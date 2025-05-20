@@ -56,11 +56,11 @@ export class Heap {
         }
     opts = this.options
 
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this
 
     this._isBefore = opts.compar
       ? function (a: any, b: any) {
-          // @ts-ignore
           return opts!.compar!(a, b) < 0
         }
       : (opts.comparBefore ??
@@ -210,6 +210,7 @@ export class Heap {
         fail = i
       }
     }
+    // eslint-disable-next-line no-console
     if (fail) console.log('failed at', fail >>> 1, fail)
     return !fail
   }

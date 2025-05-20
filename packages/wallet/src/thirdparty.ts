@@ -1,12 +1,18 @@
 // cspell:ignore ivsize cryptojs
-import { bytesToUtf8, concatBytes, unprefixedHexToBytes, utf8ToBytes } from '@ethereumjs/util'
+import {
+  EthereumJSErrorWithoutCode,
+  bytesToUtf8,
+  concatBytes,
+  unprefixedHexToBytes,
+  utf8ToBytes,
+} from '@ethereumjs/util'
 import { base64 } from '@scure/base'
 import { decrypt } from 'ethereum-cryptography/aes.js'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { pbkdf2Sync } from 'ethereum-cryptography/pbkdf2.js'
 import { md5 } from 'js-md5'
 
-import { Wallet } from './wallet.js'
+import { Wallet } from './wallet.ts'
 
 // evp_kdf
 
@@ -52,7 +58,8 @@ function evp_kdf(data: Uint8Array, salt: Uint8Array, opts?: Partial<EvpKdfOpts>)
 
   // A single EVP iteration, returns `D_i`, where block equals to `D_(i-1)`
   function iter(block: Uint8Array) {
-    if (params.digest !== 'md5') throw new Error('Only md5 is supported in evp_kdf')
+    if (params.digest !== 'md5')
+      throw EthereumJSErrorWithoutCode('Only md5 is supported in evp_kdf')
     let hash = md5.create()
     hash.update(block)
     hash.update(data)
@@ -125,16 +132,16 @@ export async function fromEtherWallet(
   let privateKey: Uint8Array
   if (!json.locked) {
     if (json.private.length !== 64) {
-      throw new Error('Invalid private key length')
+      throw EthereumJSErrorWithoutCode('Invalid private key length')
     }
     privateKey = unprefixedHexToBytes(json.private)
   } else {
     if (typeof password !== 'string') {
-      throw new Error('Password required')
+      throw EthereumJSErrorWithoutCode('Password required')
     }
 
     if (password.length < 7) {
-      throw new Error('Password must be at least 7 characters')
+      throw EthereumJSErrorWithoutCode('Password must be at least 7 characters')
     }
 
     // the "encrypted" version has the low 4 bytes
@@ -144,20 +151,20 @@ export async function fromEtherWallet(
     // decode openssl ciphertext + salt encoding
     const cipher = decodeCryptojsSalt(hash)
     if (!cipher.salt) {
-      throw new Error('Unsupported EtherWallet key format')
+      throw EthereumJSErrorWithoutCode('Unsupported EtherWallet key format')
     }
 
     // derive key/iv using OpenSSL EVP as implemented in CryptoJS
     const evp = evp_kdf(utf8ToBytes(password), cipher.salt, { keysize: 32, ivsize: 16 })
 
-    const pr = await decrypt(cipher.ciphertext, evp.key, evp.iv, 'aes-256-cbc')
+    const pr = decrypt(cipher.ciphertext, evp.key, evp.iv, 'aes-256-cbc')
 
     // NOTE: yes, they've run it through UTF8
     privateKey = unprefixedHexToBytes(bytesToUtf8(pr))
   }
   const wallet = new Wallet(privateKey)
   if (wallet.getAddressString() !== json.address) {
-    throw new Error('Invalid private key or address')
+    throw EthereumJSErrorWithoutCode('Invalid private key or address')
   }
   return wallet
 }
@@ -174,10 +181,10 @@ export function fromEtherCamp(passphrase: string): Wallet {
  */
 export function fromQuorumWallet(passphrase: string, userid: string): Wallet {
   if (passphrase.length < 10) {
-    throw new Error('Passphrase must be at least 10 characters')
+    throw EthereumJSErrorWithoutCode('Passphrase must be at least 10 characters')
   }
   if (userid.length < 10) {
-    throw new Error('User id must be at least 10 characters')
+    throw EthereumJSErrorWithoutCode('User id must be at least 10 characters')
   }
 
   const merged = utf8ToBytes(passphrase + userid)

@@ -1,7 +1,7 @@
 import { MapDB, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, beforeEach, describe, it } from 'vitest'
 
-import { CheckpointDB } from '../../src/index.js'
+import { CheckpointDB } from '../../src/index.ts'
 
 import type { BatchDBOp } from '@ethereumjs/util'
 
@@ -18,12 +18,12 @@ describe('DB tests', () => {
   })
 
   it('should initialize with empty checkpoints', () => {
-    assert(db.checkpoints.length === 0)
+    assert.isEmpty(db.checkpoints)
   })
 
   it('should add a checkpoint', () => {
     db.checkpoint(new Uint8Array())
-    assert(db.checkpoints.length === 1)
+    assert.strictEqual(db.checkpoints.length, 1)
   })
 
   it('should commit the latest checkpoint', async () => {
@@ -34,8 +34,8 @@ describe('DB tests', () => {
     await db.commit()
 
     // Ensure that the checkpoint is removed and the data is committed
-    assert(db.checkpoints.length === 0)
-    assert(db._stats.db.writes === 1)
+    assert.isEmpty(db.checkpoints)
+    assert.strictEqual(db._stats.db.writes, 1)
   })
 
   it('should revert the latest checkpoint', async () => {
@@ -48,8 +48,8 @@ describe('DB tests', () => {
     const actualRoot = await db.revert()
 
     // Ensure that the latest checkpoint is removed and the root is returned
-    assert(db.checkpoints.length === 0)
-    assert.equal(actualRoot, expectedRoot, 'roots should match')
+    assert.isEmpty(db.checkpoints)
+    assert.strictEqual(actualRoot, expectedRoot, 'roots should match')
   })
 
   it('should get a value', async () => {

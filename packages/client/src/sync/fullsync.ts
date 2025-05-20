@@ -1,17 +1,17 @@
-import { Hardfork } from '@ethereumjs/common'
+import { ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
 import { BIGINT_0, BIGINT_1, equalsBytes } from '@ethereumjs/util'
 
-import { Event } from '../types.js'
-import { short } from '../util/index.js'
+import { Event } from '../types.ts'
+import { short } from '../util/index.ts'
 
-import { BlockFetcher } from './fetcher/index.js'
-import { Synchronizer } from './sync.js'
+import { BlockFetcher } from './fetcher/index.ts'
+import { Synchronizer } from './sync.ts'
 
-import type { VMExecution } from '../execution/index.js'
-import type { Peer } from '../net/peer/peer.js'
-import type { TxPool } from '../service/txpool.js'
-import type { SynchronizerOptions } from './sync.js'
 import type { Block } from '@ethereumjs/block'
+import type { VMExecution } from '../execution/index.ts'
+import type { Peer } from '../net/peer/peer.ts'
+import type { TxPool } from '../service/txpool.ts'
+import type { SynchronizerOptions } from './sync.ts'
 
 interface FullSynchronizerOptions extends SynchronizerOptions {
   /** Tx Pool */
@@ -70,8 +70,8 @@ export class FullSynchronizer extends Synchronizer {
     const syncEvent: Promise<boolean> = new Promise((resolve) => {
       // This event listener listens for other instances of the fetcher that might be syncing from a different peer
       // and reach the head of the chain before the current fetcher.
-      this.config.events.once(Event.SYNC_SYNCHRONIZED, (height?: number) => {
-        this.resolveSync(height)
+      this.config.events.once(Event.SYNC_SYNCHRONIZED, (chainHeight?: bigint) => {
+        this.resolveSync(chainHeight)
         resolve(true)
       })
     })
@@ -102,7 +102,7 @@ export class FullSynchronizer extends Synchronizer {
     const timestamp = this.chain.blocks.latest?.header.timestamp
     this.config.chainCommon.setHardforkBy({ blockNumber: number, timestamp })
 
-    this.config.logger.info(
+    this.config.logger?.info(
       `Latest local block number=${Number(number)} td=${td} hash=${short(
         hash,
       )} hardfork=${this.config.chainCommon.hardfork()}`,
@@ -118,24 +118,38 @@ export class FullSynchronizer extends Synchronizer {
 
   /**
    * Finds the best peer to sync with. We will synchronize to this peer's
-   * blockchain. Returns null if no valid peer is found
+   * blockchain. Returns null if no valid peer is found.
    */
   async best(): Promise<Peer | undefined> {
-    let best
     const peers = this.pool.peers.filter(this.syncable.bind(this))
     if (peers.length < this.config.minPeers && !this.forceSync) return
-    for (const peer of peers) {
-      if (peer.eth?.status !== undefined) {
-        const td = peer.eth.status.td
-        if (
-          (!best && td >= this.chain.blocks.td) ||
-          (best && best.eth && best.eth.status.td < td)
-        ) {
-          best = peer
+
+    const consensus = this.config.chainCommon.consensusAlgorithm()
+
+    if (
+      (consensus === ConsensusAlgorithm.Ethash || consensus === ConsensusAlgorithm.Clique) &&
+      this.config.chainCommon.hardforkBlock(Hardfork.Paris) === null
+    ) {
+      // For pure non-Merge HF Ethash/Clique chains we want to select the peer with the highest TD
+      let best
+      for (const peer of peers) {
+        if (peer.eth?.status !== undefined) {
+          const td = peer.eth.status.td
+          if (
+            (!best && td >= this.chain.blocks.td) ||
+            (best && best.eth && best.eth.status.td < td)
+          ) {
+            best = peer
+          }
         }
       }
+      return best
+    } else {
+      // Take a random peer which advertises the eth protocol (and did handshake with, `status !== undefined`)
+      const peersWithEth = peers.filter((peer) => peer.eth?.status !== undefined)
+      // If the array is empty, will return `peersWithEth[0]`, so `undefined`.
+      return peersWithEth[Math.floor(Math.random() * peersWithEth.length)]
     }
-    return best
   }
 
   /**
@@ -174,7 +188,7 @@ export class FullSynchronizer extends Synchronizer {
       this.config.syncTargetHeight < latest.number
     ) {
       this.config.syncTargetHeight = height
-      this.config.logger.info(`New sync target height=${height} hash=${short(latest.hash())}`)
+      this.config.logger?.info(`New sync target height=${height} hash=${short(latest.hash())}`)
     }
 
     // Start fetcher from a safe distance behind because if the previous fetcher exited
@@ -199,7 +213,7 @@ export class FullSynchronizer extends Synchronizer {
       const fetcherHeight = this.fetcher.first + this.fetcher.count - BIGINT_1
       if (height > fetcherHeight) {
         this.fetcher.count += height - fetcherHeight
-        this.config.logger.info(`Updated fetcher target to height=${height} peer=${peer} `)
+        this.config.logger?.info(`Updated fetcher target to height=${height} peer=${peer} `)
       }
     }
     return true
@@ -212,14 +226,14 @@ export class FullSynchronizer extends Synchronizer {
     if (this.config.chainCommon.gteHardfork(Hardfork.Paris)) {
       if (this.fetcher !== null) {
         // If we are beyond the merge block we should stop the fetcher
-        this.config.logger.info('Paris (Merge) hardfork reached, stopping block fetcher')
+        this.config.logger?.info('Paris (Merge) hardfork reached, stopping block fetcher')
         this.clearFetcher()
       }
     }
 
     if (blocks.length === 0) {
       if (this.fetcher !== null) {
-        this.config.logger.warn('No blocks fetched are applicable for import')
+        this.config.logger?.warn('No blocks fetched are applicable for import')
       }
       return
     }
@@ -236,13 +250,12 @@ export class FullSynchronizer extends Synchronizer {
     if (nextHFBlockNum !== null) {
       const remaining = nextHFBlockNum - last
       if (remaining <= BigInt(10000)) {
-        // TODO: Do something about super-ugly nextHardforkBlockOrTimestamp() method
         const nextHF = this.config.chainCommon.getHardforkBy({ blockNumber: nextHFBlockNum })
         attentionHF = `${nextHF} HF in ${remaining} blocks`
       }
     }
 
-    this.config.logger.info(
+    this.config.logger?.info(
       `Imported blocks count=${
         blocks.length
       } first=${first} last=${last} hash=${hash} ${baseFeeAdd}hardfork=${this.config.chainCommon.hardfork()} peers=${
@@ -305,12 +318,12 @@ export class FullSynchronizer extends Synchronizer {
     try {
       await this.chain.blockchain.validateHeader(block.header)
     } catch (err) {
-      this.config.logger.debug(
+      this.config.logger?.debug(
         `Error processing new block from peer ${
           peer ? `id=${peer.id.slice(0, 8)}` : '(no peer)'
         } hash=${short(block.hash())}`,
       )
-      this.config.logger.debug(err)
+      this.config.logger?.debug(err)
       return
     }
     // Send NEW_BLOCK to square root of total number of peers in pool
@@ -375,7 +388,7 @@ export class FullSynchronizer extends Synchronizer {
     if (!newSyncHeight) return
     const [hash, height] = newSyncHeight
     this.config.syncTargetHeight = height
-    this.config.logger.info(`New sync target height=${height} hash=${short(hash)}`)
+    this.config.logger?.info(`New sync target height=${height} hash=${short(hash)}`)
     // Enqueue if we are close enough to chain head
     if (min < this.chain.headers.height + BigInt(3000)) {
       this.fetcher.enqueueByNumberList(blockNumberList, min, height)
@@ -392,7 +405,7 @@ export class FullSynchronizer extends Synchronizer {
       this.config.syncTargetHeight !== BIGINT_0 &&
       this.chain.blocks.height <= this.config.syncTargetHeight - BigInt(50)
     this.execution.run(true, shouldRunOnlyBatched).catch((e) => {
-      this.config.logger.error(`Full sync execution trigger errored`, {}, e)
+      this.config.logger?.error(`Full sync execution trigger errored`, {}, e)
     })
   }
 

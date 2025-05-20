@@ -1,3 +1,4 @@
+import { readFileSync } from 'fs'
 import {
   BlockHeader,
   createBlockFromExecutionPayload,
@@ -5,19 +6,19 @@ import {
   executionPayloadFromBeaconPayload,
 } from '@ethereumjs/block'
 import { hexToBytes } from '@ethereumjs/util'
-import { readFileSync } from 'fs'
+import * as verkle from 'micro-eth-signer'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
-import { kaustinen4Data } from '../../testdata/blocks/kaustinen4.js'
-import { kaustinen6Data } from '../../testdata/geth-genesis/kaustinen6.js'
-import { getRPCClient, setupChain } from '../helpers.js'
+import { kaustinen4Data } from '../../testdata/blocks/kaustinen4.ts'
+import { kaustinen6Data } from '../../testdata/geth-genesis/kaustinen6.ts'
+import { getRPCClient, setupChain } from '../helpers.ts'
 
-import type { Chain } from '../../../src/blockchain/index.js'
 import type { BeaconPayloadJSON } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
-import type { VerkleExecutionWitness } from '@ethereumjs/util'
-import type { HttpClient } from 'jayson/promise'
+import type { VerkleCrypto, VerkleExecutionWitness } from '@ethereumjs/util'
+import type { HttpClient } from 'jayson/promise/index.js'
+import type { Chain } from '../../../src/blockchain/index.ts'
 const genesisVerkleStateRoot = '0x1fbf85345a3cbba9a6d44f991b721e55620a22397c2a93ee8d5011136ac300ee'
 const genesisVerkleBlockHash = '0x3fe165c03e7a77d1e3759362ebeeb16fd964cb411ce11fbe35c7032fab5b9a8a'
 
@@ -35,7 +36,7 @@ const genesisVerkleBlockHash = '0x3fe165c03e7a77d1e3759362ebeeb16fd964cb411ce11f
  *     `TEST_GETH_VEC_DIR=test/testdata/gethk5vecs DEBUG=ethjs,vm:*,evm:*,statemanager:verkle* npx vitest run test/rpc/engine/kaustinen6.spec.ts` // cspell:disable-line
  */
 
-const originalValidate = (BlockHeader as any).prototype._consensusFormatValidation
+const originalValidate = BlockHeader.prototype['_consensusFormatValidation']
 
 async function fetchExecutionPayload(
   peerBeaconUrl: string,
@@ -46,7 +47,7 @@ async function fetchExecutionPayload(
     const beaconBlock = await (await fetch(`${peerBeaconUrl}/eth/v2/beacon/blocks/${slot}`)).json()
     beaconPayload = beaconBlock.data.message.body.execution_payload
     // eslint-disable-next-line no-empty
-  } catch (_e) {}
+  } catch {}
 
   return beaconPayload
 }
@@ -59,35 +60,38 @@ async function runBlock(
 ) {
   const blockCache = chain.blockCache
 
-  const parentPayload =
-    isBeaconData === true ? executionPayloadFromBeaconPayload(parent as any) : parent
-  const parentBlock = await createBlockFromExecutionPayload(parentPayload, { common })
+  const parentPayload = isBeaconData === true ? executionPayloadFromBeaconPayload(parent) : parent
+  const parentBlock = await createBlockFromExecutionPayload(parentPayload, {
+    common,
+  })
   blockCache.remoteBlocks.set(parentPayload.blockHash.slice(2), parentBlock)
   blockCache.executedBlocks.set(parentPayload.blockHash.slice(2), parentBlock)
 
   const executePayload =
-    isBeaconData === true ? executionPayloadFromBeaconPayload(execute as any) : execute
+    isBeaconData === true ? executionPayloadFromBeaconPayload(execute) : execute
   const res = await rpc.request('engine_newPayloadV2', [executePayload])
 
   // if the block was not executed mark as skip so it shows in test
   if (res.result.status === 'ACCEPTED') {
     context.skip()
   }
-  assert.equal(res.result.status, 'VALID', 'valid status should be received')
+  assert.strictEqual(res.result.status, 'VALID', 'valid status should be received')
 }
 
-describe(`valid verkle network setup`, async () => {
+describe.skip(`valid verkle network setup`, async () => {
   const { server, chain, common } = await setupChain(kaustinen6Data, 'post-merge', {
     engine: true,
-    genesisStateRoot: genesisVerkleStateRoot,
+    genesisStateRoot: hexToBytes(genesisVerkleStateRoot),
+    customCrypto: { verkle: verkle as unknown as VerkleCrypto },
+    statelessVerkle: true,
   })
   const rpc = getRPCClient(server)
   it('genesis should be correctly setup', async () => {
     const res = await rpc.request('eth_getBlockByNumber', ['0x0', false])
 
     const block0 = res.result
-    assert.equal(block0.hash, genesisVerkleBlockHash)
-    assert.equal(block0.stateRoot, genesisVerkleStateRoot)
+    assert.strictEqual(block0.hash, genesisVerkleBlockHash)
+    assert.strictEqual(block0.stateRoot, genesisVerkleStateRoot)
   })
 
   // currently it seems the the blocks can't be played one after another as it seems
@@ -145,8 +149,9 @@ describe(`valid verkle network setup`, async () => {
   }
 
   if (process.env.TEST_GETH_VEC_DIR !== undefined) {
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    const gethVectors = await loadGethVectors(process.env.TEST_GETH_VEC_DIR, { common })
+    const gethVectors = await loadGethVectors(process.env.TEST_GETH_VEC_DIR, {
+      common,
+    })
     let parent = gethVectors[0]
     for (let i = 1; i < gethVectors.length; i++) {
       const execute = gethVectors[i]

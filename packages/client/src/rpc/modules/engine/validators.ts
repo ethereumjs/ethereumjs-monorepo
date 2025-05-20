@@ -1,4 +1,4 @@
-import { validators } from '../../validation.js'
+import { validators } from '../../validation.ts'
 
 export const executionPayloadV1FieldValidators = {
   parentHash: validators.blockHash,
@@ -24,13 +24,6 @@ export const executionPayloadV3FieldValidators = {
   ...executionPayloadV2FieldValidators,
   blobGasUsed: validators.uint64,
   excessBlobGas: validators.uint64,
-}
-
-export const executionPayloadV4FieldValidators = {
-  ...executionPayloadV3FieldValidators,
-  depositRequests: validators.array(validators.depositRequest()),
-  withdrawalRequests: validators.array(validators.withdrawalRequest()),
-  consolidationRequests: validators.array(validators.consolidationRequest()),
 }
 
 export const forkchoiceFieldValidators = {

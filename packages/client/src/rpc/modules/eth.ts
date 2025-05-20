@@ -1,16 +1,23 @@
 import { createBlock } from '@ethereumjs/block'
 import { Hardfork } from '@ethereumjs/common'
 import {
+  MerkleStateManager,
+  StatelessVerkleStateManager,
+  getMerkleStateProof,
+  getVerkleStateProof,
+} from '@ethereumjs/statemanager'
+import {
   Capability,
   createBlob4844TxFromSerializedNetworkWrapper,
-  createTxFromSerializedData,
-  createTxFromTxData,
+  createTx,
+  createTxFromRLP,
 } from '@ethereumjs/tx'
 import {
   BIGINT_0,
   BIGINT_1,
   BIGINT_100,
   BIGINT_NEG1,
+  EthereumJSErrorWithoutCode,
   TypeOutput,
   bigIntMax,
   bigIntToHex,
@@ -34,21 +41,22 @@ import {
   runTx,
 } from '@ethereumjs/vm'
 
-import { INTERNAL_ERROR, INVALID_HEX_STRING, INVALID_PARAMS, PARSE_ERROR } from '../error-code.js'
-import { callWithStackTrace, getBlockByOption, toJSONRPCTx } from '../helpers.js'
-import { middleware, validators } from '../validation.js'
+import { INTERNAL_ERROR, INVALID_HEX_STRING, INVALID_PARAMS, PARSE_ERROR } from '../error-code.ts'
+import { callWithStackTrace, getBlockByOption, toJSONRPCTx } from '../helpers.ts'
+import { middleware, validators } from '../validation.ts'
 
-import type { Chain } from '../../blockchain/index.js'
-import type { ReceiptsManager } from '../../execution/receipt.js'
-import type { EthereumClient } from '../../index.js'
-import type { EthProtocol } from '../../net/protocol/index.js'
-import type { FullEthereumService, Service } from '../../service/index.js'
-import type { RPCTx } from '../types.js'
 import type { Block, JSONRPCBlock } from '@ethereumjs/block'
 import type { Log } from '@ethereumjs/evm'
 import type { Proof } from '@ethereumjs/statemanager'
 import type { FeeMarket1559Tx, LegacyTx, TypedTransaction } from '@ethereumjs/tx'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
+import type { Chain } from '../../blockchain/index.ts'
+import type { ReceiptsManager } from '../../execution/receipt.ts'
+import type { TxIndex } from '../../execution/txIndex.ts'
+import type { EthereumClient } from '../../index.ts'
+import type { EthProtocol } from '../../net/protocol/index.ts'
+import type { FullEthereumService, Service } from '../../service/index.ts'
+import type { RPCTx } from '../types.ts'
 
 const EMPTY_SLOT = `0x${'00'.repeat(32)}`
 
@@ -92,6 +100,7 @@ type JSONRPCLog = {
   transactionHash: string | null // DATA, 32 Bytes - hash of the transactions this log was created from. null when it's pending.
   blockHash: string | null // DATA, 32 Bytes - hash of the block where this log was in. null when it's pending.
   blockNumber: string | null // QUANTITY - the block number where this log was in. null when it's pending.
+  blockTimestamp: string | null // QUANTITY - the block timestamp where this log was in. null when it's pending.
   address: string // DATA, 20 Bytes - address from which this log originated.
   data: string // DATA - contains one or more 32 Bytes non-indexed arguments of the log.
   topics: string[] // Array of DATA - Array of 0 to 4 32 Bytes DATA of indexed log arguments.
@@ -146,8 +155,7 @@ const toJSONRPCBlock = async (
     blobGasUsed: header.blobGasUsed,
     excessBlobGas: header.excessBlobGas,
     parentBeaconBlockRoot: header.parentBeaconBlockRoot,
-    requestsRoot: header.requestsRoot,
-    requests: block.requests?.map((req) => bytesToHex(req.serialize())),
+    requestsHash: header.requestsHash,
   }
 }
 
@@ -167,6 +175,7 @@ const toJSONRPCLog = async (
   transactionHash: tx !== undefined ? bytesToHex(tx.hash()) : null,
   blockHash: block ? bytesToHex(block.hash()) : null,
   blockNumber: block ? bigIntToHex(block.header.number) : null,
+  blockTimestamp: block ? bigIntToHex(block.header.timestamp) : null,
   address: bytesToHex(log[0]),
   topics: log[1].map(bytesToHex),
   data: bytesToHex(log[2]),
@@ -290,6 +299,7 @@ export class Eth {
   private client: EthereumClient
   private service: Service
   private receiptsManager: ReceiptsManager | undefined
+  private txIndex: TxIndex | undefined
   private _chain: Chain
   private _vm: VM | undefined
   private _rpcDebug: boolean
@@ -301,26 +311,24 @@ export class Eth {
    */
   constructor(client: EthereumClient, rpcDebug: boolean) {
     this.client = client
-    this.service = client.services.find((s) => s.name === 'eth') as Service
+    this.service = client.service
     this._chain = this.service.chain
     this._vm = (this.service as FullEthereumService).execution?.vm
     this.receiptsManager = (this.service as FullEthereumService).execution?.receiptsManager
+    this.txIndex = (this.service as FullEthereumService).execution?.txIndex
     this._rpcDebug = rpcDebug
 
     const ethProtocol = this.service.protocols.find((p) => p.name === 'eth') as EthProtocol
     this.ethVersion = Math.max(...ethProtocol.versions)
 
-    this.blockNumber = middleware(
-      callWithStackTrace(this.blockNumber.bind(this), this._rpcDebug),
-      0,
-    )
+    this.blockNumber = callWithStackTrace(this.blockNumber.bind(this), this._rpcDebug)
 
     this.call = middleware(callWithStackTrace(this.call.bind(this), this._rpcDebug), 2, [
       [validators.transaction()],
       [validators.blockOption],
     ])
 
-    this.chainId = middleware(callWithStackTrace(this.chainId.bind(this), this._rpcDebug), 0, [])
+    this.chainId = callWithStackTrace(this.chainId.bind(this), this._rpcDebug)
 
     this.estimateGas = middleware(
       callWithStackTrace(this.estimateGas.bind(this), this._rpcDebug),
@@ -334,7 +342,7 @@ export class Eth {
       [[validators.address], [validators.blockOption]],
     )
 
-    this.coinbase = middleware(callWithStackTrace(this.coinbase.bind(this), this._rpcDebug), 0, [])
+    this.coinbase = callWithStackTrace(this.coinbase.bind(this), this._rpcDebug)
 
     this.getBlockByNumber = middleware(
       callWithStackTrace(this.getBlockByNumber.bind(this), this._rpcDebug),
@@ -438,13 +446,9 @@ export class Eth {
       [[validators.hex]],
     )
 
-    this.protocolVersion = middleware(
-      callWithStackTrace(this.protocolVersion.bind(this), this._rpcDebug),
-      0,
-      [],
-    )
+    this.protocolVersion = callWithStackTrace(this.protocolVersion.bind(this), this._rpcDebug)
 
-    this.syncing = middleware(callWithStackTrace(this.syncing.bind(this), this._rpcDebug), 0, [])
+    this.syncing = callWithStackTrace(this.syncing.bind(this), this._rpcDebug)
 
     this.getProof = middleware(callWithStackTrace(this.getProof.bind(this), this._rpcDebug), 3, [
       [validators.address],
@@ -458,7 +462,7 @@ export class Eth {
       [[validators.blockOption]],
     )
 
-    this.gasPrice = middleware(callWithStackTrace(this.gasPrice.bind(this), this._rpcDebug), 0, [])
+    this.gasPrice = callWithStackTrace(this.gasPrice.bind(this), this._rpcDebug)
 
     this.feeHistory = middleware(
       callWithStackTrace(this.feeHistory.bind(this), this._rpcDebug),
@@ -470,18 +474,13 @@ export class Eth {
       ],
     )
 
-    this.blobBaseFee = middleware(
-      callWithStackTrace(this.blobBaseFee.bind(this), this._rpcDebug),
-      0,
-      [],
-    )
+    this.blobBaseFee = callWithStackTrace(this.blobBaseFee.bind(this), this._rpcDebug)
   }
 
   /**
    * Returns number of the most recent block.
-   * @param params An empty array
    */
-  async blockNumber(_params = []) {
+  async blockNumber() {
     return bigIntToHex(this._chain.headers.latest?.number ?? BIGINT_0)
   }
 
@@ -503,7 +502,7 @@ export class Eth {
     const block = await getBlockByOption(blockOpt, this._chain)
 
     if (this._vm === undefined) {
-      throw new Error('missing vm')
+      throw EthereumJSErrorWithoutCode('missing vm')
     }
 
     const vm = await this._vm.shallowCopy()
@@ -535,10 +534,9 @@ export class Eth {
 
   /**
    * Returns the currently configured chain id, a value used in replay-protected transaction signing as introduced by EIP-155.
-   * @param _params An empty array
    * @returns The chain ID.
    */
-  async chainId(_params = []) {
+  async chainId() {
     const chainId = this._chain.config.chainCommon.chainId()
     return bigIntToHex(chainId)
   }
@@ -564,7 +562,7 @@ export class Eth {
     const block = await getBlockByOption(blockOpt ?? 'latest', this._chain)
 
     if (this._vm === undefined) {
-      throw new Error('missing vm')
+      throw EthereumJSErrorWithoutCode('missing vm')
     }
     const vm = await this._vm.shallowCopy()
     await vm.stateManager.setStateRoot(block.header.stateRoot)
@@ -608,7 +606,7 @@ export class Eth {
       blockNumber: blockToRunOn.header.number,
     })
 
-    const tx = createTxFromTxData(txData, { common: vm.common, freeze: false })
+    const tx = createTx(txData, { common: vm.common, freeze: false })
 
     // set from address
     const from =
@@ -641,7 +639,7 @@ export class Eth {
     const block = await getBlockByOption(blockOpt, this._chain)
 
     if (this._vm === undefined) {
-      throw new Error('missing vm')
+      throw EthereumJSErrorWithoutCode('missing vm')
     }
 
     const vm = await this._vm.shallowCopy()
@@ -655,10 +653,9 @@ export class Eth {
 
   /**
    * Returns the currently configured coinbase address.
-   * @param _params An empty array
    * @returns The chain ID.
    */
-  async coinbase(_params = []) {
+  async coinbase() {
     const cb = this.client.config.minerCoinbase
     if (cb === undefined) {
       throw {
@@ -681,7 +678,7 @@ export class Eth {
     try {
       const block = await this._chain.getBlock(hexToBytes(blockHash))
       return await toJSONRPCBlock(block, this._chain, includeTransactions)
-    } catch (error) {
+    } catch {
       return null
     }
   }
@@ -718,7 +715,7 @@ export class Eth {
     try {
       const block = await this._chain.getBlock(hexToBytes(blockHash))
       return intToHex(block.transactions.length)
-    } catch (error) {
+    } catch {
       throw {
         code: INVALID_PARAMS,
         message: 'Unknown block',
@@ -737,7 +734,7 @@ export class Eth {
     const block = await getBlockByOption(blockOpt, this._chain)
 
     if (this._vm === undefined) {
-      throw new Error('missing vm')
+      throw EthereumJSErrorWithoutCode('missing vm')
     }
 
     const vm = await this._vm.shallowCopy()
@@ -776,7 +773,7 @@ export class Eth {
       }
     }
     if (this._vm === undefined) {
-      throw new Error('missing vm')
+      throw EthereumJSErrorWithoutCode('missing vm')
     }
 
     const vm = await this._vm.shallowCopy()
@@ -853,10 +850,11 @@ export class Eth {
    */
   async getTransactionByHash(params: [PrefixedHexString]) {
     const [txHash] = params
-    if (!this.receiptsManager) throw new Error('missing receiptsManager')
-    const result = await this.receiptsManager.getReceiptByTxHash(hexToBytes(txHash))
-    if (!result) return null
-    const [_receipt, blockHash, txIndex] = result
+    if (!this.receiptsManager) throw EthereumJSErrorWithoutCode('missing receiptsManager')
+    if (!this.txIndex) throw EthereumJSErrorWithoutCode('missing txIndex')
+    const txHashIndex = await this.txIndex.getIndex(hexToBytes(txHash))
+    if (!txHashIndex) return null
+    const [blockHash, txIndex] = txHashIndex
     const block = await this._chain.getBlock(blockHash)
     const tx = block.transactions[txIndex]
     return toJSONRPCTx(tx, block, txIndex)
@@ -875,7 +873,7 @@ export class Eth {
     else block = await getBlockByOption('latest', this._chain)
 
     if (this._vm === undefined) {
-      throw new Error('missing vm')
+      throw EthereumJSErrorWithoutCode('missing vm')
     }
 
     const vm = await this._vm.shallowCopy()
@@ -900,9 +898,8 @@ export class Eth {
 
   /**
    * Returns the current ethereum protocol version as a hex-encoded string
-   * @param params An empty array
    */
-  protocolVersion(_params = []) {
+  protocolVersion() {
     return intToHex(this.ethVersion)
   }
 
@@ -941,7 +938,7 @@ export class Eth {
       return null
     }
     const blockHash = block.hash()
-    if (!this.receiptsManager) throw new Error('missing receiptsManager')
+    if (!this.receiptsManager) throw EthereumJSErrorWithoutCode('missing receiptsManager')
     const result = await this.receiptsManager.getReceipts(blockHash, true, true)
     if (result.length === 0) return []
     const parentBlock = await this._chain.getBlock(block.header.parentHash)
@@ -998,8 +995,11 @@ export class Eth {
   async getTransactionReceipt(params: [PrefixedHexString]) {
     const [txHash] = params
 
-    if (!this.receiptsManager) throw new Error('missing receiptsManager')
-    const result = await this.receiptsManager.getReceiptByTxHash(hexToBytes(txHash))
+    if (!this.receiptsManager) throw EthereumJSErrorWithoutCode('missing receiptsManager')
+    if (!this.txIndex) throw EthereumJSErrorWithoutCode('missing txIndex')
+    const txHashIndex = await this.txIndex.getIndex(hexToBytes(txHash))
+    if (!txHashIndex) return null
+    const result = await this.receiptsManager.getReceiptByTxHashIndex(txHashIndex)
     if (!result) return null
     const [receipt, blockHash, txIndex, logIndex] = result
     const block = await this._chain.getBlock(blockHash)
@@ -1052,7 +1052,7 @@ export class Eth {
    */
   async getLogs(params: [GetLogsParams]) {
     const { fromBlock, toBlock, blockHash, address, topics } = params[0]
-    if (!this.receiptsManager) throw new Error('missing receiptsManager')
+    if (!this.receiptsManager) throw EthereumJSErrorWithoutCode('missing receiptsManager')
     if (blockHash !== undefined && (fromBlock !== undefined || toBlock !== undefined)) {
       throw {
         code: INVALID_PARAMS,
@@ -1064,7 +1064,7 @@ export class Eth {
     if (blockHash !== undefined) {
       try {
         from = to = await this._chain.getBlock(hexToBytes(blockHash))
-      } catch (error: any) {
+      } catch {
         throw {
           code: INVALID_PARAMS,
           message: 'unknown blockHash',
@@ -1170,7 +1170,7 @@ export class Eth {
         // Blob Transactions sent over RPC are expected to be in Network Wrapper format
         tx = createBlob4844TxFromSerializedNetworkWrapper(txBuf, { common })
 
-        const blobGasLimit = tx.common.param('maxblobGasPerBlock')
+        const blobGasLimit = tx.common.param('maxBlobGasPerBlock')
         const blobGasPerBlob = tx.common.param('blobGasPerBlob')
 
         if (BigInt((tx.blobs ?? []).length) * blobGasPerBlob > blobGasLimit) {
@@ -1181,7 +1181,7 @@ export class Eth {
           )
         }
       } else {
-        tx = createTxFromSerializedData(txBuf, { common })
+        tx = createTxFromRLP(txBuf, { common })
       }
     } catch (e: any) {
       throw {
@@ -1241,19 +1241,26 @@ export class Eth {
     const block = await getBlockByOption(blockOpt, this._chain)
 
     if (this._vm === undefined) {
-      throw new Error('missing vm')
+      throw EthereumJSErrorWithoutCode('missing vm')
     }
 
     const vm = await this._vm.shallowCopy()
 
-    if (!('getProof' in vm.stateManager)) {
-      throw new Error('getProof RPC method not supported with the StateManager provided')
-    }
     await vm.stateManager.setStateRoot(block.header.stateRoot)
 
     const address = createAddressFromString(addressHex)
     const slots = slotsHex.map((slotHex) => setLengthLeft(hexToBytes(slotHex), 32))
-    const proof = await vm.stateManager.getProof!(address, slots)
+    let proof: Proof
+    if (vm.stateManager instanceof MerkleStateManager) {
+      proof = await getMerkleStateProof(vm.stateManager, address, slots)
+    } else if (vm.stateManager instanceof StatelessVerkleStateManager) {
+      proof = await getVerkleStateProof(vm.stateManager, address, slots)
+    } else {
+      throw EthereumJSErrorWithoutCode(
+        'getProof RPC method not supported with the StateManager provided',
+      )
+    }
+
     for (const p of proof.storageProof) {
       p.key = bigIntToHex(BigInt(p.key))
     }
@@ -1262,13 +1269,12 @@ export class Eth {
 
   /**
    * Returns an object with data about the sync status or false.
-   * @param params An empty array
    * @returns An object with sync status data or false (when not syncing)
    *   * startingBlock - The block at which the import started (will only be reset after the sync reached his head)
    *   * currentBlock - The current block, same as eth_blockNumber
    *   * highestBlock - The estimated highest block
    */
-  async syncing(_params = []) {
+  async syncing() {
     if (this.client.config.synchronized) {
       return false
     }
@@ -1277,7 +1283,7 @@ export class Eth {
       this._chain.headers?.latest ?? (await this._chain.getCanonicalHeadHeader())
     const currentBlock = bigIntToHex(currentBlockHeader.number)
 
-    const synchronizer = this.client.services[0].synchronizer
+    const synchronizer = this.client.service!.synchronizer
     if (!synchronizer) {
       return false
     }
@@ -1408,7 +1414,7 @@ export class Eth {
         let blobGasUsedRatio = 0
         if (b.header.excessBlobGas !== undefined) {
           baseFeePerBlobGas = b.header.getBlobGasPrice()
-          const max = b.common.param('maxblobGasPerBlock')
+          const max = b.common.param('maxBlobGasPerBlock')
           blobGasUsedRatio = Number(blobGasUsed) / Number(max)
         }
 
@@ -1432,7 +1438,10 @@ export class Eth {
 
     if (this._chain.blockchain.common.isActivatedEIP(4844)) {
       baseFeePerBlobGas.push(
-        requestedBlocks[requestedBlocks.length - 1].header.calcNextBlobGasPrice(),
+        // use the last blocks common for fee estimation
+        requestedBlocks[requestedBlocks.length - 1].header.calcNextBlobGasPrice(
+          requestedBlocks[requestedBlocks.length - 1].header.common,
+        ),
       )
     } else {
       // TODO (?): known bug
@@ -1467,6 +1476,7 @@ export class Eth {
    */
   async blobBaseFee() {
     const headBlock = await this._chain.getCanonicalHeadHeader()
-    return bigIntToHex(headBlock.calcNextBlobGasPrice())
+    // use headBlock's common to estimate the next blob fee
+    return bigIntToHex(headBlock.calcNextBlobGasPrice(headBlock.common))
   }
 }

@@ -1,15 +1,23 @@
-import { Account, Address, bigIntToBytes, hexToBytes, setLengthLeft } from '@ethereumjs/util'
+import {
+  Account,
+  Address,
+  bigIntToBytes,
+  bytesToBigInt,
+  hexToBytes,
+  setLengthLeft,
+  setLengthRight,
+} from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createEVM } from '../src/index.js'
-import { Stack } from '../src/stack.js'
+import { createEVM } from '../src/index.ts'
+import { Stack } from '../src/stack.ts'
 
-import { createAccount } from './utils.js'
+import { createAccount } from './utils.ts'
 
 describe('Stack', () => {
   it('should be empty initially', () => {
     const s = new Stack()
-    assert.equal(s.length, 0)
+    assert.strictEqual(s.length, 0)
     assert.throws(() => s.pop())
   })
 
@@ -22,7 +30,7 @@ describe('Stack', () => {
   it('should push item', () => {
     const s = new Stack()
     s.push(BigInt(5))
-    assert.equal(s.pop(), BigInt(5))
+    assert.strictEqual(s.pop(), BigInt(5))
   })
 
   it('popN should return array for n = 1', () => {
@@ -147,5 +155,28 @@ describe('Stack', () => {
     s.pop()
     const reportedStack = s.getStack()
     assert.deepEqual(reportedStack, [BigInt(4), BigInt(6)])
+  })
+
+  it('stack should return the padded value', async () => {
+    const evm = await createEVM()
+
+    for (let pushN = 0x60; pushN <= 0x7f; pushN++) {
+      const expectedStack = new Stack(1024)
+      expectedStack.push(bytesToBigInt(setLengthRight(new Uint8Array([0x01]), pushN - 0x5f)))
+
+      const resWithoutJumps = await evm.runCall({
+        // PUSHx 01
+        data: hexToBytes(`0x${pushN.toString(16)}01`),
+      })
+      const executionStack = resWithoutJumps.execResult.runState?.stack
+      assert.deepEqual(executionStack, expectedStack, 'code without jumps ok')
+
+      const resWithJumps = await evm.runCall({
+        // PUSH 0x03 JUMP JUMPDEST < PUSHx 01 >
+        data: hexToBytes(`0x6003565B${pushN.toString(16)}01`),
+      })
+      const executionStackWithJumps = resWithJumps.execResult.runState?.stack
+      assert.deepEqual(executionStackWithJumps, expectedStack, 'code with jumps ok')
+    }
   })
 })

@@ -1,14 +1,14 @@
 import { Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { CacheType, StorageCache } from '../../src/cache/index.js'
+import { CacheType, StorageCache } from '../../src/cache/index.ts'
 
 describe('Storage Cache: initialization', () => {
   for (const type of [CacheType.LRU, CacheType.ORDERED_MAP]) {
     it(`should initialize`, async () => {
       const cache = new StorageCache({ size: 100, type })
 
-      assert.equal(cache._checkpoints, 0, 'initializes given trie')
+      assert.strictEqual(cache._checkpoints, 0, 'initializes given trie')
     })
   }
 })
@@ -23,25 +23,25 @@ describe('Storage Cache: put and get account', () => {
 
     it('should return undefined for CacheElement if account not present in the cache', async () => {
       const elem = cache.get(addr, key)
-      assert.ok(elem === undefined)
+      assert.isTrue(elem === undefined)
     })
 
     it(`should put storage value`, async () => {
       cache.put(addr, key, value)
       const elem = cache.get(addr, key)
-      assert.ok(elem !== undefined && equalsBytes(elem, value))
+      assert.isTrue(elem !== undefined && equalsBytes(elem, value))
     })
 
     it(`should flush`, async () => {
       const items = cache.flush()
-      assert.equal(items.length, 1)
+      assert.strictEqual(items.length, 1)
     })
 
     it(`should delete storage value from cache`, async () => {
       cache.del(addr, key)
 
       const elem = cache.get(addr, key)
-      assert.ok(elem !== undefined && equalsBytes(elem, hexToBytes('0x80')))
+      assert.isTrue(elem !== undefined && equalsBytes(elem, hexToBytes('0x80')))
     })
   }
 })
@@ -61,12 +61,12 @@ describe('Storage Cache: checkpointing', () => {
       cache.put(addr, key, updatedValue)
 
       let elem = cache.get(addr, key)
-      assert.ok(elem !== undefined && equalsBytes(elem, updatedValue))
+      assert.isTrue(elem !== undefined && equalsBytes(elem, updatedValue))
 
       cache.revert()
 
       elem = cache.get(addr, key)
-      assert.ok(elem !== undefined && equalsBytes(elem, value))
+      assert.isTrue(elem !== undefined && equalsBytes(elem, value))
     })
 
     it(`should use outer revert`, async () => {
@@ -80,7 +80,7 @@ describe('Storage Cache: checkpointing', () => {
       cache.revert()
 
       const elem = cache.get(addr, key)
-      assert.ok(elem === undefined)
+      assert.isTrue(elem === undefined)
     })
 
     it(`should revert to unknown if nonexistent in cache before`, async () => {
@@ -90,19 +90,19 @@ describe('Storage Cache: checkpointing', () => {
       cache.put(addr, key, value)
 
       let elem = cache.get(addr, key)
-      assert.ok(elem !== undefined && equalsBytes(elem, value))
+      assert.isTrue(elem !== undefined && equalsBytes(elem, value))
 
       cache.revert()
 
       elem = cache.get(addr, key)
-      assert.ok(elem === undefined)
+      assert.isTrue(elem === undefined)
     })
 
     it(`cache clearing`, async () => {
       const cache = new StorageCache({ size: 100, type: CacheType.LRU })
       cache.put(addr, key, value)
       cache.clear()
-      assert.equal(cache.size(), 0, 'should delete cache objects with clear=true')
+      assert.strictEqual(cache.size(), 0, 'should delete cache objects with clear=true')
     })
   }
 })

@@ -1,17 +1,16 @@
-import { Lock } from '@ethereumjs/util'
+import { EthereumJSErrorWithoutCode, Lock } from '@ethereumjs/util'
 
-import { Event } from '../../types.js'
+import { Event } from '../../types.ts'
 
-import type { Config } from '../../config.js'
-import type { Peer } from '../peer/peer.js'
-import type { EthProtocolMethods } from './ethprotocol.js'
-import type { LesProtocolMethods } from './lesprotocol.js'
-import type { Message, Protocol } from './protocol.js'
-import type { Sender } from './sender.js'
-import type { AccountData, SnapProtocolMethods, StorageData } from './snapprotocol.js'
 import type { BlockBodyBytes, BlockHeader } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { TxReceipt } from '@ethereumjs/vm'
+import type { Config } from '../../config.ts'
+import type { Peer } from '../peer/peer.ts'
+import type { EthProtocolMethods } from './ethprotocol.ts'
+import type { Message, Protocol } from './protocol.ts'
+import type { Sender } from './sender.ts'
+import type { AccountData, SnapProtocolMethods, StorageData } from './snapprotocol.ts'
 
 export interface BoundProtocolOptions {
   /* Config */
@@ -75,7 +74,7 @@ export class BoundProtocol {
           // Expected message queue growth is in the single digits
           // so this adds a guard here if something goes wrong
           if (this.messageQueue.length >= 50) {
-            const error = new Error('unexpected message queue growth for peer')
+            const error = EthereumJSErrorWithoutCode('unexpected message queue growth for peer')
             this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
           }
         }
@@ -118,7 +117,7 @@ export class BoundProtocol {
     try {
       data = this.protocol.decode(message, incoming.payload)
     } catch (e: any) {
-      error = new Error(`Could not decode message ${message.name}: ${e}`)
+      error = EthereumJSErrorWithoutCode(`Could not decode message ${message.name}: ${e}`)
     }
     const resolver = this.resolvers.get(incoming.code)
     if (resolver !== undefined) {
@@ -164,7 +163,7 @@ export class BoundProtocol {
       const encoded = this.protocol.encode(message, args)
       this.sender.sendMessage(message.code, encoded)
     } else {
-      throw new Error(`Unknown message: ${name}`)
+      throw EthereumJSErrorWithoutCode(`Unknown message: ${name}`)
     }
     return message
   }
@@ -208,7 +207,7 @@ export class BoundProtocol {
       resolver.timeout = setTimeout(() => {
         resolver.timeout = null
         this.resolvers.delete(message.response!)
-        resolver.reject(new Error(`Request timed out after ${this.timeout}ms`))
+        resolver.reject(EthereumJSErrorWithoutCode(`Request timed out after ${this.timeout}ms`))
       }, this.timeout)
     })
   }
@@ -315,27 +314,6 @@ export class BoundSnapProtocol extends BoundProtocol implements SnapProtocolMeth
     bytes: bigint
   }): Promise<{ reqId: bigint; nodes: Uint8Array[] }> {
     return this.request('GetTrieNodes', opts).catch((error: Error) => {
-      this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
-      return undefined
-    })
-  }
-}
-
-export class BoundLesProtocol extends BoundProtocol implements LesProtocolMethods {
-  name = 'les' // public name: string
-
-  constructor(options: BoundProtocolOptions) {
-    super(options)
-  }
-
-  async getBlockHeaders(opts: {
-    reqId?: bigint | undefined
-    block: bigint | Uint8Array
-    max: number
-    skip?: number | undefined
-    reverse?: boolean | undefined
-  }): Promise<{ reqId: bigint; bv: bigint; headers: BlockHeader[] }> {
-    return this.request('GetBlockHeaders', opts).catch((error: Error) => {
       this.config.events.emit(Event.PROTOCOL_ERROR, error, this.peer)
       return undefined
     })

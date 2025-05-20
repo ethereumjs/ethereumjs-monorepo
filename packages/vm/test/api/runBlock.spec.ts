@@ -5,8 +5,10 @@ import {
   createSealedCliqueBlock,
 } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
-import { Common, Goerli, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
+import { type MerkleStateManager, StatefulVerkleStateManager } from '@ethereumjs/statemanager'
+import { customChainConfig, goerliChainConfig } from '@ethereumjs/testdata'
 import {
   Capability,
   LegacyTx,
@@ -20,52 +22,55 @@ import {
   Address,
   BIGINT_1,
   KECCAK256_RLP,
+  bigIntToUnpaddedBytes,
+  bytesToHex,
   concatBytes,
   createAddressFromString,
   createZeroAddress,
-  ecsign,
   equalsBytes,
   hexToBytes,
   privateToAddress,
-  toBytes,
   unpadBytes,
   utf8ToBytes,
-  zeros,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1'
+import * as verkle from 'micro-eth-signer/verkle'
 import { assert, describe, it } from 'vitest'
 
-import { createVM, runBlock } from '../../src/index.js'
-import { getDAOCommon, setupPreConditions } from '../util.js'
+import { createVM, runBlock } from '../../src/index.ts'
+import { getDAOCommon, setupPreConditions } from '../util.ts'
 
-import * as testData from './testdata/blockchain.json'
-import * as testnet from './testdata/testnet.json'
-import { createAccountWithDefaults, setBalance, setupVM } from './utils.js'
+import { blockchainData } from './testdata/blockchain.ts'
+import { createAccountWithDefaults, setBalance, setupVM } from './utils.ts'
 
-import type { VM } from '../../src/index.js'
+import type { Block, BlockBytes } from '@ethereumjs/block'
+import type { TypedTransaction } from '@ethereumjs/tx'
+import type {
+  EOACode7702AuthorizationListBytesItem,
+  NestedUint8Array,
+  PrefixedHexString,
+  VerkleExecutionWitness,
+} from '@ethereumjs/util'
+import type { VM } from '../../src/index.ts'
 import type {
   AfterBlockEvent,
   PostByzantiumTxReceipt,
   PreByzantiumTxReceipt,
   RunBlockOpts,
-} from '../../src/types.js'
-import type { Block, BlockBytes } from '@ethereumjs/block'
-import type { ChainConfig } from '@ethereumjs/common'
-import type { MerkleStateManager } from '@ethereumjs/statemanager'
-import type { AuthorizationListBytesItem, TypedTransaction } from '@ethereumjs/tx'
-import type { NestedUint8Array, PrefixedHexString } from '@ethereumjs/util'
+} from '../../src/types.ts'
 
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
 describe('runBlock() -> successful API parameter usage', async () => {
   async function simpleRun(vm: VM) {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
-    const genesisRlp = hexToBytes(testData.default.genesisRLP as PrefixedHexString)
+    const genesisRlp = hexToBytes(blockchainData.genesisRLP as PrefixedHexString)
     const genesis = createBlockFromRLP(genesisRlp, { common })
 
-    const blockRlp = hexToBytes(testData.default.blocks[0].rlp as PrefixedHexString)
+    const blockRlp = hexToBytes(blockchainData.blocks[0].rlp as PrefixedHexString)
     const block = createBlockFromRLP(blockRlp, { common })
 
-    await setupPreConditions(vm.stateManager, testData)
+    await setupPreConditions(vm.stateManager, blockchainData)
 
     assert.deepEqual(
       (vm.stateManager as MerkleStateManager)['_trie'].root(),
@@ -80,7 +85,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
       skipHardForkValidation: true,
     })
 
-    assert.equal(
+    assert.strictEqual(
       res.results[0].totalGasSpent.toString(16),
       '5208',
       'actual gas used should equal blockHeader gasUsed',
@@ -88,12 +93,12 @@ describe('runBlock() -> successful API parameter usage', async () => {
   }
 
   async function uncleRun(vm: VM) {
-    const testData = await import('./testdata/uncleData.json')
+    const { uncleData } = await import('./testdata/uncleData.ts')
 
-    await setupPreConditions(vm.stateManager, testData)
+    await setupPreConditions(vm.stateManager, uncleData)
 
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
-    const block1Rlp = hexToBytes(testData.default.blocks[0].rlp as PrefixedHexString)
+    const block1Rlp = hexToBytes(uncleData.blocks[0].rlp as PrefixedHexString)
     const block1 = createBlockFromRLP(block1Rlp, { common })
     await runBlock(vm, {
       block: block1,
@@ -102,7 +107,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
       skipHardForkValidation: true,
     })
 
-    const block2Rlp = hexToBytes(testData.default.blocks[1].rlp as PrefixedHexString)
+    const block2Rlp = hexToBytes(uncleData.blocks[1].rlp as PrefixedHexString)
     const block2 = createBlockFromRLP(block2Rlp, { common })
     await runBlock(vm, {
       block: block2,
@@ -112,7 +117,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
       skipHardForkValidation: true,
     })
 
-    const block3Rlp = toBytes(testData.default.blocks[2].rlp as PrefixedHexString)
+    const block3Rlp = hexToBytes(uncleData.blocks[2].rlp as PrefixedHexString)
     const block3 = createBlockFromRLP(block3Rlp, { common })
     await runBlock(vm, {
       block: block3,
@@ -126,9 +131,9 @@ describe('runBlock() -> successful API parameter usage', async () => {
       createAddressFromString('0xb94f5374fce5ed0000000097c15331677e6ebf0b'),
     ))!.balance.toString(16)
 
-    assert.equal(
+    assert.strictEqual(
       `0x${uncleReward}`,
-      testData.default.postState['0xb94f5374fce5ed0000000097c15331677e6ebf0b'].balance,
+      uncleData.postState['0xb94f5374fce5ed0000000097c15331677e6ebf0b'].balance,
       'calculated balance should equal postState balance',
     )
   }
@@ -153,7 +158,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
   })
 
   it('PoW block, Common custom chain (Common customChains constructor option)', async () => {
-    const common = createCustomCommon(testnet.default as ChainConfig, Mainnet, {
+    const common = createCustomCommon(customChainConfig, Mainnet, {
       hardfork: Hardfork.Berlin,
     })
     const vm = await setupVM({ common })
@@ -209,12 +214,12 @@ describe('runBlock() -> successful API parameter usage', async () => {
       skipBlockValidation: true,
       generate: true,
     })
-    assert.equal(
+    assert.strictEqual(
       txResultChainstart.results[0].totalGasSpent,
       BigInt(21000) + BigInt(68) * BigInt(3) + BigInt(3) + BigInt(50),
       'tx charged right gas on chainstart hard fork',
     )
-    assert.equal(
+    assert.strictEqual(
       txResultMuirGlacier.results[0].totalGasSpent,
       BigInt(21000) + BigInt(32000) + BigInt(16) * BigInt(3) + BigInt(3) + BigInt(800),
       'tx charged right gas on muir glacier hard fork',
@@ -227,14 +232,20 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
 
   it('should fail when runTx fails', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
-    const blockRlp = hexToBytes(testData.default.blocks[0].rlp as PrefixedHexString)
+    const blockRlp = hexToBytes(blockchainData.blocks[0].rlp as PrefixedHexString)
     const block = createBlockFromRLP(blockRlp, { common })
 
     // The mocked VM uses a mocked runTx
     // which always returns an error.
-    await runBlock(vm, { block, skipBlockValidation: true, skipHardForkValidation: true })
+    await runBlock(vm, {
+      block,
+      skipBlockValidation: true,
+      skipHardForkValidation: true,
+    })
       .then(() => assert.fail('should have returned error'))
-      .catch((e) => assert.ok(e.message.includes("sender doesn't have enough funds to send tx")))
+      .catch((e) =>
+        assert.isTrue(e.message.includes("sender doesn't have enough funds to send tx")),
+      )
   })
 
   it('should fail when block gas limit higher than 2^63-1', async () => {
@@ -247,20 +258,20 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
     })
     await runBlock(vm, { block })
       .then(() => assert.fail('should have returned error'))
-      .catch((e) => assert.ok(e.message.includes('Invalid block')))
+      .catch((e) => assert.isTrue(e.message.includes('Invalid block')))
   })
 
   it('should fail when block validation fails', async () => {
     const blockchain = await createBlockchain()
     const vm = await createVM({ common, blockchain })
 
-    const blockRlp = hexToBytes(testData.default.blocks[0].rlp as PrefixedHexString)
+    const blockRlp = hexToBytes(blockchainData.blocks[0].rlp as PrefixedHexString)
     const block = Object.create(createBlockFromRLP(blockRlp, { common }))
 
     await runBlock(vm, { block })
       .then(() => assert.fail('should have returned error'))
       .catch((e) => {
-        assert.ok(
+        assert.isTrue(
           e.message.includes('not found in DB'),
           'block failed validation due to no parent header',
         )
@@ -269,13 +280,14 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
 
   it('should fail when no `validateHeader` method exists on blockchain class', async () => {
     const vm = await createVM({ common })
-    const blockRlp = hexToBytes(testData.default.blocks[0].rlp as PrefixedHexString)
+    const blockRlp = hexToBytes(blockchainData.blocks[0].rlp as PrefixedHexString)
     const block = Object.create(createBlockFromRLP(blockRlp, { common }))
-    ;(vm.blockchain as any).validateHeader = undefined
+    // @ts-expect-error -- Assigning undefined to test error case
+    vm.blockchain['validateHeader'] = undefined
     try {
       await runBlock(vm, { block })
     } catch (err: any) {
-      assert.equal(
+      assert.strictEqual(
         err.message,
         'cannot validate header: blockchain has no `validateHeader` method',
         'should error',
@@ -286,7 +298,7 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
   it('should fail when tx gas limit higher than block gas limit', async () => {
     const vm = await createVM({ common })
 
-    const blockRlp = hexToBytes(testData.default.blocks[0].rlp as PrefixedHexString)
+    const blockRlp = hexToBytes(blockchainData.blocks[0].rlp as PrefixedHexString)
     const block = Object.create(createBlockFromRLP(blockRlp, { common }))
     // modify first tx's gasLimit
     const { nonce, gasPrice, to, value, data, v, r, s } = block.transactions[0]
@@ -300,7 +312,7 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
 
     await runBlock(vm, { block, skipBlockValidation: true })
       .then(() => assert.fail('should have returned error'))
-      .catch((e) => assert.ok(e.message.includes('higher gas limit')))
+      .catch((e) => assert.isTrue(e.message.includes('higher gas limit')))
   })
 })
 
@@ -311,13 +323,11 @@ describe('runBlock() -> runtime behavior', async () => {
 
     const vm = await setupVM({ common })
 
-    const block1 = RLP.decode(
-      testData.default.blocks[0].rlp as PrefixedHexString,
-    ) as NestedUint8Array
+    const block1 = RLP.decode(blockchainData.blocks[0].rlp as PrefixedHexString) as NestedUint8Array
     // edit extra data of this block to "dao-hard-fork"
     block1[0][12] = utf8ToBytes('dao-hard-fork')
     const block = createBlockFromBytesArray(block1 as BlockBytes, { common })
-    await setupPreConditions(vm.stateManager, testData)
+    await setupPreConditions(vm.stateManager, blockchainData)
 
     // fill two original DAO child-contracts with funds and the recovery account with funds in order to verify that the balance gets summed correctly
     const fundBalance1 = BigInt('0x1111')
@@ -347,20 +357,20 @@ describe('runBlock() -> runtime behavior', async () => {
 
     const DAOFundedContractAccount1 =
       (await vm.stateManager.getAccount(DAOFundedContractAddress1)) ?? new Account()
-    assert.equal(DAOFundedContractAccount1!.balance, BigInt(0)) // verify our funded account now has 0 balance
+    assert.strictEqual(DAOFundedContractAccount1!.balance, BigInt(0)) // verify our funded account now has 0 balance
     const DAOFundedContractAccount2 =
       (await vm.stateManager.getAccount(DAOFundedContractAddress2)) ?? new Account()
-    assert.equal(DAOFundedContractAccount2!.balance, BigInt(0)) // verify our funded account now has 0 balance
+    assert.strictEqual(DAOFundedContractAccount2!.balance, BigInt(0)) // verify our funded account now has 0 balance
 
     const DAORefundAccount = await vm.stateManager.getAccount(DAORefundAddress)
     // verify that the refund account gets the summed balance of the original refund account + two child DAO accounts
     const msg =
       'should transfer balance from DAO children to the Refund DAO account in the DAO fork'
-    assert.equal(DAORefundAccount!.balance, BigInt(0x7777), msg)
+    assert.strictEqual(DAORefundAccount!.balance, BigInt(0x7777), msg)
   })
 
   it('should allocate to correct clique beneficiary', async () => {
-    const common = new Common({ chain: Goerli, hardfork: Hardfork.Istanbul })
+    const common = new Common({ chain: goerliChainConfig, hardfork: Hardfork.Istanbul })
     const vm = await setupVM({ common })
 
     const signer = {
@@ -393,9 +403,14 @@ describe('runBlock() -> runtime behavior', async () => {
       { common },
     )
 
-    await runBlock(vm, { block, skipNonce: true, skipBlockValidation: true, generate: true })
+    await runBlock(vm, {
+      block,
+      skipNonce: true,
+      skipBlockValidation: true,
+      generate: true,
+    })
     const account = await vm.stateManager.getAccount(signer.address)
-    assert.equal(
+    assert.strictEqual(
       account!.balance,
       BigInt(42000),
       'beneficiary balance should equal the cost of the txs',
@@ -433,7 +448,11 @@ it('should correctly reflect generated fields', async () => {
   // which is a well known constant.
   const bytes32Zeros = new Uint8Array(32)
   const block = createBlock({
-    header: { receiptTrie: bytes32Zeros, transactionsTrie: bytes32Zeros, gasUsed: BigInt(1) },
+    header: {
+      receiptTrie: bytes32Zeros,
+      transactionsTrie: bytes32Zeros,
+      gasUsed: BigInt(1),
+    },
   })
 
   const results = await runBlockAndGetAfterBlockEvent(vm, {
@@ -444,17 +463,17 @@ it('should correctly reflect generated fields', async () => {
 
   assert.deepEqual(results.block.header.receiptTrie, KECCAK256_RLP)
   assert.deepEqual(results.block.header.transactionsTrie, KECCAK256_RLP)
-  assert.equal(results.block.header.gasUsed, BigInt(0))
+  assert.strictEqual(results.block.header.gasUsed, BigInt(0))
 })
 
 async function runWithHf(hardfork: string) {
   const common = new Common({ chain: Mainnet, hardfork })
   const vm = await setupVM({ common })
 
-  const blockRlp = hexToBytes(testData.default.blocks[0].rlp as PrefixedHexString)
+  const blockRlp = hexToBytes(blockchainData.blocks[0].rlp as PrefixedHexString)
   const block = createBlockFromRLP(blockRlp, { common })
 
-  await setupPreConditions(vm.stateManager, testData)
+  await setupPreConditions(vm.stateManager, blockchainData)
 
   const res = await runBlock(vm, {
     block,
@@ -468,7 +487,7 @@ async function runWithHf(hardfork: string) {
 describe('runBlock() -> API return values', () => {
   it('should return correct HF receipts', async () => {
     let res = await runWithHf('byzantium')
-    assert.equal(
+    assert.strictEqual(
       (res.receipts[0] as PostByzantiumTxReceipt).status,
       1,
       'should return correct post-Byzantium receipt format',
@@ -487,18 +506,18 @@ describe('runBlock() -> tx types', async () => {
   async function simpleRun(vm: VM, transactions: TypedTransaction[]) {
     const common = vm.common
 
-    const blockRlp = hexToBytes(testData.default.blocks[0].rlp as PrefixedHexString)
+    const blockRlp = hexToBytes(blockchainData.blocks[0].rlp as PrefixedHexString)
     const block = createBlockFromRLP(blockRlp, { common, freeze: false })
 
-    //@ts-ignore read-only property
+    //@ts-expect-error read-only property
     block.transactions = transactions
 
     if (transactions.some((t) => t.supports(Capability.EIP1559FeeMarket))) {
-      // @ts-ignore read-only property
+      //@ts-expect-error read-only property
       block.header.baseFeePerGas = BigInt(7)
     }
 
-    await setupPreConditions(vm.stateManager, testData)
+    await setupPreConditions(vm.stateManager, blockchainData)
 
     const res = await runBlock(vm, {
       block,
@@ -506,7 +525,7 @@ describe('runBlock() -> tx types', async () => {
       generate: true,
     })
 
-    assert.equal(
+    assert.strictEqual(
       res.gasUsed,
       res.receipts
         .map((r) => r.cumulativeBlockGasUsed)
@@ -596,7 +615,9 @@ describe('runBlock() -> tx types', async () => {
       pkey?: Uint8Array
     }
 
-    function getAuthorizationListItem(opts: GetAuthListOpts): AuthorizationListBytesItem {
+    function getAuthorizationListItem(
+      opts: GetAuthListOpts,
+    ): EOACode7702AuthorizationListBytesItem {
       const actualOpts = {
         ...{ chainId: 0, pkey: defaultAuthPkey },
         ...opts,
@@ -606,16 +627,23 @@ describe('runBlock() -> tx types', async () => {
 
       const chainIdBytes = unpadBytes(hexToBytes(`0x${chainId.toString(16)}`))
       const nonceBytes =
-        nonce !== undefined ? [unpadBytes(hexToBytes(`0x${nonce.toString(16)}`))] : []
+        nonce !== undefined ? unpadBytes(hexToBytes(`0x${nonce.toString(16)}`)) : new Uint8Array()
       const addressBytes = address.toBytes()
 
       const rlpdMsg = RLP.encode([chainIdBytes, addressBytes, nonceBytes])
       const msgToSign = keccak256(concatBytes(new Uint8Array([5]), rlpdMsg))
-      const signed = ecsign(msgToSign, pkey)
+      const signed = secp256k1.sign(msgToSign, pkey)
 
-      const yParity = signed.v === BigInt(27) ? new Uint8Array() : new Uint8Array([1])
+      const yParity = signed.recovery === 0 ? new Uint8Array() : new Uint8Array([1])
 
-      return [chainIdBytes, addressBytes, nonceBytes, yParity, signed.r, signed.s]
+      return [
+        chainIdBytes,
+        addressBytes,
+        nonceBytes,
+        yParity,
+        bigIntToUnpaddedBytes(signed.r),
+        bigIntToUnpaddedBytes(signed.s),
+      ]
     }
 
     const common = new Common({
@@ -677,7 +705,56 @@ describe('runBlock() -> tx types', async () => {
     )
 
     await runBlock(vm, { block, skipBlockValidation: true, generate: true })
-    const storage = await vm.stateManager.getStorage(defaultAuthAddr, zeros(32))
-    assert.ok(equalsBytes(storage, new Uint8Array([2])))
+    const storage = await vm.stateManager.getStorage(defaultAuthAddr, new Uint8Array(32))
+    assert.isTrue(equalsBytes(storage, new Uint8Array([2])))
+  })
+})
+
+describe.skip('run a verkle block', () => {
+  it('should execute a verkle block and produce an executionWitness', async () => {
+    const verkleJSONWithoutValue = (await import('./testdata/verkleBlock.ts')).block
+    const verkleJSONWithValue = (await import('./testdata/verkleBlockWithValue.ts')).block
+    const verkleBlocks = [verkleJSONWithoutValue, verkleJSONWithValue]
+
+    const common = new Common({
+      chain: Mainnet,
+      customCrypto: { verkle },
+      hardfork: Hardfork.Shanghai,
+      eips: [2935, 3607, 6800],
+    })
+
+    for (const verkleJSON of verkleBlocks) {
+      const genesisRlp = hexToBytes(verkleJSON.genesisRLP as PrefixedHexString)
+      const genesisBlock = createBlockFromRLP(genesisRlp, { common })
+
+      const blockRlp = hexToBytes(verkleJSON.blocks[0].rlp as PrefixedHexString)
+      const block = createBlockFromRLP(blockRlp, { common })
+      const sm = new StatefulVerkleStateManager({ common })
+      await sm['_trie'].createRootNode()
+      const blockchain = await createBlockchain({ common })
+      const vm = await setupVM({
+        common,
+        stateManager: sm,
+        blockchain,
+        genesisBlock,
+      })
+      await setupPreConditions(vm.stateManager, verkleJSON)
+      const witness = {
+        ...verkleJSON.blocks[0].witness,
+        parentStateRoot: bytesToHex(genesisBlock.header.stateRoot),
+      } as VerkleExecutionWitness
+
+      vm.stateManager.initVerkleExecutionWitness?.(block.header.number, witness)
+      assert.strictEqual(bytesToHex(genesisBlock.hash()), verkleJSON.genesisBlockHeader.hash)
+      assert.strictEqual(
+        bytesToHex(await vm.stateManager.getStateRoot()),
+        verkleJSON.genesisBlockHeader.stateRoot,
+        'genesis state root matches',
+      )
+      await runBlock(vm, {
+        block,
+        skipBlockValidation: true,
+      })
+    }
   })
 })

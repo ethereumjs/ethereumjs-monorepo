@@ -3,7 +3,7 @@ import { utf8ToBytes } from '@ethereumjs/util'
 import type { DB, VerkleCrypto } from '@ethereumjs/util'
 
 // Field representation of a commitment
-export interface Fr {}
+export type Fr = object
 
 export type Proof = Uint8Array[]
 
@@ -11,7 +11,7 @@ export interface VerkleTreeOpts {
   /**
    * An instantiated Verkle Cryptography interface
    */
-  verkleCrypto: VerkleCrypto | undefined
+  verkleCrypto: VerkleCrypto
   /**
    * A database instance.
    */
@@ -25,18 +25,13 @@ export interface VerkleTreeOpts {
   /**
    * Store the root inside the database after every `write` operation
    */
-  useRootPersistence?: boolean
+  useRootPersistence: boolean
 
   /**
    * LRU cache for tree nodes to allow for faster node retrieval.
    *
    * Default: 0 (deactivated)
    */
-  cacheSize?: number
-}
-
-export type VerkleTreeOptsWithDefaults = VerkleTreeOpts & {
-  useRootPersistence: boolean
   cacheSize: number
 }
 

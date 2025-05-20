@@ -1,14 +1,13 @@
 import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork } from '@ethereumjs/common'
+import { customChainConfig } from '@ethereumjs/testdata'
 import { bytesToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createBlockchain } from '../src/index.js'
+import { createBlockchain } from '../src/index.ts'
 
-import { testnetData } from './testdata/testnet.js'
-
-import type { Consensus, ConsensusDict } from '../src/index.js'
 import type { Block, BlockHeader } from '@ethereumjs/block'
+import type { Consensus, ConsensusDict } from '../src/index.ts'
 
 class fibonacciConsensus implements Consensus {
   algorithm: string
@@ -43,21 +42,21 @@ class fibonacciConsensus implements Consensus {
   }
 }
 
-testnetData.consensus.algorithm = 'fibonacci'
+customChainConfig.consensus.algorithm = 'fibonacci'
 const consensusDict: ConsensusDict = {}
 consensusDict['fibonacci'] = new fibonacciConsensus()
 
 describe('Optional consensus parameter in blockchain constructor', () => {
   it('blockchain constructor should work with custom consensus', async () => {
-    const common = new Common({ chain: testnetData, hardfork: Hardfork.Chainstart })
+    const common = new Common({ chain: customChainConfig, hardfork: Hardfork.Chainstart })
     try {
       const blockchain = await createBlockchain({ common, validateConsensus: true, consensusDict })
-      assert.equal(
+      assert.strictEqual(
         (blockchain.consensus as fibonacciConsensus).algorithm,
         'fibonacciConsensus',
         'consensus algorithm matches',
       )
-    } catch (err) {
+    } catch {
       assert.fail('blockchain should instantiate successfully')
     }
   })
@@ -65,7 +64,7 @@ describe('Optional consensus parameter in blockchain constructor', () => {
 
 describe('Custom consensus validation rules', () => {
   it('should validate custom consensus rules', async () => {
-    const common = new Common({ chain: testnetData, hardfork: Hardfork.Chainstart })
+    const common = new Common({ chain: customChainConfig, hardfork: Hardfork.Chainstart })
     const blockchain = await createBlockchain({ common, validateConsensus: true, consensusDict })
     const block = createBlock(
       {
@@ -108,7 +107,7 @@ describe('Custom consensus validation rules', () => {
       await blockchain.putBlock(blockWithBadDifficulty)
       assert.fail('should throw')
     } catch (err: any) {
-      assert.ok(
+      assert.isTrue(
         err.message.includes('invalid difficulty'),
         'failed to put block with invalid difficulty',
       )
@@ -131,7 +130,7 @@ describe('Custom consensus validation rules', () => {
       await blockchain.putBlock(blockWithBadExtraData)
       assert.fail('should throw')
     } catch (err: any) {
-      assert.ok(
+      assert.isTrue(
         err.message ===
           'header contains invalid extradata - must match first 6 elements of fibonacci sequence',
         'failed to put block with invalid extraData',
@@ -142,12 +141,12 @@ describe('Custom consensus validation rules', () => {
 
 describe('consensus transition checks', () => {
   it('should transition correctly', async () => {
-    const common = new Common({ chain: testnetData, hardfork: Hardfork.Chainstart })
+    const common = new Common({ chain: customChainConfig, hardfork: Hardfork.Chainstart })
     const blockchain = await createBlockchain({ common, validateConsensus: true, consensusDict })
 
     try {
       await blockchain.checkAndTransitionHardForkByNumber(5n)
-      assert.ok('checkAndTransitionHardForkByNumber does not throw with custom consensus')
+      assert.isTrue(true, 'checkAndTransitionHardForkByNumber does not throw with custom consensus')
     } catch (err: any) {
       assert.fail(
         `checkAndTransitionHardForkByNumber should not throw with custom consensus, error=${err.message}`,
@@ -162,7 +161,7 @@ describe('consensus transition checks', () => {
         'checkAndTransitionHardForkByNumber should throw when using standard consensus (ethash, clique, casper) but consensus algorithm defined in common is different',
       )
     } catch (err: any) {
-      assert.ok(err.message.includes('Consensus object for ethash must be passed'))
+      assert.isTrue(err.message.includes('Consensus object for ethash must be passed'))
     }
   })
 })

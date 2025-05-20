@@ -1,19 +1,23 @@
 import { Common, Mainnet } from '@ethereumjs/common'
-import { bytesToHex, hexToBytes } from '@ethereumjs/util'
+import { EthereumJSErrorWithoutCode, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import minimist from 'minimist'
 import { assert, describe, it } from 'vitest'
 
-import { createTxFromSerializedData } from '../src/transactionFactory.js'
+import { createTxFromRLP } from '../src/transactionFactory.ts'
 
-import { getTests } from './testLoader.js'
+import { getTests } from './testLoader.ts'
 
-import type { ForkName, ForkNamesMap, OfficialTransactionTestData } from './types.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { ForkName, ForkNamesMap, OfficialTransactionTestData } from './types.ts'
 
 const argv = minimist(process.argv.slice(2))
 const file: string | undefined = argv.file
 
 const forkNames: ForkName[] = [
+  'Prague',
+  'Cancun',
+  'Shanghai',
+  'Paris',
   'London+3860',
   'London',
   'Berlin',
@@ -28,7 +32,11 @@ const forkNames: ForkName[] = [
 ]
 
 const forkNameMap: ForkNamesMap = {
+  Prague: 'prague',
   'London+3860': 'london',
+  Cancun: 'cancun',
+  Shanghai: 'shanghai',
+  Paris: 'paris',
   London: 'london',
   Berlin: 'berlin',
   Istanbul: 'istanbul',
@@ -54,47 +62,49 @@ describe('TransactionTests', async () => {
       testName: string,
       testData: OfficialTransactionTestData,
     ) => {
-      it(testName, () => {
-        for (const forkName of forkNames) {
-          if (testData.result[forkName] === undefined) {
-            continue
-          }
+      for (const forkName of forkNames) {
+        if (testData.result[forkName] === undefined) {
+          continue
+        }
+        it(`${testName} - [${forkName}]`, () => {
           const forkTestData = testData.result[forkName]
           const shouldBeInvalid = forkTestData.exception !== undefined
 
-          try {
-            const rawTx = hexToBytes(testData.txbytes as PrefixedHexString)
-            const hardfork = forkNameMap[forkName]
-            const common = new Common({ chain: Mainnet, hardfork })
-            const activateEIPs = EIPs[forkName]
-            if (activateEIPs !== undefined) {
-              common.setEIPs(activateEIPs)
-            }
-            const tx = createTxFromSerializedData(rawTx, { common })
-            const sender = tx.getSenderAddress().toString()
-            const hash = bytesToHex(tx.hash())
-            const txIsValid = tx.isValid()
-            const senderIsCorrect = forkTestData.sender === sender
-            const hashIsCorrect = forkTestData.hash === hash
-
-            const hashAndSenderAreCorrect = senderIsCorrect && hashIsCorrect
-            if (shouldBeInvalid) {
-              assert.ok(!txIsValid, `Transaction should be invalid on ${forkName}`)
-            } else {
-              assert.ok(
-                hashAndSenderAreCorrect && txIsValid,
-                `Transaction should be valid on ${forkName}`,
-              )
-            }
-          } catch (e: any) {
-            if (shouldBeInvalid) {
-              assert.ok(shouldBeInvalid, `Transaction should be invalid on ${forkName}`)
-            } else {
-              assert.fail(`Transaction should be valid on ${forkName}`)
-            }
+          const rawTx = hexToBytes(testData.txbytes as PrefixedHexString)
+          const hardfork = forkNameMap[forkName]
+          const common = new Common({ chain: Mainnet, hardfork })
+          const activateEIPs = EIPs[forkName]
+          if (activateEIPs !== undefined) {
+            common.setEIPs(activateEIPs)
           }
-        }
-      })
+
+          let tx
+          let sender
+          let hash
+          let isValid
+          try {
+            tx = createTxFromRLP(rawTx, { common })
+            sender = tx.getSenderAddress().toString()
+            hash = bytesToHex(tx.hash())
+            if (!tx.isValid()) {
+              throw EthereumJSErrorWithoutCode('Tx is invalid')
+            }
+            isValid = true
+          } catch {
+            if (!shouldBeInvalid) {
+              assert.fail('Tx creation threw an error, but should be valid')
+            }
+            // Tx is correctly marked as "invalid", so test has passed
+            return
+          }
+
+          const senderIsCorrect = forkTestData.sender === sender
+          const hashIsCorrect = forkTestData.hash === hash
+          assert.isTrue(isValid, 'tx is valid')
+          assert.isTrue(senderIsCorrect, 'sender is correct')
+          assert.isTrue(hashIsCorrect, 'hash is correct')
+        }, 120000)
+      }
     },
     fileFilterRegex,
     undefined,

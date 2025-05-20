@@ -1,12 +1,12 @@
 import { equalsBytes } from '@ethereumjs/util'
 
-import { ERROR } from '../exceptions.js'
+import { EVMError } from '../errors.ts'
 
-import { adjustSstoreGasEIP2929 } from './EIP2929.js'
-import { trap } from './util.js'
+import { adjustSstoreGasEIP2929 } from './EIP2929.ts'
+import { trap } from './util.ts'
 
-import type { RunState } from '../interpreter.js'
 import type { Common } from '@ethereumjs/common'
+import type { RunState } from '../interpreter.ts'
 
 /**
  * Adjusts gas usage and refunds of SStore ops per EIP-2200 (Istanbul)
@@ -27,7 +27,7 @@ export function updateSstoreGasEIP2200(
 ) {
   // Fail if not enough gas is left
   if (runState.interpreter.getGasLeft() <= common.param('sstoreSentryEIP2200Gas')) {
-    trap(ERROR.OUT_OF_GAS)
+    trap(EVMError.errorMessages.OUT_OF_GAS)
   }
 
   // Noop

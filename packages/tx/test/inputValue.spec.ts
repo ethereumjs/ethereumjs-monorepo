@@ -8,11 +8,11 @@ import {
   createAccessList2930TxFromBytesArray,
   createLegacyTx,
   createLegacyTxFromBytesArray,
-  createTxFromTxData,
-} from '../src/index.js'
+  createTx,
+} from '../src/index.ts'
 
-import type { TxValuesArray } from '../src/index.js'
 import type { AddressLike, BigIntLike, BytesLike, PrefixedHexString } from '@ethereumjs/util'
+import type { TxValuesArray } from '../src/index.ts'
 
 // @returns: Array with subtypes of the AddressLike type for a given address
 function generateAddressLikeValues(address: PrefixedHexString): AddressLike[] {
@@ -152,30 +152,33 @@ describe('[Invalid Array Input values]', () => {
     ]
     for (const signed of [false, true]) {
       for (const txType of txTypes) {
-        let tx = createTxFromTxData({ type: txType })
+        let tx = createTx({ type: txType })
         if (signed) {
           tx = tx.sign(hexToBytes(`0x${'42'.repeat(32)}`))
         }
         const rawValues = tx.raw()
         for (let x = 0; x < rawValues.length; x++) {
-          rawValues[x] = <any>[1, 2, 3]
+          // @ts-expect-error -- Testing wrong input
+          rawValues[x] = [1, 2, 3]
           switch (txType) {
             case TransactionType.Legacy:
               assert.throws(() =>
-                createLegacyTxFromBytesArray(rawValues as TxValuesArray[TransactionType.Legacy]),
+                createLegacyTxFromBytesArray(
+                  rawValues as TxValuesArray[typeof TransactionType.Legacy],
+                ),
               )
               break
             case TransactionType.AccessListEIP2930:
               assert.throws(() =>
                 createAccessList2930TxFromBytesArray(
-                  rawValues as TxValuesArray[TransactionType.AccessListEIP2930],
+                  rawValues as TxValuesArray[typeof TransactionType.AccessListEIP2930],
                 ),
               )
               break
             case TransactionType.FeeMarketEIP1559:
               assert.throws(() =>
                 create1559FeeMarketTxFromBytesArray(
-                  rawValues as TxValuesArray[TransactionType.FeeMarketEIP1559],
+                  rawValues as TxValuesArray[typeof TransactionType.FeeMarketEIP1559],
                 ),
               )
               break
@@ -214,19 +217,20 @@ describe('[Invalid Access Lists]', () => {
     for (const signed of [false, true]) {
       for (const txType of txTypes) {
         for (const invalidAccessListItem of invalidAccessLists) {
-          let tx: any
+          let tx
           try {
-            tx = createTxFromTxData({
+            tx = createTx({
               type: txType,
-              accessList: <any>invalidAccessListItem,
+              // @ts-expect-error -- Testing wrong input
+              accessList: invalidAccessListItem,
             })
             if (signed) {
               tx = tx.sign(hexToBytes(`0x${'42'.repeat(32)}`))
             }
             assert.fail('did not fail on `fromTxData`')
-          } catch (e: any) {
-            assert.ok(true, 'failed ok on decoding in `fromTxData`')
-            tx = createTxFromTxData({ type: txType })
+          } catch {
+            assert.isTrue(true, 'failed ok on decoding in `fromTxData`')
+            tx = createTx({ type: txType })
             if (signed) {
               tx = tx.sign(hexToBytes(`0x${'42'.repeat(32)}`))
             }
@@ -234,8 +238,11 @@ describe('[Invalid Access Lists]', () => {
           const rawValues = tx!.raw()
 
           if (txType === TransactionType.AccessListEIP2930 && rawValues[7].length === 0) {
+            // @ts-expect-error -- Testing wrong input
             rawValues[7] = invalidAccessListItem
+            // @ts-expect-error -- Testing wrong input
           } else if (txType === TransactionType.FeeMarketEIP1559 && rawValues[8].length === 0) {
+            // @ts-expect-error -- Testing wrong input
             rawValues[8] = invalidAccessListItem
           }
 
@@ -243,14 +250,14 @@ describe('[Invalid Access Lists]', () => {
             case TransactionType.AccessListEIP2930:
               assert.throws(() =>
                 createAccessList2930TxFromBytesArray(
-                  rawValues as TxValuesArray[TransactionType.AccessListEIP2930],
+                  rawValues as TxValuesArray[typeof TransactionType.AccessListEIP2930],
                 ),
               )
               break
             case TransactionType.FeeMarketEIP1559:
               assert.throws(() =>
                 create1559FeeMarketTxFromBytesArray(
-                  rawValues as TxValuesArray[TransactionType.FeeMarketEIP1559],
+                  rawValues as TxValuesArray[typeof TransactionType.FeeMarketEIP1559],
                 ),
               )
               break

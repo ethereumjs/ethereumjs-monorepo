@@ -1,13 +1,23 @@
 import { RLP } from '@ethereumjs/rlp'
-import { bytesToHex, bytesToInt, bytesToUtf8, concatBytes, intToBytes } from '@ethereumjs/util'
+import {
+  EthereumJSErrorWithoutCode,
+  bigIntToBytes,
+  bytesToHex,
+  bytesToInt,
+  bytesToUtf8,
+  concatBytes,
+  intToBytes,
+  setLengthLeft,
+} from '@ethereumjs/util'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { ecdsaRecover, ecdsaSign } from 'ethereum-cryptography/secp256k1-compat.js'
+import { ecdsaRecover } from 'ethereum-cryptography/secp256k1-compat.js'
 
-import { assertEq, ipToBytes, ipToString, isV4Format, isV6Format, unstrictDecode } from '../util.js'
+import { assertEq, ipToBytes, ipToString, isV4Format, isV6Format, unstrictDecode } from '../util.ts'
 
-import type { PeerInfo } from '../types.js'
 import type { Common } from '@ethereumjs/common'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1'
+import type { PeerInfo } from '../types.ts'
 
 const debug = debugDefault('devp2p:dpt:server')
 
@@ -31,7 +41,7 @@ const address = {
   encode(value: string) {
     if (isV4Format(value)) return ipToBytes(value)
     if (isV6Format(value)) return ipToBytes(value)
-    throw new Error(`Invalid address: ${value}`)
+    throw EthereumJSErrorWithoutCode(`Invalid address: ${value}`)
   },
   decode(bytes: Uint8Array) {
     if (bytes.length === 4) return ipToString(bytes)
@@ -41,7 +51,7 @@ const address = {
     if (isV4Format(str) || isV6Format(str)) return str
 
     // also can be host, but skip it right now (because need async function for resolve)
-    throw new Error(`Invalid address bytes: ${bytesToHex(bytes)}`)
+    throw EthereumJSErrorWithoutCode(`Invalid address bytes: ${bytesToHex(bytes)}`)
   },
 }
 
@@ -143,7 +153,12 @@ const neighbours = {
   },
 }
 
-const messages: any = { ping, pong, findneighbours, neighbours }
+const messages: any = {
+  ping,
+  pong,
+  findneighbours,
+  neighbours,
+}
 
 type Types = { [index: string]: { [index: string]: number | string } }
 const types: Types = {
@@ -169,13 +184,18 @@ const types: Types = {
 
 export function encode<T>(typename: string, data: T, privateKey: Uint8Array, common?: Common) {
   const type: number = types.byName[typename] as number
-  if (type === undefined) throw new Error(`Invalid typename: ${typename}`)
+  if (type === undefined) throw EthereumJSErrorWithoutCode(`Invalid typename: ${typename}`)
   const encodedMsg = messages[typename].encode(data)
   const typedata = concatBytes(Uint8Array.from([type]), RLP.encode(encodedMsg))
 
   const sighash = (common?.customCrypto.keccak256 ?? keccak256)(typedata)
-  const sig = (common?.customCrypto.ecdsaSign ?? ecdsaSign)(sighash, privateKey)
-  const hashdata = concatBytes(sig.signature, Uint8Array.from([sig.recid]), typedata)
+  const sig = (common?.customCrypto.ecsign ?? secp256k1.sign)(sighash, privateKey)
+  const hashdata = concatBytes(
+    setLengthLeft(bigIntToBytes(sig.r), 32),
+    setLengthLeft(bigIntToBytes(sig.s), 32),
+    Uint8Array.from([sig.recovery]),
+    typedata,
+  )
   const hash = (common?.customCrypto.keccak256 ?? keccak256)(hashdata)
   return concatBytes(hash, hashdata)
 }
@@ -187,7 +207,7 @@ export function decode(bytes: Uint8Array, common?: Common) {
   const typedata = bytes.subarray(97)
   const type = typedata[0]
   const typename = types.byType[type]
-  if (typename === undefined) throw new Error(`Invalid type: ${type}`)
+  if (typename === undefined) throw EthereumJSErrorWithoutCode(`Invalid type: ${type}`)
   const data = messages[typename].decode(unstrictDecode(typedata.subarray(1)))
 
   const sighash = (common?.customCrypto.keccak256 ?? keccak256)(typedata)

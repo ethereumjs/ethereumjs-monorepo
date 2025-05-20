@@ -1,9 +1,9 @@
 import { bytesToUnprefixedHex } from '@ethereumjs/util'
-import { EventEmitter } from 'events'
+import { EventEmitter } from 'eventemitter3'
 
-import { KBucket as _KBucket } from '../ext/index.js'
+import { KBucket as _KBucket } from '../ext/index.ts'
 
-import type { PeerInfo } from '../types.js'
+import type { PeerInfo } from '../types.ts'
 
 const KBUCKET_SIZE = 16
 const KBUCKET_CONCURRENCY = 3

@@ -11,13 +11,13 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { createBlockchain } from '../src/index.js'
+import { createBlockchain } from '../src/index.ts'
 
 import type { BlockHeader } from '@ethereumjs/block'
 import type { DB } from '@ethereumjs/util'
 
 export const generateBlocks = (numberOfBlocks: number, existingBlocks?: Block[]): Block[] => {
-  const blocks = existingBlocks ? existingBlocks : []
+  const blocks = existingBlocks ?? []
 
   const gasLimit = 8000000
   const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })

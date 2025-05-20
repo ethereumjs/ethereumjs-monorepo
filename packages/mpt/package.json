@@ -1,0 +1,74 @@
+{
+  "name": "@ethereumjs/mpt",
+  "version": "10.0.0",
+  "description": "Implementation of the modified merkle patricia tree as specified in Ethereum's yellow paper.",
+  "keywords": ["merkle", "radix", "trie", "ethereum"],
+  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/mpt#readme",
+  "bugs": {
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+mpt%22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
+  },
+  "license": "MPL-2.0",
+  "author": "EthereumJS Team",
+  "contributors": ["Aaron Kumavis <http://aaron.kumavis.me/> (https://github.com/kumavis)"],
+  "type": "module",
+  "sideEffects": false,
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "exports": {
+    ".": {
+      "import": {
+        "typescript": "./src/index.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": "./dist/cjs/index.js"
+    }
+  },
+  "files": ["dist", "src"],
+  "scripts": {
+    "benchmarks": "node -r tsx/register --max-old-space-size=8024 benchmarks",
+    "biome": "npx @biomejs/biome check",
+    "biome:fix": "npx @biomejs/biome check --write",
+    "build": "../../config/cli/ts-build.sh",
+    "clean": "../../config/cli/clean-package.sh",
+    "coverage": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.mts",
+    "coverage:istanbul": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.istanbul.mts",
+    "docs:build": "typedoc --options typedoc.mjs",
+    "examples": "tsx ../../scripts/examples-runner.ts -- mpt",
+    "examples:build": "npx embedme README.md",
+    "lint": "npm run biome && eslint  --config ./eslint.config.mjs .",
+    "lint:fix": "npm run biome:fix && eslint  --fix --config ./eslint.config.mjs .",
+    "prepublishOnly": "../../config/cli/prepublish.sh",
+    "sc": "npm run spellcheck",
+    "spellcheck": "npm run spellcheck:ts && npm run spellcheck:md",
+    "spellcheck:ts": "npx cspell --gitignore -c ../../config/cspell-ts.json \"./**/*.ts\" --cache --show-suggestions --show-context",
+    "spellcheck:md": "npx cspell --gitignore -c ../../config/cspell-md.json \"**.md\" --cache --show-suggestions --show-context",
+    "profiling": "tsc --target ES5 benchmarks/random.ts && 0x benchmarks/random.js",
+    "test": "npm run test:node && npm run test:browser",
+    "test:browser": "npx vitest run --config=./vitest.config.browser.mts",
+    "test:node": "npx vitest run -c ../../config/vitest.config.mts",
+    "tsc": "../../config/cli/ts-compile.sh"
+  },
+  "dependencies": {
+    "@ethereumjs/rlp": "^10.0.0",
+    "@ethereumjs/util": "^10.0.0",
+    "debug": "^4.4.0",
+    "lru-cache": "11.0.2",
+    "ethereum-cryptography": "^3.2.0"
+  },
+  "devDependencies": {
+    "@ethereumjs/genesis": "^10.0.0",
+    "@types/benchmark": "^2.1.5",
+    "abstract-level": "^3.0.1",
+    "level": "^9.0.0",
+    "lmdb": "^3.2.6",
+    "memory-level": "^3.0.0",
+    "micro-bmark": "0.4.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

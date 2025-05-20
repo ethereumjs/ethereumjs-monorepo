@@ -1,65 +1,61 @@
+[**@ethereumjs/devp2p**](../README.md)
+
+***
+
 [@ethereumjs/devp2p](../README.md) / BanList
 
 # Class: BanList
 
-## Table of contents
-
-### Constructors
-
-- [constructor](BanList.md#constructor)
-
-### Methods
-
-- [add](BanList.md#add)
-- [has](BanList.md#has)
+Defined in: [packages/devp2p/src/dpt/ban-list.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/ban-list.ts#L13)
 
 ## Constructors
 
-### constructor
+### Constructor
 
-• **new BanList**()
+> **new BanList**(): `BanList`
 
-#### Defined in
+Defined in: [packages/devp2p/src/dpt/ban-list.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/ban-list.ts#L16)
 
-[packages/devp2p/src/dpt/ban-list.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/ban-list.ts#L18)
+#### Returns
+
+`BanList`
 
 ## Methods
 
-### add
+### add()
 
-▸ **add**(`obj`, `maxAge?`): `void`
+> **add**(`obj`, `maxAge?`): `void`
+
+Defined in: [packages/devp2p/src/dpt/ban-list.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/ban-list.ts#L22)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `obj` | `string` \| `Uint8Array` \| [`PeerInfo`](../interfaces/PeerInfo.md) |
-| `maxAge?` | `number` |
+##### obj
+
+`string` | [`PeerInfo`](../interfaces/PeerInfo.md) | `Uint8Array`\<`ArrayBufferLike`\>
+
+##### maxAge?
+
+`number`
 
 #### Returns
 
 `void`
 
-#### Defined in
+***
 
-[packages/devp2p/src/dpt/ban-list.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/ban-list.ts#L22)
+### has()
 
-___
+> **has**(`obj`): `boolean`
 
-### has
-
-▸ **has**(`obj`): `boolean`
+Defined in: [packages/devp2p/src/dpt/ban-list.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/ban-list.ts#L31)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `obj` | `string` \| `Uint8Array` \| [`PeerInfo`](../interfaces/PeerInfo.md) |
+##### obj
+
+`string` | [`PeerInfo`](../interfaces/PeerInfo.md) | `Uint8Array`\<`ArrayBufferLike`\>
 
 #### Returns
 
 `boolean`
-
-#### Defined in
-
-[packages/devp2p/src/dpt/ban-list.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/ban-list.ts#L29)

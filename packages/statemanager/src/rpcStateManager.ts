@@ -1,8 +1,8 @@
 import { Common, Mainnet } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { verifyTrieProof } from '@ethereumjs/trie'
 import {
   Account,
+  EthereumJSErrorWithoutCode,
   bigIntToHex,
   bytesToHex,
   createAccount,
@@ -16,13 +16,13 @@ import {
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { Caches, OriginalStorageCache } from './cache/index.js'
-import { modifyAccountFields } from './util.js'
+import { Caches, OriginalStorageCache } from './cache/index.ts'
+import { modifyAccountFields } from './util.ts'
 
-import type { Proof, RPCStateManagerOpts } from './index.js'
 import type { AccountFields, StateManagerInterface, StorageDump } from '@ethereumjs/common'
-import type { Address, PrefixedHexString } from '@ethereumjs/util'
+import type { Address } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
+import type { RPCStateManagerOpts } from './index.ts'
 
 const KECCAK256_RLP_EMPTY_ACCOUNT = RLP.encode(new Account().serialize()).slice(2)
 
@@ -42,11 +42,11 @@ export class RPCStateManager implements StateManagerInterface {
     this.DEBUG =
       typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
 
-    this._debug = debugDefault('statemanager:rpcStateManager')
+    this._debug = debugDefault('statemanager:rpc')
     if (typeof opts.provider === 'string' && opts.provider.startsWith('http')) {
       this._provider = opts.provider
     } else {
-      throw new Error(`valid RPC provider url required; got ${opts.provider}`)
+      throw EthereumJSErrorWithoutCode(`valid RPC provider url required; got ${opts.provider}`)
     }
 
     this._blockTag = opts.blockTag === 'earliest' ? opts.blockTag : bigIntToHex(opts.blockTag)
@@ -138,7 +138,7 @@ export class RPCStateManager implements StateManagerInterface {
   async getStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
     // Check storage slot in cache
     if (key.length !== 32) {
-      throw new Error('Storage key must be 32 bytes long')
+      throw EthereumJSErrorWithoutCode('Storage key must be 32 bytes long')
     }
 
     let value = this._caches.storage?.get(address, key)
@@ -197,30 +197,6 @@ export class RPCStateManager implements StateManagerInterface {
   }
 
   /**
-   * Checks if an `account` exists at `address`
-   * @param address - Address of the `account` to check
-   */
-  async accountExists(address: Address): Promise<boolean> {
-    if (this.DEBUG) this._debug?.(`verify if ${address.toString()} exists`)
-
-    const localAccount = this._caches.account?.get(address)
-    if (localAccount !== undefined) return true
-    // Get merkle proof for `address` from provider
-    const proof = await fetchFromProvider(this._provider, {
-      method: 'eth_getProof',
-      params: [address.toString(), [] as any, this._blockTag],
-    })
-
-    const proofBuf = proof.accountProof.map((proofNode: PrefixedHexString) => toBytes(proofNode))
-
-    const verified = await verifyTrieProof(address.bytes, proofBuf, {
-      useKeyHashing: true,
-    })
-    // if not verified (i.e. verifyProof returns null), account does not exist
-    return verified === null ? false : true
-  }
-
-  /**
    * Gets the account associated with `address` or `undefined` if account does not exist
    * @param address - Address of the `account` to get
    */
@@ -232,7 +208,7 @@ export class RPCStateManager implements StateManagerInterface {
 
     const accountFromProvider = await this.getAccountFromProvider(address)
     const account =
-      equalsBytes(accountFromProvider.codeHash, new Uint8Array(32).fill(0)) ||
+      equalsBytes(accountFromProvider.codeHash, new Uint8Array(32)) ||
       equalsBytes(accountFromProvider.serialize(), KECCAK256_RLP_EMPTY_ACCOUNT)
         ? undefined
         : createAccountFromRLP(accountFromProvider.serialize())
@@ -320,22 +296,6 @@ export class RPCStateManager implements StateManagerInterface {
   }
 
   /**
-   * Get an EIP-1186 proof from the provider
-   * @param address address to get proof of
-   * @param storageSlots storage slots to get proof of
-   * @returns an EIP-1186 formatted proof
-   */
-  async getProof(address: Address, storageSlots: Uint8Array[] = []): Promise<Proof> {
-    if (this.DEBUG) this._debug(`retrieving proof from provider for ${address.toString()}`)
-    const proof = await fetchFromProvider(this._provider, {
-      method: 'eth_getProof',
-      params: [address.toString(), storageSlots.map(bytesToHex), this._blockTag],
-    })
-
-    return proof
-  }
-
-  /**
    * Returns the applied key for a given address
    * Used for saving preimages
    * @param address - The address to return the applied key
@@ -395,14 +355,15 @@ export class RPCStateManager implements StateManagerInterface {
    * @deprecated This method is not used by the RPC State Manager and is a stub required by the State Manager interface
    */
   hasStateRoot = () => {
-    throw new Error('function not implemented')
+    throw EthereumJSErrorWithoutCode('function not implemented')
   }
 }
 
 export class RPCBlockChain {
   readonly provider: string
   constructor(provider: string) {
-    if (provider === undefined || provider === '') throw new Error('provider URL is required')
+    if (provider === undefined || provider === '')
+      throw EthereumJSErrorWithoutCode('provider URL is required')
     this.provider = provider
   }
   async getBlock(blockId: number) {

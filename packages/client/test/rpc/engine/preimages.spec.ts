@@ -4,7 +4,7 @@ import {
   genTransactionsTrieRoot,
   genWithdrawalsTrieRoot,
 } from '@ethereumjs/block'
-import { createTxFromSerializedData } from '@ethereumjs/tx'
+import { createTxFromRLP } from '@ethereumjs/tx'
 import {
   bytesToHex,
   createWithdrawal,
@@ -18,14 +18,14 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
-import { blockToExecutionPayload } from '../../../src/rpc/modules/index.js'
-import { kaustinen2Data } from '../../testdata/blocks/kaustinen2.js'
-import { kaustinen2Data as kaustinen2GethGenesisData } from '../../testdata/geth-genesis/kaustinen2.js'
-import { getRPCClient, setupChain } from '../helpers.js'
+import { blockToExecutionPayload } from '../../../src/rpc/modules/index.ts'
+import { kaustinen2Data } from '../../testdata/blocks/kaustinen2.ts'
+import { kaustinen2Data as kaustinen2GethGenesisData } from '../../testdata/geth-genesis/kaustinen2.ts'
+import { getRPCClient, setupChain } from '../helpers.ts'
 
 import type { Common } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
-import type { HttpClient } from 'jayson/promise'
+import type { HttpClient } from 'jayson/promise/index.js'
 
 const genesisStateRoot = '0x78026f1e4f2ff57c340634f844f47cb241beef4c965be86a483c855793e4b07d'
 const genesisBlockHash = '0x76a519ccb8a2b12d733ad7d88e2d5f4a11d6dc6ca320edccd3b8a3e9081ca1b3'
@@ -73,7 +73,7 @@ async function runBlock(
   const txs = []
   for (const [index, serializedTx] of transactions.entries()) {
     try {
-      const tx = createTxFromSerializedData(hexToBytes(serializedTx), {
+      const tx = createTxFromRLP(hexToBytes(serializedTx), {
         common,
       })
       txs.push(tx)
@@ -100,7 +100,7 @@ async function runBlock(
   const executeBlock = createBlock(blockData, { common })
   const executePayload = blockToExecutionPayload(executeBlock, BigInt(0)).executionPayload
   const res = await rpc.request('engine_newPayloadV2', [executePayload])
-  assert.equal(res.result.status, 'VALID', 'valid status should be received')
+  assert.strictEqual(res.result.status, 'VALID', 'valid status should be received')
   return executePayload
 }
 
@@ -108,7 +108,7 @@ describe(`valid verkle network setup`, async () => {
   // unschedule verkle
   const unschedulePragueJSON = {
     ...kaustinen2GethGenesisData,
-    config: { ...kaustinen2GethGenesisData.config, osakaTime: undefined },
+    config: { ...kaustinen2GethGenesisData.config, verkleTime: undefined },
   }
   const { server, chain, common, execution } = await setupChain(
     unschedulePragueJSON,
@@ -118,15 +118,16 @@ describe(`valid verkle network setup`, async () => {
       savePreimages: true,
     },
   )
-  ;(chain.blockchain as any).validateHeader = () => {}
+  /// @ts-expect-error -- Simple config for testing
+  chain.blockchain.validateHeader = () => {}
 
   const rpc = getRPCClient(server)
   it('genesis should be correctly setup', async () => {
     const res = await rpc.request('eth_getBlockByNumber', ['0x0', false])
 
     const block0 = res.result
-    assert.equal(block0.hash, genesisBlockHash)
-    assert.equal(block0.stateRoot, genesisStateRoot)
+    assert.strictEqual(block0.hash, genesisBlockHash)
+    assert.strictEqual(block0.stateRoot, genesisStateRoot)
   })
 
   // build some testcases uses some transactions from kaustinen2 which have
@@ -255,7 +256,7 @@ describe(`valid verkle network setup`, async () => {
           keccak256(preimageBytes),
         )
         assert.isNotNull(savedPreimage, `Missing preimage for ${preimage}`)
-        assert.ok(
+        assert.isTrue(
           savedPreimage !== null && equalsBytes(savedPreimage, preimageBytes),
           `Incorrect preimage for ${preimage}`,
         )

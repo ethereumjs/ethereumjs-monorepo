@@ -99,7 +99,6 @@ export const paramsEVM: ParamsDict = {
     prevrandaoGas: 0, // TODO: these below 0-gas additions might also point to non-clean implementations in the code base
     // evm
     stackLimit: 1024, // Maximum size of VM stack allowed
-    callCreateDepth: 1024, // Maximum depth of call/create stack
   },
   /**
 .  * Homestead HF Meta EIP
@@ -137,10 +136,10 @@ export const paramsEVM: ParamsDict = {
   609: {
     // gasPrices
     modexpGquaddivisorGas: 20, // Gquaddivisor from modexp precompile for gas calculation
-    ecAddGas: 500, // Gas costs for curve addition precompile
-    ecMulGas: 40000, // Gas costs for curve multiplication precompile
-    ecPairingGas: 100000, // Base gas costs for curve pairing precompile
-    ecPairingWordGas: 80000, // Gas costs regarding curve pairing precompile input length
+    bn254AddGas: 500, // Gas costs for curve addition precompile
+    bn254MulGas: 40000, // Gas costs for curve multiplication precompile
+    bn254PairingGas: 100000, // Base gas costs for curve pairing precompile
+    bn254PairingWordGas: 80000, // Gas costs regarding curve pairing precompile input length
     revertGas: 0, // Base fee of the REVERT opcode
     staticcallGas: 700, // Base fee of the STATICCALL opcode
     returndatasizeGas: 2, // Base fee of the RETURNDATASIZE opcode
@@ -183,10 +182,10 @@ export const paramsEVM: ParamsDict = {
   1679: {
     // gasPrices
     blake2RoundGas: 1, // Gas cost per round for the Blake2 F precompile
-    ecAddGas: 150, // Gas costs for curve addition precompile
-    ecMulGas: 6000, // Gas costs for curve multiplication precompile
-    ecPairingGas: 45000, // Base gas costs for curve pairing precompile
-    ecPairingWordGas: 34000, // Gas costs regarding curve pairing precompile input length
+    bn254AddGas: 150, // Gas costs for curve addition precompile
+    bn254MulGas: 6000, // Gas costs for curve multiplication precompile
+    bn254PairingGas: 45000, // Base gas costs for curve pairing precompile
+    bn254PairingWordGas: 34000, // Gas costs regarding curve pairing precompile input length
     sstoreSentryEIP2200Gas: 2300, // Minimum gas required to be present for an SSTORE call, not consumed
     sstoreNoopEIP2200Gas: 800, // Once per SSTORE operation if the value doesn't change
     sstoreDirtyEIP2200Gas: 800, // Once per SSTORE operation if a dirty value is changed
@@ -234,14 +233,14 @@ export const paramsEVM: ParamsDict = {
    */
   2537: {
     // gasPrices
-    Bls12381G1AddGas: 500, // Gas cost of a single BLS12-381 G1 addition precompile-call
-    Bls12381G1MulGas: 12000, // Gas cost of a single BLS12-381 G1 multiplication precompile-call
-    Bls12381G2AddGas: 800, // Gas cost of a single BLS12-381 G2 addition precompile-call
-    Bls12381G2MulGas: 45000, // Gas cost of a single BLS12-381 G2 multiplication precompile-call
-    Bls12381PairingBaseGas: 65000, // Base gas cost of BLS12-381 pairing check
-    Bls12381PairingPerPairGas: 43000, // Per-pair gas cost of BLS12-381 pairing check
-    Bls12381MapG1Gas: 5500, // Gas cost of BLS12-381 map field element to G1
-    Bls12381MapG2Gas: 75000, // Gas cost of BLS12-381 map field element to G2
+    bls12381G1AddGas: 375, // Gas cost of a single BLS12-381 G1 addition precompile-call
+    bls12381G1MulGas: 12000, // Gas cost of a single BLS12-381 G1 multiplication precompile-call
+    bls12381G2AddGas: 600, // Gas cost of a single BLS12-381 G2 addition precompile-call
+    bls12381G2MulGas: 22500, // Gas cost of a single BLS12-381 G2 multiplication precompile-call
+    bls12381PairingBaseGas: 37700, // Base gas cost of BLS12-381 pairing check
+    bls12381PairingPerPairGas: 32600, // Per-pair gas cost of BLS12-381 pairing check
+    bls12381MapG1Gas: 5500, // Gas cost of BLS12-381 map field element to G1
+    bls12381MapG2Gas: 23800, // Gas cost of BLS12-381 map field element to G2
   },
   /**
 .  * Gas cost increases for state access opcodes
@@ -272,8 +271,9 @@ export const paramsEVM: ParamsDict = {
    */
   2935: {
     // evm
-    historyStorageAddress: '0x0aae40965e6800cd9b1f4b05ff21581047e3f91e', // The address where the historical blockhashes are stored
+    historyStorageAddress: '0x0000F90827F1C53A10CB7A02335B175320002935', // The address where the historical blockhashes are stored
     historyServeWindow: 8192, // The amount of blocks to be served by the historical blockhash contract
+    systemAddress: '0xfffffffffffffffffffffffffffffffffffffffe', // The system address
   },
   /**
 .  * BASEFEE opcode

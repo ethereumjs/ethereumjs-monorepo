@@ -6,6 +6,82 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 0.10.5 - 2025-04-29
+
+- Fix client best peer selection based on TD Check, PR [#3950](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3950)
+- Add Hoodi DNS Discovery, PR [#3964](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3964)
+- New option for `logLevel` `off` allowing to fully deactivate logging, PR [#3967](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3967)
+
+## 0.10.4 - 2025-03-24
+
+### New JavaScript REPL
+
+This release comes with a new REPL - see PRs [#3781](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3781) and [#3867](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3867). It can be run using the npm script available in the client package:
+
+`npm run repl`
+
+In order to pass parameters to the client while using the repl, you can append it to the npm script command:
+
+`npm run repl -- --gethGenesis /data/genesis.json`
+
+The repl allows access to the JSON-RPC and ENGINE API's from the terminal. For help and a list of supported functions, type `.help` upon repl startup:
+```
+[01-17|09:05:57] INFO Started JSON RPC Server address=http://localhost:8545 namespaces=eth,web3,net,admin,txpool,debug 
+[01-17|09:05:57] INFO Started JSON RPC server address=http://localhost:8551 namespaces=eth,engine rpcEngineAuth=false 
+EthJS > .help
+```
+
+Example usage of repl commands:
+```
+[01-17|09:10:54] INFO Started JSON RPC Server address=http://localhost:8545 namespaces=eth,web3,net,admin,txpool,debug 
+[01-17|09:10:54] INFO Started JSON RPC server address=http://localhost:8551 namespaces=eth,engine rpcEngineAuth=false 
+EthJS > .eth_getBlockByNumber ["latest", true]
+EthJS > {
+  number: '0x0',
+  hash: '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
+  parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+  mixHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+  nonce: '0x0000000000000042',
+  ...
+```
+
+### RPC Methods
+
+- Added support for `admin_addPeer` method, PR [#3788](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3788)
+- Added support for `debug_verbosity` method, PR [#3809](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3809)
+- Added support for `debug_setHead` method, PR [#3811](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3811)
+
+### Other Changes
+
+- Experimental support for stateful verkle execution (`statefulVerkle` option), PR [#3800](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3800)
+- Fix double execution of a newplayload block on fcu, PR [#3777](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3777)
+- Outdated `LES` respectively `lightServ` support has been removed, PR [#3759](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3759)
+- Engine API adjustments (mainly related to EL requests) along with devnet-4, PR [#3706](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3706)
+
+## 0.10.3 - 2024-10-17
+
+### Engine API
+
+- Add `getBlobsV1` to the client to support CL blob import, PR [#3711](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3711)
+- Minor engine-cancun hive test fixes, PR [#3308](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3308)
+
+### RPC Methods
+
+- Added `eth_getBlockReceipts` method, PR [#3499](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3499)
+- Added `admin_Peer` RPC endpoint, PR [#3570](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3570)
+- Added `debug` namespace methods `getRawBlock`, `getRawHeader`, `getRawReceipts` and `getRawTransaction`, PR [#3490](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3490)
+- Special-case fixes for `eth_call`, PR [#3503](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3503)
+- Add `data` field to `RPCError` / `eth_call`, PR [#3547](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3547)
+- Various RPC value format fixes, PR [#3495](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3495)
+
+### Other Changes
+
+- Removal for live-TTD (Merge) HF transition support, PR [#3518](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3518)
+
+### Bugfixes
+
+- Fixes a JWT token exchange bug preventing communication with the Grandine CL client to work, PR [#3511](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3511)
+
 ## 0.10.2 - 2024-08-15
 
 This release comes with some RPC improvements as well as various updates to catch up for testnets preparing for the Prague hardfork as well as the Verkle tree integration. Note that for running/participating in the latest Prague and Verkle testnets it is still needed to join with a build from `master` since testnets are evolving so quickly that it is not practical to catch up with official client releases!

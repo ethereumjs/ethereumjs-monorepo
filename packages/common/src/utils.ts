@@ -1,9 +1,18 @@
-import { intToHex, isHexString, stripHexPrefix } from '@ethereumjs/util'
+import {
+  EthereumJSErrorWithoutCode,
+  addHexPrefix,
+  intToHex,
+  isHexString,
+  stripHexPrefix,
+} from '@ethereumjs/util'
 
-import { Goerli, Holesky, Kaustinen6, Mainnet, Sepolia } from './chains.js'
-import { Hardfork } from './enums.js'
+import { Holesky, Hoodi, Kaustinen6, Mainnet, Sepolia } from './chains.ts'
+import { Hardfork } from './enums.ts'
+import { hardforksDict } from './hardforks.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { GethGenesis } from './gethGenesis.ts'
+import type { HardforksDict } from './types.ts'
 
 type ConfigHardfork =
   | { name: string; block: null; timestamp: number }
@@ -25,10 +34,10 @@ function formatNonce(nonce: string): PrefixedHexString {
 
 /**
  * Converts Geth genesis parameters to an EthereumJS compatible `CommonOpts` object
- * @param json object representing the Geth genesis file
+ * @param gethGenesis GethGenesis object
  * @returns genesis parameters in a `CommonOpts` compliant object
  */
-function parseGethParams(json: any) {
+function parseGethParams(gethGenesis: GethGenesis) {
   const {
     name,
     config,
@@ -38,31 +47,16 @@ function parseGethParams(json: any) {
     coinbase,
     baseFeePerGas,
     excessBlobGas,
+    requestsHash,
     extraData: unparsedExtraData,
     nonce: unparsedNonce,
     timestamp: unparsedTimestamp,
-  }: {
-    name: string
-    config: any
-    difficulty: PrefixedHexString
-    mixHash: PrefixedHexString
-    gasLimit: PrefixedHexString
-    coinbase: PrefixedHexString
-    baseFeePerGas: PrefixedHexString
-    excessBlobGas: PrefixedHexString
-    extraData: string
-    nonce: string
-    timestamp: string
-  } = json
+  } = gethGenesis
   const genesisTimestamp = Number(unparsedTimestamp)
-  const {
-    chainId,
-    depositContractAddress,
-  }: { chainId: number; depositContractAddress: PrefixedHexString } = config
+  const { chainId, depositContractAddress } = config
 
   // geth is not strictly putting empty fields with a 0x prefix
-  const extraData: PrefixedHexString =
-    unparsedExtraData === '' ? '0x' : (unparsedExtraData as PrefixedHexString)
+  const extraData = addHexPrefix(unparsedExtraData ?? '')
 
   // geth may use number for timestamp
   const timestamp: PrefixedHexString = isHexString(unparsedTimestamp)
@@ -70,25 +64,47 @@ function parseGethParams(json: any) {
     : intToHex(parseInt(unparsedTimestamp))
 
   // geth may not give us a nonce strictly formatted to an 8 byte 0x-prefixed hex string
-  const nonce: PrefixedHexString =
-    unparsedNonce.length !== 18 ? formatNonce(unparsedNonce) : (unparsedNonce as PrefixedHexString)
+  const nonce =
+    unparsedNonce.length !== 18 ? formatNonce(unparsedNonce) : addHexPrefix(unparsedNonce)
 
   // EIP155 and EIP158 are both part of Spurious Dragon hardfork and must occur at the same time
   // but have different configuration parameters in geth genesis parameters
   if (config.eip155Block !== config.eip158Block) {
-    throw new Error(
+    throw EthereumJSErrorWithoutCode(
       'EIP155 block number must equal EIP 158 block number since both are part of SpuriousDragon hardfork and the client only supports activating the full hardfork',
     )
   }
 
-  // Terminal total difficulty logic is not supported any more as the merge has been completed
-  // so the Merge/Paris hardfork block must be 0
-  if (
-    config.terminalTotalDifficulty !== undefined &&
-    (BigInt(difficulty) < BigInt(config.terminalTotalDifficulty) ||
-      config.terminalTotalDifficultyPassed === false)
-  ) {
-    throw new Error('nonzero terminal total difficulty is not supported')
+  let customHardforks: HardforksDict | undefined = undefined
+  if (config.blobSchedule !== undefined) {
+    customHardforks = {}
+    const blobGasPerBlob = 131072
+    for (const [hfKey, hfSchedule] of Object.entries(config.blobSchedule)) {
+      const hfConfig = hardforksDict[hfKey]
+      if (hfConfig === undefined) {
+        throw EthereumJSErrorWithoutCode(`unknown hardfork=${hfKey} specified in blobSchedule`)
+      }
+      const { target, max, baseFeeUpdateFraction: blobGasPriceUpdateFraction } = hfSchedule
+      if (target === undefined || max === undefined || blobGasPriceUpdateFraction === undefined) {
+        throw EthereumJSErrorWithoutCode(
+          `undefined target, max or baseFeeUpdateFraction specified in blobSchedule for hardfork=${hfKey}`,
+        )
+      }
+
+      // copy current hardfork info to custom and add blob config
+      const customHfConfig = JSON.parse(JSON.stringify(hfConfig))
+      customHfConfig.params = {
+        ...customHardforks.params,
+        // removes blobGasPriceUpdateFraction key to prevent undefined overriding if undefined
+        ...{
+          targetBlobGasPerBlock: blobGasPerBlob * target,
+          maxBlobGasPerBlock: blobGasPerBlob * max,
+          blobGasPriceUpdateFraction,
+        },
+      }
+
+      customHardforks[hfKey] = customHfConfig
+    }
   }
 
   const params = {
@@ -105,9 +121,11 @@ function parseGethParams(json: any) {
       coinbase,
       baseFeePerGas,
       excessBlobGas,
+      requestsHash,
     },
     hardfork: undefined as string | undefined,
     hardforks: [] as ConfigHardfork[],
+    customHardforks,
     bootstrapNodes: [],
     consensus:
       config.clique !== undefined
@@ -141,11 +159,15 @@ function parseGethParams(json: any) {
     [Hardfork.MuirGlacier]: { name: 'muirGlacierBlock' },
     [Hardfork.Berlin]: { name: 'berlinBlock' },
     [Hardfork.London]: { name: 'londonBlock' },
-    [Hardfork.MergeForkIdTransition]: { name: 'mergeForkBlock', postMerge: true },
+    [Hardfork.ArrowGlacier]: { name: 'arrowGlacierBlock' },
+    [Hardfork.GrayGlacier]: { name: 'grayGlacierBlock' },
+    [Hardfork.Paris]: { name: 'mergeForkBlock', postMerge: true },
+    [Hardfork.MergeNetsplitBlock]: { name: 'mergeNetsplitBlock', postMerge: true },
     [Hardfork.Shanghai]: { name: 'shanghaiTime', postMerge: true, isTimestamp: true },
     [Hardfork.Cancun]: { name: 'cancunTime', postMerge: true, isTimestamp: true },
     [Hardfork.Prague]: { name: 'pragueTime', postMerge: true, isTimestamp: true },
     [Hardfork.Osaka]: { name: 'osakaTime', postMerge: true, isTimestamp: true },
+    [Hardfork.Verkle]: { name: 'verkleTime', postMerge: true, isTimestamp: true },
   }
 
   // forkMapRev is the map from config field name to Hardfork
@@ -156,24 +178,72 @@ function parseGethParams(json: any) {
     },
     {} as { [key: string]: string },
   )
-  const configHardforkNames = Object.keys(config).filter(
-    (key) => forkMapRev[key] !== undefined && config[key] !== undefined && config[key] !== null,
+
+  params.hardforks = Object.entries(forkMapRev)
+    .map(([nameBlock, hardfork]) => {
+      const configValue = config[nameBlock as keyof typeof config]
+      const isTimestamp = forkMap[hardfork].isTimestamp === true
+
+      const block = isTimestamp || typeof configValue !== 'number' ? null : configValue
+
+      const timestamp = isTimestamp && typeof configValue === 'number' ? configValue : undefined
+
+      return { name: hardfork, block, timestamp }
+    })
+    .filter(({ block, timestamp }) => block !== null || timestamp !== undefined) as ConfigHardfork[]
+
+  const mergeIndex = params.hardforks.findIndex((hf) => hf.name === Hardfork.Paris)
+  let mergeNetsplitBlockIndex = params.hardforks.findIndex(
+    (hf) => hf.name === Hardfork.MergeNetsplitBlock,
+  )
+  const firstPostMergeHFIndex = params.hardforks.findIndex(
+    (hf) => hf.timestamp !== undefined && hf.timestamp !== null,
   )
 
-  params.hardforks = configHardforkNames
-    .map((nameBlock) => ({
-      name: forkMapRev[nameBlock],
-      block:
-        forkMap[forkMapRev[nameBlock]].isTimestamp === true || typeof config[nameBlock] !== 'number'
-          ? null
-          : config[nameBlock],
-      timestamp:
-        forkMap[forkMapRev[nameBlock]].isTimestamp === true && typeof config[nameBlock] === 'number'
-          ? config[nameBlock]
-          : undefined,
-    }))
-    .filter((fork) => fork.block !== null || fork.timestamp !== undefined) as ConfigHardfork[]
+  // If we are missing a mergeNetsplitBlock, we assume it is at the same block as Paris (if present)
+  if (mergeIndex !== -1 && mergeNetsplitBlockIndex === -1) {
+    params.hardforks.splice(mergeIndex + 1, 0, {
+      name: Hardfork.MergeNetsplitBlock,
+      block: params.hardforks[mergeIndex].block!,
+    })
+    mergeNetsplitBlockIndex = mergeIndex + 1
+  }
+  // or zero if not and a postmerge hardfork is set (since testnets using the geth genesis format are all currently start postmerge)
+  if (firstPostMergeHFIndex !== -1) {
+    if (mergeNetsplitBlockIndex === -1) {
+      params.hardforks.splice(firstPostMergeHFIndex, 0, {
+        name: Hardfork.MergeNetsplitBlock,
+        block: 0,
+      })
+      mergeNetsplitBlockIndex = firstPostMergeHFIndex
+    }
+    if (mergeIndex === -1) {
+      // If we don't have a Paris hardfork, add it at the mergeNetsplitBlock
+      params.hardforks.splice(mergeNetsplitBlockIndex, 0, {
+        name: Hardfork.Paris,
+        block: params.hardforks[mergeNetsplitBlockIndex].block!,
+      })
+    }
+    // Check for terminalTotalDifficultyPassed param in genesis config if no post merge hardforks are set
+  } else if (config.terminalTotalDifficultyPassed === true) {
+    if (mergeIndex === -1) {
+      // If we don't have a Paris hardfork, add it at end of hardfork array
+      params.hardforks.push({
+        name: Hardfork.Paris,
+        block: 0,
+      })
+    }
+    // If we don't have a MergeNetsplitBlock hardfork, add it at end of hardfork array
+    if (mergeNetsplitBlockIndex === -1) {
+      params.hardforks.push({
+        name: Hardfork.MergeNetsplitBlock,
+        block: 0,
+      })
+      mergeNetsplitBlockIndex = firstPostMergeHFIndex
+    }
+  }
 
+  // TODO: Decide if we actually need to do this since `ForkMap` specifies the order we expect things in
   params.hardforks.sort(function (a: ConfigHardfork, b: ConfigHardfork) {
     return (a.block ?? Infinity) - (b.block ?? Infinity)
   })
@@ -191,25 +261,6 @@ function parseGethParams(json: any) {
     }
   }
 
-  if (config.terminalTotalDifficulty !== undefined) {
-    // Merge fork must be placed at 0 since ttd logic is no longer supported
-    const mergeConfig = {
-      name: Hardfork.Paris,
-      block: 0,
-      timestamp: undefined,
-    }
-
-    // Merge hardfork has to be placed before first hardfork that is dependent on merge
-    const postMergeIndex = params.hardforks.findIndex(
-      (hf: any) => forkMap[hf.name]?.postMerge === true,
-    )
-    if (postMergeIndex !== -1) {
-      params.hardforks.splice(postMergeIndex, 0, mergeConfig as unknown as ConfigHardfork)
-    } else {
-      params.hardforks.push(mergeConfig as unknown as ConfigHardfork)
-    }
-  }
-
   const latestHardfork = params.hardforks.length > 0 ? params.hardforks.slice(-1)[0] : undefined
   params.hardfork = latestHardfork?.name
   params.hardforks.unshift({ name: Hardfork.Chainstart, block: 0 })
@@ -218,28 +269,30 @@ function parseGethParams(json: any) {
 }
 
 /**
- * Parses a genesis.json exported from Geth into parameters for Common instance
- * @param json representing the Geth genesis file
+ * Parses a genesis object exported from Geth into parameters for Common instance
+ * @param gethGenesis GethGenesis object
  * @param name optional chain name
  * @returns parsed params
  */
-export function parseGethGenesis(json: any, name?: string) {
+export function parseGethGenesis(gethGenesis: GethGenesis, name?: string) {
   try {
     const required = ['config', 'difficulty', 'gasLimit', 'nonce', 'alloc']
-    if (required.some((field) => !(field in json))) {
-      const missingField = required.filter((field) => !(field in json))
-      throw new Error(`Invalid format, expected geth genesis field "${missingField}" missing`)
+    if (required.some((field) => !(field in gethGenesis))) {
+      const missingField = required.filter((field) => !(field in gethGenesis))
+      throw EthereumJSErrorWithoutCode(
+        `Invalid format, expected geth genesis field "${missingField}" missing`,
+      )
     }
 
-    // We copy the JSON object here because it's frozen in browser and properties can't be modified
-    const finalJSON = { ...json }
+    // We copy the object here because it's frozen in browser and properties can't be modified
+    const finalGethGenesis = { ...gethGenesis }
 
     if (name !== undefined) {
-      finalJSON.name = name
+      finalGethGenesis.name = name
     }
-    return parseGethParams(finalJSON)
+    return parseGethParams(finalGethGenesis)
   } catch (e: any) {
-    throw new Error(`Error parsing parameters file: ${e.message}`)
+    throw EthereumJSErrorWithoutCode(`Error parsing parameters file: ${e.message}`)
   }
 }
 
@@ -250,12 +303,12 @@ export function parseGethGenesis(json: any, name?: string) {
  */
 export const getPresetChainConfig = (chain: string | number) => {
   switch (chain) {
-    case 'goerli':
-    case 5:
-      return Goerli
     case 'holesky':
     case 17000:
       return Holesky
+    case 'hoodi':
+    case 560048:
+      return Hoodi
     case 'kaustinen6':
     case 69420:
       return Kaustinen6

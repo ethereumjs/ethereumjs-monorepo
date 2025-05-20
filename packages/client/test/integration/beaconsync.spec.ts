@@ -1,27 +1,28 @@
 import { BlockHeader } from '@ethereumjs/block'
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
-import { assert, describe, it, vi } from 'vitest'
+import { postMergeGethGenesis } from '@ethereumjs/testdata'
+import { assert, describe, expect, it, vi } from 'vitest'
 
-import { Event } from '../../src/types.js'
-import { postMergeData } from '../testdata/geth-genesis/post-merge.js'
+import { Event } from '../../src/types.ts'
 
-import { destroy, setup, wait } from './util.js'
+import type { BeaconSynchronizer } from '../../src/sync/beaconsync.ts'
+import { destroy, setup, wait } from './util.ts'
 
-const common = createCommonFromGethGenesis(postMergeData, { chain: 'post-merge' })
+const common = createCommonFromGethGenesis(postMergeGethGenesis, { chain: 'post-merge' })
 common.setHardforkBy({ blockNumber: BigInt(0) })
 
 describe('should sync blocks', async () => {
   BlockHeader.prototype['_consensusFormatValidation'] = vi.fn()
   vi.doMock('@ethereumjs/block', () => {
-    {
-      BlockHeader
+    return {
+      BlockHeader,
     }
   })
 
   const [remoteServer, remoteService] = await setup({ location: '127.0.0.2', height: 20, common })
   const [localServer, localService] = await setup({ location: '127.0.0.1', height: 0, common })
   const next = await remoteService.chain.getCanonicalHeadHeader()
-  ;(localService.synchronizer as any).skeleton.status.progress.subchains = [
+  ;(localService.synchronizer as BeaconSynchronizer).skeleton['status'].progress.subchains = [
     {
       head: BigInt(21),
       tail: BigInt(21),
@@ -32,7 +33,7 @@ describe('should sync blocks', async () => {
   await localServer.discover('remotePeer1', '127.0.0.2')
   localService.config.events.on(Event.SYNC_SYNCHRONIZED, async () => {
     it('should be synced', () => {
-      assert.equal(localService.chain.blocks.height, BigInt(20), 'synced')
+      assert.strictEqual(localService.chain.blocks.height, BigInt(20), 'synced')
     })
     await destroy(localServer, localService)
     await destroy(remoteServer, remoteService)
@@ -47,13 +48,10 @@ describe('should not sync with stale peers', async () => {
     throw new Error('synced with a stale peer')
   })
   it('should not sync', async () => {
-    try {
+    await expect(async () => {
       await localServer.discover('remotePeer', '127.0.0.2')
       await wait(300)
-      assert.fail('should not sync')
-    } catch (err: any) {
-      assert.ok('did not sync')
-    }
+    }, 'should not sync with stale peer').rejects.toThrow('There is no server at 127.0.0.2')
   })
   await destroy(localServer, localService)
   await destroy(remoteServer, remoteService)
@@ -76,7 +74,7 @@ describe('should sync with best peer', async () => {
     common,
     minPeers: 2,
   })
-  ;(localService.synchronizer as any).skeleton.status.progress.subchains = [
+  ;(localService.synchronizer as BeaconSynchronizer).skeleton['status'].progress.subchains = [
     {
       head: BigInt(11),
       tail: BigInt(11),
@@ -91,7 +89,7 @@ describe('should sync with best peer', async () => {
   localService.config.events.on(Event.SYNC_SYNCHRONIZED, async () => {
     it('should sync with best peer', async () => {
       if (localService.chain.blocks.height === BigInt(10)) {
-        assert.ok(true, 'synced with best peer')
+        assert.isTrue(true, 'synced with best peer')
       }
     })
     await destroy(localServer, localService)

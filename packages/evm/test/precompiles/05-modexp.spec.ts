@@ -2,15 +2,15 @@ import { Common, Mainnet } from '@ethereumjs/common'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, beforeAll, describe, it } from 'vitest'
 
-import { createEVM, getActivePrecompiles } from '../../src/index.js'
+import { createEVM, getActivePrecompiles } from '../../src/index.ts'
 
-import fuzzer from './modexp-testdata.json'
+import { testData } from './modexp-testdata.ts'
 
-import type { EVM } from '../../src/index.js'
-import type { PrecompileFunc } from '../../src/precompiles/types.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { EVM } from '../../src/index.ts'
+import type { PrecompileFunc } from '../../src/precompiles/types.ts'
 
-const fuzzerTests = fuzzer.data as PrefixedHexString[][]
+const fuzzerTests = testData.data as PrefixedHexString[][]
 describe('Precompiles: MODEXP', () => {
   let common: Common
   let evm: EVM
@@ -36,7 +36,7 @@ describe('Precompiles: MODEXP', () => {
         _EVM: evm,
       })
       const output = bytesToHex(result.returnValue)
-      assert.equal(output, expect)
+      assert.strictEqual(output, expect)
     })
   }
 
@@ -48,6 +48,6 @@ describe('Precompiles: MODEXP', () => {
       common,
       _EVM: evm,
     })
-    assert.ok(result.executionGasUsed === gas)
+    assert.strictEqual(result.executionGasUsed, gas)
   })
 })

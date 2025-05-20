@@ -2,10 +2,10 @@ import { createBlock, createBlockFromRLP } from '@ethereumjs/block'
 import { EthashConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
+import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
-import { Caches, MerkleStateManager } from '@ethereumjs/statemanager'
-import { Trie } from '@ethereumjs/trie'
-import { createTxFromSerializedData } from '@ethereumjs/tx'
+import { Caches, MerkleStateManager, StatefulVerkleStateManager } from '@ethereumjs/statemanager'
+import { createTxFromRLP } from '@ethereumjs/tx'
 import {
   MapDB,
   bytesToBigInt,
@@ -13,16 +13,17 @@ import {
   hexToBytes,
   isHexString,
   stripHexPrefix,
-  toBytes,
 } from '@ethereumjs/util'
+import { createVerkleTree } from '@ethereumjs/verkle'
 
-import { buildBlock, createVM, runBlock } from '../../../src/index.js'
-import { setupPreConditions, verifyPostConditions } from '../../util.js'
+import { buildBlock, createVM, runBlock } from '../../../src/index.ts'
+import { setupPreConditions, verifyPostConditions } from '../../util.ts'
 
 import type { Block } from '@ethereumjs/block'
 import type { Blockchain, ConsensusDict } from '@ethereumjs/blockchain'
-import type { Common } from '@ethereumjs/common'
+import type { Common, StateManagerInterface } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { VerkleTree } from '@ethereumjs/verkle'
 import type * as tape from 'tape'
 
 function formatBlockHeader(data: any) {
@@ -47,12 +48,23 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   common.setHardforkBy({ blockNumber: 0 })
 
   let cacheDB = new MapDB()
-  let state = new Trie({ useKeyHashing: true, common })
-  let stateManager = new MerkleStateManager({
-    caches: new Caches(),
-    trie: state,
-    common,
-  })
+  let stateTree: MerklePatriciaTrie | VerkleTree
+  let stateManager: StateManagerInterface
+
+  if (options.stateManager === 'verkle') {
+    stateTree = await createVerkleTree()
+    stateManager = new StatefulVerkleStateManager({
+      trie: stateTree,
+      common: options.common,
+    })
+  } else {
+    stateTree = new MerklePatriciaTrie({ useKeyHashing: true, common })
+    stateManager = new MerkleStateManager({
+      caches: new Caches(),
+      trie: stateTree,
+      common,
+    })
+  }
 
   let validatePow = false
   // Only run with block validation when sealEngine present in test file
@@ -71,7 +83,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   const genesisBlock = createBlock(blockData, { common })
 
   if (typeof testData.genesisRLP === 'string') {
-    const rlp = toBytes(testData.genesisRLP)
+    const rlp = hexToBytes(testData.genesisRLP)
     t.deepEquals(genesisBlock.serialize(), rlp, 'correct genesis RLP')
   }
 
@@ -86,7 +98,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   })
 
   if (validatePow) {
-    ;(blockchain.consensus as EthashConsensus)._ethash!.cacheDB = cacheDB as any
+    ;(blockchain.consensus as EthashConsensus)._ethash!.cacheDB = cacheDB
   }
 
   const begin = Date.now()
@@ -154,7 +166,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         const decoded: any = RLP.decode(blockRlp)
         timestamp = bytesToBigInt(decoded[0][11])
         // eslint-disable-next-line no-empty
-      } catch (e) {}
+      } catch {}
 
       common.setHardforkBy({ blockNumber: currentBlock, timestamp })
 
@@ -174,7 +186,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
           const shouldFail = txData.valid === 'false'
           try {
             const txRLP = hexToBytes(txData.rawBytes as PrefixedHexString)
-            const tx = createTxFromSerializedData(txRLP, { common })
+            const tx = createTxFromRLP(txRLP, { common })
             await blockBuilder.addTransaction(tx)
             if (shouldFail) {
               t.fail('tx should fail, but did not fail')
@@ -190,7 +202,32 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         await blockBuilder.revert() // will only revert if checkpointed
       }
 
-      const block = createBlockFromRLP(blockRlp, { common })
+      let block: Block
+      if (options.stateManager === 'verkle') {
+        currentBlock = BigInt(raw.blockHeader.number)
+        common.setHardforkBy({
+          blockNumber: currentBlock,
+          timestamp: BigInt(raw.blockHeader.timestamp),
+        })
+        // Create the block from the JSON block data since the RLP doesn't include the execution witness
+        block = createBlock(
+          {
+            header: raw.blockHeader,
+            transactions: raw.transactions,
+            uncleHeaders: raw.uncleHeaders,
+            withdrawals: raw.withdrawals,
+            executionWitness: raw.witness,
+          },
+          {
+            common,
+            setHardfork: true,
+          },
+        )
+      } else {
+        const blockRLP = hexToBytes(raw.rlp as PrefixedHexString)
+        block = createBlockFromRLP(blockRLP, { common, setHardfork: true })
+      }
+
       await blockchain.putBlock(block)
 
       // This is a trick to avoid generating the canonical genesis
@@ -205,7 +242,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
           const parentState = parentBlock.header.stateRoot
           // run block, update head if valid
           try {
-            await runBlock(vm, { block, root: parentState })
+            await runBlock(vm, { block, root: parentState, setHardfork: true })
             // set as new head block
           } catch (error: any) {
             // remove invalid block
@@ -224,7 +261,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
           const headBlock = await (vm.blockchain as Blockchain).getIteratorHead()
           await vm.stateManager.setStateRoot(headBlock.header.stateRoot)
         } else {
-          await verifyPostConditions(state, testData.postState, t)
+          await verifyPostConditions(stateTree, testData.postState, t)
         }
 
         throw e
@@ -242,7 +279,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   }
 
   t.equal(
-    bytesToHex((blockchain as any)._headHeaderHash),
+    bytesToHex(blockchain['_headHeaderHash']),
     '0x' + testData.lastblockhash,
     'correct last header block',
   )
@@ -251,6 +288,6 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   const timeSpent = `${(end - begin) / 1000} secs`
   t.comment(`Time: ${timeSpent}`)
 
-  // @ts-ignore Explicitly delete objects for memory optimization (early GC)
-  common = blockchain = state = stateManager = vm = cacheDB = null // eslint-disable-line
+  // Explicitly delete objects for memory optimization (early GC)
+  common = blockchain = stateTree = stateManager = vm = cacheDB = null as any
 }

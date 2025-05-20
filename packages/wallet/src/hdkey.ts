@@ -2,9 +2,14 @@
 import { mnemonicToSeedSync } from 'ethereum-cryptography/bip39/index.js'
 import { HDKey } from 'ethereum-cryptography/hdkey.js'
 
-import { Wallet } from './wallet.js'
+import { EthereumJSErrorWithoutCode } from '@ethereumjs/util'
+import { Wallet } from './wallet.ts'
 
 export class EthereumHDKey {
+  private readonly _hdkey: HDKey
+  constructor(hdkey: HDKey) {
+    this._hdkey = hdkey
+  }
   /**
    * Creates an instance based on a seed.
    */
@@ -26,14 +31,12 @@ export class EthereumHDKey {
     return new EthereumHDKey(HDKey.fromExtendedKey(base58Key))
   }
 
-  constructor(private readonly _hdkey: HDKey) {}
-
   /**
    * Returns a BIP32 extended private key (xprv)
    */
   public privateExtendedKey(): string {
     if (!this._hdkey.privateExtendedKey) {
-      throw new Error('This is a public key only wallet')
+      throw EthereumJSErrorWithoutCode('This is a public key only wallet')
     }
     return this._hdkey.privateExtendedKey
   }
@@ -66,7 +69,7 @@ export class EthereumHDKey {
     if (this._hdkey.privateKey) {
       return Wallet.fromPrivateKey(this._hdkey.privateKey)
     }
-    if (!this._hdkey.publicKey) throw new Error('No hdkey')
+    if (!this._hdkey.publicKey) throw EthereumJSErrorWithoutCode('No hdkey')
     return Wallet.fromPublicKey(this._hdkey.publicKey, true)
   }
 }

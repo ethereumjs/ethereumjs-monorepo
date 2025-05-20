@@ -2,8 +2,8 @@ import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { Address, bigIntToBytes, hexToBytes, setLengthLeft } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createVM } from '../../../src/index.js'
-import { createAccountWithDefaults } from '../utils.js'
+import { createVM } from '../../../src/index.ts'
+import { createAccountWithDefaults } from '../utils.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -55,9 +55,9 @@ describe('Constantinople: EIP-1283', () => {
 
       try {
         const res = await vm.evm.runCall(runCallArgs)
-        assert.equal(res.execResult.exceptionError, undefined)
-        assert.equal(res.execResult.executionGasUsed, BigInt(testCase.used))
-        assert.equal(res.execResult.gasRefund, BigInt(testCase.refund))
+        assert.strictEqual(res.execResult.exceptionError, undefined)
+        assert.strictEqual(res.execResult.executionGasUsed, BigInt(testCase.used))
+        assert.strictEqual(res.execResult.gasRefund, BigInt(testCase.refund))
       } catch (e: any) {
         assert.fail(e.message)
       }

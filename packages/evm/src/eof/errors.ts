@@ -1,254 +1,214 @@
-export enum EOFError {
-  // Stream Reader
-  OutOfBounds = 'Trying to read out of bounds',
-  VerifyUint = 'Uint does not match expected value ',
-  VerifyBytes = 'Bytes do not match expected value',
+import { EthereumJSErrorWithoutCode } from '@ethereumjs/util'
 
-  // Section Markers
-  FORMAT = 'err: invalid format',
-  MAGIC = 'err: invalid magic',
-  VERSION = `err: invalid eof version`,
-  KIND_TYPE = `err: expected kind types`,
-  KIND_CODE = `err: expected kind code`,
-  KIND_DATA = `err: expected kind data`,
-  TERMINATOR = `err: expected terminator`,
+export type EOFErrorMessage = (typeof EOFErrorMessage)[keyof typeof EOFErrorMessage]
 
-  // Section Sizes
-  TypeSize = `missing type size`,
-  InvalidTypeSize = `err: type section size invalid`,
-  CodeSize = `missing code size`,
-  CodeSectionSize = `code section should be at least one byte`,
-  InvalidCodeSize = `code size does not match type size`,
-  DataSize = `missing data size`,
-  ContainerSize = 'missing container size',
-  ContainerSectionSize = 'container section should at least contain one section and at most 255 sections',
+export const EOFErrorMessage = {
+  OUT_OF_BOUNDS: 'Trying to read out of bounds',
+  VERIFY_UINT: 'Uint does not match expected value ',
+  VERIFY_BYTES: 'Bytes do not match expected value',
+  FORMAT: 'err: invalid format',
+  MAGIC: 'err: invalid magic',
+  VERSION: 'err: invalid eof version',
+  KIND_TYPE: 'err: expected kind types',
+  KIND_CODE: 'err: expected kind code',
+  KIND_DATA: 'err: expected kind data',
+  TERMINATOR: 'err: expected terminator',
+  TYPE_SIZE: 'missing type size',
+  INVALID_TYPE_SIZE: 'err: type section size invalid',
+  CODE_SIZE: 'missing code size',
+  CODE_SECTION_SIZE: 'code section should be at least one byte',
+  INVALID_CODE_SIZE: 'code size does not match type size',
+  DATA_SIZE: 'missing data size',
+  CONTAINER_SIZE: 'missing container size',
+  CONTAINER_SECTION_SIZE:
+    'container section should at least contain one section and at most 255 sections',
+  TYPE_SECTIONS: 'err: mismatch of code sections count and type signatures',
+  INPUTS: 'expected inputs',
+  OUTPUTS: 'expected outputs',
+  MAX_INPUTS: 'inputs exceeds 127, the maximum, got: ',
+  MAX_OUTPUTS: 'outputs exceeds 127, the maximum, got: ',
+  CODE0_INPUTS: 'first code section should have 0 inputs',
+  CODE0_OUTPUTS: 'first code section should have 0x80 (terminating section) outputs',
+  MAX_STACK_HEIGHT: 'expected maxStackHeight',
+  MAX_STACK_HEIGHT_LIMIT: 'stack height limit of 1024 exceeded: ',
+  MIN_CODE_SECTIONS: 'should have at least 1 code section',
+  CODE_SECTION: 'expected a code section',
+  DATA_SECTION: 'Expected data section',
+  CONTAINER_SECTION: 'expected a container section',
+  CONTAINER_SECTION_MIN: 'container section should be at least 1 byte',
+  INVALID_EOF_CREATE_TARGET: 'EOFCREATE targets an undefined container',
+  INVALID_RETURN_CONTRACT_TARGET: 'RETURNCONTRACT targets an undefined container',
+  CONTAINER_DOUBLE_TYPE: 'Container is targeted by both EOFCREATE and RETURNCONTRACT',
+  UNREACHABLE_CONTAINER_SECTIONS: 'Unreachable containers (by both EOFCREATE and RETURNCONTRACT)',
+  CONTAINER_TYPE_ERROR:
+    'Container contains opcodes which this mode (deployment mode / init code / runtime mode) cannot have',
+  DANGLING_BYTES: 'got dangling bytes in body',
+  INVALID_OPCODE: 'invalid opcode',
+  INVALID_TERMINATOR: 'invalid terminating opcode',
+  OPCODE_INTERMEDIATES_OOB: 'invalid opcode: intermediates out-of-bounds',
+  INVALID_RJUMP: 'invalid rjump* target',
+  INVALID_CALL_TARGET: 'invalid callf/jumpf target',
+  INVALID_CALLF_RETURNING: 'invalid callf: calls to non-returning function',
+  INVALID_STACK_HEIGHT: 'invalid stack height',
+  INVALID_JUMPF: 'invalid jumpf target (output count)',
+  INVALID_RETURNING_SECTION: 'invalid returning code section: section is not returning',
+  RETURNING_NO_RETURN: 'invalid section: section should return but has no RETF/JUMP to return',
+  RJUMPV_TABLE_SIZE0: 'invalid RJUMPV: table size 0',
+  UNREACHABLE_CODE_SECTIONS: 'unreachable code sections',
+  UNREACHABLE_CODE: 'unreachable code (by forward jumps)',
+  DATALOADN_OOB: 'DATALOADN reading out of bounds',
+  MAX_STACK_HEIGHT_VIOLATION: 'Max stack height does not match the reported max stack height',
+  STACK_UNDERFLOW: 'Stack underflow',
+  STACK_OVERFLOW: 'Stack overflow',
+  UNSTABLE_STACK: 'Unstable stack (can reach stack under/overflow by jumps)',
+  RETF_NO_RETURN: 'Trying to return to undefined function',
+  RETURN_STACK_OVERFLOW: 'Return stack overflow',
+  INVALID_EXTCALL_TARGET: 'invalid extcall target: address > 20 bytes',
+  INVALID_RETURN_CONTRACT_DATA_SIZE: 'invalid RETURNCONTRACT: data size lower than expected',
+} as const
 
-  // Type Section
-  TypeSections = `err: mismatch of code sections count and type signatures`,
-  Inputs = 'expected inputs',
-  Outputs = 'expected outputs',
-  MaxInputs = 'inputs exceeds 127, the maximum, got: ',
-  MaxOutputs = 'outputs exceeds 127, the maximum, got: ',
-  Code0Inputs = 'first code section should have 0 inputs',
-  Code0Outputs = 'first code section should have 0x80 (terminating section) outputs',
-  MaxStackHeight = `expected maxStackHeight`,
-  MaxStackHeightLimit = `stack height limit of 1024 exceeded: `,
-
-  // Code/Data Section
-  MinCodeSections = `should have at least 1 code section`,
-  MaxCodeSections = `can have at most 1024 code sections`,
-  CodeSection = `expected a code section`,
-  DataSection = `Expected data section`,
-
-  // Container section
-  ContainerSection = 'expected a container section',
-  ContainerSectionMin = 'container section should be at least 1 byte',
-  InvalidEOFCreateTarget = 'EOFCREATE targets an undefined container',
-  InvalidRETURNContractTarget = 'RETURNCONTRACT targets an undefined container',
-  ContainerDoubleType = 'Container is targeted by both EOFCREATE and RETURNCONTRACT',
-  UnreachableContainerSections = 'Unreachable containers (by both EOFCREATE and RETURNCONTRACT)',
-  ContainerTypeError = 'Container contains opcodes which this mode (deployment mode / init code / runtime mode) cannot have',
-
-  // Dangling Bytes
-  DanglingBytes = 'got dangling bytes in body',
-
-  // Code verification
-  InvalidOpcode = 'invalid opcode',
-  InvalidTerminator = 'invalid terminating opcode',
-  OpcodeIntermediatesOOB = 'invalid opcode: intermediates out-of-bounds',
-
-  InvalidRJUMP = 'invalid rjump* target',
-  InvalidCallTarget = 'invalid callf/jumpf target',
-  InvalidCALLFReturning = 'invalid callf: calls to non-returning function',
-  InvalidStackHeight = 'invalid stack height',
-  InvalidJUMPF = 'invalid jumpf target (output count)',
-  InvalidReturningSection = 'invalid returning code section: section is not returning',
-  RJUMPVTableSize0 = 'invalid RJUMPV: table size 0',
-  UnreachableCodeSections = 'unreachable code sections',
-  UnreachableCode = 'unreachable code (by forward jumps)',
-  DataLoadNOutOfBounds = 'DATALOADN reading out of bounds',
-  MaxStackHeightViolation = 'Max stack height does not match the reported max stack height',
-  StackUnderflow = 'Stack underflow',
-  StackOverflow = 'Stack overflow',
-  UnstableStack = 'Unstable stack (can reach stack under/overflow by jumps)',
-  RetfNoReturn = 'Trying to return to undefined function', // This should never happen (this is a return stack underflow)
-  ReturnStackOverflow = 'Return stack overflow',
-  InvalidExtcallTarget = 'invalid extcall target: address > 20 bytes',
-  InvalidReturnContractDataSize = 'invalid RETURNCONTRACT: data size lower than expected',
-
-  InvalidEofFormat = 'invalid EOF format',
-}
-
-export enum SimpleErrors {
-  minContainerSize = 'err: container size less than minimum valid size',
-  invalidContainerSize = 'err: invalid container size',
-  typeSize = 'err: type section size invalid',
-  code0msh = 'err: computed max stack height for code section 0 does not match expect',
-  underflow = 'err: stack underflow',
-  code0IO = 'err: input and output of first code section must be 0',
-
-  // Stream Reader
-  // OutOfBounds = 'err: relative offset out-of-bounds: ',
-  VerifyUint = 'Uint does not match expected value ',
-  VerifyBytes = 'Bytes do not match expected value',
-
-  // Section Sizes
-  TypeSize = `missing type size`,
-  InvalidTypeSize = `err: type section invalid`,
-  CodeSize = `missing code size`,
-  CodeSectionSize = `code section should be at least one byte`,
-  InvalidCodeSize = `code size does not match type size`,
-  DataSize = `missing data size`,
-
-  // Type Section
-  TypeSections = `need to have a type section for each code section`,
-  Inputs = 'expected inputs',
-  Outputs = 'expected outputs',
-  MaxInputs = 'inputs exceeds 127, the maximum, got: ',
-  MaxOutputs = 'outputs exceeds 127, the maximum, got: ',
-  Code0Inputs = 'first code section should have 0 inputs',
-  Code0Outputs = 'first code section should have 0 outputs',
-  MaxStackHeight = `expected maxStackHeight`,
-  MaxStackHeightLimit = `stack height limit of 1024 exceeded: `,
-
-  // Code/Data Section
-  MinCodeSections = `should have at least 1 code section`,
-  MaxCodeSections = `can have at most 1024 code sections`,
-  CodeSection = `expected a code section`,
-  DataSection = `Expected data section`,
-
-  // Dangling Bytes
-  DanglingBytes = 'got dangling bytes in body',
-}
-
-export function validationErrorMsg(type: EOFError, ...args: any) {
+export function validationErrorMsg(type: EOFErrorMessage, ...args: any) {
   switch (type) {
-    case EOFError.OutOfBounds: {
-      return EOFError.OutOfBounds + ` at pos: ${args[0]}: ${args[1]}`
+    case EOFErrorMessage.OUT_OF_BOUNDS: {
+      return EOFErrorMessage.OUT_OF_BOUNDS + ` at pos: ${args[0]}: ${args[1]}`
     }
-    case EOFError.VerifyBytes: {
-      return EOFError.VerifyBytes + ` at pos: ${args[0]}: ${args[1]}`
+    case EOFErrorMessage.VERIFY_BYTES: {
+      return EOFErrorMessage.VERIFY_BYTES + ` at pos: ${args[0]}: ${args[1]}`
     }
-    case EOFError.VerifyUint: {
-      return EOFError.VerifyUint + `at pos: ${args[0]}: ${args[1]}`
+    case EOFErrorMessage.VERIFY_UINT: {
+      return EOFErrorMessage.VERIFY_UINT + `at pos: ${args[0]}: ${args[1]}`
     }
-    case EOFError.TypeSize: {
-      return EOFError.TypeSize + args[0]
+    case EOFErrorMessage.TYPE_SIZE: {
+      return EOFErrorMessage.TYPE_SIZE + args[0]
     }
-    case EOFError.InvalidTypeSize: {
-      return EOFError.InvalidTypeSize + args[0]
+    case EOFErrorMessage.INVALID_TYPE_SIZE: {
+      return EOFErrorMessage.INVALID_TYPE_SIZE + args[0]
     }
-    case EOFError.InvalidCodeSize: {
-      return EOFError.InvalidCodeSize + args[0]
+    case EOFErrorMessage.INVALID_CODE_SIZE: {
+      return EOFErrorMessage.INVALID_CODE_SIZE + args[0]
     }
-    case EOFError.Inputs: {
-      return `${EOFError.Inputs} - typeSection ${args[0]}`
+    case EOFErrorMessage.INPUTS: {
+      return `${EOFErrorMessage.INPUTS} - typeSection ${args[0]}`
     }
-    case EOFError.Outputs: {
-      return `${EOFError.Outputs} - typeSection ${args[0]}`
+    case EOFErrorMessage.OUTPUTS: {
+      return `${EOFErrorMessage.OUTPUTS} - typeSection ${args[0]}`
     }
-    case EOFError.Code0Inputs: {
+    case EOFErrorMessage.CODE0_INPUTS: {
       return `first code section should have 0 inputs`
     }
-    case EOFError.Code0Outputs: {
+    case EOFErrorMessage.CODE0_OUTPUTS: {
       return `first code section should have 0 outputs`
     }
-    case EOFError.MaxInputs: {
-      return EOFError.MaxInputs + `${args[1]} - code section ${args[0]}`
+    case EOFErrorMessage.MAX_INPUTS: {
+      return EOFErrorMessage.MAX_INPUTS + `${args[1]} - code section ${args[0]}`
     }
-    case EOFError.MaxOutputs: {
-      return EOFError.MaxOutputs + `${args[1]} - code section ${args[0]}`
+    case EOFErrorMessage.MAX_OUTPUTS: {
+      return EOFErrorMessage.MAX_OUTPUTS + `${args[1]} - code section ${args[0]}`
     }
-    case EOFError.CodeSection: {
+    case EOFErrorMessage.CODE_SECTION: {
       return `expected code: codeSection ${args[0]}: `
     }
-    case EOFError.DataSection: {
-      return EOFError.DataSection
+    case EOFErrorMessage.DATA_SECTION: {
+      return EOFErrorMessage.DATA_SECTION
     }
-    case EOFError.MaxStackHeight: {
-      return `${EOFError.MaxStackHeight} - typeSection ${args[0]}: `
+    case EOFErrorMessage.MAX_STACK_HEIGHT: {
+      return `${EOFErrorMessage.MAX_STACK_HEIGHT} - typeSection ${args[0]}: `
     }
-    case EOFError.MaxStackHeightLimit: {
-      return `${EOFError.MaxStackHeightLimit}, got: ${args[1]} - typeSection ${args[0]}`
+    case EOFErrorMessage.MAX_STACK_HEIGHT_LIMIT: {
+      return `${EOFErrorMessage.MAX_STACK_HEIGHT_LIMIT}, got: ${args[1]} - typeSection ${args[0]}`
     }
-    case EOFError.DanglingBytes: {
-      return EOFError.DanglingBytes
+    case EOFErrorMessage.DANGLING_BYTES: {
+      return EOFErrorMessage.DANGLING_BYTES
     }
     default: {
       return type
     }
   }
 }
-export function validationError(type: EOFError, ...args: any): never {
+export function validationError(type: EOFErrorMessage, ...args: any): never {
   switch (type) {
-    case EOFError.OutOfBounds: {
+    case EOFErrorMessage.OUT_OF_BOUNDS: {
       const pos = args[0]
       if (pos === 0 || pos === 2 || pos === 3 || pos === 6) {
-        throw new Error(args[1])
+        throw EthereumJSErrorWithoutCode(args[1])
       }
-      throw new Error(EOFError.OutOfBounds + ` `)
+      throw EthereumJSErrorWithoutCode(EOFErrorMessage.OUT_OF_BOUNDS + ` `)
     }
-    case EOFError.VerifyBytes: {
+    case EOFErrorMessage.VERIFY_BYTES: {
       const pos = args[0]
       if (pos === 0 || pos === 2 || pos === 3 || pos === 6) {
-        throw new Error(args[1])
+        throw EthereumJSErrorWithoutCode(args[1])
       }
-      throw new Error(EOFError.VerifyBytes + ` at pos: ${args[0]}: ${args[1]}`)
+      throw EthereumJSErrorWithoutCode(
+        EOFErrorMessage.VERIFY_BYTES + ` at pos: ${args[0]}: ${args[1]}`,
+      )
     }
-    case EOFError.VerifyUint: {
+    case EOFErrorMessage.VERIFY_UINT: {
       const pos = args[0]
       if (pos === 0 || pos === 2 || pos === 3 || pos === 6 || pos === 18) {
-        throw new Error(args[1])
+        throw EthereumJSErrorWithoutCode(args[1])
       }
-      throw new Error(EOFError.VerifyUint + `at pos: ${args[0]}: ${args[1]}`)
+      throw EthereumJSErrorWithoutCode(
+        EOFErrorMessage.VERIFY_UINT + `at pos: ${args[0]}: ${args[1]}`,
+      )
     }
-    case EOFError.TypeSize: {
-      throw new Error(EOFError.TypeSize + args[0])
+    case EOFErrorMessage.TYPE_SIZE: {
+      throw EthereumJSErrorWithoutCode(EOFErrorMessage.TYPE_SIZE + args[0])
     }
-    case EOFError.TypeSections: {
-      throw new Error(`${EOFError.TypeSections} (types ${args[0]} code ${args[1]})`)
+    case EOFErrorMessage.TYPE_SECTIONS: {
+      throw EthereumJSErrorWithoutCode(
+        `${EOFErrorMessage.TYPE_SECTIONS} (types ${args[0]} code ${args[1]})`,
+      )
     }
-    case EOFError.InvalidTypeSize: {
-      throw new Error(EOFError.InvalidTypeSize)
+    case EOFErrorMessage.INVALID_TYPE_SIZE: {
+      throw EthereumJSErrorWithoutCode(EOFErrorMessage.INVALID_TYPE_SIZE)
     }
-    case EOFError.InvalidCodeSize: {
-      throw new Error(EOFError.InvalidCodeSize + args[0])
+    case EOFErrorMessage.INVALID_CODE_SIZE: {
+      throw EthereumJSErrorWithoutCode(EOFErrorMessage.INVALID_CODE_SIZE + args[0])
     }
-    case EOFError.Inputs: {
-      throw new Error(`${EOFError.Inputs} - typeSection ${args[0]}`)
+    case EOFErrorMessage.INPUTS: {
+      throw EthereumJSErrorWithoutCode(`${EOFErrorMessage.INPUTS} - typeSection ${args[0]}`)
     }
-    case EOFError.Outputs: {
-      throw new Error(`${EOFError.Outputs} - typeSection ${args[0]}`)
+    case EOFErrorMessage.OUTPUTS: {
+      throw EthereumJSErrorWithoutCode(`${EOFErrorMessage.OUTPUTS} - typeSection ${args[0]}`)
     }
-    case EOFError.Code0Inputs: {
-      throw new Error(`first code section should have 0 inputs`)
+    case EOFErrorMessage.CODE0_INPUTS: {
+      throw EthereumJSErrorWithoutCode(`first code section should have 0 inputs`)
     }
-    case EOFError.Code0Outputs: {
-      throw new Error(`first code section should have 0 outputs`)
+    case EOFErrorMessage.CODE0_OUTPUTS: {
+      throw EthereumJSErrorWithoutCode(`first code section should have 0 outputs`)
     }
-    case EOFError.MaxInputs: {
-      throw new Error(EOFError.MaxInputs + `${args[1]} - code section ${args[0]}`)
+    case EOFErrorMessage.MAX_INPUTS: {
+      throw EthereumJSErrorWithoutCode(
+        EOFErrorMessage.MAX_INPUTS + `${args[1]} - code section ${args[0]}`,
+      )
     }
-    case EOFError.MaxOutputs: {
-      throw new Error(EOFError.MaxOutputs + `${args[1]} - code section ${args[0]}`)
+    case EOFErrorMessage.MAX_OUTPUTS: {
+      throw EthereumJSErrorWithoutCode(
+        EOFErrorMessage.MAX_OUTPUTS + `${args[1]} - code section ${args[0]}`,
+      )
     }
-    case EOFError.CodeSection: {
-      throw new Error(`expected code: codeSection ${args[0]}: `)
+    case EOFErrorMessage.CODE_SECTION: {
+      throw EthereumJSErrorWithoutCode(`expected code: codeSection ${args[0]}: `)
     }
-    case EOFError.DataSection: {
-      throw new Error(EOFError.DataSection)
+    case EOFErrorMessage.DATA_SECTION: {
+      throw EthereumJSErrorWithoutCode(EOFErrorMessage.DATA_SECTION)
     }
-    case EOFError.MaxStackHeight: {
-      throw new Error(`${EOFError.MaxStackHeight} - typeSection ${args[0]}: `)
+    case EOFErrorMessage.MAX_STACK_HEIGHT: {
+      throw EthereumJSErrorWithoutCode(
+        `${EOFErrorMessage.MAX_STACK_HEIGHT} - typeSection ${args[0]}: `,
+      )
     }
-    case EOFError.MaxStackHeightLimit: {
-      throw new Error(`${EOFError.MaxStackHeightLimit}, got: ${args[1]} - typeSection ${args[0]}`)
+    case EOFErrorMessage.MAX_STACK_HEIGHT_LIMIT: {
+      throw EthereumJSErrorWithoutCode(
+        `${EOFErrorMessage.MAX_STACK_HEIGHT_LIMIT}, got: ${args[1]} - typeSection ${args[0]}`,
+      )
     }
-    case EOFError.DanglingBytes: {
-      throw new Error(EOFError.DanglingBytes)
+    case EOFErrorMessage.DANGLING_BYTES: {
+      throw EthereumJSErrorWithoutCode(EOFErrorMessage.DANGLING_BYTES)
     }
     default: {
-      throw new Error(type)
+      throw EthereumJSErrorWithoutCode(type)
     }
   }
 }

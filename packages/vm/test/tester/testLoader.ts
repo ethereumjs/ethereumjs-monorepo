@@ -1,8 +1,8 @@
 import * as fs from 'fs'
-import * as dir from 'node-dir'
 import * as path from 'path'
+import * as dir from 'node-dir'
 
-import { DEFAULT_TESTS_PATH } from './config.js'
+import { DEFAULT_TESTS_PATH } from './config.ts'
 
 const falsePredicate = () => false
 
@@ -78,11 +78,10 @@ export function getTestFromSource(file: string, onFile: Function) {
   let test: any = null
 
   stream
-    .on('data', function (data: string) {
+    .on('data', function (data: Uint8Array | string) {
       contents += data
     })
     .on('error', function (err: Error) {
-      // eslint-disable-next-line no-console
       console.warn('♦︎ [WARN] Please check if submodule `ethereum-tests` is properly loaded.')
       onFile(err)
     })
@@ -158,5 +157,7 @@ export async function getTestsFromArgs(testType: string, onFile: Function, args:
  * @param file
  */
 export function getSingleFile(file: string) {
+  // TODO: Evaluate if we can get rid of the require, either by switching to async imports or to the createRequire module
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   return require(path.join(DEFAULT_TESTS_PATH, file))
 }

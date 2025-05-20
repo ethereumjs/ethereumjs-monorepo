@@ -1,12 +1,12 @@
-import { BIGINT_0, short } from '@ethereumjs/util'
-import { EventEmitter } from 'events'
+import { BIGINT_0, EthereumJSErrorWithoutCode, short } from '@ethereumjs/util'
+import { EventEmitter } from 'eventemitter3'
 
-import { BoundEthProtocol, BoundLesProtocol, BoundSnapProtocol } from '../protocol/index.js'
+import { BoundEthProtocol, BoundSnapProtocol } from '../protocol/index.ts'
 
-import type { Config } from '../../config.js'
-import type { BoundProtocol, Protocol, Sender } from '../protocol/index.js'
-import type { Server } from '../server/index.js'
 import type { BlockHeader } from '@ethereumjs/block'
+import type { Config } from '../../config.ts'
+import type { BoundProtocol, Protocol, Sender } from '../protocol/index.ts'
+import type { Server } from '../server/index.ts'
 
 export interface PeerOptions {
   /* Config */
@@ -49,7 +49,6 @@ export abstract class Peer extends EventEmitter {
   // TODO check if this should be moved into RlpxPeer
   public eth?: BoundEthProtocol
   public snap?: BoundSnapProtocol
-  public les?: BoundLesProtocol
 
   /*
     If the peer is in the PeerPool.
@@ -122,7 +121,7 @@ export abstract class Peer extends EventEmitter {
             this.config.syncTargetHeight < latest.number)
         ) {
           this.config.syncTargetHeight = height
-          this.config.logger.info(`New sync target height=${height} hash=${short(latest.hash())}`)
+          this.config.logger?.info(`New sync target height=${height} hash=${short(latest.hash())}`)
         }
       }
     }
@@ -171,20 +170,14 @@ export abstract class Peer extends EventEmitter {
 
       await bound!.handshake(sender)
 
-      this.eth = <BoundEthProtocol>bound
-    } else if (protocol.name === 'les') {
-      bound = new BoundLesProtocol(boundOpts)
-
-      await bound!.handshake(sender)
-
-      this.les = <BoundLesProtocol>bound
+      this.eth = bound as BoundEthProtocol
     } else if (protocol.name === 'snap') {
       bound = new BoundSnapProtocol(boundOpts)
       if (sender.status === undefined) throw Error('Snap can only be bound on handshaked peer')
 
-      this.snap = <BoundSnapProtocol>bound
+      this.snap = bound as BoundSnapProtocol
     } else {
-      throw new Error(`addProtocol: ${protocol.name} protocol not supported`)
+      throw EthereumJSErrorWithoutCode(`addProtocol: ${protocol.name} protocol not supported`)
     }
 
     this.boundProtocols.push(bound)

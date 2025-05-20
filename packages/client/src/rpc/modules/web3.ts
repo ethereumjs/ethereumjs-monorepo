@@ -1,14 +1,14 @@
-import { bytesToHex, hexToBytes, toBytes } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { bytesToHex, hexToBytes } from '@ethereumjs/util'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { getClientVersion } from '../../util/index.js'
-import { callWithStackTrace } from '../helpers.js'
-import { middleware, validators } from '../validation.js'
+import { getClientVersion } from '../../util/index.ts'
+import { callWithStackTrace } from '../helpers.ts'
+import { middleware, validators } from '../validation.ts'
 
-import type { Chain } from '../../blockchain/index.js'
-import type { EthereumClient } from '../../index.js'
-import type { Service } from '../../service/index.js'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { Chain } from '../../blockchain/index.ts'
+import type { EthereumClient } from '../../index.ts'
+import type { FullEthereumService } from '../../service/index.ts'
 
 /**
  * web3_* RPC module
@@ -22,7 +22,7 @@ export class Web3 {
    * @param client Client to which the module binds
    */
   constructor(client: EthereumClient, rpcDebug: boolean) {
-    const service = client.services.find((s) => s.name === 'eth') as Service
+    const service = client.service as FullEthereumService
     this._chain = service.chain
     this._rpcDebug = rpcDebug
     this.clientVersion = middleware(this.clientVersion.bind(this), 0, [])
@@ -45,7 +45,7 @@ export class Web3 {
    * @param params The data to convert into a SHA3 hash
    */
   sha3(params: PrefixedHexString[]): PrefixedHexString {
-    const hexEncodedDigest = bytesToHex(keccak256(toBytes(hexToBytes(params[0]))))
+    const hexEncodedDigest = bytesToHex(keccak256(hexToBytes(params[0])))
     return hexEncodedDigest
   }
 }

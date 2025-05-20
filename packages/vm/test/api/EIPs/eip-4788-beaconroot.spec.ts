@@ -11,7 +11,7 @@
 
 import { createBlock, createBlockHeader } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { type TransactionType, type TxData, createTxFromTxData } from '@ethereumjs/tx'
+import { type TransactionType, type TxData, createTx } from '@ethereumjs/tx'
 import {
   bigIntToBytes,
   bytesToBigInt,
@@ -19,15 +19,14 @@ import {
   hexToBytes,
   setLengthLeft,
   setLengthRight,
-  zeros,
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createVM, runBlock as runBlockVM } from '../../../src/index.js'
+import { createVM, runBlock as runBlockVM } from '../../../src/index.ts'
 
-import type { VM } from '../../../src/index.js'
 import type { Block } from '@ethereumjs/block'
 import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
+import type { VM } from '../../../src/index.ts'
 
 const common = new Common({
   chain: Mainnet,
@@ -38,6 +37,14 @@ const common = new Common({
 const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
 const contractAddress = createAddressFromString('0x' + 'c0de'.repeat(10))
 
+/**
+ * Get call status saved in the contract
+ */
+async function getCallStatus(vm: VM) {
+  const stat = await vm.stateManager.getStorage(contractAddress, new Uint8Array(32))
+  return bytesToBigInt(stat)
+}
+
 function beaconrootBlock(
   blockroot: bigint,
   timestamp: BigIntLike,
@@ -46,7 +53,7 @@ function beaconrootBlock(
   const newTxData = []
 
   for (const txData of transactions) {
-    const tx = createTxFromTxData({
+    const tx = createTx({
       gasPrice: 7,
       gasLimit: 100000,
       ...txData,
@@ -120,14 +127,6 @@ async function runBlock(block: Block) {
 }
 
 /**
- * Get call status saved in the contract
- */
-async function getCallStatus(vm: VM) {
-  const stat = await vm.stateManager.getStorage(contractAddress, zeros(32))
-  return bytesToBigInt(stat)
-}
-
-/**
  * Run block test
  * @param input
  */
@@ -154,8 +153,8 @@ async function runBlockTest(input: {
 
   const ret = await runBlock(block)
   const bigIntReturn = bytesToBigInt(ret.vmResult.results[0].execResult.returnValue)
-  assert.equal(bigIntReturn, expRet, 'blockRoot ok')
-  assert.equal(ret.callStatus, expCallStatus, 'call status ok')
+  assert.strictEqual(bigIntReturn, expRet, 'blockRoot ok')
+  assert.strictEqual(ret.callStatus, expCallStatus, 'call status ok')
 }
 
 describe('should run beaconroot precompile correctly', async () => {

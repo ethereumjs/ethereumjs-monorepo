@@ -1,11 +1,11 @@
 import { Chain } from '@ethereumjs/common'
 
-import { goerliGenesis } from './genesisStates/goerli.js'
-import { holeskyGenesis } from './genesisStates/holesky.js'
-import { mainnetGenesis } from './genesisStates/mainnet.js'
-import { sepoliaGenesis } from './genesisStates/sepolia.js'
+import { holeskyGenesis } from './genesisStates/holesky.ts'
+import { hoodiGenesis } from './genesisStates/hoodi.ts'
+import { mainnetGenesis } from './genesisStates/mainnet.ts'
+import { sepoliaGenesis } from './genesisStates/sepolia.ts'
 
-import type { GenesisState } from '@ethereumjs/util'
+import type { GenesisState } from '@ethereumjs/common'
 
 /**
  * Utility to get the genesisState of a well known network
@@ -16,12 +16,12 @@ export function getGenesis(chainId: number): GenesisState | undefined {
   switch (chainId) {
     case Chain.Mainnet:
       return mainnetGenesis
-    case Chain.Goerli:
-      return goerliGenesis
     case Chain.Sepolia:
       return sepoliaGenesis
     case Chain.Holesky:
       return holeskyGenesis
+    case Chain.Hoodi:
+      return hoodiGenesis
 
     default:
       return undefined

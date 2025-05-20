@@ -1,4 +1,4 @@
-import { Common, Goerli, Hardfork } from '@ethereumjs/common'
+import { Common, Hardfork } from '@ethereumjs/common'
 import { Address, createZeroAddress, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -11,10 +11,12 @@ import {
   cliqueVerifySignature,
   createBlockHeader,
   createSealedCliqueBlockHeader,
-} from '../src/index.js'
+} from '../src/index.ts'
+
+import { goerliChainConfig } from '@ethereumjs/testdata'
 
 describe('[Header]: Clique PoA Functionality', () => {
-  const common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
+  const common = new Common({ chain: goerliChainConfig, hardfork: Hardfork.Chainstart })
 
   it('Header Data', () => {
     let header = createBlockHeader({ number: 1 })
@@ -28,13 +30,13 @@ describe('[Header]: Clique PoA Functionality', () => {
     )
 
     header = createBlockHeader({ extraData: new Uint8Array(97) }, { common })
-    assert.ok(
+    assert.isTrue(
       cliqueIsEpochTransition(header),
       'cliqueIsEpochTransition() -> should indicate an epoch transition for the genesis block',
     )
 
     header = createBlockHeader({ number: 1, extraData: new Uint8Array(97) }, { common })
-    assert.notOk(
+    assert.isFalse(
       cliqueIsEpochTransition(header),
       'cliqueIsEpochTransition() -> should correctly identify a non-epoch block',
     )
@@ -58,7 +60,7 @@ describe('[Header]: Clique PoA Functionality', () => {
     )
 
     header = createBlockHeader({ number: 60000, extraData: new Uint8Array(137) }, { common })
-    assert.ok(
+    assert.isTrue(
       cliqueIsEpochTransition(header),
       'cliqueIsEpochTransition() -> should correctly identify an epoch block',
     )
@@ -104,12 +106,15 @@ describe('[Header]: Clique PoA Functionality', () => {
       { common, freeze: false },
     )
 
-    assert.equal(header.extraData.length, 97)
-    assert.ok(cliqueVerifySignature(header, [A.address]), 'should verify signature')
-    assert.ok(cliqueSigner(header).equals(A.address), 'should recover the correct signer address')
+    assert.strictEqual(header.extraData.length, 97)
+    assert.isTrue(cliqueVerifySignature(header, [A.address]), 'should verify signature')
+    assert.isTrue(
+      cliqueSigner(header).equals(A.address),
+      'should recover the correct signer address',
+    )
 
     header = createBlockHeader({ extraData: new Uint8Array(97) }, { common })
-    assert.ok(
+    assert.isTrue(
       cliqueSigner(header).equals(createZeroAddress()),
       'should return zero address on default block',
     )

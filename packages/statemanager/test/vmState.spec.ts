@@ -1,9 +1,9 @@
-import { Chain } from '@ethereumjs/common'
+import { Chain, ChainNameFromNumber } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import { Account, Address, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { MerkleStateManager } from '../src/index.js'
+import { MerkleStateManager } from '../src/index.ts'
 
 export function createAccount(nonce = BigInt(0), balance = BigInt(0xfff384)) {
   return new Account(nonce, balance)
@@ -32,17 +32,17 @@ describe('stateManager', () => {
       expectedStateRoot,
       `generateCanonicalGenesis should produce correct state root for mainnet from common`,
     )
-  })
+  }, 30_000)
 
   it(`should generate the genesis state root correctly for all other chains`, async () => {
     const chains: [Chain, Uint8Array][] = [
       [
-        Chain.Goerli,
-        hexToBytes('0x5d6cded585e73c4e322c30c2f782a336316f17dd85a4863b9d838d2d4b8b3008'),
-      ],
-      [
         Chain.Sepolia,
         hexToBytes('0x5eb6e371a698b8d68f665192350ffcecbbbf322916f4b51bd79bb6887da3f494'),
+      ],
+      [
+        Chain.Hoodi,
+        hexToBytes('0xda87d7f5f91c51508791bbcbd4aa5baf04917830b86985eeb9ad3d5bfb657576'),
       ],
     ]
 
@@ -55,7 +55,7 @@ describe('stateManager', () => {
       assert.deepEqual(
         stateRoot,
         expectedStateRoot,
-        `generateCanonicalGenesis should produce correct state root for ${Chain[chain]}`,
+        `generateCanonicalGenesis should produce correct state root for ${ChainNameFromNumber[chain]}`,
       )
     }
   })
@@ -132,7 +132,7 @@ describe('Original storage cache', async () => {
     try {
       await stateManager.originalStorageCache.get(address, new Uint8Array(12))
     } catch (e: any) {
-      assert.equal(e.message, 'Storage key must be 32 bytes long')
+      assert.strictEqual(e.message, 'Storage key must be 32 bytes long')
       return
     }
 

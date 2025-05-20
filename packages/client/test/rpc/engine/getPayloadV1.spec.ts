@@ -1,8 +1,8 @@
+import { postMergeGethGenesis } from '@ethereumjs/testdata'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import { postMergeData } from '../../testdata/geth-genesis/post-merge.js'
-import { baseSetup, getRPCClient, setupChain } from '../helpers.js'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
+import { baseSetup, getRPCClient, setupChain } from '../helpers.ts'
 
 const method = 'engine_getPayloadV1'
 
@@ -24,26 +24,26 @@ describe(method, () => {
     const { rpc } = await baseSetup({ engine: true, includeVM: true })
 
     const res = await rpc.request(method, [1])
-    assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('invalid argument 0: argument must be a hex string'))
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
+    assert.isTrue(res.error.message.includes('invalid argument 0: argument must be a hex string'))
   })
 
   it('call with unknown payloadId', async () => {
     const { rpc } = await baseSetup({ engine: true, includeVM: true })
 
     const res = await rpc.request(method, ['0x123'])
-    assert.equal(res.error.code, -32001, 'Unknown payload')
+    assert.strictEqual(res.error.code, -32001, 'Unknown payload')
   })
 
   it('call with known payload', async () => {
-    const { server } = await setupChain(postMergeData, 'post-merge', { engine: true })
+    const { server } = await setupChain(postMergeGethGenesis, 'post-merge', { engine: true })
     const rpc = getRPCClient(server)
     let res = await rpc.request('engine_forkchoiceUpdatedV1', validPayload)
     const payloadId = res.result.payloadId
 
     res = await rpc.request(method, [payloadId])
 
-    assert.equal(res.result.blockNumber, '0x1')
+    assert.strictEqual(res.result.blockNumber, '0x1')
     const payload = res.result
 
     // Without newpayload the fcU response should be syncing or accepted
@@ -54,12 +54,12 @@ describe(method, () => {
       },
     ])
 
-    assert.equal(res.result.payloadStatus.status, 'SYNCING')
+    assert.strictEqual(res.result.payloadStatus.status, 'SYNCING')
 
     // post new payload , the fcu should give valid
 
     res = await rpc.request('engine_newPayloadV1', [payload])
-    assert.equal(res.result.status, 'VALID')
+    assert.strictEqual(res.result.status, 'VALID')
 
     res = await rpc.request('engine_forkchoiceUpdatedV1', [
       {
@@ -67,6 +67,6 @@ describe(method, () => {
         headBlockHash: '0x3559e851470f6e7bbed1db474980683e8c315bfce99b2a6ef47c057c04de7858',
       },
     ])
-    assert.equal(res.result.payloadStatus.status, 'VALID')
+    assert.strictEqual(res.result.payloadStatus.status, 'VALID')
   })
 })

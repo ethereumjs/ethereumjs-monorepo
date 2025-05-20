@@ -2,13 +2,13 @@ import { createBlock, createBlockHeader } from '@ethereumjs/block'
 import { Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { createBlob4844Tx, createLegacyTx } from '@ethereumjs/tx'
 import { bytesToHex, createZeroAddress, hexToBytes } from '@ethereumjs/util'
-import { loadKZG } from 'kzg-wasm'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import { createClient, createManager, dummy, getRPCClient, startRPC } from '../helpers.js'
-
-const kzg = await loadKZG()
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
+import { createClient, createManager, dummy, getRPCClient, startRPC } from '../helpers.ts'
+const kzg = new microEthKZG(trustedSetup)
 
 const common = createCustomCommon({ chainId: 1 }, Mainnet, { customCrypto: { kzg } })
 
@@ -72,7 +72,7 @@ describe(method, async () => {
     const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['0x0'])
-    assert.equal(
+    assert.strictEqual(
       res.result,
       bytesToHex(genesisBlock.header.serialize()),
       'should return a valid block',
@@ -84,7 +84,7 @@ describe(method, async () => {
     const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['earliest'])
-    assert.equal(
+    assert.strictEqual(
       res.result,
       bytesToHex(genesisBlock.header.serialize()),
       'should return the genesis block as earliest',
@@ -96,31 +96,35 @@ describe(method, async () => {
     const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['latest'])
-    assert.equal(res.result, bytesToHex(block.header.serialize()), 'should return block 1 RLP')
+    assert.strictEqual(
+      res.result,
+      bytesToHex(block.header.serialize()),
+      'should return block 1 RLP',
+    )
   })
 
   it('call with unimplemented pending param', async () => {
     const manager = createManager(await createClient({ chain: createChain() }))
     const rpc = getRPCClient(startRPC(manager.getMethods()))
     const res = await rpc.request(method, ['pending'])
-    assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('"pending" is not yet supported'))
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
+    assert.isTrue(res.error.message.includes('"pending" is not yet supported'))
   })
 
   it('call with non-string block number', async () => {
     const manager = createManager(await createClient({ chain: createChain() }))
     const rpc = getRPCClient(startRPC(manager.getMethods()))
     const res = await rpc.request(method, [10])
-    assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('invalid argument 0: argument must be a string'))
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
+    assert.isTrue(res.error.message.includes('invalid argument 0: argument must be a string'))
   })
 
   it('call with invalid block number', async () => {
     const manager = createManager(await createClient({ chain: createChain() }))
     const rpc = getRPCClient(startRPC(manager.getMethods()))
     const res = await rpc.request(method, ['WRONG BLOCK NUMBER'])
-    assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
+    assert.isTrue(
       res.error.message.includes(
         'invalid argument 0: block option must be a valid 0x-prefixed block hash or hex integer, or "latest", "earliest" or "pending"',
       ),
@@ -141,7 +145,7 @@ describe('call with block with blob txs', () => {
     const rpc = getRPCClient(startRPC(manager.getMethods()))
     const res = await rpc.request(method, ['latest'])
 
-    assert.equal(
+    assert.strictEqual(
       res.result,
       bytesToHex(block1.header.serialize()),
       'block body contains a transaction with the blobVersionedHashes field',

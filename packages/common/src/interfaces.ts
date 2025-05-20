@@ -2,7 +2,13 @@
  * External Interfaces for other EthereumJS libraries
  */
 
-import type { Account, Address, PrefixedHexString, VerkleExecutionWitness } from '@ethereumjs/util'
+import type {
+  Account,
+  Address,
+  BinaryTreeExecutionWitness,
+  PrefixedHexString,
+  VerkleExecutionWitness,
+} from '@ethereumjs/util'
 
 export interface StorageDump {
   [key: string]: string
@@ -64,45 +70,104 @@ export type AccessEventFlags = {
   chunkFill: boolean
 }
 
-/**
- * Verkle related
- *
- * Experimental (do not implement)
- */
-export interface AccessWitnessInterface {
-  touchAndChargeProofOfAbsence(address: Address): bigint
-  touchAndChargeMessageCall(address: Address): bigint
-  touchAndChargeValueTransfer(caller: Address, target: Address): bigint
-  touchAndChargeContractCreateInit(address: Address): bigint
-  touchAndChargeContractCreateCompleted(address: Address): bigint
-  touchTxOriginAndComputeGas(origin: Address): bigint
-  touchTxTargetAndComputeGas(target: Address, { sendsValue }: { sendsValue?: boolean }): bigint
-  touchCodeChunksRangeOnReadAndChargeGas(contact: Address, startPc: number, endPc: number): bigint
-  touchCodeChunksRangeOnWriteAndChargeGas(contact: Address, startPc: number, endPc: number): bigint
-  touchAddressOnWriteAndComputeGas(
-    address: Address,
-    treeIndex: number | bigint,
-    subIndex: number | Uint8Array,
-  ): bigint
-  touchAddressOnReadAndComputeGas(
-    address: Address,
-    treeIndex: number | bigint,
-    subIndex: number | Uint8Array,
-  ): bigint
-  touchAddressAndChargeGas(
-    address: Address,
-    treeIndex: number | bigint,
-    subIndex: number | Uint8Array,
-    { isWrite }: { isWrite?: boolean },
-  ): bigint
-  touchAddress(
-    address: Address,
-    treeIndex: number | bigint,
-    subIndex: number | Uint8Array,
-    { isWrite }: { isWrite?: boolean },
-  ): AccessEventFlags
-  shallowCopy(): AccessWitnessInterface
-  merge(accessWitness: AccessWitnessInterface): void
+export type BinaryTreeAccessedStateType =
+  (typeof BinaryTreeAccessedStateType)[keyof typeof BinaryTreeAccessedStateType]
+
+export const BinaryTreeAccessedStateType = {
+  BasicData: 'basicData',
+  CodeHash: 'codeHash',
+  Code: 'code',
+  Storage: 'storage',
+} as const
+
+export type RawBinaryTreeAccessedState = {
+  address: Address
+  treeIndex: number | bigint
+  chunkIndex: number
+  chunkKey: PrefixedHexString
+}
+
+export type BinaryTreeAccessedState =
+  | {
+      type: Exclude<
+        BinaryTreeAccessedStateType,
+        typeof BinaryTreeAccessedStateType.Code | typeof BinaryTreeAccessedStateType.Storage
+      >
+    }
+  | { type: typeof BinaryTreeAccessedStateType.Code; codeOffset: number }
+  | { type: typeof BinaryTreeAccessedStateType.Storage; slot: bigint }
+
+export type BinaryTreeAccessedStateWithAddress = BinaryTreeAccessedState & {
+  address: Address
+  chunkKey: PrefixedHexString
+}
+export interface BinaryTreeAccessWitnessInterface {
+  accesses(): Generator<BinaryTreeAccessedStateWithAddress>
+  rawAccesses(): Generator<RawBinaryTreeAccessedState>
+  debugWitnessCost(): void
+  readAccountBasicData(address: Address): bigint
+  writeAccountBasicData(address: Address): bigint
+  readAccountCodeHash(address: Address): bigint
+  writeAccountCodeHash(address: Address): bigint
+  readAccountHeader(address: Address): bigint
+  writeAccountHeader(address: Address): bigint
+  readAccountCodeChunks(contract: Address, startPc: number, endPc: number): bigint
+  writeAccountCodeChunks(contract: Address, startPc: number, endPc: number): bigint
+  readAccountStorage(contract: Address, storageSlot: bigint): bigint
+  writeAccountStorage(contract: Address, storageSlot: bigint): bigint
+  merge(accessWitness: BinaryTreeAccessWitnessInterface): void
+  commit(): void
+  revert(): void
+}
+
+export type VerkleAccessedStateType =
+  (typeof VerkleAccessedStateType)[keyof typeof VerkleAccessedStateType]
+
+export const VerkleAccessedStateType = {
+  BasicData: 'basicData',
+  CodeHash: 'codeHash',
+  Code: 'code',
+  Storage: 'storage',
+} as const
+
+export type RawVerkleAccessedState = {
+  address: Address
+  treeIndex: number | bigint
+  chunkIndex: number
+  chunkKey: PrefixedHexString
+}
+
+export type VerkleAccessedState =
+  | {
+      type: Exclude<
+        VerkleAccessedStateType,
+        typeof VerkleAccessedStateType.Code | typeof VerkleAccessedStateType.Storage
+      >
+    }
+  | { type: typeof VerkleAccessedStateType.Code; codeOffset: number }
+  | { type: typeof VerkleAccessedStateType.Storage; slot: bigint }
+
+export type VerkleAccessedStateWithAddress = VerkleAccessedState & {
+  address: Address
+  chunkKey: PrefixedHexString
+}
+export interface VerkleAccessWitnessInterface {
+  accesses(): Generator<VerkleAccessedStateWithAddress>
+  rawAccesses(): Generator<RawVerkleAccessedState>
+  debugWitnessCost(): void
+  readAccountBasicData(address: Address): bigint
+  writeAccountBasicData(address: Address): bigint
+  readAccountCodeHash(address: Address): bigint
+  writeAccountCodeHash(address: Address): bigint
+  readAccountHeader(address: Address): bigint
+  writeAccountHeader(address: Address): bigint
+  readAccountCodeChunks(contract: Address, startPc: number, endPc: number): bigint
+  writeAccountCodeChunks(contract: Address, startPc: number, endPc: number): bigint
+  readAccountStorage(contract: Address, storageSlot: bigint): bigint
+  writeAccountStorage(contract: Address, storageSlot: bigint): bigint
+  merge(accessWitness: VerkleAccessWitnessInterface): void
+  commit(): void
+  revert(): void
 }
 
 /*
@@ -150,7 +215,6 @@ export interface StateManagerInterface {
    * on usage (check for existence)
    */
   // Client RPC
-  getProof?(address: Address, storageSlots: Uint8Array[]): Promise<Proof>
   dumpStorage?(address: Address): Promise<StorageDump>
   dumpStorageRange?(address: Address, startKey: bigint, limit: number): Promise<StorageRange>
 
@@ -162,15 +226,16 @@ export interface StateManagerInterface {
     clear(): void
   }
   generateCanonicalGenesis?(initState: any): Promise<void> // TODO make input more typesafe
-  // only Verkle/EIP-6800 (experimental)
-  accessWitness?: AccessWitnessInterface
   initVerkleExecutionWitness?(
     blockNum: bigint,
     executionWitness?: VerkleExecutionWitness | null,
-    accessWitness?: AccessWitnessInterface,
   ): void
-  verifyVerkleProof?(): boolean
-  verifyPostState?(): boolean
+  verifyVerklePostState?(accessWitness: VerkleAccessWitnessInterface): Promise<boolean>
+  initBinaryTreeExecutionWitness?(
+    blockNum: bigint,
+    executionWitness?: BinaryTreeExecutionWitness | null,
+  ): void
+  verifyBinaryTreePostState?(accessWitness: BinaryTreeAccessWitnessInterface): Promise<boolean>
   checkChunkWitnessPresent?(contract: Address, programCounter: number): Promise<boolean>
   getAppliedKey?(address: Uint8Array): Uint8Array // only for preimages
 

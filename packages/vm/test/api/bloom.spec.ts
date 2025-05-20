@@ -1,20 +1,19 @@
-import * as utils from '@ethereumjs/util'
 import { bytesToHex, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Bloom } from '../../src/bloom/index.js'
+import { Bloom } from '../../src/bloom/index.ts'
 
 const byteSize = 256
 
 describe('bloom', () => {
   it('should initialize without params', () => {
     const b = new Bloom()
-    assert.deepEqual(b.bitvector, utils.zeros(byteSize), 'should be empty')
+    assert.deepEqual(b.bitvector, new Uint8Array(byteSize), 'should be empty')
   })
 
   it("shouldn't initialize with invalid bitvector", () => {
     assert.throws(
-      () => new Bloom(utils.zeros(byteSize / 2)),
+      () => new Bloom(new Uint8Array(byteSize / 2)),
       /bitvectors must be 2048 bits long/,
       undefined,
       'should fail for invalid length',
@@ -67,7 +66,7 @@ describe('bloom', () => {
     bloom.add(hexToBytes('0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925'))
     bloom.add(hexToBytes('0x0000000000000000000000005409ed021d9299bf6814279a6a1411a7e866a631'))
     bloom.add(hexToBytes('0x0000000000000000000000001dc4c1cefef38a777b15aa20260a54e584b16c48'))
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(bloom.bitvector),
       '0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000081100200000000000000000000000000000000000000000000000000000000008000000000000000000000000004000000000000000000000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000002000000000000000004000000000000000000000',
     )

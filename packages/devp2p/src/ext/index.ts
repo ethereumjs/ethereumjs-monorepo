@@ -1,3 +1,3 @@
 'use strict'
 
-export * from './kbucket.js'
+export * from './kbucket.ts'

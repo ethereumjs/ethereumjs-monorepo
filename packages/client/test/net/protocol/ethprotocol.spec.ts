@@ -1,6 +1,6 @@
 import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Holesky } from '@ethereumjs/common'
-import { TransactionType, createFeeMarket1559Tx, createTxFromTxData } from '@ethereumjs/tx'
+import { TransactionType, createFeeMarket1559Tx, createTx } from '@ethereumjs/tx'
 import {
   bigIntToBytes,
   bytesToBigInt,
@@ -8,21 +8,23 @@ import {
   hexToBytes,
   randomBytes,
 } from '@ethereumjs/util'
-import { loadKZG } from 'kzg-wasm'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
-import { Chain } from '../../../src/blockchain/chain.js'
-import { Config } from '../../../src/config.js'
-import { EthProtocol } from '../../../src/net/protocol/index.js'
+import { Chain } from '../../../src/blockchain/chain.ts'
+import { Config } from '../../../src/config.ts'
+import { EthProtocol } from '../../../src/net/protocol/index.ts'
+const kzg = new microEthKZG(trustedSetup)
 
 describe('[EthProtocol]', () => {
   it('should get properties', async () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
-    assert.ok(typeof p.name === 'string', 'get name')
-    assert.ok(Array.isArray(p.versions), 'get versions')
-    assert.ok(Array.isArray(p.messages), 'get messages')
+    assert.isString(p.name, 'get name')
+    assert.isArray(p.versions, 'get versions')
+    assert.isArray(p.messages, 'get messages')
   })
 
   it('should open correctly', async () => {
@@ -30,8 +32,8 @@ describe('[EthProtocol]', () => {
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
     await p.open()
-    assert.ok(p.opened, 'opened is true')
-    assert.notOk(await p.open(), 'repeat open')
+    assert.isTrue(p.opened, 'opened is true')
+    assert.isFalse(await p.open(), 'repeat open')
   })
 
   it('should encode/decode status', async () => {
@@ -68,12 +70,12 @@ describe('[EthProtocol]', () => {
       'encode status',
     )
     const status = p.decodeStatus({
-      chainId: [0x01],
+      chainId: Uint8Array.from([0x01]),
       td: hexToBytes('0x64'),
       bestHash: '0xaa',
       genesisHash: '0xbb',
     })
-    assert.ok(
+    assert.isTrue(
       status.chainId === BigInt(1) &&
         status.td === BigInt(100) &&
         status.bestHash === '0xaa' &&
@@ -97,7 +99,7 @@ describe('[EthProtocol]', () => {
       td,
     ])
     assert.deepEqual(res[0].hash(), block.hash(), 'correctly decoded block')
-    assert.equal(bytesToBigInt(res2[1]), td, 'correctly encoded td')
+    assert.strictEqual(bytesToBigInt(res2[1]), td, 'correctly encoded td')
   })
 
   it('verify that GetReceipts handler encodes/decodes correctly', async () => {
@@ -113,9 +115,9 @@ describe('[EthProtocol]', () => {
       reqId: BigInt(1),
       hashes: [block.hash()],
     })
-    assert.equal(res.reqId, BigInt(1), 'correctly decoded reqId')
+    assert.strictEqual(res.reqId, BigInt(1), 'correctly decoded reqId')
     assert.deepEqual(res.hashes[0], block.hash(), 'correctly decoded blockHash')
-    assert.equal(bytesToBigInt(res2[0]), BigInt(1), 'correctly encoded reqId')
+    assert.strictEqual(bytesToBigInt(res2[0]), BigInt(1), 'correctly encoded reqId')
     assert.deepEqual(res2[1][0], block.hash(), 'correctly encoded blockHash')
   })
 
@@ -141,7 +143,7 @@ describe('[EthProtocol]', () => {
       reqId: BigInt(1),
       txs: [tx],
     })
-    assert.equal(bytesToBigInt(res[0]), BigInt(1), 'correctly encoded reqId')
+    assert.strictEqual(bytesToBigInt(res[0]), BigInt(1), 'correctly encoded reqId')
     assert.deepEqual(res[1][0], tx.serialize(), 'EIP1559 transaction correctly encoded')
   })
 
@@ -187,7 +189,7 @@ describe('[EthProtocol]', () => {
       reqId: BigInt(1),
       receipts,
     })
-    assert.equal(bytesToBigInt(res[0]), BigInt(1), 'correctly encoded reqId')
+    assert.strictEqual(bytesToBigInt(res[0]), BigInt(1), 'correctly encoded reqId')
     const expectedSerializedReceipts = [
       hexToBytes(
         '0x02f9016d0164b9010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f866f864940000000000000000000000000000000000000000f842a00000000000000000000000000000000000000000000000000000000000000000a001010101010101010101010101010101010101010101010101010101010101018a00000000000000000000',
@@ -200,7 +202,7 @@ describe('[EthProtocol]', () => {
 
     // decode the encoded result and match to the original receipts (without tx type)
     res = p.decode(p.messages.filter((message) => message.name === 'Receipts')[0], res)
-    assert.equal(BigInt(res[0]), BigInt(1), 'correctly decoded reqId')
+    assert.strictEqual(BigInt(res[0]), BigInt(1), 'correctly decoded reqId')
     const receiptsWithoutTxType = receipts.map((r: any) => {
       delete r.txType
       return r
@@ -209,7 +211,6 @@ describe('[EthProtocol]', () => {
   })
 
   it('verify that Transactions handler encodes/decodes correctly', async () => {
-    const kzg = await loadKZG()
     const config = new Config({
       common: new Common({
         chain: Holesky,
@@ -226,10 +227,10 @@ describe('[EthProtocol]', () => {
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
 
-    const legacyTx = createTxFromTxData({ type: 0 }, { common: config.chainCommon })
-    const eip2929Tx = createTxFromTxData({ type: 1 }, { common: config.chainCommon })
-    const eip1559Tx = createTxFromTxData({ type: 2 }, { common: config.chainCommon })
-    const blobTx = createTxFromTxData(
+    const legacyTx = createTx({ type: 0 }, { common: config.chainCommon })
+    const eip2929Tx = createTx({ type: 1 }, { common: config.chainCommon })
+    const eip1559Tx = createTx({ type: 2 }, { common: config.chainCommon })
+    const blobTx = createTx(
       {
         type: 3,
         to: createZeroAddress(),
@@ -254,7 +255,7 @@ describe('[EthProtocol]', () => {
     assert.deepEqual(decoded[0].type, legacyTx.type, 'decoded legacy tx correctly')
     assert.deepEqual(decoded[1].type, eip2929Tx.type, 'decoded eip2929 tx correctly')
     assert.deepEqual(decoded[2].type, eip1559Tx.type, 'decoded EIP1559 tx correctly')
-    assert.equal(decoded.length, 3, 'should not include blob transaction')
+    assert.strictEqual(decoded.length, 3, 'should not include blob transaction')
   })
 
   it('verify that NewPooledTransactionHashes encodes/decodes correctly', async () => {
@@ -265,7 +266,7 @@ describe('[EthProtocol]', () => {
     })
     const chain = await Chain.create({ config })
     const p = new EthProtocol({ config, chain })
-    const fakeTx = createTxFromTxData({}).sign(randomBytes(32))
+    const fakeTx = createTx({}).sign(randomBytes(32))
     const fakeHash = fakeTx.hash()
     const encoded = p.encode(
       p.messages.filter((message) => message.name === 'NewPooledTransactionHashes')[0],

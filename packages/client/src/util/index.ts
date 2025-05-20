@@ -1,12 +1,17 @@
+import { existsSync, readFileSync } from 'fs'
+import { platform } from 'os'
+import { dirname, join as joinPath } from 'path'
+import { fileURLToPath } from 'url'
 /**
  * @module util
  */
 import { bytesToHex } from '@ethereumjs/util'
-import { readFileSync } from 'fs'
-import { platform } from 'os'
 
-export * from './parse.js'
-export * from './rpc.js'
+export * from './inclineClient.ts'
+export * from './parse.ts'
+export * from './rpc.ts'
+// See: https://stackoverflow.com/a/50053801
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 export function short(bytes: Uint8Array | string): string {
   if (bytes === null || bytes === undefined || bytes === '') return ''
@@ -18,13 +23,36 @@ export function short(bytes: Uint8Array | string): string {
   return str
 }
 
+export function getPackageJSON() {
+  // Find the package.json by checking the current directory and then
+  // moving up a directory each time until package.json is found,
+  // or we are at the root directory.
+  let currentDir = __dirname
+
+  while (true) {
+    const packageJsonPath = joinPath(currentDir, 'package.json')
+    if (existsSync(packageJsonPath)) {
+      // Read package.json contents
+      const parsedJSON = JSON.parse(readFileSync(packageJsonPath, 'utf8'))
+
+      // Verify that the package.json contains the version
+      if (parsedJSON.version !== undefined) {
+        return parsedJSON
+      }
+      // If it does not contain the version, then keep moving to upper directories until a version is found
+    }
+    const parentDir = dirname(currentDir)
+    // If we've reached the root directory, stop searching
+    if (parentDir === currentDir) {
+      // No package.json found
+      return {}
+    }
+    currentDir = parentDir // Move up one directory
+  }
+}
+
 export function getClientVersion() {
-  const packageJSON = JSON.parse(
-    readFileSync(
-      '/' + import.meta.url.split('client')[0].split('file:///')[1] + 'client/package.json',
-      'utf-8',
-    ),
-  )
+  const packageJSON = getPackageJSON()
   const { version } = process
   return `EthereumJS/${packageJSON.version}/${platform()}/node${version.substring(1)}`
 }

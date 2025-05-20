@@ -1,34 +1,38 @@
 import { BlockHeader, createBlockHeader } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
-import { Common, Goerli, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { MerkleStateManager } from '@ethereumjs/statemanager'
+import { eip4844GethGenesis, goerliChainConfig } from '@ethereumjs/testdata'
 import { createBlob4844Tx, createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
 import {
   Account,
   Address,
+  Units,
   blobsToCommitments,
   blobsToProofs,
   bytesToHex,
   commitmentsToVersionedHashes,
-  equalsBytes,
   getBlobs,
   hexToBytes,
+  intToHex,
   randomBytes,
 } from '@ethereumjs/util'
 import { createVM } from '@ethereumjs/vm'
-import { loadKZG } from 'kzg-wasm'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it, vi } from 'vitest'
 
-import { hardfork4844Data } from '../../../block/test/testdata/4844-hardfork.js'
-import { Config } from '../../src/config.js'
-import { getLogger } from '../../src/logging.js'
-import { PendingBlock } from '../../src/miner/index.js'
-import { TxPool } from '../../src/service/txpool.js'
-import { mockBlockchain } from '../rpc/mockBlockchain.js'
+import { Config } from '../../src/config.ts'
+import { PendingBlock } from '../../src/miner/index.ts'
+import { TxPool } from '../../src/service/txpool.ts'
+import { mockBlockchain } from '../rpc/mockBlockchain.ts'
 
 import type { Blockchain } from '@ethereumjs/blockchain'
 import type { TypedTransaction } from '@ethereumjs/tx'
+import type { PrefixedHexString } from '@ethereumjs/util'
 import type { VM } from '@ethereumjs/vm'
+
+const kzg = new microEthKZG(trustedSetup)
 
 const A = {
   address: new Address(hexToBytes('0x0b90087d864e82a284dca15923f3776de6bb016f')),
@@ -46,7 +50,7 @@ const setBalance = async (vm: VM, address: Address, balance: bigint) => {
   await vm.stateManager.commit()
 }
 
-const common = new Common({ chain: Goerli, hardfork: Hardfork.Berlin })
+const common = new Common({ chain: goerliChainConfig, hardfork: Hardfork.Berlin })
 // Unschedule any timestamp since tests are not configured for timestamps
 common
   .hardforks()
@@ -61,7 +65,6 @@ const config = new Config({
   common,
   accountCache: 10000,
   storageCache: 1000,
-  logger: getLogger({ loglevel: 'debug' }),
   prometheusMetrics: txGauge,
 })
 
@@ -92,8 +95,8 @@ const setup = () => {
 describe('[PendingBlock]', async () => {
   BlockHeader.prototype['_consensusFormatValidation'] = vi.fn()
   vi.doMock('@ethereumjs/block', () => {
-    {
-      BlockHeader
+    return {
+      BlockHeader,
     }
   })
 
@@ -137,16 +140,16 @@ describe('[PendingBlock]', async () => {
     const pendingBlock = new PendingBlock({ config, txPool, skipHardForkValidation: true })
     const parentBlock = await (vm.blockchain as Blockchain).getCanonicalHeadBlock!()
     const payloadId = await pendingBlock.start(vm, parentBlock)
-    assert.equal(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
+    assert.strictEqual(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
     await txPool.add(txB01)
     const built = await pendingBlock.build(payloadId)
     if (!built) return assert.fail('pendingBlock did not return')
     const [block, receipts] = built
-    assert.equal(block?.header.number, BigInt(1), 'should have built block number 1')
-    assert.equal(block?.transactions.length, 3, 'should include txs from pool')
-    assert.equal(receipts.length, 3, 'receipts should match number of transactions')
+    assert.strictEqual(block?.header.number, BigInt(1), 'should have built block number 1')
+    assert.strictEqual(block?.transactions.length, 3, 'should include txs from pool')
+    assert.strictEqual(receipts.length, 3, 'receipts should match number of transactions')
     pendingBlock.pruneSetToMax(0)
-    assert.equal(
+    assert.strictEqual(
       pendingBlock.pendingPayloads.size,
       0,
       'should reset the pending payload after build',
@@ -162,14 +165,14 @@ describe('[PendingBlock]', async () => {
 
     txA011.common.setHardfork(Hardfork.Paris)
     await txPool.add(txA011)
-    assert.equal(txPool.txsInPool, 1, '1 txA011 should be added')
+    assert.strictEqual(txPool.txsInPool, 1, '1 txA011 should be added')
     // skip hardfork validation for ease
     const pendingBlock = new PendingBlock({ config, txPool })
     const parentBlock = await (vm.blockchain as Blockchain).getCanonicalHeadBlock!()
     const payloadId = await pendingBlock.start(vm, parentBlock)
-    assert.equal(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
+    assert.strictEqual(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
     const payload = pendingBlock.pendingPayloads.get(bytesToHex(payloadId))
-    assert.equal(
+    assert.strictEqual(
       (payload as any).transactions.filter(
         (tx: TypedTransaction) => bytesToHex(tx.hash()) === bytesToHex(txA011.hash()),
       ).length,
@@ -179,13 +182,13 @@ describe('[PendingBlock]', async () => {
 
     txB011.common.setHardfork(Hardfork.Paris)
     await txPool.add(txB011)
-    assert.equal(txPool.txsInPool, 2, '1 txB011 should be added')
+    assert.strictEqual(txPool.txsInPool, 2, '1 txB011 should be added')
     const built = await pendingBlock.build(payloadId)
     if (!built) return assert.fail('pendingBlock did not return')
     const [block] = built
-    assert.equal(block?.header.number, BigInt(1), 'should have built block number 1')
-    assert.equal(block?.transactions.length, 2, 'should include txs from pool')
-    assert.equal(
+    assert.strictEqual(block?.header.number, BigInt(1), 'should have built block number 1')
+    assert.strictEqual(block?.transactions.length, 2, 'should include txs from pool')
+    assert.strictEqual(
       (payload as any).transactions.filter(
         (tx: TypedTransaction) => bytesToHex(tx.hash()) === bytesToHex(txB011.hash()),
       ).length,
@@ -193,7 +196,7 @@ describe('[PendingBlock]', async () => {
       'txB011 should be in block',
     )
     pendingBlock.pruneSetToMax(0)
-    assert.equal(
+    assert.strictEqual(
       pendingBlock.pendingPayloads.size,
       0,
       'should reset the pending payload after build',
@@ -209,9 +212,9 @@ describe('[PendingBlock]', async () => {
     await setBalance(vm, A.address, BigInt(5000000000000000))
     const parentBlock = await (vm.blockchain as Blockchain).getCanonicalHeadBlock!()
     const payloadId = await pendingBlock.start(vm, parentBlock)
-    assert.equal(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
+    assert.strictEqual(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
     pendingBlock.stop(payloadId)
-    assert.equal(
+    assert.strictEqual(
       pendingBlock.pendingPayloads.size,
       0,
       'should reset the pending payload after stopping',
@@ -251,21 +254,21 @@ describe('[PendingBlock]', async () => {
     await setBalance(vm, A.address, BigInt(5000000000000000))
     const parentBlock = await (vm.blockchain as Blockchain).getCanonicalHeadBlock!()
     const payloadId = await pendingBlock.start(vm, parentBlock)
-    assert.equal(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
+    assert.strictEqual(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
 
     // Add a tx to
     const built = await pendingBlock.build(payloadId)
     if (!built) return assert.fail('pendingBlock did not return')
     const [block, receipts] = built
-    assert.equal(block?.header.number, BigInt(1), 'should have built block number 1')
-    assert.equal(
+    assert.strictEqual(block?.header.number, BigInt(1), 'should have built block number 1')
+    assert.strictEqual(
       block?.transactions.length,
       2,
       'should include txs from pool that fit in the block',
     )
-    assert.equal(receipts.length, 2, 'receipts should match number of transactions')
+    assert.strictEqual(receipts.length, 2, 'receipts should match number of transactions')
     pendingBlock.pruneSetToMax(0)
-    assert.equal(
+    assert.strictEqual(
       pendingBlock.pendingPayloads.size,
       0,
       'should reset the pending payload after build',
@@ -296,19 +299,19 @@ describe('[PendingBlock]', async () => {
     await setBalance(vm, A.address, BigInt(5000000000000000))
     const parentBlock = await (vm.blockchain as Blockchain).getCanonicalHeadBlock!()
     const payloadId = await pendingBlock.start(vm, parentBlock)
-    assert.equal(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
+    assert.strictEqual(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
     const built = await pendingBlock.build(payloadId)
     if (!built) return assert.fail('pendingBlock did not return')
     const [block, receipts] = built
-    assert.equal(block?.header.number, BigInt(1), 'should have built block number 1')
-    assert.equal(
+    assert.strictEqual(block?.header.number, BigInt(1), 'should have built block number 1')
+    assert.strictEqual(
       block?.transactions.length,
       2,
       'should include txs from pool that fit in the block',
     )
-    assert.equal(receipts.length, 2, 'receipts should match number of transactions')
+    assert.strictEqual(receipts.length, 2, 'receipts should match number of transactions')
     pendingBlock.pruneSetToMax(0)
-    assert.equal(
+    assert.strictEqual(
       pendingBlock.pendingPayloads.size,
       0,
       'should reset the pending payload after build',
@@ -323,19 +326,19 @@ describe('[PendingBlock]', async () => {
     const vm = await createVM({ common, blockchain })
     const parentBlock = await (vm.blockchain as Blockchain).getCanonicalHeadBlock!()
     const payloadId = await pendingBlock.start(vm, parentBlock)
-    assert.equal(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
+    assert.strictEqual(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
     const built = await pendingBlock.build(payloadId)
     if (!built) return assert.fail('pendingBlock did not return')
     const [block, receipts] = built
-    assert.equal(block?.header.number, BigInt(1), 'should have built block number 1')
-    assert.equal(
+    assert.strictEqual(block?.header.number, BigInt(1), 'should have built block number 1')
+    assert.strictEqual(
       block.transactions.length,
       0,
       'should not include tx with sender that has insufficient funds',
     )
-    assert.equal(receipts.length, 0, 'receipts should match number of transactions')
+    assert.strictEqual(receipts.length, 0, 'receipts should match number of transactions')
     pendingBlock.pruneSetToMax(0)
-    assert.equal(
+    assert.strictEqual(
       pendingBlock.pendingPayloads.size,
       0,
       'should reset the pending payload after build',
@@ -343,8 +346,7 @@ describe('[PendingBlock]', async () => {
   })
 
   it('construct blob bundles', async () => {
-    const kzg = await loadKZG()
-    const common = createCommonFromGethGenesis(hardfork4844Data, {
+    const common = createCommonFromGethGenesis(eip4844GethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
       customCrypto: {
@@ -353,27 +355,55 @@ describe('[PendingBlock]', async () => {
     })
 
     const { txPool } = setup()
+    txPool['config'].chainCommon.setHardfork(Hardfork.Cancun)
 
-    const blobs = getBlobs('hello world')
-    const commitments = blobsToCommitments(kzg, blobs)
-    const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
-    const proofs = blobsToProofs(kzg, blobs, commitments)
+    // fill up the blobsAndProofsByHash and proofs cache before adding a blob tx
+    // for cache pruning check
+    const fillBlobs = getBlobs('hello world')
+    const fillCommitments = blobsToCommitments(kzg, fillBlobs)
+    const fillProofs = blobsToProofs(kzg, fillBlobs, fillCommitments)
+    const fillBlobAndProof = { blob: fillBlobs[0], proof: fillProofs[0] }
 
-    // Create 3 txs with 2 blobs each so that only 2 of them can be included in a build
+    const blobGasLimit = txPool['config'].chainCommon.param('maxBlobGasPerBlock')
+    const blobGasPerBlob = txPool['config'].chainCommon.param('blobGasPerBlob')
+    const allowedBlobsPerBlock = Number(blobGasLimit / blobGasPerBlob)
+    const allowedLength = allowedBlobsPerBlock * txPool['config'].blobsAndProofsCacheBlocks
+
+    for (let i = 0; i < allowedLength; i++) {
+      // this is space efficient as same object is inserted in dummy positions
+      txPool.blobsAndProofsByHash.set(intToHex(i), fillBlobAndProof)
+    }
+    assert.strictEqual(
+      txPool.blobsAndProofsByHash.size,
+      allowedLength,
+      'fill the cache to capacity',
+    )
+
+    // Create 2 txs with 3 blobs each so that only 2 of them can be included in a build
+    let blobs: PrefixedHexString[] = [],
+      proofs: PrefixedHexString[] = [],
+      versionedHashes: PrefixedHexString[] = []
     for (let x = 0; x <= 2; x++) {
+      // generate unique blobs different from fillBlobs
+      const txBlobs = [
+        ...getBlobs(`hello world-${x}1`),
+        ...getBlobs(`hello world-${x}2`),
+        ...getBlobs(`hello world-${x}3`),
+      ]
+      assert.strictEqual(txBlobs.length, 3, '3 blobs should be created')
+      const txCommitments = blobsToCommitments(kzg, txBlobs)
+      const txBlobVersionedHashes = commitmentsToVersionedHashes(txCommitments)
+      const txProofs = blobsToProofs(kzg, txBlobs, txCommitments)
+
       const txA01 = createBlob4844Tx(
         {
-          blobVersionedHashes: [
-            ...blobVersionedHashes,
-            ...blobVersionedHashes,
-            ...blobVersionedHashes,
-          ],
-          blobs: [...blobs, ...blobs, ...blobs],
-          kzgCommitments: [...commitments, ...commitments, ...commitments],
-          kzgProofs: [...proofs, ...proofs, ...proofs],
+          blobVersionedHashes: txBlobVersionedHashes,
+          blobs: txBlobs,
+          kzgCommitments: txCommitments,
+          kzgProofs: txProofs,
           maxFeePerBlobGas: 100000000n,
           gasLimit: 0xffffffn,
-          maxFeePerGas: 1000000000n,
+          maxFeePerGas: Units.gwei(1),
           maxPriorityFeePerGas: 100000000n,
           to: randomBytes(20),
           nonce: BigInt(x),
@@ -381,13 +411,37 @@ describe('[PendingBlock]', async () => {
         { common },
       ).sign(A.privateKey)
       await txPool.add(txA01)
+
+      // accumulate for verification
+      blobs = [...blobs, ...txBlobs]
+      proofs = [...proofs, ...txProofs]
+      versionedHashes = [...versionedHashes, ...txBlobVersionedHashes]
+    }
+
+    assert.strictEqual(
+      txPool.blobsAndProofsByHash.size,
+      allowedLength,
+      'cache should be prune and stay at same size',
+    )
+    // check if blobs and proofs are added in txpool by versioned hashes
+    for (let i = 0; i < versionedHashes.length; i++) {
+      const versionedHash = versionedHashes[i]
+      const blob = blobs[i]
+      const proof = proofs[i]
+
+      const blobAndProof = txPool.blobsAndProofsByHash.get(versionedHash) ?? {
+        blob: '0x0',
+        proof: '0x0',
+      }
+      assert.strictEqual(blob, blobAndProof.blob, 'blob should match')
+      assert.strictEqual(proof, blobAndProof.proof, 'proof should match')
     }
 
     // Add one other normal tx for nonce 3 which should also be not included in the build
     const txNorm = createFeeMarket1559Tx(
       {
         gasLimit: 0xffffffn,
-        maxFeePerGas: 1000000000n,
+        maxFeePerGas: Units.gwei(1),
         maxPriorityFeePerGas: 100000000n,
         to: randomBytes(20),
         nonce: BigInt(3),
@@ -396,7 +450,7 @@ describe('[PendingBlock]', async () => {
     ).sign(A.privateKey)
     await txPool.add(txNorm)
 
-    assert.equal(txPool.txsInPool, 4, '4 txs should still be in the pool')
+    assert.strictEqual(txPool.txsInPool, 4, '4 txs should still be in the pool')
 
     const pendingBlock = new PendingBlock({ config, txPool })
     const blockchain = await createBlockchain({ common })
@@ -410,22 +464,24 @@ describe('[PendingBlock]', async () => {
     const payloadId = await pendingBlock.start(vm, parentBlock)
     const [block, _receipts, _value, blobsBundles] = (await pendingBlock.build(payloadId)) ?? []
 
-    assert.ok(block !== undefined && blobsBundles !== undefined)
-    assert.equal(block!.transactions.length, 2, 'Only two blob txs should be included')
-    assert.equal(blobsBundles!.blobs.length, 6, 'maximum 6 blobs should be included')
-    assert.equal(blobsBundles!.commitments.length, 6, 'maximum 6 commitments should be included')
-    assert.equal(blobsBundles!.proofs.length, 6, 'maximum 6 proofs should be included')
+    assert.isTrue(block !== undefined && blobsBundles !== undefined)
+    assert.strictEqual(block!.transactions.length, 2, 'Only two blob txs should be included')
+    assert.strictEqual(blobsBundles!.blobs.length, 6, 'maximum 6 blobs should be included')
+    assert.strictEqual(
+      blobsBundles!.commitments.length,
+      6,
+      'maximum 6 commitments should be included',
+    )
+    assert.strictEqual(blobsBundles!.proofs.length, 6, 'maximum 6 proofs should be included')
 
     const pendingBlob = blobsBundles!.blobs[0]
-    assert.ok(pendingBlob !== undefined && equalsBytes(pendingBlob, blobs[0]))
+    assert.isTrue(pendingBlob !== undefined && pendingBlob === blobs[0])
     const blobProof = blobsBundles!.proofs[0]
-    assert.ok(blobProof !== undefined && equalsBytes(blobProof, proofs[0]))
+    assert.isTrue(blobProof !== undefined && blobProof === proofs[0])
   })
 
   it('should exclude missingBlobTx', async () => {
-    const kzg = await loadKZG()
-
-    const common = createCommonFromGethGenesis(hardfork4844Data, {
+    const common = createCommonFromGethGenesis(eip4844GethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
       customCrypto: { kzg },
@@ -446,7 +502,7 @@ describe('[PendingBlock]', async () => {
         kzgProofs: proofs,
         maxFeePerBlobGas: 100000000n,
         gasLimit: 0xffffffn,
-        maxFeePerGas: 1000000000n,
+        maxFeePerGas: Units.gwei(1),
         maxPriorityFeePerGas: 100000000n,
         to: randomBytes(20),
         nonce: BigInt(0),
@@ -455,7 +511,7 @@ describe('[PendingBlock]', async () => {
     ).sign(A.privateKey)
     await txPool.add(missingBlobTx)
 
-    assert.equal(txPool.txsInPool, 1, '1 txs should still be in the pool')
+    assert.strictEqual(txPool.txsInPool, 1, '1 txs should still be in the pool')
 
     const pendingBlock = new PendingBlock({ config, txPool })
     const blockchain = await createBlockchain({ common })
@@ -469,7 +525,7 @@ describe('[PendingBlock]', async () => {
     const payloadId = await pendingBlock.start(vm, parentBlock)
     const [block, _receipts, _value, blobsBundles] = (await pendingBlock.build(payloadId)) ?? []
 
-    assert.ok(block !== undefined && blobsBundles !== undefined)
-    assert.equal(block!.transactions.length, 0, 'Missing blob tx should not be included')
+    assert.isTrue(block !== undefined && blobsBundles !== undefined)
+    assert.strictEqual(block!.transactions.length, 0, 'Missing blob tx should not be included')
   })
 })

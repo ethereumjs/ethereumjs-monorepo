@@ -4,7 +4,7 @@ import {
   Blob4844Tx,
   createBlob4844TxFromSerializedNetworkWrapper,
   createTxFromBlockBodyData,
-  createTxFromSerializedData,
+  createTxFromRLP,
   isAccessList2930Tx,
   isBlob4844Tx,
   isEOACode7702Tx,
@@ -13,6 +13,7 @@ import {
 } from '@ethereumjs/tx'
 import {
   BIGINT_0,
+  EthereumJSErrorWithoutCode,
   bigIntToUnpaddedBytes,
   bytesToBigInt,
   bytesToHex,
@@ -23,11 +24,8 @@ import {
 } from '@ethereumjs/util'
 import { encodeReceipt } from '@ethereumjs/vm'
 
-import { Protocol } from './protocol.js'
+import { Protocol } from './protocol.ts'
 
-import type { Chain } from '../../blockchain/index.js'
-import type { TxReceiptWithType } from '../../execution/receipt.js'
-import type { Message, ProtocolOptions } from './protocol.js'
 import type {
   Block,
   BlockBodyBytes,
@@ -39,6 +37,9 @@ import type { Log } from '@ethereumjs/evm'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { PostByzantiumTxReceipt, PreByzantiumTxReceipt, TxReceipt } from '@ethereumjs/vm'
+import type { Chain } from '../../blockchain/index.ts'
+import type { TxReceiptWithType } from '../../execution/receipt.ts'
+import type { Message, ProtocolOptions } from './protocol.ts'
 
 interface EthProtocolOptions extends ProtocolOptions {
   /* Blockchain */
@@ -91,7 +92,7 @@ export interface EthProtocolMethods {
 }
 
 function exhaustiveTypeGuard(_value: never, errorMsg: string): never {
-  throw new Error(errorMsg)
+  throw EthereumJSErrorWithoutCode(errorMsg)
 }
 
 /**
@@ -102,7 +103,6 @@ export class EthProtocol extends Protocol {
   private chain: Chain
   private nextReqId = BIGINT_0
 
-  /* eslint-disable no-invalid-this */
   private protocolMessages: Message[] = [
     {
       name: 'NewBlockHashes',
@@ -133,7 +133,7 @@ export class EthProtocol extends Protocol {
             BIGINT_0, // Use chainstart,
           timestamp: this.chain.headers.latest?.timestamp ?? Math.floor(Date.now() / 1000),
         })
-        return txs.map((txData) => createTxFromSerializedData(txData, { common }))
+        return txs.map((txData) => createTxFromRLP(txData, { common }))
       },
     },
     {

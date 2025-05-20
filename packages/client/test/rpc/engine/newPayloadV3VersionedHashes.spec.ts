@@ -1,10 +1,12 @@
-import { loadKZG } from 'kzg-wasm'
+import { eip4844GethGenesis } from '@ethereumjs/testdata'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import { beaconData } from '../../testdata/blocks/beacon.js'
-import { eip4844Data } from '../../testdata/geth-genesis/eip4844.js'
-import { getRPCClient, setupChain } from '../helpers.js'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
+import { beaconData } from '../../testdata/blocks/beacon.ts'
+import { getRPCClient, setupChain } from '../helpers.ts'
+const kzg = new microEthKZG(trustedSetup)
 
 const method = 'engine_newPayloadV3'
 
@@ -14,9 +16,7 @@ const [blockData] = beaconData
 
 describe(`${method}: Cancun validations`, () => {
   it('blobVersionedHashes', async () => {
-    const kzg = await loadKZG()
-
-    const { server } = await setupChain(eip4844Data, 'post-merge', {
+    const { server } = await setupChain(eip4844GethGenesis, 'post-merge', {
       engine: true,
       customCrypto: { kzg },
     })
@@ -39,10 +39,10 @@ describe(`${method}: Cancun validations`, () => {
     ]
     let res = await rpc.request(method, blockDataExtraVersionedHashes)
 
-    assert.equal(res.result.status, 'INVALID')
-    assert.equal(
+    assert.strictEqual(res.result.status, 'INVALID')
+    assert.strictEqual(
       res.result.validationError,
-      'Error verifying blobVersionedHashes: expected=0 received=2',
+      'Error assembling block from payload: Error verifying blobVersionedHashes: expected=0 received=2',
     )
 
     const txString =
@@ -64,8 +64,10 @@ describe(`${method}: Cancun validations`, () => {
       },
     ]
     res = await rpc.request(method, blockDataNoneHashes)
-    assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('missing value for required argument blobVersionedHashes'))
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
+    assert.isTrue(
+      res.error.message.includes('missing value for required argument blobVersionedHashes'),
+    )
 
     const blockDataMissingParentBeaconRoot = [
       {
@@ -81,8 +83,8 @@ describe(`${method}: Cancun validations`, () => {
       txVersionedHashesString,
     ]
     res = await rpc.request(method, blockDataMissingParentBeaconRoot)
-    assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
+    assert.isTrue(
       res.error.message.includes('missing value for required argument parentBeaconBlockRoot'),
     )
 
@@ -102,10 +104,10 @@ describe(`${method}: Cancun validations`, () => {
     ]
     res = await rpc.request(method, blockDataExtraMissingHashes1)
 
-    assert.equal(res.result.status, 'INVALID')
-    assert.equal(
+    assert.strictEqual(res.result.status, 'INVALID')
+    assert.strictEqual(
       res.result.validationError,
-      'Error verifying blobVersionedHashes: expected=2 received=1',
+      'Error assembling block from payload: Error verifying blobVersionedHashes: expected=2 received=1',
     )
 
     const blockDataExtraMisMatchingHashes1 = [
@@ -124,10 +126,10 @@ describe(`${method}: Cancun validations`, () => {
     ]
     res = await rpc.request(method, blockDataExtraMisMatchingHashes1)
 
-    assert.equal(res.result.status, 'INVALID')
-    assert.equal(
+    assert.strictEqual(res.result.status, 'INVALID')
+    assert.strictEqual(
       res.result.validationError,
-      'Error verifying blobVersionedHashes: mismatch at index=1 expected=0x0131…52c5 received=0x3456…',
+      'Error assembling block from payload: Error verifying blobVersionedHashes: mismatch at index=1 expected=0x0131…52c5 received=0x3456…',
     )
 
     const blockDataMatchingVersionedHashes = [
@@ -145,6 +147,6 @@ describe(`${method}: Cancun validations`, () => {
       parentBeaconBlockRoot,
     ]
     res = await rpc.request(method, blockDataMatchingVersionedHashes)
-    assert.equal(res.result.status, 'ACCEPTED')
+    assert.strictEqual(res.result.status, 'ACCEPTED')
   })
 })

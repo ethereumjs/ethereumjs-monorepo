@@ -1,4 +1,4 @@
-import { BlockHeader } from '@ethereumjs/block'
+import { BlockHeader, paramsBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { MerkleStateManager } from '@ethereumjs/statemanager'
 import { createBlob4844Tx, createFeeMarket1559TxFromRLP, createLegacyTx } from '@ethereumjs/tx'
@@ -11,16 +11,18 @@ import {
   hexToBytes,
   randomBytes,
 } from '@ethereumjs/util'
-import { loadKZG } from 'kzg-wasm'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
-import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../../../src/rpc/error-code.js'
-import { baseSetup } from '../helpers.js'
+import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../../../src/rpc/error-code.ts'
+import { baseSetup } from '../helpers.ts'
 
-import type { FullEthereumService } from '../../../src/service/index.js'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 const method = 'eth_sendRawTransaction'
 
+const kzg = new microEthKZG(trustedSetup)
 describe(method, () => {
   it('call with valid arguments', async () => {
     // Disable stateroot validation in TxPool since valid state root isn't available
@@ -52,14 +54,14 @@ describe(method, () => {
       '0x02f90108018001018402625a0094cccccccccccccccccccccccccccccccccccccccc830186a0b8441a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f85bf859940000000000000000000000000000000000000101f842a00000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000060a701a0afb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9a0479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64'
     const transaction = createFeeMarket1559TxFromRLP(hexToBytes(txData))
     const address = transaction.getSenderAddress()
-    const vm = (client.services.find((s) => s.name === 'eth') as FullEthereumService).execution.vm
+    const vm = client.service.execution.vm
     await vm.stateManager.putAccount(address, new Account())
     const account = await vm.stateManager.getAccount(address)
     account!.balance = BigInt('40100000')
     await vm.stateManager.putAccount(address, account!)
     const res = await rpc.request(method, [txData])
 
-    assert.equal(
+    assert.strictEqual(
       res.result,
       '0xd7217a7d3251880051783f305a3536e368c604aa1f1602e6cd107eb7b87129da',
       'should return the correct tx hash',
@@ -87,7 +89,7 @@ describe(method, () => {
 
     const res = await rpc.request(method, [txData])
 
-    assert.equal(
+    assert.strictEqual(
       res.result,
       '0xf6798d5ed936a464ef4f49dd5a3abe1ad6947364912bd47c5e56781125d44ac3',
       'local tx with lower gasprice than minimum gasprice added to pool',
@@ -109,8 +111,8 @@ describe(method, () => {
       '0x02f90108018001018402625a0094cccccccccccccccccccccccccccccccccccccccc830186a0b8441a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f85bf859940000000000000000000000000000000000000101f842a00000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000060a701a0afb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9a0479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64'
 
     const res = await rpc.request(method, [txData])
-    assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('insufficient balance'))
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
+    assert.isTrue(res.error.message.includes('insufficient balance'))
 
     // Restore setStateRoot
     MerkleStateManager.prototype.setStateRoot = originalSetStateRoot
@@ -125,8 +127,8 @@ describe(method, () => {
       '0x02f90108018001018402625a0094cccccccccccccccccccccccccccccccccccccccc830186a0b8441a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f85bf859940000000000000000000000000000000000000101f842a00000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000060a701a0afb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9a0479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64'
     const res = await rpc.request(method, [txData])
 
-    assert.equal(res.error.code, INTERNAL_ERROR)
-    assert.ok(
+    assert.strictEqual(res.error.code, INTERNAL_ERROR)
+    assert.isTrue(
       res.error.message.includes(
         'client is not aware of the current chain height yet (give sync some more time)',
       ),
@@ -142,8 +144,8 @@ describe(method, () => {
       '0x02f9010a82066a8001018402625a0094cccccccccccccccccccccccccccccccccccccccc830186a0b8441a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f85bf859940000000000000000000000000000000000000101f842a00000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000060a701a0afb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9a0479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64'
     const res = await rpc.request(method, [txData])
 
-    assert.equal(res.error.code, PARSE_ERROR)
-    assert.ok(res.error.message.includes('serialized tx data could not be parsed'))
+    assert.strictEqual(res.error.code, PARSE_ERROR)
+    assert.isTrue(res.error.message.includes('serialized tx data could not be parsed'))
   })
 
   it('call with unsigned tx', async () => {
@@ -158,14 +160,17 @@ describe(method, () => {
       common,
       freeze: false,
     })
-    ;(tx as any).v = undefined
-    ;(tx as any).r = undefined
-    ;(tx as any).s = undefined
+    /// @ts-expect-error -- Assign to-readonly property
+    tx.v = undefined
+    /// @ts-expect-error -- Assign to-readonly property
+    tx.r = undefined
+    /// @ts-expect-error -- Assign to-readonly property
+    tx.s = undefined
     const txHex = bytesToHex(tx.serialize())
     const res = await rpc.request(method, [txHex])
 
-    assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('tx needs to be signed'))
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
+    assert.isTrue(res.error.message.includes('tx needs to be signed'))
   })
 
   it('call with no peers', async () => {
@@ -191,7 +196,7 @@ describe(method, () => {
       '0x02f90108018001018402625a0094cccccccccccccccccccccccccccccccccccccccc830186a0b8441a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f85bf859940000000000000000000000000000000000000101f842a00000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000060a701a0afb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9a0479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64'
     const transaction = createFeeMarket1559TxFromRLP(hexToBytes(txData))
     const address = transaction.getSenderAddress()
-    const vm = (client.services.find((s) => s.name === 'eth') as FullEthereumService).execution.vm
+    const vm = client.service.execution.vm
 
     await vm.stateManager.putAccount(address, new Account())
     const account = await vm.stateManager.getAccount(address)
@@ -200,8 +205,8 @@ describe(method, () => {
 
     const res = await rpc.request(method, [txData])
 
-    assert.equal(res.error.code, INTERNAL_ERROR)
-    assert.ok(res.error.message.includes('no peer connection available'))
+    assert.strictEqual(res.error.code, INTERNAL_ERROR)
+    assert.isTrue(res.error.message.includes('no peer connection available'))
 
     // Restore setStateRoot
     MerkleStateManager.prototype.setStateRoot = originalSetStateRoot
@@ -219,15 +224,15 @@ describe(method, () => {
     // Disable block header consensus format validation
     const consensusFormatValidation = BlockHeader.prototype['_consensusFormatValidation']
     BlockHeader.prototype['_consensusFormatValidation'] = (): any => {}
-    const { hardfork4844Data } = await import('../../../../block/test/testdata/4844-hardfork.js')
+    const { eip4844GethGenesis } = await import('@ethereumjs/testdata')
 
-    const kzg = await loadKZG()
-
-    const common = createCommonFromGethGenesis(hardfork4844Data, {
+    const common = createCommonFromGethGenesis(eip4844GethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
       customCrypto: { kzg },
+      params: paramsBlock,
     })
+
     common.setHardfork(Hardfork.Cancun)
     const { rpc, client } = await baseSetup({
       commonChain: common,
@@ -237,7 +242,9 @@ describe(method, () => {
     const blobs = getBlobs('hello world')
     const commitments = blobsToCommitments(kzg, blobs)
     const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
-    const proofs = blobs.map((blob, ctx) => kzg.computeBlobKzgProof(blob, commitments[ctx]))
+    const proofs = blobs.map((blob, ctx) =>
+      kzg.computeBlobProof(blob, commitments[ctx]),
+    ) as PrefixedHexString[]
     const pk = randomBytes(32)
     const tx = createBlob4844Tx(
       {
@@ -268,19 +275,20 @@ describe(method, () => {
       },
       { common },
     ).sign(pk)
-    const vm = (client.services.find((s) => s.name === 'eth') as FullEthereumService).execution.vm
+    const vm = client.service.execution.vm
     await vm.stateManager.putAccount(tx.getSenderAddress(), new Account())
     const account = await vm.stateManager.getAccount(tx.getSenderAddress())
     account!.balance = BigInt(0xfffffffffffff)
     await vm.stateManager.putAccount(tx.getSenderAddress(), account!)
 
     const res = await rpc.request(method, [bytesToHex(tx.serializeNetworkWrapper())])
+
     const res2 = await rpc.request(method, [bytesToHex(replacementTx.serializeNetworkWrapper())])
 
-    assert.equal(res.error, undefined, 'initial blob transaction accepted')
+    assert.strictEqual(res.error, undefined, 'initial blob transaction accepted')
 
-    assert.equal(res2.error.code, INVALID_PARAMS)
-    assert.ok(res2.error.message.includes('replacement blob gas too low'))
+    assert.strictEqual(res2.error.code, INVALID_PARAMS)
+    assert.include(res2.error.message, 'replacement blob gas too low')
 
     // Restore stubbed out functionality
     MerkleStateManager.prototype.setStateRoot = originalSetStateRoot

@@ -10,15 +10,13 @@ export const paramsBlock: ParamsDict = {
     gasLimitBoundDivisor: 1024, // The bound divisor of the gas limit, used in update calculations
     targetBlobGasPerBlock: 0, // Base value needed here since called pre-4844 in BlockHeader.calcNextExcessBlobGas()
     blobGasPerBlob: 0,
-    maxblobGasPerBlock: 0,
+    maxBlobGasPerBlock: 0,
     // format
     maxExtraDataSize: 32, // Maximum size extra data may be after Genesis
     // pow
     minimumDifficulty: 131072, // The minimum that the difficulty may ever be
     difficultyBoundDivisor: 2048, // The bound divisor of the difficulty, used in the update calculations
     durationLimit: 13, // The decision boundary on the blocktime duration used to determine whether difficulty should go up or not
-    epochDuration: 30000, // Duration between proof-of-work epochs
-    timebombPeriod: 100000, // Exponential difficulty timebomb period
     difficultyBombDelay: 0, // the amount of blocks to delay the difficulty bomb with
   },
   /**
@@ -72,10 +70,9 @@ export const paramsBlock: ParamsDict = {
     // gasConfig
     targetBlobGasPerBlock: 393216, // The target blob gas consumed per block
     blobGasPerBlob: 131072, // The base fee for blob gas per blob
-    maxblobGasPerBlock: 786432, // The max blob gas allowable per block
+    maxBlobGasPerBlock: 786432, // The max blob gas allowable per block
     blobGasPriceUpdateFraction: 3338477, // The denominator used in the exponential when calculating a blob gas price
     // gasPrices
-    simplePerBlobGas: 12000, // The basic gas fee for each blob
     minBlobGas: 1, // The minimum fee per blob gas
   },
   /**
@@ -84,5 +81,14 @@ export const paramsBlock: ParamsDict = {
   5133: {
     // pow
     difficultyBombDelay: 11400000, // the amount of blocks to delay the difficulty bomb with
+  },
+  /**
+.  * Blob throughput increase
+.  */
+  7691: {
+    // gasConfig
+    targetBlobGasPerBlock: 786432, // The target blob gas consumed per block
+    maxBlobGasPerBlock: 1179648, // The max blob gas allowable per block
+    blobGasPriceUpdateFraction: 5007716, // The denominator used in the exponential when calculating a blob gas price
   },
 }

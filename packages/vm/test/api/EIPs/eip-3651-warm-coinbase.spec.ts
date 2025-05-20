@@ -4,7 +4,7 @@ import { createLegacyTx } from '@ethereumjs/tx'
 import { Account, Address, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createVM, runTx } from '../../../src/index.js'
+import { createVM, runTx } from '../../../src/index.ts'
 const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
 const GWEI = BigInt(1000000000)
 const sender = new Address(privateToAddress(pkey))
@@ -68,7 +68,7 @@ describe('EIP 3651 tests', () => {
 
     const result2 = await runTx(vm2, { block, tx, skipHardForkValidation: true })
     const expectedDiff = common.param('coldaccountaccessGas')! - common.param('warmstoragereadGas')!
-    assert.equal(
+    assert.strictEqual(
       result2.totalGasSpent - result.totalGasSpent,
       expectedDiff,
       'gas difference is correct',

@@ -3,7 +3,7 @@ import { createLegacyTx } from '@ethereumjs/tx'
 import { createAddressFromString } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createVM, runTx } from '../../../src/index.js'
+import { createVM, runTx } from '../../../src/index.ts'
 
 describe('EIP-3607 tests', () => {
   const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin, eips: [3607] })
@@ -20,7 +20,7 @@ describe('EIP-3607 tests', () => {
       assert.fail('runTx should have thrown')
     } catch (error: any) {
       if ((error.message as string).includes('EIP-3607')) {
-        assert.ok(true, 'threw correct error')
+        assert.isTrue(true, 'threw correct error')
       } else {
         assert.fail('did not throw correct error')
       }
@@ -34,8 +34,8 @@ describe('EIP-3607 tests', () => {
     tx.getSenderAddress = () => precompileAddr
     try {
       await runTx(vm, { tx, skipHardForkValidation: true })
-      assert.ok('runTx successfully ran')
-    } catch (error: any) {
+      assert.isTrue(true, 'runTx successfully ran')
+    } catch {
       assert.fail('threw an unexpected error')
     }
   })

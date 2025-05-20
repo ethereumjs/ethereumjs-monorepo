@@ -1,8 +1,9 @@
-import { createCommonFromGethGenesis } from '@ethereumjs/common'
-import { createTxFromTxData } from '@ethereumjs/tx'
-import { bytesToHex, hexToBytes, privateToAddress } from '@ethereumjs/util'
-import { Client } from 'jayson/promise'
 import { randomBytes } from 'node:crypto'
+
+import { createCommonFromGethGenesis } from '@ethereumjs/common'
+import { createTx } from '@ethereumjs/tx'
+import { bytesToHex, hexToBytes, privateToAddress } from '@ethereumjs/util'
+import { Client } from 'jayson/promise/index.js'
 import { assert, describe, it } from 'vitest'
 
 import {
@@ -14,7 +15,7 @@ import {
   sleep,
   startNetwork,
   waitForELStart,
-} from './simutils.js'
+} from './simutils.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -23,6 +24,7 @@ const sender = bytesToHex(privateToAddress(pkey))
 const client = Client.http({ port: 8545 })
 
 const network = '4844-devnet'
+
 const shardingJSON = require(`./configs/${network}.json`)
 const common = createCommonFromGethGenesis(shardingJSON, { chain: network })
 
@@ -41,8 +43,8 @@ describe('sharding/eip4844 hardfork tests', async () => {
     withPeer: process.env.WITH_PEER,
   })
 
-  if (result.includes('EthereumJS')) {
-    assert.ok(true, 'connected to client')
+  if (result.includes('EthereumJS') === true) {
+    assert.isTrue(true, 'connected to client')
   } else {
     assert.fail('connected to wrong client')
   }
@@ -50,7 +52,7 @@ describe('sharding/eip4844 hardfork tests', async () => {
   console.log(`Waiting for network to start...`)
   try {
     await waitForELStart(client)
-    assert.ok(true, 'ethereumjs<>lodestar started successfully')
+    assert.isTrue(true, 'ethereumjs<>lodestar started successfully')
   } catch (e) {
     assert.fail('ethereumjs<>lodestar failed to start')
     throw e
@@ -95,9 +97,9 @@ describe('sharding/eip4844 hardfork tests', async () => {
       }
     }
 
-    assert.equal(
+    assert.strictEqual(
       eth2kzgs[0],
-      bytesToHex(txResult.tx.kzgCommitments![0]),
+      txResult.tx.kzgCommitments![0],
       'found expected blob commitments on CL',
     )
   }, 60_000)
@@ -151,7 +153,7 @@ describe('sharding/eip4844 hardfork tests', async () => {
         }
         await sleep(2000)
       }
-      assert.ok(BigInt(block2.result.excessBlobGas) > 0n, 'block1 has excess blob gas > 0')
+      assert.isTrue(BigInt(block2.result.excessBlobGas) > 0n, 'block1 has excess blob gas > 0')
     },
     10 * 60_000,
   )
@@ -187,7 +189,7 @@ describe('sharding/eip4844 hardfork tests', async () => {
       maxPriorityFeePerGas: 0xf,
     }
 
-    const tx = createTxFromTxData({ type: 2, ...txData }, { common }).sign(pkey)
+    const tx = createTx({ type: 2, ...txData }, { common }).sign(pkey)
 
     const txResult = await client.request(
       'eth_sendRawTransaction',
@@ -199,8 +201,8 @@ describe('sharding/eip4844 hardfork tests', async () => {
       receipt = await client.request('eth_getTransactionReceipt', [txResult.result], 2.0)
       await sleep(1000)
     }
-    assert.ok(
-      receipt.result.contractAddress !== undefined,
+    assert.isDefined(
+      receipt.result.contractAddress,
       'successfully deployed contract that calls precompile',
     )
   }, 60_000)
@@ -209,14 +211,14 @@ describe('sharding/eip4844 hardfork tests', async () => {
     const multiPeer = Client.http({ port: 8947 })
     const res = await multiPeer.request('eth_syncing', [], 2.0)
     console.log(res)
-    assert.equal(res.result, 'false', 'multipeer is up and running')
+    assert.strictEqual(res.result, 'false', 'multipeer is up and running')
   })*/
 
   it('should reset td', async () => {
     try {
       await teardownCallBack()
-      assert.ok(true, 'network cleaned')
-    } catch (e) {
+      assert.isTrue(true, 'network cleaned')
+    } catch {
       assert.fail('network not cleaned properly')
     }
   }, 60_000)

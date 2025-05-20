@@ -1,4 +1,4 @@
-import { Trie, createTrie, createTrieFromProof } from '@ethereumjs/trie'
+import { MerklePatriciaTrie, createMPT, createMPTFromProof } from '@ethereumjs/mpt'
 import {
   Account,
   KECCAK256_RLP,
@@ -11,11 +11,15 @@ import {
   intToBytes,
   setLengthLeft,
   utf8ToBytes,
-  zeros,
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { CacheType, Caches, MerkleStateManager } from '../src/index.js'
+import { CacheType, Caches, MerkleStateManager } from '../src/index.ts'
+import {
+  addMerkleStateProofData,
+  fromMerkleStateProof,
+  getMerkleStateProof,
+} from '../src/proof/index.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -23,16 +27,16 @@ export const isBrowser = new Function('try {return this===window;}catch(e){ retu
 function verifyAccount(
   account: Account,
   state: {
-    balance: BigInt
+    balance: bigint
     codeHash: Uint8Array
-    nonce: BigInt
+    nonce: bigint
     storageRoot: Uint8Array
   },
 ) {
-  assert.equal(account.balance, state.balance)
-  assert.equal(account.nonce, state.nonce)
-  assert.ok(equalsBytes(account.codeHash, state.codeHash))
-  assert.ok(equalsBytes(account.storageRoot, state.storageRoot))
+  assert.strictEqual(account.balance, state.balance)
+  assert.strictEqual(account.nonce, state.nonce)
+  assert.isTrue(equalsBytes(account.codeHash, state.codeHash))
+  assert.isTrue(equalsBytes(account.storageRoot, state.storageRoot))
 }
 
 describe('StateManager -> General', () => {
@@ -48,8 +52,8 @@ describe('StateManager -> General', () => {
     const sm = new MerkleStateManager()
 
     try {
-      const storage = await sm.getStorage(createZeroAddress(), zeros(32))
-      assert.ok(equalsBytes(storage, new Uint8Array()))
+      const storage = await sm.getStorage(createZeroAddress(), new Uint8Array(32))
+      assert.isTrue(equalsBytes(storage, new Uint8Array()))
     } catch {
       assert.fail('should not throw')
     }
@@ -67,11 +71,15 @@ describe('StateManager -> General', () => {
     await sm.putStorage(contractAddress, storageKey, storedData)
 
     let storage = await sm.getStorage(contractAddress, storageKey)
-    assert.equal(JSON.stringify(storage), JSON.stringify(storedData), 'contract storage updated')
+    assert.strictEqual(
+      JSON.stringify(storage),
+      JSON.stringify(storedData),
+      'contract storage updated',
+    )
 
     await sm.clearStorage(contractAddress)
     storage = await sm.getStorage(contractAddress, storageKey)
-    assert.equal(
+    assert.strictEqual(
       JSON.stringify(storage),
       JSON.stringify(new Uint8Array()),
       'clears contract storage',
@@ -79,14 +87,14 @@ describe('StateManager -> General', () => {
   })
 
   it(`copy()`, async () => {
-    const trie = new Trie({ cacheSize: 1000 })
+    const trie = new MerklePatriciaTrie({ cacheSize: 1000 })
     let sm = new MerkleStateManager({
       trie,
       prefixCodeHashes: false,
     })
 
     let smCopy = sm.shallowCopy()
-    assert.equal(
+    assert.strictEqual(
       smCopy['_prefixCodeHashes'],
       sm['_prefixCodeHashes'],
       'should retain non-default values',
@@ -105,30 +113,30 @@ describe('StateManager -> General', () => {
     })
 
     smCopy = sm.shallowCopy()
-    assert.equal(
+    assert.strictEqual(
       smCopy['_caches']?.settings.account.type,
       CacheType.ORDERED_MAP,
       'should switch to ORDERED_MAP account cache on copy()',
     )
-    assert.equal(
+    assert.strictEqual(
       smCopy['_caches']?.settings.storage.type,
       CacheType.ORDERED_MAP,
       'should switch to ORDERED_MAP storage cache on copy()',
     )
-    assert.equal(smCopy['_trie']['_opts'].cacheSize, 0, 'should set trie cache size to 0')
+    assert.strictEqual(smCopy['_trie']['_opts'].cacheSize, 0, 'should set trie cache size to 0')
 
     smCopy = sm.shallowCopy(false)
-    assert.equal(
+    assert.strictEqual(
       smCopy['_caches']?.settings.account.type,
       CacheType.LRU,
       'should retain account cache type when deactivate cache downleveling',
     )
-    assert.equal(
+    assert.strictEqual(
       smCopy['_caches']?.settings.storage.type,
       CacheType.LRU,
       'should retain storage cache type when deactivate cache downleveling',
     )
-    assert.equal(
+    assert.strictEqual(
       smCopy['_trie']['_opts'].cacheSize,
       1000,
       'should retain trie cache size when deactivate cache downleveling',
@@ -214,98 +222,95 @@ describe('StateManager -> General', () => {
       stateSetup[addressStr].storageRoot = (await stateManager.getAccount(address)!)?.storageRoot
     }
 
-    const proof1 = await stateManager.getProof(address1)
+    const proof1 = await getMerkleStateProof(stateManager, address1)
 
-    const partialStateManager = await MerkleStateManager.fromProof(proof1)
-    let account1 = await partialStateManager.getAccount(address1)!
+    const partialStateManager = await fromMerkleStateProof(proof1)
 
-    verifyAccount(account1!, state1)
+    verifyAccount((await partialStateManager.getAccount(address1))!, state1)
 
-    const proof2 = await stateManager.getProof(address2)
-    await partialStateManager.addProofData(proof2)
+    const proof2 = await getMerkleStateProof(stateManager, address2)
+    await addMerkleStateProofData(partialStateManager, proof2)
 
-    let account2 = await partialStateManager.getAccount(address2)
-    verifyAccount(account2!, state2)
+    verifyAccount((await partialStateManager.getAccount(address2))!, state2)
 
-    let account3 = await partialStateManager.getAccount(address3)
-    assert.ok(account3 === undefined)
+    assert.isUndefined(await partialStateManager.getAccount(address3))
 
     // Input proofs
-    const stProof = await stateManager.getProof(address1, [state1.keys[0], state1.keys[1]])
-    await partialStateManager.addProofData(stProof)
+    const stProof = await getMerkleStateProof(stateManager, address1, [
+      state1.keys[0],
+      state1.keys[1],
+    ])
+    await addMerkleStateProofData(partialStateManager, stProof)
 
     let stSlot1_0 = await partialStateManager.getStorage(address1, state1.keys[0])
-    assert.ok(equalsBytes(stSlot1_0, state1.values[0]))
+    assert.isTrue(equalsBytes(stSlot1_0, state1.values[0]))
 
     let stSlot1_1 = await partialStateManager.getStorage(address1, state1.keys[1])
-    assert.ok(equalsBytes(stSlot1_1, state1.values[1]))
+    assert.isTrue(equalsBytes(stSlot1_1, state1.values[1]))
 
     let stSlot1_2 = await partialStateManager.getStorage(address1, state1.keys[2])
-    assert.ok(equalsBytes(stSlot1_2, new Uint8Array()))
+    assert.isTrue(equalsBytes(stSlot1_2, new Uint8Array()))
 
     // Check Array support as input
-    const newPartialStateManager = await MerkleStateManager.fromProof([proof2, stProof])
+    const newPartialStateManager = await fromMerkleStateProof([proof2, stProof])
 
     async function postVerify(sm: MerkleStateManager) {
-      account1 = await sm.getAccount(address1)
-      verifyAccount(account1!, state1)
+      verifyAccount((await sm.getAccount(address1))!, state1)
 
-      account2 = await sm.getAccount(address2)
-      verifyAccount(account2!, state2)
+      verifyAccount((await sm.getAccount(address2))!, state2)
 
-      account3 = await sm.getAccount(address3)
-      assert.ok(account3 === undefined)
+      assert.isUndefined(await sm.getAccount(address3))
 
       stSlot1_0 = await sm.getStorage(address1, state1.keys[0])
-      assert.ok(equalsBytes(stSlot1_0, state1.values[0]))
+      assert.isTrue(equalsBytes(stSlot1_0, state1.values[0]))
 
       stSlot1_1 = await sm.getStorage(address1, state1.keys[1])
-      assert.ok(equalsBytes(stSlot1_1, state1.values[1]))
+      assert.isTrue(equalsBytes(stSlot1_1, state1.values[1]))
 
       stSlot1_2 = await sm.getStorage(address1, state1.keys[2])
-      assert.ok(equalsBytes(stSlot1_2, new Uint8Array()))
+      assert.isTrue(equalsBytes(stSlot1_2, new Uint8Array()))
     }
 
     await postVerify(newPartialStateManager)
 
     // Check: empty proof input
-    const newPartialStateManager2 = await MerkleStateManager.fromProof([])
+    const newPartialStateManager2 = await fromMerkleStateProof([])
 
     try {
-      await newPartialStateManager2.addProofData([proof2, stProof], true)
+      await addMerkleStateProofData(newPartialStateManager2, [proof2, stProof], true)
       assert.fail('cannot reach this')
     } catch (e: any) {
-      assert.ok(e.message.includes('proof does not have the expected trie root'))
+      assert.include(e.message, 'proof does not have the expected trie root')
     }
 
-    await newPartialStateManager2.addProofData([proof2, stProof])
+    await addMerkleStateProofData(newPartialStateManager2, [proof2, stProof])
     await newPartialStateManager2.setStateRoot(await partialStateManager.getStateRoot())
     await postVerify(newPartialStateManager2)
 
     const zeroAddressNonce = BigInt(100)
     await stateManager.putAccount(createZeroAddress(), new Account(zeroAddressNonce))
-    const zeroAddressProof = await stateManager.getProof(createZeroAddress())
+    const zeroAddressProof = await getMerkleStateProof(stateManager, createZeroAddress())
 
     try {
-      await MerkleStateManager.fromProof([proof1, zeroAddressProof], true)
+      await fromMerkleStateProof([proof1, zeroAddressProof], true)
       assert.fail('cannot reach this')
     } catch (e: any) {
-      assert.ok(e.message.includes('proof does not have the expected trie root'))
+      assert.isTrue(e.message.includes('proof does not have the expected trie root'))
     }
 
-    await newPartialStateManager2.addProofData(zeroAddressProof)
+    await addMerkleStateProofData(newPartialStateManager2, zeroAddressProof)
 
     let zeroAccount = await newPartialStateManager2.getAccount(createZeroAddress())
-    assert.ok(zeroAccount === undefined)
+    assert.isUndefined(zeroAccount)
 
     await newPartialStateManager2.setStateRoot(await stateManager.getStateRoot())
     zeroAccount = await newPartialStateManager2.getAccount(createZeroAddress())
-    assert.ok(zeroAccount!.nonce === zeroAddressNonce)
+    assert.strictEqual(zeroAccount?.nonce, zeroAddressNonce)
   })
   it.skipIf(isBrowser() === true)(
     'should create a statemanager fromProof with opts preserved',
     async () => {
-      const trie = await createTrie({ useKeyHashing: false })
+      const trie = await createMPT({ useKeyHashing: false })
       const sm = new MerkleStateManager({ trie })
       const pk = hexToBytes('0x9f12aab647a25a81f821a5a0beec3330cd057b2346af4fb09d7a807e896701ea')
       const pk2 = hexToBytes('0x8724f27e2ce3714af01af3220478849db68a03c0f84edf1721d73d9a6139ad1c')
@@ -318,36 +323,37 @@ describe('StateManager -> General', () => {
       await sm.putStorage(address, setLengthLeft(intToBytes(0), 32), intToBytes(32))
       const storage = await sm.dumpStorage(address)
       const keys = Object.keys(storage) as PrefixedHexString[]
-      const proof = await sm.getProof(
+      const proof = await getMerkleStateProof(
+        sm,
         address,
         keys.map((key) => hexToBytes(key)),
       )
-      const proof2 = await sm.getProof(address2)
-      const newTrie = await createTrieFromProof(
+      const proof2 = await getMerkleStateProof(sm, address2)
+      const newTrie = await createMPTFromProof(
         proof.accountProof.map((e) => hexToBytes(e)),
         { useKeyHashing: false },
       )
-      const partialSM = await MerkleStateManager.fromProof([proof, proof2], true, {
+      const partialSM = await fromMerkleStateProof([proof, proof2], true, {
         trie: newTrie,
       })
-      assert.equal(
+      assert.strictEqual(
         partialSM['_trie']['_opts'].useKeyHashing,
         false,
         'trie opts are preserved in new sm',
       )
       assert.deepEqual(intToBytes(32), await partialSM.getStorage(address, hexToBytes(keys[0])))
-      assert.equal((await partialSM.getAccount(address2))?.balance, 100n)
-      const partialSM2 = await MerkleStateManager.fromProof(proof, true, {
+      assert.strictEqual((await partialSM.getAccount(address2))?.balance, 100n)
+      const partialSM2 = await fromMerkleStateProof(proof, true, {
         trie: newTrie,
       })
-      await partialSM2.addProofData(proof2, true)
-      assert.equal(
+      await addMerkleStateProofData(partialSM2, proof2, true)
+      assert.strictEqual(
         partialSM2['_trie']['_opts'].useKeyHashing,
         false,
         'trie opts are preserved in new sm',
       )
       assert.deepEqual(intToBytes(32), await partialSM2.getStorage(address, hexToBytes(keys[0])))
-      assert.equal((await partialSM2.getAccount(address2))?.balance, 100n)
+      assert.strictEqual((await partialSM2.getAccount(address2))?.balance, 100n)
     },
   )
 })

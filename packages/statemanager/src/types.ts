@@ -1,10 +1,10 @@
 import { type PrefixedHexString } from '@ethereumjs/util'
 
-import type { AccessWitness, Caches } from './index.js'
+import type { BinaryTree } from '@ethereumjs/binarytree'
 import type { Common } from '@ethereumjs/common'
-import type { Trie } from '@ethereumjs/trie'
-import type { VerkleCrypto } from '@ethereumjs/util'
+import type { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import type { VerkleTree } from '@ethereumjs/verkle'
+import type { Caches } from './index.ts'
 /**
  * Basic state manager options (not to be used directly)
  */
@@ -32,9 +32,9 @@ export interface RPCStateManagerOpts extends BaseStateManagerOpts {
  */
 export interface MerkleStateManagerOpts extends BaseStateManagerOpts {
   /**
-   * A {@link Trie} instance
+   * A {@link MerklePatriciaTrie} instance
    */
-  trie?: Trie
+  trie?: MerklePatriciaTrie
   /**
    * Option to prefix codehashes in the database. This defaults to `true`.
    * If this is disabled, note that it is possible to corrupt the trie, by deploying code
@@ -69,17 +69,30 @@ export interface MerkleStateManagerOpts extends BaseStateManagerOpts {
  * Options dictionary.
  */
 export interface StatelessVerkleStateManagerOpts extends BaseStateManagerOpts {
-  accesses?: AccessWitness
-  verkleCrypto: VerkleCrypto
-  initialStateRoot?: Uint8Array
+  common: Common // Common required since it provides verkleCrypto through customCrypto
   caches?: Caches
 }
 
 export interface StatefulVerkleStateManagerOpts extends BaseStateManagerOpts {
-  verkleCrypto: VerkleCrypto
+  common: Common // Common required since it provides verkleCrypto through customCrypto
   trie?: VerkleTree
   caches?: Caches
 }
+
+export interface StatefulBinaryTreeStateManagerOpts extends BaseStateManagerOpts {
+  hashFunction?: (data: Uint8Array) => Uint8Array
+  tree?: BinaryTree
+  caches?: Caches
+}
+
+export interface BinaryTreeState {
+  [key: PrefixedHexString]: PrefixedHexString | null
+}
+
+export interface EncodedBinaryTreeState {
+  [key: PrefixedHexString]: PrefixedHexString | null
+}
+
 export interface VerkleState {
   [key: PrefixedHexString]: PrefixedHexString | null
 }

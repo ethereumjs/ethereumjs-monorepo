@@ -1,7 +1,7 @@
 import { bigIntToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createClient, createManager, getRPCClient, startRPC } from '../helpers.js'
+import { createClient, createManager, getRPCClient, startRPC } from '../helpers.ts'
 
 const method = 'eth_blockNumber'
 
@@ -21,6 +21,6 @@ describe(method, () => {
 
     const res = await rpc.request(method, [])
 
-    assert.equal(res.result, bigIntToHex(mockBlockNumber))
+    assert.strictEqual(res.result, bigIntToHex(mockBlockNumber))
   })
 })

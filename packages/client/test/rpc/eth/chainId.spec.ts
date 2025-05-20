@@ -1,7 +1,8 @@
-import { Common, Goerli } from '@ethereumjs/common'
+import { Common } from '@ethereumjs/common'
+import { goerliChainConfig } from '@ethereumjs/testdata'
 import { assert, describe, it } from 'vitest'
 
-import { baseSetup, createClient, createManager, getRPCClient, startRPC } from '../helpers.js'
+import { baseSetup, createClient, createManager, getRPCClient, startRPC } from '../helpers.ts'
 
 const method = 'eth_chainId'
 
@@ -10,7 +11,7 @@ describe(method, () => {
     const { rpc } = await baseSetup()
 
     const res = await rpc.request(method, [])
-    assert.equal(typeof res.result, 'string', 'chainId should be a string')
+    assert.strictEqual(typeof res.result, 'string', 'chainId should be a string')
   })
 
   it('returns 1 for Mainnet', async () => {
@@ -18,17 +19,17 @@ describe(method, () => {
 
     const res = await rpc.request(method, [])
 
-    assert.equal(res.result, '0x1', 'should return chainId 1')
+    assert.strictEqual(res.result, '0x1', 'should return chainId 1')
   })
 
   it('returns 5 for Goerli', async () => {
     const manager = createManager(
-      await createClient({ opened: true, commonChain: new Common({ chain: Goerli }) }),
+      await createClient({ opened: true, commonChain: new Common({ chain: goerliChainConfig }) }),
     )
     const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, [])
 
-    assert.equal(res.result, '0x5', 'should return chainId 5')
+    assert.strictEqual(res.result, '0x5', 'should return chainId 5')
   })
 })

@@ -2,12 +2,11 @@ import { createBlock } from '@ethereumjs/block'
 import { MemoryLevel } from 'memory-level'
 import { assert, describe, it, vi } from 'vitest'
 
-import { Chain } from '../../../src/blockchain/chain.js'
-import { Config } from '../../../src/config.js'
-import { getLogger } from '../../../src/logging.js'
-import { Skeleton } from '../../../src/service/skeleton.js'
-import { Event } from '../../../src/types.js'
-import { wait } from '../../integration/util.js'
+import { Chain } from '../../../src/blockchain/chain.ts'
+import { Config } from '../../../src/config.ts'
+import { Skeleton } from '../../../src/service/skeleton.ts'
+import { Event } from '../../../src/types.ts'
+import { wait } from '../../integration/util.ts'
 
 class PeerPool {
   idle() {}
@@ -16,7 +15,7 @@ class PeerPool {
 PeerPool.prototype.idle = vi.fn()
 PeerPool.prototype.ban = vi.fn()
 
-const { ReverseBlockFetcher } = await import('../../../src/sync/fetcher/reverseblockfetcher.js')
+const { ReverseBlockFetcher } = await import('../../../src/sync/fetcher/reverseblockfetcher.ts')
 describe('[ReverseBlockFetcher]', async () => {
   it('should start/stop', async () => {
     const config = new Config({ maxPerRequest: 5 })
@@ -33,16 +32,16 @@ describe('[ReverseBlockFetcher]', async () => {
       timeout: 5,
     })
     fetcher.next = () => false
-    assert.notOk((fetcher as any).running, 'not started')
+    assert.isFalse(fetcher['running'], 'not started')
     void fetcher.fetch()
-    assert.equal((fetcher as any).in.length, 3, 'added 2 tasks')
+    assert.strictEqual(fetcher['in'].length, 3, 'added 2 tasks')
     await wait(100)
-    assert.ok((fetcher as any).running, 'started')
-    assert.equal(fetcher.first, BigInt(14), 'pending tasks first tracking should be reduced')
-    assert.equal(fetcher.count, BigInt(0), 'pending tasks count should be reduced')
+    assert.isTrue(fetcher['running'], 'started')
+    assert.strictEqual(fetcher.first, BigInt(14), 'pending tasks first tracking should be reduced')
+    assert.strictEqual(fetcher.count, BigInt(0), 'pending tasks count should be reduced')
     fetcher.destroy()
     await wait(100)
-    assert.notOk((fetcher as any).running, 'stopped')
+    assert.isFalse(fetcher['running'], 'stopped')
   })
 
   it('should generate max tasks', async () => {
@@ -60,16 +59,20 @@ describe('[ReverseBlockFetcher]', async () => {
       timeout: 5,
     })
     fetcher.next = () => false
-    assert.notOk((fetcher as any).running, 'not started')
+    assert.isFalse(fetcher['running'], 'not started')
     void fetcher.fetch()
-    assert.equal((fetcher as any).in.length, 10, 'added max 10 tasks')
+    assert.strictEqual(fetcher['in'].length, 10, 'added max 10 tasks')
     await wait(100)
-    assert.ok((fetcher as any).running, 'started')
-    assert.equal(fetcher.first, BigInt(6), 'pending tasks first tracking should be by maximum')
-    assert.equal(fetcher.count, BigInt(3), 'pending tasks count should be reduced by maximum')
+    assert.isTrue(fetcher['running'], 'started')
+    assert.strictEqual(
+      fetcher.first,
+      BigInt(6),
+      'pending tasks first tracking should be by maximum',
+    )
+    assert.strictEqual(fetcher.count, BigInt(3), 'pending tasks count should be reduced by maximum')
     fetcher.destroy()
     await wait(100)
-    assert.notOk((fetcher as any).running, 'stopped')
+    assert.isFalse(fetcher['running'], 'stopped')
   })
 
   it('should process', async () => {
@@ -87,7 +90,7 @@ describe('[ReverseBlockFetcher]', async () => {
     })
     const blocks: any = [{ header: { number: 2 } }, { header: { number: 1 } }]
     assert.deepEqual(fetcher.process({ task: { count: 2 } } as any, blocks), blocks, 'got results')
-    assert.notOk(
+    assert.isUndefined(
       fetcher.process({ task: { count: 2 } } as any, { blocks: [] } as any),
       'bad results',
     )
@@ -108,17 +111,17 @@ describe('[ReverseBlockFetcher]', async () => {
     })
     const blocks: any = [{ header: { number: 3 } }, { header: { number: 2 } }]
     const task = { count: 3, first: BigInt(3) }
-    ;(fetcher as any).running = true
+    fetcher['running'] = true
     fetcher.enqueueTask(task)
-    const job = (fetcher as any).in.peek()
+    const job = fetcher['in'].peek()
     let results = fetcher.process(job as any, blocks)
-    assert.equal((fetcher as any).in.length, 1, 'Fetcher should still have same job')
-    assert.equal(job?.partialResult?.length, 2, 'Should have two partial results')
-    assert.equal(results, undefined, 'Process should not return full results yet')
+    assert.strictEqual(fetcher['in'].length, 1, 'Fetcher should still have same job')
+    assert.strictEqual(job?.partialResult?.length, 2, 'Should have two partial results')
+    assert.strictEqual(results, undefined, 'Process should not return full results yet')
 
     const remainingBlocks: any = [{ header: { number: 1 } }]
     results = fetcher.process(job as any, remainingBlocks)
-    assert.equal(results?.length, 3, 'Should return full results')
+    assert.strictEqual(results?.length, 3, 'Should return full results')
   })
 
   it('should find a fetchable peer', async () => {
@@ -135,8 +138,8 @@ describe('[ReverseBlockFetcher]', async () => {
       first: BigInt(10),
       count: BigInt(2),
     })
-    // td.when((fetcher as any).pool.idle(td.matchers.anything())).thenReturn('peer0')
-    assert.equal(fetcher.peer(), 'peer0' as any, 'found peer')
+    // td.when(fetcher['pool'].idle(td.matchers.anything())).thenReturn('peer0')
+    assert.strictEqual(fetcher.peer(), 'peer0' as any, 'found peer')
   })
 
   it('should request correctly', async () => {
@@ -180,7 +183,6 @@ describe('[ReverseBlockFetcher]', async () => {
       accountCache: 10000,
       storageCache: 1000,
       skeletonSubchainMergeMinimum: 0,
-      logger: getLogger({ logLevel: 'debug' }),
     })
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
@@ -223,25 +225,26 @@ describe('[ReverseBlockFetcher]', async () => {
       },
       { setHardfork: true },
     )
-    ;(skeleton as any).status.progress.subchains = [
+    skeleton['status'].progress.subchains = [
       { head: BigInt(100), tail: BigInt(50), next: block49.hash() },
       { head: BigInt(48), tail: BigInt(5), next: block4.hash() },
     ]
-    await (skeleton as any).putBlock(block47)
-    await (skeleton as any).putBlock(block5)
+    await skeleton['putBlock'](block47)
+    await skeleton['putBlock'](block5)
     await fetcher.store([block49, block48])
-    assert.ok(
-      (skeleton as any).status.progress.subchains.length === 1,
+    assert.strictEqual(
+      skeleton['status'].progress.subchains.length,
+      1,
       'subchains should be merged',
     )
-    assert.equal(
-      (skeleton as any).status.progress.subchains[0].tail,
+    assert.strictEqual(
+      skeleton['status'].progress.subchains[0].tail,
       BigInt(5),
       'subchain tail should be next segment',
     )
-    assert.notOk((fetcher as any).running, 'fetcher should stop')
-    assert.equal((fetcher as any).in.length, 0, 'fetcher in should be cleared')
-    assert.equal((fetcher as any).out.length, 0, 'fetcher out should be cleared')
+    assert.isFalse(fetcher['running'], 'fetcher should stop')
+    assert.strictEqual(fetcher['in'].length, 0, 'fetcher in should be cleared')
+    assert.strictEqual(fetcher['out'].length, 0, 'fetcher out should be cleared')
   })
 })
 describe('store()', async () => {
@@ -266,7 +269,7 @@ describe('store()', async () => {
       await fetcher.store([])
       assert.fail('fetcher store should have errored')
     } catch (err: any) {
-      assert.equal(
+      assert.strictEqual(
         err.message,
         `Blocks don't extend canonical subchain`,
         'store() threw on invalid block',
@@ -275,14 +278,14 @@ describe('store()', async () => {
         first: BigInt(10),
         count: 10,
       })
-      assert.equal(destroyFetcher, false, 'fetcher should not be destroyed on this error')
-      assert.equal(banPeer, true, 'peer should be banned on this error')
+      assert.strictEqual(destroyFetcher, false, 'fetcher should not be destroyed on this error')
+      assert.strictEqual(banPeer, true, 'peer should be banned on this error')
     }
   })
   skeleton.putBlocks = vi.fn().mockResolvedValueOnce(1)
   config.events.on(Event.SYNC_FETCHED_BLOCKS, () =>
     it('should emit event on put blocks', async () => {
-      assert.ok(true, 'store() emitted SYNC_FETCHED_BLOCKS event on putting blocks')
+      assert.isTrue(true, 'store() emitted SYNC_FETCHED_BLOCKS event on putting blocks')
     }),
   )
   await fetcher.store([])

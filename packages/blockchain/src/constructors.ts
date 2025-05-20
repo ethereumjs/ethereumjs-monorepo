@@ -1,5 +1,6 @@
 import { createBlock } from '@ethereumjs/block'
-import { BIGINT_0, equalsBytes } from '@ethereumjs/util'
+import { BIGINT_0, EthereumJSErrorWithoutCode, bytesToHex, equalsBytes } from '@ethereumjs/util'
+import debugDefault from 'debug'
 
 import {
   Blockchain,
@@ -8,11 +9,15 @@ import {
   DBSetTD,
   genGenesisStateRoot,
   getGenesisStateRoot,
-} from './index.js'
+} from './index.ts'
 
-import type { BlockchainOptions, DBOp } from './index.js'
 import type { BlockData } from '@ethereumjs/block'
 import type { Chain } from '@ethereumjs/common'
+import type { BlockchainOptions, DBOp } from './index.ts'
+
+const DEBUG =
+  typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+const debug = debugDefault('blockchain:#')
 
 export async function createBlockchain(opts: BlockchainOptions = {}) {
   const blockchain = new Blockchain(opts)
@@ -41,7 +46,7 @@ export async function createBlockchain(opts: BlockchainOptions = {}) {
   // If the DB has a genesis block, then verify that the genesis block in the
   // DB is indeed the Genesis block generated or assigned.
   if (dbGenesisBlock !== undefined && !equalsBytes(genesisBlock.hash(), dbGenesisBlock.hash())) {
-    throw new Error(
+    throw EthereumJSErrorWithoutCode(
       'The genesis block in the DB has a different hash than the provided genesis block.',
     )
   }
@@ -66,20 +71,22 @@ export async function createBlockchain(opts: BlockchainOptions = {}) {
 
   // load verified iterator heads
   const heads = await blockchain.dbManager.getHeads()
-  blockchain['_heads'] = heads !== undefined ? heads : {}
+  blockchain['_heads'] = heads ?? {}
 
   // load headerchain head
   let hash = await blockchain.dbManager.getHeadHeader()
-  blockchain['_headHeaderHash'] = hash !== undefined ? hash : genesisHash
+  blockchain['_headHeaderHash'] = hash ?? genesisHash
 
   // load blockchain head
   hash = await blockchain.dbManager.getHeadBlock()
-  blockchain['_headBlockHash'] = hash !== undefined ? hash : genesisHash
+  blockchain['_headBlockHash'] = hash ?? genesisHash
 
   if (blockchain['_hardforkByHeadBlockNumber']) {
     const latestHeader = await blockchain['_getHeader'](blockchain['_headHeaderHash'])
     await blockchain.checkAndTransitionHardForkByNumber(latestHeader.number, latestHeader.timestamp)
   }
+
+  DEBUG && debug(`genesis block initialized with hash ${bytesToHex(genesisHash!)}`)
 
   return blockchain
 }

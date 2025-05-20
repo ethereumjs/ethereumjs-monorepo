@@ -7,10 +7,9 @@ import { createAddressFromString } from '@ethereumjs/util'
 import { runBlock } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import { createClient, createManager, getRPCClient, startRPC } from '../helpers.js'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
+import { createClient, createManager, getRPCClient, startRPC } from '../helpers.ts'
 
-import type { FullEthereumService } from '../../../src/service/index.js'
 import type { Block } from '@ethereumjs/block'
 
 const method = 'eth_getBlockTransactionCountByNumber'
@@ -29,7 +28,7 @@ describe(method, () => {
     const manager = createManager(client)
     const rpc = getRPCClient(startRPC(manager.getMethods()))
 
-    const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
+    const { execution } = client.service
     assert.notEqual(execution, undefined, 'should have valid execution')
     const { vm } = execution
 
@@ -62,7 +61,7 @@ describe(method, () => {
 
     // verify that the transaction count is 1
     const res = await rpc.request(method, ['latest'])
-    assert.equal(res.result, '0x1', 'should return the correct block transaction count(1)')
+    assert.strictEqual(res.result, '0x1', 'should return the correct block transaction count(1)')
   })
 
   it('call with valid arguments (multiple transactions)', async () => {
@@ -76,7 +75,7 @@ describe(method, () => {
     const manager = createManager(client)
     const rpc = getRPCClient(startRPC(manager.getMethods()))
 
-    const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
+    const { execution } = client.service
     assert.notEqual(execution, undefined, 'should have valid execution')
     const { vm } = execution
 
@@ -121,7 +120,7 @@ describe(method, () => {
     // verify that the transaction count is 3
     // specify the block number instead of using latest
     const res = await rpc.request(method, ['0x1'])
-    assert.equal(res.result, '0x3', 'should return the correct block transaction count(3)')
+    assert.strictEqual(res.result, '0x3', 'should return the correct block transaction count(3)')
   })
 
   it('call with unsupported block argument', async () => {
@@ -132,7 +131,7 @@ describe(method, () => {
     const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['pending'])
-    assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('"pending" is not yet supported'))
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
+    assert.isTrue(res.error.message.includes('"pending" is not yet supported'))
   })
 })

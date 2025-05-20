@@ -2,10 +2,10 @@ import { Hardfork } from '@ethereumjs/common'
 import {
   BIGINT_0,
   BIGINT_1,
-  BIGINT_160,
   BIGINT_2,
   BIGINT_32,
   BIGINT_64,
+  BIGINT_160,
   BIGINT_NEG1,
   bytesToHex,
   createAddressFromBigInt,
@@ -15,14 +15,50 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { EvmError } from '../exceptions.js'
+import { EVMError } from '../errors.ts'
 
-import type { ERROR } from '../exceptions.js'
-import type { RunState } from '../interpreter.js'
 import type { Common } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
+import type { EVMErrorType } from '../errors.ts'
+import type { RunState } from '../interpreter.ts'
 
 const MASK_160 = (BIGINT_1 << BIGINT_160) - BIGINT_1
+
+export function mod(a: bigint, b: bigint) {
+  let r = a % b
+  if (r < BIGINT_0) {
+    r = b + r
+  }
+  return r
+}
+
+export function fromTwos(a: bigint) {
+  return BigInt.asIntN(256, a)
+}
+
+export function toTwos(a: bigint) {
+  return BigInt.asUintN(256, a)
+}
+
+export function abs(a: bigint) {
+  if (a > 0) {
+    return a
+  }
+  return a * BIGINT_NEG1
+}
+
+const N = BigInt(115792089237316195423570985008687907853269984665640564039457584007913129639936)
+export function exponentiation(bas: bigint, exp: bigint) {
+  let t = BIGINT_1
+  while (exp > BIGINT_0) {
+    if (exp % BIGINT_2 !== BIGINT_0) {
+      t = (t * bas) % N
+    }
+    bas = (bas * bas) % N
+    exp = exp / BIGINT_2
+  }
+  return t
+}
 
 /**
  * Create an address from a stack item (256 bit integer).
@@ -49,11 +85,11 @@ export function setLengthLeftStorage(value: Uint8Array) {
 }
 
 /**
- * Wraps error message as EvmError
+ * Wraps error message as EVMError
  */
 export function trap(err: string) {
   // TODO: facilitate extra data along with errors
-  throw new EvmError(err as ERROR)
+  throw new EVMError(err as EVMErrorType)
 }
 
 /**
@@ -234,40 +270,4 @@ export function updateSstoreGas(
     */
     return common.param('sstoreSetGas')
   }
-}
-
-export function mod(a: bigint, b: bigint) {
-  let r = a % b
-  if (r < BIGINT_0) {
-    r = b + r
-  }
-  return r
-}
-
-export function fromTwos(a: bigint) {
-  return BigInt.asIntN(256, a)
-}
-
-export function toTwos(a: bigint) {
-  return BigInt.asUintN(256, a)
-}
-
-export function abs(a: bigint) {
-  if (a > 0) {
-    return a
-  }
-  return a * BIGINT_NEG1
-}
-
-const N = BigInt(115792089237316195423570985008687907853269984665640564039457584007913129639936)
-export function exponentiation(bas: bigint, exp: bigint) {
-  let t = BIGINT_1
-  while (exp > BIGINT_0) {
-    if (exp % BIGINT_2 !== BIGINT_0) {
-      t = (t * bas) % N
-    }
-    bas = (bas * bas) % N
-    exp = exp / BIGINT_2
-  }
-  return t
 }

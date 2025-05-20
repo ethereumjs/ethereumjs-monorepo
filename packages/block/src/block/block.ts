@@ -1,17 +1,21 @@
 import { ConsensusType } from '@ethereumjs/common'
+import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
-import { Trie } from '@ethereumjs/trie'
 import { Blob4844Tx, Capability } from '@ethereumjs/tx'
 import {
   BIGINT_0,
-  CLRequestType,
+  EthereumJSErrorWithoutCode,
   KECCAK256_RLP,
   KECCAK256_RLP_ARRAY,
   bytesToHex,
   equalsBytes,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { sha256 } from 'ethereum-cryptography/sha256.js'
 
+import type { Common } from '@ethereumjs/common'
+import type { FeeMarket1559Tx, LegacyTx, TypedTransaction } from '@ethereumjs/tx'
+import type { VerkleExecutionWitness, Withdrawal } from '@ethereumjs/util'
 /* eslint-disable */
 // This is to allow for a proper and linked collection of constructors for the class header.
 // For tree shaking/code size this should be no problem since types go away on transpilation.
@@ -19,30 +23,19 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 // See: https://github.com/microsoft/TypeScript/issues/47558
 // (situation will eventually improve on Typescript and/or Eslint update)
 import {
-  genRequestsTrieRoot,
-  genTransactionsTrieRoot,
-  genWithdrawalsTrieRoot,
   BlockHeader,
-  type createBlockFromBeaconPayloadJSON,
   type createBlock,
+  type createBlockFromBeaconPayloadJSON,
+  type createBlockFromBytesArray,
   type createBlockFromExecutionPayload,
   type createBlockFromJSONRPCProvider,
   type createBlockFromRLP,
   type createBlockFromRPC,
-  type createBlockFromBytesArray,
-} from '../index.js'
+  genTransactionsTrieRoot,
+  genWithdrawalsTrieRoot,
+} from '../index.ts'
 /* eslint-enable */
-import type { BlockBytes, BlockOptions, ExecutionPayload, JSONBlock } from '../types.js'
-import type { Common } from '@ethereumjs/common'
-import type { FeeMarket1559Tx, LegacyTx, TypedTransaction } from '@ethereumjs/tx'
-import type {
-  CLRequest,
-  ConsolidationRequest,
-  DepositRequest,
-  VerkleExecutionWitness,
-  Withdrawal,
-  WithdrawalRequest,
-} from '@ethereumjs/util'
+import type { BlockBytes, BlockOptions, ExecutionPayload, JSONBlock } from '../types.ts'
 
 /**
  * Class representing a block in the Ethereum network. The {@link BlockHeader} has its own
@@ -65,9 +58,9 @@ export class Block {
   public readonly transactions: TypedTransaction[] = []
   public readonly uncleHeaders: BlockHeader[] = []
   public readonly withdrawals?: Withdrawal[]
-  public readonly requests?: CLRequest<CLRequestType>[]
   public readonly common: Common
   protected keccakFunction: (msg: Uint8Array) => Uint8Array
+  protected sha256Function: (msg: Uint8Array) => Uint8Array
 
   /**
    * EIP-6800: Verkle Proof Data (experimental)
@@ -79,7 +72,6 @@ export class Block {
   protected cache: {
     txTrieRoot?: Uint8Array
     withdrawalsTrieRoot?: Uint8Array
-    requestsRoot?: Uint8Array
   } = {}
 
   /**
@@ -94,17 +86,16 @@ export class Block {
     uncleHeaders: BlockHeader[] = [],
     withdrawals?: Withdrawal[],
     opts: BlockOptions = {},
-    requests?: CLRequest<CLRequestType>[],
     executionWitness?: VerkleExecutionWitness | null,
   ) {
     this.header = header ?? new BlockHeader({}, opts)
     this.common = this.header.common
     this.keccakFunction = this.common.customCrypto.keccak256 ?? keccak256
+    this.sha256Function = this.common.customCrypto.sha256 ?? sha256
 
     this.transactions = transactions
     this.withdrawals = withdrawals ?? (this.common.isActivatedEIP(4895) ? [] : undefined)
     this.executionWitness = executionWitness
-    this.requests = requests ?? (this.common.isActivatedEIP(7685) ? [] : undefined)
     // null indicates an intentional absence of value or unavailability
     // undefined indicates that the executionWitness should be initialized with the default state
     if (this.common.isActivatedEIP(6800) && this.executionWitness === undefined) {
@@ -133,18 +124,18 @@ export class Block {
         const msg = this._errorMsg(
           'Block initialization with uncleHeaders on a PoA network is not allowed',
         )
-        throw new Error(msg)
+        throw EthereumJSErrorWithoutCode(msg)
       }
       if (this.common.consensusType() === ConsensusType.ProofOfStake) {
         const msg = this._errorMsg(
           'Block initialization with uncleHeaders on a PoS network is not allowed',
         )
-        throw new Error(msg)
+        throw EthereumJSErrorWithoutCode(msg)
       }
     }
 
     if (!this.common.isActivatedEIP(4895) && withdrawals !== undefined) {
-      throw new Error('Cannot have a withdrawals field if EIP 4895 is not active')
+      throw EthereumJSErrorWithoutCode('Cannot have a withdrawals field if EIP 4895 is not active')
     }
 
     if (
@@ -152,21 +143,11 @@ export class Block {
       executionWitness !== undefined &&
       executionWitness !== null
     ) {
-      throw new Error(`Cannot have executionWitness field if EIP 6800 is not active `)
+      throw EthereumJSErrorWithoutCode(
+        `Cannot have executionWitness field if EIP 6800 is not active `,
+      )
     }
 
-    if (!this.common.isActivatedEIP(7685) && requests !== undefined) {
-      throw new Error(`Cannot have requests field if EIP 7685 is not active`)
-    }
-
-    // Requests should be sorted in monotonically ascending order based on type
-    // and whatever internal sorting logic is defined by each request type
-    if (requests !== undefined && requests.length > 1) {
-      for (let x = 1; x < requests.length; x++) {
-        if (requests[x].type < requests[x - 1].type)
-          throw new Error('requests are not sorted in ascending order')
-      }
-    }
     const freeze = opts?.freeze ?? true
     if (freeze) {
       Object.freeze(this)
@@ -177,7 +158,7 @@ export class Block {
    * Returns a Array of the raw Bytes Arrays of this block, in order.
    */
   raw(): BlockBytes {
-    const bytesArray = <BlockBytes>[
+    const bytesArray: BlockBytes = [
       this.header.raw(),
       this.transactions.map((tx) =>
         tx.supports(Capability.EIP2718TypedTransaction) ? tx.serialize() : tx.raw(),
@@ -187,11 +168,6 @@ export class Block {
     const withdrawalsRaw = this.withdrawals?.map((wt) => wt.raw())
     if (withdrawalsRaw) {
       bytesArray.push(withdrawalsRaw)
-    }
-
-    const requestsRaw = this.requests?.map((req) => req.serialize())
-    if (requestsRaw) {
-      bytesArray.push(requestsRaw)
     }
 
     if (this.executionWitness !== undefined && this.executionWitness !== null) {
@@ -226,7 +202,10 @@ export class Block {
    * Generates transaction trie for validation.
    */
   async genTxTrie(): Promise<Uint8Array> {
-    return genTransactionsTrieRoot(this.transactions, new Trie({ common: this.common }))
+    return genTransactionsTrieRoot(
+      this.transactions,
+      new MerklePatriciaTrie({ common: this.common }),
+    )
   }
 
   /**
@@ -248,27 +227,6 @@ export class Block {
     return result
   }
 
-  async requestsTrieIsValid(requestsInput?: CLRequest<CLRequestType>[]): Promise<boolean> {
-    if (!this.common.isActivatedEIP(7685)) {
-      throw new Error('EIP 7685 is not activated')
-    }
-
-    const requests = requestsInput ?? this.requests!
-
-    if (requests!.length === 0) {
-      return equalsBytes(this.header.requestsRoot!, KECCAK256_RLP)
-    }
-
-    if (requestsInput === undefined) {
-      if (this.cache.requestsRoot === undefined) {
-        this.cache.requestsRoot = await genRequestsTrieRoot(this.requests!)
-      }
-      return equalsBytes(this.cache.requestsRoot, this.header.requestsRoot!)
-    } else {
-      const reportedRoot = await genRequestsTrieRoot(requests)
-      return equalsBytes(reportedRoot, this.header.requestsRoot!)
-    }
-  }
   /**
    * Validates transaction signatures and minimum gas requirements.
    * @returns {string[]} an array of error strings
@@ -294,7 +252,7 @@ export class Block {
         }
       }
       if (this.common.isActivatedEIP(4844)) {
-        const blobGasLimit = this.common.param('maxblobGasPerBlock')
+        const blobGasLimit = this.common.param('maxBlobGasPerBlock')
         const blobGasPerBlob = this.common.param('blobGasPerBlob')
         if (tx instanceof Blob4844Tx) {
           blobGasUsed += BigInt(tx.numBlobs()) * blobGasPerBlob
@@ -344,7 +302,7 @@ export class Block {
       const txErrors = this.getTransactionsValidationErrors()
       if (txErrors.length > 0) {
         const msg = this._errorMsg(`invalid transactions: ${txErrors.join(' ')}`)
-        throw new Error(msg)
+        throw EthereumJSErrorWithoutCode(msg)
       }
     }
 
@@ -358,34 +316,37 @@ export class Block {
           const msg = this._errorMsg(
             `invalid transactions: transaction at index ${index} is unsigned`,
           )
-          throw new Error(msg)
+          throw EthereumJSErrorWithoutCode(msg)
         }
       }
     }
 
     if (!(await this.transactionsTrieIsValid())) {
       const msg = this._errorMsg('invalid transaction trie')
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
 
     if (!this.uncleHashIsValid()) {
       const msg = this._errorMsg('invalid uncle hash')
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
 
     if (this.common.isActivatedEIP(4895) && !(await this.withdrawalsTrieIsValid())) {
       const msg = this._errorMsg('invalid withdrawals trie')
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
 
     // Validation for Verkle blocks
     // Unnecessary in this implementation since we're providing defaults if those fields are undefined
+    // TODO: Decide if we should actually require this or not
     if (this.common.isActivatedEIP(6800)) {
       if (this.executionWitness === undefined) {
-        throw new Error(`Invalid block: missing executionWitness`)
+        throw EthereumJSErrorWithoutCode(`Invalid block: missing executionWitness`)
       }
       if (this.executionWitness === null) {
-        throw new Error(`Invalid block: ethereumjs stateless client needs executionWitness`)
+        throw EthereumJSErrorWithoutCode(
+          `Invalid block: ethereumjs stateless client needs executionWitness`,
+        )
       }
     }
   }
@@ -398,13 +359,13 @@ export class Block {
    */
   validateBlobTransactions(parentHeader: BlockHeader) {
     if (this.common.isActivatedEIP(4844)) {
-      const blobGasLimit = this.common.param('maxblobGasPerBlock')
+      const blobGasLimit = this.common.param('maxBlobGasPerBlock')
       const blobGasPerBlob = this.common.param('blobGasPerBlob')
       let blobGasUsed = BIGINT_0
 
-      const expectedExcessBlobGas = parentHeader.calcNextExcessBlobGas()
+      const expectedExcessBlobGas = parentHeader.calcNextExcessBlobGas(this.common)
       if (this.header.excessBlobGas !== expectedExcessBlobGas) {
-        throw new Error(
+        throw EthereumJSErrorWithoutCode(
           `block excessBlobGas mismatch: have ${this.header.excessBlobGas}, want ${expectedExcessBlobGas}`,
         )
       }
@@ -415,7 +376,7 @@ export class Block {
         if (tx instanceof Blob4844Tx) {
           blobGasPrice = blobGasPrice ?? this.header.getBlobGasPrice()
           if (tx.maxFeePerBlobGas < blobGasPrice) {
-            throw new Error(
+            throw EthereumJSErrorWithoutCode(
               `blob transaction maxFeePerBlobGas ${
                 tx.maxFeePerBlobGas
               } < than block blob gas price ${blobGasPrice} - ${this.errorStr()}`,
@@ -425,7 +386,7 @@ export class Block {
           blobGasUsed += BigInt(tx.blobVersionedHashes.length) * blobGasPerBlob
 
           if (blobGasUsed > blobGasLimit) {
-            throw new Error(
+            throw EthereumJSErrorWithoutCode(
               `tx causes total blob gas of ${blobGasUsed} to exceed maximum blob gas per block of ${blobGasLimit}`,
             )
           }
@@ -433,7 +394,7 @@ export class Block {
       }
 
       if (this.header.blobGasUsed !== blobGasUsed) {
-        throw new Error(
+        throw EthereumJSErrorWithoutCode(
           `block blobGasUsed mismatch: have ${this.header.blobGasUsed}, want ${blobGasUsed}`,
         )
       }
@@ -459,7 +420,7 @@ export class Block {
    */
   async withdrawalsTrieIsValid(): Promise<boolean> {
     if (!this.common.isActivatedEIP(4895)) {
-      throw new Error('EIP 4895 is not activated')
+      throw EthereumJSErrorWithoutCode('EIP 4895 is not activated')
     }
 
     let result
@@ -471,7 +432,7 @@ export class Block {
     if (this.cache.withdrawalsTrieRoot === undefined) {
       this.cache.withdrawalsTrieRoot = await genWithdrawalsTrieRoot(
         this.withdrawals!,
-        new Trie({ common: this.common }),
+        new MerklePatriciaTrie({ common: this.common }),
       )
     }
     result = equalsBytes(this.cache.withdrawalsTrieRoot, this.header.withdrawalsRoot!)
@@ -495,14 +456,14 @@ export class Block {
     // Header has at most 2 uncles
     if (this.uncleHeaders.length > 2) {
       const msg = this._errorMsg('too many uncle headers')
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
 
     // Header does not count an uncle twice.
     const uncleHashes = this.uncleHeaders.map((header) => bytesToHex(header.hash()))
     if (!(new Set(uncleHashes).size === uncleHashes.length)) {
       const msg = this._errorMsg('duplicate uncles')
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
   }
 
@@ -530,7 +491,6 @@ export class Block {
       transactions: this.transactions.map((tx) => tx.toJSON()),
       uncleHeaders: this.uncleHeaders.map((uh) => uh.toJSON()),
       ...withdrawalsAttr,
-      requests: this.requests?.map((req) => bytesToHex(req.serialize())),
     }
   }
 
@@ -565,36 +525,8 @@ export class Block {
       transactions,
       ...withdrawalsArr,
       parentBeaconBlockRoot: header.parentBeaconBlockRoot,
+      requestsHash: header.requestsHash,
       executionWitness: this.executionWitness,
-
-      // lets add the  request fields first and then iterate over requests to fill them up
-      depositRequests: this.common.isActivatedEIP(6110) ? [] : undefined,
-      withdrawalRequests: this.common.isActivatedEIP(7002) ? [] : undefined,
-      consolidationRequests: this.common.isActivatedEIP(7251) ? [] : undefined,
-    }
-
-    if (this.requests !== undefined) {
-      for (const request of this.requests) {
-        switch (request.type) {
-          case CLRequestType.Deposit:
-            executionPayload.depositRequests!.push((request as DepositRequest).toJSON())
-            continue
-
-          case CLRequestType.Withdrawal:
-            executionPayload.withdrawalRequests!.push((request as WithdrawalRequest).toJSON())
-            continue
-
-          case CLRequestType.Consolidation:
-            executionPayload.consolidationRequests!.push((request as ConsolidationRequest).toJSON())
-            continue
-        }
-      }
-    } else if (
-      executionPayload.depositRequests !== undefined ||
-      executionPayload.withdrawalRequests !== undefined ||
-      executionPayload.consolidationRequests !== undefined
-    ) {
-      throw Error(`Undefined requests for activated deposit or withdrawal requests`)
     }
 
     return executionPayload
@@ -607,13 +539,13 @@ export class Block {
     let hash = ''
     try {
       hash = bytesToHex(this.hash())
-    } catch (e: any) {
+    } catch {
       hash = 'error'
     }
     let hf = ''
     try {
       hf = this.common.hardfork()
-    } catch (e: any) {
+    } catch {
       hf = 'error'
     }
     let errorStr = `block number=${this.header.number} hash=${hash} `

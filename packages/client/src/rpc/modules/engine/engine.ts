@@ -1,30 +1,47 @@
 import { Hardfork } from '@ethereumjs/common'
 import {
   BIGINT_1,
+  EthereumJSErrorWithoutCode,
   bytesToHex,
   bytesToUnprefixedHex,
   equalsBytes,
   hexToBytes,
-  toBytes,
-  zeros,
 } from '@ethereumjs/util'
 
-import { ExecStatus } from '../../../execution/index.js'
-import { PendingBlock } from '../../../miner/index.js'
-import { PutStatus } from '../../../sync/index.js'
-import { short } from '../../../util/index.js'
+import { ExecStatus } from '../../../execution/index.ts'
+import { PendingBlock } from '../../../miner/index.ts'
+import { PutStatus } from '../../../sync/index.ts'
+import { short } from '../../../util/index.ts'
 import {
   INTERNAL_ERROR,
   INVALID_PARAMS,
   TOO_LARGE_REQUEST,
   UNSUPPORTED_FORK,
   validEngineCodes,
-} from '../../error-code.js'
-import { callWithStackTrace } from '../../helpers.js'
-import { middleware, validators } from '../../validation.js'
+} from '../../error-code.ts'
+import { callWithStackTrace } from '../../helpers.ts'
+import { middleware, validators } from '../../validation.ts'
 
-import { CLConnectionManager, middleware as cmMiddleware } from './CLConnectionManager.js'
-import { type ChainCache, EngineError, type PayloadStatusV1, Status } from './types.js'
+import { CLConnectionManager, middleware as cmMiddleware } from './CLConnectionManager.ts'
+import {
+  type BlobAndProofV1,
+  type Bytes8,
+  type Bytes32,
+  type ChainCache,
+  EngineError,
+  type ExecutionPayloadBodyV1,
+  type ExecutionPayloadV1,
+  type ExecutionPayloadV2,
+  type ExecutionPayloadV3,
+  type ForkchoiceResponseV1,
+  type ForkchoiceStateV1,
+  type PayloadAttributes,
+  type PayloadAttributesV1,
+  type PayloadAttributesV2,
+  type PayloadAttributesV3,
+  type PayloadStatusV1,
+  Status,
+} from './types.ts'
 import {
   assembleBlock,
   blockToExecutionPayload,
@@ -33,45 +50,28 @@ import {
   recursivelyFindParents,
   validExecutedChainBlock,
   validHash,
-  validate4844BlobVersionedHashes,
   validateHardforkRange,
-} from './util/index.js'
+} from './util/index.ts'
 import {
   executionPayloadV1FieldValidators,
   executionPayloadV2FieldValidators,
   executionPayloadV3FieldValidators,
-  executionPayloadV4FieldValidators,
   forkchoiceFieldValidators,
   payloadAttributesFieldValidatorsV1,
   payloadAttributesFieldValidatorsV2,
   payloadAttributesFieldValidatorsV3,
-} from './validators.js'
+} from './validators.ts'
 
-import type { Chain } from '../../../blockchain/index.js'
-import type { EthereumClient } from '../../../client.js'
-import type { Config } from '../../../config.js'
-import type { VMExecution } from '../../../execution/index.js'
-import type { FullEthereumService, Skeleton } from '../../../service/index.js'
-import type {
-  Bytes32,
-  Bytes8,
-  ExecutionPayloadBodyV1,
-  ExecutionPayloadV1,
-  ExecutionPayloadV2,
-  ExecutionPayloadV3,
-  ExecutionPayloadV4,
-  ForkchoiceResponseV1,
-  ForkchoiceStateV1,
-  PayloadAttributes,
-  PayloadAttributesV1,
-  PayloadAttributesV2,
-  PayloadAttributesV3,
-} from './types.js'
 import type { Block, ExecutionPayload } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { VM } from '@ethereumjs/vm'
+import type { Chain } from '../../../blockchain/index.ts'
+import type { EthereumClient } from '../../../client.ts'
+import type { Config } from '../../../config.ts'
+import type { VMExecution } from '../../../execution/index.ts'
+import type { FullEthereumService, Skeleton } from '../../../service/index.ts'
 
-const zeroBlockHash = zeros(32)
+const zeroBlockHash = new Uint8Array(32)
 
 /**
  * engine_* RPC module
@@ -94,9 +94,9 @@ export class Engine {
   private lastNewPayloadHF: string = ''
   private lastForkchoiceUpdatedHF: string = ''
 
-  private remoteBlocks: Map<String, Block>
-  private executedBlocks: Map<String, Block>
-  private invalidBlocks: Map<String, Error>
+  private remoteBlocks: Map<string, Block>
+  private executedBlocks: Map<string, Block>
+  private invalidBlocks: Map<string, Error>
   private chainCache: ChainCache
 
   private lastAnnouncementTime = Date.now()
@@ -108,7 +108,7 @@ export class Engine {
    */
   constructor(client: EthereumClient, rpcDebug: boolean) {
     this.client = client
-    this.service = client.services.find((s) => s.name === 'eth') as FullEthereumService
+    this.service = client.service as FullEthereumService
     this.chain = this.service.chain
     this.config = this.chain.config
     this._rpcDebug = rpcDebug
@@ -207,13 +207,14 @@ export class Engine {
     this.newPayloadV4 = cmMiddleware(
       middleware(
         callWithStackTrace(this.newPayloadV4.bind(this), this._rpcDebug),
-        3,
+        4,
         [
-          [validators.object(executionPayloadV4FieldValidators)],
+          [validators.object(executionPayloadV3FieldValidators)],
           [validators.array(validators.bytes32)],
           [validators.bytes32],
+          [validators.array(validators.hex)],
         ],
-        ['executionPayload', 'blobVersionedHashes', 'parentBeaconBlockRoot'],
+        ['executionPayload', 'blobVersionedHashes', 'parentBeaconBlockRoot', 'executionRequests'],
       ),
       ([payload], response) => this.connectionManager.lastNewPayload({ payload, response }),
     )
@@ -317,6 +318,13 @@ export class Engine {
       ]),
       () => this.connectionManager.updateStatus(),
     )
+
+    this.getBlobsV1 = cmMiddleware(
+      middleware(callWithStackTrace(this.getBlobsV1.bind(this), this._rpcDebug), 1, [
+        [validators.array(validators.bytes32)],
+      ]),
+      () => this.connectionManager.updateStatus(),
+    )
   }
 
   /**
@@ -337,9 +345,14 @@ export class Engine {
    *   3. validationError: String|null - validation error message
    */
   private async newPayload(
-    params: [ExecutionPayload, (Bytes32[] | null)?, (Bytes32 | null)?],
+    params: [
+      ExecutionPayload,
+      (Bytes32[] | null)?,
+      (Bytes32 | null)?,
+      (PrefixedHexString[] | null)?,
+    ],
   ): Promise<PayloadStatusV1> {
-    const [payload, blobVersionedHashes, parentBeaconBlockRoot] = params
+    const [payload, blobVersionedHashes, parentBeaconBlockRoot, executionRequests] = params
     if (this.config.synchronized) {
       this.connectionManager.newPayloadLog()
     }
@@ -357,10 +370,11 @@ export class Engine {
      */
     // newpayloadv3 comes with parentBeaconBlockRoot out of the payload
     const { block: headBlock, error } = await assembleBlock(
+      payload,
       {
-        ...payload,
-        // ExecutionPayload only handles undefined
         parentBeaconBlockRoot: parentBeaconBlockRoot ?? undefined,
+        blobVersionedHashes: blobVersionedHashes ?? undefined,
+        executionRequests: executionRequests ?? undefined,
       },
       this.chain,
       this.chainCache,
@@ -369,7 +383,7 @@ export class Engine {
       let response = error
       if (!response) {
         const validationError = `Error assembling block from payload during initialization`
-        this.config.logger.debug(validationError)
+        this.config.logger?.debug(validationError)
         const latestValidHash = await validHash(
           hexToBytes(parentHash as PrefixedHexString),
           this.chain,
@@ -382,47 +396,12 @@ export class Engine {
     }
 
     /**
-     * Validate blob versioned hashes in the context of EIP-4844 blob transactions
-     */
-    if (headBlock.common.isActivatedEIP(4844)) {
-      let validationError: string | null = null
-      if (blobVersionedHashes === undefined || blobVersionedHashes === null) {
-        validationError = `Error verifying blobVersionedHashes: received none`
-      } else {
-        validationError = validate4844BlobVersionedHashes(headBlock, blobVersionedHashes)
-      }
-
-      // if there was a validation error return invalid
-      if (validationError !== null) {
-        this.config.logger.debug(validationError)
-        const latestValidHash = await validHash(
-          hexToBytes(parentHash as PrefixedHexString),
-          this.chain,
-          this.chainCache,
-        )
-        const response = { status: Status.INVALID, latestValidHash, validationError }
-        // skip marking the block invalid as this is more of a data issue from CL
-        return response
-      }
-    } else if (blobVersionedHashes !== undefined && blobVersionedHashes !== null) {
-      const validationError = `Invalid blobVersionedHashes before EIP-4844 is activated`
-      const latestValidHash = await validHash(
-        hexToBytes(parentHash as PrefixedHexString),
-        this.chain,
-        this.chainCache,
-      )
-      const response = { status: Status.INVALID, latestValidHash, validationError }
-      // skip marking the block invalid as this is more of a data issue from CL
-      return response
-    }
-
-    /**
      * Stats and hardfork updates
      */
     this.connectionManager.updatePayloadStats(headBlock)
     const hardfork = headBlock.common.hardfork()
     if (hardfork !== this.lastNewPayloadHF && this.lastNewPayloadHF !== '') {
-      this.config.logger.info(
+      this.config.logger?.info(
         `Hardfork change along new payload block number=${headBlock.header.number} hash=${short(
           headBlock.hash(),
         )} old=${this.lastNewPayloadHF} new=${hardfork}`,
@@ -447,7 +426,7 @@ export class Engine {
       if (headBlock.common.isActivatedEIP(4844)) {
         try {
           headBlock.validateBlobTransactions(parent.header)
-        } catch (error: any) {
+        } catch {
           const validationError = `Invalid 4844 transactions: ${error}`
           const latestValidHash = await validHash(
             hexToBytes(parentHash as PrefixedHexString),
@@ -468,9 +447,11 @@ export class Engine {
         (await validExecutedChainBlock(hexToBytes(parentHash as PrefixedHexString), this.chain))
       // If the parent is not executed throw an error, it will be caught and return SYNCING or ACCEPTED.
       if (!executedParentExists) {
-        throw new Error(`Parent block not yet executed number=${parent.header.number}`)
+        throw EthereumJSErrorWithoutCode(
+          `Parent block not yet executed number=${parent.header.number}`,
+        )
       }
-    } catch (error: any) {
+    } catch {
       // Stash the block for a potential forced forkchoice update to it later.
       this.remoteBlocks.set(bytesToUnprefixedHex(headBlock.hash()), headBlock)
 
@@ -486,7 +467,7 @@ export class Engine {
         const latestValidHash =
           this.chain.blocks.latest !== null
             ? await validHash(this.chain.blocks.latest.hash(), this.chain, this.chainCache)
-            : bytesToHex(zeros(32))
+            : bytesToHex(new Uint8Array(32))
         const response = {
           status: Status.INVALID,
           validationError: this.skeleton.fillStatus.validationError ?? '',
@@ -555,7 +536,7 @@ export class Engine {
       const latestValidHash =
         this.chain.blocks.latest !== null
           ? await validHash(this.chain.blocks.latest.hash(), this.chain, this.chainCache)
-          : bytesToHex(zeros(32))
+          : bytesToHex(new Uint8Array(32))
       const response = {
         status: Status.INVALID,
         validationError: this.skeleton.fillStatus.validationError ?? '',
@@ -621,7 +602,7 @@ export class Engine {
     try {
       // find parents till vmHead but limit lookups till engineParentLookupMaxDepth
       blocks = await recursivelyFindParents(vmHead.hash(), headBlock.header.parentHash, this.chain)
-    } catch (error) {
+    } catch {
       const response = { status: Status.SYNCING, latestValidHash: null, validationError: null }
       return response
     }
@@ -669,7 +650,7 @@ export class Engine {
 
           // if can't be executed then return syncing/accepted
           if (!executed) {
-            this.config.logger.debug(
+            this.config.logger?.debug(
               `Skipping block(s) execution for headBlock=${headBlock.header.number} hash=${short(
                 headBlock.hash(),
               )} : pendingBlocks=${blocks.length - i}(limit=${
@@ -715,7 +696,7 @@ export class Engine {
       }
 
       const validationError = `Error verifying block while running: ${errorMsg}`
-      this.config.logger.error(validationError)
+      this.config.logger?.error(validationError)
 
       const response = { status: Status.INVALID, latestValidHash, validationError }
       this.invalidBlocks.set(blockHash.slice(2), error as Error)
@@ -845,7 +826,9 @@ export class Engine {
     return newPayloadRes
   }
 
-  async newPayloadV4(params: [ExecutionPayloadV4, Bytes32[], Bytes32]): Promise<PayloadStatusV1> {
+  async newPayloadV4(
+    params: [ExecutionPayloadV3, Bytes32[], Bytes32, Bytes32[]],
+  ): Promise<PayloadStatusV1> {
     const pragueTimestamp = this.chain.config.chainCommon.hardforkTimestamp(Hardfork.Prague)
     const ts = parseInt(params[0].timestamp)
     if (pragueTimestamp === null || ts < pragueTimestamp) {
@@ -914,7 +897,7 @@ export class Engine {
     const prevError = this.invalidBlocks.get(headBlockHash.slice(2))
     if (prevError !== undefined) {
       const validationError = `Received block previously marked INVALID: ${prevError.message}`
-      this.config.logger.debug(validationError)
+      this.config.logger?.debug(validationError)
       const latestValidHash = null
       const payloadStatus = { status: Status.INVALID, latestValidHash, validationError }
       const response = { payloadStatus, payloadId: null }
@@ -927,13 +910,13 @@ export class Engine {
      */
     let headBlock: Block | undefined
     try {
-      const head = toBytes(headBlockHash)
+      const head = hexToBytes(headBlockHash)
       headBlock =
         this.remoteBlocks.get(headBlockHash.slice(2)) ??
         (await this.skeleton.getBlockByHash(head, true)) ??
         (await this.chain.getBlock(head))
-    } catch (error) {
-      this.config.logger.debug(
+    } catch {
+      this.config.logger?.debug(
         `Forkchoice announced head block unknown to EL hash=${short(headBlockHash)}`,
       )
       const payloadStatus = {
@@ -950,7 +933,7 @@ export class Engine {
      */
     const hardfork = headBlock.common.hardfork()
     if (hardfork !== this.lastForkchoiceUpdatedHF && this.lastForkchoiceUpdatedHF !== '') {
-      this.config.logger.info(
+      this.config.logger?.info(
         `Hardfork change along forkchoice head block update number=${
           headBlock.header.number
         } hash=${short(headBlock.hash())} old=${this.lastForkchoiceUpdatedHF} new=${hardfork}`,
@@ -960,7 +943,7 @@ export class Engine {
 
     // Always keep beaconSync skeleton updated so that it stays updated with any skeleton sync
     // requirements that might come later because of reorg or CL restarts
-    this.config.logger.debug(
+    this.config.logger?.debug(
       `Forkchoice requested update to new head number=${headBlock.header.number} hash=${short(
         headBlock.hash(),
       )}`,
@@ -978,7 +961,7 @@ export class Engine {
       const latestValidHash =
         this.chain.blocks.latest !== null
           ? await validHash(this.chain.blocks.latest.hash(), this.chain, this.chainCache)
-          : bytesToHex(zeros(32))
+          : bytesToHex(new Uint8Array(32))
       const response = {
         payloadStatus: {
           status: Status.INVALID,
@@ -1032,7 +1015,7 @@ export class Engine {
         this.config.ignoreStatelessInvalidExecs === true
       ) {
         // jump the vm head to failing block so that next block can be executed
-        this.config.logger.debug(
+        this.config.logger?.debug(
           `Jumping the stalled vmHead forward to hash=${this.execution.chainStatus.hash} height=${this.execution.chainStatus.height} to continue the execution`,
         )
         await this.execution.jumpVmHead(
@@ -1070,7 +1053,7 @@ export class Engine {
             headBlock.header.parentHash,
             this.chain,
           )
-        } catch (error) {
+        } catch {
           const payloadStatus = {
             status: Status.SYNCING,
             latestValidHash: null,
@@ -1327,7 +1310,7 @@ export class Engine {
       }
       // The third arg returned is the minerValue which we will use to
       // value the block
-      const [block, receipts, value, blobs] = built
+      const [block, receipts, value, blobs, requests] = built
 
       // do a blocking call even if execution might be busy for the moment and skip putting
       // it into chain till CL confirms with full data via new payload like versioned hashes
@@ -1341,7 +1324,7 @@ export class Engine {
       /**
        * Creates the payload in ExecutionPayloadV1 format to be returned
        */
-      const executionPayload = blockToExecutionPayload(block, value, blobs)
+      const executionPayload = blockToExecutionPayload(block, value, blobs, requests)
 
       let checkNotBeforeHf: Hardfork | null
       let checkNotAfterHf: Hardfork | null
@@ -1513,5 +1496,21 @@ export class Engine {
       }
     }
     return payloads
+  }
+
+  private async getBlobsV1(params: [[Bytes32]]): Promise<(BlobAndProofV1 | null)[]> {
+    if (params[0].length > 128) {
+      throw {
+        code: TOO_LARGE_REQUEST,
+        message: `More than 128 hashes queried`,
+      }
+    }
+
+    const blobsAndProof: (BlobAndProofV1 | null)[] = []
+    for (const versionedHashHex of params[0]) {
+      blobsAndProof.push(this.service.txPool.blobsAndProofsByHash.get(versionedHashHex) ?? null)
+    }
+
+    return blobsAndProof
   }
 }

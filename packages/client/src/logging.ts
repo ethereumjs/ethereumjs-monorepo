@@ -7,7 +7,7 @@ const { createLogger, format, transports: wTransports } = winston
 
 export type Logger = WinstonLogger
 type LoggerArgs = { logFile: string; logLevelFile: 'error' | 'warn' | 'info' | 'debug' } & {
-  logRotate?: Boolean
+  logRotate?: boolean
   logMaxFiles?: number
 }
 
@@ -21,15 +21,12 @@ const { combine, timestamp, label, printf } = format
 let attentionHF: string | null = null
 let attentionCL: string | null = null
 
-/**
- * Colors for logger levels
- */
-enum LevelColors {
-  error = 'red',
-  warn = 'yellow',
-  info = 'green',
-  debug = 'white',
-}
+const LevelColors = {
+  error: 'red',
+  warn: 'yellow',
+  info: 'green',
+  debug: 'white',
+} as const
 
 /**
  * Adds stack trace to error message if included
@@ -58,29 +55,28 @@ function logFormat(colors = false) {
   return printf(
     (info: {
       level: string
-      message: string | undefined
-      [key: string]: string | null | undefined
+      message: unknown
+      [key: string]: unknown
     }) => {
       let level = info.level.toUpperCase()
 
       if (info.message === undefined) info.message = '(empty message)'
 
       if (colors) {
-        const colorLevel = LevelColors[info.level as keyof typeof LevelColors]
-        const color = chalk.keyword(colorLevel).bind(chalk)
+        const color = chalk[LevelColors[info.level as keyof typeof LevelColors]]
         level = color(level)
 
         const regex = /(\w+)=(.+?)(?:\s|$)/g
         const replaceFn = (_: any, tag: string, char: string) => `${color(tag)}=${char} `
-        info.message = info.message.replace(regex, replaceFn)
+        info.message = (info.message as string).replace(regex, replaceFn)
         if (typeof info.attentionCL === 'string')
           info.attentionCL = info.attentionCL.replace(regex, replaceFn)
         if (typeof info.attentionHF === 'string')
           info.attentionHF = info.attentionHF.replace(regex, replaceFn)
       }
 
-      if (info.attentionCL !== undefined) attentionCL = info.attentionCL
-      if (info.attentionHF !== undefined) attentionHF = info.attentionHF
+      if (info.attentionCL !== undefined) attentionCL = info.attentionCL as string
+      if (info.attentionHF !== undefined) attentionHF = info.attentionHF as string
       const CLLog = attentionCL !== null ? `[ ${attentionCL} ] ` : ''
       const HFLog = attentionHF !== null ? `[ ${attentionHF} ] ` : ''
 
@@ -133,7 +129,12 @@ function logFileTransport(args: LoggerArgs) {
 /**
  * Returns a formatted {@link Logger}
  */
-export function getLogger(args: { [key: string]: any } = { logLevel: 'info' }) {
+export function getLogger(
+  args: { [key: string]: any } = { logLevel: 'info' },
+): WinstonLogger | undefined {
+  if (args.logLevel === 'off') {
+    return undefined
+  }
   const transports: any[] = [
     new wTransports.Console({
       level: args.logLevel,
@@ -149,5 +150,5 @@ export function getLogger(args: { [key: string]: any } = { logLevel: 'info' }) {
     format: formatConfig(),
     level: args.logLevel,
   })
-  return logger
+  return args.logLevel === 'off' ? undefined : logger
 }

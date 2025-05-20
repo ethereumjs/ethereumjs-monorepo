@@ -1,8 +1,7 @@
 import { ChainGenesis } from '@ethereumjs/common'
-import { genesisStateRoot as genMerkleGenesisStateRoot } from '@ethereumjs/trie'
+import { genesisMPTStateRoot } from '@ethereumjs/mpt'
 
-import type { Chain, Common } from '@ethereumjs/common'
-import type { GenesisState } from '@ethereumjs/util'
+import type { Chain, Common, GenesisState } from '@ethereumjs/common'
 
 /**
  * Safe creation of a new Blockchain object awaiting the initialization function,
@@ -29,7 +28,7 @@ export async function genGenesisStateRoot(
   if (genCommon.isActivatedEIP(6800)) {
     throw Error(`Verkle tree state not yet supported`)
   } else {
-    return genMerkleGenesisStateRoot(genesisState)
+    return genesisMPTStateRoot(genesisState)
   }
 }
 

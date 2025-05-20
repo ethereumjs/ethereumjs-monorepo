@@ -3,29 +3,28 @@ import {
   BIGINT_1,
   MAX_INTEGER,
   MAX_UINT64,
-  SECP256K1_ORDER_DIV_2,
   bigIntToHex,
+  bytesToHex,
   createAddressFromPrivateKey,
   createZeroAddress,
   hexToBytes,
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createEOACode7702Tx } from '../src/index.js'
+import { createEOACode7702Tx } from '../src/index.ts'
 
-import type { TxData } from '../src/7702/tx.js'
-import type { AuthorizationListItem } from '../src/index.js'
-import type { PrefixedHexString } from '@ethereumjs/util'
+import type { EOACode7702AuthorizationListItem, PrefixedHexString } from '@ethereumjs/util'
+import type { TxData } from '../src/7702/tx.ts'
 
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
 
 const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
 const addr = createAddressFromPrivateKey(pkey)
 
-const ones32 = `0x${'01'.repeat(32)}` as PrefixedHexString
+const ones32: PrefixedHexString = `0x${'01'.repeat(32)}`
 
-function getTxData(override: Partial<AuthorizationListItem> = {}): TxData {
-  const validAuthorizationList: AuthorizationListItem = {
+function getTxData(override: Partial<EOACode7702AuthorizationListItem> = {}): TxData {
+  const validAuthorizationList: EOACode7702AuthorizationListItem = {
     chainId: '0x',
     address: `0x${'20'.repeat(20)}`,
     nonce: '0x1',
@@ -62,13 +61,23 @@ describe('[EOACode7702Transaction]', () => {
       { common },
     )
     const signed = txn.sign(pkey)
-    assert.ok(signed.getSenderAddress().equals(addr))
+    assert.isTrue(signed.getSenderAddress().equals(addr))
     const txnSigned = txn.addSignature(signed.v!, signed.r!, signed.s!)
     assert.deepEqual(signed.toJSON(), txnSigned.toJSON())
+
+    // Verify 1000 signatures to ensure these have unique hashes (hedged signatures test)
+    const hashSet = new Set<string>()
+    for (let i = 0; i < 1000; i++) {
+      const hash = bytesToHex(txn.sign(pkey, true).hash())
+      if (hashSet.has(hash)) {
+        assert.fail('should not reuse the same hash (hedged signature test)')
+      }
+      hashSet.add(hash)
+    }
   })
 
   it('valid and invalid authorizationList values', () => {
-    const tests: [Partial<AuthorizationListItem>, string][] = [
+    const tests: [Partial<EOACode7702AuthorizationListItem>, string][] = [
       [
         {
           address: `0x${'20'.repeat(21)}`,
@@ -86,9 +95,9 @@ describe('[EOACode7702Transaction]', () => {
         { nonce: bigIntToHex(MAX_UINT64 + BIGINT_1) },
         'Invalid EIP-7702 transaction: nonce exceeds 2^64 - 1',
       ],
-      [{ yParity: '0x2' }, 'yParity should be 0 or 1'],
+      [{ yParity: '0x0100' }, 'yParity should be < 2^8'],
       [{ r: bigIntToHex(MAX_INTEGER + BIGINT_1) }, 'r exceeds 2^256 - 1'],
-      [{ s: bigIntToHex(SECP256K1_ORDER_DIV_2 + BIGINT_1) }, 's > secp256k1n/2'],
+      [{ s: bigIntToHex(MAX_INTEGER + BIGINT_1) }, 's exceeds 2^256 - 1'],
       [{ yParity: '0x0002' }, 'yParity cannot have leading zeros'],
       [{ r: '0x0001' }, 'r cannot have leading zeros'],
       [{ s: '0x0001' }, 's cannot have leading zeros'],

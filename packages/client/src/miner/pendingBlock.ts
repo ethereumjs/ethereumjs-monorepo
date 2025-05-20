@@ -9,19 +9,17 @@ import {
   concatBytes,
   createZeroAddress,
   equalsBytes,
-  toBytes,
   toType,
-  zeros,
 } from '@ethereumjs/util'
 import { BuildStatus, buildBlock } from '@ethereumjs/vm'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import type { Config } from '../config.js'
-import type { TxPool } from '../service/txpool.js'
 import type { Block, HeaderData } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
-import type { WithdrawalData } from '@ethereumjs/util'
+import type { CLRequest, CLRequestType, PrefixedHexString, WithdrawalData } from '@ethereumjs/util'
 import type { BlockBuilder, TxReceipt, VM } from '@ethereumjs/vm'
+import type { Config } from '../config.ts'
+import type { TxPool } from '../service/txpool.ts'
 
 interface PendingBlockOpts {
   /* Config */
@@ -35,9 +33,9 @@ interface PendingBlockOpts {
 }
 
 export interface BlobsBundle {
-  blobs: Uint8Array[]
-  commitments: Uint8Array[]
-  proofs: Uint8Array[]
+  blobs: PrefixedHexString[]
+  commitments: PrefixedHexString[]
+  proofs: PrefixedHexString[]
 }
 /**
  * In the future this class should build a pending block by keeping the
@@ -50,13 +48,15 @@ export interface BlobsBundle {
 // Max two payload to be cached
 const MAX_PAYLOAD_CACHE = 2
 
-enum AddTxResult {
-  Success,
-  BlockFull,
-  SkippedByGasLimit,
-  SkippedByErrors,
-  RemovedByErrors,
-}
+type AddTxResult = (typeof AddTxResult)[keyof typeof AddTxResult]
+
+const AddTxResult = {
+  Success: 'Success',
+  BlockFull: 'BlockFull',
+  SkippedByGasLimit: 'SkippedByGasLimit',
+  SkippedByErrors: 'SkippedByErrors',
+  RemovedByErrors: 'RemovedByErrors',
+} as const
 
 export class PendingBlock {
   config: Config
@@ -64,6 +64,7 @@ export class PendingBlock {
 
   pendingPayloads: Map<string, BlockBuilder> = new Map()
   blobsBundles: Map<string, BlobsBundle> = new Map()
+  executionRequests: Map<string, CLRequest<CLRequestType>[]> = new Map()
 
   private skipHardForkValidation?: boolean
 
@@ -121,12 +122,12 @@ export class PendingBlock {
     // potentially included in the fcU in future and can be safely added in uniqueness calc
     const timestampBuf = bigIntToUnpaddedBytes(toType(timestamp ?? 0, TypeOutput.BigInt))
     const gasLimitBuf = bigIntToUnpaddedBytes(gasLimit)
-    const mixHashBuf = toType(mixHash!, TypeOutput.Uint8Array) ?? zeros(32)
+    const mixHashBuf = toType(mixHash!, TypeOutput.Uint8Array) ?? new Uint8Array(32)
     const parentBeaconBlockRootBuf =
-      toType(parentBeaconBlockRoot!, TypeOutput.Uint8Array) ?? zeros(32)
-    const coinbaseBuf = toType(coinbase ?? zeros(20), TypeOutput.Uint8Array)
+      toType(parentBeaconBlockRoot!, TypeOutput.Uint8Array) ?? new Uint8Array(32)
+    const coinbaseBuf = toType(coinbase ?? new Uint8Array(20), TypeOutput.Uint8Array)
 
-    let withdrawalsBuf = zeros(0)
+    let withdrawalsBuf = new Uint8Array()
 
     if (withdrawals !== undefined && withdrawals !== null) {
       const withdrawalsBufTemp: Uint8Array[] = []
@@ -144,19 +145,18 @@ export class PendingBlock {
 
     const keccakFunction = this.config.chainCommon.customCrypto.keccak256 ?? keccak256
 
-    const payloadIdBytes = toBytes(
-      keccakFunction(
-        concatBytes(
-          parentBlock.hash(),
-          mixHashBuf,
-          timestampBuf,
-          gasLimitBuf,
-          parentBeaconBlockRootBuf,
-          coinbaseBuf,
-          withdrawalsBuf,
-        ),
-      ).subarray(0, 8),
-    )
+    const payloadIdBytes = keccakFunction(
+      concatBytes(
+        parentBlock.hash(),
+        mixHashBuf,
+        timestampBuf,
+        gasLimitBuf,
+        parentBeaconBlockRootBuf,
+        coinbaseBuf,
+        withdrawalsBuf,
+      ),
+    ).subarray(0, 8)
+
     const payloadId = bytesToHex(payloadIdBytes)
 
     // If payload has already been triggered, then return the payloadid
@@ -193,7 +193,7 @@ export class PendingBlock {
     // Get if and how many blobs are allowed in the tx
     let allowedBlobs
     if (vm.common.isActivatedEIP(4844)) {
-      const blobGasLimit = vm.common.param('maxblobGasPerBlock')
+      const blobGasLimit = vm.common.param('maxBlobGasPerBlock')
       const blobGasPerBlob = vm.common.param('blobGasPerBlob')
       allowedBlobs = Number(blobGasLimit / blobGasPerBlob)
     } else {
@@ -204,12 +204,12 @@ export class PendingBlock {
       baseFee: baseFeePerGas,
       allowedBlobs,
     })
-    this.config.logger.info(
+    this.config.logger?.info(
       `Pending: Assembling block from ${txs.length} eligible txs (baseFee: ${baseFeePerGas})`,
     )
 
     const { addedTxs, skippedByAddErrors, blobTxs } = await this.addTransactions(builder, txs)
-    this.config.logger.info(
+    this.config.logger?.info(
       `Pending: Added txs=${addedTxs} skippedByAddErrors=${skippedByAddErrors} from total=${txs.length} tx candidates`,
     )
 
@@ -233,6 +233,7 @@ export class PendingBlock {
     // Remove from pendingPayloads
     this.pendingPayloads.delete(payloadId)
     this.blobsBundles.delete(payloadId)
+    this.executionRequests.delete(payloadId)
   }
 
   /**
@@ -240,7 +241,16 @@ export class PendingBlock {
    */
   async build(
     payloadIdBytes: Uint8Array | string,
-  ): Promise<void | [block: Block, receipts: TxReceipt[], value: bigint, blobs?: BlobsBundle]> {
+  ): Promise<
+    | void
+    | [
+        block: Block,
+        receipts: TxReceipt[],
+        value: bigint,
+        blobs?: BlobsBundle,
+        requests?: CLRequest<CLRequestType>[],
+      ]
+  > {
     const payloadId =
       typeof payloadIdBytes !== 'string' ? bytesToHex(payloadIdBytes) : payloadIdBytes
     const builder = this.pendingPayloads.get(payloadId)
@@ -254,6 +264,7 @@ export class PendingBlock {
         builder.transactionReceipts,
         builder.minerValue,
         this.blobsBundles.get(payloadId),
+        this.executionRequests.get(payloadId),
       ]
     }
     const { vm, headerData } = builder as unknown as { vm: VM; headerData: HeaderData }
@@ -262,7 +273,7 @@ export class PendingBlock {
     let allowedBlobs
     if (vm.common.isActivatedEIP(4844)) {
       const bundle = this.blobsBundles.get(payloadId) ?? { blobs: [], commitments: [], proofs: [] }
-      const blobGasLimit = vm.common.param('maxblobGasPerBlock')
+      const blobGasLimit = vm.common.param('maxBlobGasPerBlock')
       const blobGasPerBlob = vm.common.param('blobGasPerBlob')
       allowedBlobs = Number(blobGasLimit / blobGasPerBlob) - bundle.blobs.length
     } else {
@@ -284,7 +295,10 @@ export class PendingBlock {
 
     const { skippedByAddErrors, blobTxs } = await this.addTransactions(builder, txs)
 
-    const block = await builder.build()
+    const { block, requests } = await builder.build()
+    if (requests !== undefined) {
+      this.executionRequests.set(payloadId, requests)
+    }
 
     // Construct blobs bundle
     const blobs = block.common.isActivatedEIP(4844)
@@ -294,7 +308,7 @@ export class PendingBlock {
     const withdrawalsStr =
       block.withdrawals !== undefined ? ` withdrawals=${block.withdrawals.length}` : ''
     const blobsStr = blobs ? ` blobs=${blobs.blobs.length}` : ''
-    this.config.logger.info(
+    this.config.logger?.info(
       `Pending: Built block number=${block.header.number} txs=${
         block.transactions.length
       }${withdrawalsStr}${blobsStr} skippedByAddErrors=${skippedByAddErrors}  hash=${bytesToHex(
@@ -302,11 +316,11 @@ export class PendingBlock {
       )}`,
     )
 
-    return [block, builder.transactionReceipts, builder.minerValue, blobs]
+    return [block, builder.transactionReceipts, builder.minerValue, blobs, requests]
   }
 
   private async addTransactions(builder: BlockBuilder, txs: TypedTransaction[]) {
-    this.config.logger.info(`Pending: Adding ${txs.length} additional eligible txs`)
+    this.config.logger?.info(`Pending: Adding ${txs.length} additional eligible txs`)
     let index = 0
     let blockFull = false
     let skippedByAddErrors = 0
@@ -351,7 +365,7 @@ export class PendingBlock {
       if (error.message === 'tx has a higher gas limit than the remaining gas in the block') {
         if (builder.gasUsed > (builder as any).headerData.gasLimit - BigInt(21000)) {
           // If block has less than 21000 gas remaining, consider it full
-          this.config.logger.info(`Pending: Assembled block full`)
+          this.config.logger?.info(`Pending: Assembled block full`)
           addTxResult = AddTxResult.BlockFull
         } else {
           addTxResult = AddTxResult.SkippedByGasLimit
@@ -359,13 +373,13 @@ export class PendingBlock {
       } else if ((error as Error).message.includes('blobs missing')) {
         // Remove the blob tx which doesn't has blobs bundled
         this.txPool.removeByHash(bytesToHex(tx.hash()), tx)
-        this.config.logger.error(
+        this.config.logger?.error(
           `Pending: Removed from txPool a blob tx ${bytesToHex(tx.hash())} with missing blobs`,
         )
         addTxResult = AddTxResult.RemovedByErrors
       } else {
         // If there is an error adding a tx, it will be skipped
-        this.config.logger.debug(
+        this.config.logger?.debug(
           `Pending: Skipping tx ${bytesToHex(
             tx.hash(),
           )}, error encountered when trying to add tx:\n${error}`,
@@ -383,9 +397,9 @@ export class PendingBlock {
    * @param blockHash the blockhash of the pending block (computed from the header data provided)
    */
   private constructBlobsBundle = (payloadId: string, txs: Blob4844Tx[]) => {
-    let blobs: Uint8Array[] = []
-    let commitments: Uint8Array[] = []
-    let proofs: Uint8Array[] = []
+    let blobs: PrefixedHexString[] = []
+    let commitments: PrefixedHexString[] = []
+    let proofs: PrefixedHexString[] = []
     const bundle = this.blobsBundles.get(payloadId)
     if (bundle !== undefined) {
       blobs = bundle.blobs

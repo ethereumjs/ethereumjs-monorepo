@@ -1,5 +1,6 @@
 import {
   BIGINT_0,
+  EthereumJSErrorWithoutCode,
   TypeOutput,
   bytesToHex,
   concatBytes,
@@ -7,19 +8,21 @@ import {
   intToBytes,
   toType,
 } from '@ethereumjs/util'
-import { EventEmitter } from 'events'
+import { EventEmitter } from 'eventemitter3'
 
-import { crc32 } from './crc.js'
-import { eipsDict } from './eips.js'
-import { Hardfork } from './enums.js'
-import { hardforksDict } from './hardforks.js'
+import { crc32 } from './crc.ts'
+import { eipsDict } from './eips.ts'
+import { Hardfork } from './enums.ts'
+import { hardforksDict } from './hardforks.ts'
 
-import type { ConsensusAlgorithm, ConsensusType } from './enums.js'
+import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
+import type { ConsensusAlgorithm, ConsensusType } from './enums.ts'
 import type {
   BootstrapNodeConfig,
   CasperConfig,
   ChainConfig,
   CliqueConfig,
+  CommonEvent,
   CommonOpts,
   CustomCrypto,
   EthashConfig,
@@ -29,16 +32,18 @@ import type {
   HardforkTransitionConfig,
   ParamsConfig,
   ParamsDict,
-} from './types.js'
-import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
+} from './types.ts'
 
 /**
  * Common class to access chain and hardfork parameters and to provide
  * a unified and shared view on the network and hardfork state.
  *
- * Use the {@link Common.custom} static constructor for creating simple
+ * Use the {@link createCustomCommon} constructor for creating simple
  * custom chain {@link Common} objects (more complete custom chain setups
  * can be created via the main constructor).
+ *
+ * Use the {@link createCommonFromGethGenesis} constructor for creating
+ * a Common object from a Geth genesis file.
  */
 export class Common {
   readonly DEFAULT_HARDFORK: string | Hardfork
@@ -55,18 +60,19 @@ export class Common {
 
   protected HARDFORK_CHANGES: [string, HardforkConfig][]
 
-  public events: EventEmitter
+  public events: EventEmitter<CommonEvent>
 
   constructor(opts: CommonOpts) {
-    this.events = new EventEmitter()
+    this.events = new EventEmitter<CommonEvent>()
 
     this._chainParams = JSON.parse(JSON.stringify(opts.chain)) // copy
-    this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? Hardfork.Cancun
+    this.DEFAULT_HARDFORK = this._chainParams.defaultHardfork ?? Hardfork.Prague
     // Assign hardfork changes in the sequence of the applied hardforks
     this.HARDFORK_CHANGES = this.hardforks().map((hf) => [
       hf.name,
-      hardforksDict[hf.name] ??
-        (this._chainParams.customHardforks && this._chainParams.customHardforks[hf.name]),
+      // Allow to even override an existing hardfork specification
+      (this._chainParams.customHardforks && this._chainParams.customHardforks[hf.name]) ??
+        hardforksDict[hf.name],
     ])
     this._hardfork = this.DEFAULT_HARDFORK
     this._params = opts.params ? JSON.parse(JSON.stringify(opts.params)) : {} // copy
@@ -152,7 +158,7 @@ export class Common {
       }
     }
     if (!existing) {
-      throw new Error(`Hardfork with name ${hardfork} not supported`)
+      throw EthereumJSErrorWithoutCode(`Hardfork with name ${hardfork} not supported`)
     }
   }
 
@@ -272,11 +278,11 @@ export class Common {
   setEIPs(eips: number[] = []) {
     for (const eip of eips) {
       if (!(eip in eipsDict)) {
-        throw new Error(`${eip} not supported`)
+        throw EthereumJSErrorWithoutCode(`${eip} not supported`)
       }
       const minHF = this.gteHardfork(eipsDict[eip]['minimumHardfork'])
       if (!minHF) {
-        throw new Error(
+        throw EthereumJSErrorWithoutCode(
           `${eip} cannot be activated on hardfork ${this.hardfork()}, minimumHardfork: ${minHF}`,
         )
       }
@@ -289,7 +295,9 @@ export class Common {
       if (eipsDict[eip].requiredEIPs !== undefined) {
         for (const elem of eipsDict[eip].requiredEIPs!) {
           if (!(eips.includes(elem) || this.isActivatedEIP(elem))) {
-            throw new Error(`${eip} requires EIP ${elem}, but is not included in the EIP list`)
+            throw EthereumJSErrorWithoutCode(
+              `${eip} requires EIP ${elem}, but is not included in the EIP list`,
+            )
           }
         }
       }
@@ -316,12 +324,12 @@ export class Common {
     for (const hfChanges of this.HARDFORK_CHANGES) {
       // EIP-referencing HF config (e.g. for berlin)
       if ('eips' in hfChanges[1]) {
-        const hfEIPs = hfChanges[1]['eips']
-        for (const eip of hfEIPs!) {
+        const hfEIPs = hfChanges[1].eips ?? []
+        for (const eip of hfEIPs) {
           this._mergeWithParamsCache(this._params[eip] ?? {})
         }
       }
-      // Parameter-inlining HF config (e.g. for istanbul)
+      // Parameter-inlining HF config (e.g. for istanbul or custom blobSchedule)
       this._mergeWithParamsCache(hfChanges[1].params ?? {})
       if (hfChanges[0] === hardfork) break
     }
@@ -336,7 +344,7 @@ export class Common {
 
     for (const [name, hf] of this.HARDFORK_CHANGES) {
       if (this.gteHardfork(name) && 'eips' in hf) {
-        this._activatedEIPsCache = this._activatedEIPsCache.concat(hf['eips'] as number[])
+        this._activatedEIPsCache = this._activatedEIPsCache.concat(hf.eips ?? [])
       }
     }
     this._activatedEIPsCache = this._activatedEIPsCache.concat(this._eips)
@@ -356,7 +364,7 @@ export class Common {
     // TODO: consider the case that different active EIPs
     // can change the same parameter
     if (!(name in this._paramsCache)) {
-      throw new Error(`Missing parameter value for ${name}`)
+      throw EthereumJSErrorWithoutCode(`Missing parameter value for ${name}`)
     }
     const value = this._paramsCache[name]
     return BigInt(value ?? 0)
@@ -391,7 +399,7 @@ export class Common {
       if (hfChanges[0] === hardfork) break
     }
     if (value === undefined) {
-      throw new Error(`Missing parameter value for ${name}`)
+      throw EthereumJSErrorWithoutCode(`Missing parameter value for ${name}`)
     }
     return BigInt(value ?? 0)
   }
@@ -404,12 +412,12 @@ export class Common {
    */
   paramByEIP(name: string, eip: number): bigint | undefined {
     if (!(eip in eipsDict)) {
-      throw new Error(`${eip} not supported`)
+      throw EthereumJSErrorWithoutCode(`${eip} not supported`)
     }
 
     const eipParams = this._params[eip]
     if (eipParams?.[name] === undefined) {
-      throw new Error(`Missing parameter value for ${name}`)
+      throw EthereumJSErrorWithoutCode(`Missing parameter value for ${name}`)
     }
     const value = eipParams![name]
     return BigInt(value ?? 0)
@@ -559,39 +567,46 @@ export class Common {
   }
 
   /**
-   * Returns the change block for the next hardfork after the hardfork provided or set
+   * Returns the block number or timestamp at which the next hardfork will occur.
+   * For pre-merge hardforks, returns the block number.
+   * For post-merge hardforks, returns the timestamp.
+   * Returns null if there is no next hardfork.
    * @param hardfork Hardfork name, optional if HF set
-   * @returns Block timestamp, number or null if not available
+   * @returns Block number or timestamp, or null if not available
    */
   nextHardforkBlockOrTimestamp(hardfork?: string | Hardfork): bigint | null {
-    hardfork = hardfork ?? this._hardfork
+    const targetHardfork = hardfork ?? this._hardfork
     const hfs = this.hardforks()
-    let hfIndex = hfs.findIndex((hf) => hf.name === hardfork)
-    // If the current hardfork is merge, go one behind as merge hf is not part of these
-    // calcs even if the merge hf block is set
-    if (hardfork === Hardfork.Paris) {
-      hfIndex -= 1
+
+    // Find the index of the target hardfork
+    let targetHfIndex = hfs.findIndex((hf) => hf.name === targetHardfork)
+
+    // Special handling for The Merge (Paris) hardfork
+    if (targetHardfork === Hardfork.Paris) {
+      // The Merge is determined by total difficulty, not block number
+      // So we look at the previous hardfork's parameters instead
+      targetHfIndex -= 1
     }
-    // Hardfork not found
-    if (hfIndex < 0) {
+
+    // If we couldn't find a valid hardfork index, return null
+    if (targetHfIndex < 0) {
       return null
     }
 
-    let currHfTimeOrBlock = hfs[hfIndex].timestamp ?? hfs[hfIndex].block
-    currHfTimeOrBlock =
-      currHfTimeOrBlock !== null && currHfTimeOrBlock !== undefined
-        ? Number(currHfTimeOrBlock)
-        : null
+    // Get the current hardfork's block/timestamp
+    const currentHf = hfs[targetHfIndex]
+    const currentBlockOrTimestamp = currentHf.timestamp ?? currentHf.block
+    if (currentBlockOrTimestamp === null || currentBlockOrTimestamp === undefined) {
+      return null
+    }
 
-    const nextHf = hfs.slice(hfIndex + 1).find((hf) => {
-      let hfTimeOrBlock = hf.timestamp ?? hf.block
-      hfTimeOrBlock =
-        hfTimeOrBlock !== null && hfTimeOrBlock !== undefined ? Number(hfTimeOrBlock) : null
+    // Find the next hardfork that has a different block/timestamp
+    const nextHf = hfs.slice(targetHfIndex + 1).find((hf) => {
+      const nextBlockOrTimestamp = hf.timestamp ?? hf.block
       return (
-        hf.name !== Hardfork.Paris &&
-        hfTimeOrBlock !== null &&
-        hfTimeOrBlock !== undefined &&
-        hfTimeOrBlock !== currHfTimeOrBlock
+        nextBlockOrTimestamp !== null &&
+        nextBlockOrTimestamp !== undefined &&
+        nextBlockOrTimestamp !== currentBlockOrTimestamp
       )
     })
     // If no next hf found with valid block or timestamp return null
@@ -599,12 +614,13 @@ export class Common {
       return null
     }
 
-    const nextHfBlock = nextHf.timestamp ?? nextHf.block
-    if (nextHfBlock === null || nextHfBlock === undefined) {
+    // Get the block/timestamp for the next hardfork
+    const nextBlockOrTimestamp = nextHf.timestamp ?? nextHf.block
+    if (nextBlockOrTimestamp === null || nextBlockOrTimestamp === undefined) {
       return null
     }
 
-    return BigInt(nextHfBlock)
+    return BigInt(nextBlockOrTimestamp)
   }
 
   /**
@@ -657,12 +673,13 @@ export class Common {
     const data = this._getHardfork(hardfork)
     if (data === null || (data?.block === null && data?.timestamp === undefined)) {
       const msg = 'No fork hash calculation possible for future hardfork'
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
     if (data?.forkHash !== null && data?.forkHash !== undefined) {
       return data.forkHash
     }
-    if (!genesisHash) throw new Error('genesisHash required for forkHash calculation')
+    if (!genesisHash)
+      throw EthereumJSErrorWithoutCode('genesisHash required for forkHash calculation')
     return this._calcForkHash(hardfork, genesisHash)
   }
 

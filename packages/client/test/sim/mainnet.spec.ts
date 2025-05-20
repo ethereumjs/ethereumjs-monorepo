@@ -1,6 +1,6 @@
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { bytesToHex, hexToBytes, privateToAddress } from '@ethereumjs/util'
-import { Client } from 'jayson/promise'
+import { Client } from 'jayson/promise/index.js'
 import { assert, describe, it } from 'vitest'
 
 import {
@@ -10,7 +10,7 @@ import {
   startNetwork,
   validateBlockHashesInclusionInBeacon,
   waitForELStart,
-} from './simutils.js'
+} from './simutils.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -36,8 +36,8 @@ describe('simple mainnet test run', async () => {
     externalRun: process.env.EXTERNAL_RUN,
   })
 
-  if (result.includes('EthereumJS')) {
-    assert.ok(true, 'connected to client')
+  if (result.includes('EthereumJS') === true) {
+    assert.isTrue(true, 'connected to client')
   } else {
     assert.fail('connected to wrong client')
   }
@@ -45,7 +45,7 @@ describe('simple mainnet test run', async () => {
   console.log(`Waiting for network to start...`)
   try {
     await waitForELStart(client)
-    assert.ok(true, 'ethereumjs<>lodestar started successfully')
+    assert.isTrue(true, 'ethereumjs<>lodestar started successfully')
   } catch (e) {
     assert.fail('ethereumjs<>lodestar failed to start')
     throw e
@@ -61,7 +61,7 @@ describe('simple mainnet test run', async () => {
         '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
         'latest',
       ])
-      assert.equal(BigInt(balance.result), 1000000n, 'sent a simple ETH transfer')
+      assert.strictEqual(BigInt(balance.result), 1000000n, 'sent a simple ETH transfer')
       await runTx('', '0x3dA33B9A0894b908DdBb00d96399e506515A1009', 1000000n)
       balance = await client.request('eth_getBalance', [
         '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
@@ -71,7 +71,7 @@ describe('simple mainnet test run', async () => {
         '0x3dA33B9A0894b908DdBb00d96399e506515A1009',
         'latest',
       ])
-      assert.equal(BigInt(balance.result), 2000000n, 'sent a simple ETH transfer 2x')
+      assert.strictEqual(BigInt(balance.result), 2000000n, 'sent a simple ETH transfer 2x')
       const latestBlock = await client.request('eth_getBlockByNumber', ['latest', false])
       blockHashes.push(latestBlock.result.hash)
     },
@@ -91,8 +91,8 @@ describe('simple mainnet test run', async () => {
   it('should reset td', async () => {
     try {
       await teardownCallBack()
-      assert.ok(true, 'network cleaned')
-    } catch (e) {
+      assert.isTrue(true, 'network cleaned')
+    } catch {
       assert.fail('network not cleaned properly')
     }
   }, 60_000)

@@ -1,7 +1,6 @@
-import { Common } from '@ethereumjs/common'
 import {
   BIGINT_0,
-  BIGINT_27,
+  EthereumJSErrorWithoutCode,
   MAX_INTEGER,
   bigIntToHex,
   bigIntToUnpaddedBytes,
@@ -9,28 +8,31 @@ import {
   toBytes,
 } from '@ethereumjs/util'
 
-import { BaseTransaction } from '../baseTransaction.js'
-import * as EIP1559 from '../capabilities/eip1559.js'
-import * as EIP2718 from '../capabilities/eip2718.js'
-import * as EIP2930 from '../capabilities/eip2930.js'
-import * as Legacy from '../capabilities/legacy.js'
-import { paramsTx } from '../params.js'
-import { TransactionType } from '../types.js'
-import { AccessLists, validateNotArray } from '../util.js'
+import * as EIP1559 from '../capabilities/eip1559.ts'
+import * as EIP2718 from '../capabilities/eip2718.ts'
+import * as EIP2930 from '../capabilities/eip2930.ts'
+import * as Legacy from '../capabilities/legacy.ts'
+import { TransactionType, isAccessList } from '../types.ts'
+import { getBaseJSON, sharedConstructor, valueOverflowCheck } from '../util/internal.ts'
 
-import { createFeeMarket1559Tx } from './constructors.js'
+import { createFeeMarket1559Tx } from './constructors.ts'
 
+import type { Common } from '@ethereumjs/common'
+import type { Address } from '@ethereumjs/util'
 import type {
-  AccessList,
   AccessListBytes,
   TxData as AllTypesTxData,
   TxValuesArray as AllTypesTxValuesArray,
+  Capability,
   JSONTx,
+  TransactionCache,
+  TransactionInterface,
   TxOptions,
-} from '../types.js'
+} from '../types.ts'
+import { accessListBytesToJSON, accessListJSONToBytes } from '../util/access.ts'
 
-export type TxData = AllTypesTxData[TransactionType.FeeMarketEIP1559]
-export type TxValuesArray = AllTypesTxValuesArray[TransactionType.FeeMarketEIP1559]
+export type TxData = AllTypesTxData[typeof TransactionType.FeeMarketEIP1559]
+export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.FeeMarketEIP1559]
 
 /**
  * Typed transaction with a new gas fee market mechanism
@@ -38,15 +40,42 @@ export type TxValuesArray = AllTypesTxValuesArray[TransactionType.FeeMarketEIP15
  * - TransactionType: 2
  * - EIP: [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559)
  */
-export class FeeMarket1559Tx extends BaseTransaction<TransactionType.FeeMarketEIP1559> {
+export class FeeMarket1559Tx
+  implements TransactionInterface<typeof TransactionType.FeeMarketEIP1559>
+{
   // implements EIP1559CompatibleTx<TransactionType.FeeMarketEIP1559>
-  public readonly chainId: bigint
+  public type = TransactionType.FeeMarketEIP1559 // 1559 tx type
+
+  // Tx data part (part of the RLP)
+  public readonly nonce!: bigint
+  public readonly gasLimit!: bigint
+  public readonly value!: bigint
+  public readonly data!: Uint8Array
+  public readonly to?: Address
   public readonly accessList: AccessListBytes
-  public readonly AccessListJSON: AccessList
+  public readonly chainId: bigint
   public readonly maxPriorityFeePerGas: bigint
   public readonly maxFeePerGas: bigint
 
-  public readonly common: Common
+  // Props only for signed txs
+  public readonly v?: bigint
+  public readonly r?: bigint
+  public readonly s?: bigint
+
+  // End of Tx data part
+
+  public readonly common!: Common
+
+  readonly txOptions!: TxOptions
+
+  readonly cache: TransactionCache = {}
+
+  /**
+   * List of tx type defining EIPs,
+   * e.g. 1559 (fee market) and 2930 (access lists)
+   * for FeeMarket1559Tx objects
+   */
+  protected activeCapabilities: number[] = []
 
   /**
    * This constructor takes the values, validates them, assigns them and freezes the object.
@@ -56,50 +85,49 @@ export class FeeMarket1559Tx extends BaseTransaction<TransactionType.FeeMarketEI
    * varying data types.
    */
   public constructor(txData: TxData, opts: TxOptions = {}) {
-    super({ ...txData, type: TransactionType.FeeMarketEIP1559 }, opts)
-    const { chainId, accessList, maxFeePerGas, maxPriorityFeePerGas } = txData
+    sharedConstructor(this, { ...txData, type: TransactionType.FeeMarketEIP1559 }, opts)
+    const { chainId, accessList: rawAccessList, maxFeePerGas, maxPriorityFeePerGas } = txData
+    const accessList = rawAccessList ?? []
 
-    this.common = opts.common?.copy() ?? new Common({ chain: this.DEFAULT_CHAIN })
     if (chainId !== undefined && bytesToBigInt(toBytes(chainId)) !== this.common.chainId()) {
-      throw new Error(
+      throw EthereumJSErrorWithoutCode(
         `Common chain ID ${this.common.chainId} not matching the derived chain ID ${chainId}`,
       )
     }
-    this.common.updateParams(opts.params ?? paramsTx)
     this.chainId = this.common.chainId()
 
     if (!this.common.isActivatedEIP(1559)) {
-      throw new Error('EIP-1559 not enabled on Common')
+      throw EthereumJSErrorWithoutCode('EIP-1559 not enabled on Common')
     }
     this.activeCapabilities = this.activeCapabilities.concat([1559, 2718, 2930])
 
     // Populate the access list fields
-    const accessListData = AccessLists.getAccessListData(accessList ?? [])
-    this.accessList = accessListData.accessList
-    this.AccessListJSON = accessListData.AccessListJSON
-    // Verify the access list format.
-    AccessLists.verifyAccessList(this.accessList)
+    this.accessList = isAccessList(accessList) ? accessListJSONToBytes(accessList) : accessList
 
+    // Verify the access list format.
+    EIP2930.verifyAccessList(this)
     this.maxFeePerGas = bytesToBigInt(toBytes(maxFeePerGas))
     this.maxPriorityFeePerGas = bytesToBigInt(toBytes(maxPriorityFeePerGas))
 
-    this._validateCannotExceedMaxInteger({
+    valueOverflowCheck({
       maxFeePerGas: this.maxFeePerGas,
       maxPriorityFeePerGas: this.maxPriorityFeePerGas,
     })
 
-    validateNotArray(txData)
-
     if (this.gasLimit * this.maxFeePerGas > MAX_INTEGER) {
-      const msg = this._errorMsg('gasLimit * maxFeePerGas cannot exceed MAX_INTEGER (2^256-1)')
-      throw new Error(msg)
+      const msg = Legacy.errorMsg(
+        this,
+        'gasLimit * maxFeePerGas cannot exceed MAX_INTEGER (2^256-1)',
+      )
+      throw EthereumJSErrorWithoutCode(msg)
     }
 
     if (this.maxFeePerGas < this.maxPriorityFeePerGas) {
-      const msg = this._errorMsg(
+      const msg = Legacy.errorMsg(
+        this,
         'maxFeePerGas cannot be less than maxPriorityFeePerGas (The total must be the larger of the two)',
       )
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
 
     EIP2718.validateYParity(this)
@@ -109,6 +137,26 @@ export class FeeMarket1559Tx extends BaseTransaction<TransactionType.FeeMarketEI
     if (freeze) {
       Object.freeze(this)
     }
+  }
+
+  /**
+   * Checks if a tx type defining capability is active
+   * on a tx, for example the EIP-1559 fee market mechanism
+   * or the EIP-2930 access list feature.
+   *
+   * Note that this is different from the tx type itself,
+   * so EIP-2930 access lists can very well be active
+   * on an EIP-1559 tx for example.
+   *
+   * This method can be useful for feature checks if the
+   * tx type is unknown (e.g. when instantiated with
+   * the tx factory).
+   *
+   * See `Capabilities` in the `types` module for a reference
+   * on all supported capabilities.
+   */
+  supports(capability: Capability) {
+    return this.activeCapabilities.includes(capability)
   }
 
   /**
@@ -132,6 +180,24 @@ export class FeeMarket1559Tx extends BaseTransaction<TransactionType.FeeMarketEI
    */
   getUpfrontCost(baseFee: bigint = BIGINT_0): bigint {
     return EIP1559.getUpfrontCost(this, baseFee)
+  }
+
+  /**
+   * The minimum gas limit which the tx to have to be valid.
+   * This covers costs as the standard fee (21000 gas), the data fee (paid for each calldata byte),
+   * the optional creation fee (if the transaction creates a contract), and if relevant the gas
+   * to be paid for access lists (EIP-2930) and authority lists (EIP-7702).
+   */
+  getIntrinsicGas(): bigint {
+    return Legacy.getIntrinsicGas(this)
+  }
+
+  // TODO figure out if this is necessary
+  /**
+   * If the tx's `to` is to the creation address
+   */
+  toCreationAddress(): boolean {
+    return Legacy.toCreationAddress(this)
   }
 
   /**
@@ -228,12 +294,7 @@ export class FeeMarket1559Tx extends BaseTransaction<TransactionType.FeeMarketEI
     return Legacy.getSenderPublicKey(this)
   }
 
-  addSignature(
-    v: bigint,
-    r: Uint8Array | bigint,
-    s: Uint8Array | bigint,
-    convertV: boolean = false,
-  ): FeeMarket1559Tx {
+  addSignature(v: bigint, r: Uint8Array | bigint, s: Uint8Array | bigint): FeeMarket1559Tx {
     r = toBytes(r)
     s = toBytes(s)
     const opts = { ...this.txOptions, common: this.common }
@@ -249,7 +310,7 @@ export class FeeMarket1559Tx extends BaseTransaction<TransactionType.FeeMarketEI
         value: this.value,
         data: this.data,
         accessList: this.accessList,
-        v: convertV ? v - BIGINT_27 : v, // This looks extremely hacky: @ethereumjs/util actually adds 27 to the value, the recovery bit is either 0 or 1.
+        v,
         r: bytesToBigInt(r),
         s: bytesToBigInt(s),
       },
@@ -261,8 +322,8 @@ export class FeeMarket1559Tx extends BaseTransaction<TransactionType.FeeMarketEI
    * Returns an object with the JSON representation of the transaction
    */
   toJSON(): JSONTx {
-    const accessListJSON = AccessLists.getAccessListJSON(this.accessList)
-    const baseJSON = super.toJSON()
+    const accessListJSON = accessListBytesToJSON(this.accessList)
+    const baseJSON = getBaseJSON(this)
 
     return {
       ...baseJSON,
@@ -273,22 +334,41 @@ export class FeeMarket1559Tx extends BaseTransaction<TransactionType.FeeMarketEI
     }
   }
 
+  getValidationErrors(): string[] {
+    return Legacy.getValidationErrors(this)
+  }
+
+  isValid(): boolean {
+    return Legacy.isValid(this)
+  }
+
+  verifySignature(): boolean {
+    return Legacy.verifySignature(this)
+  }
+
+  getSenderAddress(): Address {
+    return Legacy.getSenderAddress(this)
+  }
+
+  sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = false): FeeMarket1559Tx {
+    return Legacy.sign(this, privateKey, extraEntropy) as FeeMarket1559Tx
+  }
+
+  public isSigned(): boolean {
+    const { v, r, s } = this
+    if (v === undefined || r === undefined || s === undefined) {
+      return false
+    } else {
+      return true
+    }
+  }
+
   /**
    * Return a compact error string representation of the object
    */
   public errorStr() {
-    let errorStr = this._getSharedErrorPostfix()
+    let errorStr = Legacy.getSharedErrorPostfix(this)
     errorStr += ` maxFeePerGas=${this.maxFeePerGas} maxPriorityFeePerGas=${this.maxPriorityFeePerGas}`
     return errorStr
-  }
-
-  /**
-   * Internal helper function to create an annotated error message
-   *
-   * @param msg Base error message
-   * @hidden
-   */
-  protected _errorMsg(msg: string) {
-    return Legacy.errorMsg(this, msg)
   }
 }

@@ -1,27 +1,52 @@
 import { RLP, utils } from '@ethereumjs/rlp'
-import { bytesToHex } from '@ethereumjs/util'
+import { EthereumJSErrorWithoutCode, bytesToHex } from '@ethereumjs/util'
 import * as snappy from 'snappyjs'
 
-import { ProtocolType } from '../types.js'
-import { formatLogData } from '../util.js'
+import { ProtocolType } from '../types.ts'
+import { formatLogData } from '../util.ts'
 
-import { Protocol } from './protocol.js'
+import { Protocol } from './protocol.ts'
 
-import type { Peer } from '../rlpx/peer.js'
-import type { SendMethod } from '../types.js'
+import type { Peer } from '../rlpx/peer.ts'
+import type { SendMethod } from '../types.ts'
+
+export const SnapMessageCodes = {
+  // snap1
+  GET_ACCOUNT_RANGE: 0x00,
+  ACCOUNT_RANGE: 0x01,
+  GET_STORAGE_RANGES: 0x02,
+  STORAGE_RANGES: 0x03,
+  GET_BYTE_CODES: 0x04,
+  BYTE_CODES: 0x05,
+  GET_TRIE_NODES: 0x06,
+  TRIE_NODES: 0x07,
+} as const
+
+export type SnapMessageCodes = (typeof SnapMessageCodes)[keyof typeof SnapMessageCodes]
+
+// Create a reverse mapping: from numeric value back to the key name
+export const SnapMessageCodeNames: { [key in SnapMessageCodes]: string } = Object.entries(
+  SnapMessageCodes,
+).reduce(
+  (acc, [key, value]) => {
+    acc[value] = key
+    return acc
+  },
+  {} as { [key in SnapMessageCodes]: string },
+)
 
 export class SNAP extends Protocol {
   private DEBUG: boolean
 
   constructor(version: number, peer: Peer, send: SendMethod) {
-    super(peer, send, ProtocolType.SNAP, version, SNAP.MESSAGE_CODES)
+    super(peer, send, ProtocolType.SNAP, version, SnapMessageCodes)
     this.DEBUG =
       typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
   }
 
   static snap = { name: 'snap', version: 1, length: 8, constructor: SNAP }
 
-  _handleMessage(code: SNAP.MESSAGE_CODES, data: Uint8Array) {
+  _handleMessage(code: SnapMessageCodes, data: Uint8Array) {
     const payload = RLP.decode(data)
 
     // Note, this needs optimization, see issue #1882
@@ -35,14 +60,14 @@ export class SNAP extends Protocol {
     }
 
     switch (code) {
-      case SNAP.MESSAGE_CODES.GET_ACCOUNT_RANGE:
-      case SNAP.MESSAGE_CODES.ACCOUNT_RANGE:
-      case SNAP.MESSAGE_CODES.GET_STORAGE_RANGES:
-      case SNAP.MESSAGE_CODES.STORAGE_RANGES:
-      case SNAP.MESSAGE_CODES.GET_BYTE_CODES:
-      case SNAP.MESSAGE_CODES.BYTE_CODES:
-      case SNAP.MESSAGE_CODES.GET_TRIE_NODES:
-      case SNAP.MESSAGE_CODES.TRIE_NODES:
+      case SnapMessageCodes.GET_ACCOUNT_RANGE:
+      case SnapMessageCodes.ACCOUNT_RANGE:
+      case SnapMessageCodes.GET_STORAGE_RANGES:
+      case SnapMessageCodes.STORAGE_RANGES:
+      case SnapMessageCodes.GET_BYTE_CODES:
+      case SnapMessageCodes.BYTE_CODES:
+      case SnapMessageCodes.GET_TRIE_NODES:
+      case SnapMessageCodes.TRIE_NODES:
         break
       default:
         return
@@ -60,7 +85,7 @@ export class SNAP extends Protocol {
    * @param code Message code
    * @param payload Payload (including reqId, e.g. `[1, [437000, 1, 0, 0]]`)
    */
-  sendMessage(code: SNAP.MESSAGE_CODES, payload: any) {
+  sendMessage(code: SnapMessageCodes, payload: any) {
     if (this.DEBUG) {
       this.debug(
         this.getMsgPrefix(code),
@@ -71,17 +96,17 @@ export class SNAP extends Protocol {
     }
 
     switch (code) {
-      case SNAP.MESSAGE_CODES.GET_ACCOUNT_RANGE:
-      case SNAP.MESSAGE_CODES.ACCOUNT_RANGE:
-      case SNAP.MESSAGE_CODES.GET_STORAGE_RANGES:
-      case SNAP.MESSAGE_CODES.STORAGE_RANGES:
-      case SNAP.MESSAGE_CODES.GET_BYTE_CODES:
-      case SNAP.MESSAGE_CODES.BYTE_CODES:
-      case SNAP.MESSAGE_CODES.GET_TRIE_NODES:
-      case SNAP.MESSAGE_CODES.TRIE_NODES:
+      case SnapMessageCodes.GET_ACCOUNT_RANGE:
+      case SnapMessageCodes.ACCOUNT_RANGE:
+      case SnapMessageCodes.GET_STORAGE_RANGES:
+      case SnapMessageCodes.STORAGE_RANGES:
+      case SnapMessageCodes.GET_BYTE_CODES:
+      case SnapMessageCodes.BYTE_CODES:
+      case SnapMessageCodes.GET_TRIE_NODES:
+      case SnapMessageCodes.TRIE_NODES:
         break
       default:
-        throw new Error(`Unknown code ${code}`)
+        throw EthereumJSErrorWithoutCode(`Unknown code ${code}`)
     }
 
     payload = RLP.encode(payload)
@@ -95,25 +120,11 @@ export class SNAP extends Protocol {
     this._send(code, payload)
   }
 
-  getMsgPrefix(msgCode: SNAP.MESSAGE_CODES): string {
-    return SNAP.MESSAGE_CODES[msgCode]
+  getMsgPrefix(msgCode: SnapMessageCodes): string {
+    return SnapMessageCodeNames[msgCode]
   }
 
   getVersion() {
     return this._version
-  }
-}
-
-export namespace SNAP {
-  export enum MESSAGE_CODES {
-    // snap1
-    GET_ACCOUNT_RANGE = 0x00,
-    ACCOUNT_RANGE = 0x01,
-    GET_STORAGE_RANGES = 0x02,
-    STORAGE_RANGES = 0x03,
-    GET_BYTE_CODES = 0x04,
-    BYTE_CODES = 0x05,
-    GET_TRIE_NODES = 0x06,
-    TRIE_NODES = 0x07,
   }
 }

@@ -1,10 +1,10 @@
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
-import { INTERNAL_ERROR } from '../../../src/rpc/error-code.js'
-import { createClient, createManager, getRPCClient, startRPC } from '../helpers.js'
+import { INTERNAL_ERROR } from '../../../src/rpc/error-code.ts'
+import { createClient, createManager, getRPCClient, startRPC } from '../helpers.ts'
 
-import type { FullSynchronizer } from '../../../src/sync/index.js'
+import type { FullSynchronizer } from '../../../src/sync/index.ts'
 
 const method = 'eth_syncing'
 
@@ -15,12 +15,12 @@ describe(method, () => {
     const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     client.config.synchronized = false
-    assert.equal(client.config.synchronized, false, 'not synchronized yet')
+    assert.strictEqual(client.config.synchronized, false, 'not synchronized yet')
     client.config.synchronized = true
-    assert.equal(client.config.synchronized, true, 'synchronized')
+    assert.strictEqual(client.config.synchronized, true, 'synchronized')
 
     const res = await rpc.request(method, [])
-    assert.equal(res.result, false, 'should return false')
+    assert.strictEqual(res.result, false, 'should return false')
   })
 
   it('should return no peer available error', async () => {
@@ -29,12 +29,12 @@ describe(method, () => {
     const rpcServer = startRPC(manager.getMethods())
     const rpc = getRPCClient(rpcServer)
     client.config.synchronized = false
-    assert.equal(client.config.synchronized, false, 'not synchronized yet')
+    assert.strictEqual(client.config.synchronized, false, 'not synchronized yet')
 
     const res = await rpc.request(method, [])
 
-    assert.equal(res.error.code, INTERNAL_ERROR)
-    assert.ok(res.error.message.includes('no peer available for synchronization'))
+    assert.strictEqual(res.error.code, INTERNAL_ERROR)
+    assert.isTrue(res.error.message.includes('no peer available for synchronization'))
   })
 
   it('should return highest block header unavailable error', async () => {
@@ -42,7 +42,7 @@ describe(method, () => {
     const manager = createManager(client)
     const rpcServer = startRPC(manager.getMethods())
     const rpc = getRPCClient(rpcServer)
-    const sync = client.services[0].synchronizer!
+    const sync = client.service!.synchronizer as FullSynchronizer
     sync.best = td.func<(typeof sync)['best']>()
     td.when(sync.best()).thenResolve({
       latest: () => {
@@ -51,12 +51,12 @@ describe(method, () => {
     } as any)
 
     client.config.synchronized = false
-    assert.equal(client.config.synchronized, false, 'not synchronized yet')
+    assert.strictEqual(client.config.synchronized, false, 'not synchronized yet')
 
     const res = await rpc.request(method, [])
 
-    assert.equal(res.error.code, INTERNAL_ERROR)
-    assert.ok(res.error.message.includes('highest block header unavailable'))
+    assert.strictEqual(res.error.code, INTERNAL_ERROR)
+    assert.isTrue(res.error.message.includes('highest block header unavailable'))
   })
 
   it('should return syncing status object when unsynced', async () => {
@@ -64,7 +64,7 @@ describe(method, () => {
     const manager = createManager(client)
     const rpcServer = startRPC(manager.getMethods())
     const rpc = getRPCClient(rpcServer)
-    const sync = client.services[0].synchronizer as FullSynchronizer
+    const sync = client.service!.synchronizer as FullSynchronizer
     sync.best = td.func<(typeof sync)['best']>()
     td.when(sync.best()).thenResolve({
       latest: () => {
@@ -76,7 +76,7 @@ describe(method, () => {
     } as any)
 
     client.config.synchronized = false
-    assert.equal(client.config.synchronized, false, 'not synchronized yet')
+    assert.strictEqual(client.config.synchronized, false, 'not synchronized yet')
 
     const res = await rpc.request(method, [])
 
@@ -85,7 +85,7 @@ describe(method, () => {
       res.result.currentBlock === '0x0' &&
       res.result.highestBlock === '0x2'
     ) {
-      assert.ok(true, 'should return syncing status object')
+      assert.isTrue(true, 'should return syncing status object')
     } else {
       assert.fail('should return syncing status object')
     }

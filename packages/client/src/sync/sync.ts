@@ -1,20 +1,14 @@
 import { Hardfork } from '@ethereumjs/common'
 import { BIGINT_0 } from '@ethereumjs/util'
 
-import { FlowControl } from '../net/protocol/index.js'
-import { Event } from '../types.js'
-import { wait } from '../util/wait.js'
+import { Event } from '../types.ts'
+import { wait } from '../util/wait.ts'
 
-import type { Chain } from '../blockchain/index.js'
-import type { Config } from '../config.js'
-import type { Peer } from '../net/peer/peer.js'
-import type { PeerPool } from '../net/peerpool.js'
-import type {
-  AccountFetcher,
-  BlockFetcher,
-  HeaderFetcher,
-  ReverseBlockFetcher,
-} from './fetcher/index.js'
+import type { Chain } from '../blockchain/index.ts'
+import type { Config } from '../config.ts'
+import type { Peer } from '../net/peer/peer.ts'
+import type { PeerPool } from '../net/peerpool.ts'
+import type { AccountFetcher, BlockFetcher, ReverseBlockFetcher } from './fetcher/index.ts'
 
 export interface SynchronizerOptions {
   /* Config */
@@ -25,9 +19,6 @@ export interface SynchronizerOptions {
 
   /* Blockchain */
   chain: Chain
-
-  /* Flow control manager */
-  flow?: FlowControl
 
   /* Refresh interval in ms (default: 1000) */
   interval?: number
@@ -42,11 +33,11 @@ export abstract class Synchronizer {
 
   protected pool: PeerPool
   protected chain: Chain
-  protected flow: FlowControl
+
   protected interval: number
   protected forceSync: boolean
 
-  public _fetcher: AccountFetcher | BlockFetcher | HeaderFetcher | ReverseBlockFetcher | null
+  public _fetcher: AccountFetcher | BlockFetcher | ReverseBlockFetcher | null
   public opened: boolean
   public running: boolean
   public startingBlock: bigint
@@ -64,7 +55,7 @@ export abstract class Synchronizer {
     this.pool = options.pool
     this.chain = options.chain
     this._fetcher = null
-    this.flow = options.flow ?? new FlowControl()
+
     this.interval = options.interval ?? 1000
     this.opened = false
     this.running = false
@@ -73,7 +64,7 @@ export abstract class Synchronizer {
 
     this.config.events.on(Event.POOL_PEER_ADDED, (peer) => {
       if (this.syncable(peer)) {
-        this.config.logger.debug(`Found ${this.type} peer: ${peer}`)
+        this.config.logger?.debug(`Found ${this.type} peer: ${peer}`)
       }
     })
 
@@ -89,11 +80,11 @@ export abstract class Synchronizer {
     return 'sync'
   }
 
-  get fetcher(): AccountFetcher | BlockFetcher | HeaderFetcher | ReverseBlockFetcher | null {
+  get fetcher(): AccountFetcher | BlockFetcher | ReverseBlockFetcher | null {
     return this._fetcher
   }
 
-  set fetcher(fetcher: AccountFetcher | BlockFetcher | HeaderFetcher | ReverseBlockFetcher | null) {
+  set fetcher(fetcher: AccountFetcher | BlockFetcher | ReverseBlockFetcher | null) {
     this._fetcher = fetcher
   }
 
@@ -145,10 +136,10 @@ export abstract class Synchronizer {
 
   abstract syncWithPeer(peer?: Peer): Promise<boolean>
 
-  resolveSync(height?: number) {
+  resolveSync(height?: bigint) {
     this.clearFetcher()
-    const heightStr = typeof height === 'number' && height !== 0 ? ` height=${height}` : ''
-    this.config.logger.debug(`Finishing up sync with the current fetcher ${heightStr}`)
+    const heightStr = typeof height === 'bigint' && height !== BIGINT_0 ? ` height=${height}` : ''
+    this.config.logger?.debug(`Finishing up sync with the current fetcher ${heightStr}`)
     return true
   }
 
@@ -157,10 +148,10 @@ export abstract class Synchronizer {
       if (this._fetcher) {
         await this._fetcher.blockingFetch()
       }
-      this.config.logger.debug(`Fetcher finished fetching...`)
+      this.config.logger?.debug(`Fetcher finished fetching...`)
       return this.resolveSync()
     } catch (error: any) {
-      this.config.logger.error(
+      this.config.logger?.error(
         `Received sync error, stopping sync and clearing fetcher: ${error.message ?? error}`,
       )
       this.clearFetcher()
@@ -176,7 +167,7 @@ export abstract class Synchronizer {
     let peer = await this.best()
     let numAttempts = 1
     while (!peer && this.opened) {
-      this.config.logger.debug(`Waiting for best peer (attempt #${numAttempts})`)
+      this.config.logger?.debug(`Waiting for best peer (attempt #${numAttempts})`)
       await wait(5000)
       peer = await this.best()
       numAttempts += 1
@@ -214,7 +205,7 @@ export abstract class Synchronizer {
     clearInterval(this._syncedStatusCheckInterval as NodeJS.Timeout)
     await new Promise((resolve) => setTimeout(resolve, this.interval))
     this.running = false
-    this.config.logger.info('Stopped synchronization.')
+    this.config.logger?.info('Stopped synchronization.')
     return true
   }
 

@@ -1,22 +1,22 @@
 import { createBlock } from '@ethereumjs/block'
 import {
   Common,
+  type GethGenesis,
   Mainnet,
   createCommonFromGethGenesis,
   createCustomCommon,
 } from '@ethereumjs/common'
+import { postMergeGethGenesis } from '@ethereumjs/testdata'
 import { equalsBytes, utf8ToBytes } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 import { assert, describe, it } from 'vitest'
 
-import { Chain } from '../../src/blockchain/index.js'
-import { Config } from '../../src/config.js'
-import { getLogger } from '../../src/logging.js'
-import { Skeleton, errReorgDenied, errSyncMerged } from '../../src/sync/index.js'
-import { short } from '../../src/util/index.js'
-import { wait } from '../integration/util.js'
-import { mergeTestnetData } from '../testdata/common/mergeTestnet.js'
-import { postMergeData } from '../testdata/geth-genesis/post-merge.js'
+import { Chain } from '../../src/blockchain/index.ts'
+import { Config } from '../../src/config.ts'
+import { Skeleton, errReorgDenied, errSyncMerged } from '../../src/sync/index.ts'
+import { short } from '../../src/util/index.ts'
+import { wait } from '../integration/util.ts'
+import { mergeTestnetData } from '../testdata/common/mergeTestnet.ts'
 
 import type { Block } from '@ethereumjs/block'
 type Subchain = {
@@ -41,9 +41,9 @@ describe('[Skeleton]/ startup scenarios ', () => {
     })
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
-    assert.equal(chain.opened, false, 'chain is not started')
+    assert.strictEqual(chain.opened, false, 'chain is not started')
     await skeleton.open()
-    assert.equal(chain.opened, true, 'chain is opened by skeleton')
+    assert.strictEqual(chain.opened, true, 'chain is opened by skeleton')
   })
 
   it('throws when reset called before being started', async () => {
@@ -52,18 +52,21 @@ describe('[Skeleton]/ startup scenarios ', () => {
     })
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
-    assert.equal(chain.opened, false, 'chain is not started')
+    assert.strictEqual(chain.opened, false, 'chain is not started')
     try {
       await skeleton.reset()
       assert.fail('should have thrown')
     } catch (err: any) {
-      assert.ok(err.message.includes('skeleton reset'), 'throws when skeleton sync not started')
+      assert.isTrue(
+        err.message.includes('skeleton reset') === true,
+        'throws when skeleton sync not started',
+      )
     }
     await skeleton.open()
-    assert.equal(skeleton['status'].linked, false)
+    assert.strictEqual(skeleton['status'].linked, false)
     skeleton['status'].linked = true
     await skeleton.reset()
-    assert.equal(skeleton['status'].linked, false, 'status.linked reset to false')
+    assert.strictEqual(skeleton['status'].linked, false, 'status.linked reset to false')
   })
 })
 
@@ -228,7 +231,6 @@ describe('[Skeleton] / initSync', async () => {
     it(`${testCase.name}`, async () => {
       const config = new Config({
         common,
-        logger: getLogger({ logLevel: 'debug' }),
         accountCache: 10000,
         storageCache: 1000,
       })
@@ -263,7 +265,7 @@ describe('[Skeleton] / initSync', async () => {
             `test ${testCaseIndex}: subchain tail mismatch: have ${subchain.tail}, want ${testCase.newState[i].tail}`,
           )
         } else {
-          assert.ok(true, `test ${testCaseIndex}: subchain[${i}] matched`)
+          assert.isTrue(true, `test ${testCaseIndex}: subchain[${i}] matched`)
         }
       }
     })
@@ -345,8 +347,6 @@ describe('[Skeleton] / setHead', async () => {
     it(`${testCase.name}`, async () => {
       const config = new Config({
         common,
-
-        logger: getLogger({ logLevel: 'debug' }),
         accountCache: 10000,
         storageCache: 1000,
       })
@@ -364,14 +364,14 @@ describe('[Skeleton] / setHead', async () => {
         if (testCase.err) {
           assert.fail(`test ${testCaseIndex}: should have failed`)
         } else {
-          assert.ok(true, `test ${testCaseIndex}: successfully passed`)
+          assert.isTrue(true, `test ${testCaseIndex}: successfully passed`)
         }
       } catch (error: any) {
         if (
           typeof testCase.err?.message === 'string' &&
           (error.message as string).includes(testCase.err.message)
         ) {
-          assert.ok(true, `test ${testCaseIndex}: passed with correct error`)
+          assert.isTrue(true, `test ${testCaseIndex}: passed with correct error`)
         } else {
           assert.fail(
             `test ${testCaseIndex}: received wrong error expected=${testCase.err?.message} actual=${error.message}`,
@@ -395,17 +395,17 @@ describe('[Skeleton] / setHead', async () => {
             `test ${testCaseIndex}: subchain tail mismatch: have ${subchain.tail}, want ${testCase.newState[i].tail}`,
           )
         } else {
-          assert.ok(true, `test ${testCaseIndex}: subchain[${i}] matched`)
+          assert.isTrue(true, `test ${testCaseIndex}: subchain[${i}] matched`)
         }
       }
     })
   }
 
   it(`skeleton init should throw error if merge not set`, async () => {
-    const genesis = {
-      ...postMergeData,
+    const genesis: GethGenesis = {
+      ...postMergeGethGenesis,
       config: {
-        ...postMergeData.config,
+        ...postMergeGethGenesis.config,
         // skip the merge hardfork
         terminalTotalDifficulty: undefined,
         clique: undefined,
@@ -417,11 +417,12 @@ describe('[Skeleton] / setHead', async () => {
     const common = createCommonFromGethGenesis(genesis, { chain: 'merge-not-set' })
     const config = new Config({ common })
     const chain = await Chain.create({ config })
-    ;(chain.blockchain['_validateBlocks'] as any) = false
+    // @ts-expect-error -- Assigning to read-only property
+    chain.blockchain['_validateBlocks'] = false
     try {
       new Skeleton({ chain, config, metaDB: new MemoryLevel() })
-    } catch (e) {
-      assert.ok(true, `Skeleton init should error if merge not set`)
+    } catch {
+      assert.isTrue(true, `Skeleton init should error if merge not set`)
     }
   })
 
@@ -450,20 +451,20 @@ describe('[Skeleton] / setHead', async () => {
     let reorg
 
     reorg = await skeleton.initSync(genesis)
-    assert.equal(reorg, false, 'should not reorg on genesis init')
+    assert.strictEqual(reorg, false, 'should not reorg on genesis init')
 
     reorg = await skeleton.setHead(genesis, false)
-    assert.equal(reorg, false, 'should not reorg on genesis announcement')
+    assert.strictEqual(reorg, false, 'should not reorg on genesis announcement')
 
     reorg = await skeleton.setHead(genesis, true)
-    assert.equal(reorg, false, 'should not reorg on genesis setHead')
+    assert.strictEqual(reorg, false, 'should not reorg on genesis setHead')
 
-    assert.equal(
+    assert.strictEqual(
       skeleton['status'].progress.subchains.length,
       1,
       'trivial subchain0 should have been created',
     )
-    assert.equal(
+    assert.strictEqual(
       skeleton['status'].progress.subchains[0]!.head,
       BigInt(0),
       'trivial subchain0 should have been created',
@@ -472,73 +473,77 @@ describe('[Skeleton] / setHead', async () => {
     try {
       await skeleton.putBlocks([block1])
       assert.fail('should have not allowed putBlocks since no subchain set')
-    } catch (_e) {
-      assert.ok(true, 'should not allow putBlocks since no subchain set')
+    } catch {
+      assert.isTrue(true, 'should not allow putBlocks since no subchain set')
     }
-    assert.equal(chain.blocks.height, BigInt(0), 'canonical height should be at genesis')
+    assert.strictEqual(chain.blocks.height, BigInt(0), 'canonical height should be at genesis')
 
     reorg = await skeleton.setHead(block1, false)
-    assert.equal(reorg, false, 'should not reorg on valid first block')
-    assert.equal(
+    assert.strictEqual(reorg, false, 'should not reorg on valid first block')
+    assert.strictEqual(
       skeleton['status'].progress.subchains.length,
       1,
       'trivial subchain should have been created',
     )
-    assert.equal(
+    assert.strictEqual(
       skeleton['status'].progress.subchains[0]!.head,
       BigInt(0),
       'trivial subchain0 should have been created',
     )
 
     reorg = await skeleton.setHead(block1, true)
-    assert.equal(reorg, false, 'should not reorg on valid first block')
-    assert.equal(
+    assert.strictEqual(reorg, false, 'should not reorg on valid first block')
+    assert.strictEqual(
       skeleton['status'].progress.subchains.length,
       1,
       'subchain should have been created',
     )
-    assert.equal(
+    assert.strictEqual(
       skeleton['status'].progress.subchains[0].head,
       BigInt(1),
       'head should be set to first block',
     )
-    assert.equal(skeleton.isLinked(), true, 'subchain status should be linked')
+    assert.strictEqual(skeleton.isLinked(), true, 'subchain status should be linked')
 
     reorg = await skeleton.setHead(block2, true)
-    assert.equal(reorg, false, 'should not reorg on valid second block')
-    assert.equal(skeleton['status'].progress.subchains.length, 1, 'subchain should be same')
-    assert.equal(
+    assert.strictEqual(reorg, false, 'should not reorg on valid second block')
+    assert.strictEqual(skeleton['status'].progress.subchains.length, 1, 'subchain should be same')
+    assert.strictEqual(
       skeleton['status'].progress.subchains[0].head,
       BigInt(2),
       'head should be set to first block',
     )
-    assert.equal(skeleton.isLinked(), true, 'subchain status should stay linked')
+    assert.strictEqual(skeleton.isLinked(), true, 'subchain status should stay linked')
 
     reorg = await skeleton.setHead(block3, false)
-    assert.equal(reorg, true, 'should not extend on invalid third block')
+    assert.strictEqual(reorg, true, 'should not extend on invalid third block')
     // since its not a forced update so shouldn't affect subchain status
-    assert.equal(skeleton['status'].progress.subchains.length, 1, 'subchain should be same')
-    assert.equal(
+    assert.strictEqual(skeleton['status'].progress.subchains.length, 1, 'subchain should be same')
+    assert.strictEqual(
       skeleton['status'].progress.subchains[0].head,
       BigInt(2),
       'head should be set to second block',
     )
-    assert.equal(skeleton.isLinked(), true, 'subchain status should stay linked')
+    assert.strictEqual(skeleton.isLinked(), true, 'subchain status should stay linked')
 
     reorg = await skeleton.setHead(block3, true)
-    assert.equal(reorg, true, 'should not extend on invalid third block')
+    assert.strictEqual(reorg, true, 'should not extend on invalid third block')
     // since its not a forced update so shouldn't affect subchain status
-    assert.equal(skeleton['status'].progress.subchains.length, 2, 'new subchain should be created')
-    assert.equal(
+    assert.strictEqual(
+      skeleton['status'].progress.subchains.length,
+      2,
+      'new subchain should be created',
+    )
+    assert.strictEqual(
       skeleton['status'].progress.subchains[0].head,
       BigInt(3),
       'head should be set to third block',
     )
-    assert.equal(skeleton.isLinked(), false, 'subchain status should not be linked anymore')
+    assert.strictEqual(skeleton.isLinked(), false, 'subchain status should not be linked anymore')
   })
 
   it('should fill the canonical chain after being linked to genesis', async () => {
-    const config = new Config({ common, logger: getLogger({ logLevel: 'debug' }) })
+    const config = new Config({ common })
     const chain = await Chain.create({ config })
     ;(chain.blockchain['_validateBlocks'] as any) = false
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
@@ -570,17 +575,17 @@ describe('[Skeleton] / setHead', async () => {
 
     await skeleton.initSync(block4)
     await skeleton.putBlocks([block3, block2])
-    assert.equal(chain.blocks.height, BigInt(0), 'canonical height should be at genesis')
+    assert.strictEqual(chain.blocks.height, BigInt(0), 'canonical height should be at genesis')
     await skeleton.putBlocks([block1])
     await wait(200)
-    assert.equal(
+    assert.strictEqual(
       chain.blocks.height,
       BigInt(4),
       'canonical height should update after being linked',
     )
     await skeleton.setHead(block5, false)
     await wait(200)
-    assert.equal(
+    assert.strictEqual(
       chain.blocks.height,
       BigInt(4),
       'canonical height should not change when setHead is set with force=false',
@@ -589,7 +594,7 @@ describe('[Skeleton] / setHead', async () => {
     await skeleton.blockingFillWithCutoff(10)
     await wait(200)
 
-    assert.equal(
+    assert.strictEqual(
       chain.blocks.height,
       BigInt(5),
       'canonical height should change when setHead is set with force=true',
@@ -598,12 +603,12 @@ describe('[Skeleton] / setHead', async () => {
     // unlink the skeleton for the below check to check all blocks cleared
     skeleton['status'].linked = false
     for (const block of [block1, block2, block3, block4, block5]) {
-      assert.equal(
+      assert.strictEqual(
         (await skeleton.getBlock(block.header.number, true))?.hash(),
         undefined,
         `skeleton block number=${block.header.number} should be cleaned up after filling canonical chain`,
       )
-      assert.equal(
+      assert.strictEqual(
         (await skeleton.getBlockByHash(block.hash(), true))?.hash(),
         undefined,
         `skeleton block hash=${short(
@@ -647,17 +652,17 @@ describe('[Skeleton] / setHead', async () => {
 
     await chain.putBlocks([block1, block2])
     await skeleton.initSync(block4)
-    assert.equal(chain.blocks.height, BigInt(2), 'canonical height should be at block 2')
+    assert.strictEqual(chain.blocks.height, BigInt(2), 'canonical height should be at block 2')
     await skeleton.putBlocks([block3])
     await wait(200)
-    assert.equal(
+    assert.strictEqual(
       chain.blocks.height,
       BigInt(4),
       'canonical height should update after being linked',
     )
     await skeleton.setHead(block5, false)
     await wait(200)
-    assert.equal(
+    assert.strictEqual(
       chain.blocks.height,
       BigInt(4),
       'canonical height should not change when setHead with force=false',
@@ -667,7 +672,7 @@ describe('[Skeleton] / setHead', async () => {
     await skeleton.forkchoiceUpdate(block5)
 
     await wait(200)
-    assert.equal(
+    assert.strictEqual(
       chain.blocks.height,
       BigInt(5),
       'canonical height should change when setHead with force=true',
@@ -677,12 +682,12 @@ describe('[Skeleton] / setHead', async () => {
     const prevLinked = skeleton['status'].linked
     skeleton['status'].linked = false
     for (const block of [block3, block4, block5]) {
-      assert.equal(
+      assert.strictEqual(
         (await skeleton.getBlock(block.header.number, true))?.hash(),
         undefined,
         `skeleton block number=${block.header.number} should be cleaned up after filling canonical chain`,
       )
-      assert.equal(
+      assert.strictEqual(
         (await skeleton.getBlockByHash(block.hash(), true))?.hash(),
         undefined,
         `skeleton block hash=${short(
@@ -711,18 +716,18 @@ describe('[Skeleton] / setHead', async () => {
 
     // should link the chains including the 41, 51 block backfilled from the unfinalized
     await skeleton.forkchoiceUpdate(block61)
-    assert.equal(
+    assert.strictEqual(
       skeleton['status'].progress.subchains[0]?.head,
       BigInt(6),
       'head should be correct',
     )
-    assert.equal(
+    assert.strictEqual(
       skeleton['status'].progress.subchains[0]?.tail,
       BigInt(4),
       'tail should be backfilled',
     )
-    assert.equal(skeleton['status'].linked, true, 'should be linked')
-    assert.equal(chain.blocks.height, BigInt(6), 'all blocks should be in chain')
+    assert.strictEqual(skeleton['status'].linked, true, 'should be linked')
+    assert.strictEqual(chain.blocks.height, BigInt(6), 'all blocks should be in chain')
 
     const block71 = createBlock(
       { header: { number: 7, parentHash: block61.hash(), difficulty: 100 } },
@@ -739,13 +744,17 @@ describe('[Skeleton] / setHead', async () => {
 
     // lets jump ahead and add the block 81 and 71 with announcements and trigger tryTailBackfill
     await skeleton.forkchoiceUpdate(block91)
-    assert.equal(skeleton['status'].progress.subchains.length, 1, '1 subchain with older dropped')
-    assert.equal(
+    assert.strictEqual(
+      skeleton['status'].progress.subchains.length,
+      1,
+      '1 subchain with older dropped',
+    )
+    assert.strictEqual(
       skeleton['status'].progress.subchains[0]?.head,
       BigInt(9),
       'head should be correct',
     )
-    assert.equal(
+    assert.strictEqual(
       skeleton['status'].progress.subchains[0]?.tail,
       BigInt(9),
       'new subchain should be created',
@@ -754,21 +763,21 @@ describe('[Skeleton] / setHead', async () => {
     await skeleton.setHead(block71, false)
     await skeleton.tryTailBackfill()
 
-    assert.equal(
+    assert.strictEqual(
       skeleton['status'].progress.subchains[0]?.head,
       BigInt(9),
       'head should be correct',
     )
-    assert.equal(
+    assert.strictEqual(
       skeleton['status'].progress.subchains[0]?.tail,
       BigInt(7),
       'tail should be backfilled',
     )
-    assert.equal(skeleton['status'].linked, true, 'should be linked')
+    assert.strictEqual(skeleton['status'].linked, true, 'should be linked')
     // async wait needed here so the async fillCanonicalChain can fill the chain
     await wait(50)
-    assert.equal(chain.blocks.height, BigInt(9), 'all blocks should be in chain')
-    assert.equal(
+    assert.strictEqual(chain.blocks.height, BigInt(9), 'all blocks should be in chain')
+    assert.strictEqual(
       equalsBytes(chain.blocks.latest!.hash(), block91.hash()),
       true,
       'correct head hash',
@@ -785,17 +794,17 @@ describe('[Skeleton] / setHead', async () => {
     )
 
     await skeleton.forkchoiceUpdate(block92)
-    assert.equal(
+    assert.strictEqual(
       skeleton['status'].progress.subchains[0]?.head,
       BigInt(9),
       'head number should be same',
     )
-    assert.equal(
+    assert.strictEqual(
       skeleton['status'].progress.subchains[0]?.tail,
       BigInt(9),
       'tail should be truncated to head',
     )
-    assert.equal(
+    assert.strictEqual(
       equalsBytes(chain.blocks.latest!.hash(), block92.hash()),
       true,
       'correct reorged head hash',
@@ -803,7 +812,7 @@ describe('[Skeleton] / setHead', async () => {
 
     // should be able to build on top of the next block
     await skeleton.forkchoiceUpdate(block102)
-    assert.equal(
+    assert.strictEqual(
       equalsBytes(chain.blocks.latest!.hash(), block102.hash()),
       true,
       'continue reorged chain',
@@ -857,10 +866,10 @@ describe('[Skeleton] / setHead', async () => {
 
     await skeleton.initSync(block4InvalidPoS)
     await skeleton.putBlocks([block3PoW, block2])
-    assert.equal(chain.blocks.height, BigInt(0), 'canonical height should be at genesis')
+    assert.strictEqual(chain.blocks.height, BigInt(0), 'canonical height should be at genesis')
     await skeleton.putBlocks([block1])
     await wait(200)
-    assert.equal(
+    assert.strictEqual(
       chain.blocks.height,
       BigInt(2),
       'canonical height should stop at block 2 (valid terminal block), since block 3 is invalid (past ttd)',
@@ -873,7 +882,7 @@ describe('[Skeleton] / setHead', async () => {
       }
     }
     await wait(200)
-    assert.equal(
+    assert.strictEqual(
       chain.blocks.height,
       BigInt(2),
       'canonical height should not change when setHead is set with force=false',
@@ -888,18 +897,18 @@ describe('[Skeleton] / setHead', async () => {
       }
     }
     await wait(200)
-    assert.equal(
+    assert.strictEqual(
       chain.blocks.height,
       BigInt(4),
       'canonical height should now be at head with correct chain',
     )
     const latestHash = chain.headers.latest?.hash()
-    assert.ok(
+    assert.isTrue(
       latestHash !== undefined && equalsBytes(latestHash, block4PoS.hash()),
       'canonical height should now be at head with correct chain',
     )
     await skeleton.setHead(block5, true)
     await wait(200)
-    assert.equal(skeleton.bounds().head, BigInt(5), 'should update to new height')
+    assert.strictEqual(skeleton.bounds().head, BigInt(5), 'should update to new height')
   })
 })

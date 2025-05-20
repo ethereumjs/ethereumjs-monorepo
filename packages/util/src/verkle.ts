@@ -7,12 +7,11 @@ import {
   intToBytes,
   setLengthLeft,
   setLengthRight,
-  toBytes,
-} from './bytes.js'
+} from './bytes.ts'
 
-import type { Account } from './account.js'
-import type { Address } from './address.js'
-import type { PrefixedHexString } from './types.js'
+import type { Account } from './account.ts'
+import type { Address } from './address.ts'
+import type { PrefixedHexString } from './types.ts'
 
 /**
  * Verkle related constants and helper functions
@@ -34,14 +33,25 @@ export interface VerkleCrypto {
   verifyExecutionWitnessPreState: (prestateRoot: string, execution_witness_json: string) => boolean
   hashCommitment: (commitment: Uint8Array) => Uint8Array
   serializeCommitment: (commitment: Uint8Array) => Uint8Array
-  createProof: (bytes: Uint8Array) => Uint8Array
-  verifyProof: (proof: Uint8Array) => boolean
+  createProof: (bytes: ProverInput[]) => Uint8Array
+  verifyProof: (proof: Uint8Array, verifierInput: VerifierInput[]) => boolean
+  commitToScalars: (vector: Uint8Array[]) => Uint8Array
 }
 
+export interface ProverInput {
+  serializedCommitment: Uint8Array // serialized node commitment we want a proof from  i.e. verkleCrypto.serializeCommitment(commitment)
+  vector: Uint8Array[] // Array of 256 children/values
+  indices: number[] // Indices from the valuesArray we are proving existence of
+}
+
+export interface VerifierInput {
+  serializedCommitment: Uint8Array // serialized node commitment we want a proof from  i.e. verkleCrypto.serializeCommitment(commitment)
+  indexValuePairs: Array<{ index: number; value: Uint8Array }> // array of tuples of indices and values from node's children array being verified by proof
+}
 /**
  * @dev Returns the 31-bytes verkle tree stem for a given address and tree index.
  * @dev Assumes that the verkle node width = 256
- * @param {VerkleCrypto} verkleCrypto The {@link VerkleCrypto} foreign function interface object from verkle-cryptography-wasm.
+ * @param {VerkleCrypto} verkleCrypto The {@link VerkleCrypto} foreign function interface object from Verkle cryptography
  * @param {Address} address The address to generate the tree key for.
  * @param treeIndex The index of the tree to generate the key for. Defaults to 0.
  * @return The 31-bytes verkle tree stem as a Uint8Array.
@@ -67,7 +77,7 @@ export function getVerkleStem(
 
 /**
  * Verifies that the executionWitness is valid for the given prestateRoot.
- * @param {VerkleCrypto} verkleCrypto The {@link VerkleCrypto} foreign function interface object from verkle-cryptography-wasm.
+ * @param {VerkleCrypto} verkleCrypto The {@link VerkleCrypto} foreign function interface object from Verkle cryptography
  * @param {VerkleExecutionWitness} executionWitness The verkle execution witness.
  * @returns {boolean} Whether or not the executionWitness belongs to the prestateRoot.
  */
@@ -127,10 +137,12 @@ export interface VerkleExecutionWitness {
   verkleProof: VerkleProof
 }
 
-export enum VerkleLeafType {
-  BasicData = 0,
-  CodeHash = 1,
-}
+export type VerkleLeafType = (typeof VerkleLeafType)[keyof typeof VerkleLeafType]
+
+export const VerkleLeafType = {
+  BasicData: 0,
+  CodeHash: 1,
+} as const
 
 export type VerkleLeafBasicData = {
   version: number
@@ -224,42 +236,47 @@ export const getVerkleTreeKeyForCodeChunk = async (
   verkleCrypto: VerkleCrypto,
 ) => {
   const { treeIndex, subIndex } = getVerkleTreeIndicesForCodeChunk(chunkId)
-  return concatBytes(getVerkleStem(verkleCrypto, address, treeIndex), toBytes(subIndex))
+  return concatBytes(getVerkleStem(verkleCrypto, address, treeIndex), intToBytes(subIndex))
 }
 
+// This code was written by robots based on the reference implementation in EIP-6800
 export const chunkifyCode = (code: Uint8Array) => {
-  if (code.length === 0) return []
-  // Pad code to multiple of VERKLE_CODE_CHUNK_SIZE bytes
-  if (code.length % VERKLE_CODE_CHUNK_SIZE !== 0) {
-    const paddingLength = VERKLE_CODE_CHUNK_SIZE - (code.length % VERKLE_CODE_CHUNK_SIZE)
-    code = setLengthRight(code, code.length + paddingLength)
-  }
-  // Put first chunk (leading byte is always 0 since we have no leading PUSHDATA bytes)
-  const chunks = [concatBytes(new Uint8Array(1), code.subarray(0, 31))]
-  for (let i = 1; i < Math.floor(code.length / 31); i++) {
-    const slice = code.slice((i - 1) * 31, i * 31)
-    let x = 31
-    while (x >= 0) {
-      // Look for last push instruction in code chunk
-      if (slice[x] > 0x5f && slice[x] < 0x80) break
-      x--
+  const PUSH1 = 0x60 // Assuming PUSH1 is defined as 0x60
+  const PUSH32 = 0x7f // Assuming PUSH32 is defined as 0x7f
+  const PUSH_OFFSET = 0x5f // Assuming PUSH_OFFSET is defined as 0x5f
+
+  // Calculate padding length
+  const paddingLength = (31 - (code.length % 31)) % 31
+  const paddedCode = new Uint8Array(code.length + paddingLength)
+  paddedCode.set(code)
+
+  // Pre-allocate the bytesToExecData array
+  const bytesToExecData = new Uint8Array(paddedCode.length + 32)
+
+  let pos = 0
+  while (pos < paddedCode.length) {
+    let pushdataBytes = 0
+    if (PUSH1 <= paddedCode[pos] && paddedCode[pos] <= PUSH32) {
+      pushdataBytes = paddedCode[pos] - PUSH_OFFSET
     }
-    if (x >= 0 && slice[x] - 0x5f > 31 - x) {
-      // x >= 0 indicates PUSHn in this chunk
-      // n > 31 - x indicates that PUSHDATA spills over to next chunk
-      // PUSHDATA overflow = n - 31 - x + 1(i.e. number of elements PUSHed
-      // - size of code chunk (31) - position of PUSHn in the previous
-      // code chunk + 1 (since x is zero-indexed))
-      const pushDataOverflow = slice[x] - 0x5f - 31 - x + 1
-      // Put next chunk prepended with number of overflow PUSHDATA bytes
-      chunks.push(
-        concatBytes(Uint8Array.from([pushDataOverflow]), code.slice(i * 31, (i + 1) * 31)),
-      )
-    } else {
-      // Put next chunk prepended with 0 (i.e. no overflow PUSHDATA bytes from previous chunk)
-      chunks.push(concatBytes(new Uint8Array(1), code.slice(i * 31, (i + 1) * 31)))
+    pos += 1
+    for (let x = 0; x < pushdataBytes; x++) {
+      bytesToExecData[pos + x] = pushdataBytes - x
     }
+    pos += pushdataBytes
   }
+
+  // Pre-allocate the chunks array
+  const numChunks = Math.ceil(paddedCode.length / 31)
+  const chunks = new Array<Uint8Array>(numChunks)
+
+  for (let i = 0, pos = 0; i < numChunks; i++, pos += 31) {
+    const chunk = new Uint8Array(32)
+    chunk[0] = Math.min(bytesToExecData[pos], 31)
+    chunk.set(paddedCode.subarray(pos, pos + 31), 1)
+    chunks[i] = chunk
+  }
+
   return chunks
 }
 
@@ -277,7 +294,7 @@ export const getVerkleTreeKeyForStorageSlot = async (
 ) => {
   const { treeIndex, subIndex } = getVerkleTreeIndicesForStorageSlot(storageKey)
 
-  return concatBytes(getVerkleStem(verkleCrypto, address, treeIndex), toBytes(subIndex))
+  return concatBytes(getVerkleStem(verkleCrypto, address, treeIndex), intToBytes(subIndex))
 }
 
 /**
@@ -342,17 +359,13 @@ export function encodeVerkleLeafBasicData(account: Account): Uint8Array {
  */
 export const generateChunkSuffixes = (numChunks: number) => {
   if (numChunks === 0) return []
-  const chunkSuffixes = new Array<number>(numChunks)
-  const firstChunksSet = Math.min(numChunks, VERKLE_CODE_OFFSET)
-  for (let x = 0; x < firstChunksSet; x++) {
-    // Fill up to first 128 suffixes
-    chunkSuffixes[x] = x + VERKLE_CODE_OFFSET
-  }
-  if (numChunks > VERKLE_CODE_OFFSET) {
-    for (let x = VERKLE_CODE_OFFSET; x < numChunks; x++) {
-      // Fill subsequent chunk suffixes up to 256 and then start over since a single node
-      chunkSuffixes[x] = x - Math.floor(x / VERKLE_NODE_WIDTH) * VERKLE_NODE_WIDTH
-    }
+  const chunkSuffixes: number[] = new Array<number>(numChunks)
+  let currentSuffix = VERKLE_CODE_OFFSET
+  for (let x = 0; x < numChunks; x++) {
+    chunkSuffixes[x] = currentSuffix
+    currentSuffix++
+    // Reset suffix to 0 if exceeds VERKLE_NODE_WIDTH
+    if (currentSuffix >= VERKLE_NODE_WIDTH) currentSuffix = 0
   }
 
   return chunkSuffixes
@@ -377,7 +390,7 @@ export const generateCodeStems = async (
   // the first leaf node and 256 chunks in up to 3 additional leaf nodes)
   // So, instead of computing every single leaf key (which is a heavy async operation), we just compute the stem for the first
   // chunk in each leaf node and can then know that the chunks in between have tree keys in monotonically increasing order
-  const numStems = Math.ceil(numChunks / VERKLE_NODE_WIDTH)
+  const numStems = numChunks > VERKLE_CODE_OFFSET ? Math.ceil(numChunks / VERKLE_NODE_WIDTH) + 1 : 1
   const chunkStems = new Array<Uint8Array>(numStems)
   // Compute the stem for the initial set of code chunks
   chunkStems[0] = (await getVerkleTreeKeyForCodeChunk(address, 0, verkleCrypto)).slice(0, 31)

@@ -2,15 +2,15 @@ import { createBlock, createBlockHeader } from '@ethereumjs/block'
 import { Common, ConsensusAlgorithm, Hardfork, Mainnet } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
 import { RLP } from '@ethereumjs/rlp'
-import { KECCAK256_RLP, bytesToHex, randomBytes } from '@ethereumjs/util'
+import { bytesToHex } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, expect, it } from 'vitest'
 
-import { EthashConsensus, createBlockchain } from '../src/index.js'
+import { EthashConsensus, createBlockchain } from '../src/index.ts'
 
-import { generateBlock } from './util.js'
+import { generateBlock } from './util.ts'
 
-import type { ConsensusDict } from '../src/index.js'
+import type { ConsensusDict } from '../src/index.ts'
 
 describe('[Blockchain]: Block validation tests', () => {
   it('should throw if an uncle is included before', async () => {
@@ -29,15 +29,7 @@ describe('[Blockchain]: Block validation tests', () => {
     await blockchain.putBlock(block1)
     await blockchain.putBlock(block2)
 
-    try {
-      await blockchain.putBlock(block3)
-      assert.fail('cannot reach this')
-    } catch (e: any) {
-      assert.ok(
-        e.message.includes('uncle is already included'),
-        'block throws if uncle is already included',
-      )
-    }
+    await expect(blockchain.putBlock(block3)).rejects.toThrow('uncle is already included')
   })
 
   it('should throw if the uncle parent block is not part of the canonical chain', async () => {
@@ -55,16 +47,7 @@ describe('[Blockchain]: Block validation tests', () => {
     await blockchain.putBlock(block1)
     await blockchain.putBlock(block2)
 
-    try {
-      await blockchain.putBlock(block3)
-
-      assert.fail('cannot reach this')
-    } catch (err: any) {
-      assert.ok(
-        err.message.includes('not found in DB'),
-        'block throws if uncle parent hash is not part of the canonical chain',
-      )
-    }
+    await expect(blockchain.putBlock(block3)).rejects.toThrow('not found in DB')
   })
 
   it('should throw if the uncle is too old', async () => {
@@ -89,15 +72,9 @@ describe('[Blockchain]: Block validation tests', () => {
       common,
     )
 
-    try {
-      await blockchain.putBlock(blockWithUnclesTooOld)
-      assert.fail('cannot reach this')
-    } catch (e: any) {
-      assert.ok(
-        e.message.includes('uncle block has a parent that is too old'),
-        'block throws uncle is too old',
-      )
-    }
+    await expect(blockchain.putBlock(blockWithUnclesTooOld)).rejects.toThrow(
+      'uncle block has a parent that is too old',
+    )
   })
 
   it('should throw if uncle is too young', async () => {
@@ -111,15 +88,9 @@ describe('[Blockchain]: Block validation tests', () => {
 
     await blockchain.putBlock(uncleBlock)
 
-    try {
-      await blockchain.putBlock(block1)
-      assert.fail('cannot reach this')
-    } catch (e: any) {
-      assert.ok(
-        e.message.includes('uncle block has a parent that is too old or too young'),
-        'block throws uncle is too young',
-      )
-    }
+    await expect(blockchain.putBlock(block1)).rejects.toThrow(
+      'uncle block has a parent that is too old or too young',
+    )
   })
 
   it('should throw if the uncle header is invalid', async () => {
@@ -147,15 +118,9 @@ describe('[Blockchain]: Block validation tests', () => {
 
     await blockchain.putBlock(block1)
 
-    try {
-      await blockchain.putBlock(block2)
-      assert.fail('cannot reach this')
-    } catch (e: any) {
-      assert.ok(
-        e.message.includes('invalid difficulty block header number=1 '),
-        'block throws when uncle header is invalid',
-      )
-    }
+    await expect(blockchain.putBlock(block2)).rejects.toThrow(
+      'invalid difficulty block header number=1',
+    )
   })
 
   it('throws if uncle is a canonical block', async () => {
@@ -169,16 +134,7 @@ describe('[Blockchain]: Block validation tests', () => {
 
     await blockchain.putBlock(block1)
 
-    try {
-      await blockchain.putBlock(block2)
-
-      assert.fail('cannot reach this')
-    } catch (e: any) {
-      assert.ok(
-        e.message.includes('The uncle is a canonical block'),
-        'block throws if an uncle is a canonical block',
-      )
-    }
+    await expect(blockchain.putBlock(block2)).rejects.toThrow('The uncle is a canonical block')
   })
 
   it('successfully validates uncles', async () => {
@@ -258,11 +214,7 @@ describe('[Blockchain]: Block validation tests', () => {
       const block2 = createBlock({ header }, { common })
       await blockchain.putBlock(block2)
     } catch (e: any) {
-      const expectedError = 'Invalid block: base fee not correct'
-      assert.ok(
-        (e.message as string).includes(expectedError),
-        'should throw when base fee is not correct',
-      )
+      assert.include(e.message, 'Invalid block: base fee not correct')
     }
   })
 
@@ -342,7 +294,11 @@ describe('[Blockchain]: Block validation tests', () => {
     common.setHardfork(Hardfork.London)
     const forkBlock = generateBlock(preForkBlock, 'forkBlock', [], common)
     await blockchain.putBlock(forkBlock)
-    assert.equal(common.hardfork(), Hardfork.London, 'validation did not change common hardfork')
+    assert.strictEqual(
+      common.hardfork(),
+      Hardfork.London,
+      'validation did not change common hardfork',
+    )
 
     const forkBlockHeaderData = forkBlock.header.toJSON()
     const uncleHeaderData = unclePreFork.header.toJSON()
@@ -370,7 +326,11 @@ describe('[Blockchain]: Block validation tests', () => {
       uncleHeader.hash(),
       'successfully validated a pre-london uncle on a london block',
     )
-    assert.equal(common.hardfork(), Hardfork.London, 'validation did not change common hardfork')
+    assert.strictEqual(
+      common.hardfork(),
+      Hardfork.London,
+      'validation did not change common hardfork',
+    )
 
     assert.doesNotThrow(
       () =>
@@ -386,51 +346,10 @@ describe('[Blockchain]: Block validation tests', () => {
         ),
       'should create block even with pre-London uncle and common evaluated with london since uncle is given default base fee',
     )
-    assert.equal(common.hardfork(), Hardfork.London, 'validation did not change common hardfork')
-  })
-})
-describe('EIP 7685: requests field validation tests', () => {
-  it('should throw when putting a block with an invalid requestsRoot', async () => {
-    const common = new Common({
-      chain: Mainnet,
-      hardfork: Hardfork.Cancun,
-      eips: [7685, 1559, 4895, 4844, 4788],
-    })
-    const blockchain = await createBlockchain({
-      common,
-    })
-    const block = createBlock(
-      {
-        header: {
-          number: 1n,
-          requestsRoot: randomBytes(32),
-          withdrawalsRoot: KECCAK256_RLP,
-          parentHash: blockchain.genesisBlock.hash(),
-          timestamp: blockchain.genesisBlock.header.timestamp + 1n,
-          gasLimit: 5000,
-        },
-      },
-      { common },
-    )
-
-    await expect(async () => blockchain.putBlock(block)).rejects.toThrow('invalid requestsRoot')
-
-    const blockWithRequest = createBlock(
-      {
-        header: {
-          number: 1n,
-          requestsRoot: randomBytes(32),
-          withdrawalsRoot: KECCAK256_RLP,
-          parentHash: blockchain.genesisBlock.hash(),
-          timestamp: blockchain.genesisBlock.header.timestamp + 1n,
-          gasLimit: 5000,
-        },
-        requests: [{ type: 0x1, bytes: randomBytes(12), serialize: () => randomBytes(32) } as any],
-      },
-      { common },
-    )
-    await expect(async () => blockchain.putBlock(blockWithRequest)).rejects.toThrow(
-      'invalid requestsRoot',
+    assert.strictEqual(
+      common.hardfork(),
+      Hardfork.London,
+      'validation did not change common hardfork',
     )
   })
 })

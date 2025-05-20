@@ -1,9 +1,9 @@
+import fs from 'fs'
 import { bytesToUtf8 } from '@ethereumjs/util'
 import { base64url } from '@scure/base'
-import fs from 'fs'
 import { describe, expect, it } from 'vitest'
 
-import { jwt } from '../../src/ext/jwt-simple.js'
+import { jwt } from '../../src/ext/jwt-simple.ts'
 
 describe('jwt', function () {
   it('jwt has `encode` method', function () {
@@ -44,7 +44,7 @@ describe('decode', function () {
   })
 
   it('throw an error when no token is provided', function () {
-    //@ts-expect-error
+    //@ts-expect-error -- Testing error case
     const fn = jwt.decode.bind(null, null, key)
     expect(fn).toThrowError(/No token supplied/)
   })

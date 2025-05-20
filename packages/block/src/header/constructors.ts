@@ -1,11 +1,11 @@
 import { RLP } from '@ethereumjs/rlp'
-import { bigIntToBytes, equalsBytes } from '@ethereumjs/util'
+import { EthereumJSErrorWithoutCode, bigIntToBytes, equalsBytes } from '@ethereumjs/util'
 
-import { generateCliqueBlockExtraData } from '../consensus/clique.js'
-import { numberToHex, valuesArrayToHeaderData } from '../helpers.js'
-import { BlockHeader } from '../index.js'
+import { generateCliqueBlockExtraData } from '../consensus/clique.ts'
+import { numberToHex, valuesArrayToHeaderData } from '../helpers.ts'
+import { BlockHeader } from '../index.ts'
 
-import type { BlockHeaderBytes, BlockOptions, HeaderData, JSONRPCBlock } from '../types.js'
+import type { BlockHeaderBytes, BlockOptions, HeaderData, JSONRPCBlock } from '../types.ts'
 
 /**
  * Static constructor to create a block header from a header data dictionary
@@ -25,7 +25,7 @@ export function createBlockHeader(headerData: HeaderData = {}, opts: BlockOption
  */
 export function createBlockHeaderFromBytesArray(values: BlockHeaderBytes, opts: BlockOptions = {}) {
   const headerData = valuesArrayToHeaderData(values)
-  const { number, baseFeePerGas, excessBlobGas, blobGasUsed, parentBeaconBlockRoot, requestsRoot } =
+  const { number, baseFeePerGas, excessBlobGas, blobGasUsed, parentBeaconBlockRoot, requestsHash } =
     headerData
   const header = createBlockHeader(headerData, opts)
   if (header.common.isActivatedEIP(1559) && baseFeePerGas === undefined) {
@@ -34,22 +34,22 @@ export function createBlockHeaderFromBytesArray(values: BlockHeaderBytes, opts: 
       eip1559ActivationBlock !== undefined &&
       equalsBytes(eip1559ActivationBlock, number as Uint8Array)
     ) {
-      throw new Error('invalid header. baseFeePerGas should be provided')
+      throw EthereumJSErrorWithoutCode('invalid header. baseFeePerGas should be provided')
     }
   }
   if (header.common.isActivatedEIP(4844)) {
     if (excessBlobGas === undefined) {
-      throw new Error('invalid header. excessBlobGas should be provided')
+      throw EthereumJSErrorWithoutCode('invalid header. excessBlobGas should be provided')
     } else if (blobGasUsed === undefined) {
-      throw new Error('invalid header. blobGasUsed should be provided')
+      throw EthereumJSErrorWithoutCode('invalid header. blobGasUsed should be provided')
     }
   }
   if (header.common.isActivatedEIP(4788) && parentBeaconBlockRoot === undefined) {
-    throw new Error('invalid header. parentBeaconBlockRoot should be provided')
+    throw EthereumJSErrorWithoutCode('invalid header. parentBeaconBlockRoot should be provided')
   }
 
-  if (header.common.isActivatedEIP(7685) && requestsRoot === undefined) {
-    throw new Error('invalid header. requestsRoot should be provided')
+  if (header.common.isActivatedEIP(7685) && requestsHash === undefined) {
+    throw EthereumJSErrorWithoutCode('invalid header. requestsHash should be provided')
   }
   return header
 }
@@ -66,7 +66,7 @@ export function createBlockHeaderFromRLP(
 ) {
   const values = RLP.decode(serializedHeaderData)
   if (!Array.isArray(values)) {
-    throw new Error('Invalid serialized header input. Must be array')
+    throw EthereumJSErrorWithoutCode('Invalid serialized header input. Must be array')
   }
   return createBlockHeaderFromBytesArray(values as Uint8Array[], opts)
 }
@@ -118,7 +118,7 @@ export function createBlockHeaderFromRPC(blockParams: JSONRPCBlock, options?: Bl
     blobGasUsed,
     excessBlobGas,
     parentBeaconBlockRoot,
-    requestsRoot,
+    requestsHash,
   } = blockParams
 
   const blockHeader = new BlockHeader(
@@ -143,7 +143,7 @@ export function createBlockHeaderFromRPC(blockParams: JSONRPCBlock, options?: Bl
       blobGasUsed,
       excessBlobGas,
       parentBeaconBlockRoot,
-      requestsRoot,
+      requestsHash,
     },
     options,
   )

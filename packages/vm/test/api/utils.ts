@@ -1,5 +1,5 @@
 import { createBlockchain } from '@ethereumjs/blockchain'
-import { TransactionType, createTxFromTxData } from '@ethereumjs/tx'
+import { TransactionType, createTx } from '@ethereumjs/tx'
 import {
   Account,
   blobsToCommitments,
@@ -9,15 +9,15 @@ import {
 } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 
-import { createVM } from '../../src/index.js'
+import { createVM } from '../../src/index.ts'
 
-import { LevelDB } from './level.js'
+import { LevelDB } from './level.ts'
 
-import type { VMOpts } from '../../src/types.js'
-import type { VM } from '../../src/vm.js'
 import type { Block } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
-import type { Address } from '@ethereumjs/util'
+import type { Address, PrefixedHexString } from '@ethereumjs/util'
+import type { VMOpts } from '../../src/types.ts'
+import type { VM } from '../../src/vm.ts'
 
 export function createAccountWithDefaults(nonce = BigInt(0), balance = BigInt(0xfff384)) {
   return new Account(nonce, balance)
@@ -50,7 +50,7 @@ export async function setupVM(opts: VMOpts & { genesisBlock?: Block } = {}) {
 
 export function getTransaction(
   common: Common,
-  txType = TransactionType.Legacy,
+  txType: TransactionType = TransactionType.Legacy,
   sign = false,
   value = '0x00',
   createContract = false,
@@ -103,18 +103,15 @@ export function getTransaction(
     txParams['maxFeePerBlobGas'] = BigInt(100)
     txParams['blobs'] = getBlobs('hello world')
     txParams['kzgCommitments'] = blobsToCommitments(common.customCrypto!.kzg!, txParams['blobs'])
-    txParams['kzgProofs'] = txParams['blobs'].map((blob: Uint8Array, ctx: number) =>
-      common.customCrypto!.kzg!.computeBlobKzgProof(
-        blob,
-        txParams['kzgCommitments'][ctx] as Uint8Array,
-      ),
+    txParams['kzgProofs'] = txParams['blobs'].map((blob: PrefixedHexString, ctx: number) =>
+      common.customCrypto!.kzg!.computeBlobProof(blob, txParams['kzgCommitments'][ctx]),
     )
-    txParams['blobVersionedHashes'] = txParams['kzgCommitments'].map((commitment: Uint8Array) =>
-      computeVersionedHash(commitment, 0x1),
+    txParams['blobVersionedHashes'] = txParams['kzgCommitments'].map(
+      (commitment: PrefixedHexString) => computeVersionedHash(commitment, 0x1),
     )
   }
 
-  const tx = createTxFromTxData(txParams, { common, freeze: false })
+  const tx = createTx(txParams, { common, freeze: false })
 
   if (sign) {
     const privateKey = hexToBytes(

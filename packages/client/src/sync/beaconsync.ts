@@ -1,16 +1,16 @@
 import { BIGINT_0, BIGINT_1, bytesToHex } from '@ethereumjs/util'
 
-import { Event } from '../types.js'
-import { short } from '../util/index.js'
+import { Event } from '../types.ts'
+import { short } from '../util/index.ts'
 
-import { ReverseBlockFetcher } from './fetcher/index.js'
-import { Synchronizer } from './sync.js'
+import { ReverseBlockFetcher } from './fetcher/index.ts'
+import { Synchronizer } from './sync.ts'
 
-import type { VMExecution } from '../execution/index.js'
-import type { Peer } from '../net/peer/peer.js'
-import type { Skeleton } from '../service/skeleton.js'
-import type { SynchronizerOptions } from './sync.js'
 import type { Block } from '@ethereumjs/block'
+import type { VMExecution } from '../execution/index.ts'
+import type { Peer } from '../net/peer/peer.ts'
+import type { Skeleton } from '../service/skeleton.ts'
+import type { SynchronizerOptions } from './sync.ts'
 
 interface BeaconSynchronizerOptions extends SynchronizerOptions {
   /** Skeleton chain */
@@ -79,7 +79,7 @@ export class BeaconSynchronizer extends Synchronizer {
     const timestamp = this.chain.blocks.latest?.header.timestamp
     this.config.chainCommon.setHardforkBy({ blockNumber: number, timestamp })
 
-    this.config.logger.info(
+    this.config.logger?.info(
       `Latest local block number=${Number(number)} td=${td} hash=${bytesToHex(
         hash,
       )} hardfork=${this.config.chainCommon.hardfork()}`,
@@ -142,7 +142,7 @@ export class BeaconSynchronizer extends Synchronizer {
         try {
           await this.sync()
         } catch (error: any) {
-          this.config.logger.error(`Beacon sync error: ${error.message}`)
+          this.config.logger?.error(`Beacon sync error: ${error.message}`)
           this.config.events.emit(Event.SYNC_ERROR, error)
         }
         await new Promise((resolve) => setTimeout(resolve, this.interval))
@@ -163,7 +163,7 @@ export class BeaconSynchronizer extends Synchronizer {
     if (!this.opened) return
     // Clean the current fetcher, later this.start will start it again
     await this.stop()
-    this.config.logger.debug(
+    this.config.logger?.debug(
       `Beacon sync reorged, new head number=${block.header.number} hash=${short(
         block.header.hash(),
       )}`,
@@ -220,7 +220,7 @@ export class BeaconSynchronizer extends Synchronizer {
       this.config.syncTargetHeight < latest.number
     ) {
       this.config.syncTargetHeight = height
-      this.config.logger.info(`New sync target height=${height} hash=${short(latest.hash())}`)
+      this.config.logger?.info(`New sync target height=${height} hash=${short(latest.hash())}`)
     }
 
     const { tail } = this.skeleton.bounds()
@@ -242,7 +242,7 @@ export class BeaconSynchronizer extends Synchronizer {
     }
 
     if (count > BIGINT_0 && (this.fetcher === null || this.fetcher.syncErrored !== undefined)) {
-      this.config.logger.debug(
+      this.config.logger?.debug(
         `syncWithPeer - new ReverseBlockFetcher peer=${
           peer?.id
         } subChainTail=${tail} first=${first} count=${count} chainHeight=${
@@ -270,7 +270,7 @@ export class BeaconSynchronizer extends Synchronizer {
   async processSkeletonBlocks(blocks: Block[]) {
     if (blocks.length === 0) {
       if (this.fetcher !== null) {
-        this.config.logger.warn('No blocks fetched are applicable for import')
+        this.config.logger?.warn('No blocks fetched are applicable for import')
       }
       return
     }
@@ -280,7 +280,7 @@ export class BeaconSynchronizer extends Synchronizer {
     const last = blocks[blocks.length - 1].header.number
     const hash = short(blocks[0].hash())
 
-    this.config.logger.debug(
+    this.config.logger?.debug(
       `Imported skeleton blocks count=${blocks.length} first=${first} last=${last} hash=${hash} peers=${this.pool.size}`,
     )
   }

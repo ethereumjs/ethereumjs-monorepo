@@ -1,7 +1,7 @@
 import { platform } from 'os'
 import { assert, describe, it } from 'vitest'
 
-import { baseSetup } from '../helpers.js'
+import { baseSetup } from '../helpers.ts'
 
 const method = 'web3_clientVersion'
 
@@ -21,9 +21,13 @@ describe(method, () => {
     assert.notEqual(result.length, 0, 'result string should not be empty')
     const [actualClientTitle, actualPackageVersion, actualPlatform, actualNodeVersion] =
       result.split('/')
-    assert.equal(actualClientTitle, expectedClientTitle, 'client title should be correct')
-    assert.equal(actualPackageVersion, expectedPackageVersion, 'package version should be correct')
-    assert.equal(actualPlatform, expectedPlatform, 'platform should be correct')
-    assert.equal(actualNodeVersion, expectedNodeVersion, 'Node.js version should be correct')
+    assert.strictEqual(actualClientTitle, expectedClientTitle, 'client title should be correct')
+    assert.strictEqual(
+      actualPackageVersion,
+      expectedPackageVersion,
+      'package version should be correct',
+    )
+    assert.strictEqual(actualPlatform, expectedPlatform, 'platform should be correct')
+    assert.strictEqual(actualNodeVersion, expectedNodeVersion, 'Node.js version should be correct')
   })
 })

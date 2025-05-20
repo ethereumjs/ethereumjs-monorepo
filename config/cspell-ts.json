@@ -1,17 +1,39 @@
 {
   "language": "en-US",
-  "ignoreRegExpList": ["/0x[0-9A-Fa-f]+/", "@scure"],
+  "ignoreRegExpList": [
+    "/0x[0-9A-Fa-f]+/",
+    "@scure"
+  ],
   "overrides": [
     {
       "filename": "**/packages/devp2p/**",
-      "ignoreWords": ["pirl", "ubiq", "gwhale", "prichain", "zfill"]
+      "ignoreWords": [
+        "pirl",
+        "ubiq",
+        "gwhale",
+        "prichain",
+        "zfill"
+      ]
     },
     {
       "filename": "**/packages/ethash/**",
-      "ignoreWords": ["epoc", "cmix"]
+      "ignoreWords": [
+        "epoc",
+        "cmix"
+      ]
     }
   ],
   "words": [
+    "immediates",
+    "unerasable",
+    "bytelist",
+    "bytestring",
+    "binarytree",
+    "merkelize",
+    "kaust",
+    "EEST",
+    "paulmillr",
+    "t8ntool",
     "!Json",
     "!Rpc",
     "Hardfork",
@@ -285,6 +307,7 @@
     "MCOPY",
     "JUMPF",
     "SELFDESTRUCT",
+    "AUTHCALL",
     "triggerable",
     "RETURNDATASIZE",
     "RETURNDATACOPY",
@@ -605,6 +628,18 @@
     "Statetest",
     "testeth",
     "PUSHDATA",
-    "chunkified"
+    "chunkified",
+    "ScottyPoi",
+    "Scotty",
+    "snappystream",
+    "ethjs",
+    "Unsnappy",
+    "unsnappy",
+    "ethportal",
+    "bytevector",
+    "blobschedule",
+    "hoodi",
+    "peerdas",
+    "getpayload"
   ]
 }

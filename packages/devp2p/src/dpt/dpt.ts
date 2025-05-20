@@ -1,22 +1,27 @@
-import { bytesToInt, bytesToUnprefixedHex, randomBytes } from '@ethereumjs/util'
+import {
+  EthereumJSErrorWithoutCode,
+  bytesToInt,
+  bytesToUnprefixedHex,
+  randomBytes,
+} from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
-import { EventEmitter } from 'events'
+import { EventEmitter } from 'eventemitter3'
 
-import { DNS } from '../dns/index.js'
-import { devp2pDebug, pk2id } from '../util.js'
+import { DNS } from '../dns/index.ts'
+import { devp2pDebug, pk2id } from '../util.ts'
 
-import { BanList } from './ban-list.js'
-import { KBucket } from './kbucket.js'
-import { Server as DPTServer } from './server.js'
+import { BanList } from './ban-list.ts'
+import { KBucket } from './kbucket.ts'
+import { Server as DPTServer } from './server.ts'
 
-import type { DPTOptions, PeerInfo } from '../types.js'
 import type { Debugger } from 'debug'
+import type { DPTEvent, DPTOptions, PeerInfo } from '../types.ts'
 
 const DEBUG_BASE_NAME = 'dpt'
 
 export class DPT {
-  public events: EventEmitter
+  public events: EventEmitter<DPTEvent>
   protected _privateKey: Uint8Array
   protected _banlist: BanList
   protected _dns: DNS
@@ -41,7 +46,7 @@ export class DPT {
   private DEBUG: boolean
 
   constructor(privateKey: Uint8Array, options: DPTOptions) {
-    this.events = new EventEmitter()
+    this.events = new EventEmitter<DPTEvent>()
     this._privateKey = privateKey
     this.id = pk2id(secp256k1.getPublicKey(this._privateKey, false))
     this._shouldFindNeighbours = options.shouldFindNeighbours ?? true
@@ -106,16 +111,16 @@ export class DPT {
     for (const peer of oldPeers) {
       this._server
         .ping(peer)
-        .catch((_err: Error) => {
-          this._banlist.add(peer, 300000) // 5 min * 60 * 1000
-          this._kbucket.remove(peer)
-          err = err ?? _err
-        })
         .then(() => {
           if (++count < oldPeers.length) return
           if (err === null)
             this._banlist.add(newPeer, 300000) // 5 min * 60 * 1000
           else this._kbucket.add(newPeer)
+        })
+        .catch((_err: Error) => {
+          this._banlist.add(peer, 300000) // 5 min * 60 * 1000
+          this._kbucket.remove(peer)
+          err = err ?? _err
         })
     }
   }
@@ -150,7 +155,7 @@ export class DPT {
   }
 
   async addPeer(obj: PeerInfo): Promise<PeerInfo> {
-    if (this._banlist.has(obj)) throw new Error('Peer is banned')
+    if (this._banlist.has(obj)) throw EthereumJSErrorWithoutCode('Peer is banned')
     if (this.DEBUG) {
       this._debug(`attempt adding peer ${obj.address}:${obj.udpPort}`)
     }

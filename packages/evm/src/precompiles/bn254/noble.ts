@@ -9,10 +9,10 @@ import {
 } from '@ethereumjs/util'
 import { bn254 } from '@noble/curves/bn254'
 
-import { ERROR, EvmError } from '../../exceptions.js'
+import { EVMError } from '../../errors.ts'
 
-import type { EVMBN254Interface } from '../../types.js'
 import type { AffinePoint } from '@noble/curves/abstract/weierstrass'
+import type { EVMBN254Interface } from '../../types.ts'
 
 const G1_INFINITY_POINT_BYTES = new Uint8Array(64)
 const G2_INFINITY_POINT_BYTES = new Uint8Array(128)
@@ -29,7 +29,7 @@ const ONE_BUFFER = concatBytes(new Uint8Array(31), hexToBytes('0x01'))
  * @returns Noble G1 point
  */
 function toG1Point(input: Uint8Array) {
-  if (equalsBytes(input, G1_INFINITY_POINT_BYTES)) {
+  if (equalsBytes(input, G1_INFINITY_POINT_BYTES) === true) {
     return bn254.G1.ProjectivePoint.ZERO
   }
 
@@ -62,15 +62,28 @@ function toFrPoint(input: Uint8Array): bigint {
   return Fr
 }
 
+function toFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array) {
+  if (bytesToBigInt(fpXCoordinate) >= bn254.fields.Fp2.ORDER) {
+    throw new EVMError(EVMError.errorMessages.BN254_FP_NOT_IN_FIELD)
+  }
+  if (bytesToBigInt(fpYCoordinate) >= bn254.fields.Fp2.ORDER) {
+    throw new EVMError(EVMError.errorMessages.BN254_FP_NOT_IN_FIELD)
+  }
+
+  const fpBytes = concatBytes(fpXCoordinate, fpYCoordinate)
+
+  const FP = bn254.fields.Fp2.fromBytes(fpBytes)
+  return FP
+}
+
 /**
  * Converts an Uint8Array to a Noble G2 point. Raises errors if the point is not on the curve
  * and (if activated) if the point is in the subgroup / order check.
  * @param input Input Uint8Array. Should be 256 bytes
  * @returns Noble G2 point
  */
-function toG2Point(input: Uint8Array): any {
-  // TODO: remove any type, temporary fix due to conflicting @noble/curves versions
-  if (equalsBytes(input, G2_INFINITY_POINT_BYTES)) {
+function toG2Point(input: Uint8Array) {
+  if (equalsBytes(input, G2_INFINITY_POINT_BYTES) === true) {
     return bn254.G2.ProjectivePoint.ZERO
   }
 
@@ -83,7 +96,7 @@ function toG2Point(input: Uint8Array): any {
   for (const p of [p_x_1, p_x_2, p_y_1, p_y_2]) {
     const pB = bytesToBigInt(p)
     if (bn254.fields.Fp.create(pB) !== pB) {
-      throw new EvmError(ERROR.BN254_FP_NOT_IN_FIELD)
+      throw new EVMError(EVMError.errorMessages.BN254_FP_NOT_IN_FIELD)
     }
   }
 
@@ -100,23 +113,9 @@ function toG2Point(input: Uint8Array): any {
   return pG2
 }
 
-function toFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array) {
-  if (bytesToBigInt(fpXCoordinate) >= bn254.fields.Fp2.ORDER) {
-    throw new EvmError(ERROR.BN254_FP_NOT_IN_FIELD)
-  }
-  if (bytesToBigInt(fpYCoordinate) >= bn254.fields.Fp2.ORDER) {
-    throw new EvmError(ERROR.BN254_FP_NOT_IN_FIELD)
-  }
-
-  const fpBytes = concatBytes(fpXCoordinate, fpYCoordinate)
-
-  const FP = bn254.fields.Fp2.fromBytes(fpBytes)
-  return FP
-}
-
 /**
- * Implementation of the `EVMBN254Interface` using the `@noble/curves` JS library,
- * see https://github.com/paulmillr/noble-curves.
+ * Implementation of the `EVMBN254Interface` using the `ethereum-cryptography (`@noble/curves`)
+ * JS library, see https://github.com/ethereum/js-ethereum-cryptography.
  *
  * This is the EVM default implementation.
  */

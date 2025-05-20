@@ -3,17 +3,17 @@ import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import {
-  AccessList2930Transaction,
+  AccessList2930Tx,
   FeeMarket1559Tx,
   LegacyTx,
   TransactionType,
   createAccessList2930Tx,
   createFeeMarket1559Tx,
   createLegacyTx,
+  createTx,
   createTxFromBlockBodyData,
-  createTxFromSerializedData,
-  createTxFromTxData,
-} from '../src/index.js'
+  createTxFromRLP,
+} from '../src/index.ts'
 
 const common = new Common({
   chain: Mainnet,
@@ -40,8 +40,8 @@ const txTypes = [
     type: TransactionType.Legacy,
   },
   {
-    class: AccessList2930Transaction,
-    name: 'AccessList2930Transaction',
+    class: AccessList2930Tx,
+    name: 'AccessList2930Tx',
     unsigned: unsignedEIP2930Tx,
     signed: signedEIP2930Tx,
     eip2718: true,
@@ -61,8 +61,8 @@ describe('[TransactionFactory]: Basic functions', () => {
   it('fromSerializedData() -> success cases', () => {
     for (const txType of txTypes) {
       const serialized = txType.unsigned.serialize()
-      const factoryTx = createTxFromSerializedData(serialized, { common })
-      assert.equal(
+      const factoryTx = createTxFromRLP(serialized, { common })
+      assert.strictEqual(
         factoryTx.constructor.name,
         txType.class.name,
         `should return the right type (${txType.name})`,
@@ -76,7 +76,7 @@ describe('[TransactionFactory]: Basic functions', () => {
         const unsupportedCommon = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
         assert.throws(
           () => {
-            createTxFromSerializedData(txType.unsigned.serialize(), {
+            createTxFromRLP(txType.unsigned.serialize(), {
               common: unsupportedCommon,
             })
           },
@@ -89,7 +89,7 @@ describe('[TransactionFactory]: Basic functions', () => {
           () => {
             const serialized = txType.unsigned.serialize()
             serialized[0] = 99 // edit the transaction type
-            createTxFromSerializedData(serialized, { common })
+            createTxFromRLP(serialized, { common })
           },
           undefined,
           undefined,
@@ -108,7 +108,7 @@ describe('[TransactionFactory]: Basic functions', () => {
         rawTx = txType.signed.raw() as Uint8Array[]
       }
       const tx = createTxFromBlockBodyData(rawTx, { common })
-      assert.equal(
+      assert.strictEqual(
         tx.constructor.name,
         txType.name,
         `should return the right type (${txType.name})`,
@@ -131,15 +131,15 @@ describe('[TransactionFactory]: Basic functions', () => {
 
   it('fromTxData() -> success cases', () => {
     for (const txType of txTypes) {
-      const tx = createTxFromTxData({ type: txType.type }, { common })
-      assert.equal(
+      const tx = createTx({ type: txType.type }, { common })
+      assert.strictEqual(
         tx.constructor.name,
         txType.class.name,
         `should return the right type (${txType.name})`,
       )
       if (!txType.eip2718) {
-        const tx = createTxFromTxData({})
-        assert.equal(
+        const tx = createTx({})
+        assert.strictEqual(
           tx.constructor.name,
           txType.class.name,
           `should return the right type (${txType.name})`,
@@ -151,15 +151,15 @@ describe('[TransactionFactory]: Basic functions', () => {
   it('fromTxData() -> error cases', () => {
     const unsupportedCommon = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     assert.throws(() => {
-      createTxFromTxData({ type: 1 }, { common: unsupportedCommon })
+      createTx({ type: 1 }, { common: unsupportedCommon })
     })
 
     assert.throws(() => {
-      createTxFromTxData({ type: 999 })
+      createTx({ type: 999 })
     })
 
     assert.throws(() => {
-      createTxFromTxData({ value: BigInt('-100') })
+      createTx({ value: BigInt('-100') })
     })
   })
 })

@@ -1,6 +1,6 @@
-import type { Chain } from '../blockchain/index.js'
-import type { Config } from '../config.js'
 import type { AbstractLevel } from 'abstract-level'
+import type { Chain } from '../blockchain/index.ts'
+import type { Config } from '../config.ts'
 
 export interface ExecutionOptions {
   /* Config */
@@ -49,7 +49,7 @@ export abstract class Execution {
    */
   async open(): Promise<void> {
     this.started = true
-    this.config.logger.info('Setup EVM execution.')
+    this.config.logger?.info('Setup EVM execution.')
   }
 
   /**
@@ -57,7 +57,7 @@ export abstract class Execution {
    */
   async stop(): Promise<boolean> {
     this.started = false
-    this.config.logger.info('Stopped execution.')
+    this.config.logger?.info('Stopped execution.')
     return true
   }
 }

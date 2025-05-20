@@ -2,23 +2,22 @@ import { createBlock } from '@ethereumjs/block'
 import { Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { createEVM } from '@ethereumjs/evm'
 import { Caches, StatelessVerkleStateManager } from '@ethereumjs/statemanager'
-import { createTxFromSerializedData } from '@ethereumjs/tx'
+import { verkleKaustinen6Block72Data } from '@ethereumjs/testdata'
+import { createTxFromRLP } from '@ethereumjs/tx'
 import { hexToBytes } from '@ethereumjs/util'
-import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
+import * as verkle from 'micro-eth-signer/verkle'
 import { describe, it } from 'vitest'
 
-import { verkleKaustinen6Block72Data } from '../../../../statemanager/test/testdata/verkleKaustinen6Block72.js'
-import { createVM, runBlock } from '../../../src/index.js'
-
-import type { PrefixedHexString } from '@ethereumjs/util'
+import { createVM, runBlock } from '../../../src/index.ts'
 
 const customChainParams = { name: 'custom', chainId: 69420 }
 const common = createCustomCommon(customChainParams, Mainnet, {
   hardfork: Hardfork.Cancun,
   eips: [2935, 4895, 6800],
+  customCrypto: { verkle },
 })
 const decodedTxs = verkleKaustinen6Block72Data.transactions?.map((tx) =>
-  createTxFromSerializedData(hexToBytes(tx as PrefixedHexString), { common }),
+  createTxFromRLP(hexToBytes(tx), { common }),
 )
 
 const parentStateRoot = hexToBytes(
@@ -35,11 +34,10 @@ const block = createBlock(
 describe('EIP 6800 tests', () => {
   // TODO: Turn back on once we have kaustinen7 block data
   it.skip('successfully run transactions statelessly using the block witness', async () => {
-    const verkleCrypto = await loadVerkleCrypto()
+    common.customCrypto.verkle = verkle
     const verkleStateManager = new StatelessVerkleStateManager({
       caches: new Caches(),
       common,
-      verkleCrypto,
     })
     const evm = await createEVM({ common, stateManager: verkleStateManager })
     const vm = await createVM({

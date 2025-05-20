@@ -6,10 +6,9 @@ import { bigIntToHex, bytesToHex, createAddressFromString } from '@ethereumjs/ut
 import { runBlock, runTx } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import { createClient, createManager, getRPCClient, startRPC } from '../helpers.js'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
+import { createClient, createManager, getRPCClient, startRPC } from '../helpers.ts'
 
-import type { FullEthereumService } from '../../../src/service/index.js'
 import type { Block } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -28,7 +27,7 @@ describe(method, () => {
     const manager = createManager(client)
     const rpc = getRPCClient(startRPC(manager.getMethods()))
 
-    const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
+    const { execution } = client.service
     assert.notEqual(execution, undefined, 'should have valid execution')
     const { vm } = execution
 
@@ -101,23 +100,23 @@ describe(method, () => {
       { ...estimateTxData, gas: estimateTxData.gasLimit },
       'latest',
     ])
-    assert.equal(res.error.code, 3, 'should return the correct error code')
-    assert.equal(
+    assert.strictEqual(res.error.code, 3, 'should return the correct error code')
+    assert.strictEqual(
       res.error.data,
       bytesToHex(execResult.returnValue),
       'should return the correct return value',
     )
 
     res = await rpc.request(method, [{ ...estimateTxData }, 'latest'])
-    assert.equal(res.error.code, 3, 'should return the correct error code')
-    assert.equal(
+    assert.strictEqual(res.error.code, 3, 'should return the correct error code')
+    assert.strictEqual(
       res.error.data,
       bytesToHex(execResult.returnValue),
       'should return the correct return value with no gas limit provided',
     )
 
     res = await rpc.request(method, [{ gasLimit, data }, 'latest'])
-    assert.equal(
+    assert.strictEqual(
       res.result,
       bytesToHex(result.results[0].execResult.returnValue),
       `should let run call without 'to' for contract creation`,
@@ -146,8 +145,8 @@ describe(method, () => {
       { ...estimateTxData, gas: estimateTxData.gasLimit },
       'pending',
     ])
-    assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('"pending" is not yet supported'))
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
+    assert.isTrue(res.error.message.includes('"pending" is not yet supported'))
   })
 
   it('call with invalid hex params', async () => {
@@ -170,7 +169,7 @@ describe(method, () => {
       { ...estimateTxData, gas: estimateTxData.gasLimit },
       'latest',
     ])
-    assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('invalid argument data: hex string without 0x prefix'))
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
+    assert.isTrue(res.error.message.includes('invalid argument data: hex string without 0x prefix'))
   })
 })

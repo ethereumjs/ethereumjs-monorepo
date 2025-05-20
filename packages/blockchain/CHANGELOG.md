@@ -6,6 +6,109 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 10.0.0 - 2025-04-29
+
+### Overview
+
+This release is part of the `v10` breaking release round making the `EthereumJS` libraries compatible with the [Pectra](https://eips.ethereum.org/EIPS/eip-7600) hardfork going live on Ethereum `mainnet` on May 7 2025. Beside the hardfork update these releases mark a milestone in our release history since they - for the first time ever - bring the full `Ethereum` protocol stack - including the `EVM` - to the browser without any restrictions anymore, coming along with other substantial updates regarding library security and functionality.
+
+Some highlights:
+
+- 🌴 Introduction of a tree-shakeable API
+- 👷🏼 Substantial dependency reduction to a "controlled dependency set" (no more than 10 + `@Noble` crypto)
+- 📲 **EIP-7702** readiness
+- 🛵 Substantial bundle size reductions for all libraries
+- 🏄🏾‍♂️ All libraries now pure JS being WASM-free by default
+- 🦋 No more propriatary `Node.js` primitives
+
+So: **All libraries now work in the browser "out of the box"**.
+
+### Release Notes
+
+Major release notes for this release can be found in the `alpha.1` release notes [here](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3722#issuecomment-2792400268), with some additions along with the `RC.1` releases, see [here](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3886#issuecomment-2748966923).
+
+## 10.0.0-rc.1 - 2025-03-24
+
+This is the first (and likely the last) round of `RC` releases for the upcoming breaking releases, following the `alpha` releases from October 2024 (see `alpha` release release notes for full/main change description). The releases are somewhat delayed (sorry for that), but final releases can now be expected very very soon, to be released once the Ethereum [Pectra](https://eips.ethereum.org/EIPS/eip-7600) hardfork is scheduled for mainnet and all EIPs are fully finalized. Pectra will then also be the default hardfork setting for all EthereumJS libraries.
+
+### New Versioning Scheme
+
+This breaking release round will come with a new versioning scheme (thanks to paulmillr for the [suggestion](https://github.com/ethereumjs/ethereumjs-monorepo/issues/3748)), aligning the package numbers on breaking releases for all EthereumJS packages. This will make it easier to report bugs ("bug happened on EthereumJS version 10 releases"), reason about release series and make library compatibility more transparent and easier to grasp.
+
+As a start we bump all major release versions to version 10, these `RC` releases are the first to be released with the new versioning scheme.
+
+### Native Node.js EventEmitter Replacement
+
+We removed the last remaining internal Node.js utility dependency to make the packages more browser friendly and replace the native Node.js `EventEmitter` by using the [eventemitter3](https://github.com/primus/eventemitter3) package as a replacement, see PR [#3746](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3746).
+
+The new package is meant to be more performant while remaining almost entirely API compatible with native Node.js event emitters.
+
+If you directly import the Node.js event emitter, you need to switch your imports to:
+
+```ts
+import { EventEmitter } from 'events' // old
+import { EventEmitter } from 'eventemitter3' // new
+```
+
+All this might affect you if you listen to events emitted by the `blockchain.events` `EventEmitter` instance.
+
+### Pectra Spec Updates
+
+- Support for generalized EL requests coming with EIP-7685 introduction (devnet-4), PR [#3706](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3706)
+- Add `requestsHash` to genesis block/configuration, PR [#3771](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3771)
+
+### EthereumJS-wide Error Objects
+
+We have done preparations to allow for handling specific error sub types in the future by introducing a monorepo-wide `EthereumJSError` error class in the `@ethereumjs/util` package, see PR [#3879](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3879). This error is thrown for all error cases within the monorepo and can be specifically handled by comparing with `instanceof EthereumJSError`.
+
+We will introduce a set of more specific sub error classes inheriting from this generic type in upcoming minor releases, and so keeping things fully backwards compatible. This will allow for a more specific and robust handling of errors thrown by EthereumJS libraries.
+
+## 8.0.0-alpha.1 - 2024-10-17
+
+This is a first round of `alpha` releases for our upcoming breaking release round with a focus on bundle size (tree shaking) and security (dependencies down + no WASM (by default)). Note that `alpha` releases are not meant to be fully API-stable yet and are for early testing only. This release series will be then followed by a `beta` release round where APIs are expected to be mostly stable. Final releases can then be expected for late October/early November 2024.
+
+### Renamings
+
+#### Static Constructors
+
+The static constructors for our library classes have been reworked to now be standalone methods (with a similar naming scheme). This allows for better tree shaking of unused constructor code (see PR [#3491](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3491)):
+
+- `Blockchain.create()` -> `createBlockchain`
+- `Blockchain.fromBlocksData()` -> `createBlockchainFromBlocksData()`
+
+### New Common API
+
+There is a new Common API for simplification and better tree shaking, see PR [#3545](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3545). Change your `Common` initializations as follows (see `Common` release for more details):
+
+```ts
+// old
+import { Chain, Common } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Mainnet })
+
+// new
+import { Common, Mainnet } from '@ethereumjs/common'
+const common = new Common({ chain: Mainnet })
+```
+
+### No Consensus Validation by Default
+
+Along the transition to Proof-of-Stake, Ethereum consensus validation has moved to the consensus layer. Therefore the consensus integration of this library has been reworked (see PR [#3504](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3504)) and there is now no consensus validation/integration by default anymore (reflected by the `validateConsensus` flag now being set to `false` by default). This allows for substantial tree shaking gains by eliminating the need for by-default bundle all consensus code as well as external dependencies like the `@ethereumjs/ethash` library.
+
+It is still easy to set up a `Clique` or `Ethash` blockchain by using the new `consensusDict` option and pass in an instantiated consensus instance, see the respective option documentation or the related [example](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/examples/clique.ts) in the blockchain `examples` folder.
+
+### Removal of TTD Logic (live-Merge Transition Support)
+
+Total terminal difficulty (TTD) logic related to fork switching has been removed from the libraries, see PRs [#3518](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3518) and [#3556](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3556). This means that a Merge-type live hardfork transition solely triggered by TTD is not supported anymore. It is still possible though to replay and deal with both pre- and post Merge HF blocks.
+
+For the `Blockchain` library this means that it is not supported to operate on a PoW/PoS hybrid blockchain where the transition from PoW -> PoS happens solely by TTD.
+
+### Other Changes
+
+- Upgrade to TypeScript 5, PR [#3607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3607)
+- Node 22 support, PR [#3669](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3669)
+- Upgrade `ethereum-cryptography` to v3, PR [#3668](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3668)
+- Debug logger namespace standardization (use with `#` for the core logger, so e.g. `blockchain:#`), PR [#3692](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3692)
+
 ## 7.3.0 - 2024-08-15
 
 ### EIP-7685 Requests: EIP-6110 (Deposits) / EIP-7002 (Withdrawals) / EIP-7251 (Consolidations)

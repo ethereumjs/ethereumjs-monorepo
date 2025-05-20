@@ -1,12 +1,8 @@
 {
   "name": "@ethereumjs/wallet",
-  "version": "2.0.4",
+  "version": "10.0.0",
   "description": "Utilities for handling Ethereum keys",
-  "keywords": [
-    "ethereum",
-    "wallets",
-    "keys"
-  ],
+  "keywords": ["ethereum", "wallets", "keys"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/packages/wallet",
   "bugs": {
     "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues"
@@ -23,42 +19,48 @@
   "module": "dist/esm/index.js",
   "exports": {
     ".": {
-      "import": "./dist/esm/index.js",
+      "import": {
+        "typescript": "./src/index.ts",
+        "default": "./dist/esm/index.js"
+      },
       "require": "./dist/cjs/index.js"
     }
   },
-  "files": [
-    "src",
-    "dist"
-  ],
+  "files": ["src", "dist"],
   "scripts": {
+    "biome": "npx @biomejs/biome check",
+    "biome:fix": "npx @biomejs/biome check --write",
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
-    "coverage": "c8 --all --reporter=lcov --reporter=text npm run test:node",
-    "docs:build": "npx typedoc --options typedoc.cjs",
+    "coverage": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.mts",
+    "coverage:istanbul": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.istanbul.mts",
+    "docs:build": "npx typedoc --options typedoc.mjs",
     "examples": "tsx ../../scripts/examples-runner.ts -- wallet",
     "examples:build": "npx embedme README.md",
-    "lint": "../../config/cli/lint.sh",
-    "lint:diff": "../../config/cli/lint-diff.sh",
-    "lint:fix": "../../config/cli/lint-fix.sh",
+    "lint": "npm run biome && eslint  --config ./eslint.config.mjs .",
+    "lint:fix": "npm run biome:fix && eslint  --fix --config ./eslint.config.mjs .",
     "prepublishOnly": "../../config/cli/prepublish.sh",
+    "sc": "npm run spellcheck",
+    "spellcheck": "npm run spellcheck:ts && npm run spellcheck:md",
+    "spellcheck:ts": "npx cspell --gitignore -c ../../config/cspell-ts.json \"./**/*.ts\" --cache --show-suggestions --show-context",
+    "spellcheck:md": "npx cspell --gitignore -c ../../config/cspell-md.json \"**.md\" --cache --show-suggestions --show-context",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "npx vitest run --config=../../config/vitest.config.browser.mts",
-    "test:node": "vitest run",
+    "test:node": "npx vitest run -c ../../config/vitest.config.mts",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/util": "^9.1.0",
-    "@scure/base": "^1.1.7",
-    "ethereum-cryptography": "^2.2.1",
+    "@ethereumjs/util": "^10.0.0",
+    "@scure/base": "^1.2.4",
+    "ethereum-cryptography": "^3.2.0",
     "js-md5": "^0.8.3",
-    "uuid": "^9.0.1"
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
-    "@types/js-md5": "^0.4.3",
-    "@types/lodash.zip": "^4.2.7",
-    "@types/uuid": "^9.0.2",
-    "ethers": "^6.4.0",
+    "@types/js-md5": "^0.7.2",
+    "@types/lodash.zip": "^4.2.9",
+    "@types/uuid": "^10.0.0",
+    "ethers": "^6.13.5",
     "lodash.zip": "^4.2.0"
   },
   "engines": {

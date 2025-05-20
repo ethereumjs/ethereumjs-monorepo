@@ -4,7 +4,6 @@
   "compilerOptions": {
     "outDir": "dist/esm",
     "typeRoots": ["node_modules/@types", "src/@types"],
-    "composite": true,
     "allowSyntheticDefaultImports": true
   },
   "references": [
@@ -13,7 +12,7 @@
     { "path": "../common/tsconfig.prod.esm.json" },
     { "path": "../devp2p/tsconfig.prod.esm.json" },
     { "path": "../rlp/tsconfig.prod.esm.json" },
-    { "path": "../trie/tsconfig.prod.esm.json" },
+    { "path": "../mpt/tsconfig.prod.esm.json" },
     { "path": "../tx/tsconfig.prod.esm.json" },
     { "path": "../util/tsconfig.prod.esm.json" },
     { "path": "../vm/tsconfig.prod.esm.json" }

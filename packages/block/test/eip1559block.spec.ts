@@ -3,12 +3,12 @@ import { createFeeMarket1559Tx } from '@ethereumjs/tx'
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createBlock, createBlockHeader } from '../src/index.js'
+import { createBlock, createBlockHeader } from '../src/index.ts'
 // Test data from Besu (retrieved via Discord)
 // Older version at https://github.com/abdelhamidbakhta/besu/blob/bf54b6c0b40d3015fc85ff9b078fbc26592d80c0/ethereum/core/src/test/resources/org/hyperledger/besu/ethereum/core/fees/basefee-test.json
-import { paramsBlock } from '../src/params.js'
+import { paramsBlock } from '../src/params.ts'
 
-import { eip1559baseFeeData } from './testdata/eip1559baseFee.js'
+import { eip1559baseFeeData } from './testdata/eip1559baseFee.ts'
 
 const common = new Common({
   eips: [1559],
@@ -74,7 +74,7 @@ describe('EIP1559 tests', () => {
       assert.fail('should throw when baseFeePerGas is not set to initial base fee')
     } catch (e: any) {
       const expectedError = 'Initial EIP1559 block does not have initial base fee'
-      assert.ok(
+      assert.isTrue(
         e.message.includes(expectedError),
         'should throw if base fee is not set to initial value',
       )
@@ -94,11 +94,12 @@ describe('EIP1559 tests', () => {
           freeze: false,
         },
       )
-      ;(header as any).baseFeePerGas = undefined
+      // @ts-expect-error -- Assigning to read-only property
+      header.baseFeePerGas = undefined
       await (header as any)._genericFormatValidation()
     } catch (e: any) {
       const expectedError = 'EIP1559 block has no base fee field'
-      assert.ok(
+      assert.isTrue(
         e.message.includes(expectedError),
         'should throw with no base fee field when EIP1559 is activated',
       )
@@ -122,7 +123,7 @@ describe('EIP1559 tests', () => {
       },
     )
 
-    assert.ok(true, 'Valid initial EIP1559 header should be valid')
+    assert.isTrue(true, 'Valid initial EIP1559 header should be valid')
   })
 
   it('Header -> validate()', async () => {
@@ -142,7 +143,7 @@ describe('EIP1559 tests', () => {
       )
       assert.fail('should throw')
     } catch (e: any) {
-      assert.ok(e.message.includes('base fee'), 'should throw on wrong initial base fee')
+      assert.isTrue(e.message.includes('base fee'), 'should throw on wrong initial base fee')
     }
   })
 
@@ -177,7 +178,7 @@ describe('EIP1559 tests', () => {
         common,
       },
     )
-    assert.ok(true, 'should correctly validate subsequent EIP-1559 blocks')
+    assert.isTrue(true, 'should correctly validate subsequent EIP-1559 blocks')
   })
 
   it('Header -> validate() -> gas usage', async () => {
@@ -200,7 +201,10 @@ describe('EIP1559 tests', () => {
       )
       assert.fail('should throw')
     } catch (e: any) {
-      assert.ok(e.message.includes('too much gas used'), 'should throw when elasticity is exceeded')
+      assert.isTrue(
+        e.message.includes('too much gas used'),
+        'should throw when elasticity is exceeded',
+      )
     }
   })
 
@@ -220,7 +224,7 @@ describe('EIP1559 tests', () => {
       },
     )
 
-    assert.ok(true, 'should not throw when elasticity is exactly matched')
+    assert.isTrue(true, 'should not throw when elasticity is exactly matched')
   })
 
   const block1 = createBlock(
@@ -255,7 +259,7 @@ describe('EIP1559 tests', () => {
       },
     )
 
-    assert.ok(true, 'should not throw if gas limit is between bounds (HF transition block)')
+    assert.isTrue(true, 'should not throw if gas limit is between bounds (HF transition block)')
 
     createBlockHeader(
       {
@@ -271,7 +275,7 @@ describe('EIP1559 tests', () => {
       },
     )
 
-    assert.ok(true, 'should not throw if gas limit is between bounds (HF transition block)')
+    assert.isTrue(true, 'should not throw if gas limit is between bounds (HF transition block)')
 
     parentGasLimit = block1.header.gasLimit
     createBlockHeader(
@@ -288,7 +292,10 @@ describe('EIP1559 tests', () => {
       },
     )
 
-    assert.ok(true, 'should not throw if gas limit is between bounds (post-HF transition block)')
+    assert.isTrue(
+      true,
+      'should not throw if gas limit is between bounds (post-HF transition block)',
+    )
 
     createBlockHeader(
       {
@@ -304,7 +311,10 @@ describe('EIP1559 tests', () => {
       },
     )
 
-    assert.ok(true, 'should not throw if gas limit is between bounds (post-HF transition block)')
+    assert.isTrue(
+      true,
+      'should not throw if gas limit is between bounds (post-HF transition block)',
+    )
   })
 
   it('Header -> validateGasLimit() -> error cases', async () => {
@@ -326,7 +336,7 @@ describe('EIP1559 tests', () => {
       header.validateGasLimit(genesis.header)
       assert.fail('should throw')
     } catch (e: any) {
-      assert.ok(
+      assert.isTrue(
         e.message.includes('gas limit increased too much'),
         'should throw if gas limit is increased too much (HF transition block)',
       )
@@ -350,7 +360,7 @@ describe('EIP1559 tests', () => {
       header.validateGasLimit(block1.header)
       assert.fail('should throw')
     } catch (e: any) {
-      assert.ok(
+      assert.isTrue(
         e.message.includes('gas limit increased too much'),
         'should throw if gas limit is increased too much (post-HF transition block)',
       )
@@ -376,7 +386,7 @@ describe('EIP1559 tests', () => {
       header.validateGasLimit(genesis.header)
       assert.fail('should throw')
     } catch (e: any) {
-      assert.ok(
+      assert.isTrue(
         e.message.includes('gas limit decreased too much'),
         'should throw if gas limit is decreased too much (HF transition block)',
       )
@@ -400,7 +410,7 @@ describe('EIP1559 tests', () => {
       header.validateGasLimit(block1.header)
       assert.fail('should throw')
     } catch (e: any) {
-      assert.ok(
+      assert.isTrue(
         e.message.includes('gas limit decreased too much'),
         'should throw if gas limit is decreased too much (post-HF transition block)',
       )
@@ -443,8 +453,9 @@ describe('EIP1559 tests', () => {
     )
 
     const errs = block.getTransactionsValidationErrors()
-    assert.ok(
-      errs[0].includes('unable to pay base fee'),
+    assert.include(
+      errs[0],
+      'unable to pay base fee',
       'should throw if transaction is unable to pay base fee',
     )
   })
@@ -461,7 +472,7 @@ describe('EIP1559 tests', () => {
         { common },
       ).calcNextBaseFee()
       const expected = BigInt(item.expectedBaseFee)
-      assert.equal(expected, result, 'base fee correct')
+      assert.strictEqual(expected, result, 'base fee correct')
     }
   })
 
@@ -478,6 +489,6 @@ describe('EIP1559 tests', () => {
         common,
       },
     )
-    assert.equal(header.toJSON().baseFeePerGas, '0x5')
+    assert.strictEqual(header.toJSON().baseFeePerGas, '0x5')
   })
 })

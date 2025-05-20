@@ -53,8 +53,20 @@ jobs:
         run: npm ci     
         working-directory: ${{ github.workspace }}            
 
+        # Run coverage for common
       - run: npm run coverage
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v4
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           files: ${{ env.cwd }}/coverage/lcov.info
           flags: common
+
+        # Run coverage for util
+      - run: npm run coverage
+        working-directory: ${{ github.workspace }}/packages/util
+        
+      - uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ${{ env.cwd }}/coverage/lcov.info
+          flags: util

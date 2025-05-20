@@ -3,28 +3,23 @@ import { TransactionType } from '@ethereumjs/tx'
 import { concatBytes, hexToBytes } from '@ethereumjs/util'
 import { encodeReceipt } from '@ethereumjs/vm'
 
-import { SyncMode } from '../config.js'
-import { VMExecution } from '../execution/index.js'
-import { Miner } from '../miner/index.js'
-import { EthProtocol } from '../net/protocol/ethprotocol.js'
-import { LesProtocol } from '../net/protocol/lesprotocol.js'
-import { SnapProtocol } from '../net/protocol/snapprotocol.js'
-import { BeaconSynchronizer, FullSynchronizer, SnapSynchronizer } from '../sync/index.js'
-import { Event } from '../types.js'
+import { SyncMode } from '../config.ts'
+import { VMExecution } from '../execution/index.ts'
+import { Miner } from '../miner/index.ts'
+import { EthProtocol } from '../net/protocol/ethprotocol.ts'
+import { SnapProtocol } from '../net/protocol/snapprotocol.ts'
+import { BeaconSynchronizer, FullSynchronizer, SnapSynchronizer } from '../sync/index.ts'
+import { Event } from '../types.ts'
 
-import { Service, type ServiceOptions } from './service.js'
-import { Skeleton } from './skeleton.js'
-import { TxPool } from './txpool.js'
+import { Service } from './service.ts'
+import { Skeleton } from './skeleton.ts'
+import { TxPool } from './txpool.ts'
 
-import type { Peer } from '../net/peer/peer.js'
-import type { Protocol } from '../net/protocol/index.js'
 import type { Block } from '@ethereumjs/block'
 import type { Blob4844Tx } from '@ethereumjs/tx'
-
-interface FullEthereumServiceOptions extends ServiceOptions {
-  /** Serve LES requests (default: false) */
-  lightserv?: boolean
-}
+import type { Peer } from '../net/peer/peer.ts'
+import type { Protocol } from '../net/protocol/index.ts'
+import type { ServiceOptions } from './service.ts'
 
 /**
  * Full Ethereum service
@@ -33,7 +28,6 @@ interface FullEthereumServiceOptions extends ServiceOptions {
 export class FullEthereumService extends Service {
   /* synchronizer for syncing the chain */
   public synchronizer?: BeaconSynchronizer | FullSynchronizer
-  public lightserv: boolean
   public miner: Miner | undefined
   public txPool: TxPool
   public skeleton?: Skeleton
@@ -48,12 +42,10 @@ export class FullEthereumService extends Service {
   /**
    * Create new ETH service
    */
-  constructor(options: FullEthereumServiceOptions) {
+  constructor(options: ServiceOptions) {
     super(options)
 
-    this.lightserv = options.lightserv ?? false
-
-    this.config.logger.info('Full sync mode')
+    this.config.logger?.info('Full sync mode')
 
     const { metaDB } = options
     if (metaDB !== undefined) {
@@ -95,7 +87,7 @@ export class FullEthereumService extends Service {
         // also with skipOpen this call is a sync call as no async operation is executed
         // as good as creating the synchronizer here
         void this.switchToBeaconSync(true)
-        this.config.logger.info(`Post-merge 🐼 client mode: run with CL client.`)
+        this.config.logger?.info(`Post-merge 🐼 client mode: run with CL client.`)
       } else {
         this.synchronizer = new FullSynchronizer({
           config: this.config,
@@ -154,7 +146,7 @@ export class FullEthereumService extends Service {
 
   async open() {
     if (this.synchronizer !== undefined) {
-      this.config.logger.info(
+      this.config.logger?.info(
         `Preparing for sync using FullEthereumService with ${
           this.synchronizer instanceof BeaconSynchronizer
             ? 'BeaconSynchronizer'
@@ -162,7 +154,7 @@ export class FullEthereumService extends Service {
         }.`,
       )
     } else {
-      this.config.logger.info('Starting FullEthereumService with no syncing.')
+      this.config.logger?.info('Starting FullEthereumService with no syncing.')
     }
     // Broadcast pending txs to newly connected peer
     this.config.events.on(Event.POOL_PEER_ADDED, (peer) => {
@@ -192,17 +184,11 @@ export class FullEthereumService extends Service {
     // it will open execution when done (or if doesn't need to snap sync)
     if (this.snapsync !== undefined) {
       // set up execution vm to avoid undefined error in syncWithPeer when vm is being passed to accountfetcher
-      if (this.execution.config.execCommon.gteHardfork(Hardfork.Osaka)) {
-        if (!this.execution.config.statelessVerkle) {
-          throw Error(`Currently stateful verkle execution not supported`)
-        }
-        this.execution.config.logger.info(
-          `Skipping VM verkle statemanager genesis hardfork=${this.execution.hardfork}`,
-        )
+      if (this.execution.config.execCommon.gteHardfork(Hardfork.Verkle)) {
         await this.execution.setupVerkleVM()
         this.execution.vm = this.execution.verkleVM!
       } else {
-        this.execution.config.logger.info(
+        this.execution.config.logger?.info(
           `Initializing VM merkle statemanager genesis hardfork=${this.execution.hardfork}`,
         )
         await this.execution.setupMerkleVM()
@@ -261,17 +247,17 @@ export class FullEthereumService extends Service {
             }
           }
         } else {
-          this.config.logger.debug(
+          this.config.logger?.debug(
             `skipping snapsync since cl (skeleton) synchronized=${this.skeleton?.synchronized}`,
           )
         }
       } else {
-        this.config.logger.warn(
+        this.config.logger?.warn(
           'skipping building head state as neither execution is started nor snapsync is available',
         )
       }
     } catch (error) {
-      this.config.logger.error(`Error building headstate error=${error}`)
+      this.config.logger?.error(`Error building headstate error=${error}`)
     } finally {
       this.building = false
     }
@@ -322,16 +308,6 @@ export class FullEthereumService extends Service {
         convertSlimBody: true,
       }),
     ]
-    if (this.config.lightserv) {
-      protocols.push(
-        new LesProtocol({
-          config: this.config,
-          chain: this.chain,
-          flow: this.flow,
-          timeout: this.timeout,
-        }),
-      )
-    }
     return protocols
   }
 
@@ -344,8 +320,6 @@ export class FullEthereumService extends Service {
   async handle(message: any, protocol: string, peer: Peer): Promise<any> {
     if (protocol === 'eth') {
       return this.handleEth(message, peer)
-    } else {
-      return this.handleLes(message, peer)
     }
   }
 
@@ -387,7 +361,7 @@ export class FullEthereumService extends Service {
       }
       case 'NewBlockHashes': {
         if (this.config.chainCommon.gteHardfork(Hardfork.Paris)) {
-          this.config.logger.debug(
+          this.config.logger?.debug(
             `Dropping peer ${peer.id} for sending NewBlockHashes after merge (EIP-3675)`,
           )
           this.pool.ban(peer, 9000000)
@@ -402,7 +376,7 @@ export class FullEthereumService extends Service {
       }
       case 'NewBlock': {
         if (this.config.chainCommon.gteHardfork(Hardfork.Paris)) {
-          this.config.logger.debug(
+          this.config.logger?.debug(
             `Dropping peer ${peer.id} for sending NewBlock after merge (EIP-3675)`,
           )
           this.pool.ban(peer, 9000000)
@@ -453,34 +427,6 @@ export class FullEthereumService extends Service {
         }
         peer.eth?.send('Receipts', { reqId, receipts })
         break
-      }
-    }
-  }
-
-  /**
-   * Handles incoming LES message from connected peer
-   * @param message message object
-   * @param peer peer
-   */
-  async handleLes(message: any, peer: Peer): Promise<void> {
-    if (message.name === 'GetBlockHeaders' && this.config.lightserv) {
-      const { reqId, block, max, skip, reverse } = message.data
-      const bv = this.flow.handleRequest(peer, message.name, max)
-      if (bv < 0) {
-        this.pool.ban(peer, 300000)
-        this.config.logger.debug(`Dropping peer for violating flow control ${peer}`)
-      } else {
-        if (typeof block === 'bigint') {
-          if (
-            (reverse === true && block > this.chain.headers.height) ||
-            (reverse !== true && block + BigInt(max * skip) > this.chain.headers.height)
-          ) {
-            // Don't respond to requests greater than the current height
-            return
-          }
-        }
-        const headers = await this.chain.getHeaders(block, max, skip, reverse)
-        peer.les!.send('BlockHeaders', { reqId, bv, headers })
       }
     }
   }

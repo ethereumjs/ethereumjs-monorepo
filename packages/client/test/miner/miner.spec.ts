@@ -1,29 +1,30 @@
 import { BlockHeader, createBlock, createBlockHeader } from '@ethereumjs/block'
 import {
   Common,
-  Goerli,
+  type GethGenesis,
   Hardfork,
   createCommonFromGethGenesis,
   createCustomCommon,
 } from '@ethereumjs/common'
 import { MerkleStateManager } from '@ethereumjs/statemanager'
+import { goerliChainConfig } from '@ethereumjs/testdata'
 import { createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
 import { Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
-import { AbstractLevel } from 'abstract-level'
-// import { keccak256 } from 'ethereum-cryptography/keccak'
+// import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it, vi } from 'vitest'
 
-// import { Chain } from '../../src/blockchain/index.js'
-import { Config } from '../../src/config.js'
-import { Miner } from '../../src/miner/index.js'
-import { FullEthereumService } from '../../src/service/index.js'
+// import { Chain } from '../../src/blockchain/index.ts'
+import { Config } from '../../src/config.ts'
+import { Miner } from '../../src/miner/index.ts'
+import { FullEthereumService } from '../../src/service/index.ts'
 // import { Event } from '../../src/types'
-import { wait } from '../integration/util.js'
+import { wait } from '../integration/util.ts'
 
-import type { FullSynchronizer } from '../../src/sync/index.js'
 import type { Block } from '@ethereumjs/block'
 import type { Blockchain, CliqueConsensus } from '@ethereumjs/blockchain'
 import type { VM } from '@ethereumjs/vm'
+import { MemoryLevel } from 'memory-level'
+import type { FullSynchronizer } from '../../src/sync/index.ts'
 
 const A = {
   address: new Address(hexToBytes('0x0b90087d864e82a284dca15923f3776de6bb016f')),
@@ -84,7 +85,7 @@ class FakeChain {
     getTotalDifficulty: () => {
       return 1n
     },
-    // eslint-disable-next-line no-invalid-this
+
     shallowCopy: () => this.blockchain,
     _init: async () => undefined,
     events: {
@@ -101,7 +102,7 @@ const consensusConfig = {
     epoch: 30000,
   },
 }
-const defaultChainData = {
+const defaultChainData: GethGenesis = {
   config: {
     chainId: 123456,
     homesteadBlock: 0,
@@ -127,6 +128,7 @@ const defaultChainData = {
   gasUsed: '0x0',
   parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
   baseFeePerGas: 7,
+  alloc: {},
 }
 const addr = A.address.toString().slice(2)
 
@@ -140,7 +142,7 @@ const customCommon = createCommonFromGethGenesis(chainData, {
   chain: 'devnet',
   hardfork: Hardfork.Berlin,
 })
-customCommon.events.setMaxListeners(50)
+
 const customConfig = new Config({
   accountCache: 10000,
   storageCache: 1000,
@@ -148,10 +150,9 @@ const customConfig = new Config({
   mine: true,
   common: customCommon,
 })
-customConfig.events.setMaxListeners(50)
 
-const goerliCommon = new Common({ chain: Goerli, hardfork: Hardfork.Berlin })
-goerliCommon.events.setMaxListeners(50)
+const goerliCommon = new Common({ chain: goerliChainConfig, hardfork: Hardfork.Berlin })
+
 const goerliConfig = new Config({
   accountCache: 10000,
   storageCache: 1000,
@@ -159,7 +160,6 @@ const goerliConfig = new Config({
   mine: true,
   common: customCommon,
 })
-customConfig.events.setMaxListeners(50)
 
 const createTx = (
   from = A,
@@ -206,19 +206,19 @@ describe('should initialize correctly', () => {
   })
   it('should start/stop', async () => {
     const miner = new Miner({ config: customConfig, service })
-    assert.notOk(miner.running)
+    assert.isFalse(miner.running)
     miner.start()
-    assert.ok(miner.running)
+    assert.isTrue(miner.running)
     await wait(100)
     miner.stop()
-    assert.notOk(miner.running)
+    assert.isFalse(miner.running)
   })
 
   it('Should not start when config.mine=false', () => {
     const configMineFalse = new Config({ accounts, mine: false })
     const miner = new Miner({ config: configMineFalse, service })
     miner.start()
-    assert.notOk(miner.running, 'miner should not start when config.mine=false')
+    assert.isFalse(miner.running, 'miner should not start when config.mine=false')
   })
 })
 
@@ -248,7 +248,7 @@ describe('assembleBlocks() -> with a single tx', async () => {
 
   chain.putBlocks = (blocks: Block[]) => {
     it('should include tx in new block', () => {
-      assert.equal(blocks[0].transactions.length, 1, 'new block should include tx')
+      assert.strictEqual(blocks[0].transactions.length, 1, 'new block should include tx')
     })
     miner.stop()
     txPool.stop()
@@ -278,7 +278,7 @@ describe('assembleBlocks() -> with a hardfork mismatching tx', async () => {
   txA011.common.setHardfork(Hardfork.Paris)
   it('should add tx to pool', async () => {
     await txPool.add(txA011)
-    assert.equal(txPool.txsInPool, 1, 'transaction should be in pool')
+    assert.strictEqual(txPool.txsInPool, 1, 'transaction should be in pool')
   })
 
   // disable consensus to skip PoA block signer validation
@@ -288,12 +288,12 @@ describe('assembleBlocks() -> with a hardfork mismatching tx', async () => {
 
   chain.putBlocks = (blocks: Block[]) => {
     it('should not include tx', () => {
-      assert.equal(
+      assert.strictEqual(
         blocks[0].transactions.length,
         0,
         'new block should not include tx due to hardfork mismatch',
       )
-      assert.equal(txPool.txsInPool, 1, 'transaction should remain in pool')
+      assert.strictEqual(txPool.txsInPool, 1, 'transaction should remain in pool')
     })
     miner.stop()
     txPool.stop()
@@ -328,7 +328,8 @@ describe('assembleBlocks() -> with multiple txs, properly ordered by gasPrice an
   await txPool.add(txB01)
 
   // disable consensus to skip PoA block signer validation
-  ;(vm.blockchain as any)._validateConsensus = false
+  /// @ts-expect-error -- Property exists on actual class but not on interface
+  vm.blockchain['_validateConsensus'] = false
 
   chain.putBlocks = (blocks: Block[]) => {
     it('should be properly ordered by gasPrice and nonce', () => {
@@ -336,7 +337,7 @@ describe('assembleBlocks() -> with multiple txs, properly ordered by gasPrice an
       const expectedOrder = [txB01, txA01, txA02, txA03]
       for (const [index, tx] of expectedOrder.entries()) {
         const txHash = blocks[0].transactions[index]?.hash()
-        assert.ok(txHash !== undefined && equalsBytes(txHash, tx.hash()), msg)
+        assert.isTrue(txHash !== undefined && equalsBytes(txHash, tx.hash()), msg)
       }
     })
     miner.stop()
@@ -359,18 +360,22 @@ describe('assembleBlocks() -> with saveReceipts', async () => {
   const service = new FullEthereumService({
     config,
     chain,
-    metaDB: new AbstractLevel({
-      encodings: { utf8: true, buffer: true },
+    metaDB: new MemoryLevel({
+      keyEncoding: 'view',
+      valueEncoding: 'view',
     }),
   })
   const miner = new Miner({ config, service, skipHardForkValidation: true })
   const { txPool } = service
   await service.execution.open()
-  const { vm, receiptsManager } = service.execution
+  const { vm, receiptsManager, txIndex } = service.execution
   txPool.start()
   miner.start()
   it('should initialize receiptsManager', () => {
-    assert.ok(receiptsManager, 'receiptsManager should be initialized')
+    assert.isDefined(receiptsManager, 'receiptsManager should be initialized')
+  })
+  it('should initialize txIndex', () => {
+    assert.isDefined(txIndex)
   })
 
   await setBalance(vm, A.address, BigInt('400000000000001'))
@@ -383,7 +388,8 @@ describe('assembleBlocks() -> with saveReceipts', async () => {
   await txPool.add(txB01)
 
   // disable consensus to skip PoA block signer validation
-  ;(vm.blockchain as any)._validateConsensus = false
+  /// @ts-expect-error -- Property exists on actual class but not on interface
+  vm.blockchain['_validateConsensus'] = false
 
   chain.putBlocks = async (blocks: Block[]) => {
     it('should be properly ordered by gasPrice and nonce', async () => {
@@ -391,25 +397,29 @@ describe('assembleBlocks() -> with saveReceipts', async () => {
       const expectedOrder = [txB01, txA01, txA02, txA03]
       for (const [index, tx] of expectedOrder.entries()) {
         const txHash = blocks[0].transactions[index]?.hash()
-        assert.ok(txHash !== undefined && equalsBytes(txHash, tx.hash()), msg)
+        assert.isTrue(txHash !== undefined && equalsBytes(txHash, tx.hash()), msg)
       }
     })
     miner.stop()
     txPool.stop()
   }
   await (miner as any).queueNextAssembly(0)
-  it('should save receipt', async () => {
-    const receipt = await receiptsManager!.getReceipts(txB01.hash())
-    assert.ok(receipt, 'receipt should be saved')
+  it(`should save receipts for block`, async () => {
+    const [blockHash] = (await txIndex!.getIndex(txB01.hash()))!
+    const receipt = await receiptsManager!.getReceipts(blockHash)
+    assert.isDefined(receipt, 'receipt should be saved')
+    assert.equal(receipt.length, 4, 'receipt should include 4 tx')
   })
-  it('should save receipt', async () => {
-    let receipt = await receiptsManager!.getReceipts(txA01.hash())
-    assert.ok(receipt, 'receipt should be saved')
-    receipt = await receiptsManager!.getReceipts(txA02.hash())
-    assert.ok(receipt, 'receipt should be saved')
-
-    receipt = await receiptsManager!.getReceipts(txA03.hash())
-    assert.ok(receipt, 'receipt should be saved')
+  it('should find receipt for tx', async () => {
+    let index = await txIndex!.getIndex(txB01.hash())
+    let receipt = await receiptsManager!.getReceiptByTxHashIndex(index!)
+    assert.isDefined(receipt, 'receipt should be saved')
+    index = await txIndex!.getIndex(txA02.hash())
+    receipt = await receiptsManager!.getReceiptByTxHashIndex(index!)
+    assert.isDefined(receipt, 'receipt should be saved')
+    index = await txIndex!.getIndex(txA03.hash())
+    receipt = await receiptsManager!.getReceiptByTxHashIndex(index!)
+    assert.isDefined(receipt, 'receipt should be saved')
 
     await wait(500)
   })
@@ -422,7 +432,7 @@ describe('assembleBlocks() -> should not include tx under the baseFee', async ()
       { name: 'london', block: 0 },
     ],
   }
-  const common = createCustomCommon(customChainParams, Goerli, {
+  const common = createCustomCommon(customChainParams, goerliChainConfig, {
     hardfork: Hardfork.London,
   })
   const config = new Config({
@@ -465,11 +475,11 @@ describe('assembleBlocks() -> should not include tx under the baseFee', async ()
   } catch {
     assert.fail('txPool should throw trying to add a tx with an invalid maxFeePerGas')
   }
-
   // disable consensus to skip PoA block signer validation
-  ;(vm.blockchain as any)._validateConsensus = false
+  /// @ts-expect-error -- Property exists on actual class but not on interface
+  vm.blockchain['_validateConsensus'] = false
   ;(service.synchronizer as FullSynchronizer).handleNewBlock = async (block: Block) => {
-    assert.equal(block.transactions.length, 0, 'should not include tx')
+    assert.strictEqual(block.transactions.length, 0, 'should not include tx')
     miner.stop()
     txPool.stop()
   }
@@ -519,11 +529,12 @@ describe("assembleBlocks() -> should stop assembling a block after it's full", a
   await txPool.add(tx2ExceedsBlockGasLimit)
 
   // disable consensus to skip PoA block signer validation
-  ;(vm.blockchain as any)._validateConsensus = false
+  /// @ts-expect-error -- Property exists on actual class but not on interface
+  vm.blockchain['_validateConsensus'] = false
 
   chain.putBlocks = (blocks: Block[]) => {
     it('should include tx', () => {
-      assert.equal(blocks[0].transactions.length, 1, 'only one tx should be included')
+      assert.strictEqual(blocks[0].transactions.length, 1, 'only one tx should be included')
     })
     miner.stop()
     txPool.stop()
@@ -556,7 +567,7 @@ describe.skip('assembleBlocks() -> should stop assembling when a new block is re
 
   // stub chainUpdated so assemble isn't called again
   // when emitting Event.CHAIN_UPDATED in this test
-  ;(miner as any).chainUpdated = async () => {}
+  miner['chainUpdated'] = async () => {}
 
   const { txPool } = service
   const { vm } = service.execution
@@ -582,10 +593,10 @@ describe.skip('assembleBlocks() -> should stop assembling when a new block is re
   }
   await (miner as any).queueNextAssembly(5)
   await wait(5)
-  assert.ok((miner as any).assembling, 'miner should be assembling')
+  assert.isTrue((miner as any).assembling, 'miner should be assembling')
   config.events.emit(Event.CHAIN_UPDATED)
   await wait(25)
-  assert.notOk((miner as any).assembling, 'miner should have stopped assembling')
+  assert.isFalse((miner as any).assembling, 'miner should have stopped assembling')
   miner.stop()
   txPool.stop()
 })
@@ -618,7 +629,7 @@ describe.skip('should handle mining over the london hardfork block', async () =>
   const { vm } = service.execution
   ;(vm.blockchain.consensus as CliqueConsensus).cliqueActiveSigners = () => [A.address] // stub
   vm.blockchain.validateHeader = vi.fn() // stub
-  ;(miner as any).chainUpdated = async () => {} // stub
+  miner['chainUpdated'] = async () => {} // stub
   miner.start()
   await wait(100)
 
@@ -631,13 +642,13 @@ describe.skip('should handle mining over the london hardfork block', async () =>
   await (miner as any).queueNextAssembly(0)
   await wait(100)
   config.execCommon.setHardforkBy({ blockNumber: 1 })
-  assert.equal(config.execCommon.hardfork(), Hardfork.Chainstart)
+  assert.strictEqual(config.execCommon.hardfork(), Hardfork.Chainstart)
 
   // block 2: berlin
   await (miner as any).queueNextAssembly(0)
   await wait(100)
   config.execCommon.setHardforkBy({ blockNumber: 2 })
-  assert.equal(config.execCommon.hardfork(), Hardfork.Berlin)
+  assert.strictEqual(config.execCommon.hardfork(), Hardfork.Berlin)
   const blockHeader2 = await chain.getCanonicalHeadHeader()
 
   // block 3: london
@@ -645,27 +656,27 @@ describe.skip('should handle mining over the london hardfork block', async () =>
   await wait(100)
   const blockHeader3 = await chain.getCanonicalHeadHeader()
   config.execCommon.setHardforkBy({ blockNumber: 3 })
-  assert.equal(config.execCommon.hardfork(), Hardfork.London)
-  assert.equal(
+  assert.strictEqual(config.execCommon.hardfork(), Hardfork.London)
+  assert.strictEqual(
     blockHeader2.gasLimit * BigInt(2),
     blockHeader3.gasLimit,
     'gas limit should be double previous block'
   )
   const initialBaseFee = config.execCommon.paramByEIP('initialBaseFee', 1559)!
-  assert.equal(blockHeader3.baseFeePerGas!, initialBaseFee, 'baseFee should be initial value')
+  assert.strictEqual(blockHeader3.baseFeePerGas!, initialBaseFee, 'baseFee should be initial value')
 
   // block 4
   await (miner as any).queueNextAssembly(0)
   await wait(100)
   const blockHeader4 = await chain.getCanonicalHeadHeader()
   config.execCommon.setHardforkBy({ blockNumber: 4 })
-  assert.equal(config.execCommon.hardfork(), Hardfork.London)
-  assert.equal(
+  assert.strictEqual(config.execCommon.hardfork(), Hardfork.London)
+  assert.strictEqual(
     blockHeader4.baseFeePerGas!,
     blockHeader3.calcNextBaseFee(),
     'baseFee should be as calculated'
   )
-  assert.ok((await chain.getCanonicalHeadHeader()).number === BigInt(4))
+  assert.isTrue((await chain.getCanonicalHeadHeader()).number === BigInt(4))
   miner.stop()
   await chain.close()
 })
@@ -710,8 +721,8 @@ describe.skip('should handle mining ethash PoW', async () => {
     chain: 'devnet',
     hardfork: Hardfork.London,
   })
-  ;(common as any)._chainParams['genesis'].difficulty = 1
-  ;(common as any)._chainParams['genesis'].difficulty = 1
+  common['_chainParams']['genesis'].difficulty = 1
+  common['_chainParams']['genesis'].difficulty = 1
   const config = new Config({
     accountCache: 10000,
     storageCache: 1000,
@@ -726,12 +737,12 @@ describe.skip('should handle mining ethash PoW', async () => {
     chain,
   })
   const miner = new Miner({ config, service, skipHardForkValidation: true })
-  ;(chain.blockchain as any)._validateConsensus = false
-  ;(miner as any).chainUpdated = async () => {} // stub
+  chain.blockchain['_validateConsensus'] = false
+  miner['chainUpdated'] = async () => {} // stub
   miner.start()
   await wait(1000)
   config.events.on(Event.CHAIN_UPDATED, async () => {
-    assert.equal(chain.blocks.latest!.header.number, BigInt(1))
+    assert.strictEqual(chain.blocks.latest!.header.number, BigInt(1))
     miner.stop()
     await chain.close()
   })

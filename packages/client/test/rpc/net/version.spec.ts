@@ -1,15 +1,16 @@
-import { Common, Goerli, Holesky } from '@ethereumjs/common'
+import { Common, Holesky } from '@ethereumjs/common'
+import { goerliChainConfig } from '@ethereumjs/testdata'
 import { assert, describe, it, vi } from 'vitest'
 
-import { baseSetup, createClient, createManager, getRPCClient, startRPC } from '../helpers.js'
+import { baseSetup, createClient, createManager, getRPCClient, startRPC } from '../helpers.ts'
 
 const method = 'net_version'
 
 function compareResult(result: any, chainId: any) {
-  assert.equal(typeof result, 'string', 'result should be a string')
+  assert.strictEqual(typeof result, 'string', 'result should be a string')
   assert.notEqual(result.length, 0, 'result string should not be empty')
 
-  assert.equal(
+  assert.strictEqual(
     result,
     chainId,
     `should be the correct chain ID (expected: ${chainId}, received: ${result})`,
@@ -42,7 +43,7 @@ describe(method, () => {
 
   it('call on goerli', async () => {
     const manager = createManager(
-      await createClient({ opened: true, commonChain: new Common({ chain: Goerli }) }),
+      await createClient({ opened: true, commonChain: new Common({ chain: goerliChainConfig }) }),
     )
     const rpc = getRPCClient(startRPC(manager.getMethods()))
 

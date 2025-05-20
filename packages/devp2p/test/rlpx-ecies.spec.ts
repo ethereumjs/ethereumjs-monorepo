@@ -3,10 +3,10 @@ import { getRandomBytesSync } from 'ethereum-cryptography/random.js'
 import { publicKeyCreate } from 'ethereum-cryptography/secp256k1-compat.js'
 import { assert, it } from 'vitest'
 
-import { ECIES } from '../src/rlpx/ecies.js'
-import * as util from '../src/util.js'
+import { ECIES } from '../src/rlpx/ecies.ts'
+import * as util from '../src/util.ts'
 
-import { testData } from './testdata.js'
+import { testData } from './testdata.ts'
 
 export interface EciesTestContext {
   context: {
@@ -85,7 +85,7 @@ it(
     const body = getRandomBytesSync(600)
 
     const header = t.context.b.parseHeader(t.context.a.createBlockHeader(body.length) as Uint8Array)
-    assert.equal(header, body.length, 'createBlockHeader -> parseHeader should lead to same')
+    assert.strictEqual(header, body.length, 'createBlockHeader -> parseHeader should lead to same')
 
     const parsedBody = t.context.b.parseBody(t.context.a.createBody(body) as Uint8Array)
     assert.deepEqual(parsedBody, body, 'createBody -> parseBody should lead to same')

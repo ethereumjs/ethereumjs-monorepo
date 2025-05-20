@@ -2,10 +2,10 @@ import {
   BIGINT_0,
   BIGINT_1,
   BIGINT_2,
-  BIGINT_32,
-  BIGINT_64,
   BIGINT_7,
   BIGINT_8,
+  BIGINT_32,
+  BIGINT_64,
   BIGINT_96,
   bigIntToBytes,
   bytesToBigInt,
@@ -14,12 +14,13 @@ import {
   setLengthRight,
 } from '@ethereumjs/util'
 
-import { OOGResult } from '../evm.js'
+import { OOGResult } from '../evm.ts'
 
-import { gasLimitCheck } from './util.js'
+import { getPrecompileName } from './index.ts'
+import { gasLimitCheck } from './util.ts'
 
-import type { ExecResult } from '../types.js'
-import type { PrecompileInput } from './types.js'
+import type { ExecResult } from '../types.ts'
+import type { PrecompileInput } from './types.ts'
 
 const BIGINT_4 = BigInt(4)
 const BIGINT_16 = BigInt(16)
@@ -60,7 +61,7 @@ function getAdjustedExponentLength(data: Uint8Array): bigint {
   try {
     const baseLen = bytesToBigInt(data.subarray(0, 32))
     expBytesStart = 96 + Number(baseLen) // 96 for base length, then exponent length, and modulus length, then baseLen for the base data, then exponent bytes start
-  } catch (e: any) {
+  } catch {
     expBytesStart = Number.MAX_SAFE_INTEGER - 32
   }
   const expLen = bytesToBigInt(data.subarray(32, 64))
@@ -104,6 +105,7 @@ export function expMod(a: bigint, power: bigint, modulo: bigint) {
 }
 
 export function precompile05(opts: PrecompileInput): ExecResult {
+  const pName = getPrecompileName('05')
   const data = opts.data.length < 96 ? setLengthRight(opts.data, 96) : opts.data
 
   let adjustedELen = getAdjustedExponentLength(data)
@@ -137,7 +139,7 @@ export function precompile05(opts: PrecompileInput): ExecResult {
       gasUsed = BIGINT_200
     }
   }
-  if (!gasLimitCheck(opts, gasUsed, 'MODEXP (0x05)')) {
+  if (!gasLimitCheck(opts, gasUsed, pName)) {
     return OOGResult(opts.gasLimit)
   }
 
@@ -150,14 +152,14 @@ export function precompile05(opts: PrecompileInput): ExecResult {
 
   if (bLen > maxSize || eLen > maxSize || mLen > maxSize) {
     if (opts._debug !== undefined) {
-      opts._debug(`MODEXP (0x05) failed: OOG`)
+      opts._debug(`${pName} failed: OOG`)
     }
     return OOGResult(opts.gasLimit)
   }
 
   if (mEnd > maxInt) {
     if (opts._debug !== undefined) {
-      opts._debug(`MODEXP (0x05) failed: OOG`)
+      opts._debug(`${pName} failed: OOG`)
     }
     return OOGResult(opts.gasLimit)
   }
@@ -180,7 +182,7 @@ export function precompile05(opts: PrecompileInput): ExecResult {
 
   const res = setLengthLeft(R, Number(mLen))
   if (opts._debug !== undefined) {
-    opts._debug(`MODEXP (0x05) return value=${bytesToHex(res)}`)
+    opts._debug(`${pName} return value=${bytesToHex(res)}`)
   }
 
   return {

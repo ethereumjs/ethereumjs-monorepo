@@ -1,9 +1,9 @@
 import { bytesToHex } from '@ethereumjs/util'
 
-import { DataDirectory } from '../index.js'
+import { DataDirectory } from '../index.ts'
 
-import type { VMExecution } from '../execution/index.js'
 import type { Block } from '@ethereumjs/block'
+import type { VMExecution } from '../execution/index.ts'
 
 /**
  * Generates a code snippet which can be used to replay an erroneous block
@@ -29,7 +29,7 @@ import { Level } from 'level';
 import { Common } from '@ethereumjs/common'
 import { Block } from '@ethereumjs/block'
 import { VM, runBlock, createVM }  from './src'
-import { Trie } from '@ethereumjs/trie'
+import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { MerkleStateManager } from './src/state'
 import { Blockchain } from '@ethereumjs/blockchain'
 
@@ -40,7 +40,7 @@ const main = async () => {
   const block = createBlockFromRLP(hexToBytes('${bytesToHex(block.serialize())}'), { common })
 
   const stateDB = new Level('${execution.config.getDataDirectory(DataDirectory.State)}')
-  const trie = new Trie({ db: stateDB, useKeyHashing: true })
+  const trie = new MerklePatriciaTrie({ db: stateDB, useKeyHashing: true })
   const stateManager = new MerkleStateManager({ trie, common })
   // Ensure we run on the right root
   stateManager.setStateRoot(hexToBytes('${bytesToHex(
@@ -62,5 +62,5 @@ const main = async () => {
 
 main()
     `
-  execution.config.logger.info(code)
+  execution.config.logger?.info(code)
 }

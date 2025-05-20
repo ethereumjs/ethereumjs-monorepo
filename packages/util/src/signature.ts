@@ -2,14 +2,15 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 
 import {
+  bigIntToBytes,
   bytesToBigInt,
   bytesToHex,
   bytesToInt,
   concatBytes,
+  hexToBytes,
   setLengthLeft,
-  toBytes,
   utf8ToBytes,
-} from './bytes.js'
+} from './bytes.ts'
 import {
   BIGINT_0,
   BIGINT_1,
@@ -17,40 +18,11 @@ import {
   BIGINT_27,
   SECP256K1_ORDER,
   SECP256K1_ORDER_DIV_2,
-} from './constants.js'
-import { assertIsBytes } from './helpers.js'
+} from './constants.ts'
+import { EthereumJSErrorWithoutCode } from './errors.ts'
+import { assertIsBytes } from './helpers.ts'
 
-import type { PrefixedHexString } from './types.js'
-
-export interface ECDSASignature {
-  v: bigint
-  r: Uint8Array
-  s: Uint8Array
-}
-
-/**
- * Returns the ECDSA signature of a message hash.
- *
- * If `chainId` is provided assume an EIP-155-style signature and calculate the `v` value
- * accordingly, otherwise return a "static" `v` just derived from the `recovery` bit
- */
-export function ecsign(
-  msgHash: Uint8Array,
-  privateKey: Uint8Array,
-  chainId?: bigint,
-): ECDSASignature {
-  const sig = secp256k1.sign(msgHash, privateKey)
-  const buf = sig.toCompactRawBytes()
-  const r = buf.slice(0, 32)
-  const s = buf.slice(32, 64)
-
-  const v =
-    chainId === undefined
-      ? BigInt(sig.recovery! + 27)
-      : BigInt(sig.recovery! + 35) + BigInt(chainId) * BIGINT_2
-
-  return { r, s, v }
-}
+import type { PrefixedHexString } from './types.ts'
 
 export function calculateSigRecovery(v: bigint, chainId?: bigint): bigint {
   if (v === BIGINT_0 || v === BIGINT_1) return v
@@ -80,7 +52,7 @@ export const ecrecover = function (
   const signature = concatBytes(setLengthLeft(r, 32), setLengthLeft(s, 32))
   const recovery = calculateSigRecovery(v, chainId)
   if (!isValidSigRecovery(recovery)) {
-    throw new Error('Invalid signature v value')
+    throw EthereumJSErrorWithoutCode('Invalid signature v value')
   }
 
   const sig = secp256k1.Signature.fromCompact(signature).addRecoveryBit(Number(recovery))
@@ -101,12 +73,12 @@ export const toRPCSig = function (
 ): string {
   const recovery = calculateSigRecovery(v, chainId)
   if (!isValidSigRecovery(recovery)) {
-    throw new Error('Invalid signature v value')
+    throw EthereumJSErrorWithoutCode('Invalid signature v value')
   }
 
   // geth (and the RPC eth_sign method) uses the 65 byte format used by Bitcoin
 
-  return bytesToHex(concatBytes(setLengthLeft(r, 32), setLengthLeft(s, 32), toBytes(v)))
+  return bytesToHex(concatBytes(setLengthLeft(r, 32), setLengthLeft(s, 32), bigIntToBytes(v)))
 }
 
 /**
@@ -122,7 +94,7 @@ export const toCompactSig = function (
 ): string {
   const recovery = calculateSigRecovery(v, chainId)
   if (!isValidSigRecovery(recovery)) {
-    throw new Error('Invalid signature v value')
+    throw EthereumJSErrorWithoutCode('Invalid signature v value')
   }
 
   const ss = Uint8Array.from([...s])
@@ -141,8 +113,12 @@ export const toCompactSig = function (
  * NOTE: After EIP1559, `v` could be `0` or `1` but this function assumes
  * it's a signed message (EIP-191 or EIP-712) adding `27` at the end. Remove if needed.
  */
-export const fromRPCSig = function (sig: PrefixedHexString): ECDSASignature {
-  const bytes: Uint8Array = toBytes(sig)
+export const fromRPCSig = function (sig: PrefixedHexString): {
+  v: bigint
+  r: Uint8Array
+  s: Uint8Array
+} {
+  const bytes: Uint8Array = hexToBytes(sig)
 
   let r: Uint8Array
   let s: Uint8Array
@@ -158,11 +134,12 @@ export const fromRPCSig = function (sig: PrefixedHexString): ECDSASignature {
     v = BigInt(bytesToInt(bytes.subarray(32, 33)) >> 7)
     s[0] &= 0x7f
   } else {
-    throw new Error('Invalid signature length')
+    throw EthereumJSErrorWithoutCode('Invalid signature length')
   }
 
   // support both versions of `eth_sign` responses
   if (v < 27) {
+    // TODO: verify this behavior, and verify in which context this method (`fromRPCSig`) is used
     v = v + BIGINT_27
   }
 

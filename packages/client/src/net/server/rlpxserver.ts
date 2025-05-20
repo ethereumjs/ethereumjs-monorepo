@@ -1,14 +1,14 @@
 import { DPT as Devp2pDPT, RLPx as Devp2pRLPx } from '@ethereumjs/devp2p'
 import { bytesToUnprefixedHex, unprefixedHexToBytes, utf8ToBytes } from '@ethereumjs/util'
 
-import { Event } from '../../types.js'
-import { getClientVersion } from '../../util/index.js'
-import { RlpxPeer } from '../peer/rlpxpeer.js'
+import { Event } from '../../types.ts'
+import { getClientVersion } from '../../util/index.ts'
+import { RlpxPeer } from '../peer/rlpxpeer.ts'
 
-import { Server } from './server.js'
+import { Server } from './server.ts'
 
-import type { ServerOptions } from './server.js'
 import type { Peer as Devp2pRLPxPeer } from '@ethereumjs/devp2p'
+import type { ServerOptions } from './server.ts'
 
 export interface RlpxServerOptions extends ServerOptions {
   /* List of supported clients */
@@ -136,6 +136,7 @@ export class RlpxServer extends Server {
    * Bootstrap bootnode and DNS mapped peers from the network
    */
   async bootstrap(): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this
 
     // Bootnodes
@@ -228,7 +229,7 @@ export class RlpxServer extends Server {
       this.dpt.events.on('error', (e: Error) => {
         this.error(e)
         // If DPT can't bind to port, resolve anyway so client startup doesn't hang
-        if (e.message.includes('EADDRINUSE')) resolve()
+        if (e.message.includes('EADDRINUSE') === true) resolve()
       })
 
       this.dpt.events.on('listening', () => {
@@ -242,7 +243,7 @@ export class RlpxServer extends Server {
       if (typeof this.config.port === 'number') {
         this.dpt.bind(this.config.port, '0.0.0.0')
       }
-      this.config.logger.info(
+      this.config.logger?.info(
         `Started discovery service discV4=${this.config.discV4} dns=${this.config.discDns} refreshInterval=${this.refreshInterval}`,
       )
     })
@@ -275,7 +276,7 @@ export class RlpxServer extends Server {
         try {
           await peer.accept(rlpxPeer, this)
           this.peers.set(peer.id, peer)
-          this.config.logger.debug(`Peer connected: ${peer}`)
+          this.config.logger?.debug(`Peer connected: ${peer}`)
           this.config.events.emit(Event.PEER_CONNECTED, peer)
         } catch (error: any) {
           // Fixes a memory leak where RlpxPeer objects could not be GCed,
@@ -290,7 +291,7 @@ export class RlpxServer extends Server {
         const peer = this.peers.get(id)
         if (peer) {
           this.peers.delete(peer.id)
-          this.config.logger.debug(
+          this.config.logger?.debug(
             `Peer disconnected (${rlpxPeer.getDisconnectPrefix(reason)}): ${peer}`,
           )
           this.config.events.emit(Event.PEER_DISCONNECTED, peer)
@@ -304,7 +305,7 @@ export class RlpxServer extends Server {
       this.rlpx.events.on('error', (e: Error) => {
         this.error(e)
         // If DPT can't bind to port, resolve anyway so client startup doesn't hang
-        if (e.message.includes('EADDRINUSE')) resolve()
+        if (e.message.includes('EADDRINUSE') === true) resolve()
       })
 
       this.rlpx.events.on('listening', () => {

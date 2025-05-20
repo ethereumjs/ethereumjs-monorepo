@@ -1,0 +1,29 @@
+{
+  "name": "@ethereumjs/testdata",
+  "version": "1.0.0",
+  "description": "Common test data for EthereumJS packages",
+  "type": "module",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "exports": {
+    ".": {
+      "import": {
+        "typescript": "./src/index.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": "./dist/cjs/index.js"
+    }
+  },
+  "files": ["dist", "src"],
+  "scripts": {
+    "build": "../../config/cli/ts-build.sh",
+    "clean": "../../config/cli/clean-package.sh",
+    "lint": "npm run biome && eslint --config ./eslint.config.mjs .",
+    "lint:fix": "npm run biome:fix && eslint --fix --config ./eslint.config.mjs .",
+    "tsc": "../../config/cli/ts-compile.sh"
+  },
+  "devDependencies": {
+    "@ethereumjs/block": "^10.0.0",
+    "@ethereumjs/util": "^10.0.0"
+  }
+}

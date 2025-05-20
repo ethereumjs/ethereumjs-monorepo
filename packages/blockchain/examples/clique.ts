@@ -1,9 +1,10 @@
 import { CliqueConsensus, createBlockchain } from '@ethereumjs/blockchain'
-import { Common, ConsensusAlgorithm, Goerli, Hardfork } from '@ethereumjs/common'
+import { Common, ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
+import { goerliChainConfig } from '@ethereumjs/testdata'
 
 import type { ConsensusDict } from '@ethereumjs/blockchain'
 
-const common = new Common({ chain: Goerli, hardfork: Hardfork.London })
+const common = new Common({ chain: goerliChainConfig, hardfork: Hardfork.London })
 
 const consensusDict: ConsensusDict = {}
 consensusDict[ConsensusAlgorithm.Clique] = new CliqueConsensus()

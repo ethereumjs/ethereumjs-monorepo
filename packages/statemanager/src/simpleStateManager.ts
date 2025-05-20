@@ -1,12 +1,12 @@
-import { Account, bytesToHex } from '@ethereumjs/util'
+import { Account, EthereumJSErrorWithoutCode, bytesToHex } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { OriginalStorageCache } from './cache/originalStorageCache.js'
-import { modifyAccountFields } from './util.js'
+import { OriginalStorageCache } from './cache/originalStorageCache.ts'
+import { modifyAccountFields } from './util.ts'
 
-import type { SimpleStateManagerOpts } from './index.js'
 import type { AccountFields, Common, StateManagerInterface } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
+import type { SimpleStateManagerOpts } from './index.ts'
 
 /**
  * Simple and dependency-free state manager for basic state access use cases
@@ -21,7 +21,7 @@ import type { Address, PrefixedHexString } from '@ethereumjs/util'
  * cases and the state manager is used as default there.
  *
  * For a more full fledged and MPT-backed state manager implementation
- * have a look at the `@ethereumjs/statemanager` package.
+ * have a look at the [`@ethereumjs/statemanager` package docs](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/docs/README.md).
  */
 export class SimpleStateManager implements StateManagerInterface {
   public accountStack: Map<PrefixedHexString, Account | undefined>[] = []
@@ -143,12 +143,12 @@ export class SimpleStateManager implements StateManagerInterface {
 
   // State root functionality not implemented
   getStateRoot(): Promise<Uint8Array> {
-    throw new Error('Method not implemented.')
+    throw EthereumJSErrorWithoutCode('Method not implemented.')
   }
   setStateRoot(): Promise<void> {
-    throw new Error('Method not implemented.')
+    throw EthereumJSErrorWithoutCode('Method not implemented.')
   }
   hasStateRoot(): Promise<boolean> {
-    throw new Error('Method not implemented.')
+    throw EthereumJSErrorWithoutCode('Method not implemented.')
   }
 }

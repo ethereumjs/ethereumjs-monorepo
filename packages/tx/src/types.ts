@@ -1,52 +1,56 @@
 import { bytesToBigInt, toBytes } from '@ethereumjs/util'
 
-import type { FeeMarket1559Tx } from './1559/tx.js'
-import type { AccessList2930Transaction } from './2930/tx.js'
-import type { Blob4844Tx } from './4844/tx.js'
-import type { EOACode7702Transaction } from './7702/tx.js'
-import type { LegacyTx } from './legacy/tx.js'
 import type { Common, Hardfork, ParamsDict } from '@ethereumjs/common'
 import type {
   Address,
   AddressLike,
   BigIntLike,
   BytesLike,
+  EOACode7702AuthorizationList,
+  EOACode7702AuthorizationListBytes,
   PrefixedHexString,
 } from '@ethereumjs/util'
+import type { FeeMarket1559Tx } from './1559/tx.ts'
+import type { AccessList2930Tx } from './2930/tx.ts'
+import type { Blob4844Tx } from './4844/tx.ts'
+import type { EOACode7702Tx } from './7702/tx.ts'
+import type { LegacyTx } from './legacy/tx.ts'
+export type Capability = (typeof Capability)[keyof typeof Capability]
+
 /**
  * Can be used in conjunction with {@link Transaction[TransactionType].supports}
  * to query on tx capabilities
  */
-export enum Capability {
+export const Capability = {
   /**
    * Tx supports EIP-155 replay protection
    * See: [155](https://eips.ethereum.org/EIPS/eip-155) Replay Attack Protection EIP
    */
-  EIP155ReplayProtection = 155,
+  EIP155ReplayProtection: 155,
 
   /**
    * Tx supports EIP-1559 gas fee market mechanism
    * See: [1559](https://eips.ethereum.org/EIPS/eip-1559) Fee Market EIP
    */
-  EIP1559FeeMarket = 1559,
+  EIP1559FeeMarket: 1559,
 
   /**
    * Tx is a typed transaction as defined in EIP-2718
    * See: [2718](https://eips.ethereum.org/EIPS/eip-2718) Transaction Type EIP
    */
-  EIP2718TypedTransaction = 2718,
+  EIP2718TypedTransaction: 2718,
 
   /**
    * Tx supports access list generation as defined in EIP-2930
    * See: [2930](https://eips.ethereum.org/EIPS/eip-2930) Access Lists EIP
    */
-  EIP2930AccessLists = 2930,
+  EIP2930AccessLists: 2930,
 
   /**
    * Tx supports setting EOA code
    * See [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702)
    */
-  EIP7702EOACode = 7702,
+  EIP7702EOACode: 7702,
 }
 
 /**
@@ -116,25 +120,6 @@ export function isAccessList(input: AccessListBytes | AccessList): input is Acce
   return !isAccessListBytes(input) // This is exactly the same method, except the output is negated.
 }
 
-export function isAuthorizationListBytes(
-  input: AuthorizationListBytes | AuthorizationList,
-): input is AuthorizationListBytes {
-  if (input.length === 0) {
-    return true
-  }
-  const firstItem = input[0]
-  if (Array.isArray(firstItem)) {
-    return true
-  }
-  return false
-}
-
-export function isAuthorizationList(
-  input: AuthorizationListBytes | AuthorizationList,
-): input is AuthorizationList {
-  return !isAuthorizationListBytes(input) // This is exactly the same method, except the output is negated.
-}
-
 export interface TransactionCache {
   hash?: Uint8Array
   dataFee?: {
@@ -142,25 +127,28 @@ export interface TransactionCache {
     hardfork: string | Hardfork
   }
   senderPubKey?: Uint8Array
+  // TODO: re-add these cache items for the JSON
+  // See: https://github.com/ethereumjs/ethereumjs-monorepo/issues/3932
+  //accessListJSON?: AccessList
+  //authorityListJSON?: EOACode7702AuthorizationList
 }
 
-/**
- * Encompassing type for all transaction types.
- */
-export enum TransactionType {
-  Legacy = 0,
-  AccessListEIP2930 = 1,
-  FeeMarketEIP1559 = 2,
-  BlobEIP4844 = 3,
-  EOACodeEIP7702 = 4,
-}
+export type TransactionType = (typeof TransactionType)[keyof typeof TransactionType]
+
+export const TransactionType = {
+  Legacy: 0,
+  AccessListEIP2930: 1,
+  FeeMarketEIP1559: 2,
+  BlobEIP4844: 3,
+  EOACodeEIP7702: 4,
+} as const
 
 export interface Transaction {
   [TransactionType.Legacy]: LegacyTx
   [TransactionType.FeeMarketEIP1559]: FeeMarket1559Tx
-  [TransactionType.AccessListEIP2930]: AccessList2930Transaction
+  [TransactionType.AccessListEIP2930]: AccessList2930Tx
   [TransactionType.BlobEIP4844]: Blob4844Tx
-  [TransactionType.EOACodeEIP7702]: EOACode7702Transaction
+  [TransactionType.EOACodeEIP7702]: EOACode7702Tx
 }
 
 export type TypedTransaction = Transaction[TransactionType]
@@ -169,7 +157,7 @@ export function isLegacyTx(tx: TypedTransaction): tx is LegacyTx {
   return tx.type === TransactionType.Legacy
 }
 
-export function isAccessList2930Tx(tx: TypedTransaction): tx is AccessList2930Transaction {
+export function isAccessList2930Tx(tx: TypedTransaction): tx is AccessList2930Tx {
   return tx.type === TransactionType.AccessListEIP2930
 }
 
@@ -181,7 +169,7 @@ export function isBlob4844Tx(tx: TypedTransaction): tx is Blob4844Tx {
   return tx.type === TransactionType.BlobEIP4844
 }
 
-export function isEOACode7702Tx(tx: TypedTransaction): tx is EOACode7702Transaction {
+export function isEOACode7702Tx(tx: TypedTransaction): tx is EOACode7702Tx {
   return tx.type === TransactionType.EOACodeEIP7702
 }
 
@@ -198,6 +186,7 @@ export interface TransactionInterface<T extends TransactionType = TransactionTyp
   readonly cache: TransactionCache
   supports(capability: Capability): boolean
   type: TransactionType
+  txOptions: TxOptions
   getIntrinsicGas(): bigint
   getDataGas(): bigint
   getUpfrontCost(): bigint
@@ -214,9 +203,16 @@ export interface TransactionInterface<T extends TransactionType = TransactionTyp
   verifySignature(): boolean
   getSenderAddress(): Address
   getSenderPublicKey(): Uint8Array
-  sign(privateKey: Uint8Array): Transaction[T]
+  sign(privateKey: Uint8Array, extraEntropy?: Uint8Array | boolean): Transaction[T]
   toJSON(): JSONTx
   errorStr(): string
+
+  addSignature(
+    v: bigint,
+    r: Uint8Array | bigint,
+    s: Uint8Array | bigint,
+    convertV?: boolean,
+  ): Transaction[T]
 }
 
 export interface LegacyTxInterface<T extends TransactionType = TransactionType>
@@ -231,7 +227,6 @@ export interface EIP2718CompatibleTx<T extends TransactionType = TransactionType
 export interface EIP2930CompatibleTx<T extends TransactionType = TransactionType>
   extends EIP2718CompatibleTx<T> {
   readonly accessList: AccessListBytes
-  readonly AccessListJSON: AccessList
 }
 
 export interface EIP1559CompatibleTx<T extends TransactionType = TransactionType>
@@ -254,7 +249,7 @@ export interface EIP4844CompatibleTx<T extends TransactionType = TransactionType
 export interface EIP7702CompatibleTx<T extends TransactionType = TransactionType>
   extends EIP1559CompatibleTx<T> {
   // ChainID, Address, [nonce], y_parity, r, s
-  readonly authorizationList: AuthorizationListBytes
+  readonly authorizationList: EOACode7702AuthorizationListBytes
 }
 
 export interface TxData {
@@ -349,7 +344,7 @@ export type LegacyTxData = {
 }
 
 /**
- * {@link AccessList2930Transaction} data.
+ * {@link AccessList2930Tx} data.
  */
 export interface AccessList2930TxData extends LegacyTxData {
   /**
@@ -416,7 +411,7 @@ export interface BlobEIP4844TxData extends FeeMarketEIP1559TxData {
  * {@link EOACode7702Tx} data.
  */
 export interface EOACode7702TxData extends FeeMarketEIP1559TxData {
-  authorizationList?: AuthorizationListBytes | AuthorizationList | never
+  authorizationList?: EOACode7702AuthorizationListBytes | EOACode7702AuthorizationList | never
 }
 
 export interface TxValuesArray {
@@ -433,7 +428,7 @@ export interface TxValuesArray {
 type LegacyTxValuesArray = Uint8Array[]
 
 /**
- * Bytes values array for an {@link AccessList2930Transaction}
+ * Bytes values array for an {@link AccessList2930Tx}
  */
 type AccessList2930TxValuesArray = [
   Uint8Array,
@@ -480,7 +475,7 @@ type EOACode7702TxValuesArray = [
   Uint8Array,
   Uint8Array,
   AccessListBytes,
-  AuthorizationListBytes,
+  EOACode7702AuthorizationListBytes,
   Uint8Array?,
   Uint8Array?,
   Uint8Array?,
@@ -535,7 +530,7 @@ export interface JSONTx {
   value?: PrefixedHexString
   chainId?: PrefixedHexString
   accessList?: JSONAccessListItem[] // TODO should this not be AccessList?
-  authorizationList?: AuthorizationList
+  authorizationList?: EOACode7702AuthorizationList
   type?: PrefixedHexString
   maxPriorityFeePerGas?: PrefixedHexString
   maxFeePerGas?: PrefixedHexString
@@ -593,27 +588,3 @@ export type AccessListItem = {
 export type AccessListBytesItem = [Uint8Array, Uint8Array[]]
 export type AccessListBytes = AccessListBytesItem[]
 export type AccessList = AccessListItem[]
-
-/**
- * Authorization list types
- */
-export type AuthorizationListItem = {
-  chainId: PrefixedHexString
-  address: PrefixedHexString
-  nonce: PrefixedHexString
-  yParity: PrefixedHexString
-  r: PrefixedHexString
-  s: PrefixedHexString
-}
-
-// Tuple of [chain_id, address, [nonce], y_parity, r, s]
-export type AuthorizationListBytesItem = [
-  Uint8Array,
-  Uint8Array,
-  Uint8Array,
-  Uint8Array,
-  Uint8Array,
-  Uint8Array,
-]
-export type AuthorizationListBytes = AuthorizationListBytesItem[]
-export type AuthorizationList = AuthorizationListItem[]

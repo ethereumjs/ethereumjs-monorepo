@@ -1,10 +1,16 @@
 import { createLegacyTx } from '@ethereumjs/tx'
-import { bytesToHex, createContractAddress, hexToBytes } from '@ethereumjs/util'
+import {
+  bigIntToHex,
+  bytesToHex,
+  createContractAddress,
+  hexToBigInt,
+  hexToBytes,
+} from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import { powData } from '../../testdata/geth-genesis/pow.js'
-import { dummy, getRPCClient, runBlockWithTxs, setupChain } from '../helpers.js'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
+import { powData } from '../../testdata/geth-genesis/pow.ts'
+import { dummy, getRPCClient, runBlockWithTxs, setupChain } from '../helpers.ts'
 
 const method = 'eth_getLogs'
 
@@ -75,7 +81,7 @@ describe(method, async () => {
       { common },
     ).sign(dummy.privKey)
 
-    await runBlockWithTxs(chain, execution, [tx1, tx2, tx3, tx4])
+    let block = await runBlockWithTxs(chain, execution, [tx1, tx2, tx3, tx4])
 
     // compare the logs
     let res = await rpc.request(method, [{ fromBlock: 'earliest', toBlock: 'latest' }])
@@ -92,7 +98,7 @@ describe(method, async () => {
       res.result[0].topics[3] ===
         '0x0000000000000000000000000000000000000000000000000000000000000003'
     ) {
-      assert.ok(
+      assert.isTrue(
         true,
         `should return the correct logs (fromBlock/toBlock as 'earliest' and 'latest')`,
       )
@@ -100,9 +106,15 @@ describe(method, async () => {
       assert.fail(`should return the correct logs (fromBlock/toBlock as 'earliest' and 'latest')`)
     }
 
+    assert.strictEqual(
+      hexToBigInt(res.result[0].blockTimestamp),
+      block.header.timestamp,
+      `should return the correct blockTimestamp (fromBlock/toBlock as 'earliest' and 'latest')`,
+    )
+
     // get the logs using fromBlock/toBlock as numbers
     res = await rpc.request(method, [{ fromBlock: '0x0', toBlock: '0x1' }])
-    assert.equal(
+    assert.strictEqual(
       res.result.length,
       20,
       'should return the correct logs (fromBlock/toBlock as block numbers)',
@@ -114,7 +126,7 @@ describe(method, async () => {
       res.result.length === 10 &&
       res.result.every((r: any) => r.address === contractAddr1.toString()) === true
     ) {
-      assert.ok(true, 'should return the correct logs (filter by single address)')
+      assert.isTrue(true, 'should return the correct logs (filter by single address)')
     } else {
       assert.fail('should return the correct logs (filter by single address)')
     }
@@ -127,14 +139,14 @@ describe(method, async () => {
       res.result.length === 20 &&
       res.result.every((r: any) => addresses.includes(r.address)) === true
     ) {
-      assert.ok(true, 'should return the correct logs (filter by multiple addresses)')
+      assert.isTrue(true, 'should return the correct logs (filter by multiple addresses)')
     } else {
       assert.fail('should return the correct logs (filter by multiple addresses)')
     }
 
     // test filtering by topics (empty means anything)
     res = await rpc.request(method, [{ topics: [] }])
-    assert.equal(
+    assert.strictEqual(
       res.result.length,
       20,
       'should return the correct logs (filter by topic - empty means anything)',
@@ -144,7 +156,7 @@ describe(method, async () => {
     res = await rpc.request(method, [
       { topics: ['0xbf642f3055e2ef2589825c2c0dd4855c1137a63f6260d9d112629e5cd034a3eb'] },
     ])
-    assert.equal(
+    assert.strictEqual(
       res.result.length,
       20,
       'should return the correct logs (filter by topic - exact match)',
@@ -154,7 +166,7 @@ describe(method, async () => {
     res = await rpc.request(method, [
       { topics: [null, '0x0000000000000000000000000000000000000000000000000000000000000001'] },
     ])
-    assert.equal(
+    assert.strictEqual(
       res.result.length,
       20,
       'should return the correct logs (filter by topic - exact match for second topic)',
@@ -174,7 +186,7 @@ describe(method, async () => {
       },
     ])
 
-    assert.equal(
+    assert.strictEqual(
       res.result.length,
       20,
       'should return the correct logs (filter by topic - A or B in first position)',
@@ -187,7 +199,7 @@ describe(method, async () => {
       },
     ])
 
-    assert.equal(
+    assert.strictEqual(
       res.result.length,
       20,
       'should return the correct logs (filter by topic - null means anything)',
@@ -201,7 +213,45 @@ describe(method, async () => {
       },
     ])
 
-    assert.equal(res.result.length, 20, 'should return the correct logs (filter by blockHash)')
+    assert.strictEqual(
+      res.result.length,
+      20,
+      'should return the correct logs (filter by blockHash)',
+    )
+
+    // test adding more logs and checking timestamps against multiple blocks
+    const tx5 = createLegacyTx(
+      {
+        ...txData,
+        data,
+        to: contractAddr1,
+        nonce: 4,
+      },
+      { common },
+    ).sign(dummy.privKey)
+    const tx6 = createLegacyTx(
+      {
+        ...txData,
+        data,
+        to: contractAddr2,
+        nonce: 5,
+      },
+      { common },
+    ).sign(dummy.privKey)
+
+    const block1Timestamp = bigIntToHex(block.header.timestamp)
+    block = await runBlockWithTxs(chain, execution, [tx5, tx6])
+    const block2Timestamp = bigIntToHex(block.header.timestamp)
+
+    res = await rpc.request(method, [{ fromBlock: 'earliest', toBlock: 'latest' }])
+    const block1Logs: any[] = res.result.filter((log: any) => log.blockNumber === '0x1')
+    const block2Logs: any[] = res.result.filter((log: any) => log.blockNumber === '0x2')
+
+    assert.isTrue(
+      block1Logs.every((log) => log.blockTimestamp === block1Timestamp) &&
+        block2Logs.every((log) => log.blockTimestamp === block2Timestamp),
+      'should return the correct log timestamps across multiple blocks',
+    )
   })
 
   it('call with invalid params', async () => {
@@ -209,20 +259,20 @@ describe(method, async () => {
     const rpc = getRPCClient(server)
     // fromBlock greater than current height
     let res = await rpc.request(method, [{ fromBlock: '0x1234' }])
-    assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('specified `fromBlock` greater than current height'))
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
+    assert.isTrue(res.error.message.includes('specified `fromBlock` greater than current height'))
 
     // toBlock greater than current height
     res = await rpc.request(method, [{ toBlock: '0x1234' }])
-    assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('specified `toBlock` greater than current height'))
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
+    assert.isTrue(res.error.message.includes('specified `toBlock` greater than current height'))
 
     // unknown blockHash
     res = await rpc.request(method, [
       { blockHash: '0x1000000000000000000000000000000000000000000000000000000000000001' },
     ])
-    assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('unknown blockHash'))
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
+    assert.isTrue(res.error.message.includes('unknown blockHash'))
 
     // specifying fromBlock or toBlock with blockHash
     res = await rpc.request(method, [
@@ -231,8 +281,8 @@ describe(method, async () => {
         blockHash: '0x1000000000000000000000000000000000000000000000000000000000000001',
       },
     ])
-    assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
+    assert.isTrue(
       res.error.message.includes(
         'Can only specify a blockHash if fromBlock or toBlock are not provided',
       ),
@@ -244,8 +294,8 @@ describe(method, async () => {
         blockHash: '0x1000000000000000000000000000000000000000000000000000000000000001',
       },
     ])
-    assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
+    assert.isTrue(
       res.error.message.includes(
         'Can only specify a blockHash if fromBlock or toBlock are not provided',
       ),
@@ -253,10 +303,10 @@ describe(method, async () => {
 
     // unknown address
     res = await rpc.request(method, [{ address: '0x0000000000000000000000000000000000000001' }])
-    assert.equal(res.result.length, 0, 'should return empty logs')
+    assert.strictEqual(res.result.length, 0, 'should return empty logs')
 
     // invalid topic
     res = await rpc.request(method, [{ topics: ['0x1234'] }])
-    assert.equal(res.result.length, 0, 'should return empty logs')
+    assert.strictEqual(res.result.length, 0, 'should return empty logs')
   })
 })

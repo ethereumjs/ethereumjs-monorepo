@@ -1,0 +1,67 @@
+{
+  "name": "@ethereumjs/binarytree",
+  "version": "10.0.0",
+  "description": "Implementation of binary trees as used in Ethereum.",
+  "keywords": ["binary", "tree", "trie", "ethereum"],
+  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/binarytree#readme",
+  "bugs": {
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+binarytree%22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
+  },
+  "license": "MIT",
+  "author": "EthereumJS Team",
+  "contributors": [
+    {
+      "name": "Gabriel Rocheleau",
+      "url": "https://github.com/gabrocheleau"
+    }
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "exports": {
+    ".": {
+      "import": {
+        "typescript": "./src/index.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": "./dist/cjs/index.js"
+    }
+  },
+  "files": ["dist", "src"],
+  "scripts": {
+    "biome": "npx @biomejs/biome check",
+    "biome:fix": "npx @biomejs/biome check --write",
+    "build": "../../config/cli/ts-build.sh",
+    "clean": "../../config/cli/clean-package.sh",
+    "coverage": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.mts",
+    "coverage:istanbul": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.istanbul.mts",
+    "docs:build": "typedoc --options typedoc.mjs",
+    "lint": "npm run biome && eslint  --config ./eslint.config.mjs .",
+    "lint:fix": "npm run biome:fix && eslint  --fix --config ./eslint.config.mjs .",
+    "prepublishOnly": "../../config/cli/prepublish.sh",
+    "sc": "npm run spellcheck",
+    "spellcheck": "npm run spellcheck:ts && npm run spellcheck:md",
+    "spellcheck:ts": "npx cspell --gitignore -c ../../config/cspell-ts.json \"./**/*.ts\" --cache --show-suggestions --show-context",
+    "spellcheck:md": "npx cspell --gitignore -c ../../config/cspell-md.json \"**.md\" --cache --show-suggestions --show-context",
+    "test": "npm run test:node",
+    "test:node": "npx vitest run -c ../../config/vitest.config.mts",
+    "test:browser": "npx vitest run --config=../../config/vitest.config.browser.mts",
+    "tsc": "../../config/cli/ts-compile.sh"
+  },
+  "dependencies": {
+    "@ethereumjs/rlp": "^10.0.0",
+    "@ethereumjs/util": "^10.0.0",
+    "@noble/hashes": "^1.7.2",
+    "debug": "^4.4.0",
+    "ethereum-cryptography": "^3.2.0",
+    "lru-cache": "11.0.2"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

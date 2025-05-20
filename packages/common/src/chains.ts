@@ -1,9 +1,9 @@
-import type { ChainConfig } from './types.js'
+import type { ChainConfig } from './types.ts'
 
 export const Mainnet: ChainConfig = {
   name: 'mainnet',
   chainId: 1,
-  defaultHardfork: 'cancun',
+  defaultHardfork: 'prague',
   consensus: {
     type: 'pow',
     algorithm: 'ethash',
@@ -90,14 +90,14 @@ export const Mainnet: ChainConfig = {
       forkHash: '0xf0afd0e3',
     },
     {
-      // The forkHash will remain same as mergeForkIdTransition is post merge
+      // The forkHash will remain same as mergeNetsplitBlock is post merge
       // terminal block: https://etherscan.io/block/15537393
       name: 'paris',
       block: 15537394,
       forkHash: '0xf0afd0e3',
     },
     {
-      name: 'mergeForkIdTransition',
+      name: 'mergeNetsplitBlock',
       block: null,
       forkHash: null,
     },
@@ -115,6 +115,16 @@ export const Mainnet: ChainConfig = {
     },
     {
       name: 'prague',
+      block: null,
+      timestamp: '1746612311',
+      forkHash: '0xc376cf8b',
+    },
+    {
+      name: 'osaka',
+      block: null,
+    },
+    {
+      name: 'verkle',
       block: null,
     },
   ],
@@ -153,171 +163,10 @@ export const Mainnet: ChainConfig = {
   ],
 }
 
-export const Goerli: ChainConfig = {
-  name: 'goerli',
-  chainId: 5,
-  defaultHardfork: 'cancun',
-  consensus: {
-    type: 'poa',
-    algorithm: 'clique',
-    clique: {
-      period: 15,
-      epoch: 30000,
-    },
-  },
-  comment: 'Cross-client PoA test network',
-  url: 'https://github.com/goerli/testnet',
-  genesis: {
-    timestamp: '0x5c51a607',
-    gasLimit: 10485760,
-    difficulty: 1,
-    nonce: '0x0000000000000000',
-    extraData:
-      '0x22466c6578692069732061207468696e6722202d204166726900000000000000e0a2bd4258d2768837baa26a28fe71dc079f84c70000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-  },
-  hardforks: [
-    {
-      name: 'chainstart',
-      block: 0,
-      forkHash: '0xa3f5ab08',
-    },
-    {
-      name: 'homestead',
-      block: 0,
-      forkHash: '0xa3f5ab08',
-    },
-    {
-      name: 'tangerineWhistle',
-      block: 0,
-      forkHash: '0xa3f5ab08',
-    },
-    {
-      name: 'spuriousDragon',
-      block: 0,
-      forkHash: '0xa3f5ab08',
-    },
-    {
-      name: 'byzantium',
-      block: 0,
-      forkHash: '0xa3f5ab08',
-    },
-    {
-      name: 'constantinople',
-      block: 0,
-      forkHash: '0xa3f5ab08',
-    },
-    {
-      name: 'petersburg',
-      block: 0,
-      forkHash: '0xa3f5ab08',
-    },
-    {
-      name: 'istanbul',
-      block: 1561651,
-      forkHash: '0xc25efa5c',
-    },
-    {
-      name: 'berlin',
-      block: 4460644,
-      forkHash: '0x757a1c47',
-    },
-    {
-      name: 'london',
-      block: 5062605,
-      forkHash: '0xb8c6299d',
-    },
-    {
-      // The forkHash will remain same as mergeForkIdTransition is post merge,
-      // terminal block: https://goerli.etherscan.io/block/7382818
-      name: 'paris',
-      block: 7382819,
-      forkHash: '0xb8c6299d',
-    },
-    {
-      name: 'mergeForkIdTransition',
-      block: null,
-      forkHash: null,
-    },
-    {
-      name: 'shanghai',
-      block: null,
-      timestamp: '1678832736',
-      forkHash: '0xf9843abf',
-    },
-    {
-      name: 'cancun',
-      block: null,
-      timestamp: '1705473120',
-      forkHash: '0x70cc14e2',
-    },
-  ],
-  bootstrapNodes: [
-    {
-      ip: '51.141.78.53',
-      port: 30303,
-      id: '011f758e6552d105183b1761c5e2dea0111bc20fd5f6422bc7f91e0fabbec9a6595caf6239b37feb773dddd3f87240d99d859431891e4a642cf2a0a9e6cbb98a',
-      location: '',
-      comment: 'Upstream bootnode 1',
-    },
-    {
-      ip: '13.93.54.137',
-      port: 30303,
-      id: '176b9417f511d05b6b2cf3e34b756cf0a7096b3094572a8f6ef4cdcb9d1f9d00683bf0f83347eebdf3b81c3521c2332086d9592802230bf528eaf606a1d9677b',
-      location: '',
-      comment: 'Upstream bootnode 2',
-    },
-    {
-      ip: '94.237.54.114',
-      port: 30313,
-      id: '46add44b9f13965f7b9875ac6b85f016f341012d84f975377573800a863526f4da19ae2c620ec73d11591fa9510e992ecc03ad0751f53cc02f7c7ed6d55c7291',
-      location: '',
-      comment: 'Upstream bootnode 3',
-    },
-    {
-      ip: '18.218.250.66',
-      port: 30313,
-      id: 'b5948a2d3e9d486c4d75bf32713221c2bd6cf86463302339299bd227dc2e276cd5a1c7ca4f43a0e9122fe9af884efed563bd2a1fd28661f3b5f5ad7bf1de5949',
-      location: '',
-      comment: 'Upstream bootnode 4',
-    },
-    {
-      ip: '3.11.147.67',
-      port: 30303,
-      id: 'a61215641fb8714a373c80edbfa0ea8878243193f57c96eeb44d0bc019ef295abd4e044fd619bfc4c59731a73fb79afe84e9ab6da0c743ceb479cbb6d263fa91',
-      location: '',
-      comment: 'Ethereum Foundation bootnode',
-    },
-    {
-      ip: '51.15.116.226',
-      port: 30303,
-      id: 'a869b02cec167211fb4815a82941db2e7ed2936fd90e78619c53eb17753fcf0207463e3419c264e2a1dd8786de0df7e68cf99571ab8aeb7c4e51367ef186b1dd',
-      location: '',
-      comment: 'Goerli Initiative bootnode',
-    },
-    {
-      ip: '51.15.119.157',
-      port: 30303,
-      id: '807b37ee4816ecf407e9112224494b74dd5933625f655962d892f2f0f02d7fbbb3e2a94cf87a96609526f30c998fd71e93e2f53015c558ffc8b03eceaf30ee33',
-      location: '',
-      comment: 'Goerli Initiative bootnode',
-    },
-    {
-      ip: '51.15.119.157',
-      port: 40303,
-      id: 'a59e33ccd2b3e52d578f1fbd70c6f9babda2650f0760d6ff3b37742fdcdfdb3defba5d56d315b40c46b70198c7621e63ffa3f987389c7118634b0fefbbdfa7fd',
-      location: '',
-      comment: 'Goerli Initiative bootnode',
-    },
-  ],
-  dnsNetworks: [
-    'enrtree://AKA3AM6LPBYEUDMVNU3BSVQJ5AD45Y7YPOHJLEF6W26QOE4VTUDPE@all.goerli.ethdisco.net',
-  ],
-}
-
 export const Sepolia: ChainConfig = {
   name: 'sepolia',
   chainId: 11155111,
-  defaultHardfork: 'cancun',
+  defaultHardfork: 'prague',
   consensus: {
     type: 'pow',
     algorithm: 'ethash',
@@ -332,6 +181,7 @@ export const Sepolia: ChainConfig = {
     nonce: '0x0000000000000000',
     extraData: '0x5365706f6c69612c20417468656e732c204174746963612c2047726565636521',
   },
+  depositContractAddress: '0x7f02c3e3c98b133055b8b348b2ac625669ed295d',
   hardforks: [
     {
       name: 'chainstart',
@@ -389,14 +239,14 @@ export const Sepolia: ChainConfig = {
       forkHash: '0xfe3366e7',
     },
     {
-      // The forkHash will remain same as mergeForkIdTransition is post merge,
+      // The forkHash will remain same as mergeNetsplitBlock is post merge,
       // terminal block: https://sepolia.etherscan.io/block/1450408
       name: 'paris',
       block: 1450409,
       forkHash: '0xfe3366e7',
     },
     {
-      name: 'mergeForkIdTransition',
+      name: 'mergeNetsplitBlock',
       block: 1735371,
       forkHash: '0xb96cbd13',
     },
@@ -411,6 +261,12 @@ export const Sepolia: ChainConfig = {
       block: null,
       timestamp: '1706655072',
       forkHash: '0x88cf81d9',
+    },
+    {
+      name: 'prague',
+      block: null,
+      timestamp: '1741159776',
+      forkHash: '0xed88b5fd',
     },
   ],
   bootstrapNodes: [
@@ -451,7 +307,7 @@ export const Sepolia: ChainConfig = {
 export const Holesky: ChainConfig = {
   name: 'holesky',
   chainId: 17000,
-  defaultHardfork: 'paris',
+  defaultHardfork: 'prague',
   consensus: {
     type: 'pos',
     algorithm: 'casper',
@@ -466,6 +322,7 @@ export const Holesky: ChainConfig = {
     nonce: '0x0000000000001234',
     timestamp: '0x65156994',
   },
+  depositContractAddress: '0x4242424242424242424242424242424242424242',
   hardforks: [
     {
       name: 'chainstart',
@@ -528,7 +385,7 @@ export const Holesky: ChainConfig = {
       forkHash: '0xc61a6098',
     },
     {
-      name: 'mergeForkIdTransition',
+      name: 'mergeNetsplitBlock',
       block: 0,
       forkHash: '0xc61a6098',
     },
@@ -543,6 +400,12 @@ export const Holesky: ChainConfig = {
       block: null,
       timestamp: '1707305664',
       forkHash: '0x9b192ad0',
+    },
+    {
+      name: 'prague',
+      block: null,
+      timestamp: '1740434112',
+      forkHash: '0xdfbd9bed',
     },
   ],
   bootstrapNodes: [
@@ -566,10 +429,142 @@ export const Holesky: ChainConfig = {
   ],
 }
 
+export const Hoodi: ChainConfig = {
+  name: 'hoodi',
+  chainId: 560048,
+  defaultHardfork: 'prague',
+  consensus: {
+    type: 'pos',
+    algorithm: 'casper',
+  },
+  comment: 'PoS test network to replace Holesky',
+  url: 'https://github.com/eth-clients/hoodi',
+  genesis: {
+    baseFeePerGas: '0x3B9ACA00',
+    difficulty: '0x01',
+    extraData: '0x',
+    gasLimit: '0x2255100',
+    nonce: '0x0000000000001234',
+    timestamp: '0x67d80ec0',
+  },
+  depositContractAddress: '0x00000000219ab540356cBB839Cbe05303d7705Fa',
+  hardforks: [
+    {
+      name: 'chainstart',
+      block: 0,
+      forkHash: '0xbef71d30',
+    },
+    {
+      name: 'homestead',
+      block: 0,
+      forkHash: '0xbef71d30',
+    },
+    {
+      name: 'tangerineWhistle',
+      block: 0,
+      forkHash: '0xbef71d30',
+    },
+    {
+      name: 'spuriousDragon',
+      block: 0,
+      forkHash: '0xbef71d30',
+    },
+    {
+      name: 'byzantium',
+      block: 0,
+      forkHash: '0xbef71d30',
+    },
+    {
+      name: 'constantinople',
+      block: 0,
+      forkHash: '0xbef71d30',
+    },
+    {
+      name: 'petersburg',
+      block: 0,
+      forkHash: '0xbef71d30',
+    },
+    {
+      name: 'istanbul',
+      block: 0,
+      forkHash: '0xbef71d30',
+    },
+    {
+      name: 'muirGlacier',
+      block: 0,
+      forkHash: '0xbef71d30',
+    },
+    {
+      name: 'berlin',
+      block: 0,
+      forkHash: '0xbef71d30',
+    },
+    {
+      name: 'london',
+      block: 0,
+      forkHash: '0xbef71d30',
+    },
+    {
+      name: 'paris',
+      block: 0,
+      forkHash: '0xbef71d30',
+    },
+    {
+      name: 'mergeNetsplitBlock',
+      block: 0,
+      forkHash: '0xbef71d30',
+    },
+    {
+      name: 'shanghai',
+      block: null,
+      timestamp: '0',
+      forkHash: '0xbef71d30',
+    },
+    {
+      name: 'cancun',
+      block: null,
+      timestamp: '0',
+      forkHash: '0xbef71d30',
+    },
+    {
+      name: 'prague',
+      block: null,
+      timestamp: '1742999832',
+      forkHash: '0x0929e24e',
+    },
+  ],
+  bootstrapNodes: [
+    {
+      ip: '134.209.138.84',
+      port: 30303,
+      id: '2112dd3839dd752813d4df7f40936f06829fc54c0e051a93967c26e5f5d27d99d886b57b4ffcc3c475e930ec9e79c56ef1dbb7d86ca5ee83a9d2ccf36e5c240c',
+      location: '',
+      comment: 'bootnode 1',
+    },
+    {
+      ip: '209.38.124.160',
+      port: 30303,
+      id: '60203fcb3524e07c5df60a14ae1c9c5b24023ea5d47463dfae051d2c9f3219f309657537576090ca0ae641f73d419f53d8e8000d7a464319d4784acd7d2abc41',
+      location: '',
+      comment: 'bootnode 2',
+    },
+    {
+      ip: '134.199.184.23',
+      port: 30303,
+      id: '8ae4a48101b2299597341263da0deb47cc38aa4d3ef4b7430b897d49bfa10eb1ccfe1655679b1ed46928ef177fbf21b86837bd724400196c508427a6f41602cd',
+      location: '',
+      comment: 'bootnode 3',
+    },
+  ],
+  dnsNetworks: [
+    'enrtree://AKA3AM6LPBYEUDMVNU3BSVQJ5AD45Y7YPOHJLEF6W26QOE4VTUDPE@all.hoodi.ethdisco.net',
+  ],
+}
+
 export const Kaustinen6: ChainConfig = {
   name: 'kaustinen6',
   chainId: 69420,
-  defaultHardfork: 'osaka',
+  defaultHardfork: 'verkle',
   consensus: {
     type: 'pos',
     algorithm: 'casper',
@@ -629,7 +624,7 @@ export const Kaustinen6: ChainConfig = {
       block: 0,
     },
     {
-      name: 'mergeForkIdTransition',
+      name: 'mergeNetsplitBlock',
       block: 0,
     },
     {
@@ -638,7 +633,7 @@ export const Kaustinen6: ChainConfig = {
       timestamp: '0',
     },
     {
-      name: 'osaka',
+      name: 'verkle',
       block: null,
       timestamp: '1712848500',
     },

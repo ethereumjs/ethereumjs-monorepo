@@ -6,12 +6,11 @@ import {
   createWithdrawalFromBytesArray,
   hexToBytes,
   randomBytes,
-  zeros,
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { genWithdrawalsTrieRoot } from '../src/helpers.js'
-import { createBlock, createBlockFromRLP, createBlockHeader } from '../src/index.js'
+import { genWithdrawalsTrieRoot } from '../src/helpers.ts'
+import { createBlock, createBlockFromRLP, createBlockHeader } from '../src/index.ts'
 
 import type { WithdrawalBytes, WithdrawalData } from '@ethereumjs/util'
 
@@ -42,7 +41,7 @@ describe('EIP4895 tests', () => {
     const withdrawals = (gethBlockBytesArray[3] as WithdrawalBytes[]).map((wa) =>
       createWithdrawalFromBytesArray(wa),
     )
-    assert.equal(withdrawals.length, 8, '8 withdrawals should have been found')
+    assert.strictEqual(withdrawals.length, 8, '8 withdrawals should have been found')
     const gethWithdrawalsRoot = (gethBlockBytesArray[0] as Uint8Array[])[16] as Uint8Array
     assert.deepEqual(
       await genWithdrawalsTrieRoot(withdrawals),
@@ -57,7 +56,7 @@ describe('EIP4895 tests', () => {
       () => {
         createBlockHeader(
           {
-            withdrawalsRoot: zeros(32),
+            withdrawalsRoot: new Uint8Array(32),
           },
           {
             common: earlyCommon,
@@ -79,7 +78,7 @@ describe('EIP4895 tests', () => {
     assert.doesNotThrow(() => {
       createBlockHeader(
         {
-          withdrawalsRoot: zeros(32),
+          withdrawalsRoot: new Uint8Array(32),
         },
         {
           common,
@@ -116,7 +115,7 @@ describe('EIP4895 tests', () => {
       createBlock(
         {
           header: {
-            withdrawalsRoot: zeros(32),
+            withdrawalsRoot: new Uint8Array(32),
           },
           withdrawals: [],
         },
@@ -128,7 +127,7 @@ describe('EIP4895 tests', () => {
     const block = createBlock(
       {
         header: {
-          withdrawalsRoot: zeros(32),
+          withdrawalsRoot: new Uint8Array(32),
         },
         withdrawals: [],
       },
@@ -136,7 +135,7 @@ describe('EIP4895 tests', () => {
         common,
       },
     )
-    assert.notOk(
+    assert.isFalse(
       await block.withdrawalsTrieIsValid(),
       'should invalidate the empty withdrawals root',
     )
@@ -155,7 +154,10 @@ describe('EIP4895 tests', () => {
         common,
       },
     )
-    assert.ok(await validBlock.withdrawalsTrieIsValid(), 'should validate empty withdrawals root')
+    assert.isTrue(
+      await validBlock.withdrawalsTrieIsValid(),
+      'should validate empty withdrawals root',
+    )
 
     const withdrawal = <WithdrawalData>{
       index: BigInt(0),
@@ -177,7 +179,7 @@ describe('EIP4895 tests', () => {
         common,
       },
     )
-    assert.ok(
+    assert.isTrue(
       await validBlockWithWithdrawal.withdrawalsTrieIsValid(),
       'should validate withdrawals root',
     )
@@ -202,7 +204,7 @@ describe('EIP4895 tests', () => {
         common,
       },
     )
-    assert.ok(
+    assert.isTrue(
       await validBlockWithWithdrawal2.withdrawalsTrieIsValid(),
       'should validate withdrawals root',
     )
@@ -236,7 +238,7 @@ describe('EIP4895 tests', () => {
     const block = createBlock({}, { common })
     // Set invalid withdrawalsRoot in cache
     block['cache'].withdrawalsTrieRoot = randomBytes(32)
-    assert.ok(
+    assert.isTrue(
       await block.withdrawalsTrieIsValid(),
       'correctly executed code path where withdrawals length is 0',
     )

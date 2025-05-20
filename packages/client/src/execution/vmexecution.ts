@@ -1,3 +1,4 @@
+import { writeFileSync } from 'fs'
 import {
   DBSaveLookups,
   DBSetBlockOrHeader,
@@ -7,16 +8,18 @@ import {
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { MCLBLS, RustBN254 } from '@ethereumjs/evm'
 import { getGenesis } from '@ethereumjs/genesis'
+import { createMPT } from '@ethereumjs/mpt'
 import {
   CacheType,
   Caches,
   MerkleStateManager,
+  StatefulVerkleStateManager,
   StatelessVerkleStateManager,
 } from '@ethereumjs/statemanager'
-import { createTrie } from '@ethereumjs/trie'
 import {
   BIGINT_0,
   BIGINT_1,
+  EthereumJSErrorWithoutCode,
   Lock,
   ValueEncoding,
   bytesToHex,
@@ -24,30 +27,31 @@ import {
   hexToBytes,
 } from '@ethereumjs/util'
 import { createVM, runBlock, runTx } from '@ethereumjs/vm'
-import { writeFileSync } from 'fs'
 import * as mcl from 'mcl-wasm'
 import { initRustBN } from 'rustbn-wasm'
-import { loadVerkleCrypto } from 'verkle-cryptography-wasm'
 
-import { Event } from '../types.js'
-import { debugCodeReplayBlock } from '../util/debug.js'
-import { short } from '../util/index.js'
+import { Event } from '../types.ts'
+import { debugCodeReplayBlock } from '../util/debug.ts'
+import { short } from '../util/index.ts'
 
-import { Execution } from './execution.js'
-import { LevelDB } from './level.js'
-import { PreimagesManager } from './preimage.js'
-import { ReceiptsManager } from './receipt.js'
+import { Execution } from './execution.ts'
+import { LevelDB } from './level.ts'
+import { PreimagesManager } from './preimage.ts'
+import { ReceiptsManager } from './receipt.ts'
+import { IndexOperation, IndexType, TxIndex } from './txIndex.ts'
 
-import type { ExecutionOptions } from './execution.js'
 import type { Block } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { RunBlockOpts, TxReceipt, VM } from '@ethereumjs/vm'
+import type { ExecutionOptions } from './execution.ts'
 
-export enum ExecStatus {
-  VALID = 'VALID',
-  INVALID = 'INVALID',
-  IGNORE_INVALID = 'IGNORE_INVALID',
-}
+export type ExecStatus = (typeof ExecStatus)[keyof typeof ExecStatus]
+
+export const ExecStatus = {
+  VALID: 'VALID',
+  INVALID: 'INVALID',
+  IGNORE_INVALID: 'IGNORE_INVALID',
+} as const
 
 type ChainStatus = {
   height: bigint
@@ -68,6 +72,7 @@ export class VMExecution extends Execution {
 
   public receiptsManager?: ReceiptsManager
   public preimagesManager?: PreimagesManager
+  public txIndex?: TxIndex
   private pendingReceipts?: Map<string, TxReceipt[]>
   private vmPromise?: Promise<number | null>
 
@@ -109,10 +114,16 @@ export class VMExecution extends Execution {
 
     if (this.config.vm !== undefined) {
       this.vm = this.config.vm
-      ;(this.vm as any).blockchain = this.chain.blockchain
+      // @ts-expect-error -- Assigning to read-only property
+      this.vm.blockchain = this.chain.blockchain
     }
 
     if (this.metaDB) {
+      this.txIndex = new TxIndex({
+        metaDB: this.metaDB,
+        chain: this.chain,
+        config: this.config,
+      })
       if (this.config.saveReceipts) {
         this.receiptsManager = new ReceiptsManager({
           chain: this.chain,
@@ -126,6 +137,7 @@ export class VMExecution extends Execution {
             // Once a block gets deleted from the chain, delete the receipts also
             for (const block of blocks) {
               await this.receiptsManager?.deleteReceipts(block)
+              void this.txIndex?.updateIndex(IndexOperation.Delete, IndexType.TxHash, block)
             }
             if (resolve !== undefined) {
               resolve()
@@ -147,7 +159,7 @@ export class VMExecution extends Execution {
     if (this.merkleVM !== undefined) {
       return
     }
-    const trie = await createTrie({
+    const trie = await createMPT({
       db: new LevelDB(this.stateDB),
       useKeyHashing: true,
       common: this.config.chainCommon,
@@ -155,11 +167,11 @@ export class VMExecution extends Execution {
       valueEncoding: this.config.useStringValueTrieDB ? ValueEncoding.String : ValueEncoding.Bytes,
     })
 
-    this.config.logger.info(`Setting up merkleVM`)
-    this.config.logger.info(`Initializing account cache size=${this.config.accountCache}`)
-    this.config.logger.info(`Initializing storage cache size=${this.config.storageCache}`)
-    this.config.logger.info(`Initializing code cache size=${this.config.codeCache}`)
-    this.config.logger.info(`Initializing trie cache size=${this.config.trieCache}`)
+    this.config.logger?.info(`Setting up merkleVM`)
+    this.config.logger?.info(`Initializing account cache size=${this.config.accountCache}`)
+    this.config.logger?.info(`Initializing storage cache size=${this.config.storageCache}`)
+    this.config.logger?.info(`Initializing code cache size=${this.config.codeCache}`)
+    this.config.logger?.info(`Initializing trie cache size=${this.config.trieCache}`)
 
     const stateManager = new MerkleStateManager({
       trie,
@@ -197,14 +209,20 @@ export class VMExecution extends Execution {
   }
 
   async setupVerkleVM() {
+    let stateManager: StatelessVerkleStateManager | StatefulVerkleStateManager
     if (this.verkleVM !== undefined) {
       return
     }
-    this.config.logger.info(`Setting up verkleVM`)
-    const verkleCrypto = await loadVerkleCrypto()
-    const stateManager = new StatelessVerkleStateManager({
-      verkleCrypto,
-    })
+    if (this.config.statelessVerkle) {
+      this.config.logger?.info(`Setting up verkleVM for stateless verkle execution`)
+      stateManager = new StatelessVerkleStateManager({
+        common: this.config.execCommon,
+      })
+    } else if (this.config.statefulVerkle) {
+      this.config.logger?.info(`Setting up verkleVM for stateful verkle execution`)
+      stateManager = new StatefulVerkleStateManager({ common: this.config.execCommon })
+    } else
+      throw EthereumJSErrorWithoutCode('EIP-6800 active and no verkle execution mode specified')
     await mcl.init(mcl.BLS12_381)
     const rustBN = await initRustBN()
     this.verkleVM = await createVM({
@@ -265,7 +283,9 @@ export class VMExecution extends Execution {
 
       const blockchain = this.chain.blockchain
       if (typeof blockchain.getIteratorHead !== 'function') {
-        throw new Error('cannot get iterator head: blockchain has no getIteratorHead function')
+        throw EthereumJSErrorWithoutCode(
+          'cannot get iterator head: blockchain has no getIteratorHead function',
+        )
       }
       const headBlock = await blockchain.getIteratorHead()
       const { number, timestamp, stateRoot } = headBlock.header
@@ -277,20 +297,18 @@ export class VMExecution extends Execution {
       }
 
       if (typeof blockchain.getTotalDifficulty !== 'function') {
-        throw new Error('cannot get iterator head: blockchain has no getTotalDifficulty function')
+        throw EthereumJSErrorWithoutCode(
+          'cannot get iterator head: blockchain has no getTotalDifficulty function',
+        )
       }
       this.config.execCommon.setHardforkBy({ blockNumber: number, timestamp })
       this.hardfork = this.config.execCommon.hardfork()
 
-      if (this.config.execCommon.gteHardfork(Hardfork.Osaka)) {
-        if (!this.config.statelessVerkle) {
-          throw Error(`Currently stateful verkle execution not supported`)
-        }
-        this.config.logger.info(`Skipping VM verkle statemanager genesis hardfork=${this.hardfork}`)
+      if (this.config.execCommon.gteHardfork(Hardfork.Verkle)) {
         await this.setupVerkleVM()
         this.vm = this.verkleVM!
       } else {
-        this.config.logger.info(
+        this.config.logger?.info(
           `Initializing VM merkle statemanager genesis hardfork=${this.hardfork}`,
         )
         await this.setupMerkleVM()
@@ -304,12 +322,11 @@ export class VMExecution extends Execution {
           !genesisState &&
           (!('generateCanonicalGenesis' in this.vm.stateManager) || !this.config.statelessVerkle)
         ) {
-          throw new Error('genesisState not available')
+          throw EthereumJSErrorWithoutCode('genesisState not available')
         } else {
           await this.vm.stateManager.generateCanonicalGenesis!(genesisState)
         }
       }
-
       await super.open()
       // TODO: Should a run be started to execute any left over blocks?
       // void this.run()
@@ -342,7 +359,7 @@ export class VMExecution extends Execution {
       blockNumber: number,
       timestamp,
     })
-    if (this.config.execCommon.gteHardfork(Hardfork.Osaka)) {
+    if (this.config.execCommon.gteHardfork(Hardfork.Verkle)) {
       // verkleVM should already exist but we can still do an allocation just to be safe
       await this.setupVerkleVM()
       this.vm = this.verkleVM!
@@ -399,8 +416,8 @@ export class VMExecution extends Execution {
 
           let vm = this.vm
           if (
-            !this.config.execCommon.gteHardfork(Hardfork.Osaka) &&
-            this.config.execCommon.hardforkGteHardfork(hardfork, Hardfork.Osaka)
+            !this.config.execCommon.gteHardfork(Hardfork.Verkle) &&
+            this.config.execCommon.hardforkGteHardfork(hardfork, Hardfork.Verkle)
           ) {
             // see if this is a transition block
             const parentBlock =
@@ -410,7 +427,7 @@ export class VMExecution extends Execution {
               timestamp: parentBlock.header.timestamp,
             })
 
-            if (!this.config.execCommon.hardforkGteHardfork(parentHf, Hardfork.Osaka)) {
+            if (!this.config.execCommon.hardforkGteHardfork(parentHf, Hardfork.Verkle)) {
               await this.transitionToVerkle(parentBlock.header.stateRoot, false)
             }
             if (this.verkleVM === undefined) {
@@ -524,6 +541,9 @@ export class VMExecution extends Execution {
           await this.receiptsManager?.saveReceipts(block, receipts)
           this.pendingReceipts?.delete(bytesToHex(block.hash()))
         }
+        if (this.txIndex) {
+          void this.txIndex.updateIndex(IndexOperation.Save, IndexType.TxHash, block)
+        }
       }
 
       // check if the head, safe and finalized are now canonical
@@ -553,8 +573,8 @@ export class VMExecution extends Execution {
         timestamp: vmHeadBlock.header.timestamp,
       })
       if (
-        !this.config.execCommon.gteHardfork(Hardfork.Osaka) &&
-        this.config.execCommon.hardforkGteHardfork(hardfork, Hardfork.Osaka)
+        !this.config.execCommon.gteHardfork(Hardfork.Verkle) &&
+        this.config.execCommon.hardforkGteHardfork(hardfork, Hardfork.Verkle)
       ) {
         // verkle transition should have happened by now
         if (this.verkleVM === undefined) {
@@ -577,7 +597,7 @@ export class VMExecution extends Execution {
   async jumpVmHead(jumpToHash: Uint8Array, jumpToNumber?: bigint): Promise<void> {
     return this.runWithLock<void>(async () => {
       // check if the block is canonical in chain
-      this.config.logger.warn(
+      this.config.logger?.warn(
         `Setting execution head to hash=${short(jumpToHash)} number=${jumpToNumber}`,
       )
       await this.chain.blockchain.setIteratorHead('vm', jumpToHash)
@@ -603,7 +623,7 @@ export class VMExecution extends Execution {
         await this.checkAndReset(startHeadBlock)
         let canonicalHead = await this.chain.blockchain.getCanonicalHeadBlock()
 
-        this.config.logger.debug(
+        this.config.logger?.debug(
           `Running execution startHeadBlock=${startHeadBlock?.header.number} canonicalHead=${canonicalHead?.header.number} loop=${loop}`,
         )
 
@@ -643,7 +663,7 @@ export class VMExecution extends Execution {
 
                   if (reorg) {
                     clearCache = true
-                    this.config.logger.info(
+                    this.config.logger?.info(
                       `VM run: Chain reorged, setting new head to block number=${headBlock.header.number} clearCache=${clearCache}.`,
                     )
                   } else {
@@ -664,7 +684,7 @@ export class VMExecution extends Execution {
                     timestamp,
                   })
                   if (hardfork !== this.hardfork) {
-                    const wasPrePrague = !this.config.execCommon.gteHardfork(Hardfork.Osaka)
+                    const wasPreVerkle = !this.config.execCommon.gteHardfork(Hardfork.Verkle)
                     const hash = short(block.hash())
                     this.config.superMsg(
                       `Execution hardfork switch on block number=${number} hash=${hash} old=${this.hardfork} new=${hardfork}`,
@@ -673,16 +693,16 @@ export class VMExecution extends Execution {
                       blockNumber: number,
                       timestamp,
                     })
-                    const isPostOsaka = this.config.execCommon.gteHardfork(Hardfork.Osaka)
-                    if (wasPrePrague && isPostOsaka) {
+                    const isPostVerkle = this.config.execCommon.gteHardfork(Hardfork.Verkle)
+                    if (wasPreVerkle && isPostVerkle) {
                       await this.transitionToVerkle(parentState!)
                       clearCache = false
                     }
                   }
                   if (
-                    (!this.config.execCommon.gteHardfork(Hardfork.Osaka) &&
+                    (!this.config.execCommon.gteHardfork(Hardfork.Verkle) &&
                       typeof this.vm.stateManager.initVerkleExecutionWitness === 'function') ||
-                    (this.config.execCommon.gteHardfork(Hardfork.Osaka) &&
+                    (this.config.execCommon.gteHardfork(Hardfork.Verkle) &&
                       this.vm.stateManager instanceof MerkleStateManager)
                   ) {
                     throw Error(
@@ -726,10 +746,13 @@ export class VMExecution extends Execution {
                     } hash=${bytesToHex(block.hash())} txs=${block.transactions.length} gasUsed=${
                       result.gasUsed
                     } time=${diffSec}secs`
-                    this.config.logger.warn(msg)
+                    this.config.logger?.warn(msg)
                   }
 
                   await this.receiptsManager?.saveReceipts(block, result.receipts)
+                  if (this.txIndex) {
+                    void this.txIndex.updateIndex(IndexOperation.Save, IndexType.TxHash, block)
+                  }
                   if (this.config.savePreimages && result.preimages !== undefined) {
                     await this.savePreimages(result.preimages)
                   }
@@ -784,14 +807,14 @@ export class VMExecution extends Execution {
                   }
 
                   if (hasParentStateRoot === true && backStepToHash !== undefined) {
-                    this.config.logger.warn(
+                    this.config.logger?.warn(
                       `${errorMsg}, backStepping vmHead to number=${backStepTo} hash=${short(
                         backStepToHash ?? 'na',
                       )} hasParentStateRoot=${short(backStepToRoot ?? 'na')}:\n${error}`,
                     )
                     await this.chain.blockchain.setIteratorHead('vm', backStepToHash)
                   } else {
-                    this.config.logger.error(
+                    this.config.logger?.error(
                       `${errorMsg}, couldn't back step to vmHead number=${backStepTo} hash=${short(
                         backStepToHash ?? 'na',
                       )} hasParentStateRoot=${hasParentStateRoot} backStepToRoot=${short(
@@ -822,9 +845,9 @@ export class VMExecution extends Execution {
                       },
                     }
                     writeFileSync(file, JSON.stringify(JSONDump, null, 2))
-                    this.config.logger.warn(`${errorMsg}:\n${error} payload saved to=${file}`)
+                    this.config.logger?.warn(`${errorMsg}:\n${error} payload saved to=${file}`)
                   } else {
-                    this.config.logger.warn(`${errorMsg}:\n${error}`)
+                    this.config.logger?.warn(`${errorMsg}:\n${error}`)
                   }
                 }
 
@@ -837,7 +860,7 @@ export class VMExecution extends Execution {
                 )
                 return actualExecuted
               } else {
-                this.config.logger.error(`VM execution failed with error`, error)
+                this.config.logger?.error(`VM execution failed with error`, error)
                 return null
               }
             })
@@ -858,15 +881,17 @@ export class VMExecution extends Execution {
               const tdAdd = this.config.execCommon.gteHardfork(Hardfork.Paris)
                 ? ''
                 : `td=${this.chain.blocks.td} `
-              ;(this.config.execCommon.gteHardfork(Hardfork.Paris)
-                ? this.config.logger.debug
-                : this.config.logger.info)(
-                `Executed blocks count=${numExecuted} first=${firstNumber} hash=${firstHash} ${tdAdd}${baseFeeAdd}hardfork=${this.hardfork} last=${lastNumber} hash=${lastHash} txs=${txCounter}`,
-              )
+
+              const msg = `Executed blocks count=${numExecuted} first=${firstNumber} hash=${firstHash} ${tdAdd}${baseFeeAdd}hardfork=${this.hardfork} last=${lastNumber} hash=${lastHash} txs=${txCounter}`
+              if (this.config.execCommon.gteHardfork(Hardfork.Paris)) {
+                this.config.logger?.debug(msg)
+              } else {
+                this.config.logger?.info(msg)
+              }
 
               await this.chain.update(false)
             } else {
-              this.config.logger.debug(
+              this.config.logger?.debug(
                 `No blocks executed past chain head hash=${short(endHeadBlock.hash())} number=${
                   endHeadBlock.header.number
                 }`,
@@ -888,11 +913,7 @@ export class VMExecution extends Execution {
    * Start execution
    */
   async start(): Promise<boolean> {
-    this._statsInterval = setInterval(
-      // eslint-disable-next-line @typescript-eslint/await-thenable
-      await this.stats.bind(this),
-      this.STATS_INTERVAL,
-    )
+    this._statsInterval = setInterval(await this.stats.bind(this), this.STATS_INTERVAL)
 
     if (this.running || !this.started) {
       return false
@@ -909,10 +930,10 @@ export class VMExecution extends Execution {
       this.config.execution &&
       vmHeadBlock.header.number < canonicalHead.header.number
     ) {
-      this.config.logger.info(`Starting execution run ${infoStr}`)
+      this.config.logger?.info(`Starting execution run ${infoStr}`)
       void this.run(true, true)
     } else {
-      this.config.logger.info(`Skipped execution run ${infoStr}`)
+      this.config.logger?.info(`Skipped execution run ${infoStr}`)
     }
     return true
   }
@@ -952,7 +973,7 @@ export class VMExecution extends Execution {
    * - Range of blocks, '5-10'
    */
   async executeBlocks(first: number, last: number, txHashes: string[]) {
-    this.config.logger.info('Preparing for block execution (debug mode, no services started)...')
+    this.config.logger?.info('Preparing for block execution (debug mode, no services started)...')
 
     const block = await this.chain.blockchain.getBlock(first)
     const startExecutionHardfork = this.config.execCommon.getHardforkBy({
@@ -960,9 +981,9 @@ export class VMExecution extends Execution {
       timestamp: block.header.timestamp,
     })
 
-    // Setup VM with verkle state manager if Osaka is active
+    // Setup VM with verkle state manager if Verkle is active
     if (
-      this.config.execCommon.hardforkGteHardfork(startExecutionHardfork, Hardfork.Osaka) &&
+      this.config.execCommon.hardforkGteHardfork(startExecutionHardfork, Hardfork.Verkle) &&
       this.config.statelessVerkle
     ) {
       await this.transitionToVerkle(block.header.stateRoot, true)
@@ -997,9 +1018,9 @@ export class VMExecution extends Execution {
           block.transactions.length
         } gasUsed=${res.gasUsed} time=${diffSec}secs`
         if (diffSec <= this.MAX_TOLERATED_BLOCK_TIME) {
-          this.config.logger.info(msg)
+          this.config.logger?.info(msg)
         } else {
-          this.config.logger.warn(msg)
+          this.config.logger?.warn(msg)
         }
       } else {
         let count = 0
@@ -1010,7 +1031,7 @@ export class VMExecution extends Execution {
           const txHash = bytesToHex(tx.hash())
           if (allTxs || txHashes.includes(txHash)) {
             const res = await runTx(vm, { block, tx })
-            this.config.logger.info(
+            this.config.logger?.info(
               `Executed tx hash=${txHash} gasUsed=${res.totalGasSpent} from block num=${blockNumber}`,
             )
             count += 1
@@ -1018,9 +1039,9 @@ export class VMExecution extends Execution {
         }
         if (count === 0) {
           if (!allTxs) {
-            this.config.logger.warn(`Block number ${first} contains no txs with provided hashes`)
+            this.config.logger?.warn(`Block number ${first} contains no txs with provided hashes`)
           } else {
-            this.config.logger.info(`Block has 0 transactions (no execution)`)
+            this.config.logger?.info(`Block has 0 transactions (no execution)`)
           }
         }
       }
@@ -1033,19 +1054,19 @@ export class VMExecution extends Execution {
       const deactivatedStats = { size: 0, reads: 0, hits: 0, writes: 0 }
       let stats
       stats = sm['_caches']?.account?.stats() ?? deactivatedStats
-      this.config.logger.info(
+      this.config.logger?.info(
         `Account cache stats size=${stats.size} reads=${stats.reads} hits=${stats.hits} writes=${stats.writes}`,
       )
       stats = sm['_caches']?.storage?.stats() ?? deactivatedStats
-      this.config.logger.info(
+      this.config.logger?.info(
         `Storage cache stats size=${stats.size} reads=${stats.reads} hits=${stats.hits} writes=${stats.writes}`,
       )
       stats = sm['_caches']?.code?.stats() ?? deactivatedStats
-      this.config.logger.info(
+      this.config.logger?.info(
         `Code cache stats size=${stats.size} reads=${stats.reads} hits=${stats.hits} writes=${stats.writes}`,
       )
       const tStats = sm['_trie'].database().stats()
-      this.config.logger.info(
+      this.config.logger?.info(
         `Trie cache stats size=${tStats.size} reads=${tStats.cache.reads} hits=${tStats.cache.hits} ` +
           `writes=${tStats.cache.writes} readsDB=${tStats.db.reads} hitsDB=${tStats.db.hits} writesDB=${tStats.db.writes}`,
       )

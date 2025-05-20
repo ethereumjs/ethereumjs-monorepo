@@ -1,5 +1,8 @@
+import { execSync, spawn } from 'node:child_process'
+import * as net from 'node:net'
+
 import { executionPayloadFromBeaconPayload } from '@ethereumjs/block'
-import { createBlockchain } from '@ethereumjs/blockchain'
+import { type Common } from '@ethereumjs/common'
 import { createBlob4844Tx, createFeeMarket1559Tx } from '@ethereumjs/tx'
 import {
   BIGINT_1,
@@ -12,26 +15,20 @@ import {
   getBlobs,
   randomBytes,
 } from '@ethereumjs/util'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import * as fs from 'fs/promises'
-import { loadKZG } from 'kzg-wasm'
-import { Level } from 'level'
-import { execSync, spawn } from 'node:child_process'
-import * as net from 'node:net'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import qs from 'qs'
 
-import { EthereumClient } from '../../src/client.js'
-import { Config } from '../../src/config.js'
-import { LevelDB } from '../../src/execution/level.js'
-import { RPCManager } from '../../src/rpc/index.js'
-import { Event } from '../../src/types.js'
+import { RPCManager } from '../../src/rpc/index.ts'
+import { Event } from '../../src/types.ts'
 
-import type { Common } from '@ethereumjs/common'
+import type { ChildProcessWithoutNullStreams } from 'child_process'
 import type { TransactionType, TxData, TxOptions } from '@ethereumjs/tx'
 import type { PrefixedHexString } from '@ethereumjs/util'
-import type { ChildProcessWithoutNullStreams } from 'child_process'
-import type { Client } from 'jayson/promise'
-
-const kzg = await loadKZG()
+import type { Client } from 'jayson/promise/index.js'
+import type { EthereumClient } from '../../src/client.ts'
+const kzg = new microEthKZG(trustedSetup)
 
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 // This function switches between the native web implementation and a nodejs implementation
@@ -39,7 +36,7 @@ export async function getEventSource(): Promise<typeof EventSource> {
   if (globalThis.EventSource !== undefined) {
     return EventSource
   } else {
-    return (await import('eventsource')).default as unknown as typeof EventSource
+    return (await import('eventsource')).EventSource
   }
 }
 
@@ -57,7 +54,7 @@ export async function waitForELOnline(client: Client): Promise<string> {
       console.log('Waiting for EL online...')
       const res = await client.request('web3_clientVersion', [])
       return res.result as string
-    } catch (e) {
+    } catch {
       await sleep(4000)
     }
   }
@@ -324,7 +321,7 @@ export const runBlobTx = async (
   const hashes = commitmentsToVersionedHashes(commitments)
 
   const sender = createAddressFromPrivateKey(pkey)
-  const txData: TxData[TransactionType.BlobEIP4844] = {
+  const txData: TxData[typeof TransactionType.BlobEIP4844] = {
     to,
     data: '0x',
     chainId: '0x1',
@@ -426,45 +423,6 @@ export const runBlobTxsFromFile = async (client: Client, path: string) => {
     txnHashes.push(res.result)
   }
   return txnHashes
-}
-
-export async function createInlineClient(
-  config: any,
-  common: any,
-  customGenesisState: any,
-  datadir: any = Config.DATADIR_DEFAULT,
-) {
-  config.events.setMaxListeners(50)
-  const chainDB = new Level<string | Uint8Array, string | Uint8Array>(
-    `${datadir}/${common.chainName()}/chainDB`,
-  )
-  const stateDB = new Level<string | Uint8Array, string | Uint8Array>(
-    `${datadir}/${common.chainName()}/stateDB`,
-  )
-  const metaDB = new Level<string | Uint8Array, string | Uint8Array>(
-    `${datadir}/${common.chainName()}/metaDB`,
-  )
-
-  const blockchain = await createBlockchain({
-    db: new LevelDB(chainDB),
-    genesisState: customGenesisState,
-    common: config.chainCommon,
-    hardforkByHeadBlockNumber: true,
-    validateBlocks: true,
-    validateConsensus: false,
-  })
-  config.chainCommon.setForkHashes(blockchain.genesisBlock.hash())
-  const inlineClient = await EthereumClient.create({
-    config,
-    blockchain,
-    chainDB,
-    stateDB,
-    metaDB,
-    genesisState: customGenesisState,
-  })
-  await inlineClient.open()
-  await inlineClient.start()
-  return inlineClient
 }
 
 export async function setupEngineUpdateRelay(client: EthereumClient, peerBeaconUrl: string) {

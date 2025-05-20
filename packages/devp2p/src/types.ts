@@ -1,8 +1,60 @@
-import type { DPT } from './dpt/index.js'
-import type { Protocol } from './protocol/protocol.js'
-import type { Common } from '@ethereumjs/common'
 import type { Socket } from 'net'
+import type { Common } from '@ethereumjs/common'
+import type { NestedUint8Array } from '@ethereumjs/rlp'
+import type { DPT } from './dpt/index.ts'
+import type { EthMessageCodes } from './protocol/eth.ts'
+import type { Protocol } from './protocol/protocol.ts'
+import type { SnapMessageCodes } from './protocol/snap.ts'
+import type { Peer } from './rlpx/peer.ts'
 
+export interface RLPxEvent {
+  'peer:added': [peer: Peer]
+  'peer:error': [peer: Peer, error: any]
+  'peer:removed': [peer: Peer, reason: any, disconnectWe: boolean | null] // disconnectWe indicates whether the disconnection was initiated by us or not
+  error: [error: Error]
+  close: undefined
+  listening: undefined
+}
+
+export interface PeerEvent {
+  error: [error: Error]
+  connect: undefined
+  close: [reason: any, disconnectWe: boolean | null] // disconnectWe indicates whether the disconnection was initiated by us or not
+}
+
+export interface ProtocolEvent {
+  message: [code: SnapMessageCodes | EthMessageCodes, payload: Uint8Array | NestedUint8Array]
+  status: {
+    chainId: Uint8Array | Uint8Array[]
+    td: Uint8Array
+    bestHash: Uint8Array
+    genesisHash: Uint8Array
+    forkId?: Uint8Array | Uint8Array[]
+  }
+}
+
+export interface KBucketEvent {
+  ping: [contacts: Contact[], contact: PeerInfo]
+  updated: [incumbent: Contact, selection: Contact]
+  added: [peer: PeerInfo]
+  removed: [peer: PeerInfo]
+}
+
+export interface DPTEvent {
+  listening: undefined
+  close: undefined
+  error: [error: Error]
+  'peer:added': [peer: PeerInfo]
+  'peer:new': [peer: PeerInfo]
+  'peer:removed': [peer: PeerInfo]
+}
+
+export interface ServerEvent {
+  listening: undefined
+  close: undefined
+  error: [error: Error]
+  peers: any[]
+}
 interface ProtocolConstructor {
   new (...args: any[]): Protocol
 }
@@ -14,21 +66,35 @@ export interface Capabilities {
   constructor: ProtocolConstructor
 }
 
-export enum DISCONNECT_REASON {
-  DISCONNECT_REQUESTED = 0x00,
-  NETWORK_ERROR = 0x01,
-  PROTOCOL_ERROR = 0x02,
-  USELESS_PEER = 0x03,
-  TOO_MANY_PEERS = 0x04,
-  ALREADY_CONNECTED = 0x05,
-  INCOMPATIBLE_VERSION = 0x06,
-  INVALID_IDENTITY = 0x07,
-  CLIENT_QUITTING = 0x08,
-  UNEXPECTED_IDENTITY = 0x09,
-  SAME_IDENTITY = 0x0a,
-  TIMEOUT = 0x0b,
-  SUBPROTOCOL_ERROR = 0x10,
-}
+export type DISCONNECT_REASON = (typeof DISCONNECT_REASON)[keyof typeof DISCONNECT_REASON]
+
+export const DISCONNECT_REASON = {
+  DISCONNECT_REQUESTED: 0x00,
+  NETWORK_ERROR: 0x01,
+  PROTOCOL_ERROR: 0x02,
+  USELESS_PEER: 0x03,
+  TOO_MANY_PEERS: 0x04,
+  ALREADY_CONNECTED: 0x05,
+  INCOMPATIBLE_VERSION: 0x06,
+  INVALID_IDENTITY: 0x07,
+  CLIENT_QUITTING: 0x08,
+  UNEXPECTED_IDENTITY: 0x09,
+  SAME_IDENTITY: 0x0a,
+  TIMEOUT: 0x0b,
+  SUBPROTOCOL_ERROR: 0x10,
+} as const
+
+// Create a reverse mapping: numeric value -> key name
+export const DisconnectReasonNames: { [key in DISCONNECT_REASON]: string } = Object.entries(
+  DISCONNECT_REASON,
+).reduce(
+  (acc, [key, value]) => {
+    acc[value as DISCONNECT_REASON] = key
+    return acc
+  },
+  {} as { [key in DISCONNECT_REASON]: string },
+)
+
 export type DNSOptions = {
   /**
    * ipv4 or ipv6 address of server to pass to native dns.setServers()
@@ -154,11 +220,12 @@ export interface DPTServerOptions {
   common?: Common
 }
 
-export enum ProtocolType {
-  ETH = 'eth',
-  LES = 'les',
-  SNAP = 'snap',
-}
+export type ProtocolType = (typeof ProtocolType)[keyof typeof ProtocolType]
+
+export const ProtocolType = {
+  ETH: 'eth',
+  SNAP: 'snap',
+} as const
 
 export interface KBucketOptions {
   /**

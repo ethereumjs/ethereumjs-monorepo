@@ -1,7 +1,8 @@
 import { Account, createAddressFromString, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createEVM } from '../src/index.js'
+import { EVMErrorTypeString } from '../src/errors.ts'
+import { createEVM } from '../src/index.ts'
 
 const PUSH1 = '60'
 const STOP = '00'
@@ -34,7 +35,7 @@ describe('VM.runCode: initial program counter', () => {
       try {
         const result = await evm.runCode!(runCodeArgs)
         if (testData.resultPC !== undefined) {
-          assert.equal(
+          assert.strictEqual(
             result.runState?.programCounter,
             testData.resultPC,
             `should start the execution at the specified pc or 0, testCases[${i}]`,
@@ -46,17 +47,17 @@ describe('VM.runCode: initial program counter', () => {
 
       if (testData.error !== undefined) {
         err = err?.message ?? 'no error thrown'
-        assert.equal(err, testData.error, 'error message should match')
+        assert.strictEqual(err, testData.error, 'error message should match')
         err = false
       }
 
-      assert.ok(err === false || err === undefined)
+      assert.isTrue(err === false || err === undefined)
     }
   })
 })
 
 describe('VM.runCode: interpreter', () => {
-  it('should return a EvmError as an exceptionError on the result', async () => {
+  it('should return a EVMError as an exceptionError on the result', async () => {
     const evm = await createEVM()
 
     const INVALID_opcode = 'fe'
@@ -68,14 +69,14 @@ describe('VM.runCode: interpreter', () => {
     let result: any
     try {
       result = await evm.runCode!(runCodeArgs)
-    } catch (e: any) {
+    } catch {
       assert.fail('should not throw error')
     }
-    assert.equal(result!.exceptionError!.errorType, 'EvmError')
-    assert.ok(result!.exceptionError!.error.includes('invalid opcode'))
+    assert.strictEqual(result?.exceptionError?.errorType, EVMErrorTypeString)
+    assert.isTrue(result?.exceptionError?.error.includes('invalid opcode'))
   })
 
-  it('should throw on non-EvmError', async () => {
+  it('should throw on non-EVMError', async () => {
     const evm = await createEVM()
     // NOTE: due to now throwing on `getStorage` if account does not exist
     // this now means that if `runCode` is called and the address it runs on (default: zero address)
@@ -98,7 +99,7 @@ describe('VM.runCode: interpreter', () => {
       await evm.runCode!(runCodeArgs)
       assert.fail('should throw error')
     } catch (e: any) {
-      assert.ok(e.toString().includes('Test'), 'error thrown')
+      assert.isTrue(e.toString().includes('Test'), 'error thrown')
     }
   })
 })
@@ -116,7 +117,7 @@ describe('VM.runCode: RunCodeOptions', () => {
       await evm.runCode!(runCodeArgs)
       assert.fail('should not accept a negative call value')
     } catch (err: any) {
-      assert.ok(
+      assert.isTrue(
         err.message.includes('value field cannot be negative'),
         'throws on negative call value',
       )

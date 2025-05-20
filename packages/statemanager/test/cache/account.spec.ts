@@ -1,15 +1,15 @@
 import { Account, Address, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { AccountCache, CacheType } from '../../src/cache/index.js'
-import { createAccountWithDefaults } from '../util.js'
+import { AccountCache, CacheType } from '../../src/cache/index.ts'
+import { createAccountWithDefaults } from '../util.ts'
 
 describe('Account Cache: initialization', () => {
   for (const type of [CacheType.LRU, CacheType.ORDERED_MAP]) {
     it(`should initialize`, async () => {
       const cache = new AccountCache({ size: 100, type })
 
-      assert.equal(cache._checkpoints, 0, 'initializes given trie')
+      assert.strictEqual(cache._checkpoints, 0, 'initializes given trie')
     })
   }
 })
@@ -24,25 +24,25 @@ describe('Account Cache: put and get account', () => {
 
     it('should return undefined for CacheElement if account not present in the cache', async () => {
       const elem = cache.get(addr)
-      assert.ok(elem === undefined)
+      assert.isTrue(elem === undefined)
     })
 
     it(`should put account`, async () => {
       cache.put(addr, acc)
       const elem = cache.get(addr)
-      assert.ok(elem !== undefined && elem.accountRLP && equalsBytes(elem.accountRLP, accRLP))
+      assert.isTrue(elem !== undefined && elem.accountRLP && equalsBytes(elem.accountRLP, accRLP))
     })
 
     it(`should flush`, async () => {
       const items = cache.flush()
-      assert.equal(items.length, 1)
+      assert.strictEqual(items.length, 1)
     })
 
     it(`should delete account from cache`, async () => {
       cache.del(addr)
 
       const elem = cache.get(addr)
-      assert.ok(elem !== undefined && elem.accountRLP === undefined)
+      assert.isTrue(elem !== undefined && elem.accountRLP === undefined)
     })
   }
 })
@@ -64,14 +64,14 @@ describe('Account Cache: checkpointing', () => {
       cache.put(addr, updatedAcc)
 
       let elem = cache.get(addr)
-      assert.ok(
+      assert.isTrue(
         elem !== undefined && elem.accountRLP && equalsBytes(elem.accountRLP, updatedAccRLP),
       )
 
       cache.revert()
 
       elem = cache.get(addr)
-      assert.ok(elem !== undefined && elem.accountRLP && equalsBytes(elem.accountRLP, accRLP))
+      assert.isTrue(elem !== undefined && elem.accountRLP && equalsBytes(elem.accountRLP, accRLP))
     })
 
     it(`should use outer revert`, async () => {
@@ -85,14 +85,14 @@ describe('Account Cache: checkpointing', () => {
       cache.commit()
       cache.revert()
       const accCmp = cache.get(addr)
-      assert.ok(accCmp === undefined)
+      assert.isUndefined(accCmp)
     })
 
     it(`cache clearing`, async () => {
       const cache = new AccountCache({ size: 100, type: CacheType.LRU })
       cache.put(addr, acc)
       cache.clear()
-      assert.equal(cache.size(), 0, 'should delete cache objects with clear=true')
+      assert.strictEqual(cache.size(), 0, 'should delete cache objects with clear=true')
     })
   }
 })

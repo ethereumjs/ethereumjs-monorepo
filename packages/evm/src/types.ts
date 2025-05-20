@@ -1,20 +1,22 @@
-import { zeros } from '@ethereumjs/util'
-
-import type { EOFContainer } from './eof/container.js'
-import type { EvmError } from './exceptions.js'
-import type { InterpreterStep, RunState } from './interpreter.js'
-import type { Message } from './message.js'
-import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas.js'
-import type { OpHandler } from './opcodes/index.js'
-import type { CustomPrecompile } from './precompiles/index.js'
-import type { PrecompileFunc } from './precompiles/types.js'
 import type {
-  AccessWitnessInterface,
+  BinaryTreeAccessWitnessInterface,
   Common,
   ParamsDict,
   StateManagerInterface,
+  VerkleAccessWitnessInterface,
 } from '@ethereumjs/common'
-import type { Account, Address, AsyncEventEmitter, PrefixedHexString } from '@ethereumjs/util'
+import type { Account, Address, PrefixedHexString } from '@ethereumjs/util'
+import type { EventEmitter } from 'eventemitter3'
+import type { BinaryTreeAccessWitness } from './binaryTreeAccessWitness.ts'
+import type { EOFContainer } from './eof/container.ts'
+import type { EVMError } from './errors.ts'
+import type { InterpreterStep, RunState } from './interpreter.ts'
+import type { Message } from './message.ts'
+import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas.ts'
+import type { OpHandler } from './opcodes/index.ts'
+import type { CustomPrecompile } from './precompiles/index.ts'
+import type { PrecompileFunc } from './precompiles/types.ts'
+import type { VerkleAccessWitness } from './verkleAccessWitness.ts'
 
 export type DeleteOpcode = {
   opcode: number
@@ -29,6 +31,16 @@ export type AddOpcode = {
 }
 
 export type CustomOpcode = AddOpcode | DeleteOpcode
+
+// Typeguard
+export function isAddOpcode(customOpcode: CustomOpcode): customOpcode is AddOpcode {
+  return (
+    'opcode' in customOpcode &&
+    'opcodeName' in customOpcode &&
+    'baseFee' in customOpcode &&
+    'logicFunction' in customOpcode
+  )
+}
 
 /**
  * Base options for the `EVM.runCode()` / `EVM.runCall()` method.
@@ -85,7 +97,7 @@ interface EVMRunOpts {
   /**
    * Versioned hashes for each blob in a blob transaction
    */
-  blobVersionedHashes?: Uint8Array[]
+  blobVersionedHashes?: PrefixedHexString[]
 }
 
 export interface EVMRunCodeOpts extends EVMRunOpts {
@@ -133,7 +145,7 @@ export interface EVMRunCallOpts extends EVMRunOpts {
    */
   message?: Message
 
-  accessWitness?: AccessWitnessInterface
+  accessWitness?: VerkleAccessWitnessInterface | BinaryTreeAccessWitnessInterface
 }
 
 interface NewContractEvent {
@@ -142,7 +154,7 @@ interface NewContractEvent {
   code: Uint8Array
 }
 
-export type EVMEvents = {
+export type EVMEvent = {
   newContract: (data: NewContractEvent, resolve?: (result?: any) => void) => void
   beforeMessage: (data: Message, resolve?: (result?: any) => void) => void
   afterMessage: (data: EVMResult, resolve?: (result?: any) => void) => void
@@ -170,7 +182,11 @@ export interface EVMInterface {
   precompiles: Map<string, PrecompileFunc>
   runCall(opts: EVMRunCallOpts): Promise<EVMResult>
   runCode(opts: EVMRunCodeOpts): Promise<ExecResult>
-  events?: AsyncEventEmitter<EVMEvents>
+  events?: EventEmitter<EVMEvent>
+  verkleAccessWitness?: VerkleAccessWitness
+  systemVerkleAccessWitness?: VerkleAccessWitness
+  binaryTreeAccessWitness?: BinaryTreeAccessWitness
+  systemBinaryTreeAccessWitness?: BinaryTreeAccessWitness
 }
 
 export type EVMProfilerOpts = {
@@ -189,20 +205,19 @@ export interface EVMOpts {
    *
    * - [EIP-1153](https://eips.ethereum.org/EIPS/eip-1153) - Transient storage opcodes (Cancun)
    * - [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) - Fee market change for ETH 1.0 chain
-   * - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS precompiles (removed in v4.0.0, see latest v3 release)
+   * - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - Precompile for BLS12-381 curve operations (Prague)
    * - [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565) - ModExp gas cost
-   * - [EIP-2718](https://eips.ethereum.org/EIPS/eip-2565) - Transaction Types
+   * - [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718) - Typed Transaction Envelope
    * - [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) - Serve historical block hashes from state (Prague)
    * - [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929) - gas cost increases for state access opcodes
    * - [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930) - Optional access list tx type
+   * - [EIP-3074](https://eips.ethereum.org/EIPS/eip-3074) - AUTH and AUTHCALL opcodes
    * - [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198) - Base fee Opcode
    * - [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529) - Reduction in refunds
-   * - [EIP-3540](https://eips.ethereum.org/EIPS/eip-3541) - EVM Object Format (EOF) v1 (`outdated`)
    * - [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541) - Reject new contracts starting with the 0xEF byte
    * - [EIP-3554](https://eips.ethereum.org/EIPS/eip-3554) - Difficulty Bomb Delay to December 2021 (only PoW networks)
    * - [EIP-3607](https://eips.ethereum.org/EIPS/eip-3607) - Reject transactions from senders with deployed code
    * - [EIP-3651](https://eips.ethereum.org/EIPS/eip-3651) - Warm COINBASE (Shanghai)
-   * - [EIP-3670](https://eips.ethereum.org/EIPS/eip-3670) - EOF - Code Validation (`outdated`)
    * - [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675) - Upgrade consensus to Proof-of-Stake
    * - [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855) - Push0 opcode (Shanghai)
    * - [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) - Limit and meter initcode (Shanghai)
@@ -210,17 +225,20 @@ export interface EVMOpts {
    * - [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399) - Supplant DIFFICULTY opcode with PREVRANDAO (Merge)
    * - [EIP-4788](https://eips.ethereum.org/EIPS/eip-4788) - Beacon block root in the EVM (Cancun)
    * - [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) - Shard Blob Transactions (Cancun)
-   * - [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) - EOA code transactions (Prague) (`outdated`)
-   * - [EIP-7709](https://eips.ethereum.org/EIPS/eip-7709) - Read BLOCKHASH from storage and update cost (Osaka)
    * - [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) - Beacon chain push withdrawals as operations (Shanghai)
    * - [EIP-5133](https://eips.ethereum.org/EIPS/eip-5133) - Delaying Difficulty Bomb to mid-September 2022 (Gray Glacier)
    * - [EIP-5656](https://eips.ethereum.org/EIPS/eip-5656) - MCOPY - Memory copying instruction (Cancun)
    * - [EIP-6110](https://eips.ethereum.org/EIPS/eip-6110) - Supply validator deposits on chain (Prague)
    * - [EIP-6780](https://eips.ethereum.org/EIPS/eip-6780) - SELFDESTRUCT only in same transaction (Cancun)
-   * - [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002) - Execution layer triggerable withdrawals (Prague)
-   * - [EIP-7251](https://eips.ethereum.org/EIPS/eip-7251) - Execution layer triggerable validator consolidations (Prague)
+   * - [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002) - Execution layer triggerable exits (Prague)
+   * - [EIP-7251](https://eips.ethereum.org/EIPS/eip-7251) - Increase the MAX_EFFECTIVE_BALANCE (Prague)
    * - [EIP-7516](https://eips.ethereum.org/EIPS/eip-7516) - BLOBBASEFEE opcode (Cancun)
+   * - [EIP-7623](https://eips.ethereum.org/EIPS/eip-7623) - Increase calldata cost (Prague)
    * - [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) - General purpose execution layer requests (Prague)
+   * - [EIP-7691](https://eips.ethereum.org/EIPS/eip-7691) - Blob throughput increase (Prague)
+   * - [EIP-7692](https://eips.ethereum.org/EIPS/eip-7692) - EVM Object Format (EOF) v1 (`experimental`)
+   * - [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) - Set EOA account code (Prague)
+   * - [EIP-7709](https://eips.ethereum.org/EIPS/eip-7709) - Read BLOCKHASH from storage and update cost (Verkle)
    *
    * *Annotations:*
    *
@@ -255,7 +273,7 @@ export interface EVMOpts {
    *
    * ```ts
    * const params = JSON.parse(JSON.stringify(paramsEVM))
-   * params['1679']['ecAddGas'] = 100 // 150
+   * params['1679']['bn254AddGas'] = 100 // 150
    * ```
    */
   params?: ParamsDict
@@ -291,8 +309,8 @@ export interface EVMOpts {
   customPrecompiles?: CustomPrecompile[]
 
   /**
-   * For the EIP-2537 BLS Precompiles, the native JS `@noble/curves`
-   * https://github.com/paulmillr/noble-curves BLS12-381 curve implementation
+   * For the EIP-2537 BLS Precompiles, the native JS `ethereum-cryptography` (`@noble/curves`)
+   * https://github.com/ethereum/js-ethereum-cryptography BLS12-381 curve implementation
    * is used (see `noble.ts` file in the `precompiles/bls12_381/` folder).
    *
    * To use an alternative implementation this option can be used by passing
@@ -313,8 +331,8 @@ export interface EVMOpts {
   bls?: EVMBLSInterface
 
   /**
-   * For the EIP-196/EIP-197 BN254 (alt_BN128) EC precompiles, the native JS `@noble/curves`
-   * https://github.com/paulmillr/noble-curves BN254 curve implementation
+   * For the EIP-196/EIP-197 BN254 (alt_BN128) EC precompiles, the native JS `ethereum-cryptography`
+   * (`@noble/curves`) https://github.com/ethereum/js-ethereum-cryptography BN254 curve implementation
    * is used (see `noble.ts` file in the `precompiles/bn254/` folder).
    *
    * To use an alternative implementation this option can be used by passing
@@ -390,7 +408,7 @@ export interface ExecResult {
   /**
    * Description of the exception, if any occurred
    */
-  exceptionError?: EvmError
+  exceptionError?: EVMError
   /**
    * Amount of gas left
    */
@@ -494,7 +512,7 @@ export class EVMMockBlockchain implements EVMMockBlockchainInterface {
   async getBlock() {
     return {
       hash() {
-        return zeros(32)
+        return new Uint8Array(32)
       },
     }
   }

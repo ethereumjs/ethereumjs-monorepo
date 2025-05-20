@@ -2,7 +2,7 @@ import { createBlock } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
-import { createLegacyTx, createTxFromTxData } from '@ethereumjs/tx'
+import { createLegacyTx, createTx } from '@ethereumjs/tx'
 import {
   Account,
   createAddressFromPrivateKey,
@@ -13,9 +13,8 @@ import {
 import { runBlock } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
-import { createClient, createManager, getRPCClient, startRPC } from '../helpers.js'
+import { createClient, createManager, getRPCClient, startRPC } from '../helpers.ts'
 
-import type { FullEthereumService } from '../../../src/service/index.js'
 import type { Block } from '@ethereumjs/block'
 
 const method = 'eth_getTransactionCount'
@@ -34,7 +33,7 @@ describe(method, () => {
     const manager = createManager(client)
     const rpc = getRPCClient(startRPC(manager.getMethods()))
 
-    const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
+    const { execution } = client.service
     assert.notEqual(execution, undefined, 'should have valid execution')
     const { vm } = execution
 
@@ -47,7 +46,7 @@ describe(method, () => {
 
     // verify nonce is 0
     let res = await rpc.request(method, [address.toString(), 'latest'])
-    assert.equal(res.result, '0x0', 'should return the correct nonce (0)')
+    assert.strictEqual(res.result, '0x0', 'should return the correct nonce (0)')
 
     // construct block with tx
     const tx = createLegacyTx({ gasLimit: 53000 }, { common, freeze: false })
@@ -74,19 +73,19 @@ describe(method, () => {
 
     // verify nonce increments after a tx
     res = await rpc.request(method, [address.toString(), 'latest'])
-    assert.equal(res.result, '0x1', 'should return the correct nonce (1)')
+    assert.strictEqual(res.result, '0x1', 'should return the correct nonce (1)')
 
     // call with nonexistent account
     res = await rpc.request(method, [`0x${'11'.repeat(20)}`, 'latest'])
-    assert.equal(res.result, `0x0`, 'should return 0x0 for nonexistent account')
-  }, 40000)
+    assert.strictEqual(res.result, `0x0`, 'should return 0x0 for nonexistent account')
+  })
 
   it('call with pending block argument', async () => {
     const blockchain = await createBlockchain()
 
     const client = await createClient({ blockchain, includeVM: true })
     const manager = createManager(client)
-    const service = client.services.find((s) => s.name === 'eth') as FullEthereumService
+    const service = client.service
     const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const pk = hexToBytes('0x266682876da8fd86410d001ec33c7c281515aeeb640d175693534062e2599238')
@@ -95,7 +94,7 @@ describe(method, () => {
     const account = await service.execution.vm.stateManager.getAccount(address)
     account!.balance = 0xffffffffffffffn
     await service.execution.vm.stateManager.putAccount(address, account!)
-    const tx = createTxFromTxData({
+    const tx = createTx({
       to: randomBytes(20),
       value: 1,
       maxFeePerGas: 0xffffff,
@@ -109,6 +108,6 @@ describe(method, () => {
     await service.txPool.add(tx, true)
 
     const res = await rpc.request(method, [address.toString(), 'pending'])
-    assert.equal(res.result, '0x1')
-  }, 40000)
+    assert.strictEqual(res.result, '0x1')
+  })
 })

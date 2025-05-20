@@ -1,6 +1,7 @@
 // Adapted from - https://github.com/Inphi/eip4844-interop/blob/master/blob_tx_generator/blob.js
 import { createBlob4844Tx } from '@ethereumjs/tx'
 import {
+  Units,
   blobsToCommitments,
   bytesToHex,
   commitmentsToVersionedHashes,
@@ -8,8 +9,9 @@ import {
   hexToBytes,
   randomBytes,
 } from '@ethereumjs/util'
-import { Client } from 'jayson/promise'
-import { loadKZG } from 'kzg-wasm'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { Client } from 'jayson/promise/index.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 
 import type { TransactionType, TxData } from '@ethereumjs/tx'
 
@@ -25,9 +27,7 @@ const BLOB_SIZE = BYTES_PER_FIELD_ELEMENT * FIELD_ELEMENTS_PER_BLOB
 
 const pkey = hexToBytes('0x45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8')
 const sender = createAddressFromPrivateKey(pkey)
-
-const kzg = await loadKZG()
-
+const kzg = new microEthKZG(trustedSetup)
 function get_padded(data: any, blobs_len: number) {
   const pData = new Uint8Array(blobs_len * USEFUL_BYTES_PER_BLOB)
   const dataLen = (data as Uint8Array).byteLength
@@ -96,12 +96,12 @@ async function run(data: any) {
     await sleep(1000)
   }
 
-  const blobs = get_blobs(data)
+  const blobs = get_blobs(data).map((blob) => bytesToHex(blob))
   const commitments = blobsToCommitments(kzg, blobs)
   const hashes = commitmentsToVersionedHashes(commitments)
 
   const account = createAddressFromPrivateKey(randomBytes(32))
-  const txData: TxData[TransactionType.BlobEIP4844] = {
+  const txData: TxData[typeof TransactionType.BlobEIP4844] = {
     to: account.toString(),
     data: '0x',
     chainId: '0x1',
@@ -115,7 +115,7 @@ async function run(data: any) {
     gasLimit: undefined,
   }
 
-  txData.maxFeePerGas = BigInt(1000000000)
+  txData.maxFeePerGas = Units.gwei(1)
   txData.maxPriorityFeePerGas = BigInt(100000000)
   txData.maxFeePerBlobGas = BigInt(1000)
   txData.gasLimit = BigInt(28000000)
@@ -165,8 +165,8 @@ async function run(data: any) {
     return false
   }
 
-  const expected_kzgs = bytesToHex(blobTx.kzgCommitments![0])
-  if (blob_kzg !== bytesToHex(blobTx.kzgCommitments![0])) {
+  const expected_kzgs = blobTx.kzgCommitments![0]
+  if (blob_kzg !== blobTx.kzgCommitments![0]) {
     console.log(`Unexpected KZG commitment: expected ${expected_kzgs}, got ${blob_kzg}`)
     return false
   } else {

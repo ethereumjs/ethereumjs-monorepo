@@ -11,22 +11,24 @@ import {
   Address,
   BIGINT_0,
   BIGINT_2,
+  EthereumJSErrorWithoutCode,
   bytesToHex,
   bytesToUnprefixedHex,
   equalsBytes,
   hexToBytes,
 } from '@ethereumjs/util'
 
-import { Heap } from '../ext/qheap.js'
+import { Heap } from '../ext/qheap.ts'
 
-import type { Config } from '../config.js'
-import type { QHeap } from '../ext/qheap.js'
-import type { Peer } from '../net/peer/peer.js'
-import type { PeerPool } from '../net/peerpool.js'
-import type { FullEthereumService } from './fullethereumservice.js'
 import type { Block } from '@ethereumjs/block'
 import type { FeeMarket1559Tx, LegacyTx, TypedTransaction } from '@ethereumjs/tx'
+import type { PrefixedHexString } from '@ethereumjs/util'
 import type { VM } from '@ethereumjs/vm'
+import type { Config } from '../config.ts'
+import type { QHeap } from '../ext/qheap.ts'
+import type { Peer } from '../net/peer/peer.ts'
+import type { PeerPool } from '../net/peerpool.ts'
+import type { FullEthereumService } from './fullethereumservice.ts'
 
 // Configuration constants
 const MIN_GAS_PRICE_BUMP_PERCENT = 10
@@ -102,6 +104,10 @@ export class TxPool {
    * Maps an address to a `TxPoolObject`
    */
   public pool: Map<UnprefixedAddress, TxPoolObject[]>
+  public blobsAndProofsByHash: Map<
+    PrefixedHexString,
+    { blob: PrefixedHexString; proof: PrefixedHexString }
+  >
 
   /**
    * The number of txs currently in the pool
@@ -167,6 +173,10 @@ export class TxPool {
     this.service = options.service
 
     this.pool = new Map<UnprefixedAddress, TxPoolObject[]>()
+    this.blobsAndProofsByHash = new Map<
+      PrefixedHexString,
+      { blob: PrefixedHexString; proof: PrefixedHexString }
+    >()
     this.txsInPool = 0
     this.handled = new Map<UnprefixedHash, HandledObject>()
     this.knownByPeer = new Map<PeerId, SentObject[]>()
@@ -199,7 +209,7 @@ export class TxPool {
       this.POOLED_STORAGE_TIME_LIMIT * 1000 * 60,
     )
 
-    if (this.config.logger.isInfoEnabled()) {
+    if (this.config.logger?.isInfoEnabled() === true) {
       // Only turn on txPool stats calculator if log level is info or above
       // since all stats calculator does is print `info` logs
       this._logInterval = setInterval(this._logPoolStats.bind(this), this.LOG_STATISTICS_INTERVAL)
@@ -237,7 +247,7 @@ export class TxPool {
       existingTxGasPrice.maxFee +
       (existingTxGasPrice.maxFee * BigInt(MIN_GAS_PRICE_BUMP_PERCENT)) / BigInt(100)
     if (newGasPrice.tip < minTipCap || newGasPrice.maxFee < minFeeCap) {
-      throw new Error(
+      throw EthereumJSErrorWithoutCode(
         `replacement gas too low, got tip ${newGasPrice.tip}, min: ${minTipCap}, got fee ${newGasPrice.maxFee}, min: ${minFeeCap}`,
       )
     }
@@ -247,7 +257,7 @@ export class TxPool {
         existingTx.maxFeePerBlobGas +
         (existingTx.maxFeePerBlobGas * BigInt(MIN_GAS_PRICE_BUMP_PERCENT)) / BigInt(100)
       if (addedTx.maxFeePerBlobGas < minblobGasFee) {
-        throw new Error(
+        throw EthereumJSErrorWithoutCode(
           `replacement blob gas too low, got: ${addedTx.maxFeePerBlobGas}, min: ${minblobGasFee}`,
         )
       }
@@ -260,10 +270,10 @@ export class TxPool {
    */
   private async validate(tx: TypedTransaction, isLocalTransaction: boolean = false) {
     if (!tx.isSigned()) {
-      throw new Error('Attempting to add tx to txpool which is not signed')
+      throw EthereumJSErrorWithoutCode('Attempting to add tx to txpool which is not signed')
     }
     if (tx.data.length > TX_MAX_DATA_SIZE) {
-      throw new Error(
+      throw EthereumJSErrorWithoutCode(
         `Tx is too large (${tx.data.length} bytes) and exceeds the max data size of ${TX_MAX_DATA_SIZE} bytes`,
       )
     }
@@ -274,11 +284,13 @@ export class TxPool {
     if (!isLocalTransaction) {
       const txsInPool = this.txsInPool
       if (txsInPool >= MAX_POOL_SIZE) {
-        throw new Error('Cannot add tx: pool is full')
+        throw EthereumJSErrorWithoutCode('Cannot add tx: pool is full')
       }
       // Local txs are not checked against MIN_GAS_PRICE
       if (currentTip < MIN_GAS_PRICE) {
-        throw new Error(`Tx does not pay the minimum gas price of ${MIN_GAS_PRICE}`)
+        throw EthereumJSErrorWithoutCode(
+          `Tx does not pay the minimum gas price of ${MIN_GAS_PRICE}`,
+        )
       }
     }
     const senderAddress = tx.getSenderAddress()
@@ -286,7 +298,7 @@ export class TxPool {
     const inPool = this.pool.get(sender)
     if (inPool) {
       if (!isLocalTransaction && inPool.length >= MAX_TXS_PER_ACCOUNT) {
-        throw new Error(
+        throw EthereumJSErrorWithoutCode(
           `Cannot add tx for ${senderAddress}: already have max amount of txs for this account`,
         )
       }
@@ -294,7 +306,9 @@ export class TxPool {
       const existingTxn = inPool.find((poolObj) => poolObj.tx.nonce === tx.nonce)
       if (existingTxn) {
         if (equalsBytes(existingTxn.tx.hash(), tx.hash())) {
-          throw new Error(`${bytesToHex(tx.hash())}: this transaction is already in the TxPool`)
+          throw EthereumJSErrorWithoutCode(
+            `${bytesToHex(tx.hash())}: this transaction is already in the TxPool`,
+          )
         }
         this.validateTxGasBump(existingTxn.tx, tx)
       }
@@ -302,13 +316,13 @@ export class TxPool {
     const block = await this.service.chain.getCanonicalHeadHeader()
     if (typeof block.baseFeePerGas === 'bigint' && block.baseFeePerGas !== BIGINT_0) {
       if (currentGasPrice.maxFee < block.baseFeePerGas / BIGINT_2 && !isLocalTransaction) {
-        throw new Error(
+        throw EthereumJSErrorWithoutCode(
           `Tx cannot pay basefee of ${block.baseFeePerGas}, have ${currentGasPrice.maxFee} (not within 50% range of current basefee)`,
         )
       }
     }
     if (tx.gasLimit > block.gasLimit) {
-      throw new Error(
+      throw EthereumJSErrorWithoutCode(
         `Tx gaslimit of ${tx.gasLimit} exceeds block gas limit of ${block.gasLimit} (exceeds last block gas limit)`,
       )
     }
@@ -322,13 +336,13 @@ export class TxPool {
       account = new Account()
     }
     if (account.nonce > tx.nonce) {
-      throw new Error(
+      throw EthereumJSErrorWithoutCode(
         `0x${sender} tries to send a tx with nonce ${tx.nonce}, but account has nonce ${account.nonce} (tx nonce too low)`,
       )
     }
     const minimumBalance = tx.value + currentGasPrice.maxFee * tx.gasLimit
     if (account.balance < minimumBalance) {
-      throw new Error(
+      throw EthereumJSErrorWithoutCode(
         `0x${sender} does not have enough balance to cover transaction costs, need ${minimumBalance}, but have ${account.balance} (insufficient balance)`,
       )
     }
@@ -371,11 +385,39 @@ export class TxPool {
         this.config.metrics?.feeMarketEIP1559TxGauge?.inc()
       }
       if (isBlob4844Tx(tx)) {
+        // add to blobs and proofs cache
+        if (tx.blobs !== undefined && tx.kzgProofs !== undefined) {
+          for (const [i, versionedHash] of tx.blobVersionedHashes.entries()) {
+            const blob = tx.blobs![i]
+            const proof = tx.kzgProofs![i]
+            this.blobsAndProofsByHash.set(versionedHash, { blob, proof })
+          }
+          this.pruneBlobsAndProofsCache()
+        }
+
         this.config.metrics?.blobEIP4844TxGauge?.inc()
       }
     } catch (e) {
       this.handled.set(hash, { address, added, error: e as Error })
       throw e
+    }
+  }
+
+  pruneBlobsAndProofsCache() {
+    const blobGasLimit = this.config.chainCommon.param('maxBlobGasPerBlock')
+    const blobGasPerBlob = this.config.chainCommon.param('blobGasPerBlob')
+    const allowedBlobsPerBlock = Number(blobGasLimit / blobGasPerBlob)
+
+    const pruneLength =
+      this.blobsAndProofsByHash.size - allowedBlobsPerBlock * this.config.blobsAndProofsCacheBlocks
+    let pruned = 0
+    // since keys() is sorted by insertion order this prunes the oldest data in cache
+    for (const versionedHash of this.blobsAndProofsByHash.keys()) {
+      if (pruned >= pruneLength) {
+        break
+      }
+      this.blobsAndProofsByHash.delete(versionedHash)
+      pruned++
     }
   }
 
@@ -564,7 +606,7 @@ export class TxPool {
    */
   async handleAnnouncedTxs(txs: TypedTransaction[], peer: Peer, peerPool: PeerPool) {
     if (!this.running || txs.length === 0) return
-    this.config.logger.debug(`TxPool: received new transactions number=${txs.length}`)
+    this.config.logger?.debug(`TxPool: received new transactions number=${txs.length}`)
     this.addToKnownByPeer(
       txs.map((tx) => tx.hash()),
       peer,
@@ -578,7 +620,7 @@ export class TxPool {
         newTxHashes[1].push(tx.serialize().byteLength)
         newTxHashes[2].push(tx.hash())
       } catch (error: any) {
-        this.config.logger.debug(
+        this.config.logger?.debug(
           `Error adding tx to TxPool: ${error.message} (tx hash: ${bytesToHex(tx.hash())})`,
         )
       }
@@ -612,11 +654,11 @@ export class TxPool {
 
     if (reqHashes.length === 0) return
 
-    this.config.logger.debug(`TxPool: received new tx hashes number=${reqHashes.length}`)
+    this.config.logger?.debug(`TxPool: received new tx hashes number=${reqHashes.length}`)
 
     const reqHashesStr: UnprefixedHash[] = reqHashes.map(bytesToUnprefixedHex)
     this.pending = this.pending.concat(reqHashesStr)
-    this.config.logger.debug(
+    this.config.logger?.debug(
       `TxPool: requesting txs number=${reqHashes.length} pending=${this.pending.length}`,
     )
     const getPooledTxs = await peer.eth?.getPooledTransactions({
@@ -630,14 +672,14 @@ export class TxPool {
       return
     }
     const [_, txs] = getPooledTxs
-    this.config.logger.debug(`TxPool: received requested txs number=${txs.length}`)
+    this.config.logger?.debug(`TxPool: received requested txs number=${txs.length}`)
 
     const newTxHashes: [number[], number[], Uint8Array[]] = [[], [], []] as any
     for (const tx of txs) {
       try {
         await this.add(tx)
       } catch (error: any) {
-        this.config.logger.debug(
+        this.config.logger?.debug(
           `Error adding tx to TxPool: ${error.message} (tx hash: ${bytesToHex(tx.hash())})`,
         )
       }
@@ -741,7 +783,7 @@ export class TxPool {
         tip: tx.maxPriorityFeePerGas,
       }
     } else {
-      throw new Error(`tx of type ${(tx as TypedTransaction).type} unknown`)
+      throw EthereumJSErrorWithoutCode(`tx of type ${(tx as TypedTransaction).type} unknown`)
     }
   }
 
@@ -841,7 +883,7 @@ export class TxPool {
         byNonce.set(address, [])
       }
     }
-    this.config.logger.info(
+    this.config.logger?.info(
       `txsByPriceAndNonce selected txs=${txs.length}, skipped byNonce=${skippedStats.byNonce} byPrice=${skippedStats.byPrice} byBlobsLimit=${skippedStats.byBlobsLimit}`,
     )
     return txs
@@ -855,7 +897,7 @@ export class TxPool {
     clearInterval(this._cleanupInterval as NodeJS.Timeout)
     clearInterval(this._logInterval as NodeJS.Timeout)
     this.running = false
-    this.config.logger.info('TxPool stopped.')
+    this.config.logger?.info('TxPool stopped.')
     return true
   }
 
@@ -903,13 +945,13 @@ export class TxPool {
         handlederrors++
       }
     }
-    this.config.logger.info(
+    this.config.logger?.info(
       `TxPool Statistics txs=${this.txsInPool} senders=${this.pool.size} peers=${this.service.pool.peers.length}`,
     )
-    this.config.logger.info(
+    this.config.logger?.info(
       `TxPool Statistics broadcasts=${broadcasts}/tx/peer broadcasterrors=${broadcasterrors}/tx/peer knownpeers=${knownpeers} since minutes=${this.POOLED_STORAGE_TIME_LIMIT}`,
     )
-    this.config.logger.info(
+    this.config.logger?.info(
       `TxPool Statistics successfuladds=${handledadds} failedadds=${handlederrors} since minutes=${this.HANDLED_CLEANUP_TIME_LIMIT}`,
     )
   }

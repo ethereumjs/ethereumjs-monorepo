@@ -1,4 +1,5 @@
 import {
+  EthereumJSErrorWithoutCode,
   TypeOutput,
   bigIntToHex,
   bytesToHex,
@@ -8,16 +9,16 @@ import {
 } from '@ethereumjs/util'
 import { type VM, encodeReceipt, runTx } from '@ethereumjs/vm'
 
-import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code.js'
-import { callWithStackTrace, getBlockByOption } from '../helpers.js'
-import { middleware, validators } from '../validation.js'
+import { INTERNAL_ERROR, INVALID_PARAMS } from '../error-code.ts'
+import { callWithStackTrace, getBlockByOption } from '../helpers.ts'
+import { middleware, validators } from '../validation.ts'
 
-import type { Chain } from '../../blockchain/index.js'
-import type { EthereumClient } from '../../index.js'
-import type { FullEthereumService } from '../../service/index.js'
-import type { RPCTx } from '../types.js'
 import type { Block } from '@ethereumjs/block'
 import type { PrefixedHexString } from '@ethereumjs/util'
+import type { Chain } from '../../blockchain/index.ts'
+import type { EthereumClient } from '../../index.ts'
+import type { FullEthereumService } from '../../service/index.ts'
+import type { RPCTx } from '../types.ts'
 
 export interface tracerOpts {
   disableStack?: boolean
@@ -43,6 +44,14 @@ export interface structLog {
   }
   error: boolean | undefined | null
 }
+
+const logLevels: { [key: number]: string } = {
+  0: 'error',
+  1: 'warn',
+  2: 'info',
+  3: 'debug',
+}
+
 /**
  * Validate tracer opts to ensure only supports opts are provided
  * @param opts a dictionary of {@link tracerOpts}
@@ -85,6 +94,7 @@ const validateTracerConfig = (opts: tracerOpts): tracerOpts => {
  * @memberof module:rpc/modules
  */
 export class Debug {
+  private client: EthereumClient
   private service: FullEthereumService
   private chain: Chain
   private vm: VM
@@ -94,7 +104,8 @@ export class Debug {
    * @param client Client to which the module binds
    */
   constructor(client: EthereumClient, rpcDebug: boolean) {
-    this.service = client.services.find((s) => s.name === 'eth') as FullEthereumService
+    this.client = client
+    this.service = client.service as FullEthereumService
     this.chain = this.service.chain
     this.vm = (this.service as FullEthereumService).execution?.vm
     this._rpcDebug = rpcDebug
@@ -138,6 +149,12 @@ export class Debug {
       1,
       [[validators.hex]],
     )
+    this.setHead = middleware(callWithStackTrace(this.setHead.bind(this), this._rpcDebug), 1, [
+      [validators.blockOption],
+    ])
+    this.verbosity = middleware(callWithStackTrace(this.verbosity.bind(this), this._rpcDebug), 1, [
+      [validators.unsignedInteger],
+    ])
   }
 
   /**
@@ -159,9 +176,10 @@ export class Debug {
 
     const opts = validateTracerConfig(config)
 
-    const result = await this.service.execution.receiptsManager.getReceiptByTxHash(
-      hexToBytes(txHash),
-    )
+    if (!this.service.execution.txIndex) throw EthereumJSErrorWithoutCode('missing txIndex')
+    const txHashIndex = await this.service.execution.txIndex.getIndex(hexToBytes(txHash))
+    if (!txHashIndex) return null
+    const result = await this.service.execution.receiptsManager.getReceiptByTxHashIndex(txHashIndex)
     if (!result) return null
     const [_, blockHash, txIndex] = result
     const block = await this.service.chain.getBlock(blockHash)
@@ -251,7 +269,7 @@ export class Debug {
     }
 
     if (this.vm === undefined) {
-      throw new Error('missing vm')
+      throw EthereumJSErrorWithoutCode('missing vm')
     }
 
     const opts = validateTracerConfig(tracerOpts)
@@ -342,14 +360,14 @@ export class Debug {
     const [blockHash, txIndex, account, startKey, limit] = params
 
     if (this.vm === undefined) {
-      throw new Error('Missing VM.')
+      throw EthereumJSErrorWithoutCode('Missing VM.')
     }
 
     let block: Block
     try {
       // Validator already verified that `blockHash` is properly formatted.
       block = await this.chain.getBlock(hexToBytes(blockHash))
-    } catch (err: any) {
+    } catch {
       throw {
         code: INTERNAL_ERROR,
         message: 'Could not get requested block hash.',
@@ -410,7 +428,8 @@ export class Debug {
    */
   async getRawReceipts(params: [string]) {
     const [blockOpt] = params
-    if (!this.service.execution.receiptsManager) throw new Error('missing receiptsManager')
+    if (!this.service.execution.receiptsManager)
+      throw EthereumJSErrorWithoutCode('missing receiptsManager')
     const block = await getBlockByOption(blockOpt, this.chain)
     const receipts = await this.service.execution.receiptsManager.getReceipts(
       block.hash(),
@@ -425,14 +444,49 @@ export class Debug {
    */
   async getRawTransaction(params: [PrefixedHexString]) {
     const [txHash] = params
-    if (!this.service.execution.receiptsManager) throw new Error('missing receiptsManager')
-    const result = await this.service.execution.receiptsManager.getReceiptByTxHash(
-      hexToBytes(txHash),
-    )
-    if (!result) return null
-    const [_receipt, blockHash, txIndex] = result
+    if (!this.service.execution.receiptsManager)
+      throw EthereumJSErrorWithoutCode('missing receiptsManager')
+    if (!this.service.execution.txIndex) throw EthereumJSErrorWithoutCode('missing txIndex')
+    const txHashIndex = await this.service.execution.txIndex.getIndex(hexToBytes(txHash))
+    if (!txHashIndex) return null
+    const [blockHash, txIndex] = txHashIndex
     const block = await this.chain.getBlock(blockHash)
     const tx = block.transactions[txIndex]
     return bytesToHex(tx.serialize())
+  }
+  /**
+   * Sets the verbosity level of the client logger
+   * @param level logger level to use with 0 as the lowest verbosity
+   */
+  async verbosity(params: [number]) {
+    const [level] = params
+    this.client.config.logger?.configure({ level: logLevels[level] })
+    return `level: ${this.client.config.logger?.level}`
+  }
+
+  /**
+   * Sets the current head of the local chain by block number. Note, this is a
+   * destructive action and may severely damage your chain. Use with extreme
+   * caution.
+   * @param blockOpt Block number or tag to set as head of chain
+   */
+  async setHead(params: [string]) {
+    const [blockOpt] = params
+    if (blockOpt === 'pending') {
+      throw {
+        code: INVALID_PARAMS,
+        message: `"pending" is not supported`,
+      }
+    }
+
+    const block = await getBlockByOption(blockOpt, this.chain)
+    try {
+      await this.service.skeleton?.setHead(block, true)
+      await this.service.execution.setHead([block])
+    } catch {
+      throw {
+        code: INTERNAL_ERROR,
+      }
+    }
   }
 }

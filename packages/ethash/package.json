@@ -1,12 +1,8 @@
 {
   "name": "@ethereumjs/ethash",
-  "version": "3.0.4",
+  "version": "10.0.0",
   "description": "An implementation of the Ethash consensus algorithm in JavaScript",
-  "keywords": [
-    "ethash",
-    "ethereum",
-    "POW"
-  ],
+  "keywords": ["ethash", "ethereum", "POW"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/ethash#readme",
   "bugs": {
     "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+ethash%22"
@@ -23,37 +19,43 @@
   "module": "dist/esm/index.js",
   "exports": {
     ".": {
-      "import": "./dist/esm/index.js",
+      "import": {
+        "typescript": "./src/index.ts",
+        "default": "./dist/esm/index.js"
+      },
       "require": "./dist/cjs/index.js"
     }
   },
-  "files": [
-    "dist",
-    "src"
-  ],
+  "files": ["dist", "src"],
   "scripts": {
+    "biome": "npx @biomejs/biome check",
+    "biome:fix": "npx @biomejs/biome check --write",
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
-    "coverage": "../../config/cli/coverage.sh",
-    "docs:build": "typedoc --options typedoc.cjs",
+    "coverage": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.mts",
+    "coverage:istanbul": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.istanbul.mts",
+    "docs:build": "typedoc --options typedoc.mjs",
     "examples": "tsx ../../scripts/examples-runner.ts -- ethash",
     "examples:build": "npx embedme README.md",
-    "lint": "../../config/cli/lint.sh",
-    "lint:diff": "../../config/cli/lint-diff.sh",
-    "lint:fix": "../../config/cli/lint-fix.sh",
+    "lint": "npm run biome && eslint  --config ./eslint.config.mjs .",
+    "lint:fix": "npm run biome:fix && eslint  --fix --config ./eslint.config.mjs .",
     "prepublishOnly": "../../config/cli/prepublish.sh",
-    "test": "npx vitest run",
+    "sc": "npm run spellcheck",
+    "spellcheck": "npm run spellcheck:ts && npm run spellcheck:md",
+    "spellcheck:ts": "npx cspell --gitignore -c ../../config/cspell-ts.json \"./**/*.ts\" --cache --show-suggestions --show-context",
+    "spellcheck:md": "npx cspell --gitignore -c ../../config/cspell-md.json \"**.md\" --cache --show-suggestions --show-context",
+    "test": "npx vitest run -c ./vite.config.ts",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/block": "^5.3.0",
-    "@ethereumjs/rlp": "^5.0.2",
-    "@ethereumjs/util": "^9.1.0",
-    "bigint-crypto-utils": "^3.2.2",
-    "ethereum-cryptography": "^2.2.1"
+    "@ethereumjs/block": "^10.0.0",
+    "@ethereumjs/rlp": "^10.0.0",
+    "@ethereumjs/util": "^10.0.0",
+    "bigint-crypto-utils": "^3.3.0",
+    "ethereum-cryptography": "^3.2.0"
   },
   "devDependencies": {
-    "@ethereumjs/common": "^4.4.0"
+    "@ethereumjs/common": "^10.0.0"
   },
   "engines": {
     "node": ">=18"

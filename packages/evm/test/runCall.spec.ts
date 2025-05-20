@@ -1,4 +1,5 @@
 import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
+import { eip4844GethGenesis } from '@ethereumjs/testdata'
 import {
   Account,
   Address,
@@ -12,17 +13,15 @@ import {
   hexToBytes,
   padToEven,
   unpadBytes,
-  zeros,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
-import { eip4844Data } from '../../client/test/testdata/geth-genesis/eip4844.js'
-import { defaultBlock } from '../src/evm.js'
-import { ERROR } from '../src/exceptions.js'
-import { createEVM } from '../src/index.js'
+import { EVMError } from '../src/errors.ts'
+import { defaultBlock } from '../src/evm.ts'
+import { createEVM } from '../src/index.ts'
 
-import type { EVMRunCallOpts } from '../src/types.js'
+import type { EVMRunCallOpts } from '../src/types.ts'
 
 // Non-protected Create2Address generator. Does not check if Uint8Arrays have the right padding.
 function create2address(sourceAddress: Address, codeHash: Uint8Array, salt: Uint8Array): Address {
@@ -36,7 +35,7 @@ describe('RunCall tests', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Constantinople })
     const evm = await createEVM({ common })
     const res = await evm.runCall({ to: undefined })
-    assert.equal(
+    assert.strictEqual(
       res.createdAddress?.toString(),
       '0xbd770416a3345f91e4b34576cb804a576fa48eb1',
       'created valid address when FROM account nonce is 0',
@@ -102,7 +101,7 @@ describe('RunCall tests', () => {
       }
     }
 
-    assert.ok(true, 'CREATE2 creates (empty) contracts at the expected address')
+    assert.isTrue(true, 'CREATE2 creates (empty) contracts at the expected address')
   })
 
   it('Byzantium cannot access Constantinople opcodes', async () => {
@@ -137,13 +136,12 @@ describe('RunCall tests', () => {
     const byzantiumResult = await evmByzantium.runCall(runCallArgs)
     const constantinopleResult = await evmConstantinople.runCall(runCallArgs)
 
-    assert.ok(
-      byzantiumResult.execResult.exceptionError &&
-        byzantiumResult.execResult.exceptionError.error === 'invalid opcode',
+    assert.isTrue(
+      byzantiumResult.execResult.exceptionError?.error === 'invalid opcode',
       'byzantium cannot accept constantinople opcodes (SHL)',
     )
-    assert.ok(
-      !constantinopleResult.execResult.exceptionError,
+    assert.isUndefined(
+      constantinopleResult.execResult.exceptionError,
       'constantinople can access the SHL opcode',
     )
   })
@@ -193,8 +191,8 @@ describe('RunCall tests', () => {
 
     const result = await evm.runCall(runCallArgs)
 
-    assert.equal(result.execResult.executionGasUsed, BigInt(5812), 'gas used correct')
-    assert.equal(result.execResult.gasRefund, BigInt(4200), 'gas refund correct')
+    assert.strictEqual(result.execResult.executionGasUsed, BigInt(5812), 'gas used correct')
+    assert.strictEqual(result.execResult.gasRefund, BigInt(4200), 'gas refund correct')
   })
 
   it('ensure correct gas for pre-constantinople sstore', async () => {
@@ -218,8 +216,8 @@ describe('RunCall tests', () => {
 
     const result = await evm.runCall(runCallArgs)
 
-    assert.equal(result.execResult.executionGasUsed, BigInt(20006), 'gas used correct')
-    assert.equal(result.execResult.gasRefund, BigInt(0), 'gas refund correct')
+    assert.strictEqual(result.execResult.executionGasUsed, BigInt(20006), 'gas used correct')
+    assert.strictEqual(result.execResult.gasRefund, BigInt(0), 'gas refund correct')
   })
 
   it('ensure correct gas for calling non-existent accounts in homestead', async () => {
@@ -245,8 +243,8 @@ describe('RunCall tests', () => {
 
     // 7x push + gas + sub + call + callNewAccount
     // 7*3 + 2 + 3 + 40 + 25000 = 25066
-    assert.equal(result.execResult.executionGasUsed, BigInt(25066), 'gas used correct')
-    assert.equal(result.execResult.gasRefund, BigInt(0), 'gas refund correct')
+    assert.strictEqual(result.execResult.executionGasUsed, BigInt(25066), 'gas used correct')
+    assert.strictEqual(result.execResult.gasRefund, BigInt(0), 'gas refund correct')
   })
 
   it('ensure callcode goes OOG if the gas argument is more than the gas left in the homestead fork', async () => {
@@ -271,9 +269,13 @@ describe('RunCall tests', () => {
 
     const result = await evm.runCall(runCallArgs)
 
-    assert.equal(runCallArgs.gasLimit, result.execResult.executionGasUsed, 'gas used correct')
-    assert.equal(result.execResult.gasRefund, BigInt(0), 'gas refund correct')
-    assert.ok(result.execResult.exceptionError!.error === ERROR.OUT_OF_GAS, 'call went out of gas')
+    assert.strictEqual(runCallArgs.gasLimit, result.execResult.executionGasUsed, 'gas used correct')
+    assert.strictEqual(result.execResult.gasRefund, BigInt(0), 'gas refund correct')
+    assert.strictEqual(
+      result.execResult.exceptionError?.error,
+      EVMError.errorMessages.OUT_OF_GAS,
+      'call went out of gas',
+    )
   })
 
   it('ensure selfdestruct pays for creating new accounts', async () => {
@@ -299,9 +301,9 @@ describe('RunCall tests', () => {
 
     const result = await evm.runCall(runCallArgs)
     // gas: 5000 (selfdestruct) + 25000 (call new account)  + push (1) = 30003
-    assert.equal(result.execResult.executionGasUsed, BigInt(30003), 'gas used correct')
+    assert.strictEqual(result.execResult.executionGasUsed, BigInt(30003), 'gas used correct')
     // selfdestruct refund
-    assert.equal(result.execResult.gasRefund, BigInt(24000), 'gas refund correct')
+    assert.strictEqual(result.execResult.gasRefund, BigInt(24000), 'gas refund correct')
   })
 
   it('ensure that sstores pay for the right gas costs pre-byzantium', async () => {
@@ -364,8 +366,12 @@ describe('RunCall tests', () => {
       }
 
       const result = await evm.runCall(runCallArgs)
-      assert.equal(result.execResult.executionGasUsed, BigInt(callData.gas), 'gas used correct')
-      assert.equal(result.execResult.gasRefund, BigInt(callData.refund), 'gas refund correct')
+      assert.strictEqual(
+        result.execResult.executionGasUsed,
+        BigInt(callData.gas),
+        'gas used correct',
+      )
+      assert.strictEqual(result.execResult.gasRefund, BigInt(callData.refund), 'gas refund correct')
     }
   })
 
@@ -450,9 +456,13 @@ describe('RunCall tests', () => {
     const expectedCode =
       '0x00000000000000000000000028373a29d17af317e669579d97e7dddc9da6e3e2e7dddc9da6e3e200000000000000000000000000000000000000000000000000'
 
-    assert.equal(result.createdAddress?.toString(), expectedAddress, 'created address correct')
+    assert.strictEqual(
+      result.createdAddress?.toString(),
+      expectedAddress,
+      'created address correct',
+    )
     const deployedCode = await evm.stateManager.getCode(result.createdAddress!)
-    assert.equal(bytesToHex(deployedCode), expectedCode, 'deployed code correct')
+    assert.strictEqual(bytesToHex(deployedCode), expectedCode, 'deployed code correct')
   })
 
   it('Throws on negative call value', async () => {
@@ -470,7 +480,7 @@ describe('RunCall tests', () => {
       await evm.runCall(runCallArgs)
       assert.fail('should not accept a negative call value')
     } catch (err: any) {
-      assert.ok(
+      assert.isTrue(
         err.message.includes('value field cannot be negative'),
         'throws on negative call value',
       )
@@ -501,19 +511,24 @@ describe('RunCall tests', () => {
     for (const balance of [undefined, BigInt(5)]) {
       await evm.stateManager.modifyAccountFields(sender, { nonce: BigInt(0), balance })
       const res = await evm.runCall(runCallArgs)
-      assert.ok(true, 'runCall should not throw with no balance and skipBalance')
+      assert.isTrue(true, 'runCall should not throw with no balance and skipBalance')
       const senderBalance = (await evm.stateManager.getAccount(sender))!.balance
-      assert.equal(
+      assert.strictEqual(
         senderBalance,
         balance ?? BigInt(0),
         'sender balance should be the same before and after call execution with skipBalance',
       )
-      assert.equal(res.execResult.exceptionError, undefined, 'no exceptionError with skipBalance')
+      assert.strictEqual(
+        res.execResult.exceptionError,
+        undefined,
+        'no exceptionError with skipBalance',
+      )
     }
 
     const res2 = await evm.runCall({ ...runCallArgs, skipBalance: false })
-    assert.ok(
-      res2.execResult.exceptionError?.error.match('insufficient balance'),
+    assert.include(
+      res2.execResult.exceptionError?.error,
+      'insufficient balance',
       'runCall reverts when insufficient sender balance and skipBalance is false',
     )
   })
@@ -536,15 +551,15 @@ describe('RunCall tests', () => {
     }
 
     const result = await evm.runCall(runCallArgs)
-    assert.equal(
+    assert.strictEqual(
       result.execResult.exceptionError?.error,
-      ERROR.CODESIZE_EXCEEDS_MAXIMUM,
+      EVMError.errorMessages.CODESIZE_EXCEEDS_MAXIMUM,
       'reported error is correct',
     )
   })
   it('runCall() => use BLOBHASH opcode from EIP 4844', async () => {
     // setup the evm
-    const common = createCommonFromGethGenesis(eip4844Data, {
+    const common = createCommonFromGethGenesis(eip4844GethGenesis, {
       chain: 'custom',
       hardfork: Hardfork.Cancun,
     })
@@ -555,10 +570,10 @@ describe('RunCall tests', () => {
       gasLimit: BigInt(0xffffffffff),
       // calldata -- retrieves the versioned hash at index 0 and returns it from memory
       data: hexToBytes('0x60004960005260206000F3'),
-      blobVersionedHashes: [hexToBytes('0xab')],
+      blobVersionedHashes: ['0xab'],
     }
     const res = await evm.runCall(runCallArgs)
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(unpadBytes(res.execResult.returnValue)),
       '0xab',
       'retrieved correct versionedHash from runState',
@@ -569,10 +584,10 @@ describe('RunCall tests', () => {
       gasLimit: BigInt(0xffffffffff),
       // calldata -- tries to retrieve the versioned hash at index 1 and return it from memory
       data: hexToBytes('0x60014960005260206000F3'),
-      blobVersionedHashes: [hexToBytes('0xab')],
+      blobVersionedHashes: ['0xab'],
     }
     const res2 = await evm.runCall(runCall2Args)
-    assert.equal(
+    assert.strictEqual(
       bytesToHex(unpadBytes(res2.execResult.returnValue)),
       '0x',
       'retrieved no versionedHash when specified versionedHash does not exist in runState',
@@ -581,14 +596,14 @@ describe('RunCall tests', () => {
 
   it('runCall() => use BLOBBASEFEE opcode from EIP 7516', async () => {
     // setup the evm
-    const common = createCommonFromGethGenesis(eip4844Data, {
+    const common = createCommonFromGethGenesis(eip4844GethGenesis, {
       chain: 'custom',
       hardfork: Hardfork.Cancun,
     })
     const evm = await createEVM({ common })
 
     const BLOBBASEFEE_OPCODE = 0x4a
-    assert.equal(
+    assert.strictEqual(
       evm.getActiveOpcodes().get(BLOBBASEFEE_OPCODE)!.name,
       'BLOBBASEFEE',
       'Opcode 0x4a named BLOBBASEFEE',
@@ -605,12 +620,16 @@ describe('RunCall tests', () => {
       block,
     }
     const res = await evm.runCall(runCallArgs)
-    assert.equal(
+    assert.strictEqual(
       bytesToBigInt(unpadBytes(res.execResult.returnValue)),
       BigInt(119),
       'retrieved correct gas fee',
     )
-    assert.equal(res.execResult.executionGasUsed, BigInt(6417), 'correct blob gas fee (2) charged')
+    assert.strictEqual(
+      res.execResult.executionGasUsed,
+      BigInt(6417),
+      'correct blob gas fee (2) charged',
+    )
   })
 
   it('step event: ensure EVM memory and not internal memory gets reported', async () => {
@@ -626,16 +645,16 @@ describe('RunCall tests', () => {
       to: contractAddress,
     }
 
-    let verifyMemoryExpanded = false
+    let verifyMemoryExpanded: boolean = false
 
     evm.events.on('step', (e) => {
-      assert.ok(e.memory.length <= 96)
+      assert.isTrue(e.memory.length <= 96)
       if (e.memory.length > 0) {
         verifyMemoryExpanded = true
       }
     })
     await evm.runCall(runCallArgs)
-    assert.ok(verifyMemoryExpanded, 'memory did expand')
+    assert.isTrue(verifyMemoryExpanded, 'memory did expand')
   })
 
   it('ensure code deposit errors are logged correctly (>= Homestead)', async () => {
@@ -649,7 +668,10 @@ describe('RunCall tests', () => {
     }
 
     const res = await evm.runCall(runCallArgs)
-    assert.ok(res.execResult.exceptionError?.error === ERROR.CODESIZE_EXCEEDS_MAXIMUM)
+    assert.strictEqual(
+      res.execResult.exceptionError?.error,
+      EVMError.errorMessages.CODESIZE_EXCEEDS_MAXIMUM,
+    )
 
     // Create a contract which goes OOG when creating
     const runCallArgs2 = {
@@ -658,7 +680,7 @@ describe('RunCall tests', () => {
     }
 
     const res2 = await evm.runCall(runCallArgs2)
-    assert.ok(res2.execResult.exceptionError?.error === ERROR.OUT_OF_GAS)
+    assert.strictEqual(res2.execResult.exceptionError?.error, EVMError.errorMessages.OUT_OF_GAS)
   })
 
   it('ensure code deposit errors are logged correctly (Frontier)', async () => {
@@ -672,7 +694,10 @@ describe('RunCall tests', () => {
     }
 
     const res = await evm.runCall(runCallArgs)
-    assert.ok(res.execResult.exceptionError?.error === ERROR.CODESTORE_OUT_OF_GAS)
+    assert.strictEqual(
+      res.execResult.exceptionError?.error,
+      EVMError.errorMessages.CODESTORE_OUT_OF_GAS,
+    )
 
     // Create a contract which goes OOG when creating
     const runCallArgs2 = {
@@ -681,7 +706,7 @@ describe('RunCall tests', () => {
     }
 
     const res2 = await evm.runCall(runCallArgs2)
-    assert.ok(res2.execResult.exceptionError?.error === ERROR.OUT_OF_GAS)
+    assert.strictEqual(res2.execResult.exceptionError?.error, EVMError.errorMessages.OUT_OF_GAS)
   })
 
   it('ensure call and callcode handle gas stipend correctly', async () => {
@@ -744,10 +769,12 @@ describe('RunCall tests', () => {
       }
       await evm.runCall(runCallArgs)
 
-      const callResult = bytesToHex(await evm.stateManager.getStorage(callerAddress, zeros(32)))
+      const callResult = bytesToHex(
+        await evm.stateManager.getStorage(callerAddress, new Uint8Array(32)),
+      )
       // Expect slot to have value of either: 0 since CALLCODE and CODE did not have enough gas to execute
       // Or 1, if CALL(CODE) has enough gas to enter the new call frame
-      assert.equal(callResult, expectedOutput, `should have result ${expectedOutput}`)
+      assert.strictEqual(callResult, expectedOutput, `should have result ${expectedOutput}`)
     }
   })
 })

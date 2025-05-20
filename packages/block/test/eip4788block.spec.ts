@@ -1,8 +1,8 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { bytesToHex, zeros } from '@ethereumjs/util'
+import { bytesToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createBlock, createBlockHeader } from '../src/index.js'
+import { createBlock, createBlockHeader } from '../src/index.ts'
 
 describe('EIP4788 header tests', () => {
   it('should work', () => {
@@ -13,7 +13,7 @@ describe('EIP4788 header tests', () => {
       () => {
         createBlockHeader(
           {
-            parentBeaconBlockRoot: zeros(32),
+            parentBeaconBlockRoot: new Uint8Array(32),
           },
           {
             common: earlyCommon,
@@ -45,7 +45,7 @@ describe('EIP4788 header tests', () => {
         {
           excessBlobGas: 0n,
           blobGasUsed: 0n,
-          parentBeaconBlockRoot: zeros(32),
+          parentBeaconBlockRoot: new Uint8Array(32),
         },
         {
           common,
@@ -60,9 +60,9 @@ describe('EIP4788 header tests', () => {
       },
       { common, skipConsensusFormatValidation: true },
     )
-    assert.equal(
+    assert.strictEqual(
       block.toJSON().header?.parentBeaconBlockRoot,
-      bytesToHex(zeros(32)),
+      bytesToHex(new Uint8Array(32)),
       'JSON output includes excessBlobGas',
     )
   })

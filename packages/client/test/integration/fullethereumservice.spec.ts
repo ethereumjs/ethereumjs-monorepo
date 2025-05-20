@@ -3,24 +3,24 @@ import { createBlockchain } from '@ethereumjs/blockchain'
 import { Hardfork } from '@ethereumjs/common'
 import { MerkleStateManager } from '@ethereumjs/statemanager'
 import { createFeeMarket1559TxFromRLP } from '@ethereumjs/tx'
-import { Account, bytesToHex, equalsBytes, hexToBytes, toBytes } from '@ethereumjs/util'
+import { Account, equalsBytes, hexToBytes, toBytes } from '@ethereumjs/util'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 
-import { Config } from '../../src/config.js'
-import { FullEthereumService } from '../../src/service/index.js'
-import { Event } from '../../src/types.js'
+import { Config } from '../../src/config.ts'
+import { FullEthereumService } from '../../src/service/index.ts'
+import { Event } from '../../src/types.ts'
 
-import { MockChain } from './mocks/mockchain.js'
-import { MockServer } from './mocks/mockserver.js'
-import { destroy } from './util.js'
+import { MockChain } from './mocks/mockchain.ts'
+import { MockServer } from './mocks/mockserver.ts'
+import { destroy } from './util.ts'
 
 const config = new Config({ accountCache: 10000, storageCache: 1000 })
 
 // Stub out setStateRoot since correct state root doesn't exist in mock state.
-const ogSetStateRoot = MerkleStateManager.prototype.setStateRoot
+
 MerkleStateManager.prototype.setStateRoot = (): any => {}
-const originalStateManagerCopy = MerkleStateManager.prototype.shallowCopy
+
 MerkleStateManager.prototype.shallowCopy = function () {
   return this
 }
@@ -32,7 +32,7 @@ async function setup(): Promise<[MockServer, FullEthereumService]> {
     validateConsensus: false,
   })
   const chain = new MockChain({ config, blockchain })
-  const serviceConfig = new Config({ server, lightserv: true })
+  const serviceConfig = new Config({ server })
   const service = new FullEthereumService({
     config: serviceConfig,
     chain,
@@ -53,26 +53,26 @@ describe(
     const hash = hexToBytes('0xa321d27cd2743617c1c1b0d7ecb607dd14febcdfca8f01b79c3f0249505ea069')
     const [reqId1, headers] = await peer.eth!.getBlockHeaders({ block: BigInt(1), max: 2 })
     it('handled getBlockHeaders', async () => {
-      assert.equal(reqId1, BigInt(1), 'handled GetBlockHeaders')
-      assert.ok(equalsBytes(headers![1].hash(), hash), 'handled GetBlockHeaders')
+      assert.strictEqual(reqId1, BigInt(1), 'handled GetBlockHeaders')
+      assert.isTrue(equalsBytes(headers![1].hash(), hash), 'handled GetBlockHeaders')
     })
     const res = await peer.eth!.getBlockBodies({ hashes: [hash] })
     it('handled getBlockBodies', async () => {
       const [reqId2, bodies] = res
-      assert.equal(reqId2, BigInt(2), 'handled GetBlockBodies')
+      assert.strictEqual(reqId2, BigInt(2), 'handled GetBlockBodies')
       assert.deepEqual(bodies, [[[], []]], 'handled GetBlockBodies')
     })
     service.config.events.on(Event.PROTOCOL_MESSAGE, async (msg) => {
       switch (msg.name) {
         case 'NewBlockHashes': {
           it('should handle newBlockHashes', () => {
-            assert.ok(true, 'handled NewBlockHashes')
+            assert.isTrue(true, 'handled NewBlockHashes')
           })
           break
         }
         case 'NewBlock': {
           it('should handle NewBlock', () => {
-            assert.ok(true, 'handled NewBlock')
+            assert.isTrue(true, 'handled NewBlock')
           })
           await destroy(server, service)
           break
@@ -106,28 +106,10 @@ describe(
     )
     const [_, txs] = await peer.eth!.getPooledTransactions({ hashes: [tx.hash()] })
     it('should handle GetPooledTransactions', async () => {
-      assert.ok(equalsBytes(txs[0].hash(), tx.hash()), 'handled GetPooledTransactions')
+      assert.isTrue(equalsBytes(txs[0].hash(), tx.hash()), 'handled GetPooledTransactions')
     })
 
     peer.eth!.send('Transactions', [tx])
   },
   { timeout: 30000 },
 )
-
-describe('should handle LES requests', async () => {
-  const [server, service] = await setup()
-  const peer = await server.accept('peer0')
-  const { headers } = await peer.les!.getBlockHeaders({ block: BigInt(1), max: 2 })
-  it('should handle GetBlockHeaders', () => {
-    assert.equal(
-      bytesToHex(headers[1].hash()),
-      '0xa321d27cd2743617c1c1b0d7ecb607dd14febcdfca8f01b79c3f0249505ea069',
-      'handled GetBlockHeaders',
-    )
-  })
-  await destroy(server, service)
-
-  // unstub setStateRoot
-  MerkleStateManager.prototype.setStateRoot = ogSetStateRoot
-  MerkleStateManager.prototype.shallowCopy = originalStateManagerCopy
-}, 30000)

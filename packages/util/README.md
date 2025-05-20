@@ -1,4 +1,4 @@
-# @ethereumjs/util
+# @ethereumjs/util `v10`
 
 [![NPM Package][util-npm-badge]][util-npm-link]
 [![GitHub Issues][util-issues-badge]][util-issues-link]
@@ -9,6 +9,31 @@
 | A collection of utility functions for Ethereum. |
 | ----------------------------------------------- |
 
+## Table of Contents
+
+- [Installation](#installation)
+- [Getting Started](#getting-started)
+- [Module: [account]](#module-account)
+- [Module: [address]](#module-address)
+- [Module: [authorization]](#module-authorization)
+- [Module: [blobs]](#module-blobs)
+- [Module: [bytes]](#module-bytes)
+- [Module: [constants]](#module-constants)
+- [Module: [db]](#module-db)
+- [Module: [genesis]](#module-genesis)
+- [Module: [internal]](#module-internal)
+- [Module: [kzg]](#module-kzg)
+- [Module: [mapDB]](#module-mapdb)
+- [Module: [request]](#module-request)
+- [Module: [signature]](#module-signature)
+- [Module: [types]](#module-types)
+- [Module: [verkle]](#module-verkle)
+- [Module: [withdrawal]](#module-withdrawal)
+- [Browser](#browser)
+- [API](#api)
+- [EthereumJS](#ethereumjs)
+- [License](#license)
+
 ## Installation
 
 To obtain the latest version, simply require the project using `npm`:
@@ -17,7 +42,7 @@ To obtain the latest version, simply require the project using `npm`:
 npm install @ethereumjs/util
 ```
 
-## Usage
+## Getting Started
 
 This package contains the following modules providing respective helper methods, classes and commonly re-used constants.
 
@@ -27,9 +52,9 @@ All helpers are re-exported from the root level and deep imports are not necessa
 import { hexToBytes, isValidChecksumAddress } from '@ethereumjs/util'
 ```
 
-### Module: [account](src/account.ts)
+## Module: [account](src/account.ts)
 
-Class representing an `Account` and providing private/public key and address-related functionality (creation, validation, conversion).
+Class representing an `Account` and providing private/public key and address-related functionality (creation, validation, conversion). It is not recommended to use this constructor directly. Instead use the static factory methods to assist in creating an Account from varying data types.
 
 ```ts
 // ./examples/account.ts
@@ -59,7 +84,7 @@ const account = createPartialAccount({
 console.log(`Partial account with nonce=${account.nonce} and balance=${account.balance} created`)
 ```
 
-### Module: [address](src/address.ts)
+## Module: [address](src/address.ts)
 
 Class representing an Ethereum `Address` with instantiation helpers and validation methods.
 
@@ -72,7 +97,11 @@ const address = createAddressFromString('0x2f015c60e0be116b1f0cd534704db9c92118f
 console.log(`Ethereum address ${address.toString()} created`)
 ```
 
-### Module: [blobs](src/blobs.ts)
+## Module: [authorization](src/authorization.ts)
+
+Module with `EIP-7702` authorization list signing utilities.
+
+## Module: [blobs](src/blobs.ts)
 
 Module providing helpers for 4844 blobs and versioned hashes.
 
@@ -86,14 +115,14 @@ const blobs = getBlobs('test input')
 console.log('Created the following blobs:')
 console.log(blobs)
 
-const commitment = new Uint8Array([1, 2, 3])
+const commitment = bytesToHex(new Uint8Array([1, 2, 3]))
 const blobCommitmentVersion = 0x01
 const versionedHash = computeVersionedHash(commitment, blobCommitmentVersion)
 
-console.log(`Versioned hash ${bytesToHex(versionedHash)} computed`)
+console.log(`Versioned hash ${versionedHash} computed`)
 ```
 
-### Module: [bytes](src/bytes.ts)
+## Module: [bytes](src/bytes.ts)
 
 Byte-related helper and conversion functions.
 
@@ -108,7 +137,7 @@ const bigIntValue = bytesToBigInt(bytesValue)
 console.log(`Converted value: ${bigIntValue}`)
 ```
 
-### Module: [constants](src/constants.ts)
+## Module: [constants](src/constants.ts)
 
 Exposed constants (e.g. `KECCAK256_NULL_S` for string representation of Keccak-256 hash of null)
 
@@ -121,29 +150,29 @@ console.log(`The keccak-256 hash of null: ${KECCAK256_NULL_S}`)
 console.log(`BigInt constants (performance), e.g. BIGINT_2EXP96: ${BIGINT_2EXP96}`)
 ```
 
-### Module: [db](src/db.ts)
+## Module: [db](src/db.ts)
 
 DB interface for database abstraction (Blockchain, Trie), see e.g. [@ethereumjs/trie recipes](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie/recipes/level.ts)) for usage.
 
-### Module: [genesis](src/genesis.ts)
+## Module: [genesis](src/genesis.ts)
 
 Genesis related interfaces and helpers.
 
-### Module: [internal](src/internal.ts)
+## Module: [internal](src/internal.ts)
 
 Internalized simple helper methods like `isHexString`. Note that methods from this module might get deprecated in the future.
 
-### Module: [kzg](src/kzg.ts)
+## Module: [kzg](src/kzg.ts)
 
 KZG interface (used for 4844 blob txs), see [@ethereumjs/tx](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) README for main usage instructions.
 
-### Module: [mapDB](src/mapDB.ts)
+## Module: [mapDB](src/mapDB.ts)
 
 Simple map DB implementation using the `DB` interface (see above).
 
-### Module: [requests](src/requests.ts)
+## Module: [request](src/request.ts)
 
-Module with various type and an abstract base class for [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) general purpose execution layer requests to the CL (Prague hardfork) as well as concrete implementations for the currently supported request types:
+Module with a compact generic request class for [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) general purpose execution layer requests to the CL (Prague hardfork) with the possibility to set `data` and a `type` conforming to the following request types:
 
 - [EIP-6110](https://eips.ethereum.org/EIPS/eip-6110): `DepositRequest` (Prague Hardfork)
 - [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002): `WithdrawalRequest` (Prague Hardfork)
@@ -151,9 +180,9 @@ Module with various type and an abstract base class for [EIP-7685](https://eips.
 
 These request types are mainly used within the [@ethereumjs/block](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/block) library where applied usage instructions are provided in the README.
 
-### Module: [signature](src/signature.ts)
+## Module: [signature](src/signature.ts)
 
-Functionality for signing, signature validation, conversion, recovery.
+Small helpers around signature validation, conversion, recovery as well as selected convenience wrappers for calls to the underlying crypo libraries, using the cryptographic primitive implementations from the [Noble](https://paulmillr.com/noble/) crypto library set. If possible for your use case it is recommended to use the underlying crypto libraries directly for robustness.
 
 ```ts
 // ./examples/signature.ts
@@ -172,11 +201,11 @@ const pubkey = ecrecover(ecHash, v, r, s, chainId)
 console.log(`Recovered public key ${bytesToHex(pubkey)} from valid signature values`)
 ```
 
-### Module: [types](src/types.ts)
+## Module: [types](src/types.ts)
 
 Various TypeScript types. Direct usage is not recommended, type structure might change in the future.
 
-### Module: [verkle](src/verkle.ts)
+## Module: [verkle](src/verkle.ts)
 
 Various functions for accessing verkle state:
 
@@ -193,7 +222,7 @@ import {
 
 const state = {
   '0xdf67dea9181141d6255ac05c7ada5a590fb30a375023f16c31223f067319e300':
-    '0x0000000000000000000000000000000000000000000000000000000000000000',
+    '0x0100000001000000000000000000000001000000000000000000000000000000',
   '0xdf67dea9181141d6255ac05c7ada5a590fb30a375023f16c31223f067319e301':
     '0x923672e5275a0104000000000000000000000000000000000000000000000000',
   '0xdf67dea9181141d6255ac05c7ada5a590fb30a375023f16c31223f067319e302':
@@ -209,10 +238,10 @@ const basicDataKey = getVerkleKey(stem, VerkleLeafType.BasicData)
 const basicDataRaw = state[bytesToHex(basicDataKey)]
 const basicData = decodeVerkleLeafBasicData(hexToBytes(basicDataRaw!))
 
-console.log(basicData) // { version: 0, nonce: 0n, codeSize: 0, balance: 0n }
+console.log(basicData) // { version: 1, nonce: 1n, codeSize: 0, balance: 1n }
 ```
 
-### Module: [withdrawal](src/withdrawal.ts)
+## Module: [withdrawal](src/withdrawal.ts)
 
 Class representing an `EIP-4895` `Withdrawal` with different constructors as well as conversion and output helpers.
 
@@ -234,51 +263,15 @@ console.log(withdrawal.toJSON())
 
 ## Browser
 
-With the breaking release round in Summer 2023 we have added hybrid ESM/CJS builds for all our libraries (see section below) and have eliminated many of the caveats which had previously prevented a frictionless browser usage.
+We provide hybrid ESM/CJS builds for all our libraries. With the v10 breaking release round from Spring 2025, all libraries are "pure-JS" by default and we have eliminated all hard-wired WASM code. Additionally we have substantially lowered the bundle sizes, reduced the number of dependencies, and cut out all usages of Node.js-specific primitives (like the Node.js event emitter).
 
-It is now easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
+It is easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
 
 ## API
 
 ### Documentation
 
 Read the [API docs](docs/).
-
-### Upgrade Helpers in bytes-Module
-
-Depending on the extend of `Buffer` usage within your own libraries and other planning considerations, there are the two upgrade options to do the switch to `Uint8Array` yourself or keep `Buffer` and do transitions for input and output values.
-
-We have updated the `@ethereumjs/util` `bytes` module with helpers for the most common conversions:
-
-```ts
-Buffer.alloc(97) // Allocate a Buffer with length 97
-new Uint8Array(97) // Allocate a Uint8Array with length 97
-
-Buffer.from('342770c0', 'hex') // Convert a hex string to a Buffer
-hexToBytes('0x342770c0') // Convert a prefixed hex string to a Uint8Array, Util.hexToBytes()
-
-`0x${myBuffer.toString('hex')}` // Convert a Buffer to a prefixed hex string
-bytesToHex(myUint8Array) // Convert a Uint8Array to a prefixed hex string
-
-intToBuffer(9) // Convert an integer to a Buffer, old (removed)
-intToBytes(9) // Convert an integer to a Uint8Array, Util.intToBytes()
-bytesToInt(myUint8Array) // Convert a Uint8Array to an integer, Util.bytesToInt()
-
-bigIntToBytes(myBigInt) // Convert a BigInt to a Uint8Array, Util.bigIntToBytes()
-bytesToBigInt(myUint8Array) // Convert a Uint8Array to a BigInt, Util.bytesToInt()
-
-utf8ToBytes(myUtf8String) // Converts a UTF-8 string to a Uint8Array, Util.utf8ToBytes()
-bytesToUtf8(myUint8Array) // Converts a Uint8Array to a UTF-8 string, Util.bytesToUtf8()
-
-toBuffer(v: ToBufferInputTypes) // Converts various byte compatible types to Buffer, old (removed)
-toBytes(v: ToBytesInputTypes) // Converts various byte compatible types to Uint8Array, Util.toBytes()
-```
-
-Helper methods can be imported like this:
-
-```ts
-import { hexToBytes } from '@ethereumjs/util'
-```
 
 ### Hybrid CJS/ESM Builds
 
@@ -297,18 +290,6 @@ const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
 ```
 
 Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking which CJS can not provide.
-
-### Buffer -> Uint8Array
-
-With the breaking releases from Summer 2023 we have removed all Node.js specific `Buffer` usages from our libraries and replace these with [Uint8Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) representations, which are available both in Node.js and the browser (`Buffer` is a subclass of `Uint8Array`).
-
-We have converted existing Buffer conversion methods to Uint8Array conversion methods in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) `bytes` module, see the respective README section for guidance.
-
-### BigInt Support
-
-Starting with Util v8 the usage of [BN.js](https://github.com/indutny/bn.js/) for big numbers has been removed from the library and replaced with the usage of the native JS [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) data type (introduced in `ES2020`).
-
-Please note that number-related API signatures have changed along with this version update and the minimal build target has been updated to `ES2020`.
 
 ### ethjs-util methods
 
@@ -334,7 +315,7 @@ import { stripHexPrefix } from '@ethereumjs/util'
 
 ## EthereumJS
 
-See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices. If you want to join for work or carry out improvements on the libraries, please review our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html) first.
+The `EthereumJS` GitHub organization and its repositories are managed by the Ethereum Foundation JavaScript team, see our [website](https://ethereumjs.github.io/) for a team introduction. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
 
 ## License
 

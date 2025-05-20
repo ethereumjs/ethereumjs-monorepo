@@ -1,14 +1,14 @@
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { assert, describe, it } from 'vitest'
 
-import { Config } from '../../src/config.js'
-import { PeerPool } from '../../src/net/peerpool.js'
-import { EthProtocol } from '../../src/net/protocol/index.js'
-import { Event } from '../../src/types.js'
+import { Config } from '../../src/config.ts'
+import { PeerPool } from '../../src/net/peerpool.ts'
+import { EthProtocol } from '../../src/net/protocol/index.ts'
+import { Event } from '../../src/types.ts'
 
-import { MockChain } from './mocks/mockchain.js'
-import { MockServer } from './mocks/mockserver.js'
-import { wait } from './util.js'
+import { MockChain } from './mocks/mockchain.ts'
+import { MockServer } from './mocks/mockserver.ts'
+import { wait } from './util.ts'
 
 async function setup(protocols: EthProtocol[] = []): Promise<[MockServer, PeerPool]> {
   const serverConfig = new Config({ accountCache: 10000, storageCache: 1000 })
@@ -30,12 +30,12 @@ describe('should open', async () => {
   const [server, pool] = await setup()
   pool.config.events.on(Event.POOL_PEER_ADDED, (peer: any) => {
     it('should add peer', () => {
-      assert.equal(peer.id, 'peer0', 'added peer')
+      assert.strictEqual(peer.id, 'peer0', 'added peer')
     })
   })
   pool.config.events.on(Event.POOL_PEER_REMOVED, (peer: any) => {
     it('should remove peer', () => {
-      assert.equal(peer.id, 'peer0', 'removed peer')
+      assert.strictEqual(peer.id, 'peer0', 'removed peer')
     })
   })
   const peer0 = await server.accept('peer0')
@@ -49,12 +49,12 @@ describe('should ban peer', async () => {
   const [server, pool] = await setup()
   pool.config.events.on(Event.POOL_PEER_ADDED, (peer: any) => {
     it('should add peer', () => {
-      assert.equal(peer.id, 'peer0', 'added peer')
+      assert.strictEqual(peer.id, 'peer0', 'added peer')
     })
   })
   pool.config.events.on(Event.POOL_PEER_BANNED, (peer: any) => {
     it('should ban peer', () => {
-      assert.equal(peer.id, 'peer0', 'banned peer')
+      assert.strictEqual(peer.id, 'peer0', 'banned peer')
     })
   })
   pool.add(await server.accept('peer0'))
@@ -80,7 +80,7 @@ describe('should handle peer messages', async () => {
   const [server, pool] = await setup(protocols)
   config.events.on(Event.POOL_PEER_ADDED, (peer: any) =>
     it('should add peer', () => {
-      assert.equal(peer.id, 'peer0', 'added peer')
+      assert.strictEqual(peer.id, 'peer0', 'added peer')
     }),
   )
   config.events.on(Event.PROTOCOL_MESSAGE, (msg: any, proto: any, peer: any) => {

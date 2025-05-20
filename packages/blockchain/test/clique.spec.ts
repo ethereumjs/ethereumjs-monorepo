@@ -7,7 +7,6 @@ import {
   Common,
   ConsensusAlgorithm,
   ConsensusType,
-  Goerli,
   Hardfork,
   createCustomCommon,
 } from '@ethereumjs/common'
@@ -20,14 +19,16 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { CLIQUE_NONCE_AUTH, CLIQUE_NONCE_DROP, CliqueConsensus } from '../src/consensus/clique.js'
-import { createBlockchain } from '../src/index.js'
+import { CLIQUE_NONCE_AUTH, CLIQUE_NONCE_DROP, CliqueConsensus } from '../src/consensus/clique.ts'
+import { createBlockchain } from '../src/index.ts'
 
-import type { Blockchain, ConsensusDict } from '../src/index.js'
+import { goerliChainConfig } from '@ethereumjs/testdata'
+
 import type { Block } from '@ethereumjs/block'
 import type { CliqueConfig } from '@ethereumjs/common'
+import type { Blockchain, ConsensusDict } from '../src/index.ts'
 
-const COMMON = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
+const COMMON = new Common({ chain: goerliChainConfig, hardfork: Hardfork.Chainstart })
 const EXTRA_DATA = new Uint8Array(97)
 const GAS_LIMIT = BigInt(8000000)
 
@@ -200,7 +201,7 @@ const addNextBlock = async (
 
 describe('Clique: Initialization', () => {
   it('should initialize a clique blockchain', async () => {
-    const common = new Common({ chain: Goerli, hardfork: Hardfork.Chainstart })
+    const common = new Common({ chain: goerliChainConfig, hardfork: Hardfork.Chainstart })
     const consensusDict: ConsensusDict = {}
     consensusDict[ConsensusAlgorithm.Clique] = new CliqueConsensus()
     const blockchain = await createBlockchain({ common, consensusDict })
@@ -217,9 +218,11 @@ describe('Clique: Initialization', () => {
 
   it('should throw if signer in epoch checkpoint is not active', async () => {
     const { blockchain } = await initWithSigners([A])
-    ;(blockchain as any)._validateBlocks = false
+    // @ts-expect-error -- Assign to read-only property
+    blockchain['_validateBlocks'] = false
     // _validateConsensus needs to be true to trigger this test condition
-    ;(blockchain as any)._validateConsensus = true
+    // @ts-expect-error -- Assign to read-only property
+    blockchain['_validateConsensus'] = true
     const number = (COMMON.consensusConfig() as CliqueConfig).epoch
     const unauthorizedSigner = createAddressFromString('0x00a839de7922491683f547a67795204763ff8237')
     const extraData = concatBytes(
@@ -236,7 +239,7 @@ describe('Clique: Initialization', () => {
       await blockchain.putBlock(block)
       assert.fail('should fail')
     } catch (error: any) {
-      assert.ok(
+      assert.isTrue(
         error.message.includes('checkpoint signer not found in active signers list'),
         'correct error',
       )
@@ -267,7 +270,7 @@ describe('Clique: Initialization', () => {
       await blockchain.putBlock(block)
       assert.fail('should fail')
     } catch (error: any) {
-      assert.ok(
+      assert.isTrue(
         error.message.includes('difficulty for clique block must be INTURN (2) or NOTURN (1)'),
         'correct error',
       )
@@ -293,7 +296,7 @@ describe('Clique: Initialization', () => {
       await blockchain.putBlock(block)
       assert.fail('should fail')
     } catch (error: any) {
-      assert.ok(error.message.includes('invalid clique difficulty'), 'correct error')
+      assert.isTrue(error.message.includes('invalid clique difficulty'), 'correct error')
     }
   })
 
@@ -312,7 +315,7 @@ describe('Clique: Initialization', () => {
   it('Clique Voting: Single signer, no votes cast', async () => {
     const { blocks, blockchain } = await initWithSigners([A])
     const block = await addNextBlock(blockchain, blocks, A)
-    assert.equal(block.header.number, BigInt(1))
+    assert.strictEqual(block.header.number, BigInt(1))
     assert.deepEqual(
       (blockchain.consensus as CliqueConsensus).cliqueActiveSigners(
         block.header.number + BigInt(1),
@@ -639,7 +642,7 @@ describe('Clique: Initialization', () => {
           },
         },
       },
-      Goerli,
+      goerliChainConfig,
       {
         hardfork: Hardfork.Chainstart,
       },
@@ -665,7 +668,7 @@ describe('Clique: Initialization', () => {
       await addNextBlock(blockchain, blocks, B)
       assert.fail('should throw error')
     } catch (error: any) {
-      assert.ok(
+      assert.isTrue(
         error.message.includes('invalid PoA block signature (clique)'),
         'correct error thrown',
       )
@@ -679,7 +682,7 @@ describe('Clique: Initialization', () => {
       await addNextBlock(blockchain, blocks, A)
       assert.fail('should throw error')
     } catch (error: any) {
-      assert.ok(error.message.includes('recently signed'), 'correct error thrown')
+      assert.isTrue(error.message.includes('recently signed'), 'correct error thrown')
     }
   })
 
@@ -695,7 +698,7 @@ describe('Clique: Initialization', () => {
           },
         },
       },
-      Goerli,
+      goerliChainConfig,
       {
         hardfork: Hardfork.Chainstart,
       },
@@ -708,7 +711,7 @@ describe('Clique: Initialization', () => {
       await addNextBlock(blockchain, blocks, A, undefined, undefined, common)
       assert.fail('should throw error')
     } catch (error: any) {
-      assert.ok(error.message.includes('recently signed'), 'correct error thrown')
+      assert.isTrue(error.message.includes('recently signed'), 'correct error thrown')
     }
   })
 
@@ -716,19 +719,19 @@ describe('Clique: Initialization', () => {
     const { blocks, blockchain } = await initWithSigners([A, B, C])
     // block 1: B, next signer: C
     await addNextBlock(blockchain, blocks, B)
-    assert.notOk(
+    assert.isFalse(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         A.address,
         blocks[blocks.length - 1].header.number,
       ),
     )
-    assert.notOk(
+    assert.isFalse(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         B.address,
         blocks[blocks.length - 1].header.number,
       ),
     )
-    assert.ok(
+    assert.isTrue(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         C.address,
         blocks[blocks.length - 1].header.number,
@@ -736,19 +739,19 @@ describe('Clique: Initialization', () => {
     )
     // block 2: C, next signer: A
     await addNextBlock(blockchain, blocks, C)
-    assert.ok(
+    assert.isTrue(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         A.address,
         blocks[blocks.length - 1].header.number,
       ),
     )
-    assert.notOk(
+    assert.isFalse(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         B.address,
         blocks[blocks.length - 1].header.number,
       ),
     )
-    assert.notOk(
+    assert.isFalse(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         C.address,
         blocks[blocks.length - 1].header.number,
@@ -756,19 +759,19 @@ describe('Clique: Initialization', () => {
     )
     // block 3: A, next signer: B
     await addNextBlock(blockchain, blocks, A)
-    assert.notOk(
+    assert.isFalse(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         A.address,
         blocks[blocks.length - 1].header.number,
       ),
     )
-    assert.ok(
+    assert.isTrue(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         B.address,
         blocks[blocks.length - 1].header.number,
       ),
     )
-    assert.notOk(
+    assert.isFalse(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         C.address,
         blocks[blocks.length - 1].header.number,
@@ -776,19 +779,19 @@ describe('Clique: Initialization', () => {
     )
     // block 4: B, next signer: C
     await addNextBlock(blockchain, blocks, B)
-    assert.notOk(
+    assert.isFalse(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         A.address,
         blocks[blocks.length - 1].header.number,
       ),
     )
-    assert.notOk(
+    assert.isFalse(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         B.address,
         blocks[blocks.length - 1].header.number,
       ),
     )
-    assert.ok(
+    assert.isTrue(
       await (blockchain.consensus as CliqueConsensus).cliqueSignerInTurn(
         C.address,
         blocks[blocks.length - 1].header.number,

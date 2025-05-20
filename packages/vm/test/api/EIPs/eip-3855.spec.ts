@@ -1,11 +1,9 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { EVMErrorMessage } from '@ethereumjs/evm'
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createVM } from '../../../src/index.js'
-
-import type { InterpreterStep } from '@ethereumjs/evm'
+import { EVMError } from '@ethereumjs/evm'
+import { createVM } from '../../../src/index.ts'
 
 describe('EIP 3855 tests', () => {
   const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart, eips: [3855] })
@@ -18,8 +16,9 @@ describe('EIP 3855 tests', () => {
   it('should correctly use push0 opcode', async () => {
     const vm = await createVM({ common })
     let stack: bigint[]
-    vm.evm.events!.on('step', (e: InterpreterStep) => {
+    vm.evm.events!.on('step', (e, resolve) => {
       stack = e.stack
+      resolve?.()
     })
 
     const result = await vm.evm.runCode!({
@@ -27,16 +26,17 @@ describe('EIP 3855 tests', () => {
       gasLimit: BigInt(10),
     })
 
-    assert.ok(stack!.length === 1)
-    assert.equal(stack![0], BigInt(0))
-    assert.equal(result.executionGasUsed, common.param('push0Gas'))
+    assert.strictEqual(stack!.length, 1)
+    assert.strictEqual(stack![0], BigInt(0))
+    assert.strictEqual(result.executionGasUsed, common.param('push0Gas'))
   })
 
   it('should correctly use push0 to create a stack with stack limit length', async () => {
     const vm = await createVM({ common })
     let stack: bigint[] = []
-    vm.evm.events!.on('step', (e: InterpreterStep) => {
+    vm.evm.events!.on('step', (e, resolve) => {
       stack = e.stack
+      resolve?.()
     })
 
     const depth = Number(common.param('stackLimit'))
@@ -46,13 +46,13 @@ describe('EIP 3855 tests', () => {
       gasLimit: BigInt(10000),
     })
 
-    assert.ok(stack.length === depth)
+    assert.strictEqual(stack.length, depth)
     for (const elem of stack) {
       if (elem !== BigInt(0)) {
         assert.fail('stack element is not 0')
       }
     }
-    assert.equal(result.executionGasUsed, common.param('push0Gas')! * BigInt(depth))
+    assert.strictEqual(result.executionGasUsed, common.param('push0Gas')! * BigInt(depth))
   })
 
   it('should correctly use push0 to create a stack with stack limit + 1 length', async () => {
@@ -65,7 +65,7 @@ describe('EIP 3855 tests', () => {
       gasLimit: BigInt(10000),
     })
 
-    assert.equal(result.exceptionError?.error, EVMErrorMessage.STACK_OVERFLOW)
+    assert.strictEqual(result.exceptionError?.error, EVMError.errorMessages.STACK_OVERFLOW)
   })
 
   it('push0 is not available if EIP3855 is not activated', async () => {
@@ -76,6 +76,6 @@ describe('EIP 3855 tests', () => {
       gasLimit: BigInt(10000),
     })
 
-    assert.equal(result.exceptionError!.error, EVMErrorMessage.INVALID_OPCODE)
+    assert.strictEqual(result.exceptionError!.error, EVMError.errorMessages.INVALID_OPCODE)
   })
 })

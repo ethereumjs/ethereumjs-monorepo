@@ -1,20 +1,9 @@
 import { Common, Mainnet } from '@ethereumjs/common'
+import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
 import {
-  Trie,
-  createMerkleProof,
-  createTrieFromProof,
-  updateTrieFromMerkleProof,
-  verifyTrieProof,
-} from '@ethereumjs/trie'
-import {
   Account,
-  KECCAK256_NULL,
-  KECCAK256_NULL_S,
-  KECCAK256_RLP,
-  KECCAK256_RLP_S,
-  bigIntToHex,
-  bytesToHex,
+  EthereumJSErrorWithoutCode,
   bytesToUnprefixedHex,
   concatBytes,
   createAccount,
@@ -22,7 +11,6 @@ import {
   createAddressFromString,
   equalsBytes,
   hexToBytes,
-  setLengthLeft,
   short,
   toBytes,
   unpadBytes,
@@ -32,20 +20,17 @@ import {
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { OriginalStorageCache } from './cache/index.js'
-import { modifyAccountFields } from './util.js'
+import { OriginalStorageCache } from './cache/index.ts'
+import type { Caches, MerkleStateManagerOpts } from './index.ts'
+import { modifyAccountFields } from './util.ts'
 
-import { type MerkleStateManagerOpts } from './index.js'
-
-import type { Caches, StorageProof } from './index.js'
 import type {
   AccountFields,
-  Proof,
   StateManagerInterface,
   StorageDump,
   StorageRange,
 } from '@ethereumjs/common'
-import type { Address, DB, PrefixedHexString } from '@ethereumjs/util'
+import type { Address, DB } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
 /**
@@ -66,7 +51,7 @@ export const CODEHASH_PREFIX = utf8ToBytes('c')
  * and storage slots.
  *
  * The default state manager implementation uses a
- * `@ethereumjs/trie` trie as a data backend.
+ * `@ethereumjs/mpt` trie as a data backend.
  *
  * Note that there is a `SimpleStateManager` dependency-free state
  * manager implementation available shipped with the `@ethereumjs/statemanager`
@@ -79,8 +64,8 @@ export class MerkleStateManager implements StateManagerInterface {
 
   originalStorageCache: OriginalStorageCache
 
-  protected _trie: Trie
-  protected _storageTries: { [key: string]: Trie }
+  protected _trie: MerklePatriciaTrie
+  protected _storageTries: { [key: string]: MerklePatriciaTrie }
 
   protected readonly _prefixCodeHashes: boolean
   protected readonly _prefixStorageTrieKeys: boolean
@@ -110,13 +95,13 @@ export class MerkleStateManager implements StateManagerInterface {
     this.DEBUG =
       typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
 
-    this._debug = debugDefault('statemanager:statemanager')
+    this._debug = debugDefault('statemanager:merkle')
 
     this.common = opts.common ?? new Common({ chain: Mainnet })
 
     this._checkpointCount = 0
 
-    this._trie = opts.trie ?? new Trie({ useKeyHashing: true, common: this.common })
+    this._trie = opts.trie ?? new MerklePatriciaTrie({ useKeyHashing: true, common: this.common })
     this._storageTries = {}
 
     this.keccakFunction = opts.common?.customCrypto.keccak256 ?? keccak256
@@ -277,14 +262,14 @@ export class MerkleStateManager implements StateManagerInterface {
    * @param  rootAccount (Optional) Account object whose 'storageRoot' is to be used as
    *   the root of the new storageTrie returned when there is no pre-existing trie.
    *   If left undefined, the EMPTY_TRIE_ROOT will be used as the root instead.
-   * @returns storage Trie object
+   * @returns storage MerklePatriciaTrie object
    * @private
    */
   // TODO PR: have a better interface for hashed address pull?
   protected _getStorageTrie(
     addressOrHash: Address | { bytes: Uint8Array } | Uint8Array,
     rootAccount?: Account,
-  ): Trie {
+  ): MerklePatriciaTrie {
     // use hashed key for lookup from storage cache
     const addressBytes: Uint8Array =
       addressOrHash instanceof Uint8Array ? addressOrHash : this.keccakFunction(addressOrHash.bytes)
@@ -309,7 +294,7 @@ export class MerkleStateManager implements StateManagerInterface {
    * cache or does a lookup.
    * @private
    */
-  protected _getAccountTrie(): Trie {
+  protected _getAccountTrie(): MerklePatriciaTrie {
     return this._trie
   }
 
@@ -333,7 +318,7 @@ export class MerkleStateManager implements StateManagerInterface {
    */
   async getStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
     if (key.length !== 32) {
-      throw new Error('Storage key must be 32 bytes long')
+      throw EthereumJSErrorWithoutCode('Storage key must be 32 bytes long')
     }
     const cachedValue = this._caches?.storage?.get(address, key)
     if (cachedValue !== undefined) {
@@ -361,7 +346,7 @@ export class MerkleStateManager implements StateManagerInterface {
   protected async _modifyContractStorage(
     address: Address,
     account: Account,
-    modifyTrie: (storageTrie: Trie, done: Function) => void,
+    modifyTrie: (storageTrie: MerklePatriciaTrie, done: Function) => void,
   ): Promise<void> {
     // eslint-disable-next-line no-async-promise-executor
     return new Promise(async (resolve) => {
@@ -416,16 +401,16 @@ export class MerkleStateManager implements StateManagerInterface {
    */
   async putStorage(address: Address, key: Uint8Array, value: Uint8Array): Promise<void> {
     if (key.length !== 32) {
-      throw new Error('Storage key must be 32 bytes long')
+      throw EthereumJSErrorWithoutCode('Storage key must be 32 bytes long')
     }
 
     if (value.length > 32) {
-      throw new Error('Storage value cannot be longer than 32 bytes')
+      throw EthereumJSErrorWithoutCode('Storage value cannot be longer than 32 bytes')
     }
 
     const account = await this.getAccount(address)
     if (!account) {
-      throw new Error('putStorage() called on non-existing account')
+      throw EthereumJSErrorWithoutCode('putStorage() called on non-existing account')
     }
 
     value = unpadBytes(value)
@@ -553,221 +538,6 @@ export class MerkleStateManager implements StateManagerInterface {
   }
 
   /**
-   * Get an EIP-1186 proof
-   * @param address address to get proof of
-   * @param storageSlots storage slots to get proof of
-   */
-  async getProof(address: Address, storageSlots: Uint8Array[] = []): Promise<Proof> {
-    await this.flush()
-    const account = await this.getAccount(address)
-    if (!account) {
-      const returnValue: Proof = {
-        address: address.toString(),
-        balance: '0x0',
-        codeHash: KECCAK256_NULL_S,
-        nonce: '0x0',
-        storageHash: KECCAK256_RLP_S,
-        accountProof: (await createMerkleProof(this._trie, address.bytes)).map((p) =>
-          bytesToHex(p),
-        ),
-        storageProof: [],
-      }
-      return returnValue
-    }
-    const accountProof: PrefixedHexString[] = (
-      await createMerkleProof(this._trie, address.bytes)
-    ).map((p) => bytesToHex(p))
-    const storageProof: StorageProof[] = []
-    const storageTrie = this._getStorageTrie(address, account)
-
-    for (const storageKey of storageSlots) {
-      const proof = (await createMerkleProof(storageTrie, storageKey)).map((p) => bytesToHex(p))
-      const value = bytesToHex(await this.getStorage(address, storageKey))
-      const proofItem: StorageProof = {
-        key: bytesToHex(storageKey),
-        value: value === '0x' ? '0x0' : value, // Return '0x' values as '0x0' since this is a JSON RPC response
-        proof,
-      }
-      storageProof.push(proofItem)
-    }
-
-    const returnValue: Proof = {
-      address: address.toString(),
-      balance: bigIntToHex(account.balance),
-      codeHash: bytesToHex(account.codeHash),
-      nonce: bigIntToHex(account.nonce),
-      storageHash: bytesToHex(account.storageRoot),
-      accountProof,
-      storageProof,
-    }
-    return returnValue
-  }
-
-  /**
-   * Create a StateManager and initialize this with proof(s) gotten previously from getProof
-   * This generates a (partial) StateManager where one can retrieve all items from the proof
-   * @param proof Either a proof retrieved from `getProof`, or an array of those proofs
-   * @param safe Whether or not to verify that the roots of the proof items match the reported roots
-   * @param opts a dictionary of StateManager opts
-   * @returns A new MerkleStateManager with elements from the given proof included in its backing state trie
-   */
-  static async fromProof(
-    proof: Proof | Proof[],
-    safe: boolean = false,
-    opts: MerkleStateManagerOpts = {},
-  ): Promise<MerkleStateManager> {
-    if (Array.isArray(proof)) {
-      if (proof.length === 0) {
-        return new MerkleStateManager(opts)
-      } else {
-        const trie =
-          opts.trie ??
-          (await createTrieFromProof(
-            proof[0].accountProof.map((e) => hexToBytes(e)),
-            { useKeyHashing: true },
-          ))
-        const sm = new MerkleStateManager({ ...opts, trie })
-        const address = createAddressFromString(proof[0].address)
-        await sm.addStorageProof(proof[0].storageProof, proof[0].storageHash, address, safe)
-        for (let i = 1; i < proof.length; i++) {
-          const proofItem = proof[i]
-          await sm.addProofData(proofItem, true)
-        }
-        await sm.flush() // TODO verify if this is necessary
-        return sm
-      }
-    } else {
-      return MerkleStateManager.fromProof([proof], safe, opts)
-    }
-  }
-
-  /**
-   * Adds a storage proof to the state manager
-   * @param storageProof The storage proof
-   * @param storageHash The root hash of the storage trie
-   * @param address The address
-   * @param safe Whether or not to verify if the reported roots match the current storage root
-   */
-  private async addStorageProof(
-    storageProof: StorageProof[],
-    storageHash: PrefixedHexString,
-    address: Address,
-    safe: boolean = false,
-  ) {
-    const trie = this._getStorageTrie(address)
-    trie.root(hexToBytes(storageHash))
-    for (let i = 0; i < storageProof.length; i++) {
-      await updateTrieFromMerkleProof(
-        trie,
-        storageProof[i].proof.map((e) => hexToBytes(e)),
-        safe,
-      )
-    }
-  }
-
-  /**
-   * Add proof(s) into an already existing trie
-   * @param proof The proof(s) retrieved from `getProof`
-   * @param verifyRoot verify that all proof root nodes match statemanager's stateroot - should be
-   * set to `false` when constructing a state manager where the underlying trie has proof nodes from different state roots
-   */
-  async addProofData(proof: Proof | Proof[], safe: boolean = false) {
-    if (Array.isArray(proof)) {
-      for (let i = 0; i < proof.length; i++) {
-        await updateTrieFromMerkleProof(
-          this._trie,
-          proof[i].accountProof.map((e) => hexToBytes(e)),
-          safe,
-        )
-        await this.addStorageProof(
-          proof[i].storageProof,
-          proof[i].storageHash,
-          createAddressFromString(proof[i].address),
-          safe,
-        )
-      }
-    } else {
-      await this.addProofData([proof], safe)
-    }
-  }
-
-  /**
-   * Verify an EIP-1186 proof. Throws if proof is invalid, otherwise returns true.
-   * @param proof the proof to prove
-   */
-  async verifyProof(proof: Proof): Promise<boolean> {
-    const key = hexToBytes(proof.address)
-    const accountProof = proof.accountProof.map((rlpString: PrefixedHexString) =>
-      hexToBytes(rlpString),
-    )
-
-    // This returns the account if the proof is valid.
-    // Verify that it matches the reported account.
-    const value = await verifyTrieProof(key, accountProof, {
-      useKeyHashing: true,
-    })
-
-    if (value === null) {
-      // Verify that the account is empty in the proof.
-      const emptyBytes = new Uint8Array(0)
-      const notEmptyErrorMsg = 'Invalid proof provided: account is not empty'
-      const nonce = unpadBytes(hexToBytes(proof.nonce))
-      if (!equalsBytes(nonce, emptyBytes)) {
-        throw new Error(`${notEmptyErrorMsg} (nonce is not zero)`)
-      }
-      const balance = unpadBytes(hexToBytes(proof.balance))
-      if (!equalsBytes(balance, emptyBytes)) {
-        throw new Error(`${notEmptyErrorMsg} (balance is not zero)`)
-      }
-      const storageHash = hexToBytes(proof.storageHash)
-      if (!equalsBytes(storageHash, KECCAK256_RLP)) {
-        throw new Error(`${notEmptyErrorMsg} (storageHash does not equal KECCAK256_RLP)`)
-      }
-      const codeHash = hexToBytes(proof.codeHash)
-      if (!equalsBytes(codeHash, KECCAK256_NULL)) {
-        throw new Error(`${notEmptyErrorMsg} (codeHash does not equal KECCAK256_NULL)`)
-      }
-    } else {
-      const account = createAccountFromRLP(value)
-      const { nonce, balance, storageRoot, codeHash } = account
-      const invalidErrorMsg = 'Invalid proof provided:'
-      if (nonce !== BigInt(proof.nonce)) {
-        throw new Error(`${invalidErrorMsg} nonce does not match`)
-      }
-      if (balance !== BigInt(proof.balance)) {
-        throw new Error(`${invalidErrorMsg} balance does not match`)
-      }
-      if (!equalsBytes(storageRoot, hexToBytes(proof.storageHash))) {
-        throw new Error(`${invalidErrorMsg} storageHash does not match`)
-      }
-      if (!equalsBytes(codeHash, hexToBytes(proof.codeHash))) {
-        throw new Error(`${invalidErrorMsg} codeHash does not match`)
-      }
-    }
-
-    for (const stProof of proof.storageProof) {
-      const storageProof = stProof.proof.map((value: PrefixedHexString) => hexToBytes(value))
-      const storageValue = setLengthLeft(hexToBytes(stProof.value), 32)
-      const storageKey = hexToBytes(stProof.key)
-      const proofValue = await verifyTrieProof(storageKey, storageProof, {
-        useKeyHashing: true,
-      })
-      const reportedValue = setLengthLeft(
-        RLP.decode(proofValue ?? new Uint8Array(0)) as Uint8Array,
-        32,
-      )
-      if (!equalsBytes(reportedValue, storageValue)) {
-        throw new Error(
-          `Reported trie value does not match storage, key: ${stProof.key}, reported: ${bytesToHex(
-            reportedValue,
-          )}, actual: ${bytesToHex(storageValue)}`,
-        )
-      }
-    }
-    return true
-  }
-
-  /**
    * Gets the state-root of the Merkle-Patricia trie representation
    * of the state of this StateManager. Will error if there are uncommitted
    * checkpoints on the instance.
@@ -791,7 +561,7 @@ export class MerkleStateManager implements StateManagerInterface {
     if (!equalsBytes(stateRoot, this._trie.EMPTY_TRIE_ROOT)) {
       const hasRoot = await this._trie.checkRoot(stateRoot)
       if (!hasRoot) {
-        throw new Error('State trie does not contain state root')
+        throw EthereumJSErrorWithoutCode('State trie does not contain state root')
       }
     }
 
@@ -813,7 +583,7 @@ export class MerkleStateManager implements StateManagerInterface {
     await this.flush()
     const account = await this.getAccount(address)
     if (!account) {
-      throw new Error(`dumpStorage f() can only be called for an existing account`)
+      throw EthereumJSErrorWithoutCode(`dumpStorage f() can only be called for an existing account`)
     }
     const trie = this._getStorageTrie(address, account)
 
@@ -833,13 +603,13 @@ export class MerkleStateManager implements StateManagerInterface {
    */
   async dumpStorageRange(address: Address, startKey: bigint, limit: number): Promise<StorageRange> {
     if (!Number.isSafeInteger(limit) || limit < 0) {
-      throw new Error(`Limit is not a proper uint.`)
+      throw EthereumJSErrorWithoutCode(`Limit is not a proper uint.`)
     }
 
     await this.flush()
     const account = await this.getAccount(address)
     if (!account) {
-      throw new Error(`Account does not exist.`)
+      throw EthereumJSErrorWithoutCode(`Account does not exist.`)
     }
 
     const trie = this._getStorageTrie(address, account)
@@ -869,7 +639,7 @@ export class MerkleStateManager implements StateManagerInterface {
    */
   async generateCanonicalGenesis(initState: any): Promise<void> {
     if (this._checkpointCount !== 0) {
-      throw new Error('Cannot create genesis state with uncommitted checkpoints')
+      throw EthereumJSErrorWithoutCode('Cannot create genesis state with uncommitted checkpoints')
     }
     if (this.DEBUG) {
       this._debug(`Save genesis state into the state trie`)

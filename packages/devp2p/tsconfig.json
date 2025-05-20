@@ -1,16 +1,16 @@
 {
   "extends": "../../config/tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist"
+  },
   "include": [
     "src/**/*.ts",
     "test/**/*.ts",
     "examples/**/*.ts",
     "scripts/**/*.ts",
-    "examples/simple.cts",
-    "examples/peer-communication.cts",
-    "examples/peer-communication-les.cts",
-    "scripts/singlePeerRun.cts"
-  ],
-  "compilerOptions": {
-    "typeRoots": ["node_modules/@types", "src/@types"]
-  }
+    "examples/simple.ts",
+    "examples/peer-communication.ts",
+    "examples/peer-communication-les.ts",
+    "scripts/singlePeerRun.ts"
+  ]
 }

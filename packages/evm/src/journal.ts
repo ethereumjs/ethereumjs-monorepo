@@ -1,14 +1,15 @@
 import { Hardfork } from '@ethereumjs/common'
 import {
   Address,
+  EthereumJSErrorWithoutCode,
   RIPEMD160_ADDRESS_STRING,
   bytesToHex,
   bytesToUnprefixedHex,
+  hexToBytes,
   stripHexPrefix,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
-import { hexToBytes } from 'ethereum-cryptography/utils'
 
 import type { Common, StateManagerInterface } from '@ethereumjs/common'
 import type { Account, PrefixedHexString } from '@ethereumjs/util'
@@ -53,7 +54,7 @@ export class Journal {
     this.DEBUG =
       typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
 
-    this._debug = debugDefault('statemanager:statemanager')
+    this._debug = debugDefault('evm:journal')
 
     // TODO maybe call into this.clearJournal
     this.cleanJournal()
@@ -99,7 +100,7 @@ export class Journal {
     if (this.preimages !== undefined) {
       const bytesAddress = unprefixedHexToBytes(address)
       if (this.stateManager.getAppliedKey === undefined) {
-        throw new Error(
+        throw EthereumJSErrorWithoutCode(
           'touchAccount: stateManager.getAppliedKey can not be undefined if preimage storing is enabled',
         )
       }

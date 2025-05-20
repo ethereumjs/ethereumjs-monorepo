@@ -1,10 +1,10 @@
+import { verifyMerkleRangeProof } from '@ethereumjs/mpt'
 import { MerkleStateManager } from '@ethereumjs/statemanager'
-import { verifyTrieRangeProof } from '@ethereumjs/trie'
 import {
   BIGINT_0,
   BIGINT_1,
-  BIGINT_100,
   BIGINT_2EXP256,
+  BIGINT_100,
   KECCAK256_NULL,
   KECCAK256_RLP,
   accountBodyToRLP,
@@ -17,24 +17,23 @@ import {
   setLengthLeft,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { Event } from '../../types.js'
-import { short } from '../../util/index.js'
+import { Event } from '../../types.ts'
+import { short } from '../../util/index.ts'
 
-import { ByteCodeFetcher } from './bytecodefetcher.js'
-import { Fetcher } from './fetcher.js'
-import { StorageFetcher } from './storagefetcher.js'
-import { TrieNodeFetcher } from './trienodefetcher.js'
-import { getInitFetcherDoneFlags } from './types.js'
+import { ByteCodeFetcher } from './bytecodefetcher.ts'
+import { Fetcher } from './fetcher.ts'
+import { StorageFetcher } from './storagefetcher.ts'
+import { TrieNodeFetcher } from './trienodefetcher.ts'
+import { getInitFetcherDoneFlags } from './types.ts'
 
-import type { Peer } from '../../net/peer/index.js'
-import type { AccountData } from '../../net/protocol/snapprotocol.js'
-import type { FetcherOptions } from './fetcher.js'
-import type { StorageRequest } from './storagefetcher.js'
-import type { Job, SnapFetcherDoneFlags } from './types.js'
-import type { Trie } from '@ethereumjs/trie'
+import type { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import type { Debugger } from 'debug'
+import type { Peer } from '../../net/peer/index.ts'
+import type { AccountData } from '../../net/protocol/snapprotocol.ts'
+import type { FetcherOptions } from './fetcher.ts'
+import type { StorageRequest } from './storagefetcher.ts'
+import type { Job, SnapFetcherDoneFlags } from './types.ts'
 
 type AccountDataResponse = AccountData[] & { completed?: boolean }
 
@@ -70,7 +69,7 @@ export type JobTask = {
 export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData> {
   protected debug: Debugger
   stateManager: MerkleStateManager
-  accountTrie: Trie
+  accountTrie: MerklePatriciaTrie
 
   root: Uint8Array
   highestKnownHash: Uint8Array | undefined
@@ -99,7 +98,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     this.stateManager = options.stateManager ?? new MerkleStateManager()
     this.accountTrie = this.stateManager['_getAccountTrie']()
 
-    this.debug = debugDefault('client:AccountFetcher')
+    this.debug = debugDefault('client:fetcher:account')
 
     this.storageFetcher = new StorageFetcher({
       config: this.config,
@@ -218,7 +217,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
 
       return true
     } catch (error) {
-      this.config.logger.error(`Error while fetching snapsync: ${error}`)
+      this.config.logger?.error(`Error while fetching snapsync: ${error}`)
       return false
     } finally {
       this.fetcherDoneFlags.syncing = false
@@ -226,11 +225,10 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     }
   }
 
-  snapFetchersCompleted(fetcherType: Object, root?: Uint8Array): void {
+  snapFetchersCompleted(fetcherType: object, root?: Uint8Array): void {
     const fetcherDoneFlags = this.fetcherDoneFlags
 
     switch (fetcherType) {
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
       case AccountFetcher:
         fetcherDoneFlags.accountFetcher.done = true
         fetcherDoneFlags.accountFetcher.first = BIGINT_2EXP256
@@ -242,7 +240,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
             BIGINT_2EXP256,
             BIGINT_100,
           )
-          this.config.logger.warn(
+          this.config.logger?.warn(
             `accountFetcher completed with pending range done=${fetcherProgress}%`,
           )
         }
@@ -256,7 +254,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
             fetcherDoneFlags.storageFetcher.count,
             BIGINT_100,
           )
-          this.config.logger.warn(
+          this.config.logger?.warn(
             `storageFetcher completed with pending tasks done=${reqsDone}% of ${fetcherDoneFlags.storageFetcher.count} queued=${this.storageFetcher.storageRequests.length}`,
           )
         }
@@ -271,7 +269,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
             fetcherDoneFlags.byteCodeFetcher.count,
             BIGINT_100,
           )
-          this.config.logger.warn(
+          this.config.logger?.warn(
             `byteCodeFetcher completed with pending tasks done=${reqsDone}% of ${fetcherDoneFlags.byteCodeFetcher.count}`,
           )
         }
@@ -324,19 +322,25 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     const keys = accounts.map((acc: any) => acc.hash)
     const values = accounts.map((acc: any) => accountBodyToRLP(acc.body))
     // convert the request to the right values
-    return verifyTrieRangeProof(stateRoot, origin, keys[keys.length - 1], keys, values, proof, {
-      common: this.config.chainCommon,
-      useKeyHashingFunction: this.config.chainCommon?.customCrypto?.keccak256 ?? keccak256,
-    })
+    return verifyMerkleRangeProof(
+      stateRoot,
+      origin,
+      keys[keys.length - 1],
+      keys,
+      values,
+      proof,
+      this.config.chainCommon?.customCrypto?.keccak256,
+    )
   }
 
   private getOrigin(job: Job<JobTask, AccountData[], AccountData>): Uint8Array {
     const { task, partialResult } = job
     const { first } = task
     // Snap protocol will automatically pad it with 32 bytes left, so we don't need to worry
-    const origin = partialResult
-      ? bigIntToBytes(bytesToBigInt(partialResult[partialResult.length - 1].hash) + BIGINT_1)
-      : bigIntToBytes(first)
+    const origin =
+      partialResult !== undefined
+        ? bigIntToBytes(bytesToBigInt(partialResult[partialResult.length - 1].hash) + BIGINT_1)
+        : bigIntToBytes(first)
     return setLengthLeft(origin, 32)
   }
 
@@ -405,14 +409,13 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
       // check zero-element proof
       if (rangeResult.proof.length > 0) {
         try {
-          const isMissingRightRange = await verifyTrieRangeProof(
+          const isMissingRightRange = await verifyMerkleRangeProof(
             this.root,
             origin,
             null,
             [],
             [],
-            <any>rangeResult.proof,
-            { useKeyHashingFunction: keccak256 },
+            rangeResult.proof,
           )
           // if proof is false, reject corrupt peer
           if (isMissingRightRange !== false) return undefined
@@ -468,9 +471,12 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     const fullResult = (job.partialResult ?? []).concat(result)
 
     // update highest known hash
-    const highestReceivedhash = result.at(-1)?.hash as Uint8Array
+    const highestReceivedhash = result.at(-1)?.hash
     if (this.highestKnownHash) {
-      if (compareBytes(highestReceivedhash, this.highestKnownHash) > 0) {
+      if (
+        highestReceivedhash !== undefined &&
+        compareBytes(highestReceivedhash, this.highestKnownHash) > 0
+      ) {
         this.highestKnownHash = highestReceivedhash
       }
     } else {

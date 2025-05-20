@@ -1,19 +1,19 @@
 import { assert, describe, it } from 'vitest'
 
-import { RLP, utils } from '../src/index.js'
+import { RLP, utils } from '../src/index.ts'
 
-import * as official from './fixture/rlptest.json'
-import { numberToBytes } from './utils.js'
+import { rlpTestData } from './fixture/rlptest.ts'
+import { numberToBytes } from './utils.ts'
 
 const { bytesToHex, hexToBytes } = utils
 
 describe('official tests', () => {
-  for (const [testName, test] of Object.entries(official.tests)) {
+  for (const [testName, test] of Object.entries(rlpTestData.tests)) {
     it(`should pass ${testName}`, () => {
       let incoming: any = test.in
       // if we are testing a big number
       if (incoming[0] === '#') {
-        incoming = numberToBytes(BigInt(incoming.slice(1))) // eslint-disable-line
+        incoming = numberToBytes(BigInt(incoming.slice(1)))
       }
 
       const encoded = RLP.encode(incoming)

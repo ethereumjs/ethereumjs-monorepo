@@ -7,10 +7,9 @@ import { createAddressFromString, createContractAddress } from '@ethereumjs/util
 import { runBlock } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
-import { INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import { createClient, createManager, getRPCClient, startRPC } from '../helpers.js'
+import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
+import { createClient, createManager, getRPCClient, startRPC } from '../helpers.ts'
 
-import type { FullEthereumService } from '../../../src/service/index.js'
 import type { Block } from '@ethereumjs/block'
 
 const method = 'eth_getCode'
@@ -25,7 +24,7 @@ describe(method, () => {
     const manager = createManager(client)
     const rpc = getRPCClient(startRPC(manager.getMethods()))
 
-    const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
+    const { execution } = client.service
     assert.notEqual(execution, undefined, 'should have valid execution')
     const { vm } = execution
     await vm.stateManager.generateCanonicalGenesis!(getGenesis(1))
@@ -35,7 +34,7 @@ describe(method, () => {
 
     // verify code is null
     const res = await rpc.request(method, [address.toString(), 'latest'])
-    assert.equal(res.result, '0x', 'should return the correct code')
+    assert.strictEqual(res.result, '0x', 'should return the correct code')
   })
 
   it('ensure returns correct code', async () => {
@@ -49,7 +48,7 @@ describe(method, () => {
     const manager = createManager(client)
     const rpc = getRPCClient(startRPC(manager.getMethods()))
 
-    const { execution } = client.services.find((s) => s.name === 'eth') as FullEthereumService
+    const { execution } = client.service
     assert.notEqual(execution, undefined, 'should have valid execution')
     const { vm } = execution
 
@@ -89,14 +88,14 @@ describe(method, () => {
     await vm.blockchain.putBlock(ranBlock!)
 
     const expectedContractAddress = createContractAddress(address, BigInt(0))
-    assert.ok(
+    assert.isTrue(
       createdAddress!.equals(expectedContractAddress),
       'should match the expected contract address',
     )
 
     // verify contract has code
     const res = await rpc.request(method, [expectedContractAddress.toString(), 'latest'])
-    assert.equal(res.result, code, 'should return the correct code')
+    assert.strictEqual(res.result, code, 'should return the correct code')
   })
 
   it('call with unsupported block argument', async () => {
@@ -107,7 +106,7 @@ describe(method, () => {
     const rpc = getRPCClient(startRPC(manager.getMethods()))
 
     const res = await rpc.request(method, ['0xccfd725760a68823ff1e062f4cc97e1360e8d997', 'pending'])
-    assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('"pending" is not yet supported'))
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
+    assert.isTrue(res.error.message.includes('"pending" is not yet supported'))
   })
 })

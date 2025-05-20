@@ -3,9 +3,8 @@ import { createLegacyTx } from '@ethereumjs/tx'
 import { Account, Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createVM, runTx } from '../../../src/index.js'
+import { createVM, runTx } from '../../../src/index.ts'
 
-import type { InterpreterStep } from '@ethereumjs/evm'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 const address = new Address(hexToBytes(`0x${'11'.repeat(20)}`))
@@ -118,11 +117,12 @@ describe('EIP-3529 tests', () => {
 
     let gasRefund: bigint
     let gasLeft: bigint
-    vm.evm.events!.on('step', (step: InterpreterStep) => {
+    vm.evm.events!.on('step', (step, resolve) => {
       if (step.opcode.name === 'STOP') {
         gasRefund = step.gasRefund
         gasLeft = step.gasLeft
       }
+      resolve?.()
     })
 
     const gasLimit = BigInt(100000)
@@ -149,8 +149,8 @@ describe('EIP-3529 tests', () => {
 
       const gasUsed = gasLimit - gasLeft!
       const effectiveGas = gasUsed - gasRefund!
-      assert.equal(effectiveGas, BigInt(testCase.effectiveGas), 'correct effective gas')
-      assert.equal(gasUsed, BigInt(testCase.usedGas), 'correct used gas')
+      assert.strictEqual(effectiveGas, BigInt(testCase.effectiveGas), 'correct effective gas')
+      assert.strictEqual(gasUsed, BigInt(testCase.usedGas), 'correct used gas')
 
       // clear the storage cache, otherwise next test will use current original value
       vm.stateManager.originalStorageCache.clear()
@@ -170,8 +170,12 @@ describe('EIP-3529 tests', () => {
       skipHardForkValidation: true,
     })
 
-    assert.equal(result.execResult.exceptionError, undefined, 'transaction executed successfully')
-    assert.equal(result.gasRefund, BigInt(0), 'gas refund is zero')
+    assert.strictEqual(
+      result.execResult.exceptionError,
+      undefined,
+      'transaction executed successfully',
+    )
+    assert.strictEqual(result.gasRefund, BigInt(0), 'gas refund is zero')
   })
 
   it('refunds are capped at 1/5 of the tx gas used', async () => {
@@ -184,13 +188,14 @@ describe('EIP-3529 tests', () => {
 
     let startGas: bigint
     let finalGas: bigint
-    vm.evm.events!.on('step', (step: InterpreterStep) => {
+    vm.evm.events!.on('step', (step, resolve) => {
       if (startGas === undefined) {
         startGas = step.gasLeft
       }
       if (step.opcode.name === 'STOP') {
         finalGas = step.gasLeft
       }
+      resolve?.()
     })
 
     const address = new Address(hexToBytes(`0x${'20'.repeat(20)}`))
@@ -222,7 +227,7 @@ describe('EIP-3529 tests', () => {
     const actualGasUsed = startGas! - finalGas! + BigInt(21000)
     const maxRefund = actualGasUsed / BigInt(5)
     const minGasUsed = actualGasUsed - maxRefund
-    assert.ok(result.gasRefund! > maxRefund, 'refund is larger than the max refund')
-    assert.ok(result.totalGasSpent >= minGasUsed, 'gas used respects the max refund quotient')
+    assert.isTrue(result.gasRefund! > maxRefund, 'refund is larger than the max refund')
+    assert.isTrue(result.totalGasSpent >= minGasUsed, 'gas used respects the max refund quotient')
   })
 })

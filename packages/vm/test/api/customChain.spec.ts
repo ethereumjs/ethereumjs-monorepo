@@ -1,23 +1,21 @@
 import { createBlock } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
-import { createTxFromTxData } from '@ethereumjs/tx'
+import { customChainConfig, testnetMergeChainConfig } from '@ethereumjs/testdata'
+import { createTx } from '@ethereumjs/tx'
 import {
   bytesToHex,
   createAddressFromPrivateKey,
   createAddressFromString,
   hexToBytes,
 } from '@ethereumjs/util'
-import { Interface } from '@ethersproject/abi' // cspell:disable-line
+import { Interface } from 'ethers'
 import { assert, describe, it } from 'vitest'
 
-import { createVM, runTx } from '../../src/index.js'
+import { createVM, runTx } from '../../src/index.ts'
 
-import * as testChain from './testdata/testnet.json'
-import * as testnetMerge from './testdata/testnetMerge.json'
-
-import type { ChainConfig } from '@ethereumjs/common'
-import type { AccountState, GenesisState, PrefixedHexString } from '@ethereumjs/util'
+import type { AccountState, GenesisState } from '@ethereumjs/common'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 const storage: Array<[PrefixedHexString, PrefixedHexString]> = [
   [
@@ -49,7 +47,7 @@ const genesisState: GenesisState = {
   [contractAddress]: accountState,
 }
 
-const common = createCustomCommon(testChain.default as ChainConfig, Mainnet, {
+const common = createCustomCommon(customChainConfig, Mainnet, {
   hardfork: Hardfork.Chainstart,
 })
 const block = createBlock(
@@ -71,7 +69,7 @@ describe('VM initialized with custom state', () => {
     await vm.stateManager.generateCanonicalGenesis!(genesisState)
 
     const to = '0x00000000000000000000000000000000000000ff'
-    const tx = createTxFromTxData(
+    const tx = createTx(
       {
         type: 0,
         to,
@@ -89,8 +87,8 @@ describe('VM initialized with custom state', () => {
     const toAddress = createAddressFromString(to)
     const receiverAddress = await vm.stateManager.getAccount(toAddress)
 
-    assert.equal(result.totalGasSpent.toString(), '21000')
-    assert.equal(receiverAddress!.balance.toString(), '1')
+    assert.strictEqual(result.totalGasSpent.toString(), '21000')
+    assert.strictEqual(receiverAddress!.balance.toString(), '1')
   })
 
   it('should retrieve value from storage', async () => {
@@ -98,31 +96,29 @@ describe('VM initialized with custom state', () => {
     common.setHardfork(Hardfork.London)
     const vm = await createVM({ blockchain, common })
     await vm.stateManager.generateCanonicalGenesis!(genesisState)
-    const sigHash = new Interface(['function retrieve()']).getSighash(
-      'retrieve',
-    ) as PrefixedHexString
+    const calldata = new Interface(['function retrieve()']).getFunction('retrieve')!.selector
 
     const callResult = await vm.evm.runCall({
       to: createAddressFromString(contractAddress),
-      data: hexToBytes(sigHash),
+      data: hexToBytes(calldata as PrefixedHexString),
       caller: createAddressFromPrivateKey(privateKey),
     })
 
     const storage = genesisState[contractAddress][2]
     // Returned value should be 4, because we are trying to trigger the method `retrieve`
     // in the contract, which returns the variable stored in slot 0x00..00
-    assert.equal(bytesToHex(callResult.execResult.returnValue), storage[0][1])
+    assert.strictEqual(bytesToHex(callResult.execResult.returnValue), storage?.[0][1])
   })
 
   it('setHardfork', async () => {
-    const common = createCustomCommon(testnetMerge.default as ChainConfig, Mainnet, {
+    const common = createCustomCommon(testnetMergeChainConfig, Mainnet, {
       hardfork: Hardfork.Istanbul,
     })
 
     let vm = await createVM({ common, setHardfork: true })
-    assert.equal((vm as any)._setHardfork, true, 'should set setHardfork option')
+    assert.strictEqual(vm['_setHardfork'], true, 'should set setHardfork option')
 
     vm = await createVM({ common, setHardfork: 5001 })
-    assert.equal((vm as any)._setHardfork, BigInt(5001), 'should set setHardfork option')
+    assert.strictEqual(vm['_setHardfork'], 5001, 'should set setHardfork option')
   })
 })

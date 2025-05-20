@@ -1,19 +1,20 @@
 import {
   createBlock,
   createSealedCliqueBlock,
-  genRequestsTrieRoot,
+  genRequestsRoot,
   genTransactionsTrieRoot,
   genWithdrawalsTrieRoot,
 } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
+import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
-import { Trie } from '@ethereumjs/trie'
 import { Blob4844Tx, createMinimal4844TxFromNetworkWrapper } from '@ethereumjs/tx'
 import {
   Address,
   BIGINT_0,
   BIGINT_1,
   BIGINT_2,
+  EthereumJSErrorWithoutCode,
   GWEI_TO_WEI,
   KECCAK256_RLP,
   TypeOutput,
@@ -21,36 +22,36 @@ import {
   createZeroAddress,
   toBytes,
   toType,
-  zeros,
 } from '@ethereumjs/util'
+import { sha256 } from 'ethereum-cryptography/sha256.js'
 
-import { Bloom } from './bloom/index.js'
-import { accumulateRequests } from './requests.js'
+import { Bloom } from './bloom/index.ts'
+import { runTx } from './index.ts'
+import { accumulateRequests } from './requests.ts'
 import {
   accumulateParentBeaconBlockRoot,
   accumulateParentBlockHash,
   calculateMinerReward,
   encodeReceipt,
   rewardAccount,
-} from './runBlock.js'
+} from './runBlock.ts'
 
-import { runTx } from './index.js'
-
-import type { BuildBlockOpts, BuilderOpts, RunTxResult, SealBlockOpts } from './types.js'
-import type { VM } from './vm.js'
 import type { Block, HeaderData } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { Withdrawal } from '@ethereumjs/util'
+import type { BuildBlockOpts, BuilderOpts, RunTxResult, SealBlockOpts } from './types.ts'
+import type { VM } from './vm.ts'
 
-export enum BuildStatus {
-  Reverted = 'reverted',
-  Build = 'build',
-  Pending = 'pending',
-}
+export type BuildStatus = (typeof BuildStatus)[keyof typeof BuildStatus]
+export const BuildStatus = {
+  Reverted: 'reverted',
+  Build: 'build',
+  Pending: 'pending',
+} as const
 
 type BlockStatus =
-  | { status: BuildStatus.Pending | BuildStatus.Reverted }
-  | { status: BuildStatus.Build; block: Block }
+  | { status: typeof BuildStatus.Pending | typeof BuildStatus.Reverted }
+  | { status: typeof BuildStatus.Build; block: Block }
 
 export class BlockBuilder {
   /**
@@ -90,7 +91,7 @@ export class BlockBuilder {
 
     this.headerData = {
       ...opts.headerData,
-      parentHash: opts.parentBlock.hash(),
+      parentHash: opts.headerData?.parentHash ?? opts.parentBlock.hash(),
       number: opts.headerData?.number ?? opts.parentBlock.header.number + BIGINT_1,
       gasLimit: opts.headerData?.gasLimit ?? opts.parentBlock.header.gasLimit,
       timestamp: opts.headerData?.timestamp ?? Math.round(Date.now() / 1000),
@@ -120,7 +121,7 @@ export class BlockBuilder {
       this.vm.common.isActivatedEIP(4844) &&
       typeof this.headerData.excessBlobGas === 'undefined'
     ) {
-      this.headerData.excessBlobGas = opts.parentBlock.header.calcNextExcessBlobGas()
+      this.headerData.excessBlobGas = opts.parentBlock.header.calcNextExcessBlobGas(this.vm.common)
     }
   }
 
@@ -129,10 +130,10 @@ export class BlockBuilder {
    */
   private checkStatus() {
     if (this.blockStatus.status === BuildStatus.Build) {
-      throw new Error('Block has already been built')
+      throw EthereumJSErrorWithoutCode('Block has already been built')
     }
     if (this.blockStatus.status === BuildStatus.Reverted) {
-      throw new Error('State has already been reverted')
+      throw EthereumJSErrorWithoutCode('State has already been reverted')
     }
   }
 
@@ -144,7 +145,10 @@ export class BlockBuilder {
    * Calculates and returns the transactionsTrie for the block.
    */
   public async transactionsTrie() {
-    return genTransactionsTrieRoot(this.transactions, new Trie({ common: this.vm.common }))
+    return genTransactionsTrieRoot(
+      this.transactions,
+      new MerklePatriciaTrie({ common: this.vm.common }),
+    )
   }
 
   /**
@@ -166,7 +170,7 @@ export class BlockBuilder {
     if (this.transactionResults.length === 0) {
       return KECCAK256_RLP
     }
-    const receiptTrie = new Trie({ common: this.vm.common })
+    const receiptTrie = new MerklePatriciaTrie({ common: this.vm.common })
     for (const [i, txResult] of this.transactionResults.entries()) {
       const tx = this.transactions[i]
       const encodedReceipt = encodeReceipt(txResult.receipt, tx.type)
@@ -213,7 +217,10 @@ export class BlockBuilder {
    */
   async addTransaction(
     tx: TypedTransaction,
-    { skipHardForkValidation }: { skipHardForkValidation?: boolean } = {},
+    {
+      skipHardForkValidation,
+      allowNoBlobs,
+    }: { skipHardForkValidation?: boolean; allowNoBlobs?: boolean } = {},
   ) {
     this.checkStatus()
 
@@ -226,12 +233,14 @@ export class BlockBuilder {
     // cannot be greater than the remaining gas in the block
     const blockGasLimit = toType(this.headerData.gasLimit, TypeOutput.BigInt)
 
-    const blobGasLimit = this.vm.common.param('maxblobGasPerBlock')
+    const blobGasLimit = this.vm.common.param('maxBlobGasPerBlock')
     const blobGasPerBlob = this.vm.common.param('blobGasPerBlob')
 
     const blockGasRemaining = blockGasLimit - this.gasUsed
     if (tx.gasLimit > blockGasRemaining) {
-      throw new Error('tx has a higher gas limit than the remaining gas in the block')
+      throw EthereumJSErrorWithoutCode(
+        'tx has a higher gas limit than the remaining gas in the block',
+      )
     }
     let blobGasUsed = undefined
     if (tx instanceof Blob4844Tx) {
@@ -242,11 +251,15 @@ export class BlockBuilder {
 
       // Guard against the case if a tx came into the pool without blobs i.e. network wrapper payload
       if (blobTx.blobs === undefined) {
-        throw new Error('blobs missing for 4844 transaction')
+        // TODO: verify if we want this, do we want to allow the block builder to accept blob txs without the actual blobs?
+        // (these must have at least one `blobVersionedHashes`, this is verified at tx-level)
+        if (allowNoBlobs !== true) {
+          throw EthereumJSErrorWithoutCode('blobs missing for 4844 transaction')
+        }
       }
 
       if (this.blobGasUsed + BigInt(blobTx.numBlobs()) * blobGasPerBlob > blobGasLimit) {
-        throw new Error('block blob gas limit reached')
+        throw EthereumJSErrorWithoutCode('block blob gas limit reached')
       }
 
       blobGasUsed = this.blobGasUsed
@@ -316,7 +329,10 @@ export class BlockBuilder {
 
     const transactionsTrie = await this.transactionsTrie()
     const withdrawalsRoot = this.withdrawals
-      ? await genWithdrawalsTrieRoot(this.withdrawals, new Trie({ common: this.vm.common }))
+      ? await genWithdrawalsTrieRoot(
+          this.withdrawals,
+          new MerklePatriciaTrie({ common: this.vm.common }),
+        )
       : undefined
     const receiptTrie = await this.receiptTrie()
     const logsBloom = this.logsBloom()
@@ -330,11 +346,11 @@ export class BlockBuilder {
     }
 
     let requests
-    let requestsRoot
+    let requestsHash
     if (this.vm.common.isActivatedEIP(7685)) {
+      const sha256Function = this.vm.common.customCrypto.sha256 ?? sha256
       requests = await accumulateRequests(this.vm, this.transactionResults)
-      requestsRoot = await genRequestsTrieRoot(requests)
-      // Do other validations per request type
+      requestsHash = genRequestsRoot(requests, sha256Function)
     }
 
     // get stateRoot after all the accumulateRequests etc have been done
@@ -350,7 +366,7 @@ export class BlockBuilder {
       timestamp,
       // correct excessBlobGas should already be part of headerData used above
       blobGasUsed,
-      requestsRoot,
+      requestsHash,
     }
 
     if (consensusType === ConsensusType.ProofOfWork) {
@@ -362,7 +378,6 @@ export class BlockBuilder {
       header: headerData,
       transactions: this.transactions,
       withdrawals: this.withdrawals,
-      requests,
     }
 
     let block
@@ -383,7 +398,7 @@ export class BlockBuilder {
       this.checkpointed = false
     }
 
-    return block
+    return { block, requests }
   }
 
   async initState() {
@@ -397,7 +412,7 @@ export class BlockBuilder {
       // timestamp should already be set in constructor
       const timestampBigInt = toType(timestamp ?? 0, TypeOutput.BigInt)
       const parentBeaconBlockRootBuf =
-        toType(parentBeaconBlockRoot!, TypeOutput.Uint8Array) ?? zeros(32)
+        toType(parentBeaconBlockRoot!, TypeOutput.Uint8Array) ?? new Uint8Array(32)
 
       await accumulateParentBeaconBlockRoot(this.vm, parentBeaconBlockRootBuf, timestampBigInt)
     }
@@ -410,7 +425,7 @@ export class BlockBuilder {
       const { parentHash, number } = this.headerData
       // timestamp should already be set in constructor
       const numberBigInt = toType(number ?? 0, TypeOutput.BigInt)
-      const parentHashSanitized = toType(parentHash, TypeOutput.Uint8Array) ?? zeros(32)
+      const parentHashSanitized = toType(parentHash, TypeOutput.Uint8Array) ?? new Uint8Array(32)
 
       await accumulateParentBlockHash(this.vm, numberBigInt, parentHashSanitized)
     }

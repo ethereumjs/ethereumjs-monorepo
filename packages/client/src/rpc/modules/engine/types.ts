@@ -1,27 +1,23 @@
-import { UNKNOWN_PAYLOAD } from '../../error-code.js'
+import { UNKNOWN_PAYLOAD } from '../../error-code.ts'
 
-import type { Skeleton } from '../../../service/index.js'
 import type { Block, ExecutionPayload } from '@ethereumjs/block'
-import type {
-  ConsolidationRequestV1,
-  DepositRequestV1,
-  PrefixedHexString,
-  WithdrawalRequestV1,
-} from '@ethereumjs/util'
+import type { PrefixedHexString } from '@ethereumjs/util'
+import type { Skeleton } from '../../../service/index.ts'
 
-export enum Status {
-  ACCEPTED = 'ACCEPTED',
-  INVALID = 'INVALID',
-  INVALID_BLOCK_HASH = 'INVALID_BLOCK_HASH',
-  SYNCING = 'SYNCING',
-  VALID = 'VALID',
-}
+export type Status = (typeof Status)[keyof typeof Status]
+
+export const Status = {
+  ACCEPTED: 'ACCEPTED',
+  INVALID: 'INVALID',
+  INVALID_BLOCK_HASH: 'INVALID_BLOCK_HASH',
+  SYNCING: 'SYNCING',
+  VALID: 'VALID',
+} as const
 
 export type Bytes8 = PrefixedHexString
 export type Bytes20 = PrefixedHexString
 export type Bytes32 = PrefixedHexString
-// type Root = Bytes32
-export type Blob = Bytes32
+export type Blob = PrefixedHexString
 export type Bytes48 = PrefixedHexString
 export type Uint64 = PrefixedHexString
 export type Uint256 = PrefixedHexString
@@ -33,11 +29,6 @@ export type ExecutionPayloadV1 = ExecutionPayload
 export type ExecutionPayloadV2 = ExecutionPayloadV1 & { withdrawals: WithdrawalV1[] }
 // parentBeaconBlockRoot comes separate in new payloads and needs to be added to payload data
 export type ExecutionPayloadV3 = ExecutionPayloadV2 & { excessBlobGas: Uint64; blobGasUsed: Uint64 }
-export type ExecutionPayloadV4 = ExecutionPayloadV3 & {
-  depositRequests: DepositRequestV1[]
-  withdrawalRequests: WithdrawalRequestV1[]
-  consolidationRequests: ConsolidationRequestV1[]
-}
 
 export type ForkchoiceStateV1 = {
   headBlockHash: Bytes32
@@ -81,10 +72,15 @@ export type ExecutionPayloadBodyV1 = {
   withdrawals: WithdrawalV1[] | null
 }
 
+export type BlobAndProofV1 = {
+  blob: PrefixedHexString
+  proof: PrefixedHexString
+}
+
 export type ChainCache = {
-  remoteBlocks: Map<String, Block>
-  executedBlocks: Map<String, Block>
-  invalidBlocks: Map<String, Error>
+  remoteBlocks: Map<string, Block>
+  executedBlocks: Map<string, Block>
+  invalidBlocks: Map<string, Error>
   skeleton: Skeleton
 }
 

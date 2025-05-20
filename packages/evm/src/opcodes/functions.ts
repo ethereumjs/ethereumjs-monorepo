@@ -2,19 +2,19 @@ import {
   Address,
   BIGINT_0,
   BIGINT_1,
-  BIGINT_160,
   BIGINT_2,
+  BIGINT_2EXP96,
+  BIGINT_2EXP160,
+  BIGINT_2EXP224,
+  BIGINT_7,
+  BIGINT_8,
+  BIGINT_31,
+  BIGINT_32,
+  BIGINT_96,
+  BIGINT_160,
   BIGINT_224,
   BIGINT_255,
   BIGINT_256,
-  BIGINT_2EXP160,
-  BIGINT_2EXP224,
-  BIGINT_2EXP96,
-  BIGINT_31,
-  BIGINT_32,
-  BIGINT_7,
-  BIGINT_8,
-  BIGINT_96,
   MAX_INTEGER_BIGINT,
   TWO_POW256,
   bigIntToAddressBytes,
@@ -23,17 +23,15 @@ import {
   bytesToHex,
   bytesToInt,
   concatBytes,
-  getVerkleTreeIndicesForStorageSlot,
   setLengthLeft,
+  setLengthRight,
 } from '@ethereumjs/util'
-import { equalBytes } from '@noble/curves/abstract/utils'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { EOFContainer, EOFContainerMode } from '../eof/container.js'
-import { EOFError } from '../eof/errors.js'
-import { EOFBYTES, EOFHASH, isEOF } from '../eof/util.js'
-import { ERROR } from '../exceptions.js'
-import { DELEGATION_7702_FLAG } from '../types.js'
+import { EOFContainer, EOFContainerMode } from '../eof/container.ts'
+import { EOFErrorMessage } from '../eof/errors.ts'
+import { EOFBYTES, EOFHASH, isEOF } from '../eof/util.ts'
+import { EVMError } from '../errors.ts'
 
 import {
   createAddressFromStackBigInt,
@@ -46,10 +44,10 @@ import {
   toTwos,
   trap,
   writeCallOutput,
-} from './util.js'
+} from './util.ts'
 
-import type { RunState } from '../interpreter.js'
 import type { Common } from '@ethereumjs/common'
+import type { RunState } from '../interpreter.ts'
 
 export interface SyncOpHandler {
   (runState: RunState, common: Common): void
@@ -61,28 +59,13 @@ export interface AsyncOpHandler {
 
 export type OpHandler = SyncOpHandler | AsyncOpHandler
 
-function getEIP7702DelegatedAddress(code: Uint8Array) {
-  if (equalBytes(code.slice(0, 3), DELEGATION_7702_FLAG)) {
-    return new Address(code.slice(3, 24))
-  }
-}
-
-async function eip7702CodeCheck(runState: RunState, code: Uint8Array) {
-  const address = getEIP7702DelegatedAddress(code)
-  if (address !== undefined) {
-    return runState.stateManager.getCode(address)
-  }
-
-  return code
-}
-
 // the opcode functions
 export const handlers: Map<number, OpHandler> = new Map([
   // 0x00: STOP
   [
     0x00,
     function () {
-      trap(ERROR.STOP)
+      trap(EVMError.errorMessages.STOP)
     },
   ],
   // 0x01: ADD
@@ -528,17 +511,15 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0x3b: EXTCODESIZE
   [
     0x3b,
-    async function (runState, common) {
+    async function (runState) {
       const addressBigInt = runState.stack.pop()
       const address = createAddressFromStackBigInt(addressBigInt)
       // EOF check
-      let code = await runState.stateManager.getCode(address)
+      const code = await runState.stateManager.getCode(address)
       if (isEOF(code)) {
         // In legacy code, the target code is treated as to be "EOFBYTES" code
         runState.stack.push(BigInt(EOFBYTES.length))
         return
-      } else if (common.isActivatedEIP(7702)) {
-        code = await eip7702CodeCheck(runState, code)
       }
 
       const size = BigInt(code.length)
@@ -549,7 +530,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0x3c: EXTCODECOPY
   [
     0x3c,
-    async function (runState, common) {
+    async function (runState) {
       const [addressBigInt, memOffset, codeOffset, dataLength] = runState.stack.popN(4)
 
       if (dataLength !== BIGINT_0) {
@@ -559,8 +540,6 @@ export const handlers: Map<number, OpHandler> = new Map([
         if (isEOF(code)) {
           // In legacy code, the target code is treated as to be "EOFBYTES" code
           code = EOFBYTES
-        } else if (common.isActivatedEIP(7702)) {
-          code = await eip7702CodeCheck(runState, code)
         }
 
         const data = getDataSlice(code, codeOffset, dataLength)
@@ -573,7 +552,7 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0x3f: EXTCODEHASH
   [
     0x3f,
-    async function (runState, common) {
+    async function (runState) {
       const addressBigInt = runState.stack.pop()
       const address = createAddressFromStackBigInt(addressBigInt)
 
@@ -584,21 +563,6 @@ export const handlers: Map<number, OpHandler> = new Map([
         // Therefore, push the hash of EOFBYTES to the stack
         runState.stack.push(bytesToBigInt(EOFHASH))
         return
-      } else if (common.isActivatedEIP(7702)) {
-        const possibleDelegatedAddress = getEIP7702DelegatedAddress(code)
-        if (possibleDelegatedAddress !== undefined) {
-          const account = await runState.stateManager.getAccount(possibleDelegatedAddress)
-          if (!account || account.isEmpty()) {
-            runState.stack.push(BIGINT_0)
-            return
-          }
-
-          runState.stack.push(BigInt(bytesToHex(account.codeHash)))
-          return
-        } else {
-          runState.stack.push(bytesToBigInt(keccak256(code)))
-          return
-        }
       }
 
       const account = await runState.stateManager.getAccount(address)
@@ -669,13 +633,11 @@ export const handlers: Map<number, OpHandler> = new Map([
         const historyServeWindow = common.param('historyServeWindow')
         const key = setLengthLeft(bigIntToBytes(number % historyServeWindow), 32)
 
-        if (common.isActivatedEIP(6800)) {
-          const { treeIndex, subIndex } = getVerkleTreeIndicesForStorageSlot(number)
+        if (common.isActivatedEIP(6800) || common.isActivatedEIP(7864)) {
           // create witnesses and charge gas
-          const statelessGas = runState.env.accessWitness!.touchAddressOnReadAndComputeGas(
+          const statelessGas = runState.env.accessWitness!.readAccountStorage(
             historyAddress,
-            treeIndex,
-            subIndex,
+            number,
           )
           runState.interpreter.useGas(statelessGas, `BLOCKHASH`)
         }
@@ -762,7 +724,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState) {
       const index = runState.stack.pop()
       if (runState.env.blobVersionedHashes.length > Number(index)) {
-        runState.stack.push(bytesToBigInt(runState.env.blobVersionedHashes[Number(index)]))
+        runState.stack.push(BigInt(runState.env.blobVersionedHashes[Number(index)]))
       } else {
         runState.stack.push(BIGINT_0)
       }
@@ -848,13 +810,13 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState) {
       const dest = runState.stack.pop()
       if (dest > runState.interpreter.getCodeSize()) {
-        trap(ERROR.INVALID_JUMP + ' at ' + describeLocation(runState))
+        trap(EVMError.errorMessages.INVALID_JUMP + ' at ' + describeLocation(runState))
       }
 
       const destNum = Number(dest)
 
       if (!jumpIsValid(runState, destNum)) {
-        trap(ERROR.INVALID_JUMP + ' at ' + describeLocation(runState))
+        trap(EVMError.errorMessages.INVALID_JUMP + ' at ' + describeLocation(runState))
       }
 
       runState.programCounter = destNum
@@ -867,13 +829,13 @@ export const handlers: Map<number, OpHandler> = new Map([
       const [dest, cond] = runState.stack.popN(2)
       if (cond !== BIGINT_0) {
         if (dest > runState.interpreter.getCodeSize()) {
-          trap(ERROR.INVALID_JUMP + ' at ' + describeLocation(runState))
+          trap(EVMError.errorMessages.INVALID_JUMP + ' at ' + describeLocation(runState))
         }
 
         const destNum = Number(dest)
 
         if (!jumpIsValid(runState, destNum)) {
-          trap(ERROR.INVALID_JUMP + ' at ' + describeLocation(runState))
+          trap(EVMError.errorMessages.INVALID_JUMP + ' at ' + describeLocation(runState))
         }
 
         runState.programCounter = destNum
@@ -920,7 +882,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     function (runState) {
       // TSTORE
       if (runState.interpreter.isStatic()) {
-        trap(ERROR.STATIC_STATE_CHANGE)
+        trap(EVMError.errorMessages.STATIC_STATE_CHANGE)
       }
       const [key, val] = runState.stack.popN(2)
 
@@ -957,18 +919,15 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x60,
     function (runState, common) {
       const numToPush = runState.opCode - 0x5f
-      if (
-        runState.programCounter + numToPush > runState.code.length &&
-        common.isActivatedEIP(3540)
-      ) {
-        trap(ERROR.OUT_OF_RANGE)
-      }
 
-      if (common.isActivatedEIP(6800) && runState.env.chargeCodeAccesses === true) {
+      if (
+        (common.isActivatedEIP(6800) || common.isActivatedEIP(7864)) &&
+        runState.env.chargeCodeAccesses === true
+      ) {
         const contract = runState.interpreter.getAddress()
         const startOffset = Math.min(runState.code.length, runState.programCounter + 1)
         const endOffset = Math.min(runState.code.length, startOffset + numToPush - 1)
-        const statelessGas = runState.env.accessWitness!.touchCodeChunksRangeOnReadAndChargeGas(
+        const statelessGas = runState.env.accessWitness!.readAccountCodeChunks(
           contract,
           startOffset,
           endOffset,
@@ -980,11 +939,16 @@ export const handlers: Map<number, OpHandler> = new Map([
         runState.stack.push(runState.cachedPushes[runState.programCounter])
         runState.programCounter += numToPush
       } else {
-        const loaded = bytesToBigInt(
-          runState.code.subarray(runState.programCounter, runState.programCounter + numToPush),
+        let loadedBytes = runState.code.subarray(
+          runState.programCounter,
+          runState.programCounter + numToPush,
         )
+        if (loadedBytes.length < numToPush) {
+          loadedBytes = setLengthRight(loadedBytes, numToPush)
+        }
+
         runState.programCounter += numToPush
-        runState.stack.push(loaded)
+        runState.stack.push(bytesToBigInt(loadedBytes))
       }
     },
   ],
@@ -1028,10 +992,10 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xd0: DATALOAD
   [
     0xd0,
-    function (runState, _common) {
+    function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
-        trap(ERROR.INVALID_OPCODE)
+        trap(EVMError.errorMessages.INVALID_OPCODE)
       }
       const pos = runState.stack.pop()
       if (pos > runState.env.eof!.container.body.dataSection.length) {
@@ -1053,10 +1017,10 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xd1: DATALOADN
   [
     0xd1,
-    function (runState, _common) {
+    function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
-        trap(ERROR.INVALID_OPCODE)
+        trap(EVMError.errorMessages.INVALID_OPCODE)
       }
       const toLoad = Number(
         bytesToBigInt(runState.code.subarray(runState.programCounter, runState.programCounter + 2)),
@@ -1071,10 +1035,10 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xd2: DATASIZE
   [
     0xd2,
-    function (runState, _common) {
+    function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
-        trap(ERROR.INVALID_OPCODE)
+        trap(EVMError.errorMessages.INVALID_OPCODE)
       }
       runState.stack.push(BigInt(runState.env.eof!.container.body.dataSection.length))
     },
@@ -1082,10 +1046,10 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xd3: DATACOPY
   [
     0xd3,
-    function (runState, _common) {
+    function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
-        trap(ERROR.INVALID_OPCODE)
+        trap(EVMError.errorMessages.INVALID_OPCODE)
       }
       const [memOffset, offset, size] = runState.stack.popN(3)
       if (size !== BIGINT_0) {
@@ -1099,10 +1063,10 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xe0: RJUMP
   [
     0xe0,
-    function (runState, _common) {
+    function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
-        trap(ERROR.INVALID_OPCODE)
+        trap(EVMError.errorMessages.INVALID_OPCODE)
       } else {
         const code = runState.env.code
         const rjumpDest = new DataView(code.buffer).getInt16(runState.programCounter)
@@ -1113,10 +1077,10 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xe1: RJUMPI
   [
     0xe1,
-    function (runState, _common) {
+    function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
-        trap(ERROR.INVALID_OPCODE)
+        trap(EVMError.errorMessages.INVALID_OPCODE)
       } else {
         const cond = runState.stack.pop()
         // Move PC to the PC post instruction
@@ -1133,10 +1097,10 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xe2: RJUMPV
   [
     0xe2,
-    function (runState, _common) {
+    function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
-        trap(ERROR.INVALID_OPCODE)
+        trap(EVMError.errorMessages.INVALID_OPCODE)
       } else {
         const code = runState.env.code
         const jumptableEntries = code[runState.programCounter]
@@ -1160,21 +1124,21 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xe3: CALLF
   [
     0xe3,
-    function (runState, _common) {
+    function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
-        trap(ERROR.INVALID_OPCODE)
+        trap(EVMError.errorMessages.INVALID_OPCODE)
       }
       const sectionTarget = bytesToInt(
         runState.code.slice(runState.programCounter, runState.programCounter + 2),
       )
       const stackItems = runState.stack.length
       const typeSection = runState.env.eof!.container.body.typeSections[sectionTarget]
-      if (1024 < stackItems + typeSection?.inputs - typeSection?.maxStackHeight) {
-        trap(EOFError.StackOverflow)
+      if (stackItems > 1024 - typeSection.maxStackHeight + typeSection.inputs) {
+        trap(EOFErrorMessage.STACK_OVERFLOW)
       }
       if (runState.env.eof!.eofRunState.returnStack.length >= 1024) {
-        trap(EOFError.ReturnStackOverflow)
+        trap(EOFErrorMessage.RETURN_STACK_OVERFLOW)
       }
       runState.env.eof?.eofRunState.returnStack.push(runState.programCounter + 2)
 
@@ -1185,15 +1149,15 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xe4: RETF
   [
     0xe4,
-    function (runState, _common) {
+    function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
-        trap(ERROR.INVALID_OPCODE)
+        trap(EVMError.errorMessages.INVALID_OPCODE)
       }
       const newPc = runState.env.eof!.eofRunState.returnStack.pop()
       if (newPc === undefined) {
         // This should NEVER happen since it is validated that functions either terminate (the call frame) or return
-        trap(EOFError.RetfNoReturn)
+        trap(EOFErrorMessage.RETF_NO_RETURN)
       }
       runState.programCounter = newPc!
     },
@@ -1201,10 +1165,10 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xe5: JUMPF
   [
     0xe5,
-    function (runState, _common) {
+    function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
-        trap(ERROR.INVALID_OPCODE)
+        trap(EVMError.errorMessages.INVALID_OPCODE)
       }
       // NOTE: (and also TODO) this code is exactly the same as CALLF, except pushing to the return stack is now skipped
       // (and also the return stack overflow check)
@@ -1214,11 +1178,11 @@ export const handlers: Map<number, OpHandler> = new Map([
       )
       const stackItems = runState.stack.length
       const typeSection = runState.env.eof!.container.body.typeSections[sectionTarget]
-      if (1024 < stackItems + typeSection?.inputs - typeSection?.maxStackHeight) {
-        trap(EOFError.StackOverflow)
+      if (stackItems > 1024 - typeSection.maxStackHeight + typeSection.inputs) {
+        trap(EOFErrorMessage.STACK_OVERFLOW)
       }
       /*if (runState.env.eof!.eofRunState.returnStack.length >= 1024) {
-        trap(EOFError.ReturnStackOverflow)
+        trap(EOFErrorMessage.ReturnStackOverflow)
       }
       runState.env.eof?.eofRunState.returnStack.push(runState.programCounter + 2)*/
 
@@ -1229,10 +1193,10 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xe6: DUPN
   [
     0xe6,
-    function (runState, _common) {
+    function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
-        trap(ERROR.INVALID_OPCODE)
+        trap(EVMError.errorMessages.INVALID_OPCODE)
       }
       const toDup =
         Number(
@@ -1247,10 +1211,10 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xe7: SWAPN
   [
     0xe7,
-    function (runState, _common) {
+    function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
-        trap(ERROR.INVALID_OPCODE)
+        trap(EVMError.errorMessages.INVALID_OPCODE)
       }
       const toSwap =
         Number(
@@ -1265,10 +1229,10 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xe8: EXCHANGE
   [
     0xe8,
-    function (runState, _common) {
+    function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
-        trap(ERROR.INVALID_OPCODE)
+        trap(EVMError.errorMessages.INVALID_OPCODE)
       }
       const toExchange = Number(
         bytesToBigInt(runState.code.subarray(runState.programCounter, runState.programCounter + 1)),
@@ -1282,11 +1246,14 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xec: EOFCREATE
   [
     0xec,
-    async function (runState, _common) {
+    async function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
-        trap(ERROR.INVALID_OPCODE)
+        trap(EVMError.errorMessages.INVALID_OPCODE)
       } else {
+        if (runState.interpreter.isStatic()) {
+          trap(EVMError.errorMessages.STATIC_STATE_CHANGE)
+        }
         // Read container index
         const containerIndex = runState.env.code[runState.programCounter]
         const containerCode = runState.env.eof!.container.body.containerSections[containerIndex]
@@ -1318,10 +1285,10 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xee: RETURNCONTRACT
   [
     0xee,
-    async function (runState, _common) {
+    async function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
-        trap(ERROR.INVALID_OPCODE)
+        trap(EVMError.errorMessages.INVALID_OPCODE)
       } else {
         // Read container index
         const containerIndex = runState.env.code[runState.programCounter]
@@ -1343,13 +1310,13 @@ export const handlers: Map<number, OpHandler> = new Map([
         const actualSectionSize = preDeployDataSectionSize + Number(auxDataSize)
 
         if (actualSectionSize < originalDataSize) {
-          trap(EOFError.InvalidReturnContractDataSize)
+          trap(EOFErrorMessage.INVALID_RETURN_CONTRACT_DATA_SIZE)
         }
 
         if (actualSectionSize > 0xffff) {
           // Data section size is now larger than the max data section size
           // Temp: trap OOG?
-          trap(ERROR.OUT_OF_GAS)
+          trap(EVMError.errorMessages.OUT_OF_GAS)
         }
 
         const newSize = setLengthLeft(bigIntToBytes(BigInt(actualSectionSize)), 2)
@@ -1377,7 +1344,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         length > Number(common.param('maxInitCodeSize')) &&
         !runState.interpreter._evm.allowUnlimitedInitCodeSize
       ) {
-        trap(ERROR.INITCODE_SIZE_VIOLATION)
+        trap(EVMError.errorMessages.INITCODE_SIZE_VIOLATION)
       }
 
       const gasLimit = runState.messageGasLimit!
@@ -1403,7 +1370,7 @@ export const handlers: Map<number, OpHandler> = new Map([
     0xf5,
     async function (runState, common) {
       if (runState.interpreter.isStatic()) {
-        trap(ERROR.STATIC_STATE_CHANGE)
+        trap(EVMError.errorMessages.STATIC_STATE_CHANGE)
       }
 
       const [value, offset, length, salt] = runState.stack.popN(4)
@@ -1413,7 +1380,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         length > Number(common.param('maxInitCodeSize')) &&
         !runState.interpreter._evm.allowUnlimitedInitCodeSize
       ) {
-        trap(ERROR.INITCODE_SIZE_VIOLATION)
+        trap(EVMError.errorMessages.INITCODE_SIZE_VIOLATION)
       }
 
       const gasLimit = runState.messageGasLimit!
@@ -1518,13 +1485,37 @@ export const handlers: Map<number, OpHandler> = new Map([
       runState.stack.push(ret)
     },
   ],
+  // 0xf7: RETURNDATALOAD
+  [
+    0xf7,
+    function (runState) {
+      if (runState.env.eof === undefined) {
+        // Opcode not available in legacy contracts
+        trap(EVMError.errorMessages.INVALID_OPCODE)
+      }
+      const pos = runState.stack.pop()
+      if (pos > runState.interpreter.getReturnDataSize()) {
+        runState.stack.push(BIGINT_0)
+        return
+      }
+
+      const i = Number(pos)
+      let loaded = runState.interpreter.getReturnData().subarray(i, i + 32)
+      loaded = loaded.length ? loaded : Uint8Array.from([0])
+      let r = bytesToBigInt(loaded)
+      if (loaded.length < 32) {
+        r = r << (BIGINT_8 * BigInt(32 - loaded.length))
+      }
+      runState.stack.push(r)
+    },
+  ],
   // 0xf8: EXTCALL
   [
     0xf8,
-    async function (runState, _common) {
+    async function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
-        trap(ERROR.INVALID_OPCODE)
+        trap(EVMError.errorMessages.INVALID_OPCODE)
       } else {
         const [toAddr, inOffset, inLength, value] = runState.stack.popN(4)
 
@@ -1555,10 +1546,10 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xf9: EXTDELEGATECALL
   [
     0xf9,
-    async function (runState, _common) {
+    async function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
-        trap(ERROR.INVALID_OPCODE)
+        trap(EVMError.errorMessages.INVALID_OPCODE)
       } else {
         const value = runState.interpreter.getCallValue()
         const [toAddr, inOffset, inLength] = runState.stack.popN(3)
@@ -1580,6 +1571,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         if (!isEOF(code)) {
           // EXTDELEGATECALL cannot call legacy contracts
           runState.stack.push(BIGINT_1)
+          runState.returnBytes = new Uint8Array(0)
           return
         }
 
@@ -1619,10 +1611,10 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xfb: EXTSTATICCALL
   [
     0xfb,
-    async function (runState, _common) {
+    async function (runState) {
       if (runState.env.eof === undefined) {
         // Opcode not available in legacy contracts
-        trap(ERROR.INVALID_OPCODE)
+        trap(EVMError.errorMessages.INVALID_OPCODE)
       } else {
         const value = BIGINT_0
         const [toAddr, inOffset, inLength] = runState.stack.popN(3)

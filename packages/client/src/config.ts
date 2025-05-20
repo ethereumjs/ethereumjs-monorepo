@@ -1,30 +1,33 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { genPrivateKey } from '@ethereumjs/devp2p'
 import { type Address, BIGINT_0, BIGINT_1, BIGINT_2, BIGINT_256 } from '@ethereumjs/util'
+import { EventEmitter } from 'eventemitter3'
 import { Level } from 'level'
 
-import { getLogger } from './logging.js'
-import { RlpxServer } from './net/server/index.js'
-import { Event, EventBus } from './types.js'
-import { isBrowser, short } from './util/index.js'
+import { RlpxServer } from './net/server/index.ts'
+import { Event } from './types.ts'
+import { isBrowser, short } from './util/index.ts'
 
-import type { Logger } from './logging.js'
-import type { EventBusType, MultiaddrLike, PrometheusMetrics } from './types.js'
 import type { BlockHeader } from '@ethereumjs/block'
 import type { VM, VMProfilerOpts } from '@ethereumjs/vm'
 import type { Multiaddr } from '@multiformats/multiaddr'
+import type { Logger } from './logging.ts'
+import type { EventParams, MultiaddrLike, PrometheusMetrics } from './types.ts'
 
-export enum DataDirectory {
-  Chain = 'chain',
-  State = 'state',
-  Meta = 'meta',
-}
+export type DataDirectory = (typeof DataDirectory)[keyof typeof DataDirectory]
 
-export enum SyncMode {
-  Full = 'full',
-  Light = 'light',
-  None = 'none',
-}
+export const DataDirectory = {
+  Chain: 'chain',
+  State: 'state',
+  Meta: 'meta',
+} as const
+
+export type SyncMode = (typeof SyncMode)[keyof typeof SyncMode]
+
+export const SyncMode = {
+  Full: 'full',
+  None: 'none',
+} as const
 
 export interface ConfigOptions {
   /**
@@ -36,7 +39,7 @@ export interface ConfigOptions {
   common?: Common
 
   /**
-   * Synchronization mode ('full', 'light', 'none')
+   * Synchronization mode ('full', 'none')
    *
    * Default: 'full'
    */
@@ -69,13 +72,6 @@ export interface ConfigOptions {
    * Default: VM instance created by client
    */
   vm?: VM
-
-  /**
-   * Serve light peer requests
-   *
-   * Default: `false`
-   */
-  lightserv?: boolean
 
   /**
    * Root data directory for the blockchain
@@ -336,8 +332,14 @@ export interface ConfigOptions {
    * Enables stateless verkle block execution (default: false)
    */
   statelessVerkle?: boolean
+  statefulVerkle?: boolean
   startExecution?: boolean
   ignoreStatelessInvalidExecs?: boolean
+
+  /**
+   * The cache for blobs and proofs to support CL import blocks
+   */
+  blobsAndProofsCacheBlocks?: number
 
   /**
    * Enables Prometheus Metrics that can be collected for monitoring client health
@@ -350,11 +352,10 @@ export class Config {
    * Central event bus for events emitted by the different
    * components of the client
    */
-  public readonly events: EventBusType
+  public readonly events: EventEmitter<EventParams>
 
   public static readonly CHAIN_DEFAULT = Mainnet
   public static readonly SYNCMODE_DEFAULT = SyncMode.Full
-  public static readonly LIGHTSERV_DEFAULT = false
   public static readonly DATADIR_DEFAULT = `./datadir`
   public static readonly PORT_DEFAULT = 30303
   public static readonly MAXPERREQUEST_DEFAULT = 100
@@ -393,10 +394,12 @@ export class Config {
   // randomly kept it at 5 for fast testing purposes but ideally should be >=32 slots
   public static readonly SNAP_TRANSITION_SAFE_DEPTH = BigInt(5)
 
-  public readonly logger: Logger
+  // support blobs and proofs cache for CL getBlobs for upto 1 epoch of data
+  public static readonly BLOBS_AND_PROOFS_CACHE_BLOCKS = 32
+
+  public readonly logger: Logger | undefined
   public readonly syncmode: SyncMode
   public readonly vm?: VM
-  public readonly lightserv: boolean
   public readonly datadir: string
   public readonly key: Uint8Array
   public readonly bootnodes?: Multiaddr[]
@@ -448,8 +451,11 @@ export class Config {
   public readonly savePreimages: boolean
 
   public readonly statelessVerkle: boolean
+  public readonly statefulVerkle: boolean
   public readonly startExecution: boolean
   public readonly ignoreStatelessInvalidExecs: boolean
+
+  public readonly blobsAndProofsCacheBlocks: number
 
   public synchronized: boolean
   public lastSynchronized?: boolean
@@ -468,11 +474,10 @@ export class Config {
   public readonly metrics: PrometheusMetrics | undefined
 
   constructor(options: ConfigOptions = {}) {
-    this.events = new EventBus() as EventBusType
+    this.events = new EventEmitter<EventParams>()
 
     this.syncmode = options.syncmode ?? Config.SYNCMODE_DEFAULT
     this.vm = options.vm
-    this.lightserv = options.lightserv ?? Config.LIGHTSERV_DEFAULT
     this.bootnodes = options.bootnodes
     this.port = options.port ?? Config.PORT_DEFAULT
     this.extIP = options.extIP
@@ -538,7 +543,8 @@ export class Config {
     this.enableSnapSync = options.enableSnapSync ?? false
     this.useStringValueTrieDB = options.useStringValueTrieDB ?? false
 
-    this.statelessVerkle = options.statelessVerkle ?? true
+    this.statelessVerkle = options.statelessVerkle ?? false
+    this.statefulVerkle = options.statefulVerkle ?? false
     this.startExecution = options.startExecution ?? false
     this.ignoreStatelessInvalidExecs = options.ignoreStatelessInvalidExecs ?? false
 
@@ -553,12 +559,15 @@ export class Config {
     this.chainCommon = common.copy()
     this.execCommon = common.copy()
 
+    this.blobsAndProofsCacheBlocks =
+      options.blobsAndProofsCacheBlocks ?? Config.BLOBS_AND_PROOFS_CACHE_BLOCKS
+
     this.discDns = this.getDnsDiscovery(options.discDns)
     this.discV4 = options.discV4 ?? true
 
-    this.logger = options.logger ?? getLogger({ logLevel: 'error' })
+    this.logger = options.logger
 
-    this.logger.info(`Sync Mode ${this.syncmode}`)
+    this.logger?.info(`Sync Mode ${this.syncmode}`)
     if (this.syncmode !== SyncMode.None) {
       if (options.server !== undefined) {
         this.server = options.server
@@ -618,7 +627,7 @@ export class Config {
         const diff = Date.now() - this.lastSyncDate
         if (diff >= this.syncedStateRemovalPeriod) {
           this.synchronized = false
-          this.logger.info(
+          this.logger?.info(
             `Sync status reset (no chain updates for ${Math.round(diff / 1000)} seconds).`,
           )
         }
@@ -626,7 +635,7 @@ export class Config {
     }
 
     if (this.synchronized !== this.lastSynchronized) {
-      this.logger.debug(
+      this.logger?.debug(
         `Client synchronized=${this.synchronized}${
           latest !== null && latest !== undefined ? ' height=' + latest.number : ''
         } syncTargetHeight=${this.syncTargetHeight} lastSyncDate=${
@@ -656,7 +665,7 @@ export class Config {
     const networkDir = this.getNetworkDirectory()
     switch (dir) {
       case DataDirectory.Chain: {
-        const chainDataDirName = this.syncmode === SyncMode.Light ? 'lightchain' : 'chain'
+        const chainDataDirName = 'chain'
         return `${networkDir}/${chainDataDirName}`
       }
       case DataDirectory.State:
@@ -702,20 +711,20 @@ export class Config {
     for (const msg of msgs) {
       len = msg.length > len ? msg.length : len
     }
-    this.logger.info('-'.repeat(len), meta)
+    this.logger?.info('-'.repeat(len), meta)
     for (const msg of msgs) {
-      this.logger.info(msg, meta)
+      this.logger?.info(msg, meta)
     }
-    this.logger.info('-'.repeat(len), meta)
+    this.logger?.info('-'.repeat(len), meta)
   }
 
   /**
    * Returns specified option or the default setting for whether DNS-based peer discovery
-   * is enabled based on chainName. `true` for goerli
+   * is enabled based on chainName.
    */
   getDnsDiscovery(option: boolean | undefined): boolean {
     if (option !== undefined) return option
-    const dnsNets = ['goerli', 'sepolia', 'holesky']
+    const dnsNets = ['sepolia', 'holesky', 'hoodi']
     return dnsNets.includes(this.chainCommon.chainName())
   }
 }

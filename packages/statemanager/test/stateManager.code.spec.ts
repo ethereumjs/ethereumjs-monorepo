@@ -7,9 +7,9 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { Caches, MerkleStateManager } from '../src/index.js'
+import { Caches, MerkleStateManager } from '../src/index.ts'
 
-import { createAccountWithDefaults } from './util.js'
+import { createAccountWithDefaults } from './util.ts'
 
 import type { AccountData } from '@ethereumjs/util'
 
@@ -21,10 +21,10 @@ describe('StateManager -> Code', () => {
           This test is mostly an example of why a code prefix is necessary
           I an address, we put two storage values. The preimage of the (storage trie) root hash is known
           This preimage is used as codeHash
-  
+
           NOTE: Currently, the only problem which this code prefix fixes, is putting 0x80 as contract code
           -> This hashes to the empty trie node hash (0x80 = RLP([])), so keccak256(0x80) = empty trie node hash
-          -> Therefore, each empty state trie now points to 0x80, which is not a valid trie node, which crashes @ethereumjs/trie
+          -> Therefore, each empty state trie now points to 0x80, which is not a valid trie node, which crashes @ethereumjs/mpt
         */
 
         // Setup
@@ -50,20 +50,20 @@ describe('StateManager -> Code', () => {
         let codeSlot1 = await codeStateManager.getStorage(address1, key1)
         let codeSlot2 = await codeStateManager.getStorage(address1, key2)
 
-        assert.ok(codeSlot1.length === 0, 'slot 0 is empty')
-        assert.ok(codeSlot2.length === 0, 'slot 1 is empty')
+        assert.isEmpty(codeSlot1, 'slot 0 is empty')
+        assert.isEmpty(codeSlot2, 'slot 1 is empty')
 
         const code = await codeStateManager.getCode(address1)
-        assert.ok(code.length > 0, 'code deposited correctly')
+        assert.isAbove(code.length, 0, 'code deposited correctly')
 
         const slot1 = await stateManager.getStorage(address1, key1)
         const slot2 = await stateManager.getStorage(address1, key2)
 
-        assert.ok(slot1.length > 0, 'storage key0 deposited correctly')
-        assert.ok(slot2.length > 0, 'storage key1 deposited correctly')
+        assert.isAbove(slot1.length, 0, 'storage key0 deposited correctly')
+        assert.isAbove(slot2.length, 0, 'storage key1 deposited correctly')
 
         let slotCode = await stateManager.getCode(address1)
-        assert.ok(slotCode.length === 0, 'code cannot be loaded')
+        assert.isEmpty(slotCode, 'code cannot be loaded')
 
         // Checks by either setting state root to codeHash, or codeHash to stateRoot
         // The knowledge of the tries should not change
@@ -73,7 +73,7 @@ describe('StateManager -> Code', () => {
         await stateManager.putAccount(address1, account1!)
 
         slotCode = await stateManager.getCode(address1)
-        assert.ok(slotCode.length === 0, 'code cannot be loaded') // This test fails if no code prefix is used
+        assert.isEmpty(slotCode, 'code cannot be loaded') // This test fails if no code prefix is used
 
         account1 = await codeStateManager.getAccount(address1)
         account1!.storageRoot = root
@@ -83,8 +83,8 @@ describe('StateManager -> Code', () => {
         codeSlot1 = await codeStateManager.getStorage(address1, key1)
         codeSlot2 = await codeStateManager.getStorage(address1, key2)
 
-        assert.ok(codeSlot1.length === 0, 'slot 0 is empty')
-        assert.ok(codeSlot2.length === 0, 'slot 1 is empty')
+        assert.isEmpty(codeSlot1, 'slot 0 is empty')
+        assert.isEmpty(codeSlot2, 'slot 1 is empty')
       })
 
       it(`should set and get code`, async () => {
@@ -104,7 +104,7 @@ describe('StateManager -> Code', () => {
         await stateManager.putAccount(address, account)
         await stateManager.putCode(address, code)
         const codeRetrieved = await stateManager.getCode(address)
-        assert.ok(equalsBytes(code, codeRetrieved))
+        assert.isTrue(equalsBytes(code, codeRetrieved))
       })
 
       it(`should not get code if is not contract`, async () => {
@@ -119,7 +119,7 @@ describe('StateManager -> Code', () => {
         const account = createAccount(raw)
         await stateManager.putAccount(address, account)
         const code = await stateManager.getCode(address)
-        assert.ok(equalsBytes(code, new Uint8Array(0)))
+        assert.isTrue(equalsBytes(code, new Uint8Array(0)))
       })
 
       it(`should set empty code`, async () => {
@@ -136,7 +136,7 @@ describe('StateManager -> Code', () => {
         await stateManager.putAccount(address, account)
         await stateManager.putCode(address, code)
         const codeRetrieved = await stateManager.getCode(address)
-        assert.ok(equalsBytes(codeRetrieved, new Uint8Array(0)))
+        assert.isTrue(equalsBytes(codeRetrieved, new Uint8Array(0)))
       })
 
       it(`should prefix codehashes by default`, async () => {
@@ -147,7 +147,7 @@ describe('StateManager -> Code', () => {
         const code = hexToBytes('0x80')
         await stateManager.putCode(address, code)
         const codeRetrieved = await stateManager.getCode(address)
-        assert.ok(equalsBytes(codeRetrieved, code))
+        assert.isTrue(equalsBytes(codeRetrieved, code))
       })
 
       it(`should not prefix codehashes if prefixCodeHashes = false`, async () => {
@@ -160,8 +160,8 @@ describe('StateManager -> Code', () => {
         try {
           await stateManager.putCode(address, code)
           assert.fail('should throw')
-        } catch (e) {
-          assert.ok(true, 'successfully threw')
+        } catch {
+          assert.isTrue(true, 'successfully threw')
         }
       })
 
@@ -173,8 +173,8 @@ describe('StateManager -> Code', () => {
         await stateManager.putCode(address, new Uint8Array([1]))
         await stateManager.putCode(address, new Uint8Array())
         const account = await stateManager.getAccount(address)
-        assert.ok(account !== undefined)
-        assert.ok(account?.isEmpty())
+        assert.isDefined(account)
+        assert.isTrue(account?.isEmpty())
       })
     }
   }

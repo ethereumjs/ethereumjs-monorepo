@@ -1,5 +1,5 @@
+import { verifyMerkleRangeProof } from '@ethereumjs/mpt'
 import { MerkleStateManager } from '@ethereumjs/statemanager'
-import { verifyTrieRangeProof } from '@ethereumjs/trie'
 import {
   BIGINT_0,
   BIGINT_1,
@@ -14,16 +14,15 @@ import {
   short,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak'
 
-import { Fetcher } from './fetcher.js'
-import { getInitFetcherDoneFlags } from './types.js'
+import { Fetcher } from './fetcher.ts'
+import { getInitFetcherDoneFlags } from './types.ts'
 
-import type { Peer } from '../../net/peer/index.js'
-import type { StorageData } from '../../net/protocol/snapprotocol.js'
-import type { FetcherOptions } from './fetcher.js'
-import type { Job, SnapFetcherDoneFlags } from './types.js'
 import type { Debugger } from 'debug'
+import type { Peer } from '../../net/peer/index.ts'
+import type { StorageData } from '../../net/protocol/snapprotocol.ts'
+import type { FetcherOptions } from './fetcher.ts'
+import type { Job, SnapFetcherDoneFlags } from './types.ts'
 
 const TOTAL_RANGE_END = BIGINT_2 ** BIGINT_256 - BIGINT_1
 
@@ -78,7 +77,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
   /** Fragmented requests to fetch remaining slot data for */
   fragmentedRequests: StorageRequest[]
 
-  accountToHighestKnownHash: Map<String, Uint8Array>
+  accountToHighestKnownHash: Map<string, Uint8Array>
 
   /**
    * Create new storage fetcher
@@ -93,8 +92,8 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     this.storageRequests = options.storageRequests ?? []
     this.fetcherDoneFlags.storageFetcher.count = BigInt(this.storageRequests.length)
 
-    this.accountToHighestKnownHash = new Map<String, Uint8Array>()
-    this.debug = debugDefault('client:StorageFetcher')
+    this.accountToHighestKnownHash = new Map<string, Uint8Array>()
+    this.debug = debugDefault('client:fetcher:storage')
     if (this.storageRequests.length > 0) {
       const fullJob = {
         task: { storageRequests: this.storageRequests },
@@ -128,17 +127,14 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
         )
       const keys = slots.map((slot: any) => slot.hash)
       const values = slots.map((slot: any) => slot.body)
-      return await verifyTrieRangeProof(
+      return await verifyMerkleRangeProof(
         stateRoot,
         origin,
         keys[keys.length - 1],
         keys,
         values,
         proof ?? null,
-        {
-          common: this.config.chainCommon,
-          useKeyHashingFunction: this.config.chainCommon?.customCrypto?.keccak256 ?? keccak256,
-        },
+        this.config.chainCommon?.customCrypto?.keccak256,
       )
     } catch (err) {
       this.DEBUG && this.debug(`verifyRangeProof failure: ${(err as Error).stack}`)
@@ -166,8 +162,8 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
       if (partialResult) {
         const lastSlotArray = partialResult[partialResult.length - 1]
         const lastSlot = lastSlotArray[lastSlotArray.length - 1]
-        // @ts-ignore
-        origin = bigIntToBytes(bytesToBigInt(lastSlot[lastSlot.length - 1].hash) + BIGINT_1)
+        const lastSlotHash = lastSlot.hash
+        origin = bigIntToBytes(bytesToBigInt(lastSlotHash) + BIGINT_1)
       } else {
         origin = bigIntToBytes(first + BIGINT_1)
       }
@@ -280,14 +276,13 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
       // zero-element proof
       if (rangeResult.proof.length > 0) {
         try {
-          const isMissingRightRange = await verifyTrieRangeProof(
+          const isMissingRightRange = await verifyMerkleRangeProof(
             task.storageRequests[0].storageRoot,
             origin,
             null,
             [],
             [],
-            <any>rangeResult.proof,
-            { useKeyHashingFunction: keccak256 },
+            rangeResult.proof,
           )
 
           // if proof is false, reject corrupt peer
@@ -337,17 +332,14 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
         const proof = i === rangeResult.slots.length - 1 ? rangeResult.proof : undefined
         if (proof === undefined || proof.length === 0) {
           // all-elements proof verification
-          await verifyTrieRangeProof(
+          await verifyMerkleRangeProof(
             root,
             null,
             null,
             accountSlots.map((s) => s.hash),
             accountSlots.map((s) => s.body),
             null,
-            {
-              common: this.config.chainCommon,
-              useKeyHashingFunction: this.config.chainCommon?.customCrypto?.keccak256 ?? keccak256,
-            },
+            this.config.chainCommon?.customCrypto?.keccak256,
           )
 
           if (proof?.length === 0)

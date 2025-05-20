@@ -2,6 +2,7 @@ import { Block, BlockHeader, createBlock, createBlockHeader } from '@ethereumjs/
 import { RLP } from '@ethereumjs/rlp'
 import {
   BIGINT_0,
+  EthereumJSErrorWithoutCode,
   KeyEncoding,
   TWO_POW256,
   ValueEncoding,
@@ -12,7 +13,6 @@ import {
   equalsBytes,
   hexToBytes,
   setLengthLeft,
-  zeros,
 } from '@ethereumjs/util'
 import { keccak256, keccak512 } from 'ethereum-cryptography/keccak.js'
 
@@ -25,7 +25,7 @@ import {
   getFullSize,
   getSeed,
   params,
-} from './util.js'
+} from './util.ts'
 
 import type { BlockData, HeaderData } from '@ethereumjs/block'
 import type { DB, DBObject, PrefixedHexString } from '@ethereumjs/util'
@@ -68,7 +68,7 @@ export class Miner {
       this.block = mineObject
       this.blockHeader = mineObject.header
     } else {
-      throw new Error('unsupported mineObject')
+      throw EthereumJSErrorWithoutCode('unsupported mineObject')
     }
     this.currentNonce = BIGINT_0
     this.ethash = ethash
@@ -93,12 +93,12 @@ export class Miner {
 
     if (solution) {
       if (this.block) {
-        const data = <BlockData>this.block.toJSON()
+        const data = this.block.toJSON() as BlockData
         data.header!.mixHash = solution.mixHash
         data.header!.nonce = solution.nonce
         return createBlock(data, { common: this.block.common })
       } else {
-        const data = <HeaderData>this.blockHeader.toJSON()
+        const data = this.blockHeader.toJSON() as HeaderData
         data.mixHash = solution.mixHash
         data.nonce = solution.nonce
         return createBlockHeader(data, { common: this.blockHeader.common })
@@ -158,7 +158,7 @@ export class Miner {
 }
 
 export class Ethash {
-  dbOpts: Object
+  dbOpts: object
   cacheDB?: DB<number, DBObject>
   cache: Uint8Array[]
   epoc?: number
@@ -211,7 +211,7 @@ export class Ethash {
   run(val: Uint8Array, nonce: Uint8Array, fullSize?: number) {
     if (fullSize === undefined) {
       if (this.fullSize === undefined) {
-        throw new Error('fullSize needed')
+        throw EthereumJSErrorWithoutCode('fullSize needed')
       } else {
         fullSize = this.fullSize
       }
@@ -286,13 +286,13 @@ export class Ethash {
     this.epoc = epoc
 
     if (!this.cacheDB) {
-      throw new Error('cacheDB needed')
+      throw EthereumJSErrorWithoutCode('cacheDB needed')
     }
 
     // gives the seed the first epoc found
     const findLastSeed = async (epoc: number): Promise<[Uint8Array, number]> => {
       if (epoc === 0) {
-        return [zeros(32), 0]
+        return [new Uint8Array(32), 0]
       }
 
       const dbData = await this.cacheDB!.get(epoc, {

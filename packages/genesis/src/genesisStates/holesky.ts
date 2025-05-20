@@ -1,4 +1,4 @@
-import type { GenesisState } from '@ethereumjs/util'
+import type { GenesisState } from '@ethereumjs/common'
 
 export const holeskyGenesis: GenesisState = {
   '0x0000000000000000000000000000000000000000': '0x1',

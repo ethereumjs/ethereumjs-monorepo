@@ -1,7 +1,7 @@
 import { BIGINT_0 } from '@ethereumjs/util'
 
-import type { RunState } from '../interpreter.js'
 import type { Common } from '@ethereumjs/common'
+import type { RunState } from '../interpreter.ts'
 
 /**
  * Adds address to accessedAddresses set if not already included.
@@ -29,8 +29,12 @@ export function accessAddressEIP2929(
     // CREATE, CREATE2 opcodes have the address warmed for free.
     // selfdestruct beneficiary address reads are charged an *additional* cold access
     // if verkle not activated
-    if (chargeGas && !common.isActivatedEIP(6800)) {
+    if (chargeGas && !(common.isActivatedEIP(6800) || common.isActivatedEIP(7864))) {
       return common.param('coldaccountaccessGas')
+    } else if (chargeGas && (common.isActivatedEIP(6800) || common.isActivatedEIP(7864))) {
+      // If Verkle is active, then the warmstoragereadGas should still be charged
+      // This is because otherwise opcodes will have cost 0 (this is thus the base fee)
+      return common.param('warmstoragereadGas')
     }
     // Warm: (selfdestruct beneficiary address reads are not charged when warm)
   } else if (chargeGas && !isSelfdestruct) {
@@ -62,10 +66,13 @@ export function accessStorageEIP2929(
   // Cold (SLOAD and SSTORE)
   if (slotIsCold) {
     runState.interpreter.journal.addWarmedStorage(address, key)
-    if (chargeGas && !common.isActivatedEIP(6800)) {
+    if (chargeGas && !(common.isActivatedEIP(6800) || common.isActivatedEIP(7864))) {
       return common.param('coldsloadGas')
     }
-  } else if (chargeGas && (!isSstore || common.isActivatedEIP(6800))) {
+  } else if (
+    chargeGas &&
+    (!isSstore || common.isActivatedEIP(6800) || common.isActivatedEIP(7864))
+  ) {
     return common.param('warmstoragereadGas')
   }
   return BIGINT_0

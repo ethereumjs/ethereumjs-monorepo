@@ -1,8 +1,10 @@
 import { createBlock } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
+import { eip4844GethGenesis } from '@ethereumjs/testdata'
 import { createBlob4844Tx } from '@ethereumjs/tx'
 import {
+  Units,
   blobsToCommitments,
   blobsToProofs,
   bytesToHex,
@@ -11,29 +13,27 @@ import {
   getBlobs,
   hexToBytes,
   privateToAddress,
-  zeros,
 } from '@ethereumjs/util'
-import { loadKZG } from 'kzg-wasm'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
-import { eip4844Data } from '../../../../client/test/testdata/geth-genesis/eip4844.js'
-import { buildBlock, createVM, runBlock } from '../../../src/index.js'
-import { setBalance } from '../utils.js'
+import { buildBlock, createVM, runBlock } from '../../../src/index.ts'
+import { setBalance } from '../utils.ts'
 
 const pk = hexToBytes(`0x${'20'.repeat(32)}`)
 const sender = bytesToHex(privateToAddress(pk))
 
 describe('EIP4844 tests', () => {
+  const kzg = new microEthKZG(trustedSetup)
   it('should build a block correctly with blobs', async () => {
-    const kzg = await loadKZG()
-
-    const common = createCommonFromGethGenesis(eip4844Data, {
+    const common = createCommonFromGethGenesis(eip4844GethGenesis, {
       chain: 'eip4844',
       hardfork: Hardfork.Cancun,
       customCrypto: { kzg },
     })
     const genesisBlock = createBlock(
-      { header: { gasLimit: 50000, parentBeaconBlockRoot: zeros(32) } },
+      { header: { gasLimit: 50000, parentBeaconBlockRoot: new Uint8Array(32) } },
       { common },
     )
     const blockchain = await createBlockchain({
@@ -45,7 +45,7 @@ describe('EIP4844 tests', () => {
     const vm = await createVM({ common, blockchain })
 
     const address = createAddressFromString(sender)
-    await setBalance(vm, address, 14680063125000000000n)
+    await setBalance(vm, address, Units.gwei(14680063125))
     const vmCopy = await vm.shallowCopy()
 
     const blockBuilder = await buildBlock(vm, {
@@ -71,7 +71,7 @@ describe('EIP4844 tests', () => {
         blobs,
         kzgCommitments: commitments,
         kzgProofs: proofs,
-        maxFeePerGas: 10000000000n,
+        maxFeePerGas: Units.gwei(10),
         maxFeePerBlobGas: 100000000n,
         gasLimit: 0xffffn,
         to: hexToBytes('0xffb38a7a99e3e2335be83fc74b7faa19d5531243'),
@@ -82,22 +82,26 @@ describe('EIP4844 tests', () => {
 
     await blockBuilder.addTransaction(signedTx)
 
-    const block = await blockBuilder.build()
-    assert.equal(block.transactions.length, 1, 'blob transaction should be included')
-    assert.equal(
+    const { block } = await blockBuilder.build()
+    assert.strictEqual(block.transactions.length, 1, 'blob transaction should be included')
+    assert.strictEqual(
       bytesToHex(block.transactions[0].hash()),
       bytesToHex(signedTx.hash()),
       'blob transaction should be same',
     )
 
     const blobGasPerBlob = common.param('blobGasPerBlob')
-    assert.equal(block.header.blobGasUsed, blobGasPerBlob, 'blob gas used for 1 blob should match')
+    assert.strictEqual(
+      block.header.blobGasUsed,
+      blobGasPerBlob,
+      'blob gas used for 1 blob should match',
+    )
 
     // block should successfully execute with VM.runBlock and have same outputs
     const result = await runBlock(vmCopy, { block, skipBlockValidation: true })
-    assert.equal(result.gasUsed, block.header.gasUsed)
+    assert.strictEqual(result.gasUsed, block.header.gasUsed)
     assert.deepEqual(result.receiptsRoot, block.header.receiptTrie)
     assert.deepEqual(result.stateRoot, block.header.stateRoot)
     assert.deepEqual(result.logsBloom, block.header.logsBloom)
   })
-})
+}, 20000)

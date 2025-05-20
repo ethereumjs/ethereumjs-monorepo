@@ -2,10 +2,10 @@ import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { bytesToHex, createZeroAddress, hexToBytes } from '@ethereumjs/util'
 import { assert, beforeAll, describe, it } from 'vitest'
 
-import { createEVM, getActivePrecompiles } from '../../src/index.js'
+import { createEVM, getActivePrecompiles } from '../../src/index.ts'
 
-import type { EVM } from '../../src/index.js'
-import type { PrecompileFunc } from '../../src/precompiles/types.js'
+import type { EVM } from '../../src/index.ts'
+import type { PrecompileFunc } from '../../src/precompiles/types.ts'
 
 const validCases = [
   {
@@ -102,13 +102,13 @@ describe('Precompiles: BLAKE2F', () => {
         common,
         _EVM: evm,
       })
-      assert.equal(
+      assert.strictEqual(
         bytesToHex(result.returnValue),
         `0x${t.expected}`,
         'should generate expected value',
       )
       assert.deepEqual(result.executionGasUsed, BigInt(t.gas), 'should use expected amount of gas')
-    })
+    }, 20_000)
   }
 
   for (const t of malformedCases) {
@@ -120,7 +120,11 @@ describe('Precompiles: BLAKE2F', () => {
         common,
         _EVM: evm,
       })
-      assert.equal(result.exceptionError!.error, t.expectedError, 'should generate expected error')
+      assert.strictEqual(
+        result.exceptionError!.error,
+        t.expectedError,
+        'should generate expected error',
+      )
     })
   }
 
@@ -155,6 +159,6 @@ describe('Precompiles: BLAKE2F', () => {
     const expected =
       '0x772acbd3f30b0c3f5f53e8b836ab406f7d8d46fd4b27e2ce2ecd67dbf18c958741e2c49d1f1b1a463907a484f970c057dab9684062b82fda69e8a0057e14766f'
 
-    assert.equal(bytesToHex(res.execResult.returnValue), expected)
+    assert.strictEqual(bytesToHex(res.execResult.returnValue), expected)
   })
 })

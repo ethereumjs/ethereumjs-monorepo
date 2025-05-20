@@ -1,9 +1,9 @@
 import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { RLP } from '@ethereumjs/rlp'
 import { createLegacyTx } from '@ethereumjs/tx'
 import {
   Account,
+  CLRequestType,
   bigIntToBytes,
   bytesToHex,
   concatBytes,
@@ -12,13 +12,11 @@ import {
   equalsBytes,
   hexToBytes,
   setLengthLeft,
-  zeros,
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { bytesToBigInt } from '../../../../util/src/bytes.js'
-import { runBlock } from '../../../src/index.js'
-import { setupVM } from '../utils.js'
+import { runBlock } from '../../../src/index.ts'
+import { setupVM } from '../utils.ts'
 
 import type { Block } from '@ethereumjs/block'
 
@@ -34,11 +32,11 @@ const deploymentTxData = {
   gasLimit: BigInt('0x3d090'),
   gasPrice: BigInt('0xe8d4a51000'),
   data: hexToBytes(
-    '0x61049d5f5561013280600f5f395ff33373fffffffffffffffffffffffffffffffffffffffe146090573615156028575f545f5260205ff35b366038141561012e5760115f54600182026001905f5b5f82111560595781019083028483029004916001019190603e565b90939004341061012e57600154600101600155600354806003026004013381556001015f3581556001016020359055600101600355005b6003546002548082038060101160a4575060105b5f5b81811460dd5780604c02838201600302600401805490600101805490600101549160601b83528260140152906034015260010160a6565b910180921460ed579060025560f8565b90505f6002555f6003555b5f548061049d141561010757505f5b60015460028282011161011c5750505f610122565b01600290035b5f555f600155604c025ff35b5f5ffd',
+    '0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff5f556101f880602d5f395ff33373fffffffffffffffffffffffffffffffffffffffe1460cb5760115f54807fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff146101f457600182026001905f5b5f82111560685781019083028483029004916001019190604d565b909390049250505036603814608857366101f457346101f4575f5260205ff35b34106101f457600154600101600155600354806003026004013381556001015f35815560010160203590553360601b5f5260385f601437604c5fa0600101600355005b6003546002548082038060101160df575060105b5f5b8181146101835782810160030260040181604c02815460601b8152601401816001015481526020019060020154807fffffffffffffffffffffffffffffffff00000000000000000000000000000000168252906010019060401c908160381c81600701538160301c81600601538160281c81600501538160201c81600401538160181c81600301538160101c81600201538160081c81600101535360010160e1565b910180921461019557906002556101a0565b90505f6002555f6003555b5f54807fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff14156101cd57505f5b6001546002828201116101e25750505f6101e8565b01600290035b5f555f600155604c025ff35b5f5ffd',
   ),
   v: BigInt('0x1b'),
   r: BigInt('0x539'),
-  s: BigInt('0xaba653c9d105790c'),
+  s: BigInt('0x5feeb084551e4e03a3581e269bc2ea2f8d0008'),
 }
 
 const deploymentTx = createLegacyTx(deploymentTxData)
@@ -100,7 +98,7 @@ describe('EIP-7002 tests', () => {
       {
         header: {
           number: 2,
-          parentBeaconBlockRoot: zeros(32),
+          parentBeaconBlockRoot: new Uint8Array(32),
         },
         transactions: [tx],
       },
@@ -112,7 +110,7 @@ describe('EIP-7002 tests', () => {
       generatedBlock = e.block
     })
 
-    await runBlock(vm, {
+    let runBlockResults = await runBlock(vm, {
       block: block2,
       skipHeaderValidation: true,
       skipBlockValidation: true,
@@ -120,21 +118,30 @@ describe('EIP-7002 tests', () => {
     })
 
     // Ensure the request is generated
-    assert.ok(generatedBlock!.requests!.length === 1)
+    assert.strictEqual(runBlockResults.requests!.length, 1)
+    assert.strictEqual(
+      generatedBlock!.transactions.length,
+      1,
+      'withdrawal transaction should be included',
+    )
 
-    const requestDecoded = RLP.decode(generatedBlock!.requests![0].serialize().slice(1))
+    const withdrawalRequest = runBlockResults.requests![0]
+    assert.strictEqual(
+      withdrawalRequest.type,
+      CLRequestType.Withdrawal,
+      'make sure its withdrawal request',
+    )
 
-    const sourceAddressRequest = requestDecoded[0] as Uint8Array
-    const validatorPubkeyRequest = requestDecoded[1] as Uint8Array
-    const amountRequest = requestDecoded[2] as Uint8Array
-
+    // amount is in le when contract pack it in requests
+    const expectedRequestData = concatBytes(
+      tx.getSenderAddress().bytes,
+      validatorPubkey,
+      amountBytes.reverse(),
+    )
     // Ensure the requests are correct
-    assert.ok(equalsBytes(sourceAddressRequest, tx.getSenderAddress().bytes))
-    assert.ok(equalsBytes(validatorPubkey, validatorPubkeyRequest))
-    // the direct byte comparison fails because leading zeros have been stripped
-    // off the amountBytes because it was serialized in request from bigint
-    assert.equal(bytesToBigInt(amountBytes), bytesToBigInt(amountRequest))
+    assert.isTrue(equalsBytes(expectedRequestData, withdrawalRequest.data))
 
+    // generated block should be valid
     await runBlock(vm, { block: generatedBlock!, skipHeaderValidation: true, root })
 
     // Run block with 2 requests
@@ -146,14 +153,14 @@ describe('EIP-7002 tests', () => {
       {
         header: {
           number: 3,
-          parentBeaconBlockRoot: zeros(32),
+          parentBeaconBlockRoot: new Uint8Array(32),
         },
         transactions: [tx2, tx3],
       },
       { common },
     )
 
-    await runBlock(vm, {
+    runBlockResults = await runBlock(vm, {
       block: block3,
       skipHeaderValidation: true,
       skipBlockValidation: true,
@@ -162,7 +169,12 @@ describe('EIP-7002 tests', () => {
 
     // Note: generatedBlock is now overridden with the new generated block (this is thus block number 3)
     // Ensure there are 2 requests
-    assert.ok(generatedBlock!.requests!.length === 2)
+    assert.strictEqual(runBlockResults.requests!.length, 1)
+    assert.strictEqual(
+      generatedBlock!.transactions.length,
+      2,
+      'withdrawal transactions should be included',
+    )
   })
 
   it('should throw when contract is not deployed', async () => {
@@ -183,7 +195,7 @@ describe('EIP-7002 tests', () => {
         generate: true,
       })
     } catch (e: any) {
-      assert.ok(e.message.includes('Attempt to accumulate EIP-7002 requests failed'))
+      assert.isTrue(e.message.includes('Attempt to accumulate EIP-7002 requests failed') === true)
     }
   })
 })

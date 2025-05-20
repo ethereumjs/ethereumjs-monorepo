@@ -1,14 +1,13 @@
 import { RLP } from '@ethereumjs/rlp'
-import { hexToBytes } from '@ethereumjs/util'
-import { utf8ToBytes } from 'ethereum-cryptography/utils'
+import { hexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { assert, describe, it, vi } from 'vitest'
 
-import { Chain } from '../../../src/blockchain/index.js'
-import { Config } from '../../../src/config.js'
-import { SnapProtocol } from '../../../src/net/protocol/index.js'
-import { wait } from '../../integration/util.js'
+import { Chain } from '../../../src/blockchain/index.ts'
+import { Config } from '../../../src/config.ts'
+import { SnapProtocol } from '../../../src/net/protocol/index.ts'
+import { wait } from '../../integration/util.ts'
 
-import { _accountRangeRLP } from './accountfetcher.spec.js'
+import { _accountRangeRLP } from './accountfetcher.spec.ts'
 
 const _byteCodesRLP =
   '0xf89e1af89b9e60806040526004361061003f5760003560e01c806301ffc9a714610044579e60806040526004361061003f5760003560e01c806301ffc9a714610044589e60806040526004361061003f5760003560e01c806301ffc9a714610044599e60806040526004361061003f5760003560e01c806301ffc9a714610044609e60806040526004361061003f5760003560e01c806301ffc9a71461004461'
@@ -21,7 +20,7 @@ describe('[ByteCodeFetcher]', async () => {
   PeerPool.prototype.idle = vi.fn()
   PeerPool.prototype.ban = vi.fn()
 
-  const { ByteCodeFetcher } = await import('../../../src/sync/fetcher/bytecodefetcher.js')
+  const { ByteCodeFetcher } = await import('../../../src/sync/fetcher/bytecodefetcher.ts')
 
   it('should start/stop', async () => {
     const config = new Config({ maxPerRequest: 5 })
@@ -32,23 +31,23 @@ describe('[ByteCodeFetcher]', async () => {
       hashes: [hexToBytes('0x2034f79e0e33b0ae6bef948532021baceb116adf2616478703bec6b17329f1cc')],
     })
     fetcher.next = () => false
-    assert.notOk((fetcher as any).running, 'not started')
-    assert.equal((fetcher as any).in.length, 0, 'No jobs have yet been added')
-    assert.equal((fetcher as any).hashes.length, 1, 'one codehash have been added')
+    assert.isFalse(fetcher['running'], 'not started')
+    assert.strictEqual(fetcher['in'].length, 0, 'No jobs have yet been added')
+    assert.strictEqual(fetcher['hashes'].length, 1, 'one codehash have been added')
     fetcher.enqueueByByteCodeRequestList([
       hexToBytes('0x2034f79e0e33b0ae6bef948532021baceb116adf2616478703bec6b17329f1cc'),
     ])
-    assert.equal((fetcher as any).in.length, 1, 'A new task has been queued')
-    const job = (fetcher as any).in.peek()
-    assert.equal(job!.task.hashes.length, 2, 'two storageRequests are added to job')
+    assert.strictEqual(fetcher['in'].length, 1, 'A new task has been queued')
+    const job = fetcher['in'].peek()
+    assert.strictEqual(job!.task.hashes.length, 2, 'two storageRequests are added to job')
 
     void fetcher.fetch()
     await wait(100)
-    assert.ok((fetcher as any).running, 'started')
-    assert.ok(fetcher.write() === false, 'fetcher should not setup a new write pipe')
+    assert.isTrue(fetcher['running'], 'started')
+    assert.isFalse(fetcher.write(), 'fetcher should not setup a new write pipe')
     fetcher.destroy()
     await wait(100)
-    assert.notOk((fetcher as any).running, 'stopped')
+    assert.isFalse(fetcher['running'], 'stopped')
   })
 
   it('should process', () => {
@@ -67,15 +66,15 @@ describe('[ByteCodeFetcher]', async () => {
     const task = {
       hashes: [utf8ToBytes('')],
     }
-    ;(fetcher as any).running = true
+    fetcher['running'] = true
     fetcher.enqueueTask(task)
-    const job = (fetcher as any).in.peek()
+    const job = fetcher['in'].peek()
     assert.deepEqual(
-      (fetcher.process(job, ByteCodeResponse) as any)[0],
+      (fetcher.process(job as any, ByteCodeResponse) as any)[0],
       fullResult[0],
       'got results',
     )
-    assert.notOk(fetcher.process({} as any, { ByteCodeResponse: [] } as any), 'bad results')
+    assert.isUndefined(fetcher.process({} as any, { ByteCodeResponse: [] } as any), 'bad results')
   })
 
   it('should adopt correctly', () => {
@@ -91,17 +90,17 @@ describe('[ByteCodeFetcher]', async () => {
     const task = {
       hashes: [utf8ToBytes('')],
     }
-    ;(fetcher as any).running = true
+    fetcher['running'] = true
     fetcher.enqueueTask(task)
-    const job = (fetcher as any).in.peek()
+    const job = fetcher['in'].peek()
     let results = fetcher.process(job as any, ByteCodeResponse)
-    assert.equal((fetcher as any).in.length, 1, 'Fetcher should still have same job')
-    assert.equal(job?.partialResult.length, 2, 'Should have two partial results')
-    assert.equal(results, undefined, 'Process should not return full results yet')
+    assert.strictEqual(fetcher['in'].length, 1, 'Fetcher should still have same job')
+    assert.strictEqual(job?.partialResult?.length, 2, 'Should have two partial results')
+    assert.strictEqual(results, undefined, 'Process should not return full results yet')
     const remainingBytesCodeData: any = [utf8ToBytes(''), utf8ToBytes(''), utf8ToBytes('')]
     remainingBytesCodeData.completed = true
     results = fetcher.process(job as any, remainingBytesCodeData)
-    assert.equal((results as any).length, 5, 'Should return full results')
+    assert.strictEqual((results as any).length, 5, 'Should return full results')
   })
 
   it('should request correctly', async () => {
@@ -144,12 +143,12 @@ describe('[ByteCodeFetcher]', async () => {
     }
     const job = { peer, task }
     const results = await fetcher.request(job as any)
-    assert.ok(results?.completed === true, 'response processed and matched properly')
-    assert.equal((results![0] as any).size, 5, 'matched code in the response')
+    assert.isTrue(results?.completed === true, 'response processed and matched properly')
+    assert.strictEqual((results![0] as any).size, 5, 'matched code in the response')
 
     try {
       await fetcher.store(results! as any)
-      assert.ok(true, 'fetcher stored results successfully')
+      assert.isTrue(true, 'fetcher stored results successfully')
     } catch (e) {
       assert.fail(`fetcher failed to store results, Error: ${(e as Error).message}`)
     }
@@ -166,6 +165,6 @@ describe('[ByteCodeFetcher]', async () => {
       pool,
       hashes: [utf8ToBytes('')],
     })
-    assert.equal(fetcher.peer(), 'peer0' as any, 'found peer')
+    assert.strictEqual(fetcher.peer(), 'peer0' as any, 'found peer')
   })
 })

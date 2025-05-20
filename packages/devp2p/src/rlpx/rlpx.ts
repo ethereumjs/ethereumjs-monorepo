@@ -1,4 +1,7 @@
+import * as net from 'net'
+import * as os from 'os'
 import {
+  EthereumJSErrorWithoutCode,
   bytesToInt,
   bytesToUnprefixedHex,
   equalsBytes,
@@ -8,20 +11,18 @@ import {
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
-import { EventEmitter } from 'events'
+import { EventEmitter } from 'eventemitter3'
 import { LRUCache } from 'lru-cache'
-import * as net from 'net'
-import * as os from 'os'
 
-import { DISCONNECT_REASON } from '../types.js'
-import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util.js'
+import { DISCONNECT_REASON, DisconnectReasonNames } from '../types.ts'
+import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util.ts'
 
-import { Peer } from './peer.js'
+import { Peer } from './peer.ts'
 
-import type { DPT } from '../dpt/index.js'
-import type { Capabilities, PeerInfo, RLPxOptions } from '../types.js'
 import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
+import type { DPT } from '../dpt/index.ts'
+import type { Capabilities, PeerInfo, RLPxEvent, RLPxOptions } from '../types.ts'
 
 // note: relative path only valid in .js file in dist
 
@@ -29,7 +30,7 @@ const DEBUG_BASE_NAME = 'rlpx'
 const verbose = debugDefault('verbose').enabled
 
 export class RLPx {
-  public events: EventEmitter
+  public events: EventEmitter<RLPxEvent>
   protected _privateKey: Uint8Array
   public readonly id: Uint8Array
   private _debug: Debugger
@@ -55,7 +56,7 @@ export class RLPx {
   private DEBUG: boolean
 
   constructor(privateKey: Uint8Array, options: RLPxOptions) {
-    this.events = new EventEmitter()
+    this.events = new EventEmitter<RLPxEvent>()
     this._privateKey = privateKey
     this.id = pk2id(secp256k1.getPublicKey(this._privateKey, false))
 
@@ -63,9 +64,8 @@ export class RLPx {
     this._timeout = options.timeout ?? 10000 // 10 sec * 1000
     this._maxPeers = options.maxPeers ?? 10
 
-    this.clientId = options.clientId
-      ? options.clientId
-      : utf8ToBytes(`ethereumjs-devp2p/${os.platform()}-${os.arch()}/nodejs`)
+    this.clientId =
+      options.clientId ?? utf8ToBytes(`ethereumjs-devp2p/${os.platform()}-${os.arch()}/nodejs`)
 
     this._remoteClientIdFilter = options.remoteClientIdFilter
     this._capabilities = options.capabilities
@@ -152,8 +152,9 @@ export class RLPx {
     if (!(peer.id instanceof Uint8Array)) throw new TypeError('Expected peer.id as Uint8Array')
     const peerKey = bytesToUnprefixedHex(peer.id)
 
-    if (this._peers.has(peerKey)) throw new Error('Already connected')
-    if (this._getOpenSlots() === 0) throw new Error('Too many peers already connected')
+    if (this._peers.has(peerKey)) throw EthereumJSErrorWithoutCode('Already connected')
+    if (this._getOpenSlots() === 0)
+      throw EthereumJSErrorWithoutCode('Too many peers already connected')
 
     if (this.DEBUG) {
       this._debug(
@@ -170,7 +171,9 @@ export class RLPx {
     })
 
     socket.once('error', deferred.reject)
-    socket.setTimeout(this._timeout, () => deferred.reject(new Error('Connection timeout')))
+    socket.setTimeout(this._timeout, () =>
+      deferred.reject(EthereumJSErrorWithoutCode('Connection timeout')),
+    )
     socket.connect(peer.tcpPort, peer.address, deferred.resolve)
 
     await deferred.promise
@@ -193,7 +196,7 @@ export class RLPx {
   }
 
   _isAliveCheck() {
-    if (!this._isAlive()) throw new Error('Server already destroyed')
+    if (!this._isAlive()) throw EthereumJSErrorWithoutCode('Server already destroyed')
   }
 
   _getOpenSlots() {
@@ -271,7 +274,7 @@ export class RLPx {
       if (disconnectWe === true) {
         if (this.DEBUG) {
           this._debug(
-            `disconnect from ${socket.remoteAddress}:${socket.remotePort}, reason: ${DISCONNECT_REASON[reason]}`,
+            `disconnect from ${socket.remoteAddress}:${socket.remotePort}, reason: ${DisconnectReasonNames[reason as DISCONNECT_REASON]}`,
             `disconnect`,
           )
         }

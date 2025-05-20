@@ -1,13 +1,12 @@
 import { createBlockchain } from '@ethereumjs/blockchain'
-import { createCommonFromGethGenesis } from '@ethereumjs/common'
-import { bytesToHex, parseGethGenesisState } from '@ethereumjs/util'
-
-import gethGenesisJSON from './genesisData/post-merge.json'
+import { createCommonFromGethGenesis, parseGethGenesisState } from '@ethereumjs/common'
+import { postMergeGethGenesis } from '@ethereumjs/testdata'
+import { bytesToHex } from '@ethereumjs/util'
 
 const main = async () => {
-  // Load geth genesis json file into lets say `gethGenesisJSON`
-  const common = createCommonFromGethGenesis(gethGenesisJSON, { chain: 'customChain' })
-  const genesisState = parseGethGenesisState(gethGenesisJSON)
+  // Load geth genesis file
+  const common = createCommonFromGethGenesis(postMergeGethGenesis, { chain: 'customChain' })
+  const genesisState = parseGethGenesisState(postMergeGethGenesis)
   const blockchain = await createBlockchain({
     genesisState,
     common,

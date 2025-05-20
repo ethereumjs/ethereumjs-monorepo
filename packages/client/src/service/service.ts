@@ -1,14 +1,13 @@
-import { Chain } from '../blockchain/index.js'
-import { PeerPool } from '../net/peerpool.js'
-import { FlowControl } from '../net/protocol/index.js'
-import { Event } from '../types.js'
-import { type V8Engine, getV8Engine } from '../util/index.js'
+import { Chain } from '../blockchain/index.ts'
+import { PeerPool } from '../net/peerpool.ts'
+import { Event } from '../types.ts'
+import { type V8Engine, getV8Engine } from '../util/index.ts'
 
-import type { Config } from '../config.js'
-import type { Peer } from '../net/peer/peer.js'
-import type { Protocol } from '../net/protocol/index.js'
-import type { Synchronizer } from '../sync/index.js'
 import type { AbstractLevel } from 'abstract-level'
+import type { Config } from '../config.ts'
+import type { Peer } from '../net/peer/peer.ts'
+import type { Protocol } from '../net/protocol/index.ts'
+import type { Synchronizer } from '../sync/index.ts'
 
 export interface ServiceOptions {
   /* Config */
@@ -42,7 +41,6 @@ export class Service {
   public opened: boolean
   public running: boolean
   public pool: PeerPool
-  public flow: FlowControl
   public chain: Chain
   public interval: number
   public timeout: number
@@ -85,15 +83,14 @@ export class Service {
         try {
           await this.handle(message, protocol, peer)
         } catch (error: any) {
-          this.config.logger.debug(
+          this.config.logger?.debug(
             `Error handling message (${protocol}:${message.name}): ${error.message}`,
           )
         }
       }
     })
 
-    this.flow = new FlowControl()
-    // @ts-ignore TODO replace with async create constructor
+    //@ts-expect-error TODO replace with async create constructor
     this.chain = options.chain ?? new Chain(options)
     this.interval = options.interval ?? 8000
     this.timeout = options.timeout ?? 6000
@@ -126,13 +123,13 @@ export class Service {
     this.config.server && this.config.server.addProtocols(protocols)
 
     this.config.events.on(Event.POOL_PEER_BANNED, (peer) =>
-      this.config.logger.debug(`Peer banned: ${peer}`),
+      this.config.logger?.debug(`Peer banned: ${peer}`),
     )
     this.config.events.on(Event.POOL_PEER_ADDED, (peer) =>
-      this.config.logger.debug(`Peer added: ${peer}`),
+      this.config.logger?.debug(`Peer added: ${peer}`),
     )
     this.config.events.on(Event.POOL_PEER_REMOVED, (peer) =>
-      this.config.logger.debug(`Peer removed: ${peer}`),
+      this.config.logger?.debug(`Peer removed: ${peer}`),
     )
 
     await this.pool.open()
@@ -165,13 +162,9 @@ export class Service {
       this.v8Engine = await getV8Engine()
     }
 
-    this._statsInterval = setInterval(
-      // eslint-disable-next-line @typescript-eslint/await-thenable
-      await this.stats.bind(this),
-      this.STATS_INTERVAL,
-    )
+    this._statsInterval = setInterval(await this.stats.bind(this), this.STATS_INTERVAL)
     this.running = true
-    this.config.logger.info(`Started ${this.name} service.`)
+    this.config.logger?.info(`Started ${this.name} service.`)
     return true
   }
 
@@ -187,7 +180,7 @@ export class Service {
     clearInterval(this._statsInterval)
     await this.synchronizer?.stop()
     this.running = false
-    this.config.logger.info(`Stopped ${this.name} service.`)
+    this.config.logger?.info(`Stopped ${this.name} service.`)
     return true
   }
 
@@ -200,14 +193,14 @@ export class Service {
       const msg = `Memory stats usage=${heapUsed} MB percentage=${percentage}%`
 
       if (this._statsCounter % 4 === 0) {
-        this.config.logger.info(msg)
+        this.config.logger?.info(msg)
         this._statsCounter = 0
       } else {
-        this.config.logger.debug(msg)
+        this.config.logger?.debug(msg)
       }
 
       if (percentage >= this.MEMORY_SHUTDOWN_THRESHOLD && !this.config.shutdown) {
-        this.config.logger.error('EMERGENCY SHUTDOWN DUE TO HIGH MEMORY LOAD...')
+        this.config.logger?.error('EMERGENCY SHUTDOWN DUE TO HIGH MEMORY LOAD...')
         process.kill(process.pid, 'SIGINT')
       }
       this._statsCounter += 1

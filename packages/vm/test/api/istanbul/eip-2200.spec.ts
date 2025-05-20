@@ -2,8 +2,8 @@ import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { Address, hexToBytes, setLengthLeft } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createVM } from '../../../src/index.js'
-import { createAccountWithDefaults } from '../utils.js'
+import { createVM } from '../../../src/index.ts'
+import { createAccountWithDefaults } from '../utils.ts'
 
 const testCases = [
   {
@@ -72,12 +72,12 @@ describe('Istanbul: EIP-2200', () => {
       try {
         const res = await vm.evm.runCall(runCallArgs)
         if (typeof testCase.err !== 'undefined') {
-          assert.equal(res.execResult.exceptionError?.error, testCase.err)
+          assert.strictEqual(res.execResult.exceptionError?.error, testCase.err)
         } else {
-          assert.equal(res.execResult.exceptionError, undefined)
+          assert.strictEqual(res.execResult.exceptionError, undefined)
         }
-        assert.equal(res.execResult.executionGasUsed, BigInt(testCase.used))
-        assert.equal(res.execResult.gasRefund!, BigInt(testCase.refund))
+        assert.strictEqual(res.execResult.executionGasUsed, BigInt(testCase.used))
+        assert.strictEqual(res.execResult.gasRefund!, BigInt(testCase.refund))
       } catch (e: any) {
         assert.fail(e.message)
       }

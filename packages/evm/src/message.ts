@@ -1,9 +1,12 @@
-import { BIGINT_0, createZeroAddress } from '@ethereumjs/util'
+import { BIGINT_0, EthereumJSErrorWithoutCode, createZeroAddress } from '@ethereumjs/util'
 
-import type { PrecompileFunc } from './precompiles/index.js'
-import type { EOFEnv } from './types.js'
-import type { AccessWitnessInterface } from '@ethereumjs/common'
+import type {
+  BinaryTreeAccessWitnessInterface,
+  VerkleAccessWitnessInterface,
+} from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
+import type { PrecompileFunc } from './precompiles/index.ts'
+import type { EOFEnv } from './types.ts'
 
 const defaults = {
   value: BIGINT_0,
@@ -39,8 +42,8 @@ interface MessageOpts {
   createdAddresses?: Set<PrefixedHexString>
   delegatecall?: boolean
   gasRefund?: bigint
-  blobVersionedHashes?: Uint8Array[]
-  accessWitness?: AccessWitnessInterface
+  blobVersionedHashes?: PrefixedHexString[]
+  accessWitness?: VerkleAccessWitnessInterface | BinaryTreeAccessWitnessInterface
 }
 
 export class Message {
@@ -72,8 +75,8 @@ export class Message {
   /**
    * List of versioned hashes if message is a blob transaction in the outer VM
    */
-  blobVersionedHashes?: Uint8Array[]
-  accessWitness?: AccessWitnessInterface
+  blobVersionedHashes?: PrefixedHexString[]
+  accessWitness?: VerkleAccessWitnessInterface | BinaryTreeAccessWitnessInterface
 
   constructor(opts: MessageOpts) {
     this.to = opts.to
@@ -95,7 +98,7 @@ export class Message {
     this.blobVersionedHashes = opts.blobVersionedHashes
     this.accessWitness = opts.accessWitness
     if (this.value < 0) {
-      throw new Error(`value field cannot be negative, received ${this.value}`)
+      throw EthereumJSErrorWithoutCode(`value field cannot be negative, received ${this.value}`)
     }
   }
 
@@ -105,7 +108,7 @@ export class Message {
   get codeAddress(): Address {
     const codeAddress = this._codeAddress ?? this.to
     if (!codeAddress) {
-      throw new Error('Missing codeAddress')
+      throw EthereumJSErrorWithoutCode('Missing codeAddress')
     }
     return codeAddress
   }

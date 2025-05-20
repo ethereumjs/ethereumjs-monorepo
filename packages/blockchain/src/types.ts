@@ -1,11 +1,12 @@
-import type { Blockchain } from './index.js'
 import type { Block, BlockHeader } from '@ethereumjs/block'
-import type { Common, ConsensusAlgorithm } from '@ethereumjs/common'
-import type { AsyncEventEmitter, DB, DBObject, GenesisState } from '@ethereumjs/util'
+import type { Common, ConsensusAlgorithm, GenesisState } from '@ethereumjs/common'
+import type { DB, DBObject } from '@ethereumjs/util'
+import type { EventEmitter } from 'eventemitter3'
+import type { Blockchain } from './index.ts'
 
 export type OnBlock = (block: Block, reorg: boolean) => Promise<void> | void
 
-export type BlockchainEvents = {
+export type BlockchainEvent = {
   deletedCanonicalBlocks: (data: Block[], resolve?: (result?: any) => void) => void
 }
 
@@ -87,7 +88,7 @@ export interface BlockchainInterface {
   /**
    * Optional events emitter
    */
-  events?: AsyncEventEmitter<BlockchainEvents>
+  events?: EventEmitter<BlockchainEvent>
 }
 
 export interface GenesisOptions {

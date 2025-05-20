@@ -1,12 +1,19 @@
 import { RLP } from '@ethereumjs/rlp'
-import { bytesToHex, bytesToUnprefixedHex, concatBytes, equalsBytes } from '@ethereumjs/util'
+import {
+  EthereumJSErrorWithoutCode,
+  bytesToHex,
+  bytesToUnprefixedHex,
+  concatBytes,
+  equalsBytes,
+} from '@ethereumjs/util'
 import debug from 'debug'
 import { publicKeyConvert } from 'ethereum-cryptography/secp256k1-compat.js'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 
-import type { ETH } from './protocol/eth.js'
-import type { LES } from './protocol/les.js'
+import type { EthStatusMsg } from './protocol/eth.ts'
 
+// Do not use :# here, no logging without sub namespace occurring and current code structure
+// otherwise creates loggers like `devp2p:#:eth`
 export const devp2pDebug = debug('devp2p')
 
 export function genPrivateKey(): Uint8Array {
@@ -39,7 +46,7 @@ export function xor(a: Uint8Array, b: any): Uint8Array {
   return bytes
 }
 
-type assertInput = Uint8Array | Uint8Array[] | ETH.StatusMsg | LES.Status | number | null
+type assertInput = Uint8Array | Uint8Array[] | EthStatusMsg | number | null
 
 export function assertEq(
   expected: assertInput,
@@ -59,7 +66,7 @@ export function assertEq(
     } else {
       debug(debugMsg)
     }
-    throw new Error(fullMsg)
+    throw EthereumJSErrorWithoutCode(fullMsg)
   }
 
   if (expected === actual) return
@@ -69,7 +76,7 @@ export function assertEq(
   } else {
     debug(fullMsg)
   }
-  throw new Error(fullMsg)
+  throw EthereumJSErrorWithoutCode(fullMsg)
 }
 
 export function formatLogId(id: string, verbose: boolean): string {
@@ -189,6 +196,7 @@ export const ipToBytes = (ip: string, bytes?: Uint8Array, offset: number = 0): U
       for (i = 9 - sections.length; i > 0; i--) {
         argv.push('0')
       }
+      // eslint-disable-next-line prefer-spread
       sections.splice.apply(sections, argv)
     }
 

@@ -1,17 +1,24 @@
-import { createTxFromTxData } from '@ethereumjs/tx'
-import { bigIntToHex, bytesToBigInt, bytesToHex, hexToBytes, setLengthLeft } from '@ethereumjs/util'
+import { createTx } from '@ethereumjs/tx'
+import {
+  Units,
+  bigIntToHex,
+  bytesToBigInt,
+  bytesToHex,
+  hexToBytes,
+  setLengthLeft,
+} from '@ethereumjs/util'
 import { buildBlock } from '@ethereumjs/vm'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, beforeEach, describe, it } from 'vitest'
 
-import { INTERNAL_ERROR, INVALID_PARAMS } from '../../../src/rpc/error-code.js'
-import { debugData } from '../../testdata/geth-genesis/debug.js'
-import { dummy, getRPCClient, setupChain } from '../helpers.js'
+import { INTERNAL_ERROR, INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
+import { debugData } from '../../testdata/geth-genesis/debug.ts'
+import { dummy, getRPCClient, setupChain } from '../helpers.ts'
 
 import type { Block } from '@ethereumjs/block'
 import type { StorageRange } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
-import type { HttpClient } from 'jayson/promise'
+import type { HttpClient } from 'jayson/promise/index.js'
 
 const method = 'debug_storageRangeAt'
 
@@ -89,11 +96,11 @@ describe(method, () => {
       txLookupLimit: 0,
     })
     const rpc = getRPCClient(server)
-    const firstTx = createTxFromTxData(
+    const firstTx = createTx(
       {
         type: 0x2,
         gasLimit: 10000000,
-        maxFeePerGas: 1000000000,
+        maxFeePerGas: Units.gwei(1),
         maxPriorityFeePerGas: 1,
         value: 0,
         data: storageBytecode,
@@ -116,12 +123,12 @@ describe(method, () => {
 
     const result = await blockBuilder.addTransaction(firstTx, { skipHardForkValidation: true })
 
-    const secondTx = createTxFromTxData(
+    const secondTx = createTx(
       {
         to: result.createdAddress,
         type: 0x2,
         gasLimit: 10000000,
-        maxFeePerGas: 1000000000,
+        maxFeePerGas: Units.gwei(1),
         maxPriorityFeePerGas: 1,
         value: 0,
         nonce: 1,
@@ -132,11 +139,11 @@ describe(method, () => {
 
     await blockBuilder.addTransaction(secondTx, { skipHardForkValidation: true })
 
-    const thirdTx = createTxFromTxData(
+    const thirdTx = createTx(
       {
         type: 0x2,
         gasLimit: 10000000,
-        maxFeePerGas: 1000000000,
+        maxFeePerGas: Units.gwei(1),
         maxPriorityFeePerGas: 1,
         value: 0,
         nonce: 2,
@@ -147,13 +154,13 @@ describe(method, () => {
 
     const thirdResult = await blockBuilder.addTransaction(thirdTx, { skipHardForkValidation: true })
 
-    const block = await blockBuilder.build()
+    const { block } = await blockBuilder.build()
     await chain.putBlocks([block], true)
 
     context.rpc = rpc
     context.block = await chain.getCanonicalHeadBlock()
-    context.createdAddress = result.createdAddress!!
-    context.createdAddressNoStorage = thirdResult.createdAddress!!
+    context.createdAddress = result.createdAddress!
+    context.createdAddressNoStorage = thirdResult.createdAddress!
   })
 
   it<TestSetup>('Should return the correct (number of) key value pairs.', async ({
@@ -172,27 +179,27 @@ describe(method, () => {
     const storageRange: StorageRange = res.result
 
     const firstVariableHash = keccak256(setLengthLeft(hexToBytes('0x00'), 32))
-    assert.equal(
+    assert.strictEqual(
       storageRange.storage[bytesToHex(firstVariableHash)].value,
       '0x43',
       'First variable correctly included.',
     )
 
     const secondVariableHash = keccak256(setLengthLeft(hexToBytes('0x01'), 32))
-    assert.equal(
+    assert.strictEqual(
       storageRange.storage[bytesToHex(secondVariableHash)].value,
       '0x01',
       'Second variable correctly included.',
     )
 
     const thirdVariableHash = keccak256(setLengthLeft(hexToBytes('0x02'), 32))
-    assert.equal(
+    assert.strictEqual(
       storageRange.storage[bytesToHex(thirdVariableHash)].value,
       '0x02',
       'Third variable correctly included.',
     )
 
-    assert.equal(
+    assert.strictEqual(
       Object.keys(storageRange.storage).length,
       3,
       'Call returned the correct number of key value pairs.',
@@ -216,7 +223,7 @@ describe(method, () => {
     const storageRange: StorageRange = res.result
 
     const hashedKey = keccak256(setLengthLeft(hexToBytes('0x00'), 32))
-    assert.equal(
+    assert.strictEqual(
       storageRange.storage[bytesToHex(hashedKey)].value,
       '0x42',
       'Old value was correctly reported.',
@@ -238,7 +245,7 @@ describe(method, () => {
 
     const storageRange: StorageRange = res.result
 
-    assert.equal(
+    assert.strictEqual(
       Object.keys(storageRange.storage).length,
       2,
       'Call returned the correct number of key value pairs.',
@@ -260,7 +267,7 @@ describe(method, () => {
 
     const storageRange: StorageRange = res.result
 
-    assert.equal(
+    assert.strictEqual(
       Object.keys(storageRange.storage).length,
       0,
       'Call returned the correct number of key value pairs.',
@@ -288,7 +295,7 @@ describe(method, () => {
 
     const storageRange: StorageRange = res.result
 
-    assert.equal(
+    assert.strictEqual(
       Object.keys(storageRange.storage).length,
       2,
       'Call returned the correct number of key value pairs.',
@@ -336,7 +343,7 @@ describe(method, () => {
 
     const storageRange: StorageRange = res.result
 
-    assert.equal(storageRange.nextKey, largestHashedKey, 'nextKey was correctly set.')
+    assert.strictEqual(storageRange.nextKey, largestHashedKey, 'nextKey was correctly set.')
   })
 
   it<TestSetup>('Should provide a null value for preimages (until this is implemented).', async ({
@@ -370,8 +377,8 @@ describe(method, () => {
       '0x00',
       100,
     ])
-    assert.equal(res.error.code, INTERNAL_ERROR)
-    assert.ok(res.error.message.includes('Could not get requested block hash.'))
+    assert.strictEqual(res.error.code, INTERNAL_ERROR)
+    assert.isTrue(res.error.message.includes('Could not get requested block hash.'))
   })
 
   it<TestSetup>('Should throw an error if txIndex is too small or too large.', async ({
@@ -386,8 +393,8 @@ describe(method, () => {
       '0x00',
       100,
     ])
-    assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('invalid argument 1: argument must be larger than 0'))
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
+    assert.isTrue(res.error.message.includes('invalid argument 1: argument must be larger than 0'))
 
     res = await rpc.request(method, [
       bytesToHex(block.hash()),
@@ -396,8 +403,8 @@ describe(method, () => {
       '0x00',
       100,
     ])
-    assert.equal(res.error.code, INTERNAL_ERROR)
-    assert.ok(
+    assert.strictEqual(res.error.code, INTERNAL_ERROR)
+    assert.isTrue(
       res.error.message.includes(
         'txIndex cannot be larger than the number of transactions in the block.',
       ),
@@ -415,8 +422,8 @@ describe(method, () => {
       '0x00',
       100,
     ])
-    assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('invalid argument 2: invalid address'))
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
+    assert.isTrue(res.error.message.includes('invalid argument 2: invalid address'))
   })
 
   it<TestSetup>('Should throw an error if the address does not exist.', async ({ rpc, block }) => {
@@ -428,8 +435,8 @@ describe(method, () => {
       '0x00',
       100,
     ])
-    assert.equal(res.error.code, INTERNAL_ERROR)
-    assert.ok(res.error.message.includes('Account does not exist.'))
+    assert.strictEqual(res.error.code, INTERNAL_ERROR)
+    assert.isTrue(res.error.message.includes('Account does not exist.'))
   })
 
   it<TestSetup>('Should throw an error if limit is too small.', async ({
@@ -444,8 +451,8 @@ describe(method, () => {
       '0x00',
       -1,
     ])
-    assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('invalid argument 4: argument must be larger than 0'))
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
+    assert.isTrue(res.error.message.includes('invalid argument 4: argument must be larger than 0'))
   })
 
   it<TestSetup>("Should throw an error if hex parameters do not start with '0x'.", async ({
@@ -460,8 +467,8 @@ describe(method, () => {
       '0x00',
       -1,
     ])
-    assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('invalid argument 0: hex string without 0x prefix'))
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
+    assert.isTrue(res.error.message.includes('invalid argument 0: hex string without 0x prefix'))
 
     res = await rpc.request(method, [
       bytesToHex(block.hash()),
@@ -470,8 +477,8 @@ describe(method, () => {
       '0x00',
       -1,
     ])
-    assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('invalid argument 2: missing 0x prefix'))
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
+    assert.isTrue(res.error.message.includes('invalid argument 2: missing 0x prefix'))
 
     res = await rpc.request(method, [
       bytesToHex(block.hash()),
@@ -480,7 +487,7 @@ describe(method, () => {
       '00',
       -1,
     ])
-    assert.equal(res.error.code, INVALID_PARAMS)
-    assert.ok(res.error.message.includes('invalid argument 3: hex string without 0x prefix'))
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
+    assert.isTrue(res.error.message.includes('invalid argument 3: hex string without 0x prefix'))
   })
 })

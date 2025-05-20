@@ -1,8 +1,9 @@
-import { bytesToBigInt, bytesToHex, toBytes } from './bytes.js'
-import { isHexString } from './internal.js'
+import { bytesToBigInt, bytesToHex, toBytes } from './bytes.ts'
+import { EthereumJSErrorWithoutCode } from './errors.ts'
+import { isHexString } from './internal.ts'
 
-import type { Address } from './address.js'
-import type { ToBytesInputTypes } from './bytes.js'
+import type { Address } from './address.ts'
+import type { ToBytesInputTypes } from './bytes.ts'
 
 /*
  * A type that represents an input that can be converted to a BigInt.
@@ -57,15 +58,14 @@ export function isNestedUint8Array(value: unknown): value is NestedUint8Array {
   return true
 }
 
-/**
- * Type output options
- */
-export enum TypeOutput {
-  Number,
-  BigInt,
-  Uint8Array,
-  PrefixedHexString,
-}
+export type TypeOutput = (typeof TypeOutput)[keyof typeof TypeOutput]
+
+export const TypeOutput = {
+  Number: 0,
+  BigInt: 1,
+  Uint8Array: 2,
+  PrefixedHexString: 3,
+} as const
 
 export type TypeOutputReturnType = {
   [TypeOutput.Number]: number
@@ -98,9 +98,9 @@ export function toType<T extends TypeOutput>(
   }
 
   if (typeof input === 'string' && !isHexString(input)) {
-    throw new Error(`A string must be provided with a 0x-prefix, given: ${input}`)
+    throw EthereumJSErrorWithoutCode(`A string must be provided with a 0x-prefix, given: ${input}`)
   } else if (typeof input === 'number' && !Number.isSafeInteger(input)) {
-    throw new Error(
+    throw EthereumJSErrorWithoutCode(
       'The provided number is greater than MAX_SAFE_INTEGER (please use an alternative input type)',
     )
   }
@@ -115,7 +115,7 @@ export function toType<T extends TypeOutput>(
     case TypeOutput.Number: {
       const bigInt = bytesToBigInt(output)
       if (bigInt > BigInt(Number.MAX_SAFE_INTEGER)) {
-        throw new Error(
+        throw EthereumJSErrorWithoutCode(
           'The provided number is greater than MAX_SAFE_INTEGER (please use an alternative output type)',
         )
       }
@@ -124,6 +124,54 @@ export function toType<T extends TypeOutput>(
     case TypeOutput.PrefixedHexString:
       return bytesToHex(output) as TypeOutputReturnType[T]
     default:
-      throw new Error('unknown outputType')
+      throw EthereumJSErrorWithoutCode('unknown outputType')
   }
+}
+
+/**
+ * EIP-7702 Authorization list types
+ */
+export type EOACode7702AuthorizationListItemUnsigned = {
+  chainId: PrefixedHexString
+  address: PrefixedHexString
+  nonce: PrefixedHexString
+}
+
+export type EOACode7702AuthorizationListItem = {
+  yParity: PrefixedHexString
+  r: PrefixedHexString
+  s: PrefixedHexString
+} & EOACode7702AuthorizationListItemUnsigned
+
+// Tuple of [chain_id, address, nonce, y_parity, r, s]
+export type EOACode7702AuthorizationListBytesItem = [
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+  Uint8Array,
+]
+export type EOACode7702AuthorizationListBytes = EOACode7702AuthorizationListBytesItem[]
+export type EOACode7702AuthorizationList = EOACode7702AuthorizationListItem[]
+
+export type EOACode7702AuthorizationListBytesItemUnsigned = [Uint8Array, Uint8Array, Uint8Array]
+
+export function isEOACode7702AuthorizationListBytes(
+  input: EOACode7702AuthorizationListBytes | EOACode7702AuthorizationList,
+): input is EOACode7702AuthorizationListBytes {
+  if (input.length === 0) {
+    return true
+  }
+  const firstItem = input[0]
+  if (Array.isArray(firstItem)) {
+    return true
+  }
+  return false
+}
+
+export function isEOACode7702AuthorizationList(
+  input: EOACode7702AuthorizationListBytes | EOACode7702AuthorizationList,
+): input is EOACode7702AuthorizationList {
+  return !isEOACode7702AuthorizationListBytes(input) // This is exactly the same method, except the output is negated.
 }

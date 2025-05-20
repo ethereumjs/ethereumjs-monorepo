@@ -1,8 +1,6 @@
 import { equalsBytes } from '@ethereumjs/util'
 
-import { BLS_GAS_DISCOUNT_PAIRS } from './constants.js'
-
-import type { PrecompileInput } from '../types.js'
+import type { PrecompileInput } from '../types.ts'
 
 const ZERO_BYTES_16 = new Uint8Array(16)
 
@@ -14,15 +12,19 @@ const ZERO_BYTES_16 = new Uint8Array(16)
  * @param gasUsedPerPair
  * @returns
  */
-export const msmGasUsed = (numPairs: number, gasUsedPerPair: bigint) => {
-  const gasDiscountMax = BLS_GAS_DISCOUNT_PAIRS[BLS_GAS_DISCOUNT_PAIRS.length - 1][1]
+export const msmGasUsed = (
+  numPairs: number,
+  gasUsedPerPair: bigint,
+  discountTable: [number, number][],
+) => {
+  const gasDiscountMax = discountTable[discountTable.length - 1][1]
   let gasDiscountMultiplier
 
-  if (numPairs <= BLS_GAS_DISCOUNT_PAIRS.length) {
+  if (numPairs <= discountTable.length) {
     if (numPairs === 0) {
       gasDiscountMultiplier = 0 // this implicitly sets gasUsed to 0 as per the EIP.
     } else {
-      gasDiscountMultiplier = BLS_GAS_DISCOUNT_PAIRS[numPairs - 1][1]
+      gasDiscountMultiplier = discountTable[numPairs - 1][1]
     }
   } else {
     gasDiscountMultiplier = gasDiscountMax

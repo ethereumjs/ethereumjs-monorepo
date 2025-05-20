@@ -1,29 +1,46 @@
 import { cliqueSigner, createBlockHeader } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
-import { RLP } from '@ethereumjs/rlp'
+import { BinaryTreeAccessWitness, type EVM, VerkleAccessWitness } from '@ethereumjs/evm'
+import {
+  type StatefulVerkleStateManager,
+  type StatelessVerkleStateManager,
+} from '@ethereumjs/statemanager'
 import { Capability, isBlob4844Tx } from '@ethereumjs/tx'
 import {
   Account,
   Address,
   BIGINT_0,
   BIGINT_1,
+  EthereumJSErrorWithoutCode,
   KECCAK256_NULL,
+  MAX_UINT64,
+  SECP256K1_ORDER_DIV_2,
+  bigIntMax,
   bytesToBigInt,
   bytesToHex,
   bytesToUnprefixedHex,
   concatBytes,
-  ecrecover,
+  eoaCode7702RecoverAuthority,
   equalsBytes,
   hexToBytes,
-  publicToAddress,
   short,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { Bloom } from './bloom/index.js'
-import { emitEVMProfile } from './emitEVMProfile.js'
+import { Bloom } from './bloom/index.ts'
+import { emitEVMProfile } from './emitEVMProfile.ts'
 
+import type { Block } from '@ethereumjs/block'
+import type { Common } from '@ethereumjs/common'
+import type {
+  AccessList,
+  AccessList2930Tx,
+  AccessListItem,
+  EIP7702CompatibleTx,
+  FeeMarket1559Tx,
+  LegacyTx,
+  TypedTransaction,
+} from '@ethereumjs/tx'
 import type {
   AfterTxEvent,
   BaseTxReceipt,
@@ -33,20 +50,8 @@ import type {
   RunTxOpts,
   RunTxResult,
   TxReceipt,
-} from './types.js'
-import type { VM } from './vm.js'
-import type { Block } from '@ethereumjs/block'
-import type { Common } from '@ethereumjs/common'
-import type { EVM } from '@ethereumjs/evm'
-import type {
-  AccessList,
-  AccessList2930Transaction,
-  AccessListItem,
-  EIP7702CompatibleTx,
-  FeeMarket1559Tx,
-  LegacyTx,
-  TypedTransaction,
-} from '@ethereumjs/tx'
+} from './types.ts'
+import type { VM } from './vm.ts'
 
 const debug = debugDefault('vm:tx')
 const debugGas = debugDefault('vm:tx:gas')
@@ -93,14 +98,14 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     if (opts.block.common.hardfork() !== vm.common.hardfork()) {
       // Block and VM's hardfork should match as well
       const msg = _errorMsg('block has a different hardfork than the vm', vm, opts.block, opts.tx)
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
   }
 
   const gasLimit = opts.block?.header.gasLimit ?? DEFAULT_HEADER.gasLimit
   if (opts.skipBlockGasLimitValidation !== true && gasLimit < opts.tx.gasLimit) {
     const msg = _errorMsg('tx has a higher gas limit than the block', vm, opts.block, opts.tx)
-    throw new Error(msg)
+    throw EthereumJSErrorWithoutCode(msg)
   }
 
   // Ensure we start with a clear warmed accounts Map
@@ -131,7 +136,7 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         opts.block,
         opts.tx,
       )
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
     if (opts.tx.supports(Capability.EIP1559FeeMarket) && !vm.common.isActivatedEIP(1559)) {
       await vm.evm.journal.revert()
@@ -141,15 +146,18 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         opts.block,
         opts.tx,
       )
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
 
-    const castedTx = <AccessList2930Transaction>opts.tx
+    const castedTx = opts.tx as AccessList2930Tx
 
-    for (const accessListItem of castedTx.AccessListJSON) {
-      vm.evm.journal.addAlwaysWarmAddress(accessListItem.address, true)
-      for (const storageKey of accessListItem.storageKeys) {
-        vm.evm.journal.addAlwaysWarmSlot(accessListItem.address, storageKey, true)
+    for (const accessListItem of castedTx.accessList) {
+      const [addressBytes, slotBytesList] = accessListItem
+      const address = bytesToUnprefixedHex(addressBytes)
+      // Note: in here, the 0x is stripped, so immediately do this here
+      vm.evm.journal.addAlwaysWarmAddress(address, true)
+      for (const storageKey of slotBytesList) {
+        vm.evm.journal.addAlwaysWarmSlot(address, bytesToUnprefixedHex(storageKey), true)
       }
     }
   }
@@ -175,14 +183,14 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     if (enableProfiler) {
       // eslint-disable-next-line no-console
       console.timeEnd(entireTxLabel)
-      const logs = (<EVM>vm.evm).getPerformanceLogs()
+      const logs = (vm.evm as EVM).getPerformanceLogs()
       if (logs.precompiles.length === 0 && logs.opcodes.length === 0) {
         // eslint-disable-next-line no-console
         console.log('No precompile or opcode execution.')
       }
       emitEVMProfile(logs.precompiles, 'Precompile performance')
       emitEVMProfile(logs.opcodes, 'Opcodes performance')
-      ;(<EVM>vm.evm).clearPerformanceLogs()
+      ;(vm.evm as EVM).clearPerformanceLogs()
     }
   }
 }
@@ -190,14 +198,38 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
 async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const state = vm.stateManager
 
-  let stateAccesses
+  let stateAccesses: VerkleAccessWitness | BinaryTreeAccessWitness | undefined
+  let txAccesses: VerkleAccessWitness | BinaryTreeAccessWitness | undefined
   if (vm.common.isActivatedEIP(6800)) {
-    if (typeof vm.stateManager.initVerkleExecutionWitness !== 'function') {
-      throw Error(`StatelessVerkleStateManager needed for execution of verkle blocks`)
+    if (vm.evm.verkleAccessWitness === undefined) {
+      throw Error(`Verkle access witness needed for execution of verkle blocks`)
     }
-    stateAccesses = vm.stateManager.accessWitness!
+
+    // Check if statemanager is a Verkle State Manager (stateless and stateful both have verifyVerklePostState)
+    if (!('verifyVerklePostState' in vm.stateManager)) {
+      throw EthereumJSErrorWithoutCode(`Verkle State Manager needed for execution of verkle blocks`)
+    }
+    stateAccesses = vm.evm.verkleAccessWitness
+    txAccesses = new VerkleAccessWitness({
+      verkleCrypto: (vm.stateManager as StatelessVerkleStateManager | StatefulVerkleStateManager)
+        .verkleCrypto,
+    })
+  } else if (vm.common.isActivatedEIP(7864)) {
+    if (vm.evm.binaryTreeAccessWitness === undefined) {
+      throw Error(`Binary tree access witness needed for execution of binary tree blocks`)
+    }
+
+    // Check if statemanager is a BinaryTreeStateManager by checking for a method only on BinaryTreeStateManager API
+    if (!('verifyBinaryPostState' in vm.stateManager)) {
+      throw EthereumJSErrorWithoutCode(
+        `Binary tree State Manager needed for execution of binary tree blocks`,
+      )
+    }
+    stateAccesses = vm.evm.binaryTreeAccessWitness
+    txAccesses = new BinaryTreeAccessWitness({
+      hashFunction: vm.evm.binaryTreeAccessWitness.hashFunction,
+    })
   }
-  const txAccesses = stateAccesses?.shallowCopy()
 
   const { tx, block } = opts
 
@@ -238,17 +270,30 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   // Validate gas limit against tx base fee (DataFee + TxFee + Creation Fee)
   const intrinsicGas = tx.getIntrinsicGas()
+  let floorCost = BIGINT_0
+
+  if (vm.common.isActivatedEIP(7623)) {
+    // Tx should at least cover the floor price for tx data
+    let tokens = 0
+    for (let i = 0; i < tx.data.length; i++) {
+      tokens += tx.data[i] === 0 ? 1 : 4
+    }
+    floorCost =
+      tx.common.param('txGas') + tx.common.param('totalCostFloorPerToken') * BigInt(tokens)
+  }
+
   let gasLimit = tx.gasLimit
-  if (gasLimit < intrinsicGas) {
+  const minGasLimit = bigIntMax(intrinsicGas, floorCost)
+  if (gasLimit < minGasLimit) {
     const msg = _errorMsg(
       `tx gas limit ${Number(gasLimit)} is lower than the minimum gas limit of ${Number(
-        intrinsicGas,
+        minGasLimit,
       )}`,
       vm,
       block,
       tx,
     )
-    throw new Error(msg)
+    throw EthereumJSErrorWithoutCode(msg)
   }
   gasLimit -= intrinsicGas
   if (vm.DEBUG) {
@@ -270,7 +315,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         block,
         tx,
       )
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
   }
   if (enableProfiler) {
@@ -306,7 +351,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
           block,
           tx,
         )
-        throw new Error(msg)
+        throw EthereumJSErrorWithoutCode(msg)
       }
     }
   }
@@ -328,7 +373,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         block,
         tx,
       )
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
   }
 
@@ -346,7 +391,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (isBlob4844Tx(tx)) {
     if (!vm.common.isActivatedEIP(4844)) {
       const msg = _errorMsg('blob transactions are only valid with EIP4844 active', vm, block, tx)
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
     // EIP-4844 spec
     // the signer must be able to afford the transaction
@@ -363,7 +408,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         block,
         tx,
       )
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
   }
 
@@ -379,7 +424,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         block,
         tx,
       )
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
   }
 
@@ -391,7 +436,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         block,
         tx,
       )
-      throw new Error(msg)
+      throw EthereumJSErrorWithoutCode(msg)
     }
   }
 
@@ -406,10 +451,10 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     gasPrice = inclusionFeePerGas + baseFee
   } else {
     // Have to cast as legacy tx since EIP1559 tx does not have gas price
-    gasPrice = (<LegacyTx>tx).gasPrice
+    gasPrice = (tx as LegacyTx).gasPrice
     if (vm.common.isActivatedEIP(1559)) {
       const baseFee = block?.header.baseFeePerGas ?? DEFAULT_HEADER.baseFeePerGas!
-      inclusionFeePerGas = (<LegacyTx>tx).gasPrice - baseFee
+      inclusionFeePerGas = (tx as LegacyTx).gasPrice - baseFee
     }
   }
 
@@ -433,8 +478,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   if (tx.supports(Capability.EIP7702EOACode)) {
     // Add contract code for authority tuples provided by EIP 7702 tx
-    const authorizationList = (<EIP7702CompatibleTx>tx).authorizationList
-    const MAGIC = new Uint8Array([5])
+    const authorizationList = (tx as EIP7702CompatibleTx).authorizationList
     for (let i = 0; i < authorizationList.length; i++) {
       // Authority tuple validation
       const data = authorizationList[i]
@@ -447,21 +491,32 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       // Address to take code from
       const address = data[1]
       const nonce = data[2]
-      const yParity = bytesToBigInt(data[3])
-      const r = data[4]
+      if (bytesToBigInt(nonce) >= MAX_UINT64) {
+        // authority nonce >= 2^64 - 1. Bumping this nonce by one will not make this fit in an uint64.
+        // EIPs PR: https://github.com/ethereum/EIPs/pull/8938
+        continue
+      }
       const s = data[5]
+      if (bytesToBigInt(s) > SECP256K1_ORDER_DIV_2) {
+        // Malleability protection to avoid "flipping" a valid signature to get
+        // another valid signature (which yields the same account on `ecrecover`)
+        // This is invalid, so skip this auth tuple
+        continue
+      }
+      const yParity = bytesToBigInt(data[3])
 
-      const rlpdSignedMessage = RLP.encode([chainId, address, nonce])
-      const toSign = keccak256(concatBytes(MAGIC, rlpdSignedMessage))
-      let pubKey
+      if (yParity > BIGINT_1) {
+        continue
+      }
+
+      // Address to set code to
+      let authority
       try {
-        pubKey = ecrecover(toSign, yParity, r, s)
-      } catch (e) {
+        authority = eoaCode7702RecoverAuthority(data)
+      } catch {
         // Invalid signature, continue
         continue
       }
-      // Address to set code to
-      const authority = new Address(publicToAddress(pubKey))
       const accountMaybeUndefined = await vm.stateManager.getAccount(authority)
       const accountExists = accountMaybeUndefined !== undefined
       const account = accountMaybeUndefined ?? new Account()
@@ -497,8 +552,14 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       account.nonce++
       await vm.evm.journal.putAccount(authority, account)
 
-      const addressCode = concatBytes(DELEGATION_7702_FLAG, address)
-      await vm.stateManager.putCode(authority, addressCode)
+      if (equalsBytes(address, new Uint8Array(20))) {
+        // Special case (see EIP PR: https://github.com/ethereum/EIPs/pull/8929)
+        // If delegated to the zero address, clear the delegation of authority
+        await vm.stateManager.putCode(authority, new Uint8Array())
+      } else {
+        const addressCode = concatBytes(DELEGATION_7702_FLAG, address)
+        await vm.stateManager.putCode(authority, addressCode)
+      }
     }
   }
 
@@ -540,7 +601,9 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   })) as RunTxResult
 
   if (vm.common.isActivatedEIP(6800)) {
-    stateAccesses?.merge(txAccesses!)
+    ;(stateAccesses as VerkleAccessWitness)?.merge(txAccesses! as VerkleAccessWitness)
+  } else if (vm.common.isActivatedEIP(7864)) {
+    ;(stateAccesses as BinaryTreeAccessWitness)?.merge(txAccesses! as BinaryTreeAccessWitness)
   }
 
   if (enableProfiler) {
@@ -588,7 +651,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   // Process any gas refund
   gasRefund += results.execResult.gasRefund ?? BIGINT_0
-  results.gasRefund = gasRefund
+  results.gasRefund = gasRefund // TODO: this field could now be incorrect with the introduction of 7623
   const maxRefundQuotient = vm.common.param('maxRefundQuotient')
   if (gasRefund !== BIGINT_0) {
     const maxRefund = results.totalGasSpent / maxRefundQuotient
@@ -602,6 +665,19 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       debug(`No tx gasRefund`)
     }
   }
+
+  if (vm.common.isActivatedEIP(7623)) {
+    if (results.totalGasSpent < floorCost) {
+      if (vm.DEBUG) {
+        debugGas(
+          `tx floorCost ${floorCost} is higher than to total execution gas spent (-> ${results.totalGasSpent}), setting floor as gas paid`,
+        )
+      }
+      results.gasRefund = BIGINT_0
+      results.totalGasSpent = floorCost
+    }
+  }
+
   results.amountSpent = results.totalGasSpent * gasPrice
 
   // Update sender's balance
@@ -628,11 +704,16 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   let minerAccount = await state.getAccount(miner)
+  const minerAccountExists = minerAccount !== undefined
   if (minerAccount === undefined) {
     if (vm.common.isActivatedEIP(6800)) {
-      state.accessWitness!.touchAndChargeProofOfAbsence(miner)
+      if (vm.evm.verkleAccessWitness === undefined) {
+        throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
+      }
     }
     minerAccount = new Account()
+    // Add the miner account to the system verkle access witness
+    vm.evm.systemVerkleAccessWitness?.writeAccountHeader(miner)
   }
   // add the amount spent on gas to the miner's account
   results.minerValue = vm.common.isActivatedEIP(1559)
@@ -640,11 +721,17 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     : results.amountSpent
   minerAccount.balance += results.minerValue
 
-  if (vm.common.isActivatedEIP(6800)) {
-    // use vm utility to build access but the computed gas is not charged and hence free
-    state.accessWitness!.touchTxTargetAndComputeGas(miner, {
-      sendsValue: true,
-    })
+  if (vm.common.isActivatedEIP(6800) && results.minerValue !== BIGINT_0) {
+    if (vm.evm.verkleAccessWitness === undefined) {
+      throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
+    }
+    if (minerAccountExists) {
+      // use vm utility to build access but the computed gas is not charged and hence free
+      vm.evm.verkleAccessWitness.writeAccountBasicData(miner)
+      vm.evm.verkleAccessWitness.readAccountCodeHash(miner)
+    } else {
+      vm.evm.verkleAccessWitness.writeAccountHeader(miner)
+    }
   }
 
   // Put the miner account into the state. If the balance of the miner account remains zero, note that
@@ -727,10 +814,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   // Generate the tx receipt
-  const gasUsed =
-    opts.blockGasUsed !== undefined
-      ? opts.blockGasUsed
-      : (block?.header.gasUsed ?? DEFAULT_HEADER.gasUsed)
+  const gasUsed = opts.blockGasUsed ?? block?.header.gasUsed ?? DEFAULT_HEADER.gasUsed
   const cumulativeGasUsed = gasUsed + results.totalGasSpent
   results.receipt = await generateTxReceipt(
     vm,
@@ -761,6 +845,11 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         opts.tx.isSigned() ? bytesToHex(opts.tx.hash()) : 'unsigned'
       } sender=${caller}`,
     )
+  }
+
+  if (vm.common.isActivatedEIP(6800)) {
+    // commit all access witness changes
+    vm.evm.verkleAccessWitness?.commit()
   }
 
   return results

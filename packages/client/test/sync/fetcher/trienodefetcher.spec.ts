@@ -1,15 +1,15 @@
+import { decodeMPTNode } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
-import { decodeNode } from '@ethereumjs/trie'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 import { OrderedMap } from '@js-sdsl/ordered-map'
-import { assert, describe, it, vi } from 'vitest'
+import { assert, describe, expect, it, vi } from 'vitest'
 
-import { Chain } from '../../../src/blockchain/index.js'
-import { Config } from '../../../src/config.js'
-import { SnapProtocol } from '../../../src/net/protocol/index.js'
-import { wait } from '../../integration/util.js'
+import { Chain } from '../../../src/blockchain/index.ts'
+import { Config } from '../../../src/config.ts'
+import { SnapProtocol } from '../../../src/net/protocol/index.ts'
+import { wait } from '../../integration/util.ts'
 
-import type { BranchNode } from '@ethereumjs/trie'
+import type { BranchMPTNode } from '@ethereumjs/mpt'
 
 // Collected from Sepolia:
 // getTrieNodes({
@@ -28,7 +28,7 @@ describe('[TrieNodeFetcher]', async () => {
   PeerPool.prototype.idle = vi.fn()
   PeerPool.prototype.ban = vi.fn()
 
-  const { TrieNodeFetcher } = await import('../../../src/sync/fetcher/trienodefetcher.js')
+  const { TrieNodeFetcher } = await import('../../../src/sync/fetcher/trienodefetcher.ts')
 
   it('should start/stop', async () => {
     const config = new Config({ maxPerRequest: 5 })
@@ -39,21 +39,21 @@ describe('[TrieNodeFetcher]', async () => {
       root: new Uint8Array(0),
     })
     fetcher.next = () => false
-    assert.notOk((fetcher as any).running, 'not started')
-    assert.equal((fetcher as any).in.length, 0, 'No jobs have yet been added')
-    assert.equal(
-      (fetcher as any).pathToNodeRequestData.length,
+    assert.isFalse(fetcher['running'], 'not started')
+    assert.strictEqual(fetcher['in'].length, 0, 'No jobs have yet been added')
+    assert.strictEqual(
+      fetcher['pathToNodeRequestData'].length,
       1,
       'one node request has been added',
     )
 
     void fetcher.fetch()
     await wait(100)
-    assert.ok((fetcher as any).running, 'started')
-    assert.ok(fetcher.write() === false, 'fetcher should not setup a new write pipe')
+    assert.isTrue(fetcher['running'], 'started')
+    assert.isFalse(fetcher.write(), 'fetcher should not setup a new write pipe')
     fetcher.destroy()
     await wait(100)
-    assert.notOk((fetcher as any).running, 'stopped')
+    assert.isFalse(fetcher['running'], 'stopped')
   })
 
   it('should process', async () => {
@@ -71,15 +71,15 @@ describe('[TrieNodeFetcher]', async () => {
       pathStrings: ['0', '1'],
       paths: [[Uint8Array.from([0])], [Uint8Array.from([1])]],
     }
-    ;(fetcher as any).running = true
+    fetcher['running'] = true
     fetcher.enqueueTask(task)
-    const job = (fetcher as any).in.peek()
+    const job = fetcher['in'].peek()
     assert.deepEqual(
-      (fetcher.process(job, NodeDataResponse) as any)[0],
+      (fetcher.process(job!, NodeDataResponse) as any)[0],
       fullResult[0],
       'got results',
     )
-    assert.notOk(fetcher.process({} as any, { NodeDataResponse: [] } as any), 'bad results')
+    assert.isUndefined(fetcher.process({} as any, { NodeDataResponse: [] } as any), 'bad results')
   })
 
   it('should request correctly', async () => {
@@ -157,7 +157,7 @@ describe('[TrieNodeFetcher]', async () => {
     }
     const job = { peer, partialResult: [], task }
     const requestResult = (await fetcher.request(job as any)) as any
-    assert.equal(
+    assert.strictEqual(
       requestResult[0][0],
       res.nodes[0],
       'Request phase should cross-validate received nodes with requested nodes',
@@ -165,9 +165,9 @@ describe('[TrieNodeFetcher]', async () => {
 
     await fetcher.store(requestResult)
 
-    const rootNode = decodeNode(nodes[0] as unknown as Uint8Array) as BranchNode
+    const rootNode = decodeMPTNode(nodes[0] as unknown as Uint8Array) as BranchMPTNode
     const children = rootNode.getChildren()
-    assert.equal(
+    assert.strictEqual(
       children.length,
       fetcher.pathToNodeRequestData.length,
       'Should generate requests for all child nodes',
@@ -181,12 +181,8 @@ describe('[TrieNodeFetcher]', async () => {
       pool,
       root: new Uint8Array(),
     })
-    try {
-      await fetcher.store(undefined as any)
-      assert.ok('should run without error')
-    } catch (err: any) {
-      assert.fail(err.message)
-    }
+
+    await expect(fetcher.store(undefined as any)).resolves.toBeUndefined()
   })
 
   it('should find a fetchable peer', async () => {
@@ -200,7 +196,7 @@ describe('[TrieNodeFetcher]', async () => {
       pool,
       root: new Uint8Array(0),
     })
-    assert.equal(fetcher.peer(), 'peer0' as any, 'found peer')
+    assert.strictEqual(fetcher.peer(), 'peer0' as any, 'found peer')
   })
 
   it('should return an array of tasks with pathStrings and paths', async () => {
@@ -221,9 +217,9 @@ describe('[TrieNodeFetcher]', async () => {
     const maxTasks = 1
     const tasks = fetcher.tasks(maxTasks)
 
-    assert.equal(tasks.length, maxTasks, `should return ${maxTasks} tasks`)
-    assert.equal(tasks[0].pathStrings.length, 1, 'should have pathStrings')
-    assert.equal(tasks[0].paths.length, 1, 'should have paths')
+    assert.strictEqual(tasks.length, maxTasks, `should return ${maxTasks} tasks`)
+    assert.strictEqual(tasks[0].pathStrings.length, 1, 'should have pathStrings')
+    assert.strictEqual(tasks[0].paths.length, 1, 'should have paths')
   })
 
   it('should return an object with pathStrings', () => {

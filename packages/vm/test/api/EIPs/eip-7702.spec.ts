@@ -9,22 +9,23 @@ import {
   concatBytes,
   createAddressFromString,
   createZeroAddress,
-  ecsign,
+  equalsBytes,
   hexToBytes,
   privateToAddress,
   setLengthRight,
   unpadBytes,
-  zeros,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak'
-import { equalsBytes } from 'ethereum-cryptography/utils'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
-import { createVM, runTx } from '../../../src/index.js'
+import { createVM, runTx } from '../../../src/index.ts'
 
-import type { VM } from '../../../src/index.js'
-import type { AuthorizationListBytesItem } from '@ethereumjs/tx'
-import type { PrefixedHexString } from '@ethereumjs/util'
+import type { EOACode7702AuthorizationListBytesItem, PrefixedHexString } from '@ethereumjs/util'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1'
+import type { VM } from '../../../src/index.ts'
+
+// EIP-7702 code designator. If code starts with these bytes, it is a 7702-delegated address
+const eip7702Designator = hexToBytes('0xef01')
 
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
 
@@ -44,7 +45,7 @@ type GetAuthListOpts = {
   pkey?: Uint8Array
 }
 
-function getAuthorizationListItem(opts: GetAuthListOpts): AuthorizationListBytesItem {
+function getAuthorizationListItem(opts: GetAuthListOpts): EOACode7702AuthorizationListBytesItem {
   const actualOpts = {
     ...{ chainId: 0, pkey: defaultAuthPkey },
     ...opts,
@@ -59,15 +60,15 @@ function getAuthorizationListItem(opts: GetAuthListOpts): AuthorizationListBytes
 
   const rlpdMsg = RLP.encode([chainIdBytes, addressBytes, nonceBytes])
   const msgToSign = keccak256(concatBytes(new Uint8Array([5]), rlpdMsg))
-  const signed = ecsign(msgToSign, pkey)
+  const signed = secp256k1.sign(msgToSign, pkey)
 
   return [
     chainIdBytes,
     addressBytes,
     nonceBytes,
-    bigIntToUnpaddedBytes(signed.v - BigInt(27)),
-    signed.r,
-    signed.s,
+    bigIntToUnpaddedBytes(BigInt(signed.recovery)),
+    bigIntToUnpaddedBytes(signed.r),
+    bigIntToUnpaddedBytes(signed.s),
   ]
 }
 
@@ -99,7 +100,7 @@ async function runTest(authorizationListOpts: GetAuthListOpts[], expect: Uint8Ar
 
   const slot = hexToBytes(`0x${'00'.repeat(31)}01`)
   const value = await vm.stateManager.getStorage(defaultAuthAddr, slot)
-  assert.ok(equalsBytes(unpadBytes(expect), value))
+  assert.isTrue(equalsBytes(unpadBytes(expect), value))
 }
 
 describe('EIP 7702: set code to EOA accounts', () => {
@@ -229,7 +230,7 @@ describe('EIP 7702: set code to EOA accounts', () => {
     await vm.stateManager.putAccount(defaultSenderAddr, acc)
 
     const res = await runTx(vm, { tx })
-    assert.ok(res.execResult.executionGasUsed === BigInt(2715))
+    assert.isTrue(res.execResult.executionGasUsed === BigInt(2715))
   })
 })
 
@@ -240,6 +241,12 @@ describe('test EIP-7702 opcodes', () => {
     const randomCode = hexToBytes('0x010203040506')
     const randomCodeAddress = createAddressFromString('0x' + 'aa'.repeat(20))
 
+    const delegatedCode = concatBytes(
+      eip7702Designator,
+      hexToBytes('0x00'),
+      randomCodeAddress.bytes,
+    )
+
     const tests: {
       code: PrefixedHexString
       expectedStorage: Uint8Array
@@ -249,21 +256,21 @@ describe('test EIP-7702 opcodes', () => {
       {
         // PUSH20 <defaultAuthAddr> EXTCODESIZE PUSH0 SSTORE STOP
         code: `0x73${defaultAuthAddr.toString().slice(2)}3b5f5500`,
-        expectedStorage: bigIntToUnpaddedBytes(BigInt(randomCode.length)),
+        expectedStorage: bigIntToUnpaddedBytes(BigInt(delegatedCode.length)),
         name: 'EXTCODESIZE',
       },
       // EXTCODEHASH
       {
         // PUSH20 <defaultAuthAddr> EXTCODEHASH PUSH0 SSTORE STOP
         code: `0x73${defaultAuthAddr.toString().slice(2)}3f5f5500`,
-        expectedStorage: keccak256(randomCode),
+        expectedStorage: keccak256(delegatedCode),
         name: 'EXTCODEHASH',
       },
       // EXTCODECOPY
       {
         // PUSH1 32 PUSH0 PUSH0 PUSH20 <defaultAuthAddr> EXTCODEHASH PUSH0 MLOAD PUSH0 SSTORE STOP
         code: `0x60205f5f73${defaultAuthAddr.toString().slice(2)}3c5f515f5500`,
-        expectedStorage: setLengthRight(randomCode, 32),
+        expectedStorage: setLengthRight(delegatedCode, 32),
         name: 'EXTCODECOPY',
       },
     ]
@@ -298,8 +305,8 @@ describe('test EIP-7702 opcodes', () => {
       // Set authority and immediately call into the contract to get the extcodehash / extcodesize
       await runTx(vm, { tx: authTx })
 
-      const result = await vm.stateManager.getStorage(deploymentAddress, zeros(32))
-      assert.ok(equalsBytes(result, expectedOutput), `FAIL test: ${name}`)
+      const result = await vm.stateManager.getStorage(deploymentAddress, new Uint8Array(32))
+      assert.isTrue(equalsBytes(result, expectedOutput), `FAIL test: ${name}`)
     }
 
     for (const test of tests) {

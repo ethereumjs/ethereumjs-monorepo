@@ -4,18 +4,21 @@ import {
   Address,
   BIGINT_0,
   BIGINT_27,
+  EthereumJSErrorWithoutCode,
   bigIntToBytes,
+  bigIntToUnpaddedBytes,
   bytesToBigInt,
   concatBytes,
   createAddressFromPublicKey,
   createZeroAddress,
   ecrecover,
-  ecsign,
   equalsBytes,
+  setLengthLeft,
 } from '@ethereumjs/util'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 
-import type { BlockHeader } from '../index.js'
 import type { CliqueConfig } from '@ethereumjs/common'
+import type { BlockHeader } from '../index.ts'
 
 // Fixed number of extra-data prefix bytes reserved for signer vanity
 export const CLIQUE_EXTRA_VANITY = 32
@@ -28,7 +31,7 @@ export function requireClique(header: BlockHeader, name: string) {
     const msg = header['_errorMsg'](
       `BlockHeader.${name}() call only supported for clique PoA networks`,
     )
-    throw new Error(msg)
+    throw EthereumJSErrorWithoutCode(msg)
   }
 }
 
@@ -84,7 +87,7 @@ export function cliqueEpochTransitionSigners(header: BlockHeader): Address[] {
   requireClique(header, 'cliqueEpochTransitionSigners')
   if (!cliqueIsEpochTransition(header)) {
     const msg = header['_errorMsg']('Signers are only included in epoch transition blocks (clique)')
-    throw new Error(msg)
+    throw EthereumJSErrorWithoutCode(msg)
   }
 
   const start = CLIQUE_EXTRA_VANITY
@@ -150,9 +153,13 @@ export function generateCliqueBlockExtraData(
 
   requireClique(header, 'generateCliqueBlockExtraData')
 
-  const ecSignFunction = header.common.customCrypto?.ecsign ?? ecsign
+  const ecSignFunction = header.common.customCrypto?.ecsign ?? secp256k1.sign
   const signature = ecSignFunction(cliqueSigHash(header), cliqueSigner)
-  const signatureB = concatBytes(signature.r, signature.s, bigIntToBytes(signature.v - BIGINT_27))
+  const signatureB = concatBytes(
+    setLengthLeft(bigIntToUnpaddedBytes(signature.r), 32),
+    setLengthLeft(bigIntToUnpaddedBytes(signature.s), 32),
+    bigIntToBytes(BigInt(signature.recovery)),
+  )
 
   const extraDataWithoutSeal = header.extraData.subarray(
     0,

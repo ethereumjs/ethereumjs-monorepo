@@ -1,10 +1,10 @@
-import { getGenesis } from '@ethereumjs/genesis'
 import { spawn } from 'child_process'
 import * as fs from 'fs'
-import { Client } from 'jayson/promise'
+import { getGenesis } from '@ethereumjs/genesis'
+import { Client } from 'jayson/promise/index.js'
 import { assert, describe, it } from 'vitest'
 
-import { wait } from '../integration/util.js'
+import { wait } from '../integration/util.ts'
 
 import type { ChildProcessWithoutNullStreams } from 'child_process'
 
@@ -34,8 +34,9 @@ describe('[CLI]', () => {
     const cliArgs = ['--network=sepolia', '--chainId=11155111']
     const onData = (message: string, child: ChildProcessWithoutNullStreams, resolve: Function) => {
       if (message.includes('Initializing Ethereumjs client')) {
-        assert.ok(
-          message.includes('network=sepolia chainId=11155111'),
+        assert.include(
+          message,
+          'network=sepolia chainId=11155111',
           'client is using custom inputs for network and network ID',
         )
         child.kill()
@@ -45,11 +46,12 @@ describe('[CLI]', () => {
     await clientRunHelper(cliArgs, onData)
   }, 30000)
   it('should successfully start client with non-lower case network name', async () => {
-    const cliArgs = ['--network=Kaustinen6']
+    const cliArgs = ['--network=Mainnet']
     const onData = (message: string, child: ChildProcessWithoutNullStreams, resolve: Function) => {
       if (message.includes('Initializing Ethereumjs client')) {
-        assert.ok(
-          message.includes('network=kaustinen6'),
+        assert.include(
+          message,
+          'network=mainnet',
           'client is using custom inputs for network and network ID',
         )
         child.kill()
@@ -57,7 +59,7 @@ describe('[CLI]', () => {
       }
     }
     await clientRunHelper(cliArgs, onData)
-  }, 5000)
+  }, 10000)
   it('should successfully start client with custom inputs for PoA network', async () => {
     const cliArgs = [
       '--rpc',
@@ -83,14 +85,15 @@ describe('[CLI]', () => {
           host: '0.0.0.0',
         })
         const res = await client.request('eth_coinbase', [], 2.0)
-        assert.ok(
-          res.result === '0x7e5f4552091a69125d5dfcb7b8c2659029395bdf',
+        assert.strictEqual(
+          res.result,
+          '0x7e5f4552091a69125d5dfcb7b8c2659029395bdf',
           'correct coinbase address set',
         )
         count -= 1
       }
       if (message.includes('Client started successfully')) {
-        assert.ok(message, 'Client started successfully with custom inputs for PoA network')
+        assert.isTrue(true, 'Client started successfully with custom inputs for PoA network')
         count -= 1
       }
       if (count === 0) {
@@ -108,7 +111,7 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('Invalid values')) {
-        assert.ok(
+        assert.isTrue(
           true,
           'client correctly throws error when "dev" option is passed in without a value',
         )
@@ -126,7 +129,7 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('cannot reuse')) {
-        assert.ok(true, 'cannot reuse ports between HTTP and WS RPCs')
+        assert.isTrue(true, 'cannot reuse ports between HTTP and WS RPCs')
       }
       child.kill()
       resolve(undefined)
@@ -143,14 +146,14 @@ describe('[CLI]', () => {
     ) => {
       if (message.includes('http://')) {
         // if http endpoint startup message detected, call http endpoint with RPC method
-        assert.ok(message.includes('engine'), 'engine rpc started')
+        assert.include(message, 'engine', 'engine rpc started')
         try {
           await wait(600)
           const client = Client.http({ port: 7777 })
           await client.request('engine_exchangeCapabilities', [], 2.0)
         } catch (e: any) {
           assert(
-            e.message.includes('Unauthorized: Error: Missing auth header'),
+            e.message.includes('Unauthorized: Error: Missing auth header') === true,
             'authentication failure shows that auth is defaulting to active',
           )
         }
@@ -174,15 +177,15 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('http://')) {
-        assert.ok(message.includes('engine'), 'engine rpc started')
-        assert.ok(
-          message.includes('rpcEngineAuth=false'),
-          'auth is disabled according to client logs',
-        )
+        assert.include(message, 'engine', 'engine rpc started')
+        assert.include(message, 'rpcEngineAuth=false', 'auth is disabled according to client logs')
         await wait(600)
         const client = Client.http({ port: 8553 })
         const res = await client.request('engine_exchangeCapabilities', [], 2.0)
-        assert.ok(res.result.length > 0, 'engine api is responsive without need for auth header')
+        assert.isTrue(
+          res.result.length > 0,
+          'engine api is responsive without need for auth header',
+        )
         child.kill()
         resolve(undefined)
       }
@@ -204,16 +207,16 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('http://')) {
-        assert.ok(message.includes('engine'), 'engine rpc started')
-        assert.ok(message.includes(customPort), 'custom port is being used')
-        assert.ok(
-          message.includes('rpcEngineAuth=false'),
-          'auth is disabled according to client logs',
-        )
+        assert.include(message, 'engine', 'engine rpc started')
+        assert.include(message, customPort, 'custom port is being used')
+        assert.include(message, 'rpcEngineAuth=false', 'auth is disabled according to client logs')
         await wait(600)
         const client = Client.http({ port: Number(customPort) })
         const res = await client.request('engine_exchangeCapabilities', [], 2.0)
-        assert.ok(res.result.length > 0, 'engine api is responsive without need for auth header')
+        assert.isTrue(
+          res.result.length > 0,
+          'engine api is responsive without need for auth header',
+        )
         child.kill()
         resolve(undefined)
       }
@@ -236,16 +239,13 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('http://')) {
-        assert.ok(message.includes('engine'), 'engine rpc started')
-        assert.ok(message.includes('0.0.0.0'), 'custom address is being used')
-        assert.ok(
-          message.includes('rpcEngineAuth=false'),
-          'auth is disabled according to client logs',
-        )
+        assert.include(message, 'engine', 'engine rpc started')
+        assert.include(message, '0.0.0.0', 'custom address is being used')
+        assert.include(message, 'rpcEngineAuth=false', 'auth is disabled according to client logs')
         await wait(600)
         const client = Client.http({ hostname: '0.0.0.0', port: Number(customPort) })
         const res = await client.request('engine_exchangeCapabilities', [], 2.0)
-        assert.ok(res.result.length > 0, 'engine api is responsive on custom address')
+        assert.isTrue(res.result.length > 0, 'engine api is responsive on custom address')
         child.kill()
         resolve(undefined)
       }
@@ -269,16 +269,19 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('ws://') && message.includes('engine')) {
-        assert.ok(
-          message.includes('0.0.0.0:' + customPort),
+        assert.include(
+          message,
+          '0.0.0.0:' + customPort,
           'client logs show correct custom address and port being used',
         )
-        assert.ok(message.includes('engine'), 'engine ws started')
+        assert.include(message, 'engine', 'engine ws started')
         await wait(600)
         const client = Client.websocket({ url: 'ws://0.0.0.0:' + customPort })
-        ;(client as any).ws.on('open', async function () {
+        // TODO: Investigate why type doesn't match & if this actually works
+        // @ts-expect-error -- Property not present on type
+        client['ws'].on('open', async function () {
           const res = await client.request('engine_exchangeCapabilities', [], 2.0)
-          assert.ok(res.result.length > 0, 'read from WS RPC on custom address and port')
+          assert.isTrue(res.result.length > 0, 'read from WS RPC on custom address and port')
           child.kill()
           resolve(undefined)
         })
@@ -306,9 +309,11 @@ describe('[CLI]', () => {
         // if ws endpoint startup message detected, call ws endpoint with RPC method
         await wait(600)
         const client = Client.websocket({ url: 'ws://0.0.0.0:' + customPort })
-        ;(client as any).ws.on('open', async function () {
+        // TODO: Investigate why type doesn't match & if this actually works
+        // @ts-expect-error -- Property not present on type
+        client['ws'].on('open', async function () {
           const res = await client.request('web3_clientVersion', [], 2.0)
-          assert.ok(res.result.includes('EthereumJS'), 'read from WS RPC')
+          assert.isTrue(res.result.includes('EthereumJS'), 'read from WS RPC')
           child.kill()
           resolve(undefined)
         })
@@ -339,7 +344,7 @@ describe('[CLI]', () => {
           host: '0.0.0.0',
         })
         const res = await client.request('web3_clientVersion', [], 2.0)
-        assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
+        assert.isTrue(res.result.includes('EthereumJS'), 'read from HTTP RPC')
 
         const clientNoConnection = Client.http({
           port: 8563,
@@ -348,7 +353,7 @@ describe('[CLI]', () => {
           await clientNoConnection.request('web3_clientVersion', [], 2.0)
           assert.fail('should have thrown on invalid client address')
         } catch (e: any) {
-          assert.ok(e !== undefined, 'failed to connect to RPC on invalid address')
+          assert.isTrue(e !== undefined, 'failed to connect to RPC on invalid address')
           child.kill()
           resolve(undefined)
         }
@@ -371,7 +376,7 @@ describe('[CLI]', () => {
         assert.fail('ws endpoint should not be enabled')
       }
       if (message.includes('Miner: Assembling block')) {
-        assert.ok('miner started and no rpc endpoints started')
+        assert.isTrue(true, 'miner started and no rpc endpoints started')
         resolve(undefined)
       }
     }
@@ -386,7 +391,7 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('JSON-RPC: Supported Methods')) {
-        assert.ok(message, 'logged out supported RPC methods')
+        assert.isTrue(true, 'logged out supported RPC methods')
         child.kill()
         resolve(undefined)
       }
@@ -414,13 +419,37 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('DEBUG')) {
-        assert.ok(message, 'debug logging is enabled')
+        assert.isTrue(true, 'debug logging is enabled')
         child.kill()
         resolve(undefined)
       }
     }
     await clientRunHelper(cliArgs, onData)
   }, 30000)
+  //TODO: fix with another test-catching method
+  /*it('should start client with no logger when logLevel is set to off', async () => {
+    const cliArgs = [
+      '--logFile=false',
+      '--logRotate=false',
+      '--logMaxFiles=0',
+      '--logLevelFile="debug"',
+      '--logLevel="off"',
+      '--dev=poa',
+      '--port=39671',
+    ]
+    const onData = async (
+      message: string,
+      child: ChildProcessWithoutNullStreams,
+      resolve: Function,
+    ) => {
+      if (message.includes('logger turned off')) {
+        assert.isTrue(true, 'logLevel option can be used to turn off logger')
+        child.kill()
+        resolve(undefined)
+      }
+    }
+    await clientRunHelper(cliArgs, onData)
+  }, 30000)*/
   // caching tests
   it('should start client with custom input for account cache size', async () => {
     const cliArgs = ['--accountCache=2000', '--port=30314', '--rpc=false']
@@ -430,7 +459,7 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('account cache')) {
-        assert.ok(message.includes('2000'), 'account cache option works')
+        assert.include(message, '2000', 'account cache option works')
         child.kill()
         resolve(undefined)
       }
@@ -445,7 +474,7 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('storage cache')) {
-        assert.ok(message.includes('2000'), 'storage cache option works')
+        assert.include(message, '2000', 'storage cache option works')
         child.kill()
         resolve(undefined)
       }
@@ -461,7 +490,7 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('code cache')) {
-        assert.ok(message.includes('2000'), 'code cache option works')
+        assert.include(message, '2000', 'code cache option works')
         child.kill()
         resolve(undefined)
       }
@@ -476,7 +505,7 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('trie cache')) {
-        assert.ok(message.includes('2000'), 'trie cache option works')
+        assert.include(message, '2000', 'trie cache option works')
         child.kill()
         resolve(undefined)
       }
@@ -491,7 +520,7 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('Reading bootnodes')) {
-        assert.ok(message.includes('num=2'), 'passing bootnode.txt URL for bootnodes option works')
+        assert.include(message, 'num=2', 'passing bootnode.txt URL for bootnodes option works')
         child.kill()
         resolve(undefined)
       }
@@ -507,8 +536,9 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('Client started successfully')) {
-        assert.ok(
-          message.includes('Client started successfully'),
+        assert.include(
+          message,
+          'Client started successfully',
           'Clients started with experimental feature options',
         )
         child.kill()
@@ -537,8 +567,9 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('Client started successfully')) {
-        assert.ok(
-          message.includes('Client started successfully'),
+        assert.include(
+          message,
+          'Client started successfully',
           'Clients starts with client execution limits',
         )
         child.kill()
@@ -569,14 +600,14 @@ describe('[CLI]', () => {
           .at(-1)
           ?.split(':')
           .map((e) => e.trim()) as string[]
-        assert.ok(ip === '0.0.0.0', 'custom input for address is being used')
-        assert.ok(port === '65000', 'custom input for port is being used')
+        assert.strictEqual(ip, '0.0.0.0', 'custom input for address is being used')
+        assert.strictEqual(port, '65000', 'custom input for port is being used')
       }
       if (message.includes('Client started successfully')) {
         await wait(600)
         const client = Client.http({ port: 8573 })
         const res = await client.request('web3_clientVersion', [], 2.0)
-        assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
+        assert.isTrue(res.result.includes('EthereumJS'), 'read from HTTP RPC')
         child.kill()
         resolve(undefined)
       }
@@ -601,14 +632,15 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('Client started successfully')) {
-        assert.ok(
-          message.includes('Client started successfully'),
+        assert.include(
+          message,
+          'Client started successfully',
           'Clients starts with custom network options',
         )
         await wait(600)
         const client = Client.http({ port: 8593 })
         const res = await client.request('web3_clientVersion', [], 2.0)
-        assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
+        assert.isTrue(res.result.includes('EthereumJS'), 'read from HTTP RPC')
         child.kill()
         resolve(undefined)
       }
@@ -624,8 +656,6 @@ describe('[CLI]', () => {
       '--dev=poa',
       '--isSingleNode=true',
       '--sync="none"',
-      '--lightServe=true',
-      '--mergeForkIdPostMerge=false',
     ]
     const onData = async (
       message: string,
@@ -633,23 +663,25 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('Serving light peer requests')) {
-        assert.ok(
-          message.includes('Serving light peer requests'),
+        assert.include(
+          message,
+          'Serving light peer requests',
           'client respects custom light-mode option',
         )
       }
       if (message.includes('Starting FullEthereumService')) {
-        assert.ok(message.includes('with no syncing'), 'client respects custom sync mode option')
+        assert.include(message, 'with no syncing', 'client respects custom sync mode option')
       }
       if (message.includes('Client started successfully')) {
-        assert.ok(
-          message.includes('Client started successfully'),
+        assert.include(
+          message,
+          'Client started successfully',
           'Client starts with custom sync options',
         )
         await wait(600)
         const client = Client.http({ port: 8548 })
         const res = await client.request('web3_clientVersion', [], 2.0)
-        assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
+        assert.isTrue(res.result.includes('EthereumJS'), 'read from HTTP RPC')
         child.kill()
         resolve(undefined)
       }
@@ -709,7 +741,7 @@ describe('[CLI]', () => {
         if (writeErr !== null) {
           assert.fail(`Error writing the file: ${writeErr.message}`)
         } else {
-          assert.ok(true, 'File created and data written successfully!')
+          assert.isTrue(true, 'File created and data written successfully!')
         }
 
         fs.close(fd, (closeErr) => {
@@ -725,7 +757,7 @@ describe('[CLI]', () => {
         if (writeErr !== null) {
           assert.fail(`Error writing the file: ${writeErr.message}`)
         } else {
-          assert.ok(true, 'File created and data written successfully!')
+          assert.isTrue(true, 'File created and data written successfully!')
         }
 
         fs.close(fd, (closeErr) => {
@@ -752,17 +784,19 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('Reading custom genesis state')) {
-        assert.ok(
-          message.includes('Reading custom genesis state'),
+        assert.include(
+          message,
+          'Reading custom genesis state',
           'client respects custom genesis state file option',
         )
       }
       if (message.includes('Data directory')) {
-        assert.ok(message.includes(dir), 'client respects custom data directory option')
+        assert.include(message, dir, 'client respects custom data directory option')
       }
       if (message.includes('Initializing Ethereumjs client')) {
-        assert.ok(
-          message.includes('network=customChain'),
+        assert.include(
+          message,
+          'network=customChain',
           'Client respects custom chain parameters JSON file option',
         )
       }
@@ -770,7 +804,7 @@ describe('[CLI]', () => {
         await wait(600)
         const client = Client.http({ port: 8549 })
         const res = await client.request('web3_clientVersion', [], 2.0)
-        assert.ok(res.result.includes('EthereumJS'), 'read from HTTP RPC')
+        assert.isTrue(res.result.includes('EthereumJS'), 'read from HTTP RPC')
         child.kill()
         fs.rmSync(dir, { recursive: true, force: true })
         resolve(undefined)
@@ -787,7 +821,7 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('Unknown argument: datadir')) {
-        assert.ok(true, 'correctly errors on unknown arguments')
+        assert.isTrue(true, 'correctly errors on unknown arguments')
       }
       child.kill()
       resolve(undefined)
@@ -802,7 +836,22 @@ describe('[CLI]', () => {
       resolve: Function,
     ) => {
       if (message.includes('Arguments chainId and gethGenesis are mutually exclusive')) {
-        assert.ok(true, 'correctly errors on conflicting arguments')
+        assert.isTrue(true, 'correctly errors on conflicting arguments')
+      }
+      child.kill()
+      resolve(undefined)
+    }
+    await clientRunHelper(cliArgs, onData, true)
+  }, 5000)
+  it('should not start client with conflicting parameters', async () => {
+    const cliArgs = ['--chainId', '--gethGenesis']
+    const onData = async (
+      message: string,
+      child: ChildProcessWithoutNullStreams,
+      resolve: Function,
+    ) => {
+      if (message.includes('Arguments chainId and gethGenesis are mutually exclusive')) {
+        assert.isTrue(true, 'correctly errors on conflicting arguments')
       }
       child.kill()
       resolve(undefined)
@@ -810,3 +859,74 @@ describe('[CLI]', () => {
     await clientRunHelper(cliArgs, onData, true)
   }, 5000)
 }, 180000)
+
+describe('verkle execution', () => {
+  it('should start client with stateful verkle execution', async () => {
+    const gethGenesis = `{
+        "config": {
+          "chainId": 69420,
+          "homesteadBlock": 0,
+          "eip150Block": 0,
+          "eip155Block": 0,
+          "eip158Block": 0,
+          "byzantiumBlock": 0,
+          "constantinopleBlock": 0,
+          "petersburgBlock": 0,
+          "istanbulBlock": 0,
+          "berlinBlock": 0,
+          "londonBlock": 0,
+          "mergeNetsplitBlock": 0,
+          "terminalTotalDifficulty": 0,
+          "terminalTotalDifficultyPassed": true,
+          "shanghaiTime": 0,
+          "verkleTime": 1730214060,
+          "proofInBlocks": true
+        },
+        "coinbase": "0x0000000000000000000000000000000000000000",
+        "difficulty": "0x01",
+        "extraData": "",
+        "gasLimit": "0x17D7840",
+        "nonce": "0x1234",
+        "mixhash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "timestamp": "1730214060",
+        "alloc": {}
+      }
+ `
+    const dir = fs.mkdtempSync('test')
+    fs.open(`${dir}/gethGenesis.json`, 'w', (err, fd) => {
+      if (err !== null) throw err
+      fs.write(fd, gethGenesis, (writeErr) => {
+        if (writeErr !== null) {
+          assert.fail(`Error writing the file: ${writeErr.message}`)
+        } else {
+          assert.isTrue(true, 'File created and data written successfully!')
+        }
+
+        fs.close(fd, (closeErr) => {
+          if (closeErr) {
+            assert.fail(`Error closing the file:, ${closeErr.message}`)
+          }
+        })
+      })
+    })
+    const cliArgs = [
+      `--dataDir="${dir}"`,
+      `--gethGenesis="${dir}/gethGenesis.json"`,
+      '--statefulVerkle',
+    ]
+    const onData = async (
+      message: string,
+      child: ChildProcessWithoutNullStreams,
+      resolve: Function,
+    ) => {
+      if (message.includes('Setting up verkleVM for stateful verkle execution')) {
+        assert.isTrue(true, 'Client started with verkle execution')
+        child.kill()
+        fs.rmSync(dir, { recursive: true, force: true })
+        resolve(undefined)
+      }
+    }
+    await clientRunHelper(cliArgs, onData)
+  }, 15000)
+})

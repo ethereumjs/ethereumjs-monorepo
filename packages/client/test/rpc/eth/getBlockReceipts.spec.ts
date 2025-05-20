@@ -8,21 +8,24 @@ import {
   getBlobs,
   randomBytes,
 } from '@ethereumjs/util'
-import { loadKZG } from 'kzg-wasm'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 import { assert, describe, it } from 'vitest'
 
-import { powData } from '../../testdata/geth-genesis/pow.js'
+import { powData } from '../../testdata/geth-genesis/pow.ts'
 import {
   dummy,
   getRPCClient,
   gethGenesisStartLondon,
   runBlockWithTxs,
   setupChain,
-} from '../helpers.js'
+} from '../helpers.ts'
+
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 const method = 'eth_getTransactionReceipt'
 const method2 = 'eth_getBlockReceipts'
-
+const kzg = new microEthKZG(trustedSetup)
 describe(method, () => {
   it('call with legacy tx', async () => {
     const { chain, common, execution, server } = await setupChain(powData, 'pow')
@@ -95,26 +98,24 @@ describe(method, () => {
     const res = await rpc.request(method, [
       '0x89ea5b54111befb936851660a72b686a21bc2fc4889a9a308196ff99d08925a0',
     ])
-    assert.equal(res.result, null, 'should return null')
+    assert.strictEqual(res.result, null, 'should return null')
   })
 
   it('get blobGasUsed/blobGasPrice in blob tx receipt', async () => {
     const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
     if (isBrowser() === true) {
-      assert.ok(true)
+      assert.isTrue(true)
     } else {
-      const { hardfork4844Data } = await import('../../../../block/test/testdata/4844-hardfork.js')
+      const { eip4844GethGenesis } = await import('@ethereumjs/testdata')
 
-      const kzg = await loadKZG()
-
-      const common = createCommonFromGethGenesis(hardfork4844Data, {
+      const common = createCommonFromGethGenesis(eip4844GethGenesis, {
         chain: 'customChain',
         hardfork: Hardfork.Cancun,
         customCrypto: {
           kzg,
         },
       })
-      const { chain, execution, server } = await setupChain(hardfork4844Data, 'customChain', {
+      const { chain, execution, server } = await setupChain(eip4844GethGenesis, 'customChain', {
         customCrypto: { kzg },
       })
       common.setHardfork(Hardfork.Cancun)
@@ -123,7 +124,9 @@ describe(method, () => {
       const blobs = getBlobs('hello world')
       const commitments = blobsToCommitments(kzg, blobs)
       const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
-      const proofs = blobs.map((blob, ctx) => kzg.computeBlobKzgProof(blob, commitments[ctx]))
+      const proofs = blobs.map((blob, ctx) =>
+        kzg.computeBlobProof(blob, commitments[ctx]),
+      ) as PrefixedHexString[]
       const tx = createBlob4844Tx(
         {
           blobVersionedHashes,
@@ -144,8 +147,8 @@ describe(method, () => {
 
       const res = await rpc.request(method, [bytesToHex(tx.hash())])
 
-      assert.equal(res.result.blobGasUsed, '0x20000', 'receipt has correct blob gas usage')
-      assert.equal(res.result.blobGasPrice, '0x1', 'receipt has correct blob gas price')
+      assert.strictEqual(res.result.blobGasUsed, '0x20000', 'receipt has correct blob gas usage')
+      assert.strictEqual(res.result.blobGasPrice, '0x1', 'receipt has correct blob gas price')
 
       const res2 = await rpc.request(method2, [bigIntToHex(block.header.number)])
 

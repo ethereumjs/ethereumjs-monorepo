@@ -1,15 +1,15 @@
 // Tests written with help from CodiumAI
 
+import assert from 'assert'
 import { Common, Mainnet } from '@ethereumjs/common'
 import { equalsBytes, randomBytes } from '@ethereumjs/util'
-import assert from 'assert'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
-import EventEmitter from 'events'
+import { EventEmitter } from 'eventemitter3'
 import { describe, expect, it, vi } from 'vitest'
 
-import { RLPx, pk2id } from '../src/index.js'
+import { RLPx, pk2id } from '../src/index.ts'
 
-import type { RLPxOptions } from '../src/index.js'
+import type { RLPxOptions } from '../src/index.ts'
 
 const privateKey = randomBytes(32)
 describe('RLPx', () => {
@@ -85,8 +85,8 @@ describe('RLPx', () => {
         Socket,
       }
     })
-    vi.mock('../src/util.js', async () => {
-      const util: any = await vi.importActual('../src/util.js')
+    vi.mock('../src/util.ts', async () => {
+      const util: any = await vi.importActual('../src/util.ts')
       return {
         ...util,
         createDeferred: vi.fn().mockImplementation(() => {
@@ -148,7 +148,7 @@ describe('RLPx', () => {
       await rlpx.connect(mockPeer)
       assert.fail('should throw')
     } catch (err: any) {
-      assert.equal(err.message, 'Already connected')
+      assert.strictEqual(err.message, 'Already connected')
     }
   })
 
@@ -162,12 +162,12 @@ describe('RLPx', () => {
     }
     const rlpx = new RLPx(privateKey, options)
 
-    assert.equal(
+    assert.strictEqual(
       rlpx['_getOpenSlots'](),
       10,
       'returns default number of open slots (i.e. `max_peers`) on startup',
     )
-    assert.equal(
+    assert.strictEqual(
       rlpx['_getOpenQueueSlots'](),
       20,
       'returns default number of open queue slots on startup',

@@ -4,7 +4,7 @@
 
 ### Running Tests
 
-Tests can be found in the `tests` directory. There are test runners for [State tests](http://www.ethdocs.org/en/latest/contracts-and-transactions/ethereum-tests/state_tests/index.html) and [Blockchain tests](http://www.ethdocs.org/en/latest/contracts-and-transactions/ethereum-tests/blockchain_tests/index.html). VM tests are disabled since Frontier gas costs are not supported any more.
+Tests can be found in the `tests` directory. There are test runners for [State tests](./test/tester/runners/GeneralStateTestsRunner.ts) and [Blockchain tests](./test/tester/runners/GeneralStateTestsRunner.ts). VM tests are disabled since Frontier gas costs are not supported any more.
 
 Tests are then executed against a snapshot of the official client-independent [Ethereum tests](https://github.com/ethereum/tests) integrated in the monorepo as a submodule in [packages/ethereum-tests](./../ethereum-tests/) pointing towards a specific commit or tag from the `ethereum/tests` `develop` branch.
 
@@ -35,7 +35,7 @@ or
 
 `npm run test:state -- --fork='Constantinople'`
 
-By default it is set to use the latest hardfork (`FORK_CONFIG` in `tests/tester.js`).
+By default it is set to use the latest hardfork (`DEFAULT_FORK_CONFIG` in `test/tester/config.ts`).
 
 The `--fork` parameter can also be used to activate EIPs. This is done by first entering the hardfork, and then add the EIPs separated with the `+` sign. For instance:
 
@@ -223,3 +223,7 @@ npm run profiling -- mainnetBlocks:10
 and open the link it generates.
 
 For a high-level introduction on flame graphs see e.g. [this](https://blog.codecentric.de/en/2017/09/jvm-fire-using-flame-graphs-analyse-performance/) blog article (the non-Java part).
+
+## T8NTool: fill `execution-spec-tests` tests and write those
+
+The VM has t8ntool (transition-tool) support, see: <https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/test/t8n/README.md>. This tool can be used to create fixtures from the `execution-spec-tests` repo. These fixtures can be consumed by other clients in their test runner (similar to running `npm run test:blockchain` or `npm run test:state` in the VM package). The t8ntool readme also links to a guide on how to write tests to contribute to `execution-spec-tests`.

@@ -8,7 +8,7 @@ import {
 } from '@ethereumjs/util'
 import { bls12_381 } from '@noble/curves/bls12-381'
 
-import { ERROR, EvmError } from '../../exceptions.js'
+import { EVMError } from '../../errors.ts'
 
 import {
   BLS_FIELD_MODULUS,
@@ -18,19 +18,29 @@ import {
   BLS_G2_POINT_BYTE_LENGTH,
   BLS_ONE_BUFFER,
   BLS_ZERO_BUFFER,
-} from './constants.js'
+} from './constants.ts'
 
-import type { EVMBLSInterface } from '../../types.js'
+import type { Fp2 } from '@noble/curves/abstract/tower'
 import type { AffinePoint } from '@noble/curves/abstract/weierstrass'
-
-// Copied from @noble/curves/bls12-381 (only local declaration)
-type Fp2 = {
-  c0: bigint
-  c1: bigint
-}
+import type { EVMBLSInterface } from '../../types.ts'
 
 const G1_ZERO = bls12_381.G1.ProjectivePoint.ZERO
 const G2_ZERO = bls12_381.G2.ProjectivePoint.ZERO
+
+function BLS12_381_ToFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array) {
+  // check if the coordinates are in the field
+  if (bytesToBigInt(fpXCoordinate) >= BLS_FIELD_MODULUS) {
+    throw new EVMError(EVMError.errorMessages.BLS_12_381_FP_NOT_IN_FIELD)
+  }
+  if (bytesToBigInt(fpYCoordinate) >= BLS_FIELD_MODULUS) {
+    throw new EVMError(EVMError.errorMessages.BLS_12_381_FP_NOT_IN_FIELD)
+  }
+
+  const fpBytes = concatBytes(fpXCoordinate.subarray(16), fpYCoordinate.subarray(16))
+
+  const FP = bls12_381.fields.Fp2.fromBytes(fpBytes)
+  return FP
+}
 
 /**
  * Converts an Uint8Array to a Noble G1 point. Raises errors if the point is not on the curve
@@ -39,7 +49,7 @@ const G2_ZERO = bls12_381.G2.ProjectivePoint.ZERO
  * @returns Noble G1 point
  */
 function BLS12_381_ToG1Point(input: Uint8Array, verifyOrder = true) {
-  if (equalsBytes(input, BLS_G1_INFINITY_POINT_BYTES)) {
+  if (equalsBytes(input, BLS_G1_INFINITY_POINT_BYTES) === true) {
     return G1_ZERO
   }
 
@@ -55,7 +65,7 @@ function BLS12_381_ToG1Point(input: Uint8Array, verifyOrder = true) {
     G1.assertValidity()
   } catch (e) {
     if (verifyOrder || (e as Error).message !== 'bad point: not in prime-order subgroup')
-      throw new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE)
+      throw new EVMError(EVMError.errorMessages.BLS_12_381_POINT_NOT_ON_CURVE)
   }
 
   return G1
@@ -76,9 +86,8 @@ function BLS12_381_FromG1Point(input: AffinePoint<bigint>): Uint8Array {
  * @param input Input Uint8Array. Should be 256 bytes
  * @returns Noble G2 point
  */
-function BLS12_381_ToG2Point(input: Uint8Array, verifyOrder = true): any {
-  // TODO: remove any type, temporary fix due to conflicting @noble/curves versions
-  if (equalsBytes(input, BLS_G2_INFINITY_POINT_BYTES)) {
+function BLS12_381_ToG2Point(input: Uint8Array, verifyOrder = true) {
+  if (equalsBytes(input, BLS_G2_INFINITY_POINT_BYTES) === true) {
     return G2_ZERO
   }
 
@@ -99,7 +108,7 @@ function BLS12_381_ToG2Point(input: Uint8Array, verifyOrder = true): any {
     pG2.assertValidity()
   } catch (e) {
     if (verifyOrder || (e as Error).message !== 'bad point: not in prime-order subgroup')
-      throw new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE)
+      throw new EVMError(EVMError.errorMessages.BLS_12_381_POINT_NOT_ON_CURVE)
   }
 
   return pG2
@@ -150,31 +159,15 @@ function BLS12_381_ToFrPoint(input: Uint8Array): bigint {
 function BLS12_381_ToFpPoint(fpCoordinate: Uint8Array) {
   // check if point is in field
   if (bytesToBigInt(fpCoordinate) >= BLS_FIELD_MODULUS) {
-    throw new EvmError(ERROR.BLS_12_381_FP_NOT_IN_FIELD)
+    throw new EVMError(EVMError.errorMessages.BLS_12_381_FP_NOT_IN_FIELD)
   }
   const FP = bls12_381.fields.Fp.fromBytes(fpCoordinate.slice(16))
   return FP
 }
 
-function BLS12_381_ToFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array): any {
-  // TODO: remove any type, temporary fix due to conflicting @noble/curves versions
-  // check if the coordinates are in the field
-  if (bytesToBigInt(fpXCoordinate) >= BLS_FIELD_MODULUS) {
-    throw new EvmError(ERROR.BLS_12_381_FP_NOT_IN_FIELD)
-  }
-  if (bytesToBigInt(fpYCoordinate) >= BLS_FIELD_MODULUS) {
-    throw new EvmError(ERROR.BLS_12_381_FP_NOT_IN_FIELD)
-  }
-
-  const fpBytes = concatBytes(fpXCoordinate.subarray(16), fpYCoordinate.subarray(16))
-
-  const FP = bls12_381.fields.Fp2.fromBytes(fpBytes)
-  return FP
-}
-
 /**
- * Implementation of the `EVMBLSInterface` using the `@noble/curves` JS library,
- * see https://github.com/paulmillr/noble-curves.
+ * Implementation of the `EVMBLSInterface` using the `ethereum-cryptography (`@noble/curves`)
+ * JS library, see https://github.com/ethereum/js-ethereum-cryptography.
  *
  * This is the EVM default implementation.
  */
@@ -324,17 +317,12 @@ export class NobleBLS implements EVMBLSInterface {
       pairs.push({ g1: G1, g2: G2 })
     }
 
-    // NOTE: check for point of infinity should happen only after all points parsed (in case they are malformed)
-    for (const { g1, g2 } of pairs) {
-      const _g2 = g2 as unknown as any
-      // EIP: "If any input is the infinity point, pairing result will be 1"
-      if (g1.equals(G1_ZERO) || (_g2.equals(G2_ZERO) as boolean)) {
-        return BLS_ONE_BUFFER
-      }
-    }
+    // Filter out infinity pairs
+    const filteredPairs = pairs.filter(
+      (pair) => !pair.g1.equals(G1_ZERO) && !pair.g2.equals(G2_ZERO),
+    )
 
-    // @ts-ignore
-    const FP12 = bls12_381.pairingBatch(pairs, true)
+    const FP12 = bls12_381.pairingBatch(filteredPairs, true)
 
     if (bls12_381.fields.Fp12.eql(FP12, bls12_381.fields.Fp12.ONE)) {
       return BLS_ONE_BUFFER

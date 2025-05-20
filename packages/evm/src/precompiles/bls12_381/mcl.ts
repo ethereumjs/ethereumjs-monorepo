@@ -7,7 +7,7 @@ import {
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 
-import { ERROR, EvmError } from '../../exceptions.js'
+import { EVMError } from '../../errors.ts'
 
 import {
   BLS_FIELD_MODULUS,
@@ -17,9 +17,9 @@ import {
   BLS_G2_POINT_BYTE_LENGTH,
   BLS_ONE_BUFFER,
   BLS_ZERO_BUFFER,
-} from './constants.js'
+} from './constants.ts'
 
-import type { EVMBLSInterface } from '../../types.js'
+import type { EVMBLSInterface } from '../../types.ts'
 
 /**
  * Converts an Uint8Array to a MCL G1 point. Raises errors if the point is not on the curve
@@ -53,12 +53,12 @@ function BLS12_381_ToG1Point(input: Uint8Array, mcl: any, verifyOrder = true): a
 
   mcl.verifyOrderG1(verifyOrder)
   if (verifyOrder && G1.isValidOrder() === false) {
-    throw new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE)
+    throw new EVMError(EVMError.errorMessages.BLS_12_381_POINT_NOT_ON_CURVE)
   }
 
   // Check if these coordinates are actually on the curve.
   if (G1.isValid() === false) {
-    throw new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE)
+    throw new EVMError(EVMError.errorMessages.BLS_12_381_POINT_NOT_ON_CURVE)
   }
 
   return G1
@@ -79,6 +79,31 @@ function BLS12_381_FromG1Point(input: any): Uint8Array {
   const yBytes = setLengthLeft(unprefixedHexToBytes(decoded[2]), 64)
 
   return concatBytes(xBytes, yBytes)
+}
+
+// input: two 64-byte buffers
+// output: a mcl Fp2 point
+
+function BLS12_381_ToFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array, mcl: any): any {
+  // check if the coordinates are in the field
+  if (bytesToBigInt(fpXCoordinate) >= BLS_FIELD_MODULUS) {
+    throw new EVMError(EVMError.errorMessages.BLS_12_381_FP_NOT_IN_FIELD)
+  }
+  if (bytesToBigInt(fpYCoordinate) >= BLS_FIELD_MODULUS) {
+    throw new EVMError(EVMError.errorMessages.BLS_12_381_FP_NOT_IN_FIELD)
+  }
+
+  const fp_x = new mcl.Fp()
+  const fp_y = new mcl.Fp()
+
+  const fp2 = new mcl.Fp2()
+  fp_x.setStr(bytesToUnprefixedHex(fpXCoordinate.subarray(16)), 16)
+  fp_y.setStr(bytesToUnprefixedHex(fpYCoordinate.subarray(16)), 16)
+
+  fp2.set_a(fp_x)
+  fp2.set_b(fp_y)
+
+  return fp2
 }
 
 /**
@@ -121,11 +146,11 @@ function BLS12_381_ToG2Point(input: Uint8Array, mcl: any, verifyOrder = true): a
 
   mcl.verifyOrderG2(verifyOrder)
   if (verifyOrder && p.isValidOrder() === false) {
-    throw new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE)
+    throw new EVMError(EVMError.errorMessages.BLS_12_381_POINT_NOT_ON_CURVE)
   }
 
   if (p.isValid() === false) {
-    throw new EvmError(ERROR.BLS_12_381_POINT_NOT_ON_CURVE)
+    throw new EVMError(EVMError.errorMessages.BLS_12_381_POINT_NOT_ON_CURVE)
   }
 
   return p
@@ -165,7 +190,7 @@ function BLS12_381_ToFrPoint(input: Uint8Array, mcl: any): any {
 function BLS12_381_ToFpPoint(fpCoordinate: Uint8Array, mcl: any): any {
   // check if point is in field
   if (bytesToBigInt(fpCoordinate) >= BLS_FIELD_MODULUS) {
-    throw new EvmError(ERROR.BLS_12_381_FP_NOT_IN_FIELD)
+    throw new EVMError(EVMError.errorMessages.BLS_12_381_FP_NOT_IN_FIELD)
   }
 
   const fp = new mcl.Fp()
@@ -173,31 +198,6 @@ function BLS12_381_ToFpPoint(fpCoordinate: Uint8Array, mcl: any): any {
   fp.setBigEndianMod(mcl.fromHexStr(bytesToUnprefixedHex(fpCoordinate)))
 
   return fp
-}
-
-// input: two 64-byte buffers
-// output: a mcl Fp2 point
-
-function BLS12_381_ToFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array, mcl: any): any {
-  // check if the coordinates are in the field
-  if (bytesToBigInt(fpXCoordinate) >= BLS_FIELD_MODULUS) {
-    throw new EvmError(ERROR.BLS_12_381_FP_NOT_IN_FIELD)
-  }
-  if (bytesToBigInt(fpYCoordinate) >= BLS_FIELD_MODULUS) {
-    throw new EvmError(ERROR.BLS_12_381_FP_NOT_IN_FIELD)
-  }
-
-  const fp_x = new mcl.Fp()
-  const fp_y = new mcl.Fp()
-
-  const fp2 = new mcl.Fp2()
-  fp_x.setStr(bytesToUnprefixedHex(fpXCoordinate.subarray(16)), 16)
-  fp_y.setStr(bytesToUnprefixedHex(fpYCoordinate.subarray(16)), 16)
-
-  fp2.set_a(fp_x)
-  fp2.set_b(fp_y)
-
-  return fp2
 }
 
 /**

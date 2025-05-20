@@ -1,4 +1,4 @@
-# @ethereumjs/devp2p
+# @ethereumjs/devp2p `v10`
 
 [![NPM Status][devp2p-npm-badge]][devp2p-npm-link]
 [![GitHub Issues][devp2p-issues-badge]][devp2p-issues-link]
@@ -6,18 +6,29 @@
 [![Coverage Status][devp2p-coverage-badge]][devp2p-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-## Introduction
-
 This library bundles different components for lower-level peer-to-peer connection and message exchange:
 
 - Distributed Peer Table (DPT) / v4 Node Discovery / DNS Discovery
 - RLPx Transport Protocol
 - Ethereum Wire Protocol (ETH/68)
-- Light Ethereum Subprotocol (LES/4) (outdated)
 
-## Usage
+## Table of Contents
 
-All components of this library have a public `events` property containing a Node.js `EventEmitter` object
+- [Getting Started](#getting-started)
+- [Examples](#examples)
+- [API](#api)
+- [Distributed Peer Table (DPT) / Node Discovery](#distributed-peer-table-dpt--node-discovery)
+- [RLPx Transport Protocol](#rlpx-transport-protocol)
+- [Ethereum Wire Protocol (ETH)](#ethereum-wire-protocol-eth)
+- [Debugging](#debugging)
+- [Developer](#developer)
+- [General References](#general-references)
+- [EthereumJS](#ethereumjs)
+- [License](#license)
+
+## Getting Started
+
+All components of this library have a public `events` property containing an `EventEmitter` object (using [EventEmitter3](https://github.com/primus/eventemitter3))
 and make heavy use of the Node.js network stack.
 
 You can react on events from the network like this:
@@ -44,7 +55,7 @@ Run an example with:
 DEBUG=ethjs,devp2p:* node -r tsx/register ./examples/peer-communication.cts
 ```
 
-## Docs
+## API
 
 For a complete API reference see the generated [documentation](./docs).
 
@@ -254,7 +265,7 @@ eth.sendStatus({
 let forkDrop: NodeJS.Timeout
 let forkVerified = false
 eth.events.once('status', () => {
-  eth.sendMessage(devp2p.ETH.MESSAGE_CODES.GET_BLOCK_HEADERS, [
+  eth.sendMessage(devp2p.EthMessageCodes.GET_BLOCK_HEADERS, [
 ```
 
 Wait for follow-up messages to arrive, send your responses.
@@ -262,7 +273,7 @@ Wait for follow-up messages to arrive, send your responses.
 ```ts
 // ./examples/peer-communication.ts#L116-L119
 
-eth.events.on('message', async (code: ETH.MESSAGE_CODES, payload: any) => {
+eth.events.on('message', async (code: any, payload: any) => {
   // We keep track of how many of each message type are received
   if (code in requests.msgTypes) {
     requests.msgTypes[code]++
@@ -311,82 +322,6 @@ Events emitted:
 
 - [Ethereum wire protocol](https://github.com/ethereum/wiki/wiki/Ethereum-Wire-Protocol)
 
-## Light Ethereum Subprotocol (LES) (Outdated)
-
-Upper layer protocol used by light clients, see [./src/protocol/les/](./src/protocol/les/).
-
-### Usage
-
-Send the initial status message with `sendStatus()`, then wait for the corresponding `status` message
-to arrive to start the communication.
-
-```ts
-// ./examples/peer-communication-les.ts#L80-L100
-
-les.sendStatus({
-  headTd: intToBytes(GENESIS_TD),
-  headHash: GENESIS_HASH,
-  headNum: Uint8Array.from([]),
-  genesisHash: GENESIS_HASH,
-  announceType: intToBytes(0),
-  recentTxLookup: intToBytes(1),
-  forkID: [hexToBytes('0x3b8e0691'), intToBytes(1)],
-})
-
-les.events.once('status', (status: devp2p.LES.Status) => {
-  const msg = [
-    Uint8Array.from([]),
-    [
-      bytesToInt(status['headNum']),
-      Uint8Array.from([1]),
-      Uint8Array.from([]),
-      Uint8Array.from([1]),
-    ],
-  ]
-  les.sendMessage(devp2p.LES.MESSAGE_CODES.GET_BLOCK_HEADERS, msg)
-```
-
-Wait for follow-up messages to arrive, send your responses.
-
-```ts
-// ./examples/peer-communication-les.ts#L103-L105
-
-les.events.on('message', async (code: devp2p.LES.MESSAGE_CODES, payload: any) => {
-  switch (code) {
-    case devp2p.LES.MESSAGE_CODES.BLOCK_HEADERS: {
-```
-
-See the `peer-communication-les.ts` example for a more detailed use case.
-
-### API
-
-#### `LES` (extends `EventEmitter`)
-
-Handles the different message types like `BLOCK_HEADERS` or `GET_PROOFS_V2` (see `MESSAGE_CODES`) for
-a complete list. Currently protocol version `LES/2` running in client-mode is supported.
-
-##### `new LES(privateKey, options)`
-
-Normally not instantiated directly but created as a `SubProtocol` in the `Peer` object.
-
-- `version` - The protocol version for communicating, e.g. `2`.
-- `peer` - `Peer` object to communicate with.
-- `send` - Wrapped `peer.sendMessage()` function where the communication is routed to.
-
-#### `les.sendStatus(status)`
-
-Send initial status message.
-
-- `status` - Status message to send, format `{ headTd: TOTAL_DIFFICULTY_BUFFER, headHash: HEAD_HASH_BUFFER, headNum: HEAD_NUM_BUFFER, genesisHash: GENESIS_HASH_BUFFER }`, `networkId` (respectively `chainId`) is taken from the `Common` instance
-
-#### `les.sendMessage(code, reqId, payload)`
-
-Send initial status message.
-
-- `code` - The message code, see `MESSAGE_CODES` for available message types.
-- `reqId` - Request ID, will be echoed back on response.
-- `payload` - Payload as a list, will be rlp-encoded.
-
 #### Hybrid CJS/ESM Builds
 
 With the breaking releases from Summer 2023 we have started to ship our libraries with both CommonJS (`cjs` folder) and ESM builds (`esm` folder), see `package.json` for the detailed setup.
@@ -405,18 +340,6 @@ const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
 
 Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking which CJS can not provide.
 
-### Buffer -> Uint8Array
-
-With the breaking releases from Summer 2023 we have removed all Node.js specific `Buffer` usages from our libraries and replace these with [Uint8Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) representations, which are available both in Node.js and the browser (`Buffer` is a subclass of `Uint8Array`).
-
-We have converted existing Buffer conversion methods to Uint8Array conversion methods in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) `bytes` module, see the respective README section for guidance.
-
-### BigInt Support
-
-Starting with v4 the usage of [BN.js](https://github.com/indutny/bn.js/) for big numbers has been removed from the library and replaced with the usage of the native JS [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) data type (introduced in `ES2020`).
-
-Please note that number-related API signatures have changed along with this version update and the minimal build target has been updated to `ES2020`.
-
 ### Events
 
 Events emitted:
@@ -426,20 +349,13 @@ Events emitted:
 | message |   Message received   |
 | status  | Status info received |
 
-### Reference
-
-- [Light client protocol](https://ethereum.org/en/developers/docs/nodes-and-clients/#light-node)
-
 ## Debugging
 
 ### Introduction
 
 This library uses the [debug](https://github.com/visionmedia/debug) debugging utility package.
 
-For the debugging output to show up, set the `DEBUG` environment variable (e.g. in Linux/Mac OS:
-`export DEBUG=ethjs,*,-babel`).
-
-Use the `DEBUG` environment variable to active the logger output you are interested in, e.g.:
+Use the `DEBUG` environment variable to activate the logger output you are interested in, e.g.:
 
 ```shell
 DEBUG=ethjs,devp2p:dpt:\*,devp2p:eth node -r tsx/register [YOUR_SCRIPT_TO_RUN.ts]
@@ -456,7 +372,11 @@ The following loggers are available:
 | `devp2p:rlpx`         | General RLPx debug logger                                                                |
 | `devp2p:rlpx:peer`    | RLPx peer message exchange logging (`PING`, `PONG`, `HELLO`, `DISCONNECT`,... messages)  |
 | `devp2p:eth`          | ETH protocol message logging (`STATUS`, `GET_BLOCK_HEADER`, `TRANSACTIONS`,... messages) |
-| `devp2p:les`          | LES protocol message logging (`STATUS`, `GET_BLOCK_HEADER`, `GET_PROOFS`,... messages)   |
+
+`ethjs` **must** be included in the `DEBUG` environment variables to enable **any** logs.
+Additional log selections can be added with a comma separated list (no spaces). Logs with extensions can be enabled with a colon `:`, and `*` can be used to include all extensions.
+
+`DEBUG=ethjs,devp2p:dns:dns,devp2p:dpt:*,devp2p:rlpx:peer npx vitest test/dns.spec.ts`
 
 ### Debug Verbosity
 
@@ -465,7 +385,7 @@ in addition:
 
 DEBUG=ethjs,devp2p:dpt:\*,devp2p:eth,verbose node -r tsx/register [YOUR_SCRIPT_TO_RUN.ts]
 
-Exemplary logging output:
+Example logging output:
 
 ```shell
 Add peer: 52.3.158.184:30303 Geth/v1.7.3-unstable-479aa61f/linux-amd64/go1.9 (eth63) (total: 2)
@@ -495,7 +415,7 @@ on two message names along `ETH` protocol debugging:
 DEBUG=ethjs,devp2p:eth:GET_BLOCK_HEADERS,devp2p:eth:BLOCK_HEADERS -r tsx/register [YOUR_SCRIPT_TO_RUN.ts]
 ```
 
-Exemplary logging output:
+Example logging output:
 
 ```shell
 devp2p:eth:GET_BLOCK_HEADERS Received GET_BLOCK_HEADERS message from 207.154.201.177:30303: d188659b37d8e321bc52c782198181c08080 +50ms
@@ -519,7 +439,7 @@ DEBUG=ethjs,devp2p:3.209.45.79 -r tsx/register [YOUR_SCRIPT_TO_RUN.ts]
 
 #### First Connected
 
-Logging can be limited to the peer the first successful subprotocol (e.g. `ETH`) connection could be established:
+Logging can be limited to the peer with which the first successful subprotocol (e.g. `ETH`) connection could be established:
 
 ```shell
 DEBUG=ethjs,devp2p:FIRST_PEER -r tsx/register [YOUR_SCRIPT_TO_RUN.ts]
@@ -541,15 +461,10 @@ The following is a list of major implementations of the `devp2p` stack in other 
 
 - Python: [pydevp2p](https://github.com/ethereum/pydevp2p)
 - Go: [Go Ethereum](https://github.com/ethereum/go-ethereum/tree/master/p2p)
-- Elixir: [Exthereum](https://github.com/exthereum/exth_crypto) <!-- cspell:disable-line --->
-
-### Links
-
-- [Blog article series](https://ocalog.com/post/10/) on implementing Ethereum protocol stack
 
 ## EthereumJS
 
-See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices. If you want to join for work or carry out improvements on the libraries, please review our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html) first.
+The `EthereumJS` GitHub organization and its repositories are managed by the Ethereum Foundation JavaScript team, see our [website](https://ethereumjs.github.io/) for a team introduction. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
 
 ## License
 

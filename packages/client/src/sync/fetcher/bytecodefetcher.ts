@@ -7,16 +7,16 @@ import {
   equalsBytes,
 } from '@ethereumjs/util'
 import debug from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak'
+import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
-import { Fetcher } from './fetcher.js'
-import { getInitFetcherDoneFlags } from './types.js'
+import { Fetcher } from './fetcher.ts'
+import { getInitFetcherDoneFlags } from './types.ts'
 
-import type { Peer } from '../../net/peer/index.js'
-import type { FetcherOptions } from './fetcher.js'
-import type { Job, SnapFetcherDoneFlags } from './types.js'
 import type { BatchDBOp, DB } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
+import type { Peer } from '../../net/peer/index.ts'
+import type { FetcherOptions } from './fetcher.ts'
+import type { Job, SnapFetcherDoneFlags } from './types.ts'
 
 type ByteCodeDataResponse = Uint8Array[] & { completed?: boolean }
 
@@ -61,7 +61,7 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
 
     this.keccakFunction = this.config.chainCommon.customCrypto.keccak256 ?? keccak256
 
-    this.debug = debug('client:ByteCodeFetcher')
+    this.debug = debug('client:fetcher:bytecode')
     if (this.hashes.length > 0) {
       const fullJob = { task: { hashes: this.hashes } } as Job<JobTask, Uint8Array[], Uint8Array>
       this.DEBUG &&
@@ -110,7 +110,7 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
 
     // Cross reference the requested bytecodes with the response to find gaps
     // that the serving node is missing
-    const receivedCodes: Map<String, Uint8Array> = new Map()
+    const receivedCodes: Map<string, Uint8Array> = new Map()
     const missingCodeHashes: Uint8Array[] = []
 
     // While results are in the same order as requested hashes but there could be gaps/misses in the results
@@ -175,7 +175,7 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
    * @param result fetch result
    */
   async store(result: Uint8Array[]): Promise<void> {
-    const codeHashToByteCode = result[0] as unknown as Map<String, Uint8Array>
+    const codeHashToByteCode = result[0] as unknown as Map<string, Uint8Array>
     const ops = []
     let storeCount = 0
     for (const [_, value] of codeHashToByteCode) {

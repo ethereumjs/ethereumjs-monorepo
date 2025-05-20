@@ -1,4 +1,3 @@
-import type { Bloom } from './bloom/index.js'
 import type { Block, BlockOptions, HeaderData } from '@ethereumjs/block'
 import type { Common, ParamsDict, StateManagerInterface } from '@ethereumjs/common'
 import type {
@@ -16,6 +15,7 @@ import type {
   PrefixedHexString,
   WithdrawalData,
 } from '@ethereumjs/util'
+import type { Bloom } from './bloom/index.ts'
 export type TxReceipt = PreByzantiumTxReceipt | PostByzantiumTxReceipt | EIP4844BlobTxReceipt
 
 /**
@@ -80,7 +80,7 @@ export type EVMProfilerOpts = {
   // extra options here (such as use X hardfork for gas)
 }
 
-export type VMEvents = {
+export type VMEvent = {
   beforeBlock: (data: Block, resolve?: (result?: any) => void) => void
   afterBlock: (data: AfterBlockEvent, resolve?: (result?: any) => void) => void
   beforeTx: (data: TypedTransaction, resolve?: (result?: any) => void) => void
@@ -365,9 +365,9 @@ export interface RunBlockResult extends Omit<ApplyBlockResult, 'bloom'> {
   logsBloom: Uint8Array
 
   /**
-   * The requestsRoot for any CL requests in the block
+   * The requestsHash for any CL requests in the block
    */
-  requestsRoot?: Uint8Array
+  requestsHash?: Uint8Array
   /**
    * Any CL requests that were processed in the course of this block
    */

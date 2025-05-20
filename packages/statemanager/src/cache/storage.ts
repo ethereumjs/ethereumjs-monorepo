@@ -1,13 +1,13 @@
-import { bytesToUnprefixedHex, hexToBytes } from '@ethereumjs/util'
+import { EthereumJSErrorWithoutCode, bytesToUnprefixedHex, hexToBytes } from '@ethereumjs/util'
 import { OrderedMap } from '@js-sdsl/ordered-map'
 import debugDefault from 'debug'
 import { LRUCache } from 'lru-cache'
 
-import { Cache } from './cache.js'
-import { CacheType } from './types.js'
+import { Cache } from './cache.ts'
+import { CacheType } from './types.ts'
 
-import type { CacheOpts } from './types.js'
 import type { Address } from '@ethereumjs/util'
+import type { CacheOpts } from './types.ts'
 
 /**
  * key -> storage mapping
@@ -211,7 +211,9 @@ export class StorageCache extends Cache {
           items.push([addressHex, keyHex, value])
         }
       } else {
-        throw new Error('internal error: storage cache map for account should be defined')
+        throw EthereumJSErrorWithoutCode(
+          'internal error: storage cache map for account should be defined',
+        )
       }
     }
     this._diffCache[this._checkpoints] = new Map()

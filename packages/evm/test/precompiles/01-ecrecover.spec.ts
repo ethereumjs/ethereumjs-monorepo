@@ -3,7 +3,7 @@ import { bytesToHex, bytesToUnprefixedHex, hexToBytes, utf8ToBytes } from '@ethe
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
-import { createEVM, getActivePrecompiles } from '../../src/index.js'
+import { createEVM, getActivePrecompiles } from '../../src/index.ts'
 
 const prefix = bytesToUnprefixedHex(utf8ToBytes('\x19Ethereum Signed Message:\n32'))
 const _hash = '852daa74cc3c31fe64542bb9b8764cfb91cc30f9acf9389071ffb44a9eefde46'
@@ -43,6 +43,10 @@ describe('Precompiles: ECRECOVER', () => {
       common,
       _EVM: evm,
     })
-    assert.equal(result.exceptionError!.error, 'out of gas', 'should error when not enough gas')
+    assert.strictEqual(
+      result.exceptionError!.error,
+      'out of gas',
+      'should error when not enough gas',
+    )
   })
 })

@@ -1,4 +1,4 @@
-# @ethereumjs/evm
+# @ethereumjs/evm `v10`
 
 [![NPM Package][evm-npm-badge]][evm-npm-link]
 [![GitHub Issues][evm-issues-badge]][evm-issues-link]
@@ -8,6 +8,35 @@
 
 | TypeScript implementation of the Ethereum EVM. |
 | ---------------------------------------------- |
+
+- 🦄 All hardforks up till **Pectra**
+- 🌴 Tree-shakeable API
+- 👷🏼 Controlled dependency set (7 external + `@Noble` crypto)
+- 🧩 Flexible EIP on/off engine
+- 🛠️ Custom precompiles
+- 🚀 Build-in profiler
+- 🪢 User-friendly colored debugging
+- 🛵 422KB bundle size (110KB gzipped)
+- 🏄🏾‍♂️ WASM-free default + Fully browser ready
+
+## Table of Contents
+
+- [Installation](#installation)
+- [Getting Started](#getting-started)
+- [Examples](#examples)
+- [Browser](#browser)
+- [API](#api)
+- [Architecture](#architecture)
+- [Supported Hardforks](#supported-hardforks)
+- [Supported EIPs](#supported-eips)
+- [Precompiles](#precompiles)
+- [Events](#events)
+- [Understanding the EVM](#understanding-the-evm)
+- [Profiling the EVM](#profiling-the-evm)
+- [Development](#development)
+- [EthereumJS](#ethereumjs)
+- [License](#license)
+
 
 ## Installation
 
@@ -19,15 +48,13 @@ npm install @ethereumjs/evm
 
 This package provides the core Ethereum Virtual Machine (EVM) implementation which is capable of executing EVM-compatible bytecode. The package has been extracted from the [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm) package along the VM `v6` release.
 
-**Note:** Starting with the Dencun hardfork `EIP-4844` related functionality will become an integrated part of the EVM functionality with the activation of the point evaluation precompile. It is therefore strongly recommended to _always_ run the EVM with a KZG library installed and initialized, see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
+**Note:** Starting with the Dencun hardfork `EIP-4844` related functionality has become an integrated part of the EVM functionality with the activation of the point evaluation precompile. For this precompile to work a separate installation of the KZG library is necessary (we decided not to bundle due to large bundle sizes), see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
 
-## Usage
+## Getting Started
 
 ### Basic
 
-With the v2 release (Summer 2023) the EVM/VM packages have been further decoupled and it now possible to run the EVM package in isolation with reasonable defaults.
-
-The following is the simplest example for an EVM instantiation:
+The following is the simplest example for an EVM instantiation with reasonable defaults for state and blockchain information (like blockhashes):
 
 ```ts
 // ./examples/simple.ts
@@ -44,8 +71,6 @@ const main = async () => {
 void main()
 ```
 
-Note: with the switch from v2 to v3 the old direct `new EVM()` constructor usage has been deprecated and an `EVM` now has to be instantiated with the async static `EVM.create()` constructor.
-
 ### Blockchain, State and Events
 
 If the EVM should run on a certain state an `@ethereumjs/statemanager` is needed. An `@ethereumjs/blockchain` instance can be passed in to provide access to external interface information like a blockhash:
@@ -56,14 +81,14 @@ If the EVM should run on a certain state an `@ethereumjs/statemanager` is needed
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createEVM } from '@ethereumjs/evm'
-import { DefaultStateManager } from '@ethereumjs/statemanager'
+import { MerkleStateManager } from '@ethereumjs/statemanager'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 const main = async () => {
   const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai })
-  const stateManager = new DefaultStateManager()
+  const stateManager = new MerkleStateManager()
   const blockchain = await createBlockchain()
 
   const evm = await createEVM({
@@ -99,7 +124,155 @@ void main()
 Additionally this usage example shows the use of events to listen on the inner workings and procedural updates
 (`step` event) of the EVM.
 
-### Precompiles
+### WASM Crypto Support
+
+This library by default uses JavaScript implementations for the basic standard crypto primitives like hashing or signature verification (for included txs). See `@ethereumjs/common` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for instructions on how to replace with e.g. a more performant WASM implementation by using a shared `common` instance.
+
+## Examples
+
+See the [examples](./examples/) folder for different meaningful examples on how to use the EVM package and invoke certain aspects of it, e.g. running a bytecode snippet, listening to events or activate an EVM with a certain EIP for experimental purposes.
+
+## Browser
+
+We provide hybrid ESM/CJS builds for all our libraries. With the v10 breaking release round from Spring 2025, all libraries are "pure-JS" by default and we have eliminated all hard-wired WASM code. Additionally we have substantially lowered the bundle sizes, reduced the number of dependencies, and cut out all usages of Node.js-specific primitives (like the Node.js event emitter).
+
+It is easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
+
+## API
+
+### Docs
+
+For documentation on `EVM` instantiation, exposed API and emitted `events` see generated [API docs](./docs/README.md).
+
+### Hybrid CJS/ESM Builds
+
+With the breaking releases from Summer 2023 we have started to ship our libraries with both CommonJS (`cjs` folder) and ESM builds (`esm` folder), see `package.json` for the detailed setup.
+
+If you use an ES6-style `import` in your code files from the ESM build will be used:
+
+```ts
+import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
+```
+
+If you use Node.js specific `require`, the CJS build will be used:
+
+```ts
+const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
+```
+
+Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking which CJS can not provide.
+
+## Architecture
+
+### VM/EVM Relation
+
+This package contains the inner Ethereum Virtual Machine core functionality which was included in the [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm) package up till v5 and has been extracted along the v6 release.
+
+This will make it easier to customize the inner EVM, which can now be passed as an optional argument to the outer `VM` instance.
+
+### State and Blockchain Information
+
+For the EVM to properly work it needs access to a respective execution environment (to e.g. request on information like block hashes) as well as the connection to an outer account and contract state.
+
+With the v2 release EVM, VM and StateManager have been substantially reworked in this regard, see PR [#2649](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2649/) and PR [#2702](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2702) for further deepening context.
+
+The interfaces (in a non-TypeScript sense) between these packages have been simplified and the `EEI` package has been completely removed. Most of the EEI related logic is now either handled internally or more generic functionality being taken over by the `@ethereumjs/statemanager` package.
+
+This allows for both a standalone EVM instantiation with reasonable defaults as well as for a simplified EVM -> VM passing if a customized EVM is needed.
+
+## Supported Hardforks
+
+The EthereumJS EVM implements all hardforks from `Frontier` (`chainstart`) up to the latest active mainnet hardfork.
+
+Currently the following hardfork rules are supported:
+
+- `chainstart` (a.k.a. Frontier)
+- `homestead`
+- `tangerineWhistle`
+- `spuriousDragon`
+- `byzantium`
+- `constantinople`
+- `petersburg`
+- `istanbul`
+- `muirGlacier` (only `mainnet`)
+- `berlin` (`v5.2.0`+)
+- `london` (`v5.4.0`+)
+- `arrowGlacier` (only `mainnet`) (`v5.6.0`+)
+- `merge`
+- `shanghai` (`v2.0.0`+)
+- `cancun` (`v2.0.0`+)
+- `prague` (`v10`+)
+
+Default: `prague` (taken from `Common.DEFAULT_HARDFORK`)
+
+A specific hardfork EVM ruleset can be activated by passing in the hardfork
+along the `Common` instance to the outer `@ethereumjs/vm` instance.
+
+## Supported EIPs
+
+If you want to activate an EIP not currently active on the hardfork your `common` instance is set to, it is possible to individually activate EIP support in the EVM by specifying the desired EIPs using the `eips` property in your `CommonOpts` setup, e.g.:
+
+```ts
+// ./examples/eips.ts
+
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createEVM } from '@ethereumjs/evm'
+
+const main = async () => {
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
+  const evm = await createEVM({ common })
+  console.log(`EIP 7702 is active in isolation on top of the Cancun HF - ${evm.common.isActivatedEIP(7702)}`)
+}
+
+void main()
+```
+
+Currently supported EIPs:
+
+- [EIP-1153](https://eips.ethereum.org/EIPS/eip-1153) - Transient storage opcodes (Cancun)
+- [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) - Fee market change for ETH 1.0 chain
+- [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - Precompile for BLS12-381 curve operations (Prague)
+- [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565) - ModExp gas cost
+- [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718) - Transaction Types
+- [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) - Serve historical block hashes in state (Prague)
+- [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929) - gas cost increases for state access opcodes
+- [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930) - Optional access list tx type
+- [EIP-3074](https://eips.ethereum.org/EIPS/eip-3074) - AUTH and AUTHCALL opcodes
+- [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198) - Base fee Opcode
+- [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529) - Reduction in refunds
+- [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541) - Reject new contracts starting with the 0xEF byte
+- [EIP-3554](https://eips.ethereum.org/EIPS/eip-3554) - Difficulty Bomb Delay to December 2021 (only PoW networks)
+- [EIP-3607](https://eips.ethereum.org/EIPS/eip-3607) - Reject transactions from senders with deployed code
+- [EIP-3651](https://eips.ethereum.org/EIPS/eip-3651) - Warm COINBASE (Shanghai)
+- [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675) - Upgrade consensus to Proof-of-Stake
+- [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855) - Push0 opcode (Shanghai)
+- [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) - Limit and meter initcode (Shanghai)
+- [EIP-4345](https://eips.ethereum.org/EIPS/eip-4345) - Difficulty Bomb Delay to June 2022
+- [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399) - Supplant DIFFICULTY opcode with PREVRANDAO (Merge)
+- [EIP-4788](https://eips.ethereum.org/EIPS/eip-4788) - Beacon block root in the EVM (Cancun)
+- [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) - Shard Blob Transactions (Cancun)
+- [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) - Beacon chain push withdrawals as operations (Shanghai)
+- [EIP-5133](https://eips.ethereum.org/EIPS/eip-5133) - Delaying Difficulty Bomb to mid-September 2022 (Gray Glacier)
+- [EIP-5656](https://eips.ethereum.org/EIPS/eip-5656) - MCOPY - Memory copying instruction (Cancun)
+- [EIP-6110](https://eips.ethereum.org/EIPS/eip-6110) - Supply validator deposits on chain (Prague)
+- [EIP-6780](https://eips.ethereum.org/EIPS/eip-6780) - SELFDESTRUCT only in same transaction (Cancun)
+- [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002) - Execution layer triggerable exits (Prague)
+- [EIP-7251](https://eips.ethereum.org/EIPS/eip-7251) - Increase the MAX_EFFECTIVE_BALANCE (Prague)
+- [EIP-7516](https://eips.ethereum.org/EIPS/eip-7516) - BLOBBASEFEE opcode (Cancun)
+- [EIP-7623](https://eips.ethereum.org/EIPS/eip-7623) - Increase calldata cost (Prague)
+- [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) - General purpose execution layer requests (Prague)
+- [EIP-7691](https://eips.ethereum.org/EIPS/eip-7691) - Blob throughput increase (Prague)
+- [EIP-7692](https://eips.ethereum.org/EIPS/eip-7692) - EVM Object Format (EOF) v1 (`experimental`)
+- [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) - Set EOA account code (Prague)
+- [EIP-7709](https://eips.ethereum.org/EIPS/eip-7709) - Read BLOCKHASH from storage and update cost (Verkle)
+
+### EIP-4844 Shard Blob Transactions Support (Cancun)
+
+This library supports the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844). EIP-4844 comes with a dedicated opcode `BLOBHASH` and has added a new point evaluation precompile at address `0x0a`.
+
+**Note:** Usage of the point evaluation precompile needs a manual KZG library installation and global initialization, see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
+
+## Precompiles
 
 This library support all EVM precompiles up to the `Prague` hardfork.
 
@@ -139,7 +312,7 @@ void main()
 
 ### EIP-2537 BLS Precompiles (Prague)
 
-Starting with `v3.1.0` the EVM support the BLS precompiles introduced with [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537). These precompiles run natively using the [@noble/curves](https://github.com/paulmillr/noble-curves) library (❤️ to `@paulmillr`!).
+Starting with `v10` the EVM supports the BLS precompiles introduced with [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) in its final version introduced with the `Prague` hardfork. These precompiles run natively using the [@noble/curves](https://github.com/paulmillr/noble-curves) library (❤️ to `@paulmillr`!).
 
 An alternative WASM implementation (using [bls-wasm](https://github.com/herumi/bls-wasm)) can be optionally used like this if needed for performance reasons:
 
@@ -149,192 +322,14 @@ import { EVM, MCLBLS } from '@ethereumjs/evm'
 const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Prague })
 await mcl.init(mcl.BLS12_381)
 const mclbls = new MCLBLS(mcl)
-const evm = await EVM.create({ common, bls })
+const evm = await createEVM({ common, bls })
 ```
 
-## Examples
-
-This projects contain the following examples:
-
-1. [./examples/decode-opcodes](./examples/decode-opcodes.ts): Decodes a binary EVM program into its opcodes.
-1. [./examples/runCode](./examples/runCode.ts): Show how to use this library in a browser.
-
-All of the examples have their own `README.md` explaining how to run them.
-
-## Browser
-
-With the breaking release round in Summer 2023 we have added hybrid ESM/CJS builds for all our libraries (see section below) and have eliminated many of the caveats which had previously prevented a frictionless browser usage.
-
-It is now easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
-
-## API
-
-### Docs
-
-For documentation on `EVM` instantiation, exposed API and emitted `events` see generated [API docs](./docs/README.md).
-
-### Hybrid CJS/ESM Builds
-
-With the breaking releases from Summer 2023 we have started to ship our libraries with both CommonJS (`cjs` folder) and ESM builds (`esm` folder), see `package.json` for the detailed setup.
-
-If you use an ES6-style `import` in your code files from the ESM build will be used:
-
-```ts
-import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
-```
-
-If you use Node.js specific `require`, the CJS build will be used:
-
-```ts
-const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
-```
-
-Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking which CJS can not provide.
-
-### Buffer -> Uint8Array
-
-With the breaking releases from Summer 2023 we have removed all Node.js specific `Buffer` usages from our libraries and replace these with [Uint8Array](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array) representations, which are available both in Node.js and the browser (`Buffer` is a subclass of `Uint8Array`).
-
-We have converted existing Buffer conversion methods to Uint8Array conversion methods in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) `bytes` module, see the respective README section for guidance.
-
-### BigInt Support
-
-Starting with v1 the usage of [BN.js](https://github.com/indutny/bn.js/) for big numbers has been removed from the library and replaced with the usage of the native JS [BigInt](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt) data type (introduced in `ES2020`).
-
-Please note that number-related API signatures have changed along with this version update and the minimal build target has been updated to `ES2020`.
-
-## Architecture
-
-### VM/EVM Relation
-
-This package contains the inner Ethereum Virtual Machine core functionality which was included in the [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm) package up till v5 and has been extracted along the v6 release.
-
-This will make it easier to customize the inner EVM, which can now be passed as an optional argument to the outer `VM` instance.
-
-### State and Blockchain Information
-
-For the EVM to properly work it needs access to a respective execution environment (to e.g. request on information like block hashes) as well as the connection to an outer account and contract state.
-
-With the v2 release EVM, VM and StateManager have been substantially reworked in this regard, see PR [#2649](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2649/) and PR [#2702](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2702) for further deepening context.
-
-The interfaces (in a non-TypeScript sense) between these packages have been simplified and the `EEI` package has been completely removed. Most of the EEI related logic is now either handled internally or more generic functionality being taken over by the `@ethereumjs/statemanager` package.
-
-This allows for both a standalone EVM instantiation with reasonable defaults as well as for a simplified EVM -> VM passing if a customized EVM is needed.
-
-## Setup
-
-### Hardfork Support
-
-The EthereumJS EVM implements all hardforks from `Frontier` (`chainstart`) up to the latest active mainnet hardfork.
-
-Currently the following hardfork rules are supported:
-
-- `chainstart` (a.k.a. Frontier)
-- `homestead`
-- `tangerineWhistle`
-- `spuriousDragon`
-- `byzantium`
-- `constantinople`
-- `petersburg`
-- `istanbul`
-- `muirGlacier` (only `mainnet`)
-- `berlin` (`v5.2.0`+)
-- `london` (`v5.4.0`+)
-- `arrowGlacier` (only `mainnet`) (`v5.6.0`+)
-- `merge`
-- `shanghai` (`v2.0.0`+)
-- `cancun` (`v2.0.0`+)
-
-Default: `shanghai` (taken from `Common.DEFAULT_HARDFORK`)
-
-A specific hardfork EVM ruleset can be activated by passing in the hardfork
-along the `Common` instance to the outer `@ethereumjs/vm` instance.
-
-### EIP Support
-
-If you want to activate an EIP not currently active on the hardfork your `common` instance is set to, it is possible to individually activate EIP support in the EVM by specifying the desired EIPs using the `eips` property in your `CommonOpts` setup, e.g.:
-
-```ts
-// ./examples/eips.ts
-
-import { Common, Mainnet } from '@ethereumjs/common'
-import { createEVM } from '@ethereumjs/evm'
-
-const main = async () => {
-  const common = new Common({ chain: Mainnet, eips: [7702] })
-  const evm = await createEVM({ common })
-  console.log(`EIP 7702 is active - ${evm.common.isActivatedEIP(7702)}`)
-}
-
-void main()
-```
-
-Currently supported EIPs:
-
-- [EIP-1153](https://eips.ethereum.org/EIPS/eip-1153) - Transient storage opcodes (Cancun)
-- [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) - Fee market change for ETH 1.0 chain
-- [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS precompiles (removed in v4.0.0, see latest v3 release)
-- [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565) - ModExp gas cost
-- [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718) - Transaction Types
-- [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) - Serve historical block hashes from state (Prague)
-- [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929) - gas cost increases for state access opcodes
-- [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930) - Optional access list tx type
-- [EIP-3074](https://eips.ethereum.org/EIPS/eip-3074) - AUTH and AUTHCALL opcodes
-- [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198) - Base fee Opcode
-- [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529) - Reduction in refunds
-- [EIP-3540](https://eips.ethereum.org/EIPS/eip-3540) - EVM Object Format (EOF) v1 (`outdated`)
-- [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541) - Reject new contracts starting with the 0xEF byte
-- [EIP-3554](https://eips.ethereum.org/EIPS/eip-3554) - Difficulty Bomb Delay to December 2021 (only PoW networks)
-- [EIP-3607](https://eips.ethereum.org/EIPS/eip-3607) - Reject transactions from senders with deployed code
-- [EIP-3651](https://eips.ethereum.org/EIPS/eip-3651) - Warm COINBASE (Shanghai)
-- [EIP-3670](https://eips.ethereum.org/EIPS/eip-3670) - EOF - Code Validation (`outdated`)
-- [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675) - Upgrade consensus to Proof-of-Stake
-- [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855) - Push0 opcode (Shanghai)
-- [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) - Limit and meter initcode (Shanghai)
-- [EIP-4345](https://eips.ethereum.org/EIPS/eip-4345) - Difficulty Bomb Delay to June 2022
-- [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399) - Supplant DIFFICULTY opcode with PREVRANDAO (Merge)
-- [EIP-4788](https://eips.ethereum.org/EIPS/eip-4788) - Beacon block root in the EVM (Cancun)
-- [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) - Shard Blob Transactions (Cancun)
-- [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) - Beacon chain push withdrawals as operations (Shanghai)
-- [EIP-5133](https://eips.ethereum.org/EIPS/eip-5133) - Delaying Difficulty Bomb to mid-September 2022 (Gray Glacier)
-- [EIP-5656](https://eips.ethereum.org/EIPS/eip-5656) - MCOPY - Memory copying instruction (Cancun)
-- [EIP-6110](https://eips.ethereum.org/EIPS/eip-6110) - Supply validator deposits on chain (Prague)
-- [EIP-6780](https://eips.ethereum.org/EIPS/eip-6780) - SELFDESTRUCT only in same transaction (Cancun)
-- [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002) - Execution layer triggerable withdrawals (Prague)
-- [EIP-7251](https://eips.ethereum.org/EIPS/eip-7251) - Execution layer triggerable validator consolidations (Prague)
-- [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) - EOA code transactions (Prague) (`outdated`)
-- [EIP-7709](https://eips.ethereum.org/EIPS/eip-7709) - Read BLOCKHASH from storage and update cost (Osaka)
-- [EIP-7516](https://eips.ethereum.org/EIPS/eip-7516) - BLOBBASEFEE opcode (Cancun)
-- [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) - General purpose execution layer requests (Prague)
-
-### WASM Crypto Support
-
-This library by default uses JavaScript implementations for the basic standard crypto primitives like hashing or signature verification (for included txs). See `@ethereumjs/common` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for instructions on how to replace with e.g. a more performant WASM implementation by using a shared `common` instance.
-
-### EIP-4844 Shard Blob Transactions Support
-
-This library supports the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844).
-
-#### Initialization
-
-To run EVM related EIP-4844 functionality you have to active the EIP in the associated `@ethereumjs/common` library:
-
-```ts
-// ./examples/4844.ts
-
-import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-
-const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai, eips: [4844] })
-```
-
-EIP-4844 comes with a new opcode `BLOBHASH` (Attention! Renamed from `DATAHASH`) and adds a new point evaluation precompile at address `0x0a`
-(moved from `0x14` at some point along spec updates).
-
-**Note:** Usage of the point evaluation precompile needs a manual KZG library installation and global initialization, see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
+## Events
 
 ### Tracing Events
 
-The EVM has a public property `events` which instantiates an [AsyncEventEmitter](https://github.com/ahultgren/async-eventemitter) and events are submitted along major execution steps which you can listen to.
+The EVM emits events that support async listeners (using [EventEmitter3](https://github.com/primus/eventemitter3)).
 
 You can subscribe to the following events:
 
@@ -343,34 +338,33 @@ You can subscribe to the following events:
 - `step`: Emits an `InterpreterStep` right before running an EVM step.
 - `newContract`: Emits a `NewContractEvent` right before creating a contract. This event contains the deployment code, not the deployed code, as the creation message may not return such a code.
 
-An example for the `step` event can be found in the initial usage example in this `README`.
-
-#### Asynchronous event handlers
+#### Event listeners
 
 You can perform asynchronous operations from within an event handler
 and prevent the EVM to keep running until they finish.
 
-In order to do that, your event handler has to accept two arguments.
-The first one will be the event object, and the second one a function.
-The EVM won't continue until you call this function.
+If subscribing to events with an async listener, specify the second
+parameter of your listener as a `resolve` function that must be called once your listener code has finished.
+
+See below for example usage:
+
+```ts
+// ./examples/eventListener.ts#L7-L14
+
+evm.events.on('beforeMessage', (event) => {
+  console.log('synchronous listener to beforeMessage', event)
+})
+evm.events.on('afterMessage', (event, resolve) => {
+  console.log('asynchronous listener to beforeMessage', event)
+  // we need to call resolve() to avoid the event listener hanging
+  resolve?.()
+})
+```
 
 If an exception is passed to that function, or thrown from within the
 handler or a function called by it, the exception will bubble into the
 EVM and interrupt it, possibly corrupting its state. It's strongly
 recommended not to do that.
-
-#### Synchronous event handlers
-
-If you want to perform synchronous operations, you don't need
-to receive a function as the handler's second argument, nor call it.
-
-Note that if your event handler receives multiple arguments, the second
-one will be the continuation function, and it must be called.
-
-If an exception is thrown from within the handler or a function called
-by it, the exception will bubble into the EVM and interrupt it, possibly
-corrupting its state. It's strongly recommended not to throw from within
-event handlers.
 
 ## Understanding the EVM
 
@@ -382,10 +376,11 @@ The following loggers are currently available:
 
 | Logger                             | Description                                         |
 | ---------------------------------- | --------------------------------------------------- |
-| `evm`                              |  EVM control flow, CALL or CREATE message execution |
-| `evm:gas`                          |  EVM gas logger                                     |
-| `evm:eei:gas`                      |  EEI gas logger                                     |
-| `evm:ops`                          |  Opcode traces                                      |
+| `evm:evm`                          |  EVM control flow, CALL or CREATE message execution |
+| `evm:gas`                          |  EVM gas logger                                     |
+| `evm:precompiles`                  |  EVM precompiles logger                             |
+| `evm:journal`                      |  EVM journal logger                                 |
+| `evm:ops`                          |  Opcode traces                                      |
 | `evm:ops:[Lower-case opcode name]` | Traces on a specific opcode                         |
 
 Here are some examples for useful logger combinations.
@@ -420,36 +415,72 @@ Run some specific loggers including a logger specifically logging the `SSTORE` e
 DEBUG=ethjs,evm,evm:ops:sstore,evm:*:gas tsx test.ts
 ```
 
+`ethjs` **must** be included in the `DEBUG` environment variables to enable **any** logs.
+Additional log selections can be added with a comma separated list (no spaces). Logs with extensions can be enabled with a colon `:`, and `*` can be used to include all extensions.
+
+`DEBUG=ethjs,evm:journal,evm:ops:* npx vitest test/runCall.spec.ts`
+
 ### Internal Structure
 
-The EVM processes state changes at many levels.
+The EVM processes state changes through a hierarchical flow of execution:
 
-- **runCall**
-  - checkpoint state
-  - transfer value
-  - load code
-  - runCode
-  - materialize created contracts
-  - revert or commit checkpoint
-- **runCode**
-  - iterate over code
-  - run op codes
-  - track gas usage
-- **OpFns**
-  - run individual op code
-  - modify stack
-  - modify memory
-  - calculate fee
+#### Top Level: Message Execution (`runCall`)
+The `runCall` method handles the execution of messages, which can be either contract calls or contract creations:
+- Creates a checkpoint in the state
+- Sets up the execution environment (block context, transaction origin, etc.)
+- Manages account nonce updates
+- Handles value transfers between accounts
+- Delegates to either `_executeCall` or `_executeCreate` based on whether the message has a `to` address
+- **Both `_executeCall` and `_executeCreate` call into `runInterpreter` to actually execute the bytecode**
+- Processes any errors or exceptions
+- Manages selfdestruct sets and created contract addresses
+- Commits or reverts state changes based on execution result
+- Triggers events (`beforeMessage`, `afterMessage`)
 
-The opFns for `CREATE`, `CALL`, and `CALLCODE` call back up to `runCall`.
+#### Code Execution (`runCode` / `runInterpreter`)
+The `runCode` method is a helper for directly running EVM bytecode (e.g., for testing or utility purposes) without the full message/transaction context:
+- Sets up a minimal message context for code execution
+- **Directly calls `runInterpreter` to execute the provided bytecode**
+- Does not go through the full message handling logic of `runCall`
 
-TODO: this section likely needs an update.
+The `runInterpreter` method is used by both `runCall` (via `_executeCall`/`_executeCreate`) and `runCode` to process the actual bytecode.
+
+#### Bytecode Processing (Interpreter)
+The Interpreter class is the core bytecode processor:
+- Manages execution state (program counter, stack, memory, gas)
+- Executes a loop that:
+  - Analyzes jump destinations
+  - Fetches the next opcode
+  - Calculates gas costs (static and dynamic)
+  - Executes the opcode handler
+  - Updates the program counter
+  - Emits step events for debugging/tracing
+- Handles stack, memory, and storage operations
+- Processes call and creation operations by delegating back to the EVM
+
+#### Opcode Functions
+Each opcode has an associated handler function that:
+- Validates inputs
+- Calculates dynamic gas costs
+- Performs the opcode's logic (stack operations, memory operations, etc.)
+- Updates the EVM state
+- The program counter is incremented in between the execution of the gas handler and opcode logic handler functions, this should be considered e.g. if parsing immediate input parameters
+- Special opcodes like `CALL`, `CREATE`, `DELEGATECALL` create a new message and call back to the EVM's `runCall` method
+
+#### Journal and State Management
+- State changes are tracked in a journal system
+- The journal supports checkpointing and reversion
+- Transient storage (EIP-1153) has its own checkpoint mechanism
+- When a message completes successfully, changes are committed to the state
+- On failure (exceptions), changes are reverted
+
+This layered architecture provides separation of concerns while allowing for the complex interactions needed to execute smart contracts on the Ethereum platform.
 
 ## Profiling the EVM
 
-Starting with the `v2.1.0` release the EVM comes with build-in profiling capabilities to detect performance bottlenecks and to generally support the targeted evolution of the JavaScript EVM performance.
+The EthereumJS EVM comes with build-in profiling capabilities to detect performance bottlenecks and to generally support the targeted evolution of the JavaScript EVM performance.
 
-While the EVM now has a dedicated `profiler` setting to activate, the profiler can best and most useful be run through the EthereumJS [client](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client) since this gives the most realistic conditions providing both real-world txs and a meaningful state size.
+While the EVM has a dedicated `profiler` setting to activate, the profiler can best and most useful be run through the EthereumJS [client](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client) since this gives the most realistic conditions providing both real-world txs and a meaningful state size.
 
 To repeatedly run the EVM profiler within the client sync the client on mainnet or a larger testnet to the desired block. Then the profiler should be run without sync (to not distort the results) by using the `--executeBlocks` and the `--vmProfileBlocks` (or `--vmProfileTxs`) flags in conjunction like:
 
@@ -485,7 +516,7 @@ See [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/mast
 
 ## EthereumJS
 
-See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices. If you want to join for work or carry out improvements on the libraries, please review our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html) first.
+The `EthereumJS` GitHub organization and its repositories are managed by the Ethereum Foundation JavaScript team, see our [website](https://ethereumjs.github.io/) for a team introduction. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
 
 ## License
 

@@ -1,10 +1,10 @@
+import { readFileSync, readdirSync } from 'fs'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { Address, bytesToHex, createZeroAddress, hexToBytes } from '@ethereumjs/util'
-import { readFileSync, readdirSync } from 'fs'
 import * as mcl from 'mcl-wasm'
 import { assert, describe, it } from 'vitest'
 
-import { MCLBLS, createEVM, getActivePrecompiles } from '../../src/index.js'
+import { MCLBLS, createEVM, getActivePrecompiles } from '../../src/index.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -15,23 +15,23 @@ const files = readdirSync(dir)
 
 const precompileMap: { [key: string]: string } = {
   'add_G1_bls.json': '000000000000000000000000000000000000000b',
-  'add_G2_bls.json': '000000000000000000000000000000000000000e',
+  'add_G2_bls.json': '000000000000000000000000000000000000000d',
   'fail-add_G1_bls.json': '000000000000000000000000000000000000000b',
-  'fail-add_G2_bls.json': '000000000000000000000000000000000000000e',
-  'fail-map_fp2_to_G2_bls.json': '0000000000000000000000000000000000000013',
-  'fail-map_fp_to_G1_bls.json': '0000000000000000000000000000000000000012',
+  'fail-add_G2_bls.json': '000000000000000000000000000000000000000d',
+  'fail-map_fp2_to_G2_bls.json': '0000000000000000000000000000000000000011',
+  'fail-map_fp_to_G1_bls.json': '0000000000000000000000000000000000000010',
   'fail-mul_G1_bls.json': '000000000000000000000000000000000000000c',
-  'fail-mul_G2_bls.json': '000000000000000000000000000000000000000f',
+  'fail-mul_G2_bls.json': '000000000000000000000000000000000000000e',
   'fail-multiexp_G1_bls.json': '000000000000000000000000000000000000000c',
-  'fail-multiexp_G2_bls.json': '0000000000000000000000000000000000000010',
-  'fail-pairing_check_bls.json': '0000000000000000000000000000000000000011',
-  'map_fp2_to_G2_bls.json': '0000000000000000000000000000000000000013',
-  'map_fp_to_G1_bls.json': '0000000000000000000000000000000000000012',
+  'fail-multiexp_G2_bls.json': '000000000000000000000000000000000000000e',
+  'fail-pairing_check_bls.json': '000000000000000000000000000000000000000f',
+  'map_fp2_to_G2_bls.json': '0000000000000000000000000000000000000011',
+  'map_fp_to_G1_bls.json': '0000000000000000000000000000000000000010',
   'mul_G1_bls.json': '000000000000000000000000000000000000000c',
-  'mul_G2_bls.json': '000000000000000000000000000000000000000f',
-  'multiexp_G1_bls.json': '000000000000000000000000000000000000000d',
-  'multiexp_G2_bls.json': '0000000000000000000000000000000000000010',
-  'pairing_check_bls.json': '0000000000000000000000000000000000000011',
+  'mul_G2_bls.json': '000000000000000000000000000000000000000e',
+  'multiexp_G1_bls.json': '000000000000000000000000000000000000000c',
+  'multiexp_G2_bls.json': '000000000000000000000000000000000000000e',
+  'pairing_check_bls.json': '000000000000000000000000000000000000000f',
 }
 
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin, eips: [2537] })
@@ -44,12 +44,13 @@ const mclbls = new MCLBLS(mcl)
 // as MCL (optional).
 // Remove from array to run only with one specific interface implementation.
 for (const bls of [undefined, mclbls]) {
+  const BLSType = bls === undefined ? 'Noble' : 'MCL'
   for (const fname of files) {
     // Uncomment for running single test cases (example)
     // if (fname !== 'pairing_check_bls.json') continue
     const fullName = `${dir}/${fname}`
     const parsedJSON = JSON.parse(readFileSync(fullName, 'utf-8'))
-    describe(`Precompiles: ${fname}`, () => {
+    describe(`Precompiles: ${fname} [${BLSType}]`, () => {
       for (const data of parsedJSON) {
         it(`${data.Name}`, async () => {
           const evm = await createEVM({
@@ -76,14 +77,20 @@ for (const bls of [undefined, mclbls]) {
           } else {
             try {
               const result = await precompile(callData)
+              // First, check if an exception is thrown (this should not happen here)
+              if (result.exceptionError !== undefined) {
+                assert.fail(
+                  `Test raised an exception where this is not expected: ${result.exceptionError.toString()}`,
+                )
+              }
               assert.deepEqual(
                 '0x' + data.Expected,
                 bytesToHex(result.returnValue),
                 'return value should match testVectorResult',
               )
-              assert.equal(result.executionGasUsed, BigInt(data.Gas))
-            } catch (e) {
-              assert.fail('The precompile should not throw')
+              assert.strictEqual(result.executionGasUsed, BigInt(data.Gas))
+            } catch (e: any) {
+              assert.fail(e.message)
             }
           }
         })
@@ -93,7 +100,7 @@ for (const bls of [undefined, mclbls]) {
 }
 
 const precompileAddressStart = 0x0b
-const precompileAddressEnd = 0x13
+const precompileAddressEnd = 0x11
 
 const precompiles: PrefixedHexString[] = []
 
@@ -127,6 +134,6 @@ describe('EIP-2537 BLS precompile availability tests', () => {
       }
     }
 
-    assert.ok(true, 'BLS precompiles unreachable if EIP not activated')
+    assert.isTrue(true, 'BLS precompiles unreachable if EIP not activated')
   })
 })

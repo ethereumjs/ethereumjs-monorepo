@@ -1,2 +1,2 @@
-export * from './constructors.js'
-export { EOACode7702Transaction } from './tx.js'
+export * from './constructors.ts'
+export { EOACode7702Tx } from './tx.ts'

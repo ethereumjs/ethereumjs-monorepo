@@ -1,6 +1,6 @@
 import { assert, describe, it } from 'vitest'
 
-import { createClient, createManager, getRPCClient, startRPC } from '../helpers.js'
+import { createClient, createManager, getRPCClient, startRPC } from '../helpers.ts'
 
 const method = 'net_peerCount'
 
@@ -12,6 +12,6 @@ describe(method, () => {
     const res = await rpc.request(method, [])
 
     const { result } = res
-    assert.equal(result.substring(0, 2), '0x', 'result should be a hex number')
+    assert.strictEqual(result.substring(0, 2), '0x', 'result should be a hex number')
   })
 })

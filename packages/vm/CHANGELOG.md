@@ -6,6 +6,208 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 10.0.0 - 2025-04-29
+
+### Overview
+
+This release is part of the `v10` breaking release round making the `EthereumJS` libraries compatible with the [Pectra](https://eips.ethereum.org/EIPS/eip-7600) hardfork going live on Ethereum `mainnet` on May 7 2025. Beside the hardfork update these releases mark a milestone in our release history since they - for the first time ever - bring the full `Ethereum` protocol stack - including the `EVM` - to the browser without any restrictions anymore, coming along with other substantial updates regarding library security and functionality.
+
+Some highlights:
+
+- 🌴 Introduction of a tree-shakeable API
+- 👷🏼 Substantial dependency reduction to a "controlled dependency set" (no more than 10 + `@Noble` crypto)
+- 📲 **EIP-7702** readiness
+- 🛵 Substantial bundle size reductions for all libraries
+- 🏄🏾‍♂️ All libraries now pure JS being WASM-free by default
+- 🦋 No more propriatary `Node.js` primitives
+
+So: **All libraries now work in the browser "out of the box"**.
+
+### Release Notes
+
+Major release notes for this release can be found in the `alpha.1` release notes [here](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3722#issuecomment-2792400268), with some additions along with the `RC.1` releases, see [here](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3886#issuecomment-2748966923).
+
+### Changes since `RC.1`
+
+- `EIP-6110` log layout check fix, PR [#3977](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3977)
+- Convert `StatelessVerkleStateManager` usage to type (bundle optimizations) and small Verkle interface adjustment, PRs [#4021](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4021) and [#4022](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4022)
+
+## 10.0.0-rc.1 - 2025-03-24
+
+This is the first (and likely the last) round of `RC` releases for the upcoming breaking releases, following the `alpha` releases from October 2024 (see `alpha` release release notes for full/main change description). The releases are somewhat delayed (sorry for that), but final releases can now be expected very very soon, to be released once the Ethereum [Pectra](https://eips.ethereum.org/EIPS/eip-7600) hardfork is scheduled for mainnet and all EIPs are fully finalized. Pectra will then also be the default hardfork setting for all EthereumJS libraries.
+
+### New Versioning Scheme
+
+This breaking release round will come with a new versioning scheme (thanks to paulmillr for the [suggestion](https://github.com/ethereumjs/ethereumjs-monorepo/issues/3748)), aligning the package numbers on breaking releases for all EthereumJS packages. This will make it easier to report bugs ("bug happened on EthereumJS version 10 releases"), reason about release series and make library compatibility more transparent and easier to grasp.
+
+As a start we bump all major release versions to version 10, these `RC` releases are the first to be released with the new versioning scheme.
+
+### Native Node.js EventEmitter Replacement
+
+We removed the last remaining internal Node.js utility dependency to make the packages more browser friendly and replace the native Node.js `EventEmitter` by using the [eventemitter3](https://github.com/primus/eventemitter3) package as a replacement, see PR [#3746](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3746).
+
+The new package is meant to be more performant while remaining almost entirely API compatible with native Node.js event emitters.
+
+If you directly import the Node.js event emitter, you need to switch your imports to:
+
+```ts
+import { EventEmitter } from 'events' // old
+import { EventEmitter } from 'eventemitter3' // new
+```
+
+The new event emitter package also made it possible to remove/replace the separate async event emitter custom integration and use the new package here as well.
+
+For listening to async EVM events like `step` or VM events like `newContract` or `afterTx` API slightly changed and it is now needed to take the `resolve` parameter in on listening and explicitly call at the end of the event handling:
+
+```ts
+evm.events.on('beforeMessage', (event) => {
+  console.log('synchronous listener to beforeMessage', event)
+})
+evm.events.on('afterMessage', (event, resolve) => {
+  console.log('asynchronous listener to beforeMessage', event)
+  // we need to call resolve() to avoid the event listener hanging
+  resolve?.()
+})
+```
+
+### Pectra Spec Updates
+
+- Support for generalized EL requests coming with EIP-7685 introduction (devnet-4), PR [#3706](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3706)
+- Additional EIP-7685 adjustments/updates, PR [#3807](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3807)
+- Support for EIP-7623 Calldata Cost Increase, PR [#3813](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3813)
+- Support for EIP-7691 Blob Throughput Increase, PR [#3807](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3807)
+- Adjust `BlockBuilder.build()` return value format to return a dictionary containing the block built together with the requests generated, PR [#3706](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3706)
+- EIP-7702 related updates (devnet-4), PR [#3737](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3737)
+- More EIP-7702 updates (devnet-5), PR [#3807](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3807)
+- Fix requests contract address (devnet-5), PR [#3818](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3818)
+
+### EthereumJS-wide Error Objects
+
+We have done preparations to allow for handling specific error sub types in the future by introducing a monorepo-wide `EthereumJSError` error class in the `@ethereumjs/util` package, see PR [#3879](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3879). This error is thrown for all error cases within the monorepo and can be specifically handled by comparing with `instanceof EthereumJSError`.
+
+We will introduce a set of more specific sub error classes inheriting from this generic type in upcoming minor releases, and so keeping things fully backwards compatible. This will allow for a more specific and robust handling of errors thrown by EthereumJS libraries.
+
+### Verkle Updates (experimental)
+
+- Verkle execution witness support, PR [#3731](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3731)
+- Small adjustments, PR [#3775](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3775)
+- Add simple cache to EVM access witness, PR [#3810](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3810)
+
+### Other Changes
+- Support for `t8ntool` for `execution-spec-tests` test filling, PR [#3603](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3603)
+- Block builder adjustments, PR [#3603](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3603)
+- Filter EIP-6110 logs based on topic, PR [#3901](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3901)
+
+## 9.0.0-alpha.1 - 2024-10-17
+
+This is a first round of `alpha` releases for our upcoming breaking release round with a focus on bundle size (tree shaking) and security (dependencies down + no WASM (by default)). Note that `alpha` releases are not meant to be fully API-stable yet and are for early testing only. This release series will be then followed by a `beta` release round where APIs are expected to be mostly stable. Final releases can then be expected for late October/early November 2024.
+
+### Renamings
+
+#### Static Constructors
+
+The static constructors for our library classes have been reworked to now be standalone methods (with a similar naming scheme). This allows for better tree shaking of unused constructor code (see PR [#3618](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3618)):
+
+- `VM.create()` -> `createVM`
+
+##### Core Procedural Methods
+
+See: PR [#3530](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3530)
+
+- `VM.runTx()` -> `runTx()`
+- `VM.runBlock()` -> `runBlock()`
+- `VM.buildBlock()` -> `buildBlock()`
+
+#### Own VM Parameter Set
+
+HF-sensitive parameters like `historyStorageAddress` were previously by design all provided by the `@ethereumjs/common` library. This meant that all parameter sets were shared among the libraries and libraries carried around a lot of unnecessary parameters.
+
+With the `Common` refactoring from PR [#3537](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3537) parameters now moved over to a dedicated `params.ts` file (exposed as e.g. `paramsVM`) within the parameter-using library and the library sets its own parameter set by internally calling a new `Common` method `updateParams()`. For shared `Common` instances parameter sets then accumulate as needed.
+
+Beside having a lighter footprint this additionally allows for easier parameter customization. There is a new `params` constructor option which leverages this new possibility and where it becomes possible to provide a fully customized set of core library parameters.
+
+### New Common API
+
+There is a new Common API for simplification and better tree shaking, see PR [#3545](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3545). Change your `Common` initializations as follows (see `Common` release for more details):
+
+```ts
+// old
+import { Chain, Common } from '@ethereumjs/common'
+const common = new Common({ chain: Chain.Mainnet })
+
+// new
+import { Common, Mainnet } from '@ethereumjs/common'
+const common = new Common({ chain: Mainnet })
+```
+
+### Pure JavaScript EVM (no default WASM)
+
+This is the first EthereumJS VM release where we could realize a fully WASM-free version of the underlying EVM by default! 🤩 We were finally able to replace all crypto primitives which still relied on Web Assembly code with pure JavaScript/TypeScript pendants, thanks a lot to @paulmillr from Noble for the cooperation on this! ❤️
+
+Together with a strong dependency reduction being accomplished along this release this opens up for new use cases for the JavaScript VM/EVM in more security sensitive contexts. The code of the EVM is now compact enough that it gets fully auditable (and we plan an EVM audit for 2025), see e.g. [here](https://gist.github.com/holgerd77/2c032488196b4afee5d976dc85ee70eb) for an EVM bundle snapshot including _all_ dependencies!
+
+See EVM release notes for a detailed breakdown of the changes!
+
+### Mega-EOF Support (experimental)
+
+The underlying EVM now supports Mega-EOF in an experimental form! 🎉 See EVM release notes for more details.
+
+### EIP-7702 EOA Account Abstraction Support (experimental)
+
+The VM now experimentally supports running [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) txs with `runTx()` (or `runBlock()`) and along transform an EOA into a smart contract for the period of one transaction and execute the respective bytecode, see PRs [#3470](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3470), [#3577](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3577) and [#3581](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3581).
+
+The following is an example on how to create an EIP-7702 tx (note that you need to replace the `authorizationList` parameters with real-world tx and signature values):
+
+```ts
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createEOACode7702Tx } from '@ethereumjs/tx'
+import { type PrefixedHexString, createAddressFromPrivateKey, randomBytes } from '@ethereumjs/util'
+
+const ones32 = `0x${'01'.repeat(32)}` as PrefixedHexString
+
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
+const tx = createEOACode7702Tx(
+  {
+    authorizationList: [
+      {
+        chainId: '0x2',
+        address: `0x${'20'.repeat(20)}`,
+        nonce: '0x1',
+        yParity: '0x1',
+        r: ones32,
+        s: ones32,
+      },
+    ],
+    to: createAddressFromPrivateKey(randomBytes(32)),
+  },
+  { common },
+)
+```
+
+### Removal of TTD Logic (live-Merge Transition Support)
+
+Total terminal difficulty (TTD) logic related to fork switching has been removed from the libraries, see PRs [#3518](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3518) and [#3556](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3556). This means that a Merge-type live hardfork transition solely triggered by TTD is not supported anymore. It is still possible though to replay and deal with both pre- and post Merge HF blocks.
+
+For this library this means:
+
+- The `setHardfork` option for `runBlock()` is simplified to only accept a `boolean` and no `BigIntLike` for an eventual TD value anymore
+
+### Other Breaking Changes
+
+- New default hardfork: `Shanghai` -> `Cancun`, see PR [#3566](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3566)
+- VM is now by default initialized without state manager caches (tree shaking), PR [#3601](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3601)
+- VM uses `EVMMockBlockchain` as blockchain default (tree shaking), PR [#3601](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3601)
+
+### Other Changes
+
+- Upgrade to TypeScript 5, PR [#3607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3607)
+- Node 22 support, PR [#3669](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3669)
+- Implement `t8ntool` to use for `execution-spec-tests`, PR [#3603](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3603)
+- Upgrade `ethereum-cryptography` to v3, PR [#3668](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3668)
+- Exit early on non-existing system contracts, PR [#3614](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3614)
+- Add `allowNoBlobs` option to `BlockBuilder.addTransaction()`, PR [#3603](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3603)
+- Exit early in `runBlock()` if system contract has no code, PR [#3603](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3603)
+
 ## 8.1.0 - 2024-08-15
 
 ### EIP-7685 Requests: EIP-6110 (Deposits) / EIP-7002 (Withdrawals) / EIP-7251 (Consolidations)

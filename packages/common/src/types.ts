@@ -1,11 +1,16 @@
-import type { ConsensusAlgorithm, ConsensusType, Hardfork } from './enums.js'
-import type { BigIntLike, ECDSASignature, Kzg, PrefixedHexString } from '@ethereumjs/util'
+import type { BigIntLike, KZG, PrefixedHexString, VerkleCrypto } from '@ethereumjs/util'
+import type { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
+import type { ConsensusAlgorithm, ConsensusType, Hardfork } from './enums.ts'
 
 export interface ChainName {
   [chainId: string]: string
 }
 export interface ChainsConfig {
   [key: string]: ChainConfig | ChainName
+}
+
+export interface CommonEvent {
+  hardforkChanged: [hardfork: string]
 }
 
 export type CliqueConfig = {
@@ -48,6 +53,7 @@ export interface GenesisBlockConfig {
   extraData: PrefixedHexString
   baseFeePerGas?: PrefixedHexString
   excessBlobGas?: PrefixedHexString
+  requestsHash?: PrefixedHexString
 }
 
 export interface HardforkTransitionConfig {
@@ -80,10 +86,14 @@ export interface CustomCrypto {
     chainId?: bigint,
   ) => Uint8Array
   sha256?: (msg: Uint8Array) => Uint8Array
-  ecsign?: (msg: Uint8Array, pk: Uint8Array, chainId?: bigint) => ECDSASignature
-  ecdsaSign?: (msg: Uint8Array, pk: Uint8Array) => { signature: Uint8Array; recid: number }
+  ecsign?: (
+    msg: Uint8Array,
+    pk: Uint8Array,
+    ecSignOpts?: { extraEntropy?: Uint8Array | boolean },
+  ) => Pick<ReturnType<typeof secp256k1.sign>, 'recovery' | 'r' | 's'>
   ecdsaRecover?: (sig: Uint8Array, recId: number, hash: Uint8Array) => Uint8Array
-  kzg?: Kzg
+  kzg?: KZG
+  verkle?: VerkleCrypto
 }
 
 export interface BaseOpts {
@@ -147,7 +157,6 @@ export interface CommonOpts extends BaseOpts {
 export interface GethConfigOpts extends BaseOpts {
   chain?: string
   genesisHash?: Uint8Array
-  mergeForkIdPostMerge?: boolean
 }
 
 export interface HardforkByOpts {

@@ -9,7 +9,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createVM, runTx } from '../../../src/index.js'
+import { createVM, runTx } from '../../../src/index.ts'
 
 const common = new Common({
   eips: [2718, 2929, 2930],
@@ -67,19 +67,20 @@ describe('EIP-2930 Optional Access Lists tests', () => {
 
     let trace: any = []
 
-    vm.evm.events!.on('step', (o: any) => {
+    vm.evm.events!.on('step', (o, resolve) => {
       trace.push([o.opcode.name, o.gasLeft])
+      resolve?.()
     })
 
     await runTx(vm, { tx: txnWithAccessList })
-    assert.ok(trace[1][0] === 'SLOAD')
+    assert.strictEqual(trace[1][0], 'SLOAD')
     let gasUsed = trace[1][1] - trace[2][1]
-    assert.equal(gasUsed, 100, 'charge warm sload gas')
+    assert.strictEqual(Number(gasUsed), 100, 'charge warm sload gas')
 
     trace = []
     await runTx(vm, { tx: txnWithoutAccessList, skipNonce: true })
-    assert.ok(trace[1][0] === 'SLOAD')
+    assert.strictEqual(trace[1][0], 'SLOAD')
     gasUsed = trace[1][1] - trace[2][1]
-    assert.equal(gasUsed, 2100, 'charge cold sload gas')
+    assert.strictEqual(Number(gasUsed), 2100, 'charge cold sload gas')
   })
 })

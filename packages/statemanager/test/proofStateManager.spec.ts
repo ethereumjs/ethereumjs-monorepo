@@ -1,4 +1,4 @@
-import { Trie, createTrie } from '@ethereumjs/trie'
+import { MerklePatriciaTrie, createMPT } from '@ethereumjs/mpt'
 import {
   Account,
   Address,
@@ -10,33 +10,33 @@ import {
   equalsBytes,
   hexToBytes,
   randomBytes,
-  zeros,
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { assert, describe, it } from 'vitest'
 
-import { MerkleStateManager } from '../src/index.js'
+import { MerkleStateManager } from '../src/index.ts'
+import { getMerkleStateProof, verifyMerkleStateProof } from '../src/proof/index.ts'
 
-import { ropstenContractWithStorageData } from './testdata/ropsten_contractWithStorage.js'
-import { ropstenNonexistentAccountData } from './testdata/ropsten_nonexistentAccount.js'
-import { ropstenValidAccountData } from './testdata/ropsten_validAccount.js'
+import { ropstenContractWithStorageData } from './testdata/ropsten_contractWithStorage.ts'
+import { ropstenNonexistentAccountData } from './testdata/ropsten_nonexistentAccount.ts'
+import { ropstenValidAccountData } from './testdata/ropsten_validAccount.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 describe('ProofStateManager', () => {
   it(`should return quantity-encoded RPC representation`, async () => {
     const address = createZeroAddress()
-    const key = zeros(32)
+    const key = new Uint8Array(32)
     const stateManager = new MerkleStateManager()
 
-    const proof = await stateManager.getProof(address, [key])
-    assert.equal(proof.balance, '0x0', 'Balance is in quantity-encoded RPC representation')
-    assert.equal(proof.nonce, '0x0', 'Nonce is in quantity-encoded RPC representation')
+    const proof = await getMerkleStateProof(stateManager, address, [key])
+    assert.strictEqual(proof.balance, '0x0', 'Balance is in quantity-encoded RPC representation')
+    assert.strictEqual(proof.nonce, '0x0', 'Nonce is in quantity-encoded RPC representation')
   })
 
   it(`should correctly return the right storage root / account root`, async () => {
     const address = createZeroAddress()
-    const key = zeros(32)
+    const key = new Uint8Array(32)
     const stateManager = new MerkleStateManager()
 
     await stateManager.putAccount(address, new Account(BigInt(100), BigInt(200)))
@@ -44,41 +44,41 @@ describe('ProofStateManager', () => {
 
     await stateManager.putStorage(address, key, new Uint8Array([10]))
 
-    const proof = await stateManager.getProof(address, [key])
-    assert.ok(!equalsBytes(hexToBytes(proof.storageHash), storageRoot))
+    const proof = await getMerkleStateProof(stateManager, address, [key])
+    assert.isFalse(equalsBytes(hexToBytes(proof.storageHash), storageRoot))
   })
 
   it(`should return quantity-encoded RPC representation for existing accounts`, async () => {
     const address = createZeroAddress()
-    const key = zeros(32)
+    const key = new Uint8Array(32)
     const stateManager = new MerkleStateManager()
 
     const account = new Account()
     await stateManager.putAccount(address, account)
 
-    const proof = await stateManager.getProof(address, [key])
-    assert.equal(proof.balance, '0x0', 'Balance is in quantity-encoded RPC representation')
-    assert.equal(proof.nonce, '0x0', 'Nonce is in quantity-encoded RPC representation')
+    const proof = await getMerkleStateProof(stateManager, address, [key])
+    assert.strictEqual(proof.balance, '0x0', 'Balance is in quantity-encoded RPC representation')
+    assert.strictEqual(proof.nonce, '0x0', 'Nonce is in quantity-encoded RPC representation')
 
     account.balance = BigInt(1)
     await stateManager.putAccount(address, account)
 
-    const proof2 = await stateManager.getProof(address, [key])
-    assert.equal(proof2.balance, '0x1', 'Balance correctly encoded')
-    assert.equal(proof2.nonce, '0x0', 'Nonce is in quantity-encoded RPC representation')
+    const proof2 = await getMerkleStateProof(stateManager, address, [key])
+    assert.strictEqual(proof2.balance, '0x1', 'Balance correctly encoded')
+    assert.strictEqual(proof2.nonce, '0x0', 'Nonce is in quantity-encoded RPC representation')
 
     account.balance = BigInt(0)
     account.nonce = BigInt(1)
     await stateManager.putAccount(address, account)
 
-    const proof3 = await stateManager.getProof(address, [key])
-    assert.equal(proof3.balance, '0x0', 'Balance is in quantity-encoded RPC representation')
-    assert.equal(proof3.nonce, '0x1', 'Nonce is correctly encoded')
+    const proof3 = await getMerkleStateProof(stateManager, address, [key])
+    assert.strictEqual(proof3.balance, '0x0', 'Balance is in quantity-encoded RPC representation')
+    assert.strictEqual(proof3.nonce, '0x1', 'Nonce is correctly encoded')
   })
 
   it(`should get and verify EIP 1178 proofs`, async () => {
     const address = createZeroAddress()
-    const key = zeros(32)
+    const key = new Uint8Array(32)
     const value = hexToBytes('0x0000aabb00')
     const code = hexToBytes('0x6000')
     const stateManager = new MerkleStateManager()
@@ -97,13 +97,14 @@ describe('ProofStateManager', () => {
     await stateManager.commit()
     await stateManager.flush()
 
-    const proof = await stateManager.getProof(address, [key])
-    assert.ok(await stateManager.verifyProof(proof))
-    const nonExistenceProof = await stateManager.getProof(
+    const proof = await getMerkleStateProof(stateManager, address, [key])
+    assert.isTrue(await verifyMerkleStateProof(stateManager, proof))
+    const nonExistenceProof = await getMerkleStateProof(
+      stateManager,
       createAddressFromPrivateKey(randomBytes(32)),
     )
-    assert.equal(
-      await stateManager.verifyProof(nonExistenceProof),
+    assert.strictEqual(
+      await verifyMerkleStateProof(stateManager, nonExistenceProof),
       true,
       'verified proof of non-existence of account',
     )
@@ -115,7 +116,7 @@ describe('ProofStateManager', () => {
     // Account: 0xc626553e7c821d0f8308c28d56c60e3c15f8d55a
     // Storage slots: empty list
     const address = createAddressFromString('0xc626553e7c821d0f8308c28d56c60e3c15f8d55a')
-    const trie = await createTrie({ useKeyHashing: true })
+    const trie = await createMPT({ useKeyHashing: true })
     const stateManager = new MerkleStateManager({ trie })
     // Dump all the account proof data in the DB
     let stateRoot: Uint8Array | undefined
@@ -128,9 +129,9 @@ describe('ProofStateManager', () => {
       await trie['_db'].put(key, bufferData)
     }
     trie.root(stateRoot!)
-    const proof = await stateManager.getProof(address)
+    const proof = await getMerkleStateProof(stateManager, address)
     assert.deepEqual(ropstenValidAccountData, proof)
-    assert.ok(await stateManager.verifyProof(ropstenValidAccountData))
+    assert.isTrue(await verifyMerkleStateProof(stateManager, ropstenValidAccountData))
   })
 
   it('should report data equal to geth output for EIP 1178 proofs - nonexistent account', async () => {
@@ -139,7 +140,7 @@ describe('ProofStateManager', () => {
     // Account: 0x68268f12253f69f66b188c95b8106b2f847859fc (this account does not exist)
     // Storage slots: empty list
     const address = createAddressFromString('0x68268f12253f69f66b188c95b8106b2f847859fc')
-    const trie = new Trie({ useKeyHashing: true })
+    const trie = new MerklePatriciaTrie({ useKeyHashing: true })
     const stateManager = new MerkleStateManager({ trie })
     // Dump all the account proof data in the DB
     let stateRoot: Uint8Array | undefined
@@ -152,9 +153,9 @@ describe('ProofStateManager', () => {
       await trie['_db'].put(key, bufferData)
     }
     trie.root(stateRoot!)
-    const proof = await stateManager.getProof(address)
+    const proof = await getMerkleStateProof(stateManager, address)
     assert.deepEqual(ropstenNonexistentAccountData, proof)
-    assert.ok(await stateManager.verifyProof(ropstenNonexistentAccountData))
+    assert.isTrue(await verifyMerkleStateProof(stateManager, ropstenNonexistentAccountData))
   })
 
   it('should report data equal to geth output for EIP 1178 proofs - account with storage', async () => {
@@ -163,7 +164,7 @@ describe('ProofStateManager', () => {
     // Note: the first slot has a value, but the second slot is empty
     // Note: block hash 0x1d9ea6981b8093a2b63f22f74426ceb6ba1acae3fddd7831442bbeba3fa4f146
     const address = createAddressFromString('0x2D80502854FC7304c3E3457084DE549f5016B73f')
-    const trie = new Trie({ useKeyHashing: true })
+    const trie = new MerklePatriciaTrie({ useKeyHashing: true })
     const stateManager = new MerkleStateManager({ trie })
     // Dump all the account proof data in the DB
     let stateRoot: Uint8Array | undefined
@@ -176,7 +177,7 @@ describe('ProofStateManager', () => {
       await trie['_db'].put(key, bufferData)
     }
     const storageRoot = ropstenContractWithStorageData.storageHash
-    const storageTrie = new Trie({ useKeyHashing: true })
+    const storageTrie = new MerklePatriciaTrie({ useKeyHashing: true })
     const storageKeys: Uint8Array[] = []
     for (const storageProofsData of ropstenContractWithStorageData.storageProof) {
       storageKeys.push(hexToBytes(storageProofsData.key))
@@ -190,9 +191,9 @@ describe('ProofStateManager', () => {
     stateManager['_storageTries'][addressHex] = storageTrie
     trie.root(stateRoot!)
 
-    const proof = await stateManager.getProof(address, storageKeys)
+    const proof = await getMerkleStateProof(stateManager, address, storageKeys)
     assert.deepEqual(ropstenContractWithStorageData, proof)
-    await stateManager.verifyProof(ropstenContractWithStorageData)
+    await verifyMerkleStateProof(stateManager, ropstenContractWithStorageData)
   })
 
   it(`should throw on invalid proofs - existing accounts/slots`, async () => {
@@ -201,7 +202,7 @@ describe('ProofStateManager', () => {
     // Note: the first slot has a value, but the second slot is empty
     // Note: block hash 0x1d9ea6981b8093a2b63f22f74426ceb6ba1acae3fddd7831442bbeba3fa4f146
     const address = createAddressFromString('0x2D80502854FC7304c3E3457084DE549f5016B73f')
-    const trie = new Trie({ useKeyHashing: true })
+    const trie = new MerklePatriciaTrie({ useKeyHashing: true })
     const stateManager = new MerkleStateManager({ trie })
     // Dump all the account proof data in the DB
     let stateRoot: Uint8Array | undefined
@@ -214,7 +215,7 @@ describe('ProofStateManager', () => {
       await trie['_db'].put(key, bufferData)
     }
     const storageRoot = ropstenContractWithStorageData.storageHash
-    const storageTrie = new Trie({ useKeyHashing: true })
+    const storageTrie = new MerklePatriciaTrie({ useKeyHashing: true })
     const storageKeys: Uint8Array[] = []
     for (const storageProofsData of ropstenContractWithStorageData.storageProof) {
       storageKeys.push(hexToBytes(storageProofsData.key))
@@ -235,12 +236,12 @@ describe('ProofStateManager', () => {
       try {
         ;(testData[tamper as keyof typeof testData] as PrefixedHexString) =
           `0x9${original.slice(3)}`
-        await stateManager.verifyProof(testData)
+        await verifyMerkleStateProof(stateManager, testData)
         // note: this implicitly means that newField !== original,
         // if newField === original then the proof would be valid and test would fail
         assert.fail('should throw')
-      } catch (e) {
-        assert.ok(true, 'threw on invalid proof')
+      } catch {
+        assert.isTrue(true, 'threw on invalid proof')
       } finally {
         ;(testData[tamper as keyof typeof testData] as PrefixedHexString) = original
       }
@@ -251,10 +252,10 @@ describe('ProofStateManager', () => {
       const original = slot.value
       slot.value = `0x9${original.slice(3)}`
       try {
-        await stateManager.verifyProof(testData)
+        await verifyMerkleStateProof(stateManager, testData)
         assert.fail('should throw')
       } catch {
-        assert.ok(true, 'threw on invalid proof')
+        assert.isTrue(true, 'threw on invalid proof')
       } finally {
         slot.value = original
       }
@@ -267,7 +268,7 @@ describe('ProofStateManager', () => {
     // Note: the first slot has a value, but the second slot is empty
     // Note: block hash 0x1d9ea6981b8093a2b63f22f74426ceb6ba1acae3fddd7831442bbeba3fa4f146
     const address = createAddressFromString('0x68268f12253f69f66b188c95b8106b2f847859fc')
-    const trie = new Trie({ useKeyHashing: true })
+    const trie = new MerklePatriciaTrie({ useKeyHashing: true })
     const stateManager = new MerkleStateManager({ trie })
     // Dump all the account proof data in the DB
     let stateRoot: Uint8Array | undefined
@@ -280,7 +281,7 @@ describe('ProofStateManager', () => {
       await trie['_db'].put(key, bufferData)
     }
     const storageRoot = ropstenNonexistentAccountData.storageHash
-    const storageTrie = new Trie({ useKeyHashing: true })
+    const storageTrie = new MerklePatriciaTrie({ useKeyHashing: true })
     storageTrie.root(hexToBytes(storageRoot))
     const addressHex = bytesToHex(address.bytes)
     stateManager['_storageTries'][addressHex] = storageTrie
@@ -293,12 +294,12 @@ describe('ProofStateManager', () => {
       try {
         const newField = `0x9${original.slice(3)}`
         testdata[tamper] = newField
-        await stateManager.verifyProof(testdata)
+        await verifyMerkleStateProof(stateManager, testdata)
         // note: this implicitly means that newField !== original,
         // if newField === original then the proof would be valid and test would fail
         assert.fail('should throw')
-      } catch (e) {
-        assert.ok(true, 'threw on invalid proof')
+      } catch {
+        assert.isTrue(true, 'threw on invalid proof')
       } finally {
         // restore original valid proof
         testdata[tamper] = original

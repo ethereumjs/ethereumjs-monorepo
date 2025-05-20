@@ -1,6 +1,6 @@
 import { assert, describe, it } from 'vitest'
 
-import { baseSetup } from '../helpers.js'
+import { baseSetup } from '../helpers.ts'
 
 const method = 'engine_exchangeCapabilities'
 
@@ -10,8 +10,8 @@ describe(method, () => {
 
     const res = await rpc.request(method, [])
 
-    assert.ok(res.result.length > 0, 'got more than 1 engine capability')
-    assert.equal(
+    assert.isNotEmpty(res.result, 'got more than 1 engine capability')
+    assert.strictEqual(
       res.result.findIndex((el: string) => el === 'engine_exchangeCapabilities'),
       -1,
       'should not include engine_exchangeCapabilities in response',
