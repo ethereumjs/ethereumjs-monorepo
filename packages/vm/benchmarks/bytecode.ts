@@ -1,14 +1,19 @@
 import { readFileSync } from 'fs'
-import { Chain, Common, Hardfork, Mainnet, StateManagerInterface } from '@ethereumjs/common'
-import { getPreState } from './util.js'
+import { Chain, Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import type { StateManagerInterface } from '@ethereumjs/common'
 import { EVM } from '@ethereumjs/evm'
-import { Address, createZeroAddress, hexToBytes, PrefixedHexString } from '@ethereumjs/util'
 import { createEVM } from '@ethereumjs/evm'
-import { Bench } from 'tinybench'
 import { SimpleStateManager } from '@ethereumjs/statemanager'
+import { Address, createZeroAddress, hexToBytes } from '@ethereumjs/util'
+import type { PrefixedHexString } from '@ethereumjs/util'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
+import { Bench } from 'tinybench'
+import { getPreState } from './util.js'
 
 export async function bytecode(numSamples?: number, bytecode?: string, preState?: string) {
-  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun })
+  const kzg = new microEthKZG(trustedSetup)
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Prague, customCrypto: { kzg } })
 
   let stateManager: StateManagerInterface = new SimpleStateManager()
 
