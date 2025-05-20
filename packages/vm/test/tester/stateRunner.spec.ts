@@ -3,7 +3,7 @@ import type { Common } from '@ethereumjs/common'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import * as mcl from 'mcl-wasm'
 import minimist from 'minimist'
-import { describe, it } from 'vitest'
+import { assert, describe, it } from 'vitest'
 
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 
@@ -422,7 +422,7 @@ describe('TransactionTests', async () => {
   for (const [testName, testDataRaw] of Object.entries(testDataObject)) {
     const forkName = 'Cancun'
     it(`${testName} - [${forkName}]`, async () => {
-      await runStateTest(runnerArgs, testDataRaw, undefined)
+      await runStateTest(runnerArgs, testDataRaw, assert)
     }, 120000)
   }
 })
