@@ -1,5 +1,11 @@
 import { LegacyTx } from '@ethereumjs/tx'
-import { bigIntToUnpaddedBytes, ecrecover, equalsBytes, randomBytes } from '@ethereumjs/util'
+import {
+  bigIntToUnpaddedBytes,
+  bytesToHex,
+  ecrecover,
+  equalsBytes,
+  randomBytes,
+} from '@ethereumjs/util'
 import { SignatureWorkerPool } from '../../src/worker/signatureWorkerPool.ts'
 
 async function runBenchmark() {
@@ -66,18 +72,41 @@ async function runBenchmark() {
   const speedup = (endSeq - startSeq) / (endPar - startPar)
   console.log(`Speedup: ${speedup.toFixed(2)}x`)
 
+  // Print result counts
+  console.log(
+    `\nResults count - Sequential: ${sequentialResults.size}, Parallel: ${parallelResults.size}`,
+  )
+
   // Verify results match by comparing the stored sequential results with parallel results
   console.log('\nVerifying results...')
   let allMatch = true
+  let missingResults = 0
+  let mismatchedResults = 0
+
   for (let i = 0; i < signedTxs.length; i++) {
     const parallelResult = parallelResults.get(i)
     const sequentialResult = sequentialResults.get(i)
-    if (parallelResult && !equalsBytes(parallelResult.publicKey, sequentialResult)) {
+
+    if (!parallelResult) {
+      console.log(`Missing parallel result at index ${i}`)
+      missingResults++
+      allMatch = false
+      continue
+    }
+
+    if (!equalsBytes(parallelResult.publicKey, sequentialResult)) {
       console.log(`Mismatch at index ${i}`)
+      console.log(`Sequential: ${sequentialResult}`)
+      console.log(`Parallel: ${parallelResult.publicKey}`)
+      mismatchedResults++
       allMatch = false
     }
   }
-  console.log(`All results match: ${allMatch}`)
+
+  console.log(`\nVerification Summary:`)
+  console.log(`- All results match: ${allMatch}`)
+  console.log(`- Missing results: ${missingResults}`)
+  console.log(`- Mismatched results: ${mismatchedResults}`)
 }
 
 runBenchmark().catch(console.error)

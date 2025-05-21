@@ -1,5 +1,3 @@
-import { dirname, join } from 'path'
-import { fileURLToPath } from 'url'
 import { Worker } from 'worker_threads'
 
 interface SignatureTask {
@@ -16,54 +14,73 @@ interface SignatureResult {
 
 export class SignatureWorkerPool {
   private workers: Worker[] = []
-  private taskQueue: SignatureTask[] = []
   private results: Map<number, SignatureResult> = new Map()
   private nextTaskId = 0
+  private pendingResults = 0
 
   constructor(numWorkers: number = 4) {
-    const __filename = fileURLToPath(import.meta.url)
-    const __dirname = dirname(__filename)
-    const workerPath = join(__dirname, 'signatureWorker.ts')
+    const workerCode = `
+            const { parentPort } = require('worker_threads')
+            const { ecrecover } = require('@ethereumjs/util')
 
+            parentPort.on('message', (data) => {
+                const { tasks, taskId } = data
+                const results = tasks.map(task => {
+                    const publicKey = ecrecover(task.msgHash, task.v, task.r, task.s, task.chainId)
+                    return { publicKey }
+                })
+                parentPort.postMessage({ results, taskId })
+            })
+        `
+
+    // Initialize workers
     for (let i = 0; i < numWorkers; i++) {
-      const worker = new Worker(workerPath, {
-        // Use tsx to run TypeScript files
-        execArgv: ['-r', 'tsx/register'],
+      const worker = new Worker(workerCode, { eval: true })
+
+      worker.on('message', (data: { results: SignatureResult[]; taskId: number }) => {
+        const { results, taskId } = data
+        results.forEach((result, index) => {
+          this.results.set(taskId + index, result)
+        })
+        this.pendingResults--
       })
 
-      worker.on('message', (results: SignatureResult[]) => {
-        results.forEach((result, index) => {
-          this.results.set(this.nextTaskId - results.length + index, result)
-        })
-      })
       this.workers.push(worker)
     }
   }
 
   async processBatch(tasks: SignatureTask[]): Promise<Map<number, SignatureResult>> {
-    const batchSize = Math.ceil(tasks.length / this.workers.length)
-    const promises: Promise<void>[] = []
+    // Clear previous results
+    this.results.clear()
+    this.nextTaskId = 0
+    this.pendingResults = 0
 
+    // Calculate batch size per worker
+    const batchSize = Math.ceil(tasks.length / this.workers.length)
+
+    // Process tasks in parallel
     for (let i = 0; i < this.workers.length; i++) {
       const start = i * batchSize
       const end = Math.min(start + batchSize, tasks.length)
-      const batch = tasks.slice(start, end)
+      if (start >= tasks.length) break
 
-      if (batch.length > 0) {
-        promises.push(
-          new Promise((resolve) => {
-            this.workers[i].postMessage(batch)
-            resolve()
-          }),
-        )
-      }
+      const batch = tasks.slice(start, end)
+      this.pendingResults++
+      this.workers[i].postMessage({ tasks: batch, taskId: this.nextTaskId })
+      this.nextTaskId += batch.length
     }
 
-    await Promise.all(promises)
+    // Wait for all results
+    while (this.pendingResults > 0) {
+      await new Promise((resolve) => setTimeout(resolve, 10))
+    }
+
     return this.results
   }
 
   terminate() {
-    this.workers.forEach((worker) => worker.terminate())
+    for (const worker of this.workers) {
+      worker.terminate()
+    }
   }
 }
