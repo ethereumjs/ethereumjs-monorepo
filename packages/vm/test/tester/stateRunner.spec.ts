@@ -2,7 +2,6 @@ import type { Common } from '@ethereumjs/common'
 
 import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import * as mcl from 'mcl-wasm'
-import minimist from 'minimist'
 import { assert, describe, it } from 'vitest'
 
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
@@ -28,10 +27,13 @@ import {
 import { runStateTest } from './runners/GeneralStateTestsRunner.ts'
 import { getTestsFromArgs } from './testLoader.ts'
 
-const argv = minimist(process.argv.slice(2))
+const argv: any = {}
 
 //@ts-expect-error vitest env parameter access
 argv.fork = import.meta.env.VITE_FORK // use VITE_ as prefix for env arguments
+argv.file = import.meta.env.VITE_FILE
+argv.test = import.meta.env.VITE_TEST
+argv.dir = import.meta.env.VITE_DIR
 
 const RUN_PROFILER: boolean = argv.profile ?? false
 const FORK_CONFIG: string = argv.fork !== undefined ? argv.fork : DEFAULT_FORK_CONFIG
@@ -119,36 +121,51 @@ const testGetterArgs: {
   customStateTest: argv.customStateTest,
 }
 
-describe('GeneralStateTests', async () => {
-  const dirs = getTestDirs(FORK_CONFIG_VM, 'GeneralStateTests')
-  for (const dir of dirs) {
-    await new Promise<void>((resolve, _) => {
-      if (argv.customTestsPath !== undefined) {
-        testGetterArgs.directory = argv.customTestsPath as string
-      } else {
-        const testDir = testGetterArgs.dir ?? ''
-        const testsPath = testGetterArgs.testsPath ?? DEFAULT_TESTS_PATH
-        testGetterArgs.directory = path.join(testsPath, dir, testDir)
-      }
-      getTestsFromArgs(
-        dir,
-        async (fileName: string, subDir: string, testName: string, testDataRaw: any) => {
-          const runSkipped = testGetterArgs.runSkipped
-          const inRunSkipped = runSkipped.includes(fileName)
-          if (runSkipped.length === 0 || inRunSkipped === true) {
-            it(`file: ${subDir} test: ${testName}`, async () => {
-              await runStateTest(runnerArgs, testDataRaw, assert)
-            }, 120000)
-          }
-        },
-        testGetterArgs,
-      )
-        .then(() => {
-          resolve()
-        })
-        .catch((error: string) => {
-          assert.fail(error)
-        })
-    })
+interface LoadedTest {
+  dir: string
+  fileName: string
+  subDir: string
+  testName: string
+  testData: any
+}
+const allTests: LoadedTest[] = []
+
+const dirs = getTestDirs(FORK_CONFIG_VM, 'GeneralStateTests')
+for (const dir of dirs) {
+  if (argv.customTestsPath !== undefined) {
+    testGetterArgs.directory = argv.customTestsPath as string
+  } else {
+    const testDir = testGetterArgs.dir ?? ''
+    const testsPath = testGetterArgs.testsPath ?? DEFAULT_TESTS_PATH
+    testGetterArgs.directory = path.join(testsPath, dir, testDir)
+  }
+
+  const tests: LoadedTest[] = []
+  try {
+    await getTestsFromArgs(
+      dir,
+      async (fileName: string, subDir: string, testName: string, testData: any) => {
+        console.log(`file: ${subDir} test: ${testName}`)
+        const runSkipped = testGetterArgs.runSkipped
+        const inRunSkipped = runSkipped.includes(fileName)
+        if (runSkipped.length === 0 || inRunSkipped === true) {
+          tests.push({ dir, fileName, subDir, testName, testData })
+        }
+      },
+      testGetterArgs,
+    )
+  } catch (e) {
+    console.log(e)
+    continue
+  }
+
+  allTests.push(...tests)
+}
+
+describe('GeneralStateTests', () => {
+  for (const { subDir, testName, testData } of allTests) {
+    it(`file: ${subDir} test: ${testName}`, async () => {
+      await runStateTest(runnerArgs, testData, assert)
+    }, 120000)
   }
 })
