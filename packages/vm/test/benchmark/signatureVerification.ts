@@ -10,7 +10,7 @@ import { SignatureWorkerPool } from '../../src/worker/signatureWorkerPool.ts'
 
 async function runBenchmark() {
   // Create 10 test transactions
-  const transactions = Array.from({ length: 1000 }, (_, i) => {
+  const transactions = Array.from({ length: 2000 }, (_, i) => {
     return new LegacyTx({
       nonce: i,
       gasPrice: 1000000000n,

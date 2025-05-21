@@ -20,8 +20,8 @@ export class SignatureWorkerPool {
 
   constructor(numWorkers: number = 4) {
     const workerCode = `
-            const { parentPort } = require('worker_threads')
-            const { ecrecover } = require('@ethereumjs/util')
+            import { parentPort } from 'worker_threads'
+            import { ecrecover } from '@ethereumjs/util'
 
             parentPort.on('message', (data) => {
                 const { tasks, taskId } = data
