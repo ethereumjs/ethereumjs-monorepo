@@ -374,7 +374,7 @@ export class Config {
   public static readonly MINPEERS_DEFAULT = 1
   public static readonly MAXPEERS_DEFAULT = 25
   public static readonly DNSADDR_DEFAULT = '8.8.8.8'
-  public static readonly RPC_ETH_MAXPAYLOAD_DEFAULT = '5mb'
+  public static readonly RPC_ETH_MAXPAYLOAD_DEFAULT = '11mb'
   public static readonly RPC_ENGINE_MAXPAYLOAD_DEFAULT = '15mb'
   public static readonly EXECUTION = true
   public static readonly NUM_BLOCKS_PER_ITERATION = 100
