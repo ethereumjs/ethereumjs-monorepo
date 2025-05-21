@@ -116,7 +116,8 @@ jobs:
           fail-on-cache-miss: true
 
       - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM') == false
-        run: npm run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
+        # - run: npm run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
+        run: VITE_FORK=${{ matrix.fork }} npx vitest run test/tester/stateRunner.spec.ts
 
       - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM')
         run: npm run test:buildIntegrity
