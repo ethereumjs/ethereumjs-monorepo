@@ -1,96 +1,73 @@
+[**@ethereumjs/devp2p**](../README.md)
+
+***
+
 [@ethereumjs/devp2p](../README.md) / RLPxOptions
 
 # Interface: RLPxOptions
 
-## Table of contents
-
-### Properties
-
-- [capabilities](RLPxOptions.md#capabilities)
-- [clientId](RLPxOptions.md#clientid)
-- [common](RLPxOptions.md#common)
-- [dpt](RLPxOptions.md#dpt)
-- [listenPort](RLPxOptions.md#listenport)
-- [maxPeers](RLPxOptions.md#maxpeers)
-- [remoteClientIdFilter](RLPxOptions.md#remoteclientidfilter)
-- [timeout](RLPxOptions.md#timeout)
+Defined in: [packages/devp2p/src/types.ts:293](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L293)
 
 ## Properties
 
 ### capabilities
 
-• **capabilities**: [`Capabilities`](Capabilities.md)[]
+> **capabilities**: [`Capabilities`](Capabilities.md)[]
 
-#### Defined in
+Defined in: [packages/devp2p/src/types.ts:301](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L301)
 
-[packages/devp2p/src/types.ts:207](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L207)
+***
 
-___
+### clientId?
 
-### clientId
+> `optional` **clientId**: `Uint8Array`\<`ArrayBufferLike`\>
 
-• `Optional` **clientId**: `Uint8Array`
+Defined in: [packages/devp2p/src/types.ts:294](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L294)
 
-#### Defined in
-
-[packages/devp2p/src/types.ts:200](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L200)
-
-___
+***
 
 ### common
 
-• **common**: `Common`
+> **common**: `Common`
 
-#### Defined in
+Defined in: [packages/devp2p/src/types.ts:302](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L302)
 
-[packages/devp2p/src/types.ts:208](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L208)
+***
 
-___
+### dpt?
 
-### dpt
+> `optional` **dpt**: `null` \| [`DPT`](../classes/DPT.md)
 
-• `Optional` **dpt**: ``null`` \| [`DPT`](../classes/DPT.md)
+Defined in: [packages/devp2p/src/types.ts:297](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L297)
 
-#### Defined in
+***
 
-[packages/devp2p/src/types.ts:203](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L203)
+### listenPort?
 
-___
+> `optional` **listenPort**: `null` \| `number`
 
-### listenPort
+Defined in: [packages/devp2p/src/types.ts:303](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L303)
 
-• `Optional` **listenPort**: ``null`` \| `number`
+***
 
-#### Defined in
+### maxPeers?
 
-[packages/devp2p/src/types.ts:209](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L209)
+> `optional` **maxPeers**: `number`
 
-___
+Defined in: [packages/devp2p/src/types.ts:299](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L299)
 
-### maxPeers
+***
 
-• `Optional` **maxPeers**: `number`
+### remoteClientIdFilter?
 
-#### Defined in
+> `optional` **remoteClientIdFilter**: `string`[]
 
-[packages/devp2p/src/types.ts:205](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L205)
+Defined in: [packages/devp2p/src/types.ts:300](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L300)
 
-___
+***
 
-### remoteClientIdFilter
+### timeout?
 
-• `Optional` **remoteClientIdFilter**: `string`[]
+> `optional` **timeout**: `number`
 
-#### Defined in
-
-[packages/devp2p/src/types.ts:206](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L206)
-
-___
-
-### timeout
-
-• `Optional` **timeout**: `number`
-
-#### Defined in
-
-[packages/devp2p/src/types.ts:202](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L202)
+Defined in: [packages/devp2p/src/types.ts:296](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L296)

@@ -102,10 +102,10 @@ describe('EIP1559 tests', () => {
 
     let miner = await vm.stateManager.getAccount(coinbase)
 
-    assert.equal(miner!.balance, expectedMinerBalance, 'miner balance correct')
+    assert.strictEqual(miner!.balance, expectedMinerBalance, 'miner balance correct')
     account = await vm.stateManager.getAccount(sender)
-    assert.equal(account!.balance, expectedAccountBalance, 'account balance correct')
-    assert.equal(results.amountSpent, expectedCost, 'reported cost correct')
+    assert.strictEqual(account!.balance, expectedAccountBalance, 'account balance correct')
+    assert.strictEqual(results.amountSpent, expectedCost, 'reported cost correct')
 
     const tx2 = new AccessList2930Tx(
       {
@@ -130,10 +130,10 @@ describe('EIP1559 tests', () => {
 
     miner = await vm.stateManager.getAccount(coinbase)
 
-    assert.equal(miner!.balance, expectedMinerBalance, 'miner balance correct')
+    assert.strictEqual(miner!.balance, expectedMinerBalance, 'miner balance correct')
     account = await vm.stateManager.getAccount(sender)
-    assert.equal(account!.balance, expectedAccountBalance, 'account balance correct')
-    assert.equal(results2.amountSpent, expectedCost, 'reported cost correct')
+    assert.strictEqual(account!.balance, expectedAccountBalance, 'account balance correct')
+    assert.strictEqual(results2.amountSpent, expectedCost, 'reported cost correct')
 
     const tx3 = new LegacyTx(
       {
@@ -158,10 +158,10 @@ describe('EIP1559 tests', () => {
 
     miner = await vm.stateManager.getAccount(coinbase)
 
-    assert.equal(miner!.balance, expectedMinerBalance, 'miner balance correct')
+    assert.strictEqual(miner!.balance, expectedMinerBalance, 'miner balance correct')
     account = await vm.stateManager.getAccount(sender)
-    assert.equal(account!.balance, expectedAccountBalance, 'account balance correct')
-    assert.equal(results3.amountSpent, expectedCost, 'reported cost correct')
+    assert.strictEqual(account!.balance, expectedAccountBalance, 'account balance correct')
+    assert.strictEqual(results3.amountSpent, expectedCost, 'reported cost correct')
   })
 
   it('gasPrice uses the effective gas price', async () => {

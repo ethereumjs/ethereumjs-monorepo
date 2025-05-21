@@ -20,28 +20,28 @@ describe('simple merkle proofs generation and verification', () => {
 
     let proof = await createMerkleProof(trie, utf8ToBytes('key2bb'))
     let val = await verifyMerkleProof(utf8ToBytes('key2bb'), proof)
-    assert.equal(bytesToUtf8(val!), 'aVal2')
+    assert.strictEqual(bytesToUtf8(val!), 'aVal2')
 
     proof = await createMerkleProof(trie, utf8ToBytes('key1aa'))
     val = await verifyMerkleProof(utf8ToBytes('key1aa'), proof)
-    assert.equal(bytesToUtf8(val!), '0123456789012345678901234567890123456789xx')
+    assert.strictEqual(bytesToUtf8(val!), '0123456789012345678901234567890123456789xx')
 
     proof = await createMerkleProof(trie, utf8ToBytes('key2bb'))
     val = await verifyMerkleProof(utf8ToBytes('key2'), proof)
     // In this case, the proof _happens_ to contain enough nodes to prove `key2` because
     // traversing into `key22` would touch all the same nodes as traversing into `key2`
-    assert.equal(val, null, 'Expected value at a random key to be null')
+    assert.strictEqual(val, null, 'Expected value at a random key to be null')
 
     let myKey = utf8ToBytes('anyRandomKey')
     proof = await createMerkleProof(trie, myKey)
     val = await verifyMerkleProof(myKey, proof)
-    assert.equal(val, null, 'Expected value to be null')
+    assert.strictEqual(val, null, 'Expected value to be null')
 
     myKey = utf8ToBytes('anotherGarbageKey') // should generate a valid proof of null
     proof = await createMerkleProof(trie, myKey)
     proof.push(utf8ToBytes('123456')) // extra nodes are just ignored
     val = await verifyMerkleProof(myKey, proof)
-    assert.equal(val, null, 'Expected value to be null')
+    assert.strictEqual(val, null, 'Expected value to be null')
 
     await trie.put(utf8ToBytes('another'), utf8ToBytes('3498h4riuhgwe')) // cspell:disable-line
 
@@ -52,7 +52,7 @@ describe('simple merkle proofs generation and verification', () => {
       await verifyMerkleProof(utf8ToBytes('key1aa'), proof)
       assert.fail('expected error: Invalid proof provided')
     } catch (e: any) {
-      assert.equal(e.message, 'Invalid proof provided')
+      assert.strictEqual(e.message, 'Invalid proof provided')
     }
 
     // we can also corrupt a valid proof
@@ -62,7 +62,7 @@ describe('simple merkle proofs generation and verification', () => {
       await verifyMerkleProof(utf8ToBytes('key2bb'), proof)
       assert.fail('expected error: Invalid proof provided')
     } catch (e: any) {
-      assert.equal(e.message, 'Invalid proof provided')
+      assert.strictEqual(e.message, 'Invalid proof provided')
     }
 
     // test an invalid exclusion proof by creating
@@ -70,14 +70,14 @@ describe('simple merkle proofs generation and verification', () => {
     myKey = utf8ToBytes('anyRandomKey')
     proof = await createMerkleProof(trie, myKey)
     val = await verifyMerkleProof(myKey, proof)
-    assert.equal(val, null, 'Expected value to be null')
+    assert.strictEqual(val, null, 'Expected value to be null')
     // now make the key non-null so the exclusion proof becomes invalid
     await trie.put(myKey, utf8ToBytes('thisIsaValue'))
     try {
       await createMPTFromProof(proof, { root: trie.root() })
       assert.fail(`expected error: 'The provided proof does not have the expected trie root'`)
     } catch (e: any) {
-      assert.equal(e.message, 'The provided proof does not have the expected trie root')
+      assert.strictEqual(e.message, 'The provided proof does not have the expected trie root')
     }
   })
 
@@ -88,7 +88,7 @@ describe('simple merkle proofs generation and verification', () => {
 
     const proof = await createMerkleProof(trie, utf8ToBytes('key1aa'))
     const val = await verifyMerkleProof(utf8ToBytes('key1aa'), proof)
-    assert.equal(bytesToUtf8(val!), '0123456789012345678901234567890123456789xx')
+    assert.strictEqual(bytesToUtf8(val!), '0123456789012345678901234567890123456789xx')
   })
 
   it('create a merkle proof and verify it with a single short key', async () => {
@@ -98,7 +98,7 @@ describe('simple merkle proofs generation and verification', () => {
 
     const proof = await createMerkleProof(trie, utf8ToBytes('key1aa'))
     const val = await verifyMerkleProof(utf8ToBytes('key1aa'), proof)
-    assert.equal(bytesToUtf8(val!), '01234')
+    assert.strictEqual(bytesToUtf8(val!), '01234')
   })
 
   it('create a merkle proof and verify it whit keys in the middle', async () => {
@@ -119,15 +119,15 @@ describe('simple merkle proofs generation and verification', () => {
 
     let proof = await createMerkleProof(trie, utf8ToBytes('key1'))
     let val = await verifyMerkleProof(utf8ToBytes('key1'), proof)
-    assert.equal(bytesToUtf8(val!), '0123456789012345678901234567890123456789Very_Long')
+    assert.strictEqual(bytesToUtf8(val!), '0123456789012345678901234567890123456789Very_Long')
 
     proof = await createMerkleProof(trie, utf8ToBytes('key2'))
     val = await verifyMerkleProof(utf8ToBytes('key2'), proof)
-    assert.equal(bytesToUtf8(val!), 'short')
+    assert.strictEqual(bytesToUtf8(val!), 'short')
 
     proof = await createMerkleProof(trie, utf8ToBytes('key3'))
     val = await verifyMerkleProof(utf8ToBytes('key3'), proof)
-    assert.equal(bytesToUtf8(val!), '1234567890123456789012345678901')
+    assert.strictEqual(bytesToUtf8(val!), '1234567890123456789012345678901')
   })
 
   it('should succeed with a simple embedded extension-branch', async () => {
@@ -139,15 +139,15 @@ describe('simple merkle proofs generation and verification', () => {
 
     let proof = await createMerkleProof(trie, utf8ToBytes('a'))
     let val = await verifyMerkleProof(utf8ToBytes('a'), proof)
-    assert.equal(bytesToUtf8(val!), 'a')
+    assert.strictEqual(bytesToUtf8(val!), 'a')
 
     proof = await createMerkleProof(trie, utf8ToBytes('b'))
     val = await verifyMerkleProof(utf8ToBytes('b'), proof)
-    assert.equal(bytesToUtf8(val!), 'b')
+    assert.strictEqual(bytesToUtf8(val!), 'b')
 
     proof = await createMerkleProof(trie, utf8ToBytes('c'))
     val = await verifyMerkleProof(utf8ToBytes('c'), proof)
-    assert.equal(bytesToUtf8(val!), 'c')
+    assert.strictEqual(bytesToUtf8(val!), 'c')
   })
 
   it('creates and updates tries from proof', async () => {
@@ -181,7 +181,7 @@ describe('simple merkle proofs generation and verification', () => {
     assert.isTrue(equalsBytes(trie.root(), newTrie.root()), 'root set correctly')
 
     const trieValue3 = await newTrie.get(key3)
-    assert.equal(trieValue3, null, 'cannot reach the third key')
+    assert.strictEqual(trieValue3, null, 'cannot reach the third key')
 
     const safeTrie = new MerklePatriciaTrie({ useKeyHashing: true })
     const safeKey = setLengthLeft(new Uint8Array([100]), 32)
@@ -202,7 +202,7 @@ describe('simple merkle proofs generation and verification', () => {
 
     const newSafeValue = await newTrie.get(safeKey)
 
-    assert.equal(newSafeValue, null, 'cannot reach the trie item unless the root is set')
+    assert.strictEqual(newSafeValue, null, 'cannot reach the trie item unless the root is set')
 
     newTrie.root(safeTrie.root())
 

@@ -1,106 +1,93 @@
+[**@ethereumjs/devp2p**](../README.md)
+
+***
+
 [@ethereumjs/devp2p](../README.md) / MAC
 
 # Class: MAC
 
-## Table of contents
-
-### Constructors
-
-- [constructor](MAC.md#constructor)
-
-### Methods
-
-- [digest](MAC.md#digest)
-- [update](MAC.md#update)
-- [updateBody](MAC.md#updatebody)
-- [updateHeader](MAC.md#updateheader)
+Defined in: [packages/devp2p/src/rlpx/mac.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/mac.ts#L8)
 
 ## Constructors
 
-### constructor
+### Constructor
 
-• **new MAC**(`secret`)
+> **new MAC**(`secret`): `MAC`
+
+Defined in: [packages/devp2p/src/rlpx/mac.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/mac.ts#L11)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `secret` | `Uint8Array` |
-
-#### Defined in
-
-[packages/devp2p/src/rlpx/mac.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/mac.ts#L11)
-
-## Methods
-
-### digest
-
-▸ **digest**(): `Uint8Array`
-
-#### Returns
+##### secret
 
 `Uint8Array`
 
-#### Defined in
+#### Returns
 
-[packages/devp2p/src/rlpx/mac.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/mac.ts#L34)
+`MAC`
 
-___
+## Methods
 
-### update
+### digest()
 
-▸ **update**(`data`): `void`
+> **digest**(): `Uint8Array`\<`ArrayBuffer`\>
+
+Defined in: [packages/devp2p/src/rlpx/mac.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/mac.ts#L34)
+
+#### Returns
+
+`Uint8Array`\<`ArrayBuffer`\>
+
+***
+
+### update()
+
+> **update**(`data`): `void`
+
+Defined in: [packages/devp2p/src/rlpx/mac.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/mac.ts#L16)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `data` | `string` \| `Uint8Array` |
+##### data
+
+`string` | `Uint8Array`\<`ArrayBufferLike`\>
 
 #### Returns
 
 `void`
 
-#### Defined in
+***
 
-[packages/devp2p/src/rlpx/mac.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/mac.ts#L16)
+### updateBody()
 
-___
+> **updateBody**(`data`): `void`
 
-### updateBody
-
-▸ **updateBody**(`data`): `void`
+Defined in: [packages/devp2p/src/rlpx/mac.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/mac.ts#L26)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `data` | `string` \| `Uint8Array` |
+##### data
+
+`string` | `Uint8Array`\<`ArrayBufferLike`\>
 
 #### Returns
 
 `void`
 
-#### Defined in
+***
 
-[packages/devp2p/src/rlpx/mac.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/mac.ts#L26)
+### updateHeader()
 
-___
+> **updateHeader**(`data`): `void`
 
-### updateHeader
-
-▸ **updateHeader**(`data`): `void`
+Defined in: [packages/devp2p/src/rlpx/mac.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/mac.ts#L20)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `data` | `string` \| `Uint8Array` |
+##### data
+
+`string` | `Uint8Array`\<`ArrayBufferLike`\>
 
 #### Returns
 
 `void`
-
-#### Defined in
-
-[packages/devp2p/src/rlpx/mac.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/mac.ts#L20)

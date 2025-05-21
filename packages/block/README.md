@@ -1,4 +1,4 @@
-# @ethereumjs/block
+# @ethereumjs/block `v10`
 
 [![NPM Package][block-npm-badge]][block-npm-link]
 [![GitHub Issues][block-issues-badge]][block-issues-link]
@@ -9,6 +9,26 @@
 | Implements schema and functions related to Ethereum blocks. |
 | ----------------------------------------------------------- |
 
+- 🦄 All block features till **Pectra**
+- 🌴 Tree-shakeable API
+- 👷🏼 Controlled dependency set (4 external + `@Noble` crypto)
+- 🔮 `EIP-4844` Shard Blob Txs
+- 💸 `EIP-4895` Beacon Chain Withdrawals
+- 📨 `EIP-7685` Consensus Layer Requests
+- 🛵 324KB bundle size (81KB gzipped)
+- 🏄🏾‍♂️ WASM-free default + Fully browser ready
+
+## Table of Contents
+
+- [Installation](#installation)
+- [Getting Started](#getting-started)
+- [EIP Integrations](#eip-integrations)
+- [Consensus Types](#consensus-types)
+- [Browser](#browser)
+- [API](#api)
+- [Testing](#testing)
+- [EthereumJS](#ethereumjs)
+- [License](#license)
 
 ## Installation
 
@@ -20,9 +40,9 @@ npm install @ethereumjs/block
 
 **Note:** If you want to work with `EIP-4844` related functionality, you will have additional initialization steps for the **KZG setup**, see related section below.
 
-## Usage
+## Getting Started
 
-### Introduction
+### Instantiation
 
 There are several standalone functions to instantiate a `Block`:
 
@@ -82,7 +102,9 @@ try {
 
 This library by default uses JavaScript implementations for the basic standard crypto primitives like hashing or signature verification (for included txs). See `@ethereumjs/common` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for instructions on how to replace with e.g. a more performant WASM implementation by using a shared `common` instance.
 
-### EIP-1559 Blocks
+## EIP Integrations
+
+### Blocks with an EIP-1559 Fee Market
 
 By default (since `Hardfork.London`) blocks created with this library are [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) compatible.
 
@@ -141,7 +163,7 @@ try {
 }
 ```
 
-### EIP-4895 Beacon Chain Withdrawals Blocks
+### Blocks with EIP-4895 Beacon Chain Withdrawals
 
 Starting with the `v4.1.0` release there is support for [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) beacon chain withdrawals (`Hardfork.Shanghai` or higher). To create a block containing system-level withdrawals, the `withdrawals` data option together with a matching `withdrawalsRoot` can be used:
 
@@ -182,7 +204,7 @@ console.log(`Block with ${block.withdrawals!.length} withdrawal(s) created`)
 
 Validation of the withdrawals trie can be manually triggered with the newly introduced async `Block.withdrawalsTrieIsValid()` method.
 
-### EIP-4844 Shard Blob Transaction Blocks
+### Blocks with EIP-4844 Shard Blob Transactions
 
 This library supports the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) (`Hardfork.Cancun` or higher), see the following example:
 
@@ -389,7 +411,7 @@ To avoid bloating this repository with [ethereum/tests](https://github.com/ether
 
 ## EthereumJS
 
-See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices. If you want to join for work or carry out improvements on the libraries, please review our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html) first.
+The `EthereumJS` GitHub organization and its repositories are managed by the Ethereum Foundation JavaScript team, see our [website](https://ethereumjs.github.io/) for a team introduction. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
 
 ## License
 

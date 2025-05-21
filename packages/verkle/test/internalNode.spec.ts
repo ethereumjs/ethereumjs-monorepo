@@ -16,11 +16,15 @@ describe('verkle node - internal', () => {
     const node = new InternalVerkleNode({ commitment, verkleCrypto: verkle })
 
     assert.isTrue(isInternalVerkleNode(node), 'typeguard should return true')
-    assert.equal(node.type, VerkleNodeType.Internal, 'type should be set')
+    assert.strictEqual(node.type, VerkleNodeType.Internal, 'type should be set')
     assert.isTrue(equalsBytes(node.commitment, commitment), 'commitment should be set')
 
     // Children nodes should all default to null.
-    assert.equal(node.children.length, NODE_WIDTH, 'number of children should equal verkle width')
+    assert.strictEqual(
+      node.children.length,
+      NODE_WIDTH,
+      'number of children should equal verkle width',
+    )
     assert.isTrue(
       node.children.every((child) => child === null),
       'every children should be null',
@@ -30,7 +34,7 @@ describe('verkle node - internal', () => {
   it('create method should create an internal node', async () => {
     const node = InternalVerkleNode.create(verkle)
 
-    assert.equal(node.type, VerkleNodeType.Internal, 'type should be set')
+    assert.strictEqual(node.type, VerkleNodeType.Internal, 'type should be set')
     assert.deepEqual(
       node.commitment,
       verkle.zeroCommitment,
@@ -38,7 +42,11 @@ describe('verkle node - internal', () => {
     )
 
     // Children nodes should all default to null.
-    assert.equal(node.children.length, NODE_WIDTH, 'number of children should equal verkle width')
+    assert.strictEqual(
+      node.children.length,
+      NODE_WIDTH,
+      'number of children should equal verkle width',
+    )
     assert.isTrue(
       node.children.every((child) => child === null),
       'every children should be null',
@@ -71,6 +79,6 @@ describe('verkle node - internal', () => {
     })
     const serialized = node.serialize()
     const decoded = decodeVerkleNode(serialized, verkle)
-    assert.equal((decoded as InternalVerkleNode).children[0], null)
+    assert.strictEqual((decoded as InternalVerkleNode).children[0], null)
   })
 })

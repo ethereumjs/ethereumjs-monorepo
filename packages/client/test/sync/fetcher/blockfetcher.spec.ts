@@ -32,7 +32,7 @@ describe('[BlockFetcher]', async () => {
     fetcher.next = () => false
     assert.isFalse(fetcher['running'], 'not started')
     void fetcher.fetch()
-    assert.equal(fetcher['in'].length, 2, 'added 2 tasks')
+    assert.strictEqual(fetcher['in'].length, 2, 'added 2 tasks')
     await wait(100)
     assert.isTrue(fetcher['running'], 'started')
     fetcher.destroy()
@@ -53,7 +53,7 @@ describe('[BlockFetcher]', async () => {
       timeout: 5,
     })
     void fetcher.fetch()
-    assert.equal(fetcher['in'].length, 2, 'added 2 tasks')
+    assert.strictEqual(fetcher['in'].length, 2, 'added 2 tasks')
     await wait(100)
 
     let blockNumberList = [BigInt(11), BigInt(12)]
@@ -61,14 +61,14 @@ describe('[BlockFetcher]', async () => {
     let max = BigInt(12)
     fetcher.enqueueByNumberList(blockNumberList, min, max)
 
-    assert.equal(fetcher['in'].length, 3, '1 new task for two subsequent block numbers')
+    assert.strictEqual(fetcher['in'].length, 3, '1 new task for two subsequent block numbers')
 
     blockNumberList = [BigInt(13), BigInt(15)]
     min = BigInt(13)
     max = BigInt(15)
     fetcher.enqueueByNumberList(blockNumberList, min, max)
-    assert.equal(fetcher['in'].length, 3, 'no new task added only the height changed')
-    assert.equal(
+    assert.strictEqual(fetcher['in'].length, 3, 'no new task added only the height changed')
+    assert.strictEqual(
       fetcher.first + fetcher.count - BigInt(1) === BigInt(15),
       true,
       'height should now be 15',
@@ -80,7 +80,7 @@ describe('[BlockFetcher]', async () => {
     min = BigInt(50)
     max = BigInt(51)
     fetcher.enqueueByNumberList(blockNumberList, min, max)
-    assert.equal(
+    assert.strictEqual(
       fetcher['in'].length,
       11,
       '10 new tasks to catch up to head (1-49, 5 per request), 1 new task for subsequent block numbers (50-51)',
@@ -125,13 +125,13 @@ describe('[BlockFetcher]', async () => {
     fetcher.enqueueTask(task)
     const job = fetcher['in'].peek()
     let results = fetcher.process(job as any, blocks)
-    assert.equal(fetcher['in'].length, 1, 'Fetcher should still have same job')
-    assert.equal(job?.partialResult?.length, 2, 'Should have two partial results')
-    assert.equal(results, undefined, 'Process should not return full results yet')
+    assert.strictEqual(fetcher['in'].length, 1, 'Fetcher should still have same job')
+    assert.strictEqual(job?.partialResult?.length, 2, 'Should have two partial results')
+    assert.strictEqual(results, undefined, 'Process should not return full results yet')
 
     const remainingBlocks: any = [{ header: { number: 3 } }]
     results = fetcher.process(job as any, remainingBlocks)
-    assert.equal(results?.length, 3, 'Should return full results')
+    assert.strictEqual(results?.length, 3, 'Should return full results')
   })
 
   it('should find a fetchable peer', async () => {
@@ -148,7 +148,7 @@ describe('[BlockFetcher]', async () => {
       first: BigInt(0),
       count: BigInt(0),
     })
-    assert.equal(fetcher.peer(), 'peer0' as any, 'found peer')
+    assert.strictEqual(fetcher.peer(), 'peer0' as any, 'found peer')
   })
 
   it('should request correctly', async () => {
@@ -228,8 +228,8 @@ describe('[BlockFetcher]', async () => {
     }
     const job = { peer, task }
     const resp = await fetcher.request(job as any)
-    assert.equal(resp.length, 1, 'shanghai block should have been returned')
-    assert.equal(resp[0].withdrawals?.length, 0, 'should have withdrawals array')
+    assert.strictEqual(resp.length, 1, 'shanghai block should have been returned')
+    assert.strictEqual(resp[0].withdrawals?.length, 0, 'should have withdrawals array')
   })
 })
 describe('store()', async () => {
@@ -250,13 +250,17 @@ describe('store()', async () => {
       await fetcher.store([])
       assert.fail('fetcher store should have errored')
     } catch (err: any) {
-      assert.equal(err.message, 'could not find parent header', 'store() threw on invalid block')
+      assert.strictEqual(
+        err.message,
+        'could not find parent header',
+        'store() threw on invalid block',
+      )
       const { destroyFetcher, banPeer } = fetcher.processStoreError(err, {
         first: BigInt(1),
         count: 10,
       })
-      assert.equal(destroyFetcher, false, 'fetcher should not be destroyed on this error')
-      assert.equal(banPeer, true, 'peer should be banned on this error')
+      assert.strictEqual(destroyFetcher, false, 'fetcher should not be destroyed on this error')
+      assert.strictEqual(banPeer, true, 'peer should be banned on this error')
     }
   })
   chain.putBlocks = vi.fn().mockResolvedValueOnce(1)

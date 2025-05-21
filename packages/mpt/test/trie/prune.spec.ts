@@ -16,7 +16,7 @@ describe('Pruned trie tests', () => {
     await trie.put(key, utf8ToBytes('5'))
     await trie.put(key, utf8ToBytes('6'))
 
-    assert.equal((trie['_db'].db as any)._database.size, 6, 'DB size correct')
+    assert.strictEqual((trie['_db'].db as any)._database.size, 6, 'DB size correct')
   })
 
   it('should prune simple trie', async () => {
@@ -29,20 +29,20 @@ describe('Pruned trie tests', () => {
     await trie.put(key, utf8ToBytes('5'))
     await trie.put(key, utf8ToBytes('6'))
 
-    assert.equal((trie['_db'].db as any)._database.size, 1, 'DB size correct')
+    assert.strictEqual((trie['_db'].db as any)._database.size, 1, 'DB size correct')
   })
 
   it('should prune simple trie', async () => {
     const trie = new MerklePatriciaTrie({ useNodePruning: true })
     const key = utf8ToBytes('test')
     await trie.put(key, utf8ToBytes('1'))
-    assert.equal((trie['_db'].db as any)._database.size, 1, 'DB size correct')
+    assert.strictEqual((trie['_db'].db as any)._database.size, 1, 'DB size correct')
 
     await trie.del(key)
-    assert.equal((trie['_db'].db as any)._database.size, 0, 'DB size correct')
+    assert.strictEqual((trie['_db'].db as any)._database.size, 0, 'DB size correct')
 
     await trie.put(key, utf8ToBytes('1'))
-    assert.equal((trie['_db'].db as any)._database.size, 1, 'DB size correct')
+    assert.strictEqual((trie['_db'].db as any)._database.size, 1, 'DB size correct')
   })
 
   it('should prune trie with depth = 2', async () => {
@@ -261,7 +261,7 @@ describe('Pruned trie tests', () => {
       for (const _dbkey of (trie['_db'].db as any)._database.keys()) {
         dbKeys++
       }
-      assert.equal(dbKeys, 1, 'db is empty')
+      assert.strictEqual(dbKeys, 1, 'db is empty')
     }
   })
 })

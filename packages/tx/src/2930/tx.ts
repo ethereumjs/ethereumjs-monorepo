@@ -11,7 +11,7 @@ import * as EIP2718 from '../capabilities/eip2718.ts'
 import * as EIP2930 from '../capabilities/eip2930.ts'
 import * as Legacy from '../capabilities/legacy.ts'
 import { TransactionType, isAccessList } from '../types.ts'
-import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../util/internal.ts'
+import { getBaseJSON, sharedConstructor, valueOverflowCheck } from '../util/internal.ts'
 
 import { createAccessList2930Tx } from './constructors.ts'
 
@@ -105,7 +105,7 @@ export class AccessList2930Tx
 
     this.gasPrice = bytesToBigInt(toBytes(gasPrice))
 
-    valueBoundaryCheck({ gasPrice: this.gasPrice })
+    valueOverflowCheck({ gasPrice: this.gasPrice })
 
     if (this.gasPrice * this.gasLimit > MAX_INTEGER) {
       const msg = Legacy.errorMsg(this, 'gasLimit * gasPrice cannot exceed MAX_INTEGER')

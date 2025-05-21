@@ -1,4 +1,4 @@
-# @ethereumjs/devp2p
+# @ethereumjs/devp2p `v10`
 
 [![NPM Status][devp2p-npm-badge]][devp2p-npm-link]
 [![GitHub Issues][devp2p-issues-badge]][devp2p-issues-link]
@@ -6,15 +6,27 @@
 [![Coverage Status][devp2p-coverage-badge]][devp2p-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-## Introduction
-
 This library bundles different components for lower-level peer-to-peer connection and message exchange:
 
 - Distributed Peer Table (DPT) / v4 Node Discovery / DNS Discovery
 - RLPx Transport Protocol
 - Ethereum Wire Protocol (ETH/68)
 
-## Usage
+## Table of Contents
+
+- [Getting Started](#getting-started)
+- [Examples](#examples)
+- [API](#api)
+- [Distributed Peer Table (DPT) / Node Discovery](#distributed-peer-table-dpt--node-discovery)
+- [RLPx Transport Protocol](#rlpx-transport-protocol)
+- [Ethereum Wire Protocol (ETH)](#ethereum-wire-protocol-eth)
+- [Debugging](#debugging)
+- [Developer](#developer)
+- [General References](#general-references)
+- [EthereumJS](#ethereumjs)
+- [License](#license)
+
+## Getting Started
 
 All components of this library have a public `events` property containing an `EventEmitter` object (using [EventEmitter3](https://github.com/primus/eventemitter3))
 and make heavy use of the Node.js network stack.
@@ -43,7 +55,7 @@ Run an example with:
 DEBUG=ethjs,devp2p:* node -r tsx/register ./examples/peer-communication.cts
 ```
 
-## Docs
+## API
 
 For a complete API reference see the generated [documentation](./docs).
 
@@ -452,7 +464,7 @@ The following is a list of major implementations of the `devp2p` stack in other 
 
 ## EthereumJS
 
-See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices. If you want to join for work or carry out improvements on the libraries, please review our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html) first.
+The `EthereumJS` GitHub organization and its repositories are managed by the Ethereum Foundation JavaScript team, see our [website](https://ethereumjs.github.io/) for a team introduction. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
 
 ## License
 

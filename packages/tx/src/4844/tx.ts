@@ -21,7 +21,7 @@ import {
   getBaseJSON,
   sharedConstructor,
   validateNotArray,
-  valueBoundaryCheck,
+  valueOverflowCheck,
 } from '../util/internal.ts'
 
 import { createBlob4844Tx } from './constructors.ts'
@@ -130,7 +130,7 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
     this.maxFeePerGas = bytesToBigInt(toBytes(maxFeePerGas))
     this.maxPriorityFeePerGas = bytesToBigInt(toBytes(maxPriorityFeePerGas))
 
-    valueBoundaryCheck({
+    valueOverflowCheck({
       maxFeePerGas: this.maxFeePerGas,
       maxPriorityFeePerGas: this.maxPriorityFeePerGas,
     })
@@ -317,7 +317,9 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
   }
 
   /**
-   * @returns the serialized form of a blob transaction in the network wrapper format (used for gossipping mempool transactions over devp2p)
+   * @returns the serialized form of a blob transaction in the network wrapper format
+   * This format is used for gossipping mempool transactions over devp2p or when
+   * submitting a transaction via RPC.
    */
   serializeNetworkWrapper(): Uint8Array {
     if (

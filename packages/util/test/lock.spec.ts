@@ -21,7 +21,7 @@ describe('Lock class', () => {
     void f()
     await wait(1500)
 
-    assert.equal(global, 2)
+    assert.strictEqual(global, 2)
   })
 })
 
@@ -29,7 +29,7 @@ describe('Lock class: acquire', () => {
   it('should return true when permits are available', async () => {
     const lock = new Lock()
     const result = await lock.acquire()
-    assert.equal(result, true, 'should return true')
+    assert.strictEqual(result, true, 'should return true')
   })
 
   it('should return a promise when no permits are available', async () => {
@@ -45,7 +45,7 @@ describe('Lock class: acquire', () => {
   it('should increase the number of permits', () => {
     const lock = new Lock()
     lock.release()
-    assert.equal(lock['permits'], 2, 'should increase permits by 1')
+    assert.strictEqual(lock['permits'], 2, 'should increase permits by 1')
   })
 
   it('should resolve the waiting promise when permits are released', async () => {
@@ -57,6 +57,6 @@ describe('Lock class: acquire', () => {
     }, 100)
 
     const result = await lock.acquire()
-    assert.equal(result, true, 'should resolve waiting promise')
+    assert.strictEqual(result, true, 'should resolve waiting promise')
   })
 })

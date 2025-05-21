@@ -15,7 +15,7 @@ describe('[Common/genesis]', () => {
     const genesisState = parseGethGenesisState(kilnGethGenesis)
     // just check for deposit contract inclusion
     assert.exists(genesisState['0x4242424242424242424242424242424242424242'][1])
-    assert.equal(
+    assert.strictEqual(
       genesisState['0x4242424242424242424242424242424242424242'][1].includes(
         // sample data check
         '0x60806040526004361061003',
@@ -29,7 +29,11 @@ describe('[Common/genesis]', () => {
 describe('[Utils/Parse]', () => {
   it('should parse geth params file', async () => {
     const params = parseGethGenesis(eip4844GethGenesis)
-    assert.equal(params.genesis.nonce, '0x0000000000000042', 'nonce should be correctly formatted')
+    assert.strictEqual(
+      params.genesis.nonce,
+      '0x0000000000000042',
+      'nonce should be correctly formatted',
+    )
   })
 
   it('should throw with invalid Spurious Dragon blocks', async () => {
@@ -41,7 +45,7 @@ describe('[Utils/Parse]', () => {
 
   it('should import poa network params correctly', async () => {
     let params = parseGethGenesis(goerliGethGenesis, 'poa')
-    assert.equal(params.genesis.nonce, '0x0000000000000000', 'nonce is formatted correctly')
+    assert.strictEqual(params.genesis.nonce, '0x0000000000000000', 'nonce is formatted correctly')
     assert.deepEqual(
       params.consensus,
       { type: 'poa', algorithm: 'clique', clique: { period: 15, epoch: 30000 } },
@@ -50,23 +54,27 @@ describe('[Utils/Parse]', () => {
     const poaCopy = Object.assign({}, goerliGethGenesis)
     poaCopy.nonce = '00'
     params = parseGethGenesis(poaCopy, 'poa')
-    assert.equal(
+    assert.strictEqual(
       params.genesis.nonce,
       '0x0000000000000000',
       'non-hex prefixed nonce is formatted correctly',
     )
-    assert.equal(params.hardfork, Hardfork.Istanbul, 'should correctly infer current hardfork')
+    assert.strictEqual(
+      params.hardfork,
+      Hardfork.Istanbul,
+      'should correctly infer current hardfork',
+    )
   })
 
   it('should generate expected hash with london block zero and base fee per gas defined', async () => {
     const params = parseGethGenesis(postMergeGethGenesis, 'post-merge')
-    assert.equal(params.genesis.baseFeePerGas, postMergeGethGenesis.baseFeePerGas)
+    assert.strictEqual(params.genesis.baseFeePerGas, postMergeGethGenesis.baseFeePerGas)
   })
 
   it('should successfully parse genesis file with no extraData', async () => {
     const params = parseGethGenesis({ ...postMergeGethGenesis, extraData: '' }, 'noExtraData')
-    assert.equal(params.genesis.extraData, '0x', 'extraData set to 0x')
-    assert.equal(params.genesis.nonce, '0x0000000000000042', 'nonce parsed correctly')
+    assert.strictEqual(params.genesis.extraData, '0x', 'extraData set to 0x')
+    assert.strictEqual(params.genesis.nonce, '0x0000000000000042', 'nonce parsed correctly')
   })
 
   it('should set merge to block 0 when terminalTotalDifficultyPassed is true', () => {
@@ -74,7 +82,7 @@ describe('[Utils/Parse]', () => {
     Object.assign(mergeAtGenesisData, postMergeGethGenesis)
     mergeAtGenesisData.config.terminalTotalDifficultyPassed = true
     const common = createCommonFromGethGenesis(mergeAtGenesisData, {})
-    assert.equal(common.hardforks().slice(-1)[0].block, 0)
+    assert.strictEqual(common.hardforks().slice(-1)[0].block, 0)
   })
 
   it('should successfully assign mainnet deposit contract address when none provided', async () => {
@@ -84,7 +92,7 @@ describe('[Utils/Parse]', () => {
     const depositContractAddress =
       common['_chainParams'].depositContractAddress ?? Mainnet.depositContractAddress
 
-    assert.equal(
+    assert.strictEqual(
       depositContractAddress,
       Mainnet.depositContractAddress,
       'should assign mainnet deposit contract',
@@ -104,7 +112,7 @@ describe('[Utils/Parse]', () => {
     const depositContractAddress =
       common['_chainParams'].depositContractAddress ?? Mainnet.depositContractAddress
 
-    assert.equal(
+    assert.strictEqual(
       depositContractAddress,
       '0x4242424242424242424242424242424242424242',
       'should parse correct address',
@@ -114,7 +122,7 @@ describe('[Utils/Parse]', () => {
     const genesisJSON = postMergeGethGenesis
     genesisJSON.config.shanghaiTime = Date.now()
     const common = createCommonFromGethGenesis(genesisJSON, {})
-    assert.equal(
+    assert.strictEqual(
       common.hardforks().findIndex((hf) => hf.name === Hardfork.MergeNetsplitBlock),
       12,
     )
@@ -125,11 +133,11 @@ describe('[Utils/Parse]', () => {
     delete genesisJSON.config.terminalTotalDifficultyPassed
     delete genesisJSON.config.mergeForkBlock
     const common = createCommonFromGethGenesis(genesisJSON, {})
-    assert.equal(
+    assert.strictEqual(
       common.hardforks().findIndex((hf) => hf.name === Hardfork.MergeNetsplitBlock),
       -1,
     )
-    assert.equal(
+    assert.strictEqual(
       common.hardforks().findIndex((hf) => hf.name === Hardfork.Paris),
       -1,
     )
@@ -204,9 +212,13 @@ describe('[Utils/Parse]', () => {
       const maxBlobGasPerBlock = common.param('maxBlobGasPerBlock')
       const blobGasPriceUpdateFraction = common.param('blobGasPriceUpdateFraction')
 
-      assert.equal(targetBlobGasPerBlock, testTarget, 'target blob gas should match')
-      assert.equal(maxBlobGasPerBlock, testMax, 'max blob gas should match')
-      assert.equal(blobGasPriceUpdateFraction, testUpdateFraction, 'update fraction should match')
+      assert.strictEqual(targetBlobGasPerBlock, testTarget, 'target blob gas should match')
+      assert.strictEqual(maxBlobGasPerBlock, testMax, 'max blob gas should match')
+      assert.strictEqual(
+        Number(blobGasPriceUpdateFraction),
+        Number(testUpdateFraction),
+        'update fraction should match',
+      )
     }
   })
 

@@ -6,7 +6,7 @@ describe('[Common/EIPs]: Initialization / Chain params', () => {
   it('Correct initialization', () => {
     let eips = [2537, 2929]
     const c = new Common({ chain: Mainnet, eips })
-    assert.equal(c.eips(), eips, 'should initialize with supported EIP')
+    assert.strictEqual(c.eips(), eips, 'should initialize with supported EIP')
 
     eips = [2718, 2929, 2930]
     let f = () => {
@@ -49,7 +49,7 @@ describe('[Common/EIPs]: Initialization / Chain params', () => {
     const c = new Common({ chain: Mainnet })
 
     let msg = 'should return correct value'
-    assert.equal(c.eipBlock(1559), 12965000n, msg)
+    assert.strictEqual(c.eipBlock(1559), 12965000n, msg)
 
     msg = 'should return null for unscheduled eip'
     assert.isNull(c.eipBlock(0), msg)
@@ -65,6 +65,6 @@ describe('[Common/EIPs]: Initialization / Chain params', () => {
     assert.isNull(c.eipTimestamp(0), msg)
 
     msg = 'should return correct value'
-    assert.equal(c.eipTimestamp(3651), BigInt(1681338455), msg)
+    assert.strictEqual(c.eipTimestamp(3651), BigInt(1681338455), msg)
   })
 })

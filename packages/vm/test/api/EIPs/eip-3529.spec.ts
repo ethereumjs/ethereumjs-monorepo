@@ -149,8 +149,8 @@ describe('EIP-3529 tests', () => {
 
       const gasUsed = gasLimit - gasLeft!
       const effectiveGas = gasUsed - gasRefund!
-      assert.equal(effectiveGas, BigInt(testCase.effectiveGas), 'correct effective gas')
-      assert.equal(gasUsed, BigInt(testCase.usedGas), 'correct used gas')
+      assert.strictEqual(effectiveGas, BigInt(testCase.effectiveGas), 'correct effective gas')
+      assert.strictEqual(gasUsed, BigInt(testCase.usedGas), 'correct used gas')
 
       // clear the storage cache, otherwise next test will use current original value
       vm.stateManager.originalStorageCache.clear()
@@ -170,8 +170,12 @@ describe('EIP-3529 tests', () => {
       skipHardForkValidation: true,
     })
 
-    assert.equal(result.execResult.exceptionError, undefined, 'transaction executed successfully')
-    assert.equal(result.gasRefund, BigInt(0), 'gas refund is zero')
+    assert.strictEqual(
+      result.execResult.exceptionError,
+      undefined,
+      'transaction executed successfully',
+    )
+    assert.strictEqual(result.gasRefund, BigInt(0), 'gas refund is zero')
   })
 
   it('refunds are capped at 1/5 of the tx gas used', async () => {

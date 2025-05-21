@@ -1,0 +1,72 @@
+{
+  "name": "@ethereumjs/e2store",
+  "version": "10.0.0",
+  "description": "E2Store support for EthereumJS",
+  "keywords": ["ethereum", "e2store", "e2hs", "era", "era1", "era2", "storage", "snappy"],
+  "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/e2store#readme",
+  "bugs": {
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+e2store%22"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
+  },
+  "license": "MIT",
+  "author": "EthereumJS Team",
+  "contributors": [
+    {
+      "name": "ScottyPoi",
+      "url": "https://github.com/scottypoi"
+    }
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "exports": {
+    ".": {
+      "import": {
+        "typescript": "./src/index.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": "./dist/cjs/index.js"
+    }
+  },
+  "files": ["dist", "src"],
+  "scripts": {
+    "biome": "npx @biomejs/biome check",
+    "biome:fix": "npx @biomejs/biome check --write",
+    "build": "../../config/cli/ts-build.sh",
+    "clean": "../../config/cli/clean-package.sh",
+    "coverage": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.mts",
+    "coverage:istanbul": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.istanbul.mts",
+    "docs:build": "npx typedoc --options typedoc.mjs",
+    "examples": "tsx ../../scripts/examples-runner.ts -- e2store",
+    "examples:build": "npx embedme README.md",
+    "lint": "npm run biome && eslint  --config ./eslint.config.mjs .",
+    "lint:fix": "npm run biome:fix && eslint  --fix --config ./eslint.config.mjs .",
+    "prepublishOnly": "../../config/cli/prepublish.sh",
+    "sc": "npm run spellcheck",
+    "spellcheck": "npm run spellcheck:ts && npm run spellcheck:md",
+    "spellcheck:ts": "npx cspell --gitignore -c ../../config/cspell-ts.json \"./**/*.ts\" --cache --show-suggestions --show-context",
+    "spellcheck:md": "npx cspell --gitignore -c ../../config/cspell-md.json \"**.md\" --cache --show-suggestions --show-context",
+    "test": "npm run test:node",
+    "test:node": "npx vitest run -c ../../config/vitest.config.mts",
+    "tsc": "../../config/cli/ts-compile.sh"
+  },
+  "dependencies": {
+    "@ethereumjs/block": "^10.0.0",
+    "@ethereumjs/blockchain": "^10.0.0",
+    "@ethereumjs/rlp": "^10.0.0",
+    "@ethereumjs/util": "^10.0.0",
+    "level": "^9.0.0",
+    "micro-eth-signer": "^0.14.0",
+    "snappyjs": "^0.7.0"
+  },
+  "devDependencies": {
+    "@types/snappyjs": "^0.7.1"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
