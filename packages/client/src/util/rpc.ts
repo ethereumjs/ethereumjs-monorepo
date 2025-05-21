@@ -33,7 +33,7 @@ type CreateRPCServerListenerOpts = {
   withEngineMiddleware?: WithEngineMiddleware
 }
 type CreateWSServerOpts = CreateRPCServerListenerOpts & { httpServer?: jayson.HttpServer }
-type CreateHTTPServerOpts = CreateRPCServerListenerOpts & { maxPayload: string }
+type CreateHTTPServerOpts = CreateRPCServerListenerOpts & { maxPayload?: string }
 type WithEngineMiddleware = { jwtSecret: Uint8Array; unlessFn?: (req: IncomingMessage) => boolean }
 
 export type MethodConfig = (typeof MethodConfig)[keyof typeof MethodConfig]
