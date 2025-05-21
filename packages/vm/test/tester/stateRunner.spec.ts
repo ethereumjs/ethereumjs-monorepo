@@ -30,6 +30,7 @@ import { getTestsFromArgs } from './testLoader.ts'
 
 const argv = minimist(process.argv.slice(2))
 
+//@ts-expect-error vitest env parameter access
 argv.fork = import.meta.env.VITE_FORK // use VITE_ as prefix for env arguments
 
 const RUN_PROFILER: boolean = argv.profile ?? false

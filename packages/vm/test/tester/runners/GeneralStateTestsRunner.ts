@@ -186,7 +186,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test | Chai.Asse
   if (isTape(t)) {
     t.ok(stateRootsAreEqual, `[ ${timeSpent} ] the state roots should match (${execInfo})`)
   } else {
-    t.isTrue(stateRootsAreEqual, msg)
+    t.strictEqual(stateRootsAreEqual, true, msg)
   }
 
   vm.evm.events!.removeListener('step', stepHandler)
