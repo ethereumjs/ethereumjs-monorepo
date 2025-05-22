@@ -58,44 +58,44 @@ const argv: {
   dist?: boolean
 } = {
   // string flags
-  fork: import.meta.env.VITE_FORK,
-  bls: import.meta.env.VITE_BLS,
-  bn254: import.meta.env.VITE_BN254,
-  stateManager: import.meta.env.VITE_STATE_MANAGER,
-  forkConfig: import.meta.env.VITE_FORK_CONFIG,
-  file: import.meta.env.VITE_FILE,
-  test: import.meta.env.VITE_TEST,
-  dir: import.meta.env.VITE_DIR,
-  excludeDir: import.meta.env.VITE_EXCLUDE_DIR,
-  testsPath: import.meta.env.VITE_TESTS_PATH,
-  customStateTest: import.meta.env.VITE_CUSTOM_STATE_TEST,
-  directory: import.meta.env.VITE_DIRECTORY,
-  skip: import.meta.env.VITE_SKIP,
-  customTestsPath: import.meta.env.VITE_CUSTOM_TESTS_PATH,
+  fork: process.env.VITE_FORK,
+  bls: process.env.VITE_BLS,
+  bn254: process.env.VITE_BN254,
+  stateManager: process.env.VITE_STATE_MANAGER,
+  forkConfig: process.env.VITE_FORK_CONFIG,
+  file: process.env.VITE_FILE,
+  test: process.env.VITE_TEST,
+  dir: process.env.VITE_DIR,
+  excludeDir: process.env.VITE_EXCLUDE_DIR,
+  testsPath: process.env.VITE_TESTS_PATH,
+  customStateTest: process.env.VITE_CUSTOM_STATE_TEST,
+  directory: process.env.VITE_DIRECTORY,
+  skip: process.env.VITE_SKIP,
+  customTestsPath: process.env.VITE_CUSTOM_TESTS_PATH,
 
   // boolean flags
-  jsontrace: import.meta.env.VITE_JSONTRACE === 'true',
-  dist: import.meta.env.VITE_DIST === 'true',
-  debug: import.meta.env.VITE_DEBUG === 'true',
-  profile: import.meta.env.VITE_PROFILE === 'true',
+  jsontrace: process.env.VITE_JSONTRACE === 'true',
+  dist: process.env.VITE_DIST === 'true',
+  debug: process.env.VITE_DEBUG === 'true',
+  profile: process.env.VITE_PROFILE === 'true',
 
   // numeric flags
-  data: import.meta.env.VITE_DATA !== undefined ? Number(import.meta.env.VITE_DATA) : undefined,
-  gas: import.meta.env.VITE_GAS !== undefined ? Number(import.meta.env.VITE_GAS) : undefined,
-  value: import.meta.env.VITE_VALUE !== undefined ? Number(import.meta.env.VITE_VALUE) : undefined,
-  reps: import.meta.env.VITE_REPS !== undefined ? Number(import.meta.env.VITE_REPS) : undefined,
+  data: process.env.VITE_DATA !== undefined ? Number(process.env.VITE_DATA) : undefined,
+  gas: process.env.VITE_GAS !== undefined ? Number(process.env.VITE_GAS) : undefined,
+  value: process.env.VITE_VALUE !== undefined ? Number(process.env.VITE_VALUE) : undefined,
+  reps: process.env.VITE_REPS !== undefined ? Number(process.env.VITE_REPS) : undefined,
   verifyTestAmountAllTests:
-    import.meta.env.VITE_VERIFY_TEST_AMOUNT_ALL_TESTS !== undefined
-      ? Number(import.meta.env.VITE_VERIFY_TEST_AMOUNT_ALL_TESTS)
+    process.env.VITE_VERIFY_TEST_AMOUNT_ALL_TESTS !== undefined
+      ? Number(process.env.VITE_VERIFY_TEST_AMOUNT_ALL_TESTS)
       : undefined,
   expectedTestAmount:
-    import.meta.env.VITE_EXPECTED_TEST_AMOUNT !== undefined
-      ? Number(import.meta.env.VITE_EXPECTED_TEST_AMOUNT)
+    process.env.VITE_EXPECTED_TEST_AMOUNT !== undefined
+      ? Number(process.env.VITE_EXPECTED_TEST_AMOUNT)
       : undefined,
 
   // array flags
-  skipTests: import.meta.env.VITE_SKIP_TESTS,
-  runSkipped: import.meta.env.VITE_RUN_SKIPPED,
+  skipTests: process.env.VITE_SKIP_TESTS,
+  runSkipped: process.env.VITE_RUN_SKIPPED,
 }
 
 const RUN_PROFILER: boolean = argv.profile ?? false
