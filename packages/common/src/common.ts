@@ -308,9 +308,8 @@ export class Common {
    * Internal helper for _buildParamsCache()
    */
   protected _mergeWithParamsCache(params: ParamsConfig) {
-    this._paramsCache = {
-      ...this._paramsCache,
-      ...params,
+    for (const [key, value] of Object.entries(params)) {
+      this._paramsCache[key] = value
     }
   }
 
@@ -319,6 +318,7 @@ export class Common {
    */
   protected _buildParamsCache() {
     this._paramsCache = {}
+
     // Iterate through all hardforks up to hardfork set
     const hardfork = this.hardfork()
     for (const hfChanges of this.HARDFORK_CHANGES) {
@@ -326,16 +326,23 @@ export class Common {
       if ('eips' in hfChanges[1]) {
         const hfEIPs = hfChanges[1].eips ?? []
         for (const eip of hfEIPs) {
-          this._mergeWithParamsCache(this._params[eip] ?? {})
+          if (this._params[eip] !== undefined && this._params[eip] !== null) {
+            this._mergeWithParamsCache(this._params[eip])
+          }
         }
       }
       // Parameter-inlining HF config (e.g. for istanbul or custom blobSchedule)
-      this._mergeWithParamsCache(hfChanges[1].params ?? {})
+      if (hfChanges[1].params !== undefined && hfChanges[1].params !== null) {
+        this._mergeWithParamsCache(hfChanges[1].params)
+      }
       if (hfChanges[0] === hardfork) break
     }
+
     // Iterate through all additionally activated EIPs
     for (const eip of this._eips) {
-      this._mergeWithParamsCache(this._params[eip] ?? {})
+      if (this._params[eip] !== undefined && this._params[eip] !== null) {
+        this._mergeWithParamsCache(this._params[eip])
+      }
     }
   }
 
