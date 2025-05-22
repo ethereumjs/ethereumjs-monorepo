@@ -456,9 +456,6 @@ const transport = await TransportNodeHid.default.open()
 const eth = new Eth.default(transport)
 const common = new Common({ chain: Sepolia })
 
-let tx: LegacyTx | FeeMarket1559Tx
-let unsignedTx: Uint8Array[] | Uint8Array
-let signedTx: typeof tx
 // Signing with the first key of the derivation path
 const bip32Path = "44'/60'/0'/0/0"
 
@@ -485,23 +482,23 @@ const eip1559TxData: FeeMarketEIP1559TxData = {
 
 const run = async () => {
     // Signing a legacy tx
-    tx = createLegacyTx(legacyTxData, { common })
-    unsignedTx = tx.getMessageToSign()
+    const tx1 = createLegacyTx(legacyTxData, { common })
+    const unsignedTx1 = tx1.getMessageToSign()
     // Ledger signTransaction API expects it to be serialized
     // Ledger returns unprefixed hex strings without 0x for v, r, s values
-    let { v, r, s } = await eth.signTransaction(bip32Path, bytesToHex(RLP.encode(unsignedTx)).slice(2), null)
-    let signedTx: LegacyTx | FeeMarket1559Tx = tx.addSignature(BigInt(`0x${v}`), BigInt(`0x${r}`), BigInt(`0x${s}`))
-    let from = signedTx.getSenderAddress().toString()
-    console.log(`signedTx: ${bytesToHex(tx.serialize())}\nfrom: ${from}`)
+    const { v, r, s } = await eth.signTransaction(bip32Path, bytesToHex(RLP.encode(unsignedTx1)).slice(2), null)
+    const signedTx1 = tx1.addSignature(BigInt(`0x${v}`), BigInt(`0x${r}`), BigInt(`0x${s}`))
+    const from = signedTx1.getSenderAddress().toString()
+    console.log(`signedTx: ${bytesToHex(tx1.serialize())}\nfrom: ${from}`)
 
     // Signing a 1559 tx
-    tx = createFeeMarket1559Tx(eip1559TxData, { common })
+    const tx2 = createFeeMarket1559Tx(eip1559TxData, { common })
     // Ledger returns unprefixed hex strings without 0x for v, r, s values
-    unsignedTx = tx.getMessageToSign()
-        ; ({ v, r, s } = await eth.signTransaction(bip32Path, bytesToHex(unsignedTx).slice(2), null))
-    signedTx = tx.addSignature(BigInt(`0x${v}`), BigInt(`0x${r}`), BigInt(`0x${s}`))
-    from = signedTx.getSenderAddress().toString()
-    console.log(`signedTx: ${bytesToHex(tx.serialize())}\nfrom: ${from}`)
+    const unsignedTx2 = tx2.getMessageToSign()
+    const { v2, r2, s2 } = await eth.signTransaction(bip32Path, bytesToHex(unsignedTx2).slice(2), null)
+    const signedTx2 = tx2.addSignature(BigInt(`0x${v2}`), BigInt(`0x${r2}`), BigInt(`0x${s2}`))
+    const from2 = signedTx2.getSenderAddress().toString()
+    console.log(`signedTx: ${bytesToHex(tx2.serialize())}\nfrom: ${from2}`)
 }
 
 run()
