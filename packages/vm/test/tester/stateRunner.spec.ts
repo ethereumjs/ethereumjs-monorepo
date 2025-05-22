@@ -42,8 +42,9 @@ const argv: {
   customStateTest?: string
   directory?: string
   skip?: string
-  skipTests?: string[]
-  runSkipped?: string[]
+  skipTests?: string
+  runSkipped?: string
+  customTestsPath?: string
   data?: number
   gas?: number
   value?: number
@@ -69,6 +70,7 @@ const argv: {
   customStateTest: import.meta.env.VITE_CUSTOM_STATE_TEST,
   directory: import.meta.env.VITE_DIRECTORY,
   skip: import.meta.env.VITE_SKIP,
+  customTestsPath: import.meta.env.VITE_CUSTOM_TESTS_PATH,
 
   // boolean flags
   jsontrace: import.meta.env.VITE_JSONTRACE === 'true',
@@ -91,8 +93,8 @@ const argv: {
       : undefined,
 
   // array flags
-  skipTests: (import.meta.env.VITE_SKIP_TESTS as string)?.split(','),
-  runSkipped: (import.meta.env.VITE_RUN_SKIPPED as string)?.split(','),
+  skipTests: import.meta.env.VITE_SKIP_TESTS,
+  runSkipped: import.meta.env.VITE_RUN_SKIPPED,
 }
 
 const RUN_PROFILER: boolean = argv.profile ?? false
@@ -137,7 +139,7 @@ const runnerArgs: {
   profile: boolean
   bls: EVMBLSInterface
   bn254: EVMBN254Interface
-  stateManager: string
+  stateManager?: string
 } = {
   forkConfigVM: FORK_CONFIG_VM,
   forkConfigTestSuite: FORK_CONFIG_TEST_SUITE,
