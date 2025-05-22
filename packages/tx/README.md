@@ -459,6 +459,7 @@ const common = new Common({ chain: Sepolia })
 let tx: LegacyTx | FeeMarket1559Tx
 let unsignedTx: Uint8Array[] | Uint8Array
 let signedTx: typeof tx
+// Signing with the first key of the derivation path
 const bip32Path = "44'/60'/0'/0/0"
 
 const legacyTxData: LegacyTxData = {
@@ -486,7 +487,8 @@ const run = async () => {
     // Signing a legacy tx
     tx = createLegacyTx(legacyTxData, { common })
     unsignedTx = tx.getMessageToSign()
-    // ledger signTransaction API expects it to be serialized
+    // Ledger signTransaction API expects it to be serialized
+    // Ledger returns unprefixed hex strings without 0x for v, r, s values
     let { v, r, s } = await eth.signTransaction(bip32Path, bytesToHex(RLP.encode(unsignedTx)).slice(2), null)
     let signedTx: LegacyTx | FeeMarket1559Tx = tx.addSignature(BigInt(`0x${v}`), BigInt(`0x${r}`), BigInt(`0x${s}`))
     let from = signedTx.getSenderAddress().toString()
@@ -494,6 +496,7 @@ const run = async () => {
 
     // Signing a 1559 tx
     tx = createFeeMarket1559Tx(eip1559TxData, { common })
+    // Ledger returns unprefixed hex strings without 0x for v, r, s values
     unsignedTx = tx.getMessageToSign()
         ; ({ v, r, s } = await eth.signTransaction(bip32Path, bytesToHex(unsignedTx).slice(2), null))
     signedTx = tx.addSignature(BigInt(`0x${v}`), BigInt(`0x${r}`), BigInt(`0x${s}`))
