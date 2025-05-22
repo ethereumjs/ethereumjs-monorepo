@@ -441,42 +441,64 @@ To sign a tx with a hardware or external wallet use `tx.getMessageToSign()` to r
 
 A legacy transaction will return a Buffer list of the values, and a Typed Transaction ([EIP-2718](https://eips.ethereum.org/EIPS/eip-2718)) will return the serialized output.
 
-Here is an example of signing txs with `@ledgerhq/hw-app-eth` as of `v6.5.0`:
-
+Here is an example of signing txs with `@ledgerhq/hw-app-eth` with `v6.45.4` and `@ledgerhq/hw-transport-node-hid` with `v6.29.5`:
 ```ts
-import { Chain, Common } from '@ethereumjs/common'
-import { LegacyTransaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
+// examples/ledgerSigner.mts
+
+import { Chain, Common, Sepolia } from '@ethereumjs/common'
+import { createLegacyTx, createFeeMarket1559Tx, type LegacyTx, type FeeMarket1559Tx, type LegacyTxData, type FeeMarketEIP1559TxData } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
 import { RLP } from '@ethereumjs/rlp'
 import Eth from '@ledgerhq/hw-app-eth'
+import TransportNodeHid from '@ledgerhq/hw-transport-node-hid'
 
-const eth = new Eth(transport)
-const common = new Common({ chain: Chain.Sepolia })
+const transport = await TransportNodeHid.default.open()
+const eth = new Eth.default(transport)
+const common = new Common({ chain: Sepolia })
 
-let txData: any = { value: 1 }
-let tx: LegacyTransaction | FeeMarketEIP1559Transaction
-let unsignedTx: Uint8Array[] | Uint8Array
-let signedTx: typeof tx
+// Signing with the first key of the derivation path
 const bip32Path = "44'/60'/0'/0/0"
 
-const run = async () => {
-  // Signing a legacy tx
-  tx = LegacyTransaction.fromTxData(txData, { common })
-  tx = tx.getMessageToSign()
-  // ledger signTransaction API expects it to be serialized
-  let { v, r, s } = await eth.signTransaction(bip32Path, RLP.encode(tx))
-  tx.addSignature(v, r, s, true)
-  let from = tx.getSenderAddress().toString()
-  console.log(`signedTx: ${bytesToHex(tx.serialize())}\nfrom: ${from}`)
+const legacyTxData: LegacyTxData = {
+    nonce: '0x0',
+    gasPrice: '0x09184e72a000',
+    gasLimit: '0x2710',
+    to: '0x0000000000000000000000000000000000000000',
+    value: '0x00',
+    data: '0x7f7465737432000000000000000000000000000000000000000000000000000000600057',
+}
 
-  // Signing a 1559 tx
-  txData = { value: 1 }
-  tx = FeeMarketEIP1559Transaction.fromTxData(txData, { common })
-  tx = tx.getMessageToSign()
-  ;({ v, r, s } = await eth.signTransaction(bip32Path, unsignedTx)) // this syntax is: object destructuring - assignment without declaration
-  tx.addSignature(v, r, s)
-  from = tx.getSenderAddress().toString()
-  console.log(`signedTx: ${bytesToHex(tx.serialize())}\nfrom: ${from}`)
+const eip1559TxData: FeeMarketEIP1559TxData = {
+    data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+    gasLimit: '0x02625a00',
+    maxPriorityFeePerGas: '0x01',
+    maxFeePerGas: '0xff',
+    nonce: '0x00',
+    to: '0xcccccccccccccccccccccccccccccccccccccccc',
+    value: '0x0186a0',
+    accessList: [],
+    type: '0x02',
+}
+
+const run = async () => {
+    // Signing a legacy tx
+    const tx1 = createLegacyTx(legacyTxData, { common })
+    const unsignedTx1 = tx1.getMessageToSign()
+    // Ledger signTransaction API expects it to be serialized
+    // Ledger returns unprefixed hex strings without 0x for v, r, s values
+    const { v, r, s } = await eth.signTransaction(bip32Path, bytesToHex(RLP.encode(unsignedTx1)).slice(2), null)
+    const signedTx1 = tx1.addSignature(BigInt(`0x${v}`), BigInt(`0x${r}`), BigInt(`0x${s}`))
+    const from = signedTx1.getSenderAddress().toString()
+    console.log(`signedTx: ${bytesToHex(tx1.serialize())}\nfrom: ${from}`)
+
+    // Signing a 1559 tx
+    const tx2 = createFeeMarket1559Tx(eip1559TxData, { common })
+    // Ledger returns unprefixed hex strings without 0x for v, r, s values
+    const unsignedTx2 = tx2.getMessageToSign()
+    const { v2, r2, s2 } = await eth.signTransaction(bip32Path, bytesToHex(unsignedTx2).slice(2), null)
+    const signedTx2 = tx2.addSignature(BigInt(`0x${v2}`), BigInt(`0x${r2}`), BigInt(`0x${s2}`))
+    const from2 = signedTx2.getSenderAddress().toString()
+    console.log(`signedTx: ${bytesToHex(tx2.serialize())}\nfrom: ${from2}`)
 }
 
 run()
