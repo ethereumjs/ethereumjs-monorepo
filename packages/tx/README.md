@@ -478,9 +478,6 @@ const eip1559TxData: FeeMarketEIP1559TxData = {
     nonce: '0x00',
     to: '0xcccccccccccccccccccccccccccccccccccccccc',
     value: '0x0186a0',
-    v: '0x01',
-    r: '0xafb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9',
-    s: '0x479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64',
     accessList: [],
     type: '0x02',
 }
