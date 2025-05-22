@@ -2,7 +2,7 @@ import type { Common } from '@ethereumjs/common'
 
 import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import * as mcl from 'mcl-wasm'
-import { assert, describe, it } from 'vitest'
+import { assert, afterAll, describe, it } from 'vitest'
 
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
 
@@ -242,7 +242,12 @@ describe('GeneralStateTests', () => {
     }, 120000)
   }
 
-  if (expectedTests !== undefined) {
-    assert.isTrue(testCount >= expectedTests, `expected ${expectedTests} checks, got ${testCount}`)
-  }
+  afterAll(() => {
+    if (expectedTests !== undefined) {
+      assert.isTrue(
+        testCount >= expectedTests,
+        `expected ${expectedTests} checks, got ${testCount}`,
+      )
+    }
+  })
 })
