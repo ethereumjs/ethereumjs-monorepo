@@ -27,16 +27,76 @@ import {
 import { runStateTest } from './runners/GeneralStateTestsRunner.ts'
 import { getTestsFromArgs } from './testLoader.ts'
 
-const argv: any = {}
+// use VITE_ as prefix for env arguments
+const argv: {
+  fork?: string
+  bls?: string
+  bn254?: string
+  stateManager?: string
+  forkConfig?: string
+  file?: string
+  test?: string
+  dir?: string
+  excludeDir?: string
+  testsPath?: string
+  customStateTest?: string
+  directory?: string
+  skip?: string
+  skipTests?: string[]
+  runSkipped?: string[]
+  data?: number
+  gas?: number
+  value?: number
+  reps?: number
+  verifyTestAmountAllTests?: number
+  expectedTestAmount?: number
+  debug?: boolean
+  profile?: boolean
+  jsontrace?: boolean
+  dist?: boolean
+} = {
+  // string flags
+  fork: import.meta.env.VITE_FORK,
+  bls: import.meta.env.VITE_BLS,
+  bn254: import.meta.env.VITE_BN254,
+  stateManager: import.meta.env.VITE_STATE_MANAGER,
+  forkConfig: import.meta.env.VITE_FORK_CONFIG,
+  file: import.meta.env.VITE_FILE,
+  test: import.meta.env.VITE_TEST,
+  dir: import.meta.env.VITE_DIR,
+  excludeDir: import.meta.env.VITE_EXCLUDE_DIR,
+  testsPath: import.meta.env.VITE_TESTS_PATH,
+  customStateTest: import.meta.env.VITE_CUSTOM_STATE_TEST,
+  directory: import.meta.env.VITE_DIRECTORY,
+  skip: import.meta.env.VITE_SKIP,
 
-//@ts-expect-error vitest env parameter access
-argv.fork = import.meta.env.VITE_FORK // use VITE_ as prefix for env arguments
-argv.file = import.meta.env.VITE_FILE
-argv.test = import.meta.env.VITE_TEST
-argv.dir = import.meta.env.VITE_DIR
+  // boolean flags
+  jsontrace: import.meta.env.VITE_JSONTRACE === 'true',
+  dist: import.meta.env.VITE_DIST === 'true',
+  debug: import.meta.env.VITE_DEBUG === 'true',
+  profile: import.meta.env.VITE_PROFILE === 'true',
+
+  // numeric flags
+  data: import.meta.env.VITE_DATA !== undefined ? Number(import.meta.env.VITE_DATA) : undefined,
+  gas: import.meta.env.VITE_GAS !== undefined ? Number(import.meta.env.VITE_GAS) : undefined,
+  value: import.meta.env.VITE_VALUE !== undefined ? Number(import.meta.env.VITE_VALUE) : undefined,
+  reps: import.meta.env.VITE_REPS !== undefined ? Number(import.meta.env.VITE_REPS) : undefined,
+  verifyTestAmountAllTests:
+    import.meta.env.VITE_VERIFY_TEST_AMOUNT_ALL_TESTS !== undefined
+      ? Number(import.meta.env.VITE_VERIFYTESTAMOUNTALLTESTS)
+      : undefined,
+  expectedTestAmount:
+    import.meta.env.VITE_EXPECTED_TEST_AMOUNT !== undefined
+      ? Number(import.meta.env.VITE_EXPECTEDTESTAMOUNT)
+      : undefined,
+
+  // array flags
+  skipTests: (import.meta.env.VITE_SKIP_TESTS as string)?.split(','),
+  runSkipped: (import.meta.env.VITE_RUN_SKIPPED as string)?.split(','),
+}
 
 const RUN_PROFILER: boolean = argv.profile ?? false
-const FORK_CONFIG: string = argv.fork !== undefined ? argv.fork : DEFAULT_FORK_CONFIG
+const FORK_CONFIG: string = argv.fork ?? DEFAULT_FORK_CONFIG
 const FORK_CONFIG_TEST_SUITE = getRequiredForkConfigAlias(FORK_CONFIG)
 
 // Examples: Istanbul -> istanbul, MuirGlacier -> muirGlacier
@@ -129,7 +189,6 @@ interface LoadedTest {
   testData: any
 }
 const allTests: LoadedTest[] = []
-
 const dirs = getTestDirs(FORK_CONFIG_VM, 'GeneralStateTests')
 for (const dir of dirs) {
   if (argv.customTestsPath !== undefined) {
@@ -145,7 +204,6 @@ for (const dir of dirs) {
     await getTestsFromArgs(
       dir,
       async (fileName: string, subDir: string, testName: string, testData: any) => {
-        console.log(`file: ${subDir} test: ${testName}`)
         const runSkipped = testGetterArgs.runSkipped
         const inRunSkipped = runSkipped.includes(fileName)
         if (runSkipped.length === 0 || inRunSkipped === true) {
@@ -155,7 +213,7 @@ for (const dir of dirs) {
       testGetterArgs,
     )
   } catch (e) {
-    console.log(e)
+    console.log(e) // TODO failing to discover LegacyTests paths that are hardcoded in getTestDirs
     continue
   }
 
