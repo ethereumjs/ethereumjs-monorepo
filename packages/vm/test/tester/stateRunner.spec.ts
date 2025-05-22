@@ -225,7 +225,11 @@ for (const dir of dirs) {
 describe('GeneralStateTests', () => {
   for (const { subDir, testName, testData } of allTests) {
     it(`file: ${subDir} test: ${testName}`, async () => {
-      await runStateTest(runnerArgs, testData, assert)
+      try {
+        await runStateTest(runnerArgs, testData, assert)
+      } catch (e: any) {
+        assert.fail(e?.toString())
+      }
     }, 120000)
   }
 })
