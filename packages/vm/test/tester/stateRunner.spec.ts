@@ -20,6 +20,7 @@ import {
   DEFAULT_FORK_CONFIG,
   DEFAULT_TESTS_PATH,
   getCommon,
+  getExpectedTests,
   getRequiredForkConfigAlias,
   getSkipTests,
   getTestDirs,
@@ -85,11 +86,11 @@ const argv: {
   reps: import.meta.env.VITE_REPS !== undefined ? Number(import.meta.env.VITE_REPS) : undefined,
   verifyTestAmountAllTests:
     import.meta.env.VITE_VERIFY_TEST_AMOUNT_ALL_TESTS !== undefined
-      ? Number(import.meta.env.VITE_VERIFYTESTAMOUNTALLTESTS)
+      ? Number(import.meta.env.VITE_VERIFY_TEST_AMOUNT_ALL_TESTS)
       : undefined,
   expectedTestAmount:
     import.meta.env.VITE_EXPECTED_TEST_AMOUNT !== undefined
-      ? Number(import.meta.env.VITE_EXPECTEDTESTAMOUNT)
+      ? Number(import.meta.env.VITE_EXPECTED_TEST_AMOUNT)
       : undefined,
 
   // array flags
@@ -222,14 +223,26 @@ for (const dir of dirs) {
   allTests.push(...tests)
 }
 
+const expectedTests: number | undefined =
+  argv.verifyTestAmountAllTests !== undefined && argv.verifyTestAmountAllTests > 0
+    ? getExpectedTests(FORK_CONFIG_VM, 'GeneralStateTests')
+    : argv.expectedTestAmount !== undefined && argv.expectedTestAmount > 0
+      ? argv.expectedTestAmount
+      : undefined
+let testCount = 0
 describe('GeneralStateTests', () => {
   for (const { subDir, testName, testData } of allTests) {
     it(`file: ${subDir} test: ${testName}`, async () => {
+      testCount++
       try {
         await runStateTest(runnerArgs, testData, assert)
       } catch (e: any) {
         assert.fail(e?.toString())
       }
     }, 120000)
+  }
+
+  if (expectedTests !== undefined) {
+    assert.isTrue(testCount >= expectedTests, `expected ${expectedTests} checks, got ${testCount}`)
   }
 })
