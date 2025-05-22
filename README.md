@@ -16,6 +16,8 @@
 
 ## Introduction
 
+[Back to ToC ⬆](#table-of-contents)
+
 [![Code Coverage][coverage-badge]][coverage-link]
 [![Discord][discord-badge]][discord-link]
 
@@ -28,6 +30,8 @@ Finally, the [EthereumJS Execution Client][client-package] (EthereumJS) has been
 Also to note: on the Ethereum Consensus side, the ChainSafe [Lodestar](https://github.com/ChainSafe/lodestar) repository complements this repository with an Ethereum Consensus Client implementation as well as various protocol implementations (like an SSZ library) developed in the context of Ethereum Consensus layer evolution.
 
 ## Packages Overview
+
+[Back to ToC ⬆](#table-of-contents)
 
 Below you can find a list of the packages included in this repository.
 
@@ -52,6 +56,8 @@ Below you can find a list of the packages included in this repository.
 | [@ethereumjs/wallet][wallet-package]             | [![NPM Package][wallet-npm-badge]][wallet-npm-link]             | [![StateManager Issues][wallet-issues-badge]][wallet-issues-link]             | [![Actions Status][wallet-actions-badge]][wallet-actions-link]             | [![Code Coverage][wallet-coverage-badge]][wallet-coverage-link]             |
 
 ## Getting Started
+
+[Back to ToC ⬆](#table-of-contents)
 
 If you're new to the EthereumJS monorepo, this section will help you get up and running quickly.
 
@@ -84,6 +90,8 @@ See our [Development docs](./DEVELOPER.md) for an overview on things like toolin
 
 ## Branches
 
+[Back to ToC ⬆](#table-of-contents)
+
 ### Overview
 
 The following are our currently relevant main branches for active and former release series:
@@ -103,6 +111,8 @@ Old release cycles up to the VM v7/v8 version were named after the `@ethereumjs/
 To inspect code related to a specific package version, refer to the [tags](https://github.com/ethereumjs/ethereumjs-monorepo/tags).
 
 ## Packages Relationships
+
+[Back to ToC ⬆](#table-of-contents)
 
 ```mermaid
  graph TD
@@ -155,9 +165,13 @@ To update the diagram above edit the README file and open a new PR with the chan
 
 ## EthereumJS
 
+[Back to ToC ⬆](#table-of-contents)
+
 The `EthereumJS` GitHub organization and its repositories are managed by the Ethereum Foundation JavaScript team, see our [website](https://ethereumjs.github.io/) for a team introduction. If you want to join for work or carry out improvements on the libraries see the [developer docs](./DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](./CODE_OF_CONDUCT.md).
 
 ## License
+
+[Back to ToC ⬆](#table-of-contents)
 
 Most packages are [MPL-2.0](<https://tldrlegal.com/license/mozilla-public-license-2.0-(mpl-2)>) licensed, see package folder for the respective license.
 

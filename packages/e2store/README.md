@@ -35,6 +35,8 @@
 
 ## Installation
 
+[Back to ToC ⬆](#table-of-contents)
+
 To obtain the latest version, simply require the project using `npm`:
 
 ```shell
@@ -42,6 +44,8 @@ npm install @ethereumjs/e2store
 ```
 
 ## Usage
+
+[Back to ToC ⬆](#table-of-contents)
 
 All helpers are re-exported from the root level and deep imports are not necessary. So an import can be done like this:
 
@@ -269,6 +273,8 @@ console.log('slotIndex', {
 
 ## Common Use Cases
 
+[Back to ToC ⬆](#table-of-contents)
+
 1. **Historical Data Access**: Use E2HS and Era1 formats to efficiently access historical blockchain data
 2. **Beacon Chain Analysis**: Read and analyze beacon chain states and blocks using Era files
 3. **Data Export**: Export historical data in standardized formats for analysis or archival
@@ -277,9 +283,13 @@ console.log('slotIndex', {
 
 ## EthereumJS
 
+[Back to ToC ⬆](#table-of-contents)
+
 The `EthereumJS` GitHub organization and its repositories are managed by the Ethereum Foundation JavaScript team, see our [website](https://ethereumjs.github.io/) for a team introduction. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
 
 ## License
+
+[Back to ToC ⬆](#table-of-contents)
 
 [MPL-2.0](<https://tldrlegal.com/license/mozilla-public-license-2.0-(mpl-2)>)
 

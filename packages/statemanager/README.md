@@ -35,6 +35,8 @@
 
 ## Installation
 
+[Back to ToC ⬆](#table-of-contents)
+
 To obtain the latest version, simply require the project using `npm`:
 
 ```shell
@@ -42,6 +44,8 @@ npm install @ethereumjs/statemanager
 ```
 
 ## Getting Started
+
+[Back to ToC ⬆](#table-of-contents)
 
 ### Overview
 
@@ -62,6 +66,8 @@ It also includes a checkpoint/revert/commit mechanism to either persist or rever
 This library by default uses JavaScript implementations for the basic standard crypto primitives like hashing for underlying trie keys. See `@ethereumjs/common` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for instructions on how to replace with e.g. a more performant WASM implementation by using a shared `common` instance.
 
 ## `MerkleStateManager`
+
+[Back to ToC ⬆](#table-of-contents)
 
 ### Usage example
 
@@ -171,6 +177,8 @@ void main()
 
 ## `SimpleStateManager`
 
+[Back to ToC ⬆](#table-of-contents)
+
 The `SimpleStateManager` is a dependency-minimized simple state manager implementation. While this state manager implementation lacks the implementations of some non-core functionality as well as proof related logic (e.g. `setStateRoot()`) it is suitable for a lot use cases where things like sophisticated caching or state root handling is not needed.
 
 This state manager can be instantiated and used as follows:
@@ -195,6 +203,8 @@ void main()
 ```
 
 ## `RPCStateManager`
+
+[Back to ToC ⬆](#table-of-contents)
 
 The `RPCStateManager` can be be used with any JSON-RPC provider that supports the `eth` namespace. Instantiate the `VM` and pass in an `RPCStateManager` to run transactions against accounts sourced from the provider or to run blocks pulled from the provider at any specified block height.
 
@@ -273,17 +283,23 @@ Refer to [this test script](./test/rpcStateManager.spec.ts) for complete example
 
 ## Verkle (experimental)
 
+[Back to ToC ⬆](#table-of-contents)
+
 There are two new verkle related state managers integrated into the code base. These state managers are very experimental and meant to be used for connecting to early [Verkle Tree](https://eips.ethereum.org/EIPS/eip-6800) test networks (Kaustinen). These state managers are not yet sufficiently tested and APIs are not yet stable and it therefore should not be used in production.
 
 See [PRs around Verkle](https://github.com/search?q=repo%3Aethereumjs%2Fethereumjs-monorepo+verkle&type=pullrequests) in our monorepo for an entrypoint if you are interested in our current Verkle related work.
 
 ## Browser
 
+[Back to ToC ⬆](#table-of-contents)
+
 We provide hybrid ESM/CJS builds for all our libraries. With the v10 breaking release round from Spring 2025, all libraries are "pure-JS" by default and we have eliminated all hard-wired WASM code. Additionally we have substantially lowered the bundle sizes, reduced the number of dependencies, and cut out all usages of Node.js-specific primitives (like the Node.js event emitter).
 
 It is easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
 
 ## API
+
+[Back to ToC ⬆](#table-of-contents)
 
 ### Docs
 
@@ -309,13 +325,19 @@ Using ESM will give you additional advantages over CJS beyond browser usage like
 
 ## Development
 
+[Back to ToC ⬆](#table-of-contents)
+
 Developer documentation - currently mainly with information on testing and debugging - can be found [here](./DEVELOPER.md).
 
 ## EthereumJS
 
+[Back to ToC ⬆](#table-of-contents)
+
 The `EthereumJS` GitHub organization and its repositories are managed by the Ethereum Foundation JavaScript team, see our [website](https://ethereumjs.github.io/) for a team introduction. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
 
 ## License
+
+[Back to ToC ⬆](#table-of-contents)
 
 [MPL-2.0](<https://tldrlegal.com/license/mozilla-public-license-2.0-(mpl-2)>)
 

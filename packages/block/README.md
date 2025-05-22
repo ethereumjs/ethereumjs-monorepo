@@ -32,6 +32,8 @@
 
 ## Installation
 
+[Back to ToC ⬆](#table-of-contents)
+
 To obtain the latest version, simply install the project using `npm`:
 
 ```shell
@@ -41,6 +43,8 @@ npm install @ethereumjs/block
 **Note:** If you want to work with `EIP-4844` related functionality, you will have additional initialization steps for the **KZG setup**, see related section below.
 
 ## Getting Started
+
+[Back to ToC ⬆](#table-of-contents)
 
 ### Instantiation
 
@@ -103,6 +107,8 @@ try {
 This library by default uses JavaScript implementations for the basic standard crypto primitives like hashing or signature verification (for included txs). See `@ethereumjs/common` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for instructions on how to replace with e.g. a more performant WASM implementation by using a shared `common` instance.
 
 ## EIP Integrations
+
+[Back to ToC ⬆](#table-of-contents)
 
 ### Blocks with an EIP-1559 Fee Market
 
@@ -374,11 +380,15 @@ See the API docs for detailed documentation on Clique/PoA related utility method
 
 ## Browser
 
+[Back to ToC ⬆](#table-of-contents)
+
 We provide hybrid ESM/CJS builds for all our libraries. With the v10 breaking release round from Spring 2025, all libraries are "pure-JS" by default and we have eliminated all hard-wired WASM code. Additionally we have substantially lowered the bundle sizes, reduced the number of dependencies, and cut out all usages of Node.js specific primities (like the Node.js event emitter).
 
 It is easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
 
 ## API
+
+[Back to ToC ⬆](#table-of-contents)
 
 ### Docs
 
@@ -405,15 +415,21 @@ Using ESM will give you additional advantages over CJS beyond browser usage like
 
 ## Testing
 
+[Back to ToC ⬆](#table-of-contents)
+
 Tests in the `tests` directory are partly outdated and testing is primarily done by running the `BlockchainTests` from within the [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm) package.
 
 To avoid bloating this repository with [ethereum/tests](https://github.com/ethereum/tests) JSON files, we usually copy specific JSON files and wrap them with some metadata (source, date, commit hash). There's a helper to aid in that process and can be found at [wrap-ethereum-test.sh](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/scripts/wrap-ethereum-test.sh).
 
 ## EthereumJS
 
+[Back to ToC ⬆](#table-of-contents)
+
 The `EthereumJS` GitHub organization and its repositories are managed by the Ethereum Foundation JavaScript team, see our [website](https://ethereumjs.github.io/) for a team introduction. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
 
 ## License
+
+[Back to ToC ⬆](#table-of-contents)
 
 [MPL-2.0](<https://tldrlegal.com/license/mozilla-public-license-2.0-(mpl-2)>)
 

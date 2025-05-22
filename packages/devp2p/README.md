@@ -28,6 +28,8 @@ This library bundles different components for lower-level peer-to-peer connectio
 
 ## Getting Started
 
+[Back to ToC ⬆](#table-of-contents)
+
 All components of this library have a public `events` property containing an `EventEmitter` object (using [EventEmitter3](https://github.com/primus/eventemitter3))
 and make heavy use of the Node.js network stack.
 
@@ -40,6 +42,8 @@ dpt.events.on('error', (err) => console.error(chalk.red(`DPT error: ${err}`)))
 ```
 
 ## Examples
+
+[Back to ToC ⬆](#table-of-contents)
 
 Basic example to connect to some bootstrap nodes and get basic peer info:
 
@@ -57,12 +61,16 @@ DEBUG=ethjs,devp2p:* node -r tsx/register ./examples/peer-communication.cts
 
 ## API
 
+[Back to ToC ⬆](#table-of-contents)
+
 For a complete API reference see the generated [documentation](./docs).
 
 Additionally you can find a description of the main entrypoints for using
 the different modules in the following sections.
 
 ## Distributed Peer Table (DPT) / Node Discovery
+
+[Back to ToC ⬆](#table-of-contents)
 
 Maintain/manage a list of peers, see [./src/dpt/](./src/dpt/), also
 includes node discovery ([./src/dpt/server.ts](./src/dpt/server.ts))
@@ -166,6 +174,8 @@ Events emitted:
 
 ## RLPx Transport Protocol
 
+[Back to ToC ⬆](#table-of-contents)
+
 Connect to a peer, organize the communication, see [./src/rlpx/](./src/rlpx/)
 
 ### Usage
@@ -244,6 +254,8 @@ Events emitted:
 - [devp2p wire protocol](https://github.com/ethereum/wiki/wiki/%C3%90%CE%9EVp2p-Wire-Protocol)
 
 ## Ethereum Wire Protocol (ETH)
+
+[Back to ToC ⬆](#table-of-contents)
 
 Upper layer protocol for exchanging Ethereum network data like block headers or transactions with a node, see [./src/protocol/eth/](./src/protocol/eth/).
 
@@ -351,6 +363,8 @@ Events emitted:
 
 ## Debugging
 
+[Back to ToC ⬆](#table-of-contents)
+
 ### Introduction
 
 This library uses the [debug](https://github.com/visionmedia/debug) debugging utility package.
@@ -449,11 +463,15 @@ This logger can be used in various practical scenarios if you want to concentrat
 
 ## Developer
 
+[Back to ToC ⬆](#table-of-contents)
+
 ### Diagram Updates
 
 To update the structure diagram files in the root folder open the `devp2p.drawio` file in [draw.io](https://draw.io/), make your changes, and open a PR with the updated files. Export `svg` and `png` with `border` `width=20` and `transparency=false`. For `png` go to "Advanced" and select `300 DPI`.
 
 ## General References
+
+[Back to ToC ⬆](#table-of-contents)
 
 ### Other Implementations
 
@@ -464,9 +482,13 @@ The following is a list of major implementations of the `devp2p` stack in other 
 
 ## EthereumJS
 
+[Back to ToC ⬆](#table-of-contents)
+
 The `EthereumJS` GitHub organization and its repositories are managed by the Ethereum Foundation JavaScript team, see our [website](https://ethereumjs.github.io/) for a team introduction. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
 
 ## License
+
+[Back to ToC ⬆](#table-of-contents)
 
 [MIT](https://opensource.org/licenses/MIT)
 

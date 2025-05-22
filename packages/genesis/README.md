@@ -25,6 +25,8 @@ This module provides access to Ethereum genesis state for the following networks
 
 ## Installation
 
+[Back to ToC ⬆](#table-of-contents)
+
 The package can be install with:
 
 ```shell
@@ -32,6 +34,8 @@ npm i @ethereumjs/genesis
 ```
 
 ## Usage
+
+[Back to ToC ⬆](#table-of-contents)
 
 ```ts
 // ./examples/simple.ts
@@ -49,9 +53,13 @@ console.log(
 
 ## EthereumJS
 
+[Back to ToC ⬆](#table-of-contents)
+
 The `EthereumJS` GitHub organization and its repositories are managed by the Ethereum Foundation JavaScript team, see our [website](https://ethereumjs.github.io/) for a team introduction. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
 
 ## License
+
+[Back to ToC ⬆](#table-of-contents)
 
 [MIT](https://opensource.org/licenses/MIT)
 

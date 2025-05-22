@@ -26,6 +26,8 @@
 
 ## Installation
 
+[Back to ToC ⬆](#table-of-contents)
+
 To obtain the latest version, simply require the project using `npm`:
 
 ```shell
@@ -33,6 +35,8 @@ npm install @ethereumjs/common
 ```
 
 ## Getting Started
+
+[Back to ToC ⬆](#table-of-contents)
 
 ### import / require
 
@@ -87,6 +91,8 @@ console.log(`The current chain ID is ${commonWithCustomChainId.chainId()}`)
 ```
 
 ## Custom Cryptography Primitives (WASM)
+
+[Back to ToC ⬆](#table-of-contents)
 
 All EthereumJS packages use cryptographic primitives from the audited `ethereum-cryptography` library by default. These primitives, including `keccak256`, `sha256`, and elliptic curve signature methods, are all written in native JavaScript and therefore have the potential downside of being less performant than alternative cryptography modules written in other languages and then compiled to WASM. If cryptography performance is a bottleneck in your usage of the EthereumJS libraries, you can provide your own primitives to the `Common` constructor and they will be used in place of the defaults. Depending on how your preferred primitives are implemented, you may need to write wrapper methods around them so they conform to the interface exposed by the [`common.customCrypto` property](./src/types.ts).
 
@@ -144,11 +150,15 @@ void main()
 
 ## Browser
 
+[Back to ToC ⬆](#table-of-contents)
+
 We provide hybrid ESM/CJS builds for all our libraries. With the v10 breaking release round from Spring 2025 all libraries are "pure-JS" by default and we have eliminated all hard-wired WASM code. Additionally we have substantially lowered the bundle sizes, reduced the number of dependencies and cut out all usages of Node.js specific primities (like the Node.js event emitter).
 
 It is easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
 
 ## API
+
+[Back to ToC ⬆](#table-of-contents)
 
 ### Docs
 
@@ -178,6 +188,8 @@ const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
 Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking which CJS can not provide.
 
 ## Events
+
+[Back to ToC ⬆](#table-of-contents)
 
 The `Common` class has a public property `events` which contains an `EventEmitter` (using [EventEmitter3](https://github.com/primus/eventemitter3)). Following events are emitted on which you can react within your code:
 
@@ -270,6 +282,8 @@ console.log(`The London forkhash for this custom chain is ${common.forkHash('lon
 
 ## Hardfork Support and Usage
 
+[Back to ToC ⬆](#table-of-contents)
+
 The `hardfork` can be set in constructor like this:
 
 ```ts
@@ -324,6 +338,8 @@ hardfork.
 
 ## Supported EIPs
 
+[Back to ToC ⬆](#table-of-contents)
+
 EIPs are native citizens within the library and can be activated like this:
 
 ```ts
@@ -371,9 +387,13 @@ The following EIPs are currently supported:
 
 ## EthereumJS
 
+[Back to ToC ⬆](#table-of-contents)
+
 The `EthereumJS` GitHub organization and its repositories are managed by the Ethereum Foundation JavaScript team, see our [website](https://ethereumjs.github.io/) for a team introduction. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
 
 ## License
+
+[Back to ToC ⬆](#table-of-contents)
 
 [MIT](https://opensource.org/licenses/MIT)
 

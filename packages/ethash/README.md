@@ -19,6 +19,8 @@
 
 ## Installation
 
+[Back to ToC ⬆](#table-of-contents)
+
 To obtain the latest version, simply require the project using `npm`:
 
 ```shell
@@ -26,6 +28,8 @@ npm install @ethereumjs/ethash
 ```
 
 ## Usage
+
+[Back to ToC ⬆](#table-of-contents)
 
 ### PoW Validation
 
@@ -88,6 +92,8 @@ console.log(bytesToHex(solution!.mixHash)) // 0x892177e7bbb1f31ade0610707c96c6bf
 
 ## API
 
+[Back to ToC ⬆](#table-of-contents)
+
 ### Docs
 
 Generated TypeDoc API [Documentation](./docs/README.md)
@@ -112,9 +118,13 @@ Using ESM will give you additional advantages over CJS beyond browser usage like
 
 ## EthereumJS
 
+[Back to ToC ⬆](#table-of-contents)
+
 The `EthereumJS` GitHub organization and its repositories are managed by the Ethereum Foundation JavaScript team, see our [website](https://ethereumjs.github.io/) for a team introduction. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
 
 ## License
+
+[Back to ToC ⬆](#table-of-contents)
 
 [MPL-2.0](<https://tldrlegal.com/license/mozilla-public-license-2.0-(mpl-2)>)
 

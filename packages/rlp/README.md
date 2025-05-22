@@ -21,6 +21,8 @@
 
 ## Installation
 
+[Back to ToC ⬆](#table-of-contents)
+
 To obtain the latest version, simply require the project using `npm`:
 
 ```shell
@@ -30,6 +32,8 @@ npm install @ethereumjs/rlp
 Install with `-g` if you want to use the CLI.
 
 ## Usage
+
+[Back to ToC ⬆](#table-of-contents)
 
 ```ts
 // ./examples/simple.ts
@@ -46,17 +50,23 @@ console.log('assert.deepStrictEqual would have thrown if the decoded output did 
 
 ## Browser
 
+[Back to ToC ⬆](#table-of-contents)
+
 We provide hybrid ESM/CJS builds for all our libraries. With the v10 breaking release round from Spring 2025, all libraries are "pure-JS" by default and we have eliminated all hard-wired WASM code. Additionally we have substantially lowered the bundle sizes, reduced the number of dependencies, and cut out all usages of Node.js-specific primitives (like the Node.js event emitter).
 
 It is easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
 
 ## API
 
+[Back to ToC ⬆](#table-of-contents)
+
 `RLP.encode(plain)` - RLP encodes an `Array`, `Uint8Array` or `String` and returns a `Uint8Array`.
 
 `RLP.decode(encoded, [stream=false])` - Decodes an RLP encoded `Uint8Array`, `Array` or `String` and returns a `Uint8Array` or `NestedUint8Array`. If `stream` is enabled, it will just decode the first rlp sequence in the Uint8Array. By default, it would throw an error if there are more bytes in Uint8Array than used by the rlp sequence.
 
 ## CLI
+
+[Back to ToC ⬆](#table-of-contents)
 
 `rlp encode <JSON string>`\
 `rlp decode <0x-prefixed hex string>`
@@ -70,9 +80,13 @@ It is easily possible to run a browser build of one of the EthereumJS libraries 
 
 ## EthereumJS
 
+[Back to ToC ⬆](#table-of-contents)
+
 The `EthereumJS` GitHub organization and its repositories are managed by the Ethereum Foundation JavaScript team, see our [website](https://ethereumjs.github.io/) for a team introduction. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
 
 ## License
+
+[Back to ToC ⬆](#table-of-contents)
 
 [MPL-2.0](<https://tldrlegal.com/license/mozilla-public-license-2.0-(mpl-2)>)
 

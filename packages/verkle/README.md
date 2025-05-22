@@ -27,6 +27,8 @@
 
 ## Installation
 
+[Back to ToC ⬆](#table-of-contents)
+
 To obtain the latest version, simply require the project using `npm`:
 
 ```shell
@@ -34,6 +36,8 @@ npm install @ethereumjs/verkle
 ```
 
 ## Getting Started
+
+[Back to ToC ⬆](#table-of-contents)
 
 ### Initialization
 
@@ -109,17 +113,23 @@ void test()
 
 ## Proofs
 
+[Back to ToC ⬆](#table-of-contents)
+
 ### Verkle Proofs
 
 The EthereumJS Verkle package is still in development and verkle proof generation is not yet supported.
 
 ## Browser
 
+[Back to ToC ⬆](#table-of-contents)
+
 We provide hybrid ESM/CJS builds for all our libraries. With the v10 breaking release round from Spring 2025, all libraries are "pure-JS" by default and we have eliminated all hard-wired WASM code. Additionally we have substantially lowered the bundle sizes, reduced the number of dependencies, and cut out all usages of Node.js-specific primitives (like the Node.js event emitter).
 
 It is easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
 
 ## API
+
+[Back to ToC ⬆](#table-of-contents)
 
 ### Docs
 
@@ -142,6 +152,8 @@ const { createVerkleTree } = require('@ethereumjs/verkle')
 ```
 
 ## Debugging
+
+[Back to ToC ⬆](#table-of-contents)
 
 This library uses the [debug](https://github.com/visionmedia/debug) debugging utility package.
 
@@ -190,6 +202,8 @@ Additional log selections can be added with a comma separated list (no spaces). 
 
 ## References
 
+[Back to ToC ⬆](#table-of-contents)
+
 - Wiki
   - [Overview of verkle trees](https://ethereum.org/en/roadmap/verkle-trees/)
   - [Verkle trees general resource](https://verkle.info/)
@@ -197,9 +211,13 @@ Additional log selections can be added with a comma separated list (no spaces). 
 
 ## EthereumJS
 
+[Back to ToC ⬆](#table-of-contents)
+
 The `EthereumJS` GitHub organization and its repositories are managed by the Ethereum Foundation JavaScript team, see our [website](https://ethereumjs.github.io/) for a team introduction. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
 
 ## License
+
+[Back to ToC ⬆](#table-of-contents)
 
 [MIT](https://opensource.org/licenses/MIT)
 

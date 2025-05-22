@@ -42,6 +42,8 @@ to build and run blocks and txs and update state.
 
 ## Installation
 
+[Back to ToC ⬆](#table-of-contents)
+
 To obtain the latest version, simply require the project using `npm`:
 
 ```shell
@@ -51,6 +53,8 @@ npm install @ethereumjs/vm
 **Note:** Starting with the Dencun hardfork `EIP-4844` related functionality has become an integrated part of the EVM functionality with the activation of the point evaluation precompile. For this precompile to work a separate installation of the KGZ library is necessary (we decided not to bundle due to large bundle sizes), see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
 
 ## Usage
+
+[Back to ToC ⬆](#table-of-contents)
 
 ### Running a Transaction
 
@@ -144,6 +148,8 @@ This library by default uses JavaScript implementations for the basic standard c
 
 ## Examples
 
+[Back to ToC ⬆](#table-of-contents)
+
 See the [examples](./examples/) folder for different meaningful examples on how to use the VM package and invoke certain aspects of it, e.g. running a complete block, a certain tx or using event listeners, among others. Some noteworthy examples to point out:
 
 1. [./examples/run-blockchain](./examples/run-blockchain.ts): Loads tests data, including accounts and blocks, and runs all of them in the VM.
@@ -151,11 +157,15 @@ See the [examples](./examples/) folder for different meaningful examples on how 
 
 ## Browser
 
+[Back to ToC ⬆](#table-of-contents)
+
 We provide hybrid ESM/CJS builds for all our libraries. With the v10 breaking release round from Spring 2025, all libraries are "pure-JS" by default and we have eliminated all hard-wired WASM code. Additionally we have substantially lowered the bundle sizes, reduced the number of dependencies, and cut out all usages of Node.js-specific primitives (like the Node.js event emitter).
 
 It is easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
 
 ## API
+
+[Back to ToC ⬆](#table-of-contents)
 
 ### Docs
 
@@ -181,6 +191,8 @@ Using ESM will give you additional advantages over CJS beyond browser usage like
 
 ## Architecture
 
+[Back to ToC ⬆](#table-of-contents)
+
 ### VM/EVM Relation
 
 Starting with the `VM` v6 version the inner Ethereum Virtual Machine core previously included in this library has been extracted to an own package [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm).
@@ -203,6 +215,8 @@ With `VM` v7 a previously needed EEI interface for EVM/VM communication is not n
 With `VM` v6 the previously included `StateManager` has been extracted to its own package [@ethereumjs/statemanager](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/statemanager). The `StateManager` package provides a unified state interface and it is now also possible to provide a modified or custom `StateManager` to the VM via the optional `stateManager` constructor option.
 
 ## Setup
+
+[Back to ToC ⬆](#table-of-contents)
 
 ### Chains
 Beside the default Proof-of-Stake setup coming with the `Common` library default, the VM also support the execution of  both `Ethash/PoW` and `Clique/PoA` blocks and transactions to allow to re-execute blocks from older hardforks or testnets.
@@ -264,6 +278,8 @@ Genesis state can be configured to contain both EOAs as well as (system) contrac
 
 ## Supported EIPs
 
+[Back to ToC ⬆](#table-of-contents)
+
 It is possible to individually activate EIP support in the VM by instantiate the `Common` instance passed
 with the respective EIPs, e.g.:
 
@@ -304,6 +320,8 @@ Starting with `v8.1.0` the VM supports [EIP-2935](https://eips.ethereum.org/EIPS
 Note that this EIP has no effect on the resolution of the `BLOCKHASH` opcode, which will be a separate activation taking place by the integration of [EIP-7709](https://eips.ethereum.org/EIPS/eip-7709) in a respective Verkle/Stateless hardfork.
 
 ## Events
+
+[Back to ToC ⬆](#table-of-contents)
 
 ### Tracing Events
 
@@ -364,6 +382,8 @@ event handlers.
 
 ## Understanding the VM
 
+[Back to ToC ⬆](#table-of-contents)
+
 If you want to understand your VM runs we have added a hierarchically structured list of debug loggers for your convenience which can be activated in arbitrary combinations. We also use these loggers internally for development and testing. These loggers use the [debug](https://github.com/visionmedia/debug) library and can be activated on the CL with `DEBUG=ethjs,[Logger Selection] node [Your Script to Run].js` and produce output like the following:
 
 ![EthereumJS VM Debug Logger](./debug.png?raw=true)
@@ -413,6 +433,8 @@ DEBUG=ethjs,vm:tx,vm:evm,vm:ops:sstore,vm:*:gas tsx test.ts
 
 ## Internal Structure
 
+[Back to ToC ⬆](#table-of-contents)
+
 The VM processes state changes at several levels:
 
 - **[`runBlock`](./src/runBlock.ts)**: Processes a single block.
@@ -442,13 +464,19 @@ Note: The process of iterating through the blockchain (block by block) is typica
 
 ## Development
 
+[Back to ToC ⬆](#table-of-contents)
+
 Developer documentation - currently mainly with information on testing and debugging - can be found [here](./DEVELOPER.md).
 
 ## EthereumJS
 
+[Back to ToC ⬆](#table-of-contents)
+
 The `EthereumJS` GitHub organization and its repositories are managed by the Ethereum Foundation JavaScript team, see our [website](https://ethereumjs.github.io/) for a team introduction. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
 
 ## License
+
+[Back to ToC ⬆](#table-of-contents)
 
 [MPL-2.0](<https://tldrlegal.com/license/mozilla-public-license-2.0-(mpl-2)>)
 

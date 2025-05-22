@@ -34,6 +34,8 @@
 
 ## Installation
 
+[Back to ToC ⬆](#table-of-contents)
+
 To obtain the latest version, simply require the project using `npm`:
 
 ```shell
@@ -41,6 +43,8 @@ npm install @ethereumjs/tx
 ```
 
 ## Getting Started
+
+[Back to ToC ⬆](#table-of-contents)
 
 ### Static Constructor Methods
 
@@ -60,6 +64,8 @@ This library by default uses JavaScript implementations for the basic standard c
 
 ## Chain and Hardfork Support
 
+[Back to ToC ⬆](#table-of-contents)
+
 To use a chain other than the default Mainnet chain, or a different hardfork than the default [`@ethereumjs/common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common) hardfork (`Hardfork.Prague`), provide a `common` object in the constructor of the tx.
 
 Base default HF (determined by `Common`): `Hardfork.Prague`
@@ -77,6 +83,8 @@ Hardforks adding features and/or tx types:
 | `prague`         | `v10.0.0`  | `EIP-7702` Transactions                                                                                 |
 
 ## Transaction Types
+
+[Back to ToC ⬆](#table-of-contents)
 
 ### Table of Contents
 
@@ -335,6 +343,8 @@ console.log(bytesToHex(signedTx.hash())) // 0x894b72d87f8333fccd29d1b3aca39af69d
 
 ## Transaction Factory
 
+[Back to ToC ⬆](#table-of-contents)
+
 If you only know on runtime which tx type will be used within your code or if you want to keep your code transparent to tx types, this library comes with a `TransactionFactory` for your convenience which can be used as follows:
 
 ```ts
@@ -368,6 +378,8 @@ The correct tx type class for instantiation will then be chosen on runtime based
 
 ## KZG Setup
 
+[Back to ToC ⬆](#table-of-contents)
+
 This library fully supports `EIP-4844` blob transactions. For blob transactions and other KZG related proof functionality (e.g. for EVM precompiles) KZG has to be manually installed and initialized in the `common` instance to be used in instantiating blob transactions.
 
 As a first step add the [micro-eth-signer](https://github.com/paulmillr/micro-eth-signer) package for KZG and [@paulmillr/trusted-setups](https://github.com/paulmillr/trusted-setups) for the trusted setup data as dependencies to your `package.json` file and install the libraries. Then initialization can then be done like the following:
@@ -397,6 +409,8 @@ void main()
 Note: We did not want to directly bundle because bundle sizes are large due to the large trusted setup inclusion (especially for the mainnet trusted setup).
 
 ## Sending a Transaction
+
+[Back to ToC ⬆](#table-of-contents)
 
 ### L2 Support
 
@@ -429,11 +443,15 @@ console.log(bytesToHex(signedTx.hash())) // 0xbf98f6f8700812ed6f2314275070256e11
 
 ## Browser
 
+[Back to ToC ⬆](#table-of-contents)
+
 We provide hybrid ESM/CJS builds for all our libraries. With the v10 breaking release round from Spring 2025, all libraries are "pure-JS" by default and we have eliminated all hard-wired WASM code. Additionally we have substantially lowered the bundle sizes, reduced the number of dependencies, and cut out all usages of Node.js-specific primitives (like the Node.js event emitter).
 
 It is easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
 
 ## Hardware Wallets
+
+[Back to ToC ⬆](#table-of-contents)
 
 ### Ledger
 
@@ -484,6 +502,8 @@ run()
 
 ## API
 
+[Back to ToC ⬆](#table-of-contents)
+
 ### Docs
 
 Generated TypeDoc API [Documentation](./docs/README.md)
@@ -508,9 +528,13 @@ Using ESM will give you additional advantages over CJS beyond browser usage like
 
 ## EthereumJS
 
+[Back to ToC ⬆](#table-of-contents)
+
 The `EthereumJS` GitHub organization and its repositories are managed by the Ethereum Foundation JavaScript team, see our [website](https://ethereumjs.github.io/) for a team introduction. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
 
 ## License
+
+[Back to ToC ⬆](#table-of-contents)
 
 [MPL-2.0](<https://tldrlegal.com/license/mozilla-public-license-2.0-(mpl-2)>)
 

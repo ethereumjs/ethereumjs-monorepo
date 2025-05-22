@@ -38,6 +38,8 @@ Features not supported:
 
 ## Wallet API
 
+[Back to ToC ⬆](#table-of-contents)
+
 For information about the Wallet's API, please go to [./docs/classes/wallet.md](./docs/classes/wallet.md).
 
 You can import the `Wallet` class like this
@@ -66,6 +68,8 @@ console.log(wallet.getAddressString()) // should output an Ethereum address
 
 ## Thirdparty API
 
+[Back to ToC ⬆](#table-of-contents)
+
 Importing various third party wallets is possible through the `thirdparty` submodule:
 
 Node.js / ES5:
@@ -93,6 +97,8 @@ console.log(wallet.getAddressString()) // An Ethereum address
 Please go to [./docs/README.md](./docs/README.md) for more info.
 
 ## HD Wallet API
+
+[Back to ToC ⬆](#table-of-contents)
 
 To use BIP32 HD wallets, first include the `hdkey` submodule:
 
@@ -125,6 +131,8 @@ console.log(wallet.getWallet().getAddressString()) // Should print an Ethereum a
 Please go to [./docs/classes/ethereumhdkey.md](./docs/classes/ethereumhdkey.md) for more info.
 
 ## Special Topics
+
+[Back to ToC ⬆](#table-of-contents)
 
 ### Remarks about `toV3`
 
@@ -161,11 +169,15 @@ The following settings are favoured by the Go Ethereum implementation and we def
 
 ## EthereumJS
 
+[Back to ToC ⬆](#table-of-contents)
+
 See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices.
 
 If you want to join for work or do improvements on the libraries have a look at our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html).
 
 ## License
+
+[Back to ToC ⬆](#table-of-contents)
 
 MIT License
 

@@ -40,6 +40,8 @@
 
 ## Installation
 
+[Back to ToC ⬆](#table-of-contents)
+
 To obtain the latest version, simply require the project using `npm`:
 
 ```shell
@@ -51,6 +53,8 @@ This package provides the core Ethereum Virtual Machine (EVM) implementation whi
 **Note:** Starting with the Dencun hardfork `EIP-4844` related functionality has become an integrated part of the EVM functionality with the activation of the point evaluation precompile. For this precompile to work a separate installation of the KZG library is necessary (we decided not to bundle due to large bundle sizes), see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
 
 ## Getting Started
+
+[Back to ToC ⬆](#table-of-contents)
 
 ### Basic
 
@@ -130,15 +134,21 @@ This library by default uses JavaScript implementations for the basic standard c
 
 ## Examples
 
+[Back to ToC ⬆](#table-of-contents)
+
 See the [examples](./examples/) folder for different meaningful examples on how to use the EVM package and invoke certain aspects of it, e.g. running a bytecode snippet, listening to events or activate an EVM with a certain EIP for experimental purposes.
 
 ## Browser
+
+[Back to ToC ⬆](#table-of-contents)
 
 We provide hybrid ESM/CJS builds for all our libraries. With the v10 breaking release round from Spring 2025, all libraries are "pure-JS" by default and we have eliminated all hard-wired WASM code. Additionally we have substantially lowered the bundle sizes, reduced the number of dependencies, and cut out all usages of Node.js-specific primitives (like the Node.js event emitter).
 
 It is easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
 
 ## API
+
+[Back to ToC ⬆](#table-of-contents)
 
 ### Docs
 
@@ -164,6 +174,8 @@ Using ESM will give you additional advantages over CJS beyond browser usage like
 
 ## Architecture
 
+[Back to ToC ⬆](#table-of-contents)
+
 ### VM/EVM Relation
 
 This package contains the inner Ethereum Virtual Machine core functionality which was included in the [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm) package up till v5 and has been extracted along the v6 release.
@@ -181,6 +193,8 @@ The interfaces (in a non-TypeScript sense) between these packages have been simp
 This allows for both a standalone EVM instantiation with reasonable defaults as well as for a simplified EVM -> VM passing if a customized EVM is needed.
 
 ## Supported Hardforks
+
+[Back to ToC ⬆](#table-of-contents)
 
 The EthereumJS EVM implements all hardforks from `Frontier` (`chainstart`) up to the latest active mainnet hardfork.
 
@@ -209,6 +223,8 @@ A specific hardfork EVM ruleset can be activated by passing in the hardfork
 along the `Common` instance to the outer `@ethereumjs/vm` instance.
 
 ## Supported EIPs
+
+[Back to ToC ⬆](#table-of-contents)
 
 If you want to activate an EIP not currently active on the hardfork your `common` instance is set to, it is possible to individually activate EIP support in the EVM by specifying the desired EIPs using the `eips` property in your `CommonOpts` setup, e.g.:
 
@@ -274,6 +290,8 @@ This library supports the blob transaction type introduced with [EIP-4844](https
 
 ## Precompiles
 
+[Back to ToC ⬆](#table-of-contents)
+
 This library support all EVM precompiles up to the `Prague` hardfork.
 
 The following code allows to run precompiles in isolation, e.g. for testing purposes:
@@ -327,6 +345,8 @@ const evm = await createEVM({ common, bls })
 
 ## Events
 
+[Back to ToC ⬆](#table-of-contents)
+
 ### Tracing Events
 
 The EVM emits events that support async listeners (using [EventEmitter3](https://github.com/primus/eventemitter3)).
@@ -367,6 +387,8 @@ EVM and interrupt it, possibly corrupting its state. It's strongly
 recommended not to do that.
 
 ## Understanding the EVM
+
+[Back to ToC ⬆](#table-of-contents)
 
 If you want to understand your EVM runs we have added a hierarchically structured list of debug loggers for your convenience which can be activated in arbitrary combinations. We also use these loggers internally for development and testing. These loggers use the [debug](https://github.com/visionmedia/debug) library and can be activated on the CL with `DEBUG=ethjs,[Logger Selection] node [Your Script to Run].js` and produce output like the following:
 
@@ -478,6 +500,8 @@ This layered architecture provides separation of concerns while allowing for the
 
 ## Profiling the EVM
 
+[Back to ToC ⬆](#table-of-contents)
+
 The EthereumJS EVM comes with build-in profiling capabilities to detect performance bottlenecks and to generally support the targeted evolution of the JavaScript EVM performance.
 
 While the EVM has a dedicated `profiler` setting to activate, the profiler can best and most useful be run through the EthereumJS [client](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client) since this gives the most realistic conditions providing both real-world txs and a meaningful state size.
@@ -512,13 +536,19 @@ Happy EVM Profiling! 🎉 🤩
 
 ## Development
 
+[Back to ToC ⬆](#table-of-contents)
+
 See [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm) README.
 
 ## EthereumJS
 
+[Back to ToC ⬆](#table-of-contents)
+
 The `EthereumJS` GitHub organization and its repositories are managed by the Ethereum Foundation JavaScript team, see our [website](https://ethereumjs.github.io/) for a team introduction. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
 
 ## License
+
+[Back to ToC ⬆](#table-of-contents)
 
 [MPL-2.0](<https://tldrlegal.com/license/mozilla-public-license-2.0-(mpl-2)>)
 

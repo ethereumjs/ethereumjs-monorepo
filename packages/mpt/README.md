@@ -36,6 +36,8 @@
 
 ## Installation
 
+[Back to ToC ⬆](#table-of-contents)
+
 To obtain the latest version, simply require the project using `npm`:
 
 ```shell
@@ -43,6 +45,8 @@ npm install @ethereumjs/mpt
 ```
 
 ## Getting Started
+
+[Back to ToC ⬆](#table-of-contents)
 
 This class implements the basic [Modified Merkle Patricia Trie](https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-mpt/) in the `Trie` base class, which you can use with the `useKeyHashing` option set to `true` to create a Merkle Patricia Trie which stores values under the `keccak256` hash of its keys (this is the Trie flavor which is used in Ethereum production systems).
 
@@ -183,6 +187,8 @@ void main()
 
 ## Merkle Patricia Tries
 
+[Back to ToC ⬆](#table-of-contents)
+
 ### Database Options
 
 The `DB` opt in the `MPTOpts` allows you to use any database that conforms to the `DB` interface to store the trie data in. We provide several [examples](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie/examples) for database implementations. The [level.js](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie/examples/level.js) example is used in the `ethereumjs client` while [lmdb.js](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie/examples/lmdb.js) is an alternative implementation that uses the popular [LMDB](https://en.wikipedia.org/wiki/Lightning_Memory-Mapped_Database) as its underlying database.
@@ -231,6 +237,8 @@ void main()
 ```
 
 ## Proofs
+
+[Back to ToC ⬆](#table-of-contents)
 
 ### Merkle Proofs
 
@@ -290,15 +298,21 @@ You may use the `verifyMPTRangeProof()` function to confirm if the given leaf no
 
 ## Examples
 
+[Back to ToC ⬆](#table-of-contents)
+
 You can find additional examples complete with detailed explanations [here](./examples/README.md).
 
 ## Browser
+
+[Back to ToC ⬆](#table-of-contents)
 
 We provide hybrid ESM/CJS builds for all our libraries. With the v10 breaking release round from Spring 2025, all libraries are "pure-JS" by default and we have eliminated all hard-wired WASM code. Additionally we have substantially lowered the bundle sizes, reduced the number of dependencies, and cut out all usages of Node.js-specific primitives (like the Node.js event emitter).
 
 It is easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
 
 ## API
+
+[Back to ToC ⬆](#table-of-contents)
 
 ### Docs
 
@@ -324,6 +338,8 @@ Using ESM will give you additional advantages over CJS beyond browser usage like
 
 ## Benchmarking
 
+[Back to ToC ⬆](#table-of-contents)
+
 You will find two simple **benchmarks** in the `benchmarks` folder:
 
 - `random.ts` runs random `PUT` operations on the tree, and
@@ -346,6 +362,8 @@ npm run profiling
 0x processes the stacks and generates a profile folder (`<pid>.0x`) containing [`flamegraph.html`](https://github.com/davidmarkclements/0x/blob/master/docs/ui.md).
 
 ## Debugging
+
+[Back to ToC ⬆](#table-of-contents)
 
 This library uses the [debug](https://github.com/visionmedia/debug) debugging utility package.
 
@@ -419,6 +437,8 @@ Additional log selections can be added with a comma separated list (no spaces). 
 
 ## References
 
+[Back to ToC ⬆](#table-of-contents)
+
 - Wiki
   - [Ethereum Trie Specification](https://github.com/ethereum/wiki/wiki/Patricia-Tree)
 - Blog posts
@@ -430,9 +450,13 @@ Additional log selections can be added with a comma separated list (no spaces). 
 
 ## EthereumJS
 
+[Back to ToC ⬆](#table-of-contents)
+
 The `EthereumJS` GitHub organization and its repositories are managed by the Ethereum Foundation JavaScript team, see our [website](https://ethereumjs.github.io/) for a team introduction. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
 
 ## License
+
+[Back to ToC ⬆](#table-of-contents)
 
 [MPL-2.0](<https://tldrlegal.com/license/mozilla-public-license-2.0-(mpl-2)>)
 

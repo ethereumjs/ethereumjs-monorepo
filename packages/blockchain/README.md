@@ -23,6 +23,8 @@
 
 ## Installation
 
+[Back to ToC ⬆](#table-of-contents)
+
 To obtain the latest version, simply install the project using `npm`:
 
 ```shell
@@ -33,6 +35,8 @@ npm install @ethereumjs/blockchain
 
 ## Getting Started
 
+[Back to ToC ⬆](#table-of-contents)
+
 ### Introduction
 
 The `Blockchain` package represents an Ethereum-compatible blockchain storing a sequential chain of [@ethereumjs/block](../block) blocks and holding information about the current canonical head block as well as the context the chain is operating in (e.g. the hardfork rules the current head block adheres to).
@@ -42,6 +46,8 @@ New blocks can be added to the blockchain. Validation ensures that the block for
 The library also supports reorg scenarios e.g. by allowing to add a new block with `Blockchain.putBlock()` which follows a different canonical path to the head than given by the current canonical head block.
 
 ## Examples
+
+[Back to ToC ⬆](#table-of-contents)
 
 The following is an example to instantiate a simple Blockchain object, put blocks into the blockchain and then iterate through the blocks added:
 
@@ -104,6 +110,8 @@ More examples can be found in the [examples](./examples/) folder.
 
 ## Setup
 
+[Back to ToC ⬆](#table-of-contents)
+
 ### Block Storage
 
 For storing blocks different backends can be used. The database needs to conform to the [DB](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts) interface provided in the `@ethereumjs/util` package (since this is used in other places as well).
@@ -129,6 +137,8 @@ Also part of V6, you can also create a custom consensus class implementing the a
 Note, if you construct a blockchain with a custom consensus implementation, transition checks for switching from PoW to PoS are disabled so defining a merge hardfork will have no impact on the consensus mechanism defined for the chain.
 
 ## Custom Genesis State
+
+[Back to ToC ⬆](#table-of-contents)
 
 ### Genesis State
 
@@ -171,6 +181,8 @@ The genesis block from the initialized `Blockchain` can be retrieved via the `Bl
 
 ## Supported Blocks and Tx Types
 
+[Back to ToC ⬆](#table-of-contents)
+
 ### EIP-1559 Support
 
 This library supports the handling of `EIP-1559` blocks and transactions starting with the `v5.3.0` release.
@@ -189,11 +201,15 @@ This library supports blocks including the [EIP-7685](https://eips.ethereum.org/
 
 ## Browser
 
+[Back to ToC ⬆](#table-of-contents)
+
 We provide hybrid ESM/CJS builds for all our libraries. With the v10 breaking release round from Spring 2025, all libraries are "pure-JS" by default and we have eliminated all hard-wired WASM code. Additionally we have substantially lowered the bundle sizes, reduced the number of dependencies, and cut out all usages of Node.js-specific primitives (like the Node.js event emitter).
 
 It is easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
 
 ## API
+
+[Back to ToC ⬆](#table-of-contents)
 
 ### Docs
 
@@ -219,6 +235,8 @@ Using ESM will give you additional advantages over CJS beyond browser usage like
 
 ## Events
 
+[Back to ToC ⬆](#table-of-contents)
+
 The `Blockchain` class has a public property `events` which contains an `EventEmitter` (using [EventEmitter3](https://github.com/primus/eventemitter3)). Following events are emitted on which you can react within your code:
 
 | Event                    | Description                                 |
@@ -226,6 +244,8 @@ The `Blockchain` class has a public property `events` which contains an `EventEm
 | `deletedCanonicalBlocks` | Emitted when blocks are reorged and deleted |
 
 ## Debugging
+
+[Back to ToC ⬆](#table-of-contents)
 
 This library uses the [debug](https://github.com/visionmedia/debug) debugging utility package.
 
@@ -252,9 +272,13 @@ Additional log selections can be added with a comma separated list (no spaces). 
 
 ## EthereumJS
 
+[Back to ToC ⬆](#table-of-contents)
+
 The `EthereumJS` GitHub organization and its repositories are managed by the Ethereum Foundation JavaScript team, see our [website](https://ethereumjs.github.io/) for a team introduction. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
 
 ## License
+
+[Back to ToC ⬆](#table-of-contents)
 
 [MPL-2.0](<https://tldrlegal.com/license/mozilla-public-license-2.0-(mpl-2)>)
 

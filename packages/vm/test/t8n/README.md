@@ -4,6 +4,8 @@ T8NTool, or Transition Tool, is a tool used to "fill tests" by test runners, for
 
 ## Using T8Ntool to fill `execution-spec-tests`
 
+[Back to ToC ⬆](#table-of-contents)
+
 To fill `execution-spec-tests` (or write own tests, and test those against the monorepo), follow these steps:
 
 1. Clone <https://github.com/ethereum/execution-spec-tests/>.
@@ -24,6 +26,8 @@ Optionally, it is also possible to add the `-k <TEST>` option which will only fi
 
 ## Debugging T8NTool with `execution-spec-tests`
 
+[Back to ToC ⬆](#table-of-contents)
+
 Sometimes it is unclear why a test fails, and one wants more verbose output (from the EthereumJS side). To do so, raw output from `execution-spec-tests` can be dumped by adding the `evm-dump-dir=<DIR>` flag to the `fill` command above. This will output `stdout`, `stderr`, the raw output allocation and the raw results (logs, receipts, etc.) to the `evm-dump-dir`. Additionally, if traces are wanted in `stdout`, add the `--log` flag to `ethereumjs-t8ntool.sh`, i.e. `tsx "$SCRIPT_DIR/launchT8N.ts" "$@" --log`.
 
 This will produce small EVM traces, like this:
@@ -40,5 +44,7 @@ Processing new transaction...
 ```
 
 ## Writing a test in execution-spec-test
+
+[Back to ToC ⬆](#table-of-contents)
 
 This issue comment is a good reference to write tests, together with an example: <https://github.com/ethereumjs/ethereumjs-monorepo/issues/3666#issuecomment-2349611424>

@@ -36,6 +36,8 @@
 
 ## Installation
 
+[Back to ToC ⬆](#table-of-contents)
+
 To obtain the latest version, simply require the project using `npm`:
 
 ```shell
@@ -43,6 +45,8 @@ npm install @ethereumjs/util
 ```
 
 ## Getting Started
+
+[Back to ToC ⬆](#table-of-contents)
 
 This package contains the following modules providing respective helper methods, classes and commonly re-used constants.
 
@@ -53,6 +57,8 @@ import { hexToBytes, isValidChecksumAddress } from '@ethereumjs/util'
 ```
 
 ## Module: [account](src/account.ts)
+
+[Back to ToC ⬆](#table-of-contents)
 
 Class representing an `Account` and providing private/public key and address-related functionality (creation, validation, conversion). It is not recommended to use this constructor directly. Instead use the static factory methods to assist in creating an Account from varying data types.
 
@@ -86,6 +92,8 @@ console.log(`Partial account with nonce=${account.nonce} and balance=${account.b
 
 ## Module: [address](src/address.ts)
 
+[Back to ToC ⬆](#table-of-contents)
+
 Class representing an Ethereum `Address` with instantiation helpers and validation methods.
 
 ```ts
@@ -99,9 +107,13 @@ console.log(`Ethereum address ${address.toString()} created`)
 
 ## Module: [authorization](src/authorization.ts)
 
+[Back to ToC ⬆](#table-of-contents)
+
 Module with `EIP-7702` authorization list signing utilities.
 
 ## Module: [blobs](src/blobs.ts)
+
+[Back to ToC ⬆](#table-of-contents)
 
 Module providing helpers for 4844 blobs and versioned hashes.
 
@@ -124,6 +136,8 @@ console.log(`Versioned hash ${versionedHash} computed`)
 
 ## Module: [bytes](src/bytes.ts)
 
+[Back to ToC ⬆](#table-of-contents)
+
 Byte-related helper and conversion functions.
 
 ```ts
@@ -139,6 +153,8 @@ console.log(`Converted value: ${bigIntValue}`)
 
 ## Module: [constants](src/constants.ts)
 
+[Back to ToC ⬆](#table-of-contents)
+
 Exposed constants (e.g. `KECCAK256_NULL_S` for string representation of Keccak-256 hash of null)
 
 ```ts
@@ -152,25 +168,37 @@ console.log(`BigInt constants (performance), e.g. BIGINT_2EXP96: ${BIGINT_2EXP96
 
 ## Module: [db](src/db.ts)
 
+[Back to ToC ⬆](#table-of-contents)
+
 DB interface for database abstraction (Blockchain, Trie), see e.g. [@ethereumjs/trie recipes](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie/recipes/level.ts)) for usage.
 
 ## Module: [genesis](src/genesis.ts)
+
+[Back to ToC ⬆](#table-of-contents)
 
 Genesis related interfaces and helpers.
 
 ## Module: [internal](src/internal.ts)
 
+[Back to ToC ⬆](#table-of-contents)
+
 Internalized simple helper methods like `isHexString`. Note that methods from this module might get deprecated in the future.
 
 ## Module: [kzg](src/kzg.ts)
+
+[Back to ToC ⬆](#table-of-contents)
 
 KZG interface (used for 4844 blob txs), see [@ethereumjs/tx](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) README for main usage instructions.
 
 ## Module: [mapDB](src/mapDB.ts)
 
+[Back to ToC ⬆](#table-of-contents)
+
 Simple map DB implementation using the `DB` interface (see above).
 
 ## Module: [request](src/request.ts)
+
+[Back to ToC ⬆](#table-of-contents)
 
 Module with a compact generic request class for [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) general purpose execution layer requests to the CL (Prague hardfork) with the possibility to set `data` and a `type` conforming to the following request types:
 
@@ -181,6 +209,8 @@ Module with a compact generic request class for [EIP-7685](https://eips.ethereum
 These request types are mainly used within the [@ethereumjs/block](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/block) library where applied usage instructions are provided in the README.
 
 ## Module: [signature](src/signature.ts)
+
+[Back to ToC ⬆](#table-of-contents)
 
 Small helpers around signature validation, conversion, recovery as well as selected convenience wrappers for calls to the underlying crypo libraries, using the cryptographic primitive implementations from the [Noble](https://paulmillr.com/noble/) crypto library set. If possible for your use case it is recommended to use the underlying crypto libraries directly for robustness.
 
@@ -203,9 +233,13 @@ console.log(`Recovered public key ${bytesToHex(pubkey)} from valid signature val
 
 ## Module: [types](src/types.ts)
 
+[Back to ToC ⬆](#table-of-contents)
+
 Various TypeScript types. Direct usage is not recommended, type structure might change in the future.
 
 ## Module: [verkle](src/verkle.ts)
+
+[Back to ToC ⬆](#table-of-contents)
 
 Various functions for accessing verkle state:
 
@@ -243,6 +277,8 @@ console.log(basicData) // { version: 1, nonce: 1n, codeSize: 0, balance: 1n }
 
 ## Module: [withdrawal](src/withdrawal.ts)
 
+[Back to ToC ⬆](#table-of-contents)
+
 Class representing an `EIP-4895` `Withdrawal` with different constructors as well as conversion and output helpers.
 
 ```ts
@@ -263,11 +299,15 @@ console.log(withdrawal.toJSON())
 
 ## Browser
 
+[Back to ToC ⬆](#table-of-contents)
+
 We provide hybrid ESM/CJS builds for all our libraries. With the v10 breaking release round from Spring 2025, all libraries are "pure-JS" by default and we have eliminated all hard-wired WASM code. Additionally we have substantially lowered the bundle sizes, reduced the number of dependencies, and cut out all usages of Node.js-specific primitives (like the Node.js event emitter).
 
 It is easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
 
 ## API
+
+[Back to ToC ⬆](#table-of-contents)
 
 ### Documentation
 
@@ -315,9 +355,13 @@ import { stripHexPrefix } from '@ethereumjs/util'
 
 ## EthereumJS
 
+[Back to ToC ⬆](#table-of-contents)
+
 The `EthereumJS` GitHub organization and its repositories are managed by the Ethereum Foundation JavaScript team, see our [website](https://ethereumjs.github.io/) for a team introduction. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
 
 ## License
+
+[Back to ToC ⬆](#table-of-contents)
 
 [MPL-2.0](<https://tldrlegal.com/license/mozilla-public-license-2.0-(mpl-2)>)
 

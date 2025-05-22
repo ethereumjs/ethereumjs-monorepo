@@ -26,6 +26,8 @@
 
 ## Introduction
 
+[Back to ToC ⬆](#table-of-contents)
+
 The EthereumJS Client is an Ethereum Execution Client (similar to [go-ethereum](https://github.com/ethereum/go-ethereum) or [Nethermind](https://github.com/NethermindEth/nethermind)) written in `TypeScript`/`JavaScript`, the non-Smart-Contract language Ethereum dApp developers are most familiar with. It is targeted to be a client for research and development and not meant to be used in production on `mainnet` for the foreseeable future (out of resource and security considerations).
 
 Here are some use cases:
@@ -40,6 +42,8 @@ The client has an extremely modular design by building upon central other librar
 We invite you to explore and would be delighted if you give us feedback on your journey! 🙂 ❤️
 
 ## Installation
+
+[Back to ToC ⬆](#table-of-contents)
 
 To be able to run the EthereumJS client, you need a working [Node.js](https://nodejs.org/en/) installation, see e.g. these [docs](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) from the npm documentation for combined instructions on how to install Node.js and eventually npm.
 
@@ -91,6 +95,8 @@ Also, in your `docker run` command, be sure to include the `--init` flag so that
 
 ## General Usage
 
+[Back to ToC ⬆](#table-of-contents)
+
 You can get the client up and running by going to the shell and run:
 
 ```shell
@@ -121,6 +127,8 @@ For the networks that have transitioned to PoS aka **merged** (all Ethereum netw
 
 ## Supported Networks
 
+[Back to ToC ⬆](#table-of-contents)
+
 The EthereumJS client is tightly integrated with the EthereumJS [Common](../common) library and gets its network state and information from this library. The client supports all networks supported by `Common`.
 
 The main supported networks are:
@@ -138,6 +146,8 @@ ethereumjs --network=holesky
 The client currently supports `full` sync being set as a default and has experimental support for `light` sync.
 
 ## Running with a Consensus Layer (CL) Client
+
+[Back to ToC ⬆](#table-of-contents)
 
 In most scenarios you will want to run the EthereumJS client in a combination with a consensus layer (CL) client. The most tested combination is to run the client with the [Lodestar](https://github.com/ChainSafe/lodestar) TypeScript CL client. Lodestar provides a [quick-start repository](https://github.com/ChainSafe/lodestar-quickstart) that allows users to get started quickly with minimal configuration. After cloning the linked quick-start repository, all that should be necessary to get the Lodestar consensus client started with EthereumJS is to run the following command:
 
@@ -218,6 +228,8 @@ Then start the Lodestar client with:
 
 ## Experimental Testnets
 
+[Back to ToC ⬆](#table-of-contents)
+
 The EthereumJS client supports ongoing protocol development efforts, allowing developers and testers to participate in various testnets using the EthereumJS client.
 
 ### Verkle testnet
@@ -244,6 +256,8 @@ The process should be similar for other testnets, and the quick-start repository
 
 ## Custom Chains
 
+[Back to ToC ⬆](#table-of-contents)
+
 The EthereumJS client supports running custom chains based on a custom chain configuration. There are two ways of reading in custom chain configuration parameters:
 
 ### Common-based Configuration
@@ -267,6 +281,8 @@ ethereumjs --gethGenesis=[GETH_GENESIS_JSON_FILE]
 ```
 
 ## Custom Network Mining (Beta)
+
+[Back to ToC ⬆](#table-of-contents)
 
 The client supports private custom network mining by using the `--mine` option together with passing in a comma separated list of accounts with the `--unlock` option:
 
@@ -334,6 +350,8 @@ dist/bin/cli.js --d
 
 ## Metrics
 
+[Back to ToC ⬆](#table-of-contents)
+
 The client can optionally collect metrics using the [Prometheus](https://github.com/prometheus/prometheus) metrics platform and expose them via an HTTP endpoint with the following CLI flags.  
 The current metrics that are reported by the client can be found at the default port and route: `localhost:8000/metrics`.
 
@@ -347,11 +365,15 @@ npm run client:start:ts -- --prometheus --prometheusPort=9123
 
 ## API
 
+[Back to ToC ⬆](#table-of-contents)
+
 [API Reference](./docs/README.md)
 
 See also this [diagram](./diagram/client.svg) for an overview of the client structure with the initialization and message flow.
 
 ## JSON-RPC
+
+[Back to ToC ⬆](#table-of-contents)
 
 ### Overview
 
@@ -451,6 +473,8 @@ Output:
 
 ## Development
 
+[Back to ToC ⬆](#table-of-contents)
+
 See also [DEVELOPER.md](./DEVELOPER.md).
 
 ### Design
@@ -546,6 +570,8 @@ EthJS > {
 To update the structure diagram files in the root folder open the `client.drawio` file in [draw.io](https://draw.io/), make your changes, and open a PR with the updated files. Export `svg` and `png` with `border` `width=20` and `transparency=false`. For `png` go to "Advanced" and select `300 DPI`.
 
 ## EthereumJS
+
+[Back to ToC ⬆](#table-of-contents)
 
 See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices.
 

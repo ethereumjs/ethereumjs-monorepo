@@ -4,7 +4,7 @@ This guide provides an overview of the monorepo, development tools used, shared 
 
 It is intended to be both an entrypoint for external contributors as well as a reference point for team members.
 
-## Contents
+## Table of Contents
 
 - [Monorepo](#monorepo)
   - [Structure](#structure)
@@ -23,6 +23,8 @@ It is intended to be both an entrypoint for external contributors as well as a r
   - [Client](#client)
 
 ## Monorepo
+
+[Back to ToC ⬆](#table-of-contents)
 
 ### Structure
 
@@ -84,6 +86,8 @@ npm config delete script-shell
 ```
 
 ## Development Tools
+
+[Back to ToC ⬆](#table-of-contents)
 
 ### TypeScript
 
@@ -192,6 +196,8 @@ We use `vitest` with [playwright](https://playwright.dev/) to run browser tests.
 
 ## Advanced Topics
 
+[Back to ToC ⬆](#table-of-contents)
+
 ### Linking to an External Library
 
 #### Quick Summary
@@ -233,6 +239,8 @@ When making changes to the linked package, rebuild it for the changes to be refl
 Common development dependencies (e.g. `eslint`, `biome`) are defined in the root `package.json`. 
 
 ## Additional Docs
+
+[Back to ToC ⬆](#table-of-contents)
 
 There are selected additional developer docs available to get more deep on certain topics. The following is an overview.
 

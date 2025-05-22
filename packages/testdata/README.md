@@ -4,6 +4,8 @@ This package contains common test data used across EthereumJS packages. It is in
 
 ## Usage
 
+[Back to ToC ⬆](#table-of-contents)
+
 To use this package in another package within the monorepo:
 
 1. Add it as a devDependency in the package's `package.json`:
@@ -22,8 +24,12 @@ import { testData } from '@ethereumjs/testdata'
 
 ## Development
 
+[Back to ToC ⬆](#table-of-contents)
+
 This package is not published to npm and is meant to be used only within the EthereumJS monorepo.
 
 ## EthereumJS
+
+[Back to ToC ⬆](#table-of-contents)
 
 The `EthereumJS` GitHub organization and its repositories are managed by the Ethereum Foundation JavaScript team, see our [website](https://ethereumjs.github.io/) for a team introduction. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
