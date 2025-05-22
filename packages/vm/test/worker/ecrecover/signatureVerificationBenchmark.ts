@@ -1,6 +1,6 @@
 import { LegacyTx } from '@ethereumjs/tx'
 import { bigIntToUnpaddedBytes, ecrecover, equalsBytes, randomBytes } from '@ethereumjs/util'
-import { SignatureWorkerPool } from '../../src/worker/signatureWorkerPool.ts'
+import { SignatureWorkerPool } from './signatureWorkerPool.ts'
 
 async function runBenchmark() {
   // Create 10 test transactions
