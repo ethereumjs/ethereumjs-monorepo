@@ -13,7 +13,7 @@ import * as EIP2718 from '../capabilities/eip2718.ts'
 import * as EIP2930 from '../capabilities/eip2930.ts'
 import * as Legacy from '../capabilities/legacy.ts'
 import { TransactionType, isAccessList } from '../types.ts'
-import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../util/internal.ts'
+import { getBaseJSON, sharedConstructor, valueOverflowCheck } from '../util/internal.ts'
 
 import { createFeeMarket1559Tx } from './constructors.ts'
 
@@ -109,7 +109,7 @@ export class FeeMarket1559Tx
     this.maxFeePerGas = bytesToBigInt(toBytes(maxFeePerGas))
     this.maxPriorityFeePerGas = bytesToBigInt(toBytes(maxPriorityFeePerGas))
 
-    valueBoundaryCheck({
+    valueOverflowCheck({
       maxFeePerGas: this.maxFeePerGas,
       maxPriorityFeePerGas: this.maxPriorityFeePerGas,
     })

@@ -21,7 +21,7 @@ import {
   getBaseJSON,
   sharedConstructor,
   validateNotArray,
-  valueBoundaryCheck,
+  valueOverflowCheck,
 } from '../util/internal.ts'
 
 import { createBlob4844Tx } from './constructors.ts'
@@ -130,7 +130,7 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
     this.maxFeePerGas = bytesToBigInt(toBytes(maxFeePerGas))
     this.maxPriorityFeePerGas = bytesToBigInt(toBytes(maxPriorityFeePerGas))
 
-    valueBoundaryCheck({
+    valueOverflowCheck({
       maxFeePerGas: this.maxFeePerGas,
       maxPriorityFeePerGas: this.maxPriorityFeePerGas,
     })

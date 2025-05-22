@@ -22,7 +22,7 @@ import {
   getBaseJSON,
   sharedConstructor,
   validateNotArray,
-  valueBoundaryCheck,
+  valueOverflowCheck,
 } from '../util/internal.ts'
 
 import { createEOACode7702Tx } from './constructors.ts'
@@ -131,7 +131,7 @@ export class EOACode7702Tx implements TransactionInterface<typeof TransactionTyp
     this.maxFeePerGas = bytesToBigInt(toBytes(maxFeePerGas))
     this.maxPriorityFeePerGas = bytesToBigInt(toBytes(maxPriorityFeePerGas))
 
-    valueBoundaryCheck({
+    valueOverflowCheck({
       maxFeePerGas: this.maxFeePerGas,
       maxPriorityFeePerGas: this.maxPriorityFeePerGas,
     })

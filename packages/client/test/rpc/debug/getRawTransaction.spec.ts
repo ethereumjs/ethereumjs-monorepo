@@ -41,6 +41,9 @@ describe(method, () => {
     const { chain, common, execution, server } = await setupChain(
       gethGenesisStartLondon(powData),
       'powLondon',
+      {
+        txLookupLimit: 0,
+      },
     )
     const rpc = getRPCClient(server)
     // construct tx
@@ -58,7 +61,10 @@ describe(method, () => {
 
     // get the tx
     const res1 = await rpc.request(method, [bytesToHex(tx.hash())])
-    assert.strictEqual(res1.result, bytesToHex(tx.serialize()), 'should return the correct tx type')
+    assert.equal(res1.result, bytesToHex(tx.serialize()), 'should return the correct tx type')
+    execution.txIndex = undefined
+    const res2 = await rpc.request(method, [bytesToHex(tx.hash())])
+    assert.equal(res2.result, null, 'should return null when txIndex is undefined')
   })
 
   it('call with unknown tx hash', async () => {
