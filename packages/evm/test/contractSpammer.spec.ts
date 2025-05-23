@@ -56,6 +56,8 @@ describe('RunCall tests', () => {
 
     const res = await evm.runCall({ to: undefined, gasLimit: BigInt(30_000_000), data: code })
 
+    console.log(res)
+
     const addr = res.createdAddress!.bytes
     const deploymentHash = keccak256(deployContractCode)
 
@@ -65,11 +67,26 @@ describe('RunCall tests', () => {
     // [22-54] salt [32 bytes]
     // [55-85] codeHash [32 bytes]
 
-    const attackCode = `0x7FFF${bytesToUnprefixedHex(setLengthRight(addr, 31))}5F527F${bytesToUnprefixedHex(deploymentHash)}6035525F5B6001018060155260555F203B50604856`
+    const attackCodeEXTCODESIZE = `0x7FFF${bytesToUnprefixedHex(setLengthRight(addr, 31))}5F527F${bytesToUnprefixedHex(deploymentHash)}6035525F5B6001018060155260555F203B50604856`
 
     const ctrAddress = createAddressFromString('0x' + '20'.repeat(20))
-    await evm.stateManager.putCode(ctrAddress, hexToBytes(<any>attackCode))
+    await evm.stateManager.putCode(ctrAddress, hexToBytes(<any>attackCodeEXTCODESIZE))
 
-    const res2 = await evm.runCall({ to: ctrAddress, gasLimit: BigInt(30_000_000), data: code })
+    const res2 = await evm.runCall({
+      to: ctrAddress,
+      gasLimit: BigInt(30_000_000 - 21_000),
+      data: code,
+    })
+
+    const attackCodeEXTCODECOPY = `0x7FFF${bytesToUnprefixedHex(setLengthRight(addr, 31))}5F527F${bytesToUnprefixedHex(deploymentHash)}6035525F5B6001018060155260015F605F60555F203C604856`
+
+    const ctrAddress2 = createAddressFromString('0x' + '40'.repeat(20))
+    await evm.stateManager.putCode(ctrAddress2, hexToBytes(<any>attackCodeEXTCODECOPY))
+
+    const res3 = await evm.runCall({
+      to: ctrAddress2,
+      gasLimit: BigInt(30_000_000 - 21_000),
+      data: code,
+    })
   }, 10000000)
 })
