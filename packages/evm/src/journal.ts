@@ -45,6 +45,8 @@ export class Journal {
 
   private journalHeight: JournalHeight
 
+  private warmedCodeAddresses!: Set<AddressString>
+
   public accessList?: Map<AddressString, Set<SlotString>>
   public preimages?: Map<PrefixedHexString, Uint8Array>
 
@@ -184,6 +186,7 @@ export class Journal {
     this.alwaysWarmJournal = new Map()
     this.touched = new Set()
     this.journalDiff = [[0, [new Set(), new Map(), new Set()]]]
+    this.warmedCodeAddresses = new Set()
   }
 
   /**
@@ -243,6 +246,16 @@ export class Journal {
   }
 
   /**
+   * Returns true if the address's code is warm in the current context
+   * @param address - The address (as a Uint8Array) to check
+   */
+  isWarmedCodeAddress(address: Uint8Array): boolean {
+    const addressHex = bytesToUnprefixedHex(address)
+    const warm = this.warmedCodeAddresses.has(addressHex)
+    return warm
+  }
+
+  /**
    * Add a warm address in the current context
    * @param addressArr - The address (as a Uint8Array) to check
    */
@@ -258,6 +271,15 @@ export class Journal {
         this.accessList.set(address, new Set())
       }
     }
+  }
+
+  /**
+   * Add an address to the set of warmed code addresses in the current context
+   * @param addressArr - The address (as a Uint8Array) to check
+   */
+  addWarmedCodeAddress(addressArr: Uint8Array): void {
+    const address = bytesToUnprefixedHex(addressArr)
+    this.warmedCodeAddresses.add(address)
   }
 
   /**
