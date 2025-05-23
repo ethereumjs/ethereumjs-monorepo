@@ -981,11 +981,6 @@ export class EVM implements EVMInterface {
       this.journal.addWarmedAddress((await this._generateAddress(message)).bytes)
     }
 
-    if (!message.to && this.common.isActivatedEIP(7907)) {
-      message.code = message.data
-      this.journal.addWarmedCodeAddress((await this._generateAddress(message)).bytes)
-    }
-
     await this.journal.checkpoint()
     if (this.common.isActivatedEIP(1153)) this.transientStorage.checkpoint()
     if (this.DEBUG) {

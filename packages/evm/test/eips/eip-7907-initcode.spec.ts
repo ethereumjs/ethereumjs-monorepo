@@ -3,6 +3,7 @@ import {
   Address,
   concatBytes,
   createAddressFromString,
+  equalsBytes,
   // createAddressFromString,
   // equalsBytes,
   hexToBytes,
@@ -16,7 +17,7 @@ const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
 const sender = new Address(privateToAddress(pkey))
 
 describe('EIP 7907 initcode size tests', () => {
-  it('code 512KB exceeds max initcode size', async () => {
+  it('create contract code size 512KB exactly max initcode size does not fail from exceeding max initcode size', async () => {
     const common = new Common({
       chain: Mainnet,
       hardfork: Hardfork.Osaka,
@@ -33,17 +34,38 @@ describe('EIP 7907 initcode size tests', () => {
     const runCallArgs = {
       sender, // call address
       gasLimit: BigInt(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
-      // Simple test, PUSH <big number> PUSH 0 RETURN
-      // It tries to deploy a contract too large, where the code is all zeros
-      // (since memory which is not allocated/resized to yet is always defaulted to 0)
-      data: concatBytes(
-        hexToBytes(
-          '0x7F6000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000060005260206000F3',
-        ),
-        buffer,
-      ),
+      data: buffer,
+      to: undefined, // create contract
     }
     const result = await evm.runCall(runCallArgs)
+    // fails for being an invalid contract, but should pass the initcode size limit check
+    assert.isTrue(
+      (result.execResult.exceptionError?.error as string) !== 'initcode exceeds max initcode size',
+      'create contract with data size 512KB (exactly max initcode size) does not fail from exceeding max initcode size',
+    )
+  })
+
+  it('create contract code size 512KB (exactly max initcode size) +1 byte fails from size limit', async () => {
+    const common = new Common({
+      chain: Mainnet,
+      hardfork: Hardfork.Osaka,
+      eips: [7907],
+    })
+    const evm = await createEVM({
+      common,
+    })
+
+    // 524288 + 1 ("512KB+1B") length, 8 bit array, filled
+    const buffer = new Uint8Array(524289).fill(0x60)
+
+    // setup the call arguments
+    const runCallArgs = {
+      sender, // call address
+      gasLimit: BigInt(0xffffffffff), // ensure we pass a lot of gas, so we do not run out of gas
+      data: concatBytes(buffer),
+    }
+    const result = await evm.runCall(runCallArgs)
+
     assert.isTrue(
       (result.execResult.exceptionError?.error as string) === 'initcode exceeds max initcode size',
       'initcode exceeds max size',
@@ -123,7 +145,7 @@ describe('EIP 7907 initcode size tests', () => {
     const res = await evm.runCall(runCallArgs)
     const resWithout7907 = await evmWithout7907.runCall(runCallArgs)
 
-    // Check that the created contract address is warmed.
+    // Check that the factory and created contracts addresses are warmed.
     // This logic isn't changed in 7907, but is in place to confirm that
     // the code warm is applied inline with the address access warm on CREATE calls.
     assert.isTrue(
@@ -137,15 +159,15 @@ describe('EIP 7907 initcode size tests', () => {
       )
     })
 
-    // Both the contract factory and the created contract codes are warmed.
+    // Just the contract factory code is warmed. The created contract code is not warmed.
     assert.isTrue(
       res.execResult.runState?.interpreter.journal.isWarmedCodeAddress(contractFactory.bytes),
       'contract factory code is warmed',
     )
     res.execResult.createdAddresses?.forEach((address) => {
-      assert.isTrue(
+      assert.isFalse(
         res.execResult.runState?.interpreter.journal.isWarmedCodeAddress(hexToBytes(address)),
-        `created contract code is warmed: ${address}`,
+        `created contract code is not warmed: ${address}`,
       )
     })
 
@@ -233,80 +255,167 @@ describe('EIP 7907 initcode size tests', () => {
     )
   })
 
-  // it('CREATE with MAX_INITCODE_SIZE+1, allowUnlimitedContractSize active', async () => {
-  //   const commonWith7907 = new Common({
-  //     chain: Mainnet,
-  //     hardfork: Hardfork.Osaka,
-  //     eips: [7907],
-  //   })
-  //   const caller = createAddressFromString('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
-  //   for (const code of ['F0', 'F5']) {
-  //     const evm = await createEVM({
-  //       common: commonWith7907,
+  it('CREATE with MAX_INITCODE_SIZE+ approx 200KB, allowUnlimitedContractSize active', async () => {
+    const commonWith7907 = new Common({
+      chain: Mainnet,
+      hardfork: Hardfork.Osaka,
+      eips: [7907],
+    })
+    const caller = createAddressFromString('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
+    for (const code of ['F0', 'F5']) {
+      const evm = await createEVM({
+        common: commonWith7907,
 
-  //       allowUnlimitedInitCodeSize: true,
-  //     })
-  //     const evmDisabled = await createEVM({
-  //       common: commonWith7907,
-  //       allowUnlimitedInitCodeSize: false,
-  //     })
-  //     const contractFactory = createAddressFromString('0xb94f5374fce5edbc8e2a8697c15331677e6ebf0b')
-  //     const contractAccount = await evm.stateManager.getAccount(contractFactory)
-  //     await evm.stateManager.putAccount(contractFactory, contractAccount!)
-  //     await evmDisabled.stateManager.putAccount(contractFactory, contractAccount!)
-  //     // This factory code:
-  //     // -> reads 32 bytes from the calldata (X)
-  //     // Attempts to create a contract of X size
-  //     // (the initcode of this contract is just zeros, so STOP opcode
-  //     // It stores the topmost stack item of this CREATE(2) at slot 0
-  //     // This is either the contract address if it was successful, or 0 in case of error
-  //     const factoryCode = hexToBytes(`0x600060003560006000${code}600055`)
+        allowUnlimitedInitCodeSize: true,
+      })
+      const evmDisabled = await createEVM({
+        common: commonWith7907,
+        allowUnlimitedInitCodeSize: false,
+      })
+      const contractFactory = createAddressFromString('0xb94f5374fce5edbc8e2a8697c15331677e6ebf0b')
+      const contractAccount = await evm.stateManager.getAccount(contractFactory)
+      await evm.stateManager.putAccount(contractFactory, contractAccount!)
+      await evmDisabled.stateManager.putAccount(contractFactory, contractAccount!)
+      // This factory code:
+      // -> reads 32 bytes from the calldata (X)
+      // Attempts to create a contract of X size
+      // (the initcode of this contract is just zeros, so STOP opcode
+      // It stores the topmost stack item of this CREATE(2) at slot 0
+      // This is either the contract address if it was successful, or 0 in case of error
+      const factoryCode = hexToBytes(`0x600060003560006000${code}600055`)
 
-  //     await evm.stateManager.putCode(contractFactory, factoryCode)
-  //     await evmDisabled.stateManager.putCode(contractFactory, factoryCode)
+      await evm.stateManager.putCode(contractFactory, factoryCode)
+      await evmDisabled.stateManager.putCode(contractFactory, factoryCode)
 
-  //     const runCallArgs = {
-  //       from: caller,
-  //       to: contractFactory,
-  //       gasLimit: BigInt(0xfffffffff),
-  //       data: hexToBytes(`0x${'00'.repeat(30)}C001`),
-  //     }
+      const runCallArgs = {
+        from: caller,
+        to: contractFactory,
+        gasLimit: BigInt(0xfffffffff),
+        data: hexToBytes(`0x${'00'.repeat(29)}C0001`), // C0001 = 786,433
+      }
 
-  //     const res = await evm.runCall(runCallArgs)
-  //     await evmDisabled.runCall(runCallArgs)
+      const res = await evm.runCall(runCallArgs)
+      await evmDisabled.runCall(runCallArgs)
 
-  //     const key0 = hexToBytes(`0x${'00'.repeat(32)}`)
-  //     const storageActive = await evm.stateManager.getStorage(contractFactory, key0)
-  //     const storageInactive = await evmDisabled.stateManager.getStorage(contractFactory, key0)
+      const key0 = hexToBytes(`0x${'00'.repeat(32)}`)
+      const storageActive = await evm.stateManager.getStorage(contractFactory, key0)
+      const storageInactive = await evmDisabled.stateManager.getStorage(contractFactory, key0)
 
-  //     assert.isTrue(
-  //       !equalsBytes(storageActive, new Uint8Array()),
-  //       'created contract with MAX_INITCODE_SIZE + 1 length, allowUnlimitedInitCodeSize=true',
-  //     )
-  //     assert.isTrue(
-  //       equalsBytes(storageInactive, new Uint8Array()),
-  //       'did not create contract with MAX_INITCODE_SIZE + 1 length, allowUnlimitedInitCodeSize=false',
-  //     )
+      assert.isTrue(
+        !equalsBytes(storageActive, new Uint8Array()),
+        'created contract with MAX_INITCODE_SIZE + 1 length, allowUnlimitedInitCodeSize=true',
+      )
+      assert.isTrue(
+        equalsBytes(storageInactive, new Uint8Array()),
+        'did not create contract with MAX_INITCODE_SIZE + 1 length, allowUnlimitedInitCodeSize=false',
+      )
 
-  //     // gas check
+      // gas check
 
-  //     const runCallArgs2 = {
-  //       from: caller,
-  //       to: contractFactory,
-  //       gasLimit: BigInt(0xfffffffff),
-  //       data: hexToBytes(`0x${'00'.repeat(30)}C000`),
-  //     }
+      const runCallArgs2 = {
+        from: caller,
+        to: contractFactory,
+        gasLimit: BigInt(0xfffffffff),
+        data: hexToBytes(`0x${'00'.repeat(30)}C000`),
+      }
 
-  //     // Test:
-  //     // On the `allowUnlimitedInitCodeSize = true`, create contract with MAX_INITCODE_SIZE + 1
-  //     // On `allowUnlimitedInitCodeSize = false`, create contract with MAX_INITCODE_SIZE
-  //     // Verify that the gas cost on the prior one is higher than the first one
-  //     const res2 = await evmDisabled.runCall(runCallArgs2)
+      // Test:
+      // On the `allowUnlimitedInitCodeSize = true`, create contract with MAX_INITCODE_SIZE + 1
+      // On `allowUnlimitedInitCodeSize = false`, create contract with MAX_INITCODE_SIZE
+      // Verify that the gas cost on the prior one is higher than the first one
+      const res2 = await evmDisabled.runCall(runCallArgs2)
 
-  //     assert.isTrue(
-  //       res.execResult.executionGasUsed > res2.execResult.executionGasUsed,
-  //       'charged initcode analysis gas cost on both allowUnlimitedCodeSize=true, allowUnlimitedInitCodeSize=false',
-  //     )
-  //   }
-  // })
+      assert.isTrue(
+        res.execResult.executionGasUsed > res2.execResult.executionGasUsed,
+        'charged initcode analysis gas cost on both allowUnlimitedCodeSize=true, allowUnlimitedInitCodeSize=false',
+      )
+    }
+  })
+
+  it('CREATE with exactly MAX_INITCODE_SIZE passes', async () => {
+    const commonWith7907 = new Common({
+      chain: Mainnet,
+      hardfork: Hardfork.Osaka,
+      eips: [7907],
+    })
+    const caller = createAddressFromString('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
+    for (const code of ['F0', 'F5']) {
+      const evm = await createEVM({
+        common: commonWith7907,
+
+        allowUnlimitedInitCodeSize: true,
+      })
+      const evmDisabled = await createEVM({
+        common: commonWith7907,
+        allowUnlimitedInitCodeSize: false,
+      })
+      const contractFactory = createAddressFromString('0xb94f5374fce5edbc8e2a8697c15331677e6ebf0b')
+      const contractAccount = await evm.stateManager.getAccount(contractFactory)
+      await evm.stateManager.putAccount(contractFactory, contractAccount!)
+      await evmDisabled.stateManager.putAccount(contractFactory, contractAccount!)
+      // This factory code:
+      // -> reads 32 bytes from the calldata (X)
+      // Attempts to create a contract of X size
+      // (the initcode of this contract is just zeros, so STOP opcode
+      // It stores the topmost stack item of this CREATE(2) at slot 0
+      // This is either the contract address if it was successful, or 0 in case of error
+      const factoryCode = hexToBytes(`0x600060003560006000${code}600055`)
+
+      await evm.stateManager.putCode(contractFactory, factoryCode)
+      await evmDisabled.stateManager.putCode(contractFactory, factoryCode)
+
+      const runCallArgs = {
+        from: caller,
+        to: contractFactory,
+        gasLimit: BigInt(0xfffffffff),
+        data: hexToBytes(`0x${'00'.repeat(29)}080000`), // 512 × 1024 = 524,288 bytes (0x80000)
+      }
+
+      const res = await evm.runCall(runCallArgs)
+      const resEnabledLimit = await evmDisabled.runCall(runCallArgs)
+
+      const key0 = hexToBytes(`0x${'00'.repeat(32)}`)
+      const storageActive = await evm.stateManager.getStorage(contractFactory, key0)
+      const storageInactive = await evmDisabled.stateManager.getStorage(contractFactory, key0)
+
+      assert.isTrue(
+        !equalsBytes(storageActive, new Uint8Array()),
+        'created contract with MAX_INITCODE_SIZE length, allowUnlimitedInitCodeSize=true',
+      )
+      assert.isTrue(
+        !equalsBytes(storageInactive, new Uint8Array()),
+        'created contract with MAX_INITCODE_SIZE length, allowUnlimitedInitCodeSize=false',
+      )
+      assert.isTrue(
+        res.execResult.exceptionError === undefined,
+        'no error for successfully created a contract with data size 250KB (> 24KB and < 256KB)',
+      )
+      assert.isTrue(
+        resEnabledLimit.execResult.exceptionError === undefined,
+        'no error for successfully created a contract with data size 250KB (> 24KB and < 256KB)',
+      )
+
+      // over initcode size limit, 512KB + 1 byte
+      const runCallArgsOverLimit = {
+        from: caller,
+        to: contractFactory,
+        gasLimit: BigInt(0xfffffffff),
+        data: hexToBytes(`0x${'00'.repeat(29)}080001`), // 512 × 1024 = 524,288 bytes (0x80000) + 1 byte
+      }
+
+      const res2 = await evm.runCall(runCallArgsOverLimit)
+      const resEnabledLimi2 = await evmDisabled.runCall(runCallArgsOverLimit)
+      assert.isTrue(
+        res2.execResult.exceptionError === undefined,
+        'no error for successfully created a contract with data size 512KB + 1 byte when limit is disabled',
+      )
+      assert.isTrue(
+        (resEnabledLimi2.execResult.exceptionError?.error as string) ===
+          'initcode exceeds max initcode size',
+        'error for creating a contract with data size 512KB + 1 byte',
+      )
+
+      // gas check todo
+    }
+  })
 })
