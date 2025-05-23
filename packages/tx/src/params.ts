@@ -70,6 +70,8 @@ export const paramsTx: ParamsDict = {
    * Meter Contract Code Size And Increase Limit
    */
   7907: {
+    // The threshold for the excess contract code size (prev. maxCodeSize EIP-607)
+    excessCodeSizeThreshold: 24576, // 24 x 1024 = 24576 bytes (0x6000)
     // Maximum length of contract code
     maxCodeSize: 262144, // 256 × 1024 = 262,144 bytes (0x40000)
     // Maximum length of initialization code when creating a contract
