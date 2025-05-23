@@ -18,6 +18,7 @@ import { DELEGATION_7702_FLAG } from '../types.ts'
 import { updateSstoreGasEIP1283 } from './EIP1283.ts'
 import { updateSstoreGasEIP2200 } from './EIP2200.ts'
 import { accessAddressEIP2929, accessStorageEIP2929 } from './EIP2929.ts'
+import { accessAddressCodeEIP7907 } from './EIP7907.ts'
 import {
   createAddressFromStackBigInt,
   divCeil,
@@ -212,6 +213,11 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         if (common.isActivatedEIP(2929)) {
           gas += accessAddressEIP2929(runState, address.bytes, common, charge2929Gas)
+        }
+
+        // EXTCODECOPY loads code, so check for large contract cost
+        if (common.isActivatedEIP(7907)) {
+          gas += accessAddressCodeEIP7907(runState, address.bytes, common, true)
         }
 
         if (dataLength !== BIGINT_0) {
@@ -527,6 +533,16 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           )
         }
 
+        // CREATE loads code, add contract to warm code addresses but don't charge gas
+        if (common.isActivatedEIP(7907)) {
+          gas += accessAddressCodeEIP7907(
+            runState,
+            runState.interpreter.getAddress().bytes,
+            common,
+            false,
+          )
+        }
+
         if (common.isActivatedEIP(3860)) {
           gas += ((length + BIGINT_31) / BIGINT_32) * common.param('initCodeWordGas')
         }
@@ -572,6 +588,11 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         if (common.isActivatedEIP(2929)) {
           gas += accessAddressEIP2929(runState, toAddress.bytes, common, charge2929Gas)
+        }
+
+        // CALL loads code, so check for large contract cost
+        if (common.isActivatedEIP(7907)) {
+          gas += accessAddressCodeEIP7907(runState, toAddress.bytes, common, true)
         }
 
         if (common.isActivatedEIP(7702)) {
@@ -652,6 +673,16 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           )
         }
 
+        // CALLCODE loads code, so check for large contract cost
+        if (common.isActivatedEIP(7907)) {
+          gas += accessAddressCodeEIP7907(
+            runState,
+            createAddressFromStackBigInt(toAddr).bytes,
+            common,
+            true,
+          )
+        }
+
         if (common.isActivatedEIP(7702)) {
           gas += await eip7702GasCost(runState, common, toAddress, charge2929Gas)
         }
@@ -716,6 +747,16 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           )
         }
 
+        // DELEGATECALL loads code, so check for large contract cost
+        if (common.isActivatedEIP(7907)) {
+          gas += accessAddressCodeEIP7907(
+            runState,
+            createAddressFromStackBigInt(toAddr).bytes,
+            common,
+            true,
+          )
+        }
+
         if (common.isActivatedEIP(7702)) {
           gas += await eip7702GasCost(runState, common, toAddress, charge2929Gas)
         }
@@ -750,6 +791,16 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         if (common.isActivatedEIP(2929)) {
           gas += accessAddressEIP2929(
+            runState,
+            runState.interpreter.getAddress().bytes,
+            common,
+            false,
+          )
+        }
+
+        // CREATE2 loads code, add contract to warm code addresses but don't charge gas
+        if (common.isActivatedEIP(7907)) {
+          gas += accessAddressCodeEIP7907(
             runState,
             runState.interpreter.getAddress().bytes,
             common,
@@ -926,6 +977,16 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
             createAddressFromStackBigInt(toAddr).bytes,
             common,
             charge2929Gas,
+          )
+        }
+
+        // STATICCALL loads code, so check for large contract cost
+        if (common.isActivatedEIP(7907)) {
+          gas += accessAddressCodeEIP7907(
+            runState,
+            createAddressFromStackBigInt(toAddr).bytes,
+            common,
+            true,
           )
         }
 

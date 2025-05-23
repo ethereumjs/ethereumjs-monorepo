@@ -3,6 +3,7 @@ import {
   BIGINT_0,
   BIGINT_1,
   BIGINT_2,
+  BIGINT_31,
   BIGINT_32,
   BIGINT_64,
   BIGINT_160,
@@ -45,6 +46,12 @@ export function abs(a: bigint) {
     return a
   }
   return a * BIGINT_NEG1
+}
+
+export function ceil32(n: bigint) {
+  // Division with BigInt in JavaScript always performs
+  // integer division (i.e., it truncates toward zero)
+  return (n + BIGINT_31) / BIGINT_32
 }
 
 const N = BigInt(115792089237316195423570985008687907853269984665640564039457584007913129639936)

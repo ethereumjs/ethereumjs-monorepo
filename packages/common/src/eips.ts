@@ -478,4 +478,12 @@ export const eipsDict: EIPsDict = {
   7864: {
     minimumHardfork: Hardfork.London,
   },
+  /**
+   * Description : Meter Contract Code Size And Increase Limit
+   * URL         : https://eips.ethereum.org/EIPS/eip-7907
+   * Status      : Draft
+   */
+  7907: {
+    minimumHardfork: Hardfork.Osaka,
+  },
 }
