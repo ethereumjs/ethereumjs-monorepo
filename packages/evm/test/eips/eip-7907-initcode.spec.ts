@@ -2,6 +2,7 @@ import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import {
   Address,
   concatBytes,
+  createAddressFromString,
   // createAddressFromString,
   // equalsBytes,
   hexToBytes,
@@ -83,49 +84,78 @@ describe('EIP 7907 initcode size tests', () => {
     )
   })
 
-  // it('ensure EIP-7907 gas is applied on CREATE calls', async () => {
-  //   // Transaction/Contract data taken from https://github.com/ethereum/tests/pull/990
-  //   const commonWith7907 = new Common({
-  //     chain: Mainnet,
-  //     hardfork: Hardfork.Osaka,
-  //     eips: [7907],
-  //   })
-  //   const commonWithout7907 = new Common({
-  //     chain: Mainnet,
-  //     hardfork: Hardfork.Osaka,
-  //     eips: [],
-  //   })
-  //   const caller = createAddressFromString('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
-  //   const evm = await createEVM({
-  //     common: commonWith7907,
-  //   })
-  //   const evmWithout7907 = await createEVM({
-  //     common: commonWithout7907,
-  //   })
-  //   const contractFactory = createAddressFromString('0xb94f5374fce5edbc8e2a8697c15331677e6ebf0b')
-  //   const contractAccount = await evm.stateManager.getAccount(contractFactory)
-  //   await evm.stateManager.putAccount(contractFactory, contractAccount!)
-  //   await evmWithout7907.stateManager.putAccount(contractFactory, contractAccount!)
-  //   const factoryCode = hexToBytes(
-  //     '0x7f600a80600080396000f3000000000000000000000000000000000000000000006000526000355a8160006000f05a8203600a55806000556001600155505050',
-  //   )
+  it('ensure EIP-7907 code warm is applied on CREATE calls to factory and new contract', async () => {
+    // Transaction/Contract data taken from https://github.com/ethereum/tests/pull/990
+    const commonWith7907 = new Common({
+      chain: Mainnet,
+      hardfork: Hardfork.Osaka,
+      eips: [7907],
+    })
+    const commonWithout7907 = new Common({
+      chain: Mainnet,
+      hardfork: Hardfork.Prague,
+      eips: [],
+    })
+    const caller = createAddressFromString('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b')
+    const evm = await createEVM({
+      common: commonWith7907,
+    })
+    const evmWithout7907 = await createEVM({
+      common: commonWithout7907,
+    })
+    const contractFactory = createAddressFromString('0xb94f5374fce5edbc8e2a8697c15331677e6ebf0b')
+    const contractAccount = await evm.stateManager.getAccount(contractFactory)
+    await evm.stateManager.putAccount(contractFactory, contractAccount!)
+    await evmWithout7907.stateManager.putAccount(contractFactory, contractAccount!)
+    const factoryCode = hexToBytes(
+      '0x7f600a80600080396000f3000000000000000000000000000000000000000000006000526000355a8160006000f05a8203600a55806000556001600155505050',
+    )
 
-  //   await evm.stateManager.putCode(contractFactory, factoryCode)
-  //   await evmWithout7907.stateManager.putCode(contractFactory, factoryCode)
-  //   const data = hexToBytes('0x000000000000000000000000000000000000000000000000000000000000c000')
-  //   const runCallArgs = {
-  //     from: caller,
-  //     to: contractFactory,
-  //     data,
-  //     gasLimit: BigInt(0xfffffffff),
-  //   }
-  //   const res = await evm.runCall(runCallArgs)
-  //   const res2 = await evmWithout7907.runCall(runCallArgs)
-  //   assert.isTrue(
-  //     res.execResult.executionGasUsed > res2.execResult.executionGasUsed,
-  //     'execution gas used is higher with EIP 7907 active',
-  //   )
-  // })
+    await evm.stateManager.putCode(contractFactory, factoryCode)
+    await evmWithout7907.stateManager.putCode(contractFactory, factoryCode)
+    const data = hexToBytes('0x000000000000000000000000000000000000000000000000000000000000c000')
+    const runCallArgs = {
+      from: caller,
+      to: contractFactory,
+      data,
+      gasLimit: BigInt(0xfffffffff),
+    }
+    const res = await evm.runCall(runCallArgs)
+    const resWithout7907 = await evmWithout7907.runCall(runCallArgs)
+
+    // Check that the created contract address is warmed.
+    // This logic isn't changed in 7907, but is in place to confirm that
+    // the code warm is applied inline with the address access warm on CREATE calls.
+    assert.isTrue(
+      res.execResult.runState?.interpreter.journal.isWarmedAddress(contractFactory.bytes),
+      'contract factory address is warmed',
+    )
+    res.execResult.createdAddresses?.forEach((address) => {
+      assert.isTrue(
+        res.execResult.runState?.interpreter.journal.isWarmedAddress(hexToBytes(address)),
+        `created contract address is warmed: ${address}`,
+      )
+    })
+
+    // Both the contract factory and the created contract codes are warmed.
+    assert.isTrue(
+      res.execResult.runState?.interpreter.journal.isWarmedCodeAddress(contractFactory.bytes),
+      'contract factory code is warmed',
+    )
+    res.execResult.createdAddresses?.forEach((address) => {
+      assert.isTrue(
+        res.execResult.runState?.interpreter.journal.isWarmedCodeAddress(hexToBytes(address)),
+        `created contract code is warmed: ${address}`,
+      )
+    })
+
+    assert.isFalse(
+      resWithout7907.execResult.runState?.interpreter.journal.isWarmedCodeAddress(
+        contractFactory.bytes,
+      ),
+      'contract factory code is not warmed with EIP 7907 inactive',
+    )
+  })
 
   // it('ensure EIP-7907 gas is applied on CREATE2 calls', async () => {
   //   // Transaction/Contract data taken from https://github.com/ethereum/tests/pull/990
