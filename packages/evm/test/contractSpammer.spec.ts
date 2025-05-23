@@ -49,8 +49,10 @@ describe('RunCall tests', () => {
 
     // calldataload [0] is salt
     const code = hexToBytes(
-      `0x00${deploymentCodeMSTORE}${'5F355B'}${'60010180'}${pushCodeSize}5F5F${'F5602557'}`,
+      `0x${deploymentCodeMSTORE}${'5F355B'}${'60010180'}${pushCodeSize}5F5F${'F5602557'}`,
     )
+
+    // evm.events.on('step', (e) => {console.log(e.opcode.name)})
 
     const res = await evm.runCall({ to: undefined, gasLimit: BigInt(30_000_000), data: code })
 
@@ -63,16 +65,11 @@ describe('RunCall tests', () => {
     // [22-54] salt [32 bytes]
     // [55-85] codeHash [32 bytes]
 
-    const attackCode = `0x7FFF${bytesToUnprefixedHex(setLengthRight(addr, 31))}5F527F${bytesToUnprefixedHex(deploymentHash)}6037525F5B6001018060165260555F203B5060480056`
+    const attackCode = `0x7FFF${bytesToUnprefixedHex(setLengthRight(addr, 31))}5F527F${bytesToUnprefixedHex(deploymentHash)}6035525F5B6001018060155260555F203B50604856`
 
     const ctrAddress = createAddressFromString('0x' + '20'.repeat(20))
     await evm.stateManager.putCode(ctrAddress, hexToBytes(<any>attackCode))
 
-    evm.events.on('step', (e) => {
-      console.log(e.opcode.name, e.stack)
-    })
-
     const res2 = await evm.runCall({ to: ctrAddress, gasLimit: BigInt(30_000_000), data: code })
-    console.log(res2)
   }, 10000000)
 })
