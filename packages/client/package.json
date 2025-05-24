@@ -67,7 +67,7 @@
     "@ethereumjs/vm": "10.0.0",
     "@js-sdsl/ordered-map": "^4.4.2",
     "@multiformats/multiaddr": "^12.4.0",
-    "@paulmillr/trusted-setups": "^0.1.2",
+    "@paulmillr/trusted-setups": "^0.2.0",
     "@polkadot/wasm-crypto": "^7.4.1",
     "@scure/base": "^1.2.4",
     "abstract-level": "^3.0.1",

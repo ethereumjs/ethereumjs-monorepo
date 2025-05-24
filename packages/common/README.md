@@ -126,7 +126,7 @@ The KZG library used for EIP-4844 Blob Transactions is initialized by `common` u
 // ./examples/initKzg.ts
 
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 
 const main = async () => {
