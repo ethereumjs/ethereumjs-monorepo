@@ -14,7 +14,7 @@ import {
   hexToBytes,
 } from '@ethereumjs/util'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
-import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'

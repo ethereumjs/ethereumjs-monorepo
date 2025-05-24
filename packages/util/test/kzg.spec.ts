@@ -1,7 +1,7 @@
 import { trustedSetup as slow } from '@paulmillr/trusted-setups'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { loadKZG } from 'kzg-wasm'
-import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 import { assert, beforeAll, describe, it } from 'vitest'
 
 import { getBlobs } from '../src/blobs.ts'

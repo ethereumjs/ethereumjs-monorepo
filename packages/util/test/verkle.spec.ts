@@ -1,5 +1,5 @@
 import { verkleKaustinen6Block72Data } from '@ethereumjs/testdata'
-import * as verkle from 'micro-eth-signer/verkle'
+import * as verkle from 'micro-eth-signer/verkle.js'
 import { assert, describe, it } from 'vitest'
 
 import {

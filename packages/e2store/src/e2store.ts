@@ -6,7 +6,7 @@ import {
   concatBytes,
   equalsBytes,
 } from '@ethereumjs/util'
-import { uint256 } from 'micro-eth-signer/ssz'
+import { uint256 } from 'micro-eth-signer/ssz.js'
 
 import { compressData, decompressData } from './snappy.ts'
 import { CommonTypes, Era1Types, EraTypes } from './types.ts'

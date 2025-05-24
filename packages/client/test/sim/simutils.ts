@@ -17,7 +17,7 @@ import {
 } from '@ethereumjs/util'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import * as fs from 'fs/promises'
-import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 import qs from 'qs'
 
 import { RPCManager } from '../../src/rpc/index.ts'

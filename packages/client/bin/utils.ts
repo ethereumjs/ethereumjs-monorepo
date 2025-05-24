@@ -28,7 +28,7 @@ import {
   randomBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
-// import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import {
   keccak256 as keccak256WASM,
   secp256k1Expand,
@@ -40,8 +40,8 @@ import {
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import { sha256 } from 'ethereum-cryptography/sha256.js'
-// import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
-import * as verkle from 'micro-eth-signer/verkle'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
+import * as verkle from 'micro-eth-signer/verkle.js'
 import * as promClient from 'prom-client'
 import * as yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
@@ -631,7 +631,7 @@ function generateAccount(): Account {
 export async function getCryptoFunctions(useJsCrypto: boolean): Promise<CustomCrypto> {
   const cryptoFunctions: CustomCrypto = {}
 
-  // const kzg = new microEthKZG(trustedSetup)
+  const kzg = new microEthKZG(trustedSetup)
   ckzg.loadTrustedSetup(0)
   const cKzg = {
     blobToKzgCommitment: (blob: string) => {
@@ -734,6 +734,7 @@ export async function getCryptoFunctions(useJsCrypto: boolean): Promise<CustomCr
       return address
     }
   }
+  console.log(kzg)
   cryptoFunctions.kzg = cKzg
   cryptoFunctions.verkle = verkle
   return cryptoFunctions

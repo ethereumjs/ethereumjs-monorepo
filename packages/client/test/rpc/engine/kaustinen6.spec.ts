@@ -6,7 +6,7 @@ import {
   executionPayloadFromBeaconPayload,
 } from '@ethereumjs/block'
 import { hexToBytes } from '@ethereumjs/util'
-import * as verkle from 'micro-eth-signer'
+import * as verkle from 'micro-eth-signer/verkle.js'
 import * as td from 'testdouble'
 import { assert, describe, it } from 'vitest'
 

@@ -83,7 +83,7 @@
     "benchmark": "^2.1.4",
     "ethers": "^6.13.5",
     "mcl-wasm": "^1.8.0",
-    "micro-eth-signer": "^0.14.0",
+    "micro-eth-signer": "^0.15.0",
     "minimist": "^1.2.8",
     "node-dir": "^0.1.17",
     "nyc": "^17.1.0",
