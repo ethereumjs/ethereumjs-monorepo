@@ -631,6 +631,7 @@ export async function getCryptoFunctions(useJsCrypto: boolean): Promise<CustomCr
   const cryptoFunctions: CustomCrypto = {}
 
   const kzg = new microEthKZG(trustedSetup)
+  // Initialize WASM crypto if JS crypto is not specified
   if (useJsCrypto === false) {
     await waitReadyPolkadotSha256()
     cryptoFunctions.keccak256 = keccak256WASM
