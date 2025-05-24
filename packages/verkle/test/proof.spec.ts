@@ -1,12 +1,12 @@
 import { MapDB, bigIntToBytes, hexToBytes, randomBytes, setLengthRight } from '@ethereumjs/util'
-import * as verkle from 'micro-eth-signer/verkle'
+import * as verkle from 'micro-eth-signer/verkle.js'
 import { assert, describe, it } from 'vitest'
 
 import { createVerkleTree } from '../src/constructors.ts'
 import { LeafVerkleNode } from '../src/index.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
-import type { ProverInput, VerifierInput } from 'micro-eth-signer/verkle'
+import type { ProverInput, VerifierInput } from 'micro-eth-signer/verkle.js'
 
 describe('lets make proofs', () => {
   it.skip('should generate a proof of a specific state root and then verify it', async () => {

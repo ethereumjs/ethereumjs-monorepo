@@ -12,7 +12,7 @@ import {
   toBytes,
 } from '@ethereumjs/util'
 import { createVerkleTree } from '@ethereumjs/verkle'
-import * as verkle from 'micro-eth-signer/verkle'
+import * as verkle from 'micro-eth-signer/verkle.js'
 
 import { createVM, runTx } from '../../../src/index.ts'
 import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util.ts'

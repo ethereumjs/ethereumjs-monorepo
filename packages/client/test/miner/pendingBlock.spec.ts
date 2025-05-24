@@ -24,7 +24,7 @@ import {
 } from '@ethereumjs/util'
 import { createVM } from '@ethereumjs/vm'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
-import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 import { assert, describe, it, vi } from 'vitest'
 
 import { Config } from '../../src/config.ts'

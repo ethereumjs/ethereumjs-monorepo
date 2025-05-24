@@ -11,7 +11,7 @@ import {
 } from '@ethereumjs/util'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
 import { Client } from 'jayson/promise/index.js'
-import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 
 import type { TransactionType, TxData } from '@ethereumjs/tx'
 
