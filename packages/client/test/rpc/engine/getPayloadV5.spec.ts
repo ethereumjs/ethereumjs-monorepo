@@ -86,7 +86,7 @@ describe(method, () => {
     const txCommitments = blobsToCommitments(kzg, txBlobs)
     const txVersionedHashes = commitmentsToVersionedHashes(txCommitments)
     const txBlobProofs = blobsToProofs(kzg, txBlobs, txCommitments)
-    // const [txCells, txCellProofs, txCellIndices] = blobsToCellsAndProofs(kzg, txBlobs)
+    const [txCells, txCellProofs, txCellIndices] = blobsToCellsAndProofs(kzg, txBlobs)
     // console.log({
     //   txCells: txCells.length,
     //   txCellProofs: txCellProofs.length,
