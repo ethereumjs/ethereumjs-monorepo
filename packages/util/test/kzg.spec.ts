@@ -8,68 +8,7 @@ import { getBlobs } from '../src/blobs.ts'
 
 import type { KZG } from '../src/kzg.ts'
 
-import * as ckzg from 'c-kzg'
-import { bytesToHex, hexToBytes } from '../src/bytes.ts'
-
 export const jsKZG = new microEthKZG(trustedSetup)
-const cKzg = {
-  blobToKzgCommitment: (blob: string) => {
-    const blobBytes = hexToBytes(blob)
-    const commitmentBytes = ckzg.blobToKzgCommitment(blobBytes)
-    return bytesToHex(commitmentBytes)
-  },
-  computeBlobProof: (blob: string, commitment: string) => {
-    const blobBytes = hexToBytes(blob)
-    const commitmentBytes = hexToBytes(commitment)
-    const proofBytes = ckzg.computeBlobKzgProof(blobBytes, commitmentBytes)
-    return bytesToHex(proofBytes)
-  },
-  verifyProof: (commitment: string, z: string, y: string, proof: string) => {
-    const commitmentBytes = hexToBytes(commitment)
-    const zBytes = hexToBytes(z)
-    const yBytes = hexToBytes(y)
-    const proofBytes = hexToBytes(proof)
-    return ckzg.verifyKzgProof(commitmentBytes, zBytes, yBytes, proofBytes)
-  },
-  verifyBlobProofBatch: (blobs: string[], commitments: string[], proofs: string[]) => {
-    const blobsBytes = blobs.map((blb) => hexToBytes(blb))
-    const commitmentsBytes = commitments.map((cmt) => hexToBytes(cmt))
-    const proofsBytes = proofs.map((prf) => hexToBytes(prf))
-    return ckzg.verifyBlobKzgProofBatch(blobsBytes, commitmentsBytes, proofsBytes)
-  },
-  computeCells: (blob: string) => {
-    const blobBytes = hexToBytes(blob)
-    const cellsBytes = ckzg.computeCells(blobBytes)
-    return cellsBytes.map((cellBytes) => bytesToHex(cellBytes))
-  },
-  computeCellsAndProofs: (blob: string) => {
-    const blobBytes = hexToBytes(blob)
-    const [cellsBytes, proofsBytes] = ckzg.computeCellsAndKzgProofs(blobBytes)
-    return [
-      cellsBytes.map((cellBytes) => bytesToHex(cellBytes)),
-      proofsBytes.map((prfBytes) => bytesToHex(prfBytes)),
-    ] as [string[], string[]]
-  },
-  recoverCellsAndProofs: (indices: number[], cells: string[]) => {
-    const cellsBytes = cells.map((cell) => hexToBytes(cell))
-    const [allCellsBytes, allProofsBytes] = ckzg.recoverCellsAndKzgProofs(indices, cellsBytes)
-    return [
-      allCellsBytes.map((cellBytes) => bytesToHex(cellBytes)),
-      allProofsBytes.map((prfBytes) => bytesToHex(prfBytes)),
-    ] as [string[], string[]]
-  },
-  verifyCellKzgProofBatch: (
-    commitments: string[],
-    indices: number[],
-    cells: string[],
-    proofs: string[],
-  ) => {
-    const commitmentsBytes = commitments.map((commit) => hexToBytes(commit))
-    const cellsBytes = cells.map((cell) => hexToBytes(cell))
-    const proofsBytes = proofs.map((prf) => hexToBytes(prf))
-    return ckzg.verifyCellKzgProofBatch(commitmentsBytes, indices, cellsBytes, proofsBytes)
-  },
-}
 
 describe('KZG API tests', () => {
   let wasm: Awaited<ReturnType<typeof loadKZG>>
@@ -97,6 +36,25 @@ describe('KZG API tests', () => {
       kzgProofs: string[],
     ): boolean {
       return wasm.verifyBlobKZGProofBatch(blobs, expectedKZGCommitments, kzgProofs)
+    },
+
+    // add cell methods from micro kzg till we have them available in wasm as well
+    computeCells(blob: string): string[] {
+      return jsKZG.computeCells(blob)
+    },
+    computeCellsAndProofs(blob: string): [string[], string[]] {
+      return jsKZG.computeCellsAndProofs(blob)
+    },
+    recoverCellsAndProofs(indices: number[], cells: string[]): [string[], string[]] {
+      return jsKZG.recoverCellsAndProofs(indices, cells)
+    },
+    verifyCellKzgProofBatch(
+      commitments: string[],
+      indices: number[],
+      cells: string[],
+      proofs: string[],
+    ): boolean {
+      return jsKZG.verifyCellKzgProofBatch(commitments, indices, cells, proofs)
     },
   }
   it('should produce the same outputs', () => {
