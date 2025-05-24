@@ -9,7 +9,7 @@ import {
   hexToBytes,
   randomBytes,
 } from '@ethereumjs/util'
-import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
 import { Client } from 'jayson/promise/index.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 

@@ -57,6 +57,7 @@ describe(method, () => {
 
     const { osakaGenesis, osakaTime } = osakaGethGenesis
     const customCrypto = await getCryptoFunctions(false)
+    console.log(customCrypto.kzg)
     const kzg = customCrypto.kzg
     const { service, server, common, chain } = await setupChain(osakaGenesis, 'post-merge', {
       engine: true,

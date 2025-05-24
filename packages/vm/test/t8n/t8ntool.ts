@@ -5,7 +5,7 @@ import { EVMMockBlockchain, NobleBLS } from '@ethereumjs/evm'
 import { RLP } from '@ethereumjs/rlp'
 import { createTx } from '@ethereumjs/tx'
 import { bigIntToHex, bytesToHex, hexToBytes, toBytes } from '@ethereumjs/util'
-import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 
