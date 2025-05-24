@@ -1,5 +1,5 @@
 FROM node:22.4-slim
-RUN apt-get update && apt-get install -y git rsync g++ make python3 python3-setuptools && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y git g++ make python3 python3-setuptools && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /ethereumjs-monorepo
 
