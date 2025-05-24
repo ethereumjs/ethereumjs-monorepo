@@ -30,10 +30,10 @@ import { osakaGethGenesis } from '@ethereumjs/testdata'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { BlobEIP4844TxData } from '../src/index.ts'
 
-import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 
-const kzg = new microEthKZG(trustedSetup);
+const kzg = new microEthKZG(trustedSetup)
 const pk = randomBytes(32)
 
 describe('EIP4844 non network wrapper constructor tests - valid scenarios', () => {
