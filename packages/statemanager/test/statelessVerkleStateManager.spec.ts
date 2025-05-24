@@ -14,7 +14,7 @@ import {
   hexToBytes,
   randomBytes,
 } from '@ethereumjs/util'
-import * as verkle from 'micro-eth-signer/verkle'
+import * as verkle from 'micro-eth-signer/verkle.js'
 import { assert, describe, it, test } from 'vitest'
 
 import { CacheType, Caches, StatelessVerkleStateManager } from '../src/index.ts'

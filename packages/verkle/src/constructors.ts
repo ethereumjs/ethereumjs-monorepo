@@ -1,5 +1,5 @@
 import { KeyEncoding, MapDB, ValueEncoding } from '@ethereumjs/util'
-import * as verkle from 'micro-eth-signer/verkle'
+import * as verkle from 'micro-eth-signer/verkle.js'
 
 import { ROOT_DB_KEY } from './types.ts'
 import { VerkleTree } from './verkleTree.ts'

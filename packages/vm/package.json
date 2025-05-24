@@ -75,7 +75,7 @@
   "devDependencies": {
     "@ethereumjs/blockchain": "^10.0.0",
     "@ethereumjs/ethash": "^10.0.0",
-    "@paulmillr/trusted-setups": "^0.1.2",
+    "@paulmillr/trusted-setups": "^0.2.0",
     "@types/benchmark": "^2.1.5",
     "@types/core-js": "^2.5.8",
     "@types/minimist": "^1.2.5",
@@ -83,7 +83,7 @@
     "benchmark": "^2.1.4",
     "ethers": "^6.13.5",
     "mcl-wasm": "^1.8.0",
-    "micro-eth-signer": "^0.14.0",
+    "micro-eth-signer": "^0.15.0",
     "minimist": "^1.2.8",
     "node-dir": "^0.1.17",
     "nyc": "^17.1.0",

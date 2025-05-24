@@ -394,6 +394,15 @@ export const eipsDict: EIPsDict = {
     requiredEIPs: [4844],
   },
   /**
+   * Description : Peerdas blob transactions
+   * URL         : hhttps://eips.ethereum.org/EIPS/eip-7594
+   * Status      : Review
+   */
+  7594: {
+    minimumHardfork: Hardfork.Paris,
+    requiredEIPs: [4844],
+  },
+  /**
    * Description : EOF Contract Creation
    * URL         : https://github.com/ethereum/EIPs/blob/dd32a34cfe4473bce143641bfffe4fd67e1987ab/EIPS/eip-7620.md
    * Status      : Review

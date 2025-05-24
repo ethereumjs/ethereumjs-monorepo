@@ -59,8 +59,8 @@
   },
   "devDependencies": {
     "@ethereumjs/testdata": "1.0.0",
-    "@paulmillr/trusted-setups": "^0.1.2",
-    "micro-eth-signer": "^0.14.0"
+    "@paulmillr/trusted-setups": "^0.2.0",
+    "micro-eth-signer": "^0.15.0"
   },
   "engines": {
     "node": ">=18"

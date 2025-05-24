@@ -155,4 +155,5 @@ export type PrometheusMetrics = {
   accessListEIP2930TxGauge: promClient.Gauge<string>
   feeMarketEIP1559TxGauge: promClient.Gauge<string>
   blobEIP4844TxGauge: promClient.Gauge<string>
+  blobEIP7594TxGauge: promClient.Gauge<string>
 }

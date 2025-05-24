@@ -640,6 +640,7 @@
     "blobschedule",
     "hoodi",
     "peerdas",
-    "getpayload"
+    "getpayload",
+    "ckzg"
   ]
 }

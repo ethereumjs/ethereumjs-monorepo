@@ -1,9 +1,9 @@
 import * as path from 'path'
 
 import { MCLBLS, NobleBLS, NobleBN254, RustBN254 } from '@ethereumjs/evm'
-import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
 import * as mcl from 'mcl-wasm'
-import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 import * as minimist from 'minimist'
 import * as process from 'process'
 import { initRustBN } from 'rustbn-wasm'

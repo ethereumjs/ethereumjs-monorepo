@@ -382,6 +382,10 @@ export interface FeeMarketEIP1559TxData extends AccessList2930TxData {
  */
 export interface BlobEIP4844TxData extends FeeMarketEIP1559TxData {
   /**
+   * Is this an EIP-4844 or EIP-7594 network wrapper transaction
+   */
+  networkWrapperVersion?: BigIntLike
+  /**
    * The versioned hashes used to validate the blobs attached to a transaction
    */
   blobVersionedHashes?: BytesLike[]
@@ -508,6 +512,14 @@ export type BlobEIP4844NetworkValuesArray = [
   Uint8Array[],
 ]
 
+export type BlobEIP7594NetworkValuesArray = [
+  BlobEIP4844TxValuesArray,
+  Uint8Array,
+  Uint8Array[],
+  Uint8Array[],
+  Uint8Array[],
+]
+
 type JSONAccessListItem = { address: string; storageKeys: string[] }
 
 /**
@@ -540,6 +552,7 @@ export interface JSONTx {
 }
 
 export type JSONBlobTxNetworkWrapper = JSONTx & {
+  networkWrapperVersion: PrefixedHexString
   blobs: PrefixedHexString[]
   kzgCommitments: PrefixedHexString[]
   kzgProofs: PrefixedHexString[]
