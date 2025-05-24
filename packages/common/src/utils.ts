@@ -168,6 +168,11 @@ function parseGethParams(gethGenesis: GethGenesis) {
     [Hardfork.Prague]: { name: 'pragueTime', postMerge: true, isTimestamp: true },
     [Hardfork.Osaka]: { name: 'osakaTime', postMerge: true, isTimestamp: true },
     [Hardfork.Verkle]: { name: 'verkleTime', postMerge: true, isTimestamp: true },
+    [Hardfork.Bpo1]: { name: 'bpo1Time', postMerge: true, isTimestamp: true },
+    [Hardfork.Bpo2]: { name: 'bpo2Time', postMerge: true, isTimestamp: true },
+    [Hardfork.Bpo3]: { name: 'bpo3Time', postMerge: true, isTimestamp: true },
+    [Hardfork.Bpo4]: { name: 'bpo4Time', postMerge: true, isTimestamp: true },
+    [Hardfork.Bpo5]: { name: 'bpo5Time', postMerge: true, isTimestamp: true },
   }
 
   // forkMapRev is the map from config field name to Hardfork

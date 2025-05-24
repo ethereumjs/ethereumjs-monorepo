@@ -176,4 +176,44 @@ export const hardforksDict: HardforksDict = {
   verkle: {
     eips: [7709, 4762, 6800],
   },
+  /**
+   * Description: HF to update the blob target, max and updateFraction
+   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/bpo1.md
+   * Status     : Experimental
+   */
+  bpo1: {
+    eips: [],
+  },
+  /**
+   * Description: HF to update the blob target, max and updateFraction
+   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/bpo2.md
+   * Status     : Experimental
+   */
+  bpo2: {
+    eips: [],
+  },
+  /**
+   * Description: HF to update the blob target, max and updateFraction
+   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/bpo3.md
+   * Status     : Experimental
+   */
+  bpo3: {
+    eips: [],
+  },
+  /**
+   * Description: HF to update the blob target, max and updateFraction
+   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/bpo4.md
+   * Status     : Experimental
+   */
+  bpo4: {
+    eips: [],
+  },
+  /**
+   * Description: HF to update the blob target, max and updateFraction
+   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/bpo5.md
+   * Status     : Experimental
+   */
+  bpo5: {
+    eips: [],
+  },
 }
