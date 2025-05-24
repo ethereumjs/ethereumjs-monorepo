@@ -247,14 +247,19 @@ export class BlockBuilder {
       )
     }
     let blobGasUsed = undefined
-    let network4844tx = 0
-    let network7596tx = 0
     if (tx instanceof Blob4844Tx) {
-      if (tx.networkWrapperVersion === NetworkWrapperType.EIP4844) {
-        network4844tx++
-      } else {
-        network7596tx++
+      if (
+        tx.networkWrapperVersion === NetworkWrapperType.EIP4844 &&
+        this.vm.common.isActivatedEIP(7594)
+      ) {
+        throw Error('eip4844 blob transaction for eip7594 activated fork')
+      } else if (
+        tx.networkWrapperVersion === NetworkWrapperType.EIP7594 &&
+        !this.vm.common.isActivatedEIP(7594)
+      ) {
+        throw Error('eip7594 blob transaction for unactivated eip7594 fork')
       }
+
       if (this.blockOpts.common?.isActivatedEIP(4844) === false) {
         throw Error('eip4844 not activated yet for adding a blob transaction')
       }
