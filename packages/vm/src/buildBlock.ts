@@ -257,7 +257,7 @@ export class BlockBuilder {
         tx.networkWrapperVersion === NetworkWrapperType.EIP7594 &&
         !this.vm.common.isActivatedEIP(7594)
       ) {
-        throw Error('eip7594 blob transaction for unactivated eip7594 fork')
+        throw Error('eip7594 blob transaction but eip not yet activated')
       }
 
       if (this.blockOpts.common?.isActivatedEIP(4844) === false) {
