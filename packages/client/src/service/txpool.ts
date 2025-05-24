@@ -500,7 +500,7 @@ export class TxPool {
       this.config.metrics?.feeMarketEIP1559TxGauge?.dec()
     }
     if (isBlob4844Tx(tx)) {
-      if (tx.networkWrapperVersion == NetworkWrapperType.EIP4844) {
+      if (tx.networkWrapperVersion === NetworkWrapperType.EIP4844) {
         this.config.metrics?.blobEIP4844TxGauge?.dec()
       } else {
         this.config.metrics?.blobEIP7594TxGauge?.dec()
@@ -853,8 +853,8 @@ export class TxPool {
     const skippedStats = { byNonce: 0, byPrice: 0, byBlobsLimit: 0, byFutureFork: 0 }
 
     if (vm.common.isActivatedEIP(7594)) {
-      let oldFormatBlobTxs = []
-      for (const [address, poolObjects] of this.pool) {
+      const oldFormatBlobTxs = []
+      for (const [_address, poolObjects] of this.pool) {
         for (const txObj of poolObjects) {
           const tx = txObj.tx
           if (isBlob4844Tx(tx) && tx.networkWrapperVersion === NetworkWrapperType.EIP4844) {
@@ -862,8 +862,10 @@ export class TxPool {
           }
         }
       }
-      oldFormatBlobTxs.map((tx) => this.removeByHash(bytesToUnprefixedHex(tx.hash()), tx))
-      this.config.logger?.info(`removed old 4844 network format txs=${oldFormatBlobTxs.length}`)
+      if (oldFormatBlobTxs.length > 0) {
+        oldFormatBlobTxs.map((tx) => this.removeByHash(bytesToUnprefixedHex(tx.hash()), tx))
+        this.config.logger?.info(`removed old 4844 network format txs=${oldFormatBlobTxs.length}`)
+      }
     }
 
     for (const [address, poolObjects] of this.pool) {
