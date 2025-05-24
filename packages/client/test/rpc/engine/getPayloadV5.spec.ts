@@ -55,14 +55,13 @@ describe(method, () => {
       return this
     }
 
-    const { osakaGenesis, osakaTime } = osakaGethGenesis
+    const { osakaGenesis } = osakaGethGenesis
     const customCrypto = await getCryptoFunctions(false)
-    const kzg = customCrypto.kzg
+    const kzg = customCrypto.kzg!
     const { service, server, common, chain } = await setupChain(osakaGenesis, 'post-merge', {
       engine: true,
       hardfork: Hardfork.Osaka,
       customCrypto: { kzg },
-      timestamp: osakaTime,
     })
 
     const rpc = getRPCClient(server)
