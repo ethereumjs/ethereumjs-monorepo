@@ -87,32 +87,34 @@ describe(method, () => {
     const txVersionedHashes = commitmentsToVersionedHashes(txCommitments)
     const txBlobProofs = blobsToProofs(kzg, txBlobs, txCommitments)
     const [txCells, txCellProofs, txCellIndices] = blobsToCellsAndProofs(kzg, txBlobs)
-    // console.log({
-    //   txCells: txCells.length,
-    //   txCellProofs: txCellProofs.length,
-    //   txCellIndices: txCellIndices.length,
-    // })
-    // expect(txCells.length === txBlobs.length * CELLS_PER_EXT_BLOB)
-    // expect(txCellIndices.length === CELLS_PER_EXT_BLOB)
+    console.log({
+      txCells: txCells.length,
+      txCellProofs: txCellProofs.length,
+      txCellIndices: txCellIndices.length,
+      txVersionedHashes: txVersionedHashes.length,
+      txBlobProofs: txBlobProofs.length,
+    })
+    expect(txCells.length === txBlobs.length * CELLS_PER_EXT_BLOB)
+    expect(txCellIndices.length === CELLS_PER_EXT_BLOB)
 
-    // expect(() =>
-    //   createTx(
-    //     {
-    //       type: 0x03,
-    //       networkWrapperVersion: 0,
-    //       blobVersionedHashes: txVersionedHashes,
-    //       blobs: txBlobs,
-    //       kzgCommitments: txCommitments,
-    //       kzgProofs: txBlobProofs,
-    //       maxFeePerBlobGas: 1n,
-    //       maxFeePerGas: Units.gwei(10),
-    //       maxPriorityFeePerGas: 100000000n,
-    //       gasLimit: 30000000n,
-    //       to: createZeroAddress(),
-    //     },
-    //     { common },
-    //   ),
-    // ).toThrowError(/EIP-7594 is active on Common for EIP4844 network wrapper version/)
+    expect(() =>
+      createTx(
+        {
+          type: 0x03,
+          networkWrapperVersion: 0,
+          blobVersionedHashes: txVersionedHashes,
+          blobs: txBlobs,
+          kzgCommitments: txCommitments,
+          kzgProofs: txBlobProofs,
+          maxFeePerBlobGas: 1n,
+          maxFeePerGas: Units.gwei(10),
+          maxPriorityFeePerGas: 100000000n,
+          gasLimit: 30000000n,
+          to: createZeroAddress(),
+        },
+        { common },
+      ),
+    ).toThrowError(/EIP-7594 is active on Common for EIP4844 network wrapper version/)
 
     // const tx = createTx(
     //   {
