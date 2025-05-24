@@ -113,6 +113,7 @@ export async function getTestsFromArgs(testType: string, onFile: Function, args:
   skipFn = (name: string) => {
     return skipTest(name, args.skipTests)
   }
+
   if (new RegExp(`BlockchainTests`).test(testType)) {
     const forkFilter = new RegExp(`${args.forkConfig}$`)
     skipFn = (name: string, test: any) => {
