@@ -478,4 +478,12 @@ export const eipsDict: EIPsDict = {
   7864: {
     minimumHardfork: Hardfork.London,
   },
+  /**
+   * Description : EIP-7883: ModExp Gas Cost Increase
+   * URL         : hhttps://eips.ethereum.org/EIPS/eip-7883
+   * Status      : Draft
+   */
+  7883: {
+    minimumHardfork: Hardfork.Chainstart,
+  },
 }
