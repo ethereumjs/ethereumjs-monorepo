@@ -72,6 +72,7 @@
     "@scure/base": "^1.2.4",
     "abstract-level": "^3.0.1",
     "body-parser": "^1.20.3",
+    "c-kzg": "^4.1.0",
     "chalk": "^5.4.1",
     "connect": "^3.7.0",
     "cors": "^2.8.5",
