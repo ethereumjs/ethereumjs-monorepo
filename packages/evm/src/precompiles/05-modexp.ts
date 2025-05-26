@@ -32,7 +32,7 @@ const BIGINT_199680 = BigInt(199680)
 
 const maxInt = BigInt(Number.MAX_SAFE_INTEGER)
 
-function multiplicationComplexity(x: bigint): bigint {
+export function multiplicationComplexity(x: bigint): bigint {
   let fac1
   let fac2
   if (x <= BIGINT_64) {
@@ -50,12 +50,12 @@ function multiplicationComplexity(x: bigint): bigint {
   }
 }
 
-function multiplicationComplexityEIP2565(x: bigint): bigint {
+export function multiplicationComplexityEIP2565(x: bigint): bigint {
   const words = (x + BIGINT_7) / BIGINT_8
   return words * words
 }
 
-function getAdjustedExponentLength(data: Uint8Array): bigint {
+export function getAdjustedExponentLength(data: Uint8Array): bigint {
   let expBytesStart
   try {
     const baseLen = bytesToBigInt(data.subarray(0, 32))

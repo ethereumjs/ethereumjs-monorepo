@@ -1,26 +1,26 @@
 import { Common, Mainnet } from '@ethereumjs/common'
-import {
-  bigIntToBytes,
-  bytesToBigInt,
-  bytesToHex,
-  concatBytes,
-  hexToBytes,
-  randomBytes,
-  setLengthLeft,
-  toBytes,
-} from '@ethereumjs/util'
+import {} from '@ethereumjs/util'
 import { assert, beforeAll, describe, it } from 'vitest'
 
 import { createEVM, getActivePrecompiles } from '../../src/index.ts'
-
+import {
+  getAdjustedExponentLength,
+  multiplicationComplexity,
+  multiplicationComplexityEIP2565,
+} from '../../src/precompiles/05-modexp.ts'
+import { getPrecompileName } from '../../src/precompiles/index.ts'
 import { testData } from './modexp-testdata.ts'
+
+import { gasLimitCheck } from '../../src/precompiles/util.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { EVM } from '../../src/index.ts'
 import type { PrecompileFunc } from '../../src/precompiles/types.ts'
 
+const BIGINT_200 = BigInt(200)
+
 /**
- * Compute base^exp mod modulus for *arbitrarily* large BigInts
+ * Compute base^exp mod modulus for *arbitrarily* large BigInts using binary exponentiation
  */
 function modPow(base: bigint, exp: bigint, modulus: bigint): bigint {
   if (modulus === 0n) throw new RangeError('modulus must be non-zero')
@@ -81,6 +81,39 @@ describe('Precompiles: MODEXP', () => {
   })
 })
 
+function enoughGas(opts): boolean {
+  const pName = getPrecompileName('05')
+  const data = opts.data.length < 96 ? setLengthRight(opts.data, 96) : opts.data
+
+  let adjustedELen = getAdjustedExponentLength(data)
+  if (adjustedELen < BIGINT_1) {
+    adjustedELen = BIGINT_1
+  }
+
+  const bLen = bytesToBigInt(data.subarray(0, 32))
+  const mLen = bytesToBigInt(data.subarray(64, 96))
+
+  let maxLen = bLen
+  if (maxLen < mLen) {
+    maxLen = mLen
+  }
+  const Gquaddivisor = opts.common.param('modexpGquaddivisorGas')
+  let gasUsed
+
+  if (!(opts.common.isActivatedEIP(2565) === true)) {
+    gasUsed = (adjustedELen * multiplicationComplexity(maxLen)) / Gquaddivisor
+  } else {
+    gasUsed = (adjustedELen * multiplicationComplexityEIP2565(maxLen)) / Gquaddivisor
+    if (gasUsed < BIGINT_200) {
+      gasUsed = BIGINT_200
+    }
+  }
+  if (!(gasLimitCheck(opts, gasUsed, pName) === true)) {
+    return false
+  }
+  return true
+}
+
 describe('Precompiles: MODEXP with EIP-7823', async () => {
   const common = new Common({ chain: Mainnet, eips: [7823] })
   const evm = await createEVM({
@@ -106,12 +139,17 @@ describe('Precompiles: MODEXP with EIP-7823', async () => {
     )
 
     it(`MODEXP should reject and consume all gas for inputs over 8192 bits in length - case ${maxInputLen} bytes`, async () => {
-      const result = await MODEXP({
+      const opts = {
         data: input,
         gasLimit: BigInt(0xffffffff),
         common,
         _EVM: evm,
-      })
+      }
+
+      // sanity check to make sure there is enough gas in order to isolate error to cases causing OOG due to size limit of inputs
+      while (!enoughGas(opts)) opts.gasLimit *= BigInt(256)
+
+      const result = await MODEXP(opts)
 
       if (maxInputLen > 1024) {
         assert.strictEqual(result.exceptionError?.error, 'out of gas')
