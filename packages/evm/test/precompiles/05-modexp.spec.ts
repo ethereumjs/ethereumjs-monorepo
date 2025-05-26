@@ -1,17 +1,27 @@
 import { Common, Mainnet } from '@ethereumjs/common'
-import {} from '@ethereumjs/util'
+import {
+  BIGINT_1,
+  bigIntToBytes,
+  bytesToBigInt,
+  bytesToHex,
+  concatBytes,
+  hexToBytes,
+  randomBytes,
+  setLengthLeft,
+  toBytes,
+  bigIntToBytes,
+  bytesToBigInt,
+  bytesToHex,
+  setLengthLeft,
+  setLengthRight,
+} from '@ethereumjs/util'
 import { assert, beforeAll, describe, it } from 'vitest'
 
 import { gasLimitCheck } from '../../src/precompiles/util.ts'
 
-import { createEVM, getActivePrecompiles } from '../../src/index.ts'
-import {
-  expMod,
-  getAdjustedExponentLength,
-  multiplicationComplexity,
-  multiplicationComplexityEIP2565,
-} from '../../src/precompiles/05-modexp.ts'
+import { createEVM, getActivePrecompiles,  } from '../../src/index.ts'
 import { getPrecompileName } from '../../src/precompiles/index.ts'
+import { expMod, getAdjustedExponentLength, multiplicationComplexityEIP2565, multiplicationComplexity } from '../../src/precompiles/05-modexp.ts'
 import { testData } from './modexp-testdata.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
