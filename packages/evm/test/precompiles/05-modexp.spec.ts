@@ -6,6 +6,7 @@ import { gasLimitCheck } from '../../src/precompiles/util.ts'
 
 import { createEVM, getActivePrecompiles } from '../../src/index.ts'
 import {
+  expMod,
   getAdjustedExponentLength,
   multiplicationComplexity,
   multiplicationComplexityEIP2565,
@@ -18,26 +19,6 @@ import type { EVM } from '../../src/index.ts'
 import type { PrecompileFunc } from '../../src/precompiles/types.ts'
 
 const BIGINT_200 = BigInt(200)
-
-/**
- * Compute base^exp mod modulus for *arbitrarily* large BigInts using binary exponentiation
- */
-function modPow(base: bigint, exp: bigint, modulus: bigint): bigint {
-  if (modulus === 0n) throw new RangeError('modulus must be non-zero')
-  let result = 1n
-  let b = base % modulus
-  let e = exp
-
-  while (e > 0n) {
-    if (e & 1n) {
-      result = (result * b) % modulus
-    }
-    b = (b * b) % modulus
-    e >>= 1n
-  }
-
-  return result
-}
 
 const fuzzerTests = testData.data as PrefixedHexString[][]
 describe('Precompiles: MODEXP', () => {
@@ -130,7 +111,7 @@ describe('Precompiles: MODEXP with EIP-7823', async () => {
     const base = randomBytes(bLen)
     const exponent = randomBytes(eLen)
     const modulo = randomBytes(mLen)
-    const expected = modPow(bytesToBigInt(base), bytesToBigInt(exponent), bytesToBigInt(modulo))
+    const expected = expMod(bytesToBigInt(base), bytesToBigInt(exponent), bytesToBigInt(modulo))
     const input = concatBytes(
       setLengthLeft(toBytes(bLen), 32),
       setLengthLeft(toBytes(eLen), 32),
