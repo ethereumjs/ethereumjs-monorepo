@@ -2,6 +2,8 @@ import { Common, Mainnet } from '@ethereumjs/common'
 import {} from '@ethereumjs/util'
 import { assert, beforeAll, describe, it } from 'vitest'
 
+import { gasLimitCheck } from '../../src/precompiles/util.ts'
+
 import { createEVM, getActivePrecompiles } from '../../src/index.ts'
 import {
   getAdjustedExponentLength,
@@ -10,8 +12,6 @@ import {
 } from '../../src/precompiles/05-modexp.ts'
 import { getPrecompileName } from '../../src/precompiles/index.ts'
 import { testData } from './modexp-testdata.ts'
-
-import { gasLimitCheck } from '../../src/precompiles/util.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { EVM } from '../../src/index.ts'
