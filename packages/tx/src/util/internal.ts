@@ -63,10 +63,9 @@ function checkMaxInitCodeSize(common: Common, length: number) {
  * Validates that an object with BigInt values cannot exceed the specified bit limit.
  * @param values Object containing string keys and BigInt values
  * @param bits Number of bits to check (64 or 256)
- * @param cannotEqual Pass true if the number also cannot equal one less the maximum value
+ * @param cannotEqual Pass true if the number also cannot equal one less than the maximum value
  */
-export function valueBoundaryCheck(
-  // TODO: better method name
+export function valueOverflowCheck(
   values: { [key: string]: bigint | undefined },
   bits = 256,
   cannotEqual = false,
@@ -155,13 +154,13 @@ export function sharedConstructor(
   // Start validating the data
 
   // Validate value/r/s
-  valueBoundaryCheck({ value: tx.value, r: tx.r, s: tx.s })
+  valueOverflowCheck({ value: tx.value, r: tx.r, s: tx.s })
 
   // geth limits gasLimit to 2^64-1
-  valueBoundaryCheck({ gasLimit: tx.gasLimit }, 64)
+  valueOverflowCheck({ gasLimit: tx.gasLimit }, 64)
 
   // EIP-2681 limits nonce to 2^64-1 (cannot equal 2^64-1)
-  valueBoundaryCheck({ nonce: tx.nonce }, 64, true)
+  valueOverflowCheck({ nonce: tx.nonce }, 64, true)
 
   const createContract = tx.to === undefined || tx.to === null
   const allowUnlimitedInitCodeSize = opts.allowUnlimitedInitCodeSize ?? false
