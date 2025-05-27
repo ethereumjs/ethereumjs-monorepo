@@ -542,6 +542,70 @@ export class Eth {
   }
 
   /**
+   * Returns an estimate for max priority fee per gas for a tx to be included in a block.
+   * @returns The max priority fee per gas.
+   */
+  async getMaxPriorityFeePerGas() {
+    if (!this.client.config.synchronized) {
+      throw {
+        code: INTERNAL_ERROR,
+        message: `client is not aware of the current chain height yet (give sync some more time)`,
+      }
+    }
+    const latest = await this._chain.getCanonicalHeadBlock()
+    // This ends up with a forward-sorted list of blocks
+    const blocks = (await this._chain.getBlocks(latest.hash(), 10, 0, true)).reverse()
+
+    // Store per-block medians
+    const blockMedians: bigint[] = []
+
+    for (const block of blocks) {
+      // Array to collect all maxPriorityFeePerGas values
+      const priorityFees: bigint[] = []
+
+      for (const tx of block.transactions) {
+        // Only EIP-1559 transactions have maxPriorityFeePerGas
+        if (tx.supports(Capability.EIP1559FeeMarket) === true) {
+          priorityFees.push((tx as FeeMarket1559Tx).maxPriorityFeePerGas)
+        }
+      }
+
+      // Calculate median for this block
+      if (priorityFees.length > 0) {
+        priorityFees.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
+        const mid = Math.floor(priorityFees.length / 2)
+        let median: bigint
+        if (priorityFees.length % 2 === 0) {
+          median = (priorityFees[mid - 1] + priorityFees[mid]) / BigInt(2)
+        } else {
+          median = priorityFees[mid]
+        }
+        blockMedians.push(median)
+      }
+    }
+
+    // Linear regression to extrapolate next median value
+    function linearRegression(y: bigint[]): number {
+      const n = y.length
+      if (n === 0) return 0
+      const x = Array.from({ length: n }, (_, i) => i)
+      const meanX = x.reduce((a, b) => a + b, 0) / n
+      const meanY = y.reduce((a, b) => a + Number(b), 0) / n
+      let num = 0,
+        den = 0
+      for (let i = 0; i < n; i++) {
+        num += (x[i] - meanX) * (Number(y[i]) - meanY)
+        den += (x[i] - meanX) ** 2
+      }
+      const a = den === 0 ? 0 : num / den
+      const b = meanY - a * meanX
+      return a * n + b // predict next (n-th) value
+    }
+    const nextMedianRegression = BigInt(Math.round(linearRegression(blockMedians)))
+    return bigIntToHex(nextMedianRegression)
+  }
+
+  /**
    * Generates and returns an estimate of how much gas is necessary to allow the transaction to complete.
    * The transaction will not be added to the blockchain.
    * Note that the estimate may be significantly more than the amount of gas actually used by the transaction,
