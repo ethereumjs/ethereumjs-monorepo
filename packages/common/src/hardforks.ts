@@ -162,11 +162,11 @@ export const hardforksDict: HardforksDict = {
   },
   /**
    * Description: Next feature hardfork after prague, internally used for peerdas/EOF testing/implementation (incomplete/experimental)
-   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/osaka.md
+   * URL        : https://eips.ethereum.org/EIPS/eip-7607
    * Status     : Final
    */
   osaka: {
-    eips: [663, 3540, 3670, 4200, 4750, 5450, 6206, 7069, 7480, 7620, 7692, 7698],
+    eips: [663, 3540, 3670, 4200, 4750, 5450, 6206, 7069, 7480, 7620, 7692, 7698, 7907],
   },
   /**
    * Description: Next feature hardfork after osaka, internally used for verkle testing/implementation (incomplete/experimental)
