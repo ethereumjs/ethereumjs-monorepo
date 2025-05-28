@@ -141,6 +141,7 @@ const runnerArgs: {
   bls: EVMBLSInterface
   bn254: EVMBN254Interface
   stateManager?: string
+  testCount: number
 } = {
   forkConfigVM: FORK_CONFIG_VM,
   forkConfigTestSuite: FORK_CONFIG_TEST_SUITE,
@@ -156,6 +157,7 @@ const runnerArgs: {
   profile: RUN_PROFILER,
   bn254,
   stateManager: argv.stateManager,
+  testCount: 0,
 }
 
 /**
@@ -229,11 +231,9 @@ const expectedTests: number | undefined =
     : argv.expectedTestAmount !== undefined && argv.expectedTestAmount > 0
       ? argv.expectedTestAmount
       : undefined
-let testCount = 0
 describe('GeneralStateTests', () => {
   for (const { subDir, testName, testData } of allTests) {
     it(`file: ${subDir} test: ${testName}`, async () => {
-      testCount++
       try {
         await runStateTest(runnerArgs, testData, assert)
       } catch (e: any) {
@@ -245,8 +245,8 @@ describe('GeneralStateTests', () => {
   afterAll(() => {
     if (expectedTests !== undefined) {
       assert.isTrue(
-        testCount >= expectedTests,
-        `expected ${expectedTests} checks, got ${testCount}`,
+        runnerArgs.testCount >= expectedTests,
+        `expected ${expectedTests} checks, got ${runnerArgs.testCount}`,
       )
     }
   })
