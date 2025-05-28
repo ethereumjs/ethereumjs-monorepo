@@ -13,7 +13,6 @@ import {
 } from '@ethereumjs/util'
 import { assert, beforeAll, describe, it } from 'vitest'
 
-import type { PrecompileInput } from '../../precompiles/types.ts'
 import { gasLimitCheck } from '../../src/precompiles/util.ts'
 
 import { createEVM, getActivePrecompiles } from '../../src/index.ts'
