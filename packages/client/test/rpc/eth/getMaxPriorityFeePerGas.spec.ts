@@ -4,7 +4,6 @@ import { createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import { hexToBigInt } from '@ethereumjs/util'
 import { createClient, createManager, getRPCClient, startRPC } from '../helpers.ts'
-//import { createFeeMarket1559Tx } from '@ethereumjs/tx'
 
 const method = 'eth_getMaxPriorityFeePerGas'
 
@@ -16,10 +15,10 @@ interface Block {
 }
 /**
  * @param blockMPF - Representing txs with the respective maxPriorityFeePerGas values
- * @param irritators - Number of non-1559 txs to add to the block
+ * @param non1559Txs - Number of non-1559 txs to add to the block
  * @returns A block representation with the transactions and a hash
  */
-function createBlock(blockMPF: bigint[], irritators = 0): Block {
+function createBlock(blockMPF: bigint[], non1559Txs = 0): Block {
   const transactions: TypedTransaction[] = []
   for (const mpf of blockMPF) {
     const tx = createFeeMarket1559Tx({
@@ -28,7 +27,7 @@ function createBlock(blockMPF: bigint[], irritators = 0): Block {
     })
     transactions.push(tx)
   }
-  for (let i = 0; i < irritators; i++) {
+  for (let i = 0; i < non1559Txs; i++) {
     const tx = createLegacyTx({})
     transactions.push(tx)
   }
@@ -39,10 +38,7 @@ function createBlock(blockMPF: bigint[], irritators = 0): Block {
   }
 }
 
-function createChain(blocksMPF: BlocksMPF = [[]], irritators = 0) {
-  /*const tx = createFeeMarket1559Tx({
-    maxPriorityFeePerGas: 123456789n,
-  })*/
+function createChain(blocksMPF: BlocksMPF = [[]], non1559Txs = 0) {
   if (blocksMPF.length === 0) {
     throw new Error('call with minimum 1 block')
   }
@@ -50,7 +46,7 @@ function createChain(blocksMPF: BlocksMPF = [[]], irritators = 0) {
   const blocks: Block[] = []
 
   for (const blockMPF of blocksMPF) {
-    const block = createBlock(blockMPF, irritators)
+    const block = createBlock(blockMPF, non1559Txs)
     blocks.push(block)
   }
   const latest = blocks[blocks.length - 1]
@@ -60,8 +56,8 @@ function createChain(blocksMPF: BlocksMPF = [[]], irritators = 0) {
   }
 }
 
-async function getSetup(blocksMPF: BlocksMPF, irritators = 0) {
-  const client = await createClient({ chain: createChain(blocksMPF, irritators) })
+async function getSetup(blocksMPF: BlocksMPF, non1559Txs = 0) {
+  const client = await createClient({ chain: createChain(blocksMPF, non1559Txs) })
   client.config.synchronized = true
   const manager = createManager(client)
   const rpcServer = startRPC(manager.getMethods())
@@ -77,7 +73,7 @@ describe(method, () => {
     assert.strictEqual(hexToBigInt(res.result), 0n)
   })
 
-  it('should return "itself" for a simple block with one 1559 tx', async () => {
+  it('should return "100" for a simple block with one 1559 tx', async () => {
     const blocksMPF = [[100n]]
     const { rpc } = await getSetup(blocksMPF)
     const res = await rpc.request(method, [])
@@ -91,7 +87,7 @@ describe(method, () => {
     assert.strictEqual(hexToBigInt(res.result), 0n)
   })
 
-  it('should return "itself" for two simple blocks with one 1559 tx', async () => {
+  it('should return "100" for two simple blocks with one 1559 tx', async () => {
     const blocksMPF = [[100n], [100n]]
     const { rpc } = await getSetup(blocksMPF)
     const res = await rpc.request(method, [])
@@ -123,7 +119,6 @@ describe(method, () => {
     const blocksMPF = [[100n], [200n], [150n]]
     const { rpc } = await getSetup(blocksMPF)
     const res = await rpc.request(method, [])
-    console.log(hexToBigInt(res.result))
     assert.strictEqual(hexToBigInt(res.result), 200n)
   })
 
