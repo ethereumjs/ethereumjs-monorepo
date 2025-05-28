@@ -78,7 +78,7 @@ function enoughGas(opts: PrecompileInput): boolean {
   const pName = getPrecompileName('05')
   const data = opts.data.length < 96 ? setLengthRight(opts.data, 96) : opts.data
 
-  let adjustedELen = getAdjustedExponentLength(data)
+  let adjustedELen = getAdjustedExponentLength(data, opts)
   if (adjustedELen < BIGINT_1) {
     adjustedELen = BIGINT_1
   }
