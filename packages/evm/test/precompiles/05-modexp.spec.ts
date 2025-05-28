@@ -13,6 +13,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, beforeAll, describe, it } from 'vitest'
 
+import type { PrecompileInput } from '../../precompiles/types.ts'
 import { gasLimitCheck } from '../../src/precompiles/util.ts'
 
 import { createEVM, getActivePrecompiles } from '../../src/index.ts'
@@ -73,7 +74,7 @@ describe('Precompiles: MODEXP', () => {
   })
 })
 
-function enoughGas(opts): boolean {
+function enoughGas(opts: PrecompileInput): boolean {
   const pName = getPrecompileName('05')
   const data = opts.data.length < 96 ? setLengthRight(opts.data, 96) : opts.data
 
