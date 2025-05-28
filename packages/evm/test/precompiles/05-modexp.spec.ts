@@ -27,7 +27,7 @@ import { testData } from './modexp-testdata.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { EVM } from '../../src/index.ts'
-import type { PrecompileFunc } from '../../src/precompiles/types.ts'
+import type { PrecompileFunc, PrecompileInput } from '../../src/precompiles/types.ts'
 
 const BIGINT_200 = BigInt(200)
 
