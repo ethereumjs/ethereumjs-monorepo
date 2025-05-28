@@ -330,6 +330,11 @@ export class Eth {
 
     this.chainId = callWithStackTrace(this.chainId.bind(this), this._rpcDebug)
 
+    this.getMaxPriorityFeePerGas = callWithStackTrace(
+      this.getMaxPriorityFeePerGas.bind(this),
+      this._rpcDebug,
+    )
+
     this.estimateGas = middleware(
       callWithStackTrace(this.estimateGas.bind(this), this._rpcDebug),
       1,
