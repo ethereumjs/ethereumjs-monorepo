@@ -24,8 +24,9 @@ import type { PrecompileInput } from './types.ts'
 
 const BIGINT_4 = BigInt(4)
 const BIGINT_16 = BigInt(16)
-const BIGINT_200 = BigInt(200)
 const BIGINT_480 = BigInt(480)
+const BIGINT_200 = BigInt(200)
+const BIGINT_500 = BigInt(500)
 const BIGINT_1024 = BigInt(1024)
 const BIGINT_3072 = BigInt(3072)
 const BIGINT_199680 = BigInt(199680)
@@ -56,7 +57,7 @@ function multiplicationComplexityEIP2565(x: bigint): bigint {
   return words * words
 }
 
-function getAdjustedExponentLength(data: Uint8Array): bigint {
+function getAdjustedExponentLength(data: Uint8Array, opts: PrecompileInput): bigint {
   let expBytesStart
   try {
     const baseLen = bytesToBigInt(data.subarray(0, 32))
@@ -83,8 +84,8 @@ function getAdjustedExponentLength(data: Uint8Array): bigint {
   if (expLenMinus32OrZero < BIGINT_0) {
     expLenMinus32OrZero = BIGINT_0
   }
-  const eightTimesExpLenMinus32OrZero = expLenMinus32OrZero * BIGINT_8
-  let adjustedExpLen = eightTimesExpLenMinus32OrZero
+  let adjustedExpLen =
+    expLenMinus32OrZero * (opts.common.isActivatedEIP(7883) === true ? BIGINT_16 : BIGINT_8)
   if (bitLen > 0) {
     adjustedExpLen += BigInt(bitLen)
   }
@@ -108,7 +109,7 @@ export function precompile05(opts: PrecompileInput): ExecResult {
   const pName = getPrecompileName('05')
   const data = opts.data.length < 96 ? setLengthRight(opts.data, 96) : opts.data
 
-  let adjustedELen = getAdjustedExponentLength(data)
+  let adjustedELen = getAdjustedExponentLength(data, opts)
   if (adjustedELen < BIGINT_1) {
     adjustedELen = BIGINT_1
   }
@@ -131,13 +132,19 @@ export function precompile05(opts: PrecompileInput): ExecResult {
   const mStart = eEnd
   const mEnd = mStart + mLen
 
-  if (!opts.common.isActivatedEIP(2565)) {
-    gasUsed = (adjustedELen * multiplicationComplexity(maxLen)) / Gquaddivisor
-  } else {
+  if (opts.common.isActivatedEIP(7883)) {
+    const wordsSquared = multiplicationComplexityEIP2565(maxLen)
+    gasUsed = (adjustedELen * (maxLen > 32 ? 2n * wordsSquared : wordsSquared)) / Gquaddivisor
+    if (gasUsed < BIGINT_500) {
+      gasUsed = BIGINT_500
+    }
+  } else if (opts.common.isActivatedEIP(2565)) {
     gasUsed = (adjustedELen * multiplicationComplexityEIP2565(maxLen)) / Gquaddivisor
     if (gasUsed < BIGINT_200) {
       gasUsed = BIGINT_200
     }
+  } else {
+    gasUsed = (adjustedELen * multiplicationComplexity(maxLen)) / Gquaddivisor
   }
   if (!gasLimitCheck(opts, gasUsed, pName)) {
     return OOGResult(opts.gasLimit)
