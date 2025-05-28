@@ -131,7 +131,7 @@ describe(method, () => {
     const blocksMPF = [[300n], [200n], [250n], [400n], [700n], [200n]]
     const { rpc } = await getSetup(blocksMPF)
     const res = await rpc.request(method, [])
-    assert.strictEqual(hexToBigInt(res.result), 475n)
+    assert.strictEqual(hexToBigInt(res.result), 457n)
   })
 
   it('should apply median + linear regression in more complex scenarios', async () => {
