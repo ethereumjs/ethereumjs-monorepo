@@ -1,5 +1,7 @@
 import { assert, describe, it } from 'vitest'
 
+import { createFeeMarket1559Tx } from '@ethereumjs/tx'
+import type { FeeMarket1559Tx } from '@ethereumjs/tx'
 import { createClient, createManager, getRPCClient, startRPC } from '../helpers.ts'
 //import { createFeeMarket1559Tx } from '@ethereumjs/tx'
 
@@ -10,14 +12,25 @@ interface Block {
   hash: () => Uint8Array
 }
 
-function createBlock(_blockMPF: bigint[]): Block {
+type BlocksMPF = bigint[][]
+
+function createBlock(blockMPF: bigint[]): Block {
+  const transactions: FeeMarket1559Tx[] = []
+  for (const mpf of blockMPF) {
+    const tx = createFeeMarket1559Tx({
+      maxFeePerGas: mpf, // Side addition to satisfy tx creation
+      maxPriorityFeePerGas: mpf,
+    })
+    transactions.push(tx)
+  }
+
   return {
-    transactions: [],
+    transactions,
     hash: () => new Uint8Array([1]),
   }
 }
 
-function createChain(blocksMPF: bigint[][] = [[]]) {
+function createChain(blocksMPF: BlocksMPF = [[]]) {
   /*const tx = createFeeMarket1559Tx({
     maxPriorityFeePerGas: 123456789n,
   })*/
@@ -38,16 +51,27 @@ function createChain(blocksMPF: bigint[][] = [[]]) {
   }
 }
 
+async function getSetup(blocksMPF: BlocksMPF) {
+  const client = await createClient({ chain: createChain(blocksMPF) })
+  client.config.synchronized = true
+  const manager = createManager(client)
+  const rpcServer = startRPC(manager.getMethods())
+  const rpc = getRPCClient(rpcServer)
+  return { client, manager, rpcServer, rpc }
+}
+
 describe(method, () => {
   it('should return 0 for a simple block with no transactions', async () => {
-    const client = await createClient({ chain: createChain() })
-    const manager = createManager(client)
-    const rpcServer = startRPC(manager.getMethods())
-    const rpc = getRPCClient(rpcServer)
-
-    client.config.synchronized = true
-
+    const blocksMPF = [[]]
+    const { rpc } = await getSetup(blocksMPF)
     const res = await rpc.request(method, [])
     assert.strictEqual(res.result, '0x0')
+  })
+
+  it('should return "itself" for a simple block with one 1559 tx', async () => {
+    const blocksMPF = [[100n]] // 0x64
+    const { rpc } = await getSetup(blocksMPF)
+    const res = await rpc.request(method, [])
+    assert.strictEqual(res.result, '0x64')
   })
 })
