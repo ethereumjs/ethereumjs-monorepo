@@ -180,8 +180,6 @@ async function runTestCase(options: any, testData: any, t: tape.Test | Chai.Asse
   const end = Date.now()
   const timeSpent = `${(end - begin) / 1000} secs`
 
-  isTape(t) &&
-    t.ok(stateRootsAreEqual, `[ ${timeSpent} ] the state roots should match (${execInfo})`)
   const msg = `error running test case for fork: ${options.forkConfigTestSuite}`
   if (isTape(t)) {
     t.ok(stateRootsAreEqual, `[ ${timeSpent} ] the state roots should match (${execInfo})`)
