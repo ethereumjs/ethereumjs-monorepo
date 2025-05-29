@@ -57,8 +57,6 @@ import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import type { Logger } from '../src/logging.ts'
 import type { ClientOpts } from '../src/types.ts'
 
-import * as ckzg from 'c-kzg'
-
 export type Account = [address: Address, privateKey: Uint8Array]
 
 const networks = Object.keys(Chain).map((network) => network.toLowerCase())
@@ -631,65 +629,6 @@ function generateAccount(): Account {
 
 export async function getCryptoFunctions(useJsCrypto: boolean): Promise<CustomCrypto> {
   const cryptoFunctions: CustomCrypto = {}
-  ckzg.loadTrustedSetup(0)
-  const cKzg = {
-    blobToKzgCommitment: (blob: string) => {
-      const blobBytes = hexToBytes(blob as PrefixedHexString)
-      const commitmentBytes = ckzg.blobToKzgCommitment(blobBytes)
-      return bytesToHex(commitmentBytes) as string
-    },
-    computeBlobProof: (blob: string, commitment: string) => {
-      const blobBytes = hexToBytes(blob as PrefixedHexString)
-      const commitmentBytes = hexToBytes(commitment as PrefixedHexString)
-      const proofBytes = ckzg.computeBlobKzgProof(blobBytes, commitmentBytes)
-      return bytesToHex(proofBytes) as string
-    },
-    verifyProof: (commitment: string, z: string, y: string, proof: string) => {
-      const commitmentBytes = hexToBytes(commitment as PrefixedHexString)
-      const zBytes = hexToBytes(z as PrefixedHexString)
-      const yBytes = hexToBytes(y as PrefixedHexString)
-      const proofBytes = hexToBytes(proof as PrefixedHexString)
-      return ckzg.verifyKzgProof(commitmentBytes, zBytes, yBytes, proofBytes)
-    },
-    verifyBlobProofBatch: (blobs: string[], commitments: string[], proofs: string[]) => {
-      const blobsBytes = blobs.map((blb) => hexToBytes(blb as PrefixedHexString))
-      const commitmentsBytes = commitments.map((cmt) => hexToBytes(cmt as PrefixedHexString))
-      const proofsBytes = proofs.map((prf) => hexToBytes(prf as PrefixedHexString))
-      return ckzg.verifyBlobKzgProofBatch(blobsBytes, commitmentsBytes, proofsBytes)
-    },
-    computeCells: (blob: string) => {
-      const blobBytes = hexToBytes(blob as PrefixedHexString)
-      const cellsBytes = ckzg.computeCells(blobBytes)
-      return cellsBytes.map((cellBytes) => bytesToHex(cellBytes)) as string[]
-    },
-    computeCellsAndProofs: (blob: string) => {
-      const blobBytes = hexToBytes(blob as PrefixedHexString)
-      const [cellsBytes, proofsBytes] = ckzg.computeCellsAndKzgProofs(blobBytes)
-      return [
-        cellsBytes.map((cellBytes) => bytesToHex(cellBytes)),
-        proofsBytes.map((prfBytes) => bytesToHex(prfBytes)),
-      ] as [string[], string[]]
-    },
-    recoverCellsAndProofs: (indices: number[], cells: string[]) => {
-      const cellsBytes = cells.map((cell) => hexToBytes(cell as PrefixedHexString))
-      const [allCellsBytes, allProofsBytes] = ckzg.recoverCellsAndKzgProofs(indices, cellsBytes)
-      return [
-        allCellsBytes.map((cellBytes) => bytesToHex(cellBytes)),
-        allProofsBytes.map((prfBytes) => bytesToHex(prfBytes)),
-      ] as [string[], string[]]
-    },
-    verifyCellKzgProofBatch: (
-      commitments: string[],
-      indices: number[],
-      cells: string[],
-      proofs: string[],
-    ) => {
-      const commitmentsBytes = commitments.map((commit) => hexToBytes(commit as PrefixedHexString))
-      const cellsBytes = cells.map((cell) => hexToBytes(cell as PrefixedHexString))
-      const proofsBytes = proofs.map((prf) => hexToBytes(prf as PrefixedHexString))
-      return ckzg.verifyCellKzgProofBatch(commitmentsBytes, indices, cellsBytes, proofsBytes)
-    },
-  }
 
   const kzg = new microEthKZG(trustedSetup)
   // Initialize WASM crypto if JS crypto is not specified
@@ -736,8 +675,6 @@ export async function getCryptoFunctions(useJsCrypto: boolean): Promise<CustomCr
     }
   }
   cryptoFunctions.kzg = kzg
-  // override with cKzg for debugging
-  cryptoFunctions.kzg = cKzg
   cryptoFunctions.verkle = verkle
   return cryptoFunctions
 }
