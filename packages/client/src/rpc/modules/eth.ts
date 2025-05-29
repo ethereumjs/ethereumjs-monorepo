@@ -330,8 +330,8 @@ export class Eth {
 
     this.chainId = callWithStackTrace(this.chainId.bind(this), this._rpcDebug)
 
-    this.getMaxPriorityFeePerGas = callWithStackTrace(
-      this.getMaxPriorityFeePerGas.bind(this),
+    this.maxPriorityFeePerGas = callWithStackTrace(
+      this.maxPriorityFeePerGas.bind(this),
       this._rpcDebug,
     )
 
@@ -550,7 +550,7 @@ export class Eth {
    * Returns an estimate for max priority fee per gas for a tx to be included in a block.
    * @returns The max priority fee per gas.
    */
-  async getMaxPriorityFeePerGas() {
+  async maxPriorityFeePerGas() {
     if (!this.client.config.synchronized) {
       throw {
         code: INTERNAL_ERROR,
