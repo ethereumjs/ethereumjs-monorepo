@@ -1,7 +1,7 @@
 import { trustedSetup as slow } from '@paulmillr/trusted-setups'
-import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
 import { loadKZG } from 'kzg-wasm'
-import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 import { assert, beforeAll, describe, it } from 'vitest'
 
 import { getBlobs } from '../src/blobs.ts'
@@ -36,6 +36,25 @@ describe('KZG API tests', () => {
       kzgProofs: string[],
     ): boolean {
       return wasm.verifyBlobKZGProofBatch(blobs, expectedKZGCommitments, kzgProofs)
+    },
+
+    // add cell methods from micro kzg till we have them available in wasm as well
+    computeCells(blob: string): string[] {
+      return jsKZG.computeCells(blob)
+    },
+    computeCellsAndProofs(blob: string): [string[], string[]] {
+      return jsKZG.computeCellsAndProofs(blob)
+    },
+    recoverCellsAndProofs(indices: number[], cells: string[]): [string[], string[]] {
+      return jsKZG.recoverCellsAndProofs(indices, cells)
+    },
+    verifyCellKzgProofBatch(
+      commitments: string[],
+      indices: number[],
+      cells: string[],
+      proofs: string[],
+    ): boolean {
+      return jsKZG.verifyCellKzgProofBatch(commitments, indices, cells, proofs)
     },
   }
   it('should produce the same outputs', () => {

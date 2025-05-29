@@ -66,7 +66,7 @@
     "eventemitter3": "^5.0.1"
   },
   "devDependencies": {
-    "@paulmillr/trusted-setups": "^0.1.2",
+    "@paulmillr/trusted-setups": "^0.2.0",
     "@types/benchmark": "^2.1.5",
     "@types/core-js": "^2.5.8",
     "@types/minimist": "^1.2.5",
@@ -75,7 +75,7 @@
     "level": "^9.0.0",
     "mcl-wasm": "^1.8.0",
     "memory-level": "^3.0.0",
-    "micro-eth-signer": "^0.14.0",
+    "micro-eth-signer": "^0.15.0",
     "minimist": "^1.2.8",
     "node-dir": "^0.1.17",
     "rollup-plugin-visualizer": "^5.14.0",

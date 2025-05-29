@@ -1,6 +1,6 @@
 import { MapDB, bytesToHex } from '@ethereumjs/util'
 import { VerkleTree } from '@ethereumjs/verkle'
-import * as verkle from 'micro-eth-signer/verkle'
+import * as verkle from 'micro-eth-signer/verkle.js'
 
 const main = async () => {
   const tree = new VerkleTree({

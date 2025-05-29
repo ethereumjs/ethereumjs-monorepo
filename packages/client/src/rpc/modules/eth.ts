@@ -8,6 +8,7 @@ import {
 } from '@ethereumjs/statemanager'
 import {
   Capability,
+  NetworkWrapperType,
   createBlob4844TxFromSerializedNetworkWrapper,
   createTx,
   createTxFromRLP,
@@ -1238,6 +1239,14 @@ export class Eth {
       if (txBuf[0] === 0x03) {
         // Blob Transactions sent over RPC are expected to be in Network Wrapper format
         tx = createBlob4844TxFromSerializedNetworkWrapper(txBuf, { common })
+        if (
+          common.isActivatedEIP(7594) &&
+          tx.networkWrapperVersion !== NetworkWrapperType.EIP7594
+        ) {
+          throw Error(
+            `tx with networkWrapperVersion=${tx.networkWrapperVersion} sent for EIP-7594 activated hardfork=${common.hardfork()}`,
+          )
+        }
 
         const blobGasLimit = tx.common.param('maxBlobGasPerBlock')
         const blobGasPerBlob = tx.common.param('blobGasPerBlob')
