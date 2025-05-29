@@ -95,7 +95,11 @@ const electraGenesisContracts = {
 }
 
 function readyPragueGenesis() {
-  const gethGenesis = structuredClone(postMergeGethGenesis)
+  const gethGenesis =
+    // structuredClone not available in browser
+    structuredClone !== undefined
+      ? structuredClone(postMergeGethGenesis)
+      : JSON.parse(JSON.stringify(postMergeGethGenesis))
   const pragueTime = 1689945325
   // add shanghai and cancun to genesis
   const pragueGenesis = {

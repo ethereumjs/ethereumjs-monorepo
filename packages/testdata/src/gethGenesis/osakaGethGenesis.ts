@@ -2,7 +2,10 @@ import { pragueGethGenesis } from './pragueGethGenesis.ts'
 
 function readyOsakaGenesis() {
   const { pragueGenesis, pragueTime } = pragueGethGenesis
-  const gethGenesis = structuredClone(pragueGenesis)
+  const gethGenesis =
+    structuredClone !== undefined
+      ? structuredClone(pragueGenesis)
+      : JSON.parse(JSON.stringify(pragueGenesis))
 
   const osakaTime = pragueTime
   // add shanghai and cancun to genesis
