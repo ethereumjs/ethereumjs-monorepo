@@ -551,6 +551,8 @@ export class Eth {
    * @returns The max priority fee per gas.
    */
   async maxPriorityFeePerGas() {
+    const DEFAULT_MAX_PRIORITY_FEE_PER_GAS = '0x3B9ACA00' // 1 Gwei, 10^9 Wei
+
     if (!this.client.config.synchronized) {
       throw {
         code: INTERNAL_ERROR,
@@ -563,6 +565,7 @@ export class Eth {
 
     // Store per-block medians
     const blockMedians: bigint[] = []
+    let numSamples = 0
 
     for (const block of blocks) {
       // Array to collect all maxPriorityFeePerGas values
@@ -572,6 +575,7 @@ export class Eth {
         // Only EIP-1559 transactions have maxPriorityFeePerGas
         if (tx.supports(Capability.EIP1559FeeMarket) === true) {
           priorityFees.push((tx as FeeMarket1559Tx).maxPriorityFeePerGas)
+          numSamples += 1
         }
       }
 
@@ -587,6 +591,10 @@ export class Eth {
         }
         blockMedians.push(median)
       }
+    }
+
+    if (numSamples === 0) {
+      return DEFAULT_MAX_PRIORITY_FEE_PER_GAS
     }
 
     // Linear regression to extrapolate next median value
