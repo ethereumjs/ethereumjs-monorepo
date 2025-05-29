@@ -11,7 +11,7 @@ import {
   setLengthLeft,
 } from '@ethereumjs/util'
 import { createVerkleTree } from '@ethereumjs/verkle'
-import * as verkle from 'micro-eth-signer/verkle'
+import * as verkle from 'micro-eth-signer/verkle.js'
 import { assert, describe, it } from 'vitest'
 
 import { Caches } from '../src/index.ts'

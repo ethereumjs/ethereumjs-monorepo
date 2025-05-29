@@ -8,7 +8,11 @@ import {
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
-import { Blob4844Tx, createMinimal4844TxFromNetworkWrapper } from '@ethereumjs/tx'
+import {
+  Blob4844Tx,
+  NetworkWrapperType,
+  createMinimal4844TxFromNetworkWrapper,
+} from '@ethereumjs/tx'
 import {
   Address,
   BIGINT_0,
@@ -244,6 +248,18 @@ export class BlockBuilder {
     }
     let blobGasUsed = undefined
     if (tx instanceof Blob4844Tx) {
+      if (
+        tx.networkWrapperVersion === NetworkWrapperType.EIP4844 &&
+        this.vm.common.isActivatedEIP(7594)
+      ) {
+        throw Error('eip4844 blob transaction for eip7594 activated fork')
+      } else if (
+        tx.networkWrapperVersion === NetworkWrapperType.EIP7594 &&
+        !this.vm.common.isActivatedEIP(7594)
+      ) {
+        throw Error('eip7594 blob transaction but eip not yet activated')
+      }
+
       if (this.blockOpts.common?.isActivatedEIP(4844) === false) {
         throw Error('eip4844 not activated yet for adding a blob transaction')
       }
