@@ -97,7 +97,7 @@ const electraGenesisContracts = {
 function readyPragueGenesis() {
   const gethGenesis =
     // structuredClone not available in browser
-    structuredClone !== undefined
+    typeof structuredClone === 'function'
       ? structuredClone(postMergeGethGenesis)
       : JSON.parse(JSON.stringify(postMergeGethGenesis))
   const pragueTime = 1689945325

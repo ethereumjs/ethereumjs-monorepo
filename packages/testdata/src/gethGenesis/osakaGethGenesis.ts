@@ -3,7 +3,7 @@ import { pragueGethGenesis } from './pragueGethGenesis.ts'
 function readyOsakaGenesis() {
   const { pragueGenesis, pragueTime } = pragueGethGenesis
   const gethGenesis =
-    structuredClone !== undefined
+    typeof structuredClone === 'function'
       ? structuredClone(pragueGenesis)
       : JSON.parse(JSON.stringify(pragueGenesis))
 
