@@ -345,6 +345,16 @@ export interface ConfigOptions {
    * Enables Prometheus Metrics that can be collected for monitoring client health
    */
   prometheusMetrics?: PrometheusMetrics
+
+  /**
+   * Max JSON payload size for eth/eth RPC requests (untrusted)
+   */
+  rpcEthMaxPayload?: string
+
+  /*
+   * Max JSON payload size for engine RPC requests (trusted)
+   */
+  rpcEngineMaxPayload?: string
 }
 
 export class Config {
@@ -364,6 +374,8 @@ export class Config {
   public static readonly MINPEERS_DEFAULT = 1
   public static readonly MAXPEERS_DEFAULT = 25
   public static readonly DNSADDR_DEFAULT = '8.8.8.8'
+  public static readonly RPC_ETH_MAXPAYLOAD_DEFAULT = '11mb'
+  public static readonly RPC_ENGINE_MAXPAYLOAD_DEFAULT = '15mb'
   public static readonly EXECUTION = true
   public static readonly NUM_BLOCKS_PER_ITERATION = 100
   public static readonly ACCOUNT_CACHE = 400000
@@ -456,6 +468,9 @@ export class Config {
   public readonly ignoreStatelessInvalidExecs: boolean
 
   public readonly blobsAndProofsCacheBlocks: number
+
+  public readonly rpcEthMaxPayload: string
+  public readonly rpcEngineMaxPayload: string
 
   public synchronized: boolean
   public lastSynchronized?: boolean
@@ -561,6 +576,9 @@ export class Config {
 
     this.blobsAndProofsCacheBlocks =
       options.blobsAndProofsCacheBlocks ?? Config.BLOBS_AND_PROOFS_CACHE_BLOCKS
+
+    this.rpcEthMaxPayload = options.rpcEthMaxPayload ?? Config.RPC_ETH_MAXPAYLOAD_DEFAULT
+    this.rpcEngineMaxPayload = options.rpcEngineMaxPayload ?? Config.RPC_ENGINE_MAXPAYLOAD_DEFAULT
 
     this.discDns = this.getDnsDiscovery(options.discDns)
     this.discV4 = options.discV4 ?? true
