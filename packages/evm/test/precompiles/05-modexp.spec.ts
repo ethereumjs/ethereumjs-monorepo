@@ -1,7 +1,6 @@
 import { Common, Mainnet } from '@ethereumjs/common'
 import {
   BIGINT_1,
-  bigIntToBytes,
   bytesToBigInt,
   bytesToHex,
   concatBytes,
@@ -142,11 +141,10 @@ describe('Precompiles: MODEXP with EIP-7823', async () => {
       while (!enoughGas(opts)) opts.gasLimit *= BigInt(256)
 
       const result = await MODEXP(opts)
-
       if (maxInputLen > 1024) {
         assert.strictEqual(result.exceptionError?.error, 'out of gas')
       } else {
-        assert.deepEqual(result.returnValue, bigIntToBytes(expected))
+        assert.deepEqual(bytesToBigInt(result.returnValue), expected)
       }
     })
   }
