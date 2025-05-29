@@ -1,6 +1,6 @@
 import * as path from 'path'
 import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
-import * as verkle from 'micro-eth-signer/verkle'
+import * as verkle from 'micro-eth-signer/verkle.js'
 
 import type { HardforkTransitionConfig } from '@ethereumjs/common'
 import type { KZG } from '@ethereumjs/util'

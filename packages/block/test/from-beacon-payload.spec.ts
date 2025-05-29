@@ -1,6 +1,6 @@
 import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
-import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
-import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 import { assert, describe, expect, it } from 'vitest'
 
 import { createBlockFromBeaconPayloadJSON, createBlockHeader } from '../src/index.ts'

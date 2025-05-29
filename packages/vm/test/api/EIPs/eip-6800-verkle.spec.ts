@@ -5,7 +5,7 @@ import { Caches, StatelessVerkleStateManager } from '@ethereumjs/statemanager'
 import { verkleKaustinen6Block72Data } from '@ethereumjs/testdata'
 import { createTxFromRLP } from '@ethereumjs/tx'
 import { hexToBytes } from '@ethereumjs/util'
-import * as verkle from 'micro-eth-signer/verkle'
+import * as verkle from 'micro-eth-signer/verkle.js'
 import { describe, it } from 'vitest'
 
 import { createVM, runBlock } from '../../../src/index.ts'

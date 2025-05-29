@@ -166,7 +166,7 @@ export const hardforksDict: HardforksDict = {
    * Status     : Final
    */
   osaka: {
-    eips: [663, 3540, 3670, 4200, 4750, 5450, 6206, 7069, 7480, 7620, 7692, 7698, 7883],
+    eips: [663, 3540, 3670, 4200, 4750, 5450, 6206, 7069, 7480, 7594, 7620, 7692, 7698, 7883],
   },
   /**
    * Description: Next feature hardfork after osaka, internally used for verkle testing/implementation (incomplete/experimental)
