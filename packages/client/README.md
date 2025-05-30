@@ -36,7 +36,7 @@ If you are familiar with JavaScript/TypeScript the client is also generally a ge
 
 To be able to run the EthereumJS client, you need a working [Node.js](https://nodejs.org/en/) installation, see e.g. these [docs](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) from the npm documentation for combined instructions on how to install Node.js and eventually npm.
 
-We currently recommend to run the client with a recent Node.js version `18` installation.
+We currently recommend to run the client with a recent Node.js version `22` installation.
 
 ### NPM Installation
 
