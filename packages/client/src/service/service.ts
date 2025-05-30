@@ -91,7 +91,7 @@ export class Service {
     })
 
     //@ts-expect-error TODO replace with async create constructor
-    this.chain = options.chain ?? new Chain(options)
+    this.chain = options.chain ?? new Chain(options.config)
     this.interval = options.interval ?? 8000
     this.timeout = options.timeout ?? 6000
     this.opened = false
@@ -120,7 +120,12 @@ export class Service {
       return false
     }
     const protocols = this.protocols
-    this.config.server && this.config.server.addProtocols(protocols)
+    this.config.networkWorker?.registerHandler(async (message, protocol, peer) => {
+      const protocolHandler = protocols.find((p) => p.name === protocol)
+      if (protocolHandler) {
+        await protocolHandler.handle(message, peer)
+      }
+    })
 
     this.config.events.on(Event.POOL_PEER_BANNED, (peer) =>
       this.config.logger?.debug(`Peer banned: ${peer}`),
@@ -214,4 +219,16 @@ export class Service {
    * @param peer peer
    */
   async handle(_message: any, _protocol: string, _peer: Peer): Promise<any> {}
+
+  /**
+   * Add protocols to the service
+   */
+  addProtocols(protocols: Protocol[]) {
+    this.config.networkWorker?.registerHandler(async (message, protocol, peer) => {
+      const protocolHandler = protocols.find((p) => p.name === protocol)
+      if (protocolHandler) {
+        await protocolHandler.handle(message, peer)
+      }
+    })
+  }
 }

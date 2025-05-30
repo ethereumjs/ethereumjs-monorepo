@@ -6,7 +6,7 @@ import { assert, describe, expect, it, vi } from 'vitest'
 
 import { Chain } from '../../src/blockchain/index.ts'
 import { Config, SyncMode } from '../../src/config.ts'
-import { RlpxServer } from '../../src/net/server/index.ts'
+import { NetworkWorker } from '../../src/net/server/networkworker.ts'
 import { Event } from '../../src/types.ts'
 
 import type { Log } from '@ethereumjs/evm'
@@ -52,6 +52,7 @@ vi.mock('../../src/sync/beaconsync.ts', () => {
 })
 
 vi.mock('../../src/net/server/index.ts')
+vi.mock('../../src/net/server/networkworker.ts')
 vi.mock('../../src/execution/index.ts')
 const { FullEthereumService } = await import('../../src/service/fullethereumservice.ts')
 
@@ -87,8 +88,7 @@ describe('initialize', async () => {
 })
 
 describe('should open', async () => {
-  const server = new RlpxServer({} as any)
-  const config = new Config({ server, accountCache: 10000, storageCache: 1000 })
+  const config = new Config({ accountCache: 10000, storageCache: 1000, syncmode: SyncMode.Full })
 
   const chain = await Chain.create({ config })
   chain.open = vi.fn()
@@ -96,7 +96,8 @@ describe('should open', async () => {
 
   await service.open()
   expect(service.synchronizer!.open).toBeCalled()
-  expect(server.addProtocols).toBeCalled()
+  vi.mocked(config.networkWorker!.start).mockResolvedValue(undefined)
+  expect(config.networkWorker!.start).toBeCalled()
 
   it('should synchronize', async () => {
     assert.isTrue(
@@ -131,7 +132,7 @@ describe('should open', async () => {
         service.config.events.on(Event.SERVER_ERROR, (err) => {
           resolve(err.message)
         })
-        service.config.events.emit(Event.SERVER_ERROR, new Error('error1'), server)
+        service.config.events.emit(Event.SERVER_ERROR, new Error('error1'), config.networkWorker!)
         resolve(false)
       }),
       'error1',
@@ -143,8 +144,8 @@ describe('should open', async () => {
 })
 
 describe('should start/stop', async () => {
-  const server = new RlpxServer({} as any)
-  const config = new Config({ server, accountCache: 10000, storageCache: 1000 })
+  const networkWorker = new NetworkWorker(new Config())
+  const config = new Config({ networkWorker, accountCache: 10000, storageCache: 1000 })
   const chain = await Chain.create({ config })
 
   const service = new FullEthereumService({ config, chain })
