@@ -26,18 +26,11 @@
 
 ## Introduction
 
-The EthereumJS Client is an Ethereum Execution Client (similar to [go-ethereum](https://github.com/ethereum/go-ethereum) or [Nethermind](https://github.com/NethermindEth/nethermind)) written in `TypeScript`/`JavaScript`, the non-Smart-Contract language Ethereum dApp developers are most familiar with. It is targeted to be a client for research and development and not meant to be used in production on `mainnet` for the foreseeable future (out of resource and security considerations).
+The EthereumJS Client is an Ethereum Execution Client (similar to [go-ethereum](https://github.com/ethereum/go-ethereum) or [Nethermind](https://github.com/NethermindEth/nethermind)) written in `TypeScript`/`JavaScript`, the non-Smart-Contract language Ethereum dApp developers are most familiar with.
 
-Here are some use cases:
+The client lacks several production features (sophisticated mempool, MEV, ...) and has performance limitations, but is pretty well suited for research and development use cases due to its modular design and we have successfully joined both hardfork as well as future out-reaching research testnets with it (e.g. Verkle, PeerDAS,...) to both contribute to testing and EIP specification as well as "harden" our Node.js/browser libraries like the EVM along the way.
 
-- Sync the main Ethereum networks (`mainnet` (experimental), `sepolia`, `holesky`, ...)
-- Set up your own local development networks (PoS with consensus client / PoA Clique / PoW with CPU miner)
-- Run a network with your own custom [EthereumJS VM](../vm)
-- Analyze what's in the Ethereum `mainnet` [transaction pool (mempool)](./src/sync/txpool.ts)
-
-The client has an extremely modular design by building upon central other libraries in the EthereumJS monorepo ([VM](../vm), [Merkle Patricia Tree](../trie), [Blockchain](../blockchain), [Block](../block), [tx](../tx), [devp2p](../devp2p) and [Common](../common)) and is therefore extremely well suited for a deep dive into Ethereum protocol development.
-
-We invite you to explore and would be delighted if you give us feedback on your journey! 🙂 ❤️
+If you are familiar with JavaScript/TypeScript the client is also generally a gentle entrypoint into protocol development! 🙂 ❤️
 
 ## Installation
 
