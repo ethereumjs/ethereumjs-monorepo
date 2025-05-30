@@ -9,7 +9,6 @@ import { middleware, validators } from '../validation.ts'
 
 import type { Chain } from '../../blockchain/index.ts'
 import type { EthereumClient } from '../../client.ts'
-import type { RlpxServer } from '../../net/server/rlpxserver.ts'
 import type { FullEthereumService } from '../../service/index.ts'
 
 /**
@@ -49,8 +48,16 @@ export class Admin {
    * see for reference: https://geth.ethereum.org/docs/interacting-with-geth/rpc/ns-admin#admin_peers
    */
   async nodeInfo() {
-    const rlpxInfo = this._client.config.server!.getRlpxInfo()
-    const { enode, id, ip, listenAddr, ports } = rlpxInfo
+    const networkWorker = this._client.config.networkWorker
+    if (networkWorker === undefined) {
+      throw {
+        code: INTERNAL_ERROR,
+        message: 'Network worker not initialized',
+      }
+    }
+
+    const networkInfo = await networkWorker.getNetworkInfo()
+    const { enode, id, ip, listenAddr, ports } = networkInfo
     const { discovery, listener } = ports
     const clientName = getClientVersion()
 
@@ -112,18 +119,23 @@ export class Admin {
   }
 
   /**
-   * Attempts to add a peer to client service peer pool using the RLPx server address and port
+   * Attempts to add a peer to client service peer pool using the network worker
    * e.g. `.admin_addPeer [{"address": "127.0.0.1", "tcpPort": 30303, "udpPort": 30303}]`
    * @param params An object containing an address, tcpPort, and udpPort for target server to connect to
    */
   async addPeer(params: [object]) {
-    const service = this._client.service as any as FullEthereumService
-    const server = service.pool.config.server as RlpxServer
-    const dpt = server.dpt
+    const service = this._client.service as FullEthereumService
+    const networkWorker = this._client.config.networkWorker
 
-    let peerInfo
+    if (networkWorker === undefined) {
+      throw {
+        code: INTERNAL_ERROR,
+        message: 'Network worker not initialized',
+      }
+    }
+
     try {
-      peerInfo = await dpt!.addPeer(params[0])
+      const peerInfo = await networkWorker.addPeer(params[0])
       const rlpxPeer = new RlpxPeer({
         config: new Config(),
         id: bytesToHex(peerInfo.id!),
@@ -131,6 +143,7 @@ export class Admin {
         port: peerInfo.tcpPort as number,
       })
       service.pool.add(rlpxPeer)
+      return true
     } catch (err: any) {
       throw {
         code: INTERNAL_ERROR,
@@ -138,7 +151,5 @@ export class Admin {
         stack: err?.stack,
       }
     }
-
-    return peerInfo !== undefined
   }
 }

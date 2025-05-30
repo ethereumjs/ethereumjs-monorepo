@@ -138,10 +138,7 @@ export class EthereumClient {
     this.config.logger?.info('Setup networking and services.')
 
     await this.service.start()
-    this.config.server && (await this.config.server.start())
-    // Only call bootstrap if servers are actually started
-    this.config.server && this.config.server.started && (await this.config.server.bootstrap())
-
+    // Network worker is already started in Config constructor
     this.started = true
   }
 
@@ -154,15 +151,14 @@ export class EthereumClient {
     }
     this.config.events.emit(Event.CLIENT_SHUTDOWN)
     await this.service.stop()
-    this.config.server && this.config.server.started && (await this.config.server.stop())
+    await this.config.networkWorker?.stop()
     this.started = false
   }
 
   /**
-   *
-   * @returns the RLPx server (if it exists)
+   * @returns the network worker (if it exists)
    */
-  server() {
-    return this.config.server
+  networkWorker() {
+    return this.config.networkWorker
   }
 }

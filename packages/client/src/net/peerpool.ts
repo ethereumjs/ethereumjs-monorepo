@@ -191,10 +191,10 @@ export class PeerPool {
    * @emits {@link Event.POOL_PEER_BANNED}
    */
   ban(peer: Peer, maxAge: number = 60000) {
-    if (!peer.server) {
+    if (!peer.id) {
       return
     }
-    peer.server.ban(peer.id, maxAge)
+    this.config.networkWorker?.ban(peer.id, maxAge)
     this.remove(peer)
     this.config.events.emit(Event.POOL_PEER_BANNED, peer)
 
@@ -246,17 +246,20 @@ export class PeerPool {
       this.noPeerPeriods += 1
       if (this.noPeerPeriods >= NO_PEER_PERIOD_COUNT) {
         this.noPeerPeriods = 0
-        if (this.config.server !== undefined) {
-          this.config.logger?.info('Restarting RLPx server')
-          await this.config.server.stop()
-          await this.config.server.start()
-          this.config.logger?.info('Reinitiating server bootstrap')
-          await this.config.server.bootstrap()
+        if (this.config.networkWorker !== undefined) {
+          this.config.logger?.info('Restarting network worker')
+          await this.config.networkWorker.stop()
+          await this.config.networkWorker.start(
+            this.config,
+            this.config.bootnodes ?? [],
+            this.config.dnsNetworks ?? [],
+          )
+          this.config.logger?.info('Reinitiating worker bootstrap')
         }
       } else {
         let tablesize: number | undefined = 0
-        if (this.config.server !== undefined && this.config.server.discovery) {
-          tablesize = this.config.server.dpt?.getPeers().length
+        if (this.config.networkWorker !== undefined && this.config.networkWorker.discovery) {
+          tablesize = this.config.networkWorker.dpt?.getPeers().length
           this.config.logger?.info(`Looking for suited peers: peertablesize=${tablesize}`)
         }
       }
@@ -276,5 +279,34 @@ export class PeerPool {
         p.idle = true
       }
     }
+  }
+
+  async restart() {
+    if (this.config.networkWorker !== undefined) {
+      this.config.logger?.info('Restarting network worker')
+      await this.config.networkWorker.stop()
+      await this.config.networkWorker.start(
+        this.config,
+        this.config.bootnodes ?? [],
+        this.config.dnsNetworks ?? [],
+      )
+      this.config.logger?.info('Reinitiating worker bootstrap')
+    }
+  }
+
+  getPeers() {
+    return Array.from(this.pool.values())
+  }
+
+  getPeer(id: string) {
+    return this.pool.get(id)
+  }
+
+  addPeer(peer: Peer) {
+    this.pool.set(peer.id, peer)
+  }
+
+  removePeer(peer: Peer) {
+    this.pool.delete(peer.id)
   }
 }
