@@ -15,12 +15,6 @@ describe(method, () => {
     const localConfig = new Config({
       accountCache: 10000,
       storageCache: 1000,
-      logger: {
-        info: (msg: string) => console.log(`[LOCAL] [INFO] ${msg}`),
-        warn: (msg: string) => console.warn(`[LOCAL] [WARN] ${msg}`),
-        error: (msg: string) => console.error(`[LOCAL] [ERROR] ${msg}`),
-        debug: (msg: string) => console.debug(`[LOCAL] [DEBUG] ${msg}`),
-      },
       syncmode: SyncMode.Full,
     })
     localPeerClient.service.pool = new PeerPool({
@@ -32,12 +26,6 @@ describe(method, () => {
       storageCache: 1000,
       port: peerPort,
       syncmode: SyncMode.Full,
-      logger: {
-        info: (msg: string) => console.log(`[REMOTE] [INFO] ${msg}`),
-        warn: (msg: string) => console.warn(`[REMOTE] [WARN] ${msg}`),
-        error: (msg: string) => console.error(`[REMOTE] [ERROR] ${msg}`),
-        debug: (msg: string) => console.debug(`[REMOTE] [DEBUG] ${msg}`),
-      },
     })
 
     await remoteConfig.networkWorker!.start(remoteConfig, [], [])
