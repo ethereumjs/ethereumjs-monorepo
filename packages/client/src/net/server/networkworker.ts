@@ -79,6 +79,7 @@ export class NetworkWorker {
   }
 
   async start(config: Config, bootnodes: MultiaddrLike, dnsNetworks: string[]) {
+    console.log('starting worker', bootnodes, dnsNetworks)
     this.worker.postMessage({
       type: 'INIT',
       maxPeers: this.config.maxPeers,
