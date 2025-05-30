@@ -138,7 +138,6 @@ export class EthereumClient {
     this.config.logger?.info('Setup networking and services.')
 
     await this.service.start()
-    // Network worker is already started in Config constructor
     this.started = true
   }
 
