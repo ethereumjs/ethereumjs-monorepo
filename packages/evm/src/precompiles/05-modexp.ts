@@ -32,9 +32,8 @@ const BIGINT_3072 = BigInt(3072)
 const BIGINT_199680 = BigInt(199680)
 
 const maxInt = BigInt(Number.MAX_SAFE_INTEGER)
-const maxSize = BigInt(2147483647) // @ethereumjs/util setLengthRight limitation
 
-function multiplicationComplexity(x: bigint): bigint {
+export function multiplicationComplexity(x: bigint): bigint {
   let fac1
   let fac2
   if (x <= BIGINT_64) {
@@ -52,12 +51,12 @@ function multiplicationComplexity(x: bigint): bigint {
   }
 }
 
-function multiplicationComplexityEIP2565(x: bigint): bigint {
+export function multiplicationComplexityEIP2565(x: bigint): bigint {
   const words = (x + BIGINT_7) / BIGINT_8
   return words * words
 }
 
-function getAdjustedExponentLength(data: Uint8Array, opts: PrecompileInput): bigint {
+export function getAdjustedExponentLength(data: Uint8Array, opts: PrecompileInput): bigint {
   let expBytesStart
   try {
     const baseLen = bytesToBigInt(data.subarray(0, 32))
@@ -157,6 +156,7 @@ export function precompile05(opts: PrecompileInput): ExecResult {
     }
   }
 
+  const maxSize = opts.common.isActivatedEIP(7823) ? BigInt(1024) : BigInt(2147483647) // @ethereumjs/util setLengthRight limitation
   if (bLen > maxSize || eLen > maxSize || mLen > maxSize) {
     if (opts._debug !== undefined) {
       opts._debug(`${pName} failed: OOG`)
