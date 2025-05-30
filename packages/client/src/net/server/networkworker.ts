@@ -25,10 +25,11 @@ export class NetworkWorker {
     })
 
     // Pipe worker stdout/stderr to main process
+    //@ts-ignore
     this.worker.stdout.pipe(process.stdout)
+    // @ts-ignore
     this.worker.stderr.pipe(process.stderr)
 
-    console.log('worker started')
     // Set up message handling from worker
     this.worker.on(
       'message',
@@ -41,6 +42,7 @@ export class NetworkWorker {
           | 'PEER_ADDED'
           | 'PEER_ADD_ERROR'
           | 'EVENT'
+          | 'SERVER_ERROR'
         message?: any
         protocol?: string
         peerId?: string
@@ -76,13 +78,14 @@ export class NetworkWorker {
     )
   }
 
-  async start(_config: Config, bootnodes: MultiaddrLike, dnsNetworks: string[]) {
-    console.log('init worker')
+  async start(config: Config, bootnodes: MultiaddrLike, dnsNetworks: string[]) {
     this.worker.postMessage({
       type: 'INIT',
       maxPeers: this.config.maxPeers,
       bootnodes,
       dnsNetworks,
+      port: config.port,
+      extIP: config.extIP,
     })
   }
 
