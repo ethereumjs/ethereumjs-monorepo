@@ -16,7 +16,7 @@
 - [General Usage](#general-usage)
 - [Supported Networks](#supported-networks)
 - [Running with a Consensus Layer (CL) Client](#running-with-a-consensus-layer-cl-client)
-- [Testnets](#testnets)
+- [Research & Development](#research--development)
 - [Custom Chains](#custom-chains)
 - [Custom Network Mining (Beta)](#custom-network-mining-beta)
 - [API](#api)
@@ -98,10 +98,10 @@ And pass in CLI parameters like:
 
 ```shell
 # npm installation
-ethereumjs --network=holesky
+ethereumjs --network=sepolia
 
 # Source installation
-npm run client:start -- --network=holesky
+npm run client:start -- --network=sepolia
 ```
 
 To see a help page with the full list of client options available run:
@@ -118,17 +118,18 @@ The EthereumJS client is tightly integrated with the EthereumJS [Common](../comm
 
 The main supported networks are:
 
-- `mainnet` (experimental)
-- `sepolia` (`v0.3.0`+)
-- `holesky` (`v0.9.0`+)
+- `mainnet` (limited)
+- `sepolia`
+- `hoodi`
+- `kaustinen6` (Verkle testnet)
 
 Use the CLI `--network` option to switch the network:
 
 ```shell
-ethereumjs --network=holesky
+ethereumjs --network=hoodi
 ```
 
-The client currently supports `full` sync being set as a default and has experimental support for `light` sync.
+The client currently supports `full` sync being set as a default.
 
 ## Running with a Consensus Layer (CL) Client
 
@@ -193,27 +194,25 @@ For a testnet chain, you may skip keystore generation and directly provide lodes
 
 (Modify the mnemonic and range indices as per your validator configuration).
 
-#### Running EthereumJS/Lodestar on Holesky
+#### Running EthereumJS/Lodestar on Hoodi
 
-A suited network to test the EthereumJS/Lodestar client combination is the Holesky network, being still somewhat lightweight but nevertheless being actively used with a significant transaction load.
-
-To start the EthereumJS client with JSON RPC and Engine API endpoints exposed:
+A suited network to test the EthereumJS/Lodestar client combination is the Hoodi network. To start the EthereumJS client with JSON RPC and Engine API endpoints exposed:
 
 ```shell
-ethereumjs --network=holesky --rpc --rpcEngine
+ethereumjs --network=hoodi --rpc --rpcEngine
 ```
 
 Then start the Lodestar client with:
 
 ```shell
-./lodestar beacon --network=holesky --jwt-secret=[PATH-TO-JWT-SECRET-FROM-ETHEREUMJS-CLIENT]
+./lodestar beacon --network=hoodi --jwt-secret=[PATH-TO-JWT-SECRET-FROM-ETHEREUMJS-CLIENT]
 ```
 
-## Experimental Testnets
+## Research & Development
 
-The EthereumJS client supports ongoing protocol development efforts, allowing developers and testers to participate in various testnets using the EthereumJS client.
+We use the EthereumJS client to connect to research networks of various kinds. It is possible to connect either with a manual setup or using Kurtosis/Docker together with the predefined configurations and tool integration the [EthPandaOps](https://ethpandaops.io/) team from the Ethereum Foundation is providing.
 
-### Verkle testnet
+### Manual Testnet Setup (Verkle Example)
 
 We currently support the Kaustinen7 testnet, both with stateless and stateful execution. We will be proactively supporting upcoming testnets as they launch. 
 
@@ -540,9 +539,7 @@ To update the structure diagram files in the root folder open the `client.drawio
 
 ## EthereumJS
 
-See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices.
-
-If you want to join for work or do improvements on the libraries have a look at our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html).
+The `EthereumJS` GitHub organization and its repositories are managed by the Ethereum Foundation JavaScript team, see our [website](https://ethereumjs.github.io/) for a team introduction. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
 
 [client-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/client.svg
 [client-npm-link]: https://www.npmjs.com/package/@ethereumjs/client
