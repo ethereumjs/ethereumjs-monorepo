@@ -115,7 +115,7 @@ jobs:
           key: ${{ inputs.submodule-cache-key}}
           fail-on-cache-miss: true
   
-      - run: npm run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
+      - run: VITE_FORK=${{matrix.fork}} VITE_VERIFY_TEST_AMOUNT_ALL_TESTS=1 npx vitest run test/tester/stateRunner.spec.ts
 
   vm-state-extended:
     if: contains(join(github.event.pull_request.labels.*.name, ' '), 'Test all hardforks')
@@ -177,7 +177,7 @@ jobs:
           fail-on-cache-miss: true
   
 
-      - run: npm run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
+      - run: VITE_FORK=${{matrix.fork}} VITE_VERIFY_TEST_AMOUNT_ALL_TESTS=1 npx vitest run test/tester/stateRunner.spec.ts
 
   vm-blockchain:
     runs-on: ubuntu-latest
