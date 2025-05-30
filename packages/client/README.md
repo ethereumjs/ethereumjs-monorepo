@@ -17,6 +17,7 @@
 - [Supported Networks](#supported-networks)
 - [Running with a Consensus Layer (CL) Client](#running-with-a-consensus-layer-cl-client)
 - [Research & Development](#research--development)
+- [Joining Testnets](#joining-testnets)
 - [Custom Chains](#custom-chains)
 - [Custom Network Mining (Beta)](#custom-network-mining-beta)
 - [API](#api)
@@ -210,9 +211,77 @@ Then start the Lodestar client with:
 
 ## Research & Development
 
+### Verkle/Stateless
+
+
+### PeerDAS
+
+
+
+## Joining Testnets
+
 We use the EthereumJS client to connect to research networks of various kinds. It is possible to connect either with a manual setup or using Kurtosis/Docker together with the predefined configurations and tool integration the [EthPandaOps](https://ethpandaops.io/) team from the Ethereum Foundation is providing.
 
+### Kurtosis/Docker Testnet Setup
+
+The [ethereum-package](https://github.com/ethpandaops/ethereum-package) is a Kurtosis package dedicated to deploy Ethereum testnets and abstracts a lot of the setup and configuration complexity away. We maintain a dedicated [EthereumJS launcher](https://github.com/ethpandaops/ethereum-package/tree/main/src/el/ethereumjs) which provides a hook into the system setup.
+
+#### Getting Started
+
+To get things started, clone the repo and follow the [quickstart guide](https://github.com/ethpandaops/ethereum-package?tab=readme-ov-file#quickstart) provided. You need to install both Kurtosis and Docker.
+
+Build our client Docker image as described [here](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client#docker).
+
+#### Network Setup
+
+The `network_params.yaml` (from the panda package) is the entrypoint for testnet configuration. The following file creates a local devnet with an EthereumJS EL and a Lighthouse CL client, mentioning some useful extra "features":
+
+```yml
+participants:
+# EL
+  - el_type: ethereumjs
+    el_image: ethereumjs-local:latest
+    el_log_level: "debug" # optional log level adjustment
+    el_extra_params: [ '--rpcDebug=eth' ] # optional client params
+    el_extra_env_vars: {
+      NODE_OPTIONS: '--inspect=0.0.0.0' # use this for external Chrome Dev tools debugging
+    }
+# CL
+    cl_type: lighthouse #default
+    cl_extra_params: ["--target-peers=0"] #bug in lighthouse, fix Dora
+network_params:
+  gas_limit: 60000000
+  genesis_gaslimit: 60000000
+
+additional_services:
+  - dora # optional block explorer
+  - spamoor # optional network spammer
+docker_cache_params:
+  enabled: true
+  url: "docker.ethquokkaops.io"
+snooper_enabled: true # optional RPC proxy for debugging
+
+port_publisher:
+  el:
+    enabled: true # use this for external Chrome Dev tools debugging
+```
+
+#### Service Management
+
+The management of the services - so e.g. to start and stop the EthereumJS client or other services - is now done mostly through Kurtosis or docker.
+
+Some useful commands to start with are (assuming a Kurtosis "enclave" called "hidden-crater"):
+
+- `kurtosis enclave inspect hidden-crater` should give you the services running.
+- `kurtosis service start/stop hidden-crater el-1-ethereumjs-lighthouse` (start/stop our client)
+
+Logs/shell can be directly accessed through the docker UI for containers, also available through Kurtosis though:
+
+- `kurtosis service logs -f spooky-sea el-1-ethereumjs-lighthouse`
+
 ### Manual Testnet Setup (Verkle Example)
+
+This is an example how to using the EthereumJS client to manually join a research network.
 
 We currently support the Kaustinen7 testnet, both with stateless and stateful execution. We will be proactively supporting upcoming testnets as they launch. 
 
