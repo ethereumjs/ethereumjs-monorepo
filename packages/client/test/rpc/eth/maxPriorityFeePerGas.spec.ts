@@ -2,10 +2,10 @@ import { assert, describe, it } from 'vitest'
 
 import { createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
 import type { TypedTransaction } from '@ethereumjs/tx'
-import { hexToBigInt } from '@ethereumjs/util'
+import { Units, hexToBigInt } from '@ethereumjs/util'
 import { createClient, createManager, getRPCClient, startRPC } from '../helpers.ts'
 
-const method = 'eth_getMaxPriorityFeePerGas'
+const method = 'eth_maxPriorityFeePerGas'
 
 type BlocksMPF = bigint[][]
 
@@ -66,11 +66,11 @@ async function getSetup(blocksMPF: BlocksMPF, non1559Txs = 0) {
 }
 
 describe(method, () => {
-  it('should return 0 for a simple block with no transactions', async () => {
+  it('should return default for a simple block with no transactions', async () => {
     const blocksMPF = [[]]
     const { rpc } = await getSetup(blocksMPF)
     const res = await rpc.request(method, [])
-    assert.strictEqual(hexToBigInt(res.result), 0n)
+    assert.strictEqual(hexToBigInt(res.result), Units.gwei(1n))
   })
 
   it('should return "100" for a simple block with one 1559 tx', async () => {
@@ -84,7 +84,7 @@ describe(method, () => {
     const blocksMPF = [[]]
     const { rpc } = await getSetup(blocksMPF, 1)
     const res = await rpc.request(method, [])
-    assert.strictEqual(hexToBigInt(res.result), 0n)
+    assert.strictEqual(hexToBigInt(res.result), Units.gwei(1n))
   })
 
   it('should return "100" for two simple blocks with one 1559 tx', async () => {
