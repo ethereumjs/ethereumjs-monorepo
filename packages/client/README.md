@@ -213,10 +213,23 @@ Then start the Lodestar client with:
 
 ### Verkle/Stateless
 
+We are active in verkle/stateless research for some time, the [Stateless Implementers Calls](https://github.com/ethereum/pm/issues?q=is%3Aissue%20state%3Aopen%20label%3AStateless) serve as a good entrypoint to grasp what is going on and have some references to current work and testnets.
+
+The [verkle-devnets](https://github.com/ethpandaops/verkle-devnets) repository hosts configuration for joining the ongoing testnet efforts.
+
+In the monorepo we have experimental [verkle](./../verkle/) and [binary](./../binarytree/) tree implementations and have integrated both into our [state manager](./../statemanager/) (abstraction of Ethereum state access). All verkle/stateless code gets merged into the `master` branch. In the client there are dedicated flags for stateless execution, see `--help` flag for reference.
 
 ### PeerDAS
 
+PeerDAS is coming to Ethereum along with the [Fusaka](https://eips.ethereum.org/EIPS/eip-7607) hardfork and there are dedicated [BreakOut Room Calls](https://github.com/ethereum/pm/issues?q=is%3Aissue%20state%3Aclosed%20label%3APeerDAS) for PeerDAS.
 
+Our PeerDAS work from [PR #3976](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3976) has been merged into `master` in May 2025. Testnet configuration can be found in the [peerdas-devnets](https://github.com/ethpandaops/peerdas-devnets) repository, newer testnets will likely be set up in a Fusaka context though.
+
+### Protocol/Tx SSZ-ification
+
+Gajinder has led a vast effort to implement and prototype a proposed "SSZ-ification" of large parts L1 protocol stack - being centered around EIPs like [EIP-7495 - SSZ Stable Container](https://eips.ethereum.org/EIPS/eip-7495) or [EIP-6404 - SSZ Transactions](https://eips.ethereum.org/EIPS/eip-6404), the associated PR [#3849](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3849) provides an extensive overview of the wide range of EIPs and the integration work being done.
+
+There is an [ssz-devnet-0](https://ssz-devnet-0.ethpandaops.io/) up and running where the EthereumJS client is actively joining and providin bootnode functionality.
 
 ## Joining Testnets
 
