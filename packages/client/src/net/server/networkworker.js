@@ -1,9 +1,11 @@
+parentPort.postMessage({ type: 'LOG', event: 'Worker starting' })
 import { Config } from '@ethereumjs/client/dist/esm/src/config.js'
 import { RlpxServer } from '@ethereumjs/client/dist/esm/src/net/server/rlpxserver.js'
 import { parentPort } from 'worker_threads'
 let server = null
 
 parentPort.on('message', async (data) => {
+  parentPort.postMessage({ type: 'LOG', event: 'Worker received message', data })
   switch (data.type) {
     case 'INIT': {
       const { maxPeers, bootnodes, dnsNetworks, port, extIP } = data
@@ -26,10 +28,10 @@ parentPort.on('message', async (data) => {
     }
     case 'STOP': {
       if (server !== null) {
-        console.log('Worker stopping server...')
+        parentPort.postMessage({ type: 'LOG', event: 'Worker stopping server...' })
         await server.stop()
         server = null
-        console.log('Worker server stopped')
+        parentPort.postMessage({ type: 'LOG', event: 'Worker server stopped' })
       }
       parentPort.postMessage({ type: 'STOP_COMPLETE' })
       break

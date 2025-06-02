@@ -20,15 +20,7 @@ export class NetworkWorker {
     this.config = config
     this.worker = new Worker(`${__dirname}/networkworker.js`, {
       workerData: { __dirname },
-      stdout: true,
-      stderr: true,
     })
-
-    // Pipe worker stdout/stderr to main process
-    //@ts-ignore
-    this.worker.stdout.pipe(process.stdout)
-    // @ts-ignore
-    this.worker.stderr.pipe(process.stderr)
 
     // Set up message handling from worker
     this.worker.on(
@@ -43,6 +35,7 @@ export class NetworkWorker {
           | 'PEER_ADD_ERROR'
           | 'EVENT'
           | 'SERVER_ERROR'
+          | 'LOG'
         message?: any
         protocol?: string
         peerId?: string
@@ -52,7 +45,6 @@ export class NetworkWorker {
         event?: string
         args?: any[]
       }) => {
-        console.log('got message', data)
         if (
           data.type === 'EVENT' &&
           data.event === 'PROTOCOL_MESSAGE' &&
@@ -73,6 +65,8 @@ export class NetworkWorker {
           if (this.messageHandler) {
             void this.messageHandler(data.message, data.protocol, peer)
           }
+        } else if (data.type === 'LOG') {
+          console.log(`[DEVP2P] [${data.event}]`)
         }
       },
     )
