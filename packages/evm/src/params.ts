@@ -392,6 +392,13 @@ export const paramsEVM: ParamsDict = {
     datacopyGas: 3, // Base fee of the DATACOPY opcode
   },
   /**
+   * Precompile for secp256r1 Curve Support
+   */
+  7212: {
+    // gasPrices
+    p256verifyGas: 3450, // Base fee of the P256VERIFY precompile
+  },
+  /**
 .  * BLOBBASEFEE opcode
 .  */
   7516: {
