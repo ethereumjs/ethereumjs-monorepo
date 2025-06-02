@@ -422,28 +422,59 @@ Additional log selections can be added with a comma separated list (no spaces). 
 
 ### Internal Structure
 
-The EVM processes state changes at many levels.
+The EVM processes state changes through a hierarchical flow of execution:
 
-- **runCall**
-  - checkpoint state
-  - transfer value
-  - load code
-  - runCode
-  - materialize created contracts
-  - revert or commit checkpoint
-- **runCode**
-  - iterate over code
-  - run op codes
-  - track gas usage
-- **OpFns**
-  - run individual op code
-  - modify stack
-  - modify memory
-  - calculate fee
+#### Top Level: Message Execution (`runCall`)
+The `runCall` method handles the execution of messages, which can be either contract calls or contract creations:
+- Creates a checkpoint in the state
+- Sets up the execution environment (block context, transaction origin, etc.)
+- Manages account nonce updates
+- Handles value transfers between accounts
+- Delegates to either `_executeCall` or `_executeCreate` based on whether the message has a `to` address
+- **Both `_executeCall` and `_executeCreate` call into `runInterpreter` to actually execute the bytecode**
+- Processes any errors or exceptions
+- Manages selfdestruct sets and created contract addresses
+- Commits or reverts state changes based on execution result
+- Triggers events (`beforeMessage`, `afterMessage`)
 
-The opFns for `CREATE`, `CALL`, and `CALLCODE` call back up to `runCall`.
+#### Code Execution (`runCode` / `runInterpreter`)
+The `runCode` method is a helper for directly running EVM bytecode (e.g., for testing or utility purposes) without the full message/transaction context:
+- Sets up a minimal message context for code execution
+- **Directly calls `runInterpreter` to execute the provided bytecode**
+- Does not go through the full message handling logic of `runCall`
 
-TODO: this section likely needs an update.
+The `runInterpreter` method is used by both `runCall` (via `_executeCall`/`_executeCreate`) and `runCode` to process the actual bytecode.
+
+#### Bytecode Processing (Interpreter)
+The Interpreter class is the core bytecode processor:
+- Manages execution state (program counter, stack, memory, gas)
+- Executes a loop that:
+  - Analyzes jump destinations
+  - Fetches the next opcode
+  - Calculates gas costs (static and dynamic)
+  - Executes the opcode handler
+  - Updates the program counter
+  - Emits step events for debugging/tracing
+- Handles stack, memory, and storage operations
+- Processes call and creation operations by delegating back to the EVM
+
+#### Opcode Functions
+Each opcode has an associated handler function that:
+- Validates inputs
+- Calculates dynamic gas costs
+- Performs the opcode's logic (stack operations, memory operations, etc.)
+- Updates the EVM state
+- The program counter is incremented in between the execution of the gas handler and opcode logic handler functions, this should be considered e.g. if parsing immediate input parameters
+- Special opcodes like `CALL`, `CREATE`, `DELEGATECALL` create a new message and call back to the EVM's `runCall` method
+
+#### Journal and State Management
+- State changes are tracked in a journal system
+- The journal supports checkpointing and reversion
+- Transient storage (EIP-1153) has its own checkpoint mechanism
+- When a message completes successfully, changes are committed to the state
+- On failure (exceptions), changes are reverted
+
+This layered architecture provides separation of concerns while allowing for the complex interactions needed to execute smart contracts on the Ethereum platform.
 
 ## Profiling the EVM
 

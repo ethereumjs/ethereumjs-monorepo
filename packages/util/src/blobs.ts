@@ -14,6 +14,7 @@ const USEFUL_BYTES_PER_BLOB = 32 * FIELD_ELEMENTS_PER_BLOB
 const MAX_BLOBS_PER_TX = 2
 const MAX_USEFUL_BYTES_PER_TX = USEFUL_BYTES_PER_BLOB * MAX_BLOBS_PER_TX - 1
 const BLOB_SIZE = BYTES_PER_FIELD_ELEMENT * FIELD_ELEMENTS_PER_BLOB
+export const CELLS_PER_EXT_BLOB = 128
 
 function get_padded(data: Uint8Array, blobs_len: number): Uint8Array {
   const pData = new Uint8Array(blobs_len * USEFUL_BYTES_PER_BLOB)
@@ -107,4 +108,38 @@ export const commitmentsToVersionedHashes = (commitments: PrefixedHexString[]) =
     hashes.push(computeVersionedHash(commitment, 0x01))
   }
   return hashes
+}
+
+export const blobsToCells = (
+  kzg: KZG,
+  blobs: PrefixedHexString[],
+): [PrefixedHexString[], number[]] => {
+  const cells = blobs.reduce((acc, elem) => {
+    return [...acc, ...(kzg.computeCells(elem) as PrefixedHexString[])]
+  }, [] as PrefixedHexString[])
+  const indices = Array.from({ length: CELLS_PER_EXT_BLOB }, (_, i) => i)
+
+  return [cells, indices]
+}
+
+export const blobsToCellsAndProofs = (
+  kzg: KZG,
+  blobs: PrefixedHexString[],
+): [PrefixedHexString[], PrefixedHexString[], number[]] => {
+  const blobsAndCells = blobs.reduce(
+    ([cellsAcc, proofsAcc], elem) => {
+      const blobCellsAndProofs = kzg.computeCellsAndProofs(elem) as [
+        PrefixedHexString[],
+        PrefixedHexString[],
+      ]
+      return [
+        [...cellsAcc, ...blobCellsAndProofs[0]],
+        [...proofsAcc, ...blobCellsAndProofs[1]],
+      ]
+    },
+    [[] as PrefixedHexString[], [] as PrefixedHexString[]],
+  )
+
+  const indices = Array.from({ length: CELLS_PER_EXT_BLOB }, (_, i) => i)
+  return [...blobsAndCells, indices] as [PrefixedHexString[], PrefixedHexString[], number[]]
 }

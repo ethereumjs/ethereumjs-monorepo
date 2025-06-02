@@ -1,7 +1,12 @@
 import { BlockHeader, paramsBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { MerkleStateManager } from '@ethereumjs/statemanager'
-import { createBlob4844Tx, createFeeMarket1559TxFromRLP, createLegacyTx } from '@ethereumjs/tx'
+import {
+  NetworkWrapperType,
+  createBlob4844Tx,
+  createFeeMarket1559TxFromRLP,
+  createLegacyTx,
+} from '@ethereumjs/tx'
 import {
   Account,
   blobsToCommitments,
@@ -11,8 +16,8 @@ import {
   hexToBytes,
   randomBytes,
 } from '@ethereumjs/util'
-import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
-import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 import { assert, describe, it } from 'vitest'
 
 import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../../../src/rpc/error-code.ts'
@@ -248,6 +253,7 @@ describe(method, () => {
     const pk = randomBytes(32)
     const tx = createBlob4844Tx(
       {
+        networkWrapperVersion: NetworkWrapperType.EIP4844,
         blobVersionedHashes,
         blobs,
         kzgCommitments: commitments,
@@ -263,6 +269,7 @@ describe(method, () => {
 
     const replacementTx = createBlob4844Tx(
       {
+        networkWrapperVersion: NetworkWrapperType.EIP4844,
         blobVersionedHashes,
         blobs,
         kzgCommitments: commitments,
