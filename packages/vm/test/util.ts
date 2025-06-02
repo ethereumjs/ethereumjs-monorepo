@@ -84,8 +84,7 @@ export function verifyAccountPostConditions(
     t.comment('Account: ' + address)
     if (!equalsBytes(format(account.balance, true), format(acctData.balance, true))) {
       t.comment(
-        `Expected balance of ${bytesToBigInt(format(acctData.balance, true))}, but got ${
-          account.balance
+        `Expected balance of ${bytesToBigInt(format(acctData.balance, true))}, but got ${account.balance
         }`,
       )
     }
@@ -119,8 +118,7 @@ export function verifyAccountPostConditions(
 
       if (val !== hashedStorage[key]) {
         t.comment(
-          `Expected storage key ${bytesToHex(data.key)} at address ${address} to have value ${
-            hashedStorage[key] ?? '0x'
+          `Expected storage key ${bytesToHex(data.key)} at address ${address} to have value ${hashedStorage[key] ?? '0x'
           }, but got ${val}}`,
         )
       }

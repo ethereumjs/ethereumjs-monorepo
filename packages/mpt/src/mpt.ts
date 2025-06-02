@@ -115,13 +115,13 @@ export class MerklePatriciaTrie {
       typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
     this.debug = this.DEBUG
       ? (message: string, namespaces: string[] = []) => {
-          let log = this._debug
-          for (const name of namespaces) {
-            log = log.extend(name)
-          }
-          log(message)
+        let log = this._debug
+        for (const name of namespaces) {
+          log = log.extend(name)
         }
-      : (..._: any) => {}
+        log(message)
+      }
+      : (..._: any) => { }
 
     this.database(opts?.db ?? new MapDB<string, Uint8Array>(), valueEncoding)
 
@@ -332,8 +332,8 @@ export class MerklePatriciaTrie {
     partialPath: {
       stack: MPTNode[]
     } = {
-      stack: [],
-    },
+        stack: [],
+      },
   ): Promise<Path> {
     const targetKey = bytesToNibbles(key)
     const keyLen = targetKey.length
@@ -401,9 +401,8 @@ export class MerklePatriciaTrie {
             `Comparing node key to expected\n|| Node_Key: [${node.key()}]\n|| Expected: [${targetKey.slice(
               progress,
               progress + node.key().length,
-            )}]\n|| Matching: [${
-              targetKey.slice(progress, progress + node.key().length).toString() ===
-              node.key().toString()
+            )}]\n|| Matching: [${targetKey.slice(progress, progress + node.key().length).toString() ===
+            node.key().toString()
             }]
             `,
             ['find_path', 'extension_node'],
@@ -1089,6 +1088,43 @@ export class MerklePatriciaTrie {
     this._db.checkpoints = []
   }
 
+  /**
+   * Returns the next key with a value in the trie, starting from the given startKey (inclusive),
+   * along with the subsequent key to continue iteration.
+   *
+   * @param startKey - packed key bytes to start scanning from
+   * @returns
+   *   - key: the first key ≥ startKey that has a value (or null if none)
+   *   - nextKey: the key immediately after `key` (or null if there is no further key)
+   */
+  async getNextValue(
+    startKey: Uint8Array,
+  ): Promise<{ key: Uint8Array | undefined; nextKey: Uint8Array | undefined }> {
+    let foundKey: Uint8Array | undefined
+    let nextKey: Uint8Array | undefined
+    const startBigInt = bytesToBigInt(startKey)
+
+    await this.walkAllValueNodes(async (node: MPTNode, currentKey: number[]) => {
+      // only care about leaf nodes
+      if (!(node instanceof LeafMPTNode)) return
+
+      // reconstruct the full packed key for this leaf
+      const packed = nibblesTypeToPackedBytes(currentKey.concat(node.key()))
+      const v = bytesToBigInt(packed)
+
+      if (foundKey === undefined) {
+        // haven’t hit our startKey yet
+        if (v < startBigInt) return
+        foundKey = packed
+      } else if (nextKey === undefined) {
+        // this is the very next key after foundKey
+        nextKey = packed
+      }
+      // (no need to return anything; traversal will simply continue but we ignore further nodes)
+    })
+
+    return { key: foundKey, nextKey }
+  }
   /**
    * Returns a list of values stored in the trie
    * @param startKey first unhashed key in the range to be returned (defaults to 0).  Note, all keys must be of the same length or undefined behavior will result

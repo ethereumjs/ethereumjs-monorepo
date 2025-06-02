@@ -54,6 +54,7 @@ export * from './types.ts'
 export * from './authorization.ts'
 export * from './binaryTree.ts'
 export * from './blobs.ts'
+export * from './conversion.ts'
 export {
   arrayContainsArray,
   fromAscii,

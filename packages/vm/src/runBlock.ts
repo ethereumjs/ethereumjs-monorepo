@@ -3,7 +3,7 @@ import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { type EVM, type EVMInterface, VerkleAccessWitness } from '@ethereumjs/evm'
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
-import { type StatelessVerkleStateManager, verifyVerkleStateProof } from '@ethereumjs/statemanager'
+import { OverlayStateManager, type StatelessVerkleStateManager, verifyVerkleStateProof } from '@ethereumjs/statemanager'
 import { TransactionType } from '@ethereumjs/tx'
 import {
   Account,
@@ -25,6 +25,7 @@ import {
   setLengthLeft,
   short,
   unprefixedHexToBytes,
+  EIP7612_CONVERSION_STRIDE,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 import { sha256 } from 'ethereum-cryptography/sha256.js'
@@ -80,7 +81,6 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
   }
 
   const stateManager = vm.stateManager
-
   const { root } = opts
   const clearCache = opts.clearCache ?? true
   const setHardfork = opts.setHardfork ?? false
@@ -88,9 +88,8 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
   const generateFields = opts.generate === true
 
   if (enableProfiler) {
-    const title = `Profiler run - Block ${block.header.number} (${bytesToHex(block.hash())} with ${
-      block.transactions.length
-    } txs`
+    const title = `Profiler run - Block ${block.header.number} (${bytesToHex(block.hash())} with ${block.transactions.length
+      } txs`
     // eslint-disable-next-line no-console
     console.log(title)
     // eslint-disable-next-line no-console
@@ -119,64 +118,83 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
   if (vm.DEBUG) {
     debug('-'.repeat(100))
     debug(
-      `Running block hash=${bytesToHex(block.hash())} number=${
-        block.header.number
+      `Running block hash=${bytesToHex(block.hash())} number=${block.header.number
       } hardfork=${vm.common.hardfork()}`,
     )
   }
 
-  // Set state root if provided
-  if (root) {
+  if (
+    block.header.timestamp >= vm.common.hardforkTimestamp(Hardfork.Verkle)! && stateManager instanceof OverlayStateManager && !stateManager.isConversionActivated()
+  ) {
     if (vm.DEBUG) {
-      debug(`Set provided state root ${bytesToHex(root)} clearCache=${clearCache}`)
+      debug(`Activate conversion`)
     }
-    await stateManager.setStateRoot(root, clearCache)
+    stateManager.activateConversion()
+  } else {
+    // Set state root if provided
+    // We skip this if we are at the first block of the conversion because the stateRoot won't match the frozen state
+    if (root) {
+      if (vm.DEBUG) {
+        debug(`Set provided state root ${bytesToHex(root)} clearCache=${clearCache}`)
+      }
+      await stateManager.setStateRoot(root, clearCache)
+    }
   }
 
-  // if (vm.common.isActivatedEIP(6800) || vm.common.isActivatedEIP(7864)) {
-  //   // Initialize the access witness
 
-  //   if (vm.common.customCrypto.verkle === undefined) {
-  //     throw Error('verkleCrypto required when EIP-6800 is active')
-  //   }
-  //   vm.evm.verkleAccessWitness = new VerkleAccessWitness({
-  //     verkleCrypto: vm.common.customCrypto.verkle,
-  //   })
-  //   vm.evm.systemVerkleAccessWitness = new VerkleAccessWitness({
-  //     verkleCrypto: vm.common.customCrypto.verkle,
-  //   })
+  if (stateManager instanceof OverlayStateManager && stateManager.isConversionActivated() && !stateManager.isFullyConverted()) {
+    if (vm.DEBUG) {
+      debug(`Run conversion step with stride of ${EIP7612_CONVERSION_STRIDE}`)
+    }
+    await stateManager.runConversionStep(EIP7612_CONVERSION_STRIDE)
+  }
 
-  //   if (typeof stateManager.initVerkleExecutionWitness !== 'function') {
-  //     throw Error(`VerkleStateManager needed for execution of verkle blocks`)
-  //   }
+  if (vm.common.isActivatedEIP(6800) || vm.common.isActivatedEIP(7864)) {
+    const isConversionActive = stateManager instanceof OverlayStateManager && stateManager.isConversionActivated() && !stateManager.isFullyConverted()
+    // Initialize the access witness
+    if (vm.common.customCrypto.verkle === undefined) {
+      throw Error('verkleCrypto required when EIP-6800 is active')
+    }
+    vm.evm.verkleAccessWitness = new VerkleAccessWitness({
+      verkleCrypto: vm.common.customCrypto.verkle,
+    })
+    vm.evm.systemVerkleAccessWitness = new VerkleAccessWitness({
+      verkleCrypto: vm.common.customCrypto.verkle,
+    })
 
-  //   if (vm.DEBUG) {
-  //     debug(`Initializing executionWitness`)
-  //   }
-  //   if (clearCache) {
-  //     stateManager.clearCaches()
-  //   }
+    if (!isConversionActive && typeof stateManager.initVerkleExecutionWitness !== 'function') {
+      throw Error(`VerkleStateManager needed for execution of verkle blocks`)
+    }
 
-  //   // Populate the execution witness
-  //   stateManager.initVerkleExecutionWitness!(block.header.number, block.executionWitness)
+    if (vm.DEBUG) {
+      debug(`Initializing executionWitness`)
+    }
+    if (clearCache) {
+      stateManager.clearCaches()
+    }
 
-  //   // Check if statemanager is a Verkle State Manager (stateless and stateful both have verifyVerklePostState)
-  //   if ('verifyVerklePostState' in stateManager) {
-  //     // Update the stateRoot cache
-  //     await stateManager.setStateRoot(block.header.stateRoot)
-  //     if (verifyVerkleStateProof(stateManager as StatelessVerkleStateManager) === true) {
-  //       if (vm.DEBUG) {
-  //         debug(`Verkle proof verification succeeded`)
-  //       }
-  //     } else {
-  //       throw Error(`Verkle proof verification failed`)
-  //     }
-  //   }
-  // } else {
-  //   if (typeof stateManager.initVerkleExecutionWitness === 'function') {
-  //     throw Error(`StatelessVerkleStateManager can't execute merkle blocks`)
-  //   }
-  // }
+    // Populate the execution witness
+    if (!isConversionActive) {
+      stateManager.initVerkleExecutionWitness!(block.header.number, block.executionWitness)
+    }
+
+    // Check if statemanager is a Verkle State Manager (stateless and stateful both have verifyVerklePostState)
+    if ('verifyVerklePostState' in stateManager && !isConversionActive) {
+      // Update the stateRoot cache
+      await stateManager.setStateRoot(block.header.stateRoot)
+      if (verifyVerkleStateProof(stateManager as StatelessVerkleStateManager) === true) {
+        if (vm.DEBUG) {
+          debug(`Verkle proof verification succeeded`)
+        }
+      } else {
+        throw Error(`Verkle proof verification failed`)
+      }
+    }
+  } else {
+    if (typeof stateManager.initVerkleExecutionWitness === 'function' && !(stateManager instanceof OverlayStateManager)) {
+      throw Error(`Verkle-enabled state manager can't execute merkle blocks`)
+    }
+  }
 
   // check for DAO support and if we should apply the DAO fork
   if (
@@ -204,10 +222,8 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     result = await applyBlock(vm, block, opts)
     if (vm.DEBUG) {
       debug(
-        `Received block results gasUsed=${result.gasUsed} bloom=${short(result.bloom.bitvector)} (${
-          result.bloom.bitvector.length
-        } bytes) receiptsRoot=${bytesToHex(result.receiptsRoot)} receipts=${
-          result.receipts.length
+        `Received block results gasUsed=${result.gasUsed} bloom=${short(result.bloom.bitvector)} (${result.bloom.bitvector.length
+        } bytes) receiptsRoot=${bytesToHex(result.receiptsRoot)} receipts=${result.receipts.length
         } txResults=${result.results.length}`,
       )
     }
@@ -325,7 +341,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
       }
     }
 
-    if (vm.common.isActivatedEIP(6800)) {
+    if (vm.common.isActivatedEIP(6800) && !(stateManager instanceof OverlayStateManager && stateManager.isConversionActivated() && !stateManager.isFullyConverted())) {
       if (vm.evm.verkleAccessWitness === undefined) {
         throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
       }
@@ -362,6 +378,13 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     console.timeEnd(withdrawalsRewardsCommitLabel)
   }
 
+  if (vm.stateManager instanceof OverlayStateManager && result.preimages !== undefined) {
+    result.preimages.forEach(preimage => {
+      debug(`Adding preimage to overlay state manager :${bytesToHex(preimage)}`)
+    })
+    vm.stateManager.addPreimages(result.preimages)
+  }
+
   const results: RunBlockResult = {
     receipts: result.receipts,
     logsBloom: result.bloom.bitvector,
@@ -386,8 +409,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
   await vm._emit('afterBlock', afterBlockEvent)
   if (vm.DEBUG) {
     debug(
-      `Running block finished hash=${bytesToHex(block.hash())} number=${
-        block.header.number
+      `Running block finished hash=${bytesToHex(block.hash())} number=${block.header.number
       } hardfork=${vm.common.hardfork()}`,
     )
   }
@@ -403,7 +425,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
 
     emitEVMProfile(logs.precompiles, 'Precompile performance')
     emitEVMProfile(logs.opcodes, 'Opcodes performance')
-    ;(vm.evm as EVM).clearPerformanceLogs()
+      ; (vm.evm as EVM).clearPerformanceLogs()
   }
 
   return results
@@ -411,9 +433,8 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
 
 /**
  * Validates and applies a block, computing the results of
- * applying its transactions. vm method doesn't modify the
- * block itself. It computes the block rewards and puts
- * them on state (but doesn't persist the changes).
+ * applying its transactions. vm method is
+ * side-effect free (it doesn't modify the block nor the state).
  * @param {Block} block
  * @param {RunBlockOpts} opts
  */
@@ -477,7 +498,6 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
 
   // Add txResult preimages to the blockResults preimages
   // Also add the coinbase preimage
-
   if (opts.reportPreimages === true) {
     if (vm.evm.stateManager.getAppliedKey === undefined) {
       throw EthereumJSErrorWithoutCode(
@@ -837,7 +857,7 @@ export function encodeReceipt(
 ) {
   const encoded = RLP.encode([
     (receipt as PreByzantiumTxReceipt).stateRoot ??
-      ((receipt as PostByzantiumTxReceipt).status === 0 ? Uint8Array.from([]) : hexToBytes('0x01')),
+    ((receipt as PostByzantiumTxReceipt).status === 0 ? Uint8Array.from([]) : hexToBytes('0x01')),
     bigIntToBytes(receipt.cumulativeBlockGasUsed),
     receipt.bitvector,
     receipt.logs,
@@ -949,7 +969,7 @@ const DAOConfig = {
     '9ea779f907f0b315b364b0cfc39a0fde5b02a416',
     'ceaeb481747ca6c540a000c1f3641f8cef161fa7',
     'cc34673c6c40e791051898567a1222daf90be287',
-    '579a80d909f346fbfb1189493f521d7f48d52238',
+    '579a80d909f346fbfb1189493f521d1d43b9ae4532d',
     'e308bd1ac5fda103967359b2712dd89deffb7973',
     '4cb31628079fb14e4bc3cd5e30c2f7489b00960c',
     'ac1ecab32727358dba8962a0f3b261731aad9723',
@@ -972,8 +992,7 @@ const DAOConfig = {
     'b52042c8ca3f8aa246fa79c3feaa3d959347c0ab',
     'e4ae1efdfc53b73893af49113d8694a057b9c0d1',
     '3c02a7bc0391e86d91b7d144e61c2c01a25a79c5',
-    '0737a6b837f97f46ebade41b9bc3e1c509c85c53',
-    '97f43a37f595ab5dd318fb46e7a155eae057317a',
+    '0737a6b837f97f46ebade41b9bc3e1c509c85c53', '97f43a37f595ab5dd318fb46e7a155eae057317a',
     '52c5317c848ba20c7504cb2c8052abd1fde29d03',
     '4863226780fe7c0356454236d3b1c8792785748d',
     '5d2b2e6fcbe3b11d26b525e085ff818dae332479',

@@ -78,13 +78,13 @@ export class VerkleTree {
       typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
     this.debug = this.DEBUG
       ? (message: string, namespaces: string[] = []) => {
-          let log = this._debug
-          for (const name of namespaces) {
-            log = log.extend(name)
-          }
-          log(message)
+        let log = this._debug
+        for (const name of namespaces) {
+          log = log.extend(name)
         }
-      : (..._: any) => {}
+        log(message)
+      }
+      : (..._: any) => { }
 
     this.DEBUG &&
       this.debug(`Trie created:
@@ -185,6 +185,7 @@ export class VerkleTree {
     const putStack: [Uint8Array, VerkleNode | null][] = []
     // Find path to nearest node
     const foundPath = await this.findPath(stem)
+    this.debug(`Found path: ${foundPath}`, ['put'])
 
     // Sanity check - we should at least get the root node back
     if (foundPath.stack.length === 0) {
@@ -320,8 +321,7 @@ export class VerkleTree {
     this.root(this.verkleCrypto.serializeCommitment(rootNode.commitment))
     this.DEBUG &&
       this.debug(
-        `Updating child reference for node with path: ${bytesToHex(lastPath)} at index ${
-          lastPath[0]
+        `Updating child reference for node with path: ${bytesToHex(lastPath)} at index ${lastPath[0]
         } in root node`,
         ['put'],
       )
@@ -379,9 +379,9 @@ export class VerkleTree {
         leafNodeWasDeleted
           ? null
           : {
-              commitment: leafNode.commitment,
-              path: leafNode.stem,
-            },
+            commitment: leafNode.commitment,
+            path: leafNode.stem,
+          },
       )
       if (leafNodeWasDeleted) {
         // Check to see if the internal node has only one other child node
@@ -406,8 +406,7 @@ export class VerkleTree {
         this.debug(
           `Updating child reference for leaf node with stem: ${bytesToHex(
             leafNode.stem,
-          )} at index ${
-            leafNode.stem[partialMatchingStemIndex]
+          )} at index ${leafNode.stem[partialMatchingStemIndex]
           } in internal node at path ${bytesToHex(
             leafNode.stem.slice(0, partialMatchingStemIndex),
           )}`,
@@ -437,6 +436,7 @@ export class VerkleTree {
     // if (equalsBytes(this.root(), this.EMPTY_TREE_ROOT)) return result
 
     // Get root node
+    this.DEBUG && this.debug(`Root Node: [${bytesToHex(this.root())}]`, ['find_path'])
     let rawNode = await this._db.get(this.root())
     if (rawNode === undefined) throw EthereumJSErrorWithoutCode('root node should exist')
 
@@ -528,13 +528,18 @@ export class VerkleTree {
     const rootNode = new InternalVerkleNode({
       commitment: this.verkleCrypto.zeroCommitment,
       verkleCrypto: this.verkleCrypto,
-    })
+    });
 
-    this.DEBUG && this.debug(`No root node. Creating new root node`, ['initialize'])
-    // Set trie root to serialized (aka compressed) commitment for later use in verkle proof
-    this.root(this.verkleCrypto.serializeCommitment(rootNode.commitment))
-    await this.saveStack([[this.root(), rootNode]])
-    return
+    this.DEBUG && this.debug(`No root node. Creating new root node`, ['initialize']);
+
+    // Set the root hash to the hash of the zero commitment
+    const rootHash = this.verkleCrypto.hashCommitment(rootNode.commitment);
+    this.root(rootHash);
+
+    // Save the root node to the database
+    await this.saveStack([[rootHash, rootNode]]);
+
+    return;
   }
 
   /**

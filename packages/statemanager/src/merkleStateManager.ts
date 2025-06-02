@@ -141,10 +141,8 @@ export class MerkleStateManager implements StateManagerInterface {
   async putAccount(address: Address, account: Account | undefined): Promise<void> {
     if (this.DEBUG) {
       this._debug(
-        `Save account address=${address} nonce=${account?.nonce} balance=${
-          account?.balance
-        } contract=${account && account.isContract() ? 'yes' : 'no'} empty=${
-          account && account.isEmpty() ? 'yes' : 'no'
+        `Save account address=${address} nonce=${account?.nonce} balance=${account?.balance
+        } contract=${account && account.isContract() ? 'yes' : 'no'} empty=${account && account.isEmpty() ? 'yes' : 'no'
         }`,
       )
     }
@@ -535,6 +533,21 @@ export class MerkleStateManager implements StateManagerInterface {
         await trie.put(addressBytes, elem.accountRLP)
       }
     }
+  }
+
+  /**
+   * Find the next account key in the trie after `startKey`, using lexicographical iteration.
+   * Returns [key, value, nextKey] where:
+   * - key: the matched key >= startKey
+   * - nextKey: the next key after this one (or undefined if none)
+   */
+  async getNextAtKey(startKey: Uint8Array): Promise<{ key: Uint8Array, nextKey: Uint8Array | undefined } | undefined> {
+    const { key, nextKey } = await this._trie.getNextValue(startKey)
+    if (key === undefined) {
+      return undefined
+    }
+    return { key, nextKey }
+
   }
 
   /**

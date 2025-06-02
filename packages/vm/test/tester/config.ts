@@ -324,12 +324,13 @@ function setupCommonForVerkle(network: string, timestamp?: number, kzg?: KZG) {
       }
     }
   }
-
-  testHardforks.push({ name: 'verkle', block: 1 })
+  if (network === 'shanghaiToVerkleAtTime32') {
+    testHardforks.push({ name: 'verkle', block: null, timestamp: 32 })
+  }
   const common = createCustomCommon(
     {
       hardforks: testHardforks,
-      defaultHardfork: 'verkle',
+      defaultHardfork: 'shanghai',
     },
     Mainnet,
     { eips: [2935, 3607], customCrypto: { kzg, verkle } },
@@ -358,7 +359,7 @@ export function getCommon(network: string, kzg?: KZG): Common {
   }
   let networkLowercase = network.toLowerCase()
   // Special handler for verkle tests
-  if (networkLowercase.includes('verkle')) {
+  if (network !== 'shanghaitoverkleattime32' && networkLowercase.includes('verkle')) {
     return setupCommonForVerkle(network, undefined, kzg)
   }
   if (network.includes('+')) {
@@ -380,14 +381,16 @@ export function getCommon(network: string, kzg?: KZG): Common {
     return setupCommonWithNetworks('Shanghai', undefined, 15000, kzg)
   } else if (networkLowercase === 'cancuntopragueattime15k') {
     return setupCommonWithNetworks('Cancun', undefined, 15000, kzg)
+  } else if (networkLowercase === 'shanghaitoverkleattime32') {
+    return setupCommonForVerkle('Shanghai', undefined, kzg)
   } else {
     // Case 3: this is not a "default fork" network, but it is a "transition" network. Test the VM if it transitions the right way
     const transitionForks =
       network in transitionNetworks
         ? transitionNetworks[network as keyof typeof transitionNetworks]
         : transitionNetworks[
-            (network.charAt(0).toUpperCase() + network.slice(1)) as keyof typeof transitionNetworks
-          ]
+        (network.charAt(0).toUpperCase() + network.slice(1)) as keyof typeof transitionNetworks
+        ]
     if (transitionForks === undefined) {
       throw new Error('network not supported: ' + network)
     }

@@ -98,9 +98,9 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
 
     this._checkpointCount = 0
 
-    if (opts.common.isActivatedEIP(6800) === false) {
-      throw EthereumJSErrorWithoutCode('EIP-6800 required for verkle state management')
-    }
+    // if (opts.common.isActivatedEIP(6800) === false) {
+    //   throw EthereumJSErrorWithoutCode('EIP-6800 required for verkle state management')
+    // }
 
     if (opts.common.customCrypto.verkle === undefined) {
       throw EthereumJSErrorWithoutCode('verkle crypto required')
@@ -219,10 +219,8 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
   putAccount = async (address: Address, account?: Account): Promise<void> => {
     if (this.DEBUG) {
       this._debug(
-        `putAccount address=${address} nonce=${account?.nonce} balance=${
-          account?.balance
-        } contract=${account && account.isContract() ? 'yes' : 'no'} empty=${
-          account && account.isEmpty() ? 'yes' : 'no'
+        `putAccount address=${address} nonce=${account?.nonce} balance=${account?.balance
+        } contract=${account && account.isContract() ? 'yes' : 'no'} empty=${account && account.isEmpty() ? 'yes' : 'no'
         }`,
       )
     }
@@ -230,6 +228,10 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
       if (account !== undefined) {
         const stem = getVerkleStem(this.verkleCrypto, address, 0)
         const basicDataBytes = encodeVerkleLeafBasicData(account)
+        this._debug("Verkle root before putAccount:", bytesToHex(this._trie.root()));
+        this._debug("Has state root?: ", await this.hasStateRoot(this._trie.root()))
+        this._debug("Node at root?: ", await this._trie['_db'].get(this._trie.root()))
+
         await this._trie.put(
           stem,
           [VerkleLeafType.BasicData, VerkleLeafType.CodeHash],
@@ -721,6 +723,7 @@ export class StatefulVerkleStateManager implements StateManagerInterface {
   }
 
   setStateRoot(stateRoot: Uint8Array, clearCache?: boolean): Promise<void> {
+    this._debug(`setStateRoot: ${short(stateRoot)}`)
     this._trie.root(stateRoot)
     clearCache === true && this.clearCaches()
     return Promise.resolve()

@@ -2,6 +2,7 @@ import { cliqueSigner, createBlockHeader } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { BinaryTreeAccessWitness, type EVM, VerkleAccessWitness } from '@ethereumjs/evm'
 import {
+  OverlayStateManager,
   type StatefulVerkleStateManager,
   type StatelessVerkleStateManager,
 } from '@ethereumjs/statemanager'
@@ -190,7 +191,7 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       }
       emitEVMProfile(logs.precompiles, 'Precompile performance')
       emitEVMProfile(logs.opcodes, 'Opcodes performance')
-      ;(vm.evm as EVM).clearPerformanceLogs()
+        ; (vm.evm as EVM).clearPerformanceLogs()
     }
   }
 }
@@ -201,12 +202,13 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   let stateAccesses: VerkleAccessWitness | BinaryTreeAccessWitness | undefined
   let txAccesses: VerkleAccessWitness | BinaryTreeAccessWitness | undefined
   if (vm.common.isActivatedEIP(6800)) {
-    if (vm.evm.verkleAccessWitness === undefined) {
+    // Require verkle access witnesses unless we're in the conversion phase
+    if (vm.evm.verkleAccessWitness === undefined && (!(state instanceof OverlayStateManager) || (state instanceof OverlayStateManager && state.isConversionActivated() && state.isFullyConverted()))) {
       throw Error(`Verkle access witness needed for execution of verkle blocks`)
     }
 
     // Check if statemanager is a Verkle State Manager (stateless and stateful both have verifyVerklePostState)
-    if (!('verifyVerklePostState' in vm.stateManager)) {
+    if (!('verifyVerklePostState' in vm.stateManager) && !(state instanceof OverlayStateManager)) {
       throw EthereumJSErrorWithoutCode(`Verkle State Manager needed for execution of verkle blocks`)
     }
     stateAccesses = vm.evm.verkleAccessWitness
@@ -245,8 +247,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const caller = tx.getSenderAddress()
   if (vm.DEBUG) {
     debug(
-      `New tx run hash=${
-        opts.tx.isSigned() ? bytesToHex(opts.tx.hash()) : 'unsigned'
+      `New tx run hash=${opts.tx.isSigned() ? bytesToHex(opts.tx.hash()) : 'unsigned'
       } sender=${caller}`,
     )
   }
@@ -308,8 +309,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     const baseFeePerGas = block?.header.baseFeePerGas ?? DEFAULT_HEADER.baseFeePerGas!
     if (maxFeePerGas < baseFeePerGas) {
       const msg = _errorMsg(
-        `Transaction's ${
-          'maxFeePerGas' in tx ? 'maxFeePerGas' : 'gasPrice'
+        `Transaction's ${'maxFeePerGas' in tx ? 'maxFeePerGas' : 'gasPrice'
         } (${maxFeePerGas}) is less than the block's baseFeePerGas (${baseFeePerGas})`,
         vm,
         block,
@@ -580,10 +580,8 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   if (vm.DEBUG) {
     debug(
-      `Running tx=${
-        tx.isSigned() ? bytesToHex(tx.hash()) : 'unsigned'
-      } with caller=${caller} gasLimit=${gasLimit} to=${
-        to?.toString() ?? 'none'
+      `Running tx=${tx.isSigned() ? bytesToHex(tx.hash()) : 'unsigned'
+      } with caller=${caller} gasLimit=${gasLimit} to=${to?.toString() ?? 'none'
       } value=${value} data=${short(data)}`,
     )
   }
@@ -601,9 +599,9 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   })) as RunTxResult
 
   if (vm.common.isActivatedEIP(6800)) {
-    ;(stateAccesses as VerkleAccessWitness)?.merge(txAccesses! as VerkleAccessWitness)
+    ; (stateAccesses as VerkleAccessWitness)?.merge(txAccesses! as VerkleAccessWitness)
   } else if (vm.common.isActivatedEIP(7864)) {
-    ;(stateAccesses as BinaryTreeAccessWitness)?.merge(txAccesses! as BinaryTreeAccessWitness)
+    ; (stateAccesses as BinaryTreeAccessWitness)?.merge(txAccesses! as BinaryTreeAccessWitness)
   }
 
   if (enableProfiler) {
@@ -623,8 +621,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     const { executionGasUsed, exceptionError, returnValue } = results.execResult
     debug('-'.repeat(100))
     debug(
-      `Received tx execResult: [ executionGasUsed=${executionGasUsed} exceptionError=${
-        exceptionError !== undefined ? `'${exceptionError.error}'` : 'none'
+      `Received tx execResult: [ executionGasUsed=${executionGasUsed} exceptionError=${exceptionError !== undefined ? `'${exceptionError.error}'` : 'none'
       } returnValue=${short(returnValue)} gasRefund=${results.gasRefund ?? 0} ]`,
     )
   }
@@ -841,8 +838,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   await vm._emit('afterTx', event)
   if (vm.DEBUG) {
     debug(
-      `tx run finished hash=${
-        opts.tx.isSigned() ? bytesToHex(opts.tx.hash()) : 'unsigned'
+      `tx run finished hash=${opts.tx.isSigned() ? bytesToHex(opts.tx.hash()) : 'unsigned'
       } sender=${caller}`,
     )
   }
@@ -902,10 +898,8 @@ export async function generateTxReceipt(
   let receipt
   if (vm.DEBUG) {
     debug(
-      `Generate tx receipt transactionType=${
-        tx.type
-      } cumulativeBlockGasUsed=${cumulativeGasUsed} bitvector=${short(baseReceipt.bitvector)} (${
-        baseReceipt.bitvector.length
+      `Generate tx receipt transactionType=${tx.type
+      } cumulativeBlockGasUsed=${cumulativeGasUsed} bitvector=${short(baseReceipt.bitvector)} (${baseReceipt.bitvector.length
       } bytes) logs=${baseReceipt.logs.length}`,
     )
   }

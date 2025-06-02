@@ -73,12 +73,9 @@ export interface OverlayStateManagerOpts extends BaseStateManagerOpts {
   common: Common // Common required since it provides verkleCrypto through customCrypto
   caches?: Caches
   /**
-   * Optional initial queue of MPT leaf keys (addresses as 20-byte Uint8Arrays)
-   * that still need to be migrated to the Verkle tree.
-   * If omitted the queue starts empty and can later be populated via
-   * {@link OverlayStateManager.enqueueLeaves}.
+   * Mapping from hashed MPT keys (hex strings) to their original address preimages
    */
-  conversionQueue?: Uint8Array[]
+  frozenTreePreimages?: Map<string, Uint8Array>
 }
 
 /**

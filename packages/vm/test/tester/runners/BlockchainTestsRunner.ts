@@ -2,23 +2,25 @@ import { createBlock, createBlockFromRLP } from '@ethereumjs/block'
 import { EthashConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
-import { MerklePatriciaTrie, createMPT } from '@ethereumjs/mpt'
+import { createMPT, MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
 import {
   Caches,
   MerkleStateManager,
+  OverlayStateManager,
   StatefulVerkleStateManager,
-  TransitionStateManager,
 } from '@ethereumjs/statemanager'
 import { createTxFromRLP } from '@ethereumjs/tx'
 import {
   MapDB,
   bytesToBigInt,
   bytesToHex,
+  equalsBytes,
   hexToBytes,
   isHexString,
   stripHexPrefix,
 } from '@ethereumjs/util'
+import type { VerkleTree } from '@ethereumjs/verkle';
 import { createVerkleTree } from '@ethereumjs/verkle'
 
 import { buildBlock, createVM, runBlock } from '../../../src/index.ts'
@@ -28,7 +30,6 @@ import type { Block } from '@ethereumjs/block'
 import type { Blockchain, ConsensusDict } from '@ethereumjs/blockchain'
 import type { Common, StateManagerInterface } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
-import type { VerkleTree } from '@ethereumjs/verkle'
 import type * as tape from 'tape'
 
 function formatBlockHeader(data: any) {
@@ -63,7 +64,8 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
       common: options.common,
     })
   } else {
-    stateTree = new MerklePatriciaTrie({ useKeyHashing: true, common })
+    stateTree = await createMPT({ useKeyHashing: true, common })
+
     stateManager = new MerkleStateManager({
       caches: new Caches(),
       trie: stateTree,
@@ -103,7 +105,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   })
 
   if (validatePow) {
-    ;(blockchain.consensus as EthashConsensus)._ethash.cacheDB = cacheDB
+    ; (blockchain.consensus as EthashConsensus)._ethash.cacheDB = cacheDB
   }
 
   // set up pre-state
@@ -115,17 +117,30 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
     'correct pre stateRoot',
   )
 
-  // If using the TransitionStateManager:
-  // - Populate the frozen tree with the populated MPT
-  // - Replace the stateTree with an empty Verkle tree
-  // - Replace the stateManager with the TransitionStateManager
-  if (options.stateManager === 'transition') {
+  // If using the OverlayStateManager:
+  // - Build a frozen MPT preloaded with pre-state
+  // - Set up an empty Verkle trie for the active backend
+  // - Instantiate the OverlayStateManager with a seeded conversion queue
+  if (options.stateManager === 'overlay') {
+    // (1) frozen MPT with pre-state
+    const frozen = stateManager
+    // (2) empty Verkle trie for active writes
     stateTree = await createVerkleTree()
-    stateManager = new TransitionStateManager({
-      frozenTree: (stateManager as MerkleStateManager)['_trie'],
-      activeTree: stateTree,
+    const activeStateManager = new StatefulVerkleStateManager({ trie: stateTree, common })
+
+    // (3) Seed preimages map from all pre-state addresses
+    const preimages = new Map<PrefixedHexString, Uint8Array>();
+    for (const addrHex of Object.keys(testData.pre) as PrefixedHexString[]) {
+      const addrBytes = hexToBytes(addrHex); // 20-byte address
+      const hashedKey = frozen.getAppliedKey!(addrBytes)
+      preimages.set(bytesToHex(hashedKey), addrBytes);
+    }
+    stateManager = new OverlayStateManager({
+      frozenStateManager: frozen,
+      activeStateManager,
       common,
       caches: new Caches(),
+      frozenTreePreimages: preimages
     })
   }
 
@@ -186,7 +201,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         const decoded: any = RLP.decode(blockRlp)
         timestamp = bytesToBigInt(decoded[0][11])
         // eslint-disable-next-line no-empty
-      } catch {}
+      } catch { }
 
       common.setHardforkBy({ blockNumber: currentBlock, timestamp })
 
@@ -241,6 +256,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
           {
             common,
             setHardfork: true,
+
           },
         )
       } else {
@@ -262,7 +278,8 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
           const parentState = parentBlock.header.stateRoot
           // run block, update head if valid
           try {
-            await runBlock(vm, { block, root: parentState, setHardfork: true })
+            const runBlockResult = await runBlock(vm, { block, root: parentState, setHardfork: true, reportPreimages: stateManager instanceof OverlayStateManager })
+            // t.equal(bytesToHex(runBlockResult.stateRoot), bytesToHex(block.header.stateRoot), 'stateRoot matches')
             // set as new head block
           } catch (error: any) {
             // remove invalid block
