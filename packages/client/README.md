@@ -9,6 +9,11 @@
 | Ethereum Execution Layer (EL) Client built in TypeScript/JavaScript. |
 | -------------------------------------------------------------------- |
 
+**\[DEPRECATED\]**
+
+The EthereumJS Client has been deprecated. If you want to take it over for reasons of purpose, joy or fun or have other ideas please reach out! It will give you a lot of back! 😊
+
+
 ## Table of Contents
 
 - [Introduction](#introduction)
