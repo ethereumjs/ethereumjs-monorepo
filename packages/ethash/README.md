@@ -9,6 +9,8 @@
 | [Ethash](https://github.com/ethereum/wiki/wiki/Ethash) implementation in TypeScript. |
 | ------------------------------------------------------------------------------------ |
 
+> **\[DEPRECATED\]** This library has been deprecated (deprecation of EthereumJS Client + what is Ethash anyway? 😂).
+
 ## Table of Contents
 
 - [Installation](#installation)
