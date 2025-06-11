@@ -5,6 +5,8 @@
 [![Coverage Status][coverage-badge]][coverage-link]
 [![Discord][discord-badge]][discord-link]
 
+> **\[DEPRECATED\]** This library has been deprecated (insufficient maintenance + alternatives available (Ethers).
+
 A lightweight wallet implementation. At the moment it supports key creation and conversion between various formats.
 
 It is complemented by the following packages:
