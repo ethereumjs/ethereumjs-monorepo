@@ -9,7 +9,7 @@
 | Implementation of [Verkle Trees](https://ethereum.org/en/roadmap/verkle-trees/) as specified in [EIP-6800](https://eips.ethereum.org/EIPS/eip-6800) |
 | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 
-> Verkle trees are a cryptographic data structure proposed for use in Ethereum to optimize storage and transaction verification. They combine features of Merkle Patricia Tries and Vector Commitment Trees to offer efficient data verification with smaller proof sizes. The goal is to improve scalability and efficiency in Ethereum's network operations.
+> **\[DEPRECATED\]** Development of this library is discontinued (new direction in stateless research).
 
 **Note:** This library is in an **experimental** stage and should not be used in production!
 
