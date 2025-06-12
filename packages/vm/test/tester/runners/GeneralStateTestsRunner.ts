@@ -14,12 +14,11 @@ import {
 import { createVerkleTree } from '@ethereumjs/verkle'
 import * as verkle from 'micro-eth-signer/verkle.js'
 
-import { createVM, runTx } from '../../../src/index.ts'
-import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util.ts'
-
 import type { StateManagerInterface } from '@ethereumjs/common'
 import type { VerkleTree } from '@ethereumjs/verkle'
 import type * as tape from 'tape'
+import { createVM, runTx } from '../../../src/index.ts'
+import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util.ts'
 const loadVerkleCrypto = () => Promise.resolve(verkle)
 
 function parseTestCases(
@@ -76,7 +75,12 @@ function parseTestCases(
   return testCases
 }
 
-async function runTestCase(options: any, testData: any, t: tape.Test) {
+function isTape(t: tape.Test | Chai.AssertStatic): t is tape.Test {
+  // tape.Test has .comment, chai.AssertStatic does not
+  return typeof (t as tape.Test).comment === 'function'
+}
+
+async function runTestCase(options: any, testData: any, t: tape.Test | Chai.AssertStatic) {
   const begin = Date.now()
   // Copy the common object to not create long-lasting
   // references in memory which might prevent GC
@@ -147,7 +151,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
       opName: e.opcode.name,
     }
 
-    t.comment(JSON.stringify(opTrace))
+    isTape(t) && t.comment(JSON.stringify(opTrace))
     resolve?.()
   }
 
@@ -155,7 +159,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
     const stateRoot = {
       stateRoot: bytesToHex(await vm.stateManager.getStateRoot()),
     }
-    t.comment(JSON.stringify(stateRoot))
+    isTape(t) && t.comment(JSON.stringify(stateRoot))
     resolve?.()
   }
 
@@ -189,7 +193,12 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   const end = Date.now()
   const timeSpent = `${(end - begin) / 1000} secs`
 
-  t.ok(stateRootsAreEqual, `[ ${timeSpent} ] the state roots should match (${execInfo})`)
+  const msg = `error running test case for fork: ${options.forkConfigTestSuite}`
+  if (isTape(t)) {
+    t.ok(stateRootsAreEqual, `[ ${timeSpent} ] the state roots should match (${execInfo})`)
+  } else {
+    t.deepEqual(stateManagerStateRoot, testDataPostStateRoot, msg)
+  }
 
   vm.evm.events!.removeListener('step', stepHandler)
   vm.events.removeListener('afterTx', afterTxHandler)
@@ -199,32 +208,29 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   return parseFloat(timeSpent)
 }
 
-export async function runStateTest(options: any, testData: any, t: tape.Test) {
-  try {
-    const testCases = parseTestCases(
-      options.forkConfigTestSuite,
-      testData,
-      options.data,
-      options.gasLimit,
-      options.value,
-    )
-    if (testCases.length === 0) {
-      t.comment(`No ${options.forkConfigTestSuite} post state defined, skip test`)
-      return
-    }
-    for (const testCase of testCases) {
-      if (options.reps !== undefined && options.reps > 0) {
-        let totalTimeSpent = 0
-        for (let x = 0; x < options.reps; x++) {
-          totalTimeSpent += await runTestCase(options, testCase, t)
-        }
-        t.comment(`Average test run: ${(totalTimeSpent / options.reps).toLocaleString()} s`)
-      } else {
-        await runTestCase(options, testCase, t)
+export async function runStateTest(options: any, testData: any, t: tape.Test | Chai.AssertStatic) {
+  const testCases = parseTestCases(
+    options.forkConfigTestSuite,
+    testData,
+    options.data,
+    options.gasLimit,
+    options.value,
+  )
+  if (testCases.length === 0) {
+    isTape(t) && t.comment(`No ${options.forkConfigTestSuite} post state defined, skip test`)
+    return
+  }
+  for (const testCase of testCases) {
+    if (options.reps !== undefined && options.reps > 0) {
+      let totalTimeSpent = 0
+      for (let x = 0; x < options.reps; x++) {
+        totalTimeSpent += await runTestCase(options, testCase, t)
       }
+      isTape(t) &&
+        t.comment(`Average test run: ${(totalTimeSpent / options.reps).toLocaleString()} s`)
+    } else {
+      await runTestCase(options, testCase, t)
+      options.testCount++
     }
-  } catch (e: any) {
-    console.log(e)
-    t.fail(`error running test case for fork: ${options.forkConfigTestSuite}`)
   }
 }

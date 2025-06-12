@@ -507,7 +507,7 @@ export function getExpectedTests(
  * @param defaultChoice if to use `NONE` or `ALL` as default choice
  * @returns array with test names
  */
-export function getSkipTests(choices: string, defaultChoice: string): string[] {
+export function getSkipTests(choices: string | undefined, defaultChoice: string): string[] {
   let skipTests: string[] = []
   if (!choices) {
     choices = defaultChoice
