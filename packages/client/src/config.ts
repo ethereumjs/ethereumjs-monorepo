@@ -4,7 +4,6 @@ import { type Address, BIGINT_0, BIGINT_1, BIGINT_2, BIGINT_256 } from '@ethereu
 import { EventEmitter } from 'eventemitter3'
 import { Level } from 'level'
 
-import { RlpxServer } from './net/server/index.ts'
 import { Event } from './types.ts'
 import { isBrowser, short } from './util/index.ts'
 
@@ -12,7 +11,8 @@ import type { BlockHeader } from '@ethereumjs/block'
 import type { VM, VMProfilerOpts } from '@ethereumjs/vm'
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Logger } from './logging.ts'
-import type { EventParams, MultiaddrLike, PrometheusMetrics } from './types.ts'
+import { NetworkWorker } from './net/server/networkworker.ts'
+import type { EventParams, PrometheusMetrics } from './types.ts'
 
 export type DataDirectory = (typeof DataDirectory)[keyof typeof DataDirectory]
 
@@ -108,12 +108,6 @@ export interface ConfigOptions {
    * (e.g. /ip4/127.0.0.1/tcp/50505/p2p/QmABC)
    */
   multiaddrs?: Multiaddr[]
-
-  /**
-   * Transport servers (RLPx)
-   * Only used for testing purposes
-   */
-  server?: RlpxServer
 
   /**
    * Save tx receipts and logs in the meta db (default: false)
@@ -345,6 +339,12 @@ export interface ConfigOptions {
    * Enables Prometheus Metrics that can be collected for monitoring client health
    */
   prometheusMetrics?: PrometheusMetrics
+  /* Transport servers (RLPx) */
+  networkWorker?: NetworkWorker
+
+  clientFilter?: string[]
+
+  refreshInterval?: number
 }
 
 export class Config {
@@ -469,9 +469,15 @@ export class Config {
   public readonly chainCommon: Common
   public readonly execCommon: Common
 
-  public readonly server: RlpxServer | undefined = undefined
-
   public readonly metrics: PrometheusMetrics | undefined
+
+  public readonly networkWorker: NetworkWorker | undefined = undefined
+
+  public readonly clientFilter?: string[]
+
+  public readonly refreshInterval: number
+
+  public readonly dnsNetworks: string[] = []
 
   constructor(options: ConfigOptions = {}) {
     this.events = new EventEmitter<EventParams>()
@@ -569,20 +575,20 @@ export class Config {
 
     this.logger?.info(`Sync Mode ${this.syncmode}`)
     if (this.syncmode !== SyncMode.None) {
-      if (options.server !== undefined) {
-        this.server = options.server
-      } else if (isBrowser() !== true) {
-        // Otherwise start server
-        const bootnodes: MultiaddrLike =
-          this.bootnodes ?? (this.chainCommon.bootstrapNodes() as any)
-        const dnsNetworks = options.dnsNetworks ?? this.chainCommon.dnsNetworks()
-        this.server = new RlpxServer({ config: this, bootnodes, dnsNetworks })
+      if (isBrowser() !== true) {
+        // Initialize network worker
+        this.dnsNetworks = options.dnsNetworks ?? this.chainCommon.dnsNetworks()
+        this.networkWorker = options.networkWorker ?? new NetworkWorker(this)
+        void this.networkWorker.start(this, this.bootnodes ?? [], this.dnsNetworks)
       }
     }
 
     this.events.once(Event.CLIENT_SHUTDOWN, () => {
       this.shutdown = true
     })
+
+    this.clientFilter = options.clientFilter
+    this.refreshInterval = options.refreshInterval ?? 30000
   }
 
   /**
