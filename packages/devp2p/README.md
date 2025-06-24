@@ -166,7 +166,7 @@ Events emitted:
 
 - [Node discovery protocol](https://ethereum.org/en/developers/docs/networking-layer/#discovery)
 - [RLPx - Node Discovery Protocol](https://github.com/ethereum/devp2p/blob/master/rlpx.md#node-discovery)
-- [Kademlia Peer Selection](https://github.com/ethereum/wiki/wiki/Kademlia-Peer-Selection)
+- [Kademlia Peer Selection](https://github.com/ethereum/eth-wiki/blob/master/ideas/kademlia-peer-selection.md)
 
 ## RLPx Transport Protocol
 
