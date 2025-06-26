@@ -234,7 +234,7 @@ Our PeerDAS work from [PR #3976](https://github.com/ethereumjs/ethereumjs-monore
 
 Gajinder has led a vast effort to implement and prototype a proposed "SSZ-ification" of large parts L1 protocol stack - being centered around EIPs like [EIP-7495 - SSZ Stable Container](https://eips.ethereum.org/EIPS/eip-7495) or [EIP-6404 - SSZ Transactions](https://eips.ethereum.org/EIPS/eip-6404), the associated PR [#3849](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3849) provides an extensive overview of the wide range of EIPs and the integration work being done.
 
-There is an [ssz-devnet-0](https://ssz-devnet-0.ethpandaops.io/) up and running where the EthereumJS client is actively joining and providin bootnode functionality.
+There is an [ssz-devnet-0](https://ssz-devnet-0.ethpandaops.io/) up and running where the EthereumJS client is actively joining and providing bootnode functionality.
 
 ## Joining Testnets
 
