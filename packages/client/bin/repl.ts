@@ -3,8 +3,8 @@ import process from 'process'
 
 import { createInlineClient } from '../src/util/index.ts'
 
-import { startRPCServers } from './startRPC.ts'
-import { generateClientConfig, getArgs } from './utils.ts'
+import { type RPCArgs, startRPCServers } from './startRPC.ts'
+import { generateClientConfig, generateRpcConfigs, getArgs } from './utils.ts'
 
 import type { Common, GenesisState } from '@ethereumjs/common'
 import type { Config } from '../src/config.ts'
@@ -24,7 +24,8 @@ const setupClient = async (
     args.dataDir ?? '',
     true,
   )
-  const servers = startRPCServers(client, {
+
+  const rpcArgs: RPCArgs = {
     rpc: true,
     rpcAddr: args.rpcAddr ?? '0.0.0.0',
     rpcPort: args.rpcPort ?? 8545,
@@ -42,7 +43,9 @@ const setupClient = async (
     jwtSecret: '',
     rpcEngineAuth: false,
     rpcCors: '',
-  })
+  }
+
+  const servers = startRPCServers(client, generateRpcConfigs(config, rpcArgs))
 
   return { client, executionRPC: servers[0], engineRPC: servers[1] }
 }
