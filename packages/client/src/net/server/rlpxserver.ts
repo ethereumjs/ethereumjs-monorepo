@@ -89,9 +89,10 @@ export class RlpxServer extends Server {
 
   /**
    * Return Rlpx info
+   * @returns Object containing RLPx server information. If RLPx is not initialized,
+   * enode and id will be undefined, but other fields will still be populated.
    */
   getRlpxInfo() {
-    // TODO: return undefined? note that this.rlpx might be undefined if called before initRlpx
     const listenAddr = this.ip.match(/^(\d+\.\d+\.\d+\.\d+)$/)
       ? `${this.ip}:${this.config.port}`
       : `[${this.ip}]:${this.config.port}`
