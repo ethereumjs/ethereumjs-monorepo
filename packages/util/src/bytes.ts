@@ -428,10 +428,10 @@ export const randomBytes = (length: number): Uint8Array => {
  * @returns {Uint8Array} one Uint8Array with all the elements of the original set
  * works like `Buffer.concat`
  */
-export const concatBytes = (...arrays: Uint8Array[]): Uint8Array => {
-  if (arrays.length === 1) return arrays[0]
+export const concatBytes = (...arrays: Uint8Array[]): Uint8Array<ArrayBuffer> => {
+  if (arrays.length === 1) return arrays[0] as Uint8Array<ArrayBuffer>
   const length = arrays.reduce((a, arr) => a + arr.length, 0)
-  const result = new Uint8Array(length)
+  const result = new Uint8Array(length) as Uint8Array<ArrayBuffer>
   for (let i = 0, pad = 0; i < arrays.length; i++) {
     const arr = arrays[i]
     result.set(arr, pad)
