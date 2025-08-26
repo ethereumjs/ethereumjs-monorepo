@@ -382,7 +382,7 @@ export class Blockchain implements BlockchainInterface {
    */
   private async _putBlockOrHeader(item: Block | BlockHeader) {
     await this.runWithLock<void>(async () => {
-      // Save the current sane state incase _putBlockOrHeader midway with some
+      // Save the current sane state in case _putBlockOrHeader midway with some
       // dirty changes in head trackers
       const oldHeads = Object.assign({}, this._heads)
       const oldHeadHeaderHash = this._headHeaderHash
