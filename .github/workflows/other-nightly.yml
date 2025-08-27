@@ -71,3 +71,19 @@ jobs:
 
       - run: npm run test
         working-directory: ${{ github.workspace }}/packages/wallet
+  
+  test-verkle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      
+      - run: npm ci
+        working-directory: ${{github.workspace}}
+
+      - run: npm run test
+        working-directory: ${{ github.workspace }}/packages/verkle
