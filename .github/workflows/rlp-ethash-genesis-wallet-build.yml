@@ -56,10 +56,7 @@ jobs:
       - run: npm run coverage
         working-directory: ${{ github.workspace }}/packages/genesis
 
-      # Run coverage for wallet
-      - run: npm run coverage
-        working-directory: ${{ github.workspace }}/packages/wallet
-        # Upload code coverage for all jobs
+      # Upload code coverage for all jobs
       - uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
