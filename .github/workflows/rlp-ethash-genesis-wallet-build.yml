@@ -56,10 +56,6 @@ jobs:
       - run: npm run coverage
         working-directory: ${{ github.workspace }}/packages/genesis
 
-      # Run coverage for ethash
-      - run: npm run coverage
-        working-directory: ${{ github.workspace }}/packages/ethash
-
       # Run coverage for wallet
       - run: npm run coverage
         working-directory: ${{ github.workspace }}/packages/wallet

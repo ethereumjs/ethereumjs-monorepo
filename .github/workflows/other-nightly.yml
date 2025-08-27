@@ -1,0 +1,26 @@
+name: Other Nightly
+on:
+  schedule:
+    - cron: 0 1 * * *
+  workflow_dispatch:
+
+env:
+  cwd: ${{github.workspace}}/packages/vm # Doesn't apper to matter
+
+jobs:
+  test-ethash:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      
+      - run: npm ci
+        working-directory: ${{github.workspace}}
+
+      # Run coverage for ethash
+      - run: npm run coverage
+        working-directory: ${{ github.workspace }}/packages/ethash
