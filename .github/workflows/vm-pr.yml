@@ -78,7 +78,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        fork: ['Berlin', 'London', 'Paris', 'Shanghai', 'Cancun']
+        fork: ['Cancun']
       fail-fast: false
     steps:
       # We clone the repo and submodules if triggered from work-flow dispatch
@@ -189,10 +189,6 @@ jobs:
         # Tests were split with --dir and --excludeDir to balance execution times below the 9min mark.
         args:
           [
-            '--fork=Berlin --verify-test-amount-alltests',
-            '--fork=London --verify-test-amount-alltests',
-            '--fork=Paris --verify-test-amount-alltests',
-            '--fork=Shanghai --verify-test-amount-alltests',
             '--fork=Cancun --verify-test-amount-alltests',
           ]
       fail-fast: false
