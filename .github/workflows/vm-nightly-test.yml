@@ -21,13 +21,8 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-
-      # The job is meant to run with a fresh lock file
-      # to detect any possible issues with new dep versions.
-      - run: rm package-lock.json
-        working-directory: ${{github.workspace}}
-
-      - run: npm i
+      
+      - run: npm ci
         working-directory: ${{github.workspace}}
 
       - run: npm run test:API
@@ -44,11 +39,6 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-
-      # The job is meant to run with a fresh lock file
-      # to detect any possible issues with new dep versions.
-      - run: rm package-lock.json
-        working-directory: ${{github.workspace}}
 
       - run: npm i
         working-directory: ${{github.workspace}}
@@ -67,11 +57,6 @@ jobs:
           node-version: 20
           cache: 'npm'
 
-      # The job is meant to run with a fresh lock file
-      # to detect any possible issues with new dep versions.
-      - run: rm package-lock.json
-        working-directory: ${{github.workspace}}
-
       - run: npm i
         working-directory: ${{github.workspace}}
 
@@ -89,11 +74,6 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-
-      # The job is meant to run with a fresh lock file
-      # to detect any possible issues with new dep versions.
-      - run: rm package-lock.json
-        working-directory: ${{github.workspace}}
 
       - run: npm i
         working-directory: ${{github.workspace}}
