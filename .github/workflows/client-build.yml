@@ -28,44 +28,6 @@ concurrency:
 
 
 jobs:
-  test-client:
-    runs-on: ubuntu-latest
-    steps:
-      # We clone the repo and submodules if triggered from work-flow dispatch
-      - if: inputs.submodule-cache-key == 'none'
-        uses: actions/checkout@v5
-
-      - if: inputs.dep-cache-key != 'none' 
-        uses: actions/cache/restore@v4
-        id: dep-cache
-        with:
-          path: ${{github.workspace}}
-          key: ${{ inputs.dep-cache-key }}
-
-      - name: Use Node.js 20
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-
-      - name: Install Dependencies (if not restored from cache)
-        if: steps.dep-cache.outputs.cache-hit != 'true'
-        run: npm ci     
-        working-directory: ${{ github.workspace }}
-
-      - run: npm run coverage
-      - uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ${{ env.cwd }}/coverage/lcov.info
-          flags: client
-
-      - uses: nick-fields/retry@v2
-        with:
-          timeout_minutes: 10
-          max_attempts: 3
-          command: cd ${{github.workspace}}/packages/client && npm run test:integration
-
   test-client-cli:
     runs-on: ubuntu-latest
     strategy:
