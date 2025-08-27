@@ -118,7 +118,7 @@ jobs:
       - run: npm run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
 
   vm-state-extended:
-    if: contains(join(github.event.pull_request.labels.*.name, ' '), 'Test all hardforks')
+    if: contains(join(github.event.pull_request.labels.*.name, ' '), 'test all hardforks')
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -230,7 +230,7 @@ jobs:
       - run: npm run test:blockchain -- ${{ matrix.args }}
 
   vm-blockchain-extended:
-    if: contains(join(github.event.pull_request.labels.*.name, ' '), 'Test all hardforks')
+    if: contains(join(github.event.pull_request.labels.*.name, ' '), 'test all hardforks')
     runs-on: ubuntu-latest
     strategy:
       matrix:
