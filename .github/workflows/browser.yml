@@ -26,6 +26,7 @@ concurrency:
 
 jobs:
   test-all-browser:
+    if: contains(join(github.event.pull_request.labels.*.name, ' '), 'test no browser') == false
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false

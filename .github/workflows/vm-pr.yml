@@ -114,11 +114,15 @@ jobs:
           path: ${{github.workspace}}/packages/ethereum-tests
           key: ${{ inputs.submodule-cache-key}}
           fail-on-cache-miss: true
-  
-      - run: npm run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
+      
+      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM') == false
+        run: npm run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
+      
+      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM')
+        run: npm run test:buildIntegrity
 
   vm-state-extended:
-    if: contains(join(github.event.pull_request.labels.*.name, ' '), 'Test all hardforks')
+    if: contains(join(github.event.pull_request.labels.*.name, ' '), 'test all hardforks')
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -227,10 +231,14 @@ jobs:
           key: ${{ inputs.submodule-cache-key}}
           fail-on-cache-miss: true
 
-      - run: npm run test:blockchain -- ${{ matrix.args }}
+      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM') == false
+        run: npm run test:blockchain -- ${{ matrix.args }}
+
+      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM')
+        run: npm run test:blockchain:buildIntegrity
 
   vm-blockchain-extended:
-    if: contains(join(github.event.pull_request.labels.*.name, ' '), 'Test all hardforks')
+    if: contains(join(github.event.pull_request.labels.*.name, ' '), 'test all hardforks')
     runs-on: ubuntu-latest
     strategy:
       matrix:
