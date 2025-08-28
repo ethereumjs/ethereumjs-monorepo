@@ -6,6 +6,8 @@ import type {
   AddressLike,
   BigIntLike,
   BytesLike,
+  EOACode7702AuthorizationList,
+  EOACode7702AuthorizationListBytes,
   PrefixedHexString,
 } from '@ethereumjs/util'
 import type { FeeMarket1559Tx } from './1559/tx.ts'
@@ -118,25 +120,6 @@ export function isAccessList(input: AccessListBytes | AccessList): input is Acce
   return !isAccessListBytes(input) // This is exactly the same method, except the output is negated.
 }
 
-export function isAuthorizationListBytes(
-  input: AuthorizationListBytes | AuthorizationList,
-): input is AuthorizationListBytes {
-  if (input.length === 0) {
-    return true
-  }
-  const firstItem = input[0]
-  if (Array.isArray(firstItem)) {
-    return true
-  }
-  return false
-}
-
-export function isAuthorizationList(
-  input: AuthorizationListBytes | AuthorizationList,
-): input is AuthorizationList {
-  return !isAuthorizationListBytes(input) // This is exactly the same method, except the output is negated.
-}
-
 export interface TransactionCache {
   hash?: Uint8Array
   dataFee?: {
@@ -147,7 +130,7 @@ export interface TransactionCache {
   // TODO: re-add these cache items for the JSON
   // See: https://github.com/ethereumjs/ethereumjs-monorepo/issues/3932
   //accessListJSON?: AccessList
-  //authorityListJSON?: AuthorizationList
+  //authorityListJSON?: EOACode7702AuthorizationList
 }
 
 export type TransactionType = (typeof TransactionType)[keyof typeof TransactionType]
@@ -266,7 +249,7 @@ export interface EIP4844CompatibleTx<T extends TransactionType = TransactionType
 export interface EIP7702CompatibleTx<T extends TransactionType = TransactionType>
   extends EIP1559CompatibleTx<T> {
   // ChainID, Address, [nonce], y_parity, r, s
-  readonly authorizationList: AuthorizationListBytes
+  readonly authorizationList: EOACode7702AuthorizationListBytes
 }
 
 export interface TxData {
@@ -399,6 +382,10 @@ export interface FeeMarketEIP1559TxData extends AccessList2930TxData {
  */
 export interface BlobEIP4844TxData extends FeeMarketEIP1559TxData {
   /**
+   * Is this an EIP-4844 or EIP-7594 network wrapper transaction
+   */
+  networkWrapperVersion?: BigIntLike
+  /**
    * The versioned hashes used to validate the blobs attached to a transaction
    */
   blobVersionedHashes?: BytesLike[]
@@ -428,7 +415,7 @@ export interface BlobEIP4844TxData extends FeeMarketEIP1559TxData {
  * {@link EOACode7702Tx} data.
  */
 export interface EOACode7702TxData extends FeeMarketEIP1559TxData {
-  authorizationList?: AuthorizationListBytes | AuthorizationList | never
+  authorizationList?: EOACode7702AuthorizationListBytes | EOACode7702AuthorizationList | never
 }
 
 export interface TxValuesArray {
@@ -492,7 +479,7 @@ type EOACode7702TxValuesArray = [
   Uint8Array,
   Uint8Array,
   AccessListBytes,
-  AuthorizationListBytes,
+  EOACode7702AuthorizationListBytes,
   Uint8Array?,
   Uint8Array?,
   Uint8Array?,
@@ -525,6 +512,14 @@ export type BlobEIP4844NetworkValuesArray = [
   Uint8Array[],
 ]
 
+export type BlobEIP7594NetworkValuesArray = [
+  BlobEIP4844TxValuesArray,
+  Uint8Array,
+  Uint8Array[],
+  Uint8Array[],
+  Uint8Array[],
+]
+
 type JSONAccessListItem = { address: string; storageKeys: string[] }
 
 /**
@@ -547,7 +542,7 @@ export interface JSONTx {
   value?: PrefixedHexString
   chainId?: PrefixedHexString
   accessList?: JSONAccessListItem[] // TODO should this not be AccessList?
-  authorizationList?: AuthorizationList
+  authorizationList?: EOACode7702AuthorizationList
   type?: PrefixedHexString
   maxPriorityFeePerGas?: PrefixedHexString
   maxFeePerGas?: PrefixedHexString
@@ -557,6 +552,7 @@ export interface JSONTx {
 }
 
 export type JSONBlobTxNetworkWrapper = JSONTx & {
+  networkWrapperVersion: PrefixedHexString
   blobs: PrefixedHexString[]
   kzgCommitments: PrefixedHexString[]
   kzgProofs: PrefixedHexString[]
@@ -605,32 +601,3 @@ export type AccessListItem = {
 export type AccessListBytesItem = [Uint8Array, Uint8Array[]]
 export type AccessListBytes = AccessListBytesItem[]
 export type AccessList = AccessListItem[]
-
-/**
- * Authorization list types
- */
-export type AuthorizationListItemUnsigned = {
-  chainId: PrefixedHexString
-  address: PrefixedHexString
-  nonce: PrefixedHexString
-}
-
-export type AuthorizationListItem = {
-  yParity: PrefixedHexString
-  r: PrefixedHexString
-  s: PrefixedHexString
-} & AuthorizationListItemUnsigned
-
-// Tuple of [chain_id, address, [nonce], y_parity, r, s]
-export type AuthorizationListBytesItem = [
-  Uint8Array,
-  Uint8Array,
-  Uint8Array,
-  Uint8Array,
-  Uint8Array,
-  Uint8Array,
-]
-export type AuthorizationListBytes = AuthorizationListBytesItem[]
-export type AuthorizationList = AuthorizationListItem[]
-
-export type AuthorizationListBytesItemUnsigned = [Uint8Array, Uint8Array, Uint8Array]

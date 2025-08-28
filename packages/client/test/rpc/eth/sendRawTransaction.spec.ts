@@ -1,7 +1,12 @@
 import { BlockHeader, paramsBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { MerkleStateManager } from '@ethereumjs/statemanager'
-import { createBlob4844Tx, createFeeMarket1559TxFromRLP, createLegacyTx } from '@ethereumjs/tx'
+import {
+  NetworkWrapperType,
+  createBlob4844Tx,
+  createFeeMarket1559TxFromRLP,
+  createLegacyTx,
+} from '@ethereumjs/tx'
 import {
   Account,
   blobsToCommitments,
@@ -11,8 +16,8 @@ import {
   hexToBytes,
   randomBytes,
 } from '@ethereumjs/util'
-import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
-import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 import { assert, describe, it } from 'vitest'
 
 import { INTERNAL_ERROR, INVALID_PARAMS, PARSE_ERROR } from '../../../src/rpc/error-code.ts'
@@ -61,7 +66,7 @@ describe(method, () => {
     await vm.stateManager.putAccount(address, account!)
     const res = await rpc.request(method, [txData])
 
-    assert.equal(
+    assert.strictEqual(
       res.result,
       '0xd7217a7d3251880051783f305a3536e368c604aa1f1602e6cd107eb7b87129da',
       'should return the correct tx hash',
@@ -89,7 +94,7 @@ describe(method, () => {
 
     const res = await rpc.request(method, [txData])
 
-    assert.equal(
+    assert.strictEqual(
       res.result,
       '0xf6798d5ed936a464ef4f49dd5a3abe1ad6947364912bd47c5e56781125d44ac3',
       'local tx with lower gasprice than minimum gasprice added to pool',
@@ -111,7 +116,7 @@ describe(method, () => {
       '0x02f90108018001018402625a0094cccccccccccccccccccccccccccccccccccccccc830186a0b8441a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f85bf859940000000000000000000000000000000000000101f842a00000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000060a701a0afb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9a0479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64'
 
     const res = await rpc.request(method, [txData])
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
     assert.isTrue(res.error.message.includes('insufficient balance'))
 
     // Restore setStateRoot
@@ -127,7 +132,7 @@ describe(method, () => {
       '0x02f90108018001018402625a0094cccccccccccccccccccccccccccccccccccccccc830186a0b8441a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f85bf859940000000000000000000000000000000000000101f842a00000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000060a701a0afb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9a0479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64'
     const res = await rpc.request(method, [txData])
 
-    assert.equal(res.error.code, INTERNAL_ERROR)
+    assert.strictEqual(res.error.code, INTERNAL_ERROR)
     assert.isTrue(
       res.error.message.includes(
         'client is not aware of the current chain height yet (give sync some more time)',
@@ -144,7 +149,7 @@ describe(method, () => {
       '0x02f9010a82066a8001018402625a0094cccccccccccccccccccccccccccccccccccccccc830186a0b8441a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f85bf859940000000000000000000000000000000000000101f842a00000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000060a701a0afb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9a0479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64'
     const res = await rpc.request(method, [txData])
 
-    assert.equal(res.error.code, PARSE_ERROR)
+    assert.strictEqual(res.error.code, PARSE_ERROR)
     assert.isTrue(res.error.message.includes('serialized tx data could not be parsed'))
   })
 
@@ -169,7 +174,7 @@ describe(method, () => {
     const txHex = bytesToHex(tx.serialize())
     const res = await rpc.request(method, [txHex])
 
-    assert.equal(res.error.code, INVALID_PARAMS)
+    assert.strictEqual(res.error.code, INVALID_PARAMS)
     assert.isTrue(res.error.message.includes('tx needs to be signed'))
   })
 
@@ -205,7 +210,7 @@ describe(method, () => {
 
     const res = await rpc.request(method, [txData])
 
-    assert.equal(res.error.code, INTERNAL_ERROR)
+    assert.strictEqual(res.error.code, INTERNAL_ERROR)
     assert.isTrue(res.error.message.includes('no peer connection available'))
 
     // Restore setStateRoot
@@ -248,6 +253,7 @@ describe(method, () => {
     const pk = randomBytes(32)
     const tx = createBlob4844Tx(
       {
+        networkWrapperVersion: NetworkWrapperType.EIP4844,
         blobVersionedHashes,
         blobs,
         kzgCommitments: commitments,
@@ -263,6 +269,7 @@ describe(method, () => {
 
     const replacementTx = createBlob4844Tx(
       {
+        networkWrapperVersion: NetworkWrapperType.EIP4844,
         blobVersionedHashes,
         blobs,
         kzgCommitments: commitments,
@@ -285,9 +292,9 @@ describe(method, () => {
 
     const res2 = await rpc.request(method, [bytesToHex(replacementTx.serializeNetworkWrapper())])
 
-    assert.equal(res.error, undefined, 'initial blob transaction accepted')
+    assert.strictEqual(res.error, undefined, 'initial blob transaction accepted')
 
-    assert.equal(res2.error.code, INVALID_PARAMS)
+    assert.strictEqual(res2.error.code, INVALID_PARAMS)
     assert.include(res2.error.message, 'replacement blob gas too low')
 
     // Restore stubbed out functionality

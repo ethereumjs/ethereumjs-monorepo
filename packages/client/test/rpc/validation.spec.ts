@@ -32,7 +32,7 @@ describe(prefix, () => {
 
     const res = await rpc.request(mockMethodName, [])
 
-    assert.equal(res.error.code, INVALID_PARAMS, 'missing value for required argument 0')
+    assert.strictEqual(res.error.code, INVALID_PARAMS, 'missing value for required argument 0')
   })
 
   const validatorResult = (result: object | undefined) => {
@@ -596,10 +596,10 @@ describe(prefix, () => {
 
   it('rewardPercentile', () => {
     // valid
-    assert.equal(validators.rewardPercentile([0], 0), 0)
-    assert.equal(validators.rewardPercentile([0.1], 0), 0.1)
-    assert.equal(validators.rewardPercentile([10], 0), 10)
-    assert.equal(validators.rewardPercentile([100], 0), 100)
+    assert.strictEqual(validators.rewardPercentile([0], 0), 0)
+    assert.strictEqual(validators.rewardPercentile([0.1], 0), 0.1)
+    assert.strictEqual(validators.rewardPercentile([10], 0), 10)
+    assert.strictEqual(validators.rewardPercentile([100], 0), 100)
 
     // invalid
     assert.deepEqual(validators.rewardPercentile([-1], 0), {

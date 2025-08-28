@@ -25,6 +25,7 @@
   ],
   "words": [
     "viem",
+    "immediates",
     "unerasable",
     "bytelist",
     "bytestring",
@@ -639,6 +640,8 @@
     "bytevector",
     "blobschedule",
     "hoodi",
-    "peerdas"
+    "peerdas",
+    "getpayload",
+    "ckzg"
   ]
 }

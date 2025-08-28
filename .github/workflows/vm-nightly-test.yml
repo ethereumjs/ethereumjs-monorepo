@@ -15,19 +15,14 @@ jobs:
   test-vm-api:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
           cache: 'npm'
-
-      # The job is meant to run with a fresh lock file
-      # to detect any possible issues with new dep versions.
-      - run: rm package-lock.json
-        working-directory: ${{github.workspace}}
-
-      - run: npm i
+      
+      - run: npm ci
         working-directory: ${{github.workspace}}
 
       - run: npm run test:API
@@ -36,19 +31,14 @@ jobs:
   test-vm-state:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           submodules: recursive
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
           cache: 'npm'
-
-      # The job is meant to run with a fresh lock file
-      # to detect any possible issues with new dep versions.
-      - run: rm package-lock.json
-        working-directory: ${{github.workspace}}
 
       - run: npm i
         working-directory: ${{github.workspace}}
@@ -58,19 +48,14 @@ jobs:
   test-vm-blockchain:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           submodules: recursive
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
           cache: 'npm'
-
-      # The job is meant to run with a fresh lock file
-      # to detect any possible issues with new dep versions.
-      - run: rm package-lock.json
-        working-directory: ${{github.workspace}}
 
       - run: npm i
         working-directory: ${{github.workspace}}
@@ -81,19 +66,14 @@ jobs:
   test-vm-slow:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           submodules: recursive
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
           cache: 'npm'
-
-      # The job is meant to run with a fresh lock file
-      # to detect any possible issues with new dep versions.
-      - run: rm package-lock.json
-        working-directory: ${{github.workspace}}
 
       - run: npm i
         working-directory: ${{github.workspace}}

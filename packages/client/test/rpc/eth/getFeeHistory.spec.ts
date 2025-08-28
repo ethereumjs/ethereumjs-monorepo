@@ -14,8 +14,8 @@ import {
   hexToBytes,
 } from '@ethereumjs/util'
 import { buildBlock } from '@ethereumjs/vm'
-import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
-import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 import { assert, describe, it } from 'vitest'
 
 import { eip4844GethGenesis } from '@ethereumjs/testdata'
@@ -215,22 +215,22 @@ describe(method, () => {
       ) / 1000
 
     // Note: this also ensures that block 2,3 are returned, since gas of block 0 -> 1 and 1 -> 2 does not change
-    assert.equal(increase, 0.125)
+    assert.strictEqual(increase, 0.125)
     // Sanity check
-    assert.equal(firstBaseFee, previousBaseFee)
+    assert.strictEqual(firstBaseFee, previousBaseFee)
     // 2 blocks are requested, but the next baseFee is able to be calculated from the latest block
     // Per spec, also return this. So return 3 baseFeePerGas
-    assert.equal(res.result.baseFeePerGas.length, 3)
+    assert.strictEqual(res.result.baseFeePerGas.length, 3)
 
     // Check that the expected gasRatios of the blocks are correct
-    assert.equal(res.result.gasUsedRatio[0], 0.5) // Block 2
-    assert.equal(res.result.gasUsedRatio[1], 1) // Block 3
+    assert.strictEqual(res.result.gasUsedRatio[0], 0.5) // Block 2
+    assert.strictEqual(res.result.gasUsedRatio[1], 1) // Block 3
 
     // No ratios were requested
     assert.deepEqual(res.result.reward, [[], []])
 
     // oldestBlock is correct
-    assert.equal(res.result.oldestBlock, '0x2')
+    assert.strictEqual(res.result.oldestBlock, '0x2')
   })
 
   it(`${method}: should return 12.5% decreased base fee if the block is empty`, async () => {
@@ -256,7 +256,7 @@ describe(method, () => {
           bytesToBigInt(hexToBytes(previousBaseFee)),
       ) / 1000
 
-    assert.equal(decrease, -0.125)
+    assert.strictEqual(decrease, -0.125)
   })
 
   it(`${method}: should return initial base fee if the block number is london hard fork`, async () => {
@@ -276,7 +276,7 @@ describe(method, () => {
 
     const [baseFee] = res.result.baseFeePerGas as [PrefixedHexString]
 
-    assert.equal(bytesToBigInt(hexToBytes(baseFee)), initialBaseFee)
+    assert.strictEqual(bytesToBigInt(hexToBytes(baseFee)), initialBaseFee)
   })
 
   it(`${method}: should return 0x0 for base fees requested before eip-1559`, async () => {
@@ -294,8 +294,8 @@ describe(method, () => {
       PrefixedHexString,
     ]
 
-    assert.equal(previousBaseFee, '0x0')
-    assert.equal(nextBaseFee, '0x0')
+    assert.strictEqual(previousBaseFee, '0x0')
+    assert.strictEqual(nextBaseFee, '0x0')
   })
 
   it(`${method}: should return correct gas used ratios`, async () => {
@@ -313,8 +313,8 @@ describe(method, () => {
 
     const [genesisGasUsedRatio, nextGasUsedRatio] = res.result.gasUsedRatio as [number, number]
 
-    assert.equal(genesisGasUsedRatio, 0)
-    assert.equal(nextGasUsedRatio, 0.5)
+    assert.strictEqual(genesisGasUsedRatio, 0)
+    assert.strictEqual(nextGasUsedRatio, 0.5)
   })
 
   it(`${method}: should throw error if block count is below 1`, async () => {
@@ -344,12 +344,12 @@ describe(method, () => {
 
     const rpc = getRPCClient(server)
     const res = await rpc.request(method, ['0x1', 'latest', [50, 60]])
-    assert.equal(
+    assert.strictEqual(
       parseInt(res.result.reward[0][0]),
       0,
       'Should return 0 for empty block reward percentiles',
     )
-    assert.equal(
+    assert.strictEqual(
       res.result.reward[0][1],
       '0x0',
       'Should return 0 for empty block reward percentiles',

@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           submodules: recursive
 
@@ -47,7 +47,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: actions/cache/restore@v4
         id: dep-cache
@@ -152,7 +152,7 @@ jobs:
 
   static:
     needs: build
-    uses: ./.github/workflows/static-build.yml
+    uses: ./.github/workflows/rlp-ethash-genesis-wallet-build.yml
     secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}

@@ -19,18 +19,18 @@ describe('POW tests', () => {
       const header = createBlockHeaderFromRLP(hexToBytes(`0x${test.header}`), { common })
 
       const headerHash = ethash.headerHash(header.raw())
-      assert.equal(bytesToHex(headerHash), '0x' + test.header_hash, 'generate header hash')
+      assert.strictEqual(bytesToHex(headerHash), '0x' + test.header_hash, 'generate header hash')
 
       const epoc = getEpoc(header.number)
-      assert.equal(await getCacheSize(epoc), test.cache_size, 'generate cache size')
-      assert.equal(await getFullSize(epoc), test.full_size, 'generate full cache size')
+      assert.strictEqual(await getCacheSize(epoc), test.cache_size, 'generate cache size')
+      assert.strictEqual(await getFullSize(epoc), test.full_size, 'generate full cache size')
 
       ethash.mkcache(test.cache_size, hexToBytes(`0x${test.seed}`))
-      assert.equal(bytesToHex(ethash.cacheHash()), '0x' + test.cache_hash, 'generate cache')
+      assert.strictEqual(bytesToHex(ethash.cacheHash()), '0x' + test.cache_hash, 'generate cache')
 
       const r = ethash.run(headerHash, hexToBytes(`0x${test.nonce}`), test.full_size)
-      assert.equal(bytesToHex(r.hash), '0x' + test.result, 'generate result')
-      assert.equal(bytesToHex(r.mix), '0x' + test.mixHash, 'generate mix hash')
+      assert.strictEqual(bytesToHex(r.hash), '0x' + test.result, 'generate result')
+      assert.strictEqual(bytesToHex(r.mix), '0x' + test.mixHash, 'generate mix hash')
     }
   })
 })

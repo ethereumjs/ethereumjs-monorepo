@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 0.10.5 - 2025-04-29
+
+- Fix client best peer selection based on TD Check, PR [#3950](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3950)
+- Add Hoodi DNS Discovery, PR [#3964](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3964)
+- New option for `logLevel` `off` allowing to fully deactivate logging, PR [#3967](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3967)
+
 ## 0.10.4 - 2025-03-24
 
 ### New JavaScript REPL

@@ -124,10 +124,11 @@ export function defaultBlock(): Block {
 }
 
 /**
- * EVM is responsible for executing an EVM message fully
- * (including any nested calls and creates), processing the results
- * and storing them to state (or discarding changes in case of exceptions).
- * @ignore
+ * The EVM (Ethereum Virtual Machine) is responsible for executing EVM bytecode, processing transactions, and managing state changes. It handles both contract calls and contract creation operations.
+ *
+ * An EVM instance can be created with the constructor method:
+ *
+ * - {@link createEVM}
  */
 export class EVM implements EVMInterface {
   protected static supportedHardforks = [
@@ -152,6 +153,11 @@ export class EVM implements EVMInterface {
     Hardfork.Prague,
     Hardfork.Osaka,
     Hardfork.Verkle,
+    Hardfork.Bpo1,
+    Hardfork.Bpo2,
+    Hardfork.Bpo3,
+    Hardfork.Bpo4,
+    Hardfork.Bpo5,
   ]
   protected _tx?: {
     gasPrice: bigint
@@ -250,7 +256,7 @@ export class EVM implements EVMInterface {
     const supportedEIPs = [
       663, 1153, 1559, 2537, 2565, 2718, 2929, 2930, 2935, 3198, 3529, 3540, 3541, 3607, 3651, 3670,
       3855, 3860, 4200, 4399, 4750, 4788, 4844, 4895, 5133, 5450, 5656, 6110, 6206, 6780, 6800,
-      7002, 7069, 7251, 7480, 7516, 7620, 7685, 7691, 7692, 7698, 7702, 7709,
+      7002, 7069, 7251, 7480, 7516, 7594, 7620, 7685, 7691, 7692, 7698, 7702, 7709,
     ]
 
     for (const eip of this.common.eips()) {

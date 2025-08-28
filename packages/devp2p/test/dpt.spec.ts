@@ -37,11 +37,11 @@ describe('DPT', () => {
   it('should initialize and add peers', async () => {
     const dpt = new DPT(privateKey1, {})
     dpt['_server'] = new Server() as any
-    assert.equal(dpt['_dnsAddr'], '8.8.8.8', 'should initialize with default values')
+    assert.strictEqual(dpt['_dnsAddr'], '8.8.8.8', 'should initialize with default values')
 
     dpt['_server'].ping = vi.fn().mockResolvedValue(peers[0])
     await dpt.bootstrap(peers[0])
-    assert.equal(dpt.numPeers(), 1, 'should add peer on bootstrap()')
+    assert.strictEqual(dpt.numPeers(), 1, 'should add peer on bootstrap()')
 
     // Attention! Not all peers are called by default in refresh()
     // (take into account on test design)
@@ -51,9 +51,9 @@ describe('DPT', () => {
 
     dpt['_server'].ping = vi.fn().mockResolvedValue(peers[1])
     await dpt.addPeer(peers[1])
-    assert.equal(dpt.numPeers(), 2, 'should add another peer on addPeer()')
+    assert.strictEqual(dpt.numPeers(), 2, 'should add another peer on addPeer()')
 
-    assert.equal(
+    assert.strictEqual(
       dpt.getClosestPeers(peers[0].id!).length,
       2,
       'should return all peers on getClosestPeers()',
@@ -83,21 +83,21 @@ describe('DPT', () => {
 
     dpt['_server'].ping = vi.fn().mockResolvedValue(peers[1])
     await dpt.addPeer(peers[1])
-    assert.equal(
+    assert.strictEqual(
       dpt.getClosestPeers(peers[0].id!).length,
       1,
       'should not return unconfirmed on getClosestPeers()',
     )
 
     dpt.confirmPeer('02')
-    assert.equal(
+    assert.strictEqual(
       dpt.getClosestPeers(peers[0].id!).length,
       2,
       'should return confirmed on getClosestPeers()',
     )
 
     dpt.removePeer(peers[1])
-    assert.equal(
+    assert.strictEqual(
       dpt.getClosestPeers(peers[0].id!).length,
       1,
       'should work after peers being removed',

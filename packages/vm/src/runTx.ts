@@ -2,11 +2,10 @@ import { cliqueSigner, createBlockHeader } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { BinaryTreeAccessWitness, type EVM, VerkleAccessWitness } from '@ethereumjs/evm'
 import {
-  StatefulBinaryTreeStateManager,
-  StatefulVerkleStateManager,
-  StatelessVerkleStateManager,
+  type StatefulVerkleStateManager,
+  type StatelessVerkleStateManager,
 } from '@ethereumjs/statemanager'
-import { Capability, isBlob4844Tx, recoverAuthority } from '@ethereumjs/tx'
+import { Capability, isBlob4844Tx } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -21,6 +20,7 @@ import {
   bytesToHex,
   bytesToUnprefixedHex,
   concatBytes,
+  eoaCode7702RecoverAuthority,
   equalsBytes,
   hexToBytes,
   short,
@@ -205,20 +205,22 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       throw Error(`Verkle access witness needed for execution of verkle blocks`)
     }
 
-    if (
-      !(vm.stateManager instanceof StatefulVerkleStateManager) &&
-      !(vm.stateManager instanceof StatelessVerkleStateManager)
-    ) {
+    // Check if statemanager is a Verkle State Manager (stateless and stateful both have verifyVerklePostState)
+    if (!('verifyVerklePostState' in vm.stateManager)) {
       throw EthereumJSErrorWithoutCode(`Verkle State Manager needed for execution of verkle blocks`)
     }
     stateAccesses = vm.evm.verkleAccessWitness
-    txAccesses = new VerkleAccessWitness({ verkleCrypto: vm.stateManager.verkleCrypto })
+    txAccesses = new VerkleAccessWitness({
+      verkleCrypto: (vm.stateManager as StatelessVerkleStateManager | StatefulVerkleStateManager)
+        .verkleCrypto,
+    })
   } else if (vm.common.isActivatedEIP(7864)) {
     if (vm.evm.binaryTreeAccessWitness === undefined) {
       throw Error(`Binary tree access witness needed for execution of binary tree blocks`)
     }
 
-    if (!(vm.stateManager instanceof StatefulBinaryTreeStateManager)) {
+    // Check if statemanager is a BinaryTreeStateManager by checking for a method only on BinaryTreeStateManager API
+    if (!('verifyBinaryPostState' in vm.stateManager)) {
       throw EthereumJSErrorWithoutCode(
         `Binary tree State Manager needed for execution of binary tree blocks`,
       )
@@ -510,7 +512,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       // Address to set code to
       let authority
       try {
-        authority = recoverAuthority(data)
+        authority = eoaCode7702RecoverAuthority(data)
       } catch {
         // Invalid signature, continue
         continue

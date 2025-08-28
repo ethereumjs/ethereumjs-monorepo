@@ -85,7 +85,7 @@ describe('[CLI]', () => {
           host: '0.0.0.0',
         })
         const res = await client.request('eth_coinbase', [], 2.0)
-        assert.equal(
+        assert.strictEqual(
           res.result,
           '0x7e5f4552091a69125d5dfcb7b8c2659029395bdf',
           'correct coinbase address set',
@@ -600,8 +600,8 @@ describe('[CLI]', () => {
           .at(-1)
           ?.split(':')
           .map((e) => e.trim()) as string[]
-        assert.equal(ip, '0.0.0.0', 'custom input for address is being used')
-        assert.equal(port, '65000', 'custom input for port is being used')
+        assert.strictEqual(ip, '0.0.0.0', 'custom input for address is being used')
+        assert.strictEqual(port, '65000', 'custom input for port is being used')
       }
       if (message.includes('Client started successfully')) {
         await wait(600)

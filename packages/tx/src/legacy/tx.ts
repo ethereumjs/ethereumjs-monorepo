@@ -6,6 +6,7 @@ import {
   bigIntToHex,
   bigIntToUnpaddedBytes,
   bytesToBigInt,
+  intToBytes,
   toBytes,
   unpadBytes,
 } from '@ethereumjs/util'
@@ -14,7 +15,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import * as Legacy from '../capabilities/legacy.ts'
 import { paramsTx } from '../index.ts'
 import { Capability, TransactionType } from '../types.ts'
-import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../util/internal.ts'
+import { getBaseJSON, sharedConstructor, valueOverflowCheck } from '../util/internal.ts'
 
 import { createLegacyTx } from './constructors.ts'
 
@@ -123,7 +124,7 @@ export class LegacyTx implements TransactionInterface<typeof TransactionType.Leg
     sharedConstructor(this, txData, opts)
 
     this.gasPrice = bytesToBigInt(toBytes(txData.gasPrice))
-    valueBoundaryCheck({ gasPrice: this.gasPrice })
+    valueOverflowCheck({ gasPrice: this.gasPrice })
 
     // Everything from BaseTransaction done here
     this.common.updateParams(opts.params ?? paramsTx) // TODO should this move higher?
@@ -256,8 +257,8 @@ export class LegacyTx implements TransactionInterface<typeof TransactionType.Leg
 
     if (this.supports(Capability.EIP155ReplayProtection)) {
       message.push(bigIntToUnpaddedBytes(this.common.chainId()))
-      message.push(unpadBytes(toBytes(0)))
-      message.push(unpadBytes(toBytes(0)))
+      message.push(unpadBytes(intToBytes(0)))
+      message.push(unpadBytes(intToBytes(0)))
     }
 
     return message

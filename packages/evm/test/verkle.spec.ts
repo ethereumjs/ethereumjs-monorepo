@@ -12,7 +12,7 @@ import {
   setLengthLeft,
 } from '@ethereumjs/util'
 import { createVerkleTree } from '@ethereumjs/verkle'
-import * as verkle from 'micro-eth-signer/verkle'
+import * as verkle from 'micro-eth-signer/verkle.js'
 import { assert, describe, it } from 'vitest'
 
 import { VerkleAccessWitness, createEVM, generateExecutionWitness } from '../src/index.ts'
@@ -77,7 +77,7 @@ describe('verkle tests', () => {
       ([_, chunk]) => chunk.write !== undefined,
     )
     assert.isEmpty(writtenChunks)
-    assert.equal(res.execResult.exceptionError?.error, 'out of gas')
+    assert.strictEqual(res.execResult.exceptionError?.error, 'out of gas')
   })
 
   it('access witness should contain a write access', async () => {
@@ -109,10 +109,10 @@ describe('verkle tests', () => {
     const writtenChunks = Array.from(evm.verkleAccessWitness.chunks.entries()).filter(
       ([_, chunk]) => chunk.write !== undefined,
     )
-    assert.equal(writtenChunks.length, 1)
-    assert.equal(res.execResult.exceptionError?.error, undefined)
+    assert.strictEqual(writtenChunks.length, 1)
+    assert.strictEqual(res.execResult.exceptionError?.error, undefined)
   })
-})
+}, 20000)
 describe('generate an execution witness', () => {
   it('should generate the correct execution witness from a prestate and changes', async () => {
     const preStateVKT: Record<PrefixedHexString, PrefixedHexString> = {
@@ -186,6 +186,6 @@ describe('generate an execution witness', () => {
     const suffixDiff = stemDiff.suffixDiffs.find((diff) => diff.suffix === 0)
     assert.isDefined(suffixDiff?.newValue)
     // Ensure sender account nonce is 1 in execution witness
-    assert.equal(decodeVerkleLeafBasicData(hexToBytes(suffixDiff!.newValue!)).nonce, 1n)
+    assert.strictEqual(decodeVerkleLeafBasicData(hexToBytes(suffixDiff!.newValue!)).nonce, 1n)
   })
-})
+}, 20000)

@@ -166,7 +166,7 @@ export const hardforksDict: HardforksDict = {
    * Status     : Final
    */
   osaka: {
-    eips: [663, 3540, 3670, 4200, 4750, 5450, 6206, 7069, 7480, 7620, 7692, 7698],
+    eips: [663, 3540, 3670, 4200, 4750, 5450, 6206, 7069, 7480, 7594, 7620, 7692, 7698, 7883],
   },
   /**
    * Description: Next feature hardfork after osaka, internally used for verkle testing/implementation (incomplete/experimental)
@@ -175,5 +175,45 @@ export const hardforksDict: HardforksDict = {
    */
   verkle: {
     eips: [7709, 4762, 6800],
+  },
+  /**
+   * Description: HF to update the blob target, max and updateFraction
+   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/bpo1.md
+   * Status     : Experimental
+   */
+  bpo1: {
+    eips: [],
+  },
+  /**
+   * Description: HF to update the blob target, max and updateFraction
+   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/bpo2.md
+   * Status     : Experimental
+   */
+  bpo2: {
+    eips: [],
+  },
+  /**
+   * Description: HF to update the blob target, max and updateFraction
+   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/bpo3.md
+   * Status     : Experimental
+   */
+  bpo3: {
+    eips: [],
+  },
+  /**
+   * Description: HF to update the blob target, max and updateFraction
+   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/bpo4.md
+   * Status     : Experimental
+   */
+  bpo4: {
+    eips: [],
+  },
+  /**
+   * Description: HF to update the blob target, max and updateFraction
+   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/bpo5.md
+   * Status     : Experimental
+   */
+  bpo5: {
+    eips: [],
   },
 }

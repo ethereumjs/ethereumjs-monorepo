@@ -6,7 +6,6 @@ import {
   bytesToUnprefixedHex,
   equalsBytes,
   hexToBytes,
-  toBytes,
 } from '@ethereumjs/util'
 
 import { ExecStatus } from '../../../execution/index.ts'
@@ -26,6 +25,7 @@ import { middleware, validators } from '../../validation.ts'
 import { CLConnectionManager, middleware as cmMiddleware } from './CLConnectionManager.ts'
 import {
   type BlobAndProofV1,
+  type BlobAndProofV2,
   type Bytes8,
   type Bytes32,
   type ChainCache,
@@ -291,6 +291,13 @@ export class Engine {
       () => this.connectionManager.updateStatus(),
     )
 
+    this.getPayloadV5 = cmMiddleware(
+      middleware(callWithStackTrace(this.getPayloadV5.bind(this), this._rpcDebug), 1, [
+        [validators.bytes8],
+      ]),
+      () => this.connectionManager.updateStatus(),
+    )
+
     /**
      * exchangeCapabilities
      */
@@ -322,6 +329,12 @@ export class Engine {
 
     this.getBlobsV1 = cmMiddleware(
       middleware(callWithStackTrace(this.getBlobsV1.bind(this), this._rpcDebug), 1, [
+        [validators.array(validators.bytes32)],
+      ]),
+      () => this.connectionManager.updateStatus(),
+    )
+    this.getBlobsV2 = cmMiddleware(
+      middleware(callWithStackTrace(this.getBlobsV2.bind(this), this._rpcDebug), 1, [
         [validators.array(validators.bytes32)],
       ]),
       () => this.connectionManager.updateStatus(),
@@ -911,7 +924,7 @@ export class Engine {
      */
     let headBlock: Block | undefined
     try {
-      const head = toBytes(headBlockHash)
+      const head = hexToBytes(headBlockHash)
       headBlock =
         this.remoteBlocks.get(headBlockHash.slice(2)) ??
         (await this.skeleton.getBlockByHash(head, true)) ??
@@ -1331,6 +1344,11 @@ export class Engine {
       let checkNotAfterHf: Hardfork | null
 
       switch (payloadVersion) {
+        case 5:
+          checkNotBeforeHf = Hardfork.Osaka
+          checkNotAfterHf = Hardfork.Osaka
+          break
+
         case 4:
           checkNotBeforeHf = Hardfork.Prague
           checkNotAfterHf = Hardfork.Prague
@@ -1407,6 +1425,10 @@ export class Engine {
 
   async getPayloadV4(params: [Bytes8]) {
     return this.getPayload(params, 4)
+  }
+
+  async getPayloadV5(params: [Bytes8]) {
+    return this.getPayload(params, 5)
   }
 
   /**
@@ -1507,11 +1529,31 @@ export class Engine {
       }
     }
 
-    const blobsAndProof: (BlobAndProofV1 | null)[] = []
+    const blobAndProofArr: (BlobAndProofV1 | null)[] = []
     for (const versionedHashHex of params[0]) {
-      blobsAndProof.push(this.service.txPool.blobsAndProofsByHash.get(versionedHashHex) ?? null)
+      blobAndProofArr.push(this.service.txPool.blobAndProofByHash.get(versionedHashHex) ?? null)
     }
 
-    return blobsAndProof
+    return blobAndProofArr
+  }
+
+  private async getBlobsV2(params: [[Bytes32]]): Promise<BlobAndProofV2[] | null> {
+    if (params[0].length > 128) {
+      throw {
+        code: TOO_LARGE_REQUEST,
+        message: `More than 128 hashes queried`,
+      }
+    }
+
+    const blobAndProofsArr: BlobAndProofV2[] = []
+    for (const versionedHashHex of params[0]) {
+      const blobAndProofs = this.service.txPool.blobAndProofsByHash.get(versionedHashHex)
+      if (blobAndProofs === undefined) {
+        return null
+      }
+      blobAndProofsArr.push(blobAndProofs)
+    }
+
+    return blobAndProofsArr
   }
 }

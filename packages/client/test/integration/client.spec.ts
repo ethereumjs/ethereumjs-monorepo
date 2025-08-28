@@ -24,7 +24,7 @@ const client = await EthereumClient.create({ config })
 describe('client should start/stop/error', async () => {
   client.config.events.on(Event.SERVER_ERROR, (err) => {
     it('should get error', () => {
-      assert.equal(err.message, 'err0', 'got error')
+      assert.strictEqual(err.message, 'err0', 'got error')
     })
   })
   client.config.events.on(Event.SERVER_LISTENING, (details: any) => {

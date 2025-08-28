@@ -76,7 +76,7 @@ describe('[AccessList2930Tx / FeeMarket1559Tx] -> EIP-2930 Compatibility', () =>
         },
         { common: new Common({ chain: goerliChainConfig }) },
       )
-      assert.equal(
+      assert.strictEqual(
         tx.common.chainId(),
         BigInt(5),
         'should initialize Common with chain ID provided (supported chain ID)',
@@ -426,15 +426,19 @@ describe('[AccessList2930Tx / FeeMarket1559Tx] -> EIP-2930 Compatibility', () =>
   it('getDataGas()', () => {
     for (const txType of txTypes) {
       let tx = txType.create.txData({}, { common })
-      assert.equal(tx.getDataGas(), BigInt(0), 'Should return data fee when frozen')
+      assert.strictEqual(tx.getDataGas(), BigInt(0), 'Should return data fee when frozen')
 
       tx = txType.create.txData({}, { common, freeze: false })
-      assert.equal(tx.getDataGas(), BigInt(0), 'Should return data fee when not frozen')
+      assert.strictEqual(tx.getDataGas(), BigInt(0), 'Should return data fee when not frozen')
 
       const mutableCommon = new Common({ chain: Mainnet, hardfork: Hardfork.London })
       tx = txType.create.txData({}, { common: mutableCommon })
       tx.common.setHardfork(Hardfork.Istanbul)
-      assert.equal(tx.getDataGas(), BigInt(0), 'Should invalidate cached value on hardfork change')
+      assert.strictEqual(
+        tx.getDataGas(),
+        BigInt(0),
+        'Should invalidate cached value on hardfork change',
+      )
     }
   })
 })
@@ -505,7 +509,7 @@ describe('[AccessList2930Tx] -> Class Specific Tests', () => {
     const baseFee: number = Number(common.param('txGas'))
     const creationFee: number = Number(common.param('txCreationGas'))
 
-    assert.equal(
+    assert.strictEqual(
       tx.getIntrinsicGas(),
       BigInt(
         txDataNonZero * 2 + txDataZero + baseFee + accessListAddressCost + accessListStorageKeyCost,
@@ -522,7 +526,7 @@ describe('[AccessList2930Tx] -> Class Specific Tests', () => {
       { common },
     )
 
-    assert.equal(
+    assert.strictEqual(
       tx.getIntrinsicGas(),
       BigInt(
         txDataNonZero * 2 +
@@ -547,7 +551,7 @@ describe('[AccessList2930Tx] -> Class Specific Tests', () => {
       { common },
     )
 
-    assert.equal(
+    assert.strictEqual(
       tx.getIntrinsicGas(),
       BigInt(baseFee + accessListAddressCost * 2 + accessListStorageKeyCost * 3),
     )
@@ -558,9 +562,9 @@ describe('[AccessList2930Tx] -> Class Specific Tests', () => {
       gasPrice: BigInt(100),
     })
 
-    assert.equal(tx.getEffectivePriorityFee(), BigInt(100))
-    assert.equal(tx.getEffectivePriorityFee(BigInt(20)), BigInt(80))
-    assert.equal(tx.getEffectivePriorityFee(BigInt(100)), BigInt(0))
+    assert.strictEqual(tx.getEffectivePriorityFee(), BigInt(100))
+    assert.strictEqual(tx.getEffectivePriorityFee(BigInt(20)), BigInt(80))
+    assert.strictEqual(tx.getEffectivePriorityFee(BigInt(100)), BigInt(0))
     assert.throws(() => tx.getEffectivePriorityFee(BigInt(101)))
   })
 
@@ -573,7 +577,7 @@ describe('[AccessList2930Tx] -> Class Specific Tests', () => {
       },
       { common },
     )
-    assert.equal(tx.getUpfrontCost(), BigInt(10000000042))
+    assert.strictEqual(tx.getUpfrontCost(), BigInt(10000000042))
   })
 
   it('unsigned tx -> getHashedMessageToSign()/getMessageToSign()', () => {
@@ -657,9 +661,9 @@ describe('[AccessList2930Tx] -> Class Specific Tests', () => {
 
     const signed = unsignedTx.sign(pkey)
 
-    assert.equal(v, signed.v, 'v correct')
-    assert.equal(r, signed.r, 'r correct')
-    assert.equal(s, signed.s, 's correct')
+    assert.strictEqual(v, signed.v, 'v correct')
+    assert.strictEqual(r, signed.r, 'r correct')
+    assert.strictEqual(s, signed.s, 's correct')
     assert.isTrue(
       equalsBytes(expectedSigned, signed.serialize()),
       'serialized signed message correct',
@@ -707,7 +711,7 @@ describe('[AccessList2930Tx] -> Class Specific Tests', () => {
       },
     })
     const signedTxn = txn.sign(pKey)
-    assert.equal(
+    assert.strictEqual(
       signedTxn.common.hardfork(),
       Hardfork.Paris,
       'signed tx common is taken from tx.common',

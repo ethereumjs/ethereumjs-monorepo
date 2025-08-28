@@ -9,7 +9,6 @@ import {
   concatBytes,
   createZeroAddress,
   equalsBytes,
-  toBytes,
   toType,
 } from '@ethereumjs/util'
 import { BuildStatus, buildBlock } from '@ethereumjs/vm'
@@ -65,6 +64,7 @@ export class PendingBlock {
 
   pendingPayloads: Map<string, BlockBuilder> = new Map()
   blobsBundles: Map<string, BlobsBundle> = new Map()
+  executionRequests: Map<string, CLRequest<CLRequestType>[]> = new Map()
 
   private skipHardForkValidation?: boolean
 
@@ -145,19 +145,18 @@ export class PendingBlock {
 
     const keccakFunction = this.config.chainCommon.customCrypto.keccak256 ?? keccak256
 
-    const payloadIdBytes = toBytes(
-      keccakFunction(
-        concatBytes(
-          parentBlock.hash(),
-          mixHashBuf,
-          timestampBuf,
-          gasLimitBuf,
-          parentBeaconBlockRootBuf,
-          coinbaseBuf,
-          withdrawalsBuf,
-        ),
-      ).subarray(0, 8),
-    )
+    const payloadIdBytes = keccakFunction(
+      concatBytes(
+        parentBlock.hash(),
+        mixHashBuf,
+        timestampBuf,
+        gasLimitBuf,
+        parentBeaconBlockRootBuf,
+        coinbaseBuf,
+        withdrawalsBuf,
+      ),
+    ).subarray(0, 8)
+
     const payloadId = bytesToHex(payloadIdBytes)
 
     // If payload has already been triggered, then return the payloadid
@@ -234,6 +233,7 @@ export class PendingBlock {
     // Remove from pendingPayloads
     this.pendingPayloads.delete(payloadId)
     this.blobsBundles.delete(payloadId)
+    this.executionRequests.delete(payloadId)
   }
 
   /**
@@ -264,6 +264,7 @@ export class PendingBlock {
         builder.transactionReceipts,
         builder.minerValue,
         this.blobsBundles.get(payloadId),
+        this.executionRequests.get(payloadId),
       ]
     }
     const { vm, headerData } = builder as unknown as { vm: VM; headerData: HeaderData }
@@ -295,6 +296,9 @@ export class PendingBlock {
     const { skippedByAddErrors, blobTxs } = await this.addTransactions(builder, txs)
 
     const { block, requests } = await builder.build()
+    if (requests !== undefined) {
+      this.executionRequests.set(payloadId, requests)
+    }
 
     // Construct blobs bundle
     const blobs = block.common.isActivatedEIP(4844)
