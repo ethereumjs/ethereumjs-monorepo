@@ -33,7 +33,6 @@ const BIGINT_199680 = BigInt(199680)
 const BIGINT_2147483647 = BigInt(2147483647)
 
 const maxInt = BigInt(Number.MAX_SAFE_INTEGER)
-const maxSize = BIGINT_2147483647 // @ethereumjs/util setLengthRight limitation
 
 function multiplicationComplexity(x: bigint): bigint {
   let fac1
@@ -158,16 +157,18 @@ export function precompile05(opts: PrecompileInput): ExecResult {
     }
   }
 
+  const maxSize = BIGINT_2147483647 // @ethereumjs/util setLengthRight limitation
+
   if (bLen > maxSize || eLen > maxSize || mLen > maxSize) {
     if (opts._debug !== undefined) {
-      opts._debug(`${pName} failed: OOG`)
+      opts._debug(`${pName} failed: one or more modexp precompile input values too large`)
     }
     return OOGResult(opts.gasLimit)
   }
 
   if (mEnd > maxInt) {
     if (opts._debug !== undefined) {
-      opts._debug(`${pName} failed: OOG`)
+      opts._debug(`${pName} failed: total modexp precompile input too large`)
     }
     return OOGResult(opts.gasLimit)
   }
