@@ -30,9 +30,10 @@ const BIGINT_500 = BigInt(500)
 const BIGINT_1024 = BigInt(1024)
 const BIGINT_3072 = BigInt(3072)
 const BIGINT_199680 = BigInt(199680)
+const BIGINT_2147483647 = BigInt(2147483647)
 
 const maxInt = BigInt(Number.MAX_SAFE_INTEGER)
-const maxSize = BigInt(2147483647) // @ethereumjs/util setLengthRight limitation
+const maxSize = BIGINT_2147483647 // @ethereumjs/util setLengthRight limitation
 
 function multiplicationComplexity(x: bigint): bigint {
   let fac1
