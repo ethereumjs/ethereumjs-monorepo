@@ -157,7 +157,9 @@ export function precompile05(opts: PrecompileInput): ExecResult {
     }
   }
 
-  const maxSize = BIGINT_2147483647 // @ethereumjs/util setLengthRight limitation
+  // Upper bounds by EIP-7823 (Osaka and upwards) or otherwise
+  // @ethereumjs/util setLengthRight limitation
+  const maxSize = opts.common.isActivatedEIP(7823) ? BIGINT_1024 : BIGINT_2147483647
 
   if (bLen > maxSize || eLen > maxSize || mLen > maxSize) {
     if (opts._debug !== undefined) {
