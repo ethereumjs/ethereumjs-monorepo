@@ -30,9 +30,9 @@ const BIGINT_500 = BigInt(500)
 const BIGINT_1024 = BigInt(1024)
 const BIGINT_3072 = BigInt(3072)
 const BIGINT_199680 = BigInt(199680)
+const BIGINT_2147483647 = BigInt(2147483647)
 
 const maxInt = BigInt(Number.MAX_SAFE_INTEGER)
-const maxSize = BigInt(2147483647) // @ethereumjs/util setLengthRight limitation
 
 function multiplicationComplexity(x: bigint): bigint {
   let fac1
@@ -150,7 +150,12 @@ export function precompile05(opts: PrecompileInput): ExecResult {
     return OOGResult(opts.gasLimit)
   }
 
-  if (bLen === BIGINT_0 && mLen === BIGINT_0) {
+  // Upper bounds by EIP-7823 (Osaka and upwards) or otherwise
+  // @ethereumjs/util setLengthRight limitation
+  const maxSize = opts.common.isActivatedEIP(7823) ? BIGINT_1024 : BIGINT_2147483647
+
+  // Optimization: do not compute for b and m being 0 but return early
+  if (!opts.common.isActivatedEIP(7823) && bLen === BIGINT_0 && mLen === BIGINT_0) {
     return {
       executionGasUsed: gasUsed,
       returnValue: new Uint8Array(),
@@ -159,14 +164,14 @@ export function precompile05(opts: PrecompileInput): ExecResult {
 
   if (bLen > maxSize || eLen > maxSize || mLen > maxSize) {
     if (opts._debug !== undefined) {
-      opts._debug(`${pName} failed: OOG`)
+      opts._debug(`${pName} failed: one or more modexp precompile input values too large`)
     }
     return OOGResult(opts.gasLimit)
   }
 
   if (mEnd > maxInt) {
     if (opts._debug !== undefined) {
-      opts._debug(`${pName} failed: OOG`)
+      opts._debug(`${pName} failed: total modexp precompile input too large`)
     }
     return OOGResult(opts.gasLimit)
   }
