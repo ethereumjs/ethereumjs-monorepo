@@ -144,7 +144,7 @@ jobs:
         working-directory: ${{ github.workspace }}
       
       - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM') == false
-        run: npm run test:state -- --fork=Osaka --customTestsPath=../execution-spec-tests/fusaka-devnet-5/state_tests
+        run: npm run test:state:osaka
       
       - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM')
         run: npm run test:buildIntegrity

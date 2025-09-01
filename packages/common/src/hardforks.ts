@@ -153,7 +153,7 @@ export const hardforksDict: HardforksDict = {
     eips: [1153, 4844, 4788, 5656, 6780, 7516],
   },
   /**
-   * Description: Next feature hardfork after cancun
+   * Description: Next feature hardfork after cancun including EIP-7702 account abstraction + other EIPs
    * URL        : https://eips.ethereum.org/EIPS/eip-7600
    * Status     : Final
    */
@@ -161,12 +161,12 @@ export const hardforksDict: HardforksDict = {
     eips: [2537, 2935, 6110, 7002, 7251, 7623, 7685, 7691, 7702],
   },
   /**
-   * Description: Next feature hardfork after prague, internally used for peerdas/EOF testing/implementation (incomplete/experimental)
+   * Description: Next feature hardfork after prague (headliner: PeerDAS)
    * URL        : https://eips.ethereum.org/EIPS/eip-7607
    * Status     : Draft
    */
   osaka: {
-    eips: [7594, 7883],
+    eips: [7594, 7823, 7883],
   },
   /**
    * Description: Next feature hardfork after osaka, internally used for verkle testing/implementation (incomplete/experimental)
