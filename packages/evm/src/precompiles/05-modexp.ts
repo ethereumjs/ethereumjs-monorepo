@@ -150,13 +150,6 @@ export function precompile05(opts: PrecompileInput): ExecResult {
     return OOGResult(opts.gasLimit)
   }
 
-  if (bLen === BIGINT_0 && mLen === BIGINT_0) {
-    return {
-      executionGasUsed: gasUsed,
-      returnValue: new Uint8Array(),
-    }
-  }
-
   // Upper bounds by EIP-7823 (Osaka and upwards) or otherwise
   // @ethereumjs/util setLengthRight limitation
   const maxSize = opts.common.isActivatedEIP(7823) ? BIGINT_1024 : BIGINT_2147483647
@@ -173,6 +166,14 @@ export function precompile05(opts: PrecompileInput): ExecResult {
       opts._debug(`${pName} failed: total modexp precompile input too large`)
     }
     return OOGResult(opts.gasLimit)
+  }
+
+  // Optimization: do not compute for b and m being 0 but return early
+  if (bLen === BIGINT_0 && mLen === BIGINT_0) {
+    return {
+      executionGasUsed: gasUsed,
+      returnValue: new Uint8Array(),
+    }
   }
 
   const B = bytesToBigInt(setLengthRight(data.subarray(Number(bStart), Number(bEnd)), Number(bLen)))
