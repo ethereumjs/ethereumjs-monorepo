@@ -143,9 +143,9 @@ export const hardforksDict: HardforksDict = {
     eips: [3651, 3855, 3860, 4895],
   },
   /**
-   * Description: Next feature hardfork after shanghai, includes proto-danksharding EIP 4844 blobs
-   * (still WIP hence not for production use), transient storage opcodes, parent beacon block root
-   * availability in EVM, selfdestruct only in same transaction, and blob base fee opcode
+   * Description: Next feature hardfork after shanghai, includes proto-danksharding EIP 4844 blobs,
+   * transient storage opcodes, parent beacon block root availability in EVM, selfdestruct only in
+   * same transaction, and blob base fee opcode
    * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/cancun.md
    * Status     : Final
    */
@@ -153,8 +153,8 @@ export const hardforksDict: HardforksDict = {
     eips: [1153, 4844, 4788, 5656, 6780, 7516],
   },
   /**
-   * Description: Next feature hardfork after cancun, internally used for pectra testing/implementation (incomplete/experimental)
-   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/prague.md
+   * Description: Next feature hardfork after cancun
+   * URL        : https://eips.ethereum.org/EIPS/eip-7600
    * Status     : Final
    */
   prague: {
@@ -162,11 +162,11 @@ export const hardforksDict: HardforksDict = {
   },
   /**
    * Description: Next feature hardfork after prague, internally used for peerdas/EOF testing/implementation (incomplete/experimental)
-   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/osaka.md
-   * Status     : Final
+   * URL        : https://eips.ethereum.org/EIPS/eip-7607
+   * Status     : Draft
    */
   osaka: {
-    eips: [663, 3540, 3670, 4200, 4750, 5450, 6206, 7069, 7480, 7594, 7620, 7692, 7698, 7883],
+    eips: [7594, 7883],
   },
   /**
    * Description: Next feature hardfork after osaka, internally used for verkle testing/implementation (incomplete/experimental)
