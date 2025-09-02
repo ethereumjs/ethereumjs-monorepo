@@ -154,6 +154,15 @@ export function precompile05(opts: PrecompileInput): ExecResult {
   // @ethereumjs/util setLengthRight limitation
   const maxSize = opts.common.isActivatedEIP(7823) ? BIGINT_1024 : BIGINT_2147483647
 
+  if (opts._debug !== undefined) {
+    // Lengths value debugging
+    const total = BigInt(96) + bLen + eLen + mLen
+    const data = BigInt(opts.data.length)
+    let msg = `${pName} length values: maxSize(b/e/m)=${maxSize} bLen=${bLen} eLen=${eLen} mLen=${mLen} 96+b+e+m=${total} `
+    msg += `data=${data} lengthMatch=${total === data}`
+    opts._debug(msg)
+  }
+
   // Optimization: do not compute for b and m being 0 but return early
   if (!opts.common.isActivatedEIP(7823) && bLen === BIGINT_0 && mLen === BIGINT_0) {
     return {
@@ -164,14 +173,14 @@ export function precompile05(opts: PrecompileInput): ExecResult {
 
   if (bLen > maxSize || eLen > maxSize || mLen > maxSize) {
     if (opts._debug !== undefined) {
-      opts._debug(`${pName} failed: one or more modexp precompile input values too large`)
+      opts._debug(`${pName} failed: one or more input values too large`)
     }
     return OOGResult(opts.gasLimit)
   }
 
   if (mEnd > maxInt) {
     if (opts._debug !== undefined) {
-      opts._debug(`${pName} failed: total modexp precompile input too large`)
+      opts._debug(`${pName} failed: total input too large`)
     }
     return OOGResult(opts.gasLimit)
   }
@@ -179,6 +188,10 @@ export function precompile05(opts: PrecompileInput): ExecResult {
   const B = bytesToBigInt(setLengthRight(data.subarray(Number(bStart), Number(bEnd)), Number(bLen)))
   const E = bytesToBigInt(setLengthRight(data.subarray(Number(eStart), Number(eEnd)), Number(eLen)))
   const M = bytesToBigInt(setLengthRight(data.subarray(Number(mStart), Number(mEnd)), Number(mLen)))
+
+  if (opts._debug !== undefined) {
+    opts._debug(`${pName} input: B=${B} E=${E} M=${M}`)
+  }
 
   let R
   if (M === BIGINT_0) {
