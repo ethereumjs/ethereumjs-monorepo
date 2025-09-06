@@ -1,6 +1,6 @@
-import pluginJs from "@eslint/js";
-import tseslint from "typescript-eslint";
+import pluginJs from '@eslint/js'
 import importPlugin from 'eslint-plugin-import'
+import tseslint from 'typescript-eslint'
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [
@@ -25,10 +25,19 @@ export default [
       '**/lint-staged.config.js',
       '**/tsconfig.lint.json',
       '**/package.json',
-    ]
+    ],
   },
-  { files: ["**/*.{js,mjs,cjs,ts,cts,mts}"] },
-  { languageOptions: { parser: tseslint.parser, parserOptions: { extraFileExtensions: ['.json'], sourceType: 'module', project: './config/tsconfig.lint.json' } } },
+  { files: ['**/*.{js,mjs,cjs,ts,cts,mts}'] },
+  {
+    languageOptions: {
+      parser: tseslint.parser,
+      parserOptions: {
+        extraFileExtensions: ['.json'],
+        sourceType: 'module',
+        project: './config/tsconfig.lint.json',
+      },
+    },
+  },
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,
   importPlugin.flatConfigs.recommended,
@@ -39,15 +48,16 @@ export default [
         'error',
         {
           selector: "ThrowStatement > NewExpression[callee.name='Error']",
-          message: "Throwing default JS Errors is not allowed. Only throw `EthereumJSError` (see the util package)",
+          message:
+            'Throwing default JS Errors is not allowed. Only throw `EthereumJSError` (see the util package)',
         },
       ],
-      "no-restricted-globals": [
-        "error",
+      'no-restricted-globals': [
+        'error',
         {
-          "name": "Buffer",
-          "message": "The use of Buffer is not allowed."
-        }
+          name: 'Buffer',
+          message: 'The use of Buffer is not allowed.',
+        },
       ],
       '@typescript-eslint/consistent-type-imports': 'error',
       '@typescript-eslint/naming-convention': [
@@ -70,12 +80,18 @@ export default [
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-unsafe-function-type': 'off', // TODO: Decide if this is needed
       '@typescript-eslint/no-unused-expressions': 'off', // TODO: Decide if this is needed
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
-      '@typescript-eslint/ban-ts-comment': 'warn',  // TODO: We should clean up ts comments and replace with ts-expect-error
-      '@typescript-eslint/no-empty-object-type': ['error', {
-        allowInterfaces: 'with-single-extends',
-        allowObjectTypes: 'always'
-      }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
+      '@typescript-eslint/ban-ts-comment': 'warn', // TODO: We should clean up ts comments and replace with ts-expect-error
+      '@typescript-eslint/no-empty-object-type': [
+        'error',
+        {
+          allowInterfaces: 'with-single-extends',
+          allowObjectTypes: 'always',
+        },
+      ],
       eqeqeq: 'error',
       'no-console': 'warn',
       'no-debugger': 'error',
@@ -106,20 +122,24 @@ export default [
       'import/no-useless-path-segments': 'error',
       'import/no-webpack-loader-syntax': 'error',
       'import/order': 'off',
-
     },
   },
   {
-    files: ["**/*.ts"],
-    ignores: ["**/examples/*.ts"],
+    files: ['**/*.ts'],
+    ignores: ['**/examples/*.ts'],
     rules: {
-      "no-restricted-imports": ["error", {
-        "patterns": [{
-          "group": ["../**/*.js", "./**/*.js"],
-          "message": "use .ts extensions in relative imports"
-        }]
-      }],
-    }
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['../**/*.js', './**/*.js'],
+              message: 'use .ts extensions in relative imports',
+            },
+          ],
+        },
+      ],
+    },
   },
   {
     plugins: {
@@ -136,25 +156,30 @@ export default [
       '@typescript-eslint/no-require-imports': 'off',
       'no-console': 'off',
       'no-undef': 'off',
-    }
+    },
   },
   {
     files: ['**/*.js', '**/*.cjs', '**/*.cts'],
     rules: {
       '@typescript-eslint/no-require-imports': 'off',
       'no-undef': 'off',
-    }
-  },
-  {
-    files: ['**/examples/**/*.ts', '**/examples/**/*.js', '**/examples/**/*.cjs', '**/benchmarks/*.ts'],
-    rules: {
-      'no-console': 'off',
-      '@typescript-eslint/no-unused-vars': 'off',
-      'no-restricted-syntax': 'off'
     },
   },
   {
-    files: ['packages/statemanager/src/**', 'packages/vm/src/**',],
+    files: [
+      '**/examples/**/*.ts',
+      '**/examples/**/*.js',
+      '**/examples/**/*.cjs',
+      '**/benchmarks/*.ts',
+    ],
+    rules: {
+      'no-console': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+      'no-restricted-syntax': 'off',
+    },
+  },
+  {
+    files: ['packages/statemanager/src/**', 'packages/vm/src/**'],
     rules: {
       'no-invalid-this': 'off',
     },
@@ -167,21 +192,21 @@ export default [
     },
   },
   {
-    files: ['packages/devp2p/src/ext/**', 'packages/client/src/ext/**', '**/test/**/*.ts',],
+    files: ['packages/devp2p/src/ext/**', 'packages/client/src/ext/**', '**/test/**/*.ts'],
     rules: {
       'no-restricted-syntax': 'off',
-      "no-restricted-properties": [
-        "error",
+      'no-restricted-properties': [
+        'error',
         {
-          "object": "assert",
-          "property": "ok",
-          "message": "Usage of assert.ok is forbidden because it relies on truthiness."
+          object: 'assert',
+          property: 'ok',
+          message: 'Usage of assert.ok is forbidden because it relies on truthiness.',
         },
         {
-          "object": "assert",
-          "property": "notOk",
-          "message": "Usage of assert.notOk is forbidden because it relies on falseness."
-        }
+          object: 'assert',
+          property: 'notOk',
+          message: 'Usage of assert.notOk is forbidden because it relies on falseness.',
+        },
       ],
     },
   },
@@ -192,9 +217,13 @@ export default [
     },
   },
   {
-    files: ['packages/vm/test/util.ts', 'packages/vm/test/tester/**/*.ts', 'packages/vm/examples/**/*.ts'],
+    files: [
+      'packages/vm/test/util.ts',
+      'packages/vm/test/tester/**/*.ts',
+      'packages/vm/examples/**/*.ts',
+    ],
     rules: {
       'no-console': 'off',
     },
   },
-];
+]
