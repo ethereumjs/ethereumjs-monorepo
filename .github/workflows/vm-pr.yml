@@ -34,7 +34,7 @@ jobs:
     steps:
       # We clone the repo and submodules if triggered from work-flow dispatch
       - if: inputs.submodule-cache-key == 'none'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: recursive
 
@@ -78,12 +78,12 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        fork: ['Berlin', 'London', 'Paris', 'Shanghai', 'Cancun']
+        fork: ['Prague']
       fail-fast: false
     steps:
       # We clone the repo and submodules if triggered from work-flow dispatch
       - if: inputs.submodule-cache-key == 'none'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: recursive
 
@@ -114,11 +114,43 @@ jobs:
           path: ${{github.workspace}}/packages/ethereum-tests
           key: ${{ inputs.submodule-cache-key}}
           fail-on-cache-miss: true
-  
-      - run: npm run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
+      
+      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM') == false
+        run: npm run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
+      
+      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM')
+        run: npm run test:buildIntegrity
+
+  vm-osaka:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      # For now we always clone the repo and submodules (no cache)
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies (if not restored from cache)
+        if: steps.dep-cache.outputs.cache-hit != 'true'
+        run: npm ci     
+        working-directory: ${{ github.workspace }}
+      
+      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM') == false
+        run: npm run test:state:osaka
+      
+      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM')
+        run: npm run test:buildIntegrity
 
   vm-state-extended:
-    if: contains(join(github.event.pull_request.labels.*.name, ' '), 'Test all hardforks')
+    if: contains(join(github.event.pull_request.labels.*.name, ' '), 'test all hardforks')
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -143,7 +175,7 @@ jobs:
     steps:
       # We clone the repo and submodules if triggered from work-flow dispatch
       - if: inputs.submodule-cache-key == 'none'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: recursive
 
@@ -189,17 +221,13 @@ jobs:
         # Tests were split with --dir and --excludeDir to balance execution times below the 9min mark.
         args:
           [
-            '--fork=Berlin --verify-test-amount-alltests',
-            '--fork=London --verify-test-amount-alltests',
-            '--fork=Paris --verify-test-amount-alltests',
-            '--fork=Shanghai --verify-test-amount-alltests',
-            '--fork=Cancun --verify-test-amount-alltests',
+            '--fork=Prague --verify-test-amount-alltests',
           ]
       fail-fast: false
     steps:
       # We clone the repo and submodules if triggered from work-flow dispatch
       - if: inputs.submodule-cache-key == 'none'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: recursive
 
@@ -231,10 +259,14 @@ jobs:
           key: ${{ inputs.submodule-cache-key}}
           fail-on-cache-miss: true
 
-      - run: npm run test:blockchain -- ${{ matrix.args }}
+      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM') == false
+        run: npm run test:blockchain -- ${{ matrix.args }}
+
+      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM')
+        run: npm run test:blockchain:buildIntegrity
 
   vm-blockchain-extended:
-    if: contains(join(github.event.pull_request.labels.*.name, ' '), 'Test all hardforks')
+    if: contains(join(github.event.pull_request.labels.*.name, ' '), 'test all hardforks')
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -266,7 +298,7 @@ jobs:
     steps:
       # We clone the repo and submodules if triggered from work-flow dispatch
       - if: inputs.submodule-cache-key == 'none'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: recursive
 
@@ -305,7 +337,7 @@ jobs:
     steps:
       # We clone the repo and submodules if triggered from work-flow dispatch
       - if: inputs.submodule-cache-key == 'none'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # We restore the code/deps from cache if triggered from workflow_call (i.e. have valid cache key)
       - if: inputs.dep-cache-key != 'none' 

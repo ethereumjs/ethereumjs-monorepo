@@ -32,7 +32,8 @@ The EthereumJS project uses [npm workspaces](https://docs.npmjs.com/cli/v7/using
 
 - `/packages` - Contains all EthereumJS packages
 - `/config` - Shared configuration files and scripts
-- `packages/ethereum-tests` - Git submodule with Ethereum test vectors
+- `packages/ethereum-tests` - Git submodule with Ethereum test vectors (legacy)
+- `packages/execution-spec-tests-fixtures` - Git submodule with selected Ethereum test vectors
 
 ### Scripts
 

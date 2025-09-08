@@ -8,6 +8,7 @@ import {
 } from '@ethereumjs/statemanager'
 import {
   Capability,
+  NetworkWrapperType,
   createBlob4844TxFromSerializedNetworkWrapper,
   createTx,
   createTxFromRLP,
@@ -100,6 +101,7 @@ type JSONRPCLog = {
   transactionHash: string | null // DATA, 32 Bytes - hash of the transactions this log was created from. null when it's pending.
   blockHash: string | null // DATA, 32 Bytes - hash of the block where this log was in. null when it's pending.
   blockNumber: string | null // QUANTITY - the block number where this log was in. null when it's pending.
+  blockTimestamp: string | null // QUANTITY - the block timestamp where this log was in. null when it's pending.
   address: string // DATA, 20 Bytes - address from which this log originated.
   data: string // DATA - contains one or more 32 Bytes non-indexed arguments of the log.
   topics: string[] // Array of DATA - Array of 0 to 4 32 Bytes DATA of indexed log arguments.
@@ -174,6 +176,7 @@ const toJSONRPCLog = async (
   transactionHash: tx !== undefined ? bytesToHex(tx.hash()) : null,
   blockHash: block ? bytesToHex(block.hash()) : null,
   blockNumber: block ? bigIntToHex(block.header.number) : null,
+  blockTimestamp: block ? bigIntToHex(block.header.timestamp) : null,
   address: bytesToHex(log[0]),
   topics: log[1].map(bytesToHex),
   data: bytesToHex(log[2]),
@@ -327,6 +330,11 @@ export class Eth {
     ])
 
     this.chainId = callWithStackTrace(this.chainId.bind(this), this._rpcDebug)
+
+    this.maxPriorityFeePerGas = callWithStackTrace(
+      this.maxPriorityFeePerGas.bind(this),
+      this._rpcDebug,
+    )
 
     this.estimateGas = middleware(
       callWithStackTrace(this.estimateGas.bind(this), this._rpcDebug),
@@ -537,6 +545,78 @@ export class Eth {
   async chainId() {
     const chainId = this._chain.config.chainCommon.chainId()
     return bigIntToHex(chainId)
+  }
+
+  /**
+   * Returns an estimate for max priority fee per gas for a tx to be included in a block.
+   * @returns The max priority fee per gas.
+   */
+  async maxPriorityFeePerGas() {
+    const DEFAULT_MAX_PRIORITY_FEE_PER_GAS = '0x3B9ACA00' // 1 Gwei, 10^9 Wei
+
+    if (!this.client.config.synchronized) {
+      throw {
+        code: INTERNAL_ERROR,
+        message: `client is not aware of the current chain height yet (give sync some more time)`,
+      }
+    }
+    const latest = await this._chain.getCanonicalHeadBlock()
+    // This ends up with a forward-sorted list of blocks
+    const blocks = (await this._chain.getBlocks(latest.hash(), 10, 0, true)).reverse()
+
+    // Store per-block medians
+    const blockMedians: bigint[] = []
+    let numSamples = 0
+
+    for (const block of blocks) {
+      // Array to collect all maxPriorityFeePerGas values
+      const priorityFees: bigint[] = []
+
+      for (const tx of block.transactions) {
+        // Only EIP-1559 transactions have maxPriorityFeePerGas
+        if (tx.supports(Capability.EIP1559FeeMarket) === true) {
+          priorityFees.push((tx as FeeMarket1559Tx).maxPriorityFeePerGas)
+          numSamples += 1
+        }
+      }
+
+      // Calculate median for this block
+      if (priorityFees.length > 0) {
+        priorityFees.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0))
+        const mid = Math.floor(priorityFees.length / 2)
+        let median: bigint
+        if (priorityFees.length % 2 === 0) {
+          median = (priorityFees[mid - 1] + priorityFees[mid]) / BigInt(2)
+        } else {
+          median = priorityFees[mid]
+        }
+        blockMedians.push(median)
+      }
+    }
+
+    if (numSamples === 0) {
+      return DEFAULT_MAX_PRIORITY_FEE_PER_GAS
+    }
+
+    // Linear regression to extrapolate next median value
+    function linearRegression(y: bigint[]): number {
+      const n = y.length
+      if (n === 0) return 0
+      const x = Array.from({ length: n }, (_, i) => i)
+      const meanX = x.reduce((a, b) => a + b, 0) / n
+      const meanY = y.reduce((a, b) => a + Number(b), 0) / n
+      let num = 0,
+        den = 0
+      for (let i = 0; i < n; i++) {
+        num += (x[i] - meanX) * (Number(y[i]) - meanY)
+        den += (x[i] - meanX) ** 2
+      }
+      const a = den === 0 ? 0 : num / den
+      const b = meanY - a * meanX
+      return a * n + b // predict next (n-th) value
+    }
+    const nextMedianRegression = BigInt(Math.round(linearRegression(blockMedians)))
+    return bigIntToHex(nextMedianRegression)
   }
 
   /**
@@ -1167,6 +1247,14 @@ export class Eth {
       if (txBuf[0] === 0x03) {
         // Blob Transactions sent over RPC are expected to be in Network Wrapper format
         tx = createBlob4844TxFromSerializedNetworkWrapper(txBuf, { common })
+        if (
+          common.isActivatedEIP(7594) &&
+          tx.networkWrapperVersion !== NetworkWrapperType.EIP7594
+        ) {
+          throw Error(
+            `tx with networkWrapperVersion=${tx.networkWrapperVersion} sent for EIP-7594 activated hardfork=${common.hardfork()}`,
+          )
+        }
 
         const blobGasLimit = tx.common.param('maxBlobGasPerBlock')
         const blobGasPerBlob = tx.common.param('blobGasPerBlob')

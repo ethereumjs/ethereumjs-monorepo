@@ -394,6 +394,15 @@ export const eipsDict: EIPsDict = {
     requiredEIPs: [4844],
   },
   /**
+   * Description : Peerdas blob transactions
+   * URL         : hhttps://eips.ethereum.org/EIPS/eip-7594
+   * Status      : Review
+   */
+  7594: {
+    minimumHardfork: Hardfork.Paris,
+    requiredEIPs: [4844],
+  },
+  /**
    * Description : EOF Contract Creation
    * URL         : https://github.com/ethereum/EIPs/blob/dd32a34cfe4473bce143641bfffe4fd67e1987ab/EIPS/eip-7620.md
    * Status      : Review
@@ -462,6 +471,14 @@ export const eipsDict: EIPsDict = {
     requiredEIPs: [2718, 2929, 2930],
   },
   /**
+   * Description : Set upper bounds for MODEXP
+   * URL         : https://eips.ethereum.org/EIPS/eip-7823
+   * Status      : Review
+   */
+  7823: {
+    minimumHardfork: Hardfork.Byzantium,
+  },
+  /**
    * Description : Use historical block hashes saved in state for BLOCKHASH
    * URL         : https://eips.ethereum.org/EIPS/eip-7709
    * Status      : Final
@@ -486,5 +503,13 @@ export const eipsDict: EIPsDict = {
    */
   7864: {
     minimumHardfork: Hardfork.London,
+  },
+  /**
+   * Description : EIP-7883: ModExp Gas Cost Increase
+   * URL         : hhttps://eips.ethereum.org/EIPS/eip-7883
+   * Status      : Draft
+   */
+  7883: {
+    minimumHardfork: Hardfork.Chainstart,
   },
 }

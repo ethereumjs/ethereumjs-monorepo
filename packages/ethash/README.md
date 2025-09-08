@@ -6,8 +6,10 @@
 [![Code Coverage][ethash-coverage-badge]][ethash-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-| [Ethash](https://github.com/ethereum/wiki/wiki/Ethash) implementation in TypeScript. |
+| [Ethash](https://ethereum.org/en/developers/docs/consensus-mechanisms/pow/mining/mining-algorithms/ethash/) implementation in TypeScript. |
 | ------------------------------------------------------------------------------------ |
+
+> **\[DEPRECATED\]** This library has been deprecated (deprecation of EthereumJS Client + what is Ethash anyway? 😂).
 
 ## Table of Contents
 

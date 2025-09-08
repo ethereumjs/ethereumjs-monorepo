@@ -66,8 +66,8 @@
     "@ethereumjs/testdata": "1.0.0",
     "@types/minimist": "^1.2.5",
     "@types/node-dir": "^0.0.37",
-    "@paulmillr/trusted-setups": "^0.1.2",
-    "micro-eth-signer": "^0.14.0",
+    "@paulmillr/trusted-setups": "^0.2.0",
+    "micro-eth-signer": "^0.15.0",
     "minimist": "^1.2.8",
     "node-dir": "^0.1.17",
     "yargs": "^17.7.2"

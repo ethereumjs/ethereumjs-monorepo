@@ -1,5 +1,5 @@
-FROM node:22-alpine
-RUN apk update && apk add --no-cache bash git g++ make python3 && rm -rf /var/cache/apk/*
+FROM node:22.4-slim
+RUN apt-get update && apt-get install -y git g++ make python3 python3-setuptools && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /ethereumjs-monorepo
 

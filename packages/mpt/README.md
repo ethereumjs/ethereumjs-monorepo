@@ -6,7 +6,7 @@
 [![Code Coverage][mpt-coverage-badge]][mpt-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-| Implementation of the [Modified Merkle Patricia Trie](https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-mpt/) as specified in the [Ethereum Yellow Paper](http://gavwood.com/Paper.pdf) |
+| Implementation of the [Modified Merkle Patricia Trie](https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-trie/) as specified in the [Ethereum Yellow Paper](http://gavwood.com/Paper.pdf) |
 | ---------------------------------------------------------------------------- |
 
 - 🔭 Highly scalable
@@ -44,7 +44,7 @@ npm install @ethereumjs/mpt
 
 ## Getting Started
 
-This class implements the basic [Modified Merkle Patricia Trie](https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-mpt/) in the `Trie` base class, which you can use with the `useKeyHashing` option set to `true` to create a Merkle Patricia Trie which stores values under the `keccak256` hash of its keys (this is the Trie flavor which is used in Ethereum production systems).
+This class implements the basic [Modified Merkle Patricia Trie](https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-trie/) in the `Trie` base class, which you can use with the `useKeyHashing` option set to `true` to create a Merkle Patricia Trie which stores values under the `keccak256` hash of its keys (this is the Trie flavor which is used in Ethereum production systems).
 
 Checkpointing functionality to `Trie` through the methods `checkpoint`, `commit` and `revert`.
 

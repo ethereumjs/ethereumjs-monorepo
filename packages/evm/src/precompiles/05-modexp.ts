@@ -24,14 +24,15 @@ import type { PrecompileInput } from './types.ts'
 
 const BIGINT_4 = BigInt(4)
 const BIGINT_16 = BigInt(16)
-const BIGINT_200 = BigInt(200)
 const BIGINT_480 = BigInt(480)
+const BIGINT_200 = BigInt(200)
+const BIGINT_500 = BigInt(500)
 const BIGINT_1024 = BigInt(1024)
 const BIGINT_3072 = BigInt(3072)
 const BIGINT_199680 = BigInt(199680)
+const BIGINT_2147483647 = BigInt(2147483647)
 
 const maxInt = BigInt(Number.MAX_SAFE_INTEGER)
-const maxSize = BigInt(2147483647) // @ethereumjs/util setLengthRight limitation
 
 function multiplicationComplexity(x: bigint): bigint {
   let fac1
@@ -56,7 +57,7 @@ function multiplicationComplexityEIP2565(x: bigint): bigint {
   return words * words
 }
 
-function getAdjustedExponentLength(data: Uint8Array): bigint {
+function getAdjustedExponentLength(data: Uint8Array, opts: PrecompileInput): bigint {
   let expBytesStart
   try {
     const baseLen = bytesToBigInt(data.subarray(0, 32))
@@ -83,8 +84,8 @@ function getAdjustedExponentLength(data: Uint8Array): bigint {
   if (expLenMinus32OrZero < BIGINT_0) {
     expLenMinus32OrZero = BIGINT_0
   }
-  const eightTimesExpLenMinus32OrZero = expLenMinus32OrZero * BIGINT_8
-  let adjustedExpLen = eightTimesExpLenMinus32OrZero
+  let adjustedExpLen =
+    expLenMinus32OrZero * (opts.common.isActivatedEIP(7883) === true ? BIGINT_16 : BIGINT_8)
   if (bitLen > 0) {
     adjustedExpLen += BigInt(bitLen)
   }
@@ -108,7 +109,7 @@ export function precompile05(opts: PrecompileInput): ExecResult {
   const pName = getPrecompileName('05')
   const data = opts.data.length < 96 ? setLengthRight(opts.data, 96) : opts.data
 
-  let adjustedELen = getAdjustedExponentLength(data)
+  let adjustedELen = getAdjustedExponentLength(data, opts)
   if (adjustedELen < BIGINT_1) {
     adjustedELen = BIGINT_1
   }
@@ -131,19 +132,39 @@ export function precompile05(opts: PrecompileInput): ExecResult {
   const mStart = eEnd
   const mEnd = mStart + mLen
 
-  if (!opts.common.isActivatedEIP(2565)) {
-    gasUsed = (adjustedELen * multiplicationComplexity(maxLen)) / Gquaddivisor
-  } else {
+  if (opts.common.isActivatedEIP(7883)) {
+    const wordsSquared = multiplicationComplexityEIP2565(maxLen)
+    gasUsed = (adjustedELen * (maxLen > 32 ? 2n * wordsSquared : wordsSquared)) / Gquaddivisor
+    if (gasUsed < BIGINT_500) {
+      gasUsed = BIGINT_500
+    }
+  } else if (opts.common.isActivatedEIP(2565)) {
     gasUsed = (adjustedELen * multiplicationComplexityEIP2565(maxLen)) / Gquaddivisor
     if (gasUsed < BIGINT_200) {
       gasUsed = BIGINT_200
     }
+  } else {
+    gasUsed = (adjustedELen * multiplicationComplexity(maxLen)) / Gquaddivisor
   }
   if (!gasLimitCheck(opts, gasUsed, pName)) {
     return OOGResult(opts.gasLimit)
   }
 
-  if (bLen === BIGINT_0 && mLen === BIGINT_0) {
+  // Upper bounds by EIP-7823 (Osaka and upwards) or otherwise
+  // @ethereumjs/util setLengthRight limitation
+  const maxSize = opts.common.isActivatedEIP(7823) ? BIGINT_1024 : BIGINT_2147483647
+
+  if (opts._debug !== undefined) {
+    // Lengths value debugging
+    const total = BigInt(96) + bLen + eLen + mLen
+    const data = BigInt(opts.data.length)
+    let msg = `${pName} length values: maxSize(b/e/m)=${maxSize} bLen=${bLen} eLen=${eLen} mLen=${mLen} 96+b+e+m=${total} `
+    msg += `data=${data} lengthMatch=${total === data}`
+    opts._debug(msg)
+  }
+
+  // Optimization: do not compute for b and m being 0 but return early
+  if (!opts.common.isActivatedEIP(7823) && bLen === BIGINT_0 && mLen === BIGINT_0) {
     return {
       executionGasUsed: gasUsed,
       returnValue: new Uint8Array(),
@@ -152,14 +173,14 @@ export function precompile05(opts: PrecompileInput): ExecResult {
 
   if (bLen > maxSize || eLen > maxSize || mLen > maxSize) {
     if (opts._debug !== undefined) {
-      opts._debug(`${pName} failed: OOG`)
+      opts._debug(`${pName} failed: one or more input values too large`)
     }
     return OOGResult(opts.gasLimit)
   }
 
   if (mEnd > maxInt) {
     if (opts._debug !== undefined) {
-      opts._debug(`${pName} failed: OOG`)
+      opts._debug(`${pName} failed: total input too large`)
     }
     return OOGResult(opts.gasLimit)
   }
@@ -167,6 +188,10 @@ export function precompile05(opts: PrecompileInput): ExecResult {
   const B = bytesToBigInt(setLengthRight(data.subarray(Number(bStart), Number(bEnd)), Number(bLen)))
   const E = bytesToBigInt(setLengthRight(data.subarray(Number(eStart), Number(eEnd)), Number(eLen)))
   const M = bytesToBigInt(setLengthRight(data.subarray(Number(mStart), Number(mEnd)), Number(mLen)))
+
+  if (opts._debug !== undefined) {
+    opts._debug(`${pName} input: B=${B} E=${E} M=${M}`)
+  }
 
   let R
   if (M === BIGINT_0) {

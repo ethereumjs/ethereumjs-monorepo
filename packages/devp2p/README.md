@@ -6,6 +6,10 @@
 [![Coverage Status][devp2p-coverage-badge]][devp2p-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
+> **\[DEPRECATED\]** This library has been deprecated (decreased importance of devp2p as a networking layer for L1 + deprecation of EthereumJS Client).
+
+The EthereumJS Client has been deprecated. If you want to take it over for reasons of purpose, joy or fun or have other ideas please reach out! It will give you a lot of back! 😊
+
 This library bundles different components for lower-level peer-to-peer connection and message exchange:
 
 - Distributed Peer Table (DPT) / v4 Node Discovery / DNS Discovery
