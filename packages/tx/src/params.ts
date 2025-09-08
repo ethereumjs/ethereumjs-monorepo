@@ -70,6 +70,6 @@ export const paramsTx: ParamsDict = {
    * Transaction Gas Limit Cap
    */
   7825: {
-    maxTransactionGasLimit: 30000000, // Maximum gas limit for a single transaction (30M)
+    maxTransactionGasLimit: 16777216, // Maximum gas limit for a single transaction (2^24)
   },
 }
