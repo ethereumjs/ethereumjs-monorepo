@@ -166,7 +166,7 @@ export const hardforksDict: HardforksDict = {
    * Status     : Draft
    */
   osaka: {
-    eips: [7594, 7823, 7883],
+    eips: [7594, 7823, 7825, 7883],
   },
   /**
    * Description: Next feature hardfork after osaka, internally used for verkle testing/implementation (incomplete/experimental)
