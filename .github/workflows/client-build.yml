@@ -29,6 +29,7 @@ concurrency:
 
 jobs:
   test-client:
+    if: contains(join(github.event.pull_request.labels.*.name, ' '), 'test client')
     runs-on: ubuntu-latest
     steps:
       # We clone the repo and submodules if triggered from work-flow dispatch

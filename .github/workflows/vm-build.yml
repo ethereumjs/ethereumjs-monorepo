@@ -37,7 +37,7 @@ jobs:
         run: npm ci     
         working-directory: ${{ github.workspace }}
 
-      - run: npm run test:state:selectedForks
+      - run: npm run test:state:newForks
 
   test-vm-blockchain:
     runs-on: ubuntu-latest

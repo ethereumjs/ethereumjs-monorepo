@@ -471,6 +471,14 @@ export const eipsDict: EIPsDict = {
     requiredEIPs: [2718, 2929, 2930],
   },
   /**
+   * Description : Set upper bounds for MODEXP
+   * URL         : https://eips.ethereum.org/EIPS/eip-7823
+   * Status      : Review
+   */
+  7823: {
+    minimumHardfork: Hardfork.Byzantium,
+  },
+  /**
    * Description : Use historical block hashes saved in state for BLOCKHASH
    * URL         : https://eips.ethereum.org/EIPS/eip-7709
    * Status      : Final
@@ -478,6 +486,15 @@ export const eipsDict: EIPsDict = {
   7709: {
     minimumHardfork: Hardfork.Chainstart,
     requiredEIPs: [2935],
+  },
+  /**
+   * Description : Transaction Gas Limit Cap
+   * URL         : https://eips.ethereum.org/EIPS/eip-7825
+   * Status      : Draft
+   */
+  7825: {
+    minimumHardfork: Hardfork.Osaka,
+    requiredEIPs: [],
   },
   /**
    * Description : Ethereum state using a unified binary tree (experimental)

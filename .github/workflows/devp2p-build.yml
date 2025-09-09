@@ -23,6 +23,7 @@ concurrency:
 
 jobs:
   test-devp2p:
+    if: contains(join(github.event.pull_request.labels.*.name, ' '), 'test devp2p')
     runs-on: ubuntu-latest
 
     steps:

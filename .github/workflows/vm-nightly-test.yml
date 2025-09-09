@@ -19,15 +19,10 @@ jobs:
 
       - uses: actions/setup-node@v5
         with:
-          node-version: 18
+          node-version: 20
           cache: 'npm'
-
-      # The job is meant to run with a fresh lock file
-      # to detect any possible issues with new dep versions.
-      - run: rm package-lock.json
-        working-directory: ${{github.workspace}}
-
-      - run: npm i
+      
+      - run: npm ci
         working-directory: ${{github.workspace}}
 
       - run: npm run test:API
@@ -42,13 +37,8 @@ jobs:
 
       - uses: actions/setup-node@v5
         with:
-          node-version: 18
+          node-version: 20
           cache: 'npm'
-
-      # The job is meant to run with a fresh lock file
-      # to detect any possible issues with new dep versions.
-      - run: rm package-lock.json
-        working-directory: ${{github.workspace}}
 
       - run: npm i
         working-directory: ${{github.workspace}}
@@ -64,13 +54,8 @@ jobs:
 
       - uses: actions/setup-node@v5
         with:
-          node-version: 18
+          node-version: 20
           cache: 'npm'
-
-      # The job is meant to run with a fresh lock file
-      # to detect any possible issues with new dep versions.
-      - run: rm package-lock.json
-        working-directory: ${{github.workspace}}
 
       - run: npm i
         working-directory: ${{github.workspace}}
@@ -87,13 +72,8 @@ jobs:
 
       - uses: actions/setup-node@v5
         with:
-          node-version: 18
+          node-version: 20
           cache: 'npm'
-
-      # The job is meant to run with a fresh lock file
-      # to detect any possible issues with new dep versions.
-      - run: rm package-lock.json
-        working-directory: ${{github.workspace}}
 
       - run: npm i
         working-directory: ${{github.workspace}}

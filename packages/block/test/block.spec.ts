@@ -162,6 +162,17 @@ describe('[Block]: block functions', () => {
     assert.isEmpty(block.getTransactionsValidationErrors())
   }
 
+  it('should test transaction validation - transaction not signed', async () => {
+    const tx = createLegacyTx({
+      gasLimit: 17000000,
+      gasPrice: 7,
+    })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Osaka })
+    assert.throws(() => {
+      createBlock({ transactions: [tx] }, { common })
+    }, 'exceeds the maximum allowed by EIP-7825')
+  })
+
   it('should test transaction validation - invalid tx trie', async () => {
     const blockRlp = hexToBytes(preLondonTestDataBlocks1RLP.blockRLP)
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
