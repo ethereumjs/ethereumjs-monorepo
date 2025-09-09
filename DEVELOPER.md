@@ -9,15 +9,16 @@ It is intended to be both an entrypoint for external contributors as well as a r
 - [Monorepo](#monorepo)
   - [Structure](#structure)
   - [Workflow](#workflow)
+  - [Releases](#releases)
 - [Development Tools](#development-tools)
   - [TypeScript](#typescript)
   - [Linting](#linting)
   - [Spellcheck](#spellcheck)
   - [Testing](#testing)
-  - [Documentation](#documentation)V
+  - [Documentation](#documentation)
 - [Advanced Topics](#advanced-topics)
-  - [E2E Testing](#e2e-testing)
-  - [Cross-Package Development](#cross-package-development)
+  - [Linking to an External Library](#linking-to-an-external-library)
+  - [Shared Dependencies](#shared-dependencies)
 - [Additional Docs](#additional-docs)
   - [VM](#vm)
   - [Client](#client)
@@ -62,13 +63,13 @@ To focus on a single package (e.g., VM):
 3. Run a specific test: `npx vitest test/path/to/test.spec.ts`
 4. Build just that package: `npm run build --workspace=@ethereumjs/vm`
 
-#### Cross-Package Development
+### Releases
 
-All packages include a `typescript` entry in the exports map that allows direct use of TypeScript sources without recompilation:
+#### Overview
 
-- Run tests with TypeScript sources: `npx vitest --config ../../config/vitest.config.mts test/myTest.spec.ts`
-- Run TypeScript scripts: `tsx --conditions=typescript myScript.ts`
-- Set environment variable for bash scripts: `NODE_OPTIONS='--conditions=typescript' (if running Node 22+)`
+Releases are done in sync for all [active packages](./README.md#active-packages) and all libraries are always bumped to a same new version number. Library combinations with matching versions are CI tested and ensured to be compatible with each other.
+
+Most release rounds are done as bugfix releases, including releases of non-finalized EIP versions. Minor releases are done for hardfork finalization and otherwise outstanding selected features. Major release rounds are rarely done and are reserved to bundle structural breaking changes which come along significant changes to the API.
 
 #### Windows Users Note
 
