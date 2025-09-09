@@ -72,7 +72,7 @@
     "@scure/base": "^1.2.4",
     "abstract-level": "^3.0.1",
     "body-parser": "^1.20.3",
-    "chalk": "^5.4.1",
+    "chalk": "^5.6.2",
     "connect": "^3.7.0",
     "cors": "^2.8.5",
     "debug": "^4.4.0",
