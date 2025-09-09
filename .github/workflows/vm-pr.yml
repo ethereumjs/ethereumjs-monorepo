@@ -47,7 +47,7 @@ jobs:
           key: ${{ inputs.dep-cache-key }}
 
       - name: Use Node.js 20
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: 'npm'
@@ -96,7 +96,7 @@ jobs:
           key: ${{ inputs.dep-cache-key }}
 
       - name: Use Node.js 20
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: 'npm'
@@ -156,7 +156,7 @@ jobs:
           key: ${{ inputs.dep-cache-key }}
 
       - name: Use Node.js 20
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: 'npm'
@@ -212,7 +212,7 @@ jobs:
           key: ${{ inputs.dep-cache-key }}
 
       - name: Use Node.js 20
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: 'npm'
@@ -279,7 +279,7 @@ jobs:
           key: ${{ inputs.dep-cache-key }}
 
       - name: Use Node.js 20
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: 'npm'
@@ -316,7 +316,7 @@ jobs:
           key: ${{ inputs.dep-cache-key }}
 
       - name: Use Node.js 20
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: 'npm'
