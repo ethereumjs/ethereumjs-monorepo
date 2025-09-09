@@ -93,9 +93,7 @@ export function hash(tx: LegacyTxInterface): Uint8Array {
   const keccakFunction = tx.common.customCrypto.keccak256 ?? keccak256
 
   if (Object.isFrozen(tx)) {
-    if (!tx.cache.hash) {
-      tx.cache.hash = keccakFunction(tx.serialize())
-    }
+    tx.cache.hash ??= keccakFunction(tx.serialize())
     return tx.cache.hash
   }
 
