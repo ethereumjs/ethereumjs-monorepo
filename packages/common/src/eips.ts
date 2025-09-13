@@ -512,4 +512,13 @@ export const eipsDict: EIPsDict = {
   7883: {
     minimumHardfork: Hardfork.Chainstart,
   },
+  /**
+   * Description : Count leading zeros (CLZ) opcode
+   * URL         : https://eips.ethereum.org/EIPS/eip-7939
+   * Status      : Draft
+   */
+  7939: {
+    minimumHardfork: Hardfork.Osaka,
+    requiredEIPs: [],
+  },
 }
