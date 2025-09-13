@@ -409,4 +409,11 @@ export const paramsEVM: ParamsDict = {
     eofcreateGas: 32000, // Base fee of the EOFCREATE opcode (Same as CREATE/CREATE2)
     returncontractGas: 0, // Base fee of the RETURNCONTRACT opcode
   },
+  /**
+.  * Count leading zeros (CLZ) opcode
+.  */
+  7939: {
+    // gasPrices
+    clzGas: 5, // Base fee of the CLZ opcode (matching MUL as per EIP-7939)
+  },
 }
