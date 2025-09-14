@@ -493,7 +493,7 @@ export const eipsDict: EIPsDict = {
    * Status      : Draft
    */
   7825: {
-    minimumHardfork: Hardfork.Osaka,
+    minimumHardfork: Hardfork.Chainstart,
     requiredEIPs: [],
   },
   /**
@@ -518,7 +518,7 @@ export const eipsDict: EIPsDict = {
    * Status      : Draft
    */
   7939: {
-    minimumHardfork: Hardfork.Osaka,
+    minimumHardfork: Hardfork.Chainstart,
     requiredEIPs: [],
   },
 }
