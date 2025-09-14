@@ -403,8 +403,10 @@ export const handlers: Map<number, OpHandler> = new Map([
         return
       }
 
-      // Convert to binary string and count leading zeros
+      // toString(2) yields a binary string with no leading zeros.
+      // So 256 - binaryStr.length equals the leading-zero count.
       const binaryStr = x.toString(2)
+
       const leadingZeros = 256 - binaryStr.length
       runState.stack.push(BigInt(leadingZeros))
     },
