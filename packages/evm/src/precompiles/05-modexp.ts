@@ -134,7 +134,8 @@ export function precompile05(opts: PrecompileInput): ExecResult {
 
   if (opts.common.isActivatedEIP(7883)) {
     const wordsSquared = multiplicationComplexityEIP2565(maxLen)
-    gasUsed = (adjustedELen * (maxLen > 32 ? 2n * wordsSquared : wordsSquared)) / Gquaddivisor
+    gasUsed =
+      (adjustedELen * (maxLen > BIGINT_32 ? BIGINT_2 * wordsSquared : wordsSquared)) / Gquaddivisor
     if (gasUsed < BIGINT_500) {
       gasUsed = BIGINT_500
     }
