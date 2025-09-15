@@ -16,7 +16,7 @@ jobs:
   test-vm-state:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           submodules: recursive
 
@@ -27,7 +27,7 @@ jobs:
           key: npm-${{ hashFiles('package-lock.json') }}
 
       - name: Use Node.js 20
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: 'npm'
@@ -37,12 +37,12 @@ jobs:
         run: npm ci     
         working-directory: ${{ github.workspace }}
 
-      - run: npm run test:state:selectedForks
+      - run: npm run test:state:newForks
 
   test-vm-blockchain:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           submodules: recursive
 
@@ -53,7 +53,7 @@ jobs:
           key: npm-${{ hashFiles('package-lock.json') }}
 
       - name: Use Node.js 20
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: 'npm'

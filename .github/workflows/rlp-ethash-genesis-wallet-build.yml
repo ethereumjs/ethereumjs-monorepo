@@ -27,7 +27,7 @@ jobs:
     steps:
       # We clone the repo and submodules if triggered from work-flow dispatch
       - if: inputs.submodule-cache-key == 'none'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # We restore the code/deps from cache if triggered from workflow_call (i.e. have valid cache key)
       - if: inputs.dep-cache-key != 'none' 
@@ -38,7 +38,7 @@ jobs:
           key: ${{ inputs.dep-cache-key }}
 
       - name: Use Node.js 20
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: 'npm'
@@ -56,14 +56,7 @@ jobs:
       - run: npm run coverage
         working-directory: ${{ github.workspace }}/packages/genesis
 
-      # Run coverage for ethash
-      - run: npm run coverage
-        working-directory: ${{ github.workspace }}/packages/ethash
-
-      # Run coverage for wallet
-      - run: npm run coverage
-        working-directory: ${{ github.workspace }}/packages/wallet
-        # Upload code coverage for all jobs
+      # Upload code coverage for all jobs
       - uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

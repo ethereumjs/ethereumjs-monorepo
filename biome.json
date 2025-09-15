@@ -12,6 +12,7 @@
       "**/dist/**",
       "**/coverage/**",
       "**/ethereum-tests/**",
+      "**/execution-spec-tests/**",
       "**/config/**",
       "**/4844-interop/**",
       "**/scripts/**",

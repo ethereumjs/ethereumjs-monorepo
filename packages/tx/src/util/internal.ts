@@ -141,7 +141,12 @@ export function sharedConstructor(
   const sB = toBytes(s)
 
   tx.nonce = bytesToBigInt(toBytes(nonce))
-  tx.gasLimit = bytesToBigInt(toBytes(gasLimit))
+  // For activated EIP-7825 (tx gas limit cap) and no gas limit provided set to max
+  if (tx.common.isActivatedEIP(7825) && gasLimit === undefined) {
+    tx.gasLimit = tx.common.param('maxTransactionGasLimit')
+  } else {
+    tx.gasLimit = bytesToBigInt(toBytes(gasLimit))
+  }
   tx.to = toB.length > 0 ? new Address(toB) : undefined
   tx.value = bytesToBigInt(toBytes(value))
   tx.data = toBytes(data === '' ? '0x' : data)
@@ -161,6 +166,16 @@ export function sharedConstructor(
 
   // EIP-2681 limits nonce to 2^64-1 (cannot equal 2^64-1)
   valueOverflowCheck({ nonce: tx.nonce }, 64, true)
+
+  // EIP-7825: Transaction Gas Limit Cap
+  if (tx.common.isActivatedEIP(7825)) {
+    const maxGasLimit = tx.common.param('maxTransactionGasLimit')
+    if (tx.gasLimit > maxGasLimit) {
+      throw EthereumJSErrorWithoutCode(
+        `Transaction gas limit ${tx.gasLimit} exceeds the maximum allowed by EIP-7825 (${maxGasLimit})`,
+      )
+    }
+  }
 
   const createContract = tx.to === undefined || tx.to === null
   const allowUnlimitedInitCodeSize = opts.allowUnlimitedInitCodeSize ?? false

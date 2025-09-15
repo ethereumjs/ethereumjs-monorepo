@@ -9,6 +9,11 @@
 | Ethereum Execution Layer (EL) Client built in TypeScript/JavaScript. |
 | -------------------------------------------------------------------- |
 
+**\[DEPRECATED\]**
+
+The EthereumJS Client has been deprecated. If you want to take it over for reasons of purpose, joy or fun or have other ideas please reach out! It will give you a lot of back! 😊
+
+
 ## Table of Contents
 
 - [Introduction](#introduction)
@@ -16,7 +21,8 @@
 - [General Usage](#general-usage)
 - [Supported Networks](#supported-networks)
 - [Running with a Consensus Layer (CL) Client](#running-with-a-consensus-layer-cl-client)
-- [Testnets](#testnets)
+- [Research & Development](#research--development)
+- [Joining Testnets](#joining-testnets)
 - [Custom Chains](#custom-chains)
 - [Custom Network Mining (Beta)](#custom-network-mining-beta)
 - [API](#api)
@@ -26,24 +32,17 @@
 
 ## Introduction
 
-The EthereumJS Client is an Ethereum Execution Client (similar to [go-ethereum](https://github.com/ethereum/go-ethereum) or [Nethermind](https://github.com/NethermindEth/nethermind)) written in `TypeScript`/`JavaScript`, the non-Smart-Contract language Ethereum dApp developers are most familiar with. It is targeted to be a client for research and development and not meant to be used in production on `mainnet` for the foreseeable future (out of resource and security considerations).
+The EthereumJS Client is an Ethereum Execution Client (similar to [go-ethereum](https://github.com/ethereum/go-ethereum) or [Nethermind](https://github.com/NethermindEth/nethermind)) written in `TypeScript`/`JavaScript`, the non-Smart-Contract language Ethereum dApp developers are most familiar with.
 
-Here are some use cases:
+The client lacks several production features (sophisticated mempool, MEV, ...) and has performance limitations, but is pretty well suited for research and development use cases due to its modular design and we have successfully joined both hardfork as well as future out-reaching research testnets with it (e.g. Verkle, PeerDAS,...) to both contribute to testing and EIP specification as well as "harden" our Node.js/browser libraries like the EVM along the way.
 
-- Sync the main Ethereum networks (`mainnet` (experimental), `sepolia`, `holesky`, ...)
-- Set up your own local development networks (PoS with consensus client / PoA Clique / PoW with CPU miner)
-- Run a network with your own custom [EthereumJS VM](../vm)
-- Analyze what's in the Ethereum `mainnet` [transaction pool (mempool)](./src/sync/txpool.ts)
-
-The client has an extremely modular design by building upon central other libraries in the EthereumJS monorepo ([VM](../vm), [Merkle Patricia Tree](../trie), [Blockchain](../blockchain), [Block](../block), [tx](../tx), [devp2p](../devp2p) and [Common](../common)) and is therefore extremely well suited for a deep dive into Ethereum protocol development.
-
-We invite you to explore and would be delighted if you give us feedback on your journey! 🙂 ❤️
+If you are familiar with JavaScript/TypeScript the client is also generally a gentle entrypoint into protocol development! 🙂 ❤️
 
 ## Installation
 
 To be able to run the EthereumJS client, you need a working [Node.js](https://nodejs.org/en/) installation, see e.g. these [docs](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) from the npm documentation for combined instructions on how to install Node.js and eventually npm.
 
-We currently recommend to run the client with a recent Node.js version `18` installation.
+We currently recommend to run the client with a recent Node.js version `22` installation.
 
 ### NPM Installation
 
@@ -105,10 +104,10 @@ And pass in CLI parameters like:
 
 ```shell
 # npm installation
-ethereumjs --network=holesky
+ethereumjs --network=sepolia
 
 # Source installation
-npm run client:start -- --network=holesky
+npm run client:start -- --network=sepolia
 ```
 
 To see a help page with the full list of client options available run:
@@ -125,17 +124,18 @@ The EthereumJS client is tightly integrated with the EthereumJS [Common](../comm
 
 The main supported networks are:
 
-- `mainnet` (experimental)
-- `sepolia` (`v0.3.0`+)
-- `holesky` (`v0.9.0`+)
+- `mainnet` (limited)
+- `sepolia`
+- `hoodi`
+- `kaustinen6` (Verkle testnet)
 
 Use the CLI `--network` option to switch the network:
 
 ```shell
-ethereumjs --network=holesky
+ethereumjs --network=hoodi
 ```
 
-The client currently supports `full` sync being set as a default and has experimental support for `light` sync.
+The client currently supports `full` sync being set as a default.
 
 ## Running with a Consensus Layer (CL) Client
 
@@ -200,27 +200,106 @@ For a testnet chain, you may skip keystore generation and directly provide lodes
 
 (Modify the mnemonic and range indices as per your validator configuration).
 
-#### Running EthereumJS/Lodestar on Holesky
+#### Running EthereumJS/Lodestar on Hoodi
 
-A suited network to test the EthereumJS/Lodestar client combination is the Holesky network, being still somewhat lightweight but nevertheless being actively used with a significant transaction load.
-
-To start the EthereumJS client with JSON RPC and Engine API endpoints exposed:
+A suited network to test the EthereumJS/Lodestar client combination is the Hoodi network. To start the EthereumJS client with JSON RPC and Engine API endpoints exposed:
 
 ```shell
-ethereumjs --network=holesky --rpc --rpcEngine
+ethereumjs --network=hoodi --rpc --rpcEngine
 ```
 
 Then start the Lodestar client with:
 
 ```shell
-./lodestar beacon --network=holesky --jwt-secret=[PATH-TO-JWT-SECRET-FROM-ETHEREUMJS-CLIENT]
+./lodestar beacon --network=hoodi --jwt-secret=[PATH-TO-JWT-SECRET-FROM-ETHEREUMJS-CLIENT]
 ```
 
-## Experimental Testnets
+## Research & Development
 
-The EthereumJS client supports ongoing protocol development efforts, allowing developers and testers to participate in various testnets using the EthereumJS client.
+### Verkle/Stateless
 
-### Verkle testnet
+We are active in verkle/stateless research for some time, the [Stateless Implementers Calls](https://github.com/ethereum/pm/issues?q=is%3Aissue%20state%3Aopen%20label%3AStateless) serve as a good entrypoint to grasp what is going on and have some references to current work and testnets.
+
+The [verkle-devnets](https://github.com/ethpandaops/verkle-devnets) repository hosts configuration for joining the ongoing testnet efforts.
+
+In the monorepo we have experimental [verkle](./../verkle/) and [binary](./../binarytree/) tree implementations and have integrated both into our [state manager](./../statemanager/) (abstraction of Ethereum state access). All verkle/stateless code gets merged into the `master` branch. In the client there are dedicated flags for stateless execution, see `--help` flag for reference.
+
+### PeerDAS
+
+PeerDAS is coming to Ethereum along with the [Fusaka](https://eips.ethereum.org/EIPS/eip-7607) hardfork and there are dedicated [BreakOut Room Calls](https://github.com/ethereum/pm/issues?q=is%3Aissue%20state%3Aclosed%20label%3APeerDAS) for PeerDAS.
+
+Our PeerDAS work from [PR #3976](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3976) has been merged into `master` in May 2025. Testnet configuration can be found in the [peerdas-devnets](https://github.com/ethpandaops/peerdas-devnets) repository, newer testnets will likely be set up in a Fusaka context though.
+
+### Protocol/Tx SSZ-ification
+
+Gajinder has led a vast effort to implement and prototype a proposed "SSZ-ification" of large parts L1 protocol stack - being centered around EIPs like [EIP-7495 - SSZ Stable Container](https://eips.ethereum.org/EIPS/eip-7495) or [EIP-6404 - SSZ Transactions](https://eips.ethereum.org/EIPS/eip-6404), the associated PR [#3849](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3849) provides an extensive overview of the wide range of EIPs and the integration work being done.
+
+There is an [ssz-devnet-0](https://ssz-devnet-0.ethpandaops.io/) up and running where the EthereumJS client is actively joining and providin bootnode functionality.
+
+## Joining Testnets
+
+We use the EthereumJS client to connect to research networks of various kinds. It is possible to connect either with a manual setup or using Kurtosis/Docker together with the predefined configurations and tool integration the [EthPandaOps](https://ethpandaops.io/) team from the Ethereum Foundation is providing.
+
+### Kurtosis/Docker Testnet Setup
+
+The [ethereum-package](https://github.com/ethpandaops/ethereum-package) is a Kurtosis package dedicated to deploy Ethereum testnets and abstracts a lot of the setup and configuration complexity away. We maintain a dedicated [EthereumJS launcher](https://github.com/ethpandaops/ethereum-package/tree/main/src/el/ethereumjs) which provides a hook into the system setup.
+
+#### Getting Started
+
+To get things started, clone the repo and follow the [quickstart guide](https://github.com/ethpandaops/ethereum-package?tab=readme-ov-file#quickstart) provided. You need to install both Kurtosis and Docker.
+
+Build our client Docker image as described [here](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client#docker).
+
+#### Network Setup
+
+The `network_params.yaml` (from the panda package) is the entrypoint for testnet configuration. The following file creates a local devnet with an EthereumJS EL and a Lighthouse CL client, mentioning some useful extra "features":
+
+```yml
+participants:
+# EL
+  - el_type: ethereumjs
+    el_image: ethereumjs-local:latest
+    el_log_level: "debug" # optional log level adjustment
+    el_extra_params: [ '--rpcDebug=eth' ] # optional client params
+    el_extra_env_vars: {
+      NODE_OPTIONS: '--inspect=0.0.0.0' # use this for external Chrome Dev tools debugging
+    }
+# CL
+    cl_type: lighthouse #default
+    cl_extra_params: ["--target-peers=0"] #bug in lighthouse, fix Dora
+network_params:
+  gas_limit: 60000000
+  genesis_gaslimit: 60000000
+
+additional_services:
+  - dora # optional block explorer
+  - spamoor # optional network spammer
+docker_cache_params:
+  enabled: true
+  url: "docker.ethquokkaops.io"
+snooper_enabled: true # optional RPC proxy for debugging
+
+port_publisher:
+  el:
+    enabled: true # use this for external Chrome Dev tools debugging
+```
+
+#### Service Management
+
+The management of the services - so e.g. to start and stop the EthereumJS client or other services - is now done mostly through Kurtosis or docker.
+
+Some useful commands to start with are (assuming a Kurtosis "enclave" called "hidden-crater"):
+
+- `kurtosis enclave inspect hidden-crater` should give you the services running.
+- `kurtosis service start/stop hidden-crater el-1-ethereumjs-lighthouse` (start/stop our client)
+
+Logs/shell can be directly accessed through the docker UI for containers, also available through Kurtosis though:
+
+- `kurtosis service logs -f spooky-sea el-1-ethereumjs-lighthouse`
+
+### Manual Testnet Setup (Verkle Example)
+
+This is an example how to using the EthereumJS client to manually join a research network.
 
 We currently support the Kaustinen7 testnet, both with stateless and stateful execution. We will be proactively supporting upcoming testnets as they launch. 
 
@@ -547,9 +626,7 @@ To update the structure diagram files in the root folder open the `client.drawio
 
 ## EthereumJS
 
-See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices.
-
-If you want to join for work or do improvements on the libraries have a look at our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html).
+The `EthereumJS` GitHub organization and its repositories are managed by the Ethereum Foundation JavaScript team, see our [website](https://ethereumjs.github.io/) for a team introduction. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
 
 [client-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/client.svg
 [client-npm-link]: https://www.npmjs.com/package/@ethereumjs/client

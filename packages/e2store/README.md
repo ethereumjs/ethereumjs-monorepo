@@ -9,6 +9,8 @@
 | A collection of utility functions for Ethereum data storage formats. |
 | ------------------------------------------------------------------- |
 
+> **\[CONSIDERED FOR DEPRECATION\]** This library is being considered for deprecation. If you find it useful, please let us know!
+
 `@ethereumjs/e2store` provides utilities for working with Ethereum data storage formats, including E2HS, Era1, and Era files. These formats are commonly used for storing historical blockchain data, beacon states, and block data in an efficient, provable, and standardized way.
 
 ## Table of Contents

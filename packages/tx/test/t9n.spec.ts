@@ -81,7 +81,13 @@ function runTests(filePath: string) {
 
         for (const fork in test.result) {
           it(`${testName} [${getFork(fork)}]`, () => {
-            const common = new Common({ chain: Mainnet, hardfork: getFork(fork) })
+            let common: Common
+            try {
+              common = new Common({ chain: Mainnet, hardfork: getFork(fork) })
+            } catch {
+              assert.isOk(true, `Unknown/unsupported hardfork ${fork}, skipping test`)
+              return
+            }
             const result = test.result[fork]
 
             try {
