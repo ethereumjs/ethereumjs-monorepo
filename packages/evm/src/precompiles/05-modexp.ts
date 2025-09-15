@@ -52,11 +52,6 @@ function multiplicationComplexity(x: bigint): bigint {
   }
 }
 
-function multiplicationComplexityEIP2565(x: bigint): bigint {
-  const words = (x + BIGINT_7) / BIGINT_8
-  return words * words
-}
-
 function getAdjustedExponentLength(data: Uint8Array, opts: PrecompileInput): bigint {
   let expBytesStart
   try {
@@ -133,16 +128,16 @@ export function precompile05(opts: PrecompileInput): ExecResult {
   const mEnd = mStart + mLen
 
   if (opts.common.isActivatedEIP(2565)) {
-    const wordsSquared = multiplicationComplexityEIP2565(maxLen)
+    const words = (maxLen + BIGINT_7) / BIGINT_8
     if (opts.common.isActivatedEIP(7883)) {
       gasUsed =
-        (adjustedELen * (maxLen > BIGINT_32 ? BIGINT_2 * wordsSquared : wordsSquared)) /
+        (adjustedELen * (maxLen > BIGINT_32 ? BIGINT_2 * words * words : words * words)) /
         Gquaddivisor
       if (gasUsed < BIGINT_500) {
         gasUsed = BIGINT_500
       }
     } else {
-      gasUsed = (adjustedELen * wordsSquared) / Gquaddivisor
+      gasUsed = (adjustedELen * words * words) / Gquaddivisor
       if (gasUsed < BIGINT_200) {
         gasUsed = BIGINT_200
       }
