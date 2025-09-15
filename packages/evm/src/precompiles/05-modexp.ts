@@ -130,9 +130,7 @@ export function precompile05(opts: PrecompileInput): ExecResult {
   if (opts.common.isActivatedEIP(2565)) {
     const words = (maxLen + BIGINT_7) / BIGINT_8
     if (opts.common.isActivatedEIP(7883)) {
-      gasUsed =
-        (adjustedELen * (maxLen > BIGINT_32 ? BIGINT_2 * words * words : words * words)) /
-        Gquaddivisor
+      gasUsed = adjustedELen * (maxLen > BIGINT_32 ? BIGINT_2 * words * words : BIGINT_16)
       if (gasUsed < BIGINT_500) {
         gasUsed = BIGINT_500
       }
