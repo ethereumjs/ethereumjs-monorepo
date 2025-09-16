@@ -235,6 +235,7 @@ export interface EVMOpts {
    * - [EIP-7692](https://eips.ethereum.org/EIPS/eip-7692) - EVM Object Format (EOF) v1 (`experimental`)
    * - [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) - Set EOA account code (Prague)
    * - [EIP-7709](https://eips.ethereum.org/EIPS/eip-7709) - Read BLOCKHASH from storage and update cost (Verkle)
+   * - [EIP-7951](https://eips.ethereum.org/EIPS/eip-7951) - Precompile for secp256r1 Curve Support
    *
    * *Annotations:*
    *
