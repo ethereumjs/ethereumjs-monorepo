@@ -14,11 +14,10 @@ import {
   setLengthRight,
 } from '@ethereumjs/util'
 
-import { OOGResult } from '../evm.ts'
-
 import { getPrecompileName } from './index.ts'
 import { gasLimitCheck } from './util.ts'
 
+import { OOGResult } from '../evm.ts'
 import type { ExecResult } from '../types.ts'
 import type { PrecompileInput } from './types.ts'
 
@@ -33,7 +32,6 @@ const BIGINT_199680 = BigInt(199680)
 const BIGINT_2147483647 = BigInt(2147483647)
 
 const maxInt = BigInt(Number.MAX_SAFE_INTEGER)
-
 function multiplicationComplexity(x: bigint): bigint {
   let fac1
   let fac2
