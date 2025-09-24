@@ -199,7 +199,7 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
       }
     }
 
-    // "Old" limit (superseeded by EIP-7594 starting with Osaka)
+    // "Old" limit (superseded by EIP-7594 starting with Osaka)
     const limitBlobsPerTx =
       this.common.param('maxBlobGasPerBlock') / this.common.param('blobGasPerBlob')
     if (this.blobVersionedHashes.length > limitBlobsPerTx) {
