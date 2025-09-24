@@ -28,6 +28,7 @@ export interface GethGenesisConfig {
   shanghaiTime?: number
   cancunTime?: number
   pragueTime?: number
+  osakaTime?: number
   verkleTime?: number
   terminalTotalDifficulty?: number
   terminalTotalDifficultyPassed?: boolean
