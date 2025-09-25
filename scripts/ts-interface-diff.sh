@@ -31,7 +31,7 @@ A_FULL_PATH=`realpath $A_PATH`
 B_FULL_PATH=`realpath $B_PATH`
 
 # Downloads latest published package from npm. Stores tarball file name in variable TGZ
-TGZ=`npm pack $PACKAGE_NAME`
+TGZ=`pnpm pack $PACKAGE_NAME`
 
 # unpacks to $CACHE_PATH
 tar -xzf $TGZ --strip-components=1 -C $CACHE_PATH
