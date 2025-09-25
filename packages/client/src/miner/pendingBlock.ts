@@ -127,7 +127,7 @@ export class PendingBlock {
       toType(parentBeaconBlockRoot!, TypeOutput.Uint8Array) ?? new Uint8Array(32)
     const coinbaseBuf = toType(coinbase ?? new Uint8Array(20), TypeOutput.Uint8Array)
 
-    let withdrawalsBuf = new Uint8Array()
+    let withdrawalsBuf: Uint8Array = new Uint8Array()
 
     if (withdrawals !== undefined && withdrawals !== null) {
       const withdrawalsBufTemp: Uint8Array[] = []

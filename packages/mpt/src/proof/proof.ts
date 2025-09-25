@@ -60,7 +60,7 @@ export async function updateMPTFromMerkleProof(
 ) {
   trie['DEBUG'] && trie['debug'](`Saving (${proof.length}) proof nodes in DB`, ['from_proof'])
   const opStack = proof.map((nodeValue) => {
-    let key = Uint8Array.from(trie['hash'](nodeValue)) as Uint8Array<ArrayBuffer>
+    let key: Uint8Array = Uint8Array.from(trie['hash'](nodeValue))
     key = trie['_opts'].keyPrefix ? concatBytes(trie['_opts'].keyPrefix, key) : key
     return {
       type: 'put',

@@ -32,7 +32,7 @@ export function parseMultiaddrs(input: MultiaddrLike): Multiaddr[] {
     input = input.split(',')
   }
   try {
-    return input.map((s: string) => {
+    return (input as string[]).map((s: string) => {
       isMultiaddr
       if (isMultiaddr(s)) {
         return s

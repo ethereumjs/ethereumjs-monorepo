@@ -153,6 +153,7 @@ export class EVM implements EVMInterface {
     Hardfork.Prague,
     Hardfork.Osaka,
     Hardfork.Verkle,
+    // Bpo hardforks are experimental and may not be available in all builds
     Hardfork.Bpo1,
     Hardfork.Bpo2,
     Hardfork.Bpo3,

@@ -141,7 +141,7 @@ const accumulateDepositsRequest = (
   depositContractAddress: string,
   txResults: RunTxResult[],
 ): CLRequest<typeof CLRequestType.Deposit> => {
-  let resultsBytes = new Uint8Array(0)
+  let resultsBytes: Uint8Array = new Uint8Array(0)
   const depositContractAddressLowerCase = depositContractAddress.toLowerCase()
   for (const [_, tx] of txResults.entries()) {
     for (let i = 0; i < tx.receipt.logs.length; i++) {
