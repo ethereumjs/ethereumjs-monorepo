@@ -1,6 +1,5 @@
 name: CI
 on:
-  push:
   pull_request:
 
 jobs:
@@ -12,20 +11,19 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: '20'
-          cache: 'pnpm'          # sets up pnpm store cache ONLY
+          cache: 'pnpm'
 
-      # INSTALL PNPM (puts pnpm on PATH)
+      # This is what installs pnpm and adds it to PATH
       - uses: pnpm/action-setup@v4
         with:
-          # If your root package.json has: { "packageManager": "pnpm@9.12.0" }
-          # you can use 'auto' here. Otherwise pick a version.
-          version: '9'
+          version: auto
           run_install: false
 
-      - name: Check pnpm is available
+      - name: Verify pnpm
         run: |
+          set -eux
           pnpm -v
-          which pnpm
+          command -v pnpm
 
       - name: Install deps
         run: pnpm install --frozen-lockfile
