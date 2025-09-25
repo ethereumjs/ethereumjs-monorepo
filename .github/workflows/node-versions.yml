@@ -20,63 +20,68 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'npm'
+          cache: 'pnpm'
 
-      - run: npm ci
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.5.2
+          run_install: false
+
+      - run: pnpm install --frozen-lockfile
 
       - name: Test Block
-        run: npm run test:node
+        run: pnpm run test:node
         working-directory: packages/block
 
       - name: Test Blockchain
-        run: npm run test:node
+        run: pnpm run test:node
         working-directory: packages/blockchain
 
       # Switch client to unit tests only due to `async_hooks` dependency build error in browser tests: 2022-06-15
       - name: Test Client
-        run: npm run test
+        run: pnpm run test
         working-directory: packages/client
 
       - name: Test Devp2p
-        run: npm run test
+        run: pnpm run test
         working-directory: packages/devp2p
 
       - name: Test Common
-        run: npm run test:node
+        run: pnpm run test:node
         working-directory: packages/common
 
       - name: Test Ethash
-        run: npm run test
+        run: pnpm run test
         working-directory: packages/ethash
 
       - name: Test EVM
-        run: npm run test:node
+        run: pnpm run test:node
         working-directory: packages/evm
 
       - name: Test MPT
-        run: npm run test:node
+        run: pnpm run test:node
         working-directory: packages/mpt
 
       - name: Test Tx
-        run: npm run test:node
+        run: pnpm run test:node
         working-directory: packages/tx
 
       - name: Test Util
-        run: npm run test:node
+        run: pnpm run test:node
         working-directory: packages/util
 
       - name: Test StateManager
-        run: npm run test:node
+        run: pnpm run test:node
         working-directory: packages/statemanager
 
       - name: Test VM
-        run: npm run test:API
+        run: pnpm run test:API
         working-directory: packages/vm
 
       - name: Test RLP
-        run: npm run test:node
+        run: pnpm run test:node
         working-directory: packages/rlp
 
       - name: Test Wallet
-        run: npm run test:node
+        run: pnpm run test:node
         working-directory: packages/wallet

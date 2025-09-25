@@ -27,7 +27,9 @@ import {
   hexToBytes,
 } from '@ethereumjs/util'
 import { createVM, runBlock, runTx } from '@ethereumjs/vm'
+// @ts-ignore
 import * as mcl from 'mcl-wasm'
+// @ts-ignore
 import { initRustBN } from 'rustbn-wasm'
 
 import { Event } from '../types.ts'

@@ -1,3 +1,4 @@
+// @ts-ignore
 import { isProbablyPrime } from 'bigint-crypto-utils'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 

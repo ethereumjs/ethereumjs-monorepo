@@ -1,7 +1,9 @@
 import { URL } from 'url'
 import { EthereumJSErrorWithoutCode, hexToBytes } from '@ethereumjs/util'
+// @ts-ignore
 import { isMultiaddr, multiaddr } from '@multiformats/multiaddr'
 
+// @ts-ignore
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { MultiaddrLike } from '../types.ts'
 
@@ -30,7 +32,7 @@ export function parseMultiaddrs(input: MultiaddrLike): Multiaddr[] {
     input = input.split(',')
   }
   try {
-    return input.map((s) => {
+    return input.map((s: string) => {
       isMultiaddr
       if (isMultiaddr(s)) {
         return s

@@ -17,25 +17,24 @@ if [ -z "$GITHUB_SHA" ]; then
   exit 1
 fi
 
-npm install --no-save verdaccio
-
 # Launch npm proxy registry
-verdaccio --config verdaccio.yml &
+pnpm dlx verdaccio --config verdaccio.yml &
 
-npx wait-port 4873
+pnpm dlx wait-port 4873
 
-# `npm add user`
+# Register a user in the temporary registry
 TOKEN=$(curl -XPUT \
   -H "Content-type: application/json" \
   -d '{ "name": "test", "password": "test" }' \
   'http://localhost:4873/-/user/org.couchdb.user:test')
 
-npm set registry "http://localhost:4873"
-npm set //localhost:4873/:_authToken $TOKEN
+pnpm config set registry "http://localhost:4873"
+pnpm config set //localhost:4873/:_authToken $TOKEN
 
-# npm version
-npm version minor \
-  --workspaces \
+# pnpm version
+pnpm version minor \
+  --recursive \
+  --workspace-root \
   --no-git-tag-version \
   --force
 
@@ -47,7 +46,6 @@ git config user.name "someone"
 cp /dev/null config/cli/prepublish.sh
 
 # Publish to e2e tag
-npm publish \
+pnpm -r publish \
   --dist-tag e2e \
-  --registry http://localhost:4873 \
-  --workspaces
+  --registry http://localhost:4873

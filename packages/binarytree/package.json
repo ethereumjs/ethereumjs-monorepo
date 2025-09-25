@@ -41,14 +41,14 @@
     "coverage": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.mts",
     "coverage:istanbul": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.istanbul.mts",
     "docs:build": "typedoc --options typedoc.mjs",
-    "lint": "npm run biome && eslint  --config ./eslint.config.mjs .",
-    "lint:fix": "npm run biome:fix && eslint  --fix --config ./eslint.config.mjs .",
+    "lint": "pnpm run biome && eslint  --config ./eslint.config.mjs .",
+    "lint:fix": "pnpm run biome:fix && eslint  --fix --config ./eslint.config.mjs .",
     "prepublishOnly": "../../config/cli/prepublish.sh",
-    "sc": "npm run spellcheck",
-    "spellcheck": "npm run spellcheck:ts && npm run spellcheck:md",
+    "sc": "pnpm run spellcheck",
+    "spellcheck": "pnpm run spellcheck:ts && pnpm run spellcheck:md",
     "spellcheck:ts": "npx cspell --gitignore -c ../../config/cspell-ts.json \"./**/*.ts\" --cache --show-suggestions --show-context",
     "spellcheck:md": "npx cspell --gitignore -c ../../config/cspell-md.json \"**.md\" --cache --show-suggestions --show-context",
-    "test": "npm run test:node",
+    "test": "pnpm run test:node",
     "test:node": "npx vitest run -c ../../config/vitest.config.mts",
     "test:browser": "npx vitest run --config=../../config/vitest.config.browser.mts",
     "tsc": "../../config/cli/ts-compile.sh"
@@ -60,6 +60,9 @@
     "debug": "^4.4.0",
     "ethereum-cryptography": "^3.2.0",
     "lru-cache": "11.0.2"
+  },
+  "devDependencies": {
+    "@types/debug": "^4.1.12"
   },
   "engines": {
     "node": ">=18"

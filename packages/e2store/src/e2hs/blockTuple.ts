@@ -36,7 +36,7 @@ const MAX_HEADER_PROOF_LENGTH = 1024
 const sszHeader = bytelist(MAX_HEADER_LENGTH)
 const sszProof = bytelist(MAX_HEADER_PROOF_LENGTH)
 
-export const sszHeaderWithProof = container({
+export const sszHeaderWithProof: any = container({
   header: sszHeader,
   proof: sszProof,
 })

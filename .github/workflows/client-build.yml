@@ -47,14 +47,19 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 20
-          cache: 'npm'
+          cache: 'pnpm'
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.5.2
+          run_install: false
 
       - name: Install Dependencies (if not restored from cache)
         if: steps.dep-cache.outputs.cache-hit != 'true'
-        run: npm ci     
+        run: pnpm install --frozen-lockfile
         working-directory: ${{ github.workspace }}
 
-      - run: npm run coverage
+      - run: pnpm run coverage
       - uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -65,7 +70,7 @@ jobs:
         with:
           timeout_minutes: 10
           max_attempts: 3
-          command: cd ${{github.workspace}}/packages/client && npm run test:integration
+          command: cd ${{github.workspace}}/packages/client && pnpm run test:integration
 
   test-client-cli:
     runs-on: ubuntu-latest
@@ -87,11 +92,16 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 20
-          cache: 'npm'
+          cache: 'pnpm'
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.5.2
+          run_install: false
 
       - name: Install Dependencies (if not restored from cache)
         if: steps.dep-cache.outputs.cache-hit != 'true'
-        run: npm ci     
+        run: pnpm install --frozen-lockfile
         working-directory: ${{ github.workspace }}
 
       - run: cd ${{github.workspace}}/packages/client && npx vitest run test/cli/cli

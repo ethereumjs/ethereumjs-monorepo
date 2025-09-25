@@ -26,7 +26,7 @@ echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 echo "Installing updated ethereumjs components via virtual registry"
 echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 
-npm run e2e:inject
+pnpm run e2e:inject
 
 cd hardhat
 rm yarn.lock

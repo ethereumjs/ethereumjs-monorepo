@@ -40,7 +40,9 @@ export class RPCStateManager implements StateManagerInterface {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
     this.DEBUG =
-      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+      typeof (globalThis as any).window === 'undefined'
+        ? (process?.env?.DEBUG?.includes('ethjs') ?? false)
+        : false
 
     this._debug = debugDefault('statemanager:rpc')
     if (typeof opts.provider === 'string' && opts.provider.startsWith('http')) {

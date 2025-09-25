@@ -112,7 +112,9 @@ export class Blockchain implements BlockchainInterface {
    */
   constructor(opts: BlockchainOptions = {}) {
     this.DEBUG =
-      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+      typeof (globalThis as any).window === 'undefined'
+        ? (process?.env?.DEBUG?.includes('ethjs') ?? false)
+        : false
     this._debug = debugDefault('blockchain:#')
 
     if (opts.common) {

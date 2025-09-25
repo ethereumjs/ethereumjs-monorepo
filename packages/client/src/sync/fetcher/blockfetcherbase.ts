@@ -53,7 +53,9 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
     super(options)
 
     this.DEBUG =
-      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+      typeof (globalThis as any).window === 'undefined'
+        ? (process?.env?.DEBUG?.includes('ethjs') ?? false)
+        : false
 
     this.chain = options.chain
     this.first = options.first

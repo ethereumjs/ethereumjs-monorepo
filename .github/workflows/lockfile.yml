@@ -18,13 +18,20 @@ jobs:
         with:
           filters: |
             src:
-              - 'package-lock.json'
+              - 'pnpm-lock.yaml'
         
       - name: Use Node.js 18
         uses: actions/setup-node@v5
         with:
           node-version: 18
-          cache: 'npm'
+          cache: 'pnpm'
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.5.2
+          run_install: false
 
       - if: steps.changes.outputs.src == 'true'
-        run: npm install lockfile-lint-api && node scripts/lockfile-lint.js
+        run: |
+          pnpm install --filter . --frozen-lockfile
+          node scripts/lockfile-lint.js

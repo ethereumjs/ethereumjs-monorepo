@@ -37,30 +37,30 @@
     "docs:build": "typedoc --options typedoc.mjs",
     "examples": "tsx ../../scripts/examples-runner.ts -- blockchain",
     "examples:build": "npx embedme README.md",
-    "lint": "npm run biome && eslint --config ./eslint.config.mjs .",
-    "lint:fix": "npm run biome:fix && eslint --fix --config ./eslint.config.mjs .",
+    "lint": "pnpm run biome && eslint --config ./eslint.config.mjs .",
+    "lint:fix": "pnpm run biome:fix && eslint --fix --config ./eslint.config.mjs .",
     "prepublishOnly": "../../config/cli/prepublish.sh",
-    "sc": "npm run spellcheck",
-    "spellcheck": "npm run spellcheck:ts && npm run spellcheck:md",
+    "sc": "pnpm run spellcheck",
+    "spellcheck": "pnpm run spellcheck:ts && pnpm run spellcheck:md",
     "spellcheck:ts": "npx cspell --gitignore -c ../../config/cspell-ts.json \"./**/*.ts\" --cache --show-suggestions --show-context",
     "spellcheck:md": "npx cspell --gitignore -c ../../config/cspell-md.json \"**.md\" --cache --show-suggestions --show-context",
-    "test": "npm run test:node && npm run test:browser",
+    "test": "pnpm run test:node && pnpm run test:browser",
     "test:browser": "npx vitest run --config=./vitest.config.browser.mts",
     "test:node": "npx vitest run -c ../../config/vitest.config.mts",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/block": "^10.0.0",
-    "@ethereumjs/common": "^10.0.0",
-    "@ethereumjs/mpt": "^10.0.0",
-    "@ethereumjs/rlp": "^10.0.0",
-    "@ethereumjs/util": "^10.0.0",
+    "@ethereumjs/block": "workspace:^10.0.0",
+    "@ethereumjs/common": "workspace:^10.0.0",
+    "@ethereumjs/mpt": "workspace:^10.0.0",
+    "@ethereumjs/rlp": "workspace:^10.0.0",
+    "@ethereumjs/util": "workspace:^10.0.0",
     "debug": "^4.4.0",
     "eventemitter3": "^5.0.1",
     "lru-cache": "11.0.2"
   },
   "devDependencies": {
-    "@ethereumjs/ethash": "^10.0.0"
+    "@ethereumjs/ethash": "workspace:^10.0.0"
   },
   "engines": {
     "node": ">=18"

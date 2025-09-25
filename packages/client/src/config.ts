@@ -10,6 +10,7 @@ import { isBrowser, short } from './util/index.ts'
 
 import type { BlockHeader } from '@ethereumjs/block'
 import type { VM, VMProfilerOpts } from '@ethereumjs/vm'
+// @ts-ignore
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Logger } from './logging.ts'
 import type { EventParams, MultiaddrLike, PrometheusMetrics } from './types.ts'

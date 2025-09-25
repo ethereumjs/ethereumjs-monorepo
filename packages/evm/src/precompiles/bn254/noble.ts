@@ -124,7 +124,7 @@ export class NobleBN254 implements EVMBN254Interface {
     const p1 = toG1Point(input.slice(0, G1_POINT_BYTE_LENGTH))
     const p2 = toG1Point(input.slice(G1_POINT_BYTE_LENGTH, G1_POINT_BYTE_LENGTH * 2))
 
-    const result = fromG1Point(p1.add(p2))
+    const result = fromG1Point(p1.add(p2) as any)
     return result
   }
 
@@ -136,7 +136,7 @@ export class NobleBN254 implements EVMBN254Interface {
       return G1_INFINITY_POINT_BYTES
     }
 
-    const result = fromG1Point(p1.multiply(scalar))
+    const result = fromG1Point(p1.multiply(scalar) as any)
     return result
   }
   pairing(input: Uint8Array): Uint8Array {

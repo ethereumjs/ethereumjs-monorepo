@@ -64,7 +64,7 @@ If you're new to the EthereumJS monorepo, this section will help you get up and 
 ### Prerequisites
 
 - Node.js (v18 or higher)
-- npm (v8 or higher)
+- pnpm (v8 or higher)
 - Git
 
 ### Initial Setup
@@ -81,7 +81,7 @@ git submodule update
 2. **Install dependencies**:
 
 ```sh
-npm install
+pnpm install
 ```
 
 ### Development

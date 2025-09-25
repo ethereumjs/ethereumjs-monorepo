@@ -36,11 +36,16 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 22
-          cache: 'npm'
+          cache: 'pnpm'
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.5.2
+          run_install: false
 
       - name: Install Dependencies (if not restored from cache)
         if: steps.dep-cache.outputs.cache-hit != 'true'
-        run: npm i --ignore-scripts
+        run: pnpm install --frozen-lockfile --ignore-scripts
         working-directory: ${{ github.workspace }}
 
       - run: node --conditions=typescript --experimental-strip-types scripts/inlineClient.ts

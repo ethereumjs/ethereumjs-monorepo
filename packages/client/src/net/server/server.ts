@@ -1,5 +1,6 @@
 import { parseKey, parseMultiaddrs } from '../../util/parse.ts'
 
+// @ts-ignore
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type { Config } from '../../config.ts'
 import type { DnsNetwork, KeyLike, MultiaddrLike } from '../../types.ts'

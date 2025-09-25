@@ -50,11 +50,16 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 20
-          cache: 'npm'
+          cache: 'pnpm'
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.5.2
+          run_install: false
 
       - name: Install Dependencies (if not restored from cache)
         if: steps.dep-cache.outputs.cache-hit != 'true'
-        run: npm ci     
+        run: pnpm install --frozen-lockfile
         working-directory: ${{ github.workspace }}
     
       - if: inputs.submodule-cache-key != 'none'
@@ -66,7 +71,7 @@ jobs:
           key: ${{ inputs.submodule-cache-key}}
           fail-on-cache-miss: true
 
-      - run: npm run coverage
+      - run: pnpm run coverage
 
       - uses: codecov/codecov-action@v4
         with:
@@ -99,11 +104,16 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 20
-          cache: 'npm'
+          cache: 'pnpm'
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.5.2
+          run_install: false
 
       - name: Install Dependencies (if not restored from cache)
         if: steps.dep-cache.outputs.cache-hit != 'true'
-        run: npm ci     
+        run: pnpm install --frozen-lockfile
         working-directory: ${{ github.workspace }}
 
       - if: inputs.submodule-cache-key != 'none'
@@ -116,10 +126,10 @@ jobs:
           fail-on-cache-miss: true
       
       - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM') == false
-        run: npm run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
+        run: pnpm run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
       
       - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM')
-        run: npm run test:buildIntegrity
+        run: pnpm run test:buildIntegrity
 
   vm-osaka:
     runs-on: ubuntu-latest
@@ -136,18 +146,23 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          cache: 'pnpm'
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.5.2
+          run_install: false
 
       - name: Install Dependencies (if not restored from cache)
         if: steps.dep-cache.outputs.cache-hit != 'true'
-        run: npm ci     
+        run: pnpm install --frozen-lockfile
         working-directory: ${{ github.workspace }}
       
       - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM') == false
-        run: npm run test:state:osaka
+        run: pnpm run test:state:osaka
       
       - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM')
-        run: npm run test:buildIntegrity
+        run: pnpm run test:buildIntegrity
 
   vm-state-extended:
     if: contains(join(github.event.pull_request.labels.*.name, ' '), 'test all hardforks')
@@ -191,11 +206,16 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 20
-          cache: 'npm'
+          cache: 'pnpm'
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.5.2
+          run_install: false
 
       - name: Install Dependencies (if not restored from cache)
         if: steps.dep-cache.outputs.cache-hit != 'true'
-        run: npm ci     
+        run: pnpm install --frozen-lockfile
         working-directory: ${{ github.workspace }}
 
 
@@ -209,7 +229,7 @@ jobs:
           fail-on-cache-miss: true
   
 
-      - run: npm run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
+      - run: pnpm run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
 
   vm-blockchain:
     runs-on: ubuntu-latest
@@ -243,11 +263,16 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 20
-          cache: 'npm'
+          cache: 'pnpm'
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.5.2
+          run_install: false
 
       - name: Install Dependencies (if not restored from cache)
         if: steps.dep-cache.outputs.cache-hit != 'true'
-        run: npm ci     
+        run: pnpm install --frozen-lockfile
         working-directory: ${{ github.workspace }}
   
       - if: inputs.submodule-cache-key != 'none'
@@ -260,10 +285,10 @@ jobs:
           fail-on-cache-miss: true
 
       - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM') == false
-        run: npm run test:blockchain -- ${{ matrix.args }}
+        run: pnpm run test:blockchain -- ${{ matrix.args }}
 
       - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM')
-        run: npm run test:blockchain:buildIntegrity
+        run: pnpm run test:blockchain:buildIntegrity
 
   vm-blockchain-extended:
     if: contains(join(github.event.pull_request.labels.*.name, ' '), 'test all hardforks')
@@ -314,11 +339,16 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 20
-          cache: 'npm'
+          cache: 'pnpm'
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.5.2
+          run_install: false
 
       - name: Install Dependencies (if not restored from cache)
         if: steps.dep-cache.outputs.cache-hit != 'true'
-        run: npm ci     
+        run: pnpm install --frozen-lockfile
         working-directory: ${{ github.workspace }}
   
       - if: inputs.submodule-cache-key != 'none'
@@ -330,7 +360,7 @@ jobs:
           key: ${{ inputs.submodule-cache-key}}
           fail-on-cache-miss: true
 
-      - run: npm run test:blockchain -- ${{ matrix.args }}
+      - run: pnpm run test:blockchain -- ${{ matrix.args }}
 
   vm-benchmarks:
     runs-on: ubuntu-latest
@@ -351,17 +381,22 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 20
-          cache: 'npm'
+          cache: 'pnpm'
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.5.2
+          run_install: false
 
       - name: Install Dependencies (if not restored from cache)
         if: steps.dep-cache.outputs.cache-hit != 'true'
-        run: npm ci     
+        run: pnpm install --frozen-lockfile
         working-directory: ${{ github.workspace }}
 
-      - run: npm run build:benchmarks
+      - run: pnpm run build:benchmarks
         working-directory: ${{ env.cwd }}
 
-      - run: npm run benchmarks -- mainnetBlocks:10 | tee output.txt
+      - run: pnpm run benchmarks -- mainnetBlocks:10 | tee output.txt
         working-directory: ${{ env.cwd }}
 
       # Run git stash in case github-action-benchmark has trouble switching to gh-pages branch due to differing package-locks

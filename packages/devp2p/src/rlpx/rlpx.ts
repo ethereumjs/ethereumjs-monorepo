@@ -12,6 +12,7 @@ import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import { EventEmitter } from 'eventemitter3'
+// @ts-ignore
 import { LRUCache } from 'lru-cache'
 
 import { DISCONNECT_REASON, DisconnectReasonNames } from '../types.ts'
@@ -119,7 +120,9 @@ export class RLPx {
     this._keccakFunction = options.common?.customCrypto.keccak256 ?? keccak256
 
     this.DEBUG =
-      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+      typeof (globalThis as any).window === 'undefined'
+        ? (process?.env?.DEBUG?.includes('ethjs') ?? false)
+        : false
   }
 
   listen(...args: any[]) {

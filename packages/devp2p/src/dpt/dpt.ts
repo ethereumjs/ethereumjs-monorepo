@@ -91,7 +91,9 @@ export class DPT {
     this._refreshIntervalId = setInterval(() => this.refresh(), refreshIntervalSubdivided)
 
     this.DEBUG =
-      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+      typeof (globalThis as any).window === 'undefined'
+        ? (process?.env?.DEBUG?.includes('ethjs') ?? false)
+        : false
   }
 
   bind(...args: any[]): void {

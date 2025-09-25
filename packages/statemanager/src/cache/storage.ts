@@ -1,6 +1,8 @@
 import { EthereumJSErrorWithoutCode, bytesToUnprefixedHex, hexToBytes } from '@ethereumjs/util'
+// @ts-ignore
 import { OrderedMap } from '@js-sdsl/ordered-map'
 import debugDefault from 'debug'
+// @ts-ignore
 import { LRUCache } from 'lru-cache'
 
 import { Cache } from './cache.ts'

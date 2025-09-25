@@ -571,7 +571,7 @@ export async function setupEngineUpdateRelay(client: EthereumClient, peerBeaconU
 export const filterKeywords = [
   'warn',
   'error',
-  'npm run client:start',
+  'pnpm run client:start',
   'docker run',
   'lodestar dev',
   'kill',

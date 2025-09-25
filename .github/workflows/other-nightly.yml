@@ -16,12 +16,17 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
-      
-      - run: npm ci
+          cache: 'pnpm'
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.5.2
+          run_install: false
+
+      - run: pnpm install --frozen-lockfile
         working-directory: ${{github.workspace}}
 
-      - run: npm run test
+      - run: pnpm run test
         working-directory: ${{ github.workspace }}/packages/ethash
 
   test-client:
@@ -32,12 +37,17 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
-      
-      - run: npm ci
+          cache: 'pnpm'
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.5.2
+          run_install: false
+
+      - run: pnpm install --frozen-lockfile
         working-directory: ${{github.workspace}}
 
-      - run: npm run test
+      - run: pnpm run test
         working-directory: ${{ github.workspace }}/packages/client
   
   test-devp2p:
@@ -48,12 +58,17 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
-      
-      - run: npm ci
+          cache: 'pnpm'
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.5.2
+          run_install: false
+
+      - run: pnpm install --frozen-lockfile
         working-directory: ${{github.workspace}}
 
-      - run: npm run test
+      - run: pnpm run test
         working-directory: ${{ github.workspace }}/packages/devp2p
   
   test-wallet:
@@ -64,12 +79,17 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
-      
-      - run: npm ci
+          cache: 'pnpm'
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.5.2
+          run_install: false
+
+      - run: pnpm install --frozen-lockfile
         working-directory: ${{github.workspace}}
 
-      - run: npm run test
+      - run: pnpm run test
         working-directory: ${{ github.workspace }}/packages/wallet
   
   test-verkle:
@@ -80,10 +100,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
-      
-      - run: npm ci
+          cache: 'pnpm'
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.5.2
+          run_install: false
+
+      - run: pnpm install --frozen-lockfile
         working-directory: ${{github.workspace}}
 
-      - run: npm run test
+      - run: pnpm run test
         working-directory: ${{ github.workspace }}/packages/verkle

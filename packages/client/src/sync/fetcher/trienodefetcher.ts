@@ -19,6 +19,7 @@ import {
   hexToBytes,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
+// @ts-ignore
 import { OrderedMap } from '@js-sdsl/ordered-map'
 import debug from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'

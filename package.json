@@ -1,33 +1,32 @@
 {
   "name": "root",
   "private": true,
-  "workspaces": ["packages/*"],
   "scripts": {
     "biome": "npx @biomejs/biome check",
     "biome:fix": "npx @biomejs/biome check --write",
-    "checkNpmVersion": "./scripts/check-npm-version.sh",
     "clean": "./config/cli/clean-root.sh",
-    "docs:build": "npm run docs:build --workspaces --if-present",
+    "docs:build": "pnpm -r --if-present run docs:build",
     "e2e:inject": "node ./scripts/e2e-inject-resolutions.js",
     "e2e:publish": "./scripts/e2e-publish.sh",
     "e2e:resolutions": "node ./scripts/e2e-resolutions.js",
-    "examples": "npm run examples --workspaces --if-present",
-    "examples:build": "npm run examples:build --workspaces --if-present",
-    "lint": "npm run biome && eslint  --config ./config/eslint.config.mjs .",
-    "lint:fix": "npm run biome:fix && eslint --fix --config ./config/eslint.config.mjs .",
+    "examples": "pnpm -r --if-present run examples",
+    "examples:build": "pnpm -r --if-present run examples:build",
+    "lint": "pnpm run biome && eslint --config ./config/eslint.config.mjs .",
+    "lint:fix": "pnpm run biome:fix && eslint --fix --config ./config/eslint.config.mjs .",
     "lint:diff": "./config/cli/lint-diff.sh",
-    "test": "npm run test --workspaces --if-present",
-    "test:node": "npm run test:node --workspaces --if-present",
-    "test:browser": "npm run test:browser --workspaces --if-present",
-    "preinstall": "npm run checkNpmVersion",
-    "postinstall": "npm run build --workspaces --if-present",
+    "test": "pnpm -r --if-present run test",
+    "test:node": "pnpm -r --if-present run test:node",
+    "test:browser": "pnpm -r --if-present run test:browser",
+    "preinstall": "pnpm run checkPnpmVersion",
+    "postinstall": "pnpm -r --if-present run build",
     "prepare": "git config --local core.hooksPath .githooks",
-    "sc": "npm run spellcheck",
+    "sc": "pnpm run spellcheck",
     "sort-package-json": "sort-package-json \"package.json\" \"packages/*/package.json\"",
-    "spellcheck": "npm run spellcheck:ts && npm run spellcheck:md",
+    "spellcheck": "pnpm run spellcheck:ts && pnpm run spellcheck:md",
     "spellcheck:ts": "npx cspell --gitignore -e \"./packages/ethereum-tests\" -e \"./packages/wallet/test\" -e \"./packages/client/archive\" -c ./config/cspell-ts.json \"./packages/**/*.ts\" --cache --show-suggestions --show-context",
     "spellcheck:md": "npx cspell --gitignore -e \"./packages/ethereum-tests\" -e \"./packages/client/withdrawals-testnet/**\" -e \"./packages/**/docs\" -c ./config/cspell-md.json \"**.md\" --cache --show-suggestions --show-context",
-    "install-browser-deps": "npm install playwright@1.15.1 @vitest/browser@3.0.8"
+    "install-browser-deps": "pnpm add -D playwright@1.15.1 @vitest/browser@3.0.8",
+    "checkPnpmVersion": "./scripts/check-pnpm-version.sh"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
@@ -46,7 +45,6 @@
     "eslint": "^9.22.0",
     "eslint-plugin-import": "^2.31.0",
     "lint-staged": "15.5.0",
-    "lockfile-lint-api": "^5.9.1",
     "sort-package-json": "3.0.0",
     "tape": "5.9.0",
     "tsx": "^4.19.3",
@@ -56,13 +54,15 @@
     "typescript-eslint": "^8.26.1",
     "vite-plugin-top-level-await": "^1.5.0",
     "vite-plugin-wasm": "^3.4.1",
-    "vitest": "3.0.8"
+    "vitest": "3.0.8",
+    "yaml": "^2.7.0"
   },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "*"
   },
   "engines": {
     "node": ">=18",
-    "npm": ">=7"
-  }
+    "pnpm": ">=8"
+  },
+  "packageManager": "pnpm@10.5.2"
 }

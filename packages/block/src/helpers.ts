@@ -195,7 +195,7 @@ export function genRequestsRoot(
   for (const req of requests) {
     if (req.bytes.length > 1) {
       // Only append requests if they have content
-      flatRequests = concatBytes(flatRequests, sha256Function(req.bytes))
+      flatRequests = concatBytes(flatRequests, sha256Function(req.bytes) as Uint8Array<ArrayBuffer>)
     }
   }
 
