@@ -1,25 +1,31 @@
 name: CI
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
 
 jobs:
   build:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: '20'
-          cache: 'pnpm'   # only caching, not installing pnpm
+          cache: 'pnpm'          # sets up pnpm store cache ONLY
 
-      # ↓ This actually installs pnpm and puts it on PATH
+      # INSTALL PNPM (puts pnpm on PATH)
       - uses: pnpm/action-setup@v4
         with:
-          version: 9         # or match your repo
-          run_install: false # we'll run install explicitly
+          # If your root package.json has: { "packageManager": "pnpm@9.12.0" }
+          # you can use 'auto' here. Otherwise pick a version.
+          version: '9'
+          run_install: false
 
-      - name: Show pnpm version
-        run: pnpm -v
+      - name: Check pnpm is available
+        run: |
+          pnpm -v
+          which pnpm
 
       - name: Install deps
         run: pnpm install --frozen-lockfile
