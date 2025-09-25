@@ -6,7 +6,7 @@ import {
   preLondonTestDataBlocks2RLP,
   testnetMergeChainConfig,
 } from '@ethereumjs/testdata'
-import { createLegacyTx } from '@ethereumjs/tx'
+import { createLegacyTx, paramsTx } from '@ethereumjs/tx'
 import { KECCAK256_RLP_ARRAY, bytesToHex, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -163,11 +163,14 @@ describe('[Block]: block functions', () => {
   }
 
   it('should test transaction validation - transaction not signed', async () => {
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Osaka })
+    const maxTransactionGasLimit = paramsTx['7825'].maxTransactionGasLimit as number
+    // Create tx with gas limit over max (but not yet on Osaka)
     const tx = createLegacyTx({
-      gasLimit: 17000000,
+      gasLimit: maxTransactionGasLimit + 1,
       gasPrice: 7,
     })
-    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Osaka })
+
     assert.throws(() => {
       createBlock({ transactions: [tx] }, { common })
     }, 'exceeds the maximum allowed by EIP-7825')

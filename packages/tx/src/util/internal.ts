@@ -141,12 +141,7 @@ export function sharedConstructor(
   const sB = toBytes(s)
 
   tx.nonce = bytesToBigInt(toBytes(nonce))
-  // For activated EIP-7825 (tx gas limit cap) and no gas limit provided set to max
-  if (tx.common.isActivatedEIP(7825) && gasLimit === undefined) {
-    tx.gasLimit = tx.common.param('maxTransactionGasLimit')
-  } else {
-    tx.gasLimit = bytesToBigInt(toBytes(gasLimit))
-  }
+  tx.gasLimit = bytesToBigInt(toBytes(gasLimit))
   tx.to = toB.length > 0 ? new Address(toB) : undefined
   tx.value = bytesToBigInt(toBytes(value))
   tx.data = toBytes(data === '' ? '0x' : data)
