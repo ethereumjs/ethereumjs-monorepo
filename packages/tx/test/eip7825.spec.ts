@@ -20,10 +20,10 @@ const txTypes = [
 ]
 
 describe('[EIP-7825 tests]', () => {
-  it(`Should use max cap as gas limit default for Osaka tx`, () => {
+  it(`Should continue to use 0 gas limit default for Osaka tx`, () => {
     for (const txType of txTypes) {
       const tx = createTx({ type: txType }, { common })
-      assert.strictEqual(tx.gasLimit, maxTransactionGasLimit)
+      assert.strictEqual(tx.gasLimit, BigInt(0))
     }
   })
 

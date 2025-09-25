@@ -102,7 +102,7 @@ describe(method, () => {
           maxFeePerBlobGas: 1n,
           maxFeePerGas: Units.gwei(10),
           maxPriorityFeePerGas: 100000000n,
-          gasLimit: 30000000n,
+          gasLimit: 16000000n,
           to: createZeroAddress(),
         },
         { common },
@@ -120,7 +120,7 @@ describe(method, () => {
         maxFeePerBlobGas: 1n,
         maxFeePerGas: Units.gwei(10),
         maxPriorityFeePerGas: 100000000n,
-        gasLimit: 30000000n,
+        gasLimit: 16000000n,
         to: createZeroAddress(),
       },
       { common },
@@ -153,7 +153,7 @@ describe(method, () => {
     const { executionPayload, blobsBundle } = res.result
     assert.equal(
       executionPayload.blockHash,
-      '0x470b0993817584dcb186da39af9f41518f280fa85dc8a04695a3cd000bc8a9c9',
+      '0xde5ad0b5d70ae112048b915f66cab04d1942c9eeb0a4b5f1d42fa80cc67167a4',
       'built expected block',
     )
     assert.equal(executionPayload.excessBlobGas, '0x0', 'correct excess blob gas')
