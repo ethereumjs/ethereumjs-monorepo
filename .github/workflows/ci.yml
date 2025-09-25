@@ -1,0 +1,32 @@
+name: CI
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Node + cache for pnpm
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      # Install pnpm and put it on PATH
+      - uses: pnpm/action-setup@v4
+        with:
+          # pick your version, or keep in sync with package.json
+          version: 9
+          run_install: false
+
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Test
+        run: pnpm test
