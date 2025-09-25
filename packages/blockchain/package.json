@@ -50,17 +50,17 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/block": "workspace:^10.0.0",
-    "@ethereumjs/common": "workspace:^10.0.0",
-    "@ethereumjs/mpt": "workspace:^10.0.0",
-    "@ethereumjs/rlp": "workspace:^10.0.0",
-    "@ethereumjs/util": "workspace:^10.0.0",
+    "@ethereumjs/block": "workspace:*",
+    "@ethereumjs/common": "workspace:*",
+    "@ethereumjs/mpt": "workspace:*",
+    "@ethereumjs/rlp": "workspace:*",
+    "@ethereumjs/util": "workspace:*",
     "debug": "^4.4.0",
     "eventemitter3": "^5.0.1",
     "lru-cache": "11.0.2"
   },
   "devDependencies": {
-    "@ethereumjs/ethash": "workspace:^10.0.0"
+    "@ethereumjs/ethash": "workspace:*"
   },
   "engines": {
     "node": ">=18"

@@ -50,15 +50,15 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/common": "^10.0.0",
-    "@ethereumjs/rlp": "^10.0.0",
-    "@ethereumjs/mpt": "workspace:^10.0.0",
-    "@ethereumjs/tx": "^10.0.0",
-    "@ethereumjs/util": "workspace:^10.0.0",
+    "@ethereumjs/common": "workspace:*",
+    "@ethereumjs/rlp": "workspace:*",
+    "@ethereumjs/mpt": "workspace:*",
+    "@ethereumjs/tx": "workspace:*",
+    "@ethereumjs/util": "workspace:*",
     "ethereum-cryptography": "^3.2.0"
   },
   "devDependencies": {
-    "@ethereumjs/testdata": "workspace:1.0.0",
+    "@ethereumjs/testdata": "workspace:*",
     "@paulmillr/trusted-setups": "^0.2.0",
     "micro-eth-signer": "^0.15.0"
   },

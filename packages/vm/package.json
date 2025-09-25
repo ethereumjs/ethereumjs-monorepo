@@ -65,22 +65,22 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/block": "^10.0.0",
-    "@ethereumjs/common": "^10.0.0",
-    "@ethereumjs/evm": "^10.0.0",
-    "@ethereumjs/mpt": "workspace:^10.0.0",
-    "@ethereumjs/rlp": "^10.0.0",
-    "@ethereumjs/statemanager": "^10.0.0",
-    "@ethereumjs/tx": "^10.0.0",
-    "@ethereumjs/util": "workspace:^10.0.0",
-    "@ethereumjs/verkle": "^10.0.0",
+    "@ethereumjs/block": "workspace:*",
+    "@ethereumjs/common": "workspace:*",
+    "@ethereumjs/evm": "workspace:*",
+    "@ethereumjs/mpt": "workspace:*",
+    "@ethereumjs/rlp": "workspace:*",
+    "@ethereumjs/statemanager": "workspace:*",
+    "@ethereumjs/tx": "workspace:*",
+    "@ethereumjs/util": "workspace:*",
+    "@ethereumjs/verkle": "workspace:*",
     "debug": "^4.4.0",
     "ethereum-cryptography": "^3.2.0",
     "eventemitter3": "^5.0.1"
   },
   "devDependencies": {
-    "@ethereumjs/blockchain": "^10.0.0",
-    "@ethereumjs/ethash": "^10.0.0",
+    "@ethereumjs/blockchain": "workspace:*",
+    "@ethereumjs/ethash": "workspace:*",
     "@paulmillr/trusted-setups": "^0.2.0",
     "@types/benchmark": "^2.1.5",
     "@types/core-js": "^2.5.8",
@@ -96,7 +96,7 @@
     "solc": "^0.8.28",
     "tape": "^5.9.0",
     "yargs": "^17.7.2",
-    "@ethereumjs/testdata": "workspace:1.0.0"
+    "@ethereumjs/testdata": "workspace:*"
   },
   "engines": {
     "node": ">=18"

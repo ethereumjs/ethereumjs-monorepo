@@ -57,13 +57,13 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/common": "^10.0.0",
-    "@ethereumjs/rlp": "^10.0.0",
-    "@ethereumjs/util": "workspace:^10.0.0",
+    "@ethereumjs/common": "workspace:*",
+    "@ethereumjs/rlp": "workspace:*",
+    "@ethereumjs/util": "workspace:*",
     "ethereum-cryptography": "^3.2.0"
   },
   "devDependencies": {
-    "@ethereumjs/testdata": "workspace:1.0.0",
+    "@ethereumjs/testdata": "workspace:*",
     "@types/minimist": "^1.2.5",
     "@types/node-dir": "^0.0.37",
     "@paulmillr/trusted-setups": "^0.2.0",
