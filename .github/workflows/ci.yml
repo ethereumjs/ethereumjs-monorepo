@@ -8,22 +8,18 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v5
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 'auto'
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
         with:
           node-version: '20'
           cache: 'pnpm'
 
-      # This is what installs pnpm and adds it to PATH
-      - uses: pnpm/action-setup@v4
-        with:
-          version: auto
-          run_install: false
-
-      - name: Verify pnpm
-        run: |
-          set -eux
-          pnpm -v
-          command -v pnpm
+      - run: pnpm -v && command -v pnpm
 
       - name: Install deps
         run: pnpm install --frozen-lockfile
