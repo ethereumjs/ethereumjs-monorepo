@@ -97,11 +97,11 @@ importers:
   packages/binarytree:
     dependencies:
       '@ethereumjs/rlp':
-        specifier: ^10.0.0
-        version: 10.0.0
+        specifier: workspace:*
+        version: link:../rlp
       '@ethereumjs/util':
-        specifier: ^10.0.0
-        version: 10.0.0
+        specifier: workspace:*
+        version: link:../util
       '@noble/hashes':
         specifier: ^1.7.2
         version: 1.8.0
@@ -304,6 +304,9 @@ importers:
       '@types/cors':
         specifier: ^2.8.17
         version: 2.8.19
+      '@types/debug':
+        specifier: ^4.1.12
+        version: 4.1.12
       '@types/eventsource':
         specifier: ^3.0.0
         version: 3.0.0
@@ -353,8 +356,8 @@ importers:
   packages/common:
     dependencies:
       '@ethereumjs/util':
-        specifier: ^10.0.0
-        version: 10.0.0
+        specifier: workspace:*
+        version: link:../util
       eventemitter3:
         specifier: ^5.0.1
         version: 5.0.1
@@ -369,14 +372,14 @@ importers:
   packages/devp2p:
     dependencies:
       '@ethereumjs/common':
-        specifier: ^10.0.0
-        version: 10.0.0
+        specifier: workspace:*
+        version: link:../common
       '@ethereumjs/rlp':
-        specifier: ^10.0.0
-        version: 10.0.0
+        specifier: workspace:*
+        version: link:../rlp
       '@ethereumjs/util':
-        specifier: ^10.0.0
-        version: 10.0.0
+        specifier: workspace:*
+        version: link:../util
       '@scure/base':
         specifier: ^1.2.4
         version: 1.2.6
@@ -400,11 +403,11 @@ importers:
         version: 0.7.0
     devDependencies:
       '@ethereumjs/block':
-        specifier: ^10.0.0
-        version: 10.0.0
+        specifier: workspace:*
+        version: link:../block
       '@ethereumjs/tx':
-        specifier: ^10.0.0
-        version: 10.0.0
+        specifier: workspace:*
+        version: link:../tx
       '@types/debug':
         specifier: ^4.1.12
         version: 4.1.12
@@ -424,17 +427,17 @@ importers:
   packages/e2store:
     dependencies:
       '@ethereumjs/block':
-        specifier: ^10.0.0
-        version: 10.0.0
+        specifier: workspace:*
+        version: link:../block
       '@ethereumjs/blockchain':
-        specifier: ^10.0.0
-        version: 10.0.0
+        specifier: workspace:*
+        version: link:../blockchain
       '@ethereumjs/rlp':
-        specifier: ^10.0.0
-        version: 10.0.0
+        specifier: workspace:*
+        version: link:../rlp
       '@ethereumjs/util':
-        specifier: ^10.0.0
-        version: 10.0.0
+        specifier: workspace:*
+        version: link:../util
       level:
         specifier: ^9.0.0
         version: 9.0.0
@@ -452,14 +455,14 @@ importers:
   packages/ethash:
     dependencies:
       '@ethereumjs/block':
-        specifier: ^10.0.0
-        version: 10.0.0
+        specifier: workspace:*
+        version: link:../block
       '@ethereumjs/rlp':
-        specifier: ^10.0.0
-        version: 10.0.0
+        specifier: workspace:*
+        version: link:../rlp
       '@ethereumjs/util':
-        specifier: ^10.0.0
-        version: 10.0.0
+        specifier: workspace:*
+        version: link:../util
       bigint-crypto-utils:
         specifier: ^3.3.0
         version: 3.3.0
@@ -468,26 +471,26 @@ importers:
         version: 3.2.0
     devDependencies:
       '@ethereumjs/common':
-        specifier: ^10.0.0
-        version: 10.0.0
+        specifier: workspace:*
+        version: link:../common
 
   packages/evm:
     dependencies:
       '@ethereumjs/binarytree':
-        specifier: ^10.0.0
-        version: 10.0.0
+        specifier: workspace:*
+        version: link:../binarytree
       '@ethereumjs/common':
-        specifier: ^10.0.0
-        version: 10.0.0
+        specifier: workspace:*
+        version: link:../common
       '@ethereumjs/statemanager':
-        specifier: ^10.0.0
-        version: 10.0.0
+        specifier: workspace:*
+        version: link:../statemanager
       '@ethereumjs/util':
-        specifier: ^10.0.0
-        version: 10.0.0
+        specifier: workspace:*
+        version: link:../util
       '@ethereumjs/verkle':
-        specifier: ^10.0.0
-        version: 10.0.0
+        specifier: workspace:*
+        version: link:../verkle
       '@noble/curves':
         specifier: ^1.9.0
         version: 1.9.7
@@ -556,20 +559,23 @@ importers:
   packages/genesis:
     dependencies:
       '@ethereumjs/common':
-        specifier: ^10.0.0
-        version: 10.0.0
+        specifier: workspace:*
+        version: link:../common
       '@ethereumjs/util':
-        specifier: ^10.0.0
-        version: 10.0.0
+        specifier: workspace:*
+        version: link:../util
 
   packages/mpt:
     dependencies:
+      '@ethereumjs/common':
+        specifier: workspace:*
+        version: link:../common
       '@ethereumjs/rlp':
-        specifier: ^10.0.0
-        version: 10.0.0
+        specifier: workspace:*
+        version: link:../rlp
       '@ethereumjs/util':
-        specifier: ^10.0.0
-        version: 10.0.0
+        specifier: workspace:*
+        version: link:../util
       debug:
         specifier: ^4.4.0
         version: 4.4.3
@@ -581,11 +587,14 @@ importers:
         version: 11.0.2
     devDependencies:
       '@ethereumjs/genesis':
-        specifier: ^10.0.0
-        version: 10.0.0
+        specifier: workspace:*
+        version: link:../genesis
       '@types/benchmark':
         specifier: ^2.1.5
         version: 2.1.5
+      '@types/debug':
+        specifier: ^4.1.12
+        version: 4.1.12
       abstract-level:
         specifier: ^3.0.1
         version: 3.1.0
@@ -611,23 +620,23 @@ importers:
   packages/statemanager:
     dependencies:
       '@ethereumjs/binarytree':
-        specifier: ^10.0.0
-        version: 10.0.0
+        specifier: workspace:*
+        version: link:../binarytree
       '@ethereumjs/common':
-        specifier: ^10.0.0
-        version: 10.0.0
+        specifier: workspace:*
+        version: link:../common
       '@ethereumjs/mpt':
-        specifier: workspace:^10.0.0
+        specifier: workspace:*
         version: link:../mpt
       '@ethereumjs/rlp':
-        specifier: ^10.0.0
-        version: 10.0.0
+        specifier: workspace:*
+        version: link:../rlp
       '@ethereumjs/util':
-        specifier: workspace:^10.0.0
+        specifier: workspace:*
         version: link:../util
       '@ethereumjs/verkle':
-        specifier: ^10.0.0
-        version: 10.0.0
+        specifier: workspace:*
+        version: link:../verkle
       '@js-sdsl/ordered-map':
         specifier: ^4.4.2
         version: 4.4.2
@@ -645,11 +654,11 @@ importers:
         version: 11.0.2
     devDependencies:
       '@ethereumjs/block':
-        specifier: ^10.0.0
-        version: 10.0.0
+        specifier: workspace:*
+        version: link:../block
       '@ethereumjs/genesis':
-        specifier: ^10.0.0
-        version: 10.0.0
+        specifier: workspace:*
+        version: link:../genesis
       '@types/debug':
         specifier: ^4.1.12
         version: 4.1.12
@@ -660,11 +669,11 @@ importers:
   packages/testdata:
     devDependencies:
       '@ethereumjs/block':
-        specifier: ^10.0.0
-        version: 10.0.0
+        specifier: workspace:*
+        version: link:../block
       '@ethereumjs/util':
-        specifier: ^10.0.0
-        version: 10.0.0
+        specifier: workspace:*
+        version: link:../util
 
   packages/tx:
     dependencies:
@@ -709,8 +718,8 @@ importers:
   packages/util:
     dependencies:
       '@ethereumjs/rlp':
-        specifier: ^10.0.0
-        version: 10.0.0
+        specifier: workspace:*
+        version: link:../rlp
       ethereum-cryptography:
         specifier: ^3.2.0
         version: 3.2.0
@@ -728,11 +737,11 @@ importers:
   packages/verkle:
     dependencies:
       '@ethereumjs/rlp':
-        specifier: ^10.0.0
-        version: 10.0.0
+        specifier: workspace:*
+        version: link:../rlp
       '@ethereumjs/util':
-        specifier: ^10.0.0
-        version: 10.0.0
+        specifier: workspace:*
+        version: link:../util
       debug:
         specifier: ^4.4.0
         version: 4.4.3
@@ -800,6 +809,9 @@ importers:
       '@types/core-js':
         specifier: ^2.5.8
         version: 2.5.8
+      '@types/debug':
+        specifier: ^4.1.12
+        version: 4.1.12
       '@types/minimist':
         specifier: ^1.2.5
         version: 1.2.5
@@ -840,8 +852,8 @@ importers:
   packages/wallet:
     dependencies:
       '@ethereumjs/util':
-        specifier: ^10.0.0
-        version: 10.0.0
+        specifier: workspace:*
+        version: link:../util
       '@scure/base':
         specifier: ^1.2.4
         version: 1.2.6
@@ -1440,49 +1452,6 @@ packages:
     resolution: {integrity: sha512-Z5kJ+wU3oA7MMIqVR9tyZRtjYPr4OC004Q4Rw7pgOKUOKkJfZ3O24nz3WYfGRpMDNmcOi3TwQOmgm7B7Tpii0w==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@ethereumjs/binarytree@10.0.0':
-    resolution: {integrity: sha512-ZOfRpMhzt3kukNAzSlA/qAr8BQFw24lVbGLYN8mrILzZIHYYa2/PbhitVdPnCSQaeARSE/bLYBgM4c3+na0x0Q==}
-    engines: {node: '>=18'}
-
-  '@ethereumjs/block@10.0.0':
-    resolution: {integrity: sha512-wojY2+J1X+LdJuWoDvufbiDYqjNb+m17tr9Lo/AZ7qJsMSTuxbF+xVmYtDS2s60UASsmkdYdp/Uc7vslaksN/Q==}
-    engines: {node: '>=18'}
-
-  '@ethereumjs/blockchain@10.0.0':
-    resolution: {integrity: sha512-tQfrzn+M8gxuMke/0Bz1qU8ehsnGUtAylBryMjZ8sKIoFJGWUspF6hdNjiniYpiEDk2IutX5j7dgP/TjmOLlTw==}
-    engines: {node: '>=18'}
-
-  '@ethereumjs/common@10.0.0':
-    resolution: {integrity: sha512-qb0M1DGdXzMAf3O6Zg5Wr5UDjoxBmplLPbQyC6DQ0LfgVDBRdqn0Pk+/hHm4q0McE22Of0MxbV4hhiDTkSgKag==}
-
-  '@ethereumjs/genesis@10.0.0':
-    resolution: {integrity: sha512-6jAW49HGwPImItGxsenHDPYeJk4+xOwwix/PDF9VOjTEIr69lGtSjyXZbwcl4U2333Bb16UMdkLh3xaMFt1cCg==}
-    engines: {node: '>=18'}
-
-  '@ethereumjs/mpt@10.0.0':
-    resolution: {integrity: sha512-WpIWAyWhe/veG6bvBEQUdEGPyDTID0clFy4yMy+wRs5Tr7UHeDbsG4bAeXzLCEkhIgarSFok+9P5XO6r1q4tpw==}
-    engines: {node: '>=18'}
-
-  '@ethereumjs/rlp@10.0.0':
-    resolution: {integrity: sha512-h2SK6RxFBfN5ZGykbw8LTNNLckSXZeuUZ6xqnmtF22CzZbHflFMcIOyfVGdvyCVQqIoSbGMHtvyxMCWnOyB9RA==}
-    engines: {node: '>=18'}
-    hasBin: true
-
-  '@ethereumjs/statemanager@10.0.0':
-    resolution: {integrity: sha512-s64RQIQLNmdxhfnm1nQSfPl4ktR0ju7RBx50HhAScItefrHg0QSqk7ZaKPXwuyvR+ilZHB3jQ0cmLwJ4DSvZgA==}
-
-  '@ethereumjs/tx@10.0.0':
-    resolution: {integrity: sha512-DApm04kp2nbvaOuHy2Rkcz1ZeJkTVgW6oCuNnQf9bRtGc+LsvLrdULE3LoGtBItEoNEcgXLJqrV0foooWFX6jw==}
-    engines: {node: '>=18'}
-
-  '@ethereumjs/util@10.0.0':
-    resolution: {integrity: sha512-lO23alM4uQsv8dp6/yEm4Xw4328+wIRjSeuBO1mRTToUWRcByEMTk87yzBpXgpixpgHrl+9LTn9KB2vvKKtOQQ==}
-    engines: {node: '>=18'}
-
-  '@ethereumjs/verkle@10.0.0':
-    resolution: {integrity: sha512-pBGcIP0yhxjpBjjmZjF/3DKhjySxoFcFU6s81UI3h3bxiLsFTqPNMdTucFV1wiXeDbq8V4iH3c7IZbLZ5K07kw==}
-    engines: {node: '>=18'}
-
   '@gerrit0/mini-shiki@3.12.2':
     resolution: {integrity: sha512-HKZPmO8OSSAAo20H2B3xgJdxZaLTwtlMwxg0967scnrDlPwe6j5+ULGHyIqwgTbFCn9yv/ff8CmfWZLE9YKBzA==}
 
@@ -1661,10 +1630,6 @@ packages:
   '@noble/curves@1.2.0':
     resolution: {integrity: sha512-oYclrNgRaM9SsBUBVbb8M6DTV7ZHRTKugureoYEncY5c65HOmRzvSiTE3y5CYaPYJA/GVkrhXEoF0M3Ya9PMnw==}
 
-  '@noble/curves@1.8.2':
-    resolution: {integrity: sha512-vnI7V6lFNe0tLAuJMu+2sX+FcL14TaCWy1qiczg1VwRmPrpQCdq5ESXQMqUc2tluRNf6irBXrWbl1mGN8uaU/g==}
-    engines: {node: ^14.21.3 || >=16}
-
   '@noble/curves@1.9.0':
     resolution: {integrity: sha512-7YDlXiNMdO1YZeH6t/kvopHHbIZzlxrCV9WLqCY6QhcXOoXiNCMDqJIglZ9Yjx5+w7Dz30TITFrlTjnRg7sKEg==}
     engines: {node: ^14.21.3 || >=16}
@@ -1676,10 +1641,6 @@ packages:
   '@noble/hashes@1.3.2':
     resolution: {integrity: sha512-MVC8EAQp7MvEcm30KWENFjgR+Mkmf+D189XJTkFIlwohU5hcBbn1ZkKq7KVTi2Hme3PMGF390DaL52beVrIihQ==}
     engines: {node: '>= 16'}
-
-  '@noble/hashes@1.7.2':
-    resolution: {integrity: sha512-biZ0NUSxyjLLqo6KxEJ1b+C2NAx0wtDoFvCaXHGgUkeHzf3Xc1xKumFKREuT7f7DARNZ/slvYUwFG6B0f2b6hQ==}
-    engines: {node: ^14.21.3 || >=16}
 
   '@noble/hashes@1.8.0':
     resolution: {integrity: sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A==}
@@ -3725,9 +3686,6 @@ packages:
   micro-bmark@0.4.0:
     resolution: {integrity: sha512-lQHxIE9BurlmqBR3J4NJnUH6I72kChBYXuBeNkvNT3viFHKfYj2c070OysLZwtjBTxTjIgsUqjgcttMWlmASVA==}
 
-  micro-eth-signer@0.14.0:
-    resolution: {integrity: sha512-5PLLzHiVYPWClEvZIXXFu5yutzpadb73rnQCpUqIHu3No3coFuWQNfE5tkBQJ7djuLYl6aRLaS0MgWJYGoqiBw==}
-
   micro-eth-signer@0.15.0:
     resolution: {integrity: sha512-VkKK698Odm0ef40ERC9FdcG6BHBL9vWhy+7xkLL1M0O3bcRBLi7FP7mr+4SdiPaP823Q+r6c8JdUtWdESSf06A==}
 
@@ -5410,101 +5368,6 @@ snapshots:
       '@eslint/core': 0.15.2
       levn: 0.4.1
 
-  '@ethereumjs/binarytree@10.0.0':
-    dependencies:
-      '@ethereumjs/rlp': 10.0.0
-      '@ethereumjs/util': 10.0.0
-      '@noble/hashes': 1.8.0
-      debug: 4.4.3
-      ethereum-cryptography: 3.2.0
-      lru-cache: 11.0.2
-    transitivePeerDependencies:
-      - supports-color
-
-  '@ethereumjs/block@10.0.0':
-    dependencies:
-      '@ethereumjs/common': 10.0.0
-      '@ethereumjs/mpt': 10.0.0
-      '@ethereumjs/rlp': 10.0.0
-      '@ethereumjs/tx': 10.0.0
-      '@ethereumjs/util': 10.0.0
-      ethereum-cryptography: 3.2.0
-    transitivePeerDependencies:
-      - supports-color
-
-  '@ethereumjs/blockchain@10.0.0':
-    dependencies:
-      '@ethereumjs/block': 10.0.0
-      '@ethereumjs/common': 10.0.0
-      '@ethereumjs/mpt': 10.0.0
-      '@ethereumjs/rlp': 10.0.0
-      '@ethereumjs/util': 10.0.0
-      debug: 4.4.3
-      eventemitter3: 5.0.1
-      lru-cache: 11.0.2
-    transitivePeerDependencies:
-      - supports-color
-
-  '@ethereumjs/common@10.0.0':
-    dependencies:
-      '@ethereumjs/util': 10.0.0
-      eventemitter3: 5.0.1
-
-  '@ethereumjs/genesis@10.0.0':
-    dependencies:
-      '@ethereumjs/common': 10.0.0
-      '@ethereumjs/util': 10.0.0
-
-  '@ethereumjs/mpt@10.0.0':
-    dependencies:
-      '@ethereumjs/rlp': 10.0.0
-      '@ethereumjs/util': 10.0.0
-      debug: 4.4.3
-      ethereum-cryptography: 3.2.0
-      lru-cache: 11.0.2
-    transitivePeerDependencies:
-      - supports-color
-
-  '@ethereumjs/rlp@10.0.0': {}
-
-  '@ethereumjs/statemanager@10.0.0':
-    dependencies:
-      '@ethereumjs/binarytree': 10.0.0
-      '@ethereumjs/common': 10.0.0
-      '@ethereumjs/mpt': 10.0.0
-      '@ethereumjs/rlp': 10.0.0
-      '@ethereumjs/util': 10.0.0
-      '@ethereumjs/verkle': 10.0.0
-      '@js-sdsl/ordered-map': 4.4.2
-      '@noble/hashes': 1.8.0
-      debug: 4.4.3
-      ethereum-cryptography: 3.2.0
-      lru-cache: 11.0.2
-    transitivePeerDependencies:
-      - supports-color
-
-  '@ethereumjs/tx@10.0.0':
-    dependencies:
-      '@ethereumjs/common': 10.0.0
-      '@ethereumjs/rlp': 10.0.0
-      '@ethereumjs/util': 10.0.0
-      ethereum-cryptography: 3.2.0
-
-  '@ethereumjs/util@10.0.0':
-    dependencies:
-      '@ethereumjs/rlp': 10.0.0
-      ethereum-cryptography: 3.2.0
-
-  '@ethereumjs/verkle@10.0.0':
-    dependencies:
-      '@ethereumjs/rlp': 10.0.0
-      '@ethereumjs/util': 10.0.0
-      debug: 4.4.3
-      lru-cache: 11.0.2
-      micro-eth-signer: 0.14.0
-    transitivePeerDependencies:
-      - supports-color
-
   '@gerrit0/mini-shiki@3.12.2':
     dependencies:
       '@shikijs/engine-oniguruma': 3.12.2
@@ -5676,10 +5539,6 @@ snapshots:
     dependencies:
       '@noble/hashes': 1.3.2
 
-  '@noble/curves@1.8.2':
-    dependencies:
-      '@noble/hashes': 1.7.2
-
   '@noble/curves@1.9.0':
     dependencies:
       '@noble/hashes': 1.8.0
@@ -5689,8 +5548,6 @@ snapshots:
       '@noble/hashes': 1.8.0
 
   '@noble/hashes@1.3.2': {}
-
-  '@noble/hashes@1.7.2': {}
 
   '@noble/hashes@1.8.0': {}
 
@@ -8002,12 +7859,6 @@ snapshots:
   merge2@1.4.1: {}
 
   micro-bmark@0.4.0: {}
-
-  micro-eth-signer@0.14.0:
-    dependencies:
-      '@noble/curves': 1.8.2
-      '@noble/hashes': 1.7.2
-      micro-packed: 0.7.3
 
   micro-eth-signer@0.15.0:
     dependencies:

@@ -94,7 +94,7 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/rlp": "^10.0.0",
+    "@ethereumjs/rlp": "workspace:*",
     "ethereum-cryptography": "^3.2.0"
   },
   "devDependencies": {
