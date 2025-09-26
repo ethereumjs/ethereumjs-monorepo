@@ -37,7 +37,7 @@ const kzg = new microEthKZG(trustedSetup)
 describe('EIP4844 addSignature tests', () => {
   const common = createCommonFromGethGenesis(eip4844GethGenesis, {
     chain: 'customChain',
-    hardfork: Hardfork.Prague,
+    hardfork: Hardfork.Cancun,
     customCrypto: { kzg },
   })
 
