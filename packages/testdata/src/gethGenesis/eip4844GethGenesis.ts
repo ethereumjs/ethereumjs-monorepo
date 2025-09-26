@@ -17,8 +17,6 @@ export const eip4844GethGenesis: GethGenesis = {
     mergeForkBlock: 0,
     shanghaiTime: 0,
     cancunTime: 0,
-    pragueTime: 0,
-    osakaTime: 0,
     clique: {
       blockperiodseconds: 5,
       epochlength: 30000,
