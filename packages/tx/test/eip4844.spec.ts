@@ -214,7 +214,7 @@ describe('fromTxData using from a json', () => {
 })
 
 describe('EIP4844 constructor tests - invalid scenarios', () => {
-  const common = createCommonFromGethGenesis(eip4844GethGenesis, {
+  let common = createCommonFromGethGenesis(eip4844GethGenesis, {
     chain: 'customChain',
     hardfork: Hardfork.Cancun,
     customCrypto: { kzg },
@@ -232,8 +232,12 @@ describe('EIP4844 constructor tests - invalid scenarios', () => {
     const invalidVersionHash = {
       blobVersionedHashes: [concatBytes(new Uint8Array([3]), randomBytes(31))],
     }
-    const tooManyBlobs = {
+    const tooManyBlobs7 = {
       blobVersionedHashes: [
+        concatBytes(new Uint8Array([1]), randomBytes(31)),
+        concatBytes(new Uint8Array([1]), randomBytes(31)),
+        concatBytes(new Uint8Array([1]), randomBytes(31)),
+        concatBytes(new Uint8Array([1]), randomBytes(31)),
         concatBytes(new Uint8Array([1]), randomBytes(31)),
         concatBytes(new Uint8Array([1]), randomBytes(31)),
         concatBytes(new Uint8Array([1]), randomBytes(31)),
@@ -256,10 +260,25 @@ describe('EIP4844 constructor tests - invalid scenarios', () => {
       )
     }
     try {
-      createBlob4844Tx({ ...baseTxData, ...tooManyBlobs }, { common })
+      createBlob4844Tx({ ...baseTxData, ...tooManyBlobs7 }, { common })
     } catch (err: any) {
       assert.isTrue(
-        err.message.includes('tx can contain at most'),
+        err.message.includes('tx can contain at most 6 blobs (maxBlobGasPerBlock/blobGasPerBlob)'),
+        'throws on too many versioned hashes',
+      )
+    }
+
+    common = createCommonFromGethGenesis(eip4844GethGenesis, {
+      chain: 'customChain',
+      hardfork: Hardfork.Cancun,
+      eips: [7594],
+      customCrypto: { kzg },
+    })
+    try {
+      createBlob4844Tx({ ...baseTxData, ...tooManyBlobs7 }, { common })
+    } catch (err: any) {
+      assert.isTrue(
+        err.message.includes('tx can contain at most 6 blobs (EIP-7594)'),
         'throws on too many versioned hashes',
       )
     }
