@@ -121,7 +121,7 @@ jobs:
       - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM')
         run: npm run test:buildIntegrity
 
-  vm-osaka:
+  vm-osaka-state:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -144,11 +144,39 @@ jobs:
         working-directory: ${{ github.workspace }}
       
       - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM') == false
-        run: npm run test:state:osaka
+        run: npm run test:osaka:state
       
       - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM')
         run: npm run test:buildIntegrity
+  
+  vm-osaka-blockchain:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      # For now we always clone the repo and submodules (no cache)
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
 
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies (if not restored from cache)
+        if: steps.dep-cache.outputs.cache-hit != 'true'
+        run: npm ci     
+        working-directory: ${{ github.workspace }}
+      
+      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM') == false
+        run: npm run test:osaka:blockchain
+      
+      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM')
+        run: npm run test:buildIntegrity
+  
   vm-state-extended:
     if: contains(join(github.event.pull_request.labels.*.name, ' '), 'test all hardforks')
     runs-on: ubuntu-latest
