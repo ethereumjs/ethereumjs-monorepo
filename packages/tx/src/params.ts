@@ -46,6 +46,12 @@ export const paramsTx: ParamsDict = {
     maxBlobGasPerBlock: 786432, // The max blob gas allowable per block
   },
   /**
+   * PeerDAS - Peer Data Availability Sampling
+   */
+  7594: {
+    maxBlobsPerTx: 6, // Max number of blobs per tx
+  },
+  /**
    * Increase calldata cost to reduce maximum block size
    */
   7623: {
