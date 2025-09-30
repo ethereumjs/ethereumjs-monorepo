@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   checkout-submodules:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - uses: actions/checkout@v5
@@ -44,45 +44,37 @@ jobs:
       submodule-cache-key: submodule-${{ steps.create-cache-key.outputs.submodule-cache-key}}
 
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - uses: actions/checkout@v5
-
-      - uses: actions/cache/restore@v4
-        id: dep-cache
         with:
-          path: ${{github.workspace}}/node_modules
-          key: pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          submodules: recursive
 
-      - name: Use Node.js 20
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: '10.5.2'
+
+      - name: Setup Node
         uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: '20'
           cache: 'pnpm'
 
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10.5.2
-          run_install: false
+      - run: pnpm -v && command -v pnpm
 
-      - run: pnpm install --frozen-lockfile
-        working-directory: ${{github.workspace}}
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
 
-      - name: Cache dependencies
-        uses: actions/cache/save@v4
-        with:
-          path: ${{github.workspace}}
-          key: pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+      - name: Build
+        run: pnpm build
 
-      - name: Cache build
-        uses: actions/cache/save@v4
-        with:
-          path: ${{github.workspace}}
-          key: pnpm-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.run_id }}
+      - name: Test
+        run: pnpm test
 
     outputs:
-      dep-cache-key: ${{ steps.dep-cache.outputs.cache-primary-key }}-${{ github.run_id }}
+      dep-cache-key: pnpm-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.run_id }}
 
   binarytree:
     needs: [build, checkout-submodules]
