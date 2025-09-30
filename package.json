@@ -4,6 +4,7 @@
   "scripts": {
     "biome": "npx @biomejs/biome check",
     "biome:fix": "npx @biomejs/biome check --write",
+    "build": "pnpm -r --if-present run build",
     "clean": "./config/cli/clean-root.sh",
     "docs:build": "pnpm -r --if-present run docs:build",
     "e2e:inject": "node ./scripts/e2e-inject-resolutions.js",
