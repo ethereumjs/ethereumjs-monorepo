@@ -68,6 +68,7 @@
   },
   "devDependencies": {
     "@polkadot/util": "^13.4.3",
-    "@polkadot/wasm-crypto": "^7.4.1"
+    "@polkadot/wasm-crypto": "^7.4.1",
+    "ethereum-cryptography": "^3.2.0"
   }
 }

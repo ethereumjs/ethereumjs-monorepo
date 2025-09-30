@@ -24,6 +24,7 @@
   },
   "devDependencies": {
     "@ethereumjs/block": "workspace:*",
+    "@ethereumjs/common": "workspace:*",
     "@ethereumjs/util": "workspace:*"
   }
 }

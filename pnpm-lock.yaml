@@ -14,6 +14,9 @@ importers:
       '@eslint/js':
         specifier: ^9.22.0
         version: 9.35.0
+      '@types/debug':
+        specifier: ^4.1.12
+        version: 4.1.12
       '@types/estree':
         specifier: ^1.0.1
         version: 1.0.8
@@ -368,6 +371,9 @@ importers:
       '@polkadot/wasm-crypto':
         specifier: ^7.4.1
         version: 7.5.1(@polkadot/util@13.5.6)(@polkadot/x-randomvalues@13.5.6(@polkadot/util@13.5.6)(@polkadot/wasm-util@7.5.1(@polkadot/util@13.5.6)))
+      ethereum-cryptography:
+        specifier: ^3.2.0
+        version: 3.2.0
 
   packages/devp2p:
     dependencies:
@@ -671,6 +677,9 @@ importers:
       '@ethereumjs/block':
         specifier: workspace:*
         version: link:../block
+      '@ethereumjs/common':
+        specifier: workspace:*
+        version: link:../common
       '@ethereumjs/util':
         specifier: workspace:*
         version: link:../util
