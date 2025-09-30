@@ -1,5 +1,4 @@
-import type { BlockData } from '@ethereumjs/block'
-import type { PrefixedHexString } from '@ethereumjs/util'
+import type { BlockData, PrefixedHexString } from '../types.js'
 
 export const verkleKaustinen6Block72Data: Omit<BlockData, 'transactions'> & {
   transactions: PrefixedHexString[]
