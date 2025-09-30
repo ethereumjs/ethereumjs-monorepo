@@ -673,7 +673,7 @@ importers:
         version: 0.15.0
 
   packages/testdata:
-    devDependencies:
+    dependencies:
       '@ethereumjs/block':
         specifier: workspace:*
         version: link:../block
