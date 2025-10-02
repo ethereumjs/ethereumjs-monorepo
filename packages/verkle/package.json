@@ -60,7 +60,7 @@
     "@ethereumjs/util": "workspace:*",
     "debug": "^4.4.0",
     "lru-cache": "11.0.2",
-    "micro-eth-signer": "0.17.3"
+    "micro-eth-signer": "^0.17.3"
   },
   "engines": {
     "node": ">=18"

@@ -31,7 +31,7 @@ import type { PrefixedHexString } from '@ethereumjs/util'
 import type { BlobEIP4844TxData } from '../src/index.ts'
 
 import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
-import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/advanced/kzg.js'
 
 const kzg = new microEthKZG(trustedSetup)
 const pk = randomBytes(32)

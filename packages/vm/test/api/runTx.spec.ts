@@ -24,7 +24,7 @@ import {
   hexToBytes,
 } from '@ethereumjs/util'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
-import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/advanced/kzg.js'
 import { assert, describe, it } from 'vitest'
 
 import { createVM, runTx } from '../../src/index.ts'

@@ -60,7 +60,7 @@
   "devDependencies": {
     "@ethereumjs/testdata": "workspace:*",
     "@paulmillr/trusted-setups": "^0.2.0",
-    "micro-eth-signer": "^0.15.0"
+    "micro-eth-signer": "^0.17.3"
   },
   "engines": {
     "node": ">=18"

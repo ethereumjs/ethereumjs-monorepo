@@ -7,7 +7,7 @@ import { createTx } from '@ethereumjs/tx'
 import { bigIntToHex, bytesToHex, hexToBytes, toBytes } from '@ethereumjs/util'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/advanced/kzg.js'
 
 import { buildBlock, createVM } from '../../src/index.ts'
 import { rewardAccount } from '../../src/runBlock.ts'

@@ -60,7 +60,7 @@
     "@ethereumjs/rlp": "workspace:*",
     "@ethereumjs/util": "workspace:*",
     "level": "^9.0.0",
-    "micro-eth-signer": "^0.15.0",
+    "micro-eth-signer": "^0.17.3",
     "snappyjs": "^0.7.0"
   },
   "devDependencies": {
