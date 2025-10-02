@@ -7,7 +7,7 @@ import { startRPCServers } from './startRPC.ts'
 import { generateClientConfig, getArgs } from './utils.ts'
 
 import type { Common, GenesisState } from '@ethereumjs/common'
-import type { Config } from '../src/config.ts'
+import { Config } from '../src/config.ts'
 import type { EthereumClient } from '../src/index.ts'
 import type { ClientOpts } from '../src/types.ts'
 
@@ -42,6 +42,8 @@ const setupClient = async (
     jwtSecret: '',
     rpcEngineAuth: false,
     rpcCors: '',
+    rpcEthMaxPayload: args.rpcEthMaxPayload ?? Config.RPC_ETH_MAXPAYLOAD_DEFAULT,
+    rpcEngineMaxPayload: args.rpcEngineMaxPayload ?? Config.RPC_ENGINE_MAXPAYLOAD_DEFAULT,
   })
 
   return { client, executionRPC: servers[0], engineRPC: servers[1] }
