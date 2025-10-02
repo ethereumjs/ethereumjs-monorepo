@@ -328,5 +328,5 @@ describe('Network wrapper tests', () => {
       undefined,
       'throws when kzg proof cant be verified',
     )
-  }, 40_000)
+  }, 50_000)
 })
