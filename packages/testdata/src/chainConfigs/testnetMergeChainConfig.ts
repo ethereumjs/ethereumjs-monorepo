@@ -1,4 +1,4 @@
-import type { ChainConfig } from '@ethereumjs/common'
+import type { ChainConfig } from '../types.js'
 
 export const testnetMergeChainConfig: ChainConfig = {
   name: 'testnetMerge',

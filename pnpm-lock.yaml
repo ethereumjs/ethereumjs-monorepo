@@ -365,6 +365,9 @@ importers:
         specifier: ^5.0.1
         version: 5.0.1
     devDependencies:
+      '@ethereumjs/testdata':
+        specifier: workspace:*
+        version: link:../testdata
       '@polkadot/util':
         specifier: ^13.4.3
         version: 13.5.6
@@ -672,14 +675,7 @@ importers:
         specifier: 0.15.0
         version: 0.15.0
 
-  packages/testdata:
-    devDependencies:
-      '@ethereumjs/common':
-        specifier: workspace:*
-        version: link:../common
-      '@ethereumjs/util':
-        specifier: workspace:*
-        version: link:../util
+  packages/testdata: {}
 
   packages/tx:
     dependencies:

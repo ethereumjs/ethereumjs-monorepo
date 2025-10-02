@@ -67,6 +67,7 @@
     "eventemitter3": "^5.0.1"
   },
   "devDependencies": {
+    "@ethereumjs/testdata": "workspace:*",
     "@polkadot/util": "^13.4.3",
     "@polkadot/wasm-crypto": "^7.4.1",
     "ethereum-cryptography": "^3.2.0"

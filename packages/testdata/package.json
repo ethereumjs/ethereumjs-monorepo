@@ -21,9 +21,5 @@
     "lint": "pnpm run biome && eslint --config ./eslint.config.mjs .",
     "lint:fix": "pnpm run biome:fix && eslint --fix --config ./eslint.config.mjs .",
     "tsc": "../../config/cli/ts-compile.sh"
-  },
-  "devDependencies": {
-    "@ethereumjs/common": "workspace:*",
-    "@ethereumjs/util": "workspace:*"
   }
 }
