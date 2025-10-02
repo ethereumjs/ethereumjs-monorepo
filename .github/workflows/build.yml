@@ -70,6 +70,9 @@ jobs:
       - name: Install browser deps
         run: pnpm run install-browser-deps
 
+      - name: Install playwright browsers
+        run: npx playwright install --with-deps
+
       - name: Build
         run: pnpm build
 
