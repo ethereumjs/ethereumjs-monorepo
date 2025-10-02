@@ -2,11 +2,49 @@ name: CI
 on:
   pull_request:
 
+env:
+  cwd: ${{github.workspace}}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-ci
+  cancel-in-progress: true
+
 jobs:
+  checkout-submodules:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - id: create-cache-key
+        run: echo "submodule-cache-key=$(git submodule | head -n 1)" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - uses: actions/cache/restore@v4
+        id: submodules-cache-restore
+        with:
+          key: submodule-${{ steps.create-cache-key.outputs.submodule-cache-key }}
+          path: ${{github.workspace}}/packages/ethereum-tests
+
+      - if: steps.submodules-cache-restore.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        id: submodule-cache-save
+        with:
+          path: ${{github.workspace}}/packages/ethereum-tests
+          key: submodule-${{ steps.create-cache-key.outputs.submodule-cache-key}}
+
+    outputs:
+      submodule-cache-key: submodule-${{ steps.create-cache-key.outputs.submodule-cache-key}}
+
   build:
+    needs: checkout-submodules
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
+        with:
+          submodules: recursive
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -21,6 +59,12 @@ jobs:
 
       - run: pnpm -v && command -v pnpm
 
+      - name: Restore ethereum-tests submodule
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{github.workspace}}/packages/ethereum-tests
+          key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
+
       - name: Install deps
         run: pnpm install --frozen-lockfile
 
@@ -32,3 +76,6 @@ jobs:
 
       - name: Test
         run: pnpm test
+
+    outputs:
+      dep-cache-key: pnpm-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.run_id }}

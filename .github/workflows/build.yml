@@ -44,6 +44,7 @@ jobs:
       submodule-cache-key: submodule-${{ steps.create-cache-key.outputs.submodule-cache-key}}
 
   build:
+    needs: checkout-submodules
     runs-on: ubuntu-24.04
 
     steps:
@@ -63,6 +64,12 @@ jobs:
           cache: 'pnpm'
 
       - run: pnpm -v && command -v pnpm
+
+      - name: Restore ethereum-tests submodule
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{github.workspace}}/packages/ethereum-tests
+          key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
 
       - name: Install deps
         run: pnpm install --frozen-lockfile
