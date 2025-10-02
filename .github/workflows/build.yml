@@ -72,6 +72,7 @@ jobs:
 
       - name: Install deps
         run: pnpm install --frozen-lockfile
+        working-directory: ${{ github.workspace }}
 
       - name: Install browser deps
         run: pnpm run install-browser-deps
