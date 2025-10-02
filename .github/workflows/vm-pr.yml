@@ -46,16 +46,16 @@ jobs:
           path: ${{github.workspace}}
           key: ${{ inputs.dep-cache-key }}
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.5.2
+          run_install: false
+
       - name: Use Node.js 20
         uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: 'pnpm'
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10.5.2
-          run_install: false
 
       - name: Install Dependencies (if not restored from cache)
         if: steps.dep-cache.outputs.cache-hit != 'true'
@@ -100,16 +100,16 @@ jobs:
           path: ${{github.workspace}}
           key: ${{ inputs.dep-cache-key }}
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.5.2
+          run_install: false
+
       - name: Use Node.js 20
         uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: 'pnpm'
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10.5.2
-          run_install: false
 
       - name: Install Dependencies (if not restored from cache)
         if: steps.dep-cache.outputs.cache-hit != 'true'
@@ -175,22 +175,27 @@ jobs:
         with:
           submodules: recursive
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.5.2
+          run_install: false
+
       - name: Use Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          cache: 'pnpm'
 
       - name: Install Dependencies (if not restored from cache)
         if: steps.dep-cache.outputs.cache-hit != 'true'
-        run: npm ci
+        run: pnpm install --frozen-lockfile
         working-directory: ${{ github.workspace }}
 
       - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM') == false
-        run: npm run test:osaka:blockchain
+        run: pnpm run test:osaka:blockchain
 
       - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM')
-        run: npm run test:buildIntegrity
+        run: pnpm run test:buildIntegrity
 
   vm-state-extended:
     if: contains(join(github.event.pull_request.labels.*.name, ' '), 'test all hardforks')
@@ -230,16 +235,16 @@ jobs:
           path: ${{github.workspace}}
           key: ${{ inputs.dep-cache-key }}
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.5.2
+          run_install: false
+
       - name: Use Node.js 20
         uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: 'pnpm'
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10.5.2
-          run_install: false
 
       - name: Install Dependencies (if not restored from cache)
         if: steps.dep-cache.outputs.cache-hit != 'true'
@@ -287,16 +292,16 @@ jobs:
           path: ${{github.workspace}}
           key: ${{ inputs.dep-cache-key }}
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.5.2
+          run_install: false
+
       - name: Use Node.js 20
         uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: 'pnpm'
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10.5.2
-          run_install: false
 
       - name: Install Dependencies (if not restored from cache)
         if: steps.dep-cache.outputs.cache-hit != 'true'
@@ -363,16 +368,16 @@ jobs:
           path: ${{github.workspace}}
           key: ${{ inputs.dep-cache-key }}
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.5.2
+          run_install: false
+
       - name: Use Node.js 20
         uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: 'pnpm'
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10.5.2
-          run_install: false
 
       - name: Install Dependencies (if not restored from cache)
         if: steps.dep-cache.outputs.cache-hit != 'true'
@@ -405,16 +410,16 @@ jobs:
           path: ${{github.workspace}}
           key: ${{ inputs.dep-cache-key }}
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.5.2
+          run_install: false
+
       - name: Use Node.js 20
         uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: 'pnpm'
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10.5.2
-          run_install: false
 
       - name: Install Dependencies (if not restored from cache)
         if: steps.dep-cache.outputs.cache-hit != 'true'

@@ -16,16 +16,16 @@ jobs:
         with:
           submodules: recursive
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.5.2
+          run_install: false
+
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v5
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'pnpm'
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10.5.2
-          run_install: false
 
       - run: pnpm install --frozen-lockfile
 
