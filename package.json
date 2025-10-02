@@ -47,7 +47,6 @@
     "eslint": "^9.22.0",
     "eslint-plugin-import": "^2.31.0",
     "lint-staged": "15.5.0",
-    "playwright": "1.15.1",
     "sort-package-json": "3.0.0",
     "tape": "5.9.0",
     "tsx": "^4.19.3",
