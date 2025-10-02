@@ -1,5 +1,5 @@
 import { equalsBytes, randomBytes, setLengthRight } from '@ethereumjs/util'
-import * as verkle from 'micro-eth-signer/verkle.js'
+import * as verkle from 'micro-eth-signer/advanced/verkle.js'
 import { assert, describe, it } from 'vitest'
 
 import {
