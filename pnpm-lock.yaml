@@ -726,6 +726,9 @@ importers:
         specifier: ^3.2.0
         version: 3.2.0
     devDependencies:
+      '@ethereumjs/testdata':
+        specifier: workspace:*
+        version: link:../testdata
       '@paulmillr/trusted-setups':
         specifier: ^0.2.0
         version: 0.2.0
@@ -733,8 +736,8 @@ importers:
         specifier: ^0.5.0
         version: 0.5.0
       micro-eth-signer:
-        specifier: ^0.15.0
-        version: 0.15.0
+        specifier: ^0.17.3
+        version: 0.17.3
 
   packages/verkle:
     dependencies:
