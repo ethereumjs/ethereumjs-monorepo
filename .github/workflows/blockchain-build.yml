@@ -17,7 +17,9 @@ on:
 env:
   cwd: ${{github.workspace}}/packages/blockchain
 
-# Removed defaults.run.working-directory - commands run from root with pnpm filters
+defaults:
+  run:
+    working-directory: packages/blockchain
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-blockchain
@@ -31,17 +33,12 @@ jobs:
       - if: inputs.submodule-cache-key == 'none'
         uses: actions/checkout@v5
 
-      # We restore the code/deps from cache if triggered from workflow_call (i.e. have valid cache key)  
+      # We restore the code/deps from cache if triggered from workflow_call (i.e. have valid cache key)
       - uses: actions/cache/restore@v4
         id: dep-cache
         with:
           path: ${{github.workspace}}
           key: ${{ inputs.dep-cache-key }}
-  
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10.5.2
-          run_install: false
 
       - name: Use Node.js 20
         uses: actions/setup-node@v5
@@ -49,22 +46,17 @@ jobs:
           node-version: 20
           cache: 'pnpm'
 
-      - name: Sanity check repo root
-        run: |
-          pwd
-          ls -la
-          test -f package.json && echo "Found package.json at root" || (echo "Missing package.json at root" && exit 1)
-          test -f pnpm-workspace.yaml && echo "Found pnpm-workspace.yaml" || echo "No pnpm-workspace.yaml (ok if not a workspace)"
-          pnpm -v
-          command -v pnpm
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.5.2
+          run_install: false
 
       - name: Install Dependencies (if called from workflow_dispatch)
         if: steps.dep-cache.outputs.cache-hit != 'true'
-        run: pnpm install --frozen-lockfile --prefer-offline
+        run: pnpm install --frozen-lockfile
         working-directory: ${{ github.workspace }}
-            
-      - name: Test blockchain
-        run: pnpm -w -r --filter @ethereumjs/blockchain run coverage
+
+      - run: pnpm run coverage
       - uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
