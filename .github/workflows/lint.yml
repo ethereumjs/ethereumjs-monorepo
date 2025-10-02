@@ -34,16 +34,16 @@ jobs:
           path: ${{github.workspace}}
           key: ${{ inputs.dep-cache-key }}
   
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.5.2
+          run_install: false
+
       - name: Use Node.js 20
         uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: 'pnpm'
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10.5.2
-          run_install: false
 
       - name: Install Dependencies (if not restored from cache)
         if: steps.dep-cache.outputs.cache-hit != 'true'
