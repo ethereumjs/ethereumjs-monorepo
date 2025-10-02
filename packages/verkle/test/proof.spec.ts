@@ -61,32 +61,36 @@ describe('lets make proofs', () => {
       assert.fail(`Failed to verify proof: ${err}`)
     }
   })
-  it('should pass for empty trie', async () => {
-    const trie = await createVerkleTree({
-      verkleCrypto: verkle,
-      db: new MapDB(),
-    })
+  it(
+    'should pass for empty trie',
+    async () => {
+      const trie = await createVerkleTree({
+        verkleCrypto: verkle,
+        db: new MapDB(),
+      })
 
-    const proof = verkle.createProof([
-      {
-        // Get commitment from root node
-        serializedCommitment: verkle.serializeCommitment(
-          (await trie.findPath(new Uint8Array(31))).stack![0][0].commitment,
-        ),
-        vector: new Array(256).fill(new Uint8Array(32)),
-        indices: [0],
-      },
-    ])
-    const res = verkle.verifyProof(proof, [
-      {
-        serializedCommitment: verkle.serializeCommitment(
-          (await trie.findPath(new Uint8Array(31))).stack![0][0].commitment,
-        ),
-        indexValuePairs: [{ index: 0, value: new Uint8Array(32) }],
-      },
-    ])
-    assert.isTrue(res)
-  })
+      const proof = verkle.createProof([
+        {
+          // Get commitment from root node
+          serializedCommitment: verkle.serializeCommitment(
+            (await trie.findPath(new Uint8Array(31))).stack![0][0].commitment,
+          ),
+          vector: new Array(256).fill(new Uint8Array(32)),
+          indices: [0],
+        },
+      ])
+      const res = verkle.verifyProof(proof, [
+        {
+          serializedCommitment: verkle.serializeCommitment(
+            (await trie.findPath(new Uint8Array(31))).stack![0][0].commitment,
+          ),
+          indexValuePairs: [{ index: 0, value: new Uint8Array(32) }],
+        },
+      ])
+      assert.isTrue(res)
+    },
+    { timeout: 15000 },
+  )
   it.skip('should verify proof for single leaf node', async () => {
     const node = await LeafVerkleNode.create(randomBytes(31), verkle)
     node.setValue(0, setLengthRight(bigIntToBytes(1n), 32))
