@@ -26,7 +26,7 @@
     "spellcheck": "pnpm run spellcheck:ts && pnpm run spellcheck:md",
     "spellcheck:ts": "npx cspell --gitignore -e \"./packages/ethereum-tests\" -e \"./packages/wallet/test\" -e \"./packages/client/archive\" -c ./config/cspell-ts.json \"./packages/**/*.ts\" --cache --show-suggestions --show-context",
     "spellcheck:md": "npx cspell --gitignore -e \"./packages/ethereum-tests\" -e \"./packages/client/withdrawals-testnet/**\" -e \"./packages/**/docs\" -c ./config/cspell-md.json \"**.md\" --cache --show-suggestions --show-context",
-    "install-browser-deps": "pnpm add -D playwright@1.15.1 @vitest/browser@3.0.8",
+    "install-browser-deps": "pnpm add -D playwright@1.15.1 @vitest/browser@3.0.8 && npx playwright install --with-deps",
     "checkPnpmVersion": "./scripts/check-pnpm-version.sh"
   },
   "devDependencies": {
