@@ -17,9 +17,7 @@ on:
 env:
   cwd: ${{github.workspace}}/packages/blockchain
 
-defaults:
-  run:
-    working-directory: packages/blockchain
+# Removed defaults.run.working-directory - commands run from root with pnpm filters
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-blockchain
@@ -49,13 +47,24 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 20
+          cache: 'pnpm'
+
+      - name: Sanity check repo root
+        run: |
+          pwd
+          ls -la
+          test -f package.json && echo "Found package.json at root" || (echo "Missing package.json at root" && exit 1)
+          test -f pnpm-workspace.yaml && echo "Found pnpm-workspace.yaml" || echo "No pnpm-workspace.yaml (ok if not a workspace)"
+          pnpm -v
+          command -v pnpm
 
       - name: Install Dependencies (if called from workflow_dispatch)
         if: steps.dep-cache.outputs.cache-hit != 'true'
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --prefer-offline
         working-directory: ${{ github.workspace }}
             
-      - run: pnpm run coverage
+      - name: Test blockchain
+        run: pnpm -w -r --filter @ethereumjs/blockchain run coverage
       - uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
