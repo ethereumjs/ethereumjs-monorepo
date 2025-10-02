@@ -24,4 +24,7 @@ jobs:
           node-version: 18
           cache: 'pnpm'
 
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
       - run: pnpm run spellcheck

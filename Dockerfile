@@ -4,6 +4,9 @@ RUN apt-get update && apt-get install -y git g++ make python3 python3-setuptools
 WORKDIR /ethereumjs-monorepo
 
 COPY .git .git
+COPY package.json package.json
+COPY pnpm-lock.yaml pnpm-lock.yaml
+COPY pnpm-workspace.yaml pnpm-workspace.yaml
 COPY node_modules node_modules
 
 # copy dist folders
