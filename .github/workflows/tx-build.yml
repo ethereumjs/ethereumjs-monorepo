@@ -56,7 +56,6 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 20
-          cache: 'pnpm'
 
       - name: Install Dependencies (if not restored from cache)
         if: steps.dep-cache.outputs.cache-hit != 'true'
@@ -71,8 +70,6 @@ jobs:
           path: ${{github.workspace}}/packages/ethereum-tests
           key: ${{ inputs.submodule-cache-key}}
           fail-on-cache-miss: true
-
-
       - run: pnpm run coverage
       - uses: codecov/codecov-action@v4
         with:

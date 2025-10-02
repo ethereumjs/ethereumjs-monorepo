@@ -54,7 +54,6 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 20
-          cache: 'pnpm'
 
       - name: Install Dependencies (if called from workflow_dispatch)
         if: steps.dep-cache.outputs.cache-hit != 'true'
@@ -73,6 +72,4 @@ jobs:
       - run: npx playwright install --with-deps
 
       - run: pnpm run test:browser
-
-
 

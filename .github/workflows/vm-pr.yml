@@ -55,7 +55,6 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 20
-          cache: 'pnpm'
 
       - name: Install Dependencies (if not restored from cache)
         if: steps.dep-cache.outputs.cache-hit != 'true'
@@ -109,7 +108,6 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 20
-          cache: 'pnpm'
 
       - name: Install Dependencies (if not restored from cache)
         if: steps.dep-cache.outputs.cache-hit != 'true'
@@ -146,7 +144,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm'
 
       - uses: pnpm/action-setup@v4
         with:
@@ -184,7 +181,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm'
 
       - name: Install Dependencies (if not restored from cache)
         if: steps.dep-cache.outputs.cache-hit != 'true'
@@ -244,14 +240,11 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 20
-          cache: 'pnpm'
 
       - name: Install Dependencies (if not restored from cache)
         if: steps.dep-cache.outputs.cache-hit != 'true'
         run: pnpm install --frozen-lockfile
         working-directory: ${{ github.workspace }}
-
-
       - if: inputs.submodule-cache-key != 'none'
         uses: actions/cache/restore@v4
         name: Initialize ethereum-tests
@@ -260,8 +253,6 @@ jobs:
           path: ${{github.workspace}}/packages/ethereum-tests
           key: ${{ inputs.submodule-cache-key}}
           fail-on-cache-miss: true
-
-
       - run: pnpm run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
 
   vm-blockchain:
@@ -301,7 +292,6 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 20
-          cache: 'pnpm'
 
       - name: Install Dependencies (if not restored from cache)
         if: steps.dep-cache.outputs.cache-hit != 'true'
@@ -377,7 +367,6 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 20
-          cache: 'pnpm'
 
       - name: Install Dependencies (if not restored from cache)
         if: steps.dep-cache.outputs.cache-hit != 'true'
@@ -419,7 +408,6 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 20
-          cache: 'pnpm'
 
       - name: Install Dependencies (if not restored from cache)
         if: steps.dep-cache.outputs.cache-hit != 'true'

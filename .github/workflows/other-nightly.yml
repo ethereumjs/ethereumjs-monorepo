@@ -21,7 +21,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm'
 
       - run: pnpm install --frozen-lockfile
         working-directory: ${{github.workspace}}
@@ -42,7 +41,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm'
 
       - run: pnpm install --frozen-lockfile
         working-directory: ${{github.workspace}}
@@ -63,7 +61,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm'
 
       - run: pnpm install --frozen-lockfile
         working-directory: ${{github.workspace}}
@@ -84,7 +81,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm'
 
       - run: pnpm install --frozen-lockfile
         working-directory: ${{github.workspace}}
@@ -105,7 +101,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm'
 
       - run: pnpm install --frozen-lockfile
         working-directory: ${{github.workspace}}

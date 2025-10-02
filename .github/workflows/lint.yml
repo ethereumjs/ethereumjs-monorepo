@@ -43,13 +43,10 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 20
-          cache: 'pnpm'
 
       - name: Install Dependencies (if not restored from cache)
         if: steps.dep-cache.outputs.cache-hit != 'true'
         run: pnpm install --frozen-lockfile
         working-directory: ${{ github.workspace }}
-
-
       - run: pnpm run lint
         working-directory: ${{ github.workspace }}
