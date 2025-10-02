@@ -25,17 +25,13 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-      # Always check out the repository (don't rely on restoring the whole workspace from cache)
       - uses: actions/checkout@v5
         with:
           submodules: recursive
 
-      # Install pnpm first so setup-node's cache: 'pnpm' can find it
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          # Use 'auto' if your root package.json has: { "packageManager": "pnpm@<version>" }
-          version: auto
           run_install: false
 
       - name: Setup Node.js 20 (with pnpm store cache)
