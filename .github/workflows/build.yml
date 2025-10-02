@@ -80,8 +80,15 @@ jobs:
       - name: Build
         run: pnpm build
 
+      - name: Compute dep cache key
+        id: depkey
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "dep-cache-key=pnpm-$(sha256sum pnpm-lock.yaml | cut -d' ' -f1)-${GITHUB_RUN_ID}" >> "$GITHUB_OUTPUT"
+
     outputs:
-      dep-cache-key: pnpm-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.run_id }}
+      dep-cache-key: ${{ steps.depkey.outputs.dep-cache-key }}
 
   binarytree:
     needs: [build, checkout-submodules]
