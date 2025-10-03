@@ -168,11 +168,13 @@ describe('blob gas tests', () => {
       hardfork: Hardfork.Cancun,
       params: paramsBlock,
       customCrypto: { kzg },
+      eips: {
+        7918: true,
+      },
     })
 
     it('applies reserve price when exec cost dominates', () => {
-      const highBaseFee = 1_000_000_000n // 1 gwei
-
+      const highBaseFee = 1_000_000_000_000_000n
       const target = osakaCommon.param('targetBlobGasPerBlock')
       const max = osakaCommon.param('maxBlobGasPerBlock')
       const BLOB_BASE_COST = osakaCommon.param('blobBaseCost')
@@ -190,11 +192,9 @@ describe('blob gas tests', () => {
 
       assert.isTrue(BLOB_BASE_COST * highBaseFee > GAS_PER_BLOB * header.getBlobGasPrice())
 
-      const result = header.calcNextExcessBlobGas(osakaCommon)
-
+      const got = header.calcNextExcessBlobGas(osakaCommon)
       const expected = (target * (max - target)) / max
-
-      assert.strictEqual(result, expected)
+      assert.strictEqual(got, expected)
     })
 
     it('should use original EIP-4844 logic when reserve price condition is not met', () => {
