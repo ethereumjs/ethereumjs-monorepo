@@ -170,42 +170,33 @@ describe('blob gas tests', () => {
       customCrypto: { kzg },
     })
 
-    it('should apply reserve price when execution cost dominates', () => {
-      // Create a header with high base fee and low blob gas price
-      const highBaseFee = 1000000000n // 1 gwei
+    it('applies reserve price when exec cost dominates', () => {
+      const highBaseFee = 1_000_000_000n // 1 gwei
+      const targetBlobGasPerBlock = osakaCommon.param('targetBlobGasPerBlock')
+      const maxBlobGasPerBlock = osakaCommon.param('maxBlobGasPerBlock')
+      const blobBaseCost = osakaCommon.param('blobBaseCost')
+      const blobGasPerBlob = osakaCommon.param('blobGasPerBlob')
 
-      // Set excessBlobGas to 0 to get minimum blob gas price (1 wei)
       const header = createBlockHeader(
         {
           number: 1,
           baseFeePerGas: highBaseFee,
-          excessBlobGas: 0n, // This will result in minimum blob gas price (1 wei)
-          blobGasUsed: blobGasPerBlob, // 1 blob used
+          excessBlobGas: 0n,
+          blobGasUsed: targetBlobGasPerBlock, // use ≥ target to bypass early-exit
         },
         { common: osakaCommon, skipConsensusFormatValidation: true },
       )
 
-      const excessBlobGas = header.calcNextExcessBlobGas(osakaCommon)
+      // sanity: reserve-price condition holds
+      assert.isTrue(blobBaseCost * highBaseFee > blobGasPerBlob * header.getBlobGasPrice())
 
-      // Should use EIP-7918 formula: excess_blob_gas + blob_gas_used * (max - target) / max
-      const blobBaseCost = osakaCommon.param('blobBaseCost')
-      const maxBlobGasPerBlock = osakaCommon.param('maxBlobGasPerBlock')
-      const targetBlobGasPerBlock = osakaCommon.param('targetBlobGasPerBlock')
-      const currentBlobGasPrice = header.getBlobGasPrice()
+      const excess = header.calcNextExcessBlobGas(osakaCommon)
 
-      // Check that reserve price condition is met
-      assert.isTrue(
-        blobBaseCost * highBaseFee > blobGasPerBlob * currentBlobGasPrice,
-        'reserve price condition should be met',
-      )
+      // EIP-7918 expected: excess + used*(max-target)//max  (excess = 0 here)
+      const expected =
+        (targetBlobGasPerBlock * (maxBlobGasPerBlock - targetBlobGasPerBlock)) / maxBlobGasPerBlock
 
-      const expectedExcessBlobGas =
-        0n + (blobGasPerBlob * (maxBlobGasPerBlock - targetBlobGasPerBlock)) / maxBlobGasPerBlock
-      assert.strictEqual(
-        excessBlobGas,
-        expectedExcessBlobGas,
-        'should use EIP-7918 formula when reserve price condition is met',
-      )
+      assert.equal(excess, expected)
     })
 
     it('should use original EIP-4844 logic when reserve price condition is not met', () => {
