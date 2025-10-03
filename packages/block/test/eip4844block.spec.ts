@@ -173,21 +173,17 @@ describe('blob gas tests', () => {
     it('should apply reserve price when execution cost dominates', () => {
       // Create a header with high base fee and low blob gas price
       const highBaseFee = 1000000000n // 1 gwei
-      const lowBlobGasPrice = 1n
 
+      // Set excessBlobGas to 0 to get minimum blob gas price (1 wei)
       const header = createBlockHeader(
         {
           number: 1,
           baseFeePerGas: highBaseFee,
-          excessBlobGas: 1000000n, // Some excess blob gas
+          excessBlobGas: 0n, // This will result in minimum blob gas price (1 wei)
           blobGasUsed: blobGasPerBlob, // 1 blob used
         },
         { common: osakaCommon, skipConsensusFormatValidation: true },
       )
-
-      // Mock the blob gas price to be low
-      const originalGetBlobGasPrice = header.getBlobGasPrice
-      header.getBlobGasPrice = () => lowBlobGasPrice
 
       const excessBlobGas = header.calcNextExcessBlobGas(osakaCommon)
 
@@ -195,57 +191,52 @@ describe('blob gas tests', () => {
       const blobBaseCost = osakaCommon.param('blobBaseCost')
       const maxBlobGasPerBlock = osakaCommon.param('maxBlobGasPerBlock')
       const targetBlobGasPerBlock = osakaCommon.param('targetBlobGasPerBlock')
+      const currentBlobGasPrice = header.getBlobGasPrice()
 
       // Check that reserve price condition is met
       assert.isTrue(
-        blobBaseCost * highBaseFee > blobGasPerBlob * lowBlobGasPrice,
+        blobBaseCost * highBaseFee > blobGasPerBlob * currentBlobGasPrice,
         'reserve price condition should be met',
       )
 
       const expectedExcessBlobGas =
-        1000000n +
-        (blobGasPerBlob * (maxBlobGasPerBlock - targetBlobGasPerBlock)) / maxBlobGasPerBlock
+        0n + (blobGasPerBlob * (maxBlobGasPerBlock - targetBlobGasPerBlock)) / maxBlobGasPerBlock
       assert.strictEqual(
         excessBlobGas,
         expectedExcessBlobGas,
         'should use EIP-7918 formula when reserve price condition is met',
       )
-
-      // Restore original method
-      header.getBlobGasPrice = originalGetBlobGasPrice
     })
 
     it('should use original EIP-4844 logic when reserve price condition is not met', () => {
       // Create a header with low base fee and high blob gas price
-      const lowBaseFee = 1000000000n // 1 gwei
-      const highBlobGasPrice = 1000000n // High blob gas price
+      const lowBaseFee = 1n // Very low base fee (1 wei)
 
+      // Set excessBlobGas to a high value to get high blob gas price
+      const highExcessBlobGas = 1000000000n
       const header = createBlockHeader(
         {
           number: 1,
           baseFeePerGas: lowBaseFee,
-          excessBlobGas: 1000000n,
+          excessBlobGas: highExcessBlobGas,
           blobGasUsed: blobGasPerBlob * 2n, // 2 blobs used
         },
         { common: osakaCommon, skipConsensusFormatValidation: true },
       )
 
-      // Mock the blob gas price to be high
-      const originalGetBlobGasPrice = header.getBlobGasPrice
-      header.getBlobGasPrice = () => highBlobGasPrice
-
       const excessBlobGas = header.calcNextExcessBlobGas(osakaCommon)
 
       // Should use original EIP-4844 logic
       const blobBaseCost = osakaCommon.param('blobBaseCost')
+      const currentBlobGasPrice = header.getBlobGasPrice()
 
       // Check that reserve price condition is not met
       assert.isTrue(
-        blobBaseCost * lowBaseFee <= blobGasPerBlob * highBlobGasPrice,
+        blobBaseCost * lowBaseFee <= blobGasPerBlob * currentBlobGasPrice,
         'reserve price condition should not be met',
       )
 
-      const targetGasConsumed = 1000000n + blobGasPerBlob * 2n
+      const targetGasConsumed = highExcessBlobGas + blobGasPerBlob * 2n
       const targetBlobGasPerBlock = osakaCommon.param('targetBlobGasPerBlock')
       const expectedExcessBlobGas = targetGasConsumed - targetBlobGasPerBlock
 
@@ -254,9 +245,6 @@ describe('blob gas tests', () => {
         expectedExcessBlobGas,
         'should use original EIP-4844 logic when reserve price condition is not met',
       )
-
-      // Restore original method
-      header.getBlobGasPrice = originalGetBlobGasPrice
     })
 
     it('should not apply EIP-7918 logic when EIP is not activated', () => {
