@@ -18,39 +18,38 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-binarytree
   cancel-in-progress: true
 
+env:
+  CI: true
+
 jobs:
   test-binarytree:
     runs-on: ubuntu-24.04
 
     steps:
-      # Always fetch the repo (don’t rely on restoring the whole workspace from cache)
-      - uses: actions/checkout@v5
+      - name: Checkout repository
+        uses: actions/checkout@v5
         with:
           submodules: recursive
 
-      # Put pnpm on PATH first so setup-node's `cache: pnpm` can work safely
-      - uses: pnpm/action-setup@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
         with:
-          # Use 'auto' if your root package.json has: { "packageManager": "pnpm@x.y.z" }
-          version: auto
           run_install: false
 
-      - uses: actions/setup-node@v5
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
         with:
           node-version: '20'
           cache: 'pnpm'
 
-      # Install **once** from the workspace root
       - name: Install dependencies (workspace root)
         working-directory: ${{ github.workspace }}
         run: pnpm install --frozen-lockfile
 
-      # Build ONLY the binarytree package (run inside its folder; no -r, no root scripts)
       - name: Build @ethereumjs/binarytree
         working-directory: ${{ github.workspace }}/packages/binarytree
         run: pnpm run build
 
-      # Test ONLY the binarytree package (node tests)
-      - name: Test @ethereumjs/binarytree (node)
+      - name: Test @ethereumjs/binarytree
         working-directory: ${{ github.workspace }}/packages/binarytree
-        run: pnpm run test:node
+        run: pnpm run test
