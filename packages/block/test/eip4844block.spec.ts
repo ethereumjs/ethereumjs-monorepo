@@ -168,9 +168,7 @@ describe('blob gas tests', () => {
       hardfork: Hardfork.Cancun,
       params: paramsBlock,
       customCrypto: { kzg },
-      eips: {
-        7918: true,
-      },
+      eips: [7918],
     })
 
     it('applies reserve price when exec cost dominates', () => {
