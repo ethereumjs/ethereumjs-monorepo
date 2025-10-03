@@ -6,8 +6,8 @@ on:
         required: true
         type: string
       submodule-cache-key:
-          required: true
-          type: string
+        required: true
+        type: string
   workflow_dispatch:
     inputs:
       dep-cache-key:
@@ -17,62 +17,66 @@ on:
         required: false
         default: 'none'
 
-env:
-  cwd: ${{github.workspace}}/packages/block
-
-defaults:
-  run:
-    working-directory: packages/block
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-block
   cancel-in-progress: true
 
+env:
+  CI: true
+
 jobs:
   test-block:
-    runs-on: ubuntu-latest
-    steps:     
-      # We clone the repo and submodules if triggered from work-flow dispatch
+    runs-on: ubuntu-24.04
+
+    steps:
+      # If invoked directly, checkout the repo (including submodules)
       - if: inputs.submodule-cache-key == 'none'
         uses: actions/checkout@v5
         with:
           submodules: recursive
 
-      # We restore the code/deps from cache if triggered from workflow_call (i.e. have valid cache key)
-      - if: inputs.dep-cache-key != 'none' 
+      # If invoked via workflow_call with a dep cache, restore the workspace
+      - if: inputs.dep-cache-key != 'none'
         uses: actions/cache/restore@v4
         id: dep-cache
         with:
-          path: ${{github.workspace}}
+          path: ${{ github.workspace }}
           key: ${{ inputs.dep-cache-key }}
-  
-      - uses: pnpm/action-setup@v4
+
+      # Put pnpm on PATH (reads version from package.json "packageManager")
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
         with:
-          version: 10.5.2
           run_install: false
 
       - name: Use Node.js 20
         uses: actions/setup-node@v5
         with:
           node-version: 20
+          cache: 'pnpm'
 
-      - name: Install Dependencies (if called from workflow_dispatch)
-        if: steps.dep-cache.outputs.cache-hit != 'true'
-        run: pnpm install --frozen-lockfile
+
+      - name: Install Dependencies (if not restored)
+        if: ${{ inputs.dep-cache-key == 'none' || steps.dep-cache.outputs.cache-hit != 'true' }}
         working-directory: ${{ github.workspace }}
+        run: pnpm install --frozen-lockfile
+
 
       - if: inputs.submodule-cache-key != 'none'
         uses: actions/cache/restore@v4
         name: Initialize ethereum-tests
         id: submodules-cache
         with:
-          path: ${{github.workspace}}/packages/ethereum-tests
-          key: ${{ inputs.submodule-cache-key}}
+          path: ${{ github.workspace }}/packages/ethereum-tests
+          key: ${{ inputs.submodule-cache-key }}
           fail-on-cache-miss: true
 
-      - run: pnpm run coverage
+      - name: Coverage @ethereumjs/block
+        working-directory: ${{ github.workspace }}/packages/block
+        run: pnpm run coverage
+
       - uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ${{ github.workspace}}/packages/block/coverage/lcov.info
+          files: ${{ github.workspace }}/packages/block/coverage/lcov.info
           flags: block
