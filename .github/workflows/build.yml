@@ -1,4 +1,3 @@
-# .github/workflows/build.yml
 name: Build
 on:
   pull_request:
@@ -23,7 +22,7 @@ jobs:
         with:
           submodules: recursive
 
-      - id: create-cache-keys
+      - id: create-cache-key
         shell: bash
         run: echo "submodule-cache-key=$(git submodule | head -n 1)" >> "$GITHUB_OUTPUT"
 
@@ -33,7 +32,16 @@ jobs:
           key: submodule-${{ steps.create-cache-key.outputs.submodule-cache-key }}
           path: ${{ github.workspace }}/packages/ethereum-tests
 
-      - if: steps.submodules-cache-restore.outputs.cache-hit != 'true'
+      - name: Check submodule dir exists
+        id: have-et
+        run: |
+          if [ -d "${{ github.workspace }}/packages/ethereum-tests" ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - if: steps.submodules-cache-restore.outputs.cache-hit != 'true' && steps.have-et.outputs.exists == 'true'
         uses: actions/cache/save@v4
         with:
           path: ${{ github.workspace }}/packages/ethereum-tests
@@ -56,7 +64,7 @@ jobs:
         with:
           run_install: false
 
-      - name: Setup Node
+      - name: Setup Node (with pnpm cache here only)
         uses: actions/setup-node@v5
         with:
           node-version: '20'
@@ -89,7 +97,17 @@ jobs:
           KEY="deps-${{ runner.os }}-node20-$(sha256sum pnpm-lock.yaml | cut -d' ' -f1)-${GITHUB_RUN_ID}"
           echo "dep-cache-key=$KEY" >> "$GITHUB_OUTPUT"
 
+      - name: Verify workspace exists
+        id: have-ws
+        run: |
+          if [ -d "${{ github.workspace }}" ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Save prepared workspace
+        if: steps.have-ws.outputs.exists == 'true'
         uses: actions/cache/save@v4
         with:
           path: ${{ github.workspace }}

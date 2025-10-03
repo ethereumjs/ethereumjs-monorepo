@@ -1,4 +1,3 @@
-# .github/workflows/binarytree-build.yml
 name: binarytree
 on:
   workflow_call:
@@ -25,7 +24,7 @@ jobs:
 
     steps:
       - name: Restore prepared workspace (if provided)
-        if: inputs.dep-cache-key != 'none'
+        if: inputs.dep-cache-key != 'none' && inputs.dep-cache-key != ''
         uses: actions/cache/restore@v4
         id: dep-cache
         with:
