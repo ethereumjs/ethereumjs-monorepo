@@ -172,31 +172,29 @@ describe('blob gas tests', () => {
 
     it('applies reserve price when exec cost dominates', () => {
       const highBaseFee = 1_000_000_000n // 1 gwei
-      const targetBlobGasPerBlock = osakaCommon.param('targetBlobGasPerBlock')
-      const maxBlobGasPerBlock = osakaCommon.param('maxBlobGasPerBlock')
-      const blobBaseCost = osakaCommon.param('blobBaseCost')
-      const blobGasPerBlob = osakaCommon.param('blobGasPerBlob')
+
+      const target = osakaCommon.param('targetBlobGasPerBlock')
+      const max = osakaCommon.param('maxBlobGasPerBlock')
+      const BLOB_BASE_COST = osakaCommon.param('blobBaseCost')
+      const GAS_PER_BLOB = osakaCommon.param('blobGasPerBlob')
 
       const header = createBlockHeader(
         {
           number: 1,
           baseFeePerGas: highBaseFee,
           excessBlobGas: 0n,
-          blobGasUsed: targetBlobGasPerBlock, // use ≥ target to bypass early-exit
+          blobGasUsed: target,
         },
         { common: osakaCommon, skipConsensusFormatValidation: true },
       )
 
-      // sanity: reserve-price condition holds
-      assert.isTrue(blobBaseCost * highBaseFee > blobGasPerBlob * header.getBlobGasPrice())
+      assert.isTrue(BLOB_BASE_COST * highBaseFee > GAS_PER_BLOB * header.getBlobGasPrice())
 
-      const excess = header.calcNextExcessBlobGas(osakaCommon)
+      const result = header.calcNextExcessBlobGas(osakaCommon)
 
-      // EIP-7918 expected: excess + used*(max-target)//max  (excess = 0 here)
-      const expected =
-        (targetBlobGasPerBlock * (maxBlobGasPerBlock - targetBlobGasPerBlock)) / maxBlobGasPerBlock
+      const expected = (target * (max - target)) / max
 
-      assert.equal(excess, expected)
+      assert.strictEqual(result, expected)
     })
 
     it('should use original EIP-4844 logic when reserve price condition is not met', () => {
