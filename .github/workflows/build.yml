@@ -18,15 +18,14 @@ concurrency:
 jobs:
   checkout-submodules:
     runs-on: ubuntu-24.04
-
     steps:
       - uses: actions/checkout@v5
         with:
           submodules: recursive
 
-      - id: create-cache-key
-        run: echo "submodule-cache-key=$(git submodule | head -n 1)" >> $GITHUB_OUTPUT
+      - id: create-cache-keys
         shell: bash
+        run: echo "submodule-cache-key=$(git submodule | head -n 1)" >> "$GITHUB_OUTPUT"
 
       - uses: actions/cache/restore@v4
         id: submodules-cache-restore
@@ -36,7 +35,6 @@ jobs:
 
       - if: steps.submodules-cache-restore.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
-        id: submodule-cache-save
         with:
           path: ${{ github.workspace }}/packages/ethereum-tests
           key: submodule-${{ steps.create-cache-key.outputs.submodule-cache-key }}
