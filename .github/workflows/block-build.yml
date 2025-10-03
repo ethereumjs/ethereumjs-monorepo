@@ -6,7 +6,7 @@ on:
         required: true
         type: string
       submodule-cache-key:
-        required: true
+        required: false
         type: string
   workflow_dispatch:
     inputs:
@@ -29,21 +29,19 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-      # If invoked directly, checkout the repo (including submodules)
-      - if: inputs.submodule-cache-key == 'none'
+      - name: Checkout repository
         uses: actions/checkout@v5
         with:
           submodules: recursive
 
-      # If invoked via workflow_call with a dep cache, restore the workspace
-      - if: inputs.dep-cache-key != 'none'
+      - name: Restore workspace cache
+        if: inputs.dep-cache-key != 'none'
         uses: actions/cache/restore@v4
         id: dep-cache
         with:
           path: ${{ github.workspace }}
           key: ${{ inputs.dep-cache-key }}
 
-      # Put pnpm on PATH (reads version from package.json "packageManager")
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -55,16 +53,14 @@ jobs:
           node-version: 20
           cache: 'pnpm'
 
-
-      - name: Install Dependencies (if not restored)
+      - name: Install dependencies (if not restored)
         if: ${{ inputs.dep-cache-key == 'none' || steps.dep-cache.outputs.cache-hit != 'true' }}
         working-directory: ${{ github.workspace }}
         run: pnpm install --frozen-lockfile
 
-
-      - if: inputs.submodule-cache-key != 'none'
+      - name: Initialize ethereum-tests (from cache)
+        if: inputs.submodule-cache-key != 'none'
         uses: actions/cache/restore@v4
-        name: Initialize ethereum-tests
         id: submodules-cache
         with:
           path: ${{ github.workspace }}/packages/ethereum-tests
@@ -75,7 +71,8 @@ jobs:
         working-directory: ${{ github.workspace }}/packages/block
         run: pnpm run coverage
 
-      - uses: codecov/codecov-action@v4
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ${{ github.workspace }}/packages/block/coverage/lcov.info
