@@ -62,6 +62,7 @@ export const paramsVM: ParamsDict = {
     blobGasPriceUpdateFraction: 3338477, // The denominator used in the exponential when calculating a blob gas price
     // gasPrices
     minBlobGas: 1, // The minimum fee per blob gas
+    blobBaseCost: 8192, // EIP-7918: Blob base fee bounded by execution cost (2^13)
   },
   /**
 .  * Beacon block root in the EVM
