@@ -1,9 +1,15 @@
 FROM node:22.4-slim
 RUN apt-get update && apt-get install -y git g++ make python3 python3-setuptools && apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# Install pnpm
+RUN npm install -g pnpm@10.5.2
+
 WORKDIR /ethereumjs-monorepo
 
 COPY .git .git
+COPY package.json package.json
+COPY pnpm-lock.yaml pnpm-lock.yaml
+COPY pnpm-workspace.yaml pnpm-workspace.yaml
 COPY node_modules node_modules
 
 # copy dist folders
@@ -46,6 +52,8 @@ COPY packages/verkle/package.json packages/verkle/package.json
 COPY packages/vm/package.json packages/vm/package.json
 COPY packages/wallet/package.json packages/wallet/package.json
 
+# Install dependencies to set up workspace properly
+RUN pnpm install --frozen-lockfile
 
 # Sanity check
 RUN node /ethereumjs-monorepo/packages/client/dist/esm/bin/cli.js --help

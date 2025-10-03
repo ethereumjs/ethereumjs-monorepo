@@ -1,6 +1,7 @@
 import type { Block, BlockHeader } from '@ethereumjs/block'
 import type { MerkleStateManager } from '@ethereumjs/statemanager'
 import type { Address } from '@ethereumjs/util'
+// @ts-ignore
 import type { Multiaddr } from '@multiformats/multiaddr'
 import type * as promClient from 'prom-client'
 import type { SyncMode } from './index.ts'

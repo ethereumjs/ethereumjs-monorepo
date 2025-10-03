@@ -1,4 +1,5 @@
 import { bytesToUnprefixedHex } from '@ethereumjs/util'
+// @ts-ignore
 import { LRUCache } from 'lru-cache'
 
 /**

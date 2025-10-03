@@ -74,7 +74,9 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
     super({ ...options, objectMode: true })
 
     this.DEBUG =
-      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+      typeof (globalThis as any).window === 'undefined'
+        ? (process?.env?.DEBUG?.includes('ethjs') ?? false)
+        : false
 
     this.config = options.config
     this.debug = debug('client:fetcher:#')

@@ -27,7 +27,7 @@ It is intended to be both an entrypoint for external contributors as well as a r
 
 ### Structure
 
-The EthereumJS project uses [npm workspaces](https://docs.npmjs.com/cli/v7/using-npm/workspaces) to manage all the packages in our monorepo and link packages together.
+The EthereumJS project uses [pnpm workspaces](https://pnpm.io/workspaces) to manage all the packages in our monorepo and link packages together.
 
 #### Key Directories
 
@@ -48,20 +48,20 @@ The `./config/cli` directory contains helper scripts referenced in package.json 
 
 #### Common Commands
 
-- **Clean the workspace**: `npm run clean` - Removes build artifacts and node_modules
-- **Lint code**: `npm run lint` - Check code style with ESLint v9 and Biome
-- **Fix linting issues**: `npm run lint:fix` - Automatically fix style issues
-- **Build all packages**: `npm run build --workspaces` - Build all packages in the monorepo
-- **Build documentation**: `npm run docs:build` - Generate documentation for all packages
+- **Clean the workspace**: `pnpm run clean` - Removes build artifacts and node_modules
+- **Lint code**: `pnpm run lint` - Check code style with ESLint v9 and Biome
+- **Fix linting issues**: `pnpm run lint:fix` - Automatically fix style issues
+- **Build all packages**: `pnpm run build` - Build all packages in the monorepo
+- **Build documentation**: `pnpm run docs:build` - Generate documentation for all packages
 
 #### Working on a Specific Package
 
 To focus on a single package (e.g., VM):
 
 1. Navigate to the package directory: `cd packages/vm`
-2. Run tests: `npm run test`
+2. Run tests: `pnpm run test`
 3. Run a specific test: `npx vitest test/path/to/test.spec.ts`
-4. Build just that package: `npm run build --workspace=@ethereumjs/vm`
+4. Build just that package: `pnpm --filter @ethereumjs/vm run build`
 
 ### Releases
 
@@ -119,13 +119,13 @@ For the CHANGELOG files you have not added lines in this step please enter the f
 Windows users might encounter errors with script paths. To fix, configure Git bash as the script shell:
 
 ```sh
-npm config set script-shell "C:\\Program Files (x86)\\git\\bin\\bash.exe"
+pnpm config set script-shell "C:\\Program Files (x86)\\git\\bin\\bash.exe"
 ```
 
 To reset this setting:
 
 ```sh
-npm config delete script-shell
+pnpm config delete script-shell
 ```
 
 ## Development Tools
@@ -188,7 +188,7 @@ Each package includes:
 
 Commands area available on both root and package levels.
 
-Run `npm run lint` to find lint issues and `npm run lint:fix` to fix fixable lint issues.
+Run `pnpm run lint` to find lint issues and `pnpm run lint:fix` to fix fixable lint issues.
 
 
 ### Spellcheck
@@ -209,8 +209,8 @@ Commands area available on both root and package levels.
 ```json
 {
   "scripts": {
-    "sc": "npm run spellcheck",
-    "spellcheck": "npm run spellcheck:ts && npm run spellcheck:md",
+    "sc": "pnpm run spellcheck",
+    "spellcheck": "pnpm run spellcheck:ts && pnpm run spellcheck:md",
     "spellcheck:ts": "npx cspell --gitignore -c ../../config/cspell-ts.json ...",
     "spellcheck:md": "npx cspell --gitignore -c ../../config/cspell-md.json ..."
   }
@@ -223,7 +223,7 @@ The project uses [Vitest](https://vitest.dev/) for testing with [c8](https://vit
 
 #### General
 
-Each package includes one or more test scripts.  To run all tests in any package, use `npm run test`.  Refer to the package.json for more specifics.
+Each package includes one or more test scripts.  To run all tests in any package, use `pnpm run test`.  Refer to the package.json for more specifics.
 
 To run a specific test and watch for changes:
 
@@ -233,7 +233,7 @@ npx vitest test/path/to/test.spec.ts
 
 #### Browser
 
-We use `vitest` with [playwright](https://playwright.dev/) to run browser tests.  When running browser tests with `npm run test:browser`, ensure you have a version of the Chromium browser installed.  If not, you can run `npx playwright install --with-deps` to install a supported version.
+We use `vitest` with [playwright](https://playwright.dev/) to run browser tests.  When running browser tests with `pnpm run test:browser`, ensure you have a version of the Chromium browser installed.  If not, you can run `npx playwright install --with-deps` to install a supported version.
 
 ## Advanced Topics
 
@@ -241,23 +241,23 @@ We use `vitest` with [playwright](https://playwright.dev/) to run browser tests.
 
 #### Quick Summary
 
-To test packages with an external project locally, use npm link:
+To test packages with an external project locally, use pnpm link:
 
 1. Build the package you want to test:
 ```sh
 cd packages/package-name
-npm run build
+pnpm run build
 ```
 
 2. Link the package globally:
 ```sh
-npm link
+pnpm link --global
 ```
 
 3. In your test project, link to the local package:
 ```sh
 cd path/to/your/project
-npm link @ethereumjs/package-name
+pnpm link --global @ethereumjs/package-name
 ```
 
 4. When you make changes to your package, rebuild it for the changes to be reflected.
@@ -265,10 +265,10 @@ npm link @ethereumjs/package-name
 5. When done testing, unlink:
 ```sh
 # In your test project
-npm unlink --no-save @ethereumjs/package-name
+pnpm unlink --global @ethereumjs/package-name
 
 # In the package directory
-npm unlink
+pnpm unlink --global
 ```
 
 When making changes to the linked package, rebuild it for the changes to be reflected in your test project.

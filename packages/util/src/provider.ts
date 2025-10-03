@@ -53,7 +53,7 @@ export const fetchFromProvider = async (url: string, params: rpcParams) => {
       )}`,
     )
   }
-  const json = await res.json()
+  const json = (await res.json()) as any
   // TODO we should check json.error here
   return json.result
 }

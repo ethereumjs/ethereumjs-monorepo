@@ -1,4 +1,5 @@
 import debugDefault from 'debug'
+// @ts-ignore
 import { LRUCache } from 'lru-cache'
 
 import { formatLogId } from '../util.ts'
@@ -16,7 +17,9 @@ export class BanList {
   constructor() {
     this._lru = new LRUCache({ max: 10000 })
     this.DEBUG =
-      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+      typeof (globalThis as any).window === 'undefined'
+        ? (process?.env?.DEBUG?.includes('ethjs') ?? false)
+        : false
   }
 
   add(obj: string | Uint8Array | PeerInfo, maxAge?: number) {

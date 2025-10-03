@@ -1,4 +1,5 @@
 import { KeyEncoding, ValueEncoding, bytesToHex, hexToBytes, isHexString } from '@ethereumjs/util'
+// @ts-ignore
 import { LRUCache } from 'lru-cache'
 
 import type { BatchDBOp, DB, DelBatch, PutBatch } from '@ethereumjs/util'
