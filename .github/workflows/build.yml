@@ -1,3 +1,4 @@
+# .github/workflows/build.yml
 name: Build
 on:
   pull_request:
@@ -8,7 +9,7 @@ on:
   workflow_dispatch:
 
 env:
-  cwd: ${{github.workspace}}
+  cwd: ${{ github.workspace }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
@@ -31,17 +32,17 @@ jobs:
         id: submodules-cache-restore
         with:
           key: submodule-${{ steps.create-cache-key.outputs.submodule-cache-key }}
-          path: ${{github.workspace}}/packages/ethereum-tests
+          path: ${{ github.workspace }}/packages/ethereum-tests
 
       - if: steps.submodules-cache-restore.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         id: submodule-cache-save
         with:
-          path: ${{github.workspace}}/packages/ethereum-tests
-          key: submodule-${{ steps.create-cache-key.outputs.submodule-cache-key}}
+          path: ${{ github.workspace }}/packages/ethereum-tests
+          key: submodule-${{ steps.create-cache-key.outputs.submodule-cache-key }}
 
     outputs:
-      submodule-cache-key: submodule-${{ steps.create-cache-key.outputs.submodule-cache-key}}
+      submodule-cache-key: submodule-${{ steps.create-cache-key.outputs.submodule-cache-key }}
 
   build:
     needs: checkout-submodules
@@ -55,29 +56,31 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: '10.5.2'
+          run_install: false
 
       - name: Setup Node
         uses: actions/setup-node@v5
         with:
           node-version: '20'
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
 
       - run: pnpm -v && command -v pnpm
 
       - name: Restore ethereum-tests submodule
         uses: actions/cache/restore@v4
         with:
-          path: ${{github.workspace}}/packages/ethereum-tests
+          path: ${{ github.workspace }}/packages/ethereum-tests
           key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
 
-      - name: Install deps
-        run: pnpm install --frozen-lockfile
+      - name: Install deps (workspace root)
         working-directory: ${{ github.workspace }}
+        run: pnpm install --frozen-lockfile
 
       - name: Install browser deps
         run: pnpm run install-browser-deps
 
-      - name: Build
+      - name: Build (workspace)
         run: pnpm build
 
       - name: Compute dep cache key
@@ -85,7 +88,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          echo "dep-cache-key=pnpm-$(sha256sum pnpm-lock.yaml | cut -d' ' -f1)-${GITHUB_RUN_ID}" >> "$GITHUB_OUTPUT"
+          KEY="deps-${{ runner.os }}-node20-$(sha256sum pnpm-lock.yaml | cut -d' ' -f1)-${GITHUB_RUN_ID}"
+          echo "dep-cache-key=$KEY" >> "$GITHUB_OUTPUT"
+
+      - name: Save prepared workspace
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ github.workspace }}
+          key: ${{ steps.depkey.outputs.dep-cache-key }}
 
     outputs:
       dep-cache-key: ${{ steps.depkey.outputs.dep-cache-key }}

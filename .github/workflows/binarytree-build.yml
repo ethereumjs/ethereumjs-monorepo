@@ -10,9 +10,6 @@ on:
       dep-cache-key:
         required: false
         default: 'none'
-      submodule-cache-key:
-        required: false
-        default: 'none'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-binarytree
@@ -26,7 +23,16 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-      - name: Checkout repository
+      - name: Restore prepared workspace (if provided)
+        if: inputs.dep-cache-key != 'none'
+        uses: actions/cache/restore@v4
+        id: dep-cache
+        with:
+          path: ${{ github.workspace }}
+          key: ${{ inputs.dep-cache-key }}
+
+      - name: Checkout repository (fallback)
+        if: steps.dep-cache.outputs.cache-hit != 'true'
         uses: actions/checkout@v5
         with:
           submodules: recursive
@@ -36,19 +42,15 @@ jobs:
         with:
           run_install: false
 
-      - name: Setup Node.js
+      - name: Use Node.js 20
         uses: actions/setup-node@v5
         with:
-          node-version: '20'
-          cache: 'pnpm'
+          node-version: 20
 
-      - name: Install dependencies (workspace root)
+      - name: Install dependencies (fallback)
+        if: steps.dep-cache.outputs.cache-hit != 'true'
         working-directory: ${{ github.workspace }}
         run: pnpm install --frozen-lockfile
-
-      - name: Build @ethereumjs/binarytree
-        working-directory: ${{ github.workspace }}/packages/binarytree
-        run: pnpm run build
 
       - name: Test @ethereumjs/binarytree
         working-directory: ${{ github.workspace }}/packages/binarytree
