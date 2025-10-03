@@ -558,41 +558,36 @@ export class BlockHeader {
 
   /**
    * Calculates the excess blob gas for next (hopefully) post EIP 4844 block.
-   * Implements EIP-7918: Blob base fee bounded by execution cost
    */
   public calcNextExcessBlobGas(childCommon: Common): bigint {
-    // The validation of the fields and 4844 activation is already taken care in BlockHeader constructor
-    const targetGasConsumed = (this.excessBlobGas ?? BIGINT_0) + (this.blobGasUsed ?? BIGINT_0)
-    const targetBlobGasPerBlock = childCommon.param('targetBlobGasPerBlock')
+    // parent header fields
+    const excess = this.excessBlobGas ?? 0n
+    const used = this.blobGasUsed ?? 0n
 
-    if (targetGasConsumed <= targetBlobGasPerBlock) {
-      return BIGINT_0
+    // schedule params for the child block being processed
+    const targetPerBlock = childCommon.param('targetBlobGasPerBlock') as bigint
+    const maxPerBlock = childCommon.param('maxBlobGasPerBlock') as bigint
+
+    // Early exit (strictly < per spec)
+    if (excess + used < targetPerBlock) {
+      return 0n
     }
 
-    // EIP-7918: Check if reserve price condition is met
+    // EIP-7918 reserve price check
     if (childCommon.isActivatedEIP(7918)) {
       const blobBaseCost = childCommon.param('blobBaseCost')
-      const blobGasPerBlob = childCommon.param('blobGasPerBlob')
-      const baseFeePerGas = this.baseFeePerGas ?? BIGINT_0
-      const currentBlobGasPrice = this.getBlobGasPrice()
+      const gasPerBlob = childCommon.param('blobGasPerBlob')
+      const baseFee = this.baseFeePerGas ?? 0n
+      const blobFee = this.getBlobGasPrice()
 
-      // If BLOB_BASE_COST * base_fee_per_gas > GAS_PER_BLOB * base_fee_per_blob_gas
-      // then don't subtract target_blob_gas, causing excess_blob_gas to increase
-      if (blobBaseCost * baseFeePerGas > blobGasPerBlob * currentBlobGasPrice) {
-        // Use the new formula: excess_blob_gas + blob_gas_used * (max - target) / max
-        const maxBlobGasPerBlock = childCommon.param('maxBlobGasPerBlock')
-        const blobGasUsed = this.blobGasUsed ?? BIGINT_0
-        const excessBlobGas = this.excessBlobGas ?? BIGINT_0
-
-        return (
-          excessBlobGas +
-          (blobGasUsed * (maxBlobGasPerBlock - targetBlobGasPerBlock)) / maxBlobGasPerBlock
-        )
+      if (blobBaseCost * baseFee > gasPerBlob * blobFee) {
+        const increase = (used * (maxPerBlock - targetPerBlock)) / maxPerBlock
+        return excess + increase
       }
     }
 
-    // Original EIP-4844 logic
-    return targetGasConsumed - targetBlobGasPerBlock
+    // Original 4844 path
+    return excess + used - targetPerBlock
   }
 
   /**
@@ -659,9 +654,7 @@ export class BlockHeader {
    */
   hash(): Uint8Array {
     if (Object.isFrozen(this)) {
-      if (!this.cache.hash) {
-        this.cache.hash = this.keccakFunction(RLP.encode(this.raw())) as Uint8Array
-      }
+      this.cache.hash ??= this.keccakFunction(RLP.encode(this.raw())) as Uint8Array
       return this.cache.hash
     }
     return this.keccakFunction(RLP.encode(this.raw()))
