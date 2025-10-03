@@ -560,16 +560,14 @@ export class BlockHeader {
    * Calculates the excess blob gas for next (hopefully) post EIP 4844 block.
    */
   public calcNextExcessBlobGas(childCommon: Common): bigint {
-    // parent header fields
-    const excess = this.excessBlobGas ?? 0n
-    const used = this.blobGasUsed ?? 0n
+    const excessBlobGas = this.excessBlobGas ?? 0n
+    const blobGasUsed = this.blobGasUsed ?? 0n
 
-    // schedule params for the child block being processed
-    const targetPerBlock = childCommon.param('targetBlobGasPerBlock') as bigint
-    const maxPerBlock = childCommon.param('maxBlobGasPerBlock') as bigint
+    const targetPerBlock = childCommon.param('targetBlobGasPerBlock')
+    const maxPerBlock = childCommon.param('maxBlobGasPerBlock')
 
     // Early exit (strictly < per spec)
-    if (excess + used < targetPerBlock) {
+    if (excessBlobGas + blobGasUsed < targetPerBlock) {
       return 0n
     }
 
@@ -581,13 +579,13 @@ export class BlockHeader {
       const blobFee = this.getBlobGasPrice()
 
       if (blobBaseCost * baseFee > gasPerBlob * blobFee) {
-        const increase = (used * (maxPerBlock - targetPerBlock)) / maxPerBlock
-        return excess + increase
+        const increase = (blobGasUsed * (maxPerBlock - targetPerBlock)) / maxPerBlock
+        return excessBlobGas + increase
       }
     }
 
     // Original 4844 path
-    return excess + used - targetPerBlock
+    return excessBlobGas + blobGasUsed - targetPerBlock
   }
 
   /**
