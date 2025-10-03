@@ -14,8 +14,6 @@ on:
         required: false
         default: 'none'
 
-# No default working-directory — we install at the repo root on purpose
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-binarytree
   cancel-in-progress: true
@@ -25,30 +23,34 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
+      # Always fetch the repo (don’t rely on restoring the whole workspace from cache)
       - uses: actions/checkout@v5
         with:
           submodules: recursive
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
+      # Put pnpm on PATH first so setup-node's `cache: pnpm` can work safely
+      - uses: pnpm/action-setup@v4
         with:
+          # Use 'auto' if your root package.json has: { "packageManager": "pnpm@x.y.z" }
+          version: auto
           run_install: false
 
-      - name: Setup Node.js 20 (with pnpm store cache)
-        uses: actions/setup-node@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: '20'
           cache: 'pnpm'
 
-      # Install dependencies from the WORKSPACE ROOT
-      - name: Install dependencies (workspace)
+      # Install **once** from the workspace root
+      - name: Install dependencies (workspace root)
         working-directory: ${{ github.workspace }}
         run: pnpm install --frozen-lockfile
 
-      # Build only the binarytree package
+      # Build ONLY the binarytree package (run inside its folder; no -r, no root scripts)
       - name: Build @ethereumjs/binarytree
-        run: pnpm -w -r --filter "@ethereumjs/binarytree" run build
+        working-directory: ${{ github.workspace }}/packages/binarytree
+        run: pnpm run build
 
-      # Test only the binarytree package
-      - name: Test @ethereumjs/binarytree
-        run: pnpm -w -r --filter "@ethereumjs/binarytree" run test
+      # Test ONLY the binarytree package (node tests)
+      - name: Test @ethereumjs/binarytree (node)
+        working-directory: ${{ github.workspace }}/packages/binarytree
+        run: pnpm run test:node
