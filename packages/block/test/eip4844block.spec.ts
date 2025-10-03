@@ -161,6 +161,105 @@ describe('blob gas tests', () => {
     const nextBlobGas = highGasHeader.calcNextBlobGasPrice(common)
     assert.strictEqual(nextBlobGas, BigInt(7)) // TODO verify that this is correct
   })
+
+  describe('EIP-7918: Blob base fee bounded by execution cost', () => {
+    const osakaCommon = createCommonFromGethGenesis(eip4844GethGenesis, {
+      chain: 'customChain',
+      hardfork: Hardfork.Cancun,
+      params: paramsBlock,
+      customCrypto: { kzg },
+      eips: [7918],
+    })
+
+    it('applies reserve price when exec cost dominates', () => {
+      const highBaseFee = 1_000_000_000_000_000n
+      const target = osakaCommon.param('targetBlobGasPerBlock')
+      const max = osakaCommon.param('maxBlobGasPerBlock')
+      const BLOB_BASE_COST = osakaCommon.param('blobBaseCost')
+      const GAS_PER_BLOB = osakaCommon.param('blobGasPerBlob')
+
+      const header = createBlockHeader(
+        {
+          number: 1,
+          baseFeePerGas: highBaseFee,
+          excessBlobGas: 0n,
+          blobGasUsed: target,
+        },
+        { common: osakaCommon, skipConsensusFormatValidation: true },
+      )
+
+      assert.isTrue(BLOB_BASE_COST * highBaseFee > GAS_PER_BLOB * header.getBlobGasPrice())
+
+      const got = header.calcNextExcessBlobGas(osakaCommon)
+      const expected = (target * (max - target)) / max
+      assert.strictEqual(got, expected)
+    })
+
+    it('should use original EIP-4844 logic when reserve price condition is not met', () => {
+      // Create a header with low base fee and high blob gas price
+      const lowBaseFee = 1n // Very low base fee (1 wei)
+
+      // Set excessBlobGas to a high value to get high blob gas price
+      const highExcessBlobGas = 1000000000n
+      const header = createBlockHeader(
+        {
+          number: 1,
+          baseFeePerGas: lowBaseFee,
+          excessBlobGas: highExcessBlobGas,
+          blobGasUsed: blobGasPerBlob * 2n, // 2 blobs used
+        },
+        { common: osakaCommon, skipConsensusFormatValidation: true },
+      )
+
+      const excessBlobGas = header.calcNextExcessBlobGas(osakaCommon)
+
+      // Should use original EIP-4844 logic
+      const blobBaseCost = osakaCommon.param('blobBaseCost')
+      const currentBlobGasPrice = header.getBlobGasPrice()
+
+      // Check that reserve price condition is not met
+      assert.isTrue(
+        blobBaseCost * lowBaseFee <= blobGasPerBlob * currentBlobGasPrice,
+        'reserve price condition should not be met',
+      )
+
+      const targetGasConsumed = highExcessBlobGas + blobGasPerBlob * 2n
+      const targetBlobGasPerBlock = osakaCommon.param('targetBlobGasPerBlock')
+      const expectedExcessBlobGas = targetGasConsumed - targetBlobGasPerBlock
+
+      assert.strictEqual(
+        excessBlobGas,
+        expectedExcessBlobGas,
+        'should use original EIP-4844 logic when reserve price condition is not met',
+      )
+    })
+
+    it('should not apply EIP-7918 logic when EIP is not activated', () => {
+      // Use Cancun hardfork where EIP-7918 is not activated
+      const header = createBlockHeader(
+        {
+          number: 1,
+          baseFeePerGas: 1000000000n,
+          excessBlobGas: 1000000n,
+          blobGasUsed: blobGasPerBlob,
+        },
+        { common, skipConsensusFormatValidation: true },
+      )
+
+      const excessBlobGas = header.calcNextExcessBlobGas(common)
+
+      // Should use original EIP-4844 logic since EIP-7918 is not activated
+      const targetGasConsumed = 1000000n + blobGasPerBlob
+      const targetBlobGasPerBlock = common.param('targetBlobGasPerBlock')
+      const expectedExcessBlobGas = targetGasConsumed - targetBlobGasPerBlock
+
+      assert.strictEqual(
+        excessBlobGas,
+        expectedExcessBlobGas,
+        'should use original EIP-4844 logic when EIP-7918 is not activated',
+      )
+    })
+  })
 })
 
 describe('transaction validation tests', () => {
