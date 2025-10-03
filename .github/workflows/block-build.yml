@@ -1,10 +1,9 @@
-# .github/workflows/block-build.yml
 name: Block
 on:
   workflow_call:
     inputs:
       dep-cache-key:
-        required: true
+        required: false
         type: string
       submodule-cache-key:
         required: false
@@ -29,7 +28,16 @@ jobs:
   test-block:
     runs-on: ubuntu-24.04
     steps:
-      - name: Checkout repository
+      - name: Restore prepared workspace (if provided)
+        if: inputs.dep-cache-key != 'none'
+        uses: actions/cache/restore@v4
+        id: dep-cache
+        with:
+          path: ${{ github.workspace }}
+          key: ${{ inputs.dep-cache-key }}
+
+      - name: Checkout repository (fallback)
+        if: steps.dep-cache.outputs.cache-hit != 'true'
         uses: actions/checkout@v5
         with:
           submodules: recursive
@@ -39,7 +47,7 @@ jobs:
         with:
           run_install: false
 
-      - name: Setup Node.js (restore pnpm cache)
+      - name: Setup Node.js (enable pnpm store cache)
         uses: actions/setup-node@v5
         with:
           node-version: 20
@@ -49,9 +57,13 @@ jobs:
       - name: Prefetch deps
         run: pnpm fetch --frozen-lockfile
 
-      - name: Install dependencies (workspace root)
+      - name: Install dependencies (fallback)
+        if: steps.dep-cache.outputs.cache-hit != 'true'
         working-directory: ${{ github.workspace }}
         run: pnpm install --frozen-lockfile --ignore-scripts --prefer-offline
+
+      - name: Build Block + deps
+        run: pnpm -w -r --filter @ethereumjs/block... run build
 
       - name: Initialize ethereum-tests (from cache)
         if: inputs.submodule-cache-key != 'none'
