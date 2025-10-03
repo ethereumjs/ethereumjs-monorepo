@@ -23,16 +23,7 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-      - name: Restore prepared workspace (if provided)
-        if: inputs.dep-cache-key != 'none' && inputs.dep-cache-key != ''
-        uses: actions/cache/restore@v4
-        id: dep-cache
-        with:
-          path: ${{ github.workspace }}
-          key: ${{ inputs.dep-cache-key }}
-
-      - name: Checkout repository (fallback)
-        if: steps.dep-cache.outputs.cache-hit != 'true'
+      - name: Checkout repository
         uses: actions/checkout@v5
         with:
           submodules: recursive
@@ -42,15 +33,19 @@ jobs:
         with:
           run_install: false
 
-      - name: Use Node.js 20
+      - name: Setup Node.js (restore pnpm cache)
         uses: actions/setup-node@v5
         with:
           node-version: 20
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
 
-      - name: Install dependencies (fallback)
-        if: steps.dep-cache.outputs.cache-hit != 'true'
+      - name: Prefetch deps
+        run: pnpm fetch --frozen-lockfile
+
+      - name: Install dependencies (workspace root)
         working-directory: ${{ github.workspace }}
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --ignore-scripts --prefer-offline
 
       - name: Test @ethereumjs/binarytree
         working-directory: ${{ github.workspace }}/packages/binarytree
