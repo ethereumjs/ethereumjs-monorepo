@@ -47,6 +47,9 @@ jobs:
         working-directory: ${{ github.workspace }}
         run: pnpm install --frozen-lockfile --ignore-scripts --prefer-offline
 
+      - name: Build
+        run: pnpm -w -r --filter @ethereumjs/binarytree... run build
+
       - name: Test @ethereumjs/binarytree
         working-directory: ${{ github.workspace }}/packages/binarytree
         run: pnpm run test

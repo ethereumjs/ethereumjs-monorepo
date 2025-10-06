@@ -62,7 +62,7 @@ jobs:
         working-directory: ${{ github.workspace }}
         run: pnpm install --frozen-lockfile --ignore-scripts --prefer-offline
 
-      - name: Build Block + deps
+      - name: Build
         run: pnpm -w -r --filter @ethereumjs/block... run build
 
       - name: Initialize ethereum-tests (from cache)
