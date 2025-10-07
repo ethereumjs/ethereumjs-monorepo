@@ -61,6 +61,7 @@
   },
   "devDependencies": {
     "@ethereumjs/block": "workspace:*",
+    "@ethereumjs/evm": "workspace:*",
     "@ethereumjs/genesis": "workspace:*",
     "@types/debug": "^4.1.12",
     "micro-eth-signer": "0.15.0"
