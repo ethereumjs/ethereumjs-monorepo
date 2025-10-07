@@ -4,17 +4,16 @@ on:
     branches: [master]
     tags: ['*']
 
-defaults:
-  run:
-    working-directory: packages/vm
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
+env:
+  CI: true
+
 jobs:
   test-vm-state:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
         with:
@@ -26,25 +25,35 @@ jobs:
           path: ${{github.workspace}}
           key: pnpm-${{ hashFiles('pnpm-lock.yaml') }}
 
-      - uses: pnpm/action-setup@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
         with:
-          version: 10.5.2
           run_install: false
 
-      - name: Use Node.js 20
+      - name: Setup Node.js (enable pnpm store cache)
         uses: actions/setup-node@v5
         with:
           node-version: 20
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Prefetch deps
+        run: pnpm fetch --frozen-lockfile
 
       - name: Install Dependencies (if not restored from cache)
         if: steps.dep-cache.outputs.cache-hit != 'true'
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --ignore-scripts --prefer-offline
         working-directory: ${{ github.workspace }}
 
-      - run: pnpm run test:state:newForks
+      - name: Build
+        run: pnpm -w -r --filter @ethereumjs/vm... run build
+
+      - name: Test VM State
+        working-directory: ${{ github.workspace }}/packages/vm
+        run: pnpm run test:state:newForks
 
   test-vm-blockchain:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
         with:
@@ -56,19 +65,29 @@ jobs:
           path: ${{github.workspace}}
           key: pnpm-${{ hashFiles('pnpm-lock.yaml') }}
 
-      - uses: pnpm/action-setup@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
         with:
-          version: 10.5.2
           run_install: false
 
-      - name: Use Node.js 20
+      - name: Setup Node.js (enable pnpm store cache)
         uses: actions/setup-node@v5
         with:
           node-version: 20
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Prefetch deps
+        run: pnpm fetch --frozen-lockfile
 
       - name: Install Dependencies (if not restored from cache)
         if: steps.dep-cache.outputs.cache-hit != 'true'
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --ignore-scripts --prefer-offline
         working-directory: ${{ github.workspace }}
 
-      - run: pnpm run test:blockchain
+      - name: Build
+        run: pnpm -w -r --filter @ethereumjs/vm... run build
+
+      - name: Test VM Blockchain
+        working-directory: ${{ github.workspace }}/packages/vm
+        run: pnpm run test:blockchain

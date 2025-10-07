@@ -3,7 +3,7 @@ on:
   workflow_call:
     inputs:
       dep-cache-key:
-        required: true
+        required: false
         type: string
   workflow_dispatch:
     inputs:
@@ -14,51 +14,61 @@ on:
         required: false
         default: 'none'
 
-env:
-  cwd: ${{github.workspace}}/packages/blockchain
-
-defaults:
-  run:
-    working-directory: packages/blockchain
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-blockchain
   cancel-in-progress: true
 
+env:
+  CI: true
+
 jobs:
   test-blockchain:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      # We clone the repo and submodules if triggered from work-flow dispatch
-      - if: inputs.submodule-cache-key == 'none'
-        uses: actions/checkout@v5
-
-      # We restore the code/deps from cache if triggered from workflow_call (i.e. have valid cache key)
-      - uses: actions/cache/restore@v4
+      - name: Restore prepared workspace (if provided)
+        if: inputs.dep-cache-key != 'none'
+        uses: actions/cache/restore@v4
         id: dep-cache
         with:
-          path: ${{github.workspace}}
+          path: ${{ github.workspace }}
           key: ${{ inputs.dep-cache-key }}
 
-      - name: Use Node.js 20
+      - name: Checkout repository (fallback)
+        if: steps.dep-cache.outputs.cache-hit != 'true'
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Setup Node.js (enable pnpm store cache)
         uses: actions/setup-node@v5
         with:
           node-version: 20
-          cache: 'pnpm'
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
 
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10.5.2
-          run_install: false
+      - name: Prefetch deps
+        run: pnpm fetch --frozen-lockfile
 
-      - name: Install Dependencies (if called from workflow_dispatch)
+      - name: Install dependencies (fallback)
         if: steps.dep-cache.outputs.cache-hit != 'true'
-        run: pnpm install --frozen-lockfile
         working-directory: ${{ github.workspace }}
+        run: pnpm install --frozen-lockfile --ignore-scripts --prefer-offline
 
-      - run: pnpm run coverage
-      - uses: codecov/codecov-action@v4
+      - name: Build
+        run: pnpm -w -r --filter @ethereumjs/blockchain... run build
+
+      - name: Coverage @ethereumjs/blockchain
+        working-directory: ${{ github.workspace }}/packages/blockchain
+        run: pnpm run coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: ${{ env.cwd }}/coverage/lcov.info
+          files: ${{ github.workspace }}/packages/blockchain/coverage/lcov.info
           flags: blockchain
