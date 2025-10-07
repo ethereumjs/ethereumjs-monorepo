@@ -62,6 +62,7 @@
   },
   "devDependencies": {
     "@ethereumjs/genesis": "workspace:*",
+    "@ethereumjs/testdata": "workspace:*",
     "@types/benchmark": "^2.1.5",
     "@types/debug": "^4.1.12",
     "abstract-level": "^3.0.1",
