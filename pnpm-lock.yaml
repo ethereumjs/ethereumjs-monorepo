@@ -598,6 +598,9 @@ importers:
       '@ethereumjs/genesis':
         specifier: workspace:*
         version: link:../genesis
+      '@ethereumjs/testdata':
+        specifier: workspace:*
+        version: link:../testdata
       '@types/benchmark':
         specifier: ^2.1.5
         version: 2.1.5
@@ -665,6 +668,9 @@ importers:
       '@ethereumjs/block':
         specifier: workspace:*
         version: link:../block
+      '@ethereumjs/evm':
+        specifier: workspace:*
+        version: link:../evm
       '@ethereumjs/genesis':
         specifier: workspace:*
         version: link:../genesis
