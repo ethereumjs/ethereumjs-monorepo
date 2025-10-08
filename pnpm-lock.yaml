@@ -689,6 +689,9 @@ importers:
       '@ethereumjs/tx':
         specifier: workspace:*
         version: link:../tx
+      '@ethereumjs/vm':
+        specifier: workspace:*
+        version: link:../vm
       '@types/debug':
         specifier: ^4.1.12
         version: 4.1.12
@@ -856,6 +859,9 @@ importers:
       mcl-wasm:
         specifier: ^1.8.0
         version: 1.8.0
+      memory-level:
+        specifier: ^3.0.0
+        version: 3.1.0
       micro-eth-signer:
         specifier: ^0.17.3
         version: 0.17.3
