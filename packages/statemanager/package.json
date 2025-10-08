@@ -65,6 +65,7 @@
     "@ethereumjs/genesis": "workspace:*",
     "@ethereumjs/testdata": "workspace:*",
     "@ethereumjs/tx": "workspace:*",
+    "@ethereumjs/vm": "workspace:*",
     "@types/debug": "^4.1.12",
     "micro-eth-signer": "0.17.3"
   }
