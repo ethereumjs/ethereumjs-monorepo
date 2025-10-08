@@ -744,6 +744,9 @@ importers:
       '@paulmillr/trusted-setups':
         specifier: ^0.2.0
         version: 0.2.0
+      eventemitter3:
+        specifier: ^5.0.1
+        version: 5.0.1
       kzg-wasm:
         specifier: ^0.5.0
         version: 0.5.0

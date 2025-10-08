@@ -234,10 +234,8 @@ describe('Utility Functions', () => {
       'should fail on too big input',
     )
 
-    assert.isFalse(
-      isValidPrivate((<unknown>'WRONG_INPUT_TYPE') as Uint8Array),
-      'should fail on wrong input type',
-    )
+    // @ts-expect-error - wrong input type
+    assert.isFalse(isValidPrivate('WRONG_INPUT_TYPE'), 'should fail on wrong input type')
 
     assert.isFalse(
       isValidPrivate(
@@ -528,10 +526,8 @@ describe('Utility Functions', () => {
     // cspell:enable
     assert.throws(
       function () {
-        generateAddress(
-          (<unknown>'0x990ccf8a0de58091c028d6ff76bb235ee67c1c39') as Uint8Array,
-          intToBytes(0),
-        )
+        // @ts-expect-error - wrong input type
+        generateAddress('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39', intToBytes(0))
       },
       undefined,
       undefined,
@@ -540,10 +536,8 @@ describe('Utility Functions', () => {
 
     assert.throws(
       function () {
-        generateAddress(
-          hexToBytes('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39'),
-          (<unknown>0) as Uint8Array,
-        )
+        // @ts-expect-error - wrong input type
+        generateAddress(hexToBytes('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39'), 0)
       },
       undefined,
       undefined,

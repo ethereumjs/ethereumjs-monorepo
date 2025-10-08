@@ -108,7 +108,8 @@ describe('hashPersonalMessage', () => {
   })
   it('should throw if input is not a Uint8Array', () => {
     try {
-      hashPersonalMessage((<unknown>[0, 1, 2, 3, 4]) as Uint8Array)
+      // @ts-expect-error - wrong input type
+      hashPersonalMessage([0, 1, 2, 3, 4])
     } catch (err: any) {
       assert.isTrue(err.message.includes('This method only supports Uint8Array'))
     }
