@@ -60,7 +60,9 @@
     "lru-cache": "11.0.2"
   },
   "devDependencies": {
-    "@ethereumjs/ethash": "workspace:*"
+    "@ethereumjs/ethash": "workspace:*",
+    "@ethereumjs/testdata": "workspace:*",
+    "ethereum-cryptography": "^3.2.0"
   },
   "engines": {
     "node": ">=18"
