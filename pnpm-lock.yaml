@@ -522,6 +522,9 @@ importers:
         specifier: ^5.0.1
         version: 5.0.1
     devDependencies:
+      '@ethereumjs/testdata':
+        specifier: workspace:*
+        version: link:../testdata
       '@paulmillr/trusted-setups':
         specifier: ^0.2.0
         version: 0.2.0
@@ -680,12 +683,18 @@ importers:
       '@ethereumjs/genesis':
         specifier: workspace:*
         version: link:../genesis
+      '@ethereumjs/testdata':
+        specifier: workspace:*
+        version: link:../testdata
+      '@ethereumjs/tx':
+        specifier: workspace:*
+        version: link:../tx
       '@types/debug':
         specifier: ^4.1.12
         version: 4.1.12
       micro-eth-signer:
-        specifier: 0.15.0
-        version: 0.15.0
+        specifier: 0.17.3
+        version: 0.17.3
 
   packages/testdata: {}
 
@@ -3757,15 +3766,9 @@ packages:
   micro-bmark@0.4.0:
     resolution: {integrity: sha512-lQHxIE9BurlmqBR3J4NJnUH6I72kChBYXuBeNkvNT3viFHKfYj2c070OysLZwtjBTxTjIgsUqjgcttMWlmASVA==}
 
-  micro-eth-signer@0.15.0:
-    resolution: {integrity: sha512-VkKK698Odm0ef40ERC9FdcG6BHBL9vWhy+7xkLL1M0O3bcRBLi7FP7mr+4SdiPaP823Q+r6c8JdUtWdESSf06A==}
-
   micro-eth-signer@0.17.3:
     resolution: {integrity: sha512-6NSgzeSAO2oRQmzH3SWPS+/abXrO09E8i4utmufV1O1oez/C1E2hNpeOX/OFOHJghAS7XzPm9tkh625v/49TwA==}
     engines: {node: '>= 20.19.0'}
-
-  micro-packed@0.7.3:
-    resolution: {integrity: sha512-2Milxs+WNC00TRlem41oRswvw31146GiSaoCT7s3Xi2gMUglW5QBeqlQaZeHr5tJx9nm3i57LNXPqxOOaWtTYg==}
 
   micro-packed@0.8.0:
     resolution: {integrity: sha512-AKb8znIvg9sooythbXzyFeChEY0SkW0C6iXECpy/ls0e5BtwXO45J9wD9SLzBztnS4XmF/5kwZknsq+jyynd/A==}
@@ -8051,21 +8054,11 @@ snapshots:
 
   micro-bmark@0.4.0: {}
 
-  micro-eth-signer@0.15.0:
-    dependencies:
-      '@noble/curves': 1.9.7
-      '@noble/hashes': 1.8.0
-      micro-packed: 0.7.3
-
   micro-eth-signer@0.17.3:
     dependencies:
       '@noble/curves': 2.0.1
       '@noble/hashes': 2.0.1
       micro-packed: 0.8.0
-
-  micro-packed@0.7.3:
-    dependencies:
-      '@scure/base': 1.2.6
 
   micro-packed@0.8.0:
     dependencies:

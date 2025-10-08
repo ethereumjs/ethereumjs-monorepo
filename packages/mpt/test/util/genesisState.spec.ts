@@ -1,4 +1,4 @@
-import { type GenesisState, parseGethGenesisState } from '@ethereumjs/common'
+import { type GenesisState, type GethGenesis, parseGethGenesisState } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 // kiln genesis with deposit contract storage set
 import { kilnGethGenesis } from '@ethereumjs/testdata'
@@ -10,7 +10,7 @@ import { bytesToHex } from '@ethereumjs/util'
 
 describe('[Util/genesisStateRoot]', () => {
   it('should properly generate stateRoot from gethGenesis', async () => {
-    const genesisState = parseGethGenesisState(kilnGethGenesis)
+    const genesisState = parseGethGenesisState(kilnGethGenesis as GethGenesis)
     const stateRoot = await genesisMPTStateRoot(genesisState)
     assert.strictEqual(
       bytesToHex(stateRoot),

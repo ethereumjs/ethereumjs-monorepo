@@ -63,7 +63,9 @@
     "@ethereumjs/block": "workspace:*",
     "@ethereumjs/evm": "workspace:*",
     "@ethereumjs/genesis": "workspace:*",
+    "@ethereumjs/testdata": "workspace:*",
+    "@ethereumjs/tx": "workspace:*",
     "@types/debug": "^4.1.12",
-    "micro-eth-signer": "0.15.0"
+    "micro-eth-signer": "0.17.3"
   }
 }
