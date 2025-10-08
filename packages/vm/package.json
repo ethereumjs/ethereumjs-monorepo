@@ -82,6 +82,8 @@
   "devDependencies": {
     "@ethereumjs/blockchain": "workspace:*",
     "@ethereumjs/ethash": "workspace:*",
+    "@ethereumjs/genesis": "workspace:*",
+    "@ethereumjs/testdata": "workspace:*",
     "@paulmillr/trusted-setups": "^0.2.0",
     "@types/benchmark": "^2.1.5",
     "@types/debug": "^4.1.12",
@@ -98,8 +100,7 @@
     "nyc": "^17.1.0",
     "solc": "^0.8.28",
     "tape": "^5.9.0",
-    "yargs": "^17.7.2",
-    "@ethereumjs/testdata": "workspace:*"
+    "yargs": "^17.7.2"
   },
   "engines": {
     "node": ">=18"

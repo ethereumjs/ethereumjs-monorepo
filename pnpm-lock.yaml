@@ -829,6 +829,9 @@ importers:
       '@ethereumjs/ethash':
         specifier: workspace:*
         version: link:../ethash
+      '@ethereumjs/genesis':
+        specifier: workspace:*
+        version: link:../genesis
       '@ethereumjs/testdata':
         specifier: workspace:*
         version: link:../testdata
