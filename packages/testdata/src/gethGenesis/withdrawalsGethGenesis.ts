@@ -1,4 +1,4 @@
-import type { GethGenesis } from '@ethereumjs/common'
+import type { GethGenesis } from '../types.js'
 
 export const withdrawalsGethGenesis: GethGenesis = {
   config: {

@@ -64,7 +64,8 @@ describe('unpadBytes', () => {
   })
   it('should throw if input is not a Uint8Array', () => {
     assert.throws(function () {
-      unpadBytes((<unknown>'0000000006600') as Uint8Array)
+      // @ts-expect-error - wrong input type
+      unpadBytes('0000000006600')
     })
   })
 })
@@ -108,7 +109,8 @@ describe('setLengthLeft', () => {
   })
   it('should throw if input is not a Uint8Array', () => {
     assert.throws(function () {
-      setLengthLeft((<unknown>[9, 9]) as Uint8Array, 3)
+      // @ts-expect-error - wrong input type
+      setLengthLeft([9, 9], 3)
     })
   })
 })
@@ -126,7 +128,8 @@ describe('setLengthRight', () => {
   })
   it('should throw if input is not a Uint8Array', () => {
     assert.throws(function () {
-      setLengthRight((<unknown>[9, 9]) as Uint8Array, 3)
+      // @ts-expect-error - wrong input type
+      setLengthRight([9, 9], 3)
     })
   })
 })

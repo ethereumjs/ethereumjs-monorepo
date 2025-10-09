@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 env:
-  cwd: ${{github.workspace}}
+  cwd: ${{ github.workspace }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
@@ -16,68 +16,105 @@ concurrency:
 
 jobs:
   checkout-submodules:
-    runs-on: ubuntu-latest
-
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
         with:
           submodules: recursive
 
       - id: create-cache-key
-        run: echo "submodule-cache-key=$(git submodule | head -n 1)" >> $GITHUB_OUTPUT
         shell: bash
+        run: echo "submodule-cache-key=$(git submodule | head -n 1)" >> "$GITHUB_OUTPUT"
 
       - uses: actions/cache/restore@v4
         id: submodules-cache-restore
         with:
           key: submodule-${{ steps.create-cache-key.outputs.submodule-cache-key }}
-          path: ${{github.workspace}}/packages/ethereum-tests
+          path: ${{ github.workspace }}/packages/ethereum-tests
 
-      - if: steps.submodules-cache-restore.outputs.cache-hit != 'true'
+      - name: Check submodule dir exists
+        id: have-et
+        run: |
+          if [ -d "${{ github.workspace }}/packages/ethereum-tests" ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - if: steps.submodules-cache-restore.outputs.cache-hit != 'true' && steps.have-et.outputs.exists == 'true'
         uses: actions/cache/save@v4
-        id: submodule-cache-save
         with:
-          path: ${{github.workspace}}/packages/ethereum-tests
-          key: submodule-${{ steps.create-cache-key.outputs.submodule-cache-key}}
+          path: ${{ github.workspace }}/packages/ethereum-tests
+          key: submodule-${{ steps.create-cache-key.outputs.submodule-cache-key }}
 
     outputs:
-      submodule-cache-key: submodule-${{ steps.create-cache-key.outputs.submodule-cache-key}}
+      submodule-cache-key: submodule-${{ steps.create-cache-key.outputs.submodule-cache-key }}
 
   build:
-    runs-on: ubuntu-latest
+    needs: checkout-submodules
+    runs-on: ubuntu-24.04
 
     steps:
       - uses: actions/checkout@v5
-
-      - uses: actions/cache/restore@v4
-        id: dep-cache
         with:
-          path: ${{github.workspace}}/node_modules
-          key: npm-${{ hashFiles('package-lock.json') }}
+          submodules: recursive
 
-      - name: Use Node.js 20
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Setup Node (with pnpm cache here only)
         uses: actions/setup-node@v5
         with:
-          node-version: 20
-          cache: 'npm'
+          node-version: '20'
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
 
-      - run: npm ci
-        working-directory: ${{github.workspace}}
+      - run: pnpm -v && command -v pnpm
 
-      - name: Cache dependencies
+      - name: Restore ethereum-tests submodule
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ github.workspace }}/packages/ethereum-tests
+          key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
+
+      - name: Install deps (workspace root)
+        working-directory: ${{ github.workspace }}
+        run: pnpm install --frozen-lockfile
+
+      - name: Install browser deps
+        run: pnpm run install-browser-deps
+
+      - name: Build (workspace)
+        run: pnpm build
+
+      - name: Compute dep cache key
+        id: depkey
+        shell: bash
+        run: |
+          set -euo pipefail
+          KEY="deps-${{ runner.os }}-node20-$(sha256sum pnpm-lock.yaml | cut -d' ' -f1)-${GITHUB_RUN_ID}"
+          echo "dep-cache-key=$KEY" >> "$GITHUB_OUTPUT"
+
+      - name: Verify workspace exists
+        id: have-ws
+        run: |
+          if [ -d "${{ github.workspace }}" ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Save prepared workspace
+        if: steps.have-ws.outputs.exists == 'true'
         uses: actions/cache/save@v4
         with:
-          path: ${{github.workspace}}
-          key: npm-${{ hashFiles('package-lock.json') }}
-
-      - name: Cache build
-        uses: actions/cache/save@v4
-        with:
-          path: ${{github.workspace}}
-          key: npm-${{ hashFiles('package-lock.json') }}-${{ github.run_id }}
+          path: ${{ github.workspace }}
+          key: ${{ steps.depkey.outputs.dep-cache-key }}
 
     outputs:
-      dep-cache-key: ${{ steps.dep-cache.outputs.cache-primary-key }}-${{ github.run_id }}
+      dep-cache-key: ${{ steps.depkey.outputs.dep-cache-key }}
 
   binarytree:
     needs: [build, checkout-submodules]

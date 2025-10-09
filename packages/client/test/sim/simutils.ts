@@ -17,7 +17,7 @@ import {
 } from '@ethereumjs/util'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
 import * as fs from 'fs/promises'
-import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/advanced/kzg.js'
 import qs from 'qs'
 
 import { RPCManager } from '../../src/rpc/index.ts'
@@ -571,7 +571,7 @@ export async function setupEngineUpdateRelay(client: EthereumClient, peerBeaconU
 export const filterKeywords = [
   'warn',
   'error',
-  'npm run client:start',
+  'pnpm run client:start',
   'docker run',
   'lodestar dev',
   'kill',

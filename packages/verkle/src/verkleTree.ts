@@ -75,7 +75,9 @@ export class VerkleTree {
     this.verkleCrypto = opts.verkleCrypto
 
     this.DEBUG =
-      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+      typeof (globalThis as any).window === 'undefined'
+        ? (process?.env?.DEBUG?.includes('ethjs') ?? false)
+        : false
     this.debug = this.DEBUG
       ? (message: string, namespaces: string[] = []) => {
           let log = this._debug

@@ -153,6 +153,7 @@ export class EVM implements EVMInterface {
     Hardfork.Prague,
     Hardfork.Osaka,
     Hardfork.Verkle,
+    // Bpo hardforks are experimental and may not be available in all builds
     Hardfork.Bpo1,
     Hardfork.Bpo2,
     Hardfork.Bpo3,
@@ -317,7 +318,9 @@ export class EVM implements EVMInterface {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     // Additional window check is to prevent vite browser bundling (and potentially other) to break
     this.DEBUG =
-      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+      typeof (globalThis as any).window === 'undefined'
+        ? (process?.env?.DEBUG?.includes('ethjs') ?? false)
+        : false
   }
 
   /**

@@ -199,7 +199,7 @@ import type { BlobEIP4844TxData } from '@ethereumjs/tx'
 import { createBlob4844Tx } from '@ethereumjs/tx'
 import { bytesToHex, randomBytes } from '@ethereumjs/util'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
-import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/advanced/kzg.js'
 
 const main = async () => {
   const kzg = new microEthKZG(trustedSetup)
@@ -377,7 +377,7 @@ As a first step add the [micro-eth-signer](https://github.com/paulmillr/micro-et
 
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
-import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/advanced/kzg.js'
 
 const main = async () => {
   const kzg = new microEthKZG(trustedSetup)

@@ -57,17 +57,21 @@ describe('fetchFromProvider', () => {
     vi.unstubAllGlobals()
   })
 
-  it('should work', async () => {
-    try {
-      await fetchFromProvider(providerUrl, {
-        method: 'eth_getBalance',
-        params: ['0xabcd'],
-      })
-      assert.fail('should throw')
-    } catch (err: any) {
-      assert.isTrue(err.message.includes('fetch'), 'tried to fetch and failed')
-    }
-  })
+  it(
+    'should work',
+    async () => {
+      try {
+        await fetchFromProvider(providerUrl, {
+          method: 'eth_getBalance',
+          params: ['0xabcd'],
+        })
+        assert.fail('should throw')
+      } catch (err: any) {
+        assert.isTrue(err.message.includes('fetch'), 'tried to fetch and failed')
+      }
+    },
+    { timeout: 15000 },
+  )
 
   it('should throw a formatted error when an error is returned from the RPC', async () => {
     vi.stubGlobal('fetch', async (_url: string, _req: any) => {

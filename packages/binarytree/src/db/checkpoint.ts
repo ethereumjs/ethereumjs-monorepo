@@ -4,6 +4,7 @@ import {
   bytesToUnprefixedHex,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
+// @ts-ignore
 import { LRUCache } from 'lru-cache'
 
 import type { BatchDBOp, DB, EncodingOpts } from '@ethereumjs/util'

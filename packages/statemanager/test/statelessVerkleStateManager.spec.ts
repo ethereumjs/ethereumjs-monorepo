@@ -1,5 +1,5 @@
-import { createBlock } from '@ethereumjs/block'
-import { createCommonFromGethGenesis } from '@ethereumjs/common'
+import { type BlockData, createBlock } from '@ethereumjs/block'
+import { type GethGenesis, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { verkleKaustinen6Block72Data, verkleKaustinenGethGenesis } from '@ethereumjs/testdata'
 import { createTxFromRLP } from '@ethereumjs/tx'
 import {
@@ -14,23 +14,23 @@ import {
   hexToBytes,
   randomBytes,
 } from '@ethereumjs/util'
-import * as verkle from 'micro-eth-signer/verkle.js'
+import * as verkle from 'micro-eth-signer/advanced/verkle.js'
 import { assert, describe, it, test } from 'vitest'
 
 import { CacheType, Caches, StatelessVerkleStateManager } from '../src/index.ts'
 
 describe('StatelessVerkleStateManager: Kaustinen Verkle Block', () => {
-  const common = createCommonFromGethGenesis(verkleKaustinenGethGenesis, {
+  const common = createCommonFromGethGenesis(verkleKaustinenGethGenesis as GethGenesis, {
     chain: 'customChain',
     eips: [2935, 4895, 6800],
     customCrypto: { verkle },
   })
 
   const decodedTxs = verkleKaustinen6Block72Data.transactions.map((tx) =>
-    createTxFromRLP(hexToBytes(tx), { common }),
+    createTxFromRLP(hexToBytes(tx as `0x${string}`), { common }),
   )
   const block = createBlock(
-    { ...verkleKaustinen6Block72Data, transactions: decodedTxs },
+    { ...verkleKaustinen6Block72Data, transactions: decodedTxs } as BlockData,
     {
       common,
     },

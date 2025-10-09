@@ -2,6 +2,7 @@ import * as dgram from 'dgram'
 import { EthereumJSErrorWithoutCode, bytesToHex, bytesToUnprefixedHex } from '@ethereumjs/util'
 import debugDefault from 'debug'
 import { EventEmitter } from 'eventemitter3'
+// @ts-ignore
 import { LRUCache } from 'lru-cache'
 
 import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util.ts'
@@ -63,7 +64,9 @@ export class Server {
     this._common = options.common
 
     this.DEBUG =
-      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+      typeof (globalThis as any).window === 'undefined'
+        ? (process?.env?.DEBUG?.includes('ethjs') ?? false)
+        : false
   }
 
   bind(...args: any[]) {

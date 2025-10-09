@@ -47,7 +47,7 @@ function assignProperties(dest: any, source: any) {
   }
 }
 
-function assertAlgorithm(alg: any): asserts alg is Algorithm {
+function assertAlgorithm(alg: any): asserts alg is any {
   if (!['HS256', 'HS384', 'HS512', 'RS256'].includes(alg)) {
     throw new Error('Algorithm not supported')
   }

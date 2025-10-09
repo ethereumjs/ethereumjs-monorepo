@@ -14,9 +14,17 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.5.2
+          run_install: false
+
       - uses: actions/setup-node@v5
         with:
           node-version: 18
-          cache: 'npm'
 
-      - run: npm run spellcheck
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: ${{ github.workspace }}
+
+      - run: pnpm run spellcheck

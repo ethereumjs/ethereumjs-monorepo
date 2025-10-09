@@ -7,12 +7,12 @@ import {
 } from '@ethereumjs/testdata'
 import { assert, describe, it } from 'vitest'
 
-import { parseGethGenesisState } from '../src/gethGenesis.ts'
+import { type GethGenesis, parseGethGenesisState } from '../src/gethGenesis.ts'
 import { Hardfork, Mainnet, createCommonFromGethGenesis, parseGethGenesis } from '../src/index.ts'
 
 describe('[Common/genesis]', () => {
   it('should properly generate stateRoot from gethGenesis', () => {
-    const genesisState = parseGethGenesisState(kilnGethGenesis)
+    const genesisState = parseGethGenesisState(kilnGethGenesis as GethGenesis)
     // just check for deposit contract inclusion
     assert.exists(genesisState['0x4242424242424242424242424242424242424242'][1])
     assert.strictEqual(
@@ -28,7 +28,7 @@ describe('[Common/genesis]', () => {
 
 describe('[Utils/Parse]', () => {
   it('should parse geth params file', async () => {
-    const params = parseGethGenesis(eip4844GethGenesis)
+    const params = parseGethGenesis(eip4844GethGenesis as GethGenesis)
     assert.strictEqual(
       params.genesis.nonce,
       '0x0000000000000042',
@@ -38,13 +38,13 @@ describe('[Utils/Parse]', () => {
 
   it('should throw with invalid Spurious Dragon blocks', async () => {
     const f = () => {
-      parseGethGenesis(invalidSpuriousDragonGethGenesis, 'bad_params')
+      parseGethGenesis(invalidSpuriousDragonGethGenesis as GethGenesis, 'bad_params')
     }
     assert.throws(f, undefined, undefined, 'should throw')
   })
 
   it('should import poa network params correctly', async () => {
-    let params = parseGethGenesis(goerliGethGenesis, 'poa')
+    let params = parseGethGenesis(goerliGethGenesis as GethGenesis, 'poa')
     assert.strictEqual(params.genesis.nonce, '0x0000000000000000', 'nonce is formatted correctly')
     assert.deepEqual(
       params.consensus,
@@ -53,7 +53,7 @@ describe('[Utils/Parse]', () => {
     )
     const poaCopy = Object.assign({}, goerliGethGenesis)
     poaCopy.nonce = '00'
-    params = parseGethGenesis(poaCopy, 'poa')
+    params = parseGethGenesis(poaCopy as GethGenesis, 'poa')
     assert.strictEqual(
       params.genesis.nonce,
       '0x0000000000000000',
@@ -67,26 +67,29 @@ describe('[Utils/Parse]', () => {
   })
 
   it('should generate expected hash with london block zero and base fee per gas defined', async () => {
-    const params = parseGethGenesis(postMergeGethGenesis, 'post-merge')
+    const params = parseGethGenesis(postMergeGethGenesis as GethGenesis, 'post-merge')
     assert.strictEqual(params.genesis.baseFeePerGas, postMergeGethGenesis.baseFeePerGas)
   })
 
   it('should successfully parse genesis file with no extraData', async () => {
-    const params = parseGethGenesis({ ...postMergeGethGenesis, extraData: '' }, 'noExtraData')
+    const params = parseGethGenesis(
+      { ...postMergeGethGenesis, extraData: '' } as GethGenesis,
+      'noExtraData',
+    )
     assert.strictEqual(params.genesis.extraData, '0x', 'extraData set to 0x')
     assert.strictEqual(params.genesis.nonce, '0x0000000000000042', 'nonce parsed correctly')
   })
 
   it('should set merge to block 0 when terminalTotalDifficultyPassed is true', () => {
     const mergeAtGenesisData = {} as any
-    Object.assign(mergeAtGenesisData, postMergeGethGenesis)
+    Object.assign(mergeAtGenesisData, postMergeGethGenesis as GethGenesis)
     mergeAtGenesisData.config.terminalTotalDifficultyPassed = true
     const common = createCommonFromGethGenesis(mergeAtGenesisData, {})
     assert.strictEqual(common.hardforks().slice(-1)[0].block, 0)
   })
 
   it('should successfully assign mainnet deposit contract address when none provided', async () => {
-    const common = createCommonFromGethGenesis(postMergeGethGenesis, {
+    const common = createCommonFromGethGenesis(postMergeGethGenesis as GethGenesis, {
       chain: 'customChain',
     })
     const depositContractAddress =
@@ -101,12 +104,12 @@ describe('[Utils/Parse]', () => {
 
   it('should correctly parse deposit contract address', async () => {
     // clone json out to not have side effects
-    const customData = JSON.parse(JSON.stringify(postMergeGethGenesis))
+    const customData = JSON.parse(JSON.stringify(postMergeGethGenesis as GethGenesis))
     Object.assign(customData.config, {
       depositContractAddress: '0x4242424242424242424242424242424242424242',
     })
 
-    const common = createCommonFromGethGenesis(customData, {
+    const common = createCommonFromGethGenesis(customData as GethGenesis, {
       chain: 'customChain',
     })
     const depositContractAddress =
@@ -119,7 +122,7 @@ describe('[Utils/Parse]', () => {
     )
   })
   it('should add MergeNetSplitBlock if not present when Shanghai is present', () => {
-    const genesisJSON = postMergeGethGenesis
+    const genesisJSON = postMergeGethGenesis as GethGenesis
     genesisJSON.config.shanghaiTime = Date.now()
     const common = createCommonFromGethGenesis(genesisJSON, {})
     assert.strictEqual(
@@ -128,7 +131,7 @@ describe('[Utils/Parse]', () => {
     )
   })
   it('should not add Paris and MergeNetsplitBlock if Shanghai and ttdPassed are not present ', () => {
-    const genesisJSON = postMergeGethGenesis
+    const genesisJSON = postMergeGethGenesis as GethGenesis
     delete genesisJSON.config.shanghaiTime
     delete genesisJSON.config.terminalTotalDifficultyPassed
     delete genesisJSON.config.mergeForkBlock

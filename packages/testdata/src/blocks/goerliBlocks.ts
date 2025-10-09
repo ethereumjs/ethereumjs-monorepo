@@ -1,4 +1,4 @@
-import type { BlockData } from '@ethereumjs/block'
+import type { BlockData } from '../types.js'
 
 export const goerliBlocks: BlockData[] = [
   {

@@ -1,4 +1,4 @@
-import type { PrefixedHexString } from '@ethereumjs/util'
+import type { PrefixedHexString } from '../types.js'
 
 export const preLondonTestDataBlocks2RLP: Record<string, PrefixedHexString> = {
   block0RLP:
