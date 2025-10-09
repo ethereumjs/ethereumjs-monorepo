@@ -54,7 +54,6 @@ import type { MessageWithTo } from './message.ts'
 import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas.ts'
 import type { OpHandler, OpcodeList, OpcodeMap } from './opcodes/index.ts'
 import type { CustomPrecompile, PrecompileFunc } from './precompiles/index.ts'
-import type { VerkleAccessWitness } from './verkleAccessWitness.ts'
 
 const debug = debugDefault('evm:evm')
 const debugGas = debugDefault('evm:gas')
@@ -171,8 +170,6 @@ export class EVM implements EVMInterface {
   public stateManager: StateManagerInterface
   public blockchain: EVMMockBlockchainInterface
   public journal: Journal
-  public verkleAccessWitness?: VerkleAccessWitness
-  public systemVerkleAccessWitness?: VerkleAccessWitness
   public binaryAccessWitness?: BinaryTreeAccessWitness
   public systemBinaryAccessWitness?: BinaryTreeAccessWitness
 

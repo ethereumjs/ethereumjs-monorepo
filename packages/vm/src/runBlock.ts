@@ -1,9 +1,8 @@
 import { createBlock, genRequestsRoot } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
-import { type EVM, type EVMInterface, VerkleAccessWitness } from '@ethereumjs/evm'
+import { type EVM, type EVMInterface } from '@ethereumjs/evm'
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
-import { type StatelessVerkleStateManager, verifyVerkleStateProof } from '@ethereumjs/statemanager'
 import { TransactionType } from '@ethereumjs/tx'
 import {
   Account,
@@ -139,12 +138,13 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     if (vm.common.customCrypto.verkle === undefined) {
       throw Error('verkleCrypto required when EIP-6800 is active')
     }
-    vm.evm.verkleAccessWitness = new VerkleAccessWitness({
-      verkleCrypto: vm.common.customCrypto.verkle,
-    })
-    vm.evm.systemVerkleAccessWitness = new VerkleAccessWitness({
-      verkleCrypto: vm.common.customCrypto.verkle,
-    })
+    // Verkle functionality removed
+    // vm.evm.verkleAccessWitness = new VerkleAccessWitness({
+    //   verkleCrypto: vm.common.customCrypto.verkle,
+    // })
+    // vm.evm.systemVerkleAccessWitness = new VerkleAccessWitness({
+    //   verkleCrypto: vm.common.customCrypto.verkle,
+    // })
 
     if (typeof stateManager.initVerkleExecutionWitness !== 'function') {
       throw Error(`VerkleStateManager needed for execution of verkle blocks`)
@@ -164,13 +164,14 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     if ('verifyVerklePostState' in stateManager) {
       // Update the stateRoot cache
       await stateManager.setStateRoot(block.header.stateRoot)
-      if (verifyVerkleStateProof(stateManager as StatelessVerkleStateManager) === true) {
-        if (vm.DEBUG) {
-          debug(`Verkle proof verification succeeded`)
-        }
-      } else {
-        throw Error(`Verkle proof verification failed`)
-      }
+      // Verkle functionality removed
+      // if (verifyVerkleStateProof(stateManager as StatelessVerkleStateManager) === true) {
+      //   if (vm.DEBUG) {
+      //     debug(`Verkle proof verification succeeded`)
+      //   }
+      // } else {
+      //   throw Error(`Verkle proof verification failed`)
+      // }
     }
   } else {
     if (typeof stateManager.initVerkleExecutionWitness === 'function') {

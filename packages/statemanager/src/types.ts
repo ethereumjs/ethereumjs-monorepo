@@ -3,7 +3,6 @@ import { type PrefixedHexString } from '@ethereumjs/util'
 import type { BinaryTree } from '@ethereumjs/binarytree'
 import type { Common } from '@ethereumjs/common'
 import type { MerklePatriciaTrie } from '@ethereumjs/mpt'
-import type { VerkleTree } from '@ethereumjs/verkle'
 import type { Caches } from './index.ts'
 /**
  * Basic state manager options (not to be used directly)
@@ -70,12 +69,6 @@ export interface MerkleStateManagerOpts extends BaseStateManagerOpts {
  */
 export interface StatelessVerkleStateManagerOpts extends BaseStateManagerOpts {
   common: Common // Common required since it provides verkleCrypto through customCrypto
-  caches?: Caches
-}
-
-export interface StatefulVerkleStateManagerOpts extends BaseStateManagerOpts {
-  common: Common // Common required since it provides verkleCrypto through customCrypto
-  trie?: VerkleTree
   caches?: Caches
 }
 
