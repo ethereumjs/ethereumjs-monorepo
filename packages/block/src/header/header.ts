@@ -560,8 +560,8 @@ export class BlockHeader {
    * Calculates the excess blob gas for next (hopefully) post EIP 4844 block.
    */
   public calcNextExcessBlobGas(childCommon: Common): bigint {
-    const excessBlobGas = this.excessBlobGas ?? 0n
-    const blobGasUsed = this.blobGasUsed ?? 0n
+    const excessBlobGas = this.excessBlobGas ?? BIGINT_0
+    const blobGasUsed = this.blobGasUsed ?? BIGINT_0
 
     const targetPerBlock = childCommon.param('targetBlobGasPerBlock')
     const maxPerBlock = childCommon.param('maxBlobGasPerBlock')
