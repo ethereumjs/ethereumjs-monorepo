@@ -54,7 +54,6 @@ The following packages are deprecated and will not be updated.
 | [@ethereumjs/client][client-package]             | [![NPM Package][client-npm-badge]][client-npm-link]             | [![Client Issues][client-issues-badge]][client-issues-link]                   | [![Actions Status][client-actions-badge]][client-actions-link]             | [![Code Coverage][client-coverage-badge]][client-coverage-link]             |
 | [@ethereumjs/devp2p][devp2p-package]             | [![NPM Package][devp2p-npm-badge]][devp2p-npm-link]             | [![Devp2p Issues][devp2p-issues-badge]][devp2p-issues-link]                   | [![Actions Status][devp2p-actions-badge]][devp2p-actions-link]             | [![Code Coverage][devp2p-coverage-badge]][devp2p-coverage-link]             |
 | [@ethereumjs/ethash][ethash-package]             | [![NPM Package][ethash-npm-badge]][ethash-npm-link]             | [![Ethash Issues][ethash-issues-badge]][ethash-issues-link]                   | [![Actions Status][ethash-actions-badge]][ethash-actions-link]             | [![Code Coverage][ethash-coverage-badge]][ethash-coverage-link]             |
-| [@ethereumjs/verkle][verkle-package]             | [![NPM Package][verkle-npm-badge]][verkle-npm-link]             | [![VM Issues][verkle-issues-badge]][verkle-issues-link]                       | [![Actions Status][verkle-actions-badge]][verkle-actions-link]             | [![Code Coverage][verkle-coverage-badge]][verkle-coverage-link]             |
 | [@ethereumjs/wallet][wallet-package]             | [![NPM Package][wallet-npm-badge]][wallet-npm-link]             | [![StateManager Issues][wallet-issues-badge]][wallet-issues-link]             | [![Actions Status][wallet-actions-badge]][wallet-actions-link]             | [![Code Coverage][wallet-coverage-badge]][wallet-coverage-link]             |
 
 ## Getting Started
@@ -127,9 +126,6 @@ To inspect code related to a specific package version, refer to the [tags](https
    mpt --> blockchain
    mpt --> block
    mpt --> statemanager
-   verkle --> vm
-   verkle --> evm
-   verkle --> statemanager
    binarytree --> vm
    binarytree --> statemanager
    util --> common
@@ -312,16 +308,6 @@ Most packages are [MPL-2.0](<https://tldrlegal.com/license/mozilla-public-licens
 [util-actions-link]: https://github.com/ethereumjs/ethereumjs-monorepo/actions?query=workflow%3A%22Util%22
 [util-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/branch/master/graph/badge.svg?flag=util
 [util-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/tree/master/packages/util
-
-[verkle-package]: ./packages/verkle
-[verkle-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/verkle.svg
-[verkle-npm-link]: https://www.npmjs.com/package/@ethereumjs/verkle
-[verkle-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-monorepo/package:%20verkle?label=issues
-[verkle-issues-link]: https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+verkle"
-[verkle-actions-badge]: https://github.com/ethereumjs/ethereumjs-monorepo/workflows/Verkle/badge.svg
-[verkle-actions-link]: https://github.com/ethereumjs/ethereumjs-monorepo/actions?query=workflow%3A%22Verkle%22
-[verkle-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/branch/master/graph/badge.svg?flag=verkle
-[verkle-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/tree/master/packages/verkle
 
 [vm-package]: ./packages/vm
 [vm-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/vm.svg

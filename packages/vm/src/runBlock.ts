@@ -326,21 +326,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
       }
     }
 
-    if (vm.common.isActivatedEIP(6800)) {
-      if (vm.evm.verkleAccessWitness === undefined) {
-        throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
-      }
-      // If verkle is activated and executing statelessly, only validate the post-state
-      if (
-        (await vm['_opts'].stateManager!.verifyVerklePostState!(vm.evm.verkleAccessWitness)) ===
-        false
-      ) {
-        throw EthereumJSErrorWithoutCode(
-          `Verkle post state verification failed on block ${block.header.number}`,
-        )
-      }
-      debug(`Verkle post state verification succeeded`)
-    } else if (vm.common.isActivatedEIP(7864)) {
+    if (vm.common.isActivatedEIP(7864)) {
       if (vm.evm.binaryTreeAccessWitness === undefined) {
         throw Error(`binaryTreeAccessWitness required if binary tree (EIP-7864) is activated`)
       }
@@ -513,18 +499,6 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
     await assignBlockRewards(vm, block)
   }
 
-  // Merge system AccessWitness with AccessWitness
-  if (vm.common.isActivatedEIP(6800) && vm.evm.systemVerkleAccessWitness !== undefined) {
-    vm.evm.systemVerkleAccessWitness?.commit()
-    if (vm.DEBUG) {
-      debug('Verkle access witness aggregate costs:')
-      vm.evm.verkleAccessWitness?.debugWitnessCost()
-      debug('System verkle access witness aggregate costs:')
-      vm.evm.systemVerkleAccessWitness?.debugWitnessCost()
-    }
-    vm.evm.verkleAccessWitness?.merge(vm.evm.systemVerkleAccessWitness)
-  }
-
   if (vm.common.isActivatedEIP(7864) && vm.evm.systemBinaryTreeAccessWitness !== undefined) {
     vm.evm.systemBinaryTreeAccessWitness?.commit()
     if (vm.DEBUG) {
@@ -573,14 +547,7 @@ export async function accumulateParentBlockHash(
     // ringKey is the key the hash is actually put in (it is a ring buffer)
     const ringKey = number % historyServeWindow
 
-    // generate access witness
-    if (vm.common.isActivatedEIP(6800)) {
-      if (vm.evm.systemVerkleAccessWitness === undefined) {
-        throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
-      }
-      // Add to system verkle access witness so that it doesn't warm up tx accesses
-      vm.evm.systemVerkleAccessWitness.writeAccountStorage(historyAddress, ringKey)
-    } else if (vm.common.isActivatedEIP(7864)) {
+    if (vm.common.isActivatedEIP(7864)) {
       if (vm.evm.systemBinaryTreeAccessWitness === undefined) {
         throw Error(`systemBinaryTreeAccessWitness required if binary tree (EIP-7864) is activated`)
       }
@@ -794,12 +761,6 @@ export async function rewardAccount(
 ): Promise<Account> {
   let account = await evm.stateManager.getAccount(address)
   if (account === undefined) {
-    if (common.isActivatedEIP(6800) === true && reward !== BIGINT_0) {
-      if (evm.systemVerkleAccessWitness === undefined) {
-        throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
-      }
-      evm.systemVerkleAccessWitness.writeAccountHeader(address)
-    }
     if (common.isActivatedEIP(7864) === true && reward !== BIGINT_0) {
       if (evm.systemBinaryTreeAccessWitness === undefined) {
         throw Error(`systemBinaryTreeAccessWitness required if binary tree (EIP-7864) is activated`)
@@ -811,14 +772,6 @@ export async function rewardAccount(
   account.balance += reward
   await evm.journal.putAccount(address, account)
 
-  if (common.isActivatedEIP(6800) === true && reward !== BIGINT_0) {
-    if (evm.systemVerkleAccessWitness === undefined) {
-      throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
-    }
-    // use vm utility to build access but the computed gas is not charged and hence free
-    evm.systemVerkleAccessWitness.writeAccountBasicData(address)
-    evm.systemVerkleAccessWitness.readAccountCodeHash(address)
-  }
   if (common.isActivatedEIP(7864) === true && reward !== BIGINT_0) {
     if (evm.systemBinaryTreeAccessWitness === undefined) {
       throw Error(`systemBinaryTreeAccessWitness required if binary tree (EIP-7864) is activated`)

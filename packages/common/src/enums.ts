@@ -85,7 +85,6 @@ export const Hardfork = {
   Cancun: 'cancun',
   Prague: 'prague',
   Osaka: 'osaka',
-  Verkle: 'verkle',
   Bpo1: 'bpo1',
   Bpo2: 'bpo2',
   Bpo3: 'bpo3',

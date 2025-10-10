@@ -179,12 +179,6 @@ jobs:
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
-  verkle:
-    needs: build
-    uses: ./.github/workflows/verkle-build.yml
-    with:
-      dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
-
   vm-pr:
     needs: [build, checkout-submodules]
     uses: ./.github/workflows/vm-pr.yml

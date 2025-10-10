@@ -9,13 +9,7 @@ import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { MCLBLS, RustBN254 } from '@ethereumjs/evm'
 import { getGenesis } from '@ethereumjs/genesis'
 import { createMPT } from '@ethereumjs/mpt'
-import {
-  CacheType,
-  Caches,
-  MerkleStateManager,
-  StatefulVerkleStateManager,
-  StatelessVerkleStateManager,
-} from '@ethereumjs/statemanager'
+import { CacheType, Caches, MerkleStateManager } from '@ethereumjs/statemanager'
 import {
   BIGINT_0,
   BIGINT_1,
@@ -65,7 +59,6 @@ export class VMExecution extends Execution {
 
   public vm!: VM
   public merkleVM: VM | undefined
-  public verkleVM: VM | undefined
   public hardfork: string = ''
   /* Whether canonical chain execution has stayed valid or ran into an invalid block */
   public chainStatus: ChainStatus | null = null
@@ -208,69 +201,6 @@ export class VMExecution extends Execution {
     this.vm = this.merkleVM
   }
 
-  async setupVerkleVM() {
-    let stateManager: StatelessVerkleStateManager | StatefulVerkleStateManager
-    if (this.verkleVM !== undefined) {
-      return
-    }
-    if (this.config.statelessVerkle) {
-      this.config.logger?.info(`Setting up verkleVM for stateless verkle execution`)
-      stateManager = new StatelessVerkleStateManager({
-        common: this.config.execCommon,
-      })
-    } else if (this.config.statefulVerkle) {
-      this.config.logger?.info(`Setting up verkleVM for stateful verkle execution`)
-      stateManager = new StatefulVerkleStateManager({ common: this.config.execCommon })
-    } else
-      throw EthereumJSErrorWithoutCode('EIP-6800 active and no verkle execution mode specified')
-    await mcl.init(mcl.BLS12_381)
-    const rustBN = await initRustBN()
-    this.verkleVM = await createVM({
-      common: this.config.execCommon,
-      blockchain: this.chain.blockchain,
-      stateManager,
-      evmOpts: {
-        bls: new MCLBLS(mcl),
-        bn254: new RustBN254(rustBN),
-      },
-      profilerOpts: this.config.vmProfilerOpts,
-    })
-  }
-
-  async transitionToVerkle(merkleStateRoot: Uint8Array, assignToVM: boolean = true): Promise<void> {
-    if (typeof this.vm.stateManager.initVerkleExecutionWitness === 'function') {
-      return
-    }
-
-    return this.runWithLock<void>(async () => {
-      if (this.merkleVM === undefined) {
-        await this.setupMerkleVM()
-      }
-      const merkleVM = this.merkleVM!
-      const merkleStateManager = merkleVM.stateManager
-
-      if (this.verkleVM === undefined) {
-        await this.setupVerkleVM()
-      }
-      const verkleVM = this.verkleVM!
-      const verkleStateManager = verkleVM.stateManager
-
-      // TODO: can we please implement this in a different way and not introduce a method
-      // *inside* one state manager which takes another state manager?
-      // That bloats the interface too much, this should be minimally a separate util method
-      // or fully move to client
-      const verkleStateRoot = await (verkleStateManager as any).getTransitionStateRoot(
-        merkleStateManager,
-        merkleStateRoot,
-      )
-      await verkleStateManager.setStateRoot(verkleStateRoot)
-
-      if (assignToVM) {
-        this.vm = verkleVM
-      }
-    })
-  }
-
   /**
    * Initializes VM execution. Must be called before run() is called
    */
@@ -304,24 +234,16 @@ export class VMExecution extends Execution {
       this.config.execCommon.setHardforkBy({ blockNumber: number, timestamp })
       this.hardfork = this.config.execCommon.hardfork()
 
-      if (this.config.execCommon.gteHardfork(Hardfork.Verkle)) {
-        await this.setupVerkleVM()
-        this.vm = this.verkleVM!
-      } else {
-        this.config.logger?.info(
-          `Initializing VM merkle statemanager genesis hardfork=${this.hardfork}`,
-        )
-        await this.setupMerkleVM()
-        this.vm = this.merkleVM!
-      }
+      this.config.logger?.info(
+        `Initializing VM merkle statemanager genesis hardfork=${this.hardfork}`,
+      )
+      await this.setupMerkleVM()
+      this.vm = this.merkleVM!
 
       if (number === BIGINT_0) {
         const genesisState =
           this.chain['_customGenesisState'] ?? getGenesis(Number(blockchain.common.chainId()))
-        if (
-          !genesisState &&
-          (!('generateCanonicalGenesis' in this.vm.stateManager) || !this.config.statelessVerkle)
-        ) {
+        if (!genesisState && !('generateCanonicalGenesis' in this.vm.stateManager)) {
           throw EthereumJSErrorWithoutCode('genesisState not available')
         } else {
           await this.vm.stateManager.generateCanonicalGenesis!(genesisState)
@@ -359,15 +281,9 @@ export class VMExecution extends Execution {
       blockNumber: number,
       timestamp,
     })
-    if (this.config.execCommon.gteHardfork(Hardfork.Verkle)) {
-      // verkleVM should already exist but we can still do an allocation just to be safe
-      await this.setupVerkleVM()
-      this.vm = this.verkleVM!
-    } else {
-      // its could be a rest to a pre-merkle when the chain was never initialized
-      await this.setupMerkleVM()
-      this.vm = this.merkleVM!
-    }
+
+    await this.setupMerkleVM()
+    this.vm = this.merkleVM!
 
     await this.vm.stateManager.setStateRoot(stateRoot)
   }
@@ -409,48 +325,16 @@ export class VMExecution extends Execution {
           const parentState = root ?? prevVMStateRoot
           const clearCache = !equalsBytes(prevVMStateRoot, parentState)
 
-          const hardfork = this.config.execCommon.getHardforkBy({
-            blockNumber: block.header.number,
-            timestamp: block.header.timestamp,
-          })
+          const vm = this.vm
 
-          let vm = this.vm
-          if (
-            !this.config.execCommon.gteHardfork(Hardfork.Verkle) &&
-            this.config.execCommon.hardforkGteHardfork(hardfork, Hardfork.Verkle)
-          ) {
-            // see if this is a transition block
-            const parentBlock =
-              opts?.parentBlock ?? (await this.chain.getBlock(block.header.parentHash))
-            const parentHf = this.config.execCommon.getHardforkBy({
-              blockNumber: parentBlock.header.number,
-              timestamp: parentBlock.header.timestamp,
-            })
-
-            if (!this.config.execCommon.hardforkGteHardfork(parentHf, Hardfork.Verkle)) {
-              await this.transitionToVerkle(parentBlock.header.stateRoot, false)
-            }
-            if (this.verkleVM === undefined) {
-              throw Error(`Invalid verkleVM=undefined`)
-            }
-            vm = this.verkleVM
+          const hasParentStateRoot = await vm.stateManager.hasStateRoot(parentState)
+          // we can also return false to say that the block wasn't executed but we should throw
+          // because we shouldn't have entered this function if this block wasn't executable
+          if (!hasParentStateRoot) {
+            throw Error(`Missing parent stateRoot for execution`)
           }
 
-          const needsStatelessExecution =
-            typeof this.vm.stateManager.initVerkleExecutionWitness === 'function'
-          if (needsStatelessExecution && block.executionWitness === undefined) {
-            throw Error(`Verkle blocks need executionWitness for stateless execution`)
-          } else {
-            const hasParentStateRoot = await vm.stateManager.hasStateRoot(parentState)
-            // we can also return false to say that the block wasn't executed but we should throw
-            // because we shouldn't have entered this function if this block wasn't executable
-            if (!hasParentStateRoot) {
-              throw Error(`Missing parent stateRoot for execution`)
-            }
-          }
-
-          const skipHeaderValidation =
-            needsStatelessExecution && this.chain.headers.height < block.header.number - BIGINT_1
+          const skipHeaderValidation = this.chain.headers.height < block.header.number - BIGINT_1
           // Also skip adding this block into blockchain for now
           if (skipHeaderValidation) {
             skipBlockchain = true
@@ -568,21 +452,6 @@ export class VMExecution extends Execution {
         status: ExecStatus.VALID,
       }
 
-      const hardfork = this.config.execCommon.setHardforkBy({
-        blockNumber: vmHeadBlock.header.number,
-        timestamp: vmHeadBlock.header.timestamp,
-      })
-      if (
-        !this.config.execCommon.gteHardfork(Hardfork.Verkle) &&
-        this.config.execCommon.hardforkGteHardfork(hardfork, Hardfork.Verkle)
-      ) {
-        // verkle transition should have happened by now
-        if (this.verkleVM === undefined) {
-          throw Error(`Invalid verkleVM=undefined`)
-        }
-        this.vm = this.verkleVM
-      }
-
       if (safeBlock !== undefined) {
         await this.chain.blockchain.setIteratorHead('safe', safeBlock.hash())
       }
@@ -684,7 +553,6 @@ export class VMExecution extends Execution {
                     timestamp,
                   })
                   if (hardfork !== this.hardfork) {
-                    const wasPreVerkle = !this.config.execCommon.gteHardfork(Hardfork.Verkle)
                     const hash = short(block.hash())
                     this.config.superMsg(
                       `Execution hardfork switch on block number=${number} hash=${hash} old=${this.hardfork} new=${hardfork}`,
@@ -693,23 +561,6 @@ export class VMExecution extends Execution {
                       blockNumber: number,
                       timestamp,
                     })
-                    const isPostVerkle = this.config.execCommon.gteHardfork(Hardfork.Verkle)
-                    if (wasPreVerkle && isPostVerkle) {
-                      await this.transitionToVerkle(parentState!)
-                      clearCache = false
-                    }
-                  }
-                  if (
-                    (!this.config.execCommon.gteHardfork(Hardfork.Verkle) &&
-                      typeof this.vm.stateManager.initVerkleExecutionWitness === 'function') ||
-                    (this.config.execCommon.gteHardfork(Hardfork.Verkle) &&
-                      this.vm.stateManager instanceof MerkleStateManager)
-                  ) {
-                    throw Error(
-                      `Invalid vm stateManager type=${typeof this.vm.stateManager} for fork=${
-                        this.hardfork
-                      }`,
-                    )
                   }
 
                   let skipBlockValidation = false
@@ -975,19 +826,6 @@ export class VMExecution extends Execution {
   async executeBlocks(first: number, last: number, txHashes: string[]) {
     this.config.logger?.info('Preparing for block execution (debug mode, no services started)...')
 
-    const block = await this.chain.blockchain.getBlock(first)
-    const startExecutionHardfork = this.config.execCommon.getHardforkBy({
-      blockNumber: block.header.number,
-      timestamp: block.header.timestamp,
-    })
-
-    // Setup VM with verkle state manager if Verkle is active
-    if (
-      this.config.execCommon.hardforkGteHardfork(startExecutionHardfork, Hardfork.Verkle) &&
-      this.config.statelessVerkle
-    ) {
-      await this.transitionToVerkle(block.header.stateRoot, true)
-    }
     const vm = await this.vm.shallowCopy(false)
 
     for (let blockNumber = first; blockNumber <= last; blockNumber++) {
