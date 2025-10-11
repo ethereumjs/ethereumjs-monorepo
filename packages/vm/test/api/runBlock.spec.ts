@@ -23,7 +23,6 @@ import {
   BIGINT_1,
   KECCAK256_RLP,
   bigIntToUnpaddedBytes,
-  bytesToHex,
   concatBytes,
   createAddressFromString,
   createZeroAddress,
