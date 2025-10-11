@@ -7,7 +7,6 @@ export const Chain = {
   Sepolia: 11155111,
   Holesky: 17000,
   Hoodi: 560048,
-  Kaustinen6: 69420,
 } as const
 
 // Reverse mapping: from numeric value back to the key name
@@ -54,11 +53,6 @@ export const ChainGenesis: Record<Chain, GenesisState> = {
     name: 'hoodi',
     blockNumber: BIGINT_0,
     stateRoot: hexToBytes('0xda87d7f5f91c51508791bbcbd4aa5baf04917830b86985eeb9ad3d5bfb657576'),
-  },
-  [Chain.Kaustinen6]: {
-    name: 'kaustinen6',
-    blockNumber: BIGINT_0,
-    stateRoot: hexToBytes('0x1fbf85345a3cbba9a6d44f991b721e55620a22397c2a93ee8d5011136ac300ee'),
   },
 }
 
