@@ -278,8 +278,7 @@ async function run() {
     return helpRPC()
   }
 
-  const { config, customGenesisState, customGenesisStateRoot, metricsServer } =
-    await generateClientConfig(args)
+  const { config, customGenesisState, metricsServer } = await generateClientConfig(args)
 
   logger = config.logger
 
@@ -287,7 +286,6 @@ async function run() {
   // else a SIGINT before may kill the process in unclean manner
   const clientStartPromise = startClient(config, {
     genesisState: customGenesisState,
-    genesisStateRoot: customGenesisStateRoot,
   })
     .then((client) => {
       const servers: (RPCServer | http.Server)[] =

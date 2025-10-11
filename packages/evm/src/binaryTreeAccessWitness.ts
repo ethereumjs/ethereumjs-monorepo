@@ -27,7 +27,10 @@ import debugDefault from 'debug'
 
 import type { BinaryTree } from '@ethereumjs/binarytree'
 import type { StatefulBinaryTreeStateManager } from '@ethereumjs/statemanager'
+
 import type { Address, BinaryTreeExecutionWitness, PrefixedHexString } from '@ethereumjs/util'
+import { ChunkCache } from './chunkCache.ts'
+import { StemCache } from './stemCache.ts'
 
 const debug = debugDefault('evm:binaryTree:aw')
 
@@ -45,7 +48,7 @@ export type BinaryStemAccessEvent = { write?: boolean }
 
 export type BinaryChunkAccessEvent = BinaryStemAccessEvent & { fill?: boolean }
 
-// Since stem is hashed, it is useful to maintain the reverse relationship
+// Since stem is hashed (could chang for binary), it is useful to maintain the reverse relationship
 export type BinaryStemMeta = { address: Address; treeIndex: number | bigint }
 
 export function decodeBinaryAccessState(

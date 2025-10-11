@@ -839,11 +839,7 @@ export async function generateClientConfig(args: ClientOpts) {
     useStringValueTrieDB: args.useStringValueTrieDB,
     txLookupLimit: args.txLookupLimit,
     pruneEngineCache: args.pruneEngineCache,
-    engineNewpayloadMaxExecute:
-      args.ignoreStatelessInvalidExecs === true || args.skipEngineExec === true
-        ? 0
-        : args.engineNewpayloadMaxExecute,
-    ignoreStatelessInvalidExecs: args.ignoreStatelessInvalidExecs,
+    engineNewpayloadMaxExecute: args.skipEngineExec === true ? 0 : args.engineNewpayloadMaxExecute,
     prometheusMetrics,
   })
 

@@ -390,7 +390,7 @@ export class Blockchain implements BlockchainInterface {
       try {
         const block =
           item instanceof BlockHeader
-            ? new Block(item, undefined, undefined, undefined, { common: item.common }, undefined)
+            ? new Block(item, undefined, undefined, undefined, { common: item.common })
             : item
         const isGenesis = block.isGenesis()
 

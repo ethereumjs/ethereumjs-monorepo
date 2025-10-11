@@ -1,4 +1,3 @@
-import { writeFileSync } from 'fs'
 import {
   DBSaveLookups,
   DBSetBlockOrHeader,
@@ -344,7 +343,6 @@ export class VMExecution extends Execution {
           const result = await runBlock(vm, {
             clearCache,
             ...opts,
-            parentStateRoot: prevVMStateRoot,
             skipHeaderValidation,
             reportPreimages,
           })
@@ -586,7 +584,6 @@ export class VMExecution extends Execution {
                     skipBlockValidation,
                     skipHeaderValidation: true,
                     reportPreimages: this.config.savePreimages,
-                    parentStateRoot: parentState,
                   })
                   const afterTS = Date.now()
                   const diffSec = Math.round((afterTS - beforeTS) / 1000)
@@ -678,28 +675,10 @@ export class VMExecution extends Execution {
                     height: errorBlock.header.number,
                     root: errorBlock.header.stateRoot,
                     hash: errorBlock.hash(),
-                    status:
-                      this.config.ignoreStatelessInvalidExecs === true
-                        ? ExecStatus.IGNORE_INVALID
-                        : ExecStatus.INVALID,
+                    status: ExecStatus.INVALID,
                   }
 
-                  // headBlock should be parent of errorBlock and not undefined
-                  if (this.config.ignoreStatelessInvalidExecs === true && headBlock !== undefined) {
-                    // save the data in spec test compatible manner
-                    const blockNumStr = `${errorBlock.header.number}`
-                    const file = `${this.config.getInvalidPayloadsDir()}/${blockNumStr}.json`
-                    const JSONDump = {
-                      [blockNumStr]: {
-                        parent: headBlock.toExecutionPayload(),
-                        execute: errorBlock.toExecutionPayload(),
-                      },
-                    }
-                    writeFileSync(file, JSON.stringify(JSONDump, null, 2))
-                    this.config.logger?.warn(`${errorMsg}:\n${error} payload saved to=${file}`)
-                  } else {
-                    this.config.logger?.warn(`${errorMsg}:\n${error}`)
-                  }
+                  this.config.logger?.warn(`${errorMsg}:\n${error}`)
                 }
 
                 if (this.config.debugCode) {
@@ -777,7 +756,7 @@ export class VMExecution extends Execution {
       canonicalHead.header.number
     } hardfork=${this.config.execCommon.hardfork()} execution=${this.config.execution}`
     if (
-      (!this.config.execCommon.gteHardfork(Hardfork.Paris) || this.config.startExecution) &&
+      !this.config.execCommon.gteHardfork(Hardfork.Paris) &&
       this.config.execution &&
       vmHeadBlock.header.number < canonicalHead.header.number
     ) {
