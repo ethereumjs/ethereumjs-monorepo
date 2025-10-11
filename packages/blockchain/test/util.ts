@@ -104,7 +104,7 @@ export const generateConsecutiveBlock = (
     },
   )
 
-  const block = new Block(header, undefined, undefined, undefined, { common }, undefined)
+  const block = new Block(header, undefined, undefined, undefined, { common })
 
   return block
 }
