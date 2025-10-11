@@ -31,7 +31,7 @@ import { DBTarget } from './db/operation.ts'
 
 import type { HeaderData } from '@ethereumjs/block'
 import type { CliqueConfig, GenesisState } from '@ethereumjs/common'
-import type { BigIntLike, DB, DBObject, VerkleExecutionWitness } from '@ethereumjs/util'
+import type { BigIntLike, DB, DBObject } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 import type {
   BlockchainEvent,
@@ -1343,7 +1343,6 @@ export class Blockchain implements BlockchainInterface {
       {
         header,
         withdrawals: common.isActivatedEIP(4895) ? [] : undefined,
-        executionWitness: common.isActivatedEIP(6800) ? ({} as VerkleExecutionWitness) : undefined,
       },
       { common },
     )

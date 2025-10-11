@@ -169,14 +169,6 @@ export const hardforksDict: HardforksDict = {
     eips: [7594, 7823, 7825, 7883, 7939, 7951, 7918],
   },
   /**
-   * Description: Next feature hardfork after osaka, internally used for verkle testing/implementation (incomplete/experimental)
-   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/verkle.md
-   * Status     : Experimental
-   */
-  verkle: {
-    eips: [7709, 4762, 6800],
-  },
-  /**
    * Description: HF to update the blob target, max and updateFraction
    * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/bpo1.md
    * Status     : Experimental

@@ -167,7 +167,6 @@ function parseGethParams(gethGenesis: GethGenesis) {
     [Hardfork.Cancun]: { name: 'cancunTime', postMerge: true, isTimestamp: true },
     [Hardfork.Prague]: { name: 'pragueTime', postMerge: true, isTimestamp: true },
     [Hardfork.Osaka]: { name: 'osakaTime', postMerge: true, isTimestamp: true },
-    [Hardfork.Verkle]: { name: 'verkleTime', postMerge: true, isTimestamp: true },
     [Hardfork.Bpo1]: { name: 'bpo1Time', postMerge: true, isTimestamp: true },
     [Hardfork.Bpo2]: { name: 'bpo2Time', postMerge: true, isTimestamp: true },
     [Hardfork.Bpo3]: { name: 'bpo3Time', postMerge: true, isTimestamp: true },

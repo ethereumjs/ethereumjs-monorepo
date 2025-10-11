@@ -2,25 +2,20 @@ import { Block } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { type InterpreterStep } from '@ethereumjs/evm'
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
-import { Caches, MerkleStateManager, StatefulVerkleStateManager } from '@ethereumjs/statemanager'
+import { Caches, MerkleStateManager } from '@ethereumjs/statemanager'
 import {
   Account,
-  MapDB,
   bytesToHex,
   createAddressFromString,
   equalsBytes,
   toBytes,
 } from '@ethereumjs/util'
-import { createVerkleTree } from '@ethereumjs/verkle'
-import * as verkle from 'micro-eth-signer/verkle.js'
 
 import { createVM, runTx } from '../../../src/index.ts'
 import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util.ts'
 
 import type { StateManagerInterface } from '@ethereumjs/common'
-import type { VerkleTree } from '@ethereumjs/verkle'
 import type * as tape from 'tape'
-const loadVerkleCrypto = () => Promise.resolve(verkle)
 
 function parseTestCases(
   forkConfigTestSuite: string,
@@ -85,23 +80,15 @@ async function runTestCase(options: any, testData: any, t: tape.Test) {
   // Otherwise mainnet genesis will throw since this has difficulty nonzero
   const genesisBlock = new Block(undefined, undefined, undefined, undefined, { common })
   let blockchain = await createBlockchain({ genesisBlock, common })
-  let stateTree: VerkleTree | MerklePatriciaTrie
+  let stateTree: MerklePatriciaTrie
   let stateManager: StateManagerInterface
-  if (options.stateManager === 'verkle') {
-    const verkleCrypto = await loadVerkleCrypto()
-    stateTree = await createVerkleTree({ verkleCrypto, db: new MapDB() })
-    stateManager = new StatefulVerkleStateManager({
-      common,
-      trie: stateTree,
-    })
-  } else {
-    stateTree = new MerklePatriciaTrie({ useKeyHashing: true, common })
-    stateManager = new MerkleStateManager({
-      caches: new Caches(),
-      trie: stateTree,
-      common,
-    })
-  }
+
+  stateTree = new MerklePatriciaTrie({ useKeyHashing: true, common })
+  stateManager = new MerkleStateManager({
+    caches: new Caches(),
+    trie: stateTree,
+    common,
+  })
 
   const evmOpts = {
     bls: options.bls,

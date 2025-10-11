@@ -3,7 +3,6 @@ import type {
   Common,
   ParamsDict,
   StateManagerInterface,
-  VerkleAccessWitnessInterface,
 } from '@ethereumjs/common'
 import type { Account, Address, PrefixedHexString } from '@ethereumjs/util'
 import type { EventEmitter } from 'eventemitter3'
@@ -140,7 +139,7 @@ export interface EVMRunCallOpts extends EVMRunOpts {
    */
   message?: Message
 
-  accessWitness?: VerkleAccessWitnessInterface | BinaryTreeAccessWitnessInterface
+  accessWitness?: BinaryTreeAccessWitnessInterface
 }
 
 interface NewContractEvent {
@@ -352,7 +351,7 @@ export interface EVMOpts {
    * `@ethereumjs/statemanager` package.
    *
    * The `@ethereumjs/statemanager` package also provides a variety of state manager
-   * implementations for different needs (MPT-tree backed, RPC, experimental verkle)
+   * implementations for different needs (MPT-tree backed, RPC, experimental binary tree)
    * which can be used by this option as a replacement.
    */
   stateManager?: StateManagerInterface

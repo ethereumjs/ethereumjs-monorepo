@@ -86,14 +86,6 @@ export interface EncodedBinaryTreeState {
   [key: PrefixedHexString]: PrefixedHexString | null
 }
 
-export interface VerkleState {
-  [key: PrefixedHexString]: PrefixedHexString | null
-}
-
-export interface EncodedVerkleProof {
-  [key: PrefixedHexString]: PrefixedHexString
-}
-
 export type StorageProof = {
   key: PrefixedHexString
   proof: PrefixedHexString[]

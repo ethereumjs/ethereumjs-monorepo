@@ -1,6 +1,6 @@
 import { bigIntToHex } from '@ethereumjs/util'
 
-import type { NumericString, PrefixedHexString, VerkleExecutionWitness } from '@ethereumjs/util'
+import type { NumericString, PrefixedHexString } from '@ethereumjs/util'
 import type { ExecutionPayload } from './types.ts'
 
 type BeaconWithdrawal = {
@@ -32,64 +32,6 @@ export type BeaconPayloadJSON = {
   excess_blob_gas?: NumericString
   parent_beacon_block_root?: PrefixedHexString
   requests_hash?: PrefixedHexString
-  // the casing of VerkleExecutionWitness remains same camel case for now
-  execution_witness?: VerkleExecutionWitness
-}
-
-type VerkleProofSnakeJSON = {
-  commitments_by_path: PrefixedHexString[]
-  d: PrefixedHexString
-  depth_extension_present: PrefixedHexString
-  ipa_proof: {
-    cl: PrefixedHexString[]
-    cr: PrefixedHexString[]
-    final_evaluation: PrefixedHexString
-  }
-  other_stems: PrefixedHexString[]
-}
-
-type VerkleStateDiffSnakeJSON = {
-  stem: PrefixedHexString
-  suffix_diffs: {
-    current_value: PrefixedHexString | null
-    new_value: PrefixedHexString | null
-    suffix: number | string
-  }[]
-}
-
-type VerkleExecutionWitnessSnakeJSON = {
-  parent_state_root: PrefixedHexString
-  state_diff: VerkleStateDiffSnakeJSON[]
-  verkle_proof: VerkleProofSnakeJSON
-}
-
-function parseExecutionWitnessFromSnakeJSON({
-  parent_state_root,
-  state_diff,
-  verkle_proof,
-}: VerkleExecutionWitnessSnakeJSON): VerkleExecutionWitness {
-  return {
-    parentStateRoot: parent_state_root,
-    stateDiff: state_diff.map(({ stem, suffix_diffs }) => ({
-      stem,
-      suffixDiffs: suffix_diffs.map(({ current_value, new_value, suffix }) => ({
-        currentValue: current_value,
-        newValue: new_value,
-        suffix,
-      })),
-    })),
-    verkleProof: {
-      commitmentsByPath: verkle_proof.commitments_by_path,
-      d: verkle_proof.d,
-      depthExtensionPresent: verkle_proof.depth_extension_present,
-      ipaProof: {
-        cl: verkle_proof.ipa_proof.cl,
-        cr: verkle_proof.ipa_proof.cr,
-        finalEvaluation: verkle_proof.ipa_proof.final_evaluation,
-      },
-      otherStems: verkle_proof.other_stems,
-    },
-  }
 }
 
 /**
@@ -134,16 +76,6 @@ export function executionPayloadFromBeaconPayload(payload: BeaconPayloadJSON): E
   }
   if (payload.requests_hash !== undefined && payload.requests_hash !== null) {
     executionPayload.requestsHash = payload.requests_hash
-  }
-
-  if (payload.execution_witness !== undefined && payload.execution_witness !== null) {
-    // the casing structure in payload could be camel case or snake depending upon the CL
-    executionPayload.executionWitness =
-      payload.execution_witness.verkleProof !== undefined
-        ? payload.execution_witness
-        : parseExecutionWitnessFromSnakeJSON(
-            payload.execution_witness as unknown as VerkleExecutionWitnessSnakeJSON,
-          )
   }
 
   return executionPayload

@@ -2,7 +2,6 @@ import { createBlockHeader, paramsBlock } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import {
   Common,
-  Hardfork,
   Mainnet,
   createCommonFromGethGenesis,
   parseGethGenesis,
@@ -36,7 +35,7 @@ import { mockBlockchain } from './mockBlockchain.ts'
 import type { AddressInfo } from 'node:net'
 import type { ExecutionPayload } from '@ethereumjs/block'
 import type { Blockchain } from '@ethereumjs/blockchain'
-import type { CustomCrypto, GenesisState, GethGenesis } from '@ethereumjs/common'
+import type { CustomCrypto, GenesisState, GethGenesis, Hardfork } from '@ethereumjs/common'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { IncomingMessage } from 'connect'
 import type { HttpClient, HttpServer, MethodLike } from 'jayson/promise/index.js'
@@ -59,7 +58,6 @@ interface CreateClientOptions {
   genesisState: GenesisState
   genesisStateRoot: Uint8Array
   savePreimages: boolean
-  statelessVerkle: boolean
   engine: boolean
   customCrypto: CustomCrypto
   hardfork: string | Hardfork
@@ -112,7 +110,6 @@ export async function createClient(clientOpts: Partial<CreateClientOptions> = {}
     accountCache: 10000,
     storageCache: 1000,
     savePreimages: clientOpts.savePreimages,
-    statelessVerkle: clientOpts.statelessVerkle,
   })
   const blockchain = clientOpts.blockchain ?? (mockBlockchain() as unknown as Blockchain)
 
@@ -248,15 +245,11 @@ export async function setupChain(
     timestamp: genesisParams.genesis.timestamp,
   })
 
-  // currently we don't have a way to create verkle genesis root so we will
-  // use genesisStateRoot for blockchain init as well as to start of the stateless
-  // client. else the stateroot could have been generated out of box
-  const genesisMeta = common.gteHardfork(Hardfork.Verkle) ? { genesisStateRoot } : { genesisState }
   const blockchain = await createBlockchain({
     common,
     validateBlocks: false,
     validateConsensus: false,
-    ...genesisMeta,
+    genesisState,
   })
 
   // for the client we can pass both genesisState and genesisStateRoot and let it s

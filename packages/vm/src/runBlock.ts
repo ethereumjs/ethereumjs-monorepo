@@ -132,50 +132,14 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     await stateManager.setStateRoot(root, clearCache)
   }
 
-  if (vm.common.isActivatedEIP(6800) || vm.common.isActivatedEIP(7864)) {
+  if (vm.common.isActivatedEIP(7864)) {
     // Initialize the access witness
-
-    if (vm.common.customCrypto.verkle === undefined) {
-      throw Error('verkleCrypto required when EIP-6800 is active')
-    }
-    // Verkle functionality removed
-    // vm.evm.verkleAccessWitness = new VerkleAccessWitness({
-    //   verkleCrypto: vm.common.customCrypto.verkle,
-    // })
-    // vm.evm.systemVerkleAccessWitness = new VerkleAccessWitness({
-    //   verkleCrypto: vm.common.customCrypto.verkle,
-    // })
-
-    if (typeof stateManager.initVerkleExecutionWitness !== 'function') {
-      throw Error(`VerkleStateManager needed for execution of verkle blocks`)
-    }
 
     if (vm.DEBUG) {
       debug(`Initializing executionWitness`)
     }
     if (clearCache) {
       stateManager.clearCaches()
-    }
-
-    // Populate the execution witness
-    stateManager.initVerkleExecutionWitness!(block.header.number, block.executionWitness)
-
-    // Check if statemanager is a Verkle State Manager (stateless and stateful both have verifyVerklePostState)
-    if ('verifyVerklePostState' in stateManager) {
-      // Update the stateRoot cache
-      await stateManager.setStateRoot(block.header.stateRoot)
-      // Verkle functionality removed
-      // if (verifyVerkleStateProof(stateManager as StatelessVerkleStateManager) === true) {
-      //   if (vm.DEBUG) {
-      //     debug(`Verkle proof verification succeeded`)
-      //   }
-      // } else {
-      //   throw Error(`Verkle proof verification failed`)
-      // }
-    }
-  } else {
-    if (typeof stateManager.initVerkleExecutionWitness === 'function') {
-      throw Error(`StatelessVerkleStateManager can't execute merkle blocks`)
     }
   }
 
@@ -275,55 +239,52 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
       }
     }
 
-    // Check if statemanager is a StatelessVerkleStateManager by checking for a method only on StatelessVerkleStateManager API
-    if (!('verifyVerklePostState' in vm.stateManager)) {
-      // Only validate the following headers if Stateless isn't activated
-      if (equalsBytes(result.receiptsRoot, block.header.receiptTrie) === false) {
-        if (vm.DEBUG) {
-          debug(
-            `Invalid receiptTrie received=${bytesToHex(result.receiptsRoot)} expected=${bytesToHex(
-              block.header.receiptTrie,
-            )}`,
-          )
-        }
-        const msg = _errorMsg('invalid receiptTrie', vm, block)
-        throw EthereumJSErrorWithoutCode(msg)
+    // Only validate the following headers if Stateless isn't activated
+    if (equalsBytes(result.receiptsRoot, block.header.receiptTrie) === false) {
+      if (vm.DEBUG) {
+        debug(
+          `Invalid receiptTrie received=${bytesToHex(result.receiptsRoot)} expected=${bytesToHex(
+            block.header.receiptTrie,
+          )}`,
+        )
       }
-      if (!(equalsBytes(result.bloom.bitvector, block.header.logsBloom) === true)) {
-        if (vm.DEBUG) {
-          debug(
-            `Invalid bloom received=${bytesToHex(result.bloom.bitvector)} expected=${bytesToHex(
-              block.header.logsBloom,
-            )}`,
-          )
-        }
-        const msg = _errorMsg('invalid bloom', vm, block)
-        throw EthereumJSErrorWithoutCode(msg)
+      const msg = _errorMsg('invalid receiptTrie', vm, block)
+      throw EthereumJSErrorWithoutCode(msg)
+    }
+    if (!(equalsBytes(result.bloom.bitvector, block.header.logsBloom) === true)) {
+      if (vm.DEBUG) {
+        debug(
+          `Invalid bloom received=${bytesToHex(result.bloom.bitvector)} expected=${bytesToHex(
+            block.header.logsBloom,
+          )}`,
+        )
       }
-      if (result.gasUsed !== block.header.gasUsed) {
-        if (vm.DEBUG) {
-          debug(`Invalid gasUsed received=${result.gasUsed} expected=${block.header.gasUsed}`)
-        }
-        const msg = _errorMsg('invalid gasUsed', vm, block)
-        throw EthereumJSErrorWithoutCode(msg)
+      const msg = _errorMsg('invalid bloom', vm, block)
+      throw EthereumJSErrorWithoutCode(msg)
+    }
+    if (result.gasUsed !== block.header.gasUsed) {
+      if (vm.DEBUG) {
+        debug(`Invalid gasUsed received=${result.gasUsed} expected=${block.header.gasUsed}`)
       }
-      if (!(equalsBytes(stateRoot, block.header.stateRoot) === true)) {
-        if (vm.DEBUG) {
-          debug(
-            `Invalid stateRoot received=${bytesToHex(stateRoot)} expected=${bytesToHex(
-              block.header.stateRoot,
-            )}`,
-          )
-        }
-        const msg = _errorMsg(
-          `invalid block stateRoot, got: ${bytesToHex(stateRoot)}, want: ${bytesToHex(
+      const msg = _errorMsg('invalid gasUsed', vm, block)
+      throw EthereumJSErrorWithoutCode(msg)
+    }
+    if (!(equalsBytes(stateRoot, block.header.stateRoot) === true)) {
+      if (vm.DEBUG) {
+        debug(
+          `Invalid stateRoot received=${bytesToHex(stateRoot)} expected=${bytesToHex(
             block.header.stateRoot,
           )}`,
-          vm,
-          block,
         )
-        throw EthereumJSErrorWithoutCode(msg)
       }
+      const msg = _errorMsg(
+        `invalid block stateRoot, got: ${bytesToHex(stateRoot)}, want: ${bytesToHex(
+          block.header.stateRoot,
+        )}`,
+        vm,
+        block,
+      )
+      throw EthereumJSErrorWithoutCode(msg)
     }
 
     if (vm.common.isActivatedEIP(7864)) {
@@ -583,7 +544,7 @@ export async function accumulateParentBeaconBlockRoot(vm: VM, root: Uint8Array, 
 
   if (code.length === 0) {
     // Exit early, system contract has no code so no storage is written
-    // TODO: verify with Gabriel that this is fine regarding verkle (should we put an empty account?)
+    // TODO: verify with Gabriel that this is fine regarding binary trees (should we put an empty account?)
     return
   }
 
