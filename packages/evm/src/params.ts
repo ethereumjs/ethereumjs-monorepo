@@ -357,14 +357,6 @@ export const paramsEVM: ParamsDict = {
     jumpfGas: 5, // Base fee of the JUMPF opcode
   },
   /**
-   * Ethereum state using a unified verkle tree (experimental)
-   */
-  6800: {
-    // gasPrices
-    createGas: 1000, // Base fee of the CREATE opcode
-    coldsloadGas: 0, // Gas cost of the first read of storage from a given location (per transaction)
-  },
-  /**
 .  * Revamped CALL instructions
 .  */
   7069: {

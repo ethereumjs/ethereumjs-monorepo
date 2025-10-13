@@ -4,7 +4,7 @@ import { ConsensusAlgorithm } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
-import { Caches, MerkleStateManager, StatefulVerkleStateManager } from '@ethereumjs/statemanager'
+import { Caches, MerkleStateManager } from '@ethereumjs/statemanager'
 import { createTxFromRLP } from '@ethereumjs/tx'
 import {
   MapDB,
@@ -14,7 +14,6 @@ import {
   isHexString,
   stripHexPrefix,
 } from '@ethereumjs/util'
-import { createVerkleTree } from '@ethereumjs/verkle'
 
 import { buildBlock, createVM, runBlock } from '../../../src/index.ts'
 import { setupPreConditions, verifyPostConditions } from '../../util.ts'
@@ -23,7 +22,6 @@ import type { Block } from '@ethereumjs/block'
 import type { Blockchain, ConsensusDict } from '@ethereumjs/blockchain'
 import type { Common, StateManagerInterface } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
-import type { VerkleTree } from '@ethereumjs/verkle'
 import type * as tape from 'tape'
 
 function formatBlockHeader(data: any) {
@@ -48,23 +46,15 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   common.setHardforkBy({ blockNumber: 0 })
 
   let cacheDB = new MapDB()
-  let stateTree: MerklePatriciaTrie | VerkleTree
+  let stateTree: MerklePatriciaTrie
   let stateManager: StateManagerInterface
 
-  if (options.stateManager === 'verkle') {
-    stateTree = await createVerkleTree()
-    stateManager = new StatefulVerkleStateManager({
-      trie: stateTree,
-      common: options.common,
-    })
-  } else {
-    stateTree = new MerklePatriciaTrie({ useKeyHashing: true, common })
-    stateManager = new MerkleStateManager({
-      caches: new Caches(),
-      trie: stateTree,
-      common,
-    })
-  }
+  stateTree = new MerklePatriciaTrie({ useKeyHashing: true, common })
+  stateManager = new MerkleStateManager({
+    caches: new Caches(),
+    trie: stateTree,
+    common,
+  })
 
   let validatePow = false
   // Only run with block validation when sealEngine present in test file
@@ -202,31 +192,8 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
         await blockBuilder.revert() // will only revert if checkpointed
       }
 
-      let block: Block
-      if (options.stateManager === 'verkle') {
-        currentBlock = BigInt(raw.blockHeader.number)
-        common.setHardforkBy({
-          blockNumber: currentBlock,
-          timestamp: BigInt(raw.blockHeader.timestamp),
-        })
-        // Create the block from the JSON block data since the RLP doesn't include the execution witness
-        block = createBlock(
-          {
-            header: raw.blockHeader,
-            transactions: raw.transactions,
-            uncleHeaders: raw.uncleHeaders,
-            withdrawals: raw.withdrawals,
-            executionWitness: raw.witness,
-          },
-          {
-            common,
-            setHardfork: true,
-          },
-        )
-      } else {
-        const blockRLP = hexToBytes(raw.rlp as PrefixedHexString)
-        block = createBlockFromRLP(blockRLP, { common, setHardfork: true })
-      }
+      const blockRLP = hexToBytes(raw.rlp as PrefixedHexString)
+      const block = createBlockFromRLP(blockRLP, { common, setHardfork: true })
 
       await blockchain.putBlock(block)
 

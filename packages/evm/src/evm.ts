@@ -54,7 +54,6 @@ import type { MessageWithTo } from './message.ts'
 import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas.ts'
 import type { OpHandler, OpcodeList, OpcodeMap } from './opcodes/index.ts'
 import type { CustomPrecompile, PrecompileFunc } from './precompiles/index.ts'
-import type { VerkleAccessWitness } from './verkleAccessWitness.ts'
 
 const debug = debugDefault('evm:evm')
 const debugGas = debugDefault('evm:gas')
@@ -152,7 +151,6 @@ export class EVM implements EVMInterface {
     Hardfork.Cancun,
     Hardfork.Prague,
     Hardfork.Osaka,
-    Hardfork.Verkle,
     Hardfork.Bpo1,
     Hardfork.Bpo2,
     Hardfork.Bpo3,
@@ -171,8 +169,6 @@ export class EVM implements EVMInterface {
   public stateManager: StateManagerInterface
   public blockchain: EVMMockBlockchainInterface
   public journal: Journal
-  public verkleAccessWitness?: VerkleAccessWitness
-  public systemVerkleAccessWitness?: VerkleAccessWitness
   public binaryAccessWitness?: BinaryTreeAccessWitness
   public systemBinaryAccessWitness?: BinaryTreeAccessWitness
 
@@ -238,12 +234,12 @@ export class EVM implements EVMInterface {
     this.blockchain = opts.blockchain!
     this.stateManager = opts.stateManager!
 
-    if (this.common.isActivatedEIP(6800) || this.common.isActivatedEIP(7864)) {
+    if (this.common.isActivatedEIP(7864)) {
       const mandatory = ['checkChunkWitnessPresent']
       for (const m of mandatory) {
         if (!(m in this.stateManager)) {
           throw EthereumJSErrorWithoutCode(
-            `State manager used must implement ${m} if Verkle (EIP-6800) is activated`,
+            `State manager used must implement ${m} if Binary Trees (EIP-7864) is activated`,
           )
         }
       }
@@ -255,9 +251,9 @@ export class EVM implements EVMInterface {
     // Supported EIPs
     const supportedEIPs = [
       663, 1153, 1559, 2537, 2565, 2718, 2929, 2930, 2935, 3198, 3529, 3540, 3541, 3607, 3651, 3670,
-      3855, 3860, 4200, 4399, 4750, 4788, 4844, 4895, 5133, 5450, 5656, 6110, 6206, 6780, 6800,
-      7002, 7069, 7251, 7480, 7516, 7594, 7620, 7685, 7691, 7692, 7698, 7702, 7709, 7823, 7825,
-      7939, 7951,
+      3855, 3860, 4200, 4399, 4750, 4788, 4844, 4895, 5133, 5450, 5656, 6110, 6206, 6780, 7002,
+      7069, 7251, 7480, 7516, 7594, 7620, 7685, 7691, 7692, 7698, 7702, 7709, 7823, 7825, 7939,
+      7951,
     ]
 
     for (const eip of this.common.eips()) {
@@ -337,9 +333,9 @@ export class EVM implements EVMInterface {
     let gasLimit = message.gasLimit
     const fromAddress = message.caller
 
-    if (this.common.isActivatedEIP(6800) || this.common.isActivatedEIP(7864)) {
+    if (this.common.isActivatedEIP(7864)) {
       if (message.accessWitness === undefined) {
-        throw EthereumJSErrorWithoutCode('accessWitness is required for EIP-6800 & EIP-7864')
+        throw EthereumJSErrorWithoutCode('accessWitness is required for EIP-7864')
       }
       const sendsValue = message.value !== BIGINT_0
       if (message.depth === 0) {
@@ -960,7 +956,6 @@ export class EVM implements EVMInterface {
         createdAddresses: opts.createdAddresses ?? new Set(),
         delegatecall: opts.delegatecall,
         blobVersionedHashes: opts.blobVersionedHashes,
-        accessWitness: this.verkleAccessWitness,
       })
     }
 

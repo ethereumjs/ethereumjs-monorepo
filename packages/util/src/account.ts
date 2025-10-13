@@ -70,7 +70,7 @@ function handleNullIndicator(values: NestedUint8Array | Uint8Array): Uint8Array 
 
 /**
  * Account class to load and maintain the  basic account objects.
- * Supports partial loading and access required for verkle with null
+ * Supports partial loading and access required for stateless with null
  * as the placeholder.
  *
  * Note: passing undefined in constructor is different from null

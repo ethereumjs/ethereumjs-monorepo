@@ -123,10 +123,6 @@ export const Mainnet: ChainConfig = {
       name: 'osaka',
       block: null,
     },
-    {
-      name: 'verkle',
-      block: null,
-    },
   ],
   bootstrapNodes: [
     {
@@ -559,85 +555,4 @@ export const Hoodi: ChainConfig = {
   dnsNetworks: [
     'enrtree://AKA3AM6LPBYEUDMVNU3BSVQJ5AD45Y7YPOHJLEF6W26QOE4VTUDPE@all.hoodi.ethdisco.net',
   ],
-}
-
-export const Kaustinen6: ChainConfig = {
-  name: 'kaustinen6',
-  chainId: 69420,
-  defaultHardfork: 'verkle',
-  consensus: {
-    type: 'pos',
-    algorithm: 'casper',
-  },
-  comment: 'Verkle kaustinen testnet 6 (likely temporary, do not hard-wire into production code)',
-  url: 'https://github.com/eth-clients/kaustinen/',
-  genesis: {
-    difficulty: '0x01',
-    extraData: '0x',
-    gasLimit: '0x17D7840',
-    nonce: '0x0000000000001234',
-    timestamp: '0x66190fbc',
-  },
-  hardforks: [
-    {
-      name: 'chainstart',
-      block: 0,
-    },
-    {
-      name: 'homestead',
-      block: 0,
-    },
-    {
-      name: 'tangerineWhistle',
-      block: 0,
-    },
-    {
-      name: 'spuriousDragon',
-      block: 0,
-    },
-    {
-      name: 'byzantium',
-      block: 0,
-    },
-    {
-      name: 'constantinople',
-      block: 0,
-    },
-    {
-      name: 'petersburg',
-      block: 0,
-    },
-    {
-      name: 'istanbul',
-      block: 0,
-    },
-    {
-      name: 'berlin',
-      block: 0,
-    },
-    {
-      name: 'london',
-      block: 0,
-    },
-    {
-      name: 'paris',
-      block: 0,
-    },
-    {
-      name: 'mergeNetsplitBlock',
-      block: 0,
-    },
-    {
-      name: 'shanghai',
-      block: null,
-      timestamp: '0',
-    },
-    {
-      name: 'verkle',
-      block: null,
-      timestamp: '1712848500',
-    },
-  ],
-  bootstrapNodes: [],
-  dnsNetworks: [],
 }

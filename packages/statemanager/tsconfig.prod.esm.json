@@ -9,7 +9,6 @@
     { "path": "../common/tsconfig.prod.esm.json" },
     { "path": "../mpt/tsconfig.prod.esm.json" },
     { "path": "../util/tsconfig.prod.esm.json" },
-    { "path": "../verkle/tsconfig.prod.esm.json" },
     { "path": "../binarytree/tsconfig.prod.esm.json" }
   ]
 }

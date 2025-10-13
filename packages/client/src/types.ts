@@ -133,20 +133,14 @@ export interface ClientOpts {
   useStringValueTrieDB?: boolean
   txLookupLimit?: number
   startBlock?: number
-  startExecutionFrom?: number
-  startExecution?: boolean
   isSingleNode?: boolean
   vmProfileBlocks?: boolean
   vmProfileTxs?: boolean
   loadBlocksFromRlp?: string[]
   pruneEngineCache?: boolean
   savePreimages?: boolean
-  verkleGenesisStateRoot?: Uint8Array
-  statelessVerkle?: boolean
-  statefulVerkle?: boolean
   engineNewpayloadMaxExecute?: number
   skipEngineExec?: boolean
-  ignoreStatelessInvalidExecs?: boolean
   useJsCrypto?: boolean
 }
 

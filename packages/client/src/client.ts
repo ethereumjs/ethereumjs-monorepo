@@ -51,12 +51,6 @@ export interface EthereumClientOptions {
 
   /* custom genesisState if any for the chain */
   genesisState?: GenesisState
-
-  /* custom genesisStateRoot to be used with post verkle genesis for stateless runs */
-  genesisStateRoot?: Uint8Array
-
-  /* if client can be run stateless post verkle, defaults to true for now */
-  statelessVerkle?: boolean
 }
 
 /**

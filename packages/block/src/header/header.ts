@@ -626,13 +626,6 @@ export class BlockHeader {
       rawItems.push(this.withdrawalsRoot!)
     }
 
-    // in kaustinen 2 verkle is scheduled after withdrawals, will eventually be post deneb hopefully
-    if (this.common.isActivatedEIP(6800)) {
-      // execution witness is not mandatory part of the the block so nothing to push here
-      // but keep this comment segment for clarity regarding the same and move it according as per the
-      // HF sequence eventually planned
-    }
-
     if (this.common.isActivatedEIP(4844)) {
       rawItems.push(bigIntToUnpaddedBytes(this.blobGasUsed!))
       rawItems.push(bigIntToUnpaddedBytes(this.excessBlobGas!))

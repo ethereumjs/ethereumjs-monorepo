@@ -302,16 +302,6 @@ describe('[Block]: block functions', () => {
       { common: new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart }) },
     )
     await checkThrowsAsync(block.validateData(false, false), 'invalid uncle hash')
-
-    // Verkle witness
-    const common = new Common({ chain: Mainnet, eips: [6800], hardfork: Hardfork.Cancun })
-    // Note: `executionWitness: undefined` will still initialize an execution witness in the block
-    // So, only testing for `null` here
-    block = createBlock({ executionWitness: null }, { common })
-    await checkThrowsAsync(
-      block.validateData(false, false),
-      'Invalid block: ethereumjs stateless client needs executionWitness',
-    )
   })
 
   it('should test isGenesis (mainnet default)', () => {
