@@ -206,7 +206,7 @@ export class BlockBuilder {
       // as per the implementation of other clients geth/nethermind
       // although this should never happen as no withdrawals with 0
       // amount should ever land up here.
-      if (amount === 0n) continue
+      if (amount === BIGINT_0) continue
       // Withdrawal amount is represented in Gwei so needs to be
       // converted to wei
       await rewardAccount(this.vm.evm, address, amount * GWEI_TO_WEI, this.vm.common)
