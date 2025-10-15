@@ -59,7 +59,6 @@
     "@ethereumjs/statemanager": "^10.0.0",
     "@ethereumjs/util": "^10.0.0",
     "@noble/curves": "^1.9.0",
-    "@types/debug": "^4.1.12",
     "debug": "^4.4.0",
     "ethereum-cryptography": "^3.2.0",
     "eventemitter3": "^5.0.1"
@@ -67,6 +66,7 @@
   "devDependencies": {
     "@paulmillr/trusted-setups": "^0.2.0",
     "@types/benchmark": "^2.1.5",
+    "@types/debug": "^4.1.12",
     "@types/minimist": "^1.2.5",
     "@types/node-dir": "^0.0.37",
     "benchmark": "^2.1.4",
