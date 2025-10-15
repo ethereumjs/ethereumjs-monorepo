@@ -67,7 +67,6 @@
   "devDependencies": {
     "@paulmillr/trusted-setups": "^0.2.0",
     "@types/benchmark": "^2.1.5",
-    "@types/core-js": "^2.5.8",
     "@types/minimist": "^1.2.5",
     "@types/node-dir": "^0.0.37",
     "benchmark": "^2.1.4",
