@@ -568,14 +568,14 @@ export class BlockHeader {
 
     // Early exit (strictly < per spec)
     if (excessBlobGas + blobGasUsed < targetPerBlock) {
-      return 0n
+      return BIGINT_0
     }
 
     // EIP-7918 reserve price check
     if (childCommon.isActivatedEIP(7918)) {
       const blobBaseCost = childCommon.param('blobBaseCost')
       const gasPerBlob = childCommon.param('blobGasPerBlob')
-      const baseFee = this.baseFeePerGas ?? 0n
+      const baseFee = this.baseFeePerGas ?? BIGINT_0
       const blobFee = this.getBlobGasPrice()
 
       if (blobBaseCost * baseFee > gasPerBlob * blobFee) {
