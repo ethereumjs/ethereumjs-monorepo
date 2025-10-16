@@ -20,7 +20,7 @@
 [![Code Coverage][coverage-badge]][coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-This repository holds various protocol building blocks of the [Ethereum](https://ethereum.org) blockchain execution layer and is managed by the [Ethereum Foundation](https://ethereum.foundation/) JavaScript team. There is a TypeScript implementation of the [Ethereum Virtual Machine (EVM)][vm-package] ready to be used in Node.js or a browser environment, implementations of core structural blockchain building blocks like an Ethereum [Tx][tx-package], [Block][block-package] or [Blockchain][blockchain-package] as well as an [MPT][mpt-package] (Merkle Patricia Tree) implementation.
+This repository holds various protocol building blocks of the [Ethereum](https://ethereum.org) blockchain execution layer. It is managed and maintained by former members of the [Ethereum Foundation](https://ethereum.foundation/) JavaScript team as well as the broader Ethereum community. There is a TypeScript implementation of the [Ethereum Virtual Machine (EVM)][vm-package] ready to be used in Node.js or a browser environment, implementations of core structural blockchain building blocks like an Ethereum [Tx][tx-package], [Block][block-package] or [Blockchain][blockchain-package] as well as an [MPT][mpt-package] (Merkle Patricia Tree) implementation.
 
 All libraries are bound together by the core [Common][common-package] library keeping track of chain specifics and hardfork changes. They are complemented by helper packages like [RLP][rlp-package] for data encoding/decoding or [Util][util-package], providing helper functionalities like (byte) conversion, signatures, types and others.
 
@@ -157,7 +157,7 @@ To update the diagram above edit the README file and open a new PR with the chan
 
 ## EthereumJS
 
-The `EthereumJS` GitHub organization and its repositories are managed by the Ethereum Foundation JavaScript team, see our [website](https://ethereumjs.github.io/) for a team introduction. If you want to join for work or carry out improvements on the libraries see the [developer docs](./DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](./CODE_OF_CONDUCT.md).
+The `EthereumJS` GitHub organization and its repositories are managed by members of the former Ethereum Foundation JavaScript team and the broader Ethereum community. If you want to join for work or carry out improvements on the libraries see the [developer docs](./DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](./CODE_OF_CONDUCT.md).
 
 ## License
 
