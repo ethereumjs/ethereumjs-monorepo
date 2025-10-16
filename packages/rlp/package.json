@@ -65,6 +65,7 @@
     "node": ">=18"
   },
   "devDependencies": {
+    "@types/benchmark": "^2.1.5",
     "benchmark": "^2.1.4"
   }
 }

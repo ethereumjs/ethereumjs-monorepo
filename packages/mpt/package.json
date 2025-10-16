@@ -62,6 +62,7 @@
   "devDependencies": {
     "@ethereumjs/genesis": "^10.0.0",
     "@types/benchmark": "^2.1.5",
+    "@types/debug": "^4.1.12",
     "abstract-level": "^3.0.1",
     "level": "^9.0.0",
     "lmdb": "^3.2.6",

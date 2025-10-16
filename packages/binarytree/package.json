@@ -61,6 +61,9 @@
     "ethereum-cryptography": "^3.2.0",
     "lru-cache": "11.0.2"
   },
+  "devDependencies": {
+    "@types/debug": "^4.1.12"
+  },
   "engines": {
     "node": ">=18"
   }
