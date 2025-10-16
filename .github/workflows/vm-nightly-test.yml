@@ -13,6 +13,7 @@ defaults:
 
 jobs:
   test-vm-api:
+    if: github.repository == 'ethereumjs/ethereumjs-monorepo'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -29,6 +30,7 @@ jobs:
   #     - run: npm run test:API:browser
 
   test-vm-state:
+    if: github.repository == 'ethereumjs/ethereumjs-monorepo'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -46,6 +48,7 @@ jobs:
       - run: npm run test:state:allForks
 
   test-vm-blockchain:
+    if: github.repository == 'ethereumjs/ethereumjs-monorepo'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -64,6 +67,7 @@ jobs:
         working-directory: '${{ env.cwd }}'
 
   test-vm-slow:
+    if: github.repository == 'ethereumjs/ethereumjs-monorepo'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
