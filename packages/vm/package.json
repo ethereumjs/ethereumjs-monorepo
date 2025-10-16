@@ -81,9 +81,10 @@
   "devDependencies": {
     "@ethereumjs/blockchain": "^10.0.0",
     "@ethereumjs/ethash": "^10.0.0",
+    "@ethereumjs/testdata": "1.0.0",
     "@paulmillr/trusted-setups": "^0.2.0",
     "@types/benchmark": "^2.1.5",
-    "@types/core-js": "^2.5.8",
+    "@types/debug": "^4.1.12",
     "@types/minimist": "^1.2.5",
     "@types/node-dir": "^0.0.37",
     "benchmark": "^2.1.4",
@@ -95,8 +96,7 @@
     "nyc": "^17.1.0",
     "solc": "^0.8.28",
     "tape": "^5.9.0",
-    "yargs": "^17.7.2",
-    "@ethereumjs/testdata": "1.0.0"
+    "yargs": "^17.7.2"
   },
   "engines": {
     "node": ">=18"

@@ -272,11 +272,10 @@ class EOFHeader {
 
   // Returns the code section for a given program counter position
   getSectionFromProgramCounter(programCounter: number) {
-    if (
-      programCounter < 0 ||
-      programCounter >
-        this.codeStartPos[this.codeStartPos.lastIndex] + this.codeSizes[this.codeSizes.lastIndex]
-    ) {
+    const lastIndex = this.codeSizes.length - 1
+    const lastStart = this.getCodePosition(lastIndex)
+    const lastEnd = lastStart + this.codeSizes[lastIndex]
+    if (programCounter < 0 || programCounter > lastEnd) {
       // If code position is outside the beginning or end of the code sections, return 0
       throw EthereumJSErrorWithoutCode('program counter out of bounds')
     }
