@@ -80,7 +80,7 @@
   },
   "devDependencies": {
     "@ethereumjs/blockchain": "^10.0.1",
-    "@ethereumjs/ethash": "^10.0.1",
+    "@ethereumjs/ethash": "^10.0.0",
     "@ethereumjs/testdata": "1.0.0",
     "@paulmillr/trusted-setups": "^0.2.0",
     "@types/benchmark": "^2.1.5",

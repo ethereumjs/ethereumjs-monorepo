@@ -60,7 +60,7 @@
     "lru-cache": "11.0.2"
   },
   "devDependencies": {
-    "@ethereumjs/ethash": "^10.0.1",
+    "@ethereumjs/ethash": "^10.0.0",
     "@types/debug": "^4.1.12"
   },
   "engines": {
