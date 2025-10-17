@@ -12,24 +12,28 @@ import type { ForkName, ForkNamesMap, OfficialTransactionTestData } from './type
 
 const argv = minimist(process.argv.slice(2))
 const file: string | undefined = argv.file
-
-const forkNames: ForkName[] = [
-  'Prague',
-  'Cancun',
-  'Shanghai',
-  'Paris',
-  'London+3860',
-  'London',
-  'Berlin',
-  'Istanbul',
-  'Byzantium',
-  'ConstantinopleFix',
-  'Constantinople',
-  'EIP150',
-  'EIP158',
-  'Frontier',
-  'Homestead',
-]
+const forkNames: ForkName[] =
+  argv.forks !== undefined
+    ? Array.isArray(argv.forks)
+      ? argv.forks
+      : [argv.forks]
+    : [
+        'Prague',
+        'Cancun',
+        'Shanghai',
+        'Paris',
+        'London+3860',
+        'London',
+        'Berlin',
+        'Istanbul',
+        'Byzantium',
+        'ConstantinopleFix',
+        'Constantinople',
+        'EIP150',
+        'EIP158',
+        'Frontier',
+        'Homestead',
+      ]
 
 const forkNameMap: ForkNamesMap = {
   Prague: 'prague',
