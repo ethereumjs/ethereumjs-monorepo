@@ -34,7 +34,7 @@ export default [
       parserOptions: {
         extraFileExtensions: ['.json'],
         sourceType: 'module',
-        project: './config/tsconfig.lint.json',
+        project: './tsconfig.lint.json',
       },
     },
   },
