@@ -56,9 +56,9 @@
     "test:node": "npm run test:node:api && npm run test:node:tx",
     "test:node:api": "npx vitest run -c ../../config/vitest.config.mts --exclude='**/transactionRunner.spec.ts'",
     "test:node:tx": "npm run test:node:tx:new && npm run test:node:tx:old && npm run test:node:tx:ancient",
-    "test:node:tx:new": "FORKS='Prague Cancun Shanghai Paris' npx vitest run -c ../../config/vitest.config.mts 'test/transactionRunner.spec.ts'",
-    "test:node:tx:old": "FORKS='London+3860 London Berlin Istanbul Byzantium' npx vitest run -c ../../config/vitest.config.mts 'test/transactionRunner.spec.ts'",
-    "test:node:tx:ancient": "FORKS='ConstantinopleFix Constantinople EIP150 EIP158 Frontier Homestead' npx vitest run -c ../../config/vitest.config.mts 'test/transactionRunner.spec.ts'",
+    "test:node:tx:new": "FORKS='Prague Cancun Shanghai Paris' npx vitest run -c ../../config/vitest.config.mts './test/transactionRunner.spec.ts'",
+    "test:node:tx:old": "FORKS='London+3860 London Berlin Istanbul Byzantium' npx vitest run -c ../../config/vitest.config.mts './test/transactionRunner.spec.ts'",
+    "test:node:tx:ancient": "FORKS='ConstantinopleFix Constantinople EIP150 EIP158 Frontier Homestead' npx vitest run -c ../../config/vitest.config.mts './test/transactionRunner.spec.ts'",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
