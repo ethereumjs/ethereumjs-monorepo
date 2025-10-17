@@ -10,6 +10,7 @@ on:
 
 jobs:
   docker:
+    if: false # Temporarily disabled, not sure if kept alive
     runs-on: ubuntu-latest
     strategy:
       matrix:

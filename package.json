@@ -13,8 +13,9 @@
     "e2e:resolutions": "node ./scripts/e2e-resolutions.js",
     "examples": "npm run examples --workspaces --if-present",
     "examples:build": "npm run examples:build --workspaces --if-present",
-    "lint": "npm run biome && eslint  --config ./config/eslint.config.mjs .",
-    "lint:fix": "npm run biome:fix && eslint --fix --config ./config/eslint.config.mjs .",
+    "install-browser-deps": "npm install playwright@1.15.1 @vitest/browser@3.0.8",
+    "lint": "npm run biome && eslint  --config ./eslint.config.mjs .",
+    "lint:fix": "npm run biome:fix && eslint --fix --config ./eslint.config.mjs .",
     "lint:diff": "./config/cli/lint-diff.sh",
     "test": "npm run test --workspaces --if-present",
     "test:node": "npm run test:node --workspaces --if-present",
@@ -27,7 +28,7 @@
     "spellcheck": "npm run spellcheck:ts && npm run spellcheck:md",
     "spellcheck:ts": "npx cspell --gitignore -e \"./packages/ethereum-tests\" -e \"./packages/wallet/test\" -e \"./packages/client/archive\" -c ./config/cspell-ts.json \"./packages/**/*.ts\" --cache --show-suggestions --show-context",
     "spellcheck:md": "npx cspell --gitignore -e \"./packages/ethereum-tests\" -e \"./packages/client/withdrawals-testnet/**\" -e \"./packages/**/docs\" -c ./config/cspell-md.json \"**.md\" --cache --show-suggestions --show-context",
-    "install-browser-deps": "npm install playwright@1.15.1 @vitest/browser@3.0.8"
+    "tsc": "npm run tsc --workspaces --if-present"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
