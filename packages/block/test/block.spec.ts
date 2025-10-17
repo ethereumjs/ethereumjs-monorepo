@@ -75,7 +75,7 @@ describe('[Block]: block functions', () => {
     headerArray[13] = new Uint8Array(32) // mixHash
     headerArray[14] = new Uint8Array(8) // nonce
 
-    const valuesArray = <BlockBytes>[headerArray, [], []]
+    const valuesArray = [headerArray, [], []] as BlockBytes
 
     block = createBlockFromBytesArray(valuesArray, { common })
     assert.isFrozen(block, 'block should be frozen by default')

@@ -40,7 +40,7 @@ describe('EIP4895 tests', () => {
   it('EIP4895: withdrawals execute as expected', async () => {
     const blockchain = await createBlockchain()
     const vm = await createVM({ common, blockchain })
-    const withdrawals = <WithdrawalData[]>[]
+    const withdrawals: WithdrawalData[] = []
     const addresses = ['20'.repeat(20), '30'.repeat(20), '40'.repeat(20)]
     const amounts = [BigInt(1000), BigInt(3000), BigInt(5000)]
 
