@@ -2,8 +2,8 @@
   "extends": "./tsconfig.json",
   "include": [
     "./packages/**/*.ts",
-    "./packages**/*.spec.ts",
-    "./packages**/*.js",
+    "./packages/**/*.spec.ts",
+    "./packages/**/*.js",
     "./packages/ethereum-tests/**/*.js",
     "./packages/**/*.cjs",
     "./packages/**/*.cts",
