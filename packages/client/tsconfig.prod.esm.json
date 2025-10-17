@@ -1,5 +1,5 @@
 {
-  "extends": "../../config/tsconfig.prod.esm.json",
+  "extends": "../../tsconfig.prod.esm.json",
   "include": ["bin", "src", "package.json"],
   "compilerOptions": {
     "outDir": "dist/esm",

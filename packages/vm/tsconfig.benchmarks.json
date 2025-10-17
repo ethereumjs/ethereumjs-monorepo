@@ -1,5 +1,5 @@
 {
-  "extends": "../../config/tsconfig.prod.esm.json",
+  "extends": "../../tsconfig.prod.esm.json",
   "compilerOptions": {
     "lib": ["dom"],
     "sourceMap": false,
