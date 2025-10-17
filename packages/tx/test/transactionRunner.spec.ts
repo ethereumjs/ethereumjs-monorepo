@@ -66,48 +66,44 @@ describe('TransactionTests', async () => {
         if (testData.result[forkName] === undefined) {
           continue
         }
-        it(
-          `${testName} - [${forkName}]`,
-          () => {
-            const forkTestData = testData.result[forkName]
-            const shouldBeInvalid = forkTestData.exception !== undefined
+        it(`${testName} - [${forkName}]`, { timeout: 250000 }, () => {
+          const forkTestData = testData.result[forkName]
+          const shouldBeInvalid = forkTestData.exception !== undefined
 
-            const rawTx = hexToBytes(testData.txbytes as PrefixedHexString)
-            const hardfork = forkNameMap[forkName]
-            const common = new Common({ chain: Mainnet, hardfork })
-            const activateEIPs = EIPs[forkName]
-            if (activateEIPs !== undefined) {
-              common.setEIPs(activateEIPs)
+          const rawTx = hexToBytes(testData.txbytes as PrefixedHexString)
+          const hardfork = forkNameMap[forkName]
+          const common = new Common({ chain: Mainnet, hardfork })
+          const activateEIPs = EIPs[forkName]
+          if (activateEIPs !== undefined) {
+            common.setEIPs(activateEIPs)
+          }
+
+          let tx
+          let sender
+          let hash
+          let isValid
+          try {
+            tx = createTxFromRLP(rawTx, { common })
+            sender = tx.getSenderAddress().toString()
+            hash = bytesToHex(tx.hash())
+            if (!tx.isValid()) {
+              throw EthereumJSErrorWithoutCode('Tx is invalid')
             }
-
-            let tx
-            let sender
-            let hash
-            let isValid
-            try {
-              tx = createTxFromRLP(rawTx, { common })
-              sender = tx.getSenderAddress().toString()
-              hash = bytesToHex(tx.hash())
-              if (!tx.isValid()) {
-                throw EthereumJSErrorWithoutCode('Tx is invalid')
-              }
-              isValid = true
-            } catch {
-              if (!shouldBeInvalid) {
-                assert.fail('Tx creation threw an error, but should be valid')
-              }
-              // Tx is correctly marked as "invalid", so test has passed
-              return
+            isValid = true
+          } catch {
+            if (!shouldBeInvalid) {
+              assert.fail('Tx creation threw an error, but should be valid')
             }
+            // Tx is correctly marked as "invalid", so test has passed
+            return
+          }
 
-            const senderIsCorrect = forkTestData.sender === sender
-            const hashIsCorrect = forkTestData.hash === hash
-            assert.isTrue(isValid, 'tx is valid')
-            assert.isTrue(senderIsCorrect, 'sender is correct')
-            assert.isTrue(hashIsCorrect, 'hash is correct')
-          },
-          { timeout: 250000 },
-        )
+          const senderIsCorrect = forkTestData.sender === sender
+          const hashIsCorrect = forkTestData.hash === hash
+          assert.isTrue(isValid, 'tx is valid')
+          assert.isTrue(senderIsCorrect, 'sender is correct')
+          assert.isTrue(hashIsCorrect, 'hash is correct')
+        })
       }
     },
     fileFilterRegex,
