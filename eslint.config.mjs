@@ -72,7 +72,7 @@ export default [
         },
       ],
       '@typescript-eslint/no-unnecessary-condition': 'off',
-      '@typescript-eslint/prefer-nullish-coalescing': 'error',
+      '@typescript-eslint/prefer-nullish-coalescing': 'off',
       '@typescript-eslint/restrict-plus-operands': 'off',
       '@typescript-eslint/return-await': 'error',
       '@typescript-eslint/strict-boolean-expressions': ['error'],
