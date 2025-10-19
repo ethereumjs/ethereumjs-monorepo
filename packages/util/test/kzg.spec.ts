@@ -1,4 +1,3 @@
-import { trustedSetup as slow } from '@paulmillr/trusted-setups'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
 import { loadKZG } from 'kzg-wasm'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
@@ -13,12 +12,7 @@ export const jsKZG = new microEthKZG(trustedSetup)
 describe('KZG API tests', () => {
   let wasm: Awaited<ReturnType<typeof loadKZG>>
   beforeAll(async () => {
-    wasm = await loadKZG({
-      n1: 4096,
-      n2: 65,
-      g1: ''.concat(...slow.g1_lagrange.map((el) => el.slice(2))),
-      g2: ''.concat(...slow.g2_monomial.map((el) => el.slice(2))),
-    })
+    wasm = await loadKZG()
   })
   const wasmKZG: KZG = {
     blobToKzgCommitment(blob: string): string {
