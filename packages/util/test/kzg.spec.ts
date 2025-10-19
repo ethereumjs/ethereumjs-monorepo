@@ -10,49 +10,11 @@ import type { KZG } from '../src/kzg.ts'
 export const jsKZG = new microEthKZG(trustedSetup)
 
 describe('KZG API tests', () => {
-  let wasm: Awaited<ReturnType<typeof loadKZG>>
+  let wasmKZG: KZG
   beforeAll(async () => {
-    console.log('1. loading wasm')
-    wasm = await loadKZG()
-    console.log('2. wasm loaded')
-  })
-  const wasmKZG: KZG = {
-    blobToKzgCommitment(blob: string): string {
-      return wasm.blobToKZGCommitment(blob)
-    },
-    computeBlobProof(blob: string, commitment: string): string {
-      return wasm.computeBlobKZGProof(blob, commitment)
-    },
-    verifyProof(polynomialKZG: string, z: string, y: string, kzgProof: string): boolean {
-      return wasm.verifyKZGProof(polynomialKZG, z, y, kzgProof)
-    },
-    verifyBlobProofBatch(
-      blobs: string[],
-      expectedKZGCommitments: string[],
-      kzgProofs: string[],
-    ): boolean {
-      return wasm.verifyBlobKZGProofBatch(blobs, expectedKZGCommitments, kzgProofs)
-    },
+    wasmKZG = await loadKZG()
+  }, 50000)
 
-    // add cell methods from micro kzg till we have them available in wasm as well
-    computeCells(blob: string): string[] {
-      return jsKZG.computeCells(blob)
-    },
-    computeCellsAndProofs(blob: string): [string[], string[]] {
-      return jsKZG.computeCellsAndProofs(blob)
-    },
-    recoverCellsAndProofs(indices: number[], cells: string[]): [string[], string[]] {
-      return jsKZG.recoverCellsAndProofs(indices, cells)
-    },
-    verifyCellKzgProofBatch(
-      commitments: string[],
-      indices: number[],
-      cells: string[],
-      proofs: string[],
-    ): boolean {
-      return jsKZG.verifyCellKzgProofBatch(commitments, indices, cells, proofs)
-    },
-  }
   it('should produce the same outputs', () => {
     const blob = getBlobs('hello')[0]
     const commit = wasmKZG.blobToKzgCommitment(blob)
