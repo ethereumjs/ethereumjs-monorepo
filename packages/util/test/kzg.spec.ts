@@ -12,7 +12,9 @@ export const jsKZG = new microEthKZG(trustedSetup)
 describe('KZG API tests', () => {
   let wasm: Awaited<ReturnType<typeof loadKZG>>
   beforeAll(async () => {
+    console.log('1. loading wasm')
     wasm = await loadKZG()
+    console.log('2. wasm loaded')
   })
   const wasmKZG: KZG = {
     blobToKzgCommitment(blob: string): string {
