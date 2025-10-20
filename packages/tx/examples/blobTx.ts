@@ -1,7 +1,7 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import type { BlobEIP4844TxData } from '@ethereumjs/tx'
 import { createBlob4844Tx } from '@ethereumjs/tx'
-import { bytesToHex, randomBytes } from '@ethereumjs/util'
+import { bytesToHex, getBlobs, randomBytes } from '@ethereumjs/util'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 
@@ -28,7 +28,7 @@ const main = async () => {
     chainId: '0x01',
     accessList: [],
     type: '0x05',
-    blobsData: ['abcd'],
+    blobs: [...getBlobs('abcd'), ...getBlobs('efgh')],
   }
 
   const tx = createBlob4844Tx(txData, { common })
