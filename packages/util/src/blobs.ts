@@ -34,6 +34,14 @@ function get_blob(data: Uint8Array): PrefixedHexString {
   return bytesToHex(blob)
 }
 
+/**
+ * Splits UTF-8 input into one or two EIP-4844 blobs.
+ * - Pads input per 0x80 followed by zeros (Merkle–Damgård style) to blob-aligned size.
+ * - Enforces maximum total useful bytes of two blobs minus one byte per spec.
+ * @param input Arbitrary UTF-8 string to encode into blob(s)
+ * @throws If input is empty or exceeds the maximum allowed size
+ * @returns Array of hex-prefixed blob(s); length is 1 or 2 depending on input size
+ */
 export const getBlobs = (input: string) => {
   const data = utf8ToBytes(input)
   const len = data.byteLength
@@ -58,6 +66,12 @@ export const getBlobs = (input: string) => {
   return blobs
 }
 
+/**
+ * Computes KZG commitments for a set of blobs.
+ * @param kzg KZG implementation used to compute commitments
+ * @param blobs Array of blob data as hex-prefixed strings
+ * @returns Array of lowercase hex-prefixed KZG commitments (one per blob)
+ */
 export const blobsToCommitments = (kzg: KZG, blobs: PrefixedHexString[]) => {
   const commitments: PrefixedHexString[] = []
   for (const blob of blobs) {
@@ -66,6 +80,13 @@ export const blobsToCommitments = (kzg: KZG, blobs: PrefixedHexString[]) => {
   return commitments
 }
 
+/**
+ * Computes KZG proofs for each blob/commitment pair.
+ * @param kzg KZG implementation used to compute proofs
+ * @param blobs Array of blob data as hex-prefixed strings
+ * @param commitments Array of corresponding blob commitments
+ * @returns Array of lowercase hex-prefixed proofs (aligned with input order)
+ */
 export const blobsToProofs = (
   kzg: KZG,
   blobs: PrefixedHexString[],
@@ -110,6 +131,12 @@ export const commitmentsToVersionedHashes = (commitments: PrefixedHexString[]) =
   return hashes
 }
 
+/**
+ * Expands blobs into their extended cells using the provided KZG implementation.
+ * @param kzg KZG implementation capable of computing cells
+ * @param blobs Array of blob data as hex-prefixed strings
+ * @returns Tuple of [cells, indices], where cells are hex strings and indices are 0..127
+ */
 export const blobsToCells = (
   kzg: KZG,
   blobs: PrefixedHexString[],
@@ -122,6 +149,12 @@ export const blobsToCells = (
   return [cells, indices]
 }
 
+/**
+ * Computes extended cells and corresponding proofs for the given blobs.
+ * @param kzg KZG implementation capable of computing cells and proofs
+ * @param blobs Array of blob data as hex-prefixed strings
+ * @returns Tuple of [cells, proofs, indices]; indices are 0..127
+ */
 export const blobsToCellsAndProofs = (
   kzg: KZG,
   blobs: PrefixedHexString[],
