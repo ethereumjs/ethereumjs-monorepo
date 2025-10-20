@@ -28,7 +28,7 @@ const main = async () => {
     chainId: '0x01',
     accessList: [],
     type: '0x05',
-    blobs: getBlobs(['abcd', 'efgh']),
+    blobs: getBlobs(['blob 1', 'blob 2']),
   }
 
   const tx = createBlob4844Tx(txData, { common })
