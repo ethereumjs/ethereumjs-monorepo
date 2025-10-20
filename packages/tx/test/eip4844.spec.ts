@@ -76,7 +76,7 @@ describe('EIP4844 addSignature tests', () => {
       const signedTx = tx.sign(privateKey)
       const addSignatureTx = tx.addSignature(signedTx.v!, signedTx.r!, signedTx.s!)
 
-      assert.deepEqual(signedTx.toJSON(), addSignatureTx.toJSON())
+      assert.deepEqual(signedTx.toJSON(), addSignatureTx.toJSON(), kzg.label)
     }
   })
 
@@ -97,7 +97,7 @@ describe('EIP4844 addSignature tests', () => {
       const signedTx = tx.sign(privKey)
       const addSignatureTx = tx.addSignature(BigInt(recovery), r, s)
 
-      assert.deepEqual(signedTx.toJSON(), addSignatureTx.toJSON())
+      assert.deepEqual(signedTx.toJSON(), addSignatureTx.toJSON(), kzg.label)
     }
   })
 
@@ -133,14 +133,22 @@ describe('EIP4844 constructor tests - valid scenarios', () => {
         to: createZeroAddress(),
       }
       const tx = createBlob4844Tx(txData, { common: kzg.common })
-      assert.strictEqual(tx.type, 3, 'successfully instantiated a blob transaction from txData')
+      assert.strictEqual(
+        tx.type,
+        3,
+        `successfully instantiated a blob transaction from txData (${kzg.label})`,
+      )
       const factoryTx = createTx(txData, { common: kzg.common })
-      assert.strictEqual(factoryTx.type, 3, 'instantiated a blob transaction from the tx factory')
+      assert.strictEqual(
+        factoryTx.type,
+        3,
+        `instantiated a blob transaction from the tx factory (${kzg.label})`,
+      )
 
       const serializedTx = tx.serialize()
-      assert.strictEqual(serializedTx[0], 3, 'successfully serialized a blob tx')
+      assert.strictEqual(serializedTx[0], 3, `successfully serialized a blob tx (${kzg.label})`)
       const deserializedTx = createBlob4844TxFromRLP(serializedTx, { common: kzg.common })
-      assert.strictEqual(deserializedTx.type, 3, 'deserialized a blob tx')
+      assert.strictEqual(deserializedTx.type, 3, `deserialized a blob tx (${kzg.label})`)
 
       const signedTx = tx.sign(pk)
       const sender = signedTx.getSenderAddress().toString()
@@ -148,7 +156,7 @@ describe('EIP4844 constructor tests - valid scenarios', () => {
       assert.strictEqual(
         decodedTx.getSenderAddress().toString(),
         sender,
-        'signature and sender were deserialized correctly',
+        `signature and sender were deserialized correctly (${kzg.label})`,
       )
 
       // Verify 1000 signatures to ensure these have unique hashes (hedged signatures test)
@@ -156,7 +164,7 @@ describe('EIP4844 constructor tests - valid scenarios', () => {
       for (let i = 0; i < 1000; i++) {
         const hash = bytesToHex(tx.sign(pk, true).hash())
         if (hashSet.has(hash)) {
-          assert.fail('should not reuse the same hash (hedged signature test)')
+          assert.fail(`should not reuse the same hash (hedged signature test) (${kzg.label})`)
         }
         hashSet.add(hash)
       }
@@ -198,27 +206,27 @@ describe('fromTxData using from a json', () => {
       })
       try {
         const tx = createBlob4844Tx(txData as BlobEIP4844TxData, { common: c })
-        assert.isTrue(true, 'Should be able to parse a json data and hash it')
+        assert.isTrue(true, `Should be able to parse a json data and hash it (${kzg.label})`)
 
         assert.strictEqual(
           typeof tx.maxFeePerBlobGas,
           'bigint',
-          'should be able to parse correctly',
+          `should be able to parse correctly (${kzg.label})`,
         )
         assert.strictEqual(
           bytesToHex(tx.serialize()),
           txMeta.serialized,
-          'serialization should match',
+          `serialization should match (${kzg.label})`,
         )
         // TODO: fix the hash
-        assert.strictEqual(bytesToHex(tx.hash()), txMeta.hash, 'hash should match')
+        assert.strictEqual(bytesToHex(tx.hash()), txMeta.hash, `hash should match (${kzg.label})`)
 
         const jsonData = tx.toJSON()
         // override few fields with equivalent values to have a match
         assert.deepEqual(
           { ...txData, accessList: [] },
           { gasPrice: null, ...jsonData },
-          'toJSON should give correct json',
+          `toJSON should give correct json (${kzg.label})`,
         )
 
         const fromSerializedTx = createBlob4844TxFromRLP(
@@ -228,10 +236,10 @@ describe('fromTxData using from a json', () => {
         assert.strictEqual(
           bytesToHex(fromSerializedTx.hash()),
           txMeta.hash,
-          'fromSerializedTx hash should match',
+          `fromSerializedTx hash should match (${kzg.label})`,
         )
       } catch {
-        assert.fail('failed to parse json data')
+        assert.fail(`failed to parse json data (${kzg.label})`)
       }
     }
   })
@@ -267,7 +275,7 @@ describe('EIP4844 constructor tests - invalid scenarios', () => {
       } catch (err: any) {
         assert.isTrue(
           err.message.includes('versioned hash is invalid length'),
-          'throws on invalid versioned hash length',
+          `throws on invalid versioned hash length (${kzg.label})`,
         )
       }
       try {
@@ -275,7 +283,7 @@ describe('EIP4844 constructor tests - invalid scenarios', () => {
       } catch (err: any) {
         assert.isTrue(
           err.message.includes('does not start with KZG commitment'),
-          'throws on invalid commitment version',
+          `throws on invalid commitment version (${kzg.label})`,
         )
       }
       try {
@@ -285,7 +293,7 @@ describe('EIP4844 constructor tests - invalid scenarios', () => {
           err.message.includes(
             'tx can contain at most 6 blobs (maxBlobGasPerBlock/blobGasPerBlob)',
           ),
-          'throws on too many versioned hashes',
+          `throws on too many versioned hashes (${kzg.label})`,
         )
       }
 
@@ -300,7 +308,7 @@ describe('EIP4844 constructor tests - invalid scenarios', () => {
       } catch (err: any) {
         assert.isTrue(
           err.message.includes('tx can contain at most 6 blobs (EIP-7594)'),
-          'throws on too many versioned hashes',
+          `throws on too many versioned hashes (${kzg.label})`,
         )
       }
     }
@@ -342,32 +350,32 @@ describe('Network wrapper tests', () => {
       assert.strictEqual(
         jsonData.blobs?.length,
         blobs.length,
-        'contains the correct number of blobs',
+        `contains the correct number of blobs (${kzg.label})`,
       )
       for (let i = 0; i < jsonData.blobs.length; i++) {
         const b1 = jsonData.blobs[i]
         const b2 = signedTx.blobs![i]
-        assert.strictEqual(b1, b2, 'contains the same blobs')
+        assert.strictEqual(b1, b2, `contains the same blobs (${kzg.label})`)
       }
       assert.strictEqual(
         jsonData.kzgCommitments.length,
         signedTx.kzgCommitments!.length,
-        'contains the correct number of commitments',
+        `contains the correct number of commitments (${kzg.label})`,
       )
       for (let i = 0; i < jsonData.kzgCommitments.length; i++) {
         const c1 = jsonData.kzgCommitments[i]
         const c2 = signedTx.kzgCommitments![i]
-        assert.strictEqual(c1, c2, 'contains the same commitments')
+        assert.strictEqual(c1, c2, `contains the same commitments (${kzg.label})`)
       }
       assert.strictEqual(
         jsonData.kzgProofs?.length,
         signedTx.kzgProofs!.length,
-        'contains the correct number of proofs',
+        `contains the correct number of proofs (${kzg.label})`,
       )
       for (let i = 0; i < jsonData.kzgProofs.length; i++) {
         const p1 = jsonData.kzgProofs[i]
         const p2 = signedTx.kzgProofs![i]
-        assert.strictEqual(p1, p2, 'contains the same proofs')
+        assert.strictEqual(p1, p2, `contains the same proofs (${kzg.label})`)
       }
 
       const deserializedTx = createBlob4844TxFromSerializedNetworkWrapper(wrapper, {
@@ -377,23 +385,23 @@ describe('Network wrapper tests', () => {
       assert.strictEqual(
         deserializedTx.type,
         0x03,
-        'successfully deserialized a blob transaction network wrapper',
+        `successfully deserialized a blob transaction network wrapper (${kzg.label})`,
       )
       assert.strictEqual(
         deserializedTx.blobs?.length,
         blobs.length,
-        'contains the correct number of blobs',
+        `contains the correct number of blobs (${kzg.label})`,
       )
       assert.strictEqual(
         deserializedTx.getSenderAddress().toString(),
         sender,
-        'decoded sender address correctly',
+        `decoded sender address correctly (${kzg.label})`,
       )
       const minimalTx = createMinimal4844TxFromNetworkWrapper(deserializedTx, { common })
-      assert.isUndefined(minimalTx.blobs, 'minimal representation contains no blobs')
+      assert.isUndefined(minimalTx.blobs, `minimal representation contains no blobs (${kzg.label})`)
       assert.isTrue(
         equalsBytes(minimalTx.hash(), deserializedTx.hash()),
-        'has the same hash as the network wrapper version',
+        `has the same hash as the network wrapper version (${kzg.label})`,
       )
 
       const simpleBlobTx = createBlob4844Tx(
@@ -409,7 +417,7 @@ describe('Network wrapper tests', () => {
       assert.strictEqual(
         unsignedTx.blobVersionedHashes[0],
         simpleBlobTx.blobVersionedHashes[0],
-        'tx versioned hash for simplified blob txData constructor matches fully specified versioned hashes',
+        `tx versioned hash for simplified blob txData constructor matches fully specified versioned hashes (${kzg.label})`,
       )
 
       assert.throws(
@@ -426,7 +434,7 @@ describe('Network wrapper tests', () => {
           ),
         'encoded blobs',
         undefined,
-        'throws on blobsData and blobs in txData',
+        `throws on blobsData and blobs in txData (${kzg.label})`,
       )
 
       assert.throws(
@@ -443,7 +451,7 @@ describe('Network wrapper tests', () => {
           ),
         'KZG commitments',
         undefined,
-        'throws on blobsData and KZG commitments in txData',
+        `throws on blobsData and KZG commitments in txData (${kzg.label})`,
       )
 
       assert.throws(
@@ -460,7 +468,7 @@ describe('Network wrapper tests', () => {
           ),
         'versioned hashes',
         undefined,
-        'throws on blobsData and versioned hashes in txData',
+        `throws on blobsData and versioned hashes in txData (${kzg.label})`,
       )
 
       assert.throws(
@@ -477,7 +485,7 @@ describe('Network wrapper tests', () => {
           ),
         'KZG proofs',
         undefined,
-        'throws on blobsData and KZG proofs in txData',
+        `throws on blobsData and KZG proofs in txData (${kzg.label})`,
       )
 
       assert.throws(
@@ -497,7 +505,7 @@ describe('Network wrapper tests', () => {
         },
         'tx should contain at least one blob',
         undefined,
-        'throws a transaction with no blobs',
+        `throws a transaction with no blobs (${kzg.label})`,
       )
 
       const txWithMissingBlob = createBlob4844Tx(
@@ -523,7 +531,7 @@ describe('Network wrapper tests', () => {
           }),
         'Number of blobVersionedHashes, blobs, and commitments not all equal',
         undefined,
-        'throws when blobs/commitments/hashes mismatch',
+        `throws when blobs/commitments/hashes mismatch (${kzg.label})`,
       )
 
       const originalValue = commitments[0]
@@ -552,7 +560,7 @@ describe('Network wrapper tests', () => {
           }),
         'KZG proof cannot be verified from blobs/commitments',
         undefined,
-        'throws when kzg proof cant be verified',
+        `throws when kzg proof cant be verified (${kzg.label})`,
       )
 
       blobVersionedHashes[0] = ('0x0102' + blobVersionedHashes[0].slice(6)) as PrefixedHexString
@@ -581,7 +589,7 @@ describe('Network wrapper tests', () => {
           }),
         'commitment for blob at index 0 does not match versionedHash',
         undefined,
-        "throws when versioned hashes don't match kzg commitments",
+        `throws when versioned hashes don't match kzg commitments (${kzg.label})`,
       )
     }
   }, 20_000)
@@ -620,7 +628,7 @@ describe('hash() and signature verification', () => {
       assert.strictEqual(
         bytesToHex(unsignedTx.getHashedMessageToSign()),
         '0x02560c5173b0d793ce019cfa515ece6a04a4b3f3d67eab67fbca78dd92d4ed76',
-        'produced the correct transaction hash',
+        `produced the correct transaction hash (${kzg.label})`,
       )
       const signedTx = unsignedTx.sign(
         hexToBytes('0x45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8'),
@@ -629,9 +637,9 @@ describe('hash() and signature verification', () => {
       assert.strictEqual(
         signedTx.getSenderAddress().toString(),
         '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b',
-        'was able to recover sender address',
+        `was able to recover sender address (${kzg.label})`,
       )
-      assert.isTrue(signedTx.verifySignature(), 'signature is valid')
+      assert.isTrue(signedTx.verifySignature(), `signature is valid (${kzg.label})`)
     }
   })
 })
@@ -652,12 +660,36 @@ it('getEffectivePriorityFee()', () => {
       },
       { common },
     )
-    assert.strictEqual(tx.getEffectivePriorityFee(BigInt(10)), BigInt(0))
-    assert.strictEqual(tx.getEffectivePriorityFee(BigInt(9)), BigInt(1))
-    assert.strictEqual(tx.getEffectivePriorityFee(BigInt(8)), BigInt(2))
-    assert.strictEqual(tx.getEffectivePriorityFee(BigInt(2)), BigInt(8))
-    assert.strictEqual(tx.getEffectivePriorityFee(BigInt(1)), BigInt(8))
-    assert.strictEqual(tx.getEffectivePriorityFee(BigInt(0)), BigInt(8))
+    assert.strictEqual(
+      tx.getEffectivePriorityFee(BigInt(10)),
+      BigInt(0),
+      `getEffectivePriorityFee with baseFee=10 (${kzg.label})`,
+    )
+    assert.strictEqual(
+      tx.getEffectivePriorityFee(BigInt(9)),
+      BigInt(1),
+      `getEffectivePriorityFee with baseFee=9 (${kzg.label})`,
+    )
+    assert.strictEqual(
+      tx.getEffectivePriorityFee(BigInt(8)),
+      BigInt(2),
+      `getEffectivePriorityFee with baseFee=8 (${kzg.label})`,
+    )
+    assert.strictEqual(
+      tx.getEffectivePriorityFee(BigInt(2)),
+      BigInt(8),
+      `getEffectivePriorityFee with baseFee=2 (${kzg.label})`,
+    )
+    assert.strictEqual(
+      tx.getEffectivePriorityFee(BigInt(1)),
+      BigInt(8),
+      `getEffectivePriorityFee with baseFee=1 (${kzg.label})`,
+    )
+    assert.strictEqual(
+      tx.getEffectivePriorityFee(BigInt(0)),
+      BigInt(8),
+      `getEffectivePriorityFee with baseFee=0 (${kzg.label})`,
+    )
     assert.throws(() => tx.getEffectivePriorityFee(BigInt(11)))
   }
 })
@@ -712,16 +744,24 @@ describe('Network wrapper deserialization test', () => {
         common,
       })
       const jsonData = deserializedTx.toJSON()
-      assert.deepEqual(txData, jsonData as any, 'toJSON should give correct json')
+      assert.deepEqual(txData, jsonData as any, `toJSON should give correct json (${kzg.label})`)
 
-      assert.strictEqual(deserializedTx.blobs?.length, 1, 'contains the correct number of blobs')
-      assert.strictEqual(deserializedTx.blobs![0], blobs[0], 'blobs should match')
+      assert.strictEqual(
+        deserializedTx.blobs?.length,
+        1,
+        `contains the correct number of blobs (${kzg.label})`,
+      )
+      assert.strictEqual(deserializedTx.blobs![0], blobs[0], `blobs should match (${kzg.label})`)
       assert.strictEqual(
         deserializedTx.kzgCommitments![0],
         commitments[0],
-        'commitments should match',
+        `commitments should match (${kzg.label})`,
       )
-      assert.strictEqual(deserializedTx.kzgProofs![0], proofs[0], 'proofs should match')
+      assert.strictEqual(
+        deserializedTx.kzgProofs![0],
+        proofs[0],
+        `proofs should match (${kzg.label})`,
+      )
 
       const unsignedHash = bytesToHex(deserializedTx.getHashedMessageToSign())
       const hash = bytesToHex(deserializedTx.hash())
@@ -731,7 +771,7 @@ describe('Network wrapper deserialization test', () => {
       assert.strictEqual(
         networkSerialized,
         serialized4844TxData.tx,
-        'network serialization should match',
+        `network serialization should match (${kzg.label})`,
       )
 
       assert.deepEqual(
@@ -743,7 +783,7 @@ describe('Network wrapper deserialization test', () => {
           sender,
           networkSerializedHexLength: networkSerialized.length,
         },
-        'txMeta should match',
+        `txMeta should match (${kzg.label})`,
       )
     }
   })
