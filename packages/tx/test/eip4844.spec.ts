@@ -12,8 +12,9 @@ import {
   randomBytes,
 } from '@ethereumjs/util'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
+import { loadKZG } from 'kzg-wasm'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
-import { assert, describe, it } from 'vitest'
+import { assert, beforeAll, describe, it } from 'vitest'
 
 import {
   blobTxNetworkWrapperToJSON,
@@ -28,12 +29,16 @@ import {
 import { eip4844GethGenesis } from '@ethereumjs/testdata'
 import { serialized4844TxData } from './testData/serialized4844tx.ts'
 
-import type { PrefixedHexString } from '@ethereumjs/util'
+import type { KZG, PrefixedHexString } from '@ethereumjs/util'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1'
 import type { BlobEIP4844TxData } from '../src/index.ts'
 
 const pk = randomBytes(32)
-const kzg = new microEthKZG(trustedSetup)
+const kzgs: KZG[] = [new microEthKZG(trustedSetup)]
+
+beforeAll(async () => {
+  kzgs.push(await loadKZG())
+})
 describe('EIP4844 addSignature tests', () => {
   const common = createCommonFromGethGenesis(eip4844GethGenesis, {
     chain: 'customChain',
