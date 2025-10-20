@@ -35,32 +35,40 @@ function get_blob(data: Uint8Array): PrefixedHexString {
 }
 
 /**
- * Splits UTF-8 input into one or two EIP-4844 blobs.
- * - Pads input per 0x80 followed by zeros (Merkle–Damgård style) to blob-aligned size.
- * - Enforces maximum total useful bytes of two blobs minus one byte per spec.
- * @param input Arbitrary UTF-8 string to encode into blob(s)
- * @throws If input is empty or exceeds the maximum allowed size
- * @returns Array of hex-prefixed blob(s); length is 1 or 2 depending on input size
+ * Converts UTF-8 string(s) into EIP-4844 blob format.
+ *
+ * Each input string is converted to UTF-8 bytes, padded with 0x80 followed by zeros
+ * to align with blob boundaries, and encoded as one or more blobs depending on size.
+ * Multiple inputs are processed sequentially, with each input contributing its own blob(s).
+ *
+ * @param input Single UTF-8 string or array of UTF-8 strings to encode
+ * @throws Error with message 'invalid blob data' if any input string is empty
+ * @throws Error with message 'blob data is too large' if any single input exceeds MAX_USEFUL_BYTES_PER_TX
+ * @returns Array of hex-prefixed blob strings (0x...), one blob per 131,071 useful bytes per input
  */
-export const getBlobs = (input: string) => {
-  const data = utf8ToBytes(input)
-  const len = data.byteLength
-  if (len === 0) {
-    throw Error('invalid blob data')
-  }
-  if (len > MAX_USEFUL_BYTES_PER_TX) {
-    throw Error('blob data is too large')
-  }
-
-  const blobs_len = Math.ceil(len / USEFUL_BYTES_PER_BLOB)
-
-  const pData = get_padded(data, blobs_len)
-
+export const getBlobs = (input: string | string[]) => {
+  const inputArray = Array.isArray(input) ? input : [input]
   const blobs: PrefixedHexString[] = []
-  for (let i = 0; i < blobs_len; i++) {
-    const chunk = pData.subarray(i * USEFUL_BYTES_PER_BLOB, (i + 1) * USEFUL_BYTES_PER_BLOB)
-    const blob = get_blob(chunk)
-    blobs.push(blob)
+
+  for (const input of inputArray) {
+    const data = utf8ToBytes(input)
+    const len = data.byteLength
+    if (len === 0) {
+      throw Error('invalid blob data')
+    }
+    if (len > MAX_USEFUL_BYTES_PER_TX) {
+      throw Error('blob data is too large')
+    }
+
+    const blobs_len = Math.ceil(len / USEFUL_BYTES_PER_BLOB)
+
+    const pData = get_padded(data, blobs_len)
+
+    for (let i = 0; i < blobs_len; i++) {
+      const chunk = pData.subarray(i * USEFUL_BYTES_PER_BLOB, (i + 1) * USEFUL_BYTES_PER_BLOB)
+      const blob = get_blob(chunk)
+      blobs.push(blob)
+    }
   }
 
   return blobs

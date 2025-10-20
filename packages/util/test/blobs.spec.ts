@@ -25,6 +25,14 @@ describe('getBlobs()', () => {
     const input = 'a'.repeat(262144) // exceeds MAX_USEFUL_BYTES_PER_TX
     assert.throws(() => getBlobs(input), Error, 'blob data is too large')
   })
+
+  it('should allow for multiple inputs', () => {
+    const input = ['test input', 'test input 2']
+    const blobs = getBlobs(input)
+    assert(Array.isArray(blobs))
+    assert.lengthOf(blobs, 2)
+    for (const blob of blobs) assert(typeof blob === 'string' && blob.slice(0, 2) === '0x')
+  })
 })
 
 describe('computeVersionedHash()', () => {
