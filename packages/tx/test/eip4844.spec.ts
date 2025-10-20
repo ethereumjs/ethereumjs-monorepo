@@ -40,26 +40,25 @@ beforeAll(async () => {
   const jsKzg = new microEthKZG(trustedSetup) as KZG
   const wasmKzg = (await loadKZG()) as KZG
 
-  kzgs = [
-    {
-      lib: jsKzg,
-      label: 'JS',
-      common: createCommonFromGethGenesis(eip4844GethGenesis, {
-        chain: 'customChain',
-        hardfork: Hardfork.Cancun,
-        customCrypto: { kzg: jsKzg },
-      }),
-    },
-    {
-      lib: wasmKzg,
-      label: 'WASM',
-      common: createCommonFromGethGenesis(eip4844GethGenesis, {
-        chain: 'customChain',
-        hardfork: Hardfork.Cancun,
-        customCrypto: { kzg: wasmKzg },
-      }),
-    },
-  ]
+  const jsKzgSetup = {
+    lib: jsKzg,
+    label: 'JS',
+    common: createCommonFromGethGenesis(eip4844GethGenesis, {
+      chain: 'customChain',
+      hardfork: Hardfork.Cancun,
+      customCrypto: { kzg: jsKzg },
+    }),
+  }
+  const wasmKzgSetup = {
+    lib: wasmKzg,
+    label: 'WASM',
+    common: createCommonFromGethGenesis(eip4844GethGenesis, {
+      chain: 'customChain',
+      hardfork: Hardfork.Cancun,
+      customCrypto: { kzg: wasmKzg },
+    }),
+  }
+  kzgs = [jsKzgSetup, wasmKzgSetup]
 }, 50000)
 
 describe('EIP4844 addSignature tests', () => {
