@@ -22,7 +22,7 @@ describe('getBlobs()', () => {
   })
 
   it('should throw for too large blob data', () => {
-    const input = 'a'.repeat(262144) // exceeds MAX_USEFUL_BYTES_PER_TX
+    const input = 'a'.repeat(131072 * 6) // exceeds MAX_BLOB_BYTES_PER_TX * MAX_BLOBS_PER_TX
     assert.throws(() => getBlobs(input), Error, 'blob data is too large')
   })
 
