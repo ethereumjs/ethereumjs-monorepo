@@ -279,7 +279,7 @@ This library support all EVM precompiles up to the `Prague` hardfork.
 The following code allows to run precompiles in isolation, e.g. for testing purposes:
 
 ```ts
-// ./examples/precompile.ts
+// ./examples/precompiles.ts
 
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createEVM, getActivePrecompiles } from '@ethereumjs/evm'
