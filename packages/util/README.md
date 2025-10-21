@@ -103,7 +103,7 @@ Module with `EIP-7702` authorization list signing utilities.
 
 ## Module: [blobs](src/blobs.ts)
 
-Module providing helpers for 4844 blobs and versioned hashes.
+Module providing helpers around EIP-4844 blobs for creating blobs, associated KZG commitments and proofs as well as versioned hashes. It also provides helpers for EIP-7594 conformant blobs for creating extended cells and corresponding proofs.
 
 ```ts
 // ./examples/blobs.ts
