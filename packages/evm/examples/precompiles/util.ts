@@ -14,7 +14,7 @@ export async function runPrecompile(
   name: string,
   precompile: PrefixedHexString,
   data: PrefixedHexString,
-  hardfork = Hardfork.Osaka,
+  hardfork: Hardfork = Hardfork.Osaka,
 ) {
   const common = new Common({ chain: Mainnet, hardfork })
   const evm = await createEVM({ common })
