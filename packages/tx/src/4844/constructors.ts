@@ -104,12 +104,13 @@ export function createBlob4844Tx(txData: TxData, opts?: TxOptions) {
     )
   }
   const kzg = opts!.common!.customCrypto!.kzg!
+
+  if (txData.blobsData !== undefined && txData.blobs !== undefined) {
+    throw EthereumJSErrorWithoutCode(
+      'cannot have both raw blobs data and encoded blobs in constructor',
+    )
+  }
   if (txData.blobsData !== undefined) {
-    if (txData.blobs !== undefined) {
-      throw EthereumJSErrorWithoutCode(
-        'cannot have both raw blobs data and encoded blobs in constructor',
-      )
-    }
     if (txData.kzgCommitments !== undefined) {
       throw EthereumJSErrorWithoutCode(
         'cannot have both raw blobs data and KZG commitments in constructor',
@@ -125,12 +126,16 @@ export function createBlob4844Tx(txData: TxData, opts?: TxOptions) {
         'cannot have both raw blobs data and KZG proofs in constructor',
       )
     }
-    txData.blobs = getBlobs(txData.blobsData.reduce((acc, cur) => acc + cur)) as PrefixedHexString[]
-    txData.kzgCommitments = blobsToCommitments(kzg, txData.blobs as PrefixedHexString[])
-    txData.blobVersionedHashes = commitmentsToVersionedHashes(
+  }
+  if (txData.blobsData !== undefined || txData.blobs !== undefined) {
+    txData.blobs ??= getBlobs(
+      txData.blobsData!.reduce((acc, cur) => acc + cur),
+    ) as PrefixedHexString[]
+    txData.kzgCommitments ??= blobsToCommitments(kzg, txData.blobs as PrefixedHexString[])
+    txData.blobVersionedHashes ??= commitmentsToVersionedHashes(
       txData.kzgCommitments as PrefixedHexString[],
     )
-    txData.kzgProofs = blobsToProofs(
+    txData.kzgProofs ??= blobsToProofs(
       kzg,
       txData.blobs as PrefixedHexString[],
       txData.kzgCommitments as PrefixedHexString[],

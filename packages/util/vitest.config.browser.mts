@@ -7,12 +7,9 @@ export default mergeConfig(
     test: {
       exclude: [
         ...configDefaults.exclude,
-        // default export for minimist
-        // wrong ethereum-tests path reference (../ is stripped)
-        'test/transactionRunner.spec.ts',
-        'test/eip4844.spec.ts',
-        'test/eip7594.spec.ts',
-        'test/t9n.spec.ts',
+        // KZG tests use Node.js specific dependencies that aren't compatible with browser environment
+        'test/kzg.spec.ts',
+        'test/bench/kzg.bench.ts',
       ],
     },
   }),

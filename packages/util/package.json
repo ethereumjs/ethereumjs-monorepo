@@ -89,7 +89,7 @@
     "spellcheck:ts": "npx cspell --gitignore -c ../../config/cspell-ts.json \"./**/*.ts\" --cache --show-suggestions --show-context",
     "spellcheck:md": "npx cspell --gitignore -c ../../config/cspell-md.json \"**.md\" --cache --show-suggestions --show-context",
     "test": "npm run test:node && npm run test:browser",
-    "test:browser": "npx vitest run --config=../../config/vitest.config.browser.mts",
+    "test:browser": "npx vitest run --config=./vitest.config.browser.mts",
     "test:node": "npx vitest run -c ../../config/vitest.config.mts",
     "tsc": "../../config/cli/ts-compile.sh"
   },
