@@ -91,9 +91,10 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
    */
   networkWrapperVersion?: NetworkWrapperType
 
-  blobs?: PrefixedHexString[] // This property should only be populated when the transaction is in the "Network Wrapper" format
-  kzgCommitments?: PrefixedHexString[] // This property should only be populated when the transaction is in the "Network Wrapper" format
-  kzgProofs?: PrefixedHexString[] // This property should only be populated when the transaction is in the "Network Wrapper" format
+  // "Network Wrapper" Format
+  blobs?: PrefixedHexString[] // EIP-4844 + EIP-7594
+  kzgCommitments?: PrefixedHexString[] // EIP-4844 + EIP-7594
+  kzgProofs?: PrefixedHexString[] // EIP-4844: per-Blob proofs, EIP-7594: per-Cell proofs
 
   public readonly common!: Common
 

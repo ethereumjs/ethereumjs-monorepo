@@ -197,3 +197,13 @@ export const blobsToCellsAndProofs = (
   const indices = Array.from({ length: CELLS_PER_EXT_BLOB }, (_, i) => i)
   return [...blobsAndCells, indices] as [PrefixedHexString[], PrefixedHexString[], number[]]
 }
+
+/**
+ * EIP-7594: Computes cell proofs for the given blobs.
+ * @param kzg KZG implementation capable of computing cell proofs
+ * @param blobs Array of blob data as hex-prefixed strings
+ * @returns Array of lowercase hex-prefixed cell proofs (aligned with input order)
+ */
+export const blobsToCellProofs = (kzg: KZG, blobs: PrefixedHexString[]): PrefixedHexString[] => {
+  return blobsToCellsAndProofs(kzg, blobs)[1] as PrefixedHexString[]
+}
