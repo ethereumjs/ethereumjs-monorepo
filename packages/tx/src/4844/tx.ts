@@ -284,6 +284,18 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
       toType(commitment, TypeOutput.PrefixedHexString),
     )
     this.kzgProofs = txData.kzgProofs?.map((proof) => toType(proof, TypeOutput.PrefixedHexString))
+
+    if (this.blobs !== undefined) {
+      if (this.kzgCommitments === undefined) {
+        const msg = Legacy.errorMsg(this, 'kzgCommitments are mandatory if blobs are provided')
+        throw EthereumJSErrorWithoutCode(msg)
+      }
+      if (this.kzgProofs === undefined) {
+        const msg = Legacy.errorMsg(this, 'kzgProofs are mandatory if blobs are provided')
+        throw EthereumJSErrorWithoutCode(msg)
+      }
+    }
+
     const freeze = opts?.freeze ?? true
     if (freeze) {
       Object.freeze(this)
