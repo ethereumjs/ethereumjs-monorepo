@@ -110,23 +110,6 @@ export function createBlob4844Tx(txData: TxData, opts?: TxOptions) {
       'cannot have both raw blobs data and encoded blobs in constructor',
     )
   }
-  if (txData.blobsData !== undefined) {
-    if (txData.kzgCommitments !== undefined) {
-      throw EthereumJSErrorWithoutCode(
-        'cannot have both raw blobs data and KZG commitments in constructor',
-      )
-    }
-    if (txData.blobVersionedHashes !== undefined) {
-      throw EthereumJSErrorWithoutCode(
-        'cannot have both raw blobs data and versioned hashes in constructor',
-      )
-    }
-    if (txData.kzgProofs !== undefined) {
-      throw EthereumJSErrorWithoutCode(
-        'cannot have both raw blobs data and KZG proofs in constructor',
-      )
-    }
-  }
   if (txData.blobsData !== undefined || txData.blobs !== undefined) {
     txData.networkWrapperVersion ??= NetworkWrapperType.EIP4844
     txData.blobs ??= getBlobs(

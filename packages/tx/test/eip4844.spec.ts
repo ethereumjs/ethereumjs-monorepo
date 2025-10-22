@@ -437,57 +437,6 @@ describe('Network wrapper tests', () => {
       )
 
       assert.throws(
-        () =>
-          createBlob4844Tx(
-            {
-              blobsData: ['hello world'],
-              kzgCommitments: ['0xabcd'],
-              maxFeePerBlobGas: 100000000n,
-              gasLimit: 0xffffffn,
-              to: randomBytes(20),
-            },
-            { common },
-          ),
-        'KZG commitments',
-        undefined,
-        `throws on blobsData and KZG commitments in txData (${kzg.label})`,
-      )
-
-      assert.throws(
-        () =>
-          createBlob4844Tx(
-            {
-              blobsData: ['hello world'],
-              blobVersionedHashes: ['0x01cd'],
-              maxFeePerBlobGas: 100000000n,
-              gasLimit: 0xffffffn,
-              to: randomBytes(20),
-            },
-            { common },
-          ),
-        'versioned hashes',
-        undefined,
-        `throws on blobsData and versioned hashes in txData (${kzg.label})`,
-      )
-
-      assert.throws(
-        () =>
-          createBlob4844Tx(
-            {
-              blobsData: ['hello world'],
-              kzgProofs: ['0x01cd'],
-              maxFeePerBlobGas: 100000000n,
-              gasLimit: 0xffffffn,
-              to: randomBytes(20),
-            },
-            { common },
-          ),
-        'KZG proofs',
-        undefined,
-        `throws on blobsData and KZG proofs in txData (${kzg.label})`,
-      )
-
-      assert.throws(
         () => {
           createBlob4844Tx(
             {
