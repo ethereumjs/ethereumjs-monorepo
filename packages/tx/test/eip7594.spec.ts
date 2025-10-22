@@ -201,7 +201,7 @@ describe('Network wrapper tests', () => {
     }
   }, 40_000)
 
-  it('should work with alll data provided', async () => {
+  it('should work with all data provided', async () => {
     for (const kzg of kzgs) {
       const blobs = [...getBlobs('hello world'), ...getBlobs('hello world')]
       const commitments = blobsToCommitments(kzg.lib, blobs)

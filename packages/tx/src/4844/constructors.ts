@@ -90,7 +90,7 @@ const validateBlobTransactionNetworkWrapper = (
  * Instantiate a Blob4844Tx transaction from a data dictionary.
  *
  * If blobs are provided the tx will be instantiated in the "Network Wrapper" format,
- * otherwise in the canoncial form represented on-chain.
+ * otherwise in the canonical form represented on-chain.
  *
  * @param txData - Transaction data object containing:
  *   - `chainId` - Chain ID (will be set automatically if not provided)

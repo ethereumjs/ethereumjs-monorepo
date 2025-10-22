@@ -56,7 +56,7 @@ export type NetworkWrapperType = (typeof NetworkWrapperType)[keyof typeof Networ
  * - TransactionType: 3
  * - EIP: [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844)
  *
- * This tx type has two "modes": the plain canonical format only contzains `blobVersionedHashes`.
+ * This tx type has two "modes": the plain canonical format only contains `blobVersionedHashes`.
  * If blobs are passed in the tx automatically switches to "Network Wrapper" format and the
  * `networkWrapperVersion` will be set or validated.
  */
