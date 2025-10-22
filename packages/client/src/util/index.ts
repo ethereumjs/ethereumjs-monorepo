@@ -10,6 +10,7 @@ import { bytesToHex } from '@ethereumjs/util'
 export * from './inclineClient.ts'
 export * from './parse.ts'
 export * from './rpc.ts'
+export * from './purge.ts'
 // See: https://stackoverflow.com/a/50053801
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
