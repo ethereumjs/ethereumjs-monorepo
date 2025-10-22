@@ -1,8 +1,8 @@
 import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
 import {
-  blobsToCellsAndProofs,
+  CELLS_PER_EXT_BLOB,
+  blobsToCellProofs,
   blobsToCommitments,
-  blobsToProofs,
   bytesToHex,
   commitmentsToVersionedHashes,
   concatBytes,
@@ -13,7 +13,7 @@ import {
   randomBytes,
 } from '@ethereumjs/util'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
-import { loadKZG } from 'kzg-wasm'
+//import { loadKZG } from 'kzg-wasm'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 import { assert, beforeAll, describe, expect, it } from 'vitest'
 
@@ -25,7 +25,6 @@ import {
   createBlob4844TxFromSerializedNetworkWrapper,
   createMinimal4844TxFromNetworkWrapper,
   createTx,
-  paramsTx,
 } from '../src/index.ts'
 
 import { osakaGethGenesis } from '@ethereumjs/testdata'
@@ -38,28 +37,28 @@ let kzgs: Array<{ lib: KZG; label: string; common: any }> = []
 
 beforeAll(async () => {
   const jsKzg = new microEthKZG(trustedSetup) as KZG
-  const wasmKzg = (await loadKZG()) as KZG
+  //const wasmKzg = (await loadKZG()) as KZG
 
-  kzgs = [
-    {
-      lib: jsKzg,
-      label: 'JS',
-      common: createCommonFromGethGenesis(osakaGethGenesis.osakaGenesis, {
-        chain: 'customChain',
-        hardfork: Hardfork.Osaka,
-        customCrypto: { kzg: jsKzg },
-      }),
-    },
-    {
-      lib: wasmKzg,
-      label: 'WASM',
-      common: createCommonFromGethGenesis(osakaGethGenesis.osakaGenesis, {
-        chain: 'customChain',
-        hardfork: Hardfork.Osaka,
-        customCrypto: { kzg: wasmKzg },
-      }),
-    },
-  ]
+  const jsKzgSetup = {
+    lib: jsKzg,
+    label: 'JS',
+    common: createCommonFromGethGenesis(osakaGethGenesis.osakaGenesis, {
+      chain: 'customChain',
+      hardfork: Hardfork.Osaka,
+      customCrypto: { kzg: jsKzg },
+    }),
+  }
+  // Only activate on demand, otherwise too costly for now
+  /*const wasmKzgSetup = {
+    lib: wasmKzg,
+    label: 'WASM',
+    common: createCommonFromGethGenesis(osakaGethGenesis.osakaGenesis, {
+      chain: 'customChain',
+      hardfork: Hardfork.Osaka,
+      customCrypto: { kzg: wasmKzg },
+    }),
+  }*/
+  kzgs = [jsKzgSetup]
 }, 50000)
 
 describe('EIP4844 non network wrapper constructor tests - valid scenarios', () => {
@@ -185,36 +184,29 @@ describe('fromTxData using from a json', () => {
 })
 
 describe('Network wrapper tests', () => {
-  it('eip7594 wrapper should not work instead of 4844', async () => {
+  it('should not work with wrong network wrapper version', async () => {
     for (const kzg of kzgs) {
-      const common = createCommonFromGethGenesis(osakaGethGenesis.osakaGenesis, {
-        chain: 'customChain',
-        hardfork: Hardfork.Osaka,
-        params: paramsTx,
-        customCrypto: { kzg: kzg.lib },
-      })
-      const blobs = [...getBlobs('hello world'), ...getBlobs('hello world')]
-      const commitments = blobsToCommitments(kzg.lib, blobs)
-      const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
-      const blobProofs = blobsToProofs(kzg.lib, blobs, commitments)
-
-      const [_cells, cellProofs, _indices] = blobsToCellsAndProofs(kzg.lib, blobs)
-
       expect(() =>
         createBlob4844Tx(
           {
             networkWrapperVersion: 0,
-            blobVersionedHashes,
-            blobs,
-            kzgCommitments: commitments,
-            kzgProofs: blobProofs,
+            blobs: getBlobs('hello world'),
             maxFeePerBlobGas: 100000000n,
             gasLimit: 0xffffffn,
             to: randomBytes(20),
           },
-          { common },
+          { common: kzg.common },
         ),
-      ).toThrowError(/EIP-7594 is active on Common for EIP4844 network wrapper version/)
+      ).toThrowError(/EIP-7594 is active on Common for EIP-4844 network wrapper version/)
+    }
+  }, 40_000)
+
+  it('should work with all data provided', async () => {
+    for (const kzg of kzgs) {
+      const blobs = [...getBlobs('hello world'), ...getBlobs('hello world')]
+      const commitments = blobsToCommitments(kzg.lib, blobs)
+      const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
+      const cellProofs = blobsToCellProofs(kzg.lib, blobs)
 
       const unsignedTx = createBlob4844Tx(
         {
@@ -227,7 +219,7 @@ describe('Network wrapper tests', () => {
           gasLimit: 0xffffffn,
           to: randomBytes(20),
         },
-        { common },
+        { common: kzg.common },
       )
       assert(unsignedTx.networkWrapperVersion === NetworkWrapperType.EIP7594)
 
@@ -235,7 +227,7 @@ describe('Network wrapper tests', () => {
       const sender = signedTx.getSenderAddress().toString()
       const wrapper = signedTx.serializeNetworkWrapper()
 
-      const jsonData = blobTxNetworkWrapperToJSON(wrapper, { common })
+      const jsonData = blobTxNetworkWrapperToJSON(wrapper, { common: kzg.common })
       assert.equal(
         Number(jsonData.networkWrapperVersion),
         NetworkWrapperType.EIP7594,
@@ -274,7 +266,7 @@ describe('Network wrapper tests', () => {
       }
 
       const deserializedTx = createBlob4844TxFromSerializedNetworkWrapper(wrapper, {
-        common,
+        common: kzg.common,
       })
 
       assert.equal(
@@ -308,7 +300,9 @@ describe('Network wrapper tests', () => {
         `decoded sender address correctly (${kzg.label})`,
       )
 
-      const minimalTx = createMinimal4844TxFromNetworkWrapper(deserializedTx, { common })
+      const minimalTx = createMinimal4844TxFromNetworkWrapper(deserializedTx, {
+        common: kzg.common,
+      })
       assert.isUndefined(minimalTx.blobs, `minimal representation contains no blobs (${kzg.label})`)
       assert.isUndefined(
         minimalTx.networkWrapperVersion,
@@ -330,7 +324,7 @@ describe('Network wrapper tests', () => {
           gasLimit: 0xffffffn,
           to: randomBytes(20),
         },
-        { common },
+        { common: kzg.common },
       )
 
       const serializedWithMissingBlob = txWithMissingBlob.serializeNetworkWrapper()
@@ -338,7 +332,7 @@ describe('Network wrapper tests', () => {
       assert.throws(
         () =>
           createBlob4844TxFromSerializedNetworkWrapper(serializedWithMissingBlob, {
-            common,
+            common: kzg.common,
           }),
         'Number of blobVersionedHashes, blobs, and commitments not all equal',
         undefined,
@@ -360,7 +354,7 @@ describe('Network wrapper tests', () => {
           gasLimit: 0xffffffn,
           to: randomBytes(20),
         },
-        { common },
+        { common: kzg.common },
       )
 
       const serializedWithInvalidCommitment = txWithInvalidCommitment.serializeNetworkWrapper()
@@ -368,11 +362,37 @@ describe('Network wrapper tests', () => {
       assert.throws(
         () =>
           createBlob4844TxFromSerializedNetworkWrapper(serializedWithInvalidCommitment, {
-            common,
+            common: kzg.common,
           }),
         'KZG proof cannot be verified from blobs/commitments',
         undefined,
         'throws when kzg proof cant be verified',
+      )
+    }
+  }, 40_000)
+
+  it('should calculate the correct cell proofs', async () => {
+    for (const kzg of kzgs) {
+      const tx = await createBlob4844Tx(
+        {
+          blobs: getBlobs('hello world'),
+          maxFeePerBlobGas: 100000000n,
+          gasLimit: 0xffffffn,
+          to: randomBytes(20),
+        },
+        { common: kzg.common },
+      )
+      assert.equal(
+        tx.kzgProofs?.length,
+        CELLS_PER_EXT_BLOB * tx.blobs!.length,
+        `contains the correct number of cell proofs (${kzg.label})`,
+      )
+      const expectedCellProof0 =
+        '0x96a250543b1e967a04e0e4b7b95972af79d0ca074e813e3b1c5a150bae28a0d4e9e3c52264ee103b140b662de514a184'
+      assert.equal(
+        tx.kzgProofs![0],
+        expectedCellProof0,
+        `contains the correct cell proof (${kzg.label})`,
       )
     }
   }, 40_000)
