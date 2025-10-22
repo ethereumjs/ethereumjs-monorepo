@@ -244,7 +244,7 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
         case NetworkWrapperType.EIP7594:
           if (!this.common.isActivatedEIP(7594)) {
             throw EthereumJSErrorWithoutCode(
-              'EIP-7594 not enabled on Common for EIP7594 network wrapper version',
+              'EIP-7594 not enabled on Common for EIP-7594 network wrapper version',
             )
           }
           break
@@ -252,7 +252,7 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
         case NetworkWrapperType.EIP4844:
           if (this.common.isActivatedEIP(7594)) {
             throw EthereumJSErrorWithoutCode(
-              'EIP-7594 is active on Common for EIP4844 network wrapper version',
+              'EIP-7594 is active on Common for EIP-4844 network wrapper version',
             )
           }
           break
@@ -267,11 +267,11 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
     this.blobs = txData.blobs?.map((blob) => toType(blob, TypeOutput.PrefixedHexString))
 
     if (this.networkWrapperVersion === undefined && this.blobs !== undefined) {
-      const msg = Legacy.errorMsg(
-        this,
-        'tx must be in network wrapper format if a list of blobs is provided',
-      )
-      throw EthereumJSErrorWithoutCode(msg)
+      if (this.common.isActivatedEIP(7594)) {
+        this.networkWrapperVersion = 1
+      } else {
+        this.networkWrapperVersion = 0
+      }
     }
     if (this.networkWrapperVersion !== undefined && this.blobs === undefined) {
       const msg = Legacy.errorMsg(

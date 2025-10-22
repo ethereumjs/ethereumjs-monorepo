@@ -12,7 +12,7 @@ import {
   randomBytes,
 } from '@ethereumjs/util'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
-import { loadKZG } from 'kzg-wasm'
+//import { loadKZG } from 'kzg-wasm'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 import { assert, beforeAll, describe, it } from 'vitest'
 
@@ -38,7 +38,7 @@ let kzgs: Array<{ lib: KZG; label: string; common: any }> = []
 
 beforeAll(async () => {
   const jsKzg = new microEthKZG(trustedSetup) as KZG
-  const wasmKzg = (await loadKZG()) as KZG
+  //const wasmKzg = (await loadKZG()) as KZG
 
   const jsKzgSetup = {
     lib: jsKzg,
@@ -49,7 +49,8 @@ beforeAll(async () => {
       customCrypto: { kzg: jsKzg },
     }),
   }
-  const wasmKzgSetup = {
+  // Only activate on demand, otherwise too costly for now
+  /*const wasmKzgSetup = {
     lib: wasmKzg,
     label: 'WASM',
     common: createCommonFromGethGenesis(eip4844GethGenesis, {
@@ -57,8 +58,8 @@ beforeAll(async () => {
       hardfork: Hardfork.Cancun,
       customCrypto: { kzg: wasmKzg },
     }),
-  }
-  kzgs = [jsKzgSetup, wasmKzgSetup]
+  }*/
+  kzgs = [jsKzgSetup]
 }, 50000)
 
 describe('EIP4844 addSignature tests', () => {

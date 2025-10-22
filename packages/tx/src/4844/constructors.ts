@@ -3,6 +3,7 @@ import {
   CELLS_PER_EXT_BLOB,
   EthereumJSErrorWithoutCode,
   bigIntToHex,
+  blobsToCellProofs,
   blobsToCells,
   blobsToCommitments,
   blobsToProofs,
@@ -111,7 +112,6 @@ export function createBlob4844Tx(txData: TxData, opts?: TxOptions) {
     )
   }
   if (txData.blobsData !== undefined || txData.blobs !== undefined) {
-    txData.networkWrapperVersion ??= NetworkWrapperType.EIP4844
     txData.blobs ??= getBlobs(
       txData.blobsData!.reduce((acc, cur) => acc + cur),
     ) as PrefixedHexString[]
@@ -119,11 +119,15 @@ export function createBlob4844Tx(txData: TxData, opts?: TxOptions) {
     txData.blobVersionedHashes ??= commitmentsToVersionedHashes(
       txData.kzgCommitments as PrefixedHexString[],
     )
-    txData.kzgProofs ??= blobsToProofs(
-      kzg,
-      txData.blobs as PrefixedHexString[],
-      txData.kzgCommitments as PrefixedHexString[],
-    )
+    if (opts!.common!.isActivatedEIP(7594)) {
+      txData.kzgProofs ??= blobsToCellProofs(kzg, txData.blobs as PrefixedHexString[])
+    } else {
+      txData.kzgProofs ??= blobsToProofs(
+        kzg,
+        txData.blobs as PrefixedHexString[],
+        txData.kzgCommitments as PrefixedHexString[],
+      )
+    }
   }
 
   return new Blob4844Tx(txData, opts)
