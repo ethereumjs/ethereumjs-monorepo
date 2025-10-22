@@ -55,6 +55,10 @@ export type NetworkWrapperType = (typeof NetworkWrapperType)[keyof typeof Networ
  *
  * - TransactionType: 3
  * - EIP: [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844)
+ *
+ * This tx type has two "modes": the plain canonical format only contzains `blobVersionedHashes`.
+ * If blobs are passed in the tx automatically switches to "Network Wrapper" format and the
+ * `networkWrapperVersion` will be set or validated.
  */
 export class Blob4844Tx implements TransactionInterface<typeof TransactionType.BlobEIP4844> {
   public type = TransactionType.BlobEIP4844 // 4844 tx type
@@ -76,9 +80,17 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
   public readonly v?: bigint
   public readonly r?: bigint
   public readonly s?: bigint
-
   // End of Tx data part
+
+  /**
+   * This property is set if the tx is in "Network Wrapper" format.
+   *
+   * Possible values:
+   * - 0 (EIP-4844)
+   * - 1 (EIP-4844 + EIP-7594)
+   */
   networkWrapperVersion?: NetworkWrapperType
+
   blobs?: PrefixedHexString[] // This property should only be populated when the transaction is in the "Network Wrapper" format
   kzgCommitments?: PrefixedHexString[] // This property should only be populated when the transaction is in the "Network Wrapper" format
   kzgProofs?: PrefixedHexString[] // This property should only be populated when the transaction is in the "Network Wrapper" format
@@ -252,6 +264,22 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
     }
 
     this.blobs = txData.blobs?.map((blob) => toType(blob, TypeOutput.PrefixedHexString))
+
+    if (this.networkWrapperVersion === undefined && this.blobs !== undefined) {
+      const msg = Legacy.errorMsg(
+        this,
+        'tx must be in network wrapper format if a list of blobs is provided',
+      )
+      throw EthereumJSErrorWithoutCode(msg)
+    }
+    if (this.networkWrapperVersion !== undefined && this.blobs === undefined) {
+      const msg = Legacy.errorMsg(
+        this,
+        'tx is not allowed to be in network wrapper format if no blob list is provided',
+      )
+      throw EthereumJSErrorWithoutCode(msg)
+    }
+
     this.kzgCommitments = txData.kzgCommitments?.map((commitment) =>
       toType(commitment, TypeOutput.PrefixedHexString),
     )

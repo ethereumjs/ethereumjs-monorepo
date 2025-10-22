@@ -128,6 +128,7 @@ export function createBlob4844Tx(txData: TxData, opts?: TxOptions) {
     }
   }
   if (txData.blobsData !== undefined || txData.blobs !== undefined) {
+    txData.networkWrapperVersion ??= NetworkWrapperType.EIP4844
     txData.blobs ??= getBlobs(
       txData.blobsData!.reduce((acc, cur) => acc + cur),
     ) as PrefixedHexString[]
