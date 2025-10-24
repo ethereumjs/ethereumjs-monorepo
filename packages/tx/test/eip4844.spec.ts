@@ -132,6 +132,9 @@ describe('EIP4844 constructor tests - valid scenarios', () => {
         to: createZeroAddress(),
       }
       const tx = createBlob4844Tx(txData, { common: kzg.common })
+      assert.throws(() => {
+        tx.toCreationAddress()
+      }, 'Blob4844Tx cannot create contracts')
       assert.strictEqual(
         tx.type,
         3,
