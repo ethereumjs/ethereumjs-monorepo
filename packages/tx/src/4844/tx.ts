@@ -304,14 +304,11 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
   getUpfrontCost(baseFee: bigint = BIGINT_0): bigint {
     return EIP1559.getUpfrontCost(this, baseFee)
   }
-
-  // TODO figure out if this is necessary
-  // NOTE/TODO: this should DEFINITELY be removed from the `TransactionInterface`, since 4844/7702 can NEVER create contracts
   /**
-   * If the tx's `to` is to the creation address
+   * Blob4844Tx cannot create contracts
    */
-  toCreationAddress(): boolean {
-    return Legacy.toCreationAddress(this)
+  toCreationAddress(): never {
+    throw EthereumJSErrorWithoutCode('Blob4844Tx cannot create contracts')
   }
 
   /**

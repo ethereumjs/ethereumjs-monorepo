@@ -64,7 +64,9 @@ describe('[EOACode7702Transaction]', () => {
     assert.isTrue(signed.getSenderAddress().equals(addr))
     const txnSigned = txn.addSignature(signed.v!, signed.r!, signed.s!)
     assert.deepEqual(signed.toJSON(), txnSigned.toJSON())
-
+    assert.throws(() => {
+      txn.toCreationAddress()
+    }, 'EOACode7702Tx cannot create contracts')
     // Verify 1000 signatures to ensure these have unique hashes (hedged signatures test)
     const hashSet = new Set<string>()
     for (let i = 0; i < 1000; i++) {

@@ -73,7 +73,13 @@ export function getIntrinsicGas(tx: LegacyTxInterface): bigint {
   const txFee = tx.common.param('txGas')
   let fee = tx.getDataGas()
   if (txFee) fee += txFee
-  if (tx.common.gteHardfork('homestead') && tx.toCreationAddress()) {
+  let isContractCreation = false
+  try {
+    isContractCreation = tx.toCreationAddress()
+  } catch {
+    isContractCreation = false
+  }
+  if (tx.common.gteHardfork('homestead') && isContractCreation) {
     const txCreationFee = tx.common.param('txCreationGas')
     if (txCreationFee) fee += txCreationFee
   }
