@@ -15,14 +15,29 @@ import { paramsTx } from '../params.ts'
 
 import type { TransactionInterface, TransactionType, TxData, TxOptions } from '../types.ts'
 
+/**
+ * Gets a Common instance, creating a new one if none provided
+ * @param common - Optional Common instance
+ * @returns Common instance (copied if provided, new Mainnet instance if not)
+ */
 export function getCommon(common?: Common): Common {
   return common?.copy() ?? new Common({ chain: Mainnet })
 }
 
+/**
+ * Converts a transaction type to its byte representation
+ * @param txType - The transaction type
+ * @returns Uint8Array representation of the transaction type
+ */
 export function txTypeBytes(txType: TransactionType): Uint8Array {
   return hexToBytes(`0x${txType.toString(16).padStart(2, '0')}`)
 }
 
+/**
+ * Validates that transaction data fields are not arrays
+ * @param values - Object containing transaction data fields
+ * @throws EthereumJSErrorWithoutCode if any transaction field is an array
+ */
 export function validateNotArray(values: { [key: string]: any }) {
   const txDataKeys = [
     'nonce',
@@ -114,9 +129,13 @@ type Mutable<T> = {
   -readonly [P in keyof T]: T[P]
 }
 
-// This is (temp) a shared method which reflects `super` logic which were called from all txs and thus
-// represents the constructor of baseTransaction
-// Note: have to use `Mutable` to write to readonly props. Only call this in constructor of txs.
+/**
+ * Shared constructor logic for all transaction types
+ * Note: Uses Mutable type to write to readonly properties. Only call this in transaction constructors.
+ * @param tx - Mutable transaction interface to initialize
+ * @param txData - Transaction data
+ * @param opts - Transaction options
+ */
 export function sharedConstructor(
   tx: Mutable<TransactionInterface>,
   txData: TxData[TransactionType],
@@ -180,6 +199,11 @@ export function sharedConstructor(
   }
 }
 
+/**
+ * Converts a transaction to its base JSON representation
+ * @param tx - The transaction interface
+ * @returns JSON object with base transaction fields
+ */
 export function getBaseJSON(tx: TransactionInterface) {
   return {
     type: bigIntToHex(BigInt(tx.type)),

@@ -18,10 +18,21 @@ import { secp256k1 } from 'ethereum-cryptography/secp256k1'
 import type { LegacyTx } from '../legacy/tx.ts'
 import type { LegacyTxInterface, Transaction } from '../types.ts'
 
+/**
+ * Creates an error message with transaction context
+ * @param tx - The transaction interface
+ * @param msg - The error message
+ * @returns Formatted error message with transaction context
+ */
 export function errorMsg(tx: LegacyTxInterface, msg: string) {
   return `${msg} (${tx.errorStr()})`
 }
 
+/**
+ * Checks if a transaction is signed
+ * @param tx - The transaction interface
+ * @returns true if the transaction is signed
+ */
 export function isSigned(tx: LegacyTxInterface): boolean {
   const { v, r, s } = tx
   if (v === undefined || r === undefined || s === undefined) {
