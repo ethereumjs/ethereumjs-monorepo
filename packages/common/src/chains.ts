@@ -264,6 +264,10 @@ export const Sepolia: ChainConfig = {
       timestamp: '1741159776',
       forkHash: '0xed88b5fd',
     },
+    {
+      name: 'osaka',
+      block: null,
+    },
   ],
   bootstrapNodes: [
     {
