@@ -224,12 +224,11 @@ export class EOACode7702Tx implements TransactionInterface<typeof TransactionTyp
     return Legacy.getIntrinsicGas(this)
   }
 
-  // TODO figure out if this is necessary
   /**
-   * If the tx's `to` is to the creation address
+   * EOACode7702Tx cannot create contracts
    */
-  toCreationAddress(): boolean {
-    return Legacy.toCreationAddress(this)
+  toCreationAddress(): never {
+    throw EthereumJSErrorWithoutCode('EOACode7702Tx cannot create contracts')
   }
 
   /**
