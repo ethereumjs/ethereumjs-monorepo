@@ -184,6 +184,14 @@ export function createBlockFromBytesArray(values: BlockBytes, opts?: BlockOption
  * @param opts
  */
 export function createBlockFromRLP(serialized: Uint8Array, opts?: BlockOptions) {
+  if (opts?.common?.isActivatedEIP(7934) === true) {
+    const maxRlpBlockSize = opts.common.param('maxRlpBlockSize')
+    if (serialized.length > maxRlpBlockSize) {
+      throw EthereumJSErrorWithoutCode(
+        `Block size exceeds limit: ${serialized.length} > ${maxRlpBlockSize}`,
+      )
+    }
+  }
   const values = RLP.decode(Uint8Array.from(serialized)) as BlockBytes
 
   if (!Array.isArray(values)) {

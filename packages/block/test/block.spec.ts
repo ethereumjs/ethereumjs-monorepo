@@ -7,8 +7,14 @@ import {
   testnetMergeChainConfig,
 } from '@ethereumjs/testdata'
 import { createLegacyTx, paramsTx } from '@ethereumjs/tx'
-import { KECCAK256_RLP_ARRAY, bytesToHex, equalsBytes, hexToBytes } from '@ethereumjs/util'
-import { assert, describe, it } from 'vitest'
+import {
+  KECCAK256_RLP_ARRAY,
+  MAX_RLP_BLOCK_SIZE,
+  bytesToHex,
+  equalsBytes,
+  hexToBytes,
+} from '@ethereumjs/util'
+import { assert, describe, expect, it } from 'vitest'
 
 import { genTransactionsTrieRoot } from '../src/helpers.ts'
 import {
@@ -475,5 +481,166 @@ describe('[Block]: block functions', () => {
       'hardfork should be set to shanghai',
     )
     assert.deepEqual(block.withdrawals, [], 'withdrawals should be set to default empty array')
+  })
+})
+
+describe('[Block]: EIP-7934 RLP Execution Block Size Limit', () => {
+  // Helper function to create a large block
+  function createLargeBlock(common: Common) {
+    const largeExtraData = new Uint8Array(MAX_RLP_BLOCK_SIZE + 1000) // Exceed the limit
+    largeExtraData.fill(0x01)
+
+    return createBlock(
+      {
+        header: {
+          extraData: largeExtraData,
+        },
+      },
+      { common, skipConsensusFormatValidation: true },
+    )
+  }
+
+  it('should not throw when size exceeds but EIP-7934 is not activated', async () => {
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
+    const block = createLargeBlock(common)
+
+    // This should not throw since EIP-7934 is not activated
+    await block.validateData(false, false, true)
+  })
+
+  it('should not throw when size exceeds, EIP-7934 is activated, but validateBlockSize is default (false)', async () => {
+    const params = {
+      7934: {
+        maxRlpBlockSize: 8_388_608, // 8 MiB (MAX_BLOCK_SIZE - SAFETY_MARGIN)
+      },
+    }
+    const common = new Common({
+      chain: Mainnet,
+      hardfork: Hardfork.Chainstart,
+      eips: [7934],
+      params,
+    })
+    const block = createLargeBlock(common)
+
+    // This should not throw since validateBlockSize defaults to false
+    await block.validateData(false, false)
+  })
+
+  it('should throw when EIP-7934 is activated and validateBlockSize is explicitly set to true', async () => {
+    const params = {
+      7934: {
+        maxRlpBlockSize: 8_388_608, // 8 MiB (MAX_BLOCK_SIZE - SAFETY_MARGIN)
+      },
+    }
+    const common = new Common({
+      chain: Mainnet,
+      hardfork: Hardfork.Chainstart,
+      eips: [7934],
+      params,
+    })
+    const block = createLargeBlock(common)
+
+    // This should throw due to size limit
+    await expect(block.validateData(false, false, true)).rejects.toThrow(
+      /Block size exceeds maximum RLP block size limit/,
+    )
+  })
+
+  it('should not throw when EIP-7934 is activated, validateBlockSize is true, but size does not exceed', async () => {
+    const params = {
+      7934: {
+        maxRlpBlockSize: 8_388_608, // 8 MiB (MAX_BLOCK_SIZE - SAFETY_MARGIN)
+      },
+    }
+    const common = new Common({
+      chain: Mainnet,
+      hardfork: Hardfork.Chainstart,
+      eips: [7934],
+      params,
+    })
+
+    // Create a block that should be valid (small size)
+    const block = createBlock({}, { common })
+
+    // This should not throw for a small block
+    await block.validateData(false, false, true)
+  })
+
+  it('should use correct size limit from common parameters', async () => {
+    const params = {
+      7934: {
+        maxRlpBlockSize: 8_388_608, // 8 MiB (MAX_BLOCK_SIZE - SAFETY_MARGIN)
+      },
+    }
+    const common = new Common({
+      chain: Mainnet,
+      hardfork: Hardfork.Chainstart,
+      eips: [7934],
+      params,
+    })
+
+    // Check that the parameter is correctly set
+    const maxRlpBlockSize = common.param('maxRlpBlockSize')
+    assert.strictEqual(
+      Number(maxRlpBlockSize),
+      MAX_RLP_BLOCK_SIZE,
+      'maxRlpBlockSize should match constant',
+    )
+  })
+
+  it('should validate block size with createBlockFromRLP', async () => {
+    const params = {
+      7934: {
+        maxRlpBlockSize: 8_388_608, // 8 MiB (MAX_BLOCK_SIZE - SAFETY_MARGIN)
+      },
+    }
+    const common = new Common({
+      chain: Mainnet,
+      hardfork: Hardfork.Chainstart,
+      eips: [7934],
+      params,
+    })
+
+    // Create a valid block
+    const originalBlock = createBlock({}, { common })
+    const rlp = originalBlock.serialize()
+
+    // Create a block from RLP
+    const blockFromRLP = createBlockFromRLP(rlp, { common })
+
+    // This should not throw for a valid block
+    await blockFromRLP.validateData(false, false, true)
+    assert.isTrue(
+      equalsBytes(blockFromRLP.hash(), originalBlock.hash()),
+      'hash should match after recreating from RLP',
+    )
+  })
+
+  it('should throw when creating block from RLP when size exceeds limit', async () => {
+    const params = {
+      7934: {
+        maxRlpBlockSize: 8_388_608, // 8 MiB (MAX_BLOCK_SIZE - SAFETY_MARGIN)
+      },
+    }
+    const common = new Common({
+      chain: Mainnet,
+      hardfork: Hardfork.Chainstart,
+      eips: [7934],
+      params,
+    })
+
+    // Create a block without EIP-7934 active first to avoid size check during creation
+    const commonWithout7934 = new Common({
+      chain: Mainnet,
+      hardfork: Hardfork.Chainstart,
+    })
+
+    const block = createLargeBlock(commonWithout7934)
+    const rlp = block.serialize()
+
+    // createBlockFromRLP should throw when EIP-7934 is active
+    assert.throws(() => {
+      createBlockFromRLP(rlp, { common, skipConsensusFormatValidation: true })
+    }, /Block size exceeds limit/)
   })
 })

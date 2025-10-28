@@ -531,4 +531,13 @@ export const eipsDict: EIPsDict = {
     minimumHardfork: Hardfork.Chainstart,
     requiredEIPs: [],
   },
+  /**
+   * Description : RLP Execution Block Size Limit
+   * URL         : https://eips.ethereum.org/EIPS/eip-7934
+   * Status      : Last Call
+   */
+  7934: {
+    minimumHardfork: Hardfork.Chainstart,
+    requiredEIPs: [],
+  },
 }
