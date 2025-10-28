@@ -55,6 +55,10 @@ export type NetworkWrapperType = (typeof NetworkWrapperType)[keyof typeof Networ
  *
  * - TransactionType: 3
  * - EIP: [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844)
+ *
+ * This tx type has two "modes": the plain canonical format only contains `blobVersionedHashes`.
+ * If blobs are passed in the tx automatically switches to "Network Wrapper" format and the
+ * `networkWrapperVersion` will be set or validated.
  */
 export class Blob4844Tx implements TransactionInterface<typeof TransactionType.BlobEIP4844> {
   public type = TransactionType.BlobEIP4844 // 4844 tx type
@@ -76,12 +80,21 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
   public readonly v?: bigint
   public readonly r?: bigint
   public readonly s?: bigint
-
   // End of Tx data part
+
+  /**
+   * This property is set if the tx is in "Network Wrapper" format.
+   *
+   * Possible values:
+   * - 0 (EIP-4844)
+   * - 1 (EIP-4844 + EIP-7594)
+   */
   networkWrapperVersion?: NetworkWrapperType
-  blobs?: PrefixedHexString[] // This property should only be populated when the transaction is in the "Network Wrapper" format
-  kzgCommitments?: PrefixedHexString[] // This property should only be populated when the transaction is in the "Network Wrapper" format
-  kzgProofs?: PrefixedHexString[] // This property should only be populated when the transaction is in the "Network Wrapper" format
+
+  // "Network Wrapper" Format
+  blobs?: PrefixedHexString[] // EIP-4844 + EIP-7594
+  kzgCommitments?: PrefixedHexString[] // EIP-4844 + EIP-7594
+  kzgProofs?: PrefixedHexString[] // EIP-4844: per-Blob proofs, EIP-7594: per-Cell proofs
 
   public readonly common!: Common
 
@@ -231,7 +244,7 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
         case NetworkWrapperType.EIP7594:
           if (!this.common.isActivatedEIP(7594)) {
             throw EthereumJSErrorWithoutCode(
-              'EIP-7594 not enabled on Common for EIP7594 network wrapper version',
+              'EIP-7594 not enabled on Common for EIP-7594 network wrapper version',
             )
           }
           break
@@ -239,7 +252,7 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
         case NetworkWrapperType.EIP4844:
           if (this.common.isActivatedEIP(7594)) {
             throw EthereumJSErrorWithoutCode(
-              'EIP-7594 is active on Common for EIP4844 network wrapper version',
+              'EIP-7594 is active on Common for EIP-4844 network wrapper version',
             )
           }
           break
@@ -252,10 +265,38 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
     }
 
     this.blobs = txData.blobs?.map((blob) => toType(blob, TypeOutput.PrefixedHexString))
+
+    if (this.networkWrapperVersion === undefined && this.blobs !== undefined) {
+      if (this.common.isActivatedEIP(7594)) {
+        this.networkWrapperVersion = 1
+      } else {
+        this.networkWrapperVersion = 0
+      }
+    }
+    if (this.networkWrapperVersion !== undefined && this.blobs === undefined) {
+      const msg = Legacy.errorMsg(
+        this,
+        'tx is not allowed to be in network wrapper format if no blob list is provided',
+      )
+      throw EthereumJSErrorWithoutCode(msg)
+    }
+
     this.kzgCommitments = txData.kzgCommitments?.map((commitment) =>
       toType(commitment, TypeOutput.PrefixedHexString),
     )
     this.kzgProofs = txData.kzgProofs?.map((proof) => toType(proof, TypeOutput.PrefixedHexString))
+
+    if (this.blobs !== undefined) {
+      if (this.kzgCommitments === undefined) {
+        const msg = Legacy.errorMsg(this, 'kzgCommitments are mandatory if blobs are provided')
+        throw EthereumJSErrorWithoutCode(msg)
+      }
+      if (this.kzgProofs === undefined) {
+        const msg = Legacy.errorMsg(this, 'kzgProofs are mandatory if blobs are provided')
+        throw EthereumJSErrorWithoutCode(msg)
+      }
+    }
+
     const freeze = opts?.freeze ?? true
     if (freeze) {
       Object.freeze(this)
@@ -304,14 +345,11 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
   getUpfrontCost(baseFee: bigint = BIGINT_0): bigint {
     return EIP1559.getUpfrontCost(this, baseFee)
   }
-
-  // TODO figure out if this is necessary
-  // NOTE/TODO: this should DEFINITELY be removed from the `TransactionInterface`, since 4844/7702 can NEVER create contracts
   /**
-   * If the tx's `to` is to the creation address
+   * Blob4844Tx cannot create contracts
    */
-  toCreationAddress(): boolean {
-    return Legacy.toCreationAddress(this)
+  toCreationAddress(): never {
+    throw EthereumJSErrorWithoutCode('Blob4844Tx cannot create contracts')
   }
 
   /**
