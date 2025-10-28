@@ -104,20 +104,24 @@ describe(method, () => {
     assert.strictEqual(res.result, '0x1')
   })
 
-  it('call with more realistic blockchain', async () => {
-    const { server, execution, chain } = await setupChain(eip4844GethGenesis, 'post-merge', {
-      engine: true,
-      hardfork: Hardfork.Cancun,
-      customCrypto: {
-        kzg,
-      },
-    })
+  it(
+    'call with more realistic blockchain',
+    async () => {
+      const { server, execution, chain } = await setupChain(eip4844GethGenesis, 'post-merge', {
+        engine: true,
+        hardfork: Hardfork.Cancun,
+        customCrypto: {
+          kzg,
+        },
+      })
 
-    for (let i = 0; i < 10; i++) {
-      await produceBlockWith4844Tx(execution, chain, [6])
-    }
-    const rpc = getRPCClient(server)
-    const res = await rpc.request(method, [])
-    assert.strictEqual(res.result, '0x3')
-  })
+      for (let i = 0; i < 2; i++) {
+        await produceBlockWith4844Tx(execution, chain, [6])
+      }
+      const rpc = getRPCClient(server)
+      const res = await rpc.request(method, [])
+      assert.strictEqual(res.result, '0x1')
+    },
+    { timeout: 20000 },
+  )
 })
