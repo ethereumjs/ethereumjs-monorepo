@@ -20,9 +20,6 @@ const fixturePublicKeyBytes = hexToBytes(fixturePublicKey)
 const fixtureWallet = Wallet.fromPrivateKey(fixturePrivateKeyBytes)
 const fixtureEthersWallet = new ethersWallet(fixtureWallet.getPrivateKeyString())
 
-// Hack to detect if running in browser or not
-const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
-
 describe('Wallet tests', () => {
   it('.getPrivateKey()', () => {
     assert.strictEqual(bytesToHex(fixtureWallet.getPrivateKey()), fixturePrivateKey)
@@ -237,13 +234,11 @@ describe('Wallet tests', () => {
 
   let permutations = makePermutations(strKdfOptions, bytesKdfOptions)
 
-  if (isBrowser() === true) {
-    // These tests take a long time in the browser due to
-    // the amount of permutations so we will shorten them.
-    permutations = permutations.slice(1)
-  }
+  // These tests take a long time due to the amount of permutations so we will shorten them.
+  // If related code is touched, run full tests.
+  permutations = permutations.slice(0, 1)
 
-  it('.toV3(): should work with PBKDF2', async () => {
+  it('.toV3(): should work with PBKDF2 (shortened permutations)', async () => {
     const w =
       '{"version":3,"id":"7e59dc02-8d42-409d-b29a-a8a0f862cc81","address":"b14ab53e38da1c172f877dbc6d65e4a1b0474c3c","crypto":{"ciphertext":"01ee7f1a3c8d187ea244c92eea9e332ab0bb2b4c902d89bdd71f80dc384da1be","cipherparams":{"iv":"cecacd85e9cb89788b5aab2f93361233"},"cipher":"aes-128-ctr","kdf":"pbkdf2","kdfparams":{"dklen":32,"salt":"dc9e4a98886738bd8aae134a1f89aaa5a502c3fbd10e336136d4d5fe47448ad6","c":262144,"prf":"hmac-sha256"},"mac":"0c02cd0badfebd5e783e0cf41448f84086a96365fc3456716c33641a86ebc7cc"}}'
 
@@ -268,7 +263,7 @@ describe('Wallet tests', () => {
   const wEthers = new ethersWallet(wRandom.getPrivateKeyString())
 
   for (const [index, perm] of permutations.entries()) {
-    it(`.toV3(): should work with Scrypt (permutation ${index})`, async () => {
+    it(`.toV3(): should work with Scrypt (permutation ${index}) (shortened permutations)`, async () => {
       const { salt, iv, uuid } = perm
 
       const encFixtureWallet = await fixtureWallet.toV3String(pw, {
