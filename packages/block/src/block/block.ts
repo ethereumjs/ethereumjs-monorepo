@@ -254,7 +254,7 @@ export class Block {
    * - Block size limit (EIP-7934)
    * @param onlyHeader if only passed the header, skip validating txTrie and unclesHash (default: false)
    * @param verifyTxs if set to `false`, will not check for transaction validation errors (default: true)
-   * @param validateBlockSize if set to `false`, will not check for block size limit (default: false)
+   * @param validateBlockSize if set to `true`, will check for block size limit (EIP-7934) (default: false)
    */
   async validateData(
     onlyHeader: boolean = false,
