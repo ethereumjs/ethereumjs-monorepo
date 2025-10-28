@@ -20,8 +20,11 @@ import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
  * node examples/sendRawSepoliaTx.ts <PRIVATE_KEY> | curl -X POST -H "Content-Type: application/json" -d @- https://ethereum-sepolia-rpc.publicnode.com
  */
 
+// The '--' is a CI internal fix
 const PRIV_KEY: Uint8Array =
-  process.argv[2] !== undefined ? hexToBytes(process.argv[2] as PrefixedHexString) : randomBytes(32)
+  process.argv[2] !== undefined && process.argv[2] !== '--'
+    ? hexToBytes(process.argv[2] as PrefixedHexString)
+    : randomBytes(32)
 const to: PrefixedHexString = '0x0000000000000000000000000000000000000000'
 
 const kzg = new microEthKZG(trustedSetup)
