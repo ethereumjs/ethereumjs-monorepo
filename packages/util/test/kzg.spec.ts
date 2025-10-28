@@ -7,7 +7,7 @@ import { getBlobs } from '../src/blobs.ts'
 
 import type { KZG } from '../src/kzg.ts'
 
-export const jsKZG = new microEthKZG(trustedSetup)
+const jsKZG = new microEthKZG(trustedSetup)
 
 describe('KZG API tests', () => {
   let wasmKZG: KZG
