@@ -462,7 +462,7 @@ export interface BlobEIP4844TxData extends FeeMarketEIP1559TxData {
    */
   kzgCommitments?: BytesLike[]
   /**
-   * The KZG proofs associated with the transaction
+   * The KZG proofs associated with the transaction (EIP-4844: per-Blob proofs, EIP-7594: per-Cell proofs)
    */
   kzgProofs?: BytesLike[]
   /**
