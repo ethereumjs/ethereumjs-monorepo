@@ -107,7 +107,7 @@ describe(method, () => {
         },
         { common },
       ),
-    ).toThrowError(/EIP-7594 is active on Common for EIP4844 network wrapper version/)
+    ).toThrowError(/EIP-7594 is active on Common for EIP-4844 network wrapper version/)
 
     const tx = createTx(
       {
