@@ -385,7 +385,7 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
           )
         }
       }
-      await block.validateData()
+      await block.validateData(false, true, opts.validateBlockSize ?? false)
     }
   }
   if (vm.common.isActivatedEIP(4788)) {
