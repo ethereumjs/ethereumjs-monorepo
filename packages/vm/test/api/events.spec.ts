@@ -1,13 +1,12 @@
 import { Block } from '@ethereumjs/block'
 import { createFeeMarket1559Tx } from '@ethereumjs/tx'
-import { Account, bytesToHex, createAddressFromPrivateKey, hexToBytes } from '@ethereumjs/util'
+import { Account, bytesToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
+import { SIGNER_A } from '@ethereumjs/testdata'
 import { createVM, runBlock, runTx } from '../../src/index.ts'
 
 describe('VM events', () => {
-  const privKey = hexToBytes('0xa5737ecdc1b89ca0091647e727ba082ed8953f29182e94adc397210dda643b07')
-
   it('should emit the Block before running it', async () => {
     const vm = await createVM()
 
@@ -59,7 +58,7 @@ describe('VM events', () => {
       gasLimit: 90000,
       maxFeePerGas: 40000,
       to: '0x1111111111111111111111111111111111111111',
-    }).sign(privKey)
+    }).sign(SIGNER_A.privateKey)
 
     await runTx(vm, { tx, skipBalance: true, skipHardForkValidation: true })
 
@@ -68,8 +67,7 @@ describe('VM events', () => {
 
   it('should emit RunTxResult after running a tx', async () => {
     const vm = await createVM()
-    const address = createAddressFromPrivateKey(privKey)
-    await vm.stateManager.putAccount(address, new Account(BigInt(0), BigInt(0x11111111)))
+    await vm.stateManager.putAccount(SIGNER_A.address, new Account(BigInt(0), BigInt(0x11111111)))
     let emitted: any
     vm.events.on('afterTx', (val: any) => {
       emitted = val
@@ -80,7 +78,7 @@ describe('VM events', () => {
       maxFeePerGas: 40000,
       to: '0x1111111111111111111111111111111111111111',
       value: 1,
-    }).sign(privKey)
+    }).sign(SIGNER_A.privateKey)
 
     await runTx(vm, { tx, skipBalance: true, skipHardForkValidation: true })
 
@@ -89,8 +87,7 @@ describe('VM events', () => {
 
   it('should emit the Message before running it', async () => {
     const vm = await createVM()
-    const address = createAddressFromPrivateKey(privKey)
-    await vm.stateManager.putAccount(address, new Account(BigInt(0), BigInt(0x11111111)))
+    await vm.stateManager.putAccount(SIGNER_A.address, new Account(BigInt(0), BigInt(0x11111111)))
     let emitted: any
     vm.evm.events!.on('beforeMessage', (val, resolve) => {
       emitted = val
@@ -102,7 +99,7 @@ describe('VM events', () => {
       maxFeePerGas: 40000,
       to: '0x1111111111111111111111111111111111111111',
       value: 1,
-    }).sign(privKey)
+    }).sign(SIGNER_A.privateKey)
 
     await runTx(vm, { tx, skipBalance: true, skipHardForkValidation: true })
 
@@ -112,8 +109,7 @@ describe('VM events', () => {
 
   it('should emit EVMResult after running a message', async () => {
     const vm = await createVM()
-    const address = createAddressFromPrivateKey(privKey)
-    await vm.stateManager.putAccount(address, new Account(BigInt(0), BigInt(0x11111111)))
+    await vm.stateManager.putAccount(SIGNER_A.address, new Account(BigInt(0), BigInt(0x11111111)))
     let emitted: any
     vm.evm.events!.on('afterMessage', (val, resolve) => {
       emitted = val
@@ -125,7 +121,7 @@ describe('VM events', () => {
       maxFeePerGas: 40000,
       to: '0x1111111111111111111111111111111111111111',
       value: 1,
-    }).sign(privKey)
+    }).sign(SIGNER_A.privateKey)
 
     await runTx(vm, { tx, skipBalance: true, skipHardForkValidation: true })
 
@@ -148,7 +144,7 @@ describe('VM events', () => {
       gasLimit: 90000,
       maxFeePerGas: 40000,
       data: '0x7f410000000000000000000000000000000000000000000000000000000000000060005260016000f3',
-    }).sign(privKey)
+    }).sign(SIGNER_A.privateKey)
 
     await runTx(vm, { tx, skipBalance: true, skipHardForkValidation: true })
 
@@ -171,7 +167,7 @@ describe('VM events', () => {
       gasLimit: 90000,
       maxFeePerGas: 40000,
       data: '0x7f410000000000000000000000000000000000000000000000000000000000000060005260016000f3',
-    }).sign(privKey)
+    }).sign(SIGNER_A.privateKey)
 
     await runTx(vm, { tx, skipBalance: true, skipHardForkValidation: true })
 

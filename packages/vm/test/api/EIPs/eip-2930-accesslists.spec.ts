@@ -9,6 +9,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
+import { SIGNER_A } from '@ethereumjs/testdata'
 import { createVM, runTx } from '../../../src/index.ts'
 
 const common = new Common({
@@ -21,7 +22,6 @@ const validAddress = hexToBytes('0x00000000000000000000000000000000000000ff')
 const validSlot = hexToBytes(`0x${'00'.repeat(32)}`)
 
 // setup the accounts for this test
-const privateKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
 const contractAddress = new Address(validAddress)
 
 describe('EIP-2930 Optional Access Lists tests', () => {
@@ -40,7 +40,7 @@ describe('EIP-2930 Optional Access Lists tests', () => {
         to: contractAddress,
       },
       { common },
-    ).sign(privateKey)
+    ).sign(SIGNER_A.privateKey)
     const txnWithoutAccessList = createAccessList2930Tx(
       {
         accessList: [],
@@ -49,14 +49,14 @@ describe('EIP-2930 Optional Access Lists tests', () => {
         to: contractAddress,
       },
       { common },
-    ).sign(privateKey)
+    ).sign(SIGNER_A.privateKey)
 
     const vm = await createVM({ common })
 
     // contract code PUSH1 0x00 SLOAD STOP
     await vm.stateManager.putCode(contractAddress, hexToBytes('0x60005400'))
 
-    const address = createAddressFromPrivateKey(privateKey)
+    const address = createAddressFromPrivateKey(SIGNER_A.privateKey)
     const initialBalance = BigInt(10) ** BigInt(18)
 
     const account = await vm.stateManager.getAccount(address)
