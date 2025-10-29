@@ -5,6 +5,7 @@ import { assert, describe, it } from 'vitest'
 
 import { createVM, runTx } from '../../../src/index.ts'
 
+import { SIGNER_A } from '@ethereumjs/testdata'
 import type { InterpreterStep } from '@ethereumjs/evm'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -12,7 +13,6 @@ import type { PrefixedHexString } from '@ethereumjs/util'
 describe('EIP 2929: gas cost tests', () => {
   const initialGas = BigInt(0xffffffffff)
   const address = new Address(hexToBytes('0x000000000000000000000000636F6E7472616374'))
-  const senderKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
   const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin, eips: [2929] })
 
   const runTest = async function (test: any) {
@@ -56,7 +56,7 @@ describe('EIP 2929: gas cost tests', () => {
       to: address, // call to the contract address,
     })
 
-    const tx = unsignedTx.sign(senderKey)
+    const tx = unsignedTx.sign(SIGNER_A.privateKey)
 
     const result = await runTx(vm, { tx, skipHardForkValidation: true })
 
@@ -68,9 +68,7 @@ describe('EIP 2929: gas cost tests', () => {
 
   const runCodeTest = async function (code: PrefixedHexString, expectedGasUsed: bigint) {
     // setup the accounts for this test
-    const privateKey = hexToBytes(
-      '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-    )
+    const privateKey = SIGNER_A.privateKey
     const contractAddress = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
 
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin, eips: [2929] })
