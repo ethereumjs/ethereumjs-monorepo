@@ -251,10 +251,28 @@ export class Block {
    * - All transactions are valid
    * - The transactions trie is valid
    * - The uncle hash is valid
+   * - Block size limit (EIP-7934)
    * @param onlyHeader if only passed the header, skip validating txTrie and unclesHash (default: false)
    * @param verifyTxs if set to `false`, will not check for transaction validation errors (default: true)
+   * @param validateBlockSize if set to `true`, will check for block size limit (EIP-7934) (default: false)
    */
-  async validateData(onlyHeader: boolean = false, verifyTxs: boolean = true): Promise<void> {
+  async validateData(
+    onlyHeader: boolean = false,
+    verifyTxs: boolean = true,
+    validateBlockSize: boolean = false,
+  ): Promise<void> {
+    // EIP-7934: RLP Execution Block Size Limit validation
+    if (validateBlockSize && this.common.isActivatedEIP(7934)) {
+      const rlpEncoded = this.serialize()
+      const maxRlpBlockSize = this.common.param('maxRlpBlockSize')
+      if (rlpEncoded.length > maxRlpBlockSize) {
+        const msg = this._errorMsg(
+          `Block size exceeds maximum RLP block size limit: ${rlpEncoded.length} bytes > ${maxRlpBlockSize} bytes`,
+        )
+        throw EthereumJSErrorWithoutCode(msg)
+      }
+    }
+
     if (verifyTxs) {
       const txErrors = this.getTransactionsValidationErrors()
       if (txErrors.length > 0) {

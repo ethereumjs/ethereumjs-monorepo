@@ -314,6 +314,12 @@ export interface RunBlockOpts {
    * to the `RunTxResult` returned.
    */
   reportPreimages?: boolean
+
+  /**
+   * If true, will validate block size limit (EIP-7934) when validating block data.
+   * Defaults to false.
+   */
+  validateBlockSize?: boolean
 }
 
 /**
