@@ -4,7 +4,8 @@ import {
   createCommonFromGethGenesis,
   parseGethGenesisState,
 } from '@ethereumjs/common'
-import { Address, bytesToHex, concatBytes, hexToBytes } from '@ethereumjs/util'
+import type { Address } from '@ethereumjs/util'
+import { bytesToHex, concatBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { Config } from '../../src/config.ts'
@@ -12,6 +13,7 @@ import { Event } from '../../src/types.ts'
 import { createInlineClient } from '../../src/util/index.ts'
 import { parseMultiaddrs } from '../../src/util/parse.ts'
 
+import { SIGNER_A } from '@ethereumjs/testdata'
 import type { EthereumClient } from '../../src/index.ts'
 
 async function setupDevnet(prefundAddress: Address) {
@@ -59,12 +61,7 @@ async function setupDevnet(prefundAddress: Address) {
   return { common, customGenesisState }
 }
 
-const accounts: [Address, Uint8Array][] = [
-  [
-    new Address(hexToBytes('0x0b90087d864e82a284dca15923f3776de6bb016f')),
-    hexToBytes('0x64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'),
-  ],
-]
+const accounts: [Address, Uint8Array][] = [[SIGNER_A.address, SIGNER_A.privateKey]]
 
 async function minerSetup(): Promise<EthereumClient[]> {
   const { common, customGenesisState } = await setupDevnet(accounts[0][0])

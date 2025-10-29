@@ -10,11 +10,12 @@ import { assert, describe, it } from 'vitest'
 import { Config } from '../../src/index.ts'
 import { createInlineClient } from '../../src/util/index.ts'
 
-import { type Address, createAddressFromPrivateKey, hexToBytes } from '@ethereumjs/util'
+import { SIGNER_A } from '@ethereumjs/testdata'
+import { type Address } from '@ethereumjs/util'
 import { getLogger } from '../../src/logging.ts'
 
-const pk = hexToBytes('0x95a602ff1ae30a2243f400dcf002561b9743b2ae9827b1008e3714a5cc1c0cfe')
-const minerAddress = createAddressFromPrivateKey(pk)
+const pk = SIGNER_A.privateKey
+const minerAddress = SIGNER_A.address
 
 async function setupPowDevnet(prefundAddress: Address, cleanStart: boolean) {
   if (cleanStart) {

@@ -1,11 +1,6 @@
-import { postMergeGethGenesis } from '@ethereumjs/testdata'
+import { SIGNER_G, postMergeGethGenesis } from '@ethereumjs/testdata'
 import { createFeeMarket1559Tx } from '@ethereumjs/tx'
-import {
-  bytesToHex,
-  createAddressFromPrivateKey,
-  createAddressFromString,
-  hexToBytes,
-} from '@ethereumjs/util'
+import { bytesToHex, createAddressFromString } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
@@ -161,15 +156,11 @@ describe(method, () => {
   })
 
   it('call with valid data & valid transaction', async () => {
-    const accountPk = hexToBytes(
-      '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-    )
-    const accountAddress = createAddressFromPrivateKey(accountPk)
     const newGenesisJSON = {
       ...postMergeGethGenesis,
       alloc: {
         ...postMergeGethGenesis.alloc,
-        [accountAddress.toString()]: {
+        [SIGNER_G.address.toString()]: {
           balance: '0x1000000',
         },
       },
@@ -184,7 +175,7 @@ describe(method, () => {
         gasLimit: 53_000,
       },
       { common },
-    ).sign(accountPk)
+    ).sign(SIGNER_G.privateKey)
     const transactions = [bytesToHex(tx.serialize())]
     const blockDataWithValidTransaction = {
       ...blockData,
@@ -201,15 +192,11 @@ describe(method, () => {
   })
 
   it('call with too many transactions', async () => {
-    const accountPk = hexToBytes(
-      '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-    )
-    const accountAddress = createAddressFromPrivateKey(accountPk)
     const newGenesisJSON = {
       ...postMergeGethGenesis,
       alloc: {
         ...postMergeGethGenesis.alloc,
-        [accountAddress.toString()]: {
+        [SIGNER_G.address.toString()]: {
           balance: '0x100000000',
         },
       },
@@ -228,7 +215,7 @@ describe(method, () => {
           gasLimit: 53_000,
         },
         { common },
-      ).sign(accountPk)
+      ).sign(SIGNER_G.privateKey)
 
       return bytesToHex(tx.serialize())
     })
