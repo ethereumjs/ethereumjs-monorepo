@@ -1,5 +1,5 @@
 import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
-import { eip4844GethGenesis } from '@ethereumjs/testdata'
+import { SIGNER_G, eip4844GethGenesis } from '@ethereumjs/testdata'
 import {
   Account,
   Address,
@@ -7,7 +7,6 @@ import {
   bytesToBigInt,
   bytesToHex,
   concatBytes,
-  createAddressFromPrivateKey,
   createAddressFromString,
   createZeroAddress,
   hexToBytes,
@@ -495,10 +494,8 @@ describe('RunCall tests', () => {
     const contractCode = hexToBytes('0x00') // 00: STOP
     const contractAddress = createAddressFromString('0x000000000000000000000000636F6E7472616374')
     await evm.stateManager.putCode(contractAddress, contractCode)
-    const senderKey = hexToBytes(
-      '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-    )
-    const sender = createAddressFromPrivateKey(senderKey)
+
+    const sender = SIGNER_G.address
 
     const runCallArgs = {
       gasLimit: BigInt(21000),
