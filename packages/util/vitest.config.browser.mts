@@ -8,7 +8,7 @@ export default mergeConfig(
       exclude: [
         ...configDefaults.exclude,
         // KZG tests use Node.js specific dependencies that aren't compatible with browser environment
-        'test/kzg.spec.ts',
+        //'test/kzg.spec.ts',
         'test/bench/kzg.bench.ts',
       ],
     },
