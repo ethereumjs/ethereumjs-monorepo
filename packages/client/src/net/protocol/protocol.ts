@@ -144,4 +144,13 @@ export class Protocol {
     }
     return payload
   }
+
+  /**
+   * Handle incoming message
+   * @param message message to handle
+   * @param peer peer that sent the message
+   */
+  async handle(_message: any, _peer: any): Promise<any> {
+    throw EthereumJSErrorWithoutCode('Unimplemented')
+  }
 }
