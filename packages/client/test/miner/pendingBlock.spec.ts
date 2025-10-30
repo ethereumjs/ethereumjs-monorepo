@@ -350,143 +350,135 @@ describe('[PendingBlock]', async () => {
     )
   })
 
-  it(
-    'construct blob bundles',
-    async () => {
-      const common = createCommonFromGethGenesis(eip4844GethGenesis, {
-        chain: 'customChain',
-        hardfork: Hardfork.Cancun,
-        customCrypto: {
-          kzg,
-        },
-      })
+  it('construct blob bundles', async () => {
+    const common = createCommonFromGethGenesis(eip4844GethGenesis, {
+      chain: 'customChain',
+      hardfork: Hardfork.Cancun,
+      customCrypto: {
+        kzg,
+      },
+    })
 
-      const { txPool } = setup()
-      txPool['config'].chainCommon.setHardfork(Hardfork.Cancun)
+    const { txPool } = setup()
+    txPool['config'].chainCommon.setHardfork(Hardfork.Cancun)
 
-      // fill up the blobAndProofByHash and proofs cache before adding a blob tx
-      // for cache pruning check
-      const fillBlobs = getBlobs('hello world')
-      const fillCommitments = blobsToCommitments(kzg, fillBlobs)
-      const fillProofs = blobsToProofs(kzg, fillBlobs, fillCommitments)
-      const fillBlobAndProof = { blob: fillBlobs[0], proof: fillProofs[0] }
+    // fill up the blobAndProofByHash and proofs cache before adding a blob tx
+    // for cache pruning check
+    const fillBlobs = getBlobs('hello world')
+    const fillCommitments = blobsToCommitments(kzg, fillBlobs)
+    const fillProofs = blobsToProofs(kzg, fillBlobs, fillCommitments)
+    const fillBlobAndProof = { blob: fillBlobs[0], proof: fillProofs[0] }
 
-      const blobGasLimit = txPool['config'].chainCommon.param('maxBlobGasPerBlock')
-      const blobGasPerBlob = txPool['config'].chainCommon.param('blobGasPerBlob')
-      const allowedBlobsPerBlock = Number(blobGasLimit / blobGasPerBlob)
-      const allowedLength = allowedBlobsPerBlock * txPool['config'].blobsAndProofsCacheBlocks
+    const blobGasLimit = txPool['config'].chainCommon.param('maxBlobGasPerBlock')
+    const blobGasPerBlob = txPool['config'].chainCommon.param('blobGasPerBlob')
+    const allowedBlobsPerBlock = Number(blobGasLimit / blobGasPerBlob)
+    const allowedLength = allowedBlobsPerBlock * txPool['config'].blobsAndProofsCacheBlocks
 
-      for (let i = 0; i < allowedLength; i++) {
-        // this is space efficient as same object is inserted in dummy positions
-        txPool.blobAndProofByHash.set(intToHex(i), fillBlobAndProof)
-      }
-      assert.strictEqual(
-        txPool.blobAndProofByHash.size,
-        allowedLength,
-        'fill the cache to capacity',
-      )
+    for (let i = 0; i < allowedLength; i++) {
+      // this is space efficient as same object is inserted in dummy positions
+      txPool.blobAndProofByHash.set(intToHex(i), fillBlobAndProof)
+    }
+    assert.strictEqual(txPool.blobAndProofByHash.size, allowedLength, 'fill the cache to capacity')
 
-      // Create 2 txs with 3 blobs each so that only 2 of them can be included in a build
-      let blobs: PrefixedHexString[] = [],
-        proofs: PrefixedHexString[] = [],
-        versionedHashes: PrefixedHexString[] = []
-      for (let x = 0; x <= 2; x++) {
-        // generate unique blobs different from fillBlobs
-        const txBlobs = [
-          ...getBlobs(`hello world-${x}1`),
-          ...getBlobs(`hello world-${x}2`),
-          ...getBlobs(`hello world-${x}3`),
-        ]
-        assert.strictEqual(txBlobs.length, 3, '3 blobs should be created')
-        const txCommitments = blobsToCommitments(kzg, txBlobs)
-        const txBlobVersionedHashes = commitmentsToVersionedHashes(txCommitments)
-        const txProofs = blobsToProofs(kzg, txBlobs, txCommitments)
+    // Create 2 txs with 3 blobs each so that only 2 of them can be included in a build
+    let blobs: PrefixedHexString[] = [],
+      proofs: PrefixedHexString[] = [],
+      versionedHashes: PrefixedHexString[] = []
+    for (let x = 0; x <= 2; x++) {
+      // generate unique blobs different from fillBlobs
+      const txBlobs = [
+        ...getBlobs(`hello world-${x}1`),
+        ...getBlobs(`hello world-${x}2`),
+        ...getBlobs(`hello world-${x}3`),
+      ]
+      assert.strictEqual(txBlobs.length, 3, '3 blobs should be created')
+      const txCommitments = blobsToCommitments(kzg, txBlobs)
+      const txBlobVersionedHashes = commitmentsToVersionedHashes(txCommitments)
+      const txProofs = blobsToProofs(kzg, txBlobs, txCommitments)
 
-        const txA01 = createBlob4844Tx(
-          {
-            networkWrapperVersion: NetworkWrapperType.EIP4844,
-            blobVersionedHashes: txBlobVersionedHashes,
-            blobs: txBlobs,
-            kzgCommitments: txCommitments,
-            kzgProofs: txProofs,
-            maxFeePerBlobGas: 100000000n,
-            gasLimit: 0xffffffn,
-            maxFeePerGas: Units.gwei(1),
-            maxPriorityFeePerGas: 100000000n,
-            to: randomBytes(20),
-            nonce: BigInt(x),
-          },
-          { common },
-        ).sign(A.privateKey)
-        await txPool.add(txA01)
-
-        // accumulate for verification
-        blobs = [...blobs, ...txBlobs]
-        proofs = [...proofs, ...txProofs]
-        versionedHashes = [...versionedHashes, ...txBlobVersionedHashes]
-      }
-
-      assert.strictEqual(
-        txPool.blobAndProofByHash.size,
-        allowedLength,
-        'cache should be prune and stay at same size',
-      )
-      // check if blobs and proofs are added in txpool by versioned hashes
-      for (let i = 0; i < versionedHashes.length; i++) {
-        const versionedHash = versionedHashes[i]
-        const blob = blobs[i]
-        const proof = proofs[i]
-
-        const blobAndProof = txPool.blobAndProofByHash.get(versionedHash) ?? {
-          blob: '0x0',
-          proof: '0x0',
-        }
-        assert.strictEqual(blob, blobAndProof.blob, 'blob should match')
-        assert.strictEqual(proof, blobAndProof.proof, 'proof should match')
-      }
-
-      // Add one other normal tx for nonce 3 which should also be not included in the build
-      const txNorm = createFeeMarket1559Tx(
+      const txA01 = createBlob4844Tx(
         {
+          networkWrapperVersion: NetworkWrapperType.EIP4844,
+          blobVersionedHashes: txBlobVersionedHashes,
+          blobs: txBlobs,
+          kzgCommitments: txCommitments,
+          kzgProofs: txProofs,
+          maxFeePerBlobGas: 100000000n,
           gasLimit: 0xffffffn,
           maxFeePerGas: Units.gwei(1),
           maxPriorityFeePerGas: 100000000n,
           to: randomBytes(20),
-          nonce: BigInt(3),
+          nonce: BigInt(x),
         },
         { common },
       ).sign(A.privateKey)
-      await txPool.add(txNorm)
+      await txPool.add(txA01)
 
-      assert.strictEqual(txPool.txsInPool, 4, '4 txs should still be in the pool')
+      // accumulate for verification
+      blobs = [...blobs, ...txBlobs]
+      proofs = [...proofs, ...txProofs]
+      versionedHashes = [...versionedHashes, ...txBlobVersionedHashes]
+    }
 
-      const pendingBlock = new PendingBlock({ config, txPool })
-      const blockchain = await createBlockchain({ common })
-      const vm = await createVM({ common, blockchain })
-      await setBalance(vm, A.address, BigInt(500000000000000000))
-      const parentBlock = await (vm.blockchain as Blockchain).getCanonicalHeadBlock!()
-      // stub the vm's common set hf to do nothing but stay in cancun
-      vm.common.setHardforkBy = () => {
-        return vm.common.hardfork()
+    assert.strictEqual(
+      txPool.blobAndProofByHash.size,
+      allowedLength,
+      'cache should be prune and stay at same size',
+    )
+    // check if blobs and proofs are added in txpool by versioned hashes
+    for (let i = 0; i < versionedHashes.length; i++) {
+      const versionedHash = versionedHashes[i]
+      const blob = blobs[i]
+      const proof = proofs[i]
+
+      const blobAndProof = txPool.blobAndProofByHash.get(versionedHash) ?? {
+        blob: '0x0',
+        proof: '0x0',
       }
-      const payloadId = await pendingBlock.start(vm, parentBlock)
-      const [block, _receipts, _value, blobsBundles] = (await pendingBlock.build(payloadId)) ?? []
+      assert.strictEqual(blob, blobAndProof.blob, 'blob should match')
+      assert.strictEqual(proof, blobAndProof.proof, 'proof should match')
+    }
 
-      assert.isTrue(block !== undefined && blobsBundles !== undefined)
-      assert.strictEqual(block!.transactions.length, 2, 'Only two blob txs should be included')
-      assert.strictEqual(blobsBundles!.blobs.length, 6, 'maximum 6 blobs should be included')
-      assert.strictEqual(
-        blobsBundles!.commitments.length,
-        6,
-        'maximum 6 commitments should be included',
-      )
-      assert.strictEqual(blobsBundles!.proofs.length, 6, 'maximum 6 proofs should be included')
+    // Add one other normal tx for nonce 3 which should also be not included in the build
+    const txNorm = createFeeMarket1559Tx(
+      {
+        gasLimit: 0xffffffn,
+        maxFeePerGas: Units.gwei(1),
+        maxPriorityFeePerGas: 100000000n,
+        to: randomBytes(20),
+        nonce: BigInt(3),
+      },
+      { common },
+    ).sign(A.privateKey)
+    await txPool.add(txNorm)
 
-      const pendingBlob = blobsBundles!.blobs[0]
-      assert.isTrue(pendingBlob !== undefined && pendingBlob === blobs[0])
-      const blobProof = blobsBundles!.proofs[0]
-      assert.isTrue(blobProof !== undefined && blobProof === proofs[0])
-    },
-    { timeout: 20000 },
-  )
+    assert.strictEqual(txPool.txsInPool, 4, '4 txs should still be in the pool')
+
+    const pendingBlock = new PendingBlock({ config, txPool })
+    const blockchain = await createBlockchain({ common })
+    const vm = await createVM({ common, blockchain })
+    await setBalance(vm, A.address, BigInt(500000000000000000))
+    const parentBlock = await (vm.blockchain as Blockchain).getCanonicalHeadBlock!()
+    // stub the vm's common set hf to do nothing but stay in cancun
+    vm.common.setHardforkBy = () => {
+      return vm.common.hardfork()
+    }
+    const payloadId = await pendingBlock.start(vm, parentBlock)
+    const [block, _receipts, _value, blobsBundles] = (await pendingBlock.build(payloadId)) ?? []
+
+    assert.isTrue(block !== undefined && blobsBundles !== undefined)
+    assert.strictEqual(block!.transactions.length, 2, 'Only two blob txs should be included')
+    assert.strictEqual(blobsBundles!.blobs.length, 6, 'maximum 6 blobs should be included')
+    assert.strictEqual(
+      blobsBundles!.commitments.length,
+      6,
+      'maximum 6 commitments should be included',
+    )
+    assert.strictEqual(blobsBundles!.proofs.length, 6, 'maximum 6 proofs should be included')
+
+    const pendingBlob = blobsBundles!.blobs[0]
+    assert.isTrue(pendingBlob !== undefined && pendingBlob === blobs[0])
+    const blobProof = blobsBundles!.proofs[0]
+    assert.isTrue(blobProof !== undefined && blobProof === proofs[0])
+  }, 30000)
 })
