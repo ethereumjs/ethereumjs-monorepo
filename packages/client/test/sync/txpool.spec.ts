@@ -4,19 +4,21 @@ import type { BlockHeader } from '@ethereumjs/block'
 import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { MerkleStateManager } from '@ethereumjs/statemanager'
+import { SIGNER_A, SIGNER_B } from '@ethereumjs/testdata'
 import { createAccessList2930Tx, createFeeMarket1559Tx } from '@ethereumjs/tx'
 import {
   Account,
+  Address,
   Units,
   bytesToHex,
   bytesToUnprefixedHex,
   concatBytes,
   hexToBytes,
   privateToAddress,
+  privateToPublic,
 } from '@ethereumjs/util'
 import * as promClient from 'prom-client'
 import { assert, describe, it } from 'vitest'
-
 import { Config } from '../../src/config.ts'
 import { PeerPool } from '../../src/net/peerpool.ts'
 import { TxPool } from '../../src/service/txpool.ts'
@@ -159,17 +161,7 @@ describe('[TxPool]', async () => {
   const ogStateManagerSetStateRoot = MerkleStateManager.prototype.setStateRoot
   MerkleStateManager.prototype.setStateRoot = (): any => {}
 
-  const A = {
-    address: hexToBytes('0x0b90087d864e82a284dca15923f3776de6bb016f'),
-    privateKey: hexToBytes('0x64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'),
-  }
-
-  const B = {
-    address: hexToBytes('0x6f62d8382bf2587361db73ceca28be91b2acb6df'),
-    privateKey: hexToBytes('0x2a6e9ad5a6a8e4f17149b8bc7128bf090566a11dbd63c30e5a0ee9f161309cd6'),
-  }
-
-  const createTx = (from = A, to = B, nonce = 0, value = 1, feeBump = 0) => {
+  const createTx = (from = SIGNER_A, to = SIGNER_B, nonce = 0, value = 1, feeBump = 0) => {
     const txData = {
       nonce,
       maxFeePerGas: 1000000000,
@@ -185,11 +177,11 @@ describe('[TxPool]', async () => {
     return signedTx
   }
 
-  const txA01 = createTx() // A -> B, nonce: 0, value: 1
-  const txA02 = createTx(A, B, 0, 2, 10) // A -> B, nonce: 0, value: 2 (different hash)
-  const txA02_Underpriced = createTx(A, B, 0, 2, 9) // A -> B, nonce: 0, gas price is too low to replace txn
-  const txB01 = createTx(B, A) // B -> A, nonce: 0, value: 1
-  const txB02 = createTx(B, A, 1, 5) // B -> A, nonce: 1, value: 5
+  const txA01 = createTx() // SIGNER_A -> SIGNER_B, nonce: 0, value: 1
+  const txA02 = createTx(SIGNER_A, SIGNER_B, 0, 2, 10) // SIGNER_A -> SIGNER_B, nonce: 0, value: 2 (different hash)
+  const txA02_Underpriced = createTx(SIGNER_A, SIGNER_B, 0, 2, 9) // SIGNER_A -> SIGNER_B, nonce: 0, gas price is too low to replace txn
+  const txB01 = createTx(SIGNER_B, SIGNER_A) // SIGNER_B -> SIGNER_A, nonce: 0, value: 1
+  const txB02 = createTx(SIGNER_B, SIGNER_A, 1, 5) // SIGNER_B -> SIGNER_A, nonce: 1, value: 5
 
   it('should initialize correctly', () => {
     const { pool } = setup()
@@ -390,7 +382,7 @@ describe('[TxPool]', async () => {
 
     await pool.handleAnnouncedTxHashes([txA01.hash(), txA02.hash()], peer, peerPool)
     assert.strictEqual(pool.pool.size, 1, 'pool size 1')
-    const address = bytesToUnprefixedHex(A.address)
+    const address = bytesToUnprefixedHex(SIGNER_A.address.toBytes())
     const poolContent = pool.pool.get(address)!
     assert.strictEqual(poolContent.length, 1, 'only one tx')
     assert.deepEqual(poolContent[0].tx.hash(), txA02.hash(), 'only later-added tx')
@@ -450,7 +442,7 @@ describe('[TxPool]', async () => {
       'NewPooledTransactionHashes',
       'should have errored sendObject for NewPooledTransactionHashes broadcast',
     )
-    const address = bytesToUnprefixedHex(A.address)
+    const address = bytesToUnprefixedHex(SIGNER_A.address.toBytes())
     const poolContent = pool.pool.get(address)!
     assert.strictEqual(poolContent.length, 1, 'only one tx')
     assert.deepEqual(poolContent[0].tx.hash(), txA01.hash(), 'only later-added tx')
@@ -482,7 +474,7 @@ describe('[TxPool]', async () => {
     await pool.handleAnnouncedTxHashes([txA01.hash(), txA02_Underpriced.hash()], peer, peerPool)
 
     assert.strictEqual(pool.pool.size, 1, 'pool size 1')
-    const address = bytesToUnprefixedHex(A.address)
+    const address = bytesToUnprefixedHex(SIGNER_A.address.toBytes())
     const poolContent = pool.pool.get(address)!
     assert.strictEqual(poolContent.length, 1, 'only one tx')
     assert.deepEqual(poolContent[0].tx.hash(), txA01.hash(), 'only later-added tx')
@@ -499,11 +491,12 @@ describe('[TxPool]', async () => {
         hexToBytes(`0x${account.toString(16).padStart(2, '0')}`),
       )
       const from = {
-        address: privateToAddress(pkey),
+        address: new Address(privateToAddress(pkey)),
         privateKey: pkey,
+        publicKey: privateToPublic(pkey),
       }
       for (let tx = 0; tx < 100; tx++) {
-        const txn = createTx(from, B, tx)
+        const txn = createTx(from, SIGNER_B, tx)
         txs.push(txn)
         if (txs.length > 5000) {
           break
@@ -521,7 +514,7 @@ describe('[TxPool]', async () => {
     const txs = []
 
     for (let tx = 0; tx < 101; tx++) {
-      const txn = createTx(A, B, tx)
+      const txn = createTx(SIGNER_A, SIGNER_B, tx)
       txs.push(txn)
     }
 
@@ -555,7 +548,7 @@ describe('[TxPool]', async () => {
         maxFeePerGas: Units.gwei(1),
         maxPriorityFeePerGas: Units.gwei(1),
         nonce: 0,
-      }).sign(A.privateKey),
+      }).sign(SIGNER_A.privateKey),
     )
 
     assert.isFalse(
@@ -579,7 +572,7 @@ describe('[TxPool]', async () => {
           data: `0x${'00'.repeat(128 * 1024 + 1)}`,
         },
         { common },
-      ).sign(A.privateKey),
+      ).sign(SIGNER_A.privateKey),
     )
 
     assert.isFalse(
@@ -599,7 +592,7 @@ describe('[TxPool]', async () => {
         maxPriorityFeePerGas: Units.gwei(1),
         gasLimit: 21000,
         nonce: 0,
-      }).sign(A.privateKey),
+      }).sign(SIGNER_A.privateKey),
     )
 
     assert.isFalse(
@@ -618,7 +611,7 @@ describe('[TxPool]', async () => {
         maxFeePerGas: Units.gwei(1),
         maxPriorityFeePerGas: Units.gwei(1),
         nonce: 0,
-      }).sign(A.privateKey),
+      }).sign(SIGNER_A.privateKey),
     )
 
     const { pool } = setup()
@@ -642,7 +635,7 @@ describe('[TxPool]', async () => {
         maxPriorityFeePerGas: Units.gwei(1),
         nonce: 0,
         gasLimit: 21000,
-      }).sign(A.privateKey),
+      }).sign(SIGNER_A.privateKey),
     )
 
     const { pool } = setup()
@@ -664,7 +657,7 @@ describe('[TxPool]', async () => {
       createFeeMarket1559Tx({
         maxFeePerGas: Units.gwei(1),
         maxPriorityFeePerGas: Units.gwei(1),
-      }).sign(A.privateKey),
+      }).sign(SIGNER_A.privateKey),
     )
 
     txs.push(txs[0])
@@ -685,7 +678,7 @@ describe('[TxPool]', async () => {
         maxFeePerGas: 10000000,
         maxPriorityFeePerGas: 10000000,
         nonce: 0,
-      }).sign(A.privateKey),
+      }).sign(SIGNER_A.privateKey),
     )
 
     assert.isFalse(
@@ -701,7 +694,7 @@ describe('[TxPool]', async () => {
       createAccessList2930Tx({
         gasPrice: 10000000,
         nonce: 0,
-      }).sign(A.privateKey),
+      }).sign(SIGNER_A.privateKey),
     )
 
     assert.isFalse(
@@ -721,7 +714,7 @@ describe('[TxPool]', async () => {
       {
         freeze: false,
       },
-    ).sign(A.privateKey)
+    ).sign(SIGNER_A.privateKey)
 
     Object.defineProperty(tx, 'type', { get: () => 5 })
 
@@ -744,7 +737,7 @@ describe('[TxPool]', async () => {
 
     await pool.handleAnnouncedTxs([txA01], peer, peerPool)
     assert.strictEqual(pool.pool.size, 1, 'pool size 1')
-    const address = bytesToUnprefixedHex(A.address)
+    const address = bytesToUnprefixedHex(SIGNER_A.address.toBytes())
     const poolContent = pool.pool.get(address)!
     assert.strictEqual(poolContent.length, 1, 'one tx')
     assert.deepEqual(poolContent[0].tx.hash(), txA01.hash(), 'correct tx')
@@ -788,7 +781,7 @@ describe('[TxPool]', async () => {
     }
     await pool.handleAnnouncedTxHashes([txB01.hash(), txB02.hash()], peer, peerPool)
     assert.strictEqual(pool.pool.size, 1, 'pool size 1')
-    const address = bytesToUnprefixedHex(B.address)
+    const address = bytesToUnprefixedHex(SIGNER_B.address.toBytes())
     let poolContent = pool.pool.get(address)!
     assert.strictEqual(poolContent.length, 2, 'two txs')
 

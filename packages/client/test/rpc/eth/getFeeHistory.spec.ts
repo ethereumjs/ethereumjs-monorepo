@@ -1,27 +1,19 @@
 import { paramsBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createTx } from '@ethereumjs/tx'
-import {
-  BIGINT_0,
-  bigIntToHex,
-  bytesToBigInt,
-  createAddressFromPrivateKey,
-  hexToBytes,
-} from '@ethereumjs/util'
+import { BIGINT_0, bigIntToHex, bytesToBigInt, hexToBytes } from '@ethereumjs/util'
 import { buildBlock } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
 import { powData } from '../../testdata/geth-genesis/pow.ts'
 import { getRPCClient, gethGenesisStartLondon, setupChain } from '../helpers.ts'
 
+import { SIGNER_G } from '@ethereumjs/testdata'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { Chain } from '../../../src/blockchain/index.ts'
 import type { VMExecution } from '../../../src/execution/index.ts'
 
 const method = 'eth_feeHistory'
-
-const privateKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
-const pKeyAddress = createAddressFromPrivateKey(privateKey)
 
 /*const privateKey4844 = hexToBytes(
   '0x45a915e4d060149eb4365960e6a7a45f334393093061116b197e3240065ff2d8',
@@ -68,7 +60,7 @@ const produceBlockWithTx = async (
   gasLimits: bigint[] = [BigInt(0xfffff)],
 ) => {
   const { vm } = execution
-  const account = await vm.stateManager.getAccount(pKeyAddress)
+  const account = await vm.stateManager.getAccount(SIGNER_G.address)
   let nonce = account?.nonce ?? BIGINT_0
   const parentBlock = await chain.getCanonicalHeadBlock()
   const vmCopy = await vm.shallowCopy()
@@ -97,7 +89,7 @@ const produceBlockWithTx = async (
           data: '0xFE',
         },
         { common: vmCopy.common },
-      ).sign(privateKey),
+      ).sign(SIGNER_G.privateKey),
     )
     nonce++
   }

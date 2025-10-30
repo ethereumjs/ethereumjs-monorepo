@@ -19,6 +19,7 @@ import {
 } from '@polkadot/wasm-crypto'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 
+import { SIGNER_A } from '@ethereumjs/testdata'
 import { sha256 as jsSha256 } from 'ethereum-cryptography/sha256.js'
 import { assert, describe, it } from 'vitest'
 import { getCryptoFunctions } from '../../bin/utils.ts'
@@ -71,18 +72,16 @@ describe('WASM crypto tests', () => {
 
     await waitReady()
     const msg = hexToBytes('0x82ff40c0a986c6a5cfad4ddf4c3aa6996f1a7837f9c398e17e5de5cbd5a12b28')
-    const pk = hexToBytes('0x3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1')
-    const jsSig = secp256k1.sign(msg, pk)
-    const wasmSig = wasmSign(msg, pk)
+    const jsSig = secp256k1.sign(msg, SIGNER_A.privateKey)
+    const wasmSig = wasmSign(msg, SIGNER_A.privateKey)
     assert.deepEqual(wasmSig, jsSig, 'wasm signatures produce same result as js signatures')
   })
   it('should have the same signature and verification', async () => {
     const crypto = await getCryptoFunctions(true)
     await waitReady()
-    const pk = hexToBytes('0xbd3713a6da2c3624fa10bad8a52848b4291e3c9689ab50e0d2761e014d6e4cd7')
     const hash = hexToBytes('0x8c6d72155f746a9424b0621d82c5f5d3f6cc82e497b15df1b2ae601c8c14f75c')
-    const jsSig = secp256k1.sign(hash, pk)
-    const wasmSig = secp256k1Sign(hash, pk)
+    const jsSig = secp256k1.sign(hash, SIGNER_A.privateKey)
+    const wasmSig = secp256k1Sign(hash, SIGNER_A.privateKey)
     assert.strictEqual(bytesToHex(wasmSig.slice(0, 64)), bytesToHex(jsSig.toCompactRawBytes()))
     const wasmRec = secp256k1Recover(hash, wasmSig.slice(0, 64), wasmSig[64])
     const jsRec = crypto.ecdsaRecover!(jsSig.toCompactRawBytes(), jsSig.recovery, hash)
@@ -91,9 +90,8 @@ describe('WASM crypto tests', () => {
   it('should recover the same address', async () => {
     const crypto = await getCryptoFunctions(true)
     await waitReady()
-    const pk = hexToBytes('0xbd3713a6da2c3624fa10bad8a52848b4291e3c9689ab50e0d2761e014d6e4cd7')
     const hash = hexToBytes('0x8c6d72155f746a9424b0621d82c5f5d3f6cc82e497b15df1b2ae601c8c14f75c')
-    const jsSig = secp256k1.sign(hash, pk)
+    const jsSig = secp256k1.sign(hash, SIGNER_A.privateKey)
     const wasmRec = secp256k1Recover(hash, jsSig.toCompactRawBytes(), jsSig.recovery)
     const jsRec = crypto.ecdsaRecover!(jsSig.toCompactRawBytes(), jsSig.recovery, hash)
     assert.strictEqual(bytesToHex(wasmRec), bytesToHex(jsRec))
