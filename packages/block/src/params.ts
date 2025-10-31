@@ -1,4 +1,5 @@
 import type { ParamsDict } from '@ethereumjs/common'
+import { BPO1_BLOB_SCHEDULE, BPO2_BLOB_SCHEDULE } from '@ethereumjs/common'
 
 export const paramsBlock: ParamsDict = {
   /**
@@ -93,13 +94,33 @@ export const paramsBlock: ParamsDict = {
     blobGasPriceUpdateFraction: 5007716, // The denominator used in the exponential when calculating a blob gas price
   },
   /**
-   * Blob Parameter Only 1 (BPO1) - EIP-7892
-   * Increases blob target to 10 and max to 15
+   * EIP-7892
+   * Baseline schedule for BPO1: increases blob target to 10 and max to 15
    */
   7892: {
     // gasConfig
-    targetBlobGasPerBlock: 1310720, // The target blob gas consumed per block (10 blobs * 131072)
-    maxBlobGasPerBlock: 1966080, // The max blob gas allowable per block (15 blobs * 131072)
-    blobGasPriceUpdateFraction: 5007716, // The denominator used in the exponential when calculating a blob gas price (same as Prague)
+    targetBlobGasPerBlock: BPO1_BLOB_SCHEDULE.targetBlobGasPerBlock,
+    maxBlobGasPerBlock: BPO1_BLOB_SCHEDULE.maxBlobGasPerBlock,
+    blobGasPriceUpdateFraction: BPO1_BLOB_SCHEDULE.blobGasPriceUpdateFraction,
+  },
+  /**
+   * Blob Parameter Only 1 (BPO1) - EIP-7892
+   * Increases blob target to 10 and max to 15
+   */
+  bpo1: {
+    // gasConfig
+    targetBlobGasPerBlock: BPO1_BLOB_SCHEDULE.targetBlobGasPerBlock,
+    maxBlobGasPerBlock: BPO1_BLOB_SCHEDULE.maxBlobGasPerBlock,
+    blobGasPriceUpdateFraction: BPO1_BLOB_SCHEDULE.blobGasPriceUpdateFraction,
+  },
+  /**
+   * Blob Parameter Only 2 (BPO2) - EIP-7892
+   * Increases blob target to 14 and max to 21
+   */
+  bpo2: {
+    // gasConfig
+    targetBlobGasPerBlock: BPO2_BLOB_SCHEDULE.targetBlobGasPerBlock,
+    maxBlobGasPerBlock: BPO2_BLOB_SCHEDULE.maxBlobGasPerBlock,
+    blobGasPriceUpdateFraction: BPO2_BLOB_SCHEDULE.blobGasPriceUpdateFraction,
   },
 }
