@@ -322,3 +322,30 @@ export const getPresetChainConfig = (chain: string | number) => {
       return Mainnet
   }
 }
+
+/**
+ * Computes BPO (Blob Parameter Only) schedule parameters based on target and max blob counts
+ * @param targetBlobs Target number of blobs per block
+ * @param maxBlobs Maximum number of blobs per block
+ * @returns Object containing targetBlobGasPerBlock, maxBlobGasPerBlock, and blobGasPriceUpdateFraction
+ */
+export function computeBpoSchedule(targetBlobs: number, maxBlobs: number) {
+  const BLOB_GAS_PER_BLOB = 131_072
+  const PRAGUE_MAX_BLOB_GAS = 1_179_648
+  const PRAGUE_BLOB_GAS_UPDATE_FRACTION = 5_007_716
+
+  const targetBlobGasPerBlock = targetBlobs * BLOB_GAS_PER_BLOB
+  const maxBlobGasPerBlock = maxBlobs * BLOB_GAS_PER_BLOB
+  const blobGasPriceUpdateFraction = Math.round(
+    (maxBlobGasPerBlock * PRAGUE_BLOB_GAS_UPDATE_FRACTION) / PRAGUE_MAX_BLOB_GAS,
+  )
+
+  return {
+    targetBlobGasPerBlock,
+    maxBlobGasPerBlock,
+    blobGasPriceUpdateFraction,
+  } as const
+}
+
+export const BPO1_BLOB_SCHEDULE = computeBpoSchedule(10, 15)
+export const BPO2_BLOB_SCHEDULE = computeBpoSchedule(14, 21)
