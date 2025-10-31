@@ -9,7 +9,7 @@
 Defined in: [packages/util/src/account.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L81)
 
 Account class to load and maintain the  basic account objects.
-Supports partial loading and access required for verkle with null
+Supports partial loading and access required for stateless with null
 as the placeholder.
 
 Note: passing undefined in constructor is different from null
@@ -34,27 +34,27 @@ undefined get assigned with the defaults, but null args are retained as is
 
 ##### nonce
 
-`null` | `bigint`
+`bigint` | `null`
 
 ##### balance
 
-`null` | `bigint`
+`bigint` | `null`
 
 ##### storageRoot
 
-`null` | `Uint8Array`\<`ArrayBufferLike`\>
+`Uint8Array`\<`ArrayBufferLike`\> | `null`
 
 ##### codeHash
 
-`null` | `Uint8Array`\<`ArrayBufferLike`\>
+`Uint8Array`\<`ArrayBufferLike`\> | `null`
 
 ##### codeSize
 
-`null` | `number`
+`number` | `null`
 
 ##### version
 
-`null` | `number`
+`number` | `null`
 
 #### Returns
 
@@ -66,7 +66,7 @@ undefined get assigned with the defaults, but null args are retained as is
 
 ### \_balance
 
-> **\_balance**: `null` \| `bigint` = `null`
+> **\_balance**: `bigint` \| `null` = `null`
 
 Defined in: [packages/util/src/account.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L83)
 
@@ -74,7 +74,7 @@ Defined in: [packages/util/src/account.ts:83](https://github.com/ethereumjs/ethe
 
 ### \_codeHash
 
-> **\_codeHash**: `null` \| `Uint8Array`\<`ArrayBufferLike`\> = `null`
+> **\_codeHash**: `Uint8Array`\<`ArrayBufferLike`\> \| `null` = `null`
 
 Defined in: [packages/util/src/account.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L85)
 
@@ -82,7 +82,7 @@ Defined in: [packages/util/src/account.ts:85](https://github.com/ethereumjs/ethe
 
 ### \_codeSize
 
-> **\_codeSize**: `null` \| `number` = `null`
+> **\_codeSize**: `number` \| `null` = `null`
 
 Defined in: [packages/util/src/account.ts:87](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L87)
 
@@ -90,7 +90,7 @@ Defined in: [packages/util/src/account.ts:87](https://github.com/ethereumjs/ethe
 
 ### \_nonce
 
-> **\_nonce**: `null` \| `bigint` = `null`
+> **\_nonce**: `bigint` \| `null` = `null`
 
 Defined in: [packages/util/src/account.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L82)
 
@@ -98,7 +98,7 @@ Defined in: [packages/util/src/account.ts:82](https://github.com/ethereumjs/ethe
 
 ### \_storageRoot
 
-> **\_storageRoot**: `null` \| `Uint8Array`\<`ArrayBufferLike`\> = `null`
+> **\_storageRoot**: `Uint8Array`\<`ArrayBufferLike`\> \| `null` = `null`
 
 Defined in: [packages/util/src/account.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L84)
 
@@ -106,7 +106,7 @@ Defined in: [packages/util/src/account.ts:84](https://github.com/ethereumjs/ethe
 
 ### \_version
 
-> **\_version**: `null` \| `number` = `null`
+> **\_version**: `number` \| `null` = `null`
 
 Defined in: [packages/util/src/account.ts:88](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L88)
 

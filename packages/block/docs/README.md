@@ -25,7 +25,6 @@
 - [BlockBytes](type-aliases/BlockBytes.md)
 - [BlockHeaderBytes](type-aliases/BlockHeaderBytes.md)
 - [ExecutionPayload](type-aliases/ExecutionPayload.md)
-- [ExecutionWitnessBytes](type-aliases/ExecutionWitnessBytes.md)
 - [TransactionsBytes](type-aliases/TransactionsBytes.md)
 - [UncleHeadersBytes](type-aliases/UncleHeadersBytes.md)
 - [WithdrawalsBytes](type-aliases/WithdrawalsBytes.md)

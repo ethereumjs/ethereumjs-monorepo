@@ -10,7 +10,7 @@
 
 Defined in: [packages/devp2p/src/protocol/eth.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L34)
 
-## Type declaration
+## Type Declaration
 
 ### BLOCK\_BODIES
 

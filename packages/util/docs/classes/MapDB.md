@@ -102,7 +102,7 @@ Removes a raw value in the underlying db.
 
 ### get()
 
-> **get**(`key`): `Promise`\<`undefined` \| `TValue`\>
+> **get**(`key`): `Promise`\<`TValue` \| `undefined`\>
 
 Defined in: [packages/util/src/mapDB.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/mapDB.ts#L16)
 
@@ -116,7 +116,7 @@ Retrieves a raw value from db.
 
 #### Returns
 
-`Promise`\<`undefined` \| `TValue`\>
+`Promise`\<`TValue` \| `undefined`\>
 
 A Promise that resolves to `Uint8Array` if a value is found or `undefined` if no value is found.
 

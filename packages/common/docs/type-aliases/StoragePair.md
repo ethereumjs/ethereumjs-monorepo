@@ -8,4 +8,4 @@
 
 > **StoragePair** = \[`PrefixedHexString`, `PrefixedHexString`\]
 
-Defined in: [gethGenesis.ts:110](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L110)
+Defined in: [gethGenesis.ts:109](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L109)

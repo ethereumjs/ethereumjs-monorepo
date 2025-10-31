@@ -17,7 +17,7 @@ CompressedBody              = { type: [0x04, 0x00], data: snappyFramed(rlp(body)
 CompressedReceipts          = { type: [0x05, 0x00], data: snappyFramed(rlp(receipts)) }
 BlockIndex                  = { type: [0x66, 0x32], data: block-index }
 
-## Type declaration
+## Type Declaration
 
 ### BlockIndex
 

@@ -28,7 +28,7 @@ a dictionary containing the State and Block Slot Indices (if present)
 
 ### blockSlotIndex
 
-> **blockSlotIndex**: `undefined` \| [`SlotIndex`](../type-aliases/SlotIndex.md)
+> **blockSlotIndex**: [`SlotIndex`](../type-aliases/SlotIndex.md) \| `undefined`
 
 ### stateSlotIndex
 

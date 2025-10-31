@@ -8,7 +8,7 @@
 
 > **EVMBLSInterface** = `object`
 
-Defined in: [types.ts:446](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L446)
+Defined in: [types.ts:443](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L443)
 
 High level wrapper for BLS libraries used
 for the BLS precompiles
@@ -19,7 +19,7 @@ for the BLS precompiles
 
 > **addG1**(`input`): `Uint8Array`
 
-Defined in: [types.ts:448](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L448)
+Defined in: [types.ts:445](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L445)
 
 #### Parameters
 
@@ -37,7 +37,7 @@ Defined in: [types.ts:448](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **addG2**(`input`): `Uint8Array`
 
-Defined in: [types.ts:450](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L450)
+Defined in: [types.ts:447](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L447)
 
 #### Parameters
 
@@ -55,7 +55,7 @@ Defined in: [types.ts:450](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **init**(): `void`
 
-Defined in: [types.ts:447](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L447)
+Defined in: [types.ts:444](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L444)
 
 #### Returns
 
@@ -67,7 +67,7 @@ Defined in: [types.ts:447](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **mapFP2toG2**(`input`): `Uint8Array`
 
-Defined in: [types.ts:453](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L453)
+Defined in: [types.ts:450](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L450)
 
 #### Parameters
 
@@ -85,7 +85,7 @@ Defined in: [types.ts:453](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **mapFPtoG1**(`input`): `Uint8Array`
 
-Defined in: [types.ts:452](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L452)
+Defined in: [types.ts:449](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L449)
 
 #### Parameters
 
@@ -103,7 +103,7 @@ Defined in: [types.ts:452](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **msmG1**(`input`): `Uint8Array`
 
-Defined in: [types.ts:454](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L454)
+Defined in: [types.ts:451](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L451)
 
 #### Parameters
 
@@ -121,7 +121,7 @@ Defined in: [types.ts:454](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **msmG2**(`input`): `Uint8Array`
 
-Defined in: [types.ts:455](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L455)
+Defined in: [types.ts:452](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L452)
 
 #### Parameters
 
@@ -139,7 +139,7 @@ Defined in: [types.ts:455](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **mulG1**(`input`): `Uint8Array`
 
-Defined in: [types.ts:449](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L449)
+Defined in: [types.ts:446](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L446)
 
 #### Parameters
 
@@ -157,7 +157,7 @@ Defined in: [types.ts:449](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **mulG2**(`input`): `Uint8Array`
 
-Defined in: [types.ts:451](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L451)
+Defined in: [types.ts:448](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L448)
 
 #### Parameters
 
@@ -175,7 +175,7 @@ Defined in: [types.ts:451](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **pairingCheck**(`input`): `Uint8Array`
 
-Defined in: [types.ts:456](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L456)
+Defined in: [types.ts:453](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L453)
 
 #### Parameters
 

@@ -6,7 +6,7 @@
 
 # Interface: EVMInterface
 
-Defined in: [types.ts:160](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L160)
+Defined in: [types.ts:158](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L158)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types.ts:160](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **binaryTreeAccessWitness**: [`BinaryTreeAccessWitness`](../classes/BinaryTreeAccessWitness.md)
 
-Defined in: [types.ts:184](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L184)
+Defined in: [types.ts:180](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L180)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types.ts:184](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **common**: `Common`
 
-Defined in: [types.ts:161](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L161)
+Defined in: [types.ts:159](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L159)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types.ts:161](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **events**: `EventEmitter`\<`EVMEvent`, `any`\>
 
-Defined in: [types.ts:181](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L181)
+Defined in: [types.ts:179](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L179)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [types.ts:181](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **journal**: `object`
 
-Defined in: [types.ts:162](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L162)
+Defined in: [types.ts:160](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L160)
 
 #### accessList?
 
@@ -182,7 +182,7 @@ Defined in: [types.ts:162](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **precompiles**: `Map`\<`string`, `PrecompileFunc`\>
 
-Defined in: [types.ts:178](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L178)
+Defined in: [types.ts:176](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L176)
 
 ***
 
@@ -190,7 +190,7 @@ Defined in: [types.ts:178](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **stateManager**: `StateManagerInterface`
 
-Defined in: [types.ts:177](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L177)
+Defined in: [types.ts:175](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L175)
 
 ***
 
@@ -198,23 +198,7 @@ Defined in: [types.ts:177](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **systemBinaryTreeAccessWitness**: [`BinaryTreeAccessWitness`](../classes/BinaryTreeAccessWitness.md)
 
-Defined in: [types.ts:185](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L185)
-
-***
-
-### systemVerkleAccessWitness?
-
-> `optional` **systemVerkleAccessWitness**: [`VerkleAccessWitness`](../classes/VerkleAccessWitness.md)
-
-Defined in: [types.ts:183](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L183)
-
-***
-
-### verkleAccessWitness?
-
-> `optional` **verkleAccessWitness**: [`VerkleAccessWitness`](../classes/VerkleAccessWitness.md)
-
-Defined in: [types.ts:182](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L182)
+Defined in: [types.ts:181](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L181)
 
 ## Methods
 
@@ -222,7 +206,7 @@ Defined in: [types.ts:182](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **runCall**(`opts`): `Promise`\<[`EVMResult`](EVMResult.md)\>
 
-Defined in: [types.ts:179](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L179)
+Defined in: [types.ts:177](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L177)
 
 #### Parameters
 
@@ -240,7 +224,7 @@ Defined in: [types.ts:179](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **runCode**(`opts`): `Promise`\<[`ExecResult`](ExecResult.md)\>
 
-Defined in: [types.ts:180](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L180)
+Defined in: [types.ts:178](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L178)
 
 #### Parameters
 

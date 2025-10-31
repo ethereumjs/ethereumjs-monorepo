@@ -62,7 +62,7 @@ Defined in: [cache/cache.ts:6](https://github.com/ethereumjs/ethereumjs-monorepo
 
 ### \_diffCache
 
-> **\_diffCache**: `Map`\<`string`, `undefined` \| `AccountCacheElement`\>[] = `[]`
+> **\_diffCache**: `Map`\<`string`, `AccountCacheElement` \| `undefined`\>[] = `[]`
 
 Defined in: [cache/account.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/account.ts#L34)
 
@@ -78,7 +78,7 @@ before.
 
 ### \_lruCache
 
-> **\_lruCache**: `undefined` \| `LRUCache`\<`string`, `AccountCacheElement`, `unknown`\>
+> **\_lruCache**: `LRUCache`\<`string`, `AccountCacheElement`, `unknown`\> \| `undefined`
 
 Defined in: [cache/account.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/account.ts#L22)
 
@@ -86,7 +86,7 @@ Defined in: [cache/account.ts:22](https://github.com/ethereumjs/ethereumjs-monor
 
 ### \_orderedMapCache
 
-> **\_orderedMapCache**: `undefined` \| `OrderedMap`\<`string`, `AccountCacheElement`\>
+> **\_orderedMapCache**: `OrderedMap`\<`string`, `AccountCacheElement`\> \| `undefined`
 
 Defined in: [cache/account.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/account.ts#L23)
 
@@ -224,7 +224,7 @@ or deleted and resetting the diff cache (at checkpoint height).
 
 ### get()
 
-> **get**(`address`): `undefined` \| `AccountCacheElement`
+> **get**(`address`): `AccountCacheElement` \| `undefined`
 
 Defined in: [cache/account.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/account.ts#L99)
 
@@ -240,7 +240,7 @@ Address of account
 
 #### Returns
 
-`undefined` \| `AccountCacheElement`
+`AccountCacheElement` \| `undefined`
 
 ***
 
@@ -264,7 +264,7 @@ Address of account
 
 Account or undefined if account doesn't exist in the trie
 
-`undefined` | `Account`
+`Account` | `undefined`
 
 ##### couldBePartialAccount
 

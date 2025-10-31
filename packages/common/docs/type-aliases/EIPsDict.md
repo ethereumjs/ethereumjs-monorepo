@@ -8,7 +8,7 @@
 
 > **EIPsDict** = `object`
 
-Defined in: [types.ts:182](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L182)
+Defined in: [types.ts:181](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L181)
 
 ## Index Signature
 

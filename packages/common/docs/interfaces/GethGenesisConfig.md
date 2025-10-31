@@ -32,7 +32,7 @@ Defined in: [gethGenesis.ts:21](https://github.com/ethereumjs/ethereumjs-monorep
 
 > `optional` **blobSchedule**: [`GethGenesisBlobSchedule`](GethGenesisBlobSchedule.md)
 
-Defined in: [gethGenesis.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L52)
+Defined in: [gethGenesis.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L51)
 
 ***
 
@@ -72,7 +72,7 @@ Defined in: [gethGenesis.ts:7](https://github.com/ethereumjs/ethereumjs-monorepo
 
 > `optional` **clique**: `object`
 
-Defined in: [gethGenesis.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L35)
+Defined in: [gethGenesis.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L34)
 
 #### blockperiodseconds?
 
@@ -160,7 +160,7 @@ Defined in: [gethGenesis.ts:15](https://github.com/ethereumjs/ethereumjs-monorep
 
 > `optional` **ethash**: `object`
 
-Defined in: [gethGenesis.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L34)
+Defined in: [gethGenesis.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L33)
 
 ***
 
@@ -240,7 +240,7 @@ Defined in: [gethGenesis.ts:30](https://github.com/ethereumjs/ethereumjs-monorep
 
 > `optional` **proofInBlocks**: `boolean`
 
-Defined in: [gethGenesis.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L53)
+Defined in: [gethGenesis.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L52)
 
 ***
 
@@ -256,7 +256,7 @@ Defined in: [gethGenesis.ts:28](https://github.com/ethereumjs/ethereumjs-monorep
 
 > `optional` **terminalTotalDifficulty**: `number`
 
-Defined in: [gethGenesis.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L32)
+Defined in: [gethGenesis.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L31)
 
 ***
 
@@ -264,7 +264,7 @@ Defined in: [gethGenesis.ts:32](https://github.com/ethereumjs/ethereumjs-monorep
 
 > `optional` **terminalTotalDifficultyPassed**: `boolean`
 
-Defined in: [gethGenesis.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L33)
+Defined in: [gethGenesis.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L32)
 
 ***
 
@@ -272,7 +272,7 @@ Defined in: [gethGenesis.ts:33](https://github.com/ethereumjs/ethereumjs-monorep
 
 > `optional` **trustedCheckpoint**: `object`
 
-Defined in: [gethGenesis.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L41)
+Defined in: [gethGenesis.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L40)
 
 #### bloomRoot
 
@@ -296,7 +296,7 @@ Defined in: [gethGenesis.ts:41](https://github.com/ethereumjs/ethereumjs-monorep
 
 > `optional` **trustedCheckpointOracle**: `object`
 
-Defined in: [gethGenesis.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L47)
+Defined in: [gethGenesis.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L46)
 
 #### address
 
@@ -309,11 +309,3 @@ Defined in: [gethGenesis.ts:47](https://github.com/ethereumjs/ethereumjs-monorep
 #### threshold
 
 > **threshold**: `number`
-
-***
-
-### verkleTime?
-
-> `optional` **verkleTime**: `number`
-
-Defined in: [gethGenesis.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L31)

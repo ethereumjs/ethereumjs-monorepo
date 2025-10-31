@@ -8,9 +8,9 @@
 
 > **BinaryTreeAccessedStateWithAddress** = [`BinaryTreeAccessedState`](BinaryTreeAccessedState.md) & `object`
 
-Defined in: [interfaces.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L100)
+Defined in: [interfaces.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L99)
 
-## Type declaration
+## Type Declaration
 
 ### address
 

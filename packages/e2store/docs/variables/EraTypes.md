@@ -12,7 +12,7 @@ Defined in: [packages/e2store/src/types.ts:44](https://github.com/ethereumjs/eth
 
 Era Type Identifiers
 
-## Type declaration
+## Type Declaration
 
 ### CompressedBeaconState
 

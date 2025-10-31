@@ -6,7 +6,7 @@
 
 # Interface: GenesisState
 
-Defined in: [gethGenesis.ts:143](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L143)
+Defined in: [gethGenesis.ts:142](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L142)
 
 If you are using a custom chain [Common](../classes/Common.md), pass the genesis state.
 

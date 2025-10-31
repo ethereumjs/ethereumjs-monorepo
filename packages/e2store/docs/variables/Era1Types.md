@@ -12,7 +12,7 @@ Defined in: [packages/e2store/src/types.ts:14](https://github.com/ethereumjs/eth
 
 Era 1 Type Identifiers
 
-## Type declaration
+## Type Declaration
 
 ### AccumulatorRoot
 

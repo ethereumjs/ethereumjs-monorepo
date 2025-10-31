@@ -42,11 +42,11 @@ root hash of state trie this proof is being verified against.
 
 ### firstKeyRaw
 
-`null` | `Uint8Array`\<`ArrayBufferLike`\>
+`Uint8Array`\<`ArrayBufferLike`\> | `null`
 
 ### lastKeyRaw
 
-`null` | `Uint8Array`\<`ArrayBufferLike`\>
+`Uint8Array`\<`ArrayBufferLike`\> | `null`
 
 ### keysRaw
 
@@ -62,7 +62,7 @@ value list of leaf data being proven, one-to-one correspondence with keys.
 
 proof node list, if all-elements-proof where no proof is needed, proof should be null, and both `firstKey` and `lastKey` must be null as well
 
-`null` | `Uint8Array`\<`ArrayBufferLike`\>[]
+`Uint8Array`\<`ArrayBufferLike`\>[] | `null`
 
 ### useKeyHashingFunction
 

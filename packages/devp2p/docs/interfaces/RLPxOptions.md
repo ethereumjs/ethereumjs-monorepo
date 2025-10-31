@@ -36,7 +36,7 @@ Defined in: [packages/devp2p/src/types.ts:302](https://github.com/ethereumjs/eth
 
 ### dpt?
 
-> `optional` **dpt**: `null` \| [`DPT`](../classes/DPT.md)
+> `optional` **dpt**: [`DPT`](../classes/DPT.md) \| `null`
 
 Defined in: [packages/devp2p/src/types.ts:297](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L297)
 
@@ -44,7 +44,7 @@ Defined in: [packages/devp2p/src/types.ts:297](https://github.com/ethereumjs/eth
 
 ### listenPort?
 
-> `optional` **listenPort**: `null` \| `number`
+> `optional` **listenPort**: `number` \| `null`
 
 Defined in: [packages/devp2p/src/types.ts:303](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L303)
 

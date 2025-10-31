@@ -6,7 +6,7 @@
 
 # Function: createBlockIndex()
 
-> **createBlockIndex**(`blockTuples`, `startingNumber`): `Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
+> **createBlockIndex**(`blockTuples`, `startingNumber`): `Promise`\<`Uint8Array`\<`ArrayBuffer`\>\>
 
 Defined in: [packages/e2store/src/blockIndex.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/blockIndex.ts#L34)
 
@@ -22,4 +22,4 @@ Defined in: [packages/e2store/src/blockIndex.ts:34](https://github.com/ethereumj
 
 ## Returns
 
-`Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
+`Promise`\<`Uint8Array`\<`ArrayBuffer`\>\>

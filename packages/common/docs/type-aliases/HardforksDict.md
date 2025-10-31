@@ -8,7 +8,7 @@
 
 > **HardforksDict** = `object`
 
-Defined in: [types.ts:190](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L190)
+Defined in: [types.ts:189](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L189)
 
 ## Index Signature
 

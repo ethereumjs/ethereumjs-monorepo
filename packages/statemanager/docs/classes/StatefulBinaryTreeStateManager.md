@@ -280,7 +280,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:741](https://github.com/ethereumj
 
 ### getAccount()
 
-> **getAccount**(`address`): `Promise`\<`undefined` \| `Account`\>
+> **getAccount**(`address`): `Promise`\<`Account` \| `undefined`\>
 
 Defined in: [statefulBinaryTreeStateManager.ts:118](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L118)
 
@@ -296,7 +296,7 @@ Address of the `account` to get
 
 #### Returns
 
-`Promise`\<`undefined` \| `Account`\>
+`Promise`\<`Account` \| `undefined`\>
 
 #### Implementation of
 
@@ -350,7 +350,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:399](https://github.com/ethereumj
 
 ### getComputedValue()
 
-> **getComputedValue**(`accessedState`): `Promise`\<`null` \| `` `0x${string}` ``\>
+> **getComputedValue**(`accessedState`): `Promise`\<`` `0x${string}` `` \| `null`\>
 
 Defined in: [statefulBinaryTreeStateManager.ts:521](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L521)
 
@@ -362,7 +362,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:521](https://github.com/ethereumj
 
 #### Returns
 
-`Promise`\<`null` \| `` `0x${string}` ``\>
+`Promise`\<`` `0x${string}` `` \| `null`\>
 
 ***
 
@@ -444,7 +444,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:165](https://github.com/ethereumj
 
 ##### executionWitness?
 
-`null` | `BinaryTreeExecutionWitness`
+`BinaryTreeExecutionWitness` | `null`
 
 #### Returns
 
@@ -470,7 +470,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:263](https://github.com/ethereumj
 
 ##### accountFields
 
-`Partial`
+`AccountFields`
 
 #### Returns
 

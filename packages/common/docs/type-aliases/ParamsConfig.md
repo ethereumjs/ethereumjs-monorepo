@@ -8,8 +8,8 @@
 
 > **ParamsConfig** = `object`
 
-Defined in: [types.ts:172](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L172)
+Defined in: [types.ts:171](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L171)
 
 ## Index Signature
 
-\[`key`: `string`\]: `null` \| `string` \| `number`
+\[`key`: `string`\]: `string` \| `number` \| `null`

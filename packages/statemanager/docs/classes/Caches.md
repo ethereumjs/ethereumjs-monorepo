@@ -46,7 +46,7 @@ Defined in: [cache/caches.ts:10](https://github.com/ethereumjs/ethereumjs-monore
 
 ### settings
 
-> **settings**: `Record`\<`"code"` \| `"account"` \| `"storage"`, [`CacheOpts`](../interfaces/CacheOpts.md)\>
+> **settings**: `Record`\<`"account"` \| `"code"` \| `"storage"`, [`CacheOpts`](../interfaces/CacheOpts.md)\>
 
 Defined in: [cache/caches.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/caches.ts#L13)
 
@@ -128,7 +128,7 @@ Defined in: [cache/caches.ts:120](https://github.com/ethereumjs/ethereumjs-monor
 
 ### shallowCopy()
 
-> **shallowCopy**(`downlevelCaches`): `undefined` \| `Caches`
+> **shallowCopy**(`downlevelCaches`): `Caches` \| `undefined`
 
 Defined in: [cache/caches.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/caches.ts#L83)
 
@@ -140,4 +140,4 @@ Defined in: [cache/caches.ts:83](https://github.com/ethereumjs/ethereumjs-monore
 
 #### Returns
 
-`undefined` \| `Caches`
+`Caches` \| `undefined`

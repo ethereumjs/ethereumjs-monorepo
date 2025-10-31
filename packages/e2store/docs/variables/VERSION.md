@@ -10,7 +10,7 @@
 
 Defined in: [packages/e2store/src/types.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/types.ts#L22)
 
-## Type declaration
+## Type Declaration
 
 ### data
 

@@ -208,7 +208,7 @@ Defined in: [rpcStateManager.ts:338](https://github.com/ethereumjs/ethereumjs-mo
 
 ### getAccount()
 
-> **getAccount**(`address`): `Promise`\<`undefined` \| `Account`\>
+> **getAccount**(`address`): `Promise`\<`Account` \| `undefined`\>
 
 Defined in: [rpcStateManager.ts:203](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L203)
 
@@ -224,7 +224,7 @@ Address of the `account` to get
 
 #### Returns
 
-`Promise`\<`undefined` \| `Account`\>
+`Promise`\<`Account` \| `undefined`\>
 
 #### Implementation of
 
@@ -409,7 +409,7 @@ Address of the account to modify
 
 ##### accountFields
 
-`Partial`
+`AccountFields`
 
 Object containing account fields and values to modify
 
@@ -443,7 +443,7 @@ Address under which to store `account`
 
 The account to store
 
-`undefined` | `Account`
+`Account` | `undefined`
 
 #### Returns
 

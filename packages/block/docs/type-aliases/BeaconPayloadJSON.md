@@ -52,14 +52,6 @@ Defined in: [from-beacon-payload.ts:32](https://github.com/ethereumjs/ethereumjs
 
 ***
 
-### execution\_witness?
-
-> `optional` **execution\_witness**: `VerkleExecutionWitness`
-
-Defined in: [from-beacon-payload.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/from-beacon-payload.ts#L36)
-
-***
-
 ### extra\_data
 
 > **extra\_data**: `PrefixedHexString`

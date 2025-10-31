@@ -6,7 +6,7 @@
 
 # Function: createEVM()
 
-> **createEVM**(`createOpts?`): `Promise`\<`EVM`\>
+> **createEVM**(`createOpts?`): `Promise`\<[`EVM`](../classes/EVM.md)\>
 
 Defined in: [constructors.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/constructors.ts#L17)
 
@@ -23,6 +23,6 @@ The EVM options
 
 ## Returns
 
-`Promise`\<`EVM`\>
+`Promise`\<[`EVM`](../classes/EVM.md)\>
 
 A new EVM

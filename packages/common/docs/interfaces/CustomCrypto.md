@@ -72,7 +72,7 @@ Defined in: [types.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 ### ecsign()?
 
-> `optional` **ecsign**: (`msg`, `pk`, `ecSignOpts?`) => `Pick`\<`RecoveredSignatureType`, `"recovery"` \| `"r"` \| `"s"`\>
+> `optional` **ecsign**: (`msg`, `pk`, `ecSignOpts?`) => `Pick`\<`ReturnType`\<*typeof* `secp256k1.sign`\>, `"recovery"` \| `"r"` \| `"s"`\>
 
 Defined in: [types.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L89)
 
@@ -94,7 +94,7 @@ Defined in: [types.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 #### Returns
 
-`Pick`\<`RecoveredSignatureType`, `"recovery"` \| `"r"` \| `"s"`\>
+`Pick`\<`ReturnType`\<*typeof* `secp256k1.sign`\>, `"recovery"` \| `"r"` \| `"s"`\>
 
 ***
 
@@ -141,11 +141,3 @@ Defined in: [types.ts:88](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 #### Returns
 
 `Uint8Array`
-
-***
-
-### verkle?
-
-> `optional` **verkle**: `VerkleCrypto`
-
-Defined in: [types.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L96)

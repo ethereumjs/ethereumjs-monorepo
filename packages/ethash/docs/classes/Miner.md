@@ -48,7 +48,7 @@ Defined in: [index.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 ### iterate()
 
-> **iterate**(`iterations`): `Promise`\<`undefined` \| [`Solution`](../type-aliases/Solution.md)\>
+> **iterate**(`iterations`): `Promise`\<[`Solution`](../type-aliases/Solution.md) \| `undefined`\>
 
 Defined in: [index.ts:114](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L114)
 
@@ -64,7 +64,7 @@ Number of iterations to iterate over. If `-1` is passed, the loop runs until a s
 
 #### Returns
 
-`Promise`\<`undefined` \| [`Solution`](../type-aliases/Solution.md)\>
+`Promise`\<[`Solution`](../type-aliases/Solution.md) \| `undefined`\>
 
 - `undefined` if no solution was found, or otherwise a `Solution` object
 
@@ -72,7 +72,7 @@ Number of iterations to iterate over. If `-1` is passed, the loop runs until a s
 
 ### mine()
 
-> **mine**(`iterations`): `Promise`\<`undefined` \| `BlockHeader` \| `Block`\>
+> **mine**(`iterations`): `Promise`\<`BlockHeader` \| `Block` \| `undefined`\>
 
 Defined in: [index.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L91)
 
@@ -88,7 +88,7 @@ Number of iterations to iterate over. If `-1` is passed, the loop runs until a s
 
 #### Returns
 
-`Promise`\<`undefined` \| `BlockHeader` \| `Block`\>
+`Promise`\<`BlockHeader` \| `Block` \| `undefined`\>
 
 - `undefined` if no solution was found within the iterations, or a `BlockHeader` or `Block`
           with valid PoW based upon what was passed in the constructor

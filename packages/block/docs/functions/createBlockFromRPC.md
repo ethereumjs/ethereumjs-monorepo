@@ -8,7 +8,7 @@
 
 > **createBlockFromRPC**(`blockParams`, `uncles`, `options?`): [`Block`](../classes/Block.md)
 
-Defined in: [block/constructors.ts:235](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block/constructors.ts#L235)
+Defined in: [block/constructors.ts:211](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block/constructors.ts#L211)
 
 Creates a new block object from Ethereum JSON RPC.
 

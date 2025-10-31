@@ -68,7 +68,7 @@ Removes a raw value in the underlying db.
 
 ### get()
 
-> **get**(`key`, `opts?`): `Promise`\<`undefined` \| `TValue`\>
+> **get**(`key`, `opts?`): `Promise`\<`TValue` \| `undefined`\>
 
 Defined in: [packages/util/src/db.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L54)
 
@@ -86,7 +86,7 @@ Retrieves a raw value from db.
 
 #### Returns
 
-`Promise`\<`undefined` \| `TValue`\>
+`Promise`\<`TValue` \| `undefined`\>
 
 A Promise that resolves to `Uint8Array` if a value is found or `undefined` if no value is found.
 

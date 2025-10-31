@@ -8,7 +8,7 @@
 
 > **encodeReceipt**(`receipt`, `txType`): `Uint8Array`\<`ArrayBufferLike`\>
 
-Defined in: [vm/src/runBlock.ts:834](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L834)
+Defined in: [vm/src/runBlock.ts:749](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L749)
 
 Returns the encoded tx receipt.
 

@@ -6,7 +6,7 @@
 
 # Class: EVMMockBlockchain
 
-Defined in: [types.ts:507](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L507)
+Defined in: [types.ts:504](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L504)
 
 ## Implements
 
@@ -28,7 +28,7 @@ Defined in: [types.ts:507](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **getBlock**(): `Promise`\<\{ `hash`: `Uint8Array`\<`ArrayBuffer`\>; \}\>
 
-Defined in: [types.ts:508](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L508)
+Defined in: [types.ts:505](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L505)
 
 #### Returns
 
@@ -44,7 +44,7 @@ Defined in: [types.ts:508](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **putBlock**(): `Promise`\<`void`\>
 
-Defined in: [types.ts:515](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L515)
+Defined in: [types.ts:512](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L512)
 
 #### Returns
 
@@ -60,7 +60,7 @@ Defined in: [types.ts:515](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **shallowCopy**(): `EVMMockBlockchain`
 
-Defined in: [types.ts:516](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L516)
+Defined in: [types.ts:513](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L513)
 
 #### Returns
 

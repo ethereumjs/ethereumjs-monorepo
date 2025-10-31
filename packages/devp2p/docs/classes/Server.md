@@ -80,7 +80,7 @@ Defined in: [packages/devp2p/src/dpt/server.ts:135](https://github.com/ethereumj
 
 ### \_send()
 
-> **\_send**(`peer`, `typename`, `data`): `Uint8Array`\<`ArrayBufferLike`\>
+> **\_send**(`peer`, `typename`, `data`): `Uint8Array`\<`ArrayBuffer`\>
 
 Defined in: [packages/devp2p/src/dpt/server.ts:139](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L139)
 
@@ -100,7 +100,7 @@ Defined in: [packages/devp2p/src/dpt/server.ts:139](https://github.com/ethereumj
 
 #### Returns
 
-`Uint8Array`\<`ArrayBufferLike`\>
+`Uint8Array`\<`ArrayBuffer`\>
 
 ***
 

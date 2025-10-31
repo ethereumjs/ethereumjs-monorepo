@@ -275,7 +275,7 @@ Calculates the base fee for a potential next block
 
 > **calcNextBlobGasPrice**(`childCommon`): `bigint`
 
-Defined in: [header/header.ts:578](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L578)
+Defined in: [header/header.ts:595](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L595)
 
 Calculate the blob gas price of the block built on top of this one
 
@@ -317,7 +317,7 @@ Calculates the excess blob gas for next (hopefully) post EIP 4844 block.
 
 > **errorStr**(): `string`
 
-Defined in: [header/header.ts:802](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L802)
+Defined in: [header/header.ts:810](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L810)
 
 Return a compact error string representation of the object
 
@@ -331,7 +331,7 @@ Return a compact error string representation of the object
 
 > **ethashCanonicalDifficulty**(`parentBlockHeader`): `bigint`
 
-Defined in: [header/header.ts:658](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L658)
+Defined in: [header/header.ts:666](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L666)
 
 Returns the canonical difficulty for this block.
 
@@ -369,7 +369,7 @@ the price in gwei per unit of blob gas spent
 
 > **hash**(): `Uint8Array`
 
-Defined in: [header/header.ts:636](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L636)
+Defined in: [header/header.ts:646](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L646)
 
 Returns the hash of the block header.
 
@@ -383,7 +383,7 @@ Returns the hash of the block header.
 
 > **isGenesis**(): `boolean`
 
-Defined in: [header/header.ts:649](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L649)
+Defined in: [header/header.ts:657](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L657)
 
 Checks if the block header is a genesis header.
 
@@ -397,7 +397,7 @@ Checks if the block header is a genesis header.
 
 > **raw**(): [`BlockHeaderBytes`](../type-aliases/BlockHeaderBytes.md)
 
-Defined in: [header/header.ts:585](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L585)
+Defined in: [header/header.ts:602](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L602)
 
 Returns a Uint8Array Array of the raw Bytes in this header, in order.
 
@@ -411,7 +411,7 @@ Returns a Uint8Array Array of the raw Bytes in this header, in order.
 
 > **serialize**(): `Uint8Array`
 
-Defined in: [header/header.ts:729](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L729)
+Defined in: [header/header.ts:737](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L737)
 
 Returns the rlp encoding of the block header.
 
@@ -425,7 +425,7 @@ Returns the rlp encoding of the block header.
 
 > **toJSON**(): [`JSONHeader`](../interfaces/JSONHeader.md)
 
-Defined in: [header/header.ts:736](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L736)
+Defined in: [header/header.ts:744](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L744)
 
 Returns the block header in JSON format.
 

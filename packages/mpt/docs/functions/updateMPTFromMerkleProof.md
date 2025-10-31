@@ -6,7 +6,7 @@
 
 # Function: updateMPTFromMerkleProof()
 
-> **updateMPTFromMerkleProof**(`trie`, `proof`, `shouldVerifyRoot`): `Promise`\<`undefined` \| `Uint8Array`\<`ArrayBufferLike`\>\>
+> **updateMPTFromMerkleProof**(`trie`, `proof`, `shouldVerifyRoot`): `Promise`\<`Uint8Array`\<`ArrayBufferLike`\> \| `undefined`\>
 
 Defined in: [packages/mpt/src/proof/proof.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/proof/proof.ts#L56)
 
@@ -36,6 +36,6 @@ defaults to false. If `true`, verifies that the root key of the proof matches th
 
 ## Returns
 
-`Promise`\<`undefined` \| `Uint8Array`\<`ArrayBufferLike`\>\>
+`Promise`\<`Uint8Array`\<`ArrayBufferLike`\> \| `undefined`\>
 
 The root of the proof

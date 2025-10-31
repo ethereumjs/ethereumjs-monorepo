@@ -8,6 +8,6 @@
 
 > **Log** = \[`Uint8Array`, `Uint8Array`[], `Uint8Array`\]
 
-Defined in: [types.ts:472](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L472)
+Defined in: [types.ts:469](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L469)
 
 Log that the contract emits.

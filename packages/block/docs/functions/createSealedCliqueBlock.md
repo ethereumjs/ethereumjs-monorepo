@@ -8,7 +8,7 @@
 
 > **createSealedCliqueBlock**(`blockData`, `cliqueSigner`, `opts`): [`Block`](../classes/Block.md)
 
-Defined in: [block/constructors.ts:404](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block/constructors.ts#L404)
+Defined in: [block/constructors.ts:373](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block/constructors.ts#L373)
 
 ## Parameters
 

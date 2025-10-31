@@ -10,7 +10,7 @@
 
 Defined in: [packages/e2store/src/exportHistory.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/exportHistory.ts#L25)
 
-## Type declaration
+## Type Declaration
 
 ### Receipts
 

@@ -30,7 +30,7 @@ Defined in: [node/internalNode.ts:13](https://github.com/ethereumjs/ethereumjs-m
 
 ### children
 
-> **children**: (`null` \| [`ChildBinaryNode`](../type-aliases/ChildBinaryNode.md))[]
+> **children**: ([`ChildBinaryNode`](../type-aliases/ChildBinaryNode.md) \| `null`)[]
 
 Defined in: [node/internalNode.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/node/internalNode.ts#L9)
 
@@ -46,7 +46,7 @@ Defined in: [node/internalNode.ts:11](https://github.com/ethereumjs/ethereumjs-m
 
 ### getChild()
 
-> **getChild**(`index`): `null` \| [`ChildBinaryNode`](../type-aliases/ChildBinaryNode.md)
+> **getChild**(`index`): [`ChildBinaryNode`](../type-aliases/ChildBinaryNode.md) \| `null`
 
 Defined in: [node/internalNode.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/node/internalNode.ts#L70)
 
@@ -58,7 +58,7 @@ Defined in: [node/internalNode.ts:70](https://github.com/ethereumjs/ethereumjs-m
 
 #### Returns
 
-`null` \| [`ChildBinaryNode`](../type-aliases/ChildBinaryNode.md)
+[`ChildBinaryNode`](../type-aliases/ChildBinaryNode.md) \| `null`
 
 ***
 
@@ -119,7 +119,7 @@ Defined in: [node/internalNode.ts:74](https://github.com/ethereumjs/ethereumjs-m
 
 ##### child
 
-`null` | [`ChildBinaryNode`](../type-aliases/ChildBinaryNode.md)
+[`ChildBinaryNode`](../type-aliases/ChildBinaryNode.md) | `null`
 
 #### Returns
 
@@ -139,7 +139,7 @@ Generates a new Internal node
 
 ##### children?
 
-(`null` \| [`ChildBinaryNode`](../type-aliases/ChildBinaryNode.md))[]
+([`ChildBinaryNode`](../type-aliases/ChildBinaryNode.md) \| `null`)[]
 
 the children nodes
 

@@ -6,7 +6,7 @@
 
 # Function: getBinaryTreeKeyForStorageSlot()
 
-> **getBinaryTreeKeyForStorageSlot**(`address`, `storageKey`, `hashFunction`): `Uint8Array`\<`ArrayBufferLike`\>
+> **getBinaryTreeKeyForStorageSlot**(`address`, `storageKey`, `hashFunction`): `Uint8Array`\<`ArrayBuffer`\>
 
 Defined in: [packages/util/src/binaryTree.ts:226](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L226)
 
@@ -34,6 +34,6 @@ The hash function used in the Binary Tree.
 
 ## Returns
 
-`Uint8Array`\<`ArrayBufferLike`\>
+`Uint8Array`\<`ArrayBuffer`\>
 
 - The BinaryTree tree key as a byte array.

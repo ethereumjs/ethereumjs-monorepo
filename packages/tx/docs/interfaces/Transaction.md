@@ -6,7 +6,7 @@
 
 # Interface: Transaction
 
-Defined in: [types.ts:163](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L163)
+Defined in: [types.ts:156](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L156)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types.ts:163](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **0**: [`LegacyTx`](../classes/LegacyTx.md)
 
-Defined in: [types.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L164)
+Defined in: [types.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L157)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **1**: [`AccessList2930Tx`](../classes/AccessList2930Tx.md)
 
-Defined in: [types.ts:166](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L166)
+Defined in: [types.ts:159](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L159)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types.ts:166](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **2**: [`FeeMarket1559Tx`](../classes/FeeMarket1559Tx.md)
 
-Defined in: [types.ts:165](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L165)
+Defined in: [types.ts:158](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L158)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [types.ts:165](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **3**: [`Blob4844Tx`](../classes/Blob4844Tx.md)
 
-Defined in: [types.ts:167](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L167)
+Defined in: [types.ts:160](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L160)
 
 ***
 
@@ -46,4 +46,4 @@ Defined in: [types.ts:167](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **4**: [`EOACode7702Tx`](../classes/EOACode7702Tx.md)
 
-Defined in: [types.ts:168](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L168)
+Defined in: [types.ts:161](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L161)

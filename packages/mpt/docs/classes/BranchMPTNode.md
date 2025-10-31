@@ -32,7 +32,7 @@ Defined in: [packages/mpt/src/node/branch.ts:6](https://github.com/ethereumjs/et
 
 ### \_value
 
-> **\_value**: `null` \| `Uint8Array`\<`ArrayBufferLike`\>
+> **\_value**: `Uint8Array`\<`ArrayBufferLike`\> \| `null`
 
 Defined in: [packages/mpt/src/node/branch.ts:7](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/node/branch.ts#L7)
 
@@ -116,7 +116,7 @@ Defined in: [packages/mpt/src/node/branch.ts:29](https://github.com/ethereumjs/e
 
 ### value()
 
-> **value**(`v?`): `null` \| `Uint8Array`\<`ArrayBufferLike`\>
+> **value**(`v?`): `Uint8Array`\<`ArrayBufferLike`\> \| `null`
 
 Defined in: [packages/mpt/src/node/branch.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/node/branch.ts#L21)
 
@@ -124,11 +124,11 @@ Defined in: [packages/mpt/src/node/branch.ts:21](https://github.com/ethereumjs/e
 
 ##### v?
 
-`null` | `Uint8Array`\<`ArrayBufferLike`\>
+`Uint8Array`\<`ArrayBufferLike`\> | `null`
 
 #### Returns
 
-`null` \| `Uint8Array`\<`ArrayBufferLike`\>
+`Uint8Array`\<`ArrayBufferLike`\> \| `null`
 
 ***
 

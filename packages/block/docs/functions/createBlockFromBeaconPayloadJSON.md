@@ -8,7 +8,7 @@
 
 > **createBlockFromBeaconPayloadJSON**(`payload`, `opts?`): `Promise`\<[`Block`](../classes/Block.md)\>
 
-Defined in: [block/constructors.ts:396](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block/constructors.ts#L396)
+Defined in: [block/constructors.ts:365](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block/constructors.ts#L365)
 
 Method to retrieve a block from a beacon payload JSON
 

@@ -8,4 +8,4 @@
 
 > `const` **BIGINT\_31**: `bigint`
 
-Defined in: [packages/util/src/constants.ts:94](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L94)
+Defined in: [packages/util/src/constants.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L102)

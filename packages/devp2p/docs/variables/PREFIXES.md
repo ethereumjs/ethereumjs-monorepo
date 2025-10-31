@@ -10,7 +10,7 @@
 
 Defined in: [packages/devp2p/src/rlpx/peer.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L36)
 
-## Type declaration
+## Type Declaration
 
 ### DISCONNECT
 

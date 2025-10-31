@@ -74,7 +74,7 @@ Defined in: [packages/devp2p/src/dpt/kbucket.ts:71](https://github.com/ethereumj
 
 ### get()
 
-> **get**(`obj`): `null` \| [`PeerInfo`](../interfaces/PeerInfo.md)
+> **get**(`obj`): [`PeerInfo`](../interfaces/PeerInfo.md) \| `null`
 
 Defined in: [packages/devp2p/src/dpt/kbucket.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/kbucket.ts#L58)
 
@@ -86,7 +86,7 @@ Defined in: [packages/devp2p/src/dpt/kbucket.ts:58](https://github.com/ethereumj
 
 #### Returns
 
-`null` \| [`PeerInfo`](../interfaces/PeerInfo.md)
+[`PeerInfo`](../interfaces/PeerInfo.md) \| `null`
 
 ***
 

@@ -292,7 +292,7 @@ address -> balance | [balance, code, storage]
 
 ### getAccount()
 
-> **getAccount**(`address`): `Promise`\<`undefined` \| `Account`\>
+> **getAccount**(`address`): `Promise`\<`Account` \| `undefined`\>
 
 Defined in: [merkleStateManager.ts:121](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L121)
 
@@ -308,7 +308,7 @@ Address of the `account` to get
 
 #### Returns
 
-`Promise`\<`undefined` \| `Account`\>
+`Promise`\<`Account` \| `undefined`\>
 
 #### Implementation of
 
@@ -499,7 +499,7 @@ Address of the account to modify
 
 ##### accountFields
 
-`Partial`
+`AccountFields`
 
 Object containing account fields and values to modify
 
@@ -533,7 +533,7 @@ Address under which to store `account`
 
 The account to store or undefined if to be deleted
 
-`undefined` | `Account`
+`Account` | `undefined`
 
 #### Returns
 

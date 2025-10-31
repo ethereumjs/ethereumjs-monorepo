@@ -8,7 +8,7 @@
 
 > **runBlock**(`vm`, `opts`): `Promise`\<[`RunBlockResult`](../interfaces/RunBlockResult.md)\>
 
-Defined in: [vm/src/runBlock.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L75)
+Defined in: [vm/src/runBlock.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L74)
 
 Processes the `block` running all of the transactions it contains and updating the miner's account
 

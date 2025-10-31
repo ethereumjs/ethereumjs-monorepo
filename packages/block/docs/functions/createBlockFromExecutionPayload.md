@@ -8,7 +8,7 @@
 
 > **createBlockFromExecutionPayload**(`payload`, `opts?`): `Promise`\<[`Block`](../classes/Block.md)\>
 
-Defined in: [block/constructors.ts:325](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block/constructors.ts#L325)
+Defined in: [block/constructors.ts:301](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block/constructors.ts#L301)
 
 Method to retrieve a block from an execution payload
 

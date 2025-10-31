@@ -56,7 +56,7 @@ Defined in: [consensus/ethash.ts:20](https://github.com/ethereumjs/ethereumjs-mo
 
 ### blockchain
 
-> **blockchain**: `undefined` \| [`Blockchain`](Blockchain.md)
+> **blockchain**: [`Blockchain`](Blockchain.md) \| `undefined`
 
 Defined in: [consensus/ethash.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L19)
 

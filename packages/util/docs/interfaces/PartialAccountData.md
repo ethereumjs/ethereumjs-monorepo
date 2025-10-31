@@ -12,7 +12,7 @@ Defined in: [packages/util/src/account.ts:31](https://github.com/ethereumjs/ethe
 
 ### balance?
 
-> `optional` **balance**: `null` \| [`BigIntLike`](../type-aliases/BigIntLike.md)
+> `optional` **balance**: [`BigIntLike`](../type-aliases/BigIntLike.md) \| `null`
 
 Defined in: [packages/util/src/account.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L33)
 
@@ -20,7 +20,7 @@ Defined in: [packages/util/src/account.ts:33](https://github.com/ethereumjs/ethe
 
 ### codeHash?
 
-> `optional` **codeHash**: `null` \| [`BytesLike`](../type-aliases/BytesLike.md)
+> `optional` **codeHash**: [`BytesLike`](../type-aliases/BytesLike.md) \| `null`
 
 Defined in: [packages/util/src/account.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L35)
 
@@ -28,7 +28,7 @@ Defined in: [packages/util/src/account.ts:35](https://github.com/ethereumjs/ethe
 
 ### codeSize?
 
-> `optional` **codeSize**: `null` \| [`BigIntLike`](../type-aliases/BigIntLike.md)
+> `optional` **codeSize**: [`BigIntLike`](../type-aliases/BigIntLike.md) \| `null`
 
 Defined in: [packages/util/src/account.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L36)
 
@@ -36,7 +36,7 @@ Defined in: [packages/util/src/account.ts:36](https://github.com/ethereumjs/ethe
 
 ### nonce?
 
-> `optional` **nonce**: `null` \| [`BigIntLike`](../type-aliases/BigIntLike.md)
+> `optional` **nonce**: [`BigIntLike`](../type-aliases/BigIntLike.md) \| `null`
 
 Defined in: [packages/util/src/account.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L32)
 
@@ -44,7 +44,7 @@ Defined in: [packages/util/src/account.ts:32](https://github.com/ethereumjs/ethe
 
 ### storageRoot?
 
-> `optional` **storageRoot**: `null` \| [`BytesLike`](../type-aliases/BytesLike.md)
+> `optional` **storageRoot**: [`BytesLike`](../type-aliases/BytesLike.md) \| `null`
 
 Defined in: [packages/util/src/account.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L34)
 
@@ -52,6 +52,6 @@ Defined in: [packages/util/src/account.ts:34](https://github.com/ethereumjs/ethe
 
 ### version?
 
-> `optional` **version**: `null` \| [`BigIntLike`](../type-aliases/BigIntLike.md)
+> `optional` **version**: [`BigIntLike`](../type-aliases/BigIntLike.md) \| `null`
 
 Defined in: [packages/util/src/account.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L37)

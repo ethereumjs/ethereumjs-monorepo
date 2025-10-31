@@ -8,9 +8,9 @@
 
 > **ConsensusType**: `object`
 
-Defined in: [enums.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L91)
+Defined in: [enums.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L89)
 
-## Type declaration
+## Type Declaration
 
 ### ProofOfAuthority
 

@@ -8,9 +8,9 @@
 
 > **ConsensusAlgorithm**: `object`
 
-Defined in: [enums.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L99)
+Defined in: [enums.ts:97](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L97)
 
-## Type declaration
+## Type Declaration
 
 ### Casper
 
