@@ -1,5 +1,4 @@
 import type { ParamsDict } from '@ethereumjs/common'
-import { BPO1_BLOB_SCHEDULE, BPO2_BLOB_SCHEDULE } from '@ethereumjs/common'
 
 export const paramsVM: ParamsDict = {
   /**
@@ -105,20 +104,20 @@ export const paramsVM: ParamsDict = {
    */
   7892: {
     // gasConfig
-    targetBlobGasPerBlock: BPO1_BLOB_SCHEDULE.targetBlobGasPerBlock,
-    maxBlobGasPerBlock: BPO1_BLOB_SCHEDULE.maxBlobGasPerBlock,
-    blobGasPriceUpdateFraction: BPO1_BLOB_SCHEDULE.blobGasPriceUpdateFraction,
+    targetBlobGasPerBlock: 1_310_720, // 10 blobs * 131072
+    maxBlobGasPerBlock: 1_966_080, // 15 blobs * 131072
+    blobGasPriceUpdateFraction: 8_346_193, // Scaled Prague update fraction (≈ 5007716 * 1966080 / 1179648)
   },
   bpo1: {
     // gasConfig
-    targetBlobGasPerBlock: BPO1_BLOB_SCHEDULE.targetBlobGasPerBlock,
-    maxBlobGasPerBlock: BPO1_BLOB_SCHEDULE.maxBlobGasPerBlock,
-    blobGasPriceUpdateFraction: BPO1_BLOB_SCHEDULE.blobGasPriceUpdateFraction,
+    targetBlobGasPerBlock: 1_310_720, // 10 blobs * 131072
+    maxBlobGasPerBlock: 1_966_080, // 15 blobs * 131072
+    blobGasPriceUpdateFraction: 8_346_193, // Same schedule as baseline BPO1
   },
   bpo2: {
     // gasConfig
-    targetBlobGasPerBlock: BPO2_BLOB_SCHEDULE.targetBlobGasPerBlock,
-    maxBlobGasPerBlock: BPO2_BLOB_SCHEDULE.maxBlobGasPerBlock,
-    blobGasPriceUpdateFraction: BPO2_BLOB_SCHEDULE.blobGasPriceUpdateFraction,
+    targetBlobGasPerBlock: 1_835_008, // 14 blobs * 131072
+    maxBlobGasPerBlock: 2_752_512, // 21 blobs * 131072
+    blobGasPriceUpdateFraction: 11_684_670, // Scaled Prague update fraction (≈ 5007716 * 2752512 / 1179648)
   },
 }
