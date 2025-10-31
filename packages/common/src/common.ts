@@ -331,6 +331,12 @@ export class Common {
           }
         }
       }
+      // Hardfork-scoped params (e.g. for bpo1, bpo2)
+      // override the baseline EIP values when present
+      const hfScopedParams = this._params[hfChanges[0]]
+      if (hfScopedParams !== undefined && hfScopedParams !== null) {
+        this._mergeWithParamsCache(hfScopedParams)
+      }
       // Parameter-inlining HF config (e.g. for istanbul or custom blobSchedule)
       if (hfChanges[1].params !== undefined && hfChanges[1].params !== null) {
         this._mergeWithParamsCache(hfChanges[1].params)
