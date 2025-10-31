@@ -8,9 +8,9 @@
 
 > **computeVersionedHash**(`commitment`, `blobCommitmentVersion`): `` `0x${string}` ``
 
-Defined in: [packages/util/src/blobs.ts:88](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/blobs.ts#L88)
+Defined in: [packages/util/src/blobs.ts:131](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/blobs.ts#L131)
 
-Converts a vector commitment for a given data blob to its versioned hash.  For 4844, this version
+EIP-4844: Converts a vector commitment for a given data blob to its versioned hash.  For 4844, this version
 number will be 0x01 for KZG vector commitments but could be different if future vector commitment
 types are introduced
 

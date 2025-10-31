@@ -15,8 +15,6 @@
 - [RPCStateManager](classes/RPCStateManager.md)
 - [SimpleStateManager](classes/SimpleStateManager.md)
 - [StatefulBinaryTreeStateManager](classes/StatefulBinaryTreeStateManager.md)
-- [StatefulVerkleStateManager](classes/StatefulVerkleStateManager.md)
-- [StatelessVerkleStateManager](classes/StatelessVerkleStateManager.md)
 - [StorageCache](classes/StorageCache.md)
 
 ## Interfaces
@@ -25,14 +23,11 @@
 - [CacheOpts](interfaces/CacheOpts.md)
 - [CachesStateManagerOpts](interfaces/CachesStateManagerOpts.md)
 - [EncodedBinaryTreeState](interfaces/EncodedBinaryTreeState.md)
-- [EncodedVerkleProof](interfaces/EncodedVerkleProof.md)
 - [MerkleStateManagerOpts](interfaces/MerkleStateManagerOpts.md)
 - [RPCStateManagerOpts](interfaces/RPCStateManagerOpts.md)
 - [SimpleStateManagerOpts](interfaces/SimpleStateManagerOpts.md)
 - [StatefulBinaryTreeStateManagerOpts](interfaces/StatefulBinaryTreeStateManagerOpts.md)
-- [StatefulVerkleStateManagerOpts](interfaces/StatefulVerkleStateManagerOpts.md)
 - [StatelessVerkleStateManagerOpts](interfaces/StatelessVerkleStateManagerOpts.md)
-- [VerkleState](interfaces/VerkleState.md)
 
 ## Type Aliases
 
@@ -52,6 +47,4 @@
 - [fromMerkleStateProof](functions/fromMerkleStateProof.md)
 - [getMerkleStateProof](functions/getMerkleStateProof.md)
 - [getRPCStateProof](functions/getRPCStateProof.md)
-- [getVerkleStateProof](functions/getVerkleStateProof.md)
 - [verifyMerkleStateProof](functions/verifyMerkleStateProof.md)
-- [verifyVerkleStateProof](functions/verifyVerkleStateProof.md)

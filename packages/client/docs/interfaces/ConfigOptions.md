@@ -37,7 +37,7 @@ Default: []
 
 > `optional` **blobsAndProofsCacheBlocks**: `number`
 
-Defined in: [config.ts:342](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L342)
+Defined in: [config.ts:334](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L334)
 
 The cache for blobs and proofs to support CL import blocks
 
@@ -206,14 +206,6 @@ Start continuous VM execution (pre-Merge setting)
 Defined in: [config.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L104)
 
 RLPx external IP
-
-***
-
-### ignoreStatelessInvalidExecs?
-
-> `optional` **ignoreStatelessInvalidExecs**: `boolean`
-
-Defined in: [config.ts:337](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L337)
 
 ***
 
@@ -419,7 +411,7 @@ Default: true
 
 > `optional` **prometheusMetrics**: `PrometheusMetrics`
 
-Defined in: [config.ts:347](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L347)
+Defined in: [config.ts:339](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L339)
 
 Enables Prometheus Metrics that can be collected for monitoring client health
 
@@ -512,32 +504,6 @@ Defined in: [config.ts:323](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 > `optional` **snapTransitionSafeDepth**: `bigint`
 
 Defined in: [config.ts:324](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L324)
-
-***
-
-### startExecution?
-
-> `optional` **startExecution**: `boolean`
-
-Defined in: [config.ts:336](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L336)
-
-***
-
-### statefulVerkle?
-
-> `optional` **statefulVerkle**: `boolean`
-
-Defined in: [config.ts:335](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L335)
-
-***
-
-### statelessVerkle?
-
-> `optional` **statelessVerkle**: `boolean`
-
-Defined in: [config.ts:334](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L334)
-
-Enables stateless verkle block execution (default: false)
 
 ***
 

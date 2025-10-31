@@ -6,7 +6,7 @@
 
 # Function: getGenesis()
 
-> **getGenesis**(`chainId`): `undefined` \| `GenesisState`
+> **getGenesis**(`chainId`): `GenesisState` \| `undefined`
 
 Defined in: [index.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/genesis/src/index.ts#L15)
 
@@ -21,6 +21,6 @@ Utility to get the genesisState of a well known network
 
 ## Returns
 
-`undefined` \| `GenesisState`
+`GenesisState` \| `undefined`
 
 genesisState of the chain

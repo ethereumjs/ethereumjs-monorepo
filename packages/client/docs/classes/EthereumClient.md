@@ -6,7 +6,7 @@
 
 # Class: EthereumClient
 
-Defined in: [client.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/client.ts#L67)
+Defined in: [client.ts:61](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/client.ts#L61)
 
 Represents the top-level ethereum node, and is responsible for managing the
 lifecycle of included services.
@@ -21,7 +21,7 @@ module:node
 
 > **chain**: `Chain`
 
-Defined in: [client.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/client.ts#L69)
+Defined in: [client.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/client.ts#L63)
 
 ***
 
@@ -29,7 +29,7 @@ Defined in: [client.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **config**: [`Config`](Config.md)
 
-Defined in: [client.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/client.ts#L68)
+Defined in: [client.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/client.ts#L62)
 
 ***
 
@@ -37,7 +37,7 @@ Defined in: [client.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **opened**: `boolean`
 
-Defined in: [client.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/client.ts#L72)
+Defined in: [client.ts:66](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/client.ts#L66)
 
 ***
 
@@ -45,7 +45,7 @@ Defined in: [client.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **service**: `FullEthereumService`
 
-Defined in: [client.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/client.ts#L70)
+Defined in: [client.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/client.ts#L64)
 
 ***
 
@@ -53,33 +53,33 @@ Defined in: [client.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **started**: `boolean`
 
-Defined in: [client.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/client.ts#L73)
+Defined in: [client.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/client.ts#L67)
 
 ## Methods
 
 ### open()
 
-> **open**(): `Promise`\<`undefined` \| `false`\>
+> **open**(): `Promise`\<`false` \| `undefined`\>
 
-Defined in: [client.ts:106](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/client.ts#L106)
+Defined in: [client.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/client.ts#L100)
 
 Open node. Must be called before node is started
 
 #### Returns
 
-`Promise`\<`undefined` \| `false`\>
+`Promise`\<`false` \| `undefined`\>
 
 ***
 
 ### server()
 
-> **server**(): `undefined` \| `RlpxServer`
+> **server**(): `RlpxServer` \| `undefined`
 
-Defined in: [client.ts:165](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/client.ts#L165)
+Defined in: [client.ts:159](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/client.ts#L159)
 
 #### Returns
 
-`undefined` \| `RlpxServer`
+`RlpxServer` \| `undefined`
 
 the RLPx server (if it exists)
 
@@ -87,29 +87,29 @@ the RLPx server (if it exists)
 
 ### start()
 
-> **start**(): `Promise`\<`undefined` \| `false`\>
+> **start**(): `Promise`\<`false` \| `undefined`\>
 
-Defined in: [client.ts:134](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/client.ts#L134)
+Defined in: [client.ts:128](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/client.ts#L128)
 
 Starts node and all services and network servers.
 
 #### Returns
 
-`Promise`\<`undefined` \| `false`\>
+`Promise`\<`false` \| `undefined`\>
 
 ***
 
 ### stop()
 
-> **stop**(): `Promise`\<`undefined` \| `false`\>
+> **stop**(): `Promise`\<`false` \| `undefined`\>
 
-Defined in: [client.ts:151](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/client.ts#L151)
+Defined in: [client.ts:145](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/client.ts#L145)
 
 Stops node and all services and network servers.
 
 #### Returns
 
-`Promise`\<`undefined` \| `false`\>
+`Promise`\<`false` \| `undefined`\>
 
 ***
 
@@ -117,7 +117,7 @@ Stops node and all services and network servers.
 
 > `static` **create**(`options`): `Promise`\<`EthereumClient`\>
 
-Defined in: [client.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/client.ts#L81)
+Defined in: [client.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/client.ts#L75)
 
 Main entrypoint for client initialization.
 

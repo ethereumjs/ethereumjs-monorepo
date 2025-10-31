@@ -6,7 +6,7 @@
 
 # Class: EOFContainer
 
-Defined in: [eof/container.ts:438](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/eof/container.ts#L438)
+Defined in: [eof/container.ts:437](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/eof/container.ts#L437)
 
 Main constructor for the EOFContainer
 
@@ -16,7 +16,7 @@ Main constructor for the EOFContainer
 
 > **new EOFContainer**(`buf`, `eofMode`, `dataSectionAllowedSmaller`): `EOFContainer`
 
-Defined in: [eof/container.ts:450](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/eof/container.ts#L450)
+Defined in: [eof/container.ts:449](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/eof/container.ts#L449)
 
 #### Parameters
 
@@ -48,7 +48,7 @@ Container mode to validate the container on
 
 > **body**: `EOFBody`
 
-Defined in: [eof/container.ts:440](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/eof/container.ts#L440)
+Defined in: [eof/container.ts:439](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/eof/container.ts#L439)
 
 ***
 
@@ -56,7 +56,7 @@ Defined in: [eof/container.ts:440](https://github.com/ethereumjs/ethereumjs-mono
 
 > **buffer**: `Uint8Array`
 
-Defined in: [eof/container.ts:441](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/eof/container.ts#L441)
+Defined in: [eof/container.ts:440](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/eof/container.ts#L440)
 
 ***
 
@@ -64,7 +64,7 @@ Defined in: [eof/container.ts:441](https://github.com/ethereumjs/ethereumjs-mono
 
 > **eofMode**: `EOFContainerMode`
 
-Defined in: [eof/container.ts:442](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/eof/container.ts#L442)
+Defined in: [eof/container.ts:441](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/eof/container.ts#L441)
 
 ***
 
@@ -72,4 +72,4 @@ Defined in: [eof/container.ts:442](https://github.com/ethereumjs/ethereumjs-mono
 
 > **header**: `EOFHeader`
 
-Defined in: [eof/container.ts:439](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/eof/container.ts#L439)
+Defined in: [eof/container.ts:438](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/eof/container.ts#L438)

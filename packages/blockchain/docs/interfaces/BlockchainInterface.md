@@ -12,7 +12,7 @@ Defined in: [types.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 ### consensus
 
-> **consensus**: `undefined` \| [`Consensus`](Consensus.md)
+> **consensus**: [`Consensus`](Consensus.md) \| `undefined`
 
 Defined in: [types.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L14)
 

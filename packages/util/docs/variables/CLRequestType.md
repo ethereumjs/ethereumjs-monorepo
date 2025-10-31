@@ -10,7 +10,7 @@
 
 Defined in: [packages/util/src/request.ts:7](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/request.ts#L7)
 
-## Type declaration
+## Type Declaration
 
 ### Consolidation
 

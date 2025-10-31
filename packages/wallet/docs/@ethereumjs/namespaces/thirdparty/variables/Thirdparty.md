@@ -10,7 +10,7 @@
 
 Defined in: [thirdparty.ts:195](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/thirdparty.ts#L195)
 
-## Type declaration
+## Type Declaration
 
 ### fromEtherCamp()
 
