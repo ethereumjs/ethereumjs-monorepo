@@ -174,7 +174,7 @@ export const hardforksDict: HardforksDict = {
    * Status     : Experimental
    */
   bpo1: {
-    eips: [],
+    eips: [7892],
   },
   /**
    * Description: HF to update the blob target, max and updateFraction
@@ -182,7 +182,12 @@ export const hardforksDict: HardforksDict = {
    * Status     : Experimental
    */
   bpo2: {
-    eips: [],
+    eips: [7892],
+    params: {
+      targetBlobGasPerBlock: 1835008, // The target blob gas consumed per block (14 blobs * 131072)
+      maxBlobGasPerBlock: 2752512, // The max blob gas allowable per block (21 blobs * 131072)
+      blobGasPriceUpdateFraction: 5007716, // The denominator used in the exponential when calculating a blob gas price (same as Prague)
+    },
   },
   /**
    * Description: HF to update the blob target, max and updateFraction
