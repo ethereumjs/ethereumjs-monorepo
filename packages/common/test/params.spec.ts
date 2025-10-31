@@ -1,6 +1,7 @@
 import { assert, describe, it } from 'vitest'
 
-import { Common, Hardfork, Mainnet } from '../src/index.ts'
+import { Common, Hardfork, Mainnet, createCustomCommon } from '../src/index.ts'
+import { computeBpoSchedule } from '../src/utils.ts'
 
 import { paramsTest } from './data/paramsTest.ts'
 
@@ -138,5 +139,77 @@ describe('[Common]: Parameter access for param(), paramByHardfork()', () => {
 
     msg = 'Should return bls12381G1AddGas gas price for EIP2537'
     assert.strictEqual(c.paramByEIP('bls12381G1AddGas', 2537), BigInt(500), msg)
+  })
+})
+
+describe('[Common]: Hardfork-scoped blob schedule params', () => {
+  const baseSchedule = computeBpoSchedule(10, 15)
+  const overrideSchedule = computeBpoSchedule(14, 21)
+
+  const params = {
+    7892: baseSchedule,
+    bpo1: baseSchedule,
+    bpo2: overrideSchedule,
+  }
+
+  const mainnetWithBpo = {
+    hardforks: [
+      ...Mainnet.hardforks,
+      { name: 'bpo1', block: null, timestamp: '1893456000' },
+      { name: 'bpo2', block: null, timestamp: '1893459600' },
+    ],
+  }
+
+  const createBpoCommon = (hardfork: Hardfork) =>
+    createCustomCommon(mainnetWithBpo, Mainnet, {
+      hardfork,
+      params,
+    })
+
+  it('applies the EIP-7892 baseline at BPO1', () => {
+    const common = createBpoCommon(Hardfork.Bpo1)
+
+    assert.strictEqual(
+      common.param('targetBlobGasPerBlock'),
+      BigInt(baseSchedule.targetBlobGasPerBlock),
+      'BPO1 target blob gas should match EIP-7892 schedule',
+    )
+    assert.strictEqual(
+      common.param('maxBlobGasPerBlock'),
+      BigInt(baseSchedule.maxBlobGasPerBlock),
+      'BPO1 max blob gas should match EIP-7892 schedule',
+    )
+    assert.strictEqual(
+      common.param('blobGasPriceUpdateFraction'),
+      BigInt(baseSchedule.blobGasPriceUpdateFraction),
+      'BPO1 update fraction should match EIP-7892 schedule',
+    )
+
+    assert.strictEqual(
+      common.paramByEIP('maxBlobGasPerBlock', 7892),
+      BigInt(baseSchedule.maxBlobGasPerBlock),
+      'EIP-7892 lookup should expose the baseline schedule',
+    )
+  })
+
+  it('switches to the BPO2 override when the fork advances', () => {
+    const common = createBpoCommon(Hardfork.Bpo1)
+    common.setHardfork(Hardfork.Bpo2)
+
+    assert.strictEqual(
+      common.param('targetBlobGasPerBlock'),
+      BigInt(overrideSchedule.targetBlobGasPerBlock),
+      'BPO2 target blob gas should override the baseline schedule',
+    )
+    assert.strictEqual(
+      common.param('maxBlobGasPerBlock'),
+      BigInt(overrideSchedule.maxBlobGasPerBlock),
+      'BPO2 max blob gas should override the baseline schedule',
+    )
+    assert.strictEqual(
+      common.param('blobGasPriceUpdateFraction'),
+      BigInt(overrideSchedule.blobGasPriceUpdateFraction),
+      'BPO2 update fraction should override the baseline schedule',
+    )
   })
 })
