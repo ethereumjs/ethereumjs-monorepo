@@ -122,6 +122,20 @@ export const Mainnet: ChainConfig = {
     {
       name: 'osaka',
       block: null,
+      timestamp: '1764798551',
+      forkHash: '0x5167e2a6',
+    },
+    {
+      name: 'bpo1',
+      block: null,
+      timestamp: '1765290071',
+      forkHash: '0xcba2a1c0',
+    },
+    {
+      name: 'bpo2',
+      block: null,
+      timestamp: '1767747671',
+      forkHash: '0x07c9462e',
     },
   ],
   bootstrapNodes: [
@@ -267,6 +281,20 @@ export const Sepolia: ChainConfig = {
     {
       name: 'osaka',
       block: null,
+      timestamp: '1760427360',
+      forkHash: '0xe2ae4999',
+    },
+    {
+      name: 'bpo1',
+      block: null,
+      timestamp: '1761017184',
+      forkHash: '0x56078a1e',
+    },
+    {
+      name: 'bpo2',
+      block: null,
+      timestamp: '1761607008',
+      forkHash: '0x268956b6',
     },
   ],
   bootstrapNodes: [
@@ -407,6 +435,24 @@ export const Holesky: ChainConfig = {
       timestamp: '1740434112',
       forkHash: '0xdfbd9bed',
     },
+    {
+      name: 'osaka',
+      block: null,
+      timestamp: '1759308480',
+      forkHash: '0x783def52',
+    },
+    {
+      name: 'bpo1',
+      block: null,
+      timestamp: '1759800000',
+      forkHash: '0xa280a45c',
+    },
+    {
+      name: 'bpo2',
+      block: null,
+      timestamp: '1760389824',
+      forkHash: '0x9bc6cb31',
+    },
   ],
   bootstrapNodes: [
     {
@@ -531,6 +577,24 @@ export const Hoodi: ChainConfig = {
       block: null,
       timestamp: '1742999832',
       forkHash: '0x0929e24e',
+    },
+    {
+      name: 'osaka',
+      block: null,
+      timestamp: '1761677592',
+      forkHash: '0xe7e0e7ff',
+    },
+    {
+      name: 'bpo1',
+      block: null,
+      timestamp: '1762365720',
+      forkHash: '0x3893353e',
+    },
+    {
+      name: 'bpo2',
+      block: null,
+      timestamp: '1762955544',
+      forkHash: '0x23aa1351',
     },
   ],
   bootstrapNodes: [
