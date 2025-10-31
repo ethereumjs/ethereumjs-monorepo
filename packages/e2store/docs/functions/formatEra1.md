@@ -6,7 +6,7 @@
 
 # Function: formatEra1()
 
-> **formatEra1**(`blockTuples`, `headerRecords`, `epoch`): `Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
+> **formatEra1**(`blockTuples`, `headerRecords`, `epoch`): `Promise`\<`Uint8Array`\<`ArrayBuffer`\>\>
 
 Defined in: [packages/e2store/src/era1/era1.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/era1/era1.ts#L23)
 
@@ -34,6 +34,6 @@ epoch index
 
 ## Returns
 
-`Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
+`Promise`\<`Uint8Array`\<`ArrayBuffer`\>\>
 
 serialized era1 file

@@ -185,7 +185,7 @@ Defined in: [packages/mpt/src/db/checkpointDB.ts:207](https://github.com/ethereu
 
 ### get()
 
-> **get**(`key`): `Promise`\<`undefined` \| `Uint8Array`\<`ArrayBufferLike`\>\>
+> **get**(`key`): `Promise`\<`Uint8Array`\<`ArrayBufferLike`\> \| `undefined`\>
 
 Defined in: [packages/mpt/src/db/checkpointDB.ts:138](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/db/checkpointDB.ts#L138)
 
@@ -197,7 +197,7 @@ Defined in: [packages/mpt/src/db/checkpointDB.ts:138](https://github.com/ethereu
 
 #### Returns
 
-`Promise`\<`undefined` \| `Uint8Array`\<`ArrayBufferLike`\>\>
+`Promise`\<`Uint8Array`\<`ArrayBufferLike`\> \| `undefined`\>
 
 #### Inherit Doc
 

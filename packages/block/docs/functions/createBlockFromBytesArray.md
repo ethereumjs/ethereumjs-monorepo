@@ -8,7 +8,7 @@
 
 > **createBlockFromBytesArray**(`values`, `opts?`): [`Block`](../classes/Block.md)
 
-Defined in: [block/constructors.ts:119](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block/constructors.ts#L119)
+Defined in: [block/constructors.ts:113](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block/constructors.ts#L113)
 
 Static constructor to create a block from an array of Bytes values
 

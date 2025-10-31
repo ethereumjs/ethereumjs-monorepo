@@ -90,7 +90,7 @@ Can be used together with the `devp2p:FIRST_PEER` debugger.
 
 ### \_getProtocol()
 
-> **\_getProtocol**(`code`): `undefined` \| `ProtocolDescriptor`
+> **\_getProtocol**(`code`): `ProtocolDescriptor` \| `undefined`
 
 Defined in: [packages/devp2p/src/rlpx/peer.ts:682](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L682)
 
@@ -106,7 +106,7 @@ reference to this Peer instance or to a subprotocol instance (e.g. `ETH`)
 
 #### Returns
 
-`undefined` \| `ProtocolDescriptor`
+`ProtocolDescriptor` \| `undefined`
 
 ***
 
@@ -356,7 +356,7 @@ Send HELLO message
 
 ### \_sendMessage()
 
-> **\_sendMessage**(`code`, `data`): `undefined` \| `boolean`
+> **\_sendMessage**(`code`, `data`): `boolean` \| `undefined`
 
 Defined in: [packages/devp2p/src/rlpx/peer.ts:213](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L213)
 
@@ -375,7 +375,7 @@ Also called from SubProtocol context
 
 #### Returns
 
-`undefined` \| `boolean`
+`boolean` \| `undefined`
 
 ***
 
@@ -445,25 +445,25 @@ Defined in: [packages/devp2p/src/rlpx/peer.ts:706](https://github.com/ethereumjs
 
 ### getHelloMessage()
 
-> **getHelloMessage**(): `null` \| `Hello`
+> **getHelloMessage**(): `Hello` \| `null`
 
 Defined in: [packages/devp2p/src/rlpx/peer.ts:694](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L694)
 
 #### Returns
 
-`null` \| `Hello`
+`Hello` \| `null`
 
 ***
 
 ### getId()
 
-> **getId**(): `null` \| `Uint8Array`\<`ArrayBufferLike`\>
+> **getId**(): `Uint8Array`\<`ArrayBufferLike`\> \| `null`
 
 Defined in: [packages/devp2p/src/rlpx/peer.ts:689](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L689)
 
 #### Returns
 
-`null` \| `Uint8Array`\<`ArrayBufferLike`\>
+`Uint8Array`\<`ArrayBufferLike`\> \| `null`
 
 ***
 

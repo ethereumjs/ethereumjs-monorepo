@@ -9,7 +9,7 @@
 Defined in: [simpleStateManager.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L26)
 
 Simple and dependency-free state manager for basic state access use cases
-where a merkle-patricia or verkle tree backed state manager is too heavy-weight.
+where a merkle-patricia or binary tree backed state manager is too heavy-weight.
 
 This state manager comes with the basic state access logic for
 accounts, storage and code (put* and get* methods) as well as a simple
@@ -48,7 +48,7 @@ Defined in: [simpleStateManager.ts:38](https://github.com/ethereumjs/ethereumjs-
 
 ### accountStack
 
-> **accountStack**: `Map`\<`` `0x${string}` ``, `undefined` \| `Account`\>[] = `[]`
+> **accountStack**: `Map`\<`` `0x${string}` ``, `Account` \| `undefined`\>[] = `[]`
 
 Defined in: [simpleStateManager.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L27)
 
@@ -216,7 +216,7 @@ Defined in: [simpleStateManager.ts:131](https://github.com/ethereumjs/ethereumjs
 
 ### getAccount()
 
-> **getAccount**(`address`): `Promise`\<`undefined` \| `Account`\>
+> **getAccount**(`address`): `Promise`\<`Account` \| `undefined`\>
 
 Defined in: [simpleStateManager.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L69)
 
@@ -228,7 +228,7 @@ Defined in: [simpleStateManager.ts:69](https://github.com/ethereumjs/ethereumjs-
 
 #### Returns
 
-`Promise`\<`undefined` \| `Account`\>
+`Promise`\<`Account` \| `undefined`\>
 
 #### Implementation of
 
@@ -352,7 +352,7 @@ Defined in: [simpleStateManager.ts:81](https://github.com/ethereumjs/ethereumjs-
 
 ##### accountFields
 
-`Partial`
+`AccountFields`
 
 #### Returns
 

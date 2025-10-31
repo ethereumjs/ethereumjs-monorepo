@@ -12,7 +12,7 @@ Defined in: [packages/mpt/src/types.ts:32](https://github.com/ethereumjs/ethereu
 
 ### node
 
-> **node**: `null` \| [`MPTNode`](../type-aliases/MPTNode.md)
+> **node**: [`MPTNode`](../type-aliases/MPTNode.md) \| `null`
 
 Defined in: [packages/mpt/src/types.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/types.ts#L33)
 

@@ -10,7 +10,7 @@
 
 Defined in: [packages/e2store/src/types.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/types.ts#L8)
 
-## Type declaration
+## Type Declaration
 
 ### BlockIndex
 

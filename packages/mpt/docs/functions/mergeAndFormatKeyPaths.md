@@ -6,7 +6,7 @@
 
 # Function: mergeAndFormatKeyPaths()
 
-> **mergeAndFormatKeyPaths**(`pathStrings`): `Uint8Array`\<`ArrayBufferLike`\>[][]
+> **mergeAndFormatKeyPaths**(`pathStrings`): `Uint8Array`\<`ArrayBuffer`\>[][]
 
 Defined in: [packages/mpt/src/util/encoding.ts:161](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/util/encoding.ts#L161)
 
@@ -18,4 +18,4 @@ Defined in: [packages/mpt/src/util/encoding.ts:161](https://github.com/ethereumj
 
 ## Returns
 
-`Uint8Array`\<`ArrayBufferLike`\>[][]
+`Uint8Array`\<`ArrayBuffer`\>[][]

@@ -6,7 +6,7 @@
 
 # Interface: StatefulBinaryTreeStateManagerOpts
 
-Defined in: [types.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L82)
+Defined in: [types.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L75)
 
 ## Extends
 
@@ -18,7 +18,7 @@ Defined in: [types.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 > `optional` **caches**: [`Caches`](../classes/Caches.md)
 
-Defined in: [types.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L85)
+Defined in: [types.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L78)
 
 ***
 
@@ -26,7 +26,7 @@ Defined in: [types.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 > `optional` **common**: `Common`
 
-Defined in: [types.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L15)
+Defined in: [types.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L14)
 
 The common to use
 
@@ -40,7 +40,7 @@ The common to use
 
 > `optional` **hashFunction**: (`data`) => `Uint8Array`
 
-Defined in: [types.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L83)
+Defined in: [types.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L76)
 
 #### Parameters
 
@@ -58,4 +58,4 @@ Defined in: [types.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 > `optional` **tree**: `BinaryTree`
 
-Defined in: [types.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L84)
+Defined in: [types.ts:77](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L77)

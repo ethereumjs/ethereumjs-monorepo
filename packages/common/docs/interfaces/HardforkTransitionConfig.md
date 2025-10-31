@@ -12,7 +12,7 @@ Defined in: [types.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 ### block
 
-> **block**: `null` \| `number`
+> **block**: `number` \| `null`
 
 Defined in: [types.ts:61](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L61)
 
@@ -20,7 +20,7 @@ Defined in: [types.ts:61](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 ### forkHash?
 
-> `optional` **forkHash**: `null` \| `` `0x${string}` ``
+> `optional` **forkHash**: `` `0x${string}` `` \| `null`
 
 Defined in: [types.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L63)
 

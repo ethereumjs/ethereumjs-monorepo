@@ -8,9 +8,9 @@
 
 > **Hardfork**: `object`
 
-Defined in: [enums.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L65)
+Defined in: [enums.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L59)
 
-## Type declaration
+## Type Declaration
 
 ### ArrowGlacier
 
@@ -19,6 +19,26 @@ Defined in: [enums.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 ### Berlin
 
 > `readonly` **Berlin**: `"berlin"` = `'berlin'`
+
+### Bpo1
+
+> `readonly` **Bpo1**: `"bpo1"` = `'bpo1'`
+
+### Bpo2
+
+> `readonly` **Bpo2**: `"bpo2"` = `'bpo2'`
+
+### Bpo3
+
+> `readonly` **Bpo3**: `"bpo3"` = `'bpo3'`
+
+### Bpo4
+
+> `readonly` **Bpo4**: `"bpo4"` = `'bpo4'`
+
+### Bpo5
+
+> `readonly` **Bpo5**: `"bpo5"` = `'bpo5'`
 
 ### Byzantium
 
@@ -91,7 +111,3 @@ Defined in: [enums.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 ### TangerineWhistle
 
 > `readonly` **TangerineWhistle**: `"tangerineWhistle"` = `'tangerineWhistle'`
-
-### Verkle
-
-> `readonly` **Verkle**: `"verkle"` = `'verkle'`

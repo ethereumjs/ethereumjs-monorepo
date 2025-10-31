@@ -8,9 +8,9 @@
 
 > **utf8ToBytes**(`str`): `Uint8Array`
 
-Defined in: node\_modules/@noble/hashes/esm/utils.d.ts:44
+Defined in: node\_modules/@noble/hashes/esm/utils.d.ts:65
 
-Convert JS string to byte array.
+Converts string to bytes using UTF8 encoding.
 
 ## Parameters
 
@@ -25,5 +25,5 @@ Convert JS string to byte array.
 ## Example
 
 ```ts
-utf8ToBytes('abc') // new Uint8Array([97, 98, 99])
+utf8ToBytes('abc') // Uint8Array.from([97, 98, 99])
 ```

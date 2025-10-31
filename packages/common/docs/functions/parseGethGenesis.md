@@ -8,7 +8,7 @@
 
 > **parseGethGenesis**(`gethGenesis`, `name?`): `object`
 
-Defined in: [utils.ts:277](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/utils.ts#L277)
+Defined in: [utils.ts:281](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/utils.ts#L281)
 
 Parses a genesis object exported from Geth into parameters for Common instance
 
@@ -42,15 +42,15 @@ parsed params
 
 ### consensus
 
-> **consensus**: \{ `algorithm`: `string`; `clique`: \{ `epoch`: `undefined` \| `number`; `period`: `undefined` \| `number`; \}; `ethash?`: `undefined`; `type`: `string`; \} \| \{ `algorithm`: `string`; `clique?`: `undefined`; `ethash`: \{ \}; `type`: `string`; \}
+> **consensus**: \{ `algorithm`: `string`; `clique`: \{ `epoch`: `number` \| `undefined`; `period`: `number` \| `undefined`; \}; `ethash?`: `undefined`; `type`: `string`; \} \| \{ `algorithm`: `string`; `clique?`: `undefined`; `ethash`: \{ \}; `type`: `string`; \}
 
 ### customHardforks
 
-> **customHardforks**: `undefined` \| [`HardforksDict`](../type-aliases/HardforksDict.md)
+> **customHardforks**: [`HardforksDict`](../type-aliases/HardforksDict.md) \| `undefined`
 
 ### depositContractAddress
 
-> **depositContractAddress**: `undefined` \| `string`
+> **depositContractAddress**: `string` \| `undefined`
 
 ### genesis
 
@@ -58,19 +58,19 @@ parsed params
 
 #### genesis.baseFeePerGas
 
-> **baseFeePerGas**: `undefined` \| `null` \| `number` \| `` `0x${string}` ``
+> **baseFeePerGas**: `number` \| `` `0x${string}` `` \| `null` \| `undefined`
 
 #### genesis.coinbase
 
-> **coinbase**: `undefined` \| `` `0x${string}` ``
+> **coinbase**: `` `0x${string}` `` \| `undefined`
 
 #### genesis.difficulty
 
-> **difficulty**: `undefined` \| `` `0x${string}` ``
+> **difficulty**: `` `0x${string}` `` \| `undefined`
 
 #### genesis.excessBlobGas
 
-> **excessBlobGas**: `undefined` \| `string`
+> **excessBlobGas**: `string` \| `undefined`
 
 #### genesis.extraData
 
@@ -82,7 +82,7 @@ parsed params
 
 #### genesis.mixHash
 
-> **mixHash**: `undefined` \| `` `0x${string}` ``
+> **mixHash**: `` `0x${string}` `` \| `undefined`
 
 #### genesis.nonce
 
@@ -90,7 +90,7 @@ parsed params
 
 #### genesis.requestsHash
 
-> **requestsHash**: `undefined` \| `string`
+> **requestsHash**: `string` \| `undefined`
 
 #### genesis.timestamp
 
@@ -98,7 +98,7 @@ parsed params
 
 ### hardfork
 
-> **hardfork**: `undefined` \| `string`
+> **hardfork**: `string` \| `undefined`
 
 ### hardforks
 
@@ -106,4 +106,4 @@ parsed params
 
 ### name
 
-> **name**: `undefined` \| `string`
+> **name**: `string` \| `undefined`
