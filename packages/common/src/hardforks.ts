@@ -174,7 +174,7 @@ export const hardforksDict: HardforksDict = {
    * Status     : Experimental
    */
   bpo1: {
-    eips: [],
+    eips: [7892],
   },
   /**
    * Description: HF to update the blob target, max and updateFraction
@@ -182,7 +182,7 @@ export const hardforksDict: HardforksDict = {
    * Status     : Experimental
    */
   bpo2: {
-    eips: [],
+    eips: [7892],
   },
   /**
    * Description: HF to update the blob target, max and updateFraction
