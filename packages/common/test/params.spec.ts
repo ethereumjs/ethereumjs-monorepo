@@ -147,6 +147,7 @@ describe('[Common]: Hardfork-scoped blob schedule params', () => {
   const bp02Schedule = computeBpoSchedule(14, 21)
 
   const params = {
+    7892: bp01Schedule, // EIP-7892 params for paramByEIP lookup
     bpo1: bp01Schedule,
     bpo2: bp02Schedule,
   }
@@ -193,6 +194,8 @@ describe('[Common]: Hardfork-scoped blob schedule params', () => {
 
   it('switches to the BPO2 schedule when the fork advances', () => {
     const common = createBpoCommon(Hardfork.Bpo1)
+    // Update EIP-7892 params to BPO2 schedule when fork advances
+    common.updateParams({ 7892: bp02Schedule })
     common.setHardfork(Hardfork.Bpo2)
 
     assert.strictEqual(
