@@ -73,5 +73,5 @@ jobs:
       - run: npm ci
         working-directory: ${{github.workspace}}
 
-      - run: npm run test
+      - run: npm run test:node
         working-directory: ${{ github.workspace }}/packages/wallet
