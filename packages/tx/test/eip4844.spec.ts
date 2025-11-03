@@ -60,7 +60,7 @@ beforeAll(async () => {
     }),
   }*/
   kzgs = [jsKzgSetup]
-}, 50000)
+}, 60000)
 
 describe('EIP4844 addSignature tests', () => {
   it('addSignature() -> correctly adds correct signature values', () => {

@@ -5,12 +5,7 @@ export default mergeConfig(
   baseConfig,
   defineConfig({
     test: {
-      exclude: [
-        ...configDefaults.exclude,
-        // KZG tests use Node.js specific dependencies that aren't compatible with browser environment
-        'test/kzg.spec.ts',
-        'test/bench/kzg.bench.ts',
-      ],
+      exclude: [...configDefaults.exclude, 'test/bench/kzg.bench.ts'],
     },
   }),
 )

@@ -71,7 +71,7 @@
     "@paulmillr/trusted-setups": "^0.2.0",
     "@types/minimist": "^1.2.5",
     "@types/node-dir": "^0.0.37",
-    "kzg-wasm": "1.0.0-rc.2",
+    "kzg-wasm": "1.0.0",
     "micro-eth-signer": "^0.15.0",
     "minimist": "^1.2.8",
     "node-dir": "^0.1.17",
