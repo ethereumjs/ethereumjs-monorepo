@@ -5,10 +5,7 @@ export default mergeConfig(
   baseConfig,
   defineConfig({
     test: {
-      exclude: [
-        ...configDefaults.exclude,
-        'test/bench/kzg.bench.ts',
-      ],
+      exclude: [...configDefaults.exclude, 'test/bench/kzg.bench.ts'],
     },
   }),
 )
