@@ -175,6 +175,11 @@ export const hardforksDict: HardforksDict = {
    */
   bpo1: {
     eips: [7892],
+    params: {
+      target: 10,
+      max: 15,
+      baseFeeUpdateFraction: 8346193,
+    },
   },
   /**
    * Description: HF to update the blob target, max and updateFraction
@@ -183,6 +188,11 @@ export const hardforksDict: HardforksDict = {
    */
   bpo2: {
     eips: [7892],
+    params: {
+      target: 14,
+      max: 21,
+      baseFeeUpdateFraction: 11684671,
+    },
   },
   /**
    * Description: HF to update the blob target, max and updateFraction
@@ -190,7 +200,12 @@ export const hardforksDict: HardforksDict = {
    * Status     : Experimental
    */
   bpo3: {
-    eips: [],
+    eips: [7892],
+    params: {
+      target: 21,
+      max: 32,
+      baseFeeUpdateFraction: 20609697,
+    },
   },
   /**
    * Description: HF to update the blob target, max and updateFraction
@@ -198,7 +213,12 @@ export const hardforksDict: HardforksDict = {
    * Status     : Experimental
    */
   bpo4: {
-    eips: [],
+    eips: [7892],
+    params: {
+      target: 14,
+      max: 21,
+      baseFeeUpdateFraction: 13739630,
+    },
   },
   /**
    * Description: HF to update the blob target, max and updateFraction
