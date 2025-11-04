@@ -12,7 +12,7 @@ import { hardforksDict } from './hardforks.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { GethGenesis } from './gethGenesis.ts'
-import type { HardforksDict } from './types.ts'
+import type { BpoSchedule, HardforksDict } from './types.ts'
 
 type ConfigHardfork =
   | { name: string; block: null; timestamp: number }
@@ -324,28 +324,39 @@ export const getPresetChainConfig = (chain: string | number) => {
 }
 
 /**
- * Computes BPO (Blob Parameter Only) schedule parameters based on target and max blob counts
+ * Computes BPO (Blob Parameter Only) schedule parameters based on target/max blob counts
+ * and the base fee update fraction defined in the hardfork configuration.
  * @param targetBlobs Target number of blobs per block
  * @param maxBlobs Maximum number of blobs per block
+ * @param blobGasPriceUpdateFraction Base fee update fraction from the HF params
  * @returns Object containing targetBlobGasPerBlock, maxBlobGasPerBlock, and blobGasPriceUpdateFraction
  */
-export function computeBpoSchedule(targetBlobs: number, maxBlobs: number) {
+export function computeBpoSchedule(
+  targetBlobs: number,
+  maxBlobs: number,
+  blobGasPriceUpdateFraction: number,
+): BpoSchedule {
   const BLOB_GAS_PER_BLOB = 131_072
-  const PRAGUE_MAX_BLOB_GAS = 1_179_648
-  const PRAGUE_BLOB_GAS_UPDATE_FRACTION = 5_007_716
-
-  const targetBlobGasPerBlock = targetBlobs * BLOB_GAS_PER_BLOB
-  const maxBlobGasPerBlock = maxBlobs * BLOB_GAS_PER_BLOB
-  const blobGasPriceUpdateFraction = Math.round(
-    (maxBlobGasPerBlock * PRAGUE_BLOB_GAS_UPDATE_FRACTION) / PRAGUE_MAX_BLOB_GAS,
-  )
 
   return {
-    targetBlobGasPerBlock,
-    maxBlobGasPerBlock,
-    blobGasPriceUpdateFraction,
-  } as const
+    targetBlobGasPerBlock: BigInt(targetBlobs) * BigInt(BLOB_GAS_PER_BLOB),
+    maxBlobGasPerBlock: BigInt(maxBlobs) * BigInt(BLOB_GAS_PER_BLOB),
+    blobGasPriceUpdateFraction: BigInt(blobGasPriceUpdateFraction),
+  }
 }
 
-export const BPO1_BLOB_SCHEDULE = computeBpoSchedule(10, 15)
-export const BPO2_BLOB_SCHEDULE = computeBpoSchedule(14, 21)
+export function getBpoScheduleFromHardfork(hardfork: keyof typeof hardforksDict): BpoSchedule {
+  const hfConfig = hardforksDict[hardfork]
+  const params = hfConfig?.params
+  const target = params?.target
+  const max = params?.max
+  const updateFraction = params?.baseFeeUpdateFraction
+
+  if (typeof target !== 'number' || typeof max !== 'number' || typeof updateFraction !== 'number') {
+    throw EthereumJSErrorWithoutCode(
+      `Missing blob schedule params for hardfork=${hardfork} (target=${target}, max=${max}, baseFeeUpdateFraction=${updateFraction})`,
+    )
+  }
+
+  return computeBpoSchedule(target, max, updateFraction)
+}
