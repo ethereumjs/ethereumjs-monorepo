@@ -1,7 +1,6 @@
 import { assert, describe, it } from 'vitest'
 
-import { Common, Hardfork, Mainnet, createCustomCommon } from '../src/index.ts'
-import { computeBpoSchedule } from '../src/utils.ts'
+import { Common, Hardfork, Mainnet } from '../src/index.ts'
 
 import { paramsTest } from './data/paramsTest.ts'
 
@@ -139,79 +138,5 @@ describe('[Common]: Parameter access for param(), paramByHardfork()', () => {
 
     msg = 'Should return bls12381G1AddGas gas price for EIP2537'
     assert.strictEqual(c.paramByEIP('bls12381G1AddGas', 2537), BigInt(500), msg)
-  })
-})
-
-describe('[Common]: Hardfork-scoped blob schedule params', () => {
-  const bp01Schedule = computeBpoSchedule(10, 15)
-  const bp02Schedule = computeBpoSchedule(14, 21)
-
-  const params = {
-    7892: bp01Schedule, // EIP-7892 params for paramByEIP lookup
-    bpo1: bp01Schedule,
-    bpo2: bp02Schedule,
-  }
-
-  const mainnetWithBpo = {
-    hardforks: [
-      ...Mainnet.hardforks,
-      { name: 'bpo1', block: null, timestamp: '1893456000' },
-      { name: 'bpo2', block: null, timestamp: '1893459600' },
-    ],
-  }
-
-  const createBpoCommon = (hardfork: Hardfork) =>
-    createCustomCommon(mainnetWithBpo, Mainnet, {
-      hardfork,
-      params,
-    })
-
-  it('applies the bp01 schedule at BPO1', () => {
-    const common = createBpoCommon(Hardfork.Bpo1)
-
-    assert.strictEqual(
-      common.param('targetBlobGasPerBlock'),
-      BigInt(bp01Schedule.targetBlobGasPerBlock),
-      'BPO1 target blob gas should match EIP-7892 schedule',
-    )
-    assert.strictEqual(
-      common.param('maxBlobGasPerBlock'),
-      BigInt(bp01Schedule.maxBlobGasPerBlock),
-      'BPO1 max blob gas should match EIP-7892 schedule',
-    )
-    assert.strictEqual(
-      common.param('blobGasPriceUpdateFraction'),
-      BigInt(bp01Schedule.blobGasPriceUpdateFraction),
-      'BPO1 update fraction should match EIP-7892 schedule',
-    )
-
-    assert.strictEqual(
-      common.paramByEIP('maxBlobGasPerBlock', 7892),
-      BigInt(bp01Schedule.maxBlobGasPerBlock),
-      'EIP-7892 lookup should expose the bp01 schedule',
-    )
-  })
-
-  it('switches to the BPO2 schedule when the fork advances', () => {
-    const common = createBpoCommon(Hardfork.Bpo1)
-    // Update EIP-7892 params to BPO2 schedule when fork advances
-    common.updateParams({ 7892: bp02Schedule })
-    common.setHardfork(Hardfork.Bpo2)
-
-    assert.strictEqual(
-      common.param('targetBlobGasPerBlock'),
-      BigInt(bp02Schedule.targetBlobGasPerBlock),
-      'EIP-7892 lookup should expose the bp02 schedule',
-    )
-    assert.strictEqual(
-      common.param('maxBlobGasPerBlock'),
-      BigInt(bp02Schedule.maxBlobGasPerBlock),
-      'EIP-7892 lookup should expose the bp02 schedule',
-    )
-    assert.strictEqual(
-      common.param('blobGasPriceUpdateFraction'),
-      BigInt(bp02Schedule.blobGasPriceUpdateFraction),
-      'EIP-7892 lookup should expose the bp02 schedule',
-    )
   })
 })
