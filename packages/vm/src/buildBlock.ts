@@ -4,6 +4,7 @@ import {
   genRequestsRoot,
   genTransactionsTrieRoot,
   genWithdrawalsTrieRoot,
+  getBlobGasSchedule,
 } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
@@ -237,7 +238,7 @@ export class BlockBuilder {
     // cannot be greater than the remaining gas in the block
     const blockGasLimit = toType(this.headerData.gasLimit, TypeOutput.BigInt)
 
-    const blobGasLimit = this.vm.common.param('maxBlobGasPerBlock')
+    const { maxBlobGasPerBlock: blobGasLimit } = getBlobGasSchedule(this.vm.common)
     const blobGasPerBlob = this.vm.common.param('blobGasPerBlob')
 
     const blockGasRemaining = blockGasLimit - this.gasUsed
