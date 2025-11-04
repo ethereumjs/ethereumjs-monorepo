@@ -11,7 +11,12 @@ import {
   toType,
 } from '@ethereumjs/util'
 
-import type { Common } from '@ethereumjs/common'
+import {
+  type BpoSchedule,
+  type Common,
+  Hardfork,
+  getBpoScheduleFromHardfork,
+} from '@ethereumjs/common'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { CLRequest, CLRequestType, PrefixedHexString, Withdrawal } from '@ethereumjs/util'
 import type { BlockHeaderBytes, HeaderData } from './types.ts'
@@ -127,16 +132,28 @@ export const fakeExponential = (factor: bigint, numerator: bigint, denominator: 
   return output / denominator
 }
 
+export const getBlobGasSchedule = (common: Common): BpoSchedule => {
+  if (common.gteHardfork(Hardfork.Bpo1)) {
+    return getBpoScheduleFromHardfork(common.hardfork())
+  }
+  return {
+    targetBlobGasPerBlock: common.param('targetBlobGasPerBlock'),
+    maxBlobGasPerBlock: common.param('maxBlobGasPerBlock'),
+    blobGasPriceUpdateFraction: common.param('blobGasPriceUpdateFraction'),
+  }
+}
+
 /**
  * Returns the blob gas price depending upon the `excessBlobGas` value
  * @param excessBlobGas
  * @param common
  */
 export const computeBlobGasPrice = (excessBlobGas: bigint, common: Common) => {
+  const schedule = getBlobGasSchedule(common)
   return fakeExponential(
     common.param('minBlobGas'),
     excessBlobGas,
-    common.param('blobGasPriceUpdateFraction'),
+    schedule.blobGasPriceUpdateFraction,
   )
 }
 

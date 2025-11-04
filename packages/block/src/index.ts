@@ -7,6 +7,7 @@ export {
   genTransactionsTrieRoot,
   genWithdrawalsTrieRoot,
   getDifficulty,
+  getBlobGasSchedule,
   valuesArrayToHeaderData,
 } from './helpers.ts'
 export * from './params.ts'
