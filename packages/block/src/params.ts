@@ -92,24 +92,4 @@ export const paramsBlock: ParamsDict = {
     maxBlobGasPerBlock: 1179648, // The max blob gas allowable per block
     blobGasPriceUpdateFraction: 5007716, // The denominator used in the exponential when calculating a blob gas price
   },
-  /**
-   * Blob Parameter Only 1 (BPO1) - EIP-7892
-   * Increases blob target to 10 and max to 15
-   */
-  bpo1: {
-    // gasConfig
-    targetBlobGasPerBlock: 1_310_720, // 10 blobs * 131072
-    maxBlobGasPerBlock: 1_966_080, // 15 blobs * 131072
-    blobGasPriceUpdateFraction: 8_346_193, // Same schedule as baseline BPO1
-  },
-  /**
-   * Blob Parameter Only 2 (BPO2) - EIP-7892
-   * Increases blob target to 14 and max to 21
-   */
-  bpo2: {
-    // gasConfig
-    targetBlobGasPerBlock: 1_835_008, // 14 blobs * 131072
-    maxBlobGasPerBlock: 2_752_512, // 21 blobs * 131072
-    blobGasPriceUpdateFraction: 11_684_670, // Scaled Prague update fraction (≈ 5007716 * 2752512 / 1179648)
-  },
 }
