@@ -238,7 +238,6 @@ export class BlockBuilder {
     // cannot be greater than the remaining gas in the block
     const blockGasLimit = toType(this.headerData.gasLimit, TypeOutput.BigInt)
 
-    const { maxBlobGasPerBlock: blobGasLimit } = getBlobGasSchedule(this.vm.common)
     const blobGasPerBlob = this.vm.common.param('blobGasPerBlob')
 
     const blockGasRemaining = blockGasLimit - this.gasUsed
@@ -249,6 +248,7 @@ export class BlockBuilder {
     }
     let blobGasUsed = undefined
     if (tx instanceof Blob4844Tx) {
+      const { maxBlobGasPerBlock: blobGasLimit } = getBlobGasSchedule(this.vm.common)
       if (
         tx.networkWrapperVersion === NetworkWrapperType.EIP4844 &&
         this.vm.common.isActivatedEIP(7594)
