@@ -163,18 +163,18 @@ export const hardforksDict: HardforksDict = {
   /**
    * Description: Next feature hardfork after prague (headliner: PeerDAS)
    * URL        : https://eips.ethereum.org/EIPS/eip-7607
-   * Status     : Draft
+   * Status     : Final
    */
   osaka: {
     eips: [7594, 7823, 7825, 7883, 7939, 7951, 7918],
   },
   /**
-   * Description: HF to update the blob target, max and updateFraction
-   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/bpo1.md
-   * Status     : Experimental
+   * Description: HF to update the blob target, max and updateFraction (see also EIP-7892)
+   * URL        : TBD
+   * Status     : Final
    */
   bpo1: {
-    eips: [7892],
+    eips: [],
     params: {
       target: 10,
       max: 15,
@@ -182,50 +182,16 @@ export const hardforksDict: HardforksDict = {
     },
   },
   /**
-   * Description: HF to update the blob target, max and updateFraction
-   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/bpo2.md
-   * Status     : Experimental
+   * Description: HF to update the blob target, max and updateFraction (see also EIP-7892)
+   * URL        : TBD
+   * Status     : Final
    */
   bpo2: {
-    eips: [7892],
+    eips: [],
     params: {
       target: 14,
       max: 21,
       baseFeeUpdateFraction: 11684671,
     },
-  },
-  /**
-   * Description: HF to update the blob target, max and updateFraction
-   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/bpo3.md
-   * Status     : Experimental
-   */
-  bpo3: {
-    eips: [7892],
-    params: {
-      target: 21,
-      max: 32,
-      baseFeeUpdateFraction: 20609697,
-    },
-  },
-  /**
-   * Description: HF to update the blob target, max and updateFraction
-   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/bpo4.md
-   * Status     : Experimental
-   */
-  bpo4: {
-    eips: [7892],
-    params: {
-      target: 14,
-      max: 21,
-      baseFeeUpdateFraction: 13739630,
-    },
-  },
-  /**
-   * Description: HF to update the blob target, max and updateFraction
-   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/bpo5.md
-   * Status     : Experimental
-   */
-  bpo5: {
-    eips: [],
   },
 }
