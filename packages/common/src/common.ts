@@ -458,7 +458,7 @@ export class Common {
       return {
         targetBlobGasPerBlock: this.param('target') * this.param('blobGasPerBlob'),
         maxBlobGasPerBlock: this.param('max') * this.param('blobGasPerBlob'),
-        blobGasPriceUpdateFraction: this.param('baseFeeUpdateFraction'),
+        blobGasPriceUpdateFraction: this.param('blobGasPriceUpdateFraction'),
       }
     }
     return {

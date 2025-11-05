@@ -178,7 +178,7 @@ export const hardforksDict: HardforksDict = {
     params: {
       target: 10,
       max: 15,
-      baseFeeUpdateFraction: 8346193,
+      blobGasPriceUpdateFraction: 8346193,
     },
   },
   /**
@@ -191,7 +191,7 @@ export const hardforksDict: HardforksDict = {
     params: {
       target: 14,
       max: 21,
-      baseFeeUpdateFraction: 11684671,
+      blobGasPriceUpdateFraction: 11684671,
     },
   },
 }
