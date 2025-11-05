@@ -4,7 +4,6 @@ import {
   genRequestsRoot,
   genTransactionsTrieRoot,
   genWithdrawalsTrieRoot,
-  getBlobGasSchedule,
 } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
@@ -248,7 +247,7 @@ export class BlockBuilder {
     }
     let blobGasUsed = undefined
     if (tx instanceof Blob4844Tx) {
-      const { maxBlobGasPerBlock: blobGasLimit } = getBlobGasSchedule(this.vm.common)
+      const { maxBlobGasPerBlock: blobGasLimit } = this.vm.common.getBlobGasSchedule()
       if (
         tx.networkWrapperVersion === NetworkWrapperType.EIP4844 &&
         this.vm.common.isActivatedEIP(7594)

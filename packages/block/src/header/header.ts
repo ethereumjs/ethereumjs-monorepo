@@ -27,7 +27,7 @@ import {
   CLIQUE_EXTRA_VANITY,
   cliqueIsEpochTransition,
 } from '../consensus/clique.ts'
-import { computeBlobGasPrice, getBlobGasSchedule } from '../helpers.ts'
+import { computeBlobGasPrice } from '../helpers.ts'
 import { paramsBlock } from '../params.ts'
 
 import type { BlockHeaderBytes, BlockOptions, HeaderData, JSONHeader } from '../types.ts'
@@ -564,7 +564,7 @@ export class BlockHeader {
     const blobGasUsed = this.blobGasUsed ?? BIGINT_0
 
     const { targetBlobGasPerBlock: targetPerBlock, maxBlobGasPerBlock: maxPerBlock } =
-      getBlobGasSchedule(childCommon)
+      childCommon.getBlobGasSchedule()
 
     // Early exit (strictly < per spec)
     if (excessBlobGas + blobGasUsed < targetPerBlock) {
