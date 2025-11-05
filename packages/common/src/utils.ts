@@ -12,7 +12,7 @@ import { hardforksDict } from './hardforks.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { GethGenesis } from './gethGenesis.ts'
-import type { BpoSchedule, HardforksDict } from './types.ts'
+import type { HardforksDict } from './types.ts'
 
 type ConfigHardfork =
   | { name: string; block: null; timestamp: number }
@@ -321,42 +321,4 @@ export const getPresetChainConfig = (chain: string | number) => {
     default:
       return Mainnet
   }
-}
-
-/**
- * Computes BPO (Blob Parameter Only) schedule parameters based on target/max blob counts
- * and the base fee update fraction defined in the hardfork configuration.
- * @param targetBlobs Target number of blobs per block
- * @param maxBlobs Maximum number of blobs per block
- * @param blobGasPriceUpdateFraction Base fee update fraction from the HF params
- * @returns Object containing targetBlobGasPerBlock, maxBlobGasPerBlock, and blobGasPriceUpdateFraction
- */
-export function computeBpoSchedule(
-  targetBlobs: number,
-  maxBlobs: number,
-  blobGasPriceUpdateFraction: number,
-): BpoSchedule {
-  const BLOB_GAS_PER_BLOB = 131_072
-
-  return {
-    targetBlobGasPerBlock: BigInt(targetBlobs) * BigInt(BLOB_GAS_PER_BLOB),
-    maxBlobGasPerBlock: BigInt(maxBlobs) * BigInt(BLOB_GAS_PER_BLOB),
-    blobGasPriceUpdateFraction: BigInt(blobGasPriceUpdateFraction),
-  }
-}
-
-export function getBpoScheduleFromHardfork(hardfork: keyof typeof hardforksDict): BpoSchedule {
-  const hfConfig = hardforksDict[hardfork]
-  const params = hfConfig?.params
-  const target = params?.target
-  const max = params?.max
-  const updateFraction = params?.baseFeeUpdateFraction
-
-  if (typeof target !== 'number' || typeof max !== 'number' || typeof updateFraction !== 'number') {
-    throw EthereumJSErrorWithoutCode(
-      `Missing blob schedule params for hardfork=${hardfork} (target=${target}, max=${max}, baseFeeUpdateFraction=${updateFraction})`,
-    )
-  }
-
-  return computeBpoSchedule(target, max, updateFraction)
 }
