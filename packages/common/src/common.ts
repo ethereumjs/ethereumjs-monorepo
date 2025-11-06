@@ -250,7 +250,7 @@ export class Common {
    * Sets a new hardfork either based on block number (older HFs) or
    * timestamp (Shanghai upwards).
    *
-   * @param Opts Block number or timestamp
+   * @param opts Block number or timestamp
    * @returns The name of the HF set
    */
   setHardforkBy(opts: HardforkByOpts): string {
