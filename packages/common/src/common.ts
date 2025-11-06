@@ -353,6 +353,9 @@ export class Common {
     }
   }
 
+  /**
+   * Builds the cache of EIPs activated either via hardforks or constructor `eips`.
+   */
   protected _buildActivatedEIPsCache() {
     this._activatedEIPsCache = []
 
