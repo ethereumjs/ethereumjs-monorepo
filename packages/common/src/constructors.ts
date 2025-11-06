@@ -36,7 +36,6 @@ export function createCustomCommon(
 /**
  * Static method to load and set common from a geth genesis object
  * @param genesisJSON GethGenesis object
- * @param  opts additional {@link GethConfigOpts} for configuring common
  * @returns a new {@link Common} object
  */
 export function createCommonFromGethGenesis(
