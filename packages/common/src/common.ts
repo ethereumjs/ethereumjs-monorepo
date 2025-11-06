@@ -556,6 +556,11 @@ export class Common {
     return BigInt(block)
   }
 
+  /**
+   * Returns the timestamp at which a given hardfork is scheduled (if any).
+   * @param hardfork Hardfork name, optional if HF set
+   * @returns Timestamp or null if the hardfork is not timestamp-based
+   */
   hardforkTimestamp(hardfork?: string | Hardfork): bigint | null {
     hardfork = hardfork ?? this._hardfork
     const timestamp = this._getHardfork(hardfork)?.['timestamp']
