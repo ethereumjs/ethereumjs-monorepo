@@ -32,6 +32,11 @@ export const numberToHex = function (input?: string): PrefixedHexString | undefi
   return input
 }
 
+/**
+ * Converts the canonical byte-array representation of a header into structured {@link HeaderData}.
+ * @param values Header field values in canonical order
+ * @returns Parsed header data
+ */
 export function valuesArrayToHeaderData(values: BlockHeaderBytes): HeaderData {
   const [
     parentHash,
@@ -93,6 +98,11 @@ export function valuesArrayToHeaderData(values: BlockHeaderBytes): HeaderData {
   }
 }
 
+/**
+ * Retrieves the header difficulty as a bigint if the field is provided.
+ * @param headerData Header data potentially containing a difficulty value
+ * @returns Difficulty as bigint, or `null` when unset
+ */
 export function getDifficulty(headerData: HeaderData): bigint | null {
   const { difficulty } = headerData
   if (difficulty !== undefined) {
@@ -101,6 +111,11 @@ export function getDifficulty(headerData: HeaderData): bigint | null {
   return null
 }
 
+/**
+ * Counts the total number of blob commitments contained in the provided transactions.
+ * @param transactions Transactions to inspect for blob data
+ * @returns Number of blob versioned hashes referenced
+ */
 export const getNumBlobs = (transactions: TypedTransaction[]) => {
   let numBlobs = 0
   for (const tx of transactions) {
