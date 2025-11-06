@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## 10.1.0 - 2025-11-06
 
+- Extended modexp precompile debug messages, PR [#4124](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4124)
+- More ArrayBuffer type assignment fixes, PR [#4109](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4109)
+- Cleanup unused dependencies and fix dependency categorization, PR [#4146](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4146)
+- Remove Verkle package support, PR [#4145](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4145)
+
 ## 10.0.0 - 2025-04-29
 
 ### Overview

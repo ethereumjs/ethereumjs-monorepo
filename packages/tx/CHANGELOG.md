@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## 10.1.0 - 2025-11-06
 
+- `tx: throw on toCreationAddress for 4844 and 7702`, PR [#4162](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4162)
+- `tx: improve JSDoc annotations`, PR [#4161](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4161)
+- `4844 Tx Constructor Consistency and UX`, PR [#4155](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4155)
+- `valueBoundaryCheck chores`, PR [#4083](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4083)
+- `updates regarding blobtx serialization`, PR [#4065](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4065)
+
 ## 10.0.0 - 2025-04-29
 
 ### Overview

@@ -8,6 +8,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ## 10.1.0 - 2025-11-06
 
+- Improve `paramsCache` updates, PR [#4091](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4091)
+- Improve `nextHardforkBlockOrTimestamp` method, PR [#4080](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4080)
+- Remove Verkle package support, PR [#4145](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4145)
+
 ## 10.0.0 - 2025-04-29
 
 ### Overview
