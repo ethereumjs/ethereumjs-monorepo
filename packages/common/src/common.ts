@@ -737,8 +737,7 @@ export class Common {
   }
 
   /**
-   * Sets any missing forkHashes on the passed-in {@link Common} instance
-   * @param common The {@link Common} to set the forkHashes for
+   * Sets any missing forkHashes on this {@link Common} instance.
    * @param genesisHash The genesis block hash
    */
   setForkHashes(genesisHash: Uint8Array) {
