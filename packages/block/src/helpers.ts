@@ -143,7 +143,7 @@ export const computeBlobGasPrice = (excessBlobGas: bigint, common: Common) => {
 /**
  * Returns the withdrawals trie root for array of Withdrawal.
  * @param wts array of Withdrawal to compute the root of
- * @param optional emptyTrie to use to generate the root
+ * @param emptyTrie Optional trie used to generate the root
  */
 export async function genWithdrawalsTrieRoot(wts: Withdrawal[], emptyTrie?: MerklePatriciaTrie) {
   const trie = emptyTrie ?? new MerklePatriciaTrie()
@@ -156,7 +156,7 @@ export async function genWithdrawalsTrieRoot(wts: Withdrawal[], emptyTrie?: Merk
 /**
  * Returns the txs trie root for array of TypedTransaction
  * @param txs array of TypedTransaction to compute the root of
- * @param optional emptyTrie to use to generate the root
+ * @param emptyTrie Optional trie used to generate the root
  */
 export async function genTransactionsTrieRoot(
   txs: TypedTransaction[],
