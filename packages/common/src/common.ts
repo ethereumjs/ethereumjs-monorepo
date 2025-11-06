@@ -442,7 +442,7 @@ export class Common {
    * optional provided total difficulty (Merge HF)
    * @param name Parameter name
    * @param blockNumber Block number
-   *    * @returns The value requested or `BigInt(0)` if not found
+   * @returns The value requested or `BigInt(0)` if not found
    */
   paramByBlock(name: string, blockNumber: BigIntLike, timestamp?: BigIntLike): bigint {
     const hardfork = this.getHardforkBy({ blockNumber, timestamp })
