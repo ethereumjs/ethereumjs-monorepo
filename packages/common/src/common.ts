@@ -707,6 +707,7 @@ export class Common {
    * Returns an eth/64 compliant fork hash (EIP-2124)
    * @param hardfork Hardfork name, optional if HF set
    * @param genesisHash Genesis block hash of the network, optional if already defined and not needed to be calculated
+   * @returns Fork hash as a hex string
    */
   forkHash(hardfork?: string | Hardfork, genesisHash?: Uint8Array): PrefixedHexString {
     hardfork = hardfork ?? this._hardfork
