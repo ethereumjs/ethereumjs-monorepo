@@ -172,6 +172,7 @@ export async function genTransactionsTrieRoot(
 /**
  * Returns the requests trie root for an array of CLRequests
  * @param requests - an array of CLRequests
+ * @param sha256Function Hash function used to derive the requests root
  * @param emptyTrie optional empty trie used to generate the root
  * @returns a 32 byte Uint8Array representing the requests trie root
  */
