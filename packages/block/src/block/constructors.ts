@@ -370,6 +370,13 @@ export async function createBlockFromBeaconPayloadJSON(
   return createBlockFromExecutionPayload(executionPayload, opts)
 }
 
+/**
+ * Creates a block for Clique networks with the seal applied during instantiation.
+ * @param blockData Block fields used to build the block
+ * @param cliqueSigner Private key bytes used to sign the header
+ * @param opts {@link BlockOptions}
+ * @returns A sealed Clique block
+ */
 export function createSealedCliqueBlock(
   blockData: BlockData = {},
   cliqueSigner: Uint8Array,
