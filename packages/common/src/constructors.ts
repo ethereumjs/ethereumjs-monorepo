@@ -13,7 +13,7 @@ import type { BaseOpts, ChainConfig, GethConfigOpts } from './index.ts'
  * import { createCustomCommon, Mainnet } from '@ethereumjs/common'
  *
  * createCustomCommon({chainId: 123}, Mainnet)
- * ``
+ * ```
  *
  * @param partialConfig Custom parameter dict
  * @param baseChain `ChainConfig` chain configuration taken as a base chain, e.g. `Mainnet` (exported at root level)
