@@ -37,6 +37,33 @@ if (rlpSize > 8 * 1024 * 1024) {
 }
 ```
 
+### EIP-7892 - Blob Parameter Only Hardforks
+
+Support for Blob Parameter Only (BPO) hardforks has been implemented according to EIP-7892. BPO hardforks enable rapid scaling of blob capacity by modifying only blob-related parameters (`target`, `max`, and `blobGasPriceUpdateFraction`) without requiring code changes.
+
+The block library now properly handles blob gas calculations and blob base fee updates according to the active BPO hardfork. When processing blocks with BPO1 or BPO2 active, the library uses the updated blob parameters:
+
+- **BPO 1**: Target 10, Max 15 blobs per block
+- **BPO 2**: Target 14, Max 21 blobs per block
+
+Blob base fee calculations automatically adjust based on the active BPO hardfork parameters, ensuring proper blob fee market functionality as blob capacity scales.
+
+```typescript
+import { Block } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+
+// Block processing with BPO1 active
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Bpo1 })
+const block = Block.fromBlockData({
+  // ... block data with blobs
+}, { common })
+
+// Blob gas calculations use BPO1 parameters:
+// - Max blobs per block: 15 (instead of 9 in Osaka)
+// - Target blobs per block: 10 (instead of 6 in Osaka)
+// Blob base fee calculations automatically adjust accordingly
+```
+
 ## 10.0.0 - 2025-04-29
 
 ### Overview

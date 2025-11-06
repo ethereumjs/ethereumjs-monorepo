@@ -44,6 +44,30 @@ EIP-7939 support has been implemented, adding a new opcode `CLZ` (0x1e) that cou
 
 EIP-7951 support has been added, introducing a new precompile at address `0x100` (`P256VERIFY`) for ECDSA signature verification over the secp256r1 curve. The Common library includes the EIP configuration and activation for Osaka, enabling native support for secp256r1 signatures from modern secure hardware devices.
 
+### EIP-7892 - Blob Parameter Only Hardforks
+
+Support for Blob Parameter Only (BPO) hardforks has been implemented according to EIP-7892. BPO hardforks are lightweight protocol upgrades that modify only blob-related parameters (`target`, `max`, and `blobGasPriceUpdateFraction`) without requiring code changes, enabling rapid scaling of blob capacity in response to network demand.
+
+Two BPO hardforks are scheduled alongside Fusaka:
+
+- **BPO 1**: Increases blob target to 10 and max to 15 blobs per block
+- **BPO 2**: Further increases blob target to 14 and max to 21 blobs per block
+
+The Common library now includes BPO hardfork definitions and activation timestamps for testnets (Holešky, Sepolia, Hoodi). The `getBlobGasSchedule()` method returns the appropriate blob gas schedule parameters based on the active hardfork, automatically handling BPO transitions.
+
+```typescript
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+
+// Common instance with BPO1 active
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Bpo1 })
+
+// Get blob gas schedule parameters
+const schedule = common.getBlobGasSchedule()
+// schedule.targetBlobGasPerBlock = 1310720 (10 * 131072)
+// schedule.maxBlobGasPerBlock = 1966080 (15 * 131072)
+// schedule.blobGasPriceUpdateFraction = 8346193
+```
+
 ## 10.0.0 - 2025-04-29
 
 ### Overview
