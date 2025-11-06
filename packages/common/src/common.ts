@@ -513,7 +513,6 @@ export class Common {
    * Sequence based check if given or set HF1 is greater than or equal HF2
    * @param hardfork1 Hardfork name or null (if set)
    * @param hardfork2 Hardfork name
-   * @param opts Hardfork options
    * @returns True if HF1 gte HF2
    */
   hardforkGteHardfork(hardfork1: string | Hardfork | null, hardfork2: string | Hardfork): boolean {
