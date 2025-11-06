@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/blockchain",
-  "version": "10.0.0",
+  "version": "10.1.0",
   "description": "A module to store and interact with blocks",
   "keywords": ["ethereum", "blockchain"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/blockchain#readme",
@@ -50,11 +50,11 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/block": "^10.0.0",
-    "@ethereumjs/common": "^10.0.0",
-    "@ethereumjs/mpt": "^10.0.0",
-    "@ethereumjs/rlp": "^10.0.0",
-    "@ethereumjs/util": "^10.0.0",
+    "@ethereumjs/block": "^10.1.0",
+    "@ethereumjs/common": "^10.1.0",
+    "@ethereumjs/mpt": "^10.1.0",
+    "@ethereumjs/rlp": "^10.1.0",
+    "@ethereumjs/util": "^10.1.0",
     "debug": "^4.4.0",
     "eventemitter3": "^5.0.1",
     "lru-cache": "11.0.2"

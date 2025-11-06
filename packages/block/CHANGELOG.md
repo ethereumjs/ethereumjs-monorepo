@@ -6,6 +6,64 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 10.1.0 - 2025-11-06
+
+- Some `0n` -> `BIGINT_0` replacements, PR [#4147](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4147)
+- Remove Verkle package support, PR [#4145](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4145)
+
+### EIP-7918 - Blob base fee bounded by execution cost
+
+EIP-7918 support has been implemented, which ensures that the blob base fee is bounded by execution cost. The block library now properly calculates `excess_blob_gas` according to the new formula that imposes a reserve price, ensuring the blob fee market functions properly even when execution costs dominate.
+
+### EIP-7934 - RLP Execution Block Size Limit
+
+Support for EIP-7934 has been added, introducing a protocol-level cap on the maximum RLP-encoded block size to 10 MiB (with a 2 MiB margin for beacon block size, resulting in a maximum RLP block size of 8 MiB). The block library now validates that blocks do not exceed this size limit during construction and validation.
+
+```typescript
+import { Block } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Osaka })
+
+// Blocks exceeding 8 MiB RLP size will be rejected
+const block = createBlockFromRLP({
+  // ... block data
+}, { common })
+
+// The block size is validated according to EIP-7934
+const rlpSize = block.serialize().length
+if (rlpSize > 8 * 1024 * 1024) {
+  // Block exceeds maximum RLP size
+}
+```
+
+### EIP-7892 - Blob Parameter Only Hardforks
+
+Support for Blob Parameter Only (BPO) hardforks has been implemented according to EIP-7892. BPO hardforks enable rapid scaling of blob capacity by modifying only blob-related parameters (`target`, `max`, and `blobGasPriceUpdateFraction`) without requiring code changes.
+
+The block library now properly handles blob gas calculations and blob base fee updates according to the active BPO hardfork. When processing blocks with BPO1 or BPO2 active, the library uses the updated blob parameters:
+
+- **BPO 1**: Target 10, Max 15 blobs per block
+- **BPO 2**: Target 14, Max 21 blobs per block
+
+Blob base fee calculations automatically adjust based on the active BPO hardfork parameters, ensuring proper blob fee market functionality as blob capacity scales.
+
+```typescript
+import { Block } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+
+// Block processing with BPO1 active
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Bpo1 })
+const block = Block.fromBlockData({
+  // ... block data with blobs
+}, { common })
+
+// Blob gas calculations use BPO1 parameters:
+// - Max blobs per block: 15 (instead of 9 in Osaka)
+// - Target blobs per block: 10 (instead of 6 in Osaka)
+// Blob base fee calculations automatically adjust accordingly
+```
+
 ## 10.0.0 - 2025-04-29
 
 ### Overview

@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/tx",
-  "version": "10.0.0",
+  "version": "10.1.0",
   "description": "Implementation of the various Ethereum Transaction Types",
   "keywords": ["ethereum", "transactions"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx#readme",
@@ -61,9 +61,9 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/common": "^10.0.0",
-    "@ethereumjs/rlp": "^10.0.0",
-    "@ethereumjs/util": "^10.0.0",
+    "@ethereumjs/common": "^10.1.0",
+    "@ethereumjs/rlp": "^10.1.0",
+    "@ethereumjs/util": "^10.1.0",
     "ethereum-cryptography": "^3.2.0"
   },
   "devDependencies": {
