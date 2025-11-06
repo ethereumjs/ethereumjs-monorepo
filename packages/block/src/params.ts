@@ -20,29 +20,29 @@ export const paramsBlock: ParamsDict = {
     difficultyBombDelay: 0, // the amount of blocks to delay the difficulty bomb with
   },
   /**
-.  * Byzantium HF Meta EIP
-.  */
+   * Byzantium HF Meta EIP
+   */
   609: {
     // pow
     difficultyBombDelay: 3000000, // the amount of blocks to delay the difficulty bomb with
   },
   /**
-.  * Constantinople HF Meta EIP
-.  */
+   * Constantinople HF Meta EIP
+   */
   1013: {
     // pow
     difficultyBombDelay: 5000000, // the amount of blocks to delay the difficulty bomb with
   },
   /**
-.  * MuirGlacier HF Meta EIP
-.  */
+   * MuirGlacier HF Meta EIP
+   */
   2384: {
     // pow
     difficultyBombDelay: 9000000, // the amount of blocks to delay the difficulty bomb with
   },
   /**
-.  * Fee market change for ETH 1.0 chain
-.  */
+   * Fee market change for ETH 1.0 chain
+   */
   1559: {
     // gasConfig
     baseFeeMaxChangeDenominator: 8, // Maximum base fee change denominator
@@ -50,22 +50,22 @@ export const paramsBlock: ParamsDict = {
     initialBaseFee: 1000000000, // Initial base fee on first EIP1559 block
   },
   /**
-.  * Difficulty Bomb Delay to December 1st 2021
-.  */
+   * Difficulty Bomb Delay to December 1st 2021
+   */
   3554: {
     // pow
     difficultyBombDelay: 9500000, // the amount of blocks to delay the difficulty bomb with
   },
   /**
-.  * Difficulty Bomb Delay to June 2022
-.  */
+   * Difficulty Bomb Delay to June 2022
+   */
   4345: {
     // pow
     difficultyBombDelay: 10700000, // the amount of blocks to delay the difficulty bomb with
   },
   /**
-.  * Shard Blob Transactions
-.  */
+   * Shard Blob Transactions
+   */
   4844: {
     // gasConfig
     targetBlobGasPerBlock: 393216, // The target blob gas consumed per block
@@ -84,8 +84,8 @@ export const paramsBlock: ParamsDict = {
     difficultyBombDelay: 11400000, // the amount of blocks to delay the difficulty bomb with
   },
   /**
-.  * Blob throughput increase
-.  */
+   * Blob throughput increase
+   */
   7691: {
     // gasConfig
     targetBlobGasPerBlock: 786432, // The target blob gas consumed per block
