@@ -163,49 +163,35 @@ export const hardforksDict: HardforksDict = {
   /**
    * Description: Next feature hardfork after prague (headliner: PeerDAS)
    * URL        : https://eips.ethereum.org/EIPS/eip-7607
-   * Status     : Draft
+   * Status     : Final
    */
   osaka: {
     eips: [7594, 7823, 7825, 7883, 7939, 7951, 7918],
   },
   /**
-   * Description: HF to update the blob target, max and updateFraction
-   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/bpo1.md
-   * Status     : Experimental
+   * Description: HF to update the blob target, max and updateFraction (see also EIP-7892)
+   * URL        : TBD
+   * Status     : Final
    */
   bpo1: {
     eips: [],
+    params: {
+      target: 10,
+      max: 15,
+      blobGasPriceUpdateFraction: 8346193,
+    },
   },
   /**
-   * Description: HF to update the blob target, max and updateFraction
-   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/bpo2.md
-   * Status     : Experimental
+   * Description: HF to update the blob target, max and updateFraction (see also EIP-7892)
+   * URL        : TBD
+   * Status     : Final
    */
   bpo2: {
     eips: [],
-  },
-  /**
-   * Description: HF to update the blob target, max and updateFraction
-   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/bpo3.md
-   * Status     : Experimental
-   */
-  bpo3: {
-    eips: [],
-  },
-  /**
-   * Description: HF to update the blob target, max and updateFraction
-   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/bpo4.md
-   * Status     : Experimental
-   */
-  bpo4: {
-    eips: [],
-  },
-  /**
-   * Description: HF to update the blob target, max and updateFraction
-   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/bpo5.md
-   * Status     : Experimental
-   */
-  bpo5: {
-    eips: [],
+    params: {
+      target: 14,
+      max: 21,
+      blobGasPriceUpdateFraction: 11684671,
+    },
   },
 }

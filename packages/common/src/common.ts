@@ -19,6 +19,7 @@ import type { BigIntLike, PrefixedHexString } from '@ethereumjs/util'
 import type { ConsensusAlgorithm, ConsensusType } from './enums.ts'
 import type {
   BootstrapNodeConfig,
+  BpoSchedule,
   CasperConfig,
   ChainConfig,
   CliqueConfig,
@@ -331,6 +332,12 @@ export class Common {
           }
         }
       }
+      // Hardfork-scoped params (e.g. for bpo1, bpo2)
+      // override the baseline EIP values when present
+      const hfScopedParams = this._params[hfChanges[0]]
+      if (hfScopedParams !== undefined && hfScopedParams !== null) {
+        this._mergeWithParamsCache(hfScopedParams)
+      }
       // Parameter-inlining HF config (e.g. for istanbul or custom blobSchedule)
       if (hfChanges[1].params !== undefined && hfChanges[1].params !== null) {
         this._mergeWithParamsCache(hfChanges[1].params)
@@ -440,6 +447,25 @@ export class Common {
   paramByBlock(name: string, blockNumber: BigIntLike, timestamp?: BigIntLike): bigint {
     const hardfork = this.getHardforkBy({ blockNumber, timestamp })
     return this.paramByHardfork(name, hardfork)
+  }
+
+  /**
+   * Returns the blob gas schedule for the current hardfork
+   * @returns The blob gas schedule
+   */
+  getBlobGasSchedule(): BpoSchedule {
+    if (this.gteHardfork(Hardfork.Bpo1)) {
+      return {
+        targetBlobGasPerBlock: this.param('target') * this.param('blobGasPerBlob'),
+        maxBlobGasPerBlock: this.param('max') * this.param('blobGasPerBlob'),
+        blobGasPriceUpdateFraction: this.param('blobGasPriceUpdateFraction'),
+      }
+    }
+    return {
+      targetBlobGasPerBlock: this.param('targetBlobGasPerBlock'),
+      maxBlobGasPerBlock: this.param('maxBlobGasPerBlock'),
+      blobGasPriceUpdateFraction: this.param('blobGasPriceUpdateFraction'),
+    }
   }
 
   /**

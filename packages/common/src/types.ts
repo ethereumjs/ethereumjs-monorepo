@@ -189,3 +189,9 @@ export type ParamsDict = {
 export type HardforksDict = {
   [key: string]: HardforkConfig
 }
+
+export type BpoSchedule = {
+  targetBlobGasPerBlock: bigint
+  maxBlobGasPerBlock: bigint
+  blobGasPriceUpdateFraction: bigint
+}

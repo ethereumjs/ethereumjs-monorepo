@@ -563,8 +563,8 @@ export class BlockHeader {
     const excessBlobGas = this.excessBlobGas ?? BIGINT_0
     const blobGasUsed = this.blobGasUsed ?? BIGINT_0
 
-    const targetPerBlock = childCommon.param('targetBlobGasPerBlock')
-    const maxPerBlock = childCommon.param('maxBlobGasPerBlock')
+    const { targetBlobGasPerBlock: targetPerBlock, maxBlobGasPerBlock: maxPerBlock } =
+      childCommon.getBlobGasSchedule()
 
     // Early exit (strictly < per spec)
     if (excessBlobGas + blobGasUsed < targetPerBlock) {
