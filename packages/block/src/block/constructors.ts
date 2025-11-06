@@ -294,9 +294,9 @@ export const createBlockFromJSONRPCProvider = async (
 
 /**
  *  Method to retrieve a block from an execution payload
- * @param execution payload constructed from beacon payload
+ * @param payload Execution payload constructed from beacon payload data
  * @param opts {@link BlockOptions}
- * @returns the block constructed block
+ * @returns The constructed block
  */
 export async function createBlockFromExecutionPayload(
   payload: ExecutionPayload,
@@ -358,9 +358,9 @@ export async function createBlockFromExecutionPayload(
 
 /**
  *  Method to retrieve a block from a beacon payload JSON
- * @param payload JSON of a beacon beacon fetched from beacon apis
+ * @param payload JSON of a beacon block fetched from beacon APIs
  * @param opts {@link BlockOptions}
- * @returns the block constructed block
+ * @returns The constructed block
  */
 export async function createBlockFromBeaconPayloadJSON(
   payload: BeaconPayloadJSON,
