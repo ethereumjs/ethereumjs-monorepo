@@ -11,7 +11,7 @@
 
 - 🦄 All block features till **Pectra**
 - 🌴 Tree-shakeable API
-- 👷🏼 Controlled dependency set (4 external + `@Noble` crypto)
+- 👷🏼 Controlled dependency set (4 external + `@noble` crypto)
 - 🔮 `EIP-4844` Shard Blob Txs
 - 💸 `EIP-4895` Beacon Chain Withdrawals
 - 📨 `EIP-7685` Consensus Layer Requests
