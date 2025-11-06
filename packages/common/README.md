@@ -199,7 +199,7 @@ Supported chains:
 - `mainnet` (`Mainnet`)
 - `sepolia` (`Sepolia`) (`v2.6.1`+)
 - `holesky` (`Holesky`) (`v4.1.0`+)
-- `hoodi`(`Hoodi`) (`v10+` (new versioning scheme))
+- `hoodi` (`Hoodi`) (`v10+` (new versioning scheme))
 - Private/custom chain parameters
 
 The following chain-specific parameters are provided:
