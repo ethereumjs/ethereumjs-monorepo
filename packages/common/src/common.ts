@@ -762,8 +762,8 @@ export class Common {
   }
 
   /**
-   * Returns the hardforks for current chain
-   * @returns {Array} Array with arrays of hardforks
+   * Returns the hardfork definitions for the current chain.
+   * @returns Array of hardfork transition configs
    */
   hardforks(): HardforkTransitionConfig[] {
     const hfs = this._chainParams.hardforks
@@ -774,8 +774,8 @@ export class Common {
   }
 
   /**
-   * Returns bootstrap nodes for the current chain
-   * @returns {Dictionary} Dict with bootstrap nodes
+   * Returns bootstrap nodes for the current chain.
+   * @returns Array of bootstrap node configs
    */
   bootstrapNodes(): BootstrapNodeConfig[] {
     return this._chainParams.bootstrapNodes
