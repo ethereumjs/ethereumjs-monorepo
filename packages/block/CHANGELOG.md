@@ -11,6 +11,32 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 - Some `0n` -> `BIGINT_0` replacements, PR [#4147](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4147)
 - Remove Verkle package support, PR [#4145](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4145)
 
+### EIP-7918 - Blob base fee bounded by execution cost
+
+EIP-7918 support has been implemented, which ensures that the blob base fee is bounded by execution cost. The block library now properly calculates `excess_blob_gas` according to the new formula that imposes a reserve price, ensuring the blob fee market functions properly even when execution costs dominate.
+
+### EIP-7934 - RLP Execution Block Size Limit
+
+Support for EIP-7934 has been added, introducing a protocol-level cap on the maximum RLP-encoded block size to 10 MiB (with a 2 MiB margin for beacon block size, resulting in a maximum RLP block size of 8 MiB). The block library now validates that blocks do not exceed this size limit during construction and validation.
+
+```typescript
+import { Block } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Osaka })
+
+// Blocks exceeding 8 MiB RLP size will be rejected
+const block = createBlockFromRLP({
+  // ... block data
+}, { common })
+
+// The block size is validated according to EIP-7934
+const rlpSize = block.serialize().length
+if (rlpSize > 8 * 1024 * 1024) {
+  // Block exceeds maximum RLP size
+}
+```
+
 ## 10.0.0 - 2025-04-29
 
 ### Overview

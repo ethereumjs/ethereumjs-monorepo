@@ -12,6 +12,38 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 - Improve `nextHardforkBlockOrTimestamp` method, PR [#4080](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4080)
 - Remove Verkle package support, PR [#4145](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4145)
 
+### EIP-7594 - PeerDAS - Peer Data Availability Sampling
+
+This release adds support for EIP-7594 PeerDAS, which extends EIP-4844 blob transactions with data availability sampling capabilities. The Common library now includes EIP-7594 configuration and activation for the Osaka hardfork, enabling support for PeerDAS blob transactions with cell proofs and network wrapper version 1.
+
+### EIP-7823 - Set upper bounds for MODEXP
+
+EIP-7823 support has been added, introducing an upper bound of 8192 bits (1024 bytes) on each input field (base, exponent, modulus) of the MODEXP precompile. The Common library includes the EIP configuration and activation for Osaka, ensuring MODEXP calls exceeding these limits are properly rejected.
+
+### EIP-7825 - Transaction Gas Limit Cap
+
+Support for EIP-7825 has been implemented, introducing a protocol-level cap of 16,777,216 gas (2^24) for individual transactions. The Common library includes the EIP configuration and activation for Osaka, enabling transaction validation against this gas limit cap.
+
+### EIP-7883 - ModExp Gas Cost Increase
+
+EIP-7883 support has been added, which increases the gas cost of the MODEXP precompile. The Common library includes the EIP configuration and activation for Osaka, ensuring MODEXP operations use the updated pricing algorithm with increased minimum gas cost and adjusted complexity calculations.
+
+### EIP-7918 - Blob base fee bounded by execution cost
+
+EIP-7918 support has been implemented, which imposes that the price of `GAS_PER_BLOB` blob gas is greater than the price of `BLOB_BASE_COST` execution gas. The Common library includes the EIP configuration and activation for Osaka, ensuring proper blob fee market functionality.
+
+### EIP-7934 - RLP Execution Block Size Limit
+
+Support for EIP-7934 has been added, introducing a protocol-level cap on the maximum RLP-encoded block size to 10 MiB (with a 2 MiB margin for beacon block size). The Common library includes the EIP configuration and activation for Osaka, enabling block size validation.
+
+### EIP-7939 - Count leading zeros (CLZ) opcode
+
+EIP-7939 support has been implemented, adding a new opcode `CLZ` (0x1e) that counts the number of leading zero bits in a 256-bit word. The Common library includes the EIP configuration and activation for Osaka, enabling the use of the CLZ opcode in EVM execution.
+
+### EIP-7951 - Precompile for secp256r1 Curve Support
+
+EIP-7951 support has been added, introducing a new precompile at address `0x100` (`P256VERIFY`) for ECDSA signature verification over the secp256r1 curve. The Common library includes the EIP configuration and activation for Osaka, enabling native support for secp256r1 signatures from modern secure hardware devices.
+
 ## 10.0.0 - 2025-04-29
 
 ### Overview
