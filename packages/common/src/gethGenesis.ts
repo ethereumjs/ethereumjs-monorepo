@@ -146,6 +146,7 @@ export interface GenesisState {
 /**
  * Parses the geth genesis state into Blockchain {@link GenesisState}
  * @param gethGenesis GethGenesis object
+ * @returns Parsed {@link GenesisState}
  */
 export function parseGethGenesisState(gethGenesis: GethGenesis): GenesisState {
   const state: GenesisState = {}
