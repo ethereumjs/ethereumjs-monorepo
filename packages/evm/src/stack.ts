@@ -51,11 +51,6 @@ export class Stack {
   }
 
   /**
-   * Pop multiple items from stack. Top of stack is first item
-   * in returned array.
-   * @param num - Number of items to pop
-   */
-  /**
    * Pops multiple items from the stack with the top-most item returned first.
    * @param num - Number of items to pop (defaults to 1)
    * @returns Array containing the popped values
@@ -81,14 +76,10 @@ export class Stack {
   }
 
   /**
-   * Return items from the stack
-   * @param num Number of items to return
-   * @throws {@link ERROR.STACK_UNDERFLOW}
-   */
-  /**
    * Returns items from the stack without removing them.
    * @param num - Number of items to return (defaults to 1)
    * @returns Array of items, with index 0 representing the top of the stack
+   * @throws {@link EVMError} with code STACK_UNDERFLOW if there are not enough items on the stack
    */
   peek(num: number = 1): bigint[] {
     const peekArray: bigint[] = Array(num)
@@ -104,10 +95,6 @@ export class Stack {
     return peekArray
   }
 
-  /**
-   * Swap top of stack with an item in the stack.
-   * @param position - Index of item from top of the stack (0-indexed)
-   */
   /**
    * Swaps the top of the stack with another item.
    * @param position - Zero-based index from the top of the stack (0 swaps with the top itself)
@@ -126,10 +113,6 @@ export class Stack {
     storageCached[i] = tmp
   }
 
-  /**
-   * Pushes a copy of an item in the stack.
-   * @param position - Index of item to be copied (1-indexed)
-   */
   // I would say that we do not need this method any more
   // since you can't copy a primitive data type
   // Nevertheless not sure if we "loose" something here?
