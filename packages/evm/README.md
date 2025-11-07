@@ -277,7 +277,7 @@ This library supports the blob transaction type introduced with [EIP-4844](https
 
 ## Precompiles
 
-This library support all EVM precompiles up to the `Prague` hardfork.
+This library supports all EVM precompiles up to the `Prague` hardfork.
 
 In our `examples` folder we provide a helper function for simple direct precompile runs in the `precompiles` folder.
 
