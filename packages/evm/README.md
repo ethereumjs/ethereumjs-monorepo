@@ -405,7 +405,7 @@ recommended not to do that.
 
 ## Understanding the EVM
 
-If you want to understand your EVM runs we have added a hierarchically structured list of debug loggers for your convenience which can be activated in arbitrary combinations. We also use these loggers internally for development and testing. These loggers use the [debug](https://github.com/visionmedia/debug) library and can be activated on the CL with `DEBUG=ethjs,[Logger Selection] node [Your Script to Run].js` and produce output like the following:
+If you want to understand your EVM runs we have added a hierarchically structured list of debug loggers for your convenience which can be activated in arbitrary combinations. We also use these loggers internally for development and testing. These loggers use the [debug](https://github.com/visionmedia/debug) library and can be activated on the CLI with `DEBUG=ethjs,[Logger Selection] node [Your Script to Run].js` and produce output like the following:
 
 ![EthereumJS EVM Debug Logger](./debug.png?raw=true)
 
