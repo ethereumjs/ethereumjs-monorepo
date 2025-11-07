@@ -449,6 +449,7 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
    * ```javascript
    * const serializedMessage = tx.getMessageToSign() // use this for the HW wallet input
    * ```
+   * @returns Serialized unsigned transaction payload
    */
   getMessageToSign(): Uint8Array {
     return EIP2718.serialize(this, this.raw().slice(0, 11))
@@ -460,6 +461,7 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
    *
    * Note: in contrast to the legacy tx the raw message format is already
    * serialized and doesn't need to be RLP encoded any more.
+   * @returns Keccak hash of the unsigned transaction payload
    */
   getHashedMessageToSign(): Uint8Array {
     return EIP2718.getHashedMessageToSign(this)
@@ -470,6 +472,7 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
    *
    * This method can only be used for signed txs (it throws otherwise).
    * Use {@link Blob4844Tx.getMessageToSign} to get a tx hash for the purpose of signing.
+   * @returns Hash of the serialized signed transaction
    */
   public hash(): Uint8Array {
     return Legacy.hash(this)
@@ -485,6 +488,7 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
 
   /**
    * Returns the public key of the sender
+   * @returns Sender public key
    */
   public getSenderPublicKey(): Uint8Array {
     return Legacy.getSenderPublicKey(this)
@@ -492,6 +496,7 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
 
   /**
    * Produces a JSON representation compliant with the execution API.
+   * @returns JSON encoding of the transaction
    */
   toJSON(): JSONTx {
     const accessListJSON = accessListBytesToJSON(this.accessList)
@@ -547,6 +552,7 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
 
   /**
    * Returns validation errors for this transaction, if any.
+   * @returns Array of validation error messages
    */
   getValidationErrors(): string[] {
     return Legacy.getValidationErrors(this)
@@ -561,6 +567,7 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
 
   /**
    * Verifies whether the attached signature is valid.
+   * @returns true if signature verification succeeds
    */
   verifySignature(): boolean {
     return Legacy.verifySignature(this)
@@ -568,6 +575,7 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
 
   /**
    * Returns the recovered sender address.
+   * @returns Sender {@link Address}
    */
   getSenderAddress(): Address {
     return Legacy.getSenderAddress(this)
@@ -577,6 +585,7 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
    * Signs the transaction with the provided private key and returns the signed instance.
    * @param privateKey - 32-byte private key used for signing
    * @param extraEntropy - Optional entropy passed to the signing routine
+   * @returns Newly signed transaction
    */
   sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = false): Blob4844Tx {
     return Legacy.sign(this, privateKey, extraEntropy) as Blob4844Tx
@@ -584,6 +593,7 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
 
   /**
    * Indicates whether the transaction already carries signature values.
+   * @returns true if signature parts are present
    */
   public isSigned(): boolean {
     const { v, r, s } = this
@@ -596,6 +606,7 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
 
   /**
    * Return a compact error string representation of the object
+   * @returns Human-readable error summary
    */
   public errorStr() {
     let errorStr = Legacy.getSharedErrorPostfix(this)

@@ -253,6 +253,7 @@ export class LegacyTx implements TransactionInterface<typeof TransactionType.Leg
    * const message = tx.getMessageToSign()
    * const serializedMessage = RLP.encode(message)) // use this for the HW wallet input
    * ```
+   * @returns Array representing the unsigned transaction fields
    */
   getMessageToSign(): Uint8Array[] {
     const message = [
@@ -276,6 +277,7 @@ export class LegacyTx implements TransactionInterface<typeof TransactionType.Leg
   /**
    * Returns the hashed serialized unsigned tx, which can be used
    * to sign the transaction (e.g. for sending to a hardware wallet).
+   * @returns Hash of the unsigned transaction payload
    */
   getHashedMessageToSign() {
     const message = this.getMessageToSign()
@@ -318,6 +320,7 @@ export class LegacyTx implements TransactionInterface<typeof TransactionType.Leg
    *
    * This method can only be used for signed txs (it throws otherwise).
    * Use {@link Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
+   * @returns Hash of the serialized signed transaction
    */
   hash(): Uint8Array {
     return Legacy.hash(this)
@@ -325,6 +328,7 @@ export class LegacyTx implements TransactionInterface<typeof TransactionType.Leg
 
   /**
    * Computes a sha3-256 hash which can be used to verify the signature
+   * @returns Hash used when verifying the signature
    */
   getMessageToVerifySignature() {
     if (!this.isSigned()) {
@@ -336,6 +340,7 @@ export class LegacyTx implements TransactionInterface<typeof TransactionType.Leg
 
   /**
    * Returns the public key of the sender
+   * @returns Sender public key
    */
   getSenderPublicKey(): Uint8Array {
     return Legacy.getSenderPublicKey(this)
@@ -388,6 +393,7 @@ export class LegacyTx implements TransactionInterface<typeof TransactionType.Leg
 
   /**
    * Returns an object with the JSON representation of the transaction.
+   * @returns JSON encoding of the transaction
    */
   toJSON(): JSONTx {
     // TODO this is just copied. Make this execution-api compliant
@@ -424,6 +430,7 @@ export class LegacyTx implements TransactionInterface<typeof TransactionType.Leg
 
   /**
    * Returns the recovered sender address.
+   * @returns Sender {@link Address}
    */
   getSenderAddress(): Address {
     return Legacy.getSenderAddress(this)
@@ -441,6 +448,7 @@ export class LegacyTx implements TransactionInterface<typeof TransactionType.Leg
 
   /**
    * Return a compact error string representation of the object
+   * @returns Human-readable error summary
    */
   public errorStr() {
     let errorStr = Legacy.getSharedErrorPostfix(this)
