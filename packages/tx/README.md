@@ -238,7 +238,7 @@ const main = async () => {
   console.log(`Tx contains ${tx.numBlobs()} blob`)
   console.log(`Blob versioned hashes: ${tx.blobVersionedHashes.join(', ')}`)
 
-  // To send a transaction via RPC, you can something like this:
+  // To send a transaction via RPC, you can do something like this:
   // const rawTx = tx.sign(privateKeyBytes).serializeNetworkWrapper()
   // myRPCClient.request('eth_sendRawTransaction', [rawTx]) // submits a transaction via RPC
 }
