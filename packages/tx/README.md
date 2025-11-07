@@ -256,7 +256,7 @@ For manually deriving commitments, proofs and versioned hashes, there are dedica
 #### Serialization
 
 Blob transactions can be serialized in two ways.
-1) `tx.serialize()` - the standard serialization returns an RLP-encoded `uint8Array` that conforms to the transaction as represented after it is included in a block 
+1) `tx.serialize()` - the standard serialization returns an RLP-encoded `Uint8Array` that conforms to the transaction as represented after it is included in a block 
 2) `tx.serializeNetworkWrapper()` - this serialization format includes the `blobs` in the encoded data and is the format specified for transactions that are being submitted to/gossipped around the mempool.  If you are constructing a transaction to submit via JSON-RPC, use this format.
 
 See the [Blob Transaction Tests](./test/eip4844.spec.ts) for additional examples of usage in instantiating, serializing, and deserializing these transactions.
