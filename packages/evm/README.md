@@ -121,7 +121,7 @@ const main = async () => {
 void main()
 ```
 
-Additionally this usage example shows the use of events to listen on the inner workings and procedural updates
+Additionally, this example shows how to use events to listen to the inner workings and procedural updates
 (`step` event) of the EVM.
 
 ### WASM Crypto Support
