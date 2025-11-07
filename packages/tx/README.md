@@ -310,7 +310,7 @@ console.log(
 - Activation: `chainstart` (with modifications along the road, see HF section below)
 - Type: `0` (internal)
 
-Legacy transaction are still valid transaction within Ethereum `mainnet` but will likely be deprecated at some point.
+Legacy transactions are still valid transactions within Ethereum `mainnet` but will likely be deprecated at some point.
 See this [example script](./examples/transactions.ts) or the following code example on how to use.
 
 ```ts
