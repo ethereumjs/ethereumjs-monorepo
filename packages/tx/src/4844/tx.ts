@@ -475,6 +475,10 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
     return Legacy.hash(this)
   }
 
+  /**
+   * Returns the hashed unsigned transaction that should be used for signature verification.
+   * @returns Hash of the unsigned transaction payload
+   */
   getMessageToVerifySignature(): Uint8Array {
     return this.getHashedMessageToSign()
   }
@@ -486,6 +490,9 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
     return Legacy.getSenderPublicKey(this)
   }
 
+  /**
+   * Produces a JSON representation compliant with the execution API.
+   */
   toJSON(): JSONTx {
     const accessListJSON = accessListBytesToJSON(this.accessList)
     const baseJSON = getBaseJSON(this)
@@ -501,6 +508,13 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
     }
   }
 
+  /**
+   * Adds signature values (and optional network wrapper fields) and returns a new transaction.
+   * @param v - Recovery parameter
+   * @param r - Signature `r` value
+   * @param s - Signature `s` value
+   * @returns New `Blob4844Tx` instance containing the signature
+   */
   addSignature(v: bigint, r: Uint8Array | bigint, s: Uint8Array | bigint): Blob4844Tx {
     r = toBytes(r)
     s = toBytes(s)
@@ -531,26 +545,46 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
     )
   }
 
+  /**
+   * Returns validation errors for this transaction, if any.
+   */
   getValidationErrors(): string[] {
     return Legacy.getValidationErrors(this)
   }
 
+  /**
+   * @returns true if the transaction has no validation errors
+   */
   isValid(): boolean {
     return Legacy.isValid(this)
   }
 
+  /**
+   * Verifies whether the attached signature is valid.
+   */
   verifySignature(): boolean {
     return Legacy.verifySignature(this)
   }
 
+  /**
+   * Returns the recovered sender address.
+   */
   getSenderAddress(): Address {
     return Legacy.getSenderAddress(this)
   }
 
+  /**
+   * Signs the transaction with the provided private key and returns the signed instance.
+   * @param privateKey - 32-byte private key used for signing
+   * @param extraEntropy - Optional entropy passed to the signing routine
+   */
   sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = false): Blob4844Tx {
     return Legacy.sign(this, privateKey, extraEntropy) as Blob4844Tx
   }
 
+  /**
+   * Indicates whether the transaction already carries signature values.
+   */
   public isSigned(): boolean {
     const { v, r, s } = this
     if (v === undefined || r === undefined || s === undefined) {
