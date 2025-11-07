@@ -130,7 +130,7 @@ This library by default uses JavaScript implementations for the basic standard c
 
 ## Examples
 
-See the [examples](./examples/) folder for different meaningful examples on how to use the EVM package and invoke certain aspects of it, e.g. running a bytecode snippet, listening to events or activate an EVM with a certain EIP for experimental purposes.
+See the [examples](./examples/) folder for different meaningful examples on how to use the EVM package and invoke certain aspects of it, e.g. running a bytecode snippet, listening to events, or to activate an EVM with a certain EIP for experimental purposes.
 
 ## Browser
 
