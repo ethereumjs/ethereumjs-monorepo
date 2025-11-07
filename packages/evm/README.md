@@ -14,7 +14,7 @@
 - 👷🏼 Controlled dependency set (7 external + `@Noble` crypto)
 - 🧩 Flexible EIP on/off engine
 - 🛠️ Custom precompiles
-- 🚀 Build-in profiler
+- 🚀 Built-in profiler
 - 🪢 User-friendly colored debugging
 - 🛵 422KB bundle size (110KB gzipped)
 - 🏄🏾‍♂️ WASM-free default + Fully browser ready
