@@ -184,10 +184,19 @@ export class LegacyTx implements TransactionInterface<typeof TransactionType.Leg
     return this.activeCapabilities.includes(capability)
   }
 
+  /**
+   * Indicates whether the transaction already contains signature values.
+   * @returns true if `v`, `r`, and `s` are populated
+   */
   isSigned(): boolean {
     return Legacy.isSigned(this)
   }
 
+  /**
+   * Computes the effective priority fee for this legacy transaction, optionally considering a base fee.
+   * @param baseFee - Optional base fee used on networks that emulate 1559-style pricing
+   * @returns Priority fee portion denominated in wei
+   */
   getEffectivePriorityFee(baseFee?: bigint): bigint {
     return Legacy.getEffectivePriorityFee(this.gasPrice, baseFee)
   }
@@ -332,6 +341,14 @@ export class LegacyTx implements TransactionInterface<typeof TransactionType.Leg
     return Legacy.getSenderPublicKey(this)
   }
 
+  /**
+   * Adds a signature (or replaces an existing one) and returns a new transaction instance.
+   * @param v - Recovery parameter, potentially unconverted when `convertV` is false
+   * @param r - `r` value of the signature
+   * @param s - `s` value of the signature
+   * @param convertV - When true, converts the recovery ID into the appropriate legacy `v`
+   * @returns A new `LegacyTx` that includes the provided signature
+   */
   addSignature(
     v: bigint,
     r: Uint8Array | bigint,
@@ -381,22 +398,43 @@ export class LegacyTx implements TransactionInterface<typeof TransactionType.Leg
     return baseJSON
   }
 
+  /**
+   * Validates the transaction and returns any encountered errors.
+   * @returns Array containing validation error messages
+   */
   getValidationErrors(): string[] {
     return Legacy.getValidationErrors(this)
   }
 
+  /**
+   * Determines whether the transaction passes all validation checks.
+   * @returns true if no validation errors were found
+   */
   isValid(): boolean {
     return Legacy.isValid(this)
   }
 
+  /**
+   * Checks whether the stored signature can be successfully verified.
+   * @returns true if the signature is valid
+   */
   verifySignature(): boolean {
     return Legacy.verifySignature(this)
   }
 
+  /**
+   * Returns the recovered sender address.
+   */
   getSenderAddress(): Address {
     return Legacy.getSenderAddress(this)
   }
 
+  /**
+   * Signs the transaction with the provided private key and returns the new signed instance.
+   * @param privateKey - 32-byte private key used to sign the transaction
+   * @param extraEntropy - Optional entropy passed to the signing routine
+   * @returns A new signed `LegacyTx`
+   */
   sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = false): LegacyTx {
     return Legacy.sign(this, privateKey, extraEntropy) as LegacyTx
   }
