@@ -268,7 +268,7 @@ See the [Blob Transaction Tests](./test/eip4844.spec.ts) for additional examples
 - Activation: `prague`
 - Type: `4`
 
-This tx type allows to run code in the context of an EOA and therefore extend the functionality which can be "reached" from respectively integrated into the scope of an otherwise limited EOA account.
+This tx type lets you run code in the context of an EOA, extending the functionality available to an otherwise limited account.
 
 The following is a simple example how to use an `EOACodeEIP7702Tx` with one authorization list item:
 
