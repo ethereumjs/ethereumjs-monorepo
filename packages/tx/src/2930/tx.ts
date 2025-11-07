@@ -270,6 +270,13 @@ export class AccessList2930Tx
     return Legacy.getSenderPublicKey(this)
   }
 
+  /**
+   * Adds the provided signature values and returns a new transaction instance.
+   * @param v - Recovery parameter (y-parity)
+   * @param r - `r` component of the signature
+   * @param s - `s` component of the signature
+   * @returns New `AccessList2930Tx` with the supplied signature
+   */
   addSignature(v: bigint, r: Uint8Array | bigint, s: Uint8Array | bigint): AccessList2930Tx {
     r = toBytes(r)
     s = toBytes(s)
@@ -308,26 +315,46 @@ export class AccessList2930Tx
     }
   }
 
+  /**
+   * Runs transaction validation and returns any discovered errors.
+   */
   getValidationErrors(): string[] {
     return Legacy.getValidationErrors(this)
   }
 
+  /**
+   * @returns true if the transaction has no validation errors
+   */
   isValid(): boolean {
     return Legacy.isValid(this)
   }
 
+  /**
+   * Checks whether the signature currently attached to the transaction is valid.
+   */
   verifySignature(): boolean {
     return Legacy.verifySignature(this)
   }
 
+  /**
+   * Returns the signer's address recovered from the signature.
+   */
   getSenderAddress(): Address {
     return Legacy.getSenderAddress(this)
   }
 
+  /**
+   * Signs the transaction with the provided private key and returns a new instance.
+   * @param privateKey - 32-byte private key
+   * @param extraEntropy - Optional entropy fed into the signing algorithm
+   */
   sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = false): AccessList2930Tx {
     return Legacy.sign(this, privateKey, extraEntropy) as AccessList2930Tx
   }
 
+  /**
+   * Reports whether the transaction already contains signature values.
+   */
   isSigned(): boolean {
     return Legacy.isSigned(this)
   }
