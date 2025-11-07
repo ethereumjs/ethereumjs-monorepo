@@ -378,7 +378,7 @@ You can subscribe to the following events:
 #### Event listeners
 
 You can perform asynchronous operations from within an event handler
-and prevent the EVM to keep running until they finish.
+and prevent the EVM from continuing until they finish.
 
 If subscribing to events with an async listener, specify the second
 parameter of your listener as a `resolve` function that must be called once your listener code has finished.
