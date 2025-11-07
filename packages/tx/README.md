@@ -181,7 +181,7 @@ console.log(bytesToHex(tx.hash())) // 0x9150cdebad74e88b038e6c6b964d99af705f9c08
 ```
 
 For generating access lists from tx data based on a certain network state there is a `reportAccessList` option
-on the `Vm.runTx()` method of the `@ethereumjs/vm` `TypeScript` VM implementation.
+on the `VM.runTx()` method of the `@ethereumjs/vm` `TypeScript` VM implementation.
 
 ### Blob Transactions (EIP-4844)
 
