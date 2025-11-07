@@ -49,7 +49,7 @@ npm install @ethereumjs/tx
 
 ### Static Constructor Methods
 
-To instantiate a tx it is not recommended to use the constructor directly. Instead each tx type comes with the following set of static constructor methods which helps on instantiation depending on the input data format:
+To instantiate a tx, it is not recommended to use the constructor directly. Instead each tx type comes with the following set of static constructor methods which help instantiate depending on the input data format:
 
 - `public static fromTxData(txData: TxData, opts: TxOptions = {})`: instantiate from a data dictionary
 - `public static fromSerializedTx(serialized: Uint8Array, opts: TxOptions = {})`: instantiate from a serialized tx
