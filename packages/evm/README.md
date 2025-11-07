@@ -420,7 +420,7 @@ The following loggers are currently available:
 | `evm:ops`                          |  Opcode traces                                      |
 | `evm:ops:[Lower-case opcode name]` | Traces on a specific opcode                         |
 
-Here are some examples for useful logger combinations.
+Here are some examples of useful logger combinations.
 
 Run one specific logger:
 
