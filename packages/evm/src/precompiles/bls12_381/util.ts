@@ -8,9 +8,10 @@ const ZERO_BYTES_16 = new Uint8Array(16)
  * Calculates the gas used for the MSM precompiles based on the number of pairs and
  * calculating in some discount in relation to the number of pairs.
  *
- * @param numPairs
- * @param gasUsedPerPair
- * @returns
+ * @param numPairs - Number of pairings provided to the precompile
+ * @param gasUsedPerPair - Base gas cost per pairing
+ * @param discountTable - Discount table (pair count -> multiplier)
+ * @returns Total gas to charge after applying the discount table
  */
 export const msmGasUsed = (
   numPairs: number,
@@ -49,11 +50,11 @@ export const msmGasUsed = (
  * ]
  * ```
  *
- * @param opts
- * @param zeroByteRanges
- * @param pName
- * @param pairStart
- * @returns
+ * @param opts - Precompile input wrapper containing the data to inspect
+ * @param zeroByteRanges - Ranges (as [start, end]) within which bytes must be zero
+ * @param pName - Human readable precompile name for logging
+ * @param pairStart - Optional offset into the data when iterating through pairs
+ * @returns `true` if every specified range contains only zero bytes
  */
 export const leading16ZeroBytesCheck = (
   opts: PrecompileInput,
