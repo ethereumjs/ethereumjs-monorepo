@@ -9,7 +9,7 @@
 | Implements schema and functions for the different Ethereum transaction types |
 | ---------------------------------------------------------------------------- |
 
-- 🦄 All tx types up till **Pectra**
+- 🦄 All tx types up to **Pectra**
 - 🌴 Tree-shakeable API
 - 👷🏼 Controlled dependency set (1 external + `@Noble` crypto)
 - 🎼 Unified tx type API
