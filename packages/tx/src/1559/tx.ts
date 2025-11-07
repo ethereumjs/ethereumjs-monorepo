@@ -294,6 +294,13 @@ export class FeeMarket1559Tx
     return Legacy.getSenderPublicKey(this)
   }
 
+  /**
+   * Adds signature values and returns a new EIP-1559 transaction instance.
+   * @param v - Recovery parameter (y-parity)
+   * @param r - Signature `r` value
+   * @param s - Signature `s` value
+   * @returns Newly created transaction that includes the signature
+   */
   addSignature(v: bigint, r: Uint8Array | bigint, s: Uint8Array | bigint): FeeMarket1559Tx {
     r = toBytes(r)
     s = toBytes(s)
@@ -334,26 +341,46 @@ export class FeeMarket1559Tx
     }
   }
 
+  /**
+   * Runs validation logic and returns encountered errors, if any.
+   */
   getValidationErrors(): string[] {
     return Legacy.getValidationErrors(this)
   }
 
+  /**
+   * @returns true if the transaction passes validation
+   */
   isValid(): boolean {
     return Legacy.isValid(this)
   }
 
+  /**
+   * Verifies the embedded signature.
+   */
   verifySignature(): boolean {
     return Legacy.verifySignature(this)
   }
 
+  /**
+   * Recovers the sender address from the signature.
+   */
   getSenderAddress(): Address {
     return Legacy.getSenderAddress(this)
   }
 
+  /**
+   * Signs the transaction with the provided private key and returns the signed instance.
+   * @param privateKey - 32-byte private key
+   * @param extraEntropy - Optional entropy passed to the signing routine
+   */
   sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = false): FeeMarket1559Tx {
     return Legacy.sign(this, privateKey, extraEntropy) as FeeMarket1559Tx
   }
 
+  /**
+   * Reports whether the transaction already contains `v`, `r`, and `s`.
+   */
   public isSigned(): boolean {
     const { v, r, s } = this
     if (v === undefined || r === undefined || s === undefined) {
