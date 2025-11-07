@@ -73,7 +73,7 @@ void main()
 
 ### Blockchain, State and Events
 
-If the EVM should run on a certain state an `@ethereumjs/statemanager` is needed. An `@ethereumjs/blockchain` instance can be passed in to provide access to external interface information like a blockhash:
+If you want the EVM to run against a specific state, you need an `@ethereumjs/statemanager`. An `@ethereumjs/blockchain` instance can be passed in to provide access to external interface information like a blockhash:
 
 ```ts
 // ./examples/withBlockchain.ts
