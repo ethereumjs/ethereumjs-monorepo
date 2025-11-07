@@ -100,7 +100,7 @@ This library supports the following transaction types ([EIP-2718](https://eips.e
 - Activation: `london`
 - Type: `2`
 
-This is the recommended tx type starting with the activation of the `london` HF, see the following code snipped for an example on how to instantiate:
+This is the recommended tx type starting with the activation of the `london` HF, see the following code snippet for an example on how to instantiate:
 
 ```ts
 // ./examples/londonTx.ts
@@ -140,7 +140,7 @@ console.log(bytesToHex(tx.hash())) // 0x6f9ef69ccb1de1aea64e511efd6542541008ced3
 - Activation: `berlin`
 - Type: `1`
 
-This transaction type has been introduced along the `berlin` HF. See the following code snipped for an example on how to instantiate:
+This transaction type has been introduced along the `berlin` HF. See the following code snippet for an example on how to instantiate:
 
 ```ts
 // ./examples/accessListTx.ts
@@ -194,7 +194,7 @@ This library supports the blob transaction type introduced with [EIP-4844](https
 
 **Note:** This functionality needs a manual KZG library installation and global initialization, see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
 
-See the following code snipped for an example on how to instantiate:
+See the following code snippet for an example on how to instantiate:
 
 ```ts
 // ./examples/blobTx.ts
