@@ -45,7 +45,7 @@ const main = async () => {
   // Case 1: x == 0x00..00 -> expect 256
   await runCase(evm, `0x${'00'.repeat(32)}` as PrefixedHexString)
 
-  // Case 2: x == 0x01..00 -> MSB at bit 255 -> expect 255
+  // Case 2: x == 0x0..01 -> MSB at bit 0 -> expect 255
   await runCase(evm, `0x${'00'.repeat(31)}01` as PrefixedHexString)
 
   // Case 3: x == 0x40..00 -> MSB at bit 254 -> expect 1
