@@ -344,7 +344,7 @@ console.log(bytesToHex(signedTx.hash())) // 0x894b72d87f8333fccd29d1b3aca39af69d
 
 ## Transaction Factory
 
-If you only know on runtime which tx type will be used within your code or if you want to keep your code transparent to tx types, this library comes with a `TransactionFactory` for your convenience which can be used as follows:
+If you only know at runtime which tx type will be used within your code or if you want to keep your code transparent to tx types, this library comes with a `TransactionFactory` for your convenience which can be used as follows:
 
 ```ts
 // ./examples/txFactory.ts
@@ -366,7 +366,7 @@ if (tx.supports(Capability.EIP1559FeeMarket)) {
 }
 ```
 
-The correct tx type class for instantiation will then be chosen on runtime based on the data provided as an input.
+The correct tx type class for instantiation will then be chosen at runtime based on the data provided as an input.
 
 `TransactionFactory` supports the following static constructor methods:
 
