@@ -326,6 +326,13 @@ export class EOACode7702Tx implements TransactionInterface<typeof TransactionTyp
     return Legacy.getSenderPublicKey(this)
   }
 
+  /**
+   * Adds the provided signature values and returns a new transaction instance.
+   * @param v - Recovery parameter
+   * @param r - Signature `r` value
+   * @param s - Signature `s` value
+   * @returns New `EOACode7702Tx` that includes the signature
+   */
   addSignature(v: bigint, r: Uint8Array | bigint, s: Uint8Array | bigint): EOACode7702Tx {
     r = toBytes(r)
     s = toBytes(s)
@@ -372,26 +379,46 @@ export class EOACode7702Tx implements TransactionInterface<typeof TransactionTyp
     }
   }
 
+  /**
+   * Returns the list of validation errors, if any.
+   */
   getValidationErrors(): string[] {
     return Legacy.getValidationErrors(this)
   }
 
+  /**
+   * @returns true if the transaction has no validation issues
+   */
   isValid(): boolean {
     return Legacy.isValid(this)
   }
 
+  /**
+   * Verifies the embedded signature.
+   */
   verifySignature(): boolean {
     return Legacy.verifySignature(this)
   }
 
+  /**
+   * Returns the recovered sender address.
+   */
   getSenderAddress(): Address {
     return Legacy.getSenderAddress(this)
   }
 
+  /**
+   * Signs the transaction and returns the signed instance.
+   * @param privateKey - 32-byte private key
+   * @param extraEntropy - Optional entropy supplied to the signing routine
+   */
   sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = false): EOACode7702Tx {
     return Legacy.sign(this, privateKey, extraEntropy) as EOACode7702Tx
   }
 
+  /**
+   * Indicates whether the transaction already carries signature data.
+   */
   public isSigned(): boolean {
     const { v, r, s } = this
     if (v === undefined || r === undefined || s === undefined) {
