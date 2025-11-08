@@ -2,6 +2,15 @@ import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { type EVM, createEVM } from '@ethereumjs/evm'
 import { type PrefixedHexString, hexToBytes } from '@ethereumjs/util'
 
+// CLZ (Count Leading Zeros) opcode (0x1e)
+// Demonstrates the CLZ opcode introduced in https://eips.ethereum.org/EIPS/eip-7939
+//
+// The CLZ opcode returns the number of zero bits before the most significant 1-bit in a 256-bit value.
+// It enables efficient computation of bit length, log₂, and prefix comparisons directly in the EVM.
+//
+// Doing this in Solidity/Yul requires a loop or binary search using shifts and comparisons, which costs hundreds of gas and bloats bytecode.
+// By replacing multi-step shift and branch logic with a single instruction, it reduces gas cost, bytecode size, and zk-proof complexity.
+
 const common = new Common({
   chain: Mainnet,
   hardfork: Hardfork.Osaka,
