@@ -77,6 +77,14 @@ export const MAX_WITHDRAWALS_PER_PAYLOAD = 16
 export const RIPEMD160_ADDRESS_STRING = '0000000000000000000000000000000000000003'
 
 /**
+ * EIP-7934: RLP Execution Block Size Limit constants
+ * Maximum RLP-encoded block size to 10 MiB, with a 2 MiB margin for beacon block sizes
+ */
+export const MAX_BLOCK_SIZE = 10_485_760 // 10 MiB
+export const SAFETY_MARGIN = 2_097_152 // 2 MiB
+export const MAX_RLP_BLOCK_SIZE = MAX_BLOCK_SIZE - SAFETY_MARGIN // 8 MiB
+
+/**
  * BigInt constants
  */
 

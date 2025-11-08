@@ -1,376 +1,507 @@
+[**@ethereumjs/common**](../README.md)
+
+***
+
 [@ethereumjs/common](../README.md) / StateManagerInterface
 
 # Interface: StateManagerInterface
 
-## Hierarchy
+Defined in: [interfaces.ts:126](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L126)
 
-- **`StateManagerInterface`**
+## Properties
 
-  ↳ [`EVMStateManagerInterface`](EVMStateManagerInterface.md)
+### originalStorageCache
 
-## Table of contents
+> **originalStorageCache**: `object`
 
-### Methods
+Defined in: [interfaces.ts:173](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L173)
 
-- [checkpoint](StateManagerInterface.md#checkpoint)
-- [clearContractStorage](StateManagerInterface.md#clearcontractstorage)
-- [commit](StateManagerInterface.md#commit)
-- [deleteAccount](StateManagerInterface.md#deleteaccount)
-- [getAccount](StateManagerInterface.md#getaccount)
-- [getAppliedKey](StateManagerInterface.md#getappliedkey)
-- [getContractCode](StateManagerInterface.md#getcontractcode)
-- [getContractStorage](StateManagerInterface.md#getcontractstorage)
-- [getProof](StateManagerInterface.md#getproof)
-- [getStateRoot](StateManagerInterface.md#getstateroot)
-- [hasStateRoot](StateManagerInterface.md#hasstateroot)
-- [modifyAccountFields](StateManagerInterface.md#modifyaccountfields)
-- [putAccount](StateManagerInterface.md#putaccount)
-- [putContractCode](StateManagerInterface.md#putcontractcode)
-- [putContractStorage](StateManagerInterface.md#putcontractstorage)
-- [revert](StateManagerInterface.md#revert)
-- [setStateRoot](StateManagerInterface.md#setstateroot)
-- [shallowCopy](StateManagerInterface.md#shallowcopy)
+#### clear()
+
+> **clear**(): `void`
+
+##### Returns
+
+`void`
+
+#### get()
+
+> **get**(`address`, `key`): `Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
+
+##### Parameters
+
+###### address
+
+`Address`
+
+###### key
+
+`Uint8Array`
+
+##### Returns
+
+`Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
 
 ## Methods
 
-### checkpoint
+### checkChunkWitnessPresent()?
 
-▸ **checkpoint**(): `Promise`<`void`\>
+> `optional` **checkChunkWitnessPresent**(`contract`, `programCounter`): `Promise`\<`boolean`\>
 
-#### Returns
-
-`Promise`<`void`\>
-
-#### Defined in
-
-[interfaces.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L78)
-
-___
-
-### clearContractStorage
-
-▸ **clearContractStorage**(`address`): `Promise`<`void`\>
+Defined in: [interfaces.ts:183](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L183)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `address` | `Address` |
+##### contract
+
+`Address`
+
+##### programCounter
+
+`number`
 
 #### Returns
 
-`Promise`<`void`\>
+`Promise`\<`boolean`\>
 
-#### Defined in
+***
 
-[interfaces.ts:77](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L77)
+### checkpoint()
 
-___
+> **checkpoint**(): `Promise`\<`void`\>
 
-### commit
-
-▸ **commit**(): `Promise`<`void`\>
+Defined in: [interfaces.ts:149](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L149)
 
 #### Returns
 
-`Promise`<`void`\>
+`Promise`\<`void`\>
 
-#### Defined in
+***
 
-[interfaces.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L79)
+### clearCaches()
 
-___
+> **clearCaches**(): `void`
 
-### deleteAccount
+Defined in: [interfaces.ts:189](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L189)
 
-▸ **deleteAccount**(`address`): `Promise`<`void`\>
+#### Returns
+
+`void`
+
+***
+
+### clearStorage()
+
+> **clearStorage**(`address`): `Promise`\<`void`\>
+
+Defined in: [interfaces.ts:144](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L144)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `address` | `Address` |
+##### address
+
+`Address`
 
 #### Returns
 
-`Promise`<`void`\>
+`Promise`\<`void`\>
 
-#### Defined in
+***
 
-[interfaces.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L71)
+### commit()
 
-___
+> **commit**(): `Promise`\<`void`\>
 
-### getAccount
-
-▸ **getAccount**(`address`): `Promise`<`undefined` \| `Account`\>
-
-#### Parameters
-
-| Name | Type |
-| :------ | :------ |
-| `address` | `Address` |
+Defined in: [interfaces.ts:150](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L150)
 
 #### Returns
 
-`Promise`<`undefined` \| `Account`\>
+`Promise`\<`void`\>
 
-#### Defined in
+***
 
-[interfaces.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L69)
+### deleteAccount()
 
-___
+> **deleteAccount**(`address`): `Promise`\<`void`\>
 
-### getAppliedKey
-
-▸ `Optional` **getAppliedKey**(`address`): `Uint8Array`
+Defined in: [interfaces.ts:133](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L133)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `address` | `Uint8Array` |
+##### address
+
+`Address`
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### dumpStorage()?
+
+> `optional` **dumpStorage**(`address`): `Promise`\<[`StorageDump`](StorageDump.md)\>
+
+Defined in: [interfaces.ts:167](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L167)
+
+#### Parameters
+
+##### address
+
+`Address`
+
+#### Returns
+
+`Promise`\<[`StorageDump`](StorageDump.md)\>
+
+***
+
+### dumpStorageRange()?
+
+> `optional` **dumpStorageRange**(`address`, `startKey`, `limit`): `Promise`\<[`StorageRange`](StorageRange.md)\>
+
+Defined in: [interfaces.ts:168](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L168)
+
+#### Parameters
+
+##### address
+
+`Address`
+
+##### startKey
+
+`bigint`
+
+##### limit
+
+`number`
+
+#### Returns
+
+`Promise`\<[`StorageRange`](StorageRange.md)\>
+
+***
+
+### generateCanonicalGenesis()?
+
+> `optional` **generateCanonicalGenesis**(`initState`): `Promise`\<`void`\>
+
+Defined in: [interfaces.ts:177](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L177)
+
+#### Parameters
+
+##### initState
+
+`any`
+
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### getAccount()
+
+> **getAccount**(`address`): `Promise`\<`Account` \| `undefined`\>
+
+Defined in: [interfaces.ts:131](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L131)
+
+#### Parameters
+
+##### address
+
+`Address`
+
+#### Returns
+
+`Promise`\<`Account` \| `undefined`\>
+
+***
+
+### getAppliedKey()?
+
+> `optional` **getAppliedKey**(`address`): `Uint8Array`
+
+Defined in: [interfaces.ts:184](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L184)
+
+#### Parameters
+
+##### address
+
+`Uint8Array`
 
 #### Returns
 
 `Uint8Array`
 
-#### Defined in
+***
 
-[interfaces.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L86)
+### getCode()
 
-___
+> **getCode**(`address`): `Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
 
-### getContractCode
-
-▸ **getContractCode**(`address`): `Promise`<`Uint8Array`\>
+Defined in: [interfaces.ts:138](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L138)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `address` | `Address` |
+##### address
+
+`Address`
 
 #### Returns
 
-`Promise`<`Uint8Array`\>
+`Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
 
-#### Defined in
+***
 
-[interfaces.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L74)
+### getCodeSize()
 
-___
+> **getCodeSize**(`address`): `Promise`\<`number`\>
 
-### getContractStorage
-
-▸ **getContractStorage**(`address`, `key`): `Promise`<`Uint8Array`\>
+Defined in: [interfaces.ts:139](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L139)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `address` | `Address` |
-| `key` | `Uint8Array` |
+##### address
+
+`Address`
 
 #### Returns
 
-`Promise`<`Uint8Array`\>
+`Promise`\<`number`\>
 
-#### Defined in
+***
 
-[interfaces.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L75)
+### getStateRoot()
 
-___
+> **getStateRoot**(): `Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
 
-### getProof
+Defined in: [interfaces.ts:156](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L156)
 
-▸ `Optional` **getProof**(`address`, `storageSlots`): `Promise`<[`Proof`](../README.md#proof)\>
+#### Returns
+
+`Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
+
+***
+
+### getStorage()
+
+> **getStorage**(`address`, `key`): `Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
+
+Defined in: [interfaces.ts:142](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L142)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `address` | `Address` |
-| `storageSlots` | `Uint8Array`[] |
+##### address
+
+`Address`
+
+##### key
+
+`Uint8Array`
 
 #### Returns
 
-`Promise`<[`Proof`](../README.md#proof)\>
+`Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
 
-#### Defined in
+***
 
-[interfaces.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L83)
+### hasStateRoot()
 
-___
+> **hasStateRoot**(`root`): `Promise`\<`boolean`\>
 
-### getStateRoot
-
-▸ **getStateRoot**(): `Promise`<`Uint8Array`\>
-
-#### Returns
-
-`Promise`<`Uint8Array`\>
-
-#### Defined in
-
-[interfaces.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L81)
-
-___
-
-### hasStateRoot
-
-▸ **hasStateRoot**(`root`): `Promise`<`boolean`\>
+Defined in: [interfaces.ts:158](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L158)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `root` | `Uint8Array` |
+##### root
+
+`Uint8Array`
 
 #### Returns
 
-`Promise`<`boolean`\>
+`Promise`\<`boolean`\>
 
-#### Defined in
+***
 
-[interfaces.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L84)
+### initBinaryTreeExecutionWitness()?
 
-___
+> `optional` **initBinaryTreeExecutionWitness**(`blockNum`, `executionWitness?`): `void`
 
-### modifyAccountFields
-
-▸ **modifyAccountFields**(`address`, `accountFields`): `Promise`<`void`\>
+Defined in: [interfaces.ts:178](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L178)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `address` | `Address` |
-| `accountFields` | `Partial`<`Pick`<`Account`, ``"nonce"`` \| ``"balance"`` \| ``"storageRoot"`` \| ``"codeHash"``\>\> |
+##### blockNum
+
+`bigint`
+
+##### executionWitness?
+
+`BinaryTreeExecutionWitness` | `null`
 
 #### Returns
 
-`Promise`<`void`\>
+`void`
 
-#### Defined in
+***
 
-[interfaces.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L72)
+### modifyAccountFields()
 
-___
+> **modifyAccountFields**(`address`, `accountFields`): `Promise`\<`void`\>
 
-### putAccount
-
-▸ **putAccount**(`address`, `account?`): `Promise`<`void`\>
+Defined in: [interfaces.ts:134](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L134)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `address` | `Address` |
-| `account?` | `Account` |
+##### address
+
+`Address`
+
+##### accountFields
+
+[`AccountFields`](../type-aliases/AccountFields.md)
 
 #### Returns
 
-`Promise`<`void`\>
+`Promise`\<`void`\>
 
-#### Defined in
+***
 
-[interfaces.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L70)
+### putAccount()
 
-___
+> **putAccount**(`address`, `account?`): `Promise`\<`void`\>
 
-### putContractCode
-
-▸ **putContractCode**(`address`, `value`): `Promise`<`void`\>
+Defined in: [interfaces.ts:132](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L132)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `address` | `Address` |
-| `value` | `Uint8Array` |
+##### address
+
+`Address`
+
+##### account?
+
+`Account`
 
 #### Returns
 
-`Promise`<`void`\>
+`Promise`\<`void`\>
 
-#### Defined in
+***
 
-[interfaces.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L73)
+### putCode()
 
-___
+> **putCode**(`address`, `value`): `Promise`\<`void`\>
 
-### putContractStorage
-
-▸ **putContractStorage**(`address`, `key`, `value`): `Promise`<`void`\>
+Defined in: [interfaces.ts:137](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L137)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `address` | `Address` |
-| `key` | `Uint8Array` |
-| `value` | `Uint8Array` |
+##### address
+
+`Address`
+
+##### value
+
+`Uint8Array`
 
 #### Returns
 
-`Promise`<`void`\>
+`Promise`\<`void`\>
 
-#### Defined in
+***
 
-[interfaces.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L76)
+### putStorage()
 
-___
+> **putStorage**(`address`, `key`, `value`): `Promise`\<`void`\>
 
-### revert
-
-▸ **revert**(): `Promise`<`void`\>
-
-#### Returns
-
-`Promise`<`void`\>
-
-#### Defined in
-
-[interfaces.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L80)
-
-___
-
-### setStateRoot
-
-▸ **setStateRoot**(`stateRoot`, `clearCache?`): `Promise`<`void`\>
+Defined in: [interfaces.ts:143](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L143)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `stateRoot` | `Uint8Array` |
-| `clearCache?` | `boolean` |
+##### address
+
+`Address`
+
+##### key
+
+`Uint8Array`
+
+##### value
+
+`Uint8Array`
 
 #### Returns
 
-`Promise`<`void`\>
+`Promise`\<`void`\>
 
-#### Defined in
+***
 
-[interfaces.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L82)
+### revert()
 
-___
+> **revert**(): `Promise`\<`void`\>
 
-### shallowCopy
+Defined in: [interfaces.ts:151](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L151)
 
-▸ **shallowCopy**(`downlevelCaches?`): [`StateManagerInterface`](StateManagerInterface.md)
+#### Returns
+
+`Promise`\<`void`\>
+
+***
+
+### setStateRoot()
+
+> **setStateRoot**(`stateRoot`, `clearCache?`): `Promise`\<`void`\>
+
+Defined in: [interfaces.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L157)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `downlevelCaches?` | `boolean` |
+##### stateRoot
+
+`Uint8Array`
+
+##### clearCache?
+
+`boolean`
 
 #### Returns
 
-[`StateManagerInterface`](StateManagerInterface.md)
+`Promise`\<`void`\>
 
-#### Defined in
+***
 
-[interfaces.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L85)
+### shallowCopy()
+
+> **shallowCopy**(`downlevelCaches?`): `StateManagerInterface`
+
+Defined in: [interfaces.ts:190](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L190)
+
+#### Parameters
+
+##### downlevelCaches?
+
+`boolean`
+
+#### Returns
+
+`StateManagerInterface`
+
+***
+
+### verifyBinaryTreePostState()?
+
+> `optional` **verifyBinaryTreePostState**(`accessWitness`): `Promise`\<`boolean`\>
+
+Defined in: [interfaces.ts:182](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L182)
+
+#### Parameters
+
+##### accessWitness
+
+[`BinaryTreeAccessWitnessInterface`](BinaryTreeAccessWitnessInterface.md)
+
+#### Returns
+
+`Promise`\<`boolean`\>

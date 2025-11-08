@@ -53,13 +53,13 @@ describe(
     const hash = hexToBytes('0xa321d27cd2743617c1c1b0d7ecb607dd14febcdfca8f01b79c3f0249505ea069')
     const [reqId1, headers] = await peer.eth!.getBlockHeaders({ block: BigInt(1), max: 2 })
     it('handled getBlockHeaders', async () => {
-      assert.equal(reqId1, BigInt(1), 'handled GetBlockHeaders')
+      assert.strictEqual(reqId1, BigInt(1), 'handled GetBlockHeaders')
       assert.isTrue(equalsBytes(headers![1].hash(), hash), 'handled GetBlockHeaders')
     })
     const res = await peer.eth!.getBlockBodies({ hashes: [hash] })
     it('handled getBlockBodies', async () => {
       const [reqId2, bodies] = res
-      assert.equal(reqId2, BigInt(2), 'handled GetBlockBodies')
+      assert.strictEqual(reqId2, BigInt(2), 'handled GetBlockBodies')
       assert.deepEqual(bodies, [[[], []]], 'handled GetBlockBodies')
     })
     service.config.events.on(Event.PROTOCOL_MESSAGE, async (msg) => {

@@ -3,7 +3,6 @@ import type {
   Common,
   ParamsDict,
   StateManagerInterface,
-  VerkleAccessWitnessInterface,
 } from '@ethereumjs/common'
 import type { Account, Address, PrefixedHexString } from '@ethereumjs/util'
 import type { EventEmitter } from 'eventemitter3'
@@ -16,7 +15,6 @@ import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/ga
 import type { OpHandler } from './opcodes/index.ts'
 import type { CustomPrecompile } from './precompiles/index.ts'
 import type { PrecompileFunc } from './precompiles/types.ts'
-import type { VerkleAccessWitness } from './verkleAccessWitness.ts'
 
 export type DeleteOpcode = {
   opcode: number
@@ -141,7 +139,7 @@ export interface EVMRunCallOpts extends EVMRunOpts {
    */
   message?: Message
 
-  accessWitness?: VerkleAccessWitnessInterface | BinaryTreeAccessWitnessInterface
+  accessWitness?: BinaryTreeAccessWitnessInterface
 }
 
 interface NewContractEvent {
@@ -179,8 +177,6 @@ export interface EVMInterface {
   runCall(opts: EVMRunCallOpts): Promise<EVMResult>
   runCode(opts: EVMRunCodeOpts): Promise<ExecResult>
   events?: EventEmitter<EVMEvent>
-  verkleAccessWitness?: VerkleAccessWitness
-  systemVerkleAccessWitness?: VerkleAccessWitness
   binaryTreeAccessWitness?: BinaryTreeAccessWitness
   systemBinaryTreeAccessWitness?: BinaryTreeAccessWitness
 }
@@ -235,6 +231,7 @@ export interface EVMOpts {
    * - [EIP-7692](https://eips.ethereum.org/EIPS/eip-7692) - EVM Object Format (EOF) v1 (`experimental`)
    * - [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) - Set EOA account code (Prague)
    * - [EIP-7709](https://eips.ethereum.org/EIPS/eip-7709) - Read BLOCKHASH from storage and update cost (Verkle)
+   * - [EIP-7934](https://eips.ethereum.org/EIPS/eip-7934) - RLP Execution Block Size Limit
    *
    * *Annotations:*
    *
@@ -355,7 +352,7 @@ export interface EVMOpts {
    * `@ethereumjs/statemanager` package.
    *
    * The `@ethereumjs/statemanager` package also provides a variety of state manager
-   * implementations for different needs (MPT-tree backed, RPC, experimental verkle)
+   * implementations for different needs (MPT-tree backed, RPC, experimental binary tree)
    * which can be used by this option as a replacement.
    */
   stateManager?: StateManagerInterface

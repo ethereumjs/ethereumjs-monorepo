@@ -122,10 +122,20 @@ export const Mainnet: ChainConfig = {
     {
       name: 'osaka',
       block: null,
+      timestamp: '1764798551',
+      forkHash: '0x5167e2a6',
     },
     {
-      name: 'verkle',
+      name: 'bpo1',
       block: null,
+      timestamp: '1765290071',
+      forkHash: '0xcba2a1c0',
+    },
+    {
+      name: 'bpo2',
+      block: null,
+      timestamp: '1767747671',
+      forkHash: '0x07c9462e',
     },
   ],
   bootstrapNodes: [
@@ -268,6 +278,24 @@ export const Sepolia: ChainConfig = {
       timestamp: '1741159776',
       forkHash: '0xed88b5fd',
     },
+    {
+      name: 'osaka',
+      block: null,
+      timestamp: '1760427360',
+      forkHash: '0xe2ae4999',
+    },
+    {
+      name: 'bpo1',
+      block: null,
+      timestamp: '1761017184',
+      forkHash: '0x56078a1e',
+    },
+    {
+      name: 'bpo2',
+      block: null,
+      timestamp: '1761607008',
+      forkHash: '0x268956b6',
+    },
   ],
   bootstrapNodes: [
     {
@@ -407,6 +435,24 @@ export const Holesky: ChainConfig = {
       timestamp: '1740434112',
       forkHash: '0xdfbd9bed',
     },
+    {
+      name: 'osaka',
+      block: null,
+      timestamp: '1759308480',
+      forkHash: '0x783def52',
+    },
+    {
+      name: 'bpo1',
+      block: null,
+      timestamp: '1759800000',
+      forkHash: '0xa280a45c',
+    },
+    {
+      name: 'bpo2',
+      block: null,
+      timestamp: '1760389824',
+      forkHash: '0x9bc6cb31',
+    },
   ],
   bootstrapNodes: [
     {
@@ -532,6 +578,24 @@ export const Hoodi: ChainConfig = {
       timestamp: '1742999832',
       forkHash: '0x0929e24e',
     },
+    {
+      name: 'osaka',
+      block: null,
+      timestamp: '1761677592',
+      forkHash: '0xe7e0e7ff',
+    },
+    {
+      name: 'bpo1',
+      block: null,
+      timestamp: '1762365720',
+      forkHash: '0x3893353e',
+    },
+    {
+      name: 'bpo2',
+      block: null,
+      timestamp: '1762955544',
+      forkHash: '0x23aa1351',
+    },
   ],
   bootstrapNodes: [
     {
@@ -559,85 +623,4 @@ export const Hoodi: ChainConfig = {
   dnsNetworks: [
     'enrtree://AKA3AM6LPBYEUDMVNU3BSVQJ5AD45Y7YPOHJLEF6W26QOE4VTUDPE@all.hoodi.ethdisco.net',
   ],
-}
-
-export const Kaustinen6: ChainConfig = {
-  name: 'kaustinen6',
-  chainId: 69420,
-  defaultHardfork: 'verkle',
-  consensus: {
-    type: 'pos',
-    algorithm: 'casper',
-  },
-  comment: 'Verkle kaustinen testnet 6 (likely temporary, do not hard-wire into production code)',
-  url: 'https://github.com/eth-clients/kaustinen/',
-  genesis: {
-    difficulty: '0x01',
-    extraData: '0x',
-    gasLimit: '0x17D7840',
-    nonce: '0x0000000000001234',
-    timestamp: '0x66190fbc',
-  },
-  hardforks: [
-    {
-      name: 'chainstart',
-      block: 0,
-    },
-    {
-      name: 'homestead',
-      block: 0,
-    },
-    {
-      name: 'tangerineWhistle',
-      block: 0,
-    },
-    {
-      name: 'spuriousDragon',
-      block: 0,
-    },
-    {
-      name: 'byzantium',
-      block: 0,
-    },
-    {
-      name: 'constantinople',
-      block: 0,
-    },
-    {
-      name: 'petersburg',
-      block: 0,
-    },
-    {
-      name: 'istanbul',
-      block: 0,
-    },
-    {
-      name: 'berlin',
-      block: 0,
-    },
-    {
-      name: 'london',
-      block: 0,
-    },
-    {
-      name: 'paris',
-      block: 0,
-    },
-    {
-      name: 'mergeNetsplitBlock',
-      block: 0,
-    },
-    {
-      name: 'shanghai',
-      block: null,
-      timestamp: '0',
-    },
-    {
-      name: 'verkle',
-      block: null,
-      timestamp: '1712848500',
-    },
-  ],
-  bootstrapNodes: [],
-  dnsNetworks: [],
 }

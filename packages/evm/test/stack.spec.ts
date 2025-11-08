@@ -17,7 +17,7 @@ import { createAccount } from './utils.ts'
 describe('Stack', () => {
   it('should be empty initially', () => {
     const s = new Stack()
-    assert.equal(s.length, 0)
+    assert.strictEqual(s.length, 0)
     assert.throws(() => s.pop())
   })
 
@@ -30,7 +30,7 @@ describe('Stack', () => {
   it('should push item', () => {
     const s = new Stack()
     s.push(BigInt(5))
-    assert.equal(s.pop(), BigInt(5))
+    assert.strictEqual(s.pop(), BigInt(5))
   })
 
   it('popN should return array for n = 1', () => {

@@ -62,7 +62,7 @@ describe('[TransactionFactory]: Basic functions', () => {
     for (const txType of txTypes) {
       const serialized = txType.unsigned.serialize()
       const factoryTx = createTxFromRLP(serialized, { common })
-      assert.equal(
+      assert.strictEqual(
         factoryTx.constructor.name,
         txType.class.name,
         `should return the right type (${txType.name})`,
@@ -108,7 +108,7 @@ describe('[TransactionFactory]: Basic functions', () => {
         rawTx = txType.signed.raw() as Uint8Array[]
       }
       const tx = createTxFromBlockBodyData(rawTx, { common })
-      assert.equal(
+      assert.strictEqual(
         tx.constructor.name,
         txType.name,
         `should return the right type (${txType.name})`,
@@ -132,14 +132,14 @@ describe('[TransactionFactory]: Basic functions', () => {
   it('fromTxData() -> success cases', () => {
     for (const txType of txTypes) {
       const tx = createTx({ type: txType.type }, { common })
-      assert.equal(
+      assert.strictEqual(
         tx.constructor.name,
         txType.class.name,
         `should return the right type (${txType.name})`,
       )
       if (!txType.eip2718) {
         const tx = createTx({})
-        assert.equal(
+        assert.strictEqual(
           tx.constructor.name,
           txType.class.name,
           `should return the right type (${txType.name})`,

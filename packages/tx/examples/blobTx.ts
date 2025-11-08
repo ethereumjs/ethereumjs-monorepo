@@ -1,16 +1,15 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import type { BlobEIP4844TxData } from '@ethereumjs/tx'
 import { createBlob4844Tx } from '@ethereumjs/tx'
-import { bytesToHex } from '@ethereumjs/util'
-import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
-import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
+import { bytesToHex, getBlobs, randomBytes } from '@ethereumjs/util'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 
 const main = async () => {
   const kzg = new microEthKZG(trustedSetup)
   const common = new Common({
     chain: Mainnet,
-    hardfork: Hardfork.Shanghai,
-    eips: [4844],
+    hardfork: Hardfork.Cancun,
     customCrypto: { kzg },
   })
 
@@ -29,12 +28,18 @@ const main = async () => {
     chainId: '0x01',
     accessList: [],
     type: '0x05',
-    blobsData: ['abcd'],
+    blobs: getBlobs(['blob 1', 'blob 2']),
   }
 
   const tx = createBlob4844Tx(txData, { common })
 
-  console.log(bytesToHex(tx.hash())) //0x3c3e7c5e09c250d2200bcc3530f4a9088d7e3fb4ea3f4fccfd09f535a3539e84
+  console.log(`Blob tx created with hash: ${bytesToHex(tx.hash())}`)
+  console.log(`Tx contains ${tx.numBlobs()} blob`)
+  console.log(`Blob versioned hashes: ${tx.blobVersionedHashes.join(', ')}`)
+
+  // To send a transaction via RPC, you can something like this:
+  // const rawTx = tx.sign(privateKeyBytes).serializeNetworkWrapper()
+  // myRPCClient.request('eth_sendRawTransaction', [rawTx]) // submits a transaction via RPC
 }
 
 void main()

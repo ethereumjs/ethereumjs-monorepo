@@ -367,7 +367,7 @@ export class ECIES {
     const bufSize = zfill(intToBytes(size), 3)
     const headerData = RLP.encode([0, 0]) // [capability-id, context-id] (currently unused in spec)
     let header = concatBytes(bufSize, headerData)
-    header = zfill(header, 16, false)
+    header = zfill(header, 16, false) as Uint8Array<ArrayBuffer>
     if (!this._egressAes) return
     header = Uint8Array.from(this._egressAes.update(header))
 

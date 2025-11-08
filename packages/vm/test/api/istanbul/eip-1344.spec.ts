@@ -1,5 +1,5 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { EVMErrorMessages } from '@ethereumjs/evm'
+import { EVMError } from '@ethereumjs/evm'
 import { bytesToBigInt, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -7,7 +7,7 @@ import { createVM } from '../../../src/index.ts'
 
 const testCases = [
   { chain: Mainnet, hardfork: Hardfork.Istanbul, chainId: BigInt(1) },
-  { chain: Mainnet, hardfork: Hardfork.Constantinople, err: EVMErrorMessages.INVALID_OPCODE },
+  { chain: Mainnet, hardfork: Hardfork.Constantinople, err: EVMError.errorMessages.INVALID_OPCODE },
 ]
 
 // CHAINID PUSH8 0x00 MSTORE8 PUSH8 0x01 PUSH8 0x00 RETURN
@@ -27,10 +27,10 @@ describe('Istanbul: EIP-1344', () => {
       try {
         const res = await vm.evm.runCode!(runCodeArgs)
         if (testCase.err !== undefined) {
-          assert.equal(res.exceptionError?.error, testCase.err)
+          assert.strictEqual(res.exceptionError?.error, testCase.err)
         } else {
           assert.isTrue(res.exceptionError === undefined)
-          assert.equal(testCase.chainId, bytesToBigInt(res.returnValue))
+          assert.strictEqual(testCase.chainId, bytesToBigInt(res.returnValue))
         }
       } catch (e: any) {
         assert.fail(e.message)

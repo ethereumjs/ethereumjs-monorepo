@@ -1,197 +1,166 @@
+[**@ethereumjs/vm**](../README.md)
+
+***
+
 [@ethereumjs/vm](../README.md) / AfterTxEvent
 
 # Interface: AfterTxEvent
 
+Defined in: [vm/src/types.ts:494](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L494)
+
 Execution result of a transaction
 
-## Hierarchy
+## Extends
 
 - [`RunTxResult`](RunTxResult.md)
 
-  ↳ **`AfterTxEvent`**
-
-## Table of contents
-
-### Properties
-
-- [accessList](AfterTxEvent.md#accesslist)
-- [amountSpent](AfterTxEvent.md#amountspent)
-- [blobGasUsed](AfterTxEvent.md#blobgasused)
-- [bloom](AfterTxEvent.md#bloom)
-- [createdAddress](AfterTxEvent.md#createdaddress)
-- [execResult](AfterTxEvent.md#execresult)
-- [gasRefund](AfterTxEvent.md#gasrefund)
-- [minerValue](AfterTxEvent.md#minervalue)
-- [preimages](AfterTxEvent.md#preimages)
-- [receipt](AfterTxEvent.md#receipt)
-- [totalGasSpent](AfterTxEvent.md#totalgasspent)
-- [transaction](AfterTxEvent.md#transaction)
-
 ## Properties
 
-### accessList
+### accessList?
 
-• `Optional` **accessList**: `AccessList`
+> `optional` **accessList**: `AccessList`
+
+Defined in: [vm/src/types.ts:476](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L476)
 
 EIP-2930 access list generated for the tx (see `reportAccessList` option)
 
 #### Inherited from
 
-[RunTxResult](RunTxResult.md).[accessList](RunTxResult.md#accesslist)
+[`RunTxResult`](RunTxResult.md).[`accessList`](RunTxResult.md#accesslist)
 
-#### Defined in
-
-[vm/src/types.ts:427](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L427)
-
-___
+***
 
 ### amountSpent
 
-• **amountSpent**: `bigint`
+> **amountSpent**: `bigint`
+
+Defined in: [vm/src/types.ts:454](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L454)
 
 The amount of ether used by this transaction
 
 #### Inherited from
 
-[RunTxResult](RunTxResult.md).[amountSpent](RunTxResult.md#amountspent)
+[`RunTxResult`](RunTxResult.md).[`amountSpent`](RunTxResult.md#amountspent)
 
-#### Defined in
+***
 
-[vm/src/types.ts:405](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L405)
+### blobGasUsed?
 
-___
+> `optional` **blobGasUsed**: `bigint`
 
-### blobGasUsed
-
-• `Optional` **blobGasUsed**: `bigint`
+Defined in: [vm/src/types.ts:491](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L491)
 
 This is the blob gas units times the fee per blob gas for 4844 transactions
 
 #### Inherited from
 
-[RunTxResult](RunTxResult.md).[blobGasUsed](RunTxResult.md#blobgasused)
+[`RunTxResult`](RunTxResult.md).[`blobGasUsed`](RunTxResult.md#blobgasused)
 
-#### Defined in
-
-[vm/src/types.ts:442](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L442)
-
-___
+***
 
 ### bloom
 
-• **bloom**: `Bloom`
+> **bloom**: `Bloom`
+
+Defined in: [vm/src/types.ts:449](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L449)
 
 Bloom filter resulted from transaction
 
 #### Inherited from
 
-[RunTxResult](RunTxResult.md).[bloom](RunTxResult.md#bloom)
+[`RunTxResult`](RunTxResult.md).[`bloom`](RunTxResult.md#bloom)
 
-#### Defined in
+***
 
-[vm/src/types.ts:400](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L400)
+### createdAddress?
 
-___
+> `optional` **createdAddress**: `Address`
 
-### createdAddress
-
-• `Optional` **createdAddress**: `Address`
+Defined in: evm/dist/esm/types.d.ts:331
 
 Address of created account during transaction, if any
 
 #### Inherited from
 
-[RunTxResult](RunTxResult.md).[createdAddress](RunTxResult.md#createdaddress)
+[`RunTxResult`](RunTxResult.md).[`createdAddress`](RunTxResult.md#createdaddress)
 
-#### Defined in
-
-evm/dist/cjs/types.d.ts:248
-
-___
+***
 
 ### execResult
 
-• **execResult**: `ExecResult`
+> **execResult**: `ExecResult`
+
+Defined in: evm/dist/esm/types.d.ts:335
 
 Contains the results from running the code, if any, as described in runCode
 
 #### Inherited from
 
-[RunTxResult](RunTxResult.md).[execResult](RunTxResult.md#execresult)
+[`RunTxResult`](RunTxResult.md).[`execResult`](RunTxResult.md#execresult)
 
-#### Defined in
-
-evm/dist/cjs/types.d.ts:252
-
-___
+***
 
 ### gasRefund
 
-• **gasRefund**: `bigint`
+> **gasRefund**: `bigint`
+
+Defined in: [vm/src/types.ts:471](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L471)
 
 The amount of gas as that was refunded during the transaction (i.e. `gasUsed = totalGasConsumed - gasRefund`)
 
 #### Inherited from
 
-[RunTxResult](RunTxResult.md).[gasRefund](RunTxResult.md#gasrefund)
+[`RunTxResult`](RunTxResult.md).[`gasRefund`](RunTxResult.md#gasrefund)
 
-#### Defined in
-
-[vm/src/types.ts:422](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L422)
-
-___
+***
 
 ### minerValue
 
-• **minerValue**: `bigint`
+> **minerValue**: `bigint`
+
+Defined in: [vm/src/types.ts:486](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L486)
 
 The value that accrues to the miner by this transaction
 
 #### Inherited from
 
-[RunTxResult](RunTxResult.md).[minerValue](RunTxResult.md#minervalue)
+[`RunTxResult`](RunTxResult.md).[`minerValue`](RunTxResult.md#minervalue)
 
-#### Defined in
+***
 
-[vm/src/types.ts:437](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L437)
+### preimages?
 
-___
+> `optional` **preimages**: `Map`\<`` `0x${string}` ``, `Uint8Array`\<`ArrayBufferLike`\>\>
 
-### preimages
-
-• `Optional` **preimages**: `Map`<`string`, `Uint8Array`\>
+Defined in: [vm/src/types.ts:481](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L481)
 
 Preimages mapping of the touched accounts from the tx (see `reportPreimages` option)
 
 #### Inherited from
 
-[RunTxResult](RunTxResult.md).[preimages](RunTxResult.md#preimages)
+[`RunTxResult`](RunTxResult.md).[`preimages`](RunTxResult.md#preimages)
 
-#### Defined in
-
-[vm/src/types.ts:432](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L432)
-
-___
+***
 
 ### receipt
 
-• **receipt**: [`TxReceipt`](../README.md#txreceipt)
+> **receipt**: [`TxReceipt`](../type-aliases/TxReceipt.md)
+
+Defined in: [vm/src/types.ts:459](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L459)
 
 The tx receipt
 
 #### Inherited from
 
-[RunTxResult](RunTxResult.md).[receipt](RunTxResult.md#receipt)
+[`RunTxResult`](RunTxResult.md).[`receipt`](RunTxResult.md#receipt)
 
-#### Defined in
-
-[vm/src/types.ts:410](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L410)
-
-___
+***
 
 ### totalGasSpent
 
-• **totalGasSpent**: `bigint`
+> **totalGasSpent**: `bigint`
+
+Defined in: [vm/src/types.ts:466](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L466)
 
 The amount of gas used in this transaction, which is paid for
 This contains the gas units that have been used on execution, plus the upfront cost,
@@ -199,20 +168,14 @@ which consists of calldata cost, intrinsic cost and optionally the access list c
 
 #### Inherited from
 
-[RunTxResult](RunTxResult.md).[totalGasSpent](RunTxResult.md#totalgasspent)
+[`RunTxResult`](RunTxResult.md).[`totalGasSpent`](RunTxResult.md#totalgasspent)
 
-#### Defined in
-
-[vm/src/types.ts:417](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L417)
-
-___
+***
 
 ### transaction
 
-• **transaction**: `TypedTransaction`
+> **transaction**: `TypedTransaction`
+
+Defined in: [vm/src/types.ts:498](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L498)
 
 The transaction which just got finished
-
-#### Defined in
-
-[vm/src/types.ts:449](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L449)

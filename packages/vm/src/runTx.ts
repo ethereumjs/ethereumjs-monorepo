@@ -1,12 +1,7 @@
 import { cliqueSigner, createBlockHeader } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
-import { BinaryTreeAccessWitness, type EVM, VerkleAccessWitness } from '@ethereumjs/evm'
-import {
-  StatefulBinaryTreeStateManager,
-  StatefulVerkleStateManager,
-  StatelessVerkleStateManager,
-} from '@ethereumjs/statemanager'
-import { Capability, isBlob4844Tx, recoverAuthority } from '@ethereumjs/tx'
+import { BinaryTreeAccessWitness, type EVM } from '@ethereumjs/evm'
+import { Capability, isBlob4844Tx } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -21,6 +16,7 @@ import {
   bytesToHex,
   bytesToUnprefixedHex,
   concatBytes,
+  eoaCode7702RecoverAuthority,
   equalsBytes,
   hexToBytes,
   short,
@@ -198,27 +194,16 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
 async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const state = vm.stateManager
 
-  let stateAccesses: VerkleAccessWitness | BinaryTreeAccessWitness | undefined
-  let txAccesses: VerkleAccessWitness | BinaryTreeAccessWitness | undefined
-  if (vm.common.isActivatedEIP(6800)) {
-    if (vm.evm.verkleAccessWitness === undefined) {
-      throw Error(`Verkle access witness needed for execution of verkle blocks`)
-    }
+  let stateAccesses: BinaryTreeAccessWitness | undefined
+  let txAccesses: BinaryTreeAccessWitness | undefined
 
-    if (
-      !(vm.stateManager instanceof StatefulVerkleStateManager) &&
-      !(vm.stateManager instanceof StatelessVerkleStateManager)
-    ) {
-      throw EthereumJSErrorWithoutCode(`Verkle State Manager needed for execution of verkle blocks`)
-    }
-    stateAccesses = vm.evm.verkleAccessWitness
-    txAccesses = new VerkleAccessWitness({ verkleCrypto: vm.stateManager.verkleCrypto })
-  } else if (vm.common.isActivatedEIP(7864)) {
+  if (vm.common.isActivatedEIP(7864)) {
     if (vm.evm.binaryTreeAccessWitness === undefined) {
       throw Error(`Binary tree access witness needed for execution of binary tree blocks`)
     }
 
-    if (!(vm.stateManager instanceof StatefulBinaryTreeStateManager)) {
+    // Check if statemanager is a BinaryTreeStateManager by checking for a method only on BinaryTreeStateManager API
+    if (!('verifyBinaryPostState' in vm.stateManager)) {
       throw EthereumJSErrorWithoutCode(
         `Binary tree State Manager needed for execution of binary tree blocks`,
       )
@@ -510,7 +495,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       // Address to set code to
       let authority
       try {
-        authority = recoverAuthority(data)
+        authority = eoaCode7702RecoverAuthority(data)
       } catch {
         // Invalid signature, continue
         continue
@@ -598,9 +583,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     accessWitness: txAccesses,
   })) as RunTxResult
 
-  if (vm.common.isActivatedEIP(6800)) {
-    ;(stateAccesses as VerkleAccessWitness)?.merge(txAccesses! as VerkleAccessWitness)
-  } else if (vm.common.isActivatedEIP(7864)) {
+  if (vm.common.isActivatedEIP(7864)) {
     ;(stateAccesses as BinaryTreeAccessWitness)?.merge(txAccesses! as BinaryTreeAccessWitness)
   }
 
@@ -702,35 +685,14 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
 
   let minerAccount = await state.getAccount(miner)
-  const minerAccountExists = minerAccount !== undefined
   if (minerAccount === undefined) {
-    if (vm.common.isActivatedEIP(6800)) {
-      if (vm.evm.verkleAccessWitness === undefined) {
-        throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
-      }
-    }
     minerAccount = new Account()
-    // Add the miner account to the system verkle access witness
-    vm.evm.systemVerkleAccessWitness?.writeAccountHeader(miner)
   }
   // add the amount spent on gas to the miner's account
   results.minerValue = vm.common.isActivatedEIP(1559)
     ? results.totalGasSpent * inclusionFeePerGas!
     : results.amountSpent
   minerAccount.balance += results.minerValue
-
-  if (vm.common.isActivatedEIP(6800) && results.minerValue !== BIGINT_0) {
-    if (vm.evm.verkleAccessWitness === undefined) {
-      throw Error(`verkleAccessWitness required if verkle (EIP-6800) is activated`)
-    }
-    if (minerAccountExists) {
-      // use vm utility to build access but the computed gas is not charged and hence free
-      vm.evm.verkleAccessWitness.writeAccountBasicData(miner)
-      vm.evm.verkleAccessWitness.readAccountCodeHash(miner)
-    } else {
-      vm.evm.verkleAccessWitness.writeAccountHeader(miner)
-    }
-  }
 
   // Put the miner account into the state. If the balance of the miner account remains zero, note that
   // the state.putAccount function puts vm into the "touched" accounts. This will thus be removed when
@@ -843,11 +805,6 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         opts.tx.isSigned() ? bytesToHex(opts.tx.hash()) : 'unsigned'
       } sender=${caller}`,
     )
-  }
-
-  if (vm.common.isActivatedEIP(6800)) {
-    // commit all access witness changes
-    vm.evm.verkleAccessWitness?.commit()
   }
 
   return results

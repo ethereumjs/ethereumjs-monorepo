@@ -1,69 +1,45 @@
+[**@ethereumjs/block**](../README.md)
+
+***
+
 [@ethereumjs/block](../README.md) / BlockData
 
 # Interface: BlockData
 
+Defined in: [types.ts:114](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L114)
+
 A block's data.
-
-## Table of contents
-
-### Properties
-
-- [executionWitness](BlockData.md#executionwitness)
-- [header](BlockData.md#header)
-- [transactions](BlockData.md#transactions)
-- [uncleHeaders](BlockData.md#uncleheaders)
-- [withdrawals](BlockData.md#withdrawals)
 
 ## Properties
 
-### executionWitness
+### header?
 
-• `Optional` **executionWitness**: ``null`` \| [`VerkleExecutionWitness`](VerkleExecutionWitness.md)
+> `optional` **header**: [`HeaderData`](HeaderData.md)
 
-EIP-6800: Verkle Proof Data (experimental)
-
-#### Defined in
-
-[types.ts:153](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L153)
-
-___
-
-### header
-
-• `Optional` **header**: [`HeaderData`](HeaderData.md)
+Defined in: [types.ts:118](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L118)
 
 Header data for the block
 
-#### Defined in
+***
 
-[types.ts:146](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L146)
+### transactions?
 
-___
+> `optional` **transactions**: (`LegacyTxData` \| `AccessList2930TxData` \| `FeeMarketEIP1559TxData` \| `BlobEIP4844TxData` \| `EOACode7702TxData`)[]
 
-### transactions
+Defined in: [types.ts:119](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L119)
 
-• `Optional` **transactions**: (`AccessListEIP2930TxData` \| `BlobEIP4844TxData` \| `FeeMarketEIP1559TxData` \| `LegacyTxData`)[]
+***
 
-#### Defined in
+### uncleHeaders?
 
-[types.ts:147](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L147)
+> `optional` **uncleHeaders**: [`HeaderData`](HeaderData.md)[]
 
-___
+Defined in: [types.ts:120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L120)
 
-### uncleHeaders
+***
 
-• `Optional` **uncleHeaders**: [`HeaderData`](HeaderData.md)[]
+### withdrawals?
 
-#### Defined in
+> `optional` **withdrawals**: `WithdrawalData`[]
 
-[types.ts:148](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L148)
-
-___
-
-### withdrawals
-
-• `Optional` **withdrawals**: `WithdrawalData`[]
-
-#### Defined in
-
-[types.ts:149](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L149)
+Defined in: [types.ts:121](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L121)

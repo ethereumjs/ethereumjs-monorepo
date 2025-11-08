@@ -1,230 +1,220 @@
+[**@ethereumjs/tx**](../README.md)
+
+***
+
 [@ethereumjs/tx](../README.md) / EIP2718CompatibleTx
 
-# Interface: EIP2718CompatibleTx<T\>
+# Interface: EIP2718CompatibleTx\<T\>
 
-## Type parameters
+Defined in: [types.ts:256](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L256)
 
-| Name | Type |
-| :------ | :------ |
-| `T` | extends [`TransactionType`](../enums/TransactionType.md) = [`TransactionType`](../enums/TransactionType.md) |
+## Extends
 
-## Hierarchy
+- [`TransactionInterface`](TransactionInterface.md)\<`T`\>
 
-- [`TransactionInterface`](TransactionInterface.md)<`T`\>
+## Extended by
 
-  ↳ **`EIP2718CompatibleTx`**
+- [`EIP2930CompatibleTx`](EIP2930CompatibleTx.md)
 
-  ↳↳ [`EIP2930CompatibleTx`](EIP2930CompatibleTx.md)
+## Type Parameters
 
-## Table of contents
+### T
 
-### Properties
-
-- [cache](EIP2718CompatibleTx.md#cache)
-- [chainId](EIP2718CompatibleTx.md#chainid)
-- [common](EIP2718CompatibleTx.md#common)
-- [data](EIP2718CompatibleTx.md#data)
-- [gasLimit](EIP2718CompatibleTx.md#gaslimit)
-- [nonce](EIP2718CompatibleTx.md#nonce)
-- [r](EIP2718CompatibleTx.md#r)
-- [s](EIP2718CompatibleTx.md#s)
-- [to](EIP2718CompatibleTx.md#to)
-- [type](EIP2718CompatibleTx.md#type)
-- [v](EIP2718CompatibleTx.md#v)
-- [value](EIP2718CompatibleTx.md#value)
-
-### Methods
-
-- [errorStr](EIP2718CompatibleTx.md#errorstr)
-- [getBaseFee](EIP2718CompatibleTx.md#getbasefee)
-- [getDataFee](EIP2718CompatibleTx.md#getdatafee)
-- [getHashedMessageToSign](EIP2718CompatibleTx.md#gethashedmessagetosign)
-- [getMessageToSign](EIP2718CompatibleTx.md#getmessagetosign)
-- [getMessageToVerifySignature](EIP2718CompatibleTx.md#getmessagetoverifysignature)
-- [getSenderAddress](EIP2718CompatibleTx.md#getsenderaddress)
-- [getSenderPublicKey](EIP2718CompatibleTx.md#getsenderpublickey)
-- [getUpfrontCost](EIP2718CompatibleTx.md#getupfrontcost)
-- [getValidationErrors](EIP2718CompatibleTx.md#getvalidationerrors)
-- [hash](EIP2718CompatibleTx.md#hash)
-- [isSigned](EIP2718CompatibleTx.md#issigned)
-- [isValid](EIP2718CompatibleTx.md#isvalid)
-- [raw](EIP2718CompatibleTx.md#raw)
-- [serialize](EIP2718CompatibleTx.md#serialize)
-- [sign](EIP2718CompatibleTx.md#sign)
-- [supports](EIP2718CompatibleTx.md#supports)
-- [toCreationAddress](EIP2718CompatibleTx.md#tocreationaddress)
-- [toJSON](EIP2718CompatibleTx.md#tojson)
-- [verifySignature](EIP2718CompatibleTx.md#verifysignature)
+`T` *extends* [`TransactionType`](../type-aliases/TransactionType.md) = [`TransactionType`](../type-aliases/TransactionType.md)
 
 ## Properties
 
 ### cache
 
-• `Readonly` **cache**: [`TransactionCache`](TransactionCache.md)
+> `readonly` **cache**: [`TransactionCache`](TransactionCache.md)
+
+Defined in: [types.ts:221](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L221)
 
 #### Inherited from
 
-[TransactionInterface](TransactionInterface.md).[cache](TransactionInterface.md#cache)
+[`TransactionInterface`](TransactionInterface.md).[`cache`](TransactionInterface.md#cache)
 
-#### Defined in
-
-[tx/src/types.ts:150](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L150)
-
-___
+***
 
 ### chainId
 
-• `Readonly` **chainId**: `bigint`
+> `readonly` **chainId**: `bigint`
 
-#### Defined in
+Defined in: [types.ts:258](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L258)
 
-[tx/src/types.ts:179](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L179)
-
-___
+***
 
 ### common
 
-• `Readonly` **common**: `Common`
+> `readonly` **common**: `Common`
+
+Defined in: [types.ts:212](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L212)
 
 #### Inherited from
 
-[TransactionInterface](TransactionInterface.md).[common](TransactionInterface.md#common)
+[`TransactionInterface`](TransactionInterface.md).[`common`](TransactionInterface.md#common)
 
-#### Defined in
-
-[tx/src/types.ts:141](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L141)
-
-___
+***
 
 ### data
 
-• `Readonly` **data**: `Uint8Array`
+> `readonly` **data**: `Uint8Array`
+
+Defined in: [types.ts:217](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L217)
 
 #### Inherited from
 
-[TransactionInterface](TransactionInterface.md).[data](TransactionInterface.md#data)
+[`TransactionInterface`](TransactionInterface.md).[`data`](TransactionInterface.md#data)
 
-#### Defined in
-
-[tx/src/types.ts:146](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L146)
-
-___
+***
 
 ### gasLimit
 
-• `Readonly` **gasLimit**: `bigint`
+> `readonly` **gasLimit**: `bigint`
+
+Defined in: [types.ts:214](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L214)
 
 #### Inherited from
 
-[TransactionInterface](TransactionInterface.md).[gasLimit](TransactionInterface.md#gaslimit)
+[`TransactionInterface`](TransactionInterface.md).[`gasLimit`](TransactionInterface.md#gaslimit)
 
-#### Defined in
-
-[tx/src/types.ts:143](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L143)
-
-___
+***
 
 ### nonce
 
-• `Readonly` **nonce**: `bigint`
+> `readonly` **nonce**: `bigint`
+
+Defined in: [types.ts:213](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L213)
 
 #### Inherited from
 
-[TransactionInterface](TransactionInterface.md).[nonce](TransactionInterface.md#nonce)
+[`TransactionInterface`](TransactionInterface.md).[`nonce`](TransactionInterface.md#nonce)
 
-#### Defined in
+***
 
-[tx/src/types.ts:142](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L142)
+### r?
 
-___
+> `readonly` `optional` **r**: `bigint`
 
-### r
-
-• `Optional` `Readonly` **r**: `bigint`
+Defined in: [types.ts:219](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L219)
 
 #### Inherited from
 
-[TransactionInterface](TransactionInterface.md).[r](TransactionInterface.md#r)
+[`TransactionInterface`](TransactionInterface.md).[`r`](TransactionInterface.md#r)
 
-#### Defined in
+***
 
-[tx/src/types.ts:148](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L148)
+### s?
 
-___
+> `readonly` `optional` **s**: `bigint`
 
-### s
-
-• `Optional` `Readonly` **s**: `bigint`
+Defined in: [types.ts:220](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L220)
 
 #### Inherited from
 
-[TransactionInterface](TransactionInterface.md).[s](TransactionInterface.md#s)
+[`TransactionInterface`](TransactionInterface.md).[`s`](TransactionInterface.md#s)
 
-#### Defined in
+***
 
-[tx/src/types.ts:149](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L149)
+### to?
 
-___
+> `readonly` `optional` **to**: `Address`
 
-### to
-
-• `Optional` `Readonly` **to**: `Address`
+Defined in: [types.ts:215](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L215)
 
 #### Inherited from
 
-[TransactionInterface](TransactionInterface.md).[to](TransactionInterface.md#to)
+[`TransactionInterface`](TransactionInterface.md).[`to`](TransactionInterface.md#to)
 
-#### Defined in
+***
 
-[tx/src/types.ts:144](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L144)
+### txOptions
 
-___
+> **txOptions**: [`TxOptions`](TxOptions.md)
+
+Defined in: [types.ts:224](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L224)
+
+#### Inherited from
+
+[`TransactionInterface`](TransactionInterface.md).[`txOptions`](TransactionInterface.md#txoptions)
+
+***
 
 ### type
 
-• **type**: [`TransactionType`](../enums/TransactionType.md)
+> **type**: [`TransactionType`](../type-aliases/TransactionType.md)
+
+Defined in: [types.ts:223](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L223)
 
 #### Inherited from
 
-[TransactionInterface](TransactionInterface.md).[type](TransactionInterface.md#type)
+[`TransactionInterface`](TransactionInterface.md).[`type`](TransactionInterface.md#type)
 
-#### Defined in
+***
 
-[tx/src/types.ts:152](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L152)
+### v?
 
-___
+> `readonly` `optional` **v**: `bigint`
 
-### v
-
-• `Optional` `Readonly` **v**: `bigint`
+Defined in: [types.ts:218](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L218)
 
 #### Inherited from
 
-[TransactionInterface](TransactionInterface.md).[v](TransactionInterface.md#v)
+[`TransactionInterface`](TransactionInterface.md).[`v`](TransactionInterface.md#v)
 
-#### Defined in
-
-[tx/src/types.ts:147](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L147)
-
-___
+***
 
 ### value
 
-• `Readonly` **value**: `bigint`
+> `readonly` **value**: `bigint`
+
+Defined in: [types.ts:216](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L216)
 
 #### Inherited from
 
-[TransactionInterface](TransactionInterface.md).[value](TransactionInterface.md#value)
-
-#### Defined in
-
-[tx/src/types.ts:145](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L145)
+[`TransactionInterface`](TransactionInterface.md).[`value`](TransactionInterface.md#value)
 
 ## Methods
 
-### errorStr
+### addSignature()
 
-▸ **errorStr**(): `string`
+> **addSignature**(`v`, `r`, `s`, `convertV?`): [`Transaction`](Transaction.md)\[`T`\]
+
+Defined in: [types.ts:245](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L245)
+
+#### Parameters
+
+##### v
+
+`bigint`
+
+##### r
+
+`bigint` | `Uint8Array`\<`ArrayBufferLike`\>
+
+##### s
+
+`bigint` | `Uint8Array`\<`ArrayBufferLike`\>
+
+##### convertV?
+
+`boolean`
+
+#### Returns
+
+[`Transaction`](Transaction.md)\[`T`\]
+
+#### Inherited from
+
+[`TransactionInterface`](TransactionInterface.md).[`addSignature`](TransactionInterface.md#addsignature)
+
+***
+
+### errorStr()
+
+> **errorStr**(): `string`
+
+Defined in: [types.ts:243](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L243)
 
 #### Returns
 
@@ -232,17 +222,15 @@ ___
 
 #### Inherited from
 
-[TransactionInterface](TransactionInterface.md).[errorStr](TransactionInterface.md#errorstr)
+[`TransactionInterface`](TransactionInterface.md).[`errorStr`](TransactionInterface.md#errorstr)
 
-#### Defined in
+***
 
-[tx/src/types.ts:171](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L171)
+### getDataGas()
 
-___
+> **getDataGas**(): `bigint`
 
-### getBaseFee
-
-▸ **getBaseFee**(): `bigint`
+Defined in: [types.ts:226](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L226)
 
 #### Returns
 
@@ -250,35 +238,15 @@ ___
 
 #### Inherited from
 
-[TransactionInterface](TransactionInterface.md).[getBaseFee](TransactionInterface.md#getbasefee)
+[`TransactionInterface`](TransactionInterface.md).[`getDataGas`](TransactionInterface.md#getdatagas)
 
-#### Defined in
+***
 
-[tx/src/types.ts:153](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L153)
+### getHashedMessageToSign()
 
-___
+> **getHashedMessageToSign**(): `Uint8Array`
 
-### getDataFee
-
-▸ **getDataFee**(): `bigint`
-
-#### Returns
-
-`bigint`
-
-#### Inherited from
-
-[TransactionInterface](TransactionInterface.md).[getDataFee](TransactionInterface.md#getdatafee)
-
-#### Defined in
-
-[tx/src/types.ts:154](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L154)
-
-___
-
-### getHashedMessageToSign
-
-▸ **getHashedMessageToSign**(): `Uint8Array`
+Defined in: [types.ts:232](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L232)
 
 #### Returns
 
@@ -286,17 +254,31 @@ ___
 
 #### Inherited from
 
-[TransactionInterface](TransactionInterface.md).[getHashedMessageToSign](TransactionInterface.md#gethashedmessagetosign)
+[`TransactionInterface`](TransactionInterface.md).[`getHashedMessageToSign`](TransactionInterface.md#gethashedmessagetosign)
 
-#### Defined in
+***
 
-[tx/src/types.ts:160](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L160)
+### getIntrinsicGas()
 
-___
+> **getIntrinsicGas**(): `bigint`
 
-### getMessageToSign
+Defined in: [types.ts:225](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L225)
 
-▸ **getMessageToSign**(): `Uint8Array`
+#### Returns
+
+`bigint`
+
+#### Inherited from
+
+[`TransactionInterface`](TransactionInterface.md).[`getIntrinsicGas`](TransactionInterface.md#getintrinsicgas)
+
+***
+
+### getMessageToSign()
+
+> **getMessageToSign**(): `Uint8Array`
+
+Defined in: [types.ts:259](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L259)
 
 #### Returns
 
@@ -304,17 +286,15 @@ ___
 
 #### Overrides
 
-[TransactionInterface](TransactionInterface.md).[getMessageToSign](TransactionInterface.md#getmessagetosign)
+[`TransactionInterface`](TransactionInterface.md).[`getMessageToSign`](TransactionInterface.md#getmessagetosign)
 
-#### Defined in
+***
 
-[tx/src/types.ts:180](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L180)
+### getMessageToVerifySignature()
 
-___
+> **getMessageToVerifySignature**(): `Uint8Array`
 
-### getMessageToVerifySignature
-
-▸ **getMessageToVerifySignature**(): `Uint8Array`
+Defined in: [types.ts:234](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L234)
 
 #### Returns
 
@@ -322,17 +302,15 @@ ___
 
 #### Inherited from
 
-[TransactionInterface](TransactionInterface.md).[getMessageToVerifySignature](TransactionInterface.md#getmessagetoverifysignature)
+[`TransactionInterface`](TransactionInterface.md).[`getMessageToVerifySignature`](TransactionInterface.md#getmessagetoverifysignature)
 
-#### Defined in
+***
 
-[tx/src/types.ts:162](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L162)
+### getSenderAddress()
 
-___
+> **getSenderAddress**(): `Address`
 
-### getSenderAddress
-
-▸ **getSenderAddress**(): `Address`
+Defined in: [types.ts:239](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L239)
 
 #### Returns
 
@@ -340,17 +318,15 @@ ___
 
 #### Inherited from
 
-[TransactionInterface](TransactionInterface.md).[getSenderAddress](TransactionInterface.md#getsenderaddress)
+[`TransactionInterface`](TransactionInterface.md).[`getSenderAddress`](TransactionInterface.md#getsenderaddress)
 
-#### Defined in
+***
 
-[tx/src/types.ts:167](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L167)
+### getSenderPublicKey()
 
-___
+> **getSenderPublicKey**(): `Uint8Array`
 
-### getSenderPublicKey
-
-▸ **getSenderPublicKey**(): `Uint8Array`
+Defined in: [types.ts:240](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L240)
 
 #### Returns
 
@@ -358,17 +334,15 @@ ___
 
 #### Inherited from
 
-[TransactionInterface](TransactionInterface.md).[getSenderPublicKey](TransactionInterface.md#getsenderpublickey)
+[`TransactionInterface`](TransactionInterface.md).[`getSenderPublicKey`](TransactionInterface.md#getsenderpublickey)
 
-#### Defined in
+***
 
-[tx/src/types.ts:168](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L168)
+### getUpfrontCost()
 
-___
+> **getUpfrontCost**(): `bigint`
 
-### getUpfrontCost
-
-▸ **getUpfrontCost**(): `bigint`
+Defined in: [types.ts:227](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L227)
 
 #### Returns
 
@@ -376,17 +350,15 @@ ___
 
 #### Inherited from
 
-[TransactionInterface](TransactionInterface.md).[getUpfrontCost](TransactionInterface.md#getupfrontcost)
+[`TransactionInterface`](TransactionInterface.md).[`getUpfrontCost`](TransactionInterface.md#getupfrontcost)
 
-#### Defined in
+***
 
-[tx/src/types.ts:155](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L155)
+### getValidationErrors()
 
-___
+> **getValidationErrors**(): `string`[]
 
-### getValidationErrors
-
-▸ **getValidationErrors**(): `string`[]
+Defined in: [types.ts:235](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L235)
 
 #### Returns
 
@@ -394,17 +366,15 @@ ___
 
 #### Inherited from
 
-[TransactionInterface](TransactionInterface.md).[getValidationErrors](TransactionInterface.md#getvalidationerrors)
+[`TransactionInterface`](TransactionInterface.md).[`getValidationErrors`](TransactionInterface.md#getvalidationerrors)
 
-#### Defined in
+***
 
-[tx/src/types.ts:163](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L163)
+### hash()
 
-___
+> **hash**(): `Uint8Array`
 
-### hash
-
-▸ **hash**(): `Uint8Array`
+Defined in: [types.ts:233](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L233)
 
 #### Returns
 
@@ -412,17 +382,15 @@ ___
 
 #### Inherited from
 
-[TransactionInterface](TransactionInterface.md).[hash](TransactionInterface.md#hash)
+[`TransactionInterface`](TransactionInterface.md).[`hash`](TransactionInterface.md#hash)
 
-#### Defined in
+***
 
-[tx/src/types.ts:161](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L161)
+### isSigned()
 
-___
+> **isSigned**(): `boolean`
 
-### isSigned
-
-▸ **isSigned**(): `boolean`
+Defined in: [types.ts:236](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L236)
 
 #### Returns
 
@@ -430,17 +398,15 @@ ___
 
 #### Inherited from
 
-[TransactionInterface](TransactionInterface.md).[isSigned](TransactionInterface.md#issigned)
+[`TransactionInterface`](TransactionInterface.md).[`isSigned`](TransactionInterface.md#issigned)
 
-#### Defined in
+***
 
-[tx/src/types.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L164)
+### isValid()
 
-___
+> **isValid**(): `boolean`
 
-### isValid
-
-▸ **isValid**(): `boolean`
+Defined in: [types.ts:237](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L237)
 
 #### Returns
 
@@ -448,35 +414,31 @@ ___
 
 #### Inherited from
 
-[TransactionInterface](TransactionInterface.md).[isValid](TransactionInterface.md#isvalid)
+[`TransactionInterface`](TransactionInterface.md).[`isValid`](TransactionInterface.md#isvalid)
 
-#### Defined in
+***
 
-[tx/src/types.ts:165](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L165)
+### raw()
 
-___
+> **raw**(): [`TxValuesArray`](TxValuesArray.md)\[`T`\]
 
-### raw
-
-▸ **raw**(): [`TxValuesArray`](TxValuesArray.md)[`T`]
+Defined in: [types.ts:229](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L229)
 
 #### Returns
 
-[`TxValuesArray`](TxValuesArray.md)[`T`]
+[`TxValuesArray`](TxValuesArray.md)\[`T`\]
 
 #### Inherited from
 
-[TransactionInterface](TransactionInterface.md).[raw](TransactionInterface.md#raw)
+[`TransactionInterface`](TransactionInterface.md).[`raw`](TransactionInterface.md#raw)
 
-#### Defined in
+***
 
-[tx/src/types.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L157)
+### serialize()
 
-___
+> **serialize**(): `Uint8Array`
 
-### serialize
-
-▸ **serialize**(): `Uint8Array`
+Defined in: [types.ts:230](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L230)
 
 #### Returns
 
@@ -484,47 +446,47 @@ ___
 
 #### Inherited from
 
-[TransactionInterface](TransactionInterface.md).[serialize](TransactionInterface.md#serialize)
+[`TransactionInterface`](TransactionInterface.md).[`serialize`](TransactionInterface.md#serialize)
 
-#### Defined in
+***
 
-[tx/src/types.ts:158](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L158)
+### sign()
 
-___
+> **sign**(`privateKey`, `extraEntropy?`): [`Transaction`](Transaction.md)\[`T`\]
 
-### sign
-
-▸ **sign**(`privateKey`): [`Transaction`](Transaction.md)[`T`]
+Defined in: [types.ts:241](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L241)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `privateKey` | `Uint8Array` |
+##### privateKey
+
+`Uint8Array`
+
+##### extraEntropy?
+
+`boolean` | `Uint8Array`\<`ArrayBufferLike`\>
 
 #### Returns
 
-[`Transaction`](Transaction.md)[`T`]
+[`Transaction`](Transaction.md)\[`T`\]
 
 #### Inherited from
 
-[TransactionInterface](TransactionInterface.md).[sign](TransactionInterface.md#sign)
+[`TransactionInterface`](TransactionInterface.md).[`sign`](TransactionInterface.md#sign)
 
-#### Defined in
+***
 
-[tx/src/types.ts:169](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L169)
+### supports()
 
-___
+> **supports**(`capability`): `boolean`
 
-### supports
-
-▸ **supports**(`capability`): `boolean`
+Defined in: [types.ts:222](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L222)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `capability` | [`Capability`](../enums/Capability.md) |
+##### capability
+
+`number`
 
 #### Returns
 
@@ -532,17 +494,15 @@ ___
 
 #### Inherited from
 
-[TransactionInterface](TransactionInterface.md).[supports](TransactionInterface.md#supports)
+[`TransactionInterface`](TransactionInterface.md).[`supports`](TransactionInterface.md#supports)
 
-#### Defined in
+***
 
-[tx/src/types.ts:151](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L151)
+### toCreationAddress()
 
-___
+> **toCreationAddress**(): `boolean`
 
-### toCreationAddress
-
-▸ **toCreationAddress**(): `boolean`
+Defined in: [types.ts:228](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L228)
 
 #### Returns
 
@@ -550,35 +510,31 @@ ___
 
 #### Inherited from
 
-[TransactionInterface](TransactionInterface.md).[toCreationAddress](TransactionInterface.md#tocreationaddress)
+[`TransactionInterface`](TransactionInterface.md).[`toCreationAddress`](TransactionInterface.md#tocreationaddress)
 
-#### Defined in
+***
 
-[tx/src/types.ts:156](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L156)
+### toJSON()
 
-___
+> **toJSON**(): [`JSONTx`](JSONTx.md)
 
-### toJSON
-
-▸ **toJSON**(): [`JsonTx`](JsonTx.md)
+Defined in: [types.ts:242](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L242)
 
 #### Returns
 
-[`JsonTx`](JsonTx.md)
+[`JSONTx`](JSONTx.md)
 
 #### Inherited from
 
-[TransactionInterface](TransactionInterface.md).[toJSON](TransactionInterface.md#tojson)
+[`TransactionInterface`](TransactionInterface.md).[`toJSON`](TransactionInterface.md#tojson)
 
-#### Defined in
+***
 
-[tx/src/types.ts:170](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L170)
+### verifySignature()
 
-___
+> **verifySignature**(): `boolean`
 
-### verifySignature
-
-▸ **verifySignature**(): `boolean`
+Defined in: [types.ts:238](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L238)
 
 #### Returns
 
@@ -586,8 +542,4 @@ ___
 
 #### Inherited from
 
-[TransactionInterface](TransactionInterface.md).[verifySignature](TransactionInterface.md#verifysignature)
-
-#### Defined in
-
-[tx/src/types.ts:166](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L166)
+[`TransactionInterface`](TransactionInterface.md).[`verifySignature`](TransactionInterface.md#verifysignature)

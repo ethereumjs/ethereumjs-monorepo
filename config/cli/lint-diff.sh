@@ -25,7 +25,7 @@ dim() {
     echo "${DIM}$1${NOCOLOR}"
 }
 
-dim "> eslint --config ./config/eslint.config.mjs ."
+dim "> eslint --config ./eslint.config.mjs ."
 
 blue "[Lint]${NOCOLOR} checking..."
 
@@ -34,7 +34,7 @@ if [ -z "$FILESCHANGED" ]; then
     exit
 fi
 
-eslint --config ./config/eslint.config.mjs $FILESCHANGED
+eslint --config ./eslint.config.mjs $FILESCHANGED
 
 RETURN_CODE=$?
 

@@ -31,7 +31,7 @@ import { DBTarget } from './db/operation.ts'
 
 import type { HeaderData } from '@ethereumjs/block'
 import type { CliqueConfig, GenesisState } from '@ethereumjs/common'
-import type { BigIntLike, DB, DBObject, VerkleExecutionWitness } from '@ethereumjs/util'
+import type { BigIntLike, DB, DBObject } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 import type {
   BlockchainEvent,
@@ -51,6 +51,10 @@ import type {
  * Proof-of-Stake consensus is validated by the Ethereum consensus layer.
  * If consensus validation is desired for Ethash or Clique blockchains the
  * optional `consensusDict` option can be used to pass in validation objects.
+ *
+ * A Blockchain object can be created with the constructor method:
+ *
+ * - {@link createBlockchain}
  */
 export class Blockchain implements BlockchainInterface {
   db: DB<Uint8Array | string, Uint8Array | string | DBObject>
@@ -378,7 +382,7 @@ export class Blockchain implements BlockchainInterface {
    */
   private async _putBlockOrHeader(item: Block | BlockHeader) {
     await this.runWithLock<void>(async () => {
-      // Save the current sane state incase _putBlockOrHeader midway with some
+      // Save the current sane state in case _putBlockOrHeader midway with some
       // dirty changes in head trackers
       const oldHeads = Object.assign({}, this._heads)
       const oldHeadHeaderHash = this._headHeaderHash
@@ -386,7 +390,7 @@ export class Blockchain implements BlockchainInterface {
       try {
         const block =
           item instanceof BlockHeader
-            ? new Block(item, undefined, undefined, undefined, { common: item.common }, undefined)
+            ? new Block(item, undefined, undefined, undefined, { common: item.common })
             : item
         const isGenesis = block.isGenesis()
 
@@ -1339,7 +1343,6 @@ export class Blockchain implements BlockchainInterface {
       {
         header,
         withdrawals: common.isActivatedEIP(4895) ? [] : undefined,
-        executionWitness: common.isActivatedEIP(6800) ? ({} as VerkleExecutionWitness) : undefined,
       },
       { common },
     )

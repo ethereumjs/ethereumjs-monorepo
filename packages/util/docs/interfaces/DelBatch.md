@@ -1,47 +1,39 @@
+[**@ethereumjs/util**](../README.md)
+
+***
+
 [@ethereumjs/util](../README.md) / DelBatch
 
-# Interface: DelBatch<TKey\>
+# Interface: DelBatch\<TKey\>
 
-## Type parameters
+Defined in: [packages/util/src/db.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L39)
 
-| Name | Type |
-| :------ | :------ |
-| `TKey` | extends `Uint8Array` \| `string` \| `number` = `Uint8Array` |
+## Type Parameters
 
-## Table of contents
+### TKey
 
-### Properties
-
-- [key](DelBatch.md#key)
-- [opts](DelBatch.md#opts)
-- [type](DelBatch.md#type)
+`TKey` *extends* `Uint8Array` \| `string` \| `number` = `Uint8Array`
 
 ## Properties
 
 ### key
 
-• **key**: `TKey`
+> **key**: `TKey`
 
-#### Defined in
+Defined in: [packages/util/src/db.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L41)
 
-[packages/util/src/db.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L37)
+***
 
-___
+### opts?
 
-### opts
+> `optional` **opts**: [`EncodingOpts`](../type-aliases/EncodingOpts.md)
 
-• `Optional` **opts**: [`EncodingOpts`](../README.md#encodingopts)
+Defined in: [packages/util/src/db.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L42)
 
-#### Defined in
-
-[packages/util/src/db.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L38)
-
-___
+***
 
 ### type
 
-• **type**: ``"del"``
+> **type**: `"del"`
 
-#### Defined in
-
-[packages/util/src/db.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L36)
+Defined in: [packages/util/src/db.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L40)

@@ -6,9 +6,95 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 10.x.x - UNPUBLISHED
+## 10.1.0 - 2025-11-06
 
-Update transaction test runner to correctly report tests and fix edge case of invalid 7702 txs with nested lists inside the authority list, PR[3942](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3942)
+- `tx: throw on toCreationAddress for 4844 and 7702`, PR [#4162](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4162)
+- `tx: improve JSDoc annotations`, PR [#4161](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4161)
+- `4844 Tx Constructor Consistency and UX`, PR [#4155](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4155)
+- `valueBoundaryCheck chores`, PR [#4083](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4083)
+- `updates regarding blobtx serialization`, PR [#4065](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4065)
+
+### EIP-7594 - PeerDAS - Peer Data Availability Sampling
+
+Support for EIP-7594 PeerDAS blob transactions has been added. This extends EIP-4844 blob transactions with data availability sampling capabilities. PeerDAS transactions use network wrapper version 1 and include cell proofs instead of blob proofs. The transaction library now supports creating and validating PeerDAS transactions with a maximum of 6 blobs per transaction.
+
+```typescript
+import { Blob4844Tx } from '@ethereumjs/tx'
+import { Common, Hardfork } from '@ethereumjs/common'
+import { hexToBytes } from '@ethereumjs/util'
+
+const common = new Common({ chain: 'mainnet', hardfork: Hardfork.Osaka })
+
+// Create a PeerDAS blob transaction (network wrapper version 1)
+const tx = Blob4844Tx.fromTxData({
+  chainId: common.chainId(),
+  nonce: 0n,
+  maxFeePerGas: 1000000000n,
+  maxPriorityFeePerGas: 1000000000n,
+  maxFeePerBlobGas: 1000000000n,
+  gasLimit: 100000n,
+  to: '0x...',
+  value: 0n,
+  blobVersionedHashes: ['0x...'],
+  blobs: ['0x...'], // Blob data
+  kzgCommitments: ['0x...'],
+  kzgProofs: ['0x...'], // Cell proofs for PeerDAS
+  networkWrapperVersion: 1 // EIP-7594
+}, { common })
+```
+
+### EIP-7825 - Transaction Gas Limit Cap
+
+EIP-7825 support has been implemented, introducing a protocol-level cap of 16,777,216 gas (2^24) for individual transactions. The transaction library now validates that transaction gas limits do not exceed this cap. Transactions with gas limits above the cap will be rejected during construction.
+
+```typescript
+import { LegacyTx } from '@ethereumjs/tx'
+import { Common, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: 'mainnet', hardfork: Hardfork.Osaka })
+
+// Transaction with gas limit exceeding 16,777,216 will throw an error
+try {
+  const tx = LegacyTx.fromTxData({
+    gasLimit: 20000000n, // Exceeds EIP-7825 cap
+    // ... other fields
+  }, { common })
+} catch (error) {
+  // Error: Gas limit exceeds maximum allowed by EIP-7825
+}
+
+// Valid transaction with gas limit within the cap
+const validTx = LegacyTx.fromTxData({
+  gasLimit: 10000000n, // Within EIP-7825 cap
+  // ... other fields
+}, { common })
+```
+
+## 10.0.0 - 2025-04-29
+
+### Overview
+
+This release is part of the `v10` breaking release round making the `EthereumJS` libraries compatible with the [Pectra](https://eips.ethereum.org/EIPS/eip-7600) hardfork going live on Ethereum `mainnet` on May 7 2025. Beside the hardfork update these releases mark a milestone in our release history since they - for the first time ever - bring the full `Ethereum` protocol stack - including the `EVM` - to the browser without any restrictions anymore, coming along with other substantial updates regarding library security and functionality.
+
+Some highlights:
+
+- 🌴 Introduction of a tree-shakeable API
+- 👷🏼 Substantial dependency reduction to a "controlled dependency set" (no more than 10 + `@Noble` crypto)
+- 📲 **EIP-7702** readiness
+- 🛵 Substantial bundle size reductions for all libraries
+- 🏄🏾‍♂️ All libraries now pure JS being WASM-free by default
+- 🦋 No more propriatary `Node.js` primitives
+
+So: **All libraries now work in the browser "out of the box"**.
+
+### Release Notes
+
+Major release notes for this release can be found in the `alpha.1` release notes [here](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3722#issuecomment-2792400268), with some additions along with the `RC.1` releases, see [here](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3886#issuecomment-2748966923).
+
+### Changes since `RC.1`
+
+- Fix for the `EIP-7702` gas calculation, PR [#3935](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3935)
+- Update transaction test runner to correctly report tests and fix edge case of invalid 7702 txs with nested lists inside the authority list, PR[3942](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3942)
 
 ## 10.0.0-rc.1 - 2025-03-24
 

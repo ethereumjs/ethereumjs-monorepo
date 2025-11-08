@@ -58,15 +58,15 @@ describe('EIP 6780 tests', () => {
     const createdAddress = result.createdAddress!
 
     const contract = (await vm.stateManager.getAccount(createdAddress)) ?? new Account()
-    assert.equal(contract.balance, BigInt(0), 'value sent')
-    assert.equal(contract.nonce, BigInt(0), 'contract nonce 0')
+    assert.strictEqual(contract.balance, BigInt(0), 'value sent')
+    assert.strictEqual(contract.nonce, BigInt(0), 'contract nonce 0')
 
     // Account does not exist...
     assert.isUndefined(
       await vm.evm.stateManager.getAccount(createdAddress),
       'account does not exist, so storage is cleared',
     )
-    assert.equal(
+    assert.strictEqual(
       (await vm.stateManager.getAccount(createAddressFromString('0x' + '00'.repeat(19) + '01')))!
         .balance,
       BigInt(value),
@@ -95,14 +95,14 @@ describe('EIP 6780 tests', () => {
     await runTx(vm, { tx })
 
     const contract = (await vm.stateManager.getAccount(target)) ?? new Account()
-    assert.equal(contract.balance, BigInt(0), 'value sent')
-    assert.equal(contract.nonce, BigInt(1), 'nonce 1')
+    assert.strictEqual(contract.balance, BigInt(0), 'value sent')
+    assert.strictEqual(contract.nonce, BigInt(1), 'nonce 1')
 
     const key = hexToBytes(`0x${'00'.repeat(31)}01`)
     const storage = await vm.stateManager.getStorage(target, key)
 
     assert.isTrue(equalsBytes(storage, hexToBytes('0x01')), 'storage not cleared')
-    assert.equal(
+    assert.strictEqual(
       (await vm.stateManager.getAccount(createAddressFromString('0x' + '00'.repeat(19) + '01')))!
         .balance,
       BigInt(value),

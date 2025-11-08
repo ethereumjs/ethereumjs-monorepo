@@ -1,4 +1,4 @@
-# @ethereumjs/common
+# @ethereumjs/common `v10`
 
 [![NPM Package][common-npm-badge]][common-npm-link]
 [![GitHub Issues][common-issues-badge]][common-issues-link]
@@ -9,6 +9,33 @@
 | Resources common to all EthereumJS implementations. |
 | --------------------------------------------------- |
 
+## Table of Contents
+
+- [@ethereumjs/common `v10`](#ethereumjscommon-v10)
+  - [Table of Contents](#table-of-contents)
+  - [Installation](#installation)
+  - [Getting Started](#getting-started)
+    - [import / require](#import--require)
+    - [Parameters](#parameters)
+  - [Custom Cryptography Primitives (WASM)](#custom-cryptography-primitives-wasm)
+    - [Example 1: keccak256 Hashing](#example-1-keccak256-hashing)
+    - [Example 2: KZG](#example-2-kzg)
+  - [Browser](#browser)
+  - [API](#api)
+    - [Docs](#docs)
+    - [Hybrid CJS/ESM Builds](#hybrid-cjsesm-builds)
+  - [Events](#events)
+    - [Chains and Genesis](#chains-and-genesis)
+    - [Working with Private/Custom Chains](#working-with-privatecustom-chains)
+      - [Initialize using Geth's genesis json](#initialize-using-geths-genesis-json)
+  - [Hardfork Support and Usage](#hardfork-support-and-usage)
+    - [Active Hardforks](#active-hardforks)
+    - [Future Hardforks](#future-hardforks)
+    - [Parameter Access](#parameter-access)
+  - [Supported EIPs](#supported-eips)
+  - [EthereumJS](#ethereumjs)
+  - [License](#license)
+
 ## Installation
 
 To obtain the latest version, simply require the project using `npm`:
@@ -17,7 +44,7 @@ To obtain the latest version, simply require the project using `npm`:
 npm install @ethereumjs/common
 ```
 
-## Usage
+## Getting Started
 
 ### import / require
 
@@ -71,7 +98,7 @@ const commonWithCustomChainId = createCustomCommon({ chainId: 1234 }, Mainnet)
 console.log(`The current chain ID is ${commonWithCustomChainId.chainId()}`)
 ```
 
-### Custom Cryptography Primitives (WASM)
+## Custom Cryptography Primitives (WASM)
 
 All EthereumJS packages use cryptographic primitives from the audited `ethereum-cryptography` library by default. These primitives, including `keccak256`, `sha256`, and elliptic curve signature methods, are all written in native JavaScript and therefore have the potential downside of being less performant than alternative cryptography modules written in other languages and then compiled to WASM. If cryptography performance is a bottleneck in your usage of the EthereumJS libraries, you can provide your own primitives to the `Common` constructor and they will be used in place of the defaults. Depending on how your preferred primitives are implemented, you may need to write wrapper methods around them so they conform to the interface exposed by the [`common.customCrypto` property](./src/types.ts).
 
@@ -111,8 +138,8 @@ The KZG library used for EIP-4844 Blob Transactions is initialized by `common` u
 // ./examples/initKzg.ts
 
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
-import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 
 const main = async () => {
   const kzg = new microEthKZG(trustedSetup)
@@ -129,7 +156,7 @@ void main()
 
 ## Browser
 
-We provide hybrid ESM/CJS builds for all our libraries. With the v10 breaking release round from Spring 2025 all libraries are "pure-JS" by default and we have eliminated all hard-wired WASM code. Additionally we have substantially lowered the bundle sizes, reduced the number of dependencies and cut out all usages of Node.js specific primities (like the Node.js event emitter).
+We provide hybrid ESM/CJS builds for all our libraries. With the v10 breaking release round from Spring 2025 all libraries are "pure-JS" by default and we have eliminated all hard-wired WASM code. Additionally we have substantially lowered the bundle sizes, reduced the number of dependencies and cut out all usages of Node.js specific primitives (like the Node.js event emitter).
 
 It is easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
 
@@ -138,7 +165,7 @@ It is easily possible to run a browser build of one of the EthereumJS libraries 
 ### Docs
 
 See the API documentation for a full list of functions for accessing specific chain and
-depending hardfork parameters. There are also additional helper functions like
+dependent hardfork parameters. There are also additional helper functions like
 `paramByBlock (topic, name, blockNumber)` or `hardforkIsActiveOnBlock (hardfork, blockNumber)`
 to ease `blockNumber` based access to parameters.
 
@@ -170,9 +197,7 @@ The `Common` class has a public property `events` which contains an `EventEmitte
 | ----------------- | ---------------------------------------------------------- |
 | `hardforkChanged` | Emitted when a hardfork change occurs in the Common object |
 
-## Setup
-
-### Chains
+### Chains and Genesis
 
 The `chain` can be set in the constructor like this:
 
@@ -186,7 +211,7 @@ Supported chains:
 - `mainnet` (`Mainnet`)
 - `sepolia` (`Sepolia`) (`v2.6.1`+)
 - `holesky` (`Holesky`) (`v4.1.0`+)
-- `hoodi`(`Hoodi`) (`v10+` (new versioning scheme))
+- `hoodi` (`Hoodi`) (`v10+` (new versioning scheme))
 - Private/custom chain parameters
 
 The following chain-specific parameters are provided:
@@ -207,7 +232,7 @@ file, or to the `Chain` type in [./src/types.ts](./src/types.ts).
 
 ### Working with Private/Custom Chains
 
-Starting with the `v10` release series using custom chain configurations has been simplified and consolidated in a single API `createCustomCommon()`. This constructor can be both used to make simple chain ID adjustments and keep the rest of the config conforming to a given "base chain":
+Starting with the `v10` release series using custom chain configurations has been simplified and consolidated in a single API `createCustomCommon()`. This constructor can be used both to make simple chain ID adjustments and keep the rest of the config conforming to a given "base chain":
 
 ```ts
 import { createCustomCommon, Mainnet } from '@ethereumjs/common'
@@ -217,7 +242,7 @@ createCustomCommon({chainId: 123}, Mainnet)
 
 See the `Tx` library [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx) for how to use such a `Common` instance in the context of sending txs to L2 networks.
 
-Beyond it is possible to customize to a fully custom chain by passing in a complete configuration object as first parameter:
+Beyond that, it is possible to customize to a fully custom chain by passing in a complete configuration object as first parameter:
 
 ```ts
 // ./examples/customChain.ts
@@ -233,7 +258,7 @@ console.log(`Common is instantiated with custom chain parameters - ${common1.cha
 
 #### Initialize using Geth's genesis json
 
-For lots of custom chains (for e.g. devnets and testnets), you might come across a genesis json config which
+For lots of custom chains (e.g., devnets and testnets), you might come across a genesis json config which
 has both config specification for the chain as well as the genesis state specification. You can derive the
 common from such configuration in the following manner:
 
@@ -246,16 +271,16 @@ import { hexToBytes } from '@ethereumjs/util'
 import genesisJSON from './genesisData/post-merge.json'
 
 const genesisHash = hexToBytes('0x3b8fb240d288781d4aac94d3fd16809ee413bc99294a085798a589dae51ddd4a')
-// Load geth genesis JSON file into lets say `genesisJSON` and optional `chain` and `genesisHash`
+// Load geth genesis JSON file into let's say `genesisJSON` and optional `chain` and `genesisHash`
 const common = createCommonFromGethGenesis(genesisJSON, { chain: 'customChain', genesisHash })
-// If you don't have `genesisHash` while initiating common, you can later configure common (for e.g.
+// If you don't have `genesisHash` while initiating common, you can later configure common (e.g.,
 // after calculating it via `blockchain`)
 common.setForkHashes(genesisHash)
 
 console.log(`The London forkhash for this custom chain is ${common.forkHash('london')}`)
 ```
 
-### Hardforks
+## Hardfork Support and Usage
 
 The `hardfork` can be set in constructor like this:
 
@@ -270,8 +295,8 @@ const commonWithEnums = new Common({ chain: Mainnet, hardfork: Hardfork.London }
 
 ### Active Hardforks
 
-There are currently parameter changes by the following past and future hardfork by the
-library supported:
+There are currently parameter changes by the following past and future hardforks
+supported by the library:
 
 - `chainstart` (`Hardfork.Chainstart`)
 - `homestead` (`Hardfork.Homestead`)
@@ -309,7 +334,7 @@ See one of the hardfork configurations in the `hardforks.ts` file
 for an overview. For consistency, the chain start (`chainstart`) is considered an own
 hardfork.
 
-### EIPs
+## Supported EIPs
 
 EIPs are native citizens within the library and can be activated like this:
 
@@ -351,18 +376,15 @@ The following EIPs are currently supported:
 - [EIP-7516](https://eips.ethereum.org/EIPS/eip-7516) - BLOBBASEFEE opcode (Cancun)
 - [EIP-7623](https://eips.ethereum.org/EIPS/eip-7623) - Increase calldata cost (Prague)
 - [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) - General purpose execution layer requests (Prague)
+- [EIP-7918](https://eips.ethereum.org/EIPS/eip-7918) - Blob base fee bounded by execution cost (Osaka)
 - [EIP-7691](https://eips.ethereum.org/EIPS/eip-7691) - Blob throughput increase (Prague)
 - [EIP-7692](https://eips.ethereum.org/EIPS/eip-7692) - EVM Object Format (EOF) v1 (`experimental`)
 - [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) - Set EOA account code (Prague)
 - [EIP-7709](https://eips.ethereum.org/EIPS/eip-7709) - Read BLOCKHASH from storage and update cost (Verkle)
 
-### Bootstrap Nodes
-
-You can use `common.bootstrapNodes()` function to get nodes for a specific chain/network.
-
 ## EthereumJS
 
-See our organizational [documentation](https://ethereumjs.readthedocs.io) for an introduction to `EthereumJS` as well as information on current standards and best practices. If you want to join for work or carry out improvements on the libraries, please review our [contribution guidelines](https://ethereumjs.readthedocs.io/en/latest/contributing.html) first.
+The `EthereumJS` GitHub organization and its repositories are managed by members of the former Ethereum Foundation JavaScript team and the broader Ethereum community. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
 
 ## License
 

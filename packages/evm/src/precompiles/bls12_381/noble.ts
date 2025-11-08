@@ -8,7 +8,7 @@ import {
 } from '@ethereumjs/util'
 import { bls12_381 } from '@noble/curves/bls12-381'
 
-import { EVMError, EVMErrorMessages } from '../../errors.ts'
+import { EVMError } from '../../errors.ts'
 
 import {
   BLS_FIELD_MODULUS,
@@ -30,10 +30,10 @@ const G2_ZERO = bls12_381.G2.ProjectivePoint.ZERO
 function BLS12_381_ToFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array) {
   // check if the coordinates are in the field
   if (bytesToBigInt(fpXCoordinate) >= BLS_FIELD_MODULUS) {
-    throw new EVMError(EVMErrorMessages.BLS_12_381_FP_NOT_IN_FIELD)
+    throw new EVMError(EVMError.errorMessages.BLS_12_381_FP_NOT_IN_FIELD)
   }
   if (bytesToBigInt(fpYCoordinate) >= BLS_FIELD_MODULUS) {
-    throw new EVMError(EVMErrorMessages.BLS_12_381_FP_NOT_IN_FIELD)
+    throw new EVMError(EVMError.errorMessages.BLS_12_381_FP_NOT_IN_FIELD)
   }
 
   const fpBytes = concatBytes(fpXCoordinate.subarray(16), fpYCoordinate.subarray(16))
@@ -65,7 +65,7 @@ function BLS12_381_ToG1Point(input: Uint8Array, verifyOrder = true) {
     G1.assertValidity()
   } catch (e) {
     if (verifyOrder || (e as Error).message !== 'bad point: not in prime-order subgroup')
-      throw new EVMError(EVMErrorMessages.BLS_12_381_POINT_NOT_ON_CURVE)
+      throw new EVMError(EVMError.errorMessages.BLS_12_381_POINT_NOT_ON_CURVE)
   }
 
   return G1
@@ -108,7 +108,7 @@ function BLS12_381_ToG2Point(input: Uint8Array, verifyOrder = true) {
     pG2.assertValidity()
   } catch (e) {
     if (verifyOrder || (e as Error).message !== 'bad point: not in prime-order subgroup')
-      throw new EVMError(EVMErrorMessages.BLS_12_381_POINT_NOT_ON_CURVE)
+      throw new EVMError(EVMError.errorMessages.BLS_12_381_POINT_NOT_ON_CURVE)
   }
 
   return pG2
@@ -159,7 +159,7 @@ function BLS12_381_ToFrPoint(input: Uint8Array): bigint {
 function BLS12_381_ToFpPoint(fpCoordinate: Uint8Array) {
   // check if point is in field
   if (bytesToBigInt(fpCoordinate) >= BLS_FIELD_MODULUS) {
-    throw new EVMError(EVMErrorMessages.BLS_12_381_FP_NOT_IN_FIELD)
+    throw new EVMError(EVMError.errorMessages.BLS_12_381_FP_NOT_IN_FIELD)
   }
   const FP = bls12_381.fields.Fp.fromBytes(fpCoordinate.slice(16))
   return FP

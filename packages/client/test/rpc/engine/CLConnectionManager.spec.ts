@@ -135,7 +135,7 @@ describe('updates status correctly', async () => {
   manager['updateStatus']()
   it('updates status correctly', () => {
     assert.isTrue(manager.running, 'connection manager started when updateStatus called')
-    assert.equal(
+    assert.strictEqual(
       manager['connectionStatus'],
       ConnectionStatus.Connected,
       'connection status updated correctly',
@@ -151,7 +151,7 @@ describe('updates connection status correctly', async () => {
     manager['connectionStatus'] = ConnectionStatus.Connected
     manager['lastRequestTimestamp'] = Date.now() - manager['DISCONNECTED_THRESHOLD'] - 1
     manager['connectionCheck']()
-    assert.equal(
+    assert.strictEqual(
       manager['connectionStatus'],
       ConnectionStatus.Disconnected,
       'should disconnect from CL',
@@ -161,7 +161,7 @@ describe('updates connection status correctly', async () => {
     manager['connectionStatus'] = ConnectionStatus.Connected
     manager['lastRequestTimestamp'] = Date.now() - manager['UNCERTAIN_THRESHOLD'] - 1
     manager['connectionCheck']()
-    assert.equal(
+    assert.strictEqual(
       manager['connectionStatus'],
       ConnectionStatus.Uncertain,
       'should update status to uncertain',
@@ -174,6 +174,10 @@ describe('updates connection status correctly', async () => {
     const callbackSpy = vi.spyOn(manager as any, '_inActivityCb')
     manager['connectionCheck']()
     expect(callbackSpy).toHaveBeenCalledTimes(1)
-    assert.equal(manager['disconnectedCheckIndex'], 1, 'disconnection check incremented correctly')
+    assert.strictEqual(
+      manager['disconnectedCheckIndex'],
+      1,
+      'disconnection check incremented correctly',
+    )
   })
 })

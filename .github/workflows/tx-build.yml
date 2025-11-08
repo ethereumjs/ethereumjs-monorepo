@@ -35,7 +35,7 @@ jobs:
     steps:
       # We clone the repo and submodules if triggered from work-flow dispatch
       - if: inputs.submodule-cache-key == 'none'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           submodules: recursive
 
@@ -48,7 +48,7 @@ jobs:
           key: ${{ inputs.dep-cache-key }}
 
       - name: Use Node.js 20
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: 'npm'
@@ -68,7 +68,7 @@ jobs:
           fail-on-cache-miss: true
 
 
-      - run: npm run coverage
+      - run: npm run test:node && npm run coverage
       - uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

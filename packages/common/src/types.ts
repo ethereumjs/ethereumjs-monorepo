@@ -1,4 +1,4 @@
-import type { BigIntLike, KZG, PrefixedHexString, VerkleCrypto } from '@ethereumjs/util'
+import type { BigIntLike, KZG, PrefixedHexString } from '@ethereumjs/util'
 import type { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import type { ConsensusAlgorithm, ConsensusType, Hardfork } from './enums.ts'
 
@@ -93,7 +93,6 @@ export interface CustomCrypto {
   ) => Pick<ReturnType<typeof secp256k1.sign>, 'recovery' | 'r' | 's'>
   ecdsaRecover?: (sig: Uint8Array, recId: number, hash: Uint8Array) => Uint8Array
   kzg?: KZG
-  verkle?: VerkleCrypto
 }
 
 export interface BaseOpts {
@@ -189,4 +188,10 @@ export type ParamsDict = {
 
 export type HardforksDict = {
   [key: string]: HardforkConfig
+}
+
+export type BpoSchedule = {
+  targetBlobGasPerBlock: bigint
+  maxBlobGasPerBlock: bigint
+  blobGasPriceUpdateFraction: bigint
 }

@@ -10,8 +10,12 @@ import type { BigIntLike } from '@ethereumjs/util'
 import type { VMEvent, VMOpts } from './types.ts'
 
 /**
- * Execution engine which can be used to run a blockchain, individual
- * blocks, individual transactions, or snippets of EVM bytecode.
+ * The VM is a state transition machine that executes EVM bytecode and updates the state.
+ * It can be used to execute transactions, blocks, individual transactions, or snippets of EVM bytecode.
+ *
+ * A VM can be created with the constructor method:
+ *
+ * - {@link createVM}
  */
 export class VM {
   /**

@@ -1,6 +1,6 @@
 import { bytesToHex } from '@ethereumjs/util'
 
-import { EVMError, EVMErrorMessages } from '../errors.ts'
+import { EVMError } from '../errors.ts'
 import { OOGResult } from '../evm.ts'
 
 import { getPrecompileName } from './index.ts'
@@ -181,7 +181,7 @@ export function precompile09(opts: PrecompileInput): ExecResult {
     return {
       returnValue: new Uint8Array(0),
       executionGasUsed: opts.gasLimit,
-      exceptionError: new EVMError(EVMErrorMessages.OUT_OF_RANGE),
+      exceptionError: new EVMError(EVMError.errorMessages.OUT_OF_RANGE),
     }
   }
   const lastByte = data.subarray(212, 213)[0]
@@ -192,7 +192,7 @@ export function precompile09(opts: PrecompileInput): ExecResult {
     return {
       returnValue: new Uint8Array(0),
       executionGasUsed: opts.gasLimit,
-      exceptionError: new EVMError(EVMErrorMessages.OUT_OF_RANGE),
+      exceptionError: new EVMError(EVMError.errorMessages.OUT_OF_RANGE),
     }
   }
 

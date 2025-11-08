@@ -6,7 +6,7 @@ import {
   stripHexPrefix,
 } from '@ethereumjs/util'
 
-import { Holesky, Hoodi, Kaustinen6, Mainnet, Sepolia } from './chains.ts'
+import { Holesky, Hoodi, Mainnet, Sepolia } from './chains.ts'
 import { Hardfork } from './enums.ts'
 import { hardforksDict } from './hardforks.ts'
 
@@ -167,7 +167,11 @@ function parseGethParams(gethGenesis: GethGenesis) {
     [Hardfork.Cancun]: { name: 'cancunTime', postMerge: true, isTimestamp: true },
     [Hardfork.Prague]: { name: 'pragueTime', postMerge: true, isTimestamp: true },
     [Hardfork.Osaka]: { name: 'osakaTime', postMerge: true, isTimestamp: true },
-    [Hardfork.Verkle]: { name: 'verkleTime', postMerge: true, isTimestamp: true },
+    [Hardfork.Bpo1]: { name: 'bpo1Time', postMerge: true, isTimestamp: true },
+    [Hardfork.Bpo2]: { name: 'bpo2Time', postMerge: true, isTimestamp: true },
+    [Hardfork.Bpo3]: { name: 'bpo3Time', postMerge: true, isTimestamp: true },
+    [Hardfork.Bpo4]: { name: 'bpo4Time', postMerge: true, isTimestamp: true },
+    [Hardfork.Bpo5]: { name: 'bpo5Time', postMerge: true, isTimestamp: true },
   }
 
   // forkMapRev is the map from config field name to Hardfork
@@ -309,9 +313,6 @@ export const getPresetChainConfig = (chain: string | number) => {
     case 'hoodi':
     case 560048:
       return Hoodi
-    case 'kaustinen6':
-    case 69420:
-      return Kaustinen6
     case 'sepolia':
     case 11155111:
       return Sepolia

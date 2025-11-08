@@ -6,8 +6,8 @@ import {
   hexToBytes,
   unpadBytes,
 } from '@ethereumjs/util'
-import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
-import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 import { assert, describe, it } from 'vitest'
 
 import { createEVM, getActivePrecompiles } from '../../src/index.ts'
@@ -59,7 +59,7 @@ describe('Precompiles: point evaluation', () => {
     }
 
     let res = await pointEvaluation(opts)
-    assert.equal(
+    assert.strictEqual(
       bytesToBigInt(unpadBytes(res.returnValue.slice(32))),
       BLS_MODULUS,
       'point evaluation precompile returned expected output',

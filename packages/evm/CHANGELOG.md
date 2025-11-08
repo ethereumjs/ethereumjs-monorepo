@@ -6,6 +6,115 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 10.1.0 - 2025-11-06
+
+- Extended modexp precompile debug messages, PR [#4124](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4124)
+- More ArrayBuffer type assignment fixes, PR [#4109](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4109)
+- Cleanup unused dependencies and fix dependency categorization, PR [#4146](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4146)
+- Remove Verkle package support, PR [#4145](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4145)
+
+### EIP-7823 - Set upper bounds for MODEXP
+
+The MODEXP precompile (address `0x05`) now enforces an upper bound of 8192 bits (1024 bytes) on each input field (base, exponent, modulus). If any input exceeds this limit, the precompile execution stops, returns an error, and consumes all gas. This change improves security and makes the precompile more suitable for future EVMMAX replacement.
+
+```typescript
+import { EVM } from '@ethereumjs/evm'
+import { Common, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: 'mainnet', hardfork: Hardfork.Osaka })
+const evm = await EVM.create({ common })
+
+// MODEXP call with inputs exceeding 1024 bytes will now fail
+// Inputs within the limit continue to work as before
+```
+
+### EIP-7883 - ModExp Gas Cost Increase
+
+The MODEXP precompile gas cost calculation has been updated according to EIP-7883. The minimum gas cost has been increased from 200 to 500, and the pricing algorithm has been adjusted with increased complexity calculations for larger inputs. The multiplier for exponents larger than 32 bytes has been doubled from 8 to 16.
+
+```typescript
+import { EVM } from '@ethereumjs/evm'
+import { Common, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: 'mainnet', hardfork: Hardfork.Osaka })
+const evm = await EVM.create({ common })
+
+// MODEXP calls will now consume more gas according to the new pricing formula
+// The minimum cost is now 500 gas (previously 200)
+```
+
+### EIP-7939 - Count leading zeros (CLZ) opcode
+
+A new opcode `CLZ` (0x1e) has been added that counts the number of leading zero bits in a 256-bit word. If the input is zero, it returns 256. The opcode has a gas cost of 5 gas.
+
+```typescript
+import { EVM } from '@ethereumjs/evm'
+import { Common, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: 'mainnet', hardfork: Hardfork.Osaka })
+const evm = await EVM.create({ common })
+
+// CLZ opcode can be used in EVM bytecode:
+// PUSH1 0x01  // Push 1 to stack
+// CLZ         // Count leading zeros: returns 255
+// PUSH1 0x00  // Push 0 to stack  
+// CLZ         // Returns 256
+```
+
+### EIP-7951 - Precompile for secp256r1 Curve Support
+
+A new precompile `P256VERIFY` has been added at address `0x100` for ECDSA signature verification over the secp256r1 curve (also known as P-256 or prime256v1). This enables native support for signatures from modern secure hardware including Apple Secure Enclave, Android Keystore, and FIDO2/WebAuthn devices. The precompile costs 6900 gas and expects 160 bytes of input (32 bytes each for message hash, r, s, public key x, and public key y).
+
+```typescript
+import { EVM } from '@ethereumjs/evm'
+import { Common, Hardfork } from '@ethereumjs/common'
+import { hexToBytes } from '@ethereumjs/util'
+
+const common = new Common({ chain: 'mainnet', hardfork: Hardfork.Osaka })
+const evm = await EVM.create({ common })
+
+// P256VERIFY precompile usage:
+// Input: 160 bytes = [msgHash (32) | r (32) | s (32) | qx (32) | qy (32)]
+// Output: 32 bytes with 0x00...01 for valid signature, empty for invalid
+const input = hexToBytes('0x...') // 160 bytes
+const result = await evm.runCall({
+  to: '0x0000000000000000000000000000000000000100',
+  data: input,
+  gasLimit: 10000n
+})
+```
+
+## 10.0.0 - 2025-04-29
+
+### Overview
+
+This release is part of the `v10` breaking release round making the `EthereumJS` libraries compatible with the [Pectra](https://eips.ethereum.org/EIPS/eip-7600) hardfork going live on Ethereum `mainnet` on May 7 2025. Beside the hardfork update these releases mark a milestone in our release history since they - for the first time ever - bring the full `Ethereum` protocol stack - including the `EVM` - to the browser without any restrictions anymore, coming along with other substantial updates regarding library security and functionality.
+
+Some highlights:
+
+- 🌴 Introduction of a tree-shakeable API
+- 👷🏼 Substantial dependency reduction to a "controlled dependency set" (no more than 10 + `@Noble` crypto)
+- 📲 **EIP-7702** readiness
+- 🛵 Substantial bundle size reductions for all libraries
+- 🏄🏾‍♂️ All libraries now pure JS being WASM-free by default
+- 🦋 No more propriatary `Node.js` primitives
+
+So: **All libraries now work in the browser "out of the box"**.
+
+### Release Notes
+
+Major release notes for this release can be found in the `alpha.1` release notes [here](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3722#issuecomment-2792400268), with some additions along with the `RC.1` releases, see [here](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3886#issuecomment-2748966923).
+
+### Changes since `RC.1`
+
+- Fix inconsistent memory expansion behavior along `step` event, PR [#3953](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3953)
+- Error related renamings for consistency reasons, PRs [#3968](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3968), [#3994](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3994) and [#4033](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4033):
+  - `ERROR` -> `EVMErrorMessage` (Error messages)
+  - `EvmError` -> `EVMError` (Error class)
+  - EOF related error renamings
+- Upgrade `@noble/curves` to `1.9.0`, PR [#4018](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4018)
+- Add JSON tracing to `t8n` in compliance with `EIP-7756`, PRs [#3953](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3953) and [#4027](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4027)
+
 ## 10.0.0-rc.1 - 2025-03-24
 
 This is the first (and likely the last) round of `RC` releases for the upcoming breaking releases, following the `alpha` releases from October 2024 (see `alpha` release release notes for full/main change description). The releases are somewhat delayed (sorry for that), but final releases can now be expected very very soon, to be released once the Ethereum [Pectra](https://eips.ethereum.org/EIPS/eip-7600) hardfork is scheduled for mainnet and all EIPs are fully finalized. Pectra will then also be the default hardfork setting for all EthereumJS libraries.

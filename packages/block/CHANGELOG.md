@@ -6,6 +6,90 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 10.1.0 - 2025-11-06
+
+- Some `0n` -> `BIGINT_0` replacements, PR [#4147](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4147)
+- Remove Verkle package support, PR [#4145](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4145)
+
+### EIP-7918 - Blob base fee bounded by execution cost
+
+EIP-7918 support has been implemented, which ensures that the blob base fee is bounded by execution cost. The block library now properly calculates `excess_blob_gas` according to the new formula that imposes a reserve price, ensuring the blob fee market functions properly even when execution costs dominate.
+
+### EIP-7934 - RLP Execution Block Size Limit
+
+Support for EIP-7934 has been added, introducing a protocol-level cap on the maximum RLP-encoded block size to 10 MiB (with a 2 MiB margin for beacon block size, resulting in a maximum RLP block size of 8 MiB). The block library now validates that blocks do not exceed this size limit during construction and validation.
+
+```typescript
+import { Block } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Osaka })
+
+// Blocks exceeding 8 MiB RLP size will be rejected
+const block = createBlockFromRLP({
+  // ... block data
+}, { common })
+
+// The block size is validated according to EIP-7934
+const rlpSize = block.serialize().length
+if (rlpSize > 8 * 1024 * 1024) {
+  // Block exceeds maximum RLP size
+}
+```
+
+### EIP-7892 - Blob Parameter Only Hardforks
+
+Support for Blob Parameter Only (BPO) hardforks has been implemented according to EIP-7892. BPO hardforks enable rapid scaling of blob capacity by modifying only blob-related parameters (`target`, `max`, and `blobGasPriceUpdateFraction`) without requiring code changes.
+
+The block library now properly handles blob gas calculations and blob base fee updates according to the active BPO hardfork. When processing blocks with BPO1 or BPO2 active, the library uses the updated blob parameters:
+
+- **BPO 1**: Target 10, Max 15 blobs per block
+- **BPO 2**: Target 14, Max 21 blobs per block
+
+Blob base fee calculations automatically adjust based on the active BPO hardfork parameters, ensuring proper blob fee market functionality as blob capacity scales.
+
+```typescript
+import { Block } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+
+// Block processing with BPO1 active
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Bpo1 })
+const block = Block.fromBlockData({
+  // ... block data with blobs
+}, { common })
+
+// Blob gas calculations use BPO1 parameters:
+// - Max blobs per block: 15 (instead of 9 in Osaka)
+// - Target blobs per block: 10 (instead of 6 in Osaka)
+// Blob base fee calculations automatically adjust accordingly
+```
+
+## 10.0.0 - 2025-04-29
+
+### Overview
+
+This release is part of the `v10` breaking release round making the `EthereumJS` libraries compatible with the [Pectra](https://eips.ethereum.org/EIPS/eip-7600) hardfork going live on Ethereum `mainnet` on May 7 2025. Beside the hardfork update these releases mark a milestone in our release history since they - for the first time ever - bring the full `Ethereum` protocol stack - including the `EVM` - to the browser without any restrictions anymore, coming along with other substantial updates regarding library security and functionality.
+
+Some highlights:
+
+- 🌴 Introduction of a tree-shakeable API
+- 👷🏼 Substantial dependency reduction to a "controlled dependency set" (no more than 10 + `@Noble` crypto)
+- 📲 **EIP-7702** readiness
+- 🛵 Substantial bundle size reductions for all libraries
+- 🏄🏾‍♂️ All libraries now pure JS being WASM-free by default
+- 🦋 No more propriatary `Node.js` primitives
+
+So: **All libraries now work in the browser "out of the box"**.
+
+### Release Notes
+
+Major release notes for this release can be found in the `alpha.1` release notes [here](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3722#issuecomment-2792400268), with some additions along with the `RC.1` releases, see [here](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3886#issuecomment-2748966923).
+
+### Changes since `RC.1`
+
+- Remove `totalDifficulty` from `JSONRPCBlock` type required fields, PR [#3939](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3939)
+- New `EIP-7685` `CLRequests` test, example, and docs (thanks ❤️ @avdheshcharjan), PR [#4008](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4008) 
+
 ## 10.0.0-rc.1 - 2025-03-24
 
 This is the first (and likely the last) round of `RC` releases for the upcoming breaking releases, following the `alpha` releases from October 2024 (see `alpha` release release notes for full/main change description). The releases are somewhat delayed (sorry for that), but final releases can now be expected very very soon, to be released once the Ethereum [Pectra](https://eips.ethereum.org/EIPS/eip-7600) hardfork is scheduled for mainnet and all EIPs are fully finalized. Pectra will then also be the default hardfork setting for all EthereumJS libraries.

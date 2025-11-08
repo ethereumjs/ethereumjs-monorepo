@@ -35,7 +35,7 @@ import { type Block, createBlock, ethashCanonicalDifficulty } from '../src/index
 
 function runDifficultyTests(test: any, parentBlock: Block, block: Block, msg: string) {
   const dif = ethashCanonicalDifficulty(block, parentBlock)
-  assert.equal(dif, BigInt(test.currentDifficulty), `test ethashCanonicalDifficulty: ${msg}`)
+  assert.strictEqual(dif, BigInt(test.currentDifficulty), `test ethashCanonicalDifficulty: ${msg}`)
 }
 
 type TestData = { [key: string]: any }

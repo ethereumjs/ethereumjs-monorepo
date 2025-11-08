@@ -184,16 +184,11 @@ export class FullEthereumService extends Service {
     // it will open execution when done (or if doesn't need to snap sync)
     if (this.snapsync !== undefined) {
       // set up execution vm to avoid undefined error in syncWithPeer when vm is being passed to accountfetcher
-      if (this.execution.config.execCommon.gteHardfork(Hardfork.Verkle)) {
-        await this.execution.setupVerkleVM()
-        this.execution.vm = this.execution.verkleVM!
-      } else {
-        this.execution.config.logger?.info(
-          `Initializing VM merkle statemanager genesis hardfork=${this.execution.hardfork}`,
-        )
-        await this.execution.setupMerkleVM()
-        this.execution.vm = this.execution.merkleVM!
-      }
+      this.execution.config.logger?.info(
+        `Initializing VM merkle statemanager genesis hardfork=${this.execution.hardfork}`,
+      )
+      await this.execution.setupMerkleVM()
+      this.execution.vm = this.execution.merkleVM!
 
       await this.snapsync.open()
     } else {

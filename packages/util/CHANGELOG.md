@@ -6,9 +6,39 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## 10.x.x - UNPUBLISHED
+## 10.1.0 - 2025-11-06
 
-- Does not add `27` to the recovery bit `v` value of `ecsign`. Also removes the `chainId` option from extra options, PR [3941](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3941)
+- Update `kzg-wasm` dependency, PR [#4169](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4169)
+- Integrate new `kzg-wasm` library version / Sanity & API Checks, PR [#4153](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4153)
+- Explicitly cast result type to Uint8Array<ArrayBuffer> to satisfy ESLint, PR [#4108](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4108)
+
+## 10.0.0 - 2025-04-29
+
+### Overview
+
+This release is part of the `v10` breaking release round making the `EthereumJS` libraries compatible with the [Pectra](https://eips.ethereum.org/EIPS/eip-7600) hardfork going live on Ethereum `mainnet` on May 7 2025. Beside the hardfork update these releases mark a milestone in our release history since they - for the first time ever - bring the full `Ethereum` protocol stack - including the `EVM` - to the browser without any restrictions anymore, coming along with other substantial updates regarding library security and functionality.
+
+Some highlights:
+
+- 🌴 Introduction of a tree-shakeable API
+- 👷🏼 Substantial dependency reduction to a "controlled dependency set" (no more than 10 + `@Noble` crypto)
+- 📲 **EIP-7702** readiness
+- 🛵 Substantial bundle size reductions for all libraries
+- 🏄🏾‍♂️ All libraries now pure JS being WASM-free by default
+- 🦋 No more propriatary `Node.js` primitives
+
+So: **All libraries now work in the browser "out of the box"**.
+
+### Release Notes
+
+Major release notes for this release can be found in the `alpha.1` release notes [here](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3722#issuecomment-2792400268), with some additions along with the `RC.1` releases, see [here](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3886#issuecomment-2748966923).
+
+### Changes since `RC.1`
+
+- Additional `authorization` module with `EIP-7702` authorization list signing utilities, PRs [#3933](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3933) and [#4032](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4032)
+- `signature` module: Remove `ecsign` method (use `ethereum-cryptography` directly), PR [#3948](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3948)
+- `bytes` module: Stricter `hexToBytes()` method, PR [#3995](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3995)
+- `bytes` module: `bytesToHex()`now throws on `undefined` input (instead of returning `0x`), PR [#4004](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4004)
 
 ## 10.0.0-rc.1 - 2025-03-24
 

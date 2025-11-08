@@ -1,146 +1,149 @@
+[**@ethereumjs/vm**](../README.md)
+
+***
+
 [@ethereumjs/vm](../README.md) / AfterBlockEvent
 
 # Interface: AfterBlockEvent
 
-Result of runBlock
+Defined in: [vm/src/types.ts:378](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L378)
 
-## Hierarchy
+Result of [runBlock](../functions/runBlock.md)
+
+## Extends
 
 - [`RunBlockResult`](RunBlockResult.md)
-
-  ↳ **`AfterBlockEvent`**
-
-## Table of contents
-
-### Properties
-
-- [block](AfterBlockEvent.md#block)
-- [gasUsed](AfterBlockEvent.md#gasused)
-- [logsBloom](AfterBlockEvent.md#logsbloom)
-- [preimages](AfterBlockEvent.md#preimages)
-- [receipts](AfterBlockEvent.md#receipts)
-- [receiptsRoot](AfterBlockEvent.md#receiptsroot)
-- [results](AfterBlockEvent.md#results)
-- [stateRoot](AfterBlockEvent.md#stateroot)
 
 ## Properties
 
 ### block
 
-• **block**: `Block`
+> **block**: `Block`
 
-#### Defined in
+Defined in: [vm/src/types.ts:380](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L380)
 
-[vm/src/types.ts:331](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L331)
-
-___
+***
 
 ### gasUsed
 
-• **gasUsed**: `bigint`
+> **gasUsed**: `bigint`
+
+Defined in: [vm/src/types.ts:336](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L336)
 
 The gas used after executing the block
 
 #### Inherited from
 
-[RunBlockResult](RunBlockResult.md).[gasUsed](RunBlockResult.md#gasused)
+[`ApplyBlockResult`](ApplyBlockResult.md).[`gasUsed`](ApplyBlockResult.md#gasused)
 
-#### Defined in
-
-[vm/src/types.ts:296](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L296)
-
-___
+***
 
 ### logsBloom
 
-• **logsBloom**: `Uint8Array`
+> **logsBloom**: `Uint8Array`
+
+Defined in: [vm/src/types.ts:366](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L366)
 
 The bloom filter of the LOGs (events) after executing the block
 
 #### Inherited from
 
-[RunBlockResult](RunBlockResult.md).[logsBloom](RunBlockResult.md#logsbloom)
+[`RunBlockResult`](RunBlockResult.md).[`logsBloom`](RunBlockResult.md#logsbloom)
 
-#### Defined in
+***
 
-[vm/src/types.ts:326](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L326)
+### preimages?
 
-___
+> `optional` **preimages**: `Map`\<`` `0x${string}` ``, `Uint8Array`\<`ArrayBufferLike`\>\>
 
-### preimages
-
-• `Optional` **preimages**: `Map`<`string`, `Uint8Array`\>
+Defined in: [vm/src/types.ts:352](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L352)
 
 Preimages mapping of the touched accounts from the block (see reportPreimages option)
 
 #### Inherited from
 
-[RunBlockResult](RunBlockResult.md).[preimages](RunBlockResult.md#preimages)
+[`ApplyBlockResult`](ApplyBlockResult.md).[`preimages`](ApplyBlockResult.md#preimages)
 
-#### Defined in
-
-[vm/src/types.ts:312](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L312)
-
-___
+***
 
 ### receipts
 
-• **receipts**: [`TxReceipt`](../README.md#txreceipt)[]
+> **receipts**: [`TxReceipt`](../type-aliases/TxReceipt.md)[]
+
+Defined in: [vm/src/types.ts:344](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L344)
 
 Receipts generated for transactions in the block
 
 #### Inherited from
 
-[RunBlockResult](RunBlockResult.md).[receipts](RunBlockResult.md#receipts)
+[`ApplyBlockResult`](ApplyBlockResult.md).[`receipts`](ApplyBlockResult.md#receipts)
 
-#### Defined in
-
-[vm/src/types.ts:304](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L304)
-
-___
+***
 
 ### receiptsRoot
 
-• **receiptsRoot**: `Uint8Array`
+> **receiptsRoot**: `Uint8Array`
+
+Defined in: [vm/src/types.ts:340](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L340)
 
 The receipt root after executing the block
 
 #### Inherited from
 
-[RunBlockResult](RunBlockResult.md).[receiptsRoot](RunBlockResult.md#receiptsroot)
+[`ApplyBlockResult`](ApplyBlockResult.md).[`receiptsRoot`](ApplyBlockResult.md#receiptsroot)
 
-#### Defined in
+***
 
-[vm/src/types.ts:300](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L300)
+### requests?
 
-___
+> `optional` **requests**: `CLRequest`\<`CLRequestType`\>[]
+
+Defined in: [vm/src/types.ts:375](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L375)
+
+Any CL requests that were processed in the course of this block
+
+#### Inherited from
+
+[`RunBlockResult`](RunBlockResult.md).[`requests`](RunBlockResult.md#requests)
+
+***
+
+### requestsHash?
+
+> `optional` **requestsHash**: `Uint8Array`\<`ArrayBufferLike`\>
+
+Defined in: [vm/src/types.ts:371](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L371)
+
+The requestsHash for any CL requests in the block
+
+#### Inherited from
+
+[`RunBlockResult`](RunBlockResult.md).[`requestsHash`](RunBlockResult.md#requestshash)
+
+***
 
 ### results
 
-• **results**: [`RunTxResult`](RunTxResult.md)[]
+> **results**: [`RunTxResult`](RunTxResult.md)[]
+
+Defined in: [vm/src/types.ts:348](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L348)
 
 Results of executing the transactions in the block
 
 #### Inherited from
 
-[RunBlockResult](RunBlockResult.md).[results](RunBlockResult.md#results)
+[`ApplyBlockResult`](ApplyBlockResult.md).[`results`](ApplyBlockResult.md#results)
 
-#### Defined in
-
-[vm/src/types.ts:308](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L308)
-
-___
+***
 
 ### stateRoot
 
-• **stateRoot**: `Uint8Array`
+> **stateRoot**: `Uint8Array`
+
+Defined in: [vm/src/types.ts:362](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L362)
 
 The stateRoot after executing the block
 
 #### Inherited from
 
-[RunBlockResult](RunBlockResult.md).[stateRoot](RunBlockResult.md#stateroot)
-
-#### Defined in
-
-[vm/src/types.ts:322](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L322)
+[`RunBlockResult`](RunBlockResult.md).[`stateRoot`](RunBlockResult.md#stateroot)

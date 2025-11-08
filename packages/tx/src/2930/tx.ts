@@ -11,7 +11,7 @@ import * as EIP2718 from '../capabilities/eip2718.ts'
 import * as EIP2930 from '../capabilities/eip2930.ts'
 import * as Legacy from '../capabilities/legacy.ts'
 import { TransactionType, isAccessList } from '../types.ts'
-import { getBaseJSON, sharedConstructor, valueBoundaryCheck } from '../util/internal.ts'
+import { getBaseJSON, sharedConstructor, valueOverflowCheck } from '../util/internal.ts'
 
 import { createAccessList2930Tx } from './constructors.ts'
 
@@ -105,7 +105,7 @@ export class AccessList2930Tx
 
     this.gasPrice = bytesToBigInt(toBytes(gasPrice))
 
-    valueBoundaryCheck({ gasPrice: this.gasPrice })
+    valueOverflowCheck({ gasPrice: this.gasPrice })
 
     if (this.gasPrice * this.gasLimit > MAX_INTEGER) {
       const msg = Legacy.errorMsg(this, 'gasLimit * gasPrice cannot exceed MAX_INTEGER')
@@ -230,6 +230,7 @@ export class AccessList2930Tx
    * ```javascript
    * const serializedMessage = tx.getMessageToSign() // use this for the HW wallet input
    * ```
+   * @returns Serialized unsigned transaction payload
    */
   getMessageToSign(): Uint8Array {
     return EIP2718.serialize(this, this.raw().slice(0, 8))
@@ -241,6 +242,7 @@ export class AccessList2930Tx
    *
    * Note: in contrast to the legacy tx the raw message format is already
    * serialized and doesn't need to be RLP encoded any more.
+   * @returns Keccak hash of the unsigned transaction payload
    */
   getHashedMessageToSign(): Uint8Array {
     return EIP2718.getHashedMessageToSign(this)
@@ -251,6 +253,7 @@ export class AccessList2930Tx
    *
    * This method can only be used for signed txs (it throws otherwise).
    * Use {@link Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
+   * @returns Hash of the serialized signed transaction
    */
   hash(): Uint8Array {
     return Legacy.hash(this)
@@ -258,6 +261,7 @@ export class AccessList2930Tx
 
   /**
    * Computes a sha3-256 hash which can be used to verify the signature
+   * @returns Hash used when verifying the signature
    */
   public getMessageToVerifySignature(): Uint8Array {
     return this.getHashedMessageToSign()
@@ -265,11 +269,19 @@ export class AccessList2930Tx
 
   /**
    * Returns the public key of the sender
+   * @returns Sender public key
    */
   public getSenderPublicKey(): Uint8Array {
     return Legacy.getSenderPublicKey(this)
   }
 
+  /**
+   * Adds the provided signature values and returns a new transaction instance.
+   * @param v - Recovery parameter (y-parity)
+   * @param r - `r` component of the signature
+   * @param s - `s` component of the signature
+   * @returns New `AccessList2930Tx` with the supplied signature
+   */
   addSignature(v: bigint, r: Uint8Array | bigint, s: Uint8Array | bigint): AccessList2930Tx {
     r = toBytes(r)
     s = toBytes(s)
@@ -295,6 +307,7 @@ export class AccessList2930Tx
 
   /**
    * Returns an object with the JSON representation of the transaction
+   * @returns JSON encoding of the transaction
    */
   toJSON(): JSONTx {
     const accessListJSON = accessListBytesToJSON(this.accessList)
@@ -308,26 +321,51 @@ export class AccessList2930Tx
     }
   }
 
+  /**
+   * Runs transaction validation and returns any discovered errors.
+   * @returns Array of validation error messages
+   */
   getValidationErrors(): string[] {
     return Legacy.getValidationErrors(this)
   }
 
+  /**
+   * @returns true if the transaction has no validation errors
+   */
   isValid(): boolean {
     return Legacy.isValid(this)
   }
 
+  /**
+   * Checks whether the signature currently attached to the transaction is valid.
+   * @returns true if signature verification succeeds
+   */
   verifySignature(): boolean {
     return Legacy.verifySignature(this)
   }
 
+  /**
+   * Returns the signer's address recovered from the signature.
+   * @returns Sender {@link Address}
+   */
   getSenderAddress(): Address {
     return Legacy.getSenderAddress(this)
   }
 
+  /**
+   * Signs the transaction with the provided private key and returns a new instance.
+   * @param privateKey - 32-byte private key
+   * @param extraEntropy - Optional entropy fed into the signing algorithm
+   * @returns Newly signed transaction
+   */
   sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = false): AccessList2930Tx {
     return Legacy.sign(this, privateKey, extraEntropy) as AccessList2930Tx
   }
 
+  /**
+   * Reports whether the transaction already contains signature values.
+   * @returns true if signature parts are present
+   */
   isSigned(): boolean {
     return Legacy.isSigned(this)
   }

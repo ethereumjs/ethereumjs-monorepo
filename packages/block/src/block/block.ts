@@ -15,7 +15,7 @@ import { sha256 } from 'ethereum-cryptography/sha256.js'
 
 import type { Common } from '@ethereumjs/common'
 import type { FeeMarket1559Tx, LegacyTx, TypedTransaction } from '@ethereumjs/tx'
-import type { VerkleExecutionWitness, Withdrawal } from '@ethereumjs/util'
+import type { Withdrawal } from '@ethereumjs/util'
 /* eslint-disable */
 // This is to allow for a proper and linked collection of constructors for the class header.
 // For tree shaking/code size this should be no problem since types go away on transpilation.
@@ -62,13 +62,6 @@ export class Block {
   protected keccakFunction: (msg: Uint8Array) => Uint8Array
   protected sha256Function: (msg: Uint8Array) => Uint8Array
 
-  /**
-   * EIP-6800: Verkle Proof Data (experimental)
-   * null implies that the non default executionWitness might exist but not available
-   * and will not lead to execution of the block via vm with verkle stateless manager
-   */
-  public readonly executionWitness?: VerkleExecutionWitness | null
-
   protected cache: {
     txTrieRoot?: Uint8Array
     withdrawalsTrieRoot?: Uint8Array
@@ -86,7 +79,6 @@ export class Block {
     uncleHeaders: BlockHeader[] = [],
     withdrawals?: Withdrawal[],
     opts: BlockOptions = {},
-    executionWitness?: VerkleExecutionWitness | null,
   ) {
     this.header = header ?? new BlockHeader({}, opts)
     this.common = this.header.common
@@ -95,27 +87,6 @@ export class Block {
 
     this.transactions = transactions
     this.withdrawals = withdrawals ?? (this.common.isActivatedEIP(4895) ? [] : undefined)
-    this.executionWitness = executionWitness
-    // null indicates an intentional absence of value or unavailability
-    // undefined indicates that the executionWitness should be initialized with the default state
-    if (this.common.isActivatedEIP(6800) && this.executionWitness === undefined) {
-      this.executionWitness = {
-        // TODO: Evaluate how default parentStateRoot should be handled?
-        parentStateRoot: '0x',
-        stateDiff: [],
-        verkleProof: {
-          commitmentsByPath: [],
-          d: '0x',
-          depthExtensionPresent: '0x',
-          ipaProof: {
-            cl: [],
-            cr: [],
-            finalEvaluation: '0x',
-          },
-          otherStems: [],
-        },
-      }
-    }
 
     this.uncleHeaders = uncleHeaders
     if (uncleHeaders.length > 0) {
@@ -138,16 +109,6 @@ export class Block {
       throw EthereumJSErrorWithoutCode('Cannot have a withdrawals field if EIP 4895 is not active')
     }
 
-    if (
-      !this.common.isActivatedEIP(6800) &&
-      executionWitness !== undefined &&
-      executionWitness !== null
-    ) {
-      throw EthereumJSErrorWithoutCode(
-        `Cannot have executionWitness field if EIP 6800 is not active `,
-      )
-    }
-
     const freeze = opts?.freeze ?? true
     if (freeze) {
       Object.freeze(this)
@@ -155,7 +116,7 @@ export class Block {
   }
 
   /**
-   * Returns a Array of the raw Bytes Arrays of this block, in order.
+   * Returns an array of the raw byte arrays for this block, in order.
    */
   raw(): BlockBytes {
     const bytesArray: BlockBytes = [
@@ -170,10 +131,6 @@ export class Block {
       bytesArray.push(withdrawalsRaw)
     }
 
-    if (this.executionWitness !== undefined && this.executionWitness !== null) {
-      const executionWitnessBytes = RLP.encode(JSON.stringify(this.executionWitness))
-      bytesArray.push(executionWitnessBytes as any)
-    }
     return bytesArray
   }
 
@@ -294,10 +251,28 @@ export class Block {
    * - All transactions are valid
    * - The transactions trie is valid
    * - The uncle hash is valid
+   * - Block size limit (EIP-7934)
    * @param onlyHeader if only passed the header, skip validating txTrie and unclesHash (default: false)
    * @param verifyTxs if set to `false`, will not check for transaction validation errors (default: true)
+   * @param validateBlockSize if set to `true`, will check for block size limit (EIP-7934) (default: false)
    */
-  async validateData(onlyHeader: boolean = false, verifyTxs: boolean = true): Promise<void> {
+  async validateData(
+    onlyHeader: boolean = false,
+    verifyTxs: boolean = true,
+    validateBlockSize: boolean = false,
+  ): Promise<void> {
+    // EIP-7934: RLP Execution Block Size Limit validation
+    if (validateBlockSize && this.common.isActivatedEIP(7934)) {
+      const rlpEncoded = this.serialize()
+      const maxRlpBlockSize = this.common.param('maxRlpBlockSize')
+      if (rlpEncoded.length > maxRlpBlockSize) {
+        const msg = this._errorMsg(
+          `Block size exceeds maximum RLP block size limit: ${rlpEncoded.length} bytes > ${maxRlpBlockSize} bytes`,
+        )
+        throw EthereumJSErrorWithoutCode(msg)
+      }
+    }
+
     if (verifyTxs) {
       const txErrors = this.getTransactionsValidationErrors()
       if (txErrors.length > 0) {
@@ -334,20 +309,6 @@ export class Block {
     if (this.common.isActivatedEIP(4895) && !(await this.withdrawalsTrieIsValid())) {
       const msg = this._errorMsg('invalid withdrawals trie')
       throw EthereumJSErrorWithoutCode(msg)
-    }
-
-    // Validation for Verkle blocks
-    // Unnecessary in this implementation since we're providing defaults if those fields are undefined
-    // TODO: Decide if we should actually require this or not
-    if (this.common.isActivatedEIP(6800)) {
-      if (this.executionWitness === undefined) {
-        throw EthereumJSErrorWithoutCode(`Invalid block: missing executionWitness`)
-      }
-      if (this.executionWitness === null) {
-        throw EthereumJSErrorWithoutCode(
-          `Invalid block: ethereumjs stateless client needs executionWitness`,
-        )
-      }
     }
   }
 
@@ -526,7 +487,6 @@ export class Block {
       ...withdrawalsArr,
       parentBeaconBlockRoot: header.parentBeaconBlockRoot,
       requestsHash: header.requestsHash,
-      executionWitness: this.executionWitness,
     }
 
     return executionPayload

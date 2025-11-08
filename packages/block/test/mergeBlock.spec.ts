@@ -25,13 +25,13 @@ function validateMergeHeader(header: BlockHeader) {
   assert.isTrue(equalsBytes(header.transactionsTrie, KECCAK256_RLP), 'transactionsTrie')
   assert.isTrue(equalsBytes(header.receiptTrie, KECCAK256_RLP), 'receiptTrie')
   assert.isTrue(equalsBytes(header.logsBloom, new Uint8Array(256)), 'logsBloom')
-  assert.equal(header.difficulty, BigInt(0), 'difficulty')
-  assert.equal(header.number, BigInt(0), 'number')
-  assert.equal(header.gasLimit, BigInt('0xffffffffffffff'), 'gasLimit')
-  assert.equal(header.gasUsed, BigInt(0), 'gasUsed')
-  assert.equal(header.timestamp, BigInt(0), 'timestamp')
+  assert.strictEqual(header.difficulty, BigInt(0), 'difficulty')
+  assert.strictEqual(header.number, BigInt(0), 'number')
+  assert.strictEqual(header.gasLimit, BigInt('0xffffffffffffff'), 'gasLimit')
+  assert.strictEqual(header.gasUsed, BigInt(0), 'gasUsed')
+  assert.strictEqual(header.timestamp, BigInt(0), 'timestamp')
   assert.isTrue(header.extraData.length <= 32, 'extraData')
-  assert.equal(header.mixHash.length, 32, 'mixHash')
+  assert.strictEqual(header.mixHash.length, 32, 'mixHash')
   assert.isTrue(equalsBytes(header.nonce, new Uint8Array(8)), 'nonce')
 }
 
@@ -40,7 +40,7 @@ describe('[Header]: Casper PoS / The Merge Functionality', () => {
     const header = createBlockHeader({}, { common })
     validateMergeHeader(header)
 
-    const block = new Block(undefined, undefined, undefined, undefined, { common }, undefined)
+    const block = new Block(undefined, undefined, undefined, undefined, { common })
     validateMergeHeader(block.header)
   })
 

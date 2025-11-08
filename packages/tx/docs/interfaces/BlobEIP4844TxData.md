@@ -1,333 +1,282 @@
+[**@ethereumjs/tx**](../README.md)
+
+***
+
 [@ethereumjs/tx](../README.md) / BlobEIP4844TxData
 
 # Interface: BlobEIP4844TxData
 
-[BlobEIP4844Transaction](../classes/BlobEIP4844Transaction.md) data.
+Defined in: [types.ts:443](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L443)
 
-## Hierarchy
+[Blob4844Tx](../classes/Blob4844Tx.md) data.
+
+## Extends
 
 - [`FeeMarketEIP1559TxData`](FeeMarketEIP1559TxData.md)
 
-  ↳ **`BlobEIP4844TxData`**
-
-## Table of contents
-
-### Properties
-
-- [accessList](BlobEIP4844TxData.md#accesslist)
-- [blobVersionedHashes](BlobEIP4844TxData.md#blobversionedhashes)
-- [blobs](BlobEIP4844TxData.md#blobs)
-- [blobsData](BlobEIP4844TxData.md#blobsdata)
-- [chainId](BlobEIP4844TxData.md#chainid)
-- [data](BlobEIP4844TxData.md#data)
-- [gasLimit](BlobEIP4844TxData.md#gaslimit)
-- [gasPrice](BlobEIP4844TxData.md#gasprice)
-- [kzgCommitments](BlobEIP4844TxData.md#kzgcommitments)
-- [kzgProofs](BlobEIP4844TxData.md#kzgproofs)
-- [maxFeePerBlobGas](BlobEIP4844TxData.md#maxfeeperblobgas)
-- [maxFeePerGas](BlobEIP4844TxData.md#maxfeepergas)
-- [maxPriorityFeePerGas](BlobEIP4844TxData.md#maxpriorityfeepergas)
-- [nonce](BlobEIP4844TxData.md#nonce)
-- [r](BlobEIP4844TxData.md#r)
-- [s](BlobEIP4844TxData.md#s)
-- [to](BlobEIP4844TxData.md#to)
-- [type](BlobEIP4844TxData.md#type)
-- [v](BlobEIP4844TxData.md#v)
-- [value](BlobEIP4844TxData.md#value)
-
 ## Properties
 
-### accessList
+### accessList?
 
-• `Optional` **accessList**: ``null`` \| [`AccessListBytes`](../README.md#accesslistbytes) \| [`AccessList`](../README.md#accesslist)
+> `optional` **accessList**: [`AccessListBytes`](../type-aliases/AccessListBytes.md) \| [`AccessList`](../type-aliases/AccessList.md) \| `null`
+
+Defined in: [types.ts:418](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L418)
 
 The access list which contains the addresses/storage slots which the transaction wishes to access
 
 #### Inherited from
 
-[FeeMarketEIP1559TxData](FeeMarketEIP1559TxData.md).[accessList](FeeMarketEIP1559TxData.md#accesslist)
+[`FeeMarketEIP1559TxData`](FeeMarketEIP1559TxData.md).[`accessList`](FeeMarketEIP1559TxData.md#accesslist)
 
-#### Defined in
+***
 
-[tx/src/types.ts:303](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L303)
+### blobs?
 
-___
+> `optional` **blobs**: `BytesLike`[]
 
-### blobVersionedHashes
-
-• `Optional` **blobVersionedHashes**: `BytesLike`[]
-
-The versioned hashes used to validate the blobs attached to a transaction
-
-#### Defined in
-
-[tx/src/types.ts:332](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L332)
-
-___
-
-### blobs
-
-• `Optional` **blobs**: `BytesLike`[]
+Defined in: [types.ts:459](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L459)
 
 The blobs associated with a transaction
 
-#### Defined in
+***
 
-[tx/src/types.ts:340](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L340)
+### blobsData?
 
-___
+> `optional` **blobsData**: `string`[]
 
-### blobsData
-
-• `Optional` **blobsData**: `string`[]
+Defined in: [types.ts:471](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L471)
 
 An array of arbitrary strings that blobs are to be constructed from
 
-#### Defined in
+***
 
-[tx/src/types.ts:352](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L352)
+### blobVersionedHashes?
 
-___
+> `optional` **blobVersionedHashes**: `BytesLike`[]
 
-### chainId
+Defined in: [types.ts:451](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L451)
 
-• `Optional` **chainId**: `BigIntLike`
+The versioned hashes used to validate the blobs attached to a transaction
+
+***
+
+### chainId?
+
+> `optional` **chainId**: `BigIntLike`
+
+Defined in: [types.ts:413](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L413)
 
 The transaction's chain ID
 
 #### Inherited from
 
-[FeeMarketEIP1559TxData](FeeMarketEIP1559TxData.md).[chainId](FeeMarketEIP1559TxData.md#chainid)
+[`FeeMarketEIP1559TxData`](FeeMarketEIP1559TxData.md).[`chainId`](FeeMarketEIP1559TxData.md#chainid)
 
-#### Defined in
+***
 
-[tx/src/types.ts:298](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L298)
+### data?
 
-___
+> `optional` **data**: `""` \| `BytesLike`
 
-### data
-
-• `Optional` **data**: `BytesLike`
+Defined in: [types.ts:382](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L382)
 
 This will contain the data of the message or the init of a contract.
 
 #### Inherited from
 
-[FeeMarketEIP1559TxData](FeeMarketEIP1559TxData.md).[data](FeeMarketEIP1559TxData.md#data)
+[`FeeMarketEIP1559TxData`](FeeMarketEIP1559TxData.md).[`data`](FeeMarketEIP1559TxData.md#data)
 
-#### Defined in
+***
 
-[tx/src/types.ts:267](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L267)
+### gasLimit?
 
-___
+> `optional` **gasLimit**: `BigIntLike`
 
-### gasLimit
-
-• `Optional` **gasLimit**: `BigIntLike`
+Defined in: [types.ts:367](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L367)
 
 The transaction's gas limit.
 
 #### Inherited from
 
-[FeeMarketEIP1559TxData](FeeMarketEIP1559TxData.md).[gasLimit](FeeMarketEIP1559TxData.md#gaslimit)
+[`FeeMarketEIP1559TxData`](FeeMarketEIP1559TxData.md).[`gasLimit`](FeeMarketEIP1559TxData.md#gaslimit)
 
-#### Defined in
+***
 
-[tx/src/types.ts:252](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L252)
+### gasPrice?
 
-___
+> `optional` **gasPrice**: `null`
 
-### gasPrice
-
-• `Optional` **gasPrice**: ``null``
+Defined in: [types.ts:429](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L429)
 
 The transaction's gas price, inherited from [Transaction](Transaction.md).  This property is not used for EIP1559
 transactions and should always be undefined for this specific transaction type.
 
 #### Inherited from
 
-[FeeMarketEIP1559TxData](FeeMarketEIP1559TxData.md).[gasPrice](FeeMarketEIP1559TxData.md#gasprice)
+[`FeeMarketEIP1559TxData`](FeeMarketEIP1559TxData.md).[`gasPrice`](FeeMarketEIP1559TxData.md#gasprice)
 
-#### Defined in
+***
 
-[tx/src/types.ts:314](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L314)
+### kzgCommitments?
 
-___
+> `optional` **kzgCommitments**: `BytesLike`[]
 
-### kzgCommitments
-
-• `Optional` **kzgCommitments**: `BytesLike`[]
+Defined in: [types.ts:463](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L463)
 
 The KZG commitments corresponding to the versioned hashes for each blob
 
-#### Defined in
+***
 
-[tx/src/types.ts:344](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L344)
+### kzgProofs?
 
-___
+> `optional` **kzgProofs**: `BytesLike`[]
 
-### kzgProofs
+Defined in: [types.ts:467](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L467)
 
-• `Optional` **kzgProofs**: `BytesLike`[]
+The KZG proofs associated with the transaction (EIP-4844: per-Blob proofs, EIP-7594: per-Cell proofs)
 
-The KZG proofs associated with the transaction
+***
 
-#### Defined in
+### maxFeePerBlobGas?
 
-[tx/src/types.ts:348](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L348)
+> `optional` **maxFeePerBlobGas**: `BigIntLike`
 
-___
-
-### maxFeePerBlobGas
-
-• `Optional` **maxFeePerBlobGas**: `BigIntLike`
+Defined in: [types.ts:455](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L455)
 
 The maximum fee per blob gas paid for the transaction
 
-#### Defined in
+***
 
-[tx/src/types.ts:336](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L336)
+### maxFeePerGas?
 
-___
+> `optional` **maxFeePerGas**: `BigIntLike`
 
-### maxFeePerGas
-
-• `Optional` **maxFeePerGas**: `BigIntLike`
+Defined in: [types.ts:437](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L437)
 
 The maximum total fee
 
 #### Inherited from
 
-[FeeMarketEIP1559TxData](FeeMarketEIP1559TxData.md).[maxFeePerGas](FeeMarketEIP1559TxData.md#maxfeepergas)
+[`FeeMarketEIP1559TxData`](FeeMarketEIP1559TxData.md).[`maxFeePerGas`](FeeMarketEIP1559TxData.md#maxfeepergas)
 
-#### Defined in
+***
 
-[tx/src/types.ts:322](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L322)
+### maxPriorityFeePerGas?
 
-___
+> `optional` **maxPriorityFeePerGas**: `BigIntLike`
 
-### maxPriorityFeePerGas
-
-• `Optional` **maxPriorityFeePerGas**: `BigIntLike`
+Defined in: [types.ts:433](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L433)
 
 The maximum inclusion fee per gas (this fee is given to the miner)
 
 #### Inherited from
 
-[FeeMarketEIP1559TxData](FeeMarketEIP1559TxData.md).[maxPriorityFeePerGas](FeeMarketEIP1559TxData.md#maxpriorityfeepergas)
+[`FeeMarketEIP1559TxData`](FeeMarketEIP1559TxData.md).[`maxPriorityFeePerGas`](FeeMarketEIP1559TxData.md#maxpriorityfeepergas)
 
-#### Defined in
+***
 
-[tx/src/types.ts:318](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L318)
+### networkWrapperVersion?
 
-___
+> `optional` **networkWrapperVersion**: `BigIntLike`
 
-### nonce
+Defined in: [types.ts:447](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L447)
 
-• `Optional` **nonce**: `BigIntLike`
+Is this an EIP-4844 or EIP-7594 network wrapper transaction
+
+***
+
+### nonce?
+
+> `optional` **nonce**: `BigIntLike`
+
+Defined in: [types.ts:357](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L357)
 
 The transaction's nonce.
 
 #### Inherited from
 
-[FeeMarketEIP1559TxData](FeeMarketEIP1559TxData.md).[nonce](FeeMarketEIP1559TxData.md#nonce)
+[`FeeMarketEIP1559TxData`](FeeMarketEIP1559TxData.md).[`nonce`](FeeMarketEIP1559TxData.md#nonce)
 
-#### Defined in
+***
 
-[tx/src/types.ts:242](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L242)
+### r?
 
-___
+> `optional` **r**: `BigIntLike`
 
-### r
-
-• `Optional` **r**: `BigIntLike`
+Defined in: [types.ts:392](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L392)
 
 EC signature parameter.
 
 #### Inherited from
 
-[FeeMarketEIP1559TxData](FeeMarketEIP1559TxData.md).[r](FeeMarketEIP1559TxData.md#r)
+[`FeeMarketEIP1559TxData`](FeeMarketEIP1559TxData.md).[`r`](FeeMarketEIP1559TxData.md#r)
 
-#### Defined in
+***
 
-[tx/src/types.ts:277](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L277)
+### s?
 
-___
+> `optional` **s**: `BigIntLike`
 
-### s
-
-• `Optional` **s**: `BigIntLike`
+Defined in: [types.ts:397](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L397)
 
 EC signature parameter.
 
 #### Inherited from
 
-[FeeMarketEIP1559TxData](FeeMarketEIP1559TxData.md).[s](FeeMarketEIP1559TxData.md#s)
+[`FeeMarketEIP1559TxData`](FeeMarketEIP1559TxData.md).[`s`](FeeMarketEIP1559TxData.md#s)
 
-#### Defined in
+***
 
-[tx/src/types.ts:282](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L282)
+### to?
 
-___
+> `optional` **to**: `""` \| `AddressLike`
 
-### to
-
-• `Optional` **to**: `AddressLike`
+Defined in: [types.ts:372](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L372)
 
 The transaction's the address is sent to.
 
 #### Inherited from
 
-[FeeMarketEIP1559TxData](FeeMarketEIP1559TxData.md).[to](FeeMarketEIP1559TxData.md#to)
+[`FeeMarketEIP1559TxData`](FeeMarketEIP1559TxData.md).[`to`](FeeMarketEIP1559TxData.md#to)
 
-#### Defined in
+***
 
-[tx/src/types.ts:257](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L257)
+### type?
 
-___
+> `optional` **type**: `BigIntLike`
 
-### type
-
-• `Optional` **type**: `BigIntLike`
+Defined in: [types.ts:403](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L403)
 
 The transaction type
 
 #### Inherited from
 
-[FeeMarketEIP1559TxData](FeeMarketEIP1559TxData.md).[type](FeeMarketEIP1559TxData.md#type)
+[`FeeMarketEIP1559TxData`](FeeMarketEIP1559TxData.md).[`type`](FeeMarketEIP1559TxData.md#type)
 
-#### Defined in
+***
 
-[tx/src/types.ts:288](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L288)
+### v?
 
-___
+> `optional` **v**: `BigIntLike`
 
-### v
-
-• `Optional` **v**: `BigIntLike`
+Defined in: [types.ts:387](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L387)
 
 EC recovery ID.
 
 #### Inherited from
 
-[FeeMarketEIP1559TxData](FeeMarketEIP1559TxData.md).[v](FeeMarketEIP1559TxData.md#v)
+[`FeeMarketEIP1559TxData`](FeeMarketEIP1559TxData.md).[`v`](FeeMarketEIP1559TxData.md#v)
 
-#### Defined in
+***
 
-[tx/src/types.ts:272](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L272)
+### value?
 
-___
+> `optional` **value**: `BigIntLike`
 
-### value
-
-• `Optional` **value**: `BigIntLike`
+Defined in: [types.ts:377](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L377)
 
 The amount of Ether sent.
 
 #### Inherited from
 
-[FeeMarketEIP1559TxData](FeeMarketEIP1559TxData.md).[value](FeeMarketEIP1559TxData.md#value)
-
-#### Defined in
-
-[tx/src/types.ts:262](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L262)
+[`FeeMarketEIP1559TxData`](FeeMarketEIP1559TxData.md).[`value`](FeeMarketEIP1559TxData.md#value)

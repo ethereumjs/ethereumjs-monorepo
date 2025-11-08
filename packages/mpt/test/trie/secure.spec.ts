@@ -40,15 +40,15 @@ describe('SecureTrie', () => {
     const keyPrefix = hexToBytes('0x1234')
     const t = trie.shallowCopy(true, { keyPrefix })
     assert.isTrue(equalsBytes(t['_opts']['keyPrefix']!, keyPrefix))
-    assert.equal(t['_opts']['cacheSize'], 0)
-    assert.equal(trie['_opts']['cacheSize'], 0)
+    assert.strictEqual(t['_opts']['cacheSize'], 0)
+    assert.strictEqual(trie['_opts']['cacheSize'], 0)
   })
 
   it('copy trie (new cache size)', async () => {
     const cacheSize = 1000
     const t = trie.shallowCopy(true, { cacheSize })
-    assert.equal(t['_opts']['cacheSize'], cacheSize)
-    assert.equal(trie['_opts']['cacheSize'], 0)
+    assert.strictEqual(t['_opts']['cacheSize'], cacheSize)
+    assert.strictEqual(trie['_opts']['cacheSize'], 0)
   })
 })
 
@@ -70,12 +70,12 @@ describe('SecureTrie proof', () => {
     await trie.put(keccak256(utf8ToBytes('key1aa')), utf8ToBytes('01234'), true)
 
     const val = await trie.get(utf8ToBytes('key1aa'))
-    assert.equal(bytesToUtf8(val!), '01234')
+    assert.strictEqual(bytesToUtf8(val!), '01234')
 
     // check roots match if written in normal fashion
     const trie2 = new MerklePatriciaTrie({ useKeyHashing: true, db: new MapDB() })
     await trie2.put(utf8ToBytes('key1aa'), utf8ToBytes('01234'))
-    assert.equal(bytesToUtf8(trie.root()), bytesToUtf8(trie2.root()))
+    assert.strictEqual(bytesToUtf8(trie.root()), bytesToUtf8(trie2.root()))
   })
 })
 
@@ -87,7 +87,7 @@ describe('secure tests', () => {
       const val = row[1] !== undefined && row[1] !== null ? utf8ToBytes(row[1]) : null
       await trie.put(utf8ToBytes(row[0]!), val)
     }
-    assert.equal(bytesToHex(trie.root()), trieTestSecureTrieData.tests.emptyValues.root)
+    assert.strictEqual(bytesToHex(trie.root()), trieTestSecureTrieData.tests.emptyValues.root)
   })
 
   it('branchingTests', async () => {
@@ -96,7 +96,7 @@ describe('secure tests', () => {
       const val = row[1] !== undefined && row[1] !== null ? utf8ToBytes(row[1]) : null
       await trie.put(utf8ToBytes(row[0]!), val)
     }
-    assert.equal(bytesToHex(trie.root()), trieTestSecureTrieData.tests.branchingTests.root)
+    assert.strictEqual(bytesToHex(trie.root()), trieTestSecureTrieData.tests.branchingTests.root)
   })
 
   it('jeff', async () => {
@@ -107,7 +107,7 @@ describe('secure tests', () => {
       }
       await trie.put(hexToBytes(`0x${row[0]!.slice(2)}`), val)
     }
-    assert.equal(bytesToHex(trie.root()), trieTestSecureTrieData.tests.jeff.root)
+    assert.strictEqual(bytesToHex(trie.root()), trieTestSecureTrieData.tests.jeff.root)
   })
 
   it('put fails if the key is the ROOT_DB_KEY', async () => {
@@ -122,7 +122,7 @@ describe('secure tests', () => {
 
       assert.fail("Attempting to set '__root__' should fail but it did not.")
     } catch ({ message }: any) {
-      assert.equal(message, "Attempted to set '__root__' key but it is not allowed.")
+      assert.strictEqual(message, "Attempted to set '__root__' key but it is not allowed.")
     }
   })
 })
@@ -186,7 +186,7 @@ describe('SecureTrie.copy', () => {
     await trie.put(utf8ToBytes('key2'), utf8ToBytes('value2'))
     const trieCopy = trie.shallowCopy()
     const value = await trieCopy.get(utf8ToBytes('key2'))
-    assert.equal(bytesToUtf8(value!), 'value2')
+    assert.strictEqual(bytesToUtf8(value!), 'value2')
   })
 
   it('created copy includes values added before checkpoint', async () => {
@@ -197,7 +197,7 @@ describe('SecureTrie.copy', () => {
     await trie.put(utf8ToBytes('key2'), utf8ToBytes('value2'))
     const trieCopy = trie.shallowCopy()
     const value = await trieCopy.get(utf8ToBytes('key1'))
-    assert.equal(bytesToUtf8(value!), 'value1')
+    assert.strictEqual(bytesToUtf8(value!), 'value1')
   })
 
   it('created copy uses the correct hash function', async () => {
@@ -212,6 +212,6 @@ describe('SecureTrie.copy', () => {
     await trie.put(utf8ToBytes('key2'), utf8ToBytes('value2'))
     const trieCopy = trie.shallowCopy()
     const value = await trieCopy.get(utf8ToBytes('key1'))
-    assert.equal(bytesToUtf8(value!), 'value1')
+    assert.strictEqual(bytesToUtf8(value!), 'value1')
   })
 })

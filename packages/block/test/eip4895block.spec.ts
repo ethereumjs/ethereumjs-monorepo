@@ -41,7 +41,7 @@ describe('EIP4895 tests', () => {
     const withdrawals = (gethBlockBytesArray[3] as WithdrawalBytes[]).map((wa) =>
       createWithdrawalFromBytesArray(wa),
     )
-    assert.equal(withdrawals.length, 8, '8 withdrawals should have been found')
+    assert.strictEqual(withdrawals.length, 8, '8 withdrawals should have been found')
     const gethWithdrawalsRoot = (gethBlockBytesArray[0] as Uint8Array[])[16] as Uint8Array
     assert.deepEqual(
       await genWithdrawalsTrieRoot(withdrawals),
@@ -159,12 +159,12 @@ describe('EIP4895 tests', () => {
       'should validate empty withdrawals root',
     )
 
-    const withdrawal = <WithdrawalData>{
+    const withdrawal = {
       index: BigInt(0),
       validatorIndex: BigInt(0),
       address: new Address(hexToBytes(`0x${'20'.repeat(20)}`)),
       amount: BigInt(1000),
-    }
+    } as WithdrawalData
 
     const validBlockWithWithdrawal = createBlock(
       {
@@ -184,12 +184,12 @@ describe('EIP4895 tests', () => {
       'should validate withdrawals root',
     )
 
-    const withdrawal2 = <WithdrawalData>{
+    const withdrawal2 = {
       index: BigInt(1),
       validatorIndex: BigInt(11),
       address: new Address(hexToBytes(`0x${'30'.repeat(20)}`)),
       amount: BigInt(2000),
-    }
+    } as WithdrawalData
 
     const validBlockWithWithdrawal2 = createBlock(
       {

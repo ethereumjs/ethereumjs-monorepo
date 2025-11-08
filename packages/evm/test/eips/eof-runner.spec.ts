@@ -1,7 +1,7 @@
-import { Account, Address, hexToBytes } from '@ethereumjs/util'
+import { Account, Address, type PrefixedHexString, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createEVM } from '../../src/index.ts'
+import { EOFContainer, createEVM } from '../../src/index.ts'
 
 import { getCommon } from './eof-utils.ts'
 
@@ -36,6 +36,21 @@ describe('EOF: should run a simple contract', async () => {
 
     // The code which is being ran should run ADDRESS POP STOP
     // This costs 4 gas
-    assert.equal(result.execResult.executionGasUsed, BigInt(4))
+    assert.strictEqual(result.execResult.executionGasUsed, BigInt(4))
+  })
+  it('should initialize code positions correctly', async () => {
+    const code = hexToBytes(
+      ('0xef0001' +
+        '010008' +
+        '02' +
+        '000200080003' +
+        '040000' +
+        '00' +
+        '0080000100000001' + // Section 1
+        '3050e30001600100' + // Section 2
+        '3050e4') as PrefixedHexString,
+    )
+    const eofContainer = new EOFContainer(code)
+    assert.doesNotThrow(() => eofContainer.header.getSectionFromProgramCounter(33))
   })
 })

@@ -6,13 +6,13 @@ import { getCommon } from '../../tester/config.ts'
 describe('test runner config tests', () => {
   it('should initialize common with the right hardfork', () => {
     const common = getCommon('byzantium')
-    assert.equal(common.hardfork(), Hardfork.Byzantium)
+    assert.strictEqual(common.hardfork(), Hardfork.Byzantium)
   })
   it('should initialize common with the right hardfork upper-cased', () => {
     let common = getCommon('Byzantium')
-    assert.equal(common.hardfork(), Hardfork.Byzantium)
+    assert.strictEqual(common.hardfork(), Hardfork.Byzantium)
     common = getCommon('BYZANTIUM')
-    assert.equal(common.hardfork(), Hardfork.Byzantium)
+    assert.strictEqual(common.hardfork(), Hardfork.Byzantium)
   })
   it('should always activate EIP 3607', () => {
     let common = getCommon('byzantium')
@@ -41,7 +41,7 @@ describe('test runner config tests', () => {
     forks.map((testCase) => {
       const str = testCase.hf + 'ToMergeAtDiff' + testCase.TTD.toString(16)
       const common = getCommon(str)
-      assert.equal(common.hardfork(), testCase.hf)
+      assert.strictEqual(common.hardfork(), testCase.hf)
     })
   })
   it('should throw on a non-existing fork', () => {

@@ -1,108 +1,90 @@
+[**@ethereumjs/vm**](../README.md)
+
+***
+
 [@ethereumjs/vm](../README.md) / BlockBuilder
 
 # Class: BlockBuilder
 
-## Table of contents
-
-### Constructors
-
-- [constructor](BlockBuilder.md#constructor)
-
-### Properties
-
-- [blobGasUsed](BlockBuilder.md#blobgasused)
-- [gasUsed](BlockBuilder.md#gasused)
-
-### Accessors
-
-- [minerValue](BlockBuilder.md#minervalue)
-- [transactionReceipts](BlockBuilder.md#transactionreceipts)
-
-### Methods
-
-- [addTransaction](BlockBuilder.md#addtransaction)
-- [build](BlockBuilder.md#build)
-- [getStatus](BlockBuilder.md#getstatus)
-- [initState](BlockBuilder.md#initstate)
-- [logsBloom](BlockBuilder.md#logsbloom)
-- [receiptTrie](BlockBuilder.md#receipttrie)
-- [revert](BlockBuilder.md#revert)
-- [transactionsTrie](BlockBuilder.md#transactionstrie)
+Defined in: [vm/src/buildBlock.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L60)
 
 ## Constructors
 
-### constructor
+### Constructor
 
-• **new BlockBuilder**(`vm`, `opts`)
+> **new BlockBuilder**(`vm`, `opts`): `BlockBuilder`
+
+Defined in: [vm/src/buildBlock.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L92)
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `vm` | [`VM`](VM.md) |
-| `opts` | [`BuildBlockOpts`](../interfaces/BuildBlockOpts.md) |
+##### vm
 
-#### Defined in
+[`VM`](VM.md)
 
-[vm/src/buildBlock.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L76)
+##### opts
+
+[`BuildBlockOpts`](../interfaces/BuildBlockOpts.md)
+
+#### Returns
+
+`BlockBuilder`
 
 ## Properties
 
 ### blobGasUsed
 
-• **blobGasUsed**: `bigint` = `BIGINT_0`
+> **blobGasUsed**: `bigint` = `BIGINT_0`
+
+Defined in: [vm/src/buildBlock.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L68)
 
 The cumulative blob gas used by the blobs in a block
 
-#### Defined in
-
-[vm/src/buildBlock.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L52)
-
-___
+***
 
 ### gasUsed
 
-• **gasUsed**: `bigint` = `BIGINT_0`
+> **gasUsed**: `bigint` = `BIGINT_0`
+
+Defined in: [vm/src/buildBlock.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L64)
 
 The cumulative gas used by the transactions added to the block.
-
-#### Defined in
-
-[vm/src/buildBlock.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L48)
 
 ## Accessors
 
 ### minerValue
 
-• `get` **minerValue**(): `bigint`
+#### Get Signature
 
-#### Returns
+> **get** **minerValue**(): `bigint`
+
+Defined in: [vm/src/buildBlock.ts:88](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L88)
+
+##### Returns
 
 `bigint`
 
-#### Defined in
-
-[vm/src/buildBlock.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L72)
-
-___
+***
 
 ### transactionReceipts
 
-• `get` **transactionReceipts**(): [`TxReceipt`](../README.md#txreceipt)[]
+#### Get Signature
 
-#### Returns
+> **get** **transactionReceipts**(): [`TxReceipt`](../type-aliases/TxReceipt.md)[]
 
-[`TxReceipt`](../README.md#txreceipt)[]
+Defined in: [vm/src/buildBlock.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L84)
 
-#### Defined in
+##### Returns
 
-[vm/src/buildBlock.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L68)
+[`TxReceipt`](../type-aliases/TxReceipt.md)[]
 
 ## Methods
 
-### addTransaction
+### addTransaction()
 
-▸ **addTransaction**(`tx`, `__namedParameters?`): `Promise`<[`RunTxResult`](../interfaces/RunTxResult.md)\>
+> **addTransaction**(`tx`, `__namedParameters`): `Promise`\<[`RunTxResult`](../interfaces/RunTxResult.md)\>
+
+Defined in: [vm/src/buildBlock.ts:222](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L222)
 
 Run and add a transaction to the block being built.
 Please note that this modifies the state of the VM.
@@ -111,27 +93,33 @@ the remaining gas in the block.
 
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `tx` | `TypedTransaction` |
-| `__namedParameters` | `Object` |
-| `__namedParameters.skipHardForkValidation?` | `boolean` |
+##### tx
+
+`TypedTransaction`
+
+##### \_\_namedParameters
+
+###### allowNoBlobs?
+
+`boolean`
+
+###### skipHardForkValidation?
+
+`boolean`
 
 #### Returns
 
-`Promise`<[`RunTxResult`](../interfaces/RunTxResult.md)\>
+`Promise`\<[`RunTxResult`](../interfaces/RunTxResult.md)\>
 
-#### Defined in
+***
 
-[vm/src/buildBlock.ts:203](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L203)
+### build()
 
-___
+> **build**(`sealOpts?`): `Promise`\<\{ `block`: `Block`; `requests`: `CLRequest`\<`CLRequestType`\>[] \| `undefined`; \}\>
 
-### build
+Defined in: [vm/src/buildBlock.ts:336](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L336)
 
-▸ **build**(`sealOpts?`): `Promise`<`Block`\>
-
-This method returns the finalized block.
+This method constructs the finalized block, including withdrawals and any CLRequests.
 It also:
  - Assigns the reward for miner (PoW)
  - Commits the checkpoint on the StateManager
@@ -141,108 +129,95 @@ which is validated along with the block number and difficulty by ethash.
 For PoA, please pass `blockOption.cliqueSigner` into the buildBlock constructor,
 as the signer will be awarded the txs amount spent on gas as they are added.
 
+Note: we add CLRequests here because they can be generated at any time during the
+lifecycle of a pending block so need to be provided only when the block is finalized.
+
 #### Parameters
 
-| Name | Type |
-| :------ | :------ |
-| `sealOpts?` | [`SealBlockOpts`](../interfaces/SealBlockOpts.md) |
+##### sealOpts?
+
+[`SealBlockOpts`](../interfaces/SealBlockOpts.md)
 
 #### Returns
 
-`Promise`<`Block`\>
+`Promise`\<\{ `block`: `Block`; `requests`: `CLRequest`\<`CLRequestType`\>[] \| `undefined`; \}\>
 
-#### Defined in
+***
 
-[vm/src/buildBlock.ts:293](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L293)
+### getStatus()
 
-___
+> **getStatus**(): `BlockStatus`
 
-### getStatus
-
-▸ **getStatus**(): `BlockStatus`
+Defined in: [vm/src/buildBlock.ts:144](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L144)
 
 #### Returns
 
 `BlockStatus`
 
-#### Defined in
+***
 
-[vm/src/buildBlock.ts:128](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L128)
+### initState()
 
-___
+> **initState**(): `Promise`\<`void`\>
 
-### initState
-
-▸ **initState**(): `Promise`<`void`\>
+Defined in: [vm/src/buildBlock.ts:420](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L420)
 
 #### Returns
 
-`Promise`<`void`\>
+`Promise`\<`void`\>
 
-#### Defined in
+***
 
-[vm/src/buildBlock.ts:357](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L357)
+### logsBloom()
 
-___
+> **logsBloom**(): `Uint8Array`\<`ArrayBufferLike`\>
 
-### logsBloom
-
-▸ **logsBloom**(): `Uint8Array`
+Defined in: [vm/src/buildBlock.ts:161](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L161)
 
 Calculates and returns the logs bloom for the block.
 
 #### Returns
 
-`Uint8Array`
+`Uint8Array`\<`ArrayBufferLike`\>
 
-#### Defined in
+***
 
-[vm/src/buildBlock.ts:142](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L142)
+### receiptTrie()
 
-___
+> **receiptTrie**(): `Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
 
-### receiptTrie
-
-▸ **receiptTrie**(): `Promise`<`Uint8Array`\>
+Defined in: [vm/src/buildBlock.ts:173](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L173)
 
 Calculates and returns the receiptTrie for the block.
 
 #### Returns
 
-`Promise`<`Uint8Array`\>
+`Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
 
-#### Defined in
+***
 
-[vm/src/buildBlock.ts:154](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L154)
+### revert()
 
-___
+> **revert**(): `Promise`\<`void`\>
 
-### revert
-
-▸ **revert**(): `Promise`<`void`\>
+Defined in: [vm/src/buildBlock.ts:314](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L314)
 
 Reverts the checkpoint on the StateManager to reset the state from any transactions that have been run.
 
 #### Returns
 
-`Promise`<`void`\>
+`Promise`\<`void`\>
 
-#### Defined in
+***
 
-[vm/src/buildBlock.ts:274](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L274)
+### transactionsTrie()
 
-___
+> **transactionsTrie**(): `Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
 
-### transactionsTrie
-
-▸ **transactionsTrie**(): `Promise`<`Uint8Array`\>
+Defined in: [vm/src/buildBlock.ts:151](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L151)
 
 Calculates and returns the transactionsTrie for the block.
 
 #### Returns
 
-`Promise`<`Uint8Array`\>
-
-#### Defined in
-
-[vm/src/buildBlock.ts:135](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L135)
+`Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>

@@ -132,7 +132,7 @@ describe('Original storage cache', async () => {
     try {
       await stateManager.originalStorageCache.get(address, new Uint8Array(12))
     } catch (e: any) {
-      assert.equal(e.message, 'Storage key must be 32 bytes long')
+      assert.strictEqual(e.message, 'Storage key must be 32 bytes long')
       return
     }
 

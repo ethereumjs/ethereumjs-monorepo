@@ -51,6 +51,7 @@ export * from './types.ts'
 /**
  * Export ethjs-util methods
  */
+export * from './authorization.ts'
 export * from './binaryTree.ts'
 export * from './blobs.ts'
 export {
@@ -70,4 +71,3 @@ export * from './mapDB.ts'
 export * from './provider.ts'
 export * from './request.ts'
 export * from './tasks.ts'
-export * from './verkle.ts'

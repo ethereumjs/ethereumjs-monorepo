@@ -61,8 +61,8 @@ describe('initialize', async () => {
   const service = new FullEthereumService({ config, chain })
 
   it('should initialize correctly', async () => {
-    assert.equal('full', service.synchronizer?.type, 'full mode')
-    assert.equal(service.name, 'eth', 'got name')
+    assert.strictEqual('full', service.synchronizer?.type, 'full mode')
+    assert.strictEqual(service.name, 'eth', 'got name')
   })
 
   it('should get protocols', async () => {
@@ -112,7 +112,7 @@ describe('should open', async () => {
   })
 
   it('should get sync error', async () => {
-    assert.equal(
+    assert.strictEqual(
       await new Promise((resolve) => {
         service.config.events.on(Event.SYNC_ERROR, (err) => {
           resolve(err.message)
@@ -126,7 +126,7 @@ describe('should open', async () => {
   })
 
   it('should get server error', async () => {
-    assert.equal(
+    assert.strictEqual(
       await new Promise((resolve) => {
         service.config.events.on(Event.SERVER_ERROR, (err) => {
           resolve(err.message)
@@ -231,7 +231,7 @@ describe('should call handleNewBlock on NewBlock and handleNewBlockHashes on New
   // (would error if called since handleNewBlock and handleNewBlockHashes are not available on BeaconSynchronizer)
   it('should switch to beacon sync', async () => {
     await service.switchToBeaconSync()
-    assert.equal(
+    assert.strictEqual(
       (service.synchronizer as BeaconSynchronizer).type,
       'beacon',
       'switched to BeaconSynchronizer',

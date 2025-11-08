@@ -5,8 +5,9 @@ const pkg = process.argv[3]
 if (!pkg) {
   throw new Error('Package argument must be passed')
 }
+const subDir = process.argv[4] ?? ''
 
-const examplesPath = `../packages/${pkg}/examples/`
+const examplesPath = `../packages/${pkg}/examples/${subDir}/`
 const path = join(__dirname, examplesPath)
 
 const getExample = (fileName: string): Promise<NodeModule> | undefined => {

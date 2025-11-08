@@ -13,7 +13,7 @@ import type { BaseOpts, ChainConfig, GethConfigOpts } from './index.ts'
  * import { createCustomCommon, Mainnet } from '@ethereumjs/common'
  *
  * createCustomCommon({chainId: 123}, Mainnet)
- * ``
+ * ```
  *
  * @param partialConfig Custom parameter dict
  * @param baseChain `ChainConfig` chain configuration taken as a base chain, e.g. `Mainnet` (exported at root level)
@@ -35,9 +35,8 @@ export function createCustomCommon(
 
 /**
  * Static method to load and set common from a geth genesis object
- * @param gethGenesis GethGenesis object
- * @param  opts additional {@link GethConfigOpts} for configuring common
- * @returns Common
+ * @param genesisJSON GethGenesis object
+ * @returns a new {@link Common} object
  */
 export function createCommonFromGethGenesis(
   genesisJSON: GethGenesis,

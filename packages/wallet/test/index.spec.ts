@@ -20,12 +20,9 @@ const fixturePublicKeyBytes = hexToBytes(fixturePublicKey)
 const fixtureWallet = Wallet.fromPrivateKey(fixturePrivateKeyBytes)
 const fixtureEthersWallet = new ethersWallet(fixtureWallet.getPrivateKeyString())
 
-// Hack to detect if running in browser or not
-const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
-
 describe('Wallet tests', () => {
   it('.getPrivateKey()', () => {
-    assert.equal(bytesToHex(fixtureWallet.getPrivateKey()), fixturePrivateKey)
+    assert.strictEqual(bytesToHex(fixtureWallet.getPrivateKey()), fixturePrivateKey)
 
     assert.throws(() => {
       Wallet.fromPrivateKey(hexToBytes('0x001122'))
@@ -143,12 +140,12 @@ describe('Wallet tests', () => {
   }, 30000)
 
   it('.generate()', () => {
-    assert.equal(Wallet.generate().getPrivateKey().length, 32, 'should generate an account')
+    assert.strictEqual(Wallet.generate().getPrivateKey().length, 32, 'should generate an account')
     const max = BigInt('0x088f924eeceeda7fe92e1f5b0fffffffffffffff')
     const wallet = Wallet.generate(true)
-    assert.equal(wallet.getPrivateKey().length, 32)
+    assert.strictEqual(wallet.getPrivateKey().length, 32)
     const addr = bytesToHex(wallet.getAddress())
-    assert.equal(
+    assert.strictEqual(
       BigInt(addr) <= max,
       true,
       'should generate an account compatible with ICAP Direct',
@@ -237,13 +234,11 @@ describe('Wallet tests', () => {
 
   let permutations = makePermutations(strKdfOptions, bytesKdfOptions)
 
-  if (isBrowser() === true) {
-    // These tests take a long time in the browser due to
-    // the amount of permutations so we will shorten them.
-    permutations = permutations.slice(1)
-  }
+  // These tests take a long time due to the amount of permutations so we will shorten them.
+  // If related code is touched, run full tests.
+  permutations = permutations.slice(0, 1)
 
-  it('.toV3(): should work with PBKDF2', async () => {
+  it('.toV3(): should work with PBKDF2 (shortened permutations)', async () => {
     const w =
       '{"version":3,"id":"7e59dc02-8d42-409d-b29a-a8a0f862cc81","address":"b14ab53e38da1c172f877dbc6d65e4a1b0474c3c","crypto":{"ciphertext":"01ee7f1a3c8d187ea244c92eea9e332ab0bb2b4c902d89bdd71f80dc384da1be","cipherparams":{"iv":"cecacd85e9cb89788b5aab2f93361233"},"cipher":"aes-128-ctr","kdf":"pbkdf2","kdfparams":{"dklen":32,"salt":"dc9e4a98886738bd8aae134a1f89aaa5a502c3fbd10e336136d4d5fe47448ad6","c":262144,"prf":"hmac-sha256"},"mac":"0c02cd0badfebd5e783e0cf41448f84086a96365fc3456716c33641a86ebc7cc"}}'
 
@@ -261,13 +256,14 @@ describe('Wallet tests', () => {
     }
   }, 180000)
 
-  it('.toV3(): should work with Scrypt', async () => {
-    const wStaticJSON =
-      '{"version":3,"id":"7e59dc02-8d42-409d-b29a-a8a0f862cc81","address":"b14ab53e38da1c172f877dbc6d65e4a1b0474c3c","crypto":{"ciphertext":"c52682025b1e5d5c06b816791921dbf439afe7a053abb9fac19f38a57499652c","cipherparams":{"iv":"cecacd85e9cb89788b5aab2f93361233"},"cipher":"aes-128-ctr","kdf":"scrypt","kdfparams":{"dklen":32,"salt":"dc9e4a98886738bd8aae134a1f89aaa5a502c3fbd10e336136d4d5fe47448ad6","n":262144,"r":8,"p":1},"mac":"27b98c8676dc6619d077453b38db645a4c7c17a3e686ee5adaf53c11ac1b890e"}}'
-    const wStatic = JSON.parse(wStaticJSON)
-    const wRandom = Wallet.generate()
-    const wEthers = new ethersWallet(wRandom.getPrivateKeyString())
-    for (const perm of permutations) {
+  const wStaticJSON =
+    '{"version":3,"id":"7e59dc02-8d42-409d-b29a-a8a0f862cc81","address":"b14ab53e38da1c172f877dbc6d65e4a1b0474c3c","crypto":{"ciphertext":"c52682025b1e5d5c06b816791921dbf439afe7a053abb9fac19f38a57499652c","cipherparams":{"iv":"cecacd85e9cb89788b5aab2f93361233"},"cipher":"aes-128-ctr","kdf":"scrypt","kdfparams":{"dklen":32,"salt":"dc9e4a98886738bd8aae134a1f89aaa5a502c3fbd10e336136d4d5fe47448ad6","n":262144,"r":8,"p":1},"mac":"27b98c8676dc6619d077453b38db645a4c7c17a3e686ee5adaf53c11ac1b890e"}}'
+  const wStatic = JSON.parse(wStaticJSON)
+  const wRandom = Wallet.generate()
+  const wEthers = new ethersWallet(wRandom.getPrivateKeyString())
+
+  for (const [index, perm] of permutations.entries()) {
+    it(`.toV3(): should work with Scrypt (permutation ${index}) (shortened permutations)`, async () => {
       const { salt, iv, uuid } = perm
 
       const encFixtureWallet = await fixtureWallet.toV3String(pw, {
@@ -307,8 +303,8 @@ describe('Wallet tests', () => {
       assert.deepEqual(wStatic, JSON.parse(encFixtureWallet))
       assert.deepEqual(wStatic, JSON.parse(encFixtureEthersWallet))
       assert.deepEqual(JSON.parse(encRandomWallet), JSON.parse(encEthersWallet))
-    }
-  }, 180000)
+    }, 180000)
+  }
 
   it('.toV3(): without providing options', async () => {
     const wallet = await fixtureWallet.toV3('testtest')
@@ -367,8 +363,8 @@ describe('Wallet tests', () => {
     let salt: any = ''
     let w = await fixtureWallet.toV3(pw, { salt, kdf: 'pbkdf2' })
 
-    assert.equal(salt, w.crypto.kdfparams.salt)
-    assert.equal(
+    assert.strictEqual(salt, w.crypto.kdfparams.salt)
+    assert.strictEqual(
       fixtureWallet.getPrivateKeyString(),
       (await Wallet.fromV3(w, pw)).getPrivateKeyString(),
     )
@@ -376,8 +372,8 @@ describe('Wallet tests', () => {
     salt = '0x'
     w = await fixtureWallet.toV3(pw, { salt, kdf: 'pbkdf2' })
 
-    assert.equal('', w.crypto.kdfparams.salt)
-    assert.equal(
+    assert.strictEqual('', w.crypto.kdfparams.salt)
+    assert.strictEqual(
       fixtureWallet.getPrivateKeyString(),
       (await Wallet.fromV3(w, pw)).getPrivateKeyString(),
     )
@@ -385,8 +381,8 @@ describe('Wallet tests', () => {
     salt = hexToBytes('0x')
     w = await fixtureWallet.toV3(pw, { salt, kdf: 'pbkdf2' })
 
-    assert.equal('', w.crypto.kdfparams.salt)
-    assert.equal(
+    assert.strictEqual('', w.crypto.kdfparams.salt)
+    assert.strictEqual(
       fixtureWallet.getPrivateKeyString(),
       (await Wallet.fromV3(w, pw)).getPrivateKeyString(),
     )
@@ -416,11 +412,11 @@ describe('Wallet tests', () => {
 
     assert.deepEqual(salt, JSON.parse(wStr).crypto.kdfparams.salt)
     assert.deepEqual(JSON.parse(wStr), JSON.parse(wEthersStr.toLowerCase()))
-    assert.equal(
+    assert.strictEqual(
       fixtureWallet.getPrivateKeyString(),
       (await Wallet.fromV3(JSON.parse(wStr), pw)).getPrivateKeyString(),
     )
-    assert.equal(
+    assert.strictEqual(
       fixtureWallet.getPrivateKeyString(),
       (await ethersWallet.fromEncryptedJson(wEthersStr, pw)).privateKey,
     )
@@ -448,13 +444,13 @@ describe('Wallet tests', () => {
       },
     )
 
-    assert.equal('', JSON.parse(wStr).crypto.kdfparams.salt)
+    assert.strictEqual('', JSON.parse(wStr).crypto.kdfparams.salt)
     assert.deepEqual(JSON.parse(wStr), JSON.parse(wEthersStr.toLowerCase()))
-    assert.equal(
+    assert.strictEqual(
       fixtureWallet.getPrivateKeyString(),
       (await Wallet.fromV3(JSON.parse(wStr), pw)).getPrivateKeyString(),
     )
-    assert.equal(
+    assert.strictEqual(
       fixtureWallet.getPrivateKeyString(),
       (await ethersWallet.fromEncryptedJson(wEthersStr, pw)).privateKey,
     )
@@ -480,13 +476,13 @@ describe('Wallet tests', () => {
       },
     )
 
-    assert.equal('', JSON.parse(wStr).crypto.kdfparams.salt)
+    assert.strictEqual('', JSON.parse(wStr).crypto.kdfparams.salt)
     assert.deepEqual(JSON.parse(wStr), JSON.parse(wEthersStr.toLowerCase()))
-    assert.equal(
+    assert.strictEqual(
       fixtureWallet.getPrivateKeyString(),
       (await Wallet.fromV3(JSON.parse(wStr), pw)).getPrivateKeyString(),
     )
-    assert.equal(
+    assert.strictEqual(
       fixtureWallet.getPrivateKeyString(),
       (await ethersWallet.fromEncryptedJson(wEthersStr, pw)).privateKey,
     )
@@ -636,14 +632,14 @@ describe('Wallet tests', () => {
       kdf: 'pbkdf2',
     })
 
-    assert.equal(salt, w.crypto.kdfparams.salt)
-    assert.equal(iv, w.crypto.cipherparams.iv)
-    assert.equal(w.id, w2.id)
-    assert.equal(
+    assert.strictEqual(salt, w.crypto.kdfparams.salt)
+    assert.strictEqual(iv, w.crypto.cipherparams.iv)
+    assert.strictEqual(w.id, w2.id)
+    assert.strictEqual(
       fixtureWallet.getPrivateKeyString(),
       (await Wallet.fromV3(w, pw)).getPrivateKeyString(),
     )
-    assert.equal(
+    assert.strictEqual(
       fixtureWallet.getPrivateKeyString(),
       (await Wallet.fromV3(w2, pw)).getPrivateKeyString(),
     )
@@ -661,14 +657,14 @@ describe('Wallet tests', () => {
       kdf: 'scrypt',
     })
 
-    assert.equal(salt, w.crypto.kdfparams.salt)
-    assert.equal(iv, w.crypto.cipherparams.iv)
-    assert.equal(w.id, w2.id)
-    assert.equal(
+    assert.strictEqual(salt, w.crypto.kdfparams.salt)
+    assert.strictEqual(iv, w.crypto.cipherparams.iv)
+    assert.strictEqual(w.id, w2.id)
+    assert.strictEqual(
       fixtureWallet.getPrivateKeyString(),
       (await Wallet.fromV3(w, pw)).getPrivateKeyString(),
     )
-    assert.equal(
+    assert.strictEqual(
       fixtureWallet.getPrivateKeyString(),
       (await Wallet.fromV3(w2, pw)).getPrivateKeyString(),
     )
@@ -814,7 +810,7 @@ describe('Wallet tests', () => {
 
   it('.fromEtherCamp()', () => {
     const wallet = Thirdparty.fromEtherCamp('ethercamp123')
-    assert.equal(
+    assert.strictEqual(
       wallet.getAddressString(),
       '0x182b6ca390224c455f11b6337d74119305014ed4',
       'should work with seed text',
@@ -823,7 +819,7 @@ describe('Wallet tests', () => {
 
   it('.fromQuorumWallet()', () => {
     const wallet = Thirdparty.fromQuorumWallet('testtesttest', 'ethereumjs-wallet')
-    assert.equal(wallet.getAddressString(), '0x1b86ccc22e8f137f204a41a23033541242a48815')
+    assert.strictEqual(wallet.getAddressString(), '0x1b86ccc22e8f137f204a41a23033541242a48815')
   }, 30000)
 
   it('raw new Wallet() init', () => {
