@@ -88,7 +88,6 @@
     "@types/minimist": "^1.2.5",
     "@types/node-dir": "^0.0.37",
     "benchmark": "^2.1.4",
-    "ethers": "^6.13.5",
     "mcl-wasm": "^1.8.0",
     "micro-eth-signer": "^0.15.0",
     "minimist": "^1.2.8",
@@ -96,6 +95,7 @@
     "nyc": "^17.1.0",
     "solc": "^0.8.28",
     "tape": "^5.9.0",
+    "viem": "^2.38.6",
     "yargs": "^17.7.2"
   },
   "engines": {

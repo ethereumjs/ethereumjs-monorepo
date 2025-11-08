@@ -6,11 +6,11 @@ import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
 import { bytesToHex, createAddressFromPrivateKey, hexToBytes } from '@ethereumjs/util'
 import { createVM, runTx } from '@ethereumjs/vm'
-import { AbiCoder, Interface } from 'ethers'
 import solc from 'solc'
+import { decodeAbiParameters, encodeAbiParameters, encodeFunctionData } from 'viem'
 
 import { getAccountNonce, insertAccount } from './helpers/account-utils.ts'
-import { buildTransaction, encodeDeployment, encodeFunction } from './helpers/tx-builder.ts'
+import { buildTransaction } from './helpers/tx-builder.ts'
 
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import type { VM } from '@ethereumjs/vm'
@@ -100,10 +100,8 @@ async function deployContract(
   // Contracts are deployed by sending their deployment bytecode to the address 0
   // The contract params should be abi-encoded and appended to the deployment bytecode.
 
-  const data = encodeDeployment(deploymentBytecode, {
-    types: ['string'],
-    values: [greeting],
-  })
+  const data =
+    '0x' + deploymentBytecode + encodeAbiParameters([{ type: 'string' }], [greeting]).slice(2)
   const txData = {
     data,
     nonce: await getAccountNonce(vm, senderPrivateKey),
@@ -126,9 +124,18 @@ async function setGreeting(
   contractAddress: Address,
   greeting: string,
 ) {
-  const data = encodeFunction('setGreeting', {
-    types: ['string'],
-    values: [greeting],
+  const data = encodeFunctionData({
+    abi: [
+      {
+        type: 'function',
+        name: 'setGreeting',
+        inputs: [{ type: 'string' }],
+        outputs: [],
+        stateMutability: 'nonpayable',
+      },
+    ],
+    functionName: 'setGreeting',
+    args: [greeting],
   })
 
   const txData = {
@@ -147,8 +154,18 @@ async function setGreeting(
 }
 
 async function getGreeting(vm: VM, contractAddress: Address, caller: Address) {
-  const sigHash = new Interface(['function greet()']).getFunction('greet')!
-    .selector as PrefixedHexString
+  const sigHash = encodeFunctionData({
+    abi: [
+      {
+        type: 'function',
+        name: 'greet',
+        inputs: [],
+        outputs: [{ type: 'string' }],
+        stateMutability: 'view',
+      },
+    ],
+    functionName: 'greet',
+  })
 
   const greetResult = await vm.evm.runCall({
     to: contractAddress,
@@ -162,7 +179,7 @@ async function getGreeting(vm: VM, contractAddress: Address, caller: Address) {
     throw greetResult.execResult.exceptionError
   }
 
-  const results = new AbiCoder().decode(['string'], greetResult.execResult.returnValue)
+  const results = decodeAbiParameters([{ type: 'string' }], greetResult.execResult.returnValue)
 
   return results[0]
 }
