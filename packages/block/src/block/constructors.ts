@@ -47,8 +47,9 @@ import type {
  *
  * @param blockData
  * @param opts
+ * @returns a new {@link Block} object
  */
-export function createBlock(blockData: BlockData = {}, opts?: BlockOptions) {
+export function createBlock(blockData: BlockData = {}, opts?: BlockOptions): Block {
   const {
     header: headerData,
     transactions: txsData,
@@ -98,8 +99,9 @@ export function createBlock(blockData: BlockData = {}, opts?: BlockOptions) {
  *
  * @param headerData
  * @param opts
+ * @returns a new {@link Block} object
  */
-export function createEmptyBlock(headerData: HeaderData, opts?: BlockOptions) {
+export function createEmptyBlock(headerData: HeaderData, opts?: BlockOptions): Block {
   const header = createBlockHeader(headerData, opts)
   return new Block(header)
 }
@@ -109,8 +111,9 @@ export function createEmptyBlock(headerData: HeaderData, opts?: BlockOptions) {
  *
  * @param values
  * @param opts
+ * @returns a new {@link Block} object
  */
-export function createBlockFromBytesArray(values: BlockBytes, opts?: BlockOptions) {
+export function createBlockFromBytesArray(values: BlockBytes, opts?: BlockOptions): Block {
   if (values.length > 5) {
     throw EthereumJSErrorWithoutCode(
       `invalid  More values=${values.length} than expected were received (at most 5)`,
@@ -182,8 +185,9 @@ export function createBlockFromBytesArray(values: BlockBytes, opts?: BlockOption
  *
  * @param serialized
  * @param opts
+ * @returns a new {@link Block} object
  */
-export function createBlockFromRLP(serialized: Uint8Array, opts?: BlockOptions) {
+export function createBlockFromRLP(serialized: Uint8Array, opts?: BlockOptions): Block {
   if (opts?.common?.isActivatedEIP(7934) === true) {
     const maxRlpBlockSize = opts.common.param('maxRlpBlockSize')
     if (serialized.length > maxRlpBlockSize) {
@@ -207,12 +211,13 @@ export function createBlockFromRLP(serialized: Uint8Array, opts?: BlockOptions) 
  * @param blockParams - Ethereum JSON RPC of block (eth_getBlockByNumber)
  * @param uncles - Optional list of Ethereum JSON RPC of uncles (eth_getUncleByBlockHashAndIndex)
  * @param opts - An object describing the blockchain
+ * @returns a new {@link Block} object
  */
 export function createBlockFromRPC(
   blockParams: JSONRPCBlock,
   uncles: any[] = [],
   options?: BlockOptions,
-) {
+): Block {
   const header = createBlockHeaderFromRPC(blockParams, options)
 
   const transactions: TypedTransaction[] = []
@@ -236,13 +241,13 @@ export function createBlockFromRPC(
  * @param provider either a url for a remote provider or an Ethers JSONRPCProvider object
  * @param blockTag block hash or block number to be run
  * @param opts {@link BlockOptions}
- * @returns the block specified by `blockTag`
+ * @returns a new {@link Block} object specified by `blockTag`
  */
 export const createBlockFromJSONRPCProvider = async (
   provider: string | EthersProvider,
   blockTag: string | bigint,
   opts: BlockOptions,
-) => {
+): Promise<Block> => {
   let blockData
   const providerUrl = getProvider(provider)
 
@@ -294,9 +299,9 @@ export const createBlockFromJSONRPCProvider = async (
 
 /**
  *  Method to retrieve a block from an execution payload
- * @param execution payload constructed from beacon payload
+ * @param payload Execution payload constructed from beacon payload data
  * @param opts {@link BlockOptions}
- * @returns the block constructed block
+ * @returns The constructed {@link Block} object
  */
 export async function createBlockFromExecutionPayload(
   payload: ExecutionPayload,
@@ -358,9 +363,9 @@ export async function createBlockFromExecutionPayload(
 
 /**
  *  Method to retrieve a block from a beacon payload JSON
- * @param payload JSON of a beacon beacon fetched from beacon apis
+ * @param payload JSON of a beacon block fetched from beacon APIs
  * @param opts {@link BlockOptions}
- * @returns the block constructed block
+ * @returns The constructed {@link Block} object
  */
 export async function createBlockFromBeaconPayloadJSON(
   payload: BeaconPayloadJSON,
@@ -370,6 +375,13 @@ export async function createBlockFromBeaconPayloadJSON(
   return createBlockFromExecutionPayload(executionPayload, opts)
 }
 
+/**
+ * Creates a block for Clique networks with the seal applied during instantiation.
+ * @param blockData Block fields used to build the block
+ * @param cliqueSigner Private key bytes used to sign the header
+ * @param opts {@link BlockOptions}
+ * @returns A sealed Clique {@link Block} object
+ */
 export function createSealedCliqueBlock(
   blockData: BlockData = {},
   cliqueSigner: Uint8Array,
