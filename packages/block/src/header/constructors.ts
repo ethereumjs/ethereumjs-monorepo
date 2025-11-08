@@ -71,6 +71,13 @@ export function createBlockHeaderFromRLP(
   return createBlockHeaderFromBytesArray(values as Uint8Array[], opts)
 }
 
+/**
+ * Creates a Clique block header with the seal applied during instantiation.
+ * @param headerData Header fields for the Clique block
+ * @param cliqueSigner Private key bytes used to sign the header
+ * @param opts {@link BlockOptions}
+ * @returns A sealed {@link BlockHeader}
+ */
 export function createSealedCliqueBlockHeader(
   headerData: HeaderData = {},
   cliqueSigner: Uint8Array,

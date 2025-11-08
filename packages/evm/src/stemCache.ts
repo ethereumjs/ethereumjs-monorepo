@@ -37,7 +37,7 @@ export class StemCache {
 
   /**
    * Returns the size of the cache
-   * @returns
+   * @returns Number of cached stems currently stored
    */
   size() {
     return this.cache.size

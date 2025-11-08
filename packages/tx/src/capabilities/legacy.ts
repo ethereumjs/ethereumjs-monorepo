@@ -97,10 +97,21 @@ export function getIntrinsicGas(tx: LegacyTxInterface): bigint {
   return fee
 }
 
+/**
+ * Checks if the transaction targets the creation address (deploys a contract).
+ * @param tx - Transaction interface to inspect
+ * @returns true if the transaction's `to` is undefined or empty
+ */
 export function toCreationAddress(tx: LegacyTxInterface): boolean {
   return tx.to === undefined || tx.to.bytes.length === 0
 }
 
+/**
+ * Computes the keccak256 hash of a signed legacy transaction.
+ * @param tx - Transaction to hash
+ * @returns Hash of the serialized transaction
+ * @throws EthereumJSErrorWithoutCode if the transaction is unsigned
+ */
 export function hash(tx: LegacyTxInterface): Uint8Array {
   if (!tx.isSigned()) {
     const msg = errorMsg(tx, 'Cannot call hash method if transaction is not signed')
@@ -132,6 +143,12 @@ export function validateHighS(tx: LegacyTxInterface): void {
   }
 }
 
+/**
+ * Recovers the sender's public key from the transaction signature.
+ * @param tx - Transaction from which the public key should be derived
+ * @returns The uncompressed sender public key
+ * @throws EthereumJSErrorWithoutCode if the signature is invalid
+ */
 export function getSenderPublicKey(tx: LegacyTxInterface): Uint8Array {
   if (tx.cache.senderPubKey !== undefined) {
     return tx.cache.senderPubKey
@@ -162,6 +179,13 @@ export function getSenderPublicKey(tx: LegacyTxInterface): Uint8Array {
   }
 }
 
+/**
+ * Calculates the effective priority fee for a legacy-style transaction.
+ * @param gasPrice - Gas price specified on the transaction
+ * @param baseFee - Optional base fee from the block when operating on L2s that mimic 1559 behavior
+ * @returns The priority fee portion that can be paid to the block producer
+ * @throws EthereumJSErrorWithoutCode if the base fee exceeds the gas price
+ */
 export function getEffectivePriorityFee(gasPrice: bigint, baseFee: bigint | undefined): bigint {
   if (baseFee !== undefined && baseFee > gasPrice) {
     throw EthereumJSErrorWithoutCode('Tx cannot pay baseFee')
@@ -287,6 +311,11 @@ export function sign(
 }
 
 // TODO maybe move this to shared methods (util.ts in features)
+/**
+ * Builds a compact string that summarizes common transaction fields for error messages.
+ * @param tx - Transaction used to assemble the postfix
+ * @returns A formatted string containing tx type, hash, nonce, value, signature status, and hardfork
+ */
 export function getSharedErrorPostfix(tx: LegacyTxInterface) {
   let hash = ''
   try {
