@@ -47,7 +47,7 @@ jobs:
           key: ${{ inputs.dep-cache-key }}
 
       - name: Use Node.js 20
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: 'npm'
@@ -78,7 +78,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        fork: ['Cancun']
+        fork: ['Prague']
       fail-fast: false
     steps:
       # We clone the repo and submodules if triggered from work-flow dispatch
@@ -96,7 +96,7 @@ jobs:
           key: ${{ inputs.dep-cache-key }}
 
       - name: Use Node.js 20
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: 'npm'
@@ -121,6 +121,62 @@ jobs:
       - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM')
         run: npm run test:buildIntegrity
 
+  vm-osaka-state:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      # For now we always clone the repo and submodules (no cache)
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies (if not restored from cache)
+        if: steps.dep-cache.outputs.cache-hit != 'true'
+        run: npm ci     
+        working-directory: ${{ github.workspace }}
+      
+      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM') == false
+        run: npm run test:osaka:state
+      
+      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM')
+        run: npm run test:buildIntegrity
+  
+  vm-osaka-blockchain:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      # For now we always clone the repo and submodules (no cache)
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies (if not restored from cache)
+        if: steps.dep-cache.outputs.cache-hit != 'true'
+        run: npm ci     
+        working-directory: ${{ github.workspace }}
+      
+      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM') == false
+        run: npm run test:osaka:blockchain
+      
+      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM')
+        run: npm run test:buildIntegrity
+  
   vm-state-extended:
     if: contains(join(github.event.pull_request.labels.*.name, ' '), 'test all hardforks')
     runs-on: ubuntu-latest
@@ -160,7 +216,7 @@ jobs:
           key: ${{ inputs.dep-cache-key }}
 
       - name: Use Node.js 20
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: 'npm'
@@ -193,7 +249,7 @@ jobs:
         # Tests were split with --dir and --excludeDir to balance execution times below the 9min mark.
         args:
           [
-            '--fork=Cancun --verify-test-amount-alltests',
+            '--fork=Prague --verify-test-amount-alltests',
           ]
       fail-fast: false
     steps:
@@ -212,7 +268,7 @@ jobs:
           key: ${{ inputs.dep-cache-key }}
 
       - name: Use Node.js 20
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: 'npm'
@@ -283,7 +339,7 @@ jobs:
           key: ${{ inputs.dep-cache-key }}
 
       - name: Use Node.js 20
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: 'npm'
@@ -320,7 +376,7 @@ jobs:
           key: ${{ inputs.dep-cache-key }}
 
       - name: Use Node.js 20
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: 'npm'

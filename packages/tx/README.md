@@ -23,6 +23,11 @@
 - [Getting Started](#getting-started)
 - [Chain and Hardfork Support](#chain-and-hardfork-support)
 - [Transaction Types](#transaction-types)
+  - [Gas Fee Market Transactions (EIP-1559)](#gas-fee-market-transactions-eip-1559)
+  - [Access List Transactions (EIP-2930)](#access-list-transactions-eip-2930)
+  - [Blob Transactions (EIP-4844)](#blob-transactions-eip-4844)
+  - [EOA Code Transaction (EIP-7702)](#eoa-code-transaction-eip-7702)
+  - [Legacy Transactions](#legacy-transactions)
 - [Transaction Factory](#transaction-factory)
 - [KZG Setup](#kzg-setup)
 - [Sending a Transaction](#sending-a-transaction)
@@ -197,7 +202,7 @@ See the following code snipped for an example on how to instantiate:
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import type { BlobEIP4844TxData } from '@ethereumjs/tx'
 import { createBlob4844Tx } from '@ethereumjs/tx'
-import { bytesToHex, randomBytes } from '@ethereumjs/util'
+import { bytesToHex, getBlobs, randomBytes } from '@ethereumjs/util'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 
@@ -224,12 +229,14 @@ const main = async () => {
     chainId: '0x01',
     accessList: [],
     type: '0x05',
-    blobsData: ['abcd'],
+    blobs: getBlobs(['blob 1', 'blob 2']),
   }
 
   const tx = createBlob4844Tx(txData, { common })
 
-  console.log(bytesToHex(tx.hash())) //0x3c3e7c5e09c250d2200bcc3530f4a9088d7e3fb4ea3f4fccfd09f535a3539e84
+  console.log(`Blob tx created with hash: ${bytesToHex(tx.hash())}`)
+  console.log(`Tx contains ${tx.numBlobs()} blob`)
+  console.log(`Blob versioned hashes: ${tx.blobVersionedHashes.join(', ')}`)
 
   // To send a transaction via RPC, you can something like this:
   // const rawTx = tx.sign(privateKeyBytes).serializeNetworkWrapper()
@@ -240,9 +247,11 @@ void main()
 
 ```
 
-Note that `versionedHashes` and `kzgCommitments` have a real length of 32 bytes, `blobs` have a real length of `4096` bytes and values are trimmed here for brevity.
+**Note:** `versionedHashes` and `kzgCommitments` have a real length of 32 bytes, `blobs` have a real length of `4096` bytes and values are trimmed here for brevity.
 
-Alternatively, you can pass a `blobsData` property with an array of strings corresponding to a set of blobs and the `fromTxData` constructor will derive the corresponding `blobs`, `versionedHashes`, `kzgCommitments`, and `kzgProofs` for you.
+You can either pass in blobs as the initial `blobsData` - and the final `blobs` format will be derived for you - or you can pass in the final `blobs` format directly as bytes. `versionedHashes`, `kzgCommitments` and `kzgProofs` are either derived or taken from the values passed in.
+
+For manually deriving commitments, proofs and versioned hashes, there are dedicated helpers available in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) package.
 
 #### Serialization
 
@@ -445,10 +454,15 @@ Here is an example of signing txs with `@ledgerhq/hw-app-eth` with `v6.45.4` and
 ```ts
 // examples/ledgerSigner.mts
 
-import { Chain, Common, Sepolia } from '@ethereumjs/common'
-import { createLegacyTx, createFeeMarket1559Tx, type LegacyTx, type FeeMarket1559Tx, type LegacyTxData, type FeeMarketEIP1559TxData } from '@ethereumjs/tx'
-import { bytesToHex } from '@ethereumjs/util'
+import { Common, Sepolia } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
+import {
+  type FeeMarketEIP1559TxData,
+  type LegacyTxData,
+  createFeeMarket1559Tx,
+  createLegacyTx,
+} from '@ethereumjs/tx'
+import { bytesToHex } from '@ethereumjs/util'
 import Eth from '@ledgerhq/hw-app-eth'
 import TransportNodeHid from '@ledgerhq/hw-transport-node-hid'
 
@@ -460,48 +474,57 @@ const common = new Common({ chain: Sepolia })
 const bip32Path = "44'/60'/0'/0/0"
 
 const legacyTxData: LegacyTxData = {
-    nonce: '0x0',
-    gasPrice: '0x09184e72a000',
-    gasLimit: '0x2710',
-    to: '0x0000000000000000000000000000000000000000',
-    value: '0x00',
-    data: '0x7f7465737432000000000000000000000000000000000000000000000000000000600057',
+  nonce: '0x0',
+  gasPrice: '0x09184e72a000',
+  gasLimit: '0x2710',
+  to: '0x0000000000000000000000000000000000000000',
+  value: '0x00',
+  data: '0x7f7465737432000000000000000000000000000000000000000000000000000000600057',
 }
 
 const eip1559TxData: FeeMarketEIP1559TxData = {
-    data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-    gasLimit: '0x02625a00',
-    maxPriorityFeePerGas: '0x01',
-    maxFeePerGas: '0xff',
-    nonce: '0x00',
-    to: '0xcccccccccccccccccccccccccccccccccccccccc',
-    value: '0x0186a0',
-    accessList: [],
-    type: '0x02',
+  data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+  gasLimit: '0x02625a00',
+  maxPriorityFeePerGas: '0x01',
+  maxFeePerGas: '0xff',
+  nonce: '0x00',
+  to: '0xcccccccccccccccccccccccccccccccccccccccc',
+  value: '0x0186a0',
+  accessList: [],
+  type: '0x02',
 }
 
 const run = async () => {
-    // Signing a legacy tx
-    const tx1 = createLegacyTx(legacyTxData, { common })
-    const unsignedTx1 = tx1.getMessageToSign()
-    // Ledger signTransaction API expects it to be serialized
-    // Ledger returns unprefixed hex strings without 0x for v, r, s values
-    const { v, r, s } = await eth.signTransaction(bip32Path, bytesToHex(RLP.encode(unsignedTx1)).slice(2), null)
-    const signedTx1 = tx1.addSignature(BigInt(`0x${v}`), BigInt(`0x${r}`), BigInt(`0x${s}`))
-    const from = signedTx1.getSenderAddress().toString()
-    console.log(`signedTx: ${bytesToHex(tx1.serialize())}\nfrom: ${from}`)
+  // Signing a legacy tx
+  const tx1 = createLegacyTx(legacyTxData, { common })
+  const unsignedTx1 = tx1.getMessageToSign()
+  // Ledger signTransaction API expects it to be serialized
+  // Ledger returns unprefixed hex strings without 0x for v, r, s values
+  const { v, r, s } = await eth.signTransaction(
+    bip32Path,
+    bytesToHex(RLP.encode(unsignedTx1)).slice(2),
+    null,
+  )
+  const signedTx1 = tx1.addSignature(BigInt(`0x${v}`), BigInt(`0x${r}`), BigInt(`0x${s}`))
+  const from = signedTx1.getSenderAddress().toString()
+  console.log(`signedTx: ${bytesToHex(tx1.serialize())}\nfrom: ${from}`)
 
-    // Signing a 1559 tx
-    const tx2 = createFeeMarket1559Tx(eip1559TxData, { common })
-    // Ledger returns unprefixed hex strings without 0x for v, r, s values
-    const unsignedTx2 = tx2.getMessageToSign()
-    const { v2, r2, s2 } = await eth.signTransaction(bip32Path, bytesToHex(unsignedTx2).slice(2), null)
-    const signedTx2 = tx2.addSignature(BigInt(`0x${v2}`), BigInt(`0x${r2}`), BigInt(`0x${s2}`))
-    const from2 = signedTx2.getSenderAddress().toString()
-    console.log(`signedTx: ${bytesToHex(tx2.serialize())}\nfrom: ${from2}`)
+  // Signing a 1559 tx
+  const tx2 = createFeeMarket1559Tx(eip1559TxData, { common })
+  // Ledger returns unprefixed hex strings without 0x for v, r, s values
+  const unsignedTx2 = tx2.getMessageToSign()
+  const { v2, r2, s2 } = await eth.signTransaction(
+    bip32Path,
+    bytesToHex(unsignedTx2).slice(2),
+    null,
+  )
+  const signedTx2 = tx2.addSignature(BigInt(`0x${v2}`), BigInt(`0x${r2}`), BigInt(`0x${s2}`))
+  const from2 = signedTx2.getSenderAddress().toString()
+  console.log(`signedTx: ${bytesToHex(tx2.serialize())}\nfrom: ${from2}`)
 }
 
 run()
+
 ```
 
 ## API
@@ -530,7 +553,7 @@ Using ESM will give you additional advantages over CJS beyond browser usage like
 
 ## EthereumJS
 
-The `EthereumJS` GitHub organization and its repositories are managed by the Ethereum Foundation JavaScript team, see our [website](https://ethereumjs.github.io/) for a team introduction. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
+The `EthereumJS` GitHub organization and its repositories are managed by members of the former Ethereum Foundation JavaScript team and the broader Ethereum community. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
 
 ## License
 

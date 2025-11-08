@@ -6,7 +6,7 @@
 
 # Interface: HeaderData
 
-Defined in: [types.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L90)
+Defined in: [types.ts:87](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L87)
 
 A block header's data.
 
@@ -16,7 +16,7 @@ A block header's data.
 
 > `optional` **baseFeePerGas**: `BigIntLike`
 
-Defined in: [types.ts:106](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L106)
+Defined in: [types.ts:103](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L103)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: [types.ts:106](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **blobGasUsed**: `BigIntLike`
 
-Defined in: [types.ts:108](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L108)
+Defined in: [types.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L105)
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: [types.ts:108](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **coinbase**: `AddressLike`
 
-Defined in: [types.ts:93](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L93)
+Defined in: [types.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L90)
 
 ***
 
@@ -40,7 +40,7 @@ Defined in: [types.ts:93](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 > `optional` **difficulty**: `BigIntLike`
 
-Defined in: [types.ts:98](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L98)
+Defined in: [types.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L95)
 
 ***
 
@@ -48,7 +48,7 @@ Defined in: [types.ts:98](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 > `optional` **excessBlobGas**: `BigIntLike`
 
-Defined in: [types.ts:109](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L109)
+Defined in: [types.ts:106](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L106)
 
 ***
 
@@ -56,7 +56,7 @@ Defined in: [types.ts:109](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **extraData**: `BytesLike`
 
-Defined in: [types.ts:103](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L103)
+Defined in: [types.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L100)
 
 ***
 
@@ -64,7 +64,7 @@ Defined in: [types.ts:103](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **gasLimit**: `BigIntLike`
 
-Defined in: [types.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L100)
+Defined in: [types.ts:97](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L97)
 
 ***
 
@@ -72,7 +72,7 @@ Defined in: [types.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **gasUsed**: `BigIntLike`
 
-Defined in: [types.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L101)
+Defined in: [types.ts:98](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L98)
 
 ***
 
@@ -80,7 +80,7 @@ Defined in: [types.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **logsBloom**: `BytesLike`
 
-Defined in: [types.ts:97](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L97)
+Defined in: [types.ts:94](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L94)
 
 ***
 
@@ -88,7 +88,7 @@ Defined in: [types.ts:97](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 > `optional` **mixHash**: `BytesLike`
 
-Defined in: [types.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L104)
+Defined in: [types.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L101)
 
 ***
 
@@ -96,7 +96,7 @@ Defined in: [types.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **nonce**: `BytesLike`
 
-Defined in: [types.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L105)
+Defined in: [types.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L102)
 
 ***
 
@@ -104,7 +104,7 @@ Defined in: [types.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **number**: `BigIntLike`
 
-Defined in: [types.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L99)
+Defined in: [types.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L96)
 
 ***
 
@@ -112,7 +112,7 @@ Defined in: [types.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 > `optional` **parentBeaconBlockRoot**: `BytesLike`
 
-Defined in: [types.ts:110](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L110)
+Defined in: [types.ts:107](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L107)
 
 ***
 
@@ -120,7 +120,7 @@ Defined in: [types.ts:110](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **parentHash**: `BytesLike`
 
-Defined in: [types.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L91)
+Defined in: [types.ts:88](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L88)
 
 ***
 
@@ -128,7 +128,7 @@ Defined in: [types.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 > `optional` **receiptTrie**: `BytesLike`
 
-Defined in: [types.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L96)
+Defined in: [types.ts:93](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L93)
 
 ***
 
@@ -136,7 +136,7 @@ Defined in: [types.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 > `optional` **requestsHash**: `BytesLike`
 
-Defined in: [types.ts:111](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L111)
+Defined in: [types.ts:108](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L108)
 
 ***
 
@@ -144,7 +144,7 @@ Defined in: [types.ts:111](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **stateRoot**: `BytesLike`
 
-Defined in: [types.ts:94](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L94)
+Defined in: [types.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L91)
 
 ***
 
@@ -152,7 +152,7 @@ Defined in: [types.ts:94](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 > `optional` **timestamp**: `BigIntLike`
 
-Defined in: [types.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L102)
+Defined in: [types.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L99)
 
 ***
 
@@ -160,7 +160,7 @@ Defined in: [types.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **transactionsTrie**: `BytesLike`
 
-Defined in: [types.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L95)
+Defined in: [types.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L92)
 
 ***
 
@@ -168,7 +168,7 @@ Defined in: [types.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 > `optional` **uncleHash**: `BytesLike`
 
-Defined in: [types.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L92)
+Defined in: [types.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L89)
 
 ***
 
@@ -176,4 +176,4 @@ Defined in: [types.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 > `optional` **withdrawalsRoot**: `BytesLike`
 
-Defined in: [types.ts:107](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L107)
+Defined in: [types.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L104)

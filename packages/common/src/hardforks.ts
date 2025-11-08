@@ -143,9 +143,9 @@ export const hardforksDict: HardforksDict = {
     eips: [3651, 3855, 3860, 4895],
   },
   /**
-   * Description: Next feature hardfork after shanghai, includes proto-danksharding EIP 4844 blobs
-   * (still WIP hence not for production use), transient storage opcodes, parent beacon block root
-   * availability in EVM, selfdestruct only in same transaction, and blob base fee opcode
+   * Description: Next feature hardfork after shanghai, includes proto-danksharding EIP 4844 blobs,
+   * transient storage opcodes, parent beacon block root availability in EVM, selfdestruct only in
+   * same transaction, and blob base fee opcode
    * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/cancun.md
    * Status     : Final
    */
@@ -153,67 +153,45 @@ export const hardforksDict: HardforksDict = {
     eips: [1153, 4844, 4788, 5656, 6780, 7516],
   },
   /**
-   * Description: Next feature hardfork after cancun, internally used for pectra testing/implementation (incomplete/experimental)
-   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/prague.md
+   * Description: Next feature hardfork after cancun including EIP-7702 account abstraction + other EIPs
+   * URL        : https://eips.ethereum.org/EIPS/eip-7600
    * Status     : Final
    */
   prague: {
     eips: [2537, 2935, 6110, 7002, 7251, 7623, 7685, 7691, 7702],
   },
   /**
-   * Description: Next feature hardfork after prague, internally used for peerdas/EOF testing/implementation (incomplete/experimental)
-   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/osaka.md
+   * Description: Next feature hardfork after prague (headliner: PeerDAS)
+   * URL        : https://eips.ethereum.org/EIPS/eip-7607
    * Status     : Final
    */
   osaka: {
-    eips: [663, 3540, 3670, 4200, 4750, 5450, 6206, 7069, 7480, 7594, 7620, 7692, 7698, 7883],
+    eips: [7594, 7823, 7825, 7883, 7939, 7951, 7918],
   },
   /**
-   * Description: Next feature hardfork after osaka, internally used for verkle testing/implementation (incomplete/experimental)
-   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/verkle.md
-   * Status     : Experimental
-   */
-  verkle: {
-    eips: [7709, 4762, 6800],
-  },
-  /**
-   * Description: HF to update the blob target, max and updateFraction
-   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/bpo1.md
-   * Status     : Experimental
+   * Description: HF to update the blob target, max and updateFraction (see also EIP-7892)
+   * URL        : TBD
+   * Status     : Final
    */
   bpo1: {
     eips: [],
+    params: {
+      target: 10,
+      max: 15,
+      blobGasPriceUpdateFraction: 8346193,
+    },
   },
   /**
-   * Description: HF to update the blob target, max and updateFraction
-   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/bpo2.md
-   * Status     : Experimental
+   * Description: HF to update the blob target, max and updateFraction (see also EIP-7892)
+   * URL        : TBD
+   * Status     : Final
    */
   bpo2: {
     eips: [],
-  },
-  /**
-   * Description: HF to update the blob target, max and updateFraction
-   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/bpo3.md
-   * Status     : Experimental
-   */
-  bpo3: {
-    eips: [],
-  },
-  /**
-   * Description: HF to update the blob target, max and updateFraction
-   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/bpo4.md
-   * Status     : Experimental
-   */
-  bpo4: {
-    eips: [],
-  },
-  /**
-   * Description: HF to update the blob target, max and updateFraction
-   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/bpo5.md
-   * Status     : Experimental
-   */
-  bpo5: {
-    eips: [],
+    params: {
+      target: 14,
+      max: 21,
+      blobGasPriceUpdateFraction: 11684671,
+    },
   },
 }

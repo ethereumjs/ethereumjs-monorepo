@@ -8,7 +8,7 @@
 
 > **HardforkConfig** = `object`
 
-Defined in: [types.ts:176](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L176)
+Defined in: [types.ts:175](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L175)
 
 ## Properties
 
@@ -16,7 +16,7 @@ Defined in: [types.ts:176](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **consensus**: `ConsensusConfig`
 
-Defined in: [types.ts:178](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L178)
+Defined in: [types.ts:177](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L177)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: [types.ts:178](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **eips**: `number`[]
 
-Defined in: [types.ts:177](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L177)
+Defined in: [types.ts:176](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L176)
 
 ***
 
@@ -32,4 +32,4 @@ Defined in: [types.ts:177](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **params**: [`ParamsConfig`](ParamsConfig.md)
 
-Defined in: [types.ts:179](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L179)
+Defined in: [types.ts:178](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L178)

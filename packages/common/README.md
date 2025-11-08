@@ -364,6 +364,7 @@ The following EIPs are currently supported:
 - [EIP-7516](https://eips.ethereum.org/EIPS/eip-7516) - BLOBBASEFEE opcode (Cancun)
 - [EIP-7623](https://eips.ethereum.org/EIPS/eip-7623) - Increase calldata cost (Prague)
 - [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) - General purpose execution layer requests (Prague)
+- [EIP-7918](https://eips.ethereum.org/EIPS/eip-7918) - Blob base fee bounded by execution cost (Osaka)
 - [EIP-7691](https://eips.ethereum.org/EIPS/eip-7691) - Blob throughput increase (Prague)
 - [EIP-7692](https://eips.ethereum.org/EIPS/eip-7692) - EVM Object Format (EOF) v1 (`experimental`)
 - [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) - Set EOA account code (Prague)
@@ -371,7 +372,7 @@ The following EIPs are currently supported:
 
 ## EthereumJS
 
-The `EthereumJS` GitHub organization and its repositories are managed by the Ethereum Foundation JavaScript team, see our [website](https://ethereumjs.github.io/) for a team introduction. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
+The `EthereumJS` GitHub organization and its repositories are managed by members of the former Ethereum Foundation JavaScript team and the broader Ethereum community. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
 
 ## License
 

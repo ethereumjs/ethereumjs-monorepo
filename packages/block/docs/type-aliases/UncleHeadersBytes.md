@@ -8,4 +8,4 @@
 
 > **UncleHeadersBytes** = `Uint8Array`[][]
 
-Defined in: [types.ts:154](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L154)
+Defined in: [types.ts:137](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L137)

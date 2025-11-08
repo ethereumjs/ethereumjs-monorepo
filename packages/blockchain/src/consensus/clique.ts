@@ -30,7 +30,9 @@ import type { Consensus, ConsensusOptions } from '../types.ts'
 const debug = debugDefault('blockchain:clique')
 
 // Magic nonce number to vote on adding a new signer
-export const CLIQUE_NONCE_AUTH = hexToBytes('0xffffffffffffffff')
+export const CLIQUE_NONCE_AUTH = new Uint8Array(
+  hexToBytes('0xffffffffffffffff').buffer as ArrayBuffer,
+)
 // Magic nonce number to vote on removing a signer.
 export const CLIQUE_NONCE_DROP = new Uint8Array(8)
 

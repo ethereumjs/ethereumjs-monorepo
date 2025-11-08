@@ -1,17 +1,18 @@
 import type { PrefixedHexString } from '@ethereumjs/util'
-import type { ChunkAccessEvent } from './verkleAccessWitness.ts'
+import type { BinaryChunkAccessEvent } from './binaryTreeAccessWitness.ts'
+
 export class ChunkCache {
-  cache: Map<PrefixedHexString, ChunkAccessEvent>
+  cache: Map<PrefixedHexString, BinaryChunkAccessEvent>
 
   constructor() {
-    this.cache = new Map<PrefixedHexString, ChunkAccessEvent>()
+    this.cache = new Map<PrefixedHexString, BinaryChunkAccessEvent>()
   }
 
-  set(stemKey: PrefixedHexString, accessedStem: ChunkAccessEvent) {
+  set(stemKey: PrefixedHexString, accessedStem: BinaryChunkAccessEvent) {
     this.cache.set(stemKey, accessedStem)
   }
 
-  get(stemHex: PrefixedHexString): ChunkAccessEvent | undefined {
+  get(stemHex: PrefixedHexString): BinaryChunkAccessEvent | undefined {
     return this.cache.get(stemHex)
   }
 
@@ -19,8 +20,8 @@ export class ChunkCache {
     this.cache.delete(stemHex)
   }
 
-  commit(): [PrefixedHexString, ChunkAccessEvent][] {
-    const items: [PrefixedHexString, ChunkAccessEvent][] = Array.from(this.cache.entries())
+  commit(): [PrefixedHexString, BinaryChunkAccessEvent][] {
+    const items: [PrefixedHexString, BinaryChunkAccessEvent][] = Array.from(this.cache.entries())
     this.clear()
     return items
   }

@@ -10,7 +10,7 @@ import type { SimpleStateManagerOpts } from './index.ts'
 
 /**
  * Simple and dependency-free state manager for basic state access use cases
- * where a merkle-patricia or verkle tree backed state manager is too heavy-weight.
+ * where a merkle-patricia or binary tree backed state manager is too heavy-weight.
  *
  * This state manager comes with the basic state access logic for
  * accounts, storage and code (put* and get* methods) as well as a simple

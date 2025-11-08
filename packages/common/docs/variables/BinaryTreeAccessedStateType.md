@@ -8,9 +8,9 @@
 
 > **BinaryTreeAccessedStateType**: `object`
 
-Defined in: [interfaces.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L73)
+Defined in: [interfaces.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L72)
 
-## Type declaration
+## Type Declaration
 
 ### BasicData
 

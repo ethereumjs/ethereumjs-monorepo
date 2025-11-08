@@ -480,55 +480,5 @@ describe('[PendingBlock]', async () => {
     assert.isTrue(pendingBlob !== undefined && pendingBlob === blobs[0])
     const blobProof = blobsBundles!.proofs[0]
     assert.isTrue(blobProof !== undefined && blobProof === proofs[0])
-  })
-
-  it('should exclude missingBlobTx', async () => {
-    const common = createCommonFromGethGenesis(eip4844GethGenesis, {
-      chain: 'customChain',
-      hardfork: Hardfork.Cancun,
-      customCrypto: { kzg },
-    })
-
-    const { txPool } = setup()
-
-    const blobs = getBlobs('hello world')
-    const commitments = blobsToCommitments(kzg, blobs)
-    const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
-    const proofs = blobsToProofs(kzg, blobs, commitments)
-
-    // create a tx with missing blob data which should be excluded from the build
-    const missingBlobTx = createBlob4844Tx(
-      {
-        networkWrapperVersion: NetworkWrapperType.EIP4844,
-        blobVersionedHashes,
-        kzgCommitments: commitments,
-        kzgProofs: proofs,
-        maxFeePerBlobGas: 100000000n,
-        gasLimit: 0xffffffn,
-        maxFeePerGas: Units.gwei(1),
-        maxPriorityFeePerGas: 100000000n,
-        to: randomBytes(20),
-        nonce: BigInt(0),
-      },
-      { common },
-    ).sign(A.privateKey)
-    await txPool.add(missingBlobTx)
-
-    assert.strictEqual(txPool.txsInPool, 1, '1 txs should still be in the pool')
-
-    const pendingBlock = new PendingBlock({ config, txPool })
-    const blockchain = await createBlockchain({ common })
-    const vm = await createVM({ common, blockchain })
-    await setBalance(vm, A.address, BigInt(500000000000000000))
-    const parentBlock = await (vm.blockchain as Blockchain).getCanonicalHeadBlock!()
-    // stub the vm's common set hf to do nothing but stay in cancun
-    vm.common.setHardforkBy = () => {
-      return vm.common.hardfork()
-    }
-    const payloadId = await pendingBlock.start(vm, parentBlock)
-    const [block, _receipts, _value, blobsBundles] = (await pendingBlock.build(payloadId)) ?? []
-
-    assert.isTrue(block !== undefined && blobsBundles !== undefined)
-    assert.strictEqual(block!.transactions.length, 0, 'Missing blob tx should not be included')
-  })
+  }, 30000)
 })

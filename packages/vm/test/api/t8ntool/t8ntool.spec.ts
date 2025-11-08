@@ -83,8 +83,9 @@ describe('trace tests', async () => {
   })
   it('should produce a trace of the correct length', async () => {
     const common = new Common({
-      hardfork: Hardfork.Osaka,
+      hardfork: Hardfork.Prague,
       chain: Mainnet,
+      eips: [663, 3540, 3670, 4200, 4750, 5450, 6206, 7069, 7480, 7620, 7692, 7698],
     })
     const sm = new MerkleStateManager({ common })
     const vm = await createVM({ common, stateManager: sm })
@@ -120,8 +121,9 @@ describe('trace tests', async () => {
   })
   it('should execute an EOF contract with 2 code sections linked by CALLF', async () => {
     const common = new Common({
-      hardfork: Hardfork.Osaka,
+      hardfork: Hardfork.Prague,
       chain: Mainnet,
+      eips: [663, 3540, 3670, 4200, 4750, 5450, 6206, 7069, 7480, 7620, 7692, 7698],
     })
     const sm = new MerkleStateManager({ common })
     const vm = await createVM({ common, stateManager: sm })

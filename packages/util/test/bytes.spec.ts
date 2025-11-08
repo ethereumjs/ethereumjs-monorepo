@@ -64,6 +64,7 @@ describe('unpadBytes', () => {
   })
   it('should throw if input is not a Uint8Array', () => {
     assert.throws(function () {
+      // @ts-expect-error -- This syntax is not allowed when 'erasableSyntaxOnly' is enabled.
       unpadBytes((<unknown>'0000000006600') as Uint8Array)
     })
   })
@@ -108,6 +109,7 @@ describe('setLengthLeft', () => {
   })
   it('should throw if input is not a Uint8Array', () => {
     assert.throws(function () {
+      // @ts-expect-error -- This syntax is not allowed when 'erasableSyntaxOnly' is enabled.
       setLengthLeft((<unknown>[9, 9]) as Uint8Array, 3)
     })
   })
@@ -126,6 +128,7 @@ describe('setLengthRight', () => {
   })
   it('should throw if input is not a Uint8Array', () => {
     assert.throws(function () {
+      // @ts-expect-error -- This syntax is not allowed when 'erasableSyntaxOnly' is enabled.
       setLengthRight((<unknown>[9, 9]) as Uint8Array, 3)
     })
   })

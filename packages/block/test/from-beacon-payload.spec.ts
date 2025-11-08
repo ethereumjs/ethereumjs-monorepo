@@ -6,10 +6,8 @@ import { assert, describe, expect, it } from 'vitest'
 import { createBlockFromBeaconPayloadJSON, createBlockHeader } from '../src/index.ts'
 
 import { eip4844GethGenesis } from '@ethereumjs/testdata'
-import { payloadKaustinenData } from './testdata/payload-kaustinen.ts'
 import { payloadSlot87335Data } from './testdata/payload-slot-87335.ts'
 import { payloadSlot87475Data } from './testdata/payload-slot-87475.ts'
-import { verkleKaustinenGethGenesis } from './testdata/testnetVerkleKaustinen.ts'
 
 const kzg = new microEthKZG(trustedSetup)
 describe('[fromExecutionPayloadJSON]: 4844 devnet 5', () => {
@@ -67,28 +65,5 @@ describe('[fromExecutionPayloadJSON]: 4844 devnet 5', () => {
       const parentHeader = createBlockHeader({ excessBlobGas: BigInt(0) }, { common })
       block.validateBlobTransactions(parentHeader)
     }, 'should fail constructing the block').rejects.toThrow('block excessBlobGas mismatch')
-  })
-})
-
-describe('[fromExecutionPayloadJSON]: kaustinen', () => {
-  const network = 'kaustinen'
-
-  // safely change chainId without modifying underlying json
-  const common = createCommonFromGethGenesis(verkleKaustinenGethGenesis, {
-    chain: network,
-    eips: [6800],
-  })
-  it('reconstruct kaustinen block', async () => {
-    assert.isTrue(common.isActivatedEIP(6800), 'verkle eip should be activated')
-    const block = await createBlockFromBeaconPayloadJSON(payloadKaustinenData, {
-      common,
-    })
-    // the witness object in payload has camel casing for now
-    // the current block hash doesn't include witness data so deep match is required
-    assert.deepEqual(
-      block.executionWitness,
-      payloadKaustinenData.execution_witness,
-      'execution witness should match',
-    )
   })
 })

@@ -336,14 +336,6 @@ export const eipsDict: EIPsDict = {
     minimumHardfork: Hardfork.London,
   },
   /**
-   * Description : Ethereum state using a unified verkle tree (experimental)
-   * URL         : https://eips.ethereum.org/EIPS/eip-6800
-   * Status      : Draft
-   */
-  6800: {
-    minimumHardfork: Hardfork.London,
-  },
-  /**
    * Description : Execution layer triggerable withdrawals (experimental)
    * URL         : https://github.com/ethereum/EIPs/blob/3b5fcad6b35782f8aaeba7d4ac26004e8fbd720f/EIPS/eip-7002.md
    * Status      : Review
@@ -443,6 +435,15 @@ export const eipsDict: EIPsDict = {
     requiredEIPs: [4844],
   },
   /**
+   * Description : Blob base fee bounded by execution cost
+   * URL         : https://eips.ethereum.org/EIPS/eip-7918
+   * Status      : Last Call
+   */
+  7918: {
+    minimumHardfork: Hardfork.Paris,
+    requiredEIPs: [4844],
+  },
+  /**
    * Description : EVM Object Format (EOFv1) Meta
    * URL         : https://github.com/ethereum/EIPs/blob/4153e95befd0264082de3c4c2fe3a85cc74d3152/EIPS/eip-7692.md
    * Status      : Draft
@@ -471,6 +472,14 @@ export const eipsDict: EIPsDict = {
     requiredEIPs: [2718, 2929, 2930],
   },
   /**
+   * Description : Set upper bounds for MODEXP
+   * URL         : https://eips.ethereum.org/EIPS/eip-7823
+   * Status      : Review
+   */
+  7823: {
+    minimumHardfork: Hardfork.Byzantium,
+  },
+  /**
    * Description : Use historical block hashes saved in state for BLOCKHASH
    * URL         : https://eips.ethereum.org/EIPS/eip-7709
    * Status      : Final
@@ -478,6 +487,15 @@ export const eipsDict: EIPsDict = {
   7709: {
     minimumHardfork: Hardfork.Chainstart,
     requiredEIPs: [2935],
+  },
+  /**
+   * Description : Transaction Gas Limit Cap
+   * URL         : https://eips.ethereum.org/EIPS/eip-7825
+   * Status      : Draft
+   */
+  7825: {
+    minimumHardfork: Hardfork.Chainstart,
+    requiredEIPs: [],
   },
   /**
    * Description : Ethereum state using a unified binary tree (experimental)
@@ -494,5 +512,32 @@ export const eipsDict: EIPsDict = {
    */
   7883: {
     minimumHardfork: Hardfork.Chainstart,
+  },
+  /**
+   * Description : Count leading zeros (CLZ) opcode
+   * URL         : https://eips.ethereum.org/EIPS/eip-7939
+   * Status      : Draft
+   */
+  7939: {
+    minimumHardfork: Hardfork.Chainstart,
+    requiredEIPs: [],
+  },
+  /**
+   * Description : Precompile for secp256r1 Curve Support
+   * URL         : https://eips.ethereum.org/EIPS/eip-7951
+   * Status      : Draft
+   */
+  7951: {
+    minimumHardfork: Hardfork.Chainstart,
+    requiredEIPs: [],
+  },
+  /**
+   * Description : RLP Execution Block Size Limit
+   * URL         : https://eips.ethereum.org/EIPS/eip-7934
+   * Status      : Last Call
+   */
+  7934: {
+    minimumHardfork: Hardfork.Chainstart,
+    requiredEIPs: [],
   },
 }

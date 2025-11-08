@@ -6,7 +6,7 @@ import type { WithdrawalData } from '@ethereumjs/util'
 
 const common = new Common({ chain: Mainnet })
 
-const withdrawal = <WithdrawalData>{
+const withdrawal: WithdrawalData = {
   index: BigInt(0),
   validatorIndex: BigInt(0),
   address: new Address(hexToBytes(`0x${'20'.repeat(20)}`)),

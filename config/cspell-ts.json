@@ -43,8 +43,6 @@
     "ethash",
     "KECCAK",
     "keccak",
-    "Verkle",
-    "verkle",
     "maxblob",
     "Randao",
     "hardforks",
@@ -642,6 +640,8 @@
     "hoodi",
     "peerdas",
     "getpayload",
-    "ckzg"
+    "ckzg",
+    "Damgård",
+    "viem"
   ]
 }

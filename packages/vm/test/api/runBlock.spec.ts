@@ -7,7 +7,7 @@ import {
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { type MerkleStateManager, StatefulVerkleStateManager } from '@ethereumjs/statemanager'
+import { type MerkleStateManager } from '@ethereumjs/statemanager'
 import { customChainConfig, goerliChainConfig } from '@ethereumjs/testdata'
 import {
   Capability,
@@ -23,7 +23,6 @@ import {
   BIGINT_1,
   KECCAK256_RLP,
   bigIntToUnpaddedBytes,
-  bytesToHex,
   concatBytes,
   createAddressFromString,
   createZeroAddress,
@@ -35,7 +34,6 @@ import {
 } from '@ethereumjs/util'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { secp256k1 } from 'ethereum-cryptography/secp256k1'
-import * as verkle from 'micro-eth-signer/verkle.js'
 import { assert, describe, it } from 'vitest'
 
 import { createVM, runBlock } from '../../src/index.ts'
@@ -50,7 +48,6 @@ import type {
   EOACode7702AuthorizationListBytesItem,
   NestedUint8Array,
   PrefixedHexString,
-  VerkleExecutionWitness,
 } from '@ethereumjs/util'
 import type { VM } from '../../src/index.ts'
 import type {
@@ -707,54 +704,5 @@ describe('runBlock() -> tx types', async () => {
     await runBlock(vm, { block, skipBlockValidation: true, generate: true })
     const storage = await vm.stateManager.getStorage(defaultAuthAddr, new Uint8Array(32))
     assert.isTrue(equalsBytes(storage, new Uint8Array([2])))
-  })
-})
-
-describe.skip('run a verkle block', () => {
-  it('should execute a verkle block and produce an executionWitness', async () => {
-    const verkleJSONWithoutValue = (await import('./testdata/verkleBlock.ts')).block
-    const verkleJSONWithValue = (await import('./testdata/verkleBlockWithValue.ts')).block
-    const verkleBlocks = [verkleJSONWithoutValue, verkleJSONWithValue]
-
-    const common = new Common({
-      chain: Mainnet,
-      customCrypto: { verkle },
-      hardfork: Hardfork.Shanghai,
-      eips: [2935, 3607, 6800],
-    })
-
-    for (const verkleJSON of verkleBlocks) {
-      const genesisRlp = hexToBytes(verkleJSON.genesisRLP as PrefixedHexString)
-      const genesisBlock = createBlockFromRLP(genesisRlp, { common })
-
-      const blockRlp = hexToBytes(verkleJSON.blocks[0].rlp as PrefixedHexString)
-      const block = createBlockFromRLP(blockRlp, { common })
-      const sm = new StatefulVerkleStateManager({ common })
-      await sm['_trie'].createRootNode()
-      const blockchain = await createBlockchain({ common })
-      const vm = await setupVM({
-        common,
-        stateManager: sm,
-        blockchain,
-        genesisBlock,
-      })
-      await setupPreConditions(vm.stateManager, verkleJSON)
-      const witness = {
-        ...verkleJSON.blocks[0].witness,
-        parentStateRoot: bytesToHex(genesisBlock.header.stateRoot),
-      } as VerkleExecutionWitness
-
-      vm.stateManager.initVerkleExecutionWitness?.(block.header.number, witness)
-      assert.strictEqual(bytesToHex(genesisBlock.hash()), verkleJSON.genesisBlockHeader.hash)
-      assert.strictEqual(
-        bytesToHex(await vm.stateManager.getStateRoot()),
-        verkleJSON.genesisBlockHeader.stateRoot,
-        'genesis state root matches',
-      )
-      await runBlock(vm, {
-        block,
-        skipBlockValidation: true,
-      })
-    }
   })
 })

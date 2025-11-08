@@ -49,21 +49,11 @@ Defaults to `false`.
 
 ***
 
-### parentStateRoot?
-
-> `optional` **parentStateRoot**: `Uint8Array`\<`ArrayBufferLike`\>
-
-Defined in: [vm/src/types.ts:280](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L280)
-
-The stateRoot of the parent. Used for verifying the witness proofs in the context of Verkle.
-
-***
-
 ### reportPreimages?
 
 > `optional` **reportPreimages**: `boolean`
 
-Defined in: [vm/src/types.ts:321](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L321)
+Defined in: [vm/src/types.ts:316](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L316)
 
 If true, adds a hashedKey -> preimages mapping of all touched accounts
 to the `RunTxResult` returned.
@@ -84,7 +74,7 @@ Root of the state trie
 
 > `optional` **setHardfork**: `boolean`
 
-Defined in: [vm/src/types.ts:315](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L315)
+Defined in: [vm/src/types.ts:310](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L310)
 
 Set the hardfork either by timestamp (for HFs from Shanghai onwards) or by block number
 for older Hfs.
@@ -97,7 +87,7 @@ Default: `false` (HF is set to whatever default HF is set by the Common instance
 
 > `optional` **skipBalance**: `boolean`
 
-Defined in: [vm/src/types.ts:308](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L308)
+Defined in: [vm/src/types.ts:303](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L303)
 
 If true, checks the balance of the `from` account for the transaction and sets its
 balance equal equal to the upfront cost (gas limit * gas price + transaction value)
@@ -108,7 +98,7 @@ balance equal equal to the upfront cost (gas limit * gas price + transaction val
 
 > `optional` **skipBlockValidation**: `boolean`
 
-Defined in: [vm/src/types.ts:287](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L287)
+Defined in: [vm/src/types.ts:282](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L282)
 
 If true, will skip "Block validation":
 Block validation validates the header (with respect to the blockchain),
@@ -120,7 +110,7 @@ the transactions, the transaction trie and the uncle hash.
 
 > `optional` **skipHardForkValidation**: `boolean`
 
-Defined in: [vm/src/types.ts:292](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L292)
+Defined in: [vm/src/types.ts:287](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L287)
 
 If true, skips the hardfork validation of vm, block
 and tx
@@ -131,7 +121,7 @@ and tx
 
 > `optional` **skipHeaderValidation**: `boolean`
 
-Defined in: [vm/src/types.ts:299](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L299)
+Defined in: [vm/src/types.ts:294](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L294)
 
 if true, will skip "Header validation"
 If the block has been picked from the blockchain to be executed,
@@ -144,6 +134,17 @@ consensus of the chain has moved ahead.
 
 > `optional` **skipNonce**: `boolean`
 
-Defined in: [vm/src/types.ts:303](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L303)
+Defined in: [vm/src/types.ts:298](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L298)
 
 If true, skips the nonce check
+
+***
+
+### validateBlockSize?
+
+> `optional` **validateBlockSize**: `boolean`
+
+Defined in: [vm/src/types.ts:322](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L322)
+
+If true, will validate block size limit (EIP-7934) when validating block data.
+Defaults to false.

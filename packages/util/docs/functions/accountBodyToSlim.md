@@ -6,7 +6,7 @@
 
 # Function: accountBodyToSlim()
 
-> **accountBodyToSlim**(`body`): `Uint8Array`\<`ArrayBuffer`\>[]
+> **accountBodyToSlim**(`body`): `Uint8Array`\<`ArrayBufferLike`\>[]
 
 Defined in: [packages/util/src/account.ts:612](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L612)
 
@@ -18,4 +18,4 @@ Defined in: [packages/util/src/account.ts:612](https://github.com/ethereumjs/eth
 
 ## Returns
 
-`Uint8Array`\<`ArrayBuffer`\>[]
+`Uint8Array`\<`ArrayBufferLike`\>[]

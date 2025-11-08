@@ -18,10 +18,21 @@ import { secp256k1 } from 'ethereum-cryptography/secp256k1'
 import type { LegacyTx } from '../legacy/tx.ts'
 import type { LegacyTxInterface, Transaction } from '../types.ts'
 
+/**
+ * Creates an error message with transaction context
+ * @param tx - The transaction interface
+ * @param msg - The error message
+ * @returns Formatted error message with transaction context
+ */
 export function errorMsg(tx: LegacyTxInterface, msg: string) {
   return `${msg} (${tx.errorStr()})`
 }
 
+/**
+ * Checks if a transaction is signed
+ * @param tx - The transaction interface
+ * @returns true if the transaction is signed
+ */
 export function isSigned(tx: LegacyTxInterface): boolean {
   const { v, r, s } = tx
   if (v === undefined || r === undefined || s === undefined) {
@@ -73,7 +84,13 @@ export function getIntrinsicGas(tx: LegacyTxInterface): bigint {
   const txFee = tx.common.param('txGas')
   let fee = tx.getDataGas()
   if (txFee) fee += txFee
-  if (tx.common.gteHardfork('homestead') && tx.toCreationAddress()) {
+  let isContractCreation = false
+  try {
+    isContractCreation = tx.toCreationAddress()
+  } catch {
+    isContractCreation = false
+  }
+  if (tx.common.gteHardfork('homestead') && isContractCreation) {
     const txCreationFee = tx.common.param('txCreationGas')
     if (txCreationFee) fee += txCreationFee
   }
@@ -93,9 +110,7 @@ export function hash(tx: LegacyTxInterface): Uint8Array {
   const keccakFunction = tx.common.customCrypto.keccak256 ?? keccak256
 
   if (Object.isFrozen(tx)) {
-    if (!tx.cache.hash) {
-      tx.cache.hash = keccakFunction(tx.serialize())
-    }
+    tx.cache.hash ??= keccakFunction(tx.serialize())
     return tx.cache.hash
   }
 

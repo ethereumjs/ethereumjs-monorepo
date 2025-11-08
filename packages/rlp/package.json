@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/rlp",
-  "version": "10.0.0",
+  "version": "10.1.0",
   "description": "Recursive Length Prefix Encoding Module",
   "keywords": ["rlp", "ethereum"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/rlp#readme",
@@ -65,6 +65,7 @@
     "node": ">=18"
   },
   "devDependencies": {
+    "@types/benchmark": "^2.1.5",
     "benchmark": "^2.1.4"
   }
 }

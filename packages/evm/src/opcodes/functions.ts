@@ -391,6 +391,26 @@ export const handlers: Map<number, OpHandler> = new Map([
       runState.stack.push(r)
     },
   ],
+  // 0x1e: CLZ
+  [
+    0x1e,
+    function (runState) {
+      const x = runState.stack.pop()
+
+      // If x is zero, return 256
+      if (x === BIGINT_0) {
+        runState.stack.push(BIGINT_256)
+        return
+      }
+
+      // toString(2) yields a binary string with no leading zeros.
+      // So 256 - binaryStr.length equals the leading-zero count.
+      const binaryStr = x.toString(2)
+
+      const leadingZeros = 256 - binaryStr.length
+      runState.stack.push(BigInt(leadingZeros))
+    },
+  ],
   // 0x20 range - crypto
   // 0x20: KECCAK256
   [

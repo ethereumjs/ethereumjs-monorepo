@@ -9,6 +9,7 @@ env:
 
 jobs:
   test-ethash:
+    if: github.repository == 'ethereumjs/ethereumjs-monorepo'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -17,7 +18,7 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-      
+
       - run: npm ci
         working-directory: ${{github.workspace}}
 
@@ -25,6 +26,7 @@ jobs:
         working-directory: ${{ github.workspace }}/packages/ethash
 
   test-client:
+    if: github.repository == 'ethereumjs/ethereumjs-monorepo'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -33,14 +35,15 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-      
+
       - run: npm ci
         working-directory: ${{github.workspace}}
 
       - run: npm run test
         working-directory: ${{ github.workspace }}/packages/client
-  
+
   test-devp2p:
+    if: github.repository == 'ethereumjs/ethereumjs-monorepo'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -49,14 +52,15 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-      
+
       - run: npm ci
         working-directory: ${{github.workspace}}
 
       - run: npm run test
         working-directory: ${{ github.workspace }}/packages/devp2p
-  
+
   test-wallet:
+    if: github.repository == 'ethereumjs/ethereumjs-monorepo'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -65,25 +69,9 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-      
+
       - run: npm ci
         working-directory: ${{github.workspace}}
 
-      - run: npm run test
+      - run: npm run test:node
         working-directory: ${{ github.workspace }}/packages/wallet
-  
-  test-verkle:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-      
-      - run: npm ci
-        working-directory: ${{github.workspace}}
-
-      - run: npm run test
-        working-directory: ${{ github.workspace }}/packages/verkle

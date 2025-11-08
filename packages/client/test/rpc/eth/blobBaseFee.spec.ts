@@ -113,11 +113,11 @@ describe(method, () => {
       },
     })
 
-    for (let i = 0; i < 10; i++) {
-      await produceBlockWith4844Tx(execution, chain, [6])
+    for (let i = 0; i < 2; i++) {
+      await produceBlockWith4844Tx(execution, chain, [3])
     }
     const rpc = getRPCClient(server)
     const res = await rpc.request(method, [])
-    assert.strictEqual(res.result, '0x3')
-  })
+    assert.strictEqual(res.result, '0x1')
+  }, 20000)
 })

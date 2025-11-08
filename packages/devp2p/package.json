@@ -65,9 +65,9 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/common": "^10.0.0",
-    "@ethereumjs/rlp": "^10.0.0",
-    "@ethereumjs/util": "^10.0.0",
+    "@ethereumjs/common": "^10.1.0",
+    "@ethereumjs/rlp": "^10.1.0",
+    "@ethereumjs/util": "^10.1.0",
     "@scure/base": "^1.2.4",
     "debug": "^4.4.0",
     "ethereum-cryptography": "^3.2.0",
@@ -77,12 +77,12 @@
     "snappyjs": "^0.7.0"
   },
   "devDependencies": {
-    "@ethereumjs/block": "^10.0.0",
-    "@ethereumjs/tx": "^10.0.0",
+    "@ethereumjs/block": "^10.1.0",
+    "@ethereumjs/tx": "^10.1.0",
     "@types/debug": "^4.1.12",
     "@types/k-bucket": "^5.0.4",
     "@types/node": "^22.13.10",
-    "chalk": "^5.4.1",
+    "chalk": "^5.6.2",
     "testdouble": "^3.20.2"
   },
   "engines": {

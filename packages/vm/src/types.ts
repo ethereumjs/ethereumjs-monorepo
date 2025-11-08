@@ -275,11 +275,6 @@ export interface RunBlockOpts {
   generate?: boolean
 
   /**
-   * The stateRoot of the parent. Used for verifying the witness proofs in the context of Verkle.
-   */
-  parentStateRoot?: Uint8Array
-
-  /**
    * If true, will skip "Block validation":
    * Block validation validates the header (with respect to the blockchain),
    * the transactions, the transaction trie and the uncle hash.
@@ -319,6 +314,12 @@ export interface RunBlockOpts {
    * to the `RunTxResult` returned.
    */
   reportPreimages?: boolean
+
+  /**
+   * If true, will validate block size limit (EIP-7934) when validating block data.
+   * Defaults to false.
+   */
+  validateBlockSize?: boolean
 }
 
 /**

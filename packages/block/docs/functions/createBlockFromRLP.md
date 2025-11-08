@@ -8,7 +8,7 @@
 
 > **createBlockFromRLP**(`serialized`, `opts?`): [`Block`](../classes/Block.md)
 
-Defined in: [block/constructors.ts:218](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block/constructors.ts#L218)
+Defined in: [block/constructors.ts:186](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block/constructors.ts#L186)
 
 Static constructor to create a block from a RLP-serialized block
 

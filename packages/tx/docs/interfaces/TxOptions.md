@@ -6,7 +6,7 @@
 
 # Interface: TxOptions
 
-Defined in: [types.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L57)
+Defined in: [types.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L59)
 
 The options for initializing a [Transaction](Transaction.md).
 
@@ -16,7 +16,7 @@ The options for initializing a [Transaction](Transaction.md).
 
 > `optional` **allowUnlimitedInitCodeSize**: `boolean`
 
-Defined in: [types.ts:103](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L103)
+Defined in: [types.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L105)
 
 Allows unlimited contract code-size init while debugging. This (partially) disables EIP-3860.
 Gas cost for initcode size analysis will still be charged. Use with caution.
@@ -27,7 +27,7 @@ Gas cost for initcode size analysis will still be charged. Use with caution.
 
 > `optional` **common**: `Common`
 
-Defined in: [types.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L68)
+Defined in: [types.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L70)
 
 A Common object defining the chain and hardfork for the transaction.
 
@@ -44,7 +44,7 @@ Current default hardfork: `istanbul`
 
 > `optional` **freeze**: `boolean`
 
-Defined in: [types.ts:97](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L97)
+Defined in: [types.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L99)
 
 A transaction object by default gets frozen along initialization. This gives you
 strong additional security guarantees on the consistency of the tx parameters.
@@ -62,7 +62,7 @@ Default: true
 
 > `optional` **params**: `ParamsDict`
 
-Defined in: [types.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L85)
+Defined in: [types.ts:87](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L87)
 
 Tx parameters sorted by EIP can be found in the exported `paramsTx` dictionary,
 which is internally passed to the associated `@ethereumjs/common` instance which
