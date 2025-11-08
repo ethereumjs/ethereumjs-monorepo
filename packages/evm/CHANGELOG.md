@@ -6,6 +6,84 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 10.1.0 - 2025-11-06
+
+- Extended modexp precompile debug messages, PR [#4124](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4124)
+- More ArrayBuffer type assignment fixes, PR [#4109](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4109)
+- Cleanup unused dependencies and fix dependency categorization, PR [#4146](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4146)
+- Remove Verkle package support, PR [#4145](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4145)
+
+### EIP-7823 - Set upper bounds for MODEXP
+
+The MODEXP precompile (address `0x05`) now enforces an upper bound of 8192 bits (1024 bytes) on each input field (base, exponent, modulus). If any input exceeds this limit, the precompile execution stops, returns an error, and consumes all gas. This change improves security and makes the precompile more suitable for future EVMMAX replacement.
+
+```typescript
+import { EVM } from '@ethereumjs/evm'
+import { Common, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: 'mainnet', hardfork: Hardfork.Osaka })
+const evm = await EVM.create({ common })
+
+// MODEXP call with inputs exceeding 1024 bytes will now fail
+// Inputs within the limit continue to work as before
+```
+
+### EIP-7883 - ModExp Gas Cost Increase
+
+The MODEXP precompile gas cost calculation has been updated according to EIP-7883. The minimum gas cost has been increased from 200 to 500, and the pricing algorithm has been adjusted with increased complexity calculations for larger inputs. The multiplier for exponents larger than 32 bytes has been doubled from 8 to 16.
+
+```typescript
+import { EVM } from '@ethereumjs/evm'
+import { Common, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: 'mainnet', hardfork: Hardfork.Osaka })
+const evm = await EVM.create({ common })
+
+// MODEXP calls will now consume more gas according to the new pricing formula
+// The minimum cost is now 500 gas (previously 200)
+```
+
+### EIP-7939 - Count leading zeros (CLZ) opcode
+
+A new opcode `CLZ` (0x1e) has been added that counts the number of leading zero bits in a 256-bit word. If the input is zero, it returns 256. The opcode has a gas cost of 5 gas.
+
+```typescript
+import { EVM } from '@ethereumjs/evm'
+import { Common, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: 'mainnet', hardfork: Hardfork.Osaka })
+const evm = await EVM.create({ common })
+
+// CLZ opcode can be used in EVM bytecode:
+// PUSH1 0x01  // Push 1 to stack
+// CLZ         // Count leading zeros: returns 255
+// PUSH1 0x00  // Push 0 to stack  
+// CLZ         // Returns 256
+```
+
+### EIP-7951 - Precompile for secp256r1 Curve Support
+
+A new precompile `P256VERIFY` has been added at address `0x100` for ECDSA signature verification over the secp256r1 curve (also known as P-256 or prime256v1). This enables native support for signatures from modern secure hardware including Apple Secure Enclave, Android Keystore, and FIDO2/WebAuthn devices. The precompile costs 6900 gas and expects 160 bytes of input (32 bytes each for message hash, r, s, public key x, and public key y).
+
+```typescript
+import { EVM } from '@ethereumjs/evm'
+import { Common, Hardfork } from '@ethereumjs/common'
+import { hexToBytes } from '@ethereumjs/util'
+
+const common = new Common({ chain: 'mainnet', hardfork: Hardfork.Osaka })
+const evm = await EVM.create({ common })
+
+// P256VERIFY precompile usage:
+// Input: 160 bytes = [msgHash (32) | r (32) | s (32) | qx (32) | qy (32)]
+// Output: 32 bytes with 0x00...01 for valid signature, empty for invalid
+const input = hexToBytes('0x...') // 160 bytes
+const result = await evm.runCall({
+  to: '0x0000000000000000000000000000000000000100',
+  data: input,
+  gasLimit: 10000n
+})
+```
+
 ## 10.0.0 - 2025-04-29
 
 ### Overview

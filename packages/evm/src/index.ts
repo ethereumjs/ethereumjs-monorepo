@@ -61,4 +61,3 @@ export {
 export * from './binaryTreeAccessWitness.ts'
 export * from './constructors.ts'
 export * from './params.ts'
-export * from './verkleAccessWitness.ts'

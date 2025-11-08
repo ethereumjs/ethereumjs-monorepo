@@ -1,7 +1,7 @@
 import { DBKey, MetaDBManager } from '../util/metaDBManager.ts'
 
 /**
- * The `PreImagesManager` saves the preimages of hashed keys. This is necessary for the Verkle transition.
+ * The `PreImagesManager` saves the preimages of hashed keys. This is necessary for the State tree transitions.
  * A "PreImage" of a hash is whatever the input is to the hashed function. So, if one calls `keccak256(X)` with
  * output `Y` then `X` is the preimage of `Y`. It thus serves to recover the input to the trapdoor hash function,
  * which would otherwise not be feasible.

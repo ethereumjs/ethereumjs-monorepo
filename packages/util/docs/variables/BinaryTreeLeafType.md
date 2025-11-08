@@ -10,7 +10,7 @@
 
 Defined in: [packages/util/src/binaryTree.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L76)
 
-## Type declaration
+## Type Declaration
 
 ### BasicData
 

@@ -105,6 +105,11 @@ export interface TxOptions {
   allowUnlimitedInitCodeSize?: boolean
 }
 
+/**
+ * Type guard to check if input is AccessListBytes format
+ * @param input - The input to check
+ * @returns true if input is AccessListBytes format
+ */
 export function isAccessListBytes(input: AccessListBytes | AccessList): input is AccessListBytes {
   if (input.length === 0) {
     return true
@@ -116,6 +121,11 @@ export function isAccessListBytes(input: AccessListBytes | AccessList): input is
   return false
 }
 
+/**
+ * Type guard to check if input is AccessList format
+ * @param input - The input to check
+ * @returns true if input is AccessList format
+ */
 export function isAccessList(input: AccessListBytes | AccessList): input is AccessList {
   return !isAccessListBytes(input) // This is exactly the same method, except the output is negated.
 }
@@ -153,22 +163,47 @@ export interface Transaction {
 
 export type TypedTransaction = Transaction[TransactionType]
 
+/**
+ * Type guard to check if transaction is a Legacy transaction
+ * @param tx - The transaction to check
+ * @returns true if transaction is Legacy type
+ */
 export function isLegacyTx(tx: TypedTransaction): tx is LegacyTx {
   return tx.type === TransactionType.Legacy
 }
 
+/**
+ * Type guard to check if transaction is an AccessList EIP-2930 transaction
+ * @param tx - The transaction to check
+ * @returns true if transaction is AccessList EIP-2930 type
+ */
 export function isAccessList2930Tx(tx: TypedTransaction): tx is AccessList2930Tx {
   return tx.type === TransactionType.AccessListEIP2930
 }
 
+/**
+ * Type guard to check if transaction is a Fee Market EIP-1559 transaction
+ * @param tx - The transaction to check
+ * @returns true if transaction is Fee Market EIP-1559 type
+ */
 export function isFeeMarket1559Tx(tx: TypedTransaction): tx is FeeMarket1559Tx {
   return tx.type === TransactionType.FeeMarketEIP1559
 }
 
+/**
+ * Type guard to check if transaction is a Blob EIP-4844 transaction
+ * @param tx - The transaction to check
+ * @returns true if transaction is Blob EIP-4844 type
+ */
 export function isBlob4844Tx(tx: TypedTransaction): tx is Blob4844Tx {
   return tx.type === TransactionType.BlobEIP4844
 }
 
+/**
+ * Type guard to check if transaction is an EOA Code EIP-7702 transaction
+ * @param tx - The transaction to check
+ * @returns true if transaction is EOA Code EIP-7702 type
+ */
 export function isEOACode7702Tx(tx: TypedTransaction): tx is EOACode7702Tx {
   return tx.type === TransactionType.EOACodeEIP7702
 }
@@ -262,26 +297,51 @@ export interface TxData {
 
 export type TypedTxData = TxData[TransactionType]
 
+/**
+ * Type guard to check if transaction data is Legacy transaction data
+ * @param txData - The transaction data to check
+ * @returns true if transaction data is Legacy type
+ */
 export function isLegacyTxData(txData: TypedTxData): txData is LegacyTxData {
   const txType = Number(bytesToBigInt(toBytes(txData.type)))
   return txType === TransactionType.Legacy
 }
 
+/**
+ * Type guard to check if transaction data is AccessList EIP-2930 transaction data
+ * @param txData - The transaction data to check
+ * @returns true if transaction data is AccessList EIP-2930 type
+ */
 export function isAccessList2930TxData(txData: TypedTxData): txData is AccessList2930TxData {
   const txType = Number(bytesToBigInt(toBytes(txData.type)))
   return txType === TransactionType.AccessListEIP2930
 }
 
+/**
+ * Type guard to check if transaction data is Fee Market EIP-1559 transaction data
+ * @param txData - The transaction data to check
+ * @returns true if transaction data is Fee Market EIP-1559 type
+ */
 export function isFeeMarket1559TxData(txData: TypedTxData): txData is FeeMarketEIP1559TxData {
   const txType = Number(bytesToBigInt(toBytes(txData.type)))
   return txType === TransactionType.FeeMarketEIP1559
 }
 
+/**
+ * Type guard to check if transaction data is Blob EIP-4844 transaction data
+ * @param txData - The transaction data to check
+ * @returns true if transaction data is Blob EIP-4844 type
+ */
 export function isBlob4844TxData(txData: TypedTxData): txData is BlobEIP4844TxData {
   const txType = Number(bytesToBigInt(toBytes(txData.type)))
   return txType === TransactionType.BlobEIP4844
 }
 
+/**
+ * Type guard to check if transaction data is EOA Code EIP-7702 transaction data
+ * @param txData - The transaction data to check
+ * @returns true if transaction data is EOA Code EIP-7702 type
+ */
 export function isEOACode7702TxData(txData: TypedTxData): txData is EOACode7702TxData {
   const txType = Number(bytesToBigInt(toBytes(txData.type)))
   return txType === TransactionType.EOACodeEIP7702
@@ -382,6 +442,10 @@ export interface FeeMarketEIP1559TxData extends AccessList2930TxData {
  */
 export interface BlobEIP4844TxData extends FeeMarketEIP1559TxData {
   /**
+   * Is this an EIP-4844 or EIP-7594 network wrapper transaction
+   */
+  networkWrapperVersion?: BigIntLike
+  /**
    * The versioned hashes used to validate the blobs attached to a transaction
    */
   blobVersionedHashes?: BytesLike[]
@@ -398,7 +462,7 @@ export interface BlobEIP4844TxData extends FeeMarketEIP1559TxData {
    */
   kzgCommitments?: BytesLike[]
   /**
-   * The KZG proofs associated with the transaction
+   * The KZG proofs associated with the transaction (EIP-4844: per-Blob proofs, EIP-7594: per-Cell proofs)
    */
   kzgProofs?: BytesLike[]
   /**
@@ -508,6 +572,14 @@ export type BlobEIP4844NetworkValuesArray = [
   Uint8Array[],
 ]
 
+export type BlobEIP7594NetworkValuesArray = [
+  BlobEIP4844TxValuesArray,
+  Uint8Array,
+  Uint8Array[],
+  Uint8Array[],
+  Uint8Array[],
+]
+
 type JSONAccessListItem = { address: string; storageKeys: string[] }
 
 /**
@@ -540,6 +612,7 @@ export interface JSONTx {
 }
 
 export type JSONBlobTxNetworkWrapper = JSONTx & {
+  networkWrapperVersion: PrefixedHexString
   blobs: PrefixedHexString[]
   kzgCommitments: PrefixedHexString[]
   kzgProofs: PrefixedHexString[]

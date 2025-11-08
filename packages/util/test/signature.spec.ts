@@ -108,6 +108,7 @@ describe('hashPersonalMessage', () => {
   })
   it('should throw if input is not a Uint8Array', () => {
     try {
+      // @ts-expect-error -- This syntax is not allowed when 'erasableSyntaxOnly' is enabled.
       hashPersonalMessage((<unknown>[0, 1, 2, 3, 4]) as Uint8Array)
     } catch (err: any) {
       assert.isTrue(err.message.includes('This method only supports Uint8Array'))

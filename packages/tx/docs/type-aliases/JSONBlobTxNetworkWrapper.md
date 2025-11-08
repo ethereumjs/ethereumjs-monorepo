@@ -8,9 +8,9 @@
 
 > **JSONBlobTxNetworkWrapper** = [`JSONTx`](../interfaces/JSONTx.md) & `object`
 
-Defined in: [types.ts:559](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L559)
+Defined in: [types.ts:614](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L614)
 
-## Type declaration
+## Type Declaration
 
 ### blobs
 
@@ -23,3 +23,7 @@ Defined in: [types.ts:559](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 ### kzgProofs
 
 > **kzgProofs**: `PrefixedHexString`[]
+
+### networkWrapperVersion
+
+> **networkWrapperVersion**: `PrefixedHexString`

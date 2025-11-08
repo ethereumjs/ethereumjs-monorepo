@@ -3,7 +3,12 @@ import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { MerkleStateManager } from '@ethereumjs/statemanager'
 import { eip4844GethGenesis, goerliChainConfig } from '@ethereumjs/testdata'
-import { createBlob4844Tx, createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
+import {
+  NetworkWrapperType,
+  createBlob4844Tx,
+  createFeeMarket1559Tx,
+  createLegacyTx,
+} from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -18,8 +23,8 @@ import {
   randomBytes,
 } from '@ethereumjs/util'
 import { createVM } from '@ethereumjs/vm'
-import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
-import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 import { assert, describe, it, vi } from 'vitest'
 
 import { Config } from '../../src/config.ts'
@@ -357,7 +362,7 @@ describe('[PendingBlock]', async () => {
     const { txPool } = setup()
     txPool['config'].chainCommon.setHardfork(Hardfork.Cancun)
 
-    // fill up the blobsAndProofsByHash and proofs cache before adding a blob tx
+    // fill up the blobAndProofByHash and proofs cache before adding a blob tx
     // for cache pruning check
     const fillBlobs = getBlobs('hello world')
     const fillCommitments = blobsToCommitments(kzg, fillBlobs)
@@ -371,13 +376,9 @@ describe('[PendingBlock]', async () => {
 
     for (let i = 0; i < allowedLength; i++) {
       // this is space efficient as same object is inserted in dummy positions
-      txPool.blobsAndProofsByHash.set(intToHex(i), fillBlobAndProof)
+      txPool.blobAndProofByHash.set(intToHex(i), fillBlobAndProof)
     }
-    assert.strictEqual(
-      txPool.blobsAndProofsByHash.size,
-      allowedLength,
-      'fill the cache to capacity',
-    )
+    assert.strictEqual(txPool.blobAndProofByHash.size, allowedLength, 'fill the cache to capacity')
 
     // Create 2 txs with 3 blobs each so that only 2 of them can be included in a build
     let blobs: PrefixedHexString[] = [],
@@ -397,6 +398,7 @@ describe('[PendingBlock]', async () => {
 
       const txA01 = createBlob4844Tx(
         {
+          networkWrapperVersion: NetworkWrapperType.EIP4844,
           blobVersionedHashes: txBlobVersionedHashes,
           blobs: txBlobs,
           kzgCommitments: txCommitments,
@@ -419,7 +421,7 @@ describe('[PendingBlock]', async () => {
     }
 
     assert.strictEqual(
-      txPool.blobsAndProofsByHash.size,
+      txPool.blobAndProofByHash.size,
       allowedLength,
       'cache should be prune and stay at same size',
     )
@@ -429,7 +431,7 @@ describe('[PendingBlock]', async () => {
       const blob = blobs[i]
       const proof = proofs[i]
 
-      const blobAndProof = txPool.blobsAndProofsByHash.get(versionedHash) ?? {
+      const blobAndProof = txPool.blobAndProofByHash.get(versionedHash) ?? {
         blob: '0x0',
         proof: '0x0',
       }
@@ -478,54 +480,5 @@ describe('[PendingBlock]', async () => {
     assert.isTrue(pendingBlob !== undefined && pendingBlob === blobs[0])
     const blobProof = blobsBundles!.proofs[0]
     assert.isTrue(blobProof !== undefined && blobProof === proofs[0])
-  })
-
-  it('should exclude missingBlobTx', async () => {
-    const common = createCommonFromGethGenesis(eip4844GethGenesis, {
-      chain: 'customChain',
-      hardfork: Hardfork.Cancun,
-      customCrypto: { kzg },
-    })
-
-    const { txPool } = setup()
-
-    const blobs = getBlobs('hello world')
-    const commitments = blobsToCommitments(kzg, blobs)
-    const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
-    const proofs = blobsToProofs(kzg, blobs, commitments)
-
-    // create a tx with missing blob data which should be excluded from the build
-    const missingBlobTx = createBlob4844Tx(
-      {
-        blobVersionedHashes,
-        kzgCommitments: commitments,
-        kzgProofs: proofs,
-        maxFeePerBlobGas: 100000000n,
-        gasLimit: 0xffffffn,
-        maxFeePerGas: Units.gwei(1),
-        maxPriorityFeePerGas: 100000000n,
-        to: randomBytes(20),
-        nonce: BigInt(0),
-      },
-      { common },
-    ).sign(A.privateKey)
-    await txPool.add(missingBlobTx)
-
-    assert.strictEqual(txPool.txsInPool, 1, '1 txs should still be in the pool')
-
-    const pendingBlock = new PendingBlock({ config, txPool })
-    const blockchain = await createBlockchain({ common })
-    const vm = await createVM({ common, blockchain })
-    await setBalance(vm, A.address, BigInt(500000000000000000))
-    const parentBlock = await (vm.blockchain as Blockchain).getCanonicalHeadBlock!()
-    // stub the vm's common set hf to do nothing but stay in cancun
-    vm.common.setHardforkBy = () => {
-      return vm.common.hardfork()
-    }
-    const payloadId = await pendingBlock.start(vm, parentBlock)
-    const [block, _receipts, _value, blobsBundles] = (await pendingBlock.build(payloadId)) ?? []
-
-    assert.isTrue(block !== undefined && blobsBundles !== undefined)
-    assert.strictEqual(block!.transactions.length, 0, 'Missing blob tx should not be included')
-  })
+  }, 30000)
 })

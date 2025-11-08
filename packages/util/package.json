@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/util",
-  "version": "10.0.0",
+  "version": "10.1.0",
   "description": "A collection of utility functions for Ethereum",
   "keywords": ["ethereum", "utilities", "utils"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util#readme",
@@ -89,18 +89,18 @@
     "spellcheck:ts": "npx cspell --gitignore -c ../../config/cspell-ts.json \"./**/*.ts\" --cache --show-suggestions --show-context",
     "spellcheck:md": "npx cspell --gitignore -c ../../config/cspell-md.json \"**.md\" --cache --show-suggestions --show-context",
     "test": "npm run test:node && npm run test:browser",
-    "test:browser": "npx vitest run --config=../../config/vitest.config.browser.mts",
+    "test:browser": "npx vitest run --config=./vitest.config.browser.mts",
     "test:node": "npx vitest run -c ../../config/vitest.config.mts",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/rlp": "^10.0.0",
+    "@ethereumjs/rlp": "^10.1.0",
     "ethereum-cryptography": "^3.2.0"
   },
   "devDependencies": {
-    "@paulmillr/trusted-setups": "^0.1.2",
-    "kzg-wasm": "^0.5.0",
-    "micro-eth-signer": "^0.14.0"
+    "@paulmillr/trusted-setups": "^0.2.0",
+    "kzg-wasm": "1.0.0",
+    "micro-eth-signer": "^0.15.0"
   },
   "engines": {
     "node": ">=18"

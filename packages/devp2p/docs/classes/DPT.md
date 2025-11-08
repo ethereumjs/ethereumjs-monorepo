@@ -42,7 +42,7 @@ Defined in: [packages/devp2p/src/dpt/dpt.ts:24](https://github.com/ethereumjs/et
 
 ### id
 
-> `readonly` **id**: `undefined` \| `Uint8Array`\<`ArrayBufferLike`\>
+> `readonly` **id**: `Uint8Array`\<`ArrayBufferLike`\> \| `undefined`
 
 Defined in: [packages/devp2p/src/dpt/dpt.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L30)
 
@@ -239,7 +239,7 @@ Defined in: [packages/devp2p/src/dpt/dpt.ts:228](https://github.com/ethereumjs/e
 
 ### getPeer()
 
-> **getPeer**(`obj`): `null` \| [`PeerInfo`](../interfaces/PeerInfo.md)
+> **getPeer**(`obj`): [`PeerInfo`](../interfaces/PeerInfo.md) \| `null`
 
 Defined in: [packages/devp2p/src/dpt/dpt.ts:193](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/dpt.ts#L193)
 
@@ -251,7 +251,7 @@ Defined in: [packages/devp2p/src/dpt/dpt.ts:193](https://github.com/ethereumjs/e
 
 #### Returns
 
-`null` \| [`PeerInfo`](../interfaces/PeerInfo.md)
+[`PeerInfo`](../interfaces/PeerInfo.md) \| `null`
 
 ***
 

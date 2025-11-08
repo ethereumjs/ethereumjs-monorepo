@@ -11,7 +11,7 @@
 
 - 🦄 All block features till **Pectra**
 - 🌴 Tree-shakeable API
-- 👷🏼 Controlled dependency set (4 external + `@Noble` crypto)
+- 👷🏼 Controlled dependency set (4 external + `@noble` crypto)
 - 🔮 `EIP-4844` Shard Blob Txs
 - 💸 `EIP-4895` Beacon Chain Withdrawals
 - 📨 `EIP-7685` Consensus Layer Requests
@@ -215,9 +215,9 @@ import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createBlob4844Tx } from '@ethereumjs/tx'
 import { createAddressFromPrivateKey } from '@ethereumjs/util'
-import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
 import { randomBytes } from 'crypto'
-import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 
 const main = async () => {
   const kzg = new microEthKZG(trustedSetup)
@@ -374,7 +374,7 @@ See the API docs for detailed documentation on Clique/PoA related utility method
 
 ## Browser
 
-We provide hybrid ESM/CJS builds for all our libraries. With the v10 breaking release round from Spring 2025, all libraries are "pure-JS" by default and we have eliminated all hard-wired WASM code. Additionally we have substantially lowered the bundle sizes, reduced the number of dependencies, and cut out all usages of Node.js specific primities (like the Node.js event emitter).
+We provide hybrid ESM/CJS builds for all our libraries. With the v10 breaking release round from Spring 2025, all libraries are "pure-JS" by default and we have eliminated all hard-wired WASM code. Additionally we have substantially lowered the bundle sizes, reduced the number of dependencies, and cut out all usages of Node.js-specific primitives (like the Node.js event emitter).
 
 It is easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
 
@@ -388,7 +388,7 @@ Generated TypeDoc API [Documentation](./docs/README.md)
 
 With the breaking releases from Summer 2023 we have started to ship our libraries with both CommonJS (`cjs` folder) and ESM builds (`esm` folder), see `package.json` for the detailed setup.
 
-If you use an ES6-style `import` in your code files from the ESM build will be used:
+If you use an ES6-style `import` in your code, the ESM build will be used:
 
 ```ts
 import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
@@ -400,7 +400,7 @@ If you use Node.js specific `require`, the CJS build will be used:
 const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
 ```
 
-Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking which CJS can not provide.
+Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking which CJS cannot provide.
 
 
 ## Testing
@@ -411,7 +411,7 @@ To avoid bloating this repository with [ethereum/tests](https://github.com/ether
 
 ## EthereumJS
 
-The `EthereumJS` GitHub organization and its repositories are managed by the Ethereum Foundation JavaScript team, see our [website](https://ethereumjs.github.io/) for a team introduction. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
+The `EthereumJS` GitHub organization and its repositories are managed by members of the former Ethereum Foundation JavaScript team and the broader Ethereum community. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
 
 ## License
 

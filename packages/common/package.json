@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/common",
-  "version": "10.0.0",
+  "version": "10.1.0",
   "description": "Resources common to all Ethereum implementations",
   "keywords": [
     "ethereum",
@@ -63,7 +63,7 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/util": "^10.0.0",
+    "@ethereumjs/util": "^10.1.0",
     "eventemitter3": "^5.0.1"
   },
   "devDependencies": {

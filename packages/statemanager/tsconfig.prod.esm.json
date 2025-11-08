@@ -1,5 +1,5 @@
 {
-  "extends": "../../config/tsconfig.prod.esm.json",
+  "extends": "../../tsconfig.prod.esm.json",
   "compilerOptions": {
     "rootDir": "src",
     "outDir": "dist/esm"
@@ -9,7 +9,6 @@
     { "path": "../common/tsconfig.prod.esm.json" },
     { "path": "../mpt/tsconfig.prod.esm.json" },
     { "path": "../util/tsconfig.prod.esm.json" },
-    { "path": "../verkle/tsconfig.prod.esm.json" },
     { "path": "../binarytree/tsconfig.prod.esm.json" }
   ]
 }

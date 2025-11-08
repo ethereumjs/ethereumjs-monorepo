@@ -6,7 +6,7 @@
 
 # Interface: GethConfigOpts
 
-Defined in: [types.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L157)
+Defined in: [types.ts:156](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L156)
 
 ## Extends
 
@@ -18,7 +18,7 @@ Defined in: [types.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **chain**: `string`
 
-Defined in: [types.ts:158](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L158)
+Defined in: [types.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L157)
 
 ***
 
@@ -26,7 +26,7 @@ Defined in: [types.ts:158](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **customCrypto**: [`CustomCrypto`](CustomCrypto.md)
 
-Defined in: [types.ts:143](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L143)
+Defined in: [types.ts:142](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L142)
 
 This option can be used to replace the most common crypto primitives
 (keccak256 hashing e.g.) within the EthereumJS ecosystem libraries
@@ -47,7 +47,7 @@ and be made with eventual security implications considered.
 
 > `optional` **eips**: `number`[]
 
-Defined in: [types.ts:114](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L114)
+Defined in: [types.ts:113](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L113)
 
 Selected EIPs which can be activated, please use an array for instantiation
 (e.g. `eips: [ 2537, ]`)
@@ -66,7 +66,7 @@ Currently supported:
 
 > `optional` **genesisHash**: `Uint8Array`\<`ArrayBufferLike`\>
 
-Defined in: [types.ts:159](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L159)
+Defined in: [types.ts:158](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L158)
 
 ***
 
@@ -74,7 +74,7 @@ Defined in: [types.ts:159](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **hardfork**: `string`
 
-Defined in: [types.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L105)
+Defined in: [types.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L104)
 
 String identifier ('byzantium') for hardfork or [Hardfork](../variables/Hardfork.md) enum.
 
@@ -90,7 +90,7 @@ Default: Hardfork.London
 
 > `optional` **params**: [`ParamsDict`](../type-aliases/ParamsDict.md)
 
-Defined in: [types.ts:132](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L132)
+Defined in: [types.ts:131](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L131)
 
 Optionally pass in an EIP params dictionary, see one of the
 EthereumJS library `params.ts` files for an example (e.g. tx, evm).

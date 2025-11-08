@@ -4,7 +4,7 @@
 
 [@ethereumjs/util](../README.md) / EthereumJSErrorWithoutCode
 
-# Function: ~~EthereumJSErrorWithoutCode()~~
+# ~~Function: EthereumJSErrorWithoutCode()~~
 
 > **EthereumJSErrorWithoutCode**(`message?`, `stack?`): [`EthereumJSError`](../classes/EthereumJSError.md)\<\{ `code`: `string`; \}\>
 

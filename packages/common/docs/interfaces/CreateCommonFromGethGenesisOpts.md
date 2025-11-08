@@ -6,7 +6,7 @@
 
 # Interface: CreateCommonFromGethGenesisOpts
 
-Defined in: [gethGenesis.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L104)
+Defined in: [gethGenesis.ts:103](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L103)
 
 Type for the options passed to createCommonFromGethGenesis
 
@@ -16,7 +16,7 @@ Type for the options passed to createCommonFromGethGenesis
 
 > `optional` **chain**: `string`
 
-Defined in: [gethGenesis.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L105)
+Defined in: [gethGenesis.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L104)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: [gethGenesis.ts:105](https://github.com/ethereumjs/ethereumjs-monore
 
 > `optional` **genesisHash**: `string`
 
-Defined in: [gethGenesis.ts:106](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L106)
+Defined in: [gethGenesis.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L105)
 
 ***
 
@@ -32,4 +32,4 @@ Defined in: [gethGenesis.ts:106](https://github.com/ethereumjs/ethereumjs-monore
 
 > `optional` **mergeForkIdPostMerge**: `boolean`
 
-Defined in: [gethGenesis.ts:107](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L107)
+Defined in: [gethGenesis.ts:106](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L106)

@@ -133,20 +133,14 @@ export interface ClientOpts {
   useStringValueTrieDB?: boolean
   txLookupLimit?: number
   startBlock?: number
-  startExecutionFrom?: number
-  startExecution?: boolean
   isSingleNode?: boolean
   vmProfileBlocks?: boolean
   vmProfileTxs?: boolean
   loadBlocksFromRlp?: string[]
   pruneEngineCache?: boolean
   savePreimages?: boolean
-  verkleGenesisStateRoot?: Uint8Array
-  statelessVerkle?: boolean
-  statefulVerkle?: boolean
   engineNewpayloadMaxExecute?: number
   skipEngineExec?: boolean
-  ignoreStatelessInvalidExecs?: boolean
   useJsCrypto?: boolean
 }
 
@@ -155,4 +149,5 @@ export type PrometheusMetrics = {
   accessListEIP2930TxGauge: promClient.Gauge<string>
   feeMarketEIP1559TxGauge: promClient.Gauge<string>
   blobEIP4844TxGauge: promClient.Gauge<string>
+  blobEIP7594TxGauge: promClient.Gauge<string>
 }

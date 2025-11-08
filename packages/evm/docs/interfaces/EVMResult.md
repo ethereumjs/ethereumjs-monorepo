@@ -6,9 +6,9 @@
 
 # Interface: EVMResult
 
-Defined in: [types.ts:388](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L388)
+Defined in: [types.ts:385](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L385)
 
-Result of executing a message via the EVM.
+Result of executing a message via the [EVM](../classes/EVM.md).
 
 ## Properties
 
@@ -16,7 +16,7 @@ Result of executing a message via the EVM.
 
 > `optional` **createdAddress**: `Address`
 
-Defined in: [types.ts:392](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L392)
+Defined in: [types.ts:389](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L389)
 
 Address of created account during transaction, if any
 
@@ -26,6 +26,6 @@ Address of created account during transaction, if any
 
 > **execResult**: [`ExecResult`](ExecResult.md)
 
-Defined in: [types.ts:396](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L396)
+Defined in: [types.ts:393](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L393)
 
 Contains the results from running the code, if any, as described in runCode

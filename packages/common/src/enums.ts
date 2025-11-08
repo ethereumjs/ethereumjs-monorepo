@@ -7,7 +7,6 @@ export const Chain = {
   Sepolia: 11155111,
   Holesky: 17000,
   Hoodi: 560048,
-  Kaustinen6: 69420,
 } as const
 
 // Reverse mapping: from numeric value back to the key name
@@ -55,11 +54,6 @@ export const ChainGenesis: Record<Chain, GenesisState> = {
     blockNumber: BIGINT_0,
     stateRoot: hexToBytes('0xda87d7f5f91c51508791bbcbd4aa5baf04917830b86985eeb9ad3d5bfb657576'),
   },
-  [Chain.Kaustinen6]: {
-    name: 'kaustinen6',
-    blockNumber: BIGINT_0,
-    stateRoot: hexToBytes('0x1fbf85345a3cbba9a6d44f991b721e55620a22397c2a93ee8d5011136ac300ee'),
-  },
 }
 
 export type Hardfork = (typeof Hardfork)[keyof typeof Hardfork]
@@ -85,7 +79,11 @@ export const Hardfork = {
   Cancun: 'cancun',
   Prague: 'prague',
   Osaka: 'osaka',
-  Verkle: 'verkle',
+  Bpo1: 'bpo1',
+  Bpo2: 'bpo2',
+  Bpo3: 'bpo3',
+  Bpo4: 'bpo4',
+  Bpo5: 'bpo5',
 } as const
 
 export type ConsensusType = (typeof ConsensusType)[keyof typeof ConsensusType]

@@ -6,7 +6,7 @@
 
 # Function: getBinaryTreeKey()
 
-> **getBinaryTreeKey**(`stem`, `leaf`): `Uint8Array`\<`ArrayBufferLike`\>
+> **getBinaryTreeKey**(`stem`, `leaf`): `Uint8Array`\<`ArrayBuffer`\>
 
 Defined in: [packages/util/src/binaryTree.ts:116](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L116)
 
@@ -24,7 +24,7 @@ The 31-bytes binary tree stem as a Uint8Array.
 
 ## Returns
 
-`Uint8Array`\<`ArrayBufferLike`\>
+`Uint8Array`\<`ArrayBuffer`\>
 
 The tree key as a Uint8Array.
 

@@ -6,6 +6,10 @@
 [![Coverage Status][devp2p-coverage-badge]][devp2p-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
+> **\[DEPRECATED\]** This library has been deprecated (decreased importance of devp2p as a networking layer for L1 + deprecation of EthereumJS Client).
+
+The EthereumJS Client has been deprecated. If you want to take it over for reasons of purpose, joy or fun or have other ideas please reach out! It will give you a lot of back! 😊
+
 This library bundles different components for lower-level peer-to-peer connection and message exchange:
 
 - Distributed Peer Table (DPT) / v4 Node Discovery / DNS Discovery
@@ -464,7 +468,7 @@ The following is a list of major implementations of the `devp2p` stack in other 
 
 ## EthereumJS
 
-The `EthereumJS` GitHub organization and its repositories are managed by the Ethereum Foundation JavaScript team, see our [website](https://ethereumjs.github.io/) for a team introduction. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
+The `EthereumJS` GitHub organization and its repositories are managed by members of the former Ethereum Foundation JavaScript team and the broader Ethereum community. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
 
 ## License
 

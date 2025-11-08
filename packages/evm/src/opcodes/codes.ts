@@ -375,6 +375,12 @@ const eipOpcodes: { eip: number; opcodes: OpcodeEntry }[] = [
       0xee: asyncAndDynamicGasOp('RETURNCONTRACT'),
     },
   },
+  {
+    eip: 7939,
+    opcodes: {
+      0x1e: defaultOp('CLZ'),
+    },
+  },
 ]
 
 /**

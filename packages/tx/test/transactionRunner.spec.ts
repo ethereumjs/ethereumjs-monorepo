@@ -12,24 +12,10 @@ import type { ForkName, ForkNamesMap, OfficialTransactionTestData } from './type
 
 const argv = minimist(process.argv.slice(2))
 const file: string | undefined = argv.file
-
-const forkNames: ForkName[] = [
-  'Prague',
-  'Cancun',
-  'Shanghai',
-  'Paris',
-  'London+3860',
-  'London',
-  'Berlin',
-  'Istanbul',
-  'Byzantium',
-  'ConstantinopleFix',
-  'Constantinople',
-  'EIP150',
-  'EIP158',
-  'Frontier',
-  'Homestead',
-]
+const forkNames: ForkName[] =
+  process.env.FORKS !== undefined && process.env.FORKS !== ''
+    ? (process.env.FORKS.split(' ') as ForkName[])
+    : []
 
 const forkNameMap: ForkNamesMap = {
   Prague: 'prague',
@@ -66,7 +52,7 @@ describe('TransactionTests', async () => {
         if (testData.result[forkName] === undefined) {
           continue
         }
-        it(`${testName} - [${forkName}]`, () => {
+        it(`${testName} - [${forkName}]`, { timeout: 250000 }, () => {
           const forkTestData = testData.result[forkName]
           const shouldBeInvalid = forkTestData.exception !== undefined
 
@@ -103,7 +89,7 @@ describe('TransactionTests', async () => {
           assert.isTrue(isValid, 'tx is valid')
           assert.isTrue(senderIsCorrect, 'sender is correct')
           assert.isTrue(hashIsCorrect, 'hash is correct')
-        }, 120000)
+        })
       }
     },
     fileFilterRegex,

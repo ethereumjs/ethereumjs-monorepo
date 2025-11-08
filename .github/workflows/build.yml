@@ -19,12 +19,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           submodules: recursive
 
       - id: create-cache-key
-        run: echo "submodule-cache-key=$(git submodule)" >> $GITHUB_OUTPUT
+        run: echo "submodule-cache-key=$(git submodule | head -n 1)" >> $GITHUB_OUTPUT
         shell: bash
 
       - uses: actions/cache/restore@v4
@@ -47,7 +47,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: actions/cache/restore@v4
         id: dep-cache
@@ -56,7 +56,7 @@ jobs:
           key: npm-${{ hashFiles('package-lock.json') }}
 
       - name: Use Node.js 20
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: 'npm'
@@ -176,12 +176,6 @@ jobs:
     needs: build
     uses: ./.github/workflows/util-build.yml
     secrets: inherit
-    with:
-      dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
-
-  verkle:
-    needs: build
-    uses: ./.github/workflows/verkle-build.yml
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 

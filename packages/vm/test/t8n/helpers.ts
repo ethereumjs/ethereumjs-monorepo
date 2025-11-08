@@ -93,7 +93,7 @@ export function getArguments() {
     reward: BigInt((args as any)['state.reward']),
     chainid: BigInt((args as any)['state.chainid']),
   }
-  args.trace = (<any>args)['trace']
+  args.trace = (args as any)['trace']
   return args
 }
 

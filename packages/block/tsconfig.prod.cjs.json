@@ -1,5 +1,5 @@
 {
-  "extends": "../../config/tsconfig.prod.cjs.json",
+  "extends": "../../tsconfig.prod.cjs.json",
   "compilerOptions": {
     "lib": ["dom"],
     "rootDir": "src",

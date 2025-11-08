@@ -136,7 +136,7 @@ Defined in: [packages/devp2p/src/rlpx/rlpx.ts:219](https://github.com/ethereumjs
 
 ##### peerId
 
-`null` | `Uint8Array`\<`ArrayBufferLike`\>
+`Uint8Array`\<`ArrayBufferLike`\> | `null`
 
 #### Returns
 

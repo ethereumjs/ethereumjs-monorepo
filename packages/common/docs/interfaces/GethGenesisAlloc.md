@@ -6,7 +6,7 @@
 
 # Interface: GethGenesisAlloc
 
-Defined in: [gethGenesis.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L59)
+Defined in: [gethGenesis.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L58)
 
 Interface for account allocation in Geth Genesis
 

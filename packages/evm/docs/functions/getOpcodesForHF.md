@@ -8,7 +8,7 @@
 
 > **getOpcodesForHF**(`common`, `customOpcodes?`): `OpcodeContext`
 
-Defined in: [opcodes/codes.ts:424](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/opcodes/codes.ts#L424)
+Defined in: [opcodes/codes.ts:430](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/opcodes/codes.ts#L430)
 
 Get suitable opcodes for the required hardfork.
 
