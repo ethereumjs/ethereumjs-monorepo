@@ -11,18 +11,30 @@
 
 ## Table of Contents
 
-- [Installation](#installation)
-- [Getting Started](#getting-started)
-- [Custom Cryptography Primitives (WASM)](#custom-cryptography-primitives-wasm)
-- [Browser](#browser)
-- [API](#api)
-- [Events](#events)
-- [Chains and Genesis](#chains-and-genesis)
-- [Working with Private/Custom Chains](#working-with-privatecustom-chains)
-- [Hardfork Support and Usage](#hardfork-support-and-usage)
-- [Supported EIPs](#supported-eips)
-- [EthereumJS](#ethereumjs)
-- [License](#license)
+- [@ethereumjs/common `v10`](#ethereumjscommon-v10)
+  - [Table of Contents](#table-of-contents)
+  - [Installation](#installation)
+  - [Getting Started](#getting-started)
+    - [import / require](#import--require)
+    - [Parameters](#parameters)
+  - [Custom Cryptography Primitives (WASM)](#custom-cryptography-primitives-wasm)
+    - [Example 1: keccak256 Hashing](#example-1-keccak256-hashing)
+    - [Example 2: KZG](#example-2-kzg)
+  - [Browser](#browser)
+  - [API](#api)
+    - [Docs](#docs)
+    - [Hybrid CJS/ESM Builds](#hybrid-cjsesm-builds)
+  - [Events](#events)
+    - [Chains and Genesis](#chains-and-genesis)
+    - [Working with Private/Custom Chains](#working-with-privatecustom-chains)
+      - [Initialize using Geth's genesis json](#initialize-using-geths-genesis-json)
+  - [Hardfork Support and Usage](#hardfork-support-and-usage)
+    - [Active Hardforks](#active-hardforks)
+    - [Future Hardforks](#future-hardforks)
+    - [Parameter Access](#parameter-access)
+  - [Supported EIPs](#supported-eips)
+  - [EthereumJS](#ethereumjs)
+  - [License](#license)
 
 ## Installation
 
@@ -144,7 +156,7 @@ void main()
 
 ## Browser
 
-We provide hybrid ESM/CJS builds for all our libraries. With the v10 breaking release round from Spring 2025 all libraries are "pure-JS" by default and we have eliminated all hard-wired WASM code. Additionally we have substantially lowered the bundle sizes, reduced the number of dependencies and cut out all usages of Node.js specific primities (like the Node.js event emitter).
+We provide hybrid ESM/CJS builds for all our libraries. With the v10 breaking release round from Spring 2025 all libraries are "pure-JS" by default and we have eliminated all hard-wired WASM code. Additionally we have substantially lowered the bundle sizes, reduced the number of dependencies and cut out all usages of Node.js specific primitives (like the Node.js event emitter).
 
 It is easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
 
@@ -153,7 +165,7 @@ It is easily possible to run a browser build of one of the EthereumJS libraries 
 ### Docs
 
 See the API documentation for a full list of functions for accessing specific chain and
-depending hardfork parameters. There are also additional helper functions like
+dependent hardfork parameters. There are also additional helper functions like
 `paramByBlock (topic, name, blockNumber)` or `hardforkIsActiveOnBlock (hardfork, blockNumber)`
 to ease `blockNumber` based access to parameters.
 
@@ -199,7 +211,7 @@ Supported chains:
 - `mainnet` (`Mainnet`)
 - `sepolia` (`Sepolia`) (`v2.6.1`+)
 - `holesky` (`Holesky`) (`v4.1.0`+)
-- `hoodi`(`Hoodi`) (`v10+` (new versioning scheme))
+- `hoodi` (`Hoodi`) (`v10+` (new versioning scheme))
 - Private/custom chain parameters
 
 The following chain-specific parameters are provided:
@@ -220,7 +232,7 @@ file, or to the `Chain` type in [./src/types.ts](./src/types.ts).
 
 ### Working with Private/Custom Chains
 
-Starting with the `v10` release series using custom chain configurations has been simplified and consolidated in a single API `createCustomCommon()`. This constructor can be both used to make simple chain ID adjustments and keep the rest of the config conforming to a given "base chain":
+Starting with the `v10` release series using custom chain configurations has been simplified and consolidated in a single API `createCustomCommon()`. This constructor can be used both to make simple chain ID adjustments and keep the rest of the config conforming to a given "base chain":
 
 ```ts
 import { createCustomCommon, Mainnet } from '@ethereumjs/common'
@@ -230,7 +242,7 @@ createCustomCommon({chainId: 123}, Mainnet)
 
 See the `Tx` library [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx) for how to use such a `Common` instance in the context of sending txs to L2 networks.
 
-Beyond it is possible to customize to a fully custom chain by passing in a complete configuration object as first parameter:
+Beyond that, it is possible to customize to a fully custom chain by passing in a complete configuration object as first parameter:
 
 ```ts
 // ./examples/customChain.ts
@@ -246,7 +258,7 @@ console.log(`Common is instantiated with custom chain parameters - ${common1.cha
 
 #### Initialize using Geth's genesis json
 
-For lots of custom chains (for e.g. devnets and testnets), you might come across a genesis json config which
+For lots of custom chains (e.g., devnets and testnets), you might come across a genesis json config which
 has both config specification for the chain as well as the genesis state specification. You can derive the
 common from such configuration in the following manner:
 
@@ -259,9 +271,9 @@ import { hexToBytes } from '@ethereumjs/util'
 import genesisJSON from './genesisData/post-merge.json'
 
 const genesisHash = hexToBytes('0x3b8fb240d288781d4aac94d3fd16809ee413bc99294a085798a589dae51ddd4a')
-// Load geth genesis JSON file into lets say `genesisJSON` and optional `chain` and `genesisHash`
+// Load geth genesis JSON file into let's say `genesisJSON` and optional `chain` and `genesisHash`
 const common = createCommonFromGethGenesis(genesisJSON, { chain: 'customChain', genesisHash })
-// If you don't have `genesisHash` while initiating common, you can later configure common (for e.g.
+// If you don't have `genesisHash` while initiating common, you can later configure common (e.g.,
 // after calculating it via `blockchain`)
 common.setForkHashes(genesisHash)
 
@@ -283,8 +295,8 @@ const commonWithEnums = new Common({ chain: Mainnet, hardfork: Hardfork.London }
 
 ### Active Hardforks
 
-There are currently parameter changes by the following past and future hardfork by the
-library supported:
+There are currently parameter changes by the following past and future hardforks
+supported by the library:
 
 - `chainstart` (`Hardfork.Chainstart`)
 - `homestead` (`Hardfork.Homestead`)

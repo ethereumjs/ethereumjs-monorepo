@@ -22,7 +22,7 @@ export function getDataGas(tx: EIP7702CompatibleTx): bigint {
 
 /**
  * Checks if the authorization list is valid. Throws if invalid.
- * @param authorizationList
+ * @param tx - Transaction whose authorization list should be validated
  */
 export function verifyAuthorizationList(tx: EIP7702CompatibleTx) {
   const authorizationList = tx.authorizationList

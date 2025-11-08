@@ -167,7 +167,7 @@ export class Common {
    * Returns the hardfork either based on block number (older HFs) or
    * timestamp (Shanghai upwards).
    *
-   * @param Opts Block number or timestamp
+   * @param opts Block number or timestamp
    * @returns The name of the HF
    */
   getHardforkBy(opts: HardforkByOpts): string {
@@ -250,7 +250,7 @@ export class Common {
    * Sets a new hardfork either based on block number (older HFs) or
    * timestamp (Shanghai upwards).
    *
-   * @param Opts Block number or timestamp
+   * @param opts Block number or timestamp
    * @returns The name of the HF set
    */
   setHardforkBy(opts: HardforkByOpts): string {
@@ -353,6 +353,9 @@ export class Common {
     }
   }
 
+  /**
+   * Builds the cache of EIPs activated either via hardforks or constructor `eips`.
+   */
   protected _buildActivatedEIPsCache() {
     this._activatedEIPsCache = []
 
@@ -442,7 +445,7 @@ export class Common {
    * optional provided total difficulty (Merge HF)
    * @param name Parameter name
    * @param blockNumber Block number
-   *    * @returns The value requested or `BigInt(0)` if not found
+   * @returns The value requested or `BigInt(0)` if not found
    */
   paramByBlock(name: string, blockNumber: BigIntLike, timestamp?: BigIntLike): bigint {
     const hardfork = this.getHardforkBy({ blockNumber, timestamp })
@@ -513,7 +516,6 @@ export class Common {
    * Sequence based check if given or set HF1 is greater than or equal HF2
    * @param hardfork1 Hardfork name or null (if set)
    * @param hardfork2 Hardfork name
-   * @param opts Hardfork options
    * @returns True if HF1 gte HF2
    */
   hardforkGteHardfork(hardfork1: string | Hardfork | null, hardfork2: string | Hardfork): boolean {
@@ -554,6 +556,11 @@ export class Common {
     return BigInt(block)
   }
 
+  /**
+   * Returns the timestamp at which a given hardfork is scheduled (if any).
+   * @param hardfork Hardfork name, optional if HF set
+   * @returns Timestamp or null if the hardfork is not timestamp-based
+   */
   hardforkTimestamp(hardfork?: string | Hardfork): bigint | null {
     hardfork = hardfork ?? this._hardfork
     const timestamp = this._getHardfork(hardfork)?.['timestamp']
@@ -700,6 +707,7 @@ export class Common {
    * Returns an eth/64 compliant fork hash (EIP-2124)
    * @param hardfork Hardfork name, optional if HF set
    * @param genesisHash Genesis block hash of the network, optional if already defined and not needed to be calculated
+   * @returns Fork hash as a hex string
    */
   forkHash(hardfork?: string | Hardfork, genesisHash?: Uint8Array): PrefixedHexString {
     hardfork = hardfork ?? this._hardfork
@@ -729,8 +737,7 @@ export class Common {
   }
 
   /**
-   * Sets any missing forkHashes on the passed-in {@link Common} instance
-   * @param common The {@link Common} to set the forkHashes for
+   * Sets any missing forkHashes on this {@link Common} instance.
    * @param genesisHash The genesis block hash
    */
   setForkHashes(genesisHash: Uint8Array) {
@@ -755,8 +762,8 @@ export class Common {
   }
 
   /**
-   * Returns the hardforks for current chain
-   * @returns {Array} Array with arrays of hardforks
+   * Returns the hardfork definitions for the current chain.
+   * @returns Array of hardfork transition configs
    */
   hardforks(): HardforkTransitionConfig[] {
     const hfs = this._chainParams.hardforks
@@ -767,8 +774,8 @@ export class Common {
   }
 
   /**
-   * Returns bootstrap nodes for the current chain
-   * @returns {Dictionary} Dict with bootstrap nodes
+   * Returns bootstrap nodes for the current chain.
+   * @returns Array of bootstrap node configs
    */
   bootstrapNodes(): BootstrapNodeConfig[] {
     return this._chainParams.bootstrapNodes
