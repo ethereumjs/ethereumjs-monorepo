@@ -45,7 +45,9 @@ const runCase = async (evm: EVM, x: PrefixedHexString) => {
 
   const [top] = stack.peek(1)
   const hexValue = `0x${top.toString(16)}`
-  console.log(`clz=${top} (hex=${hexValue}) for x=${x}`)
+  const gas = res.executionGasUsed
+  console.log(`input=${x}`)
+  console.log(`output=${hexValue} -- clz=${top} -- gas=${gas}`)
 }
 
 const main = async () => {
