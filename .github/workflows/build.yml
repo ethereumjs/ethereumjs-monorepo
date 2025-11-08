@@ -55,10 +55,10 @@ jobs:
           path: ${{github.workspace}}/node_modules
           key: npm-${{ hashFiles('package-lock.json') }}
 
-      - name: Use Node.js 20
-        uses: actions/setup-node@v5
+      - name: Use Node.js 24
+        uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 24
           cache: 'npm'
 
       - run: npm ci
