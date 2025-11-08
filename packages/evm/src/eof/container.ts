@@ -97,8 +97,8 @@ class StreamReader {
 
   /**
    * Same as readUint, except this reads an uint16
-   * @param errorStr
-   * @returns
+   * @param errorStr - Optional error message to include in thrown validation errors
+   * @returns Unsigned 16-bit integer read from the stream
    */
   readUint16(errorStr?: string) {
     const end = this.ptr + 2
@@ -471,7 +471,7 @@ export class EOFContainer {
  * @param evm EVM, to read opcodes from
  * @param containerMode Container mode to validate on
  * @param eofMode EOF mode to run in
- * @returns
+ * @returns The decoded EOF container
  */
 export function validateEOF(
   input: Uint8Array,

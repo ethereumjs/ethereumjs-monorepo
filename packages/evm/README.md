@@ -9,12 +9,12 @@
 | TypeScript implementation of the Ethereum EVM. |
 | ---------------------------------------------- |
 
-- 🦄 All hardforks up till **Pectra**
+- 🦄 All hardforks up to **Pectra**
 - 🌴 Tree-shakeable API
 - 👷🏼 Controlled dependency set (7 external + `@Noble` crypto)
 - 🧩 Flexible EIP on/off engine
 - 🛠️ Custom precompiles
-- 🚀 Build-in profiler
+- 🚀 Built-in profiler
 - 🪢 User-friendly colored debugging
 - 🛵 422KB bundle size (110KB gzipped)
 - 🏄🏾‍♂️ WASM-free default + Fully browser ready
@@ -73,7 +73,7 @@ void main()
 
 ### Blockchain, State and Events
 
-If the EVM should run on a certain state an `@ethereumjs/statemanager` is needed. An `@ethereumjs/blockchain` instance can be passed in to provide access to external interface information like a blockhash:
+If you want the EVM to run against a specific state, you need an `@ethereumjs/statemanager`. An `@ethereumjs/blockchain` instance can be passed in to provide access to external interface information like a blockhash:
 
 ```ts
 // ./examples/withBlockchain.ts
@@ -121,16 +121,16 @@ const main = async () => {
 void main()
 ```
 
-Additionally this usage example shows the use of events to listen on the inner workings and procedural updates
+Additionally, this example shows how to use events to listen to the inner workings and procedural updates
 (`step` event) of the EVM.
 
 ### WASM Crypto Support
 
-This library by default uses JavaScript implementations for the basic standard crypto primitives like hashing or signature verification (for included txs). See `@ethereumjs/common` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for instructions on how to replace with e.g. a more performant WASM implementation by using a shared `common` instance.
+This library by default uses JavaScript implementations for the basic standard crypto primitives like hashing or signature verification (for included txs). See `@ethereumjs/common` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for instructions on how to replace them with, e.g., a more performant WASM implementation by using a shared `common` instance.
 
 ## Examples
 
-See the [examples](./examples/) folder for different meaningful examples on how to use the EVM package and invoke certain aspects of it, e.g. running a bytecode snippet, listening to events or activate an EVM with a certain EIP for experimental purposes.
+See the [examples](./examples/) folder for different meaningful examples on how to use the EVM package and invoke certain aspects of it, e.g. running a bytecode snippet, listening to events, or to activate an EVM with a certain EIP for experimental purposes.
 
 ## Browser
 
@@ -148,7 +148,7 @@ For documentation on `EVM` instantiation, exposed API and emitted `events` see g
 
 With the breaking releases from Summer 2023 we have started to ship our libraries with both CommonJS (`cjs` folder) and ESM builds (`esm` folder), see `package.json` for the detailed setup.
 
-If you use an ES6-style `import` in your code files from the ESM build will be used:
+If you use an ES6-style `import` in your code files, the ESM build will be used:
 
 ```ts
 import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
@@ -166,7 +166,7 @@ Using ESM will give you additional advantages over CJS beyond browser usage like
 
 ### VM/EVM Relation
 
-This package contains the inner Ethereum Virtual Machine core functionality which was included in the [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm) package up till v5 and has been extracted along the v6 release.
+This package contains the inner Ethereum Virtual Machine core functionality which was included in the [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm) package up to v5 and has been extracted along the v6 release.
 
 This will make it easier to customize the inner EVM, which can now be passed as an optional argument to the outer `VM` instance.
 
@@ -277,7 +277,7 @@ This library supports the blob transaction type introduced with [EIP-4844](https
 
 ## Precompiles
 
-This library support all EVM precompiles up to the `Prague` hardfork.
+This library supports all EVM precompiles up to the `Prague` hardfork.
 
 In our `examples` folder we provide a helper function for simple direct precompile runs in the `precompiles` folder.
 
@@ -378,7 +378,7 @@ You can subscribe to the following events:
 #### Event listeners
 
 You can perform asynchronous operations from within an event handler
-and prevent the EVM to keep running until they finish.
+and prevent the EVM from continuing until they finish.
 
 If subscribing to events with an async listener, specify the second
 parameter of your listener as a `resolve` function that must be called once your listener code has finished.
@@ -405,7 +405,7 @@ recommended not to do that.
 
 ## Understanding the EVM
 
-If you want to understand your EVM runs we have added a hierarchically structured list of debug loggers for your convenience which can be activated in arbitrary combinations. We also use these loggers internally for development and testing. These loggers use the [debug](https://github.com/visionmedia/debug) library and can be activated on the CL with `DEBUG=ethjs,[Logger Selection] node [Your Script to Run].js` and produce output like the following:
+If you want to understand your EVM runs we have added a hierarchically structured list of debug loggers for your convenience which can be activated in arbitrary combinations. We also use these loggers internally for development and testing. These loggers use the [debug](https://github.com/visionmedia/debug) library and can be activated on the CLI with `DEBUG=ethjs,[Logger Selection] node [Your Script to Run].js` and produce output like the following:
 
 ![EthereumJS EVM Debug Logger](./debug.png?raw=true)
 
@@ -420,7 +420,7 @@ The following loggers are currently available:
 | `evm:ops`                          |  Opcode traces                                      |
 | `evm:ops:[Lower-case opcode name]` | Traces on a specific opcode                         |
 
-Here are some examples for useful logger combinations.
+Here are some examples of useful logger combinations.
 
 Run one specific logger:
 
@@ -515,9 +515,9 @@ This layered architecture provides separation of concerns while allowing for the
 
 ## Profiling the EVM
 
-The EthereumJS EVM comes with build-in profiling capabilities to detect performance bottlenecks and to generally support the targeted evolution of the JavaScript EVM performance.
+The EthereumJS EVM comes with built-in profiling capabilities to detect performance bottlenecks and to generally support the targeted evolution of the JavaScript EVM performance.
 
-While the EVM has a dedicated `profiler` setting to activate, the profiler can best and most useful be run through the EthereumJS [client](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client) since this gives the most realistic conditions providing both real-world txs and a meaningful state size.
+While the EVM has a dedicated `profiler` setting to activate, the profiler is most useful when run through the EthereumJS [client](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client) since this gives the most realistic conditions providing both real-world txs and a meaningful state size.
 
 To repeatedly run the EVM profiler within the client sync the client on mainnet or a larger testnet to the desired block. Then the profiler should be run without sync (to not distort the results) by using the `--executeBlocks` and the `--vmProfileBlocks` (or `--vmProfileTxs`) flags in conjunction like:
 

@@ -59,6 +59,11 @@ const debug = debugDefault('evm:evm')
 const debugGas = debugDefault('evm:gas')
 const debugPrecompiles = debugDefault('evm:precompiles')
 
+/**
+ * Creates a standardized ExecResult for out-of-gas errors.
+ * @param gasLimit - Gas limit consumed by the failing frame
+ * @returns Execution result describing the OOG failure
+ */
 export function OOGResult(gasLimit: bigint): ExecResult {
   return {
     returnValue: new Uint8Array(0),
@@ -66,7 +71,10 @@ export function OOGResult(gasLimit: bigint): ExecResult {
     exceptionError: new EVMError(EVMError.errorMessages.OUT_OF_GAS),
   }
 }
-// CodeDeposit OOG Result
+/**
+ * Creates an ExecResult for code-deposit out-of-gas errors (EIP-3541).
+ * @param gasUsedCreateCode - Gas consumed while attempting to store code
+ */
 export function COOGResult(gasUsedCreateCode: bigint): ExecResult {
   return {
     returnValue: new Uint8Array(0),
@@ -75,6 +83,10 @@ export function COOGResult(gasUsedCreateCode: bigint): ExecResult {
   }
 }
 
+/**
+ * Returns an ExecResult signalling invalid bytecode input.
+ * @param gasLimit - Gas consumed up to the point of failure
+ */
 export function INVALID_BYTECODE_RESULT(gasLimit: bigint): ExecResult {
   return {
     returnValue: new Uint8Array(0),
@@ -83,6 +95,10 @@ export function INVALID_BYTECODE_RESULT(gasLimit: bigint): ExecResult {
   }
 }
 
+/**
+ * Returns an ExecResult signalling invalid EOF formatting.
+ * @param gasLimit - Gas consumed up to the point of failure
+ */
 export function INVALID_EOF_RESULT(gasLimit: bigint): ExecResult {
   return {
     returnValue: new Uint8Array(0),
@@ -91,6 +107,10 @@ export function INVALID_EOF_RESULT(gasLimit: bigint): ExecResult {
   }
 }
 
+/**
+ * Returns an ExecResult for code size violations.
+ * @param gasUsed - Gas consumed before the violation was detected
+ */
 export function CodesizeExceedsMaximumError(gasUsed: bigint): ExecResult {
   return {
     returnValue: new Uint8Array(0),
@@ -99,6 +119,11 @@ export function CodesizeExceedsMaximumError(gasUsed: bigint): ExecResult {
   }
 }
 
+/**
+ * Wraps an {@link EVMError} in an ExecResult.
+ * @param error - Error encountered during execution
+ * @param gasUsed - Gas consumed up to the error
+ */
 export function EVMErrorResult(error: EVMError, gasUsed: bigint): ExecResult {
   return {
     returnValue: new Uint8Array(0),
@@ -107,6 +132,10 @@ export function EVMErrorResult(error: EVMError, gasUsed: bigint): ExecResult {
   }
 }
 
+/**
+ * Creates a default block header used by stand-alone executions.
+ * @returns Block-like object with zeroed header fields
+ */
 export function defaultBlock(): Block {
   return {
     header: {
