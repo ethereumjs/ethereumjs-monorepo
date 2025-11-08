@@ -32,6 +32,11 @@ export const numberToHex = function (input?: string): PrefixedHexString | undefi
   return input
 }
 
+/**
+ * Converts the canonical byte-array representation of a header into structured {@link HeaderData}.
+ * @param values Header field values in canonical order
+ * @returns Parsed header data
+ */
 export function valuesArrayToHeaderData(values: BlockHeaderBytes): HeaderData {
   const [
     parentHash,
@@ -93,6 +98,11 @@ export function valuesArrayToHeaderData(values: BlockHeaderBytes): HeaderData {
   }
 }
 
+/**
+ * Retrieves the header difficulty as a bigint if the field is provided.
+ * @param headerData Header data potentially containing a difficulty value
+ * @returns Difficulty as bigint, or `null` when unset
+ */
 export function getDifficulty(headerData: HeaderData): bigint | null {
   const { difficulty } = headerData
   if (difficulty !== undefined) {
@@ -101,6 +111,11 @@ export function getDifficulty(headerData: HeaderData): bigint | null {
   return null
 }
 
+/**
+ * Counts the total number of blob commitments contained in the provided transactions.
+ * @param transactions Transactions to inspect for blob data
+ * @returns Number of blob versioned hashes referenced
+ */
 export const getNumBlobs = (transactions: TypedTransaction[]) => {
   let numBlobs = 0
   for (const tx of transactions) {
@@ -143,7 +158,7 @@ export const computeBlobGasPrice = (excessBlobGas: bigint, common: Common) => {
 /**
  * Returns the withdrawals trie root for array of Withdrawal.
  * @param wts array of Withdrawal to compute the root of
- * @param optional emptyTrie to use to generate the root
+ * @param emptyTrie Optional trie used to generate the root
  */
 export async function genWithdrawalsTrieRoot(wts: Withdrawal[], emptyTrie?: MerklePatriciaTrie) {
   const trie = emptyTrie ?? new MerklePatriciaTrie()
@@ -156,7 +171,7 @@ export async function genWithdrawalsTrieRoot(wts: Withdrawal[], emptyTrie?: Merk
 /**
  * Returns the txs trie root for array of TypedTransaction
  * @param txs array of TypedTransaction to compute the root of
- * @param optional emptyTrie to use to generate the root
+ * @param emptyTrie Optional trie used to generate the root
  */
 export async function genTransactionsTrieRoot(
   txs: TypedTransaction[],
@@ -172,6 +187,7 @@ export async function genTransactionsTrieRoot(
 /**
  * Returns the requests trie root for an array of CLRequests
  * @param requests - an array of CLRequests
+ * @param sha256Function Hash function used to derive the requests root
  * @param emptyTrie optional empty trie used to generate the root
  * @returns a 32 byte Uint8Array representing the requests trie root
  */

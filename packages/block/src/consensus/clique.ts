@@ -81,7 +81,7 @@ export function cliqueExtraSeal(header: BlockHeader): Uint8Array {
  *
  * This function throws if not called on an epoch
  * transition block and should therefore be used
- * in conjunction with {@link BlockHeader.cliqueIsEpochTransition}
+ * in conjunction with {@link cliqueIsEpochTransition}
  */
 export function cliqueEpochTransitionSigners(header: BlockHeader): Address[] {
   requireClique(header, 'cliqueEpochTransitionSigners')

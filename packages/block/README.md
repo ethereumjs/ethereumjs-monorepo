@@ -11,7 +11,7 @@
 
 - 🦄 All block features till **Pectra**
 - 🌴 Tree-shakeable API
-- 👷🏼 Controlled dependency set (4 external + `@Noble` crypto)
+- 👷🏼 Controlled dependency set (4 external + `@noble` crypto)
 - 🔮 `EIP-4844` Shard Blob Txs
 - 💸 `EIP-4895` Beacon Chain Withdrawals
 - 📨 `EIP-7685` Consensus Layer Requests
@@ -374,7 +374,7 @@ See the API docs for detailed documentation on Clique/PoA related utility method
 
 ## Browser
 
-We provide hybrid ESM/CJS builds for all our libraries. With the v10 breaking release round from Spring 2025, all libraries are "pure-JS" by default and we have eliminated all hard-wired WASM code. Additionally we have substantially lowered the bundle sizes, reduced the number of dependencies, and cut out all usages of Node.js specific primities (like the Node.js event emitter).
+We provide hybrid ESM/CJS builds for all our libraries. With the v10 breaking release round from Spring 2025, all libraries are "pure-JS" by default and we have eliminated all hard-wired WASM code. Additionally we have substantially lowered the bundle sizes, reduced the number of dependencies, and cut out all usages of Node.js-specific primitives (like the Node.js event emitter).
 
 It is easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
 
@@ -388,7 +388,7 @@ Generated TypeDoc API [Documentation](./docs/README.md)
 
 With the breaking releases from Summer 2023 we have started to ship our libraries with both CommonJS (`cjs` folder) and ESM builds (`esm` folder), see `package.json` for the detailed setup.
 
-If you use an ES6-style `import` in your code files from the ESM build will be used:
+If you use an ES6-style `import` in your code, the ESM build will be used:
 
 ```ts
 import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
@@ -400,7 +400,7 @@ If you use Node.js specific `require`, the CJS build will be used:
 const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
 ```
 
-Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking which CJS can not provide.
+Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking which CJS cannot provide.
 
 
 ## Testing

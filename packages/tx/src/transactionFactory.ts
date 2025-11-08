@@ -110,7 +110,7 @@ export function createTxFromBlockBodyData(
  * Note that this normalizes some of the parameters
  * @param txData The RPC-encoded data
  * @param txOptions The transaction options
- * @returns
+ * @returns A promise that resolves with the instantiated transaction
  */
 export async function createTxFromRPC<T extends TransactionType>(
   txData: TxData[T],

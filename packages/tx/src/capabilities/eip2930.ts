@@ -27,7 +27,7 @@ function getAccessListDataGas(tx: EIP2930CompatibleTx): number {
 
 /**
  * Verifies an access list. Throws if invalid.
- * @param accessList
+ * @param tx - Transaction whose access list should be validated
  */
 export function verifyAccessList(tx: EIP2930CompatibleTx) {
   const accessList = tx.accessList
