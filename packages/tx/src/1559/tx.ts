@@ -254,6 +254,7 @@ export class FeeMarket1559Tx
    * ```javascript
    * const serializedMessage = tx.getMessageToSign() // use this for the HW wallet input
    * ```
+   * @returns Serialized unsigned transaction payload
    */
   getMessageToSign(): Uint8Array {
     return EIP2718.serialize(this, this.raw().slice(0, 9))
@@ -265,6 +266,7 @@ export class FeeMarket1559Tx
    *
    * Note: in contrast to the legacy tx the raw message format is already
    * serialized and doesn't need to be RLP encoded any more.
+   * @returns Keccak hash of the unsigned transaction payload
    */
   getHashedMessageToSign(): Uint8Array {
     return EIP2718.getHashedMessageToSign(this)
@@ -275,6 +277,7 @@ export class FeeMarket1559Tx
    *
    * This method can only be used for signed txs (it throws otherwise).
    * Use {@link FeeMarket1559Tx.getMessageToSign} to get a tx hash for the purpose of signing.
+   * @returns Hash of the serialized signed transaction
    */
   public hash(): Uint8Array {
     return Legacy.hash(this)
@@ -282,6 +285,7 @@ export class FeeMarket1559Tx
 
   /**
    * Computes a sha3-256 hash which can be used to verify the signature
+   * @returns Hash used when verifying the signature
    */
   public getMessageToVerifySignature(): Uint8Array {
     return this.getHashedMessageToSign()
@@ -289,11 +293,19 @@ export class FeeMarket1559Tx
 
   /**
    * Returns the public key of the sender
+   * @returns Sender public key
    */
   public getSenderPublicKey(): Uint8Array {
     return Legacy.getSenderPublicKey(this)
   }
 
+  /**
+   * Adds signature values and returns a new EIP-1559 transaction instance.
+   * @param v - Recovery parameter (y-parity)
+   * @param r - Signature `r` value
+   * @param s - Signature `s` value
+   * @returns Newly created transaction that includes the signature
+   */
   addSignature(v: bigint, r: Uint8Array | bigint, s: Uint8Array | bigint): FeeMarket1559Tx {
     r = toBytes(r)
     s = toBytes(s)
@@ -320,6 +332,7 @@ export class FeeMarket1559Tx
 
   /**
    * Returns an object with the JSON representation of the transaction
+   * @returns JSON encoding of the transaction
    */
   toJSON(): JSONTx {
     const accessListJSON = accessListBytesToJSON(this.accessList)
@@ -334,26 +347,51 @@ export class FeeMarket1559Tx
     }
   }
 
+  /**
+   * Runs validation logic and returns encountered errors, if any.
+   * @returns Array of validation error messages.
+   */
   getValidationErrors(): string[] {
     return Legacy.getValidationErrors(this)
   }
 
+  /**
+   * @returns true if the transaction passes validation
+   */
   isValid(): boolean {
     return Legacy.isValid(this)
   }
 
+  /**
+   * Verifies the embedded signature.
+   * @returns true if signature verification succeeds
+   */
   verifySignature(): boolean {
     return Legacy.verifySignature(this)
   }
 
+  /**
+   * Recovers the sender address from the signature.
+   * @returns Sender {@link Address}
+   */
   getSenderAddress(): Address {
     return Legacy.getSenderAddress(this)
   }
 
+  /**
+   * Signs the transaction with the provided private key and returns the signed instance.
+   * @param privateKey - 32-byte private key
+   * @param extraEntropy - Optional entropy passed to the signing routine
+   * @returns Newly signed transaction
+   */
   sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = false): FeeMarket1559Tx {
     return Legacy.sign(this, privateKey, extraEntropy) as FeeMarket1559Tx
   }
 
+  /**
+   * Reports whether the transaction already contains `v`, `r`, and `s`.
+   * @returns true if signature parts are present
+   */
   public isSigned(): boolean {
     const { v, r, s } = this
     if (v === undefined || r === undefined || s === undefined) {
@@ -365,6 +403,7 @@ export class FeeMarket1559Tx
 
   /**
    * Return a compact error string representation of the object
+   * @returns Human-readable error summary
    */
   public errorStr() {
     let errorStr = Legacy.getSharedErrorPostfix(this)
