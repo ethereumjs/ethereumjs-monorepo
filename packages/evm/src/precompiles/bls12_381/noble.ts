@@ -325,7 +325,7 @@ export class NobleBLS implements EVMBLSInterface {
 
     // Filter out infinity pairs
     const filteredPairs = pairs.filter(
-      (pair) => !pair.g1.equals(G1_ZERO) && !pair.g2.equals(G2_ZERO),
+      (pair) => pair.g1.equals(G1_ZERO) === false && pair.g2.equals(G2_ZERO) === false,
     )
 
     const FP12 = bls12_381.pairingBatch(filteredPairs, true)
