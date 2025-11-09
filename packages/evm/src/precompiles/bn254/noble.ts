@@ -30,12 +30,14 @@ const ONE_BUFFER = concatBytes(new Uint8Array(31), hexToBytes('0x01'))
  */
 function toG1Point(input: Uint8Array) {
   if (equalsBytes(input, G1_INFINITY_POINT_BYTES) === true) {
+    // @ts-ignore - @noble/curves v2 is ESM-only, TypeScript's moduleResolution: "node" doesn't properly resolve types for CJS build
     return bn254.G1.ProjectivePoint.ZERO
   }
 
   const x = bytesToBigInt(input.subarray(0, G1_ELEMENT_BYTE_LENGTH))
   const y = bytesToBigInt(input.subarray(G1_ELEMENT_BYTE_LENGTH, G1_POINT_BYTE_LENGTH))
 
+  // @ts-ignore - @noble/curves v2 is ESM-only, TypeScript's moduleResolution: "node" doesn't properly resolve types for CJS build
   const G1 = bn254.G1.ProjectivePoint.fromAffine({
     x,
     y,
@@ -84,6 +86,7 @@ function toFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array) {
  */
 function toG2Point(input: Uint8Array) {
   if (equalsBytes(input, G2_INFINITY_POINT_BYTES) === true) {
+    // @ts-ignore - @noble/curves v2 is ESM-only, TypeScript's moduleResolution: "node" doesn't properly resolve types for CJS build
     return bn254.G2.ProjectivePoint.ZERO
   }
 
@@ -103,6 +106,7 @@ function toG2Point(input: Uint8Array) {
   const Fp2X = toFp2Point(p_x_1, p_x_2)
   const Fp2Y = toFp2Point(p_y_1, p_y_2)
 
+  // @ts-ignore - @noble/curves v2 is ESM-only, TypeScript's moduleResolution: "node" doesn't properly resolve types for CJS build
   const pG2 = bn254.G2.ProjectivePoint.fromAffine({
     x: Fp2X,
     y: Fp2Y,
@@ -150,6 +154,7 @@ export class NobleBN254 implements EVMBN254Interface {
       const g2start = pairStart + G1_POINT_BYTE_LENGTH
       const G2 = toG2Point(input.subarray(g2start, g2start + G2_POINT_BYTE_LENGTH))
 
+      // @ts-ignore - @noble/curves v2 is ESM-only, TypeScript's moduleResolution: "node" doesn't properly resolve types for CJS build
       if (G1 === bn254.G1.ProjectivePoint.ZERO || G2 === bn254.G2.ProjectivePoint.ZERO) {
         continue
       }
