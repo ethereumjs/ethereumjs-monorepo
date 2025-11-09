@@ -7,11 +7,11 @@ import {
   hexToBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
-import { bn254 } from '@noble/curves/bn254'
+import { bn254 } from '@noble/curves/bn254.js'
 
 import { EVMError } from '../../errors.ts'
 
-import type { AffinePoint } from '@noble/curves/abstract/weierstrass'
+import type { AffinePoint } from '@noble/curves/abstract/weierstrass.js'
 import type { EVMBN254Interface } from '../../types.ts'
 
 const G1_INFINITY_POINT_BYTES = new Uint8Array(64)

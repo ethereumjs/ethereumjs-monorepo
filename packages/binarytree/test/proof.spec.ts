@@ -1,4 +1,4 @@
-import { blake3 } from '@noble/hashes/blake3'
+import { blake3 } from '@noble/hashes/blake3.js'
 import { assert, describe, it } from 'vitest'
 
 import { createBinaryTree } from '../src/constructors.ts'

@@ -1,6 +1,6 @@
 import { Hardfork } from '@ethereumjs/common'
 import { type PrefixedHexString, bytesToHex, randomBytes, utf8ToBytes } from '@ethereumjs/util'
-import { p256 } from '@noble/curves/p256'
+import { p256 } from '@noble/curves/p256.js'
 import { sha256 } from 'ethereum-cryptography/sha256.js'
 import { runPrecompile } from './util.ts'
 

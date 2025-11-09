@@ -6,7 +6,7 @@ import {
   equalsBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
-import { bls12_381 } from '@noble/curves/bls12-381'
+import { bls12_381 } from '@noble/curves/bls12-381.js'
 
 import { EVMError } from '../../errors.ts'
 
@@ -20,8 +20,8 @@ import {
   BLS_ZERO_BUFFER,
 } from './constants.ts'
 
-import type { Fp2 } from '@noble/curves/abstract/tower'
-import type { AffinePoint } from '@noble/curves/abstract/weierstrass'
+import type { Fp2 } from '@noble/curves/abstract/tower.js'
+import type { AffinePoint } from '@noble/curves/abstract/weierstrass.js'
 import type { EVMBLSInterface } from '../../types.ts'
 
 // @ts-ignore - @noble/curves v2 is ESM-only, TypeScript's moduleResolution: "node" doesn't properly resolve types for CJS build
