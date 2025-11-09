@@ -1,6 +1,6 @@
-import rootConfig from '../../eslint.config.mjs'
-import { fileURLToPath } from 'url'
 import { dirname } from 'path'
+import { fileURLToPath } from 'url'
+import rootConfig from '../../eslint.config.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
