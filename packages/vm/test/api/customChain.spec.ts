@@ -1,7 +1,12 @@
 import { createBlock } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
-import { customChainConfig, testnetMergeChainConfig } from '@ethereumjs/testdata'
+import {
+  SIGNER_A,
+  SIGNER_G,
+  customChainConfig,
+  testnetMergeChainConfig,
+} from '@ethereumjs/testdata'
 import { createTx } from '@ethereumjs/tx'
 import {
   bytesToHex,
@@ -42,8 +47,8 @@ const accountState: AccountState = [
 
 const contractAddress = '0x3651539F2E119a27c606cF0cB615410eCDaAE62a'
 const genesisState: GenesisState = {
-  '0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b': '0x6d6172697573766477000000',
-  '0xbe862ad9abfe6f22bcb087716c7d89a26051f74c': '0x6d6172697573766477000000',
+  [SIGNER_A.address.toString()]: '0x6d6172697573766477000000',
+  [SIGNER_G.address.toString()]: '0x6d6172697573766477000000',
   [contractAddress]: accountState,
 }
 
@@ -60,7 +65,6 @@ const block = createBlock(
     common,
   },
 )
-const privateKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
 
 describe('VM initialized with custom state', () => {
   it('should transfer eth from already existent account', async () => {
@@ -79,7 +83,7 @@ describe('VM initialized with custom state', () => {
       {
         common,
       },
-    ).sign(privateKey)
+    ).sign(SIGNER_A.privateKey)
     const result = await runTx(vm, {
       tx,
       block,
@@ -106,7 +110,7 @@ describe('VM initialized with custom state', () => {
     const callResult = await vm.evm.runCall({
       to: createAddressFromString(contractAddress),
       data: hexToBytes(calldata as PrefixedHexString),
-      caller: createAddressFromPrivateKey(privateKey),
+      caller: createAddressFromPrivateKey(SIGNER_A.privateKey),
     })
 
     const storage = genesisState[contractAddress][2]
