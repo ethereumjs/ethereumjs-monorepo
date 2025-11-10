@@ -1,5 +1,11 @@
 import { Hardfork } from '@ethereumjs/common'
-import { type PrefixedHexString, bytesToHex, randomBytes, utf8ToBytes } from '@ethereumjs/util'
+import {
+  type PrefixedHexString,
+  bytesToHex,
+  bytesToUnprefixedHex,
+  randomBytes,
+  utf8ToBytes,
+} from '@ethereumjs/util'
 import { p256 } from '@noble/curves/nist.js'
 import { sha256 } from 'ethereum-cryptography/sha256.js'
 import { runPrecompile } from './util.ts'
@@ -18,18 +24,19 @@ const main = async () => {
   const message = 'ethereumjs-evm-p256verify-example'
   const messageHash = sha256(utf8ToBytes(message))
 
-  const privateKey = randomBytes(32)
-  const publicKey = p256.ProjectivePoint.fromPrivateKey(privateKey).toAffine()
+  const privateKey = p256.utils.randomSecretKey()
+  const publicKey = p256.getPublicKey(privateKey, false) // Get uncompressed public key
 
-  const signature = p256.sign(messageHash, privateKey)
+  const signatureBytes = p256.sign(messageHash, privateKey)
+  const signature = p256.Signature.fromBytes(signatureBytes)
 
   const padHex = (value: bigint) => value.toString(16).padStart(64, '0')
 
   const msgHashHex = bytesToHex(messageHash)
   const rHex = padHex(signature.r)
   const sHex = padHex(signature.s)
-  const qxHex = padHex(publicKey.x)
-  const qyHex = padHex(publicKey.y)
+  const qxHex = bytesToUnprefixedHex(publicKey.slice(1, 33)).padStart(64, '0')
+  const qyHex = bytesToUnprefixedHex(publicKey.slice(33, 65)).padStart(64, '0')
 
   const data: PrefixedHexString = `${msgHashHex}${rHex}${sHex}${qxHex}${qyHex}`
 
