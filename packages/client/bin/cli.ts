@@ -13,7 +13,7 @@ import { DataDirectory } from '../src/config.ts'
 import { LevelDB } from '../src/execution/level.ts'
 
 import { helpRPC, startRPCServers } from './startRPC.ts'
-import { generateClientConfig, getArgs } from './utils.ts'
+import { generateClientConfig, generateRpcConfigs, getArgs } from './utils.ts'
 
 import type * as http from 'http'
 import type { Block, BlockBytes } from '@ethereumjs/block'
@@ -23,6 +23,7 @@ import type { AbstractLevel } from 'abstract-level'
 import type { Server as RPCServer } from 'jayson/promise/index.js'
 import type { Config } from '../src/config.ts'
 import type { Logger } from '../src/logging.ts'
+import type { RpcConfig } from '../src/rpc/config.ts'
 import type { FullEthereumService } from '../src/service/index.ts'
 import type { ClientOpts } from '../src/types.ts'
 import type { RPCArgs } from './startRPC.ts'
@@ -280,8 +281,26 @@ async function run() {
 
   const { config, customGenesisState, metricsServer } = await generateClientConfig(args)
 
+  const rpcConfigs = generateRpcConfigs(config, args as RPCArgs)
+
   logger = config.logger
 
+  await startClientAndServers(
+    config,
+    customGenesisState,
+    customGenesisStateRoot,
+    metricsServer,
+    rpcConfigs,
+  )
+}
+
+async function startClientAndServers(
+  config: Config,
+  customGenesisState: GenesisState | undefined,
+  customGenesisStateRoot: Uint8Array<ArrayBufferLike> | undefined,
+  metricsServer: http.Server<typeof http.IncomingMessage, typeof http.ServerResponse> | undefined,
+  rpcConfigs: RpcConfig[],
+) {
   // Do not wait for client to be fully started so that we can hookup SIGINT handling
   // else a SIGINT before may kill the process in unclean manner
   const clientStartPromise = startClient(config, {
@@ -290,7 +309,7 @@ async function run() {
     .then((client) => {
       const servers: (RPCServer | http.Server)[] =
         args.rpc === true || args.rpcEngine === true || args.ws === true
-          ? startRPCServers(client, args as RPCArgs)
+          ? startRPCServers(client, rpcConfigs)
           : []
       if (
         client.config.chainCommon.gteHardfork(Hardfork.Paris) &&
