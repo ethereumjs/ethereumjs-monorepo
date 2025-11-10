@@ -27,7 +27,7 @@ const main = async () => {
   const privateKey = p256.utils.randomSecretKey()
   const publicKey = p256.getPublicKey(privateKey, false) // Get uncompressed public key
 
-  const signatureBytes = p256.sign(messageHash, privateKey)
+  const signatureBytes = p256.sign(messageHash, privateKey, { prehash: false })
   const signature = p256.Signature.fromBytes(signatureBytes)
 
   const padHex = (value: bigint) => value.toString(16).padStart(64, '0')
