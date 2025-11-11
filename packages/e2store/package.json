@@ -67,6 +67,6 @@
     "@types/snappyjs": "^0.7.1"
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=20"
   }
 }

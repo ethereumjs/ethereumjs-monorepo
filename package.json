@@ -63,7 +63,7 @@
     "@rollup/rollup-linux-x64-gnu": "*"
   },
   "engines": {
-    "node": ">=22",
-    "npm": ">=10"
+    "node": ">=20",
+    "npm": ">=9"
   }
 }
