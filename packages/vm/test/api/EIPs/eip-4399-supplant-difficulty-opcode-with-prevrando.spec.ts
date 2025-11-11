@@ -23,32 +23,37 @@ describe('EIP-4399 -> 0x44 (DIFFICULTY) should return PREVRANDAO', () => {
 
     // Track stack
     let stack: any = []
-    vm.evm.events!.on('step', (iStep, resolve) => {
+    const handler = (iStep: any, resolve?: () => void) => {
       if (iStep.opcode.name === 'STOP') {
         stack = iStep.stack
       }
       resolve?.()
-    })
-
-    const runCodeArgs = {
-      code: hexToBytes('0x4400'),
-      gasLimit: BigInt(0xffff),
     }
-    await vm.evm.runCode!({ ...runCodeArgs, block })
-    assert.strictEqual(stack[0], block.header.difficulty, '0x44 returns DIFFICULTY (London)')
+    vm.evm.events!.on('step', handler)
 
-    common.setHardfork(Hardfork.Paris)
-    const prevRandao = bytesToBigInt(new Uint8Array(32).fill(1))
-    block = createBlock(
-      {
-        header: {
-          ...header,
-          mixHash: prevRandao,
+    try {
+      const runCodeArgs = {
+        code: hexToBytes('0x4400'),
+        gasLimit: BigInt(0xffff),
+      }
+      await vm.evm.runCode!({ ...runCodeArgs, block })
+      assert.strictEqual(stack[0], block.header.difficulty, '0x44 returns DIFFICULTY (London)')
+
+      common.setHardfork(Hardfork.Paris)
+      const prevRandao = bytesToBigInt(new Uint8Array(32).fill(1))
+      block = createBlock(
+        {
+          header: {
+            ...header,
+            mixHash: prevRandao,
+          },
         },
-      },
-      { common },
-    )
-    await vm.evm.runCode!({ ...runCodeArgs, block })
-    assert.strictEqual(stack[0], prevRandao, '0x44 returns PREVRANDAO (Merge)')
+        { common },
+      )
+      await vm.evm.runCode!({ ...runCodeArgs, block })
+      assert.strictEqual(stack[0], prevRandao, '0x44 returns PREVRANDAO (Merge)')
+    } finally {
+      vm.evm.events!.removeListener('step', handler)
+    }
   })
 })

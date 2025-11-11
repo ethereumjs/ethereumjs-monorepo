@@ -16,43 +16,53 @@ describe('EIP 3855 tests', () => {
   it('should correctly use push0 opcode', async () => {
     const vm = await createVM({ common })
     let stack: bigint[]
-    vm.evm.events!.on('step', (e, resolve) => {
+    const handler = (e: any, resolve?: () => void) => {
       stack = e.stack
       resolve?.()
-    })
+    }
+    vm.evm.events!.on('step', handler)
 
-    const result = await vm.evm.runCode!({
-      code: hexToBytes('0x5F00'),
-      gasLimit: BigInt(10),
-    })
+    try {
+      const result = await vm.evm.runCode!({
+        code: hexToBytes('0x5F00'),
+        gasLimit: BigInt(10),
+      })
 
-    assert.strictEqual(stack!.length, 1)
-    assert.strictEqual(stack![0], BigInt(0))
-    assert.strictEqual(result.executionGasUsed, common.param('push0Gas'))
+      assert.strictEqual(stack!.length, 1)
+      assert.strictEqual(stack![0], BigInt(0))
+      assert.strictEqual(result.executionGasUsed, common.param('push0Gas'))
+    } finally {
+      vm.evm.events!.removeListener('step', handler)
+    }
   })
 
   it('should correctly use push0 to create a stack with stack limit length', async () => {
     const vm = await createVM({ common })
     let stack: bigint[] = []
-    vm.evm.events!.on('step', (e, resolve) => {
+    const handler = (e: any, resolve?: () => void) => {
       stack = e.stack
       resolve?.()
-    })
-
-    const depth = Number(common.param('stackLimit'))
-
-    const result = await vm.evm.runCode!({
-      code: hexToBytes(`0x${'5F'.repeat(depth)}00`),
-      gasLimit: BigInt(10000),
-    })
-
-    assert.strictEqual(stack.length, depth)
-    for (const elem of stack) {
-      if (elem !== BigInt(0)) {
-        assert.fail('stack element is not 0')
-      }
     }
-    assert.strictEqual(result.executionGasUsed, common.param('push0Gas')! * BigInt(depth))
+    vm.evm.events!.on('step', handler)
+
+    try {
+      const depth = Number(common.param('stackLimit'))
+
+      const result = await vm.evm.runCode!({
+        code: hexToBytes(`0x${'5F'.repeat(depth)}00`),
+        gasLimit: BigInt(10000),
+      })
+
+      assert.strictEqual(stack.length, depth)
+      for (const elem of stack) {
+        if (elem !== BigInt(0)) {
+          assert.fail('stack element is not 0')
+        }
+      }
+      assert.strictEqual(result.executionGasUsed, common.param('push0Gas')! * BigInt(depth))
+    } finally {
+      vm.evm.events!.removeListener('step', handler)
+    }
   })
 
   it('should correctly use push0 to create a stack with stack limit + 1 length', async () => {

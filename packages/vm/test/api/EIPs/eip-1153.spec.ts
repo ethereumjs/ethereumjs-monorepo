@@ -25,7 +25,7 @@ describe('EIP 1153: transient storage', () => {
     let currentGas = initialGas
     const vm = await createVM({ common })
 
-    vm.evm.events!.on('step', function (step, resolve) {
+    const handler = function (step: any, resolve?: () => void) {
       const gasUsed = currentGas - step.gasLeft
       currentGas = step.gasLeft
 
@@ -53,21 +53,26 @@ describe('EIP 1153: transient storage', () => {
       }
       i++
       resolve?.()
-    })
-
-    for (const { code, address } of test.contracts) {
-      await vm.stateManager.putCode(address, hexToBytes(code as PrefixedHexString))
     }
+    vm.evm.events!.on('step', handler)
 
-    const fromAddress = new Address(privateToAddress(senderKey))
-    await vm.stateManager.putAccount(fromAddress, new Account(BigInt(0), BigInt(0xfffffffff)))
-    const results = []
-    for (const tx of test.transactions) {
-      const result = await runTx(vm, { tx, skipBalance: true, skipHardForkValidation: true })
-      results.push(result)
+    try {
+      for (const { code, address } of test.contracts) {
+        await vm.stateManager.putCode(address, hexToBytes(code as PrefixedHexString))
+      }
+
+      const fromAddress = new Address(privateToAddress(senderKey))
+      await vm.stateManager.putAccount(fromAddress, new Account(BigInt(0), BigInt(0xfffffffff)))
+      const results = []
+      for (const tx of test.transactions) {
+        const result = await runTx(vm, { tx, skipBalance: true, skipHardForkValidation: true })
+        results.push(result)
+      }
+
+      return results
+    } finally {
+      vm.evm.events!.removeListener('step', handler)
     }
-
-    return results
   }
 
   it('should tload and tstore', async () => {

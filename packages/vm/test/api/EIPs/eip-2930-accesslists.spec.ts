@@ -67,20 +67,25 @@ describe('EIP-2930 Optional Access Lists tests', () => {
 
     let trace: any = []
 
-    vm.evm.events!.on('step', (o, resolve) => {
+    const handler = (o: any, resolve?: () => void) => {
       trace.push([o.opcode.name, o.gasLeft])
       resolve?.()
-    })
+    }
+    vm.evm.events!.on('step', handler)
 
-    await runTx(vm, { tx: txnWithAccessList })
-    assert.strictEqual(trace[1][0], 'SLOAD')
-    let gasUsed = trace[1][1] - trace[2][1]
-    assert.strictEqual(Number(gasUsed), 100, 'charge warm sload gas')
+    try {
+      await runTx(vm, { tx: txnWithAccessList })
+      assert.strictEqual(trace[1][0], 'SLOAD')
+      let gasUsed = trace[1][1] - trace[2][1]
+      assert.strictEqual(Number(gasUsed), 100, 'charge warm sload gas')
 
-    trace = []
-    await runTx(vm, { tx: txnWithoutAccessList, skipNonce: true })
-    assert.strictEqual(trace[1][0], 'SLOAD')
-    gasUsed = trace[1][1] - trace[2][1]
-    assert.strictEqual(Number(gasUsed), 2100, 'charge cold sload gas')
+      trace = []
+      await runTx(vm, { tx: txnWithoutAccessList, skipNonce: true })
+      assert.strictEqual(trace[1][0], 'SLOAD')
+      gasUsed = trace[1][1] - trace[2][1]
+      assert.strictEqual(Number(gasUsed), 2100, 'charge cold sload gas')
+    } finally {
+      vm.evm.events!.removeListener('step', handler)
+    }
   })
 })

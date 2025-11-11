@@ -18,7 +18,7 @@ describe('EIP 2929: gas cost tests', () => {
     let i = 0
     let currentGas = initialGas
     const vm = await createVM({ common })
-    vm.evm.events!.on('step', function (step, resolve) {
+    const handler = function (step: any, resolve?: () => void) {
       const gasUsed = currentGas - step.gasLeft
       currentGas = step.gasLeft
 
@@ -46,22 +46,27 @@ describe('EIP 2929: gas cost tests', () => {
       }
       i++
       resolve?.()
-    })
+    }
+    vm.evm.events!.on('step', handler)
 
-    await vm.stateManager.putCode(address, hexToBytes(test.code))
+    try {
+      await vm.stateManager.putCode(address, hexToBytes(test.code))
 
-    const unsignedTx = createLegacyTx({
-      gasLimit: initialGas, // ensure we pass a lot of gas, so we do not run out of gas
-      to: address, // call to the contract address,
-    })
+      const unsignedTx = createLegacyTx({
+        gasLimit: initialGas, // ensure we pass a lot of gas, so we do not run out of gas
+        to: address, // call to the contract address,
+      })
 
-    const tx = unsignedTx.sign(senderKey)
+      const tx = unsignedTx.sign(senderKey)
 
-    const result = await runTx(vm, { tx, skipHardForkValidation: true })
+      const result = await runTx(vm, { tx, skipHardForkValidation: true })
 
-    const totalGasUsed = initialGas - currentGas
-    assert.strictEqual(true, totalGasUsed === BigInt(test.totalGasUsed) + BigInt(21000)) // Add tx upfront cost.
-    return result
+      const totalGasUsed = initialGas - currentGas
+      assert.strictEqual(true, totalGasUsed === BigInt(test.totalGasUsed) + BigInt(21000)) // Add tx upfront cost.
+      return result
+    } finally {
+      vm.evm.events!.removeListener('step', handler)
+    }
   }
 
   const runCodeTest = async function (code: PrefixedHexString, expectedGasUsed: bigint) {

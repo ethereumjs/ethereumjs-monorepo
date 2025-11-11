@@ -77,20 +77,25 @@ describe('EIP3198 tests', () => {
     // Track stack
 
     let stack: any = []
-    vm.evm.events!.on('step', (iStep, resolve) => {
+    const handler = (iStep: any, resolve?: () => void) => {
       if (iStep.opcode.name === 'STOP') {
         stack = iStep.stack
       }
       resolve?.()
-    })
+    }
+    vm.evm.events!.on('step', handler)
 
-    const results = await runTx(vm, {
-      tx: block.transactions[0],
-      block,
-    })
-    const txBaseFee = block.transactions[0].getIntrinsicGas()
-    const gasUsed = results.totalGasSpent - txBaseFee
-    assert.strictEqual(gasUsed, BigInt(2), 'gas used correct')
-    assert.strictEqual(stack[0], fee, 'right item pushed on stack')
+    try {
+      const results = await runTx(vm, {
+        tx: block.transactions[0],
+        block,
+      })
+      const txBaseFee = block.transactions[0].getIntrinsicGas()
+      const gasUsed = results.totalGasSpent - txBaseFee
+      assert.strictEqual(gasUsed, BigInt(2), 'gas used correct')
+      assert.strictEqual(stack[0], fee, 'right item pushed on stack')
+    } finally {
+      vm.evm.events!.removeListener('step', handler)
+    }
   })
 })
