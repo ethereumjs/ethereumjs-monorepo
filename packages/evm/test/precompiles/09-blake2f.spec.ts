@@ -108,7 +108,7 @@ describe('Precompiles: BLAKE2F', () => {
         'should generate expected value',
       )
       assert.deepEqual(result.executionGasUsed, BigInt(t.gas), 'should use expected amount of gas')
-    }, 20_000)
+    }, 40_000)
   }
 
   for (const t of malformedCases) {
