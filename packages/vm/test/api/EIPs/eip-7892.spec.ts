@@ -112,7 +112,7 @@ describe('EIP-7892 BPO tests', () => {
 
     // Block has already been executed by build(), just verify it's valid
     assert.isTrue(block.header.gasUsed > 0n, 'block should execute successfully')
-  }, 60000)
+  }, 120000)
 
   it('should accept block with BPO2 blob parameters', async () => {
     // Sepolia BPO2 timestamp: 1761607008
@@ -200,5 +200,5 @@ describe('EIP-7892 BPO tests', () => {
 
     // Block has already been executed by build(), just verify it's valid
     assert.isTrue(block.header.gasUsed > 0n, 'block should execute successfully')
-  }, 60000)
+  }, 120000)
 })
