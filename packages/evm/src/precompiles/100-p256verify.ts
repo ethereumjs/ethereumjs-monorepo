@@ -1,5 +1,5 @@
 import { bytesToBigInt, bytesToHex, setLengthLeft } from '@ethereumjs/util'
-import { p256 } from '@noble/curves/p256'
+import { p256 } from '@noble/curves/p256.js'
 
 import { OOGResult } from '../evm.ts'
 
