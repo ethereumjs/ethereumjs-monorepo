@@ -5,6 +5,7 @@ import { assert, describe, it } from 'vitest'
 
 import { createVM, runTx } from '../../../src/index.ts'
 
+import type { InterpreterStep } from '@ethereumjs/evm'
 import type { Address } from '@ethereumjs/util'
 
 const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
@@ -70,36 +71,32 @@ describe('EIP 3541 tests', () => {
 
     const vm = await createVM({ common })
     let address: Address
-    const handler = (step: any, resolve?: () => void) => {
+    const handler = (step: InterpreterStep) => {
       if (step.depth === 1) {
         address = step.address
       }
-      resolve?.()
     }
     vm.evm.events!.on('step', handler)
 
-    try {
-      await runTx(vm, { tx, skipHardForkValidation: true })
+    await runTx(vm, { tx, skipHardForkValidation: true })
 
-      let code = await vm.stateManager.getCode(address!)
+    let code = await vm.stateManager.getCode(address!)
 
-      assert.strictEqual(code.length, 0, 'did not deposit code')
+    assert.strictEqual(code.length, 0, 'did not deposit code')
 
-      // put 0xFF contract
-      const tx1 = createLegacyTx({
-        data: '0x7F60FF60005360016000F300000000000000000000000000000000000000000000600052602060006000F000',
-        gasLimit: 1000000,
-        nonce: 1,
-      }).sign(pkey)
+    // put 0xFF contract
+    const tx1 = createLegacyTx({
+      data: '0x7F60FF60005360016000F300000000000000000000000000000000000000000000600052602060006000F000',
+      gasLimit: 1000000,
+      nonce: 1,
+    }).sign(pkey)
 
-      await runTx(vm, { tx: tx1, skipHardForkValidation: true })
+    await runTx(vm, { tx: tx1, skipHardForkValidation: true })
 
-      code = await vm.stateManager.getCode(address!)
+    code = await vm.stateManager.getCode(address!)
 
-      assert.isNotEmpty(code, 'did deposit code')
-    } finally {
-      vm.evm.events!.removeListener('step', handler)
-    }
+    assert.isNotEmpty(code, 'did deposit code')
+    vm.evm.events!.removeListener('step', handler)
   })
 
   it('deploy contracts starting with 0xEF using CREATE2', async () => {
@@ -111,35 +108,31 @@ describe('EIP 3541 tests', () => {
 
     const vm = await createVM({ common })
     let address: Address
-    const handler = (step: any, resolve?: () => void) => {
+    const handler = (step: InterpreterStep) => {
       if (step.depth === 1) {
         address = step.address
       }
-      resolve?.()
     }
     vm.evm.events!.on('step', handler)
 
-    try {
-      await runTx(vm, { tx, skipHardForkValidation: true })
+    await runTx(vm, { tx, skipHardForkValidation: true })
 
-      let code = await vm.stateManager.getCode(address!)
+    let code = await vm.stateManager.getCode(address!)
 
-      assert.strictEqual(code.length, 0, 'did not deposit code')
+    assert.strictEqual(code.length, 0, 'did not deposit code')
 
-      // put 0xFF contract
-      const tx1 = createLegacyTx({
-        data: '0x7F60FF60005360016000F3000000000000000000000000000000000000000000006000526000602060006000F500',
-        gasLimit: 1000000,
-        nonce: 1,
-      }).sign(pkey)
+    // put 0xFF contract
+    const tx1 = createLegacyTx({
+      data: '0x7F60FF60005360016000F3000000000000000000000000000000000000000000006000526000602060006000F500',
+      gasLimit: 1000000,
+      nonce: 1,
+    }).sign(pkey)
 
-      await runTx(vm, { tx: tx1, skipHardForkValidation: true })
+    await runTx(vm, { tx: tx1, skipHardForkValidation: true })
 
-      code = await vm.stateManager.getCode(address!)
+    code = await vm.stateManager.getCode(address!)
 
-      assert.isNotEmpty(code, 'did deposit code')
-    } finally {
-      vm.evm.events!.removeListener('step', handler)
-    }
+    assert.isNotEmpty(code, 'did deposit code')
+    vm.evm.events!.removeListener('step', handler)
   })
 })

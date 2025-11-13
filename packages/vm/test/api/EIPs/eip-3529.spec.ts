@@ -5,6 +5,7 @@ import { assert, describe, it } from 'vitest'
 
 import { createVM, runTx } from '../../../src/index.ts'
 
+import type { InterpreterStep } from '@ethereumjs/evm'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 const address = new Address(hexToBytes(`0x${'11'.repeat(20)}`))
@@ -117,49 +118,45 @@ describe('EIP-3529 tests', () => {
 
     let gasRefund: bigint
     let gasLeft: bigint
-    const handler = (step: any, resolve?: () => void) => {
+    const handler = (step: InterpreterStep) => {
       if (step.opcode.name === 'STOP') {
         gasRefund = step.gasRefund
         gasLeft = step.gasLeft
       }
-      resolve?.()
     }
     vm.evm.events!.on('step', handler)
 
-    try {
-      const gasLimit = BigInt(100000)
-      const key = hexToBytes(`0x${'00'.repeat(32)}`)
+    const gasLimit = BigInt(100000)
+    const key = hexToBytes(`0x${'00'.repeat(32)}`)
 
-      for (const testCase of testCases) {
-        const code = hexToBytes(`${testCase.code as PrefixedHexString}00`) // add a STOP opcode (0 gas) so we can find the gas used / effective gas
+    for (const testCase of testCases) {
+      const code = hexToBytes(`${testCase.code as PrefixedHexString}00`) // add a STOP opcode (0 gas) so we can find the gas used / effective gas
 
-        await vm.stateManager.putAccount(address, new Account())
-        await vm.stateManager.putStorage(
-          address,
-          key,
-          hexToBytes(`0x${testCase.original.toString().padStart(64, '0')}`),
-        )
+      await vm.stateManager.putAccount(address, new Account())
+      await vm.stateManager.putStorage(
+        address,
+        key,
+        hexToBytes(`0x${testCase.original.toString().padStart(64, '0')}`),
+      )
 
-        await vm.stateManager.getStorage(address, key)
-        vm.evm.journal.addAlwaysWarmSlot(bytesToHex(address.bytes), bytesToHex(key))
+      await vm.stateManager.getStorage(address, key)
+      vm.evm.journal.addAlwaysWarmSlot(bytesToHex(address.bytes), bytesToHex(key))
 
-        await vm.evm.runCode!({
-          code,
-          to: address,
-          gasLimit,
-        })
+      await vm.evm.runCode!({
+        code,
+        to: address,
+        gasLimit,
+      })
 
-        const gasUsed = gasLimit - gasLeft!
-        const effectiveGas = gasUsed - gasRefund!
-        assert.strictEqual(effectiveGas, BigInt(testCase.effectiveGas), 'correct effective gas')
-        assert.strictEqual(gasUsed, BigInt(testCase.usedGas), 'correct used gas')
+      const gasUsed = gasLimit - gasLeft!
+      const effectiveGas = gasUsed - gasRefund!
+      assert.strictEqual(effectiveGas, BigInt(testCase.effectiveGas), 'correct effective gas')
+      assert.strictEqual(gasUsed, BigInt(testCase.usedGas), 'correct used gas')
 
-        // clear the storage cache, otherwise next test will use current original value
-        vm.stateManager.originalStorageCache.clear()
-      }
-    } finally {
-      vm.evm.events!.removeListener('step', handler)
+      // clear the storage cache, otherwise next test will use current original value
+      vm.stateManager.originalStorageCache.clear()
     }
+    vm.evm.events!.removeListener('step', handler)
   })
 
   it('should not refund selfdestructs', async () => {
@@ -193,51 +190,47 @@ describe('EIP-3529 tests', () => {
 
     let startGas: bigint
     let finalGas: bigint
-    const handler = (step: any, resolve?: () => void) => {
+    const handler = (step: InterpreterStep) => {
       if (startGas === undefined) {
         startGas = step.gasLeft
       }
       if (step.opcode.name === 'STOP') {
         finalGas = step.gasLeft
       }
-      resolve?.()
     }
     vm.evm.events!.on('step', handler)
 
-    try {
-      const address = new Address(hexToBytes(`0x${'20'.repeat(20)}`))
+    const address = new Address(hexToBytes(`0x${'20'.repeat(20)}`))
 
-      const value = hexToBytes(`0x${'01'.repeat(32)}`)
+    const value = hexToBytes(`0x${'01'.repeat(32)}`)
 
-      let code: PrefixedHexString = '0x'
+    let code: PrefixedHexString = '0x'
 
-      for (let i = 0; i < 100; i++) {
-        const key = hexToBytes(`0x${i.toString(16).padStart(64, '0')}`)
-        await vm.stateManager.putAccount(address, new Account())
-        await vm.stateManager.putStorage(address, key, value)
-        const hex = i.toString(16).padStart(2, '0')
-        // push 0 push <hex> sstore
-        code = `${code}600060${hex}55`
-      }
-
-      code = `${code}00`
-
-      await vm.stateManager.putCode(address, hexToBytes(code))
-
-      const tx = createLegacyTx({
-        to: address,
-        gasLimit: 10000000,
-      }).sign(pkey)
-
-      const result = await runTx(vm, { tx, skipHardForkValidation: true })
-
-      const actualGasUsed = startGas! - finalGas! + BigInt(21000)
-      const maxRefund = actualGasUsed / BigInt(5)
-      const minGasUsed = actualGasUsed - maxRefund
-      assert.isTrue(result.gasRefund! > maxRefund, 'refund is larger than the max refund')
-      assert.isTrue(result.totalGasSpent >= minGasUsed, 'gas used respects the max refund quotient')
-    } finally {
-      vm.evm.events!.removeListener('step', handler)
+    for (let i = 0; i < 100; i++) {
+      const key = hexToBytes(`0x${i.toString(16).padStart(64, '0')}`)
+      await vm.stateManager.putAccount(address, new Account())
+      await vm.stateManager.putStorage(address, key, value)
+      const hex = i.toString(16).padStart(2, '0')
+      // push 0 push <hex> sstore
+      code = `${code}600060${hex}55`
     }
+
+    code = `${code}00`
+
+    await vm.stateManager.putCode(address, hexToBytes(code))
+
+    const tx = createLegacyTx({
+      to: address,
+      gasLimit: 10000000,
+    }).sign(pkey)
+
+    const result = await runTx(vm, { tx, skipHardForkValidation: true })
+
+    const actualGasUsed = startGas! - finalGas! + BigInt(21000)
+    const maxRefund = actualGasUsed / BigInt(5)
+    const minGasUsed = actualGasUsed - maxRefund
+    assert.isTrue(result.gasRefund! > maxRefund, 'refund is larger than the max refund')
+    assert.isTrue(result.totalGasSpent >= minGasUsed, 'gas used respects the max refund quotient')
+    vm.evm.events!.removeListener('step', handler)
   })
 })

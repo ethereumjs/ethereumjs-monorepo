@@ -6,6 +6,7 @@ import { assert, describe, it } from 'vitest'
 
 import { createVM, runTx } from '../../../src/index.ts'
 
+import type { InterpreterStep } from '@ethereumjs/evm'
 import type { TypedTransaction } from '@ethereumjs/tx'
 
 const common = new Common({
@@ -76,26 +77,22 @@ describe('EIP3198 tests', () => {
 
     // Track stack
 
-    let stack: any = []
-    const handler = (iStep: any, resolve?: () => void) => {
+    let stack: bigint[] = []
+    const handler = (iStep: InterpreterStep) => {
       if (iStep.opcode.name === 'STOP') {
         stack = iStep.stack
       }
-      resolve?.()
     }
     vm.evm.events!.on('step', handler)
 
-    try {
-      const results = await runTx(vm, {
-        tx: block.transactions[0],
-        block,
-      })
-      const txBaseFee = block.transactions[0].getIntrinsicGas()
-      const gasUsed = results.totalGasSpent - txBaseFee
-      assert.strictEqual(gasUsed, BigInt(2), 'gas used correct')
-      assert.strictEqual(stack[0], fee, 'right item pushed on stack')
-    } finally {
-      vm.evm.events!.removeListener('step', handler)
-    }
+    const results = await runTx(vm, {
+      tx: block.transactions[0],
+      block,
+    })
+    const txBaseFee = block.transactions[0].getIntrinsicGas()
+    const gasUsed = results.totalGasSpent - txBaseFee
+    assert.strictEqual(gasUsed, BigInt(2), 'gas used correct')
+    assert.strictEqual(stack[0], fee, 'right item pushed on stack')
+    vm.evm.events!.removeListener('step', handler)
   })
 })

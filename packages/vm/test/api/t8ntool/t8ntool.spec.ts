@@ -14,7 +14,8 @@ import {
   randomBytes,
 } from '@ethereumjs/util'
 
-import { createVM, runTx } from '../../../src/index.ts'
+import type { InterpreterStep } from '@ethereumjs/evm'
+import { type AfterTxEvent, createVM, runTx } from '../../../src/index.ts'
 import { stepTraceJSON, summaryTraceJSON } from '../../t8n/helpers.ts'
 import type { T8NOptions } from '../../t8n/types.ts'
 const t8nDir = 'test/t8n/testdata/'
@@ -65,28 +66,25 @@ describe('trace tests', async () => {
     await vm.stateManager.putAccount(contractAddress)
     await vm.stateManager.putCode(contractAddress, bytecode)
     const trace: string[] = []
-    const stepHandler = (step: any) => {
+    const stepHandler = (step: InterpreterStep) => {
       trace.push(JSON.stringify(stepTraceJSON(step, true)))
     }
-    const afterTxHandler = async (event: any) => {
+    const afterTxHandler = async (event: AfterTxEvent) => {
       trace.push(JSON.stringify(await summaryTraceJSON(event, vm)))
     }
     vm.evm.events!.on('step', stepHandler)
     vm.events!.on('afterTx', afterTxHandler)
-    try {
-      const tx = await createTx({
-        to: contractAddress,
-        data: bytecode,
-        gasLimit: 0xffffffff,
-        gasPrice: 0xf,
-      }).sign(randomBytes(32))
-      await runTx(vm, { tx, skipBalance: true, skipBlockGasLimitValidation: true, skipNonce: true })
-      assert.strictEqual(trace.length, 7, 'trace length is 7')
-      assert.strictEqual(JSON.parse(trace[6]).gasUsed, 21154)
-    } finally {
-      vm.evm.events!.removeListener('step', stepHandler)
-      vm.events!.removeListener('afterTx', afterTxHandler)
-    }
+    const tx = createTx({
+      to: contractAddress,
+      data: bytecode,
+      gasLimit: 0xffffffff,
+      gasPrice: 0xf,
+    }).sign(randomBytes(32))
+    await runTx(vm, { tx, skipBalance: true, skipBlockGasLimitValidation: true, skipNonce: true })
+    assert.strictEqual(trace.length, 7, 'trace length is 7')
+    assert.strictEqual(JSON.parse(trace[6]).gasUsed, 21154)
+    vm.evm.events!.removeListener('step', stepHandler)
+    vm.events!.removeListener('afterTx', afterTxHandler)
   })
   it('should produce a trace of the correct length', async () => {
     const common = new Common({
@@ -111,27 +109,24 @@ describe('trace tests', async () => {
       to: contractAddress,
     }).sign(pk)
     const trace: string[] = []
-    const stepHandler = (step: any) => {
+    const stepHandler = (step: InterpreterStep) => {
       trace.push(JSON.stringify(stepTraceJSON(step, true)))
     }
-    const afterTxHandler = async (event: any) => {
+    const afterTxHandler = async (event: AfterTxEvent) => {
       trace.push(JSON.stringify(await summaryTraceJSON(event, vm)))
     }
     vm.evm.events!.on('step', stepHandler)
     vm.events!.on('afterTx', afterTxHandler)
-    try {
-      const result = await runTx(vm, {
-        tx,
-        skipBalance: true,
-        skipNonce: true,
-        skipBlockGasLimitValidation: true,
-      })
-      assert.strictEqual(result.execResult.executionGasUsed, BigInt(4))
-      assert.strictEqual(trace.length, 4)
-    } finally {
-      vm.evm.events!.removeListener('step', stepHandler)
-      vm.events!.removeListener('afterTx', afterTxHandler)
-    }
+    const result = await runTx(vm, {
+      tx,
+      skipBalance: true,
+      skipNonce: true,
+      skipBlockGasLimitValidation: true,
+    })
+    assert.strictEqual(result.execResult.executionGasUsed, BigInt(4))
+    assert.strictEqual(trace.length, 4)
+    vm.evm.events!.removeListener('step', stepHandler)
+    vm.events!.removeListener('afterTx', afterTxHandler)
   })
   it('should execute an EOF contract with 2 code sections linked by CALLF', async () => {
     const common = new Common({
@@ -201,42 +196,39 @@ describe('trace tests', async () => {
     }).sign(pk)
 
     const trace: string[] = []
-    const stepHandler = (step: any) => {
+    const stepHandler = (step: InterpreterStep) => {
       trace.push(JSON.stringify(stepTraceJSON(step, true)))
     }
-    const afterTxHandler = async (event: any) => {
+    const afterTxHandler = async (event: AfterTxEvent) => {
       trace.push(JSON.stringify(await summaryTraceJSON(event, vm)))
     }
     vm.evm.events!.on('step', stepHandler)
     vm.events!.on('afterTx', afterTxHandler)
 
-    try {
-      const result = await runTx(vm, {
-        tx,
-        skipBalance: true,
-        skipNonce: true,
-        skipBlockGasLimitValidation: true,
-      })
+    const result = await runTx(vm, {
+      tx,
+      skipBalance: true,
+      skipNonce: true,
+      skipBlockGasLimitValidation: true,
+    })
 
-      // Expected execution flow:
-      // 1. ADDRESS in code section 0
-      // 2. POP in code section 0
-      // 3. CALLF to code section 1
-      // 4. ADDRESS in code section 1
-      // 5. POP in code section 1
-      // 6. RETF back to code section 0 (returns to the instruction after CALLF)
-      // 7. PUSH1 in code section 0
-      // 8. STOP in code section 0
-      // Plus the summary trace
-      assert.strictEqual(trace.length, 9, 'trace length should be 9')
+    // Expected execution flow:
+    // 1. ADDRESS in code section 0
+    // 2. POP in code section 0
+    // 3. CALLF to code section 1
+    // 4. ADDRESS in code section 1
+    // 5. POP in code section 1
+    // 6. RETF back to code section 0 (returns to the instruction after CALLF)
+    // 7. PUSH1 in code section 0
+    // 8. STOP in code section 0
+    // Plus the summary trace
+    assert.strictEqual(trace.length, 9, 'trace length should be 9')
 
-      // The execution should use exactly 19 gas (one for each opcode executed)
-      assert.strictEqual(result.execResult.executionGasUsed, BigInt(19))
-      const immediate = JSON.parse(trace[2]).immediate
-      assert.strictEqual(immediate, '0x0001') // Verifies that CALLF immediate matches
-    } finally {
-      vm.evm.events!.removeListener('step', stepHandler)
-      vm.events!.removeListener('afterTx', afterTxHandler)
-    }
+    // The execution should use exactly 19 gas (one for each opcode executed)
+    assert.strictEqual(result.execResult.executionGasUsed, BigInt(19))
+    const immediate = JSON.parse(trace[2]).immediate
+    assert.strictEqual(immediate, '0x0001') // Verifies that CALLF immediate matches
+    vm.evm.events!.removeListener('step', stepHandler)
+    vm.events!.removeListener('afterTx', afterTxHandler)
   })
 })
