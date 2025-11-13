@@ -25,9 +25,9 @@ import type { AffinePoint } from '@noble/curves/abstract/weierstrass.js'
 import type { EVMBLSInterface } from '../../types.ts'
 
 // @ts-ignore - @noble/curves v2 is ESM-only, TypeScript's moduleResolution: "node" doesn't properly resolve types for CJS build
-const G1_ZERO = bls12_381.G1.Point.ZERO
+const G1_ZERO = bls12_381.G1.ProjectivePoint.ZERO
 // @ts-ignore - @noble/curves v2 is ESM-only, TypeScript's moduleResolution: "node" doesn't properly resolve types for CJS build
-const G2_ZERO = bls12_381.G2.Point.ZERO
+const G2_ZERO = bls12_381.G2.ProjectivePoint.ZERO
 
 function BLS12_381_ToFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array) {
   // check if the coordinates are in the field
@@ -59,7 +59,7 @@ function BLS12_381_ToG1Point(input: Uint8Array, verifyOrder = true) {
   const y = bytesToBigInt(input.subarray(80, BLS_G1_POINT_BYTE_LENGTH))
 
   // @ts-ignore - @noble/curves v2 is ESM-only, TypeScript's moduleResolution: "node" doesn't properly resolve types for CJS build
-  const G1 = bls12_381.G1.Point.fromAffine({
+  const G1 = bls12_381.G1.ProjectivePoint.fromAffine({
     x,
     y,
   })
@@ -103,7 +103,7 @@ function BLS12_381_ToG2Point(input: Uint8Array, verifyOrder = true) {
   const Fp2Y = BLS12_381_ToFp2Point(p_y_1, p_y_2)
 
   // @ts-ignore - @noble/curves v2 is ESM-only, TypeScript's moduleResolution: "node" doesn't properly resolve types for CJS build
-  const pG2 = bls12_381.G2.Point.fromAffine({
+  const pG2 = bls12_381.G2.ProjectivePoint.fromAffine({
     x: Fp2X,
     y: Fp2Y,
   })

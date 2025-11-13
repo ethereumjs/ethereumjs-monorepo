@@ -1,6 +1,6 @@
 import { Hardfork } from '@ethereumjs/common'
 import { type PrefixedHexString, bytesToHex, randomBytes, utf8ToBytes } from '@ethereumjs/util'
-import { p256 } from '@noble/curves/p256'
+import { p256 } from '@noble/curves/nist.js'
 import { sha256 } from 'ethereum-cryptography/sha256.js'
 import { runPrecompile } from './util.ts'
 
@@ -19,6 +19,9 @@ const main = async () => {
   const messageHash = sha256(utf8ToBytes(message))
 
   const privateKey = randomBytes(32)
+  // Note: Changelog says Point.fromPrivateKey() removed, should use Point.BASE.multiply(Point.Fn.fromBytes(secretKey))
+  // but v2.0.1 still has ProjectivePoint.fromPrivateKey(). Using it for now.
+  // @ts-expect-error - @noble/curves v2 is ESM-only, TypeScript's moduleResolution: "node" doesn't properly resolve types for CJS build
   const publicKey = p256.ProjectivePoint.fromPrivateKey(privateKey).toAffine()
 
   const signature = p256.sign(messageHash, privateKey)
@@ -26,7 +29,9 @@ const main = async () => {
   const padHex = (value: bigint) => value.toString(16).padStart(64, '0')
 
   const msgHashHex = bytesToHex(messageHash)
+  // @ts-expect-error - TypeScript types say sign returns Uint8Array, but runtime returns Signature object with .r and .s
   const rHex = padHex(signature.r)
+  // @ts-expect-error - TypeScript types say sign returns Uint8Array, but runtime returns Signature object with .r and .s
   const sHex = padHex(signature.s)
   const qxHex = padHex(publicKey.x)
   const qyHex = padHex(publicKey.y)

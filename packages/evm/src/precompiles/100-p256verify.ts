@@ -1,5 +1,5 @@
 import { bytesToBigInt, bytesToHex, setLengthLeft } from '@ethereumjs/util'
-import { p256 } from '@noble/curves/p256.js'
+import { p256 } from '@noble/curves/nist.js'
 
 import { OOGResult } from '../evm.ts'
 
@@ -103,6 +103,7 @@ export function precompile100(opts: PrecompileInput): ExecResult {
 
   try {
     // Create public key point
+    // @ts-expect-error - @noble/curves v2 is ESM-only, TypeScript's moduleResolution: "node" doesn't properly resolve types for CJS build
     const publicKey = p256.ProjectivePoint.fromAffine({
       x: qxBigInt,
       y: qyBigInt,
@@ -115,10 +116,15 @@ export function precompile100(opts: PrecompileInput): ExecResult {
     signatureBytes.set(rBytes, 0)
     signatureBytes.set(sBytes, 32)
 
+    // @ts-expect-error - @noble/curves v2 is ESM-only, TypeScript's moduleResolution: "node" doesn't properly resolve types for CJS build
+    // Note: Changelog says fromCompact => fromBytes('compact'), but v2.0.1 still has fromCompact
     const signature = p256.Signature.fromCompact(signatureBytes)
 
     // Verify signature
-    const isValid = p256.verify(signature, msgHash, publicKey.toRawBytes(false))
+    // Note: Changelog says verify prohibits Signature-instance and requires signature.toBytes(),
+    // but v2.0.1 still accepts Signature instance. Using bytes format for future compatibility.
+    // @ts-ignore - @noble/curves v2 is ESM-only, TypeScript's moduleResolution: "node" doesn't properly resolve types for CJS build
+    const isValid = p256.verify(signature.toCompactRawBytes(), msgHash, publicKey.toRawBytes(false))
 
     if (isValid) {
       if (opts._debug !== undefined) {

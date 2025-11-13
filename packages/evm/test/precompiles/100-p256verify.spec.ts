@@ -1,6 +1,6 @@
 import { Common, Mainnet } from '@ethereumjs/common'
 import { Address, hexToBytes } from '@ethereumjs/util'
-import { p256 } from '@noble/curves/p256'
+import { p256 } from '@noble/curves/nist.js'
 import { assert, beforeAll, describe, it } from 'vitest'
 
 import { createEVM } from '../../src/index.ts'
@@ -13,12 +13,16 @@ const testCases = [
     name: 'valid signature verification',
     input: (() => {
       // Generate a test key pair and signature
+      // Note: Changelog says randomPrivateKey => randomSecretKey, but v2.0.1 still has randomPrivateKey at runtime
+      // @ts-expect-error - TypeScript types say randomSecretKey, but runtime has randomPrivateKey
       const privateKey = p256.utils.randomPrivateKey()
       const publicKey = p256.getPublicKey(privateKey, false) // Get uncompressed public key
       const message = new Uint8Array(32)
       message[31] = 1 // Simple test message
 
       const signature = p256.sign(message, privateKey)
+      // Note: Changelog says toCompactRawBytes => toBytes('compact'), but v2.0.1 still has toCompactRawBytes
+      // @ts-expect-error - TypeScript types say sign returns Uint8Array, but runtime returns Signature object
       const signatureBytes = signature.toCompactRawBytes()
 
       // Format input: msgHash (32) + r (32) + s (32) + qx (32) + qy (32)
@@ -92,6 +96,7 @@ const testCases = [
     name: 'invalid signature verification',
     input: (() => {
       // Generate a valid key pair but wrong signature
+      // @ts-expect-error - TypeScript types say randomSecretKey, but runtime has randomPrivateKey
       const privateKey = p256.utils.randomPrivateKey()
       const publicKey = p256.getPublicKey(privateKey, false) // Get uncompressed public key
       const message = new Uint8Array(32)
@@ -101,6 +106,7 @@ const testCases = [
       const wrongMessage = new Uint8Array(32)
       wrongMessage[31] = 2
       const signature = p256.sign(wrongMessage, privateKey)
+      // @ts-expect-error - TypeScript types say sign returns Uint8Array, but runtime returns Signature object
       const signatureBytes = signature.toCompactRawBytes()
 
       const input = new Uint8Array(160)
