@@ -12,9 +12,10 @@ describe('VM events', () => {
     const vm = await createVM()
 
     let emitted
-    vm.events.on('beforeBlock', (val) => {
+    const handler = (val: any) => {
       emitted = val
-    })
+    }
+    vm.events.once('beforeBlock', handler)
 
     const block = new Block()
 
@@ -31,9 +32,10 @@ describe('VM events', () => {
     const vm = await createVM()
 
     let emitted
-    vm.events.on('afterBlock', (val) => {
+    const handler = (val: any) => {
       emitted = val
-    })
+    }
+    vm.events.once('afterBlock', handler)
 
     const block = new Block()
 
@@ -51,9 +53,10 @@ describe('VM events', () => {
     const vm = await createVM()
 
     let emitted
-    vm.events.on('beforeTx', (val) => {
+    const handler = (val: any) => {
       emitted = val
-    })
+    }
+    vm.events.once('beforeTx', handler)
 
     const tx = createFeeMarket1559Tx({
       gasLimit: 90000,
@@ -71,9 +74,10 @@ describe('VM events', () => {
     const address = createAddressFromPrivateKey(privKey)
     await vm.stateManager.putAccount(address, new Account(BigInt(0), BigInt(0x11111111)))
     let emitted: any
-    vm.events.on('afterTx', (val: any) => {
+    const handler = (val: any) => {
       emitted = val
-    })
+    }
+    vm.events.once('afterTx', handler)
 
     const tx = createFeeMarket1559Tx({
       gasLimit: 90000,
@@ -92,10 +96,11 @@ describe('VM events', () => {
     const address = createAddressFromPrivateKey(privKey)
     await vm.stateManager.putAccount(address, new Account(BigInt(0), BigInt(0x11111111)))
     let emitted: any
-    vm.evm.events!.on('beforeMessage', (val, resolve) => {
+    const handler = (val: any, resolve?: () => void) => {
       emitted = val
       resolve?.()
-    })
+    }
+    vm.evm.events!.once('beforeMessage', handler)
 
     const tx = createFeeMarket1559Tx({
       gasLimit: 90000,
@@ -115,10 +120,11 @@ describe('VM events', () => {
     const address = createAddressFromPrivateKey(privKey)
     await vm.stateManager.putAccount(address, new Account(BigInt(0), BigInt(0x11111111)))
     let emitted: any
-    vm.evm.events!.on('afterMessage', (val, resolve) => {
+    const handler = (val: any, resolve?: () => void) => {
       emitted = val
       resolve?.()
-    })
+    }
+    vm.evm.events!.once('afterMessage', handler)
 
     const tx = createFeeMarket1559Tx({
       gasLimit: 90000,
@@ -135,11 +141,11 @@ describe('VM events', () => {
   it('should emit InterpreterStep on each step', async () => {
     const vm = await createVM()
 
-    let lastEmitted: any
-    vm.evm.events!.on('step', (val, resolve) => {
+    let lastEmitted
+    const handler = (val: unknown) => {
       lastEmitted = val
-      resolve?.()
-    })
+    }
+    vm.evm.events!.on('step', handler)
 
     // This is a deployment transaction that pushes 0x41 (i.e. ascii A) followed by 31 0s to
     // the stack, stores that in memory, and then returns the first byte from memory.
@@ -152,17 +158,19 @@ describe('VM events', () => {
 
     await runTx(vm, { tx, skipBalance: true, skipHardForkValidation: true })
 
-    assert.strictEqual(lastEmitted.opcode.name, 'RETURN')
+    assert.strictEqual((lastEmitted as any).opcode.name, 'RETURN')
+    vm.evm.events!.removeListener('step', handler)
   })
 
   it('should emit a NewContractEvent on new contracts', async () => {
     const vm = await createVM()
 
     let emitted: any
-    vm.evm.events!.on('newContract', (val, resolve) => {
+    const handler = (val: any, resolve?: () => void) => {
       emitted = val
       resolve?.()
-    })
+    }
+    vm.evm.events!.once('newContract', handler)
 
     // This is a deployment transaction that pushes 0x41 (i.e. ascii A) followed by 31 0s to
     // the stack, stores that in memory, and then returns the first byte from memory.

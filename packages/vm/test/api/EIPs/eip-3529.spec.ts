@@ -5,6 +5,7 @@ import { assert, describe, it } from 'vitest'
 
 import { createVM, runTx } from '../../../src/index.ts'
 
+import type { InterpreterStep } from '@ethereumjs/evm'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 const address = new Address(hexToBytes(`0x${'11'.repeat(20)}`))
@@ -117,13 +118,13 @@ describe('EIP-3529 tests', () => {
 
     let gasRefund: bigint
     let gasLeft: bigint
-    vm.evm.events!.on('step', (step, resolve) => {
+    const handler = (step: InterpreterStep) => {
       if (step.opcode.name === 'STOP') {
         gasRefund = step.gasRefund
         gasLeft = step.gasLeft
       }
-      resolve?.()
-    })
+    }
+    vm.evm.events!.on('step', handler)
 
     const gasLimit = BigInt(100000)
     const key = hexToBytes(`0x${'00'.repeat(32)}`)
@@ -155,6 +156,7 @@ describe('EIP-3529 tests', () => {
       // clear the storage cache, otherwise next test will use current original value
       vm.stateManager.originalStorageCache.clear()
     }
+    vm.evm.events!.removeListener('step', handler)
   })
 
   it('should not refund selfdestructs', async () => {
@@ -188,15 +190,15 @@ describe('EIP-3529 tests', () => {
 
     let startGas: bigint
     let finalGas: bigint
-    vm.evm.events!.on('step', (step, resolve) => {
+    const handler = (step: InterpreterStep) => {
       if (startGas === undefined) {
         startGas = step.gasLeft
       }
       if (step.opcode.name === 'STOP') {
         finalGas = step.gasLeft
       }
-      resolve?.()
-    })
+    }
+    vm.evm.events!.on('step', handler)
 
     const address = new Address(hexToBytes(`0x${'20'.repeat(20)}`))
 
@@ -229,5 +231,6 @@ describe('EIP-3529 tests', () => {
     const minGasUsed = actualGasUsed - maxRefund
     assert.isTrue(result.gasRefund! > maxRefund, 'refund is larger than the max refund')
     assert.isTrue(result.totalGasSpent >= minGasUsed, 'gas used respects the max refund quotient')
+    vm.evm.events!.removeListener('step', handler)
   })
 })

@@ -62,7 +62,7 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "devDependencies": {
     "@types/benchmark": "^2.1.5",

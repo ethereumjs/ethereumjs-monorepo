@@ -19,11 +19,11 @@ jobs:
           filters: |
             src:
               - 'package-lock.json'
-        
-      - name: Use Node.js 18
-        uses: actions/setup-node@v5
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@v6
         with:
-          node-version: 18
+          node-version: 24
           cache: 'npm'
 
       - if: steps.changes.outputs.src == 'true'

@@ -26,15 +26,15 @@ jobs:
           path: ${{github.workspace}}
           key: npm-${{ hashFiles('package-lock.json') }}
 
-      - name: Use Node.js 20
-        uses: actions/setup-node@v5
+      - name: Use Node.js 24
+        uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 24
           cache: 'npm'
 
       - name: Install Dependencies (if not restored from cache)
         if: steps.dep-cache.outputs.cache-hit != 'true'
-        run: npm ci     
+        run: npm ci
         working-directory: ${{ github.workspace }}
 
       - run: npm run test:state:newForks
@@ -52,15 +52,15 @@ jobs:
           path: ${{github.workspace}}
           key: npm-${{ hashFiles('package-lock.json') }}
 
-      - name: Use Node.js 20
-        uses: actions/setup-node@v5
+      - name: Use Node.js 24
+        uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 24
           cache: 'npm'
 
       - name: Install Dependencies (if not restored from cache)
         if: steps.dep-cache.outputs.cache-hit != 'true'
-        run: npm ci     
+        run: npm ci
         working-directory: ${{ github.workspace }}
 
       - run: npm run test:blockchain

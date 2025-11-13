@@ -113,9 +113,10 @@ describe('EIP4895 tests', () => {
     )
 
     let result: Uint8Array
-    vm.events.on('afterTx', (e) => {
+    const handler = (e: any) => {
       result = e.execResult.returnValue
-    })
+    }
+    vm.events.once('afterTx', handler)
 
     await runBlock(vm, { block, generate: true })
 

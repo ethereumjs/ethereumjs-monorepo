@@ -5,6 +5,7 @@ import { assert, describe, it } from 'vitest'
 
 import { createVM, runTx } from '../../../src/index.ts'
 
+import type { InterpreterStep } from '@ethereumjs/evm'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 // Test cases source: https://gist.github.com/holiman/174548cad102096858583c6fbbb0649a
@@ -18,7 +19,7 @@ describe('EIP 2929: gas cost tests', () => {
     let i = 0
     let currentGas = initialGas
     const vm = await createVM({ common })
-    vm.evm.events!.on('step', function (step, resolve) {
+    const handler = function (step: InterpreterStep) {
       const gasUsed = currentGas - step.gasLeft
       currentGas = step.gasLeft
 
@@ -45,8 +46,8 @@ describe('EIP 2929: gas cost tests', () => {
         }
       }
       i++
-      resolve?.()
-    })
+    }
+    vm.evm.events!.on('step', handler)
 
     await vm.stateManager.putCode(address, hexToBytes(test.code))
 
@@ -61,6 +62,7 @@ describe('EIP 2929: gas cost tests', () => {
 
     const totalGasUsed = initialGas - currentGas
     assert.strictEqual(true, totalGasUsed === BigInt(test.totalGasUsed) + BigInt(21000)) // Add tx upfront cost.
+    vm.evm.events!.removeListener('step', handler)
     return result
   }
 
