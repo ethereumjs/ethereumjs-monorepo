@@ -11,6 +11,8 @@ import { assert, describe, it } from 'vitest'
 
 import { createVM, runTx } from '../../../src/index.ts'
 
+import type { InterpreterStep } from '@ethereumjs/evm'
+
 const common = new Common({
   eips: [2718, 2929, 2930],
   chain: Mainnet,
@@ -65,12 +67,12 @@ describe('EIP-2930 Optional Access Lists tests', () => {
       createAccount({ ...account, balance: initialBalance }),
     )
 
-    let trace: any = []
+    let trace: Array<[string, bigint]> = []
 
-    vm.evm.events!.on('step', (o, resolve) => {
+    const handler = (o: InterpreterStep) => {
       trace.push([o.opcode.name, o.gasLeft])
-      resolve?.()
-    })
+    }
+    vm.evm.events!.on('step', handler)
 
     await runTx(vm, { tx: txnWithAccessList })
     assert.strictEqual(trace[1][0], 'SLOAD')
@@ -82,5 +84,6 @@ describe('EIP-2930 Optional Access Lists tests', () => {
     assert.strictEqual(trace[1][0], 'SLOAD')
     gasUsed = trace[1][1] - trace[2][1]
     assert.strictEqual(Number(gasUsed), 2100, 'charge cold sload gas')
+    vm.evm.events!.removeListener('step', handler)
   })
 })
