@@ -27,25 +27,21 @@ describe.skipIf(isBrowser)('CLI command', () => {
     assert.deepEqual(resultFormatted, '0xc105')
   })
 
-  it(
-    'should return valid values for official tests',
-    async () => {
-      for (const [testName, test] of Object.entries(rlpTestData.tests)) {
-        const { in: incoming, out } = test
+  it('should return valid values for official tests', { timeout: 10000 }, async () => {
+    for (const [testName, test] of Object.entries(rlpTestData.tests)) {
+      const { in: incoming, out } = test
 
-        // skip if testing a big number
-        if ((incoming as any)[0] === '#') {
-          continue
-        }
-
-        const json = JSON.stringify(incoming)
-        const encodeResult = exec(`./bin/rlp encode '${json}'`)
-        const encodeResultTrimmed = encodeResult.stdout!.read().trim()
-        assert.deepEqual(encodeResultTrimmed, out.toLowerCase(), `should pass encoding ${testName}`)
+      // skip if testing a big number
+      if ((incoming as any)[0] === '#') {
+        continue
       }
-    },
-    { timeout: 10000 },
-  )
+
+      const json = JSON.stringify(incoming)
+      const encodeResult = exec(`./bin/rlp encode '${json}'`)
+      const encodeResultTrimmed = encodeResult.stdout!.read().trim()
+      assert.deepEqual(encodeResultTrimmed, out.toLowerCase(), `should pass encoding ${testName}`)
+    }
+  })
 })
 
 describe.skipIf(isBrowser)('Cross-frame', () => {

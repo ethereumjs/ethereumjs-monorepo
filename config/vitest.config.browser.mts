@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitest/config'
+import { playwright } from '@vitest/browser-playwright'
 
 const config = defineConfig({
   test: {
@@ -6,7 +7,7 @@ const config = defineConfig({
       enabled: true,
       headless: true,
       fileParallelism: false,
-      provider: 'playwright',
+      provider: playwright(),
       instances: [
         {
           browser: 'chromium',
