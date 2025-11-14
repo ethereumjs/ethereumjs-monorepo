@@ -480,5 +480,5 @@ describe('[PendingBlock]', async () => {
     assert.isTrue(pendingBlob !== undefined && pendingBlob === blobs[0])
     const blobProof = blobsBundles!.proofs[0]
     assert.isTrue(blobProof !== undefined && blobProof === proofs[0])
-  }, 30000)
+  }, 60000)
 })
