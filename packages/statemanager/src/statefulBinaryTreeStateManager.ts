@@ -33,7 +33,7 @@ import {
   short,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
-import { blake3 } from '@noble/hashes/blake3'
+import { blake3 } from '@noble/hashes/blake3.js'
 import debugDefault from 'debug'
 import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
