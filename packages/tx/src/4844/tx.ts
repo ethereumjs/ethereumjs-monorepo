@@ -21,6 +21,7 @@ import { TransactionType, isAccessList } from '../types.ts'
 import { accessListBytesToJSON, accessListJSONToBytes } from '../util/access.ts'
 import {
   getBaseJSON,
+  getCommon,
   sharedConstructor,
   validateNotArray,
   valueOverflowCheck,
@@ -117,6 +118,37 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
    * varying data types.
    */
   constructor(txData: TxData, opts: TxOptions = {}) {
+    // Check networkWrapperVersion early, before sharedConstructor, to ensure proper error ordering
+    // This validation needs to happen before EIP-7825 gas limit checks
+    const common = getCommon(opts.common)
+    const networkWrapperVersion =
+      txData.networkWrapperVersion !== undefined
+        ? (bytesToInt(toBytes(txData.networkWrapperVersion)) as NetworkWrapperType)
+        : undefined
+
+    if (networkWrapperVersion !== undefined) {
+      switch (networkWrapperVersion) {
+        case NetworkWrapperType.EIP7594:
+          if (!common.isActivatedEIP(7594)) {
+            throw EthereumJSErrorWithoutCode(
+              'EIP-7594 not enabled on Common for EIP-7594 network wrapper version',
+            )
+          }
+          break
+
+        case NetworkWrapperType.EIP4844:
+          if (common.isActivatedEIP(7594)) {
+            throw EthereumJSErrorWithoutCode(
+              'EIP-7594 is active on Common for EIP-4844 network wrapper version',
+            )
+          }
+          break
+
+        default:
+          throw EthereumJSErrorWithoutCode(`Invalid networkWrapperVersion=${networkWrapperVersion}`)
+      }
+    }
+
     sharedConstructor(this, { ...txData, type: TransactionType.BlobEIP4844 }, opts)
     const {
       chainId,
@@ -234,35 +266,11 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
       throw EthereumJSErrorWithoutCode(msg)
     }
 
+    // networkWrapperVersion was already validated earlier in the constructor
     this.networkWrapperVersion =
       txData.networkWrapperVersion !== undefined
         ? (bytesToInt(toBytes(txData.networkWrapperVersion)) as NetworkWrapperType)
         : undefined
-
-    if (this.networkWrapperVersion !== undefined) {
-      switch (this.networkWrapperVersion) {
-        case NetworkWrapperType.EIP7594:
-          if (!this.common.isActivatedEIP(7594)) {
-            throw EthereumJSErrorWithoutCode(
-              'EIP-7594 not enabled on Common for EIP-7594 network wrapper version',
-            )
-          }
-          break
-
-        case NetworkWrapperType.EIP4844:
-          if (this.common.isActivatedEIP(7594)) {
-            throw EthereumJSErrorWithoutCode(
-              'EIP-7594 is active on Common for EIP-4844 network wrapper version',
-            )
-          }
-          break
-
-        default:
-          throw EthereumJSErrorWithoutCode(
-            `Invalid networkWrapperVersion=${this.networkWrapperVersion}`,
-          )
-      }
-    }
 
     this.blobs = txData.blobs?.map((blob) => toType(blob, TypeOutput.PrefixedHexString))
 
