@@ -15,6 +15,8 @@ export function clientRunHelper(
 ) {
   const file = require.resolve('../../bin/cli.ts')
   const child = spawn('tsx', [file, ...cliArgs])
+  // Increase max listeners to avoid Node.js warnings about memory leaks
+  child.setMaxListeners(20)
   return new Promise((resolve) => {
     child.stdout.on('data', async (data) => {
       const message: string = data.toString()
