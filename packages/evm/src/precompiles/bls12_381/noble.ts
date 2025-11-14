@@ -135,9 +135,9 @@ function BLS12_381_FromG2Point(input: AffinePoint<Fp2>): Uint8Array {
 function BLS12_381_ToFrPoint(input: Uint8Array): bigint {
   const Fr = bls12_381.fields.Fr.fromBytes(input)
   if (Fr >= bls12_381.fields.Fr.ORDER) {
-    return Fr % bls12_381.fields.Fr.ORDER
+    return bls12_381.fields.Fr.create(Fr % bls12_381.fields.Fr.ORDER)
   }
-  return Fr
+  return bls12_381.fields.Fr.create(Fr)
 }
 
 // input: a 64-byte buffer
