@@ -164,23 +164,19 @@ describe('DNS: (integration)', () => {
   const enrTree = `enrtree://${publicKey}@${goerliDNS}`
   const ipTestRegex = /^\d+\.\d+\.\d+\.\d+$/ // e.g 123.44.55.77
 
-  it(
-    'should retrieve 5 PeerInfos for goerli',
-    async () => {
-      // Google's dns server address. Needs to be set explicitly to run in CI
-      const dns = new DNS({ dnsServerAddress: '8.8.8.8' })
-      const peers = await dns.getPeers(5, [enrTree])
+  it('should retrieve 5 PeerInfos for goerli', { timeout: 10000 }, async () => {
+    // Google's dns server address. Needs to be set explicitly to run in CI
+    const dns = new DNS({ dnsServerAddress: '8.8.8.8' })
+    const peers = await dns.getPeers(5, [enrTree])
 
-      assert.strictEqual(peers.length, 5, 'returns 5 peers')
+    assert.strictEqual(peers.length, 5, 'returns 5 peers')
 
-      const seen: string[] = []
-      for (const peer of peers) {
-        assert.isDefined(peer.address)
-        assert.match(peer.address, ipTestRegex, 'address is a valid ip')
-        assert.notInclude(seen, peer.address, 'peer is not duplicate')
-        seen.push(peer.address)
-      }
-    },
-    { timeout: 10000 },
-  )
+    const seen: string[] = []
+    for (const peer of peers) {
+      assert.isDefined(peer.address)
+      assert.match(peer.address, ipTestRegex, 'address is a valid ip')
+      assert.notInclude(seen, peer.address, 'peer is not duplicate')
+      seen.push(peer.address)
+    }
+  })
 })

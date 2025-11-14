@@ -13,7 +13,7 @@
     "e2e:resolutions": "node ./scripts/e2e-resolutions.js",
     "examples": "npm run examples --workspaces --if-present",
     "examples:build": "npm run examples:build --workspaces --if-present",
-    "install-browser-deps": "npm install playwright@1.15.1 @vitest/browser@3.2.4",
+    "install-browser-deps": "npm install playwright@1.15.1 @vitest/browser@^4.0.0 @vitest/browser-playwright@^4.0.0",
     "lint": "npm run biome && eslint  --config ./eslint.config.mjs .",
     "lint:fix": "npm run biome:fix && eslint --fix --config ./eslint.config.mjs .",
     "lint:diff": "./config/cli/lint-diff.sh",
@@ -38,10 +38,11 @@
     "@types/tape": "5.8.1",
     "@typescript-eslint/eslint-plugin": "^8.26.1",
     "@typescript-eslint/parser": "^8.26.1",
-    "@vitest/browser": "3.2.4",
-    "@vitest/coverage-istanbul": "3.2.4",
-    "@vitest/coverage-v8": "3.2.4",
-    "@vitest/ui": "3.2.4",
+    "@vitest/browser": "^4.0.0",
+    "@vitest/browser-playwright": "^4.0.0",
+    "@vitest/coverage-istanbul": "^4.0.0",
+    "@vitest/coverage-v8": "^4.0.0",
+    "@vitest/ui": "^4.0.0",
     "cspell": "^8.17.5",
     "embedme": "1.22.1",
     "eslint": "^9.22.0",
@@ -57,7 +58,7 @@
     "typescript-eslint": "^8.26.1",
     "vite-plugin-top-level-await": "^1.5.0",
     "vite-plugin-wasm": "^3.4.1",
-    "vitest": "3.2.4"
+    "vitest": "^4.0.0"
   },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "*"
