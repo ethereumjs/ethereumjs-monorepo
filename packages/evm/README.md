@@ -362,6 +362,32 @@ void main()
 
 ```
 
+### EIP-7951 Precompile for secp256r1 Curve Support (Osaka)
+
+The Osaka hardfork introduces a new precompile for secp256r1 curve support with [EIP-7951](https://eips.ethereum.org/EIPS/eip-7951).
+
+The following example code allows you to generate input values for the precompile using Noble Curves [v2.0.0](https://github.com/paulmillr/noble-curves/releases/tag/2.0.0) or later.
+
+```ts
+// No direct examples integration (library version not taken in as a dependency)
+import { p256 } from '@noble/curves/nist.js'
+import { sha256 } from '@noble/hashes/sha2.js'
+import { bigIntToHex, bytesToHex } from '@ethereumjs/util'
+
+// Private/public key
+const { secretKey, publicKey } = p256.keygen()
+const pointPubKey = p256.Point.fromBytes(publicKey)
+const pointX = bigIntToHex(pointPubKey.X)
+const pointY = bigIntToHex(pointPubKey.Y)
+
+// Message (hash) / signature
+const msg = new TextEncoder().encode('Hello Fusaka!')
+const sig = p256.sign(msg, secretKey)
+const msgHash = bytesToHex(sha256(msg))
+const sigR = bytesToHex(sig).substring(2, 64 + 2)
+const sigS = bytesToHex(sig).substring(64 + 2)
+```
+
 ## Events
 
 ### Tracing Events
