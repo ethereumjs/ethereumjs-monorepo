@@ -15,6 +15,7 @@ describe('async events', () => {
     await evm.stateManager.putCode(targ, hexToBytes('0x6001'))
     let didTimeOut = false
     evm.events.on('step', async (event, next) => {
+      assert.isTrue(event.codeAddress !== undefined)
       const startTime = Date.now()
       setTimeout(() => {
         assert.isTrue(Date.now() > startTime + 999, 'evm paused on step function for one second')

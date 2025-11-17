@@ -499,7 +499,11 @@ export class EVM implements EVMInterface {
       if (this.DEBUG) {
         debug(`Start bytecode processing...`)
       }
-      result = await this.runInterpreter({ ...message, gasLimit } as Message)
+      result = await this.runInterpreter({
+        ...{ codeAddress: message.codeAddress },
+        ...message,
+        gasLimit,
+      } as Message)
     }
 
     if (message.depth === 0) {
