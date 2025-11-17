@@ -18,7 +18,7 @@ const testCases = [
       const message = new Uint8Array(32)
       message[31] = 1 // Simple test message
 
-      const signatureBytes = p256.sign(message, privateKey)
+      const signatureBytes = p256.sign(message, privateKey, { lowS: false })
 
       // Format input: msgHash (32) + r (32) + s (32) + qx (32) + qy (32)
       const input = new Uint8Array(160)
@@ -99,7 +99,7 @@ const testCases = [
       // Use wrong message for signature
       const wrongMessage = new Uint8Array(32)
       wrongMessage[31] = 2
-      const signature = p256.sign(wrongMessage, privateKey)
+      const signature = p256.sign(wrongMessage, privateKey, { lowS: false })
 
       const input = new Uint8Array(160)
       input.set(message, 0) // msgHash (different from signed message)

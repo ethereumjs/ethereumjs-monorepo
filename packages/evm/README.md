@@ -382,7 +382,7 @@ const pointY = bigIntToHex(pointPubKey.Y)
 
 // Message (hash) / signature
 const msg = new TextEncoder().encode('Hello Fusaka!')
-const sig = p256.sign(msg, secretKey)
+const sig = p256.sign(msg, secretKey, { lowS: false })
 const msgHash = bytesToHex(sha256(msg))
 const sigR = bytesToHex(sig).substring(2, 64 + 2)
 const sigS = bytesToHex(sig).substring(64 + 2)
