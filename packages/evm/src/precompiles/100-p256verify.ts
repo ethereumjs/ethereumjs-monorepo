@@ -118,7 +118,10 @@ export function precompile100(opts: PrecompileInput): ExecResult {
     const signature = p256.Signature.fromBytes(signatureBytes).toBytes()
 
     // Verify signature
-    const isValid = p256.verify(signature, msgHash, publicKey.toBytes(false), { lowS: false })
+    const isValid = p256.verify(signature, msgHash, publicKey.toBytes(false), {
+      lowS: false,
+      prehash: false,
+    })
 
     if (isValid) {
       if (opts._debug !== undefined) {
