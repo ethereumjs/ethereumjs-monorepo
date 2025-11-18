@@ -11,7 +11,7 @@ describe('async events', () => {
     const evm = await createEVM({
       common,
     })
-    const targ = createAddressFromBigInt(BigInt(123456))
+    const to = createAddressFromBigInt(BigInt(123456))
     await evm.stateManager.putCode(targ, hexToBytes('0x6001'))
     let didTimeOut = false
     evm.events.on('step', async (event, next) => {
@@ -27,7 +27,7 @@ describe('async events', () => {
       caller, // call address
       gasLimit: BigInt(0xffffffffff),
       data: hexToBytes('0x600000'),
-      to: targ,
+      to,
     }
     await evm.runCall(runCallArgs)
     assert.isTrue(didTimeOut)
