@@ -9,7 +9,7 @@
 | TypeScript implementation of the Ethereum EVM. |
 | ---------------------------------------------- |
 
-- 🦄 All hardforks up to **Pectra**
+- 🦄 All hardforks up to **Osaka**
 - 🌴 Tree-shakeable API
 - 👷🏼 Controlled dependency set (7 external + `@Noble` crypto)
 - 🧩 Flexible EIP on/off engine
