@@ -12,7 +12,7 @@ describe('async events', () => {
       common,
     })
     const to = createAddressFromBigInt(BigInt(123456))
-    await evm.stateManager.putCode(targ, hexToBytes('0x6001'))
+    await evm.stateManager.putCode(to, hexToBytes('0x6001'))
     let didTimeOut = false
     evm.events.on('step', async (event, next) => {
       assert.isTrue(event.codeAddress !== undefined)
