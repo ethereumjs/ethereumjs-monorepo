@@ -9,10 +9,11 @@
 | Implements schema and functions related to Ethereum blocks. |
 | ----------------------------------------------------------- |
 
-- 🦄 All block features till **Pectra**
+- 🦄 All block features till **Osaka**
 - 🌴 Tree-shakeable API
 - 👷🏼 Controlled dependency set (4 external + `@noble` crypto)
 - 🔮 `EIP-4844` Shard Blob Txs
+- 🔮 `EIP-7594` PeerDAS Blob Transactions
 - 💸 `EIP-4895` Beacon Chain Withdrawals
 - 📨 `EIP-7685` Consensus Layer Requests
 - 🛵 324KB bundle size (81KB gzipped)
