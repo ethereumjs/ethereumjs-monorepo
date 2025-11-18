@@ -9,11 +9,12 @@
 | Implements schema and functions for the different Ethereum transaction types |
 | ---------------------------------------------------------------------------- |
 
-- 🦄 All tx types up to **Pectra**
+- 🦄 All tx types up to **Osaka**
 - 🌴 Tree-shakeable API
 - 👷🏼 Controlled dependency set (1 external + `@Noble` crypto)
 - 🎼 Unified tx type API
 - 📲 New type for **EIP-7702** account abstraction
+- 🔮 `EIP-7594` PeerDAS Blob Transactions
 - 🛵 190KB bundle size (all tx types) (47KB gzipped)
 - 🏄🏾‍♂️ WASM-free default + Fully browser ready
 
@@ -25,7 +26,7 @@
 - [Transaction Types](#transaction-types)
   - [Gas Fee Market Transactions (EIP-1559)](#gas-fee-market-transactions-eip-1559)
   - [Access List Transactions (EIP-2930)](#access-list-transactions-eip-2930)
-  - [Blob Transactions (EIP-4844)](#blob-transactions-eip-4844)
+  - [Blob Transactions (EIP-4844 / EIP-7594)](#blob-transactions-eip-4844--eip-7594)
   - [EOA Code Transaction (EIP-7702)](#eoa-code-transaction-eip-7702)
   - [Legacy Transactions](#legacy-transactions)
 - [Transaction Factory](#transaction-factory)
