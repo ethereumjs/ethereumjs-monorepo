@@ -183,18 +183,25 @@ console.log(bytesToHex(tx.hash())) // 0x9150cdebad74e88b038e6c6b964d99af705f9c08
 For generating access lists from tx data based on a certain network state there is a `reportAccessList` option
 on the `VM.runTx()` method of the `@ethereumjs/vm` `TypeScript` VM implementation.
 
-### Blob Transactions (EIP-4844)
+### Blob Transactions (EIP-4844 / EIP-7594)
 
 - Class: `BlobEIP4844Tx`
-- EIP: [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844)
-- Activation: `cancun`
+- EIPs: [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844), [EIP-7594](https://eips.ethereum.org/EIPS/eip-7594)
+- Activation: `cancun` (EIP-4844), `osaka` (EIP-7594)
 - Type: `3`
 
+#### Introduction
+
 This library supports the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844).
+Additionally it is able to process blobs in the "PeerDAS way" - introduced with [EIP-7594](https://eips.ethereum.org/EIPS/eip-7594) along the
+`osaka` hardfork and generate cell proofs instead of blob proofs.
 
 **Note:** This functionality needs a manual KZG library installation and global initialization, see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
 
-See the following code snippet for an example on how to instantiate:
+#### Example
+
+See the following code snippet for an example on how to create a blob transaction, one for EIP-4844 only 
+and one taking EIP-7594 into the mix:
 
 ```ts
 // ./examples/blobTx.ts
@@ -208,15 +215,46 @@ import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 
 const main = async () => {
   const kzg = new microEthKZG(trustedSetup)
-  const common = new Common({
+  // EIP-4844 only
+  const common4844 = new Common({
     chain: Mainnet,
     hardfork: Hardfork.Cancun,
     customCrypto: { kzg },
   })
 
+  // EIP-4844 and EIP-7594
+  const common4844and7594 = new Common({
+    chain: Mainnet,
+    hardfork: Hardfork.Osaka,
+    customCrypto: { kzg },
+  })
+  const setups = [
+    {
+      title: 'Blob transaction (EIP-4844 only)',
+      common: common4844,
+      proofAmountComment: 'one proof per blob'
+    },
+    {
+      title: 'Blob transaction (EIP-4844 + EIP-7594)',
+    common: common4844and7594,
+    proofAmountComment: '128 cells per blob + one proof per cell -> NUM_BLOBS * 128 proofs'
+  },
+]
+
+for (const setup of setups) {
+  console.log(`\n${setup.title}:`)
+  console.log('---------------------------------------')
+
+  const blobsData = ['blob 1', 'blob 2', 'blob 3']  
+  console.log(`Blobs (Data) : "${blobsData.join('", "')}"`)
+  // Final format, filled with a lot of 0s, added marker
+  const blobs = getBlobs(blobsData)
+
+  console.log('Generating tx...')
+
   const txData: BlobEIP4844TxData = {
     data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-    gasLimit: '0x02625a00',
+    gasLimit: 16_000_000n,
     maxPriorityFeePerGas: '0x01',
     maxFeePerGas: '0xff',
     maxFeePerBlobGas: '0xfff',
@@ -229,18 +267,24 @@ const main = async () => {
     chainId: '0x01',
     accessList: [],
     type: '0x05',
-    blobs: getBlobs(['blob 1', 'blob 2']),
+    blobs,
   }
 
-  const tx = createBlob4844Tx(txData, { common })
+  const tx = createBlob4844Tx(txData, { common: setup.common })
 
-  console.log(`Blob tx created with hash: ${bytesToHex(tx.hash())}`)
-  console.log(`Tx contains ${tx.numBlobs()} blob`)
-  console.log(`Blob versioned hashes: ${tx.blobVersionedHashes.join(', ')}`)
+  console.log(`Tx hash               : ${bytesToHex(tx.hash())}`)
+  console.log(`Num blobs             : ${tx.numBlobs()}`)
+  console.log(`Blob versioned hashes : ${tx.blobVersionedHashes.join(', ')}`)
+  console.log(`KZG commitments       : ${tx.kzgCommitments!.join(', ')}`)
+  console.log(`First KZG (cell) proof: ${tx.kzgProofs![0]}`)
+  console.log(`Num KZG (cell) proofs : ${tx.kzgProofs!.length} (${setup.proofAmountComment})`)
+  }
 
-  // To send a transaction via RPC, you can do something like this:
+  // To send a transaction via RPC, you can something like this:
   // const rawTx = tx.sign(privateKeyBytes).serializeNetworkWrapper()
   // myRPCClient.request('eth_sendRawTransaction', [rawTx]) // submits a transaction via RPC
+  //
+  // Also see ./sendRawSepoliaTx.ts example
 }
 
 void main()
@@ -249,7 +293,9 @@ void main()
 
 **Note:** `versionedHashes` and `kzgCommitments` have a real length of 32 bytes, `blobs` have a real length of `4096` bytes and values are trimmed here for brevity.
 
-You can either pass in blobs as the initial `blobsData` - and the final `blobs` format will be derived for you - or you can pass in the final `blobs` format directly as bytes. `versionedHashes`, `kzgCommitments` and `kzgProofs` are either derived or taken from the values passed in.
+You can either pass in blobs as the initial `blobsData` (the data you want to store in the blob) - and the final `blobs` format (filled with a lot of 0s, added marker) will be derived for you - or you can pass in the final `blobs` format directly as bytes. `versionedHashes`, `kzgCommitments` and `kzgProofs` are either derived or taken from the values passed in.
+
+The `kzgProofs` field is used for both blob proofs (EIP-4844) and cell proofs (EIP-7594). Note that the amount of proofs increases by a factor of 128 when EIP-7594 is activated, since proofs are then computed per cell instead of per blob (128 cells per blob).
 
 For manually deriving commitments, proofs and versioned hashes, there are dedicated helpers available in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) package.
 
@@ -257,7 +303,9 @@ For manually deriving commitments, proofs and versioned hashes, there are dedica
 
 Blob transactions can be serialized in two ways.
 1) `tx.serialize()` - the standard serialization returns an RLP-encoded `Uint8Array` that conforms to the transaction as represented after it is included in a block 
-2) `tx.serializeNetworkWrapper()` - this serialization format includes the `blobs` in the encoded data and is the format specified for transactions that are being submitted to/gossipped around the mempool.  If you are constructing a transaction to submit via JSON-RPC, use this format.
+2) `tx.serializeNetworkWrapper()` - this serialization format includes the `blobs` in the encoded data and is the format specified for transactions that are being submitted to/gossipped around the mempool.  **If you are constructing a transaction to submit via JSON-RPC, use this format.**
+
+See the [Send Raw Sepolia Tx](./examples/sendRawSepoliaTx.ts) example for a detailed example on how to send a blob transaction via JSON-RPC.
 
 See the [Blob Transaction Tests](./test/eip4844.spec.ts) for additional examples of usage in instantiating, serializing, and deserializing these transactions.
 
