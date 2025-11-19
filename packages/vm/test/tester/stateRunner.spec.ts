@@ -1,10 +1,10 @@
 import type { Common } from '@ethereumjs/common'
 
-import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
 import * as mcl from 'mcl-wasm'
 import { assert, afterAll, describe, it } from 'vitest'
 
-import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 
 import path from 'path'
 import {
