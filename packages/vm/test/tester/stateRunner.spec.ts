@@ -217,8 +217,7 @@ for (const dir of dirs) {
       },
       testGetterArgs,
     )
-  } catch (e) {
-    console.log(e)
+  } catch {
     continue
   }
 

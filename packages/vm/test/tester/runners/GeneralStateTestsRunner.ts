@@ -162,7 +162,6 @@ async function runTestCase(options: any, testData: any, t: tape.Test | Chai.Asse
         await runTx(vm, { tx, block })
         execInfo = 'successful tx run'
       } catch (e: any) {
-        console.log(e)
         execInfo = `tx runtime error :${e.message}`
       }
     } else {
