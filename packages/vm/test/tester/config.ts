@@ -441,7 +441,7 @@ export function getExpectedTests(
  */
 export function getSkipTests(choices: string | undefined, defaultChoice: string): string[] {
   let skipTests: string[] = []
-  if (!choices) {
+  if (choices === undefined) {
     choices = defaultChoice
   }
   choices = choices.toLowerCase()
