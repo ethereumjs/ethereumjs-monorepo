@@ -46,8 +46,10 @@ const runCase = async (evm: EVM, x: PrefixedHexString) => {
   const [top] = stack.peek(1)
   const hexValue = `0x${top.toString(16)}`
   const gas = res.executionGasUsed
+  console.log('--------------------------------')
   console.log(`input=${x}`)
-  console.log(`output=${hexValue} -- clz=${top} -- gas=${gas}`)
+  console.log(`output=${hexValue}  (leading zeros=${top})`)
+  console.log(`Gas used: ${gas}`)
 }
 
 const main = async () => {
@@ -64,6 +66,7 @@ const main = async () => {
 
   // Case 4: x == 0x80..00 -> MSB at bit 255 -> expect 0
   await runCase(evm, `0x80${'00'.repeat(31)}` as PrefixedHexString)
+  console.log('--------------------------------')
 }
 
 void main().catch((err) => {
