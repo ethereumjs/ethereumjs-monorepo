@@ -17,7 +17,7 @@ export default mergeConfig(
         // Uses NodeJS builtins and we don't need to fill tests in browser anyway
         'test/api/t8ntool/t8ntool.spec.ts',
         // test runners are ran only in ci
-        'test/tester/stateRunner.spec.ts'
+        'test/tester/stateRunner.spec.ts',
       ],
     },
     resolve: {
