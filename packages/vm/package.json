@@ -58,9 +58,9 @@
     "test:osaka:blockchain": "npm run test:blockchain -- --fork=Osaka --customTestsPath=../execution-spec-tests/fusaka-devnet-5/blockchain_tests",
     "test:state": "npm run tester -- --state",
     "test:state:allForks": "npm run test:state:newForks && npm run test:state:oldForks && npm run test:state:transitionForks",
-    "test:state:newForks": "echo 'Prague' | xargs -n1 | xargs -I v1  VITEST_FORK=v1 VITE_VERIFY_TEST_AMOUNT_ALL_TESTS=1 npx vitest test/tester/stateRunner.spec.ts",
-    "test:state:oldForks": "echo 'Chainstart Homestead dao TangerineWhistle SpuriousDragon Byzantium Constantinople Petersburg Istanbul MuirGlacier Berlin London Paris Shanghai Cancun' | xargs -n1 | xargs -I v1  VITEST_FORK=v1 VITE_VERIFY_TEST_AMOUNT_ALL_TESTS=1 npx vitest test/tester/stateRunner.spec.ts",
-    "test:state:transitionForks": "echo 'ByzantiumToConstantinopleFixAt5 EIP158ToByzantiumAt5 FrontierToHomesteadAt5 HomesteadToDaoAt5 HomesteadToEIP150At5 BerlinToLondonAt5' | xargs -n1 | xargs -I v1  VITEST_FORK=v1 VITE_VERIFY_TEST_AMOUNT_ALL_TESTS=1 npx vitest test/tester/stateRunner.spec.ts",
+    "test:state:newForks": "echo 'Prague' | xargs -n1 | xargs -I {} sh -c 'VITE_FORK={} VITE_VERIFY_TEST_AMOUNT_ALL_TESTS=1 npx vitest test/tester/stateRunner.spec.ts'",
+    "test:state:oldForks": "echo 'Chainstart Homestead dao TangerineWhistle SpuriousDragon Byzantium Constantinople Petersburg Istanbul MuirGlacier Berlin London Paris Shanghai Cancun' | xargs -n1 | xargs -I {} sh -c 'VITE_FORK={} VITE_VERIFY_TEST_AMOUNT_ALL_TESTS=1 npx vitest test/tester/stateRunner.spec.ts'",
+    "test:state:transitionForks": "echo 'ByzantiumToConstantinopleFixAt5 EIP158ToByzantiumAt5 FrontierToHomesteadAt5 HomesteadToDaoAt5 HomesteadToEIP150At5 BerlinToLondonAt5' | xargs -n1 | xargs -I {} sh -c 'VITE_FORK={} VITE_VERIFY_TEST_AMOUNT_ALL_TESTS=1 npx vitest test/tester/stateRunner.spec.ts'",
     "test:state:slow": "VITE_RUN_SKIPPED=slow npx vitest test/tester/stateRunner.spec.ts",
     "tester": "tsx --conditions=typescript ./test/tester --stack-size=1500",
     "tsc": "../../config/cli/ts-compile.sh"
