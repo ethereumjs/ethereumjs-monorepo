@@ -238,7 +238,7 @@ jobs:
           fail-on-cache-miss: true
 
 
-      - run: VITE_FORK=${{matrix.fork}} VITE_VERIFY_TEST_AMOUNT_ALL_TESTS=1 npx vitest run test/tester/stateRunner.spec.ts
+      - run: VITE_FORK=${{ matrix.fork }} VITE_VERIFY_TEST_AMOUNT_ALL_TESTS=1 npx vitest run test/tester/stateRunner.spec.ts
 
   vm-blockchain:
     runs-on: ubuntu-latest
