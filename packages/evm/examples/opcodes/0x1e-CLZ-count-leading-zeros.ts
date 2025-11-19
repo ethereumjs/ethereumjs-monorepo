@@ -8,13 +8,13 @@ import { type PrefixedHexString, hexToBytes } from '@ethereumjs/util'
 // The CLZ opcode returns the number of zero bits before the most significant 1-bit in a 256-bit value.
 // It enables efficient computation of bit length, log₂, and prefix comparisons directly in the EVM.
 //
-// Doing this in Solidity/Yul requires a loop or binary search using shifts and comparisons, which costs hundreds of gas and bloats bytecode.
-// By replacing multi-step shift and branch logic with a single instruction, it reduces gas cost, bytecode size, and zk-proof complexity.
+// Doing this in Solidity/Yul requires a loop or binary search using shifts and comparisons,
+// which costs hundreds of gas and bloats bytecode. By replacing multi-step shift and branch logic
+// with a single instruction, it reduces gas cost, bytecode size, and zk-proof complexity.
 
 const common = new Common({
   chain: Mainnet,
   hardfork: Hardfork.Osaka,
-  eips: [7939],
 })
 
 const assembleCode = (x: Uint8Array) => {
@@ -33,10 +33,7 @@ const assembleCode = (x: Uint8Array) => {
 const runCase = async (evm: EVM, x: PrefixedHexString) => {
   const code = assembleCode(hexToBytes(x))
 
-  const res = await evm.runCode({
-    code,
-    gasLimit: 1_000_000n,
-  })
+  const res = await evm.runCode({ code })
 
   const stack = res.runState?.stack
   if (!stack) {
