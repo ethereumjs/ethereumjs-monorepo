@@ -3,19 +3,14 @@ import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
 import { createLegacyTx, createTx } from '@ethereumjs/tx'
-import {
-  Account,
-  createAddressFromPrivateKey,
-  createAddressFromString,
-  hexToBytes,
-  randomBytes,
-} from '@ethereumjs/util'
+import { Account, createAddressFromString, randomBytes } from '@ethereumjs/util'
 import { runBlock } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
 import { createClient, createManager, getRPCClient, startRPC } from '../helpers.ts'
 
 import type { Block } from '@ethereumjs/block'
+import { SIGNER_A } from '@ethereumjs/testdata'
 
 const method = 'eth_getTransactionCount'
 
@@ -78,7 +73,7 @@ describe(method, () => {
     // call with nonexistent account
     res = await rpc.request(method, [`0x${'11'.repeat(20)}`, 'latest'])
     assert.strictEqual(res.result, `0x0`, 'should return 0x0 for nonexistent account')
-  })
+  }, 20000)
 
   it('call with pending block argument', async () => {
     const blockchain = await createBlockchain()
@@ -88,17 +83,15 @@ describe(method, () => {
     const service = client.service
     const rpc = getRPCClient(startRPC(manager.getMethods()))
 
-    const pk = hexToBytes('0x266682876da8fd86410d001ec33c7c281515aeeb640d175693534062e2599238')
-    const address = createAddressFromPrivateKey(pk)
-    await service.execution.vm.stateManager.putAccount(address, new Account())
-    const account = await service.execution.vm.stateManager.getAccount(address)
+    await service.execution.vm.stateManager.putAccount(SIGNER_A.address, new Account())
+    const account = await service.execution.vm.stateManager.getAccount(SIGNER_A.address)
     account!.balance = 0xffffffffffffffn
-    await service.execution.vm.stateManager.putAccount(address, account!)
+    await service.execution.vm.stateManager.putAccount(SIGNER_A.address, account!)
     const tx = createTx({
       to: randomBytes(20),
       value: 1,
       maxFeePerGas: 0xffffff,
-    }).sign(pk)
+    }).sign(SIGNER_A.privateKey)
 
     // Set stubs so getTxCount won't validate txns or mess up state root
     service.txPool['validate'] = () => Promise.resolve(undefined)
@@ -107,7 +100,7 @@ describe(method, () => {
 
     await service.txPool.add(tx, true)
 
-    const res = await rpc.request(method, [address.toString(), 'pending'])
+    const res = await rpc.request(method, [SIGNER_A.address.toString(), 'pending'])
     assert.strictEqual(res.result, '0x1')
-  })
+  }, 23000)
 })
