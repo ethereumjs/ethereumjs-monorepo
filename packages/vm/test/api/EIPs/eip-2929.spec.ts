@@ -5,8 +5,8 @@ import { assert, describe, it } from 'vitest'
 
 import { createVM, runTx } from '../../../src/index.ts'
 
-import { SIGNER_A } from '@ethereumjs/testdata'
 import type { InterpreterStep } from '@ethereumjs/evm'
+import { SIGNER_A } from '@ethereumjs/testdata'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 // Test cases source: https://gist.github.com/holiman/174548cad102096858583c6fbbb0649a

@@ -5,8 +5,8 @@ import { assert, describe, it } from 'vitest'
 
 import { createVM, runTx } from '../../../src/index.ts'
 
-import { SIGNER_A } from '@ethereumjs/testdata'
 import type { InterpreterStep } from '@ethereumjs/evm'
+import { SIGNER_A } from '@ethereumjs/testdata'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
