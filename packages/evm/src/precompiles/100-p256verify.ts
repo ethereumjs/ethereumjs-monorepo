@@ -1,5 +1,5 @@
 import { bytesToBigInt, bytesToHex, setLengthLeft } from '@ethereumjs/util'
-import { p256 } from '@noble/curves/p256'
+import { p256 } from '@noble/curves/nist.js'
 
 import { OOGResult } from '../evm.ts'
 
@@ -103,7 +103,7 @@ export function precompile100(opts: PrecompileInput): ExecResult {
 
   try {
     // Create public key point
-    const publicKey = p256.ProjectivePoint.fromAffine({
+    const publicKey = p256.Point.fromAffine({
       x: qxBigInt,
       y: qyBigInt,
     })
@@ -115,10 +115,13 @@ export function precompile100(opts: PrecompileInput): ExecResult {
     signatureBytes.set(rBytes, 0)
     signatureBytes.set(sBytes, 32)
 
-    const signature = p256.Signature.fromCompact(signatureBytes)
+    const signature = p256.Signature.fromBytes(signatureBytes).toBytes()
 
     // Verify signature
-    const isValid = p256.verify(signature, msgHash, publicKey.toRawBytes(false))
+    const isValid = p256.verify(signature, msgHash, publicKey.toBytes(false), {
+      lowS: false,
+      prehash: false,
+    })
 
     if (isValid) {
       if (opts._debug !== undefined) {

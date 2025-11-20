@@ -6,7 +6,7 @@ import {
   equalsBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
-import { bls12_381 } from '@noble/curves/bls12-381'
+import { bls12_381 } from '@noble/curves/bls12-381.js'
 
 import { EVMError } from '../../errors.ts'
 
@@ -20,12 +20,14 @@ import {
   BLS_ZERO_BUFFER,
 } from './constants.ts'
 
-import type { Fp2 } from '@noble/curves/abstract/tower'
-import type { AffinePoint } from '@noble/curves/abstract/weierstrass'
+import type { Fp2 } from '@noble/curves/abstract/tower.js'
+import type { AffinePoint } from '@noble/curves/abstract/weierstrass.js'
 import type { EVMBLSInterface } from '../../types.ts'
 
-const G1_ZERO = bls12_381.G1.ProjectivePoint.ZERO
-const G2_ZERO = bls12_381.G2.ProjectivePoint.ZERO
+// @ts-ignore - @noble/curves v2 is ESM-only, TypeScript's moduleResolution: "node" doesn't properly resolve types for CJS build
+const G1_ZERO = bls12_381.G1.Point.ZERO
+// @ts-ignore - @noble/curves v2 is ESM-only, TypeScript's moduleResolution: "node" doesn't properly resolve types for CJS build
+const G2_ZERO = bls12_381.G2.Point.ZERO
 
 function BLS12_381_ToFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array) {
   // check if the coordinates are in the field
@@ -56,7 +58,8 @@ function BLS12_381_ToG1Point(input: Uint8Array, verifyOrder = true) {
   const x = bytesToBigInt(input.subarray(16, BLS_G1_POINT_BYTE_LENGTH / 2))
   const y = bytesToBigInt(input.subarray(80, BLS_G1_POINT_BYTE_LENGTH))
 
-  const G1 = bls12_381.G1.ProjectivePoint.fromAffine({
+  // @ts-ignore - @noble/curves v2 is ESM-only, TypeScript's moduleResolution: "node" doesn't properly resolve types for CJS build
+  const G1 = bls12_381.G1.Point.fromAffine({
     x,
     y,
   })
@@ -99,7 +102,8 @@ function BLS12_381_ToG2Point(input: Uint8Array, verifyOrder = true) {
   const Fp2X = BLS12_381_ToFp2Point(p_x_1, p_x_2)
   const Fp2Y = BLS12_381_ToFp2Point(p_y_1, p_y_2)
 
-  const pG2 = bls12_381.G2.ProjectivePoint.fromAffine({
+  // @ts-ignore - @noble/curves v2 is ESM-only, TypeScript's moduleResolution: "node" doesn't properly resolve types for CJS build
+  const pG2 = bls12_381.G2.Point.fromAffine({
     x: Fp2X,
     y: Fp2Y,
   })
@@ -130,26 +134,9 @@ function BLS12_381_FromG2Point(input: AffinePoint<Fp2>): Uint8Array {
 
 function BLS12_381_ToFrPoint(input: Uint8Array): bigint {
   const Fr = bls12_381.fields.Fr.fromBytes(input)
-
-  // TODO: This fixes the following two failing tests:
-  // bls_g1mul_random*g1_unnormalized_scalar
-  // bls_g1mul_random*p1_unnormalized_scalar
-  // It should be nevertheless validated if this is (fully) correct,
-  // especially if ">" or ">=" should be applied.
-  //
-  // Unfortunately the scalar in both test vectors is significantly
-  // greater than the ORDER threshold, here are th values from both tests:
-  //
-  // Scalar / Order
-  // 69732848789442042582239751384143889712113271203482973843852656394296700715236n
-  // 52435875175126190479447740508185965837690552500527637822603658699938581184513n
-  //
-  // There should be 4 test cases added to the official test suite:
-  // 1. bls_g1mul_random*g1_unnormalized_scalar within threshold (ORDER (?))
-  // 2. bls_g1mul_random*g1_unnormalized_scalar outside threshold (ORDER + 1 (?))
-  // 3. bls_g1mul_random*p1_unnormalized_scalar within threshold (ORDER (?))
-  // 4. bls_g1mul_random*p1_unnormalized_scalar outside threshold (ORDER + 1 (?))
-  //
+  if (Fr >= bls12_381.fields.Fr.ORDER) {
+    return bls12_381.fields.Fr.create(Fr % bls12_381.fields.Fr.ORDER)
+  }
   return bls12_381.fields.Fr.create(Fr)
 }
 
@@ -180,7 +167,7 @@ export class NobleBLS implements EVMBLSInterface {
     )
 
     const p = p1.add(p2)
-    const result = BLS12_381_FromG1Point(p)
+    const result = BLS12_381_FromG1Point(p.toAffine())
 
     return result
   }
@@ -194,7 +181,7 @@ export class NobleBLS implements EVMBLSInterface {
       return BLS_G1_INFINITY_POINT_BYTES
     }
     const result = p.multiplyUnsafe(scalar)
-    return BLS12_381_FromG1Point(result)
+    return BLS12_381_FromG1Point(result.toAffine())
   }
 
   addG2(input: Uint8Array): Uint8Array {
@@ -204,7 +191,7 @@ export class NobleBLS implements EVMBLSInterface {
       false,
     )
     const p = p1.add(p2)
-    const result = BLS12_381_FromG2Point(p)
+    const result = BLS12_381_FromG2Point(p.toAffine())
 
     return result
   }
@@ -218,13 +205,14 @@ export class NobleBLS implements EVMBLSInterface {
       return BLS_G2_INFINITY_POINT_BYTES
     }
     const result = p.multiplyUnsafe(scalar)
-    return BLS12_381_FromG2Point(result)
+    return BLS12_381_FromG2Point(result.toAffine())
   }
 
   mapFPtoG1(input: Uint8Array): Uint8Array {
     // convert input to Fp1 point
     const FP = BLS12_381_ToFpPoint(input.subarray(0, 64))
-    const result = bls12_381.G1.mapToCurve([FP]).toAffine()
+    // @ts-ignore - @noble/curves v2 is ESM-only, TypeScript's moduleResolution: "node" doesn't properly resolve types for CJS build
+    const result = bls12_381.G1.mapToCurve(FP).toAffine()
     const resultBytes = BLS12_381_FromG1Point(result)
     return resultBytes
   }
@@ -232,6 +220,7 @@ export class NobleBLS implements EVMBLSInterface {
   mapFP2toG2(input: Uint8Array): Uint8Array {
     // convert input to Fp2 point
     const Fp2Point = BLS12_381_ToFp2Point(input.subarray(0, 64), input.subarray(64, 128))
+    // @ts-ignore - @noble/curves v2 is ESM-only, TypeScript's moduleResolution: "node" doesn't properly resolve types for CJS build
     const result = bls12_381.G2.mapToCurve([Fp2Point.c0, Fp2Point.c1]).toAffine()
     const resultBytes = BLS12_381_FromG2Point(result)
     return resultBytes
@@ -266,7 +255,7 @@ export class NobleBLS implements EVMBLSInterface {
       pRes = pRes.add(pMul)
     }
 
-    return BLS12_381_FromG1Point(pRes)
+    return BLS12_381_FromG1Point(pRes.toAffine())
   }
 
   msmG2(input: Uint8Array): Uint8Array {
@@ -298,7 +287,7 @@ export class NobleBLS implements EVMBLSInterface {
       pRes = pRes.add(pMul)
     }
 
-    return BLS12_381_FromG2Point(pRes)
+    return BLS12_381_FromG2Point(pRes.toAffine())
   }
 
   pairingCheck(input: Uint8Array): Uint8Array {
@@ -319,7 +308,7 @@ export class NobleBLS implements EVMBLSInterface {
 
     // Filter out infinity pairs
     const filteredPairs = pairs.filter(
-      (pair) => !pair.g1.equals(G1_ZERO) && !pair.g2.equals(G2_ZERO),
+      (pair) => pair.g1.equals(G1_ZERO) === false && pair.g2.equals(G2_ZERO) === false,
     )
 
     const FP12 = bls12_381.pairingBatch(filteredPairs, true)

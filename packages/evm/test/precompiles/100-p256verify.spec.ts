@@ -1,6 +1,6 @@
 import { Common, Mainnet } from '@ethereumjs/common'
 import { Address, hexToBytes } from '@ethereumjs/util'
-import { p256 } from '@noble/curves/p256'
+import { p256 } from '@noble/curves/nist.js'
 import { assert, beforeAll, describe, it } from 'vitest'
 
 import { createEVM } from '../../src/index.ts'
@@ -13,13 +13,12 @@ const testCases = [
     name: 'valid signature verification',
     input: (() => {
       // Generate a test key pair and signature
-      const privateKey = p256.utils.randomPrivateKey()
+      const privateKey = p256.utils.randomSecretKey()
       const publicKey = p256.getPublicKey(privateKey, false) // Get uncompressed public key
       const message = new Uint8Array(32)
       message[31] = 1 // Simple test message
 
-      const signature = p256.sign(message, privateKey)
-      const signatureBytes = signature.toCompactRawBytes()
+      const signatureBytes = p256.sign(message, privateKey, { lowS: false, prehash: false })
 
       // Format input: msgHash (32) + r (32) + s (32) + qx (32) + qy (32)
       const input = new Uint8Array(160)
@@ -92,7 +91,7 @@ const testCases = [
     name: 'invalid signature verification',
     input: (() => {
       // Generate a valid key pair but wrong signature
-      const privateKey = p256.utils.randomPrivateKey()
+      const privateKey = p256.utils.randomSecretKey()
       const publicKey = p256.getPublicKey(privateKey, false) // Get uncompressed public key
       const message = new Uint8Array(32)
       message[31] = 1
@@ -100,13 +99,12 @@ const testCases = [
       // Use wrong message for signature
       const wrongMessage = new Uint8Array(32)
       wrongMessage[31] = 2
-      const signature = p256.sign(wrongMessage, privateKey)
-      const signatureBytes = signature.toCompactRawBytes()
+      const signature = p256.sign(wrongMessage, privateKey, { lowS: false, prehash: false })
 
       const input = new Uint8Array(160)
       input.set(message, 0) // msgHash (different from signed message)
-      input.set(signatureBytes.slice(0, 32), 32) // r
-      input.set(signatureBytes.slice(32, 64), 64) // s
+      input.set(signature.slice(0, 32), 32) // r
+      input.set(signature.slice(32, 64), 64) // s
       input.set(publicKey.slice(1, 33), 96) // qx
       input.set(publicKey.slice(33, 65), 128) // qy
 

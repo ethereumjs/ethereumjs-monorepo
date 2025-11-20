@@ -7,11 +7,11 @@ import {
   hexToBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
-import { bn254 } from '@noble/curves/bn254'
+import { bn254 } from '@noble/curves/bn254.js'
 
 import { EVMError } from '../../errors.ts'
 
-import type { AffinePoint } from '@noble/curves/abstract/weierstrass'
+import type { AffinePoint } from '@noble/curves/abstract/weierstrass.js'
 import type { EVMBN254Interface } from '../../types.ts'
 
 const G1_INFINITY_POINT_BYTES = new Uint8Array(64)
@@ -30,13 +30,15 @@ const ONE_BUFFER = concatBytes(new Uint8Array(31), hexToBytes('0x01'))
  */
 function toG1Point(input: Uint8Array) {
   if (equalsBytes(input, G1_INFINITY_POINT_BYTES) === true) {
-    return bn254.G1.ProjectivePoint.ZERO
+    // @ts-ignore - @noble/curves v2 is ESM-only, TypeScript's moduleResolution: "node" doesn't properly resolve types for CJS build
+    return bn254.G1.Point.ZERO
   }
 
   const x = bytesToBigInt(input.subarray(0, G1_ELEMENT_BYTE_LENGTH))
   const y = bytesToBigInt(input.subarray(G1_ELEMENT_BYTE_LENGTH, G1_POINT_BYTE_LENGTH))
 
-  const G1 = bn254.G1.ProjectivePoint.fromAffine({
+  // @ts-ignore - @noble/curves v2 is ESM-only, TypeScript's moduleResolution: "node" doesn't properly resolve types for CJS build
+  const G1 = bn254.G1.Point.fromAffine({
     x,
     y,
   })
@@ -49,17 +51,6 @@ function fromG1Point(input: AffinePoint<bigint>): Uint8Array {
   const yBytes = setLengthLeft(bigIntToBytes(input.y), G1_ELEMENT_BYTE_LENGTH)
 
   return concatBytes(xBytes, yBytes)
-}
-
-// input: a 32-byte hex scalar Uint8Array
-// output: a Noble Fr point
-
-function toFrPoint(input: Uint8Array): bigint {
-  const Fr = bn254.fields.Fr.fromBytes(input)
-  if (Fr >= bn254.fields.Fr.ORDER) {
-    return Fr % bn254.fields.Fr.ORDER
-  }
-  return Fr
 }
 
 function toFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array) {
@@ -84,7 +75,8 @@ function toFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array) {
  */
 function toG2Point(input: Uint8Array) {
   if (equalsBytes(input, G2_INFINITY_POINT_BYTES) === true) {
-    return bn254.G2.ProjectivePoint.ZERO
+    // @ts-ignore - @noble/curves v2 is ESM-only, TypeScript's moduleResolution: "node" doesn't properly resolve types for CJS build
+    return bn254.G2.Point.ZERO
   }
 
   const p_x_2 = input.subarray(0, G1_ELEMENT_BYTE_LENGTH)
@@ -103,7 +95,8 @@ function toG2Point(input: Uint8Array) {
   const Fp2X = toFp2Point(p_x_1, p_x_2)
   const Fp2Y = toFp2Point(p_y_1, p_y_2)
 
-  const pG2 = bn254.G2.ProjectivePoint.fromAffine({
+  // @ts-ignore - @noble/curves v2 is ESM-only, TypeScript's moduleResolution: "node" doesn't properly resolve types for CJS build
+  const pG2 = bn254.G2.Point.fromAffine({
     x: Fp2X,
     y: Fp2Y,
   })
@@ -124,19 +117,19 @@ export class NobleBN254 implements EVMBN254Interface {
     const p1 = toG1Point(input.slice(0, G1_POINT_BYTE_LENGTH))
     const p2 = toG1Point(input.slice(G1_POINT_BYTE_LENGTH, G1_POINT_BYTE_LENGTH * 2))
 
-    const result = fromG1Point(p1.add(p2))
+    const result = fromG1Point(p1.add(p2).toAffine())
     return result
   }
 
   mul(input: Uint8Array): Uint8Array {
     const p1 = toG1Point(input.slice(0, G1_POINT_BYTE_LENGTH))
-    const scalar = toFrPoint(input.slice(G1_POINT_BYTE_LENGTH, 96))
+    const scalar = bn254.fields.Fr.create(bytesToBigInt(input.slice(G1_POINT_BYTE_LENGTH, 96)))
 
     if (scalar === BIGINT_0) {
       return G1_INFINITY_POINT_BYTES
     }
 
-    const result = fromG1Point(p1.multiply(scalar))
+    const result = fromG1Point(p1.multiply(scalar).toAffine())
     return result
   }
   pairing(input: Uint8Array): Uint8Array {
@@ -150,7 +143,8 @@ export class NobleBN254 implements EVMBN254Interface {
       const g2start = pairStart + G1_POINT_BYTE_LENGTH
       const G2 = toG2Point(input.subarray(g2start, g2start + G2_POINT_BYTE_LENGTH))
 
-      if (G1 === bn254.G1.ProjectivePoint.ZERO || G2 === bn254.G2.ProjectivePoint.ZERO) {
+      // @ts-ignore - @noble/curves v2 is ESM-only, TypeScript's moduleResolution: "node" doesn't properly resolve types for CJS build
+      if (G1 === bn254.G1.Point.ZERO || G2 === bn254.G2.Point.ZERO) {
         continue
       }
 
