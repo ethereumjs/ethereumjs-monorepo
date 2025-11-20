@@ -15,10 +15,10 @@ const kzg = new microEthKZG(trustedSetup)
 
 // Use with node ./examples/blobs.ts <file path>
 const filePath = process.argv[2]
-let blobData: string = fs.readFileSync(filePath, 'ascii')
+const blobData: string = fs.readFileSync(filePath, 'ascii')
 console.log(blobData)
 console.log(blobData.length)
-blobData = blobData.substring(0, 100)
+//blobData = blobData.substring(0, 100)
 
 const blobs = [getBlob(hexToBytes(`0x${blobData}`))]
 

@@ -40,7 +40,7 @@ export function getBlob(data: Uint8Array): PrefixedHexString {
   const blob = new Uint8Array(BLOB_SIZE)
   for (let i = 0; i < FIELD_ELEMENTS_PER_BLOB; i++) {
     const chunk = new Uint8Array(32)
-    chunk.set(data.subarray(i * 31, (i + 1) * 31), 0)
+    chunk.set(data.subarray(i * 32, (i + 1) * 32), 0)
     blob.set(chunk, i * 32)
   }
 
