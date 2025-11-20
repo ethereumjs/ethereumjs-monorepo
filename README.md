@@ -4,16 +4,25 @@
 
 # EthereumJS Monorepo
 
+abcde
+
 ## Table of Contents
 
-- [Introduction](#introduction)
-- [Active Packages](#active-packages)
-- [Deprecated Packages](#deprecated-packages)
-- [Getting Started](#getting-started)
-- [Branches](#branches)
-- [Packages Relationships](#packages-relationships)
-- [EthereumJS](#ethereumjs)
-- [License](#license)
+- [EthereumJS Monorepo](#ethereumjs-monorepo)
+  - [Table of Contents](#table-of-contents)
+  - [Introduction](#introduction)
+  - [Active Packages](#active-packages)
+  - [Deprecated Packages](#deprecated-packages)
+  - [Getting Started](#getting-started)
+    - [Prerequisites](#prerequisites)
+    - [Initial Setup](#initial-setup)
+    - [Development](#development)
+  - [Branches](#branches)
+    - [Overview](#overview)
+    - [Breaking Releases](#breaking-releases)
+  - [Packages Relationships](#packages-relationships)
+  - [EthereumJS](#ethereumjs)
+  - [License](#license)
 
 ## Introduction
 
