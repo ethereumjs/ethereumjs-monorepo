@@ -53,17 +53,6 @@ function fromG1Point(input: AffinePoint<bigint>): Uint8Array {
   return concatBytes(xBytes, yBytes)
 }
 
-// input: a 32-byte hex scalar Uint8Array
-// output: a Noble Fr point
-
-function toFrPoint(input: Uint8Array): bigint {
-  const Fr = bn254.fields.Fr.fromBytes(input)
-  if (Fr >= bn254.fields.Fr.ORDER) {
-    return Fr % bn254.fields.Fr.ORDER
-  }
-  return Fr
-}
-
 function toFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array) {
   if (bytesToBigInt(fpXCoordinate) >= bn254.fields.Fp2.ORDER) {
     throw new EVMError(EVMError.errorMessages.BN254_FP_NOT_IN_FIELD)
@@ -134,7 +123,7 @@ export class NobleBN254 implements EVMBN254Interface {
 
   mul(input: Uint8Array): Uint8Array {
     const p1 = toG1Point(input.slice(0, G1_POINT_BYTE_LENGTH))
-    const scalar = toFrPoint(input.slice(G1_POINT_BYTE_LENGTH, 96))
+    const scalar = bn254.fields.Fr.create(bytesToBigInt(input.slice(G1_POINT_BYTE_LENGTH, 96)))
 
     if (scalar === BIGINT_0) {
       return G1_INFINITY_POINT_BYTES
