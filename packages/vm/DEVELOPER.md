@@ -99,7 +99,7 @@ Running a specific state test case:
 npm run test:state -- --test='stackOverflow'
 
 # Alternative: Direct command (still works)
-tsx ./test/tester --state --test='stackOverflow'
+VITE_TEST='stackOverflow' npx vitest test/tester/stateRunner.spec.ts
 ```
 
 Running all tests in a file:
