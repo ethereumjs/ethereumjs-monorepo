@@ -28,7 +28,7 @@ npm run test:state -- --fork=Constantinople
 npm run test:state -- --test=stackOverflow
 ```
 
-**Note**: The old Tape-based command `tsx ./test/tester --state` still works for backward compatibility (via the Vitest wrapper), but `npm run test:state` is recommended.
+**Note**: You can also invoke Vitest directly (`npx vitest test/tester/stateRunner.spec.ts`), but `npm run test:state` is recommended for argument handling.
 
 Additional Vitest scripts:
 
@@ -40,13 +40,13 @@ npm run test:state:allForks
 npm run test:state:slow
 ```
 
-**Blockchain Tests (Tape)**
+**Blockchain Tests (Vitest)**
 
-Blockchain tests still run on Tape:
+Blockchain tests now run on Vitest via the blockchain wrapper:
 
 ```bash
 # Direct command
-tsx ./test/tester --blockchain
+npx vitest test/tester/blockchainRunner.spec.ts
 
 # Via npm script
 npm run test:blockchain
@@ -61,7 +61,7 @@ Tests run against source by default. To run with compiled output:
 npm run build:dist && npm run test:state -- --dist
 
 # Blockchain tests
-npm run build:dist && node ./test/tester --blockchain --dist
+npm run build:dist && npm run test:blockchain -- --dist
 ```
 
 Use `--fork` to pass in the desired hardfork:
@@ -70,8 +70,8 @@ Use `--fork` to pass in the desired hardfork:
 # Recommended: Using npm script (Vitest)
 npm run test:state -- --fork='Constantinople'
 
-# Alternative: Direct Tape command (still works)
-tsx ./test/tester --state --fork='Constantinople'
+# Alternative: Direct Vitest command
+VITE_FORK=Constantinople npx vitest test/tester/stateRunner.spec.ts
 ```
 
 By default state tests use the latest hardfork (`DEFAULT_FORK_CONFIG` in `test/tester/config.ts`, currently `Prague`).
@@ -134,72 +134,54 @@ Run a test from a specified source file not under the `tests` directory:
 npm run test:state -- --customStateTest='{path_to_file}'
 ```
 
-**Blockchain Tests (Tape)**
+**Blockchain Tests (Vitest)**
 
 Running all the blockchain tests in a file:
 
 ```bash
-tsx ./test/tester --blockchain --file='randomStatetest303'
-# Or
 npm run test:blockchain -- --file='randomStatetest303'
+# Or
+VITE_FILE='randomStatetest303' npx vitest test/tester/blockchainRunner.spec.ts
 ```
 
 Running tests from a specific directory:
 
 ```bash
-tsx ./test/tester --blockchain --dir='bcBlockGasLimitTest'
-# Or
 npm run test:blockchain -- --dir='bcBlockGasLimitTest'
+# Or
+VITE_DIR='bcBlockGasLimitTest' npx vitest test/tester/blockchainRunner.spec.ts
 ```
 
 #### Running tests with a reporter/formatter
 
-**Vitest (State Tests)**
-
-Vitest has built-in reporters. Use Vitest's `--reporter` option:
+Vitest has built-in reporters. Use Vitest's `--reporter` option for both suites:
 
 ```bash
 # JSON reporter
 npx vitest test/tester/stateRunner.spec.ts --reporter=json
+npx vitest test/tester/blockchainRunner.spec.ts --reporter=json
 
 # Verbose reporter
 npx vitest test/tester/stateRunner.spec.ts --reporter=verbose
+npx vitest test/tester/blockchainRunner.spec.ts --reporter=verbose
 
 # See all options
 npx vitest --help
 ```
 
-**Tape (Blockchain Tests)**
-
-For Tape-based tests, you can use the formatTest script:
-
-```bash
-npm install -g tap-mocha-reporter
-npm run formatTest -- -t test:blockchain -with 'tap-mocha-reporter json'
-```
-
-To pipe the results of tests run with a node command to a formatter:
-
-```bash
-npm run formatTest -- -t "./test/tester --blockchain --dir='bcBlockGasLimitTest'" -with 'tap-mocha-reporter json'
-```
-
-If no reporter or formatter is provided:
-- State tests (Vitest): Results are reported by Vitest's default reporter.
-- Blockchain tests (Tape): Results are reported by `tape` without any additional formatting.
+If no reporter or formatter is provided, results are reported by Vitest's default reporter.
 
 ## Test Framework Migration
 
-State tests have been migrated from Tape to Vitest, while blockchain tests still use Tape.
+State and blockchain tests now run on Vitest only.
 
 **State Tests (Vitest)**
 - Use `npm run test:state` (recommended).
-- The old `tsx ./test/tester --state` command still works via the Vitest wrapper.
-- All CLI arguments are supported; the wrapper converts them to `VITE_*` environment variables.
+- You can also call `npx vitest test/tester/stateRunner.spec.ts` directly; CLI arguments are converted to `VITE_*` env vars by the wrapper when needed.
 
-**Blockchain Tests (Tape)**
-- Use `npm run test:blockchain` or `tsx ./test/tester --blockchain`.
-- Migration to Vitest is planned but not yet complete.
+**Blockchain Tests (Vitest)**
+- Use `npm run test:blockchain` (recommended).
+- You can also call `npx vitest test/tester/blockchainRunner.spec.ts` directly; CLI arguments are converted to `VITE_*` env vars by the blockchain wrapper.
 
 **Why Vitest?**
 - Better performance and parallel execution.
@@ -208,14 +190,16 @@ State tests have been migrated from Tape to Vitest, while blockchain tests still
 
 **Environment variables**
 
-You can provide options either through CLI arguments or environment variables; the wrapper keeps behavior consistent:
+You can provide options either through CLI arguments or environment variables; the wrappers keep behavior consistent:
 
 ```bash
 # CLI arguments (converted to env vars by wrapper)
 npm run test:state -- --fork=Constantinople
+npm run test:blockchain -- --fork=Constantinople
 
 # Direct environment variables
 VITE_FORK=Constantinople npx vitest test/tester/stateRunner.spec.ts
+VITE_FORK=Constantinople npx vitest test/tester/blockchainRunner.spec.ts
 ```
 
 #### Skipping Tests
@@ -258,7 +242,7 @@ For state tests you can use the `--jsontrace` flag to output opcode trace inform
 
 Blockchain tests support `--debug` to verify the postState:
 
-`tsx ./test/tester --blockchain --debug --test='ZeroValue_SELFDESTRUCT_ToOneStorageKey_OOGRevert_d0g0v0_EIP158'`
+`npm run test:blockchain -- --debug --test='ZeroValue_SELFDESTRUCT_ToOneStorageKey_OOGRevert_d0g0v0_EIP158'`
 
 All/most State tests are replicated as Blockchain tests in a `GeneralStateTests` [sub directory](https://github.com/ethereum/tests/tree/develop/docs/test_types/TestStructures/GeneralStateTests) in the Ethereum tests repo, so for debugging single test cases the Blockchain test version of the State test can be used.
 
@@ -317,7 +301,7 @@ Note: this script runs by actually checking out the targeted branch, running the
 [Clinic](https://github.com/nearform/node-clinic) allows profiling the VM in the node environment. It supports various profiling methods, among them is [flame](https://github.com/nearform/node-clinic-flame) which can be used for generating flamegraphs to highlight bottlenecks and hot paths. As an example, to generate a flamegraph for the VM blockchain tests, you can run:
 
 ```sh
-NODE_OPTIONS="--max-old-space-size=4096" clinic flame -- node ./test/tester.js --blockchain --excludeDir='GeneralStateTests'
+NODE_OPTIONS="--max-old-space-size=4096" clinic flame -- VITE_EXCLUDE_DIR='GeneralStateTests' npx vitest test/tester/blockchainRunner.spec.ts
 ```
 
 ## Benchmarks
