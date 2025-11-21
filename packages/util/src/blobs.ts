@@ -36,11 +36,11 @@ function getPadded(data: Uint8Array, blobs_len: number): Uint8Array {
  * @param data Input data (must be exactly BLOB_SIZE bytes)
  * @returns Hex-prefixed blob string
  */
-function getBlob(data: Uint8Array): PrefixedHexString {
+export function getBlob(data: Uint8Array): PrefixedHexString {
   const blob = new Uint8Array(BLOB_SIZE)
   for (let i = 0; i < FIELD_ELEMENTS_PER_BLOB; i++) {
     const chunk = new Uint8Array(32)
-    chunk.set(data.subarray(i * 31, (i + 1) * 31), 0)
+    chunk.set(data.subarray(i * 32, (i + 1) * 32), 0)
     blob.set(chunk, i * 32)
   }
 
