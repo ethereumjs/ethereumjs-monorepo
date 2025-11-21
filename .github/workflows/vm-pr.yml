@@ -244,7 +244,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # Args to pass to the tester. Note that some have split the slow tests and only
+        # Args to pass to the blockchain Vitest wrapper. Note that some have split the slow tests and only
         # run on forks where applicable (see PR #489 for numbers on these)
 
         # Tests were split with --dir and --excludeDir to balance execution times below the 9min mark.
@@ -299,7 +299,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # Args to pass to the tester.
+        # Args to pass to the blockchain Vitest wrapper.
         args:
           [
             '--fork=Chainstart --verify-test-amount-alltests',
