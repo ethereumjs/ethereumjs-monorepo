@@ -90,6 +90,7 @@ export function verifyAccountPostConditions(
     logComment(t, 'Account: ' + address)
     if (!equalsBytes(format(account.balance, true), format(acctData.balance, true))) {
       logComment(
+        t,
         `Expected balance of ${bytesToBigInt(format(acctData.balance, true))}, but got ${
           account.balance
         }`,
@@ -97,6 +98,7 @@ export function verifyAccountPostConditions(
     }
     if (!equalsBytes(format(account.nonce, true), format(acctData.nonce, true))) {
       logComment(
+        t,
         `Expected nonce of ${bytesToBigInt(format(acctData.nonce, true))}, but got ${account.nonce}`,
       )
     }
@@ -125,6 +127,7 @@ export function verifyAccountPostConditions(
 
       if (val !== hashedStorage[key]) {
         logComment(
+          t,
           `Expected storage key ${bytesToHex(data.key)} at address ${address} to have value ${
             hashedStorage[key] ?? '0x'
           }, but got ${val}}`,
