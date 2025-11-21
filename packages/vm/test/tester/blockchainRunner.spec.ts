@@ -88,6 +88,8 @@ const RUN_PROFILER: boolean = argv.profile ?? false
 const FORK_CONFIG: string = argv.fork ?? DEFAULT_FORK_CONFIG
 const FORK_CONFIG_TEST_SUITE = getRequiredForkConfigAlias(FORK_CONFIG)
 
+console.log(`Running tests for fork: ${FORK_CONFIG}`)
+
 // Examples: Istanbul -> istanbul, MuirGlacier -> muirGlacier
 const FORK_CONFIG_VM = FORK_CONFIG.charAt(0).toLowerCase() + FORK_CONFIG.substring(1)
 
