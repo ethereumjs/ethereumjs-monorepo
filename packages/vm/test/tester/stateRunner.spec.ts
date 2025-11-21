@@ -105,6 +105,8 @@ const FORK_CONFIG_TEST_SUITE = getRequiredForkConfigAlias(FORK_CONFIG)
 // Examples: Istanbul -> istanbul, MuirGlacier -> muirGlacier
 const FORK_CONFIG_VM = FORK_CONFIG.charAt(0).toLowerCase() + FORK_CONFIG.substring(1)
 
+console.log(`Running tests for fork: ${FORK_CONFIG}`)
+
 let bls: EVMBLSInterface
 if (argv.bls !== undefined && argv.bls.toLowerCase() === 'mcl') {
   await mcl.init(mcl.BLS12_381)
