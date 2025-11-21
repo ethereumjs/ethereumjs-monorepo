@@ -283,29 +283,6 @@ export async function verifyPostConditions(state: any, testData: any, t: tape.Te
   })
 }
 
-/**
- * verifyGas by computing the difference of coinbase account balance
- * @param {Object} results  to verify
- * @param {Object} testData from tests repo
- */
-export function verifyGas(results: any, testData: any, t: tape.Test) {
-  const coinbaseAddr = testData.env.currentCoinbase
-  const preBal = testData.pre[coinbaseAddr] !== undefined ? testData.pre[coinbaseAddr].balance : 0
-
-  if (testData.post[coinbaseAddr] === undefined) {
-    return
-  }
-
-  const postBal = BigInt(testData.post[coinbaseAddr].balance)
-  const balance = postBal - preBal
-  if (balance !== BigInt(0)) {
-    const amountSpent = results.gasUsed * testData.transaction.gasPrice
-    t.equal(amountSpent, balance, 'correct gas')
-  } else {
-    t.equal(results, undefined)
-  }
-}
-
 export function makeParentBlockHeader(data: any, opts: BlockOptions) {
   const {
     parentGasLimit,
