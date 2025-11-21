@@ -3,18 +3,16 @@ import { createBlockchain } from '@ethereumjs/blockchain'
 import { type InterpreterStep } from '@ethereumjs/evm'
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { Caches, MerkleStateManager } from '@ethereumjs/statemanager'
-import {
-  Account,
-  bytesToHex,
-  createAddressFromString,
-  equalsBytes,
-  toBytes,
-} from '@ethereumjs/util'
+import { Account, bytesToHex, createAddressFromString, toBytes } from '@ethereumjs/util'
+import { assert } from 'vitest'
 
 import type { StateManagerInterface } from '@ethereumjs/common'
-import type * as tape from 'tape'
 import { createVM, runTx } from '../../../src/index.ts'
 import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util.ts'
+
+function logComment(message: string): void {
+  console.log(`[TEST] ${message}`)
+}
 
 function parseTestCases(
   forkConfigTestSuite: string,
@@ -70,12 +68,7 @@ function parseTestCases(
   return testCases
 }
 
-function isTape(t: tape.Test | Chai.AssertStatic): t is tape.Test {
-  // tape.Test has .comment, chai.AssertStatic does not
-  return typeof (t as tape.Test).comment === 'function'
-}
-
-async function runTestCase(options: any, testData: any, t: tape.Test | Chai.AssertStatic) {
+async function runTestCase(options: any, testData: any, t: typeof assert) {
   const begin = Date.now()
   // Copy the common object to not create long-lasting
   // references in memory which might prevent GC
@@ -138,7 +131,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test | Chai.Asse
       opName: e.opcode.name,
     }
 
-    isTape(t) && t.comment(JSON.stringify(opTrace))
+    logComment(JSON.stringify(opTrace))
     resolve?.()
   }
 
@@ -146,7 +139,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test | Chai.Asse
     const stateRoot = {
       stateRoot: bytesToHex(await vm.stateManager.getStateRoot()),
     }
-    isTape(t) && t.comment(JSON.stringify(stateRoot))
+    logComment(JSON.stringify(stateRoot))
     resolve?.()
   }
 
@@ -174,17 +167,13 @@ async function runTestCase(options: any, testData: any, t: tape.Test | Chai.Asse
 
   const stateManagerStateRoot = await vm.stateManager.getStateRoot() // Ensure state root is updated (flush all changes to trie)
   const testDataPostStateRoot = toBytes(testData.postStateRoot)
-  const stateRootsAreEqual = equalsBytes(stateManagerStateRoot, testDataPostStateRoot)
 
   const end = Date.now()
   const timeSpent = `${(end - begin) / 1000} secs`
 
   const msg = `error running test case for fork: ${options.forkConfigTestSuite}`
-  if (isTape(t)) {
-    t.ok(stateRootsAreEqual, `[ ${timeSpent} ] the state roots should match (${execInfo})`)
-  } else {
-    t.deepEqual(stateManagerStateRoot, testDataPostStateRoot, msg)
-  }
+  logComment(`[ ${timeSpent} ] the state roots should match (${execInfo})`)
+  t.deepEqual(stateManagerStateRoot, testDataPostStateRoot, msg)
 
   vm.evm.events!.removeListener('step', stepHandler)
   vm.events.removeListener('afterTx', afterTxHandler)
@@ -194,7 +183,7 @@ async function runTestCase(options: any, testData: any, t: tape.Test | Chai.Asse
   return parseFloat(timeSpent)
 }
 
-export async function runStateTest(options: any, testData: any, t: tape.Test | Chai.AssertStatic) {
+export async function runStateTest(options: any, testData: any, t: typeof assert) {
   const testCases = parseTestCases(
     options.forkConfigTestSuite,
     testData,
@@ -203,7 +192,7 @@ export async function runStateTest(options: any, testData: any, t: tape.Test | C
     options.value,
   )
   if (testCases.length === 0) {
-    isTape(t) && t.comment(`No ${options.forkConfigTestSuite} post state defined, skip test`)
+    logComment(`No ${options.forkConfigTestSuite} post state defined, skip test`)
     return
   }
   for (const testCase of testCases) {
@@ -212,8 +201,7 @@ export async function runStateTest(options: any, testData: any, t: tape.Test | C
       for (let x = 0; x < options.reps; x++) {
         totalTimeSpent += await runTestCase(options, testCase, t)
       }
-      isTape(t) &&
-        t.comment(`Average test run: ${(totalTimeSpent / options.reps).toLocaleString()} s`)
+      logComment(`Average test run: ${(totalTimeSpent / options.reps).toLocaleString()} s`)
     } else {
       await runTestCase(options, testCase, t)
     }
