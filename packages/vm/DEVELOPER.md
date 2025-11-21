@@ -4,7 +4,7 @@
 
 ### Running Tests
 
-Tests can be found in the `tests` directory. There are test runners for [State tests](./test/tester/runners/GeneralStateTestsRunner.ts) and [Blockchain tests](./test/tester/runners/GeneralStateTestsRunner.ts). VM tests are disabled since Frontier gas costs are not supported any more.
+Tests can be found in the `tests` directory. There are test runners for [State tests](./test/tester/runners/GeneralStateTestsRunner.ts) and [Blockchain tests](./test/tester/runners/BlockchainTestsRunner.ts). VM tests are disabled since Frontier gas costs are not supported any more.
 
 Tests are then executed against a snapshot of the official client-independent [Ethereum tests](https://github.com/ethereum/tests) integrated in the monorepo as a submodule in [packages/ethereum-tests](./../ethereum-tests/) pointing towards a specific commit or tag from the `ethereum/tests` `develop` branch.
 
@@ -13,29 +13,68 @@ or the associated YouTube video introduction to [Core Development with Ethereumj
 
 #### Running different Test Types
 
-Running the State tests:
+**State Tests (Vitest)**
 
-`tsx ./test/tester --state`
+State tests now run on Vitest via an npm script. Recommended commands:
 
-Running the Blockchain tests:
+```bash
+# Run with default fork (Prague)
+npm run test:state
 
-`tsx ./test/tester --blockchain`
+# Run with specific fork
+npm run test:state -- --fork=Constantinople
 
-Tests run against source by default. They can be run with the `--dist` flag:
+# Run a specific test
+npm run test:state -- --test=stackOverflow
+```
 
-`npm run build:dist && node ./test/tester --state --dist`
+**Note**: The old Tape-based command `tsx ./test/tester --state` still works for backward compatibility (via the Vitest wrapper), but `npm run test:state` is recommended.
 
-See `package.json` for all the scripts in the `test:` namespace, such as `npm run test:state` which would execute the above.
+Additional Vitest scripts:
+
+```bash
+npm run test:state:newForks
+npm run test:state:oldForks
+npm run test:state:transitionForks
+npm run test:state:allForks
+npm run test:state:slow
+```
+
+**Blockchain Tests (Tape)**
+
+Blockchain tests still run on Tape:
+
+```bash
+# Direct command
+tsx ./test/tester --blockchain
+
+# Via npm script
+npm run test:blockchain
+```
+
+**Running with compiled code**
+
+Tests run against source by default. To run with compiled output:
+
+```bash
+# State tests
+npm run build:dist && npm run test:state -- --dist
+
+# Blockchain tests
+npm run build:dist && node ./test/tester --blockchain --dist
+```
 
 Use `--fork` to pass in the desired hardfork:
 
-`tsx ./test/tester --state --fork='Constantinople'`
+```bash
+# Recommended: Using npm script (Vitest)
+npm run test:state -- --fork='Constantinople'
 
-or
+# Alternative: Direct Tape command (still works)
+tsx ./test/tester --state --fork='Constantinople'
+```
 
-`npm run test:state -- --fork='Constantinople'`
-
-By default it is set to use the latest hardfork (`DEFAULT_FORK_CONFIG` in `test/tester/config.ts`).
+By default state tests use the latest hardfork (`DEFAULT_FORK_CONFIG` in `test/tester/config.ts`, currently `Prague`).
 
 The `--fork` parameter can also be used to activate EIPs. This is done by first entering the hardfork, and then add the EIPs separated with the `+` sign. For instance:
 
@@ -51,66 +90,155 @@ State tests run significantly faster than Blockchain tests, so it is often a goo
 
 #### Running Specific Tests
 
-Running all the blockchain tests in a file:
-
-`tsx ./test/tester --blockchain --file='randomStatetest303'`
-
-Running tests from a specific directory:
-
-`tsx ./test/tester --blockchain --dir='bcBlockGasLimitTest'`
+**State Tests (Vitest)**
 
 Running a specific state test case:
 
-`tsx ./test/tester --state --test='stackOverflow'`
+```bash
+# Recommended: Using npm script
+npm run test:state -- --test='stackOverflow'
+
+# Alternative: Direct command (still works)
+tsx ./test/tester --state --test='stackOverflow'
+```
+
+Running all tests in a file:
+
+```bash
+npm run test:state -- --file='create2collisionCode2'
+```
+
+Running tests from a specific directory:
+
+```bash
+npm run test:state -- --dir='stCreate2'
+```
 
 Only run test cases with selected `data`, `gas` and/or `value` values (see
 [attribute description](http://ethereum-tests.readthedocs.io/en/latest/test_types/state_tests.html) in
 test docs), provided by the index of the array element in the test `transaction` section:
 
-`tsx ./test/tester --state --test='CreateCollisionToEmpty' --data=0 --gas=1 --value=0`
+```bash
+npm run test:state -- --test='CreateCollisionToEmpty' --data=0 --gas=1 --value=0
+```
 
 Recursively run all tests from a custom directory:
 
-`tsx ./test/tester --state --fork='London' --customTestsPath=../../my_custom_test_folder`
+```bash
+npm run test:state -- --fork='London' --customTestsPath=../../my_custom_test_folder
+```
 
-Run a test from a specified source file not under the `tests` directory (only state tests):
+Run a test from a specified source file not under the `tests` directory:
 
-`tsx ./test/tester --state --customStateTest='{path_to_file}'`
+```bash
+npm run test:state -- --customStateTest='{path_to_file}'
+```
+
+**Blockchain Tests (Tape)**
+
+Running all the blockchain tests in a file:
+
+```bash
+tsx ./test/tester --blockchain --file='randomStatetest303'
+# Or
+npm run test:blockchain -- --file='randomStatetest303'
+```
+
+Running tests from a specific directory:
+
+```bash
+tsx ./test/tester --blockchain --dir='bcBlockGasLimitTest'
+# Or
+npm run test:blockchain -- --dir='bcBlockGasLimitTest'
+```
 
 #### Running tests with a reporter/formatter
 
-`npm run formatTest -t [npm script name OR node command] -with [formatter]` will report test results using a formatter of your choosing.
+**Vitest (State Tests)**
 
-`npm install -g tap-mocha-reporter`
-`npm run formatTest -- -t test:API -with 'tap-mocha-reporter json'`
+Vitest has built-in reporters. Use Vitest's `--reporter` option:
+
+```bash
+# JSON reporter
+npx vitest test/tester/stateRunner.spec.ts --reporter=json
+
+# Verbose reporter
+npx vitest test/tester/stateRunner.spec.ts --reporter=verbose
+
+# See all options
+npx vitest --help
+```
+
+**Tape (Blockchain Tests)**
+
+For Tape-based tests, you can use the formatTest script:
+
+```bash
+npm install -g tap-mocha-reporter
+npm run formatTest -- -t test:blockchain -with 'tap-mocha-reporter json'
+```
 
 To pipe the results of tests run with a node command to a formatter:
 
-`npm run formatTest -- -t "./test/tester --blockchain --dir='bcBlockGasLimitTest'" -with 'tap-mocha-reporter json'`
+```bash
+npm run formatTest -- -t "./test/tester --blockchain --dir='bcBlockGasLimitTest'" -with 'tap-mocha-reporter json'
+```
 
-If no reporter or formatter is provided, test results will be reported by `tape` without any additional formatting.
+If no reporter or formatter is provided:
+- State tests (Vitest): Results are reported by Vitest's default reporter.
+- Blockchain tests (Tape): Results are reported by `tape` without any additional formatting.
+
+## Test Framework Migration
+
+State tests have been migrated from Tape to Vitest, while blockchain tests still use Tape.
+
+**State Tests (Vitest)**
+- Use `npm run test:state` (recommended).
+- The old `tsx ./test/tester --state` command still works via the Vitest wrapper.
+- All CLI arguments are supported; the wrapper converts them to `VITE_*` environment variables.
+
+**Blockchain Tests (Tape)**
+- Use `npm run test:blockchain` or `tsx ./test/tester --blockchain`.
+- Migration to Vitest is planned but not yet complete.
+
+**Why Vitest?**
+- Better performance and parallel execution.
+- Modern developer experience with strong TypeScript support.
+- Actively maintained ecosystem.
+
+**Environment variables**
+
+You can provide options either through CLI arguments or environment variables; the wrapper keeps behavior consistent:
+
+```bash
+# CLI arguments (converted to env vars by wrapper)
+npm run test:state -- --fork=Constantinople
+
+# Direct environment variables
+VITE_FORK=Constantinople npx vitest test/tester/stateRunner.spec.ts
+```
 
 #### Skipping Tests
 
 There are three types of skip lists (`BROKEN`, `PERMANENT` and `SLOW`) which
-can be found in `test/tester.js`. By default tests from all skip lists are omitted.
+can be found in `test/tester/config.ts`. By default tests from all skip lists are omitted.
 
 You can change this behaviour with:
 
-`tsx ./test/tester --state --skip=BROKEN,PERMANENT`
+`npm run test:state -- --skip=BROKEN,PERMANENT`
 
 to skip only the `BROKEN` and `PERMANENT` tests and include the `SLOW` tests.
 There are also the keywords `NONE` or `ALL` for convenience.
 
 It is also possible to only run the tests from the skip lists:
 
-`tsx ./test/tester --state --runSkipped=SLOW`
+`npm run test:state -- --runSkipped=SLOW`
 
 #### Profiling Tests
 
 Test runs can be profiled using the new EVM/VM profiling functionality by using the `--profile` option for test runs:
 
-`tsx ./test/tester --state --test='CreateCollisionToEmpty' --data=0 --gas=1 --value=0 --profile`
+`npm run test:state -- --test='CreateCollisionToEmpty' --data=0 --gas=1 --value=0 --profile`
 
 ### CI Test Integration
 
