@@ -36,7 +36,7 @@ if (argv.profile === true) setEnv('VITE_PROFILE', 'true')
 
 const packageRoot = path.resolve(fileURLToPath(new URL('.', import.meta.url)), '..', '..')
 
-const vitest = spawn('npx', ['vitest', 'test/tester/blockchainRunner.spec.ts'], {
+const vitest = spawn('npx', ['vitest', 'test/tester/blockchain.spec.ts'], {
   cwd: packageRoot,
   env,
   stdio: 'inherit',

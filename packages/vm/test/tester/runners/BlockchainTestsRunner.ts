@@ -65,7 +65,7 @@ export async function runBlockchainTest(options: any, testData: any, t: typeof a
   // and being set to Ethash PoW validation
   if (testData.sealEngine === 'Ethash') {
     if (common.consensusAlgorithm() !== ConsensusAlgorithm.Ethash) {
-      // Return early - test is filtered in blockchainRunner.spec.ts
+      // Return early - test is filtered in blockchain.spec.ts
       return
     }
     validatePow = true

@@ -13,6 +13,6 @@ export default defineConfig({
       all: true,
       reporter: ['lcov'],
     },
-    exclude: ['test/tester/stateRunner.spec.ts'],
+    exclude: ['test/tester/state.spec.ts'],
   },
 })

@@ -28,7 +28,7 @@ npm run test:state -- --fork=Constantinople
 npm run test:state -- --test=stackOverflow
 ```
 
-**Note**: You can also invoke Vitest directly (`npx vitest test/tester/stateRunner.spec.ts`), but `npm run test:state` is recommended for argument handling.
+**Note**: You can also invoke Vitest directly (`npx vitest test/tester/state.spec.ts`), but `npm run test:state` is recommended for argument handling.
 
 Additional Vitest scripts:
 
@@ -46,7 +46,7 @@ Blockchain tests now run on Vitest via the blockchain wrapper:
 
 ```bash
 # Direct command
-npx vitest test/tester/blockchainRunner.spec.ts
+npx vitest test/tester/blockchain.spec.ts
 
 # Via npm script
 npm run test:blockchain
@@ -71,7 +71,7 @@ Use `--fork` to pass in the desired hardfork:
 npm run test:state -- --fork='Constantinople'
 
 # Alternative: Direct Vitest command
-VITE_FORK=Constantinople npx vitest test/tester/stateRunner.spec.ts
+VITE_FORK=Constantinople npx vitest test/tester/state.spec.ts
 ```
 
 By default state tests use the latest hardfork (`DEFAULT_FORK_CONFIG` in `test/tester/config.ts`, currently `Prague`).
@@ -99,7 +99,7 @@ Running a specific state test case:
 npm run test:state -- --test='stackOverflow'
 
 # Alternative: Direct command (still works)
-VITE_TEST='stackOverflow' npx vitest test/tester/stateRunner.spec.ts
+VITE_TEST='stackOverflow' npx vitest test/tester/state.spec.ts
 ```
 
 Running all tests in a file:
@@ -141,7 +141,7 @@ Running all the blockchain tests in a file:
 ```bash
 npm run test:blockchain -- --file='randomStatetest303'
 # Or
-VITE_FILE='randomStatetest303' npx vitest test/tester/blockchainRunner.spec.ts
+VITE_FILE='randomStatetest303' npx vitest test/tester/blockchain.spec.ts
 ```
 
 Running tests from a specific directory:
@@ -149,7 +149,7 @@ Running tests from a specific directory:
 ```bash
 npm run test:blockchain -- --dir='bcBlockGasLimitTest'
 # Or
-VITE_DIR='bcBlockGasLimitTest' npx vitest test/tester/blockchainRunner.spec.ts
+VITE_DIR='bcBlockGasLimitTest' npx vitest test/tester/blockchain.spec.ts
 ```
 
 #### Running tests with a reporter/formatter
@@ -158,12 +158,12 @@ Vitest has built-in reporters. Use Vitest's `--reporter` option for both suites:
 
 ```bash
 # JSON reporter
-npx vitest test/tester/stateRunner.spec.ts --reporter=json
-npx vitest test/tester/blockchainRunner.spec.ts --reporter=json
+npx vitest test/tester/state.spec.ts --reporter=json
+npx vitest test/tester/blockchain.spec.ts --reporter=json
 
 # Verbose reporter
-npx vitest test/tester/stateRunner.spec.ts --reporter=verbose
-npx vitest test/tester/blockchainRunner.spec.ts --reporter=verbose
+npx vitest test/tester/state.spec.ts --reporter=verbose
+npx vitest test/tester/blockchain.spec.ts --reporter=verbose
 
 # See all options
 npx vitest --help
@@ -177,11 +177,11 @@ State and blockchain tests now run on Vitest only.
 
 **State Tests (Vitest)**
 - Use `npm run test:state` (recommended).
-- You can also call `npx vitest test/tester/stateRunner.spec.ts` directly; CLI arguments are converted to `VITE_*` env vars by the wrapper when needed.
+- You can also call `npx vitest test/tester/state.spec.ts` directly; CLI arguments are converted to `VITE_*` env vars by the wrapper when needed.
 
 **Blockchain Tests (Vitest)**
 - Use `npm run test:blockchain` (recommended).
-- You can also call `npx vitest test/tester/blockchainRunner.spec.ts` directly; CLI arguments are converted to `VITE_*` env vars by the blockchain wrapper.
+- You can also call `npx vitest test/tester/blockchain.spec.ts` directly; CLI arguments are converted to `VITE_*` env vars by the blockchain wrapper.
 
 **Why Vitest?**
 - Better performance and parallel execution.
@@ -198,8 +198,8 @@ npm run test:state -- --fork=Constantinople
 npm run test:blockchain -- --fork=Constantinople
 
 # Direct environment variables
-VITE_FORK=Constantinople npx vitest test/tester/stateRunner.spec.ts
-VITE_FORK=Constantinople npx vitest test/tester/blockchainRunner.spec.ts
+VITE_FORK=Constantinople npx vitest test/tester/state.spec.ts
+VITE_FORK=Constantinople npx vitest test/tester/blockchain.spec.ts
 ```
 
 #### Skipping Tests
@@ -301,7 +301,7 @@ Note: this script runs by actually checking out the targeted branch, running the
 [Clinic](https://github.com/nearform/node-clinic) allows profiling the VM in the node environment. It supports various profiling methods, among them is [flame](https://github.com/nearform/node-clinic-flame) which can be used for generating flamegraphs to highlight bottlenecks and hot paths. As an example, to generate a flamegraph for the VM blockchain tests, you can run:
 
 ```sh
-NODE_OPTIONS="--max-old-space-size=4096" clinic flame -- VITE_EXCLUDE_DIR='GeneralStateTests' npx vitest test/tester/blockchainRunner.spec.ts
+NODE_OPTIONS="--max-old-space-size=4096" clinic flame -- VITE_EXCLUDE_DIR='GeneralStateTests' npx vitest test/tester/blockchain.spec.ts
 ```
 
 ## Benchmarks
