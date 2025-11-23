@@ -37,7 +37,7 @@ import type {
   LegacyTx,
   TxOptions,
 } from '@ethereumjs/tx'
-import { assert } from 'vitest'
+import type { assert } from 'vitest'
 
 // Use Vitest assert type directly
 function logComment(t: typeof assert, message: string): void {

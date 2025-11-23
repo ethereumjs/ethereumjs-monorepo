@@ -4,7 +4,7 @@ import { type InterpreterStep } from '@ethereumjs/evm'
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { Caches, MerkleStateManager } from '@ethereumjs/statemanager'
 import { Account, bytesToHex, createAddressFromString, toBytes } from '@ethereumjs/util'
-import { assert } from 'vitest'
+import type { assert } from 'vitest'
 
 import type { StateManagerInterface } from '@ethereumjs/common'
 import { createVM, runTx } from '../../../src/index.ts'
