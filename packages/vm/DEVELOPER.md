@@ -183,11 +183,6 @@ State and blockchain tests now run on Vitest only.
 - Use `npm run test:blockchain` (recommended).
 - You can also call `npx vitest test/tester/blockchain.spec.ts` directly; CLI arguments are converted to `VITE_*` env vars by the blockchain wrapper.
 
-**Why Vitest?**
-- Better performance and parallel execution.
-- Modern developer experience with strong TypeScript support.
-- Actively maintained ecosystem.
-
 **Environment variables**
 
 You can provide options either through CLI arguments or environment variables; the wrappers keep behavior consistent:
