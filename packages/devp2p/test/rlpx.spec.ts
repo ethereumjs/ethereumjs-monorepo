@@ -64,16 +64,19 @@ describe('RLPx', () => {
 
   it('should connect to a peer', async () => {
     vi.mock('net', () => {
-      const Socket = vi.fn().mockImplementation(() => {
-        return {
-          on: vi.fn(),
-          once: vi.fn(),
-          setTimeout: () => {},
-          connect: vi.fn().mockImplementation(() => {
-            return 'mocked resolve!'
-          }),
+      // Create a proper constructor mock for Socket
+      class SocketMock {
+        on = vi.fn()
+        once = vi.fn()
+        setTimeout = vi.fn()
+        connect = vi.fn().mockImplementation(() => {
+          return 'mocked resolve!'
+        })
+        constructor() {
+          // Constructor can be empty, properties are initialized above
         }
-      })
+      }
+
       return {
         createServer: () => {
           return {
@@ -82,7 +85,7 @@ describe('RLPx', () => {
             address: () => '0.0.0.0',
           }
         },
-        Socket,
+        Socket: SocketMock,
       }
     })
     vi.mock('../src/util.ts', async () => {
