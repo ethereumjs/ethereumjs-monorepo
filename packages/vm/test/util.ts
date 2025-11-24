@@ -37,7 +37,13 @@ import type {
   LegacyTx,
   TxOptions,
 } from '@ethereumjs/tx'
-import type * as tape from 'tape'
+import type { assert } from 'vitest'
+
+// Use Vitest assert type directly
+function logComment(t: typeof assert, message: string): void {
+  // Vitest doesn't have comments, use console.log
+  console.log(`[TEST] ${message}`)
+}
 
 export function format(a: any, toZero: boolean = false, isHex: boolean = false): Uint8Array {
   if (a === '') {
@@ -78,19 +84,21 @@ export function verifyAccountPostConditions(
   address: string,
   account: Account,
   acctData: any,
-  t: tape.Test,
+  t: typeof assert,
 ) {
   return new Promise<void>((resolve) => {
-    t.comment('Account: ' + address)
+    logComment(t, 'Account: ' + address)
     if (!equalsBytes(format(account.balance, true), format(acctData.balance, true))) {
-      t.comment(
+      logComment(
+        t,
         `Expected balance of ${bytesToBigInt(format(acctData.balance, true))}, but got ${
           account.balance
         }`,
       )
     }
     if (!equalsBytes(format(account.nonce, true), format(acctData.nonce, true))) {
-      t.comment(
+      logComment(
+        t,
         `Expected nonce of ${bytesToBigInt(format(acctData.nonce, true))}, but got ${account.nonce}`,
       )
     }
@@ -118,7 +126,8 @@ export function verifyAccountPostConditions(
       }
 
       if (val !== hashedStorage[key]) {
-        t.comment(
+        logComment(
+          t,
           `Expected storage key ${bytesToHex(data.key)} at address ${address} to have value ${
             hashedStorage[key] ?? '0x'
           }, but got ${val}}`,
@@ -130,7 +139,7 @@ export function verifyAccountPostConditions(
     rs.on('end', function () {
       for (const key in hashedStorage) {
         if (hashedStorage[key] !== '0x00') {
-          t.comment(`key: ${key} not found in storage at address ${address}`)
+          logComment(t, `key: ${key} not found in storage at address ${address}`)
         }
       }
 
@@ -242,7 +251,7 @@ export function makeTx(
   return tx
 }
 
-export async function verifyPostConditions(state: any, testData: any, t: tape.Test) {
+export async function verifyPostConditions(state: any, testData: any, t: typeof assert) {
   return new Promise<void>((resolve) => {
     const hashedAccounts: any = {}
     const keyMap: any = {}
@@ -269,41 +278,18 @@ export async function verifyPostConditions(state: any, testData: any, t: tape.Te
         const promise = verifyAccountPostConditions(state, address, account, testData, t)
         queue.push(promise)
       } else {
-        t.comment('invalid account in the trie: ' + key)
+        logComment(t, 'invalid account in the trie: ' + key)
       }
     })
 
     stream.on('end', async function () {
       await Promise.all(queue)
       for (const [_key, address] of Object.entries(keyMap)) {
-        t.comment(`Missing account!: ${address}`)
+        logComment(t, `Missing account!: ${address}`)
       }
       resolve()
     })
   })
-}
-
-/**
- * verifyGas by computing the difference of coinbase account balance
- * @param {Object} results  to verify
- * @param {Object} testData from tests repo
- */
-export function verifyGas(results: any, testData: any, t: tape.Test) {
-  const coinbaseAddr = testData.env.currentCoinbase
-  const preBal = testData.pre[coinbaseAddr] !== undefined ? testData.pre[coinbaseAddr].balance : 0
-
-  if (testData.post[coinbaseAddr] === undefined) {
-    return
-  }
-
-  const postBal = BigInt(testData.post[coinbaseAddr].balance)
-  const balance = postBal - preBal
-  if (balance !== BigInt(0)) {
-    const amountSpent = results.gasUsed * testData.transaction.gasPrice
-    t.equal(amountSpent, balance, 'correct gas')
-  } else {
-    t.equal(results, undefined)
-  }
 }
 
 export function makeParentBlockHeader(data: any, opts: BlockOptions) {

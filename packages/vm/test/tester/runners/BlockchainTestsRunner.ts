@@ -14,6 +14,7 @@ import {
   isHexString,
   stripHexPrefix,
 } from '@ethereumjs/util'
+import { assert } from 'vitest'
 
 import { buildBlock, createVM, runBlock } from '../../../src/index.ts'
 import { setupPreConditions, verifyPostConditions } from '../../util.ts'
@@ -22,7 +23,10 @@ import type { Block } from '@ethereumjs/block'
 import type { Blockchain, ConsensusDict } from '@ethereumjs/blockchain'
 import type { Common, StateManagerInterface } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
-import type * as tape from 'tape'
+
+function logComment(t: typeof assert, message: string): void {
+  console.log(`[TEST] ${message}`)
+}
 
 function formatBlockHeader(data: any) {
   const formatted: any = {}
@@ -32,10 +36,10 @@ function formatBlockHeader(data: any) {
   return formatted
 }
 
-export async function runBlockchainTest(options: any, testData: any, t: tape.Test) {
+export async function runBlockchainTest(options: any, testData: any, t: typeof assert) {
   // ensure that the test data is the right fork data
   if (testData.network !== options.forkConfigTestSuite) {
-    t.comment(`skipping test: no data available for ${options.forkConfigTestSuite}`)
+    logComment(t, `skipping test: no data available for ${options.forkConfigTestSuite}`)
     return
   }
 
@@ -61,7 +65,8 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   // and being set to Ethash PoW validation
   if (testData.sealEngine === 'Ethash') {
     if (common.consensusAlgorithm() !== ConsensusAlgorithm.Ethash) {
-      t.skip('SealEngine setting is not matching chain consensus type, skip test.')
+      // Return early - test is filtered in blockchain.spec.ts
+      return
     }
     validatePow = true
   }
@@ -74,7 +79,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
 
   if (typeof testData.genesisRLP === 'string') {
     const rlp = hexToBytes(testData.genesisRLP)
-    t.deepEquals(genesisBlock.serialize(), rlp, 'correct genesis RLP')
+    t.deepEqual(genesisBlock.serialize(), rlp, 'correct genesis RLP')
   }
 
   const consensusDict: ConsensusDict = {}
@@ -111,7 +116,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
   // set up pre-state
   await setupPreConditions(vm.stateManager, testData)
 
-  t.deepEquals(
+  t.deepEqual(
     await vm.stateManager.getStateRoot(),
     genesisBlock.header.stateRoot,
     'correct pre stateRoot',
@@ -119,9 +124,9 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
 
   async function handleError(error: string | undefined, expectException: string | boolean) {
     if (expectException !== false) {
-      t.pass(`Expected exception ${expectException}`)
+      t.ok(true, `Expected exception ${expectException}`)
     } else {
-      t.fail(error)
+      assert.fail(error)
     }
   }
 
@@ -179,13 +184,13 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
             const tx = createTxFromRLP(txRLP, { common })
             await blockBuilder.addTransaction(tx)
             if (shouldFail) {
-              t.fail('tx should fail, but did not fail')
+              assert.fail('tx should fail, but did not fail')
             }
           } catch (e: any) {
             if (!shouldFail) {
-              t.fail(`tx should not fail, but failed: ${e.message}`)
+              assert.fail(`tx should not fail, but failed: ${e.message}`)
             } else {
-              t.pass('tx successfully failed')
+              t.ok(true, 'tx successfully failed')
             }
           }
         }
@@ -235,7 +240,7 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
       }
 
       if (expectException !== false) {
-        t.fail(`expected exception but test did not throw an exception: ${expectException}`)
+        assert.fail(`expected exception but test did not throw an exception: ${expectException}`)
         return
       }
     } catch (error: any) {
@@ -253,7 +258,9 @@ export async function runBlockchainTest(options: any, testData: any, t: tape.Tes
 
   const end = Date.now()
   const timeSpent = `${(end - begin) / 1000} secs`
-  t.comment(`Time: ${timeSpent}`)
+  logComment(t, `Time: ${timeSpent}`)
+
+  options.testCount = (options.testCount ?? 0) + 1
 
   // Explicitly delete objects for memory optimization (early GC)
   common = blockchain = stateTree = stateManager = vm = cacheDB = null as any

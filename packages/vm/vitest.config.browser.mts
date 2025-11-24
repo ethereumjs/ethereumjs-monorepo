@@ -16,6 +16,9 @@ export default mergeConfig(
         'test/api/EIPs/eip-6800-verkle.spec.ts',
         // Uses NodeJS builtins and we don't need to fill tests in browser anyway
         'test/api/t8ntool/t8ntool.spec.ts',
+        // test runners are ran only in ci
+        'test/tester/state.spec.ts',
+        'test/tester/blockchain.spec.ts',
       ],
     },
     resolve: {
