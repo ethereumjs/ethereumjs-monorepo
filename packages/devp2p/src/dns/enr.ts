@@ -1,8 +1,8 @@
 import { RLP } from '@ethereumjs/rlp'
 import { EthereumJSErrorWithoutCode, bytesToUtf8, utf8ToBytes } from '@ethereumjs/util'
+import { secp256k1 } from '@noble/curves/secp256k1.js'
 import { keccak_256 } from '@noble/hashes/sha3.js'
 import { base32, base64url } from '@scure/base'
-import { ecdsaVerify } from 'ethereum-cryptography/secp256k1-compat.js'
 import { sscanf } from 'scanf'
 
 import { ipToString } from '../util.ts'
@@ -71,11 +71,16 @@ export class ENR {
     }
 
     // Validate sig
-    const isVerified = ecdsaVerify(
-      signature as Uint8Array,
-      (common?.customCrypto.keccak256 ?? keccak_256)(RLP.encode([seq, ...kvs])),
-      obj.secp256k1,
-    )
+    const hash = (common?.customCrypto.keccak256 ?? keccak_256)(RLP.encode([seq, ...kvs]))
+    // secp256k1.verify expects signature in compact format (64 bytes) and public key
+    // The signature from ENR is 65 bytes (r, s, recovery), we need to extract r and s
+    const sigBytes = signature as Uint8Array
+    const sigCompact = sigBytes.length === 65 ? sigBytes.subarray(0, 64) : sigBytes
+
+    const isVerified = secp256k1.verify(sigCompact, hash, obj.secp256k1, {
+      lowS: false,
+      prehash: false,
+    })
 
     if (!isVerified) throw EthereumJSErrorWithoutCode('Unable to verify ENR signature')
 
@@ -130,12 +135,12 @@ export class ENR {
     )
 
     const keyBytes = Uint8Array.from(decodedPublicKey)
+    const hash = (common?.customCrypto.keccak256 ?? keccak_256)(signedComponentBytes)
 
-    const isVerified = ecdsaVerify(
-      signatureBytes,
-      (common?.customCrypto.keccak256 ?? keccak_256)(signedComponentBytes),
-      keyBytes,
-    )
+    const isVerified = secp256k1.verify(signatureBytes, hash, keyBytes, {
+      lowS: false,
+      prehash: false,
+    })
 
     if (!isVerified) throw EthereumJSErrorWithoutCode('Unable to verify ENR root signature')
 
