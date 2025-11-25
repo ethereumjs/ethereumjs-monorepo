@@ -36,7 +36,7 @@ describe('[Common]: Custom Crypto', () => {
 
   it('keccak_256', () => {
     const customCrypto = {
-      keccak_256: customKeccak256,
+      keccak256: customKeccak256,
     }
     const value = new Uint8Array([2])
 
