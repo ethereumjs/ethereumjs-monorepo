@@ -11,8 +11,8 @@ export const paramsEVM: ParamsDict = {
     basefeeGas: 2, // Gas base cost, used e.g. for ChainID opcode (Istanbul)
     expGas: 10, // Base fee of the EXP opcode
     expByteGas: 10, // Times ceil(log256(exponent)) for the EXP instruction
-    keccak256Gas: 30, // Base fee of the SHA3 opcode
-    keccak256WordGas: 6, // Once per word of the SHA3 operation's data
+    keccak_256Gas: 30, // Base fee of the SHA3 opcode
+    keccak_256WordGas: 6, // Once per word of the SHA3 operation's data
     sloadGas: 50, // Base fee of the SLOAD opcode
     sstoreSetGas: 20000, // Once per SSTORE operation if the zeroness changes from zero
     sstoreResetGas: 5000, // Once per SSTORE operation if the zeroness does not change from zero

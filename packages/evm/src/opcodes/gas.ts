@@ -92,7 +92,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       async function (runState, gas, common): Promise<bigint> {
         const [offset, length] = runState.stack.peek(2)
         gas += subMemUsage(runState, offset, length, common)
-        gas += common.param('keccak256WordGas') * divCeil(length, BIGINT_32)
+        gas += common.param('keccak_256WordGas') * divCeil(length, BIGINT_32)
         return gas
       },
     ],
@@ -488,7 +488,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         const container = runState.env.eof!.container.body.containerSections[containerIndex]
 
         // Charge for hashing cost
-        gas += common.param('keccak256WordGas') * divCeil(BigInt(container.length), BIGINT_32)
+        gas += common.param('keccak_256WordGas') * divCeil(BigInt(container.length), BIGINT_32)
 
         const gasLeft = runState.interpreter.getGasLeft() - gas
         runState.messageGasLimit = maxCallGas(gasLeft, gasLeft, runState, common)
@@ -761,7 +761,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           gas += ((length + BIGINT_31) / BIGINT_32) * common.param('initCodeWordGas')
         }
 
-        gas += common.param('keccak256WordGas') * divCeil(length, BIGINT_32)
+        gas += common.param('keccak_256WordGas') * divCeil(length, BIGINT_32)
         let gasLimit = runState.interpreter.getGasLeft() - gas
         gasLimit = maxCallGas(gasLimit, gasLimit, runState, common) // CREATE2 is only available after TangerineWhistle (Constantinople introduced this opcode)
         runState.messageGasLimit = gasLimit

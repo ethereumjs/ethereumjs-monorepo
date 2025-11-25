@@ -1,4 +1,4 @@
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 //@ts-expect-error - package has no types...
 import { logMem, mark, run } from 'micro-bmark' // cspell:disable-line
 
@@ -31,7 +31,7 @@ export function createSuite(db: DB<string, string>) {
         let key = new Uint8Array(KEY_SIZE)
 
         for (let i = 0; i <= ROUNDS; i++) {
-          key = keccak256(key)
+          key = keccak_256(key)
 
           if (symmetric) {
             await trie.put(key, key)

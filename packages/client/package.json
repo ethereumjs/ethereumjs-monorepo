@@ -67,6 +67,8 @@
     "@ethereumjs/vm": "10.1.0",
     "@js-sdsl/ordered-map": "^4.4.2",
     "@multiformats/multiaddr": "^12.4.0",
+    "@noble/hashes": "^2.0.1",
+    "@noble/curves": "^2.0.1",
     "@paulmillr/trusted-setups": "^0.2.0",
     "@polkadot/wasm-crypto": "^7.4.1",
     "@scure/base": "^1.2.4",

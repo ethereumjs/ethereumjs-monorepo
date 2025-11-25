@@ -10,7 +10,7 @@ import {
   publicToAddress,
   unpadBytes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 
 import { Capability, TransactionType } from '../types.ts'
 
@@ -107,7 +107,7 @@ export function toCreationAddress(tx: LegacyTxInterface): boolean {
 }
 
 /**
- * Computes the keccak256 hash of a signed legacy transaction.
+ * Computes the keccak_256 hash of a signed legacy transaction.
  * @param tx - Transaction to hash
  * @returns Hash of the serialized transaction
  * @throws EthereumJSErrorWithoutCode if the transaction is unsigned
@@ -118,7 +118,7 @@ export function hash(tx: LegacyTxInterface): Uint8Array {
     throw EthereumJSErrorWithoutCode(msg)
   }
 
-  const keccakFunction = tx.common.customCrypto.keccak256 ?? keccak256
+  const keccakFunction = tx.common.customCrypto.keccak256 ?? keccak_256
 
   if (Object.isFrozen(tx)) {
     tx.cache.hash ??= keccakFunction(tx.serialize())

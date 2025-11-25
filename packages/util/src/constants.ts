@@ -1,5 +1,5 @@
-import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
-import { sha256 } from 'ethereum-cryptography/sha256.js'
+import { secp256k1 } from '@noble/curves/secp256k1.js'
+import { sha256 } from '@noble/hashes/sha2.js'
 
 import { hexToBytes } from './bytes.ts'
 
@@ -24,8 +24,8 @@ export const MAX_INTEGER_BIGINT = BigInt(
   '115792089237316195423570985008687907853269984665640564039457584007913129639935',
 )
 
-export const SECP256K1_ORDER = secp256k1.CURVE.n
-export const SECP256K1_ORDER_DIV_2 = secp256k1.CURVE.n / BigInt(2)
+export const SECP256K1_ORDER = secp256k1.Point.CURVE().n
+export const SECP256K1_ORDER_DIV_2 = SECP256K1_ORDER / BigInt(2)
 
 /**
  * 2^256

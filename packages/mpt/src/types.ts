@@ -57,7 +57,7 @@ export interface MPTOpts {
 
   /**
    * Create as a secure MerklePatriciaTrie where the keys are automatically hashed using the
-   * **keccak256** hash function or alternatively the custom hash function provided.
+   * **keccak_256** hash function or alternatively the custom hash function provided.
    * Default: `false`
    *
    * This is the flavor of the MerklePatriciaTrie which is used in production Ethereum networks

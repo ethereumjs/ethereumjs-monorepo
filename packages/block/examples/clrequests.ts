@@ -1,6 +1,6 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { CLRequestType, bytesToHex, createCLRequest, hexToBytes } from '@ethereumjs/util'
-import { sha256 } from 'ethereum-cryptography/sha256.js'
+import { sha256 } from '@noble/hashes/sha2.js'
 
 import { createBlock, genRequestsRoot } from '../src'
 

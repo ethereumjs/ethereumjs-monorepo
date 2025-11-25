@@ -11,7 +11,7 @@ import { SIGNER_A, SIGNER_B, goerliChainConfig } from '@ethereumjs/testdata'
 import { createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
 import type { Address } from '@ethereumjs/util'
 import { equalsBytes } from '@ethereumjs/util'
-// import { keccak256 } from 'ethereum-cryptography/keccak.js'
+// import { keccak_256 } from '@noble/hashes/sha3.js'
 import { assert, describe, it, vi } from 'vitest'
 
 // import { Chain } from '../../src/blockchain/index.ts'
@@ -568,7 +568,7 @@ describe.skip('assembleBlocks() -> should stop assembling when a new block is re
   await setBalance(vm, SIGNER_A.address, BigInt('200000000000001'))
 
   // add many txs to slow assembling
-  let privateKey = keccak256(new Uint8Array(0))
+  let privateKey = keccak_256(new Uint8Array(0))
   for (let i = 0; i < 1000; i++) {
     // In order not to pollute TxPool with too many txs from the same address
     // (or txs which are already known), keep generating a new address for each tx
@@ -576,7 +576,7 @@ describe.skip('assembleBlocks() -> should stop assembling when a new block is re
     await setBalance(vm, address, BigInt('200000000000001'))
     const tx = createTx({ address, privateKey })
     await txPool.add(tx)
-    privateKey = keccak256(privateKey)
+    privateKey = keccak_256(privateKey)
   }
 
   chain.putBlocks = () => {

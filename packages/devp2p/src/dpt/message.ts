@@ -9,8 +9,8 @@ import {
   intToBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 import debugDefault from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { ecdsaRecover } from 'ethereum-cryptography/secp256k1-compat.js'
 
 import { assertEq, ipToBytes, ipToString, isV4Format, isV6Format, unstrictDecode } from '../util.ts'
@@ -188,7 +188,7 @@ export function encode<T>(typename: string, data: T, privateKey: Uint8Array, com
   const encodedMsg = messages[typename].encode(data)
   const typedata = concatBytes(Uint8Array.from([type]), RLP.encode(encodedMsg))
 
-  const sighash = (common?.customCrypto.keccak256 ?? keccak256)(typedata)
+  const sighash = (common?.customCrypto.keccak256 ?? keccak_256)(typedata)
   const sig = (common?.customCrypto.ecsign ?? secp256k1.sign)(sighash, privateKey)
   const hashdata = concatBytes(
     setLengthLeft(bigIntToBytes(sig.r), 32),
@@ -196,12 +196,12 @@ export function encode<T>(typename: string, data: T, privateKey: Uint8Array, com
     Uint8Array.from([sig.recovery]),
     typedata,
   )
-  const hash = (common?.customCrypto.keccak256 ?? keccak256)(hashdata)
+  const hash = (common?.customCrypto.keccak256 ?? keccak_256)(hashdata)
   return concatBytes(hash, hashdata)
 }
 
 export function decode(bytes: Uint8Array, common?: Common) {
-  const hash = (common?.customCrypto.keccak256 ?? keccak256)(bytes.subarray(32))
+  const hash = (common?.customCrypto.keccak256 ?? keccak_256)(bytes.subarray(32))
   assertEq(bytes.subarray(0, 32), hash, 'Hash verification failed', debug)
 
   const typedata = bytes.subarray(97)
@@ -210,7 +210,7 @@ export function decode(bytes: Uint8Array, common?: Common) {
   if (typename === undefined) throw EthereumJSErrorWithoutCode(`Invalid type: ${type}`)
   const data = messages[typename].decode(unstrictDecode(typedata.subarray(1)))
 
-  const sighash = (common?.customCrypto.keccak256 ?? keccak256)(typedata)
+  const sighash = (common?.customCrypto.keccak256 ?? keccak_256)(typedata)
   const signature = bytes.subarray(32, 96)
   const recoverId = bytes[96]
   const publicKey = (common?.customCrypto.ecdsaRecover ?? ecdsaRecover)(

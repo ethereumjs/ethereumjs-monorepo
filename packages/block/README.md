@@ -268,7 +268,7 @@ Starting with v10 this library supports requests to the consensus layer which ha
 
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createCLRequest, CLRequestType, hexToBytes, bytesToHex } from '@ethereumjs/util'
-import { sha256 } from 'ethereum-cryptography/sha256.js'
+import { sha256 } from '@noble/hashes/sha2.js'
 
 import { createBlock, genRequestsRoot } from '../src'
 

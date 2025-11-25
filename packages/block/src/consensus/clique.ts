@@ -15,7 +15,7 @@ import {
   equalsBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1'
 
 import type { CliqueConfig } from '@ethereumjs/common'
 import type { BlockHeader } from '../index.ts'

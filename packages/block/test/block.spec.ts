@@ -336,7 +336,7 @@ describe('[Block]: block functions', () => {
       chain: Mainnet,
       hardfork: Hardfork.Chainstart,
       customCrypto: {
-        keccak256: () => {
+        keccak_256: () => {
           return new Uint8Array([1])
         },
       },
