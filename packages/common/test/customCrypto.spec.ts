@@ -34,25 +34,23 @@ describe('[Common]: Custom Crypto', () => {
     }
   }
 
-  it('keccak_256', () => {
+  it('keccak256', () => {
     const customCrypto = {
       keccak256: customKeccak256,
     }
     const value = new Uint8Array([2])
 
     let c = new Common({ chain: Mainnet, customCrypto })
-    let msg =
-      'Should initialize with custom keccak_256 function and use properly (main constructor)'
-    assert.deepEqual(c.customCrypto.keccak256!(value), new Uint8Array([2, 1]), msg)
+    let msg = 'Should initialize with custom keccak256 function and use properly (main constructor)'
+    assert.deepEqual(c.customCrypto.keccak256?.(value), new Uint8Array([2, 1]), msg)
 
     msg = 'Should still work on a copied instance'
     assert.deepEqual(c.copy().customCrypto.keccak256!(value), new Uint8Array([2, 1]), msg)
 
     const customChainParams = { name: 'custom', chainId: 123 }
     c = createCustomCommon(customChainParams, Mainnet, { customCrypto })
-    msg =
-      'Should initialize with custom keccak_256 function and use properly (custom() constructor)'
-    assert.deepEqual(c.customCrypto.keccak256!(value), new Uint8Array([2, 1]), msg)
+    msg = 'Should initialize with custom keccak256 function and use properly (custom() constructor)'
+    assert.deepEqual(c.customCrypto.keccak256?.(value), new Uint8Array([2, 1]), msg)
   })
 
   it('ecrecover', () => {
