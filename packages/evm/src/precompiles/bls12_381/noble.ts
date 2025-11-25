@@ -7,7 +7,6 @@ import {
   setLengthLeft,
 } from '@ethereumjs/util'
 import { bls12_381 } from '@noble/curves/bls12-381.js'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1'
 
 import { EVMError } from '../../errors.ts'
 
