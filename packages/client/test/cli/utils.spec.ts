@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 import { keccak_256 } from '@noble/hashes/sha3.js'
-import { keccak_256 as keccak_256WASM } from '@polkadot/wasm-crypto'
+import { keccak256 as keccak_256WASM } from '@polkadot/wasm-crypto'
 import { assert, describe, it } from 'vitest'
 
 import { generateClientConfig } from '../../bin/utils.ts'
