@@ -9,11 +9,10 @@ import {
   intToBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
+import { secp256k1 } from '@noble/curves/secp256k1.js'
 import { keccak_256 } from '@noble/hashes/sha3.js'
 import debugDefault from 'debug'
 import { getRandomBytesSync } from 'ethereum-cryptography/random.js'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1'
-import { ecdh, ecdsaRecover } from 'ethereum-cryptography/secp256k1-compat.js'
 
 import { assertEq, genPrivateKey, id2pk, pk2id, unstrictDecode, xor, zfill } from '../util.ts'
 
@@ -26,13 +25,10 @@ const debug = debugDefault('devp2p:rlpx:peer')
 
 function ecdhX(publicKey: Uint8Array, privateKey: Uint8Array) {
   // return (publicKey * privateKey).x
-  function hashfn(x: Uint8Array, y: Uint8Array) {
-    const pubKey = new Uint8Array(33)
-    pubKey[0] = (y[31] & 1) === 0 ? 0x02 : 0x03
-    pubKey.set(x, 1)
-    return pubKey.subarray(1)
-  }
-  return ecdh(publicKey, privateKey, { hashfn }, new Uint8Array(32))
+  // Get shared secret using noble curves - returns compressed public key (33 bytes)
+  const sharedSecret = secp256k1.getSharedSecret(privateKey, publicKey)
+  // Extract x coordinate from the shared secret point (first 32 bytes after the prefix)
+  return sharedSecret.subarray(1, 33)
 }
 
 // a straight rip from python interop w/go ecies implementation
@@ -97,8 +93,24 @@ export class ECIES {
     this._ephemeralPublicKey = secp256k1.getPublicKey(this._ephemeralPrivateKey, false)
 
     this._keccakFunction = common?.customCrypto.keccak256 ?? keccak_256
-    this._ecdsaSign = common?.customCrypto.ecsign ?? secp256k1.sign
-    this._ecdsaRecover = common?.customCrypto.ecdsaRecover ?? ecdsaRecover
+    this._ecdsaSign =
+      common?.customCrypto.ecsign ??
+      ((msg: Uint8Array, pk: Uint8Array) => {
+        const sigBytes = secp256k1.sign(msg, pk, { prehash: false, format: 'recovered' })
+        const sig = secp256k1.Signature.fromBytes(sigBytes, 'recovered')
+        return {
+          r: sig.r,
+          s: sig.s,
+          recovery: sig.recovery!,
+        }
+      })
+    this._ecdsaRecover =
+      common?.customCrypto.ecdsaRecover ??
+      ((sig: Uint8Array, recId: number, hash: Uint8Array) => {
+        const signature = secp256k1.Signature.fromBytes(sig)
+        const point = signature.addRecoveryBit(recId).recoverPublicKey(hash)
+        return point.toBytes(false)
+      })
   }
 
   _encryptMessage(
