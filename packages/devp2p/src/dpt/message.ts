@@ -11,12 +11,11 @@ import {
 } from '@ethereumjs/util'
 import { keccak_256 } from '@noble/hashes/sha3.js'
 import debugDefault from 'debug'
-import { ecdsaRecover } from 'ethereum-cryptography/secp256k1-compat.js'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1'
 
 import { assertEq, ipToBytes, ipToString, isV4Format, isV6Format, unstrictDecode } from '../util.ts'
 
 import type { Common } from '@ethereumjs/common'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1'
 import type { PeerInfo } from '../types.ts'
 
 const debug = debugDefault('devp2p:dpt:server')
@@ -213,11 +212,13 @@ export function decode(bytes: Uint8Array, common?: Common) {
   const sighash = (common?.customCrypto.keccak256 ?? keccak_256)(typedata)
   const signature = bytes.subarray(32, 96)
   const recoverId = bytes[96]
-  const publicKey = (common?.customCrypto.ecdsaRecover ?? ecdsaRecover)(
-    signature,
-    recoverId,
-    sighash,
-    false,
-  )
+  const publicKey = (
+    common?.customCrypto.ecdsaRecover ??
+    ((sig: Uint8Array, recId: number, hash: Uint8Array) => {
+      const signature = secp256k1.Signature.fromCompact(sig)
+      const point = signature.addRecoveryBit(recId).recoverPublicKey(hash)
+      return point.toRawBytes(false)
+    })
+  )(signature, recoverId, sighash)
   return { typename, data, publicKey }
 }
