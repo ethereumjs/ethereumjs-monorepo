@@ -237,7 +237,7 @@ describe('keyHashingFunction', async () => {
     }
     const c = {
       customCrypto: {
-        keccak_256: (msg: Uint8Array) => msg,
+        keccak256: (msg: Uint8Array) => msg,
       },
     }
 
@@ -258,7 +258,7 @@ describe('keyHashingFunction', async () => {
     }
     const c = {
       customCrypto: {
-        keccak_256: (msg: Uint8Array) => msg,
+        keccak256: (msg: Uint8Array) => msg,
       },
     }
 
