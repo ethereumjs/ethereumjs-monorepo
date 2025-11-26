@@ -283,16 +283,26 @@ jobs:
       - name: Analyze Bundle Sizes (with comparison if PR)
         if: github.event_name == 'pull_request'
         run: |
+          # Ensure script exists
+          if [ ! -f scripts/analyze-bundle-size.js ]; then
+            echo "❌ Error: scripts/analyze-bundle-size.js not found"
+            exit 1
+          fi
           if [ -f baseline-results.json ]; then
             echo "📊 Comparing bundle sizes with baseline (${{ github.base_ref }})..."
-            npm run bundle:analyze -- --compare --baseline=baseline-results.json
+            node scripts/analyze-bundle-size.js --compare --baseline=baseline-results.json
           else
             echo "📊 Analyzing bundle sizes (baseline comparison unavailable)..."
-            npm run bundle:analyze
+            node scripts/analyze-bundle-size.js
           fi
         working-directory: ${{ github.workspace }}
 
       - name: Analyze Bundle Sizes (push to master)
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-        run: npm run bundle:analyze
+        run: |
+          if [ ! -f scripts/analyze-bundle-size.js ]; then
+            echo "❌ Error: scripts/analyze-bundle-size.js not found"
+            exit 1
+          fi
+          node scripts/analyze-bundle-size.js
         working-directory: ${{ github.workspace }}
