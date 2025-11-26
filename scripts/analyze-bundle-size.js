@@ -215,24 +215,6 @@ function compareResults(current, baseline) {
  * Print comparison results
  */
 function printComparison(comparison) {
-
-    // Generate summary if requested
-    if (args.includes('--summary') || args.includes('--summary-file')) {
-      const summaryFile = args.find(arg => arg.startsWith('--summary-file='))?.split('=')[1]
-      const baselineRef = args.find(arg => arg.startsWith('--baseline-ref='))?.split('=')[1] || 'baseline'
-      const summary = generateSummary(comparison, baselineRef)
-      
-      if (summaryFile) {
-        await writeFile(summaryFile, summary)
-        console.log(`\n📝 Summary saved to ${summaryFile}`)
-      } else {
-        // Output to stdout for CI to capture
-        console.log('\n---SUMMARY_START---')
-        console.log(summary)
-        console.log('---SUMMARY_END---')
-      }
-    }
-    
   console.log('\n📊 Bundle Size Comparison (Current vs Baseline)\n')
   console.log(
     'Package'.padEnd(20) +
@@ -291,6 +273,9 @@ function printComparison(comparison) {
 }
 
 /**
+ * Save results to JSON file
+ */
+/**
  * Generate markdown summary for PR comment
  */
 function generateSummary(comparison, baselineRef = 'baseline') {
@@ -319,23 +304,14 @@ function generateSummary(comparison, baselineRef = 'baseline') {
   const signRaw = totalDiffRaw >= 0 ? '+' : ''
   const signGzip = totalDiffGzip >= 0 ? '+' : ''
   
-  let summary = `## 📦 Bundle Size Analysis
-
-`
-  summary += `**Total Bundle Size:** ${formatBytes(totalCurrentRaw)} (${formatBytes(totalCurrentGzip)} gzipped)
-`
-  summary += `**Change:** ${signRaw}${formatBytes(totalDiffRaw)} (${signRaw}${totalDiffPercentRaw}%) / ${signGzip}${formatBytes(totalDiffGzip)} (${signGzip}${totalDiffPercentGzip}%) gzipped
-
-`
-  summary += `Compared to ${baselineRef}
-
-`
+  let summary = `## 📦 Bundle Size Analysis\n\n`
+  summary += `**Total Bundle Size:** ${formatBytes(totalCurrentRaw)} (${formatBytes(totalCurrentGzip)} gzipped)\n`
+  summary += `**Change:** ${signRaw}${formatBytes(totalDiffRaw)} (${signRaw}${totalDiffPercentRaw}%) / ${signGzip}${formatBytes(totalDiffGzip)} (${signGzip}${totalDiffPercentGzip}%) gzipped\n\n`
+  summary += `Compared to ${baselineRef}\n\n`
   
   // Table header
-  summary += `| Package | Baseline | Current | Change |
-`
-  summary += `|---------|----------|---------|--------|
-`
+  summary += `| Package | Baseline | Current | Change |\n`
+  summary += `|---------|----------|---------|--------|\n`
   
   // Add rows for packages with changes
   let hasSignificantChanges = false
@@ -353,8 +329,7 @@ function generateSummary(comparison, baselineRef = 'baseline') {
       const indicator = significantChange ? (comp.diff.raw > 0 ? '⚠️ ' : '✅ ') : ''
       const changeText = `${formatDiff(comp.current.raw, comp.baseline.raw)} / ${diffGzip}`
       
-      summary += `| ${indicator}**${comp.package}** | ${baselineGzip} | ${currentGzip} | ${changeText} |
-`
+      summary += `| ${indicator}**${comp.package}** | ${baselineGzip} | ${currentGzip} | ${changeText} |\n`
       
       if (significantChange) {
         hasSignificantChanges = true
@@ -363,17 +338,12 @@ function generateSummary(comparison, baselineRef = 'baseline') {
   }
   
   if (hasSignificantChanges) {
-    summary += `
-⚠️ **Significant changes detected** (>5% or >10KB)
-`
+    summary += `\n⚠️ **Significant changes detected** (>5% or >10KB)\n`
   }
   
   return summary
 }
 
-/**
- * Save results to JSON file
- */
 async function saveResults(results, filePath) {
   await writeFile(filePath, JSON.stringify(results, null, 2))
 }
@@ -437,9 +407,8 @@ async function main() {
       }
     }
     
-    printComparison(comparison)
-    
-    console.log('\n✅ Bundle size comparison complete')
+    console.log('
+✅ Bundle size comparison complete')
   } else if (args.includes('--save') || args.includes('-s')) {
     // Save mode - save current results to file
     const outputFile = args.find(arg => arg.startsWith('--output='))?.split('=')[1] || 

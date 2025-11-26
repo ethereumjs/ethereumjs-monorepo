@@ -306,7 +306,7 @@ jobs:
         continue-on-error: true
 
       - name: Post Bundle Size Summary to PR
-        if: github.event_name == 'pull_request' && steps.bundle-analysis.outcome == 'success' || steps.bundle-analysis.outcome == 'failure'
+        if: github.event_name == 'pull_request' && (steps.bundle-analysis.outcome == 'success' || steps.bundle-analysis.outcome == 'failure')
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
