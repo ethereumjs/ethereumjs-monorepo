@@ -418,6 +418,27 @@ async function main() {
     const comparison = compareResults(currentResults, baselineResults)
     printComparison(comparison)
     
+    // Generate summary if requested
+    if (args.includes('--summary') || args.includes('--summary-file')) {
+      const summaryFile = args.find(arg => arg.startsWith('--summary-file='))?.split('=')[1]
+      const baselineRef = args.find(arg => arg.startsWith('--baseline-ref='))?.split('=')[1] || 'baseline'
+      const summary = generateSummary(comparison, baselineRef)
+      
+      if (summaryFile) {
+        await writeFile(summaryFile, summary)
+        console.log(`
+📝 Summary saved to ${summaryFile}`)
+      } else {
+        // Output to stdout for CI to capture
+        console.log('
+---SUMMARY_START---')
+        console.log(summary)
+        console.log('---SUMMARY_END---')
+      }
+    }
+    
+    printComparison(comparison)
+    
     console.log('\n✅ Bundle size comparison complete')
   } else if (args.includes('--save') || args.includes('-s')) {
     // Save mode - save current results to file
