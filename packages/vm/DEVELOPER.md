@@ -230,7 +230,29 @@ If no reporter or formatter is provided, results are reported by Vitest's defaul
 
 ## TEST GENERATION
 
-### `execution-spec-tests` Integration (T8NTool)
+Ethereum's official test suite can be found in the [execution-specs](https://github.com/ethereum/execution-specs) repository.
+
+### Test Generation with EELS
+
+To use the built-in (so: on the test repo side) EELS EVM implementation, follow the installation instructions in the [execution-specs](https://github.com/ethereum/execution-specs) repository and e.g. fill tests with:
+
+```bash
+uv run fill -v tests/prague/eip2537_bls_12_381_precompiles/test_bls12_g1msm.py --fork Osaka --clean -m state_test
+```
+
+This will generate fixtures in the following directory:
+
+```text
+fixtures/state_tests/prague/eip2537_bls_12_381_precompiles/bls12_g1msm/
+```
+
+These tests can then be integrated e.g. to analyze test coverage by using the following (or similar) test path (from within the VM package):
+
+```bash
+VITE_CUSTOM_TESTS_PATH=../../../execution-specs/fixtures/state_tests/prague/eip2537_bls_12_381_precompiles/bls12_g1msm/
+```
+
+### Test Generation with EthereumJS/T8NTool
 
 The VM has t8ntool (transition-tool) support, see: <https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/test/t8n/README.md>. This tool can be used to create fixtures from the `execution-spec-tests` repo. These fixtures can be consumed by other clients in their test runner (similar to running `npm run test:blockchain` or `npm run test:state` in the VM package). The t8ntool readme also links to a guide on how to write tests to contribute to `execution-spec-tests`.
 
