@@ -236,22 +236,44 @@ jobs:
         run: npm ci
         working-directory: ${{ github.workspace }}
 
-      - name: Checkout and build baseline (for PR comparison)
+      - name: Checkout baseline branch (for PR comparison)
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.base_ref }}
+          path: baseline-workspace
+
+      - name: Use Node.js 24 (baseline)
+        if: github.event_name == 'pull_request'
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: 'npm'
+
+      - name: Install dependencies in baseline
+        if: github.event_name == 'pull_request'
+        working-directory: baseline-workspace
+        run: npm ci || true
+        continue-on-error: true
+
+      - name: Build baseline packages
+        if: github.event_name == 'pull_request'
+        working-directory: baseline-workspace
+        run: npm run build --workspaces --if-present || true
+        continue-on-error: true
+
+      - name: Analyze baseline bundle sizes
         if: github.event_name == 'pull_request'
         run: |
-          # Save current branch
-          CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-          # Fetch base branch
-          git fetch origin ${{ github.base_ref }}:${{ github.base_ref }}
-          # Checkout base branch
-          git checkout ${{ github.base_ref }} || git checkout -b ${{ github.base_ref }} origin/${{ github.base_ref }}
-          # Build baseline
-          npm ci
-          npm run build --workspaces --if-present || true
-          # Analyze baseline
-          node scripts/analyze-bundle-size.js --save --output=baseline-results.json || true
-          # Checkout back to PR branch
-          git checkout $CURRENT_BRANCH
+          # Copy the analysis script to baseline workspace if it doesn't exist there
+          # (since this is a new script, it might not be in the base branch yet)
+          if [ ! -f baseline-workspace/scripts/analyze-bundle-size.js ]; then
+            mkdir -p baseline-workspace/scripts
+            cp scripts/analyze-bundle-size.js baseline-workspace/scripts/ || true
+          fi
+          # Run analysis in baseline workspace
+          cd baseline-workspace
+          node scripts/analyze-bundle-size.js --save --output=../baseline-results.json || true
         continue-on-error: true
 
       - name: Build all packages for bundle analysis
