@@ -275,25 +275,18 @@ jobs:
         working-directory: baseline-workspace
         run: |
           if [ ! -f scripts/bundle-size.mjs ]; then
-            cp ../scripts/bundle-size.mjs scripts/ || true
+            cp ../scripts/bundle-size.mjs scripts/
           fi
           echo "📊 Analyzing baseline bundle sizes..."
-          echo "Current directory: $(pwd)"
-          echo "Packages directory: $(ls -la packages/ | head -10)"
-          node scripts/bundle-size.mjs --output=../baseline.json 2>&1 || {
-            echo "❌ Baseline analysis failed"
-            exit 1
-          }
-          if [ -f ../baseline.json ]; then
-            echo "✅ Baseline analysis complete"
-            echo "Baseline file size: $(wc -c < ../baseline.json) bytes"
-            echo "Baseline content preview:"
-            head -5 ../baseline.json || true
-          else
+          node scripts/bundle-size.mjs --output=../baseline.json
+          if [ ! -f ../baseline.json ]; then
             echo "❌ Baseline analysis failed - no file created"
             exit 1
           fi
-        continue-on-error: true
+          echo "✅ Baseline analysis complete"
+          echo "Baseline file size: $(wc -c < ../baseline.json) bytes"
+          echo "Baseline content preview:"
+          head -5 ../baseline.json
 
       - name: Build current branch
         run: npm run build --workspaces --if-present
@@ -302,27 +295,9 @@ jobs:
       - name: Analyze and compare bundle sizes
         id: bundle-analysis
         run: |
-          echo "📊 Checking baseline.json..."
-          if [ -f baseline.json ]; then
-            echo "✅ Baseline file exists"
-            echo "File size: $(wc -c < baseline.json) bytes"
-            BASELINE_CONTENT=$(cat baseline.json | tr -d '[:space:]')
-            if [ "$BASELINE_CONTENT" = "{}" ]; then
-              echo "⚠️ Baseline file is empty object"
-            else
-              echo "Baseline contains data for: $(cat baseline.json | grep -o '"[^"]*"' | head -5 | tr '\n' ' ')"
-            fi
-          else
-            echo "❌ Baseline file not found"
-          fi
-
           if [ -f baseline.json ] && [ -s baseline.json ] && [ "$(cat baseline.json | tr -d '[:space:]')" != "{}" ]; then
             echo "✅ Baseline file is valid, running comparison..."
-            node scripts/bundle-size.mjs --baseline=baseline.json > bundle-summary.md 2>&1 || {
-              echo "## 📦 Bundle Size Analysis" > bundle-summary.md
-              echo "" >> bundle-summary.md
-              echo "❌ Error comparing bundle sizes. See workflow logs for details." >> bundle-summary.md
-            }
+            node scripts/bundle-size.mjs --baseline=baseline.json > bundle-summary.md
           else
             echo "## 📦 Bundle Size Analysis" > bundle-summary.md
             echo "" >> bundle-summary.md

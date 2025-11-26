@@ -42,26 +42,42 @@ async function getGzipSize(filePath) {
 }
 
 /**
+ * Recursively find all JS files in a directory
+ */
+async function findJSFiles(dir, baseDir = dir) {
+  const files = []
+  try {
+    const entries = await readdir(dir, { withFileTypes: true })
+    for (const entry of entries) {
+      const fullPath = join(dir, entry.name)
+      if (entry.isDirectory()) {
+        // Recursively search subdirectories
+        const subFiles = await findJSFiles(fullPath, baseDir)
+        files.push(...subFiles)
+      } else if (entry.isFile() && (entry.name.endsWith('.js') || entry.name.endsWith('.mjs'))) {
+        files.push(fullPath)
+      }
+    }
+  } catch (error) {
+    // Ignore errors (permission denied, etc.)
+  }
+  return files
+}
+
+/**
  * Calculate total gzipped size of a directory
  */
 async function calculateDirSize(dir) {
   try {
-    const files = await readdir(dir, { recursive: true, withFileTypes: true })
+    const jsFiles = await findJSFiles(dir)
     let totalGzip = 0
-    let fileCount = 0
     
-    for (const file of files) {
-      if (file.isFile() && (file.name.endsWith('.js') || file.name.endsWith('.mjs'))) {
-        const filePath = join(file.path || dir, file.name)
-        const size = await getGzipSize(filePath)
-        totalGzip += size
-        if (size > 0) {
-          fileCount++
-        }
-      }
+    for (const filePath of jsFiles) {
+      const size = await getGzipSize(filePath)
+      totalGzip += size
     }
     
-    return { size: totalGzip, fileCount }
+    return { size: totalGzip, fileCount: jsFiles.length }
   } catch (error) {
     return { size: 0, fileCount: 0 }
   }
@@ -79,39 +95,28 @@ function formatKB(bytes) {
  */
 async function analyzePackages() {
   try {
-    console.error(`📂 Looking for packages in: ${packagesDir}`)
     const packages = await readdir(packagesDir, { withFileTypes: true })
-    console.error(`📦 Found ${packages.length} items in packages directory`)
     const results = {}
     
     for (const pkg of packages) {
-      if (!pkg.isDirectory()) {
-        console.error(`⏭️  Skipping non-directory: ${pkg.name}`)
-        continue
-      }
+      if (!pkg.isDirectory()) continue
       
       const distPath = join(packagesDir, pkg.name, 'dist')
       try {
         await stat(distPath)
-        console.error(`📊 Analyzing ${pkg.name}...`)
-        const result = await calculateDirSize(distPath); const size = result.size; const fileCount = result.fileCount
-        console.error(`   Found ${fileCount} JS files, total size: ${formatKB(size)}`)
+        const result = await calculateDirSize(distPath)
+        const { size, fileCount } = result
         if (size > 0) {
           results[pkg.name] = size
-        } else {
-          console.error(`   ⚠️  No size calculated for ${pkg.name}`)
         }
-      } catch (err) {
-        console.error(`   ⏭️  No dist folder for ${pkg.name}`)
+      } catch {
+        // No dist folder
       }
     }
     
-    console.error(`✅ Analysis complete: ${Object.keys(results).length} packages with size > 0`)
     return results
   } catch (error) {
     console.error(`❌ Error in analyzePackages: ${error.message}`)
-    console.error(`   packagesDir: ${packagesDir}`)
-    console.error(`   cwd: ${process.cwd()}`)
     return {}
   }
 }
