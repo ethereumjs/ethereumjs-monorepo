@@ -15,14 +15,13 @@ const packagesDir = join(process.cwd(), 'packages')
  * Get gzipped size of a file
  */
 async function getGzipSize(filePath) {
-  // Check if file exists first
   try {
     await stat(filePath)
   } catch (err) {
     return 0
   }
 
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const chunks = []
     const gzip = createGzip()
     const readStream = createReadStream(filePath)
@@ -34,32 +33,28 @@ async function getGzipSize(filePath) {
         const size = chunks.reduce((acc, chunk) => acc + chunk.length, 0)
         resolve(size)
       })
-      .on('error', (err) => {
-        // Silently ignore errors (file might be deleted, etc.)
-        resolve(0)
-      })
+      .on('error', () => resolve(0))
   })
 }
 
 /**
  * Recursively find all JS files in a directory
  */
-async function findJSFiles(dir, baseDir = dir) {
+async function findJSFiles(dir) {
   const files = []
   try {
     const entries = await readdir(dir, { withFileTypes: true })
     for (const entry of entries) {
       const fullPath = join(dir, entry.name)
       if (entry.isDirectory()) {
-        // Recursively search subdirectories
-        const subFiles = await findJSFiles(fullPath, baseDir)
+        const subFiles = await findJSFiles(fullPath)
         files.push(...subFiles)
       } else if (entry.isFile() && (entry.name.endsWith('.js') || entry.name.endsWith('.mjs'))) {
         files.push(fullPath)
       }
     }
   } catch (error) {
-    // Ignore errors (permission denied, etc.)
+    // Ignore errors
   }
   return files
 }
@@ -73,13 +68,12 @@ async function calculateDirSize(dir) {
     let totalGzip = 0
     
     for (const filePath of jsFiles) {
-      const size = await getGzipSize(filePath)
-      totalGzip += size
+      totalGzip += await getGzipSize(filePath)
     }
     
-    return { size: totalGzip, fileCount: jsFiles.length }
+    return totalGzip
   } catch (error) {
-    return { size: 0, fileCount: 0 }
+    return 0
   }
 }
 
@@ -87,7 +81,7 @@ async function calculateDirSize(dir) {
  * Format bytes to KB
  */
 function formatKB(bytes) {
-  return (bytes / 1024).toFixed(2) + ' KB'
+  return (bytes / 1024).toFixed(1) + ' KB'
 }
 
 /**
@@ -104,8 +98,7 @@ async function analyzePackages() {
       const distPath = join(packagesDir, pkg.name, 'dist')
       try {
         await stat(distPath)
-        const result = await calculateDirSize(distPath)
-        const { size, fileCount } = result
+        const size = await calculateDirSize(distPath)
         if (size > 0) {
           results[pkg.name] = size
         }
@@ -116,7 +109,6 @@ async function analyzePackages() {
     
     return results
   } catch (error) {
-    console.error(`❌ Error in analyzePackages: ${error.message}`)
     return {}
   }
 }
@@ -134,57 +126,71 @@ function generateComparisonTable(current, baseline) {
     
     if (baselineSize === 0 && currentSize === 0) continue
     
-    let diff = ''
+    let sizeDisplay = formatKB(currentSize)
+    let diffDisplay = ''
+    
     if (baselineSize === 0) {
-      diff = '+NEW'
+      diffDisplay = '🆕 NEW'
     } else if (currentSize === 0) {
-      diff = '-REMOVED'
+      diffDisplay = '🗑️ REMOVED'
     } else {
       const diffBytes = currentSize - baselineSize
-      const diffPercent = ((diffBytes / baselineSize) * 100).toFixed(2)
-      const sign = diffBytes >= 0 ? '+' : ''
-      diff = `${sign}${formatKB(diffBytes)} (${sign}${diffPercent}%)`
+      const diffPercent = ((diffBytes / baselineSize) * 100)
+      
+      if (Math.abs(diffPercent) < 0.01) {
+        diffDisplay = '⚪ ±0%'
+      } else if (diffBytes > 0) {
+        diffDisplay = `🔴 +${formatKB(diffBytes)} (+${diffPercent.toFixed(2)}%)`
+      } else {
+        diffDisplay = `🟢 ${formatKB(diffBytes)} (${diffPercent.toFixed(2)}%)`
+      }
     }
     
     rows.push({
       package: pkg,
-      current: currentSize,
-      baseline: baselineSize,
-      diff,
+      size: sizeDisplay,
+      diff: diffDisplay,
     })
   }
   
-  // Generate markdown table
   if (rows.length === 0) {
     return 'No packages found to compare.'
   }
   
-  let table = '| Package | Size Δ |\n'
-  table += '|---------|--------|\n'
+  let table = '| Package | Size (gzip) | Δ |\n'
+  table += '|---------|-------------|---|\n'
   
   for (const row of rows) {
-    table += `| ${row.package} | ${row.diff} |\n`
+    table += `| ${row.package} | ${row.size} | ${row.diff} |\n`
   }
   
   return table
 }
 
 /**
+ * Parse command line arguments
+ */
+function parseArgs(args) {
+  const result = {}
+  for (const arg of args) {
+    if (arg.startsWith('--baseline=')) {
+      result.baseline = arg.split('=')[1]
+    } else if (arg.startsWith('--output=')) {
+      result.output = arg.split('=')[1]
+    }
+  }
+  return result
+}
+
+/**
  * Main function
  */
 async function main() {
-  const args = process.argv.slice(2)
+  const args = parseArgs(process.argv.slice(2))
   
-  if (args.includes('--baseline')) {
-    // Load baseline and compare
-    const baselineFile = args.find(arg => arg.startsWith('--baseline='))?.split('=')[1]
-    if (!baselineFile) {
-      console.error('❌ --baseline requires a file path')
-      process.exit(1)
-    }
-    
+  if (args.baseline) {
     try {
-      const baselineContent = await readFile(baselineFile, 'utf-8')
+      const baselineContent = await readFile(args.baseline, 'utf-8')
       if (!baselineContent || baselineContent.trim() === '' || baselineContent.trim() === '{}') {
         console.error('❌ Baseline file is empty or invalid')
         process.exit(1)
@@ -207,7 +213,7 @@ async function main() {
       console.log(table)
     } catch (error) {
       if (error.code === 'ENOENT') {
-        console.error(`❌ Baseline file not found: ${baselineFile}`)
+        console.error(`❌ Baseline file not found: ${args.baseline}`)
       } else if (error instanceof SyntaxError) {
         console.error(`❌ Baseline file is not valid JSON: ${error.message}`)
       } else {
@@ -216,18 +222,15 @@ async function main() {
       process.exit(1)
     }
   } else {
-    // Just analyze current
     const results = await analyzePackages()
-    const output = args.find(arg => arg.startsWith('--output='))?.split('=')[1]
     
-    if (output) {
-      // Only write if we have results
+    if (args.output) {
       if (Object.keys(results).length === 0) {
         console.error('❌ No packages found to analyze. Make sure packages are built.')
         process.exit(1)
       }
-      await writeFile(output, JSON.stringify(results, null, 2))
-      console.log(`✅ Results saved to ${output}`)
+      await writeFile(args.output, JSON.stringify(results, null, 2))
+      console.log(`✅ Results saved to ${args.output}`)
       console.log(`📦 Analyzed ${Object.keys(results).length} packages`)
     } else {
       console.log(JSON.stringify(results, null, 2))
