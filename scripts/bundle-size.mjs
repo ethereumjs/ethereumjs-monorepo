@@ -15,6 +15,13 @@ const packagesDir = join(process.cwd(), 'packages')
  * Get gzipped size of a file
  */
 async function getGzipSize(filePath) {
+  // Check if file exists first
+  try {
+    await stat(filePath)
+  } catch (err) {
+    return 0
+  }
+
   return new Promise((resolve, reject) => {
     const chunks = []
     const gzip = createGzip()
@@ -27,7 +34,10 @@ async function getGzipSize(filePath) {
         const size = chunks.reduce((acc, chunk) => acc + chunk.length, 0)
         resolve(size)
       })
-      .on('error', reject)
+      .on('error', (err) => {
+        // Silently ignore errors (file might be deleted, etc.)
+        resolve(0)
+      })
   })
 }
 
@@ -42,11 +52,8 @@ async function calculateDirSize(dir) {
     for (const file of files) {
       if (file.isFile() && (file.name.endsWith('.js') || file.name.endsWith('.mjs'))) {
         const filePath = join(file.path || dir, file.name)
-        try {
-          totalGzip += await getGzipSize(filePath)
-        } catch (err) {
-          // Skip files that can't be read
-        }
+        const size = await getGzipSize(filePath)
+        totalGzip += size
       }
     }
     

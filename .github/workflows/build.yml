@@ -250,10 +250,10 @@ jobs:
       - name: Analyze baseline bundle sizes
         working-directory: baseline-workspace
         run: |
-          if [ ! -f scripts/bundle-size.js ]; then
-            cp ../scripts/bundle-size.js scripts/ || true
+          if [ ! -f scripts/bundle-size.mjs ]; then
+            cp ../scripts/bundle-size.mjs scripts/ || true
           fi
-          node scripts/bundle-size.js --output=../baseline.json || true
+          node scripts/bundle-size.mjs --output=../baseline.json || true
         continue-on-error: true
 
       - name: Build current branch
@@ -264,7 +264,7 @@ jobs:
         id: bundle-analysis
         run: |
           if [ -f baseline.json ]; then
-            node scripts/bundle-size.js --baseline=baseline.json > bundle-summary.md || true
+            node scripts/bundle-size.mjs --baseline=baseline.json > bundle-summary.md || true
           else
             echo "## 📦 Bundle Size Analysis" > bundle-summary.md
             echo "" >> bundle-summary.md

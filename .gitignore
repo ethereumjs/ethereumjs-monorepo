@@ -112,7 +112,7 @@ datadir*
 ## Vite
 stats.html
 *bundle*.js
-!scripts/bundle-size.js
+!scripts/bundle-size.mjs
 
 ## Vitest
 __snapshots__
