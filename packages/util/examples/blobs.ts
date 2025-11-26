@@ -7,6 +7,7 @@ import {
   getBlob,
   getBlobs,
   hexToBytes,
+  unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
@@ -15,18 +16,10 @@ const kzg = new microEthKZG(trustedSetup)
 
 // Use with node ./examples/blobs.ts <file path>
 const filePath = process.argv[2]
-const blobData: string = fs.readFileSync(filePath, 'ascii')
+const blobData: PrefixedHexString = `0x${fs.readFileSync(filePath, 'ascii')}`
 console.log(blobData)
-console.log(blobData.length)
-//blobData = blobData.substring(0, 100)
 
-const blobs = [getBlob(hexToBytes(`0x${blobData}`))]
-
-//const blobData = 'hello'
-//const blobs = getBlobs(blobData)
-
-console.log('Created the following blobs:')
-//console.log(blobs)
+const blobs = [blobData]
 
 const commitment = kzg.blobToKzgCommitment(blobs[0])
 
@@ -37,6 +30,7 @@ const versionedHash = computeVersionedHash(commitment as PrefixedHexString, blob
 const blobProof = blobsToProofs(kzg, blobs, [commitment as PrefixedHexString])
 const cellProofs = blobsToCellProofs(kzg, blobs)
 
+console.log(`Blob size                   : ${hexToBytes(blobData).length / 1024}KiB`)
 console.log(`Commitment                  : ${commitment}`)
 console.log(`Versioned hash              : ${versionedHash}`)
 console.log(`Blob proof (EIP-4844)       : ${blobProof}`)
