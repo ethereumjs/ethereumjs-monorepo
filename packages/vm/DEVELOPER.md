@@ -1,21 +1,47 @@
 # Developer Documentation
 
+## Table of Contents
+
+- [TESTING](#testing)
+  - [Introduction](#introduction)
+  - [General Test Execution](#general-test-execution)
+  - [Running Specific Tests on PRs](#running-specific-tests-on-prs)
+- [COVERAGE](#coverage)
+  - [Spec Tests Coverage](#spec-tests-coverage)
+  - [Coverage Reporting](#coverage-reporting)
+- [TEST GENERATION](#test-generation)
+  - [`execution-spec-tests` Integration (T8NTool)](#execution-spec-tests-integration-t8ntool)
+- [DEBUGGING](#debugging)
+  - [Local Debugging](#local-debugging)
+  - [Comparing Stack Traces](#comparing-stack-traces)
+  - [Debugging Tools](#debugging-tools)
+- [PERFORMANCE](#performance)
+  - [Build-in Profiling](#build-in-profiling)
+  - [Using External Tools](#using-external-tools)
+  - [Git Branch Performance Testing](#git-branch-performance-testing)
+  - [Benchmarks](#benchmarks)
+
 ## TESTING
 
-### Running Tests
+### Introduction
 
-Tests can be found in the `tests` directory. There are test runners for [State tests](./test/tester/runners/GeneralStateTestsRunner.ts) and [Blockchain tests](./test/tester/runners/BlockchainTestsRunner.ts). VM tests are disabled since Frontier gas costs are not supported any more.
+Tests can be found in the `tests` directory. There are test runners for [State tests](./test/tester/runners/GeneralStateTestsRunner.ts) and [Blockchain tests](./test/tester/runners/BlockchainTestsRunner.ts).
 
-Tests are then executed against a snapshot of the official client-independent [Ethereum tests](https://github.com/ethereum/tests) integrated in the monorepo as a submodule in [packages/ethereum-tests](./../ethereum-tests/) pointing towards a specific commit or tag from the `ethereum/tests` `develop` branch.
+Currently there is a hybrid situation where tests from old forks are still run against the now-deprecated [Ethereum tests](https://github.com/ethereum/tests) repository, while we started to run news tests (Osaka+) against the new [execution-spec-tests](https://github.com/ethereum/execution-spec-tests) repository (which now again transitioned to [execution-specs](https://github.com/ethereum/execution-specs)).
 
-For a wider picture about how to use tests to implement EIPs you can have a look at this [Reddit post](https://www.reddit.com/r/ethereum/comments/6kc5g3/ethereumjs_team_is_seeking_contributors/)
-or the associated YouTube video introduction to [Core Development with Ethereumjs-vm](https://www.youtube.com/watch?v=L0BVDl6HZzk).
+There are currently two submodules integrated along:
 
-#### Running different Test Types
+- [packages/ethereum-tests](./../ethereum-tests/) pointing towards a specific commit or tag from the `ethereum/tests` `develop` branch.
+- [packages/execution-spec-tests](./../execution-spec-tests/) pointing to an own custom fixture "fork" for `execution-spec-tests` fixtures
+located called [execution-spec-tests-fixtures](https://github.com/ethereumjs/execution-spec-tests-fixtures) (maintained by the EthereumJS team)
 
-**State Tests (Vitest)**
+All this will evolve during the next few months, but for now we need to support both.
 
-State tests now run on Vitest via an npm script. Recommended commands:
+### General Test Execution
+
+#### State Tests
+
+State tests run on Vitest via an npm script. Recommended commands:
 
 ```bash
 # Run with default fork (Prague)
@@ -28,7 +54,12 @@ npm run test:state -- --fork=Constantinople
 npm run test:state -- --test=stackOverflow
 ```
 
-**Note**: You can also invoke Vitest directly (`npx vitest test/tester/state.spec.ts`), but `npm run test:state` is recommended for argument handling.
+You can also invoke Vitest directly:
+```bash
+VITE_FORK=Prague npx vitest test/tester/state.spec.ts
+```
+
+This version uses environment variables like `VITE_FORK`, `VITE_TEST`, `VITE_DIR`, etc.
 
 Additional Vitest scripts:
 
@@ -40,9 +71,9 @@ npm run test:state:allForks
 npm run test:state:slow
 ```
 
-**Blockchain Tests (Vitest)**
+#### Blockchain Tests
 
-Blockchain tests now run on Vitest via the blockchain wrapper:
+Blockchain tests run on Vitest (using a wrapper if you want to use CLI arguments):
 
 ```bash
 # Direct command
@@ -52,7 +83,7 @@ npx vitest test/tester/blockchain.spec.ts
 npm run test:blockchain
 ```
 
-**Running with compiled code**
+#### Running with compiled code
 
 Tests run against source by default. To run with compiled output:
 
@@ -64,41 +95,37 @@ npm run build:dist && npm run test:state -- --dist
 npm run build:dist && npm run test:blockchain -- --dist
 ```
 
-Use `--fork` to pass in the desired hardfork:
-
-```bash
-# Recommended: Using npm script (Vitest)
-npm run test:state -- --fork='Constantinople'
-
-# Alternative: Direct Vitest command
-VITE_FORK=Constantinople npx vitest test/tester/state.spec.ts
-```
-
 By default state tests use the latest hardfork (`DEFAULT_FORK_CONFIG` in `test/tester/config.ts`, currently `Prague`).
+
+#### Running with specific forks and EIPs
 
 The `--fork` parameter can also be used to activate EIPs. This is done by first entering the hardfork, and then add the EIPs separated with the `+` sign. For instance:
 
 `npm run test:state -- --fork='London+3855'`
 
-Will run the state tests with the London hardfork and with EIP-3855 activated. To activate multiple EIPs:
+To activate multiple EIPs:
 
 `npm run test:blockchain -- --fork='London+3855+3860'`
 
-This runs the blockchain tests on the London hardfork with the EIP-3855 and EIP-3860 activated. Note, that only tests which have testdata on this specific configuration will run: most combinations will run 0 tests.
+Note: most combinations will run 0 tests due to missing testdata.
 
-State tests run significantly faster than Blockchain tests, so it is often a good choice to start fixing State tests.
+#### Test Scope on PRs
 
-#### Running Specific Tests
+On an ordinary PR, `vm-state-extended` and `vm-blockchain-extended` will be skipped
+unless the special label `type: test all hardforks` is applied.
+If the label is removed, the extended tests will not run anymore.
 
-**State Tests (Vitest)**
+### Running Specific Tests on PRs
+
+#### State Tests
 
 Running a specific state test case:
 
 ```bash
-# Recommended: Using npm script
+# Using npm script
 npm run test:state -- --test='stackOverflow'
 
-# Alternative: Direct command (still works)
+# Direct command
 VITE_TEST='stackOverflow' npx vitest test/tester/state.spec.ts
 ```
 
@@ -134,7 +161,7 @@ Run a test from a specified source file not under the `tests` directory:
 npm run test:state -- --customStateTest='{path_to_file}'
 ```
 
-**Blockchain Tests (Vitest)**
+#### Blockchain Tests
 
 Running all the blockchain tests in a file:
 
@@ -150,51 +177,6 @@ Running tests from a specific directory:
 npm run test:blockchain -- --dir='bcBlockGasLimitTest'
 # Or
 VITE_DIR='bcBlockGasLimitTest' npx vitest test/tester/blockchain.spec.ts
-```
-
-#### Running tests with a reporter/formatter
-
-Vitest has built-in reporters. Use Vitest's `--reporter` option for both suites:
-
-```bash
-# JSON reporter
-npx vitest test/tester/state.spec.ts --reporter=json
-npx vitest test/tester/blockchain.spec.ts --reporter=json
-
-# Verbose reporter
-npx vitest test/tester/state.spec.ts --reporter=verbose
-npx vitest test/tester/blockchain.spec.ts --reporter=verbose
-
-# See all options
-npx vitest --help
-```
-
-If no reporter or formatter is provided, results are reported by Vitest's default reporter.
-
-## Test Framework Migration
-
-State and blockchain tests now run on Vitest only.
-
-**State Tests (Vitest)**
-- Use `npm run test:state` (recommended).
-- You can also call `npx vitest test/tester/state.spec.ts` directly; CLI arguments are converted to `VITE_*` env vars by the wrapper when needed.
-
-**Blockchain Tests (Vitest)**
-- Use `npm run test:blockchain` (recommended).
-- You can also call `npx vitest test/tester/blockchain.spec.ts` directly; CLI arguments are converted to `VITE_*` env vars by the blockchain wrapper.
-
-**Environment variables**
-
-You can provide options either through CLI arguments or environment variables; the wrappers keep behavior consistent:
-
-```bash
-# CLI arguments (converted to env vars by wrapper)
-npm run test:state -- --fork=Constantinople
-npm run test:blockchain -- --fork=Constantinople
-
-# Direct environment variables
-VITE_FORK=Constantinople npx vitest test/tester/state.spec.ts
-VITE_FORK=Constantinople npx vitest test/tester/blockchain.spec.ts
 ```
 
 #### Skipping Tests
@@ -213,25 +195,48 @@ It is also possible to only run the tests from the skip lists:
 
 `npm run test:state -- --runSkipped=SLOW`
 
-#### Profiling Tests
+## COVERAGE
 
-Test runs can be profiled using the new EVM/VM profiling functionality by using the `--profile` option for test runs:
+### Spec Tests Coverage
 
-`npm run test:state -- --test='CreateCollisionToEmpty' --data=0 --gas=1 --value=0 --profile`
+The following command shows an example of how to get coverage for a set of the official spec test files:
 
-### CI Test Integration
+```bash
+VITE_CUSTOM_TESTS_PATH=../execution-spec-tests/fusaka-devnet-5/state_tests/osaka/eip7951_p256verify_precompiles  VITE_FORK=Osaka npx vitest watch --coverage --coverage.reporter=html --ui --coverage.allowExternal test/tester/state.spec.ts
+```
 
-Tests and checks are run in CI using [Github Actions](https://github.com/ethereumjs/ethereumjs-monorepo/actions). The configuration can be found in `.github/workflows`.
+This can be useful to identify gaps in the coverage of the official spec tests and see where additional tests are needed.
 
-#### On-demand testing for VM State and Blockchain
+The specific command stays in "watch" mode and opens a specific UI to see coverage also for EVM files (this needs the `coverage.allowExternal` flag to be set).
 
-On an ordinary PR, `vm-state-extended` and `vm-blockchain-extended` will be skipped
-unless the special label `type: test all hardforks` is applied.
-If the label is removed, the extended tests will not run anymore.
+### Coverage Reporting
 
-### Debugging
+Vitest has built-in reporters. Use Vitest's `--reporter` option for both suites:
 
-#### Local Debugging
+```bash
+# JSON reporter
+npx vitest test/tester/state.spec.ts --reporter=json
+npx vitest test/tester/blockchain.spec.ts --reporter=json
+
+# Verbose reporter
+npx vitest test/tester/state.spec.ts --reporter=verbose
+npx vitest test/tester/blockchain.spec.ts --reporter=verbose
+
+# See all options
+npx vitest --help
+```
+
+If no reporter or formatter is provided, results are reported by Vitest's default reporter.
+
+## TEST GENERATION
+
+### `execution-spec-tests` Integration (T8NTool)
+
+The VM has t8ntool (transition-tool) support, see: <https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/test/t8n/README.md>. This tool can be used to create fixtures from the `execution-spec-tests` repo. These fixtures can be consumed by other clients in their test runner (similar to running `npm run test:blockchain` or `npm run test:state` in the VM package). The t8ntool readme also links to a guide on how to write tests to contribute to `execution-spec-tests`.
+
+## DEBUGGING
+
+### Local Debugging
 
 For state tests you can use the `--jsontrace` flag to output opcode trace information.
 
@@ -241,7 +246,7 @@ Blockchain tests support `--debug` to verify the postState:
 
 All/most State tests are replicated as Blockchain tests in a `GeneralStateTests` [sub directory](https://github.com/ethereum/tests/tree/develop/docs/test_types/TestStructures/GeneralStateTests) in the Ethereum tests repo, so for debugging single test cases the Blockchain test version of the State test can be used.
 
-#### Comparing Stack Traces
+### Comparing Stack Traces
 
 Other client implementations often also provide functionality for output trace information.
 
@@ -253,7 +258,7 @@ evm --json --nomemory statetest node_modules/ethereumjs-testing/tests/GeneralSta
 
 If you want to have only the output for a specific fork you can go into the referenced json test file and temporarily delete the `post` section for the non-desired fork outputs (or, more safe and also more convenient on triggering later: copy the test files you are interested in to your working directory and then modify without further worrying).
 
-#### Debugging Tools
+### Debugging Tools
 
 For comparing `EVM` traces [here](https://gist.github.com/cdetrio/41172f374ae32047a6c9e97fa9d09ad0) are some instructions for setting up `pyethereum` to generate corresponding traces for state tests.
 
@@ -267,7 +272,23 @@ python utils/diffTestOutput.py output-wip-byzantium.txt output-master.txt
 
 An extremely rich and powerful toolbox is the [evmlab](https://github.com/holiman/evmlab) from `holiman`, both for debugging and creating new test cases or example data.
 
-## Git Branch Performance Testing
+## PERFORMANCE
+
+### Build-in Profiling
+
+Test runs can be profiled using the new EVM/VM profiling functionality by using the `--profile` option for test runs:
+
+`npm run test:state -- --test='CreateCollisionToEmpty' --data=0 --gas=1 --value=0 --profile`
+
+### Using External Tools
+
+[Clinic](https://github.com/nearform/node-clinic) allows profiling the VM in the node environment. It supports various profiling methods, among them is [flame](https://github.com/nearform/node-clinic-flame) which can be used for generating flamegraphs to highlight bottlenecks and hot paths. As an example, to generate a flamegraph for the VM blockchain tests, you can run:
+
+```sh
+NODE_OPTIONS="--max-old-space-size=4096" clinic flame -- VITE_EXCLUDE_DIR='GeneralStateTests' npx vitest test/tester/blockchain.spec.ts
+```
+
+### Git Branch Performance Testing
 
 The [`diffTester`](./scripts/diffTester.sh) script can be used to do simple comparative performance testing of changes made targeting the VM. This script allows you to run a single State test a specified number of times on two different branches and reports the average time of the test run for each branch. While not statistically rigorous, it gives you a quick sense of how a specific change (or set of changes) may impact VM performance on a given area that is covered by one specific test. Run this script from `[monorepo-root]/packages/vm` as below:
 
@@ -291,15 +312,7 @@ ok 5 [ 1.472 secs ] the state roots should match (successful tx run)
 
 Note: this script runs by actually checking out the targeted branch, running the test, and then switching back to your current branch, running the test again, and then restoring any changes you had in the current branch. For best results, you should run this test while you currently have `master` checked out.
 
-## Profiling
-
-[Clinic](https://github.com/nearform/node-clinic) allows profiling the VM in the node environment. It supports various profiling methods, among them is [flame](https://github.com/nearform/node-clinic-flame) which can be used for generating flamegraphs to highlight bottlenecks and hot paths. As an example, to generate a flamegraph for the VM blockchain tests, you can run:
-
-```sh
-NODE_OPTIONS="--max-old-space-size=4096" clinic flame -- VITE_EXCLUDE_DIR='GeneralStateTests' npx vitest test/tester/blockchain.spec.ts
-```
-
-## Benchmarks
+### Benchmarks
 
 This helps us see how the VM performs when running mainnet blocks.
 
@@ -325,6 +338,3 @@ and open the link it generates.
 
 For a high-level introduction on flame graphs see e.g. [this](https://blog.codecentric.de/en/2017/09/jvm-fire-using-flame-graphs-analyse-performance/) blog article (the non-Java part).
 
-## T8NTool: fill `execution-spec-tests` tests and write those
-
-The VM has t8ntool (transition-tool) support, see: <https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/test/t8n/README.md>. This tool can be used to create fixtures from the `execution-spec-tests` repo. These fixtures can be consumed by other clients in their test runner (similar to running `npm run test:blockchain` or `npm run test:state` in the VM package). The t8ntool readme also links to a guide on how to write tests to contribute to `execution-spec-tests`.
