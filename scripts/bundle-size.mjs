@@ -199,8 +199,14 @@ async function main() {
     const output = args.find(arg => arg.startsWith('--output='))?.split('=')[1]
     
     if (output) {
+      // Only write if we have results
+      if (Object.keys(results).length === 0) {
+        console.error('❌ No packages found to analyze. Make sure packages are built.')
+        process.exit(1)
+      }
       await writeFile(output, JSON.stringify(results, null, 2))
       console.log(`✅ Results saved to ${output}`)
+      console.log(`📦 Analyzed ${Object.keys(results).length} packages`)
     } else {
       console.log(JSON.stringify(results, null, 2))
     }

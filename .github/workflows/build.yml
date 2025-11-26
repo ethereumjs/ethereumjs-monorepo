@@ -253,7 +253,16 @@ jobs:
           if [ ! -f scripts/bundle-size.mjs ]; then
             cp ../scripts/bundle-size.mjs scripts/ || true
           fi
-          node scripts/bundle-size.mjs --output=../baseline.json || true
+          echo "📊 Analyzing baseline bundle sizes..."
+          node scripts/bundle-size.mjs --output=../baseline.json
+          if [ -f ../baseline.json ]; then
+            echo "✅ Baseline analysis complete"
+            echo "Baseline file size: $(wc -c < ../baseline.json) bytes"
+            echo "Baseline content preview:"
+            head -5 ../baseline.json || true
+          else
+            echo "❌ Baseline analysis failed - no file created"
+          fi
         continue-on-error: true
 
       - name: Build current branch
@@ -263,7 +272,19 @@ jobs:
       - name: Analyze and compare bundle sizes
         id: bundle-analysis
         run: |
-          if [ -f baseline.json ] && [ -s baseline.json ] && [ "$(cat baseline.json)" != "{}" ]; then
+          echo "📊 Checking baseline.json..."
+          if [ -f baseline.json ]; then
+            echo "Baseline file exists"
+            echo "File size: $(wc -c < baseline.json) bytes"
+            echo "File content:"
+            cat baseline.json
+            echo ""
+          else
+            echo "❌ Baseline file not found"
+          fi
+
+          if [ -f baseline.json ] && [ -s baseline.json ] && [ "$(cat baseline.json | tr -d '[:space:]')" != "{}" ]; then
+            echo "✅ Baseline file is valid, running comparison..."
             node scripts/bundle-size.mjs --baseline=baseline.json > bundle-summary.md 2>&1 || {
               echo "## 📦 Bundle Size Analysis" > bundle-summary.md
               echo "" >> bundle-summary.md
@@ -272,8 +293,16 @@ jobs:
           else
             echo "## 📦 Bundle Size Analysis" > bundle-summary.md
             echo "" >> bundle-summary.md
-            echo "Baseline comparison unavailable (baseline not found or empty)." >> bundle-summary.md
+            if [ ! -f baseline.json ]; then
+              echo "Baseline comparison unavailable (baseline file not found)." >> bundle-summary.md
+            elif [ ! -s baseline.json ]; then
+              echo "Baseline comparison unavailable (baseline file is empty)." >> bundle-summary.md
+            else
+              echo "Baseline comparison unavailable (baseline contains no package data)." >> bundle-summary.md
+            fi
           fi
+          echo ""
+          echo "📄 Bundle summary:"
           cat bundle-summary.md
         working-directory: ${{ github.workspace }}
 
