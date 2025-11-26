@@ -243,18 +243,45 @@ jobs:
       - name: Build baseline
         working-directory: baseline-workspace
         run: |
-          npm ci || true
-          npm run build --workspaces --if-present || true
+          echo "📦 Installing baseline dependencies..."
+          npm ci || echo "⚠️ npm ci failed, trying npm install..."
+          npm install || echo "⚠️ npm install also failed"
+          echo "🔨 Building baseline packages..."
+          npm run build --workspaces --if-present || echo "⚠️ Build failed for some packages"
+        continue-on-error: true
+
+      - name: Check baseline build status
+        working-directory: baseline-workspace
+        run: |
+          echo "📊 Checking if any packages were built..."
+          BUILT_COUNT=0
+          for pkg in packages/*/dist; do
+            if [ -d "$pkg" ] && [ "$(find "$pkg" -name "*.js" -o -name "*.mjs" | wc -l)" -gt 0 ]; then
+              BUILT_COUNT=$((BUILT_COUNT + 1))
+              echo "✅ Found built package: $(dirname "$pkg" | xargs basename)"
+            fi
+          done
+          echo "📦 Found $BUILT_COUNT packages with dist folders"
+          if [ "$BUILT_COUNT" -eq 0 ]; then
+            echo "⚠️ No packages were built in baseline. Comparison will be skipped."
+            echo "BUILT_COUNT=0" >> $GITHUB_ENV
+          else
+            echo "BUILT_COUNT=$BUILT_COUNT" >> $GITHUB_ENV
+          fi
         continue-on-error: true
 
       - name: Analyze baseline bundle sizes
+        if: env.BUILT_COUNT != '0'
         working-directory: baseline-workspace
         run: |
           if [ ! -f scripts/bundle-size.mjs ]; then
             cp ../scripts/bundle-size.mjs scripts/ || true
           fi
           echo "📊 Analyzing baseline bundle sizes..."
-          node scripts/bundle-size.mjs --output=../baseline.json
+          node scripts/bundle-size.mjs --output=../baseline.json || {
+            echo "❌ Baseline analysis failed"
+            exit 1
+          }
           if [ -f ../baseline.json ]; then
             echo "✅ Baseline analysis complete"
             echo "Baseline file size: $(wc -c < ../baseline.json) bytes"
@@ -262,6 +289,7 @@ jobs:
             head -5 ../baseline.json || true
           else
             echo "❌ Baseline analysis failed - no file created"
+            exit 1
           fi
         continue-on-error: true
 
@@ -274,11 +302,14 @@ jobs:
         run: |
           echo "📊 Checking baseline.json..."
           if [ -f baseline.json ]; then
-            echo "Baseline file exists"
+            echo "✅ Baseline file exists"
             echo "File size: $(wc -c < baseline.json) bytes"
-            echo "File content:"
-            cat baseline.json
-            echo ""
+            BASELINE_CONTENT=$(cat baseline.json | tr -d '[:space:]')
+            if [ "$BASELINE_CONTENT" = "{}" ]; then
+              echo "⚠️ Baseline file is empty object"
+            else
+              echo "Baseline contains data for: $(cat baseline.json | grep -o '"[^"]*"' | head -5 | tr '\n' ' ')"
+            fi
           else
             echo "❌ Baseline file not found"
           fi
@@ -294,7 +325,7 @@ jobs:
             echo "## 📦 Bundle Size Analysis" > bundle-summary.md
             echo "" >> bundle-summary.md
             if [ ! -f baseline.json ]; then
-              echo "Baseline comparison unavailable (baseline file not found)." >> bundle-summary.md
+              echo "Baseline comparison unavailable (baseline build failed or no packages were built)." >> bundle-summary.md
             elif [ ! -s baseline.json ]; then
               echo "Baseline comparison unavailable (baseline file is empty)." >> bundle-summary.md
             else
