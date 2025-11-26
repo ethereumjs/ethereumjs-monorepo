@@ -263,12 +263,16 @@ jobs:
       - name: Analyze and compare bundle sizes
         id: bundle-analysis
         run: |
-          if [ -f baseline.json ]; then
-            node scripts/bundle-size.mjs --baseline=baseline.json > bundle-summary.md || true
+          if [ -f baseline.json ] && [ -s baseline.json ] && [ "$(cat baseline.json)" != "{}" ]; then
+            node scripts/bundle-size.mjs --baseline=baseline.json > bundle-summary.md 2>&1 || {
+              echo "## 📦 Bundle Size Analysis" > bundle-summary.md
+              echo "" >> bundle-summary.md
+              echo "❌ Error comparing bundle sizes. See workflow logs for details." >> bundle-summary.md
+            }
           else
             echo "## 📦 Bundle Size Analysis" > bundle-summary.md
             echo "" >> bundle-summary.md
-            echo "Baseline comparison unavailable." >> bundle-summary.md
+            echo "Baseline comparison unavailable (baseline not found or empty)." >> bundle-summary.md
           fi
           cat bundle-summary.md
         working-directory: ${{ github.workspace }}

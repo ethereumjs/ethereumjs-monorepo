@@ -74,25 +74,29 @@ function formatKB(bytes) {
  * Analyze all packages
  */
 async function analyzePackages() {
-  const packages = await readdir(packagesDir, { withFileTypes: true })
-  const results = {}
-  
-  for (const pkg of packages) {
-    if (!pkg.isDirectory()) continue
+  try {
+    const packages = await readdir(packagesDir, { withFileTypes: true })
+    const results = {}
     
-    const distPath = join(packagesDir, pkg.name, 'dist')
-    try {
-      await stat(distPath)
-      const size = await calculateDirSize(distPath)
-      if (size > 0) {
-        results[pkg.name] = size
+    for (const pkg of packages) {
+      if (!pkg.isDirectory()) continue
+      
+      const distPath = join(packagesDir, pkg.name, 'dist')
+      try {
+        await stat(distPath)
+        const size = await calculateDirSize(distPath)
+        if (size > 0) {
+          results[pkg.name] = size
+        }
+      } catch {
+        // No dist folder
       }
-    } catch {
-      // No dist folder
     }
+    
+    return results
+  } catch (error) {
+    return {}
   }
-  
-  return results
 }
 
 /**
@@ -129,6 +133,10 @@ function generateComparisonTable(current, baseline) {
   }
   
   // Generate markdown table
+  if (rows.length === 0) {
+    return 'No packages found to compare.'
+  }
+  
   let table = '| Package | Size Δ |\n'
   table += '|---------|--------|\n'
   
@@ -153,18 +161,37 @@ async function main() {
       process.exit(1)
     }
     
-    const baseline = JSON.parse(await readFile(baselineFile, 'utf-8'))
-    const current = await analyzePackages()
-    
-    const table = generateComparisonTable(current, baseline)
-    console.log('## 📦 Bundle Size Analysis\n')
-    console.log(table)
-    
-    // Output JSON for CI
-    if (args.includes('--json')) {
-      console.log('\n---JSON_START---')
-      console.log(JSON.stringify({ current, baseline }, null, 2))
-      console.log('---JSON_END---')
+    try {
+      const baselineContent = await readFile(baselineFile, 'utf-8')
+      if (!baselineContent || baselineContent.trim() === '' || baselineContent.trim() === '{}') {
+        console.error('❌ Baseline file is empty or invalid')
+        process.exit(1)
+      }
+      
+      const baseline = JSON.parse(baselineContent)
+      if (typeof baseline !== 'object' || baseline === null || Object.keys(baseline).length === 0) {
+        console.error('❌ Baseline file contains no package data')
+        process.exit(1)
+      }
+      
+      const current = await analyzePackages()
+      if (Object.keys(current).length === 0) {
+        console.error('❌ No packages found in current build')
+        process.exit(1)
+      }
+      
+      const table = generateComparisonTable(current, baseline)
+      console.log('## 📦 Bundle Size Analysis\n')
+      console.log(table)
+    } catch (error) {
+      if (error.code === 'ENOENT') {
+        console.error(`❌ Baseline file not found: ${baselineFile}`)
+      } else if (error instanceof SyntaxError) {
+        console.error(`❌ Baseline file is not valid JSON: ${error.message}`)
+      } else {
+        console.error(`❌ Error: ${error.message}`)
+      }
+      process.exit(1)
     }
   } else {
     // Just analyze current
@@ -181,6 +208,6 @@ async function main() {
 }
 
 main().catch((error) => {
-  console.error('❌ Error:', error)
+  console.error('❌ Error:', error.message)
   process.exit(1)
 })
