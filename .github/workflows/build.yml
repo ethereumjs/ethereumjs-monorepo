@@ -205,3 +205,72 @@ jobs:
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
       submodule-cache-key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
+
+  bundle-size:
+    needs: [build]
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
+    # This job runs as a side task to monitor bundle sizes without blocking the workflow
+
+    steps:
+      - name: Checkout current branch
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/cache/restore@v4
+        id: dep-cache
+        with:
+          path: ${{github.workspace}}
+          key: ${{ needs.build.outputs.dep-cache-key }}
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: 'npm'
+
+      - name: Install Dependencies (if not restored from cache)
+        if: steps.dep-cache.outputs.cache-hit != 'true'
+        run: npm ci
+        working-directory: ${{ github.workspace }}
+
+      - name: Checkout and build baseline (for PR comparison)
+        if: github.event_name == 'pull_request'
+        run: |
+          # Save current branch
+          CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+          # Fetch base branch
+          git fetch origin ${{ github.base_ref }}:${{ github.base_ref }}
+          # Checkout base branch
+          git checkout ${{ github.base_ref }} || git checkout -b ${{ github.base_ref }} origin/${{ github.base_ref }}
+          # Build baseline
+          npm ci
+          npm run build --workspaces --if-present || true
+          # Analyze baseline
+          node scripts/analyze-bundle-size.js --save --output=baseline-results.json || true
+          # Checkout back to PR branch
+          git checkout $CURRENT_BRANCH
+        continue-on-error: true
+
+      - name: Build all packages for bundle analysis
+        run: npm run build --workspaces --if-present
+        working-directory: ${{ github.workspace }}
+
+      - name: Analyze Bundle Sizes (with comparison if PR)
+        if: github.event_name == 'pull_request'
+        run: |
+          if [ -f baseline-results.json ]; then
+            echo "📊 Comparing bundle sizes with baseline (${{ github.base_ref }})..."
+            npm run bundle:analyze -- --compare --baseline=baseline-results.json
+          else
+            echo "📊 Analyzing bundle sizes (baseline comparison unavailable)..."
+            npm run bundle:analyze
+          fi
+        working-directory: ${{ github.workspace }}
+
+      - name: Analyze Bundle Sizes (push to master)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        run: npm run bundle:analyze
+        working-directory: ${{ github.workspace }}

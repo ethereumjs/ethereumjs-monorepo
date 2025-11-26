@@ -28,6 +28,9 @@
     "spellcheck": "npm run spellcheck:ts && npm run spellcheck:md",
     "spellcheck:ts": "npx cspell --gitignore -e \"./packages/ethereum-tests\" -e \"./packages/wallet/test\" -e \"./packages/client/archive\" -c ./config/cspell-ts.json \"./packages/**/*.ts\" --cache --show-suggestions --show-context",
     "spellcheck:md": "npx cspell --gitignore -e \"./packages/ethereum-tests\" -e \"./packages/client/withdrawals-testnet/**\" -e \"./packages/**/docs\" -c ./config/cspell-md.json \"**.md\" --cache --show-suggestions --show-context",
+    "bundle:analyze": "node scripts/analyze-bundle-size.js",
+    "bundle:save": "node scripts/analyze-bundle-size.js --save",
+    "bundle:compare": "node scripts/analyze-bundle-size.js --compare --baseline=bundle-size-baseline.json",
     "tsc": "npm run tsc --workspaces --if-present"
   },
   "devDependencies": {
