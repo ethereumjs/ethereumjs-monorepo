@@ -278,7 +278,9 @@ jobs:
             cp ../scripts/bundle-size.mjs scripts/ || true
           fi
           echo "📊 Analyzing baseline bundle sizes..."
-          node scripts/bundle-size.mjs --output=../baseline.json || {
+          echo "Current directory: $(pwd)"
+          echo "Packages directory: $(ls -la packages/ | head -10)"
+          node scripts/bundle-size.mjs --output=../baseline.json 2>&1 || {
             echo "❌ Baseline analysis failed"
             exit 1
           }

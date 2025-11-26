@@ -48,18 +48,22 @@ async function calculateDirSize(dir) {
   try {
     const files = await readdir(dir, { recursive: true, withFileTypes: true })
     let totalGzip = 0
+    let fileCount = 0
     
     for (const file of files) {
       if (file.isFile() && (file.name.endsWith('.js') || file.name.endsWith('.mjs'))) {
         const filePath = join(file.path || dir, file.name)
         const size = await getGzipSize(filePath)
         totalGzip += size
+        if (size > 0) {
+          fileCount++
+        }
       }
     }
     
-    return totalGzip
+    return { size: totalGzip, fileCount }
   } catch (error) {
-    return 0
+    return { size: 0, fileCount: 0 }
   }
 }
 
@@ -75,26 +79,39 @@ function formatKB(bytes) {
  */
 async function analyzePackages() {
   try {
+    console.error(`📂 Looking for packages in: ${packagesDir}`)
     const packages = await readdir(packagesDir, { withFileTypes: true })
+    console.error(`📦 Found ${packages.length} items in packages directory`)
     const results = {}
     
     for (const pkg of packages) {
-      if (!pkg.isDirectory()) continue
+      if (!pkg.isDirectory()) {
+        console.error(`⏭️  Skipping non-directory: ${pkg.name}`)
+        continue
+      }
       
       const distPath = join(packagesDir, pkg.name, 'dist')
       try {
         await stat(distPath)
-        const size = await calculateDirSize(distPath)
+        console.error(`📊 Analyzing ${pkg.name}...`)
+        const result = await calculateDirSize(distPath); const size = result.size; const fileCount = result.fileCount
+        console.error(`   Found ${fileCount} JS files, total size: ${formatKB(size)}`)
         if (size > 0) {
           results[pkg.name] = size
+        } else {
+          console.error(`   ⚠️  No size calculated for ${pkg.name}`)
         }
-      } catch {
-        // No dist folder
+      } catch (err) {
+        console.error(`   ⏭️  No dist folder for ${pkg.name}`)
       }
     }
     
+    console.error(`✅ Analysis complete: ${Object.keys(results).length} packages with size > 0`)
     return results
   } catch (error) {
+    console.error(`❌ Error in analyzePackages: ${error.message}`)
+    console.error(`   packagesDir: ${packagesDir}`)
+    console.error(`   cwd: ${process.cwd()}`)
     return {}
   }
 }
