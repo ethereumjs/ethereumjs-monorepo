@@ -10,7 +10,7 @@ import {
 } from '@ethereumjs/util'
 import { keccak_256 } from '@noble/hashes/sha3.js'
 import debugDefault from 'debug'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import { EventEmitter } from 'eventemitter3'
 import { LRUCache } from 'lru-cache'
 

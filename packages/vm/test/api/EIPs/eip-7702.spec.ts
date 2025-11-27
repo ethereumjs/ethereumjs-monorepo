@@ -21,7 +21,7 @@ import { assert, describe, it } from 'vitest'
 import { createVM, runTx } from '../../../src/index.ts'
 
 import type { EOACode7702AuthorizationListBytesItem, PrefixedHexString } from '@ethereumjs/util'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import type { VM } from '../../../src/index.ts'
 
 // EIP-7702 code designator. If code starts with these bytes, it is a 7702-delegated address

@@ -33,7 +33,7 @@ import {
   utf8ToBytes,
 } from '@ethereumjs/util'
 import { keccak_256 } from '@noble/hashes/sha3.js'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import { assert, describe, it } from 'vitest'
 
 import { createVM, runBlock } from '../../src/index.ts'

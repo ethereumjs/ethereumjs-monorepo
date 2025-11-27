@@ -1,17 +1,15 @@
 import { RLP } from '@ethereumjs/rlp'
 import {
   EthereumJSErrorWithoutCode,
-  bigIntToBytes,
   bytesToHex,
   bytesToInt,
   bytesToUtf8,
   concatBytes,
   intToBytes,
-  setLengthLeft,
 } from '@ethereumjs/util'
+import { secp256k1 } from '@noble/curves/secp256k1.js'
 import { keccak_256 } from '@noble/hashes/sha3.js'
 import debugDefault from 'debug'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1'
 
 import { assertEq, ipToBytes, ipToString, isV4Format, isV6Format, unstrictDecode } from '../util.ts'
 
@@ -189,12 +187,7 @@ export function encode<T>(typename: string, data: T, privateKey: Uint8Array, com
 
   const sighash = (common?.customCrypto.keccak256 ?? keccak_256)(typedata)
   const sig = (common?.customCrypto.ecsign ?? secp256k1.sign)(sighash, privateKey)
-  const hashdata = concatBytes(
-    setLengthLeft(bigIntToBytes(sig.r), 32),
-    setLengthLeft(bigIntToBytes(sig.s), 32),
-    Uint8Array.from([sig.recovery]),
-    typedata,
-  )
+  const hashdata = concatBytes(sig, typedata)
   const hash = (common?.customCrypto.keccak256 ?? keccak_256)(hashdata)
   return concatBytes(hash, hashdata)
 }
@@ -215,9 +208,9 @@ export function decode(bytes: Uint8Array, common?: Common) {
   const publicKey = (
     common?.customCrypto.ecdsaRecover ??
     ((sig: Uint8Array, recId: number, hash: Uint8Array) => {
-      const signature = secp256k1.Signature.fromCompact(sig)
+      const signature = secp256k1.Signature.fromBytes(sig)
       const point = signature.addRecoveryBit(recId).recoverPublicKey(hash)
-      return point.toRawBytes(false)
+      return point.toBytes(false)
     })
   )(signature, recoverId, sighash)
   return { typename, data, publicKey }

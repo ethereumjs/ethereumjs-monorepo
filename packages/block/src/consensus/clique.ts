@@ -5,17 +5,14 @@ import {
   BIGINT_0,
   BIGINT_27,
   EthereumJSErrorWithoutCode,
-  bigIntToBytes,
-  bigIntToUnpaddedBytes,
   bytesToBigInt,
   concatBytes,
   createAddressFromPublicKey,
   createZeroAddress,
   ecrecover,
   equalsBytes,
-  setLengthLeft,
 } from '@ethereumjs/util'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1'
+import { secp256k1 } from '@noble/curves/secp256k1.js'
 
 import type { CliqueConfig } from '@ethereumjs/common'
 import type { BlockHeader } from '../index.ts'
@@ -155,16 +152,11 @@ export function generateCliqueBlockExtraData(
 
   const ecSignFunction = header.common.customCrypto?.ecsign ?? secp256k1.sign
   const signature = ecSignFunction(cliqueSigHash(header), cliqueSigner)
-  const signatureB = concatBytes(
-    setLengthLeft(bigIntToUnpaddedBytes(signature.r), 32),
-    setLengthLeft(bigIntToUnpaddedBytes(signature.s), 32),
-    bigIntToBytes(BigInt(signature.recovery)),
-  )
 
   const extraDataWithoutSeal = header.extraData.subarray(
     0,
     header.extraData.length - CLIQUE_EXTRA_SEAL,
   )
-  const extraData = concatBytes(extraDataWithoutSeal, signatureB)
+  const extraData = concatBytes(extraDataWithoutSeal, signature)
   return extraData
 }

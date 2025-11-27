@@ -17,7 +17,7 @@ import {
   waitReady,
   sha256 as wasmSha256,
 } from '@polkadot/wasm-crypto'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1'
+import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 
 import { SIGNER_A } from '@ethereumjs/testdata'
 import { sha256 as jsSha256 } from 'ethereum-cryptography/sha256.js'

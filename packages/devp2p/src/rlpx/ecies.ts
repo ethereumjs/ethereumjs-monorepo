@@ -2,12 +2,10 @@ import * as crypto from 'crypto'
 import { RLP } from '@ethereumjs/rlp'
 import {
   EthereumJSErrorWithoutCode,
-  bigIntToBytes,
   bytesToInt,
   concatBytes,
   hexToBytes,
   intToBytes,
-  setLengthLeft,
 } from '@ethereumjs/util'
 import { secp256k1 } from '@noble/curves/secp256k1.js'
 import { keccak_256 } from '@noble/hashes/sha3.js'
@@ -93,17 +91,8 @@ export class ECIES {
     this._ephemeralPublicKey = secp256k1.getPublicKey(this._ephemeralPrivateKey, false)
 
     this._keccakFunction = common?.customCrypto.keccak256 ?? keccak_256
-    this._ecdsaSign =
-      common?.customCrypto.ecsign ??
-      ((msg: Uint8Array, pk: Uint8Array) => {
-        const sigBytes = secp256k1.sign(msg, pk, { prehash: false, format: 'recovered' })
-        const sig = secp256k1.Signature.fromBytes(sigBytes, 'recovered')
-        return {
-          r: sig.r,
-          s: sig.s,
-          recovery: sig.recovery!,
-        }
-      })
+    this._ecdsaSign = common?.customCrypto.ecsign ?? secp256k1.sign
+
     this._ecdsaRecover =
       common?.customCrypto.ecdsaRecover ??
       ((sig: Uint8Array, recId: number, hash: Uint8Array) => {
@@ -206,11 +195,7 @@ export class ECIES {
     const x = ecdhX(this._remotePublicKey, this._privateKey)
     const sig = this._ecdsaSign(xor(x, this._nonce), this._ephemeralPrivateKey)
     const data = [
-      concatBytes(
-        setLengthLeft(bigIntToBytes(sig.r), 32),
-        setLengthLeft(bigIntToBytes(sig.s), 32),
-        Uint8Array.from([sig.recovery]),
-      ),
+      sig,
       // this._keccakFunction(pk2id(this._ephemeralPublicKey)),
       pk2id(this._publicKey),
       this._nonce,
@@ -233,9 +218,7 @@ export class ECIES {
     const x = ecdhX(this._remotePublicKey, this._privateKey)
     const sig = this._ecdsaSign(xor(x, this._nonce), this._ephemeralPrivateKey)
     const data = concatBytes(
-      bigIntToBytes(sig.r),
-      bigIntToBytes(sig.s),
-      Uint8Array.from([sig.recovery]),
+      sig,
       this._keccakFunction(pk2id(this._ephemeralPublicKey)),
       pk2id(this._publicKey),
       this._nonce,

@@ -17,7 +17,6 @@ import {
 } from '@ethereumjs/common'
 import {
   EthereumJSErrorWithoutCode,
-  bytesToBigInt,
   bytesToHex,
   calculateSigRecovery,
   concatBytes,
@@ -28,6 +27,7 @@ import {
   randomBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
+import { secp256k1 } from '@noble/curves/secp256k1.js'
 import { sha256 } from '@noble/hashes/sha2.js'
 import { keccak_256 } from '@noble/hashes/sha3.js'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
@@ -39,7 +39,6 @@ import {
   waitReady as waitReadyPolkadotSha256,
   sha256 as wasmSha256,
 } from '@polkadot/wasm-crypto'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 import * as promClient from 'prom-client'
 import * as yargs from 'yargs'
@@ -624,12 +623,7 @@ export async function getCryptoFunctions(useJsCrypto: boolean): Promise<CustomCr
       ).slice(1)
     cryptoFunctions.sha256 = wasmSha256
     cryptoFunctions.ecsign = (msg: Uint8Array, pk: Uint8Array) => {
-      const buf = secp256k1Sign(msg, pk)
-      const r = bytesToBigInt(buf.slice(0, 32))
-      const s = bytesToBigInt(buf.slice(32, 64))
-      const recovery = buf[64]
-
-      return { r, s, recovery }
+      return secp256k1Sign(msg, pk)
     }
     cryptoFunctions.ecdsaRecover = (sig: Uint8Array, recId: number, hash: Uint8Array) => {
       return secp256k1Recover(hash, sig, recId)
@@ -641,9 +635,9 @@ export async function getCryptoFunctions(useJsCrypto: boolean): Promise<CustomCr
     cryptoFunctions.ecsign = secp256k1.sign
     cryptoFunctions.ecdsaRecover = (sig: Uint8Array, recId: number, hash: Uint8Array) => {
       // Adapted from @noble/curves docs
-      const sign = secp256k1.Signature.fromCompact(sig)
+      const sign = secp256k1.Signature.fromBytes(sig)
       const point = sign.addRecoveryBit(recId).recoverPublicKey(hash)
-      const address = point.toRawBytes(true)
+      const address = point.toBytes(false)
       return address
     }
   }
