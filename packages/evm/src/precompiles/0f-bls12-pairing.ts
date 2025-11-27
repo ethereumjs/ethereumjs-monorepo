@@ -15,7 +15,7 @@ export async function precompile0f(opts: PrecompileInput): Promise<ExecResult> {
   const pName = getPrecompileName('11')
   const bls = (opts._EVM as EVM)['_bls']!
 
-  const baseGas = opts.common.param('bls12381PairingBaseGas') ?? BigInt(0)
+  const baseGas = opts.common.param('bls12381PairingBaseGas')
 
   // TODO: confirm that this is not a thing for the other precompiles
   if (opts.data.length === 0) {
