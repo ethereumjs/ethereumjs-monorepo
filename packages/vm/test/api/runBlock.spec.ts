@@ -609,17 +609,22 @@ describe('runBlock() -> tx types', async () => {
 
       const rlpdMsg = RLP.encode([chainIdBytes, addressBytes, nonceBytes])
       const msgToSign = keccak_256(concatBytes(new Uint8Array([5]), rlpdMsg))
-      const signed = secp256k1.sign(msgToSign, pkey)
+      const signed = secp256k1.sign(msgToSign, pkey, { format: 'recovered', prehash: false })
 
-      const yParity = signed.recovery === 0 ? new Uint8Array() : new Uint8Array([1])
+      const { recovery, r, s } = secp256k1.Signature.fromBytes(signed, 'recovered')
+      if (recovery === undefined) {
+        throw new Error('Recovery is undefined')
+      }
+
+      const yParity = recovery === 0 ? new Uint8Array() : new Uint8Array([1])
 
       return [
         chainIdBytes,
         addressBytes,
         nonceBytes,
         yParity,
-        bigIntToUnpaddedBytes(signed.r),
-        bigIntToUnpaddedBytes(signed.s),
+        bigIntToUnpaddedBytes(r),
+        bigIntToUnpaddedBytes(s),
       ]
     }
 
