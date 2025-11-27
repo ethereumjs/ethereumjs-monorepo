@@ -243,21 +243,21 @@ const main = async () => {
 
   const vm = await createVM()
   await vm.stateManager.generateCanonicalGenesis!(genesisState)
-  const account = await vm.stateManager.getAccount(
-    createAddressFromString('0x000d836201318ec6899a67540690382780743280'),
-  )
+  const accountAddress = '0x000d836201318ec6899a67540690382780743280'
+  const account = await vm.stateManager.getAccount(createAddressFromString(accountAddress))
 
   if (account === undefined) {
     throw new Error('Account does not exist: failed to import genesis state')
   }
 
   console.log(
-    `This balance for account 0x000d836201318ec6899a67540690382780743280 in this chain's genesis state is ${Number(
+    `This balance for account ${accountAddress} in this chain's genesis state is ${Number(
       account?.balance,
     )}`,
   )
 }
 void main()
+
 ```
 
 Genesis state can be configured to contain both EOAs as well as (system) contracts with initial storage values set.
@@ -276,9 +276,12 @@ import { createVM } from '@ethereumjs/vm'
 const main = async () => {
   const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
   const vm = await createVM({ common })
-  console.log(`EIP 7702 is active in isolation on top of the Cancun HF - ${vm.common.isActivatedEIP(7702)}`)
+  console.log(
+    `EIP 7702 is active in isolation on top of the Cancun HF - ${vm.common.isActivatedEIP(7702)}`,
+  )
 }
 void main()
+
 ```
 
 For a list with supported EIPs see the [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm) documentation.

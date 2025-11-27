@@ -34,8 +34,8 @@ import {
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import { blake3 } from '@noble/hashes/blake3.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 import debugDefault from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { OriginalStorageCache } from './cache/originalStorageCache.ts'
 import { modifyAccountFields } from './util.ts'
@@ -107,7 +107,7 @@ export class StatefulBinaryTreeStateManager implements StateManagerInterface {
     this._debug = debugDefault('statemanager:binarytree')
     this.originalStorageCache = new OriginalStorageCache(this.getStorage.bind(this))
     this._caches = opts.caches
-    this.keccakFunction = keccak256
+    this.keccakFunction = keccak_256
     this.preStateRoot = new Uint8Array(32) // Initial state root is zeroes
   }
 
@@ -270,7 +270,7 @@ export class StatefulBinaryTreeStateManager implements StateManagerInterface {
 
     this._caches?.code?.put(address, value)
 
-    const codeHash = keccak256(value)
+    const codeHash = keccak_256(value)
     if (equalsBytes(codeHash, KECCAK256_NULL)) {
       // If the code hash is the null hash, no code has to be stored
       return

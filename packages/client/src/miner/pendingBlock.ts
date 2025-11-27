@@ -12,7 +12,7 @@ import {
   toType,
 } from '@ethereumjs/util'
 import { BuildStatus, buildBlock } from '@ethereumjs/vm'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 
 import type { Block, HeaderData } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
@@ -143,7 +143,7 @@ export class PendingBlock {
       withdrawalsBuf = concatBytes(...withdrawalsBufTemp)
     }
 
-    const keccakFunction = this.config.chainCommon.customCrypto.keccak256 ?? keccak256
+    const keccakFunction = this.config.chainCommon.customCrypto.keccak256 ?? keccak_256
 
     const payloadIdBytes = keccakFunction(
       concatBytes(

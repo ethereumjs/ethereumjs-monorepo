@@ -5,17 +5,14 @@ import {
   BIGINT_0,
   BIGINT_27,
   EthereumJSErrorWithoutCode,
-  bigIntToBytes,
-  bigIntToUnpaddedBytes,
   bytesToBigInt,
   concatBytes,
   createAddressFromPublicKey,
   createZeroAddress,
   ecrecover,
   equalsBytes,
-  setLengthLeft,
 } from '@ethereumjs/util'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
+import { secp256k1 } from '@noble/curves/secp256k1.js'
 
 import type { CliqueConfig } from '@ethereumjs/common'
 import type { BlockHeader } from '../index.ts'
@@ -153,18 +150,22 @@ export function generateCliqueBlockExtraData(
 
   requireClique(header, 'generateCliqueBlockExtraData')
 
+  const msgHash = cliqueSigHash(header)
+
+  // Use custom ecsign if provided, otherwise use secp256k1.sign
   const ecSignFunction = header.common.customCrypto?.ecsign ?? secp256k1.sign
-  const signature = ecSignFunction(cliqueSigHash(header), cliqueSigner)
-  const signatureB = concatBytes(
-    setLengthLeft(bigIntToUnpaddedBytes(signature.r), 32),
-    setLengthLeft(bigIntToUnpaddedBytes(signature.s), 32),
-    bigIntToBytes(BigInt(signature.recovery)),
-  )
+
+  // Use noble/curves secp256k1.sign with recovered format (returns 65-byte Uint8Array)
+  // sigBytes format: [recovery (1 byte) | r (32 bytes) | s (32 bytes)]
+  const sigBytes = ecSignFunction(msgHash, cliqueSigner, { prehash: false, format: 'recovered' })
+
+  // clique format: [r (32 bytes) | s (32 bytes) | recovery (1 byte)]
+  const cliqueSignature = concatBytes(sigBytes.subarray(1), sigBytes.subarray(0, 1))
 
   const extraDataWithoutSeal = header.extraData.subarray(
     0,
     header.extraData.length - CLIQUE_EXTRA_SEAL,
   )
-  const extraData = concatBytes(extraDataWithoutSeal, signatureB)
+  const extraData = concatBytes(extraDataWithoutSeal, cliqueSignature)
   return extraData
 }

@@ -3,7 +3,7 @@ import { Common, ConsensusAlgorithm, Hardfork, Mainnet } from '@ethereumjs/commo
 import { Ethash } from '@ethereumjs/ethash'
 import { RLP } from '@ethereumjs/rlp'
 import { bytesToHex } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 import { assert, describe, expect, it } from 'vitest'
 
 import { EthashConsensus, createBlockchain } from '../src/index.ts'
@@ -308,7 +308,7 @@ describe('[Blockchain]: Block validation tests', () => {
       common: new Common({ chain: Mainnet, hardfork: Hardfork.Berlin }),
     })
 
-    forkBlockHeaderData.uncleHash = bytesToHex(keccak256(RLP.encode([uncleHeader.raw()])))
+    forkBlockHeaderData.uncleHash = bytesToHex(keccak_256(RLP.encode([uncleHeader.raw()])))
 
     const forkBlock_ValidCommon = createBlock(
       {

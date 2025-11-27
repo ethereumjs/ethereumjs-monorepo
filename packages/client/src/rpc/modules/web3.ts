@@ -1,5 +1,5 @@
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 
 import { getClientVersion } from '../../util/index.ts'
 import { callWithStackTrace } from '../helpers.ts'
@@ -45,7 +45,7 @@ export class Web3 {
    * @param params The data to convert into a SHA3 hash
    */
   sha3(params: PrefixedHexString[]): PrefixedHexString {
-    const hexEncodedDigest = bytesToHex(keccak256(hexToBytes(params[0])))
+    const hexEncodedDigest = bytesToHex(keccak_256(hexToBytes(params[0])))
     return hexEncodedDigest
   }
 }

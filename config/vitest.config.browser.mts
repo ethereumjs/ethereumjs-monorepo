@@ -18,6 +18,9 @@ const config = defineConfig({
     },
     maxConcurrency: 1
   },
+  resolve: {
+    conditions: ['typescript'],
+  },
   optimizeDeps: {
     exclude: ['kzg-wasm'],
   },

@@ -17,7 +17,6 @@ import {
 } from '@ethereumjs/common'
 import {
   EthereumJSErrorWithoutCode,
-  bytesToBigInt,
   bytesToHex,
   calculateSigRecovery,
   concatBytes,
@@ -28,18 +27,18 @@ import {
   randomBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
+import { secp256k1 } from '@noble/curves/secp256k1.js'
+import { sha256 } from '@noble/hashes/sha2.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
 import {
-  keccak256 as keccak256WASM,
+  keccak256 as keccak_256WASM,
   secp256k1Expand,
   secp256k1Recover,
   secp256k1Sign,
   waitReady as waitReadyPolkadotSha256,
   sha256 as wasmSha256,
 } from '@polkadot/wasm-crypto'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
-import { sha256 } from 'ethereum-cryptography/sha256.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 import * as promClient from 'prom-client'
 import * as yargs from 'yargs'
@@ -607,7 +606,7 @@ export async function getCryptoFunctions(useJsCrypto: boolean): Promise<CustomCr
   // Initialize WASM crypto if JS crypto is not specified
   if (useJsCrypto === false) {
     await waitReadyPolkadotSha256()
-    cryptoFunctions.keccak256 = keccak256WASM
+    cryptoFunctions.keccak256 = keccak_256WASM
     cryptoFunctions.ecrecover = (
       msgHash: Uint8Array,
       v: bigint,
@@ -624,27 +623,23 @@ export async function getCryptoFunctions(useJsCrypto: boolean): Promise<CustomCr
       ).slice(1)
     cryptoFunctions.sha256 = wasmSha256
     cryptoFunctions.ecsign = (msg: Uint8Array, pk: Uint8Array) => {
-      const buf = secp256k1Sign(msg, pk)
-      const r = bytesToBigInt(buf.slice(0, 32))
-      const s = bytesToBigInt(buf.slice(32, 64))
-      const recovery = buf[64]
-
-      return { r, s, recovery }
+      return secp256k1Sign(msg, pk)
     }
     cryptoFunctions.ecdsaRecover = (sig: Uint8Array, recId: number, hash: Uint8Array) => {
       return secp256k1Recover(hash, sig, recId)
     }
   } else {
-    cryptoFunctions.keccak256 = keccak256
+    cryptoFunctions.keccak256 = keccak_256
     cryptoFunctions.ecrecover = ecrecover
     cryptoFunctions.sha256 = sha256
     cryptoFunctions.ecsign = secp256k1.sign
     cryptoFunctions.ecdsaRecover = (sig: Uint8Array, recId: number, hash: Uint8Array) => {
       // Adapted from @noble/curves docs
-      const sign = secp256k1.Signature.fromCompact(sig)
+      const sign = secp256k1.Signature.fromBytes(sig)
       const point = sign.addRecoveryBit(recId).recoverPublicKey(hash)
-      const address = point.toRawBytes(true)
-      return address
+      // Returns uncompressed public key (65 bytes)
+      const publicKey = point.toBytes(false)
+      return publicKey
     }
   }
   cryptoFunctions.kzg = kzg

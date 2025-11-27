@@ -205,7 +205,7 @@ export function genRequestsRoot(
   }
 
   // def compute_requests_hash(list):
-  //    return keccak256(rlp.encode([rlp.encode(req) for req in list]))
+  //    return keccak_256(rlp.encode([rlp.encode(req) for req in list]))
 
   let flatRequests = new Uint8Array()
   for (const req of requests) {
