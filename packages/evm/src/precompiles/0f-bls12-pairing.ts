@@ -28,7 +28,7 @@ export async function precompile0f(opts: PrecompileInput): Promise<ExecResult> {
     )
   }
 
-  const gasUsedPerPair = opts.common.param('bls12381PairingPerPairGas') ?? BigInt(0)
+  const gasUsedPerPair = opts.common.param('bls12381PairingPerPairGas')
 
   // TODO: For this precompile it is the only exception that the length check is placed before the
   // gas check. I will keep it there to not side-change the existing implementation, but we should
