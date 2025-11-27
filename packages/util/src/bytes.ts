@@ -57,8 +57,9 @@ for (let i = 0; i <= 256 * 256 - 1; i++) {
  * @returns {bigint}
  */
 export const bytesToBigInt = (bytes: Uint8Array, littleEndian = false): bigint => {
+  assertIsBytes(bytes)
   if (littleEndian) {
-    bytes.reverse()
+    bytes = bytes.slice().reverse()
   }
   const hex = bytesToHex(bytes)
   if (hex === '0x') {
@@ -123,48 +124,72 @@ export const bigIntToBytes = (num: bigint, littleEndian = false): Uint8Array => 
 
 /**
  * Pads a `Uint8Array` with zeros till it has `length` bytes.
- * Truncates the beginning or end of input if its length exceeds `length`.
+ * Throws if input length exceeds target length, unless allowTruncate is true.
  * @param {Uint8Array} msg the value to pad
  * @param {number} length the number of bytes the output should be
- * @param {boolean} right whether to start padding form the left or right
+ * @param {boolean} right whether to start padding from the left or right
+ * @param {boolean} allowTruncate whether to allow truncation if msg exceeds length
  * @return {Uint8Array}
  */
-const setLength = (msg: Uint8Array, length: number, right: boolean): Uint8Array => {
-  if (right) {
-    if (msg.length < length) {
-      return new Uint8Array([...msg, ...new Uint8Array(length - msg.length)])
+const setLength = (
+  msg: Uint8Array,
+  length: number,
+  right: boolean,
+  allowTruncate: boolean,
+): Uint8Array => {
+  if (msg.length > length) {
+    if (!allowTruncate) {
+      throw EthereumJSErrorWithoutCode(
+        `Input length ${msg.length} exceeds target length ${length}. Use allowTruncate option to truncate.`,
+      )
     }
-    return msg.subarray(0, length)
-  } else {
-    if (msg.length < length) {
-      return new Uint8Array([...new Uint8Array(length - msg.length), ...msg])
-    }
-    return msg.subarray(-length)
+    return right ? msg.subarray(0, length) : msg.subarray(-length)
   }
+  if (msg.length < length) {
+    return right
+      ? new Uint8Array([...msg, ...new Uint8Array(length - msg.length)])
+      : new Uint8Array([...new Uint8Array(length - msg.length), ...msg])
+  }
+  return msg
+}
+
+export interface SetLengthOpts {
+  /** Allow truncation if msg exceeds length. Default: false */
+  allowTruncate?: boolean
 }
 
 /**
  * Left Pads a `Uint8Array` with leading zeros till it has `length` bytes.
- * Or it truncates the beginning if it exceeds.
+ * Throws if input length exceeds target length, unless allowTruncate option is true.
  * @param {Uint8Array} msg the value to pad
  * @param {number} length the number of bytes the output should be
+ * @param {SetLengthOpts} opts options object with allowTruncate flag
  * @return {Uint8Array}
  */
-export const setLengthLeft = (msg: Uint8Array, length: number): Uint8Array => {
+export const setLengthLeft = (
+  msg: Uint8Array,
+  length: number,
+  opts: SetLengthOpts = {},
+): Uint8Array => {
   assertIsBytes(msg)
-  return setLength(msg, length, false)
+  return setLength(msg, length, false, opts.allowTruncate ?? false)
 }
 
 /**
  * Right Pads a `Uint8Array` with trailing zeros till it has `length` bytes.
- * it truncates the end if it exceeds.
+ * Throws if input length exceeds target length, unless allowTruncate option is true.
  * @param {Uint8Array} msg the value to pad
  * @param {number} length the number of bytes the output should be
+ * @param {SetLengthOpts} opts options object with allowTruncate flag
  * @return {Uint8Array}
  */
-export const setLengthRight = (msg: Uint8Array, length: number): Uint8Array => {
+export const setLengthRight = (
+  msg: Uint8Array,
+  length: number,
+  opts: SetLengthOpts = {},
+): Uint8Array => {
   assertIsBytes(msg)
-  return setLength(msg, length, true)
+  return setLength(msg, length, true, opts.allowTruncate ?? false)
 }
 
 /**
@@ -381,8 +406,8 @@ export const bigIntToAddressBytes = (value: bigint, strict: boolean = true): Uin
     throw Error(`Invalid address bytes length=${addressBytes.length} strict=${strict}`)
   }
 
-  // setLength already slices if more than requisite length
-  return setLengthLeft(addressBytes, 20)
+  // When not strict, allow truncation of values larger than 20 bytes
+  return setLengthLeft(addressBytes, 20, { allowTruncate: !strict })
 }
 
 /**
@@ -448,7 +473,7 @@ export const concatBytes = (...arrays: Uint8Array[]): Uint8Array<ArrayBuffer> =>
  */
 export function bytesToInt32(bytes: Uint8Array, littleEndian: boolean = false): number {
   if (bytes.length < 4) {
-    bytes = setLength(bytes, 4, littleEndian)
+    bytes = setLength(bytes, 4, littleEndian, false)
   }
   const dataView = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
   return dataView.getUint32(0, littleEndian)
@@ -462,7 +487,7 @@ export function bytesToInt32(bytes: Uint8Array, littleEndian: boolean = false): 
  */
 export function bytesToBigInt64(bytes: Uint8Array, littleEndian: boolean = false): bigint {
   if (bytes.length < 8) {
-    bytes = setLength(bytes, 8, littleEndian)
+    bytes = setLength(bytes, 8, littleEndian, false)
   }
   const dataView = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
   return dataView.getBigUint64(0, littleEndian)

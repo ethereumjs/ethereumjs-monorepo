@@ -102,9 +102,15 @@ describe('setLengthLeft', () => {
     const padded = setLengthLeft(bytes, 3)
     assert.strictEqual(bytesToHex(padded), '0x000909')
   })
-  it('should left truncate a Uint8Array', () => {
+  it('should throw by default when input exceeds target length', () => {
     const bytes = new Uint8Array([9, 0, 9])
-    const padded = setLengthLeft(bytes, 2)
+    assert.throws(function () {
+      setLengthLeft(bytes, 2)
+    }, /Input length 3 exceeds target length 2/)
+  })
+  it('should left truncate a Uint8Array when allowTruncate is true', () => {
+    const bytes = new Uint8Array([9, 0, 9])
+    const padded = setLengthLeft(bytes, 2, { allowTruncate: true })
     assert.strictEqual(bytesToHex(padded), '0x0009')
   })
   it('should throw if input is not a Uint8Array', () => {
@@ -121,9 +127,15 @@ describe('setLengthRight', () => {
     const padded = setLengthRight(bytes, 3)
     assert.strictEqual(bytesToHex(padded), '0x090900')
   })
-  it('should right truncate a Uint8Array', () => {
+  it('should throw by default when input exceeds target length', () => {
     const bytes = new Uint8Array([9, 0, 9])
-    const padded = setLengthRight(bytes, 2)
+    assert.throws(function () {
+      setLengthRight(bytes, 2)
+    }, /Input length 3 exceeds target length 2/)
+  })
+  it('should right truncate a Uint8Array when allowTruncate is true', () => {
+    const bytes = new Uint8Array([9, 0, 9])
+    const padded = setLengthRight(bytes, 2, { allowTruncate: true })
     assert.strictEqual(bytesToHex(padded), '0x0900')
   })
   it('should throw if input is not a Uint8Array', () => {
@@ -371,6 +383,26 @@ describe('bytesToBigInt', () => {
   it('should pass on correct input', () => {
     const buf = hexToBytes('0x123')
     assert.strictEqual(BigInt(0x123), bytesToBigInt(buf))
+  })
+  it('should return 0n for empty Uint8Array', () => {
+    assert.strictEqual(bytesToBigInt(new Uint8Array(0)), 0n)
+  })
+  it('should throw if input is not a Uint8Array', () => {
+    assert.throws(function () {
+      // @ts-expect-error -- Testing invalid input
+      bytesToBigInt([1, 2, 3])
+    }, /This method only supports Uint8Array/)
+  })
+  it('should not mutate input when littleEndian is true', () => {
+    const bytes = new Uint8Array([0x01, 0x02, 0x03])
+    const original = new Uint8Array([0x01, 0x02, 0x03])
+    bytesToBigInt(bytes, true)
+    assert.deepEqual(bytes, original)
+  })
+  it('should correctly convert littleEndian bytes', () => {
+    // 0x030201 in big-endian = 0x010203 in little-endian
+    const bytes = new Uint8Array([0x01, 0x02, 0x03])
+    assert.strictEqual(bytesToBigInt(bytes, true), BigInt(0x030201))
   })
 })
 
