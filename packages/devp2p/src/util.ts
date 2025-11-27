@@ -24,7 +24,7 @@ export function pk2id(pk: Uint8Array): Uint8Array {
   if (pk.length === 33) {
     // Convert compressed public key to uncompressed format
     // @ts-ignore - @noble/curves v2 is ESM-only, TypeScript's moduleResolution: "node" doesn't properly resolve types for CJS build
-    const point = secp256k1.Point.fromBytes(pk)
+    const point = secp256k1.ProjectivePoint.fromBytes(pk)
     pk = point.toBytes(false)
   }
   return pk.subarray(1)

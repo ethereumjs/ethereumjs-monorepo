@@ -91,11 +91,22 @@ export class ECIES {
     this._ephemeralPublicKey = secp256k1.getPublicKey(this._ephemeralPrivateKey, false)
 
     this._keccakFunction = common?.customCrypto.keccak256 ?? keccak_256
-    this._ecdsaSign = common?.customCrypto.ecsign ?? secp256k1.sign
+    this._ecdsaSign =
+      common?.customCrypto.ecsign ??
+      ((msg: Uint8Array, pk: Uint8Array) => {
+        // noble/curves returns: recovery[1] + r[32] + s[32]
+        // ECIES expects: r[32] + s[32] + recovery[1]
+        const sigBytes = secp256k1.sign(msg, pk, { format: 'recovered', prehash: false })
+        const recovery = sigBytes[0]
+        const r = sigBytes.subarray(1, 33)
+        const s = sigBytes.subarray(33, 65)
+        return concatBytes(r, s, new Uint8Array([recovery]))
+      })
 
     this._ecdsaRecover =
       common?.customCrypto.ecdsaRecover ??
       ((sig: Uint8Array, recId: number, hash: Uint8Array) => {
+        // sig is: r[32] + s[32] (64 bytes compact), recId is separate
         const signature = secp256k1.Signature.fromBytes(sig)
         const point = signature.addRecoveryBit(recId).recoverPublicKey(hash)
         return point.toBytes(false)

@@ -186,7 +186,18 @@ export function encode<T>(typename: string, data: T, privateKey: Uint8Array, com
   const typedata = concatBytes(Uint8Array.from([type]), RLP.encode(encodedMsg))
 
   const sighash = (common?.customCrypto.keccak256 ?? keccak_256)(typedata)
-  const sig = (common?.customCrypto.ecsign ?? secp256k1.sign)(sighash, privateKey)
+  // Generate signature with recovery byte
+  // noble/curves returns: recovery[1] + r[32] + s[32]
+  // DPT format expects: r[32] + s[32] + recovery[1]
+  const sig =
+    common?.customCrypto.ecsign?.(sighash, privateKey) ??
+    (() => {
+      const sigBytes = secp256k1.sign(sighash, privateKey, { format: 'recovered', prehash: false })
+      const recovery = sigBytes[0]
+      const r = sigBytes.subarray(1, 33)
+      const s = sigBytes.subarray(33, 65)
+      return concatBytes(r, s, new Uint8Array([recovery]))
+    })()
   const hashdata = concatBytes(sig, typedata)
   const hash = (common?.customCrypto.keccak256 ?? keccak_256)(hashdata)
   return concatBytes(hash, hashdata)
