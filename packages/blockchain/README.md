@@ -144,9 +144,8 @@ For many custom chains we might come across a genesis configuration, which can b
 
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { createCommonFromGethGenesis, parseGethGenesisState } from '@ethereumjs/common'
-import { bytesToHex} from '@ethereumjs/util'
-
-import { postMergeGethGenesis } from './genesisData/post-merge.ts'
+import { postMergeGethGenesis } from '@ethereumjs/testdata'
+import { bytesToHex } from '@ethereumjs/util'
 
 const main = async () => {
   // Load geth genesis file

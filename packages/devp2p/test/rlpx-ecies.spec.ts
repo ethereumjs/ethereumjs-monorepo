@@ -1,6 +1,6 @@
 import { unprefixedHexToBytes, utf8ToBytes } from '@ethereumjs/util'
-import { getRandomBytesSync } from 'ethereum-cryptography/random.js'
-import { publicKeyCreate } from 'ethereum-cryptography/secp256k1-compat.js'
+import { secp256k1 } from '@noble/curves/secp256k1.js'
+import { randomBytes } from '@noble/hashes/utils.js'
 import { assert, it } from 'vitest'
 
 import { ECIES } from '../src/rlpx/ecies.ts'
@@ -21,8 +21,8 @@ function randomBefore(fn: Function) {
   return (t: EciesTestContext) => {
     const privateKey1 = util.genPrivateKey()
     const privateKey2 = util.genPrivateKey()
-    const publicKey1 = publicKeyCreate(privateKey1, false)
-    const publicKey2 = publicKeyCreate(privateKey2, false)
+    const publicKey1 = secp256k1.getPublicKey(privateKey1, false)
+    const publicKey2 = secp256k1.getPublicKey(privateKey2, false)
     t.context = {
       a: new ECIES(privateKey1, util.pk2id(publicKey1), util.pk2id(publicKey2)),
       b: new ECIES(privateKey2, util.pk2id(publicKey2), util.pk2id(publicKey1)),
@@ -82,7 +82,7 @@ it(
       t.context.a.parseAckPlain(ack as Uint8Array)
     }, 'should not throw on ack creation/parsing')
 
-    const body = getRandomBytesSync(600)
+    const body = randomBytes(600)
 
     const header = t.context.b.parseHeader(t.context.a.createBlockHeader(body.length) as Uint8Array)
     assert.strictEqual(header, body.length, 'createBlockHeader -> parseHeader should lead to same')

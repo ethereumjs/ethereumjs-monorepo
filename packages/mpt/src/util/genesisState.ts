@@ -6,7 +6,7 @@ import {
   unpadBytes,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 
 import { MerklePatriciaTrie } from '../mpt.ts'
 
@@ -29,7 +29,7 @@ export async function genesisMPTStateRoot(genesisState: GenesisState) {
       }
       if (code !== undefined) {
         const codeBytes = isHexString(code) ? hexToBytes(code) : unprefixedHexToBytes(code)
-        account.codeHash = keccak256(codeBytes)
+        account.codeHash = keccak_256(codeBytes)
       }
       if (storage !== undefined) {
         const storageTrie = new MerklePatriciaTrie({ useKeyHashing: true })

@@ -40,7 +40,7 @@ You can react on events from the network like this:
 ```ts
 // ./examples/peer-communication.ts#L65-L65
 
-dpt.events.on('error', (err) => console.error(chalk.red(`DPT error: ${err}`)))
+
 ```
 
 ## Examples
@@ -103,11 +103,11 @@ Add some bootstrap nodes (or some custom nodes with `dpt.addPeer()`):
 ```ts
 // ./examples/peer-communication.ts#L321-L325
 
-
-for (const bootnode of BOOTNODES) {
-  dpt.bootstrap(bootnode).catch((err) => {
     console.error(chalk.bold.red(`DPT bootstrap error: ${err.stack ?? err}`))
   })
+}
+
+// connect to local ethereum node (debug)
 ```
 
 ### API
@@ -259,9 +259,6 @@ to arrive to start the communication.
 ```ts
 // ./examples/peer-communication.ts#L96-L106
 
-eth.sendStatus({
-  td: intToBytes(17179869184), // total difficulty in genesis block
-  bestHash: hexToBytes('0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'),
   genesisHash: hexToBytes('0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'),
 })
 
@@ -270,6 +267,9 @@ let forkDrop: NodeJS.Timeout
 let forkVerified = false
 eth.events.once('status', () => {
   eth.sendMessage(devp2p.EthMessageCodes.GET_BLOCK_HEADERS, [
+    Uint8Array.from([1]),
+    [intToBytes(CHECK_BLOCK_NR), Uint8Array.from([1]), Uint8Array.from([]), Uint8Array.from([])],
+  ])
 ```
 
 Wait for follow-up messages to arrive, send your responses.
@@ -277,10 +277,10 @@ Wait for follow-up messages to arrive, send your responses.
 ```ts
 // ./examples/peer-communication.ts#L116-L119
 
-eth.events.on('message', async (code: any, payload: any) => {
-  // We keep track of how many of each message type are received
-  if (code in requests.msgTypes) {
-    requests.msgTypes[code]++
+  requests.msgTypes[code]++
+} else {
+  requests.msgTypes[code] = 1
+}
 ```
 
 See the `peer-communication.ts` example for a more detailed use case.

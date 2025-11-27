@@ -7,7 +7,7 @@ import {
   utf8ToBytes,
 } from '@ethereumjs/util'
 import { p256 } from '@noble/curves/nist.js'
-import { sha256 } from 'ethereum-cryptography/sha256.js'
+import { sha256 } from '@noble/hashes/sha2.js'
 import { runPrecompile } from './util.ts'
 
 const main = async () => {

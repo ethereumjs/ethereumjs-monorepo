@@ -123,11 +123,12 @@ const main = async () => {
   const block = createBlock({}, { common })
 
   // Method invocations within EthereumJS library instantiations where the common
-  // instance above is passed will now use the custom keccak256 implementation
+  // instance above is passed will now use the custom keccak_256 implementation
   console.log(block.hash())
 }
 
 void main()
+
 ```
 
 ### Example 2: KZG
@@ -247,13 +248,13 @@ Beyond that, it is possible to customize to a fully custom chain by passing in a
 ```ts
 // ./examples/customChain.ts
 
-import { Common, Mainnet, createCustomCommon } from '@ethereumjs/common'
-
-import myCustomChain1 from './genesisData/testnet.json'
+import { Mainnet, createCustomCommon } from '@ethereumjs/common'
+import { customChainConfig } from '@ethereumjs/testdata'
 
 // Add custom chain config
-const common1 = createCustomCommon(myCustomChain1, Mainnet)
+const common1 = createCustomCommon(customChainConfig, Mainnet)
 console.log(`Common is instantiated with custom chain parameters - ${common1.chainName()}`)
+
 ```
 
 #### Initialize using Geth's genesis json
@@ -266,18 +267,21 @@ common from such configuration in the following manner:
 // ./examples/fromGeth.ts
 
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
+import { postMergeGethGenesis } from '@ethereumjs/testdata'
 import { hexToBytes } from '@ethereumjs/util'
 
-import genesisJSON from './genesisData/post-merge.json'
-
 const genesisHash = hexToBytes('0x3b8fb240d288781d4aac94d3fd16809ee413bc99294a085798a589dae51ddd4a')
-// Load geth genesis JSON file into let's say `genesisJSON` and optional `chain` and `genesisHash`
-const common = createCommonFromGethGenesis(genesisJSON, { chain: 'customChain', genesisHash })
-// If you don't have `genesisHash` while initiating common, you can later configure common (e.g.,
+// Load geth genesis JSON file into lets say `genesisJSON` and optional `chain` and `genesisHash`
+const common = createCommonFromGethGenesis(postMergeGethGenesis, {
+  chain: 'customChain',
+  genesisHash,
+})
+// If you don't have `genesisHash` while initiating common, you can later configure common (for e.g.
 // after calculating it via `blockchain`)
 common.setForkHashes(genesisHash)
 
 console.log(`The London forkhash for this custom chain is ${common.forkHash('london')}`)
+
 ```
 
 ## Hardfork Support and Usage
@@ -290,7 +294,7 @@ The `hardfork` can be set in constructor like this:
 import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 
 // With enums:
-const commonWithEnums = new Common({ chain: Mainnet, hardfork: Hardfork.London })
+const commonWithEnums = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun })
 ```
 
 ### Active Hardforks

@@ -5,7 +5,7 @@ import {
   concatBytes,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 
 import { MerklePatriciaTrie, ROOT_DB_KEY, updateMPTFromMerkleProof } from './index.ts'
 
@@ -13,7 +13,7 @@ import type { MPTOpts, Proof } from './index.ts'
 
 export async function createMPT(opts?: MPTOpts) {
   const keccakFunction =
-    opts?.common?.customCrypto.keccak256 ?? opts?.useKeyHashingFunction ?? keccak256
+    opts?.common?.customCrypto.keccak256 ?? opts?.useKeyHashingFunction ?? keccak_256
   let key = ROOT_DB_KEY
 
   const encoding =
