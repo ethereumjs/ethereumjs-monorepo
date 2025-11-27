@@ -9,8 +9,8 @@ import {
 } from '@ethereumjs/util'
 import { secp256k1 } from '@noble/curves/secp256k1.js'
 import { keccak_256 } from '@noble/hashes/sha3.js'
+import { randomBytes } from '@noble/hashes/utils.js'
 import debugDefault from 'debug'
-import { getRandomBytesSync } from 'ethereum-cryptography/random.js'
 
 import { assertEq, genPrivateKey, id2pk, pk2id, unstrictDecode, xor, zfill } from '../util.ts'
 
@@ -86,7 +86,7 @@ export class ECIES {
     this._publicKey = id2pk(id)
     this._remotePublicKey = remoteId !== null ? id2pk(remoteId) : null
 
-    this._nonce = getRandomBytesSync(32)
+    this._nonce = randomBytes(32)
     this._ephemeralPrivateKey = genPrivateKey()
     this._ephemeralPublicKey = secp256k1.getPublicKey(this._ephemeralPrivateKey, false)
 
@@ -125,7 +125,7 @@ export class ECIES {
     const mKey = crypto.createHash('sha256').update(key.subarray(16, 32)).digest() // MAC key
 
     // encrypt
-    const IV = getRandomBytesSync(16)
+    const IV = randomBytes(16)
     const cipher = crypto.createCipheriv('aes-128-ctr', ekey, IV)
     const encryptedData = Uint8Array.from(cipher.update(data))
     const dataIV = concatBytes(IV, encryptedData)
@@ -214,7 +214,7 @@ export class ECIES {
     ]
 
     const dataRLP = RLP.encode(data)
-    const pad = getRandomBytesSync(100 + Math.floor(Math.random() * 151)) // Random padding between 100, 250
+    const pad = randomBytes(100 + Math.floor(Math.random() * 151)) // Random padding between 100, 250
     const authMsg = concatBytes(dataRLP, pad)
     const overheadLength = 113
     const sharedMacData = intToBytes(authMsg.length + overheadLength)
@@ -310,7 +310,7 @@ export class ECIES {
     const data = [pk2id(this._ephemeralPublicKey), this._nonce, Uint8Array.from([0x04])]
 
     const dataRLP = RLP.encode(data)
-    const pad = getRandomBytesSync(100 + Math.floor(Math.random() * 151)) // Random padding between 100, 250
+    const pad = randomBytes(100 + Math.floor(Math.random() * 151)) // Random padding between 100, 250
     const ackMsg = concatBytes(dataRLP, pad)
     const overheadLength = 113
     const sharedMacData = intToBytes(ackMsg.length + overheadLength)

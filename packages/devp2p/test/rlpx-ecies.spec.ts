@@ -1,6 +1,6 @@
 import { unprefixedHexToBytes, utf8ToBytes } from '@ethereumjs/util'
 import { secp256k1 } from '@noble/curves/secp256k1.js'
-import { getRandomBytesSync } from 'ethereum-cryptography/random.js'
+import { randomBytes } from '@noble/hashes/utils.js'
 import { assert, it } from 'vitest'
 
 import { ECIES } from '../src/rlpx/ecies.ts'
@@ -82,7 +82,7 @@ it(
       t.context.a.parseAckPlain(ack as Uint8Array)
     }, 'should not throw on ack creation/parsing')
 
-    const body = getRandomBytesSync(600)
+    const body = randomBytes(600)
 
     const header = t.context.b.parseHeader(t.context.a.createBlockHeader(body.length) as Uint8Array)
     assert.strictEqual(header, body.length, 'createBlockHeader -> parseHeader should lead to same')
