@@ -42,15 +42,6 @@ export async function precompile0c(opts: PrecompileInput): Promise<ExecResult> {
     return OOGResult(opts.gasLimit)
   }
 
-  if (inputData.length % 160 !== 0) {
-    if (opts._debug !== undefined) {
-      opts._debug(`${pName} failed: Invalid input length length=${inputData.length}`)
-    }
-    return EVMErrorResult(
-      new EVMError(EVMError.errorMessages.BLS_12_381_INVALID_INPUT_LENGTH),
-      opts.gasLimit,
-    )
-  }
   if (!moduloLengthCheck(opts, 160, pName)) {
     return EVMErrorResult(
       new EVMError(EVMError.errorMessages.BLS_12_381_INVALID_INPUT_LENGTH),
