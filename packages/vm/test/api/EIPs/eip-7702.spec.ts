@@ -60,15 +60,20 @@ function getAuthorizationListItem(opts: GetAuthListOpts): EOACode7702Authorizati
 
   const rlpdMsg = RLP.encode([chainIdBytes, addressBytes, nonceBytes])
   const msgToSign = keccak_256(concatBytes(new Uint8Array([5]), rlpdMsg))
-  const signed = secp256k1.sign(msgToSign, pkey)
+  const signatureBytes = secp256k1.sign(msgToSign, pkey, { format: 'recovered', prehash: false })
 
+  const { recovery, r, s } = secp256k1.Signature.fromBytes(signatureBytes, 'recovered')
+
+  if (recovery === undefined) {
+    throw new Error('Recovery is undefined')
+  }
   return [
     chainIdBytes,
     addressBytes,
     nonceBytes,
-    bigIntToUnpaddedBytes(BigInt(signed.recovery)),
-    bigIntToUnpaddedBytes(signed.r),
-    bigIntToUnpaddedBytes(signed.s),
+    bigIntToUnpaddedBytes(BigInt(recovery)),
+    bigIntToUnpaddedBytes(r),
+    bigIntToUnpaddedBytes(s),
   ]
 }
 
