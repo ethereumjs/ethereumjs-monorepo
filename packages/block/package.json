@@ -56,8 +56,7 @@
     "@ethereumjs/tx": "^10.1.0",
     "@ethereumjs/util": "^10.1.0",
     "@noble/curves": "^2.0.1",
-    "@noble/hashes": "^2.0.1",
-    "ethereum-cryptography": "^3.2.0"
+    "@noble/hashes": "^2.0.1"
   },
   "devDependencies": {
     "@ethereumjs/testdata": "1.0.0",

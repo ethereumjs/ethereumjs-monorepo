@@ -8,8 +8,8 @@ import {
   hexToBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
+import { blake2b } from '@noble/hashes/blake2.js'
 import { keccak_256 } from '@noble/hashes/sha3.js'
-import { blake2b } from 'ethereum-cryptography/blake2b.js'
 import { assert, describe, it } from 'vitest'
 
 import { LeafMPTNode, MerklePatriciaTrie } from '../src/index.ts'
@@ -357,7 +357,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
     describe('blake2b256 trie root', () => {
       it('should work', async () => {
         const trie = new MerklePatriciaTrie({
-          useKeyHashingFunction: (msg) => blake2b(msg, 32),
+          useKeyHashingFunction: (msg) => blake2b(msg, { dkLen: 32 }),
           cacheSize,
         })
         await trie.put(utf8ToBytes('foo'), utf8ToBytes('bar'))

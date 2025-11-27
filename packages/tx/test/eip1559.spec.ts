@@ -155,9 +155,11 @@ describe('[FeeMarket1559Tx]', () => {
     const tx = createFeeMarket1559Tx({})
 
     const msgHash = tx.getHashedMessageToSign()
+    // Use same options as Legacy.sign internally uses
     const signatureBytes = secp256k1.sign(msgHash, privKey, {
       extraEntropy: false,
       format: 'recovered',
+      prehash: false,
     })
     const { recovery, r, s } = secp256k1.Signature.fromBytes(signatureBytes, 'recovered')
 
@@ -165,8 +167,9 @@ describe('[FeeMarket1559Tx]', () => {
       throw new Error('Invalid signature recovery')
     }
 
-    const signedTx = tx.sign(privKey)
     const addSignatureTx = tx.addSignature(BigInt(recovery), r, s)
+    // Sign separately to get a signed tx to compare with
+    const signedTx = tx.sign(privKey)
 
     assert.deepEqual(signedTx.toJSON(), addSignatureTx.toJSON())
   })
@@ -176,7 +179,11 @@ describe('[FeeMarket1559Tx]', () => {
     const tx = createFeeMarket1559Tx({})
 
     const msgHash = tx.getHashedMessageToSign()
-    const signatureBytes = secp256k1.sign(msgHash, privKey)
+    // Must use format: 'recovered' to get 65-byte signature with recovery byte
+    const signatureBytes = secp256k1.sign(msgHash, privKey, {
+      format: 'recovered',
+      prehash: false,
+    })
     const { recovery, r, s } = secp256k1.Signature.fromBytes(signatureBytes, 'recovered')
 
     if (recovery === undefined) {
