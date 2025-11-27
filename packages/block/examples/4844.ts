@@ -1,8 +1,8 @@
-import { randomBytes } from 'crypto'
 import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createBlob4844Tx } from '@ethereumjs/tx'
 import { createAddressFromPrivateKey } from '@ethereumjs/util'
+import { randomBytes } from '@noble/hashes/utils.js'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 

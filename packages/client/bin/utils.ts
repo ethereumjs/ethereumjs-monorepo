@@ -637,8 +637,9 @@ export async function getCryptoFunctions(useJsCrypto: boolean): Promise<CustomCr
       // Adapted from @noble/curves docs
       const sign = secp256k1.Signature.fromBytes(sig)
       const point = sign.addRecoveryBit(recId).recoverPublicKey(hash)
-      const address = point.toBytes(false)
-      return address
+      // Returns uncompressed public key (65 bytes)
+      const publicKey = point.toBytes(false)
+      return publicKey
     }
   }
   cryptoFunctions.kzg = kzg
