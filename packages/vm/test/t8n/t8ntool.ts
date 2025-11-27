@@ -5,8 +5,8 @@ import { EVMMockBlockchain, NobleBLS } from '@ethereumjs/evm'
 import { RLP } from '@ethereumjs/rlp'
 import { createTx } from '@ethereumjs/tx'
 import { bigIntToHex, bytesToHex, hexToBytes, toBytes } from '@ethereumjs/util'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 
 import { buildBlock, createVM } from '../../src/index.ts'
@@ -332,7 +332,7 @@ export class TransitionTool {
       stateRoot: bytesToHex(block.header.stateRoot),
       txRoot: bytesToHex(block.header.transactionsTrie),
       receiptsRoot: bytesToHex(block.header.receiptTrie),
-      logsHash: bytesToHex(keccak256(RLP.encode(this.logs))),
+      logsHash: bytesToHex(keccak_256(RLP.encode(this.logs))),
       logsBloom: bytesToHex(block.header.logsBloom),
       receipts: this.receipts,
       gasUsed: bigIntToHex(block.header.gasUsed),

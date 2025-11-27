@@ -10,8 +10,8 @@ import {
   bytesToHex,
   equalsBytes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { sha256 } from 'ethereum-cryptography/sha256.js'
+import { sha256 } from '@noble/hashes/sha2.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 
 import type { Common } from '@ethereumjs/common'
 import type { FeeMarket1559Tx, LegacyTx, TypedTransaction } from '@ethereumjs/tx'
@@ -82,7 +82,7 @@ export class Block {
   ) {
     this.header = header ?? new BlockHeader({}, opts)
     this.common = this.header.common
-    this.keccakFunction = this.common.customCrypto.keccak256 ?? keccak256
+    this.keccakFunction = this.common.customCrypto.keccak256 ?? keccak_256
     this.sha256Function = this.common.customCrypto.sha256 ?? sha256
 
     this.transactions = transactions

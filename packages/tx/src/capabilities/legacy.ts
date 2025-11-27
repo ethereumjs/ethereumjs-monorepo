@@ -10,11 +10,11 @@ import {
   publicToAddress,
   unpadBytes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { secp256k1 } from '@noble/curves/secp256k1.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 
 import { Capability, TransactionType } from '../types.ts'
 
-import { secp256k1 } from 'ethereum-cryptography/secp256k1'
 import type { LegacyTx } from '../legacy/tx.ts'
 import type { LegacyTxInterface, Transaction } from '../types.ts'
 
@@ -107,7 +107,7 @@ export function toCreationAddress(tx: LegacyTxInterface): boolean {
 }
 
 /**
- * Computes the keccak256 hash of a signed legacy transaction.
+ * Computes the keccak_256 hash of a signed legacy transaction.
  * @param tx - Transaction to hash
  * @returns Hash of the serialized transaction
  * @throws EthereumJSErrorWithoutCode if the transaction is unsigned
@@ -118,7 +118,7 @@ export function hash(tx: LegacyTxInterface): Uint8Array {
     throw EthereumJSErrorWithoutCode(msg)
   }
 
-  const keccakFunction = tx.common.customCrypto.keccak256 ?? keccak256
+  const keccakFunction = tx.common.customCrypto.keccak256 ?? keccak_256
 
   if (Object.isFrozen(tx)) {
     tx.cache.hash ??= keccakFunction(tx.serialize())
@@ -296,7 +296,17 @@ export function sign(
 
   const msgHash = tx.getHashedMessageToSign()
   const ecSignFunction = tx.common.customCrypto?.ecsign ?? secp256k1.sign
-  const { recovery, r, s } = ecSignFunction(msgHash, privateKey, { extraEntropy })
+
+  const signatureBytes = ecSignFunction(msgHash, privateKey, {
+    extraEntropy,
+    format: 'recovered',
+    prehash: false,
+  })
+  const { recovery, r, s } = secp256k1.Signature.fromBytes(signatureBytes, 'recovered')
+
+  if (recovery === undefined) {
+    throw EthereumJSErrorWithoutCode('Invalid signature recovery')
+  }
   const signedTx = tx.addSignature(BigInt(recovery), r, s, true)
 
   // Hack part 2

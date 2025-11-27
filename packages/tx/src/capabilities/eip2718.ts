@@ -1,6 +1,6 @@
 import { RLP } from '@ethereumjs/rlp'
 import { BIGINT_0, BIGINT_1, EthereumJSErrorWithoutCode, concatBytes } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 
 import { txTypeBytes } from '../util/internal.ts'
 
@@ -15,7 +15,7 @@ import type { EIP2718CompatibleTx } from '../types.ts'
  * @returns Hashed message to sign
  */
 export function getHashedMessageToSign(tx: EIP2718CompatibleTx): Uint8Array {
-  const keccakFunction = tx.common.customCrypto.keccak256 ?? keccak256
+  const keccakFunction = tx.common.customCrypto.keccak256 ?? keccak_256
   return keccakFunction(tx.getMessageToSign())
 }
 

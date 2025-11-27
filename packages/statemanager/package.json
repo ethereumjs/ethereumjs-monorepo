@@ -55,7 +55,6 @@
     "@js-sdsl/ordered-map": "^4.4.2",
     "@noble/hashes": "^2.0.1",
     "debug": "^4.4.0",
-    "ethereum-cryptography": "^3.2.0",
     "lru-cache": "11.0.2"
   },
   "devDependencies": {

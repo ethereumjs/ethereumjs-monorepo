@@ -30,7 +30,7 @@ import { eip4844GethGenesis } from '@ethereumjs/testdata'
 import { serialized4844TxData } from './testData/serialized4844tx.ts'
 
 import type { KZG, PrefixedHexString } from '@ethereumjs/util'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1'
+import { secp256k1 } from '@noble/curves/secp256k1.js'
 import type { BlobEIP4844TxData } from '../src/index.ts'
 
 const pk = randomBytes(32)
@@ -92,7 +92,16 @@ describe('EIP4844 addSignature tests', () => {
       )
 
       const msgHash = tx.getHashedMessageToSign()
-      const { recovery, r, s } = secp256k1.sign(msgHash, privKey)
+      // Use same options as Legacy.sign internally uses
+      const signatureBytes = secp256k1.sign(msgHash, privKey, {
+        format: 'recovered',
+        prehash: false,
+      })
+      const { recovery, r, s } = secp256k1.Signature.fromBytes(signatureBytes, 'recovered')
+
+      if (recovery === undefined) {
+        throw new Error('Invalid signature recovery')
+      }
 
       const signedTx = tx.sign(privKey)
       const addSignatureTx = tx.addSignature(BigInt(recovery), r, s)
@@ -113,7 +122,16 @@ describe('EIP4844 addSignature tests', () => {
       )
 
       const msgHash = tx.getHashedMessageToSign()
-      const { recovery, r, s } = secp256k1.sign(msgHash, privKey)
+      // Use same options as Legacy.sign internally uses
+      const signatureBytes = secp256k1.sign(msgHash, privKey, {
+        format: 'recovered',
+        prehash: false,
+      })
+      const { recovery, r, s } = secp256k1.Signature.fromBytes(signatureBytes, 'recovered')
+
+      if (recovery === undefined) {
+        throw new Error('Invalid signature recovery')
+      }
 
       assert.throws(() => {
         // This will throw, since we now try to set either v=27 or v=28

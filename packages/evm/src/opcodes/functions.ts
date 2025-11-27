@@ -26,7 +26,7 @@ import {
   setLengthLeft,
   setLengthRight,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 
 import { EOFContainer, EOFContainerMode } from '../eof/container.ts'
 import { EOFErrorMessage } from '../eof/errors.ts'
@@ -421,7 +421,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       if (length !== BIGINT_0) {
         data = runState.memory.read(Number(offset), Number(length))
       }
-      const r = BigInt(bytesToHex((common.customCrypto.keccak256 ?? keccak256)(data)))
+      const r = BigInt(bytesToHex((common.customCrypto.keccak256 ?? keccak_256)(data)))
       runState.stack.push(r)
     },
   ],
