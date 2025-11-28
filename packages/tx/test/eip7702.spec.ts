@@ -118,5 +118,15 @@ describe('[EOACode7702Transaction]', () => {
     assert.doesNotThrow(() => {
       createEOACode7702Tx(getTxData(), { common })
     })
+
+    // 0x00 (single zero byte) should be allowed for chainId and yParity
+    // See: https://github.com/ethereumjs/ethereumjs-monorepo/issues/4057
+    assert.doesNotThrow(() => {
+      createEOACode7702Tx(getTxData({ chainId: '0x00' }), { common })
+    }, 'chainId 0x00 should be allowed')
+
+    assert.doesNotThrow(() => {
+      createEOACode7702Tx(getTxData({ yParity: '0x00' }), { common })
+    }, 'yParity 0x00 should be allowed')
   })
 })

@@ -369,6 +369,34 @@ export const validateNoLeadingZeroes = (values: { [key: string]: Uint8Array | un
 }
 
 /**
+ * Checks provided Uint8Array for leading zeroes and throws if found.
+ * This variant allows a single zero byte (0x00) which represents the value 0.
+ *
+ * Examples:
+ *
+ * Valid values: 0x1, 0x, 0x00, 0x01, 0x1234
+ * Invalid values: 0x001, 0x0001
+ *
+ * Note: This method is useful for validating integers that should have no leading zero bytes,
+ * but where a single 0x00 byte is acceptable to represent the value zero (e.g., in EIP-7702
+ * authorization lists where chainId=0 and yParity=0 are valid values).
+ * @param values An object containing string keys and Uint8Array values
+ * @throws if any provided value is found to have leading zero bytes (except single 0x00)
+ */
+export const validateNoLeadingZeroesAllowZero = (values: {
+  [key: string]: Uint8Array | undefined
+}) => {
+  for (const [k, v] of Object.entries(values)) {
+    // Allow empty array [] and single zero byte [0], but reject [0, ...] with length > 1
+    if (v !== undefined && v.length > 1 && v[0] === 0) {
+      throw EthereumJSErrorWithoutCode(
+        `${k} cannot have leading zeroes, received: ${bytesToHex(v)}`,
+      )
+    }
+  }
+}
+
+/**
  * Converts a {@link bigint} to a `0x` prefixed hex string
  * @param {bigint} num the bigint to convert
  * @returns {PrefixedHexString}
