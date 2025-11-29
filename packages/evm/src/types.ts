@@ -103,6 +103,10 @@ export interface EVMRunCodeOpts extends EVMRunOpts {
    * The initial program counter. Defaults to `0`
    */
   pc?: number
+  /**
+   * Created addresses in current context. Used in EIP 6780
+   */
+  createdAddresses?: Set<PrefixedHexString>
 }
 
 /**
