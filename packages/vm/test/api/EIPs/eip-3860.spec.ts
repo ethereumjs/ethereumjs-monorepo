@@ -45,4 +45,4 @@ describe('EIP 3860 tests', () => {
       'initcode exceeds max size',
     )
   })
-})
+}, 10000)

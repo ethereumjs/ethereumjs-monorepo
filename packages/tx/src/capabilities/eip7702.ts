@@ -6,6 +6,7 @@ import {
   MAX_UINT64,
   bytesToBigInt,
   validateNoLeadingZeroes,
+  validateNoLeadingZeroesAllowZero,
 } from '@ethereumjs/util'
 import type { EIP7702CompatibleTx } from '../types.ts'
 
@@ -49,7 +50,10 @@ export function verifyAuthorizationList(tx: EIP7702CompatibleTx) {
 
     const [chainId, address, nonce, yParity, r, s] = item
 
-    validateNoLeadingZeroes({ yParity, r, s, nonce, chainId })
+    // For chainId and yParity, we allow 0x00 (single zero byte) as valid encoding for zero
+    // See: https://github.com/ethereumjs/ethereumjs-monorepo/issues/4057
+    validateNoLeadingZeroesAllowZero({ chainId, yParity })
+    validateNoLeadingZeroes({ r, s, nonce })
 
     if (address.length !== 20) {
       throw EthereumJSErrorWithoutCode(
