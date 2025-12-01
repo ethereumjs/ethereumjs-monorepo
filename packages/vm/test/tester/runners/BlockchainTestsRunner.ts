@@ -255,11 +255,6 @@ export async function runBlockchainTest(options: any, testData: any, t: typeof a
     '0x' + testData.lastblockhash,
     'correct last header block',
   )
-
-  const end = Date.now()
-  const timeSpent = `${(end - begin) / 1000} secs`
-  logComment(t, `Time: ${timeSpent}`)
-
   options.testCount = (options.testCount ?? 0) + 1
 
   // Explicitly delete objects for memory optimization (early GC)
