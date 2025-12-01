@@ -168,13 +168,13 @@ jobs:
       matrix:
         testFile:
           [
-            '^Call50000_sha256$',
-            '^CALLBlake2f_MaxRounds$',
-            '^Return50000$',
-            '^Return50000_2$',
-            '^static_Call50000_sha256$',
-            '^loopMul$',
-            '^loopExp$',
+            '^Call50000_sha256',
+            '^CALLBlake2f_MaxRounds',
+            '^Return50000',
+            '^Return50000_2',
+            '^static_Call50000_sha256',
+            '^loopMul',
+            '^loopExp',
           ]
       fail-fast: false
     steps:
