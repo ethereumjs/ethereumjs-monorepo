@@ -233,6 +233,11 @@ const expectedTests: number | undefined =
       ? argv.expectedTestAmount
       : undefined
 describe('GeneralStateTests', () => {
+  if (allTests.length === 0) {
+    it.skip(`no GeneralStateTests found for fork ${FORK_CONFIG_TEST_SUITE}, skipping suite`, () => {})
+    return
+  }
+
   for (const { subDir, testName, testData } of allTests) {
     it(`file: ${subDir} test: ${testName}`, async () => {
       try {
