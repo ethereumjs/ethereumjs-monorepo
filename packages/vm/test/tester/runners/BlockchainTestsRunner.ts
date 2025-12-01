@@ -101,8 +101,6 @@ export async function runBlockchainTest(options: any, testData: any, t: typeof a
     ;(blockchain.consensus as EthashConsensus)._ethash!.cacheDB = cacheDB
   }
 
-  const begin = Date.now()
-
   const evmOpts = {
     bls: options.bls,
     bn254: options.bn254,
