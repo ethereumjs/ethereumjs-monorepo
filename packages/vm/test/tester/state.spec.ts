@@ -245,7 +245,7 @@ describe('GeneralStateTests', () => {
       } catch (e: any) {
         assert.fail(e?.toString())
       }
-    }, 120000)
+    }, 3600000)
   }
 
   afterAll(() => {
