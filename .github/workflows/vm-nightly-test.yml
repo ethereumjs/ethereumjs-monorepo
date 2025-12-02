@@ -23,7 +23,8 @@ jobs:
           node-version: 24
           cache: 'npm'
       
-      - run: npm ci
+      - name: Install Dependencies
+        run: npm ci
         working-directory: ${{github.workspace}}
 
       - run: npm run test:API
@@ -32,54 +33,149 @@ jobs:
   test-vm-state:
     if: github.repository == 'ethereumjs/ethereumjs-monorepo'
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        fork:
+          [
+            'Prague',
+            'Chainstart',
+            'Homestead',
+            'dao',
+            'TangerineWhistle',
+            'SpuriousDragon',
+            'Byzantium',
+            'Constantinople',
+            'Petersburg',
+            'Istanbul',
+            'MuirGlacier',
+            'Berlin',
+            'London',
+            'Paris',
+            'Shanghai',
+            'Cancun',
+            'ByzantiumToConstantinopleFixAt5',
+            'EIP158ToByzantiumAt5',
+            'FrontierToHomesteadAt5',
+            'HomesteadToDaoAt5',
+            'HomesteadToEIP150At5',
+            'BerlinToLondonAt5',
+          ]
+      fail-fast: false
     steps:
       - uses: actions/checkout@v5
-        with:
-          submodules: recursive
 
       - uses: actions/setup-node@v6
         with:
           node-version: 24
           cache: 'npm'
 
-      - run: npm i
+      - name: Install Dependencies
+        run: npm ci
         working-directory: ${{github.workspace}}
 
-      - run: npm run test:state:allForks
+      - uses: actions/cache/restore@v4
+        id: submodules-cache
+        with:
+          path: ${{github.workspace}}/packages/ethereum-tests
+          key: ethereum-tests-${{ hashFiles('.gitmodules') }}-${{ github.sha }}
+
+      - name: Initialize submodules (if not cached)
+        if: steps.submodules-cache.outputs.cache-hit != 'true'
+        run: git submodule update --init --recursive
+
+      - run: VITE_FORK=${{ matrix.fork }} VITE_VERIFY_TEST_AMOUNT_ALL_TESTS=1 npx vitest run --passWithNoTests test/tester/state.spec.ts
 
   test-vm-blockchain:
     if: github.repository == 'ethereumjs/ethereumjs-monorepo'
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        fork:
+          [
+            'Prague',
+            'Chainstart',
+            'Homestead',
+            'dao',
+            'TangerineWhistle',
+            'SpuriousDragon',
+            'Byzantium',
+            'Constantinople',
+            'Petersburg',
+            'Istanbul',
+            'MuirGlacier',
+            'Berlin',
+            'London',
+            'Paris',
+            'Shanghai',
+            'Cancun',
+            'ByzantiumToConstantinopleFixAt5',
+            'EIP158ToByzantiumAt5',
+            'FrontierToHomesteadAt5',
+            'HomesteadToDaoAt5',
+            'HomesteadToEIP150At5',
+            'BerlinToLondonAt5',
+          ]
+      fail-fast: false
     steps:
       - uses: actions/checkout@v5
-        with:
-          submodules: recursive
 
       - uses: actions/setup-node@v6
         with:
           node-version: 24
           cache: 'npm'
 
-      - run: npm i
+      - name: Install Dependencies
+        run: npm ci
         working-directory: ${{github.workspace}}
 
-      - run: npm run test:blockchain:allForks
-        working-directory: '${{ env.cwd }}'
+      - uses: actions/cache/restore@v4
+        id: submodules-cache
+        with:
+          path: ${{github.workspace}}/packages/ethereum-tests
+          key: ethereum-tests-${{ hashFiles('.gitmodules') }}-${{ github.sha }}
+
+      - name: Initialize submodules (if not cached)
+        if: steps.submodules-cache.outputs.cache-hit != 'true'
+        run: git submodule update --init --recursive
+
+      - run: VITE_FORK=${{ matrix.fork }} VITE_VERIFY_TEST_AMOUNT_ALL_TESTS=1 npx vitest run --passWithNoTests test/tester/blockchain.spec.ts
 
   test-vm-slow:
     if: github.repository == 'ethereumjs/ethereumjs-monorepo'
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        testFile:
+          [
+            '^Call50000_sha256',
+            '^CALLBlake2f_MaxRounds',
+            '^Return50000',
+            '^Return50000_2',
+            '^static_Call50000_sha256',
+            '^loopMul',
+            '^loopExp',
+          ]
+      fail-fast: false
     steps:
       - uses: actions/checkout@v5
-        with:
-          submodules: recursive
 
       - uses: actions/setup-node@v6
         with:
           node-version: 24
           cache: 'npm'
 
-      - run: npm i
+      - name: Install Dependencies
+        run: npm ci
         working-directory: ${{github.workspace}}
 
-      - run: npm run test:state:slow
+      - uses: actions/cache/restore@v4
+        id: submodules-cache
+        with:
+          path: ${{github.workspace}}/packages/ethereum-tests
+          key: ethereum-tests-${{ hashFiles('.gitmodules') }}-${{ github.sha }}
+
+      - name: Initialize submodules (if not cached)
+        if: steps.submodules-cache.outputs.cache-hit != 'true'
+        run: git submodule update --init --recursive
+
+      - run: VITE_FILE=${{ matrix.testFile }} VITE_RUN_SKIPPED=slow npx vitest run test/tester/state.spec.ts

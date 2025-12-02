@@ -218,6 +218,11 @@ const expectedTests: number | undefined =
       : undefined
 
 describe('BlockchainTests', () => {
+  if (filteredTests.length === 0) {
+    it.skip(`no BlockchainTests found for fork ${FORK_CONFIG_TEST_SUITE}, skipping suite`, () => {})
+    return
+  }
+
   for (const { subDir, testName, testData } of filteredTests) {
     it(`file: ${subDir} test: ${testName}`, async () => {
       try {
