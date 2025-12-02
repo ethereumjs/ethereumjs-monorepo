@@ -28,6 +28,10 @@ function logComment(t: typeof assert, message: string): void {
   console.log(`[TEST] ${message}`)
 }
 
+function incrementCount(options: any) {
+  options.testCount = (options.testCount ?? 0) + 1
+}
+
 function formatBlockHeader(data: any) {
   const formatted: any = {}
   for (const [key, value] of Object.entries(data) as [string, string][]) {
@@ -80,6 +84,7 @@ export async function runBlockchainTest(options: any, testData: any, t: typeof a
   if (typeof testData.genesisRLP === 'string') {
     const rlp = hexToBytes(testData.genesisRLP)
     t.deepEqual(genesisBlock.serialize(), rlp, 'correct genesis RLP')
+    incrementCount(options)
   }
 
   const consensusDict: ConsensusDict = {}
@@ -95,8 +100,6 @@ export async function runBlockchainTest(options: any, testData: any, t: typeof a
   if (validatePow) {
     ;(blockchain.consensus as EthashConsensus)._ethash!.cacheDB = cacheDB
   }
-
-  const begin = Date.now()
 
   const evmOpts = {
     bls: options.bls,
@@ -121,10 +124,12 @@ export async function runBlockchainTest(options: any, testData: any, t: typeof a
     genesisBlock.header.stateRoot,
     'correct pre stateRoot',
   )
+  incrementCount(options)
 
   async function handleError(error: string | undefined, expectException: string | boolean) {
     if (expectException !== false) {
       t.ok(true, `Expected exception ${expectException}`)
+      incrementCount(options)
     } else {
       assert.fail(error)
     }
@@ -191,6 +196,7 @@ export async function runBlockchainTest(options: any, testData: any, t: typeof a
               assert.fail(`tx should not fail, but failed: ${e.message}`)
             } else {
               t.ok(true, 'tx successfully failed')
+              incrementCount(options)
             }
           }
         }
@@ -255,13 +261,7 @@ export async function runBlockchainTest(options: any, testData: any, t: typeof a
     '0x' + testData.lastblockhash,
     'correct last header block',
   )
-
-  const end = Date.now()
-  const timeSpent = `${(end - begin) / 1000} secs`
-  logComment(t, `Time: ${timeSpent}`)
-
-  options.testCount = (options.testCount ?? 0) + 1
-
+  incrementCount(options)
   // Explicitly delete objects for memory optimization (early GC)
   common = blockchain = stateTree = stateManager = vm = cacheDB = null as any
 }
