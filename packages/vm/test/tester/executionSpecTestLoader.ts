@@ -1,5 +1,8 @@
 import fs from 'fs'
 import path from 'path'
+import { Common, Mainnet, createCustomCommon } from '@ethereumjs/common'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 
 export type ExecutionSpecFixtureType = 'state_tests' | 'blockchain_tests'
 
@@ -101,5 +104,47 @@ export function parseTest(fork: string, testData: any) {
     env: testData['env'],
     pre: testData['pre'],
     expectException: testCase['expectException'],
+  }
+}
+
+export function createCommonForFork(fork: string) {
+  const kzg = new microEthKZG(trustedSetup)
+  try {
+    // Single Fork
+    return new Common({ chain: Mainnet, hardfork: fork.toLowerCase(), customCrypto: { kzg } })
+  } catch {
+    // Transition Fork (e.g. OsakaToBPO1AtTime15K)
+    const match = fork.match(/^([A-Za-z0-9]+)To([A-Za-z0-9]+)AtTime(\d+)$/)
+    if (match === null) {
+      throw new Error(`unsupported fork ${fork}`)
+    }
+    const [, fromFork, toFork, timestampStr, suffix] = match
+    const from = fromFork.charAt(0).toLowerCase() + fromFork.substring(1)
+    const to = toFork.charAt(0).toLowerCase() + toFork.substring(1)
+    let timestamp = Number(timestampStr)
+    if (suffix && suffix === 'k') {
+      timestamp *= 1000
+    }
+    const hardforks = [
+      {
+        name: from,
+        block: null,
+        timestamp: 0,
+      },
+      {
+        name: to,
+        block: null,
+        timestamp,
+      },
+    ]
+
+    return createCustomCommon(
+      {
+        hardforks,
+        defaultHardfork: from,
+      },
+      Mainnet,
+      { customCrypto: { kzg } },
+    )
   }
 }
