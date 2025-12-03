@@ -43,3 +43,36 @@ function findJsonFiles(root: string, fixtureType: ExecutionSpecFixtureType) {
 
   return files.sort()
 }
+
+export function loadExecutionSpecFixtures(
+  root: string,
+  fixtureType: ExecutionSpecFixtureType,
+): ExecutionSpecFixture[] {
+  const files = findJsonFiles(root, fixtureType)
+  const fixtures: ExecutionSpecFixture[] = []
+
+  for (const filePath of files) {
+    let parsed: Record<string, any>
+    try {
+      parsed = JSON.parse(fs.readFileSync(filePath, 'utf8'))
+    } catch {
+      continue
+    }
+
+    for (const [id, data] of Object.entries(parsed)) {
+      if (fixtureType === 'state_tests') {
+        const forks = Object.keys((data as any).post ?? {})
+        for (const fork of forks) {
+          fixtures.push({ id, fork, filePath, data })
+        }
+      } else {
+        const fork = (data as any).network ?? (data as any).config?.network
+        if (fork !== undefined) {
+          fixtures.push({ id, fork, filePath, data })
+        }
+      }
+    }
+  }
+
+  return fixtures
+}
