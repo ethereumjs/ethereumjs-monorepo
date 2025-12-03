@@ -1,36 +1,35 @@
-import * as fs from 'fs'
+//import * as fs from 'fs'
 import {
   type PrefixedHexString,
   blobsToCellProofs,
   blobsToProofs,
   computeVersionedHash,
-  getBlob,
-  getBlobs,
   hexToBytes,
-  unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 
 const kzg = new microEthKZG(trustedSetup)
 
-// Use with node ./examples/blobs.ts <file path>
-const filePath = process.argv[2]
-const blobData: PrefixedHexString = `0x${fs.readFileSync(filePath, 'ascii')}`
-console.log(blobData)
+/**
+ *  Uncomment for a more realistic example using a real blob, e.g. from https://blobscan.com/
+ *  Use with node ./examples/blobs.ts <file path>
+ */
+// const filePath = process.argv[2]
+//const blob: PrefixedHexString = `0x${fs.readFileSync(filePath, 'ascii')}`
+const blob: PrefixedHexString = `0x${'11'.repeat(131072)}` // 128 KiB
+console.log(blob)
 
-const blobs = [blobData]
-
-const commitment = kzg.blobToKzgCommitment(blobs[0])
+const commitment = kzg.blobToKzgCommitment(blob)
 
 const blobCommitmentVersion = 0x01
 const versionedHash = computeVersionedHash(commitment as PrefixedHexString, blobCommitmentVersion)
 
 // EIP-4844 only
-const blobProof = blobsToProofs(kzg, blobs, [commitment as PrefixedHexString])
-const cellProofs = blobsToCellProofs(kzg, blobs)
+const blobProof = blobsToProofs(kzg, [blob], [commitment as PrefixedHexString])
+const cellProofs = blobsToCellProofs(kzg, [blob])
 
-console.log(`Blob size                   : ${hexToBytes(blobData).length / 1024}KiB`)
+console.log(`Blob size                   : ${hexToBytes(blob).length / 1024}KiB`)
 console.log(`Commitment                  : ${commitment}`)
 console.log(`Versioned hash              : ${versionedHash}`)
 console.log(`Blob proof (EIP-4844)       : ${blobProof}`)
