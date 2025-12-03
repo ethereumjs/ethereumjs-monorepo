@@ -76,3 +76,30 @@ export function loadExecutionSpecFixtures(
 
   return fixtures
 }
+
+export function parseTest(fork: string, testData: any) {
+  const postState = testData['post']?.[fork]
+  const testCase = postState[0]
+  const testIndexes = testCase['indexes']
+  const tx = { ...testData.transaction }
+
+  tx.data = testData.transaction.data[testIndexes['data']]
+  tx.gasLimit = testData.transaction.gasLimit[testIndexes['gas']]
+  tx.value = testData.transaction.value[testIndexes['value']]
+
+  if (tx.accessLists !== undefined) {
+    tx.accessList = testData.transaction.accessLists[testIndexes['data']]
+    if (tx.chainId === undefined) {
+      tx.chainId = 1
+    }
+  }
+
+  return {
+    transaction: tx,
+    postStateRoot: testCase['hash'],
+    logs: testCase['logs'],
+    env: testData['env'],
+    pre: testData['pre'],
+    expectException: testCase['expectException'],
+  }
+}
