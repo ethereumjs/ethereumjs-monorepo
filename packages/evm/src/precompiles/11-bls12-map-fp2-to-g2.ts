@@ -16,7 +16,7 @@ export async function precompile11(opts: PrecompileInput): Promise<ExecResult> {
   const bls = (opts._EVM as EVM)['_bls']!
 
   // note: the gas used is constant; even if the input is incorrect.
-  const gasUsed = opts.common.param('bls12381MapG2Gas') ?? BigInt(0)
+  const gasUsed = opts.common.param('bls12381MapG2Gas')
   if (!gasLimitCheck(opts, gasUsed, pName)) {
     return OOGResult(opts.gasLimit)
   }
