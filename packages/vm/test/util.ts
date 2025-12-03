@@ -25,7 +25,7 @@ import {
   toType,
   unpadBytes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 
 import type { BlockOptions } from '@ethereumjs/block'
 import type { StateManagerInterface } from '@ethereumjs/common'
@@ -109,7 +109,7 @@ export function verifyAccountPostConditions(
     const hashedStorage: any = {}
     for (const key in acctData.storage) {
       hashedStorage[
-        bytesToHex(keccak256(setLengthLeft(hexToBytes(isHexString(key) ? key : `0x${key}`), 32)))
+        bytesToHex(keccak_256(setLengthLeft(hexToBytes(isHexString(key) ? key : `0x${key}`), 32)))
       ] = acctData.storage[key]
     }
 
@@ -257,7 +257,7 @@ export async function verifyPostConditions(state: any, testData: any, t: typeof 
     const keyMap: any = {}
 
     for (const key in testData) {
-      const hash = bytesToHex(keccak256(hexToBytes(isHexString(key) ? key : `0x${key}`)))
+      const hash = bytesToHex(keccak_256(hexToBytes(isHexString(key) ? key : `0x${key}`)))
       hashedAccounts[hash] = testData[key]
       keyMap[hash] = key
     }
@@ -390,7 +390,7 @@ export async function setupPreConditions(state: StateManagerInterface, testData:
     await state.putAccount(address, new Account())
 
     const codeBuf = format(code)
-    const codeHash = keccak256(codeBuf)
+    const codeHash = keccak_256(codeBuf)
 
     // Set contract storage
     for (const storageKey of Object.keys(storage)) {

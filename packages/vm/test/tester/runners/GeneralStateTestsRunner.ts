@@ -171,8 +171,7 @@ async function runTestCase(options: any, testData: any, t: typeof assert) {
   const end = Date.now()
   const timeSpent = `${(end - begin) / 1000} secs`
 
-  const msg = `error running test case for fork: ${options.forkConfigTestSuite}`
-  logComment(`[ ${timeSpent} ] the state roots should match (${execInfo})`)
+  const msg = `error running test case for fork: ${options.forkConfigTestSuite} (${execInfo})`
   t.deepEqual(stateManagerStateRoot, testDataPostStateRoot, msg)
 
   vm.evm.events!.removeListener('step', stepHandler)

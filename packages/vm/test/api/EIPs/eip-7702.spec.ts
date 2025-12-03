@@ -15,13 +15,13 @@ import {
   setLengthRight,
   unpadBytes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 import { assert, describe, it } from 'vitest'
 
 import { createVM, runTx } from '../../../src/index.ts'
 
 import type { EOACode7702AuthorizationListBytesItem, PrefixedHexString } from '@ethereumjs/util'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1'
+import { secp256k1 } from '@noble/curves/secp256k1.js'
 import type { VM } from '../../../src/index.ts'
 
 // EIP-7702 code designator. If code starts with these bytes, it is a 7702-delegated address
@@ -59,16 +59,21 @@ function getAuthorizationListItem(opts: GetAuthListOpts): EOACode7702Authorizati
   const addressBytes = address.toBytes()
 
   const rlpdMsg = RLP.encode([chainIdBytes, addressBytes, nonceBytes])
-  const msgToSign = keccak256(concatBytes(new Uint8Array([5]), rlpdMsg))
-  const signed = secp256k1.sign(msgToSign, pkey)
+  const msgToSign = keccak_256(concatBytes(new Uint8Array([5]), rlpdMsg))
+  const signatureBytes = secp256k1.sign(msgToSign, pkey, { format: 'recovered', prehash: false })
 
+  const { recovery, r, s } = secp256k1.Signature.fromBytes(signatureBytes, 'recovered')
+
+  if (recovery === undefined) {
+    throw new Error('Recovery is undefined')
+  }
   return [
     chainIdBytes,
     addressBytes,
     nonceBytes,
-    bigIntToUnpaddedBytes(BigInt(signed.recovery)),
-    bigIntToUnpaddedBytes(signed.r),
-    bigIntToUnpaddedBytes(signed.s),
+    bigIntToUnpaddedBytes(BigInt(recovery)),
+    bigIntToUnpaddedBytes(r),
+    bigIntToUnpaddedBytes(s),
   ]
 }
 
@@ -263,7 +268,7 @@ describe('test EIP-7702 opcodes', () => {
       {
         // PUSH20 <defaultAuthAddr> EXTCODEHASH PUSH0 SSTORE STOP
         code: `0x73${defaultAuthAddr.toString().slice(2)}3f5f5500`,
-        expectedStorage: keccak256(delegatedCode),
+        expectedStorage: keccak_256(delegatedCode),
         name: 'EXTCODEHASH',
       },
       // EXTCODECOPY

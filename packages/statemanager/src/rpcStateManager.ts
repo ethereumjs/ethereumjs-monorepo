@@ -13,8 +13,8 @@ import {
   intToHex,
   toBytes,
 } from '@ethereumjs/util'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 import debugDefault from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { Caches, OriginalStorageCache } from './cache/index.ts'
 import { modifyAccountFields } from './util.ts'
@@ -55,7 +55,7 @@ export class RPCStateManager implements StateManagerInterface {
 
     this.originalStorageCache = new OriginalStorageCache(this.getStorage.bind(this))
     this.common = opts.common ?? new Common({ chain: Mainnet })
-    this.keccakFunction = opts.common?.customCrypto.keccak256 ?? keccak256
+    this.keccakFunction = opts.common?.customCrypto.keccak256 ?? keccak_256
   }
 
   /**

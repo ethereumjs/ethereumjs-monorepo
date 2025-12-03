@@ -1,6 +1,6 @@
 import { RLP } from '@ethereumjs/rlp'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
+import { secp256k1 } from '@noble/curves/secp256k1.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 
 import {
   bigIntToUnpaddedBytes,
@@ -419,7 +419,7 @@ export const toChecksumAddress = function (
   }
 
   const bytes = utf8ToBytes(prefix + address)
-  const hash = bytesToHex(keccak256(bytes)).slice(2)
+  const hash = bytesToHex(keccak_256(bytes)).slice(2)
   let ret = ''
 
   for (let i = 0; i < address.length; i++) {
@@ -457,11 +457,11 @@ export const generateAddress = function (from: Uint8Array, nonce: Uint8Array): U
   if (bytesToBigInt(nonce) === BIGINT_0) {
     // in RLP we want to encode null in the case of zero nonce
     // read the RLP documentation for an answer if you dare
-    return keccak256(RLP.encode([from, Uint8Array.from([])])).subarray(-20)
+    return keccak_256(RLP.encode([from, Uint8Array.from([])])).subarray(-20)
   }
 
   // Only take the lower 160bits of the hash
-  return keccak256(RLP.encode([from, nonce])).subarray(-20)
+  return keccak_256(RLP.encode([from, nonce])).subarray(-20)
 }
 
 /**
@@ -486,7 +486,7 @@ export const generateAddress2 = function (
     throw EthereumJSErrorWithoutCode('Expected salt to be of length 32')
   }
 
-  const address = keccak256(concatBytes(hexToBytes('0xff'), from, salt, keccak256(initCode)))
+  const address = keccak_256(concatBytes(hexToBytes('0xff'), from, salt, keccak_256(initCode)))
 
   return address.subarray(-20)
 }
@@ -495,7 +495,7 @@ export const generateAddress2 = function (
  * Checks if the private key satisfies the rules of the curve secp256k1.
  */
 export const isValidPrivate = function (privateKey: Uint8Array): boolean {
-  return secp256k1.utils.isValidPrivateKey(privateKey)
+  return secp256k1.utils.isValidSecretKey(privateKey)
 }
 
 /**
@@ -510,7 +510,7 @@ export const isValidPublic = function (publicKey: Uint8Array, sanitize: boolean 
     // Convert to SEC1 for secp256k1
     // Automatically checks whether point is on curve
     try {
-      secp256k1.ProjectivePoint.fromHex(concatBytes(Uint8Array.from([4]), publicKey))
+      secp256k1.Point.fromBytes(concatBytes(Uint8Array.from([4]), publicKey))
       return true
     } catch {
       return false
@@ -522,7 +522,7 @@ export const isValidPublic = function (publicKey: Uint8Array, sanitize: boolean 
   }
 
   try {
-    secp256k1.ProjectivePoint.fromHex(publicKey)
+    secp256k1.Point.fromBytes(publicKey)
     return true
   } catch {
     return false
@@ -538,13 +538,13 @@ export const isValidPublic = function (publicKey: Uint8Array, sanitize: boolean 
 export const pubToAddress = function (pubKey: Uint8Array, sanitize: boolean = false): Uint8Array {
   assertIsBytes(pubKey)
   if (sanitize && pubKey.length !== 64) {
-    pubKey = secp256k1.ProjectivePoint.fromHex(pubKey).toRawBytes(false).slice(1)
+    pubKey = secp256k1.Point.fromBytes(pubKey).toBytes(false).slice(1)
   }
   if (pubKey.length !== 64) {
     throw EthereumJSErrorWithoutCode('Expected pubKey to be of length 64')
   }
   // Only take the lower 160bits of the hash
-  return keccak256(pubKey).subarray(-20)
+  return keccak_256(pubKey).subarray(-20)
 }
 export const publicToAddress = pubToAddress
 
@@ -555,7 +555,7 @@ export const publicToAddress = pubToAddress
 export const privateToPublic = function (privateKey: Uint8Array): Uint8Array {
   assertIsBytes(privateKey)
   // skip the type flag and use the X, Y points
-  return secp256k1.ProjectivePoint.fromPrivateKey(privateKey).toRawBytes(false).slice(1)
+  return secp256k1.getPublicKey(privateKey, false).slice(1)
 }
 
 /**
@@ -572,7 +572,7 @@ export const privateToAddress = function (privateKey: Uint8Array): Uint8Array {
 export const importPublic = function (publicKey: Uint8Array): Uint8Array {
   assertIsBytes(publicKey)
   if (publicKey.length !== 64) {
-    publicKey = secp256k1.ProjectivePoint.fromHex(publicKey).toRawBytes(false).slice(1)
+    publicKey = secp256k1.Point.fromBytes(publicKey).toBytes(false).slice(1)
   }
   return publicKey
 }

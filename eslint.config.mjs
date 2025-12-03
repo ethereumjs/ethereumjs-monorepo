@@ -48,7 +48,7 @@ export default [
   importPlugin.flatConfigs.recommended,
   {
     rules: {
-      'no-restricted-imports': ['error', 'ethereum-cryptography/utils'],
+      'no-restricted-imports': ['error'],
       'no-restricted-syntax': [
         'error',
         {

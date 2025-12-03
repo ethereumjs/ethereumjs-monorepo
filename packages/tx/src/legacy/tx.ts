@@ -10,7 +10,7 @@ import {
   toBytes,
   unpadBytes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 
 import * as Legacy from '../capabilities/legacy.ts'
 import { paramsTx } from '../index.ts'
@@ -136,7 +136,7 @@ export class LegacyTx implements TransactionInterface<typeof TransactionType.Leg
       )
     }
 
-    this.keccakFunction = this.common.customCrypto.keccak256 ?? keccak256
+    this.keccakFunction = this.common.customCrypto.keccak256 ?? keccak_256
 
     if (this.gasPrice * this.gasLimit > MAX_INTEGER) {
       throw EthereumJSErrorWithoutCode('gas limit * gasPrice cannot exceed MAX_INTEGER (2^256-1)')

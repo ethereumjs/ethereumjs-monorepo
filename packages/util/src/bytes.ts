@@ -1,9 +1,8 @@
-import { getRandomBytesSync } from 'ethereum-cryptography/random.js'
-
 import {
-  bytesToHex as _bytesToUnprefixedHex,
-  hexToBytes as nobleH2B,
-} from 'ethereum-cryptography/utils.js'
+  bytesToHex as bytesToUnprefixedHexNoble,
+  hexToBytes as hexToBytesNoble,
+  randomBytes as randomBytesNoble,
+} from '@noble/hashes/utils.js'
 
 import { EthereumJSErrorWithoutCode } from './errors.ts'
 import { assertIsArray, assertIsBytes, assertIsHexString } from './helpers.ts'
@@ -16,7 +15,7 @@ const BIGINT_0 = BigInt(0)
 /**
  * @deprecated
  */
-export const bytesToUnprefixedHex = _bytesToUnprefixedHex
+export const bytesToUnprefixedHex = bytesToUnprefixedHexNoble
 
 /**
  * Converts a {@link PrefixedHexString} to a {@link Uint8Array}
@@ -26,12 +25,12 @@ export const bytesToUnprefixedHex = _bytesToUnprefixedHex
  */
 export const hexToBytes = (hex: PrefixedHexString): Uint8Array => {
   if (!hex.startsWith('0x')) throw EthereumJSErrorWithoutCode('input string must be 0x prefixed')
-  return nobleH2B(padToEven(stripHexPrefix(hex)))
+  return hexToBytesNoble(padToEven(stripHexPrefix(hex)))
 }
 
 export const unprefixedHexToBytes = (hex: string): Uint8Array => {
   if (hex.startsWith('0x')) throw EthereumJSErrorWithoutCode('input string cannot be 0x prefixed')
-  return nobleH2B(padToEven(hex))
+  return hexToBytesNoble(padToEven(hex))
 }
 
 /**
@@ -417,7 +416,7 @@ export const compareBytes = (value1: Uint8Array, value2: Uint8Array): number => 
  * @returns {Uint8Array} A Uint8Array of random bytes of specified length.
  */
 export const randomBytes = (length: number): Uint8Array => {
-  return getRandomBytesSync(length)
+  return randomBytesNoble(length)
 }
 
 /**
@@ -494,7 +493,41 @@ export function bigInt64ToBytes(value: bigint, littleEndian: boolean = false): U
   return new Uint8Array(buffer)
 }
 
-export { bytesToUtf8, equalsBytes, utf8ToBytes } from 'ethereum-cryptography/utils.js'
+export { utf8ToBytes } from '@noble/hashes/utils.js'
+
+/**
+ * @notice Converts a Uint8Array to a UTF-8 string.
+ * Implementation copied from ethereum-cryptography https://github.com/ethereum/js-ethereum-cryptography/blob/31f980b2847545d33268f2510ba38a3836202a44/src/utils.ts#L22-L27
+ * @param {Uint8Array} bytes - The input Uint8Array to convert.
+ * @returns {string} The UTF-8 string.
+ * @throws {TypeError} If the input is not a Uint8Array.
+ *
+ */
+export function bytesToUtf8(bytes: Uint8Array): string {
+  if (!(bytes instanceof Uint8Array)) {
+    throw new TypeError(`bytesToUtf8 expected Uint8Array, got ${typeof bytes}`)
+  }
+  return new TextDecoder().decode(bytes)
+}
+
+/**
+ * @notice Compares two Uint8Arrays and returns true if they are equal.
+ * Implementation copied from ethereum-cryptography https://github.com/ethereum/js-ethereum-cryptography/blob/main/src/utils.ts#L35-L45
+ * @param {Uint8Array} a - The first Uint8Array to compare.
+ * @param {Uint8Array} b - The second Uint8Array to compare.
+ * @returns {boolean} True if the Uint8Arrays are equal, false otherwise.
+ */
+export function equalsBytes(a: Uint8Array, b: Uint8Array): boolean {
+  if (a.length !== b.length) {
+    return false
+  }
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) {
+      return false
+    }
+  }
+  return true
+}
 
 export function hexToBigInt(input: PrefixedHexString): bigint {
   return bytesToBigInt(hexToBytes(isHexString(input) ? input : `0x${input}`))

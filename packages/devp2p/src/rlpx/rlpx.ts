@@ -8,9 +8,9 @@ import {
   unprefixedHexToBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
+import { secp256k1 } from '@noble/curves/secp256k1.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 import debugDefault from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 import { EventEmitter } from 'eventemitter3'
 import { LRUCache } from 'lru-cache'
 
@@ -116,7 +116,7 @@ export class RLPx {
     const refillIntervalSubdivided = Math.floor(REFILL_INTERVAL / 10)
     this._refillIntervalId = setInterval(() => this._refillConnections(), refillIntervalSubdivided)
 
-    this._keccakFunction = options.common?.customCrypto.keccak256 ?? keccak256
+    this._keccakFunction = options.common?.customCrypto.keccak256 ?? keccak_256
 
     this.DEBUG =
       typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false

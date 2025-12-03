@@ -20,8 +20,8 @@ import {
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import { OrderedMap } from '@js-sdsl/ordered-map'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 import debug from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { Fetcher } from './fetcher.ts'
 import { getInitFetcherDoneFlags } from './types.ts'
@@ -115,7 +115,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     this.nodeCount = 0
     this.debug = debug('client:fetcher:trienode')
 
-    this.keccakFunction = this.config.chainCommon.customCrypto.keccak256 ?? keccak256
+    this.keccakFunction = this.config.chainCommon.customCrypto.keccak256 ?? keccak_256
 
     // will always start with root node as first set of node requests
     this.pathToNodeRequestData.setElement('', {
