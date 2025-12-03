@@ -114,13 +114,13 @@ export function createCommonForFork(fork: string) {
     return new Common({ chain: Mainnet, hardfork: fork.toLowerCase(), customCrypto: { kzg } })
   } catch {
     // Transition Fork (e.g. OsakaToBPO1AtTime15K)
-    const match = fork.match(/^([A-Za-z0-9]+)To([A-Za-z0-9]+)AtTime(\d+)$/)
+    const match = fork.match(/^([A-Za-z0-9]+)To([A-Za-z0-9]+)AtTime(\d+)([Kk])?$/)
     if (match === null) {
       throw new Error(`unsupported fork ${fork}`)
     }
     const [, fromFork, toFork, timestampStr, suffix] = match
-    const from = fromFork.charAt(0).toLowerCase() + fromFork.substring(1)
-    const to = toFork.charAt(0).toLowerCase() + toFork.substring(1)
+    const from = fromFork.toLowerCase()
+    const to = toFork.toLowerCase()
     let timestamp = Number(timestampStr)
     if (suffix && suffix === 'k') {
       timestamp *= 1000
