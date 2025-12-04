@@ -130,15 +130,7 @@ function publishPackages(packages: PackageInfo[], npmToken: string, tag: string)
   for (const pkg of packages) {
     console.log(`  Publishing ${pkg.name}...`)
     
-    // Create temporary .npmrc file in package directory
-    const npmrcPath = join(pkg.path, '.npmrc')
-    const npmrcContent = `//registry.npmjs.org/:_authToken=${npmToken}\n`
-    
-    try {
-      // Write temporary .npmrc file
-      writeFileSync(npmrcPath, npmrcContent, 'utf-8')
-      
-      // Publish with the local .npmrc
+    try {    
       execSync(`npm publish --tag=${tag}`, {
         cwd: pkg.path,
         stdio: 'inherit',
@@ -148,17 +140,8 @@ function publishPackages(packages: PackageInfo[], npmToken: string, tag: string)
         },
       })
       
-      // Remove temporary .npmrc file
-      unlinkSync(npmrcPath)
-      
       console.log(`  ✅ ${pkg.name} published successfully\n`)
     } catch (error) {
-      // Clean up .npmrc file even on error
-      try {
-        unlinkSync(npmrcPath)
-      } catch {
-        // Ignore cleanup errors
-      }
       console.error(`  ❌ Failed to publish ${pkg.name}`)
       throw error
     }
