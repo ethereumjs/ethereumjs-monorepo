@@ -114,6 +114,21 @@ Added lines should follow the format from the examples given above. PR numbers a
 For the CHANGELOG files you have not added lines in this step please enter the following sentence instead: Maintenance release, no active changes.
 ```
 
+#### In-between Releases
+
+We have a simple release script for lightweight in-between releases like nightly or non-official alpha releases. This is meant
+for e.g. external targeted testing and releases are not mentioned in CHANGELOG.md files.
+
+```sh
+tsx scripts/simple-release.ts <version> <npm_token> <tag>
+```
+
+Example:
+
+```sh
+tsx scripts/simple-release.ts 10.1.1-nightly.1 abc123 nightly
+```
+
 #### Windows Users Note
 
 Windows users might encounter errors with script paths. To fix, configure Git bash as the script shell:
