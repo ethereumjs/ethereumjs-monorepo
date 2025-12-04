@@ -1,5 +1,8 @@
 import { readdirSync } from 'fs'
-import { extname, join } from 'path'
+import { extname, join, dirname } from 'path'
+import { fileURLToPath } from 'url'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 const pkg = process.argv[3]
 if (!pkg) {
