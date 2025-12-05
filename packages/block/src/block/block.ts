@@ -209,7 +209,9 @@ export class Block {
         }
       }
       if (this.common.isActivatedEIP(4844)) {
-        const blobGasLimit = this.common.param('maxBlobGasPerBlock')
+        const blobGasLimit = this.common.isActivatedEIP(7892)
+          ? this.common.getBlobGasSchedule().maxBlobGasPerBlock
+          : this.common.param('maxBlobGasPerBlock')
         const blobGasPerBlob = this.common.param('blobGasPerBlob')
         if (tx instanceof Blob4844Tx) {
           blobGasUsed += BigInt(tx.numBlobs()) * blobGasPerBlob
@@ -320,7 +322,9 @@ export class Block {
    */
   validateBlobTransactions(parentHeader: BlockHeader) {
     if (this.common.isActivatedEIP(4844)) {
-      const blobGasLimit = this.common.param('maxBlobGasPerBlock')
+      const blobGasLimit = this.common.isActivatedEIP(7892)
+        ? this.common.getBlobGasSchedule().maxBlobGasPerBlock
+        : this.common.param('maxBlobGasPerBlock')
       const blobGasPerBlob = this.common.param('blobGasPerBlob')
       let blobGasUsed = BIGINT_0
 

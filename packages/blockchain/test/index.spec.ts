@@ -25,7 +25,7 @@ describe('blockchain test', () => {
   })
 
   it('should initialize correctly', async () => {
-    const common = new Common({ chain: Mainnet })
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     let blockchain = await createBlockchain({ common })
 
     const iteratorHead = await blockchain.getIteratorHead()
