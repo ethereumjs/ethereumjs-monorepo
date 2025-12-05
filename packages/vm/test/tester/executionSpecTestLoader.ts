@@ -14,7 +14,7 @@ export interface ExecutionSpecFixture {
   data: any
 }
 
-function findJsonFiles(root: string, fixtureType: ExecutionSpecFixtureType) {
+function findJSONFiles(root: string, fixtureType: ExecutionSpecFixtureType) {
   const files: string[] = []
   const stack = [root]
 
@@ -52,7 +52,7 @@ export function loadExecutionSpecFixtures(
   root: string,
   fixtureType: ExecutionSpecFixtureType,
 ): ExecutionSpecFixture[] {
-  const files = findJsonFiles(root, fixtureType)
+  const files = findJSONFiles(root, fixtureType)
   const fixtures: ExecutionSpecFixture[] = []
 
   for (const filePath of files) {
