@@ -21,7 +21,7 @@ const main = async () => {
         difficulty: blockchain.genesisBlock.header.difficulty + 1n,
       },
     },
-    { common, setHardfork: true },
+    { common },
   )
   const block2 = createBlock(
     {
@@ -31,11 +31,11 @@ const main = async () => {
         difficulty: block.header.difficulty + 1n,
       },
     },
-    { common, setHardfork: true },
+    { common },
   )
+  console.log(`Block 1: ${bytesToHex(block.hash())}`)
+  console.log(`Block 2: ${bytesToHex(block2.hash())}`)
   // See @ethereumjs/block for more details on how to create a block
-  await blockchain.putBlock(block)
-  await blockchain.putBlock(block2)
 
   // We iterate over the blocks in the chain to the current head (block 2)
   await blockchain.iterator('i', (block) => {
@@ -44,7 +44,7 @@ const main = async () => {
     console.log(`Block ${blockNumber}: ${blockHash}`)
   })
 
-  // Block 1: 0xa1a061528d74ba81f560e1ebc4f29d6b58171fc13b72b876cdffe6e43b01bdc5
-  // Block 2: 0x5583be91cf9fb14f5dbeb03ad56e8cef19d1728f267c35a25ba5a355a528f602
+  //  Block 1: 0xf6673384492391fc85b76c2a3628eb1600896c51eb813a61cf44867d981eca58
+  //  Block 2: 0x751f498d2156ffb678eec7286a39b0c7cef7abde9183ed2073aa61cef316a417
 }
 void main()
