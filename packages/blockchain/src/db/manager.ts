@@ -134,7 +134,7 @@ export class DBManager {
     }
 
     const blockData = [header.raw(), ...body] as BlockBytes
-    const opts: BlockOptions = { common: this.common, setHardfork: true }
+    const opts: BlockOptions = { common: this.common }
     return createBlockFromBytesArray(blockData, opts)
   }
 
@@ -153,7 +153,7 @@ export class DBManager {
     const encodedHeader = await this.get(DBTarget.Header, { blockHash, blockNumber })
     const headerValues = RLP.decode(encodedHeader)
 
-    const opts: BlockOptions = { common: this.common, setHardfork: true }
+    const opts: BlockOptions = { common: this.common }
     return createBlockHeaderFromBytesArray(headerValues as Uint8Array[], opts)
   }
 
