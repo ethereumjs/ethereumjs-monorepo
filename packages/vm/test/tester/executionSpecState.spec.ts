@@ -45,7 +45,7 @@ if (fs.existsSync(fixturesPath) === false) {
 }
 
 export async function runStateTestCase(fork: string, testData: any, t: typeof assert) {
-  const common = createCommonForFork(fork)
+  const common = createCommonForFork(fork).from
   const vm = await createVM({
     common,
   })
