@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
-import { Common, Mainnet, createCustomCommon } from '@ethereumjs/common'
+import { type ChainConfig, Common, Mainnet } from '@ethereumjs/common'
+import { TypeOutput, toType } from '@ethereumjs/util'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 
@@ -107,44 +108,85 @@ export function parseTest(fork: string, testData: any) {
   }
 }
 
-export function createCommonForFork(fork: string) {
+function buildTransitionChainConfig(
+  blobSchedule: any,
+  transition: { hardfork: string; timestamp: number },
+): ChainConfig {
+  const customHardforks: any = {}
+  const additionalHardforks: any[] = []
+
+  // Extract BPO parameters from blobSchedule
+  for (const [hfName, params] of Object.entries(blobSchedule)) {
+    const hfNameLower = hfName.toLowerCase()
+    if (hfNameLower.startsWith('bpo')) {
+      const bpoParams = params as any
+      customHardforks[hfNameLower] = {
+        params: {
+          target: toType(bpoParams.target, TypeOutput.Number),
+          max: toType(bpoParams.max, TypeOutput.Number),
+          blobGasPriceUpdateFraction: toType(bpoParams.baseFeeUpdateFraction, TypeOutput.Number),
+        },
+      }
+      const timestamp = transition.hardfork === hfNameLower ? transition.timestamp : undefined
+      additionalHardforks.push({
+        name: hfNameLower,
+        block: null,
+        timestamp,
+      })
+    }
+  }
+
+  // Build chain config with custom hardforks and additional hardforks in the hardforks list
+  const chainConfig = {
+    ...Mainnet,
+    ...(customHardforks !== undefined ? { customHardforks } : {}),
+    hardforks: [...Mainnet.hardforks, ...additionalHardforks],
+  }
+
+  return chainConfig
+}
+
+export function createCommonForFork(fork: string, testData?: any) {
   const kzg = new microEthKZG(trustedSetup)
+
   try {
-    // Single Fork
-    return new Common({ chain: Mainnet, hardfork: fork.toLowerCase(), customCrypto: { kzg } })
+    // Single Fork (will throw if "fork" is transition fork string)
+    return {
+      from: new Common({ chain: Mainnet, hardfork: fork.toLowerCase(), customCrypto: { kzg } }),
+      to: undefined,
+      timestamp: undefined,
+    }
   } catch {
     // Transition Fork (e.g. OsakaToBPO1AtTime15K)
-    const match = fork.match(/^([A-Za-z0-9]+)To([A-Za-z0-9]+)AtTime(\d+)([Kk])?$/)
-    if (match === null) {
-      throw new Error(`unsupported fork ${fork}`)
+
+    // Check if this is a transition fork
+    const transitionMatch = fork.match(/^([A-Za-z0-9]+)To([A-Za-z0-9]+)AtTime(\d+)([Kk])?$/)
+    if (transitionMatch === null) {
+      throw new Error(`Unable to parse transition fork: ${fork}`)
     }
-    const [, fromFork, toFork, timestampStr, suffix] = match
+
+    // extract fork names and timestamp
+    const [, fromFork, toFork, timestampStr, suffix] = transitionMatch
     const from = fromFork.toLowerCase()
     const to = toFork.toLowerCase()
     let timestamp = Number(timestampStr)
-    if (suffix && suffix === 'k') {
+    if (suffix && suffix.toLowerCase() === 'k') {
       timestamp *= 1000
     }
-    const hardforks = [
-      {
-        name: from,
-        block: null,
-        timestamp: 0,
-      },
-      {
-        name: to,
-        block: null,
-        timestamp,
-      },
-    ]
 
-    return createCustomCommon(
-      {
-        hardforks,
-        defaultHardfork: from,
-      },
-      Mainnet,
-      { customCrypto: { kzg } },
-    )
+    const transition = {
+      hardfork: toFork.toLowerCase(),
+      timestamp,
+    }
+    const blobSchedule = testData.config.blobSchedule
+
+    // Build chain config with custom hardforks and blob schedule
+    const chainConfig = buildTransitionChainConfig(blobSchedule, transition)
+
+    return {
+      from: new Common({ chain: chainConfig, hardfork: from, customCrypto: { kzg } }),
+      to,
+      timestamp,
+    }
   }
 }
