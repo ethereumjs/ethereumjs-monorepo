@@ -23,6 +23,7 @@
     "preinstall": "npm run checkNpmVersion",
     "postinstall": "npm run build --workspaces --if-present",
     "prepare": "git config --local core.hooksPath .githooks",
+    "release:simple": "tsx ./scripts/simple-release.ts",
     "sc": "npm run spellcheck",
     "sort-package-json": "sort-package-json \"package.json\" \"packages/*/package.json\"",
     "spellcheck": "npm run spellcheck:ts && npm run spellcheck:md",
