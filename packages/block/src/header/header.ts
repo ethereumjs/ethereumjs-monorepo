@@ -576,7 +576,7 @@ export class BlockHeader {
       const blobBaseCost = childCommon.param('blobBaseCost')
       const gasPerBlob = childCommon.param('blobGasPerBlob')
       const baseFee = this.baseFeePerGas ?? BIGINT_0
-      const blobFee = this.getBlobGasPrice()
+      const blobFee = computeBlobGasPrice(excessBlobGas, childCommon)
 
       if (blobBaseCost * baseFee > gasPerBlob * blobFee) {
         const increase = (blobGasUsed * (maxPerBlock - targetPerBlock)) / maxPerBlock

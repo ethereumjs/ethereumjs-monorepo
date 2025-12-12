@@ -166,7 +166,7 @@ export const hardforksDict: HardforksDict = {
    * Status     : Final
    */
   osaka: {
-    eips: [7594, 7823, 7825, 7883, 7939, 7951, 7918],
+    eips: [7594, 7823, 7825, 7883, 7892, 7939, 7951, 7918],
   },
   /**
    * Description: HF to update the blob target, max and updateFraction (see also EIP-7892)
