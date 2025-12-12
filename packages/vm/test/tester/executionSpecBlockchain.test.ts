@@ -105,7 +105,7 @@ export async function runBlockchainTestCase(fork: string, testData: any, t: type
     }
   }
 
-  // // Check final state after all blocks are processed
+  // Check final state after all blocks are processed
   const head = await blockchain.getCanonicalHeadBlock()
   t.equal(bytesToHex(head.hash()), testData.lastblockhash, `head block hash matches lastblockhash`)
 
