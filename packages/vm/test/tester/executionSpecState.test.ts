@@ -3,15 +3,14 @@ import { assert, describe, it } from 'vitest'
 import fs from 'fs'
 import path from 'path'
 
+import { Common, Mainnet } from '@ethereumjs/common'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 import { toBytes } from 'viem'
 import { createVM } from '../../src/constructors.ts'
 import { runTx } from '../../src/runTx.ts'
 import { makeBlockFromEnv, makeTx, setupPreConditions } from '../util.ts'
-import {
-  createCommonForFork,
-  loadExecutionSpecFixtures,
-  parseTest,
-} from './executionSpecTestLoader.ts'
+import { loadExecutionSpecFixtures, parseTest } from './executionSpecTestLoader.ts'
 
 const customFixturesPath = process.env.TEST_PATH ?? '../execution-spec-tests'
 const fixturesPath = path.resolve(customFixturesPath)
@@ -45,7 +44,8 @@ if (fs.existsSync(fixturesPath) === false) {
 }
 
 export async function runStateTestCase(fork: string, testData: any, t: typeof assert) {
-  const common = createCommonForFork(fork).from
+  const kzg = new microEthKZG(trustedSetup)
+  const common = new Common({ chain: Mainnet, hardfork: fork.toLowerCase(), customCrypto: { kzg } })
   const vm = await createVM({
     common,
   })
