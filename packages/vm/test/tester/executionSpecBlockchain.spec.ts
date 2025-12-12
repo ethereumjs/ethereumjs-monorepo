@@ -45,9 +45,9 @@ if (fs.existsSync(fixturesPath) === false) {
 }
 
 export async function runBlockchainTestCase(fork: string, testData: any, t: typeof assert) {
-  const { from: common, to, timestamp } = createCommonForFork(fork, testData)
-  const blockData = { header: testData.genesisBlockHeader }
-  const genesisBlock = createBlock(blockData, { common })
+  const common = createCommonForFork(fork, testData)
+  const genesisBlockData = { header: testData.genesisBlockHeader }
+  const genesisBlock = createBlock(genesisBlockData, { common, setHardfork: true })
   const blockchain = await createBlockchain({
     common,
     genesisBlock,
@@ -67,33 +67,35 @@ export async function runBlockchainTestCase(fork: string, testData: any, t: type
     'correct pre stateRoot',
   )
 
-  let parentBlock = genesisBlock
-  for (const { blockHeader, rlp, expectException, rlp_decoded } of testData.blocks) {
-    let block: Block | undefined
-    const blockTimestamp =
-      blockHeader !== undefined ? blockHeader.timestamp : rlp_decoded.blockHeader.timestamp
-    const currentHF = vm.common.hardfork()
-    try {
-      if (to !== undefined) {
-        if (hexToBigInt(blockTimestamp) >= timestamp) {
-          vm.common.setHardfork(to)
-        }
-      }
-      block = createBlockFromRLP(hexToBytes(rlp), { common: vm.common })
-      t.equal(bytesToHex(block.serialize()), rlp, 'correct block RLP')
+  t.equal(
+    bytesToHex(genesisBlock.hash()),
+    testData.genesisBlockHeader.hash,
+    'correct genesis block hash',
+  )
 
+  let parentBlock = genesisBlock
+
+  for (const { rlp, expectException, blockHeader, rlp_decoded } of testData.blocks) {
+    const expectedHash = blockHeader?.hash ?? rlp_decoded.blockHeader.hash
+    let block: Block | undefined
+    try {
+      block = createBlockFromRLP(hexToBytes(rlp), { common: vm.common, setHardfork: true })
+      t.equal(bytesToHex(block.serialize()), rlp, 'correct block RLP')
+      t.equal(bytesToHex(block.hash()), expectedHash, 'correct block hash')
       await runBlock(vm, {
         block,
         root: parentBlock.header.stateRoot,
         generate: true,
+        setHardfork: true,
       })
       await vm.blockchain.putBlock(block)
       parentBlock = block
     } catch (e: any) {
-      // Reset hardfork to the current hardfork if block fails
-      vm.common.setHardfork(currentHF)
       // Check if the block failed due to an expected exception
-      t.exists(expectException, `expectException should be defined.  Error: ${e.message}`)
+      t.exists(
+        expectException,
+        `expectException should be defined.  Error: ${e.message}\n${e.stack}`,
+      )
       // Check if the error message matches the expected exception
       t.match(
         e.message,
@@ -103,12 +105,9 @@ export async function runBlockchainTestCase(fork: string, testData: any, t: type
     }
   }
 
-  // Check final state after all blocks are processed
+  // // Check final state after all blocks are processed
   const head = await blockchain.getCanonicalHeadBlock()
   t.equal(bytesToHex(head.hash()), testData.lastblockhash, `head block hash matches lastblockhash`)
-
-  // Set state root to the head block's state root before checking accounts
-  await vm.stateManager.setStateRoot(head.header.stateRoot)
 
   // Check post state
   for (const address of Object.keys(testData.postState)) {
@@ -131,7 +130,7 @@ export async function runBlockchainTestCase(fork: string, testData: any, t: type
 const exceptionMessages: Record<string, RegExp> = {
   'TransactionException.GAS_LIMIT_EXCEEDS_MAXIMUM':
     /^Transaction gas limit \d+ exceeds the maximum allowed by EIP-7825 \(\d+\)$/,
-  'TransactionException.GAS_ALLOWANCE_EXCEEDED': /Invalid block: too much gas used./,
+  'TransactionException.GAS_ALLOWANCE_EXCEEDED': /tx has a higher gas limit than the block/,
   'TransactionException.INTRINSIC_GAS_TOO_LOW':
     /^invalid transactions: errors at tx \d+: gasLimit is too low\. The gasLimit is lower than the minimum gas limit of \d+, the gas limit is: \d+ \(block number=\d+ hash=0x[a-f0-9]+ hf=\w+ baseFeePerGas=\d+ txs=\d+ uncles=\d+\)$/,
   'TransactionException.INTRINSIC_GAS_BELOW_FLOOR_GAS_COST':
