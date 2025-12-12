@@ -19,7 +19,7 @@ export default mergeConfig(
         // test runners are ran only in ci
         'test/tester/state.spec.ts',
         'test/tester/blockchain.spec.ts',
-        'test/tester/executionSpecBlockchain.spec.ts',
+        'test/tester/executionSpecBlockchain.test.ts',
         'test/tester/executionSpecState.test.ts',
       ],
     },
