@@ -172,18 +172,6 @@ export class NobleBLS implements EVMBLSInterface {
     return result
   }
 
-  mulG1(input: Uint8Array): Uint8Array {
-    // convert input to G1 points, add them, and convert the output to a Uint8Array.
-    const p = BLS12_381_ToG1Point(input.subarray(0, BLS_G1_POINT_BYTE_LENGTH))
-    const scalar = BLS12_381_ToFrPoint(input.subarray(BLS_G1_POINT_BYTE_LENGTH, 160))
-
-    if (scalar === BIGINT_0) {
-      return BLS_G1_INFINITY_POINT_BYTES
-    }
-    const result = p.multiplyUnsafe(scalar)
-    return BLS12_381_FromG1Point(result.toAffine())
-  }
-
   addG2(input: Uint8Array): Uint8Array {
     const p1 = BLS12_381_ToG2Point(input.subarray(0, BLS_G2_POINT_BYTE_LENGTH), false)
     const p2 = BLS12_381_ToG2Point(
@@ -194,18 +182,6 @@ export class NobleBLS implements EVMBLSInterface {
     const result = BLS12_381_FromG2Point(p.toAffine())
 
     return result
-  }
-
-  mulG2(input: Uint8Array): Uint8Array {
-    // convert input to G2 point/Fr point, add them, and convert the output to a Uint8Array.
-    const p = BLS12_381_ToG2Point(input.subarray(0, BLS_G2_POINT_BYTE_LENGTH))
-    const scalar = BLS12_381_ToFrPoint(input.subarray(BLS_G2_POINT_BYTE_LENGTH, 288))
-
-    if (scalar === BIGINT_0) {
-      return BLS_G2_INFINITY_POINT_BYTES
-    }
-    const result = p.multiplyUnsafe(scalar)
-    return BLS12_381_FromG2Point(result.toAffine())
   }
 
   mapFPtoG1(input: Uint8Array): Uint8Array {
