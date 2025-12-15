@@ -30,7 +30,7 @@ export async function precompile0e(opts: PrecompileInput): Promise<ExecResult> {
   }
 
   const numPairs = Math.floor(opts.data.length / 288)
-  const gasUsedPerPair = opts.common.param('bls12381G2MulGas') ?? BigInt(0)
+  const gasUsedPerPair = opts.common.param('bls12381G2MulGas')
   const gasUsed = msmGasUsed(numPairs, gasUsedPerPair, BLS_GAS_DISCOUNT_PAIRS_G2)
 
   if (!gasLimitCheck(opts, gasUsed, pName)) {
