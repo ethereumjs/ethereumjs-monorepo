@@ -1,4 +1,4 @@
-import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
 import {
   blobsToCommitments,
   blobsToProofs,
@@ -317,12 +317,12 @@ describe('EIP4844 constructor tests - invalid scenarios', () => {
         )
       }
 
-      const commonWithEIP7594 = createCommonFromGethGenesis(eip4844GethGenesis, {
-        chain: 'customChain',
-        hardfork: Hardfork.Cancun,
-        eips: [7594],
+      const commonWithEIP7594 = new Common({
+        chain: Mainnet,
+        hardfork: Hardfork.Osaka,
         customCrypto: { kzg: kzg.lib },
       })
+      assert.isTrue(commonWithEIP7594.isActivatedEIP(7594), 'EIP-7594 should be activated')
       try {
         createBlob4844Tx({ ...baseTxData, ...tooManyBlobs7 }, { common: commonWithEIP7594 })
       } catch (err: any) {
