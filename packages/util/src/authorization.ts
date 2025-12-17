@@ -63,12 +63,12 @@ export function eoaCode7702AuthorizationListJSONItemToBytes(
   }
 
   return [
-    hexToBytes(authorizationList.chainId),
-    hexToBytes(authorizationList.address),
-    hexToBytes(authorizationList.nonce),
-    hexToBytes(authorizationList.yParity),
-    hexToBytes(authorizationList.r),
-    hexToBytes(authorizationList.s),
+    unpadBytes(hexToBytes(authorizationList.chainId)),
+    unpadBytes(hexToBytes(authorizationList.address)),
+    unpadBytes(hexToBytes(authorizationList.nonce)),
+    unpadBytes(hexToBytes(authorizationList.yParity)),
+    unpadBytes(hexToBytes(authorizationList.r)),
+    unpadBytes(hexToBytes(authorizationList.s)),
   ]
 }
 
@@ -78,7 +78,7 @@ function unsignedAuthorizationListToBytes(input: EOACode7702AuthorizationListIte
   const chainId = hexToBytes(chainIdHex)
   const address = setLengthLeft(hexToBytes(addressHex), 20)
   const nonce = hexToBytes(nonceHex)
-  return [chainId, address, nonce]
+  return [chainId, address, nonce].map(unpadBytes)
 }
 
 /**
@@ -151,9 +151,9 @@ export function eoaCode7702SignAuthorization(
     : unsignedAuthorizationListToBytes(input)
 
   return [
-    chainId,
-    address,
-    nonce,
+    unpadBytes(chainId),
+    unpadBytes(address),
+    unpadBytes(nonce),
     bigIntToUnpaddedBytes(BigInt(signed.recovery!)),
     bigIntToUnpaddedBytes(signed.r),
     bigIntToUnpaddedBytes(signed.s),
@@ -166,7 +166,7 @@ export function eoaCode7702RecoverAuthority(
   const inputBytes = Array.isArray(input)
     ? input
     : eoaCode7702AuthorizationListJSONItemToBytes(input)
-  const [chainId, address, nonce, yParity, r, s] = inputBytes
+  const [chainId, address, nonce, yParity, r, s] = inputBytes.map(unpadBytes)
   const msgHash = eoaCode7702AuthorizationHashedMessageToSign([chainId, address, nonce])
   const pubKey = ecrecover(msgHash, bytesToBigInt(yParity), r, s)
   return new Address(publicToAddress(pubKey))
