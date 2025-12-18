@@ -318,7 +318,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     debug(`Sender's pre-tx balance is ${balance}`)
   }
   // EIP-3607: Reject transactions from senders with deployed code
-  if (vm.common.isActivatedEIP(3607) && !equalsBytes(fromAccount.codeHash, KECCAK256_NULL)) {
+  if (!equalsBytes(fromAccount.codeHash, KECCAK256_NULL)) {
     const isActive7702 = vm.common.isActivatedEIP(7702)
     switch (isActive7702) {
       case true: {
