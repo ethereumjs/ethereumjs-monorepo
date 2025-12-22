@@ -9,7 +9,7 @@ describe('EIP-3607 tests', () => {
   const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
   const precompileAddr = createAddressFromString('0x0000000000000000000000000000000000000001')
 
-  it('should reject txs from senders with deployed code when EIP is enabled', async () => {
+  it('should reject txs from senders with deployed code', async () => {
     const vm = await createVM({ common })
     await vm.stateManager.putCode(precompileAddr, new Uint8Array(32).fill(1))
     const tx = createLegacyTx({ gasLimit: 100000 }, { freeze: false })
