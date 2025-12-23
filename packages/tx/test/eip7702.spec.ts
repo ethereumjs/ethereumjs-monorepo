@@ -100,11 +100,6 @@ describe('[EOACode7702Transaction]', () => {
       [{ yParity: '0x0100' }, 'yParity should be < 2^8'],
       [{ r: bigIntToHex(MAX_INTEGER + BIGINT_1) }, 'r exceeds 2^256 - 1'],
       [{ s: bigIntToHex(MAX_INTEGER + BIGINT_1) }, 's exceeds 2^256 - 1'],
-      [{ yParity: '0x0002' }, 'yParity cannot have leading zeros'],
-      [{ r: '0x0001' }, 'r cannot have leading zeros'],
-      [{ s: '0x0001' }, 's cannot have leading zeros'],
-      [{ nonce: '0x0001' }, 'nonce cannot have leading zeros'],
-      [{ chainId: '0x0001' }, 'chainId cannot have leading zeros'],
     ]
 
     for (const test of tests) {
@@ -118,5 +113,30 @@ describe('[EOACode7702Transaction]', () => {
     assert.doesNotThrow(() => {
       createEOACode7702Tx(getTxData(), { common })
     })
+
+    // Leading zeros in hex strings are now accepted because unpadBytes normalizes them
+    // '0x0001' is treated the same as '0x01' (both represent the number 1)
+    // '0x0002' is treated the same as '0x02' (both represent the number 2)
+    // This is correct behavior for numeric fields in RLP encoding
+    assert.doesNotThrow(() => {
+      createEOACode7702Tx(getTxData({ yParity: '0x0002' }), { common })
+    }, 'leading zeros in yParity should be normalized and accepted')
+
+    assert.doesNotThrow(() => {
+      createEOACode7702Tx(getTxData({ nonce: '0x0001' }), { common })
+    }, 'leading zeros in nonce should be normalized and accepted')
+
+    assert.doesNotThrow(() => {
+      createEOACode7702Tx(getTxData({ chainId: '0x0001' }), { common })
+    }, 'leading zeros in chainId should be normalized and accepted')
+
+    // '0x0' should be treated as zero (empty bytes after unpadding)
+    assert.doesNotThrow(() => {
+      createEOACode7702Tx(getTxData({ chainId: '0x0' }), { common })
+    }, 'chainId 0x0 should be normalized to empty bytes and accepted')
+
+    assert.doesNotThrow(() => {
+      createEOACode7702Tx(getTxData({ yParity: '0x0' }), { common })
+    }, 'yParity 0x0 should be normalized to empty bytes and accepted')
   })
 })
