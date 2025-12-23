@@ -131,12 +131,33 @@ describe('[EOACode7702Transaction]', () => {
     }, 'leading zeros in chainId should be normalized and accepted')
 
     // '0x0' should be treated as zero (empty bytes after unpadding)
-    assert.doesNotThrow(() => {
-      createEOACode7702Tx(getTxData({ chainId: '0x0' }), { common })
-    }, 'chainId 0x0 should be normalized to empty bytes and accepted')
+    const txWithZeroChainId = createEOACode7702Tx(getTxData({ chainId: '0x0' }), { common })
+    assert.strictEqual(
+      txWithZeroChainId.authorizationList[0][0].length,
+      0,
+      'chainId 0x0 should be normalized to empty bytes',
+    )
 
-    assert.doesNotThrow(() => {
-      createEOACode7702Tx(getTxData({ yParity: '0x0' }), { common })
-    }, 'yParity 0x0 should be normalized to empty bytes and accepted')
+    const txWithZeroYParity = createEOACode7702Tx(getTxData({ yParity: '0x0' }), { common })
+    assert.strictEqual(
+      txWithZeroYParity.authorizationList[0][3].length,
+      0,
+      'yParity 0x0 should be normalized to empty bytes',
+    )
+
+    // Verify that leading zeros are normalized correctly
+    const txWithPaddedNonce = createEOACode7702Tx(getTxData({ nonce: '0x0001' }), { common })
+    assert.deepEqual(
+      txWithPaddedNonce.authorizationList[0][2],
+      new Uint8Array([1]),
+      'nonce 0x0001 should be normalized to [1]',
+    )
+
+    const txWithPaddedChainId = createEOACode7702Tx(getTxData({ chainId: '0x0001' }), { common })
+    assert.deepEqual(
+      txWithPaddedChainId.authorizationList[0][0],
+      new Uint8Array([1]),
+      'chainId 0x0001 should be normalized to [1]',
+    )
   })
 })
