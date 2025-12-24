@@ -45,7 +45,16 @@ if (fs.existsSync(fixturesPath) === false) {
 
 export async function runStateTestCase(fork: string, testData: any, t: typeof assert) {
   const kzg = new microEthKZG(trustedSetup)
-  const common = new Common({ chain: Mainnet, hardfork: fork.toLowerCase(), customCrypto: { kzg } })
+  const common = new Common({
+    chain: Mainnet,
+    hardfork:
+      fork.toLowerCase() === 'frontier'
+        ? 'chainstart'
+        : fork.toLowerCase() === 'constantinoplefix'
+          ? 'petersburg'
+          : fork.toLowerCase(),
+    customCrypto: { kzg },
+  })
   const vm = await createVM({
     common,
   })
