@@ -237,6 +237,9 @@ export class Journal {
    * @param address - The address (as a Uint8Array) to check
    */
   isWarmedAddress(address: Uint8Array): boolean {
+    // Using deprecated bytesToUnprefixedHex for performance: this is a hot path used in Map/Set lookups.
+    // bytesToUnprefixedHex directly calls the noble library without creating an intermediate prefixed string,
+    // avoiding the overhead of bytesToHex + stripHexPrefix.
     const addressHex = bytesToUnprefixedHex(address)
     const warm = this.journal.has(addressHex) || this.alwaysWarmJournal.has(addressHex)
     return warm
@@ -247,6 +250,9 @@ export class Journal {
    * @param addressArr - The address (as a Uint8Array) to check
    */
   addWarmedAddress(addressArr: Uint8Array): void {
+    // Using deprecated bytesToUnprefixedHex for performance: this is a hot path used in Map/Set operations.
+    // bytesToUnprefixedHex directly calls the noble library without creating an intermediate prefixed string,
+    // avoiding the overhead of bytesToHex + stripHexPrefix.
     const address = bytesToUnprefixedHex(addressArr)
     if (!this.journal.has(address)) {
       this.journal.set(address, new Set())
@@ -266,6 +272,9 @@ export class Journal {
    * @param slot - The slot (as a Uint8Array) to check
    */
   isWarmedStorage(address: Uint8Array, slot: Uint8Array): boolean {
+    // Using deprecated bytesToUnprefixedHex for performance: this is a hot path used in Map/Set lookups.
+    // bytesToUnprefixedHex directly calls the noble library without creating an intermediate prefixed string,
+    // avoiding the overhead of bytesToHex + stripHexPrefix.
     const addressHex = bytesToUnprefixedHex(address)
     const slots = this.journal.get(addressHex)
     if (slots === undefined) {
@@ -288,6 +297,9 @@ export class Journal {
    * @param slot - The slot (as a Uint8Array) to check
    */
   addWarmedStorage(address: Uint8Array, slot: Uint8Array): void {
+    // Using deprecated bytesToUnprefixedHex for performance: this is a hot path used in Map/Set operations.
+    // bytesToUnprefixedHex directly calls the noble library without creating an intermediate prefixed string,
+    // avoiding the overhead of bytesToHex + stripHexPrefix.
     const addressHex = bytesToUnprefixedHex(address)
     let slots = this.journal.get(addressHex)
     if (slots === undefined) {
