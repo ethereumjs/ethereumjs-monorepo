@@ -164,6 +164,8 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
   }
 
   let result: ApplyBlockResult
+  let requestsHash: Uint8Array | undefined
+  let requests: CLRequest<CLRequestType>[] | undefined
 
   try {
     result = await applyBlock(vm, block, opts)
@@ -176,6 +178,21 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
         } txResults=${result.results.length}`,
       )
     }
+    if (block.common.isActivatedEIP(7685)) {
+      const sha256Function = vm.common.customCrypto.sha256 ?? sha256
+      requests = await accumulateRequests(vm, result.results)
+      requestsHash = genRequestsRoot(requests, sha256Function)
+      if (!equalsBytes(block.header.requestsHash!, requestsHash!)) {
+        if (vm.DEBUG)
+          debug(
+            `Invalid requestsHash received=${bytesToHex(
+              block.header.requestsHash!,
+            )} expected=${bytesToHex(requestsHash!)}`,
+          )
+        const msg = _errorMsg('invalid requestsHash', vm, block)
+        throw EthereumJSErrorWithoutCode(msg)
+      }
+    }
   } catch (err: any) {
     await vm.evm.journal.revert()
     if (vm.DEBUG) {
@@ -186,14 +203,6 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
       console.timeEnd(withdrawalsRewardsCommitLabel)
     }
     throw err
-  }
-
-  let requestsHash: Uint8Array | undefined
-  let requests: CLRequest<CLRequestType>[] | undefined
-  if (block.common.isActivatedEIP(7685)) {
-    const sha256Function = vm.common.customCrypto.sha256 ?? sha256
-    requests = await accumulateRequests(vm, result.results)
-    requestsHash = genRequestsRoot(requests, sha256Function)
   }
 
   // Persist state
@@ -226,19 +235,6 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     }
     block = createBlock(blockData, { common: vm.common })
   } else {
-    if (vm.common.isActivatedEIP(7685)) {
-      if (!equalsBytes(block.header.requestsHash!, requestsHash!)) {
-        if (vm.DEBUG)
-          debug(
-            `Invalid requestsHash received=${bytesToHex(
-              block.header.requestsHash!,
-            )} expected=${bytesToHex(requestsHash!)}`,
-          )
-        const msg = _errorMsg('invalid requestsHash', vm, block)
-        throw EthereumJSErrorWithoutCode(msg)
-      }
-    }
-
     // Only validate the following headers if Stateless isn't activated
     if (equalsBytes(result.receiptsRoot, block.header.receiptTrie) === false) {
       if (vm.DEBUG) {
