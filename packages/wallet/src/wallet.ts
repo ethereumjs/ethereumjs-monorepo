@@ -306,10 +306,8 @@ export class Wallet {
       const max = BigInt('0x088f924eeceeda7fe92e1f5b0fffffffffffffff')
       for (;;) {
         const privateKey = randomBytes(32)
-        // Using deprecated bytesToUnprefixedHex for performance: this is in a tight loop and we're building
-        // a hex string with '0x' prefix. bytesToUnprefixedHex avoids creating an intermediate prefixed string.
-        const hex = bytesToUnprefixedHex(privateToAddress(privateKey))
-        if (BigInt('0x' + hex) <= max) {
+        const hex = bytesToHex(privateToAddress(privateKey))
+        if (BigInt(hex) <= max) {
           return new Wallet(privateKey)
         }
       }

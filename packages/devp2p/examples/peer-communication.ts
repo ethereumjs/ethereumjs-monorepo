@@ -4,6 +4,7 @@ import * as devp2p from '@ethereumjs/devp2p'
 import { RLP } from '@ethereumjs/rlp'
 import { createTxFromBlockBodyData } from '@ethereumjs/tx'
 import {
+  bytesToHex,
   bytesToInt,
   bytesToUnprefixedHex,
   equalsBytes,
@@ -207,10 +208,7 @@ rlpx.events.on('peer:added', (peer) => {
           }
 
           if (!isValidPayload) {
-            // Using deprecated bytesToUnprefixedHex for performance: used for string formatting in logging.
-            console.log(
-              `${addr} received wrong block header ${bytesToUnprefixedHex(header.hash())}`,
-            )
+            console.log(`${addr} received wrong block header ${bytesToHex(header.hash())}`)
           }
         }
 
