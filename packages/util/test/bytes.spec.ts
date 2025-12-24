@@ -68,6 +68,22 @@ describe('unpadBytes', () => {
       unpadBytes((<unknown>'0000000006600') as Uint8Array)
     })
   })
+  it('should correctly unpad 0x0', () => {
+    const bytes = hexToBytes('0x0')
+    assert.deepEqual(bytes, new Uint8Array([0]), 'hexToBytes("0x0") should return [0]')
+
+    const unpadded = unpadBytes(bytes)
+    assert.deepEqual(unpadded, new Uint8Array(0), 'unpadBytes should return empty array for 0x0')
+    assert.strictEqual(unpadded.length, 0, 'unpadded result should have length 0')
+
+    const result = unpadBytes(hexToBytes('0x0'))
+    assert.deepEqual(
+      result,
+      new Uint8Array(0),
+      'unpadBytes(hexToBytes("0x0")) should return empty array',
+    )
+    assert.strictEqual(bytesToHex(result), '0x', 'empty bytes should convert to "0x" hex string')
+  })
 })
 
 describe('unpadArray', () => {
