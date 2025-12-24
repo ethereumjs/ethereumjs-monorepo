@@ -594,13 +594,7 @@ async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
   for (let txIdx = 0; txIdx < block.transactions.length; txIdx++) {
     const tx = block.transactions[txIdx]
 
-    let maxGasLimit
-    if (vm.common.isActivatedEIP(1559)) {
-      maxGasLimit = block.header.gasLimit * vm.common.param('elasticityMultiplier')
-    } else {
-      maxGasLimit = block.header.gasLimit
-    }
-    const gasLimitIsHigherThanBlock = maxGasLimit < tx.gasLimit + gasUsed
+    const gasLimitIsHigherThanBlock = block.header.gasLimit < tx.gasLimit + gasUsed
     if (gasLimitIsHigherThanBlock) {
       const msg = _errorMsg('tx has a higher gas limit than the block', vm, block)
       throw EthereumJSErrorWithoutCode(msg)
