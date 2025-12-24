@@ -306,6 +306,8 @@ export class Wallet {
       const max = BigInt('0x088f924eeceeda7fe92e1f5b0fffffffffffffff')
       for (;;) {
         const privateKey = randomBytes(32)
+        // Using deprecated bytesToUnprefixedHex for performance: this is in a tight loop and we're building
+        // a hex string with '0x' prefix. bytesToUnprefixedHex avoids creating an intermediate prefixed string.
         const hex = bytesToUnprefixedHex(privateToAddress(privateKey))
         if (BigInt('0x' + hex) <= max) {
           return new Wallet(privateKey)
@@ -327,6 +329,8 @@ export class Wallet {
     for (;;) {
       const privateKey = randomBytes(32)
       const address = privateToAddress(privateKey)
+      // Using deprecated bytesToUnprefixedHex for performance: this is in a tight loop for vanity address generation.
+      // bytesToUnprefixedHex avoids creating an intermediate prefixed string.
       if (pattern.test(bytesToUnprefixedHex(address))) {
         return new Wallet(privateKey)
       }
@@ -399,6 +403,8 @@ export class Wallet {
     const derivedKey = await scryptV1(utf8ToBytes(password), salt, kdfparams)
     const ciphertext = unprefixedHexToBytes(json.Crypto.CipherText)
     const mac = keccak_256(concatBytes(derivedKey.subarray(16, 32), ciphertext))
+    // Using deprecated bytesToUnprefixedHex for performance: comparing with JSON string values that are unprefixed.
+    // bytesToUnprefixedHex avoids creating an intermediate prefixed string and then stripping it.
     if (bytesToUnprefixedHex(mac) !== json.Crypto.MAC) {
       throw EthereumJSErrorWithoutCode('Key derivation failed - possibly wrong passphrase')
     }
@@ -455,6 +461,8 @@ export class Wallet {
 
     const ciphertext = unprefixedHexToBytes(json.crypto.ciphertext)
     const mac = keccak_256(concatBytes(derivedKey.subarray(16, 32), ciphertext))
+    // Using deprecated bytesToUnprefixedHex for performance: comparing with JSON string values that are unprefixed.
+    // bytesToUnprefixedHex avoids creating an intermediate prefixed string and then stripping it.
     if (bytesToUnprefixedHex(mac) !== json.crypto.mac) {
       throw EthereumJSErrorWithoutCode('Key derivation failed - possibly wrong passphrase')
     }
@@ -500,6 +508,8 @@ export class Wallet {
     )
 
     const wallet = new Wallet(keccak_256(seed))
+    // Using deprecated bytesToUnprefixedHex for performance: comparing with JSON string values that are unprefixed.
+    // bytesToUnprefixedHex avoids creating an intermediate prefixed string and then stripping it.
     if (bytesToUnprefixedHex(wallet.getAddress()) !== json.ethaddr) {
       throw EthereumJSErrorWithoutCode('Decoded key mismatch - possibly wrong passphrase')
     }
@@ -622,6 +632,8 @@ export class Wallet {
     )
     const mac = keccak_256(concatBytes(derivedKey.subarray(16, 32), ciphertext))
 
+    // Using deprecated bytesToUnprefixedHex for performance: building keystore JSON objects where unprefixed hex
+    // strings are required. bytesToUnprefixedHex avoids creating intermediate prefixed strings and then stripping them.
     return {
       version: 3,
       id: uuidv4({ random: v3Params.uuid }),
@@ -661,6 +673,8 @@ export class Wallet {
       'UTC--',
       ts.toJSON().replace(/:/g, '-'),
       '--',
+      // Using deprecated bytesToUnprefixedHex for performance: building a filename string where unprefixed hex is needed.
+      // bytesToUnprefixedHex avoids creating an intermediate prefixed string and then stripping it.
       bytesToUnprefixedHex(this.getAddress()),
     ].join('')
   }

@@ -896,6 +896,9 @@ export class MerklePatriciaTrie {
   // (i.e. the Trie is not correctly pruned)
   // If this method returns `true`, the Trie is correctly pruned and all keys are reachable
   async verifyPrunedIntegrity(): Promise<boolean> {
+    // Using deprecated bytesToUnprefixedHex for performance: used for string comparisons with database keys.
+    // bytesToUnprefixedHex directly calls the noble library without creating an intermediate prefixed string,
+    // avoiding the overhead of bytesToHex + stripHexPrefix.
     const roots = [
       bytesToUnprefixedHex(this.root()),
       bytesToUnprefixedHex(this.appliedKey(ROOT_DB_KEY)),
@@ -918,6 +921,7 @@ export class MerklePatriciaTrie {
           if (node instanceof BranchMPTNode) {
             for (const item of node._branches) {
               // If one of the branches matches the key, then it is found
+              // Using deprecated bytesToUnprefixedHex for performance: used for string comparisons with database keys.
               if (
                 item !== null &&
                 bytesToUnprefixedHex(
@@ -933,6 +937,7 @@ export class MerklePatriciaTrie {
           }
           if (node instanceof ExtensionMPTNode) {
             // If the value of the ExtensionMPTNode points to the dbkey, then it is found
+            // Using deprecated bytesToUnprefixedHex for performance: used for string comparisons with database keys.
             if (bytesToUnprefixedHex(node.value()) === dbkey) {
               found = true
               return
