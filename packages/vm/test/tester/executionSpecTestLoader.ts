@@ -167,16 +167,18 @@ function buildTransitionChainConfig(
 
   const customHardforks: HardforksDict = {}
   // Extract BPO parameters from blobSchedule
-  for (const [hfName, params] of Object.entries(blobSchedule)) {
-    const hfNameLower = hfName.toLowerCase()
-    if (hfNameLower.startsWith('bpo')) {
-      const bpoParams = params as any
-      customHardforks[hfNameLower] = {
-        params: {
-          target: toType(bpoParams.target, TypeOutput.Number),
-          max: toType(bpoParams.max, TypeOutput.Number),
-          blobGasPriceUpdateFraction: toType(bpoParams.baseFeeUpdateFraction, TypeOutput.Number),
-        },
+  if (blobSchedule !== undefined) {
+    for (const [hfName, params] of Object.entries(blobSchedule)) {
+      const hfNameLower = hfName.toLowerCase()
+      if (hfNameLower.startsWith('bpo')) {
+        const bpoParams = params as any
+        customHardforks[hfNameLower] = {
+          params: {
+            target: toType(bpoParams.target, TypeOutput.Number),
+            max: toType(bpoParams.max, TypeOutput.Number),
+            blobGasPriceUpdateFraction: toType(bpoParams.baseFeeUpdateFraction, TypeOutput.Number),
+          },
+        }
       }
     }
   }
@@ -187,30 +189,61 @@ function buildTransitionChainConfig(
     customHardforks,
     defaultHardfork: from,
     hardforks,
-    consensus: {
-      type: ConsensusType.ProofOfStake,
-      algorithm: 'casper',
-    },
+    consensus: preMergeForks.includes(from)
+      ? {
+          type: ConsensusType.ProofOfStake,
+          algorithm: 'casper',
+        }
+      : {
+          type: ConsensusType.ProofOfWork,
+          algorithm: 'ethash',
+        },
   }
 
   return chainConfig
 }
 
+const preMergeForks = [
+  'chainstart',
+  'homestead',
+  'dao',
+  'tangerineWhistle',
+  'spuriousDragon',
+  'byzantium',
+  'constantinople',
+  'petersburg',
+  'istanbul',
+  'muirGlacier',
+  'berlin',
+  'london',
+  'arrowGlacier',
+  'grayGlacier',
+]
+
 export function createCommonForFork(fork: string, testData?: any) {
   const kzg = new microEthKZG(trustedSetup)
 
   try {
-    const forkLower = fork.toLowerCase()
-
+    let forkLower = fork.toLowerCase()
+    if (forkLower === 'frontier') {
+      forkLower = 'chainstart'
+    } else if (forkLower === 'constantinoplefix') {
+      forkLower = 'petersburg'
+    }
     const hardforks: HardforkTransitionConfig[] = customHardforkHistory(forkLower)
 
     const chainConfig: ChainConfig = {
       ...Mainnet,
       hardforks,
-      consensus: {
-        type: ConsensusType.ProofOfStake,
-        algorithm: 'casper',
-      },
+      consensus: preMergeForks.includes(forkLower)
+        ? {
+            type: ConsensusType.ProofOfWork,
+            algorithm: 'ethash',
+          }
+        : {
+            type: ConsensusType.ProofOfStake,
+            algorithm: 'casper',
+          },
       defaultHardfork: forkLower,
     }
     // Only set chainId if it's provided in testData, otherwise use Mainnet's chainId
