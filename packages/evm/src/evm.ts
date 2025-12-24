@@ -478,6 +478,9 @@ export class EVM implements EVMInterface {
       let callTimer: Timer | undefined
       let target: string
       if (this._optsCached.profiler?.enabled === true) {
+        // Using deprecated bytesToUnprefixedHex for performance: used for profiler string formatting.
+        // bytesToUnprefixedHex directly calls the noble library without creating an intermediate prefixed string,
+        // avoiding the overhead of bytesToHex + stripHexPrefix.
         target = bytesToUnprefixedHex(message.codeAddress.bytes)
         // TODO: map target precompile not to address, but to a name
         target = getPrecompileName(target) ?? target.slice(20)
@@ -1122,6 +1125,9 @@ export class EVM implements EVMInterface {
    * if no such precompile exists.
    */
   getPrecompile(address: Address): PrecompileFunc | undefined {
+    // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for precompile lookups.
+    // bytesToUnprefixedHex directly calls the noble library without creating an intermediate prefixed string,
+    // avoiding the overhead of bytesToHex + stripHexPrefix.
     return this.precompiles.get(bytesToUnprefixedHex(address.bytes))
   }
 

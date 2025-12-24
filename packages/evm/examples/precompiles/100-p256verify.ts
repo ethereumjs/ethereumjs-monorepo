@@ -35,6 +35,9 @@ const main = async () => {
   const msgHashHex = bytesToHex(messageHash)
   const rHex = padHex(signature.r)
   const sHex = padHex(signature.s)
+  // Using deprecated bytesToUnprefixedHex for performance: used for string building in hex concatenation.
+  // bytesToUnprefixedHex directly calls the noble library without creating an intermediate prefixed string,
+  // avoiding the overhead of bytesToHex + stripHexPrefix.
   const qxHex = bytesToUnprefixedHex(publicKey.slice(1, 33)).padStart(64, '0')
   const qyHex = bytesToUnprefixedHex(publicKey.slice(33, 65)).padStart(64, '0')
 
