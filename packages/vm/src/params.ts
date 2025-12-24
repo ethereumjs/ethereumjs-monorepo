@@ -78,6 +78,7 @@ export const paramsVM: ParamsDict = {
     systemAddress: '0xfffffffffffffffffffffffffffffffffffffffe', // The system address to perform operations on the withdrawal requests predeploy address
     // See: https://github.com/ethereum/EIPs/pull/8934/files
     withdrawalRequestPredeployAddress: '0x00000961EF480EB55E80D19AD83579A64C007002', // Address of the validator excess address
+    systemCallGasLimit: 30_000_000, // EIP-7002 system call gas limit
   },
 
   /**
@@ -88,6 +89,7 @@ export const paramsVM: ParamsDict = {
     systemAddress: '0xfffffffffffffffffffffffffffffffffffffffe', // The system address to perform operations on the consolidation requests predeploy address
     // See: https://github.com/ethereum/EIPs/pull/8934/files
     consolidationRequestPredeployAddress: '0x0000BBDDC7CE488642FB579F8B00F3A590007251', // Address of the consolidations contract
+    systemCallGasLimit: 30_000_000, // EIP-7251 system call gas limit
   },
   /**
 .  * Shard Blob Transactions
