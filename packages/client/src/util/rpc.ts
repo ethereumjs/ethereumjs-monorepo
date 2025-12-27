@@ -1,5 +1,12 @@
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import { createServer } from 'http'
 import { inspect } from 'util'
+import {
+  EthereumJSErrorWithoutCode,
+  bytesToUnprefixedHex,
+  hexToBytes,
+  randomBytes,
+} from '@ethereumjs/util'
 import bodyParser from 'body-parser'
 import Connect from 'connect'
 import cors from 'cors'
@@ -8,6 +15,7 @@ import jayson from 'jayson/promise/index.js'
 import { jwt } from '../ext/jwt-simple.ts'
 
 import type { IncomingMessage } from 'connect'
+import type { Config } from '../config.ts'
 import type { TAlgorithm } from '../ext/jwt-simple.ts'
 import type { Logger } from '../logging.ts'
 import type { RPCManager } from '../rpc/index.ts'
@@ -243,4 +251,39 @@ export function createWsRPCServerListener(opts: CreateWSServerOpts): jayson.Http
   })
   // Only return something if a new server was created
   return !opts.httpServer ? httpServer : undefined
+}
+
+/**
+ * Returns a jwt secret from a provided file path, otherwise saves a randomly generated one to datadir if none already exists
+ */
+export function parseJwtSecret(config: Config, jwtFilePath?: string): Uint8Array {
+  let jwtSecret: Uint8Array
+  const defaultJwtPath = `${config.datadir}/jwtsecret`
+  const usedJwtPath = jwtFilePath ?? defaultJwtPath
+
+  // If jwtFilePath is provided, it should exist
+  if (jwtFilePath !== undefined && !existsSync(jwtFilePath)) {
+    throw EthereumJSErrorWithoutCode(`No file exists at provided jwt secret path=${jwtFilePath}`)
+  }
+
+  if (jwtFilePath !== undefined || existsSync(defaultJwtPath)) {
+    const jwtSecretContents = readFileSync(jwtFilePath ?? defaultJwtPath, 'utf-8').trim()
+    const hexPattern = new RegExp(/^(0x|0X)?(?<jwtSecret>[a-fA-F0-9]+)$/, 'g')
+    const jwtSecretHex = hexPattern.exec(jwtSecretContents)?.groups?.jwtSecret
+    if (jwtSecretHex === undefined || jwtSecretHex.length !== 64) {
+      throw Error('Need a valid 256 bit hex encoded secret')
+    }
+    jwtSecret = hexToBytes(`0x${jwtSecretHex}`)
+  } else {
+    const folderExists = existsSync(config.datadir)
+    if (!folderExists) {
+      mkdirSync(config.datadir, { recursive: true })
+    }
+
+    jwtSecret = randomBytes(32)
+    writeFileSync(defaultJwtPath, bytesToUnprefixedHex(jwtSecret), {})
+    config.logger?.info(`New Engine API JWT token created path=${defaultJwtPath}`)
+  }
+  config.logger?.info(`Using Engine API with JWT token authentication path=${usedJwtPath}`)
+  return jwtSecret
 }
