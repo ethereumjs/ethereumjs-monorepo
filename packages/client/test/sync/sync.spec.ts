@@ -23,7 +23,6 @@ class PeerPool {
 }
 PeerPool.prototype.open = vi.fn()
 PeerPool.prototype.close = vi.fn()
-describe('[Synchronizer]', async () => {})
 
 describe('should sync', async () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })

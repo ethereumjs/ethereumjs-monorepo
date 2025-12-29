@@ -114,10 +114,11 @@ describe('[BoundProtocol]', () => {
   it('should perform request', async () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const sender = new Sender()
+    const testPeer = { pooled: true } as any
     const bound = new BoundProtocol({
       config,
       protocol,
-      peer,
+      peer: testPeer,
       sender,
     })
     protocol.encode.mockReturnValue('1')
@@ -126,9 +127,11 @@ describe('[BoundProtocol]', () => {
       return payload
     })
     sender.sendMessage = vi.fn().mockImplementation(() => {
-      setTimeout(() => {
+      // Use setImmediate to ensure the event is emitted in the next tick
+      // but before the timeout fires
+      setImmediate(() => {
         sender.emit('message', { code: 0x02, payload: '2' })
-      }, 100)
+      })
     })
     const response = await bound.request('TestMessage', 1)
     assert.strictEqual(response, 2, 'got response')

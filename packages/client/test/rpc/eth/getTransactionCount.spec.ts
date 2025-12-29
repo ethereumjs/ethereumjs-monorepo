@@ -95,8 +95,14 @@ describe(method, () => {
 
     // Set stubs so getTxCount won't validate txns or mess up state root
     service.txPool['validate'] = () => Promise.resolve(undefined)
-    service.execution.vm.stateManager.setStateRoot = () => Promise.resolve(undefined)
-    service.execution.vm.shallowCopy = () => Promise.resolve(service.execution.vm)
+    const originalShallowCopy = service.execution.vm.shallowCopy.bind(service.execution.vm)
+    service.execution.vm.shallowCopy = async () => {
+      const vmCopy = await originalShallowCopy()
+      // Ensure the account exists in the copied state manager
+      await vmCopy.stateManager.putAccount(SIGNER_A.address, account!)
+      vmCopy.stateManager.setStateRoot = () => Promise.resolve(undefined)
+      return vmCopy
+    }
 
     await service.txPool.add(tx, true)
 
