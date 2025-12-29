@@ -120,13 +120,12 @@ describe('[BoundProtocol]', () => {
       peer,
       sender,
     })
-    sender.sendMessage = vi.fn()
     protocol.encode.mockReturnValue('1')
     protocol.decode.mockImplementation((msg: any, payload: string) => {
       if (payload === '2') return 2
       return payload
     })
-    sender.sendMessage.mockImplementation(() => {
+    sender.sendMessage = vi.fn().mockImplementation(() => {
       setTimeout(() => {
         sender.emit('message', { code: 0x02, payload: '2' })
       }, 100)

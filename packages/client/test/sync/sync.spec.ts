@@ -30,10 +30,8 @@ describe('should sync', async () => {
   config.syncTargetHeight = BigInt(1)
   const pool = new PeerPool() as any
   const chain = await Chain.create({ config })
-  const sync = new SynchronizerTest({ config, pool, chain })
-  //@ts-expect-error -- Manually overwriting with function for testing
-  sync.sync = vi.fn()
-  sync.sync.mockResolvedValue(true)
+  const sync: any = new SynchronizerTest({ config, pool, chain })
+  sync.sync = vi.fn().mockResolvedValue(true)
   config.events.on(Event.SYNC_SYNCHRONIZED, async () => {
     it('should sync', async () => {
       assert.isTrue(true, 'synchronized')
