@@ -25,7 +25,13 @@ class FetcherTest extends Fetcher<any, any, any> {
 
 it('should handle bad result', () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
-  const fetcher = new FetcherTest({ config, pool: {} as any })
+  const fetcher = new FetcherTest({
+    config,
+    pool: {
+      ban: vi.fn(),
+      idle: vi.fn(),
+    } as any,
+  })
   const job: any = { peer: {}, state: 'active' }
   fetcher['running'] = true
   fetcher.next = vi.fn()
@@ -37,7 +43,13 @@ it('should handle bad result', () => {
 
 it('should handle failure', () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
-  const fetcher = new FetcherTest({ config, pool: {} as any })
+  const fetcher = new FetcherTest({
+    config,
+    pool: {
+      ban: vi.fn(),
+      idle: vi.fn(),
+    } as any,
+  })
   const job = { peer: {}, state: 'active' }
   fetcher['running'] = true
   fetcher.next = vi.fn()
@@ -59,12 +71,13 @@ describe('should handle expiration', async () => {
           return false
         },
         ban: vi.fn(),
+        idle: vi.fn(),
       } as any,
       timeout: 5,
     })
     const job = { index: 0 }
     const peer = { idle: true, latest: vi.fn() }
-    fetcher.peer = vi.fn().mockReturnValue(() => peer)
+    fetcher.peer = vi.fn().mockReturnValue(peer)
     fetcher.request = vi.fn().mockImplementationOnce(async (job, peer) => {
       await new Promise((resolve) => {
         setTimeout(resolve, 1000)
@@ -91,7 +104,10 @@ describe('should handle queue management', () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   const fetcher = new FetcherTest({
     config,
-    pool: {} as any,
+    pool: {
+      ban: vi.fn(),
+      idle: vi.fn(),
+    } as any,
   })
   const job1 = { index: 0 }
   const job2 = { index: 1 }
@@ -120,7 +136,14 @@ describe('should handle queue management', () => {
 
 describe('should re-enqueue on a non-fatal error', () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
-  const fetcher = new FetcherTest({ config, pool: {} as any, timeout: 5000 })
+  const fetcher = new FetcherTest({
+    config,
+    pool: {
+      ban: vi.fn(),
+      idle: vi.fn(),
+    } as any,
+    timeout: 5000,
+  })
   const task = { first: BigInt(50), count: 10 }
   const job: any = { peer: {}, task, state: 'active', index: 0 }
   fetcher.next = vi.fn()
@@ -133,7 +156,9 @@ describe('should re-enqueue on a non-fatal error', () => {
   fetcher['running'] = true
   fetcher.store = vi.fn().mockRejectedValue(new Error('could not find parent header'))
   fetcher['success'](job, ['something'])
-  it('should step back', () => {
+  it('should step back', async () => {
+    // Wait for async write error handling to complete
+    await new Promise((resolve) => setTimeout(resolve, 100))
     assert.strictEqual(
       fetcher['in'].peek()?.task.first,
       BigInt(1),
@@ -144,7 +169,14 @@ describe('should re-enqueue on a non-fatal error', () => {
 
 describe('should handle fatal errors correctly', () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
-  const fetcher = new FetcherTest({ config, pool: {} as any, timeout: 5000 })
+  const fetcher = new FetcherTest({
+    config,
+    pool: {
+      ban: vi.fn(),
+      idle: vi.fn(),
+    } as any,
+    timeout: 5000,
+  })
   const task = { first: BigInt(50), count: 10 }
   const job: any = { peer: {}, task, state: 'active', index: 0 }
   fetcher['in'].insert(job)

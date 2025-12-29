@@ -8,6 +8,9 @@ import type { ETH as Devp2pETH } from '@ethereumjs/devp2p'
 describe('should send status', async () => {
   const rlpxProtocol = {
     sendStatus: vi.fn(),
+    events: {
+      on: vi.fn(),
+    },
   } as any
   const status = { id: 5 }
   const sender = new RlpxSender(rlpxProtocol)
@@ -21,6 +24,9 @@ describe('should send status', async () => {
 describe('should send message', async () => {
   const rlpxProtocol = {
     sendMessage: vi.fn(),
+    events: {
+      on: vi.fn(),
+    },
   } as any
   const sender = new RlpxSender(rlpxProtocol)
   sender.sendMessage(1, 5)
