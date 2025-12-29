@@ -1,5 +1,4 @@
-import * as td from 'testdouble'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, it, vi } from 'vitest'
 
 import { Chain, type ChainHeaders } from '../../src/blockchain/index.ts'
 import { Config } from '../../src/config.ts'
@@ -22,13 +21,9 @@ class PeerPool {
   open() {}
   close() {}
 }
-PeerPool.prototype.open = td.func<any>()
-PeerPool.prototype.close = td.func<any>()
-describe('[Synchronizer]', async () => {
-  it('should reset td', () => {
-    td.reset()
-  })
-})
+PeerPool.prototype.open = vi.fn()
+PeerPool.prototype.close = vi.fn()
+describe('[Synchronizer]', async () => {})
 
 describe('should sync', async () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
@@ -37,8 +32,8 @@ describe('should sync', async () => {
   const chain = await Chain.create({ config })
   const sync = new SynchronizerTest({ config, pool, chain })
   //@ts-expect-error -- Manually overwriting with function for testing
-  sync.sync = td.func()
-  td.when(sync.sync()).thenResolve(true)
+  sync.sync = vi.fn()
+  sync.sync.mockResolvedValue(true)
   config.events.on(Event.SYNC_SYNCHRONIZED, async () => {
     it('should sync', async () => {
       assert.isTrue(true, 'synchronized')

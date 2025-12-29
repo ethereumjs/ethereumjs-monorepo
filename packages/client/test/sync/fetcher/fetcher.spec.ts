@@ -1,4 +1,3 @@
-import * as td from 'testdouble'
 import { assert, describe, it, vi } from 'vitest'
 
 import { Config } from '../../../src/config.ts'
@@ -26,12 +25,11 @@ class FetcherTest extends Fetcher<any, any, any> {
 
 it('should handle bad result', () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
-  const fetcher = new FetcherTest({ config, pool: td.object() })
+  const fetcher = new FetcherTest({ config, pool: {} as any })
   const job: any = { peer: {}, state: 'active' }
   fetcher['running'] = true
-  fetcher.next = td.func<FetcherTest['next']>()
-  fetcher.wait = td.func<FetcherTest['wait']>()
-  td.when(fetcher.wait()).thenResolve(undefined)
+  fetcher.next = vi.fn()
+  fetcher.wait = vi.fn().mockResolvedValue(undefined)
   fetcher['success'](job, undefined)
   assert.strictEqual(fetcher['in'].length, 1, 'enqueued job')
   setTimeout(() => assert.isTrue(job.peer.idle, 'peer idled'), 10)
@@ -39,10 +37,10 @@ it('should handle bad result', () => {
 
 it('should handle failure', () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
-  const fetcher = new FetcherTest({ config, pool: td.object() })
+  const fetcher = new FetcherTest({ config, pool: {} as any })
   const job = { peer: {}, state: 'active' }
   fetcher['running'] = true
-  fetcher.next = td.func<FetcherTest['next']>()
+  fetcher.next = vi.fn()
   config.events.on(Event.SYNC_FETCHER_ERROR, (err) =>
     assert.strictEqual(err.message, 'err0', 'got error'),
   )
@@ -93,7 +91,7 @@ describe('should handle queue management', () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
   const fetcher = new FetcherTest({
     config,
-    pool: td.object(),
+    pool: {} as any,
   })
   const job1 = { index: 0 }
   const job2 = { index: 1 }
@@ -122,22 +120,18 @@ describe('should handle queue management', () => {
 
 describe('should re-enqueue on a non-fatal error', () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
-  const fetcher = new FetcherTest({ config, pool: td.object(), timeout: 5000 })
+  const fetcher = new FetcherTest({ config, pool: {} as any, timeout: 5000 })
   const task = { first: BigInt(50), count: 10 }
   const job: any = { peer: {}, task, state: 'active', index: 0 }
-  fetcher.next = td.func<FetcherTest['next']>()
-  fetcher.processStoreError = td.func<FetcherTest['processStoreError']>()
-  fetcher.write()
-  fetcher['running'] = true
-  fetcher.store = td.func<FetcherTest['store']>()
-  td.when(fetcher.store(td.matchers.anything())).thenReject(
-    new Error('could not find parent header'),
-  )
-  td.when(fetcher.processStoreError(td.matchers.anything(), td.matchers.anything())).thenReturn({
+  fetcher.next = vi.fn()
+  fetcher.processStoreError = vi.fn().mockReturnValue({
     destroyFetcher: false,
     banPeer: true,
     stepBack: BigInt(49),
   })
+  fetcher.write()
+  fetcher['running'] = true
+  fetcher.store = vi.fn().mockRejectedValue(new Error('could not find parent header'))
   fetcher['success'](job, ['something'])
   it('should step back', () => {
     assert.strictEqual(
@@ -148,11 +142,9 @@ describe('should re-enqueue on a non-fatal error', () => {
   })
 })
 
-td.reset()
-
 describe('should handle fatal errors correctly', () => {
   const config = new Config({ accountCache: 10000, storageCache: 1000 })
-  const fetcher = new FetcherTest({ config, pool: td.object(), timeout: 5000 })
+  const fetcher = new FetcherTest({ config, pool: {} as any, timeout: 5000 })
   const task = { first: BigInt(50), count: 10 }
   const job: any = { peer: {}, task, state: 'active', index: 0 }
   fetcher['in'].insert(job)

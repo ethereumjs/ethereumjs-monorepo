@@ -1,6 +1,5 @@
 import { EventEmitter } from 'eventemitter3'
-import * as td from 'testdouble'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, expect, it, vi } from 'vitest'
 
 import { Config } from '../../../src/config.ts'
 import { BoundProtocol } from '../../../src/net/protocol/index.ts'
@@ -8,8 +7,14 @@ import { Sender } from '../../../src/net/protocol/sender.ts'
 import { Event } from '../../../src/types.ts'
 
 describe('[BoundProtocol]', () => {
-  const peer = td.object('Peer') as any
-  const protocol = td.object('Protocol') as any
+  const peer = {} as any
+  const protocol = {
+    timeout: 100,
+    messages: [] as any[],
+    handshake: vi.fn(),
+    decode: vi.fn(),
+    encode: vi.fn(),
+  } as any
   const testMessage = {
     name: 'TestMessage',
     code: 0x01,
@@ -23,7 +28,6 @@ describe('[BoundProtocol]', () => {
     encode: (value: any) => value.toString(),
     decode: (value: any) => parseInt(value),
   }
-  protocol.timeout = 100
   protocol.messages = [testMessage, testResponse]
 
   it('should add methods for messages with a response', () => {
@@ -62,7 +66,7 @@ describe('[BoundProtocol]', () => {
       peer,
       sender,
     })
-    td.when(protocol.handshake(td.matchers.isA(EventEmitter))).thenResolve({ id: 1 })
+    protocol.handshake.mockResolvedValue({ id: 1 })
     await bound.handshake(sender)
     assert.deepEqual(bound.status, { id: 1 }, 'handshake success')
   })
@@ -79,28 +83,31 @@ describe('[BoundProtocol]', () => {
     bound.config.events.once(Event.PROTOCOL_ERROR, (err) => {
       assert.isTrue(/error0/.test(err.message), 'decode error')
     })
-    td.when(protocol.decode(testMessage, '1')).thenThrow(new Error('error0'))
+    protocol.decode.mockImplementation((msg: any, payload: string) => {
+      if (payload === '1') throw new Error('error0')
+      if (payload === '2') return 2
+      return payload
+    })
     bound['handle']({ name: 'TestMessage', code: 0x01, payload: '1' })
     bound.config.events.once(Event.PROTOCOL_MESSAGE, (message) => {
       assert.deepEqual(message, { name: 'TestMessage', data: 2 }, 'correct message')
     })
-    td.when(protocol.decode(testMessage, '2')).thenReturn(2)
     bound['handle']({ name: 'TestMessage', code: 0x01, payload: '2' })
   })
 
   it('should perform send', () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
     const sender = new Sender()
-    sender.sendMessage = td.func<Sender['sendMessage']>()
+    sender.sendMessage = vi.fn()
     const bound = new BoundProtocol({
       config,
       protocol,
       peer,
       sender,
     })
-    td.when(protocol.encode(testMessage, 3)).thenReturn('3')
+    protocol.encode.mockReturnValue('3')
     assert.deepEqual(bound.send('TestMessage', 3), testMessage, 'message returned')
-    td.verify(sender.sendMessage(0x01, '3' as any))
+    expect(sender.sendMessage).toHaveBeenCalledWith(0x01, '3' as any)
     assert.throws(() => bound.send('UnknownMessage'), /Unknown message/, 'unknown message')
   })
 
@@ -113,17 +120,23 @@ describe('[BoundProtocol]', () => {
       peer,
       sender,
     })
-    sender.sendMessage = td.func<Sender['sendMessage']>()
-    td.when(protocol.encode(testMessage, 1)).thenReturn('1')
-    td.when(protocol.decode(testResponse, '2')).thenReturn(2)
-    td.when(sender.sendMessage(0x01, '1' as any)).thenDo(() => {
+    sender.sendMessage = vi.fn()
+    protocol.encode.mockReturnValue('1')
+    protocol.decode.mockImplementation((msg: any, payload: string) => {
+      if (payload === '2') return 2
+      return payload
+    })
+    sender.sendMessage.mockImplementation(() => {
       setTimeout(() => {
         sender.emit('message', { code: 0x02, payload: '2' })
       }, 100)
     })
     const response = await bound.request('TestMessage', 1)
     assert.strictEqual(response, 2, 'got response')
-    td.when(protocol.decode(testResponse, '2')).thenThrow(new Error('error1'))
+    protocol.decode.mockImplementation((msg: any, payload: string) => {
+      if (payload === '2') throw new Error('error1')
+      return payload
+    })
     try {
       await bound.request('TestMessage', 1)
     } catch (err: any) {
@@ -133,7 +146,11 @@ describe('[BoundProtocol]', () => {
 
   it('should timeout request', async () => {
     const config = new Config({ accountCache: 10000, storageCache: 1000 })
-    const sender = td.object<Sender>('Sender')
+    const sender = {
+      sendMessage: vi.fn(),
+      on: vi.fn(),
+      emit: vi.fn(),
+    } as any as Sender
     const bound = new BoundProtocol({
       config,
       protocol,
@@ -145,9 +162,5 @@ describe('[BoundProtocol]', () => {
     } catch (err: any) {
       assert.isTrue(/timed out/.test(err.message), 'got error')
     }
-  })
-
-  it('should reset td', () => {
-    td.reset()
   })
 })
