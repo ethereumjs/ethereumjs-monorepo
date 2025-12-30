@@ -163,7 +163,8 @@ export async function runBlockchainTestCase(fork: string, testData: any, t: type
 // EthJS error messages mapped to expected exception types
 const exceptionMessages: Record<string, RegExp> = {
   // TransactionException entries
-  'TransactionException.GAS_ALLOWANCE_EXCEEDED': /tx has a higher gas limit than the block/,
+  'TransactionException.GAS_ALLOWANCE_EXCEEDED':
+    /(?:tx has a higher gas limit than the block|tx unable to pay base fee)/,
   'TransactionException.GAS_LIMIT_EXCEEDS_MAXIMUM':
     /^Transaction gas limit \d+ exceeds the maximum allowed by EIP-7825 \(\d+\)$/,
   'TransactionException.INITCODE_SIZE_EXCEEDED':
@@ -178,6 +179,10 @@ const exceptionMessages: Record<string, RegExp> = {
   'TransactionException.PRIORITY_GREATER_THAN_MAX_FEE_PER_GAS':
     /maxFeePerGas cannot be less than maxPriorityFeePerGas/,
   'TransactionException.SENDER_NOT_EOA': /invalid sender address, address is not EOA/,
+  'TransactionException.NONCE_MISMATCH_TOO_HIGH': /the tx doesn't have the correct nonce/,
+  'TransactionException.NONCE_IS_MAX': /nonce cannot equal or exceed MAX_UINT64/,
+  'TransactionException.GASLIMIT_PRICE_PRODUCT_OVERFLOW':
+    /gas limit \* gasPrice cannot exceed MAX_INTEGER/,
   'TransactionException.TYPE_1_TX_PRE_FORK': /^EIP-2930 not enabled on Common$/,
   'TransactionException.TYPE_2_TX_PRE_FORK': /^EIP-1559 not enabled on Common$/,
   'TransactionException.TYPE_3_TX_BLOB_COUNT_EXCEEDED':
@@ -207,4 +212,5 @@ const exceptionMessages: Record<string, RegExp> = {
   'BlockException.INVALID_WITHDRAWALS_ROOT': /invalid withdrawals trie/,
   'BlockException.SYSTEM_CONTRACT_CALL_FAILED': /system contract call failed/,
   'BlockException.SYSTEM_CONTRACT_EMPTY': /system contract empty/,
+  'BlockException.INVALID_GASLIMIT': /gas limit/,
 }
