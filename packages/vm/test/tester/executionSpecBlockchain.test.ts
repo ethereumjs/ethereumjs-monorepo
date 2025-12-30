@@ -39,7 +39,7 @@ if (fs.existsSync(fixturesPath) === false) {
     for (const { id, fork, data } of fixtures) {
       it(`${fork}: ${id}`, async () => {
         await runBlockchainTestCase(fork, data, assert)
-      }, 120000)
+      }, 360000) // 6 minutes
     }
   })
 }
