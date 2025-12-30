@@ -40,6 +40,8 @@ export const unprefixedHexToBytes = (hex: string): Uint8Array => {
  * @dev Returns `0x` if provided an empty Uint8Array
  */
 export const bytesToHex = (bytes: Uint8Array): PrefixedHexString => {
+  // Using deprecated bytesToUnprefixedHex for performance: bytesToHex is a wrapper that adds the 0x prefix.
+  // Using bytesToUnprefixedHex directly avoids creating an intermediate prefixed string and then stripping it.
   const unprefixedHex = bytesToUnprefixedHex(bytes)
   return `0x${unprefixedHex}`
 }

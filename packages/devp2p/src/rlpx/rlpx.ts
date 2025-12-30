@@ -81,6 +81,9 @@ export class RLPx {
           this._debug(`banning peer with missing tcp port: ${peer.address}`)
           return
         }
+        // Using deprecated bytesToUnprefixedHex for performance: used as LRU cache keys for peer tracking.
+        // bytesToUnprefixedHex directly calls the noble library without creating an intermediate prefixed string,
+        // avoiding the overhead of bytesToHex + stripHexPrefix.
         const key = bytesToUnprefixedHex(peer.id!)
         if (this._peersLRU.has(key)) return
         this._peersLRU.set(key, true)
@@ -150,6 +153,7 @@ export class RLPx {
     this._isAliveCheck()
 
     if (!(peer.id instanceof Uint8Array)) throw new TypeError('Expected peer.id as Uint8Array')
+    // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for peer lookups.
     const peerKey = bytesToUnprefixedHex(peer.id)
 
     if (this._peers.has(peerKey)) throw EthereumJSErrorWithoutCode('Already connected')
@@ -185,6 +189,7 @@ export class RLPx {
   }
 
   disconnect(id: Uint8Array) {
+    // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for peer lookups.
     const peer = this._peers.get(bytesToUnprefixedHex(id))
     if (peer instanceof Peer) {
       peer.disconnect(DISCONNECT_REASON.CLIENT_QUITTING)
@@ -260,6 +265,7 @@ export class RLPx {
         return peer.disconnect(DISCONNECT_REASON.SAME_IDENTITY)
       }
 
+      // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for peer lookups.
       const peerKey = bytesToUnprefixedHex(id!)
       const item = this._peers.get(peerKey)
       if (item && item instanceof Peer) {
@@ -296,6 +302,7 @@ export class RLPx {
 
       const id = peer.getId()
       if (id) {
+        // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for peer lookups.
         const peerKey = bytesToUnprefixedHex(id)
         this._peers.delete(peerKey)
         this.events.emit('peer:removed', peer, reason, disconnectWe)

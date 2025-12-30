@@ -264,6 +264,7 @@ function getActivePrecompiles(
   const precompileMap = new Map()
   if (customPrecompiles) {
     for (const precompile of customPrecompiles) {
+      // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for precompile lookups.
       precompileMap.set(
         bytesToUnprefixedHex(precompile.address.bytes),
         'function' in precompile ? precompile.function : undefined,

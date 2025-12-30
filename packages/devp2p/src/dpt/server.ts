@@ -101,6 +101,9 @@ export class Server {
     })
 
     const deferred = createDeferred()
+    // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for request tracking.
+    // bytesToUnprefixedHex directly calls the noble library without creating an intermediate prefixed string,
+    // avoiding the overhead of bytesToHex + stripHexPrefix.
     const rKey = bytesToUnprefixedHex(hash)
     this._requests.set(rKey, {
       peer,
@@ -191,6 +194,7 @@ export class Server {
       }
 
       case 'pong': {
+        // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for request lookups.
         const rKey = bytesToUnprefixedHex(info.data.hash)
         const request = this._requests.get(rKey)
         if (request !== undefined) {
