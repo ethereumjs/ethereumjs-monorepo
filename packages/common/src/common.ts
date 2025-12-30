@@ -768,7 +768,15 @@ export class Common {
   hardforks(): HardforkTransitionConfig[] {
     const hfs = this._chainParams.hardforks
     if (this._chainParams.customHardforks !== undefined) {
-      this._chainParams.customHardforks
+      // Add transition configs for custom hardforks that aren't already in the hardforks array
+      const existingNames = new Set(hfs.map((hf) => hf.name))
+      const customHfEntries = Object.keys(this._chainParams.customHardforks)
+        .filter((name) => !existingNames.has(name))
+        .map((name) => ({
+          name,
+          block: null, // Custom hardforks without explicit transition config default to null (inactive by block)
+        }))
+      return [...hfs, ...customHfEntries]
     }
     return hfs
   }

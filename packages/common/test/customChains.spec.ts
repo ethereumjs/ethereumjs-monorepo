@@ -178,6 +178,89 @@ describe('[Common]: Custom chains', () => {
     assert.strictEqual(c.hardfork(), 'stop10Gas')
     assert.strictEqual(c.param('stop'), BigInt(10))
   })
+
+  it('hardforks(): should return coherent results with customHardforks', () => {
+    const c = createCustomCommon(
+      {
+        customHardforks: {
+          // Custom hardfork that exists in hardforks array (should be kept)
+          existingCustomHF: {
+            eips: [2935],
+            params: {
+              stop: 5,
+            },
+          },
+          // Custom hardfork that doesn't exist in hardforks array (should be added)
+          newCustomHF: {
+            eips: [2935],
+            params: {
+              stop: 15,
+            },
+          },
+        },
+        hardforks: [
+          {
+            name: 'chainstart',
+            block: 0,
+          },
+          {
+            name: 'existingCustomHF',
+            block: 10,
+            timestamp: undefined,
+          },
+          {
+            name: 'berlin',
+            block: null,
+            timestamp: 1000,
+          },
+        ],
+      },
+      Mainnet,
+    )
+
+    const hfs = c.hardforks()
+
+    // Should return an array
+    assert.isTrue(Array.isArray(hfs), 'should return an array')
+
+    // Should include all original hardforks
+    assert.strictEqual(
+      hfs.length,
+      4,
+      'should include all original hardforks plus new custom hardfork',
+    )
+    assert.strictEqual(hfs[0].name, 'chainstart', 'should include chainstart')
+    assert.strictEqual(hfs[0].block, 0, 'should preserve chainstart block')
+    assert.strictEqual(hfs[1].name, 'existingCustomHF', 'should include existingCustomHF')
+    assert.strictEqual(hfs[1].block, 10, 'should preserve existingCustomHF block')
+    assert.strictEqual(hfs[2].name, 'berlin', 'should include berlin')
+    assert.strictEqual(hfs[2].block, null, 'should preserve berlin block')
+    assert.strictEqual(hfs[2].timestamp, 1000, 'should preserve berlin timestamp')
+
+    // Should add new custom hardfork that wasn't in the array
+    assert.strictEqual(hfs[3].name, 'newCustomHF', 'should add new custom hardfork')
+    assert.strictEqual(hfs[3].block, null, 'new custom hardfork should have block: null')
+    assert.isUndefined(hfs[3].timestamp, 'new custom hardfork should not have timestamp')
+
+    // Should not duplicate existingCustomHF (it's already in the array)
+    const existingCustomHFCount = hfs.filter((hf) => hf.name === 'existingCustomHF').length
+    assert.strictEqual(existingCustomHFCount, 1, 'should not duplicate existing custom hardfork')
+
+    // All entries should have proper structure
+    for (const hf of hfs) {
+      assert.isString(hf.name, `hardfork ${hf.name} should have a name`)
+      assert.isTrue(
+        hf.block === null || typeof hf.block === 'number',
+        `hardfork ${hf.name} should have block as null or number`,
+      )
+      if (hf.timestamp !== undefined) {
+        assert.isTrue(
+          typeof hf.timestamp === 'number' || typeof hf.timestamp === 'string',
+          `hardfork ${hf.name} should have timestamp as number or string if defined`,
+        )
+      }
+    }
+  })
 })
 
 describe('custom chain setup with hardforks with undefined/null block numbers', () => {
