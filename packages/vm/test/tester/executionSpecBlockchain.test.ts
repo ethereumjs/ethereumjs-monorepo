@@ -91,6 +91,7 @@ export async function runBlockchainTestCase(fork: string, testData: any, t: type
       })
       await vm.blockchain.putBlock(block)
       parentBlock = block
+      t.notExists(expectException, `Should have thrown with: ${expectException}`)
     } catch (e: any) {
       // Check if the block failed due to an expected exception
       t.exists(
@@ -132,7 +133,7 @@ export async function runBlockchainTestCase(fork: string, testData: any, t: type
         t.match(
           e.message,
           exceptionMessages[expectException],
-          `Should have correct error for ${expectException}`,
+          `Should have correct error for ${expectException} -- got: ${e.message}`,
         )
       }
     }
