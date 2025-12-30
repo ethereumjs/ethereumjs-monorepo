@@ -14,12 +14,17 @@ describe('async events', () => {
     const to = createAddressFromBigInt(BigInt(123456))
     await evm.stateManager.putCode(to, hexToBytes('0x6001'))
     let didTimeOut = false
+    let stepHandlerError: Error | undefined
     evm.events.on('step', async (event, next) => {
       assert.isTrue(event.codeAddress !== undefined)
       const startTime = Date.now()
       setTimeout(() => {
-        assert.isTrue(Date.now() > startTime + 999, 'evm paused on step function for one second')
-        didTimeOut = true
+        try {
+          assert.isTrue(Date.now() > startTime + 999, 'evm paused on step function for one second')
+          didTimeOut = true
+        } catch (error) {
+          stepHandlerError = error as Error
+        }
         next?.()
       }, 1000)
     })
@@ -30,6 +35,11 @@ describe('async events', () => {
       to,
     }
     await evm.runCall(runCallArgs)
+    // Wait a bit more to ensure the setTimeout callback has executed
+    await new Promise((resolve) => setTimeout(resolve, 100))
+    if (stepHandlerError) {
+      throw stepHandlerError
+    }
     assert.isTrue(didTimeOut)
   })
 })

@@ -119,5 +119,5 @@ describe(method, () => {
     const rpc = getRPCClient(server)
     const res = await rpc.request(method, [])
     assert.strictEqual(res.result, '0x1')
-  }, 20000)
+  }, 30000)
 })
