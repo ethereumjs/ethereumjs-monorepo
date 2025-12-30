@@ -87,7 +87,6 @@ export async function runBlockchainTestCase(fork: string, testData: any, t: type
       await runBlock(vm, {
         block,
         root: parentBlock.header.stateRoot,
-        generate: true,
         setHardfork: true,
       })
       await vm.blockchain.putBlock(block)
