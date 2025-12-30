@@ -87,20 +87,29 @@ describe(method, () => {
     const account = await service.execution.vm.stateManager.getAccount(SIGNER_A.address)
     account!.balance = 0xffffffffffffffn
     await service.execution.vm.stateManager.putAccount(SIGNER_A.address, account!)
+
     const tx = createTx({
       to: randomBytes(20),
       value: 1,
       maxFeePerGas: 0xffffff,
     }).sign(SIGNER_A.privateKey)
 
-    // Set stubs so getTxCount won't validate txns or mess up state root
+    // Set stubs so getTxCount won't validate txns
     service.txPool['validate'] = () => Promise.resolve(undefined)
+
+    // Stub shallowCopy to ensure the account is available in the copied state manager
     const originalShallowCopy = service.execution.vm.shallowCopy.bind(service.execution.vm)
     service.execution.vm.shallowCopy = async () => {
       const vmCopy = await originalShallowCopy()
-      // Ensure the account exists in the copied state manager
+      // Put the account in the copied state manager before setStateRoot is called
       await vmCopy.stateManager.putAccount(SIGNER_A.address, account!)
-      vmCopy.stateManager.setStateRoot = () => Promise.resolve(undefined)
+      // Stub setStateRoot - it will be called with block.header.stateRoot, but we want to keep our account
+      const originalSetStateRoot = vmCopy.stateManager.setStateRoot.bind(vmCopy.stateManager)
+      vmCopy.stateManager.setStateRoot = async (root: Uint8Array) => {
+        // Call the original but then restore our account
+        await originalSetStateRoot(root)
+        await vmCopy.stateManager.putAccount(SIGNER_A.address, account!)
+      }
       return vmCopy
     }
 
