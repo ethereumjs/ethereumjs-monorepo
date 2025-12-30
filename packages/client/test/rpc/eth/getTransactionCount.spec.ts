@@ -73,7 +73,7 @@ describe(method, () => {
     // call with nonexistent account
     res = await rpc.request(method, [`0x${'11'.repeat(20)}`, 'latest'])
     assert.strictEqual(res.result, `0x0`, 'should return 0x0 for nonexistent account')
-  }, 30000)
+  }, 20000)
 
   it('call with pending block argument', async () => {
     const blockchain = await createBlockchain()
@@ -94,24 +94,10 @@ describe(method, () => {
       maxFeePerGas: 0xffffff,
     }).sign(SIGNER_A.privateKey)
 
-    // Set stubs so getTxCount won't validate txns
+    // Set stubs so getTxCount won't validate txns or mess up state root
     service.txPool['validate'] = () => Promise.resolve(undefined)
-
-    // Stub shallowCopy to ensure the account is available in the copied state manager
-    const originalShallowCopy = service.execution.vm.shallowCopy.bind(service.execution.vm)
-    service.execution.vm.shallowCopy = async () => {
-      const vmCopy = await originalShallowCopy()
-      // Put the account in the copied state manager before setStateRoot is called
-      await vmCopy.stateManager.putAccount(SIGNER_A.address, account!)
-      // Stub setStateRoot - it will be called with block.header.stateRoot, but we want to keep our account
-      const originalSetStateRoot = vmCopy.stateManager.setStateRoot.bind(vmCopy.stateManager)
-      vmCopy.stateManager.setStateRoot = async (root: Uint8Array) => {
-        // Call the original but then restore our account
-        await originalSetStateRoot(root)
-        await vmCopy.stateManager.putAccount(SIGNER_A.address, account!)
-      }
-      return vmCopy
-    }
+    service.execution.vm.stateManager.setStateRoot = () => Promise.resolve(undefined)
+    service.execution.vm.shallowCopy = () => Promise.resolve(service.execution.vm)
 
     await service.txPool.add(tx, true)
 
