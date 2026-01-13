@@ -12,7 +12,7 @@
     "url": "https://github.com/ethereumjs/ethereumjs-monorepo.git"
   },
   "license": "MPL-2.0",
-  "author": "EthereumJS",
+  "author": "EthereumJS Team",
   "contributors": ["Alex Beregszaszi <alex@rtfs.hu>"],
   "type": "module",
   "sideEffects": false,
