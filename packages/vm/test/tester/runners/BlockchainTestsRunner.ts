@@ -1,3 +1,15 @@
+/**
+ * This file is deprecated.
+ *
+ * The new runner in executionSpecBlockchain.test.ts will become the main
+ * entry point for blockchain tests.
+ *
+ * If you discover functionality here which is still missing in the new runner,
+ * please open a PR against executionSpecBlockchain.test.ts.
+ *
+ * PLEASE DO NOT COPY LARGER PARTS OF THE CODE TO THE NEW RUNNER BUT RE-IMPLEMENT
+ * (USE COMMON SENSE).
+ */
 import { createBlock, createBlockFromRLP } from '@ethereumjs/block'
 import { EthashConsensus, createBlockchain } from '@ethereumjs/blockchain'
 import { ConsensusAlgorithm } from '@ethereumjs/common'
