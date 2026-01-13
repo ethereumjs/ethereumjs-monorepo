@@ -14,6 +14,8 @@ import {
   setLengthLeft,
 } from '@ethereumjs/util'
 import { keccak_256 } from '@noble/hashes/sha3.js'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 import { createVM, runBlock } from '../../src/index.ts'
 import { setupPreConditions } from '../util.ts'
 import { createCommonForFork, loadExecutionSpecFixtures } from './executionSpecTestLoader.ts'
@@ -22,6 +24,9 @@ const customFixturesPath = process.env.TEST_PATH ?? '../execution-spec-tests'
 const fixturesPath = path.resolve(customFixturesPath)
 
 console.log(`Using execution-spec blockchain tests from: ${fixturesPath}`)
+
+// Create KZG instance once at the top level (expensive operation)
+const kzg = new microEthKZG(trustedSetup)
 
 if (fs.existsSync(fixturesPath) === false) {
   describe('Execution-spec blockchain tests', () => {
@@ -38,14 +43,19 @@ if (fs.existsSync(fixturesPath) === false) {
 
     for (const { id, fork, data } of fixtures) {
       it(`${fork}: ${id}`, async () => {
-        await runBlockchainTestCase(fork, data, assert)
+        await runBlockchainTestCase(fork, data, assert, kzg)
       }, 360000) // 6 minutes
     }
   })
 }
 
-export async function runBlockchainTestCase(fork: string, testData: any, t: typeof assert) {
-  const common = createCommonForFork(fork, testData)
+export async function runBlockchainTestCase(
+  fork: string,
+  testData: any,
+  t: typeof assert,
+  kzg: microEthKZG,
+) {
+  const common = createCommonForFork(fork, testData, kzg)
   const genesisBlockData = { header: testData.genesisBlockHeader }
   const genesisBlock = createBlock(genesisBlockData, { common, setHardfork: true })
   const blockchain = await createBlockchain({

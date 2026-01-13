@@ -220,8 +220,8 @@ const preMergeForks = [
   'grayGlacier',
 ]
 
-export function createCommonForFork(fork: string, testData?: any) {
-  const kzg = new microEthKZG(trustedSetup)
+export function createCommonForFork(fork: string, testData?: any, kzg?: microEthKZG) {
+  const kzgInstance = kzg ?? new microEthKZG(trustedSetup)
 
   try {
     let forkLower = fork.toLowerCase()
@@ -250,7 +250,11 @@ export function createCommonForFork(fork: string, testData?: any) {
     if (testData?.config?.chainId !== undefined) {
       chainConfig.chainId = testData.config.chainId
     }
-    return new Common({ chain: chainConfig, hardfork: forkLower, customCrypto: { kzg } })
+    return new Common({
+      chain: chainConfig,
+      hardfork: forkLower,
+      customCrypto: { kzg: kzgInstance },
+    })
   } catch {
     // Transition Fork (e.g. OsakaToBPO1AtTime15K)
 
@@ -274,6 +278,6 @@ export function createCommonForFork(fork: string, testData?: any) {
     // Build chain config with custom hardforks and blob schedule
     const chainConfig = buildTransitionChainConfig(blobSchedule, from, to, timestamp)
 
-    return new Common({ chain: chainConfig, hardfork: from, customCrypto: { kzg } })
+    return new Common({ chain: chainConfig, hardfork: from, customCrypto: { kzg: kzgInstance } })
   }
 }
