@@ -17,6 +17,9 @@ const fixturesPath = path.resolve(customFixturesPath)
 
 console.log(`Using execution-spec state tests from: ${fixturesPath}`)
 
+// Create KZG instance once at the top level (expensive operation)
+const kzg = new microEthKZG(trustedSetup)
+
 if (fs.existsSync(fixturesPath) === false) {
   describe('Execution-spec state tests', () => {
     it.skip(`fixtures not found at ${fixturesPath}`, () => {})
@@ -34,7 +37,7 @@ if (fs.existsSync(fixturesPath) === false) {
       it(`${fork}: ${id}`, async () => {
         const testCase = parseTest(fork, data)
         try {
-          await runStateTestCase(fork, testCase, assert)
+          await runStateTestCase(fork, testCase, assert, kzg)
         } catch (e: any) {
           assert.fail(e?.toString() + e.stack)
         }
@@ -43,8 +46,12 @@ if (fs.existsSync(fixturesPath) === false) {
   })
 }
 
-export async function runStateTestCase(fork: string, testData: any, t: typeof assert) {
-  const kzg = new microEthKZG(trustedSetup)
+export async function runStateTestCase(
+  fork: string,
+  testData: any,
+  t: typeof assert,
+  kzg: microEthKZG,
+) {
   const common = new Common({
     chain: Mainnet,
     hardfork:
