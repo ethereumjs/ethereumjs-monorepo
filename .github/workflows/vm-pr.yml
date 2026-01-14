@@ -121,7 +121,7 @@ jobs:
       - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM')
         run: npm run test:buildIntegrity
 
-  vm-osaka-state:
+  vm-est-stable-state:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -144,12 +144,12 @@ jobs:
         working-directory: ${{ github.workspace }}
 
       - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM') == false
-        run: npm run test:osaka:state
+        run: npm run test:est:stable:state
 
       - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM')
         run: npm run test:buildIntegrity
 
-  vm-osaka-blockchain:
+  vm-est-stable-blockchain:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -172,7 +172,63 @@ jobs:
         working-directory: ${{ github.workspace }}
 
       - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM') == false
-        run: npm run test:osaka:blockchain
+        run: npm run test:est:stable:blockchain
+
+      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM')
+        run: npm run test:buildIntegrity
+  
+  vm-est-dev-state:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      # For now we always clone the repo and submodules (no cache)
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: 'npm'
+
+      - name: Install Dependencies (if not restored from cache)
+        if: steps.dep-cache.outputs.cache-hit != 'true'
+        run: npm ci
+        working-directory: ${{ github.workspace }}
+
+      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM') == false
+        run: npm run test:est:dev:state
+
+      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM')
+        run: npm run test:buildIntegrity
+
+  vm-est-dev-blockchain:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      # For now we always clone the repo and submodules (no cache)
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: 'npm'
+
+      - name: Install Dependencies (if not restored from cache)
+        if: steps.dep-cache.outputs.cache-hit != 'true'
+        run: npm ci
+        working-directory: ${{ github.workspace }}
+
+      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM') == false
+        run: npm run test:est:dev:blockchain
 
       - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM')
         run: npm run test:buildIntegrity
