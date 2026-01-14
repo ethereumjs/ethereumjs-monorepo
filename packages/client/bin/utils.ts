@@ -47,13 +47,15 @@ import { hideBin } from 'yargs/helpers'
 import { Config, SyncMode } from '../src/config.ts'
 import { getLogger } from '../src/logging.ts'
 import { Event } from '../src/types.ts'
-import { parseMultiaddrs } from '../src/util/index.ts'
+import { MethodConfig, parseJwtSecret, parseMultiaddrs } from '../src/util/index.ts'
 import { setupMetrics } from '../src/util/metrics.ts'
 
 import type { CustomCrypto, GenesisState, GethGenesis } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import type { Logger } from '../src/logging.ts'
+import { RpcConfig } from '../src/rpc/config.ts'
 import type { ClientOpts } from '../src/types.ts'
+import type { RPCArgs } from './startRPC.ts'
 
 export type Account = [address: Address, privateKey: Uint8Array]
 
@@ -854,4 +856,100 @@ export async function generateClientConfig(args: ClientOpts) {
   }
 
   return { config, customGenesisState, metricsServer, common }
+}
+
+export function generateRpcConfigs(config: Config, args: RPCArgs): RpcConfig[] {
+  const servers: RpcConfig[] = []
+
+  const jwtSecret =
+    args.rpcEngine && args.rpcEngineAuth
+      ? parseJwtSecret(config, args.jwtSecret)
+      : new Uint8Array(0)
+
+  // eth/engine shared
+  const withEngineMethods =
+    args.rpcEngine &&
+    args.rpc &&
+    args.rpcEnginePort === args.rpcPort &&
+    args.rpcEngineAddr === args.rpcAddr
+
+  if (args.rpc || args.ws) {
+    const methodConfig = withEngineMethods ? MethodConfig.WithEngine : MethodConfig.WithoutEngine
+
+    if (args.rpc) {
+      servers.push(
+        new RpcConfig({
+          type: 'eth',
+          transport: 'http',
+          methodConfig,
+          address: args.rpcAddr,
+          port: args.rpcPort,
+          engineAuth: withEngineMethods && args.rpcEngineAuth,
+          jwtSecret: withEngineMethods ? jwtSecret : undefined,
+          debug: args.rpcDebug,
+          debugVerbose: args.rpcDebugVerbose,
+          cors: args.rpcCors,
+        }),
+      )
+    }
+
+    if (args.ws) {
+      servers.push(
+        new RpcConfig({
+          type: 'eth',
+          transport: 'ws',
+          methodConfig,
+          address: args.wsAddr,
+          port: args.wsPort,
+          engineAuth: withEngineMethods && args.rpcEngineAuth,
+          jwtSecret: withEngineMethods ? jwtSecret : undefined,
+          debug: args.rpcDebug,
+          debugVerbose: args.rpcDebugVerbose,
+          cors: args.rpcCors,
+        }),
+      )
+    }
+  }
+
+  const engineSeparate =
+    args.rpcEngine &&
+    !(args.rpc && args.rpcPort === args.rpcEnginePort && args.rpcAddr === args.rpcEngineAddr)
+
+  if (engineSeparate) {
+    const methodConfig = MethodConfig.EngineOnly
+
+    servers.push(
+      new RpcConfig({
+        type: 'engine',
+        transport: 'http',
+        methodConfig,
+        address: args.rpcEngineAddr,
+        port: args.rpcEnginePort,
+        engineAuth: args.rpcEngineAuth,
+        jwtSecret,
+        debug: args.rpcDebug,
+        debugVerbose: args.rpcDebugVerbose,
+        cors: args.rpcCors,
+      }),
+    )
+
+    if (args.ws) {
+      servers.push(
+        new RpcConfig({
+          type: 'engine',
+          transport: 'ws',
+          methodConfig,
+          address: args.wsEngineAddr,
+          port: args.wsEnginePort,
+          engineAuth: args.rpcEngineAuth,
+          jwtSecret,
+          debug: args.rpcDebug,
+          debugVerbose: args.rpcDebugVerbose,
+          cors: args.rpcCors,
+        }),
+      )
+    }
+  }
+
+  return servers
 }
