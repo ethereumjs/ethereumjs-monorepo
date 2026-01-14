@@ -28,6 +28,8 @@ function resolveExportTarget(target) {
   if (typeof target !== 'object') return null
   if (target.import?.default) return target.import.default
   if (typeof target.import === 'string') return target.import
+  if (target.default?.default) return target.default.default
+  if (typeof target.default === 'string') return target.default
   return null
 }
 
