@@ -17,15 +17,18 @@ export class RustBN254 implements EVMBN254Interface {
   }
 
   add(input: Uint8Array): Uint8Array {
+    // Using deprecated bytesToUnprefixedHex for performance: rustbn WASM library expects unprefixed hex strings.
     const inputStr = bytesToUnprefixedHex(input)
     return hexToBytes(this._rustbn.ec_add(inputStr))
   }
 
   mul(input: Uint8Array): Uint8Array {
+    // Using deprecated bytesToUnprefixedHex for performance: rustbn WASM library expects unprefixed hex strings.
     const inputHex = bytesToUnprefixedHex(input)
     return hexToBytes(this._rustbn.ec_mul(inputHex))
   }
   pairing(input: Uint8Array): Uint8Array {
+    // Using deprecated bytesToUnprefixedHex for performance: rustbn WASM library expects unprefixed hex strings.
     const inputStr = bytesToUnprefixedHex(input)
     return hexToBytes(this._rustbn.ec_pairing(inputStr))
   }
