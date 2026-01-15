@@ -514,6 +514,15 @@ export const eipsDict: EIPsDict = {
     minimumHardfork: Hardfork.Chainstart,
   },
   /**
+   * Description : Block Level Access Lists (BAL)
+   * URL         : https://eips.ethereum.org/EIPS/eip-7928
+   * Status      : Draft (in development, do not use in production)
+   */
+  7928: {
+    minimumHardfork: Hardfork.Prague,
+    requiredEIPs: [],
+  },
+  /**
    * Description : Count leading zeros (CLZ) opcode
    * URL         : https://eips.ethereum.org/EIPS/eip-7939
    * Status      : Draft
