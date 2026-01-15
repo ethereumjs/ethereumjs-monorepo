@@ -115,10 +115,10 @@ jobs:
           key: ${{ inputs.submodule-cache-key}}
           fail-on-cache-miss: true
 
-      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM') == false
+      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM') == false
         run: VITE_FORK=${{ matrix.fork }} VITE_VERIFY_TEST_AMOUNT_ALL_TESTS=1 npx vitest run test/tester/state.spec.ts
 
-      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM')
+      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM')
         run: npm run test:buildIntegrity
 
   vm-est-stable-state:
@@ -143,10 +143,10 @@ jobs:
         run: npm ci
         working-directory: ${{ github.workspace }}
 
-      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM') == false
+      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM') == false
         run: npm run test:est:stable:state
 
-      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM')
+      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM')
         run: npm run test:buildIntegrity
 
   vm-est-stable-blockchain:
@@ -171,10 +171,10 @@ jobs:
         run: npm ci
         working-directory: ${{ github.workspace }}
 
-      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM') == false
+      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM') == false
         run: npm run test:est:stable:blockchain
 
-      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM')
+      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM')
         run: npm run test:buildIntegrity
   
   vm-est-dev-state:
@@ -199,10 +199,10 @@ jobs:
         run: npm ci
         working-directory: ${{ github.workspace }}
 
-      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM') == false
+      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip dev VM') == false
         run: npm run test:est:dev:state
 
-      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM')
+      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip dev VM')
         run: npm run test:buildIntegrity
 
   vm-est-dev-blockchain:
@@ -227,10 +227,10 @@ jobs:
         run: npm ci
         working-directory: ${{ github.workspace }}
 
-      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM') == false
+      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip dev VM') == false
         run: npm run test:est:dev:blockchain
 
-      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM')
+      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip dev VM')
         run: npm run test:buildIntegrity
 
   vm-state-extended:
@@ -343,10 +343,10 @@ jobs:
           key: ${{ inputs.submodule-cache-key}}
           fail-on-cache-miss: true
 
-      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM') == false
+      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM') == false
         run: npm run test:blockchain -- ${{ matrix.args }}
 
-      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most VM')
+      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM')
         run: npm run test:blockchain:buildIntegrity
 
   vm-blockchain-extended:
