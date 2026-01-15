@@ -662,6 +662,10 @@ export class BlockHeader {
       rawItems.push(this.requestsHash!)
     }
 
+    if (this.common.isActivatedEIP(7928)) {
+      rawItems.push(this.blockAccessListHash!)
+    }
+
     return rawItems
   }
 
@@ -800,6 +804,9 @@ export class BlockHeader {
     }
     if (this.common.isActivatedEIP(7685)) {
       JSONDict.requestsHash = bytesToHex(this.requestsHash!)
+    }
+    if (this.common.isActivatedEIP(7928)) {
+      JSONDict.blockAccessListHash = bytesToHex(this.blockAccessListHash!)
     }
     return JSONDict
   }
