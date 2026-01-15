@@ -181,8 +181,6 @@ export const ipToBytes = (ip: string, bytes?: Uint8Array, offset: number = 0): U
       if (isv4) {
         v4Bytes = ipToBytes(sections[i])
         // Using deprecated bytesToUnprefixedHex for performance: used for string building in IPv6 address conversion.
-        // bytesToUnprefixedHex directly calls the noble library without creating an intermediate prefixed string,
-        // avoiding the overhead of bytesToHex + stripHexPrefix.
         sections[i] = bytesToUnprefixedHex(v4Bytes.subarray(0, 2))
       }
 

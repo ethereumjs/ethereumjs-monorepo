@@ -15,8 +15,6 @@ export class Cache<V> {
   set(key: string | Uint8Array, value: V): void {
     if (key instanceof Uint8Array) {
       // Using deprecated bytesToUnprefixedHex for performance: used as LRU cache keys (string encoding).
-      // bytesToUnprefixedHex directly calls the noble library without creating an intermediate prefixed string,
-      // avoiding the overhead of bytesToHex + stripHexPrefix.
       key = bytesToUnprefixedHex(key)
     }
     this._cache.set(key, { value })

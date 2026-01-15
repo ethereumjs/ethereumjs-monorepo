@@ -137,8 +137,6 @@ export class CheckpointDB implements DB {
    */
   async get(key: Uint8Array): Promise<Uint8Array | undefined> {
     // Using deprecated bytesToUnprefixedHex for performance: used as cache/database keys (string encoding).
-    // bytesToUnprefixedHex directly calls the noble library without creating an intermediate prefixed string,
-    // avoiding the overhead of bytesToHex + stripHexPrefix.
     const keyHex = bytesToUnprefixedHex(key)
     if (this._cache !== undefined) {
       const value = this._cache.get(keyHex)

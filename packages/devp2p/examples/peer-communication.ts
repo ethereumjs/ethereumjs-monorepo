@@ -126,8 +126,6 @@ rlpx.events.on('peer:added', (peer) => {
         for (const item of payload) {
           const blockHash = item[0]
           // Using deprecated bytesToUnprefixedHex for performance: used as LRU cache keys for block deduplication.
-          // bytesToUnprefixedHex directly calls the noble library without creating an intermediate prefixed string,
-          // avoiding the overhead of bytesToHex + stripHexPrefix.
           if (blocksCache.has(bytesToUnprefixedHex(blockHash))) continue
           setTimeout(() => {
             eth.sendMessage(devp2p.EthMessageCodes.GET_BLOCK_HEADERS, [
@@ -342,8 +340,6 @@ dpt.addPeer({ address: '127.0.0.1', udpPort: 30303, tcpPort: 30303 })
 const txCache: LRUCache<string, boolean> = new LRUCache({ max: 1000 })
 function onNewTx(tx: TypedTransaction, peer: Peer) {
   // Using deprecated bytesToUnprefixedHex for performance: used as LRU cache keys for transaction deduplication.
-  // bytesToUnprefixedHex directly calls the noble library without creating an intermediate prefixed string,
-  // avoiding the overhead of bytesToHex + stripHexPrefix.
   const txHashHex = bytesToUnprefixedHex(tx.hash())
   if (txCache.has(txHashHex)) return
 

@@ -381,8 +381,6 @@ export class TxPool {
    */
   async add(tx: TypedTransaction, isLocalTransaction: boolean = false) {
     // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for transaction lookups.
-    // bytesToUnprefixedHex directly calls the noble library without creating an intermediate prefixed string,
-    // avoiding the overhead of bytesToHex + stripHexPrefix.
     const hash: UnprefixedHash = bytesToUnprefixedHex(tx.hash())
     const added = Date.now()
     const address: UnprefixedAddress = tx.getSenderAddress().toString().slice(2)

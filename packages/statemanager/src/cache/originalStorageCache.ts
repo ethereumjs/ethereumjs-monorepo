@@ -23,8 +23,6 @@ export class OriginalStorageCache {
 
   async get(address: Address, key: Uint8Array): Promise<Uint8Array> {
     // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for cache lookups.
-    // bytesToUnprefixedHex directly calls the noble library without creating an intermediate prefixed string,
-    // avoiding the overhead of bytesToHex + stripHexPrefix.
     const addressHex = bytesToUnprefixedHex(address.bytes)
     const map = this.map.get(addressHex)
     if (map !== undefined) {

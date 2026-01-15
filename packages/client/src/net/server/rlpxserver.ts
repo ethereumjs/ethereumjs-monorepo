@@ -106,8 +106,6 @@ export class RlpxServer extends Server {
       }
     }
     // Using deprecated bytesToUnprefixedHex for performance: used for string building in enode URL construction.
-    // bytesToUnprefixedHex directly calls the noble library without creating an intermediate prefixed string,
-    // avoiding the overhead of bytesToHex + stripHexPrefix.
     const id = bytesToUnprefixedHex(this.rlpx.id)
     return {
       enode: `enode://${id}@${listenAddr}`,

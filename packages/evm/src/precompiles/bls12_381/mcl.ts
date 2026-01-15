@@ -35,8 +35,6 @@ function BLS12_381_ToG1Point(input: Uint8Array, mcl: any, verifyOrder = true): a
   }
 
   // Using deprecated bytesToUnprefixedHex for performance: mcl library expects unprefixed hex strings.
-  // bytesToUnprefixedHex directly calls the noble library without creating an intermediate prefixed string,
-  // avoiding the overhead of bytesToHex + stripHexPrefix.
   const p_x = bytesToUnprefixedHex(input.subarray(16, BLS_G1_POINT_BYTE_LENGTH / 2))
   const p_y = bytesToUnprefixedHex(input.subarray(80, BLS_G1_POINT_BYTE_LENGTH))
 

@@ -143,8 +143,6 @@ export class DPT {
       peer = await this.addPeer(peer)
       if (peer.id !== undefined) {
         // Using deprecated bytesToUnprefixedHex for performance: used as Set keys for peer tracking.
-        // bytesToUnprefixedHex directly calls the noble library without creating an intermediate prefixed string,
-        // avoiding the overhead of bytesToHex + stripHexPrefix.
         this._confirmedPeers.add(bytesToUnprefixedHex(peer.id))
       }
     } catch (error: any) {

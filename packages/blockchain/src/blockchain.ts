@@ -657,8 +657,6 @@ export class Blockchain implements BlockchainInterface {
 
       // mark block hash as part of the canonical chain
       // Using deprecated bytesToUnprefixedHex for performance: used as object keys for hash lookups.
-      // bytesToUnprefixedHex directly calls the noble library without creating an intermediate prefixed string,
-      // avoiding the overhead of bytesToHex + stripHexPrefix.
       canonicalChainHashes[bytesToUnprefixedHex(parentBlock.hash())] = true
 
       // for each of the uncles, mark the uncle as included
@@ -1237,8 +1235,6 @@ export class Blockchain implements BlockchainInterface {
     // LevelDB doesn't handle Uint8Arrays properly when they are part
     // of a JSON object being stored as a value in the DB
     // Using deprecated bytesToUnprefixedHex for performance: used for JSON serialization where unprefixed hex is needed.
-    // bytesToUnprefixedHex directly calls the noble library without creating an intermediate prefixed string,
-    // avoiding the overhead of bytesToHex + stripHexPrefix.
     const hexHeads = Object.fromEntries(
       Object.entries(this._heads).map((entry) => [entry[0], bytesToUnprefixedHex(entry[1])]),
     )

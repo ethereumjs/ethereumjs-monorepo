@@ -18,8 +18,6 @@ export class RustBN254 implements EVMBN254Interface {
 
   add(input: Uint8Array): Uint8Array {
     // Using deprecated bytesToUnprefixedHex for performance: rustbn WASM library expects unprefixed hex strings.
-    // bytesToUnprefixedHex directly calls the noble library without creating an intermediate prefixed string,
-    // avoiding the overhead of bytesToHex + stripHexPrefix.
     const inputStr = bytesToUnprefixedHex(input)
     return hexToBytes(this._rustbn.ec_add(inputStr))
   }

@@ -82,8 +82,6 @@ export class RLPx {
           return
         }
         // Using deprecated bytesToUnprefixedHex for performance: used as LRU cache keys for peer tracking.
-        // bytesToUnprefixedHex directly calls the noble library without creating an intermediate prefixed string,
-        // avoiding the overhead of bytesToHex + stripHexPrefix.
         const key = bytesToUnprefixedHex(peer.id!)
         if (this._peersLRU.has(key)) return
         this._peersLRU.set(key, true)

@@ -897,8 +897,6 @@ export class MerklePatriciaTrie {
   // If this method returns `true`, the Trie is correctly pruned and all keys are reachable
   async verifyPrunedIntegrity(): Promise<boolean> {
     // Using deprecated bytesToUnprefixedHex for performance: used for string comparisons with database keys.
-    // bytesToUnprefixedHex directly calls the noble library without creating an intermediate prefixed string,
-    // avoiding the overhead of bytesToHex + stripHexPrefix.
     const roots = [
       bytesToUnprefixedHex(this.root()),
       bytesToUnprefixedHex(this.appliedKey(ROOT_DB_KEY)),

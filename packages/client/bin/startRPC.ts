@@ -68,8 +68,6 @@ function parseJwtSecret(config: Config, jwtFilePath?: string): Uint8Array {
 
     jwtSecret = randomBytes(32)
     // Using deprecated bytesToUnprefixedHex for performance: used for file I/O where unprefixed hex is needed.
-    // bytesToUnprefixedHex directly calls the noble library without creating an intermediate prefixed string,
-    // avoiding the overhead of bytesToHex + stripHexPrefix.
     writeFileSync(defaultJwtPath, bytesToUnprefixedHex(jwtSecret), {})
     config.logger?.info(`New Engine API JWT token created path=${defaultJwtPath}`)
   }

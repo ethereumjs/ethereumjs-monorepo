@@ -119,8 +119,6 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
 
     // will always start with root node as first set of node requests
     // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for node lookups.
-    // bytesToUnprefixedHex directly calls the noble library without creating an intermediate prefixed string,
-    // avoiding the overhead of bytesToHex + stripHexPrefix.
     this.pathToNodeRequestData.setElement('', {
       nodeHash: bytesToUnprefixedHex(this.root),
       nodeParentHash: '', // root node does not have a parent

@@ -274,8 +274,6 @@ export class MerkleStateManager implements StateManagerInterface {
     const addressBytes: Uint8Array =
       addressOrHash instanceof Uint8Array ? addressOrHash : this.keccakFunction(addressOrHash.bytes)
     // Using deprecated bytesToUnprefixedHex for performance: used as object keys for trie cache lookups.
-    // bytesToUnprefixedHex directly calls the noble library without creating an intermediate prefixed string,
-    // avoiding the overhead of bytesToHex + stripHexPrefix.
     const addressHex: string = bytesToUnprefixedHex(addressBytes)
     let storageTrie = this._storageTries[addressHex]
     if (storageTrie === undefined) {

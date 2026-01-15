@@ -71,8 +71,6 @@ export class AccountCache extends Cache {
     couldBePartialAccount: boolean = false,
   ): void {
     // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for cache lookups.
-    // bytesToUnprefixedHex directly calls the noble library without creating an intermediate prefixed string,
-    // avoiding the overhead of bytesToHex + stripHexPrefix.
     const addressHex = bytesToUnprefixedHex(address.bytes)
     this._saveCachePreState(addressHex)
     const elem = {

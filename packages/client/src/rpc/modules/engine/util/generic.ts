@@ -85,8 +85,6 @@ export const validHash = async (
     let validParent: Block | null = null
     for (let inspectedParents = 0; inspectedParents < maxDepth; inspectedParents++) {
       // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for block lookups.
-      // bytesToUnprefixedHex directly calls the noble library without creating an intermediate prefixed string,
-      // avoiding the overhead of bytesToHex + stripHexPrefix.
       const unPrefixedHashStr = bytesToUnprefixedHex(hash)
       validParent =
         remoteBlocks.get(unPrefixedHashStr) ??

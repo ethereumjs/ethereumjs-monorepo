@@ -149,9 +149,7 @@ export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
     for (const accessListItem of castedTx.accessList) {
       const [addressBytes, slotBytesList] = accessListItem
-      // Using deprecated bytesToUnprefixedHex for performance: journal methods expect unprefixed hex strings
-      // for Map/Set lookups. bytesToUnprefixedHex directly calls the noble library without creating an
-      // intermediate prefixed string, avoiding the overhead of bytesToHex + stripHexPrefix.
+      // Using deprecated bytesToUnprefixedHex for performance: journal methods expect unprefixed hex strings for Map/Set lookups.
       const address = bytesToUnprefixedHex(addressBytes)
       vm.evm.journal.addAlwaysWarmAddress(address, true)
       for (const storageKey of slotBytesList) {

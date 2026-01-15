@@ -468,8 +468,6 @@ export class Engine {
     } catch {
       // Stash the block for a potential forced forkchoice update to it later.
       // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for block lookups.
-      // bytesToUnprefixedHex directly calls the noble library without creating an intermediate prefixed string,
-      // avoiding the overhead of bytesToHex + stripHexPrefix.
       this.remoteBlocks.set(bytesToUnprefixedHex(headBlock.hash()), headBlock)
 
       const optimisticLookup = !(await this.skeleton.setHead(headBlock, false))
