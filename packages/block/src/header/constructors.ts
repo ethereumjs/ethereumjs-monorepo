@@ -25,8 +25,15 @@ export function createBlockHeader(headerData: HeaderData = {}, opts: BlockOption
  */
 export function createBlockHeaderFromBytesArray(values: BlockHeaderBytes, opts: BlockOptions = {}) {
   const headerData = valuesArrayToHeaderData(values)
-  const { number, baseFeePerGas, excessBlobGas, blobGasUsed, parentBeaconBlockRoot, requestsHash } =
-    headerData
+  const {
+    number,
+    baseFeePerGas,
+    excessBlobGas,
+    blobGasUsed,
+    parentBeaconBlockRoot,
+    requestsHash,
+    blockAccessListHash,
+  } = headerData
   const header = createBlockHeader(headerData, opts)
   if (header.common.isActivatedEIP(1559) && baseFeePerGas === undefined) {
     const eip1559ActivationBlock = bigIntToBytes(header.common.eipBlock(1559)!)
@@ -50,6 +57,9 @@ export function createBlockHeaderFromBytesArray(values: BlockHeaderBytes, opts: 
 
   if (header.common.isActivatedEIP(7685) && requestsHash === undefined) {
     throw EthereumJSErrorWithoutCode('invalid header. requestsHash should be provided')
+  }
+  if (header.common.isActivatedEIP(7928) && blockAccessListHash === undefined) {
+    throw EthereumJSErrorWithoutCode('invalid header. blockAccessListHash should be provided')
   }
   return header
 }
@@ -126,6 +136,7 @@ export function createBlockHeaderFromRPC(blockParams: JSONRPCBlock, options?: Bl
     excessBlobGas,
     parentBeaconBlockRoot,
     requestsHash,
+    blockAccessListHash,
   } = blockParams
 
   const blockHeader = new BlockHeader(
@@ -151,6 +162,7 @@ export function createBlockHeaderFromRPC(blockParams: JSONRPCBlock, options?: Bl
       excessBlobGas,
       parentBeaconBlockRoot,
       requestsHash,
+      blockAccessListHash,
     },
     options,
   )

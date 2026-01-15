@@ -63,6 +63,7 @@ export class BlockHeader {
   public readonly excessBlobGas?: bigint
   public readonly parentBeaconBlockRoot?: Uint8Array
   public readonly requestsHash?: Uint8Array
+  public readonly blockAccessListHash?: Uint8Array
 
   public readonly common: Common
 
@@ -166,6 +167,7 @@ export class BlockHeader {
       // Note: as of devnet-4 we stub the null SHA256 hash, but for devnet5 this will actually
       // be the correct hash for empty requests.
       requestsHash: this.common.isActivatedEIP(7685) ? SHA256_NULL : undefined,
+      blockAccessListHash: this.common.isActivatedEIP(7928) ? new Uint8Array(32) : undefined,
     }
 
     const baseFeePerGas =
@@ -181,6 +183,9 @@ export class BlockHeader {
       hardforkDefaults.parentBeaconBlockRoot
     const requestsHash =
       toType(headerData.requestsHash, TypeOutput.Uint8Array) ?? hardforkDefaults.requestsHash
+    const blockAccessListHash =
+      toType(headerData.blockAccessListHash, TypeOutput.Uint8Array) ??
+      hardforkDefaults.blockAccessListHash
 
     if (!this.common.isActivatedEIP(1559) && baseFeePerGas !== undefined) {
       throw EthereumJSErrorWithoutCode(
@@ -218,6 +223,12 @@ export class BlockHeader {
       throw EthereumJSErrorWithoutCode('requestsHash can only be provided with EIP 7685 activated')
     }
 
+    if (!this.common.isActivatedEIP(7928) && blockAccessListHash !== undefined) {
+      throw EthereumJSErrorWithoutCode(
+        'blockAccessListHash can only be provided with EIP 7928 activated',
+      )
+    }
+
     this.parentHash = parentHash
     this.uncleHash = uncleHash
     this.coinbase = coinbase
@@ -239,6 +250,7 @@ export class BlockHeader {
     this.excessBlobGas = excessBlobGas
     this.parentBeaconBlockRoot = parentBeaconBlockRoot
     this.requestsHash = requestsHash
+    this.blockAccessListHash = blockAccessListHash
     this._genericFormatValidation()
     this._validateDAOExtraData()
 
@@ -356,6 +368,19 @@ export class BlockHeader {
     if (this.common.isActivatedEIP(7685)) {
       if (this.requestsHash === undefined) {
         const msg = this._errorMsg('EIP7685 block has no requestsHash field')
+        throw EthereumJSErrorWithoutCode(msg)
+      }
+    }
+
+    if (this.common.isActivatedEIP(7928)) {
+      if (this.blockAccessListHash === undefined) {
+        const msg = this._errorMsg('EIP7928 block has no blockAccessListHash field')
+        throw EthereumJSErrorWithoutCode(msg)
+      }
+      if (this.blockAccessListHash?.length !== 32) {
+        const msg = this._errorMsg(
+          `blockAccessListHash must be 32 bytes, received ${this.blockAccessListHash!.length} bytes`,
+        )
         throw EthereumJSErrorWithoutCode(msg)
       }
     }
