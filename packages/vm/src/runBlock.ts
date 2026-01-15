@@ -196,12 +196,6 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     requestsHash = genRequestsRoot(requests, sha256Function)
   }
 
-  // Persist state
-  await vm.evm.journal.commit()
-  if (vm.DEBUG) {
-    debug(`block checkpoint committed`)
-  }
-
   const stateRoot = await stateManager.getStateRoot()
 
   // Given the generate option, either set resulting header
@@ -226,83 +220,97 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     }
     block = createBlock(blockData, { common: vm.common })
   } else {
-    if (vm.common.isActivatedEIP(7685)) {
-      if (!equalsBytes(block.header.requestsHash!, requestsHash!)) {
-        if (vm.DEBUG)
+    try {
+      if (vm.common.isActivatedEIP(7685)) {
+        if (!equalsBytes(block.header.requestsHash!, requestsHash!)) {
+          if (vm.DEBUG)
+            debug(
+              `Invalid requestsHash received=${bytesToHex(
+                block.header.requestsHash!,
+              )} expected=${bytesToHex(requestsHash!)}`,
+            )
+          const msg = _errorMsg('invalid requestsHash', vm, block)
+          throw EthereumJSErrorWithoutCode(msg)
+        }
+      }
+
+      // Only validate the following headers if Stateless isn't activated
+      if (equalsBytes(result.receiptsRoot, block.header.receiptTrie) === false) {
+        if (vm.DEBUG) {
           debug(
-            `Invalid requestsHash received=${bytesToHex(
-              block.header.requestsHash!,
-            )} expected=${bytesToHex(requestsHash!)}`,
+            `Invalid receiptTrie received=${bytesToHex(result.receiptsRoot)} expected=${bytesToHex(
+              block.header.receiptTrie,
+            )}`,
           )
-        const msg = _errorMsg('invalid requestsHash', vm, block)
+        }
+        const msg = _errorMsg('invalid receiptTrie', vm, block)
         throw EthereumJSErrorWithoutCode(msg)
       }
-    }
-
-    // Only validate the following headers if Stateless isn't activated
-    if (equalsBytes(result.receiptsRoot, block.header.receiptTrie) === false) {
-      if (vm.DEBUG) {
-        debug(
-          `Invalid receiptTrie received=${bytesToHex(result.receiptsRoot)} expected=${bytesToHex(
-            block.header.receiptTrie,
-          )}`,
-        )
+      if (!(equalsBytes(result.bloom.bitvector, block.header.logsBloom) === true)) {
+        if (vm.DEBUG) {
+          debug(
+            `Invalid bloom received=${bytesToHex(result.bloom.bitvector)} expected=${bytesToHex(
+              block.header.logsBloom,
+            )}`,
+          )
+        }
+        const msg = _errorMsg('invalid bloom', vm, block)
+        throw EthereumJSErrorWithoutCode(msg)
       }
-      const msg = _errorMsg('invalid receiptTrie', vm, block)
-      throw EthereumJSErrorWithoutCode(msg)
-    }
-    if (!(equalsBytes(result.bloom.bitvector, block.header.logsBloom) === true)) {
-      if (vm.DEBUG) {
-        debug(
-          `Invalid bloom received=${bytesToHex(result.bloom.bitvector)} expected=${bytesToHex(
-            block.header.logsBloom,
-          )}`,
-        )
+      if (result.gasUsed !== block.header.gasUsed) {
+        if (vm.DEBUG) {
+          debug(`Invalid gasUsed received=${result.gasUsed} expected=${block.header.gasUsed}`)
+        }
+        const msg = _errorMsg('invalid gasUsed', vm, block)
+        throw EthereumJSErrorWithoutCode(msg)
       }
-      const msg = _errorMsg('invalid bloom', vm, block)
-      throw EthereumJSErrorWithoutCode(msg)
-    }
-    if (result.gasUsed !== block.header.gasUsed) {
-      if (vm.DEBUG) {
-        debug(`Invalid gasUsed received=${result.gasUsed} expected=${block.header.gasUsed}`)
-      }
-      const msg = _errorMsg('invalid gasUsed', vm, block)
-      throw EthereumJSErrorWithoutCode(msg)
-    }
-    if (!(equalsBytes(stateRoot, block.header.stateRoot) === true)) {
-      if (vm.DEBUG) {
-        debug(
-          `Invalid stateRoot received=${bytesToHex(stateRoot)} expected=${bytesToHex(
+      if (!(equalsBytes(stateRoot, block.header.stateRoot) === true)) {
+        if (vm.DEBUG) {
+          debug(
+            `Invalid stateRoot received=${bytesToHex(stateRoot)} expected=${bytesToHex(
+              block.header.stateRoot,
+            )}`,
+          )
+        }
+        const msg = _errorMsg(
+          `invalid block stateRoot, got: ${bytesToHex(stateRoot)}, want: ${bytesToHex(
             block.header.stateRoot,
           )}`,
+          vm,
+          block,
         )
+        throw EthereumJSErrorWithoutCode(msg)
       }
-      const msg = _errorMsg(
-        `invalid block stateRoot, got: ${bytesToHex(stateRoot)}, want: ${bytesToHex(
-          block.header.stateRoot,
-        )}`,
-        vm,
-        block,
-      )
-      throw EthereumJSErrorWithoutCode(msg)
-    }
 
-    if (vm.common.isActivatedEIP(7864)) {
-      if (vm.evm.binaryTreeAccessWitness === undefined) {
-        throw Error(`binaryTreeAccessWitness required if binary tree (EIP-7864) is activated`)
+      if (vm.common.isActivatedEIP(7864)) {
+        if (vm.evm.binaryTreeAccessWitness === undefined) {
+          throw Error(`binaryTreeAccessWitness required if binary tree (EIP-7864) is activated`)
+        }
+        // If binary tree is activated and executing statelessly, only validate the post-state
+        if (
+          (await vm['_opts'].stateManager!.verifyBinaryTreePostState!(
+            vm.evm.binaryTreeAccessWitness,
+          )) === false
+        ) {
+          throw EthereumJSErrorWithoutCode(
+            `Binary tree post state verification failed on block ${block.header.number}`,
+          )
+        }
+        debug(`Binary tree post state verification succeeded`)
       }
-      // If binary tree is activated and executing statelessly, only validate the post-state
-      if (
-        (await vm['_opts'].stateManager!.verifyBinaryTreePostState!(
-          vm.evm.binaryTreeAccessWitness,
-        )) === false
-      ) {
-        throw EthereumJSErrorWithoutCode(
-          `Binary tree post state verification failed on block ${block.header.number}`,
-        )
+    } catch (err) {
+      await vm.evm.journal.revert()
+      if (vm.DEBUG) {
+        debug(`block checkpoint reverted`)
       }
-      debug(`Binary tree post state verification succeeded`)
+      throw err
     }
+  }
+
+  // Persist state
+  await vm.evm.journal.commit()
+  if (vm.DEBUG) {
+    debug(`block checkpoint committed`)
   }
 
   if (enableProfiler) {
