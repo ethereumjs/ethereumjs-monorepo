@@ -194,4 +194,12 @@ export const hardforksDict: HardforksDict = {
       blobGasPriceUpdateFraction: 11684671,
     },
   },
+  /**
+   * Description: Feature hardfork after osaka (headliner: EIP-7928 Block Level Access Lists (BAL))
+   * URL        : https://eips.ethereum.org/EIPS/eip-7773
+   * Status     : Draft (implementation incomplete + spec still moving!)
+   */
+  amsterdam: {
+    eips: [],
+  },
 }

@@ -84,6 +84,7 @@ export const Hardfork = {
   Bpo3: 'bpo3',
   Bpo4: 'bpo4',
   Bpo5: 'bpo5',
+  Amsterdam: 'amsterdam',
 } as const
 
 export type ConsensusType = (typeof ConsensusType)[keyof typeof ConsensusType]

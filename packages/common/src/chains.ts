@@ -137,6 +137,10 @@ export const Mainnet: ChainConfig = {
       timestamp: '1767747671',
       forkHash: '0x07c9462e',
     },
+    {
+      name: 'amsterdam',
+      block: null,
+    },
   ],
   bootstrapNodes: [
     {
@@ -295,6 +299,10 @@ export const Sepolia: ChainConfig = {
       block: null,
       timestamp: '1761607008',
       forkHash: '0x268956b6',
+    },
+    {
+      name: 'amsterdam',
+      block: null,
     },
   ],
   bootstrapNodes: [
@@ -595,6 +603,10 @@ export const Hoodi: ChainConfig = {
       block: null,
       timestamp: '1762955544',
       forkHash: '0x23aa1351',
+    },
+    {
+      name: 'amsterdam',
+      block: null,
     },
   ],
   bootstrapNodes: [
