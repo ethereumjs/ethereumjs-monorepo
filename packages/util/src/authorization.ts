@@ -63,21 +63,21 @@ export function eoaCode7702AuthorizationListJSONItemToBytes(
   }
 
   return [
-    hexToBytes(authorizationList.chainId),
+    unpadBytes(hexToBytes(authorizationList.chainId)),
     hexToBytes(authorizationList.address),
-    hexToBytes(authorizationList.nonce),
-    hexToBytes(authorizationList.yParity),
-    hexToBytes(authorizationList.r),
-    hexToBytes(authorizationList.s),
+    unpadBytes(hexToBytes(authorizationList.nonce)),
+    unpadBytes(hexToBytes(authorizationList.yParity)),
+    unpadBytes(hexToBytes(authorizationList.r)),
+    unpadBytes(hexToBytes(authorizationList.s)),
   ]
 }
 
 /** Authorization signing utility methods */
 function unsignedAuthorizationListToBytes(input: EOACode7702AuthorizationListItemUnsigned) {
   const { chainId: chainIdHex, address: addressHex, nonce: nonceHex } = input
-  const chainId = hexToBytes(chainIdHex)
+  const chainId = unpadBytes(hexToBytes(chainIdHex))
   const address = setLengthLeft(hexToBytes(addressHex), 20)
-  const nonce = hexToBytes(nonceHex)
+  const nonce = unpadBytes(hexToBytes(nonceHex))
   return [chainId, address, nonce]
 }
 
@@ -151,9 +151,9 @@ export function eoaCode7702SignAuthorization(
     : unsignedAuthorizationListToBytes(input)
 
   return [
-    chainId,
+    unpadBytes(chainId),
     address,
-    nonce,
+    unpadBytes(nonce),
     bigIntToUnpaddedBytes(BigInt(signed.recovery!)),
     bigIntToUnpaddedBytes(signed.r),
     bigIntToUnpaddedBytes(signed.s),
@@ -166,7 +166,14 @@ export function eoaCode7702RecoverAuthority(
   const inputBytes = Array.isArray(input)
     ? input
     : eoaCode7702AuthorizationListJSONItemToBytes(input)
-  const [chainId, address, nonce, yParity, r, s] = inputBytes
+  const [chainId, address, nonce, yParity, r, s] = [
+    unpadBytes(inputBytes[0]),
+    inputBytes[1],
+    unpadBytes(inputBytes[2]),
+    unpadBytes(inputBytes[3]),
+    unpadBytes(inputBytes[4]),
+    unpadBytes(inputBytes[5]),
+  ]
   const msgHash = eoaCode7702AuthorizationHashedMessageToSign([chainId, address, nonce])
   const pubKey = ecrecover(msgHash, bytesToBigInt(yParity), r, s)
   return new Address(publicToAddress(pubKey))

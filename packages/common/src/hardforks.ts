@@ -166,7 +166,7 @@ export const hardforksDict: HardforksDict = {
    * Status     : Final
    */
   osaka: {
-    eips: [7594, 7823, 7825, 7883, 7939, 7951, 7918],
+    eips: [7594, 7823, 7825, 7883, 7892, 7939, 7951, 7918],
   },
   /**
    * Description: HF to update the blob target, max and updateFraction (see also EIP-7892)
@@ -193,5 +193,13 @@ export const hardforksDict: HardforksDict = {
       max: 21,
       blobGasPriceUpdateFraction: 11684671,
     },
+  },
+  /**
+   * Description: Feature hardfork after osaka (headliner: EIP-7928 Block Level Access Lists (BAL))
+   * URL        : https://eips.ethereum.org/EIPS/eip-7773
+   * Status     : Draft (implementation incomplete + spec still moving!)
+   */
+  amsterdam: {
+    eips: [],
   },
 }

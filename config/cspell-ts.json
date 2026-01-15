@@ -24,6 +24,7 @@
     }
   ],
   "words": [
+    "unpadding",
     "prehash",
     "viem",
     "immediates",
@@ -72,6 +73,7 @@
     "headerchain",
     "Merkle",
     "cornercase",
+    "constantinoplefix",
     "Deauthorizations",
     "Deauthorizing",
     "deauthorized",

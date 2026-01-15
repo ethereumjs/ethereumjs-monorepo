@@ -1,29 +1,36 @@
 import { EventEmitter } from 'eventemitter3'
-import * as td from 'testdouble'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, expect, it, vi } from 'vitest'
 
 import { RlpxSender } from '../../../src/net/protocol/index.ts'
 
 import type { ETH as Devp2pETH } from '@ethereumjs/devp2p'
 
 describe('should send status', async () => {
-  const rlpxProtocol = td.object() as any
+  const rlpxProtocol = {
+    sendStatus: vi.fn(),
+    events: {
+      on: vi.fn(),
+    },
+  } as any
   const status = { id: 5 }
   const sender = new RlpxSender(rlpxProtocol)
   sender.sendStatus(status)
-  td.verify(rlpxProtocol.sendStatus(status))
-  td.reset()
+  expect(rlpxProtocol.sendStatus).toHaveBeenCalledWith(status)
   it('sent status', () => {
     assert.isTrue(true, 'status sent')
   })
 })
 
 describe('should send message', async () => {
-  const rlpxProtocol = td.object() as any
+  const rlpxProtocol = {
+    sendMessage: vi.fn(),
+    events: {
+      on: vi.fn(),
+    },
+  } as any
   const sender = new RlpxSender(rlpxProtocol)
   sender.sendMessage(1, 5)
-  td.verify(rlpxProtocol.sendMessage(1, 5))
-  td.reset()
+  expect(rlpxProtocol.sendMessage).toHaveBeenCalledWith(1, 5)
   it('sent message', () => {
     assert.isTrue(true, 'message sent')
   })

@@ -87,7 +87,7 @@ const accumulateWithdrawalsRequest = async (
 
   const results = await vm.evm.runCall({
     caller: systemAddress,
-    gasLimit: BigInt(1_000_000),
+    gasLimit: vm.common.param('systemCallGasLimit'),
     to: withdrawalsAddress,
   })
 
@@ -123,7 +123,7 @@ const accumulateConsolidationsRequest = async (
 
   const results = await vm.evm.runCall({
     caller: systemAddress,
-    gasLimit: BigInt(1_000_000),
+    gasLimit: vm.common.param('systemCallGasLimit'),
     to: consolidationsAddress,
   })
 
