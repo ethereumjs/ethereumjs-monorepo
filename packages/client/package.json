@@ -105,8 +105,6 @@
     "it-pair": "^2.0.6",
     "it-pipe": "^3.0.1",
     "it-pushable": "^3.2.3",
-    "testdouble": "^3.20.2",
-    "testdouble-timers": "^0.1.1",
     "ws": "^8.18.1"
   },
   "engines": {

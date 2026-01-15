@@ -1,3 +1,15 @@
+/**
+ * This file is deprecated.
+ *
+ * The new runner in executionSpecState.test.ts will become the main
+ * entry point for state tests.
+ *
+ * If you discover functionality here which is still missing in the new runner,
+ * please open a PR against executionSpecState.test.ts.
+ *
+ * PLEASE DO NOT COPY LARGER PARTS OF THE CODE TO THE NEW RUNNER BUT RE-IMPLEMENT
+ * (USE COMMON SENSE).
+ */
 import type { Common } from '@ethereumjs/common'
 
 import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'

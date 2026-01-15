@@ -1,5 +1,4 @@
-import * as td from 'testdouble'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, it, vi } from 'vitest'
 
 import { INTERNAL_ERROR } from '../../../src/rpc/error-code.ts'
 import { createClient, createManager, getRPCClient, startRPC } from '../helpers.ts'
@@ -43,8 +42,7 @@ describe(method, () => {
     const rpcServer = startRPC(manager.getMethods())
     const rpc = getRPCClient(rpcServer)
     const sync = client.service!.synchronizer as FullSynchronizer
-    sync.best = td.func<(typeof sync)['best']>()
-    td.when(sync.best()).thenResolve({
+    sync.best = vi.fn().mockResolvedValue({
       latest: () => {
         return
       },
@@ -65,8 +63,7 @@ describe(method, () => {
     const rpcServer = startRPC(manager.getMethods())
     const rpc = getRPCClient(rpcServer)
     const sync = client.service!.synchronizer as FullSynchronizer
-    sync.best = td.func<(typeof sync)['best']>()
-    td.when(sync.best()).thenResolve({
+    sync.best = vi.fn().mockResolvedValue({
       latest: () => {
         return {
           number: BigInt(2),
@@ -89,9 +86,5 @@ describe(method, () => {
     } else {
       assert.fail('should return syncing status object')
     }
-  })
-
-  it('should reset td', () => {
-    td.reset()
   })
 })

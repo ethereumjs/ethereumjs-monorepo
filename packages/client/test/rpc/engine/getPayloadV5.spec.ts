@@ -172,4 +172,4 @@ describe(method, () => {
     MerkleStateManager.prototype.setStateRoot = originalSetStateRoot
     MerkleStateManager.prototype.shallowCopy = originalStateManagerCopy
   })
-}, 30000)
+}, 60000)

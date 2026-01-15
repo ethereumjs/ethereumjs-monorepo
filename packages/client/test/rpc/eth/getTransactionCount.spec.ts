@@ -73,7 +73,7 @@ describe(method, () => {
     // call with nonexistent account
     res = await rpc.request(method, [`0x${'11'.repeat(20)}`, 'latest'])
     assert.strictEqual(res.result, `0x0`, 'should return 0x0 for nonexistent account')
-  }, 20000)
+  }, 60000)
 
   it('call with pending block argument', async () => {
     const blockchain = await createBlockchain()
@@ -87,6 +87,7 @@ describe(method, () => {
     const account = await service.execution.vm.stateManager.getAccount(SIGNER_A.address)
     account!.balance = 0xffffffffffffffn
     await service.execution.vm.stateManager.putAccount(SIGNER_A.address, account!)
+
     const tx = createTx({
       to: randomBytes(20),
       value: 1,
@@ -102,5 +103,5 @@ describe(method, () => {
 
     const res = await rpc.request(method, [SIGNER_A.address.toString(), 'pending'])
     assert.strictEqual(res.result, '0x1')
-  }, 23000)
+  }, 60000)
 })

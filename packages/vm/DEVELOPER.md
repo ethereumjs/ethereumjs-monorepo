@@ -25,7 +25,12 @@
 
 ### Introduction
 
-Tests can be found in the `tests` directory. There are test runners for [State tests](./test/tester/runners/GeneralStateTestsRunner.ts) and [Blockchain tests](./test/tester/runners/BlockchainTestsRunner.ts).
+Tests can be found in the `tests` directory.
+
+We have new test runners for [State tests](./test/tester/executionSpecState.test.ts) and [Blockchain tests](./test/tester/executionSpecBlockchain.test.ts).
+The old test runners for [State tests](./test/tester/runners/GeneralStateTestsRunner.ts) and [Blockchain tests](./test/tester/runners/BlockchainTestsRunner.ts) are deprecated and will be removed in the future, but can still be used for now and also still supports some functionality that is not yet available in the new runners.
+
+IF YOU DISCOVER FUNCTIONALITY HERE WHICH IS STILL MISSING IN THE NEW RUNNER, PLEASE OPEN A PR AGAINST THE NEW RUNNER FILE(S).
 
 Currently there is a hybrid situation where tests from old forks are still run against the now-deprecated [Ethereum tests](https://github.com/ethereum/tests) repository, while we started to run news tests (Osaka+) against the new [execution-spec-tests](https://github.com/ethereum/execution-spec-tests) repository (which now again transitioned to [execution-specs](https://github.com/ethereum/execution-specs)).
 
@@ -56,12 +61,16 @@ npm run test:state -- --test=stackOverflow
 
 You can also invoke Vitest directly:
 ```bash
+// Old runner
 VITE_FORK=Prague npx vitest test/tester/state.spec.ts
+
+// New runner
+npx vitest test/tester/executionSpecState.test.ts
 ```
 
-This version uses environment variables like `VITE_FORK`, `VITE_TEST`, `VITE_DIR`, etc.
+This version (old runner) uses environment variables like `VITE_FORK`, `VITE_TEST`, `VITE_DIR`, etc.
 
-Additional Vitest scripts:
+Additional test scripts:
 
 ```bash
 npm run test:state:newForks
@@ -77,7 +86,11 @@ Blockchain tests run on Vitest (using a wrapper if you want to use CLI arguments
 
 ```bash
 # Direct command
-npx vitest test/tester/blockchain.spec.ts
+// Old runner
+VITE_FORK=Prague npx vitest test/tester/blockchain.spec.ts
+
+// New runner
+npx vitest test/tester/executionSpecBlockchain.test.ts
 
 # Via npm script
 npm run test:blockchain
@@ -95,9 +108,11 @@ npm run build:dist && npm run test:state -- --dist
 npm run build:dist && npm run test:blockchain -- --dist
 ```
 
-By default state tests use the latest hardfork (`DEFAULT_FORK_CONFIG` in `test/tester/config.ts`, currently `Prague`).
+By default state tests use the latest hardfork (for the old runner: `DEFAULT_FORK_CONFIG` in `test/tester/config.ts`, currently `Prague`).
 
 #### Running with specific forks and EIPs
+
+NOT FULLY IMPLEMENTED IN NEW RUNNER YET.
 
 The `--fork` parameter can also be used to activate EIPs. This is done by first entering the hardfork, and then add the EIPs separated with the `+` sign. For instance:
 
@@ -126,7 +141,11 @@ Running a specific state test case:
 npm run test:state -- --test='stackOverflow'
 
 # Direct command
+// Old runner
 VITE_TEST='stackOverflow' npx vitest test/tester/state.spec.ts
+
+// New runner
+NOT IMPLEMENTED YET.
 ```
 
 Running all tests in a file:
@@ -168,6 +187,7 @@ Running all the blockchain tests in a file:
 ```bash
 npm run test:blockchain -- --file='randomStatetest303'
 # Or
+// Old runner
 VITE_FILE='randomStatetest303' npx vitest test/tester/blockchain.spec.ts
 ```
 
@@ -176,6 +196,7 @@ Running tests from a specific directory:
 ```bash
 npm run test:blockchain -- --dir='bcBlockGasLimitTest'
 # Or
+// Old runner
 VITE_DIR='bcBlockGasLimitTest' npx vitest test/tester/blockchain.spec.ts
 ```
 

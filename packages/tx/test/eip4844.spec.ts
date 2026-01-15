@@ -1,4 +1,4 @@
-import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
 import {
   blobsToCommitments,
   blobsToProofs,
@@ -310,26 +310,25 @@ describe('EIP4844 constructor tests - invalid scenarios', () => {
       try {
         createBlob4844Tx({ ...baseTxData, ...tooManyBlobs7 }, { common: kzg.common })
       } catch (err: any) {
-        assert.isTrue(
-          err.message.includes(
-            'tx can contain at most 6 blobs (maxBlobGasPerBlock/blobGasPerBlob)',
-          ),
+        assert.match(
+          err.message,
+          /tx causes total blob gas of \d+ to exceed maximum blob gas per block of \d+/,
           `throws on too many versioned hashes (${kzg.label})`,
         )
       }
 
-      const commonWithEIP7594 = createCommonFromGethGenesis(eip4844GethGenesis, {
-        chain: 'customChain',
-        hardfork: Hardfork.Cancun,
-        eips: [7594],
+      const commonWithEIP7594 = new Common({
+        chain: Mainnet,
+        hardfork: Hardfork.Osaka,
         customCrypto: { kzg: kzg.lib },
       })
+      assert.isTrue(commonWithEIP7594.isActivatedEIP(7594), 'EIP-7594 should be activated')
       try {
         createBlob4844Tx({ ...baseTxData, ...tooManyBlobs7 }, { common: commonWithEIP7594 })
       } catch (err: any) {
         assert.isTrue(
-          err.message.includes('tx can contain at most 6 blobs (EIP-7594)'),
-          `throws on too many versioned hashes (${kzg.label})`,
+          err.message.includes('7 blobs exceeds max 6 blobs per tx (EIP-7594)'),
+          `throws on too many versioned hashes (${kzg.label}): ${err.message}`,
         )
       }
     }

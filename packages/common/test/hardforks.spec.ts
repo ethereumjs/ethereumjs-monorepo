@@ -35,6 +35,7 @@ describe('[Common]: Hardfork logic', () => {
       Hardfork.GrayGlacier,
       Hardfork.Shanghai,
       Hardfork.Paris,
+      Hardfork.Amsterdam,
     ]
     let c
 

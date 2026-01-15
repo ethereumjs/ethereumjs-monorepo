@@ -1,5 +1,4 @@
 import { createBlock } from '@ethereumjs/block'
-import * as td from 'testdouble'
 import { assert, describe, it, vi } from 'vitest'
 
 import { Common } from '@ethereumjs/common'
@@ -196,8 +195,7 @@ describe('[FullSynchronizer]', async () => {
       txPool,
       execution,
     })
-    sync.best = td.func<(typeof sync)['best']>()
-    td.when(sync.best()).thenResolve({
+    sync.best = vi.fn().mockResolvedValue({
       les: { status: { headNum: BigInt(2) } },
       latest: () => {
         return {
