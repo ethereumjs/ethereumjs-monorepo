@@ -22,6 +22,7 @@ export class OriginalStorageCache {
   }
 
   async get(address: Address, key: Uint8Array): Promise<Uint8Array> {
+    // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for cache lookups.
     const addressHex = bytesToUnprefixedHex(address.bytes)
     const map = this.map.get(addressHex)
     if (map !== undefined) {
@@ -37,6 +38,7 @@ export class OriginalStorageCache {
   }
 
   put(address: Address, key: Uint8Array, value: Uint8Array) {
+    // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for cache lookups.
     const addressHex = bytesToUnprefixedHex(address.bytes)
     let map = this.map.get(addressHex)
     if (map === undefined) {

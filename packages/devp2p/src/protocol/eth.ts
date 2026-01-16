@@ -286,6 +286,7 @@ export class ETH extends Protocol {
   }
 
   _forkHashFromForkId(forkId: Uint8Array): string {
+    // Using deprecated bytesToUnprefixedHex for performance: used for string conversion in protocol handling.
     return bytesToUnprefixedHex(forkId)
   }
 

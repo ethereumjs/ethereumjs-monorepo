@@ -148,6 +148,8 @@ export function toAscii(hex: string): string {
 export function fromUtf8(stringValue: string) {
   const str = utf8ToBytes(stringValue)
 
+  // Using deprecated bytesToUnprefixedHex for performance: we're building a hex string with 0x prefix,
+  // so using bytesToUnprefixedHex avoids creating an intermediate prefixed string and then stripping it.
   return `0x${padToEven(bytesToUnprefixedHex(str)).replace(/^0+|0+$/g, '')}`
 }
 

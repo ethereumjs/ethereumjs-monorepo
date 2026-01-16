@@ -101,6 +101,7 @@ export class Server {
     })
 
     const deferred = createDeferred()
+    // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for request tracking.
     const rKey = bytesToUnprefixedHex(hash)
     this._requests.set(rKey, {
       peer,
@@ -191,6 +192,7 @@ export class Server {
       }
 
       case 'pong': {
+        // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for request lookups.
         const rKey = bytesToUnprefixedHex(info.data.hash)
         const request = this._requests.get(rKey)
         if (request !== undefined) {
