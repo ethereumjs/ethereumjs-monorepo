@@ -3,8 +3,8 @@ import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 import { assert, describe, it } from 'vitest'
 
+import { beaconData } from '@ethereumjs/testdata'
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
-import { beaconData } from '../../testdata/blocks/beacon.ts'
 import { getRPCClient, setupChain } from '../helpers.ts'
 const kzg = new microEthKZG(trustedSetup)
 

@@ -1,6 +1,10 @@
 import type { GethGenesis } from '@ethereumjs/common'
 
-export const debugData: GethGenesis = {
+/**
+ * Geth genesis configuration for debug/testing scenarios.
+ * Used for testing debug RPC methods and post-merge functionality.
+ */
+export const debugGethGenesis: GethGenesis = {
   config: {
     chainId: 1,
     homesteadBlock: 0,
@@ -42,3 +46,6 @@ export const debugData: GethGenesis = {
   parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
   baseFeePerGas: '0x7',
 }
+
+// Backward compatibility export
+export const debugData = debugGethGenesis
