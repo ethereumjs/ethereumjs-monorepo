@@ -149,7 +149,7 @@ describe('[Block]: Header functions', () => {
   })
 
   it('Initialization -> createWithdrawalFromBytesArray() -> error cases', () => {
-    const headerArray = Array(22).fill(new Uint8Array(0))
+    const headerArray = Array(25).fill(new Uint8Array(0))
 
     // mock header data (if set to new Uint8Array() header throws)
     headerArray[0] = new Uint8Array(32) //parentHash
@@ -160,6 +160,9 @@ describe('[Block]: Header functions', () => {
     headerArray[13] = new Uint8Array(32) // mixHash
     headerArray[14] = new Uint8Array(8) // nonce
     headerArray[15] = new Uint8Array(4) // bad data
+    headerArray[16] = new Uint8Array(4) // bad data
+    headerArray[17] = new Uint8Array(4) // bad data
+    headerArray[18] = new Uint8Array(4) // bad data
 
     assert.throw(
       () => createBlockHeaderFromBytesArray(headerArray),
