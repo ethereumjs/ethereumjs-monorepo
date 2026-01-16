@@ -656,6 +656,7 @@ export class Blockchain implements BlockchainInterface {
       canonicalBlockMap.push(parentBlock)
 
       // mark block hash as part of the canonical chain
+      // Using deprecated bytesToUnprefixedHex for performance: used as object keys for hash lookups.
       canonicalChainHashes[bytesToUnprefixedHex(parentBlock.hash())] = true
 
       // for each of the uncles, mark the uncle as included
@@ -672,6 +673,7 @@ export class Blockchain implements BlockchainInterface {
     // Uncle Header has a parentHash which points to the canonical chain.
 
     uncleHeaders.map((uh) => {
+      // Using deprecated bytesToUnprefixedHex for performance: used as object keys for hash lookups.
       const uncleHash = bytesToUnprefixedHex(uh.hash())
       const parentHash = bytesToUnprefixedHex(uh.parentHash)
 
@@ -1232,6 +1234,7 @@ export class Blockchain implements BlockchainInterface {
     // Convert DB heads to hex strings for efficient storage in DB
     // LevelDB doesn't handle Uint8Arrays properly when they are part
     // of a JSON object being stored as a value in the DB
+    // Using deprecated bytesToUnprefixedHex for performance: used for JSON serialization where unprefixed hex is needed.
     const hexHeads = Object.fromEntries(
       Object.entries(this._heads).map((entry) => [entry[0], bytesToUnprefixedHex(entry[1])]),
     )

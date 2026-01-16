@@ -1,11 +1,5 @@
 import { Hardfork } from '@ethereumjs/common'
-import {
-  type PrefixedHexString,
-  bytesToHex,
-  bytesToUnprefixedHex,
-  randomBytes,
-  utf8ToBytes,
-} from '@ethereumjs/util'
+import { type PrefixedHexString, bytesToHex, randomBytes, utf8ToBytes } from '@ethereumjs/util'
 import { p256 } from '@noble/curves/nist.js'
 import { sha256 } from '@noble/hashes/sha2.js'
 import { runPrecompile } from './util.ts'
@@ -31,12 +25,11 @@ const main = async () => {
   const signature = p256.Signature.fromBytes(signatureBytes)
 
   const padHex = (value: bigint) => value.toString(16).padStart(64, '0')
-
   const msgHashHex = bytesToHex(messageHash)
   const rHex = padHex(signature.r)
   const sHex = padHex(signature.s)
-  const qxHex = bytesToUnprefixedHex(publicKey.slice(1, 33)).padStart(64, '0')
-  const qyHex = bytesToUnprefixedHex(publicKey.slice(33, 65)).padStart(64, '0')
+  const qxHex = bytesToHex(publicKey.slice(1, 33)).slice(2).padStart(64, '0')
+  const qyHex = bytesToHex(publicKey.slice(33, 65)).slice(2).padStart(64, '0')
 
   const data: PrefixedHexString = `${msgHashHex}${rHex}${sHex}${qxHex}${qyHex}`
 
