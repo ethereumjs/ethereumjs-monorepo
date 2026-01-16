@@ -154,6 +154,7 @@ export class BlockHeader {
     }
 
     // Hardfork defaults which couldn't be paired with earlier defaults
+    const isGenesis = number === BIGINT_0
     const hardforkDefaults = {
       baseFeePerGas: this.common.isActivatedEIP(1559)
         ? number === this.common.hardforkBlock(Hardfork.London)
@@ -163,7 +164,9 @@ export class BlockHeader {
       withdrawalsRoot: this.common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined,
       blobGasUsed: this.common.isActivatedEIP(4844) ? BIGINT_0 : undefined,
       excessBlobGas: this.common.isActivatedEIP(4844) ? BIGINT_0 : undefined,
-      parentBeaconBlockRoot: this.common.isActivatedEIP(4788) ? new Uint8Array(32) : undefined,
+      // EIP-4788: parentBeaconBlockRoot should not be set for genesis blocks
+      parentBeaconBlockRoot:
+        this.common.isActivatedEIP(4788) && !isGenesis ? new Uint8Array(32) : undefined,
       // Note: as of devnet-4 we stub the null SHA256 hash, but for devnet5 this will actually
       // be the correct hash for empty requests.
       requestsHash: this.common.isActivatedEIP(7685) ? SHA256_NULL : undefined,
@@ -655,7 +658,7 @@ export class BlockHeader {
       rawItems.push(bigIntToUnpaddedBytes(this.blobGasUsed!))
       rawItems.push(bigIntToUnpaddedBytes(this.excessBlobGas!))
     }
-    if (this.common.isActivatedEIP(4788)) {
+    if (this.common.isActivatedEIP(4788) && !this.isGenesis()) {
       rawItems.push(this.parentBeaconBlockRoot!)
     }
     if (this.common.isActivatedEIP(7685)) {
