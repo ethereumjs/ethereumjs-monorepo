@@ -1,5 +1,9 @@
 // cspell:disable
-export const testData = {
+/**
+ * DevP2P protocol test data including EIP-8 handshake test vectors and DNS/ENR test data.
+ * Used for testing RLPx, ECIES, DNS discovery, and ENR functionality.
+ */
+export const devp2pTestData = {
   eip8Values: {
     keyA: '49a7b37aa6f6645917e7b807e9d1c00d4fa71f18343b0d4122a4d2df64dd6fee',
     keyB: 'b71c71a67e1177ad4e901695e1b4b9ee17ae16c6668d313eac2f96dbcda3f291',

@@ -1,6 +1,10 @@
 import type { GethGenesis } from '@ethereumjs/common'
 
-export const RPCTestnetData: GethGenesis = {
+/**
+ * Geth genesis configuration for RPC testnet testing.
+ * Used for testing RPC methods that require a custom testnet setup.
+ */
+export const rpcTestnetGethGenesis: GethGenesis = {
   config: {
     chainId: 15470,
     homesteadBlock: 0,
@@ -799,3 +803,7 @@ export const RPCTestnetData: GethGenesis = {
   gasUsed: '0x0',
   parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
 }
+
+// Backward compatibility exports
+export const RPCTestnetData = rpcTestnetGethGenesis
+export const rpcTestnetData = rpcTestnetGethGenesis

@@ -18,7 +18,7 @@ const method = 'eth_estimateGas'
 describe(method, () => {
   it('call with valid arguments', async () => {
     // Use custom genesis so we can test EIP1559 txs more easily
-    const { RPCTestnetData } = await import('../../testdata/geth-genesis/rpctestnet.ts')
+    const { RPCTestnetData } = await import('@ethereumjs/testdata')
     const common = createCommonFromGethGenesis(RPCTestnetData, {
       chain: 'testnet',
       hardfork: 'berlin',

@@ -2,6 +2,7 @@ import { bytesToHex } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 import { assert, describe, it } from 'vitest'
 
+import { powData } from '@ethereumjs/testdata'
 import { EthereumClient } from '../../src/client.ts'
 import { Config } from '../../src/config.ts'
 import { METHOD_NOT_FOUND } from '../../src/rpc/error-code.ts'
@@ -13,7 +14,6 @@ import {
   createWsRPCServerListener,
 } from '../../src/util/rpc.ts'
 import { getRPCClient, setupChain } from '../rpc/helpers.ts'
-import { powData } from '../testdata/geth-genesis/pow.ts'
 
 describe('[Util/RPC]', () => {
   it('should return enabled RPC servers', async () => {

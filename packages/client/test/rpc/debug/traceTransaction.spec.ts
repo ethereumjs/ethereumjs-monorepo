@@ -3,8 +3,8 @@ import { createTx } from '@ethereumjs/tx'
 import { bytesToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
+import { debugData } from '@ethereumjs/testdata'
 import { INTERNAL_ERROR, INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
-import { debugData } from '../../testdata/geth-genesis/debug.ts'
 import { baseSetup, dummy, getRPCClient, runBlockWithTxs, setupChain } from '../helpers.ts'
 
 const method = 'debug_traceTransaction'

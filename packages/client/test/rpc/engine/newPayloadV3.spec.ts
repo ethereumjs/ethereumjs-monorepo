@@ -2,8 +2,8 @@ import { postMergeGethGenesis } from '@ethereumjs/testdata'
 import { bigIntToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
+import { beaconData } from '@ethereumjs/testdata'
 import { INVALID_PARAMS, UNSUPPORTED_FORK } from '../../../src/rpc/error-code.ts'
-import { beaconData } from '../../testdata/blocks/beacon.ts'
 import { batchBlocks, getRPCClient, setupChain } from '../helpers.ts'
 
 const method = 'engine_newPayloadV3'

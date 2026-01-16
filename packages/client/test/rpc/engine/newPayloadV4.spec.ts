@@ -3,8 +3,8 @@ import { createTx } from '@ethereumjs/tx'
 import { Units, bigIntToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
+import { beaconData } from '@ethereumjs/testdata'
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
-import { beaconData } from '../../testdata/blocks/beacon.ts'
 import { getRPCClient, setupChain } from '../helpers.ts'
 
 const method = 'engine_newPayloadV4'
