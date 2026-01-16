@@ -1,80 +1,90 @@
 #!/usr/bin/env node
 /**
  * Simple bundle size analysis script
- * Calculates gzipped bundle sizes for all packages and compares with baseline
+ * Calculates minified+gzipped bundle sizes for each package and compares with baseline.
  */
 
 import { readdir, stat, readFile, writeFile } from 'fs/promises'
-import { createGzip } from 'zlib'
-import { createReadStream } from 'fs'
-import { join } from 'path'
+import { gzipSync } from 'zlib'
+import { join, resolve } from 'path'
+import { build } from 'esbuild'
 
 const packagesDir = join(process.cwd(), 'packages')
+/**
+ * Safely parse JSON from disk
+ */
+async function readJson(filePath) {
+  try {
+    const raw = await readFile(filePath, 'utf-8')
+    return JSON.parse(raw)
+  } catch {
+    return null
+  }
+}
+
+function resolveExportTarget(target) {
+  if (!target) return null
+  if (typeof target === 'string') return target
+  if (typeof target !== 'object') return null
+  if (target.import?.default) return target.import.default
+  if (typeof target.import === 'string') return target.import
+  if (target.default?.default) return target.default.default
+  if (typeof target.default === 'string') return target.default
+  return null
+}
+
+function resolveEntry(packageJson) {
+  const exportsField = packageJson?.exports
+  if (exportsField) {
+    const rootExport = exportsField['.'] ?? exportsField
+    const resolved = resolveExportTarget(rootExport)
+    if (resolved) return resolved
+  }
+  return packageJson?.module ?? packageJson?.main ?? null
+}
 
 /**
- * Get gzipped size of a file
+ * Get internal workspace packages so we can bundle them.
  */
-async function getGzipSize(filePath) {
-  try {
-    await stat(filePath)
-  } catch (err) {
-    return 0
+async function getInternalPackages() {
+  const internal = new Map()
+  const entries = await readdir(packagesDir, { withFileTypes: true })
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue
+    const packageJsonPath = join(packagesDir, entry.name, 'package.json')
+    const packageJson = await readJson(packageJsonPath)
+    if (packageJson?.name) {
+      internal.set(packageJson.name, join(packagesDir, entry.name))
+    }
   }
+  return internal
+}
 
-  return new Promise((resolve) => {
-    const chunks = []
-    const gzip = createGzip()
-    const readStream = createReadStream(filePath)
-
-    readStream
-      .pipe(gzip)
-      .on('data', (chunk) => chunks.push(chunk))
-      .on('end', () => {
-        const size = chunks.reduce((acc, chunk) => acc + chunk.length, 0)
-        resolve(size)
-      })
-      .on('error', () => resolve(0))
+/**
+ * Bundle and minify a package entry and return gzipped size
+ */
+async function getBundledSize(entryPath, pkgDir, external) {
+  const result = await build({
+    entryPoints: [entryPath],
+    bundle: true,
+    format: 'esm',
+    platform: 'node',
+    target: 'es2020',
+    treeShaking: true,
+    minify: true,
+    sourcemap: false,
+    write: false,
+    logLevel: 'silent',
+    absWorkingDir: pkgDir,
+    external,
+    define: {
+      'process.env.NODE_ENV': '"production"',
+    },
   })
-}
 
-/**
- * Recursively find all JS files in a directory
- */
-async function findJSFiles(dir) {
-  const files = []
-  try {
-    const entries = await readdir(dir, { withFileTypes: true })
-    for (const entry of entries) {
-      const fullPath = join(dir, entry.name)
-      if (entry.isDirectory()) {
-        const subFiles = await findJSFiles(fullPath)
-        files.push(...subFiles)
-      } else if (entry.isFile() && (entry.name.endsWith('.js') || entry.name.endsWith('.mjs'))) {
-        files.push(fullPath)
-      }
-    }
-  } catch (error) {
-    // Ignore errors
-  }
-  return files
-}
-
-/**
- * Calculate total gzipped size of a directory
- */
-async function calculateDirSize(dir) {
-  try {
-    const jsFiles = await findJSFiles(dir)
-    let totalGzip = 0
-    
-    for (const filePath of jsFiles) {
-      totalGzip += await getGzipSize(filePath)
-    }
-    
-    return totalGzip
-  } catch (error) {
-    return 0
-  }
+  if (!result.outputFiles || result.outputFiles.length === 0) return 0
+  const output = result.outputFiles[0].text
+  return gzipSync(Buffer.from(output)).length
 }
 
 /**
@@ -90,23 +100,44 @@ function formatKB(bytes) {
 async function analyzePackages() {
   try {
     const packages = await readdir(packagesDir, { withFileTypes: true })
+    const internalPackages = await getInternalPackages()
     const results = {}
-    
+    const errors = []
+
     for (const pkg of packages) {
       if (!pkg.isDirectory()) continue
-      
-      const distPath = join(packagesDir, pkg.name, 'dist')
+
+      const pkgDir = join(packagesDir, pkg.name)
+      const packageJson = await readJson(join(pkgDir, 'package.json'))
+      if (!packageJson) continue
+
+      const entryRel = resolveEntry(packageJson)
+      if (!entryRel) continue
+
+      const entryPath = resolve(pkgDir, entryRel)
       try {
-        await stat(distPath)
-        const size = await calculateDirSize(distPath)
+        await stat(entryPath)
+        const deps = {
+          ...(packageJson.dependencies || {}),
+          ...(packageJson.peerDependencies || {}),
+          ...(packageJson.optionalDependencies || {}),
+        }
+        const external = Object.keys(deps).filter((dep) => !internalPackages.has(dep))
+        const size = await getBundledSize(entryPath, pkgDir, external)
         if (size > 0) {
           results[pkg.name] = size
         }
-      } catch {
-        // No dist folder
+      } catch (error) {
+        errors.push(`${pkg.name}: ${error.message}`)
       }
     }
-    
+
+    if (errors.length > 0) {
+      console.error('⚠️ Bundle size analysis errors:')
+      for (const message of errors) {
+        console.error(`- ${message}`)
+      }
+    }
     return results
   } catch (error) {
     return {}
@@ -157,8 +188,8 @@ function generateComparisonTable(current, baseline) {
     return 'No packages found to compare.'
   }
   
-  let table = '| Package | Size (gzip) | Δ |\n'
-  table += '|---------|-------------|---|\n'
+  let table = '| Package | Size (min+gzip) | Δ |\n'
+  table += '|---------|-----------------|---|\n'
   
   for (const row of rows) {
     table += `| ${row.package} | ${row.size} | ${row.diff} |\n`
@@ -211,6 +242,9 @@ async function main() {
       const table = generateComparisonTable(current, baseline)
       console.log('## 📦 Bundle Size Analysis\n')
       console.log(table)
+      console.log(
+        '\n_Values are minified+gzipped bundles of each package entry. Workspace deps are bundled; external deps are excluded._\n'
+      )
     } catch (error) {
       if (error.code === 'ENOENT') {
         console.error(`❌ Baseline file not found: ${args.baseline}`)
@@ -223,7 +257,7 @@ async function main() {
     }
   } else {
     const results = await analyzePackages()
-    
+
     if (args.output) {
       if (Object.keys(results).length === 0) {
         console.error('❌ No packages found to analyze. Make sure packages are built.')
