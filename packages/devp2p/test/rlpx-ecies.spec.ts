@@ -6,7 +6,7 @@ import { assert, it } from 'vitest'
 import { ECIES } from '../src/rlpx/ecies.ts'
 import * as util from '../src/util.ts'
 
-import { testData } from './testdata.ts'
+import { devp2pTestData } from '@ethereumjs/testdata'
 
 export interface EciesTestContext {
   context: {
@@ -34,12 +34,12 @@ function randomBefore(fn: Function) {
 
 function testdataBefore(fn: Function) {
   return (t: EciesTestContext) => {
-    const v = testData.eip8Values
+    const v = devp2pTestData.eip8Values
     const keyA = unprefixedHexToBytes(v.keyA)
     const keyB = unprefixedHexToBytes(v.keyB)
     const pubA = unprefixedHexToBytes(v.pubA)
     const pubB = unprefixedHexToBytes(v.pubB)
-    const h = testData.eip8Handshakes
+    const h = devp2pTestData.eip8Handshakes
 
     t.context = {
       a: new ECIES(keyA, util.pk2id(pubA), util.pk2id(pubB)),

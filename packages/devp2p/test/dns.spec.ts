@@ -2,10 +2,10 @@ import { assert, describe, it, vi } from 'vitest'
 
 import { DNS } from '../src/dns/index.ts'
 
-import { testData } from './testdata.ts'
+import { devp2pTestData } from '@ethereumjs/testdata'
 
 describe('DNS', () => {
-  const mockData = testData.dns
+  const mockData = devp2pTestData.dns
   const mockDns = {
     resolve: vi.fn(),
   }
