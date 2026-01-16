@@ -34,6 +34,7 @@ function BLS12_381_ToG1Point(input: Uint8Array, mcl: any, verifyOrder = true): a
     return new mcl.G1()
   }
 
+  // Using deprecated bytesToUnprefixedHex for performance: mcl library expects unprefixed hex strings.
   const p_x = bytesToUnprefixedHex(input.subarray(16, BLS_G1_POINT_BYTE_LENGTH / 2))
   const p_y = bytesToUnprefixedHex(input.subarray(80, BLS_G1_POINT_BYTE_LENGTH))
 
@@ -97,6 +98,7 @@ function BLS12_381_ToFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Arr
   const fp_y = new mcl.Fp()
 
   const fp2 = new mcl.Fp2()
+  // Using deprecated bytesToUnprefixedHex for performance: mcl library expects unprefixed hex strings.
   fp_x.setStr(bytesToUnprefixedHex(fpXCoordinate.subarray(16)), 16)
   fp_y.setStr(bytesToUnprefixedHex(fpYCoordinate.subarray(16)), 16)
 
@@ -178,6 +180,7 @@ function BLS12_381_FromG2Point(input: any): Uint8Array {
 // output: a mcl Fr point
 
 function BLS12_381_ToFrPoint(input: Uint8Array, mcl: any): any {
+  // Using deprecated bytesToUnprefixedHex for performance: mcl library expects unprefixed hex strings.
   const mclHex = mcl.fromHexStr(bytesToUnprefixedHex(input))
   const Fr = new mcl.Fr()
   Fr.setBigEndianMod(mclHex)
@@ -195,6 +198,7 @@ function BLS12_381_ToFpPoint(fpCoordinate: Uint8Array, mcl: any): any {
 
   const fp = new mcl.Fp()
 
+  // Using deprecated bytesToUnprefixedHex for performance: mcl library expects unprefixed hex strings.
   fp.setBigEndianMod(mcl.fromHexStr(bytesToUnprefixedHex(fpCoordinate)))
 
   return fp

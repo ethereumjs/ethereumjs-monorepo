@@ -136,6 +136,7 @@ export class CheckpointDB implements DB {
    * @inheritDoc
    */
   async get(key: Uint8Array): Promise<Uint8Array | undefined> {
+    // Using deprecated bytesToUnprefixedHex for performance: used as cache/database keys (string encoding).
     const keyHex = bytesToUnprefixedHex(key)
     if (this._cache !== undefined) {
       const value = this._cache.get(keyHex)
@@ -181,6 +182,7 @@ export class CheckpointDB implements DB {
    * @inheritDoc
    */
   async put(key: Uint8Array, value: Uint8Array): Promise<void> {
+    // Using deprecated bytesToUnprefixedHex for performance: used as cache/database keys and values (string encoding).
     const keyHex = bytesToUnprefixedHex(key)
     if (this.hasCheckpoints()) {
       // put value in diff cache
@@ -205,6 +207,7 @@ export class CheckpointDB implements DB {
    * @inheritDoc
    */
   async del(key: Uint8Array): Promise<void> {
+    // Using deprecated bytesToUnprefixedHex for performance: used as cache/database keys (string encoding).
     const keyHex = bytesToUnprefixedHex(key)
     if (this.hasCheckpoints()) {
       // delete the value in the current diff cache

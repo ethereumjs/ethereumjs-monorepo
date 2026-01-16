@@ -4,6 +4,7 @@ import * as devp2p from '@ethereumjs/devp2p'
 import { RLP } from '@ethereumjs/rlp'
 import { createTxFromBlockBodyData } from '@ethereumjs/tx'
 import {
+  bytesToHex,
   bytesToInt,
   bytesToUnprefixedHex,
   equalsBytes,
@@ -124,6 +125,7 @@ rlpx.events.on('peer:added', (peer) => {
 
         for (const item of payload) {
           const blockHash = item[0]
+          // Using deprecated bytesToUnprefixedHex for performance: used as LRU cache keys for block deduplication.
           if (blocksCache.has(bytesToUnprefixedHex(blockHash))) continue
           setTimeout(() => {
             eth.sendMessage(devp2p.EthMessageCodes.GET_BLOCK_HEADERS, [
@@ -172,6 +174,7 @@ rlpx.events.on('peer:added', (peer) => {
 
           const expectedHash = CHECK_BLOCK
           const header = createBlockHeaderFromBytesArray(payload[1][0], { common })
+          // Using deprecated bytesToUnprefixedHex for performance: used for string comparisons.
           if (bytesToUnprefixedHex(header.hash()) === expectedHash) {
             console.log(`${addr} verified to be on the same side of the ${CHECK_BLOCK_TITLE}`)
             clearTimeout(forkDrop)
@@ -203,9 +206,7 @@ rlpx.events.on('peer:added', (peer) => {
           }
 
           if (!isValidPayload) {
-            console.log(
-              `${addr} received wrong block header ${bytesToUnprefixedHex(header.hash())}`,
-            )
+            console.log(`${addr} received wrong block header ${bytesToHex(header.hash())}`)
           }
         }
 
@@ -338,6 +339,7 @@ dpt.addPeer({ address: '127.0.0.1', udpPort: 30303, tcpPort: 30303 })
 
 const txCache: LRUCache<string, boolean> = new LRUCache({ max: 1000 })
 function onNewTx(tx: TypedTransaction, peer: Peer) {
+  // Using deprecated bytesToUnprefixedHex for performance: used as LRU cache keys for transaction deduplication.
   const txHashHex = bytesToUnprefixedHex(tx.hash())
   if (txCache.has(txHashHex)) return
 
@@ -347,6 +349,7 @@ function onNewTx(tx: TypedTransaction, peer: Peer) {
 
 const blocksCache: LRUCache<string, boolean> = new LRUCache({ max: 100 })
 function onNewBlock(block: Block, peer: Peer) {
+  // Using deprecated bytesToUnprefixedHex for performance: used as LRU cache keys for block deduplication.
   const blockHashHex = bytesToUnprefixedHex(block.hash())
   const blockNumber = block.header.number
   if (blocksCache.has(blockHashHex)) return

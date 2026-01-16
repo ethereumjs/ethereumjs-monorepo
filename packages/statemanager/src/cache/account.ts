@@ -70,6 +70,7 @@ export class AccountCache extends Cache {
     account: Account | undefined,
     couldBePartialAccount: boolean = false,
   ): void {
+    // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for cache lookups.
     const addressHex = bytesToUnprefixedHex(address.bytes)
     this._saveCachePreState(addressHex)
     const elem = {
@@ -97,6 +98,7 @@ export class AccountCache extends Cache {
    * @param address - Address of account
    */
   get(address: Address): AccountCacheElement | undefined {
+    // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for cache lookups.
     const addressHex = bytesToUnprefixedHex(address.bytes)
     if (this.DEBUG) {
       this._debug(`Get account ${addressHex}`)
@@ -120,6 +122,7 @@ export class AccountCache extends Cache {
    * @param address - Address
    */
   del(address: Address): void {
+    // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for cache lookups.
     const addressHex = bytesToUnprefixedHex(address.bytes)
     this._saveCachePreState(addressHex)
     if (this.DEBUG) {

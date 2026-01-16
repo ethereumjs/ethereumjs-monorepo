@@ -142,6 +142,7 @@ export class DPT {
     try {
       peer = await this.addPeer(peer)
       if (peer.id !== undefined) {
+        // Using deprecated bytesToUnprefixedHex for performance: used as Set keys for peer tracking.
         this._confirmedPeers.add(bytesToUnprefixedHex(peer.id))
       }
     } catch (error: any) {
@@ -205,6 +206,7 @@ export class DPT {
   getClosestPeers(id: Uint8Array) {
     let peers = this._kbucket.closest(id)
     if (this._onlyConfirmed && this._confirmedPeers.size > 0) {
+      // Using deprecated bytesToUnprefixedHex for performance: used as Set keys for peer filtering.
       peers = peers.filter((peer) =>
         this._confirmedPeers.has(bytesToUnprefixedHex(peer.id as Uint8Array)) ? true : false,
       )
@@ -215,6 +217,7 @@ export class DPT {
   removePeer(obj: string | PeerInfo | Uint8Array) {
     const peer = this._kbucket.get(obj)
     if (peer?.id !== undefined) {
+      // Using deprecated bytesToUnprefixedHex for performance: used as Set keys for peer tracking.
       this._confirmedPeers.delete(bytesToUnprefixedHex(peer.id as Uint8Array))
     }
     this._kbucket.remove(obj)
@@ -247,6 +250,7 @@ export class DPT {
         const selector = bytesToInt((peer.id as Uint8Array).subarray(0, 1)) % 10
         let confirmed = true
         if (this._onlyConfirmed && this._confirmedPeers.size > 0) {
+          // Using deprecated bytesToUnprefixedHex for performance: used as Set keys for peer filtering.
           const id = bytesToUnprefixedHex(peer.id as Uint8Array)
           if (!this._confirmedPeers.has(id)) {
             confirmed = false

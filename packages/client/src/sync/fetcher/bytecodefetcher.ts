@@ -136,6 +136,7 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
         break
       } else {
         // match found
+        // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for code lookups.
         receivedCodes.set(bytesToUnprefixedHex(receivedHash), receivedCode)
       }
     }
