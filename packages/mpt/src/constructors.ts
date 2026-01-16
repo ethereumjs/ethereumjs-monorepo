@@ -28,6 +28,7 @@ export async function createMPT(opts?: MPTOpts) {
 
   if (opts?.db !== undefined && opts?.useRootPersistence === true) {
     if (opts?.root === undefined) {
+      // Using deprecated bytesToUnprefixedHex for performance: used as database keys (string encoding).
       const root = await opts?.db.get(bytesToUnprefixedHex(key), {
         keyEncoding: KeyEncoding.String,
         valueEncoding: encoding,
@@ -38,6 +39,7 @@ export async function createMPT(opts?: MPTOpts) {
         opts.root = root
       }
     } else {
+      // Using deprecated bytesToUnprefixedHex for performance: used as database keys/values (string encoding).
       await opts?.db.put(
         bytesToUnprefixedHex(key),
         encoding === ValueEncoding.Bytes ? opts.root : bytesToUnprefixedHex(opts.root),

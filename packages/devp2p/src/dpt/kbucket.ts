@@ -40,6 +40,7 @@ export class KBucket {
   }
 
   static getKeys(obj: Uint8Array | string | PeerInfo): string[] {
+    // Using deprecated bytesToUnprefixedHex for performance: used for key generation in k-bucket lookups.
     if (obj instanceof Uint8Array) return [bytesToUnprefixedHex(obj)]
     if (typeof obj === 'string') return [obj]
 
