@@ -4,6 +4,7 @@ import * as dir from 'node-dir'
 import { assert, describe, it } from 'vitest'
 
 import { EOFContainerMode, validateEOF } from '../../src/eof/container.ts'
+import { EOFValidationError } from '../../src/eof/errors.ts'
 import { ContainerSectionType } from '../../src/eof/verify.ts'
 import { createEVM } from '../../src/index.ts'
 
@@ -52,7 +53,6 @@ await new Promise<void>((resolve, reject) => {
             const code = hexToBytes(test.code)
 
             const expected = test.results.Osaka.result
-            const _exception = test.results.Osaka.exception
 
             let containerSectionType: ContainerSectionType = ContainerSectionType.RuntimeCode
             let eofContainerMode: EOFContainerMode = EOFContainerMode.Default
@@ -69,10 +69,20 @@ await new Promise<void>((resolve, reject) => {
             if (expected === true) {
               validateEOF(code, evm, containerSectionType, eofContainerMode)
             } else {
-              assert.throws(() => {
-                // TODO verify that the correct error is thrown
+              const expectedError = test.results.Osaka.exception
+              try {
                 validateEOF(code, evm, containerSectionType, eofContainerMode)
-              })
+                assert.fail(`Should have failed because of: ${expectedError}`)
+              } catch (e: unknown) {
+                if (e instanceof EOFValidationError) {
+                  if (process.env.EOF_VERBOSE_ERRORS !== undefined && e.code !== expectedError) {
+                    // eslint-disable-next-line no-console
+                    console.log(`[Mismatch] Expected: ${expectedError}, Got: ${e.code}`)
+                  }
+                } else {
+                  throw e // Re-throw unexpected errors
+                }
+              }
             }
           }
         })

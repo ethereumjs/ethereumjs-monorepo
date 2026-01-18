@@ -208,6 +208,10 @@ function validateOpcodes(
       const minStackCurrent = stackHeightMin[ptr]
       const maxStackCurrent = stackHeightMax[ptr]
 
+      if (stackDelta[opcode] === undefined) {
+        validationError(EOFErrorMessage.INVALID_OPCODE)
+      }
+
       const opcodeInputs = stackDelta[opcode].inputs
       const opcodeOutputs = stackDelta[opcode].outputs
 

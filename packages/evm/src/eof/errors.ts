@@ -1,5 +1,3 @@
-import { EthereumJSErrorWithoutCode } from '@ethereumjs/util'
-
 export type EOFErrorMessage = (typeof EOFErrorMessage)[keyof typeof EOFErrorMessage]
 
 export const EOFErrorMessage = {
@@ -65,7 +63,20 @@ export const EOFErrorMessage = {
   RETURN_STACK_OVERFLOW: 'Return stack overflow',
   INVALID_EXTCALL_TARGET: 'invalid extcall target: address > 20 bytes',
   INVALID_RETURN_CONTRACT_DATA_SIZE: 'invalid RETURNCONTRACT: data size lower than expected',
+  CONTAINER_SIZE_MIN: 'err: container size less than minimum valid size',
+  CONTAINER_SIZE_MAX: 'err: container size more than maximum valid size',
+  TYPE_SIZE_MAX: 'type size exceeds limit',
 } as const
+
+export class EOFValidationError extends Error {
+  public readonly code: string
+
+  constructor(type: EOFErrorMessage, message: string) {
+    super(message)
+    this.name = 'EOFValidationError'
+    this.code = type
+  }
+}
 
 export function validationErrorMsg(type: EOFErrorMessage, ...args: any) {
   switch (type) {
@@ -130,85 +141,95 @@ export function validationError(type: EOFErrorMessage, ...args: any): never {
     case EOFErrorMessage.OUT_OF_BOUNDS: {
       const pos = args[0]
       if (pos === 0 || pos === 2 || pos === 3 || pos === 6) {
-        throw EthereumJSErrorWithoutCode(args[1])
+        const actualType = args[1] as EOFErrorMessage
+        throw new EOFValidationError(actualType, actualType)
       }
-      throw EthereumJSErrorWithoutCode(EOFErrorMessage.OUT_OF_BOUNDS + ` `)
+      throw new EOFValidationError(type, EOFErrorMessage.OUT_OF_BOUNDS + ` `)
     }
     case EOFErrorMessage.VERIFY_BYTES: {
       const pos = args[0]
       if (pos === 0 || pos === 2 || pos === 3 || pos === 6) {
-        throw EthereumJSErrorWithoutCode(args[1])
+        const actualType = args[1] as EOFErrorMessage
+        throw new EOFValidationError(actualType, actualType)
       }
-      throw EthereumJSErrorWithoutCode(
+      throw new EOFValidationError(
+        type,
         EOFErrorMessage.VERIFY_BYTES + ` at pos: ${args[0]}: ${args[1]}`,
       )
     }
     case EOFErrorMessage.VERIFY_UINT: {
       const pos = args[0]
       if (pos === 0 || pos === 2 || pos === 3 || pos === 6 || pos === 18) {
-        throw EthereumJSErrorWithoutCode(args[1])
+        const actualType = args[1] as EOFErrorMessage
+        throw new EOFValidationError(actualType, actualType)
       }
-      throw EthereumJSErrorWithoutCode(
+      throw new EOFValidationError(
+        type,
         EOFErrorMessage.VERIFY_UINT + `at pos: ${args[0]}: ${args[1]}`,
       )
     }
     case EOFErrorMessage.TYPE_SIZE: {
-      throw EthereumJSErrorWithoutCode(EOFErrorMessage.TYPE_SIZE + args[0])
+      throw new EOFValidationError(type, EOFErrorMessage.TYPE_SIZE + args[0])
     }
     case EOFErrorMessage.TYPE_SECTIONS: {
-      throw EthereumJSErrorWithoutCode(
+      throw new EOFValidationError(
+        type,
         `${EOFErrorMessage.TYPE_SECTIONS} (types ${args[0]} code ${args[1]})`,
       )
     }
     case EOFErrorMessage.INVALID_TYPE_SIZE: {
-      throw EthereumJSErrorWithoutCode(EOFErrorMessage.INVALID_TYPE_SIZE)
+      throw new EOFValidationError(type, EOFErrorMessage.INVALID_TYPE_SIZE)
     }
     case EOFErrorMessage.INVALID_CODE_SIZE: {
-      throw EthereumJSErrorWithoutCode(EOFErrorMessage.INVALID_CODE_SIZE + args[0])
+      throw new EOFValidationError(type, EOFErrorMessage.INVALID_CODE_SIZE + args[0])
     }
     case EOFErrorMessage.INPUTS: {
-      throw EthereumJSErrorWithoutCode(`${EOFErrorMessage.INPUTS} - typeSection ${args[0]}`)
+      throw new EOFValidationError(type, `${EOFErrorMessage.INPUTS} - typeSection ${args[0]}`)
     }
     case EOFErrorMessage.OUTPUTS: {
-      throw EthereumJSErrorWithoutCode(`${EOFErrorMessage.OUTPUTS} - typeSection ${args[0]}`)
+      throw new EOFValidationError(type, `${EOFErrorMessage.OUTPUTS} - typeSection ${args[0]}`)
     }
     case EOFErrorMessage.CODE0_INPUTS: {
-      throw EthereumJSErrorWithoutCode(`first code section should have 0 inputs`)
+      throw new EOFValidationError(type, `first code section should have 0 inputs`)
     }
     case EOFErrorMessage.CODE0_OUTPUTS: {
-      throw EthereumJSErrorWithoutCode(`first code section should have 0 outputs`)
+      throw new EOFValidationError(type, `first code section should have 0 outputs`)
     }
     case EOFErrorMessage.MAX_INPUTS: {
-      throw EthereumJSErrorWithoutCode(
+      throw new EOFValidationError(
+        type,
         EOFErrorMessage.MAX_INPUTS + `${args[1]} - code section ${args[0]}`,
       )
     }
     case EOFErrorMessage.MAX_OUTPUTS: {
-      throw EthereumJSErrorWithoutCode(
+      throw new EOFValidationError(
+        type,
         EOFErrorMessage.MAX_OUTPUTS + `${args[1]} - code section ${args[0]}`,
       )
     }
     case EOFErrorMessage.CODE_SECTION: {
-      throw EthereumJSErrorWithoutCode(`expected code: codeSection ${args[0]}: `)
+      throw new EOFValidationError(type, `expected code: codeSection ${args[0]}: `)
     }
     case EOFErrorMessage.DATA_SECTION: {
-      throw EthereumJSErrorWithoutCode(EOFErrorMessage.DATA_SECTION)
+      throw new EOFValidationError(type, EOFErrorMessage.DATA_SECTION)
     }
     case EOFErrorMessage.MAX_STACK_HEIGHT: {
-      throw EthereumJSErrorWithoutCode(
+      throw new EOFValidationError(
+        type,
         `${EOFErrorMessage.MAX_STACK_HEIGHT} - typeSection ${args[0]}: `,
       )
     }
     case EOFErrorMessage.MAX_STACK_HEIGHT_LIMIT: {
-      throw EthereumJSErrorWithoutCode(
+      throw new EOFValidationError(
+        type,
         `${EOFErrorMessage.MAX_STACK_HEIGHT_LIMIT}, got: ${args[1]} - typeSection ${args[0]}`,
       )
     }
     case EOFErrorMessage.DANGLING_BYTES: {
-      throw EthereumJSErrorWithoutCode(EOFErrorMessage.DANGLING_BYTES)
+      throw new EOFValidationError(type, EOFErrorMessage.DANGLING_BYTES)
     }
     default: {
-      throw EthereumJSErrorWithoutCode(type)
+      throw new EOFValidationError(type, type)
     }
   }
 }

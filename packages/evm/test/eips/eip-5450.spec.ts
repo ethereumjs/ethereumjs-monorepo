@@ -5,6 +5,7 @@ import { default as testData } from '../../../ethereum-tests/EOFTests/EIP5450/va
   type: 'json',
 }
 import { validateEOF } from '../../src/eof/container.ts'
+import { EOFValidationError } from '../../src/eof/errors.ts'
 import { createEVM } from '../../src/index.ts'
 
 import { getCommon } from './eof-utils.ts'
@@ -29,10 +30,20 @@ describe('EIP 5450 tests', async () => {
       if (expected === true) {
         validateEOF(code, evm)
       } else {
-        assert.throws(() => {
-          // TODO verify that the correct error is thrown
+        const expectedError = (input.results.Osaka as { exception: string }).exception
+        try {
           validateEOF(code, evm)
-        })
+          assert.fail(`Should have failed because of: ${expectedError}`)
+        } catch (e: unknown) {
+          if (e instanceof EOFValidationError) {
+            if (process.env.EOF_VERBOSE_ERRORS !== undefined && e.code !== expectedError) {
+              // eslint-disable-next-line no-console
+              console.log(`[Mismatch] Expected: ${expectedError}, Got: ${e.code}`)
+            }
+          } else {
+            throw e
+          }
+        }
       }
     })
   }

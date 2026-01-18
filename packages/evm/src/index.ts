@@ -1,4 +1,5 @@
 import { EOFContainer, validateEOF } from './eof/container.ts'
+import { EOFValidationError } from './eof/errors.ts'
 import { EVMError } from './errors.ts'
 import { EVM } from './evm.ts'
 import { Message } from './message.ts'
@@ -45,6 +46,7 @@ export type {
 
 export {
   EOFContainer,
+  EOFValidationError,
   EVM,
   EVMError,
   EVMMockBlockchain,
