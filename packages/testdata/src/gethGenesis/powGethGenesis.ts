@@ -1,6 +1,10 @@
 import type { GethGenesis } from '@ethereumjs/common'
 
-export const powData: GethGenesis = {
+/**
+ * Geth genesis configuration for Proof of Work (PoW) testing.
+ * Used for testing RPC methods that require PoW chain setup.
+ */
+export const powGethGenesis: GethGenesis = {
   config: {
     chainId: 15470,
     homesteadBlock: 0,
@@ -802,3 +806,6 @@ export const powData: GethGenesis = {
   gasUsed: '0x0',
   parentHash: '0x0000000000000000000000000000000000000000000000000000000000000000',
 }
+
+// Backward compatibility export
+export const powData = powGethGenesis

@@ -5,10 +5,9 @@ import { BIGINT_0, bigIntToHex, bytesToBigInt, hexToBytes } from '@ethereumjs/ut
 import { buildBlock } from '@ethereumjs/vm'
 import { assert, describe, it } from 'vitest'
 
-import { powData } from '../../testdata/geth-genesis/pow.ts'
+import { SIGNER_G, powData } from '@ethereumjs/testdata'
 import { getRPCClient, gethGenesisStartLondon, setupChain } from '../helpers.ts'
 
-import { SIGNER_G } from '@ethereumjs/testdata'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { Chain } from '../../../src/blockchain/index.ts'
 import type { VMExecution } from '../../../src/execution/index.ts'
