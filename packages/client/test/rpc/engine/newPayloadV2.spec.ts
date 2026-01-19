@@ -1,9 +1,8 @@
-import { SIGNER_G, postMergeGethGenesis } from '@ethereumjs/testdata'
+import { SIGNER_G, beaconData, postMergeGethGenesis } from '@ethereumjs/testdata'
 import { createFeeMarket1559Tx } from '@ethereumjs/tx'
 import { bytesToHex, createAddressFromString } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { beaconData } from '@ethereumjs/testdata'
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
 import { baseSetup, batchBlocks, getRPCClient, setupChain } from '../helpers.ts'
 

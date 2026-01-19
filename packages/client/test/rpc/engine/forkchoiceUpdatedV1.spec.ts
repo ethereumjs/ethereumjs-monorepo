@@ -1,10 +1,9 @@
 import { BlockHeader, createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { postMergeGethGenesis } from '@ethereumjs/testdata'
+import { beaconData, postMergeGethGenesis } from '@ethereumjs/testdata'
 import { bytesToHex, randomBytes } from '@ethereumjs/util'
 import { assert, describe, it, vi } from 'vitest'
 
-import { beaconData } from '@ethereumjs/testdata'
 import { INVALID_FORKCHOICE_STATE, INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
 import { blockToExecutionPayload } from '../../../src/rpc/modules/index.ts'
 import { baseSetup, batchBlocks, getRPCClient, setupChain } from '../helpers.ts'
