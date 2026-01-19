@@ -51,8 +51,6 @@ export function createBlockHeaderFromBytesArray(values: BlockHeaderBytes, opts: 
   if (header.common.isActivatedEIP(7685) && requestsHash === undefined) {
     throw EthereumJSErrorWithoutCode('invalid header. requestsHash should be provided')
   }
-  // EIP-7928: blockAccessListHash is required for non-genesis blocks
-  // Check header.blockAccessListHash (after defaults) rather than blockAccessListHash from headerData
   if (
     header.common.isActivatedEIP(7928) &&
     header.blockAccessListHash === undefined &&
