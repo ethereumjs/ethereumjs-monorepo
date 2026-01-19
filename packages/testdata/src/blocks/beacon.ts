@@ -1,5 +1,9 @@
 import type { ExecutionPayload } from '@ethereumjs/block'
 
+/**
+ * Beacon chain execution payload test data.
+ * Used for testing Engine API methods (newPayload, forkchoiceUpdated) in the client package.
+ */
 export const beaconData: ExecutionPayload[] = [
   {
     blockNumber: '0x1',

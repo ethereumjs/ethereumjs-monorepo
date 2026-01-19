@@ -1,8 +1,8 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { assert } from 'vitest'
 
+import { devp2pTestData } from '@ethereumjs/testdata'
 import { DPT, ETH, RLPx, genPrivateKey } from '../../src/index.ts'
-import { testData } from '../testdata.ts'
 
 import type { it } from 'vitest'
 import type { Capabilities } from '../../src/index.ts'
@@ -44,7 +44,7 @@ export function getTestDPTsWithDns(numDPTs: number, basePort: number) {
       },
       timeout: 1000,
       refreshInterval: 400,
-      dnsNetworks: [testData.dns.enrTree],
+      dnsNetworks: [devp2pTestData.dns.enrTree],
       shouldFindNeighbours: false,
       shouldGetDnsPeers: true,
     })

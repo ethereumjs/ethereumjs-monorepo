@@ -14,7 +14,7 @@ import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 import { assert, describe, it } from 'vitest'
 
-import { powData } from '../../testdata/geth-genesis/pow.ts'
+import { powData } from '@ethereumjs/testdata'
 import {
   dummy,
   getRPCClient,

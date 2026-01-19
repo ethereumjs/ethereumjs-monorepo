@@ -1,10 +1,9 @@
-import { SIGNER_H, pragueGethGenesis } from '@ethereumjs/testdata'
+import { SIGNER_H, beaconData, pragueGethGenesis } from '@ethereumjs/testdata'
 import { createTx } from '@ethereumjs/tx'
 import { Units, bigIntToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
-import { beaconData } from '../../testdata/blocks/beacon.ts'
 import { getRPCClient, setupChain } from '../helpers.ts'
 
 const method = 'engine_newPayloadV4'
