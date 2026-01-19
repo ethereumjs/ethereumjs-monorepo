@@ -25,15 +25,8 @@ export function createBlockHeader(headerData: HeaderData = {}, opts: BlockOption
  */
 export function createBlockHeaderFromBytesArray(values: BlockHeaderBytes, opts: BlockOptions = {}) {
   const headerData = valuesArrayToHeaderData(values)
-  const {
-    number,
-    baseFeePerGas,
-    excessBlobGas,
-    blobGasUsed,
-    parentBeaconBlockRoot,
-    requestsHash,
-    blockAccessListHash,
-  } = headerData
+  const { number, baseFeePerGas, excessBlobGas, blobGasUsed, parentBeaconBlockRoot, requestsHash } =
+    headerData
   const header = createBlockHeader(headerData, opts)
   if (header.common.isActivatedEIP(1559) && baseFeePerGas === undefined) {
     const eip1559ActivationBlock = bigIntToBytes(header.common.eipBlock(1559)!)
@@ -59,9 +52,10 @@ export function createBlockHeaderFromBytesArray(values: BlockHeaderBytes, opts: 
     throw EthereumJSErrorWithoutCode('invalid header. requestsHash should be provided')
   }
   // EIP-7928: blockAccessListHash is required for non-genesis blocks
+  // Check header.blockAccessListHash (after defaults) rather than blockAccessListHash from headerData
   if (
     header.common.isActivatedEIP(7928) &&
-    blockAccessListHash === undefined &&
+    header.blockAccessListHash === undefined &&
     !header.isGenesis()
   ) {
     throw EthereumJSErrorWithoutCode('invalid header. blockAccessListHash should be provided')
