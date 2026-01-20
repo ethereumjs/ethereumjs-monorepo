@@ -18,6 +18,7 @@ import {
   bytesToHex,
   concatBytes,
   createAddressFromString,
+  createBlockLevelAccessList,
   equalsBytes,
   hexToBytes,
   intToBytes,
@@ -35,7 +36,12 @@ import { accumulateRequests } from './requests.ts'
 
 import type { Block } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
-import type { CLRequest, CLRequestType, PrefixedHexString } from '@ethereumjs/util'
+import type {
+  BlockLevelAccessList,
+  CLRequest,
+  CLRequestType,
+  PrefixedHexString,
+} from '@ethereumjs/util'
 import type {
   AfterBlockEvent,
   ApplyBlockResult,
@@ -317,6 +323,11 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     console.timeEnd(withdrawalsRewardsCommitLabel)
   }
 
+  let blockLevelAccessList: BlockLevelAccessList | undefined
+  if (vm.common.isActivatedEIP(7928)) {
+    blockLevelAccessList = createBlockLevelAccessList()
+  }
+
   const results: RunBlockResult = {
     receipts: result.receipts,
     logsBloom: result.bloom.bitvector,
@@ -327,6 +338,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     preimages: result.preimages,
     requestsHash,
     requests,
+    blockLevelAccessList,
   }
 
   const afterBlockEvent: AfterBlockEvent = { ...results, block }
@@ -477,6 +489,7 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
     }
     vm.evm.binaryTreeAccessWitness?.merge(vm.evm.systemBinaryTreeAccessWitness)
   }
+
   return blockResults
 }
 
