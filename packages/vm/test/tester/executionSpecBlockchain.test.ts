@@ -94,7 +94,7 @@ export async function runBlockchainTestCase(
       if (expectedHash !== undefined) {
         t.equal(bytesToHex(block.hash()), expectedHash, 'correct block hash')
       }
-      await runBlock(vm, {
+      const result = await runBlock(vm, {
         block,
         root: parentBlock.header.stateRoot,
         setHardfork: true,
@@ -102,6 +102,15 @@ export async function runBlockchainTestCase(
       await vm.blockchain.putBlock(block)
       parentBlock = block
       t.notExists(expectException, `Should have thrown with: ${expectException}`)
+
+      // Check if the block level access list is correct
+      if (common.isActivatedEIP(7928)) {
+        t.deepEqual(
+          result.blockLevelAccessList!.hash(),
+          block.header.blockAccessListHash,
+          'generated block level access list correct',
+        )
+      }
     } catch (e: any) {
       // Check if the block failed due to an expected exception
       t.exists(
