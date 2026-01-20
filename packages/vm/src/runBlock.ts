@@ -189,9 +189,23 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
   let requestsHash: Uint8Array | undefined
   let requests: CLRequest<CLRequestType>[] | undefined
   if (block.common.isActivatedEIP(7685)) {
-    const sha256Function = vm.common.customCrypto.sha256 ?? sha256
-    requests = await accumulateRequests(vm, result.results)
-    requestsHash = genRequestsRoot(requests, sha256Function)
+    try {
+      const sha256Function = vm.common.customCrypto.sha256 ?? sha256
+      requests = await accumulateRequests(vm, result.results)
+      requestsHash = genRequestsRoot(requests, sha256Function)
+    } catch (err: any) {
+      if (generateFields === false) {
+        await vm.evm.journal.revert()
+        if (vm.DEBUG) {
+          debug(`block checkpoint reverted`)
+        }
+        if (enableProfiler) {
+          // eslint-disable-next-line no-console
+          console.timeEnd(withdrawalsRewardsCommitLabel)
+        }
+        throw err
+      }
+    }
   }
 
   const stateRoot = await stateManager.getStateRoot()
