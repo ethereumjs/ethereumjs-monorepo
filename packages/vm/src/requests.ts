@@ -92,6 +92,10 @@ const accumulateWithdrawalsRequest = async (
     to: withdrawalsAddress,
   })
 
+  if (results.execResult.exceptionError !== undefined) {
+    throw EthereumJSErrorWithoutCode('system contract call failed')
+  }
+
   if (systemAccount === undefined) {
     await vm.stateManager.deleteAccount(systemAddress)
   } else {
@@ -128,6 +132,10 @@ const accumulateConsolidationsRequest = async (
     gasLimit: vm.common.param('systemCallGasLimit'),
     to: consolidationsAddress,
   })
+
+  if (results.execResult.exceptionError !== undefined) {
+    throw EthereumJSErrorWithoutCode('system contract call failed')
+  }
 
   if (systemAccount === undefined) {
     await vm.stateManager.deleteAccount(systemAddress)
