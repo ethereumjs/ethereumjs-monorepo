@@ -662,16 +662,6 @@ export class BlockHeader {
       rawItems.push(this.requestsHash!)
     }
 
-    // EIP-7928: blockAccessListHash should not be included in genesis block RLP encoding
-    // Genesis blocks don't have a block access list, so this field is excluded from RLP
-    // Also exclude for BPO transition forks to match test data expectations
-    if (this.common.isActivatedEIP(7928)) {
-      const isBPOTransition = this.common.hardfork().toLowerCase().startsWith('bpo')
-      if (!this.isGenesis() && !isBPOTransition) {
-        rawItems.push(this.blockAccessListHash!)
-      }
-    }
-
     return rawItems
   }
 
