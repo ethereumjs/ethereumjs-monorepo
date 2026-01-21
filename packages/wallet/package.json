@@ -50,8 +50,9 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/util": "^10.0.0",
+    "@ethereumjs/util": "^10.1.0",
     "@scure/base": "^1.2.4",
+    "@noble/hashes": "^2.0.1",
     "ethereum-cryptography": "^3.2.0",
     "js-md5": "^0.8.3",
     "uuid": "^11.1.0"
@@ -64,6 +65,6 @@
     "lodash.zip": "^4.2.0"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   }
 }

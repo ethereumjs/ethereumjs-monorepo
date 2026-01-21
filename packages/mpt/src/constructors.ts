@@ -5,7 +5,7 @@ import {
   concatBytes,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 
 import { MerklePatriciaTrie, ROOT_DB_KEY, updateMPTFromMerkleProof } from './index.ts'
 
@@ -13,7 +13,7 @@ import type { MPTOpts, Proof } from './index.ts'
 
 export async function createMPT(opts?: MPTOpts) {
   const keccakFunction =
-    opts?.common?.customCrypto.keccak256 ?? opts?.useKeyHashingFunction ?? keccak256
+    opts?.common?.customCrypto.keccak256 ?? opts?.useKeyHashingFunction ?? keccak_256
   let key = ROOT_DB_KEY
 
   const encoding =
@@ -28,6 +28,7 @@ export async function createMPT(opts?: MPTOpts) {
 
   if (opts?.db !== undefined && opts?.useRootPersistence === true) {
     if (opts?.root === undefined) {
+      // Using deprecated bytesToUnprefixedHex for performance: used as database keys (string encoding).
       const root = await opts?.db.get(bytesToUnprefixedHex(key), {
         keyEncoding: KeyEncoding.String,
         valueEncoding: encoding,
@@ -38,6 +39,7 @@ export async function createMPT(opts?: MPTOpts) {
         opts.root = root
       }
     } else {
+      // Using deprecated bytesToUnprefixedHex for performance: used as database keys/values (string encoding).
       await opts?.db.put(
         bytesToUnprefixedHex(key),
         encoding === ValueEncoding.Bytes ? opts.root : bytesToUnprefixedHex(opts.root),

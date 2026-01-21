@@ -10,7 +10,7 @@ import {
   toBytes,
   unpadBytes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 
 import * as Legacy from '../capabilities/legacy.ts'
 import { paramsTx } from '../index.ts'
@@ -136,7 +136,7 @@ export class LegacyTx implements TransactionInterface<typeof TransactionType.Leg
       )
     }
 
-    this.keccakFunction = this.common.customCrypto.keccak256 ?? keccak256
+    this.keccakFunction = this.common.customCrypto.keccak256 ?? keccak_256
 
     if (this.gasPrice * this.gasLimit > MAX_INTEGER) {
       throw EthereumJSErrorWithoutCode('gas limit * gasPrice cannot exceed MAX_INTEGER (2^256-1)')
@@ -184,10 +184,19 @@ export class LegacyTx implements TransactionInterface<typeof TransactionType.Leg
     return this.activeCapabilities.includes(capability)
   }
 
+  /**
+   * Indicates whether the transaction already contains signature values.
+   * @returns true if `v`, `r`, and `s` are populated
+   */
   isSigned(): boolean {
     return Legacy.isSigned(this)
   }
 
+  /**
+   * Computes the effective priority fee for this legacy transaction, optionally considering a base fee.
+   * @param baseFee - Optional base fee used on networks that emulate 1559-style pricing
+   * @returns Priority fee portion denominated in wei
+   */
   getEffectivePriorityFee(baseFee?: bigint): bigint {
     return Legacy.getEffectivePriorityFee(this.gasPrice, baseFee)
   }
@@ -244,6 +253,7 @@ export class LegacyTx implements TransactionInterface<typeof TransactionType.Leg
    * const message = tx.getMessageToSign()
    * const serializedMessage = RLP.encode(message)) // use this for the HW wallet input
    * ```
+   * @returns Array representing the unsigned transaction fields
    */
   getMessageToSign(): Uint8Array[] {
     const message = [
@@ -267,6 +277,7 @@ export class LegacyTx implements TransactionInterface<typeof TransactionType.Leg
   /**
    * Returns the hashed serialized unsigned tx, which can be used
    * to sign the transaction (e.g. for sending to a hardware wallet).
+   * @returns Hash of the unsigned transaction payload
    */
   getHashedMessageToSign() {
     const message = this.getMessageToSign()
@@ -309,6 +320,7 @@ export class LegacyTx implements TransactionInterface<typeof TransactionType.Leg
    *
    * This method can only be used for signed txs (it throws otherwise).
    * Use {@link Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
+   * @returns Hash of the serialized signed transaction
    */
   hash(): Uint8Array {
     return Legacy.hash(this)
@@ -316,6 +328,7 @@ export class LegacyTx implements TransactionInterface<typeof TransactionType.Leg
 
   /**
    * Computes a sha3-256 hash which can be used to verify the signature
+   * @returns Hash used when verifying the signature
    */
   getMessageToVerifySignature() {
     if (!this.isSigned()) {
@@ -327,11 +340,20 @@ export class LegacyTx implements TransactionInterface<typeof TransactionType.Leg
 
   /**
    * Returns the public key of the sender
+   * @returns Sender public key
    */
   getSenderPublicKey(): Uint8Array {
     return Legacy.getSenderPublicKey(this)
   }
 
+  /**
+   * Adds a signature (or replaces an existing one) and returns a new transaction instance.
+   * @param v - Recovery parameter, potentially unconverted when `convertV` is false
+   * @param r - `r` value of the signature
+   * @param s - `s` value of the signature
+   * @param convertV - When true, converts the recovery ID into the appropriate legacy `v`
+   * @returns A new `LegacyTx` that includes the provided signature
+   */
   addSignature(
     v: bigint,
     r: Uint8Array | bigint,
@@ -371,6 +393,7 @@ export class LegacyTx implements TransactionInterface<typeof TransactionType.Leg
 
   /**
    * Returns an object with the JSON representation of the transaction.
+   * @returns JSON encoding of the transaction
    */
   toJSON(): JSONTx {
     // TODO this is just copied. Make this execution-api compliant
@@ -381,28 +404,51 @@ export class LegacyTx implements TransactionInterface<typeof TransactionType.Leg
     return baseJSON
   }
 
+  /**
+   * Validates the transaction and returns any encountered errors.
+   * @returns Array containing validation error messages
+   */
   getValidationErrors(): string[] {
     return Legacy.getValidationErrors(this)
   }
 
+  /**
+   * Determines whether the transaction passes all validation checks.
+   * @returns true if no validation errors were found
+   */
   isValid(): boolean {
     return Legacy.isValid(this)
   }
 
+  /**
+   * Checks whether the stored signature can be successfully verified.
+   * @returns true if the signature is valid
+   */
   verifySignature(): boolean {
     return Legacy.verifySignature(this)
   }
 
+  /**
+   * Returns the recovered sender address.
+   * @returns Sender {@link Address}
+   */
   getSenderAddress(): Address {
     return Legacy.getSenderAddress(this)
   }
 
+  /**
+   * Signs the transaction with the provided private key and returns the new signed instance.
+   * @param privateKey - 32-byte private key used to sign the transaction
+   * @param extraEntropy - Optional entropy passed to the signing routine
+   * @returns A new signed `LegacyTx`
+   */
   sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = false): LegacyTx {
     return Legacy.sign(this, privateKey, extraEntropy) as LegacyTx
   }
 
   /**
    * Return a compact error string representation of the object
+   * @returns Human-readable error summary
    */
   public errorStr() {
     let errorStr = Legacy.getSharedErrorPostfix(this)

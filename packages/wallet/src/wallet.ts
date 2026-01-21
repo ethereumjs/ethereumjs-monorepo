@@ -16,12 +16,12 @@ import {
   unprefixedHexToBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
+import { sha256 } from '@noble/hashes/sha2.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 import { base58check } from '@scure/base'
 import * as aes from 'ethereum-cryptography/aes.js'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { pbkdf2 } from 'ethereum-cryptography/pbkdf2.js'
 import { scrypt } from 'ethereum-cryptography/scrypt.js'
-import { sha256 } from 'ethereum-cryptography/sha256.js'
 import { v4 as uuidv4 } from 'uuid'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
@@ -306,8 +306,8 @@ export class Wallet {
       const max = BigInt('0x088f924eeceeda7fe92e1f5b0fffffffffffffff')
       for (;;) {
         const privateKey = randomBytes(32)
-        const hex = bytesToUnprefixedHex(privateToAddress(privateKey))
-        if (BigInt('0x' + hex) <= max) {
+        const hex = bytesToHex(privateToAddress(privateKey))
+        if (BigInt(hex) <= max) {
           return new Wallet(privateKey)
         }
       }
@@ -327,6 +327,8 @@ export class Wallet {
     for (;;) {
       const privateKey = randomBytes(32)
       const address = privateToAddress(privateKey)
+      // Using deprecated bytesToUnprefixedHex for performance: this is in a tight loop for vanity address generation.
+      // bytesToUnprefixedHex avoids creating an intermediate prefixed string.
       if (pattern.test(bytesToUnprefixedHex(address))) {
         return new Wallet(privateKey)
       }
@@ -398,14 +400,16 @@ export class Wallet {
     const salt = unprefixedHexToBytes(json.Crypto.Salt)
     const derivedKey = await scryptV1(utf8ToBytes(password), salt, kdfparams)
     const ciphertext = unprefixedHexToBytes(json.Crypto.CipherText)
-    const mac = keccak256(concatBytes(derivedKey.subarray(16, 32), ciphertext))
+    const mac = keccak_256(concatBytes(derivedKey.subarray(16, 32), ciphertext))
+    // Using deprecated bytesToUnprefixedHex for performance: comparing with JSON string values that are unprefixed.
+    // bytesToUnprefixedHex avoids creating an intermediate prefixed string and then stripping it.
     if (bytesToUnprefixedHex(mac) !== json.Crypto.MAC) {
       throw EthereumJSErrorWithoutCode('Key derivation failed - possibly wrong passphrase')
     }
 
     const seed = aes.decrypt(
       ciphertext,
-      keccak256(derivedKey.subarray(0, 16)).subarray(0, 16),
+      keccak_256(derivedKey.subarray(0, 16)).subarray(0, 16),
       unprefixedHexToBytes(json.Crypto.IV),
       'aes-128-cbc',
     )
@@ -454,7 +458,9 @@ export class Wallet {
     }
 
     const ciphertext = unprefixedHexToBytes(json.crypto.ciphertext)
-    const mac = keccak256(concatBytes(derivedKey.subarray(16, 32), ciphertext))
+    const mac = keccak_256(concatBytes(derivedKey.subarray(16, 32), ciphertext))
+    // Using deprecated bytesToUnprefixedHex for performance: comparing with JSON string values that are unprefixed.
+    // bytesToUnprefixedHex avoids creating an intermediate prefixed string and then stripping it.
     if (bytesToUnprefixedHex(mac) !== json.crypto.mac) {
       throw EthereumJSErrorWithoutCode('Key derivation failed - possibly wrong passphrase')
     }
@@ -499,7 +505,9 @@ export class Wallet {
       true,
     )
 
-    const wallet = new Wallet(keccak256(seed))
+    const wallet = new Wallet(keccak_256(seed))
+    // Using deprecated bytesToUnprefixedHex for performance: comparing with JSON string values that are unprefixed.
+    // bytesToUnprefixedHex avoids creating an intermediate prefixed string and then stripping it.
     if (bytesToUnprefixedHex(wallet.getAddress()) !== json.ethaddr) {
       throw EthereumJSErrorWithoutCode('Decoded key mismatch - possibly wrong passphrase')
     }
@@ -620,8 +628,10 @@ export class Wallet {
       v3Params.cipher,
       false,
     )
-    const mac = keccak256(concatBytes(derivedKey.subarray(16, 32), ciphertext))
+    const mac = keccak_256(concatBytes(derivedKey.subarray(16, 32), ciphertext))
 
+    // Using deprecated bytesToUnprefixedHex for performance: building keystore JSON objects where unprefixed hex
+    // strings are required. bytesToUnprefixedHex avoids creating intermediate prefixed strings and then stripping them.
     return {
       version: 3,
       id: uuidv4({ random: v3Params.uuid }),
@@ -661,6 +671,8 @@ export class Wallet {
       'UTC--',
       ts.toJSON().replace(/:/g, '-'),
       '--',
+      // Using deprecated bytesToUnprefixedHex for performance: building a filename string where unprefixed hex is needed.
+      // bytesToUnprefixedHex avoids creating an intermediate prefixed string and then stripping it.
       bytesToUnprefixedHex(this.getAddress()),
     ].join('')
   }

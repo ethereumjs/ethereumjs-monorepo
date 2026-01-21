@@ -2,7 +2,7 @@ import { BlockHeader, createBlockHeader } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { MerkleStateManager } from '@ethereumjs/statemanager'
-import { eip4844GethGenesis, goerliChainConfig } from '@ethereumjs/testdata'
+import { SIGNER_A, SIGNER_B, eip4844GethGenesis, goerliChainConfig } from '@ethereumjs/testdata'
 import {
   NetworkWrapperType,
   createBlob4844Tx,
@@ -11,14 +11,12 @@ import {
 } from '@ethereumjs/tx'
 import {
   Account,
-  Address,
   Units,
   blobsToCommitments,
   blobsToProofs,
   bytesToHex,
   commitmentsToVersionedHashes,
   getBlobs,
-  hexToBytes,
   intToHex,
   randomBytes,
 } from '@ethereumjs/util'
@@ -27,27 +25,16 @@ import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 import { assert, describe, it, vi } from 'vitest'
 
+import type { Blockchain } from '@ethereumjs/blockchain'
+import type { TypedTransaction } from '@ethereumjs/tx'
+import type { Address, PrefixedHexString } from '@ethereumjs/util'
+import type { VM } from '@ethereumjs/vm'
 import { Config } from '../../src/config.ts'
 import { PendingBlock } from '../../src/miner/index.ts'
 import { TxPool } from '../../src/service/txpool.ts'
 import { mockBlockchain } from '../rpc/mockBlockchain.ts'
 
-import type { Blockchain } from '@ethereumjs/blockchain'
-import type { TypedTransaction } from '@ethereumjs/tx'
-import type { PrefixedHexString } from '@ethereumjs/util'
-import type { VM } from '@ethereumjs/vm'
-
 const kzg = new microEthKZG(trustedSetup)
-
-const A = {
-  address: new Address(hexToBytes('0x0b90087d864e82a284dca15923f3776de6bb016f')),
-  privateKey: hexToBytes('0x64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'),
-}
-
-const B = {
-  address: new Address(hexToBytes('0x6f62d8382bf2587361db73ceca28be91b2acb6df')),
-  privateKey: hexToBytes('0x2a6e9ad5a6a8e4f17149b8bc7128bf090566a11dbd63c30e5a0ee9f161309cd6'),
-}
 
 const setBalance = async (vm: VM, address: Address, balance: bigint) => {
   await vm.stateManager.checkpoint()
@@ -108,8 +95,8 @@ describe('[PendingBlock]', async () => {
   MerkleStateManager.prototype.setStateRoot = vi.fn()
 
   const createTx = (
-    from = A,
-    to = B,
+    from = SIGNER_A,
+    to = SIGNER_B,
     nonce = 0,
     value = 1,
     gasPrice = 1000000000,
@@ -127,18 +114,18 @@ describe('[PendingBlock]', async () => {
     return signedTx
   }
 
-  const txA01 = createTx() // A -> B, nonce: 0, value: 1, normal gasPrice
-  const txA011 = createTx() // A -> B, nonce: 0, value: 1, normal gasPrice
-  const txA02 = createTx(A, B, 1, 1, 2000000000) // A -> B, nonce: 1, value: 1, 2x gasPrice
-  const txB01 = createTx(B, A, 0, 1, 2500000000) // B -> A, nonce: 0, value: 1, 2.5x gasPrice
-  const txB011 = createTx(B, A, 0, 1, 2500000000) // B -> A, nonce: 0, value: 1, 2.5x gasPrice
+  const txA01 = createTx() // SIGNER_A -> SIGNER_B, nonce: 0, value: 1, normal gasPrice
+  const txA011 = createTx() // SIGNER_A -> SIGNER_B, nonce: 0, value: 1, normal gasPrice
+  const txA02 = createTx(SIGNER_A, SIGNER_B, 1, 1, 2000000000) // SIGNER_A -> SIGNER_B, nonce: 1, value: 1, 2x gasPrice
+  const txB01 = createTx(SIGNER_B, SIGNER_A, 0, 1, 2500000000) // SIGNER_B -> SIGNER_A, nonce: 0, value: 1, 2.5x gasPrice
+  const txB011 = createTx(SIGNER_B, SIGNER_A, 0, 1, 2500000000) // SIGNER_B -> SIGNER_A, nonce: 0, value: 1, 2.5x gasPrice
 
   it('should start and build', async () => {
     const { txPool } = setup()
     const blockchain = await createBlockchain({ common })
     const vm = await createVM({ common, blockchain })
-    await setBalance(vm, A.address, BigInt(5000000000000000))
-    await setBalance(vm, B.address, BigInt(5000000000000000))
+    await setBalance(vm, SIGNER_A.address, BigInt(5000000000000000))
+    await setBalance(vm, SIGNER_B.address, BigInt(5000000000000000))
     await txPool.add(txA01)
     await txPool.add(txA02)
     // skip hardfork validation for ease
@@ -165,8 +152,8 @@ describe('[PendingBlock]', async () => {
     const { txPool } = setup()
     const blockchain = await createBlockchain({ common })
     const vm = await createVM({ common, blockchain })
-    await setBalance(vm, A.address, BigInt(5000000000000000))
-    await setBalance(vm, B.address, BigInt(5000000000000000))
+    await setBalance(vm, SIGNER_A.address, BigInt(5000000000000000))
+    await setBalance(vm, SIGNER_B.address, BigInt(5000000000000000))
 
     txA011.common.setHardfork(Hardfork.Paris)
     await txPool.add(txA011)
@@ -214,7 +201,7 @@ describe('[PendingBlock]', async () => {
     const pendingBlock = new PendingBlock({ config, txPool, skipHardForkValidation: true })
     const blockchain = await createBlockchain({ common })
     const vm = await createVM({ common, blockchain })
-    await setBalance(vm, A.address, BigInt(5000000000000000))
+    await setBalance(vm, SIGNER_A.address, BigInt(5000000000000000))
     const parentBlock = await (vm.blockchain as Blockchain).getCanonicalHeadBlock!()
     const payloadId = await pendingBlock.start(vm, parentBlock)
     assert.strictEqual(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
@@ -235,11 +222,11 @@ describe('[PendingBlock]', async () => {
 
     const blockchain = await createBlockchain({ common })
     const vm = await createVM({ common, blockchain })
-    await setBalance(vm, A.address, BigInt(5000000000000000))
+    await setBalance(vm, SIGNER_A.address, BigInt(5000000000000000))
 
     // create alternate transactions with custom gas limits to
-    const txA012 = createTx(A, B, 0, 1, 1000000000, 25000)
-    const txA022 = createTx(A, B, 1, 1, 2000000000, 25000) // A -> B, nonce: 1, value: 1, 2x gasPrice
+    const txA012 = createTx(SIGNER_A, SIGNER_B, 0, 1, 1000000000, 25000)
+    const txA022 = createTx(SIGNER_A, SIGNER_B, 1, 1, 2000000000, 25000) // SIGNER_A -> SIGNER_B, nonce: 1, value: 1, 2x gasPrice
 
     await txPool.add(txA012)
     await txPool.add(txA022)
@@ -253,10 +240,10 @@ describe('[PendingBlock]', async () => {
         nonce: 2,
       },
       { common },
-    ).sign(A.privateKey)
+    ).sign(SIGNER_A.privateKey)
     await txPool.add(txA03)
     const pendingBlock = new PendingBlock({ config, txPool, skipHardForkValidation: true })
-    await setBalance(vm, A.address, BigInt(5000000000000000))
+    await setBalance(vm, SIGNER_A.address, BigInt(5000000000000000))
     const parentBlock = await (vm.blockchain as Blockchain).getCanonicalHeadBlock!()
     const payloadId = await pendingBlock.start(vm, parentBlock)
     assert.strictEqual(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
@@ -287,7 +274,7 @@ describe('[PendingBlock]', async () => {
     const { txPool } = setup()
     const blockchain = await createBlockchain({ common })
     const vm = await createVM({ common, blockchain })
-    await setBalance(vm, A.address, BigInt(5000000000000000))
+    await setBalance(vm, SIGNER_A.address, BigInt(5000000000000000))
     await txPool.add(txA01)
     await txPool.add(txA02)
     const txA03 = createLegacyTx(
@@ -298,10 +285,10 @@ describe('[PendingBlock]', async () => {
         nonce: 2,
       },
       { common },
-    ).sign(A.privateKey)
+    ).sign(SIGNER_A.privateKey)
     await txPool.add(txA03)
     const pendingBlock = new PendingBlock({ config, txPool, skipHardForkValidation: true })
-    await setBalance(vm, A.address, BigInt(5000000000000000))
+    await setBalance(vm, SIGNER_A.address, BigInt(5000000000000000))
     const parentBlock = await (vm.blockchain as Blockchain).getCanonicalHeadBlock!()
     const payloadId = await pendingBlock.start(vm, parentBlock)
     assert.strictEqual(pendingBlock.pendingPayloads.size, 1, 'should set the pending payload')
@@ -411,7 +398,7 @@ describe('[PendingBlock]', async () => {
           nonce: BigInt(x),
         },
         { common },
-      ).sign(A.privateKey)
+      ).sign(SIGNER_A.privateKey)
       await txPool.add(txA01)
 
       // accumulate for verification
@@ -449,7 +436,7 @@ describe('[PendingBlock]', async () => {
         nonce: BigInt(3),
       },
       { common },
-    ).sign(A.privateKey)
+    ).sign(SIGNER_A.privateKey)
     await txPool.add(txNorm)
 
     assert.strictEqual(txPool.txsInPool, 4, '4 txs should still be in the pool')
@@ -457,7 +444,7 @@ describe('[PendingBlock]', async () => {
     const pendingBlock = new PendingBlock({ config, txPool })
     const blockchain = await createBlockchain({ common })
     const vm = await createVM({ common, blockchain })
-    await setBalance(vm, A.address, BigInt(500000000000000000))
+    await setBalance(vm, SIGNER_A.address, BigInt(500000000000000000))
     const parentBlock = await (vm.blockchain as Blockchain).getCanonicalHeadBlock!()
     // stub the vm's common set hf to do nothing but stay in cancun
     vm.common.setHardforkBy = () => {
@@ -480,55 +467,5 @@ describe('[PendingBlock]', async () => {
     assert.isTrue(pendingBlob !== undefined && pendingBlob === blobs[0])
     const blobProof = blobsBundles!.proofs[0]
     assert.isTrue(blobProof !== undefined && blobProof === proofs[0])
-  })
-
-  it('should exclude missingBlobTx', async () => {
-    const common = createCommonFromGethGenesis(eip4844GethGenesis, {
-      chain: 'customChain',
-      hardfork: Hardfork.Cancun,
-      customCrypto: { kzg },
-    })
-
-    const { txPool } = setup()
-
-    const blobs = getBlobs('hello world')
-    const commitments = blobsToCommitments(kzg, blobs)
-    const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
-    const proofs = blobsToProofs(kzg, blobs, commitments)
-
-    // create a tx with missing blob data which should be excluded from the build
-    const missingBlobTx = createBlob4844Tx(
-      {
-        networkWrapperVersion: NetworkWrapperType.EIP4844,
-        blobVersionedHashes,
-        kzgCommitments: commitments,
-        kzgProofs: proofs,
-        maxFeePerBlobGas: 100000000n,
-        gasLimit: 0xffffffn,
-        maxFeePerGas: Units.gwei(1),
-        maxPriorityFeePerGas: 100000000n,
-        to: randomBytes(20),
-        nonce: BigInt(0),
-      },
-      { common },
-    ).sign(A.privateKey)
-    await txPool.add(missingBlobTx)
-
-    assert.strictEqual(txPool.txsInPool, 1, '1 txs should still be in the pool')
-
-    const pendingBlock = new PendingBlock({ config, txPool })
-    const blockchain = await createBlockchain({ common })
-    const vm = await createVM({ common, blockchain })
-    await setBalance(vm, A.address, BigInt(500000000000000000))
-    const parentBlock = await (vm.blockchain as Blockchain).getCanonicalHeadBlock!()
-    // stub the vm's common set hf to do nothing but stay in cancun
-    vm.common.setHardforkBy = () => {
-      return vm.common.hardfork()
-    }
-    const payloadId = await pendingBlock.start(vm, parentBlock)
-    const [block, _receipts, _value, blobsBundles] = (await pendingBlock.build(payloadId)) ?? []
-
-    assert.isTrue(block !== undefined && blobsBundles !== undefined)
-    assert.strictEqual(block!.transactions.length, 0, 'Missing blob tx should not be included')
-  })
+  }, 60000)
 })

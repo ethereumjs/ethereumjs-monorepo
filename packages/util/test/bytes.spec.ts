@@ -64,8 +64,25 @@ describe('unpadBytes', () => {
   })
   it('should throw if input is not a Uint8Array', () => {
     assert.throws(function () {
+      // @ts-expect-error -- This syntax is not allowed when 'erasableSyntaxOnly' is enabled.
       unpadBytes((<unknown>'0000000006600') as Uint8Array)
     })
+  })
+  it('should correctly unpad 0x0', () => {
+    const bytes = hexToBytes('0x0')
+    assert.deepEqual(bytes, new Uint8Array([0]), 'hexToBytes("0x0") should return [0]')
+
+    const unpadded = unpadBytes(bytes)
+    assert.deepEqual(unpadded, new Uint8Array(0), 'unpadBytes should return empty array for 0x0')
+    assert.strictEqual(unpadded.length, 0, 'unpadded result should have length 0')
+
+    const result = unpadBytes(hexToBytes('0x0'))
+    assert.deepEqual(
+      result,
+      new Uint8Array(0),
+      'unpadBytes(hexToBytes("0x0")) should return empty array',
+    )
+    assert.strictEqual(bytesToHex(result), '0x', 'empty bytes should convert to "0x" hex string')
   })
 })
 
@@ -101,13 +118,20 @@ describe('setLengthLeft', () => {
     const padded = setLengthLeft(bytes, 3)
     assert.strictEqual(bytesToHex(padded), '0x000909')
   })
-  it('should left truncate a Uint8Array', () => {
+  it('should throw by default when input exceeds target length', () => {
     const bytes = new Uint8Array([9, 0, 9])
-    const padded = setLengthLeft(bytes, 2)
+    assert.throws(function () {
+      setLengthLeft(bytes, 2)
+    }, /Input length 3 exceeds target length 2/)
+  })
+  it('should left truncate a Uint8Array when allowTruncate is true', () => {
+    const bytes = new Uint8Array([9, 0, 9])
+    const padded = setLengthLeft(bytes, 2, { allowTruncate: true })
     assert.strictEqual(bytesToHex(padded), '0x0009')
   })
   it('should throw if input is not a Uint8Array', () => {
     assert.throws(function () {
+      // @ts-expect-error -- This syntax is not allowed when 'erasableSyntaxOnly' is enabled.
       setLengthLeft((<unknown>[9, 9]) as Uint8Array, 3)
     })
   })
@@ -119,13 +143,20 @@ describe('setLengthRight', () => {
     const padded = setLengthRight(bytes, 3)
     assert.strictEqual(bytesToHex(padded), '0x090900')
   })
-  it('should right truncate a Uint8Array', () => {
+  it('should throw by default when input exceeds target length', () => {
     const bytes = new Uint8Array([9, 0, 9])
-    const padded = setLengthRight(bytes, 2)
+    assert.throws(function () {
+      setLengthRight(bytes, 2)
+    }, /Input length 3 exceeds target length 2/)
+  })
+  it('should right truncate a Uint8Array when allowTruncate is true', () => {
+    const bytes = new Uint8Array([9, 0, 9])
+    const padded = setLengthRight(bytes, 2, { allowTruncate: true })
     assert.strictEqual(bytesToHex(padded), '0x0900')
   })
   it('should throw if input is not a Uint8Array', () => {
     assert.throws(function () {
+      // @ts-expect-error -- This syntax is not allowed when 'erasableSyntaxOnly' is enabled.
       setLengthRight((<unknown>[9, 9]) as Uint8Array, 3)
     })
   })
@@ -368,6 +399,26 @@ describe('bytesToBigInt', () => {
   it('should pass on correct input', () => {
     const buf = hexToBytes('0x123')
     assert.strictEqual(BigInt(0x123), bytesToBigInt(buf))
+  })
+  it('should return 0n for empty Uint8Array', () => {
+    assert.strictEqual(bytesToBigInt(new Uint8Array(0)), 0n)
+  })
+  it('should throw if input is not a Uint8Array', () => {
+    assert.throws(function () {
+      // @ts-expect-error -- Testing invalid input
+      bytesToBigInt([1, 2, 3])
+    }, /This method only supports Uint8Array/)
+  })
+  it('should not mutate input when littleEndian is true', () => {
+    const bytes = new Uint8Array([0x01, 0x02, 0x03])
+    const original = new Uint8Array([0x01, 0x02, 0x03])
+    bytesToBigInt(bytes, true)
+    assert.deepEqual(bytes, original)
+  })
+  it('should correctly convert littleEndian bytes', () => {
+    // 0x030201 in big-endian = 0x010203 in little-endian
+    const bytes = new Uint8Array([0x01, 0x02, 0x03])
+    assert.strictEqual(bytesToBigInt(bytes, true), BigInt(0x030201))
   })
 })
 

@@ -6,7 +6,7 @@
 
 # Interface: TransactionInterface\<T\>
 
-Defined in: [types.ts:193](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L193)
+Defined in: [types.ts:211](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L211)
 
 ## Extended by
 
@@ -25,7 +25,7 @@ Defined in: [types.ts:193](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `readonly` **cache**: [`TransactionCache`](TransactionCache.md)
 
-Defined in: [types.ts:203](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L203)
+Defined in: [types.ts:221](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L221)
 
 ***
 
@@ -33,7 +33,7 @@ Defined in: [types.ts:203](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `readonly` **common**: `Common`
 
-Defined in: [types.ts:194](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L194)
+Defined in: [types.ts:212](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L212)
 
 ***
 
@@ -41,7 +41,7 @@ Defined in: [types.ts:194](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `readonly` **data**: `Uint8Array`
 
-Defined in: [types.ts:199](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L199)
+Defined in: [types.ts:217](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L217)
 
 ***
 
@@ -49,7 +49,7 @@ Defined in: [types.ts:199](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `readonly` **gasLimit**: `bigint`
 
-Defined in: [types.ts:196](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L196)
+Defined in: [types.ts:214](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L214)
 
 ***
 
@@ -57,7 +57,7 @@ Defined in: [types.ts:196](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `readonly` **nonce**: `bigint`
 
-Defined in: [types.ts:195](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L195)
+Defined in: [types.ts:213](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L213)
 
 ***
 
@@ -65,7 +65,7 @@ Defined in: [types.ts:195](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `readonly` `optional` **r**: `bigint`
 
-Defined in: [types.ts:201](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L201)
+Defined in: [types.ts:219](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L219)
 
 ***
 
@@ -73,7 +73,7 @@ Defined in: [types.ts:201](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `readonly` `optional` **s**: `bigint`
 
-Defined in: [types.ts:202](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L202)
+Defined in: [types.ts:220](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L220)
 
 ***
 
@@ -81,7 +81,7 @@ Defined in: [types.ts:202](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `readonly` `optional` **to**: `Address`
 
-Defined in: [types.ts:197](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L197)
+Defined in: [types.ts:215](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L215)
 
 ***
 
@@ -89,7 +89,7 @@ Defined in: [types.ts:197](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **txOptions**: [`TxOptions`](TxOptions.md)
 
-Defined in: [types.ts:206](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L206)
+Defined in: [types.ts:224](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L224)
 
 ***
 
@@ -97,7 +97,7 @@ Defined in: [types.ts:206](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **type**: [`TransactionType`](../type-aliases/TransactionType.md)
 
-Defined in: [types.ts:205](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L205)
+Defined in: [types.ts:223](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L223)
 
 ***
 
@@ -105,7 +105,7 @@ Defined in: [types.ts:205](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `readonly` `optional` **v**: `bigint`
 
-Defined in: [types.ts:200](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L200)
+Defined in: [types.ts:218](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L218)
 
 ***
 
@@ -113,7 +113,7 @@ Defined in: [types.ts:200](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `readonly` **value**: `bigint`
 
-Defined in: [types.ts:198](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L198)
+Defined in: [types.ts:216](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L216)
 
 ## Methods
 
@@ -121,7 +121,7 @@ Defined in: [types.ts:198](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **addSignature**(`v`, `r`, `s`, `convertV?`): [`Transaction`](Transaction.md)\[`T`\]
 
-Defined in: [types.ts:227](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L227)
+Defined in: [types.ts:245](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L245)
 
 #### Parameters
 
@@ -151,7 +151,7 @@ Defined in: [types.ts:227](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **errorStr**(): `string`
 
-Defined in: [types.ts:225](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L225)
+Defined in: [types.ts:243](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L243)
 
 #### Returns
 
@@ -163,7 +163,7 @@ Defined in: [types.ts:225](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **getDataGas**(): `bigint`
 
-Defined in: [types.ts:208](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L208)
+Defined in: [types.ts:226](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L226)
 
 #### Returns
 
@@ -175,7 +175,7 @@ Defined in: [types.ts:208](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **getHashedMessageToSign**(): `Uint8Array`
 
-Defined in: [types.ts:214](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L214)
+Defined in: [types.ts:232](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L232)
 
 #### Returns
 
@@ -187,7 +187,7 @@ Defined in: [types.ts:214](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **getIntrinsicGas**(): `bigint`
 
-Defined in: [types.ts:207](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L207)
+Defined in: [types.ts:225](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L225)
 
 #### Returns
 
@@ -199,7 +199,7 @@ Defined in: [types.ts:207](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **getMessageToSign**(): `Uint8Array`\<`ArrayBufferLike`\> \| `Uint8Array`\<`ArrayBufferLike`\>[]
 
-Defined in: [types.ts:213](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L213)
+Defined in: [types.ts:231](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L231)
 
 #### Returns
 
@@ -211,7 +211,7 @@ Defined in: [types.ts:213](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **getMessageToVerifySignature**(): `Uint8Array`
 
-Defined in: [types.ts:216](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L216)
+Defined in: [types.ts:234](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L234)
 
 #### Returns
 
@@ -223,7 +223,7 @@ Defined in: [types.ts:216](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **getSenderAddress**(): `Address`
 
-Defined in: [types.ts:221](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L221)
+Defined in: [types.ts:239](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L239)
 
 #### Returns
 
@@ -235,7 +235,7 @@ Defined in: [types.ts:221](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **getSenderPublicKey**(): `Uint8Array`
 
-Defined in: [types.ts:222](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L222)
+Defined in: [types.ts:240](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L240)
 
 #### Returns
 
@@ -247,7 +247,7 @@ Defined in: [types.ts:222](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **getUpfrontCost**(): `bigint`
 
-Defined in: [types.ts:209](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L209)
+Defined in: [types.ts:227](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L227)
 
 #### Returns
 
@@ -259,7 +259,7 @@ Defined in: [types.ts:209](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **getValidationErrors**(): `string`[]
 
-Defined in: [types.ts:217](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L217)
+Defined in: [types.ts:235](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L235)
 
 #### Returns
 
@@ -271,7 +271,7 @@ Defined in: [types.ts:217](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **hash**(): `Uint8Array`
 
-Defined in: [types.ts:215](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L215)
+Defined in: [types.ts:233](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L233)
 
 #### Returns
 
@@ -283,7 +283,7 @@ Defined in: [types.ts:215](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **isSigned**(): `boolean`
 
-Defined in: [types.ts:218](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L218)
+Defined in: [types.ts:236](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L236)
 
 #### Returns
 
@@ -295,7 +295,7 @@ Defined in: [types.ts:218](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **isValid**(): `boolean`
 
-Defined in: [types.ts:219](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L219)
+Defined in: [types.ts:237](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L237)
 
 #### Returns
 
@@ -307,7 +307,7 @@ Defined in: [types.ts:219](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **raw**(): [`TxValuesArray`](TxValuesArray.md)\[`T`\]
 
-Defined in: [types.ts:211](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L211)
+Defined in: [types.ts:229](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L229)
 
 #### Returns
 
@@ -319,7 +319,7 @@ Defined in: [types.ts:211](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **serialize**(): `Uint8Array`
 
-Defined in: [types.ts:212](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L212)
+Defined in: [types.ts:230](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L230)
 
 #### Returns
 
@@ -331,7 +331,7 @@ Defined in: [types.ts:212](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **sign**(`privateKey`, `extraEntropy?`): [`Transaction`](Transaction.md)\[`T`\]
 
-Defined in: [types.ts:223](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L223)
+Defined in: [types.ts:241](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L241)
 
 #### Parameters
 
@@ -353,7 +353,7 @@ Defined in: [types.ts:223](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **supports**(`capability`): `boolean`
 
-Defined in: [types.ts:204](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L204)
+Defined in: [types.ts:222](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L222)
 
 #### Parameters
 
@@ -371,7 +371,7 @@ Defined in: [types.ts:204](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **toCreationAddress**(): `boolean`
 
-Defined in: [types.ts:210](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L210)
+Defined in: [types.ts:228](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L228)
 
 #### Returns
 
@@ -383,7 +383,7 @@ Defined in: [types.ts:210](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **toJSON**(): [`JSONTx`](JSONTx.md)
 
-Defined in: [types.ts:224](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L224)
+Defined in: [types.ts:242](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L242)
 
 #### Returns
 
@@ -395,7 +395,7 @@ Defined in: [types.ts:224](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **verifySignature**(): `boolean`
 
-Defined in: [types.ts:220](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L220)
+Defined in: [types.ts:238](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L238)
 
 #### Returns
 

@@ -1,5 +1,4 @@
-import * as td from 'testdouble'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, expect, it, vi } from 'vitest'
 
 import { Config } from '../../../src/config.ts'
 import { RlpxPeer } from '../../../src/net/peer/rlpxpeer.ts'
@@ -54,7 +53,7 @@ describe('[Protocol]', () => {
   it('should perform handshake (status now)', async () => {
     const p = new TestProtocol()
     const sender = new Sender()
-    sender.sendStatus = td.func<Sender['sendStatus']>()
+    sender.sendStatus = vi.fn()
     sender.status = [1]
     assert.deepEqual(await p.handshake(sender), { id: 1 }, 'got status now')
   })
@@ -62,19 +61,19 @@ describe('[Protocol]', () => {
   it('should perform handshake (status later)', async () => {
     const p = new TestProtocol()
     const sender = new Sender()
-    sender.sendStatus = td.func<Sender['sendStatus']>()
+    sender.sendStatus = vi.fn()
     setTimeout(() => {
       sender.emit('status', [1])
     }, 100)
     const status = await p.handshake(sender)
-    td.verify(sender.sendStatus([1]))
+    expect(sender.sendStatus).toHaveBeenCalledWith([1])
     assert.deepEqual(status, { id: 1 }, 'got status later')
   })
 
   it('should handle handshake timeout', async () => {
     const p = new TestProtocol()
     const sender = new Sender()
-    sender.sendStatus = td.func<Sender['sendStatus']>()
+    sender.sendStatus = vi.fn()
     p.timeout = 100
     setTimeout(() => {
       sender.emit('status', [1])
@@ -109,6 +108,4 @@ describe('[Protocol]', () => {
 
     assert.instanceOf(bound, BoundProtocol, 'correct bound protocol')
   })
-
-  td.reset()
 })

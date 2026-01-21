@@ -17,7 +17,6 @@ import {
 } from '@ethereumjs/common'
 import {
   EthereumJSErrorWithoutCode,
-  bytesToBigInt,
   bytesToHex,
   calculateSigRecovery,
   concatBytes,
@@ -28,20 +27,19 @@ import {
   randomBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
+import { secp256k1 } from '@noble/curves/secp256k1.js'
+import { sha256 } from '@noble/hashes/sha2.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
 import {
-  keccak256 as keccak256WASM,
+  keccak256 as keccak_256WASM,
   secp256k1Expand,
   secp256k1Recover,
   secp256k1Sign,
   waitReady as waitReadyPolkadotSha256,
   sha256 as wasmSha256,
 } from '@polkadot/wasm-crypto'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
-import { sha256 } from 'ethereum-cryptography/sha256.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
-import * as verkle from 'micro-eth-signer/verkle.js'
 import * as promClient from 'prom-client'
 import * as yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
@@ -110,11 +108,6 @@ export function getArgs(): ClientOpts {
         describe: 'Path to custom genesis state json file (@ethereumjs/common format)',
         coerce: (arg: string) => (arg ? path.resolve(arg) : undefined),
         implies: 'customChain',
-      })
-      .option('verkleGenesisStateRoot', {
-        describe: 'State root of the verkle genesis genesis (experimental)',
-        string: true,
-        coerce: (customGenesisStateRoot: PrefixedHexString) => hexToBytes(customGenesisStateRoot),
       })
       .option('gethGenesis', {
         describe: 'Import a geth genesis file for running a custom network',
@@ -392,11 +385,6 @@ export function getArgs(): ClientOpts {
           'Block number to start syncing from. Must be lower than the local chain tip. Note: this is destructive and removes blocks from the blockchain, please back up your datadir before using.',
         number: true,
       })
-      .option('startExecutionFrom', {
-        describe:
-          'Block number to start/restart execution from. For merkle based state, parent state should be present in the the db while in verkle stateless mode the chain should be synced till the block and witnesses available this block onwards',
-        number: true,
-      })
       .option('startExecution', {
         describe:
           'Start execution of unexecuted blocks without waiting for the CL fcU, set to `true` if `startExecutionFrom` provided',
@@ -428,16 +416,6 @@ export function getArgs(): ClientOpts {
         boolean: true,
         default: true,
       })
-      .option('statelessVerkle', {
-        describe: 'Run verkle+ hardforks using stateless verkle stateManager (experimental)',
-        boolean: true,
-        default: false,
-      })
-      .option('statefulVerkle', {
-        describe: 'Run verkle+ hardforks using stateful verkle stateManager (experimental)',
-        boolean: true,
-        default: false,
-      })
       .option('engineNewpayloadMaxExecute', {
         describe:
           'Number of unexecuted blocks (including ancestors) that can be executed per-block in engine`s new payload (if required and possible) to determine the validity of the block',
@@ -447,12 +425,6 @@ export function getArgs(): ClientOpts {
         describe:
           'Skip executing blocks in new payload calls in engine, alias for --engineNewpayloadMaxExecute=0 and overrides any engineNewpayloadMaxExecute if also provided',
         boolean: true,
-      })
-      .option('ignoreStatelessInvalidExecs', {
-        describe:
-          'Ignore stateless execution failures and keep moving the vm execution along using execution witnesses available in block (verkle). Sets/overrides --statelessVerkle=true and --engineNewpayloadMaxExecute=0 to prevent engine newPayload direct block execution where block execution failures may stall the CL client. Useful for debugging the verkle. The invalid blocks will be stored in dataDir/network/invalidPayloads which one may use later for debugging',
-        boolean: true,
-        hidden: true,
       })
       .option('useJsCrypto', {
         describe: 'Use pure Javascript cryptography functions',
@@ -634,7 +606,7 @@ export async function getCryptoFunctions(useJsCrypto: boolean): Promise<CustomCr
   // Initialize WASM crypto if JS crypto is not specified
   if (useJsCrypto === false) {
     await waitReadyPolkadotSha256()
-    cryptoFunctions.keccak256 = keccak256WASM
+    cryptoFunctions.keccak256 = keccak_256WASM
     cryptoFunctions.ecrecover = (
       msgHash: Uint8Array,
       v: bigint,
@@ -651,31 +623,26 @@ export async function getCryptoFunctions(useJsCrypto: boolean): Promise<CustomCr
       ).slice(1)
     cryptoFunctions.sha256 = wasmSha256
     cryptoFunctions.ecsign = (msg: Uint8Array, pk: Uint8Array) => {
-      const buf = secp256k1Sign(msg, pk)
-      const r = bytesToBigInt(buf.slice(0, 32))
-      const s = bytesToBigInt(buf.slice(32, 64))
-      const recovery = buf[64]
-
-      return { r, s, recovery }
+      return secp256k1Sign(msg, pk)
     }
     cryptoFunctions.ecdsaRecover = (sig: Uint8Array, recId: number, hash: Uint8Array) => {
       return secp256k1Recover(hash, sig, recId)
     }
   } else {
-    cryptoFunctions.keccak256 = keccak256
+    cryptoFunctions.keccak256 = keccak_256
     cryptoFunctions.ecrecover = ecrecover
     cryptoFunctions.sha256 = sha256
     cryptoFunctions.ecsign = secp256k1.sign
     cryptoFunctions.ecdsaRecover = (sig: Uint8Array, recId: number, hash: Uint8Array) => {
       // Adapted from @noble/curves docs
-      const sign = secp256k1.Signature.fromCompact(sig)
+      const sign = secp256k1.Signature.fromBytes(sig)
       const point = sign.addRecoveryBit(recId).recoverPublicKey(hash)
-      const address = point.toRawBytes(true)
-      return address
+      // Returns uncompressed public key (65 bytes)
+      const publicKey = point.toBytes(false)
+      return publicKey
     }
   }
   cryptoFunctions.kzg = kzg
-  cryptoFunctions.verkle = verkle
   return cryptoFunctions
 }
 
@@ -867,14 +834,7 @@ export async function generateClientConfig(args: ClientOpts) {
     useStringValueTrieDB: args.useStringValueTrieDB,
     txLookupLimit: args.txLookupLimit,
     pruneEngineCache: args.pruneEngineCache,
-    statelessVerkle: args.ignoreStatelessInvalidExecs === true ? true : args.statelessVerkle,
-    statefulVerkle: args.statefulVerkle,
-    startExecution: args.startExecutionFrom !== undefined ? true : args.startExecution,
-    engineNewpayloadMaxExecute:
-      args.ignoreStatelessInvalidExecs === true || args.skipEngineExec === true
-        ? 0
-        : args.engineNewpayloadMaxExecute,
-    ignoreStatelessInvalidExecs: args.ignoreStatelessInvalidExecs,
+    engineNewpayloadMaxExecute: args.skipEngineExec === true ? 0 : args.engineNewpayloadMaxExecute,
     prometheusMetrics,
   })
 
@@ -892,7 +852,6 @@ export async function generateClientConfig(args: ClientOpts) {
     const numAccounts = Object.keys(customGenesisState).length
     config.logger?.info(`Reading custom genesis state accounts=${numAccounts}`)
   }
-  const customGenesisStateRoot = args.verkleGenesisStateRoot
 
-  return { config, customGenesisState, customGenesisStateRoot, metricsServer, common }
+  return { config, customGenesisState, metricsServer, common }
 }

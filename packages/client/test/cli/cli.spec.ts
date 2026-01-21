@@ -15,6 +15,8 @@ export function clientRunHelper(
 ) {
   const file = require.resolve('../../bin/cli.ts')
   const child = spawn('tsx', [file, ...cliArgs])
+  // Increase max listeners to avoid Node.js warnings about memory leaks
+  child.setMaxListeners(20)
   return new Promise((resolve) => {
     child.stdout.on('data', async (data) => {
       const message: string = data.toString()
@@ -859,74 +861,3 @@ describe('[CLI]', () => {
     await clientRunHelper(cliArgs, onData, true)
   }, 5000)
 }, 180000)
-
-describe('verkle execution', () => {
-  it('should start client with stateful verkle execution', async () => {
-    const gethGenesis = `{
-        "config": {
-          "chainId": 69420,
-          "homesteadBlock": 0,
-          "eip150Block": 0,
-          "eip155Block": 0,
-          "eip158Block": 0,
-          "byzantiumBlock": 0,
-          "constantinopleBlock": 0,
-          "petersburgBlock": 0,
-          "istanbulBlock": 0,
-          "berlinBlock": 0,
-          "londonBlock": 0,
-          "mergeNetsplitBlock": 0,
-          "terminalTotalDifficulty": 0,
-          "terminalTotalDifficultyPassed": true,
-          "shanghaiTime": 0,
-          "verkleTime": 1730214060,
-          "proofInBlocks": true
-        },
-        "coinbase": "0x0000000000000000000000000000000000000000",
-        "difficulty": "0x01",
-        "extraData": "",
-        "gasLimit": "0x17D7840",
-        "nonce": "0x1234",
-        "mixhash": "0x0000000000000000000000000000000000000000000000000000000000000000",
-        "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
-        "timestamp": "1730214060",
-        "alloc": {}
-      }
- `
-    const dir = fs.mkdtempSync('test')
-    fs.open(`${dir}/gethGenesis.json`, 'w', (err, fd) => {
-      if (err !== null) throw err
-      fs.write(fd, gethGenesis, (writeErr) => {
-        if (writeErr !== null) {
-          assert.fail(`Error writing the file: ${writeErr.message}`)
-        } else {
-          assert.isTrue(true, 'File created and data written successfully!')
-        }
-
-        fs.close(fd, (closeErr) => {
-          if (closeErr) {
-            assert.fail(`Error closing the file:, ${closeErr.message}`)
-          }
-        })
-      })
-    })
-    const cliArgs = [
-      `--dataDir="${dir}"`,
-      `--gethGenesis="${dir}/gethGenesis.json"`,
-      '--statefulVerkle',
-    ]
-    const onData = async (
-      message: string,
-      child: ChildProcessWithoutNullStreams,
-      resolve: Function,
-    ) => {
-      if (message.includes('Setting up verkleVM for stateful verkle execution')) {
-        assert.isTrue(true, 'Client started with verkle execution')
-        child.kill()
-        fs.rmSync(dir, { recursive: true, force: true })
-        resolve(undefined)
-      }
-    }
-    await clientRunHelper(cliArgs, onData)
-  }, 15000)
-})

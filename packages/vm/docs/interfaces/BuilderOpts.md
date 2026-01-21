@@ -68,18 +68,6 @@ Current default hardfork: `merge`
 
 ***
 
-### executionWitness?
-
-> `optional` **executionWitness**: `VerkleExecutionWitness`
-
-Defined in: block/dist/esm/types.d.ts:72
-
-#### Inherited from
-
-`BlockOptions.executionWitness`
-
-***
-
 ### freeze?
 
 > `optional` **freeze**: `boolean`

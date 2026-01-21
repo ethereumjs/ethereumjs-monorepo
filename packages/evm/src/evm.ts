@@ -54,12 +54,16 @@ import type { MessageWithTo } from './message.ts'
 import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/gas.ts'
 import type { OpHandler, OpcodeList, OpcodeMap } from './opcodes/index.ts'
 import type { CustomPrecompile, PrecompileFunc } from './precompiles/index.ts'
-import type { VerkleAccessWitness } from './verkleAccessWitness.ts'
 
 const debug = debugDefault('evm:evm')
 const debugGas = debugDefault('evm:gas')
 const debugPrecompiles = debugDefault('evm:precompiles')
 
+/**
+ * Creates a standardized ExecResult for out-of-gas errors.
+ * @param gasLimit - Gas limit consumed by the failing frame
+ * @returns Execution result describing the OOG failure
+ */
 export function OOGResult(gasLimit: bigint): ExecResult {
   return {
     returnValue: new Uint8Array(0),
@@ -67,7 +71,10 @@ export function OOGResult(gasLimit: bigint): ExecResult {
     exceptionError: new EVMError(EVMError.errorMessages.OUT_OF_GAS),
   }
 }
-// CodeDeposit OOG Result
+/**
+ * Creates an ExecResult for code-deposit out-of-gas errors (EIP-3541).
+ * @param gasUsedCreateCode - Gas consumed while attempting to store code
+ */
 export function COOGResult(gasUsedCreateCode: bigint): ExecResult {
   return {
     returnValue: new Uint8Array(0),
@@ -76,6 +83,10 @@ export function COOGResult(gasUsedCreateCode: bigint): ExecResult {
   }
 }
 
+/**
+ * Returns an ExecResult signalling invalid bytecode input.
+ * @param gasLimit - Gas consumed up to the point of failure
+ */
 export function INVALID_BYTECODE_RESULT(gasLimit: bigint): ExecResult {
   return {
     returnValue: new Uint8Array(0),
@@ -84,6 +95,10 @@ export function INVALID_BYTECODE_RESULT(gasLimit: bigint): ExecResult {
   }
 }
 
+/**
+ * Returns an ExecResult signalling invalid EOF formatting.
+ * @param gasLimit - Gas consumed up to the point of failure
+ */
 export function INVALID_EOF_RESULT(gasLimit: bigint): ExecResult {
   return {
     returnValue: new Uint8Array(0),
@@ -92,6 +107,10 @@ export function INVALID_EOF_RESULT(gasLimit: bigint): ExecResult {
   }
 }
 
+/**
+ * Returns an ExecResult for code size violations.
+ * @param gasUsed - Gas consumed before the violation was detected
+ */
 export function CodesizeExceedsMaximumError(gasUsed: bigint): ExecResult {
   return {
     returnValue: new Uint8Array(0),
@@ -100,6 +119,11 @@ export function CodesizeExceedsMaximumError(gasUsed: bigint): ExecResult {
   }
 }
 
+/**
+ * Wraps an {@link EVMError} in an ExecResult.
+ * @param error - Error encountered during execution
+ * @param gasUsed - Gas consumed up to the error
+ */
 export function EVMErrorResult(error: EVMError, gasUsed: bigint): ExecResult {
   return {
     returnValue: new Uint8Array(0),
@@ -108,6 +132,10 @@ export function EVMErrorResult(error: EVMError, gasUsed: bigint): ExecResult {
   }
 }
 
+/**
+ * Creates a default block header used by stand-alone executions.
+ * @returns Block-like object with zeroed header fields
+ */
 export function defaultBlock(): Block {
   return {
     header: {
@@ -152,12 +180,12 @@ export class EVM implements EVMInterface {
     Hardfork.Cancun,
     Hardfork.Prague,
     Hardfork.Osaka,
-    Hardfork.Verkle,
     Hardfork.Bpo1,
     Hardfork.Bpo2,
     Hardfork.Bpo3,
     Hardfork.Bpo4,
     Hardfork.Bpo5,
+    Hardfork.Amsterdam,
   ]
   protected _tx?: {
     gasPrice: bigint
@@ -171,8 +199,6 @@ export class EVM implements EVMInterface {
   public stateManager: StateManagerInterface
   public blockchain: EVMMockBlockchainInterface
   public journal: Journal
-  public verkleAccessWitness?: VerkleAccessWitness
-  public systemVerkleAccessWitness?: VerkleAccessWitness
   public binaryAccessWitness?: BinaryTreeAccessWitness
   public systemBinaryAccessWitness?: BinaryTreeAccessWitness
 
@@ -238,12 +264,12 @@ export class EVM implements EVMInterface {
     this.blockchain = opts.blockchain!
     this.stateManager = opts.stateManager!
 
-    if (this.common.isActivatedEIP(6800) || this.common.isActivatedEIP(7864)) {
+    if (this.common.isActivatedEIP(7864)) {
       const mandatory = ['checkChunkWitnessPresent']
       for (const m of mandatory) {
         if (!(m in this.stateManager)) {
           throw EthereumJSErrorWithoutCode(
-            `State manager used must implement ${m} if Verkle (EIP-6800) is activated`,
+            `State manager used must implement ${m} if Binary Trees (EIP-7864) is activated`,
           )
         }
       }
@@ -255,8 +281,9 @@ export class EVM implements EVMInterface {
     // Supported EIPs
     const supportedEIPs = [
       663, 1153, 1559, 2537, 2565, 2718, 2929, 2930, 2935, 3198, 3529, 3540, 3541, 3607, 3651, 3670,
-      3855, 3860, 4200, 4399, 4750, 4788, 4844, 4895, 5133, 5450, 5656, 6110, 6206, 6780, 6800,
-      7002, 7069, 7251, 7480, 7516, 7594, 7620, 7685, 7691, 7692, 7698, 7702, 7709,
+      3855, 3860, 4200, 4399, 4750, 4788, 4844, 4895, 5133, 5450, 5656, 6110, 6206, 6780, 7002,
+      7069, 7251, 7480, 7516, 7594, 7620, 7685, 7691, 7692, 7698, 7702, 7709, 7823, 7825, 7934,
+      7939, 7951,
     ]
 
     for (const eip of this.common.eips()) {
@@ -336,9 +363,9 @@ export class EVM implements EVMInterface {
     let gasLimit = message.gasLimit
     const fromAddress = message.caller
 
-    if (this.common.isActivatedEIP(6800) || this.common.isActivatedEIP(7864)) {
+    if (this.common.isActivatedEIP(7864)) {
       if (message.accessWitness === undefined) {
-        throw EthereumJSErrorWithoutCode('accessWitness is required for EIP-6800 & EIP-7864')
+        throw EthereumJSErrorWithoutCode('accessWitness is required for EIP-7864')
       }
       const sendsValue = message.value !== BIGINT_0
       if (message.depth === 0) {
@@ -452,6 +479,7 @@ export class EVM implements EVMInterface {
       let callTimer: Timer | undefined
       let target: string
       if (this._optsCached.profiler?.enabled === true) {
+        // Using deprecated bytesToUnprefixedHex for performance: used for profiler string formatting.
         target = bytesToUnprefixedHex(message.codeAddress.bytes)
         // TODO: map target precompile not to address, but to a name
         target = getPrecompileName(target) ?? target.slice(20)
@@ -473,7 +501,11 @@ export class EVM implements EVMInterface {
       if (this.DEBUG) {
         debug(`Start bytecode processing...`)
       }
-      result = await this.runInterpreter({ ...message, gasLimit } as Message)
+      result = await this.runInterpreter({
+        ...{ codeAddress: message.codeAddress },
+        ...message,
+        gasLimit,
+      } as Message)
     }
 
     if (message.depth === 0) {
@@ -959,7 +991,6 @@ export class EVM implements EVMInterface {
         createdAddresses: opts.createdAddresses ?? new Set(),
         delegatecall: opts.delegatecall,
         blobVersionedHashes: opts.blobVersionedHashes,
-        accessWitness: this.verkleAccessWitness,
       })
     }
 
@@ -1093,6 +1124,7 @@ export class EVM implements EVMInterface {
    * if no such precompile exists.
    */
   getPrecompile(address: Address): PrecompileFunc | undefined {
+    // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for precompile lookups.
     return this.precompiles.get(bytesToUnprefixedHex(address.bytes))
   }
 

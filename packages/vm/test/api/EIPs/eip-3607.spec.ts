@@ -6,11 +6,10 @@ import { assert, describe, it } from 'vitest'
 import { createVM, runTx } from '../../../src/index.ts'
 
 describe('EIP-3607 tests', () => {
-  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin, eips: [3607] })
-  const commonNoEIP3607 = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin, eips: [] })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
   const precompileAddr = createAddressFromString('0x0000000000000000000000000000000000000001')
 
-  it('should reject txs from senders with deployed code when EIP is enabled', async () => {
+  it('should reject txs from senders with deployed code', async () => {
     const vm = await createVM({ common })
     await vm.stateManager.putCode(precompileAddr, new Uint8Array(32).fill(1))
     const tx = createLegacyTx({ gasLimit: 100000 }, { freeze: false })
@@ -24,19 +23,6 @@ describe('EIP-3607 tests', () => {
       } else {
         assert.fail('did not throw correct error')
       }
-    }
-  })
-
-  it('should not reject txs from senders with deployed code when EIP is not enabled', async () => {
-    const vm = await createVM({ common: commonNoEIP3607 })
-    await vm.stateManager.putCode(precompileAddr, new Uint8Array(32).fill(1))
-    const tx = createLegacyTx({ gasLimit: 100000 }, { freeze: false })
-    tx.getSenderAddress = () => precompileAddr
-    try {
-      await runTx(vm, { tx, skipHardForkValidation: true })
-      assert.isTrue(true, 'runTx successfully ran')
-    } catch {
-      assert.fail('threw an unexpected error')
     }
   })
 })

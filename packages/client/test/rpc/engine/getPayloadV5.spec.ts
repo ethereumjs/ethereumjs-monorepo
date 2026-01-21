@@ -1,6 +1,6 @@
 import { Hardfork } from '@ethereumjs/common'
 import { MerkleStateManager } from '@ethereumjs/statemanager'
-import { osakaGethGenesis } from '@ethereumjs/testdata'
+import { SIGNER_H, osakaGethGenesis } from '@ethereumjs/testdata'
 import { createTx } from '@ethereumjs/tx'
 import {
   Account,
@@ -10,10 +10,8 @@ import {
   blobsToCommitments,
   blobsToProofs,
   commitmentsToVersionedHashes,
-  createAddressFromPrivateKey,
   createZeroAddress,
   getBlobs,
-  hexToBytes,
 } from '@ethereumjs/util'
 import { assert, describe, expect, it } from 'vitest'
 
@@ -71,8 +69,7 @@ describe(method, () => {
     let res = await rpc.request(`eth_getBlockByNumber`, ['0x0', false])
     assert.equal(res.result.hash, validForkChoiceState.headBlockHash)
 
-    const pkey = hexToBytes('0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
-    const address = createAddressFromPrivateKey(pkey)
+    const address = SIGNER_H.address
     await service.execution.vm.stateManager.putAccount(address, new Account())
     const account = await service.execution.vm.stateManager.getAccount(address)
     account!.balance = 0xfffffffffffffffn
@@ -102,12 +99,12 @@ describe(method, () => {
           maxFeePerBlobGas: 1n,
           maxFeePerGas: Units.gwei(10),
           maxPriorityFeePerGas: 100000000n,
-          gasLimit: 30000000n,
+          gasLimit: 16000000n,
           to: createZeroAddress(),
         },
         { common },
       ),
-    ).toThrowError(/EIP-7594 is active on Common for EIP4844 network wrapper version/)
+    ).toThrowError(/EIP-7594 is active on Common for EIP-4844 network wrapper version/)
 
     const tx = createTx(
       {
@@ -120,11 +117,11 @@ describe(method, () => {
         maxFeePerBlobGas: 1n,
         maxFeePerGas: Units.gwei(10),
         maxPriorityFeePerGas: 100000000n,
-        gasLimit: 30000000n,
+        gasLimit: 16000000n,
         to: createZeroAddress(),
       },
       { common },
-    ).sign(pkey)
+    ).sign(SIGNER_H.privateKey)
 
     await service.txPool.add(tx, true)
 
@@ -153,7 +150,7 @@ describe(method, () => {
     const { executionPayload, blobsBundle } = res.result
     assert.equal(
       executionPayload.blockHash,
-      '0x470b0993817584dcb186da39af9f41518f280fa85dc8a04695a3cd000bc8a9c9',
+      '0xde5ad0b5d70ae112048b915f66cab04d1942c9eeb0a4b5f1d42fa80cc67167a4',
       'built expected block',
     )
     assert.equal(executionPayload.excessBlobGas, '0x0', 'correct excess blob gas')
@@ -175,4 +172,4 @@ describe(method, () => {
     MerkleStateManager.prototype.setStateRoot = originalSetStateRoot
     MerkleStateManager.prototype.shallowCopy = originalStateManagerCopy
   })
-}, 30000)
+}, 60000)

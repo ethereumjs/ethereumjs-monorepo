@@ -13,8 +13,9 @@
     "e2e:resolutions": "node ./scripts/e2e-resolutions.js",
     "examples": "npm run examples --workspaces --if-present",
     "examples:build": "npm run examples:build --workspaces --if-present",
-    "lint": "npm run biome && eslint  --config ./config/eslint.config.mjs .",
-    "lint:fix": "npm run biome:fix && eslint --fix --config ./config/eslint.config.mjs .",
+    "install-browser-deps": "npm install playwright@1.15.1 @vitest/browser@4.0.9 @vitest/browser-playwright@4.0.9",
+    "lint": "npm run biome && eslint  --config ./eslint.config.mjs .",
+    "lint:fix": "npm run biome:fix && eslint --fix --config ./eslint.config.mjs .",
     "lint:diff": "./config/cli/lint-diff.sh",
     "test": "npm run test --workspaces --if-present",
     "test:node": "npm run test:node --workspaces --if-present",
@@ -22,25 +23,26 @@
     "preinstall": "npm run checkNpmVersion",
     "postinstall": "npm run build --workspaces --if-present",
     "prepare": "git config --local core.hooksPath .githooks",
+    "release:simple": "tsx ./scripts/simple-release.ts",
     "sc": "npm run spellcheck",
     "sort-package-json": "sort-package-json \"package.json\" \"packages/*/package.json\"",
     "spellcheck": "npm run spellcheck:ts && npm run spellcheck:md",
     "spellcheck:ts": "npx cspell --gitignore -e \"./packages/ethereum-tests\" -e \"./packages/wallet/test\" -e \"./packages/client/archive\" -c ./config/cspell-ts.json \"./packages/**/*.ts\" --cache --show-suggestions --show-context",
     "spellcheck:md": "npx cspell --gitignore -e \"./packages/ethereum-tests\" -e \"./packages/client/withdrawals-testnet/**\" -e \"./packages/**/docs\" -c ./config/cspell-md.json \"**.md\" --cache --show-suggestions --show-context",
-    "install-browser-deps": "npm install playwright@1.15.1 @vitest/browser@3.0.8"
+    "tsc": "npm run tsc --workspaces --if-present"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@eslint/js": "^9.22.0",
     "@types/estree": "^1.0.1",
     "@types/node": "22.13.10",
-    "@types/tape": "5.8.1",
     "@typescript-eslint/eslint-plugin": "^8.26.1",
     "@typescript-eslint/parser": "^8.26.1",
-    "@vitest/browser": "3.0.8",
-    "@vitest/coverage-istanbul": "3.0.8",
-    "@vitest/coverage-v8": "3.0.8",
-    "@vitest/ui": "3.0.8",
+    "@vitest/browser": "^4.0.0",
+    "@vitest/browser-playwright": "^4.0.0",
+    "@vitest/coverage-istanbul": "^4.0.0",
+    "@vitest/coverage-v8": "^4.0.0",
+    "@vitest/ui": "^4.0.0",
     "cspell": "^8.17.5",
     "embedme": "1.22.1",
     "eslint": "^9.22.0",
@@ -48,7 +50,6 @@
     "lint-staged": "15.5.0",
     "lockfile-lint-api": "^5.9.1",
     "sort-package-json": "3.0.0",
-    "tape": "5.9.0",
     "tsx": "^4.19.3",
     "typedoc": "^0.28.3",
     "typedoc-plugin-markdown": "^4.6.3",
@@ -56,13 +57,13 @@
     "typescript-eslint": "^8.26.1",
     "vite-plugin-top-level-await": "^1.5.0",
     "vite-plugin-wasm": "^3.4.1",
-    "vitest": "3.0.8"
+    "vitest": "^4.0.0"
   },
   "optionalDependencies": {
     "@rollup/rollup-linux-x64-gnu": "*"
   },
   "engines": {
-    "node": ">=18",
-    "npm": ">=7"
+    "node": ">=20",
+    "npm": ">=9"
   }
 }

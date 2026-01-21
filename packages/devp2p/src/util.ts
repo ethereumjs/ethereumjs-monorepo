@@ -6,9 +6,8 @@ import {
   concatBytes,
   equalsBytes,
 } from '@ethereumjs/util'
+import { secp256k1 } from '@noble/curves/secp256k1.js'
 import debug from 'debug'
-import { publicKeyConvert } from 'ethereum-cryptography/secp256k1-compat.js'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 
 import type { EthStatusMsg } from './protocol/eth.ts'
 
@@ -17,13 +16,16 @@ import type { EthStatusMsg } from './protocol/eth.ts'
 export const devp2pDebug = debug('devp2p')
 
 export function genPrivateKey(): Uint8Array {
-  const privateKey = secp256k1.utils.randomPrivateKey()
-  return secp256k1.utils.isValidPrivateKey(privateKey) === true ? privateKey : genPrivateKey()
+  const privateKey = secp256k1.utils.randomSecretKey()
+  return secp256k1.utils.isValidSecretKey(privateKey) === true ? privateKey : genPrivateKey()
 }
 
 export function pk2id(pk: Uint8Array): Uint8Array {
   if (pk.length === 33) {
-    pk = publicKeyConvert(pk, false)
+    // Convert compressed public key to uncompressed format
+    // @ts-ignore - @noble/curves v2 is ESM-only, TypeScript's moduleResolution: "node" doesn't properly resolve types for CJS build
+    const point = secp256k1.Point.fromBytes(pk)
+    pk = point.toBytes(false)
   }
   return pk.subarray(1)
 }
@@ -178,6 +180,7 @@ export const ipToBytes = (ip: string, bytes?: Uint8Array, offset: number = 0): U
 
       if (isv4) {
         v4Bytes = ipToBytes(sections[i])
+        // Using deprecated bytesToUnprefixedHex for performance: used for string building in IPv6 address conversion.
         sections[i] = bytesToUnprefixedHex(v4Bytes.subarray(0, 2))
       }
 

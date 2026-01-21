@@ -20,8 +20,8 @@ import {
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import { OrderedMap } from '@js-sdsl/ordered-map'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 import debug from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { Fetcher } from './fetcher.ts'
 import { getInitFetcherDoneFlags } from './types.ts'
@@ -115,9 +115,10 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     this.nodeCount = 0
     this.debug = debug('client:fetcher:trienode')
 
-    this.keccakFunction = this.config.chainCommon.customCrypto.keccak256 ?? keccak256
+    this.keccakFunction = this.config.chainCommon.customCrypto.keccak256 ?? keccak_256
 
     // will always start with root node as first set of node requests
+    // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for node lookups.
     this.pathToNodeRequestData.setElement('', {
       nodeHash: bytesToUnprefixedHex(this.root),
       nodeParentHash: '', // root node does not have a parent
@@ -177,6 +178,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
       const receivedNodes: Uint8Array[] = []
       for (let i = 0; i < rangeResult.nodes.length; i++) {
         const receivedNode = rangeResult.nodes[i]
+        // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for node lookups.
         const receivedHash = bytesToUnprefixedHex(this.keccakFunction(receivedNode) as Uint8Array)
         if (this.requestedNodeToPath.has(receivedHash)) {
           receivedNodes.push(rangeResult.nodes[i])
@@ -220,6 +222,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
       // process received node data and request unknown child nodes
       for (const nodeData of result[0]) {
         const node = decodeMPTNode(nodeData as unknown as Uint8Array)
+        // Using deprecated bytesToUnprefixedHex for performance: used as Map keys and string building for paths.
         const nodeHash = bytesToUnprefixedHex(
           this.keccakFunction(nodeData as unknown as Uint8Array),
         )
@@ -235,6 +238,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
           const children = (node as BranchMPTNode).getChildren()
           for (const [i, embeddedNode] of children) {
             if (embeddedNode !== null) {
+              // Using deprecated bytesToUnprefixedHex for performance: used for string building in path construction.
               const newStoragePath = nodePath.concat(bytesToUnprefixedHex(Uint8Array.from([i])))
               const syncPath =
                 storagePath === undefined ? newStoragePath : [accountPath, newStoragePath].join('/')
@@ -247,6 +251,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
           }
         } else if (node instanceof ExtensionMPTNode) {
           this.DEBUG && this.debug('extension node found')
+          // Using deprecated bytesToUnprefixedHex for performance: used for string building in path construction.
           const stringPath = bytesToUnprefixedHex(pathToHexKey(nodePath, node.key(), 'hex'))
           const syncPath =
             storagePath === undefined ? stringPath : [accountPath, stringPath].join('/')
@@ -263,6 +268,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
             const storageRoot: Uint8Array = account.storageRoot
             if (equalsBytes(storageRoot, KECCAK256_RLP) === false) {
               this.DEBUG && this.debug('storage component found')
+              // Using deprecated bytesToUnprefixedHex for performance: used for string building in path construction.
               const syncPath = [
                 bytesToUnprefixedHex(pathToHexKey(accountPath, node.key(), 'hex')),
                 storagePath,
@@ -303,6 +309,7 @@ export class TrieNodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
             const { parentAccountHash } = this.pathToNodeRequestData.getElementByKey(
               pathString,
             ) as NodeRequestData
+            // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for node lookups.
             this.pathToNodeRequestData.setElement(childNode.path, {
               nodeHash: bytesToUnprefixedHex(childNode.nodeHash as Uint8Array),
               nodeParentHash: nodeHash, // TODO root node does not have a parent, so handle that in the leaf callback when checking if dependencies are met recursively

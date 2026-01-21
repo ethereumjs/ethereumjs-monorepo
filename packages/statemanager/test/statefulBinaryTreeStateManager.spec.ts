@@ -10,7 +10,7 @@ import {
   matchingBytesLength,
   setLengthLeft,
 } from '@ethereumjs/util'
-import { blake3 } from '@noble/hashes/blake3'
+import { blake3 } from '@noble/hashes/blake3.js'
 import { assert, describe, it } from 'vitest'
 
 import { Caches } from '../src/index.ts'

@@ -29,7 +29,6 @@ import type {
   BinaryTreeAccessWitnessInterface,
   Common,
   StateManagerInterface,
-  VerkleAccessWitnessInterface,
 } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import { stackDelta } from './eof/stackDelta.ts'
@@ -86,7 +85,7 @@ export interface Env {
   eof?: EOFEnv /* Optional EOF environment in case of EOF execution */
   blobVersionedHashes: PrefixedHexString[] /** Versioned hashes for blob transactions */
   createdAddresses?: Set<string>
-  accessWitness?: VerkleAccessWitnessInterface | BinaryTreeAccessWitnessInterface
+  accessWitness?: BinaryTreeAccessWitnessInterface
   chargeCodeAccesses?: boolean
 }
 
@@ -309,11 +308,11 @@ export class Interpreter {
         opCode = opCodeObj.opcodeInfo.code
       }
 
-      // if its an invalid opcode with verkle activated, then check if its because of a missing code
+      // if its an invalid opcode with binary activated, then check if its because of a missing code
       // chunk in the witness, and throw appropriate error to distinguish from an actual invalid opcode
       if (
         opCode === 0xfe &&
-        (this.common.isActivatedEIP(6800) || this.common.isActivatedEIP(7864)) &&
+        this.common.isActivatedEIP(7864) &&
         // is this a code loaded from state using witnesses
         this._runState.env.chargeCodeAccesses === true
       ) {

@@ -25,7 +25,7 @@ export function precompile01(opts: PrecompileInput): ExecResult {
     return OOGResult(opts.gasLimit)
   }
 
-  const data = setLengthRight(opts.data, 128)
+  const data = setLengthRight(opts.data, 128, { allowTruncate: true })
 
   const msgHash = data.subarray(0, 32)
   const v = data.subarray(32, 64)

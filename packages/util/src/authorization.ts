@@ -1,8 +1,8 @@
 // Utility helpers to convert authorization lists from the byte format and JSON format and vice versa
 
 import { EthereumJSErrorWithoutCode, RLP } from '@ethereumjs/rlp'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
+import { secp256k1 } from '@noble/curves/secp256k1.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 import { publicToAddress } from './account.ts'
 import { Address } from './address.ts'
 import {
@@ -63,21 +63,21 @@ export function eoaCode7702AuthorizationListJSONItemToBytes(
   }
 
   return [
-    hexToBytes(authorizationList.chainId),
+    unpadBytes(hexToBytes(authorizationList.chainId)),
     hexToBytes(authorizationList.address),
-    hexToBytes(authorizationList.nonce),
-    hexToBytes(authorizationList.yParity),
-    hexToBytes(authorizationList.r),
-    hexToBytes(authorizationList.s),
+    unpadBytes(hexToBytes(authorizationList.nonce)),
+    unpadBytes(hexToBytes(authorizationList.yParity)),
+    unpadBytes(hexToBytes(authorizationList.r)),
+    unpadBytes(hexToBytes(authorizationList.s)),
   ]
 }
 
 /** Authorization signing utility methods */
 function unsignedAuthorizationListToBytes(input: EOACode7702AuthorizationListItemUnsigned) {
   const { chainId: chainIdHex, address: addressHex, nonce: nonceHex } = input
-  const chainId = hexToBytes(chainIdHex)
+  const chainId = unpadBytes(hexToBytes(chainIdHex))
   const address = setLengthLeft(hexToBytes(addressHex), 20)
-  const nonce = hexToBytes(nonceHex)
+  const nonce = unpadBytes(hexToBytes(nonceHex))
   return [chainId, address, nonce]
 }
 
@@ -113,7 +113,7 @@ export function eoaCode7702AuthorizationMessageToSign(
 export function eoaCode7702AuthorizationHashedMessageToSign(
   input: EOACode7702AuthorizationListItemUnsigned | EOACode7702AuthorizationListBytesItemUnsigned,
 ) {
-  return keccak256(eoaCode7702AuthorizationMessageToSign(input))
+  return keccak_256(eoaCode7702AuthorizationMessageToSign(input))
 }
 
 /**
@@ -131,20 +131,30 @@ export function eoaCode7702SignAuthorization(
     msg: Uint8Array,
     pk: Uint8Array,
     ecSignOpts?: { extraEntropy?: Uint8Array | boolean },
-  ) => Pick<ReturnType<typeof secp256k1.sign>, 'recovery' | 'r' | 's'>,
+  ) => Pick<ReturnType<typeof secp256k1.Signature.fromBytes>, 'recovery' | 'r' | 's'>,
 ): EOACode7702AuthorizationListBytesItem {
   const msgHash = eoaCode7702AuthorizationHashedMessageToSign(input)
-  const secp256k1Sign = ecSign ?? secp256k1.sign
+  const secp256k1Sign = (msgHash: Uint8Array, pk: Uint8Array) => {
+    return (
+      ecSign?.(msgHash, pk) ??
+      secp256k1.Signature.fromBytes(
+        secp256k1.sign(msgHash, pk, { prehash: false, format: 'recovered' }),
+        'recovered',
+      )
+    )
+  }
+
   const signed = secp256k1Sign(msgHash, privateKey)
+
   const [chainId, address, nonce] = Array.isArray(input)
     ? input
     : unsignedAuthorizationListToBytes(input)
 
   return [
-    chainId,
+    unpadBytes(chainId),
     address,
-    nonce,
-    bigIntToUnpaddedBytes(BigInt(signed.recovery)),
+    unpadBytes(nonce),
+    bigIntToUnpaddedBytes(BigInt(signed.recovery!)),
     bigIntToUnpaddedBytes(signed.r),
     bigIntToUnpaddedBytes(signed.s),
   ]
@@ -156,7 +166,14 @@ export function eoaCode7702RecoverAuthority(
   const inputBytes = Array.isArray(input)
     ? input
     : eoaCode7702AuthorizationListJSONItemToBytes(input)
-  const [chainId, address, nonce, yParity, r, s] = inputBytes
+  const [chainId, address, nonce, yParity, r, s] = [
+    unpadBytes(inputBytes[0]),
+    inputBytes[1],
+    unpadBytes(inputBytes[2]),
+    unpadBytes(inputBytes[3]),
+    unpadBytes(inputBytes[4]),
+    unpadBytes(inputBytes[5]),
+  ]
   const msgHash = eoaCode7702AuthorizationHashedMessageToSign([chainId, address, nonce])
   const pubKey = ecrecover(msgHash, bytesToBigInt(yParity), r, s)
   return new Address(publicToAddress(pubKey))

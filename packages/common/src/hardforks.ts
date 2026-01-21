@@ -163,57 +163,43 @@ export const hardforksDict: HardforksDict = {
   /**
    * Description: Next feature hardfork after prague (headliner: PeerDAS)
    * URL        : https://eips.ethereum.org/EIPS/eip-7607
-   * Status     : Draft
+   * Status     : Final
    */
   osaka: {
-    eips: [7594, 7823, 7883],
+    eips: [7594, 7823, 7825, 7883, 7892, 7939, 7951, 7918],
   },
   /**
-   * Description: Next feature hardfork after osaka, internally used for verkle testing/implementation (incomplete/experimental)
-   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/verkle.md
-   * Status     : Experimental
-   */
-  verkle: {
-    eips: [7709, 4762, 6800],
-  },
-  /**
-   * Description: HF to update the blob target, max and updateFraction
-   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/bpo1.md
-   * Status     : Experimental
+   * Description: HF to update the blob target, max and updateFraction (see also EIP-7892)
+   * URL        : TBD
+   * Status     : Final
    */
   bpo1: {
     eips: [],
+    params: {
+      target: 10,
+      max: 15,
+      blobGasPriceUpdateFraction: 8346193,
+    },
   },
   /**
-   * Description: HF to update the blob target, max and updateFraction
-   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/bpo2.md
-   * Status     : Experimental
+   * Description: HF to update the blob target, max and updateFraction (see also EIP-7892)
+   * URL        : TBD
+   * Status     : Final
    */
   bpo2: {
     eips: [],
+    params: {
+      target: 14,
+      max: 21,
+      blobGasPriceUpdateFraction: 11684671,
+    },
   },
   /**
-   * Description: HF to update the blob target, max and updateFraction
-   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/bpo3.md
-   * Status     : Experimental
+   * Description: Feature hardfork after osaka (headliner: EIP-7928 Block Level Access Lists (BAL))
+   * URL        : https://eips.ethereum.org/EIPS/eip-7773
+   * Status     : Draft (implementation incomplete + spec still moving!)
    */
-  bpo3: {
-    eips: [],
-  },
-  /**
-   * Description: HF to update the blob target, max and updateFraction
-   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/bpo4.md
-   * Status     : Experimental
-   */
-  bpo4: {
-    eips: [],
-  },
-  /**
-   * Description: HF to update the blob target, max and updateFraction
-   * URL        : https://github.com/ethereum/execution-specs/blob/master/network-upgrades/mainnet-upgrades/bpo5.md
-   * Status     : Experimental
-   */
-  bpo5: {
-    eips: [],
+  amsterdam: {
+    eips: [7928],
   },
 }

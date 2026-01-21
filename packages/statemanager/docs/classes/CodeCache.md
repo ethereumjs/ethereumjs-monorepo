@@ -62,7 +62,7 @@ Defined in: [cache/cache.ts:6](https://github.com/ethereumjs/ethereumjs-monorepo
 
 ### \_diffCache
 
-> **\_diffCache**: `Map`\<`string`, `undefined` \| `CodeCacheElement`\>[] = `[]`
+> **\_diffCache**: `Map`\<`string`, `CodeCacheElement` \| `undefined`\>[] = `[]`
 
 Defined in: [cache/code.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/code.ts#L32)
 
@@ -78,7 +78,7 @@ before.
 
 ### \_lruCache
 
-> **\_lruCache**: `undefined` \| `LRUCache`\<`string`, `CodeCacheElement`, `unknown`\>
+> **\_lruCache**: `LRUCache`\<`string`, `CodeCacheElement`, `unknown`\> \| `undefined`
 
 Defined in: [cache/code.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/code.ts#L20)
 
@@ -86,7 +86,7 @@ Defined in: [cache/code.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo
 
 ### \_orderedMapCache
 
-> **\_orderedMapCache**: `undefined` \| `OrderedMap`\<`string`, `CodeCacheElement`\>
+> **\_orderedMapCache**: `OrderedMap`\<`string`, `CodeCacheElement`\> \| `undefined`
 
 Defined in: [cache/code.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/code.ts#L21)
 
@@ -228,7 +228,7 @@ or deleted and resetting the diff cache (at checkpoint height).
 
 ### get()
 
-> **get**(`address`): `undefined` \| `CodeCacheElement`
+> **get**(`address`): `CodeCacheElement` \| `undefined`
 
 Defined in: [cache/code.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/code.ts#L96)
 
@@ -244,7 +244,7 @@ Account address for which code is being fetched.
 
 #### Returns
 
-`undefined` \| `CodeCacheElement`
+`CodeCacheElement` \| `undefined`
 
 ***
 
@@ -268,7 +268,7 @@ Address of account code is being modified for.
 
 Bytecode or undefined if code doesn't exist.
 
-`undefined` | `Uint8Array`\<`ArrayBufferLike`\>
+`Uint8Array`\<`ArrayBufferLike`\> | `undefined`
 
 #### Returns
 

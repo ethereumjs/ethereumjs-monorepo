@@ -11,7 +11,6 @@ import { Level } from 'level'
 import { EthereumClient } from '../src/client.ts'
 import { DataDirectory } from '../src/config.ts'
 import { LevelDB } from '../src/execution/level.ts'
-import { generateVKTStateRoot } from '../src/util/vkt.ts'
 
 import { helpRPC, startRPCServers } from './startRPC.ts'
 import { generateClientConfig, getArgs } from './utils.ts'
@@ -124,61 +123,6 @@ async function startBlock(client: EthereumClient) {
   }
 }
 
-async function startExecutionFrom(client: EthereumClient) {
-  if (args.startExecutionFrom === undefined) return
-  const startExecutionFrom = BigInt(args.startExecutionFrom)
-
-  const height = client.chain.headers.height
-  if (height < startExecutionFrom) {
-    throw EthereumJSErrorWithoutCode(
-      `Cannot start merkle chain higher than current height ${height}`,
-    )
-  }
-
-  const startExecutionBlock = await client.chain.getBlock(startExecutionFrom)
-  const startExecutionParent = await client.chain.getBlock(startExecutionBlock.header.parentHash)
-
-  const startExecutionHardfork = client.config.execCommon.getHardforkBy({
-    blockNumber: startExecutionBlock.header.number,
-    timestamp: startExecutionBlock.header.timestamp,
-  })
-
-  if (client.config.execCommon.hardforkGteHardfork(startExecutionHardfork, Hardfork.Verkle)) {
-    if (client.config.statelessVerkle) {
-      // for stateless verkle sync execution witnesses are available and hence we can blindly set the vmHead
-      // to startExecutionParent's hash
-      try {
-        await client.chain.blockchain.setIteratorHead('vm', startExecutionParent.hash())
-        await client.chain.update(false)
-        client.config.logger?.info(
-          `vmHead set to ${client.chain.headers.height} for starting stateless execution at hardfork=${startExecutionHardfork}`,
-        )
-      } catch (err: any) {
-        throw EthereumJSErrorWithoutCode(
-          `Error setting vmHead for starting stateless execution: ${err}`,
-        )
-      }
-    } else if (client.config.statefulVerkle) {
-      try {
-        await client.chain.blockchain.setIteratorHead('vm', startExecutionParent.hash())
-        await client.chain.update(false)
-        client.config.logger?.info(
-          `vmHead set to ${client.chain.headers.height} for starting stateful execution at hardfork=${startExecutionHardfork}`,
-        )
-      } catch (err: any) {
-        throw EthereumJSErrorWithoutCode(
-          `Error setting vmHead for starting stateful execution: ${err}`,
-        )
-      }
-    } else {
-      // we need parent state availability to set the vmHead to the parent
-      throw EthereumJSErrorWithoutCode(
-        `Stateful execution reset not implemented at hardfork=${startExecutionHardfork}`,
-      )
-    }
-  }
-}
-
 /**
  * Starts and returns the {@link EthereumClient}
  */
@@ -199,14 +143,6 @@ async function startClient(
       validateConsensus = true
     }
 
-    let stateRoot
-    if (config.statefulVerkle) {
-      if (genesisMeta.genesisState === undefined) {
-        throw EthereumJSErrorWithoutCode('genesisState is required to compute stateRoot')
-      }
-      stateRoot = await generateVKTStateRoot(genesisMeta.genesisState, config.chainCommon)
-    }
-
     blockchain = await createBlockchain({
       db: new LevelDB(dbs.chainDB),
       ...genesisMeta,
@@ -216,7 +152,6 @@ async function startClient(
       validateConsensus,
       consensusDict,
       genesisState: genesisMeta.genesisState,
-      genesisStateRoot: stateRoot,
     })
     config.chainCommon.setForkHashes(blockchain.genesisBlock.hash())
   }
@@ -268,9 +203,6 @@ async function startClient(
 
   if (typeof args.startBlock === 'number') {
     await startBlock(client)
-  }
-  if (typeof args.startExecutionFrom === 'number') {
-    await startExecutionFrom(client)
   }
 
   // update client's sync status and start txpool if synchronized
@@ -346,8 +278,7 @@ async function run() {
     return helpRPC()
   }
 
-  const { config, customGenesisState, customGenesisStateRoot, metricsServer } =
-    await generateClientConfig(args)
+  const { config, customGenesisState, metricsServer } = await generateClientConfig(args)
 
   logger = config.logger
 
@@ -355,7 +286,6 @@ async function run() {
   // else a SIGINT before may kill the process in unclean manner
   const clientStartPromise = startClient(config, {
     genesisState: customGenesisState,
-    genesisStateRoot: customGenesisStateRoot,
   })
     .then((client) => {
       const servers: (RPCServer | http.Server)[] =

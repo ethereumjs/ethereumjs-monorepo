@@ -8,7 +8,7 @@
 
 > **blobTxNetworkWrapperToJSON**(`serialized`, `opts?`): [`JSONBlobTxNetworkWrapper`](../type-aliases/JSONBlobTxNetworkWrapper.md)
 
-Defined in: [4844/constructors.ts:329](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/constructors.ts#L329)
+Defined in: [4844/constructors.ts:450](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/constructors.ts#L450)
 
 Returns the EIP 4844 transaction network wrapper in JSON format similar to toJSON, including
 blobs, commitments, and proofs fields

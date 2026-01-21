@@ -1,10 +1,9 @@
-import { pragueGethGenesis } from '@ethereumjs/testdata'
+import { SIGNER_H, beaconData, pragueGethGenesis } from '@ethereumjs/testdata'
 import { createTx } from '@ethereumjs/tx'
 import { Units, bigIntToHex, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
-import { beaconData } from '../../testdata/blocks/beacon.ts'
 import { getRPCClient, setupChain } from '../helpers.ts'
 
 const method = 'engine_newPayloadV4'
@@ -78,8 +77,8 @@ describe(`${method}: call with executionPayloadV4`, () => {
       'valid payloadId should be received',
     )
 
-    // address 0x610adc49ecd66cbf176a8247ebd59096c031bd9f has been sufficiently funded in genesis
-    const pk = hexToBytes('0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
+    // SIGNER_H.address 0x610adc49ecd66cbf176a8247ebd59096c031bd9f has been sufficiently funded in genesis
+    const pk = SIGNER_H.privateKey
     const depositTx = createTx({
       data: '0x22895118000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000001208cd4e5a69709cf8ee5b1b73d6efbf3f33bcac92fb7e4ce62b2467542fb50a72d0000000000000000000000000000000000000000000000000000000000000030ac842878bb70009552a4cfcad801d6e659c50bd50d7d03306790cb455ce7363c5b6972f0159d170f625a99b2064dbefc000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000020010000000000000000000000818ccb1c4eda80270b04d6df822b1e72dd83c3030000000000000000000000000000000000000000000000000000000000000060a747f75c72d0cf0d2b52504c7385b516f0523e2f0842416399f42b4aee5c6384a5674f6426b1cc3d0827886fa9b909e616f5c9f61f986013ed2b9bf37071cbae951136265b549f44e3c8e26233c0433e9124b7fd0dc86e82f9fedfc0a179d769',
       value: Units.ether(32),

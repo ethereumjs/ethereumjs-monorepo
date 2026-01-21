@@ -6,7 +6,7 @@
 
 # Function: encode()
 
-> **encode**\<`T`\>(`typename`, `data`, `privateKey`, `common?`): `Uint8Array`\<`ArrayBufferLike`\>
+> **encode**\<`T`\>(`typename`, `data`, `privateKey`, `common?`): `Uint8Array`\<`ArrayBuffer`\>
 
 Defined in: [packages/devp2p/src/dpt/message.ts:185](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/message.ts#L185)
 
@@ -36,4 +36,4 @@ Defined in: [packages/devp2p/src/dpt/message.ts:185](https://github.com/ethereum
 
 ## Returns
 
-`Uint8Array`\<`ArrayBufferLike`\>
+`Uint8Array`\<`ArrayBuffer`\>

@@ -97,8 +97,8 @@ class StreamReader {
 
   /**
    * Same as readUint, except this reads an uint16
-   * @param errorStr
-   * @returns
+   * @param errorStr - Optional error message to include in thrown validation errors
+   * @returns Unsigned 16-bit integer read from the stream
    */
   readUint16(errorStr?: string) {
     const end = this.ptr + 2
@@ -272,11 +272,10 @@ class EOFHeader {
 
   // Returns the code section for a given program counter position
   getSectionFromProgramCounter(programCounter: number) {
-    if (
-      programCounter < 0 ||
-      programCounter >
-        this.codeStartPos[this.codeStartPos.lastIndex] + this.codeSizes[this.codeSizes.lastIndex]
-    ) {
+    const lastIndex = this.codeSizes.length - 1
+    const lastStart = this.getCodePosition(lastIndex)
+    const lastEnd = lastStart + this.codeSizes[lastIndex]
+    if (programCounter < 0 || programCounter > lastEnd) {
       // If code position is outside the beginning or end of the code sections, return 0
       throw EthereumJSErrorWithoutCode('program counter out of bounds')
     }
@@ -472,7 +471,7 @@ export class EOFContainer {
  * @param evm EVM, to read opcodes from
  * @param containerMode Container mode to validate on
  * @param eofMode EOF mode to run in
- * @returns
+ * @returns The decoded EOF container
  */
 export function validateEOF(
   input: Uint8Array,

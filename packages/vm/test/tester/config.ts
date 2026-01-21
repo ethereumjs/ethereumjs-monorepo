@@ -1,6 +1,17 @@
+/**
+ * This file is deprecated (helper for old test runner).
+ *
+ * The new runners in executionSpec*.test.ts will become the main
+ * entry point for test running.
+ *
+ * If you discover functionality here which is still missing in the new runner,
+ * please open a PR against executionSpecState.test.ts.
+ *
+ * PLEASE DO NOT COPY LARGER PARTS OF THE CODE TO THE NEW RUNNER BUT RE-IMPLEMENT
+ * (USE COMMON SENSE).
+ */
 import * as path from 'path'
 import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
-import * as verkle from 'micro-eth-signer/verkle.js'
 
 import type { HardforkTransitionConfig } from '@ethereumjs/common'
 import type { KZG } from '@ethereumjs/util'
@@ -110,7 +121,6 @@ const normalHardforks = [
   'cancun',
   'prague',
   'osaka',
-  'verkle',
 ]
 
 const transitionNetworks = {
@@ -281,69 +291,6 @@ function setupCommonWithNetworks(network: string, ttd?: number, timestamp?: numb
 }
 
 /**
- * Returns a common instance configured for verkle
- * @param network Network target (this can include EIPs, such as Byzantium+2537+2929)
- * @param ttd If set: total terminal difficulty to switch to merge
- * @returns
- */
-function setupCommonForVerkle(network: string, timestamp?: number, kzg?: KZG) {
-  let ttd
-  // hard fork that verkle tests are filled on
-  const hfName = 'shanghai'
-  const mainnetCommon = new Common({ chain: Mainnet, hardfork: hfName })
-  const hardforks = mainnetCommon.hardforks().slice(0, 17) // skip hardforks after Shanghai
-  const testHardforks: HardforkTransitionConfig[] = []
-  for (const hf of hardforks) {
-    // check if we enable this hf
-    // disable dao hf by default (if enabled at block 0 forces the first 10 blocks to have dao-hard-fork in extraData of block header)
-    if (mainnetCommon.gteHardfork(hf.name) && hf.name !== Hardfork.Dao) {
-      // this hardfork should be activated at block 0
-      testHardforks.push({
-        name: hf.name,
-        // Current type definition Partial<Chain> in Common is currently not allowing to pass in forkHash
-        // forkHash: hf.forkHash,
-        block: 0,
-      })
-    } else {
-      // disable hardforks newer than the test hardfork (but do add "support" for it, it just never gets activated)
-      if (
-        (ttd === undefined && timestamp === undefined) ||
-        (hf.name === 'paris' && ttd !== undefined)
-      ) {
-        testHardforks.push({
-          name: hf.name,
-          block: null,
-        })
-      }
-      if (timestamp !== undefined && hf.name !== Hardfork.Dao) {
-        testHardforks.push({
-          name: hf.name,
-          block: null,
-          timestamp,
-        })
-      }
-    }
-  }
-
-  testHardforks.push({ name: 'verkle', block: 1 })
-  const common = createCustomCommon(
-    {
-      hardforks: testHardforks,
-      defaultHardfork: 'verkle',
-    },
-    Mainnet,
-    { eips: [2935, 3607], customCrypto: { kzg, verkle } },
-  )
-
-  // Activate EIPs
-  const eips = network.match(/(?<=\+)(.\d+)/g)
-  if (eips) {
-    common.setEIPs(eips.map((e: string) => parseInt(e)))
-  }
-  return common
-}
-
-/**
  * Returns a Common for the given network (a test parameter)
  * @param network - the network field of a test.
  * If this network has a `+` sign, it will also include these EIPs.
@@ -357,10 +304,7 @@ export function getCommon(network: string, kzg?: KZG): Common {
     network = retestethAlias[network as keyof typeof retestethAlias]
   }
   let networkLowercase = network.toLowerCase()
-  // Special handler for verkle tests
-  if (networkLowercase.includes('verkle')) {
-    return setupCommonForVerkle(network, undefined, kzg)
-  }
+
   if (network.includes('+')) {
     const index = network.indexOf('+')
     networkLowercase = network.slice(0, index).toLowerCase()
@@ -507,9 +451,9 @@ export function getExpectedTests(
  * @param defaultChoice if to use `NONE` or `ALL` as default choice
  * @returns array with test names
  */
-export function getSkipTests(choices: string, defaultChoice: string): string[] {
+export function getSkipTests(choices: string | undefined, defaultChoice: string): string[] {
   let skipTests: string[] = []
-  if (!choices) {
+  if (choices === undefined) {
     choices = defaultChoice
   }
   choices = choices.toLowerCase()

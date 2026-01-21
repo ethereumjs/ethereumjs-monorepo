@@ -34,6 +34,7 @@ function BLS12_381_ToG1Point(input: Uint8Array, mcl: any, verifyOrder = true): a
     return new mcl.G1()
   }
 
+  // Using deprecated bytesToUnprefixedHex for performance: mcl library expects unprefixed hex strings.
   const p_x = bytesToUnprefixedHex(input.subarray(16, BLS_G1_POINT_BYTE_LENGTH / 2))
   const p_y = bytesToUnprefixedHex(input.subarray(80, BLS_G1_POINT_BYTE_LENGTH))
 
@@ -97,6 +98,7 @@ function BLS12_381_ToFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Arr
   const fp_y = new mcl.Fp()
 
   const fp2 = new mcl.Fp2()
+  // Using deprecated bytesToUnprefixedHex for performance: mcl library expects unprefixed hex strings.
   fp_x.setStr(bytesToUnprefixedHex(fpXCoordinate.subarray(16)), 16)
   fp_y.setStr(bytesToUnprefixedHex(fpYCoordinate.subarray(16)), 16)
 
@@ -178,6 +180,7 @@ function BLS12_381_FromG2Point(input: any): Uint8Array {
 // output: a mcl Fr point
 
 function BLS12_381_ToFrPoint(input: Uint8Array, mcl: any): any {
+  // Using deprecated bytesToUnprefixedHex for performance: mcl library expects unprefixed hex strings.
   const mclHex = mcl.fromHexStr(bytesToUnprefixedHex(input))
   const Fr = new mcl.Fr()
   Fr.setBigEndianMod(mclHex)
@@ -195,6 +198,7 @@ function BLS12_381_ToFpPoint(fpCoordinate: Uint8Array, mcl: any): any {
 
   const fp = new mcl.Fp()
 
+  // Using deprecated bytesToUnprefixedHex for performance: mcl library expects unprefixed hex strings.
   fp.setBigEndianMod(mcl.fromHexStr(bytesToUnprefixedHex(fpCoordinate)))
 
   return fp
@@ -234,16 +238,6 @@ export class MCLBLS implements EVMBLSInterface {
     return BLS12_381_FromG1Point(result)
   }
 
-  mulG1(input: Uint8Array): Uint8Array {
-    // convert input to G1 points, add them, and convert the output to a Uint8Array.
-    const p = BLS12_381_ToG1Point(input.subarray(0, BLS_G1_POINT_BYTE_LENGTH), this._mcl)
-    const frPoint = BLS12_381_ToFrPoint(input.subarray(BLS_G1_POINT_BYTE_LENGTH, 160), this._mcl)
-
-    const result = this._mcl.mul(p, frPoint)
-
-    return BLS12_381_FromG1Point(result)
-  }
-
   addG2(input: Uint8Array): Uint8Array {
     // convert input to G1 points, add them, and convert the output to a Uint8Array.
     const p1 = BLS12_381_ToG2Point(input.subarray(0, BLS_G2_POINT_BYTE_LENGTH), this._mcl, false)
@@ -254,16 +248,6 @@ export class MCLBLS implements EVMBLSInterface {
     )
 
     const result = this._mcl.add(p1, p2)
-
-    return BLS12_381_FromG2Point(result)
-  }
-
-  mulG2(input: Uint8Array): Uint8Array {
-    // convert input to G2 point/Fr point, add them, and convert the output to a Uint8Array.
-    const p = BLS12_381_ToG2Point(input.subarray(0, BLS_G2_POINT_BYTE_LENGTH), this._mcl)
-    const frPoint = BLS12_381_ToFrPoint(input.subarray(BLS_G2_POINT_BYTE_LENGTH, 288), this._mcl)
-
-    const result = this._mcl.mul(p, frPoint)
 
     return BLS12_381_FromG2Point(result)
   }

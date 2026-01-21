@@ -1,9 +1,8 @@
-import { getRandomBytesSync } from 'ethereum-cryptography/random.js'
-
 import {
-  bytesToHex as _bytesToUnprefixedHex,
-  hexToBytes as nobleH2B,
-} from 'ethereum-cryptography/utils.js'
+  bytesToHex as bytesToUnprefixedHexNoble,
+  hexToBytes as hexToBytesNoble,
+  randomBytes as randomBytesNoble,
+} from '@noble/hashes/utils.js'
 
 import { EthereumJSErrorWithoutCode } from './errors.ts'
 import { assertIsArray, assertIsBytes, assertIsHexString } from './helpers.ts'
@@ -16,7 +15,7 @@ const BIGINT_0 = BigInt(0)
 /**
  * @deprecated
  */
-export const bytesToUnprefixedHex = _bytesToUnprefixedHex
+export const bytesToUnprefixedHex = bytesToUnprefixedHexNoble
 
 /**
  * Converts a {@link PrefixedHexString} to a {@link Uint8Array}
@@ -26,12 +25,12 @@ export const bytesToUnprefixedHex = _bytesToUnprefixedHex
  */
 export const hexToBytes = (hex: PrefixedHexString): Uint8Array => {
   if (!hex.startsWith('0x')) throw EthereumJSErrorWithoutCode('input string must be 0x prefixed')
-  return nobleH2B(padToEven(stripHexPrefix(hex)))
+  return hexToBytesNoble(padToEven(stripHexPrefix(hex)))
 }
 
 export const unprefixedHexToBytes = (hex: string): Uint8Array => {
   if (hex.startsWith('0x')) throw EthereumJSErrorWithoutCode('input string cannot be 0x prefixed')
-  return nobleH2B(padToEven(hex))
+  return hexToBytesNoble(padToEven(hex))
 }
 
 /**
@@ -41,6 +40,8 @@ export const unprefixedHexToBytes = (hex: string): Uint8Array => {
  * @dev Returns `0x` if provided an empty Uint8Array
  */
 export const bytesToHex = (bytes: Uint8Array): PrefixedHexString => {
+  // Using deprecated bytesToUnprefixedHex for performance: bytesToHex is a wrapper that adds the 0x prefix.
+  // Using bytesToUnprefixedHex directly avoids creating an intermediate prefixed string and then stripping it.
   const unprefixedHex = bytesToUnprefixedHex(bytes)
   return `0x${unprefixedHex}`
 }
@@ -57,8 +58,9 @@ for (let i = 0; i <= 256 * 256 - 1; i++) {
  * @returns {bigint}
  */
 export const bytesToBigInt = (bytes: Uint8Array, littleEndian = false): bigint => {
+  assertIsBytes(bytes)
   if (littleEndian) {
-    bytes.reverse()
+    bytes = bytes.slice().reverse()
   }
   const hex = bytesToHex(bytes)
   if (hex === '0x') {
@@ -123,48 +125,72 @@ export const bigIntToBytes = (num: bigint, littleEndian = false): Uint8Array => 
 
 /**
  * Pads a `Uint8Array` with zeros till it has `length` bytes.
- * Truncates the beginning or end of input if its length exceeds `length`.
+ * Throws if input length exceeds target length, unless allowTruncate is true.
  * @param {Uint8Array} msg the value to pad
  * @param {number} length the number of bytes the output should be
- * @param {boolean} right whether to start padding form the left or right
+ * @param {boolean} right whether to start padding from the left or right
+ * @param {boolean} allowTruncate whether to allow truncation if msg exceeds length
  * @return {Uint8Array}
  */
-const setLength = (msg: Uint8Array, length: number, right: boolean): Uint8Array => {
-  if (right) {
-    if (msg.length < length) {
-      return new Uint8Array([...msg, ...new Uint8Array(length - msg.length)])
+const setLength = (
+  msg: Uint8Array,
+  length: number,
+  right: boolean,
+  allowTruncate: boolean,
+): Uint8Array => {
+  if (msg.length > length) {
+    if (!allowTruncate) {
+      throw EthereumJSErrorWithoutCode(
+        `Input length ${msg.length} exceeds target length ${length}. Use allowTruncate option to truncate.`,
+      )
     }
-    return msg.subarray(0, length)
-  } else {
-    if (msg.length < length) {
-      return new Uint8Array([...new Uint8Array(length - msg.length), ...msg])
-    }
-    return msg.subarray(-length)
+    return right ? msg.subarray(0, length) : msg.subarray(-length)
   }
+  if (msg.length < length) {
+    return right
+      ? new Uint8Array([...msg, ...new Uint8Array(length - msg.length)])
+      : new Uint8Array([...new Uint8Array(length - msg.length), ...msg])
+  }
+  return msg
+}
+
+export interface SetLengthOpts {
+  /** Allow truncation if msg exceeds length. Default: false */
+  allowTruncate?: boolean
 }
 
 /**
  * Left Pads a `Uint8Array` with leading zeros till it has `length` bytes.
- * Or it truncates the beginning if it exceeds.
+ * Throws if input length exceeds target length, unless allowTruncate option is true.
  * @param {Uint8Array} msg the value to pad
  * @param {number} length the number of bytes the output should be
+ * @param {SetLengthOpts} opts options object with allowTruncate flag
  * @return {Uint8Array}
  */
-export const setLengthLeft = (msg: Uint8Array, length: number): Uint8Array => {
+export const setLengthLeft = (
+  msg: Uint8Array,
+  length: number,
+  opts: SetLengthOpts = {},
+): Uint8Array => {
   assertIsBytes(msg)
-  return setLength(msg, length, false)
+  return setLength(msg, length, false, opts.allowTruncate ?? false)
 }
 
 /**
  * Right Pads a `Uint8Array` with trailing zeros till it has `length` bytes.
- * it truncates the end if it exceeds.
+ * Throws if input length exceeds target length, unless allowTruncate option is true.
  * @param {Uint8Array} msg the value to pad
  * @param {number} length the number of bytes the output should be
+ * @param {SetLengthOpts} opts options object with allowTruncate flag
  * @return {Uint8Array}
  */
-export const setLengthRight = (msg: Uint8Array, length: number): Uint8Array => {
+export const setLengthRight = (
+  msg: Uint8Array,
+  length: number,
+  opts: SetLengthOpts = {},
+): Uint8Array => {
   assertIsBytes(msg)
-  return setLength(msg, length, true)
+  return setLength(msg, length, true, opts.allowTruncate ?? false)
 }
 
 /**
@@ -381,8 +407,8 @@ export const bigIntToAddressBytes = (value: bigint, strict: boolean = true): Uin
     throw Error(`Invalid address bytes length=${addressBytes.length} strict=${strict}`)
   }
 
-  // setLength already slices if more than requisite length
-  return setLengthLeft(addressBytes, 20)
+  // When not strict, allow truncation of values larger than 20 bytes
+  return setLengthLeft(addressBytes, 20, { allowTruncate: !strict })
 }
 
 /**
@@ -417,7 +443,7 @@ export const compareBytes = (value1: Uint8Array, value2: Uint8Array): number => 
  * @returns {Uint8Array} A Uint8Array of random bytes of specified length.
  */
 export const randomBytes = (length: number): Uint8Array => {
-  return getRandomBytesSync(length)
+  return randomBytesNoble(length)
 }
 
 /**
@@ -448,7 +474,7 @@ export const concatBytes = (...arrays: Uint8Array[]): Uint8Array<ArrayBuffer> =>
  */
 export function bytesToInt32(bytes: Uint8Array, littleEndian: boolean = false): number {
   if (bytes.length < 4) {
-    bytes = setLength(bytes, 4, littleEndian)
+    bytes = setLength(bytes, 4, littleEndian, false)
   }
   const dataView = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
   return dataView.getUint32(0, littleEndian)
@@ -462,7 +488,7 @@ export function bytesToInt32(bytes: Uint8Array, littleEndian: boolean = false): 
  */
 export function bytesToBigInt64(bytes: Uint8Array, littleEndian: boolean = false): bigint {
   if (bytes.length < 8) {
-    bytes = setLength(bytes, 8, littleEndian)
+    bytes = setLength(bytes, 8, littleEndian, false)
   }
   const dataView = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
   return dataView.getBigUint64(0, littleEndian)
@@ -494,7 +520,41 @@ export function bigInt64ToBytes(value: bigint, littleEndian: boolean = false): U
   return new Uint8Array(buffer)
 }
 
-export { bytesToUtf8, equalsBytes, utf8ToBytes } from 'ethereum-cryptography/utils.js'
+export { utf8ToBytes } from '@noble/hashes/utils.js'
+
+/**
+ * @notice Converts a Uint8Array to a UTF-8 string.
+ * Implementation copied from ethereum-cryptography https://github.com/ethereum/js-ethereum-cryptography/blob/31f980b2847545d33268f2510ba38a3836202a44/src/utils.ts#L22-L27
+ * @param {Uint8Array} bytes - The input Uint8Array to convert.
+ * @returns {string} The UTF-8 string.
+ * @throws {TypeError} If the input is not a Uint8Array.
+ *
+ */
+export function bytesToUtf8(bytes: Uint8Array): string {
+  if (!(bytes instanceof Uint8Array)) {
+    throw new TypeError(`bytesToUtf8 expected Uint8Array, got ${typeof bytes}`)
+  }
+  return new TextDecoder().decode(bytes)
+}
+
+/**
+ * @notice Compares two Uint8Arrays and returns true if they are equal.
+ * Implementation copied from ethereum-cryptography https://github.com/ethereum/js-ethereum-cryptography/blob/main/src/utils.ts#L35-L45
+ * @param {Uint8Array} a - The first Uint8Array to compare.
+ * @param {Uint8Array} b - The second Uint8Array to compare.
+ * @returns {boolean} True if the Uint8Arrays are equal, false otherwise.
+ */
+export function equalsBytes(a: Uint8Array, b: Uint8Array): boolean {
+  if (a.length !== b.length) {
+    return false
+  }
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) {
+      return false
+    }
+  }
+  return true
+}
 
 export function hexToBigInt(input: PrefixedHexString): bigint {
   return bytesToBigInt(hexToBytes(isHexString(input) ? input : `0x${input}`))

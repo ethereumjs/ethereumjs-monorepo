@@ -1,5 +1,5 @@
 import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
-import { eip4844GethGenesis } from '@ethereumjs/testdata'
+import { SIGNER_G, eip4844GethGenesis } from '@ethereumjs/testdata'
 import {
   Account,
   Address,
@@ -7,14 +7,13 @@ import {
   bytesToBigInt,
   bytesToHex,
   concatBytes,
-  createAddressFromPrivateKey,
   createAddressFromString,
   createZeroAddress,
   hexToBytes,
   padToEven,
   unpadBytes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 import { assert, describe, it } from 'vitest'
 
 import { EVMError } from '../src/errors.ts'
@@ -27,7 +26,7 @@ import type { EVMRunCallOpts } from '../src/types.ts'
 function create2address(sourceAddress: Address, codeHash: Uint8Array, salt: Uint8Array): Address {
   const rlp_proc_bytes = hexToBytes('0xff')
   const hashBytes = concatBytes(rlp_proc_bytes, sourceAddress.bytes, salt, codeHash)
-  return new Address(keccak256(hashBytes).slice(12))
+  return new Address(keccak_256(hashBytes).slice(12))
 }
 
 describe('RunCall tests', () => {
@@ -74,7 +73,7 @@ describe('RunCall tests', () => {
 
     await evm.stateManager.putCode(contractAddress, hexToBytes(code)) // setup the contract code
     await evm.stateManager.putAccount(caller, new Account(BigInt(0), BigInt(0x11111111))) // give the calling account a big balance so we don't run out of funds
-    const codeHash = keccak256(new Uint8Array())
+    const codeHash = keccak_256(new Uint8Array())
     for (let value = 0; value <= 1000; value += 20) {
       // setup the call arguments
       const runCallArgs = {
@@ -495,10 +494,8 @@ describe('RunCall tests', () => {
     const contractCode = hexToBytes('0x00') // 00: STOP
     const contractAddress = createAddressFromString('0x000000000000000000000000636F6E7472616374')
     await evm.stateManager.putCode(contractAddress, contractCode)
-    const senderKey = hexToBytes(
-      '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-    )
-    const sender = createAddressFromPrivateKey(senderKey)
+
+    const sender = SIGNER_G.address
 
     const runCallArgs = {
       gasLimit: BigInt(21000),

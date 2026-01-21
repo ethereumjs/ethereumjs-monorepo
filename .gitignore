@@ -106,12 +106,13 @@ Temporary Items
 
 # End of https://www.toptal.com/developers/gitignore/api/node
 
-# ethereumjs 
+# ethereumjs
 datadir*
 
 ## Vite
 stats.html
 *bundle*.js
+!scripts/bundle-size.mjs
 
 ## Vitest
 __snapshots__

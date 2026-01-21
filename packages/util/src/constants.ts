@@ -1,5 +1,5 @@
-import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
-import { sha256 } from 'ethereum-cryptography/sha256.js'
+import { secp256k1 } from '@noble/curves/secp256k1.js'
+import { sha256 } from '@noble/hashes/sha2.js'
 
 import { hexToBytes } from './bytes.ts'
 
@@ -24,8 +24,8 @@ export const MAX_INTEGER_BIGINT = BigInt(
   '115792089237316195423570985008687907853269984665640564039457584007913129639935',
 )
 
-export const SECP256K1_ORDER = secp256k1.CURVE.n
-export const SECP256K1_ORDER_DIV_2 = secp256k1.CURVE.n / BigInt(2)
+export const SECP256K1_ORDER = secp256k1.Point.CURVE().n
+export const SECP256K1_ORDER_DIV_2 = SECP256K1_ORDER / BigInt(2)
 
 /**
  * 2^256
@@ -75,6 +75,14 @@ export const RLP_EMPTY_STRING = Uint8Array.from([0x80])
 export const MAX_WITHDRAWALS_PER_PAYLOAD = 16
 
 export const RIPEMD160_ADDRESS_STRING = '0000000000000000000000000000000000000003'
+
+/**
+ * EIP-7934: RLP Execution Block Size Limit constants
+ * Maximum RLP-encoded block size to 10 MiB, with a 2 MiB margin for beacon block sizes
+ */
+export const MAX_BLOCK_SIZE = 10_485_760 // 10 MiB
+export const SAFETY_MARGIN = 2_097_152 // 2 MiB
+export const MAX_RLP_BLOCK_SIZE = MAX_BLOCK_SIZE - SAFETY_MARGIN // 8 MiB
 
 /**
  * BigInt constants

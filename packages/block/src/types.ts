@@ -7,7 +7,6 @@ import type {
   JSONRPCWithdrawal,
   NumericString,
   PrefixedHexString,
-  VerkleExecutionWitness,
   WithdrawalBytes,
   WithdrawalData,
 } from '@ethereumjs/util'
@@ -80,8 +79,6 @@ export interface BlockOptions {
    *  Skip consensus format validation checks on header if set. Defaults to false.
    */
   skipConsensusFormatValidation?: boolean
-
-  executionWitness?: VerkleExecutionWitness
 }
 
 /**
@@ -109,6 +106,10 @@ export interface HeaderData {
   excessBlobGas?: BigIntLike
   parentBeaconBlockRoot?: BytesLike
   requestsHash?: BytesLike
+  /**
+   * 32 bytes hash of the block access list (EIP-7928)
+   */
+  blockAccessListHash?: BytesLike
 }
 
 /**
@@ -122,29 +123,15 @@ export interface BlockData {
   transactions?: Array<TxData[TransactionType]>
   uncleHeaders?: Array<HeaderData>
   withdrawals?: Array<WithdrawalData>
-  /**
-   * EIP-6800: Verkle Proof Data (experimental)
-   */
-  executionWitness?: VerkleExecutionWitness | null
 }
 
 export type WithdrawalsBytes = WithdrawalBytes[]
-export type ExecutionWitnessBytes = Uint8Array
 
 export type BlockBytes =
   | [BlockHeaderBytes, TransactionsBytes, UncleHeadersBytes]
   | [BlockHeaderBytes, TransactionsBytes, UncleHeadersBytes, WithdrawalsBytes]
-  | [
-      BlockHeaderBytes,
-      TransactionsBytes,
-      UncleHeadersBytes,
-      WithdrawalsBytes,
-      ExecutionWitnessBytes,
-    ]
+  | [BlockHeaderBytes, TransactionsBytes, UncleHeadersBytes, WithdrawalsBytes]
 
-/**
- * BlockHeaderBuffer is a Buffer array, except for the Verkle PreState which is an array of prestate arrays.
- */
 export type BlockHeaderBytes = Uint8Array[]
 export type BlockBodyBytes = [TransactionsBytes, UncleHeadersBytes, WithdrawalsBytes?]
 /**
@@ -164,7 +151,6 @@ export interface JSONBlock {
   transactions?: JSONTx[]
   uncleHeaders?: JSONHeader[]
   withdrawals?: JSONRPCWithdrawal[]
-  executionWitness?: VerkleExecutionWitness | null
 }
 
 /**
@@ -192,6 +178,7 @@ export interface JSONHeader {
   excessBlobGas?: PrefixedHexString
   parentBeaconBlockRoot?: PrefixedHexString
   requestsHash?: PrefixedHexString
+  blockAccessListHash?: PrefixedHexString
 }
 
 /*
@@ -224,8 +211,8 @@ export interface JSONRPCBlock {
   blobGasUsed?: PrefixedHexString // If EIP-4844 is enabled for this block, returns the blob gas used for the block
   excessBlobGas?: PrefixedHexString // If EIP-4844 is enabled for this block, returns the excess blob gas for the block
   parentBeaconBlockRoot?: PrefixedHexString // If EIP-4788 is enabled for this block, returns parent beacon block root
-  executionWitness?: VerkleExecutionWitness | null // If Verkle is enabled for this block
   requestsHash?: PrefixedHexString // If EIP-7685 is enabled for this block, returns the requests root
+  blockAccessListHash?: PrefixedHexString // If EIP-7928 is enabled for this block, returns the hash of the block access list
 }
 
 export type WithdrawalV1 = {
@@ -256,6 +243,5 @@ export type ExecutionPayload = {
   excessBlobGas?: PrefixedHexString // QUANTITY, 64 Bits
   parentBeaconBlockRoot?: PrefixedHexString // QUANTITY, 64 Bits
   requestsHash?: PrefixedHexString
-  // VerkleExecutionWitness is already a hex serialized object
-  executionWitness?: VerkleExecutionWitness | null // QUANTITY, 64 Bits, null implies not available
+  blockAccessListHash?: PrefixedHexString // DATA, 32 Bytes
 }

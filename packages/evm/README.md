@@ -9,12 +9,12 @@
 | TypeScript implementation of the Ethereum EVM. |
 | ---------------------------------------------- |
 
-- 🦄 All hardforks up till **Pectra**
+- 🦄 All hardforks up to **Osaka**
 - 🌴 Tree-shakeable API
 - 👷🏼 Controlled dependency set (7 external + `@Noble` crypto)
 - 🧩 Flexible EIP on/off engine
 - 🛠️ Custom precompiles
-- 🚀 Build-in profiler
+- 🚀 Built-in profiler
 - 🪢 User-friendly colored debugging
 - 🛵 422KB bundle size (110KB gzipped)
 - 🏄🏾‍♂️ WASM-free default + Fully browser ready
@@ -73,7 +73,7 @@ void main()
 
 ### Blockchain, State and Events
 
-If the EVM should run on a certain state an `@ethereumjs/statemanager` is needed. An `@ethereumjs/blockchain` instance can be passed in to provide access to external interface information like a blockhash:
+If you want the EVM to run against a specific state, you need an `@ethereumjs/statemanager`. An `@ethereumjs/blockchain` instance can be passed in to provide access to external interface information like a blockhash:
 
 ```ts
 // ./examples/withBlockchain.ts
@@ -121,16 +121,16 @@ const main = async () => {
 void main()
 ```
 
-Additionally this usage example shows the use of events to listen on the inner workings and procedural updates
+Additionally, this example shows how to use events to listen to the inner workings and procedural updates
 (`step` event) of the EVM.
 
 ### WASM Crypto Support
 
-This library by default uses JavaScript implementations for the basic standard crypto primitives like hashing or signature verification (for included txs). See `@ethereumjs/common` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for instructions on how to replace with e.g. a more performant WASM implementation by using a shared `common` instance.
+This library by default uses JavaScript implementations for the basic standard crypto primitives like hashing or signature verification (for included txs). See `@ethereumjs/common` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for instructions on how to replace them with, e.g., a more performant WASM implementation by using a shared `common` instance.
 
 ## Examples
 
-See the [examples](./examples/) folder for different meaningful examples on how to use the EVM package and invoke certain aspects of it, e.g. running a bytecode snippet, listening to events or activate an EVM with a certain EIP for experimental purposes.
+See the [examples](./examples/) folder for different meaningful examples on how to use the EVM package and invoke certain aspects of it, e.g. running a bytecode snippet, listening to events, or to activate an EVM with a certain EIP for experimental purposes.
 
 ## Browser
 
@@ -148,7 +148,7 @@ For documentation on `EVM` instantiation, exposed API and emitted `events` see g
 
 With the breaking releases from Summer 2023 we have started to ship our libraries with both CommonJS (`cjs` folder) and ESM builds (`esm` folder), see `package.json` for the detailed setup.
 
-If you use an ES6-style `import` in your code files from the ESM build will be used:
+If you use an ES6-style `import` in your code files, the ESM build will be used:
 
 ```ts
 import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
@@ -166,7 +166,7 @@ Using ESM will give you additional advantages over CJS beyond browser usage like
 
 ### VM/EVM Relation
 
-This package contains the inner Ethereum Virtual Machine core functionality which was included in the [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm) package up till v5 and has been extracted along the v6 release.
+This package contains the inner Ethereum Virtual Machine core functionality which was included in the [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm) package up to v5 and has been extracted along the v6 release.
 
 This will make it easier to customize the inner EVM, which can now be passed as an optional argument to the outer `VM` instance.
 
@@ -221,10 +221,13 @@ import { createEVM } from '@ethereumjs/evm'
 const main = async () => {
   const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
   const evm = await createEVM({ common })
-  console.log(`EIP 7702 is active in isolation on top of the Cancun HF - ${evm.common.isActivatedEIP(7702)}`)
+  console.log(
+    `EIP 7702 is active in isolation on top of the Cancun HF - ${evm.common.isActivatedEIP(7702)}`,
+  )
 }
 
 void main()
+
 ```
 
 Currently supported EIPs:
@@ -274,41 +277,34 @@ This library supports the blob transaction type introduced with [EIP-4844](https
 
 ## Precompiles
 
-This library support all EVM precompiles up to the `Prague` hardfork.
+This library supports all EVM precompiles up to the `Prague` hardfork.
 
-The following code allows to run precompiles in isolation, e.g. for testing purposes:
+In our `examples` folder we provide a helper function for simple direct precompile runs in the `precompiles` folder.
+
+This is an example of a simple precompile run (BLS12_G1ADD precompile):
 
 ```ts
-// ./examples/precompile.ts
+// ./examples/precompiles/0b-bls12-g1add.ts
 
-import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { createEVM, getActivePrecompiles } from '@ethereumjs/evm'
-import { bytesToHex, hexToBytes } from '@ethereumjs/util'
+import { runPrecompile } from './util.ts'
 
 const main = async () => {
-  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Prague })
+  // BLS12_G1ADD precompile (address 0xb)
+  // Data taken from test/eips/precompiles/bls/add_G1_bls.json
+  // Input: G1 and G2 points (each 128 bytes = 256 hex characters)
+  const g1Point =
+    '0000000000000000000000000000000017f1d3a73197d7942695638c4fa9ac0fc3688c4f9774b905a14e3a3f171bac586c55e83ff97a1aeffb3af00adb22c6bb0000000000000000000000000000000008b3f481e3aaa0f1a09e30ed741d8ae4fcf5e095d5d00af600db18cb2c04b3edd03cc744a2888ae40caa232946c5e7e1'
+  const g2Point =
+    '00000000000000000000000000000000112b98340eee2777cc3c14163dea3ec97977ac3dc5c70da32e6e87578f44912e902ccef9efe28d4a78b8999dfbca942600000000000000000000000000000000186b28d92356c4dfec4b5201ad099dbdede3781f8998ddf929b4cd7756192185ca7b8f4ef7088f813270ac3d48868a21'
+  const data = `0x${g1Point}${g2Point}`
 
-  // Taken from test/eips/precompiles/bls/add_G1_bls.json
-  const data = hexToBytes(
-    '0x0000000000000000000000000000000017f1d3a73197d7942695638c4fa9ac0fc3688c4f9774b905a14e3a3f171bac586c55e83ff97a1aeffb3af00adb22c6bb0000000000000000000000000000000008b3f481e3aaa0f1a09e30ed741d8ae4fcf5e095d5d00af600db18cb2c04b3edd03cc744a2888ae40caa232946c5e7e100000000000000000000000000000000112b98340eee2777cc3c14163dea3ec97977ac3dc5c70da32e6e87578f44912e902ccef9efe28d4a78b8999dfbca942600000000000000000000000000000000186b28d92356c4dfec4b5201ad099dbdede3781f8998ddf929b4cd7756192185ca7b8f4ef7088f813270ac3d48868a21',
-  )
-  const gasLimit = BigInt(5000000)
-
-  const evm = await createEVM({ common })
-  const precompile = getActivePrecompiles(common).get('000000000000000000000000000000000000000b')!
-
-  const callData = {
-    data,
-    gasLimit,
-    common,
-    _EVM: evm,
-  }
-  const result = await precompile(callData)
-  console.log(`Precompile result:${bytesToHex(result.returnValue)}`)
+  await runPrecompile('BLS12_G1ADD', '0xb', data)
 }
 
 void main()
+
 ```
+
 
 ### EIP-2537 BLS Precompiles (Prague)
 
@@ -323,6 +319,73 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Prague })
 await mcl.init(mcl.BLS12_381)
 const mclbls = new MCLBLS(mcl)
 const evm = await createEVM({ common, bls })
+```
+
+### EIP-7823/EIP-7883 MODEXP Precompile (Osaka)
+
+The Osaka hardfork introduces some behavioral changes with [EIP-7823](https://eips.ethereum.org/EIPS/eip-7823) as well as a gas cost increase for the MODEXP precompile with [EIP-7883](https://eips.ethereum.org/EIPS/eip-7883).
+
+You can use the following example as a starting point to compare on the changes between hardforks:
+
+```ts
+// ./examples/precompiles/05-modexp.ts
+
+import { Hardfork } from '@ethereumjs/common'
+import { runPrecompile } from './util.ts'
+
+const main = async () => {
+  // MODEXP precompile (address 0x05)
+  // Calculate: 2^3 mod 5 = 8 mod 5 = 3
+  //
+  // Input format:
+  // - First 32 bytes: base length (0x01 = 1 byte)
+  // - Next 32 bytes: exponent length (0x01 = 1 byte)
+  // - Next 32 bytes: modulus length (0x01 = 1 byte)
+  // - Next 1 byte: base value (0x02 = 2)
+  // - Next 1 byte: exponent value (0x03 = 3)
+  // - Next 1 byte: modulus value (0x05 = 5)
+
+  const baseLen = '0000000000000000000000000000000000000000000000000000000000000001' // 1 byte
+  const expLen = '0000000000000000000000000000000000000000000000000000000000000001' // 1 byte
+  const modLen = '0000000000000000000000000000000000000000000000000000000000000001' // 1 byte
+  const base = '02' // 2
+  const exponent = '03' // 3
+  const modulus = '05' // 5
+
+  const data = `0x${baseLen}${expLen}${modLen}${base}${exponent}${modulus}`
+
+  await runPrecompile('MODEXP', '0x05', data)
+  await runPrecompile('MODEXP', '0x05', data, Hardfork.Cancun)
+}
+
+void main()
+
+```
+
+### EIP-7951 Precompile for secp256r1 Curve Support (Osaka)
+
+The Osaka hardfork introduces a new precompile for secp256r1 curve support with [EIP-7951](https://eips.ethereum.org/EIPS/eip-7951).
+
+The following example code allows you to generate input values for the precompile using Noble Curves [v2.0.0](https://github.com/paulmillr/noble-curves/releases/tag/2.0.0) or later.
+
+```ts
+// No direct examples integration (library version not taken in as a dependency)
+import { p256 } from '@noble/curves/nist.js'
+import { sha256 } from '@noble/hashes/sha2.js'
+import { bigIntToHex, bytesToHex } from '@ethereumjs/util'
+
+// Private/public key
+const { secretKey, publicKey } = p256.keygen()
+const pointPubKey = p256.Point.fromBytes(publicKey)
+const pointX = bigIntToHex(pointPubKey.X)
+const pointY = bigIntToHex(pointPubKey.Y)
+
+// Message (hash) / signature
+const msg = new TextEncoder().encode('Hello Fusaka!')
+const sig = p256.sign(msg, secretKey, { lowS: false, prehash: false })
+const msgHash = bytesToHex(sha256(msg))
+const sigR = bytesToHex(sig).substring(2, 64 + 2)
+const sigS = bytesToHex(sig).substring(64 + 2)
 ```
 
 ## Events
@@ -341,7 +404,7 @@ You can subscribe to the following events:
 #### Event listeners
 
 You can perform asynchronous operations from within an event handler
-and prevent the EVM to keep running until they finish.
+and prevent the EVM from continuing until they finish.
 
 If subscribing to events with an async listener, specify the second
 parameter of your listener as a `resolve` function that must be called once your listener code has finished.
@@ -368,7 +431,7 @@ recommended not to do that.
 
 ## Understanding the EVM
 
-If you want to understand your EVM runs we have added a hierarchically structured list of debug loggers for your convenience which can be activated in arbitrary combinations. We also use these loggers internally for development and testing. These loggers use the [debug](https://github.com/visionmedia/debug) library and can be activated on the CL with `DEBUG=ethjs,[Logger Selection] node [Your Script to Run].js` and produce output like the following:
+If you want to understand your EVM runs we have added a hierarchically structured list of debug loggers for your convenience which can be activated in arbitrary combinations. We also use these loggers internally for development and testing. These loggers use the [debug](https://github.com/visionmedia/debug) library and can be activated on the CLI with `DEBUG=ethjs,[Logger Selection] node [Your Script to Run].js` and produce output like the following:
 
 ![EthereumJS EVM Debug Logger](./debug.png?raw=true)
 
@@ -383,7 +446,7 @@ The following loggers are currently available:
 | `evm:ops`                          |  Opcode traces                                      |
 | `evm:ops:[Lower-case opcode name]` | Traces on a specific opcode                         |
 
-Here are some examples for useful logger combinations.
+Here are some examples of useful logger combinations.
 
 Run one specific logger:
 
@@ -478,9 +541,9 @@ This layered architecture provides separation of concerns while allowing for the
 
 ## Profiling the EVM
 
-The EthereumJS EVM comes with build-in profiling capabilities to detect performance bottlenecks and to generally support the targeted evolution of the JavaScript EVM performance.
+The EthereumJS EVM comes with built-in profiling capabilities to detect performance bottlenecks and to generally support the targeted evolution of the JavaScript EVM performance.
 
-While the EVM has a dedicated `profiler` setting to activate, the profiler can best and most useful be run through the EthereumJS [client](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client) since this gives the most realistic conditions providing both real-world txs and a meaningful state size.
+While the EVM has a dedicated `profiler` setting to activate, the profiler is most useful when run through the EthereumJS [client](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client) since this gives the most realistic conditions providing both real-world txs and a meaningful state size.
 
 To repeatedly run the EVM profiler within the client sync the client on mainnet or a larger testnet to the desired block. Then the profiler should be run without sync (to not distort the results) by using the `--executeBlocks` and the `--vmProfileBlocks` (or `--vmProfileTxs`) flags in conjunction like:
 
@@ -516,7 +579,7 @@ See [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/mast
 
 ## EthereumJS
 
-The `EthereumJS` GitHub organization and its repositories are managed by the Ethereum Foundation JavaScript team, see our [website](https://ethereumjs.github.io/) for a team introduction. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
+The `EthereumJS` GitHub organization and its repositories are managed by members of the former Ethereum Foundation JavaScript team and the broader Ethereum community. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
 
 ## License
 

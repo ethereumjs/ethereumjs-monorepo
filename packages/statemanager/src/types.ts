@@ -3,7 +3,6 @@ import { type PrefixedHexString } from '@ethereumjs/util'
 import type { BinaryTree } from '@ethereumjs/binarytree'
 import type { Common } from '@ethereumjs/common'
 import type { MerklePatriciaTrie } from '@ethereumjs/mpt'
-import type { VerkleTree } from '@ethereumjs/verkle'
 import type { Caches } from './index.ts'
 /**
  * Basic state manager options (not to be used directly)
@@ -73,12 +72,6 @@ export interface StatelessVerkleStateManagerOpts extends BaseStateManagerOpts {
   caches?: Caches
 }
 
-export interface StatefulVerkleStateManagerOpts extends BaseStateManagerOpts {
-  common: Common // Common required since it provides verkleCrypto through customCrypto
-  trie?: VerkleTree
-  caches?: Caches
-}
-
 export interface StatefulBinaryTreeStateManagerOpts extends BaseStateManagerOpts {
   hashFunction?: (data: Uint8Array) => Uint8Array
   tree?: BinaryTree
@@ -91,14 +84,6 @@ export interface BinaryTreeState {
 
 export interface EncodedBinaryTreeState {
   [key: PrefixedHexString]: PrefixedHexString | null
-}
-
-export interface VerkleState {
-  [key: PrefixedHexString]: PrefixedHexString | null
-}
-
-export interface EncodedVerkleProof {
-  [key: PrefixedHexString]: PrefixedHexString
 }
 
 export type StorageProof = {

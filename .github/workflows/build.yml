@@ -55,10 +55,10 @@ jobs:
           path: ${{github.workspace}}/node_modules
           key: npm-${{ hashFiles('package-lock.json') }}
 
-      - name: Use Node.js 20
-        uses: actions/setup-node@v4
+      - name: Use Node.js 24
+        uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 24
           cache: 'npm'
 
       - run: npm ci
@@ -179,12 +179,6 @@ jobs:
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
-  verkle:
-    needs: build
-    uses: ./.github/workflows/verkle-build.yml
-    with:
-      dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
-
   vm-pr:
     needs: [build, checkout-submodules]
     uses: ./.github/workflows/vm-pr.yml
@@ -211,3 +205,156 @@ jobs:
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
       submodule-cache-key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
+
+  bundle-size:
+    needs: [build]
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout current branch
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - uses: actions/cache/restore@v4
+        id: dep-cache
+        with:
+          path: ${{github.workspace}}
+          key: ${{ needs.build.outputs.dep-cache-key }}
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: 'npm'
+
+      - name: Install Dependencies (if not restored from cache)
+        if: steps.dep-cache.outputs.cache-hit != 'true'
+        run: npm ci
+        working-directory: ${{ github.workspace }}
+
+      - name: Checkout master for baseline
+        uses: actions/checkout@v5
+        with:
+          ref: master
+          path: baseline-workspace
+
+      - name: Build baseline
+        working-directory: baseline-workspace
+        run: |
+          echo "📦 Installing baseline dependencies..."
+          npm ci || echo "⚠️ npm ci failed, trying npm install..."
+          npm install || echo "⚠️ npm install also failed"
+          echo "🔨 Building baseline packages..."
+          npm run build --workspaces --if-present || echo "⚠️ Build failed for some packages"
+        continue-on-error: true
+
+      - name: Check baseline build status
+        working-directory: baseline-workspace
+        run: |
+          echo "📊 Checking if any packages were built..."
+          BUILT_COUNT=0
+          for pkg in packages/*/dist; do
+            if [ -d "$pkg" ] && [ "$(find "$pkg" -name "*.js" -o -name "*.mjs" | wc -l)" -gt 0 ]; then
+              BUILT_COUNT=$((BUILT_COUNT + 1))
+              echo "✅ Found built package: $(dirname "$pkg" | xargs basename)"
+            fi
+          done
+          echo "📦 Found $BUILT_COUNT packages with dist folders"
+          if [ "$BUILT_COUNT" -eq 0 ]; then
+            echo "⚠️ No packages were built in baseline. Comparison will be skipped."
+            echo "BUILT_COUNT=0" >> $GITHUB_ENV
+          else
+            echo "BUILT_COUNT=$BUILT_COUNT" >> $GITHUB_ENV
+          fi
+        continue-on-error: true
+
+      - name: Analyze baseline bundle sizes
+        if: env.BUILT_COUNT != '0'
+        working-directory: baseline-workspace
+        run: |
+          if [ ! -f scripts/bundle-size.mjs ]; then
+            cp ../scripts/bundle-size.mjs scripts/
+          fi
+          echo "📊 Analyzing baseline bundle sizes..."
+          node scripts/bundle-size.mjs --output=../baseline.json
+          if [ ! -f ../baseline.json ]; then
+            echo "❌ Baseline analysis failed - no file created"
+            exit 1
+          fi
+          echo "✅ Baseline analysis complete"
+          echo "Baseline file size: $(wc -c < ../baseline.json) bytes"
+          echo "Baseline content preview:"
+          head -5 ../baseline.json
+
+      - name: Build current branch
+        run: npm run build --workspaces --if-present
+        working-directory: ${{ github.workspace }}
+
+      - name: Analyze and compare bundle sizes
+        id: bundle-analysis
+        run: |
+          if [ -f baseline.json ] && [ -s baseline.json ] && [ "$(cat baseline.json | tr -d '[:space:]')" != "{}" ]; then
+            echo "✅ Baseline file is valid, running comparison..."
+            node scripts/bundle-size.mjs --baseline=baseline.json > bundle-summary.md
+          else
+            echo "## 📦 Bundle Size Analysis" > bundle-summary.md
+            echo "" >> bundle-summary.md
+            if [ ! -f baseline.json ]; then
+              echo "Baseline comparison unavailable (baseline build failed or no packages were built)." >> bundle-summary.md
+            elif [ ! -s baseline.json ]; then
+              echo "Baseline comparison unavailable (baseline file is empty)." >> bundle-summary.md
+            else
+              echo "Baseline comparison unavailable (baseline contains no package data)." >> bundle-summary.md
+            fi
+          fi
+          echo ""
+          echo "📄 Bundle summary:"
+          cat bundle-summary.md
+        working-directory: ${{ github.workspace }}
+
+      - name: Post bundle size summary to PR
+        if: steps.bundle-analysis.outcome == 'success' || steps.bundle-analysis.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const summaryPath = path.join(process.env.GITHUB_WORKSPACE, 'bundle-summary.md');
+
+            if (fs.existsSync(summaryPath)) {
+              const summary = fs.readFileSync(summaryPath, 'utf-8');
+
+              // Find existing comment
+              const comments = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+              });
+
+              const existingComment = comments.data.find(
+                c => c.user.type === 'Bot' && c.body.includes('📦 Bundle Size Analysis')
+              );
+
+              const commentBody = summary + '\n\n<sub>Generated by [bundle-size](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) workflow</sub>';
+
+              if (existingComment) {
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: existingComment.id,
+                  body: commentBody,
+                });
+                console.log('✅ Updated PR comment');
+              } else {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  body: commentBody,
+                });
+                console.log('✅ Posted PR comment');
+              }
+            }

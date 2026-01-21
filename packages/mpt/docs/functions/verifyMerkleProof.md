@@ -6,7 +6,7 @@
 
 # Function: verifyMerkleProof()
 
-> **verifyMerkleProof**(`key`, `proof`, `opts?`): `Promise`\<`null` \| `Uint8Array`\<`ArrayBufferLike`\>\>
+> **verifyMerkleProof**(`key`, `proof`, `opts?`): `Promise`\<`Uint8Array`\<`ArrayBufferLike`\> \| `null`\>
 
 Defined in: [packages/mpt/src/proof/proof.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/proof/proof.ts#L17)
 
@@ -35,7 +35,7 @@ optional, the opts may include a custom hashing function to use with the trie fo
 
 ## Returns
 
-`Promise`\<`null` \| `Uint8Array`\<`ArrayBufferLike`\>\>
+`Promise`\<`Uint8Array`\<`ArrayBufferLike`\> \| `null`\>
 
 The value from the key, or null if valid proof of non-existence.
 

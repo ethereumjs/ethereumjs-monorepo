@@ -339,6 +339,16 @@ export class TxPool {
       )
     }
 
+    // EIP-7825: Transaction Gas Limit Cap
+    if (tx.common.isActivatedEIP(7825)) {
+      const maxGasLimit = tx.common.param('maxTransactionGasLimit')
+      if (tx.gasLimit > maxGasLimit) {
+        throw EthereumJSErrorWithoutCode(
+          `Transaction gas limit ${tx.gasLimit} exceeds the maximum allowed by EIP-7825 (${maxGasLimit})`,
+        )
+      }
+    }
+
     // Copy VM in order to not overwrite the state root of the VMExecution module which may be concurrently running blocks
     const vmCopy = await this.service.execution.vm.shallowCopy()
     // Set state root to latest block so that account balance is correct when doing balance check
@@ -370,6 +380,7 @@ export class TxPool {
    * @param isLocalTransaction if this is a local transaction (loosens some constraints) (default: false)
    */
   async add(tx: TypedTransaction, isLocalTransaction: boolean = false) {
+    // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for transaction lookups.
     const hash: UnprefixedHash = bytesToUnprefixedHex(tx.hash())
     const added = Date.now()
     const address: UnprefixedAddress = tx.getSenderAddress().toString().slice(2)
@@ -465,6 +476,7 @@ export class TxPool {
   getByHash(txHashes: Uint8Array[]): TypedTransaction[] {
     const found = []
     for (const txHash of txHashes) {
+      // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for transaction lookups.
       const txHashStr = bytesToUnprefixedHex(txHash)
       const handled = this.handled.get(txHashStr)
       if (!handled) continue
@@ -531,6 +543,7 @@ export class TxPool {
 
     const newHashes: Uint8Array[] = []
     for (const hash of txHashes) {
+      // Using deprecated bytesToUnprefixedHex for performance: used for string comparisons and Map keys.
       const inSent = this.knownByPeer
         .get(peer.id)!
         .filter((sentObject) => sentObject.hash === bytesToUnprefixedHex(hash)).length
@@ -616,6 +629,7 @@ export class TxPool {
       for (const peer of peers) {
         // This is used to avoid re-sending along pooledTxHashes
         // announcements/re-broadcasts
+        // Using deprecated bytesToUnprefixedHex for performance: used for array operations and string comparisons.
         const newHashes = this.addToKnownByPeer(hashes, peer)
         const newHashesHex = newHashes.map((txHash) => bytesToUnprefixedHex(txHash))
         const newTxs = txs.filter((tx) => newHashesHex.includes(bytesToUnprefixedHex(tx.hash())))
@@ -685,6 +699,7 @@ export class TxPool {
 
     const reqHashes = []
     for (const txHash of txHashes) {
+      // Using deprecated bytesToUnprefixedHex for performance: used as Set/Array keys for transaction tracking.
       const txHashStr: UnprefixedHash = bytesToUnprefixedHex(txHash)
       if (this.pending.includes(txHashStr) || this.handled.has(txHashStr)) {
         continue
@@ -696,6 +711,7 @@ export class TxPool {
 
     this.config.logger?.debug(`TxPool: received new tx hashes number=${reqHashes.length}`)
 
+    // Using deprecated bytesToUnprefixedHex for performance: used for array mapping operations.
     const reqHashesStr: UnprefixedHash[] = reqHashes.map(bytesToUnprefixedHex)
     this.pending = this.pending.concat(reqHashesStr)
     this.config.logger?.debug(
@@ -737,6 +753,7 @@ export class TxPool {
     if (!this.running) return
     for (const block of newBlocks) {
       for (const tx of block.transactions) {
+        // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for transaction removal.
         const txHash: UnprefixedHash = bytesToUnprefixedHex(tx.hash())
         this.removeByHash(txHash, tx)
       }
@@ -863,6 +880,7 @@ export class TxPool {
         }
       }
       if (oldFormatBlobTxs.length > 0) {
+        // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for transaction removal.
         oldFormatBlobTxs.map((tx) => this.removeByHash(bytesToUnprefixedHex(tx.hash()), tx))
         this.config.logger?.info(`removed old 4844 network format txs=${oldFormatBlobTxs.length}`)
       }

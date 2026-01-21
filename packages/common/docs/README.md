@@ -32,7 +32,6 @@
 - [StateManagerInterface](interfaces/StateManagerInterface.md)
 - [StorageDump](interfaces/StorageDump.md)
 - [StorageRange](interfaces/StorageRange.md)
-- [VerkleAccessWitnessInterface](interfaces/VerkleAccessWitnessInterface.md)
 
 ## Type Aliases
 
@@ -57,12 +56,8 @@
 - [ParamsDict](type-aliases/ParamsDict.md)
 - [Proof](type-aliases/Proof.md)
 - [RawBinaryTreeAccessedState](type-aliases/RawBinaryTreeAccessedState.md)
-- [RawVerkleAccessedState](type-aliases/RawVerkleAccessedState.md)
 - [StoragePair](type-aliases/StoragePair.md)
 - [StorageProof](type-aliases/StorageProof.md)
-- [VerkleAccessedState](type-aliases/VerkleAccessedState.md)
-- [VerkleAccessedStateType](type-aliases/VerkleAccessedStateType.md)
-- [VerkleAccessedStateWithAddress](type-aliases/VerkleAccessedStateWithAddress.md)
 
 ## Variables
 
@@ -75,10 +70,8 @@
 - [Hardfork](variables/Hardfork.md)
 - [Holesky](variables/Holesky.md)
 - [Hoodi](variables/Hoodi.md)
-- [Kaustinen6](variables/Kaustinen6.md)
 - [Mainnet](variables/Mainnet.md)
 - [Sepolia](variables/Sepolia.md)
-- [VerkleAccessedStateType](variables/VerkleAccessedStateType.md)
 
 ## Functions
 

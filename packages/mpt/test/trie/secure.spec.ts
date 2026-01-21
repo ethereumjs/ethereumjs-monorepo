@@ -6,8 +6,8 @@ import {
   hexToBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { sha256 } from 'ethereum-cryptography/sha256.js'
+import { sha256 } from '@noble/hashes/sha2.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 import { assert, describe, it } from 'vitest'
 
 import {
@@ -67,7 +67,7 @@ describe('SecureTrie proof', () => {
   it('read back data written with hashed key', async () => {
     const trie = new MerklePatriciaTrie({ useKeyHashing: true, db: new MapDB() })
     // skip key transformation if the key is already hashed like data received in snapsync
-    await trie.put(keccak256(utf8ToBytes('key1aa')), utf8ToBytes('01234'), true)
+    await trie.put(keccak_256(utf8ToBytes('key1aa')), utf8ToBytes('01234'), true)
 
     const val = await trie.get(utf8ToBytes('key1aa'))
     assert.strictEqual(bytesToUtf8(val!), '01234')

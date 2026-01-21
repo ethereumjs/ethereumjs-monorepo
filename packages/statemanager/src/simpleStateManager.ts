@@ -1,5 +1,5 @@
 import { Account, EthereumJSErrorWithoutCode, bytesToHex } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 
 import { OriginalStorageCache } from './cache/originalStorageCache.ts'
 import { modifyAccountFields } from './util.ts'
@@ -10,7 +10,7 @@ import type { SimpleStateManagerOpts } from './index.ts'
 
 /**
  * Simple and dependency-free state manager for basic state access use cases
- * where a merkle-patricia or verkle tree backed state manager is too heavy-weight.
+ * where a merkle-patricia or binary tree backed state manager is too heavy-weight.
  *
  * This state manager comes with the basic state access logic for
  * accounts, storage and code (put* and get* methods) as well as a simple
@@ -92,7 +92,7 @@ export class SimpleStateManager implements StateManagerInterface {
       await this.putAccount(address, new Account())
     }
     await this.modifyAccountFields(address, {
-      codeHash: (this.common?.customCrypto.keccak256 ?? keccak256)(value),
+      codeHash: (this.common?.customCrypto.keccak256 ?? keccak_256)(value),
     })
   }
 

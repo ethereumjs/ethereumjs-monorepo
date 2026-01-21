@@ -6,8 +6,8 @@ import {
   concatBytes,
   equalsBytes,
 } from '@ethereumjs/util'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 import debug from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { Fetcher } from './fetcher.ts'
 import { getInitFetcherDoneFlags } from './types.ts'
@@ -59,7 +59,7 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
     this.fetcherDoneFlags.byteCodeFetcher.count = BigInt(this.hashes.length)
     this.codeDB = this.stateManager['_getCodeDB']()
 
-    this.keccakFunction = this.config.chainCommon.customCrypto.keccak256 ?? keccak256
+    this.keccakFunction = this.config.chainCommon.customCrypto.keccak256 ?? keccak_256
 
     this.debug = debug('client:fetcher:bytecode')
     if (this.hashes.length > 0) {
@@ -136,6 +136,7 @@ export class ByteCodeFetcher extends Fetcher<JobTask, Uint8Array[], Uint8Array> 
         break
       } else {
         // match found
+        // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for code lookups.
         receivedCodes.set(bytesToUnprefixedHex(receivedHash), receivedCode)
       }
     }

@@ -609,7 +609,7 @@ export class Skeleton extends MetaDBManager {
       if (height >= (this.config.syncTargetHeight ?? BIGINT_0)) {
         this.config.syncTargetHeight = height
         this.lastSyncDate =
-          typeof latest.timestamp === 'bigint' && latest.timestamp > 0n
+          typeof latest.timestamp === 'bigint' && latest.timestamp > BIGINT_0
             ? Number(latest.timestamp) * 1000
             : Date.now()
 

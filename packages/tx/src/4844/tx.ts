@@ -21,6 +21,7 @@ import { TransactionType, isAccessList } from '../types.ts'
 import { accessListBytesToJSON, accessListJSONToBytes } from '../util/access.ts'
 import {
   getBaseJSON,
+  getCommon,
   sharedConstructor,
   validateNotArray,
   valueOverflowCheck,
@@ -55,6 +56,10 @@ export type NetworkWrapperType = (typeof NetworkWrapperType)[keyof typeof Networ
  *
  * - TransactionType: 3
  * - EIP: [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844)
+ *
+ * This tx type has two "modes": the plain canonical format only contains `blobVersionedHashes`.
+ * If blobs are passed in the tx automatically switches to "Network Wrapper" format and the
+ * `networkWrapperVersion` will be set or validated.
  */
 export class Blob4844Tx implements TransactionInterface<typeof TransactionType.BlobEIP4844> {
   public type = TransactionType.BlobEIP4844 // 4844 tx type
@@ -76,12 +81,21 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
   public readonly v?: bigint
   public readonly r?: bigint
   public readonly s?: bigint
-
   // End of Tx data part
+
+  /**
+   * This property is set if the tx is in "Network Wrapper" format.
+   *
+   * Possible values:
+   * - 0 (EIP-4844)
+   * - 1 (EIP-4844 + EIP-7594)
+   */
   networkWrapperVersion?: NetworkWrapperType
-  blobs?: PrefixedHexString[] // This property should only be populated when the transaction is in the "Network Wrapper" format
-  kzgCommitments?: PrefixedHexString[] // This property should only be populated when the transaction is in the "Network Wrapper" format
-  kzgProofs?: PrefixedHexString[] // This property should only be populated when the transaction is in the "Network Wrapper" format
+
+  // "Network Wrapper" Format
+  blobs?: PrefixedHexString[] // EIP-4844 + EIP-7594
+  kzgCommitments?: PrefixedHexString[] // EIP-4844 + EIP-7594
+  kzgProofs?: PrefixedHexString[] // EIP-4844: per-Blob proofs, EIP-7594: per-Cell proofs
 
   public readonly common!: Common
 
@@ -104,6 +118,37 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
    * varying data types.
    */
   constructor(txData: TxData, opts: TxOptions = {}) {
+    // Check networkWrapperVersion early, before sharedConstructor, to ensure proper error ordering
+    // This validation needs to happen before EIP-7825 gas limit checks
+    const common = getCommon(opts.common)
+    const networkWrapperVersion =
+      txData.networkWrapperVersion !== undefined
+        ? (bytesToInt(toBytes(txData.networkWrapperVersion)) as NetworkWrapperType)
+        : undefined
+
+    if (networkWrapperVersion !== undefined) {
+      switch (networkWrapperVersion) {
+        case NetworkWrapperType.EIP7594:
+          if (!common.isActivatedEIP(7594)) {
+            throw EthereumJSErrorWithoutCode(
+              'EIP-7594 not enabled on Common for EIP-7594 network wrapper version',
+            )
+          }
+          break
+
+        case NetworkWrapperType.EIP4844:
+          if (common.isActivatedEIP(7594)) {
+            throw EthereumJSErrorWithoutCode(
+              'EIP-7594 is active on Common for EIP-4844 network wrapper version',
+            )
+          }
+          break
+
+        default:
+          throw EthereumJSErrorWithoutCode(`Invalid networkWrapperVersion=${networkWrapperVersion}`)
+      }
+    }
+
     sharedConstructor(this, { ...txData, type: TransactionType.BlobEIP4844 }, opts)
     const {
       chainId,
@@ -187,12 +232,29 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
       }
     }
 
+    // "Old" limit (superseded by EIP-7594 starting with Osaka)
     const limitBlobsPerTx =
       this.common.param('maxBlobGasPerBlock') / this.common.param('blobGasPerBlob')
     if (this.blobVersionedHashes.length > limitBlobsPerTx) {
-      const msg = Legacy.errorMsg(this, `tx can contain at most ${limitBlobsPerTx} blobs`)
+      const msg = Legacy.errorMsg(
+        this,
+        `tx causes total blob gas of ${Number(this.common.param('blobGasPerBlob')) * this.blobVersionedHashes.length} to exceed maximum blob gas per block of ${this.common.param('maxBlobGasPerBlock')}`,
+      )
       throw EthereumJSErrorWithoutCode(msg)
-    } else if (this.blobVersionedHashes.length === 0) {
+    }
+
+    // EIP-7594 PeerDAS: Limit of 6 blobs per transaction
+    if (this.common.isActivatedEIP(7594)) {
+      const maxBlobsPerTx = this.common.param('maxBlobsPerTx')
+      if (this.blobVersionedHashes.length > maxBlobsPerTx) {
+        const msg = Legacy.errorMsg(
+          this,
+          `${this.blobVersionedHashes.length} blobs exceeds max ${maxBlobsPerTx} blobs per tx (EIP-7594)`,
+        )
+        throw EthereumJSErrorWithoutCode(msg)
+      }
+    }
+    if (this.blobVersionedHashes.length === 0) {
       const msg = Legacy.errorMsg(this, `tx should contain at least one blob`)
       throw EthereumJSErrorWithoutCode(msg)
     }
@@ -205,41 +267,45 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
       throw EthereumJSErrorWithoutCode(msg)
     }
 
+    // networkWrapperVersion was already validated earlier in the constructor
     this.networkWrapperVersion =
       txData.networkWrapperVersion !== undefined
         ? (bytesToInt(toBytes(txData.networkWrapperVersion)) as NetworkWrapperType)
         : undefined
 
-    if (this.networkWrapperVersion !== undefined) {
-      switch (this.networkWrapperVersion) {
-        case NetworkWrapperType.EIP7594:
-          if (!this.common.isActivatedEIP(7594)) {
-            throw EthereumJSErrorWithoutCode(
-              'EIP-7594 not enabled on Common for EIP7594 network wrapper version',
-            )
-          }
-          break
+    this.blobs = txData.blobs?.map((blob) => toType(blob, TypeOutput.PrefixedHexString))
 
-        case NetworkWrapperType.EIP4844:
-          if (this.common.isActivatedEIP(7594)) {
-            throw EthereumJSErrorWithoutCode(
-              'EIP-7594 is active on Common for EIP4844 network wrapper version',
-            )
-          }
-          break
-
-        default:
-          throw EthereumJSErrorWithoutCode(
-            `Invalid networkWrapperVersion=${this.networkWrapperVersion}`,
-          )
+    if (this.networkWrapperVersion === undefined && this.blobs !== undefined) {
+      if (this.common.isActivatedEIP(7594)) {
+        this.networkWrapperVersion = 1
+      } else {
+        this.networkWrapperVersion = 0
       }
     }
+    if (this.networkWrapperVersion !== undefined && this.blobs === undefined) {
+      const msg = Legacy.errorMsg(
+        this,
+        'tx is not allowed to be in network wrapper format if no blob list is provided',
+      )
+      throw EthereumJSErrorWithoutCode(msg)
+    }
 
-    this.blobs = txData.blobs?.map((blob) => toType(blob, TypeOutput.PrefixedHexString))
     this.kzgCommitments = txData.kzgCommitments?.map((commitment) =>
       toType(commitment, TypeOutput.PrefixedHexString),
     )
     this.kzgProofs = txData.kzgProofs?.map((proof) => toType(proof, TypeOutput.PrefixedHexString))
+
+    if (this.blobs !== undefined) {
+      if (this.kzgCommitments === undefined) {
+        const msg = Legacy.errorMsg(this, 'kzgCommitments are mandatory if blobs are provided')
+        throw EthereumJSErrorWithoutCode(msg)
+      }
+      if (this.kzgProofs === undefined) {
+        const msg = Legacy.errorMsg(this, 'kzgProofs are mandatory if blobs are provided')
+        throw EthereumJSErrorWithoutCode(msg)
+      }
+    }
+
     const freeze = opts?.freeze ?? true
     if (freeze) {
       Object.freeze(this)
@@ -288,14 +354,11 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
   getUpfrontCost(baseFee: bigint = BIGINT_0): bigint {
     return EIP1559.getUpfrontCost(this, baseFee)
   }
-
-  // TODO figure out if this is necessary
-  // NOTE/TODO: this should DEFINITELY be removed from the `TransactionInterface`, since 4844/7702 can NEVER create contracts
   /**
-   * If the tx's `to` is to the creation address
+   * Blob4844Tx cannot create contracts
    */
-  toCreationAddress(): boolean {
-    return Legacy.toCreationAddress(this)
+  toCreationAddress(): never {
+    throw EthereumJSErrorWithoutCode('Blob4844Tx cannot create contracts')
   }
 
   /**
@@ -395,6 +458,7 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
    * ```javascript
    * const serializedMessage = tx.getMessageToSign() // use this for the HW wallet input
    * ```
+   * @returns Serialized unsigned transaction payload
    */
   getMessageToSign(): Uint8Array {
     return EIP2718.serialize(this, this.raw().slice(0, 11))
@@ -406,6 +470,7 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
    *
    * Note: in contrast to the legacy tx the raw message format is already
    * serialized and doesn't need to be RLP encoded any more.
+   * @returns Keccak hash of the unsigned transaction payload
    */
   getHashedMessageToSign(): Uint8Array {
     return EIP2718.getHashedMessageToSign(this)
@@ -416,22 +481,32 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
    *
    * This method can only be used for signed txs (it throws otherwise).
    * Use {@link Blob4844Tx.getMessageToSign} to get a tx hash for the purpose of signing.
+   * @returns Hash of the serialized signed transaction
    */
   public hash(): Uint8Array {
     return Legacy.hash(this)
   }
 
+  /**
+   * Returns the hashed unsigned transaction that should be used for signature verification.
+   * @returns Hash of the unsigned transaction payload
+   */
   getMessageToVerifySignature(): Uint8Array {
     return this.getHashedMessageToSign()
   }
 
   /**
    * Returns the public key of the sender
+   * @returns Sender public key
    */
   public getSenderPublicKey(): Uint8Array {
     return Legacy.getSenderPublicKey(this)
   }
 
+  /**
+   * Produces a JSON representation compliant with the execution API.
+   * @returns JSON encoding of the transaction
+   */
   toJSON(): JSONTx {
     const accessListJSON = accessListBytesToJSON(this.accessList)
     const baseJSON = getBaseJSON(this)
@@ -447,6 +522,13 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
     }
   }
 
+  /**
+   * Adds signature values (and optional network wrapper fields) and returns a new transaction.
+   * @param v - Recovery parameter
+   * @param r - Signature `r` value
+   * @param s - Signature `s` value
+   * @returns New `Blob4844Tx` instance containing the signature
+   */
   addSignature(v: bigint, r: Uint8Array | bigint, s: Uint8Array | bigint): Blob4844Tx {
     r = toBytes(r)
     s = toBytes(s)
@@ -477,26 +559,51 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
     )
   }
 
+  /**
+   * Returns validation errors for this transaction, if any.
+   * @returns Array of validation error messages
+   */
   getValidationErrors(): string[] {
     return Legacy.getValidationErrors(this)
   }
 
+  /**
+   * @returns true if the transaction has no validation errors
+   */
   isValid(): boolean {
     return Legacy.isValid(this)
   }
 
+  /**
+   * Verifies whether the attached signature is valid.
+   * @returns true if signature verification succeeds
+   */
   verifySignature(): boolean {
     return Legacy.verifySignature(this)
   }
 
+  /**
+   * Returns the recovered sender address.
+   * @returns Sender {@link Address}
+   */
   getSenderAddress(): Address {
     return Legacy.getSenderAddress(this)
   }
 
+  /**
+   * Signs the transaction with the provided private key and returns the signed instance.
+   * @param privateKey - 32-byte private key used for signing
+   * @param extraEntropy - Optional entropy passed to the signing routine
+   * @returns Newly signed transaction
+   */
   sign(privateKey: Uint8Array, extraEntropy: Uint8Array | boolean = false): Blob4844Tx {
     return Legacy.sign(this, privateKey, extraEntropy) as Blob4844Tx
   }
 
+  /**
+   * Indicates whether the transaction already carries signature values.
+   * @returns true if signature parts are present
+   */
   public isSigned(): boolean {
     const { v, r, s } = this
     if (v === undefined || r === undefined || s === undefined) {
@@ -508,6 +615,7 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
 
   /**
    * Return a compact error string representation of the object
+   * @returns Human-readable error summary
    */
   public errorStr() {
     let errorStr = Legacy.getSharedErrorPostfix(this)

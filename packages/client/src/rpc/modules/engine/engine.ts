@@ -467,6 +467,7 @@ export class Engine {
       }
     } catch {
       // Stash the block for a potential forced forkchoice update to it later.
+      // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for block lookups.
       this.remoteBlocks.set(bytesToUnprefixedHex(headBlock.hash()), headBlock)
 
       const optimisticLookup = !(await this.skeleton.setHead(headBlock, false))
@@ -559,6 +560,7 @@ export class Engine {
       return response
     }
 
+    // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for block lookups.
     this.remoteBlocks.set(bytesToUnprefixedHex(headBlock.hash()), headBlock)
 
     // we should check if the block exists executed in remoteBlocks or in chain as a check since stateroot
@@ -629,6 +631,7 @@ export class Engine {
         lastBlock = block
         const bHash = block.hash()
 
+        // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for block lookups.
         const isBlockExecuted =
           (this.executedBlocks.get(bytesToUnprefixedHex(bHash)) ??
             (await validExecutedChainBlock(bHash, this.chain))) !== null
@@ -678,6 +681,7 @@ export class Engine {
             const response = { status, latestValidHash: null, validationError: null }
             return response
           } else {
+            // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for block lookups.
             this.executedBlocks.set(bytesToUnprefixedHex(block.hash()), block)
           }
         }
@@ -1024,19 +1028,22 @@ export class Engine {
       }
 
       // if the execution is stalled because it hit an invalid block which we need to hop over
-      if (
-        this.execution.chainStatus?.status === ExecStatus.IGNORE_INVALID &&
-        this.config.ignoreStatelessInvalidExecs === true
-      ) {
-        // jump the vm head to failing block so that next block can be executed
-        this.config.logger?.debug(
-          `Jumping the stalled vmHead forward to hash=${this.execution.chainStatus.hash} height=${this.execution.chainStatus.height} to continue the execution`,
-        )
-        await this.execution.jumpVmHead(
-          this.execution.chainStatus.hash,
-          this.execution.chainStatus.height,
-        )
-      }
+      // Verkle functionality removed
+      // if (
+      //   this.execution.chainStatus?.status === ExecStatus.IGNORE_INVALID &&
+      //   this.config.ignoreStatelessInvalidExecs === true
+      // ) {
+      // Verkle functionality removed - entire block commented out
+      // if (false) {
+      //   // jump the vm head to failing block so that next block can be executed
+      //   this.config.logger?.debug(
+      //     `Jumping the stalled vmHead forward to hash=${this.execution.chainStatus.hash} height=${this.execution.chainStatus.height} to continue the execution`,
+      //   )
+      //   await this.execution.jumpVmHead(
+      //     this.execution.chainStatus.hash,
+      //     this.execution.chainStatus.height,
+      //   )
+      // }
 
       // Trigger the statebuild here since we have finalized and safeblock available
       void this.service.buildHeadState()
@@ -1334,6 +1341,7 @@ export class Engine {
         throw Error(`runWithoutSetHead did not execute the block for payload=${payloadId}`)
       }
 
+      // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for block lookups.
       this.executedBlocks.set(bytesToUnprefixedHex(block.hash()), block)
       /**
        * Creates the payload in ExecutionPayloadV1 format to be returned

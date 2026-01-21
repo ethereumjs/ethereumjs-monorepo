@@ -29,7 +29,7 @@ import { assert, describe, it } from 'vitest'
 
 import { createVM, runTx } from '../../src/index.ts'
 
-import { goerliChainConfig } from '@ethereumjs/testdata'
+import { SIGNER_A, goerliChainConfig } from '@ethereumjs/testdata'
 import { createAccountWithDefaults, getTransaction, setBalance } from './utils.ts'
 
 import type { FeeMarketEIP1559TxData, LegacyTx, TypedTxData } from '@ethereumjs/tx'
@@ -182,22 +182,18 @@ describe('runTx() -> successful API parameter usage', async () => {
     for (const txType of TRANSACTION_TYPES) {
       const vm = await createVM({ common })
 
-      const privateKey = hexToBytes(
-        '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-      )
-      const address = createAddressFromPrivateKey(privateKey)
       const initialBalance = BigInt(10) ** BigInt(18)
 
-      const account = await vm.stateManager.getAccount(address)
+      const account = await vm.stateManager.getAccount(SIGNER_A.address)
       await vm.stateManager.putAccount(
-        address,
+        SIGNER_A.address,
         createAccount({ ...account, balance: initialBalance }),
       )
 
       const transferCost = 21000
       const unsignedTx = createTx(
         {
-          to: address,
+          to: SIGNER_A.address,
           gasLimit: transferCost,
           gasPrice: 100,
           nonce: 0,
@@ -207,7 +203,7 @@ describe('runTx() -> successful API parameter usage', async () => {
         } as TypedTxData,
         { common },
       )
-      const tx = unsignedTx.sign(privateKey)
+      const tx = unsignedTx.sign(SIGNER_A.privateKey)
 
       const coinbase = hexToBytes('0x00000000000000000000000000000000000000ff')
       const block = createBlock(
@@ -436,9 +432,7 @@ describe('runTx() -> runtime behavior', () => {
     for (const txType of TRANSACTION_TYPES) {
       const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
       const vm = await createVM({ common })
-      const privateKey = hexToBytes(
-        '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-      )
+      const privateKey = SIGNER_A.privateKey
       /* Code which is deployed here:
         PUSH1 01
         PUSH1 00
@@ -741,22 +735,20 @@ describe('runTx() -> RunTxOptions', () => {
 it('runTx() -> skipBalance behavior', async () => {
   const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
   const vm = await createVM({ common })
-  const senderKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
-  const sender = createAddressFromPrivateKey(senderKey)
 
   for (const balance of [undefined, BigInt(5)]) {
     if (balance !== undefined) {
-      await vm.stateManager.modifyAccountFields(sender, { nonce: BigInt(0), balance })
+      await vm.stateManager.modifyAccountFields(SIGNER_A.address, { nonce: BigInt(0), balance })
     }
     const tx = createLegacyTx({
       gasLimit: BigInt(21000),
       value: BigInt(1),
       to: createZeroAddress(),
-    }).sign(senderKey)
+    }).sign(SIGNER_A.privateKey)
 
     const res = await runTx(vm, { tx, skipBalance: true, skipHardForkValidation: true })
     assert.isTrue(true, 'runTx should not throw with no balance and skipBalance')
-    const afterTxBalance = (await vm.stateManager.getAccount(sender))!.balance
+    const afterTxBalance = (await vm.stateManager.getAccount(SIGNER_A.address))!.balance
     assert.strictEqual(
       afterTxBalance,
       balance !== undefined ? balance - 1n : BigInt(0),

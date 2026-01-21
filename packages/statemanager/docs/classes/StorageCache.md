@@ -78,7 +78,7 @@ before.
 
 ### \_lruCache
 
-> **\_lruCache**: `undefined` \| `LRUCache`\<`string`, `StorageCacheMap`, `unknown`\>
+> **\_lruCache**: `LRUCache`\<`string`, `StorageCacheMap`, `unknown`\> \| `undefined`
 
 Defined in: [cache/storage.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/storage.ts#L21)
 
@@ -86,7 +86,7 @@ Defined in: [cache/storage.ts:21](https://github.com/ethereumjs/ethereumjs-monor
 
 ### \_orderedMapCache
 
-> **\_orderedMapCache**: `undefined` \| `OrderedMap`\<`string`, `StorageCacheMap`\>
+> **\_orderedMapCache**: `OrderedMap`\<`string`, `StorageCacheMap`\> \| `undefined`
 
 Defined in: [cache/storage.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/storage.ts#L22)
 
@@ -239,7 +239,7 @@ Storage key
 
 ### dump()
 
-> **dump**(`address`): `undefined` \| `StorageCacheMap`
+> **dump**(`address`): `StorageCacheMap` \| `undefined`
 
 Defined in: [cache/storage.ts:359](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/storage.ts#L359)
 
@@ -255,7 +255,7 @@ The address of the `account` to return storage for
 
 #### Returns
 
-`undefined` \| `StorageCacheMap`
+`StorageCacheMap` \| `undefined`
 
 - The storage values for the `account` or undefined if the `account` is not in the cache
 
@@ -263,7 +263,7 @@ The address of the `account` to return storage for
 
 ### flush()
 
-> **flush**(): \[`string`, `string`, `undefined` \| `Uint8Array`\<`ArrayBufferLike`\>\][]
+> **flush**(): \[`string`, `string`, `Uint8Array`\<`ArrayBufferLike`\> \| `undefined`\][]
 
 Defined in: [cache/storage.ts:188](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/storage.ts#L188)
 
@@ -272,13 +272,13 @@ or deleted and resetting the diff cache (at checkpoint height).
 
 #### Returns
 
-\[`string`, `string`, `undefined` \| `Uint8Array`\<`ArrayBufferLike`\>\][]
+\[`string`, `string`, `Uint8Array`\<`ArrayBufferLike`\> \| `undefined`\][]
 
 ***
 
 ### get()
 
-> **get**(`address`, `key`): `undefined` \| `Uint8Array`\<`ArrayBufferLike`\>
+> **get**(`address`, `key`): `Uint8Array`\<`ArrayBufferLike`\> \| `undefined`
 
 Defined in: [cache/storage.ts:120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/storage.ts#L120)
 
@@ -302,7 +302,7 @@ Storage key
 
 #### Returns
 
-`undefined` \| `Uint8Array`\<`ArrayBufferLike`\>
+`Uint8Array`\<`ArrayBufferLike`\> \| `undefined`
 
 Storage value or undefined
 

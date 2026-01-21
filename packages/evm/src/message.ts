@@ -1,9 +1,6 @@
 import { BIGINT_0, EthereumJSErrorWithoutCode, createZeroAddress } from '@ethereumjs/util'
 
-import type {
-  BinaryTreeAccessWitnessInterface,
-  VerkleAccessWitnessInterface,
-} from '@ethereumjs/common'
+import type { BinaryTreeAccessWitnessInterface } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import type { PrecompileFunc } from './precompiles/index.ts'
 import type { EOFEnv } from './types.ts'
@@ -43,7 +40,7 @@ interface MessageOpts {
   delegatecall?: boolean
   gasRefund?: bigint
   blobVersionedHashes?: PrefixedHexString[]
-  accessWitness?: VerkleAccessWitnessInterface | BinaryTreeAccessWitnessInterface
+  accessWitness?: BinaryTreeAccessWitnessInterface
 }
 
 export class Message {
@@ -76,7 +73,7 @@ export class Message {
    * List of versioned hashes if message is a blob transaction in the outer VM
    */
   blobVersionedHashes?: PrefixedHexString[]
-  accessWitness?: VerkleAccessWitnessInterface | BinaryTreeAccessWitnessInterface
+  accessWitness?: BinaryTreeAccessWitnessInterface
 
   constructor(opts: MessageOpts) {
     this.to = opts.to

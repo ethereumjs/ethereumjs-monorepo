@@ -22,7 +22,6 @@ COPY packages/rlp/dist packages/rlp/dist
 COPY packages/statemanager/dist packages/statemanager/dist
 COPY packages/tx/dist packages/tx/dist
 COPY packages/util/dist packages/util/dist
-COPY packages/verkle/dist packages/verkle/dist
 COPY packages/vm/dist packages/vm/dist
 COPY packages/wallet/dist packages/wallet/dist
 
@@ -42,7 +41,6 @@ COPY packages/rlp/package.json packages/rlp/package.json
 COPY packages/statemanager/package.json packages/statemanager/package.json
 COPY packages/tx/package.json packages/tx/package.json
 COPY packages/util/package.json packages/util/package.json
-COPY packages/verkle/package.json packages/verkle/package.json
 COPY packages/vm/package.json packages/vm/package.json
 COPY packages/wallet/package.json packages/wallet/package.json
 

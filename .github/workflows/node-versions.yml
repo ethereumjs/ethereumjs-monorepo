@@ -6,10 +6,11 @@ on:
 
 jobs:
   tests:
+    if: github.repository == 'ethereumjs/ethereumjs-monorepo'
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [20, 22]
+        node-version: [20, 22, 24]
       fail-fast: false
     steps:
       - uses: actions/checkout@v5
@@ -17,7 +18,7 @@ jobs:
           submodules: recursive
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'

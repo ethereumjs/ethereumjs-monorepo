@@ -10,7 +10,7 @@
 
 Defined in: [packages/devp2p/src/protocol/snap.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/snap.ts#L13)
 
-## Type declaration
+## Type Declaration
 
 ### ACCOUNT\_RANGE
 

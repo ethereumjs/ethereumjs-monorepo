@@ -5,6 +5,8 @@ import { assert, describe, it } from 'vitest'
 
 import { createVM, runTx } from '../../../src/index.ts'
 
+import type { InterpreterStep } from '@ethereumjs/evm'
+import { SIGNER_A } from '@ethereumjs/testdata'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
@@ -13,8 +15,6 @@ interface Test {
   contracts: { code: string; address: Address }[]
   transactions: TypedTransaction[]
 }
-
-const senderKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
 
 describe('EIP 1153: transient storage', () => {
   const initialGas = BigInt(0xffffffffff)
@@ -25,7 +25,7 @@ describe('EIP 1153: transient storage', () => {
     let currentGas = initialGas
     const vm = await createVM({ common })
 
-    vm.evm.events!.on('step', function (step, resolve) {
+    const handler = function (step: InterpreterStep) {
       const gasUsed = currentGas - step.gasLeft
       currentGas = step.gasLeft
 
@@ -52,14 +52,14 @@ describe('EIP 1153: transient storage', () => {
         )
       }
       i++
-      resolve?.()
-    })
+    }
+    vm.evm.events!.on('step', handler)
 
     for (const { code, address } of test.contracts) {
       await vm.stateManager.putCode(address, hexToBytes(code as PrefixedHexString))
     }
 
-    const fromAddress = new Address(privateToAddress(senderKey))
+    const fromAddress = new Address(privateToAddress(SIGNER_A.privateKey))
     await vm.stateManager.putAccount(fromAddress, new Account(BigInt(0), BigInt(0xfffffffff)))
     const results = []
     for (const tx of test.transactions) {
@@ -67,6 +67,7 @@ describe('EIP 1153: transient storage', () => {
       results.push(result)
     }
 
+    vm.evm.events!.removeListener('step', handler)
     return results
   }
 
@@ -80,7 +81,7 @@ describe('EIP 1153: transient storage', () => {
       gasLimit: BigInt(21000 + 9000),
       to: address,
       value: BigInt(1),
-    }).sign(senderKey)
+    }).sign(SIGNER_A.privateKey)
 
     const test = {
       contracts: [{ address, code }],
@@ -123,12 +124,12 @@ describe('EIP 1153: transient storage', () => {
           gasLimit: BigInt(15000000),
           to: address,
           data: new Uint8Array(32),
-        }).sign(senderKey),
+        }).sign(SIGNER_A.privateKey),
         createLegacyTx({
           nonce: 1,
           gasLimit: BigInt(15000000),
           to: address,
-        }).sign(senderKey),
+        }).sign(SIGNER_A.privateKey),
       ],
       steps: [
         // first tx
@@ -193,7 +194,7 @@ describe('EIP 1153: transient storage', () => {
       to: callingAddress,
     })
 
-    const tx = unsignedTx.sign(senderKey)
+    const tx = unsignedTx.sign(SIGNER_A.privateKey)
 
     const test = {
       contracts: [

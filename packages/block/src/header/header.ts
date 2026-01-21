@@ -20,7 +20,7 @@ import {
   hexToBytes,
   toType,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 
 import {
   CLIQUE_EXTRA_SEAL,
@@ -63,6 +63,7 @@ export class BlockHeader {
   public readonly excessBlobGas?: bigint
   public readonly parentBeaconBlockRoot?: Uint8Array
   public readonly requestsHash?: Uint8Array
+  public readonly blockAccessListHash?: Uint8Array
 
   public readonly common: Common
 
@@ -102,7 +103,7 @@ export class BlockHeader {
     }
     this.common.updateParams(opts.params ?? paramsBlock)
 
-    this.keccakFunction = this.common.customCrypto.keccak256 ?? keccak256
+    this.keccakFunction = this.common.customCrypto.keccak256 ?? keccak_256
 
     const skipValidateConsensusFormat = opts.skipConsensusFormatValidation ?? false
 
@@ -166,6 +167,7 @@ export class BlockHeader {
       // Note: as of devnet-4 we stub the null SHA256 hash, but for devnet5 this will actually
       // be the correct hash for empty requests.
       requestsHash: this.common.isActivatedEIP(7685) ? SHA256_NULL : undefined,
+      blockAccessListHash: this.common.isActivatedEIP(7928) ? new Uint8Array(32) : undefined,
     }
 
     const baseFeePerGas =
@@ -181,6 +183,9 @@ export class BlockHeader {
       hardforkDefaults.parentBeaconBlockRoot
     const requestsHash =
       toType(headerData.requestsHash, TypeOutput.Uint8Array) ?? hardforkDefaults.requestsHash
+    const blockAccessListHash =
+      toType(headerData.blockAccessListHash, TypeOutput.Uint8Array) ??
+      hardforkDefaults.blockAccessListHash
 
     if (!this.common.isActivatedEIP(1559) && baseFeePerGas !== undefined) {
       throw EthereumJSErrorWithoutCode(
@@ -218,6 +223,12 @@ export class BlockHeader {
       throw EthereumJSErrorWithoutCode('requestsHash can only be provided with EIP 7685 activated')
     }
 
+    if (!this.common.isActivatedEIP(7928) && blockAccessListHash !== undefined) {
+      throw EthereumJSErrorWithoutCode(
+        'blockAccessListHash can only be provided with EIP 7928 activated',
+      )
+    }
+
     this.parentHash = parentHash
     this.uncleHash = uncleHash
     this.coinbase = coinbase
@@ -239,6 +250,7 @@ export class BlockHeader {
     this.excessBlobGas = excessBlobGas
     this.parentBeaconBlockRoot = parentBeaconBlockRoot
     this.requestsHash = requestsHash
+    this.blockAccessListHash = blockAccessListHash
     this._genericFormatValidation()
     this._validateDAOExtraData()
 
@@ -356,6 +368,19 @@ export class BlockHeader {
     if (this.common.isActivatedEIP(7685)) {
       if (this.requestsHash === undefined) {
         const msg = this._errorMsg('EIP7685 block has no requestsHash field')
+        throw EthereumJSErrorWithoutCode(msg)
+      }
+    }
+
+    if (this.common.isActivatedEIP(7928)) {
+      if (this.blockAccessListHash === undefined) {
+        const msg = this._errorMsg('EIP7928 block has no blockAccessListHash field')
+        throw EthereumJSErrorWithoutCode(msg)
+      }
+      if (this.blockAccessListHash?.length !== 32) {
+        const msg = this._errorMsg(
+          `blockAccessListHash must be 32 bytes, received ${this.blockAccessListHash!.length} bytes`,
+        )
         throw EthereumJSErrorWithoutCode(msg)
       }
     }
@@ -560,15 +585,32 @@ export class BlockHeader {
    * Calculates the excess blob gas for next (hopefully) post EIP 4844 block.
    */
   public calcNextExcessBlobGas(childCommon: Common): bigint {
-    // The validation of the fields and 4844 activation is already taken care in BlockHeader constructor
-    const targetGasConsumed = (this.excessBlobGas ?? BIGINT_0) + (this.blobGasUsed ?? BIGINT_0)
-    const targetBlobGasPerBlock = childCommon.param('targetBlobGasPerBlock')
+    const excessBlobGas = this.excessBlobGas ?? BIGINT_0
+    const blobGasUsed = this.blobGasUsed ?? BIGINT_0
 
-    if (targetGasConsumed <= targetBlobGasPerBlock) {
+    const { targetBlobGasPerBlock: targetPerBlock, maxBlobGasPerBlock: maxPerBlock } =
+      childCommon.getBlobGasSchedule()
+
+    // Early exit (strictly < per spec)
+    if (excessBlobGas + blobGasUsed < targetPerBlock) {
       return BIGINT_0
-    } else {
-      return targetGasConsumed - targetBlobGasPerBlock
     }
+
+    // EIP-7918 reserve price check
+    if (childCommon.isActivatedEIP(7918)) {
+      const blobBaseCost = childCommon.param('blobBaseCost')
+      const gasPerBlob = childCommon.param('blobGasPerBlob')
+      const baseFee = this.baseFeePerGas ?? BIGINT_0
+      const blobFee = computeBlobGasPrice(excessBlobGas, childCommon)
+
+      if (blobBaseCost * baseFee > gasPerBlob * blobFee) {
+        const increase = (blobGasUsed * (maxPerBlock - targetPerBlock)) / maxPerBlock
+        return excessBlobGas + increase
+      }
+    }
+
+    // Original 4844 path
+    return excessBlobGas + blobGasUsed - targetPerBlock
   }
 
   /**
@@ -609,13 +651,6 @@ export class BlockHeader {
       rawItems.push(this.withdrawalsRoot!)
     }
 
-    // in kaustinen 2 verkle is scheduled after withdrawals, will eventually be post deneb hopefully
-    if (this.common.isActivatedEIP(6800)) {
-      // execution witness is not mandatory part of the the block so nothing to push here
-      // but keep this comment segment for clarity regarding the same and move it according as per the
-      // HF sequence eventually planned
-    }
-
     if (this.common.isActivatedEIP(4844)) {
       rawItems.push(bigIntToUnpaddedBytes(this.blobGasUsed!))
       rawItems.push(bigIntToUnpaddedBytes(this.excessBlobGas!))
@@ -635,9 +670,7 @@ export class BlockHeader {
    */
   hash(): Uint8Array {
     if (Object.isFrozen(this)) {
-      if (!this.cache.hash) {
-        this.cache.hash = this.keccakFunction(RLP.encode(this.raw())) as Uint8Array
-      }
+      this.cache.hash ??= this.keccakFunction(RLP.encode(this.raw())) as Uint8Array
       return this.cache.hash
     }
     return this.keccakFunction(RLP.encode(this.raw()))
@@ -767,6 +800,9 @@ export class BlockHeader {
     }
     if (this.common.isActivatedEIP(7685)) {
       JSONDict.requestsHash = bytesToHex(this.requestsHash!)
+    }
+    if (this.common.isActivatedEIP(7928)) {
+      JSONDict.blockAccessListHash = bytesToHex(this.blockAccessListHash!)
     }
     return JSONDict
   }

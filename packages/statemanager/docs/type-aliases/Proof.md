@@ -8,7 +8,7 @@
 
 > **Proof** = `object`
 
-Defined in: [types.ts:110](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L110)
+Defined in: [types.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L95)
 
 ## Properties
 
@@ -16,7 +16,7 @@ Defined in: [types.ts:110](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **accountProof**: `PrefixedHexString`[]
 
-Defined in: [types.ts:116](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L116)
+Defined in: [types.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L101)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: [types.ts:116](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **address**: `PrefixedHexString`
 
-Defined in: [types.ts:111](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L111)
+Defined in: [types.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L96)
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: [types.ts:111](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **balance**: `PrefixedHexString`
 
-Defined in: [types.ts:112](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L112)
+Defined in: [types.ts:97](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L97)
 
 ***
 
@@ -40,7 +40,7 @@ Defined in: [types.ts:112](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **codeHash**: `PrefixedHexString`
 
-Defined in: [types.ts:113](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L113)
+Defined in: [types.ts:98](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L98)
 
 ***
 
@@ -48,7 +48,7 @@ Defined in: [types.ts:113](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **nonce**: `PrefixedHexString`
 
-Defined in: [types.ts:114](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L114)
+Defined in: [types.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L99)
 
 ***
 
@@ -56,7 +56,7 @@ Defined in: [types.ts:114](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **storageHash**: `PrefixedHexString`
 
-Defined in: [types.ts:115](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L115)
+Defined in: [types.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L100)
 
 ***
 
@@ -64,4 +64,4 @@ Defined in: [types.ts:115](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **storageProof**: [`StorageProof`](StorageProof.md)[]
 
-Defined in: [types.ts:117](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L117)
+Defined in: [types.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L102)

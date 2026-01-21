@@ -17,8 +17,8 @@ import {
   unprefixedHexToBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 import debugDefault from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { OriginalStorageCache } from './cache/index.ts'
 import type { Caches, MerkleStateManagerOpts } from './index.ts'
@@ -104,7 +104,7 @@ export class MerkleStateManager implements StateManagerInterface {
     this._trie = opts.trie ?? new MerklePatriciaTrie({ useKeyHashing: true, common: this.common })
     this._storageTries = {}
 
-    this.keccakFunction = opts.common?.customCrypto.keccak256 ?? keccak256
+    this.keccakFunction = opts.common?.customCrypto.keccak256 ?? keccak_256
 
     this.originalStorageCache = new OriginalStorageCache(this.getStorage.bind(this))
 
@@ -273,6 +273,7 @@ export class MerkleStateManager implements StateManagerInterface {
     // use hashed key for lookup from storage cache
     const addressBytes: Uint8Array =
       addressOrHash instanceof Uint8Array ? addressOrHash : this.keccakFunction(addressOrHash.bytes)
+    // Using deprecated bytesToUnprefixedHex for performance: used as object keys for trie cache lookups.
     const addressHex: string = bytesToUnprefixedHex(addressBytes)
     let storageTrie = this._storageTries[addressHex]
     if (storageTrie === undefined) {
@@ -354,6 +355,7 @@ export class MerkleStateManager implements StateManagerInterface {
 
       modifyTrie(storageTrie, async () => {
         // update storage cache
+        // Using deprecated bytesToUnprefixedHex for performance: used as object keys for trie cache lookups.
         const addressHex = bytesToUnprefixedHex(address.bytes)
         this._storageTries[addressHex] = storageTrie
 

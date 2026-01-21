@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 10.1.0 - 2025-11-06
+
+- Update `kzg-wasm` dependency, PR [#4169](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4169)
+- Integrate new `kzg-wasm` library version / Sanity & API Checks, PR [#4153](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4153)
+- Explicitly cast result type to Uint8Array<ArrayBuffer> to satisfy ESLint, PR [#4108](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4108)
+
 ## 10.0.0 - 2025-04-29
 
 ### Overview

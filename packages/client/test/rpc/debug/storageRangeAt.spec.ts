@@ -8,11 +8,11 @@ import {
   setLengthLeft,
 } from '@ethereumjs/util'
 import { buildBlock } from '@ethereumjs/vm'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 import { assert, beforeEach, describe, it } from 'vitest'
 
+import { debugData } from '@ethereumjs/testdata'
 import { INTERNAL_ERROR, INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
-import { debugData } from '../../testdata/geth-genesis/debug.ts'
 import { dummy, getRPCClient, setupChain } from '../helpers.ts'
 
 import type { Block } from '@ethereumjs/block'
@@ -178,21 +178,21 @@ describe(method, () => {
 
     const storageRange: StorageRange = res.result
 
-    const firstVariableHash = keccak256(setLengthLeft(hexToBytes('0x00'), 32))
+    const firstVariableHash = keccak_256(setLengthLeft(hexToBytes('0x00'), 32))
     assert.strictEqual(
       storageRange.storage[bytesToHex(firstVariableHash)].value,
       '0x43',
       'First variable correctly included.',
     )
 
-    const secondVariableHash = keccak256(setLengthLeft(hexToBytes('0x01'), 32))
+    const secondVariableHash = keccak_256(setLengthLeft(hexToBytes('0x01'), 32))
     assert.strictEqual(
       storageRange.storage[bytesToHex(secondVariableHash)].value,
       '0x01',
       'Second variable correctly included.',
     )
 
-    const thirdVariableHash = keccak256(setLengthLeft(hexToBytes('0x02'), 32))
+    const thirdVariableHash = keccak_256(setLengthLeft(hexToBytes('0x02'), 32))
     assert.strictEqual(
       storageRange.storage[bytesToHex(thirdVariableHash)].value,
       '0x02',
@@ -222,7 +222,7 @@ describe(method, () => {
 
     const storageRange: StorageRange = res.result
 
-    const hashedKey = keccak256(setLengthLeft(hexToBytes('0x00'), 32))
+    const hashedKey = keccak_256(setLengthLeft(hexToBytes('0x00'), 32))
     assert.strictEqual(
       storageRange.storage[bytesToHex(hashedKey)].value,
       '0x42',
@@ -282,7 +282,7 @@ describe(method, () => {
     createdAddress,
   }) => {
     // The lowest hashed key in our example contract corresponds to storage slot 0x00.
-    const smallestHashedKey = keccak256(setLengthLeft(hexToBytes('0x00'), 32))
+    const smallestHashedKey = keccak_256(setLengthLeft(hexToBytes('0x00'), 32))
 
     const res = await rpc.request(method, [
       bytesToHex(block.hash()),
@@ -339,7 +339,7 @@ describe(method, () => {
     ])
 
     // The largest hashed key in our example contract corresponds to storage slot 0x01.
-    const largestHashedKey = bytesToHex(keccak256(setLengthLeft(hexToBytes('0x01'), 32)))
+    const largestHashedKey = bytesToHex(keccak_256(setLengthLeft(hexToBytes('0x01'), 32)))
 
     const storageRange: StorageRange = res.result
 
