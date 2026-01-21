@@ -168,10 +168,16 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     debug(`block checkpoint`)
   }
 
+  let blockLevelAccessList: BlockLevelAccessList | undefined
+  if (vm.common.isActivatedEIP(7928)) {
+    blockLevelAccessList = createBlockLevelAccessList()
+    // Pre-execution system contracts
+    await trackSystemContracts(vm, blockLevelAccessList, block)
+  }
   let result: ApplyBlockResult
 
   try {
-    result = await applyBlock(vm, block, opts)
+    result = await applyBlock(vm, block, opts, blockLevelAccessList)
     if (vm.DEBUG) {
       debug(
         `Received block results gasUsed=${result.gasUsed} bloom=${short(result.bloom.bitvector)} (${
@@ -192,7 +198,10 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     }
     throw err
   }
-
+  if (blockLevelAccessList) {
+    // Post-execution system contracts
+    await trackSystemContracts(vm, blockLevelAccessList, block, block.transactions.length + 1)
+  }
   let requestsHash: Uint8Array | undefined
   let requests: CLRequest<CLRequestType>[] | undefined
   if (block.common.isActivatedEIP(7685)) {
@@ -323,11 +332,6 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     console.timeEnd(withdrawalsRewardsCommitLabel)
   }
 
-  let blockLevelAccessList: BlockLevelAccessList | undefined
-  if (vm.common.isActivatedEIP(7928)) {
-    blockLevelAccessList = createBlockLevelAccessList()
-  }
-
   const results: RunBlockResult = {
     receipts: result.receipts,
     logsBloom: result.bloom.bitvector,
@@ -384,7 +388,12 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
  * @param {Block} block
  * @param {RunBlockOpts} opts
  */
-async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<ApplyBlockResult> {
+async function applyBlock(
+  vm: VM,
+  block: Block,
+  opts: RunBlockOpts,
+  blockLevelAccessList?: BlockLevelAccessList,
+): Promise<ApplyBlockResult> {
   // Validate block
   if (opts.skipBlockValidation !== true) {
     if (block.header.gasLimit >= BigInt('0x8000000000000000')) {
@@ -435,7 +444,11 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
     debug(`Apply transactions`)
   }
 
-  const blockResults = await applyTransactions(vm, block, opts)
+  const blockResults = await applyTransactions(vm, block, opts, blockLevelAccessList)
+
+  if (blockLevelAccessList) {
+    await collectWithdrawalAccesses(vm, blockLevelAccessList, block)
+  }
 
   if (enableProfiler) {
     // eslint-disable-next-line no-console
@@ -590,7 +603,12 @@ export async function accumulateParentBeaconBlockRoot(vm: VM, root: Uint8Array, 
  * @param {Block} block
  * @param {RunBlockOpts} opts
  */
-async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
+async function applyTransactions(
+  vm: VM,
+  block: Block,
+  opts: RunBlockOpts,
+  blockLevelAccessList?: BlockLevelAccessList,
+) {
   if (enableProfiler) {
     // eslint-disable-next-line no-console
     console.time(processTxsLabel)
@@ -650,6 +668,10 @@ async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
     receipts.push(txRes.receipt)
     const encodedReceipt = encodeReceipt(txRes.receipt, tx.type)
     await receiptTrie!.put(RLP.encode(txIdx), encodedReceipt)
+
+    if (blockLevelAccessList) {
+      await trackStateChanges(vm, blockLevelAccessList, txRes, txIdx + 1)
+    }
   }
 
   if (enableProfiler) {
