@@ -962,3 +962,62 @@ const DAOConfig = {
   ],
   DAORefundContract: 'bf4ed7b27f1d666546e30d74d50d173d20bca754',
 }
+
+async function trackStateChanges(
+  vm: VM,
+  blockLevelAccessList: BlockLevelAccessList,
+  tx: RunTxResult,
+  blockAccessIndex: number,
+): Promise<void> {
+  for (const access of tx.accessList!) {
+    const address = access.address
+    blockLevelAccessList.addAddress(address)
+    const storageKeys = access.storageKeys
+    for (const storageKey of storageKeys) {
+      // TODO: How to differentiate between storage reads and writes?
+
+      // storage read:
+      // blockLevelAccessList.addStorageRead(address, storageKey)
+
+      // storage write:
+      const value = await vm.stateManager.getStorage(
+        createAddressFromString(address),
+        hexToBytes(storageKey),
+      )
+      blockLevelAccessList.addStorageWrite(address, storageKey, value, blockAccessIndex)
+    }
+    const account = await vm.stateManager.getAccount(createAddressFromString(address))
+    const code = await vm.stateManager.getCode(createAddressFromString(address))
+
+    // TODO: only if changed
+    blockLevelAccessList.addBalanceChange(address, account!.balance, blockAccessIndex)
+    // TODO: only if changed
+    blockLevelAccessList.addNonceChange(address, account!.nonce, blockAccessIndex)
+    // TODO: only if changed
+    blockLevelAccessList.addCodeChange(address, code, blockAccessIndex)
+  }
+}
+
+async function collectWithdrawalAccesses(
+  vm: VM,
+  blockLevelAccessList: BlockLevelAccessList,
+  block: Block,
+): Promise<void> {
+  const postIndex = block.transactions.length + 1
+  const withdrawals = block.withdrawals!
+  for (const withdrawal of withdrawals) {
+    const address = withdrawal.address.toString()
+    blockLevelAccessList.addAddress(address)
+    const balance = (await vm.stateManager.getAccount(createAddressFromString(address)))!.balance
+    blockLevelAccessList.addBalanceChange(address, balance, postIndex)
+  }
+}
+
+async function trackSystemContracts(
+  _vm: VM,
+  _blockLevelAccessList: BlockLevelAccessList,
+  _block: Block,
+  _blockAccessIndex: number = 0,
+): Promise<void> {
+  // TODO: Implement
+}
