@@ -43,8 +43,14 @@ type Accesses = Record<
  * EXPERIMENTAL: DO NOT USE IN PRODUCTION!
  */
 export class BlockLevelAccessList {
-  public raw(): Uint8Array[] {
-    return []
+  public accesses: Accesses
+
+  constructor() {
+    this.accesses = {}
+  }
+
+  public raw(): Input {
+    return formatListForRLP(this.build())
   }
 
   public serialize(): Uint8Array {
@@ -59,8 +65,90 @@ export class BlockLevelAccessList {
   public hash(): Uint8Array {
     return keccak_256(this.serialize())
   }
+
+  public build(): BlockAccessList {
+    const bal: BlockAccessList = []
+
+    for (const address in Object.keys(this.accesses).sort()) {
+      const data = this.accesses[address]
+
+      // Format storage changes: [slot, [[index, value], ...]]
+      //  storage_changes = [[slot, sorted(changes)]
+      //  for slot, changes in sorted(data['storage_writes'].items())]
+      const storageChanges: SlotChanges[] = Object.entries(data.storageWrites)
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(([slot, changes]) => [slot, changes.sort((a, b) => a[0] - b[0])])
+
+      bal.push([
+        address,
+        storageChanges,
+        Array.from(data.storageReads),
+        data.balanceChanges,
+        data.nonceChanges,
+        data.codeChanges,
+      ])
+    }
+
+    return bal
+  }
+
+  public addAddress(address: Address): void {
+    if (this.accesses[address] !== undefined) {
+      return
+    }
+    this.accesses[address] = {
+      storageWrites: {},
+      storageReads: new Set(),
+      balanceChanges: [],
+      nonceChanges: [],
+      codeChanges: [],
+    }
+  }
+
+  public addStorageWrite(
+    address: Address,
+    storageKey: StorageKey,
+    value: StorageValue,
+    blockAccessIndex: BlockAccessIndex,
+  ): void {
+    this.accesses[address].storageWrites[storageKey].push([blockAccessIndex, value])
+  }
+
+  public addStorageRead(address: Address, storageKey: StorageKey): void {
+    this.accesses[address].storageReads.add(storageKey)
+  }
+
+  public addBalanceChange(
+    address: Address,
+    balance: Balance,
+    blockAccessIndex: BlockAccessIndex,
+  ): void {
+    this.accesses[address].balanceChanges.push([blockAccessIndex, balance])
+  }
+
+  public addNonceChange(address: Address, nonce: Nonce, blockAccessIndex: BlockAccessIndex): void {
+    this.accesses[address].nonceChanges.push([blockAccessIndex, nonce])
+  }
+
+  public addCodeChange(address: Address, code: ByteCode, blockAccessIndex: BlockAccessIndex): void {
+    this.accesses[address].codeChanges.push([blockAccessIndex, code])
+  }
 }
 
 export function createBlockLevelAccessList(): BlockLevelAccessList {
   return new BlockLevelAccessList()
+}
+
+/**
+ * Address = bytes20  # 20-byte Ethereum address
+ * StorageKey = uint256  # Storage slot key
+ * StorageValue = uint256  # Storage value
+ * Bytecode = bytes  # Variable-length contract bytecode
+ * BlockAccessIndex = uint16  # Block access index (0 for pre-execution, 1..n for transactions, n+1 for post-execution)
+ * Balance = uint256  # Post-transaction balance in wei
+ * Nonce = uint64  # Account nonce
+ */
+function formatListForRLP(_bal: BlockAccessList): Input {
+  // TODO: Implement
+  return []
 }
