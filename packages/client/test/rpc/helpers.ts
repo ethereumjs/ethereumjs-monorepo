@@ -396,7 +396,7 @@ export const produceBlockWith4844Tx = async (
   let nonce = account?.nonce ?? BIGINT_0
   const parentBlock = await chain.getCanonicalHeadBlock()
   const vmCopy = await vm.shallowCopy()
-  // Set block's gas used to max
+  // Initialize a block builder for a new block on top of the current head
   const blockBuilder = await buildBlock(vmCopy, {
     parentBlock,
     headerData: {
