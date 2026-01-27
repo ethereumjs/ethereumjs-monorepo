@@ -50,7 +50,7 @@ export class BlockLevelAccessList {
   }
 
   public raw(): Input {
-    return formatListForRLP(this.build())
+    return this.build()
   }
 
   public serialize(): Uint8Array {
@@ -137,18 +137,4 @@ export class BlockLevelAccessList {
 
 export function createBlockLevelAccessList(): BlockLevelAccessList {
   return new BlockLevelAccessList()
-}
-
-/**
- * Address = bytes20  # 20-byte Ethereum address
- * StorageKey = uint256  # Storage slot key
- * StorageValue = uint256  # Storage value
- * Bytecode = bytes  # Variable-length contract bytecode
- * BlockAccessIndex = uint16  # Block access index (0 for pre-execution, 1..n for transactions, n+1 for post-execution)
- * Balance = uint256  # Post-transaction balance in wei
- * Nonce = uint64  # Account nonce
- */
-function formatListForRLP(_bal: BlockAccessList): Input {
-  // TODO: Implement
-  return []
 }
