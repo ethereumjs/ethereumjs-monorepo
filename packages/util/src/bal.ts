@@ -1,39 +1,43 @@
 import { RLP } from '@ethereumjs/rlp'
 import { keccak_256 } from '@noble/hashes/sha3.js'
+import type { PrefixedHexString } from './types.ts'
 
-type Address = string // bytes20
-type StorageKey = string // uint256
-type StorageValue = Uint8Array // uint256
-type ByteCode = Uint8Array // bytes
-type BlockAccessIndex = number // uint16
-type Balance = bigint // uint256
-type Nonce = bigint // uint64
+// Base types which can be used for JSON, internal representation and raw format.
+type BALAddressHex = PrefixedHexString // bytes20
+type BALStorageKeyHex = PrefixedHexString // uint256
+type BALStorageValueBytes = Uint8Array // uint256
+type BALByteCodeBytes = Uint8Array // bytes
+type BALAccessIndexNumber = number // uint16
+type BALBalanceBigInt = bigint // uint256
+type BALNonceBigInt = bigint // uint64
 
-type StorageChange = [BlockAccessIndex, StorageValue]
-type BalanceChange = [BlockAccessIndex, Balance]
-type NonceChange = [BlockAccessIndex, Nonce]
-type CodeChange = [BlockAccessIndex, ByteCode]
-type SlotChanges = [StorageKey, StorageChange[]]
+// Change types which can be used for internal representation and raw format.
+type BALRawStorageChange = [BALAccessIndexNumber, BALStorageValueBytes]
+type BALRawBalanceChange = [BALAccessIndexNumber, BALBalanceBigInt]
+type BALRawNonceChange = [BALAccessIndexNumber, BALNonceBigInt]
+type BALRawCodeChange = [BALAccessIndexNumber, BALByteCodeBytes]
+type BALRawSlotChanges = [BALStorageKeyHex, BALRawStorageChange[]]
 
-type AccountChanges = [
-  Address,
-  SlotChanges[],
-  StorageKey[],
-  BalanceChange[],
-  NonceChange[],
-  CodeChange[],
+// Core data format for the raw format.
+type BALRawAccountChanges = [
+  BALAddressHex,
+  BALRawSlotChanges[],
+  BALStorageKeyHex[],
+  BALRawBalanceChange[],
+  BALRawNonceChange[],
+  BALRawCodeChange[],
 ]
+type BlockAccessList = BALRawAccountChanges[]
 
-type BlockAccessList = AccountChanges[]
-
+// Internal representation of the access list.
 type Accesses = Record<
-  Address,
+  BALAddressHex,
   {
-    nonceChanges: [BlockAccessIndex, Nonce][]
-    balanceChanges: [BlockAccessIndex, Balance][]
-    codeChanges: [BlockAccessIndex, ByteCode][]
-    storageChanges: Record<StorageKey, [BlockAccessIndex, StorageValue][]>
-    storageReads: Set<StorageKey>
+    nonceChanges: BALRawNonceChange[]
+    balanceChanges: BALRawBalanceChange[]
+    codeChanges: BALRawCodeChange[]
+    storageChanges: Record<BALStorageKeyHex, BALRawStorageChange[]>
+    storageReads: Set<BALStorageKeyHex>
   }
 >
 
@@ -77,17 +81,19 @@ export class BlockLevelAccessList {
     const bal: BlockAccessList = []
 
     for (const address in Object.keys(this.accesses).sort()) {
-      const data = this.accesses[address]
+      const data = this.accesses[address as BALAddressHex]
 
       // Format storage changes: [slot, [[index, value], ...]]
       //  storage_changes = [[slot, sorted(changes)]
       //  for slot, changes in sorted(data['storage_writes'].items())]
-      const storageChanges: SlotChanges[] = Object.entries(data.storageChanges)
+      const storageChanges: BALRawSlotChanges[] = (
+        Object.entries(data.storageChanges) as [BALStorageKeyHex, BALRawStorageChange[]][]
+      )
         .sort((a, b) => a[0].localeCompare(b[0]))
         .map(([slot, changes]) => [slot, changes.sort((a, b) => a[0] - b[0])])
 
       bal.push([
-        address,
+        address as BALAddressHex,
         storageChanges,
         Array.from(data.storageReads),
         data.balanceChanges,
@@ -99,7 +105,7 @@ export class BlockLevelAccessList {
     return bal
   }
 
-  public addAddress(address: Address): void {
+  public addAddress(address: BALAddressHex): void {
     if (this.accesses[address] !== undefined) {
       return
     }
@@ -113,31 +119,39 @@ export class BlockLevelAccessList {
   }
 
   public addStorageWrite(
-    address: Address,
-    storageKey: StorageKey,
-    value: StorageValue,
-    blockAccessIndex: BlockAccessIndex,
+    address: BALAddressHex,
+    storageKey: BALStorageKeyHex,
+    value: BALStorageValueBytes,
+    blockAccessIndex: BALAccessIndexNumber,
   ): void {
     this.accesses[address].storageChanges[storageKey].push([blockAccessIndex, value])
   }
 
-  public addStorageRead(address: Address, storageKey: StorageKey): void {
+  public addStorageRead(address: BALAddressHex, storageKey: BALStorageKeyHex): void {
     this.accesses[address].storageReads.add(storageKey)
   }
 
   public addBalanceChange(
-    address: Address,
-    balance: Balance,
-    blockAccessIndex: BlockAccessIndex,
+    address: BALAddressHex,
+    balance: BALBalanceBigInt,
+    blockAccessIndex: BALAccessIndexNumber,
   ): void {
     this.accesses[address].balanceChanges.push([blockAccessIndex, balance])
   }
 
-  public addNonceChange(address: Address, nonce: Nonce, blockAccessIndex: BlockAccessIndex): void {
+  public addNonceChange(
+    address: BALAddressHex,
+    nonce: BALNonceBigInt,
+    blockAccessIndex: BALAccessIndexNumber,
+  ): void {
     this.accesses[address].nonceChanges.push([blockAccessIndex, nonce])
   }
 
-  public addCodeChange(address: Address, code: ByteCode, blockAccessIndex: BlockAccessIndex): void {
+  public addCodeChange(
+    address: BALAddressHex,
+    code: BALByteCodeBytes,
+    blockAccessIndex: BALAccessIndexNumber,
+  ): void {
     this.accesses[address].codeChanges.push([blockAccessIndex, code])
   }
 }
