@@ -3,6 +3,9 @@ import type { PrefixedHexString } from '../../../src/types.ts'
 
 import { hexToBytes } from '../../../src/bytes.ts'
 
+export const balSimpleHash: PrefixedHexString =
+  '0xf487a8de6b5b4c5ed1238362d193bb840e9ac76cf13df283cb1ccfc23a69f673'
+
 /**
  * Converts the JSON BAL representation to the internal Accesses format.
  * This is equivalent to the data in bal_simple.json.
