@@ -5,7 +5,7 @@
     "balanceChanges": [],
     "codeChanges": [],
     "storageChanges": [],
-    "storageReads": ["0x0", "0x1", "0x2", "0x3"]
+    "storageReads": ["0x00", "0x01", "0x02", "0x03"]
   },
   {
     "address": "0x0000bbddc7ce488642fb579f8b00f3a590007251",
@@ -13,7 +13,7 @@
     "balanceChanges": [],
     "codeChanges": [],
     "storageChanges": [],
-    "storageReads": ["0x0", "0x1", "0x2", "0x3"]
+    "storageReads": ["0x00", "0x01", "0x02", "0x03"]
   },
   {
     "address": "0x0000f90827f1c53a10cb7a02335b175320002935",
@@ -22,11 +22,11 @@
     "codeChanges": [],
     "storageChanges": [
       {
-        "slot": "0x0",
+        "slot": "0x00",
         "slotChanges": [
           {
-            "blockAccessIndex": "0x0",
-            "postValue": "0xf38ed3d9b968f777fef4d8f2c3caf4a9f02cdea52dc257a2b92118d4dd0c9357"
+            "blockAccessIndex": "0x00",
+            "postValue": "0x7f70ecfdb2f3ff276e1156fbf569c8d41047fc1cf00f32134d3d345404093ce2"
           }
         ]
       }
@@ -40,15 +40,24 @@
     "codeChanges": [],
     "storageChanges": [
       {
-        "slot": "0xc",
+        "slot": "0x0c",
         "slotChanges": [
           {
-            "blockAccessIndex": "0x0",
-            "postValue": "0xc"
+            "blockAccessIndex": "0x00",
+            "postValue": "0x0c"
+          }
+        ]
+      },
+      {
+        "slot": "0x200b",
+        "slotChanges": [
+          {
+            "blockAccessIndex": "0x00",
+            "postValue": "0xabcdef"
           }
         ]
       }
     ],
-    "storageReads": ["0x200b"]
+    "storageReads": []
   }
 ]

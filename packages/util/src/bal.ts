@@ -135,7 +135,7 @@ export class BlockLevelAccessList {
   public raw(): BALRawBlockAccessList {
     const bal: BALRawBlockAccessList = []
 
-    for (const address in Object.keys(this.accesses).sort()) {
+    for (const address of Object.keys(this.accesses).sort()) {
       const data = this.accesses[address as BALAddressHex]
 
       // Format storage changes: [slot, [[index, value], ...]]
