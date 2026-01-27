@@ -7,20 +7,17 @@ type BALAddressHex = PrefixedHexString // bytes20
 type BALStorageKeyHex = PrefixedHexString // uint256
 type BALStorageValueBytes = Uint8Array // uint256
 type BALStorageValueHex = PrefixedHexString // uint256 as hex
-type BALAccessIndexNumber = number // uint16
 type BALAccessIndexHex = PrefixedHexString // uint16 as hex
-type BALBalanceBigInt = bigint // uint256
 type BALBalanceHex = PrefixedHexString // uint256 as hex
-type BALNonceBigInt = bigint // uint64
 type BALNonceHex = PrefixedHexString // uint64 as hex
 type BALByteCodeBytes = Uint8Array // bytes
 type BALByteCodeHex = PrefixedHexString // bytes as hex
 
 // Change types which can be used for internal representation and raw format.
-type BALRawStorageChange = [BALAccessIndexNumber, BALStorageValueBytes]
-type BALRawBalanceChange = [BALAccessIndexNumber, BALBalanceBigInt]
-type BALRawNonceChange = [BALAccessIndexNumber, BALNonceBigInt]
-type BALRawCodeChange = [BALAccessIndexNumber, BALByteCodeBytes]
+type BALRawStorageChange = [BALAccessIndexHex, BALStorageValueBytes]
+type BALRawBalanceChange = [BALAccessIndexHex, BALBalanceHex]
+type BALRawNonceChange = [BALAccessIndexHex, BALNonceHex]
+type BALRawCodeChange = [BALAccessIndexHex, BALByteCodeBytes]
 type BALRawSlotChanges = [BALStorageKeyHex, BALRawStorageChange[]]
 
 // Core data format for the raw format.
@@ -145,7 +142,7 @@ export class BlockLevelAccessList {
         Object.entries(data.storageChanges) as [BALStorageKeyHex, BALRawStorageChange[]][]
       )
         .sort((a, b) => a[0].localeCompare(b[0]))
-        .map(([slot, changes]) => [slot, changes.sort((a, b) => a[0] - b[0])])
+        .map(([slot, changes]) => [slot, changes.sort((a, b) => a[0].localeCompare(b[0]))])
 
       bal.push([
         address as BALAddressHex,
@@ -177,7 +174,7 @@ export class BlockLevelAccessList {
     address: BALAddressHex,
     storageKey: BALStorageKeyHex,
     value: BALStorageValueBytes,
-    blockAccessIndex: BALAccessIndexNumber,
+    blockAccessIndex: BALAccessIndexHex,
   ): void {
     this.accesses[address].storageChanges[storageKey].push([blockAccessIndex, value])
   }
@@ -188,16 +185,16 @@ export class BlockLevelAccessList {
 
   public addBalanceChange(
     address: BALAddressHex,
-    balance: BALBalanceBigInt,
-    blockAccessIndex: BALAccessIndexNumber,
+    balance: BALBalanceHex,
+    blockAccessIndex: BALAccessIndexHex,
   ): void {
     this.accesses[address].balanceChanges.push([blockAccessIndex, balance])
   }
 
   public addNonceChange(
     address: BALAddressHex,
-    nonce: BALNonceBigInt,
-    blockAccessIndex: BALAccessIndexNumber,
+    nonce: BALNonceHex,
+    blockAccessIndex: BALAccessIndexHex,
   ): void {
     this.accesses[address].nonceChanges.push([blockAccessIndex, nonce])
   }
@@ -205,7 +202,7 @@ export class BlockLevelAccessList {
   public addCodeChange(
     address: BALAddressHex,
     code: BALByteCodeBytes,
-    blockAccessIndex: BALAccessIndexNumber,
+    blockAccessIndex: BALAccessIndexHex,
   ): void {
     this.accesses[address].codeChanges.push([blockAccessIndex, code])
   }

@@ -12,7 +12,7 @@ import bal_all_transaction_types from './testdata/bal/bal_all_transaction_types.
   type: 'json',
 }
 import { balEmptyBlock, balEmptyBlockHash } from './testdata/bal/bal_empty_block.ts'
-import { balSimple } from './testdata/bal/bal_simple.ts'
+import { balSimple, balSimpleHash } from './testdata/bal/bal_simple.ts'
 
 describe('Basic initialization', () => {
   it('should create an empty access list', () => {
@@ -32,7 +32,9 @@ describe('Basic initialization', () => {
 
     const addressWithBalanceChanges = '0x2adc25665018aa1fe0e6bc666dac8fc2697ff9ba'
     assert.equal(bal.accesses[addressWithBalanceChanges].balanceChanges.length, 2)
-    assert.deepEqual(bal.accesses[addressWithBalanceChanges].balanceChanges[0], [0x01, 0xf618n])
+    assert.deepEqual(bal.accesses[addressWithBalanceChanges].balanceChanges[0], ['0x01', '0xf618'])
+
+    assert.deepEqual(bytesToHex(bal.hash()), balSimpleHash)
   })
 
   it('hashes should match', () => {
@@ -40,7 +42,7 @@ describe('Basic initialization', () => {
     assert.deepEqual(bytesToHex(bal.hash()), KECCAK256_RLP_ARRAY_S)
 
     bal = new BlockLevelAccessList(balEmptyBlock)
-    const raw = bal.raw()
+    bal.hash()
     assert.deepEqual(bytesToHex(bal.hash()), balEmptyBlockHash)
   })
 })
