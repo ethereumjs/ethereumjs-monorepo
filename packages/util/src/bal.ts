@@ -1,4 +1,4 @@
-import { type Input, RLP } from '@ethereumjs/rlp'
+import { RLP } from '@ethereumjs/rlp'
 import { keccak_256 } from '@noble/hashes/sha3.js'
 
 type Address = string // bytes20
@@ -29,11 +29,11 @@ type BlockAccessList = AccountChanges[]
 type Accesses = Record<
   Address,
   {
-    storageWrites: Record<StorageKey, [BlockAccessIndex, StorageValue][]>
-    storageReads: Set<StorageKey>
-    balanceChanges: [BlockAccessIndex, Balance][]
     nonceChanges: [BlockAccessIndex, Nonce][]
+    balanceChanges: [BlockAccessIndex, Balance][]
     codeChanges: [BlockAccessIndex, ByteCode][]
+    storageChanges: Record<StorageKey, [BlockAccessIndex, StorageValue][]>
+    storageReads: Set<StorageKey>
   }
 >
 
@@ -49,10 +49,11 @@ export class BlockLevelAccessList {
     this.accesses = {}
   }
 
-  public raw(): Input {
-    return this.build()
-  }
-
+  /**
+   * Serializes the block level access list to RLP.
+   *
+   * @returns the RLP encoded block level access list
+   */
   public serialize(): Uint8Array {
     return RLP.encode(this.raw())
   }
@@ -66,7 +67,13 @@ export class BlockLevelAccessList {
     return keccak_256(this.serialize())
   }
 
-  public build(): BlockAccessList {
+  /**
+   * Returns the raw block level access list with values
+   * correctly sorted.
+   *
+   * @returns the raw block level access list
+   */
+  public raw(): BlockAccessList {
     const bal: BlockAccessList = []
 
     for (const address in Object.keys(this.accesses).sort()) {
@@ -75,7 +82,7 @@ export class BlockLevelAccessList {
       // Format storage changes: [slot, [[index, value], ...]]
       //  storage_changes = [[slot, sorted(changes)]
       //  for slot, changes in sorted(data['storage_writes'].items())]
-      const storageChanges: SlotChanges[] = Object.entries(data.storageWrites)
+      const storageChanges: SlotChanges[] = Object.entries(data.storageChanges)
         .sort((a, b) => a[0].localeCompare(b[0]))
         .map(([slot, changes]) => [slot, changes.sort((a, b) => a[0] - b[0])])
 
@@ -97,7 +104,7 @@ export class BlockLevelAccessList {
       return
     }
     this.accesses[address] = {
-      storageWrites: {},
+      storageChanges: {},
       storageReads: new Set(),
       balanceChanges: [],
       nonceChanges: [],
@@ -111,7 +118,7 @@ export class BlockLevelAccessList {
     value: StorageValue,
     blockAccessIndex: BlockAccessIndex,
   ): void {
-    this.accesses[address].storageWrites[storageKey].push([blockAccessIndex, value])
+    this.accesses[address].storageChanges[storageKey].push([blockAccessIndex, value])
   }
 
   public addStorageRead(address: Address, storageKey: StorageKey): void {
