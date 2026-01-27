@@ -6,10 +6,15 @@ import type { PrefixedHexString } from './types.ts'
 type BALAddressHex = PrefixedHexString // bytes20
 type BALStorageKeyHex = PrefixedHexString // uint256
 type BALStorageValueBytes = Uint8Array // uint256
-type BALByteCodeBytes = Uint8Array // bytes
+type BALStorageValueHex = PrefixedHexString // uint256 as hex
 type BALAccessIndexNumber = number // uint16
+type BALAccessIndexHex = PrefixedHexString // uint16 as hex
 type BALBalanceBigInt = bigint // uint256
+type BALBalanceHex = PrefixedHexString // uint256 as hex
 type BALNonceBigInt = bigint // uint64
+type BALNonceHex = PrefixedHexString // uint64 as hex
+type BALByteCodeBytes = Uint8Array // bytes
+type BALByteCodeHex = PrefixedHexString // bytes as hex
 
 // Change types which can be used for internal representation and raw format.
 type BALRawStorageChange = [BALAccessIndexNumber, BALStorageValueBytes]
@@ -27,7 +32,7 @@ type BALRawAccountChanges = [
   BALRawNonceChange[],
   BALRawCodeChange[],
 ]
-type BlockAccessList = BALRawAccountChanges[]
+type BALRawBlockAccessList = BALRawAccountChanges[]
 
 // Internal representation of the access list.
 type Accesses = Record<
@@ -40,6 +45,56 @@ type Accesses = Record<
     storageReads: Set<BALStorageKeyHex>
   }
 >
+
+// JSON representation types (all numeric values as hex strings for JSON serialization)
+// JSON change types
+interface BALJSONBalanceChange {
+  blockAccessIndex: BALAccessIndexHex
+  postBalance: BALBalanceHex
+}
+
+interface BALJSONNonceChange {
+  blockAccessIndex: BALAccessIndexHex
+  postNonce: BALNonceHex
+}
+
+interface BALJSONCodeChange {
+  blockAccessIndex: BALAccessIndexHex
+  newCode: BALByteCodeHex
+}
+
+interface BALJSONStorageChange {
+  blockAccessIndex: BALAccessIndexHex
+  postValue: BALStorageValueHex
+}
+
+interface BALJSONSlotChanges {
+  slot: BALStorageKeyHex
+  slotChanges: BALJSONStorageChange[]
+}
+
+// JSON representation of account changes
+interface BALJSONAccountChanges {
+  address: BALAddressHex
+  balanceChanges: BALJSONBalanceChange[]
+  nonceChanges: BALJSONNonceChange[]
+  codeChanges: BALJSONCodeChange[]
+  storageChanges: BALJSONSlotChanges[]
+  storageReads: BALStorageKeyHex[]
+}
+
+// Top level JSON type
+export type BALJSONBlockAccessList = BALJSONAccountChanges[]
+
+// Re-export JSON types for external use
+export type {
+  BALJSONAccountChanges,
+  BALJSONStorageChange,
+  BALJSONSlotChanges,
+  BALJSONBalanceChange,
+  BALJSONNonceChange,
+  BALJSONCodeChange,
+}
 
 /**
  * Structural helper class for block level access lists
@@ -77,8 +132,8 @@ export class BlockLevelAccessList {
    *
    * @returns the raw block level access list
    */
-  public raw(): BlockAccessList {
-    const bal: BlockAccessList = []
+  public raw(): BALRawBlockAccessList {
+    const bal: BALRawBlockAccessList = []
 
     for (const address in Object.keys(this.accesses).sort()) {
       const data = this.accesses[address as BALAddressHex]
@@ -157,5 +212,12 @@ export class BlockLevelAccessList {
 }
 
 export function createBlockLevelAccessList(): BlockLevelAccessList {
+  return new BlockLevelAccessList()
+}
+
+export function createBlockLevelAccessListFromJSON(
+  _json: BALJSONBlockAccessList,
+): BlockLevelAccessList {
+  // TODO: implement conversion from JSON to internal format
   return new BlockLevelAccessList()
 }
