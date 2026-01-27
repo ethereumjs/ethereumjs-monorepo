@@ -35,7 +35,7 @@ type BALRawAccountChanges = [
 type BALRawBlockAccessList = BALRawAccountChanges[]
 
 // Internal representation of the access list.
-type Accesses = Record<
+export type Accesses = Record<
   BALAddressHex,
   {
     nonceChanges: BALRawNonceChange[]
@@ -104,8 +104,8 @@ export type {
 export class BlockLevelAccessList {
   public accesses: Accesses
 
-  constructor() {
-    this.accesses = {}
+  constructor(accesses: Accesses = {}) {
+    this.accesses = accesses
   }
 
   /**
