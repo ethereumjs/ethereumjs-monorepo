@@ -50,7 +50,7 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/util": "^10.1.0",
+    "@ethereumjs/util": "^10.1.1",
     "@scure/base": "^1.2.4",
     "@noble/hashes": "^2.0.1",
     "ethereum-cryptography": "^3.2.0",
