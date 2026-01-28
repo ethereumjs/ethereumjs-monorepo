@@ -115,6 +115,10 @@ function updateDependencyVersion(
   const updated: Record<string, string> = { ...deps }
   for (const [depName, depVersion] of Object.entries(updated)) {
     if (depName.startsWith('@ethereumjs/')) {
+      // Only update references to active packages
+      const packageName = depName.replace('@ethereumjs/', '')
+      if (!ACTIVE_PACKAGES.includes(packageName)) continue
+
       // Preserve the version prefix (^, ~, etc.) if present
       const prefixMatch = depVersion.match(/^([\^~])?/)
       const prefix = prefixMatch?.[1] || ''
