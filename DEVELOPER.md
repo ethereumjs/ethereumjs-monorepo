@@ -78,7 +78,7 @@ Most release rounds are done as bugfix releases, including releases of non-final
 We have a release script that handles version bumping and publishing for all packages. It supports both regular releases and lightweight in-between releases (nightly, alpha).
 
 ```sh
-tsx scripts/release.ts [--bump-version=<version>] [--publish=<tag>]
+tsx scripts/release-npm.ts [--bump-version=<version>] [--publish=<tag>]
 ```
 
 **Options:**
@@ -99,16 +99,16 @@ When publishing, ensure you are authenticated with npm via `npm login` beforehan
 
 ```sh
 # Bump versions only (no publish) - for preparing a release
-tsx scripts/release.ts --bump-version=10.1.0
+tsx scripts/release-npm.ts --bump-version=10.1.0
 
 # Bump versions and publish - full release
-tsx scripts/release.ts --bump-version=10.1.0 --publish=latest
+tsx scripts/release-npm.ts --bump-version=10.1.0 --publish=latest
 
 # Lightweight nightly release
-tsx scripts/release.ts --bump-version=10.1.1-nightly.1 --publish=nightly
+tsx scripts/release-npm.ts --bump-version=10.1.1-nightly.1 --publish=nightly
 
 # Publish current versions without bumping
-tsx scripts/release.ts --publish=latest
+tsx scripts/release-npm.ts --publish=latest
 ```
 
 ##### CHANGELOG Preparation
