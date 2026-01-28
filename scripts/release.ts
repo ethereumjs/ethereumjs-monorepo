@@ -5,14 +5,17 @@
  * Supports both regular releases and in-between releases (nightly, alpha, etc.)
  *
  * Usage:
- *   tsx scripts/release.ts <version> <tag> [--publish] [--npm-token=<token>]
+ *   tsx scripts/release.ts [--bump-version=<version>] [--publish=<tag>] [--npm-token=<token>]
  *
  * Examples:
- *   # Update versions only (no publish)
- *   tsx scripts/release.ts 10.1.0 latest
+ *   # Bump versions only (no publish)
+ *   tsx scripts/release.ts --bump-version=10.1.0
  *
- *   # Update versions and publish
- *   tsx scripts/release.ts 10.1.1-nightly.1 nightly --publish --npm-token=abc123
+ *   # Bump versions and publish
+ *   tsx scripts/release.ts --bump-version=10.1.1-nightly.1 --publish=nightly --npm-token=abc123
+ *
+ *   # Publish current versions (no bump)
+ *   tsx scripts/release.ts --publish=latest --npm-token=abc123
  */
 
 import { readFileSync, writeFileSync } from 'fs'
@@ -60,39 +63,42 @@ interface PackageInfo {
   packageJson: PackageJson
 }
 
-function parseArgs(): { version: string; tag: string; publish: boolean; npmToken?: string } {
+interface ParsedArgs {
+  version?: string
+  tag?: string
+  npmToken?: string
+}
+
+function parseArgs(): ParsedArgs {
   const args = process.argv.slice(2)
 
-  // Extract flags
-  const publish = args.includes('--publish')
+  // Extract named arguments
+  const versionArg = args.find((arg) => arg.startsWith('--bump-version='))
+  const publishArg = args.find((arg) => arg.startsWith('--publish='))
   const npmTokenArg = args.find((arg) => arg.startsWith('--npm-token='))
+
+  const version = versionArg?.split('=')[1]
+  const tag = publishArg?.split('=')[1]
   const npmToken = npmTokenArg?.split('=')[1]
 
-  // Filter out flags to get positional args
-  const positionalArgs = args.filter(
-    (arg) => !arg.startsWith('--publish') && !arg.startsWith('--npm-token=')
-  )
-
-  if (positionalArgs.length !== 2) {
-    console.error('Usage: tsx scripts/release.ts <version> <tag> [--publish] [--npm-token=<token>]')
+  // Validate: at least one action must be specified
+  if (!version && !tag) {
+    console.error('Usage: tsx scripts/release.ts [--bump-version=<version>] [--publish=<tag>] [--npm-token=<token>]')
     console.error('')
     console.error('Examples:')
-    console.error('  tsx scripts/release.ts 10.1.0 latest')
-    console.error('  tsx scripts/release.ts 10.1.1-nightly.1 nightly --publish --npm-token=abc123')
+    console.error('  tsx scripts/release.ts --bump-version=10.1.0')
+    console.error('  tsx scripts/release.ts --bump-version=10.1.1-nightly.1 --publish=nightly --npm-token=abc123')
+    console.error('  tsx scripts/release.ts --publish=latest --npm-token=abc123')
     process.exit(1)
   }
 
-  if (publish && !npmToken) {
+  // Validate: --npm-token required when publishing
+  if (tag && !npmToken) {
     console.error('Error: --npm-token is required when using --publish')
     process.exit(1)
   }
 
-  return {
-    version: positionalArgs[0],
-    tag: positionalArgs[1],
-    publish,
-    npmToken,
-  }
+  return { version, tag, npmToken }
 }
 
 function readPackageJson(packagePath: string): PackageJson {
@@ -191,14 +197,13 @@ function publishPackages(packages: PackageInfo[], npmToken: string, tag: string)
 }
 
 async function main(): Promise<void> {
-  const { version, tag, publish, npmToken } = parseArgs()
+  const { version, tag, npmToken } = parseArgs()
 
   console.log('\n' + '='.repeat(60))
   console.log('EthereumJS Release Script')
   console.log('='.repeat(60))
-  console.log(`Version: ${version}`)
-  console.log(`Tag: ${tag}`)
-  console.log(`Publish: ${publish ? 'yes' : 'no (dry run)'}`)
+  console.log(`Bump version: ${version ?? 'no'}`)
+  console.log(`Publish: ${tag ? `yes (tag: ${tag})` : 'no'}`)
   console.log('='.repeat(60) + '\n')
 
   const rootPath = process.cwd()
@@ -231,34 +236,35 @@ async function main(): Promise<void> {
   }
 
   // Display current versions
-  console.log('Active packages (version + deps updated):')
+  console.log('Active packages:')
   for (const pkg of packages) {
     console.log(`  ${pkg.name}: ${pkg.oldVersion}`)
   }
-  console.log('\nDeps-only packages (only deps updated, not published):')
+  console.log('\nDeps-only packages (deprecated + testdata):')
   for (const pkg of depsOnlyPackages) {
-    console.log(`  ${pkg.name}: ${pkg.oldVersion} (unchanged)`)
+    console.log(`  ${pkg.name}: ${pkg.oldVersion}`)
   }
 
   try {
-    // Step 1: Update versions + deps for active packages
-    updatePackages(packages, version, true)
+    // Step 1: Bump versions (if --bump-version is set)
+    if (version) {
+      // Update versions + deps for active packages
+      updatePackages(packages, version, true)
+      // Update deps only for deprecated/special packages
+      updatePackages(depsOnlyPackages, version, false)
+    } else {
+      console.log('\n📋 Skipping version bump (use --bump-version to update versions)\n')
+    }
 
-    // Step 2: Update deps only for deprecated/special packages
-    updatePackages(depsOnlyPackages, version, false)
-
-    // Step 3: Publish packages (if --publish flag is set)
-    if (publish) {
+    // Step 2: Publish packages (if --publish is set)
+    if (tag) {
       publishPackages(packages, npmToken!, tag)
     } else {
-      console.log('\n📋 Skipping publish (use --publish to publish packages)\n')
+      console.log('\n📋 Skipping publish (use --publish=<tag> to publish packages)\n')
     }
 
     console.log('\n' + '='.repeat(60))
     console.log('✅ Release completed successfully!')
-    if (!publish) {
-      console.log('Note: Packages were NOT published. Use --publish to publish.')
-    }
     console.log('='.repeat(60) + '\n')
   } catch (error) {
     console.error('\n' + '='.repeat(60))
