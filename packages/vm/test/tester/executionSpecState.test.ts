@@ -1,6 +1,5 @@
 import { assert, describe, it } from 'vitest'
 
-import fs from 'fs'
 import path from 'path'
 
 import { Common, Mainnet } from '@ethereumjs/common'
@@ -14,22 +13,18 @@ import { loadExecutionSpecFixtures, parseTest } from './executionSpecTestLoader.
 
 const customFixturesPath = process.env.TEST_PATH ?? '../execution-spec-tests'
 const fixturesPath = path.resolve(customFixturesPath)
-
-console.log(`Using execution-spec state tests from: ${fixturesPath}`)
+const resolvedNote = path.isAbsolute(customFixturesPath) ? '' : ` (resolved: ${fixturesPath})`
+console.log(`Using execution-spec state tests from: ${customFixturesPath}${resolvedNote}`)
 
 // Create KZG instance once at the top level (expensive operation)
 const kzg = new microEthKZG(trustedSetup)
 
-if (fs.existsSync(fixturesPath) === false) {
-  describe('Execution-spec state tests', () => {
-    it.skip(`fixtures not found at ${fixturesPath}`, () => {})
-  })
-} else {
-  const fixtures = loadExecutionSpecFixtures(fixturesPath, 'state_tests')
+{
+  const fixtures = loadExecutionSpecFixtures(customFixturesPath, 'state_tests')
 
   describe('Execution-spec state tests', () => {
     if (fixtures.length === 0) {
-      it.skip(`no execution-spec state fixtures found under ${fixturesPath}`, () => {})
+      it.skip(`no execution-spec state fixtures found for ${customFixturesPath}`, () => {})
       return
     }
 

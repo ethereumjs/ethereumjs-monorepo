@@ -1,6 +1,5 @@
 import { assert, describe, it } from 'vitest'
 
-import fs from 'fs'
 import path from 'path'
 
 import type { Block } from '@ethereumjs/block'
@@ -22,22 +21,18 @@ import { createCommonForFork, loadExecutionSpecFixtures } from './executionSpecT
 
 const customFixturesPath = process.env.TEST_PATH ?? '../execution-spec-tests'
 const fixturesPath = path.resolve(customFixturesPath)
-
-console.log(`Using execution-spec blockchain tests from: ${fixturesPath}`)
+const resolvedNote = path.isAbsolute(customFixturesPath) ? '' : ` (resolved: ${fixturesPath})`
+console.log(`Using execution-spec blockchain tests from: ${customFixturesPath}${resolvedNote}`)
 
 // Create KZG instance once at the top level (expensive operation)
 const kzg = new microEthKZG(trustedSetup)
 
-if (fs.existsSync(fixturesPath) === false) {
-  describe('Execution-spec blockchain tests', () => {
-    it.skip(`fixtures not found at ${fixturesPath}`, () => {})
-  })
-} else {
-  const fixtures = loadExecutionSpecFixtures(fixturesPath, 'blockchain_tests')
+{
+  const fixtures = loadExecutionSpecFixtures(customFixturesPath, 'blockchain_tests')
 
   describe('Execution-spec blockchain tests', () => {
     if (fixtures.length === 0) {
-      it.skip(`no execution-spec blockchain fixtures found under ${fixturesPath}`, () => {})
+      it.skip(`no execution-spec blockchain fixtures found for ${customFixturesPath}`, () => {})
       return
     }
 

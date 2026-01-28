@@ -55,11 +55,128 @@ function findJSONFiles(root: string, fixtureType: ExecutionSpecFixtureType) {
   return files.sort()
 }
 
+function findExecutionSpecTestsRoot(): string | undefined {
+  let current = process.cwd()
+  while (true) {
+    const candidate = path.join(current, 'execution-spec-tests')
+    try {
+      if (fs.statSync(candidate).isDirectory()) {
+        return candidate
+      }
+    } catch {
+      // keep walking up
+    }
+    const parent = path.dirname(current)
+    if (parent === current) {
+      return undefined
+    }
+    current = parent
+  }
+}
+
+function findPartialMatches(
+  base: string,
+  partial: string,
+): { directories: string[]; files: string[] } {
+  const directories: string[] = []
+  const files: string[] = []
+  const stack = [base]
+  const normalizedPartial = path.normalize(partial).replace(/^[/\\]+/, '')
+  const hasSeparator = normalizedPartial.includes(path.sep)
+  const isJson = normalizedPartial.endsWith('.json')
+
+  while (stack.length > 0) {
+    const current = stack.pop()!
+    let entries: fs.Dirent[]
+    try {
+      entries = fs.readdirSync(current, { withFileTypes: true })
+    } catch {
+      continue
+    }
+
+    for (const entry of entries) {
+      const fullPath = path.join(current, entry.name)
+      if (entry.isDirectory()) {
+        stack.push(fullPath)
+        if (isJson) {
+          continue
+        }
+        const rel = path.relative(base, fullPath)
+        if (
+          (hasSeparator && rel.endsWith(normalizedPartial)) ||
+          (!hasSeparator && entry.name === normalizedPartial)
+        ) {
+          directories.push(fullPath)
+        }
+        continue
+      }
+
+      if (entry.isFile() === false || isJson === false) {
+        continue
+      }
+      const rel = path.relative(base, fullPath)
+      if (
+        (hasSeparator && rel.endsWith(normalizedPartial)) ||
+        (!hasSeparator && entry.name === normalizedPartial)
+      ) {
+        files.push(fullPath)
+      }
+    }
+  }
+
+  return { directories, files }
+}
+
 export function loadExecutionSpecFixtures(
   root: string,
   fixtureType: ExecutionSpecFixtureType,
 ): ExecutionSpecFixture[] {
-  const files = findJSONFiles(root, fixtureType)
+  const filesSet = new Set<string>()
+  const addFilesFromRoot = (rootPath: string) => {
+    if (rootPath.endsWith('.json')) {
+      try {
+        if (fs.statSync(rootPath).isFile()) {
+          filesSet.add(rootPath)
+        }
+      } catch {
+        // ignore
+      }
+      return
+    }
+    for (const filePath of findJSONFiles(rootPath, fixtureType)) {
+      filesSet.add(filePath)
+    }
+  }
+
+  let rootStat: fs.Stats | undefined
+  try {
+    rootStat = fs.statSync(root)
+  } catch {
+    rootStat = undefined
+  }
+
+  if (rootStat?.isFile() === true || rootStat?.isDirectory() === true) {
+    addFilesFromRoot(root)
+  } else {
+    const execSpecRoot = findExecutionSpecTestsRoot()
+    if (execSpecRoot !== undefined) {
+      try {
+        if (fs.statSync(execSpecRoot).isDirectory()) {
+          const { directories, files } = findPartialMatches(execSpecRoot, root)
+          for (const dir of directories) {
+            addFilesFromRoot(dir)
+          }
+          for (const file of files) {
+            addFilesFromRoot(file)
+          }
+        }
+      } catch {
+        // ignore
+      }
+    }
+  }
+
+  const files = Array.from(filesSet).sort()
   const fixtures: ExecutionSpecFixture[] = []
 
   for (const filePath of files) {
