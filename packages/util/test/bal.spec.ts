@@ -11,7 +11,11 @@ import { KECCAK256_RLP_ARRAY_S } from '../src/constants.ts'
 import bal_all_transaction_types from './testdata/bal/bal_all_transaction_types.json' with {
   type: 'json',
 }
-import { balEmptyBlock, balEmptyBlockHash } from './testdata/bal/bal_empty_block.ts'
+import {
+  balEmptyBlockNoCoinbase,
+  balEmptyBlockNoCoinbaseHash,
+  balEmptyBlockNoCoinbaseRLP,
+} from './testdata/bal/bal_empty_block_no_coinbase.ts'
 import { balSimple, balSimpleHash } from './testdata/bal/bal_simple.ts'
 
 describe('Basic initialization', () => {
@@ -41,9 +45,9 @@ describe('Basic initialization', () => {
     let bal = new BlockLevelAccessList()
     assert.deepEqual(bytesToHex(bal.hash()), KECCAK256_RLP_ARRAY_S)
 
-    bal = new BlockLevelAccessList(balEmptyBlock)
-    console.log(bytesToHex(bal.serialize()))
-    assert.deepEqual(bytesToHex(bal.hash()), balEmptyBlockHash)
+    bal = new BlockLevelAccessList(balEmptyBlockNoCoinbase)
+    assert.deepEqual(bytesToHex(bal.serialize()), balEmptyBlockNoCoinbaseRLP)
+    assert.deepEqual(bytesToHex(bal.hash()), balEmptyBlockNoCoinbaseHash)
   })
 })
 

@@ -137,22 +137,24 @@ export class BlockLevelAccessList {
       const data = this.accesses[address as BALAddressHex]
 
       // Format storage changes: [slot, [[index, value], ...]]
-      //  storage_changes = [[slot, sorted(changes)]
-      //  for slot, changes in sorted(data['storage_writes'].items())]
-      const storageChanges: BALRawSlotChanges[] = (
+      // Normalize slot keys for canonical RLP encoding (0 -> empty bytes)
+      const storageChanges = (
         Object.entries(data.storageChanges) as [BALStorageKeyHex, BALRawStorageChange[]][]
       )
         .sort((a, b) => a[0].localeCompare(b[0]))
-        .map(([slot, changes]) => [slot, changes.sort((a, b) => a[0] - b[0])])
+        .map(([slot, changes]) => [normalizeHexForRLP(slot), changes.sort((a, b) => a[0] - b[0])])
+
+      // Normalize storage reads for canonical RLP encoding (0 -> empty bytes)
+      const storageReads = Array.from(data.storageReads).map(normalizeHexForRLP)
 
       bal.push([
         address as BALAddressHex,
         storageChanges,
-        Array.from(data.storageReads),
+        storageReads,
         data.balanceChanges,
         data.nonceChanges,
         data.codeChanges,
-      ])
+      ] as BALRawAccountChanges)
     }
 
     return bal
@@ -218,4 +220,19 @@ export function createBlockLevelAccessListFromJSON(
 ): BlockLevelAccessList {
   // TODO: implement conversion from JSON to internal format
   return new BlockLevelAccessList()
+}
+
+/**
+ * Normalizes a hex string for canonical RLP encoding.
+ * In RLP, the integer 0 must be encoded as empty bytes (0x80), not as a single zero byte (0x00).
+ * This function converts hex strings representing zero to empty Uint8Array.
+ */
+function normalizeHexForRLP(hex: PrefixedHexString): PrefixedHexString | Uint8Array {
+  // Strip 0x prefix and all leading zeros
+  const stripped = hex.slice(2).replace(/^0+/, '')
+  if (stripped === '') {
+    // Value is zero - return empty array for canonical RLP encoding
+    return Uint8Array.from([])
+  }
+  return hex
 }
