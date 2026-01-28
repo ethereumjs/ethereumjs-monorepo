@@ -19,7 +19,7 @@ import { readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { execSync } from 'child_process'
 
-// Active packages from README.md
+// Active packages from README.md (version + dependencies updated, published)
 const ACTIVE_PACKAGES = [
   'binarytree',
   'block',
@@ -33,6 +33,16 @@ const ACTIVE_PACKAGES = [
   'tx',
   'util',
   'vm',
+]
+
+// Deprecated packages + testdata (only dependencies updated, not published)
+// These packages keep their own version but need @ethereumjs/* deps updated
+const DEPS_ONLY_PACKAGES = [
+  'client',
+  'devp2p',
+  'ethash',
+  'wallet',
+  'testdata',
 ]
 
 interface PackageJson {
@@ -114,39 +124,40 @@ function updateDependencyVersion(
   return updated
 }
 
-function updatePackageVersions(
+function updatePackages(
   packages: PackageInfo[],
-  newVersion: string
+  newVersion: string,
+  updateVersion: boolean = true
 ): void {
-  console.log(`\n📦 Updating package versions to ${newVersion}...\n`)
+  const mode = updateVersion ? 'version + deps' : 'deps only'
+  console.log(`\n📦 Updating packages (${mode}) to ${newVersion}...\n`)
 
   for (const pkg of packages) {
-    console.log(`  Updating ${pkg.name}...`)
-    
-    // Update main version
-    pkg.packageJson.version = newVersion
+    if (updateVersion) {
+      console.log(`  Updating ${pkg.name}...`)
+      pkg.packageJson.version = newVersion
+    } else {
+      console.log(`  Updating deps in ${pkg.name} (version stays at ${pkg.oldVersion})...`)
+    }
 
     // Update dependencies
     if (pkg.packageJson.dependencies) {
-      pkg.packageJson.dependencies = updateDependencyVersion(
-        pkg.packageJson.dependencies,
-        newVersion
-      ) || pkg.packageJson.dependencies
+      pkg.packageJson.dependencies =
+        updateDependencyVersion(pkg.packageJson.dependencies, newVersion) ||
+        pkg.packageJson.dependencies
     }
 
     // Update devDependencies
     if (pkg.packageJson.devDependencies) {
-      pkg.packageJson.devDependencies = updateDependencyVersion(
-        pkg.packageJson.devDependencies,
-        newVersion
-      ) || pkg.packageJson.devDependencies
+      pkg.packageJson.devDependencies =
+        updateDependencyVersion(pkg.packageJson.devDependencies, newVersion) ||
+        pkg.packageJson.devDependencies
     }
 
-    // Write updated package.json
     writePackageJson(pkg.path, pkg.packageJson)
   }
 
-  console.log('\n✅ All package versions updated\n')
+  console.log(`\n✅ All packages updated (${mode})\n`)
 }
 
 function publishPackages(packages: PackageInfo[], npmToken: string, tag: string): void {
@@ -189,7 +200,7 @@ async function main(): Promise<void> {
   const rootPath = process.cwd()
   const packagesPath = join(rootPath, 'packages')
 
-  // Read all package.json files
+  // Read all package.json files for active packages
   const packages: PackageInfo[] = []
   for (const packageName of ACTIVE_PACKAGES) {
     const packagePath = join(packagesPath, packageName)
@@ -202,17 +213,37 @@ async function main(): Promise<void> {
     })
   }
 
+  // Read package.json files for deps-only packages (deprecated + testdata)
+  const depsOnlyPackages: PackageInfo[] = []
+  for (const packageName of DEPS_ONLY_PACKAGES) {
+    const packagePath = join(packagesPath, packageName)
+    const packageJson = readPackageJson(packagePath)
+    depsOnlyPackages.push({
+      name: packageName,
+      path: packagePath,
+      oldVersion: packageJson.version,
+      packageJson,
+    })
+  }
+
   // Display current versions
-  console.log('Current package versions:')
+  console.log('Active packages (version + deps updated):')
   for (const pkg of packages) {
     console.log(`  ${pkg.name}: ${pkg.oldVersion}`)
   }
+  console.log('\nDeps-only packages (only deps updated, not published):')
+  for (const pkg of depsOnlyPackages) {
+    console.log(`  ${pkg.name}: ${pkg.oldVersion} (unchanged)`)
+  }
 
   try {
-    // Step 1: Update versions
-    updatePackageVersions(packages, version)
+    // Step 1: Update versions + deps for active packages
+    updatePackages(packages, version, true)
 
-    // Step 2: Publish packages (if --publish flag is set)
+    // Step 2: Update deps only for deprecated/special packages
+    updatePackages(depsOnlyPackages, version, false)
+
+    // Step 3: Publish packages (if --publish flag is set)
     if (publish) {
       publishPackages(packages, npmToken!, tag)
     } else {
