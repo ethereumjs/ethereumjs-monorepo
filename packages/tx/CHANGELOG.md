@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 10.1.1 - 2025-01-28
+
+- EIP-7702: Fix unpadding of bytes for hex-string "0x0" inputs in authorization list fields, see PR [#4209](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4209)
+- Deprecate Node.js 18 support, minimum Node.js version is now 20, see PR [#4180](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4180)
+- Add Node.js 24 support, see PR [#4194](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4194)
+- Dependency update: `@noble/curves` to v2, see PR [#4179](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4179)
+
 ## 10.1.0 - 2025-11-06
 
 - `tx: throw on toCreationAddress for 4844 and 7702`, PR [#4162](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4162)

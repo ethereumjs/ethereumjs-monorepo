@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 10.1.1 - 2025-01-28
+
+- BigInt bytes conversion fixes, see PR [#4203](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4203)
+- Deprecate Node.js 18 support, minimum Node.js version is now 20, see PR [#4180](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4180)
+- Add Node.js 24 support, see PR [#4194](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4194)
+
 ## 10.1.0 - 2025-11-06
 
 - Update `kzg-wasm` dependency, PR [#4169](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4169)
