@@ -73,7 +73,50 @@ Most release rounds are done as bugfix releases, including releases of non-final
 
 #### Process
 
-The following prompts have been tested with Cursor IDE to work well for release preparation:
+##### Version/Dependency Update & Publish Script
+
+We have a release script that handles version bumping and publishing for all packages. It supports both regular releases and lightweight in-between releases (nightly, alpha).
+
+```sh
+tsx scripts/release.ts [--bump-version=<version>] [--publish=<tag>] [--npm-token=<token>]
+```
+
+**Options:**
+
+- `--bump-version=<version>` - Bump package versions to the specified version
+- `--publish=<tag>` - Publish packages with the specified npm tag
+- `--npm-token=<token>` - NPM token for authentication (required when publishing)
+
+At least one of `--bump-version` or `--publish` must be specified.
+
+To create an npm session, `npm login` must be used.
+
+**What the script does:**
+
+- **Active packages**: Updates version numbers and `@ethereumjs/*` dependency references
+- **Deprecated packages + testdata**: Only updates (active) `@ethereumjs/*` dependency references (keeps their own version unchanged, not published)
+
+**Examples:**
+
+```sh
+# Bump versions only (no publish) - for preparing a release
+tsx scripts/release.ts --bump-version=10.1.0
+
+# Bump versions and publish - full release
+tsx scripts/release.ts --bump-version=10.1.0 --publish=latest --npm-token=abc123
+
+# Lightweight nightly release
+tsx scripts/release.ts --bump-version=10.1.1-nightly.1 --publish=nightly --npm-token=abc123
+
+# Publish current versions without bumping
+tsx scripts/release.ts --publish=latest --npm-token=abc123
+```
+
+##### CHANGELOG Preparation
+
+The following prompts have been tested with Cursor IDE to work well for CHANGELOG preparation:
+
+TODO: Update
 
 Step 1: CHANGELOG entries, version bumps and dependency updates
 (please adjust dates, versions and file references accordingly)
@@ -112,21 +155,6 @@ Can you now based on this collection add simple one-liner summaries in the CHANG
 Added lines should follow the format from the examples given above. PR numbers and links can be extracted from the commit titles, these are the hash-prefixed number links in the title.
 
 For the CHANGELOG files you have not added lines in this step please enter the following sentence instead: Maintenance release, no active changes.
-```
-
-#### In-between Releases
-
-We have a simple release script for lightweight in-between releases like nightly or non-official alpha releases. This is meant
-for e.g. external targeted testing and releases are not mentioned in CHANGELOG.md files.
-
-```sh
-tsx scripts/simple-release.ts <version> <npm_token> <tag>
-```
-
-Example:
-
-```sh
-tsx scripts/simple-release.ts 10.1.1-nightly.1 abc123 nightly
 ```
 
 #### Windows Users Note
