@@ -19,6 +19,13 @@ export * from './units.ts'
 export * from './account.ts'
 
 /**
+ * Block level access list
+ *
+ * EXPERIMENTAL: DO NOT USE IN PRODUCTION!
+ */
+export * from './bal.ts'
+
+/**
  * Address type
  */
 export * from './address.ts'

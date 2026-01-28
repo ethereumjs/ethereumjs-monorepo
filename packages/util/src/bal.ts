@@ -1,0 +1,273 @@
+import { RLP } from '@ethereumjs/rlp'
+import { keccak_256 } from '@noble/hashes/sha3.js'
+import { hexToBytes } from './bytes.ts'
+import type { PrefixedHexString } from './types.ts'
+
+// Base types which can be used for JSON, internal representation and raw format.
+type BALAddressHex = PrefixedHexString // bytes20
+type BALStorageKeyHex = PrefixedHexString // uint256
+type BALStorageValueBytes = Uint8Array // uint256
+type BALStorageValueHex = PrefixedHexString // uint256 as hex
+type BALAccessIndexNumber = number // uint16
+type BALAccessIndexHex = PrefixedHexString // uint16 as hex d
+type BALBalanceHex = PrefixedHexString // uint256 as hex
+type BALNonceHex = PrefixedHexString // uint64 as hex
+type BALByteCodeBytes = Uint8Array // bytes
+type BALByteCodeHex = PrefixedHexString // bytes as hex
+
+// Change types which can be used for internal representation and raw format.
+type BALRawStorageChange = [BALAccessIndexNumber, BALStorageValueBytes]
+type BALRawBalanceChange = [BALAccessIndexNumber, BALBalanceHex]
+type BALRawNonceChange = [BALAccessIndexNumber, BALNonceHex]
+type BALRawCodeChange = [BALAccessIndexNumber, BALByteCodeBytes]
+type BALRawSlotChanges = [BALStorageKeyHex, BALRawStorageChange[]]
+
+// Core data format for the raw format.
+type BALRawAccountChanges = [
+  BALAddressHex,
+  BALRawSlotChanges[],
+  BALStorageKeyHex[],
+  BALRawBalanceChange[],
+  BALRawNonceChange[],
+  BALRawCodeChange[],
+]
+type BALRawBlockAccessList = BALRawAccountChanges[]
+
+// Internal representation of the access list.
+export type Accesses = Record<
+  BALAddressHex,
+  {
+    nonceChanges: BALRawNonceChange[]
+    balanceChanges: BALRawBalanceChange[]
+    codeChanges: BALRawCodeChange[]
+    storageChanges: Record<BALStorageKeyHex, BALRawStorageChange[]>
+    storageReads: Set<BALStorageKeyHex>
+  }
+>
+
+// JSON representation types (all numeric values as hex strings for JSON serialization)
+// JSON change types
+interface BALJSONBalanceChange {
+  blockAccessIndex: BALAccessIndexHex
+  postBalance: BALBalanceHex
+}
+
+interface BALJSONNonceChange {
+  blockAccessIndex: BALAccessIndexHex
+  postNonce: BALNonceHex
+}
+
+interface BALJSONCodeChange {
+  blockAccessIndex: BALAccessIndexHex
+  newCode: BALByteCodeHex
+}
+
+interface BALJSONStorageChange {
+  blockAccessIndex: BALAccessIndexHex
+  postValue: BALStorageValueHex
+}
+
+interface BALJSONSlotChanges {
+  slot: BALStorageKeyHex
+  slotChanges: BALJSONStorageChange[]
+}
+
+// JSON representation of account changes
+interface BALJSONAccountChanges {
+  address: BALAddressHex
+  balanceChanges: BALJSONBalanceChange[]
+  nonceChanges: BALJSONNonceChange[]
+  codeChanges: BALJSONCodeChange[]
+  storageChanges: BALJSONSlotChanges[]
+  storageReads: BALStorageKeyHex[]
+}
+
+// Top level JSON type
+export type BALJSONBlockAccessList = BALJSONAccountChanges[]
+
+// Re-export JSON types for external use
+export type {
+  BALJSONAccountChanges,
+  BALJSONStorageChange,
+  BALJSONSlotChanges,
+  BALJSONBalanceChange,
+  BALJSONNonceChange,
+  BALJSONCodeChange,
+}
+
+/**
+ * Structural helper class for block level access lists
+ *
+ * EXPERIMENTAL: DO NOT USE IN PRODUCTION!
+ */
+export class BlockLevelAccessList {
+  public accesses: Accesses
+
+  constructor(accesses: Accesses = {}) {
+    this.accesses = accesses
+  }
+
+  /**
+   * Serializes the block level access list to RLP.
+   *
+   * @returns the RLP encoded block level access list
+   */
+  public serialize(): Uint8Array {
+    return RLP.encode(this.raw())
+  }
+
+  /**
+   * This hash is used in the block header
+   *
+   * @returns the hash of the serialized block level access list
+   */
+  public hash(): Uint8Array {
+    return keccak_256(this.serialize())
+  }
+
+  /**
+   * Returns the raw block level access list with values
+   * correctly sorted.
+   *
+   * @returns the raw block level access list
+   */
+  public raw(): BALRawBlockAccessList {
+    const bal: BALRawBlockAccessList = []
+
+    for (const address of Object.keys(this.accesses).sort()) {
+      const data = this.accesses[address as BALAddressHex]
+
+      // Format storage changes: [slot, [[index, value], ...]]
+      // Normalize slot keys for canonical RLP encoding (0 -> empty bytes)
+      const storageChanges = (
+        Object.entries(data.storageChanges) as [BALStorageKeyHex, BALRawStorageChange[]][]
+      )
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(([slot, changes]) => [normalizeHexForRLP(slot), changes.sort((a, b) => a[0] - b[0])])
+
+      // Normalize storage reads for canonical RLP encoding (0 -> empty bytes)
+      const storageReads = Array.from(data.storageReads).map(normalizeHexForRLP)
+
+      bal.push([
+        address as BALAddressHex,
+        storageChanges,
+        storageReads,
+        data.balanceChanges,
+        data.nonceChanges,
+        data.codeChanges,
+      ] as BALRawAccountChanges)
+    }
+
+    return bal
+  }
+
+  public addAddress(address: BALAddressHex): void {
+    if (this.accesses[address] !== undefined) {
+      return
+    }
+    this.accesses[address] = {
+      storageChanges: {},
+      storageReads: new Set(),
+      balanceChanges: [],
+      nonceChanges: [],
+      codeChanges: [],
+    }
+  }
+
+  public addStorageWrite(
+    address: BALAddressHex,
+    storageKey: BALStorageKeyHex,
+    value: BALStorageValueBytes,
+    blockAccessIndex: BALAccessIndexNumber,
+  ): void {
+    this.accesses[address].storageChanges[storageKey].push([blockAccessIndex, value])
+  }
+
+  public addStorageRead(address: BALAddressHex, storageKey: BALStorageKeyHex): void {
+    this.accesses[address].storageReads.add(storageKey)
+  }
+
+  public addBalanceChange(
+    address: BALAddressHex,
+    balance: BALBalanceHex,
+    blockAccessIndex: BALAccessIndexNumber,
+  ): void {
+    this.accesses[address].balanceChanges.push([blockAccessIndex, balance])
+  }
+
+  public addNonceChange(
+    address: BALAddressHex,
+    nonce: BALNonceHex,
+    blockAccessIndex: BALAccessIndexNumber,
+  ): void {
+    this.accesses[address].nonceChanges.push([blockAccessIndex, nonce])
+  }
+
+  public addCodeChange(
+    address: BALAddressHex,
+    code: BALByteCodeBytes,
+    blockAccessIndex: BALAccessIndexNumber,
+  ): void {
+    this.accesses[address].codeChanges.push([blockAccessIndex, code])
+  }
+}
+
+export function createBlockLevelAccessList(): BlockLevelAccessList {
+  return new BlockLevelAccessList()
+}
+
+export function createBlockLevelAccessListFromJSON(
+  json: BALJSONBlockAccessList,
+): BlockLevelAccessList {
+  const bal = new BlockLevelAccessList()
+
+  for (const account of json) {
+    bal.addAddress(account.address)
+    const access = bal.accesses[account.address]
+
+    for (const slotChange of account.storageChanges) {
+      if (access.storageChanges[slotChange.slot] === undefined) {
+        access.storageChanges[slotChange.slot] = []
+      }
+      for (const change of slotChange.slotChanges) {
+        access.storageChanges[slotChange.slot].push([
+          parseInt(change.blockAccessIndex, 16),
+          hexToBytes(change.postValue),
+        ])
+      }
+    }
+
+    for (const slot of account.storageReads) {
+      access.storageReads.add(slot)
+    }
+
+    for (const change of account.balanceChanges) {
+      access.balanceChanges.push([parseInt(change.blockAccessIndex, 16), change.postBalance])
+    }
+
+    for (const change of account.nonceChanges) {
+      access.nonceChanges.push([parseInt(change.blockAccessIndex, 16), change.postNonce])
+    }
+
+    for (const change of account.codeChanges) {
+      access.codeChanges.push([parseInt(change.blockAccessIndex, 16), hexToBytes(change.newCode)])
+    }
+  }
+
+  return bal
+}
+
+/**
+ * Normalizes a hex string for canonical RLP encoding.
+ * In RLP, the integer 0 must be encoded as empty bytes (0x80), not as a single zero byte (0x00).
+ * This function converts hex strings representing zero to empty Uint8Array.
+ */
+function normalizeHexForRLP(hex: PrefixedHexString): PrefixedHexString | Uint8Array {
+  // Strip 0x prefix and all leading zeros
+  const stripped = hex.slice(2).replace(/^0+/, '')
+  if (stripped === '') {
+    // Value is zero - return empty array for canonical RLP encoding
+    return Uint8Array.from([])
+  }
+  return hex
+}
