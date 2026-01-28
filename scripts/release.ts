@@ -1,15 +1,21 @@
 #!/usr/bin/env tsx
 /**
- * Simple release script for in-between releases (nightly, alpha, etc.)
- * 
+ * Release script for EthereumJS monorepo packages
+ *
+ * Supports both regular releases and in-between releases (nightly, alpha, etc.)
+ *
  * Usage:
- *   tsx scripts/simple-release.ts <version> <npm_token> <tag>
- * 
- * Example:
- *   tsx scripts/simple-release.ts 10.1.1-nightly.1 abc123 nightly
+ *   tsx scripts/release.ts <version> <tag> [--publish] [--npm-token=<token>]
+ *
+ * Examples:
+ *   # Update versions only (no publish)
+ *   tsx scripts/release.ts 10.1.0 latest
+ *
+ *   # Update versions and publish
+ *   tsx scripts/release.ts 10.1.1-nightly.1 nightly --publish --npm-token=abc123
  */
 
-import { readFileSync, writeFileSync, unlinkSync } from 'fs'
+import { readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { execSync } from 'child_process'
 
@@ -44,19 +50,38 @@ interface PackageInfo {
   packageJson: PackageJson
 }
 
-function parseArgs(): { version: string; npmToken: string; tag: string } {
+function parseArgs(): { version: string; tag: string; publish: boolean; npmToken?: string } {
   const args = process.argv.slice(2)
-  
-  if (args.length !== 3) {
-    console.error('Usage: tsx scripts/simple-release.ts <version> <npm_token> <tag>')
-    console.error('Example: tsx scripts/simple-release.ts 10.1.1-nightly.1 abc123 nightly')
+
+  // Extract flags
+  const publish = args.includes('--publish')
+  const npmTokenArg = args.find((arg) => arg.startsWith('--npm-token='))
+  const npmToken = npmTokenArg?.split('=')[1]
+
+  // Filter out flags to get positional args
+  const positionalArgs = args.filter(
+    (arg) => !arg.startsWith('--publish') && !arg.startsWith('--npm-token=')
+  )
+
+  if (positionalArgs.length !== 2) {
+    console.error('Usage: tsx scripts/release.ts <version> <tag> [--publish] [--npm-token=<token>]')
+    console.error('')
+    console.error('Examples:')
+    console.error('  tsx scripts/release.ts 10.1.0 latest')
+    console.error('  tsx scripts/release.ts 10.1.1-nightly.1 nightly --publish --npm-token=abc123')
+    process.exit(1)
+  }
+
+  if (publish && !npmToken) {
+    console.error('Error: --npm-token is required when using --publish')
     process.exit(1)
   }
 
   return {
-    version: args[0],
-    npmToken: args[1],
-    tag: args[2],
+    version: positionalArgs[0],
+    tag: positionalArgs[1],
+    publish,
+    npmToken,
   }
 }
 
@@ -150,30 +175,15 @@ function publishPackages(packages: PackageInfo[], npmToken: string, tag: string)
   console.log('\n✅ All packages published\n')
 }
 
-function revertChanges(): void {
-  console.log('\n🔄 Reverting version changes...\n')
-  
-  try {
-    // Revert all package.json files
-    execSync('git checkout -- packages/*/package.json', {
-      stdio: 'inherit',
-    })
-    console.log('\n✅ Version changes reverted\n')
-  } catch (error) {
-    console.error('\n❌ Failed to revert changes')
-    console.error('You may need to manually revert package.json files')
-    throw error
-  }
-}
-
 async function main(): Promise<void> {
-  const { version, npmToken, tag } = parseArgs()
+  const { version, tag, publish, npmToken } = parseArgs()
 
   console.log('\n' + '='.repeat(60))
-  console.log('Simple Release Script')
+  console.log('EthereumJS Release Script')
   console.log('='.repeat(60))
   console.log(`Version: ${version}`)
   console.log(`Tag: ${tag}`)
+  console.log(`Publish: ${publish ? 'yes' : 'no (dry run)'}`)
   console.log('='.repeat(60) + '\n')
 
   const rootPath = process.cwd()
@@ -202,30 +212,24 @@ async function main(): Promise<void> {
     // Step 1: Update versions
     updatePackageVersions(packages, version)
 
-    // Step 2: Publish packages
-    publishPackages(packages, npmToken, tag)
-
-    // Step 3: Revert changes
-    revertChanges()
+    // Step 2: Publish packages (if --publish flag is set)
+    if (publish) {
+      publishPackages(packages, npmToken!, tag)
+    } else {
+      console.log('\n📋 Skipping publish (use --publish to publish packages)\n')
+    }
 
     console.log('\n' + '='.repeat(60))
     console.log('✅ Release completed successfully!')
+    if (!publish) {
+      console.log('Note: Packages were NOT published. Use --publish to publish.')
+    }
     console.log('='.repeat(60) + '\n')
   } catch (error) {
     console.error('\n' + '='.repeat(60))
     console.error('❌ Release failed!')
     console.error('='.repeat(60))
     console.error(error)
-    
-    // Try to revert changes even on error
-    console.error('\nAttempting to revert changes...')
-    try {
-      revertChanges()
-    } catch (revertError) {
-      console.error('Failed to revert changes automatically')
-      console.error('Please manually revert package.json files')
-    }
-    
     process.exit(1)
   }
 }
