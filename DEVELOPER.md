@@ -78,18 +78,17 @@ Most release rounds are done as bugfix releases, including releases of non-final
 We have a release script that handles version bumping and publishing for all packages. It supports both regular releases and lightweight in-between releases (nightly, alpha).
 
 ```sh
-tsx scripts/release.ts [--bump-version=<version>] [--publish=<tag>] [--npm-token=<token>]
+tsx scripts/release.ts [--bump-version=<version>] [--publish=<tag>]
 ```
 
 **Options:**
 
 - `--bump-version=<version>` - Bump package versions to the specified version
 - `--publish=<tag>` - Publish packages with the specified npm tag
-- `--npm-token=<token>` - NPM token for authentication (required when publishing)
 
 At least one of `--bump-version` or `--publish` must be specified.
 
-To create an npm session, `npm login` must be used.
+When publishing, ensure you are authenticated with npm via `npm login` beforehand.
 
 **What the script does:**
 
@@ -103,13 +102,13 @@ To create an npm session, `npm login` must be used.
 tsx scripts/release.ts --bump-version=10.1.0
 
 # Bump versions and publish - full release
-tsx scripts/release.ts --bump-version=10.1.0 --publish=latest --npm-token=abc123
+tsx scripts/release.ts --bump-version=10.1.0 --publish=latest
 
 # Lightweight nightly release
-tsx scripts/release.ts --bump-version=10.1.1-nightly.1 --publish=nightly --npm-token=abc123
+tsx scripts/release.ts --bump-version=10.1.1-nightly.1 --publish=nightly
 
 # Publish current versions without bumping
-tsx scripts/release.ts --publish=latest --npm-token=abc123
+tsx scripts/release.ts --publish=latest
 ```
 
 ##### CHANGELOG Preparation

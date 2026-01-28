@@ -5,17 +5,17 @@
  * Supports both regular releases and in-between releases (nightly, alpha, etc.)
  *
  * Usage:
- *   tsx scripts/release.ts [--bump-version=<version>] [--publish=<tag>] [--npm-token=<token>]
+ *   tsx scripts/release.ts [--bump-version=<version>] [--publish=<tag>]
  *
  * Examples:
  *   # Bump versions only (no publish)
  *   tsx scripts/release.ts --bump-version=10.1.0
  *
  *   # Bump versions and publish
- *   tsx scripts/release.ts --bump-version=10.1.1-nightly.1 --publish=nightly --npm-token=abc123
+ *   tsx scripts/release.ts --bump-version=10.1.1-nightly.1 --publish=nightly
  *
  *   # Publish current versions (no bump)
- *   tsx scripts/release.ts --publish=latest --npm-token=abc123
+ *   tsx scripts/release.ts --publish=latest
  */
 
 import { readFileSync, writeFileSync } from 'fs'
@@ -66,7 +66,6 @@ interface PackageInfo {
 interface ParsedArgs {
   version?: string
   tag?: string
-  npmToken?: string
 }
 
 function parseArgs(): ParsedArgs {
@@ -75,30 +74,22 @@ function parseArgs(): ParsedArgs {
   // Extract named arguments
   const versionArg = args.find((arg) => arg.startsWith('--bump-version='))
   const publishArg = args.find((arg) => arg.startsWith('--publish='))
-  const npmTokenArg = args.find((arg) => arg.startsWith('--npm-token='))
 
   const version = versionArg?.split('=')[1]
   const tag = publishArg?.split('=')[1]
-  const npmToken = npmTokenArg?.split('=')[1]
 
   // Validate: at least one action must be specified
   if (!version && !tag) {
-    console.error('Usage: tsx scripts/release.ts [--bump-version=<version>] [--publish=<tag>] [--npm-token=<token>]')
+    console.error('Usage: tsx scripts/release.ts [--bump-version=<version>] [--publish=<tag>]')
     console.error('')
     console.error('Examples:')
     console.error('  tsx scripts/release.ts --bump-version=10.1.0')
-    console.error('  tsx scripts/release.ts --bump-version=10.1.1-nightly.1 --publish=nightly --npm-token=abc123')
-    console.error('  tsx scripts/release.ts --publish=latest --npm-token=abc123')
+    console.error('  tsx scripts/release.ts --bump-version=10.1.1-nightly.1 --publish=nightly')
+    console.error('  tsx scripts/release.ts --publish=latest')
     process.exit(1)
   }
 
-  // Validate: --npm-token required when publishing
-  if (tag && !npmToken) {
-    console.error('Error: --npm-token is required when using --publish')
-    process.exit(1)
-  }
-
-  return { version, tag, npmToken }
+  return { version, tag }
 }
 
 function readPackageJson(packagePath: string): PackageJson {
@@ -170,7 +161,7 @@ function updatePackages(
   console.log(`\n✅ All packages updated (${mode})\n`)
 }
 
-function publishPackages(packages: PackageInfo[], npmToken: string, tag: string): void {
+function publishPackages(packages: PackageInfo[], tag: string): void {
   console.log(`\n🚀 Publishing packages with tag "${tag}"...\n`)
 
   for (const pkg of packages) {
@@ -180,10 +171,6 @@ function publishPackages(packages: PackageInfo[], npmToken: string, tag: string)
       execSync(`npm publish --tag=${tag}`, {
         cwd: pkg.path,
         stdio: 'inherit',
-        env: {
-          ...process.env,
-          NPM_TOKEN: npmToken,
-        },
       })
       
       console.log(`  ✅ ${pkg.name} published successfully\n`)
@@ -197,7 +184,7 @@ function publishPackages(packages: PackageInfo[], npmToken: string, tag: string)
 }
 
 async function main(): Promise<void> {
-  const { version, tag, npmToken } = parseArgs()
+  const { version, tag } = parseArgs()
 
   console.log('\n' + '='.repeat(60))
   console.log('EthereumJS Release Script')
@@ -258,7 +245,7 @@ async function main(): Promise<void> {
 
     // Step 2: Publish packages (if --publish is set)
     if (tag) {
-      publishPackages(packages, npmToken!, tag)
+      publishPackages(packages, tag)
     } else {
       console.log('\n📋 Skipping publish (use --publish=<tag> to publish packages)\n')
     }
