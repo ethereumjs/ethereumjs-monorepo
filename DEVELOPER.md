@@ -114,47 +114,18 @@ tsx scripts/release.ts --publish=latest --npm-token=abc123
 
 ##### CHANGELOG Preparation
 
-The following prompts have been tested with Cursor IDE to work well for CHANGELOG preparation:
-
-TODO: Update
-
-Step 1: CHANGELOG entries, version bumps and dependency updates
-(please adjust dates, versions and file references accordingly)
+The following prompt has been tested with Cursor IDE to work well for CHANGELOG updates (please update placeholders in the first paragraph accordingly):
 
 ```markdown
-We are planning to do a new release round for all active packages listed in @README.md on September 10 2025, bumping versions to 10.0.1.
+I want to do a new release round for all active packages listed in @README.md. Version bump has already been done, see an exemplary [ REFERENCE package.json FILE ] file, release is target for today. Last release round has been done on [ ENTER DATE IN FORMAT: April 29 2025 ] along commit [ ENTER COMMIT HASH, e.g.: 9e461f54312bf20c710b43ab73f7d3ad753f8765 ]. An exemplary CHANGELOG.md file is [ REFERENCE e.g. block CHANGELOG.md file ].
 
-Can you please add new headers in the relevant CHANGELOG.md files for the packages, e.g. @CHANGELOG.md?
+Can you please add new sections in the CHANGELOG files and add one-line summaries for the user-facing changes? For this please go for the commits since last release, one commit represents one PR due to our (squash) merge policy. You can leave out PRs only updating documentation, code in the examples folder or tests. Also tooling infrastructure (linting,...) and CI updating PRs can be left out. New support for new and deprecation for older Node.js as well as TypeScript versions should be added. Version updates for external dependencies - so not from within the monorepo - should be added as well.
 
-Please then also bump the version number in the relevant package.json files like @package.json of the active packages.
-
-And last but not least please update the internal dependency versions in `package.json` files accordingly, both if listed as dependencies as well as dev dependencies, and this step for both the active and the deprecated (also see @README.md) packages. Do not include the root package.json file here.
-```
-
-Step 2: Condensed CHANGELOG entries
-(again, dates and commit hashes to be adjusted accordingly, examples can remain as provided)
-
-```markdown
-Thanks, that was great!
-
-Last release round has been done on April 29 2025 along commit 9e461f54312bf20c710b43ab73f7d3ad753f8765.
-
-We now would want to deal with the rather minor changes being done since then and include them in the new section fo the CHANGELOG.md files for the active repositories that you just prepared for.
-
-As a first step can you go through all commits after the mentioned last release round and identify PRs (one commit is the same as one PR in our specific work setup) where active production code in the respective src directories has been touched. You can leave out PRs only updating documentation, code in the examples folder or tests. Also tooling infrastructure (linting,...) and CI updating PRs can be left out. New support for new and deprecation for older Node.js as well as TypeScript versions should be added. Version updates for external dependencies - so not from within the monorepo - should be added as well.
-
-Can you now based on this collection add simple one-liner summaries in the CHANGELOG sections, one line for each PR respectively commit identified to be added. Here are a few examples for orientation regarding the desired format:
+Here is an example for the format of a change/PR entry:
 
 - New default hardfork: `Shanghai` -> `Cancun`, see PR [#3566](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3566)
-- `Block.validateData()` now throws if unsigned txs are added, PR [#3240](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3240)
-- Remove `networkId` property from chain files (use `chainId` instead), PR [#3513](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3513)
-- Upgrade to TypeScript 5, PR [#3607](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3607)
-- Stricter prefixed hex typing, PRs [#3348](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3348)
-- Adds support for [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) EOA code transactions (outdated) (see tx library for full documentation), see PR [#3470](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3470)
 
-Added lines should follow the format from the examples given above. PR numbers and links can be extracted from the commit titles, these are the hash-prefixed number links in the title.
-
-For the CHANGELOG files you have not added lines in this step please enter the following sentence instead: Maintenance release, no active changes.
+For the CHANGELOG files you have not added lines in this step please nevertheless add a CHANGELOG entry (we do releases for all active packages no matter the changeset) and enter the following sentence: Maintenance release, no active changes.
 ```
 
 #### Windows Users Note
