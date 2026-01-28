@@ -1008,15 +1008,15 @@ async function trackStateChanges(
       )
       blockLevelAccessList.addStorageWrite(address, storageKey, value, blockAccessIndex)
     }
-    const account = await vm.stateManager.getAccount(createAddressFromString(address))
-    const code = await vm.stateManager.getCode(createAddressFromString(address))
+    //const account = await vm.stateManager.getAccount(createAddressFromString(address))
+    //const code = await vm.stateManager.getCode(createAddressFromString(address))
 
     // TODO: only if changed
-    blockLevelAccessList.addBalanceChange(address, account!.balance, blockAccessIndex)
+    //blockLevelAccessList.addBalanceChange(address, account!.balance, blockAccessIndex)
     // TODO: only if changed
-    blockLevelAccessList.addNonceChange(address, account!.nonce, blockAccessIndex)
+    //blockLevelAccessList.addNonceChange(address, account!.nonce, blockAccessIndex)
     // TODO: only if changed
-    blockLevelAccessList.addCodeChange(address, code, blockAccessIndex)
+    //blockLevelAccessList.addCodeChange(address, code, blockAccessIndex)
   }
 }
 
@@ -1025,13 +1025,13 @@ async function collectWithdrawalAccesses(
   blockLevelAccessList: BlockLevelAccessList,
   block: Block,
 ): Promise<void> {
-  const postIndex = block.transactions.length + 1
+  //const postIndex = block.transactions.length + 1
   const withdrawals = block.withdrawals!
   for (const withdrawal of withdrawals) {
     const address = withdrawal.address.toString()
     blockLevelAccessList.addAddress(address)
-    const balance = (await vm.stateManager.getAccount(createAddressFromString(address)))!.balance
-    blockLevelAccessList.addBalanceChange(address, balance, postIndex)
+    //const balance = (await vm.stateManager.getAccount(createAddressFromString(address)))!.balance
+    //blockLevelAccessList.addBalanceChange(address, balance, postIndex)
   }
 }
 
