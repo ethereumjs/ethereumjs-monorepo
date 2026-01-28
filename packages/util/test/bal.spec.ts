@@ -8,6 +8,7 @@ import {
 } from '../src/bal.ts'
 import { bytesToHex } from '../src/bytes.ts'
 import { KECCAK256_RLP_ARRAY_S } from '../src/constants.ts'
+import type { PrefixedHexString } from '../src/types.ts'
 import bal_all_transaction_types from './testdata/bal/bal_all_transaction_types.json' with {
   type: 'json',
 }
@@ -57,5 +58,31 @@ describe('JSON', () => {
       bal_all_transaction_types as BALJSONBlockAccessList,
     )
     assert.isNotNull(bal)
+  })
+
+  it('should map JSON fields to internal types', () => {
+    const bal = createBlockLevelAccessListFromJSON(
+      bal_all_transaction_types as BALJSONBlockAccessList,
+    )
+    const addressWithReads = bal_all_transaction_types[0].address as PrefixedHexString
+    for (const read of bal_all_transaction_types[0].storageReads) {
+      assert.isTrue(bal.accesses[addressWithReads].storageReads.has(read as PrefixedHexString))
+    }
+
+    const addressWithStorageWrite = bal_all_transaction_types[2].address as PrefixedHexString
+    for (const write of bal_all_transaction_types[2].storageChanges) {
+      const storageWrite =
+        bal.accesses[addressWithStorageWrite].storageChanges[write.slot as PrefixedHexString][0]
+      assert.deepEqual(storageWrite[0], parseInt(write.slotChanges[0].blockAccessIndex, 16))
+      assert.equal(bytesToHex(storageWrite[1]), write.slotChanges[0].postValue)
+    }
+
+    const addressWithCodeChange = bal_all_transaction_types[3].address as PrefixedHexString
+    for (const codeChange of bal_all_transaction_types[3].codeChanges) {
+      const codeChangeData = bal.accesses[addressWithCodeChange].codeChanges[0]
+      assert.deepEqual(codeChangeData[0], parseInt(codeChange.blockAccessIndex, 16))
+      assert.equal(codeChangeData[1].length > 0, true)
+      assert.equal(bytesToHex(codeChangeData[1]), codeChange.newCode)
+    }
   })
 })
