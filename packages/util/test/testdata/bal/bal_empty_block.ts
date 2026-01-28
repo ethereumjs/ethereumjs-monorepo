@@ -31,7 +31,7 @@ export const balEmptyBlock: Accesses = {
     codeChanges: [],
     storageChanges: {
       '0x00': [
-        ['0x00', hexToBytes('0x7f70ecfdb2f3ff276e1156fbf569c8d41047fc1cf00f32134d3d345404093ce2')],
+        [0, hexToBytes('0x7f70ecfdb2f3ff276e1156fbf569c8d41047fc1cf00f32134d3d345404093ce2')],
       ],
     },
     storageReads: new Set<PrefixedHexString>(),
@@ -41,8 +41,8 @@ export const balEmptyBlock: Accesses = {
     balanceChanges: [],
     codeChanges: [],
     storageChanges: {
-      '0x0c': [['0x00', hexToBytes('0x0c')]],
-      '0x200b': [['0x00', hexToBytes('0xabcdef')]],
+      '0x0c': [[0, hexToBytes('0x0c')]],
+      '0x200b': [[0, hexToBytes('0xabcdef')]],
     },
     storageReads: new Set<PrefixedHexString>(),
   },

@@ -31,7 +31,7 @@ export const balSimple: Accesses = {
     codeChanges: [],
     storageChanges: {
       '0x00': [
-        ['0x00', hexToBytes('0x372103e56664908ceaa2479eae7f3e852363b920a2ee7a19559b0a2035ba3d21')],
+        [0, hexToBytes('0x372103e56664908ceaa2479eae7f3e852363b920a2ee7a19559b0a2035ba3d21')],
       ],
     },
     storageReads: new Set<PrefixedHexString>(),
@@ -41,16 +41,16 @@ export const balSimple: Accesses = {
     balanceChanges: [],
     codeChanges: [],
     storageChanges: {
-      '0x0c': [['0x00', hexToBytes('0x0c')]],
-      '0x200b': [['0x00', hexToBytes('0xabcdef')]],
+      '0x0c': [[0, hexToBytes('0x0c')]],
+      '0x200b': [[0, hexToBytes('0xabcdef')]],
     },
     storageReads: new Set<PrefixedHexString>(),
   },
   '0x2adc25665018aa1fe0e6bc666dac8fc2697ff9ba': {
     nonceChanges: [],
     balanceChanges: [
-      ['0x01', '0xf618'],
-      ['0x02', '0x01ec30'],
+      [1, '0xf618'],
+      [2, '0x01ec30'],
     ],
     codeChanges: [],
     storageChanges: {},
@@ -59,23 +59,23 @@ export const balSimple: Accesses = {
   '0x6032d7702ce646223d30c900bfc4d8641ce84dd1': {
     nonceChanges: [],
     balanceChanges: [
-      ['0x01', '0x0a'],
-      ['0x02', '0x14'],
+      [1, '0x0a'],
+      [2, '0x14'],
     ],
     codeChanges: [],
     storageChanges: {},
     storageReads: new Set<PrefixedHexString>(),
   },
   '0x9c450aafafe41b35edac4bc49eddb23209a250dc': {
-    nonceChanges: [['0x02', '0x01']],
-    balanceChanges: [['0x02', '0x3635c9adc5de9ccba6']],
+    nonceChanges: [[2, '0x01']],
+    balanceChanges: [[2, '0x3635c9adc5de9ccba6']],
     codeChanges: [],
     storageChanges: {},
     storageReads: new Set<PrefixedHexString>(),
   },
   '0xf5ffa27864bf419390eaa7c520b528a740c594de': {
-    nonceChanges: [['0x01', '0x01']],
-    balanceChanges: [['0x01', '0x3635c9adc5de9ccba6']],
+    nonceChanges: [[1, '0x01']],
+    balanceChanges: [[1, '0x3635c9adc5de9ccba6']],
     codeChanges: [],
     storageChanges: {},
     storageReads: new Set<PrefixedHexString>(),
