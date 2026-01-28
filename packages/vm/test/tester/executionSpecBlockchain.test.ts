@@ -103,6 +103,9 @@ export async function runBlockchainTestCase(
       parentBlock = block
       t.notExists(expectException, `Should have thrown with: ${expectException}`)
     } catch (e: any) {
+      if (e.message.includes(`Should have thrown`) === true) {
+        throw e
+      }
       // Check if the block failed due to an expected exception
       t.exists(
         expectException,
