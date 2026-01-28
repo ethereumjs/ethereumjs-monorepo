@@ -1,5 +1,6 @@
 import { RLP } from '@ethereumjs/rlp'
 import { keccak_256 } from '@noble/hashes/sha3.js'
+import { hexToBytes } from './bytes.ts'
 import type { PrefixedHexString } from './types.ts'
 
 // Base types which can be used for JSON, internal representation and raw format.
@@ -216,10 +217,44 @@ export function createBlockLevelAccessList(): BlockLevelAccessList {
 }
 
 export function createBlockLevelAccessListFromJSON(
-  _json: BALJSONBlockAccessList,
+  json: BALJSONBlockAccessList,
 ): BlockLevelAccessList {
-  // TODO: implement conversion from JSON to internal format
-  return new BlockLevelAccessList()
+  const bal = new BlockLevelAccessList()
+
+  for (const account of json) {
+    bal.addAddress(account.address)
+    const access = bal.accesses[account.address]
+
+    for (const slotChange of account.storageChanges) {
+      if (access.storageChanges[slotChange.slot] === undefined) {
+        access.storageChanges[slotChange.slot] = []
+      }
+      for (const change of slotChange.slotChanges) {
+        access.storageChanges[slotChange.slot].push([
+          parseInt(change.blockAccessIndex, 16),
+          hexToBytes(change.postValue),
+        ])
+      }
+    }
+
+    for (const slot of account.storageReads) {
+      access.storageReads.add(slot)
+    }
+
+    for (const change of account.balanceChanges) {
+      access.balanceChanges.push([parseInt(change.blockAccessIndex, 16), change.postBalance])
+    }
+
+    for (const change of account.nonceChanges) {
+      access.nonceChanges.push([parseInt(change.blockAccessIndex, 16), change.postNonce])
+    }
+
+    for (const change of account.codeChanges) {
+      access.codeChanges.push([parseInt(change.blockAccessIndex, 16), hexToBytes(change.newCode)])
+    }
+  }
+
+  return bal
 }
 
 /**
