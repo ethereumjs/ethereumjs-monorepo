@@ -13,11 +13,16 @@ import bal_all_transaction_types from './testdata/bal/bal_all_transaction_types.
   type: 'json',
 }
 import {
+  balAllTransactionTypes,
+  balAllTransactionTypesHash,
+  balAllTransactionTypesRLP,
+} from './testdata/bal/bal_all_transaction_types.ts'
+import {
   balEmptyBlockNoCoinbase,
   balEmptyBlockNoCoinbaseHash,
   balEmptyBlockNoCoinbaseRLP,
 } from './testdata/bal/bal_empty_block_no_coinbase.ts'
-import { balSimple, balSimpleHash } from './testdata/bal/bal_simple.ts'
+import { balSimple, balSimpleHash, balSimpleRLP } from './testdata/bal/bal_simple.ts'
 
 describe('Basic initialization', () => {
   it('should create an empty access list', () => {
@@ -42,13 +47,21 @@ describe('Basic initialization', () => {
     assert.deepEqual(bytesToHex(bal.hash()), balSimpleHash)
   })
 
-  it('hashes should match', () => {
+  it('hashes and RLP should match', () => {
     let bal = new BlockLevelAccessList()
     assert.deepEqual(bytesToHex(bal.hash()), KECCAK256_RLP_ARRAY_S)
+
+    bal = new BlockLevelAccessList(balSimple)
+    assert.deepEqual(bytesToHex(bal.serialize()), balSimpleRLP)
+    assert.deepEqual(bytesToHex(bal.hash()), balSimpleHash)
 
     bal = new BlockLevelAccessList(balEmptyBlockNoCoinbase)
     assert.deepEqual(bytesToHex(bal.serialize()), balEmptyBlockNoCoinbaseRLP)
     assert.deepEqual(bytesToHex(bal.hash()), balEmptyBlockNoCoinbaseHash)
+
+    bal = new BlockLevelAccessList(balAllTransactionTypes)
+    assert.deepEqual(bytesToHex(bal.serialize()), balAllTransactionTypesRLP)
+    assert.deepEqual(bytesToHex(bal.hash()), balAllTransactionTypesHash)
   })
 })
 
