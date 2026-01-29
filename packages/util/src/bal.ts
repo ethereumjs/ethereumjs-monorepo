@@ -1,6 +1,6 @@
 import { RLP } from '@ethereumjs/rlp'
 import { keccak_256 } from '@noble/hashes/sha3.js'
-import { bytesToHex, bytesToInt, hexToBytes } from './bytes.ts'
+import { bytesToHex, bytesToInt, hexToBigInt, hexToBytes } from './bytes.ts'
 import type { PrefixedHexString } from './types.ts'
 
 // Base types which can be used for JSON, internal representation and raw format.
@@ -180,10 +180,19 @@ export class BlockLevelAccessList {
     value: BALStorageValueBytes,
     blockAccessIndex: BALAccessIndexNumber,
   ): void {
+    if (this.accesses[address] === undefined) {
+      this.addAddress(address)
+    }
+    if (this.accesses[address].storageChanges[storageKey] === undefined) {
+      this.accesses[address].storageChanges[storageKey] = []
+    }
     this.accesses[address].storageChanges[storageKey].push([blockAccessIndex, value])
   }
 
   public addStorageRead(address: BALAddressHex, storageKey: BALStorageKeyHex): void {
+    if (this.accesses[address] === undefined) {
+      this.addAddress(address)
+    }
     this.accesses[address].storageReads.add(storageKey)
   }
 
@@ -192,6 +201,9 @@ export class BlockLevelAccessList {
     balance: BALBalanceHex,
     blockAccessIndex: BALAccessIndexNumber,
   ): void {
+    if (this.accesses[address] === undefined) {
+      this.addAddress(address)
+    }
     this.accesses[address].balanceChanges.push([blockAccessIndex, balance])
   }
 
@@ -200,6 +212,9 @@ export class BlockLevelAccessList {
     nonce: BALNonceHex,
     blockAccessIndex: BALAccessIndexNumber,
   ): void {
+    if (this.accesses[address] === undefined) {
+      this.addAddress(address)
+    }
     this.accesses[address].nonceChanges.push([blockAccessIndex, nonce])
   }
 
@@ -208,6 +223,9 @@ export class BlockLevelAccessList {
     code: BALByteCodeBytes,
     blockAccessIndex: BALAccessIndexNumber,
   ): void {
+    if (this.accesses[address] === undefined) {
+      this.addAddress(address)
+    }
     this.accesses[address].codeChanges.push([blockAccessIndex, code])
   }
 }
