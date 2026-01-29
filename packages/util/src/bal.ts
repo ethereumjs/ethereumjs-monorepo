@@ -146,7 +146,9 @@ export class BlockLevelAccessList {
         .map(([slot, changes]) => [normalizeHexForRLP(slot), changes.sort((a, b) => a[0] - b[0])])
 
       // Normalize storage reads for canonical RLP encoding (0 -> empty bytes)
-      const storageReads = Array.from(data.storageReads).map(normalizeHexForRLP)
+      const storageReads = Array.from(data.storageReads)
+        .map(normalizeHexForRLP)
+        .sort((a, b) => Number(hexToBigInt(a as `0x${string}`) - hexToBigInt(b as `0x${string}`)))
 
       bal.push([
         address as BALAddressHex,
