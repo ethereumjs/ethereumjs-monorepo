@@ -17,11 +17,15 @@ import {
   balAllTransactionTypesHash,
   balAllTransactionTypesRLP,
 } from './testdata/bal/bal_all_transaction_types.ts'
+import bal_empty_block_no_coinbase from './testdata/bal/bal_empty_block_no_coinbase.json' with {
+  type: 'json',
+}
 import {
   balEmptyBlockNoCoinbase,
   balEmptyBlockNoCoinbaseHash,
   balEmptyBlockNoCoinbaseRLP,
 } from './testdata/bal/bal_empty_block_no_coinbase.ts'
+import bal_simple from './testdata/bal/bal_simple.json' with { type: 'json' }
 import { balSimple, balSimpleHash, balSimpleRLP } from './testdata/bal/bal_simple.ts'
 
 describe('Basic initialization', () => {
@@ -97,5 +101,27 @@ describe('JSON', () => {
       assert.equal(codeChangeData[1].length > 0, true)
       assert.equal(bytesToHex(codeChangeData[1]), codeChange.newCode)
     }
+  })
+
+  it('Creating from JSON should do the full round trip', () => {
+    let bal = createBlockLevelAccessListFromJSON(
+      bal_empty_block_no_coinbase as BALJSONBlockAccessList,
+    )
+    assert.isNotNull(bal)
+    assert.deepEqual(bal.accesses, balEmptyBlockNoCoinbase)
+    assert.deepEqual(bytesToHex(bal.serialize()), balEmptyBlockNoCoinbaseRLP)
+    assert.deepEqual(bytesToHex(bal.hash()), balEmptyBlockNoCoinbaseHash)
+
+    bal = createBlockLevelAccessListFromJSON(bal_simple as BALJSONBlockAccessList)
+    assert.isNotNull(bal)
+    assert.deepEqual(bal.accesses, balSimple)
+    assert.deepEqual(bytesToHex(bal.serialize()), balSimpleRLP)
+    assert.deepEqual(bytesToHex(bal.hash()), balSimpleHash)
+
+    bal = createBlockLevelAccessListFromJSON(bal_all_transaction_types as BALJSONBlockAccessList)
+    assert.isNotNull(bal)
+    assert.deepEqual(bal.accesses, balAllTransactionTypes)
+    assert.deepEqual(bytesToHex(bal.serialize()), balAllTransactionTypesRLP)
+    assert.deepEqual(bytesToHex(bal.hash()), balAllTransactionTypesHash)
   })
 })
