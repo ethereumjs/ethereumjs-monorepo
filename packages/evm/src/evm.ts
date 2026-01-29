@@ -1,4 +1,5 @@
 import { Hardfork } from '@ethereumjs/common'
+import type { BlockLevelAccessList } from '@ethereumjs/util'
 import {
   Account,
   Address,
@@ -10,6 +11,7 @@ import {
   MAX_INTEGER,
   bigIntToBytes,
   bytesToUnprefixedHex,
+  createBlockLevelAccessList,
   createZeroAddress,
   equalsBytes,
   generateAddress,
@@ -209,6 +211,8 @@ export class EVM implements EVMInterface {
   public readonly allowUnlimitedContractSize: boolean
   public readonly allowUnlimitedInitCodeSize: boolean
 
+  public readonly blockLevelAccessList?: BlockLevelAccessList
+
   protected readonly _customOpcodes?: CustomOpcode[]
   protected readonly _customPrecompiles?: CustomPrecompile[]
 
@@ -273,6 +277,10 @@ export class EVM implements EVMInterface {
           )
         }
       }
+    }
+
+    if (this.common.isActivatedEIP(7928)) {
+      this.blockLevelAccessList = opts.blockLevelAccessList ?? createBlockLevelAccessList()
     }
 
     this.events = new EventEmitter<EVMEvent>()
