@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/binarytree",
-  "version": "10.1.0",
+  "version": "10.1.1",
   "description": "Implementation of binary trees as used in Ethereum.",
   "keywords": ["binary", "tree", "trie", "ethereum"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/binarytree#readme",
@@ -54,8 +54,8 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/rlp": "^10.1.0",
-    "@ethereumjs/util": "^10.1.0",
+    "@ethereumjs/rlp": "^10.1.1",
+    "@ethereumjs/util": "^10.1.1",
     "@noble/hashes": "^2.0.1",
     "debug": "^4.4.0",
     "lru-cache": "11.0.2"

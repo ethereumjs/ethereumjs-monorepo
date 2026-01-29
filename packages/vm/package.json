@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/vm",
-  "version": "10.1.0",
+  "version": "10.1.1",
   "description": "An Ethereum VM implementation",
   "keywords": ["ethereum", "VM"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#readme",
@@ -67,20 +67,20 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/block": "^10.1.0",
-    "@ethereumjs/common": "^10.1.0",
-    "@ethereumjs/evm": "^10.1.0",
-    "@ethereumjs/mpt": "^10.1.0",
-    "@ethereumjs/rlp": "^10.1.0",
-    "@ethereumjs/statemanager": "^10.1.0",
-    "@ethereumjs/tx": "^10.1.0",
-    "@ethereumjs/util": "^10.1.0",
+    "@ethereumjs/block": "^10.1.1",
+    "@ethereumjs/common": "^10.1.1",
+    "@ethereumjs/evm": "^10.1.1",
+    "@ethereumjs/mpt": "^10.1.1",
+    "@ethereumjs/rlp": "^10.1.1",
+    "@ethereumjs/statemanager": "^10.1.1",
+    "@ethereumjs/tx": "^10.1.1",
+    "@ethereumjs/util": "^10.1.1",
     "@noble/hashes": "^2.0.1",
     "debug": "^4.4.0",
     "eventemitter3": "^5.0.1"
   },
   "devDependencies": {
-    "@ethereumjs/blockchain": "^10.1.0",
+    "@ethereumjs/blockchain": "^10.1.1",
     "@ethereumjs/ethash": "^10.0.0",
     "@ethereumjs/testdata": "1.0.0",
     "@noble/curves": "^2.0.1",
