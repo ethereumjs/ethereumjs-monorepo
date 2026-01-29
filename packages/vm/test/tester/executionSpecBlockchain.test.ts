@@ -22,8 +22,12 @@ import { createCommonForFork, loadExecutionSpecFixtures } from './executionSpecT
 
 const customFixturesPath = process.env.TEST_PATH ?? '../execution-spec-tests'
 const fixturesPath = path.resolve(customFixturesPath)
+const testFile = process.env.TEST_FILE
 
 console.log(`Using execution-spec blockchain tests from: ${fixturesPath}`)
+if (testFile !== undefined) {
+  console.log(`Filtering tests to file: ${testFile}`)
+}
 
 // Create KZG instance once at the top level (expensive operation)
 const kzg = new microEthKZG(trustedSetup)
@@ -33,7 +37,13 @@ if (fs.existsSync(fixturesPath) === false) {
     it.skip(`fixtures not found at ${fixturesPath}`, () => {})
   })
 } else {
-  const fixtures = loadExecutionSpecFixtures(fixturesPath, 'blockchain_tests')
+  let fixtures = loadExecutionSpecFixtures(fixturesPath, 'blockchain_tests')
+
+  // Filter by TEST_FILE if provided (works with or without .json extension)
+  if (testFile !== undefined) {
+    const normalizedTestFile = testFile.endsWith('.json') ? testFile : `${testFile}.json`
+    fixtures = fixtures.filter((f) => path.basename(f.filePath) === normalizedTestFile)
+  }
 
   describe('Execution-spec blockchain tests', () => {
     if (fixtures.length === 0) {
