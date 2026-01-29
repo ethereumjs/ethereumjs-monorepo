@@ -695,6 +695,7 @@ export class Interpreter {
    * @param original - If true, return the original storage value (default: false)
    */
   async storageLoad(key: Uint8Array, original = false): Promise<Uint8Array> {
+    this._evm.blockLevelAccessList?.addStorageRead(this._env.address.toString(), bytesToHex(key))
     if (original) {
       return this._stateManager.originalStorageCache.get(this._env.address, key)
     } else {
