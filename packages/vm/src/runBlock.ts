@@ -18,7 +18,6 @@ import {
   bytesToHex,
   concatBytes,
   createAddressFromString,
-  createBlockLevelAccessList,
   equalsBytes,
   hexToBytes,
   intToBytes,
@@ -36,12 +35,7 @@ import { accumulateRequests } from './requests.ts'
 
 import type { Block } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
-import type {
-  BlockLevelAccessList,
-  CLRequest,
-  CLRequestType,
-  PrefixedHexString,
-} from '@ethereumjs/util'
+import type { CLRequest, CLRequestType, PrefixedHexString } from '@ethereumjs/util'
 import type {
   AfterBlockEvent,
   ApplyBlockResult,
@@ -168,16 +162,10 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     debug(`block checkpoint`)
   }
 
-  let blockLevelAccessList: BlockLevelAccessList | undefined
-  if (vm.common.isActivatedEIP(7928)) {
-    blockLevelAccessList = createBlockLevelAccessList()
-    // Pre-execution system contracts
-    await trackSystemContracts(vm, blockLevelAccessList, block)
-  }
   let result: ApplyBlockResult
 
   try {
-    result = await applyBlock(vm, block, opts, blockLevelAccessList)
+    result = await applyBlock(vm, block, opts)
     if (vm.DEBUG) {
       debug(
         `Received block results gasUsed=${result.gasUsed} bloom=${short(result.bloom.bitvector)} (${
@@ -197,10 +185,6 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
       console.timeEnd(withdrawalsRewardsCommitLabel)
     }
     throw err
-  }
-  if (blockLevelAccessList) {
-    // Post-execution system contracts
-    await trackSystemContracts(vm, blockLevelAccessList, block, block.transactions.length + 1)
   }
   let requestsHash: Uint8Array | undefined
   let requests: CLRequest<CLRequestType>[] | undefined
@@ -342,7 +326,6 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     preimages: result.preimages,
     requestsHash,
     requests,
-    blockLevelAccessList,
   }
 
   const afterBlockEvent: AfterBlockEvent = { ...results, block }
@@ -388,12 +371,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
  * @param {Block} block
  * @param {RunBlockOpts} opts
  */
-async function applyBlock(
-  vm: VM,
-  block: Block,
-  opts: RunBlockOpts,
-  blockLevelAccessList?: BlockLevelAccessList,
-): Promise<ApplyBlockResult> {
+async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<ApplyBlockResult> {
   // Validate block
   if (opts.skipBlockValidation !== true) {
     if (block.header.gasLimit >= BigInt('0x8000000000000000')) {
@@ -444,11 +422,7 @@ async function applyBlock(
     debug(`Apply transactions`)
   }
 
-  const blockResults = await applyTransactions(vm, block, opts, blockLevelAccessList)
-
-  if (blockLevelAccessList) {
-    await collectWithdrawalAccesses(vm, blockLevelAccessList, block)
-  }
+  const blockResults = await applyTransactions(vm, block, opts)
 
   if (enableProfiler) {
     // eslint-disable-next-line no-console
@@ -603,12 +577,7 @@ export async function accumulateParentBeaconBlockRoot(vm: VM, root: Uint8Array, 
  * @param {Block} block
  * @param {RunBlockOpts} opts
  */
-async function applyTransactions(
-  vm: VM,
-  block: Block,
-  opts: RunBlockOpts,
-  blockLevelAccessList?: BlockLevelAccessList,
-) {
+async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
   if (enableProfiler) {
     // eslint-disable-next-line no-console
     console.time(processTxsLabel)
@@ -668,10 +637,6 @@ async function applyTransactions(
     receipts.push(txRes.receipt)
     const encodedReceipt = encodeReceipt(txRes.receipt, tx.type)
     await receiptTrie!.put(RLP.encode(txIdx), encodedReceipt)
-
-    if (blockLevelAccessList) {
-      await trackStateChanges(vm, blockLevelAccessList, txRes, txIdx + 1)
-    }
   }
 
   if (enableProfiler) {
@@ -983,63 +948,4 @@ const DAOConfig = {
     '807640a13483f8ac783c557fcdf27be11ea4ac7a',
   ],
   DAORefundContract: 'bf4ed7b27f1d666546e30d74d50d173d20bca754',
-}
-
-async function trackStateChanges(
-  vm: VM,
-  blockLevelAccessList: BlockLevelAccessList,
-  tx: RunTxResult,
-  blockAccessIndex: number,
-): Promise<void> {
-  for (const access of tx.accessList!) {
-    const address = access.address
-    blockLevelAccessList.addAddress(address)
-    const storageKeys = access.storageKeys
-    for (const storageKey of storageKeys) {
-      // TODO: How to differentiate between storage reads and writes?
-
-      // storage read:
-      // blockLevelAccessList.addStorageRead(address, storageKey)
-
-      // storage write:
-      const value = await vm.stateManager.getStorage(
-        createAddressFromString(address),
-        hexToBytes(storageKey),
-      )
-      blockLevelAccessList.addStorageWrite(address, storageKey, value, blockAccessIndex)
-    }
-    //const account = await vm.stateManager.getAccount(createAddressFromString(address))
-    //const code = await vm.stateManager.getCode(createAddressFromString(address))
-
-    // TODO: only if changed
-    //blockLevelAccessList.addBalanceChange(address, account!.balance, blockAccessIndex)
-    // TODO: only if changed
-    //blockLevelAccessList.addNonceChange(address, account!.nonce, blockAccessIndex)
-    // TODO: only if changed
-    //blockLevelAccessList.addCodeChange(address, code, blockAccessIndex)
-  }
-}
-
-async function collectWithdrawalAccesses(
-  vm: VM,
-  blockLevelAccessList: BlockLevelAccessList,
-  block: Block,
-): Promise<void> {
-  //const postIndex = block.transactions.length + 1
-  const withdrawals = block.withdrawals!
-  for (const withdrawal of withdrawals) {
-    const address = withdrawal.address.toString()
-    blockLevelAccessList.addAddress(address)
-    //const balance = (await vm.stateManager.getAccount(createAddressFromString(address)))!.balance
-    //blockLevelAccessList.addBalanceChange(address, balance, postIndex)
-  }
-}
-
-async function trackSystemContracts(
-  _vm: VM,
-  _blockLevelAccessList: BlockLevelAccessList,
-  _block: Block,
-  _blockAccessIndex: number = 0,
-): Promise<void> {
-  // TODO: Implement
 }
