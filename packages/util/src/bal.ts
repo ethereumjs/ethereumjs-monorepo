@@ -1,6 +1,6 @@
 import { RLP } from '@ethereumjs/rlp'
 import { keccak_256 } from '@noble/hashes/sha3.js'
-import { hexToBytes } from './bytes.ts'
+import { bytesToHex, bytesToInt, hexToBytes } from './bytes.ts'
 import type { PrefixedHexString } from './types.ts'
 
 // Base types which can be used for JSON, internal representation and raw format.
@@ -270,4 +270,64 @@ function normalizeHexForRLP(hex: PrefixedHexString): PrefixedHexString | Uint8Ar
     return Uint8Array.from([])
   }
   return hex
+}
+
+export function createBlockLevelAccessListFromRLP(rlp: Uint8Array): BlockLevelAccessList {
+  const decoded = RLP.decode(rlp) as Array<
+    [
+      Uint8Array, // address
+      Array<[Uint8Array, Array<[Uint8Array, Uint8Array]>]>, // storage changes
+      Uint8Array[], // storage reads
+      Array<[Uint8Array, Uint8Array]>, // balance changes
+      Array<[Uint8Array, Uint8Array]>, // nonce changes
+      Array<[Uint8Array, Uint8Array]>, // code changes
+    ]
+  >
+
+  const bal = new BlockLevelAccessList()
+
+  for (const account of decoded) {
+    const [
+      addressBytes,
+      storageChangesRaw,
+      storageReadsRaw,
+      balanceChangesRaw,
+      nonceChangesRaw,
+      codeChangesRaw,
+    ] = account
+    const address = bytesToHex(addressBytes) as BALAddressHex
+    bal.addAddress(address)
+    const access = bal.accesses[address]
+
+    for (const [slotBytes, slotChangesRaw] of storageChangesRaw) {
+      const slot = bytesToHex(slotBytes) as BALStorageKeyHex
+      if (access.storageChanges[slot] === undefined) {
+        access.storageChanges[slot] = []
+      }
+      for (const [indexBytes, valueBytes] of slotChangesRaw) {
+        access.storageChanges[slot].push([bytesToInt(indexBytes), valueBytes])
+      }
+    }
+
+    for (const slotBytes of storageReadsRaw) {
+      access.storageReads.add(bytesToHex(slotBytes) as BALStorageKeyHex)
+    }
+
+    for (const [indexBytes, balanceBytes] of balanceChangesRaw) {
+      access.balanceChanges.push([
+        bytesToInt(indexBytes),
+        bytesToHex(balanceBytes) as BALBalanceHex,
+      ])
+    }
+
+    for (const [indexBytes, nonceBytes] of nonceChangesRaw) {
+      access.nonceChanges.push([bytesToInt(indexBytes), bytesToHex(nonceBytes) as BALNonceHex])
+    }
+
+    for (const [indexBytes, codeBytes] of codeChangesRaw) {
+      access.codeChanges.push([bytesToInt(indexBytes), codeBytes])
+    }
+  }
+
+  return bal
 }
