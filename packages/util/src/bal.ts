@@ -5,6 +5,7 @@ import type { PrefixedHexString } from './types.ts'
 
 // Base types which can be used for JSON, internal representation and raw format.
 type BALAddressHex = PrefixedHexString // bytes20
+type BALStorageKeyBytes = Uint8Array // uint256
 type BALStorageKeyHex = PrefixedHexString // uint256
 type BALStorageValueBytes = Uint8Array // uint256
 type BALStorageValueHex = PrefixedHexString // uint256 as hex
@@ -179,24 +180,29 @@ export class BlockLevelAccessList {
 
   public addStorageWrite(
     address: BALAddressHex,
-    storageKey: BALStorageKeyHex,
+    storageKey: BALStorageKeyBytes,
     value: BALStorageValueBytes,
     blockAccessIndex: BALAccessIndexNumber,
   ): void {
+    if (value.length === 0) {
+      return
+    }
+    const strippedKey = bytesToHex(stripLeadingZeros(storageKey))
+    const strippedValue = stripLeadingZeros(value)
     if (this.accesses[address] === undefined) {
       this.addAddress(address)
     }
-    if (this.accesses[address].storageChanges[storageKey] === undefined) {
-      this.accesses[address].storageChanges[storageKey] = []
+    if (this.accesses[address].storageChanges[strippedKey] === undefined) {
+      this.accesses[address].storageChanges[strippedKey] = []
     }
-    this.accesses[address].storageChanges[storageKey].push([blockAccessIndex, value])
+    this.accesses[address].storageChanges[strippedKey].push([blockAccessIndex, strippedValue])
   }
 
-  public addStorageRead(address: BALAddressHex, storageKey: BALStorageKeyHex): void {
+  public addStorageRead(address: BALAddressHex, storageKey: BALStorageKeyBytes): void {
     if (this.accesses[address] === undefined) {
       this.addAddress(address)
     }
-    this.accesses[address].storageReads.add(storageKey)
+    this.accesses[address].storageReads.add(bytesToHex(stripLeadingZeros(storageKey)))
   }
 
   public addBalanceChange(
