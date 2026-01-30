@@ -352,3 +352,12 @@ export function createBlockLevelAccessListFromRLP(rlp: Uint8Array): BlockLevelAc
 
   return bal
 }
+
+function stripLeadingZeros(bytes: Uint8Array): Uint8Array {
+  let first = bytes[0]
+  while (bytes.length > 0 && first.toString() === '0') {
+    bytes = bytes.slice(1)
+    first = bytes[0]
+  }
+  return bytes
+}
