@@ -682,6 +682,12 @@ export class Interpreter {
    */
   async storageStore(key: Uint8Array, value: Uint8Array): Promise<void> {
     await this._stateManager.putStorage(this._env.address, key, value)
+    this._evm.blockLevelAccessList?.addStorageWrite(
+      this._env.address.toString(),
+      key,
+      value,
+      this._evm.blockLevelAccessList!.blockAccessIndex,
+    )
     const account = await this._stateManager.getAccount(this._env.address)
     if (!account) {
       throw EthereumJSErrorWithoutCode('could not read account while persisting memory')
@@ -695,7 +701,7 @@ export class Interpreter {
    * @param original - If true, return the original storage value (default: false)
    */
   async storageLoad(key: Uint8Array, original = false): Promise<Uint8Array> {
-    this._evm.blockLevelAccessList?.addStorageRead(this._env.address.toString(), bytesToHex(key))
+    this._evm.blockLevelAccessList?.addStorageRead(this._env.address.toString(), key)
     if (original) {
       return this._stateManager.originalStorageCache.get(this._env.address, key)
     } else {
