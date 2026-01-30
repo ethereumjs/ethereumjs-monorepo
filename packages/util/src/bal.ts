@@ -102,9 +102,10 @@ export type {
  */
 export class BlockLevelAccessList {
   public accesses: Accesses
-
+  public blockAccessIndex: number
   constructor(accesses: Accesses = {}) {
     this.accesses = accesses
+    this.blockAccessIndex = 0
   }
 
   /**
