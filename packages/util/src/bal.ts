@@ -189,6 +189,10 @@ export class BlockLevelAccessList {
     }
     const strippedKey = bytesToHex(stripLeadingZeros(storageKey))
     const strippedValue = stripLeadingZeros(value)
+    if (strippedValue.length === 0) {
+      this.addStorageRead(address, storageKey)
+      return
+    }
     if (this.accesses[address] === undefined) {
       this.addAddress(address)
     }
