@@ -1,6 +1,7 @@
 import { RLP } from '@ethereumjs/rlp'
 import { keccak_256 } from '@noble/hashes/sha3.js'
-import { bytesToHex, bytesToInt, hexToBigInt, hexToBytes } from './bytes.ts'
+import { bigIntToHex, bytesToHex, bytesToInt, hexToBigInt, hexToBytes } from './bytes.ts'
+import { padToEven } from './internal.ts'
 import type { PrefixedHexString } from './types.ts'
 
 // Base types which can be used for JSON, internal representation and raw format.
@@ -11,6 +12,7 @@ type BALStorageValueBytes = Uint8Array // uint256
 type BALStorageValueHex = PrefixedHexString // uint256 as hex
 type BALAccessIndexNumber = number // uint16
 type BALAccessIndexHex = PrefixedHexString // uint16 as hex d
+type BALBalanceBigInt = bigint // uint256 as bigint
 type BALBalanceHex = PrefixedHexString // uint256 as hex
 type BALNonceHex = PrefixedHexString // uint64 as hex
 type BALByteCodeBytes = Uint8Array // bytes
@@ -211,13 +213,16 @@ export class BlockLevelAccessList {
 
   public addBalanceChange(
     address: BALAddressHex,
-    balance: BALBalanceHex,
+    balance: BALBalanceBigInt,
     blockAccessIndex: BALAccessIndexNumber,
   ): void {
     if (this.accesses[address] === undefined) {
       this.addAddress(address)
     }
-    this.accesses[address].balanceChanges.push([blockAccessIndex, balance])
+    this.accesses[address].balanceChanges.push([
+      blockAccessIndex,
+      padToEvenHex(bigIntToHex(balance)),
+    ])
   }
 
   public addNonceChange(
@@ -370,4 +375,8 @@ function stripLeadingZeros(bytes: Uint8Array): Uint8Array {
     first = bytes[0]
   }
   return bytes
+}
+
+function padToEvenHex(hex: PrefixedHexString): PrefixedHexString {
+  return `0x${padToEven(hex.slice(2))}`
 }
