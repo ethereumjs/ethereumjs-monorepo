@@ -14,8 +14,12 @@ import { loadExecutionSpecFixtures, parseTest } from './executionSpecTestLoader.
 
 const customFixturesPath = process.env.TEST_PATH ?? '../execution-spec-tests'
 const fixturesPath = path.resolve(customFixturesPath)
+const testFile = process.env.TEST_FILE
 
 console.log(`Using execution-spec state tests from: ${fixturesPath}`)
+if (testFile !== undefined) {
+  console.log(`Filtering tests to file: ${testFile}`)
+}
 
 // Create KZG instance once at the top level (expensive operation)
 const kzg = new microEthKZG(trustedSetup)
@@ -25,7 +29,13 @@ if (fs.existsSync(fixturesPath) === false) {
     it.skip(`fixtures not found at ${fixturesPath}`, () => {})
   })
 } else {
-  const fixtures = loadExecutionSpecFixtures(fixturesPath, 'state_tests')
+  let fixtures = loadExecutionSpecFixtures(fixturesPath, 'state_tests')
+
+  // Filter by TEST_FILE if provided (works with or without .json extension)
+  if (testFile !== undefined) {
+    const normalizedTestFile = testFile.endsWith('.json') ? testFile : `${testFile}.json`
+    fixtures = fixtures.filter((f) => path.basename(f.filePath) === normalizedTestFile)
+  }
 
   describe('Execution-spec state tests', () => {
     if (fixtures.length === 0) {
