@@ -527,12 +527,14 @@ export async function accumulateParentBlockHash(
       vm.evm.systemBinaryTreeAccessWitness.writeAccountStorage(historyAddress, ringKey)
     }
     const key = setLengthLeft(bigIntToBytes(ringKey), 32)
-    vm.evm.blockLevelAccessList!.addStorageWrite(
-      historyAddress.toString(),
-      key,
-      hash,
-      vm.evm.blockLevelAccessList!.blockAccessIndex,
-    )
+    if (vm.common.isActivatedEIP(7928)) {
+      vm.evm.blockLevelAccessList!.addStorageWrite(
+        historyAddress.toString(),
+        key,
+        hash,
+        vm.evm.blockLevelAccessList!.blockAccessIndex,
+      )
+    }
     await vm.stateManager.putStorage(historyAddress, key, hash)
   }
   await putBlockHash(vm, parentHash, currentBlockNumber - BIGINT_1)
@@ -564,23 +566,27 @@ export async function accumulateParentBeaconBlockRoot(vm: VM, root: Uint8Array, 
     // TODO: verify with Gabriel that this is fine regarding binary trees (should we put an empty account?)
     return
   }
-  vm.evm.blockLevelAccessList!.addStorageWrite(
-    parentBeaconBlockRootAddress.toString(),
-    setLengthLeft(bigIntToBytes(timestampIndex), 32),
-    bigIntToBytes(timestamp),
-    vm.evm.blockLevelAccessList!.blockAccessIndex,
-  )
+  if (vm.common.isActivatedEIP(7928)) {
+    vm.evm.blockLevelAccessList!.addStorageWrite(
+      parentBeaconBlockRootAddress.toString(),
+      setLengthLeft(bigIntToBytes(timestampIndex), 32),
+      bigIntToBytes(timestamp),
+      vm.evm.blockLevelAccessList!.blockAccessIndex,
+    )
+  }
   await vm.stateManager.putStorage(
     parentBeaconBlockRootAddress,
     setLengthLeft(bigIntToBytes(timestampIndex), 32),
     bigIntToBytes(timestamp),
   )
-  vm.evm.blockLevelAccessList!.addStorageWrite(
-    parentBeaconBlockRootAddress.toString(),
-    setLengthLeft(bigIntToBytes(timestampExtended), 32),
-    root,
-    vm.evm.blockLevelAccessList!.blockAccessIndex,
-  )
+  if (vm.common.isActivatedEIP(7928)) {
+    vm.evm.blockLevelAccessList!.addStorageWrite(
+      parentBeaconBlockRootAddress.toString(),
+      setLengthLeft(bigIntToBytes(timestampExtended), 32),
+      root,
+      vm.evm.blockLevelAccessList!.blockAccessIndex,
+    )
+  }
   await vm.stateManager.putStorage(
     parentBeaconBlockRootAddress,
     setLengthLeft(bigIntToBytes(timestampExtended), 32),
