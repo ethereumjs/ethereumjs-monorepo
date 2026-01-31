@@ -186,9 +186,6 @@ export class BlockLevelAccessList {
     value: BALStorageValueBytes,
     blockAccessIndex: BALAccessIndexNumber,
   ): void {
-    if (value.length === 0) {
-      return
-    }
     const strippedKey = bytesToHex(stripLeadingZeros(storageKey))
     const strippedValue = stripLeadingZeros(value)
     if (strippedValue.length === 0) {
