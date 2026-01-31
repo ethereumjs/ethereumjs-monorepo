@@ -759,6 +759,17 @@ export async function rewardAccount(
     account = new Account()
   }
   account.balance += reward
+  if (common.isActivatedEIP(7928)) {
+    if (reward === BIGINT_0) {
+      evm.blockLevelAccessList?.addAddress(address.toString())
+    } else {
+      evm.blockLevelAccessList!.addBalanceChange(
+        address.toString(),
+        account.balance,
+        evm.blockLevelAccessList!.blockAccessIndex,
+      )
+    }
+  }
   await evm.journal.putAccount(address, account)
 
   if (common.isActivatedEIP(7864) === true && reward !== BIGINT_0) {
