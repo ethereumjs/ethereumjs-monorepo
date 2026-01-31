@@ -41,7 +41,7 @@ export type Accesses = Record<
   BALAddressHex,
   {
     nonceChanges: BALRawNonceChange[]
-    balanceChanges: BALRawBalanceChange[]
+    balanceChanges: Map<BALAccessIndexNumber, BALBalanceHex>
     codeChanges: BALRawCodeChange[]
     storageChanges: Record<BALStorageKeyHex, BALRawStorageChange[]>
     storageReads: Set<BALStorageKeyHex>
@@ -154,11 +154,15 @@ export class BlockLevelAccessList {
         .map(normalizeHexForRLP)
         .sort((a, b) => Number(hexToBigInt(a as `0x${string}`) - hexToBigInt(b as `0x${string}`)))
 
+      const balanceChanges = Array.from(data.balanceChanges.entries()).map(([index, balance]) => [
+        index,
+        balance,
+      ])
       bal.push([
         address as BALAddressHex,
         storageChanges,
         storageReads,
-        data.balanceChanges,
+        balanceChanges,
         data.nonceChanges,
         data.codeChanges,
       ] as BALRawAccountChanges)
@@ -174,7 +178,7 @@ export class BlockLevelAccessList {
     this.accesses[address] = {
       storageChanges: {},
       storageReads: new Set(),
-      balanceChanges: [],
+      balanceChanges: new Map(),
       nonceChanges: [],
       codeChanges: [],
     }
@@ -216,10 +220,7 @@ export class BlockLevelAccessList {
     if (this.accesses[address] === undefined) {
       this.addAddress(address)
     }
-    this.accesses[address].balanceChanges.push([
-      blockAccessIndex,
-      padToEvenHex(bigIntToHex(balance)),
-    ])
+    this.accesses[address].balanceChanges.set(blockAccessIndex, padToEvenHex(bigIntToHex(balance)))
   }
 
   public addNonceChange(
@@ -275,7 +276,7 @@ export function createBlockLevelAccessListFromJSON(
     }
 
     for (const change of account.balanceChanges) {
-      access.balanceChanges.push([parseInt(change.blockAccessIndex, 16), change.postBalance])
+      access.balanceChanges.set(parseInt(change.blockAccessIndex, 16), change.postBalance)
     }
 
     for (const change of account.nonceChanges) {
@@ -347,10 +348,7 @@ export function createBlockLevelAccessListFromRLP(rlp: Uint8Array): BlockLevelAc
     }
 
     for (const [indexBytes, balanceBytes] of balanceChangesRaw) {
-      access.balanceChanges.push([
-        bytesToInt(indexBytes),
-        bytesToHex(balanceBytes) as BALBalanceHex,
-      ])
+      access.balanceChanges.set(bytesToInt(indexBytes), bytesToHex(balanceBytes) as BALBalanceHex)
     }
 
     for (const [indexBytes, nonceBytes] of nonceChangesRaw) {
