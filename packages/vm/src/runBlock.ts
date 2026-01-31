@@ -684,6 +684,9 @@ async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
 }
 
 async function assignWithdrawals(vm: VM, block: Block): Promise<void> {
+  if (vm.common.isActivatedEIP(7928)) {
+    vm.evm.blockLevelAccessList!.blockAccessIndex = block.transactions.length + 1
+  }
   const withdrawals = block.withdrawals!
   for (const withdrawal of withdrawals) {
     const { address, amount } = withdrawal
