@@ -115,6 +115,25 @@ export async function runBlockchainTestCase(
 
       // Check if the block level access list is correct
       if (common.isActivatedEIP(7928)) {
+        // Debug: print generated BAL
+        console.log(
+          'Generated BAL:',
+          JSON.stringify(
+            result.blockLevelAccessList!.raw(),
+            (key, value) => {
+              if (value instanceof Uint8Array) {
+                return bytesToHex(value)
+              }
+              if (value instanceof Set) {
+                return Array.from(value)
+              }
+              return value
+            },
+            2,
+          ),
+        )
+        console.log('Generated BAL hash:', bytesToHex(result.blockLevelAccessList!.hash()))
+        console.log('Expected BAL hash:', bytesToHex(block.header.blockAccessListHash!))
         t.deepEqual(
           result.blockLevelAccessList!.hash(),
           block.header.blockAccessListHash,

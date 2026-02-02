@@ -21,21 +21,21 @@ export const balEmptyBlockNoCoinbaseRLP: PrefixedHexString =
 export const balEmptyBlockNoCoinbase: Accesses = {
   '0x00000961ef480eb55e80d19ad83579a64c007002': {
     nonceChanges: [],
-    balanceChanges: [],
+    balanceChanges: new Map<number, PrefixedHexString>(),
     codeChanges: [],
     storageChanges: {},
     storageReads: new Set<PrefixedHexString>(['0x0', '0x1', '0x2', '0x3']),
   },
   '0x0000bbddc7ce488642fb579f8b00f3a590007251': {
     nonceChanges: [],
-    balanceChanges: [],
+    balanceChanges: new Map<number, PrefixedHexString>(),
     codeChanges: [],
     storageChanges: {},
     storageReads: new Set<PrefixedHexString>(['0x0', '0x1', '0x2', '0x3']),
   },
   '0x0000f90827f1c53a10cb7a02335b175320002935': {
     nonceChanges: [],
-    balanceChanges: [],
+    balanceChanges: new Map<number, PrefixedHexString>(),
     codeChanges: [],
     storageChanges: {
       '0x0': [
@@ -46,7 +46,7 @@ export const balEmptyBlockNoCoinbase: Accesses = {
   },
   '0x000f3df6d732807ef1319fb7b8bb8522d0beac02': {
     nonceChanges: [],
-    balanceChanges: [],
+    balanceChanges: new Map<number, PrefixedHexString>(),
     codeChanges: [],
     storageChanges: {
       '0xc': [[0, hexToBytes('0xc')]],
