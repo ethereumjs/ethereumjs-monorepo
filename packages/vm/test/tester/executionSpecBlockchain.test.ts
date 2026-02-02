@@ -9,6 +9,7 @@ import { createBlockchain } from '@ethereumjs/blockchain'
 import {
   bytesToHex,
   createAddressFromString,
+  createBlockLevelAccessListFromJSON,
   hexToBigInt,
   hexToBytes,
   setLengthLeft,
@@ -19,6 +20,7 @@ import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 import { createVM, runBlock } from '../../src/index.ts'
 import { setupPreConditions } from '../util.ts'
 import { createCommonForFork, loadExecutionSpecFixtures } from './executionSpecTestLoader.ts'
+import { compareBAL } from './util/balComparatorAI.ts'
 
 const customFixturesPath = process.env.TEST_PATH ?? '../execution-spec-tests'
 const fixturesPath = path.resolve(customFixturesPath)
@@ -95,7 +97,13 @@ export async function runBlockchainTestCase(
 
   let parentBlock = genesisBlock
 
-  for (const { rlp, expectException, blockHeader, rlp_decoded } of testData.blocks) {
+  for (const {
+    rlp,
+    expectException,
+    blockHeader,
+    rlp_decoded,
+    blockAccessList,
+  } of testData.blocks) {
     const expectedHash = blockHeader?.hash ?? rlp_decoded?.blockHeader?.hash ?? undefined
     let block: Block | undefined
     try {
@@ -115,25 +123,11 @@ export async function runBlockchainTestCase(
 
       // Check if the block level access list is correct
       if (common.isActivatedEIP(7928)) {
-        // Debug: print generated BAL
-        console.log(
-          'Generated BAL:',
-          JSON.stringify(
-            result.blockLevelAccessList!.raw(),
-            (key, value) => {
-              if (value instanceof Uint8Array) {
-                return bytesToHex(value)
-              }
-              if (value instanceof Set) {
-                return Array.from(value)
-              }
-              return value
-            },
-            2,
-          ),
-        )
-        console.log('Generated BAL hash:', bytesToHex(result.blockLevelAccessList!.hash()))
-        console.log('Expected BAL hash:', bytesToHex(block.header.blockAccessListHash!))
+        if (blockAccessList !== undefined) {
+          const expectedBAL = createBlockLevelAccessListFromJSON(blockAccessList)
+          // Use the BAL comparator to show a colored diff of any mismatches
+          compareBAL(expectedBAL.raw(), result.blockLevelAccessList!.raw())
+        }
         t.deepEqual(
           bytesToHex(result.blockLevelAccessList!.hash()),
           bytesToHex(block.header.blockAccessListHash!),
