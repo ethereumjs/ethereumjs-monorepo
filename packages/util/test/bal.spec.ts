@@ -45,8 +45,8 @@ describe('Basic initialization', () => {
     assert.isTrue(bal.accesses[address1].storageReads.has('0x00'))
 
     const addressWithBalanceChanges = '0x2adc25665018aa1fe0e6bc666dac8fc2697ff9ba'
-    assert.equal(bal.accesses[addressWithBalanceChanges].balanceChanges.length, 2)
-    assert.deepEqual(bal.accesses[addressWithBalanceChanges].balanceChanges[0], [1, '0xf618'])
+    assert.equal(bal.accesses[addressWithBalanceChanges].balanceChanges.size, 2)
+    assert.deepEqual(bal.accesses[addressWithBalanceChanges].balanceChanges.get(1), '0xf618')
 
     assert.deepEqual(bytesToHex(bal.hash()), balSimpleHash)
   })
