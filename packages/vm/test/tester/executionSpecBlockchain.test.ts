@@ -141,7 +141,7 @@ export async function runBlockchainTestCase(
         )
       }
     } catch (e: any) {
-      if (e.message.includes(`Should have thrown`) === true) {
+      if (expectException === undefined) {
         throw e
       }
       // Check if the block failed due to an expected exception
