@@ -24,21 +24,21 @@ export const balEmptyBlockNoCoinbase: Accesses = {
     balanceChanges: new Map<number, PrefixedHexString>(),
     codeChanges: [],
     storageChanges: {},
-    storageReads: new Set<PrefixedHexString>(['0x0', '0x1', '0x2', '0x3']),
+    storageReads: new Set<PrefixedHexString>(['0x00', '0x01', '0x02', '0x03']),
   },
   '0x0000bbddc7ce488642fb579f8b00f3a590007251': {
     nonceChanges: [],
     balanceChanges: new Map<number, PrefixedHexString>(),
     codeChanges: [],
     storageChanges: {},
-    storageReads: new Set<PrefixedHexString>(['0x0', '0x1', '0x2', '0x3']),
+    storageReads: new Set<PrefixedHexString>(['0x00', '0x01', '0x02', '0x03']),
   },
   '0x0000f90827f1c53a10cb7a02335b175320002935': {
     nonceChanges: [],
     balanceChanges: new Map<number, PrefixedHexString>(),
     codeChanges: [],
     storageChanges: {
-      '0x0': [
+      '0x00': [
         [0, hexToBytes('0xf38ed3d9b968f777fef4d8f2c3caf4a9f02cdea52dc257a2b92118d4dd0c9357')],
       ],
     },
@@ -49,7 +49,7 @@ export const balEmptyBlockNoCoinbase: Accesses = {
     balanceChanges: new Map<number, PrefixedHexString>(),
     codeChanges: [],
     storageChanges: {
-      '0xc': [[0, hexToBytes('0xc')]],
+      '0x0c': [[0, hexToBytes('0x0c')]],
     },
     storageReads: new Set<PrefixedHexString>(['0x200b']),
   },

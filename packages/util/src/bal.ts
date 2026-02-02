@@ -190,7 +190,7 @@ export class BlockLevelAccessList {
     value: BALStorageValueBytes,
     blockAccessIndex: BALAccessIndexNumber,
   ): void {
-    const strippedKey = bytesToHex(stripLeadingZeros(storageKey))
+    const strippedKey = normalizeStorageKeyHex(bytesToHex(stripLeadingZeros(storageKey)))
     const strippedValue = stripLeadingZeros(value)
     if (strippedValue.length === 0) {
       this.addStorageRead(address, storageKey)
@@ -209,7 +209,9 @@ export class BlockLevelAccessList {
     if (this.accesses[address] === undefined) {
       this.addAddress(address)
     }
-    this.accesses[address].storageReads.add(bytesToHex(stripLeadingZeros(storageKey)))
+    this.accesses[address].storageReads.add(
+      normalizeStorageKeyHex(bytesToHex(stripLeadingZeros(storageKey))),
+    )
   }
 
   public addBalanceChange(
@@ -260,11 +262,12 @@ export function createBlockLevelAccessListFromJSON(
     const access = bal.accesses[account.address]
 
     for (const slotChange of account.storageChanges) {
-      if (access.storageChanges[slotChange.slot] === undefined) {
-        access.storageChanges[slotChange.slot] = []
+      const normalizedSlot = normalizeStorageKeyHex(slotChange.slot)
+      if (access.storageChanges[normalizedSlot] === undefined) {
+        access.storageChanges[normalizedSlot] = []
       }
       for (const change of slotChange.slotChanges) {
-        access.storageChanges[slotChange.slot].push([
+        access.storageChanges[normalizedSlot].push([
           parseInt(change.blockAccessIndex, 16),
           hexToBytes(change.postValue),
         ])
@@ -272,7 +275,7 @@ export function createBlockLevelAccessListFromJSON(
     }
 
     for (const slot of account.storageReads) {
-      access.storageReads.add(slot)
+      access.storageReads.add(normalizeStorageKeyHex(slot))
     }
 
     for (const change of account.balanceChanges) {
@@ -334,7 +337,7 @@ export function createBlockLevelAccessListFromRLP(rlp: Uint8Array): BlockLevelAc
     const access = bal.accesses[address]
 
     for (const [slotBytes, slotChangesRaw] of storageChangesRaw) {
-      const slot = bytesToHex(slotBytes) as BALStorageKeyHex
+      const slot = normalizeStorageKeyHex(bytesToHex(slotBytes))
       if (access.storageChanges[slot] === undefined) {
         access.storageChanges[slot] = []
       }
@@ -344,7 +347,7 @@ export function createBlockLevelAccessListFromRLP(rlp: Uint8Array): BlockLevelAc
     }
 
     for (const slotBytes of storageReadsRaw) {
-      access.storageReads.add(bytesToHex(slotBytes) as BALStorageKeyHex)
+      access.storageReads.add(normalizeStorageKeyHex(bytesToHex(slotBytes)))
     }
 
     for (const [indexBytes, balanceBytes] of balanceChangesRaw) {
@@ -374,4 +377,20 @@ function stripLeadingZeros(bytes: Uint8Array): Uint8Array {
 
 function padToEvenHex(hex: PrefixedHexString): PrefixedHexString {
   return `0x${padToEven(hex.slice(2))}`
+}
+
+/**
+ * Normalizes a storage key hex string to ensure consistent even-length representation.
+ * - "0x" (empty bytes) is kept as is
+ * - "0x0" becomes "0x00"
+ * - Any odd-length hex is padded to even (e.g., "0x1" → "0x01")
+ */
+function normalizeStorageKeyHex(hex: PrefixedHexString): BALStorageKeyHex {
+  const stripped = hex.slice(2)
+  // Empty string "0x" stays as is
+  if (stripped === '') {
+    return '0x' as BALStorageKeyHex
+  }
+  // Pad to even length (handles "0x0" → "0x00", "0x1" → "0x01", etc.)
+  return `0x${padToEven(stripped)}` as BALStorageKeyHex
 }
