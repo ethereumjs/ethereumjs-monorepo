@@ -135,8 +135,8 @@ export async function runBlockchainTestCase(
         console.log('Generated BAL hash:', bytesToHex(result.blockLevelAccessList!.hash()))
         console.log('Expected BAL hash:', bytesToHex(block.header.blockAccessListHash!))
         t.deepEqual(
-          result.blockLevelAccessList!.hash(),
-          block.header.blockAccessListHash,
+          bytesToHex(result.blockLevelAccessList!.hash()),
+          bytesToHex(block.header.blockAccessListHash!),
           'generated block level access list correct',
         )
       }
