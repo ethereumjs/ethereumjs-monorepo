@@ -5,7 +5,7 @@
  * and producing a compact colored CLI diff output.
  *
  * FULLY AI-GENERATED - EVENTUALLY DELETE WHEN PURPOSE IS SERVED
- * Holger Drewes, 2026-02-02
+ * Creation date: 2026-02-02, Opus 4.5, Cursor IDE
  */
 
 // ANSI color codes for terminal output
