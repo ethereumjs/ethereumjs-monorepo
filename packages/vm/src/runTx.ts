@@ -756,6 +756,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     fromAccount.balance = BIGINT_0
   }
   await vm.evm.journal.putAccount(caller, fromAccount)
+
   if (vm.common.isActivatedEIP(7928)) {
     vm.evm.blockLevelAccessList!.addBalanceChange(
       caller.toString(),

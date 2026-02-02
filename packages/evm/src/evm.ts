@@ -564,6 +564,11 @@ export class EVM implements EVMInterface {
 
     result.executionGasUsed += message.gasLimit - gasLimit
 
+    // EIP-7708: Prepend the ETH transfer log to the result logs
+    if (eip7708Log) {
+      result.logs = [eip7708Log, ...(result.logs ?? [])]
+    }
+
     return {
       execResult: result,
     }
@@ -933,6 +938,11 @@ export class EVM implements EVMInterface {
 
     if (message.depth === 0) {
       this.postMessageCleanup()
+    }
+
+    // EIP-7708: Prepend the ETH transfer log to the result logs
+    if (eip7708CreateLog) {
+      result.logs = [eip7708CreateLog, ...(result.logs ?? [])]
     }
 
     return {
