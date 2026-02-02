@@ -214,6 +214,11 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     })
   }
 
+  // Increment the block access index for the next transaction if EIP-7928 is activated
+  if (vm.common.isActivatedEIP(7928)) {
+    vm.evm.blockLevelAccessList!.blockAccessIndex++
+  }
+
   const { tx, block } = opts
 
   /**
@@ -695,6 +700,15 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     ? results.totalGasSpent * inclusionFeePerGas!
     : results.amountSpent
   minerAccount.balance += results.minerValue
+  if (vm.common.isActivatedEIP(7928)) {
+    if (results.minerValue !== BIGINT_0) {
+      vm.evm.blockLevelAccessList!.addBalanceChange(
+        miner.toString(),
+        minerAccount.balance,
+        vm.evm.blockLevelAccessList!.blockAccessIndex,
+      )
+    }
+  }
 
   // Put the miner account into the state. If the balance of the miner account remains zero, note that
   // the state.putAccount function puts vm into the "touched" accounts. This will thus be removed when
