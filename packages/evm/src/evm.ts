@@ -1,4 +1,5 @@
 import { Hardfork } from '@ethereumjs/common'
+import type { BlockLevelAccessList } from '@ethereumjs/util'
 import {
   Account,
   Address,
@@ -10,6 +11,8 @@ import {
   MAX_INTEGER,
   bigIntToBytes,
   bytesToUnprefixedHex,
+  createBlockLevelAccessList,
+  createEIP7708TransferLog,
   createZeroAddress,
   equalsBytes,
   generateAddress,
@@ -44,6 +47,7 @@ import {
   type EVMRunCallOpts,
   type EVMRunCodeOpts,
   type ExecResult,
+  type Log,
 } from './types.ts'
 
 import type { Common, StateManagerInterface } from '@ethereumjs/common'
@@ -209,6 +213,8 @@ export class EVM implements EVMInterface {
   public readonly allowUnlimitedContractSize: boolean
   public readonly allowUnlimitedInitCodeSize: boolean
 
+  public readonly blockLevelAccessList?: BlockLevelAccessList
+
   protected readonly _customOpcodes?: CustomOpcode[]
   protected readonly _customPrecompiles?: CustomPrecompile[]
 
@@ -273,6 +279,10 @@ export class EVM implements EVMInterface {
           )
         }
       }
+    }
+
+    if (this.common.isActivatedEIP(7928)) {
+      this.blockLevelAccessList = opts.blockLevelAccessList ?? createBlockLevelAccessList()
     }
 
     this.events = new EventEmitter<EVMEvent>()
@@ -462,13 +472,39 @@ export class EVM implements EVMInterface {
         debug(`Exit early on value transfer overflowed (CALL)`)
       }
     }
+
+    // EIP-7708: Create ETH transfer log for non-zero value transfers
+    // - CALL to different account: emit log (caller -> to)
+    // - CALLCODE with value: emit log (caller -> to, which equals caller) - detected by codeAddress != to
+    // - CALL to self: no log (caller == to AND codeAddress == to)
+    // - DELEGATECALL: no value parameter, no log
+    let eip7708Log: Log | undefined
+    const isCallcode = !equalsBytes(message.codeAddress.bytes, message.to.bytes)
+    const isTransferToDifferentAccount = !equalsBytes(message.caller.bytes, message.to.bytes)
+    if (
+      this.common.isActivatedEIP(7708) &&
+      !message.delegatecall &&
+      message.value > BIGINT_0 &&
+      (isTransferToDifferentAccount || isCallcode) &&
+      errorMessage === undefined
+    ) {
+      eip7708Log = createEIP7708TransferLog(message.caller, message.to, message.value)
+      if (this.DEBUG) {
+        debug(
+          `EIP-7708: Created ETH transfer log from ${message.caller} to ${message.to} value=${message.value}`,
+        )
+      }
+    }
+
     if (exit) {
+      // Even on early exit, we may need to return the EIP-7708 log if value was transferred
       return {
         execResult: {
           gasRefund: message.gasRefund,
           executionGasUsed: message.gasLimit - gasLimit,
           exceptionError: errorMessage, // Only defined if addToBalance failed
           returnValue: new Uint8Array(0),
+          logs: eip7708Log ? [eip7708Log] : undefined,
         },
       }
     }
@@ -513,6 +549,11 @@ export class EVM implements EVMInterface {
     }
 
     result.executionGasUsed += message.gasLimit - gasLimit
+
+    // EIP-7708: Prepend the ETH transfer log to the result logs
+    if (eip7708Log) {
+      result.logs = [eip7708Log, ...(result.logs ?? [])]
+    }
 
     return {
       execResult: result,
@@ -655,6 +696,23 @@ export class EVM implements EVMInterface {
       }
     }
 
+    // EIP-7708: Create ETH transfer log for contract creation with value
+    let eip7708CreateLog: Log | undefined
+    if (
+      this.common.isActivatedEIP(7708) &&
+      message.value > BIGINT_0 &&
+      message.to !== undefined &&
+      !equalsBytes(message.caller.bytes, message.to.bytes) &&
+      errorMessage === undefined
+    ) {
+      eip7708CreateLog = createEIP7708TransferLog(message.caller, message.to, message.value)
+      if (this.DEBUG) {
+        debug(
+          `EIP-7708: Created ETH transfer log for CREATE from ${message.caller} to ${message.to} value=${message.value}`,
+        )
+      }
+    }
+
     if (exit) {
       if (this.common.isActivatedEIP(6800) || this.common.isActivatedEIP(7864)) {
         const createCompleteAccessGas = message.accessWitness!.writeAccountHeader(message.to)
@@ -684,6 +742,7 @@ export class EVM implements EVMInterface {
           gasRefund: message.gasRefund,
           exceptionError: errorMessage, // only defined if addToBalance failed
           returnValue: new Uint8Array(0),
+          logs: eip7708CreateLog ? [eip7708CreateLog] : undefined,
         },
       }
     }
@@ -845,6 +904,11 @@ export class EVM implements EVMInterface {
 
     if (message.depth === 0) {
       this.postMessageCleanup()
+    }
+
+    // EIP-7708: Prepend the ETH transfer log to the result logs
+    if (eip7708CreateLog) {
+      result.logs = [eip7708CreateLog, ...(result.logs ?? [])]
     }
 
     return {

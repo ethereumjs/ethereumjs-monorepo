@@ -558,4 +558,13 @@ export const eipsDict: EIPsDict = {
     minimumHardfork: Hardfork.Chainstart,
     requiredEIPs: [1559, 4788, 6780],
   },
+  /**
+   * Description : SLOTNUM opcode
+   * URL         : https://eips.ethereum.org/EIPS/eip-7843
+   * Status      : Draft
+   */
+  7843: {
+    minimumHardfork: Hardfork.Cancun,
+    requiredEIPs: [],
+  },
 }

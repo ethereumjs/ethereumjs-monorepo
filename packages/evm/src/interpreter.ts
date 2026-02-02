@@ -6,10 +6,13 @@ import {
   BIGINT_2,
   EthereumJSErrorWithoutCode,
   MAX_UINT64,
+  bigIntToBytes,
   bigIntToHex,
   bytesToBigInt,
   bytesToHex,
   equalsBytes,
+  hexToBytes,
+  setLengthLeft,
   setLengthRight,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
@@ -45,6 +48,28 @@ import type {
 } from './types.ts'
 
 const debugGas = debugDefault('evm:gas')
+
+/**
+ * EIP-7708: System address that emits ETH transfer logs
+ * 0xfffffffffffffffffffffffffffffffffffffffe
+ */
+const EIP7708_SYSTEM_ADDRESS = hexToBytes('0xfffffffffffffffffffffffffffffffffffffffe')
+
+/**
+ * EIP-7708: keccak256('Transfer(address,address,uint256)')
+ * This matches the ERC-20 Transfer event signature
+ */
+const EIP7708_TRANSFER_TOPIC = hexToBytes(
+  '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
+)
+
+/**
+ * EIP-7708: keccak256('Selfdestruct(address,uint256)')
+ * Emitted when a contract selfdestructs and burns remaining balance
+ */
+const EIP7708_SELFDESTRUCT_TOPIC = hexToBytes(
+  '0x4bfaba3443c1a1836cd362418edc679fc96cae8449cbefccb6457cdf2c943083',
+)
 
 export interface InterpreterOpts {
   pc?: number
@@ -1243,6 +1268,21 @@ export class Interpreter {
     this._result.selfdestruct.add(bytesToHex(this._env.address.bytes))
 
     const toSelf = equalsBytes(toAddress.bytes, this._env.address.bytes)
+    const contractBalance = this._env.contract.balance
+
+    // EIP-7708: Emit ETH transfer log for SELFDESTRUCT with value to a different account
+    if (this.common.isActivatedEIP(7708) && contractBalance > BIGINT_0 && !toSelf) {
+      // Transfer log: from contract to beneficiary
+      const fromTopic = setLengthLeft(this._env.address.bytes, 32)
+      const toTopic = setLengthLeft(toAddress.bytes, 32)
+      const data = setLengthLeft(bigIntToBytes(contractBalance), 32)
+      const transferLog: Log = [
+        EIP7708_SYSTEM_ADDRESS,
+        [EIP7708_TRANSFER_TOPIC, fromTopic, toTopic],
+        data,
+      ]
+      this._result.logs.push(transferLog)
+    }
 
     // Add to beneficiary balance
     if (!toSelf) {
@@ -1250,7 +1290,7 @@ export class Interpreter {
       if (!toAccount) {
         toAccount = new Account()
       }
-      toAccount.balance += this._env.contract.balance
+      toAccount.balance += contractBalance
       await this.journal.putAccount(toAddress, toAccount)
     }
 
@@ -1267,6 +1307,19 @@ export class Interpreter {
         // Check if ETH being sent to another account (thus set balance to 0)
         doModify = !toSelf
       }
+    }
+
+    // EIP-7708: Emit Selfdestruct log when balance is burnt (SELFDESTRUCT to self in same-tx creation)
+    if (this.common.isActivatedEIP(7708) && contractBalance > BIGINT_0 && toSelf && doModify) {
+      // Selfdestruct log: contract burns its own balance
+      const contractTopic = setLengthLeft(this._env.address.bytes, 32)
+      const data = setLengthLeft(bigIntToBytes(contractBalance), 32)
+      const selfdestructLog: Log = [
+        EIP7708_SYSTEM_ADDRESS,
+        [EIP7708_SELFDESTRUCT_TOPIC, contractTopic],
+        data,
+      ]
+      this._result.logs.push(selfdestructLog)
     }
 
     // Set contract balance to 0
