@@ -284,11 +284,14 @@ export function createBlockLevelAccessListFromJSON(
     }
 
     for (const change of account.balanceChanges) {
-      access.balanceChanges.set(parseInt(change.blockAccessIndex, 16), change.postBalance)
+      access.balanceChanges.set(
+        parseInt(change.blockAccessIndex, 16),
+        padToEvenHex(change.postBalance),
+      )
     }
 
     for (const change of account.nonceChanges) {
-      access.nonceChanges.set(parseInt(change.blockAccessIndex, 16), change.postNonce)
+      access.nonceChanges.set(parseInt(change.blockAccessIndex, 16), padToEvenHex(change.postNonce))
     }
 
     for (const change of account.codeChanges) {
@@ -356,11 +359,17 @@ export function createBlockLevelAccessListFromRLP(rlp: Uint8Array): BlockLevelAc
     }
 
     for (const [indexBytes, balanceBytes] of balanceChangesRaw) {
-      access.balanceChanges.set(bytesToInt(indexBytes), bytesToHex(balanceBytes) as BALBalanceHex)
+      access.balanceChanges.set(
+        bytesToInt(indexBytes),
+        padToEvenHex(bytesToHex(balanceBytes)) as BALBalanceHex,
+      )
     }
 
     for (const [indexBytes, nonceBytes] of nonceChangesRaw) {
-      access.nonceChanges.set(bytesToInt(indexBytes), bytesToHex(nonceBytes) as BALNonceHex)
+      access.nonceChanges.set(
+        bytesToInt(indexBytes),
+        padToEvenHex(bytesToHex(nonceBytes)) as BALNonceHex,
+      )
     }
 
     for (const [indexBytes, codeBytes] of codeChangesRaw) {
