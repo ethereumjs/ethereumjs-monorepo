@@ -280,13 +280,16 @@ function compareAccount(
  *
  * @param expected - The expected BAL raw data (from test fixtures)
  * @param generated - The generated BAL raw data (from VM execution)
- * @returns void - Outputs diff to console
+ * @param printToConsole - Whether to also print to console (default: true for backwards compat)
+ * @returns Object with `hasDiff` boolean and `diffString` for use in assertions
  */
 export function compareBAL(
   expected: BALRawBlockAccessList,
   generated: BALRawBlockAccessList,
-): void {
-  console.log('\n' + colors.bold + colors.magenta + '═══ BAL COMPARISON ═══' + colors.reset + '\n')
+  printToConsole = true,
+): { hasDiff: boolean; diffString: string } {
+  const lines: string[] = []
+  lines.push('\n' + colors.bold + colors.magenta + '═══ BAL COMPARISON ═══' + colors.reset + '\n')
 
   // Build maps keyed by address
   const expMap = new Map<string, BALRawAccountChanges>()
@@ -314,9 +317,9 @@ export function compareBAL(
   }
 
   if (allDiffs.length === 0) {
-    console.log(colors.green + colors.bold + '✓ BAL MATCH - No differences found!' + colors.reset)
+    lines.push(colors.green + colors.bold + '✓ BAL MATCH - No differences found!' + colors.reset)
   } else {
-    console.log(
+    lines.push(
       colors.red +
         colors.bold +
         `✗ BAL MISMATCH - ${totalDiffs} address(es) with differences:` +
@@ -324,24 +327,40 @@ export function compareBAL(
         '\n',
     )
     for (const line of allDiffs) {
-      console.log(line)
+      lines.push(line)
     }
   }
 
   // Summary statistics
-  console.log(colors.dim + '─'.repeat(50) + colors.reset)
-  console.log(
+  lines.push(colors.dim + '─'.repeat(50) + colors.reset)
+  lines.push(
     colors.dim +
       `Expected: ${expected.length} addresses | Generated: ${generated.length} addresses` +
       colors.reset,
   )
-  console.log('')
+  lines.push('')
+
+  const diffString = lines.join('\n')
+
+  if (printToConsole) {
+    console.log(diffString)
+  }
+
+  return { hasDiff: totalDiffs > 0, diffString }
 }
 
 /**
  * Convenience wrapper for BlockLevelAccessList objects
  * Call with the result of bal.raw() for both expected and generated
  */
-export function compareBALFromRaw(expected: unknown, generated: unknown): void {
-  compareBAL(expected as BALRawBlockAccessList, generated as BALRawBlockAccessList)
+export function compareBALFromRaw(
+  expected: unknown,
+  generated: unknown,
+  printToConsole = true,
+): { hasDiff: boolean; diffString: string } {
+  return compareBAL(
+    expected as BALRawBlockAccessList,
+    generated as BALRawBlockAccessList,
+    printToConsole,
+  )
 }

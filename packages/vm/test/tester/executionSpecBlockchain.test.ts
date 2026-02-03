@@ -132,15 +132,22 @@ export async function runBlockchainTestCase(
 
       // Check if the block level access list is correct
       if (common.isActivatedEIP(7928)) {
+        let balDiffMessage = ''
         if (blockAccessList !== undefined) {
           const expectedBAL = createBlockLevelAccessListFromJSON(blockAccessList)
           // Use the BAL comparator to show a colored diff of any mismatches
-          compareBAL(expectedBAL.raw(), result.blockLevelAccessList!.raw())
+          // Pass false to skip console output during test, we'll include it in the assertion
+          const { diffString } = compareBAL(
+            expectedBAL.raw(),
+            result.blockLevelAccessList!.raw(),
+            false,
+          )
+          balDiffMessage = diffString
         }
         t.deepEqual(
           bytesToHex(result.blockLevelAccessList!.hash()),
           bytesToHex(block.header.blockAccessListHash!),
-          'generated block level access list correct',
+          `generated block level access list correct${balDiffMessage}`,
         )
       }
     } catch (e: any) {
