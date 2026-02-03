@@ -214,11 +214,6 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     })
   }
 
-  // Increment the block access index for the next transaction if EIP-7928 is activated
-  if (vm.common.isActivatedEIP(7928)) {
-    vm.evm.blockLevelAccessList!.blockAccessIndex++
-  }
-
   const { tx, block } = opts
 
   /**
