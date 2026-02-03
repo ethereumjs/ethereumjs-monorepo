@@ -1176,6 +1176,10 @@ export class EVM implements EVMInterface {
         ) {
           const address = new Address(message.code.slice(3, 24))
           message.code = await this.stateManager.getCode(address)
+          // EIP-7928: Track delegation target access in BAL
+          if (this.common.isActivatedEIP(7928)) {
+            this.blockLevelAccessList?.addAddress(address.toString())
+          }
           if (message.depth === 0) {
             this.journal.addAlwaysWarmAddress(address.toString())
           }

@@ -534,6 +534,10 @@ export const handlers: Map<number, OpHandler> = new Map([
     async function (runState) {
       const addressBigInt = runState.stack.pop()
       const address = createAddressFromStackBigInt(addressBigInt)
+      // EIP-7928: Track address access in BAL
+      if (runState.interpreter._evm.common.isActivatedEIP(7928)) {
+        runState.interpreter._evm.blockLevelAccessList?.addAddress(address.toString())
+      }
       // EOF check
       const code = await runState.stateManager.getCode(address)
       if (isEOF(code)) {
@@ -555,6 +559,10 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       if (dataLength !== BIGINT_0) {
         const address = createAddressFromStackBigInt(addressBigInt)
+        // EIP-7928: Track address access in BAL
+        if (runState.interpreter._evm.common.isActivatedEIP(7928)) {
+          runState.interpreter._evm.blockLevelAccessList?.addAddress(address.toString())
+        }
         let code = await runState.stateManager.getCode(address)
 
         if (isEOF(code)) {
@@ -575,6 +583,10 @@ export const handlers: Map<number, OpHandler> = new Map([
     async function (runState) {
       const addressBigInt = runState.stack.pop()
       const address = createAddressFromStackBigInt(addressBigInt)
+      // EIP-7928: Track address access in BAL
+      if (runState.interpreter._evm.common.isActivatedEIP(7928)) {
+        runState.interpreter._evm.blockLevelAccessList?.addAddress(address.toString())
+      }
 
       // EOF check
       const code = await runState.stateManager.getCode(address)
