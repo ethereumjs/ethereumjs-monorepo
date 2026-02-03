@@ -20,21 +20,21 @@ export const balAllTransactionTypesRLP: PrefixedHexString =
  */
 export const balAllTransactionTypes: Accesses = {
   '0x00000961ef480eb55e80d19ad83579a64c007002': {
-    nonceChanges: [],
+    nonceChanges: new Map<number, PrefixedHexString>(),
     balanceChanges: new Map<number, PrefixedHexString>(),
     codeChanges: [],
     storageChanges: {},
     storageReads: new Set<PrefixedHexString>(['0x00', '0x01', '0x02', '0x03']),
   },
   '0x0000bbddc7ce488642fb579f8b00f3a590007251': {
-    nonceChanges: [],
+    nonceChanges: new Map<number, PrefixedHexString>(),
     balanceChanges: new Map<number, PrefixedHexString>(),
     codeChanges: [],
     storageChanges: {},
     storageReads: new Set<PrefixedHexString>(['0x00', '0x01', '0x02', '0x03']),
   },
   '0x0000f90827f1c53a10cb7a02335b175320002935': {
-    nonceChanges: [],
+    nonceChanges: new Map<number, PrefixedHexString>(),
     balanceChanges: new Map<number, PrefixedHexString>(),
     codeChanges: [],
     storageChanges: {
@@ -45,7 +45,7 @@ export const balAllTransactionTypes: Accesses = {
     storageReads: new Set<PrefixedHexString>(),
   },
   '0x000f3df6d732807ef1319fb7b8bb8522d0beac02': {
-    nonceChanges: [],
+    nonceChanges: new Map<number, PrefixedHexString>(),
     balanceChanges: new Map<number, PrefixedHexString>(),
     codeChanges: [],
     storageChanges: {
@@ -54,7 +54,7 @@ export const balAllTransactionTypes: Accesses = {
     storageReads: new Set<PrefixedHexString>(['0x200b']),
   },
   '0x0c7dcbd9e1c8f0cafb629cd4251570cd9c8c8ad2': {
-    nonceChanges: [[5, '0x01']],
+    nonceChanges: new Map<number, PrefixedHexString>([[5, '0x01']]),
     balanceChanges: new Map<number, PrefixedHexString>(),
     codeChanges: [[5, hexToBytes('0xef0100bf0980440e98d1dc6ef4714a120302d7229671d9')]],
     storageChanges: {
@@ -63,7 +63,7 @@ export const balAllTransactionTypes: Accesses = {
     storageReads: new Set<PrefixedHexString>(),
   },
   '0x2adc25665018aa1fe0e6bc666dac8fc2697ff9ba': {
-    nonceChanges: [],
+    nonceChanges: new Map<number, PrefixedHexString>(),
     balanceChanges: new Map<number, PrefixedHexString>([
       [1, '0x01fad3'],
       [2, '0x0411c6'],
@@ -76,35 +76,35 @@ export const balAllTransactionTypes: Accesses = {
     storageReads: new Set<PrefixedHexString>(),
   },
   '0x3c138d679072c173dabdc3fd45380f41ead0b3d4': {
-    nonceChanges: [[3, '0x01']],
+    nonceChanges: new Map<number, PrefixedHexString>([[3, '0x01']]),
     balanceChanges: new Map<number, PrefixedHexString>([[3, '0x3635c9adc5de9814b4']]),
     codeChanges: [],
     storageChanges: {},
     storageReads: new Set<PrefixedHexString>(),
   },
   '0x95c7ed676f490cd77cdb941c70f49b2256e3a0e4': {
-    nonceChanges: [[2, '0x01']],
+    nonceChanges: new Map<number, PrefixedHexString>([[2, '0x01']]),
     balanceChanges: new Map<number, PrefixedHexString>([[2, '0x3635c9adc5de9908d6']]),
     codeChanges: [],
     storageChanges: {},
     storageReads: new Set<PrefixedHexString>(),
   },
   '0xa0a12c0d5ddf86a31979ac889518fb57c9ee1d69': {
-    nonceChanges: [[5, '0x01']],
+    nonceChanges: new Map<number, PrefixedHexString>([[5, '0x01']]),
     balanceChanges: new Map<number, PrefixedHexString>([[5, '0x3635c9adc5de95d178']]),
     codeChanges: [],
     storageChanges: {},
     storageReads: new Set<PrefixedHexString>(),
   },
   '0xb06f60a2a3d59e7902432200a69612c1970d3d67': {
-    nonceChanges: [[4, '0x01']],
+    nonceChanges: new Map<number, PrefixedHexString>([[4, '0x01']]),
     balanceChanges: new Map<number, PrefixedHexString>([[4, '0x3635c9adc5de9614b4']]),
     codeChanges: [],
     storageChanges: {},
     storageReads: new Set<PrefixedHexString>(),
   },
   '0xbf0980440e98d1dc6ef4714a120302d722966dd9': {
-    nonceChanges: [],
+    nonceChanges: new Map<number, PrefixedHexString>(),
     balanceChanges: new Map<number, PrefixedHexString>(),
     codeChanges: [],
     storageChanges: {
@@ -113,7 +113,7 @@ export const balAllTransactionTypes: Accesses = {
     storageReads: new Set<PrefixedHexString>(),
   },
   '0xbf0980440e98d1dc6ef4714a120302d722966ed9': {
-    nonceChanges: [],
+    nonceChanges: new Map<number, PrefixedHexString>(),
     balanceChanges: new Map<number, PrefixedHexString>(),
     codeChanges: [],
     storageChanges: {
@@ -122,7 +122,7 @@ export const balAllTransactionTypes: Accesses = {
     storageReads: new Set<PrefixedHexString>(),
   },
   '0xbf0980440e98d1dc6ef4714a120302d722966fd9': {
-    nonceChanges: [],
+    nonceChanges: new Map<number, PrefixedHexString>(),
     balanceChanges: new Map<number, PrefixedHexString>(),
     codeChanges: [],
     storageChanges: {
@@ -131,7 +131,7 @@ export const balAllTransactionTypes: Accesses = {
     storageReads: new Set<PrefixedHexString>(),
   },
   '0xbf0980440e98d1dc6ef4714a120302d7229670d9': {
-    nonceChanges: [],
+    nonceChanges: new Map<number, PrefixedHexString>(),
     balanceChanges: new Map<number, PrefixedHexString>(),
     codeChanges: [],
     storageChanges: {
@@ -140,14 +140,14 @@ export const balAllTransactionTypes: Accesses = {
     storageReads: new Set<PrefixedHexString>(),
   },
   '0xbf0980440e98d1dc6ef4714a120302d7229671d9': {
-    nonceChanges: [],
+    nonceChanges: new Map<number, PrefixedHexString>(),
     balanceChanges: new Map<number, PrefixedHexString>(),
     codeChanges: [],
     storageChanges: {},
     storageReads: new Set<PrefixedHexString>(),
   },
   '0xbf9375cb0fa8610da19655ba849d9e2b276416c0': {
-    nonceChanges: [[1, '0x01']],
+    nonceChanges: new Map<number, PrefixedHexString>([[1, '0x01']]),
     balanceChanges: new Map<number, PrefixedHexString>([[1, '0x3635c9adc5de996696']]),
     codeChanges: [],
     storageChanges: {},
