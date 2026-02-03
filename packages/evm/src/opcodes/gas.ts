@@ -350,11 +350,14 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           value = bigIntToBytes(val)
         }
 
+        // Read current and original storage for gas calculation.
+        // Pass trackBAL=false because we'll track the read manually below,
+        // but ONLY if the EIP-2200 sentry check passes (per EIP-7928).
         const currentStorage = setLengthLeftStorage(
-          await runState.interpreter.storageLoad(keyBytes),
+          await runState.interpreter.storageLoad(keyBytes, false, false),
         )
         const originalStorage = setLengthLeftStorage(
-          await runState.interpreter.storageLoad(keyBytes, true),
+          await runState.interpreter.storageLoad(keyBytes, true, false),
         )
         if (common.hardfork() === Hardfork.Constantinople) {
           gas += updateSstoreGasEIP1283(
@@ -377,6 +380,17 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           }
         } else {
           gas += updateSstoreGas(runState, currentStorage, setLengthLeftStorage(value), common)
+        }
+
+        // If we reach here, the EIP-2200 sentry check passed (didn't trap).
+        // Per EIP-7928, now track the storage read for BAL. If the SSTORE
+        // succeeds later, the write will remove this read (see addStorageWrite).
+        // If SSTORE fails with OOG after the sentry, the read remains in BAL.
+        if (common.isActivatedEIP(7928)) {
+          runState.interpreter._evm.blockLevelAccessList?.addStorageRead(
+            runState.interpreter.getAddress().toString(),
+            keyBytes,
+          )
         }
 
         let charge2929Gas = true
