@@ -25,10 +25,14 @@ import { compareBAL } from './util/balComparatorAI.ts'
 const customFixturesPath = process.env.TEST_PATH ?? '../execution-spec-tests'
 const fixturesPath = path.resolve(customFixturesPath)
 const testFile = process.env.TEST_FILE
+const testCase = process.env.TEST_CASE
 
 console.log(`Using execution-spec blockchain tests from: ${fixturesPath}`)
 if (testFile !== undefined) {
   console.log(`Filtering tests to file: ${testFile}`)
+}
+if (testCase !== undefined) {
+  console.log(`Filtering tests to case: ${testCase}`)
 }
 
 // Create KZG instance once at the top level (expensive operation)
@@ -45,6 +49,11 @@ if (fs.existsSync(fixturesPath) === false) {
   if (testFile !== undefined) {
     const normalizedTestFile = testFile.endsWith('.json') ? testFile : `${testFile}.json`
     fixtures = fixtures.filter((f) => path.basename(f.filePath) === normalizedTestFile)
+  }
+
+  // Filter by TEST_CASE if provided (matches against the test case id/name)
+  if (testCase !== undefined) {
+    fixtures = fixtures.filter((f) => f.id.includes(testCase))
   }
 
   describe('Execution-spec blockchain tests', () => {
