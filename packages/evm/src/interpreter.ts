@@ -665,6 +665,10 @@ export class Interpreter {
    * @param address - Address of account
    */
   async getExternalBalance(address: Address): Promise<bigint> {
+    // Track address access for EIP-7928 BAL
+    if (this._evm.common.isActivatedEIP(7928)) {
+      this._evm.blockLevelAccessList?.addAddress(address.toString())
+    }
     // shortcut if current account
     if (address.equals(this._env.address)) {
       return this._env.contract.balance
