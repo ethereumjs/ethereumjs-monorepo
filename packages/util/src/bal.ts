@@ -14,6 +14,7 @@ type BALAccessIndexNumber = number // uint16
 type BALAccessIndexHex = PrefixedHexString // uint16 as hex d
 type BALBalanceBigInt = bigint // uint256 as bigint
 type BALBalanceHex = PrefixedHexString // uint256 as hex
+type BALNonceBigInt = bigint // uint64 as bigint
 type BALNonceHex = PrefixedHexString // uint64 as hex
 type BALByteCodeBytes = Uint8Array // bytes
 type BALByteCodeHex = PrefixedHexString // bytes as hex
@@ -40,7 +41,7 @@ type BALRawBlockAccessList = BALRawAccountChanges[]
 export type Accesses = Record<
   BALAddressHex,
   {
-    nonceChanges: BALRawNonceChange[]
+    nonceChanges: Map<BALAccessIndexNumber, BALNonceHex>
     balanceChanges: Map<BALAccessIndexNumber, BALBalanceHex>
     codeChanges: BALRawCodeChange[]
     storageChanges: Record<BALStorageKeyHex, BALRawStorageChange[]>
@@ -158,12 +159,16 @@ export class BlockLevelAccessList {
         index,
         balance,
       ])
+      const nonceChanges = Array.from(data.nonceChanges.entries()).map(([index, nonce]) => [
+        index,
+        nonce,
+      ])
       bal.push([
         address as BALAddressHex,
         storageChanges,
         storageReads,
         balanceChanges,
-        data.nonceChanges,
+        nonceChanges,
         data.codeChanges,
       ] as BALRawAccountChanges)
     }
@@ -179,7 +184,7 @@ export class BlockLevelAccessList {
       storageChanges: {},
       storageReads: new Set(),
       balanceChanges: new Map(),
-      nonceChanges: [],
+      nonceChanges: new Map(),
       codeChanges: [],
     }
   }
@@ -227,13 +232,13 @@ export class BlockLevelAccessList {
 
   public addNonceChange(
     address: BALAddressHex,
-    nonce: BALNonceHex,
+    nonce: BALNonceBigInt,
     blockAccessIndex: BALAccessIndexNumber,
   ): void {
     if (this.accesses[address] === undefined) {
       this.addAddress(address)
     }
-    this.accesses[address].nonceChanges.push([blockAccessIndex, nonce])
+    this.accesses[address].nonceChanges.set(blockAccessIndex, padToEvenHex(bigIntToHex(nonce)))
   }
 
   public addCodeChange(
@@ -283,7 +288,7 @@ export function createBlockLevelAccessListFromJSON(
     }
 
     for (const change of account.nonceChanges) {
-      access.nonceChanges.push([parseInt(change.blockAccessIndex, 16), change.postNonce])
+      access.nonceChanges.set(parseInt(change.blockAccessIndex, 16), change.postNonce)
     }
 
     for (const change of account.codeChanges) {
@@ -355,7 +360,7 @@ export function createBlockLevelAccessListFromRLP(rlp: Uint8Array): BlockLevelAc
     }
 
     for (const [indexBytes, nonceBytes] of nonceChangesRaw) {
-      access.nonceChanges.push([bytesToInt(indexBytes), bytesToHex(nonceBytes) as BALNonceHex])
+      access.nonceChanges.set(bytesToInt(indexBytes), bytesToHex(nonceBytes) as BALNonceHex)
     }
 
     for (const [indexBytes, codeBytes] of codeChangesRaw) {
