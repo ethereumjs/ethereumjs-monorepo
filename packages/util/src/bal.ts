@@ -208,15 +208,21 @@ export class BlockLevelAccessList {
       this.accesses[address].storageChanges[strippedKey] = []
     }
     this.accesses[address].storageChanges[strippedKey].push([blockAccessIndex, strippedValue])
+    // Per EIP-7928: A successful storage write subsumes any prior read of the same slot.
+    // Remove the slot from storageReads since it's now in storageChanges.
+    this.accesses[address].storageReads.delete(strippedKey)
   }
 
   public addStorageRead(address: BALAddressHex, storageKey: BALStorageKeyBytes): void {
     if (this.accesses[address] === undefined) {
       this.addAddress(address)
     }
-    this.accesses[address].storageReads.add(
-      normalizeStorageKeyHex(bytesToHex(stripLeadingZeros(storageKey))),
-    )
+    const strippedKey = normalizeStorageKeyHex(bytesToHex(stripLeadingZeros(storageKey)))
+    // Per EIP-7928: Don't add to storageReads if the slot was already written.
+    // A write subsumes any reads of the same slot.
+    if (this.accesses[address].storageChanges[strippedKey] === undefined) {
+      this.accesses[address].storageReads.add(strippedKey)
+    }
   }
 
   public addBalanceChange(

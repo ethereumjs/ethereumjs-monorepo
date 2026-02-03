@@ -705,9 +705,11 @@ export class Interpreter {
    * Loads a 256-bit value to memory from persistent storage.
    * @param key - Storage key
    * @param original - If true, return the original storage value (default: false)
+   * @param trackBAL - If true, track in BAL storageReads (default: true). Set to false for
+   *                   implicit reads (e.g., SSTORE gas calculation) that should not appear in BAL.
    */
-  async storageLoad(key: Uint8Array, original = false): Promise<Uint8Array> {
-    if (this._evm.common.isActivatedEIP(7928)) {
+  async storageLoad(key: Uint8Array, original = false, trackBAL = true): Promise<Uint8Array> {
+    if (this._evm.common.isActivatedEIP(7928) && trackBAL) {
       this._evm.blockLevelAccessList?.addStorageRead(this._env.address.toString(), key)
     }
     if (original) {
