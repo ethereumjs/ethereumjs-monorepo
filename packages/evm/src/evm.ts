@@ -1220,6 +1220,13 @@ export class EVM implements EVMInterface {
       throw new EVMError(EVMError.errorMessages.VALUE_OVERFLOW)
     }
     toAccount.balance = newBalance
+    if (this.common.isActivatedEIP(7928) && message.value !== BIGINT_0) {
+      this.blockLevelAccessList!.addBalanceChange(
+        message.to.toString(),
+        newBalance,
+        this.blockLevelAccessList!.blockAccessIndex,
+      )
+    }
     // putAccount as the nonce may have changed for contract creation
     await this.journal.putAccount(message.to, toAccount)
     if (this.DEBUG) {
