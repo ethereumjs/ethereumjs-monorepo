@@ -455,6 +455,17 @@ export class EVM implements EVMInterface {
       }
     }
 
+    // EIP-7928: Add codeAddress to BAL for DELEGATECALL/CALLCODE
+    // For these opcodes, `to` is the current contract but `codeAddress` is the target
+    // whose code is being executed. The target MUST be included in the BAL.
+    if (
+      this.common.isActivatedEIP(7928) &&
+      message.codeAddress !== undefined &&
+      message.codeAddress.toString() !== message.to.toString()
+    ) {
+      this.blockLevelAccessList!.addAddress(message.codeAddress.toString())
+    }
+
     // Load code
     await this._loadCode(message)
     let exit = false
