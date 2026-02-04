@@ -1313,9 +1313,18 @@ export class Interpreter {
 
     // Set contract balance to 0
     if (doModify) {
+      const originalBalance = this._env.contract.balance
       await this._stateManager.modifyAccountFields(this._env.address, {
         balance: BIGINT_0,
       })
+      if (this.common.isActivatedEIP(7928)) {
+        this._evm.blockLevelAccessList!.addBalanceChange(
+          this._env.address.toString(),
+          BIGINT_0,
+          this._evm.blockLevelAccessList!.blockAccessIndex,
+          originalBalance,
+        )
+      }
     }
 
     trap(EVMError.errorMessages.STOP)
