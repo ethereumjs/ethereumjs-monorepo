@@ -288,6 +288,19 @@ async function updateMinerBalance(
     ? results.totalGasSpent * inclusionFeePerGas
     : results.amountSpent
   minerAccount.balance += results.minerValue
+  if (vm.common.isActivatedEIP(7928)) {
+    if (results.minerValue !== BIGINT_0) {
+      vm.evm.blockLevelAccessList!.addBalanceChange(
+        miner.toString(),
+        minerAccount.balance,
+        vm.evm.blockLevelAccessList!.blockAccessIndex,
+      )
+    } else {
+      // EIP-7928: If the COINBASE reward is zero, the COINBASE address
+      // MUST be included as a read (address only, no balance change)
+      vm.evm.blockLevelAccessList!.addAddress(miner.toString())
+    }
+  }
 
   // Store updated miner account
   // Note: If balance remains zero, account is marked as "touched" and may be
