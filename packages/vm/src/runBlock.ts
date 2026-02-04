@@ -19,7 +19,9 @@ import {
   concatBytes,
   createAddressFromString,
   createBlockLevelAccessList,
+  createBlockLevelAccessListFromRLP,
   equalsBytes,
+  hexToBigInt,
   hexToBytes,
   intToBytes,
   setLengthLeft,
@@ -331,7 +333,26 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     requests,
     blockLevelAccessList: vm.evm.blockLevelAccessList,
   }
-
+  const bal = createBlockLevelAccessListFromRLP(results.blockLevelAccessList!.serialize())
+  for (const [account, access] of Object.entries(bal.accesses).sort((a, b) =>
+    Number(hexToBigInt(a[0] as `0x${string}`) - hexToBigInt(b[0] as `0x${string}`)),
+  )) {
+    console.log('account: ', account)
+    console.log('storageReads: ', access.storageReads)
+    console.log('storageChanges: ')
+    for (const [slot, changes] of Object.entries(access.storageChanges)) {
+      console.log('slot: ', slot)
+      console.log('changes: ', changes)
+    }
+    console.log('balanceChanges: ', access.balanceChanges)
+    console.log('nonceChanges: ', access.nonceChanges)
+    console.log('codeChanges: ', access.codeChanges)
+    console.log('.................................................')
+  }
+  console.log('hash: ', bytesToHex(vm.evm.blockLevelAccessList!.hash()))
+  console.log('--------------------------------')
+  console.log('--------------------------------')
+  console.log('blockLevelAccessList rlp: ', bytesToHex(results.blockLevelAccessList!.serialize()))
   const afterBlockEvent: AfterBlockEvent = { ...results, block }
 
   /**
@@ -764,6 +785,7 @@ export async function rewardAccount(
     }
     account = new Account()
   }
+  const originalBalance = account.balance
   account.balance += reward
   if (common.isActivatedEIP(7928)) {
     if (reward === BIGINT_0) {
@@ -773,6 +795,7 @@ export async function rewardAccount(
         address.toString(),
         account.balance,
         evm.blockLevelAccessList!.blockAccessIndex,
+        originalBalance,
       )
     }
   }
@@ -831,6 +854,7 @@ async function _applyDAOHardfork(evm: EVMInterface) {
     DAORefundAccount = new Account()
   }
 
+  const originalDAORefundAccountBalance = DAORefundAccount.balance
   for (const addr of DAOAccountList) {
     // retrieve the account and add it to the DAO's Refund accounts' balance.
     const address = new Address(unprefixedHexToBytes(addr))
@@ -840,6 +864,7 @@ async function _applyDAOHardfork(evm: EVMInterface) {
     }
     DAORefundAccount.balance += account.balance
     // clear the accounts' balance
+    const originalBalance = account.balance
     account.balance = BIGINT_0
     await evm.journal.putAccount(address, account)
     if (evm.common.isActivatedEIP(7928)) {
@@ -847,6 +872,7 @@ async function _applyDAOHardfork(evm: EVMInterface) {
         address.toString(),
         account.balance,
         evm.blockLevelAccessList!.blockAccessIndex,
+        originalBalance,
       )
     }
   }
@@ -858,6 +884,7 @@ async function _applyDAOHardfork(evm: EVMInterface) {
       DAORefundContractAddress.toString(),
       DAORefundAccount.balance,
       evm.blockLevelAccessList!.blockAccessIndex,
+      originalDAORefundAccountBalance,
     )
   }
 }

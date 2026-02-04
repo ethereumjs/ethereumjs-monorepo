@@ -1283,13 +1283,15 @@ export class Interpreter {
       if (!toAccount) {
         toAccount = new Account()
       }
+      const originalBalance = toAccount.balance
       toAccount.balance += this._env.contract.balance
       await this.journal.putAccount(toAddress, toAccount)
-      if (this.common.isActivatedEIP(7928) && this._env.contract.balance !== BIGINT_0) {
+      if (this.common.isActivatedEIP(7928)) {
         this._evm.blockLevelAccessList!.addBalanceChange(
           toAddress.toString(),
           toAccount.balance,
           this._evm.blockLevelAccessList!.blockAccessIndex,
+          originalBalance,
         )
       }
     }

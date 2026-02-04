@@ -1003,6 +1003,7 @@ export class EVM implements EVMInterface {
         if (!callerAccount) {
           callerAccount = new Account()
         }
+        const originalBalance = callerAccount.balance
         if (callerAccount.balance < value) {
           // if skipBalance and balance less than value, set caller balance to `value` to ensure sufficient funds
           callerAccount.balance = value
@@ -1012,6 +1013,7 @@ export class EVM implements EVMInterface {
               caller.toString(),
               callerAccount.balance,
               this.blockLevelAccessList!.blockAccessIndex,
+              originalBalance,
             )
           }
         }
@@ -1263,7 +1265,7 @@ export class EVM implements EVMInterface {
     }
     // EIP-7928: Record the sender's reduced balance in BAL
     // Per spec, CALL/CALLCODE senders must have their balance recorded
-    if (this.common.isActivatedEIP(7928) && message.value !== BIGINT_0) {
+    if (this.common.isActivatedEIP(7928)) {
       this.blockLevelAccessList!.addBalanceChange(
         message.caller.toString(),
         account.balance,
