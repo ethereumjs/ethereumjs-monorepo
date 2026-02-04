@@ -556,13 +556,13 @@ export const handlers: Map<number, OpHandler> = new Map([
     0x3c,
     async function (runState) {
       const [addressBigInt, memOffset, codeOffset, dataLength] = runState.stack.popN(4)
+      const address = createAddressFromStackBigInt(addressBigInt)
+      // EIP-7928: Track address access in BAL
+      if (runState.interpreter._evm.common.isActivatedEIP(7928)) {
+        runState.interpreter._evm.blockLevelAccessList?.addAddress(address.toString())
+      }
 
       if (dataLength !== BIGINT_0) {
-        const address = createAddressFromStackBigInt(addressBigInt)
-        // EIP-7928: Track address access in BAL
-        if (runState.interpreter._evm.common.isActivatedEIP(7928)) {
-          runState.interpreter._evm.blockLevelAccessList?.addAddress(address.toString())
-        }
         let code = await runState.stateManager.getCode(address)
 
         if (isEOF(code)) {
