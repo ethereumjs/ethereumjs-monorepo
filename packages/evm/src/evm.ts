@@ -1260,6 +1260,15 @@ export class EVM implements EVMInterface {
     if (account.balance < BIGINT_0) {
       throw new EVMError(EVMError.errorMessages.INSUFFICIENT_BALANCE)
     }
+    // EIP-7928: Record the sender's reduced balance in BAL
+    // Per spec, CALL/CALLCODE senders must have their balance recorded
+    if (this.common.isActivatedEIP(7928) && message.value !== BIGINT_0) {
+      this.blockLevelAccessList!.addBalanceChange(
+        message.caller.toString(),
+        account.balance,
+        this.blockLevelAccessList!.blockAccessIndex,
+      )
+    }
     const result = this.journal.putAccount(message.caller, account)
     if (this.DEBUG) {
       debug(`Reduced sender (${message.caller}) balance (-> ${account.balance})`)
