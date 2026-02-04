@@ -115,6 +115,8 @@ export class BlockLevelAccessList {
   public accesses: Accesses
   public blockAccessIndex: number
   private checkpoints: { accesses: Accesses; blockAccessIndex: number }[] = []
+  // Track original (pre-transaction) balances for net-zero detection
+  private originalBalances: Map<BALAddressHex, bigint> = new Map()
   constructor(accesses: Accesses = {}) {
     this.accesses = accesses
     this.blockAccessIndex = 0
@@ -345,14 +347,46 @@ export class BlockLevelAccessList {
     address: BALAddressHex,
     balance: BALBalanceBigInt,
     blockAccessIndex: BALAccessIndexNumber,
+    originalBalance?: BALBalanceBigInt,
   ): void {
     if (this.accesses[address] === undefined) {
       this.addAddress(address)
+    }
+    // EIP-7928: Track the original (pre-transaction) balance for net-zero detection
+    // Only set if not already tracked (first call wins)
+    if (originalBalance !== undefined && !this.originalBalances.has(address)) {
+      this.originalBalances.set(address, originalBalance)
     }
     this.accesses[address].balanceChanges.set(
       blockAccessIndex,
       padToEvenHex(bytesToHex(stripLeadingZeros(bigIntToBytes(balance)))),
     )
+  }
+
+  /**
+   * EIP-7928: Remove balance changes for addresses where final balance equals first balance.
+   * Call this at the end of each transaction to clean up net-zero balance changes.
+   */
+  public cleanupNetZeroBalanceChanges(): void {
+    for (const [address, originalBalance] of this.originalBalances.entries()) {
+      const access = this.accesses[address]
+      if (access === undefined || access.balanceChanges.size === 0) {
+        continue
+      }
+      // Get the final balance (last entry in the balanceChanges map)
+      const entries = Array.from(access.balanceChanges.values())
+      const finalBalanceHex = entries[entries.length - 1]
+      const finalBalance =
+        finalBalanceHex === '0x' ? BigInt(0) : BigInt(`0x${finalBalanceHex.replace(/^0x/, '')}`)
+
+      // EIP-7928: If final balance == original balance, remove all balanceChanges
+      // but keep the address in the BAL
+      if (finalBalance === originalBalance) {
+        access.balanceChanges.clear()
+      }
+    }
+    // Clear the tracking map for the next transaction
+    this.originalBalances.clear()
   }
 
   public addNonceChange(

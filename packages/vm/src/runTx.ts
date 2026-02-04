@@ -287,6 +287,7 @@ async function updateMinerBalance(
   results.minerValue = vm.common.isActivatedEIP(1559)
     ? results.totalGasSpent * inclusionFeePerGas
     : results.amountSpent
+  const minerOriginalBalance = minerAccount.balance
   minerAccount.balance += results.minerValue
   if (vm.common.isActivatedEIP(7928)) {
     if (results.minerValue !== BIGINT_0) {
@@ -294,6 +295,7 @@ async function updateMinerBalance(
         miner.toString(),
         minerAccount.balance,
         vm.evm.blockLevelAccessList!.blockAccessIndex,
+        minerOriginalBalance,
       )
     } else {
       // EIP-7928: If the COINBASE reward is zero, the COINBASE address
@@ -724,6 +726,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // ===========================
   const txCost = tx.gasLimit * gasPrice
   const blobGasCost = totalblobGas * blobGasPrice
+  const senderOriginalBalance = fromAccount.balance
   fromAccount.balance -= txCost
   fromAccount.balance -= blobGasCost
   if (opts.skipBalance === true && fromAccount.balance < BIGINT_0) {
@@ -735,6 +738,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       caller.toString(),
       fromAccount.balance,
       vm.evm.blockLevelAccessList!.blockAccessIndex,
+      senderOriginalBalance,
     )
   }
 
@@ -955,6 +959,12 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (enableProfiler) {
     // eslint-disable-next-line no-console
     console.timeEnd(receiptsLabel)
+  }
+
+  // EIP-7928: Clean up net-zero balance changes
+  // Per spec, if an account's balance changed during tx but final == pre-tx, don't record
+  if (vm.common.isActivatedEIP(7928)) {
+    vm.evm.blockLevelAccessList!.cleanupNetZeroBalanceChanges()
   }
 
   /** The `afterTx` event - emits transaction results */
