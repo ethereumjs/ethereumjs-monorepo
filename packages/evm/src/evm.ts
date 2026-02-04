@@ -620,6 +620,9 @@ export class EVM implements EVMInterface {
       if (this.DEBUG) {
         debug(`Returning on address collision`)
       }
+      if (this.common.isActivatedEIP(7928)) {
+        this.blockLevelAccessList!.addAddress(message.to.toString())
+      }
       return {
         createdAddress: message.to,
         execResult: {
