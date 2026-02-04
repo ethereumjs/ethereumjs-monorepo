@@ -295,6 +295,10 @@ async function updateMinerBalance(
         minerAccount.balance,
         vm.evm.blockLevelAccessList!.blockAccessIndex,
       )
+    } else {
+      // EIP-7928: If the COINBASE reward is zero, the COINBASE address
+      // MUST be included as a read (address only, no balance change)
+      vm.evm.blockLevelAccessList!.addAddress(miner.toString())
     }
   }
 
