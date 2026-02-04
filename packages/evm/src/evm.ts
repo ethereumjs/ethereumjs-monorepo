@@ -1052,6 +1052,9 @@ export class EVM implements EVMInterface {
       this.journal.addWarmedAddress((await this._generateAddress(message)).bytes)
     }
 
+    if (this.common.isActivatedEIP(7928)) {
+      this.blockLevelAccessList?.checkpoint()
+    }
     await this.journal.checkpoint()
     if (this.common.isActivatedEIP(1153)) this.transientStorage.checkpoint()
     if (this.DEBUG) {
@@ -1108,12 +1111,18 @@ export class EVM implements EVMInterface {
       result.execResult.logs = []
       await this.journal.revert()
       if (this.common.isActivatedEIP(1153)) this.transientStorage.revert()
+      if (this.common.isActivatedEIP(7928)) {
+        this.blockLevelAccessList?.revert()
+      }
       if (this.DEBUG) {
         debug(`message checkpoint reverted`)
       }
     } else {
       await this.journal.commit()
       if (this.common.isActivatedEIP(1153)) this.transientStorage.commit()
+      if (this.common.isActivatedEIP(7928)) {
+        this.blockLevelAccessList?.commit()
+      }
       if (this.DEBUG) {
         debug(`message checkpoint committed`)
       }

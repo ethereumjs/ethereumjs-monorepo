@@ -114,6 +114,7 @@ export type {
 export class BlockLevelAccessList {
   public accesses: Accesses
   public blockAccessIndex: number
+  private checkpoints: { accesses: Accesses; blockAccessIndex: number }[] = []
   constructor(accesses: Accesses = {}) {
     this.accesses = accesses
     this.blockAccessIndex = 0
@@ -135,6 +136,67 @@ export class BlockLevelAccessList {
    */
   public hash(): Uint8Array {
     return keccak_256(this.serialize())
+  }
+
+  public checkpoint(): void {
+    this.checkpoints.push({
+      accesses: this.cloneAccesses(this.accesses),
+      blockAccessIndex: this.blockAccessIndex,
+    })
+  }
+
+  public commit(): void {
+    if (this.checkpoints.length > 0) {
+      this.checkpoints.pop()
+    }
+  }
+
+  public revert(): void {
+    const snapshot = this.checkpoints.pop()
+    if (!snapshot) {
+      return
+    }
+    const current = this.accesses
+    this.accesses = snapshot.accesses
+    this.blockAccessIndex = snapshot.blockAccessIndex
+
+    // Preserve address touches and storage reads across reverts.
+    for (const [address, access] of Object.entries(current)) {
+      if (this.accesses[address as BALAddressHex] === undefined) {
+        this.accesses[address as BALAddressHex] = {
+          nonceChanges: new Map(),
+          balanceChanges: new Map(),
+          codeChanges: [],
+          storageChanges: {},
+          storageReads: new Set(access.storageReads),
+        }
+        continue
+      }
+      const target = this.accesses[address as BALAddressHex]
+      for (const slot of access.storageReads) {
+        target.storageReads.add(slot)
+      }
+    }
+  }
+
+  private cloneAccesses(accesses: Accesses): Accesses {
+    const cloned: Accesses = {}
+    for (const [address, access] of Object.entries(accesses)) {
+      const storageChanges: Record<BALStorageKeyHex, BALRawStorageChange[]> = {}
+      for (const [slot, changes] of Object.entries(access.storageChanges)) {
+        storageChanges[slot as BALStorageKeyHex] = changes.map(
+          ([index, value]) => [index, value] as BALRawStorageChange,
+        )
+      }
+      cloned[address as BALAddressHex] = {
+        nonceChanges: new Map(access.nonceChanges),
+        balanceChanges: new Map(access.balanceChanges),
+        codeChanges: access.codeChanges.map(([index, code]) => [index, code] as BALRawCodeChange),
+        storageChanges,
+        storageReads: new Set(access.storageReads),
+      }
+    }
+    return cloned
   }
 
   /**
