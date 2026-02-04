@@ -1256,6 +1256,7 @@ export class EVM implements EVMInterface {
   }
 
   protected async _reduceSenderBalance(account: Account, message: Message): Promise<void> {
+    const originalBalance = account.balance
     account.balance -= message.value
     if (account.balance < BIGINT_0) {
       throw new EVMError(EVMError.errorMessages.INSUFFICIENT_BALANCE)
@@ -1267,6 +1268,7 @@ export class EVM implements EVMInterface {
         message.caller.toString(),
         account.balance,
         this.blockLevelAccessList!.blockAccessIndex,
+        originalBalance,
       )
     }
     const result = this.journal.putAccount(message.caller, account)
@@ -1277,6 +1279,7 @@ export class EVM implements EVMInterface {
   }
 
   protected async _addToBalance(toAccount: Account, message: MessageWithTo): Promise<void> {
+    const originalBalance = toAccount.balance
     const newBalance = toAccount.balance + message.value
     if (newBalance > MAX_INTEGER) {
       throw new EVMError(EVMError.errorMessages.VALUE_OVERFLOW)
@@ -1289,6 +1292,7 @@ export class EVM implements EVMInterface {
           message.to.toString(),
           newBalance,
           this.blockLevelAccessList!.blockAccessIndex,
+          originalBalance,
         )
       }
     }
