@@ -610,11 +610,6 @@ async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
     console.time(processTxsLabel)
   }
 
-  // Increment the block access index for the next transaction if EIP-7928 is activated
-  if (vm.common.isActivatedEIP(7928)) {
-    vm.evm.blockLevelAccessList!.blockAccessIndex++
-  }
-
   const bloom = new Bloom(undefined, vm.common)
   // the total amount of gas used processing these transactions
   let gasUsed = BIGINT_0
@@ -631,6 +626,9 @@ async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
    * Process transactions
    */
   for (let txIdx = 0; txIdx < block.transactions.length; txIdx++) {
+    if (vm.common.isActivatedEIP(7928)) {
+      vm.evm.blockLevelAccessList!.blockAccessIndex = txIdx + 1
+    }
     const tx = block.transactions[txIdx]
 
     const gasLimitIsHigherThanBlock = block.header.gasLimit < tx.gasLimit + gasUsed
