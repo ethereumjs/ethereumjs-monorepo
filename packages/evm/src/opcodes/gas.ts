@@ -631,6 +631,12 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           trap(EVMError.errorMessages.OUT_OF_GAS)
         }
 
+        // EIP-7928: Add CALL target to BAL after gas calculation succeeds
+        // Address is only added if all OOG checks pass
+        if (common.isActivatedEIP(7928)) {
+          runState.interpreter._evm.blockLevelAccessList?.addAddress(toAddress.toString())
+        }
+
         runState.messageGasLimit = gasLimit
         return gas
       },
@@ -686,6 +692,11 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           trap(EVMError.errorMessages.OUT_OF_GAS)
         }
 
+        // EIP-7928: Add CALLCODE target to BAL after gas calculation succeeds
+        if (common.isActivatedEIP(7928)) {
+          runState.interpreter._evm.blockLevelAccessList?.addAddress(toAddress.toString())
+        }
+
         runState.messageGasLimit = gasLimit
         return gas
       },
@@ -706,6 +717,11 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         const [currentGasLimit, toAddr, inOffset, inLength, outOffset, outLength] =
           runState.stack.peek(6)
         const toAddress = createAddressFromStackBigInt(toAddr)
+
+        // EIP-7928: Add DELEGATECALL target to BAL during gas calculation
+        if (common.isActivatedEIP(7928)) {
+          runState.interpreter._evm.blockLevelAccessList?.addAddress(toAddress.toString())
+        }
 
         gas += subMemUsage(runState, inOffset, inLength, common)
         gas += subMemUsage(runState, outOffset, outLength, common)
@@ -740,10 +756,16 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           runState,
           common,
         )
+
         // note that TangerineWhistle or later this cannot happen
         // (it could have ran out of gas prior to getting here though)
         if (gasLimit > runState.interpreter.getGasLeft() - gas) {
           trap(EVMError.errorMessages.OUT_OF_GAS)
+        }
+
+        // EIP-7928: Add DELEGATECALL target to BAL after gas calculation succeeds
+        if (common.isActivatedEIP(7928)) {
+          runState.interpreter._evm.blockLevelAccessList?.addAddress(toAddress.toString())
         }
 
         runState.messageGasLimit = gasLimit
@@ -958,6 +980,11 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           runState,
           common,
         ) // we set TangerineWhistle or later to true here, as STATICCALL was available from Byzantium (which is after TangerineWhistle)
+
+        // EIP-7928: Add STATICCALL target to BAL before returning
+        if (common.isActivatedEIP(7928)) {
+          runState.interpreter._evm.blockLevelAccessList?.addAddress(toAddress.toString())
+        }
 
         runState.messageGasLimit = gasLimit
         return gas

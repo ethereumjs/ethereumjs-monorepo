@@ -1063,22 +1063,6 @@ export class EVM implements EVMInterface {
       this.journal.addWarmedAddress((await this._generateAddress(message)).bytes)
     }
 
-    // EIP-7928: Add call target and delegation target to BAL before checkpoint
-    // This ensures they're preserved even if OOG occurs
-    if (this.common.isActivatedEIP(7928) && message.to) {
-      // Add the call target itself
-      this.blockLevelAccessList!.addAddress(message.to.toString())
-
-      // For EIP-7702 delegation, also add the delegation target
-      if (this.common.isActivatedEIP(7702)) {
-        const targetCode = await this.stateManager.getCode(message.to)
-        if (equalsBytes(targetCode.slice(0, 3), DELEGATION_7702_FLAG)) {
-          const delegationTarget = new Address(targetCode.slice(3, 24))
-          this.blockLevelAccessList!.addAddress(delegationTarget.toString())
-        }
-      }
-    }
-
     if (this.common.isActivatedEIP(7928)) {
       this.blockLevelAccessList?.checkpoint()
     }
