@@ -265,10 +265,19 @@ export class BlockLevelAccessList {
     storageKey: BALStorageKeyBytes,
     value: BALStorageValueBytes,
     blockAccessIndex: BALAccessIndexNumber,
+    originalValue?: BALStorageValueBytes,
   ): void {
     const strippedKey = normalizeStorageKeyHex(bytesToHex(stripLeadingZeros(storageKey)))
     const strippedValue = stripLeadingZeros(value)
-    if (strippedValue.length === 0) {
+    const strippedOriginal = originalValue ? stripLeadingZeros(originalValue) : undefined
+
+    // EIP-7928: Check if this is a no-op write (value equals pre-transaction value)
+    // No-op writes should be recorded as reads, not changes.
+    const isNoOp =
+      strippedOriginal !== undefined && bytesToHex(strippedValue) === bytesToHex(strippedOriginal)
+
+    // Zero writes or no-op writes are treated as reads
+    if (strippedValue.length === 0 || isNoOp) {
       this.addStorageRead(address, storageKey)
       return
     }

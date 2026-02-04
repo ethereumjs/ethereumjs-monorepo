@@ -685,13 +685,22 @@ export class Interpreter {
    * Store 256-bit a value in memory to persistent storage.
    */
   async storageStore(key: Uint8Array, value: Uint8Array): Promise<void> {
+    // EIP-7928: Get the original (pre-transaction) value BEFORE storing
+    // This is needed to detect no-op writes (where new value equals original value)
+    let originalValue: Uint8Array | undefined
+    if (this._evm.common.isActivatedEIP(7928)) {
+      originalValue = await this._stateManager.originalStorageCache.get(this._env.address, key)
+    }
+
     await this._stateManager.putStorage(this._env.address, key, value)
+
     if (this._evm.common.isActivatedEIP(7928)) {
       this._evm.blockLevelAccessList?.addStorageWrite(
         this._env.address.toString(),
         key,
         value,
         this._evm.blockLevelAccessList!.blockAccessIndex,
+        originalValue,
       )
     }
     const account = await this._stateManager.getAccount(this._env.address)
