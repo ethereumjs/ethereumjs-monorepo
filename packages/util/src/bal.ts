@@ -146,7 +146,9 @@ export class BlockLevelAccessList {
   public raw(): BALRawBlockAccessList {
     const bal: BALRawBlockAccessList = []
 
-    for (const address of Object.keys(this.accesses).sort()) {
+    for (const address of Object.keys(this.accesses)
+      .sort()
+      .filter((address) => address !== systemAddress)) {
       const data = this.accesses[address as BALAddressHex]
 
       // Format storage changes: [slot, [[index, value], ...]]
@@ -424,3 +426,6 @@ function normalizeStorageKeyHex(hex: PrefixedHexString): BALStorageKeyHex {
   // Pad to even length (handles "0x0" → "0x00", "0x1" → "0x01", etc.)
   return `0x${padToEven(stripped)}` as BALStorageKeyHex
 }
+
+// Address to ignore
+const systemAddress = '0xfffffffffffffffffffffffffffffffffffffffe'
