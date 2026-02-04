@@ -410,6 +410,29 @@ export class BlockLevelAccessList {
     }
     this.accesses[address].codeChanges.push([blockAccessIndex, code])
   }
+
+  /**
+   * EIP-7928: For selfdestructed accounts, drop all state changes while
+   * preserving read footprints. Any storageChanges are converted to storageReads.
+   */
+  public cleanupSelfdestructed(addresses: Array<BALAddressHex>): void {
+    for (const address of addresses) {
+      const access = this.accesses[address]
+      if (access === undefined) {
+        continue
+      }
+
+      // Convert any storageChanges into storageReads
+      for (const slot of Object.keys(access.storageChanges)) {
+        access.storageReads.add(slot as BALStorageKeyHex)
+      }
+
+      access.storageChanges = {}
+      access.nonceChanges.clear()
+      access.balanceChanges.clear()
+      access.codeChanges = []
+    }
+  }
 }
 
 export function createBlockLevelAccessList(): BlockLevelAccessList {

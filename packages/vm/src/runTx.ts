@@ -10,6 +10,7 @@ import {
   EthereumJSErrorWithoutCode,
   KECCAK256_NULL,
   MAX_UINT64,
+  type PrefixedHexString,
   SECP256K1_ORDER_DIV_2,
   bigIntMax,
   bytesToBigInt,
@@ -211,6 +212,7 @@ async function processSelfdestructs(vm: VM, results: RunTxResult): Promise<void>
     return
   }
 
+  const destroyedForBAL: Set<PrefixedHexString> = new Set()
   for (const addressToSelfdestructHex of results.execResult.selfdestruct) {
     const address = new Address(hexToBytes(addressToSelfdestructHex))
 
@@ -222,9 +224,14 @@ async function processSelfdestructs(vm: VM, results: RunTxResult): Promise<void>
     }
 
     await vm.evm.journal.deleteAccount(address)
+    destroyedForBAL.add(address.toString())
     if (vm.DEBUG) {
       debug(`tx selfdestruct on address=${address}`)
     }
+  }
+
+  if (destroyedForBAL.size > 0 && vm.common.isActivatedEIP(7928)) {
+    vm.evm.blockLevelAccessList!.cleanupSelfdestructed([...destroyedForBAL])
   }
 }
 
