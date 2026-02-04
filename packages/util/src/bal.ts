@@ -161,20 +161,37 @@ export class BlockLevelAccessList {
     this.blockAccessIndex = snapshot.blockAccessIndex
 
     // Preserve address touches and storage reads across reverts.
+    // EIP-7928: When storage writes are reverted, the slot keys MUST still
+    // appear in storageReads since the slots were accessed (SSTORE reads
+    // the current value for gas calculation).
     for (const [address, access] of Object.entries(current)) {
       if (this.accesses[address as BALAddressHex] === undefined) {
+        // Collect both explicit reads and slots that were written (but will be reverted)
+        const allReads = new Set(access.storageReads)
+        for (const slot of Object.keys(access.storageChanges)) {
+          allReads.add(slot as BALStorageKeyHex)
+        }
         this.accesses[address as BALAddressHex] = {
           nonceChanges: new Map(),
           balanceChanges: new Map(),
           codeChanges: [],
           storageChanges: {},
-          storageReads: new Set(access.storageReads),
+          storageReads: allReads,
         }
         continue
       }
       const target = this.accesses[address as BALAddressHex]
+      // Preserve explicit storageReads
       for (const slot of access.storageReads) {
         target.storageReads.add(slot)
+      }
+      // EIP-7928: Convert reverted storageChanges to storageReads
+      for (const slot of Object.keys(access.storageChanges)) {
+        // Only add to reads if not already in the target's storageChanges
+        // (a successful write subsumes a read)
+        if (target.storageChanges[slot as BALStorageKeyHex] === undefined) {
+          target.storageReads.add(slot as BALStorageKeyHex)
+        }
       }
     }
   }
