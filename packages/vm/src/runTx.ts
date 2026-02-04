@@ -162,6 +162,13 @@ async function processAuthorizationList(
     // Update account nonce and store
     account.nonce++
     await vm.evm.journal.putAccount(authority, account)
+    if (vm.common.isActivatedEIP(7928)) {
+      vm.evm.blockLevelAccessList!.addNonceChange(
+        authority.toString(),
+        account.nonce,
+        vm.evm.blockLevelAccessList!.blockAccessIndex,
+      )
+    }
 
     // Set delegation code
     const address = data[1]
@@ -169,9 +176,23 @@ async function processAuthorizationList(
       // Special case: clear delegation when delegating to zero address
       // See EIP PR: https://github.com/ethereum/EIPs/pull/8929
       await vm.stateManager.putCode(authority, new Uint8Array())
+      if (vm.common.isActivatedEIP(7928)) {
+        vm.evm.blockLevelAccessList!.addCodeChange(
+          authority.toString(),
+          new Uint8Array(),
+          vm.evm.blockLevelAccessList!.blockAccessIndex,
+        )
+      }
     } else {
       const addressCode = concatBytes(DELEGATION_7702_FLAG, address)
       await vm.stateManager.putCode(authority, addressCode)
+      if (vm.common.isActivatedEIP(7928)) {
+        vm.evm.blockLevelAccessList!.addCodeChange(
+          authority.toString(),
+          addressCode,
+          vm.evm.blockLevelAccessList!.blockAccessIndex,
+        )
+      }
     }
   }
 
@@ -579,6 +600,13 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         // if skipBalance and not EIP1559 transaction, ensure caller balance is enough to run transaction
         fromAccount.balance = upFrontCost
         await vm.evm.journal.putAccount(caller, fromAccount)
+        if (vm.common.isActivatedEIP(7928)) {
+          vm.evm.blockLevelAccessList!.addBalanceChange(
+            caller.toString(),
+            fromAccount.balance,
+            vm.evm.blockLevelAccessList!.blockAccessIndex,
+          )
+        }
       }
     } else {
       const msg = _errorMsg(
@@ -631,6 +659,13 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       // if skipBalance, ensure caller balance is enough to run transaction
       fromAccount.balance = maxCost
       await vm.evm.journal.putAccount(caller, fromAccount)
+      if (vm.common.isActivatedEIP(7928)) {
+        vm.evm.blockLevelAccessList!.addBalanceChange(
+          caller.toString(),
+          fromAccount.balance,
+          vm.evm.blockLevelAccessList!.blockAccessIndex,
+        )
+      }
     } else {
       const msg = _errorMsg(
         `sender doesn't have enough funds to send tx. The max cost is: ${maxCost} and the sender's account (${caller}) only has: ${balance}`,
@@ -691,6 +726,13 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     fromAccount.balance = BIGINT_0
   }
   await vm.evm.journal.putAccount(caller, fromAccount)
+  if (vm.common.isActivatedEIP(7928)) {
+    vm.evm.blockLevelAccessList!.addBalanceChange(
+      caller.toString(),
+      fromAccount.balance,
+      vm.evm.blockLevelAccessList!.blockAccessIndex,
+    )
+  }
 
   // Process EIP-7702 authorization list (if applicable)
   let gasRefund = BIGINT_0
