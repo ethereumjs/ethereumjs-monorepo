@@ -604,6 +604,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     if (opts.skipBalance === true && fromAccount.balance < upFrontCost) {
       if (tx.supports(Capability.EIP1559FeeMarket) === false) {
         // if skipBalance and not EIP1559 transaction, ensure caller balance is enough to run transaction
+        const originalBalance = fromAccount.balance
         fromAccount.balance = upFrontCost
         await vm.evm.journal.putAccount(caller, fromAccount)
         if (vm.common.isActivatedEIP(7928)) {
@@ -611,6 +612,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
             caller.toString(),
             fromAccount.balance,
             vm.evm.blockLevelAccessList!.blockAccessIndex,
+            originalBalance,
           )
         }
       }
@@ -663,6 +665,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (fromAccount.balance < maxCost) {
     if (opts.skipBalance === true && fromAccount.balance < maxCost) {
       // if skipBalance, ensure caller balance is enough to run transaction
+      const originalBalance = fromAccount.balance
       fromAccount.balance = maxCost
       await vm.evm.journal.putAccount(caller, fromAccount)
       if (vm.common.isActivatedEIP(7928)) {
@@ -670,6 +673,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
           caller.toString(),
           fromAccount.balance,
           vm.evm.blockLevelAccessList!.blockAccessIndex,
+          originalBalance,
         )
       }
     } else {
@@ -870,6 +874,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   }
   const actualTxCost = results.totalGasSpent * gasPrice
   const txCostDiff = txCost - actualTxCost
+  const originalBalance = fromAccount.balance
   fromAccount.balance += txCostDiff
 
   if (vm.common.isActivatedEIP(7928)) {
@@ -877,6 +882,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       caller.toString(),
       fromAccount.balance,
       vm.evm.blockLevelAccessList!.blockAccessIndex,
+      originalBalance,
     )
     vm.evm.blockLevelAccessList!.addNonceChange(
       caller.toString(),
