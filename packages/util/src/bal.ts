@@ -1,6 +1,13 @@
 import { RLP } from '@ethereumjs/rlp'
 import { keccak_256 } from '@noble/hashes/sha3.js'
-import { bigIntToHex, bytesToHex, bytesToInt, hexToBigInt, hexToBytes } from './bytes.ts'
+import {
+  bigIntToBytes,
+  bigIntToHex,
+  bytesToHex,
+  bytesToInt,
+  hexToBigInt,
+  hexToBytes,
+} from './bytes.ts'
 import { padToEven } from './internal.ts'
 import type { PrefixedHexString } from './types.ts'
 
@@ -233,7 +240,10 @@ export class BlockLevelAccessList {
     if (this.accesses[address] === undefined) {
       this.addAddress(address)
     }
-    this.accesses[address].balanceChanges.set(blockAccessIndex, padToEvenHex(bigIntToHex(balance)))
+    this.accesses[address].balanceChanges.set(
+      blockAccessIndex,
+      padToEvenHex(bytesToHex(stripLeadingZeros(bigIntToBytes(balance)))),
+    )
   }
 
   public addNonceChange(
