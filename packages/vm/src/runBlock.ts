@@ -842,10 +842,24 @@ async function _applyDAOHardfork(evm: EVMInterface) {
     // clear the accounts' balance
     account.balance = BIGINT_0
     await evm.journal.putAccount(address, account)
+    if (evm.common.isActivatedEIP(7928)) {
+      evm.blockLevelAccessList!.addBalanceChange(
+        address.toString(),
+        account.balance,
+        evm.blockLevelAccessList!.blockAccessIndex,
+      )
+    }
   }
 
   // finally, put the Refund Account
   await evm.journal.putAccount(DAORefundContractAddress, DAORefundAccount)
+  if (evm.common.isActivatedEIP(7928)) {
+    evm.blockLevelAccessList!.addBalanceChange(
+      DAORefundContractAddress.toString(),
+      DAORefundAccount.balance,
+      evm.blockLevelAccessList!.blockAccessIndex,
+    )
+  }
 }
 
 async function _genTxTrie(block: Block) {

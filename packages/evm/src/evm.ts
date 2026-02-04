@@ -637,7 +637,13 @@ export class EVM implements EVMInterface {
     if (this.common.gteHardfork(Hardfork.SpuriousDragon)) {
       toAccount.nonce += BIGINT_1
     }
-
+    if (this.common.isActivatedEIP(7928)) {
+      this.blockLevelAccessList!.addNonceChange(
+        message.to.toString(),
+        toAccount.nonce,
+        this.blockLevelAccessList!.blockAccessIndex,
+      )
+    }
     // Add tx value to the `to` account
     let errorMessage
     try {
@@ -836,6 +842,15 @@ export class EVM implements EVMInterface {
       }
 
       await this.stateManager.putCode(message.to, result.returnValue)
+
+      if (this.common.isActivatedEIP(7928)) {
+        this.blockLevelAccessList!.addCodeChange(
+          message.to.toString(),
+          result.returnValue,
+          this.blockLevelAccessList!.blockAccessIndex,
+        )
+      }
+
       if (this.DEBUG) {
         debug(`Code saved on new contract creation`)
       }
@@ -981,6 +996,13 @@ export class EVM implements EVMInterface {
           // if skipBalance and balance less than value, set caller balance to `value` to ensure sufficient funds
           callerAccount.balance = value
           await this.journal.putAccount(caller, callerAccount)
+          if (this.common.isActivatedEIP(7928)) {
+            this.blockLevelAccessList!.addBalanceChange(
+              caller.toString(),
+              callerAccount.balance,
+              this.blockLevelAccessList!.blockAccessIndex,
+            )
+          }
         }
       }
 
@@ -1011,6 +1033,13 @@ export class EVM implements EVMInterface {
       }
       callerAccount.nonce++
       await this.journal.putAccount(message.caller, callerAccount)
+      if (this.common.isActivatedEIP(7928)) {
+        this.blockLevelAccessList!.addNonceChange(
+          message.caller.toString(),
+          callerAccount.nonce,
+          this.blockLevelAccessList!.blockAccessIndex,
+        )
+      }
       if (this.DEBUG) {
         debug(`Update fromAccount (caller) nonce (-> ${callerAccount.nonce}))`)
       }
