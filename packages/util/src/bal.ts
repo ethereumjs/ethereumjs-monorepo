@@ -287,14 +287,24 @@ export class BlockLevelAccessList {
     const strippedKey = normalizeStorageKeyHex(bytesToHex(stripLeadingZeros(storageKey)))
     const strippedValue = stripLeadingZeros(value)
     const strippedOriginal = originalValue ? stripLeadingZeros(originalValue) : undefined
+    const isZeroWrite = strippedValue.length === 0
 
     // EIP-7928: Check if this is a no-op write (value equals pre-transaction value)
     // No-op writes should be recorded as reads, not changes.
-    const isNoOp =
-      strippedOriginal !== undefined && bytesToHex(strippedValue) === bytesToHex(strippedOriginal)
+    // Note: Both empty arrays (zero values) compare equal via bytesToHex
+    let isNoOp = false
+    if (strippedOriginal !== undefined) {
+      // We have original value - compare properly
+      isNoOp = bytesToHex(strippedValue) === bytesToHex(strippedOriginal)
+    } else if (isZeroWrite) {
+      // No original value provided and writing zero - likely a no-op for system contracts
+      // reading empty slots. Treat as read for safety.
+      isNoOp = true
+    }
 
-    // Zero writes or no-op writes are treated as reads
-    if (strippedValue.length === 0 || isNoOp) {
+    // Only no-op writes (writing same value as original) are treated as reads
+    // EIP-7928: Zeroing a slot (pre-value exists, post-value is zero) IS a write
+    if (isNoOp) {
       this.addStorageRead(address, storageKey)
       return
     }
@@ -304,6 +314,7 @@ export class BlockLevelAccessList {
     if (this.accesses[address].storageChanges[strippedKey] === undefined) {
       this.accesses[address].storageChanges[strippedKey] = []
     }
+    // For zero values, strippedValue is empty - this is correct for RLP encoding
     this.accesses[address].storageChanges[strippedKey].push([blockAccessIndex, strippedValue])
     // Per EIP-7928: A successful storage write subsumes any prior read of the same slot.
     // Remove the slot from storageReads since it's now in storageChanges.
