@@ -7,6 +7,7 @@ import {
   BIGINT_32,
   BIGINT_64,
   bigIntToBytes,
+  bytesToHex,
   equalsBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
@@ -34,17 +35,24 @@ import type { RunState } from '../interpreter.ts'
 
 const EXTCALL_TARGET_MAX = BigInt(2) ** BigInt(8 * 20) - BigInt(1)
 
+/**
+ * Calculates gas cost for EIP-7702 delegation lookup.
+ * Returns both the gas cost and the delegation address (if any) so callers
+ * can handle BAL tracking after verifying sufficient gas.
+ */
 async function eip7702GasCost(
   runState: RunState,
   common: Common,
   address: Address,
   charge2929Gas: boolean,
-) {
+): Promise<{ gas: bigint; delegationAddress: Uint8Array | null }> {
   const code = await runState.stateManager.getCode(address)
   if (equalsBytes(code.slice(0, 3), DELEGATION_7702_FLAG)) {
-    return accessAddressEIP2929(runState, code.slice(3, 24), common, charge2929Gas)
+    const delegationAddress = code.slice(3, 24)
+    const gas = accessAddressEIP2929(runState, delegationAddress, common, charge2929Gas)
+    return { gas, delegationAddress }
   }
-  return BIGINT_0
+  return { gas: BIGINT_0, delegationAddress: null }
 }
 
 /**
@@ -568,6 +576,12 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         gas += subMemUsage(runState, inOffset, inLength, common)
         gas += subMemUsage(runState, outOffset, outLength, common)
 
+        // EIP-7928: Early OOG check before address access
+        // If we don't have enough gas to proceed, trap before adding to BAL
+        if (common.isActivatedEIP(7928) && gas > runState.interpreter.getGasLeft()) {
+          trap(EVMError.errorMessages.OUT_OF_GAS)
+        }
+
         let charge2929Gas = true
         if (
           (common.isActivatedEIP(6800) || common.isActivatedEIP(7864)) &&
@@ -588,8 +602,34 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           gas += accessAddressEIP2929(runState, toAddress.bytes, common, charge2929Gas)
         }
 
+        // EIP-7928: Add target to BAL after verifying we have enough gas for target access
+        if (common.isActivatedEIP(7928)) {
+          if (gas > runState.interpreter.getGasLeft()) {
+            trap(EVMError.errorMessages.OUT_OF_GAS)
+          }
+          runState.interpreter._evm.blockLevelAccessList?.addAddress(toAddress.toString())
+        }
+
         if (common.isActivatedEIP(7702)) {
-          gas += await eip7702GasCost(runState, common, toAddress, charge2929Gas)
+          const { gas: delegationGas, delegationAddress } = await eip7702GasCost(
+            runState,
+            common,
+            toAddress,
+            charge2929Gas,
+          )
+          gas += delegationGas
+
+          // EIP-7928: Add delegation to BAL only if we have enough gas
+          // The delegation was "accessed" (warmed in EIP-2929) but only add to BAL
+          // if we won't OOG from this access
+          if (common.isActivatedEIP(7928) && delegationAddress !== null) {
+            if (gas > runState.interpreter.getGasLeft()) {
+              trap(EVMError.errorMessages.OUT_OF_GAS)
+            }
+            runState.interpreter._evm.blockLevelAccessList?.addAddress(
+              bytesToHex(delegationAddress),
+            )
+          }
         }
 
         if (value !== BIGINT_0 && !common.isActivatedEIP(6800) && !common.isActivatedEIP(7864)) {
@@ -631,12 +671,6 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           trap(EVMError.errorMessages.OUT_OF_GAS)
         }
 
-        // EIP-7928: Add CALL target to BAL after gas calculation succeeds
-        // Address is only added if all OOG checks pass
-        if (common.isActivatedEIP(7928)) {
-          runState.interpreter._evm.blockLevelAccessList?.addAddress(toAddress.toString())
-        }
-
         runState.messageGasLimit = gasLimit
         return gas
       },
@@ -651,6 +685,12 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         gas += subMemUsage(runState, inOffset, inLength, common)
         gas += subMemUsage(runState, outOffset, outLength, common)
+
+        // EIP-7928: Early OOG check before address access
+        // If we don't have enough gas to proceed, trap before adding to BAL
+        if (common.isActivatedEIP(7928) && gas > runState.interpreter.getGasLeft()) {
+          trap(EVMError.errorMessages.OUT_OF_GAS)
+        }
 
         let charge2929Gas = true
         if (
@@ -672,8 +712,32 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           )
         }
 
+        // EIP-7928: Add target to BAL after verifying we have enough gas for target access
+        if (common.isActivatedEIP(7928)) {
+          if (gas > runState.interpreter.getGasLeft()) {
+            trap(EVMError.errorMessages.OUT_OF_GAS)
+          }
+          runState.interpreter._evm.blockLevelAccessList?.addAddress(toAddress.toString())
+        }
+
         if (common.isActivatedEIP(7702)) {
-          gas += await eip7702GasCost(runState, common, toAddress, charge2929Gas)
+          const { gas: delegationGas, delegationAddress } = await eip7702GasCost(
+            runState,
+            common,
+            toAddress,
+            charge2929Gas,
+          )
+          gas += delegationGas
+
+          // EIP-7928: Add delegation to BAL after verifying we have enough gas
+          if (common.isActivatedEIP(7928) && delegationAddress !== null) {
+            if (gas > runState.interpreter.getGasLeft()) {
+              trap(EVMError.errorMessages.OUT_OF_GAS)
+            }
+            runState.interpreter._evm.blockLevelAccessList?.addAddress(
+              bytesToHex(delegationAddress),
+            )
+          }
         }
 
         if (value !== BIGINT_0) {
@@ -692,9 +756,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           trap(EVMError.errorMessages.OUT_OF_GAS)
         }
 
-        // EIP-7928: Add CALLCODE target to BAL after gas calculation succeeds
-        if (common.isActivatedEIP(7928)) {
-          runState.interpreter._evm.blockLevelAccessList?.addAddress(toAddress.toString())
+        if (gas > runState.interpreter.getGasLeft()) {
+          trap(EVMError.errorMessages.OUT_OF_GAS)
         }
 
         runState.messageGasLimit = gasLimit
@@ -718,13 +781,14 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           runState.stack.peek(6)
         const toAddress = createAddressFromStackBigInt(toAddr)
 
-        // EIP-7928: Add DELEGATECALL target to BAL during gas calculation
-        if (common.isActivatedEIP(7928)) {
-          runState.interpreter._evm.blockLevelAccessList?.addAddress(toAddress.toString())
-        }
-
         gas += subMemUsage(runState, inOffset, inLength, common)
         gas += subMemUsage(runState, outOffset, outLength, common)
+
+        // EIP-7928: Early OOG check before address access
+        // If we don't have enough gas to proceed, trap before adding to BAL
+        if (common.isActivatedEIP(7928) && gas > runState.interpreter.getGasLeft()) {
+          trap(EVMError.errorMessages.OUT_OF_GAS)
+        }
 
         let charge2929Gas = true
         if (
@@ -746,8 +810,32 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           )
         }
 
+        // EIP-7928: Add target to BAL after verifying we have enough gas for target access
+        if (common.isActivatedEIP(7928)) {
+          if (gas > runState.interpreter.getGasLeft()) {
+            trap(EVMError.errorMessages.OUT_OF_GAS)
+          }
+          runState.interpreter._evm.blockLevelAccessList?.addAddress(toAddress.toString())
+        }
+
         if (common.isActivatedEIP(7702)) {
-          gas += await eip7702GasCost(runState, common, toAddress, charge2929Gas)
+          const { gas: delegationGas, delegationAddress } = await eip7702GasCost(
+            runState,
+            common,
+            toAddress,
+            charge2929Gas,
+          )
+          gas += delegationGas
+
+          // EIP-7928: Add delegation to BAL after verifying we have enough gas
+          if (common.isActivatedEIP(7928) && delegationAddress !== null) {
+            if (gas > runState.interpreter.getGasLeft()) {
+              trap(EVMError.errorMessages.OUT_OF_GAS)
+            }
+            runState.interpreter._evm.blockLevelAccessList?.addAddress(
+              bytesToHex(delegationAddress),
+            )
+          }
         }
 
         const gasLimit = maxCallGas(
@@ -763,9 +851,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           trap(EVMError.errorMessages.OUT_OF_GAS)
         }
 
-        // EIP-7928: Add DELEGATECALL target to BAL after gas calculation succeeds
-        if (common.isActivatedEIP(7928)) {
-          runState.interpreter._evm.blockLevelAccessList?.addAddress(toAddress.toString())
+        if (gas > runState.interpreter.getGasLeft()) {
+          trap(EVMError.errorMessages.OUT_OF_GAS)
         }
 
         runState.messageGasLimit = gasLimit
@@ -944,6 +1031,12 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         gas += subMemUsage(runState, inOffset, inLength, common)
         gas += subMemUsage(runState, outOffset, outLength, common)
 
+        // EIP-7928: Early OOG check before address access
+        // If we don't have enough gas to proceed, trap before adding to BAL
+        if (common.isActivatedEIP(7928) && gas > runState.interpreter.getGasLeft()) {
+          trap(EVMError.errorMessages.OUT_OF_GAS)
+        }
+
         let charge2929Gas = true
         const toAddress = createAddressFromStackBigInt(toAddr)
         if (
@@ -965,13 +1058,32 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           )
         }
 
+        // EIP-7928: Add target to BAL after verifying we have enough gas for target access
+        if (common.isActivatedEIP(7928)) {
+          if (gas > runState.interpreter.getGasLeft()) {
+            trap(EVMError.errorMessages.OUT_OF_GAS)
+          }
+          runState.interpreter._evm.blockLevelAccessList?.addAddress(toAddress.toString())
+        }
+
         if (common.isActivatedEIP(7702)) {
-          gas += await eip7702GasCost(
+          const { gas: delegationGas, delegationAddress } = await eip7702GasCost(
             runState,
             common,
             createAddressFromStackBigInt(toAddr),
             charge2929Gas,
           )
+          gas += delegationGas
+
+          // EIP-7928: Add delegation to BAL after verifying we have enough gas
+          if (common.isActivatedEIP(7928) && delegationAddress !== null) {
+            if (gas > runState.interpreter.getGasLeft()) {
+              trap(EVMError.errorMessages.OUT_OF_GAS)
+            }
+            runState.interpreter._evm.blockLevelAccessList?.addAddress(
+              bytesToHex(delegationAddress),
+            )
+          }
         }
 
         const gasLimit = maxCallGas(
@@ -980,11 +1092,6 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           runState,
           common,
         ) // we set TangerineWhistle or later to true here, as STATICCALL was available from Byzantium (which is after TangerineWhistle)
-
-        // EIP-7928: Add STATICCALL target to BAL before returning
-        if (common.isActivatedEIP(7928)) {
-          runState.interpreter._evm.blockLevelAccessList?.addAddress(toAddress.toString())
-        }
 
         runState.messageGasLimit = gasLimit
         return gas

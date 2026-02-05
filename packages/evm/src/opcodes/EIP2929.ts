@@ -1,4 +1,4 @@
-import { BIGINT_0 } from '@ethereumjs/util'
+import { BIGINT_0, bytesToHex } from '@ethereumjs/util'
 
 import type { Common } from '@ethereumjs/common'
 import type { RunState } from '../interpreter.ts'
@@ -7,11 +7,18 @@ import type { RunState } from '../interpreter.ts'
  * Adds address to accessedAddresses set if not already included.
  * Adjusts cost incurred for executing opcode based on whether address read
  * is warm/cold. (EIP 2929)
+ *
+ * For EIP-7928 BAL tracking: By default, this function does NOT add to BAL.
+ * Callers that need BAL tracking should either:
+ * - Pass trackBAL=true, or
+ * - Manually add to BAL after verifying sufficient gas
+ *
  * @param {RunState} runState
- * @param {Address}  address
+ * @param {Uint8Array}  address
  * @param {Common}   common
  * @param {Boolean}  chargeGas (default: true)
  * @param {Boolean}  isSelfdestruct (default: false)
+ * @param {Boolean}  trackBAL (default: false) - whether to track in BAL for EIP-7928
  */
 export function accessAddressEIP2929(
   runState: RunState,
@@ -19,8 +26,15 @@ export function accessAddressEIP2929(
   common: Common,
   chargeGas = true,
   isSelfdestruct = false,
+  trackBAL = false,
 ): bigint {
   if (!common.isActivatedEIP(2929)) return BIGINT_0
+
+  // EIP-7928: Track address access in block-level access list (if requested)
+  if (trackBAL && common.isActivatedEIP(7928)) {
+    const addressHex = bytesToHex(address)
+    runState.interpreter._evm.blockLevelAccessList?.addAddress(addressHex)
+  }
 
   // Cold
   if (!runState.interpreter.journal.isWarmedAddress(address)) {
