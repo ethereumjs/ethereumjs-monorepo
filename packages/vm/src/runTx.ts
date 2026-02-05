@@ -172,19 +172,27 @@ async function processAuthorizationList(
     }
 
     // Set delegation code
+    let originalCode: Uint8Array | undefined
     const address = data[1]
     if (equalsBytes(address, new Uint8Array(20))) {
       // Special case: clear delegation when delegating to zero address
       // See EIP PR: https://github.com/ethereum/EIPs/pull/8929
+      if (vm.common.isActivatedEIP(7928)) {
+        originalCode = await vm.stateManager.getCode(authority)
+      }
       await vm.stateManager.putCode(authority, new Uint8Array())
       if (vm.common.isActivatedEIP(7928)) {
         vm.evm.blockLevelAccessList!.addCodeChange(
           authority.toString(),
           new Uint8Array(),
           vm.evm.blockLevelAccessList!.blockAccessIndex,
+          originalCode,
         )
       }
     } else {
+      if (vm.common.isActivatedEIP(7928)) {
+        originalCode = await vm.stateManager.getCode(authority)
+      }
       const addressCode = concatBytes(DELEGATION_7702_FLAG, address)
       await vm.stateManager.putCode(authority, addressCode)
       if (vm.common.isActivatedEIP(7928)) {
@@ -192,6 +200,7 @@ async function processAuthorizationList(
           authority.toString(),
           addressCode,
           vm.evm.blockLevelAccessList!.blockAccessIndex,
+          originalCode,
         )
       }
     }
