@@ -375,7 +375,7 @@ const kzg = new microEthKZG(trustedSetup)
  * This method builds a block on top of the current head block and will insert 4844 txs
  * @param execution
  * @param chain
- * @param blobsCount Array of blob txs to produce. The amount of blobs in here is thus the amount of blobs per tx.
+ * @param blobsCount Array where each element specifies the number of blobs for each transaction to create (e.g., [3, 2, 1] creates 3 txs with 3, 2, and 1 blobs respectively).
  * @param accountAddress Address of the account to send the txs from
  * @param privateKey Private key of the account to sign the txs
  */
