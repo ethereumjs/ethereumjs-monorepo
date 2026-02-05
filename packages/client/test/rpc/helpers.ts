@@ -8,16 +8,26 @@ import {
   parseGethGenesisState,
 } from '@ethereumjs/common'
 import { getGenesis } from '@ethereumjs/genesis'
+import { createTx } from '@ethereumjs/tx'
 import {
   Address,
+  BIGINT_0,
   BIGINT_1,
+  BIGINT_256,
   KECCAK256_RLP,
+  type PrefixedHexString,
+  blobsToCommitments,
+  commitmentsToVersionedHashes,
   createAddressFromString,
+  createZeroAddress,
+  getBlobs,
   hexToBytes,
 } from '@ethereumjs/util'
 import { buildBlock } from '@ethereumjs/vm'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
 import { Client, Server as RPCServer } from 'jayson/promise/index.js'
 import { MemoryLevel } from 'memory-level'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 import { assert } from 'vitest'
 
 import { Chain } from '../../src/blockchain/chain.ts'
@@ -357,4 +367,79 @@ export async function testSetup(blockchain: Blockchain, common?: Common) {
   await chain.open()
   await exec.open()
   return exec
+}
+
+const kzg = new microEthKZG(trustedSetup)
+
+/**
+ * This method builds a block on top of the current head block and will insert 4844 txs
+ * @param execution
+ * @param chain
+ * @param blobsCount Array where each element specifies the number of blobs for each transaction to create (e.g., [3, 2, 1] creates 3 txs with 3, 2, and 1 blobs respectively).
+ * @param accountAddress Address of the account to send the txs from
+ * @param privateKey Private key of the account to sign the txs
+ */
+export const produceBlockWith4844Tx = async (
+  execution: VMExecution,
+  chain: Chain,
+  blobsCount: number[],
+  accountAddress: Address,
+  privateKey: Uint8Array,
+) => {
+  // 4844 sample blob
+  const sampleBlob = getBlobs('hello world')
+  const commitment = blobsToCommitments(kzg, sampleBlob)
+  const blobVersionedHash = commitmentsToVersionedHashes(commitment)
+
+  const { vm } = execution
+  const account = await vm.stateManager.getAccount(accountAddress)
+  let nonce = account?.nonce ?? BIGINT_0
+  const parentBlock = await chain.getCanonicalHeadBlock()
+  const vmCopy = await vm.shallowCopy()
+  // Initialize a block builder for a new block on top of the current head
+  const blockBuilder = await buildBlock(vmCopy, {
+    parentBlock,
+    headerData: {
+      timestamp: parentBlock.header.timestamp + BigInt(1),
+    },
+    blockOpts: {
+      calcDifficultyFromHeader: parentBlock.header,
+      putBlockIntoBlockchain: false,
+    },
+  })
+  for (let i = 0; i < blobsCount.length; i++) {
+    const blobVersionedHashes = [] as PrefixedHexString[]
+    const blobs = [] as PrefixedHexString[]
+    const kzgCommitments = [] as PrefixedHexString[]
+    const to = createZeroAddress()
+    if (blobsCount[i] > 0) {
+      for (let blob = 0; blob < blobsCount[i]; blob++) {
+        blobVersionedHashes.push(...blobVersionedHash)
+        blobs.push(...sampleBlob)
+        kzgCommitments.push(...commitment)
+      }
+    }
+    await blockBuilder.addTransaction(
+      createTx(
+        {
+          type: 3,
+          gasLimit: 21000,
+          maxFeePerGas: 0xffffffff,
+          maxPriorityFeePerGas: BIGINT_256,
+          nonce,
+          to,
+          blobVersionedHashes,
+          blobs,
+          kzgCommitments,
+          maxFeePerBlobGas: BigInt(1000),
+        },
+        { common: vmCopy.common },
+      ).sign(privateKey),
+    )
+    nonce++
+  }
+
+  const { block } = await blockBuilder.build()
+  await chain.putBlocks([block], true)
+  await execution.run()
 }
