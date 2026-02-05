@@ -135,6 +135,12 @@ async function processAuthorizationList(
     // Add authority address to warm addresses
     vm.evm.journal.addAlwaysWarmAddress(authority.toString())
 
+    // EIP-7928: Add authority address to BAL (even if authorization fails later,
+    // the account was accessed to check nonce/code)
+    if (vm.common.isActivatedEIP(7928)) {
+      vm.evm.blockLevelAccessList!.addAddress(authority.toString())
+    }
+
     // Skip if account is a "normal" contract (not 7702-delegated)
     if (account.isContract()) {
       const code = await vm.stateManager.getCode(authority)
@@ -172,27 +178,24 @@ async function processAuthorizationList(
     }
 
     // Set delegation code
-    let originalCode: Uint8Array | undefined
     const address = data[1]
+    // Get current code before modifying (needed for BAL tracking)
+    const currentCode = vm.common.isActivatedEIP(7928)
+      ? await vm.stateManager.getCode(authority)
+      : undefined
     if (equalsBytes(address, new Uint8Array(20))) {
       // Special case: clear delegation when delegating to zero address
       // See EIP PR: https://github.com/ethereum/EIPs/pull/8929
-      if (vm.common.isActivatedEIP(7928)) {
-        originalCode = await vm.stateManager.getCode(authority)
-      }
       await vm.stateManager.putCode(authority, new Uint8Array())
       if (vm.common.isActivatedEIP(7928)) {
         vm.evm.blockLevelAccessList!.addCodeChange(
           authority.toString(),
           new Uint8Array(),
           vm.evm.blockLevelAccessList!.blockAccessIndex,
-          originalCode,
+          currentCode,
         )
       }
     } else {
-      if (vm.common.isActivatedEIP(7928)) {
-        originalCode = await vm.stateManager.getCode(authority)
-      }
       const addressCode = concatBytes(DELEGATION_7702_FLAG, address)
       await vm.stateManager.putCode(authority, addressCode)
       if (vm.common.isActivatedEIP(7928)) {
@@ -200,7 +203,7 @@ async function processAuthorizationList(
           authority.toString(),
           addressCode,
           vm.evm.blockLevelAccessList!.blockAccessIndex,
-          originalCode,
+          currentCode,
         )
       }
     }

@@ -5,7 +5,6 @@ import {
   bigIntToHex,
   bytesToHex,
   bytesToInt,
-  equalsBytes,
   hexToBigInt,
   hexToBytes,
 } from './bytes.ts'
@@ -118,7 +117,9 @@ export class BlockLevelAccessList {
   private checkpoints: { accesses: Accesses; blockAccessIndex: number }[] = []
   // Track original (pre-transaction) balances for net-zero detection
   private originalBalances: Map<BALAddressHex, bigint> = new Map()
-  private originalCodes: Map<BALAddressHex, Uint8Array> = new Map()
+  // Track original code at the start of each blockAccessIndex for each address
+  // Key format: `${address}-${blockAccessIndex}`
+  private originalCodesAtIndex: Map<string, Uint8Array> = new Map()
   constructor(accesses: Accesses = {}) {
     this.accesses = accesses
     this.blockAccessIndex = 0
@@ -411,15 +412,39 @@ export class BlockLevelAccessList {
     if (this.accesses[address] === undefined) {
       this.addAddress(address)
     }
-    const storedOriginal = this.originalCodes.get(address)
-    if (storedOriginal === undefined && originalCode !== undefined) {
-      this.originalCodes.set(address, originalCode)
+    const codeChanges = this.accesses[address].codeChanges
+
+    // Track the original code at the start of this blockAccessIndex
+    const trackingKey = `${address}-${blockAccessIndex}`
+    if (!this.originalCodesAtIndex.has(trackingKey) && originalCode !== undefined) {
+      this.originalCodesAtIndex.set(trackingKey, originalCode)
     }
-    if (storedOriginal !== undefined && equalsBytes(code, storedOriginal)) {
-      this.accesses[address].codeChanges = []
-      return
+
+    // Get the original code at the start of this blockAccessIndex
+    const originalCodeAtIndex = this.originalCodesAtIndex.get(trackingKey)
+
+    // Check if there's already a code change at this blockAccessIndex
+    const existingIndex = codeChanges.findIndex(([idx]) => idx === blockAccessIndex)
+    if (existingIndex !== -1) {
+      // Check if the new code equals the original code at start of this blockAccessIndex
+      // If so, remove the entry (net-zero change within this blockAccessIndex)
+      if (
+        originalCodeAtIndex !== undefined &&
+        bytesToHex(code) === bytesToHex(originalCodeAtIndex)
+      ) {
+        codeChanges.splice(existingIndex, 1)
+      } else {
+        // Update the existing entry with the new code
+        codeChanges[existingIndex] = [blockAccessIndex, code]
+      }
+    } else {
+      // Add new entry, but only if code is actually different from originalCode
+      if (originalCode !== undefined && bytesToHex(code) === bytesToHex(originalCode)) {
+        // No actual change, don't record
+        return
+      }
+      codeChanges.push([blockAccessIndex, code])
     }
-    this.accesses[address].codeChanges.push([blockAccessIndex, code])
   }
 
   /**
