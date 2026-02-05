@@ -3,13 +3,14 @@
  * Test Analysis Report Tool
  *
  * Runs execution-spec blockchain tests file-by-file and produces a summary table
- * showing test results along with metadata from each test file.
+ * showing test results along with metadata from each test file. Searches for
+ * test files recursively in all subdirectories.
  *
  * Usage:
  *   npm run test:analysis:report -- --folder=<path-to-test-folder>
  *
  * Example:
- *   npm run test:analysis:report -- --folder=../execution-spec-tests/dev/blockchain_tests/amsterdam/v200_bal_defs_somewhat_outdated/eip7928_block_level_access_lists/block_access_lists
+ *   npm run test:analysis:report -- --folder=../execution-spec-tests/dev/blockchain_tests/amsterdam
  */
 
 import { execSync } from 'child_process'
@@ -30,6 +31,7 @@ const colors = {
 
 interface TestFileInfo {
   fileName: string
+  displayName: string // File name or relative path for display
   filePath: string
   network: string
   description: string
@@ -66,7 +68,7 @@ function parseArgs(): { folder: string } {
 }
 
 /**
- * Find all JSON test files in a directory (non-recursive)
+ * Find all JSON test files in a directory (searches recursively)
  */
 function findTestFiles(folderPath: string): string[] {
   const resolvedPath = path.resolve(folderPath)
@@ -76,18 +78,37 @@ function findTestFiles(folderPath: string): string[] {
     process.exit(1)
   }
 
-  const files = fs.readdirSync(resolvedPath)
-  return files
-    .filter((f) => f.endsWith('.json'))
-    .map((f) => path.join(resolvedPath, f))
-    .sort()
+  const results: string[] = []
+
+  function scanDirectory(dirPath: string): void {
+    const entries = fs.readdirSync(dirPath, { withFileTypes: true })
+
+    for (const entry of entries) {
+      const fullPath = path.join(dirPath, entry.name)
+
+      if (entry.isDirectory()) {
+        scanDirectory(fullPath)
+      } else if (entry.isFile() && entry.name.endsWith('.json')) {
+        results.push(fullPath)
+      }
+    }
+  }
+
+  scanDirectory(resolvedPath)
+  return results.sort()
 }
 
 /**
  * Extract metadata from a test JSON file (from first test case)
+ * @param filePath - Full path to the test file
+ * @param baseFolderPath - Base folder path for calculating relative display name
  */
-function extractTestInfo(filePath: string): TestFileInfo {
+function extractTestInfo(filePath: string, baseFolderPath: string): TestFileInfo {
   const fileName = path.basename(filePath)
+  // Calculate relative path from base folder for display
+  const relativePath = path.relative(baseFolderPath, filePath)
+  const displayName = relativePath !== fileName ? relativePath : fileName
+
   let network = 'Unknown'
   let description = 'No description'
   let testCount = 0
@@ -114,7 +135,7 @@ function extractTestInfo(filePath: string): TestFileInfo {
     // Keep defaults if parsing fails
   }
 
-  return { fileName, filePath, network, description, testCount }
+  return { fileName, displayName, filePath, network, description, testCount }
 }
 
 /**
@@ -281,7 +302,7 @@ function formatRowData(
 }
 
 /**
- * Print the summary table
+ * Print the summary table (only showing files with failures)
  */
 function printSummaryTable(results: TestResult[]): void {
   const divider =
@@ -301,36 +322,43 @@ function printSummaryTable(results: TestResult[]): void {
     '-'.repeat(8) +
     '+'
 
+  // Filter to only show files with failures
+  const failedResults = results.filter((r) => r.status !== 'PASS')
+
   console.log('\n' + '='.repeat(165))
-  console.log(' TEST ANALYSIS REPORT')
+  console.log(' TEST ANALYSIS REPORT (showing failures only)')
   console.log('='.repeat(165))
   console.log(divider)
   console.log(
-    formatRowHeader('File Name', 'Network', 'Description', 'Tests', 'Passed', 'Failed', 'Status'),
+    formatRowHeader('File', 'Network', 'Description', 'Tests', 'Passed', 'Failed', 'Status'),
   )
   console.log(divider)
 
-  for (const result of results) {
-    console.log(
-      formatRowData(
-        result.fileName,
-        result.network,
-        result.description,
-        result.testCount.toString(),
-        result.passed,
-        result.failed,
-        result.status,
-      ),
-    )
+  if (failedResults.length === 0) {
+    console.log('| ' + 'All tests passed!'.padEnd(161) + ' |')
+  } else {
+    for (const result of failedResults) {
+      console.log(
+        formatRowData(
+          result.displayName,
+          result.network,
+          result.description,
+          result.testCount.toString(),
+          result.passed,
+          result.failed,
+          result.status,
+        ),
+      )
+    }
   }
 
   console.log(divider)
 
-  // Summary totals
+  // Summary totals (from all results, not just failures)
   const totalTests = results.reduce((sum, r) => sum + r.testCount, 0)
   const totalPassed = results.reduce((sum, r) => sum + r.passed, 0)
   const totalFailed = results.reduce((sum, r) => sum + r.failed, 0)
-  const filesWithFailures = results.filter((r) => r.status !== 'PASS').length
+  const filesWithFailures = failedResults.length
 
   console.log(
     formatRowData(
@@ -366,14 +394,15 @@ async function main(): Promise<void> {
 
   const results: TestResult[] = []
 
+  const baseFolderPath = path.resolve(folder)
+
   for (let i = 0; i < testFiles.length; i++) {
     const filePath = testFiles[i]
-    const fileName = path.basename(filePath)
+    const info = extractTestInfo(filePath, baseFolderPath)
 
     // Show progress
-    process.stdout.write(`[${i + 1}/${testFiles.length}] Running ${fileName}... `)
+    process.stdout.write(`[${i + 1}/${testFiles.length}] Running ${info.displayName}... `)
 
-    const info = extractTestInfo(filePath)
     const { passed, failed, error } = runTestFile(filePath)
 
     const result: TestResult = {
