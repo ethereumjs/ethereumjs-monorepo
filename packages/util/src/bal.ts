@@ -5,6 +5,7 @@ import {
   bigIntToHex,
   bytesToHex,
   bytesToInt,
+  equalsBytes,
   hexToBigInt,
   hexToBytes,
 } from './bytes.ts'
@@ -117,6 +118,7 @@ export class BlockLevelAccessList {
   private checkpoints: { accesses: Accesses; blockAccessIndex: number }[] = []
   // Track original (pre-transaction) balances for net-zero detection
   private originalBalances: Map<BALAddressHex, bigint> = new Map()
+  private originalCodes: Map<BALAddressHex, Uint8Array> = new Map()
   constructor(accesses: Accesses = {}) {
     this.accesses = accesses
     this.blockAccessIndex = 0
@@ -404,9 +406,18 @@ export class BlockLevelAccessList {
     address: BALAddressHex,
     code: BALByteCodeBytes,
     blockAccessIndex: BALAccessIndexNumber,
+    originalCode?: BALByteCodeBytes,
   ): void {
     if (this.accesses[address] === undefined) {
       this.addAddress(address)
+    }
+    const storedOriginal = this.originalCodes.get(address)
+    if (storedOriginal === undefined && originalCode !== undefined) {
+      this.originalCodes.set(address, originalCode)
+    }
+    if (storedOriginal !== undefined && equalsBytes(code, storedOriginal)) {
+      this.accesses[address].codeChanges = []
+      return
     }
     this.accesses[address].codeChanges.push([blockAccessIndex, code])
   }
