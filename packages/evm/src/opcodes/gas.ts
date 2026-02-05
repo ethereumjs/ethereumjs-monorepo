@@ -1230,16 +1230,17 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         const selfdestructToAddress = createAddressFromStackBigInt(selfdestructToaddressBigInt)
         const contractAddress = runState.interpreter.getAddress()
 
-        let deductGas = false
         const balance = await runState.interpreter.getExternalBalance(contractAddress)
 
+        // Calculate new account gas first (needed for checkpoint ordering)
+        let newAccountGas = BIGINT_0
         if (common.gteHardfork(Hardfork.SpuriousDragon)) {
           // EIP-161: State Trie Clearing
           if (balance > BIGINT_0) {
             // This technically checks if account is empty or non-existent
             const account = await runState.stateManager.getAccount(selfdestructToAddress)
             if (account === undefined || account.isEmpty()) {
-              deductGas = true
+              newAccountGas = common.param('callNewAccountGas')
             }
           }
         } else if (common.gteHardfork(Hardfork.TangerineWhistle)) {
@@ -1247,11 +1248,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           const exists =
             (await runState.stateManager.getAccount(selfdestructToAddress)) !== undefined
           if (!exists) {
-            deductGas = true
+            newAccountGas = common.param('callNewAccountGas')
           }
-        }
-        if (deductGas) {
-          gas += common.param('callNewAccountGas')
         }
 
         let selfDestructToCharge2929Gas = true
@@ -1275,15 +1273,39 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           selfDestructToCharge2929Gas = selfDestructToColdAccessGas === BIGINT_0
         }
 
+        // EIP-2929/7928: Get cold access cost first (no side effects)
+        let coldAccessCost = BIGINT_0
         if (common.isActivatedEIP(2929)) {
-          gas += accessAddressEIP2929(
+          coldAccessCost = getAddressAccessCost(
             runState,
             selfdestructToAddress.bytes,
             common,
             selfDestructToCharge2929Gas,
             true,
           )
+          gas += coldAccessCost
         }
+
+        // EIP-7928: Check if we have enough gas for the cold access (checkpoint 1)
+        // If yes, add beneficiary to BAL - this is the "state access" point
+        // The newAccountGas (checkpoint 2) is added after, so OOG there still records BAL
+        if (common.isActivatedEIP(7928)) {
+          // Only add to BAL if we have enough gas for the current accumulated cost
+          // (base gas + cold access). newAccountGas is NOT included here because
+          // per EIP-7928, if we pass the cold access check but fail at new account
+          // creation, the beneficiary should still be in BAL.
+          if (gas <= runState.interpreter.getGasLeft()) {
+            addAddressToBAL(runState, selfdestructToAddress.bytes, common)
+          }
+        }
+
+        // Now commit the address warming (EIP-2929)
+        if (common.isActivatedEIP(2929)) {
+          warmAddress(runState, selfdestructToAddress.bytes)
+        }
+
+        // Add new account gas (checkpoint 2)
+        gas += newAccountGas
 
         return gas
       },

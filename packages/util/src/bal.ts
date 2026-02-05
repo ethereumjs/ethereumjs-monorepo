@@ -425,6 +425,9 @@ export class BlockLevelAccessList {
   /**
    * EIP-7928: For selfdestructed accounts, drop all state changes while
    * preserving read footprints. Any storageChanges are converted to storageReads.
+   *
+   * Per EIP-7928: "if the account had a positive balance pre-transaction,
+   * the balance change to zero MUST be recorded."
    */
   public cleanupSelfdestructed(addresses: Array<BALAddressHex>): void {
     for (const address of addresses) {
@@ -440,8 +443,19 @@ export class BlockLevelAccessList {
 
       access.storageChanges = {}
       access.nonceChanges.clear()
-      access.balanceChanges.clear()
       access.codeChanges = []
+
+      // EIP-7928: If the account had a positive pre-transaction balance,
+      // the balance change to zero MUST be recorded.
+      // The balance change to 0 is already added during SELFDESTRUCT execution.
+      // We only clear balance changes if pre-transaction balance was 0 (no actual change).
+      const originalBalance = this.originalBalances.get(address)
+      if (originalBalance === undefined || originalBalance === BigInt(0)) {
+        // Pre-transaction balance was 0 or unknown - clear balance changes
+        // (0 -> 0 is no change, so nothing to record)
+        access.balanceChanges.clear()
+      }
+      // If originalBalance > 0, keep the balance changes (which should show balance = 0)
     }
   }
 }
