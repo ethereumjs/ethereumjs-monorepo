@@ -42,29 +42,38 @@ export class BlockLevelAccessList {
   // Track original code at the start of each blockAccessIndex for each address
   // Key format: `${address}-${blockAccessIndex}`
   private originalCodesAtIndex: Map<string, Uint8Array> = new Map()
+
+  /**
+   * Creates a block-level access list with optional initial {@link Accesses}.
+   *
+   * @param accesses - Initial address-to-access record; defaults to empty
+   */
   constructor(accesses: Accesses = {}) {
     this.accesses = accesses
     this.blockAccessIndex = 0
   }
 
   /**
-   * Serializes the block level access list to RLP.
+   * Serializes the block-level access list to RLP.
    *
-   * @returns the RLP encoded block level access list
+   * @returns RLP-encoded block-level access list
    */
   public serialize(): Uint8Array {
     return RLP.encode(this.raw())
   }
 
   /**
-   * This hash is used in the block header
+   * Returns the Keccak-256 hash of the serialized BAL (used in the block header).
    *
-   * @returns the hash of the serialized block level access list
+   * @returns Hash of the RLP-encoded block-level access list
    */
   public hash(): Uint8Array {
     return keccak_256(this.serialize())
   }
 
+  /**
+   * Pushes a snapshot of current {@link accesses} and {@link blockAccessIndex} for later revert.
+   */
   public checkpoint(): void {
     this.checkpoints.push({
       accesses: this.cloneAccesses(this.accesses),
@@ -72,12 +81,19 @@ export class BlockLevelAccessList {
     })
   }
 
+  /**
+   * Discards the most recent checkpoint without reverting state.
+   */
   public commit(): void {
     if (this.checkpoints.length > 0) {
       this.checkpoints.pop()
     }
   }
 
+  /**
+   * Restores state from the most recent checkpoint. Storage writes are reverted;
+   * affected slots remain in storageReads per EIP-7928 (SSTORE reads for gas).
+   */
   public revert(): void {
     const snapshot = this.checkpoints.pop()
     if (!snapshot) {
@@ -123,6 +139,12 @@ export class BlockLevelAccessList {
     }
   }
 
+  /**
+   * Deep-clones an {@link Accesses} record (Maps and nested structures copied).
+   *
+   * @param accesses - Access record to clone
+   * @returns New record with the same structure and values
+   */
   private cloneAccesses(accesses: Accesses): Accesses {
     const cloned: Accesses = {}
     for (const [address, access] of Object.entries(accesses)) {
@@ -144,10 +166,10 @@ export class BlockLevelAccessList {
   }
 
   /**
-   * Returns the raw block level access list with values
-   * correctly sorted.
+   * Returns the raw block-level access list with keys and entries sorted for canonical RLP.
+   * Excludes {@link SYSTEM_ADDRESS}. Uses normalization helpers for storage, balance, and nonce.
    *
-   * @returns the raw block level access list
+   * @returns Sorted {@link BALRawBlockAccessList} ready for encoding
    */
   public raw(): BALRawBlockAccessList {
     const bal: BALRawBlockAccessList = []
@@ -177,6 +199,11 @@ export class BlockLevelAccessList {
     return bal
   }
 
+  /**
+   * Ensures an address is present in the access list with empty changes. No-op if already present.
+   *
+   * @param address - Account address to add
+   */
   public addAddress(address: BALAddressHex): void {
     if (this.accesses[address] !== undefined) {
       return
@@ -190,6 +217,16 @@ export class BlockLevelAccessList {
     }
   }
 
+  /**
+   * Records a storage write. No-op writes (value equals original) are recorded as reads per EIP-7928.
+   * Keys and values are normalized (leading zeros stripped); zero value is encoded as empty bytes.
+   *
+   * @param address - Account address
+   * @param storageKey - Storage slot key (bytes)
+   * @param value - New value written
+   * @param blockAccessIndex - Block access index for this write
+   * @param originalValue - Pre-write value when known (used for no-op detection)
+   */
   public addStorageWrite(
     address: BALAddressHex,
     storageKey: BALStorageKeyBytes,
@@ -242,6 +279,12 @@ export class BlockLevelAccessList {
     this.accesses[address].storageReads.delete(strippedKey)
   }
 
+  /**
+   * Records a storage read. Skipped if the slot already has a write (write subsumes read per EIP-7928).
+   *
+   * @param address - Account address
+   * @param storageKey - Storage slot key (bytes)
+   */
   public addStorageRead(address: BALAddressHex, storageKey: BALStorageKeyBytes): void {
     if (this.accesses[address] === undefined) {
       this.addAddress(address)
@@ -254,6 +297,15 @@ export class BlockLevelAccessList {
     }
   }
 
+  /**
+   * Records a balance change at the given block access index. Original balance can be supplied
+   * for later net-zero cleanup via {@link cleanupNetZeroBalanceChanges}.
+   *
+   * @param address - Account address
+   * @param balance - Post-change balance
+   * @param blockAccessIndex - Block access index for this change
+   * @param originalBalance - Pre-transaction balance when known (for net-zero detection)
+   */
   public addBalanceChange(
     address: BALAddressHex,
     balance: BALBalanceBigInt,
@@ -275,8 +327,8 @@ export class BlockLevelAccessList {
   }
 
   /**
-   * EIP-7928: Remove balance changes for addresses where final balance equals first balance.
-   * Call this at the end of each transaction to clean up net-zero balance changes.
+   * EIP-7928: Removes balance changes for addresses whose final balance equals their
+   * pre-transaction balance. Call at the end of each transaction to clean up net-zero changes.
    */
   public cleanupNetZeroBalanceChanges(): void {
     for (const [address, originalBalance] of this.originalBalances.entries()) {
@@ -300,6 +352,13 @@ export class BlockLevelAccessList {
     this.originalBalances.clear()
   }
 
+  /**
+   * Records a nonce change at the given block access index.
+   *
+   * @param address - Account address
+   * @param nonce - Post-change nonce
+   * @param blockAccessIndex - Block access index for this change
+   */
   public addNonceChange(
     address: BALAddressHex,
     nonce: BALNonceBigInt,
@@ -311,6 +370,15 @@ export class BlockLevelAccessList {
     this.accesses[address].nonceChanges.set(blockAccessIndex, padToEvenHex(bigIntToHex(nonce)))
   }
 
+  /**
+   * Records a code change at the given block access index. Net-zero changes (code equals
+   * original at that index) are removed. Replacing an existing entry updates the stored code.
+   *
+   * @param address - Account address
+   * @param code - New contract code (bytes)
+   * @param blockAccessIndex - Block access index for this change
+   * @param originalCode - Code before this change when known (for net-zero detection)
+   */
   public addCodeChange(
     address: BALAddressHex,
     code: BALByteCodeBytes,
@@ -356,11 +424,11 @@ export class BlockLevelAccessList {
   }
 
   /**
-   * EIP-7928: For selfdestructed accounts, drop all state changes while
-   * preserving read footprints. Any storageChanges are converted to storageReads.
+   * EIP-7928: For selfdestructed accounts, drops all state changes while preserving read
+   * footprints. Storage changes are converted to storage reads. If the account had a
+   * positive pre-transaction balance, the balance change to zero is preserved.
    *
-   * Per EIP-7928: "if the account had a positive balance pre-transaction,
-   * the balance change to zero MUST be recorded."
+   * @param addresses - List of selfdestructed account addresses to clean up
    */
   public cleanupSelfdestructed(addresses: Array<BALAddressHex>): void {
     for (const address of addresses) {
