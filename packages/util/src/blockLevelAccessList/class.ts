@@ -1,6 +1,6 @@
 import { RLP } from '@ethereumjs/rlp'
 import { keccak_256 } from '@noble/hashes/sha3.js'
-import { bigIntToBytes, bigIntToHex, bytesToHex, hexToBigInt } from '../bytes.ts'
+import { bigIntToBytes, bigIntToHex, bytesToHex } from '../bytes.ts'
 import {
   type Accesses,
   type BALAccessIndexNumber,
@@ -19,8 +19,11 @@ import {
 } from './types.ts'
 
 import {
-  normalizeHexForRLP,
+  normalizeBalanceChanges,
+  normalizeNonceChanges,
+  normalizeStorageChanges,
   normalizeStorageKeyHex,
+  normalizeStorageReads,
   padToEvenHex,
   stripLeadingZeros,
 } from './normalize.ts'
@@ -154,27 +157,13 @@ export class BlockLevelAccessList {
       .filter((address) => address !== SYSTEM_ADDRESS)) {
       const data = this.accesses[address as BALAddressHex]
 
-      // Format storage changes: [slot, [[index, value], ...]]
-      // Normalize slot keys for canonical RLP encoding (0 -> empty bytes)
-      const storageChanges = (
-        Object.entries(data.storageChanges) as [BALStorageKeyHex, BALRawStorageChange[]][]
-      )
-        .sort((a, b) => a[0].localeCompare(b[0]))
-        .map(([slot, changes]) => [normalizeHexForRLP(slot), changes.sort((a, b) => a[0] - b[0])])
+      // Normalize BAL data for canonical RLP encoding
 
-      // Normalize storage reads for canonical RLP encoding (0 -> empty bytes)
-      const storageReads = Array.from(data.storageReads)
-        .map(normalizeHexForRLP)
-        .sort((a, b) => Number(hexToBigInt(a as `0x${string}`) - hexToBigInt(b as `0x${string}`)))
+      const storageChanges = normalizeStorageChanges(data.storageChanges)
+      const storageReads = normalizeStorageReads(data.storageReads)
+      const balanceChanges = normalizeBalanceChanges(data.balanceChanges)
+      const nonceChanges = normalizeNonceChanges(data.nonceChanges)
 
-      const balanceChanges = Array.from(data.balanceChanges.entries()).map(([index, balance]) => [
-        index,
-        balance,
-      ])
-      const nonceChanges = Array.from(data.nonceChanges.entries()).map(([index, nonce]) => [
-        index,
-        nonce,
-      ])
       bal.push([
         address as BALAddressHex,
         storageChanges,
