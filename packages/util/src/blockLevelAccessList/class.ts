@@ -1,5 +1,6 @@
 import { RLP } from '@ethereumjs/rlp'
 import { keccak_256 } from '@noble/hashes/sha3.js'
+import { bigIntToBytes, bigIntToHex, bytesToHex, hexToBigInt } from '../bytes.ts'
 import {
   type Accesses,
   type BALAccessIndexNumber,
@@ -15,15 +16,14 @@ import {
   type BALStorageKeyHex,
   type BALStorageValueBytes,
   SYSTEM_ADDRESS,
-} from './blockLevelAccessList/types.ts'
-import { bigIntToBytes, bigIntToHex, bytesToHex, hexToBigInt } from './bytes.ts'
+} from './types.ts'
 
 import {
   normalizeHexForRLP,
   normalizeStorageKeyHex,
   padToEvenHex,
   stripLeadingZeros,
-} from './blockLevelAccessList/normalize.ts'
+} from './normalize.ts'
 
 /**
  * Structural helper class for block level access lists

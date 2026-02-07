@@ -1,6 +1,6 @@
 import { RLP, hexToBytes } from '@ethereumjs/rlp'
-import { BlockLevelAccessList } from '../bal.ts'
 import { bytesToHex, bytesToInt } from '../bytes.ts'
+import { BlockLevelAccessList } from './class.ts'
 import { normalizeStorageKeyHex, padToEvenHex } from './normalize.ts'
 import type { BALAddressHex, BALBalanceHex, BALJSONBlockAccessList, BALNonceHex } from './types.ts'
 
