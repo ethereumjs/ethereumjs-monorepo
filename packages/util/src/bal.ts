@@ -1,6 +1,25 @@
 import { RLP } from '@ethereumjs/rlp'
 import { keccak_256 } from '@noble/hashes/sha3.js'
 import {
+  type Accesses,
+  type BALAccessIndexNumber,
+  type BALAddressHex,
+  type BALBalanceBigInt,
+  type BALBalanceHex,
+  type BALByteCodeBytes,
+  type BALJSONBlockAccessList,
+  type BALNonceBigInt,
+  type BALNonceHex,
+  type BALRawAccountChanges,
+  type BALRawBlockAccessList,
+  type BALRawCodeChange,
+  type BALRawStorageChange,
+  type BALStorageKeyBytes,
+  type BALStorageKeyHex,
+  type BALStorageValueBytes,
+  SYSTEM_ADDRESS,
+} from './blockLevelAccessList/types.ts'
+import {
   bigIntToBytes,
   bigIntToHex,
   bytesToHex,
@@ -10,101 +29,6 @@ import {
 } from './bytes.ts'
 import { padToEven } from './internal.ts'
 import type { PrefixedHexString } from './types.ts'
-
-// Base types which can be used for JSON, internal representation and raw format.
-type BALAddressHex = PrefixedHexString // bytes20
-type BALStorageKeyBytes = Uint8Array // uint256
-type BALStorageKeyHex = PrefixedHexString // uint256
-type BALStorageValueBytes = Uint8Array // uint256
-type BALStorageValueHex = PrefixedHexString // uint256 as hex
-type BALAccessIndexNumber = number // uint16
-type BALAccessIndexHex = PrefixedHexString // uint16 as hex d
-type BALBalanceBigInt = bigint // uint256 as bigint
-type BALBalanceHex = PrefixedHexString // uint256 as hex
-type BALNonceBigInt = bigint // uint64 as bigint
-type BALNonceHex = PrefixedHexString // uint64 as hex
-type BALByteCodeBytes = Uint8Array // bytes
-type BALByteCodeHex = PrefixedHexString // bytes as hex
-
-// Change types which can be used for internal representation and raw format.
-type BALRawStorageChange = [BALAccessIndexNumber, BALStorageValueBytes]
-type BALRawBalanceChange = [BALAccessIndexNumber, BALBalanceHex]
-type BALRawNonceChange = [BALAccessIndexNumber, BALNonceHex]
-type BALRawCodeChange = [BALAccessIndexNumber, BALByteCodeBytes]
-type BALRawSlotChanges = [BALStorageKeyHex, BALRawStorageChange[]]
-
-// Core data format for the raw format.
-type BALRawAccountChanges = [
-  BALAddressHex,
-  BALRawSlotChanges[],
-  BALStorageKeyHex[],
-  BALRawBalanceChange[],
-  BALRawNonceChange[],
-  BALRawCodeChange[],
-]
-type BALRawBlockAccessList = BALRawAccountChanges[]
-
-// Internal representation of the access list.
-export type Accesses = Record<
-  BALAddressHex,
-  {
-    nonceChanges: Map<BALAccessIndexNumber, BALNonceHex>
-    balanceChanges: Map<BALAccessIndexNumber, BALBalanceHex>
-    codeChanges: BALRawCodeChange[]
-    storageChanges: Record<BALStorageKeyHex, BALRawStorageChange[]>
-    storageReads: Set<BALStorageKeyHex>
-  }
->
-
-// JSON representation types (all numeric values as hex strings for JSON serialization)
-// JSON change types
-interface BALJSONBalanceChange {
-  blockAccessIndex: BALAccessIndexHex
-  postBalance: BALBalanceHex
-}
-
-interface BALJSONNonceChange {
-  blockAccessIndex: BALAccessIndexHex
-  postNonce: BALNonceHex
-}
-
-interface BALJSONCodeChange {
-  blockAccessIndex: BALAccessIndexHex
-  newCode: BALByteCodeHex
-}
-
-interface BALJSONStorageChange {
-  blockAccessIndex: BALAccessIndexHex
-  postValue: BALStorageValueHex
-}
-
-interface BALJSONSlotChanges {
-  slot: BALStorageKeyHex
-  slotChanges: BALJSONStorageChange[]
-}
-
-// JSON representation of account changes
-interface BALJSONAccountChanges {
-  address: BALAddressHex
-  balanceChanges: BALJSONBalanceChange[]
-  nonceChanges: BALJSONNonceChange[]
-  codeChanges: BALJSONCodeChange[]
-  storageChanges: BALJSONSlotChanges[]
-  storageReads: BALStorageKeyHex[]
-}
-
-// Top level JSON type
-export type BALJSONBlockAccessList = BALJSONAccountChanges[]
-
-// Re-export JSON types for external use
-export type {
-  BALJSONAccountChanges,
-  BALJSONStorageChange,
-  BALJSONSlotChanges,
-  BALJSONBalanceChange,
-  BALJSONNonceChange,
-  BALJSONCodeChange,
-}
 
 /**
  * Structural helper class for block level access lists
@@ -232,7 +156,7 @@ export class BlockLevelAccessList {
 
     for (const address of Object.keys(this.accesses)
       .sort()
-      .filter((address) => address !== systemAddress)) {
+      .filter((address) => address !== SYSTEM_ADDRESS)) {
       const data = this.accesses[address as BALAddressHex]
 
       // Format storage changes: [slot, [[index, value], ...]]
@@ -534,21 +458,6 @@ export function createBlockLevelAccessListFromJSON(
   return bal
 }
 
-/**
- * Normalizes a hex string for canonical RLP encoding.
- * In RLP, the integer 0 must be encoded as empty bytes (0x80), not as a single zero byte (0x00).
- * This function converts hex strings representing zero to empty Uint8Array.
- */
-function normalizeHexForRLP(hex: PrefixedHexString): PrefixedHexString | Uint8Array {
-  // Strip 0x prefix and all leading zeros
-  const stripped = hex.slice(2).replace(/^0+/, '')
-  if (stripped === '') {
-    // Value is zero - return empty array for canonical RLP encoding
-    return Uint8Array.from([])
-  }
-  return hex
-}
-
 export function createBlockLevelAccessListFromRLP(rlp: Uint8Array): BlockLevelAccessList {
   const decoded = RLP.decode(rlp) as Array<
     [
@@ -641,5 +550,17 @@ function normalizeStorageKeyHex(hex: PrefixedHexString): BALStorageKeyHex {
   return `0x${padToEven(stripped)}` as BALStorageKeyHex
 }
 
-// Address to ignore
-const systemAddress = '0xfffffffffffffffffffffffffffffffffffffffe'
+/**
+ * Normalizes a hex string for canonical RLP encoding.
+ * In RLP, the integer 0 must be encoded as empty bytes (0x80), not as a single zero byte (0x00).
+ * This function converts hex strings representing zero to empty Uint8Array.
+ */
+function normalizeHexForRLP(hex: PrefixedHexString): PrefixedHexString | Uint8Array {
+  // Strip 0x prefix and all leading zeros
+  const stripped = hex.slice(2).replace(/^0+/, '')
+  if (stripped === '') {
+    // Value is zero - return empty array for canonical RLP encoding
+    return Uint8Array.from([])
+  }
+  return hex
+}
