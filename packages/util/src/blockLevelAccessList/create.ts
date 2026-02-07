@@ -4,10 +4,22 @@ import { BlockLevelAccessList } from './class.ts'
 import { normalizeStorageKeyHex, padToEvenHex } from './normalize.ts'
 import type { BALAddressHex, BALBalanceHex, BALJSONBlockAccessList, BALNonceHex } from './types.ts'
 
+/**
+ * Creates an empty block-level access list.
+ *
+ * @returns New {@link BlockLevelAccessList} with no accesses
+ */
 export function createBlockLevelAccessList(): BlockLevelAccessList {
   return new BlockLevelAccessList()
 }
 
+/**
+ * Builds a block-level access list from the JSON representation.
+ * Parses hex-encoded indices and values into the internal format used by {@link BlockLevelAccessList}.
+ *
+ * @param json - BAL in {@link BALJSONBlockAccessList} form (hex strings for indices and values)
+ * @returns Populated {@link BlockLevelAccessList}
+ */
 export function createBlockLevelAccessListFromJSON(
   json: BALJSONBlockAccessList,
 ): BlockLevelAccessList {
@@ -53,6 +65,13 @@ export function createBlockLevelAccessListFromJSON(
   return bal
 }
 
+/**
+ * Decodes RLP-encoded block-level access list bytes into a {@link BlockLevelAccessList}.
+ * Expects the canonical structure produced by {@link BlockLevelAccessList.serialize}.
+ *
+ * @param rlp - RLP-encoded BAL bytes
+ * @returns Decoded {@link BlockLevelAccessList}
+ */
 export function createBlockLevelAccessListFromRLP(rlp: Uint8Array): BlockLevelAccessList {
   const decoded = RLP.decode(rlp) as Array<
     [
