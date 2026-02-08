@@ -922,6 +922,16 @@ export class Interpreter {
   }
 
   /**
+   * Returns the block's slot number (EIP-7843).
+   */
+  getBlockSlotNumber(): bigint {
+    if (this._env.block.header.slotNumber === undefined) {
+      throw EthereumJSErrorWithoutCode('slotNumber is not available on this block')
+    }
+    return this._env.block.header.slotNumber
+  }
+
+  /**
    * Returns the Base Fee of the block as proposed in [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198)
    */
   getBlockBaseFee(): bigint {

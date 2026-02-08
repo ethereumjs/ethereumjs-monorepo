@@ -79,6 +79,7 @@ export const paramsEVM: ParamsDict = {
     numberGas: 2, // Base fee of the NUMBER opcode
     difficultyGas: 2, // Base fee of the DIFFICULTY opcode
     gaslimitGas: 2, // Base fee of the GASLIMIT opcode
+    slotnumGas: 2, // Base fee of the SLOTNUM opcode (EIP-7843)
     popGas: 2, // Base fee of the POP opcode
     mloadGas: 3, // Base fee of the MLOAD opcode
     mstoreGas: 3, // Base fee of the MSTORE opcode
