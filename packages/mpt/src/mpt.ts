@@ -117,13 +117,13 @@ export class MerklePatriciaTrie {
       typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
     this.debug = this.DEBUG
       ? (message: string, namespaces: string[] = []) => {
-          let log = this._debug
-          for (const name of namespaces) {
-            log = log.extend(name)
+          let logger = this._debug
+          for (const namespace of namespaces) {
+            logger = logger.extend(namespace)
           }
-          log(message)
+          logger(message)
         }
-      : (..._: any) => {}
+      : (..._args: unknown[]) => {}
 
     this.database(opts?.db ?? new MapDB<string, Uint8Array>(), valueEncoding)
 
@@ -313,24 +313,31 @@ export class MerklePatriciaTrie {
     const stack: MPTNode[] = Array.from({ length: keyLen })
 
     // Pre-fill stack from partialPath when resuming a previous walk
-    let progress = 0
-    for (let i = 0; i < partialPath.stack.length - 1; i++) {
-      stack[i] = partialPath.stack[i]
-      progress += stack[i] instanceof BranchMPTNode ? 1 : (stack[i] as ExtensionMPTNode).keyLength()
+    let pathProgress = 0
+    for (let stackIndex = 0; stackIndex < partialPath.stack.length - 1; stackIndex++) {
+      stack[stackIndex] = partialPath.stack[stackIndex]
+      pathProgress +=
+        stack[stackIndex] instanceof BranchMPTNode
+          ? 1
+          : (stack[stackIndex] as ExtensionMPTNode).keyLength()
     }
 
     this.DEBUG && this.debug(`Target (${targetKey.length}): [${targetKey}]`, ['find_path'])
     let result: Path | null = null
 
-    const onFound: FoundNodeFunction = async (_, node, keyProgress, walkController) => {
-      stack[progress] = node as MPTNode
+    const onFound: FoundNodeFunction = async (
+      _nodeRef,
+      node,
+      currentKeyNibbles,
+      walkController,
+    ) => {
+      stack[pathProgress] = node as MPTNode
 
       if (node instanceof BranchMPTNode) {
-        // Branch: follow targetKey[progress] to next child
-        if (progress === keyLen) {
+        if (pathProgress === keyLen) {
           result = { node, remaining: [], stack }
         } else {
-          const branchIndex = targetKey[progress]
+          const branchIndex = targetKey[pathProgress]
           const branchNode = node.getBranch(branchIndex)
           this.DEBUG &&
             this.debug(
@@ -340,43 +347,41 @@ export class MerklePatriciaTrie {
               ['find_path', 'branch_node'],
             )
           if (!branchNode) {
-            result = { node: null, remaining: targetKey.slice(progress), stack }
+            result = { node: null, remaining: targetKey.slice(pathProgress), stack }
           } else {
-            progress++
-            walkController.onlyBranchIndex(node, keyProgress, branchIndex)
+            pathProgress++
+            walkController.onlyBranchIndex(node, currentKeyNibbles, branchIndex)
           }
         }
       } else if (node instanceof LeafMPTNode) {
-        // Leaf: check if key path matches this leaf's path exactly
-        const startProgress = progress
-        if (keyLen - progress > node.key().length) {
-          result = { node: null, remaining: targetKey.slice(startProgress), stack }
+        const leafStartProgress = pathProgress
+        if (keyLen - pathProgress > node.key().length) {
+          result = { node: null, remaining: targetKey.slice(leafStartProgress), stack }
           return
         }
-        for (const k of node.key()) {
-          if (k !== targetKey[progress]) {
-            result = { node: null, remaining: targetKey.slice(startProgress), stack }
+        for (const nibble of node.key()) {
+          if (nibble !== targetKey[pathProgress]) {
+            result = { node: null, remaining: targetKey.slice(leafStartProgress), stack }
             return
           }
-          progress++
+          pathProgress++
         }
         result = { node, remaining: [], stack }
       } else if (node instanceof ExtensionMPTNode) {
-        // Extension: follow path, then continue to child
-        const startProgress = progress
+        const extensionStartProgress = pathProgress
         this.DEBUG &&
           this.debug(
-            `Extension key: [${node.key()}] vs expected [${targetKey.slice(progress, progress + node.key().length)}]`,
+            `Extension key: [${node.key()}] vs expected [${targetKey.slice(pathProgress, pathProgress + node.key().length)}]`,
             ['find_path', 'extension_node'],
           )
-        for (const k of node.key()) {
-          if (k !== targetKey[progress]) {
-            result = { node: null, remaining: targetKey.slice(startProgress), stack }
+        for (const nibble of node.key()) {
+          if (nibble !== targetKey[pathProgress]) {
+            result = { node: null, remaining: targetKey.slice(extensionStartProgress), stack }
             return
           }
-          progress++
+          pathProgress++
         }
-        walkController.allChildren(node, keyProgress)
+        walkController.allChildren(node, currentKeyNibbles)
       }
     }
     const startingNode = partialPath.stack[partialPath.stack.length - 1]
@@ -405,13 +410,13 @@ export class MerklePatriciaTrie {
         ['find_path'],
       )
 
-    result.stack = result.stack.filter((e) => e !== undefined)
+    result.stack = result.stack.filter((stackEntry) => stackEntry !== undefined)
     this.DEBUG &&
       this.debug(
         `Result:
         || Node: ${result.node === null ? 'null' : result.node.constructor.name}
         || Remaining: [${result.remaining}]\n|| Stack: ${result.stack
-          .map((e) => e.constructor.name)
+          .map((stackEntry) => stackEntry.constructor.name)
           .join(', ')}`,
         ['find_path'],
       )
@@ -505,17 +510,20 @@ export class MerklePatriciaTrie {
   protected _isMatchingLeafUpdate(
     lastNode: MPTNode,
     stack: MPTNode[],
-    key: Nibbles,
+    fullKeyNibbles: Nibbles,
     keyRemainder: Nibbles,
   ): boolean {
     if (!(lastNode instanceof LeafMPTNode) || keyRemainder.length !== 0) {
       return false
     }
     let keyOffset = 0
-    for (const n of stack) {
-      keyOffset += n instanceof BranchMPTNode ? 1 : n.key().length
+    for (const stackNode of stack) {
+      keyOffset += stackNode instanceof BranchMPTNode ? 1 : stackNode.key().length
     }
-    return matchingNibbleLength(lastNode.key(), key.slice(keyOffset)) === lastNode.key().length
+    return (
+      matchingNibbleLength(lastNode.key(), fullKeyNibbles.slice(keyOffset)) ===
+      lastNode.key().length
+    )
   }
 
   /**
@@ -530,19 +538,19 @@ export class MerklePatriciaTrie {
    * @private
    */
   protected async _updateNode(
-    k: Uint8Array,
+    keyBytes: Uint8Array,
     value: Uint8Array,
     keyRemainder: Nibbles,
     stack: MPTNode[],
   ): Promise<void> {
-    const toSave: BatchDBOp[] = []
+    const opStack: BatchDBOp[] = []
     const lastNode = stack.pop()
     if (!lastNode) {
       throw EthereumJSErrorWithoutCode('Stack underflow')
     }
 
-    const key = bytesToNibbles(k)
-    const matchLeaf = this._isMatchingLeafUpdate(lastNode, stack, key, keyRemainder)
+    const fullKeyNibbles = bytesToNibbles(keyBytes)
+    const matchLeaf = this._isMatchingLeafUpdate(lastNode, stack, fullKeyNibbles, keyRemainder)
 
     if (matchLeaf) {
       // Case 1: Key already exists at this leaf – update value in place
@@ -579,11 +587,11 @@ export class MerklePatriciaTrie {
           const formattedNode = this._formatNode(
             lastNode,
             false,
-            toSave,
+            opStack,
           ) as NodeReferenceOrRawMPTNode
           newBranchMPTNode.setBranch(branchKey, formattedNode)
         } else {
-          this._formatNode(lastNode, false, toSave, true)
+          this._formatNode(lastNode, false, opStack, true)
           newBranchMPTNode.setBranch(branchKey, lastNode.value())
         }
       } else {
@@ -598,7 +606,7 @@ export class MerklePatriciaTrie {
       }
     }
 
-    await this.saveStack(key, stack, toSave)
+    await this.saveStack(fullKeyNibbles, stack, opStack)
   }
 
   /**
@@ -611,63 +619,64 @@ export class MerklePatriciaTrie {
    *
    * @private
    */
-  protected async _deleteNode(k: Uint8Array, stack: MPTNode[]): Promise<void> {
+  protected async _deleteNode(keyBytes: Uint8Array, stack: MPTNode[]): Promise<void> {
     /**
      * Collapses a branch with one child into a simpler structure.
      * Parent can be: Branch (branch→branch), Extension (ext→branch), or null (branch is root).
      */
     const collapseBranchWithOneChild = (
-      key: Nibbles,
-      branchKey: number,
-      branchNode: MPTNode,
+      pathNibbles: Nibbles,
+      branchIndex: number,
+      childNode: MPTNode,
       parentNode: MPTNode | null | undefined,
-      stack: MPTNode[],
+      nodeStack: MPTNode[],
     ): Nibbles => {
       const parentIsBranchOrRoot =
         parentNode === null || parentNode === undefined || parentNode instanceof BranchMPTNode
 
       if (parentIsBranchOrRoot) {
-        if (parentNode instanceof BranchMPTNode) stack.push(parentNode)
-        if (branchNode instanceof BranchMPTNode) {
-          const extensionNode = new ExtensionMPTNode([branchKey], new Uint8Array())
-          stack.push(extensionNode)
-          key.push(branchKey)
+        if (parentNode instanceof BranchMPTNode) nodeStack.push(parentNode)
+        if (childNode instanceof BranchMPTNode) {
+          const extensionNode = new ExtensionMPTNode([branchIndex], new Uint8Array())
+          nodeStack.push(extensionNode)
+          pathNibbles.push(branchIndex)
         } else {
-          const branchNodeKey = branchNode.key()
-          branchNodeKey.unshift(branchKey)
-          branchNode.key(branchNodeKey.slice(0))
-          key = key.concat(branchNodeKey)
+          const childNodeKey = childNode.key()
+          childNodeKey.unshift(branchIndex)
+          childNode.key(childNodeKey.slice(0))
+          nodeStack.push(childNode)
+          return pathNibbles.concat(childNodeKey)
         }
-        stack.push(branchNode)
-        return key
+        nodeStack.push(childNode)
+        return pathNibbles
       }
 
-      // Parent is Extension – merge extension path with single child
       if (!(parentNode instanceof ExtensionMPTNode)) {
         throw EthereumJSErrorWithoutCode('Expected extension node')
       }
       const parentKey = parentNode.key()
-      if (branchNode instanceof BranchMPTNode) {
-        parentKey.push(branchKey)
-        key.push(branchKey)
+      if (childNode instanceof BranchMPTNode) {
+        parentKey.push(branchIndex)
+        pathNibbles.push(branchIndex)
         parentNode.key(parentKey)
-        stack.push(parentNode)
+        nodeStack.push(parentNode)
       } else {
-        const branchNodeKey = branchNode.key()
-        branchNodeKey.unshift(branchKey)
-        key = key.concat(branchNodeKey)
-        const fullPath = parentKey.concat(branchNodeKey)
-        branchNode.key(fullPath)
+        const childNodeKey = childNode.key()
+        childNodeKey.unshift(branchIndex)
+        const fullPath = parentKey.concat(childNodeKey)
+        childNode.key(fullPath)
+        nodeStack.push(childNode)
+        return pathNibbles.concat(childNodeKey)
       }
-      stack.push(branchNode)
-      return key
+      nodeStack.push(childNode)
+      return pathNibbles
     }
 
     let lastNode = stack.pop()
     if (lastNode === undefined) throw EthereumJSErrorWithoutCode('missing last node')
     let parentNode = stack.pop()
     const opStack: BatchDBOp[] = []
-    let key = bytesToNibbles(k)
+    let pathNibbles = bytesToNibbles(keyBytes)
 
     if (parentNode === undefined) {
       this.root(this.EMPTY_TRIE_ROOT)
@@ -682,9 +691,9 @@ export class MerklePatriciaTrie {
         throw EthereumJSErrorWithoutCode('Expected branch node')
       }
       const lastNodeKey = lastNode.key()
-      key.splice(key.length - lastNodeKey.length)
+      pathNibbles.splice(pathNibbles.length - lastNodeKey.length)
       this._formatNode(lastNode, false, opStack, true)
-      parentNode.setBranch(key.pop()!, null)
+      parentNode.setBranch(pathNibbles.pop()!, null)
       lastNode = parentNode
       parentNode = stack.pop()
     }
@@ -713,8 +722,14 @@ export class MerklePatriciaTrie {
 
       // look up node
       const foundNode = await this.lookupNode(branchNode)
-      key = collapseBranchWithOneChild(key, branchNodeKey, foundNode, parentNode as MPTNode, stack)
-      await this.saveStack(key, stack, opStack)
+      pathNibbles = collapseBranchWithOneChild(
+        pathNibbles,
+        branchNodeKey,
+        foundNode,
+        parentNode as MPTNode,
+        stack,
+      )
+      await this.saveStack(pathNibbles, stack, opStack)
     } else {
       // Branch has multiple children: just persist the updated branch
       if (parentNode) {
@@ -722,7 +737,7 @@ export class MerklePatriciaTrie {
       }
 
       stack.push(lastNode)
-      await this.saveStack(key, stack, opStack)
+      await this.saveStack(pathNibbles, stack, opStack)
     }
   }
 
@@ -734,8 +749,8 @@ export class MerklePatriciaTrie {
    * @param stack - nodes from findPath/update, bottom (leaf) to top (root)
    * @param opStack - put/del operations accumulated by _formatNode
    */
-  async saveStack(key: Nibbles, stack: MPTNode[], opStack: BatchDBOp[]): Promise<void> {
-    let lastRoot: Uint8Array | undefined
+  async saveStack(pathNibbles: Nibbles, stack: MPTNode[], opStack: BatchDBOp[]): Promise<void> {
+    let childHash: Uint8Array | undefined
 
     while (stack.length > 0) {
       const node = stack.pop()
@@ -743,20 +758,20 @@ export class MerklePatriciaTrie {
         throw EthereumJSErrorWithoutCode('saveStack: missing node')
       }
       if (node instanceof LeafMPTNode || node instanceof ExtensionMPTNode) {
-        key.splice(key.length - node.key().length)
+        pathNibbles.splice(pathNibbles.length - node.key().length)
       }
-      if (node instanceof ExtensionMPTNode && lastRoot !== undefined) {
-        node.value(lastRoot)
+      if (node instanceof ExtensionMPTNode && childHash !== undefined) {
+        node.value(childHash)
       }
-      if (node instanceof BranchMPTNode && lastRoot !== undefined) {
-        const branchKey = key.pop()
-        node.setBranch(branchKey!, lastRoot)
+      if (node instanceof BranchMPTNode && childHash !== undefined) {
+        const branchIndex = pathNibbles.pop()
+        node.setBranch(branchIndex!, childHash)
       }
-      lastRoot = this._formatNode(node, stack.length === 0, opStack) as Uint8Array
+      childHash = this._formatNode(node, stack.length === 0, opStack) as Uint8Array
     }
 
-    if (lastRoot !== undefined) {
-      this.root(lastRoot)
+    if (childHash !== undefined) {
+      this.root(childHash)
     }
     await this._db.batch(opStack)
     await this.persistRoot()
@@ -781,25 +796,17 @@ export class MerklePatriciaTrie {
     const encoded = node.serialize()
 
     if (encoded.length >= 32 || topLevel) {
-      const lastRoot = this.hash(encoded)
-      const key = this._getDbKey(lastRoot)
+      const nodeHash = this.hash(encoded)
+      const dbKey = this._getDbKey(nodeHash)
 
       if (remove) {
         if (this._opts.useNodePruning) {
-          opStack.push({
-            type: 'del',
-            key,
-          })
+          opStack.push({ type: 'del', key: dbKey })
         }
       } else {
-        opStack.push({
-          type: 'put',
-          key,
-          value: encoded,
-        })
+        opStack.push({ type: 'put', key: dbKey, value: encoded })
       }
-
-      return lastRoot
+      return nodeHash
     }
 
     return node.raw()
@@ -843,8 +850,8 @@ export class MerklePatriciaTrie {
       bytesToUnprefixedHex(this.root()),
       bytesToUnprefixedHex(this.appliedKey(ROOT_DB_KEY)),
     ]
-    for (const dbkey of (this._db.db as any)._database.keys()) {
-      if (roots.includes(dbkey)) {
+    for (const dbKeyHex of (this._db.db as any)._database.keys()) {
+      if (roots.includes(dbKeyHex)) {
         // The root key can never be found from the trie, otherwise this would
         // convert the tree from a directed acyclic graph to a directed cycling graph
         continue
@@ -853,36 +860,30 @@ export class MerklePatriciaTrie {
       // Track if key is found
       let found = false
       try {
-        await this.walkTrie(this.root(), async function (_, node, key, controller) {
-          if (found) {
-            // Abort all other children checks
-            return
-          }
+        await this.walkTrie(this.root(), async (_, node, currentKeyNibbles, walkController) => {
+          if (found) return
           if (node instanceof BranchMPTNode) {
-            for (const item of node._branches) {
-              // If one of the branches matches the key, then it is found
-              // Using deprecated bytesToUnprefixedHex for performance: used for string comparisons with database keys.
+            for (const branchRef of node._branches) {
               if (
-                item !== null &&
+                branchRef !== null &&
                 bytesToUnprefixedHex(
-                  isRawMPTNode(item) ? controller.trie.appliedKey(RLP.encode(item)) : item,
-                ) === dbkey
+                  isRawMPTNode(branchRef)
+                    ? walkController.trie.appliedKey(RLP.encode(branchRef))
+                    : branchRef,
+                ) === dbKeyHex
               ) {
                 found = true
                 return
               }
             }
-            // Check all children of the branch
-            controller.allChildren(node, key)
+            walkController.allChildren(node, currentKeyNibbles)
           }
           if (node instanceof ExtensionMPTNode) {
-            // If the value of the ExtensionMPTNode points to the dbkey, then it is found
-            // Using deprecated bytesToUnprefixedHex for performance: used for string comparisons with database keys.
-            if (bytesToUnprefixedHex(node.value()) === dbkey) {
+            if (bytesToUnprefixedHex(node.value()) === dbKeyHex) {
               found = true
               return
             }
-            controller.allChildren(node, key)
+            walkController.allChildren(node, currentKeyNibbles)
           }
         })
       } catch {
@@ -984,8 +985,8 @@ export class MerklePatriciaTrie {
     return key
   }
 
-  protected hash(msg: Uint8Array): Uint8Array {
-    return Uint8Array.from(this._opts.useKeyHashingFunction.call(undefined, msg))
+  protected hash(inputBytes: Uint8Array): Uint8Array {
+    return Uint8Array.from(this._opts.useKeyHashingFunction.call(undefined, inputBytes))
   }
 
   /**
@@ -1057,9 +1058,8 @@ export class MerklePatriciaTrie {
     startKey = BIGINT_0,
     limit?: number,
   ): Promise<{ values: { [key: string]: string }; nextKey: null | string }> {
-    // If limit is undefined, all keys are inRange
     let inRange = limit !== undefined ? false : true
-    let i = 0
+    let valueCount = 0
     const values: { [key: string]: string } = {}
     let nextKey: string | null = null
     await this.walkAllValueNodes(async (node: MPTNode, currentKey: number[]) => {
@@ -1074,10 +1074,10 @@ export class MerklePatriciaTrie {
           }
         }
 
-        if (limit === undefined || i < limit) {
+        if (limit === undefined || valueCount < limit) {
           values[bytesToHex(keyBytes)] = bytesToHex(node._value)
-          i++
-        } else if (i === limit) {
+          valueCount++
+        } else if (valueCount === limit) {
           nextKey = bytesToHex(keyBytes)
         }
       }
