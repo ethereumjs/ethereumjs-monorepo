@@ -369,6 +369,12 @@ const eipOpcodes: { eip: number; opcodes: OpcodeEntry }[] = [
     },
   },
   {
+    eip: 7843,
+    opcodes: {
+      0x4b: asyncOp('SLOTNUM'),
+    },
+  },
+  {
     eip: 7620,
     opcodes: {
       0xec: asyncAndDynamicGasOp('EOFCREATE'),

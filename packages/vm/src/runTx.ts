@@ -682,6 +682,14 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     fromAccount.balance = BIGINT_0
   }
   await vm.evm.journal.putAccount(caller, fromAccount)
+  // EIP-7928: Track sender balance change for gas deduction in Block Access List
+  if (vm.common.isActivatedEIP(7928) && (txCost > BIGINT_0 || blobGasCost > BIGINT_0)) {
+    vm.evm.blockLevelAccessList!.addBalanceChange(
+      caller.toString(),
+      fromAccount.balance,
+      vm.evm.blockLevelAccessList!.blockAccessIndex,
+    )
+  }
 
   // Process EIP-7702 authorization list (if applicable)
   let gasRefund = BIGINT_0
@@ -813,6 +821,14 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const txCostDiff = txCost - actualTxCost
   fromAccount.balance += txCostDiff
   await vm.evm.journal.putAccount(caller, fromAccount)
+  // EIP-7928: Track sender balance change for gas refund in Block Access List
+  if (vm.common.isActivatedEIP(7928) && txCostDiff > BIGINT_0) {
+    vm.evm.blockLevelAccessList!.addBalanceChange(
+      caller.toString(),
+      fromAccount.balance,
+      vm.evm.blockLevelAccessList!.blockAccessIndex,
+    )
+  }
   if (vm.DEBUG) {
     debug(
       `Refunded txCostDiff (${txCostDiff}) to fromAccount (caller) balance (-> ${fromAccount.balance})`,
