@@ -57,13 +57,17 @@
     "test:est:stable:state": "TEST_PATH=../execution-spec-tests/stable/state_tests npx vitest run test/tester/executionSpecState.test.ts",
     "test:est:stable:blockchain": "TEST_PATH=../execution-spec-tests/stable/blockchain_tests npx vitest run test/tester/executionSpecBlockchain.test.ts",
     "test:est:dev:state": "TEST_PATH=../execution-spec-tests/dev/state_tests npx vitest run test/tester/executionSpecState.test.ts",
-    "test:est:dev:blockchain": "TEST_PATH=../execution-spec-tests/dev/blockchain_tests npx vitest run test/tester/executionSpecBlockchain.test.ts",
+    "test:est:dev:blockchain": "npm run test:est:dev:blockchain:v200",
+    "test:est:dev:blockchain:v500": "TEST_PATH=../execution-spec-tests/dev/blockchain_tests/amsterdam/v500_mixed_with_other_eips npx vitest run test/tester/executionSpecBlockchain.test.ts",
+    "test:est:dev:blockchain:v301": "TEST_PATH=../execution-spec-tests/dev/blockchain_tests/amsterdam/v301_single_bal_no_bal_defs npx vitest run test/tester/executionSpecBlockchain.test.ts",
+    "test:est:dev:blockchain:v200": "TEST_PATH=../execution-spec-tests/dev/blockchain_tests/amsterdam/v200_bal_defs_somewhat_outdated npx vitest run test/tester/executionSpecBlockchain.test.ts",
     "test:state": "tsx ./test/tester/vitest-wrapper.ts",
     "test:state:allForks": "npm run test:state:newForks && npm run test:state:oldForks && npm run test:state:transitionForks",
     "test:state:newForks": "echo 'Prague' | xargs -n1 | xargs -I {} sh -c 'VITE_FORK={} VITE_VERIFY_TEST_AMOUNT_ALL_TESTS=1 npx vitest test/tester/state.spec.ts'",
     "test:state:oldForks": "echo 'Chainstart Homestead dao TangerineWhistle SpuriousDragon Byzantium Constantinople Petersburg Istanbul MuirGlacier Berlin London Paris Shanghai Cancun' | xargs -n1 | xargs -I {} sh -c 'VITE_FORK={} VITE_VERIFY_TEST_AMOUNT_ALL_TESTS=1 npx vitest test/tester/state.spec.ts'",
     "test:state:transitionForks": "echo 'ByzantiumToConstantinopleFixAt5 EIP158ToByzantiumAt5 FrontierToHomesteadAt5 HomesteadToDaoAt5 HomesteadToEIP150At5 BerlinToLondonAt5' | xargs -n1 | xargs -I {} sh -c 'VITE_FORK={} VITE_VERIFY_TEST_AMOUNT_ALL_TESTS=1 npx vitest test/tester/state.spec.ts'",
     "test:state:slow": "VITE_RUN_SKIPPED=slow npx vitest test/tester/state.spec.ts",
+    "test:analysis:report": "npx tsx ./test/tester/util/testAnalysisReportAI.ts",
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {

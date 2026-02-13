@@ -665,6 +665,10 @@ export class Interpreter {
    * @param address - Address of account
    */
   async getExternalBalance(address: Address): Promise<bigint> {
+    // Track address access for EIP-7928 BAL
+    if (this._evm.common.isActivatedEIP(7928)) {
+      this._evm.blockLevelAccessList?.addAddress(address.toString())
+    }
     // shortcut if current account
     if (address.equals(this._env.address)) {
       return this._env.contract.balance
@@ -681,7 +685,24 @@ export class Interpreter {
    * Store 256-bit a value in memory to persistent storage.
    */
   async storageStore(key: Uint8Array, value: Uint8Array): Promise<void> {
+    // EIP-7928: Get the original (pre-transaction) value BEFORE storing
+    // This is needed to detect no-op writes (where new value equals original value)
+    let originalValue: Uint8Array | undefined
+    if (this._evm.common.isActivatedEIP(7928)) {
+      originalValue = await this._stateManager.originalStorageCache.get(this._env.address, key)
+    }
+
     await this._stateManager.putStorage(this._env.address, key, value)
+
+    if (this._evm.common.isActivatedEIP(7928)) {
+      this._evm.blockLevelAccessList?.addStorageWrite(
+        this._env.address.toString(),
+        key,
+        value,
+        this._evm.blockLevelAccessList!.blockAccessIndex,
+        originalValue,
+      )
+    }
     const account = await this._stateManager.getAccount(this._env.address)
     if (!account) {
       throw EthereumJSErrorWithoutCode('could not read account while persisting memory')
@@ -693,8 +714,13 @@ export class Interpreter {
    * Loads a 256-bit value to memory from persistent storage.
    * @param key - Storage key
    * @param original - If true, return the original storage value (default: false)
+   * @param trackBAL - If true, track in BAL storageReads (default: true). Set to false for
+   *                   implicit reads (e.g., SSTORE gas calculation) that should not appear in BAL.
    */
-  async storageLoad(key: Uint8Array, original = false): Promise<Uint8Array> {
+  async storageLoad(key: Uint8Array, original = false, trackBAL = true): Promise<Uint8Array> {
+    if (this._evm.common.isActivatedEIP(7928) && trackBAL) {
+      this._evm.blockLevelAccessList?.addStorageRead(this._env.address.toString(), key)
+    }
     if (original) {
       return this._stateManager.originalStorageCache.get(this._env.address, key)
     } else {
@@ -1121,6 +1147,13 @@ export class Interpreter {
 
     this._env.contract.nonce += BIGINT_1
     await this.journal.putAccount(this._env.address, this._env.contract)
+    if (this.common.isActivatedEIP(7928)) {
+      this._evm.blockLevelAccessList!.addNonceChange(
+        this._env.address.toString(),
+        this._env.contract.nonce,
+        this._evm.blockLevelAccessList!.blockAccessIndex,
+      )
+    }
 
     if (this.common.isActivatedEIP(3860)) {
       if (
@@ -1250,8 +1283,17 @@ export class Interpreter {
       if (!toAccount) {
         toAccount = new Account()
       }
+      const originalBalance = toAccount.balance
       toAccount.balance += this._env.contract.balance
       await this.journal.putAccount(toAddress, toAccount)
+      if (this.common.isActivatedEIP(7928)) {
+        this._evm.blockLevelAccessList!.addBalanceChange(
+          toAddress.toString(),
+          toAccount.balance,
+          this._evm.blockLevelAccessList!.blockAccessIndex,
+          originalBalance,
+        )
+      }
     }
 
     // Modify the account (set balance to 0) flag
@@ -1271,9 +1313,18 @@ export class Interpreter {
 
     // Set contract balance to 0
     if (doModify) {
+      const originalBalance = this._env.contract.balance
       await this._stateManager.modifyAccountFields(this._env.address, {
         balance: BIGINT_0,
       })
+      if (this.common.isActivatedEIP(7928)) {
+        this._evm.blockLevelAccessList!.addBalanceChange(
+          this._env.address.toString(),
+          BIGINT_0,
+          this._evm.blockLevelAccessList!.blockAccessIndex,
+          originalBalance,
+        )
+      }
     }
 
     trap(EVMError.errorMessages.STOP)

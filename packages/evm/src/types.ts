@@ -4,7 +4,7 @@ import type {
   ParamsDict,
   StateManagerInterface,
 } from '@ethereumjs/common'
-import type { Account, Address, PrefixedHexString } from '@ethereumjs/util'
+import type { Account, Address, BlockLevelAccessList, PrefixedHexString } from '@ethereumjs/util'
 import type { EventEmitter } from 'eventemitter3'
 import type { BinaryTreeAccessWitness } from './binaryTreeAccessWitness.ts'
 import type { EOFContainer } from './eof/container.ts'
@@ -179,6 +179,7 @@ export interface EVMInterface {
   events?: EventEmitter<EVMEvent>
   binaryTreeAccessWitness?: BinaryTreeAccessWitness
   systemBinaryTreeAccessWitness?: BinaryTreeAccessWitness
+  blockLevelAccessList?: BlockLevelAccessList
 }
 
 export type EVMProfilerOpts = {
@@ -370,6 +371,12 @@ export interface EVMOpts {
    *
    */
   profiler?: EVMProfilerOpts
+
+  /**
+   * If EIP-7928 is activated, a block-level access list can be provided here.
+   * If not provided, a new one will be created if EIP-7928 is activated
+   */
+  blockLevelAccessList?: BlockLevelAccessList
 
   /**
    * When running the EVM with PoA consensus, the `cliqueSigner` function from the `@ethereumjs/block` class

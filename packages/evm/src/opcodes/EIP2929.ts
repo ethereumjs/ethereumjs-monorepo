@@ -1,14 +1,87 @@
-import { BIGINT_0 } from '@ethereumjs/util'
+import { BIGINT_0, bytesToHex } from '@ethereumjs/util'
 
 import type { Common } from '@ethereumjs/common'
 import type { RunState } from '../interpreter.ts'
 
 /**
+ * Returns the gas cost for accessing an address WITHOUT any side effects.
+ * Use this to check if you have enough gas before committing to the access.
+ *
+ * @param {RunState} runState
+ * @param {Uint8Array} address
+ * @param {Common} common
+ * @param {Boolean} chargeGas (default: true)
+ * @param {Boolean} isSelfdestruct (default: false)
+ * @returns {bigint} The gas cost for this address access
+ */
+export function getAddressAccessCost(
+  runState: RunState,
+  address: Uint8Array,
+  common: Common,
+  chargeGas = true,
+  isSelfdestruct = false,
+): bigint {
+  if (!common.isActivatedEIP(2929)) return BIGINT_0
+
+  const isCold = !runState.interpreter.journal.isWarmedAddress(address)
+
+  if (isCold) {
+    // CREATE, CREATE2 opcodes have the address warmed for free.
+    // selfdestruct beneficiary address reads are charged an *additional* cold access
+    // if binary tree not activated
+    if (chargeGas && !common.isActivatedEIP(7864)) {
+      return common.param('coldaccountaccessGas')
+    } else if (chargeGas && common.isActivatedEIP(7864)) {
+      // If binary tree is active, then the warmstoragereadGas should still be charged
+      // This is because otherwise opcodes will have cost 0 (this is thus the base fee)
+      return common.param('warmstoragereadGas')
+    }
+  } else if (chargeGas && !isSelfdestruct) {
+    // Warm: (selfdestruct beneficiary address reads are not charged when warm)
+    return common.param('warmstoragereadGas')
+  }
+  return BIGINT_0
+}
+
+/**
+ * Warms an address (adds to EIP-2929 accessed addresses set).
+ * Call this AFTER verifying you have enough gas for the access.
+ *
+ * @param {RunState} runState
+ * @param {Uint8Array} address
+ */
+export function warmAddress(runState: RunState, address: Uint8Array): void {
+  if (!runState.interpreter.journal.isWarmedAddress(address)) {
+    runState.interpreter.journal.addWarmedAddress(address)
+  }
+}
+
+/**
+ * Adds address to BAL (Block Access List) for EIP-7928.
+ * Call this AFTER verifying you have enough gas for the access.
+ *
+ * @param {RunState} runState
+ * @param {Uint8Array} address
+ * @param {Common} common
+ */
+export function addAddressToBAL(runState: RunState, address: Uint8Array, common: Common): void {
+  if (common.isActivatedEIP(7928)) {
+    const addressHex = bytesToHex(address)
+    runState.interpreter._evm.blockLevelAccessList?.addAddress(addressHex)
+  }
+}
+
+/**
  * Adds address to accessedAddresses set if not already included.
  * Adjusts cost incurred for executing opcode based on whether address read
  * is warm/cold. (EIP 2929)
+ *
+ * This is a convenience function that combines getAddressAccessCost + warmAddress.
+ * For fine-grained control (e.g., EIP-7928 BAL with OOG checks), use the
+ * individual functions instead.
+ *
  * @param {RunState} runState
- * @param {Address}  address
+ * @param {Uint8Array}  address
  * @param {Common}   common
  * @param {Boolean}  chargeGas (default: true)
  * @param {Boolean}  isSelfdestruct (default: false)
@@ -22,25 +95,9 @@ export function accessAddressEIP2929(
 ): bigint {
   if (!common.isActivatedEIP(2929)) return BIGINT_0
 
-  // Cold
-  if (!runState.interpreter.journal.isWarmedAddress(address)) {
-    runState.interpreter.journal.addWarmedAddress(address)
-
-    // CREATE, CREATE2 opcodes have the address warmed for free.
-    // selfdestruct beneficiary address reads are charged an *additional* cold access
-    // if binary tree not activated
-    if (chargeGas && !common.isActivatedEIP(7864)) {
-      return common.param('coldaccountaccessGas')
-    } else if (chargeGas && common.isActivatedEIP(7864)) {
-      // If binary tree is active, then the warmstoragereadGas should still be charged
-      // This is because otherwise opcodes will have cost 0 (this is thus the base fee)
-      return common.param('warmstoragereadGas')
-    }
-    // Warm: (selfdestruct beneficiary address reads are not charged when warm)
-  } else if (chargeGas && !isSelfdestruct) {
-    return common.param('warmstoragereadGas')
-  }
-  return BIGINT_0
+  const cost = getAddressAccessCost(runState, address, common, chargeGas, isSelfdestruct)
+  warmAddress(runState, address)
+  return cost
 }
 
 /**

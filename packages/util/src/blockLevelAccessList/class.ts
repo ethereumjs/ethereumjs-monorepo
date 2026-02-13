@@ -1,0 +1,462 @@
+import { RLP } from '@ethereumjs/rlp'
+import { keccak_256 } from '@noble/hashes/sha3.js'
+import { bigIntToBytes, bigIntToHex, bytesToHex } from '../bytes.ts'
+import {
+  type Accesses,
+  type BALAccessIndexNumber,
+  type BALAddressHex,
+  type BALBalanceBigInt,
+  type BALByteCodeBytes,
+  type BALNonceBigInt,
+  type BALRawAccountChanges,
+  type BALRawBlockAccessList,
+  type BALRawCodeChange,
+  type BALRawStorageChange,
+  type BALStorageKeyBytes,
+  type BALStorageKeyHex,
+  type BALStorageValueBytes,
+  SYSTEM_ADDRESS,
+} from './types.ts'
+
+import {
+  normalizeBalanceChanges,
+  normalizeNonceChanges,
+  normalizeStorageChanges,
+  normalizeStorageKeyHex,
+  normalizeStorageReads,
+  padToEvenHex,
+  stripLeadingZeros,
+} from './normalize.ts'
+
+/**
+ * Structural helper class for block level access lists
+ *
+ * EXPERIMENTAL: DO NOT USE IN PRODUCTION!
+ */
+export class BlockLevelAccessList {
+  public accesses: Accesses
+  public blockAccessIndex: number
+  private checkpoints: { accesses: Accesses; blockAccessIndex: number }[] = []
+  // Track original (pre-transaction) balances for net-zero detection
+  private originalBalances: Map<BALAddressHex, bigint> = new Map()
+  // Track original code at the start of each blockAccessIndex for each address
+  // Key format: `${address}-${blockAccessIndex}`
+  private originalCodesAtIndex: Map<string, Uint8Array> = new Map()
+
+  /**
+   * Creates a block-level access list with optional initial {@link Accesses}.
+   *
+   * @param accesses - Initial address-to-access record; defaults to empty
+   */
+  constructor(accesses: Accesses = {}) {
+    this.accesses = accesses
+    this.blockAccessIndex = 0
+  }
+
+  /**
+   * Serializes the block-level access list to RLP.
+   *
+   * @returns RLP-encoded block-level access list
+   */
+  public serialize(): Uint8Array {
+    return RLP.encode(this.raw())
+  }
+
+  /**
+   * Returns the Keccak-256 hash of the serialized BAL (used in the block header).
+   *
+   * @returns Hash of the RLP-encoded block-level access list
+   */
+  public hash(): Uint8Array {
+    return keccak_256(this.serialize())
+  }
+
+  /**
+   * Pushes a snapshot of current {@link accesses} and {@link blockAccessIndex} for later revert.
+   */
+  public checkpoint(): void {
+    this.checkpoints.push({
+      accesses: this.cloneAccesses(this.accesses),
+      blockAccessIndex: this.blockAccessIndex,
+    })
+  }
+
+  /**
+   * Discards the most recent checkpoint without reverting state.
+   */
+  public commit(): void {
+    if (this.checkpoints.length > 0) {
+      this.checkpoints.pop()
+    }
+  }
+
+  /**
+   * Restores state from the most recent checkpoint. Storage writes are reverted;
+   * affected slots remain in storageReads per EIP-7928 (SSTORE reads for gas).
+   */
+  public revert(): void {
+    const snapshot = this.checkpoints.pop()
+    if (!snapshot) {
+      return
+    }
+    const current = this.accesses
+    this.accesses = snapshot.accesses
+    this.blockAccessIndex = snapshot.blockAccessIndex
+
+    // Preserve address touches and storage reads across reverts.
+    // EIP-7928: When storage writes are reverted, the slot keys MUST still
+    // appear in storageReads since the slots were accessed (SSTORE reads
+    // the current value for gas calculation).
+    for (const [address, access] of Object.entries(current)) {
+      if (this.accesses[address as BALAddressHex] === undefined) {
+        // Collect both explicit reads and slots that were written (but will be reverted)
+        const allReads = new Set(access.storageReads)
+        for (const slot of Object.keys(access.storageChanges)) {
+          allReads.add(slot as BALStorageKeyHex)
+        }
+        this.accesses[address as BALAddressHex] = {
+          nonceChanges: new Map(),
+          balanceChanges: new Map(),
+          codeChanges: [],
+          storageChanges: {},
+          storageReads: allReads,
+        }
+        continue
+      }
+      const target = this.accesses[address as BALAddressHex]
+      // Preserve explicit storageReads
+      for (const slot of access.storageReads) {
+        target.storageReads.add(slot)
+      }
+      // EIP-7928: Convert reverted storageChanges to storageReads
+      for (const slot of Object.keys(access.storageChanges)) {
+        // Only add to reads if not already in the target's storageChanges
+        // (a successful write subsumes a read)
+        if (target.storageChanges[slot as BALStorageKeyHex] === undefined) {
+          target.storageReads.add(slot as BALStorageKeyHex)
+        }
+      }
+    }
+  }
+
+  /**
+   * Deep-clones an {@link Accesses} record (Maps and nested structures copied).
+   *
+   * @param accesses - Access record to clone
+   * @returns New record with the same structure and values
+   */
+  private cloneAccesses(accesses: Accesses): Accesses {
+    const cloned: Accesses = {}
+    for (const [address, access] of Object.entries(accesses)) {
+      const storageChanges: Record<BALStorageKeyHex, BALRawStorageChange[]> = {}
+      for (const [slot, changes] of Object.entries(access.storageChanges)) {
+        storageChanges[slot as BALStorageKeyHex] = changes.map(
+          ([index, value]) => [index, value] as BALRawStorageChange,
+        )
+      }
+      cloned[address as BALAddressHex] = {
+        nonceChanges: new Map(access.nonceChanges),
+        balanceChanges: new Map(access.balanceChanges),
+        codeChanges: access.codeChanges.map(([index, code]) => [index, code] as BALRawCodeChange),
+        storageChanges,
+        storageReads: new Set(access.storageReads),
+      }
+    }
+    return cloned
+  }
+
+  /**
+   * Returns the raw block-level access list with keys and entries sorted for canonical RLP.
+   * Excludes {@link SYSTEM_ADDRESS}. Uses normalization helpers for storage, balance, and nonce.
+   *
+   * @returns Sorted {@link BALRawBlockAccessList} ready for encoding
+   */
+  public raw(): BALRawBlockAccessList {
+    const bal: BALRawBlockAccessList = []
+
+    for (const address of Object.keys(this.accesses)
+      .sort()
+      .filter((address) => address !== SYSTEM_ADDRESS)) {
+      const data = this.accesses[address as BALAddressHex]
+
+      // Normalize BAL data for canonical RLP encoding
+
+      const storageChanges = normalizeStorageChanges(data.storageChanges)
+      const storageReads = normalizeStorageReads(data.storageReads)
+      const balanceChanges = normalizeBalanceChanges(data.balanceChanges)
+      const nonceChanges = normalizeNonceChanges(data.nonceChanges)
+
+      bal.push([
+        address as BALAddressHex,
+        storageChanges,
+        storageReads,
+        balanceChanges,
+        nonceChanges,
+        data.codeChanges,
+      ] as BALRawAccountChanges)
+    }
+
+    return bal
+  }
+
+  /**
+   * Ensures an address is present in the access list with empty changes. No-op if already present.
+   *
+   * @param address - Account address to add
+   */
+  public addAddress(address: BALAddressHex): void {
+    if (this.accesses[address] !== undefined) {
+      return
+    }
+    this.accesses[address] = {
+      storageChanges: {},
+      storageReads: new Set(),
+      balanceChanges: new Map(),
+      nonceChanges: new Map(),
+      codeChanges: [],
+    }
+  }
+
+  /**
+   * Records a storage write. No-op writes (value equals original) are recorded as reads per EIP-7928.
+   * Keys and values are normalized (leading zeros stripped); zero value is encoded as empty bytes.
+   *
+   * @param address - Account address
+   * @param storageKey - Storage slot key (bytes)
+   * @param value - New value written
+   * @param blockAccessIndex - Block access index for this write
+   * @param originalValue - Pre-write value when known (used for no-op detection)
+   */
+  public addStorageWrite(
+    address: BALAddressHex,
+    storageKey: BALStorageKeyBytes,
+    value: BALStorageValueBytes,
+    blockAccessIndex: BALAccessIndexNumber,
+    originalValue?: BALStorageValueBytes,
+  ): void {
+    const strippedKey = normalizeStorageKeyHex(bytesToHex(stripLeadingZeros(storageKey)))
+    const strippedValue = stripLeadingZeros(value)
+    const strippedOriginal = originalValue ? stripLeadingZeros(originalValue) : undefined
+    const isZeroWrite = strippedValue.length === 0
+
+    // EIP-7928: Check if this is a no-op write (value equals pre-transaction value)
+    // No-op writes should be recorded as reads, not changes.
+    // Note: Both empty arrays (zero values) compare equal via bytesToHex
+    let isNoOp = false
+    if (strippedOriginal !== undefined) {
+      // We have original value - compare properly
+      isNoOp = bytesToHex(strippedValue) === bytesToHex(strippedOriginal)
+    } else if (isZeroWrite) {
+      // No original value provided and writing zero - likely a no-op for system contracts
+      // reading empty slots. Treat as read for safety.
+      isNoOp = true
+    }
+
+    // Only no-op writes (writing same value as original) are treated as reads
+    // EIP-7928: Zeroing a slot (pre-value exists, post-value is zero) IS a write
+    if (isNoOp) {
+      // EIP-7928: If a slot is written back to its original value (net-zero change),
+      // it should appear in storageReads, not storageChanges.
+      // This handles nested calls where intermediate frames write different values
+      // but the final value equals the original.
+      if (this.accesses[address] !== undefined) {
+        // Remove any existing storageChanges for this slot since final == original
+        delete this.accesses[address].storageChanges[strippedKey]
+      }
+      this.addStorageRead(address, storageKey)
+      return
+    }
+    if (this.accesses[address] === undefined) {
+      this.addAddress(address)
+    }
+    if (this.accesses[address].storageChanges[strippedKey] === undefined) {
+      this.accesses[address].storageChanges[strippedKey] = []
+    }
+    // For zero values, strippedValue is empty - this is correct for RLP encoding
+    this.accesses[address].storageChanges[strippedKey].push([blockAccessIndex, strippedValue])
+    // Per EIP-7928: A successful storage write subsumes any prior read of the same slot.
+    // Remove the slot from storageReads since it's now in storageChanges.
+    this.accesses[address].storageReads.delete(strippedKey)
+  }
+
+  /**
+   * Records a storage read. Skipped if the slot already has a write (write subsumes read per EIP-7928).
+   *
+   * @param address - Account address
+   * @param storageKey - Storage slot key (bytes)
+   */
+  public addStorageRead(address: BALAddressHex, storageKey: BALStorageKeyBytes): void {
+    if (this.accesses[address] === undefined) {
+      this.addAddress(address)
+    }
+    const strippedKey = normalizeStorageKeyHex(bytesToHex(stripLeadingZeros(storageKey)))
+    // Per EIP-7928: Don't add to storageReads if the slot was already written.
+    // A write subsumes any reads of the same slot.
+    if (this.accesses[address].storageChanges[strippedKey] === undefined) {
+      this.accesses[address].storageReads.add(strippedKey)
+    }
+  }
+
+  /**
+   * Records a balance change at the given block access index. Original balance can be supplied
+   * for later net-zero cleanup via {@link cleanupNetZeroBalanceChanges}.
+   *
+   * @param address - Account address
+   * @param balance - Post-change balance
+   * @param blockAccessIndex - Block access index for this change
+   * @param originalBalance - Pre-transaction balance when known (for net-zero detection)
+   */
+  public addBalanceChange(
+    address: BALAddressHex,
+    balance: BALBalanceBigInt,
+    blockAccessIndex: BALAccessIndexNumber,
+    originalBalance?: BALBalanceBigInt,
+  ): void {
+    if (this.accesses[address] === undefined) {
+      this.addAddress(address)
+    }
+    // EIP-7928: Track the original (pre-transaction) balance for net-zero detection
+    // Only set if not already tracked (first call wins)
+    if (originalBalance !== undefined && !this.originalBalances.has(address)) {
+      this.originalBalances.set(address, originalBalance)
+    }
+    this.accesses[address].balanceChanges.set(
+      blockAccessIndex,
+      padToEvenHex(bytesToHex(stripLeadingZeros(bigIntToBytes(balance)))),
+    )
+  }
+
+  /**
+   * EIP-7928: Removes balance changes for addresses whose final balance equals their
+   * pre-transaction balance. Call at the end of each transaction to clean up net-zero changes.
+   */
+  public cleanupNetZeroBalanceChanges(): void {
+    for (const [address, originalBalance] of this.originalBalances.entries()) {
+      const access = this.accesses[address]
+      if (access === undefined || access.balanceChanges.size === 0) {
+        continue
+      }
+      // Get the final balance (last entry in the balanceChanges map)
+      const entries = Array.from(access.balanceChanges.values())
+      const finalBalanceHex = entries[entries.length - 1]
+      const finalBalance =
+        finalBalanceHex === '0x' ? BigInt(0) : BigInt(`0x${finalBalanceHex.replace(/^0x/, '')}`)
+
+      // EIP-7928: If final balance == original balance, remove all balanceChanges
+      // but keep the address in the BAL
+      if (finalBalance === originalBalance) {
+        access.balanceChanges.clear()
+      }
+    }
+    // Clear the tracking map for the next transaction
+    this.originalBalances.clear()
+  }
+
+  /**
+   * Records a nonce change at the given block access index.
+   *
+   * @param address - Account address
+   * @param nonce - Post-change nonce
+   * @param blockAccessIndex - Block access index for this change
+   */
+  public addNonceChange(
+    address: BALAddressHex,
+    nonce: BALNonceBigInt,
+    blockAccessIndex: BALAccessIndexNumber,
+  ): void {
+    if (this.accesses[address] === undefined) {
+      this.addAddress(address)
+    }
+    this.accesses[address].nonceChanges.set(blockAccessIndex, padToEvenHex(bigIntToHex(nonce)))
+  }
+
+  /**
+   * Records a code change at the given block access index. Net-zero changes (code equals
+   * original at that index) are removed. Replacing an existing entry updates the stored code.
+   *
+   * @param address - Account address
+   * @param code - New contract code (bytes)
+   * @param blockAccessIndex - Block access index for this change
+   * @param originalCode - Code before this change when known (for net-zero detection)
+   */
+  public addCodeChange(
+    address: BALAddressHex,
+    code: BALByteCodeBytes,
+    blockAccessIndex: BALAccessIndexNumber,
+    originalCode?: BALByteCodeBytes,
+  ): void {
+    if (this.accesses[address] === undefined) {
+      this.addAddress(address)
+    }
+    const codeChanges = this.accesses[address].codeChanges
+
+    // Track the original code at the start of this blockAccessIndex
+    const trackingKey = `${address}-${blockAccessIndex}`
+    if (!this.originalCodesAtIndex.has(trackingKey) && originalCode !== undefined) {
+      this.originalCodesAtIndex.set(trackingKey, originalCode)
+    }
+
+    // Get the original code at the start of this blockAccessIndex
+    const originalCodeAtIndex = this.originalCodesAtIndex.get(trackingKey)
+
+    // Check if there's already a code change at this blockAccessIndex
+    const existingIndex = codeChanges.findIndex(([idx]) => idx === blockAccessIndex)
+    if (existingIndex !== -1) {
+      // Check if the new code equals the original code at start of this blockAccessIndex
+      // If so, remove the entry (net-zero change within this blockAccessIndex)
+      if (
+        originalCodeAtIndex !== undefined &&
+        bytesToHex(code) === bytesToHex(originalCodeAtIndex)
+      ) {
+        codeChanges.splice(existingIndex, 1)
+      } else {
+        // Update the existing entry with the new code
+        codeChanges[existingIndex] = [blockAccessIndex, code]
+      }
+    } else {
+      // Add new entry, but only if code is actually different from originalCode
+      if (originalCode !== undefined && bytesToHex(code) === bytesToHex(originalCode)) {
+        // No actual change, don't record
+        return
+      }
+      codeChanges.push([blockAccessIndex, code])
+    }
+  }
+
+  /**
+   * EIP-7928: For selfdestructed accounts, drops all state changes while preserving read
+   * footprints. Storage changes are converted to storage reads. If the account had a
+   * positive pre-transaction balance, the balance change to zero is preserved.
+   *
+   * @param addresses - List of selfdestructed account addresses to clean up
+   */
+  public cleanupSelfdestructed(addresses: Array<BALAddressHex>): void {
+    for (const address of addresses) {
+      const access = this.accesses[address]
+      if (access === undefined) {
+        continue
+      }
+
+      // Convert any storageChanges into storageReads
+      for (const slot of Object.keys(access.storageChanges)) {
+        access.storageReads.add(slot as BALStorageKeyHex)
+      }
+
+      access.storageChanges = {}
+      access.nonceChanges.clear()
+      access.codeChanges = []
+
+      // EIP-7928: If the account had a positive pre-transaction balance,
+      // the balance change to zero MUST be recorded.
+      // The balance change to 0 is already added during SELFDESTRUCT execution.
+      // We only clear balance changes if pre-transaction balance was 0 (no actual change).
+      const originalBalance = this.originalBalances.get(address)
+      if (originalBalance === undefined || originalBalance === BigInt(0)) {
+        // Pre-transaction balance was 0 or unknown - clear balance changes
+        // (0 -> 0 is no change, so nothing to record)
+        access.balanceChanges.clear()
+      }
+      // If originalBalance > 0, keep the balance changes (which should show balance = 0)
+    }
+  }
+}

@@ -662,6 +662,9 @@ export class BlockHeader {
       rawItems.push(this.requestsHash!)
     }
 
+    if (this.common.isActivatedEIP(7928)) {
+      rawItems.push(this.blockAccessListHash!)
+    }
     return rawItems
   }
 
