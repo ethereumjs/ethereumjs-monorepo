@@ -625,9 +625,9 @@ async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
     }
 
     // Add to total block gas usage
-    gasUsed += txRes.totalGasSpent
+    gasUsed += txRes.blockGasSpent
     if (vm.DEBUG) {
-      debug(`Add tx gas used (${txRes.totalGasSpent}) to total block gas usage (-> ${gasUsed})`)
+      debug(`Add tx gas used (${txRes.blockGasSpent}) to total block gas usage (-> ${gasUsed})`)
     }
 
     // Combine blooms via bitwise OR
