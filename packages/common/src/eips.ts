@@ -514,6 +514,15 @@ export const eipsDict: EIPsDict = {
     minimumHardfork: Hardfork.Chainstart,
   },
   /**
+   * Description : Block-level gas accounting without refunds
+   * URL         : https://eips.ethereum.org/EIPS/eip-7778
+   * Status      : Draft
+   */
+  7778: {
+    minimumHardfork: Hardfork.Amsterdam,
+    requiredEIPs: [],
+  },
+  /**
    * Description : Block Level Access Lists (BAL)
    * URL         : https://eips.ethereum.org/EIPS/eip-7928
    * Status      : Draft (in development, do not use in production)
