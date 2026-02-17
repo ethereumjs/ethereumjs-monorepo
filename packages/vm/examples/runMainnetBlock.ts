@@ -11,6 +11,12 @@ import * as path from 'node:path'
  * Data files are expected at:
  *   examples/data/block<blockNumber>.json
  *   examples/data/block<blockNumber>State.json
+ *
+ * Known issues:
+ *   Block 24476002: VM gas mismatch (17945809 vs expected 18980393).
+ *     Data files are saved for debugging but the offline replay will fail.
+ *     The mismatch also reproduces with the plain RPC script (runBlockWithRPC.ts),
+ *     so this is a VM execution bug, not a data collection issue.
  */
 import { createBlockFromRPC } from '@ethereumjs/block'
 import { Common, Mainnet } from '@ethereumjs/common'

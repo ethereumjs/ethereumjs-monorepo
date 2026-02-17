@@ -143,12 +143,7 @@ const main = async () => {
       `  Gas used: ${result.gasUsed} (expected: ${block.header.gasUsed}) ${match ? '✓' : '✗ MISMATCH'}`,
     )
 
-    if (!match) {
-      console.log(`  ERROR: Gas mismatch on block ${blockNumber}, stopping.`)
-      process.exit(1)
-    }
-
-    // 4. Save data immediately after successful execution
+    // 4. Save data (even on gas mismatch, for later debugging)
     const accountCount = Object.keys(collectedAccounts).length
     const codeCount = Object.values(collectedCode).filter((c) => c !== '0x').length
     const storageSlotCount = Object.values(collectedStorage).reduce(
@@ -169,6 +164,10 @@ const main = async () => {
       }),
     )
     console.log(`  ✓ Saved to examples/data/`)
+
+    if (!match) {
+      console.log(`  WARNING: Gas mismatch on block ${blockNumber}, continuing...`)
+    }
   }
 
   console.log(`\nAll ${Number(endBlock - startBlock) + 1} blocks collected successfully!`)
