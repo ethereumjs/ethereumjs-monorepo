@@ -1,10 +1,15 @@
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 /**
- * Temporary batch data collection script.
- * Collects block JSON + pre-state for a range of blocks, saving after each.
+ * Data collection script for offline mainnet block replay.
+ * Runs blocks via RPC while intercepting state accesses to capture the pre-state,
+ * then saves block JSON + pre-state for offline replay with runMainnetBlock.ts.
  *
- * Usage: npx tsx examples/collectBlockData.ts <providerUrl> <startBlock> <endBlock>
+ * Usage: npx tsx scripts/collectBlockData.ts <providerUrl> <startBlock> <endBlock>
+ *
+ * Output files are written to examples/data/:
+ *   block<number>.json       - Raw block JSON from eth_getBlockByNumber
+ *   block<number>State.json  - Pre-state (accounts, code, storage)
  */
 import { createBlockFromRPC } from '@ethereumjs/block'
 import { Common, Mainnet } from '@ethereumjs/common'
@@ -50,13 +55,13 @@ const main = async () => {
   const endBlock = process.argv[4] !== undefined ? BigInt(process.argv[4]) : undefined
 
   if (providerUrl === undefined || startBlock === undefined || endBlock === undefined) {
-    console.log('Usage: npx tsx collectBlockData.ts <providerUrl> <startBlock> <endBlock>')
+    console.log('Usage: npx tsx scripts/collectBlockData.ts <providerUrl> <startBlock> <endBlock>')
     process.exit(1)
   }
 
   const kzg = new microEthKZG(trustedSetup)
   const common = new Common({ chain: Mainnet, customCrypto: { kzg } })
-  const outDir = path.resolve(import.meta.dirname, 'data')
+  const outDir = path.resolve(import.meta.dirname, '..', 'examples', 'data')
 
   for (let blockNumber = startBlock; blockNumber <= endBlock; blockNumber++) {
     console.log(`\n${'='.repeat(60)}`)
@@ -163,7 +168,7 @@ const main = async () => {
         storage: collectedStorage,
       }),
     )
-    console.log(`  ✓ Saved to examples/data/`)
+    console.log(`  ✓ Saved to ${outDir}/`)
 
     if (!match) {
       console.log(`  WARNING: Gas mismatch on block ${blockNumber}, continuing...`)
