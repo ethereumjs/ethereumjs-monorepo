@@ -14,8 +14,9 @@ import * as path from 'node:path'
  *
  * Known issues:
  *   Block 24476002: VM gas mismatch (17945809 vs expected 18980393).
+ *   Block 24476006: VM gas mismatch (59807084 vs expected 59826984).
  *     Data files are saved for debugging but the offline replay will fail.
- *     The mismatch also reproduces with the plain RPC script (runBlockWithRPC.ts),
+ *     These mismatches also reproduce with the plain RPC script (runBlockWithRPC.ts),
  *     so this is a VM execution bug, not a data collection issue.
  */
 import { createBlockFromRPC } from '@ethereumjs/block'
