@@ -5,6 +5,11 @@ type rpcParams = {
   params: (string | string[] | boolean | number)[]
 }
 
+export type FetchFromProviderOptions = {
+  /** Request timeout in milliseconds (default: 60000) */
+  timeout?: number
+}
+
 /**
  * Makes a simple RPC call to a remote Ethereum JSON-RPC provider and passes through the response.
  * No parameter or response validation is done.
@@ -12,6 +17,7 @@ type rpcParams = {
  * @param url the URL for the JSON RPC provider
  * @param params the parameters for the JSON-RPC method - refer to
  * https://ethereum.org/en/developers/docs/apis/json-rpc/ for details on RPC methods
+ * @param options optional settings (e.g. timeout)
  * @returns the `result` field from the JSON-RPC response
  * @example
  * ```ts
@@ -23,7 +29,12 @@ type rpcParams = {
  * const block = await fetchFromProvider(provider, params)
  * ```
  */
-export const fetchFromProvider = async (url: string, params: rpcParams) => {
+export const fetchFromProvider = async (
+  url: string,
+  params: rpcParams,
+  options?: FetchFromProviderOptions,
+) => {
+  const timeout = options?.timeout ?? 60_000
   const data = JSON.stringify({
     method: params.method,
     params: params.params,
@@ -31,12 +42,25 @@ export const fetchFromProvider = async (url: string, params: rpcParams) => {
     id: 1,
   })
 
+  let signal: AbortSignal
+  let timer: ReturnType<typeof setTimeout> | undefined
+  if (typeof AbortSignal.timeout === 'function') {
+    signal = AbortSignal.timeout(timeout)
+  } else {
+    const controller = new AbortController()
+    signal = controller.signal
+    timer = setTimeout(() => controller.abort(), timeout)
+  }
+
   const res = await fetch(url, {
     headers: {
       'content-type': 'application/json',
     },
     method: 'POST',
     body: data,
+    signal,
+  }).finally(() => {
+    if (timer !== undefined) clearTimeout(timer)
   })
   if (!res.ok) {
     throw EthereumJSErrorWithoutCode(

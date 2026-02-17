@@ -1,6 +1,13 @@
 import { RLP } from '@ethereumjs/rlp'
 import { keccak_256 } from '@noble/hashes/sha3.js'
-import { bigIntToHex, bytesToHex, bytesToInt, hexToBigInt, hexToBytes } from './bytes.ts'
+import {
+  bigIntToBytes,
+  bigIntToHex,
+  bytesToHex,
+  bytesToInt,
+  hexToBigInt,
+  hexToBytes,
+} from './bytes.ts'
 import { padToEven } from './internal.ts'
 import type { PrefixedHexString } from './types.ts'
 
@@ -14,6 +21,7 @@ type BALAccessIndexNumber = number // uint16
 type BALAccessIndexHex = PrefixedHexString // uint16 as hex d
 type BALBalanceBigInt = bigint // uint256 as bigint
 type BALBalanceHex = PrefixedHexString // uint256 as hex
+type BALNonceBigInt = bigint // uint64 as bigint
 type BALNonceHex = PrefixedHexString // uint64 as hex
 type BALByteCodeBytes = Uint8Array // bytes
 type BALByteCodeHex = PrefixedHexString // bytes as hex
@@ -40,7 +48,7 @@ type BALRawBlockAccessList = BALRawAccountChanges[]
 export type Accesses = Record<
   BALAddressHex,
   {
-    nonceChanges: BALRawNonceChange[]
+    nonceChanges: Map<BALAccessIndexNumber, BALNonceHex>
     balanceChanges: Map<BALAccessIndexNumber, BALBalanceHex>
     codeChanges: BALRawCodeChange[]
     storageChanges: Record<BALStorageKeyHex, BALRawStorageChange[]>
@@ -106,6 +114,12 @@ export type {
 export class BlockLevelAccessList {
   public accesses: Accesses
   public blockAccessIndex: number
+  private checkpoints: { accesses: Accesses; blockAccessIndex: number }[] = []
+  // Track original (pre-transaction) balances for net-zero detection
+  private originalBalances: Map<BALAddressHex, bigint> = new Map()
+  // Track original code at the start of each blockAccessIndex for each address
+  // Key format: `${address}-${blockAccessIndex}`
+  private originalCodesAtIndex: Map<string, Uint8Array> = new Map()
   constructor(accesses: Accesses = {}) {
     this.accesses = accesses
     this.blockAccessIndex = 0
@@ -129,6 +143,84 @@ export class BlockLevelAccessList {
     return keccak_256(this.serialize())
   }
 
+  public checkpoint(): void {
+    this.checkpoints.push({
+      accesses: this.cloneAccesses(this.accesses),
+      blockAccessIndex: this.blockAccessIndex,
+    })
+  }
+
+  public commit(): void {
+    if (this.checkpoints.length > 0) {
+      this.checkpoints.pop()
+    }
+  }
+
+  public revert(): void {
+    const snapshot = this.checkpoints.pop()
+    if (!snapshot) {
+      return
+    }
+    const current = this.accesses
+    this.accesses = snapshot.accesses
+    this.blockAccessIndex = snapshot.blockAccessIndex
+
+    // Preserve address touches and storage reads across reverts.
+    // EIP-7928: When storage writes are reverted, the slot keys MUST still
+    // appear in storageReads since the slots were accessed (SSTORE reads
+    // the current value for gas calculation).
+    for (const [address, access] of Object.entries(current)) {
+      if (this.accesses[address as BALAddressHex] === undefined) {
+        // Collect both explicit reads and slots that were written (but will be reverted)
+        const allReads = new Set(access.storageReads)
+        for (const slot of Object.keys(access.storageChanges)) {
+          allReads.add(slot as BALStorageKeyHex)
+        }
+        this.accesses[address as BALAddressHex] = {
+          nonceChanges: new Map(),
+          balanceChanges: new Map(),
+          codeChanges: [],
+          storageChanges: {},
+          storageReads: allReads,
+        }
+        continue
+      }
+      const target = this.accesses[address as BALAddressHex]
+      // Preserve explicit storageReads
+      for (const slot of access.storageReads) {
+        target.storageReads.add(slot)
+      }
+      // EIP-7928: Convert reverted storageChanges to storageReads
+      for (const slot of Object.keys(access.storageChanges)) {
+        // Only add to reads if not already in the target's storageChanges
+        // (a successful write subsumes a read)
+        if (target.storageChanges[slot as BALStorageKeyHex] === undefined) {
+          target.storageReads.add(slot as BALStorageKeyHex)
+        }
+      }
+    }
+  }
+
+  private cloneAccesses(accesses: Accesses): Accesses {
+    const cloned: Accesses = {}
+    for (const [address, access] of Object.entries(accesses)) {
+      const storageChanges: Record<BALStorageKeyHex, BALRawStorageChange[]> = {}
+      for (const [slot, changes] of Object.entries(access.storageChanges)) {
+        storageChanges[slot as BALStorageKeyHex] = changes.map(
+          ([index, value]) => [index, value] as BALRawStorageChange,
+        )
+      }
+      cloned[address as BALAddressHex] = {
+        nonceChanges: new Map(access.nonceChanges),
+        balanceChanges: new Map(access.balanceChanges),
+        codeChanges: access.codeChanges.map(([index, code]) => [index, code] as BALRawCodeChange),
+        storageChanges,
+        storageReads: new Set(access.storageReads),
+      }
+    }
+    return cloned
+  }
+
   /**
    * Returns the raw block level access list with values
    * correctly sorted.
@@ -138,7 +230,9 @@ export class BlockLevelAccessList {
   public raw(): BALRawBlockAccessList {
     const bal: BALRawBlockAccessList = []
 
-    for (const address of Object.keys(this.accesses).sort()) {
+    for (const address of Object.keys(this.accesses)
+      .sort()
+      .filter((address) => address !== systemAddress)) {
       const data = this.accesses[address as BALAddressHex]
 
       // Format storage changes: [slot, [[index, value], ...]]
@@ -158,12 +252,16 @@ export class BlockLevelAccessList {
         index,
         balance,
       ])
+      const nonceChanges = Array.from(data.nonceChanges.entries()).map(([index, nonce]) => [
+        index,
+        nonce,
+      ])
       bal.push([
         address as BALAddressHex,
         storageChanges,
         storageReads,
         balanceChanges,
-        data.nonceChanges,
+        nonceChanges,
         data.codeChanges,
       ] as BALRawAccountChanges)
     }
@@ -179,7 +277,7 @@ export class BlockLevelAccessList {
       storageChanges: {},
       storageReads: new Set(),
       balanceChanges: new Map(),
-      nonceChanges: [],
+      nonceChanges: new Map(),
       codeChanges: [],
     }
   }
@@ -189,10 +287,37 @@ export class BlockLevelAccessList {
     storageKey: BALStorageKeyBytes,
     value: BALStorageValueBytes,
     blockAccessIndex: BALAccessIndexNumber,
+    originalValue?: BALStorageValueBytes,
   ): void {
     const strippedKey = normalizeStorageKeyHex(bytesToHex(stripLeadingZeros(storageKey)))
     const strippedValue = stripLeadingZeros(value)
-    if (strippedValue.length === 0) {
+    const strippedOriginal = originalValue ? stripLeadingZeros(originalValue) : undefined
+    const isZeroWrite = strippedValue.length === 0
+
+    // EIP-7928: Check if this is a no-op write (value equals pre-transaction value)
+    // No-op writes should be recorded as reads, not changes.
+    // Note: Both empty arrays (zero values) compare equal via bytesToHex
+    let isNoOp = false
+    if (strippedOriginal !== undefined) {
+      // We have original value - compare properly
+      isNoOp = bytesToHex(strippedValue) === bytesToHex(strippedOriginal)
+    } else if (isZeroWrite) {
+      // No original value provided and writing zero - likely a no-op for system contracts
+      // reading empty slots. Treat as read for safety.
+      isNoOp = true
+    }
+
+    // Only no-op writes (writing same value as original) are treated as reads
+    // EIP-7928: Zeroing a slot (pre-value exists, post-value is zero) IS a write
+    if (isNoOp) {
+      // EIP-7928: If a slot is written back to its original value (net-zero change),
+      // it should appear in storageReads, not storageChanges.
+      // This handles nested calls where intermediate frames write different values
+      // but the final value equals the original.
+      if (this.accesses[address] !== undefined) {
+        // Remove any existing storageChanges for this slot since final == original
+        delete this.accesses[address].storageChanges[strippedKey]
+      }
       this.addStorageRead(address, storageKey)
       return
     }
@@ -202,49 +327,161 @@ export class BlockLevelAccessList {
     if (this.accesses[address].storageChanges[strippedKey] === undefined) {
       this.accesses[address].storageChanges[strippedKey] = []
     }
+    // For zero values, strippedValue is empty - this is correct for RLP encoding
     this.accesses[address].storageChanges[strippedKey].push([blockAccessIndex, strippedValue])
+    // Per EIP-7928: A successful storage write subsumes any prior read of the same slot.
+    // Remove the slot from storageReads since it's now in storageChanges.
+    this.accesses[address].storageReads.delete(strippedKey)
   }
 
   public addStorageRead(address: BALAddressHex, storageKey: BALStorageKeyBytes): void {
     if (this.accesses[address] === undefined) {
       this.addAddress(address)
     }
-    this.accesses[address].storageReads.add(
-      normalizeStorageKeyHex(bytesToHex(stripLeadingZeros(storageKey))),
-    )
+    const strippedKey = normalizeStorageKeyHex(bytesToHex(stripLeadingZeros(storageKey)))
+    // Per EIP-7928: Don't add to storageReads if the slot was already written.
+    // A write subsumes any reads of the same slot.
+    if (this.accesses[address].storageChanges[strippedKey] === undefined) {
+      this.accesses[address].storageReads.add(strippedKey)
+    }
   }
 
   public addBalanceChange(
     address: BALAddressHex,
     balance: BALBalanceBigInt,
     blockAccessIndex: BALAccessIndexNumber,
+    originalBalance?: BALBalanceBigInt,
   ): void {
     if (this.accesses[address] === undefined) {
       this.addAddress(address)
     }
-    this.accesses[address].balanceChanges.set(blockAccessIndex, padToEvenHex(bigIntToHex(balance)))
+    // EIP-7928: Track the original (pre-transaction) balance for net-zero detection
+    // Only set if not already tracked (first call wins)
+    if (originalBalance !== undefined && !this.originalBalances.has(address)) {
+      this.originalBalances.set(address, originalBalance)
+    }
+    this.accesses[address].balanceChanges.set(
+      blockAccessIndex,
+      padToEvenHex(bytesToHex(stripLeadingZeros(bigIntToBytes(balance)))),
+    )
+  }
+
+  /**
+   * EIP-7928: Remove balance changes for addresses where final balance equals first balance.
+   * Call this at the end of each transaction to clean up net-zero balance changes.
+   */
+  public cleanupNetZeroBalanceChanges(): void {
+    for (const [address, originalBalance] of this.originalBalances.entries()) {
+      const access = this.accesses[address]
+      if (access === undefined || access.balanceChanges.size === 0) {
+        continue
+      }
+      // Get the final balance (last entry in the balanceChanges map)
+      const entries = Array.from(access.balanceChanges.values())
+      const finalBalanceHex = entries[entries.length - 1]
+      const finalBalance =
+        finalBalanceHex === '0x' ? BigInt(0) : BigInt(`0x${finalBalanceHex.replace(/^0x/, '')}`)
+
+      // EIP-7928: If final balance == original balance, remove all balanceChanges
+      // but keep the address in the BAL
+      if (finalBalance === originalBalance) {
+        access.balanceChanges.clear()
+      }
+    }
+    // Clear the tracking map for the next transaction
+    this.originalBalances.clear()
   }
 
   public addNonceChange(
     address: BALAddressHex,
-    nonce: BALNonceHex,
+    nonce: BALNonceBigInt,
     blockAccessIndex: BALAccessIndexNumber,
   ): void {
     if (this.accesses[address] === undefined) {
       this.addAddress(address)
     }
-    this.accesses[address].nonceChanges.push([blockAccessIndex, nonce])
+    this.accesses[address].nonceChanges.set(blockAccessIndex, padToEvenHex(bigIntToHex(nonce)))
   }
 
   public addCodeChange(
     address: BALAddressHex,
     code: BALByteCodeBytes,
     blockAccessIndex: BALAccessIndexNumber,
+    originalCode?: BALByteCodeBytes,
   ): void {
     if (this.accesses[address] === undefined) {
       this.addAddress(address)
     }
-    this.accesses[address].codeChanges.push([blockAccessIndex, code])
+    const codeChanges = this.accesses[address].codeChanges
+
+    // Track the original code at the start of this blockAccessIndex
+    const trackingKey = `${address}-${blockAccessIndex}`
+    if (!this.originalCodesAtIndex.has(trackingKey) && originalCode !== undefined) {
+      this.originalCodesAtIndex.set(trackingKey, originalCode)
+    }
+
+    // Get the original code at the start of this blockAccessIndex
+    const originalCodeAtIndex = this.originalCodesAtIndex.get(trackingKey)
+
+    // Check if there's already a code change at this blockAccessIndex
+    const existingIndex = codeChanges.findIndex(([idx]) => idx === blockAccessIndex)
+    if (existingIndex !== -1) {
+      // Check if the new code equals the original code at start of this blockAccessIndex
+      // If so, remove the entry (net-zero change within this blockAccessIndex)
+      if (
+        originalCodeAtIndex !== undefined &&
+        bytesToHex(code) === bytesToHex(originalCodeAtIndex)
+      ) {
+        codeChanges.splice(existingIndex, 1)
+      } else {
+        // Update the existing entry with the new code
+        codeChanges[existingIndex] = [blockAccessIndex, code]
+      }
+    } else {
+      // Add new entry, but only if code is actually different from originalCode
+      if (originalCode !== undefined && bytesToHex(code) === bytesToHex(originalCode)) {
+        // No actual change, don't record
+        return
+      }
+      codeChanges.push([blockAccessIndex, code])
+    }
+  }
+
+  /**
+   * EIP-7928: For selfdestructed accounts, drop all state changes while
+   * preserving read footprints. Any storageChanges are converted to storageReads.
+   *
+   * Per EIP-7928: "if the account had a positive balance pre-transaction,
+   * the balance change to zero MUST be recorded."
+   */
+  public cleanupSelfdestructed(addresses: Array<BALAddressHex>): void {
+    for (const address of addresses) {
+      const access = this.accesses[address]
+      if (access === undefined) {
+        continue
+      }
+
+      // Convert any storageChanges into storageReads
+      for (const slot of Object.keys(access.storageChanges)) {
+        access.storageReads.add(slot as BALStorageKeyHex)
+      }
+
+      access.storageChanges = {}
+      access.nonceChanges.clear()
+      access.codeChanges = []
+
+      // EIP-7928: If the account had a positive pre-transaction balance,
+      // the balance change to zero MUST be recorded.
+      // The balance change to 0 is already added during SELFDESTRUCT execution.
+      // We only clear balance changes if pre-transaction balance was 0 (no actual change).
+      const originalBalance = this.originalBalances.get(address)
+      if (originalBalance === undefined || originalBalance === BigInt(0)) {
+        // Pre-transaction balance was 0 or unknown - clear balance changes
+        // (0 -> 0 is no change, so nothing to record)
+        access.balanceChanges.clear()
+      }
+      // If originalBalance > 0, keep the balance changes (which should show balance = 0)
+    }
   }
 }
 
@@ -279,11 +516,14 @@ export function createBlockLevelAccessListFromJSON(
     }
 
     for (const change of account.balanceChanges) {
-      access.balanceChanges.set(parseInt(change.blockAccessIndex, 16), change.postBalance)
+      access.balanceChanges.set(
+        parseInt(change.blockAccessIndex, 16),
+        padToEvenHex(change.postBalance),
+      )
     }
 
     for (const change of account.nonceChanges) {
-      access.nonceChanges.push([parseInt(change.blockAccessIndex, 16), change.postNonce])
+      access.nonceChanges.set(parseInt(change.blockAccessIndex, 16), padToEvenHex(change.postNonce))
     }
 
     for (const change of account.codeChanges) {
@@ -351,11 +591,17 @@ export function createBlockLevelAccessListFromRLP(rlp: Uint8Array): BlockLevelAc
     }
 
     for (const [indexBytes, balanceBytes] of balanceChangesRaw) {
-      access.balanceChanges.set(bytesToInt(indexBytes), bytesToHex(balanceBytes) as BALBalanceHex)
+      access.balanceChanges.set(
+        bytesToInt(indexBytes),
+        padToEvenHex(bytesToHex(balanceBytes)) as BALBalanceHex,
+      )
     }
 
     for (const [indexBytes, nonceBytes] of nonceChangesRaw) {
-      access.nonceChanges.push([bytesToInt(indexBytes), bytesToHex(nonceBytes) as BALNonceHex])
+      access.nonceChanges.set(
+        bytesToInt(indexBytes),
+        padToEvenHex(bytesToHex(nonceBytes)) as BALNonceHex,
+      )
     }
 
     for (const [indexBytes, codeBytes] of codeChangesRaw) {
@@ -394,3 +640,6 @@ function normalizeStorageKeyHex(hex: PrefixedHexString): BALStorageKeyHex {
   // Pad to even length (handles "0x0" → "0x00", "0x1" → "0x01", etc.)
   return `0x${padToEven(stripped)}` as BALStorageKeyHex
 }
+
+// Address to ignore
+const systemAddress = '0xfffffffffffffffffffffffffffffffffffffffe'

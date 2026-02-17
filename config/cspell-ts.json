@@ -440,6 +440,7 @@
     "RIPEMD",
     "journaling",
     "BLOBHASH",
+    "BALJSON",
     "coldaccountaccess",
     "warmstorageread",
     "coldsload",

@@ -18,6 +18,7 @@ import {
   bytesToHex,
   concatBytes,
   createAddressFromString,
+  createBlockLevelAccessList,
   equalsBytes,
   hexToBytes,
   intToBytes,
@@ -76,12 +77,13 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     // eslint-disable-next-line no-console
     console.time(entireBlockLabel)
   }
-
+  if (vm.common.isActivatedEIP(7928)) {
+    vm.evm.blockLevelAccessList = createBlockLevelAccessList()
+  }
   const stateManager = vm.stateManager
 
   const { root } = opts
   const clearCache = opts.clearCache ?? true
-  const setHardfork = opts.setHardfork ?? false
   let { block } = opts
   const generateFields = opts.generate === true
 
@@ -104,14 +106,12 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
    */
   await vm._emit('beforeBlock', block)
 
-  if (setHardfork !== false || vm['_setHardfork'] !== false) {
-    const setHardforkUsed = setHardfork ?? vm['_setHardfork']
-    if (setHardforkUsed === true) {
-      vm.common.setHardforkBy({
-        blockNumber: block.header.number,
-        timestamp: block.header.timestamp,
-      })
-    }
+  const setHardforkUsed = opts.setHardfork ?? vm['_setHardfork']
+  if (setHardforkUsed === true) {
+    vm.common.setHardforkBy({
+      blockNumber: block.header.number,
+      timestamp: block.header.timestamp,
+    })
   }
 
   if (vm.DEBUG) {
@@ -186,7 +186,6 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     }
     throw err
   }
-
   let requestsHash: Uint8Array | undefined
   let requests: CLRequest<CLRequestType>[] | undefined
   if (block.common.isActivatedEIP(7685)) {
@@ -327,6 +326,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     preimages: result.preimages,
     requestsHash,
     requests,
+    blockLevelAccessList: vm.evm.blockLevelAccessList,
   }
 
   const afterBlockEvent: AfterBlockEvent = { ...results, block }
@@ -477,6 +477,7 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
     }
     vm.evm.binaryTreeAccessWitness?.merge(vm.evm.systemBinaryTreeAccessWitness)
   }
+
   return blockResults
 }
 
@@ -523,6 +524,14 @@ export async function accumulateParentBlockHash(
       vm.evm.systemBinaryTreeAccessWitness.writeAccountStorage(historyAddress, ringKey)
     }
     const key = setLengthLeft(bigIntToBytes(ringKey), 32)
+    if (vm.common.isActivatedEIP(7928)) {
+      vm.evm.blockLevelAccessList!.addStorageWrite(
+        historyAddress.toString(),
+        key,
+        hash,
+        vm.evm.blockLevelAccessList!.blockAccessIndex,
+      )
+    }
     await vm.stateManager.putStorage(historyAddress, key, hash)
   }
   await putBlockHash(vm, parentHash, currentBlockNumber - BIGINT_1)
@@ -554,12 +563,27 @@ export async function accumulateParentBeaconBlockRoot(vm: VM, root: Uint8Array, 
     // TODO: verify with Gabriel that this is fine regarding binary trees (should we put an empty account?)
     return
   }
-
+  if (vm.common.isActivatedEIP(7928)) {
+    vm.evm.blockLevelAccessList!.addStorageWrite(
+      parentBeaconBlockRootAddress.toString(),
+      setLengthLeft(bigIntToBytes(timestampIndex), 32),
+      bigIntToBytes(timestamp),
+      vm.evm.blockLevelAccessList!.blockAccessIndex,
+    )
+  }
   await vm.stateManager.putStorage(
     parentBeaconBlockRootAddress,
     setLengthLeft(bigIntToBytes(timestampIndex), 32),
     bigIntToBytes(timestamp),
   )
+  if (vm.common.isActivatedEIP(7928)) {
+    vm.evm.blockLevelAccessList!.addStorageWrite(
+      parentBeaconBlockRootAddress.toString(),
+      setLengthLeft(bigIntToBytes(timestampExtended), 32),
+      root,
+      vm.evm.blockLevelAccessList!.blockAccessIndex,
+    )
+  }
   await vm.stateManager.putStorage(
     parentBeaconBlockRootAddress,
     setLengthLeft(bigIntToBytes(timestampExtended), 32),
@@ -599,7 +623,16 @@ async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
    * Process transactions
    */
   for (let txIdx = 0; txIdx < block.transactions.length; txIdx++) {
+    if (vm.common.isActivatedEIP(7928)) {
+      vm.evm.blockLevelAccessList!.blockAccessIndex = txIdx + 1
+    }
     const tx = block.transactions[txIdx]
+
+    if (vm.DEBUG) {
+      debug(
+        `Run tx ${txIdx + 1}/${block.transactions.length} gasLimit=${tx.gasLimit} type=${tx.type} (block gas used so far: ${gasUsed}/${block.header.gasLimit})`,
+      )
+    }
 
     const gasLimitIsHigherThanBlock = block.header.gasLimit < tx.gasLimit + gasUsed
     if (gasLimitIsHigherThanBlock) {
@@ -657,6 +690,9 @@ async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
 }
 
 async function assignWithdrawals(vm: VM, block: Block): Promise<void> {
+  if (vm.common.isActivatedEIP(7928)) {
+    vm.evm.blockLevelAccessList!.blockAccessIndex = block.transactions.length + 1
+  }
   const withdrawals = block.withdrawals!
   for (const withdrawal of withdrawals) {
     const { address, amount } = withdrawal
@@ -731,7 +767,20 @@ export async function rewardAccount(
     }
     account = new Account()
   }
+  const originalBalance = account.balance
   account.balance += reward
+  if (common.isActivatedEIP(7928)) {
+    if (reward === BIGINT_0) {
+      evm.blockLevelAccessList?.addAddress(address.toString())
+    } else {
+      evm.blockLevelAccessList!.addBalanceChange(
+        address.toString(),
+        account.balance,
+        evm.blockLevelAccessList!.blockAccessIndex,
+        originalBalance,
+      )
+    }
+  }
   await evm.journal.putAccount(address, account)
 
   if (common.isActivatedEIP(7864) === true && reward !== BIGINT_0) {
@@ -787,6 +836,7 @@ async function _applyDAOHardfork(evm: EVMInterface) {
     DAORefundAccount = new Account()
   }
 
+  const originalDAORefundAccountBalance = DAORefundAccount.balance
   for (const addr of DAOAccountList) {
     // retrieve the account and add it to the DAO's Refund accounts' balance.
     const address = new Address(unprefixedHexToBytes(addr))
@@ -796,12 +846,29 @@ async function _applyDAOHardfork(evm: EVMInterface) {
     }
     DAORefundAccount.balance += account.balance
     // clear the accounts' balance
+    const originalBalance = account.balance
     account.balance = BIGINT_0
     await evm.journal.putAccount(address, account)
+    if (evm.common.isActivatedEIP(7928)) {
+      evm.blockLevelAccessList!.addBalanceChange(
+        address.toString(),
+        account.balance,
+        evm.blockLevelAccessList!.blockAccessIndex,
+        originalBalance,
+      )
+    }
   }
 
   // finally, put the Refund Account
   await evm.journal.putAccount(DAORefundContractAddress, DAORefundAccount)
+  if (evm.common.isActivatedEIP(7928)) {
+    evm.blockLevelAccessList!.addBalanceChange(
+      DAORefundContractAddress.toString(),
+      DAORefundAccount.balance,
+      evm.blockLevelAccessList!.blockAccessIndex,
+      originalDAORefundAccountBalance,
+    )
+  }
 }
 
 async function _genTxTrie(block: Block) {
