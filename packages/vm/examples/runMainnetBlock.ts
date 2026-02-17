@@ -80,8 +80,11 @@ const main = async () => {
     await stateManager.putAccount(address, account)
   }
 
-  // Load storage slots
+  // Load storage slots (skip addresses with explicitly null accounts — they don't exist
+  // at pre-state, so their storage is empty by default and was only captured because the
+  // VM queried it during execution after creating the account)
   for (const [addrHex, slots] of Object.entries(stateData.storage)) {
+    if (stateData.accounts[addrHex] === null) continue
     const address = createAddressFromString(addrHex)
     for (const [keyHex, valueHex] of Object.entries(slots)) {
       const key = setLengthLeft(hexToBytes(keyHex as `0x${string}`), 32)
@@ -92,9 +95,10 @@ const main = async () => {
     }
   }
 
-  // Load code (putCode updates the account's codeHash internally)
+  // Load code (skip addresses with explicitly null accounts — code was deployed during execution)
   for (const [addrHex, codeHex] of Object.entries(stateData.code)) {
     if (codeHex === '0x' || codeHex === '') continue
+    if (stateData.accounts[addrHex] === null) continue
     const address = createAddressFromString(addrHex)
     await stateManager.putCode(address, hexToBytes(codeHex as `0x${string}`))
   }
