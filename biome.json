@@ -7,7 +7,7 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "maxSize": 5242880,
+    "maxSize": 15000000,
     "ignore": [
       "**/node_modules/**",
       "**/dist/**",
