@@ -628,6 +628,13 @@ async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
     }
     const tx = block.transactions[txIdx]
 
+    if (vm.DEBUG) {
+      const txHash = bytesToHex(tx.hash())
+      debug(
+        `Run tx ${txIdx + 1}/${block.transactions.length} hash=${txHash} gasLimit=${tx.gasLimit} type=${tx.type} (block gas used so far: ${gasUsed}/${block.header.gasLimit})`,
+      )
+    }
+
     const gasLimitIsHigherThanBlock = block.header.gasLimit < tx.gasLimit + gasUsed
     if (gasLimitIsHigherThanBlock) {
       const msg = _errorMsg('tx has a higher gas limit than the block', vm, block)
