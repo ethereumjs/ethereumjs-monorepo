@@ -10,6 +10,7 @@ import type {
 import type { AccessList, TypedTransaction } from '@ethereumjs/tx'
 import type {
   BigIntLike,
+  BlockLevelAccessList,
   CLRequest,
   CLRequestType,
   PrefixedHexString,
@@ -373,6 +374,11 @@ export interface RunBlockResult extends Omit<ApplyBlockResult, 'bloom'> {
    * Any CL requests that were processed in the course of this block
    */
   requests?: CLRequest<CLRequestType>[]
+  /**
+   * The block level access list created during execution
+   * (if EIP-7928 is active)
+   */
+  blockLevelAccessList?: BlockLevelAccessList
 }
 
 export interface AfterBlockEvent extends RunBlockResult {

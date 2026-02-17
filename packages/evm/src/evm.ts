@@ -1,4 +1,5 @@
 import { Hardfork } from '@ethereumjs/common'
+import type { BlockLevelAccessList } from '@ethereumjs/util'
 import {
   Account,
   Address,
@@ -10,6 +11,7 @@ import {
   MAX_INTEGER,
   bigIntToBytes,
   bytesToUnprefixedHex,
+  createBlockLevelAccessList,
   createZeroAddress,
   equalsBytes,
   generateAddress,
@@ -209,6 +211,8 @@ export class EVM implements EVMInterface {
   public readonly allowUnlimitedContractSize: boolean
   public readonly allowUnlimitedInitCodeSize: boolean
 
+  public readonly blockLevelAccessList?: BlockLevelAccessList
+
   protected readonly _customOpcodes?: CustomOpcode[]
   protected readonly _customPrecompiles?: CustomPrecompile[]
 
@@ -273,6 +277,10 @@ export class EVM implements EVMInterface {
           )
         }
       }
+    }
+
+    if (this.common.isActivatedEIP(7928)) {
+      this.blockLevelAccessList = opts.blockLevelAccessList ?? createBlockLevelAccessList()
     }
 
     this.events = new EventEmitter<EVMEvent>()
@@ -447,6 +455,17 @@ export class EVM implements EVMInterface {
       }
     }
 
+    // EIP-7928: Add codeAddress to BAL for DELEGATECALL/CALLCODE
+    // For these opcodes, `to` is the current contract but `codeAddress` is the target
+    // whose code is being executed. The target MUST be included in the BAL.
+    if (
+      this.common.isActivatedEIP(7928) &&
+      message.codeAddress !== undefined &&
+      message.codeAddress.toString() !== message.to.toString()
+    ) {
+      this.blockLevelAccessList!.addAddress(message.codeAddress.toString())
+    }
+
     // Load code
     await this._loadCode(message)
     let exit = false
@@ -601,6 +620,9 @@ export class EVM implements EVMInterface {
       if (this.DEBUG) {
         debug(`Returning on address collision`)
       }
+      if (this.common.isActivatedEIP(7928)) {
+        this.blockLevelAccessList!.addAddress(message.to.toString())
+      }
       return {
         createdAddress: message.to,
         execResult: {
@@ -629,7 +651,13 @@ export class EVM implements EVMInterface {
     if (this.common.gteHardfork(Hardfork.SpuriousDragon)) {
       toAccount.nonce += BIGINT_1
     }
-
+    if (this.common.isActivatedEIP(7928)) {
+      this.blockLevelAccessList!.addNonceChange(
+        message.to.toString(),
+        toAccount.nonce,
+        this.blockLevelAccessList!.blockAccessIndex,
+      )
+    }
     // Add tx value to the `to` account
     let errorMessage
     try {
@@ -828,6 +856,15 @@ export class EVM implements EVMInterface {
       }
 
       await this.stateManager.putCode(message.to, result.returnValue)
+
+      if (this.common.isActivatedEIP(7928)) {
+        this.blockLevelAccessList!.addCodeChange(
+          message.to.toString(),
+          result.returnValue,
+          this.blockLevelAccessList!.blockAccessIndex,
+        )
+      }
+
       if (this.DEBUG) {
         debug(`Code saved on new contract creation`)
       }
@@ -969,10 +1006,19 @@ export class EVM implements EVMInterface {
         if (!callerAccount) {
           callerAccount = new Account()
         }
+        const originalBalance = callerAccount.balance
         if (callerAccount.balance < value) {
           // if skipBalance and balance less than value, set caller balance to `value` to ensure sufficient funds
           callerAccount.balance = value
           await this.journal.putAccount(caller, callerAccount)
+          if (this.common.isActivatedEIP(7928)) {
+            this.blockLevelAccessList!.addBalanceChange(
+              caller.toString(),
+              callerAccount.balance,
+              this.blockLevelAccessList!.blockAccessIndex,
+              originalBalance,
+            )
+          }
         }
       }
 
@@ -1003,6 +1049,13 @@ export class EVM implements EVMInterface {
       }
       callerAccount.nonce++
       await this.journal.putAccount(message.caller, callerAccount)
+      if (this.common.isActivatedEIP(7928)) {
+        this.blockLevelAccessList!.addNonceChange(
+          message.caller.toString(),
+          callerAccount.nonce,
+          this.blockLevelAccessList!.blockAccessIndex,
+        )
+      }
       if (this.DEBUG) {
         debug(`Update fromAccount (caller) nonce (-> ${callerAccount.nonce}))`)
       }
@@ -1015,6 +1068,9 @@ export class EVM implements EVMInterface {
       this.journal.addWarmedAddress((await this._generateAddress(message)).bytes)
     }
 
+    if (this.common.isActivatedEIP(7928)) {
+      this.blockLevelAccessList?.checkpoint()
+    }
     await this.journal.checkpoint()
     if (this.common.isActivatedEIP(1153)) this.transientStorage.checkpoint()
     if (this.DEBUG) {
@@ -1071,12 +1127,18 @@ export class EVM implements EVMInterface {
       result.execResult.logs = []
       await this.journal.revert()
       if (this.common.isActivatedEIP(1153)) this.transientStorage.revert()
+      if (this.common.isActivatedEIP(7928)) {
+        this.blockLevelAccessList?.revert()
+      }
       if (this.DEBUG) {
         debug(`message checkpoint reverted`)
       }
     } else {
       await this.journal.commit()
       if (this.common.isActivatedEIP(1153)) this.transientStorage.commit()
+      if (this.common.isActivatedEIP(7928)) {
+        this.blockLevelAccessList?.commit()
+      }
       if (this.DEBUG) {
         debug(`message checkpoint committed`)
       }
@@ -1168,6 +1230,10 @@ export class EVM implements EVMInterface {
         ) {
           const address = new Address(message.code.slice(3, 24))
           message.code = await this.stateManager.getCode(address)
+          // EIP-7928: Track delegation target access in BAL
+          if (this.common.isActivatedEIP(7928)) {
+            this.blockLevelAccessList?.addAddress(address.toString())
+          }
           if (message.depth === 0) {
             this.journal.addAlwaysWarmAddress(address.toString())
           }
@@ -1195,9 +1261,20 @@ export class EVM implements EVMInterface {
   }
 
   protected async _reduceSenderBalance(account: Account, message: Message): Promise<void> {
+    const originalBalance = account.balance
     account.balance -= message.value
     if (account.balance < BIGINT_0) {
       throw new EVMError(EVMError.errorMessages.INSUFFICIENT_BALANCE)
+    }
+    // EIP-7928: Record the sender's reduced balance in BAL
+    // Per spec, CALL/CALLCODE senders must have their balance recorded
+    if (this.common.isActivatedEIP(7928)) {
+      this.blockLevelAccessList!.addBalanceChange(
+        message.caller.toString(),
+        account.balance,
+        this.blockLevelAccessList!.blockAccessIndex,
+        originalBalance,
+      )
     }
     const result = this.journal.putAccount(message.caller, account)
     if (this.DEBUG) {
@@ -1207,11 +1284,23 @@ export class EVM implements EVMInterface {
   }
 
   protected async _addToBalance(toAccount: Account, message: MessageWithTo): Promise<void> {
+    const originalBalance = toAccount.balance
     const newBalance = toAccount.balance + message.value
     if (newBalance > MAX_INTEGER) {
       throw new EVMError(EVMError.errorMessages.VALUE_OVERFLOW)
     }
     toAccount.balance = newBalance
+    if (this.common.isActivatedEIP(7928)) {
+      this.blockLevelAccessList!.addAddress(message.to.toString())
+      if (message.value !== BIGINT_0) {
+        this.blockLevelAccessList!.addBalanceChange(
+          message.to.toString(),
+          newBalance,
+          this.blockLevelAccessList!.blockAccessIndex,
+          originalBalance,
+        )
+      }
+    }
     // putAccount as the nonce may have changed for contract creation
     await this.journal.putAccount(message.to, toAccount)
     if (this.DEBUG) {

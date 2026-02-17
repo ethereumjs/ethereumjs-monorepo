@@ -119,3 +119,6 @@ __snapshots__
 
 # CSpell
 .cspellcache
+
+# For local storage
+tmp/
