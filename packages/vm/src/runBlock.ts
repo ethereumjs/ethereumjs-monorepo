@@ -84,7 +84,6 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
 
   const { root } = opts
   const clearCache = opts.clearCache ?? true
-  const setHardfork = opts.setHardfork ?? false
   let { block } = opts
   const generateFields = opts.generate === true
 
@@ -107,14 +106,12 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
    */
   await vm._emit('beforeBlock', block)
 
-  if (setHardfork !== false || vm['_setHardfork'] !== false) {
-    const setHardforkUsed = setHardfork ?? vm['_setHardfork']
-    if (setHardforkUsed === true) {
-      vm.common.setHardforkBy({
-        blockNumber: block.header.number,
-        timestamp: block.header.timestamp,
-      })
-    }
+  const setHardforkUsed = opts.setHardfork ?? vm['_setHardfork']
+  if (setHardforkUsed === true) {
+    vm.common.setHardforkBy({
+      blockNumber: block.header.number,
+      timestamp: block.header.timestamp,
+    })
   }
 
   if (vm.DEBUG) {
@@ -630,6 +627,12 @@ async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
       vm.evm.blockLevelAccessList!.blockAccessIndex = txIdx + 1
     }
     const tx = block.transactions[txIdx]
+
+    if (vm.DEBUG) {
+      debug(
+        `Run tx ${txIdx + 1}/${block.transactions.length} gasLimit=${tx.gasLimit} type=${tx.type} (block gas used so far: ${gasUsed}/${block.header.gasLimit})`,
+      )
+    }
 
     const gasLimitIsHigherThanBlock = block.header.gasLimit < tx.gasLimit + gasUsed
     if (gasLimitIsHigherThanBlock) {
