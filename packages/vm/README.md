@@ -27,13 +27,31 @@ to build and run blocks and txs and update state.
 
 - [Installation](#installation)
 - [Usage](#usage)
+  - [Running a Transaction](#running-a-transaction)
+  - [Running an RPC Mainnet Block](#running-an-rpc-mainnet-block)
+  - [Building a Block](#building-a-block)
+  - [WASM Crypto Support](#wasm-crypto-support)
 - [Examples](#examples)
 - [Browser](#browser)
 - [API](#api)
+  - [Docs](#docs)
+  - [Hybrid CJS/ESM Builds](#hybrid-cjsesm-builds)
 - [Architecture](#architecture)
+  - [VM/EVM Relation](#vmevm-relation)
+  - [State and Blockchain Information](#state-and-blockchain-information)
 - [Setup](#setup)
+  - [Chains](#chains)
+  - [Hardforks](#hardforks)
+  - [Custom Genesis State](#custom-genesis-state)
 - [Supported EIPs](#supported-eips)
+  - [EIP-4844 Shard Blob Transactions Support (Cancun)](#eip-4844-shard-blob-transactions-support-cancun)
+  - [EIP-7702 EAO Code Transactions Support (Prague)](#eip-7702-eao-code-transactions-support-prague)
+  - [EIP-7685 Requests Support (Prague)](#eip-7685-requests-support-prague)
+  - [EIP-2935 Serve Historical Block Hashes from State (Prague)](#eip-2935-serve-historical-block-hashes-from-state-prague)
 - [Events](#events)
+  - [Tracing Events](#tracing-events)
+  - [Asynchronous event handlers](#asynchronous-event-handlers)
+  - [Synchronous event handlers](#synchronous-event-handlers)
 - [Understanding the VM](#understanding-the-vm)
 - [Internal Structure](#internal-structure)
 - [Development](#development)
@@ -83,6 +101,104 @@ void main()
 ```
 
 Additionally to the `VM.runTx()` method there is an API method `VM.runBlock()` which allows to run the whole block and execute all included transactions along.
+
+### Running an RPC Mainnet Block
+
+It is possible to fetch a real mainnet block via JSON-RPC and execute it locally using the VM together with the `RPCStateManager` from the `@ethereumjs/statemanager` package, which fetches account and storage data on demand from a remote provider.
+
+> **Note:** Running recent mainnet blocks will generate **thousands of RPC requests** (one for each account/storage access during EVM execution). Make sure your RPC provider can handle the load and be mindful of rate limits and quotas.
+
+```ts
+// ./examples/runBlockWithRPC.ts
+
+import { createBlockFromJSONRPCProvider } from '@ethereumjs/block'
+import { Common, Mainnet } from '@ethereumjs/common'
+import { RPCStateManager } from '@ethereumjs/statemanager'
+import { bytesToHex } from '@ethereumjs/util'
+import { createVM, runBlock } from '@ethereumjs/vm'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
+
+const main = async () => {
+  const providerUrl = process.argv[2]
+  const blockNumber = process.argv[3] !== undefined ? BigInt(process.argv[3]) : undefined
+
+  if (providerUrl === undefined || blockNumber === undefined) {
+    console.log('Example skipped (real-world RPC scenario)')
+    console.log('Usage: npx tsx runBlockWithRPC.ts <providerUrl> <blockNumber>')
+    return
+  }
+
+  const kzg = new microEthKZG(trustedSetup)
+  const common = new Common({ chain: Mainnet, customCrypto: { kzg } })
+
+  // 1. Fetch block from RPC
+  console.log(`Fetching block ${blockNumber} from ${providerUrl}...`)
+  const block = await createBlockFromJSONRPCProvider(providerUrl, blockNumber, {
+    common,
+    setHardfork: true,
+  })
+
+  console.log(`Block ${block.header.number} fetched successfully`)
+  console.log(`  Hash:         ${bytesToHex(block.hash())}`)
+  console.log(`  Parent hash:  ${bytesToHex(block.header.parentHash)}`)
+  console.log(`  State root:   ${bytesToHex(block.header.stateRoot)}`)
+  console.log(`  Transactions: ${block.transactions.length}`)
+  console.log(`  Gas used:     ${block.header.gasUsed}`)
+  console.log(`  Hardfork:     ${block.common.hardfork()}`)
+
+  // 2. Set up RPC state manager pointing to the parent block (pre-state)
+  const stateManager = new RPCStateManager({
+    provider: providerUrl,
+    blockTag: blockNumber - 1n,
+    common,
+  })
+
+  // 3. Create VM with the RPC state manager
+  const vm = await createVM({ common, stateManager, setHardfork: true })
+
+  // 4. Run the block
+  console.log(`\nRunning block ${blockNumber} (${block.transactions.length} txs)...`)
+  const startTime = performance.now()
+
+  const result = await runBlock(vm, {
+    block,
+    generate: true,
+    skipHeaderValidation: true,
+    skipBlockValidation: true,
+  })
+
+  const elapsed = ((performance.now() - startTime) / 1000).toFixed(1)
+
+  // 5. Display results
+  console.log(`\nBlock execution completed in ${elapsed}s`)
+  console.log(`  Tx results:     ${result.results.length}`)
+  console.log(`  Receipts root:  ${bytesToHex(result.receiptsRoot)}`)
+
+  console.log(`\n  Gas used:       ${result.gasUsed} (expected: ${block.header.gasUsed})`)
+  if (result.gasUsed === block.header.gasUsed) {
+    console.log(`  Gas used MATCHES expected block header value`)
+  } else {
+    console.log(`  Gas used MISMATCH`)
+  }
+
+  // Note: State root comparison is informational only.
+  // RPCStateManager cannot produce valid Merkle state roots since it
+  // doesn't maintain a local trie -- it fetches state on demand via RPC.
+  console.log(`\n  Computed state root: ${bytesToHex(result.stateRoot)}`)
+  console.log(`  Expected state root: ${bytesToHex(block.header.stateRoot)}`)
+  console.log(`  (State root comparison is not meaningful with RPCStateManager,`)
+  console.log(`   which does not maintain a local Merkle trie)`)
+}
+
+void main()
+```
+
+Run with:
+
+```sh
+npx tsx examples/runBlockWithRPC.ts <providerUrl> <blockNumber>
+```
 
 ### Building a Block
 
