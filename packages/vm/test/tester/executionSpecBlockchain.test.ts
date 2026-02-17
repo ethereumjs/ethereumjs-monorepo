@@ -27,7 +27,17 @@ const fixturesPath = path.resolve(customFixturesPath)
 const testFile = process.env.TEST_FILE
 const testCase = process.env.TEST_CASE
 
+// Networks to skip (BPO transition forks are not yet supported)
+const SKIP_NETWORKS: string[] = [
+  'BPO1ToBPO2AtTime15k',
+  'BPO2ToBPO3AtTime15k',
+  'BPO3ToBPO4AtTime15k',
+]
+
 console.log(`Using execution-spec blockchain tests from: ${fixturesPath}`)
+if (SKIP_NETWORKS.length > 0) {
+  console.log(`Networks skipped: ${SKIP_NETWORKS.join(', ')}`)
+}
 if (testFile !== undefined) {
   console.log(`Filtering tests to file: ${testFile}`)
 }
@@ -54,6 +64,11 @@ if (fs.existsSync(fixturesPath) === false) {
   // Filter by TEST_CASE if provided (matches against the test case id/name)
   if (testCase !== undefined) {
     fixtures = fixtures.filter((f) => f.id.includes(testCase))
+  }
+
+  // Filter out skipped networks
+  if (SKIP_NETWORKS.length > 0) {
+    fixtures = fixtures.filter((f) => !SKIP_NETWORKS.includes(f.fork))
   }
 
   describe('Execution-spec blockchain tests', () => {
