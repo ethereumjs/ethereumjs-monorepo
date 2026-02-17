@@ -11,12 +11,16 @@ import {
   bytesToBigInt,
   bytesToHex,
   equalsBytes,
-  hexToBytes,
   setLengthLeft,
   setLengthRight,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 
+import {
+  EIP7708_SELFDESTRUCT_TOPIC,
+  EIP7708_SYSTEM_ADDRESS,
+  EIP7708_TRANSFER_TOPIC,
+} from './eip7708.ts'
 import { FORMAT, MAGIC, VERSION } from './eof/constants.ts'
 import { EOFContainerMode, validateEOF } from './eof/container.ts'
 import { setupEOF } from './eof/setup.ts'
@@ -49,30 +53,10 @@ import type {
 
 const debugGas = debugDefault('evm:gas')
 
-/**
- * EIP-7708: System address that emits ETH transfer logs
- * 0xfffffffffffffffffffffffffffffffffffffffe
- */
-const EIP7708_SYSTEM_ADDRESS = hexToBytes('0xfffffffffffffffffffffffffffffffffffffffe')
-
-/**
- * EIP-7708: keccak256('Transfer(address,address,uint256)')
- * This matches the ERC-20 Transfer event signature
- */
-const EIP7708_TRANSFER_TOPIC = hexToBytes(
-  '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
-)
-
-/**
- * EIP-7708: keccak256('Selfdestruct(address,uint256)')
- * Emitted when a contract selfdestructs and burns remaining balance
- */
-const EIP7708_SELFDESTRUCT_TOPIC = hexToBytes(
-  '0x4bfaba3443c1a1836cd362418edc679fc96cae8449cbefccb6457cdf2c943083',
-)
-
 export interface InterpreterOpts {
   pc?: number
+  /** Logs to prepend to the result (e.g. EIP-7708 ETH transfer log from message-level value transfer) */
+  initialLogs?: Log[]
 }
 
 /**
@@ -112,6 +96,8 @@ export interface Env {
   createdAddresses?: Set<string>
   accessWitness?: BinaryTreeAccessWitnessInterface
   chargeCodeAccesses?: boolean
+  /** Logs to prepend (e.g. EIP-7708 ETH transfer log from message-level value transfer) */
+  initialLogs?: Log[]
 }
 
 export interface RunState {
@@ -233,7 +219,7 @@ export class Interpreter {
     this.journal = journal
     this._env = env
     this._result = {
-      logs: [],
+      logs: env.initialLogs ? [...env.initialLogs] : [],
       returnValue: undefined,
       selfdestruct: new Set(),
     }

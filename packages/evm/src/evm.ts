@@ -12,7 +12,6 @@ import {
   bigIntToBytes,
   bytesToUnprefixedHex,
   createBlockLevelAccessList,
-  createEIP7708TransferLog,
   createZeroAddress,
   equalsBytes,
   generateAddress,
@@ -22,6 +21,7 @@ import {
 import debugDefault from 'debug'
 import { EventEmitter } from 'eventemitter3'
 
+import { createEIP7708TransferLog } from './eip7708.ts'
 import { FORMAT } from './eof/constants.ts'
 import { isEOF } from './eof/util.ts'
 import { EVMError } from './errors.ts'
@@ -548,11 +548,14 @@ export class EVM implements EVMInterface {
       if (this.DEBUG) {
         debug(`Start bytecode processing...`)
       }
-      result = await this.runInterpreter({
-        ...{ codeAddress: message.codeAddress },
-        ...message,
-        gasLimit,
-      } as Message)
+      result = await this.runInterpreter(
+        {
+          ...{ codeAddress: message.codeAddress },
+          ...message,
+          gasLimit,
+        } as Message,
+        { initialLogs: eip7708Log ? [eip7708Log] : undefined },
+      )
     }
 
     if (message.depth === 0) {
@@ -560,11 +563,6 @@ export class EVM implements EVMInterface {
     }
 
     result.executionGasUsed += message.gasLimit - gasLimit
-
-    // EIP-7708: Prepend the ETH transfer log to the result logs
-    if (eip7708Log) {
-      result.logs = [eip7708Log, ...(result.logs ?? [])]
-    }
 
     return {
       execResult: result,
@@ -772,7 +770,9 @@ export class EVM implements EVMInterface {
     }
 
     // run the message with the updated gas limit and add accessed gas used to the result
-    let result = await this.runInterpreter({ ...message, gasLimit, isCreate: true } as Message)
+    let result = await this.runInterpreter({ ...message, gasLimit, isCreate: true } as Message, {
+      initialLogs: eip7708CreateLog ? [eip7708CreateLog] : undefined,
+    })
     result.executionGasUsed += message.gasLimit - gasLimit
 
     // fee for size of the return value
@@ -935,11 +935,6 @@ export class EVM implements EVMInterface {
       this.postMessageCleanup()
     }
 
-    // EIP-7708: Prepend the ETH transfer log to the result logs
-    if (eip7708CreateLog) {
-      result.logs = [eip7708CreateLog, ...(result.logs ?? [])]
-    }
-
     return {
       createdAddress: message.to,
       execResult: result,
@@ -977,6 +972,7 @@ export class EVM implements EVMInterface {
       blobVersionedHashes: message.blobVersionedHashes ?? [],
       accessWitness: message.accessWitness,
       createdAddresses: message.createdAddresses,
+      initialLogs: opts.initialLogs,
     }
 
     const interpreter = new Interpreter(

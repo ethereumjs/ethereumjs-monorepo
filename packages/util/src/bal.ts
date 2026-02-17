@@ -8,6 +8,7 @@ import {
   hexToBigInt,
   hexToBytes,
 } from './bytes.ts'
+import { SYSTEM_ADDRESS } from './constants.ts'
 import { padToEven } from './internal.ts'
 import type { PrefixedHexString } from './types.ts'
 
@@ -641,5 +642,5 @@ function normalizeStorageKeyHex(hex: PrefixedHexString): BALStorageKeyHex {
   return `0x${padToEven(stripped)}` as BALStorageKeyHex
 }
 
-// Address to ignore
-const systemAddress = '0xfffffffffffffffffffffffffffffffffffffffe'
+// Address to ignore (canonical system address used by EIP-2935, EIP-7002, EIP-7251, EIP-7708, etc.)
+const systemAddress = SYSTEM_ADDRESS

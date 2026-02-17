@@ -63,11 +63,6 @@ export * from './types.ts'
 export * from './bal.ts'
 
 /**
- * EIP-7708 ETH transfer log utilities
- */
-export * from './ethTransferLog.ts'
-
-/**
  * Export ethjs-util methods
  */
 export * from './authorization.ts'
