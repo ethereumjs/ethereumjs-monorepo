@@ -8,7 +8,12 @@ import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 
 const main = async () => {
   const providerUrl = process.argv[2]
-  const blockNumber = process.argv[3] !== undefined ? BigInt(process.argv[3]) : undefined
+  let blockNumber: bigint | undefined
+  try {
+    blockNumber = process.argv[3] !== undefined ? BigInt(process.argv[3]) : undefined
+  } catch {
+    // argument is not a valid block number
+  }
 
   if (providerUrl === undefined || blockNumber === undefined) {
     console.log('Example skipped (real-world RPC scenario)')
