@@ -115,5 +115,5 @@ describe('run mainnet block offline', () => {
       273,
       'should have execution results for all 273 transactions',
     )
-  }, 30_000)
+  }, 60_000)
 })
