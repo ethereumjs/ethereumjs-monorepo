@@ -15,6 +15,8 @@ import * as path from 'node:path'
  * Known issues:
  *   Block 24476002: VM gas mismatch (17945809 vs expected 18980393).
  *   Block 24476006: VM gas mismatch (59807084 vs expected 59826984).
+ *   Block 24476007: VM gas mismatch (1986185 vs expected 3544160).
+ *   Block 24476008: VM gas mismatch (44711077 vs expected 44733384).
  *     Data files are saved for debugging but the offline replay will fail.
  *     These mismatches also reproduce with the plain RPC script (runBlockWithRPC.ts),
  *     so this is a VM execution bug, not a data collection issue.
