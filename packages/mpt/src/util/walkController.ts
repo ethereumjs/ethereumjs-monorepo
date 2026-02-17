@@ -3,121 +3,150 @@ import { EthereumJSErrorWithoutCode, PrioritizedTaskExecutor } from '@ethereumjs
 import { BranchMPTNode, ExtensionMPTNode, LeafMPTNode } from '../node/index.ts'
 
 import type { MerklePatriciaTrie } from '../mpt.ts'
-import type { FoundNodeFunction, MPTNode, Nibbles } from '../types.ts'
+import type { FoundNodeFunction, MPTNode, Nibbles, NodeReferenceOrRawMPTNode } from '../types.ts'
 
 /**
- * WalkController is an interface to control how the trie is being traversed.
+ * Interface to control how the trie is being traversed. Schedules node visits via a
+ * prioritized task queue and invokes the provided callback for each node.
+ *
+ * Used by {@link MerklePatriciaTrie.findPath}, {@link MerklePatriciaTrie.walkTrie}, etc.
  */
 export class WalkController {
+  /** The {@link FoundNodeFunction} to call when a node is found. */
   readonly onNode: FoundNodeFunction
+
+  /** Task executor that prioritizes node visits (shorter paths first). */
   readonly taskExecutor: PrioritizedTaskExecutor
+
+  /** The trie being walked. */
   readonly trie: MerklePatriciaTrie
-  private resolve: Function
-  private reject: Function
+
+  private _resolvePromise: () => void
+  private _rejectPromise: (error: unknown) => void
 
   /**
-   * Creates a new WalkController
-   * @param onNode - The `FoundNodeFunction` to call if a node is found.
-   * @param trie - The `Trie` to walk on.
+   * @param onNode - The {@link FoundNodeFunction} to call when a node is found.
+   * @param trie - The trie to walk on.
    * @param poolSize - The size of the task queue.
    */
   private constructor(onNode: FoundNodeFunction, trie: MerklePatriciaTrie, poolSize: number) {
     this.onNode = onNode
     this.taskExecutor = new PrioritizedTaskExecutor(poolSize)
     this.trie = trie
-    this.resolve = () => {}
-    this.reject = () => {}
+    this._resolvePromise = () => {}
+    this._rejectPromise = () => {}
   }
 
   /**
-   * Async function to create and start a new walk over a trie.
-   * @param onNode - The `FoundNodeFunction to call if a node is found.
+   * Creates and starts an async walk over a trie from the given root.
+   * Resolves when all reachable nodes have been visited and no new tasks were scheduled.
+   *
+   * @param onNode - The {@link FoundNodeFunction} to call when a node is found.
    * @param trie - The trie to walk on.
-   * @param root - The root key to walk on.
+   * @param rootHash - The root hash (32-byte keccak) to start walking from.
    * @param poolSize - Task execution pool size to prevent OOM errors. Defaults to 500.
+   * @returns A Promise that resolves when the walk is finished.
    */
   static async newWalk(
     onNode: FoundNodeFunction,
     trie: MerklePatriciaTrie,
-    root: Uint8Array,
+    rootHash: Uint8Array,
     poolSize?: number,
   ): Promise<void> {
-    const strategy = new WalkController(onNode, trie, poolSize ?? 500)
-    await strategy.startWalk(root)
+    const controller = new WalkController(onNode, trie, poolSize ?? 500)
+    await controller._startWalk(rootHash)
   }
 
-  private async startWalk(root: Uint8Array): Promise<void> {
-    // eslint-disable-next-line no-async-promise-executor
-    return new Promise(async (resolve, reject) => {
-      this.resolve = resolve
-      this.reject = reject
-      let node
-      try {
-        node = await this.trie.lookupNode(root)
-      } catch (error: any) {
-        return this.reject(error)
-      }
-      this.processNode(root, node, [])
+  private async _startWalk(rootHash: Uint8Array): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this._resolvePromise = resolve
+      this._rejectPromise = reject
+      this.trie
+        .lookupNode(rootHash)
+        .then((rootNode) => {
+          this._processNode(rootHash, rootNode, [])
+        })
+        .catch((error: unknown) => {
+          this._rejectPromise(error)
+        })
     })
   }
 
   /**
-   * Run all children of a node. Priority of these nodes are the key length of the children.
+   * Runs all children of a node. Priority of these nodes is the key length of the children.
+   * Used when walking an Extension or when exploring all branches of a Branch node.
+   *
    * @param node - Node to get all children of and call onNode on.
-   * @param key - The current `key` which would yield the `node` when trying to get this node with a `get` operation.
+   * @param currentKeyNibbles - The current key (nibbles) which would yield the `node` when
+   *        trying to get this node with a `get` operation. Defaults to `[]`.
+   * @returns `void`
    */
-  allChildren(node: MPTNode, key: Nibbles = []) {
+  allChildren(node: MPTNode, currentKeyNibbles: Nibbles = []): void {
     if (node instanceof LeafMPTNode) {
       return
     }
-    let children
+    let childEntries: [Nibbles, NodeReferenceOrRawMPTNode][]
     if (node instanceof ExtensionMPTNode) {
-      children = [[node.key(), node.value()]]
+      childEntries = [[node.key(), node.value()]]
     } else if (node instanceof BranchMPTNode) {
-      children = node.getChildren().map((b) => [[b[0]], b[1]])
-    }
-    if (!children) {
+      childEntries = node
+        .getChildren()
+        .map(([branchIndex, branchRef]) => [[branchIndex], branchRef])
+    } else {
       return
     }
-    for (const child of children) {
-      const keyExtension = child[0] as Nibbles
-      const childRef = child[1] as Uint8Array
-      const childKey = key.concat(keyExtension)
-      const priority = childKey.length
-      this.pushNodeToQueue(childRef, childKey, priority)
+    for (const [keyExtension, childRef] of childEntries) {
+      const childKeyNibbles = currentKeyNibbles.concat(keyExtension)
+      const taskPriority = childKeyNibbles.length
+      this.pushNodeToQueue(childRef, childKeyNibbles, taskPriority)
     }
   }
 
   /**
-   * Push a node to the queue. If the queue has places left for tasks, the node is executed immediately, otherwise it is queued.
-   * @param nodeRef - Push a node reference to the event queue. This reference is a 32-byte keccak hash of the value corresponding to the `key`.
-   * @param key - The current key.
-   * @param priority - Optional priority, defaults to key length
+   * Pushes a node to the queue. If the queue has capacity, the node is executed immediately,
+   * otherwise it is queued for later execution.
+   *
+   * @param nodeRef - A node reference (32-byte keccak hash or raw encoding) to enqueue.
+   * @param currentKeyNibbles - The current key (nibbles) corresponding to this node. Defaults to `[]`.
+   * @param priority - Optional priority. Defaults to key length.
+   * @returns `void`
    */
-  pushNodeToQueue(nodeRef: Uint8Array, key: Nibbles = [], priority?: number) {
-    this.taskExecutor.executeOrQueue(
-      priority ?? key.length,
-      async (taskFinishedCallback: Function) => {
-        let childNode
-        try {
-          childNode = await this.trie.lookupNode(nodeRef)
-        } catch (error: any) {
-          return this.reject(error)
-        }
-        taskFinishedCallback() // this marks the current task as finished. If there are any tasks left in the queue, this will immediately execute the first task.
-        this.processNode(nodeRef as Uint8Array, childNode as MPTNode, key)
-      },
-    )
+  pushNodeToQueue(
+    nodeRef: NodeReferenceOrRawMPTNode,
+    currentKeyNibbles: Nibbles = [],
+    priority?: number,
+  ): void {
+    const taskPriority = priority ?? currentKeyNibbles.length
+    this.taskExecutor.executeOrQueue(taskPriority, (taskFinishedCallback: () => void) => {
+      this.trie
+        .lookupNode(nodeRef)
+        .then((decodedNode) => {
+          taskFinishedCallback()
+          this._processNode(nodeRef, decodedNode, currentKeyNibbles)
+        })
+        .catch((error: unknown) => {
+          this._rejectPromise(error)
+        })
+    })
   }
 
   /**
-   * Push a branch of a certain BranchMPTNode to the event queue.
-   * @param node - The node to select a branch on. Should be a BranchMPTNode.
-   * @param key - The current key which leads to the corresponding node.
-   * @param childIndex - The child index to add to the event queue.
-   * @param priority - Optional priority of the event, defaults to the total key length.
+   * Pushes a branch of a certain BranchMPTNode to the event queue.
+   * Used by findPath when following a specific key (only one child index is traversed).
+   *
+   * @param node - The BranchMPTNode to select a branch on.
+   * @param currentKeyNibbles - The current key which leads to the corresponding node. Defaults to `[]`.
+   * @param childIndex - The child index (0–15) to add to the event queue.
+   * @param priority - Optional priority of the event. Defaults to the total key length.
+   * @returns `void`
+   * @throws If `node` is not a BranchMPTNode or if the branch at `childIndex` is empty.
    */
-  onlyBranchIndex(node: BranchMPTNode, key: Nibbles = [], childIndex: number, priority?: number) {
+  onlyBranchIndex(
+    node: BranchMPTNode,
+    currentKeyNibbles: Nibbles = [],
+    childIndex: number,
+    priority?: number,
+  ): void {
     if (!(node instanceof BranchMPTNode)) {
       throw EthereumJSErrorWithoutCode('Expected branch node')
     }
@@ -125,17 +154,19 @@ export class WalkController {
     if (!childRef) {
       throw EthereumJSErrorWithoutCode('Could not get branch of childIndex')
     }
-    const childKey = key.slice() // This copies the key to a new array.
-    childKey.push(childIndex)
-    const prio = priority ?? childKey.length
-    this.pushNodeToQueue(childRef as Uint8Array, childKey, prio)
+    const childKeyNibbles = currentKeyNibbles.concat(childIndex)
+    const taskPriority = priority ?? childKeyNibbles.length
+    this.pushNodeToQueue(childRef, childKeyNibbles, taskPriority)
   }
 
-  private processNode(nodeRef: Uint8Array, node: MPTNode | null, key: Nibbles = []) {
-    this.onNode(nodeRef, node, key, this)
+  private _processNode(
+    nodeRef: NodeReferenceOrRawMPTNode,
+    node: MPTNode | null,
+    currentKeyNibbles: Nibbles,
+  ): void {
+    this.onNode(nodeRef, node, currentKeyNibbles, this)
     if (this.taskExecutor.finished()) {
-      // onNode should schedule new tasks. If no tasks was added and the queue is empty, then we have finished our walk.
-      this.resolve()
+      this._resolvePromise()
     }
   }
 }

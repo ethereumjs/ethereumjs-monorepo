@@ -36,7 +36,7 @@ export interface Path {
 }
 
 export type FoundNodeFunction = (
-  nodeRef: Uint8Array,
+  nodeRef: NodeReferenceOrRawMPTNode,
   node: MPTNode | null,
   key: Nibbles,
   walkController: WalkController,

@@ -98,75 +98,6 @@ const produceBlockWithTx = async (
   await execution.run()
 }
 
-/**
- * This method builds a block on top of the current head block and will insert 4844 txs
- * @param execution
- * @param chain
- * @param blobsCount Array of blob txs to produce. The amount of blobs in here is thus the amount of blobs per tx.
- */
-/*const produceBlockWith4844Tx = async (
-  execution: VMExecution,
-  chain: Chain,
-  blobsCount: number[],
-) => {
-  // 4844 sample blob
-  const sampleBlob = getBlobs('hello world')
-  const commitment = blobsToCommitments(kzg, sampleBlob)
-  const blobVersionedHash = commitmentsToVersionedHashes(commitment)
-
-  const { vm } = execution
-  const account = await vm.stateManager.getAccount(p4844Address)
-  let nonce = account?.nonce ?? BIGINT_0
-  const parentBlock = await chain.getCanonicalHeadBlock()
-  const vmCopy = await vm.shallowCopy()
-  // Set block's gas used to max
-  const blockBuilder = await buildBlock(vmCopy, {
-    parentBlock,
-    headerData: {
-      timestamp: parentBlock.header.timestamp + BigInt(1),
-    },
-    blockOpts: {
-      calcDifficultyFromHeader: parentBlock.header,
-      putBlockIntoBlockchain: false,
-    },
-  })
-  for (let i = 0; i < blobsCount.length; i++) {
-    const blobVersionedHashes = [] as PrefixedHexString[]
-    const blobs = [] as PrefixedHexString[]
-    const kzgCommitments = [] as PrefixedHexString[]
-    const to = createZeroAddress()
-    if (blobsCount[i] > 0) {
-      for (let blob = 0; blob < blobsCount[i]; blob++) {
-        blobVersionedHashes.push(...blobVersionedHash)
-        blobs.push(...sampleBlob)
-        kzgCommitments.push(...commitment)
-      }
-    }
-    await blockBuilder.addTransaction(
-      createTx(
-        {
-          type: 3,
-          gasLimit: 21000,
-          maxFeePerGas: 0xffffffff,
-          maxPriorityFeePerGas: BIGINT_256,
-          nonce,
-          to,
-          blobVersionedHashes,
-          blobs,
-          kzgCommitments,
-          maxFeePerBlobGas: BigInt(1000),
-        },
-        { common: vmCopy.common },
-      ).sign(privateKey4844),
-    )
-    nonce++
-  }
-
-  const { block } = await blockBuilder.build()
-  await chain.putBlocks([block], true)
-  await execution.run()
-}*/
-
 describe(method, () => {
   it(`${method}: should return 12.5% increased baseFee if parent block is full`, async () => {
     const { chain, server, execution } = await setupChain(
@@ -430,12 +361,12 @@ describe(method, () => {
       // Start cranking up the initial blob gas for some more "realistic" testing
 
       for (let i = 0; i < 10; i++) {
-        await produceBlockWith4844Tx(execution, chain, [6])
+        await produceBlockWith4844Tx(execution, chain, [6], p4844Address, privateKey4844)
       }
 
       // Now for the actual test: create 6 blocks each with a decreasing amount of blobs
       for (let i = 6; i > 0; i--) {
-        await produceBlockWith4844Tx(execution, chain, [i])
+        await produceBlockWith4844Tx(execution, chain, [i], p4844Address, privateKey4844)
       }
 
       const rpc = getRPCClient(server)
