@@ -108,7 +108,10 @@ describe('fetchFromProvider', () => {
       )
       assert.fail('should throw')
     } catch (err: any) {
-      assert.isTrue(err.name === 'TimeoutError', 'throws a TimeoutError')
+      assert.isTrue(
+        err.name === 'TimeoutError' || err.name === 'AbortError',
+        'throws a TimeoutError or AbortError',
+      )
     }
     vi.unstubAllGlobals()
   })

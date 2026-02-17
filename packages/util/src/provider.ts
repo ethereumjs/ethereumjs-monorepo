@@ -42,13 +42,25 @@ export const fetchFromProvider = async (
     id: 1,
   })
 
+  let signal: AbortSignal
+  let timer: ReturnType<typeof setTimeout> | undefined
+  if (typeof AbortSignal.timeout === 'function') {
+    signal = AbortSignal.timeout(timeout)
+  } else {
+    const controller = new AbortController()
+    signal = controller.signal
+    timer = setTimeout(() => controller.abort(), timeout)
+  }
+
   const res = await fetch(url, {
     headers: {
       'content-type': 'application/json',
     },
     method: 'POST',
     body: data,
-    signal: AbortSignal.timeout(timeout),
+    signal,
+  }).finally(() => {
+    if (timer !== undefined) clearTimeout(timer)
   })
   if (!res.ok) {
     throw EthereumJSErrorWithoutCode(
