@@ -41,6 +41,7 @@ import {
   getDataSlice,
   jumpIsValid,
   mod,
+  readImmediateByte,
   toTwos,
   trap,
   writeCallOutput,
@@ -58,15 +59,6 @@ export interface AsyncOpHandler {
 }
 
 export type OpHandler = SyncOpHandler | AsyncOpHandler
-
-function readImmediateByte(runState: RunState): number {
-  const immediate = runState.code[runState.programCounter]
-  if (immediate === undefined) {
-    trap(EVMError.errorMessages.INVALID_OPCODE)
-  }
-  runState.programCounter++
-  return immediate
-}
 
 // the opcode functions
 export const handlers: Map<number, OpHandler> = new Map([
