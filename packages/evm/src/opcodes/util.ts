@@ -92,6 +92,15 @@ export function trap(err: string) {
   throw new EVMError(err as EVMErrorType)
 }
 
+export function readImmediateByte(runState: RunState): number {
+  const immediate = runState.code[runState.programCounter]
+  if (immediate === undefined) {
+    trap(EVMError.errorMessages.INVALID_OPCODE)
+  }
+  runState.programCounter++
+  return immediate
+}
+
 /**
  * Error message helper - generates location string
  */
