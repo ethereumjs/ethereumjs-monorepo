@@ -365,8 +365,12 @@ export class BlockBuilder {
     let requestsHash
     if (this.vm.common.isActivatedEIP(7685)) {
       const sha256Function = this.vm.common.customCrypto.sha256 ?? sha256
-      requests = await accumulateRequests(this.vm, this.transactionResults)
-      requestsHash = genRequestsRoot(requests, sha256Function)
+      try {
+        requests = await accumulateRequests(this.vm, this.transactionResults)
+        requestsHash = genRequestsRoot(requests, sha256Function)
+      } catch {
+        // NOOP (requestsHash remains undefined)
+      }
     }
 
     // get stateRoot after all the accumulateRequests etc have been done
