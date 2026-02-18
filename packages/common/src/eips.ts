@@ -68,6 +68,15 @@ export const eipsDict: EIPsDict = {
     requiredEIPs: [3540, 5450],
   },
   /**
+   * Description : DUPN, SWAPN and EXCHANGE instructions
+   * URL         : https://eips.ethereum.org/EIPS/eip-8024
+   * Status      : Draft
+   */
+  8024: {
+    minimumHardfork: Hardfork.Chainstart,
+    requiredEIPs: [],
+  },
+  /**
    * Description : Transient storage opcodes
    * URL         : https://eips.ethereum.org/EIPS/eip-1153
    * Status      : Final
