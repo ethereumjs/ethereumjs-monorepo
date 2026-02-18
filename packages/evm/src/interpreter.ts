@@ -619,6 +619,25 @@ export class Interpreter {
           // Define a JUMPDEST as a 1 in the valid jumps array
           jumps[i] = 1
         }
+      } else if (
+        this.common.isActivatedEIP(8024) &&
+        (opcode === 0xe6 || opcode === 0xe7 || opcode === 0xe8)
+      ) {
+        const immediate = code[i + 1]
+        if (immediate === undefined) {
+          continue
+        }
+        let skipImmediate = false
+        if (opcode === 0xe6 || opcode === 0xe7) {
+          skipImmediate = immediate <= 0x7f
+        } else {
+          const x = (immediate >> 4) + 1
+          const y = (immediate & 0x0f) + 1
+          skipImmediate = x + y <= 17
+        }
+        if (skipImmediate) {
+          i++
+        }
       }
     }
     return { jumps, pushes, opcodesCached }
