@@ -59,6 +59,15 @@ export interface AsyncOpHandler {
 
 export type OpHandler = SyncOpHandler | AsyncOpHandler
 
+function readImmediateByte(runState: RunState): number {
+  const immediate = runState.code[runState.programCounter]
+  if (immediate === undefined) {
+    trap(EVMError.errorMessages.INVALID_OPCODE)
+  }
+  runState.programCounter++
+  return immediate
+}
+
 // the opcode functions
 export const handlers: Map<number, OpHandler> = new Map([
   // 0x00: STOP
@@ -1232,54 +1241,50 @@ export const handlers: Map<number, OpHandler> = new Map([
   // 0xe6: DUPN
   [
     0xe6,
-    function (runState) {
-      if (runState.env.eof === undefined) {
+    function (runState, common) {
+      if (runState.env.eof === undefined && !common.isActivatedEIP(8024)) {
         // Opcode not available in legacy contracts
         trap(EVMError.errorMessages.INVALID_OPCODE)
       }
-      const toDup =
-        Number(
-          bytesToBigInt(
-            runState.code.subarray(runState.programCounter, runState.programCounter + 1),
-          ),
-        ) + 1
+      const immediate = readImmediateByte(runState)
+      if (common.isActivatedEIP(8024) && immediate > 0x7f) {
+        trap(EVMError.errorMessages.INVALID_OPCODE)
+      }
+      const toDup = immediate + 1
       runState.stack.dup(toDup)
-      runState.programCounter++
     },
   ],
   // 0xe7: SWAPN
   [
     0xe7,
-    function (runState) {
-      if (runState.env.eof === undefined) {
+    function (runState, common) {
+      if (runState.env.eof === undefined && !common.isActivatedEIP(8024)) {
         // Opcode not available in legacy contracts
         trap(EVMError.errorMessages.INVALID_OPCODE)
       }
-      const toSwap =
-        Number(
-          bytesToBigInt(
-            runState.code.subarray(runState.programCounter, runState.programCounter + 1),
-          ),
-        ) + 1
+      const immediate = readImmediateByte(runState)
+      if (common.isActivatedEIP(8024) && immediate > 0x7f) {
+        trap(EVMError.errorMessages.INVALID_OPCODE)
+      }
+      const toSwap = immediate + 1
       runState.stack.swap(toSwap)
-      runState.programCounter++
     },
   ],
   // 0xe8: EXCHANGE
   [
     0xe8,
-    function (runState) {
-      if (runState.env.eof === undefined) {
+    function (runState, common) {
+      if (runState.env.eof === undefined && !common.isActivatedEIP(8024)) {
         // Opcode not available in legacy contracts
         trap(EVMError.errorMessages.INVALID_OPCODE)
       }
-      const toExchange = Number(
-        bytesToBigInt(runState.code.subarray(runState.programCounter, runState.programCounter + 1)),
-      )
-      const n = (toExchange >> 4) + 1
-      const m = (toExchange & 0x0f) + 1
-      runState.stack.exchange(n, n + m)
-      runState.programCounter++
+      const immediate = readImmediateByte(runState)
+      const x = (immediate >> 4) + 1
+      const y = (immediate & 0x0f) + 1
+      if (common.isActivatedEIP(8024) && x + y > 17) {
+        trap(EVMError.errorMessages.INVALID_OPCODE)
+      }
+      runState.stack.exchange(x, x + y)
     },
   ],
   // 0xec: EOFCREATE
