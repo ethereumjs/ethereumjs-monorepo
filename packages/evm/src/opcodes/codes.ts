@@ -293,6 +293,14 @@ const eipOpcodes: { eip: number; opcodes: OpcodeEntry }[] = [
     },
   },
   {
+    eip: 8024,
+    opcodes: {
+      0xe6: defaultOp('DUPN'),
+      0xe7: defaultOp('SWAPN'),
+      0xe8: defaultOp('EXCHANGE'),
+    },
+  },
+  {
     eip: 1153,
     opcodes: {
       0x5c: defaultOp('TLOAD'),
