@@ -844,8 +844,9 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     debug(`Generated tx bloom with logs=${results.execResult.logs?.length}`)
   }
 
-  // Calculate the total gas used
-  results.totalGasSpent = results.execResult.executionGasUsed + intrinsicGas
+  // Calculate tx gas used before refund processing
+  const totalGasSpentBeforeRefund = results.execResult.executionGasUsed + intrinsicGas
+  results.totalGasSpent = totalGasSpentBeforeRefund
   if (vm.DEBUG) {
     debugGas(`tx add baseFee ${intrinsicGas} to totalGasSpent (-> ${results.totalGasSpent})`)
   }
@@ -883,6 +884,12 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       results.totalGasSpent = floorCost
     }
   }
+
+  // EIP-7778: block-level gas accounting does not subtract tx refunds.
+  // For pre-7778 forks this equals the amount paid by the sender.
+  results.blockGasSpent = vm.common.isActivatedEIP(7778)
+    ? bigIntMax(totalGasSpentBeforeRefund, floorCost)
+    : results.totalGasSpent
 
   results.amountSpent = results.totalGasSpent * gasPrice
 

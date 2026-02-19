@@ -608,8 +608,10 @@ async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
   }
 
   const bloom = new Bloom(undefined, vm.common)
-  // the total amount of gas used processing these transactions
+  // Block header gas accounting (EIP-7778: no refund subtraction)
   let gasUsed = BIGINT_0
+  // Receipt cumulative gas accounting (keeps tx refund subtraction semantics)
+  let receiptGasUsed = BIGINT_0
 
   let receiptTrie: MerklePatriciaTrie | undefined = undefined
   if (block.transactions.length !== 0) {
@@ -649,7 +651,7 @@ async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
       skipBalance,
       skipNonce,
       skipHardForkValidation,
-      blockGasUsed: gasUsed,
+      blockGasUsed: receiptGasUsed,
       reportPreimages,
     })
     txResults.push(txRes)
@@ -658,9 +660,10 @@ async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
     }
 
     // Add to total block gas usage
-    gasUsed += txRes.totalGasSpent
+    gasUsed += txRes.blockGasSpent
+    receiptGasUsed += txRes.totalGasSpent
     if (vm.DEBUG) {
-      debug(`Add tx gas used (${txRes.totalGasSpent}) to total block gas usage (-> ${gasUsed})`)
+      debug(`Add tx gas used (${txRes.blockGasSpent}) to total block gas usage (-> ${gasUsed})`)
     }
 
     // Combine blooms via bitwise OR
