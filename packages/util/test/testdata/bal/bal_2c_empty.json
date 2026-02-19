@@ -1,0 +1,16 @@
+{
+  "accessMap": [
+    {
+      "addresses": ["0x000f3df6d732807ef1319fb7b8bb8522d0beac02"],
+      "storageSlots": [
+        { "address": "0x000f3df6d732807ef1319fb7b8bb8522d0beac02", "slots": ["0x0c", "0x200b"] }
+      ]
+    }
+  ],
+  "stateDiff": [
+    {
+      "address": "0x000f3df6d732807ef1319fb7b8bb8522d0beac02",
+      "storageDiffs": [{ "slot": "0x0c", "value": "0x0c" }]
+    }
+  ]
+}
