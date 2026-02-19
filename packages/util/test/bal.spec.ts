@@ -148,8 +148,8 @@ describe('JSON', () => {
     // so direct JSON comparison won't match. Verify semantic roundtrip instead:
     // JSON -> internal -> toJSON() -> internal -> RLP/hash must still match.
     bal = createBlockLevelAccessListFromJSON(bal_empty_block_no_coinbase as BALJSONBlockAccessList)
-    const roundtrippedJSON = bal.toJSON()
-    const bal2 = createBlockLevelAccessListFromJSON(roundtrippedJSON)
+    const roundtripJSON = bal.toJSON()
+    const bal2 = createBlockLevelAccessListFromJSON(roundtripJSON)
     assert.deepEqual(bal2.accesses, balEmptyBlockNoCoinbase)
     assert.deepEqual(bytesToHex(bal2.serialize()), balEmptyBlockNoCoinbaseRLP)
     assert.deepEqual(bytesToHex(bal2.hash()), balEmptyBlockNoCoinbaseHash)
