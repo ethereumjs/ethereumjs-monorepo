@@ -53,6 +53,7 @@ export const stackDelta: {
   0x43: { inputs: 0, outputs: 1, name: 'NUMBER', intermediates: 0 },
   0x44: { inputs: 0, outputs: 1, name: 'PREVRANDAO', intermediates: 0 },
   0x45: { inputs: 0, outputs: 1, name: 'GASLIMIT', intermediates: 0 },
+  0x4b: { inputs: 0, outputs: 1, name: 'SLOTNUM', intermediates: 0 },
   0x46: { inputs: 0, outputs: 1, name: 'CHAINID', intermediates: 0 },
   0x47: { inputs: 0, outputs: 1, name: 'SELFBALANCE', intermediates: 0 },
   0x48: { inputs: 0, outputs: 1, name: 'BASEFEE', intermediates: 0 },

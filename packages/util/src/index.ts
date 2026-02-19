@@ -56,6 +56,13 @@ export * from './bytes.ts'
 export * from './types.ts'
 
 /**
+ * Block level access list
+ *
+ * EXPERIMENTAL: DO NOT USE IN PRODUCTION!
+ */
+export * from './bal.ts'
+
+/**
  * Export ethjs-util methods
  */
 export * from './authorization.ts'

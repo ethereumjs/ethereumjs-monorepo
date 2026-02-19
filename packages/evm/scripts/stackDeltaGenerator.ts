@@ -116,7 +116,7 @@ const tbl = [
   OpcodeInfo.validOpcode('BASEFEE', 0x48, 0, 1, 1),
   OpcodeInfo.validOpcode('BLOBAHASH', 0x49, 1, 1, 1),
   OpcodeInfo.validOpcode('BLOBBASEFEE', 0x4a, 0, 1, 1),
-  OpcodeInfo.unallocatedOpcode(0x4b),
+  OpcodeInfo.validOpcode('SLOTNUM', 0x4b, 0, 1, 1),
   OpcodeInfo.unallocatedOpcode(0x4c),
   OpcodeInfo.unallocatedOpcode(0x4d),
   OpcodeInfo.unallocatedOpcode(0x4e),

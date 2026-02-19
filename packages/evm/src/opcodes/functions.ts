@@ -729,6 +729,13 @@ export const handlers: Map<number, OpHandler> = new Map([
       runState.stack.push(runState.interpreter.getBlockGasLimit())
     },
   ],
+  // 0x4b: SLOTNUM (EIP-7843)
+  [
+    0x4b,
+    function (runState) {
+      runState.stack.push(runState.interpreter.getBlockSlotNumber())
+    },
+  ],
   // 0x46: CHAINID
   [
     0x46,

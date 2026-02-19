@@ -77,6 +77,13 @@ export const MAX_WITHDRAWALS_PER_PAYLOAD = 16
 export const RIPEMD160_ADDRESS_STRING = '0000000000000000000000000000000000000003'
 
 /**
+ * System address used by various EIPs (EIP-2935, EIP-7002, EIP-7251, EIP-7708, BAL).
+ * Single canonical definition to avoid duplication across packages.
+ */
+export const SYSTEM_ADDRESS = '0xfffffffffffffffffffffffffffffffffffffffe'
+export const SYSTEM_ADDRESS_BYTES = hexToBytes(SYSTEM_ADDRESS)
+
+/**
  * EIP-7934: RLP Execution Block Size Limit constants
  * Maximum RLP-encoded block size to 10 MiB, with a 2 MiB margin for beacon block sizes
  */

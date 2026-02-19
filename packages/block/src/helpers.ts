@@ -61,11 +61,12 @@ export function valuesArrayToHeaderData(values: BlockHeaderBytes): HeaderData {
     parentBeaconBlockRoot,
     requestsHash,
     blockAccessListHash,
+    slotNumber,
   ] = values
 
-  if (values.length > 22) {
+  if (values.length > 23) {
     throw EthereumJSErrorWithoutCode(
-      `invalid header. More values than expected were received. Max: 20, got: ${values.length}`,
+      `invalid header. More values than expected were received. Max: 23, got: ${values.length}`,
     )
   }
   if (values.length < 15) {
@@ -97,6 +98,7 @@ export function valuesArrayToHeaderData(values: BlockHeaderBytes): HeaderData {
     parentBeaconBlockRoot,
     requestsHash,
     blockAccessListHash,
+    slotNumber,
   }
 }
 

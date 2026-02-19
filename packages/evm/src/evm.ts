@@ -21,6 +21,7 @@ import {
 import debugDefault from 'debug'
 import { EventEmitter } from 'eventemitter3'
 
+import { createEIP7708TransferLog } from './eip7708.ts'
 import { FORMAT } from './eof/constants.ts'
 import { isEOF } from './eof/util.ts'
 import { EVMError } from './errors.ts'
@@ -46,6 +47,7 @@ import {
   type EVMRunCallOpts,
   type EVMRunCodeOpts,
   type ExecResult,
+  type Log,
 } from './types.ts'
 
 import type { Common, StateManagerInterface } from '@ethereumjs/common'
@@ -481,13 +483,39 @@ export class EVM implements EVMInterface {
         debug(`Exit early on value transfer overflowed (CALL)`)
       }
     }
+
+    // EIP-7708: Create ETH transfer log for non-zero value transfers
+    // - CALL to different account: emit log (caller -> to)
+    // - CALLCODE with value: emit log (caller -> to, which equals caller) - detected by codeAddress != to
+    // - CALL to self: no log (caller == to AND codeAddress == to)
+    // - DELEGATECALL: no value parameter, no log
+    let eip7708Log: Log | undefined
+    const isCallcode = !equalsBytes(message.codeAddress.bytes, message.to.bytes)
+    const isTransferToDifferentAccount = !equalsBytes(message.caller.bytes, message.to.bytes)
+    if (
+      this.common.isActivatedEIP(7708) &&
+      !message.delegatecall &&
+      message.value > BIGINT_0 &&
+      (isTransferToDifferentAccount || isCallcode) &&
+      errorMessage === undefined
+    ) {
+      eip7708Log = createEIP7708TransferLog(message.caller, message.to, message.value)
+      if (this.DEBUG) {
+        debug(
+          `EIP-7708: Created ETH transfer log from ${message.caller} to ${message.to} value=${message.value}`,
+        )
+      }
+    }
+
     if (exit) {
+      // Even on early exit, we may need to return the EIP-7708 log if value was transferred
       return {
         execResult: {
           gasRefund: message.gasRefund,
           executionGasUsed: message.gasLimit - gasLimit,
           exceptionError: errorMessage, // Only defined if addToBalance failed
           returnValue: new Uint8Array(0),
+          logs: eip7708Log ? [eip7708Log] : undefined,
         },
       }
     }
@@ -520,11 +548,14 @@ export class EVM implements EVMInterface {
       if (this.DEBUG) {
         debug(`Start bytecode processing...`)
       }
-      result = await this.runInterpreter({
-        ...{ codeAddress: message.codeAddress },
-        ...message,
-        gasLimit,
-      } as Message)
+      result = await this.runInterpreter(
+        {
+          ...{ codeAddress: message.codeAddress },
+          ...message,
+          gasLimit,
+        } as Message,
+        { initialLogs: eip7708Log ? [eip7708Log] : undefined },
+      )
     }
 
     if (message.depth === 0) {
@@ -683,6 +714,23 @@ export class EVM implements EVMInterface {
       }
     }
 
+    // EIP-7708: Create ETH transfer log for contract creation with value
+    let eip7708CreateLog: Log | undefined
+    if (
+      this.common.isActivatedEIP(7708) &&
+      message.value > BIGINT_0 &&
+      message.to !== undefined &&
+      !equalsBytes(message.caller.bytes, message.to.bytes) &&
+      errorMessage === undefined
+    ) {
+      eip7708CreateLog = createEIP7708TransferLog(message.caller, message.to, message.value)
+      if (this.DEBUG) {
+        debug(
+          `EIP-7708: Created ETH transfer log for CREATE from ${message.caller} to ${message.to} value=${message.value}`,
+        )
+      }
+    }
+
     if (exit) {
       if (this.common.isActivatedEIP(6800) || this.common.isActivatedEIP(7864)) {
         const createCompleteAccessGas = message.accessWitness!.writeAccountHeader(message.to)
@@ -712,6 +760,7 @@ export class EVM implements EVMInterface {
           gasRefund: message.gasRefund,
           exceptionError: errorMessage, // only defined if addToBalance failed
           returnValue: new Uint8Array(0),
+          logs: eip7708CreateLog ? [eip7708CreateLog] : undefined,
         },
       }
     }
@@ -721,7 +770,9 @@ export class EVM implements EVMInterface {
     }
 
     // run the message with the updated gas limit and add accessed gas used to the result
-    let result = await this.runInterpreter({ ...message, gasLimit, isCreate: true } as Message)
+    let result = await this.runInterpreter({ ...message, gasLimit, isCreate: true } as Message, {
+      initialLogs: eip7708CreateLog ? [eip7708CreateLog] : undefined,
+    })
     result.executionGasUsed += message.gasLimit - gasLimit
 
     // fee for size of the return value
@@ -921,6 +972,7 @@ export class EVM implements EVMInterface {
       blobVersionedHashes: message.blobVersionedHashes ?? [],
       accessWitness: message.accessWitness,
       createdAddresses: message.createdAddresses,
+      initialLogs: opts.initialLogs,
     }
 
     const interpreter = new Interpreter(

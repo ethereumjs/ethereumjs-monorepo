@@ -482,6 +482,7 @@ export type Block = {
     prevRandao: Uint8Array
     gasLimit: bigint
     baseFeePerGas?: bigint
+    slotNumber?: bigint
     getBlobGasPrice(): bigint | undefined
   }
 }

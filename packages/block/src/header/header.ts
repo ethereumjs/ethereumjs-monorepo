@@ -64,6 +64,7 @@ export class BlockHeader {
   public readonly parentBeaconBlockRoot?: Uint8Array
   public readonly requestsHash?: Uint8Array
   public readonly blockAccessListHash?: Uint8Array
+  public readonly slotNumber?: bigint
 
   public readonly common: Common
 
@@ -168,6 +169,7 @@ export class BlockHeader {
       // be the correct hash for empty requests.
       requestsHash: this.common.isActivatedEIP(7685) ? SHA256_NULL : undefined,
       blockAccessListHash: this.common.isActivatedEIP(7928) ? new Uint8Array(32) : undefined,
+      slotNumber: this.common.isActivatedEIP(7843) ? BIGINT_0 : undefined,
     }
 
     const baseFeePerGas =
@@ -186,6 +188,8 @@ export class BlockHeader {
     const blockAccessListHash =
       toType(headerData.blockAccessListHash, TypeOutput.Uint8Array) ??
       hardforkDefaults.blockAccessListHash
+    const slotNumber =
+      toType(headerData.slotNumber, TypeOutput.BigInt) ?? hardforkDefaults.slotNumber
 
     if (!this.common.isActivatedEIP(1559) && baseFeePerGas !== undefined) {
       throw EthereumJSErrorWithoutCode(
@@ -229,6 +233,10 @@ export class BlockHeader {
       )
     }
 
+    if (!this.common.isActivatedEIP(7843) && slotNumber !== undefined) {
+      throw EthereumJSErrorWithoutCode('slotNumber can only be provided with EIP 7843 activated')
+    }
+
     this.parentHash = parentHash
     this.uncleHash = uncleHash
     this.coinbase = coinbase
@@ -251,6 +259,7 @@ export class BlockHeader {
     this.parentBeaconBlockRoot = parentBeaconBlockRoot
     this.requestsHash = requestsHash
     this.blockAccessListHash = blockAccessListHash
+    this.slotNumber = slotNumber
     this._genericFormatValidation()
     this._validateDAOExtraData()
 
@@ -381,6 +390,13 @@ export class BlockHeader {
         const msg = this._errorMsg(
           `blockAccessListHash must be 32 bytes, received ${this.blockAccessListHash!.length} bytes`,
         )
+        throw EthereumJSErrorWithoutCode(msg)
+      }
+    }
+
+    if (this.common.isActivatedEIP(7843)) {
+      if (this.slotNumber === undefined) {
+        const msg = this._errorMsg('EIP7843 block has no slotNumber field')
         throw EthereumJSErrorWithoutCode(msg)
       }
     }
@@ -665,6 +681,9 @@ export class BlockHeader {
     if (this.common.isActivatedEIP(7928)) {
       rawItems.push(this.blockAccessListHash!)
     }
+    if (this.common.isActivatedEIP(7843)) {
+      rawItems.push(bigIntToUnpaddedBytes(this.slotNumber!))
+    }
     return rawItems
   }
 
@@ -806,6 +825,9 @@ export class BlockHeader {
     }
     if (this.common.isActivatedEIP(7928)) {
       JSONDict.blockAccessListHash = bytesToHex(this.blockAccessListHash!)
+    }
+    if (this.common.isActivatedEIP(7843)) {
+      JSONDict.slotNumber = bigIntToHex(this.slotNumber!)
     }
     return JSONDict
   }

@@ -54,6 +54,9 @@ export function createBlockHeaderFromBytesArray(values: BlockHeaderBytes, opts: 
   if (header.common.isActivatedEIP(7928) && header.blockAccessListHash === undefined) {
     throw EthereumJSErrorWithoutCode('invalid header. blockAccessListHash should be provided')
   }
+  if (header.common.isActivatedEIP(7843) && header.slotNumber === undefined) {
+    throw EthereumJSErrorWithoutCode('invalid header. slotNumber should be provided')
+  }
   return header
 }
 
@@ -130,6 +133,7 @@ export function createBlockHeaderFromRPC(blockParams: JSONRPCBlock, options?: Bl
     parentBeaconBlockRoot,
     requestsHash,
     blockAccessListHash,
+    slotNumber,
   } = blockParams
 
   const blockHeader = new BlockHeader(
@@ -156,6 +160,7 @@ export function createBlockHeaderFromRPC(blockParams: JSONRPCBlock, options?: Bl
       parentBeaconBlockRoot,
       requestsHash,
       blockAccessListHash,
+      slotNumber,
     },
     options,
   )
