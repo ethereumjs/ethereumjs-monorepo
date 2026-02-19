@@ -1242,7 +1242,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       }
       const immediate = readImmediateByte(runState)
       if (runState.env.eof === undefined) {
-        const toDup = decodeEIP8024SingleImmediate(immediate) + 1
+        const toDup = decodeEIP8024SingleImmediate(immediate)
         runState.stack.dup(toDup)
         return
       }
@@ -1259,7 +1259,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       }
       const immediate = readImmediateByte(runState)
       if (runState.env.eof === undefined) {
-        const toSwap = decodeEIP8024SingleImmediate(immediate) + 1
+        const toSwap = decodeEIP8024SingleImmediate(immediate)
         runState.stack.swap(toSwap)
         return
       }
