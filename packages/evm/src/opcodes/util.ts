@@ -102,37 +102,31 @@ export function readImmediateByte(runState: RunState): number {
 }
 
 export function isEIP8024SingleImmediateValid(immediate: number): boolean {
-  return immediate < 0x5b || immediate >= 0x80
+  return immediate <= 0x5a || immediate >= 0x80
 }
 
 export function decodeEIP8024SingleImmediate(immediate: number): number {
   if (!isEIP8024SingleImmediateValid(immediate)) {
     trap(EVMError.errorMessages.INVALID_OPCODE)
   }
-  return immediate < 0x5b ? immediate : immediate - 0x25
+  return immediate <= 0x5a ? immediate + 17 : immediate - 20
 }
 
 export function isEIP8024PairImmediateValid(immediate: number): boolean {
-  return !(
-    (immediate >= 0x33 && immediate < 0x43) ||
-    (immediate >= 0x53 && immediate < 0x63) ||
-    (immediate >= 0x73 && immediate < 0x83) ||
-    (immediate >= 0x93 && immediate < 0xa3) ||
-    (immediate >= 0xb3 && immediate < 0xc3) ||
-    (immediate >= 0xd3 && immediate < 0xe3) ||
-    immediate >= 0xf3
-  )
+  return immediate <= 0x4f || immediate >= 0x80
 }
 
 export function decodeEIP8024PairImmediate(immediate: number): [number, number] {
   if (!isEIP8024PairImmediateValid(immediate)) {
     trap(EVMError.errorMessages.INVALID_OPCODE)
   }
-  const a = immediate >> 4
-  const b = immediate & 0x0f
-  const x = a >= 3 ? a + 1 : a
-  const y = b >= 3 ? b + 1 : b
-  return [x, y]
+  const k = immediate <= 0x4f ? immediate : immediate - 48
+  const q = Math.floor(k / 16)
+  const r = k % 16
+  if (q < r) {
+    return [q + 1, r + 1]
+  }
+  return [r + 1, 29 - q]
 }
 
 /**
