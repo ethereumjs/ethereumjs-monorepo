@@ -77,9 +77,6 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     // eslint-disable-next-line no-console
     console.time(entireBlockLabel)
   }
-  if (vm.common.isActivatedEIP(7928)) {
-    vm.evm.blockLevelAccessList = createBlockLevelAccessList()
-  }
   const stateManager = vm.stateManager
 
   const { root } = opts
@@ -112,6 +109,10 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
       blockNumber: block.header.number,
       timestamp: block.header.timestamp,
     })
+  }
+
+  if (vm.common.isActivatedEIP(7928)) {
+    vm.evm.blockLevelAccessList = createBlockLevelAccessList()
   }
 
   if (vm.DEBUG) {
