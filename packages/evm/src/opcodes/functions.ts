@@ -536,7 +536,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const address = createAddressFromStackBigInt(addressBigInt)
       // EIP-7928: Track address access in BAL
       if (runState.interpreter._evm.common.isActivatedEIP(7928)) {
-        runState.interpreter._evm.blockLevelAccessList?.addAddress(address.toString())
+        runState.interpreter._evm.blockLevelAccessList?.trackAddress(address.toString())
       }
       // EOF check
       const code = await runState.stateManager.getCode(address)
@@ -559,7 +559,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const address = createAddressFromStackBigInt(addressBigInt)
       // EIP-7928: Track address access in BAL
       if (runState.interpreter._evm.common.isActivatedEIP(7928)) {
-        runState.interpreter._evm.blockLevelAccessList?.addAddress(address.toString())
+        runState.interpreter._evm.blockLevelAccessList?.trackAddress(address.toString())
       }
 
       if (dataLength !== BIGINT_0) {
@@ -585,7 +585,7 @@ export const handlers: Map<number, OpHandler> = new Map([
       const address = createAddressFromStackBigInt(addressBigInt)
       // EIP-7928: Track address access in BAL
       if (runState.interpreter._evm.common.isActivatedEIP(7928)) {
-        runState.interpreter._evm.blockLevelAccessList?.addAddress(address.toString())
+        runState.interpreter._evm.blockLevelAccessList?.trackAddress(address.toString())
       }
 
       // EOF check

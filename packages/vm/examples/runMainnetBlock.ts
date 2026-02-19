@@ -210,8 +210,14 @@ const main = async () => {
     fs.writeFileSync(rlpFile, rlpOutput)
 
     const rlpBytes = bal.serialize()
-    const addressCount = Object.keys(bal.accesses).length
-    console.log(`\n  BAL: ${addressCount} addresses, RLP size: ${rlpBytes.length} bytes`)
+    const json = bal.toJSON()
+    const uniqueAddresses = new Set<string>()
+    for (const phase of json.accessMap) {
+      for (const addr of phase.addresses) uniqueAddresses.add(addr)
+    }
+    console.log(
+      `\n  BAL: ${uniqueAddresses.size} addresses, ${json.stateDiff.length} state diffs, ${json.accessMap.length} phases, RLP size: ${rlpBytes.length} bytes`,
+    )
     console.log(`  BAL hash: ${bytesToHex(bal.hash())}`)
     console.log(`  Saved: ${jsonFile}`)
     console.log(`  Saved: ${rlpFile}`)

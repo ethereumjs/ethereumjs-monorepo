@@ -404,11 +404,9 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         }
 
         // If we reach here, the EIP-2200 sentry check passed (didn't trap).
-        // Per EIP-7928, now track the storage read for BAL. If the SSTORE
-        // succeeds later, the write will remove this read (see addStorageWrite).
-        // If SSTORE fails with OOG after the sentry, the read remains in BAL.
+        // EIP-7928: Track storage slot access in BAL
         if (common.isActivatedEIP(7928)) {
-          runState.interpreter._evm.blockLevelAccessList?.addStorageRead(
+          runState.interpreter._evm.blockLevelAccessList?.trackStorageSlot(
             runState.interpreter.getAddress().toString(),
             keyBytes,
           )

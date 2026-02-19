@@ -463,7 +463,7 @@ export class EVM implements EVMInterface {
       message.codeAddress !== undefined &&
       message.codeAddress.toString() !== message.to.toString()
     ) {
-      this.blockLevelAccessList!.addAddress(message.codeAddress.toString())
+      this.blockLevelAccessList!.trackAddress(message.codeAddress.toString())
     }
 
     // Load code
@@ -621,7 +621,7 @@ export class EVM implements EVMInterface {
         debug(`Returning on address collision`)
       }
       if (this.common.isActivatedEIP(7928)) {
-        this.blockLevelAccessList!.addAddress(message.to.toString())
+        this.blockLevelAccessList!.trackAddress(message.to.toString())
       }
       return {
         createdAddress: message.to,
@@ -652,11 +652,7 @@ export class EVM implements EVMInterface {
       toAccount.nonce += BIGINT_1
     }
     if (this.common.isActivatedEIP(7928)) {
-      this.blockLevelAccessList!.addNonceChange(
-        message.to.toString(),
-        toAccount.nonce,
-        this.blockLevelAccessList!.blockAccessIndex,
-      )
+      this.blockLevelAccessList!.trackAddress(message.to.toString())
     }
     // Add tx value to the `to` account
     let errorMessage
@@ -858,11 +854,8 @@ export class EVM implements EVMInterface {
       await this.stateManager.putCode(message.to, result.returnValue)
 
       if (this.common.isActivatedEIP(7928)) {
-        this.blockLevelAccessList!.addCodeChange(
-          message.to.toString(),
-          result.returnValue,
-          this.blockLevelAccessList!.blockAccessIndex,
-        )
+        this.blockLevelAccessList!.trackAddress(message.to.toString())
+        this.blockLevelAccessList!.recordPreBlockCode(message.to.toString(), new Uint8Array(0))
       }
 
       if (this.DEBUG) {
@@ -1012,12 +1005,8 @@ export class EVM implements EVMInterface {
           callerAccount.balance = value
           await this.journal.putAccount(caller, callerAccount)
           if (this.common.isActivatedEIP(7928)) {
-            this.blockLevelAccessList!.addBalanceChange(
-              caller.toString(),
-              callerAccount.balance,
-              this.blockLevelAccessList!.blockAccessIndex,
-              originalBalance,
-            )
+            this.blockLevelAccessList!.trackAddress(caller.toString())
+            this.blockLevelAccessList!.recordPreBlockBalance(caller.toString(), originalBalance)
           }
         }
       }
@@ -1050,11 +1039,7 @@ export class EVM implements EVMInterface {
       callerAccount.nonce++
       await this.journal.putAccount(message.caller, callerAccount)
       if (this.common.isActivatedEIP(7928)) {
-        this.blockLevelAccessList!.addNonceChange(
-          message.caller.toString(),
-          callerAccount.nonce,
-          this.blockLevelAccessList!.blockAccessIndex,
-        )
+        this.blockLevelAccessList!.trackAddress(message.caller.toString())
       }
       if (this.DEBUG) {
         debug(`Update fromAccount (caller) nonce (-> ${callerAccount.nonce}))`)
@@ -1068,9 +1053,6 @@ export class EVM implements EVMInterface {
       this.journal.addWarmedAddress((await this._generateAddress(message)).bytes)
     }
 
-    if (this.common.isActivatedEIP(7928)) {
-      this.blockLevelAccessList?.checkpoint()
-    }
     await this.journal.checkpoint()
     if (this.common.isActivatedEIP(1153)) this.transientStorage.checkpoint()
     if (this.DEBUG) {
@@ -1127,18 +1109,12 @@ export class EVM implements EVMInterface {
       result.execResult.logs = []
       await this.journal.revert()
       if (this.common.isActivatedEIP(1153)) this.transientStorage.revert()
-      if (this.common.isActivatedEIP(7928)) {
-        this.blockLevelAccessList?.revert()
-      }
       if (this.DEBUG) {
         debug(`message checkpoint reverted`)
       }
     } else {
       await this.journal.commit()
       if (this.common.isActivatedEIP(1153)) this.transientStorage.commit()
-      if (this.common.isActivatedEIP(7928)) {
-        this.blockLevelAccessList?.commit()
-      }
       if (this.DEBUG) {
         debug(`message checkpoint committed`)
       }
@@ -1232,7 +1208,7 @@ export class EVM implements EVMInterface {
           message.code = await this.stateManager.getCode(address)
           // EIP-7928: Track delegation target access in BAL
           if (this.common.isActivatedEIP(7928)) {
-            this.blockLevelAccessList?.addAddress(address.toString())
+            this.blockLevelAccessList?.trackAddress(address.toString())
           }
           if (message.depth === 0) {
             this.journal.addAlwaysWarmAddress(address.toString())
@@ -1266,15 +1242,9 @@ export class EVM implements EVMInterface {
     if (account.balance < BIGINT_0) {
       throw new EVMError(EVMError.errorMessages.INSUFFICIENT_BALANCE)
     }
-    // EIP-7928: Record the sender's reduced balance in BAL
-    // Per spec, CALL/CALLCODE senders must have their balance recorded
     if (this.common.isActivatedEIP(7928)) {
-      this.blockLevelAccessList!.addBalanceChange(
-        message.caller.toString(),
-        account.balance,
-        this.blockLevelAccessList!.blockAccessIndex,
-        originalBalance,
-      )
+      this.blockLevelAccessList!.trackAddress(message.caller.toString())
+      this.blockLevelAccessList!.recordPreBlockBalance(message.caller.toString(), originalBalance)
     }
     const result = this.journal.putAccount(message.caller, account)
     if (this.DEBUG) {
@@ -1291,14 +1261,9 @@ export class EVM implements EVMInterface {
     }
     toAccount.balance = newBalance
     if (this.common.isActivatedEIP(7928)) {
-      this.blockLevelAccessList!.addAddress(message.to.toString())
+      this.blockLevelAccessList!.trackAddress(message.to.toString())
       if (message.value !== BIGINT_0) {
-        this.blockLevelAccessList!.addBalanceChange(
-          message.to.toString(),
-          newBalance,
-          this.blockLevelAccessList!.blockAccessIndex,
-          originalBalance,
-        )
+        this.blockLevelAccessList!.recordPreBlockBalance(message.to.toString(), originalBalance)
       }
     }
     // putAccount as the nonce may have changed for contract creation

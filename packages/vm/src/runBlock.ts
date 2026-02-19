@@ -176,6 +176,21 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
         } txResults=${result.results.length}`,
       )
     }
+
+    // EIP-7928: Compute state diffs post-block by comparing pre-block vs post-block state
+    if (vm.common.isActivatedEIP(7928)) {
+      const bal = vm.evm.blockLevelAccessList!
+      await bal.finalizeStateDiffs(
+        async (addr) => {
+          const account = await vm.stateManager.getAccount(createAddressFromString(addr))
+          return account !== undefined
+            ? { balance: account.balance, nonce: account.nonce }
+            : undefined
+        },
+        async (addr, slot) => vm.stateManager.getStorage(createAddressFromString(addr), slot),
+        async (addr) => vm.stateManager.getCode(createAddressFromString(addr)),
+      )
+    }
   } catch (err: any) {
     await vm.evm.journal.revert()
     if (vm.DEBUG) {
@@ -526,11 +541,12 @@ export async function accumulateParentBlockHash(
     }
     const key = setLengthLeft(bigIntToBytes(ringKey), 32)
     if (vm.common.isActivatedEIP(7928)) {
-      vm.evm.blockLevelAccessList!.addStorageWrite(
+      const preValue = await vm.stateManager.getStorage(historyAddress, key)
+      vm.evm.blockLevelAccessList!.trackStorageSlot(historyAddress.toString(), key)
+      vm.evm.blockLevelAccessList!.recordPreBlockStorage(
         historyAddress.toString(),
-        key,
-        hash,
-        vm.evm.blockLevelAccessList!.blockAccessIndex,
+        bytesToHex(key),
+        preValue,
       )
     }
     await vm.stateManager.putStorage(historyAddress, key, hash)
@@ -564,32 +580,23 @@ export async function accumulateParentBeaconBlockRoot(vm: VM, root: Uint8Array, 
     // TODO: verify with Gabriel that this is fine regarding binary trees (should we put an empty account?)
     return
   }
+  const beaconKey1 = setLengthLeft(bigIntToBytes(timestampIndex), 32)
+  const beaconKey2 = setLengthLeft(bigIntToBytes(timestampExtended), 32)
   if (vm.common.isActivatedEIP(7928)) {
-    vm.evm.blockLevelAccessList!.addStorageWrite(
-      parentBeaconBlockRootAddress.toString(),
-      setLengthLeft(bigIntToBytes(timestampIndex), 32),
-      bigIntToBytes(timestamp),
-      vm.evm.blockLevelAccessList!.blockAccessIndex,
-    )
+    const addr = parentBeaconBlockRootAddress.toString()
+    const pre1 = await vm.stateManager.getStorage(parentBeaconBlockRootAddress, beaconKey1)
+    vm.evm.blockLevelAccessList!.trackStorageSlot(addr, beaconKey1)
+    vm.evm.blockLevelAccessList!.recordPreBlockStorage(addr, bytesToHex(beaconKey1), pre1)
+    const pre2 = await vm.stateManager.getStorage(parentBeaconBlockRootAddress, beaconKey2)
+    vm.evm.blockLevelAccessList!.trackStorageSlot(addr, beaconKey2)
+    vm.evm.blockLevelAccessList!.recordPreBlockStorage(addr, bytesToHex(beaconKey2), pre2)
   }
   await vm.stateManager.putStorage(
     parentBeaconBlockRootAddress,
-    setLengthLeft(bigIntToBytes(timestampIndex), 32),
+    beaconKey1,
     bigIntToBytes(timestamp),
   )
-  if (vm.common.isActivatedEIP(7928)) {
-    vm.evm.blockLevelAccessList!.addStorageWrite(
-      parentBeaconBlockRootAddress.toString(),
-      setLengthLeft(bigIntToBytes(timestampExtended), 32),
-      root,
-      vm.evm.blockLevelAccessList!.blockAccessIndex,
-    )
-  }
-  await vm.stateManager.putStorage(
-    parentBeaconBlockRootAddress,
-    setLengthLeft(bigIntToBytes(timestampExtended), 32),
-    root,
-  )
+  await vm.stateManager.putStorage(parentBeaconBlockRootAddress, beaconKey2, root)
 
   // do cleanup if the code was not deployed
   await vm.evm.journal.cleanup()
@@ -625,7 +632,7 @@ async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
    */
   for (let txIdx = 0; txIdx < block.transactions.length; txIdx++) {
     if (vm.common.isActivatedEIP(7928)) {
-      vm.evm.blockLevelAccessList!.blockAccessIndex = txIdx + 1
+      vm.evm.blockLevelAccessList!.setPhase(txIdx + 1)
     }
     const tx = block.transactions[txIdx]
 
@@ -692,7 +699,7 @@ async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
 
 async function assignWithdrawals(vm: VM, block: Block): Promise<void> {
   if (vm.common.isActivatedEIP(7928)) {
-    vm.evm.blockLevelAccessList!.blockAccessIndex = block.transactions.length + 1
+    vm.evm.blockLevelAccessList!.setPhase(block.transactions.length + 1)
   }
   const withdrawals = block.withdrawals!
   for (const withdrawal of withdrawals) {
@@ -771,16 +778,9 @@ export async function rewardAccount(
   const originalBalance = account.balance
   account.balance += reward
   if (common.isActivatedEIP(7928)) {
-    if (reward === BIGINT_0) {
-      evm.blockLevelAccessList?.addAddress(address.toString())
-    } else {
-      evm.blockLevelAccessList!.addBalanceChange(
-        address.toString(),
-        account.balance,
-        evm.blockLevelAccessList!.blockAccessIndex,
-        originalBalance,
-      )
-    }
+    evm.blockLevelAccessList!.trackAddress(address.toString())
+    evm.blockLevelAccessList!.recordPreBlockBalance(address.toString(), originalBalance)
+    evm.blockLevelAccessList!.recordPreBlockNonce(address.toString(), account.nonce)
   }
   await evm.journal.putAccount(address, account)
 
@@ -851,22 +851,17 @@ async function _applyDAOHardfork(evm: EVMInterface) {
     account.balance = BIGINT_0
     await evm.journal.putAccount(address, account)
     if (evm.common.isActivatedEIP(7928)) {
-      evm.blockLevelAccessList!.addBalanceChange(
-        address.toString(),
-        account.balance,
-        evm.blockLevelAccessList!.blockAccessIndex,
-        originalBalance,
-      )
+      evm.blockLevelAccessList!.trackAddress(address.toString())
+      evm.blockLevelAccessList!.recordPreBlockBalance(address.toString(), originalBalance)
     }
   }
 
   // finally, put the Refund Account
   await evm.journal.putAccount(DAORefundContractAddress, DAORefundAccount)
   if (evm.common.isActivatedEIP(7928)) {
-    evm.blockLevelAccessList!.addBalanceChange(
+    evm.blockLevelAccessList!.trackAddress(DAORefundContractAddress.toString())
+    evm.blockLevelAccessList!.recordPreBlockBalance(
       DAORefundContractAddress.toString(),
-      DAORefundAccount.balance,
-      evm.blockLevelAccessList!.blockAccessIndex,
       originalDAORefundAccountBalance,
     )
   }

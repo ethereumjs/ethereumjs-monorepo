@@ -667,7 +667,10 @@ export class Interpreter {
   async getExternalBalance(address: Address): Promise<bigint> {
     // Track address access for EIP-7928 BAL
     if (this._evm.common.isActivatedEIP(7928)) {
-      this._evm.blockLevelAccessList?.addAddress(address.toString())
+      this._evm.blockLevelAccessList?.trackAddress(address.toString())
+      const acct = await this._stateManager.getAccount(address)
+      this._evm.blockLevelAccessList?.recordPreBlockBalance(address.toString(), acct?.balance ?? 0n)
+      this._evm.blockLevelAccessList?.recordPreBlockNonce(address.toString(), acct?.nonce ?? 0n)
     }
     // shortcut if current account
     if (address.equals(this._env.address)) {
@@ -695,13 +698,14 @@ export class Interpreter {
     await this._stateManager.putStorage(this._env.address, key, value)
 
     if (this._evm.common.isActivatedEIP(7928)) {
-      this._evm.blockLevelAccessList?.addStorageWrite(
-        this._env.address.toString(),
-        key,
-        value,
-        this._evm.blockLevelAccessList!.blockAccessIndex,
-        originalValue,
-      )
+      this._evm.blockLevelAccessList?.trackStorageSlot(this._env.address.toString(), key)
+      if (originalValue !== undefined) {
+        this._evm.blockLevelAccessList?.recordPreBlockStorage(
+          this._env.address.toString(),
+          bytesToHex(key),
+          originalValue,
+        )
+      }
     }
     const account = await this._stateManager.getAccount(this._env.address)
     if (!account) {
@@ -719,7 +723,13 @@ export class Interpreter {
    */
   async storageLoad(key: Uint8Array, original = false, trackBAL = true): Promise<Uint8Array> {
     if (this._evm.common.isActivatedEIP(7928) && trackBAL) {
-      this._evm.blockLevelAccessList?.addStorageRead(this._env.address.toString(), key)
+      this._evm.blockLevelAccessList?.trackStorageSlot(this._env.address.toString(), key)
+      const origForBAL = await this._stateManager.originalStorageCache.get(this._env.address, key)
+      this._evm.blockLevelAccessList?.recordPreBlockStorage(
+        this._env.address.toString(),
+        bytesToHex(key),
+        origForBAL,
+      )
     }
     if (original) {
       return this._stateManager.originalStorageCache.get(this._env.address, key)
@@ -1148,11 +1158,7 @@ export class Interpreter {
     this._env.contract.nonce += BIGINT_1
     await this.journal.putAccount(this._env.address, this._env.contract)
     if (this.common.isActivatedEIP(7928)) {
-      this._evm.blockLevelAccessList!.addNonceChange(
-        this._env.address.toString(),
-        this._env.contract.nonce,
-        this._evm.blockLevelAccessList!.blockAccessIndex,
-      )
+      this._evm.blockLevelAccessList!.trackAddress(this._env.address.toString())
     }
 
     if (this.common.isActivatedEIP(3860)) {
@@ -1287,12 +1293,8 @@ export class Interpreter {
       toAccount.balance += this._env.contract.balance
       await this.journal.putAccount(toAddress, toAccount)
       if (this.common.isActivatedEIP(7928)) {
-        this._evm.blockLevelAccessList!.addBalanceChange(
-          toAddress.toString(),
-          toAccount.balance,
-          this._evm.blockLevelAccessList!.blockAccessIndex,
-          originalBalance,
-        )
+        this._evm.blockLevelAccessList!.trackAddress(toAddress.toString())
+        this._evm.blockLevelAccessList!.recordPreBlockBalance(toAddress.toString(), originalBalance)
       }
     }
 
@@ -1318,10 +1320,9 @@ export class Interpreter {
         balance: BIGINT_0,
       })
       if (this.common.isActivatedEIP(7928)) {
-        this._evm.blockLevelAccessList!.addBalanceChange(
+        this._evm.blockLevelAccessList!.trackAddress(this._env.address.toString())
+        this._evm.blockLevelAccessList!.recordPreBlockBalance(
           this._env.address.toString(),
-          BIGINT_0,
-          this._evm.blockLevelAccessList!.blockAccessIndex,
           originalBalance,
         )
       }

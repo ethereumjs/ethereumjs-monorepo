@@ -1,6 +1,13 @@
 import { RLP } from '@ethereumjs/rlp'
 import { keccak_256 } from '@noble/hashes/sha3.js'
-import { bigIntToBytes, bigIntToHex, bytesToHex, bytesToInt, hexToBytes } from './bytes.ts'
+import {
+  bigIntToBytes,
+  bigIntToHex,
+  bytesToHex,
+  bytesToInt,
+  hexToBytes,
+  setLengthLeft,
+} from './bytes.ts'
 import { padToEven } from './internal.ts'
 import type { PrefixedHexString } from './types.ts'
 
@@ -91,6 +98,12 @@ export class BlockLevelAccessList {
   private _stateDiff: Map<BALAddressHex, AccountStateDiff>
   private _currentPhase: number
 
+  // Pre-block state snapshots for post-block diff computation (first-call wins)
+  private _preBlockBalances: Map<BALAddressHex, bigint> = new Map()
+  private _preBlockNonces: Map<BALAddressHex, bigint> = new Map()
+  private _preBlockStorage: Map<string, Uint8Array> = new Map()
+  private _preBlockCode: Map<BALAddressHex, Uint8Array> = new Map()
+
   constructor() {
     this._accessMap = []
     this._stateDiff = new Map()
@@ -174,6 +187,80 @@ export class BlockLevelAccessList {
 
   setCodeDiff(address: BALAddressHex, finalCode: Uint8Array): void {
     this.ensureAccountDiff(address).code = finalCode
+  }
+
+  // --- Pre-block state recording (first-call wins) ---
+
+  recordPreBlockBalance(address: BALAddressHex, balance: bigint): void {
+    if (!this._preBlockBalances.has(address)) this._preBlockBalances.set(address, balance)
+  }
+
+  recordPreBlockNonce(address: BALAddressHex, nonce: bigint): void {
+    if (!this._preBlockNonces.has(address)) this._preBlockNonces.set(address, nonce)
+  }
+
+  recordPreBlockStorage(address: BALAddressHex, slot: BALStorageKeyHex, value: Uint8Array): void {
+    const key = `${address}|${slot}`
+    if (!this._preBlockStorage.has(key)) this._preBlockStorage.set(key, value)
+  }
+
+  recordPreBlockCode(address: BALAddressHex, code: Uint8Array): void {
+    if (!this._preBlockCode.has(address)) this._preBlockCode.set(address, code)
+  }
+
+  /**
+   * Compute state diffs by comparing post-block state with recorded pre-block state
+   * for all accessed addresses and storage slots. Call after all block execution is
+   * complete but before the journal is committed.
+   */
+  async finalizeStateDiffs(
+    getAccount: (addr: BALAddressHex) => Promise<{ balance: bigint; nonce: bigint } | undefined>,
+    getStorage: (addr: BALAddressHex, slot: Uint8Array) => Promise<Uint8Array>,
+    getCode: (addr: BALAddressHex) => Promise<Uint8Array>,
+  ): Promise<void> {
+    // Collect all accessed addresses and storage slots across all phases
+    const allAddresses = new Set<BALAddressHex>()
+    const allStorageSlots = new Map<BALAddressHex, Set<BALStorageKeyHex>>()
+    for (const phase of this._accessMap) {
+      for (const addr of phase.addresses) {
+        if (addr !== SYSTEM_ADDRESS) allAddresses.add(addr)
+      }
+      for (const [addr, slots] of phase.storageSlots) {
+        if (addr === SYSTEM_ADDRESS) continue
+        if (!allStorageSlots.has(addr)) allStorageSlots.set(addr, new Set())
+        for (const slot of slots) allStorageSlots.get(addr)!.add(slot)
+      }
+    }
+
+    // Compare pre-block vs post-block for each accessed address
+    for (const addr of allAddresses) {
+      const account = await getAccount(addr)
+      const postBalance = account?.balance ?? 0n
+      const postNonce = account?.nonce ?? 0n
+
+      const preBalance = this._preBlockBalances.get(addr) ?? 0n
+      const preNonce = this._preBlockNonces.get(addr) ?? 0n
+
+      if (postBalance !== preBalance) this.setBalanceDiff(addr, postBalance)
+      if (postNonce !== preNonce) this.setNonceDiff(addr, postNonce)
+
+      const postCode = await getCode(addr)
+      const preCode = this._preBlockCode.get(addr) ?? new Uint8Array()
+      if (bytesToHex(postCode) !== bytesToHex(preCode)) this.setCodeDiff(addr, postCode)
+    }
+
+    // Compare storage slots
+    for (const [addr, slots] of allStorageSlots) {
+      for (const slot of slots) {
+        const slotBytes = setLengthLeft(slot === '0x' ? new Uint8Array(0) : hexToBytes(slot), 32)
+        const postValue = await getStorage(addr, slotBytes)
+        const preKey = `${addr}|${slot}`
+        const preValue = this._preBlockStorage.get(preKey) ?? new Uint8Array()
+        if (bytesToHex(stripLeadingZeros(postValue)) !== bytesToHex(stripLeadingZeros(preValue))) {
+          this.setStorageDiff(addr, slot, postValue)
+        }
+      }
+    }
   }
 
   // --- Serialization ---

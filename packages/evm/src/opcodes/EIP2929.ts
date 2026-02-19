@@ -67,7 +67,7 @@ export function warmAddress(runState: RunState, address: Uint8Array): void {
 export function addAddressToBAL(runState: RunState, address: Uint8Array, common: Common): void {
   if (common.isActivatedEIP(7928)) {
     const addressHex = bytesToHex(address)
-    runState.interpreter._evm.blockLevelAccessList?.addAddress(addressHex)
+    runState.interpreter._evm.blockLevelAccessList?.trackAddress(addressHex)
   }
 }
 
