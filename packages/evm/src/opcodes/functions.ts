@@ -1237,53 +1237,36 @@ export const handlers: Map<number, OpHandler> = new Map([
   [
     0xe6,
     function (runState, common) {
-      if (runState.env.eof === undefined && !common.isActivatedEIP(8024)) {
-        // Opcode not available in legacy contracts
+      if (!common.isActivatedEIP(8024)) {
         trap(EVMError.errorMessages.INVALID_OPCODE)
       }
       const immediate = readImmediateByteOrZero(runState)
-      if (runState.env.eof === undefined) {
-        const toDup = decodeEIP8024SingleImmediate(immediate)
-        runState.stack.dup(toDup)
-        return
-      }
-      runState.stack.dup(immediate + 1)
+      const toDup = decodeEIP8024SingleImmediate(immediate)
+      runState.stack.dup(toDup)
     },
   ],
   // 0xe7: SWAPN
   [
     0xe7,
     function (runState, common) {
-      if (runState.env.eof === undefined && !common.isActivatedEIP(8024)) {
-        // Opcode not available in legacy contracts
+      if (!common.isActivatedEIP(8024)) {
         trap(EVMError.errorMessages.INVALID_OPCODE)
       }
       const immediate = readImmediateByteOrZero(runState)
-      if (runState.env.eof === undefined) {
-        const toSwap = decodeEIP8024SingleImmediate(immediate)
-        runState.stack.swap(toSwap)
-        return
-      }
-      runState.stack.swap(immediate + 1)
+      const toSwap = decodeEIP8024SingleImmediate(immediate)
+      runState.stack.swap(toSwap)
     },
   ],
   // 0xe8: EXCHANGE
   [
     0xe8,
     function (runState, common) {
-      if (runState.env.eof === undefined && !common.isActivatedEIP(8024)) {
-        // Opcode not available in legacy contracts
+      if (!common.isActivatedEIP(8024)) {
         trap(EVMError.errorMessages.INVALID_OPCODE)
       }
       const immediate = readImmediateByteOrZero(runState)
-      if (runState.env.eof === undefined) {
-        const [x, y] = decodeEIP8024PairImmediate(immediate)
-        runState.stack.exchange(x, y)
-        return
-      }
-      const x = (immediate >> 4) + 1
-      const y = (immediate & 0x0f) + 1
-      runState.stack.exchange(x, x + y)
+      const [x, y] = decodeEIP8024PairImmediate(immediate)
+      runState.stack.exchange(x, y)
     },
   ],
   // 0xec: EOFCREATE
