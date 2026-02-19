@@ -44,6 +44,7 @@ import {
   jumpIsValid,
   mod,
   readImmediateByte,
+  readImmediateByteOrZero,
   toTwos,
   trap,
   writeCallOutput,
@@ -1240,7 +1241,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         // Opcode not available in legacy contracts
         trap(EVMError.errorMessages.INVALID_OPCODE)
       }
-      const immediate = readImmediateByte(runState)
+      const immediate = readImmediateByteOrZero(runState)
       if (runState.env.eof === undefined) {
         const toDup = decodeEIP8024SingleImmediate(immediate)
         runState.stack.dup(toDup)
@@ -1257,7 +1258,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         // Opcode not available in legacy contracts
         trap(EVMError.errorMessages.INVALID_OPCODE)
       }
-      const immediate = readImmediateByte(runState)
+      const immediate = readImmediateByteOrZero(runState)
       if (runState.env.eof === undefined) {
         const toSwap = decodeEIP8024SingleImmediate(immediate)
         runState.stack.swap(toSwap)
@@ -1274,7 +1275,7 @@ export const handlers: Map<number, OpHandler> = new Map([
         // Opcode not available in legacy contracts
         trap(EVMError.errorMessages.INVALID_OPCODE)
       }
-      const immediate = readImmediateByte(runState)
+      const immediate = readImmediateByteOrZero(runState)
       if (runState.env.eof === undefined) {
         const [x, y] = decodeEIP8024PairImmediate(immediate)
         runState.stack.exchange(x, y)
