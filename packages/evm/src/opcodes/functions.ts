@@ -35,6 +35,8 @@ import { EVMError } from '../errors.ts'
 
 import {
   createAddressFromStackBigInt,
+  decodeEIP8024PairImmediate,
+  decodeEIP8024SingleImmediate,
   describeLocation,
   exponentiation,
   fromTwos,
@@ -1239,11 +1241,12 @@ export const handlers: Map<number, OpHandler> = new Map([
         trap(EVMError.errorMessages.INVALID_OPCODE)
       }
       const immediate = readImmediateByte(runState)
-      if (common.isActivatedEIP(8024) && immediate > 0x7f) {
-        trap(EVMError.errorMessages.INVALID_OPCODE)
+      if (runState.env.eof === undefined) {
+        const toDup = decodeEIP8024SingleImmediate(immediate) + 1
+        runState.stack.dup(toDup)
+        return
       }
-      const toDup = immediate + 1
-      runState.stack.dup(toDup)
+      runState.stack.dup(immediate + 1)
     },
   ],
   // 0xe7: SWAPN
@@ -1255,11 +1258,12 @@ export const handlers: Map<number, OpHandler> = new Map([
         trap(EVMError.errorMessages.INVALID_OPCODE)
       }
       const immediate = readImmediateByte(runState)
-      if (common.isActivatedEIP(8024) && immediate > 0x7f) {
-        trap(EVMError.errorMessages.INVALID_OPCODE)
+      if (runState.env.eof === undefined) {
+        const toSwap = decodeEIP8024SingleImmediate(immediate) + 1
+        runState.stack.swap(toSwap)
+        return
       }
-      const toSwap = immediate + 1
-      runState.stack.swap(toSwap)
+      runState.stack.swap(immediate + 1)
     },
   ],
   // 0xe8: EXCHANGE
@@ -1271,11 +1275,13 @@ export const handlers: Map<number, OpHandler> = new Map([
         trap(EVMError.errorMessages.INVALID_OPCODE)
       }
       const immediate = readImmediateByte(runState)
+      if (runState.env.eof === undefined) {
+        const [x, y] = decodeEIP8024PairImmediate(immediate)
+        runState.stack.exchange(x, y)
+        return
+      }
       const x = (immediate >> 4) + 1
       const y = (immediate & 0x0f) + 1
-      if (common.isActivatedEIP(8024) && x + y > 17) {
-        trap(EVMError.errorMessages.INVALID_OPCODE)
-      }
       runState.stack.exchange(x, x + y)
     },
   ],
