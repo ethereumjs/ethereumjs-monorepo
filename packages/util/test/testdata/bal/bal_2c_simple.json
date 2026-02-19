@@ -1,0 +1,70 @@
+{
+  "accessMap": [
+    {
+      "addresses": [
+        "0x0000f90827f1c53a10cb7a02335b175320002935",
+        "0x000f3df6d732807ef1319fb7b8bb8522d0beac02"
+      ],
+      "storageSlots": [
+        { "address": "0x0000f90827f1c53a10cb7a02335b175320002935", "slots": ["0x"] },
+        { "address": "0x000f3df6d732807ef1319fb7b8bb8522d0beac02", "slots": ["0x0c", "0x200b"] }
+      ]
+    },
+    {
+      "addresses": [
+        "0x2adc25665018aa1fe0e6bc666dac8fc2697ff9ba",
+        "0x6032d7702ce646223d30c900bfc4d8641ce84dd1",
+        "0xf5ffa27864bf419390eaa7c520b528a740c594de"
+      ],
+      "storageSlots": []
+    },
+    {
+      "addresses": [
+        "0x2adc25665018aa1fe0e6bc666dac8fc2697ff9ba",
+        "0x6032d7702ce646223d30c900bfc4d8641ce84dd1",
+        "0x9c450aafafe41b35edac4bc49eddb23209a250dc"
+      ],
+      "storageSlots": []
+    }
+  ],
+  "stateDiff": [
+    {
+      "address": "0x0000f90827f1c53a10cb7a02335b175320002935",
+      "storageDiffs": [
+        {
+          "slot": "0x",
+          "value": "0x372103e56664908ceaa2479eae7f3e852363b920a2ee7a19559b0a2035ba3d21"
+        }
+      ]
+    },
+    {
+      "address": "0x000f3df6d732807ef1319fb7b8bb8522d0beac02",
+      "storageDiffs": [
+        { "slot": "0x0c", "value": "0x0c" },
+        { "slot": "0x200b", "value": "0xabcdef" }
+      ]
+    },
+    {
+      "address": "0x2adc25665018aa1fe0e6bc666dac8fc2697ff9ba",
+      "storageDiffs": [],
+      "balance": "0x01ec30"
+    },
+    {
+      "address": "0x6032d7702ce646223d30c900bfc4d8641ce84dd1",
+      "storageDiffs": [],
+      "balance": "0x14"
+    },
+    {
+      "address": "0x9c450aafafe41b35edac4bc49eddb23209a250dc",
+      "storageDiffs": [],
+      "balance": "0x3635c9adc5de9ccba6",
+      "nonce": "0x01"
+    },
+    {
+      "address": "0xf5ffa27864bf419390eaa7c520b528a740c594de",
+      "storageDiffs": [],
+      "balance": "0x3635c9adc5de9ccba6",
+      "nonce": "0x01"
+    }
+  ]
+}
