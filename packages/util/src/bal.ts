@@ -455,6 +455,69 @@ export class BlockLevelAccessList {
    * Per EIP-7928: "if the account had a positive balance pre-transaction,
    * the balance change to zero MUST be recorded."
    */
+  /**
+   * Converts the internal representation to the JSON format (BALJSONBlockAccessList).
+   * Inverse of createBlockLevelAccessListFromJSON().
+   */
+  public toJSON(): BALJSONBlockAccessList {
+    const result: BALJSONBlockAccessList = []
+
+    for (const [address, access] of Object.entries(this.accesses)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .filter(([addr]) => addr !== systemAddress)) {
+      const storageChanges: BALJSONSlotChanges[] = (
+        Object.entries(access.storageChanges) as [BALStorageKeyHex, BALRawStorageChange[]][]
+      )
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([slot, changes]) => ({
+          slot,
+          slotChanges: changes
+            .sort((a, b) => a[0] - b[0])
+            .map(([index, value]) => ({
+              blockAccessIndex: indexToHex(index),
+              postValue: padToEvenHex(bytesToHex(value)),
+            })),
+        }))
+
+      const storageReads: BALStorageKeyHex[] = Array.from(access.storageReads).sort((a, b) =>
+        Number(
+          (a === '0x' ? 0n : hexToBigInt(a as `0x${string}`)) -
+            (b === '0x' ? 0n : hexToBigInt(b as `0x${string}`)),
+        ),
+      )
+
+      const balanceChanges: BALJSONBalanceChange[] = Array.from(access.balanceChanges.entries())
+        .sort(([a], [b]) => a - b)
+        .map(([index, balance]) => ({
+          blockAccessIndex: indexToHex(index),
+          postBalance: balance,
+        }))
+
+      const nonceChanges: BALJSONNonceChange[] = Array.from(access.nonceChanges.entries())
+        .sort(([a], [b]) => a - b)
+        .map(([index, nonce]) => ({
+          blockAccessIndex: indexToHex(index),
+          postNonce: nonce,
+        }))
+
+      const codeChanges: BALJSONCodeChange[] = access.codeChanges.map(([index, code]) => ({
+        blockAccessIndex: indexToHex(index),
+        newCode: bytesToHex(code),
+      }))
+
+      result.push({
+        address: address as BALAddressHex,
+        nonceChanges,
+        balanceChanges,
+        codeChanges,
+        storageChanges,
+        storageReads,
+      })
+    }
+
+    return result
+  }
+
   public cleanupSelfdestructed(addresses: Array<BALAddressHex>): void {
     for (const address of addresses) {
       const access = this.accesses[address]
@@ -644,3 +707,7 @@ function normalizeStorageKeyHex(hex: PrefixedHexString): BALStorageKeyHex {
 
 // Address to ignore (canonical system address used by EIP-2935, EIP-7002, EIP-7251, EIP-7708, etc.)
 const systemAddress = SYSTEM_ADDRESS
+
+function indexToHex(index: BALAccessIndexNumber): BALAccessIndexHex {
+  return padToEvenHex(`0x${index.toString(16)}`) as BALAccessIndexHex
+}
