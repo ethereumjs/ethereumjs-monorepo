@@ -5,8 +5,9 @@ import {
   BlockLevelAccessList,
   createBlockLevelAccessList,
   createBlockLevelAccessListFromJSON,
+  createBlockLevelAccessListFromRLP,
 } from '../src/bal.ts'
-import { bytesToHex } from '../src/bytes.ts'
+import { bytesToHex, hexToBytes } from '../src/bytes.ts'
 import { KECCAK256_RLP_ARRAY_S } from '../src/constants.ts'
 import type { PrefixedHexString } from '../src/types.ts'
 import bal_all_transaction_types from './testdata/bal/bal_all_transaction_types.json' with {
@@ -121,6 +122,62 @@ describe('JSON', () => {
     bal = createBlockLevelAccessListFromJSON(bal_all_transaction_types as BALJSONBlockAccessList)
     assert.isNotNull(bal)
     assert.deepEqual(bal.accesses, balAllTransactionTypes)
+    assert.deepEqual(bytesToHex(bal.serialize()), balAllTransactionTypesRLP)
+    assert.deepEqual(bytesToHex(bal.hash()), balAllTransactionTypesHash)
+  })
+
+  it('toJSON() should produce correct JSON from Accesses data', () => {
+    // bal_simple and bal_all_transaction_types use even-padded hex,
+    // so toJSON() output should match the JSON test data directly.
+    let bal = new BlockLevelAccessList(balSimple)
+    assert.deepEqual(bal.toJSON(), bal_simple as BALJSONBlockAccessList)
+
+    bal = new BlockLevelAccessList(balAllTransactionTypes)
+    assert.deepEqual(bal.toJSON(), bal_all_transaction_types as BALJSONBlockAccessList)
+  })
+
+  it('toJSON() roundtrip: JSON -> internal -> toJSON()', () => {
+    // For already-normalized JSON (even-padded hex), toJSON() output matches input.
+    let bal = createBlockLevelAccessListFromJSON(bal_simple as BALJSONBlockAccessList)
+    assert.deepEqual(bal.toJSON(), bal_simple as BALJSONBlockAccessList)
+
+    bal = createBlockLevelAccessListFromJSON(bal_all_transaction_types as BALJSONBlockAccessList)
+    assert.deepEqual(bal.toJSON(), bal_all_transaction_types as BALJSONBlockAccessList)
+
+    // bal_empty_block_no_coinbase uses un-normalized hex (e.g. "0x0" vs "0x00"),
+    // so direct JSON comparison won't match. Verify semantic roundtrip instead:
+    // JSON -> internal -> toJSON() -> internal -> RLP/hash must still match.
+    bal = createBlockLevelAccessListFromJSON(bal_empty_block_no_coinbase as BALJSONBlockAccessList)
+    const roundtripJSON = bal.toJSON()
+    const bal2 = createBlockLevelAccessListFromJSON(roundtripJSON)
+    assert.deepEqual(bal2.accesses, balEmptyBlockNoCoinbase)
+    assert.deepEqual(bytesToHex(bal2.serialize()), balEmptyBlockNoCoinbaseRLP)
+    assert.deepEqual(bytesToHex(bal2.hash()), balEmptyBlockNoCoinbaseHash)
+  })
+})
+
+describe('RLP', () => {
+  it('serialize() should produce correct RLP output', () => {
+    let bal = new BlockLevelAccessList(balSimple)
+    assert.deepEqual(bytesToHex(bal.serialize()), balSimpleRLP)
+
+    bal = new BlockLevelAccessList(balEmptyBlockNoCoinbase)
+    assert.deepEqual(bytesToHex(bal.serialize()), balEmptyBlockNoCoinbaseRLP)
+
+    bal = new BlockLevelAccessList(balAllTransactionTypes)
+    assert.deepEqual(bytesToHex(bal.serialize()), balAllTransactionTypesRLP)
+  })
+
+  it('serialize() roundtrip: RLP -> internal -> serialize()', () => {
+    let bal = createBlockLevelAccessListFromRLP(hexToBytes(balSimpleRLP))
+    assert.deepEqual(bytesToHex(bal.serialize()), balSimpleRLP)
+    assert.deepEqual(bytesToHex(bal.hash()), balSimpleHash)
+
+    bal = createBlockLevelAccessListFromRLP(hexToBytes(balEmptyBlockNoCoinbaseRLP))
+    assert.deepEqual(bytesToHex(bal.serialize()), balEmptyBlockNoCoinbaseRLP)
+    assert.deepEqual(bytesToHex(bal.hash()), balEmptyBlockNoCoinbaseHash)
+
+    bal = createBlockLevelAccessListFromRLP(hexToBytes(balAllTransactionTypesRLP))
     assert.deepEqual(bytesToHex(bal.serialize()), balAllTransactionTypesRLP)
     assert.deepEqual(bytesToHex(bal.hash()), balAllTransactionTypesHash)
   })
