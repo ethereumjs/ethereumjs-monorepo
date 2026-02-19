@@ -31,6 +31,7 @@ import { type EVMPerformanceLogger, type Timer } from './logger.ts'
 import { Memory } from './memory.ts'
 import { Message } from './message.ts'
 import { trap } from './opcodes/index.ts'
+import { isEIP8024PairImmediateValid, isEIP8024SingleImmediateValid } from './opcodes/util.ts'
 import { Stack } from './stack.ts'
 
 import type {
@@ -627,14 +628,10 @@ export class Interpreter {
         if (immediate === undefined) {
           continue
         }
-        let skipImmediate = false
-        if (opcode === 0xe6 || opcode === 0xe7) {
-          skipImmediate = immediate <= 0x7f
-        } else {
-          const x = (immediate >> 4) + 1
-          const y = (immediate & 0x0f) + 1
-          skipImmediate = x + y <= 17
-        }
+        const skipImmediate =
+          opcode === 0xe8
+            ? isEIP8024PairImmediateValid(immediate)
+            : isEIP8024SingleImmediateValid(immediate)
         if (skipImmediate) {
           i++
         }
