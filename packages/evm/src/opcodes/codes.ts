@@ -285,14 +285,6 @@ const hardforkOpcodes: { hardfork: Hardfork; opcodes: OpcodeEntry }[] = [
 
 const eipOpcodes: { eip: number; opcodes: OpcodeEntry }[] = [
   {
-    eip: 663,
-    opcodes: {
-      0xe6: defaultOp('DUPN'),
-      0xe7: defaultOp('SWAPN'),
-      0xe8: defaultOp('EXCHANGE'),
-    },
-  },
-  {
     eip: 8024,
     opcodes: {
       0xe6: defaultOp('DUPN'),
