@@ -101,6 +101,12 @@ export function readImmediateByte(runState: RunState): number {
   return immediate
 }
 
+export function readImmediateByteOrZero(runState: RunState): number {
+  const immediate = runState.code[runState.programCounter] ?? 0
+  runState.programCounter++
+  return immediate
+}
+
 export function isEIP8024SingleImmediateValid(immediate: number): boolean {
   return immediate <= 0x5a || immediate >= 0x80
 }
