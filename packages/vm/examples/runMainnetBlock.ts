@@ -22,7 +22,7 @@ import * as path from 'node:path'
  *     so this is a VM execution bug, not a data collection issue.
  */
 import { createBlockFromRPC } from '@ethereumjs/block'
-import { Common, Mainnet } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { MerkleStateManager } from '@ethereumjs/statemanager'
 import {
   Account,
@@ -41,20 +41,7 @@ interface StateData {
   storage: Record<string, Record<string, string>>
 }
 
-const main = async () => {
-  let blockNumber: bigint | undefined
-  try {
-    blockNumber = process.argv[2] !== undefined ? BigInt(process.argv[2]) : undefined
-  } catch {
-    // argument is not a valid block number
-  }
-
-  if (blockNumber === undefined) {
-    console.log('Example skipped (no block number provided)')
-    console.log('Usage: npx tsx examples/runMainnetBlock.ts <blockNumber>')
-    return
-  }
-
+const runSingleBlock = async (blockNumber: bigint) => {
   const dataDir = path.resolve(import.meta.dirname, 'data')
   const blockFile = path.join(dataDir, `block${blockNumber}.json`)
   const stateFile = path.join(dataDir, `block${blockNumber}State.json`)
@@ -63,7 +50,7 @@ const main = async () => {
     console.log(`Data files not found for block ${blockNumber}`)
     console.log(`  Expected: ${blockFile}`)
     console.log(`  Expected: ${stateFile}`)
-    return
+    return undefined
   }
 
   // 1. Load block JSON and state data
@@ -73,7 +60,7 @@ const main = async () => {
 
   // 2. Set up Common with KZG
   const kzg = new microEthKZG(trustedSetup)
-  const common = new Common({ chain: Mainnet, customCrypto: { kzg } })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam, customCrypto: { kzg } })
 
   // 3. Create MerkleStateManager and populate with collected pre-state
   console.log('Populating state manager...')
@@ -138,13 +125,13 @@ const main = async () => {
   )
 
   // 4. Create block from saved JSON
-  const block = createBlockFromRPC(blockJSON, [], { common, setHardfork: true })
+  const block = createBlockFromRPC(blockJSON, [], { common })
   console.log(
     `Block ${block.header.number}: ${block.transactions.length} txs, hardfork=${block.common.hardfork()}`,
   )
 
   // 5. Create VM and run the block
-  const vm = await createVM({ common, stateManager, setHardfork: true })
+  const vm = await createVM({ common, stateManager })
 
   console.log(`\nRunning block ${block.header.number} (${block.transactions.length} txs)...`)
   const startTime = performance.now()
@@ -167,8 +154,67 @@ const main = async () => {
   if (result.gasUsed === block.header.gasUsed) {
     console.log(`  ✓ Gas used MATCHES expected block header value`)
   } else {
-    console.log(`  ✗ Gas used MISMATCH`)
-    process.exit(1)
+    console.log(`  ✗ Gas used MISMATCH (continuing anyway)`)
+  }
+
+  return result
+}
+
+const main = async () => {
+  let blockNumber: bigint | undefined
+  try {
+    blockNumber = process.argv[2] !== undefined ? BigInt(process.argv[2]) : undefined
+  } catch {
+    // argument is not a valid block number
+  }
+
+  if (blockNumber === undefined) {
+    console.log('Example skipped (no block number provided)')
+    console.log('Usage: npx tsx examples/runMainnetBlock.ts <blockNumber>')
+    console.log('       npx tsx examples/runMainnetBlock.ts <startBlock> <endBlock>')
+    return
+  }
+
+  const endBlockNumber = process.argv[3] !== undefined ? BigInt(process.argv[3]) : blockNumber
+
+  const outputDir = path.resolve(import.meta.dirname, 'data', 'bals')
+  if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true })
+  }
+
+  for (let bn = blockNumber; bn <= endBlockNumber; bn++) {
+    console.log(`\n${'='.repeat(80)}`)
+    console.log(`Processing block ${bn}`)
+    console.log(`${'='.repeat(80)}\n`)
+
+    const result = await runSingleBlock(bn)
+    if (result === undefined) {
+      console.log(`  Skipping block ${bn} (no data files)\n`)
+      continue
+    }
+
+    const bal = result.blockLevelAccessList
+    if (bal === undefined) {
+      console.log(`  No BAL generated for block ${bn} (EIP-7928 not active?)\n`)
+      continue
+    }
+
+    // Save JSON
+    const jsonFile = path.join(outputDir, `bal${bn}JSON.json`)
+    const jsonOutput = JSON.stringify(bal.toJSON(), null, 2)
+    fs.writeFileSync(jsonFile, jsonOutput)
+
+    // Save RLP (hex-encoded bytes)
+    const rlpFile = path.join(outputDir, `bal${bn}RLP.txt`)
+    const rlpOutput = bytesToHex(bal.serialize())
+    fs.writeFileSync(rlpFile, rlpOutput)
+
+    const rlpBytes = bal.serialize()
+    const addressCount = Object.keys(bal.accesses).length
+    console.log(`\n  BAL: ${addressCount} addresses, RLP size: ${rlpBytes.length} bytes`)
+    console.log(`  BAL hash: ${bytesToHex(bal.hash())}`)
+    console.log(`  Saved: ${jsonFile}`)
+    console.log(`  Saved: ${rlpFile}`)
   }
 }
 
