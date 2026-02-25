@@ -43,7 +43,6 @@ import {
   getDataSlice,
   jumpIsValid,
   mod,
-  readImmediateByte,
   readImmediateByteOrZero,
   toTwos,
   trap,
