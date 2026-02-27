@@ -30,6 +30,7 @@ import { type EVMPerformanceLogger, type Timer } from './logger.ts'
 import { Memory } from './memory.ts'
 import { Message } from './message.ts'
 import { trap } from './opcodes/index.ts'
+import { isEIP8024PairImmediateValid, isEIP8024SingleImmediateValid } from './opcodes/util.ts'
 import { Stack } from './stack.ts'
 
 import type {
@@ -595,6 +596,21 @@ export class Interpreter {
         } else if (opcode === 0x5b) {
           // Define a JUMPDEST as a 1 in the valid jumps array
           jumps[i] = 1
+        }
+      } else if (
+        this.common.isActivatedEIP(8024) &&
+        (opcode === 0xe6 || opcode === 0xe7 || opcode === 0xe8)
+      ) {
+        const immediate = code[i + 1]
+        if (immediate === undefined) {
+          continue
+        }
+        const skipImmediate =
+          opcode === 0xe8
+            ? isEIP8024PairImmediateValid(immediate)
+            : isEIP8024SingleImmediateValid(immediate)
+        if (skipImmediate === true) {
+          i++
         }
       }
     }
