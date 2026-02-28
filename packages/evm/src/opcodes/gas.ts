@@ -618,10 +618,10 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           gas += targetAccessCost
         }
 
-        // EIP-7928: Check gas before committing target access
-        // For value transfers (SpuriousDragon+), we need to include value transfer and
-        // new account gas in the check. For no-value calls or pre-SpuriousDragon,
-        // use the simpler check.
+        // EIP-7928: Check gas before committing target access.
+        // Include value transfer gas in this boundary, but defer new-account gas
+        // until after target access commit so OOG can still happen after target
+        // access for account-creation cases.
         let valueTransferGas = BIGINT_0
         let newAccountGas = BIGINT_0
 
@@ -639,7 +639,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         }
 
         // EIP-7928: Check gas before committing target access
-        const gasForTargetAccess = gas + valueTransferGas + newAccountGas
+        const gasForTargetAccess = gas + valueTransferGas
         if (common.isActivatedEIP(7928) && gasForTargetAccess > runState.interpreter.getGasLeft()) {
           trap(EVMError.errorMessages.OUT_OF_GAS)
         }
