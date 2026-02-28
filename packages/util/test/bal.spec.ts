@@ -1,5 +1,6 @@
 import { assert, describe, it } from 'vitest'
 
+import { RLP } from '@ethereumjs/rlp'
 import {
   type BALJSONBlockAccessList,
   BlockLevelAccessList,
@@ -8,7 +9,7 @@ import {
   createBlockLevelAccessListFromRLP,
 } from '../src/bal.ts'
 import { bytesToHex, hexToBytes } from '../src/bytes.ts'
-import { KECCAK256_RLP_ARRAY_S } from '../src/constants.ts'
+import { KECCAK256_RLP_ARRAY_S, SYSTEM_ADDRESS } from '../src/constants.ts'
 import type { PrefixedHexString } from '../src/types.ts'
 import bal_all_transaction_types from './testdata/bal/bal_all_transaction_types.json' with {
   type: 'json',
@@ -124,6 +125,105 @@ describe('JSON', () => {
     assert.deepEqual(bal.accesses, balAllTransactionTypes)
     assert.deepEqual(bytesToHex(bal.serialize()), balAllTransactionTypesRLP)
     assert.deepEqual(bytesToHex(bal.hash()), balAllTransactionTypesHash)
+  })
+
+  it('should canonically serialize quantity-like storage slots and values from JSON', () => {
+    const bal = createBlockLevelAccessListFromJSON([
+      {
+        address: '0x0000000000000000000000000000000000000001',
+        nonceChanges: [],
+        balanceChanges: [],
+        codeChanges: [],
+        storageChanges: [
+          {
+            slot: '0x0001',
+            slotChanges: [
+              {
+                blockAccessIndex: '0x0',
+                postValue: '0x0',
+              },
+              {
+                blockAccessIndex: '0x1',
+                postValue: '0x0002',
+              },
+            ],
+          },
+        ],
+        storageReads: ['0x0', '0x0003'],
+      },
+    ] satisfies BALJSONBlockAccessList)
+
+    const expected = RLP.encode([
+      [
+        hexToBytes('0x0000000000000000000000000000000000000001'),
+        [
+          [
+            hexToBytes('0x01'),
+            [
+              [0, new Uint8Array([])],
+              [1, hexToBytes('0x02')],
+            ],
+          ],
+        ],
+        [new Uint8Array([]), hexToBytes('0x03')],
+        [],
+        [],
+        [],
+      ],
+    ])
+
+    assert.deepEqual(bytesToHex(bal.serialize()), bytesToHex(expected))
+  })
+
+  it('should omit an empty system address entry when serializing', () => {
+    const bal = createBlockLevelAccessListFromJSON([
+      {
+        address: SYSTEM_ADDRESS,
+        nonceChanges: [],
+        balanceChanges: [],
+        codeChanges: [],
+        storageChanges: [],
+        storageReads: [],
+      },
+    ] satisfies BALJSONBlockAccessList)
+
+    assert.deepEqual(bal.raw(), [])
+    assert.deepEqual(bal.toJSON(), [])
+  })
+
+  it('should preserve a touched system address entry when serializing', () => {
+    const bal = createBlockLevelAccessListFromJSON([
+      {
+        address: SYSTEM_ADDRESS,
+        nonceChanges: [],
+        balanceChanges: [
+          {
+            blockAccessIndex: '0x1',
+            postBalance: '0x01',
+          },
+        ],
+        codeChanges: [],
+        storageChanges: [],
+        storageReads: [],
+      },
+    ] satisfies BALJSONBlockAccessList)
+
+    assert.deepEqual(bal.raw(), [[SYSTEM_ADDRESS, [], [], [[1, '0x01']], [], []]])
+    assert.deepEqual(bal.toJSON(), [
+      {
+        address: SYSTEM_ADDRESS,
+        nonceChanges: [],
+        balanceChanges: [
+          {
+            blockAccessIndex: '0x01',
+            postBalance: '0x01',
+          },
+        ],
+        codeChanges: [],
+        storageChanges: [],
+        storageReads: [],
+      },
+    ])
   })
 
   it('toJSON() should produce correct JSON from Accesses data', () => {

@@ -233,7 +233,9 @@ export class BlockLevelAccessList {
 
     for (const address of Object.keys(this.accesses)
       .sort()
-      .filter((address) => address !== systemAddress)) {
+      .filter((address) =>
+        shouldIncludeAddress(address as BALAddressHex, this.accesses[address as BALAddressHex]),
+      )) {
       const data = this.accesses[address as BALAddressHex]
 
       // Format storage changes: [slot, [[index, value], ...]]
@@ -241,29 +243,38 @@ export class BlockLevelAccessList {
       const storageChanges = (
         Object.entries(data.storageChanges) as [BALStorageKeyHex, BALRawStorageChange[]][]
       )
-        .sort((a, b) => a[0].localeCompare(b[0]))
-        .map(([slot, changes]) => [normalizeHexForRLP(slot), changes.sort((a, b) => a[0] - b[0])])
+        .sort((a, b) => compareLexicographicHexOrBytes(a[0], b[0]))
+        .map(([slot, changes]) => [
+          normalizeHexForRLP(slot),
+          changes
+            .sort((a, b) => a[0] - b[0])
+            .map(
+              ([index, value]) =>
+                [index, normalizeBytesForRLPQuantity(value)] as BALRawStorageChange,
+            ),
+        ])
 
       // Normalize storage reads for canonical RLP encoding (0 -> empty bytes)
       const storageReads = Array.from(data.storageReads)
         .map(normalizeHexForRLP)
-        .sort((a, b) => Number(hexToBigInt(a as `0x${string}`) - hexToBigInt(b as `0x${string}`)))
+        .sort((a, b) => compareLexicographicHexOrBytes(a, b))
 
-      const balanceChanges = Array.from(data.balanceChanges.entries()).map(([index, balance]) => [
-        index,
-        balance,
-      ])
-      const nonceChanges = Array.from(data.nonceChanges.entries()).map(([index, nonce]) => [
-        index,
-        nonce,
-      ])
+      const balanceChanges = Array.from(data.balanceChanges.entries())
+        .sort(([a], [b]) => a - b)
+        .map(
+          ([index, balance]) => [index, normalizeQuantityHexForRLP(balance)] as BALRawBalanceChange,
+        )
+      const nonceChanges = Array.from(data.nonceChanges.entries())
+        .sort(([a], [b]) => a - b)
+        .map(([index, nonce]) => [index, normalizeQuantityHexForRLP(nonce)] as BALRawNonceChange)
+      const codeChanges = [...data.codeChanges].sort(([a], [b]) => a - b)
       bal.push([
         address as BALAddressHex,
         storageChanges,
         storageReads,
         balanceChanges,
         nonceChanges,
-        data.codeChanges,
+        codeChanges,
       ] as BALRawAccountChanges)
     }
 
@@ -384,9 +395,9 @@ export class BlockLevelAccessList {
         finalBalanceHex === '0x' ? BigInt(0) : BigInt(`0x${finalBalanceHex.replace(/^0x/, '')}`)
 
       // EIP-7928: If final balance == original balance, remove all balanceChanges
-      // but keep the address in the BAL
+      // for the current blockAccessIndex only, but keep prior tx entries.
       if (finalBalance === originalBalance) {
-        access.balanceChanges.clear()
+        access.balanceChanges.delete(this.blockAccessIndex)
       }
     }
     // Clear the tracking map for the next transaction
@@ -464,7 +475,7 @@ export class BlockLevelAccessList {
 
     for (const [address, access] of Object.entries(this.accesses)
       .sort(([a], [b]) => a.localeCompare(b))
-      .filter(([addr]) => addr !== systemAddress)) {
+      .filter(([address, access]) => shouldIncludeAddress(address as BALAddressHex, access))) {
       const storageChanges: BALJSONSlotChanges[] = (
         Object.entries(access.storageChanges) as [BALStorageKeyHex, BALRawStorageChange[]][]
       )
@@ -549,6 +560,22 @@ export class BlockLevelAccessList {
   }
 }
 
+function compareLexicographicHexOrBytes(
+  a: PrefixedHexString | Uint8Array,
+  b: PrefixedHexString | Uint8Array,
+): number {
+  const aBytes = a instanceof Uint8Array ? a : hexToBytes(a)
+  const bBytes = b instanceof Uint8Array ? b : hexToBytes(b)
+  const minLength = Math.min(aBytes.length, bBytes.length)
+  for (let i = 0; i < minLength; i++) {
+    if (aBytes[i] < bBytes[i]) return -1
+    if (aBytes[i] > bBytes[i]) return 1
+  }
+  if (aBytes.length < bBytes.length) return -1
+  if (aBytes.length > bBytes.length) return 1
+  return 0
+}
+
 export function createBlockLevelAccessList(): BlockLevelAccessList {
   return new BlockLevelAccessList()
 }
@@ -599,18 +626,28 @@ export function createBlockLevelAccessListFromJSON(
 }
 
 /**
- * Normalizes a hex string for canonical RLP encoding.
- * In RLP, the integer 0 must be encoded as empty bytes (0x80), not as a single zero byte (0x00).
- * This function converts hex strings representing zero to empty Uint8Array.
+ * Normalizes a quantity-like hex string for canonical RLP encoding.
+ * Integer fields in the BAL use minimal big-endian encoding, so leading zero bytes
+ * are stripped and zero is encoded as empty bytes.
  */
 function normalizeHexForRLP(hex: PrefixedHexString): PrefixedHexString | Uint8Array {
-  // Strip 0x prefix and all leading zeros
   const stripped = hex.slice(2).replace(/^0+/, '')
   if (stripped === '') {
-    // Value is zero - return empty array for canonical RLP encoding
     return Uint8Array.from([])
   }
-  return hex
+  return `0x${padToEven(stripped)}` as PrefixedHexString
+}
+
+function normalizeBytesForRLPQuantity(bytes: Uint8Array): Uint8Array {
+  return stripLeadingZeros(bytes)
+}
+
+function normalizeQuantityHexForRLP(hex: PrefixedHexString): PrefixedHexString {
+  const stripped = hex.slice(2).replace(/^0+/, '')
+  if (stripped === '') {
+    return '0x'
+  }
+  return `0x${padToEven(stripped)}`
 }
 
 export function createBlockLevelAccessListFromRLP(rlp: Uint8Array): BlockLevelAccessList {
@@ -705,8 +742,19 @@ function normalizeStorageKeyHex(hex: PrefixedHexString): BALStorageKeyHex {
   return `0x${padToEven(stripped)}` as BALStorageKeyHex
 }
 
-// Address to ignore (canonical system address used by EIP-2935, EIP-7002, EIP-7251, EIP-7708, etc.)
-const systemAddress = SYSTEM_ADDRESS
+function shouldIncludeAddress(address: BALAddressHex, access: Accesses[BALAddressHex]): boolean {
+  if (address !== SYSTEM_ADDRESS) {
+    return true
+  }
+
+  return (
+    access.storageReads.size > 0 ||
+    Object.keys(access.storageChanges).length > 0 ||
+    access.balanceChanges.size > 0 ||
+    access.nonceChanges.size > 0 ||
+    access.codeChanges.length > 0
+  )
+}
 
 function indexToHex(index: BALAccessIndexNumber): BALAccessIndexHex {
   return padToEvenHex(`0x${index.toString(16)}`) as BALAccessIndexHex
