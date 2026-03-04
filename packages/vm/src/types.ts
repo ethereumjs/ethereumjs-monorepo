@@ -472,6 +472,12 @@ export interface RunTxResult extends EVMResult {
   totalGasSpent: bigint
 
   /**
+   * The amount of gas accounted for at block level.
+   * On EIP-7778 this excludes tx-level refund subtraction.
+   */
+  blockGasSpent: bigint
+
+  /**
    * The amount of gas as that was refunded during the transaction (i.e. `gasUsed = totalGasConsumed - gasRefund`)
    */
   gasRefund: bigint

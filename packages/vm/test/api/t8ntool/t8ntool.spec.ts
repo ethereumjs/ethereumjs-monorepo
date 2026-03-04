@@ -90,7 +90,7 @@ describe('trace tests', async () => {
     const common = new Common({
       hardfork: Hardfork.Prague,
       chain: Mainnet,
-      eips: [663, 3540, 3670, 4200, 4750, 5450, 6206, 7069, 7480, 7620, 7692, 7698],
+      eips: [3540, 3670, 4200, 4750, 5450, 6206, 7069, 7480, 7620, 7692, 7698],
     })
     const sm = new MerkleStateManager({ common })
     const vm = await createVM({ common, stateManager: sm })
@@ -132,7 +132,7 @@ describe('trace tests', async () => {
     const common = new Common({
       hardfork: Hardfork.Prague,
       chain: Mainnet,
-      eips: [663, 3540, 3670, 4200, 4750, 5450, 6206, 7069, 7480, 7620, 7692, 7698],
+      eips: [3540, 3670, 4200, 4750, 5450, 6206, 7069, 7480, 7620, 7692, 7698],
     })
     const sm = new MerkleStateManager({ common })
     const vm = await createVM({ common, stateManager: sm })
