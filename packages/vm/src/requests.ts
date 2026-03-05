@@ -81,15 +81,20 @@ const accumulateWithdrawalsRequest = async (
 
   const originalAccount = await vm.stateManager.getAccount(withdrawalsAddress)
 
-  if (originalAccount === undefined) {
-    return new CLRequest(CLRequestType.Withdrawal, new Uint8Array())
-  }
+  const originalCode = await vm.stateManager.getCode(withdrawalsAddress)
 
+  if (originalAccount === undefined || originalCode.length === 0) {
+    throw EthereumJSErrorWithoutCode('system contract empty')
+  }
   const results = await vm.evm.runCall({
     caller: systemAddress,
     gasLimit: vm.common.param('systemCallGasLimit'),
     to: withdrawalsAddress,
   })
+
+  if (results.execResult.exceptionError !== undefined) {
+    throw EthereumJSErrorWithoutCode('system contract call failed')
+  }
 
   if (systemAccount === undefined) {
     await vm.stateManager.deleteAccount(systemAddress)
@@ -116,9 +121,10 @@ const accumulateConsolidationsRequest = async (
   const systemAccount = await vm.stateManager.getAccount(systemAddress)
 
   const originalAccount = await vm.stateManager.getAccount(consolidationsAddress)
+  const originalCode = await vm.stateManager.getCode(consolidationsAddress)
 
-  if (originalAccount === undefined) {
-    return new CLRequest(CLRequestType.Consolidation, new Uint8Array(0))
+  if (originalAccount === undefined || originalCode.length === 0) {
+    throw EthereumJSErrorWithoutCode('system contract empty')
   }
 
   const results = await vm.evm.runCall({
@@ -126,6 +132,10 @@ const accumulateConsolidationsRequest = async (
     gasLimit: vm.common.param('systemCallGasLimit'),
     to: consolidationsAddress,
   })
+
+  if (results.execResult.exceptionError !== undefined) {
+    throw EthereumJSErrorWithoutCode('system contract call failed')
+  }
 
   if (systemAccount === undefined) {
     await vm.stateManager.deleteAccount(systemAddress)
