@@ -1,4 +1,5 @@
 import { Mainnet } from '@ethereumjs/common'
+import type { BlockLevelAccessList, PrefixedHexString } from '@ethereumjs/util'
 import {
   CLRequest,
   CLRequestType,
@@ -29,7 +30,7 @@ const INDEX_SIZE = BigInt(8)
 const LOG_SIZE = 576
 const LOG_LAYOUT_MISMATCH = 'invalid deposit log: unsupported data layout'
 
-function cloneSystemAccessEntry(vm: VM, systemAddressHex: string) {
+function cloneSystemAccessEntry(vm: VM, systemAddressHex: PrefixedHexString) {
   const access = vm.evm.blockLevelAccessList?.accesses[systemAddressHex]
   if (access === undefined) {
     return undefined
@@ -37,7 +38,9 @@ function cloneSystemAccessEntry(vm: VM, systemAddressHex: string) {
 
   const storageChanges: typeof access.storageChanges = {}
   for (const [slot, changes] of Object.entries(access.storageChanges)) {
-    storageChanges[slot] = changes.map(([index, value]) => [index, value] as const)
+    storageChanges[slot as PrefixedHexString] = changes.map(
+      ([index, value]) => [index, value] as const,
+    )
   }
 
   return {
@@ -51,7 +54,7 @@ function cloneSystemAccessEntry(vm: VM, systemAddressHex: string) {
 
 function restoreSystemAccessEntry(
   vm: VM,
-  systemAddressHex: string,
+  systemAddressHex: PrefixedHexString,
   snapshot: ReturnType<typeof cloneSystemAccessEntry>,
 ) {
   const bal = vm.evm.blockLevelAccessList
@@ -64,7 +67,7 @@ function restoreSystemAccessEntry(
     return
   }
 
-  bal.accesses[systemAddressHex] = snapshot
+  bal.accesses[systemAddressHex] = snapshot as BlockLevelAccessList['accesses'][PrefixedHexString]
 }
 
 /**
