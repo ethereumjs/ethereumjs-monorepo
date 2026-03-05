@@ -204,9 +204,9 @@ export const paramsEVM: ParamsDict = {
   },
 
   /**
-.  * SWAPN, DUPN and EXCHANGE instructions
+.  * DUPN, SWAPN and EXCHANGE instructions
 .  */
-  663: {
+  8024: {
     // gasPrices
     dupnGas: 3, // Base fee of the DUPN opcode
     swapnGas: 3, // Base fee of the SWAPN opcode

@@ -59,13 +59,13 @@ export const eipsDict: EIPsDict = {
     minimumHardfork: Hardfork.Istanbul,
   },
   /**
-   * Description : SWAPN, DUPN and EXCHANGE instructions
-   * URL         : https://github.com/ethereum/EIPs/blob/bd421962b4e241aa2b00a85d9cf4e57770bdb954/EIPS/eip-663.md
+   * Description : DUPN, SWAPN and EXCHANGE instructions
+   * URL         : https://eips.ethereum.org/EIPS/eip-8024
    * Status      : Review
    */
-  663: {
-    minimumHardfork: Hardfork.Chainstart,
-    requiredEIPs: [3540, 5450],
+  8024: {
+    minimumHardfork: Hardfork.Amsterdam,
+    requiredEIPs: [],
   },
   /**
    * Description : Transient storage opcodes
@@ -450,7 +450,7 @@ export const eipsDict: EIPsDict = {
    */
   7692: {
     minimumHardfork: Hardfork.Cancun,
-    requiredEIPs: [663, 3540, 3670, 4200, 4750, 5450, 6206, 7069, 7480, 7620, 7698],
+    requiredEIPs: [3540, 3670, 4200, 4750, 5450, 6206, 7069, 7480, 7620, 7698],
   },
   /**
    * Description : EOF - Creation transaction
@@ -512,6 +512,15 @@ export const eipsDict: EIPsDict = {
    */
   7883: {
     minimumHardfork: Hardfork.Chainstart,
+  },
+  /**
+   * Description : Block-level gas accounting without refunds
+   * URL         : https://eips.ethereum.org/EIPS/eip-7778
+   * Status      : Draft
+   */
+  7778: {
+    minimumHardfork: Hardfork.Amsterdam,
+    requiredEIPs: [],
   },
   /**
    * Description : Block Level Access Lists (BAL)

@@ -13,7 +13,7 @@
     "e2e:resolutions": "node ./scripts/e2e-resolutions.js",
     "examples": "npm run examples --workspaces --if-present",
     "examples:build": "npm run examples:build --workspaces --if-present",
-    "install-browser-deps": "npm install playwright@1.15.1 @vitest/browser@4.0.9 @vitest/browser-playwright@4.0.9",
+    "install-browser-deps": "npm install playwright@1.50.1 @vitest/browser@4.0.9 @vitest/browser-playwright@4.0.9",
     "lint": "npm run biome && eslint  --config ./eslint.config.mjs .",
     "lint:fix": "npm run biome:fix && eslint --fix --config ./eslint.config.mjs .",
     "lint:diff": "./config/cli/lint-diff.sh",
