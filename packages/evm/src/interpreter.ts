@@ -1363,9 +1363,9 @@ export class Interpreter {
       }
     }
 
-    // EIP-7708: Emit Selfdestruct log when balance is burnt (SELFDESTRUCT to self in same-tx creation)
-    if (this.common.isActivatedEIP(7708) && contractBalance > BIGINT_0 && toSelf && doModify) {
-      // Selfdestruct log: contract burns its own balance
+    // EIP-7708: Emit a Selfdestruct log for SELFDESTRUCT to self when the contract
+    // has a non-zero balance, even if EIP-6780 prevents the balance from being zeroed.
+    if (this.common.isActivatedEIP(7708) && contractBalance > BIGINT_0 && toSelf) {
       const contractTopic = setLengthLeft(this._env.address.bytes, 32)
       const data = setLengthLeft(bigIntToBytes(contractBalance), 32)
       const selfdestructLog: Log = [

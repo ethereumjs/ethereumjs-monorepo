@@ -484,19 +484,13 @@ export class EVM implements EVMInterface {
       }
     }
 
-    // EIP-7708: Create ETH transfer log for non-zero value transfers
-    // - CALL to different account: emit log (caller -> to)
-    // - CALLCODE with value: emit log (caller -> to, which equals caller) - detected by codeAddress != to
-    // - CALL to self: no log (caller == to AND codeAddress == to)
-    // - DELEGATECALL: no value parameter, no log
+    // EIP-7708: Create ETH transfer log for non-zero value transfers.
+    // Emit for all non-DELEGATECALL value transfers, including self-transfer and CALLCODE.
     let eip7708Log: Log | undefined
-    const isCallcode = !equalsBytes(message.codeAddress.bytes, message.to.bytes)
-    const isTransferToDifferentAccount = !equalsBytes(message.caller.bytes, message.to.bytes)
     if (
       this.common.isActivatedEIP(7708) &&
       !message.delegatecall &&
       message.value > BIGINT_0 &&
-      (isTransferToDifferentAccount || isCallcode) &&
       errorMessage === undefined
     ) {
       eip7708Log = createEIP7708TransferLog(message.caller, message.to, message.value)
@@ -536,6 +530,10 @@ export class EVM implements EVMInterface {
         timer = this.performanceLogger.startTimer(target)
       }
       result = await this.runPrecompile(message.code as PrecompileFunc, message.data, gasLimit)
+
+      if (eip7708Log !== undefined) {
+        result.logs = result.logs !== undefined ? [eip7708Log, ...result.logs] : [eip7708Log]
+      }
 
       if (this._optsCached.profiler?.enabled === true) {
         this.performanceLogger.stopTimer(timer!, Number(result.executionGasUsed), 'precompiles')

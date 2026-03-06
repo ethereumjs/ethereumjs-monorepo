@@ -158,6 +158,11 @@ export async function runBlockchainTestCase(
             false,
           )
           balDiffMessage = diffString
+          t.deepEqual(
+            bytesToHex(expectedBAL.hash()),
+            bytesToHex(block.header.blockAccessListHash!),
+            `expected block level access list correct${balDiffMessage}`,
+          )
         }
         t.deepEqual(
           bytesToHex(result.blockLevelAccessList!.hash()),
