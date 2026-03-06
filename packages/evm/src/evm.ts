@@ -484,13 +484,16 @@ export class EVM implements EVMInterface {
       }
     }
 
-    // EIP-7708: Create ETH transfer log for non-zero value transfers.
-    // Emit for all non-DELEGATECALL value transfers, including self-transfer and CALLCODE.
+    // EIP-7708: Create ETH transfer log for non-zero value transfers to a different account.
+    // CALLCODE always executes in the caller's context (to == caller), so it is a self-transfer.
+    // Self-transfers (caller == to) and DELEGATECALL do not emit a log.
     let eip7708Log: Log | undefined
+    const isTransferToDifferentAccount = !equalsBytes(message.caller.bytes, message.to.bytes)
     if (
       this.common.isActivatedEIP(7708) &&
       !message.delegatecall &&
       message.value > BIGINT_0 &&
+      isTransferToDifferentAccount &&
       errorMessage === undefined
     ) {
       eip7708Log = createEIP7708TransferLog(message.caller, message.to, message.value)
