@@ -4,18 +4,16 @@ import { EVM } from './evm.ts'
 import { Message } from './message.ts'
 import { getOpcodesForHF } from './opcodes/index.ts'
 import {
+  type AddPrecompile,
+  type CustomPrecompile,
+  type DeletePrecompile,
   MCLBLS,
   NobleBLS,
   NobleBN254,
+  type PrecompileFunc,
   type PrecompileInput,
   RustBN254,
   getActivePrecompiles,
-} from './precompiles/index.ts'
-import type {
-  AddPrecompile,
-  CustomPrecompile,
-  DeletePrecompile,
-  PrecompileFunc,
 } from './precompiles/index.ts'
 import { EVMMockBlockchain } from './types.ts'
 

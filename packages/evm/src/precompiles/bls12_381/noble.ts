@@ -24,9 +24,9 @@ import type { Fp2 } from '@noble/curves/abstract/tower.js'
 import type { AffinePoint } from '@noble/curves/abstract/weierstrass.js'
 import type { EVMBLSInterface } from '../../types.ts'
 
-// @ts-ignore - @noble/curves v2 is ESM-only, TypeScript's moduleResolution: "node" doesn't properly resolve types for CJS build
+// @ts-expect-error - @noble/curves v2 is ESM-only, TypeScript's moduleResolution: "node" doesn't properly resolve types for CJS build
 const G1_ZERO = bls12_381.G1.Point.ZERO
-// @ts-ignore - @noble/curves v2 is ESM-only, TypeScript's moduleResolution: "node" doesn't properly resolve types for CJS build
+// @ts-expect-error - @noble/curves v2 is ESM-only, TypeScript's moduleResolution: "node" doesn't properly resolve types for CJS build
 const G2_ZERO = bls12_381.G2.Point.ZERO
 
 function BLS12_381_ToFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array) {
@@ -58,7 +58,7 @@ function BLS12_381_ToG1Point(input: Uint8Array, verifyOrder = true) {
   const x = bytesToBigInt(input.subarray(16, BLS_G1_POINT_BYTE_LENGTH / 2))
   const y = bytesToBigInt(input.subarray(80, BLS_G1_POINT_BYTE_LENGTH))
 
-  // @ts-ignore - @noble/curves v2 is ESM-only, TypeScript's moduleResolution: "node" doesn't properly resolve types for CJS build
+  // @ts-expect-error - @noble/curves v2 is ESM-only, TypeScript's moduleResolution: "node" doesn't properly resolve types for CJS build
   const G1 = bls12_381.G1.Point.fromAffine({
     x,
     y,
@@ -102,7 +102,7 @@ function BLS12_381_ToG2Point(input: Uint8Array, verifyOrder = true) {
   const Fp2X = BLS12_381_ToFp2Point(p_x_1, p_x_2)
   const Fp2Y = BLS12_381_ToFp2Point(p_y_1, p_y_2)
 
-  // @ts-ignore - @noble/curves v2 is ESM-only, TypeScript's moduleResolution: "node" doesn't properly resolve types for CJS build
+  // @ts-expect-error - @noble/curves v2 is ESM-only, TypeScript's moduleResolution: "node" doesn't properly resolve types for CJS build
   const pG2 = bls12_381.G2.Point.fromAffine({
     x: Fp2X,
     y: Fp2Y,
@@ -187,7 +187,7 @@ export class NobleBLS implements EVMBLSInterface {
   mapFPtoG1(input: Uint8Array): Uint8Array {
     // convert input to Fp1 point
     const FP = BLS12_381_ToFpPoint(input.subarray(0, 64))
-    // @ts-ignore - @noble/curves v2 is ESM-only, TypeScript's moduleResolution: "node" doesn't properly resolve types for CJS build
+    // @ts-expect-error - @noble/curves v2 is ESM-only, TypeScript's moduleResolution: "node" doesn't properly resolve types for CJS build
     const result = bls12_381.G1.mapToCurve(FP).toAffine()
     const resultBytes = BLS12_381_FromG1Point(result)
     return resultBytes
@@ -196,7 +196,7 @@ export class NobleBLS implements EVMBLSInterface {
   mapFP2toG2(input: Uint8Array): Uint8Array {
     // convert input to Fp2 point
     const Fp2Point = BLS12_381_ToFp2Point(input.subarray(0, 64), input.subarray(64, 128))
-    // @ts-ignore - @noble/curves v2 is ESM-only, TypeScript's moduleResolution: "node" doesn't properly resolve types for CJS build
+    // @ts-expect-error - @noble/curves v2 is ESM-only, TypeScript's moduleResolution: "node" doesn't properly resolve types for CJS build
     const result = bls12_381.G2.mapToCurve([Fp2Point.c0, Fp2Point.c1]).toAffine()
     const resultBytes = BLS12_381_FromG2Point(result)
     return resultBytes
