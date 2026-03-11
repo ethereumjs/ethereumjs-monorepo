@@ -11,6 +11,12 @@ import {
   RustBN254,
   getActivePrecompiles,
 } from './precompiles/index.ts'
+import type {
+  AddPrecompile,
+  CustomPrecompile,
+  DeletePrecompile,
+  PrecompileFunc,
+} from './precompiles/index.ts'
 import { EVMMockBlockchain } from './types.ts'
 
 import type { InterpreterStep } from './interpreter.ts'
@@ -29,6 +35,9 @@ import type {
 export * from './logger.ts'
 
 export type {
+  AddPrecompile,
+  CustomPrecompile,
+  DeletePrecompile,
   EVMBLSInterface,
   EVMBN254Interface,
   EVMInterface,
@@ -40,6 +49,7 @@ export type {
   ExecResult,
   InterpreterStep,
   Log,
+  PrecompileFunc,
   PrecompileInput,
 }
 
