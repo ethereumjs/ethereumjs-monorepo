@@ -4,9 +4,13 @@ import { EVM } from './evm.ts'
 import { Message } from './message.ts'
 import { getOpcodesForHF } from './opcodes/index.ts'
 import {
+  type AddPrecompile,
+  type CustomPrecompile,
+  type DeletePrecompile,
   MCLBLS,
   NobleBLS,
   NobleBN254,
+  type PrecompileFunc,
   type PrecompileInput,
   RustBN254,
   getActivePrecompiles,
@@ -29,6 +33,9 @@ import type {
 export * from './logger.ts'
 
 export type {
+  AddPrecompile,
+  CustomPrecompile,
+  DeletePrecompile,
   EVMBLSInterface,
   EVMBN254Interface,
   EVMInterface,
@@ -40,6 +47,7 @@ export type {
   ExecResult,
   InterpreterStep,
   Log,
+  PrecompileFunc,
   PrecompileInput,
 }
 

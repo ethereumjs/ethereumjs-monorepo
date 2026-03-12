@@ -1,5 +1,5 @@
 import { Hardfork } from '@ethereumjs/common'
-import type { BlockLevelAccessList } from '@ethereumjs/util'
+import type { BlockLevelAccessList, PrefixedHexString } from '@ethereumjs/util'
 import {
   Account,
   Address,
@@ -1235,11 +1235,22 @@ export class EVM implements EVMInterface {
   }
 
   /**
-   * Returns code for precompile at the given address, or undefined
-   * if no such precompile exists.
+   * Returns the precompile function registered at the given address,
+   * or `undefined` if no precompile is active there.
+   *
+   * Accepts either an `Address` instance or a `0x`-prefixed hex string.
+   *
+   * ```ts
+   * const evm = await createEVM({
+   *   customPrecompiles: [{ address: '0x000000000000000000000000000000000000ff01', function: myFn }],
+   * })
+   * const fn = evm.getPrecompile('0x000000000000000000000000000000000000ff01')
+   * ```
    */
-  getPrecompile(address: Address): PrecompileFunc | undefined {
-    // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for precompile lookups.
+  getPrecompile(address: Address | PrefixedHexString): PrecompileFunc | undefined {
+    if (typeof address === 'string') {
+      return this.precompiles.get(address.slice(2).padStart(40, '0').toLowerCase())
+    }
     return this.precompiles.get(bytesToUnprefixedHex(address.bytes))
   }
 

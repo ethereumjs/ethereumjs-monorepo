@@ -174,6 +174,7 @@ export interface EVMInterface {
   }
   stateManager: StateManagerInterface
   precompiles: Map<string, PrecompileFunc>
+  getPrecompile?(address: Address | PrefixedHexString): PrecompileFunc | undefined
   runCall(opts: EVMRunCallOpts): Promise<EVMResult>
   runCode(opts: EVMRunCodeOpts): Promise<ExecResult>
   events?: EventEmitter<EVMEvent>
