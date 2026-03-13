@@ -41,11 +41,11 @@ export async function validateHeaderFields(
   }
   // EIP-7928: Validate Block Access List Hash
   if (vm.common.isActivatedEIP(7928)) {
-    if (!equalsBytes(block.header.blockAccessListHash!, block.header.blockAccessListHash!)) {
+    if (!equalsBytes(block.header.blockAccessListHash!, vm.evm.blockLevelAccessList!.hash())) {
       const msg = formatErrorMessage(
         'blockAccessListHash',
         bytesToHex(block.header.blockAccessListHash!),
-        bytesToHex(block.header.blockAccessListHash!),
+        bytesToHex(vm.evm.blockLevelAccessList!.hash()),
       )
       if (vm.DEBUG) debug(msg)
       errors.push(msg)
