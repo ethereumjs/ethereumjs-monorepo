@@ -221,7 +221,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
   } else {
     try {
       // Only validate header fields if Stateless isn't activated
-      validateHeaderFields(vm, block, result, requestsHash, stateRoot, debug)
+      await validateHeaderFields(vm, block, result, requestsHash, stateRoot, debug)
 
       // Validate binary tree post-state if activated
       if (vm.common.isActivatedEIP(7864)) {
