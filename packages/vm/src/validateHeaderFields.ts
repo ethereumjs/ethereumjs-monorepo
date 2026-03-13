@@ -17,7 +17,7 @@ const formatErrorMessage = (field: string, headerValue: string, resultsValue: st
  * @param stateRoot - Post execution state root.
  * @param debug - Debug function.
  */
-export async function validateHeaderFields(
+export function validateHeaderFields(
   vm: VM,
   block: Block,
   result: ApplyBlockResult,
