@@ -1,6 +1,7 @@
 import type { MerkleStateManager } from '@ethereumjs/statemanager'
 import {
   type BALJSONBlockAccessList,
+  EthereumJSErrorWithoutCode,
   bytesToHex,
   createAddressFromString,
   equalsBytes,
@@ -50,7 +51,7 @@ export async function consumeBal(
   }
   const stateRoot = await vm.stateManager.getStateRoot()
   if (expectedStateRoot && !equalsBytes(expectedStateRoot, stateRoot)) {
-    throw new Error(
+    throw EthereumJSErrorWithoutCode(
       `Expected state root ${bytesToHex(expectedStateRoot)} but got ${bytesToHex(stateRoot)}`,
     )
   }
