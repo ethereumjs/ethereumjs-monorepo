@@ -225,7 +225,7 @@ async function processSelfdestructs(vm: VM, results: RunTxResult): Promise<void>
   }
 
   const destroyedForBAL: Set<PrefixedHexString> = new Set()
-  for (const addressToSelfdestructHex of results.execResult.selfdestruct) {
+  for (const addressToSelfdestructHex of results.execResult.selfdestruct.keys()) {
     const address = new Address(hexToBytes(addressToSelfdestructHex))
 
     // EIP-6780: Only delete contracts created in the same transaction

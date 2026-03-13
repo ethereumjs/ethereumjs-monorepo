@@ -67,9 +67,9 @@ export interface RunResult {
   logs: Log[]
   returnValue?: Uint8Array
   /**
-   * A set of accounts to selfdestruct
+   * Selfdestructed accounts mapped to their beneficiary
    */
-  selfdestruct: Set<PrefixedHexString>
+  selfdestruct: Map<PrefixedHexString, PrefixedHexString>
 
   /**
    * A map which tracks which addresses were created (used in EIP 6780)
@@ -222,7 +222,7 @@ export class Interpreter {
     this._result = {
       logs: env.initialLogs ? [...env.initialLogs] : [],
       returnValue: undefined,
-      selfdestruct: new Set(),
+      selfdestruct: new Map(),
     }
     this.profilerOpts = profilerOpts
     this.performanceLogger = performanceLogs
@@ -1089,7 +1089,7 @@ export class Interpreter {
   }
 
   async _baseCall(msg: Message): Promise<bigint> {
-    const selfdestruct = new Set(this._result.selfdestruct)
+    const selfdestruct = new Map(this._result.selfdestruct)
     msg.selfdestruct = selfdestruct
     msg.gasRefund = this._runState.gasRefund
 
@@ -1131,8 +1131,8 @@ export class Interpreter {
     }
 
     if (!results.execResult.exceptionError) {
-      for (const addressToSelfdestructHex of selfdestruct) {
-        this._result.selfdestruct.add(addressToSelfdestructHex)
+      for (const [addressToSelfdestructHex, beneficiaryHex] of selfdestruct) {
+        this._result.selfdestruct.set(addressToSelfdestructHex, beneficiaryHex)
       }
       if (this.common.isActivatedEIP(6780)) {
         // copy over the items to result via iterator
@@ -1162,7 +1162,7 @@ export class Interpreter {
     salt?: Uint8Array,
     eofCallData?: Uint8Array,
   ): Promise<bigint> {
-    const selfdestruct = new Set(this._result.selfdestruct)
+    const selfdestruct = new Map(this._result.selfdestruct)
     const caller = this._env.address
     const depth = this._env.depth + 1
 
@@ -1242,8 +1242,8 @@ export class Interpreter {
       !results.execResult.exceptionError ||
       results.execResult.exceptionError.error === EVMError.errorMessages.CODESTORE_OUT_OF_GAS
     ) {
-      for (const addressToSelfdestructHex of selfdestruct) {
-        this._result.selfdestruct.add(addressToSelfdestructHex)
+      for (const [addressToSelfdestructHex, beneficiaryHex] of selfdestruct) {
+        this._result.selfdestruct.set(addressToSelfdestructHex, beneficiaryHex)
       }
       if (this.common.isActivatedEIP(6780)) {
         // copy over the items to result via iterator
@@ -1306,11 +1306,12 @@ export class Interpreter {
 
   async _selfDestruct(toAddress: Address): Promise<void> {
     // only add to refund if this is the first selfdestruct for the address
-    if (!this._result.selfdestruct.has(bytesToHex(this._env.address.bytes))) {
+    const selfdestructAddressHex = bytesToHex(this._env.address.bytes)
+    if (!this._result.selfdestruct.has(selfdestructAddressHex)) {
       this.refundGas(this.common.param('selfdestructRefundGas'))
     }
 
-    this._result.selfdestruct.add(bytesToHex(this._env.address.bytes))
+    this._result.selfdestruct.set(selfdestructAddressHex, toAddress.toString())
 
     const toSelf = equalsBytes(toAddress.bytes, this._env.address.bytes)
     const contractBalance = this._env.contract.balance
