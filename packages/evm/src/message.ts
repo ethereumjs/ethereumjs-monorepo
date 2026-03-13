@@ -3,8 +3,7 @@ import { BIGINT_0, EthereumJSErrorWithoutCode, createZeroAddress } from '@ethere
 import type { BinaryTreeAccessWitnessInterface } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import type { PrecompileFunc } from './precompiles/index.ts'
-import type { EOFEnv } from './types.ts'
-import type { SelfdestructMap } from './types.ts'
+import type { EOFEnv, SelfdestructMap } from './types.ts'
 
 const defaults = {
   value: BIGINT_0,
