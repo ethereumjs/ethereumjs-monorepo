@@ -90,8 +90,7 @@ export class DPT {
     const refreshIntervalSubdivided = Math.floor((options.refreshInterval ?? 60000) / 10) // 60 sec * 1000
     this._refreshIntervalId = setInterval(() => this.refresh(), refreshIntervalSubdivided)
 
-    this.DEBUG =
-      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+    this.DEBUG = globalThis.process?.env?.DEBUG?.includes('ethjs') ?? false
   }
 
   bind(...args: any[]): void {

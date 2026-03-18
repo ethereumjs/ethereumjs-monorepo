@@ -1,4 +1,4 @@
-import { BIGINT_0, BIGINT_1 } from '@ethereumjs/util'
+import { BIGINT_0, BIGINT_1, isDebugEnabled } from '@ethereumjs/util'
 
 import { Fetcher } from './fetcher.ts'
 
@@ -52,8 +52,7 @@ export abstract class BlockFetcherBase<JobResult, StorageItem> extends Fetcher<
   constructor(options: BlockFetcherOptions) {
     super(options)
 
-    this.DEBUG =
-      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+    this.DEBUG = isDebugEnabled('ethjs')
 
     this.chain = options.chain
     this.first = options.first

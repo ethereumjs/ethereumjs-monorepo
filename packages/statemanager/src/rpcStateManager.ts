@@ -11,6 +11,7 @@ import {
   fetchFromProvider,
   hexToBytes,
   intToHex,
+  isDebugEnabled,
   toBytes,
 } from '@ethereumjs/util'
 import { keccak_256 } from '@noble/hashes/sha3.js'
@@ -38,9 +39,7 @@ export class RPCStateManager implements StateManagerInterface {
 
   constructor(opts: RPCStateManagerOpts) {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
-    // Additional window check is to prevent vite browser bundling (and potentially other) to break
-    this.DEBUG =
-      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+    this.DEBUG = isDebugEnabled('ethjs')
 
     this._debug = debugDefault('statemanager:rpc')
     if (typeof opts.provider === 'string' && opts.provider.startsWith('http')) {

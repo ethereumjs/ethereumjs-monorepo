@@ -6,6 +6,7 @@ import {
   bytesToHex,
   bytesToUnprefixedHex,
   hexToBytes,
+  isDebugEnabled,
   stripHexPrefix,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
@@ -50,9 +51,7 @@ export class Journal {
 
   constructor(stateManager: StateManagerInterface, common: Common) {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
-    // Additional window check is to prevent vite browser bundling (and potentially other) to break
-    this.DEBUG =
-      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+    this.DEBUG = isDebugEnabled('ethjs')
 
     this._debug = debugDefault('evm:journal')
 

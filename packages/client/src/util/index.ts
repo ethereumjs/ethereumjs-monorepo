@@ -91,7 +91,7 @@ export function timeDiff(timestamp: number) {
 }
 
 // Dynamically load v8 for tracking mem stats
-export const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
+export const isBrowser = (): boolean => typeof globalThis.process?.versions?.node !== 'string'
 export type V8Engine = {
   getHeapStatistics: () => { heap_size_limit: number; used_heap_size: number }
 }

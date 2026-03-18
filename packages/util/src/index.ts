@@ -66,6 +66,7 @@ export * from './bal.ts'
  * Export ethjs-util methods
  */
 export * from './authorization.ts'
+export * from './env.ts'
 export * from './binaryTree.ts'
 export * from './blobs.ts'
 export {
