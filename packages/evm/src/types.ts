@@ -28,6 +28,8 @@ export type AddOpcode = {
   logicFunction: OpHandler
 }
 
+export type SelfdestructMap = Map<PrefixedHexString, PrefixedHexString>
+
 export type CustomOpcode = AddOpcode | DeleteOpcode
 
 // Typeguard
@@ -85,9 +87,9 @@ interface EVMRunOpts {
    */
   isStatic?: boolean
   /**
-   * Addresses to selfdestruct. Defaults to the empty set.
+   * Selfdestructed addresses mapped to their beneficiary. Defaults to the empty map.
    */
-  selfdestruct?: Set<PrefixedHexString>
+  selfdestruct?: SelfdestructMap
   /**
    * The address of the account that is executing this code (`address(this)`). Defaults to the zero address.
    */
@@ -427,9 +429,9 @@ export interface ExecResult {
    */
   logs?: Log[]
   /**
-   * A set of accounts to selfdestruct
+   * Selfdestructed accounts mapped to their beneficiary
    */
-  selfdestruct?: Set<PrefixedHexString>
+  selfdestruct?: SelfdestructMap
   /**
    * Map of addresses which were created (used in EIP 6780)
    */

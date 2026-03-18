@@ -36,3 +36,12 @@ export function createEIP7708TransferLog(from: Address, to: Address, value: bigi
   const data = setLengthLeft(bigIntToBytes(value), 32)
   return [EIP7708_SYSTEM_ADDRESS, [EIP7708_TRANSFER_TOPIC, fromTopic, toTopic], data]
 }
+
+/**
+ * Creates an EIP-7708 SELFDESTRUCT burn log for residual balance finalization.
+ */
+export function createEIP7708SelfdestructLog(contract: Address, value: bigint): Log {
+  const contractTopic = setLengthLeft(contract.bytes, 32)
+  const data = setLengthLeft(bigIntToBytes(value), 32)
+  return [EIP7708_SYSTEM_ADDRESS, [EIP7708_SELFDESTRUCT_TOPIC, contractTopic], data]
+}

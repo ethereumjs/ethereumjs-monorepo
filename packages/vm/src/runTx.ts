@@ -1,6 +1,11 @@
 import { cliqueSigner, createBlockHeader } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
-import { BinaryTreeAccessWitness, type EVM } from '@ethereumjs/evm'
+import {
+  BinaryTreeAccessWitness,
+  type EVM,
+  type Log,
+  createEIP7708SelfdestructLog,
+} from '@ethereumjs/evm'
 import { Capability, isBlob4844Tx } from '@ethereumjs/tx'
 import {
   Account,
@@ -225,7 +230,12 @@ async function processSelfdestructs(vm: VM, results: RunTxResult): Promise<void>
   }
 
   const destroyedForBAL: Set<PrefixedHexString> = new Set()
-  for (const addressToSelfdestructHex of results.execResult.selfdestruct) {
+  const finalizationLogs: Log[] = []
+  const sortedSelfdestructs = [...results.execResult.selfdestruct.entries()].sort(([a], [b]) =>
+    a.localeCompare(b),
+  )
+
+  for (const [addressToSelfdestructHex] of sortedSelfdestructs) {
     const address = new Address(hexToBytes(addressToSelfdestructHex))
 
     // EIP-6780: Only delete contracts created in the same transaction
@@ -235,11 +245,23 @@ async function processSelfdestructs(vm: VM, results: RunTxResult): Promise<void>
       }
     }
 
+    if (vm.common.isActivatedEIP(7708)) {
+      const account = await vm.stateManager.getAccount(address)
+      const finalizationBalance = account?.balance ?? BIGINT_0
+      if (finalizationBalance > BIGINT_0) {
+        finalizationLogs.push(createEIP7708SelfdestructLog(address, finalizationBalance))
+      }
+    }
+
     await vm.evm.journal.deleteAccount(address)
     destroyedForBAL.add(address.toString())
     if (vm.DEBUG) {
       debug(`tx selfdestruct on address=${address}`)
     }
+  }
+
+  if (finalizationLogs.length > 0) {
+    results.execResult.logs = [...(results.execResult.logs ?? []), ...finalizationLogs]
   }
 
   if (destroyedForBAL.size > 0 && vm.common.isActivatedEIP(7928)) {
@@ -839,12 +861,6 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // ===========================
   // RESULTS: Gas and Balances
   // ===========================
-  // Generate the bloom for the tx
-  results.bloom = txLogsBloom(results.execResult.logs, vm.common)
-  if (vm.DEBUG) {
-    debug(`Generated tx bloom with logs=${results.execResult.logs?.length}`)
-  }
-
   // Calculate tx gas used before refund processing
   const totalGasSpentBeforeRefund = results.execResult.executionGasUsed + intrinsicGas
   results.totalGasSpent = totalGasSpentBeforeRefund
@@ -947,6 +963,12 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // CLEANUP: Accounts and State
   // ===========================
   await processSelfdestructs(vm, results)
+
+  // Generate the bloom after selfdestruct finalization logs have been appended.
+  results.bloom = txLogsBloom(results.execResult.logs, vm.common)
+  if (vm.DEBUG) {
+    debug(`Generated tx bloom with logs=${results.execResult.logs?.length}`)
+  }
 
   if (enableProfiler) {
     // eslint-disable-next-line no-console
