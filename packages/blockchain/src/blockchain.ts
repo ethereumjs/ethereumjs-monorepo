@@ -14,6 +14,7 @@ import {
   bytesToUnprefixedHex,
   concatBytes,
   equalsBytes,
+  isDebugEnabled,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 import { EventEmitter } from 'eventemitter3'
@@ -111,8 +112,7 @@ export class Blockchain implements BlockchainInterface {
    * {@link BlockchainOptions}.
    */
   constructor(opts: BlockchainOptions = {}) {
-    this.DEBUG =
-      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+    this.DEBUG = isDebugEnabled('ethjs')
     this._debug = debugDefault('blockchain:#')
 
     if (opts.common) {

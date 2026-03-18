@@ -1,5 +1,5 @@
 import { ConsensusAlgorithm } from '@ethereumjs/common'
-import { EthereumJSErrorWithoutCode, bytesToHex } from '@ethereumjs/util'
+import { EthereumJSErrorWithoutCode, bytesToHex, isDebugEnabled } from '@ethereumjs/util'
 import debugDefault from 'debug'
 
 import type { Block, BlockHeader } from '@ethereumjs/block'
@@ -24,8 +24,7 @@ export class EthashConsensus implements Consensus {
   private _debug: Debugger
 
   constructor(ethash: MinimalEthashInterface) {
-    this.DEBUG =
-      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+    this.DEBUG = isDebugEnabled('ethjs')
     this._debug = debugDefault('blockchain:ethash')
 
     this.algorithm = ConsensusAlgorithm.Ethash

@@ -15,8 +15,7 @@ export class BanList {
   private DEBUG: boolean
   constructor() {
     this._lru = new LRUCache({ max: 10000 })
-    this.DEBUG =
-      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+    this.DEBUG = globalThis.process?.env?.DEBUG?.includes('ethjs') ?? false
   }
 
   add(obj: string | Uint8Array | PeerInfo, maxAge?: number) {
