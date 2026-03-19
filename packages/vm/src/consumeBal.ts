@@ -1,4 +1,3 @@
-import type { MerkleStateManager } from '@ethereumjs/statemanager'
 import {
   type BALJSONBlockAccessList,
   EthereumJSErrorWithoutCode,
@@ -25,12 +24,14 @@ export async function consumeBal(
     ) {
       continue
     }
+    const lastBalanceChange = acc.balanceChanges.at(-1)
     const balance =
-      acc.balanceChanges.slice(-1)[0]?.postBalance &&
-      hexToBigInt(acc.balanceChanges.slice(-1)[0]?.postBalance)
+      lastBalanceChange?.postBalance !== undefined
+        ? hexToBigInt(lastBalanceChange.postBalance)
+        : undefined
+    const lastNonceChange = acc.nonceChanges.at(-1)
     const nonce =
-      acc.nonceChanges.slice(-1)[0]?.postNonce &&
-      hexToBigInt(acc.nonceChanges.slice(-1)[0]?.postNonce)
+      lastNonceChange?.postNonce !== undefined ? hexToBigInt(lastNonceChange.postNonce) : undefined
     const code = acc.codeChanges.slice(-1)[0]?.newCode ?? undefined
     if (code !== undefined) {
       await vm.stateManager.putCode(createAddressFromString(acc.address), hexToBytes(code))
@@ -47,7 +48,7 @@ export async function consumeBal(
         setLengthLeft(hexToBytes(value), 32),
       )
     }
-    await (vm.stateManager as MerkleStateManager).flush()
+    // await (vm.stateManager as MerkleStateManager).flush()
   }
   const stateRoot = await vm.stateManager.getStateRoot()
   if (expectedStateRoot && !equalsBytes(expectedStateRoot, stateRoot)) {
