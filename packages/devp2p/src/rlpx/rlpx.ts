@@ -119,8 +119,7 @@ export class RLPx {
 
     this._keccakFunction = options.common?.customCrypto.keccak256 ?? keccak_256
 
-    this.DEBUG =
-      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+    this.DEBUG = globalThis.process?.env?.DEBUG?.includes('ethjs') ?? false
   }
 
   listen(...args: any[]) {

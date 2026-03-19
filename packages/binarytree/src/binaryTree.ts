@@ -7,6 +7,7 @@ import {
   concatBytes,
   equalsBits,
   equalsBytes,
+  isDebugEnabled,
   matchingBitsLength,
   setLengthRight,
 } from '@ethereumjs/util'
@@ -72,8 +73,7 @@ export class BinaryTree {
       this.root(opts.root)
     }
 
-    this.DEBUG =
-      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+    this.DEBUG = isDebugEnabled('ethjs')
     this.debug = this.DEBUG
       ? (message: string, namespaces: string[] = []) => {
           let log = this._debug

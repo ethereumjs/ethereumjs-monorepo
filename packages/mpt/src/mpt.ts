@@ -16,6 +16,7 @@ import {
   bytesToUtf8,
   concatBytes,
   equalsBytes,
+  isDebugEnabled,
 } from '@ethereumjs/util'
 import { keccak_256 } from '@noble/hashes/sha3.js'
 import debug from 'debug'
@@ -113,8 +114,7 @@ export class MerklePatriciaTrie {
     const valueEncoding =
       opts?.db !== undefined ? (opts.valueEncoding ?? ValueEncoding.String) : ValueEncoding.Bytes
 
-    this.DEBUG =
-      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+    this.DEBUG = isDebugEnabled('ethjs')
     this.debug = this.DEBUG
       ? (message: string, namespaces: string[] = []) => {
           let logger = this._debug
