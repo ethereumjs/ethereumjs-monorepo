@@ -19,7 +19,6 @@ import {
   concatBytes,
   createAddressFromString,
   createBlockLevelAccessList,
-  equalsBytes,
   hexToBytes,
   intToBytes,
   setLengthLeft,
@@ -47,6 +46,7 @@ import type {
   RunTxResult,
   TxReceipt,
 } from './types.ts'
+import { validateHeaderFields } from './validateHeaderFields.ts'
 import type { VM } from './vm.ts'
 
 const debug = debugDefault('vm:block')
@@ -220,67 +220,10 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     block = createBlock(blockData, { common: vm.common })
   } else {
     try {
-      if (vm.common.isActivatedEIP(7685)) {
-        if (!equalsBytes(block.header.requestsHash!, requestsHash!)) {
-          if (vm.DEBUG)
-            debug(
-              `Invalid requestsHash received=${bytesToHex(
-                block.header.requestsHash!,
-              )} expected=${bytesToHex(requestsHash!)}`,
-            )
-          const msg = _errorMsg('invalid requestsHash', vm, block)
-          throw EthereumJSErrorWithoutCode(msg)
-        }
-      }
+      // Only validate header fields if Stateless isn't activated
+      validateHeaderFields(vm, block, result, requestsHash, stateRoot, debug)
 
-      // Only validate the following headers if Stateless isn't activated
-      if (equalsBytes(result.receiptsRoot, block.header.receiptTrie) === false) {
-        if (vm.DEBUG) {
-          debug(
-            `Invalid receiptTrie received=${bytesToHex(result.receiptsRoot)} expected=${bytesToHex(
-              block.header.receiptTrie,
-            )}`,
-          )
-        }
-        const msg = _errorMsg('invalid receiptTrie', vm, block)
-        throw EthereumJSErrorWithoutCode(msg)
-      }
-      if (!(equalsBytes(result.bloom.bitvector, block.header.logsBloom) === true)) {
-        if (vm.DEBUG) {
-          debug(
-            `Invalid bloom received=${bytesToHex(result.bloom.bitvector)} expected=${bytesToHex(
-              block.header.logsBloom,
-            )}`,
-          )
-        }
-        const msg = _errorMsg('invalid bloom', vm, block)
-        throw EthereumJSErrorWithoutCode(msg)
-      }
-      if (result.gasUsed !== block.header.gasUsed) {
-        if (vm.DEBUG) {
-          debug(`Invalid gasUsed received=${result.gasUsed} expected=${block.header.gasUsed}`)
-        }
-        const msg = _errorMsg('invalid gasUsed', vm, block)
-        throw EthereumJSErrorWithoutCode(msg)
-      }
-      if (!(equalsBytes(stateRoot, block.header.stateRoot) === true)) {
-        if (vm.DEBUG) {
-          debug(
-            `Invalid stateRoot received=${bytesToHex(stateRoot)} expected=${bytesToHex(
-              block.header.stateRoot,
-            )}`,
-          )
-        }
-        const msg = _errorMsg(
-          `invalid block stateRoot, got: ${bytesToHex(stateRoot)}, want: ${bytesToHex(
-            block.header.stateRoot,
-          )}`,
-          vm,
-          block,
-        )
-        throw EthereumJSErrorWithoutCode(msg)
-      }
-
+      // Validate binary tree post-state if activated
       if (vm.common.isActivatedEIP(7864)) {
         if (vm.evm.binaryTreeAccessWitness === undefined) {
           throw Error(`binaryTreeAccessWitness required if binary tree (EIP-7864) is activated`)
