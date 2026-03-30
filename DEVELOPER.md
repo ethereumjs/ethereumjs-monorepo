@@ -10,6 +10,7 @@ It is intended to be both an entrypoint for external contributors as well as a r
   - [Structure](#structure)
   - [Workflow](#workflow)
   - [Releases](#releases)
+    - [Fork Releases (Feel Your Protocol)](#fork-releases-feel-your-protocol)
 - [Development Tools](#development-tools)
   - [TypeScript](#typescript)
   - [Linting](#linting)
@@ -78,13 +79,14 @@ Most release rounds are done as bugfix releases, including releases of non-final
 We have a release script that handles version bumping and publishing for all packages. It supports both regular releases and lightweight in-between releases (nightly, alpha).
 
 ```sh
-tsx scripts/release-npm.ts [--bump-version=<version>] [--publish=<tag>]
+tsx scripts/release-npm.ts [--bump-version=<version>] [--publish=<tag>] [--scope=<scope>]
 ```
 
 **Options:**
 
 - `--bump-version=<version>` - Bump package versions to the specified version
 - `--publish=<tag>` - Publish packages with the specified npm tag
+- `--scope=<scope>` - Publish under a different npm scope (default: `ethereumjs`, see [Fork Releases](#fork-releases-feel-your-protocol))
 
 At least one of `--bump-version` or `--publish` must be specified.
 
@@ -110,6 +112,25 @@ tsx scripts/release-npm.ts --bump-version=10.1.1-nightly.1 --publish=nightly
 # Publish current versions without bumping
 tsx scripts/release-npm.ts --publish=latest
 ```
+
+##### Fork Releases (Feel Your Protocol)
+
+The release script supports publishing all packages under a different npm scope via the `--scope` flag. This is used by [Feel Your Protocol](https://feelyourprotocol.org) to publish fork releases from feature branches (e.g. EIP prototype implementations) that can be integrated as separate dependencies alongside the official `@ethereumjs/*` packages.
+
+```sh
+# Publish all packages under @feelyourprotocol scope
+tsx scripts/release-npm.ts --scope=feelyourprotocol --bump-version=8141.0.0 --publish=latest
+```
+
+When `--scope` is set to a value other than `ethereumjs`, the script:
+
+- Rewrites package names: `@ethereumjs/evm` → `@<scope>/evm`
+- Rewrites inter-package dependency references to match the new scope
+- Rewrites `@ethereumjs/` import paths in all source files under `src/`
+- Skips deps-only packages (not published, rewriting would break local dev)
+- Publishes with `--access=public` (required for new scoped npm orgs)
+
+The `--scope` flag is fully generic and not tied to any specific npm org.
 
 ##### CHANGELOG Preparation
 
