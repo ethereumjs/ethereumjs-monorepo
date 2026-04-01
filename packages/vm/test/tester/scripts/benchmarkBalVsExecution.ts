@@ -17,14 +17,14 @@ import { keccak_256 } from '@noble/hashes/sha3.js'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 
-import { consumeBal } from '../../src/consumeBal.ts'
-import { createVM, runBlock } from '../../src/index.ts'
-import { setupPreConditions } from '../util.ts'
+import { consumeBal } from '../../../src/consumeBal.ts'
+import { createVM, runBlock } from '../../../src/index.ts'
+import { setupPreConditions } from '../../util.ts'
 import {
   type ExecutionSpecFixture,
   createCommonForFork,
   loadExecutionSpecFixtures,
-} from './executionSpecTestLoader.ts'
+} from '../executionSpecTestLoader.ts'
 
 const defaultFixturesPath = '../execution-spec-tests'
 const SKIP_NETWORKS = new Set(['BPO1ToBPO2AtTime15k', 'BPO2ToBPO3AtTime15k', 'BPO3ToBPO4AtTime15k'])
