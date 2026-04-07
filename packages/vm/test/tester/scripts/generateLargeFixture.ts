@@ -1038,7 +1038,7 @@ async function main() {
   const recipients = Array.from({ length: 128 }, (_, index) =>
     makeAddress(0x2000000000000000000000000000000000000000n + BigInt(index + 1)),
   )
-  const coinbases = Array.from({ length: 32 }, (_, index) =>
+  const coinbaseArray = Array.from({ length: 32 }, (_, index) =>
     makeAddress(0x3000000000000000000000000000000000000000n + BigInt(index + 1)),
   )
 
@@ -1109,7 +1109,7 @@ async function main() {
     ...contractAccounts.keys(),
     ...authorities.map((authority) => authority.address.toString()),
     ...recipients.map((recipient) => recipient.toString()),
-    ...coinbases.map((coinbase) => coinbase.toString()),
+    ...coinbaseArray.map((coinbase) => coinbase.toString()),
   ])
   const trackedSlots = new Map<string, Set<string>>()
   addTrackedSlot(trackedSlots, contracts.store, zeroSlotHex)
@@ -1127,7 +1127,7 @@ async function main() {
   for (let blockIndex = 0; blockIndex < blocks; blockIndex++) {
     const blockNumber = BigInt(blockIndex + 1)
     const timestamp = blockNumber * blockSpacing
-    const coinbase = coinbases[blockIndex % coinbases.length]
+    const coinbase = coinbaseArray[blockIndex % coinbaseArray.length]
     const baseFee = parentBlock.header.calcNextBaseFee()
     const parentBeaconBlockRoot = keccak_256(setLengthLeft(bigIntToBytes(blockNumber), 32))
     const withdrawals = createWithdrawals(
@@ -1285,7 +1285,7 @@ async function main() {
   const description = [
     `Synthetic Amsterdam BAL stress fixture with ${blocks} blocks.`,
     `Each block targets a mean of ${txsPerBlock} transactions, 200 internal contract calls, and ${withdrawalsPerBlock} withdrawals.`,
-    'Scenarios include legacy, EIP-2930, EIP-1559, EIP-4844, and EIP-7702 transactions; access-list warming; contract storage writes; internal CALL/DELEGATECALL/STATICCALL/precompile fanout; CREATE/CREATE2; self-destruct calls; history/beacon-root queries; and EIP-7002 withdrawal requests.',
+    'Scenarios include legacy, EIP-2930, EIP-1559, EIP-4844, and EIP-7702 transactions; access-list warming; contract storage writes; internal CALL/DELEGATECALL/STATICCALL/precompile fan out; CREATE/CREATE2; self-destruct calls; history/beacon-root queries; and EIP-7002 withdrawal requests.',
   ].join('\n')
   const fixtureInfoHash = bytesToHex(
     keccak_256(new TextEncoder().encode(`${fixtureId}:${blocks}:${txsPerBlock}:${withdrawalsPerBlock}`)),
