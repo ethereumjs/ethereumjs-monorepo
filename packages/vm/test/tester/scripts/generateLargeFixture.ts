@@ -136,7 +136,7 @@ function indent(level: number) {
 }
 
 function formatJSON(value: unknown, nestedIndentLevel: number) {
-  return JSON.stringify(value, null, 4)!.replaceAll('\n', `\n${indent(nestedIndentLevel)}`)
+  return JSON.stringify(value, null, 4)!.split('\n').join(`\n${indent(nestedIndentLevel)}`)
 }
 
 async function writeChunk(stream: ReturnType<typeof createWriteStream>, chunk: string) {
