@@ -11,6 +11,10 @@ export default defineConfig({
       enabled: true,
       reporter: ['lcov'],
     },
-    exclude: ['test/tester/state.spec.ts', 'test/tester/blockchain.spec.ts'],
+    exclude: [
+      'test/tester/state.spec.ts',
+      'test/tester/blockchain.spec.ts',
+      'test/tester/consumeBal.test.ts',
+    ],
   },
 })
