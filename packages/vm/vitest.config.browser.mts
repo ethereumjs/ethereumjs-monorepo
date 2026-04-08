@@ -21,7 +21,7 @@ export default mergeConfig(
         'test/tester/blockchain.spec.ts',
         'test/tester/executionSpecBlockchain.test.ts',
         'test/tester/executionSpecState.test.ts',
-        'test/tester/consumeBal.test.ts'
+        'test/tester/consumeBal.test.ts',
       ],
     },
     resolve: {
