@@ -107,18 +107,23 @@ describe('BlockBuilder', () => {
 
     const transactions = (blockBuilder as any).transactions as TypedTransaction[]
     const originalPush = transactions.push.bind(transactions)
-    transactions.push = (() => {
-      throw new Error('synthetic bookkeeping failure')
-    }) as typeof transactions.push
 
     const tx = createLegacyTx(
       { to: createZeroAddress(), value: 1000, gasLimit: 21000, gasPrice: 1 },
       { common, freeze: false },
     ).sign(SIGNER_A.privateKey)
 
-    await expect(blockBuilder.addTransaction(tx)).rejects.toThrow(/synthetic bookkeeping failure/)
+    try {
+      transactions.push = (() => {
+        throw new Error('synthetic bookkeeping failure')
+      }) as typeof transactions.push
 
-    transactions.push = originalPush
+      await expect(blockBuilder.addTransaction(tx)).rejects.toThrow(
+        /synthetic bookkeeping failure/,
+      )
+    } finally {
+      transactions.push = originalPush
+    }
 
     assert.strictEqual(blockBuilder.gasUsed, 0n, 'gas used should be rolled back')
     assert.strictEqual(blockBuilder.minerValue, 0n, 'miner value should be rolled back')
