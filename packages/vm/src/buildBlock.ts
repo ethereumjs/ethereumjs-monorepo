@@ -239,7 +239,7 @@ export class BlockBuilder {
     const previousTransactionCount = this.transactions.length
     const previousTransactionResultCount = this.transactionResults.length
 
-    await this.vm.evm.journal.checkpoint()
+    await this.vm.stateManager.checkpoint()
 
     try {
       // According to the Yellow Paper, a transaction's gas limit
@@ -314,7 +314,7 @@ export class BlockBuilder {
       this.gasUsed += result.totalGasSpent
       this._minerValue += result.minerValue
 
-      await this.vm.evm.journal.commit()
+      await this.vm.stateManager.commit()
 
       return result
     } catch (error) {
@@ -323,7 +323,7 @@ export class BlockBuilder {
       this._minerValue = previousMinerValue
       this.transactions.length = previousTransactionCount
       this.transactionResults.length = previousTransactionResultCount
-      await this.vm.evm.journal.revert()
+      await this.vm.stateManager.revert()
       throw error
     }
   }
