@@ -60,6 +60,7 @@
     "lru-cache": "11.0.2"
   },
   "devDependencies": {
+    "@awasm/noble": "^0.1.1",
     "@ethereumjs/genesis": "^10.1.1",
     "@types/benchmark": "^2.1.5",
     "@types/debug": "^4.1.12",
