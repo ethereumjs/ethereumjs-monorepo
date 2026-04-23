@@ -118,9 +118,7 @@ describe('BlockBuilder', () => {
         throw new Error('synthetic bookkeeping failure')
       }) as typeof transactions.push
 
-      await expect(blockBuilder.addTransaction(tx)).rejects.toThrow(
-        /synthetic bookkeeping failure/,
-      )
+      await expect(blockBuilder.addTransaction(tx)).rejects.toThrow(/synthetic bookkeeping failure/)
     } finally {
       transactions.push = originalPush
     }
