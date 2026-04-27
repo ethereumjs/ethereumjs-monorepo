@@ -22,7 +22,16 @@ function getAccessListDataGas(tx: EIP2930CompatibleTx): number {
   const totalSlots = accessList.reduce((sum, item) => sum + item[1].length, 0)
   const addresses = accessList.length
 
-  return addresses * Number(accessListAddressCost) + totalSlots * Number(accessListStorageKeyCost)
+  let cost =
+    addresses * Number(accessListAddressCost) + totalSlots * Number(accessListStorageKeyCost)
+
+  // EIP-7981: add floor cost for access list bytes (20 bytes/address + 32 bytes/slot, 4 tokens/byte)
+  if (common.isActivatedEIP(7981)) {
+    const accessListBytes = addresses * 20 + totalSlots * 32
+    cost += Number(common.param('totalCostFloorPerToken')) * accessListBytes * 4
+  }
+
+  return cost
 }
 
 /**
