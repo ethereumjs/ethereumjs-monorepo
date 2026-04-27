@@ -78,4 +78,10 @@ export const paramsTx: ParamsDict = {
   7825: {
     maxTransactionGasLimit: 16777216, // Maximum gas limit for a single transaction (2^24)
   },
+  /**
+   * Increase calldata floor cost (uniform 64 gas/byte floor)
+   */
+  7976: {
+    totalCostFloorPerToken: 16,
+  },
 }

@@ -554,8 +554,13 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (vm.common.isActivatedEIP(7623)) {
     // Tx should at least cover the floor price for tx data
     let tokens = 0
-    for (let i = 0; i < tx.data.length; i++) {
-      tokens += tx.data[i] === 0 ? 1 : 4
+    if (vm.common.isActivatedEIP(7976)) {
+      // EIP-7976: uniform 4 tokens per byte regardless of zero/non-zero
+      tokens = tx.data.length * 4
+    } else {
+      for (let i = 0; i < tx.data.length; i++) {
+        tokens += tx.data[i] === 0 ? 1 : 4
+      }
     }
     floorCost =
       tx.common.param('txGas') + tx.common.param('totalCostFloorPerToken') * BigInt(tokens)

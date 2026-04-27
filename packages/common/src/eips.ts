@@ -576,4 +576,13 @@ export const eipsDict: EIPsDict = {
     minimumHardfork: Hardfork.Cancun,
     requiredEIPs: [],
   },
+  /**
+   * Description : Increase calldata floor cost
+   * URL         : https://eips.ethereum.org/EIPS/eip-7976
+   * Status      : Draft
+   */
+  7976: {
+    minimumHardfork: Hardfork.Chainstart,
+    requiredEIPs: [7623],
+  },
 }
