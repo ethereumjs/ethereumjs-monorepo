@@ -910,7 +910,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // EIP-7778: block-level gas accounting does not subtract tx refunds.
   // For pre-7778 forks this equals the amount paid by the sender.
   results.blockGasSpent = vm.common.isActivatedEIP(7778)
-    ? bigIntMax(totalGasSpentBeforeRefund, floorCost)
+    ? bigIntMax(results.totalGasSpent, floorCost)
     : results.totalGasSpent
 
   results.amountSpent = results.totalGasSpent * gasPrice
