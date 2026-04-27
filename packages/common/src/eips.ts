@@ -585,4 +585,13 @@ export const eipsDict: EIPsDict = {
     minimumHardfork: Hardfork.Chainstart,
     requiredEIPs: [7623],
   },
+  /**
+   * Description : Access list data pricing
+   * URL         : https://eips.ethereum.org/EIPS/eip-7981
+   * Status      : Draft
+   */
+  7981: {
+    minimumHardfork: Hardfork.Amsterdam,
+    requiredEIPs: [2930, 7976],
+  },
 }
