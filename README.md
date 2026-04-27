@@ -36,6 +36,7 @@ Below you can find a list of the active packages included in this repository.
 | [@ethereumjs/block][block-package]               | [![NPM Package][block-npm-badge]][block-npm-link]               | [![Block Issues][block-issues-badge]][block-issues-link]                      | [![Actions Status][block-actions-badge]][block-actions-link]               | [![Code Coverage][block-coverage-badge]][block-coverage-link]               |
 | [@ethereumjs/blockchain][blockchain-package]     | [![NPM Package][blockchain-npm-badge]][blockchain-npm-link]     | [![Blockchain Issues][blockchain-issues-badge]][blockchain-issues-link]       | [![Actions Status][blockchain-actions-badge]][blockchain-actions-link]     | [![Code Coverage][blockchain-coverage-badge]][blockchain-coverage-link]     |
 | [@ethereumjs/common][common-package]             | [![NPM Package][common-npm-badge]][common-npm-link]             | [![Common Issues][common-issues-badge]][common-issues-link]                   | [![Actions Status][common-actions-badge]][common-actions-link]             | [![Code Coverage][common-coverage-badge]][common-coverage-link]             |
+| [@ethereumjs/e2store][e2store-package]           | [![NPM Package][e2store-npm-badge]][e2store-npm-link]           | [![E2store Issues][e2store-issues-badge]][e2store-issues-link]                | -                                                                          | -                                                                           |
 | [@ethereumjs/evm][evm-package]                   | [![NPM Package][evm-npm-badge]][evm-npm-link]                   | [![EVM Issues][evm-issues-badge]][evm-issues-link]                            | [![Actions Status][evm-actions-badge]][evm-actions-link]                   | [![Code Coverage][evm-coverage-badge]][evm-coverage-link]                   |
 | [@ethereumjs/genesis][genesis-package]           | [![NPM Package][genesis-npm-badge]][genesis-npm-link]           | [![Genesis Issues][genesis-issues-badge]][genesis-issues-link]                | [![Actions Status][genesis-actions-badge]][genesis-actions-link]           | [![Code Coverage][genesis-coverage-badge]][genesis-coverage-link]           |
 | [@ethereumjs/mpt][mpt-package]                   | [![NPM Package][mpt-npm-badge]][mpt-npm-link]                   | [![MPT Issues][mpt-issues-badge]][mpt-issues-link]                            | [![Actions Status][mpt-actions-badge]][mpt-actions-link]                   | [![Code Coverage][mpt-coverage-badge]][mpt-coverage-link]                   |
@@ -62,8 +63,8 @@ If you're new to the EthereumJS monorepo, this section will help you get up and 
 
 ### Prerequisites
 
-- Node.js (v18 or higher)
-- npm (v8 or higher)
+- Node.js (v20 or higher)
+- npm (v9 or higher)
 - Git
 
 ### Initial Setup
@@ -148,6 +149,10 @@ To inspect code related to a specific package version, refer to the [tags](https
    tx --> client
    vm --> client
    rlp --> util
+   rlp --> e2store
+   util --> e2store
+   block --> e2store
+   blockchain --> e2store
    statemanager --> evm
    statemanager --> vm
    statemanager --> client
@@ -228,6 +233,12 @@ Most packages are [MPL-2.0](<https://tldrlegal.com/license/mozilla-public-licens
 [devp2p-actions-link]: https://github.com/ethereumjs/ethereumjs-monorepo/actions?query=workflow%3A%22Devp2p%22
 [devp2p-coverage-badge]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/branch/master/graph/badge.svg?flag=devp2p
 [devp2p-coverage-link]: https://codecov.io/gh/ethereumjs/ethereumjs-monorepo/tree/master/packages/devp2p
+
+[e2store-package]: ./packages/e2store
+[e2store-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/e2store.svg
+[e2store-npm-link]: https://www.npmjs.com/package/@ethereumjs/e2store
+[e2store-issues-badge]: https://img.shields.io/github/issues/ethereumjs/ethereumjs-monorepo/package:%20e2store?label=issues
+[e2store-issues-link]: https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aopen+is%3Aissue+label%3A"package%3A+e2store"
 
 [ethash-package]: ./packages/ethash
 [ethash-npm-badge]: https://img.shields.io/npm/v/@ethereumjs/ethash.svg

@@ -25,7 +25,7 @@
 - [MerkleStateManager](#merklestatemanager)
 - [SimpleStateManager](#simplestatemanager)
 - [RPCStateManager](#rpcstatemanager)
-- [Verkle (experimental)](#verkle-state-managers-experimental)
+- [Binary Tree (experimental)](#binary-tree-experimental)
 - [Browser](#browser)
 - [API](#api)
 - [Development](#development)
@@ -52,8 +52,7 @@ This library includes several different implementations that all implement the `
 - [`SimpleStateManager`](./src/simpleStateManager.ts) -a minimally functional (and dependency minimized) version of the state manager suitable for most basic EVM bytecode operations
 - [`MerkleStateManager`](./src/stateManager.ts) - a Merkle-Patricia Trie-based `MerkleStateManager` implementation that is used by the `@ethereumjs/client` and `@ethereumjs/vm`
 - [`RPCStateManager`](./src/rpcStateManager.ts) - a light-weight implementation that sources state and history data from an external JSON-RPC provider
-- [`StatefulVerkleStateManager`](./src/statefulVerkleStateManager.ts) - an experimental implementation of a stateful verkle state manager
-- [`StatelessVerkleStateManager`](./src/statelessVerkleStateManager.ts) - an experimental implementation of a "stateless" state manager that uses Verkle proofs to provide necessary state access for processing verkle-trie based blocks
+- [`StatefulBinaryTreeStateManager`](./src/statefulBinaryTreeStateManager.ts) - an experimental implementation of a stateful binary tree state manager
 
 It also includes a checkpoint/revert/commit mechanism to either persist or revert state changes and provides a sophisticated caching mechanism under the hood to reduce the need reading state accesses from disk.
 
@@ -271,11 +270,9 @@ Note: Failing to provide the `RPCBlockChain` instance when instantiating the EVM
 
 Refer to [this test script](./test/rpcStateManager.spec.ts) for complete examples of running transactions and blocks in the `vm` with data sourced from a provider.
 
-## Verkle (experimental)
+## Binary Tree (experimental)
 
-There are two new verkle related state managers integrated into the code base. These state managers are very experimental and meant to be used for connecting to early [Verkle Tree](https://eips.ethereum.org/EIPS/eip-6800) test networks (Kaustinen). These state managers are not yet sufficiently tested and APIs are not yet stable and it therefore should not be used in production.
-
-See [PRs around Verkle](https://github.com/search?q=repo%3Aethereumjs%2Fethereumjs-monorepo+verkle&type=pullrequests) in our monorepo for an entrypoint if you are interested in our current Verkle related work.
+The `StatefulBinaryTreeStateManager` is an experimental state manager built on top of the [binary tree](../binarytree/) implementation, intended for stateless-Ethereum research and early test networks. It is not yet sufficiently tested and its APIs are not yet stable; it should not be used in production.
 
 ## Browser
 

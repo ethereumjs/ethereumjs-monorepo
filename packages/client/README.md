@@ -216,13 +216,11 @@ Then start the Lodestar client with:
 
 ## Research & Development
 
-### Verkle/Stateless
+### Stateless
 
-We are active in verkle/stateless research for some time, the [Stateless Implementers Calls](https://github.com/ethereum/pm/issues?q=is%3Aissue%20state%3Aopen%20label%3AStateless) serve as a good entrypoint to grasp what is going on and have some references to current work and testnets.
+We have been active in stateless research for some time, the [Stateless Implementers Calls](https://github.com/ethereum/pm/issues?q=is%3Aissue%20state%3Aopen%20label%3AStateless) serve as a good entrypoint to grasp what is going on and have some references to current work and testnets.
 
-The [verkle-devnets](https://github.com/ethpandaops/verkle-devnets) repository hosts configuration for joining the ongoing testnet efforts.
-
-In the monorepo we have experimental [verkle](./../verkle/) and [binary](./../binarytree/) tree implementations and have integrated both into our [state manager](./../statemanager/) (abstraction of Ethereum state access). All verkle/stateless code gets merged into the `master` branch. In the client there are dedicated flags for stateless execution, see `--help` flag for reference.
+In the monorepo we have an experimental [binary tree](./../binarytree/) implementation that is integrated into our [state manager](./../statemanager/) (abstraction of Ethereum state access).
 
 ### PeerDAS
 
@@ -296,30 +294,6 @@ Some useful commands to start with are (assuming a Kurtosis "enclave" called "hi
 Logs/shell can be directly accessed through the docker UI for containers, also available through Kurtosis though:
 
 - `kurtosis service logs -f spooky-sea el-1-ethereumjs-lighthouse`
-
-### Manual Testnet Setup (Verkle Example)
-
-This is an example how to using the EthereumJS client to manually join a research network.
-
-We currently support the Kaustinen7 testnet, both with stateless and stateful execution. We will be proactively supporting upcoming testnets as they launch. 
-
-Step 1 - Running the EthereumJS client (from the cloned @ethereumjs/client package)
-
-For stateless execution: 
-
-`npm run client:start:ts -- --rpc --gethGenesis=./devnets/kaustinen7/genesis.json --dataDir=datadir/kaust7 --rpcEngine --rpcEngineAuth=false --statelessVerkle=true`
-
-For stateful execution:
-
-`npm run client:start:ts -- --rpc --gethGenesis=./devnets/kaustinen7/genesis.json --dataDir=datadir/kaust7 --rpcEngine --rpcEngineAuth=false --statefulVerkle=true`
-
-Step 2 - Running the Lodestar client (from the cloned Lodestar quick-start repository)
-
-`./setup.sh --network kaustinen7 --dataDir kaust --justCL`
-
-Additional information on the Kaustinen7 testnet can be retrieve from this page: https://verkle-gen-devnet-7.ethpandaops.io/
-
-The process should be similar for other testnets, and the quick-start repository should provide testnet-specific configuration instructions for the Lodestar consensus layer client.
 
 ## Custom Chains
 
