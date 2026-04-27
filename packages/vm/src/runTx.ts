@@ -562,6 +562,12 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
         tokens += tx.data[i] === 0 ? 1 : 4
       }
     }
+    // EIP-7981: include access list bytes in floor token count (20 bytes/address + 32 bytes/slot)
+    if (vm.common.isActivatedEIP(7981) && 'accessList' in tx) {
+      const accessList = tx.accessList
+      const totalSlots = accessList.reduce((sum: number, item) => sum + item[1].length, 0)
+      tokens += (accessList.length * 20 + totalSlots * 32) * 4
+    }
     floorCost =
       tx.common.param('txGas') + tx.common.param('totalCostFloorPerToken') * BigInt(tokens)
   }
@@ -570,7 +576,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   const minGasLimit = bigIntMax(intrinsicGas, floorCost)
   if (gasLimit < minGasLimit) {
     const msg = _errorMsg(
-      `tx gas limit ${Number(gasLimit)} is lower than the minimum gas limit of ${Number(
+      `INTRINSIC_GAS_TOO_LOW: tx gas limit ${Number(gasLimit)} is lower than the minimum gas limit of ${Number(
         minGasLimit,
       )}`,
       vm,
