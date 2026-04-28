@@ -563,8 +563,8 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       }
     }
     // EIP-7981: include access list bytes in floor token count (20 bytes/address + 32 bytes/slot)
-    if (vm.common.isActivatedEIP(7981) && 'accessList' in tx) {
-      const accessList = tx.accessList
+    if (vm.common.isActivatedEIP(7981) && tx.supports(Capability.EIP2930AccessLists)) {
+      const accessList = (tx as AccessList2930Tx).accessList
       const totalSlots = accessList.reduce((sum: number, item) => sum + item[1].length, 0)
       tokens += (accessList.length * 20 + totalSlots * 32) * 4
     }
