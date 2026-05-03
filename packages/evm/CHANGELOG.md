@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+- Add optional `pushData` on `InterpreterStep` for `PUSH0`–`PUSH32` opcode traces, see Issue [#2418](https://github.com/ethereumjs/ethereumjs-monorepo/issues/2418)
+
 ## 10.1.1 - 2025-01-28
 
 - Ensure `codeAddress` in step event is correctly set, see PR [#4189](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4189)
