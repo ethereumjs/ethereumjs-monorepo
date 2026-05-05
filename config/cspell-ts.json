@@ -648,6 +648,7 @@
     "getpayload",
     "ckzg",
     "Damgård",
-    "viem"
+    "viem",
+    "snobal"
   ]
 }
