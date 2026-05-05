@@ -966,9 +966,21 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // to the EVM, so executionGasUsed alone misses it).
   let totalGasSpentBeforeRefund = results.execResult.executionGasUsed + intrinsicGas
   if (vm.common.isActivatedEIP(8037)) {
+    const executionStateGasUsed = vm.evm.executionStateGasUsed
     const reservoirDelta = stateGasReservoirInitial - vm.evm.stateGasReservoir
     totalGasSpentBeforeRefund =
       results.execResult.executionGasUsed + intrinsicRegularGas + intrinsicStateGas + reservoirDelta
+    // Per-dimension breakdown for the runBlock 2D accumulator. Note that
+    // executionGasUsed reflects everything spent from `gas_left` (regular
+    // ops + state-gas spilled to gas_left). reservoirDelta is the slice of
+    // state-gas paid from the reservoir. Together they cover all state-gas
+    // (= executionStateGasUsed by definition), so:
+    //   execution_regular_gas_used = executionGasUsed - (state-gas spilled to gas_left)
+    //                              = executionGasUsed - (executionStateGasUsed - reservoirDelta)
+    const stateGasFromGasLeft = executionStateGasUsed - reservoirDelta
+    const executionRegularGasUsed = results.execResult.executionGasUsed - stateGasFromGasLeft
+    results.txStateGas = intrinsicStateGas + executionStateGasUsed
+    results.txRegularGas = intrinsicRegularGas + executionRegularGasUsed
   }
   results.totalGasSpent = totalGasSpentBeforeRefund
   if (vm.DEBUG) {
