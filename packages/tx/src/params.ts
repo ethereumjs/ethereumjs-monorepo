@@ -85,12 +85,14 @@ export const paramsTx: ParamsDict = {
     totalCostFloorPerToken: 16,
   },
   /**
-   * State Creation Gas Cost Increase — EIP-7702 regular-gas overrides.
-   * State-gas portion of the authorization base/empty-account cost is computed
-   * separately from the EIP-8037 constants (see evm params block).
+   * State Creation Gas Cost Increase — tx-level regular-gas overrides.
+   * State-gas portion of the authorization base/empty-account cost and the
+   * creation-tx state cost are computed separately from the EIP-8037
+   * constants (see evm params block).
    */
   8037: {
     perAuthBaseGas: 7500, // Regular gas per authorization (down from 12500); state portion = stateBytesPerAuthBase * costPerStateByte
     perEmptyAccountCost: 0, // Regular gas for empty authority (down from 25000); state portion = stateBytesPerNewAccount * costPerStateByte (refunded if authority is non-empty)
+    txCreationGas: 9000, // Regular gas for a creation tx (down from 32000); state portion = stateBytesPerNewAccount * costPerStateByte
   },
 }

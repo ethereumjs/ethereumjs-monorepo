@@ -216,6 +216,20 @@ export class EVM implements EVMInterface {
 
   public readonly blockLevelAccessList?: BlockLevelAccessList
 
+  /**
+   * EIP-8037 transaction-level state-gas reservoir.
+   * Holds gas paid by the user that exceeds the EIP-7825 regular-gas budget
+   * and is reserved exclusively for state-creation charges. State-gas charges
+   * draw from `stateGasReservoir` first; once exhausted, they fall through to
+   * the regular `gasLeft`. Refunds (revert / exceptional halt / SELFDESTRUCT
+   * of same-tx-created accounts) refill it.
+   * Initialized by runTx at the start of each transaction; 0 when EIP-8037 is
+   * inactive.
+   */
+  public stateGasReservoir: bigint = BIGINT_0
+  /** EIP-8037 cumulative state-gas used by the current transaction. */
+  public executionStateGasUsed: bigint = BIGINT_0
+
   protected readonly _customOpcodes?: CustomOpcode[]
   protected readonly _customPrecompiles?: CustomPrecompile[]
 
