@@ -20,7 +20,7 @@ import { setupPreConditions } from '../util.ts'
 import { createCommonForFork, loadExecutionSpecFixtures } from './executionSpecTestLoader.ts'
 
 const fixturesPath = path.resolve(
-  '../execution-spec-tests/dev/blockchain_tests/amsterdam/v570_mixed_with_other_eips/eip7928_block_level_access_lists',
+  '../execution-spec-tests/dev/blockchain_tests/amsterdam/snobal_devnet_6_v110_mixed_with_other_eips/eip7928_block_level_access_lists',
 )
 // Create KZG instance once at the top level (expensive operation)
 const kzg = new microEthKZG(trustedSetup)

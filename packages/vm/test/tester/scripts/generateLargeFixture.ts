@@ -96,11 +96,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const repoRoot = path.resolve(__dirname, '../../..')
 const referenceFixturePath = path.join(
   repoRoot,
-  'packages/execution-spec-tests/dev/blockchain_tests/amsterdam/v570_mixed_with_other_eips/eip7928_block_level_access_lists/block_access_lists/bal_all_transaction_types.json',
+  'packages/execution-spec-tests/dev/blockchain_tests/amsterdam/snobal_devnet_6_v110_mixed_with_other_eips/eip7928_block_level_access_lists/block_access_lists/bal_all_transaction_types.json',
 )
 const defaultOutputPath = path.join(
   repoRoot,
-  'packages/execution-spec-tests/dev/blockchain_tests/amsterdam/v570_mixed_with_other_eips/eip7928_block_level_access_lists/block_access_lists/bal_large_generated_fixture.json',
+  'packages/execution-spec-tests/dev/blockchain_tests/amsterdam/snobal_devnet_6_v110_mixed_with_other_eips/eip7928_block_level_access_lists/block_access_lists/bal_large_generated_fixture.json',
 )
 
 const gasLimit = 0x07270e00n
