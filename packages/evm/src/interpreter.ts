@@ -657,6 +657,59 @@ export class Interpreter {
   }
 
   /**
+   * EIP-8037: Charge state-gas. Draws from the per-tx state-gas reservoir
+   * first; if the reservoir is exhausted, the remainder is taken from the
+   * regular `gasLeft` (which may OOG). Increments `execution_state_gas_used`
+   * by the full charged amount.
+   * @param amount - Amount of state gas to charge
+   * @param context - Usage context for debugging
+   * @throws if both pools combined are insufficient (out of gas)
+   */
+  chargeStateGas(amount: bigint, context?: string): void {
+    if (amount === BIGINT_0) return
+    const evm = this._evm
+    let remaining = amount
+    if (evm.stateGasReservoir > BIGINT_0) {
+      const fromReservoir = remaining < evm.stateGasReservoir ? remaining : evm.stateGasReservoir
+      evm.stateGasReservoir -= fromReservoir
+      remaining -= fromReservoir
+    }
+    if (remaining > BIGINT_0) {
+      this.useGas(
+        remaining,
+        context !== undefined ? `state-gas spill: ${context}` : 'state-gas spill',
+      )
+    }
+    evm.executionStateGasUsed += amount
+    if (evm.DEBUG) {
+      debugGas(
+        `${context !== undefined ? context + ': ' : ''}charged ${amount} state gas (reservoir=${evm.stateGasReservoir}, executionStateGasUsed=${evm.executionStateGasUsed}, gasLeft=${this._runState.gasLeft})`,
+      )
+    }
+  }
+
+  /**
+   * EIP-8037: Refill the state-gas reservoir, e.g. on revert / exceptional
+   * halt or on SSTORE clear-back-to-zero where the slot was zero at tx start.
+   * Increments `stateGasReservoir` and decrements `execution_state_gas_used`
+   * by the same amount. Refills always go to the reservoir, regardless of
+   * whether the original charge spilled to gas_left.
+   * @param amount - Amount of state gas to refill
+   * @param context - Usage context for debugging
+   */
+  refillStateGasReservoir(amount: bigint, context?: string): void {
+    if (amount === BIGINT_0) return
+    const evm = this._evm
+    evm.stateGasReservoir += amount
+    evm.executionStateGasUsed -= amount
+    if (evm.DEBUG) {
+      debugGas(
+        `${context !== undefined ? context + ': ' : ''}refilled ${amount} state gas (reservoir=${evm.stateGasReservoir}, executionStateGasUsed=${evm.executionStateGasUsed})`,
+      )
+    }
+  }
+
+  /**
    * Reduces amount of gas to be refunded by a positive value.
    * @param amount - Amount to subtract from gas refunds
    * @param context - Usage context for debugging

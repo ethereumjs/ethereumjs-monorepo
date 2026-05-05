@@ -843,7 +843,40 @@ export const handlers: Map<number, OpHandler> = new Map([
         value = bigIntToBytes(val)
       }
 
+      // EIP-8037: state-gas accounting at the end of SSTORE (per the spec
+      // table). State-gas adjustments only happen when the slot was zero at
+      // the start of the transaction:
+      //   original=0, current=0, new!=0  -> charge stateBytesPerStorageSet * costPerStateByte
+      //   original=0, current!=0, new=0  -> refill stateBytesPerStorageSet * costPerStateByte
+      //   all other (original, current, new) triplets: no adjustment
+      // NB: the regular-gas `sstoreSetGas` (2900 under 8037, was 20000) is
+      // still charged in the dynamic gas function above; this only meters
+      // the state-gas dimension.
+      const common = runState.interpreter._evm.common
+      let originalIsZero = false
+      let currentIsZero = false
+      const newIsZero = val === BIGINT_0
+      if (common.isActivatedEIP(8037)) {
+        const current = await runState.interpreter.storageLoad(keyBuf, false, false)
+        const original = await runState.interpreter.storageLoad(keyBuf, true, false)
+        currentIsZero = current.length === 0
+        originalIsZero = original.length === 0
+      }
+
       await runState.interpreter.storageStore(keyBuf, value)
+
+      if (common.isActivatedEIP(8037) && originalIsZero) {
+        const stateBytes = common.param('stateBytesPerStorageSet')
+        const costPerStateByte = common.param('costPerStateByte')
+        const amount = stateBytes * costPerStateByte
+        if (currentIsZero && !newIsZero) {
+          // 0 -> 0 -> nonzero: new slot, charge state gas
+          runState.interpreter.chargeStateGas(amount, 'SSTORE')
+        } else if (!currentIsZero && newIsZero) {
+          // 0 -> nonzero -> 0: clearing a slot created in this tx, refill reservoir
+          runState.interpreter.refillStateGasReservoir(amount, 'SSTORE clear')
+        }
+      }
     },
   ],
   // 0x56: JUMP

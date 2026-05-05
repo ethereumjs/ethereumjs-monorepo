@@ -638,7 +638,22 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     //   regular_gas_budget = TX_MAX_GAS_LIMIT - intrinsic_regular_gas
     //   gas_left           = min(regular_gas_budget, execution_gas)
     //   reservoir          = execution_gas - gas_left
-    const txMaxGasLimit = vm.common.param('maxTransactionGasLimit')
+    // EIP-7825 cap applies only to the regular-gas dimension under 8037:
+    //   max(intrinsic_regular_gas, calldata_floor_gas_cost) <= TX_MAX_GAS_LIMIT.
+    // (tx.common is used because `maxTransactionGasLimit` lives in the tx
+    // params block, which is merged into tx.common but may not be merged into
+    // vm.common in all configurations.)
+    const txMaxGasLimit = tx.common.param('maxTransactionGasLimit')
+    const regularCapCheck = bigIntMax(intrinsicRegularGas, floorCost)
+    if (regularCapCheck > txMaxGasLimit) {
+      const msg = _errorMsg(
+        `Transaction intrinsic regular gas ${regularCapCheck} exceeds the EIP-7825 cap (${txMaxGasLimit})`,
+        vm,
+        block,
+        tx,
+      )
+      throw EthereumJSErrorWithoutCode(msg)
+    }
     const executionGas = gasLimit - totalIntrinsic
     const regularBudget =
       txMaxGasLimit > intrinsicRegularGas ? txMaxGasLimit - intrinsicRegularGas : BIGINT_0
