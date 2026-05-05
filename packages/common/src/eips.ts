@@ -594,4 +594,13 @@ export const eipsDict: EIPsDict = {
     minimumHardfork: Hardfork.Amsterdam,
     requiredEIPs: [2930, 7976],
   },
+  /**
+   * Description : State Creation Gas Cost Increase
+   * URL         : https://eips.ethereum.org/EIPS/eip-8037
+   * Status      : Draft
+   */
+  8037: {
+    minimumHardfork: Hardfork.Amsterdam,
+    requiredEIPs: [2780, 6780, 7702, 7825, 7976, 7981],
+  },
 }
