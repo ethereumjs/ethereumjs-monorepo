@@ -547,16 +547,38 @@ export class EVM implements EVMInterface {
     }
 
     if (exit) {
-      // Even on early exit, we may need to return the EIP-7708 log if value was transferred
-      return {
-        execResult: {
-          gasRefund: message.gasRefund,
-          executionGasUsed: message.gasLimit - gasLimit,
-          exceptionError: errorMessage, // Only defined if addToBalance failed
-          returnValue: new Uint8Array(0),
-          logs: eip7708Log ? [eip7708Log] : undefined,
-        },
+      // Even on early exit, we may need to return the EIP-7708 log if value
+      // was transferred. EIP-8037: still charge state-gas if this empty-code
+      // call created a new account (the frame "succeeded" with no code).
+      let earlyResult: ExecResult = {
+        gasRefund: message.gasRefund,
+        executionGasUsed: message.gasLimit - gasLimit,
+        exceptionError: errorMessage,
+        returnValue: new Uint8Array(0),
+        logs: eip7708Log ? [eip7708Log] : undefined,
       }
+      if (
+        this.common.isActivatedEIP(8037) &&
+        !earlyResult.exceptionError &&
+        !toExistedBefore &&
+        message.value !== BIGINT_0 &&
+        !message.delegatecall &&
+        this.getPrecompile(message.to) === undefined
+      ) {
+        const stateBytesPerNewAccount = this.common.param('stateBytesPerNewAccount')
+        const costPerStateByte = activeCostPerStateByte(this.common, this._block?.header.gasLimit)
+        const charge = stateBytesPerNewAccount * costPerStateByte
+        const fromReservoir = charge < this.stateGasReservoir ? charge : this.stateGasReservoir
+        const spill = charge - fromReservoir
+        if (earlyResult.executionGasUsed + spill > message.gasLimit) {
+          earlyResult = OOGResult(message.gasLimit)
+        } else {
+          this.stateGasReservoir -= fromReservoir
+          this.executionStateGasUsed += charge
+          earlyResult.executionGasUsed += spill
+        }
+      }
+      return { execResult: earlyResult }
     }
 
     let result: ExecResult
