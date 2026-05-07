@@ -892,6 +892,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   // Process EIP-7702 authorization list (if applicable)
   let gasRefund = BIGINT_0
+  let existingAuthStateGasRefund = BIGINT_0
   if (tx.supports(Capability.EIP7702EOACode)) {
     const result = await processAuthorizationList(
       vm,
@@ -901,12 +902,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       block,
     )
     gasRefund = result.gasRefund
-    // EIP-8037: refund the state-gas portion for already-existing authority
-    // accounts directly into the reservoir (no 20% cap, applied before
-    // execution begins).
-    if (vm.common.isActivatedEIP(8037)) {
-      stateGasReservoirInitial += result.existingAuthStateGasRefund
-    }
+    existingAuthStateGasRefund = result.existingAuthStateGasRefund
   }
 
   if (vm.DEBUG) {
@@ -937,7 +933,11 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // EIP-8037: install the per-tx reservoir on the EVM so opcodes / frame-exit
   // hooks can charge / refill state-gas across the whole transaction.
   if (vm.common.isActivatedEIP(8037)) {
-    vm.evm.stateGasReservoir = stateGasReservoirInitial
+    // Apply 7702 existing-authority refund directly to evm.stateGasReservoir
+    // (NOT to stateGasReservoirInitial, which is the snapshot used by the
+    // tx-end formula `tx.gas - gas_left - reservoir_end`; including the
+    // refund there would overstate tx_gas_used by the refund amount).
+    vm.evm.stateGasReservoir = stateGasReservoirInitial + existingAuthStateGasRefund
     vm.evm.executionStateGasUsed = BIGINT_0
     // Reset any per-frame state-gas snapshot stack left over from a previous
     // tx. Each tx starts at frame depth 0 with an empty snapshot stack.
