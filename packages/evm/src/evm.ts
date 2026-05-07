@@ -239,7 +239,11 @@ export class EVM implements EVMInterface {
    *    frame's state_gas_reservoir [...] execution_state_gas_used is
    *    decreased consistently".
    */
-  protected _stateGasSnapshots: Array<{ reservoir: bigint; used: bigint }> = []
+  protected _stateGasSnapshots: Array<{
+    reservoir: bigint
+    used: bigint
+    createdAccountStateGas: Map<PrefixedHexString, bigint>
+  }> = []
 
   /**
    * EIP-8037 SELFDESTRUCT deferred refund support.
@@ -1289,6 +1293,7 @@ export class EVM implements EVMInterface {
       this._stateGasSnapshots.push({
         reservoir: this.stateGasReservoir,
         used: this.executionStateGasUsed,
+        createdAccountStateGas: new Map(this.createdAccountStateGas),
       })
     }
     if (this.DEBUG) {
@@ -1356,6 +1361,7 @@ export class EVM implements EVMInterface {
         if (snap !== undefined) {
           this.stateGasReservoir = snap.reservoir
           this.executionStateGasUsed = snap.used
+          this.createdAccountStateGas = snap.createdAccountStateGas
         }
       }
       if (this.DEBUG) {
