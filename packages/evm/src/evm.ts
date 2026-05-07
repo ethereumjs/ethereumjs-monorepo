@@ -973,7 +973,9 @@ export class EVM implements EVMInterface {
       // Record the charge keyed on the freshly-created address so runTx
       // can refund it if this account is SELFDESTRUCTed within the same
       // tx (per EIP-8037 SELFDESTRUCT deferred-refund rules).
-      this.createdAccountStateGas.set(message.to.toString(), stateGasCreate)
+      const addrKey = message.to.toString()
+      const prior = this.createdAccountStateGas.get(addrKey) ?? BIGINT_0
+      this.createdAccountStateGas.set(addrKey, prior + stateGasCreate)
     }
 
     // get the fresh gas limit for the rest of the ops

@@ -873,9 +873,22 @@ export const handlers: Map<number, OpHandler> = new Map([
         if (currentIsZero && !newIsZero) {
           // 0 -> 0 -> nonzero: new slot, charge state gas
           runState.interpreter.chargeStateGas(amount, 'SSTORE')
+          // Track per-address state-gas spent on storage so a same-tx
+          // SELFDESTRUCT can refund it (account/code already tracked at CREATE).
+          const addrKey = runState.interpreter.getAddress().toString()
+          const evm = runState.interpreter._evm
+          const prior = evm.createdAccountStateGas.get(addrKey) ?? BIGINT_0
+          evm.createdAccountStateGas.set(addrKey, prior + amount)
         } else if (!currentIsZero && newIsZero) {
           // 0 -> nonzero -> 0: clearing a slot created in this tx, refill reservoir
           runState.interpreter.refillStateGasReservoir(amount, 'SSTORE clear')
+          // Symmetric: subtract from the per-address tracker so we don't
+          // double-refund storage that was already cleared inside the tx.
+          const addrKey = runState.interpreter.getAddress().toString()
+          const evm = runState.interpreter._evm
+          const prior = evm.createdAccountStateGas.get(addrKey) ?? BIGINT_0
+          const next = prior > amount ? prior - amount : BIGINT_0
+          evm.createdAccountStateGas.set(addrKey, next)
         }
       }
     },
