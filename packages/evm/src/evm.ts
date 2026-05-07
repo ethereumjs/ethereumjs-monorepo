@@ -23,6 +23,7 @@ import debugDefault from 'debug'
 import { EventEmitter } from 'eventemitter3'
 
 import { createEIP7708TransferLog } from './eip7708.ts'
+import { activeCostPerStateByte } from './eip8037.ts'
 import { FORMAT } from './eof/constants.ts'
 import { isEOF } from './eof/util.ts'
 import { EVMError } from './errors.ts'
@@ -624,7 +625,7 @@ export class EVM implements EVMInterface {
       this.getPrecompile(message.to) === undefined
     ) {
       const stateBytesPerNewAccount = this.common.param('stateBytesPerNewAccount')
-      const costPerStateByte = this.common.param('costPerStateByte')
+      const costPerStateByte = activeCostPerStateByte(this.common, this._block?.header.gasLimit)
       const charge = stateBytesPerNewAccount * costPerStateByte
       const fromReservoir = charge < this.stateGasReservoir ? charge : this.stateGasReservoir
       const spill = charge - fromReservoir
@@ -871,7 +872,7 @@ export class EVM implements EVMInterface {
         //   - Creation transaction (depth 0): only L * costPerStateByte; the
         //     stateBytesPerNewAccount portion is already charged as
         //     intrinsic_state_gas in runTx (per spec).
-        const costPerStateByte = this.common.param('costPerStateByte')
+        const costPerStateByte = activeCostPerStateByte(this.common, this._block?.header.gasLimit)
         const stateBytesPerNewAccount = this.common.param('stateBytesPerNewAccount')
         const accountStateBytes = message.depth === 0 ? BIGINT_0 : stateBytesPerNewAccount
         stateGasCreate = (accountStateBytes + L) * costPerStateByte

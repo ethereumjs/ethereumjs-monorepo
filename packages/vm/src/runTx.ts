@@ -4,6 +4,7 @@ import {
   BinaryTreeAccessWitness,
   type EVM,
   type Log,
+  activeCostPerStateByte,
   createEIP7708SelfdestructLog,
 } from '@ethereumjs/evm'
 import { Capability, isBlob4844Tx } from '@ethereumjs/tx'
@@ -588,7 +589,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   let intrinsicStateGas = BIGINT_0
   let stateGasReservoirInitial = BIGINT_0
   if (vm.common.isActivatedEIP(8037)) {
-    const costPerStateByte = vm.common.param('costPerStateByte')
+    const costPerStateByte = activeCostPerStateByte(vm.common, block.header.gasLimit)
     const stateBytesPerNewAccount = vm.common.param('stateBytesPerNewAccount')
     const stateBytesPerAuthBase = vm.common.param('stateBytesPerAuthBase')
 

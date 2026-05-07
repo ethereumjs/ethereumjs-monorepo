@@ -28,6 +28,7 @@ import {
 } from '@ethereumjs/util'
 import { keccak_256 } from '@noble/hashes/sha3.js'
 
+import { activeCostPerStateByte } from '../eip8037.ts'
 import { EOFContainer, EOFContainerMode } from '../eof/container.ts'
 import { EOFErrorMessage } from '../eof/errors.ts'
 import { EOFBYTES, EOFHASH, isEOF } from '../eof/util.ts'
@@ -867,7 +868,7 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       if (common.isActivatedEIP(8037) && originalIsZero) {
         const stateBytes = common.param('stateBytesPerStorageSet')
-        const costPerStateByte = common.param('costPerStateByte')
+        const costPerStateByte = activeCostPerStateByte(common, runState.env.block.header.gasLimit)
         const amount = stateBytes * costPerStateByte
         if (currentIsZero && !newIsZero) {
           // 0 -> 0 -> nonzero: new slot, charge state gas
