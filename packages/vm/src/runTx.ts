@@ -90,8 +90,10 @@ async function processAuthorizationList(
   tx: EIP7702CompatibleTx,
   caller: Address,
   initialGasRefund: bigint,
-): Promise<bigint> {
+  block: Block,
+): Promise<{ gasRefund: bigint; existingAuthStateGasRefund: bigint }> {
   let gasRefund = initialGasRefund
+  let existingAuthStateGasRefund = BIGINT_0
   const authorizationList = tx.authorizationList
 
   for (let i = 0; i < authorizationList.length; i++) {
@@ -177,6 +179,17 @@ async function processAuthorizationList(
       gasRefund += refund
     }
 
+    // EIP-8037: under 8037, the intrinsic state-gas charge for each auth
+    // includes (stateBytesPerNewAccount + stateBytesPerAuthBase) * costPerStateByte.
+    // If the authority account already existed, refund the
+    // stateBytesPerNewAccount * costPerStateByte portion to the reservoir
+    // (no 20% cap).
+    if (accountExists && tx.common.isActivatedEIP(8037)) {
+      const stateBytesPerNewAccount = vm.common.param('stateBytesPerNewAccount')
+      const costPerStateByte = activeCostPerStateByte(vm.common, block.header.gasLimit)
+      existingAuthStateGasRefund += stateBytesPerNewAccount * costPerStateByte
+    }
+
     // Update account nonce and store
     account.nonce++
     await vm.evm.journal.putAccount(authority, account)
@@ -220,7 +233,7 @@ async function processAuthorizationList(
     }
   }
 
-  return gasRefund
+  return { gasRefund, existingAuthStateGasRefund }
 }
 
 /**
@@ -880,7 +893,20 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // Process EIP-7702 authorization list (if applicable)
   let gasRefund = BIGINT_0
   if (tx.supports(Capability.EIP7702EOACode)) {
-    gasRefund = await processAuthorizationList(vm, tx as EIP7702CompatibleTx, caller, gasRefund)
+    const result = await processAuthorizationList(
+      vm,
+      tx as EIP7702CompatibleTx,
+      caller,
+      gasRefund,
+      block,
+    )
+    gasRefund = result.gasRefund
+    // EIP-8037: refund the state-gas portion for already-existing authority
+    // accounts directly into the reservoir (no 20% cap, applied before
+    // execution begins).
+    if (vm.common.isActivatedEIP(8037)) {
+      stateGasReservoirInitial += result.existingAuthStateGasRefund
+    }
   }
 
   if (vm.DEBUG) {
