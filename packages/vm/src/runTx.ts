@@ -90,7 +90,7 @@ async function processAuthorizationList(
   tx: EIP7702CompatibleTx,
   caller: Address,
   initialGasRefund: bigint,
-  block: Block,
+  block: Block | undefined,
 ): Promise<{ gasRefund: bigint; existingAuthStateGasRefund: bigint }> {
   let gasRefund = initialGasRefund
   let existingAuthStateGasRefund = BIGINT_0
@@ -186,7 +186,7 @@ async function processAuthorizationList(
     // (no 20% cap).
     if (accountExists && tx.common.isActivatedEIP(8037)) {
       const stateBytesPerNewAccount = vm.common.param('stateBytesPerNewAccount')
-      const costPerStateByte = activeCostPerStateByte(vm.common, block.header.gasLimit)
+      const costPerStateByte = activeCostPerStateByte(vm.common, block?.header.gasLimit)
       existingAuthStateGasRefund += stateBytesPerNewAccount * costPerStateByte
     }
 
@@ -602,7 +602,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   let intrinsicStateGas = BIGINT_0
   let stateGasReservoirInitial = BIGINT_0
   if (vm.common.isActivatedEIP(8037)) {
-    const costPerStateByte = activeCostPerStateByte(vm.common, block.header.gasLimit)
+    const costPerStateByte = activeCostPerStateByte(vm.common, block?.header.gasLimit)
     const stateBytesPerNewAccount = vm.common.param('stateBytesPerNewAccount')
     const stateBytesPerAuthBase = vm.common.param('stateBytesPerAuthBase')
 
