@@ -997,6 +997,18 @@ export class EVM implements EVMInterface {
       const addrKey = message.to.toString()
       const prior = this.createdAccountStateGas.get(addrKey) ?? BIGINT_0
       this.createdAccountStateGas.set(addrKey, prior + stateGasCreate)
+    } else if (this.common.isActivatedEIP(8037) && !createSucceeded && message.depth === 0) {
+      // EIP-8037: on top-level (creation tx) failure, refund the intrinsic
+      // state-gas portion (stateBytesPerNewAccount * CPSB) to the reservoir.
+      // The intrinsic was paid up-front in runTx; if the new account isn't
+      // created (revert / exceptional halt), no state-gas should be charged
+      // for it. The L * CPSB code-deposit portion is naturally not charged
+      // because we only charge stateGasCreate on success.
+      const stateBytesPerNewAccount = this.common.param('stateBytesPerNewAccount')
+      const costPerStateByte = activeCostPerStateByte(this.common, this._block?.header.gasLimit)
+      const refund = stateBytesPerNewAccount * costPerStateByte
+      this.stateGasReservoir += refund
+      this.executionStateGasUsed -= refund
     }
 
     // get the fresh gas limit for the rest of the ops
