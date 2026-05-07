@@ -420,6 +420,7 @@ export const paramsEVM: ParamsDict = {
     // Regular-gas overrides (state portion is metered separately)
     sstoreSetGas: 2900, // SSTORE 0->nonzero: regular gas (down from 20000); state portion = stateBytesPerStorageSet * costPerStateByte
     sstoreInitEIP2200Gas: 2900, // EIP-2200 path uses this name for the create-slot regular cost; align with sstoreSetGas under 8037
+    sstoreInitRefundEIP2200Gas: 0, // Legacy refund for "create-then-clear-in-same-tx" is replaced by the state-gas reservoir refill
     createGas: 9000, // CREATE / CREATE2 base regular gas (down from 32000); state portion = (stateBytesPerNewAccount + L) * costPerStateByte
     callNewAccountGas: 0, // CALL* to non-existent: regular gas (down from 25000); state portion = stateBytesPerNewAccount * costPerStateByte
     createDataGas: 0, // Per-byte regular cost of code deposit (down from 200); replaced by costPerStateByte state-gas plus a per-word hash cost (see codeDepositHashWordGas)
