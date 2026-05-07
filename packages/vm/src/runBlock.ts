@@ -191,7 +191,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
   let requests: CLRequest<CLRequestType>[] | undefined
   if (block.common.isActivatedEIP(7685)) {
     const sha256Function = vm.common.customCrypto.sha256 ?? sha256
-    requests = await accumulateRequests(vm, result.results)
+    requests = await accumulateRequests(vm, result.results, block.header.gasLimit)
     requestsHash = genRequestsRoot(requests, sha256Function)
   }
 
