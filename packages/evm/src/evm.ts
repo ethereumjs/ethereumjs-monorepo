@@ -550,7 +550,7 @@ export class EVM implements EVMInterface {
       // Even on early exit, we may need to return the EIP-7708 log if value
       // was transferred. EIP-8037: still charge state-gas if this empty-code
       // call created a new account (the frame "succeeded" with no code).
-      let earlyResult: ExecResult = {
+      const earlyResult: ExecResult = {
         gasRefund: message.gasRefund,
         executionGasUsed: message.gasLimit - gasLimit,
         exceptionError: errorMessage,
@@ -570,13 +570,15 @@ export class EVM implements EVMInterface {
         const charge = stateBytesPerNewAccount * costPerStateByte
         const fromReservoir = charge < this.stateGasReservoir ? charge : this.stateGasReservoir
         const spill = charge - fromReservoir
-        if (earlyResult.executionGasUsed + spill > message.gasLimit) {
-          earlyResult = OOGResult(message.gasLimit)
-        } else {
-          this.stateGasReservoir -= fromReservoir
-          this.executionStateGasUsed += charge
-          earlyResult.executionGasUsed += spill
-        }
+        // EIP-8037: state-gas spill charges the tx-level gas_left, not the
+        // inner frame's budget. We let executionGasUsed exceed message.gasLimit
+        // here; the caller's useGas() picks up the overage and consumes it
+        // from the parent frame's gasLeft (which ultimately bubbles up to
+        // tx-level gas_left). If the tx as a whole runs out, OOG is raised
+        // at the caller frame, not here.
+        this.stateGasReservoir -= fromReservoir
+        this.executionStateGasUsed += charge
+        earlyResult.executionGasUsed += spill
       }
       return { execResult: earlyResult }
     }
@@ -651,16 +653,13 @@ export class EVM implements EVMInterface {
       const charge = stateBytesPerNewAccount * costPerStateByte
       const fromReservoir = charge < this.stateGasReservoir ? charge : this.stateGasReservoir
       const spill = charge - fromReservoir
-      if (result.executionGasUsed + spill > message.gasLimit) {
-        // OOG: the spill into gas_left can't be covered by what's left in
-        // this frame. Convert to an OOG result; the journal-revert path
-        // unwinds the snapshot.
-        result = OOGResult(message.gasLimit)
-      } else {
-        this.stateGasReservoir -= fromReservoir
-        this.executionStateGasUsed += charge
-        result.executionGasUsed += spill
-      }
+      // EIP-8037: state-gas spill charges the tx-level gas_left, not the
+      // current frame's budget. Let executionGasUsed exceed message.gasLimit;
+      // the caller picks up the overage via useGas() and OOG is raised at
+      // the caller frame if there's not enough tx gas overall.
+      this.stateGasReservoir -= fromReservoir
+      this.executionStateGasUsed += charge
+      result.executionGasUsed += spill
     }
 
     return {
