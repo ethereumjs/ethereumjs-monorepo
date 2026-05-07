@@ -1040,7 +1040,11 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     const stateGasFromGasLeft = executionStateGasUsed - reservoirDelta
     const executionRegularGasUsed = results.execResult.executionGasUsed - stateGasFromGasLeft
     results.txStateGas = intrinsicStateGas + executionStateGasUsed
-    results.txRegularGas = intrinsicRegularGas + executionRegularGasUsed
+    // Per EIP-8037: block_regular_gas_used += max(tx_regular_gas, calldata_floor)
+    // Apply the EIP-7623 floor to the regular dimension here so runBlock can
+    // accumulate dimensions independently.
+    const txRegularGasRaw = intrinsicRegularGas + executionRegularGasUsed
+    results.txRegularGas = txRegularGasRaw > floorCost ? txRegularGasRaw : floorCost
   }
   results.totalGasSpent = totalGasSpentBeforeRefund
   if (vm.DEBUG) {

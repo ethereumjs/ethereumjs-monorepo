@@ -696,9 +696,13 @@ async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
     // their max as the block's gas_used. tx_regular_gas/tx_state_gas come
     // from runTx; the calldata floor applies to the regular dimension.
     if (vm.common.isActivatedEIP(8037) && txRes.txRegularGas !== undefined) {
-      const txRegular =
-        txRes.txRegularGas > txRes.blockGasSpent ? txRes.txRegularGas : txRes.blockGasSpent
-      blockRegularGasUsed += txRegular
+      // EIP-8037: track regular and state dimensions independently and use
+      // their max as the block's gas_used. txRegularGas already incorporates
+      // the EIP-7623 calldata floor (max(intrinsic+exec_regular, floorCost))
+      // applied in runTx, so we accumulate it directly without re-max'ing
+      // against blockGasSpent (which is the combined regular+state total
+      // and would inflate blockRegular).
+      blockRegularGasUsed += txRes.txRegularGas
       blockStateGasUsed += txRes.txStateGas ?? BIGINT_0
       gasUsed = blockRegularGasUsed > blockStateGasUsed ? blockRegularGasUsed : blockStateGasUsed
     } else {
