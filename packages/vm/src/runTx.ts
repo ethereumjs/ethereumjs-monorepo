@@ -912,6 +912,13 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (vm.common.isActivatedEIP(8037)) {
     vm.evm.stateGasReservoir = stateGasReservoirInitial
     vm.evm.executionStateGasUsed = BIGINT_0
+    // Reset any per-frame state-gas snapshot stack left over from a previous
+    // tx. Each tx starts at frame depth 0 with an empty snapshot stack.
+    ;(vm.evm as unknown as { _stateGasSnapshots: unknown[] })._stateGasSnapshots = []
+    // Reset the per-tx record of state-gas charged for newly-created
+    // accounts, used for the SELFDESTRUCT deferred refund.
+    ;(vm.evm as unknown as { createdAccountStateGas: Map<string, bigint> }).createdAccountStateGas =
+      new Map()
   }
 
   const results = (await vm.evm.runCall({
@@ -956,6 +963,32 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // ===========================
   // RESULTS: Gas and Balances
   // ===========================
+  // EIP-8037 SELFDESTRUCT deferred refund: for any address that was both
+  // created in this tx and SELFDESTRUCTed during it, refund the state-gas
+  // charged at CREATE time (account + code deposit). These refunds go
+  // directly to the reservoir and decrement execution_state_gas_used by
+  // the same amount, and are NOT subject to the 20% refund cap.
+  // (Storage-slot state-gas tracking per-account is a separate follow-up;
+  // this covers the pure account+code-deposit refund cases that otherwise
+  // regress vs the parent branch.)
+  if (vm.common.isActivatedEIP(8037)) {
+    const sd = results.execResult.selfdestruct
+    const created = results.execResult.createdAddresses
+    const map = (vm.evm as unknown as { createdAccountStateGas: Map<string, bigint> })
+      .createdAccountStateGas
+    if (sd !== undefined && created !== undefined && map.size > 0) {
+      for (const addr of sd.keys()) {
+        if (created.has(addr)) {
+          const charge = map.get(addr)
+          if (charge !== undefined && charge > BIGINT_0) {
+            vm.evm.stateGasReservoir += charge
+            vm.evm.executionStateGasUsed -= charge
+          }
+        }
+      }
+    }
+  }
+
   // Calculate tx gas used before refund processing.
   // Pre-EIP-8037: tx_gas_used = intrinsic + executionGasUsed.
   // EIP-8037: tx_gas_used_before_refund = tx.gas - gas_left - state_gas_reservoir
