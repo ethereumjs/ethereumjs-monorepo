@@ -21,6 +21,7 @@ import {
   EIP7708_SYSTEM_ADDRESS,
   EIP7708_TRANSFER_TOPIC,
 } from './eip7708.ts'
+import { activeCostPerStateByte } from './eip8037.ts'
 import { FORMAT, MAGIC, VERSION } from './eof/constants.ts'
 import { EOFContainerMode, validateEOF } from './eof/container.ts'
 import { setupEOF } from './eof/setup.ts'
@@ -1384,8 +1385,10 @@ export class Interpreter {
     }
 
     // Add to beneficiary balance
+    let beneficiaryWasNew = false
     if (!toSelf) {
       let toAccount = await this._stateManager.getAccount(toAddress)
+      beneficiaryWasNew = toAccount === undefined || toAccount.isEmpty()
       if (!toAccount) {
         toAccount = new Account()
       }
@@ -1400,6 +1403,21 @@ export class Interpreter {
           originalBalance,
         )
       }
+    }
+
+    // EIP-8037: SELFDESTRUCT that transfers value to a non-existent beneficiary
+    // creates a new account. Charge stateBytesPerNewAccount * CPSB.
+    if (
+      this.common.isActivatedEIP(8037) &&
+      !toSelf &&
+      beneficiaryWasNew &&
+      contractBalance > BIGINT_0
+    ) {
+      const stateBytesPerNewAccount = this.common.param('stateBytesPerNewAccount')
+      const blockGasLimit = this._env.block.header.gasLimit
+      const costPerStateByte = activeCostPerStateByte(this.common, blockGasLimit)
+      const charge = stateBytesPerNewAccount * costPerStateByte
+      this.chargeStateGas(charge, 'SELFDESTRUCT new beneficiary')
     }
 
     // Modify the account (set balance to 0) flag
