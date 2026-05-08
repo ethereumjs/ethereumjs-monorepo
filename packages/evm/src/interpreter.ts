@@ -1406,7 +1406,7 @@ export class Interpreter {
     }
 
     // EIP-8037: SELFDESTRUCT that transfers value to a non-existent beneficiary
-    // creates a new account. Charge stateBytesPerNewAccount * CPSB.
+    // creates a new account. Charge stateBytesPerNewAccount * costPerStateByte.
     if (
       this.common.isActivatedEIP(8037) &&
       !toSelf &&

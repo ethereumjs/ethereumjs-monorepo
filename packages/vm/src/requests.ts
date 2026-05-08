@@ -21,11 +21,11 @@ import type { VM } from './vm.ts'
 /**
  * EIP-8037 system-call gas split.
  *   regular gas_left   = 30_000_000 (unchanged)
- *   reservoir          = stateBytesPerStorageSet * cpsb(blockGasLimit) * 16
+ *   reservoir          = stateBytesPerStorageSet * costPerStateByte(blockGasLimit) * 16
  *
  * Returns the regular gas portion (passed to runCall) and the reservoir
  * portion (set on vm.evm before the call). The block argument is required
- * under 8037 so cpsb scales with the current block's gas limit.
+ * under 8037 so costPerStateByte scales with the current block's gas limit.
  */
 function computeSystemCallGas(
   vm: VM,
@@ -37,8 +37,8 @@ function computeSystemCallGas(
   }
   const stateBytesPerStorageSet = vm.common.param('stateBytesPerStorageSet')
   const systemMaxSstoresPerCall = BigInt(16)
-  const cpsb = activeCostPerStateByte(vm.common, blockGasLimit)
-  const reservoir = stateBytesPerStorageSet * cpsb * systemMaxSstoresPerCall
+  const costPerStateByte = activeCostPerStateByte(vm.common, blockGasLimit)
+  const reservoir = stateBytesPerStorageSet * costPerStateByte * systemMaxSstoresPerCall
   return { regular, reservoir }
 }
 
