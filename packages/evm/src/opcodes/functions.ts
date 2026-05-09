@@ -28,6 +28,7 @@ import {
 } from '@ethereumjs/util'
 import { keccak_256 } from '@noble/hashes/sha3.js'
 
+import { activeCostPerStateByte } from '../eip8037.ts'
 import { EOFContainer, EOFContainerMode } from '../eof/container.ts'
 import { EOFErrorMessage } from '../eof/errors.ts'
 import { EOFBYTES, EOFHASH, isEOF } from '../eof/util.ts'
@@ -867,14 +868,27 @@ export const handlers: Map<number, OpHandler> = new Map([
 
       if (common.isActivatedEIP(8037) && originalIsZero) {
         const stateBytes = common.param('stateBytesPerStorageSet')
-        const costPerStateByte = common.param('costPerStateByte')
+        const costPerStateByte = activeCostPerStateByte(common, runState.env.block.header.gasLimit)
         const amount = stateBytes * costPerStateByte
         if (currentIsZero && !newIsZero) {
           // 0 -> 0 -> nonzero: new slot, charge state gas
           runState.interpreter.chargeStateGas(amount, 'SSTORE')
+          // Track per-address state-gas spent on storage so a same-tx
+          // SELFDESTRUCT can refund it (account/code already tracked at CREATE).
+          const addrKey = runState.interpreter.getAddress().toString()
+          const evm = runState.interpreter._evm
+          const prior = evm.createdAccountStateGas.get(addrKey) ?? BIGINT_0
+          evm.createdAccountStateGas.set(addrKey, prior + amount)
         } else if (!currentIsZero && newIsZero) {
           // 0 -> nonzero -> 0: clearing a slot created in this tx, refill reservoir
           runState.interpreter.refillStateGasReservoir(amount, 'SSTORE clear')
+          // Symmetric: subtract from the per-address tracker so we don't
+          // double-refund storage that was already cleared inside the tx.
+          const addrKey = runState.interpreter.getAddress().toString()
+          const evm = runState.interpreter._evm
+          const prior = evm.createdAccountStateGas.get(addrKey) ?? BIGINT_0
+          const next = prior > amount ? prior - amount : BIGINT_0
+          evm.createdAccountStateGas.set(addrKey, next)
         }
       }
     },

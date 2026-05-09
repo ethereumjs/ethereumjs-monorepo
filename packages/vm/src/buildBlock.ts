@@ -22,6 +22,7 @@ import {
   GWEI_TO_WEI,
   KECCAK256_RLP,
   TypeOutput,
+  bytesToBigInt,
   createWithdrawal,
   createZeroAddress,
   toBytes,
@@ -365,7 +366,13 @@ export class BlockBuilder {
     let requestsHash
     if (this.vm.common.isActivatedEIP(7685)) {
       const sha256Function = this.vm.common.customCrypto.sha256 ?? sha256
-      requests = await accumulateRequests(this.vm, this.transactionResults)
+      requests = await accumulateRequests(
+        this.vm,
+        this.transactionResults,
+        this.headerData.gasLimit !== undefined
+          ? bytesToBigInt(toBytes(this.headerData.gasLimit))
+          : undefined,
+      )
       requestsHash = genRequestsRoot(requests, sha256Function)
     }
 
