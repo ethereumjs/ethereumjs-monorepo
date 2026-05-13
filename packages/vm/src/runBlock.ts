@@ -191,7 +191,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
   let requests: CLRequest<CLRequestType>[] | undefined
   if (block.common.isActivatedEIP(7685)) {
     const sha256Function = vm.common.customCrypto.sha256 ?? sha256
-    requests = await accumulateRequests(vm, result.results)
+    requests = await accumulateRequests(vm, result.results, block.header.gasLimit)
     requestsHash = genRequestsRoot(requests, sha256Function)
   }
 
@@ -609,8 +609,14 @@ async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
   }
 
   const bloom = new Bloom(undefined, vm.common)
-  // Block header gas accounting (EIP-7778: no refund subtraction)
+  // Block header gas accounting (EIP-7778: no refund subtraction).
+  // Under EIP-8037 this is the bottleneck of two dimensions:
+  //   gas_used = max(block_regular_gas_used, block_state_gas_used)
+  // tracked via blockRegularGasUsed / blockStateGasUsed below.
   let gasUsed = BIGINT_0
+  // EIP-8037 per-dimension accumulators
+  let blockRegularGasUsed = BIGINT_0
+  let blockStateGasUsed = BIGINT_0
   // Receipt cumulative gas accounting (keeps tx refund subtraction semantics)
   let receiptGasUsed = BIGINT_0
 
@@ -637,10 +643,32 @@ async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
       )
     }
 
-    const gasLimitIsHigherThanBlock = block.header.gasLimit < tx.gasLimit + gasUsed
-    if (gasLimitIsHigherThanBlock) {
-      const msg = _errorMsg('tx has a higher gas limit than the block', vm, block)
-      throw EthereumJSErrorWithoutCode(msg)
+    // EIP-8037 pre-execution check (spec):
+    //   min(TX_MAX_GAS_LIMIT, tx.gas) <= regular_gas_available
+    //   tx.gas <= state_gas_available
+    // where *_available = block.gas_limit - block_*_gas_used.
+    // Pre-EIP-8037 keeps the original check (`tx.gasLimit + gasUsed <= block.gasLimit`).
+    if (vm.common.isActivatedEIP(8037)) {
+      const txMax = tx.common.param('maxTransactionGasLimit')
+      const regularAvailable =
+        block.header.gasLimit > blockRegularGasUsed
+          ? block.header.gasLimit - blockRegularGasUsed
+          : BIGINT_0
+      const stateAvailable =
+        block.header.gasLimit > blockStateGasUsed
+          ? block.header.gasLimit - blockStateGasUsed
+          : BIGINT_0
+      const txRegularBound = tx.gasLimit < txMax ? tx.gasLimit : txMax
+      if (txRegularBound > regularAvailable || tx.gasLimit > stateAvailable) {
+        const msg = _errorMsg('tx has a higher gas limit than the block', vm, block)
+        throw EthereumJSErrorWithoutCode(msg)
+      }
+    } else {
+      const gasLimitIsHigherThanBlock = block.header.gasLimit < tx.gasLimit + gasUsed
+      if (gasLimitIsHigherThanBlock) {
+        const msg = _errorMsg('tx has a higher gas limit than the block', vm, block)
+        throw EthereumJSErrorWithoutCode(msg)
+      }
     }
 
     // Run the tx through the VM
@@ -660,8 +688,26 @@ async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
       debug('-'.repeat(100))
     }
 
-    // Add to total block gas usage
-    gasUsed += txRes.blockGasSpent
+    // Add to total block gas usage.
+    // Pre-EIP-8037: single-dimension accumulator (blockGasSpent already
+    // applies the EIP-7623 calldata floor and respects EIP-7778's no-refund
+    // semantics).
+    // EIP-8037: track regular and state dimensions independently and use
+    // their max as the block's gas_used. tx_regular_gas/tx_state_gas come
+    // from runTx; the calldata floor applies to the regular dimension.
+    if (vm.common.isActivatedEIP(8037) && txRes.txRegularGas !== undefined) {
+      // EIP-8037: track regular and state dimensions independently and use
+      // their max as the block's gas_used. txRegularGas already incorporates
+      // the EIP-7623 calldata floor (max(intrinsic+exec_regular, floorCost))
+      // applied in runTx, so we accumulate it directly without re-max'ing
+      // against blockGasSpent (which is the combined regular+state total
+      // and would inflate blockRegular).
+      blockRegularGasUsed += txRes.txRegularGas
+      blockStateGasUsed += txRes.txStateGas ?? BIGINT_0
+      gasUsed = blockRegularGasUsed > blockStateGasUsed ? blockRegularGasUsed : blockStateGasUsed
+    } else {
+      gasUsed += txRes.blockGasSpent
+    }
     receiptGasUsed += txRes.totalGasSpent
     if (vm.DEBUG) {
       debug(`Add tx gas used (${txRes.blockGasSpent}) to total block gas usage (-> ${gasUsed})`)

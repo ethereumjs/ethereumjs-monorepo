@@ -1,6 +1,8 @@
 import { Mainnet } from '@ethereumjs/common'
+import { activeCostPerStateByte } from '@ethereumjs/evm'
 import type { BlockLevelAccessList, PrefixedHexString } from '@ethereumjs/util'
 import {
+  BIGINT_0,
   CLRequest,
   CLRequestType,
   EthereumJSErrorWithoutCode,
@@ -15,6 +17,60 @@ import {
 
 import type { RunTxResult } from './types.ts'
 import type { VM } from './vm.ts'
+
+/**
+ * EIP-8037 system-call gas split.
+ *   regular gas_left   = 30_000_000 (unchanged)
+ *   reservoir          = stateBytesPerStorageSet * costPerStateByte(blockGasLimit) * 16
+ *
+ * Returns the regular gas portion (passed to runCall) and the reservoir
+ * portion (set on vm.evm before the call). The block argument is required
+ * under 8037 so costPerStateByte scales with the current block's gas limit.
+ */
+function computeSystemCallGas(
+  vm: VM,
+  blockGasLimit?: bigint,
+): { regular: bigint; reservoir: bigint } {
+  const regular = vm.common.param('systemCallGasLimit')
+  if (!vm.common.isActivatedEIP(8037)) {
+    return { regular, reservoir: BIGINT_0 }
+  }
+  const stateBytesPerStorageSet = vm.common.param('stateBytesPerStorageSet')
+  const systemMaxSstoresPerCall = BigInt(16)
+  const costPerStateByte = activeCostPerStateByte(vm.common, blockGasLimit)
+  const reservoir = stateBytesPerStorageSet * costPerStateByte * systemMaxSstoresPerCall
+  return { regular, reservoir }
+}
+
+/**
+ * Snapshot/restore the per-EVM 8037 reservoir state around a system call
+ * so the system call's state-gas accounting is isolated from any
+ * concurrent tx-level reservoir.
+ */
+function setupSystemCallReservoir(vm: VM, reservoir: bigint) {
+  if (!vm.common.isActivatedEIP(8037)) return null
+  const evm = vm.evm
+  const prior = {
+    reservoir: evm.stateGasReservoir,
+    used: evm.executionStateGasUsed,
+    snapshots: (evm as unknown as { _stateGasSnapshots: unknown[] })._stateGasSnapshots,
+  }
+  evm.stateGasReservoir = reservoir
+  evm.executionStateGasUsed = BIGINT_0
+  ;(evm as unknown as { _stateGasSnapshots: unknown[] })._stateGasSnapshots = []
+  return prior
+}
+
+function teardownSystemCallReservoir(
+  vm: VM,
+  prior: { reservoir: bigint; used: bigint; snapshots: unknown[] } | null,
+) {
+  if (prior === null) return
+  const evm = vm.evm
+  evm.stateGasReservoir = prior.reservoir
+  evm.executionStateGasUsed = prior.used
+  ;(evm as unknown as { _stateGasSnapshots: unknown[] })._stateGasSnapshots = prior.snapshots
+}
 
 const DEPOSIT_TOPIC = '0x649bbc62d0e31342afea4e5cd82d4049e7e1ee912fc0889aa790803be39038c5'
 const PUBKEY_OFFSET = BigInt(160)
@@ -79,6 +135,7 @@ function restoreSystemAccessEntry(
 export const accumulateRequests = async (
   vm: VM,
   txResults: RunTxResult[],
+  blockGasLimit?: bigint,
 ): Promise<CLRequest<CLRequestType>[]> => {
   const requests: CLRequest<CLRequestType>[] = []
   const common = vm.common
@@ -93,12 +150,12 @@ export const accumulateRequests = async (
   }
 
   if (common.isActivatedEIP(7002)) {
-    const withdrawalsRequest = await accumulateWithdrawalsRequest(vm)
+    const withdrawalsRequest = await accumulateWithdrawalsRequest(vm, blockGasLimit)
     requests.push(withdrawalsRequest)
   }
 
   if (common.isActivatedEIP(7251)) {
-    const consolidationsRequest = await accumulateConsolidationsRequest(vm)
+    const consolidationsRequest = await accumulateConsolidationsRequest(vm, blockGasLimit)
     requests.push(consolidationsRequest)
   }
 
@@ -108,6 +165,7 @@ export const accumulateRequests = async (
 
 const accumulateWithdrawalsRequest = async (
   vm: VM,
+  blockGasLimit?: bigint,
 ): Promise<CLRequest<typeof CLRequestType.Withdrawal>> => {
   // Partial withdrawals logic
   const addressBytes = setLengthLeft(
@@ -128,11 +186,14 @@ const accumulateWithdrawalsRequest = async (
 
   const systemAddressHex = systemAddress.toString()
   const balSnapshot = cloneSystemAccessEntry(vm, systemAddressHex)
+  const { regular, reservoir } = computeSystemCallGas(vm, blockGasLimit)
+  const reservoirPrior = setupSystemCallReservoir(vm, reservoir)
   const results = await vm.evm.runCall({
     caller: systemAddress,
-    gasLimit: vm.common.param('systemCallGasLimit'),
+    gasLimit: regular,
     to: withdrawalsAddress,
   })
+  teardownSystemCallReservoir(vm, reservoirPrior)
   restoreSystemAccessEntry(vm, systemAddressHex, balSnapshot)
 
   if (systemAccount === undefined) {
@@ -147,6 +208,7 @@ const accumulateWithdrawalsRequest = async (
 
 const accumulateConsolidationsRequest = async (
   vm: VM,
+  blockGasLimit?: bigint,
 ): Promise<CLRequest<typeof CLRequestType.Consolidation>> => {
   // Partial withdrawals logic
   const addressBytes = setLengthLeft(
@@ -167,11 +229,14 @@ const accumulateConsolidationsRequest = async (
 
   const systemAddressHex = systemAddress.toString()
   const balSnapshot = cloneSystemAccessEntry(vm, systemAddressHex)
+  const { regular, reservoir } = computeSystemCallGas(vm, blockGasLimit)
+  const reservoirPrior = setupSystemCallReservoir(vm, reservoir)
   const results = await vm.evm.runCall({
     caller: systemAddress,
-    gasLimit: vm.common.param('systemCallGasLimit'),
+    gasLimit: regular,
     to: consolidationsAddress,
   })
+  teardownSystemCallReservoir(vm, reservoirPrior)
   restoreSystemAccessEntry(vm, systemAddressHex, balSnapshot)
 
   if (systemAccount === undefined) {

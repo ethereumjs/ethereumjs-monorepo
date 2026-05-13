@@ -21,6 +21,7 @@ import {
   EIP7708_SYSTEM_ADDRESS,
   EIP7708_TRANSFER_TOPIC,
 } from './eip7708.ts'
+import { activeCostPerStateByte } from './eip8037.ts'
 import { FORMAT, MAGIC, VERSION } from './eof/constants.ts'
 import { EOFContainerMode, validateEOF } from './eof/container.ts'
 import { setupEOF } from './eof/setup.ts'
@@ -654,6 +655,59 @@ export class Interpreter {
       )
     }
     this._runState.gasRefund += amount
+  }
+
+  /**
+   * EIP-8037: Charge state-gas. Draws from the per-tx state-gas reservoir
+   * first; if the reservoir is exhausted, the remainder is taken from the
+   * regular `gasLeft` (which may OOG). Increments `execution_state_gas_used`
+   * by the full charged amount.
+   * @param amount - Amount of state gas to charge
+   * @param context - Usage context for debugging
+   * @throws if both pools combined are insufficient (out of gas)
+   */
+  chargeStateGas(amount: bigint, context?: string): void {
+    if (amount === BIGINT_0) return
+    const evm = this._evm
+    let remaining = amount
+    if (evm.stateGasReservoir > BIGINT_0) {
+      const fromReservoir = remaining < evm.stateGasReservoir ? remaining : evm.stateGasReservoir
+      evm.stateGasReservoir -= fromReservoir
+      remaining -= fromReservoir
+    }
+    if (remaining > BIGINT_0) {
+      this.useGas(
+        remaining,
+        context !== undefined ? `state-gas spill: ${context}` : 'state-gas spill',
+      )
+    }
+    evm.executionStateGasUsed += amount
+    if (evm.DEBUG) {
+      debugGas(
+        `${context !== undefined ? context + ': ' : ''}charged ${amount} state gas (reservoir=${evm.stateGasReservoir}, executionStateGasUsed=${evm.executionStateGasUsed}, gasLeft=${this._runState.gasLeft})`,
+      )
+    }
+  }
+
+  /**
+   * EIP-8037: Refill the state-gas reservoir, e.g. on revert / exceptional
+   * halt or on SSTORE clear-back-to-zero where the slot was zero at tx start.
+   * Increments `stateGasReservoir` and decrements `execution_state_gas_used`
+   * by the same amount. Refills always go to the reservoir, regardless of
+   * whether the original charge spilled to gas_left.
+   * @param amount - Amount of state gas to refill
+   * @param context - Usage context for debugging
+   */
+  refillStateGasReservoir(amount: bigint, context?: string): void {
+    if (amount === BIGINT_0) return
+    const evm = this._evm
+    evm.stateGasReservoir += amount
+    evm.executionStateGasUsed -= amount
+    if (evm.DEBUG) {
+      debugGas(
+        `${context !== undefined ? context + ': ' : ''}refilled ${amount} state gas (reservoir=${evm.stateGasReservoir}, executionStateGasUsed=${evm.executionStateGasUsed})`,
+      )
+    }
   }
 
   /**
@@ -1331,8 +1385,10 @@ export class Interpreter {
     }
 
     // Add to beneficiary balance
+    let beneficiaryWasNew = false
     if (!toSelf) {
       let toAccount = await this._stateManager.getAccount(toAddress)
+      beneficiaryWasNew = toAccount === undefined || toAccount.isEmpty()
       if (!toAccount) {
         toAccount = new Account()
       }
@@ -1347,6 +1403,21 @@ export class Interpreter {
           originalBalance,
         )
       }
+    }
+
+    // EIP-8037: SELFDESTRUCT that transfers value to a non-existent beneficiary
+    // creates a new account. Charge stateBytesPerNewAccount * costPerStateByte.
+    if (
+      this.common.isActivatedEIP(8037) &&
+      !toSelf &&
+      beneficiaryWasNew &&
+      contractBalance > BIGINT_0
+    ) {
+      const stateBytesPerNewAccount = this.common.param('stateBytesPerNewAccount')
+      const blockGasLimit = this._env.block.header.gasLimit
+      const costPerStateByte = activeCostPerStateByte(this.common, blockGasLimit)
+      const charge = stateBytesPerNewAccount * costPerStateByte
+      this.chargeStateGas(charge, 'SELFDESTRUCT new beneficiary')
     }
 
     // Modify the account (set balance to 0) flag

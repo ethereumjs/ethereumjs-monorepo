@@ -478,6 +478,22 @@ export interface RunTxResult extends EVMResult {
   blockGasSpent: bigint
 
   /**
+   * EIP-8037 per-tx state-gas total (intrinsic_state_gas +
+   * execution_state_gas_used). Undefined when 8037 is inactive.
+   * Used by runBlock to track the block-level state-gas dimension and
+   * compute `gas_used = max(block_regular_gas_used, block_state_gas_used)`.
+   */
+  txStateGas?: bigint
+
+  /**
+   * EIP-8037 per-tx regular-gas total (intrinsic_regular_gas +
+   * execution_regular_gas_used; with the EIP-7623 calldata floor applied
+   * via `max(tx_regular_gas, calldata_floor_gas_cost)` at the block level).
+   * Undefined when 8037 is inactive.
+   */
+  txRegularGas?: bigint
+
+  /**
    * The amount of gas as that was refunded during the transaction (i.e. `gasUsed = totalGasConsumed - gasRefund`)
    */
   gasRefund: bigint

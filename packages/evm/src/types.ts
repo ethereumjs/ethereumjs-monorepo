@@ -183,6 +183,10 @@ export interface EVMInterface {
   binaryTreeAccessWitness?: BinaryTreeAccessWitness
   systemBinaryTreeAccessWitness?: BinaryTreeAccessWitness
   blockLevelAccessList?: BlockLevelAccessList
+  /** EIP-8037: per-tx state-gas reservoir (set by runTx, read/written by opcodes). */
+  stateGasReservoir: bigint
+  /** EIP-8037: per-tx cumulative state-gas used. */
+  executionStateGasUsed: bigint
 }
 
 export type EVMProfilerOpts = {
