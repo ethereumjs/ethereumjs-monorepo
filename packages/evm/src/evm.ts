@@ -1002,6 +1002,10 @@ export class EVM implements EVMInterface {
       const prior = this.createdAccountStateGas.get(addrKey) ?? BIGINT_0
       this.createdAccountStateGas.set(addrKey, prior + stateGasCreate)
     }
+    // Note: a similar refund for the intrinsic stateBytesPerNewAccount portion
+    // of a TOP-LEVEL creation-tx failure is applied in runCall's revert
+    // handler (after the snapshot pop), where it can survive the snapshot
+    // restore. See the `isCreate && message.depth === 0` branch there.
 
     // get the fresh gas limit for the rest of the ops
     gasLimit = message.gasLimit - result.executionGasUsed
@@ -1265,6 +1269,7 @@ export class EVM implements EVMInterface {
 
     await this._emit('beforeMessage', message)
 
+    const isCreate = !message.to
     if (!message.to && this.common.isActivatedEIP(2929)) {
       message.code = message.data
       this.journal.addWarmedAddress((await this._generateAddress(message)).bytes)
@@ -1364,6 +1369,19 @@ export class EVM implements EVMInterface {
           this.stateGasReservoir = snap.reservoir + spilledThisFrame
           this.executionStateGasUsed = snap.used
           this.createdAccountStateGas = snap.createdAccountStateGas
+        }
+        // EIP-8037: on a TOP-LEVEL creation-tx failure (revert / halt /
+        // OOG / collision / oversized code etc.), additionally refund the
+        // intrinsic stateBytesPerNewAccount * costPerStateByte portion that
+        // runTx paid up-front. The intrinsic was not part of any frame's
+        // state-gas charges (it was deducted from tx.gas before EVM start),
+        // so the snapshot pop doesn't credit it; do it explicitly here.
+        if (isCreate && message.depth === 0) {
+          const stateBytesPerNewAccount = this.common.param('stateBytesPerNewAccount')
+          const costPerStateByte = activeCostPerStateByte(this.common, this._block?.header.gasLimit)
+          const intrinsicAccountStateGas = stateBytesPerNewAccount * costPerStateByte
+          this.stateGasReservoir += intrinsicAccountStateGas
+          this.executionStateGasUsed -= intrinsicAccountStateGas
         }
       }
       if (this.DEBUG) {
