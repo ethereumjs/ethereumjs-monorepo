@@ -426,9 +426,9 @@ export const paramsEVM: ParamsDict = {
     createDataGas: 0, // Per-byte regular cost of code deposit (down from 200); replaced by costPerStateByte state-gas plus a per-word hash cost (see codeDepositHashWordGas)
     codeDepositHashWordGas: 6, // Per 32-byte word regular hash cost on contract creation (6 * ceil(L/32))
     // New state-gas constants (used to compute state-gas charges)
-    costPerStateByte: 1174, // Cost per state byte
-    stateBytesPerStorageSet: 32, // Bytes accounted per new storage slot
-    stateBytesPerNewAccount: 112, // Bytes accounted per newly created account
+    costPerStateByte: 1530, // Cost per state byte (v7 fixtures)
+    stateBytesPerStorageSet: 64, // Bytes accounted per new storage slot (v7 fixtures)
+    stateBytesPerNewAccount: 120, // Bytes accounted per newly created account (v7 fixtures)
     stateBytesPerAuthBase: 23, // Bytes accounted per EIP-7702 authorization base
     systemMaxSstoresPerCall: 16, // Reservoir headroom for system contract calls
   },
