@@ -1345,9 +1345,23 @@ export class EVM implements EVMInterface {
         // EIP-8037: restore reservoir + cumulative state-gas used to their
         // values at frame entry, refunding any state-gas charged during the
         // reverted frame and undoing any in-frame reservoir refills.
+        //
+        // The snapshot pop restores the reservoir to its entry value, which
+        // implicitly refunds the reservoir-paid portion. The spec also wants
+        // the gas_left-spilled portion to be refunded to the parent's
+        // reservoir, so the parent (or tx) effectively gets credited for
+        // all state-gas charged on the reverted frame, not just the part
+        // that came from the reservoir. Compute the spilled portion and add
+        // it back on top.
         const snap = this._stateGasSnapshots.pop()
         if (snap !== undefined) {
-          this.stateGasReservoir = snap.reservoir
+          const usedThisFrame = this.executionStateGasUsed - snap.used
+          const reservoirPaidThisFrame = snap.reservoir - this.stateGasReservoir
+          const spilledThisFrame =
+            usedThisFrame > reservoirPaidThisFrame
+              ? usedThisFrame - reservoirPaidThisFrame
+              : BIGINT_0
+          this.stateGasReservoir = snap.reservoir + spilledThisFrame
           this.executionStateGasUsed = snap.used
           this.createdAccountStateGas = snap.createdAccountStateGas
         }
