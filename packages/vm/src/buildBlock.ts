@@ -1,3 +1,5 @@
+//import { createMinimal4844TxFromNetworkWrapper } from '@ethereumjs/tx'
+//import { runTx } from './runTx.ts'
 import {
   createBlock,
   createSealedCliqueBlock,
@@ -219,6 +221,173 @@ export class BlockBuilder {
    * Throws if the transaction's gasLimit is greater than
    * the remaining gas in the block.
    */
+
+  async addTransaction(
+  tx: TypedTransaction,
+  {
+    skipHardForkValidation,
+    allowNoBlobs,
+  }: { skipHardForkValidation?: boolean; allowNoBlobs?: boolean } = {},
+) {
+  this.checkStatus()
+
+  if (!this.checkpointed) {
+    await this.vm.evm.journal.checkpoint()
+    this.checkpointed = true
+  }
+
+  /**
+   * Save builder state for rollback.
+   */
+  const oldBlobGasUsed = this.blobGasUsed
+  const oldGasUsed = this.gasUsed
+  const oldTransactionsLength = this.transactions.length
+  const oldResultsLength = this.transactionResults.length
+  const oldMinerValue = this._minerValue
+
+  try {
+    const blockGasLimit = toType(this.headerData.gasLimit, TypeOutput.BigInt)
+
+    const blobGasPerBlob = this.vm.common.param('blobGasPerBlob')
+
+    const blockGasRemaining = blockGasLimit - this.gasUsed
+
+    if (tx.gasLimit > blockGasRemaining) {
+      throw EthereumJSErrorWithoutCode(
+        'tx has a higher gas limit than the remaining gas in the block',
+      )
+    }
+
+    let blobGasUsed = undefined
+
+    if (tx instanceof Blob4844Tx) {
+      const { maxBlobGasPerBlock: blobGasLimit } =
+        this.vm.common.getBlobGasSchedule()
+
+      /**
+       * PRE-RUN VALIDATION FIX
+       *
+       * Force Osaka validation BEFORE runTx().
+       * This is the critical fix.
+       */
+      createMinimal4844TxFromNetworkWrapper(tx, {
+        common: this.blockOpts.common,
+      })
+
+      if (
+        tx.networkWrapperVersion === NetworkWrapperType.EIP4844 &&
+        this.vm.common.isActivatedEIP(7594)
+      ) {
+        throw Error('eip4844 blob transaction for eip7594 activated fork')
+      } else if (
+        tx.networkWrapperVersion === NetworkWrapperType.EIP7594 &&
+        !this.vm.common.isActivatedEIP(7594)
+      ) {
+        throw Error('eip7594 blob transaction but eip not yet activated')
+      }
+
+      if (this.blockOpts.common?.isActivatedEIP(4844) === false) {
+        throw Error('eip4844 not activated yet for adding a blob transaction')
+      }
+
+      const blobTx = tx as Blob4844Tx
+
+      if (blobTx.blobs === undefined) {
+        if (allowNoBlobs !== true) {
+          throw EthereumJSErrorWithoutCode(
+            'blobs missing for 4844 transaction',
+          )
+        }
+      }
+
+      if (
+        this.blobGasUsed +
+          BigInt(blobTx.numBlobs()) * blobGasPerBlob >
+        blobGasLimit
+      ) {
+        throw EthereumJSErrorWithoutCode(
+          'block blob gas limit reached',
+        )
+      }
+
+      blobGasUsed = this.blobGasUsed
+    }
+
+    const header = {
+      ...this.headerData,
+      gasUsed: this.gasUsed,
+      blobGasUsed,
+    }
+
+    const blockData = {
+      header,
+      transactions: this.transactions,
+    }
+
+    const block = createBlock(blockData, this.blockOpts)
+
+    /**
+     * runTx happens ONLY after all validation passes.
+     */
+    const result = await runTx(this.vm, {
+      tx,
+      block,
+      skipHardForkValidation,
+    })
+
+    /**
+     * Accounting updates happen AFTER successful execution.
+     */
+    if (tx instanceof Blob4844Tx) {
+      const txData = tx as Blob4844Tx
+
+      this.blobGasUsed +=
+        BigInt(txData.blobVersionedHashes.length) *
+        blobGasPerBlob
+
+      tx = createMinimal4844TxFromNetworkWrapper(txData, {
+        common: this.blockOpts.common,
+      })
+    }
+
+    this.transactions.push(tx)
+    this.transactionResults.push(result)
+
+    this.gasUsed += result.totalGasSpent
+    this._minerValue += result.minerValue
+
+    return result
+  } catch (error) {
+    /**
+     * ROLLBACK FIX
+     */
+
+    this.blobGasUsed = oldBlobGasUsed
+    this.gasUsed = oldGasUsed
+    this._minerValue = oldMinerValue
+
+    this.transactions.length = oldTransactionsLength
+    this.transactionResults.length = oldResultsLength
+
+    /**
+     * Revert journal changes caused by runTx().
+     */
+    await this.vm.evm.journal.revert()
+
+    this.checkpointed = false
+
+    throw error
+  }
+}
+
+
+
+
+
+
+
+
+  /**
   async addTransaction(
     tx: TypedTransaction,
     {
@@ -307,7 +476,9 @@ export class BlockBuilder {
 
     return result
   }
+  */
 
+  
   /**
    * Reverts the checkpoint on the StateManager to reset the state from any transactions that have been run.
    */
