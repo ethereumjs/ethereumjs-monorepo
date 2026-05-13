@@ -950,6 +950,9 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     // accounts, used for the SELFDESTRUCT deferred refund.
     ;(vm.evm as unknown as { createdAccountStateGas: Map<string, bigint> }).createdAccountStateGas =
       new Map()
+    ;(
+      vm.evm as unknown as { createdAccountIntrinsicStateGas: Map<string, bigint> }
+    ).createdAccountIntrinsicStateGas = new Map()
   }
 
   const results = (await vm.evm.runCall({
@@ -1002,19 +1005,35 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // (Storage-slot state-gas tracking per-account is a separate follow-up;
   // this covers the pure account+code-deposit refund cases that otherwise
   // regress vs the parent branch.)
+  // Intrinsic state-gas refund accumulator (depth=0 creation-tx
+  // SELFDESTRUCT). Tracked separately because, per v7 spec, this refund
+  // affects ONLY tx_state_gas (block_state_gas_used) and does NOT credit
+  // the reservoir — the sender still pays the gross intrinsic.
+  let txCreateIntrinsicStateGasRefund = BIGINT_0
   if (vm.common.isActivatedEIP(8037)) {
     const sd = results.execResult.selfdestruct
     const created = results.execResult.createdAddresses
     const map = (vm.evm as unknown as { createdAccountStateGas: Map<string, bigint> })
       .createdAccountStateGas
-    if (sd !== undefined && created !== undefined && map.size > 0) {
+    const intrinsicMap = (
+      vm.evm as unknown as { createdAccountIntrinsicStateGas: Map<string, bigint> }
+    ).createdAccountIntrinsicStateGas
+    if (sd !== undefined && created !== undefined) {
       for (const addr of sd.keys()) {
-        if (created.has(addr)) {
-          const charge = map.get(addr)
-          if (charge !== undefined && charge > BIGINT_0) {
-            vm.evm.stateGasReservoir += charge
-            vm.evm.executionStateGasUsed -= charge
-          }
+        if (!created.has(addr)) continue
+        // Frame-exit deferred refund (depth>0 CREATEs + same-tx storage):
+        // refund the cumulative state-gas BOTH to the reservoir (so the user
+        // gets credited on their bill) AND decrement execution_state_gas_used.
+        const charge = map.get(addr)
+        if (charge !== undefined && charge > BIGINT_0) {
+          vm.evm.stateGasReservoir += charge
+          vm.evm.executionStateGasUsed -= charge
+        }
+        // Intrinsic refund (depth=0 creation-tx initcode SELFDESTRUCT):
+        // accumulate; applied only to txStateGas at final accounting time.
+        const intrinsicCharge = intrinsicMap.get(addr)
+        if (intrinsicCharge !== undefined && intrinsicCharge > BIGINT_0) {
+          txCreateIntrinsicStateGasRefund += intrinsicCharge
         }
       }
     }
@@ -1043,7 +1062,12 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     //                              = executionGasUsed - (executionStateGasUsed - reservoirDelta)
     const stateGasFromGasLeft = executionStateGasUsed - reservoirDelta
     const executionRegularGasUsed = results.execResult.executionGasUsed - stateGasFromGasLeft
-    results.txStateGas = intrinsicStateGas + executionStateGasUsed
+    // Apply the intrinsic-create-selfdestruct refund to tx_state_gas only.
+    // It does not affect totalGasSpent (the sender still pays the gross)
+    // and it does not affect tx_regular_gas (it's a state-dim accounting
+    // adjustment that brings block_state_gas_used to 0 for an account that
+    // never persists).
+    results.txStateGas = intrinsicStateGas + executionStateGasUsed - txCreateIntrinsicStateGasRefund
     // Per EIP-8037: block_regular_gas_used += max(tx_regular_gas, calldata_floor)
     // Apply the EIP-7623 floor to the regular dimension here so runBlock can
     // accumulate dimensions independently.

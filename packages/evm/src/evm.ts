@@ -243,6 +243,7 @@ export class EVM implements EVMInterface {
     reservoir: bigint
     used: bigint
     createdAccountStateGas: Map<PrefixedHexString, bigint>
+    createdAccountIntrinsicStateGas: Map<PrefixedHexString, bigint>
   }> = []
 
   /**
@@ -257,6 +258,17 @@ export class EVM implements EVMInterface {
    * follow-up.
    */
   public createdAccountStateGas: Map<PrefixedHexString, bigint> = new Map()
+  /**
+   * EIP-8037 (v7): intrinsic state-gas tracking for depth=0 creation
+   * transactions. The intrinsic stateBytesPerNewAccount * costPerStateByte
+   * is paid up-front in runTx and isn't part of stateGasCreate. On a same-tx
+   * SELFDESTRUCT of the freshly-created contract, runTx refunds the STATE
+   * dimension only (decrement execution_state_gas_used) — the reservoir is
+   * NOT credited, so the user still pays the gross intrinsic. This realises
+   * the v7 spec note "tx doesn't over charge for an account that never
+   * persists" at the block_state_gas_used level.
+   */
+  public createdAccountIntrinsicStateGas: Map<PrefixedHexString, bigint> = new Map()
 
   protected readonly _customOpcodes?: CustomOpcode[]
   protected readonly _customPrecompiles?: CustomPrecompile[]
@@ -992,15 +1004,32 @@ export class EVM implements EVMInterface {
     // values are dropped (the journal-revert snapshot will also restore the
     // reservoir to its frame-entry value, so even any in-frame charges from
     // the body — e.g. SSTORE — are unwound).
-    if (this.common.isActivatedEIP(8037) && createSucceeded && stateGasCreate > BIGINT_0) {
-      this.stateGasReservoir -= stateGasFromReservoir
-      this.executionStateGasUsed += stateGasCreate
+    if (this.common.isActivatedEIP(8037) && createSucceeded) {
+      if (stateGasCreate > BIGINT_0) {
+        this.stateGasReservoir -= stateGasFromReservoir
+        this.executionStateGasUsed += stateGasCreate
+      }
       // Record the charge keyed on the freshly-created address so runTx
       // can refund it if this account is SELFDESTRUCTed within the same
       // tx (per EIP-8037 SELFDESTRUCT deferred-refund rules).
       const addrKey = message.to.toString()
       const prior = this.createdAccountStateGas.get(addrKey) ?? BIGINT_0
       this.createdAccountStateGas.set(addrKey, prior + stateGasCreate)
+      // For depth=0 creation transactions, the intrinsic
+      // stateBytesPerNewAccount * costPerStateByte was paid up-front in
+      // runTx and isn't covered by stateGasCreate. Track it separately so
+      // a same-tx SELFDESTRUCT can refund the STATE dimension (decrementing
+      // execution_state_gas_used) without crediting the reservoir — the
+      // user still pays the gross intrinsic on their balance, but block
+      // block_state_gas_used reflects that nothing persisted.
+      if (message.depth === 0) {
+        const stateBytesPerNewAccount = this.common.param('stateBytesPerNewAccount')
+        const costPerStateByte = activeCostPerStateByte(this.common, this._block?.header.gasLimit)
+        this.createdAccountIntrinsicStateGas.set(
+          addrKey,
+          stateBytesPerNewAccount * costPerStateByte,
+        )
+      }
     }
     // Note: a similar refund for the intrinsic stateBytesPerNewAccount portion
     // of a TOP-LEVEL creation-tx failure is applied in runCall's revert
@@ -1287,6 +1316,7 @@ export class EVM implements EVMInterface {
         reservoir: this.stateGasReservoir,
         used: this.executionStateGasUsed,
         createdAccountStateGas: new Map(this.createdAccountStateGas),
+        createdAccountIntrinsicStateGas: new Map(this.createdAccountIntrinsicStateGas),
       })
     }
     if (this.DEBUG) {
@@ -1369,6 +1399,7 @@ export class EVM implements EVMInterface {
           this.stateGasReservoir = snap.reservoir + spilledThisFrame
           this.executionStateGasUsed = snap.used
           this.createdAccountStateGas = snap.createdAccountStateGas
+          this.createdAccountIntrinsicStateGas = snap.createdAccountIntrinsicStateGas
         }
         // EIP-8037: on a TOP-LEVEL creation-tx failure (revert / halt /
         // OOG / collision / oversized code etc.), additionally refund the
