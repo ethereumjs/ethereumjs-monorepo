@@ -938,7 +938,11 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     // tx-end formula `tx.gas - gas_left - reservoir_end`; including the
     // refund there would overstate tx_gas_used by the refund amount).
     vm.evm.stateGasReservoir = stateGasReservoirInitial + existingAuthStateGasRefund
-    vm.evm.executionStateGasUsed = BIGINT_0
+    // Per spec, the auth refund also DECREASES execution_state_gas_used.
+    // execution_state_gas_used starts negative so SSTORE / CREATE etc.
+    // climb back; the final tx_state_gas (intrinsicState + executionStateGasUsed)
+    // ends up reduced by the refund amount.
+    vm.evm.executionStateGasUsed = -existingAuthStateGasRefund
     // Reset any per-frame state-gas snapshot stack left over from a previous
     // tx. Each tx starts at frame depth 0 with an empty snapshot stack.
     ;(vm.evm as unknown as { _stateGasSnapshots: unknown[] })._stateGasSnapshots = []
