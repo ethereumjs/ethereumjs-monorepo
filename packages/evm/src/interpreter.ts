@@ -1223,16 +1223,34 @@ export class Interpreter {
     // empty the return data buffer
     this._runState.returnBytes = new Uint8Array(0)
 
+    // EIP-8037: helper to refund the pre-charged NEW_ACCOUNT state-gas
+    // when the CREATE short-circuits BEFORE a child frame is spawned
+    // (depth limit, insufficient balance, EIP-2681 nonce overflow,
+    // EIP-3860 oversized initcode). The pre-charge happened in
+    // opcodes/gas.ts; the runCall revert handler won't fire here since
+    // no child frame is created, so refund explicitly.
+    const refundCreatePreCharge = (): void => {
+      if (!this.common.isActivatedEIP(8037)) return
+      const stateBytesPerNewAccount = this.common.param('stateBytesPerNewAccount')
+      const blockGasLimit = this._env.block.header.gasLimit
+      const costPerStateByte = activeCostPerStateByte(this.common, blockGasLimit)
+      const newAccountStateGas = stateBytesPerNewAccount * costPerStateByte
+      this._evm.stateGasReservoir += newAccountStateGas
+      this._evm.executionStateGasUsed -= newAccountStateGas
+    }
+
     // Check if account has enough ether and max depth not exceeded
     if (
       this._env.depth >= Number(this.common.param('stackLimit')) ||
       this._env.contract.balance < value
     ) {
+      refundCreatePreCharge()
       return BIGINT_0
     }
 
     // EIP-2681 check
     if (this._env.contract.nonce >= MAX_UINT64) {
+      refundCreatePreCharge()
       return BIGINT_0
     }
 
@@ -1251,6 +1269,7 @@ export class Interpreter {
         codeToRun.length > Number(this.common.param('maxInitCodeSize')) &&
         this._evm.allowUnlimitedInitCodeSize === false
       ) {
+        refundCreatePreCharge()
         return BIGINT_0
       }
     }
