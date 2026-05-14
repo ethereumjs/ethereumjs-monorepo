@@ -67,7 +67,8 @@
     "level": "^9.0.0",
     "lmdb": "^3.2.6",
     "memory-level": "^3.0.0",
-    "micro-bmark": "0.4.0"
+    "micro-bmark": "0.4.0",
+    "unrolled-nbl-hashes-sha3": "^0.1.1"
   },
   "engines": {
     "node": ">=20"
