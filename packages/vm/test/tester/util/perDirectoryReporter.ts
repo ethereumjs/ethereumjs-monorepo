@@ -91,7 +91,11 @@ export function annotateFixture(
 /**
  * Vitest reporter. Wire up via `--reporter=./path/to/perDirectoryReporter.ts`
  * on the command line, or in `vitest.config.ts` under `test.reporters`.
+ *
+ * Note: vitest's CLI `--reporter=<path>` loader requires a default export, so
+ * we keep one here despite the project-wide `import/no-default-export` rule.
  */
+// eslint-disable-next-line import/no-default-export
 export default class PerDirectoryReporter implements Reporter {
   private stats = new Map<string, DirStats>()
   private label = 'tests'
