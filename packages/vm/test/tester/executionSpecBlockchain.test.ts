@@ -21,6 +21,7 @@ import { createVM, runBlock } from '../../src/index.ts'
 import { setupPreConditions } from '../util.ts'
 import { createCommonForFork, loadExecutionSpecFixtures } from './executionSpecTestLoader.ts'
 import { compareBAL } from './util/balComparatorAI.ts'
+import { annotateFixture } from './util/perDirectoryReporter.ts'
 
 const customFixturesPath = process.env.TEST_PATH ?? '../execution-spec-tests'
 const fixturesPath = path.resolve(customFixturesPath)
@@ -77,8 +78,9 @@ if (fs.existsSync(fixturesPath) === false) {
       return
     }
 
-    for (const { id, fork, data } of fixtures) {
-      it(`${fork}: ${id}`, async () => {
+    for (const { id, fork, filePath, data } of fixtures) {
+      it(`${fork}: ${id}`, async ({ task }) => {
+        annotateFixture(task, filePath, fixturesPath, 'blockchain tests')
         await runBlockchainTestCase(fork, data, assert, kzg)
       }, 360000) // 6 minutes
     }
