@@ -11,6 +11,7 @@ import {
   setLengthLeft,
 } from '@ethereumjs/util'
 
+import { activeCostPerStateByte } from '../eip8037.ts'
 import { EOFErrorMessage } from '../eof/errors.ts'
 import { EVMError } from '../errors.ts'
 import { DELEGATION_7702_FLAG } from '../types.ts'
@@ -568,6 +569,25 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         gas += subMemUsage(runState, offset, length, common)
 
+        // EIP-8037 (v7): pre-charge the NEW_ACCOUNT state-gas portion at the
+        // CREATE opcode entry (BEFORE the EIP-150 1/64 retention is computed)
+        // so the forwarded amount reflects the reduced gas_left. The
+        // _executeCreate path refunds this amount on any inner-frame failure
+        // (collision / revert / halt / OOG / oversized code), and on success
+        // the frame-exit logic skips the account portion to avoid
+        // double-charging.
+        if (common.isActivatedEIP(8037)) {
+          const stateBytesPerNewAccount = common.param('stateBytesPerNewAccount')
+          const blockGasLimit = runState.env.block.header.gasLimit
+          const costPerStateByte = activeCostPerStateByte(common, blockGasLimit)
+          const newAccountStateGas = stateBytesPerNewAccount * costPerStateByte
+          if (gas > BIGINT_0) {
+            runState.interpreter.useGas(gas, 'CREATE pre-charges')
+            gas = BIGINT_0
+          }
+          runState.interpreter.chargeStateGas(newAccountStateGas, 'CREATE pre-charge new_account')
+        }
+
         let gasLimit = BigInt(runState.interpreter.getGasLeft()) - gas
         gasLimit = maxCallGas(gasLimit, gasLimit, runState, common)
 
@@ -937,6 +957,21 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         }
 
         gas += common.param('keccak256WordGas') * divCeil(length, BIGINT_32)
+
+        // EIP-8037 (v7): pre-charge NEW_ACCOUNT state-gas at CREATE2 opcode
+        // entry (mirrors CREATE).
+        if (common.isActivatedEIP(8037)) {
+          const stateBytesPerNewAccount = common.param('stateBytesPerNewAccount')
+          const blockGasLimit = runState.env.block.header.gasLimit
+          const costPerStateByte = activeCostPerStateByte(common, blockGasLimit)
+          const newAccountStateGas = stateBytesPerNewAccount * costPerStateByte
+          if (gas > BIGINT_0) {
+            runState.interpreter.useGas(gas, 'CREATE2 pre-charges')
+            gas = BIGINT_0
+          }
+          runState.interpreter.chargeStateGas(newAccountStateGas, 'CREATE2 pre-charge new_account')
+        }
+
         let gasLimit = runState.interpreter.getGasLeft() - gas
         gasLimit = maxCallGas(gasLimit, gasLimit, runState, common) // CREATE2 is only available after TangerineWhistle (Constantinople introduced this opcode)
         runState.messageGasLimit = gasLimit
