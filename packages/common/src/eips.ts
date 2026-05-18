@@ -577,6 +577,15 @@ export const eipsDict: EIPsDict = {
     requiredEIPs: [],
   },
   /**
+   * Description : Increase max contract code size (24 → 32 KiB) and initcode size (48 → 64 KiB)
+   * URL         : https://eips.ethereum.org/EIPS/eip-7954
+   * Status      : Draft
+   */
+  7954: {
+    minimumHardfork: Hardfork.Amsterdam,
+    requiredEIPs: [],
+  },
+  /**
    * Description : Increase calldata floor cost
    * URL         : https://eips.ethereum.org/EIPS/eip-7976
    * Status      : Draft

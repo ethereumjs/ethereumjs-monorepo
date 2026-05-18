@@ -3,6 +3,7 @@ import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import {
   BinaryTreeAccessWitness,
   type EVM,
+  EVMError,
   type Log,
   activeCostPerStateByte,
   createEIP7708SelfdestructLog,
@@ -1047,6 +1048,22 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // The reservoir delta captures state-gas that was charged to the reservoir
   // (which is part of `tx.gas` paid upfront but not part of `gasLeft` passed
   // to the EVM, so executionGasUsed alone misses it).
+  // EIP-8037 + EIP-3860: when a CREATE/CREATE2 opcode traps with
+  // INITCODE_SIZE_VIOLATION, the gas function (opcodes/gas.ts) has already
+  // pre-charged the NEW_ACCOUNT state-gas portion (spilled to gas_left
+  // because no reservoir was available). The opcode function then traps
+  // BEFORE the sub-frame is entered, so the frame-revert handler in evm.ts
+  // refunds the spilled slice back to the reservoir. That refund is correct
+  // for nested-frame reverts (the parent gets credited), but for a tx that
+  // exceptionally halts due to the trap the entire `tx.gasLimit` must be
+  // burned. Force-drain the reservoir here so the user pays for the full
+  // tx gas (matches EVM spec: exceptional halt consumes all gas).
+  if (
+    vm.common.isActivatedEIP(8037) &&
+    results.execResult.exceptionError?.error === EVMError.errorMessages.INITCODE_SIZE_VIOLATION
+  ) {
+    vm.evm.stateGasReservoir = BIGINT_0
+  }
   let totalGasSpentBeforeRefund = results.execResult.executionGasUsed + intrinsicGas
   if (vm.common.isActivatedEIP(8037)) {
     const executionStateGasUsed = vm.evm.executionStateGasUsed

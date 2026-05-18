@@ -411,6 +411,14 @@ export const paramsEVM: ParamsDict = {
     clzGas: 5, // Base fee of the CLZ opcode (matching MUL as per EIP-7939)
   },
   /**
+   * Increase max contract code size and initcode size
+   */
+  7954: {
+    // evm
+    maxCodeSize: 32768, // EIP-7954: Maximum length of contract code (raised from 24 KiB)
+    maxInitCodeSize: 65536, // EIP-7954: Maximum length of initialization code (raised from 48 KiB)
+  },
+  /**
    * State Creation Gas Cost Increase
    * Regular-gas portions of the state-creation cost overrides per the EIP-8037 parameter table,
    * plus the new state-gas constants. State-gas charges are derived from these constants and

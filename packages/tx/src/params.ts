@@ -79,6 +79,13 @@ export const paramsTx: ParamsDict = {
     maxTransactionGasLimit: 16777216, // Maximum gas limit for a single transaction (2^24)
   },
   /**
+   * Increase max contract code size and initcode size
+   */
+  7954: {
+    // format
+    maxInitCodeSize: 65536, // EIP-7954: Maximum length of initialization code (raised from 48 KiB)
+  },
+  /**
    * Increase calldata floor cost (uniform 64 gas/byte floor)
    */
   7976: {
