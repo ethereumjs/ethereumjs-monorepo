@@ -421,14 +421,15 @@ export const paramsEVM: ParamsDict = {
     sstoreSetGas: 2900, // SSTORE 0->nonzero: regular gas (down from 20000); state portion = stateBytesPerStorageSet * costPerStateByte
     sstoreInitEIP2200Gas: 2900, // EIP-2200 path uses this name for the create-slot regular cost; align with sstoreSetGas under 8037
     sstoreInitRefundEIP2200Gas: 0, // Legacy refund for "create-then-clear-in-same-tx" is replaced by the state-gas reservoir refill
-    createGas: 9000, // CREATE / CREATE2 base regular gas (down from 32000); state portion = (stateBytesPerNewAccount + L) * costPerStateByte
+    createGas: 9000, // CREATE base regular gas (down from 32000); state portion = (stateBytesPerNewAccount + L) * costPerStateByte
+    create2Gas: 9000, // CREATE2 base regular gas (down from 32000); state portion = (stateBytesPerNewAccount + L) * costPerStateByte
     callNewAccountGas: 0, // CALL* to non-existent: regular gas (down from 25000); state portion = stateBytesPerNewAccount * costPerStateByte
     createDataGas: 0, // Per-byte regular cost of code deposit (down from 200); replaced by costPerStateByte state-gas plus a per-word hash cost (see codeDepositHashWordGas)
     codeDepositHashWordGas: 6, // Per 32-byte word regular hash cost on contract creation (6 * ceil(L/32))
     // New state-gas constants (used to compute state-gas charges)
-    costPerStateByte: 1174, // Cost per state byte
-    stateBytesPerStorageSet: 32, // Bytes accounted per new storage slot
-    stateBytesPerNewAccount: 112, // Bytes accounted per newly created account
+    costPerStateByte: 1530, // Cost per state byte (v7 fixtures)
+    stateBytesPerStorageSet: 64, // Bytes accounted per new storage slot (v7 fixtures)
+    stateBytesPerNewAccount: 120, // Bytes accounted per newly created account (v7 fixtures)
     stateBytesPerAuthBase: 23, // Bytes accounted per EIP-7702 authorization base
     systemMaxSstoresPerCall: 16, // Reservoir headroom for system contract calls
   },

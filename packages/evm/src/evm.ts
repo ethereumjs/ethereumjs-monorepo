@@ -243,6 +243,7 @@ export class EVM implements EVMInterface {
     reservoir: bigint
     used: bigint
     createdAccountStateGas: Map<PrefixedHexString, bigint>
+    createdAccountIntrinsicStateGas: Map<PrefixedHexString, bigint>
   }> = []
 
   /**
@@ -257,6 +258,17 @@ export class EVM implements EVMInterface {
    * follow-up.
    */
   public createdAccountStateGas: Map<PrefixedHexString, bigint> = new Map()
+  /**
+   * EIP-8037 (v7): intrinsic state-gas tracking for depth=0 creation
+   * transactions. The intrinsic stateBytesPerNewAccount * costPerStateByte
+   * is paid up-front in runTx and isn't part of stateGasCreate. On a same-tx
+   * SELFDESTRUCT of the freshly-created contract, runTx refunds the STATE
+   * dimension only (decrement execution_state_gas_used) — the reservoir is
+   * NOT credited, so the user still pays the gross intrinsic. This realizes
+   * the v7 spec note "tx doesn't over charge for an account that never
+   * persists" at the block_state_gas_used level.
+   */
+  public createdAccountIntrinsicStateGas: Map<PrefixedHexString, bigint> = new Map()
 
   protected readonly _customOpcodes?: CustomOpcode[]
   protected readonly _customPrecompiles?: CustomPrecompile[]
@@ -892,15 +904,16 @@ export class EVM implements EVMInterface {
         const L = BigInt(result.returnValue.length)
         const words = (L + BigInt(31)) / BigInt(32)
         returnFee = words * this.common.param('codeDepositHashWordGas')
-        // State-gas:
-        //   - CREATE/CREATE2 opcode (depth > 0): (stateBytesPerNewAccount + L) * costPerStateByte
-        //   - Creation transaction (depth 0): only L * costPerStateByte; the
-        //     stateBytesPerNewAccount portion is already charged as
-        //     intrinsic_state_gas in runTx (per spec).
+        // State-gas at frame-exit success: only the L * costPerStateByte
+        // code-deposit portion. The stateBytesPerNewAccount portion is
+        // already accounted for elsewhere:
+        //   - depth=0 creation transactions: paid in intrinsic_state_gas in
+        //     runTx (refunded on top-level failure by the runCall handler).
+        //   - depth>0 inner CREATE/CREATE2: pre-charged at the opcode entry
+        //     in opcodes/gas.ts (refunded on any inner-frame failure by the
+        //     runCall handler).
         const costPerStateByte = activeCostPerStateByte(this.common, this._block?.header.gasLimit)
-        const stateBytesPerNewAccount = this.common.param('stateBytesPerNewAccount')
-        const accountStateBytes = message.depth === 0 ? BIGINT_0 : stateBytesPerNewAccount
-        stateGasCreate = (accountStateBytes + L) * costPerStateByte
+        stateGasCreate = L * costPerStateByte
         // Tentatively split the state-gas across the reservoir and the
         // remaining gas in this CREATE frame. Don't mutate evm.* yet — we
         // commit only if totalGas (including spill) <= message.gasLimit.
@@ -992,16 +1005,53 @@ export class EVM implements EVMInterface {
     // values are dropped (the journal-revert snapshot will also restore the
     // reservoir to its frame-entry value, so even any in-frame charges from
     // the body — e.g. SSTORE — are unwound).
-    if (this.common.isActivatedEIP(8037) && createSucceeded && stateGasCreate > BIGINT_0) {
-      this.stateGasReservoir -= stateGasFromReservoir
-      this.executionStateGasUsed += stateGasCreate
+    if (this.common.isActivatedEIP(8037) && createSucceeded) {
+      if (stateGasCreate > BIGINT_0) {
+        this.stateGasReservoir -= stateGasFromReservoir
+        this.executionStateGasUsed += stateGasCreate
+      }
       // Record the charge keyed on the freshly-created address so runTx
       // can refund it if this account is SELFDESTRUCTed within the same
       // tx (per EIP-8037 SELFDESTRUCT deferred-refund rules).
+      //
+      // For depth>0 inner CREATE: the new-account portion was pre-charged
+      // at the CREATE opcode (in opcodes/gas.ts). It isn't part of
+      // stateGasCreate (which is only L*costPerStateByte for code deposit
+      // here), so bake it back into the deferred-refund map alongside
+      // stateGasCreate so a same-tx SELFDESTRUCT refunds the full amount.
+      // For depth=0 (creation tx), the new-account portion was paid via
+      // intrinsic_state_gas — tracked separately in
+      // createdAccountIntrinsicStateGas (which has different refund
+      // semantics: state-dim only, no reservoir credit).
       const addrKey = message.to.toString()
       const prior = this.createdAccountStateGas.get(addrKey) ?? BIGINT_0
-      this.createdAccountStateGas.set(addrKey, prior + stateGasCreate)
+      let bakedIn = stateGasCreate
+      if (message.depth > 0) {
+        const stateBytesPerNewAccount = this.common.param('stateBytesPerNewAccount')
+        const costPerStateByte = activeCostPerStateByte(this.common, this._block?.header.gasLimit)
+        bakedIn += stateBytesPerNewAccount * costPerStateByte
+      }
+      this.createdAccountStateGas.set(addrKey, prior + bakedIn)
+      // For depth=0 creation transactions, the intrinsic
+      // stateBytesPerNewAccount * costPerStateByte was paid up-front in
+      // runTx and isn't covered by stateGasCreate. Track it separately so
+      // a same-tx SELFDESTRUCT can refund the STATE dimension (decrementing
+      // execution_state_gas_used) without crediting the reservoir — the
+      // user still pays the gross intrinsic on their balance, but block
+      // block_state_gas_used reflects that nothing persisted.
+      if (message.depth === 0) {
+        const stateBytesPerNewAccount = this.common.param('stateBytesPerNewAccount')
+        const costPerStateByte = activeCostPerStateByte(this.common, this._block?.header.gasLimit)
+        this.createdAccountIntrinsicStateGas.set(
+          addrKey,
+          stateBytesPerNewAccount * costPerStateByte,
+        )
+      }
     }
+    // Note: a similar refund for the intrinsic stateBytesPerNewAccount portion
+    // of a TOP-LEVEL creation-tx failure is applied in runCall's revert
+    // handler (after the snapshot pop), where it can survive the snapshot
+    // restore. See the `isCreate && message.depth === 0` branch there.
 
     // get the fresh gas limit for the rest of the ops
     gasLimit = message.gasLimit - result.executionGasUsed
@@ -1265,6 +1315,7 @@ export class EVM implements EVMInterface {
 
     await this._emit('beforeMessage', message)
 
+    const isCreate = !message.to
     if (!message.to && this.common.isActivatedEIP(2929)) {
       message.code = message.data
       this.journal.addWarmedAddress((await this._generateAddress(message)).bytes)
@@ -1282,6 +1333,7 @@ export class EVM implements EVMInterface {
         reservoir: this.stateGasReservoir,
         used: this.executionStateGasUsed,
         createdAccountStateGas: new Map(this.createdAccountStateGas),
+        createdAccountIntrinsicStateGas: new Map(this.createdAccountIntrinsicStateGas),
       })
     }
     if (this.DEBUG) {
@@ -1345,11 +1397,42 @@ export class EVM implements EVMInterface {
         // EIP-8037: restore reservoir + cumulative state-gas used to their
         // values at frame entry, refunding any state-gas charged during the
         // reverted frame and undoing any in-frame reservoir refills.
+        //
+        // The snapshot pop restores the reservoir to its entry value, which
+        // implicitly refunds the reservoir-paid portion. The spec also wants
+        // the gas_left-spilled portion to be refunded to the parent's
+        // reservoir, so the parent (or tx) effectively gets credited for
+        // all state-gas charged on the reverted frame, not just the part
+        // that came from the reservoir. Compute the spilled portion and add
+        // it back on top.
         const snap = this._stateGasSnapshots.pop()
         if (snap !== undefined) {
-          this.stateGasReservoir = snap.reservoir
+          const usedThisFrame = this.executionStateGasUsed - snap.used
+          const reservoirPaidThisFrame = snap.reservoir - this.stateGasReservoir
+          const spilledThisFrame =
+            usedThisFrame > reservoirPaidThisFrame
+              ? usedThisFrame - reservoirPaidThisFrame
+              : BIGINT_0
+          this.stateGasReservoir = snap.reservoir + spilledThisFrame
           this.executionStateGasUsed = snap.used
           this.createdAccountStateGas = snap.createdAccountStateGas
+          this.createdAccountIntrinsicStateGas = snap.createdAccountIntrinsicStateGas
+        }
+        // EIP-8037: on ANY creation-frame failure (revert / halt / OOG /
+        // collision / oversized code etc.), refund the
+        // stateBytesPerNewAccount * costPerStateByte portion that was paid
+        // for this frame's new-account allocation. The pre-charge happened
+        // either as intrinsic_state_gas (depth=0 creation tx, paid up-front
+        // in runTx) or as the CREATE/CREATE2 opcode pre-charge (depth>0,
+        // applied in opcodes/gas.ts). In neither case is it part of the
+        // per-frame snapshot, so the snapshot pop doesn't credit it; do it
+        // explicitly here.
+        if (isCreate) {
+          const stateBytesPerNewAccount = this.common.param('stateBytesPerNewAccount')
+          const costPerStateByte = activeCostPerStateByte(this.common, this._block?.header.gasLimit)
+          const newAccountStateGas = stateBytesPerNewAccount * costPerStateByte
+          this.stateGasReservoir += newAccountStateGas
+          this.executionStateGasUsed -= newAccountStateGas
         }
       }
       if (this.DEBUG) {
