@@ -19,11 +19,14 @@ export const EIP7708_TRANSFER_TOPIC = hexToBytes(
 )
 
 /**
- * EIP-7708: keccak256('Selfdestruct(address,uint256)')
- * Emitted when a contract selfdestructs and burns remaining balance
+ * EIP-7708: keccak256('Burn(address,uint256)')
+ * LOG2 topic used for burn logs emitted (a) immediately on SELFDESTRUCT-to-self
+ * for a contract created in the same transaction with non-zero balance, and
+ * (b) at transaction finalization for any account marked for deletion that
+ * still holds a non-zero balance at removal time.
  */
-export const EIP7708_SELFDESTRUCT_TOPIC = hexToBytes(
-  '0x4bfaba3443c1a1836cd362418edc679fc96cae8449cbefccb6457cdf2c943083',
+export const EIP7708_BURN_TOPIC = hexToBytes(
+  '0xcc16f5dbb4873280815c1ee09dbd06736cffcc184412cf7a71a0fdb75d397ca5',
 )
 
 /**
@@ -38,10 +41,10 @@ export function createEIP7708TransferLog(from: Address, to: Address, value: bigi
 }
 
 /**
- * Creates an EIP-7708 SELFDESTRUCT burn log for residual balance finalization.
+ * Creates an EIP-7708 burn log (LOG2) for a burned account balance.
  */
-export function createEIP7708SelfdestructLog(contract: Address, value: bigint): Log {
-  const contractTopic = setLengthLeft(contract.bytes, 32)
+export function createEIP7708BurnLog(account: Address, value: bigint): Log {
+  const accountTopic = setLengthLeft(account.bytes, 32)
   const data = setLengthLeft(bigIntToBytes(value), 32)
-  return [EIP7708_SYSTEM_ADDRESS, [EIP7708_SELFDESTRUCT_TOPIC, contractTopic], data]
+  return [EIP7708_SYSTEM_ADDRESS, [EIP7708_BURN_TOPIC, accountTopic], data]
 }

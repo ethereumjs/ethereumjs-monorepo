@@ -16,11 +16,7 @@ import {
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 
-import {
-  EIP7708_SELFDESTRUCT_TOPIC,
-  EIP7708_SYSTEM_ADDRESS,
-  EIP7708_TRANSFER_TOPIC,
-} from './eip7708.ts'
+import { EIP7708_BURN_TOPIC, EIP7708_SYSTEM_ADDRESS, EIP7708_TRANSFER_TOPIC } from './eip7708.ts'
 import { activeCostPerStateByte } from './eip8037.ts'
 import { FORMAT, MAGIC, VERSION } from './eof/constants.ts'
 import { EOFContainerMode, validateEOF } from './eof/container.ts'
@@ -1454,18 +1450,14 @@ export class Interpreter {
       }
     }
 
-    // EIP-7708: Emit a Selfdestruct log for SELFDESTRUCT to self only when the balance
+    // EIP-7708: Emit a Burn log (LOG2) for SELFDESTRUCT to self only when the balance
     // is actually zeroed (doModify=true, i.e. same-tx contract creation). Pre-existing
     // contracts where EIP-6780 prevents the burn should not emit a log.
     if (this.common.isActivatedEIP(7708) && contractBalance > BIGINT_0 && toSelf && doModify) {
       const contractTopic = setLengthLeft(this._env.address.bytes, 32)
       const data = setLengthLeft(bigIntToBytes(contractBalance), 32)
-      const selfdestructLog: Log = [
-        EIP7708_SYSTEM_ADDRESS,
-        [EIP7708_SELFDESTRUCT_TOPIC, contractTopic],
-        data,
-      ]
-      this._result.logs.push(selfdestructLog)
+      const burnLog: Log = [EIP7708_SYSTEM_ADDRESS, [EIP7708_BURN_TOPIC, contractTopic], data]
+      this._result.logs.push(burnLog)
     }
 
     // Set contract balance to 0
