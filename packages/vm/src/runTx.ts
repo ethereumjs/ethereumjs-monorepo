@@ -6,7 +6,7 @@ import {
   EVMError,
   type Log,
   activeCostPerStateByte,
-  createEIP7708SelfdestructLog,
+  createEIP7708BurnLog,
 } from '@ethereumjs/evm'
 import { Capability, isBlob4844Tx } from '@ethereumjs/tx'
 import {
@@ -269,7 +269,7 @@ async function processSelfdestructs(vm: VM, results: RunTxResult): Promise<void>
       const account = await vm.stateManager.getAccount(address)
       const finalizationBalance = account?.balance ?? BIGINT_0
       if (finalizationBalance > BIGINT_0) {
-        finalizationLogs.push(createEIP7708SelfdestructLog(address, finalizationBalance))
+        finalizationLogs.push(createEIP7708BurnLog(address, finalizationBalance))
       }
     }
 
@@ -998,47 +998,17 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // ===========================
   // RESULTS: Gas and Balances
   // ===========================
-  // EIP-8037 SELFDESTRUCT deferred refund: for any address that was both
-  // created in this tx and SELFDESTRUCTed during it, refund the state-gas
-  // charged at CREATE time (account + code deposit). These refunds go
-  // directly to the reservoir and decrement execution_state_gas_used by
-  // the same amount, and are NOT subject to the 20% refund cap.
-  // (Storage-slot state-gas tracking per-account is a separate follow-up;
-  // this covers the pure account+code-deposit refund cases that otherwise
-  // regress vs the parent branch.)
-  // Intrinsic state-gas refund accumulator (depth=0 creation-tx
-  // SELFDESTRUCT). Tracked separately because, per v7 spec, this refund
-  // affects ONLY tx_state_gas (block_state_gas_used) and does NOT credit
-  // the reservoir — the sender still pays the gross intrinsic.
-  let txCreateIntrinsicStateGasRefund = BIGINT_0
-  if (vm.common.isActivatedEIP(8037)) {
-    const sd = results.execResult.selfdestruct
-    const created = results.execResult.createdAddresses
-    const map = (vm.evm as unknown as { createdAccountStateGas: Map<string, bigint> })
-      .createdAccountStateGas
-    const intrinsicMap = (
-      vm.evm as unknown as { createdAccountIntrinsicStateGas: Map<string, bigint> }
-    ).createdAccountIntrinsicStateGas
-    if (sd !== undefined && created !== undefined) {
-      for (const addr of sd.keys()) {
-        if (!created.has(addr)) continue
-        // Frame-exit deferred refund (depth>0 CREATEs + same-tx storage):
-        // refund the cumulative state-gas BOTH to the reservoir (so the user
-        // gets credited on their bill) AND decrement execution_state_gas_used.
-        const charge = map.get(addr)
-        if (charge !== undefined && charge > BIGINT_0) {
-          vm.evm.stateGasReservoir += charge
-          vm.evm.executionStateGasUsed -= charge
-        }
-        // Intrinsic refund (depth=0 creation-tx initcode SELFDESTRUCT):
-        // accumulate; applied only to txStateGas at final accounting time.
-        const intrinsicCharge = intrinsicMap.get(addr)
-        if (intrinsicCharge !== undefined && intrinsicCharge > BIGINT_0) {
-          txCreateIntrinsicStateGasRefund += intrinsicCharge
-        }
-      }
-    }
-  }
+  // EIP-8037 §"Gas refills for SELFDESTRUCT" (spec line 145-147):
+  //   SELFDESTRUCT for accounts created in the same transaction does not
+  //   produce increases in state size [...]. However, this operation does
+  //   not produce any state-gas refills and there are no changes to
+  //   execution_state_gas_used.
+  // Therefore: NO refund to the reservoir, NO decrement of
+  // execution_state_gas_used, and NO refund to tx_state_gas. The state-gas
+  // charged at CREATE time (account + code deposit) and the depth=0
+  // intrinsic_state_gas portion stay charged. (Tracking maps are
+  // retained for diagnostics but not consumed here.)
+  const txCreateIntrinsicStateGasRefund = BIGINT_0
 
   // Calculate tx gas used before refund processing.
   // Pre-EIP-8037: tx_gas_used = intrinsic + executionGasUsed.

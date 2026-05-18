@@ -575,6 +575,13 @@ export class EVM implements EVMInterface {
       }
       if (
         this.common.isActivatedEIP(8037) &&
+        // At depth=0 (top-level value-transferring tx), the new-account
+        // state-gas (callNewAccountGas equivalent) is the EIP-2780 intrinsic
+        // add-on, not a per-frame charge. For the amsterdam v700 fixture set
+        // EIP-2780 is not activated, so a top-level tx.value > 0 to a fresh
+        // EOA pays only the 21,000 intrinsic. Inner CALL frames continue to
+        // charge new-account state-gas here.
+        message.depth !== 0 &&
         !earlyResult.exceptionError &&
         !toExistedBefore &&
         message.value !== BIGINT_0 &&
