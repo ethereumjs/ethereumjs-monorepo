@@ -21,6 +21,7 @@ import { createVM, runBlock } from '../../src/index.ts'
 import { setupPreConditions } from '../util.ts'
 import { createCommonForFork, loadExecutionSpecFixtures } from './executionSpecTestLoader.ts'
 import { compareBAL } from './util/balComparatorAI.ts'
+import { annotateFixture } from './util/perDirectoryReporter.ts'
 
 const customFixturesPath = process.env.TEST_PATH ?? '../execution-spec-tests'
 const fixturesPath = path.resolve(customFixturesPath)
@@ -77,8 +78,9 @@ if (fs.existsSync(fixturesPath) === false) {
       return
     }
 
-    for (const { id, fork, data } of fixtures) {
-      it(`${fork}: ${id}`, async () => {
+    for (const { id, fork, filePath, data } of fixtures) {
+      it(`${fork}: ${id}`, async ({ task }) => {
+        annotateFixture(task, filePath, fixturesPath, 'blockchain tests')
         await runBlockchainTestCase(fork, data, assert, kzg)
       }, 360000) // 6 minutes
     }
@@ -121,124 +123,170 @@ export async function runBlockchainTestCase(
 
   let parentBlock = genesisBlock
 
-  for (const {
-    rlp,
-    expectException,
-    blockHeader,
-    rlp_decoded,
-    blockAccessList,
-  } of testData.blocks) {
-    const expectedHash = blockHeader?.hash ?? rlp_decoded?.blockHeader?.hash ?? undefined
-    let block: Block | undefined
-    try {
-      block = createBlockFromRLP(hexToBytes(rlp), { common: vm.common, setHardfork: true })
-      //t.equal(bytesToHex(block.serialize()), rlp, 'correct block RLP')
-      if (expectedHash !== undefined) {
-        //t.equal(bytesToHex(block.hash()), expectedHash, 'correct block hash')
-      }
-      const result = await runBlock(vm, {
-        block,
-        root: parentBlock.header.stateRoot,
-        setHardfork: true,
-      })
-      await vm.blockchain.putBlock(block)
-      parentBlock = block
-      t.notExists(expectException, `Should have thrown with: ${expectException}`)
+  // Capture errors from block processing so post-state checks still run; this
+  // surfaces state-divergence details even when a block throws unexpectedly.
+  let runError: Error | undefined
 
-      // Check if the block level access list is correct
-      if (common.isActivatedEIP(7928)) {
-        let balDiffMessage = ''
-        if (blockAccessList !== undefined) {
-          const expectedBAL = createBlockLevelAccessListFromJSON(blockAccessList)
-          // Use the BAL comparator to show a colored diff of any mismatches
-          // Pass false to skip console output during test, we'll include it in the assertion
-          const { diffString } = compareBAL(
-            expectedBAL.raw(),
-            result.blockLevelAccessList!.raw(),
-            false,
-          )
-          balDiffMessage = diffString
+  try {
+    for (const {
+      rlp,
+      expectException,
+      blockHeader,
+      rlp_decoded,
+      blockAccessList,
+    } of testData.blocks) {
+      const expectedHash = blockHeader?.hash ?? rlp_decoded?.blockHeader?.hash ?? undefined
+      let block: Block | undefined
+      try {
+        block = createBlockFromRLP(hexToBytes(rlp), { common: vm.common, setHardfork: true })
+        //t.equal(bytesToHex(block.serialize()), rlp, 'correct block RLP')
+        if (expectedHash !== undefined) {
+          //t.equal(bytesToHex(block.hash()), expectedHash, 'correct block hash')
+        }
+        const result = await runBlock(vm, {
+          block,
+          root: parentBlock.header.stateRoot,
+          setHardfork: true,
+        })
+        await vm.blockchain.putBlock(block)
+        parentBlock = block
+        t.notExists(expectException, `Should have thrown with: ${expectException}`)
+
+        // Check if the block level access list is correct
+        if (common.isActivatedEIP(7928)) {
+          let balDiffMessage = ''
+          if (blockAccessList !== undefined) {
+            const expectedBAL = createBlockLevelAccessListFromJSON(blockAccessList)
+            // Use the BAL comparator to show a colored diff of any mismatches
+            // Pass false to skip console output during test, we'll include it in the assertion
+            const { diffString } = compareBAL(
+              expectedBAL.raw(),
+              result.blockLevelAccessList!.raw(),
+              false,
+            )
+            balDiffMessage = diffString
+            t.deepEqual(
+              bytesToHex(expectedBAL.hash()),
+              bytesToHex(block.header.blockAccessListHash!),
+              `expected block level access list correct${balDiffMessage}`,
+            )
+          }
           t.deepEqual(
-            bytesToHex(expectedBAL.hash()),
+            bytesToHex(result.blockLevelAccessList!.hash()),
             bytesToHex(block.header.blockAccessListHash!),
-            `expected block level access list correct${balDiffMessage}`,
+            `generated block level access list correct${balDiffMessage}`,
           )
         }
-        t.deepEqual(
-          bytesToHex(result.blockLevelAccessList!.hash()),
-          bytesToHex(block.header.blockAccessListHash!),
-          `generated block level access list correct${balDiffMessage}`,
+      } catch (e: any) {
+        if (expectException === undefined) {
+          throw e
+        }
+        // Check if the block failed due to an expected exception
+        t.exists(
+          expectException,
+          `expectException should be defined.  Error: ${e.message}\n${e.stack}`,
         )
-      }
-    } catch (e: any) {
-      if (expectException === undefined) {
-        throw e
-      }
-      // Check if the block failed due to an expected exception
-      t.exists(
-        expectException,
-        `expectException should be defined.  Error: ${e.message}\n${e.stack}`,
-      )
 
-      if (expectException.includes('|') === true) {
-        const exceptions = expectException.split('|')
-        let i = 0
-        while (i < exceptions.length) {
-          try {
-            t.isTrue(
-              exceptions[i] in exceptionMessages,
-              `expectException: (${exceptions[i]}) should be in exceptionMessages.  Error: ${e.message}\n${e.stack}`,
-            )
-            t.match(
-              e.message,
-              exceptionMessages[exceptions[i]],
-              `Should have correct error for ${exceptions[i]}`,
-            )
-            break
-          } catch {
-            if (i === exceptions.length - 1) {
-              t.fail(
-                `Should have thrown one of the following exceptions: ${expectException}.  Threw: ${e.message}`,
+        if (expectException.includes('|') === true) {
+          const exceptions = expectException.split('|')
+          let i = 0
+          while (i < exceptions.length) {
+            try {
+              t.isTrue(
+                exceptions[i] in exceptionMessages,
+                `expectException: (${exceptions[i]}) should be in exceptionMessages.  Error: ${e.message}\n${e.stack}`,
+              )
+              t.match(
+                e.message,
+                exceptionMessages[exceptions[i]],
+                `Should have correct error for ${exceptions[i]}`,
               )
               break
+            } catch {
+              if (i === exceptions.length - 1) {
+                t.fail(
+                  `Should have thrown one of the following exceptions: ${expectException}.  Threw: ${e.message}`,
+                )
+                break
+              }
+              i++
             }
-            i++
           }
+        } else {
+          t.isTrue(
+            expectException in exceptionMessages,
+            `expectException: (${expectException}) should be in exceptionMessages.  Error: ${e.message}\n${e.stack}`,
+          )
+          // Check if the error message matches the expected exception
+          t.match(
+            e.message,
+            exceptionMessages[expectException],
+            `Should have correct error for ${expectException} -- got: ${e.message}`,
+          )
         }
-      } else {
-        t.isTrue(
-          expectException in exceptionMessages,
-          `expectException: (${expectException}) should be in exceptionMessages.  Error: ${e.message}\n${e.stack}`,
-        )
-        // Check if the error message matches the expected exception
-        t.match(
-          e.message,
-          exceptionMessages[expectException],
-          `Should have correct error for ${expectException} -- got: ${e.message}`,
-        )
       }
     }
+  } catch (e: any) {
+    runError = e
   }
 
-  // Check final state after all blocks are processed
-  const head = await blockchain.getCanonicalHeadBlock()
-  t.equal(bytesToHex(head.hash()), testData.lastblockhash, `head block hash matches lastblockhash`)
+  // Always check final state and post state, even if block processing threw.
+  // Individual diffs go into `postFailures` so we can show them alongside any
+  // block-processing error rather than masking them with an early throw.
+  const postFailures: string[] = []
 
-  // Check post state
-  for (const address of Object.keys(testData.postState)) {
-    const account = await vm.stateManager.getAccount(createAddressFromString(address))
-    t.exists(account, `account should be defined.  Got: ${address}`)
-    const accountInfo = testData.postState[address]
-    t.equal(account.balance, hexToBigInt(accountInfo.balance), 'correct balance')
-    t.equal(account.nonce, hexToBigInt(accountInfo.nonce), 'correct nonce')
-    t.deepEqual(account.codeHash, keccak_256(hexToBytes(accountInfo.code)), 'correct code')
+  try {
+    const head = await blockchain.getCanonicalHeadBlock()
+    t.equal(
+      bytesToHex(head.hash()),
+      testData.lastblockhash,
+      `head block hash matches lastblockhash`,
+    )
+  } catch (e: any) {
+    postFailures.push(`head block hash: ${e?.message ?? String(e)}`)
+  }
 
-    for (const [key, value] of Object.entries(accountInfo.storage)) {
-      const keyBytes = setLengthLeft(hexToBytes(key as `0x${string}`), 32)
-      const storage = await vm.stateManager.getStorage(createAddressFromString(address), keyBytes)
-      t.equal(bytesToHex(storage), value, 'correct storage')
+  const postState = testData.postState ?? {}
+  for (const address of Object.keys(postState)) {
+    try {
+      const account = await vm.stateManager.getAccount(createAddressFromString(address))
+      t.exists(account, `account should be defined.  Got: ${address}`)
+      const accountInfo = postState[address]
+      t.equal(account.balance, hexToBigInt(accountInfo.balance), `correct balance (${address})`)
+      t.equal(account.nonce, hexToBigInt(accountInfo.nonce), `correct nonce (${address})`)
+      t.deepEqual(
+        account.codeHash,
+        keccak_256(hexToBytes(accountInfo.code)),
+        `correct code (${address})`,
+      )
+
+      for (const [key, value] of Object.entries(accountInfo.storage)) {
+        const keyBytes = setLengthLeft(hexToBytes(key as `0x${string}`), 32)
+        const storage = await vm.stateManager.getStorage(createAddressFromString(address), keyBytes)
+        t.equal(bytesToHex(storage), value, `correct storage[${key}] (${address})`)
+      }
+    } catch (e: any) {
+      postFailures.push(e?.message ?? String(e))
     }
   }
+
+  if (runError === undefined && postFailures.length === 0) return
+
+  // Build a combined failure. If a block-run error was the root cause, keep
+  // its original stack so vitest's source-mapped frames still point there.
+  const sections: string[] = []
+  if (runError !== undefined) sections.push(runError.message)
+  if (postFailures.length > 0) {
+    const header =
+      postFailures.length === 1
+        ? `Post-run state issue:`
+        : `Post-run state issues (${postFailures.length}):`
+    sections.push([header, ...postFailures.map((m) => `  - ${m}`)].join('\n'))
+  }
+
+  const combined = new Error(sections.join('\n\n'))
+  if (runError?.stack !== undefined) combined.stack = runError.stack
+  throw combined
 }
 
 // EthJS error messages mapped to expected exception types
