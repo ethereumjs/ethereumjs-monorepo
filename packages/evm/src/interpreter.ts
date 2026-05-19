@@ -26,6 +26,10 @@ import { EVMError, EVMErrorTypeString } from './errors.ts'
 import { type EVMPerformanceLogger, type Timer } from './logger.ts'
 import { Memory } from './memory.ts'
 import { Message } from './message.ts'
+import {
+  type Eip7928PostTargetCallOog,
+  consumeEip7928PostTargetCallOog,
+} from './opcodes/EIP7928.ts'
 import { isEIP8024PairImmediateValid, isEIP8024SingleImmediateValid } from './opcodes/EIP8024.ts'
 import { trap } from './opcodes/index.ts'
 import { Stack } from './stack.ts'
@@ -113,6 +117,8 @@ export interface RunState {
   blockchain: EVMMockBlockchainInterface
   env: Env
   messageGasLimit?: bigint // Cache value from `gas.ts` to save gas limit for a message call
+  /** EIP-7928 CALL post-target OOG: cleared in runStep after output is zeroed. */
+  eip7928PostTargetCallOog?: Eip7928PostTargetCallOog
   interpreter: Interpreter
   gasRefund: bigint // Tracks the current refund
   gasLeft: bigint // Current gas left
@@ -429,6 +435,8 @@ export class Interpreter {
 
       // Advance program counter
       this._runState.programCounter++
+
+      consumeEip7928PostTargetCallOog(this._runState)
 
       // Execute opcode handler
       const opFn = opEntry.opHandler

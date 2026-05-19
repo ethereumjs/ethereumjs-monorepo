@@ -231,6 +231,11 @@ export class EVM implements EVMInterface {
   /** EIP-8037 cumulative state-gas used by the current transaction. */
   public executionStateGasUsed: bigint = BIGINT_0
   /**
+   * EIP-7928 CALL post-state OOG: set while handling post-target access failure so
+   * runTx drains the state-gas reservoir and the sender pays the full tx gas limit.
+   */
+  public eip7928CallPostTargetOog = false
+  /**
    * EIP-8037 per-frame state-gas snapshots. Pushed on each message-level
    * journal.checkpoint() and popped on commit (drop) or revert / exceptional
    * halt (restore). Restoring on revert refunds all state-gas charges and

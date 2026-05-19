@@ -602,6 +602,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   let intrinsicRegularGas = intrinsicGas
   let intrinsicStateGas = BIGINT_0
   let stateGasReservoirInitial = BIGINT_0
+  vm.evm.eip7928CallPostTargetOog = false
   if (vm.common.isActivatedEIP(8037)) {
     const costPerStateByte = activeCostPerStateByte(vm.common, block?.header.gasLimit)
     const stateBytesPerNewAccount = vm.common.param('stateBytesPerNewAccount')
@@ -1028,12 +1029,19 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // exceptionally halts due to the trap the entire `tx.gasLimit` must be
   // burned. Force-drain the reservoir here so the user pays for the full
   // tx gas (matches EVM spec: exceptional halt consumes all gas).
-  if (
-    vm.common.isActivatedEIP(8037) &&
-    results.execResult.exceptionError?.error === EVMError.errorMessages.INITCODE_SIZE_VIOLATION
-  ) {
-    vm.evm.stateGasReservoir = BIGINT_0
+  if (vm.common.isActivatedEIP(8037)) {
+    const err = results.execResult.exceptionError?.error
+    // INITCODE_SIZE_VIOLATION: frame revert refunds reservoir spill; tx must still pay full gas.
+    // INITCODE_SIZE_VIOLATION: pre-charged state gas must not be refunded on exceptional halt.
+    // EIP-7928 CALL post-target OOG: burn the full tx gas limit (reservoir slice included).
+    if (
+      err === EVMError.errorMessages.INITCODE_SIZE_VIOLATION ||
+      (err === EVMError.errorMessages.OUT_OF_GAS && vm.evm.eip7928CallPostTargetOog)
+    ) {
+      vm.evm.stateGasReservoir = BIGINT_0
+    }
   }
+  vm.evm.eip7928CallPostTargetOog = false
   let totalGasSpentBeforeRefund = results.execResult.executionGasUsed + intrinsicGas
   if (vm.common.isActivatedEIP(8037)) {
     const executionStateGasUsed = vm.evm.executionStateGasUsed

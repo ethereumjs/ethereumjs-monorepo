@@ -8,7 +8,6 @@ import {
   hexToBigInt,
   hexToBytes,
 } from '../bytes.ts'
-import { SYSTEM_ADDRESS } from '../constants.ts'
 import { padToEven } from '../internal.ts'
 import type { PrefixedHexString } from '../types.ts'
 

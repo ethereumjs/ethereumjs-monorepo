@@ -1421,6 +1421,11 @@ export const handlers: Map<number, OpHandler> = new Map([
       const gasLimit = runState.messageGasLimit!
       runState.messageGasLimit = undefined
 
+      if (gasLimit === BIGINT_0) {
+        runState.stack.push(BIGINT_0)
+        return
+      }
+
       let data = new Uint8Array(0)
       if (length !== BIGINT_0) {
         data = runState.memory.read(Number(offset), Number(length), true)
@@ -1457,6 +1462,11 @@ export const handlers: Map<number, OpHandler> = new Map([
       const gasLimit = runState.messageGasLimit!
       runState.messageGasLimit = undefined
 
+      if (gasLimit === BIGINT_0) {
+        runState.stack.push(BIGINT_0)
+        return
+      }
+
       let data = new Uint8Array(0)
       if (length !== BIGINT_0) {
         data = runState.memory.read(Number(offset), Number(length), true)
@@ -1491,13 +1501,13 @@ export const handlers: Map<number, OpHandler> = new Map([
       }
 
       let gasLimit = runState.messageGasLimit!
+      runState.messageGasLimit = undefined
+
       if (value !== BIGINT_0) {
         const callStipend = common.param('callStipendGas')
         runState.interpreter.addStipend(callStipend)
         gasLimit += callStipend
       }
-
-      runState.messageGasLimit = undefined
 
       const ret = await runState.interpreter.call(gasLimit, toAddress, value, data)
       // Write return data to memory
@@ -1514,13 +1524,13 @@ export const handlers: Map<number, OpHandler> = new Map([
       const toAddress = createAddressFromStackBigInt(toAddr)
 
       let gasLimit = runState.messageGasLimit!
+      runState.messageGasLimit = undefined
+
       if (value !== BIGINT_0) {
         const callStipend = common.param('callStipendGas')
         runState.interpreter.addStipend(callStipend)
         gasLimit += callStipend
       }
-
-      runState.messageGasLimit = undefined
 
       let data = new Uint8Array(0)
       if (inLength !== BIGINT_0) {
