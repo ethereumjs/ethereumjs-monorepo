@@ -7,24 +7,37 @@ import { TransactionType } from '@ethereumjs/tx'
 import {
   Account,
   Address,
+  type BALJSONBlockAccessList,
   BIGINT_0,
   BIGINT_1,
   BIGINT_8,
+  BlockLevelAccessList,
+  type CLRequest,
+  type CLRequestType,
   EthereumJSErrorWithoutCode,
   GWEI_TO_WEI,
   KECCAK256_RLP,
+  type PrefixedHexString,
   bigIntToAddressBytes,
   bigIntToBytes,
   bytesToHex,
   concatBytes,
   createAddressFromString,
   createBlockLevelAccessList,
+  createBlockLevelAccessListFromJSON,
+  createBlockLevelAccessListFromRLP,
+  equalsBlockAccessList,
   equalsBytes,
   hexToBytes,
   intToBytes,
+  isAccountOrderOnlyViolation,
   setLengthLeft,
   short,
   unprefixedHexToBytes,
+  validateBlockAccessListHash,
+  validateBlockAccessListHashFromJSON,
+  validateBlockAccessListJSONStructure,
+  validateBlockAccessListStructure,
 } from '@ethereumjs/util'
 import { sha256 } from '@noble/hashes/sha2.js'
 import debugDefault from 'debug'
@@ -36,7 +49,6 @@ import { accumulateRequests } from './requests.ts'
 
 import type { Block } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
-import type { CLRequest, CLRequestType, PrefixedHexString } from '@ethereumjs/util'
 import type {
   AfterBlockEvent,
   ApplyBlockResult,
@@ -113,6 +125,16 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
 
   if (vm.common.isActivatedEIP(7928)) {
     vm.evm.blockLevelAccessList = createBlockLevelAccessList()
+  }
+
+  let providedBlockAccessList: BlockLevelAccessList | undefined
+  if (vm.common.isActivatedEIP(7928) && opts.blockAccessList !== undefined) {
+    providedBlockAccessList = parseProvidedBlockAccessList(
+      opts.blockAccessList,
+      block.header.blockAccessListHash,
+      generateFields,
+    )
+    validateBlockAccessListStructure(providedBlockAccessList)
   }
 
   if (vm.DEBUG) {
@@ -229,6 +251,24 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
               )} expected=${bytesToHex(requestsHash!)}`,
             )
           const msg = _errorMsg('invalid requestsHash', vm, block)
+          throw EthereumJSErrorWithoutCode(msg)
+        }
+      }
+
+      if (vm.common.isActivatedEIP(7928) && providedBlockAccessList !== undefined) {
+        const generated = vm.evm.blockLevelAccessList
+        if (
+          generated === undefined ||
+          equalsBlockAccessList(providedBlockAccessList, generated) === false
+        ) {
+          if (vm.DEBUG) {
+            debug(
+              `Invalid block access list received hash=${bytesToHex(
+                providedBlockAccessList.hash(),
+              )} expected hash=${bytesToHex(generated?.hash() ?? new Uint8Array(32))}`,
+            )
+          }
+          const msg = _errorMsg('invalid block access list', vm, block)
           throw EthereumJSErrorWithoutCode(msg)
         }
       }
@@ -943,6 +983,35 @@ function _errorMsg(msg: string, vm: VM, block: Block) {
 
   const errorMsg = `${msg} (${vm.errorStr()} -> ${blockErrorStr})`
   return errorMsg
+}
+
+function parseProvidedBlockAccessList(
+  blockAccessList: NonNullable<RunBlockOpts['blockAccessList']>,
+  blockAccessListHash: Uint8Array | undefined,
+  generateFields: boolean,
+): BlockLevelAccessList {
+  if (blockAccessList instanceof BlockLevelAccessList) {
+    if (blockAccessListHash !== undefined && generateFields === false) {
+      validateBlockAccessListHash(blockAccessList, blockAccessListHash)
+    }
+    return blockAccessList
+  }
+  if (blockAccessList instanceof Uint8Array) {
+    const bal = createBlockLevelAccessListFromRLP(blockAccessList)
+    if (blockAccessListHash !== undefined && generateFields === false) {
+      validateBlockAccessListHash(bal, blockAccessListHash)
+    }
+    return bal
+  }
+  const json: BALJSONBlockAccessList = blockAccessList
+  validateBlockAccessListJSONStructure(json)
+  if (isAccountOrderOnlyViolation(json)) {
+    throw EthereumJSErrorWithoutCode('invalid header: block access list accounts are not sorted')
+  }
+  if (blockAccessListHash !== undefined && generateFields === false) {
+    validateBlockAccessListHashFromJSON(json, blockAccessListHash)
+  }
+  return createBlockLevelAccessListFromJSON(json)
 }
 
 const DAOConfig = {

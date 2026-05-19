@@ -7,10 +7,10 @@ import {
   bytesToInt,
   hexToBigInt,
   hexToBytes,
-} from './bytes.ts'
-import { SYSTEM_ADDRESS } from './constants.ts'
-import { padToEven } from './internal.ts'
-import type { PrefixedHexString } from './types.ts'
+} from '../bytes.ts'
+import { SYSTEM_ADDRESS } from '../constants.ts'
+import { padToEven } from '../internal.ts'
+import type { PrefixedHexString } from '../types.ts'
 
 // Base types which can be used for JSON, internal representation and raw format.
 type BALAddressHex = PrefixedHexString // bytes20

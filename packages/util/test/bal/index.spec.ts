@@ -7,28 +7,28 @@ import {
   createBlockLevelAccessList,
   createBlockLevelAccessListFromJSON,
   createBlockLevelAccessListFromRLP,
-} from '../src/bal.ts'
-import { bytesToHex, hexToBytes } from '../src/bytes.ts'
-import { KECCAK256_RLP_ARRAY_S, SYSTEM_ADDRESS } from '../src/constants.ts'
-import type { PrefixedHexString } from '../src/types.ts'
-import bal_all_transaction_types from './testdata/bal/bal_all_transaction_types.json' with {
+} from '../../src/bal/index.ts'
+import { bytesToHex, hexToBytes } from '../../src/bytes.ts'
+import { KECCAK256_RLP_ARRAY_S, SYSTEM_ADDRESS } from '../../src/constants.ts'
+import type { PrefixedHexString } from '../../src/types.ts'
+import bal_all_transaction_types from '../testdata/bal/bal_all_transaction_types.json' with {
   type: 'json',
 }
 import {
   balAllTransactionTypes,
   balAllTransactionTypesHash,
   balAllTransactionTypesRLP,
-} from './testdata/bal/bal_all_transaction_types.ts'
-import bal_empty_block_no_coinbase from './testdata/bal/bal_empty_block_no_coinbase.json' with {
+} from '../testdata/bal/bal_all_transaction_types.ts'
+import bal_empty_block_no_coinbase from '../testdata/bal/bal_empty_block_no_coinbase.json' with {
   type: 'json',
 }
 import {
   balEmptyBlockNoCoinbase,
   balEmptyBlockNoCoinbaseHash,
   balEmptyBlockNoCoinbaseRLP,
-} from './testdata/bal/bal_empty_block_no_coinbase.ts'
-import bal_simple from './testdata/bal/bal_simple.json' with { type: 'json' }
-import { balSimple, balSimpleHash, balSimpleRLP } from './testdata/bal/bal_simple.ts'
+} from '../testdata/bal/bal_empty_block_no_coinbase.ts'
+import bal_simple from '../testdata/bal/bal_simple.json' with { type: 'json' }
+import { balSimple, balSimpleHash, balSimpleRLP } from '../testdata/bal/bal_simple.ts'
 
 describe('Basic initialization', () => {
   it('should create an empty access list', () => {

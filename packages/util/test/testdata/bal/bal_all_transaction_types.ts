@@ -1,4 +1,4 @@
-import type { Accesses } from '../../../src/bal.ts'
+import type { Accesses } from '../../../src/bal/index.ts'
 import type { PrefixedHexString } from '../../../src/types.ts'
 
 import { hexToBytes } from '../../../src/bytes.ts'
