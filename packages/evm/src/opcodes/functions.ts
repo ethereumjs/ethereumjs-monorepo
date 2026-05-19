@@ -34,10 +34,9 @@ import { EOFErrorMessage } from '../eof/errors.ts'
 import { EOFBYTES, EOFHASH, isEOF } from '../eof/util.ts'
 import { EVMError } from '../errors.ts'
 
+import { decodeEIP8024PairImmediate, decodeEIP8024SingleImmediate } from './EIP8024.ts'
 import {
   createAddressFromStackBigInt,
-  decodeEIP8024PairImmediate,
-  decodeEIP8024SingleImmediate,
   describeLocation,
   exponentiation,
   fromTwos,
