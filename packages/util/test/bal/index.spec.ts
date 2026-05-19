@@ -31,6 +31,19 @@ describe('Basic initialization', () => {
     assert.isNotNull(bal)
   })
 
+  it('should replace prior storage writes at the same blockAccessIndex', () => {
+    const bal = createBlockLevelAccessList()
+    const address = '0x0000000000000000000000000000000000000001' as const
+    bal.blockAccessIndex = 1
+    bal.addAddress(address)
+    const key = hexToBytes('0x00')
+    bal.addStorageWrite(address, key, hexToBytes('0x01'), 1)
+    bal.addStorageWrite(address, key, hexToBytes('0x02'), 1)
+    const slotChanges = bal.raw()[0][1][0][1]
+    assert.equal(slotChanges.length, 1)
+    assert.deepEqual(slotChanges[0][1], hexToBytes('0x02'))
+  })
+
   it('should create an access list from Accesses data', () => {
     const bal = new BlockLevelAccessList(balSimple)
     assert.isNotNull(bal)
@@ -170,7 +183,7 @@ describe('JSON', () => {
     assert.deepEqual(bytesToHex(bal.serialize()), bytesToHex(expected))
   })
 
-  it('should omit an empty system address entry when serializing', () => {
+  it('should include an accessed system address with empty change lists when serializing', () => {
     const bal = createBlockLevelAccessListFromJSON([
       {
         address: SYSTEM_ADDRESS,
@@ -182,8 +195,17 @@ describe('JSON', () => {
       },
     ] satisfies BALJSONBlockAccessList)
 
-    assert.deepEqual(bal.raw(), [])
-    assert.deepEqual(bal.toJSON(), [])
+    assert.deepEqual(bal.raw(), [[SYSTEM_ADDRESS, [], [], [], [], []]])
+    assert.deepEqual(bal.toJSON(), [
+      {
+        address: SYSTEM_ADDRESS,
+        nonceChanges: [],
+        balanceChanges: [],
+        codeChanges: [],
+        storageChanges: [],
+        storageReads: [],
+      },
+    ])
   })
 
   it('should preserve a touched system address entry when serializing', () => {
