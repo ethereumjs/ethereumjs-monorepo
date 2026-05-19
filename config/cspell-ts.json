@@ -34,6 +34,7 @@
     "bytelist",
     "bytestring",
     "binarytree",
+    "divmod",
     "merkelize",
     "kaust",
     "EEST",
