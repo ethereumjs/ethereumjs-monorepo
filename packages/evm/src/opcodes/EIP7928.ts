@@ -238,7 +238,12 @@ export async function callFamilyGas(
   gas += valueTransferGas
 
   let newAccountStateGas = BIGINT_0
-  if (includeNewAccountPostCheck && value !== BIGINT_0) {
+  // SpuriousDragon+ charges the new-account fee only on value transfers, but
+  // pre-SpuriousDragon charges it for any call to a non-existent account.
+  if (
+    includeNewAccountPostCheck &&
+    (value !== BIGINT_0 || !common.gteHardfork(Hardfork.SpuriousDragon))
+  ) {
     const { regular, state } = await getCallNewAccountPostCosts(runState, common, toAddress)
     gas += regular
     newAccountStateGas = state
