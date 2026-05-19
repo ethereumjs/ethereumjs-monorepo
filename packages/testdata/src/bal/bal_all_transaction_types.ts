@@ -1,7 +1,5 @@
-import type { Accesses } from '../../../src/bal.ts'
-import type { PrefixedHexString } from '../../../src/types.ts'
-
-import { hexToBytes } from '../../../src/bytes.ts'
+import type { Accesses, PrefixedHexString } from '@ethereumjs/util'
+import { hexToBytes } from '@ethereumjs/util'
 
 export const balAllTransactionTypesHash: PrefixedHexString =
   '0x656055f6f0599b43484b03a8a379b14a61b87c116aca83829f6d0c1f435b285c'

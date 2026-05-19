@@ -9,6 +9,7 @@ import type {
 } from '@ethereumjs/evm'
 import type { AccessList, TypedTransaction } from '@ethereumjs/tx'
 import type {
+  BALJSONBlockAccessList,
   BigIntLike,
   BlockLevelAccessList,
   CLRequest,
@@ -321,6 +322,13 @@ export interface RunBlockOpts {
    * Defaults to false.
    */
   validateBlockSize?: boolean
+
+  /**
+   * Block-level access list supplied with the block (e.g. from an execution payload).
+   * When set and EIP-7928 is active, {@link runBlock} validates structure and header hash
+   * before execution and RLP equality against the generated list after execution.
+   */
+  blockAccessList?: BALJSONBlockAccessList | BlockLevelAccessList | Uint8Array
 }
 
 /**

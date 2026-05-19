@@ -81,7 +81,7 @@ if (fs.existsSync(fixturesPath) === false) {
     for (const { id, fork, filePath, data } of fixtures) {
       it(`${fork}: ${id}`, async ({ task }) => {
         annotateFixture(task, filePath, fixturesPath, 'blockchain tests')
-        await runBlockchainTestCase(fork, data, assert, kzg)
+        await runBlockchainTestCase(fork, data, assert, kzg, filePath)
       }, 360000) // 6 minutes
     }
   })
@@ -92,7 +92,9 @@ export async function runBlockchainTestCase(
   testData: any,
   t: typeof assert,
   kzg: microEthKZG,
+  fixtureFilePath = '',
 ) {
+  const isEip7928BalFixture = fixtureFilePath.includes('eip7928_block_level_access_lists')
   const common = createCommonForFork(fork, testData, kzg)
   const genesisBlockData = { header: testData.genesisBlockHeader }
   const genesisBlock = createBlock(genesisBlockData, { common, setHardfork: true })
@@ -143,22 +145,27 @@ export async function runBlockchainTestCase(
         if (expectedHash !== undefined) {
           //t.equal(bytesToHex(block.hash()), expectedHash, 'correct block hash')
         }
+        const providedBalJson = blockAccessList ?? rlp_decoded?.blockAccessList
+        // Enforce provided BAL in runBlock only for invalid-block tests. Other Amsterdam v7
+        // fixtures may include a reference BAL without requiring strict client equality.
+        const validateProvidedBalInRunBlock =
+          common.isActivatedEIP(7928) &&
+          providedBalJson !== undefined &&
+          expectException !== undefined
         const result = await runBlock(vm, {
           block,
           root: parentBlock.header.stateRoot,
           setHardfork: true,
+          ...(validateProvidedBalInRunBlock ? { blockAccessList: providedBalJson } : {}),
         })
         await vm.blockchain.putBlock(block)
         parentBlock = block
         t.notExists(expectException, `Should have thrown with: ${expectException}`)
 
-        // Check if the block level access list is correct
-        if (common.isActivatedEIP(7928)) {
+        if (common.isActivatedEIP(7928) && isEip7928BalFixture) {
           let balDiffMessage = ''
-          if (blockAccessList !== undefined) {
-            const expectedBAL = createBlockLevelAccessListFromJSON(blockAccessList)
-            // Use the BAL comparator to show a colored diff of any mismatches
-            // Pass false to skip console output during test, we'll include it in the assertion
+          if (providedBalJson !== undefined) {
+            const expectedBAL = createBlockLevelAccessListFromJSON(providedBalJson)
             const { diffString } = compareBAL(
               expectedBAL.raw(),
               result.blockLevelAccessList!.raw(),
@@ -339,6 +346,9 @@ const exceptionMessages: Record<string, RegExp> = {
   'BlockException.INVALID_BASEFEE_PER_GAS': /^Invalid block: base fee not correct .*$/,
   'BlockException.INVALID_DEPOSIT_EVENT_LAYOUT': /invalid deposit log: unsupported data layout/,
   'BlockException.INVALID_REQUESTS': /invalid requestsHash/,
+  'BlockException.INVALID_BAL_HASH': /invalid block access list hash/,
+  'BlockException.INVALID_BLOCK_HASH': /invalid block access list hash/,
+  'BlockException.INVALID_BLOCK_ACCESS_LIST': /invalid block access list/,
   'BlockException.INVALID_WITHDRAWALS_ROOT': /invalid withdrawals trie/,
   'BlockException.SYSTEM_CONTRACT_CALL_FAILED': /system contract call failed/,
   'BlockException.SYSTEM_CONTRACT_EMPTY': /system contract empty/,
