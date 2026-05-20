@@ -1421,7 +1421,8 @@ export const handlers: Map<number, OpHandler> = new Map([
       const gasLimit = runState.messageGasLimit!
       runState.messageGasLimit = undefined
 
-      if (gasLimit === BIGINT_0) {
+      if (runState.eip7928PostTargetCreateOog === true) {
+        runState.eip7928PostTargetCreateOog = false
         runState.stack.push(BIGINT_0)
         return
       }
@@ -1462,7 +1463,8 @@ export const handlers: Map<number, OpHandler> = new Map([
       const gasLimit = runState.messageGasLimit!
       runState.messageGasLimit = undefined
 
-      if (gasLimit === BIGINT_0) {
+      if (runState.eip7928PostTargetCreateOog === true) {
+        runState.eip7928PostTargetCreateOog = false
         runState.stack.push(BIGINT_0)
         return
       }

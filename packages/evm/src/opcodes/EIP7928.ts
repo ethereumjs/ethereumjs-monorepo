@@ -67,6 +67,7 @@ export function eip7928PostTargetCreateOog(
     trap(EVMError.errorMessages.OUT_OF_GAS)
   }
   runState.messageGasLimit = BIGINT_0
+  runState.eip7928PostTargetCreateOog = true
   return gas
 }
 

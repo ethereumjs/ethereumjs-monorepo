@@ -119,6 +119,8 @@ export interface RunState {
   messageGasLimit?: bigint // Cache value from `gas.ts` to save gas limit for a message call
   /** EIP-7928 CALL post-target OOG: cleared in runStep after output is zeroed. */
   eip7928PostTargetCallOog?: Eip7928PostTargetCallOog
+  /** EIP-7928 CREATE post-target OOG: signals the CREATE/CREATE2 handler to push 0 without executing. */
+  eip7928PostTargetCreateOog?: boolean
   interpreter: Interpreter
   gasRefund: bigint // Tracks the current refund
   gasLeft: bigint // Current gas left
