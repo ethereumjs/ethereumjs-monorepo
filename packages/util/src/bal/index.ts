@@ -8,7 +8,6 @@ import {
   hexToBigInt,
   hexToBytes,
 } from '../bytes.ts'
-import { SYSTEM_ADDRESS } from '../constants.ts'
 import { padToEven } from '../internal.ts'
 import type { PrefixedHexString } from '../types.ts'
 
@@ -339,8 +338,13 @@ export class BlockLevelAccessList {
     if (this.accesses[address].storageChanges[strippedKey] === undefined) {
       this.accesses[address].storageChanges[strippedKey] = []
     }
-    // For zero values, strippedValue is empty - this is correct for RLP encoding
-    this.accesses[address].storageChanges[strippedKey].push([blockAccessIndex, strippedValue])
+    const slotChanges = this.accesses[address].storageChanges[strippedKey]
+    const existingIndex = slotChanges.findIndex(([idx]) => idx === blockAccessIndex)
+    if (existingIndex !== -1) {
+      slotChanges[existingIndex] = [blockAccessIndex, strippedValue]
+    } else {
+      slotChanges.push([blockAccessIndex, strippedValue])
+    }
     // Per EIP-7928: A successful storage write subsumes any prior read of the same slot.
     // Remove the slot from storageReads since it's now in storageChanges.
     this.accesses[address].storageReads.delete(strippedKey)
@@ -742,18 +746,11 @@ function normalizeStorageKeyHex(hex: PrefixedHexString): BALStorageKeyHex {
   return `0x${padToEven(stripped)}` as BALStorageKeyHex
 }
 
-function shouldIncludeAddress(address: BALAddressHex, access: Accesses[BALAddressHex]): boolean {
-  if (address !== SYSTEM_ADDRESS) {
-    return true
-  }
-
-  return (
-    access.storageReads.size > 0 ||
-    Object.keys(access.storageChanges).length > 0 ||
-    access.balanceChanges.size > 0 ||
-    access.nonceChanges.size > 0 ||
-    access.codeChanges.length > 0
-  )
+function shouldIncludeAddress(_address: BALAddressHex, _access: Accesses[BALAddressHex]): boolean {
+  // All entries in `accesses` were explicitly touched during execution (or supplied via
+  // fixture JSON). EIP-7928 requires touched addresses to appear even with empty change
+  // lists, including SYSTEM_ADDRESS when accessed directly (e.g. BALANCE).
+  return true
 }
 
 function indexToHex(index: BALAccessIndexNumber): BALAccessIndexHex {

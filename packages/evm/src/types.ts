@@ -187,6 +187,11 @@ export interface EVMInterface {
   stateGasReservoir: bigint
   /** EIP-8037: per-tx cumulative state-gas used. */
   executionStateGasUsed: bigint
+  /**
+   * EIP-7928: set during CALL post-target OOG so runTx can drain the state-gas
+   * reservoir on exceptional halt. Optional for custom {@link EVMInterface} implementations.
+   */
+  eip7928CallPostTargetOog?: boolean
 }
 
 export type EVMProfilerOpts = {
