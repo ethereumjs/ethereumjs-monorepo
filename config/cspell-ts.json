@@ -650,6 +650,10 @@
     "ckzg",
     "Damgård",
     "viem",
-    "snobal"
+    "snobal",
+    "awasm",
+    "deopts",
+    "IMPLS",
+    "impls"
   ]
 }
