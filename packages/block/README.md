@@ -16,6 +16,8 @@
 - 🔮 `EIP-7594` PeerDAS Blob Transactions
 - 💸 `EIP-4895` Beacon Chain Withdrawals
 - 📨 `EIP-7685` Consensus Layer Requests
+- 📋 `EIP-7928` Block Level Access List Hash (Amsterdam, experimental)
+- 🕐 `EIP-7843` Slot Number header field (Amsterdam, experimental)
 - 🛵 324KB bundle size (81KB gzipped)
 - 🏄🏾‍♂️ WASM-free default + Fully browser ready
 
@@ -262,6 +264,81 @@ void main()
 ```
 
 **Note:** Working with blob transactions needs a manual KZG library installation and global initialization, see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
+
+### Blocks with EIP-7928 Block Access List Hash
+
+When [EIP-7928](https://eips.ethereum.org/EIPS/eip-7928) is active (`Hardfork.Amsterdam`, experimental), blocks carry a `blockAccessListHash` header field (32 bytes). The hash is `keccak256(rlp(bal))` over the canonical BAL encoding — compute it with `@ethereumjs/util` or obtain it from `runBlock({ generate: true })` in the VM (see [@ethereumjs/vm BAL docs](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#eip-7928-block-level-access-lists-amsterdam)).
+
+```ts
+// ./examples/blockAccessListHash.ts
+
+import { createBlock } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { bytesToHex, createBlockLevelAccessListFromJSON } from '@ethereumjs/util'
+
+const main = () => {
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })
+
+  const balJson = [
+    {
+      address: '0x0000000000000000000000000000000000000001',
+      storageChanges: [],
+      storageReads: [],
+      balanceChanges: [{ blockAccessIndex: '0x01', postBalance: '0x03e8' }],
+      nonceChanges: [],
+      codeChanges: [],
+    },
+  ]
+
+  const bal = createBlockLevelAccessListFromJSON(balJson)
+  const block = createBlock(
+    {
+      header: {
+        blockAccessListHash: bal.hash(),
+      },
+    },
+    { common, skipConsensusFormatValidation: true },
+  )
+
+  console.log(`blockAccessListHash: ${bytesToHex(block.header.blockAccessListHash!)}`)
+  console.log(`matches BAL hash: ${bytesToHex(bal.hash())}`)
+  console.log(`hash length: ${block.header.blockAccessListHash!.length} bytes`)
+}
+
+void main()
+
+```
+
+### Blocks with EIP-7843 slot number
+
+When [EIP-7843](https://eips.ethereum.org/EIPS/eip-7843) is active (`Hardfork.Amsterdam`, experimental), blocks carry a `slotNumber` header field (64-bit quantity). The EVM exposes the value via the `SLOTNUM` opcode during execution.
+
+**Important:** `runBlock({ generate: true })` does **not** populate `slotNumber` automatically — set it explicitly when constructing or generating blocks. Consensus validation requires the field when EIP-7843 is active.
+
+```ts
+// ./examples/blockSlotNumber.ts
+
+import { createBlock } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+
+const main = () => {
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })
+
+  const block = createBlock(
+    {
+      header: {
+        slotNumber: 42n,
+      },
+    },
+    { common, skipConsensusFormatValidation: true },
+  )
+
+  console.log(`slotNumber: ${block.header.slotNumber}`)
+}
+
+void main()
+
+```
 
 ### Blocks with EIP-7685 Consensus Layer Requests
 
