@@ -246,13 +246,24 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     const gasUsed = result.gasUsed
     const receiptTrie = result.receiptsRoot
     const transactionsTrie = await _genTxTrie(block)
-    const generatedFields = {
+    const generatedFields: {
+      stateRoot: Uint8Array
+      logsBloom: Uint8Array
+      gasUsed: bigint
+      receiptTrie: Uint8Array
+      transactionsTrie: Uint8Array
+      requestsHash?: Uint8Array
+      blockAccessListHash?: Uint8Array
+    } = {
       stateRoot,
       logsBloom,
       gasUsed,
       receiptTrie,
       transactionsTrie,
       requestsHash,
+    }
+    if (vm.common.isActivatedEIP(7928) && vm.evm.blockLevelAccessList !== undefined) {
+      generatedFields.blockAccessListHash = vm.evm.blockLevelAccessList.hash()
     }
     const blockData = {
       ...block,

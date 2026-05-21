@@ -16,6 +16,7 @@
 - [Module: [account]](#module-account)
 - [Module: [address]](#module-address)
 - [Module: [authorization]](#module-authorization)
+- [Module: [bal]](#module-bal)
 - [Module: [blobs]](#module-blobs)
 - [Module: [bytes]](#module-bytes)
 - [Module: [constants]](#module-constants)
@@ -107,18 +108,44 @@ Module providing helpers around EIP-4844 blobs for creating blobs, associated KZ
 ```ts
 // ./examples/blobs.ts
 
-import { bytesToHex, computeVersionedHash, getBlobs } from '@ethereumjs/util'
+//import * as fs from 'fs'
+import {
+  type PrefixedHexString,
+  blobsToCellProofs,
+  blobsToProofs,
+  computeVersionedHash,
+  hexToBytes,
+} from '@ethereumjs/util'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 
-const blobs = getBlobs('test input')
+const kzg = new microEthKZG(trustedSetup)
 
-console.log('Created the following blobs:')
-console.log(blobs)
+/**
+ *  Uncomment for a more realistic example using a real blob, e.g. from https://blobscan.com/
+ *  Use with node ./examples/blobs.ts <file path>
+ */
+// const filePath = process.argv[2]
+//const blob: PrefixedHexString = `0x${fs.readFileSync(filePath, 'ascii')}`
+const blob: PrefixedHexString = `0x${'11'.repeat(131072)}` // 128 KiB
+console.log(blob)
 
-const commitment = bytesToHex(new Uint8Array([1, 2, 3]))
+const commitment = kzg.blobToKzgCommitment(blob)
+
 const blobCommitmentVersion = 0x01
-const versionedHash = computeVersionedHash(commitment, blobCommitmentVersion)
+const versionedHash = computeVersionedHash(commitment as PrefixedHexString, blobCommitmentVersion)
 
-console.log(`Versioned hash ${versionedHash} computed`)
+// EIP-4844 only
+const blobProof = blobsToProofs(kzg, [blob], [commitment as PrefixedHexString])
+const cellProofs = blobsToCellProofs(kzg, [blob])
+
+console.log(`Blob size                   : ${hexToBytes(blob).length / 1024}KiB`)
+console.log(`Commitment                  : ${commitment}`)
+console.log(`Versioned hash              : ${versionedHash}`)
+console.log(`Blob proof (EIP-4844)       : ${blobProof}`)
+console.log(`First cell proof (EIP-7594) : ${cellProofs[0]}`)
+console.log(`Num cell proofs (EIP-7594)  : ${cellProofs.length}`)
+
 ```
 
 ## Module: [bytes](src/bytes.ts)
@@ -178,6 +205,44 @@ Module with a compact generic request class for [EIP-7685](https://eips.ethereum
 - [EIP-7251](https://eips.ethereum.org/EIPS/eip-7251): `ConsolidationRequest` (Prague Hardfork)
 
 These request types are mainly used within the [@ethereumjs/block](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/block) library where applied usage instructions are provided in the README.
+
+## Module: [bal](src/bal/index.ts)
+
+Helpers for [EIP-7928](https://eips.ethereum.org/EIPS/eip-7928) Block Level Access Lists (BAL): the `BlockLevelAccessList` class, JSON/RLP conversion, hashing, and validation utilities. Use this module for offline fixture checks or tooling; block execution and BAL accumulation live in [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#eip-7928-block-level-access-lists-amsterdam).
+
+```ts
+// ./examples/bal.ts
+
+import {
+  bytesToHex,
+  createBlockLevelAccessListFromJSON,
+  validateBlockAccessListHashFromJSON,
+  validateBlockAccessListStructure,
+} from '@ethereumjs/util'
+
+const main = () => {
+  const balJson = [
+    {
+      address: '0x0000000000000000000000000000000000000001',
+      storageChanges: [],
+      storageReads: [],
+      balanceChanges: [{ blockAccessIndex: '0x01', postBalance: '0x03e8' }],
+      nonceChanges: [],
+      codeChanges: [],
+    },
+  ]
+
+  const bal = createBlockLevelAccessListFromJSON(balJson)
+  validateBlockAccessListStructure(bal)
+  validateBlockAccessListHashFromJSON(balJson, bal.hash())
+
+  console.log(`BAL account count: ${bal.toJSON().length}`)
+  console.log(`BAL hash: ${bytesToHex(bal.hash())}`)
+}
+
+void main()
+
+```
 
 ## Module: [signature](src/signature.ts)
 

@@ -293,6 +293,8 @@ Annotations:
 - Hardfork labels (e.g. `(Prague)`) indicate default activation on that fork
 - `(Amsterdam, experimental)` and `(experimental)` mark unstable specs; behaviour may change on patch releases
 
+When EIP-7928 is active, BAL data accumulates on `evm.blockLevelAccessList` during execution. For typical usage see [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#eip-7928-block-level-access-lists-amsterdam).
+
 ### EIP-4844 Shard Blob Transactions Support (Cancun)
 
 This library supports the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844). EIP-4844 comes with a dedicated opcode `BLOBHASH` and has added a new point evaluation precompile at address `0x0a`.
