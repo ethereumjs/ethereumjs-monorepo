@@ -28,15 +28,15 @@ import {
 } from '@ethereumjs/util'
 import { keccak_256 } from '@noble/hashes/sha3.js'
 
+import { activeCostPerStateByte } from '../eip8037.ts'
 import { EOFContainer, EOFContainerMode } from '../eof/container.ts'
 import { EOFErrorMessage } from '../eof/errors.ts'
 import { EOFBYTES, EOFHASH, isEOF } from '../eof/util.ts'
 import { EVMError } from '../errors.ts'
 
+import { decodeEIP8024PairImmediate, decodeEIP8024SingleImmediate } from './EIP8024.ts'
 import {
   createAddressFromStackBigInt,
-  decodeEIP8024PairImmediate,
-  decodeEIP8024SingleImmediate,
   describeLocation,
   exponentiation,
   fromTwos,
@@ -843,7 +843,53 @@ export const handlers: Map<number, OpHandler> = new Map([
         value = bigIntToBytes(val)
       }
 
+      // EIP-8037: state-gas accounting at the end of SSTORE (per the spec
+      // table). State-gas adjustments only happen when the slot was zero at
+      // the start of the transaction:
+      //   original=0, current=0, new!=0  -> charge stateBytesPerStorageSet * costPerStateByte
+      //   original=0, current!=0, new=0  -> refill stateBytesPerStorageSet * costPerStateByte
+      //   all other (original, current, new) triplets: no adjustment
+      // NB: the regular-gas `sstoreSetGas` (2900 under 8037, was 20000) is
+      // still charged in the dynamic gas function above; this only meters
+      // the state-gas dimension.
+      const common = runState.interpreter._evm.common
+      let originalIsZero = false
+      let currentIsZero = false
+      const newIsZero = val === BIGINT_0
+      if (common.isActivatedEIP(8037)) {
+        const current = await runState.interpreter.storageLoad(keyBuf, false, false)
+        const original = await runState.interpreter.storageLoad(keyBuf, true, false)
+        currentIsZero = current.length === 0
+        originalIsZero = original.length === 0
+      }
+
       await runState.interpreter.storageStore(keyBuf, value)
+
+      if (common.isActivatedEIP(8037) && originalIsZero) {
+        const stateBytes = common.param('stateBytesPerStorageSet')
+        const costPerStateByte = activeCostPerStateByte(common, runState.env.block.header.gasLimit)
+        const amount = stateBytes * costPerStateByte
+        if (currentIsZero && !newIsZero) {
+          // 0 -> 0 -> nonzero: new slot, charge state gas
+          runState.interpreter.chargeStateGas(amount, 'SSTORE')
+          // Track per-address state-gas spent on storage so a same-tx
+          // SELFDESTRUCT can refund it (account/code already tracked at CREATE).
+          const addrKey = runState.interpreter.getAddress().toString()
+          const evm = runState.interpreter._evm
+          const prior = evm.createdAccountStateGas.get(addrKey) ?? BIGINT_0
+          evm.createdAccountStateGas.set(addrKey, prior + amount)
+        } else if (!currentIsZero && newIsZero) {
+          // 0 -> nonzero -> 0: clearing a slot created in this tx, refill reservoir
+          runState.interpreter.refillStateGasReservoir(amount, 'SSTORE clear')
+          // Symmetric: subtract from the per-address tracker so we don't
+          // double-refund storage that was already cleared inside the tx.
+          const addrKey = runState.interpreter.getAddress().toString()
+          const evm = runState.interpreter._evm
+          const prior = evm.createdAccountStateGas.get(addrKey) ?? BIGINT_0
+          const next = prior > amount ? prior - amount : BIGINT_0
+          evm.createdAccountStateGas.set(addrKey, next)
+        }
+      }
     },
   ],
   // 0x56: JUMP
@@ -1375,6 +1421,12 @@ export const handlers: Map<number, OpHandler> = new Map([
       const gasLimit = runState.messageGasLimit!
       runState.messageGasLimit = undefined
 
+      if (runState.eip7928PostTargetCreateOog === true) {
+        runState.eip7928PostTargetCreateOog = false
+        runState.stack.push(BIGINT_0)
+        return
+      }
+
       let data = new Uint8Array(0)
       if (length !== BIGINT_0) {
         data = runState.memory.read(Number(offset), Number(length), true)
@@ -1411,6 +1463,12 @@ export const handlers: Map<number, OpHandler> = new Map([
       const gasLimit = runState.messageGasLimit!
       runState.messageGasLimit = undefined
 
+      if (runState.eip7928PostTargetCreateOog === true) {
+        runState.eip7928PostTargetCreateOog = false
+        runState.stack.push(BIGINT_0)
+        return
+      }
+
       let data = new Uint8Array(0)
       if (length !== BIGINT_0) {
         data = runState.memory.read(Number(offset), Number(length), true)
@@ -1445,13 +1503,13 @@ export const handlers: Map<number, OpHandler> = new Map([
       }
 
       let gasLimit = runState.messageGasLimit!
+      runState.messageGasLimit = undefined
+
       if (value !== BIGINT_0) {
         const callStipend = common.param('callStipendGas')
         runState.interpreter.addStipend(callStipend)
         gasLimit += callStipend
       }
-
-      runState.messageGasLimit = undefined
 
       const ret = await runState.interpreter.call(gasLimit, toAddress, value, data)
       // Write return data to memory
@@ -1468,13 +1526,13 @@ export const handlers: Map<number, OpHandler> = new Map([
       const toAddress = createAddressFromStackBigInt(toAddr)
 
       let gasLimit = runState.messageGasLimit!
+      runState.messageGasLimit = undefined
+
       if (value !== BIGINT_0) {
         const callStipend = common.param('callStipendGas')
         runState.interpreter.addStipend(callStipend)
         gasLimit += callStipend
       }
-
-      runState.messageGasLimit = undefined
 
       let data = new Uint8Array(0)
       if (inLength !== BIGINT_0) {

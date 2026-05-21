@@ -23,7 +23,8 @@ export * from './account.ts'
  *
  * EXPERIMENTAL: DO NOT USE IN PRODUCTION!
  */
-export * from './bal.ts'
+export * from './bal/index.ts'
+export * from './bal/validation.ts'
 
 /**
  * Address type
@@ -54,13 +55,6 @@ export * from './bytes.ts'
  * Helpful TypeScript types
  */
 export * from './types.ts'
-
-/**
- * Block level access list
- *
- * EXPERIMENTAL: DO NOT USE IN PRODUCTION!
- */
-export * from './bal.ts'
 
 /**
  * Export ethjs-util methods

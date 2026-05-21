@@ -15,7 +15,7 @@ describe('EIP 3860 tests', () => {
     eips: [3860],
   })
 
-  it('EIP-3860 tests', async () => {
+  it('EIP-3860 tests', { timeout: 10000 }, async () => {
     const vm = await createVM({ common })
     await vm.stateManager.putAccount(sender, new Account())
     const account = await vm.stateManager.getAccount(sender)

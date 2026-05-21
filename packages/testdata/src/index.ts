@@ -1,3 +1,4 @@
+export * from './bal/index.ts'
 export * from './blocks/index.ts'
 export * from './chainConfigs/index.ts'
 export * from './devp2p.ts'

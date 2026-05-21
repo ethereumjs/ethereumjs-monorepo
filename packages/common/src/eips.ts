@@ -576,4 +576,40 @@ export const eipsDict: EIPsDict = {
     minimumHardfork: Hardfork.Cancun,
     requiredEIPs: [],
   },
+  /**
+   * Description : Increase max contract code size (24 → 32 KiB) and initcode size (48 → 64 KiB)
+   * URL         : https://eips.ethereum.org/EIPS/eip-7954
+   * Status      : Draft
+   */
+  7954: {
+    minimumHardfork: Hardfork.Amsterdam,
+    requiredEIPs: [],
+  },
+  /**
+   * Description : Increase calldata floor cost
+   * URL         : https://eips.ethereum.org/EIPS/eip-7976
+   * Status      : Draft
+   */
+  7976: {
+    minimumHardfork: Hardfork.Chainstart,
+    requiredEIPs: [7623],
+  },
+  /**
+   * Description : Access list data pricing
+   * URL         : https://eips.ethereum.org/EIPS/eip-7981
+   * Status      : Draft
+   */
+  7981: {
+    minimumHardfork: Hardfork.Amsterdam,
+    requiredEIPs: [2930, 7976],
+  },
+  /**
+   * Description : State Creation Gas Cost Increase
+   * URL         : https://eips.ethereum.org/EIPS/eip-8037
+   * Status      : Draft
+   */
+  8037: {
+    minimumHardfork: Hardfork.Amsterdam,
+    requiredEIPs: [2780, 6780, 7702, 7825, 7976, 7981],
+  },
 }

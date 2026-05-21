@@ -27,7 +27,6 @@
 - [Module: [request]](#module-request)
 - [Module: [signature]](#module-signature)
 - [Module: [types]](#module-types)
-- [Module: [verkle]](#module-verkle)
 - [Module: [withdrawal]](#module-withdrawal)
 - [Browser](#browser)
 - [API](#api)

@@ -7,22 +7,29 @@ import type { EIP2930CompatibleTx } from '../types.ts'
  * The amount of gas paid for the data in this tx
  */
 export function getDataGas(tx: EIP2930CompatibleTx): bigint {
-  const eip2930Gas = BigInt(getAccessListDataGas(tx))
-  return Legacy.getDataGas(tx) + eip2930Gas
+  return Legacy.getDataGas(tx) + getAccessListDataGas(tx)
 }
 
 /**
  * Calculates the data gas cost for the access list of a tx
  */
-function getAccessListDataGas(tx: EIP2930CompatibleTx): number {
+function getAccessListDataGas(tx: EIP2930CompatibleTx): bigint {
   const { common, accessList } = tx
   const accessListStorageKeyCost = common.param('accessListStorageKeyGas')
   const accessListAddressCost = common.param('accessListAddressGas')
 
-  const totalSlots = accessList.reduce((sum, item) => sum + item[1].length, 0)
-  const addresses = accessList.length
+  const totalSlots = accessList.reduce((sum, item) => sum + BigInt(item[1].length), 0n)
+  const addresses = BigInt(accessList.length)
 
-  return addresses * Number(accessListAddressCost) + totalSlots * Number(accessListStorageKeyCost)
+  let cost = addresses * accessListAddressCost + totalSlots * accessListStorageKeyCost
+
+  // EIP-7981: add floor cost for access list bytes (20 bytes/address + 32 bytes/slot, 4 tokens/byte)
+  if (common.isActivatedEIP(7981)) {
+    const accessListBytes = addresses * 20n + totalSlots * 32n
+    cost += common.param('totalCostFloorPerToken') * accessListBytes * 4n
+  }
+
+  return cost
 }
 
 /**

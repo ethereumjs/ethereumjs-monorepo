@@ -1,39 +1,47 @@
-import { assert, describe, it } from 'vitest'
-
 import { RLP } from '@ethereumjs/rlp'
+import {
+  balAllTransactionTypes,
+  balAllTransactionTypesHash,
+  balAllTransactionTypesJSON,
+  balAllTransactionTypesRLP,
+  balEmptyBlockNoCoinbase,
+  balEmptyBlockNoCoinbaseHash,
+  balEmptyBlockNoCoinbaseJSON,
+  balEmptyBlockNoCoinbaseRLP,
+  balSimple,
+  balSimpleHash,
+  balSimpleJSON,
+  balSimpleRLP,
+} from '@ethereumjs/testdata'
+import { assert, describe, it } from 'vitest'
 import {
   type BALJSONBlockAccessList,
   BlockLevelAccessList,
   createBlockLevelAccessList,
   createBlockLevelAccessListFromJSON,
   createBlockLevelAccessListFromRLP,
-} from '../src/bal.ts'
-import { bytesToHex, hexToBytes } from '../src/bytes.ts'
-import { KECCAK256_RLP_ARRAY_S, SYSTEM_ADDRESS } from '../src/constants.ts'
-import type { PrefixedHexString } from '../src/types.ts'
-import bal_all_transaction_types from './testdata/bal/bal_all_transaction_types.json' with {
-  type: 'json',
-}
-import {
-  balAllTransactionTypes,
-  balAllTransactionTypesHash,
-  balAllTransactionTypesRLP,
-} from './testdata/bal/bal_all_transaction_types.ts'
-import bal_empty_block_no_coinbase from './testdata/bal/bal_empty_block_no_coinbase.json' with {
-  type: 'json',
-}
-import {
-  balEmptyBlockNoCoinbase,
-  balEmptyBlockNoCoinbaseHash,
-  balEmptyBlockNoCoinbaseRLP,
-} from './testdata/bal/bal_empty_block_no_coinbase.ts'
-import bal_simple from './testdata/bal/bal_simple.json' with { type: 'json' }
-import { balSimple, balSimpleHash, balSimpleRLP } from './testdata/bal/bal_simple.ts'
+} from '../../src/bal/index.ts'
+import { bytesToHex, hexToBytes } from '../../src/bytes.ts'
+import { KECCAK256_RLP_ARRAY_S, SYSTEM_ADDRESS } from '../../src/constants.ts'
+import type { PrefixedHexString } from '../../src/types.ts'
 
 describe('Basic initialization', () => {
   it('should create an empty access list', () => {
     const bal = createBlockLevelAccessList()
     assert.isNotNull(bal)
+  })
+
+  it('should replace prior storage writes at the same blockAccessIndex', () => {
+    const bal = createBlockLevelAccessList()
+    const address = '0x0000000000000000000000000000000000000001' as const
+    bal.blockAccessIndex = 1
+    bal.addAddress(address)
+    const key = hexToBytes('0x00')
+    bal.addStorageWrite(address, key, hexToBytes('0x01'), 1)
+    bal.addStorageWrite(address, key, hexToBytes('0x02'), 1)
+    const slotChanges = bal.raw()[0][1][0][1]
+    assert.equal(slotChanges.length, 1)
+    assert.deepEqual(slotChanges[0][1], hexToBytes('0x02'))
   })
 
   it('should create an access list from Accesses data', () => {
@@ -74,30 +82,30 @@ describe('Basic initialization', () => {
 describe('JSON', () => {
   it('should convert to JSON', () => {
     const bal = createBlockLevelAccessListFromJSON(
-      bal_all_transaction_types as BALJSONBlockAccessList,
+      balAllTransactionTypesJSON as BALJSONBlockAccessList,
     )
     assert.isNotNull(bal)
   })
 
   it('should map JSON fields to internal types', () => {
     const bal = createBlockLevelAccessListFromJSON(
-      bal_all_transaction_types as BALJSONBlockAccessList,
+      balAllTransactionTypesJSON as BALJSONBlockAccessList,
     )
-    const addressWithReads = bal_all_transaction_types[0].address as PrefixedHexString
-    for (const read of bal_all_transaction_types[0].storageReads) {
+    const addressWithReads = balAllTransactionTypesJSON[0].address as PrefixedHexString
+    for (const read of balAllTransactionTypesJSON[0].storageReads) {
       assert.isTrue(bal.accesses[addressWithReads].storageReads.has(read as PrefixedHexString))
     }
 
-    const addressWithStorageWrite = bal_all_transaction_types[2].address as PrefixedHexString
-    for (const write of bal_all_transaction_types[2].storageChanges) {
+    const addressWithStorageWrite = balAllTransactionTypesJSON[2].address as PrefixedHexString
+    for (const write of balAllTransactionTypesJSON[2].storageChanges) {
       const storageWrite =
         bal.accesses[addressWithStorageWrite].storageChanges[write.slot as PrefixedHexString][0]
       assert.deepEqual(storageWrite[0], parseInt(write.slotChanges[0].blockAccessIndex, 16))
       assert.equal(bytesToHex(storageWrite[1]), write.slotChanges[0].postValue)
     }
 
-    const addressWithCodeChange = bal_all_transaction_types[3].address as PrefixedHexString
-    for (const codeChange of bal_all_transaction_types[3].codeChanges) {
+    const addressWithCodeChange = balAllTransactionTypesJSON[3].address as PrefixedHexString
+    for (const codeChange of balAllTransactionTypesJSON[3].codeChanges) {
       const codeChangeData = bal.accesses[addressWithCodeChange].codeChanges[0]
       assert.deepEqual(codeChangeData[0], parseInt(codeChange.blockAccessIndex, 16))
       assert.equal(codeChangeData[1].length > 0, true)
@@ -107,20 +115,20 @@ describe('JSON', () => {
 
   it('Creating from JSON should do the full round trip', () => {
     let bal = createBlockLevelAccessListFromJSON(
-      bal_empty_block_no_coinbase as BALJSONBlockAccessList,
+      balEmptyBlockNoCoinbaseJSON as BALJSONBlockAccessList,
     )
     assert.isNotNull(bal)
     assert.deepEqual(bal.accesses, balEmptyBlockNoCoinbase)
     assert.deepEqual(bytesToHex(bal.serialize()), balEmptyBlockNoCoinbaseRLP)
     assert.deepEqual(bytesToHex(bal.hash()), balEmptyBlockNoCoinbaseHash)
 
-    bal = createBlockLevelAccessListFromJSON(bal_simple as BALJSONBlockAccessList)
+    bal = createBlockLevelAccessListFromJSON(balSimpleJSON as BALJSONBlockAccessList)
     assert.isNotNull(bal)
     assert.deepEqual(bal.accesses, balSimple)
     assert.deepEqual(bytesToHex(bal.serialize()), balSimpleRLP)
     assert.deepEqual(bytesToHex(bal.hash()), balSimpleHash)
 
-    bal = createBlockLevelAccessListFromJSON(bal_all_transaction_types as BALJSONBlockAccessList)
+    bal = createBlockLevelAccessListFromJSON(balAllTransactionTypesJSON as BALJSONBlockAccessList)
     assert.isNotNull(bal)
     assert.deepEqual(bal.accesses, balAllTransactionTypes)
     assert.deepEqual(bytesToHex(bal.serialize()), balAllTransactionTypesRLP)
@@ -175,7 +183,7 @@ describe('JSON', () => {
     assert.deepEqual(bytesToHex(bal.serialize()), bytesToHex(expected))
   })
 
-  it('should omit an empty system address entry when serializing', () => {
+  it('should include an accessed system address with empty change lists when serializing', () => {
     const bal = createBlockLevelAccessListFromJSON([
       {
         address: SYSTEM_ADDRESS,
@@ -187,8 +195,17 @@ describe('JSON', () => {
       },
     ] satisfies BALJSONBlockAccessList)
 
-    assert.deepEqual(bal.raw(), [])
-    assert.deepEqual(bal.toJSON(), [])
+    assert.deepEqual(bal.raw(), [[SYSTEM_ADDRESS, [], [], [], [], []]])
+    assert.deepEqual(bal.toJSON(), [
+      {
+        address: SYSTEM_ADDRESS,
+        nonceChanges: [],
+        balanceChanges: [],
+        codeChanges: [],
+        storageChanges: [],
+        storageReads: [],
+      },
+    ])
   })
 
   it('should preserve a touched system address entry when serializing', () => {
@@ -227,27 +244,27 @@ describe('JSON', () => {
   })
 
   it('toJSON() should produce correct JSON from Accesses data', () => {
-    // bal_simple and bal_all_transaction_types use even-padded hex,
+    // balSimpleJSON and balAllTransactionTypesJSON use even-padded hex,
     // so toJSON() output should match the JSON test data directly.
     let bal = new BlockLevelAccessList(balSimple)
-    assert.deepEqual(bal.toJSON(), bal_simple as BALJSONBlockAccessList)
+    assert.deepEqual(bal.toJSON(), balSimpleJSON as BALJSONBlockAccessList)
 
     bal = new BlockLevelAccessList(balAllTransactionTypes)
-    assert.deepEqual(bal.toJSON(), bal_all_transaction_types as BALJSONBlockAccessList)
+    assert.deepEqual(bal.toJSON(), balAllTransactionTypesJSON as BALJSONBlockAccessList)
   })
 
   it('toJSON() roundtrip: JSON -> internal -> toJSON()', () => {
     // For already-normalized JSON (even-padded hex), toJSON() output matches input.
-    let bal = createBlockLevelAccessListFromJSON(bal_simple as BALJSONBlockAccessList)
-    assert.deepEqual(bal.toJSON(), bal_simple as BALJSONBlockAccessList)
+    let bal = createBlockLevelAccessListFromJSON(balSimpleJSON as BALJSONBlockAccessList)
+    assert.deepEqual(bal.toJSON(), balSimpleJSON as BALJSONBlockAccessList)
 
-    bal = createBlockLevelAccessListFromJSON(bal_all_transaction_types as BALJSONBlockAccessList)
-    assert.deepEqual(bal.toJSON(), bal_all_transaction_types as BALJSONBlockAccessList)
+    bal = createBlockLevelAccessListFromJSON(balAllTransactionTypesJSON as BALJSONBlockAccessList)
+    assert.deepEqual(bal.toJSON(), balAllTransactionTypesJSON as BALJSONBlockAccessList)
 
-    // bal_empty_block_no_coinbase uses un-normalized hex (e.g. "0x0" vs "0x00"),
+    // balEmptyBlockNoCoinbaseJSON uses un-normalized hex (e.g. "0x0" vs "0x00"),
     // so direct JSON comparison won't match. Verify semantic roundtrip instead:
     // JSON -> internal -> toJSON() -> internal -> RLP/hash must still match.
-    bal = createBlockLevelAccessListFromJSON(bal_empty_block_no_coinbase as BALJSONBlockAccessList)
+    bal = createBlockLevelAccessListFromJSON(balEmptyBlockNoCoinbaseJSON as BALJSONBlockAccessList)
     const roundtripJSON = bal.toJSON()
     const bal2 = createBlockLevelAccessListFromJSON(roundtripJSON)
     assert.deepEqual(bal2.accesses, balEmptyBlockNoCoinbase)

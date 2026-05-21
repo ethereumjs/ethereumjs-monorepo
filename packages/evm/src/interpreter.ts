@@ -16,11 +16,8 @@ import {
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 
-import {
-  EIP7708_SELFDESTRUCT_TOPIC,
-  EIP7708_SYSTEM_ADDRESS,
-  EIP7708_TRANSFER_TOPIC,
-} from './eip7708.ts'
+import { EIP7708_BURN_TOPIC, EIP7708_SYSTEM_ADDRESS, EIP7708_TRANSFER_TOPIC } from './eip7708.ts'
+import { activeCostPerStateByte } from './eip8037.ts'
 import { FORMAT, MAGIC, VERSION } from './eof/constants.ts'
 import { EOFContainerMode, validateEOF } from './eof/container.ts'
 import { setupEOF } from './eof/setup.ts'
@@ -29,8 +26,12 @@ import { EVMError, EVMErrorTypeString } from './errors.ts'
 import { type EVMPerformanceLogger, type Timer } from './logger.ts'
 import { Memory } from './memory.ts'
 import { Message } from './message.ts'
+import {
+  type Eip7928PostTargetCallOog,
+  consumeEip7928PostTargetCallOog,
+} from './opcodes/EIP7928.ts'
+import { isEIP8024PairImmediateValid, isEIP8024SingleImmediateValid } from './opcodes/EIP8024.ts'
 import { trap } from './opcodes/index.ts'
-import { isEIP8024PairImmediateValid, isEIP8024SingleImmediateValid } from './opcodes/util.ts'
 import { Stack } from './stack.ts'
 
 import type {
@@ -116,6 +117,10 @@ export interface RunState {
   blockchain: EVMMockBlockchainInterface
   env: Env
   messageGasLimit?: bigint // Cache value from `gas.ts` to save gas limit for a message call
+  /** EIP-7928 CALL post-target OOG: cleared in runStep after output is zeroed. */
+  eip7928PostTargetCallOog?: Eip7928PostTargetCallOog
+  /** EIP-7928 CREATE post-target OOG: signals the CREATE/CREATE2 handler to push 0 without executing. */
+  eip7928PostTargetCreateOog?: boolean
   interpreter: Interpreter
   gasRefund: bigint // Tracks the current refund
   gasLeft: bigint // Current gas left
@@ -433,6 +438,8 @@ export class Interpreter {
       // Advance program counter
       this._runState.programCounter++
 
+      consumeEip7928PostTargetCallOog(this._runState)
+
       // Execute opcode handler
       const opFn = opEntry.opHandler
 
@@ -654,6 +661,59 @@ export class Interpreter {
       )
     }
     this._runState.gasRefund += amount
+  }
+
+  /**
+   * EIP-8037: Charge state-gas. Draws from the per-tx state-gas reservoir
+   * first; if the reservoir is exhausted, the remainder is taken from the
+   * regular `gasLeft` (which may OOG). Increments `execution_state_gas_used`
+   * by the full charged amount.
+   * @param amount - Amount of state gas to charge
+   * @param context - Usage context for debugging
+   * @throws if both pools combined are insufficient (out of gas)
+   */
+  chargeStateGas(amount: bigint, context?: string): void {
+    if (amount === BIGINT_0) return
+    const evm = this._evm
+    let remaining = amount
+    if (evm.stateGasReservoir > BIGINT_0) {
+      const fromReservoir = remaining < evm.stateGasReservoir ? remaining : evm.stateGasReservoir
+      evm.stateGasReservoir -= fromReservoir
+      remaining -= fromReservoir
+    }
+    if (remaining > BIGINT_0) {
+      this.useGas(
+        remaining,
+        context !== undefined ? `state-gas spill: ${context}` : 'state-gas spill',
+      )
+    }
+    evm.executionStateGasUsed += amount
+    if (evm.DEBUG) {
+      debugGas(
+        `${context !== undefined ? context + ': ' : ''}charged ${amount} state gas (reservoir=${evm.stateGasReservoir}, executionStateGasUsed=${evm.executionStateGasUsed}, gasLeft=${this._runState.gasLeft})`,
+      )
+    }
+  }
+
+  /**
+   * EIP-8037: Refill the state-gas reservoir, e.g. on revert / exceptional
+   * halt or on SSTORE clear-back-to-zero where the slot was zero at tx start.
+   * Increments `stateGasReservoir` and decrements `execution_state_gas_used`
+   * by the same amount. Refills always go to the reservoir, regardless of
+   * whether the original charge spilled to gas_left.
+   * @param amount - Amount of state gas to refill
+   * @param context - Usage context for debugging
+   */
+  refillStateGasReservoir(amount: bigint, context?: string): void {
+    if (amount === BIGINT_0) return
+    const evm = this._evm
+    evm.stateGasReservoir += amount
+    evm.executionStateGasUsed -= amount
+    if (evm.DEBUG) {
+      debugGas(
+        `${context !== undefined ? context + ': ' : ''}refilled ${amount} state gas (reservoir=${evm.stateGasReservoir}, executionStateGasUsed=${evm.executionStateGasUsed})`,
+      )
+    }
   }
 
   /**
@@ -1169,16 +1229,34 @@ export class Interpreter {
     // empty the return data buffer
     this._runState.returnBytes = new Uint8Array(0)
 
+    // EIP-8037: helper to refund the pre-charged NEW_ACCOUNT state-gas
+    // when the CREATE short-circuits BEFORE a child frame is spawned
+    // (depth limit, insufficient balance, EIP-2681 nonce overflow,
+    // EIP-3860 oversized initcode). The pre-charge happened in
+    // opcodes/gas.ts; the runCall revert handler won't fire here since
+    // no child frame is created, so refund explicitly.
+    const refundCreatePreCharge = (): void => {
+      if (!this.common.isActivatedEIP(8037)) return
+      const stateBytesPerNewAccount = this.common.param('stateBytesPerNewAccount')
+      const blockGasLimit = this._env.block.header.gasLimit
+      const costPerStateByte = activeCostPerStateByte(this.common, blockGasLimit)
+      const newAccountStateGas = stateBytesPerNewAccount * costPerStateByte
+      this._evm.stateGasReservoir += newAccountStateGas
+      this._evm.executionStateGasUsed -= newAccountStateGas
+    }
+
     // Check if account has enough ether and max depth not exceeded
     if (
       this._env.depth >= Number(this.common.param('stackLimit')) ||
       this._env.contract.balance < value
     ) {
+      refundCreatePreCharge()
       return BIGINT_0
     }
 
     // EIP-2681 check
     if (this._env.contract.nonce >= MAX_UINT64) {
+      refundCreatePreCharge()
       return BIGINT_0
     }
 
@@ -1197,6 +1275,7 @@ export class Interpreter {
         codeToRun.length > Number(this.common.param('maxInitCodeSize')) &&
         this._evm.allowUnlimitedInitCodeSize === false
       ) {
+        refundCreatePreCharge()
         return BIGINT_0
       }
     }
@@ -1331,8 +1410,10 @@ export class Interpreter {
     }
 
     // Add to beneficiary balance
+    let beneficiaryWasNew = false
     if (!toSelf) {
       let toAccount = await this._stateManager.getAccount(toAddress)
+      beneficiaryWasNew = toAccount === undefined || toAccount.isEmpty()
       if (!toAccount) {
         toAccount = new Account()
       }
@@ -1347,6 +1428,21 @@ export class Interpreter {
           originalBalance,
         )
       }
+    }
+
+    // EIP-8037: SELFDESTRUCT that transfers value to a non-existent beneficiary
+    // creates a new account. Charge stateBytesPerNewAccount * costPerStateByte.
+    if (
+      this.common.isActivatedEIP(8037) &&
+      !toSelf &&
+      beneficiaryWasNew &&
+      contractBalance > BIGINT_0
+    ) {
+      const stateBytesPerNewAccount = this.common.param('stateBytesPerNewAccount')
+      const blockGasLimit = this._env.block.header.gasLimit
+      const costPerStateByte = activeCostPerStateByte(this.common, blockGasLimit)
+      const charge = stateBytesPerNewAccount * costPerStateByte
+      this.chargeStateGas(charge, 'SELFDESTRUCT new beneficiary')
     }
 
     // Modify the account (set balance to 0) flag
@@ -1364,18 +1460,14 @@ export class Interpreter {
       }
     }
 
-    // EIP-7708: Emit a Selfdestruct log for SELFDESTRUCT to self only when the balance
+    // EIP-7708: Emit a Burn log (LOG2) for SELFDESTRUCT to self only when the balance
     // is actually zeroed (doModify=true, i.e. same-tx contract creation). Pre-existing
     // contracts where EIP-6780 prevents the burn should not emit a log.
     if (this.common.isActivatedEIP(7708) && contractBalance > BIGINT_0 && toSelf && doModify) {
       const contractTopic = setLengthLeft(this._env.address.bytes, 32)
       const data = setLengthLeft(bigIntToBytes(contractBalance), 32)
-      const selfdestructLog: Log = [
-        EIP7708_SYSTEM_ADDRESS,
-        [EIP7708_SELFDESTRUCT_TOPIC, contractTopic],
-        data,
-      ]
-      this._result.logs.push(selfdestructLog)
+      const burnLog: Log = [EIP7708_SYSTEM_ADDRESS, [EIP7708_BURN_TOPIC, contractTopic], data]
+      this._result.logs.push(burnLog)
     }
 
     // Set contract balance to 0

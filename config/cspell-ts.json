@@ -34,6 +34,7 @@
     "bytelist",
     "bytestring",
     "binarytree",
+    "divmod",
     "merkelize",
     "kaust",
     "EEST",
@@ -648,6 +649,7 @@
     "getpayload",
     "ckzg",
     "Damgård",
-    "viem"
+    "viem",
+    "snobal"
   ]
 }

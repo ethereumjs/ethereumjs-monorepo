@@ -11,6 +11,7 @@ import { createVM } from '../../src/constructors.ts'
 import { runTx } from '../../src/runTx.ts'
 import { makeBlockFromEnv, makeTx, setupPreConditions } from '../util.ts'
 import { loadExecutionSpecFixtures, parseTest } from './executionSpecTestLoader.ts'
+import { annotateFixture } from './util/perDirectoryReporter.ts'
 
 const customFixturesPath = process.env.TEST_PATH ?? '../execution-spec-tests'
 const fixturesPath = path.resolve(customFixturesPath)
@@ -52,8 +53,9 @@ if (fs.existsSync(fixturesPath) === false) {
       return
     }
 
-    for (const { id, fork, data } of fixtures) {
-      it(`${fork}: ${id}`, async () => {
+    for (const { id, fork, filePath, data } of fixtures) {
+      it(`${fork}: ${id}`, async ({ task }) => {
+        annotateFixture(task, filePath, fixturesPath, 'state tests')
         const testCase = parseTest(fork, data)
         try {
           await runStateTestCase(fork, testCase, assert, kzg)
