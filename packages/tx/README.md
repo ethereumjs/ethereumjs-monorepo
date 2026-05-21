@@ -29,6 +29,7 @@
   - [Blob Transactions (EIP-4844 / EIP-7594)](#blob-transactions-eip-4844--eip-7594)
   - [EOA Code Transaction (EIP-7702)](#eoa-code-transaction-eip-7702)
   - [Legacy Transactions](#legacy-transactions)
+  - [Amsterdam transaction validation (EIP-7976, EIP-7981)](#amsterdam-transaction-validation-eip-7976-eip-7981)
 - [Transaction Factory](#transaction-factory)
 - [KZG Setup](#kzg-setup)
 - [Sending a Transaction](#sending-a-transaction)
@@ -81,6 +82,7 @@ Hardforks adding features and/or tx types:
 | `london`         | `v3.2.0`   | `EIP-1559` Transactions                                                                                 |
 | `cancun`         | `v5.0.0`   | `EIP-4844` Transactions                                                                                 |
 | `prague`         | `v10.0.0`  | `EIP-7702` Transactions                                                                                 |
+| `amsterdam`      | `v10.x`    | `EIP-7976` / `EIP-7981` floor pricing, bundled with other Amsterdam EIPs (experimental)                 |
 
 ## Transaction Types
 
@@ -93,6 +95,7 @@ This library supports the following transaction types ([EIP-2718](https://eips.e
 - [Blob Transactions (EIP-4844)](#blob-transactions-eip-4844)
 - [EOA Code Transaction (EIP-7702)](#eoa-code-transaction-eip-7702)
 - [Legacy Transactions](#legacy-transactions) (original Ethereum txs)
+- [Amsterdam transaction validation (EIP-7976, EIP-7981)](#amsterdam-transaction-validation-eip-7976-eip-7981)
 
 ### Gas Fee Market Transactions (EIP-1559)
 
@@ -390,6 +393,18 @@ const _serializedTx = signedTx.serialize()
 console.log(bytesToHex(signedTx.hash())) // 0x894b72d87f8333fccd29d1b3aca39af69d97a6bc281e7e7a3a60640690a3cd2b
 
 ```
+
+### Amsterdam transaction validation (EIP-7976, EIP-7981)
+
+On `Hardfork.Amsterdam` (experimental), two EIPs adjust the minimum gas a transaction must pay before execution:
+
+**[EIP-7976](https://eips.ethereum.org/EIPS/eip-7976) — calldata floor:** under EIP-7623, calldata is priced in **tokens** (1 per zero byte, 4 per non-zero byte pre-7976). EIP-7976 raises the floor to a uniform **4 tokens per byte** for all calldata bytes. The floor cost is `txGas + totalCostFloorPerToken × tokens` and is enforced in `getValidationErrors()` / intrinsic gas calculation for all tx types.
+
+**[EIP-7981](https://eips.ethereum.org/EIPS/eip-7981) — access-list floor:** for typed txs with an access list (types `1`, `2`, `3`, `4`), an additional floor charge applies to the raw access-list bytes: **20 bytes per address + 32 bytes per storage key**, each counted at 4 tokens per byte (`totalCostFloorPerToken × accessListBytes × 4`).
+
+Both floors feed into EIP-8037 block-level regular-gas accounting in the VM: `RunTxResult.txRegularGas = max(raw_regular_gas, calldata_floor)`. See [@ethereumjs/vm EIP-8037 docs](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#eip-8037-state-creation-gas-cost-increase-amsterdam).
+
+**Example:** Amsterdam txs in tests typically need `baseFeePerGas: 1n` on the block header and a sufficiently high `gasPrice` / `maxFeePerGas` on legacy/1559 txs to satisfy the 1559 base-fee check alongside the new floors.
 
 ## Transaction Factory
 

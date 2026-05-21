@@ -17,6 +17,7 @@
 - 💸 `EIP-4895` Beacon Chain Withdrawals
 - 📨 `EIP-7685` Consensus Layer Requests
 - 📋 `EIP-7928` Block Level Access List Hash (Amsterdam, experimental)
+- 🕐 `EIP-7843` Slot Number header field (Amsterdam, experimental)
 - 🛵 324KB bundle size (81KB gzipped)
 - 🏄🏾‍♂️ WASM-free default + Fully browser ready
 
@@ -302,6 +303,37 @@ const main = () => {
   console.log(`blockAccessListHash: ${bytesToHex(block.header.blockAccessListHash!)}`)
   console.log(`matches BAL hash: ${bytesToHex(bal.hash())}`)
   console.log(`hash length: ${block.header.blockAccessListHash!.length} bytes`)
+}
+
+void main()
+
+```
+
+### Blocks with EIP-7843 slot number
+
+When [EIP-7843](https://eips.ethereum.org/EIPS/eip-7843) is active (`Hardfork.Amsterdam`, experimental), blocks carry a `slotNumber` header field (64-bit quantity). The EVM exposes the value via the `SLOTNUM` opcode during execution.
+
+**Important:** `runBlock({ generate: true })` does **not** populate `slotNumber` automatically — set it explicitly when constructing or generating blocks. Consensus validation requires the field when EIP-7843 is active.
+
+```ts
+// ./examples/blockSlotNumber.ts
+
+import { createBlock } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+
+const main = () => {
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })
+
+  const block = createBlock(
+    {
+      header: {
+        slotNumber: 42n,
+      },
+    },
+    { common, skipConsensusFormatValidation: true },
+  )
+
+  console.log(`slotNumber: ${block.header.slotNumber}`)
 }
 
 void main()

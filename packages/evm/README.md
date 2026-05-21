@@ -295,6 +295,33 @@ Annotations:
 
 When EIP-7928 is active, BAL data accumulates on `evm.blockLevelAccessList` during execution. For typical usage see [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#eip-7928-block-level-access-lists-amsterdam).
 
+### EIP-8024 stack opcodes (Amsterdam)
+
+[EIP-8024](https://eips.ethereum.org/EIPS/eip-8024) adds three backward-compatible stack manipulation opcodes, each with a single-byte immediate operand:
+
+| Opcode | Byte | Effect |
+| --- | --- | --- |
+| `DUPN` | `0xe6` | Duplicate the stack item at depth `n` (immediate encodes `n`) |
+| `SWAPN` | `0xe7` | Swap the top item with the item at depth `n` |
+| `EXCHANGE` | `0xe8` | Exchange items at depths `x` and `y` (pair immediate) |
+
+The opcodes are active on `Hardfork.Amsterdam` and validated at decode time (invalid immediates trap). Gas costs: `dupnGas`, `swapnGas`, `exchangeGas` (default 3 each). They are supported in legacy bytecode and in EOF containers.
+
+### EIP-7954 contract and initcode size limits (Amsterdam)
+
+[EIP-7954](https://eips.ethereum.org/EIPS/eip-7954) raises the EVM size limits when active on `Hardfork.Amsterdam`:
+
+| Parameter | Pre-7954 | Post-7954 |
+| --- | --- | --- |
+| `maxCodeSize` | 24 KiB (24576) | 32 KiB (32768) |
+| `maxInitCodeSize` | 48 KiB (49152) | 64 KiB (65536) |
+
+These are `Common` parameters (`common.param('maxCodeSize')`) — no API changes beyond using the Amsterdam hardfork.
+
+### EIP-8037 and EIP-7708 (Amsterdam)
+
+State-gas accounting ([EIP-8037](https://eips.ethereum.org/EIPS/eip-8037)) and ETH transfer/burn logs ([EIP-7708](https://eips.ethereum.org/EIPS/eip-7708)) are implemented at the VM execution layer. See [@ethereumjs/vm Amsterdam docs](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) for `RunTxResult` fields, block gas dimensions, and receipt log behaviour.
+
 ### EIP-4844 Shard Blob Transactions Support (Cancun)
 
 This library supports the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844). EIP-4844 comes with a dedicated opcode `BLOBHASH` and has added a new point evaluation precompile at address `0x0a`.
