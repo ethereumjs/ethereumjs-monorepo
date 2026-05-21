@@ -34,6 +34,7 @@ import {
   setLengthLeft,
   short,
   unprefixedHexToBytes,
+  validateBlockAccessListGasLimit,
   validateBlockAccessListHash,
   validateBlockAccessListHashFromJSON,
   validateBlockAccessListJSONStructure,
@@ -209,12 +210,30 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
     }
     throw err
   }
+
   let requestsHash: Uint8Array | undefined
   let requests: CLRequest<CLRequestType>[] | undefined
   if (block.common.isActivatedEIP(7685)) {
     const sha256Function = vm.common.customCrypto.sha256 ?? sha256
     requests = await accumulateRequests(vm, result.results, block.header.gasLimit)
     requestsHash = genRequestsRoot(requests, sha256Function)
+  }
+
+  if (vm.common.isActivatedEIP(7928) && vm.evm.blockLevelAccessList !== undefined) {
+    try {
+      validateBlockAccessListGasLimit(vm.evm.blockLevelAccessList, block.header.gasLimit)
+    } catch {
+      await vm.evm.journal.revert()
+      if (vm.DEBUG) {
+        debug(`block checkpoint reverted`)
+      }
+      if (enableProfiler) {
+        // eslint-disable-next-line no-console
+        console.timeEnd(withdrawalsRewardsCommitLabel)
+      }
+      const msg = _errorMsg('block access list gas limit exceeded', vm, block)
+      throw EthereumJSErrorWithoutCode(msg)
+    }
   }
 
   const stateRoot = await stateManager.getStateRoot()

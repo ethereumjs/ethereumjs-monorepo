@@ -12,6 +12,35 @@ import {
   createBlockLevelAccessListFromJSON,
 } from './index.ts'
 
+/** EIP-7928: gas cost attributed to each BAL item (address or storage key). */
+export const BLOCK_ACCESS_LIST_ITEM_COST = 2000
+
+/**
+ * Counts BAL items per EIP-7928: `addresses + storage_keys`.
+ * Uses the canonical {@link BlockLevelAccessList.raw()} view.
+ */
+export function countBlockAccessListItems(bal: BlockLevelAccessList): number {
+  let items = 0
+  for (const [, storageChanges, storageReads] of bal.raw()) {
+    items += 1 + storageChanges.length + storageReads.length
+  }
+  return items
+}
+
+/**
+ * Ensures `bal_items <= block_gas_limit // ITEM_COST` (EIP-7928).
+ */
+export function validateBlockAccessListGasLimit(
+  bal: BlockLevelAccessList,
+  blockGasLimit: bigint,
+): void {
+  const maxItems = blockGasLimit / BigInt(BLOCK_ACCESS_LIST_ITEM_COST)
+  const items = BigInt(countBlockAccessListItems(bal))
+  if (items > maxItems) {
+    throwBlockAccessListGasLimitExceeded()
+  }
+}
+
 /**
  * Validates canonical BAL structure and, when provided, the header hash commitment.
  */
@@ -319,4 +348,8 @@ function throwInvalidBlockAccessList(detail: string): never {
 
 function throwInvalidBalHash(detail: string): never {
   throw EthereumJSErrorWithoutCode(`invalid block access list hash: ${detail}`)
+}
+
+function throwBlockAccessListGasLimitExceeded(): never {
+  throw EthereumJSErrorWithoutCode('block access list gas limit exceeded')
 }

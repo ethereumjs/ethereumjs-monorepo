@@ -349,6 +349,7 @@ const exceptionMessages: Record<string, RegExp> = {
   'BlockException.INVALID_BAL_HASH': /invalid block access list hash/,
   'BlockException.INVALID_BLOCK_HASH': /invalid block access list hash/,
   'BlockException.INVALID_BLOCK_ACCESS_LIST': /invalid block access list/,
+  'BlockException.BLOCK_ACCESS_LIST_GAS_LIMIT_EXCEEDED': /block access list gas limit exceeded/,
   'BlockException.INVALID_WITHDRAWALS_ROOT': /invalid withdrawals trie/,
   'BlockException.SYSTEM_CONTRACT_CALL_FAILED': /system contract call failed/,
   'BlockException.SYSTEM_CONTRACT_EMPTY': /system contract empty/,
