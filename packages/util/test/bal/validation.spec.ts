@@ -9,8 +9,11 @@ import {
 import { assert, describe, it } from 'vitest'
 
 import {
+  BLOCK_ACCESS_LIST_ITEM_COST,
+  countBlockAccessListItems,
   equalsBlockAccessList,
   isAccountOrderOnlyViolation,
+  validateBlockAccessListGasLimit,
   validateBlockAccessListHash,
   validateBlockAccessListHashFromJSON,
   validateBlockAccessListJSONStructure,
@@ -139,6 +142,69 @@ describe('execution-spec invalid BAL fixtures', () => {
     assert.throws(
       () => validateBlockAccessListHashFromJSON(balJSON, headerHash),
       /invalid block access list hash:/,
+    )
+  })
+})
+
+describe('validateBlockAccessListGasLimit', () => {
+  // Minimal fixture mirroring bal_gas_limit_boundary (4 addresses + 11 storage keys = 15 items)
+  const boundaryBalJson: BALJSONBlockAccessList = [
+    {
+      address: '0x00000961ef480eb55e80d19ad83579a64c007002',
+      nonceChanges: [],
+      balanceChanges: [],
+      codeChanges: [],
+      storageChanges: [],
+      storageReads: ['0x00', '0x01', '0x02', '0x03'],
+    },
+    {
+      address: '0x0000bbddc7ce488642fb579f8b00f3a590007251',
+      nonceChanges: [],
+      balanceChanges: [],
+      codeChanges: [],
+      storageChanges: [],
+      storageReads: ['0x00', '0x01', '0x02', '0x03'],
+    },
+    {
+      address: '0x0000f90827f1c53a10cb7a02335b175320002935',
+      nonceChanges: [],
+      balanceChanges: [],
+      codeChanges: [],
+      storageChanges: [
+        {
+          slot: '0x00',
+          slotChanges: [{ blockAccessIndex: '0x00', postValue: '0x01' }],
+        },
+      ],
+      storageReads: [],
+    },
+    {
+      address: '0x000f3df6d732807ef1319fb7b8bb8522d0beac02',
+      nonceChanges: [],
+      balanceChanges: [],
+      codeChanges: [],
+      storageChanges: [
+        {
+          slot: '0x0c',
+          slotChanges: [{ blockAccessIndex: '0x00', postValue: '0x0c' }],
+        },
+      ],
+      storageReads: ['0x200b'],
+    },
+  ]
+
+  it('counts BAL items as addresses plus storage keys', () => {
+    const bal = createBlockLevelAccessListFromJSON(boundaryBalJson)
+    assert.equal(countBlockAccessListItems(bal), 15)
+    assert.equal(BLOCK_ACCESS_LIST_ITEM_COST, 2000)
+  })
+
+  it('accepts at-boundary gas limit and rejects one below', () => {
+    const bal = createBlockLevelAccessListFromJSON(boundaryBalJson)
+    validateBlockAccessListGasLimit(bal, 30000n)
+    assert.throws(
+      () => validateBlockAccessListGasLimit(bal, 29999n),
+      /block access list gas limit exceeded/,
     )
   })
 })
