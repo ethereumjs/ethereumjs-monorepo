@@ -155,6 +155,19 @@ function finalizeCallMessageGas(
     return postTargetCallOogOrTrap(runState, common, outOffset, outLength)
   }
 
+  // EIP-8037: pre-charge the new-account state-gas BEFORE the inner call
+  // runs. This matches the EELS amsterdam (tests-bal) reference, where
+  // `charge_state_gas(STATE_BYTES_PER_NEW_ACCOUNT * COST_PER_STATE_BYTE)`
+  // happens in the CALL opcode body before the sub-frame is processed and
+  // before the insufficient-balance check. The charge is unconditional
+  // (per spec it sticks even when the sub-call later fails for insufficient
+  // balance or reverts), so we charge here rather than after frame exit.
+  // The post-frame charge in evm.ts is skipped under EIP-8037 to avoid
+  // double-counting (see `_executeCall` post-execution block).
+  if (common.isActivatedEIP(8037) && newAccountStateGas > BIGINT_0) {
+    runState.interpreter.chargeStateGas(newAccountStateGas, 'CALL pre-charge new_account')
+  }
+
   runState.messageGasLimit = gasLimit
   return gas
 }

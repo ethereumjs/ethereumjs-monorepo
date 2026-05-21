@@ -578,36 +578,12 @@ export class EVM implements EVMInterface {
         returnValue: new Uint8Array(0),
         logs: eip7708Log ? [eip7708Log] : undefined,
       }
-      if (
-        this.common.isActivatedEIP(8037) &&
-        // At depth=0 (top-level value-transferring tx), the new-account
-        // state-gas (callNewAccountGas equivalent) is the EIP-2780 intrinsic
-        // add-on, not a per-frame charge. For the amsterdam v700 fixture set
-        // EIP-2780 is not activated, so a top-level tx.value > 0 to a fresh
-        // EOA pays only the 21,000 intrinsic. Inner CALL frames continue to
-        // charge new-account state-gas here.
-        message.depth !== 0 &&
-        !earlyResult.exceptionError &&
-        !toExistedBefore &&
-        message.value !== BIGINT_0 &&
-        !message.delegatecall &&
-        this.getPrecompile(message.to) === undefined
-      ) {
-        const stateBytesPerNewAccount = this.common.param('stateBytesPerNewAccount')
-        const costPerStateByte = activeCostPerStateByte(this.common, this._block?.header.gasLimit)
-        const charge = stateBytesPerNewAccount * costPerStateByte
-        const fromReservoir = charge < this.stateGasReservoir ? charge : this.stateGasReservoir
-        const spill = charge - fromReservoir
-        // EIP-8037: state-gas spill charges the tx-level gas_left, not the
-        // inner frame's budget. We let executionGasUsed exceed message.gasLimit
-        // here; the caller's useGas() picks up the overage and consumes it
-        // from the parent frame's gasLeft (which ultimately bubbles up to
-        // tx-level gas_left). If the tx as a whole runs out, OOG is raised
-        // at the caller frame, not here.
-        this.stateGasReservoir -= fromReservoir
-        this.executionStateGasUsed += charge
-        earlyResult.executionGasUsed += spill
-      }
+      // EIP-8037: new-account state-gas for inner CALLs is now pre-charged at
+      // the CALL opcode (callFamilyGas → finalizeCallMessageGas), matching
+      // the EELS amsterdam (tests-bal) `charge_state_gas` placement. The
+      // charge is unconditional w.r.t. inner-frame outcome (it stays charged
+      // even when the call fails on insufficient balance or reverts), so no
+      // additional charge is applied on the early-exit path here.
       return { execResult: earlyResult }
     }
 
@@ -659,36 +635,12 @@ export class EVM implements EVMInterface {
 
     result.executionGasUsed += message.gasLimit - gasLimit
 
-    // EIP-8037: charge state-gas on successful CALL frame exit when this
-    // call created a new account (non-existent or empty `to` + non-zero
-    // value transfer). On revert / exceptional halt the snapshot mechanism
-    // restores the reservoir, so we only charge on success.
-    // Precompile addresses are excluded: they are code-only entities, not
-    // real account state. Funding a precompile via CALL-with-value does not
-    // create a new "stored" account, so no state-gas charge applies (this
-    // matches the behavior the network's other clients exhibit; without the
-    // skip we regress test_bal_precompile_funded and similar fixtures).
-    if (
-      this.common.isActivatedEIP(8037) &&
-      !result.exceptionError &&
-      !toExistedBefore &&
-      message.value !== BIGINT_0 &&
-      !message.delegatecall &&
-      this.getPrecompile(message.to) === undefined
-    ) {
-      const stateBytesPerNewAccount = this.common.param('stateBytesPerNewAccount')
-      const costPerStateByte = activeCostPerStateByte(this.common, this._block?.header.gasLimit)
-      const charge = stateBytesPerNewAccount * costPerStateByte
-      const fromReservoir = charge < this.stateGasReservoir ? charge : this.stateGasReservoir
-      const spill = charge - fromReservoir
-      // EIP-8037: state-gas spill charges the tx-level gas_left, not the
-      // current frame's budget. Let executionGasUsed exceed message.gasLimit;
-      // the caller picks up the overage via useGas() and OOG is raised at
-      // the caller frame if there's not enough tx gas overall.
-      this.stateGasReservoir -= fromReservoir
-      this.executionStateGasUsed += charge
-      result.executionGasUsed += spill
-    }
+    // EIP-8037: the new-account state-gas charge is now pre-charged at the
+    // CALL opcode (see callFamilyGas → finalizeCallMessageGas), matching the
+    // EELS amsterdam (tests-bal) `charge_state_gas` placement before the
+    // sub-frame runs. The charge is therefore independent of inner-frame
+    // success/failure (per spec it sticks even when the sub-call fails for
+    // insufficient balance or reverts). No post-frame charge is needed here.
 
     return {
       execResult: result,
