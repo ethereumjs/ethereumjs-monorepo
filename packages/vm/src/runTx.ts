@@ -6,6 +6,7 @@ import {
   EVMError,
   type Log,
   activeCostPerStateByte,
+  computeIntrinsicGasDimensions8037,
   createEIP7708BurnLog,
 } from '@ethereumjs/evm'
 import { Capability, isBlob4844Tx } from '@ethereumjs/tx'
@@ -613,40 +614,10 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // for state-creation charges and is plumbed onto the EVM instance so
   // child frames can draw from / refill it across the whole transaction.
   // ===========================
-  let intrinsicRegularGas = intrinsicGas
-  let intrinsicStateGas = BIGINT_0
   let stateGasReservoirInitial = BIGINT_0
   vm.evm.eip7928CallPostTargetOog = false
-  if (vm.common.isActivatedEIP(8037)) {
-    const costPerStateByte = activeCostPerStateByte(vm.common, block?.header.gasLimit)
-    const stateBytesPerNewAccount = vm.common.param('stateBytesPerNewAccount')
-    const stateBytesPerAuthBase = vm.common.param('stateBytesPerAuthBase')
-
-    // 7702 intrinsic correction: getDataGas adds (authCount * perEmptyAccountCost)
-    // to the regular intrinsic, but under EIP-8037 perEmptyAccountCost = 0 and
-    // the regular per-auth cost is perAuthBaseGas instead. Add the missing
-    // regular per-auth amount here.
-    let authCount = 0
-    if (tx.type === 4 /* EOACode7702Tx */) {
-      authCount = (tx as EIP7702CompatibleTx).authorizationList.length
-      intrinsicRegularGas += BigInt(authCount) * tx.common.param('perAuthBaseGas')
-    }
-
-    // intrinsic_state_gas = creation tx state portion + per-auth state portion
-    let isCreate = false
-    try {
-      isCreate = tx.toCreationAddress()
-    } catch {
-      isCreate = false
-    }
-    if (isCreate) {
-      intrinsicStateGas += stateBytesPerNewAccount * costPerStateByte
-    }
-    if (authCount > 0) {
-      intrinsicStateGas +=
-        BigInt(authCount) * (stateBytesPerNewAccount + stateBytesPerAuthBase) * costPerStateByte
-    }
-  }
+  const { intrinsicRegular: intrinsicRegularGas, intrinsicState: intrinsicStateGas } =
+    computeIntrinsicGasDimensions8037(tx.common, tx, block?.header.gasLimit)
   const totalIntrinsic = intrinsicRegularGas + intrinsicStateGas
 
   let gasLimit = tx.gasLimit
@@ -1033,27 +1004,17 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // The reservoir delta captures state-gas that was charged to the reservoir
   // (which is part of `tx.gas` paid upfront but not part of `gasLeft` passed
   // to the EVM, so executionGasUsed alone misses it).
-  // EIP-8037 + EIP-3860: when a CREATE/CREATE2 opcode traps with
-  // INITCODE_SIZE_VIOLATION, the gas function (opcodes/gas.ts) has already
-  // pre-charged the NEW_ACCOUNT state-gas portion (spilled to gas_left
-  // because no reservoir was available). The opcode function then traps
-  // BEFORE the sub-frame is entered, so the frame-revert handler in evm.ts
-  // refunds the spilled slice back to the reservoir. That refund is correct
-  // for nested-frame reverts (the parent gets credited), but for a tx that
-  // exceptionally halts due to the trap the entire `tx.gasLimit` must be
-  // burned. Force-drain the reservoir here so the user pays for the full
-  // tx gas (matches EVM spec: exceptional halt consumes all gas).
-  if (vm.common.isActivatedEIP(8037)) {
-    const err = results.execResult.exceptionError?.error
-    // INITCODE_SIZE_VIOLATION: frame revert refunds reservoir spill; tx must still pay full gas.
-    // INITCODE_SIZE_VIOLATION: pre-charged state gas must not be refunded on exceptional halt.
-    // EIP-7928 CALL post-target OOG: burn the full tx gas limit (reservoir slice included).
-    if (
-      err === EVMError.errorMessages.INITCODE_SIZE_VIOLATION ||
-      (err === EVMError.errorMessages.OUT_OF_GAS && vm.evm.eip7928CallPostTargetOog)
-    ) {
-      vm.evm.stateGasReservoir = BIGINT_0
-    }
+  // EIP-7928 CALL post-target OOG: burn the full tx gas limit (reservoir
+  // slice included). EIP-3860 INITCODE_SIZE_VIOLATION is now caught in
+  // create7928Gas BEFORE the new-account state-gas pre-charge, matching the
+  // EELS amsterdam (tests-bal) ordering, so the reservoir is naturally
+  // preserved across the trap and no force-drain is needed there.
+  if (
+    vm.common.isActivatedEIP(8037) &&
+    results.execResult.exceptionError?.error === EVMError.errorMessages.OUT_OF_GAS &&
+    vm.evm.eip7928CallPostTargetOog
+  ) {
+    vm.evm.stateGasReservoir = BIGINT_0
   }
   vm.evm.eip7928CallPostTargetOog = false
   let totalGasSpentBeforeRefund = results.execResult.executionGasUsed + intrinsicGas

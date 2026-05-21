@@ -325,9 +325,16 @@ function validateAddress(address: PrefixedHexString): void {
   hexToBytes(address)
 }
 
-function compareLexicographicHex(a: PrefixedHexString, b: PrefixedHexString): number {
-  const aBytes = hexToBytes(a)
-  const bBytes = hexToBytes(b)
+// Accepts both hex strings and raw bytes because BlockLevelAccessList.raw()
+// runs slot/read keys through normalizeHexForRLP, which returns Uint8Array
+// for the canonical zero-slot case (an empty bytes encoding). The validator
+// sees both shapes when comparing slots that have been normalized for RLP.
+function compareLexicographicHex(
+  a: PrefixedHexString | Uint8Array,
+  b: PrefixedHexString | Uint8Array,
+): number {
+  const aBytes = a instanceof Uint8Array ? a : hexToBytes(a)
+  const bBytes = b instanceof Uint8Array ? b : hexToBytes(b)
   const minLength = Math.min(aBytes.length, bBytes.length)
   for (let i = 0; i < minLength; i++) {
     if (aBytes[i] < bBytes[i]) return -1

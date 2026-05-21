@@ -307,6 +307,22 @@ export async function create7928Gas(
 ): Promise<bigint> {
   const { offset, length, salt, extraPreTargetGas = BIGINT_0, preChargeLabel } = opts
 
+  // EIP-3860: reject oversized initcode BEFORE any state-gas pre-charge so
+  // that EIP-8037's reservoir is preserved when the size check fails. This
+  // matches the EELS amsterdam (tests-bal) reference, which raises
+  // OutOfGasError from `generic_create` ahead of `charge_state_gas`. Without
+  // this, the new-account state-gas pre-charge runs first and is hard to
+  // unwind cleanly at the tx-root frame (depth=0): the frame-revert handler
+  // refunds the spilled slice to a parent reservoir that doesn't exist, and
+  // the user is overcharged by `STATE_BYTES_PER_NEW_ACCOUNT * costPerStateByte`.
+  if (
+    common.isActivatedEIP(3860) &&
+    length > Number(common.param('maxInitCodeSize')) &&
+    !runState.interpreter._evm.allowUnlimitedInitCodeSize
+  ) {
+    trap(EVMError.errorMessages.INITCODE_SIZE_VIOLATION)
+  }
+
   gas += subMemUsage(runState, offset, length, common)
   if (common.isActivatedEIP(3860)) {
     gas += ((length + BIGINT_31) / BIGINT_32) * common.param('initCodeWordGas')

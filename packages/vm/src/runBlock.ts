@@ -1,6 +1,6 @@
 import { createBlock, genRequestsRoot } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
-import { type EVM, type EVMInterface } from '@ethereumjs/evm'
+import { type EVM, type EVMInterface, computeIntrinsicGasDimensions8037 } from '@ethereumjs/evm'
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
 import { TransactionType } from '@ethereumjs/tx'
@@ -703,9 +703,17 @@ async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
     }
 
     // EIP-8037 pre-execution check (spec):
-    //   min(TX_MAX_GAS_LIMIT, tx.gas) <= regular_gas_available
-    //   tx.gas <= state_gas_available
+    //   regular: min(TX_MAX_GAS_LIMIT, tx.gas - intrinsic_state) > regular_available  → reject
+    //   state:   tx.gas - intrinsic_regular                       > state_available    → reject
     // where *_available = block.gas_limit - block_*_gas_used.
+    // The intrinsic.state subtraction in the regular check and the
+    // intrinsic_regular subtraction in the state check are essential: a tx's
+    // regular execution can only use `tx.gas - intrinsic_state`, and its
+    // worst-case state-gas consumption is `tx.gas - intrinsic_regular` (the
+    // residual after paying regular intrinsic). See
+    // execution-specs/tests/amsterdam/eip8037.../test_state_gas_reservoir.py
+    // (`test_block_state_gas_limit_boundary` and
+    // `test_creation_tx_regular_check_subtracts_intrinsic_state`).
     // Pre-EIP-8037 keeps the original check (`tx.gasLimit + gasUsed <= block.gasLimit`).
     if (vm.common.isActivatedEIP(8037)) {
       const txMax = tx.common.param('maxTransactionGasLimit')
@@ -717,8 +725,17 @@ async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
         block.header.gasLimit > blockStateGasUsed
           ? block.header.gasLimit - blockStateGasUsed
           : BIGINT_0
-      const txRegularBound = tx.gasLimit < txMax ? tx.gasLimit : txMax
-      if (txRegularBound > regularAvailable || tx.gasLimit > stateAvailable) {
+      const { intrinsicRegular, intrinsicState } = computeIntrinsicGasDimensions8037(
+        tx.common,
+        tx,
+        block.header.gasLimit,
+      )
+      const txRegularContrib =
+        tx.gasLimit > intrinsicState ? tx.gasLimit - intrinsicState : BIGINT_0
+      const txStateContrib =
+        tx.gasLimit > intrinsicRegular ? tx.gasLimit - intrinsicRegular : BIGINT_0
+      const txRegularBound = txRegularContrib < txMax ? txRegularContrib : txMax
+      if (txRegularBound > regularAvailable || txStateContrib > stateAvailable) {
         const msg = _errorMsg('tx has a higher gas limit than the block', vm, block)
         throw EthereumJSErrorWithoutCode(msg)
       }
