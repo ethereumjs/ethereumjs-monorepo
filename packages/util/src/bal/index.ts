@@ -321,15 +321,24 @@ export class BlockLevelAccessList {
     // Only no-op writes (writing same value as original) are treated as reads
     // EIP-7928: Zeroing a slot (pre-value exists, post-value is zero) IS a write
     if (isNoOp) {
-      // EIP-7928: If a slot is written back to its original value (net-zero change),
-      // it should appear in storageReads, not storageChanges.
-      // This handles nested calls where intermediate frames write different values
-      // but the final value equals the original.
+      // EIP-7928: A no-op write within a transaction only affects that tx's
+      // blockAccessIndex entry. Prior tx changes for the same slot must remain.
       if (this.accesses[address] !== undefined) {
-        // Remove any existing storageChanges for this slot since final == original
-        delete this.accesses[address].storageChanges[strippedKey]
+        const slotChanges = this.accesses[address].storageChanges[strippedKey]
+        if (slotChanges !== undefined) {
+          const remaining = slotChanges.filter(([idx]) => idx !== blockAccessIndex)
+          if (remaining.length === 0) {
+            delete this.accesses[address].storageChanges[strippedKey]
+            this.addStorageRead(address, storageKey)
+          } else {
+            this.accesses[address].storageChanges[strippedKey] = remaining
+          }
+        } else {
+          this.addStorageRead(address, storageKey)
+        }
+      } else {
+        this.addStorageRead(address, storageKey)
       }
-      this.addStorageRead(address, storageKey)
       return
     }
     if (this.accesses[address] === undefined) {

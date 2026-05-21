@@ -184,11 +184,26 @@ async function processAuthorizationList(
     // includes (stateBytesPerNewAccount + stateBytesPerAuthBase) * costPerStateByte.
     // If the authority account already existed, refund the
     // stateBytesPerNewAccount * costPerStateByte portion to the reservoir
-    // (no 20% cap).
+    // (no 20% cap). When the pre-state code slot already holds a delegation
+    // indicator, also refund stateBytesPerAuthBase — the refill keys off the
+    // pre-state code slot, not the bytes being written.
+    const codeBeforeAuth =
+      vm.common.isActivatedEIP(7928) || vm.common.isActivatedEIP(8037)
+        ? await vm.stateManager.getCode(authority)
+        : undefined
     if (accountExists && tx.common.isActivatedEIP(8037)) {
       const stateBytesPerNewAccount = vm.common.param('stateBytesPerNewAccount')
+      const stateBytesPerAuthBase = vm.common.param('stateBytesPerAuthBase')
       const costPerStateByte = activeCostPerStateByte(vm.common, block?.header.gasLimit)
-      existingAuthStateGasRefund += stateBytesPerNewAccount * costPerStateByte
+      let refundStateBytes = stateBytesPerNewAccount
+      if (
+        codeBeforeAuth !== undefined &&
+        codeBeforeAuth.length >= 3 &&
+        equalsBytes(codeBeforeAuth.slice(0, 3), DELEGATION_7702_FLAG)
+      ) {
+        refundStateBytes += stateBytesPerAuthBase
+      }
+      existingAuthStateGasRefund += refundStateBytes * costPerStateByte
     }
 
     // Update account nonce and store
@@ -205,9 +220,8 @@ async function processAuthorizationList(
     // Set delegation code
     const address = data[1]
     // Get current code before modifying (needed for BAL tracking)
-    const currentCode = vm.common.isActivatedEIP(7928)
-      ? await vm.stateManager.getCode(authority)
-      : undefined
+    const currentCode =
+      vm.common.isActivatedEIP(7928) || vm.common.isActivatedEIP(8037) ? codeBeforeAuth : undefined
     if (equalsBytes(address, new Uint8Array(20))) {
       // Special case: clear delegation when delegating to zero address
       // See EIP PR: https://github.com/ethereum/EIPs/pull/8929
