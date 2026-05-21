@@ -309,7 +309,8 @@ const exceptionMessages: Record<string, RegExp> = {
   'TransactionException.INSUFFICIENT_MAX_FEE_PER_BLOB_GAS':
     /Transaction's maxFeePerBlobGas \d+\) is less than block blobGasPrice \(\d+\)/,
   'TransactionException.INSUFFICIENT_MAX_FEE_PER_GAS': /tx unable to pay base fee/,
-  'TransactionException.INTRINSIC_GAS_BELOW_FLOOR_GAS_COST': /gasLimit is too low/,
+  'TransactionException.INTRINSIC_GAS_BELOW_FLOOR_GAS_COST':
+    /gasLimit is too low|INTRINSIC_GAS_TOO_LOW/,
   'TransactionException.INTRINSIC_GAS_TOO_LOW': /gasLimit is too low|INTRINSIC_GAS_TOO_LOW/,
   'TransactionException.NONCE_MISMATCH_TOO_LOW': /the tx doesn't have the correct nonce/,
   'TransactionException.PRIORITY_GREATER_THAN_MAX_FEE_PER_GAS':
