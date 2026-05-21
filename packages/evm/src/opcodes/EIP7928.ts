@@ -330,7 +330,6 @@ export async function create7928Gas(
   if (common.isActivatedEIP(2929)) {
     warmAddress(runState, targetAddress)
   }
-  addAddressToBAL(runState, targetAddress, common)
 
   if (common.isActivatedEIP(2929)) {
     gas += accessAddressEIP2929(runState, runState.interpreter.getAddress().bytes, common, false)
@@ -338,9 +337,11 @@ export async function create7928Gas(
 
   if (common.isActivatedEIP(8037)) {
     if (!canAfford(runState, gas, newAccountStateGas)) {
+      addAddressToBAL(runState, targetAddress, common)
       return eip7928PostTargetCreateOog(runState, common, gas)
     }
     if (gas > runState.interpreter.getGasLeft()) {
+      addAddressToBAL(runState, targetAddress, common)
       return eip7928PostTargetCreateOog(runState, common, gas)
     }
     if (gas > BIGINT_0) {
@@ -349,6 +350,7 @@ export async function create7928Gas(
     }
     runState.interpreter.chargeStateGas(newAccountStateGas, `${preChargeLabel} new_account`)
   } else if (gas > runState.interpreter.getGasLeft()) {
+    addAddressToBAL(runState, targetAddress, common)
     return eip7928PostTargetCreateOog(runState, common, gas)
   }
 
@@ -356,6 +358,7 @@ export async function create7928Gas(
   gasLimit = maxCallGas(gasLimit, gasLimit, runState, common)
 
   if (gas > runState.interpreter.getGasLeft()) {
+    addAddressToBAL(runState, targetAddress, common)
     return eip7928PostTargetCreateOog(runState, common, gas)
   }
 
