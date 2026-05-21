@@ -485,11 +485,6 @@ export class EVM implements EVMInterface {
 
     // Load `to` account
     let toAccount = await this.stateManager.getAccount(message.to)
-    // EIP-8037: capture whether the destination account existed before this
-    // call frame, used below to decide whether to charge new-account state
-    // gas on successful frame exit. Empty accounts are treated as
-    // non-existent (matches the existing callNewAccountGas trigger).
-    const toExistedBefore = toAccount !== undefined && !toAccount.isEmpty()
     if (!toAccount) {
       if (this.common.isActivatedEIP(6800) || this.common.isActivatedEIP(7864)) {
         const absenceProofAccessGas = message.accessWitness!.readAccountHeader(message.to)
