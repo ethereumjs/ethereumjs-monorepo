@@ -68,7 +68,7 @@
     "level": "^9.0.0",
     "lmdb": "^3.2.6",
     "memory-level": "^3.0.0",
-    "micro-bmark": "0.4.0"
+    "@paulmillr/jsbt": "^0.5.0"
   },
   "engines": {
     "node": ">=20"

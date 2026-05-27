@@ -1,6 +1,5 @@
 import { keccak_256 } from '@noble/hashes/sha3.js'
-//@ts-expect-error - package has no types...
-import { logMem, mark, run } from 'micro-bmark' // cspell:disable-line
+import { bench, utils } from '@paulmillr/jsbt/bench.js'
 
 import { MerklePatriciaTrie } from '../dist/cjs/index.js'
 import { keys } from './keys'
@@ -14,7 +13,7 @@ export function createSuite(db: DB<string, string>) {
   const ROUNDS = 1000
   const KEY_SIZE = 32
 
-  run(async () => {
+  ;(async () => {
     // random.ts
     // Test ID is defined as: `pair_count`-`era_size`-`key_size`-`value_type`
     // where value_type = symmetric ? 'mir' : 'ran'
@@ -27,7 +26,7 @@ export function createSuite(db: DB<string, string>) {
       ['1k-1k-32-ran', 1000, false],
       ['1k-1k-32-mir', 1000, true],
     ]) {
-      await mark(title, async () => {
+      await bench(title as string, async () => {
         let key = new Uint8Array(KEY_SIZE)
 
         for (let i = 0; i <= ROUNDS; i++) {
@@ -49,13 +48,17 @@ export function createSuite(db: DB<string, string>) {
     // References:
     // https://gist.github.com/heikoheiko/0fa2b322560ba7794f22/
     for (const samples of [100, 500, 1000, 5000]) {
-      await mark(`Checkpointing: ${samples} iterations`, samples, async (i: number) => {
-        checkpointTrie.checkpoint()
-        await checkpointTrie.put(keys[i], keys[i])
-        await checkpointTrie.commit()
-      })
+      await bench(
+        `Checkpointing: ${samples} iterations`,
+        async (i?: number) => {
+          checkpointTrie.checkpoint()
+          await checkpointTrie.put(keys[i!], keys[i!])
+          await checkpointTrie.commit()
+        },
+        { multiplier: samples },
+      )
     }
 
-    logMem()
-  })
+    utils.logMem()
+  })()
 }
