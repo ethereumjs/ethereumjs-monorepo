@@ -544,7 +544,7 @@ You can subscribe to the following events:
 
 - `beforeMessage`: Emits a `Message` right after running it.
 - `afterMessage`: Emits an `EVMResult` right after running a message.
-- `step`: Emits an `InterpreterStep` right before running an EVM step.
+- `step`: Emits an `InterpreterStep` right before running an EVM step. For `PUSH0`–`PUSH32`, `InterpreterStep.pushData` contains the bytes placed on the stack (one `0x00` byte for `PUSH0`, otherwise the immediate bytes from bytecode).
 - `newContract`: Emits a `NewContractEvent` right before creating a contract. This event contains the deployment code, not the deployed code, as the creation message may not return such a code.
 
 #### Event listeners

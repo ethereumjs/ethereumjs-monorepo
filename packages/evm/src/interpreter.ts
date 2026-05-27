@@ -153,6 +153,11 @@ export interface InterpreterStep {
   codeAddress: Address
   eofSection?: number // Current EOF section being executed
   immediate?: Uint8Array // Immediate argument of the opcode
+  /**
+   * Bytes placed on the stack by `PUSH0`–`PUSH32` (present only on those steps).
+   * For `PUSH0` this is a single `0x00` byte; for `PUSHn` it is the `n` immediate bytes from code.
+   */
+  pushData?: Uint8Array
   eofFunctionDepth?: number // Depth of CALLF return stack
   error?: Uint8Array // Error bytes returned if revert occurs
   storage?: [PrefixedHexString, PrefixedHexString][]
@@ -496,6 +501,16 @@ export class Interpreter {
       )
     }
 
+    let pushData: Uint8Array | undefined
+    const opCodeNum = opcodeInfo.code
+    if (opCodeNum >= 0x5f && opCodeNum <= 0x7f) {
+      if (opCodeNum === 0x5f) {
+        pushData = new Uint8Array([0])
+      } else {
+        pushData = immediate
+      }
+    }
+
     // Create event object for step
     const eventObj: InterpreterStep = {
       pc: this._runState.programCounter,
@@ -518,6 +533,7 @@ export class Interpreter {
       stateManager: this._runState.stateManager,
       eofSection: section,
       immediate,
+      pushData,
       error,
       eofFunctionDepth:
         this._env.eof !== undefined ? this._env.eof?.eofRunState.returnStack.length + 1 : undefined,
@@ -572,6 +588,7 @@ export class Interpreter {
      * @property {Address} codeAddress the address of the code which is currently being ran (this differs from `address` in a `DELEGATECALL` and `CALLCODE` call)
      * @property {number} eofSection the current EOF code section referenced by the PC
      * @property {Uint8Array} immediate the immediate argument of the opcode
+     * @property {Uint8Array} pushData bytes pushed by PUSH0–PUSH32 (only present for those opcodes)
      * @property {Uint8Array} error the error data of the opcode (only present for REVERT)
      * @property {number} eofFunctionDepth the depth of the function call (only present for EOF)
      * @property {Array} storage an array of tuples, where each tuple contains a storage key and value
