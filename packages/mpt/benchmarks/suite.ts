@@ -12,7 +12,6 @@ export function createSuite(db: DB<string, string>) {
 
   const ROUNDS = 1000
   const KEY_SIZE = 32
-
   ;(async () => {
     // random.ts
     // Test ID is defined as: `pair_count`-`era_size`-`key_size`-`value_type`
