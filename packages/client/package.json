@@ -95,7 +95,6 @@
     "@types/body-parser": "^1.19.5",
     "@types/connect": "^3.4.38",
     "@types/cors": "^2.8.17",
-    "@types/eventsource": "^3.0.0",
     "@types/fs-extra": "^11.0.4",
     "@types/qs": "^6.9.18",
     "@types/ws": "^8.18.0",
