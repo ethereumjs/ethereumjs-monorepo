@@ -94,7 +94,7 @@ With **no flags**, the script publishes the current package versions to npm unde
 **npm authentication** (required for publish):
 
 - **Interactive (maintainer laptop):** `npm login` — stores a token in `~/.npmrc`. Use a [granular access token](https://docs.npmjs.com/creating-and-viewing-access-tokens) with publish access to the `@ethereumjs` scope (recommended over classic tokens).
-- **Token in config:** add `//registry.npmjs.org/:_authToken=<token>` to `~/.npmrc` (never commit tokens). Same granular publish token as above.
+- **Token in config:** add a registry `_authToken` entry to `~/.npmrc` (see [npm registry auth](https://docs.npmjs.com/cli/v10/using-npm/registry); never commit tokens). Same granular publish token as above.
 - **2FA:** pass `--otp=<code>` when your npm account requires it.
 
 The script runs `npm whoami` before publishing and exits if you are not authenticated.
