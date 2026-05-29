@@ -8,7 +8,7 @@
 
 > **eoaCode7702RecoverAuthority**(`input`): [`Address`](../classes/Address.md)
 
-Defined in: [packages/util/src/authorization.ts:153](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/authorization.ts#L153)
+Defined in: [packages/util/src/authorization.ts:163](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/authorization.ts#L163)
 
 ## Parameters
 

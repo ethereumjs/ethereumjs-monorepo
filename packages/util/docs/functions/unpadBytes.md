@@ -8,7 +8,7 @@
 
 > **unpadBytes**(`a`): `Uint8Array`
 
-Defined in: [packages/util/src/bytes.ts:191](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L191)
+Defined in: [packages/util/src/bytes.ts:217](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L217)
 
 Trims leading zeros from a `Uint8Array`.
 

@@ -28,6 +28,20 @@ Defined in: [types.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 ***
 
+### blockAccessListHash?
+
+> `optional` **blockAccessListHash**: `BytesLike`
+
+Defined in: [types.ts:114](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L114)
+
+32-byte `keccak256(rlp(bal))` commitment when [EIP-7928](https://eips.ethereum.org/EIPS/eip-7928) is active.
+
+#### Remarks
+
+Experimental (Amsterdam): may change on patch releases.
+
+***
+
 ### coinbase?
 
 > `optional` **coinbase**: `AddressLike`
@@ -137,6 +151,20 @@ Defined in: [types.ts:93](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 > `optional` **requestsHash**: `BytesLike`
 
 Defined in: [types.ts:108](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L108)
+
+***
+
+### slotNumber?
+
+> `optional` **slotNumber**: `BigIntLike`
+
+Defined in: [types.ts:120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L120)
+
+Consensus slot number when [EIP-7843](https://eips.ethereum.org/EIPS/eip-7843) is active.
+
+#### Remarks
+
+Experimental (Amsterdam): may change on patch releases.
 
 ***
 

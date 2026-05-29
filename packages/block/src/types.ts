@@ -107,11 +107,15 @@ export interface HeaderData {
   parentBeaconBlockRoot?: BytesLike
   requestsHash?: BytesLike
   /**
-   * 32 bytes hash of the block access list (EIP-7928)
+   * 32-byte `keccak256(rlp(bal))` commitment when [EIP-7928](https://eips.ethereum.org/EIPS/eip-7928) is active.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
    */
   blockAccessListHash?: BytesLike
   /**
-   * Slot number (EIP-7843)
+   * Consensus slot number when [EIP-7843](https://eips.ethereum.org/EIPS/eip-7843) is active.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
    */
   slotNumber?: BigIntLike
 }
@@ -182,7 +186,9 @@ export interface JSONHeader {
   excessBlobGas?: PrefixedHexString
   parentBeaconBlockRoot?: PrefixedHexString
   requestsHash?: PrefixedHexString
+  /** EIP-7928 (Amsterdam, experimental). May change on patch releases. */
   blockAccessListHash?: PrefixedHexString
+  /** EIP-7843 (Amsterdam, experimental). May change on patch releases. */
   slotNumber?: PrefixedHexString
 }
 
@@ -217,8 +223,8 @@ export interface JSONRPCBlock {
   excessBlobGas?: PrefixedHexString // If EIP-4844 is enabled for this block, returns the excess blob gas for the block
   parentBeaconBlockRoot?: PrefixedHexString // If EIP-4788 is enabled for this block, returns parent beacon block root
   requestsHash?: PrefixedHexString // If EIP-7685 is enabled for this block, returns the requests root
-  blockAccessListHash?: PrefixedHexString // If EIP-7928 is enabled for this block, returns the hash of the block access list
-  slotNumber?: PrefixedHexString // If EIP-7843 is enabled for this block, returns the slot number
+  blockAccessListHash?: PrefixedHexString // EIP-7928 (Amsterdam, experimental): DATA, 32 Bytes
+  slotNumber?: PrefixedHexString // EIP-7843 (Amsterdam, experimental): QUANTITY, 64 Bits
 }
 
 export type WithdrawalV1 = {
@@ -249,6 +255,6 @@ export type ExecutionPayload = {
   excessBlobGas?: PrefixedHexString // QUANTITY, 64 Bits
   parentBeaconBlockRoot?: PrefixedHexString // QUANTITY, 64 Bits
   requestsHash?: PrefixedHexString
-  blockAccessListHash?: PrefixedHexString // DATA, 32 Bytes
-  slotNumber?: PrefixedHexString // QUANTITY, 64 Bits (EIP-7843)
+  blockAccessListHash?: PrefixedHexString // DATA, 32 Bytes (EIP-7928, Amsterdam experimental)
+  slotNumber?: PrefixedHexString // QUANTITY, 64 Bits (EIP-7843, Amsterdam experimental)
 }

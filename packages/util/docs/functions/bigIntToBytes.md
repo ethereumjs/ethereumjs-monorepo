@@ -8,7 +8,7 @@
 
 > **bigIntToBytes**(`num`, `littleEndian`): `Uint8Array`
 
-Defined in: [packages/util/src/bytes.ts:118](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L118)
+Defined in: [packages/util/src/bytes.ts:120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L120)
 
 Converts a bigint to a Uint8Array
  *

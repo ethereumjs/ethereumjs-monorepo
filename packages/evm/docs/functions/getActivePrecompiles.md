@@ -6,9 +6,9 @@
 
 # Function: getActivePrecompiles()
 
-> **getActivePrecompiles**(`common`, `customPrecompiles?`): `Map`\<`string`, `PrecompileFunc`\>
+> **getActivePrecompiles**(`common`, `customPrecompiles?`): `Map`\<`string`, [`PrecompileFunc`](../interfaces/PrecompileFunc.md)\>
 
-Defined in: [precompiles/index.ts:260](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/index.ts#L260)
+Defined in: [precompiles/index.ts:290](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/index.ts#L290)
 
 ## Parameters
 
@@ -18,8 +18,8 @@ Defined in: [precompiles/index.ts:260](https://github.com/ethereumjs/ethereumjs-
 
 ### customPrecompiles?
 
-`CustomPrecompile`[]
+[`CustomPrecompile`](../type-aliases/CustomPrecompile.md)[]
 
 ## Returns
 
-`Map`\<`string`, `PrecompileFunc`\>
+`Map`\<`string`, [`PrecompileFunc`](../interfaces/PrecompileFunc.md)\>

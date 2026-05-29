@@ -6,7 +6,7 @@
 
 # Class: NobleBLS
 
-Defined in: [precompiles/bls12\_381/noble.ts:174](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/bls12_381/noble.ts#L174)
+Defined in: [precompiles/bls12\_381/noble.ts:158](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/bls12_381/noble.ts#L158)
 
 Implementation of the `EVMBLSInterface` using the `ethereum-cryptography (`@noble/curves`)
 JS library, see https://github.com/ethereum/js-ethereum-cryptography.
@@ -33,7 +33,7 @@ This is the EVM default implementation.
 
 > **addG1**(`input`): `Uint8Array`
 
-Defined in: [precompiles/bls12\_381/noble.ts:175](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/bls12_381/noble.ts#L175)
+Defined in: [precompiles/bls12\_381/noble.ts:159](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/bls12_381/noble.ts#L159)
 
 #### Parameters
 
@@ -55,7 +55,7 @@ Defined in: [precompiles/bls12\_381/noble.ts:175](https://github.com/ethereumjs/
 
 > **addG2**(`input`): `Uint8Array`
 
-Defined in: [precompiles/bls12\_381/noble.ts:200](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/bls12_381/noble.ts#L200)
+Defined in: [precompiles/bls12\_381/noble.ts:172](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/bls12_381/noble.ts#L172)
 
 #### Parameters
 
@@ -77,7 +77,7 @@ Defined in: [precompiles/bls12\_381/noble.ts:200](https://github.com/ethereumjs/
 
 > **mapFP2toG2**(`input`): `Uint8Array`
 
-Defined in: [precompiles/bls12\_381/noble.ts:232](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/bls12_381/noble.ts#L232)
+Defined in: [precompiles/bls12\_381/noble.ts:194](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/bls12_381/noble.ts#L194)
 
 #### Parameters
 
@@ -99,7 +99,7 @@ Defined in: [precompiles/bls12\_381/noble.ts:232](https://github.com/ethereumjs/
 
 > **mapFPtoG1**(`input`): `Uint8Array`
 
-Defined in: [precompiles/bls12\_381/noble.ts:224](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/bls12_381/noble.ts#L224)
+Defined in: [precompiles/bls12\_381/noble.ts:184](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/bls12_381/noble.ts#L184)
 
 #### Parameters
 
@@ -121,7 +121,7 @@ Defined in: [precompiles/bls12\_381/noble.ts:224](https://github.com/ethereumjs/
 
 > **msmG1**(`input`): `Uint8Array`
 
-Defined in: [precompiles/bls12\_381/noble.ts:240](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/bls12_381/noble.ts#L240)
+Defined in: [precompiles/bls12\_381/noble.ts:204](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/bls12_381/noble.ts#L204)
 
 #### Parameters
 
@@ -143,7 +143,7 @@ Defined in: [precompiles/bls12\_381/noble.ts:240](https://github.com/ethereumjs/
 
 > **msmG2**(`input`): `Uint8Array`
 
-Defined in: [precompiles/bls12\_381/noble.ts:272](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/bls12_381/noble.ts#L272)
+Defined in: [precompiles/bls12\_381/noble.ts:236](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/bls12_381/noble.ts#L236)
 
 #### Parameters
 
@@ -161,55 +161,11 @@ Defined in: [precompiles/bls12\_381/noble.ts:272](https://github.com/ethereumjs/
 
 ***
 
-### mulG1()
-
-> **mulG1**(`input`): `Uint8Array`
-
-Defined in: [precompiles/bls12\_381/noble.ts:188](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/bls12_381/noble.ts#L188)
-
-#### Parameters
-
-##### input
-
-`Uint8Array`
-
-#### Returns
-
-`Uint8Array`
-
-#### Implementation of
-
-`EVMBLSInterface.mulG1`
-
-***
-
-### mulG2()
-
-> **mulG2**(`input`): `Uint8Array`
-
-Defined in: [precompiles/bls12\_381/noble.ts:212](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/bls12_381/noble.ts#L212)
-
-#### Parameters
-
-##### input
-
-`Uint8Array`
-
-#### Returns
-
-`Uint8Array`
-
-#### Implementation of
-
-`EVMBLSInterface.mulG2`
-
-***
-
 ### pairingCheck()
 
 > **pairingCheck**(`input`): `Uint8Array`
 
-Defined in: [precompiles/bls12\_381/noble.ts:304](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/bls12_381/noble.ts#L304)
+Defined in: [precompiles/bls12\_381/noble.ts:268](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/bls12_381/noble.ts#L268)
 
 #### Parameters
 

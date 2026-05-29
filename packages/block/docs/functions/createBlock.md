@@ -8,7 +8,7 @@
 
 > **createBlock**(`blockData`, `opts?`): [`Block`](../classes/Block.md)
 
-Defined in: [block/constructors.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block/constructors.ts#L51)
+Defined in: [block/constructors.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block/constructors.ts#L52)
 
 Static constructor to create a block from a block data dictionary
 
@@ -25,3 +25,5 @@ Static constructor to create a block from a block data dictionary
 ## Returns
 
 [`Block`](../classes/Block.md)
+
+a new [Block](../classes/Block.md) object

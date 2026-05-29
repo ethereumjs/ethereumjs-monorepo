@@ -6,17 +6,15 @@
 
 # Class: MerklePatriciaTrie
 
-Defined in: [packages/mpt/src/mpt.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L63)
+Defined in: [packages/mpt/src/mpt.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L73)
 
-The basic trie interface, use with `import { MerklePatriciaTrie } from '@ethereumjs/mpt'`.
+Merkle Patricia Trie - a space-optimized trie where each node with only one child
+is merged with its parent. Used for Ethereum state and storage.
 
-A MerklePatriciaTrie object can be created with the constructor method:
-
-- [createMPT](../functions/createMPT.md)
-
-A sparse MerklePatriciaTrie object can be created from a merkle proof:
-
-- [createMPTFromProof](../functions/createMPTFromProof.md)
+Node types:
+- Branch: 16-way branch + optional value (for keys ending at this node)
+- Extension: short path (nibbles) → child node
+- Leaf: remaining path (nibbles) → value
 
 ## Constructors
 
@@ -24,7 +22,7 @@ A sparse MerklePatriciaTrie object can be created from a merkle proof:
 
 > **new MerklePatriciaTrie**(`opts?`): `MerklePatriciaTrie`
 
-Defined in: [packages/mpt/src/mpt.ts:94](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L94)
+Defined in: [packages/mpt/src/mpt.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L105)
 
 Creates a new trie.
 
@@ -48,7 +46,7 @@ Note: in most cases, [createMPT](../functions/createMPT.md) constructor should b
 
 > **EMPTY\_TRIE\_ROOT**: `Uint8Array`
 
-Defined in: [packages/mpt/src/mpt.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L75)
+Defined in: [packages/mpt/src/mpt.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L86)
 
 The root for an empty trie
 
@@ -58,7 +56,7 @@ The root for an empty trie
 
 > **walkTrieIterable**: (...`args`) => `AsyncIterable`
 
-Defined in: [packages/mpt/src/mpt.ts:472](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L472)
+Defined in: [packages/mpt/src/mpt.ts:436](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L436)
 
 #### Parameters
 
@@ -72,11 +70,54 @@ Defined in: [packages/mpt/src/mpt.ts:472](https://github.com/ethereumjs/ethereum
 
 ## Methods
 
+### \_formatNode()
+
+> **\_formatNode**(`node`, `topLevel`, `opStack`, `remove`): [`NodeReferenceOrRawMPTNode`](../type-aliases/NodeReferenceOrRawMPTNode.md) \| [`BranchMPTNodeBranchValue`](../type-aliases/BranchMPTNodeBranchValue.md)[] \| `Uint8Array`\<`ArrayBufferLike`\>
+
+Defined in: [packages/mpt/src/mpt.ts:790](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L790)
+
+Serializes a node and either stores it (put) or schedules removal (del).
+Nodes ≥32 bytes (or top-level) are hashed and stored; smaller nodes are inlined as raw.
+
+#### Parameters
+
+##### node
+
+[`MPTNode`](../type-aliases/MPTNode.md)
+
+the node to persist
+
+##### topLevel
+
+`boolean`
+
+if true, always store (root must be in DB)
+
+##### opStack
+
+`BatchDBOp`[]
+
+accumulates put/del operations for batch commit
+
+##### remove
+
+`boolean` = `false`
+
+if true, schedule del (used when pruning)
+
+#### Returns
+
+[`NodeReferenceOrRawMPTNode`](../type-aliases/NodeReferenceOrRawMPTNode.md) \| [`BranchMPTNodeBranchValue`](../type-aliases/BranchMPTNodeBranchValue.md)[] \| `Uint8Array`\<`ArrayBufferLike`\>
+
+hash (for references) or raw encoding (for inline)
+
+***
+
 ### batch()
 
 > **batch**(`ops`, `skipKeyTransform?`): `Promise`\<`void`\>
 
-Defined in: [packages/mpt/src/mpt.ts:880](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L880)
+Defined in: [packages/mpt/src/mpt.ts:829](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L829)
 
 The given hash of operations (key additions or deletions) are executed on the trie
 (delete operations are only executed on DB with `deleteFromDB` set to `true`)
@@ -114,7 +155,7 @@ await trie.batch(ops)
 
 > **checkpoint**(): `void`
 
-Defined in: [packages/mpt/src/mpt.ts:1044](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L1044)
+Defined in: [packages/mpt/src/mpt.ts:1003](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L1003)
 
 Creates a checkpoint that can later be reverted to or committed.
 After this is called, all changes can be reverted until `commit` is called.
@@ -129,7 +170,7 @@ After this is called, all changes can be reverted until `commit` is called.
 
 > **checkRoot**(`root`): `Promise`\<`boolean`\>
 
-Defined in: [packages/mpt/src/mpt.ts:180](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L180)
+Defined in: [packages/mpt/src/mpt.ts:182](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L182)
 
 Checks if a given root exists.
 
@@ -149,7 +190,7 @@ Checks if a given root exists.
 
 > **commit**(): `Promise`\<`void`\>
 
-Defined in: [packages/mpt/src/mpt.ts:1054](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L1054)
+Defined in: [packages/mpt/src/mpt.ts:1013](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L1013)
 
 Commits a checkpoint to disk, if current checkpoint is not nested.
 If nested, only sets the parent checkpoint as current checkpoint.
@@ -168,7 +209,7 @@ If not during a checkpoint phase
 
 > **database**(`db?`, `valueEncoding?`): [`CheckpointDB`](CheckpointDB.md)
 
-Defined in: [packages/mpt/src/mpt.ts:145](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L145)
+Defined in: [packages/mpt/src/mpt.ts:147](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L147)
 
 #### Parameters
 
@@ -190,7 +231,7 @@ Defined in: [packages/mpt/src/mpt.ts:145](https://github.com/ethereumjs/ethereum
 
 > **del**(`key`, `skipKeyTransform`): `Promise`\<`void`\>
 
-Defined in: [packages/mpt/src/mpt.ts:286](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L286)
+Defined in: [packages/mpt/src/mpt.ts:269](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L269)
 
 Deletes a value given a `key` from the trie
 (delete operations are only executed on DB with `deleteFromDB` set to `true`)
@@ -217,10 +258,11 @@ A Promise that resolves once value is deleted.
 
 > **findPath**(`key`, `throwIfMissing`, `partialPath`): `Promise`\<[`Path`](../interfaces/Path.md)\>
 
-Defined in: [packages/mpt/src/mpt.ts:329](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L329)
+Defined in: [packages/mpt/src/mpt.ts:302](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L302)
 
-Tries to find a path to the node for the given key.
-It returns a `stack` of nodes to the closest node.
+Finds the path from root to the node for the given key.
+Walks the trie, matching nibbles at each level. Returns the target node (if found)
+and the stack of nodes along the path (needed for updates/deletes).
 
 #### Parameters
 
@@ -228,15 +270,17 @@ It returns a `stack` of nodes to the closest node.
 
 `Uint8Array`
 
-the search key
+the search key (bytes)
 
 ##### throwIfMissing
 
 `boolean` = `false`
 
-if true, throws if any nodes are missing. Used for verifying proofs. (default: false)
+if true, throws when nodes are missing (e.g. proof verification)
 
 ##### partialPath
+
+optional pre-loaded stack for resuming from a mid-path node
 
 ###### stack
 
@@ -252,7 +296,7 @@ if true, throws if any nodes are missing. Used for verifying proofs. (default: f
 
 > **flushCheckpoints**(): `void`
 
-Defined in: [packages/mpt/src/mpt.ts:1086](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L1086)
+Defined in: [packages/mpt/src/mpt.ts:1045](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L1045)
 
 Flushes all checkpoints, restoring the initial checkpoint state.
 
@@ -266,7 +310,7 @@ Flushes all checkpoints, restoring the initial checkpoint state.
 
 > **get**(`key`, `throwIfMissing`): `Promise`\<`Uint8Array`\<`ArrayBufferLike`\> \| `null`\>
 
-Defined in: [packages/mpt/src/mpt.ts:199](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L199)
+Defined in: [packages/mpt/src/mpt.ts:201](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L201)
 
 Gets a value given a `key`
 
@@ -296,7 +340,7 @@ A Promise that resolves to `Uint8Array` if a value was found or `null` if no val
 
 > **getValueMap**(`startKey`, `limit?`): `Promise`\<\{ `nextKey`: `string` \| `null`; `values`: \{\[`key`: `string`\]: `string`; \}; \}\>
 
-Defined in: [packages/mpt/src/mpt.ts:1098](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L1098)
+Defined in: [packages/mpt/src/mpt.ts:1057](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L1057)
 
 Returns a list of values stored in the trie
 
@@ -326,7 +370,7 @@ an object with two properties (a map of all key/value pairs in the trie - or in 
 
 > **hasCheckpoints**(): `boolean`
 
-Defined in: [packages/mpt/src/mpt.ts:1036](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L1036)
+Defined in: [packages/mpt/src/mpt.ts:995](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L995)
 
 Is the trie during a checkpoint phase?
 
@@ -340,7 +384,7 @@ Is the trie during a checkpoint phase?
 
 > **lookupNode**(`node`): `Promise`\<[`MPTNode`](../type-aliases/MPTNode.md)\>
 
-Defined in: [packages/mpt/src/mpt.ts:523](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L523)
+Defined in: [packages/mpt/src/mpt.ts:487](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L487)
 
 Retrieves a node from db by hash.
 
@@ -360,7 +404,7 @@ Retrieves a node from db by hash.
 
 > **persistRoot**(): `Promise`\<`void`\>
 
-Defined in: [packages/mpt/src/mpt.ts:983](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L983)
+Defined in: [packages/mpt/src/mpt.ts:929](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L929)
 
 Persists the root hash in the underlying database
 
@@ -374,7 +418,7 @@ Persists the root hash in the underlying database
 
 > **put**(`key`, `value`, `skipKeyTransform`): `Promise`\<`void`\>
 
-Defined in: [packages/mpt/src/mpt.ts:217](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L217)
+Defined in: [packages/mpt/src/mpt.ts:219](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L219)
 
 Stores a given `value` at the given `key` or do a delete if `value` is empty
 (delete operations are only executed on DB with `deleteFromDB` set to `true`)
@@ -405,7 +449,7 @@ A Promise that resolves once value is stored.
 
 > **revert**(): `Promise`\<`void`\>
 
-Defined in: [packages/mpt/src/mpt.ts:1070](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L1070)
+Defined in: [packages/mpt/src/mpt.ts:1029](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L1029)
 
 Reverts the trie to the state it was at when `checkpoint` was first called.
 If during a nested checkpoint, sets root to most recent checkpoint, and sets
@@ -421,7 +465,7 @@ parent checkpoint as current.
 
 > **root**(`value?`): `Uint8Array`
 
-Defined in: [packages/mpt/src/mpt.ts:160](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L160)
+Defined in: [packages/mpt/src/mpt.ts:162](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L162)
 
 Gets and/or Sets the current root of the `trie`
 
@@ -439,31 +483,30 @@ Gets and/or Sets the current root of the `trie`
 
 ### saveStack()
 
-> **saveStack**(`key`, `stack`, `opStack`): `Promise`\<`void`\>
+> **saveStack**(`pathNibbles`, `stack`, `opStack`): `Promise`\<`void`\>
 
-Defined in: [packages/mpt/src/mpt.ts:794](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L794)
+Defined in: [packages/mpt/src/mpt.ts:752](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L752)
 
-Saves a stack of nodes to the database.
+Persists the modified node stack to the DB. Processes nodes from leaf toward root,
+wiring each node's references (extension value, branch slot) to its child's hash.
 
 #### Parameters
 
-##### key
+##### pathNibbles
 
 [`Nibbles`](../type-aliases/Nibbles.md)
-
-the key. Should follow the stack
 
 ##### stack
 
 [`MPTNode`](../type-aliases/MPTNode.md)[]
 
-a stack of nodes to the value given by the key
+nodes from findPath/update, bottom (leaf) to top (root)
 
 ##### opStack
 
 `BatchDBOp`[]
 
-a stack of levelup operations to commit at the end of this function
+put/del operations accumulated by _formatNode
 
 #### Returns
 
@@ -475,7 +518,7 @@ a stack of levelup operations to commit at the end of this function
 
 > **shallowCopy**(`includeCheckpoints`, `opts?`): `MerklePatriciaTrie`
 
-Defined in: [packages/mpt/src/mpt.ts:966](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L966)
+Defined in: [packages/mpt/src/mpt.ts:912](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L912)
 
 Returns a copy of the underlying trie.
 
@@ -509,7 +552,10 @@ If true and during a checkpoint, the copy will contain the checkpointing metadat
 
 > **verifyPrunedIntegrity**(): `Promise`\<`boolean`\>
 
-Defined in: [packages/mpt/src/mpt.ts:898](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L898)
+Defined in: [packages/mpt/src/mpt.ts:847](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L847)
+
+Verifies that every key in the DB is reachable from the root. Used to ensure
+pruning is correct – unreachable keys indicate a bug or corrupt state.
 
 #### Returns
 
@@ -521,7 +567,7 @@ Defined in: [packages/mpt/src/mpt.ts:898](https://github.com/ethereumjs/ethereum
 
 > **walkAllNodes**(`onFound`): `Promise`\<`void`\>
 
-Defined in: [packages/mpt/src/mpt.ts:479](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L479)
+Defined in: [packages/mpt/src/mpt.ts:443](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L443)
 
 Executes a callback for each node in the trie.
 
@@ -545,7 +591,7 @@ Resolves when finished walking trie.
 
 > **walkAllValueNodes**(`onFound`): `Promise`\<`void`\>
 
-Defined in: [packages/mpt/src/mpt.ts:490](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L490)
+Defined in: [packages/mpt/src/mpt.ts:454](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L454)
 
 Executes a callback for each value node in the trie.
 
@@ -569,7 +615,7 @@ Resolves when finished walking trie.
 
 > **walkTrie**(`root`, `onFound`): `Promise`\<`void`\>
 
-Defined in: [packages/mpt/src/mpt.ts:468](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L468)
+Defined in: [packages/mpt/src/mpt.ts:432](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/mpt.ts#L432)
 
 Walks a trie until finished.
 

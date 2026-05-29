@@ -8,7 +8,7 @@
 
 > **getKeys**(`params`, `key`, `allowEmpty?`): `string`[]
 
-Defined in: [packages/util/src/internal.ts:183](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L183)
+Defined in: [packages/util/src/internal.ts:185](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L185)
 
 Returns the keys from an array of objects.
 

@@ -8,9 +8,13 @@
 
 > **Hardfork**: `object`
 
-Defined in: [enums.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L59)
+Defined in: [common/src/enums.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L59)
 
 ## Type Declaration
+
+### Amsterdam
+
+> `readonly` **Amsterdam**: `"amsterdam"` = `'amsterdam'`
 
 ### ArrowGlacier
 

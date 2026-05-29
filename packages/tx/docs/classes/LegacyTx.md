@@ -200,7 +200,9 @@ Defined in: [legacy/tx.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/
 
 > **addSignature**(`v`, `r`, `s`, `convertV`): `LegacyTx`
 
-Defined in: [legacy/tx.ts:335](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L335)
+Defined in: [legacy/tx.ts:357](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L357)
+
+Adds a signature (or replaces an existing one) and returns a new transaction instance.
 
 #### Parameters
 
@@ -208,11 +210,17 @@ Defined in: [legacy/tx.ts:335](https://github.com/ethereumjs/ethereumjs-monorepo
 
 `bigint`
 
+Recovery parameter, potentially unconverted when `convertV` is false
+
 ##### r
+
+`r` value of the signature
 
 `bigint` | `Uint8Array`\<`ArrayBufferLike`\>
 
 ##### s
+
+`s` value of the signature
 
 `bigint` | `Uint8Array`\<`ArrayBufferLike`\>
 
@@ -220,9 +228,13 @@ Defined in: [legacy/tx.ts:335](https://github.com/ethereumjs/ethereumjs-monorepo
 
 `boolean` = `false`
 
+When true, converts the recovery ID into the appropriate legacy `v`
+
 #### Returns
 
 `LegacyTx`
+
+A new `LegacyTx` that includes the provided signature
 
 #### Implementation of
 
@@ -234,13 +246,15 @@ Defined in: [legacy/tx.ts:335](https://github.com/ethereumjs/ethereumjs-monorepo
 
 > **errorStr**(): `string`
 
-Defined in: [legacy/tx.ts:407](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L407)
+Defined in: [legacy/tx.ts:453](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L453)
 
 Return a compact error string representation of the object
 
 #### Returns
 
 `string`
+
+Human-readable error summary
 
 #### Implementation of
 
@@ -252,7 +266,7 @@ Return a compact error string representation of the object
 
 > **getDataGas**(): `bigint`
 
-Defined in: [legacy/tx.ts:279](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L279)
+Defined in: [legacy/tx.ts:290](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L290)
 
 The amount of gas paid for the data in this tx
 
@@ -270,7 +284,9 @@ The amount of gas paid for the data in this tx
 
 > **getEffectivePriorityFee**(`baseFee?`): `bigint`
 
-Defined in: [legacy/tx.ts:191](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L191)
+Defined in: [legacy/tx.ts:200](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L200)
+
+Computes the effective priority fee for this legacy transaction, optionally considering a base fee.
 
 #### Parameters
 
@@ -278,9 +294,13 @@ Defined in: [legacy/tx.ts:191](https://github.com/ethereumjs/ethereumjs-monorepo
 
 `bigint`
 
+Optional base fee used on networks that emulate 1559-style pricing
+
 #### Returns
 
 `bigint`
+
+Priority fee portion denominated in wei
 
 ***
 
@@ -288,7 +308,7 @@ Defined in: [legacy/tx.ts:191](https://github.com/ethereumjs/ethereumjs-monorepo
 
 > **getHashedMessageToSign**(): `Uint8Array`\<`ArrayBufferLike`\>
 
-Defined in: [legacy/tx.ts:271](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L271)
+Defined in: [legacy/tx.ts:282](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L282)
 
 Returns the hashed serialized unsigned tx, which can be used
 to sign the transaction (e.g. for sending to a hardware wallet).
@@ -296,6 +316,8 @@ to sign the transaction (e.g. for sending to a hardware wallet).
 #### Returns
 
 `Uint8Array`\<`ArrayBufferLike`\>
+
+Hash of the unsigned transaction payload
 
 #### Implementation of
 
@@ -307,7 +329,7 @@ to sign the transaction (e.g. for sending to a hardware wallet).
 
 > **getIntrinsicGas**(): `bigint`
 
-Defined in: [legacy/tx.ts:297](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L297)
+Defined in: [legacy/tx.ts:308](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L308)
 
 The minimum gas limit which the tx to have to be valid.
 This covers costs as the standard fee (21000 gas), the data fee (paid for each calldata byte),
@@ -328,7 +350,7 @@ to be paid for access lists (EIP-2930) and authority lists (EIP-7702).
 
 > **getMessageToSign**(): `Uint8Array`\<`ArrayBufferLike`\>[]
 
-Defined in: [legacy/tx.ts:248](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L248)
+Defined in: [legacy/tx.ts:258](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L258)
 
 Returns the raw unsigned tx, which can be used
 to sign the transaction (e.g. for sending to a hardware wallet).
@@ -346,6 +368,8 @@ const serializedMessage = RLP.encode(message)) // use this for the HW wallet inp
 
 `Uint8Array`\<`ArrayBufferLike`\>[]
 
+Array representing the unsigned transaction fields
+
 #### Implementation of
 
 [`TransactionInterface`](../interfaces/TransactionInterface.md).[`getMessageToSign`](../interfaces/TransactionInterface.md#getmessagetosign)
@@ -356,13 +380,15 @@ const serializedMessage = RLP.encode(message)) // use this for the HW wallet inp
 
 > **getMessageToVerifySignature**(): `Uint8Array`\<`ArrayBufferLike`\>
 
-Defined in: [legacy/tx.ts:320](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L320)
+Defined in: [legacy/tx.ts:333](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L333)
 
 Computes a sha3-256 hash which can be used to verify the signature
 
 #### Returns
 
 `Uint8Array`\<`ArrayBufferLike`\>
+
+Hash used when verifying the signature
 
 #### Implementation of
 
@@ -374,11 +400,15 @@ Computes a sha3-256 hash which can be used to verify the signature
 
 > **getSenderAddress**(): `Address`
 
-Defined in: [legacy/tx.ts:396](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L396)
+Defined in: [legacy/tx.ts:435](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L435)
+
+Returns the recovered sender address.
 
 #### Returns
 
 `Address`
+
+Sender Address
 
 #### Implementation of
 
@@ -390,13 +420,15 @@ Defined in: [legacy/tx.ts:396](https://github.com/ethereumjs/ethereumjs-monorepo
 
 > **getSenderPublicKey**(): `Uint8Array`
 
-Defined in: [legacy/tx.ts:331](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L331)
+Defined in: [legacy/tx.ts:345](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L345)
 
 Returns the public key of the sender
 
 #### Returns
 
 `Uint8Array`
+
+Sender public key
 
 #### Implementation of
 
@@ -408,7 +440,7 @@ Returns the public key of the sender
 
 > **getUpfrontCost**(): `bigint`
 
-Defined in: [legacy/tx.ts:303](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L303)
+Defined in: [legacy/tx.ts:314](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L314)
 
 The up front amount that an account must have for this transaction to be valid
 
@@ -426,11 +458,15 @@ The up front amount that an account must have for this transaction to be valid
 
 > **getValidationErrors**(): `string`[]
 
-Defined in: [legacy/tx.ts:384](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L384)
+Defined in: [legacy/tx.ts:411](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L411)
+
+Validates the transaction and returns any encountered errors.
 
 #### Returns
 
 `string`[]
+
+Array containing validation error messages
 
 #### Implementation of
 
@@ -442,7 +478,7 @@ Defined in: [legacy/tx.ts:384](https://github.com/ethereumjs/ethereumjs-monorepo
 
 > **hash**(): `Uint8Array`
 
-Defined in: [legacy/tx.ts:313](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L313)
+Defined in: [legacy/tx.ts:325](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L325)
 
 Computes a sha3-256 hash of the serialized tx.
 
@@ -452,6 +488,8 @@ Use Transaction.getMessageToSign to get a tx hash for the purpose of signing.
 #### Returns
 
 `Uint8Array`
+
+Hash of the serialized signed transaction
 
 #### Implementation of
 
@@ -463,11 +501,15 @@ Use Transaction.getMessageToSign to get a tx hash for the purpose of signing.
 
 > **isSigned**(): `boolean`
 
-Defined in: [legacy/tx.ts:187](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L187)
+Defined in: [legacy/tx.ts:191](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L191)
+
+Indicates whether the transaction already contains signature values.
 
 #### Returns
 
 `boolean`
+
+true if `v`, `r`, and `s` are populated
 
 #### Implementation of
 
@@ -479,11 +521,15 @@ Defined in: [legacy/tx.ts:187](https://github.com/ethereumjs/ethereumjs-monorepo
 
 > **isValid**(): `boolean`
 
-Defined in: [legacy/tx.ts:388](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L388)
+Defined in: [legacy/tx.ts:419](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L419)
+
+Determines whether the transaction passes all validation checks.
 
 #### Returns
 
 `boolean`
+
+true if no validation errors were found
 
 #### Implementation of
 
@@ -495,7 +541,7 @@ Defined in: [legacy/tx.ts:388](https://github.com/ethereumjs/ethereumjs-monorepo
 
 > **raw**(): `LegacyTxValuesArray`
 
-Defined in: [legacy/tx.ts:208](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L208)
+Defined in: [legacy/tx.ts:217](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L217)
 
 Returns a Uint8Array Array of the raw Bytes of the legacy transaction, in order.
 
@@ -523,7 +569,7 @@ representation have a look at Transaction.getMessageToSign.
 
 > **serialize**(): `Uint8Array`
 
-Defined in: [legacy/tx.ts:231](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L231)
+Defined in: [legacy/tx.ts:240](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L240)
 
 Returns the serialized encoding of the legacy transaction.
 
@@ -547,7 +593,9 @@ representation for external signing use Transaction.getMessageToSign.
 
 > **sign**(`privateKey`, `extraEntropy`): `LegacyTx`
 
-Defined in: [legacy/tx.ts:400](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L400)
+Defined in: [legacy/tx.ts:445](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L445)
+
+Signs the transaction with the provided private key and returns the new signed instance.
 
 #### Parameters
 
@@ -555,13 +603,19 @@ Defined in: [legacy/tx.ts:400](https://github.com/ethereumjs/ethereumjs-monorepo
 
 `Uint8Array`
 
+32-byte private key used to sign the transaction
+
 ##### extraEntropy
+
+Optional entropy passed to the signing routine
 
 `boolean` | `Uint8Array`\<`ArrayBufferLike`\>
 
 #### Returns
 
 `LegacyTx`
+
+A new signed `LegacyTx`
 
 #### Implementation of
 
@@ -610,7 +664,7 @@ on all supported capabilities.
 
 > **toCreationAddress**(): `boolean`
 
-Defined in: [legacy/tx.ts:287](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L287)
+Defined in: [legacy/tx.ts:298](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L298)
 
 If the tx's `to` is to the creation address
 
@@ -628,13 +682,15 @@ If the tx's `to` is to the creation address
 
 > **toJSON**(): [`JSONTx`](../interfaces/JSONTx.md)
 
-Defined in: [legacy/tx.ts:375](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L375)
+Defined in: [legacy/tx.ts:398](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L398)
 
 Returns an object with the JSON representation of the transaction.
 
 #### Returns
 
 [`JSONTx`](../interfaces/JSONTx.md)
+
+JSON encoding of the transaction
 
 #### Implementation of
 
@@ -646,11 +702,15 @@ Returns an object with the JSON representation of the transaction.
 
 > **verifySignature**(): `boolean`
 
-Defined in: [legacy/tx.ts:392](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L392)
+Defined in: [legacy/tx.ts:427](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L427)
+
+Checks whether the stored signature can be successfully verified.
 
 #### Returns
 
 `boolean`
+
+true if the signature is valid
 
 #### Implementation of
 

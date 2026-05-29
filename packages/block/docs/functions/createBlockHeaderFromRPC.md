@@ -8,7 +8,7 @@
 
 > **createBlockHeaderFromRPC**(`blockParams`, `options?`): [`BlockHeader`](../classes/BlockHeader.md)
 
-Defined in: [header/constructors.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/constructors.ts#L99)
+Defined in: [header/constructors.ts:112](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/constructors.ts#L112)
 
 Creates a new block header object from Ethereum JSON RPC.
 

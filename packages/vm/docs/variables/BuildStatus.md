@@ -8,7 +8,7 @@
 
 > **BuildStatus**: `object`
 
-Defined in: [vm/src/buildBlock.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L49)
+Defined in: [vm/src/buildBlock.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L50)
 
 ## Type Declaration
 

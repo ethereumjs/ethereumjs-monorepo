@@ -8,7 +8,7 @@
 
 > `const` **NetworkWrapperType**: `object`
 
-Defined in: [4844/tx.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L47)
+Defined in: [4844/tx.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L48)
 
 ## Type Declaration
 

@@ -8,14 +8,14 @@
 
 > **cliqueEpochTransitionSigners**(`header`): `Address`[]
 
-Defined in: [consensus/clique.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/consensus/clique.ts#L86)
+Defined in: [consensus/clique.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/consensus/clique.ts#L83)
 
 Returns a list of signers
 (only clique PoA, throws otherwise)
 
 This function throws if not called on an epoch
 transition block and should therefore be used
-in conjunction with BlockHeader.cliqueIsEpochTransition
+in conjunction with [cliqueIsEpochTransition](cliqueIsEpochTransition.md)
 
 ## Parameters
 

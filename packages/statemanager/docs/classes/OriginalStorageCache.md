@@ -39,7 +39,7 @@ Defined in: [cache/originalStorageCache.ts:19](https://github.com/ethereumjs/eth
 
 > **clear**(): `void`
 
-Defined in: [cache/originalStorageCache.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/originalStorageCache.ts#L52)
+Defined in: [cache/originalStorageCache.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/originalStorageCache.ts#L54)
 
 #### Returns
 
@@ -73,7 +73,7 @@ Defined in: [cache/originalStorageCache.ts:24](https://github.com/ethereumjs/eth
 
 > **put**(`address`, `key`, `value`): `void`
 
-Defined in: [cache/originalStorageCache.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/originalStorageCache.ts#L39)
+Defined in: [cache/originalStorageCache.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/originalStorageCache.ts#L40)
 
 #### Parameters
 

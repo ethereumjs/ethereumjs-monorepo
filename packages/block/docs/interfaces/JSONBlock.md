@@ -6,7 +6,7 @@
 
 # Interface: JSONBlock
 
-Defined in: [types.ts:142](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L142)
+Defined in: [types.ts:154](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L154)
 
 An object with the block's data represented as strings.
 
@@ -16,7 +16,7 @@ An object with the block's data represented as strings.
 
 > `optional` **header**: [`JSONHeader`](JSONHeader.md)
 
-Defined in: [types.ts:146](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L146)
+Defined in: [types.ts:158](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L158)
 
 Header data for the block
 
@@ -26,7 +26,7 @@ Header data for the block
 
 > `optional` **transactions**: `JSONTx`[]
 
-Defined in: [types.ts:147](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L147)
+Defined in: [types.ts:159](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L159)
 
 ***
 
@@ -34,7 +34,7 @@ Defined in: [types.ts:147](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **uncleHeaders**: [`JSONHeader`](JSONHeader.md)[]
 
-Defined in: [types.ts:148](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L148)
+Defined in: [types.ts:160](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L160)
 
 ***
 
@@ -42,4 +42,4 @@ Defined in: [types.ts:148](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **withdrawals**: `JSONRPCWithdrawal`[]
 
-Defined in: [types.ts:149](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L149)
+Defined in: [types.ts:161](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L161)

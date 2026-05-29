@@ -105,7 +105,7 @@ Defined in: [db/checkpoint.ts:18](https://github.com/ethereumjs/ethereumjs-monor
 
 > **batch**(`opStack`): `Promise`\<`void`\>
 
-Defined in: [db/checkpoint.ts:229](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/db/checkpoint.ts#L229)
+Defined in: [db/checkpoint.ts:232](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/db/checkpoint.ts#L232)
 
 #### Parameters
 
@@ -163,7 +163,7 @@ Commits the latest checkpoint
 
 > **del**(`key`): `Promise`\<`void`\>
 
-Defined in: [db/checkpoint.ts:207](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/db/checkpoint.ts#L207)
+Defined in: [db/checkpoint.ts:209](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/db/checkpoint.ts#L209)
 
 #### Parameters
 
@@ -225,7 +225,7 @@ Is the DB during a checkpoint phase?
 
 > **open**(): `Promise`\<`void`\>
 
-Defined in: [db/checkpoint.ts:291](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/db/checkpoint.ts#L291)
+Defined in: [db/checkpoint.ts:294](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/db/checkpoint.ts#L294)
 
 Opens the database -- if applicable
 
@@ -243,7 +243,7 @@ Opens the database -- if applicable
 
 > **put**(`key`, `value`): `Promise`\<`void`\>
 
-Defined in: [db/checkpoint.ts:183](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/db/checkpoint.ts#L183)
+Defined in: [db/checkpoint.ts:184](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/db/checkpoint.ts#L184)
 
 #### Parameters
 
@@ -305,7 +305,7 @@ Flush the checkpoints and use the given checkpoints instead.
 
 > **shallowCopy**(): `CheckpointDB`
 
-Defined in: [db/checkpoint.ts:283](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/db/checkpoint.ts#L283)
+Defined in: [db/checkpoint.ts:286](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/db/checkpoint.ts#L286)
 
 #### Returns
 
@@ -323,7 +323,7 @@ Defined in: [db/checkpoint.ts:283](https://github.com/ethereumjs/ethereumjs-mono
 
 > **stats**(`reset`): `object`
 
-Defined in: [db/checkpoint.ts:261](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/db/checkpoint.ts#L261)
+Defined in: [db/checkpoint.ts:264](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/db/checkpoint.ts#L264)
 
 #### Parameters
 

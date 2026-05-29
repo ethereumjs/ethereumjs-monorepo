@@ -12,12 +12,18 @@ import {
   createBlockLevelAccessListFromJSON,
 } from './index.ts'
 
-/** EIP-7928: gas cost attributed to each BAL item (address or storage key). */
+/**
+ * EIP-7928 gas cost attributed to each BAL item (one address or one storage key).
+ *
+ * @remarks Experimental (Amsterdam): may change on patch releases.
+ */
 export const BLOCK_ACCESS_LIST_ITEM_COST = 2000
 
 /**
  * Counts BAL items per EIP-7928: `addresses + storage_keys`.
  * Uses the canonical {@link BlockLevelAccessList.raw()} view.
+ *
+ * @remarks Experimental (Amsterdam): may change on patch releases.
  */
 export function countBlockAccessListItems(bal: BlockLevelAccessList): number {
   let items = 0
@@ -29,6 +35,9 @@ export function countBlockAccessListItems(bal: BlockLevelAccessList): number {
 
 /**
  * Ensures `bal_items <= block_gas_limit // ITEM_COST` (EIP-7928).
+ *
+ * @throws if the access list exceeds the block gas-derived item cap
+ * @remarks Experimental (Amsterdam): may change on patch releases.
  */
 export function validateBlockAccessListGasLimit(
   bal: BlockLevelAccessList,
@@ -43,6 +52,8 @@ export function validateBlockAccessListGasLimit(
 
 /**
  * Validates canonical BAL structure and, when provided, the header hash commitment.
+ *
+ * @remarks Experimental (Amsterdam): may change on patch releases.
  */
 export function validateBlockAccessList(
   bal: BlockLevelAccessList,
@@ -60,6 +71,8 @@ export function validateBlockAccessList(
  *
  * Use before {@link createBlockLevelAccessListFromJSON} so out-of-order or
  * duplicate accounts are not silently merged.
+ *
+ * @remarks Experimental (Amsterdam): may change on patch releases.
  */
 export function validateBlockAccessListJSONStructure(json: BALJSONBlockAccessList): void {
   const seenAddresses = new Set<PrefixedHexString>()
@@ -77,6 +90,8 @@ export function validateBlockAccessListJSONStructure(json: BALJSONBlockAccessLis
 /**
  * True when accounts are out of lexicographic order in a way that indicates a full reorder
  * (e.g. `reverse_accounts()`), as opposed to a single appended account breaking sort at the end.
+ *
+ * @remarks Experimental (Amsterdam): may change on patch releases.
  */
 export function isAccountOrderOnlyViolation(json: BALJSONBlockAccessList): boolean {
   return countAccountOrderInversions(json) >= 2
@@ -84,6 +99,8 @@ export function isAccountOrderOnlyViolation(json: BALJSONBlockAccessList): boole
 
 /**
  * `keccak256(rlp(bal))` using the JSON account order (not re-sorted), matching Engine API bytes.
+ *
+ * @remarks Experimental (Amsterdam): may change on patch releases.
  */
 export function hashBlockAccessListFromJSON(json: BALJSONBlockAccessList): Uint8Array {
   const accounts: BALRawBlockAccessList = []
@@ -98,6 +115,8 @@ export function hashBlockAccessListFromJSON(json: BALJSONBlockAccessList): Uint8
 
 /**
  * Verifies the header hash against the JSON-ordered RLP encoding.
+ *
+ * @remarks Experimental (Amsterdam): may change on patch releases.
  */
 export function validateBlockAccessListHashFromJSON(
   json: BALJSONBlockAccessList,
@@ -108,6 +127,8 @@ export function validateBlockAccessListHashFromJSON(
 
 /**
  * Validates the canonical RLP-oriented structure of a {@link BlockLevelAccessList}.
+ *
+ * @remarks Experimental (Amsterdam): may change on patch releases.
  */
 export function validateBlockAccessListStructure(bal: BlockLevelAccessList): void {
   validateBlockAccessListRaw(bal.raw())
@@ -115,6 +136,8 @@ export function validateBlockAccessListStructure(bal: BlockLevelAccessList): voi
 
 /**
  * Verifies `keccak256(rlp(bal))` matches the committed header hash.
+ *
+ * @remarks Experimental (Amsterdam): may change on patch releases.
  */
 export function validateBlockAccessListHash(
   bal: BlockLevelAccessList,
@@ -125,6 +148,8 @@ export function validateBlockAccessListHash(
 
 /**
  * Returns true when two access lists produce identical canonical RLP.
+ *
+ * @remarks Experimental (Amsterdam): may change on patch releases.
  */
 export function equalsBlockAccessList(a: BlockLevelAccessList, b: BlockLevelAccessList): boolean {
   return equalsBytes(a.serialize(), b.serialize())

@@ -9,26 +9,25 @@
 | A collection of utility functions for Ethereum. |
 | ----------------------------------------------- |
 
+- 🧰 Shared primitives for the whole monorepo (bytes, accounts, addresses, signatures)
+- 📋 **EIP-7928** Block Level Access Lists — parse, validate, hash (Amsterdam, experimental)
+- 📲 **EIP-7702** authorization signing helpers
+- 🔮 **EIP-4844 / EIP-7594** blob and cell proof utilities
+- 📨 **EIP-7685** consensus-layer request types
+- 💸 **EIP-4895** withdrawal helpers
+- 🌴 Tree-shakeable root imports (`import { … } from '@ethereumjs/util'`)
+- 👷🏼 Controlled dependency set (`@noble` crypto + minimal externals)
+- 🏄🏾‍♂️ WASM-free default + fully browser ready
+
 ## Table of Contents
 
 - [Installation](#installation)
 - [Getting Started](#getting-started)
-- [Module: [account]](#module-account)
-- [Module: [address]](#module-address)
-- [Module: [authorization]](#module-authorization)
-- [Module: [bal]](#module-bal)
-- [Module: [blobs]](#module-blobs)
-- [Module: [bytes]](#module-bytes)
-- [Module: [constants]](#module-constants)
-- [Module: [db]](#module-db)
-- [Module: [genesis]](#module-genesis)
-- [Module: [internal]](#module-internal)
-- [Module: [kzg]](#module-kzg)
-- [Module: [mapDB]](#module-mapdb)
-- [Module: [request]](#module-request)
-- [Module: [signature]](#module-signature)
-- [Module: [types]](#module-types)
-- [Module: [withdrawal]](#module-withdrawal)
+- [At a glance](#at-a-glance)
+- [Module guide](#module-guide)
+  - [Core primitives](#core-primitives)
+  - [Fork & protocol helpers](#fork--protocol-helpers)
+  - [Storage & integration](#storage--integration)
 - [Browser](#browser)
 - [API](#api)
 - [EthereumJS](#ethereumjs)
@@ -44,12 +43,50 @@ npm install @ethereumjs/util
 
 ## Getting Started
 
-This package contains the following modules providing respective helper methods, classes and commonly re-used constants.
-
-All helpers are re-exported from the root level and deep imports are not necessary. So an import can be done like this:
+`@ethereumjs/util` bundles small, focused helpers used across the monorepo — from byte conversion and accounts to fork-specific types (BAL, blobs, CL requests). Everything is re-exported from the package root; deep imports are not necessary:
 
 ```ts
 import { hexToBytes, isValidChecksumAddress } from '@ethereumjs/util'
+```
+
+See [At a glance](#at-a-glance) for common entry points, or browse the [module guide](#module-guide) below grouped by role.
+
+## At a glance
+
+| If you need… | Module | Details |
+| --- | --- | --- |
+| BAL JSON/RLP, validation, header hash | [`bal`](#module-bal) | Offline tooling; execution in [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#eip-7928-block-level-access-lists-amsterdam) |
+| Blob / cell proofs (4844, PeerDAS) | [`blobs`](#module-blobs) | KZG commitments, versioned hashes |
+| Hex ↔ bytes ↔ bigint conversion | [`bytes`](#module-bytes) | Most-used helpers |
+| Accounts (full or partial) | [`account`](#module-account) | State trie account objects |
+| Ethereum addresses | [`address`](#module-address) | Creation, validation, conversion |
+| Sign / recover secp256k1 | [`signature`](#module-signature) | Thin wrappers over `@noble` |
+| EIP-7702 auth list signing | [`authorization`](#module-authorization) | Prague+ |
+| CL requests (7685) | [`request`](#module-request) | Deposits, exits, consolidations |
+| Beacon withdrawals (4895) | [`withdrawal`](#module-withdrawal) | Block withdrawal objects |
+| Trie / blockchain storage | [`db`](#module-db) / [`mapDB`](#module-mapdb) | Pluggable key-value API |
+
+## Module guide
+
+Modules are grouped by role. Each section keeps the `## Module: [name]` anchors used elsewhere in the docs.
+
+### Core primitives
+
+Everyday building blocks — bytes, accounts, addresses, signatures, constants, and shared types.
+
+## Module: [bytes](src/bytes.ts)
+
+Byte-related helper and conversion functions.
+
+```ts
+// ./examples/bytes.ts
+
+import { bytesToBigInt } from '@ethereumjs/util'
+
+const bytesValue = new Uint8Array([97])
+const bigIntValue = bytesToBigInt(bytesValue)
+
+console.log(`Converted value: ${bigIntValue}`)
 ```
 
 ## Module: [account](src/account.ts)
@@ -97,9 +134,85 @@ const address = createAddressFromString('0x2f015c60e0be116b1f0cd534704db9c92118f
 console.log(`Ethereum address ${address.toString()} created`)
 ```
 
-## Module: [authorization](src/authorization.ts)
+## Module: [signature](src/signature.ts)
 
-Module with `EIP-7702` authorization list signing utilities.
+Small helpers around signature validation, conversion, recovery as well as selected convenience wrappers for calls to the underlying crypo libraries, using the cryptographic primitive implementations from the [Noble](https://paulmillr.com/noble/) crypto library set. If possible for your use case it is recommended to use the underlying crypto libraries directly for robustness.
+
+```ts
+// ./examples/signature.ts
+
+import { bytesToHex, ecrecover, hexToBytes } from '@ethereumjs/util'
+
+const chainId = BigInt(3) // Ropsten
+
+const ecHash = hexToBytes('0x82ff40c0a986c6a5cfad4ddf4c3aa6996f1a7837f9c398e17e5de5cbd5a12b28')
+const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
+const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
+const v = BigInt(41)
+
+const pubkey = ecrecover(ecHash, v, r, s, chainId)
+
+console.log(`Recovered public key ${bytesToHex(pubkey)} from valid signature values`)
+```
+
+## Module: [constants](src/constants.ts)
+
+Exposed constants (e.g. `KECCAK256_NULL_S` for string representation of Keccak-256 hash of null)
+
+```ts
+// ./examples/constants.ts
+
+import { BIGINT_2EXP96, KECCAK256_NULL_S } from '@ethereumjs/util'
+
+console.log(`The keccak-256 hash of null: ${KECCAK256_NULL_S}`)
+console.log(`BigInt constants (performance), e.g. BIGINT_2EXP96: ${BIGINT_2EXP96}`)
+```
+
+## Module: [types](src/types.ts)
+
+Various TypeScript types. Direct usage is not recommended, type structure might change in the future.
+
+### Fork & protocol helpers
+
+Fork-specific types and helpers — BAL, blobs, authorization lists, CL requests, withdrawals.
+
+## Module: [bal](src/bal/index.ts)
+
+Helpers for [EIP-7928](https://eips.ethereum.org/EIPS/eip-7928) Block Level Access Lists (BAL): the `BlockLevelAccessList` class, JSON/RLP conversion, hashing, and validation utilities. Use this module for offline fixture checks or tooling; block execution and BAL accumulation live in [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#eip-7928-block-level-access-lists-amsterdam). See the [canonical Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) for release ↔ spec tracking.
+
+```ts
+// ./examples/bal.ts
+
+import {
+  bytesToHex,
+  createBlockLevelAccessListFromJSON,
+  validateBlockAccessListHashFromJSON,
+  validateBlockAccessListStructure,
+} from '@ethereumjs/util'
+
+const main = () => {
+  const balJson = [
+    {
+      address: '0x0000000000000000000000000000000000000001',
+      storageChanges: [],
+      storageReads: [],
+      balanceChanges: [{ blockAccessIndex: '0x01', postBalance: '0x03e8' }],
+      nonceChanges: [],
+      codeChanges: [],
+    },
+  ]
+
+  const bal = createBlockLevelAccessListFromJSON(balJson)
+  validateBlockAccessListStructure(bal)
+  validateBlockAccessListHashFromJSON(balJson, bal.hash())
+
+  console.log(`BAL account count: ${bal.toJSON().length}`)
+  console.log(`BAL hash: ${bytesToHex(bal.hash())}`)
+}
+
+void main()
+
+```
 
 ## Module: [blobs](src/blobs.ts)
 
@@ -148,53 +261,9 @@ console.log(`Num cell proofs (EIP-7594)  : ${cellProofs.length}`)
 
 ```
 
-## Module: [bytes](src/bytes.ts)
+## Module: [authorization](src/authorization.ts)
 
-Byte-related helper and conversion functions.
-
-```ts
-// ./examples/bytes.ts
-
-import { bytesToBigInt } from '@ethereumjs/util'
-
-const bytesValue = new Uint8Array([97])
-const bigIntValue = bytesToBigInt(bytesValue)
-
-console.log(`Converted value: ${bigIntValue}`)
-```
-
-## Module: [constants](src/constants.ts)
-
-Exposed constants (e.g. `KECCAK256_NULL_S` for string representation of Keccak-256 hash of null)
-
-```ts
-// ./examples/constants.ts
-
-import { BIGINT_2EXP96, KECCAK256_NULL_S } from '@ethereumjs/util'
-
-console.log(`The keccak-256 hash of null: ${KECCAK256_NULL_S}`)
-console.log(`BigInt constants (performance), e.g. BIGINT_2EXP96: ${BIGINT_2EXP96}`)
-```
-
-## Module: [db](src/db.ts)
-
-DB interface for database abstraction (Blockchain, Trie), see e.g. [@ethereumjs/trie recipes](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie/recipes/level.ts)) for usage.
-
-## Module: [genesis](src/genesis.ts)
-
-Genesis related interfaces and helpers.
-
-## Module: [internal](src/internal.ts)
-
-Internalized simple helper methods like `isHexString`. Note that methods from this module might get deprecated in the future.
-
-## Module: [kzg](src/kzg.ts)
-
-KZG interface (used for 4844 blob txs), see [@ethereumjs/tx](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) README for main usage instructions.
-
-## Module: [mapDB](src/mapDB.ts)
-
-Simple map DB implementation using the `DB` interface (see above).
+Module with `EIP-7702` authorization list signing utilities.
 
 ## Module: [request](src/request.ts)
 
@@ -205,69 +274,6 @@ Module with a compact generic request class for [EIP-7685](https://eips.ethereum
 - [EIP-7251](https://eips.ethereum.org/EIPS/eip-7251): `ConsolidationRequest` (Prague Hardfork)
 
 These request types are mainly used within the [@ethereumjs/block](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/block) library where applied usage instructions are provided in the README.
-
-## Module: [bal](src/bal/index.ts)
-
-Helpers for [EIP-7928](https://eips.ethereum.org/EIPS/eip-7928) Block Level Access Lists (BAL): the `BlockLevelAccessList` class, JSON/RLP conversion, hashing, and validation utilities. Use this module for offline fixture checks or tooling; block execution and BAL accumulation live in [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#eip-7928-block-level-access-lists-amsterdam).
-
-```ts
-// ./examples/bal.ts
-
-import {
-  bytesToHex,
-  createBlockLevelAccessListFromJSON,
-  validateBlockAccessListHashFromJSON,
-  validateBlockAccessListStructure,
-} from '@ethereumjs/util'
-
-const main = () => {
-  const balJson = [
-    {
-      address: '0x0000000000000000000000000000000000000001',
-      storageChanges: [],
-      storageReads: [],
-      balanceChanges: [{ blockAccessIndex: '0x01', postBalance: '0x03e8' }],
-      nonceChanges: [],
-      codeChanges: [],
-    },
-  ]
-
-  const bal = createBlockLevelAccessListFromJSON(balJson)
-  validateBlockAccessListStructure(bal)
-  validateBlockAccessListHashFromJSON(balJson, bal.hash())
-
-  console.log(`BAL account count: ${bal.toJSON().length}`)
-  console.log(`BAL hash: ${bytesToHex(bal.hash())}`)
-}
-
-void main()
-
-```
-
-## Module: [signature](src/signature.ts)
-
-Small helpers around signature validation, conversion, recovery as well as selected convenience wrappers for calls to the underlying crypo libraries, using the cryptographic primitive implementations from the [Noble](https://paulmillr.com/noble/) crypto library set. If possible for your use case it is recommended to use the underlying crypto libraries directly for robustness.
-
-```ts
-// ./examples/signature.ts
-
-import { bytesToHex, ecrecover, hexToBytes } from '@ethereumjs/util'
-
-const chainId = BigInt(3) // Ropsten
-
-const ecHash = hexToBytes('0x82ff40c0a986c6a5cfad4ddf4c3aa6996f1a7837f9c398e17e5de5cbd5a12b28')
-const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
-const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
-const v = BigInt(41)
-
-const pubkey = ecrecover(ecHash, v, r, s, chainId)
-
-console.log(`Recovered public key ${bytesToHex(pubkey)} from valid signature values`)
-```
-
-## Module: [types](src/types.ts)
-
-Various TypeScript types. Direct usage is not recommended, type structure might change in the future.
 
 ## Module: [withdrawal](src/withdrawal.ts)
 
@@ -288,6 +294,30 @@ const withdrawal = createWithdrawal({
 console.log('Withdrawal object created:')
 console.log(withdrawal.toJSON())
 ```
+
+### Storage & integration
+
+Database abstractions, KZG typing, genesis helpers, and legacy internal utilities.
+
+## Module: [db](src/db.ts)
+
+DB interface for database abstraction (Blockchain, Trie), see e.g. [@ethereumjs/trie recipes](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie/recipes/level.ts)) for usage.
+
+## Module: [mapDB](src/mapDB.ts)
+
+Simple map DB implementation using the `DB` interface (see above).
+
+## Module: [kzg](src/kzg.ts)
+
+KZG interface (used for 4844 blob txs), see [@ethereumjs/tx](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) README for main usage instructions.
+
+## Module: [genesis](src/genesis.ts)
+
+Genesis related interfaces and helpers.
+
+## Module: [internal](src/internal.ts)
+
+Internalized simple helper methods like `isHexString`. Note that methods from this module might get deprecated in the future. Prefer the documented helpers in [API → ethjs-util methods](#ethjs-util-methods) when available.
 
 ## Browser
 

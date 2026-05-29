@@ -8,7 +8,7 @@
 
 > **hexToBytes**(`hex`): `Uint8Array`
 
-Defined in: [packages/util/src/bytes.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L27)
+Defined in: [packages/util/src/bytes.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L26)
 
 Converts a [PrefixedHexString](../type-aliases/PrefixedHexString.md) to a Uint8Array
 

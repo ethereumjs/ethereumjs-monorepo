@@ -8,7 +8,7 @@
 
 > **bytesToBigInt64**(`bytes`, `littleEndian`): `bigint`
 
-Defined in: [packages/util/src/bytes.ts:463](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L463)
+Defined in: [packages/util/src/bytes.ts:489](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L489)
 
 ## Parameters
 

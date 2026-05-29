@@ -93,7 +93,8 @@ interface BALJSONAccountChanges {
   storageReads: BALStorageKeyHex[]
 }
 
-// Top level JSON type
+// Top level JSON type (Engine API / fixture form).
+/** @remarks Experimental (Amsterdam): may change on patch releases. */
 export type BALJSONBlockAccessList = BALJSONAccountChanges[]
 
 // Re-export JSON types for external use
@@ -107,12 +108,16 @@ export type {
 }
 
 /**
- * Structural helper class for block level access lists
+ * In-memory [EIP-7928](https://eips.ethereum.org/EIPS/eip-7928) block access list with
+ * canonical RLP/JSON encoding, checkpointing, and mutation helpers used by the VM during execution.
  *
- * EXPERIMENTAL: DO NOT USE IN PRODUCTION!
+ * @remarks Experimental (Amsterdam): public API and behaviour may change on patch releases.
+ * See `@ethereumjs/vm` README section `Amsterdam hardfork (experimental)` for release ↔ spec tracking.
  */
 export class BlockLevelAccessList {
+  /** Account-level access entries keyed by address. */
   public accesses: Accesses
+  /** Current block access index (transaction or system phase) for new change records. */
   public blockAccessIndex: number
   private checkpoints: { accesses: Accesses; blockAccessIndex: number }[] = []
   // Track original (pre-transaction) balances for net-zero detection
@@ -126,18 +131,18 @@ export class BlockLevelAccessList {
   }
 
   /**
-   * Serializes the block level access list to RLP.
+   * Canonical RLP encoding of the access list (`RLP.encode(raw())`).
    *
-   * @returns the RLP encoded block level access list
+   * @remarks Experimental (Amsterdam): may change on patch releases.
    */
   public serialize(): Uint8Array {
     return RLP.encode(this.raw())
   }
 
   /**
-   * This hash is used in the block header
+   * Header commitment `keccak256(serialize())` used as `blockAccessListHash`.
    *
-   * @returns the hash of the serialized block level access list
+   * @remarks Experimental (Amsterdam): may change on patch releases.
    */
   public hash(): Uint8Array {
     return keccak_256(this.serialize())
@@ -222,10 +227,9 @@ export class BlockLevelAccessList {
   }
 
   /**
-   * Returns the raw block level access list with values
-   * correctly sorted.
+   * Canonical sorted tuple view used for RLP and validation.
    *
-   * @returns the raw block level access list
+   * @remarks Experimental (Amsterdam): may change on patch releases.
    */
   public raw(): BALRawBlockAccessList {
     const bal: BALRawBlockAccessList = []
@@ -473,15 +477,10 @@ export class BlockLevelAccessList {
   }
 
   /**
-   * EIP-7928: For selfdestructed accounts, drop all state changes while
-   * preserving read footprints. Any storageChanges are converted to storageReads.
+   * Converts the internal representation to JSON fixture / Engine API form.
+   * Inverse of {@link createBlockLevelAccessListFromJSON}.
    *
-   * Per EIP-7928: "if the account had a positive balance pre-transaction,
-   * the balance change to zero MUST be recorded."
-   */
-  /**
-   * Converts the internal representation to the JSON format (BALJSONBlockAccessList).
-   * Inverse of createBlockLevelAccessListFromJSON().
+   * @remarks Experimental (Amsterdam): may change on patch releases.
    */
   public toJSON(): BALJSONBlockAccessList {
     const result: BALJSONBlockAccessList = []
@@ -542,6 +541,13 @@ export class BlockLevelAccessList {
     return result
   }
 
+  /**
+   * For selfdestructed accounts, drop state changes while preserving read footprints.
+   * Any `storageChanges` are converted to `storageReads`. Per EIP-7928, a positive
+   * pre-transaction balance reduced to zero via `SELFDESTRUCT` keeps the balance change.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
   public cleanupSelfdestructed(addresses: Array<BALAddressHex>): void {
     for (const address of addresses) {
       const access = this.accesses[address]
@@ -589,10 +595,20 @@ function compareLexicographicHexOrBytes(
   return 0
 }
 
+/**
+ * Creates an empty {@link BlockLevelAccessList}.
+ *
+ * @remarks Experimental (Amsterdam): may change on patch releases.
+ */
 export function createBlockLevelAccessList(): BlockLevelAccessList {
   return new BlockLevelAccessList()
 }
 
+/**
+ * Parses a JSON block access list (fixture / Engine API order).
+ *
+ * @remarks Experimental (Amsterdam): may change on patch releases.
+ */
 export function createBlockLevelAccessListFromJSON(
   json: BALJSONBlockAccessList,
 ): BlockLevelAccessList {
@@ -663,6 +679,11 @@ function normalizeQuantityHexForRLP(hex: PrefixedHexString): PrefixedHexString {
   return `0x${padToEven(stripped)}`
 }
 
+/**
+ * Parses an RLP-encoded block access list.
+ *
+ * @remarks Experimental (Amsterdam): may change on patch releases.
+ */
 export function createBlockLevelAccessListFromRLP(rlp: Uint8Array): BlockLevelAccessList {
   const decoded = RLP.decode(rlp) as Array<
     [

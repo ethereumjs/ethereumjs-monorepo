@@ -6,7 +6,7 @@
 
 # Interface: CustomCrypto
 
-Defined in: [types.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L76)
+Defined in: [common/src/types.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L76)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 > `optional` **ecdsaRecover**: (`sig`, `recId`, `hash`) => `Uint8Array`
 
-Defined in: [types.ts:94](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L94)
+Defined in: [common/src/types.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L90)
 
 #### Parameters
 
@@ -40,7 +40,7 @@ Defined in: [types.ts:94](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 > `optional` **ecrecover**: (`msgHash`, `v`, `r`, `s`, `chainId?`) => `Uint8Array`
 
-Defined in: [types.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L81)
+Defined in: [common/src/types.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L81)
 
 #### Parameters
 
@@ -72,29 +72,27 @@ Defined in: [types.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 ### ecsign()?
 
-> `optional` **ecsign**: (`msg`, `pk`, `ecSignOpts?`) => `Pick`\<`ReturnType`\<*typeof* `secp256k1.sign`\>, `"recovery"` \| `"r"` \| `"s"`\>
+> `optional` **ecsign**: (`message`, `secretKey`, `opts?`) => `Uint8Array`
 
-Defined in: [types.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L89)
+Defined in: [common/src/types.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L89)
 
 #### Parameters
 
-##### msg
+##### message
 
 `Uint8Array`
 
-##### pk
+##### secretKey
 
 `Uint8Array`
 
-##### ecSignOpts?
+##### opts?
 
-###### extraEntropy?
-
-`boolean` \| `Uint8Array`\<`ArrayBufferLike`\>
+`ECDSASignOpts`
 
 #### Returns
 
-`Pick`\<`ReturnType`\<*typeof* `secp256k1.sign`\>, `"recovery"` \| `"r"` \| `"s"`\>
+`Uint8Array`
 
 ***
 
@@ -102,7 +100,7 @@ Defined in: [types.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 > `optional` **keccak256**: (`msg`) => `Uint8Array`
 
-Defined in: [types.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L80)
+Defined in: [common/src/types.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L80)
 
 Interface for providing custom cryptographic primitives in place of `ethereum-cryptography` variants
 
@@ -122,7 +120,7 @@ Interface for providing custom cryptographic primitives in place of `ethereum-cr
 
 > `optional` **kzg**: `KZG`
 
-Defined in: [types.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L95)
+Defined in: [common/src/types.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L91)
 
 ***
 
@@ -130,7 +128,7 @@ Defined in: [types.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 > `optional` **sha256**: (`msg`) => `Uint8Array`
 
-Defined in: [types.ts:88](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L88)
+Defined in: [common/src/types.ts:88](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L88)
 
 #### Parameters
 

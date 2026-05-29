@@ -8,4 +8,4 @@
 
 > `const` **paramsEVM**: `ParamsDict`
 
-Defined in: [params.ts:3](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/params.ts#L3)
+Defined in: [params.ts:4](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/params.ts#L4)

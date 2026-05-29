@@ -19,6 +19,8 @@ on:
 
 env:
   cwd: ${{github.workspace}}
+  # Keep in sync with package-lock.json playwright version.
+  PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-browser
@@ -31,13 +33,14 @@ jobs:
     strategy:
       fail-fast: false
     steps:
-      # We clone the repo and submodules if triggered from work-flow dispatch
+      # Deps/cache on the host runner (same pattern as util-build et al.).
+      # actions/cache cannot reliably restore host-created caches inside a
+      # container job, even with zstd installed — restore here, test in Docker.
       - if: inputs.submodule-cache-key == 'none'
         uses: actions/checkout@v5
         with:
           submodules: recursive
 
-      # We restore the code/deps from cache if triggered from workflow_call (i.e. have valid cache key)
       - if: inputs.dep-cache-key != 'none'
         uses: actions/cache/restore@v4
         id: dep-cache
@@ -49,9 +52,8 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 24
-          cache: 'npm'
 
-      - name: Install Dependencies (if called from workflow_dispatch)
+      - name: Install Dependencies (if not restored from cache)
         if: steps.dep-cache.outputs.cache-hit != 'true'
         run: npm ci
         working-directory: ${{ github.workspace }}
@@ -64,10 +66,16 @@ jobs:
           path: ${{github.workspace}}/packages/ethereum-tests
           key: ${{ inputs.submodule-cache-key }}
 
-      - run: npm run install-browser-deps
-      - run: npx playwright install --with-deps
-
-      - run: npm run test:browser --workspaces --if-present
-
-
-
+      # Preinstalled Chromium (playwright@1.60.0) — no ~150MB download per run.
+      - name: Run browser tests (Playwright container)
+        run: |
+          docker run --rm \
+            --ipc=host \
+            --init \
+            --user root \
+            -v "${{ github.workspace }}:${{ github.workspace }}" \
+            -w "${{ github.workspace }}" \
+            -e PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
+            -e CI=true \
+            mcr.microsoft.com/playwright:v1.60.0-noble \
+            npm run test:browser --workspaces --if-present

@@ -8,7 +8,7 @@
 
 > **bytesToBits**(`bytes`, `bitLength?`): `number`[]
 
-Defined in: [packages/util/src/bytes.ts:509](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L509)
+Defined in: [packages/util/src/bytes.ts:569](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L569)
 
 Converts a Uint8Array of bytes into an array of bits.
 

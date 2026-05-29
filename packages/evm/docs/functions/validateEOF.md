@@ -43,3 +43,5 @@ EOF mode to run in
 ## Returns
 
 [`EOFContainer`](../classes/EOFContainer.md)
+
+The decoded EOF container

@@ -36,3 +36,5 @@ The transaction options
 ## Returns
 
 `Promise`\<[`Transaction`](../interfaces/Transaction.md)\[`T`\]\>
+
+A promise that resolves with the instantiated transaction

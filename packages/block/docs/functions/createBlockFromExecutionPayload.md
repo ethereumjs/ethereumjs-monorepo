@@ -8,7 +8,7 @@
 
 > **createBlockFromExecutionPayload**(`payload`, `opts?`): `Promise`\<[`Block`](../classes/Block.md)\>
 
-Defined in: [block/constructors.ts:301](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block/constructors.ts#L301)
+Defined in: [block/constructors.ts:306](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block/constructors.ts#L306)
 
 Method to retrieve a block from an execution payload
 
@@ -17,6 +17,8 @@ Method to retrieve a block from an execution payload
 ### payload
 
 [`ExecutionPayload`](../type-aliases/ExecutionPayload.md)
+
+Execution payload constructed from beacon payload data
 
 ### opts?
 
@@ -28,4 +30,4 @@ Method to retrieve a block from an execution payload
 
 `Promise`\<[`Block`](../classes/Block.md)\>
 
-the block constructed block
+The constructed [Block](../classes/Block.md) object

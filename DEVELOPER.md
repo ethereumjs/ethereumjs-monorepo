@@ -267,7 +267,18 @@ npx vitest test/path/to/test.spec.ts
 
 #### Browser
 
-We use `vitest` with [playwright](https://playwright.dev/) to run browser tests.  When running browser tests with `npm run test:browser`, ensure you have a version of the Chromium browser installed.  If not, you can run `npx playwright install --with-deps` to install a supported version.
+We use `vitest` with [playwright](https://playwright.dev/) to run browser tests in real Chromium (headless).
+
+**Local:** browser tests are optional unless you are working on bundling or browser-specific behaviour. Install Chromium once (Chromium only — not the full Playwright browser set):
+
+```sh
+npm run install-browser-deps
+# equivalent to: npx playwright install chromium
+```
+
+Then run `npm run test:browser` in a package, or `npm run test:browser` from the monorepo root.
+
+**CI:** deps are restored on the host runner (same cache as other jobs). Browser tests run in the official [Playwright Docker image](https://playwright.dev/docs/docker) (`mcr.microsoft.com/playwright:v1.60.0-noble`) via `docker run` — preinstalled browsers, no Chromium download per run. Keep the image tag in `.github/workflows/browser.yml` in sync with the `playwright` version in `package-lock.json`.
 
 ## Advanced Topics
 

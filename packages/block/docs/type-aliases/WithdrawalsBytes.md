@@ -8,4 +8,4 @@
 
 > **WithdrawalsBytes** = `WithdrawalBytes`[]
 
-Defined in: [types.ts:124](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L124)
+Defined in: [types.ts:136](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L136)

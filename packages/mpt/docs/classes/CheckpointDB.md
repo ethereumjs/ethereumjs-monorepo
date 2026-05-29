@@ -105,7 +105,7 @@ Defined in: [packages/mpt/src/db/checkpointDB.ts:18](https://github.com/ethereum
 
 > **batch**(`opStack`): `Promise`\<`void`\>
 
-Defined in: [packages/mpt/src/db/checkpointDB.ts:229](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/db/checkpointDB.ts#L229)
+Defined in: [packages/mpt/src/db/checkpointDB.ts:232](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/db/checkpointDB.ts#L232)
 
 #### Parameters
 
@@ -163,7 +163,7 @@ Commits the latest checkpoint
 
 > **del**(`key`): `Promise`\<`void`\>
 
-Defined in: [packages/mpt/src/db/checkpointDB.ts:207](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/db/checkpointDB.ts#L207)
+Defined in: [packages/mpt/src/db/checkpointDB.ts:209](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/db/checkpointDB.ts#L209)
 
 #### Parameters
 
@@ -225,7 +225,7 @@ Is the DB during a checkpoint phase?
 
 > **open**(): `Promise`\<`void`\>
 
-Defined in: [packages/mpt/src/db/checkpointDB.ts:291](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/db/checkpointDB.ts#L291)
+Defined in: [packages/mpt/src/db/checkpointDB.ts:295](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/db/checkpointDB.ts#L295)
 
 Opens the database -- if applicable
 
@@ -243,7 +243,7 @@ Opens the database -- if applicable
 
 > **put**(`key`, `value`): `Promise`\<`void`\>
 
-Defined in: [packages/mpt/src/db/checkpointDB.ts:183](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/db/checkpointDB.ts#L183)
+Defined in: [packages/mpt/src/db/checkpointDB.ts:184](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/db/checkpointDB.ts#L184)
 
 #### Parameters
 
@@ -305,7 +305,7 @@ Flush the checkpoints and use the given checkpoints instead.
 
 > **shallowCopy**(): `CheckpointDB`
 
-Defined in: [packages/mpt/src/db/checkpointDB.ts:283](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/db/checkpointDB.ts#L283)
+Defined in: [packages/mpt/src/db/checkpointDB.ts:287](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/db/checkpointDB.ts#L287)
 
 #### Returns
 
@@ -323,7 +323,7 @@ Defined in: [packages/mpt/src/db/checkpointDB.ts:283](https://github.com/ethereu
 
 > **stats**(`reset`): `object`
 
-Defined in: [packages/mpt/src/db/checkpointDB.ts:261](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/db/checkpointDB.ts#L261)
+Defined in: [packages/mpt/src/db/checkpointDB.ts:265](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/db/checkpointDB.ts#L265)
 
 #### Parameters
 

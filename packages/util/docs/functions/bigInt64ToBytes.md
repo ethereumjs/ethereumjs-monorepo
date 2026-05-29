@@ -8,7 +8,7 @@
 
 > **bigInt64ToBytes**(`value`, `littleEndian`): `Uint8Array`
 
-Defined in: [packages/util/src/bytes.ts:490](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L490)
+Defined in: [packages/util/src/bytes.ts:516](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L516)
 
 ## Parameters
 

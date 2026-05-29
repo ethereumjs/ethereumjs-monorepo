@@ -323,7 +323,7 @@ supported by the library:
 
 ### Future Hardforks
 
-The next upcoming HF `Hardfork.Amsterdam` is currently in development (started January 2026).
+The next upcoming HF `Hardfork.Amsterdam` is currently in development (started January 2026). See the [canonical Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) in `@ethereumjs/vm` for release ↔ spec tracking.
 
 ### Parameter Access
 
@@ -408,6 +408,7 @@ Annotations:
 
 - Hardfork labels (e.g. `(Prague)`) indicate default activation on that fork
 - `(Amsterdam, experimental)` and `(experimental)` mark unstable specs; behaviour may change on patch releases
+- Release ↔ spec tracking: [canonical Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) in `@ethereumjs/vm`
 
 ## EthereumJS
 

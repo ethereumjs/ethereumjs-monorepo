@@ -8,7 +8,7 @@
 
 > **createBlockFromJSONRPCProvider**(`provider`, `blockTag`, `opts`): `Promise`\<[`Block`](../classes/Block.md)\>
 
-Defined in: [block/constructors.ts:241](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block/constructors.ts#L241)
+Defined in: [block/constructors.ts:246](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block/constructors.ts#L246)
 
 Method to retrieve a block from a JSON-RPC provider and format as a [Block](../classes/Block.md)
 
@@ -36,4 +36,4 @@ block hash or block number to be run
 
 `Promise`\<[`Block`](../classes/Block.md)\>
 
-the block specified by `blockTag`
+a new [Block](../classes/Block.md) object specified by `blockTag`

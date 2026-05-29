@@ -72,7 +72,7 @@ Defined in: [message.ts:61](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 ### code?
 
-> `optional` **code**: `Uint8Array`\<`ArrayBufferLike`\> \| `PrecompileFunc`
+> `optional` **code**: `Uint8Array`\<`ArrayBufferLike`\> \| [`PrecompileFunc`](../interfaces/PrecompileFunc.md)
 
 Defined in: [message.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L55)
 
@@ -178,11 +178,11 @@ Defined in: [message.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 ### selfdestruct?
 
-> `optional` **selfdestruct**: `Set`\<`` `0x${string}` ``\>
+> `optional` **selfdestruct**: [`SelfdestructMap`](../type-aliases/SelfdestructMap.md)
 
 Defined in: [message.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L65)
 
-Set of addresses to selfdestruct. Key is the unprefixed address.
+Selfdestructed addresses mapped to their beneficiary.
 
 ***
 

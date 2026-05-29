@@ -8,4 +8,4 @@
 
 > **ConsensusAlgorithm** = *typeof* [`ConsensusAlgorithm`](../variables/ConsensusAlgorithm.md)\[keyof *typeof* [`ConsensusAlgorithm`](../variables/ConsensusAlgorithm.md)\]
 
-Defined in: [enums.ts:97](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L97)
+Defined in: [common/src/enums.ts:98](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L98)

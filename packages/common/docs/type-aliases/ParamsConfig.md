@@ -8,7 +8,7 @@
 
 > **ParamsConfig** = `object`
 
-Defined in: [types.ts:171](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L171)
+Defined in: [common/src/types.ts:167](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L167)
 
 ## Index Signature
 
