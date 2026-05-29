@@ -31,19 +31,25 @@ jobs:
     if: contains(join(github.event.pull_request.labels.*.name, ' '), 'test no browser') == false
     runs-on: ubuntu-latest
     # Preinstalled Chromium (playwright@1.60.0) — no ~150MB download per run.
+    # --user root: apt-get for zstd; browsers live in /ms-playwright (world-readable).
     container:
       image: mcr.microsoft.com/playwright:v1.60.0-noble
-      options: --ipc=host --init
+      options: --ipc=host --init --user root
     strategy:
       fail-fast: false
     steps:
-      # actions/checkout needs git in the container; without it, files are fetched via the
-      # REST API and there is no .git directory (npm prepare then fails).
-      - name: Install git
-        run: apt-get update && apt-get install -y --no-install-recommends git
+      # actions/cache needs zstd inside the container to decompress caches saved on
+      # the host runner (without it every restore is a miss and npm ci re-builds).
+      - name: Install zstd for actions/cache
+        run: apt-get update && apt-get install -y --no-install-recommends zstd
 
-      # Restore node_modules/dist first; checkout below adds .git and tracked sources while
-      # leaving gitignored cache contents (node_modules, dist) in place.
+      # Same pattern as util-build et al.: PR CI restores the build job workspace
+      # from cache; no checkout needed (git is not required for browser tests).
+      - if: inputs.submodule-cache-key == 'none'
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
       - if: inputs.dep-cache-key != 'none'
         uses: actions/cache/restore@v4
         id: dep-cache
@@ -51,17 +57,19 @@ jobs:
           path: ${{github.workspace}}
           key: ${{ inputs.dep-cache-key }}
 
-      - uses: actions/checkout@v5
-        with:
-          submodules: ${{ inputs.submodule-cache-key == 'none' && 'recursive' || false }}
-
       - name: Use Node.js 24
         uses: actions/setup-node@v6
         with:
           node-version: 24
 
-      - name: Install dependencies (cache miss)
-        if: inputs.dep-cache-key == 'none' || steps.dep-cache.outputs.cache-hit != 'true'
+      - name: Require build cache (workflow_call)
+        if: inputs.dep-cache-key != 'none' && steps.dep-cache.outputs.cache-hit != 'true'
+        run: |
+          echo "::error::Build cache was not restored (key: ${{ inputs.dep-cache-key }}). Browser tests expect deps from the build job."
+          exit 1
+
+      - name: Install dependencies (manual dispatch only)
+        if: inputs.dep-cache-key == 'none'
         run: npm ci
         working-directory: ${{ github.workspace }}
 
