@@ -208,7 +208,7 @@ These request types are mainly used within the [@ethereumjs/block](https://githu
 
 ## Module: [bal](src/bal/index.ts)
 
-Helpers for [EIP-7928](https://eips.ethereum.org/EIPS/eip-7928) Block Level Access Lists (BAL): the `BlockLevelAccessList` class, JSON/RLP conversion, hashing, and validation utilities. Use this module for offline fixture checks or tooling; block execution and BAL accumulation live in [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#eip-7928-block-level-access-lists-amsterdam).
+Helpers for [EIP-7928](https://eips.ethereum.org/EIPS/eip-7928) Block Level Access Lists (BAL): the `BlockLevelAccessList` class, JSON/RLP conversion, hashing, and validation utilities. Use this module for offline fixture checks or tooling; block execution and BAL accumulation live in [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#eip-7928-block-level-access-lists-amsterdam). See the [canonical Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) for release ↔ spec tracking.
 
 ```ts
 // ./examples/bal.ts

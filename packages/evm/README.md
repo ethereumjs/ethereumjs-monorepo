@@ -292,10 +292,13 @@ Annotations:
 
 - Hardfork labels (e.g. `(Prague)`) indicate default activation on that fork
 - `(Amsterdam, experimental)` and `(experimental)` mark unstable specs; behaviour may change on patch releases
+- Release ↔ spec tracking: [canonical Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) in `@ethereumjs/vm`
 
 When EIP-7928 is active, BAL data accumulates on `evm.blockLevelAccessList` during execution. For typical usage see [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#eip-7928-block-level-access-lists-amsterdam).
 
 ### EIP-8024 stack opcodes (Amsterdam)
+
+See the [canonical Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) in `@ethereumjs/vm` for release ↔ spec tracking.
 
 [EIP-8024](https://eips.ethereum.org/EIPS/eip-8024) adds three backward-compatible stack manipulation opcodes, each with a single-byte immediate operand:
 
@@ -309,6 +312,8 @@ The opcodes are active on `Hardfork.Amsterdam` and validated at decode time (inv
 
 ### EIP-7954 contract and initcode size limits (Amsterdam)
 
+See the [canonical Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) in `@ethereumjs/vm` for release ↔ spec tracking.
+
 [EIP-7954](https://eips.ethereum.org/EIPS/eip-7954) raises the EVM size limits when active on `Hardfork.Amsterdam`:
 
 | Parameter | Pre-7954 | Post-7954 |
@@ -319,6 +324,8 @@ The opcodes are active on `Hardfork.Amsterdam` and validated at decode time (inv
 These are `Common` parameters (`common.param('maxCodeSize')`) — no API changes beyond using the Amsterdam hardfork.
 
 ### EIP-8037 and EIP-7708 (Amsterdam)
+
+See the [canonical Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) in `@ethereumjs/vm` for release ↔ spec tracking.
 
 State-gas accounting ([EIP-8037](https://eips.ethereum.org/EIPS/eip-8037)) and ETH transfer/burn logs ([EIP-7708](https://eips.ethereum.org/EIPS/eip-7708)) are implemented at the VM execution layer. See [@ethereumjs/vm Amsterdam docs](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) for `RunTxResult` fields, block gas dimensions, and receipt log behaviour.
 

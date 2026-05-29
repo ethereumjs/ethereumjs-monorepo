@@ -396,6 +396,8 @@ console.log(bytesToHex(signedTx.hash())) // 0x894b72d87f8333fccd29d1b3aca39af69d
 
 ### Amsterdam transaction validation (EIP-7976, EIP-7981)
 
+See the [canonical Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) in `@ethereumjs/vm` for release ↔ spec tracking.
+
 On `Hardfork.Amsterdam` (experimental), two EIPs adjust the minimum gas a transaction must pay before execution:
 
 **[EIP-7976](https://eips.ethereum.org/EIPS/eip-7976) — calldata floor:** under EIP-7623, calldata is priced in **tokens** (1 per zero byte, 4 per non-zero byte pre-7976). EIP-7976 raises the floor to a uniform **4 tokens per byte** for all calldata bytes. The floor cost is `txGas + totalCostFloorPerToken × tokens` and is enforced in `getValidationErrors()` / intrinsic gas calculation for all tx types.

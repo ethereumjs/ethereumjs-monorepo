@@ -268,6 +268,7 @@ export interface EVMOpts {
    *
    * - Hardfork labels (e.g. `(Prague)`) indicate default activation on that fork
    * - `(Amsterdam, experimental)` and `(experimental)` mark unstable specs; behaviour can change on patch releases
+   * - Release ↔ spec tracking: canonical Amsterdam overview in `@ethereumjs/vm` README (`#amsterdam-hardfork-experimental`)
    */
   common?: Common
 

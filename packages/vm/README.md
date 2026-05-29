@@ -458,13 +458,13 @@ The `Hardfork.Amsterdam` bundle activates the following EIPs. Amsterdam test fix
 | [8024](https://eips.ethereum.org/EIPS/eip-8024) | `DUPN`, `SWAPN`, `EXCHANGE` stack opcodes | [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#eip-8024-stack-opcodes-amsterdam) |
 | [8037](https://eips.ethereum.org/EIPS/eip-8037) | Two-dimensional block gas + state-gas reservoir | [EIP-8037 section](#eip-8037-state-creation-gas-cost-increase-amsterdam) (below) |
 
-**Activation:** `new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })`. Spec is still moving; behaviour may change on patch releases.
+**Activation:** `new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })`. See [Release ↔ spec tracking](#amsterdam-hardfork-experimental) above for supported spec snapshots; behaviour may change on patch releases.
 
 ### EIP-7928 Block Level Access Lists (Amsterdam)
 
-[EIP-7928](https://eips.ethereum.org/EIPS/eip-7928) adds a block-level access list (BAL) committed via `blockAccessListHash` in the block header. When EIP-7928 is active, the VM accumulates state accesses automatically during `runBlock()` / `runTx()` — no extra opt-in flag is required.
+[EIP-7928](https://eips.ethereum.org/EIPS/eip-7928) adds a block-level access list (BAL) committed via `blockAccessListHash` in the block header. When EIP-7928 is active, the VM accumulates state accesses automatically during `runBlock()` / `runTx()` — no extra opt-in flag is required. See [Release ↔ spec tracking](#amsterdam-hardfork-experimental) above for the EST / testnet snapshot this release targets.
 
-**Activation:** use `Hardfork.Amsterdam` (experimental; spec still moving).
+**Activation:** use `Hardfork.Amsterdam` (experimental).
 
 **Block builder flow (`generate: true`):** execute the block, read `RunBlockResult.blockLevelAccessList`, and use the returned block from the `afterBlock` event — its header includes `blockAccessListHash` (set from `bal.hash()`).
 
@@ -634,6 +634,8 @@ void main()
 
 ### EIP-8037 State creation gas cost increase (Amsterdam)
 
+See [Release ↔ spec tracking](#amsterdam-hardfork-experimental) above for the supported Amsterdam spec snapshot.
+
 [EIP-8037](https://eips.ethereum.org/EIPS/eip-8037) splits block gas into two independent dimensions — **regular** and **state** — and introduces a per-transaction **state-gas reservoir** for state-touching operations. When active, `runBlock()` and `runTx()` handle this automatically; no extra opt-in is required.
 
 **Block-level gas used:** instead of summing a single `gasUsed`, the block header field becomes `max(block_regular_gas_used, block_state_gas_used)`. Each transaction contributes to both dimensions via `RunTxResult.txRegularGas` and `RunTxResult.txStateGas` (undefined when EIP-8037 is inactive).
@@ -655,9 +657,13 @@ void main()
 
 ### EIP-7778 Block gas accounting (Amsterdam)
 
+See [Release ↔ spec tracking](#amsterdam-hardfork-experimental) above for the supported Amsterdam spec snapshot.
+
 [EIP-7778](https://eips.ethereum.org/EIPS/eip-7778) changes how gas refunds affect block-level accounting. `RunTxResult.totalGasSpent` is what the sender pays (refunds subtracted). `RunTxResult.blockGasSpent` is what counts toward the block header's `gasUsed` — under EIP-7778 this **does not** subtract tx-level refunds (`blockGasSpent = max(totalGasSpent, floorCost)`). Receipt `cumulativeGasUsed` still uses the pre-7778 refund semantics via a separate accumulator inside `runBlock()`.
 
 ### EIP-7708 ETH transfer and burn logs (Amsterdam)
+
+See [Release ↔ spec tracking](#amsterdam-hardfork-experimental) above for the supported Amsterdam spec snapshot.
 
 [EIP-7708](https://eips.ethereum.org/EIPS/eip-7708) adds synthetic logs for native ETH transfers and balance burns. When active, value-bearing `CALL`/`CREATE` paths and certain `SELFDESTRUCT`/account-removal flows append logs from the system address (`0xfff…fff`) with `Transfer(address,address,uint256)` or `Burn(address,uint256)` topics. These appear in `RunTxResult.receipt.logs` like any other log — no VM API changes are needed beyond using `Hardfork.Amsterdam`.
 

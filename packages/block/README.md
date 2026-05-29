@@ -267,6 +267,8 @@ void main()
 
 ### Blocks with EIP-7928 Block Access List Hash
 
+See the [canonical Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) in `@ethereumjs/vm` for release ↔ spec tracking.
+
 When [EIP-7928](https://eips.ethereum.org/EIPS/eip-7928) is active (`Hardfork.Amsterdam`, experimental), blocks carry a `blockAccessListHash` header field (32 bytes). The hash is `keccak256(rlp(bal))` over the canonical BAL encoding — compute it with `@ethereumjs/util` or obtain it from `runBlock({ generate: true })` in the VM (see [@ethereumjs/vm BAL docs](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#eip-7928-block-level-access-lists-amsterdam)).
 
 ```ts
@@ -310,6 +312,8 @@ void main()
 ```
 
 ### Blocks with EIP-7843 slot number
+
+See the [canonical Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) in `@ethereumjs/vm` for release ↔ spec tracking.
 
 When [EIP-7843](https://eips.ethereum.org/EIPS/eip-7843) is active (`Hardfork.Amsterdam`, experimental), blocks carry a `slotNumber` header field (64-bit quantity). The EVM exposes the value via the `SLOTNUM` opcode during execution.
 
