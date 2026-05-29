@@ -22,7 +22,7 @@
     "test:browser": "npm run test:browser --workspaces --if-present",
     "preinstall": "npm run checkNpmVersion",
     "postinstall": "npm run build --workspaces --if-present",
-    "prepare": "git rev-parse --is-inside-work-tree >/dev/null 2>&1 && git config --local core.hooksPath .githooks || true",
+    "prepare": "test -z \"$CI\" && git rev-parse --is-inside-work-tree >/dev/null 2>&1 && git config --local core.hooksPath .githooks || true",
     "release:simple": "tsx ./scripts/simple-release.ts",
     "sc": "npm run spellcheck",
     "sort-package-json": "sort-package-json \"package.json\" \"packages/*/package.json\"",

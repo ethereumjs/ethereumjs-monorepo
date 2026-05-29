@@ -278,7 +278,7 @@ npm run install-browser-deps
 
 Then run `npm run test:browser` in a package, or `npm run test:browser` from the monorepo root.
 
-**CI:** the Browser workflow uses the official [Playwright Docker image](https://playwright.dev/docs/docker) (`mcr.microsoft.com/playwright:v1.60.0-noble`) with preinstalled browsers — no Chromium download step per run. Keep the image tag in `.github/workflows/browser.yml` in sync with the `playwright` version in `package-lock.json`.
+**CI:** deps are restored on the host runner (same cache as other jobs). Browser tests run in the official [Playwright Docker image](https://playwright.dev/docs/docker) (`mcr.microsoft.com/playwright:v1.60.0-noble`) via `docker run` — preinstalled browsers, no Chromium download per run. Keep the image tag in `.github/workflows/browser.yml` in sync with the `playwright` version in `package-lock.json`.
 
 ## Advanced Topics
 

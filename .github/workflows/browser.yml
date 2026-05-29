@@ -30,21 +30,12 @@ jobs:
   test-all-browser:
     if: contains(join(github.event.pull_request.labels.*.name, ' '), 'test no browser') == false
     runs-on: ubuntu-latest
-    # Preinstalled Chromium (playwright@1.60.0) — no ~150MB download per run.
-    # --user root: apt-get for zstd; browsers live in /ms-playwright (world-readable).
-    container:
-      image: mcr.microsoft.com/playwright:v1.60.0-noble
-      options: --ipc=host --init --user root
     strategy:
       fail-fast: false
     steps:
-      # actions/cache needs zstd inside the container to decompress caches saved on
-      # the host runner (without it every restore is a miss and npm ci re-builds).
-      - name: Install zstd for actions/cache
-        run: apt-get update && apt-get install -y --no-install-recommends zstd
-
-      # Same pattern as util-build et al.: PR CI restores the build job workspace
-      # from cache; no checkout needed (git is not required for browser tests).
+      # Deps/cache on the host runner (same pattern as util-build et al.).
+      # actions/cache cannot reliably restore host-created caches inside a
+      # container job, even with zstd installed — restore here, test in Docker.
       - if: inputs.submodule-cache-key == 'none'
         uses: actions/checkout@v5
         with:
@@ -62,14 +53,8 @@ jobs:
         with:
           node-version: 24
 
-      - name: Require build cache (workflow_call)
-        if: inputs.dep-cache-key != 'none' && steps.dep-cache.outputs.cache-hit != 'true'
-        run: |
-          echo "::error::Build cache was not restored (key: ${{ inputs.dep-cache-key }}). Browser tests expect deps from the build job."
-          exit 1
-
-      - name: Install dependencies (manual dispatch only)
-        if: inputs.dep-cache-key == 'none'
+      - name: Install Dependencies (if not restored from cache)
+        if: steps.dep-cache.outputs.cache-hit != 'true'
         run: npm ci
         working-directory: ${{ github.workspace }}
 
@@ -81,4 +66,16 @@ jobs:
           path: ${{github.workspace}}/packages/ethereum-tests
           key: ${{ inputs.submodule-cache-key }}
 
-      - run: npm run test:browser --workspaces --if-present
+      # Preinstalled Chromium (playwright@1.60.0) — no ~150MB download per run.
+      - name: Run browser tests (Playwright container)
+        run: |
+          docker run --rm \
+            --ipc=host \
+            --init \
+            --user root \
+            -v "${{ github.workspace }}:${{ github.workspace }}" \
+            -w "${{ github.workspace }}" \
+            -e PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
+            -e CI=true \
+            mcr.microsoft.com/playwright:v1.60.0-noble \
+            npm run test:browser --workspaces --if-present
