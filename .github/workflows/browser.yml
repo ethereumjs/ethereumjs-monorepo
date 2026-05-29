@@ -37,12 +37,13 @@ jobs:
     strategy:
       fail-fast: false
     steps:
-      # Always checkout in container jobs: the workspace must exist and package-lock.json
-      # must be present before setup-node (node_modules/dist come from dep-cache when available).
-      - uses: actions/checkout@v5
-        with:
-          submodules: ${{ inputs.submodule-cache-key == 'none' && 'recursive' || false }}
+      # actions/checkout needs git in the container; without it, files are fetched via the
+      # REST API and there is no .git directory (npm prepare then fails).
+      - name: Install git
+        run: apt-get update && apt-get install -y --no-install-recommends git
 
+      # Restore node_modules/dist first; checkout below adds .git and tracked sources while
+      # leaving gitignored cache contents (node_modules, dist) in place.
       - if: inputs.dep-cache-key != 'none'
         uses: actions/cache/restore@v4
         id: dep-cache
@@ -50,13 +51,17 @@ jobs:
           path: ${{github.workspace}}
           key: ${{ inputs.dep-cache-key }}
 
+      - uses: actions/checkout@v5
+        with:
+          submodules: ${{ inputs.submodule-cache-key == 'none' && 'recursive' || false }}
+
       - name: Use Node.js 24
         uses: actions/setup-node@v6
         with:
           node-version: 24
 
       - name: Install dependencies (cache miss)
-        if: steps.dep-cache.outputs.cache-hit != 'true'
+        if: inputs.dep-cache-key == 'none' || steps.dep-cache.outputs.cache-hit != 'true'
         run: npm ci
         working-directory: ${{ github.workspace }}
 
