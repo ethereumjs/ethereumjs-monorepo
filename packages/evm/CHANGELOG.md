@@ -6,6 +6,58 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 10.1.2 - 2026-05-29
+
+### Release round overview
+
+Welcome to **`10.1.2`** — a coordinated release across all active `@ethereumjs/*` libraries on the **`10.1.x`** line. If you have been following the upcoming Amsterdam hardfork, this is our **first experimental preview** ready to try out: a largely complete **nine-EIP `Hardfork.Amsterdam` bundle**, currently aligned with [tests-bal@v7.1.0](https://github.com/ethereum/execution-specs/releases/tag/tests-bal@v7.1.0) and [BAL devnet-7](https://notes.ethereum.org/@ethpandaops/bal-devnet-7).
+
+Amsterdam is still in flux — **please do not use this in production yet** — and we expect further **`10.1.x`** releases as the spec and official tests evolve. The sections below cover **this package only**; for the full fork picture (EIP list, examples, release ↔ spec tracking), see the [@ethereumjs/vm Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental). On Osaka or earlier hardforks? Nothing changes unless you explicitly select `Hardfork.Amsterdam`.
+
+### `@ethereumjs/evm`
+
+`@ethereumjs/evm` is the low-level EVM interpreter: opcodes, precompiles, gas metering, and message-call semantics. Within the `10.1.2` round, Amsterdam changes land here first — new instructions, revised size limits, state-gas accounting inside the interpreter, and BAL footprint recording on `evm.blockLevelAccessList`. The VM wraps these details into `runBlock()` / `runTx()`; use the EVM directly when building tracers, custom runners, or `runCall()`-style tools.
+
+### At a glance
+
+- **EIP-8024** stack opcodes `DUPN`, `SWAPN`, `EXCHANGE` with immediate validation at decode time.
+- **EIP-7954** raised max contract code and initcode size (via `common.param('maxCodeSize')`).
+- **EIP-8037** state-gas reservoir on the EVM instance — state-touching ops draw from `evm.stateGasReservoir` before spilling into regular gas.
+- **EIP-7708** synthetic `Transfer` / `Burn` logs on value-moving paths; **EIP-7843** `SLOTNUM` opcode.
+- **EIP-7928** automatic state-access recording on `evm.blockLevelAccessList` when active.
+- Custom precompile API improvements (`PrefixedHexString`, `getPrecompile`, exported types), see PR [#4261](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4261).
+
+### Amsterdam (experimental)
+
+> Behaviour may change in subsequent `10.1.x` patch releases.
+> **Spec snapshot:** [tests-bal@v7.1.0](https://github.com/ethereum/execution-specs/releases/tag/tests-bal@v7.1.0) · **Testnet:** [BAL devnet-7](https://notes.ethereum.org/@ethpandaops/bal-devnet-7)
+> Fork overview: [Amsterdam hardfork (experimental)](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental)
+
+**EIP-8024** adds three stack-manipulation opcodes, each with a single-byte immediate (validated at decode — invalid immediates trap):
+
+```ts
+import { EVM } from '@ethereumjs/evm'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })
+const evm = await EVM.create({ common })
+
+// DUPN/SWAPN/EXCHANGE behave like extended DUP/SWAP variants;
+// gas: dupnGas / swapnGas / exchangeGas (default 3 each)
+```
+
+When **EIP-7928** is active, every state-touching operation appends to `evm.blockLevelAccessList` during `runCall()` / internal message execution. The VM reads this object after each transaction to build the block-level list. For BAL builder/validator flows see [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#eip-7928-block-level-access-lists-amsterdam).
+
+Further Amsterdam notes: [EIP-8024](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#eip-8024-stack-opcodes-amsterdam), [EIP-7954](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#eip-7954-contract-and-initcode-size-limits-amsterdam), [EIP-8037 / EIP-7708](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#eip-8037-and-eip-7708-amsterdam).
+
+### Changes
+
+- EIP-8024 stack opcodes, see PR [#4248](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4248), [#4302](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4302)
+- EIP-7954 max contract and initcode size, see PR [#4299](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4299)
+- EIP-8037 state-gas accounting and reservoir logic, see PR [#4285](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4285), [#4293](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4293), [#4301](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4301), [#4304](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4304)
+- EIP-7708 / EIP-7843 execution changes, see PR [#4239](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4239), [#4251](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4251), [#4263](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4263), [#4301](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4301)
+- EIP-7928 BAL accumulation during message execution, see PR [#4233](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4233), [#4304](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4304)
+
 ## 10.1.1 - 2025-01-28
 
 - Ensure `codeAddress` in step event is correctly set, see PR [#4189](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4189)

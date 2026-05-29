@@ -6,6 +6,51 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 10.1.2 - 2026-05-29
+
+### Release round overview
+
+Welcome to **`10.1.2`** — a coordinated release across all active `@ethereumjs/*` libraries on the **`10.1.x`** line. If you have been following the upcoming Amsterdam hardfork, this is our **first experimental preview** ready to try out: a largely complete **nine-EIP `Hardfork.Amsterdam` bundle**, currently aligned with [tests-bal@v7.1.0](https://github.com/ethereum/execution-specs/releases/tag/tests-bal@v7.1.0) and [BAL devnet-7](https://notes.ethereum.org/@ethpandaops/bal-devnet-7).
+
+Amsterdam is still in flux — **please do not use this in production yet** — and we expect further **`10.1.x`** releases as the spec and official tests evolve. The sections below cover **this package only**; for the full fork picture (EIP list, examples, release ↔ spec tracking), see the [@ethereumjs/vm Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental). On Osaka or earlier hardforks? Nothing changes unless you explicitly select `Hardfork.Amsterdam`.
+
+### `@ethereumjs/common`
+
+`@ethereumjs/common` is the fork and parameter engine: it answers “which EIPs are active?”, “what is `maxCodeSize`?”, and “what gas schedule applies?” for every other library. Within the `10.1.2` round, Amsterdam lands here as a new **`Hardfork.Amsterdam`** entry that activates the full nine-EIP bundle together — the same bundling execution-spec-tests and devnets use, so you should not cherry-pick individual Amsterdam EIPs in isolation when reproducing fixtures.
+
+For integrators, the practical effect is a single switch: construct your `Common` with `hardfork: Hardfork.Amsterdam` and all downstream packages (`@ethereumjs/evm`, `@ethereumjs/vm`, `@ethereumjs/tx`, …) inherit consistent activation and parameter values.
+
+### At a glance
+
+- Add experimental **`Hardfork.Amsterdam`** with EIPs 7708, 7843, 7778, 7928, 7954, 7976, 7981, 8024, and 8037.
+- Updated `gasPrices`, `gasConfig`, and `vm` parameters for Amsterdam (7954 size limits, 7976/7981 floor pricing constants, 8037 state-gas dimensions, …).
+
+### Amsterdam (experimental)
+
+> Behaviour may change in subsequent `10.1.x` patch releases.
+> **Spec snapshot:** [tests-bal@v7.1.0](https://github.com/ethereum/execution-specs/releases/tag/tests-bal@v7.1.0) · **Testnet:** [BAL devnet-7](https://notes.ethereum.org/@ethpandaops/bal-devnet-7)
+> Execution details: [Amsterdam hardfork (experimental)](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental)
+
+```ts
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })
+
+// Amsterdam raises max code / initcode size (EIP-7954)
+common.param('maxCodeSize') // 51200 (vs 24576 pre-Amsterdam)
+
+// EIP active checks drive behaviour in EVM, VM, Tx, Block
+common.isActivatedEIP(7928) // true — BAL accumulation in VM/EVM
+common.isActivatedEIP(8037) // true — two-dimensional block gas
+```
+
+The [Supported EIPs](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common#supported-eips) section lists every Amsterdam EIP with links to the package that implements execution semantics.
+
+### Changes
+
+- Amsterdam hardfork definition and EIP activations, see PR [#4239](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4239), [#4248](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4248), [#4280](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4280), [#4282](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4282), [#4285](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4285), [#4299](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4299)
+- Supported EIP list and Amsterdam documentation cross-links, see PR [#4308](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4308)
+
 ## 10.1.1 - 2025-01-28
 
 - Fix custom hardforks implementation to properly return hardforks list, see PR [#4216](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4216)

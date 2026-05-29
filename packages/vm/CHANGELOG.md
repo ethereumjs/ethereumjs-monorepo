@@ -6,6 +6,72 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 10.1.2 - 2026-05-29
+
+### Release round overview
+
+Welcome to **`10.1.2`** — a coordinated release across all active `@ethereumjs/*` libraries on the **`10.1.x`** line. If you have been following the upcoming Amsterdam hardfork, this is our **first experimental preview** ready to try out: a largely complete **nine-EIP `Hardfork.Amsterdam` bundle**, currently aligned with [tests-bal@v7.1.0](https://github.com/ethereum/execution-specs/releases/tag/tests-bal@v7.1.0) and [BAL devnet-7](https://notes.ethereum.org/@ethpandaops/bal-devnet-7).
+
+Amsterdam is still in flux — **please do not use this in production yet** — and we expect further **`10.1.x`** releases as the spec and official tests evolve. The sections below cover **this package only**; for the full fork picture (EIP list, examples, release ↔ spec tracking), see the [@ethereumjs/vm Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental). On Osaka or earlier hardforks? Nothing changes unless you explicitly select `Hardfork.Amsterdam`.
+
+### `@ethereumjs/vm`
+
+`@ethereumjs/vm` is the block-and-transaction execution orchestrator: it wires state, the EVM, consensus checks, and receipts into the high-level APIs most integrators call (`runBlock()`, `runTx()`, `createVM()`). Within the `10.1.2` round, this package carries the bulk of Amsterdam execution logic — BAL builder/validator flows, two-dimensional block gas, and receipt-level fork behaviour — along with spec-alignment fixes and an internal `runTx()` refactor since `10.1.1`.
+
+### At a glance
+
+- End-to-end **Amsterdam** block execution on `Hardfork.Amsterdam`: nine EIPs active together, matching how execution-spec-tests and devnets exercise the fork.
+- **EIP-7928** Block Level Access Lists (BAL): generate during `runBlock({ generate: true })`, validate with `RunBlockOpts.blockAccessList`, read back via `RunBlockResult.blockLevelAccessList`.
+- **EIP-8037 / EIP-7778** two-dimensional block gas and refund-aware header accounting — surfaced on `RunTxResult` without extra VM flags.
+- Passes the v700 mixed EST slice for [tests-bal@v7.1.0](https://github.com/ethereum/execution-specs/releases/tag/tests-bal@v7.1.0).
+
+### Amsterdam (experimental)
+
+> **Do not use in production.** Spec alignment and public APIs may change in subsequent `10.1.x` patch releases.
+
+| | |
+| --- | --- |
+| **Spec snapshot** | [tests-bal@v7.1.0](https://github.com/ethereum/execution-specs/releases/tag/tests-bal@v7.1.0) |
+| **Testnet** | [BAL devnet-7](https://notes.ethereum.org/@ethpandaops/bal-devnet-7) |
+| **Full overview** | [Amsterdam hardfork (experimental)](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) |
+
+When EIP-7928 is active the VM accumulates state accesses automatically during execution — no separate opt-in flag. For **block building**, run the block with `generate: true` and read the BAL from the result; the `afterBlock` event delivers a block whose header already carries the matching `blockAccessListHash`. For **validation**, pass a known BAL (JSON, RLP, or `BlockLevelAccessList`) via `blockAccessList`; the VM checks structure and hash before execution and compares against the list produced afterward.
+
+Full walkthrough: `packages/vm/examples/runBlockBalGenerate.ts` and `runBlockBalValidate.ts`. The validator example below shows the round-trip pattern:
+
+```ts
+import { createBlock } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createLegacyTx } from '@ethereumjs/tx'
+import { Account, createAddressFromPrivateKey, createZeroAddress, hexToBytes } from '@ethereumjs/util'
+import { createVM, runBlock } from '@ethereumjs/vm'
+
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })
+const vm = await createVM({ common })
+// … fund sender, build block …
+
+const generated = await runBlock(vm, { block, generate: true, skipBlockValidation: true })
+const balJson = generated.blockLevelAccessList!.toJSON()
+
+// Validator node: replay with the provided BAL
+await runBlock(vm2, { block: sealedBlock, blockAccessList: balJson, skipBlockValidation: true })
+```
+
+Under **EIP-8037**, each transaction contributes to separate regular and state gas dimensions (`RunTxResult.txRegularGas`, `txStateGas`); block header gas used becomes `max(block_regular_gas, block_state_gas)`. Under **EIP-7778**, `RunTxResult.blockGasSpent` is what counts toward the header (refunds excluded), while `totalGasSpent` is what the sender pays. **EIP-7708** transfer/burn logs appear in receipts like ordinary logs.
+
+Offline BAL parsing and hash checks live in [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util#module-bal); opcode-level details in [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#supported-eips).
+
+### Changes
+
+- EIP-7928 BAL generate/validate integration in `runBlock()`, see PR [#4233](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4233), [#4264](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4264), [#4303](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4303), [#4304](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4304), [#4306](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4306)
+- EIP-8037 two-dimensional block gas and state-gas reservoir, see PR [#4285](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4285), [#4293](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4293), [#4301](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4301), [#4307](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4307)
+- EIP-7976 calldata floor enforcement during block execution, see PR [#4280](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4280)
+- EIP-7778 block gas accounting, see PR [#4248](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4248), [#4307](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4307)
+- EIP-7708 / EIP-7843 execution-layer behaviour, see PR [#4239](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4239), [#4263](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4263), [#4301](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4301)
+- Structural refactor and cleanup of `runTx()`, see PR [#4240](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4240)
+- Execution-spec-tests runner and fixture updates through v7.1.0, see PR [#4207](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4207), [#4298](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4298)
+- Amsterdam documentation and release ↔ spec tracking table, see PR [#4308](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4308)
+
 ## 10.1.1 - 2025-01-28
 
 - Revert state changes if header validation fails in `runBlock`, see PR [#4227](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4227)

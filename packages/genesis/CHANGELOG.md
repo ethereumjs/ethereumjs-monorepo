@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 10.1.2 - 2026-05-29
+
+### Release round overview
+
+Welcome to **`10.1.2`** — a coordinated release across all active `@ethereumjs/*` libraries on the **`10.1.x`** line. If you have been following the upcoming Amsterdam hardfork, this is our **first experimental preview** ready to try out: a largely complete **nine-EIP `Hardfork.Amsterdam` bundle**, currently aligned with [tests-bal@v7.1.0](https://github.com/ethereum/execution-specs/releases/tag/tests-bal@v7.1.0) and [BAL devnet-7](https://notes.ethereum.org/@ethpandaops/bal-devnet-7).
+
+Amsterdam is still in flux — **please do not use this in production yet** — and we expect further **`10.1.x`** releases as the spec and official tests evolve. The sections below cover **this package only**; for the full fork picture (EIP list, examples, release ↔ spec tracking), see the [@ethereumjs/vm Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental). On Osaka or earlier hardforks? Nothing changes unless you explicitly select `Hardfork.Amsterdam`.
+
+### `@ethereumjs/genesis`
+
+`@ethereumjs/genesis` provides genesis-state helpers and JSON genesis parsing used when bootstrapping chains and test environments. Amsterdam does not introduce new genesis formats in the `10.1.2` round; this package bumps in version only to stay aligned with the monorepo. If you spin up an Amsterdam test environment, you will typically set `hardfork: Hardfork.Amsterdam` on your `Common` at runtime rather than changing genesis handling here.
+
 ## 10.1.1 - 2025-01-28
 
 Maintenance release, no active changes.

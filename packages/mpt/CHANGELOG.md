@@ -6,6 +6,27 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 10.1.2 - 2026-05-29
+
+### Release round overview
+
+Welcome to **`10.1.2`** — a coordinated release across all active `@ethereumjs/*` libraries on the **`10.1.x`** line. If you have been following the upcoming Amsterdam hardfork, this is our **first experimental preview** ready to try out: a largely complete **nine-EIP `Hardfork.Amsterdam` bundle**, currently aligned with [tests-bal@v7.1.0](https://github.com/ethereum/execution-specs/releases/tag/tests-bal@v7.1.0) and [BAL devnet-7](https://notes.ethereum.org/@ethpandaops/bal-devnet-7).
+
+Amsterdam is still in flux — **please do not use this in production yet** — and we expect further **`10.1.x`** releases as the spec and official tests evolve. The sections below cover **this package only**; for the full fork picture (EIP list, examples, release ↔ spec tracking), see the [@ethereumjs/vm Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental). On Osaka or earlier hardforks? Nothing changes unless you explicitly select `Hardfork.Amsterdam`.
+
+### `@ethereumjs/mpt`
+
+`@ethereumjs/mpt` implements the Merkle Patricia Trie used by `@ethereumjs/statemanager` and `@ethereumjs/vm` for account and storage state. Amsterdam execution touches many more state paths (BAL recording, state-gas accounting), but those semantics live in the EVM/VM layers — within the `10.1.2` round this package is primarily a **version sync** so consumers can depend on a consistent `@ethereumjs/*` set when experimenting with Amsterdam.
+
+### At a glance
+
+- Monorepo version sync for `@ethereumjs/*` `10.1.2` — no public API changes.
+- Internal MPT class refactor and simplification, see PR [#4241](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4241).
+
+### Amsterdam (experimental)
+
+State reads and writes during Amsterdam block execution flow through the same MPT interface as before. For BAL and state-gas behaviour see [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental).
+
 ## 10.1.1 - 2025-01-28
 
 - Deprecate Node.js 18 support, minimum Node.js version is now 20, see PR [#4180](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4180)

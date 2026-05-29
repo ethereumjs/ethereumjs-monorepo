@@ -6,6 +6,55 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 10.1.2 - 2026-05-29
+
+### Release round overview
+
+Welcome to **`10.1.2`** — a coordinated release across all active `@ethereumjs/*` libraries on the **`10.1.x`** line. If you have been following the upcoming Amsterdam hardfork, this is our **first experimental preview** ready to try out: a largely complete **nine-EIP `Hardfork.Amsterdam` bundle**, currently aligned with [tests-bal@v7.1.0](https://github.com/ethereum/execution-specs/releases/tag/tests-bal@v7.1.0) and [BAL devnet-7](https://notes.ethereum.org/@ethpandaops/bal-devnet-7).
+
+Amsterdam is still in flux — **please do not use this in production yet** — and we expect further **`10.1.x`** releases as the spec and official tests evolve. The sections below cover **this package only**; for the full fork picture (EIP list, examples, release ↔ spec tracking), see the [@ethereumjs/vm Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental). On Osaka or earlier hardforks? Nothing changes unless you explicitly select `Hardfork.Amsterdam`.
+
+### `@ethereumjs/block`
+
+`@ethereumjs/block` owns the block header and body data model: serialization, consensus field validation, and the typed accessors you use when constructing or parsing blocks before handing them to the VM or a chain backend. Within the `10.1.2` round, Amsterdam extends the header with two new fields — and this library is where you set, read, and validate them.
+
+### At a glance
+
+- **`blockAccessListHash`** (EIP-7928): 32-byte commitment to the canonical BAL RLP encoding.
+- **`slotNumber`** (EIP-7843): 64-bit consensus field read by the `SLOTNUM` opcode during execution.
+- Header validation rejects missing or malformed fields when the corresponding EIPs are active on `Hardfork.Amsterdam`.
+
+### Amsterdam (experimental)
+
+> Behaviour may change in subsequent `10.1.x` patch releases.
+> **Spec snapshot:** [tests-bal@v7.1.0](https://github.com/ethereum/execution-specs/releases/tag/tests-bal@v7.1.0) · **Testnet:** [BAL devnet-7](https://notes.ethereum.org/@ethpandaops/bal-devnet-7)
+> Fork overview: [Amsterdam hardfork (experimental)](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental)
+
+For **BAL**, the hash is `keccak256(rlp(bal))`. You can compute it offline with `@ethereumjs/util` when assembling a block manually, or let `@ethereumjs/vm` set it when using `runBlock({ generate: true })`:
+
+```ts
+import { createBlock } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { bytesToHex, createBlockLevelAccessListFromJSON } from '@ethereumjs/util'
+
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })
+const bal = createBlockLevelAccessListFromJSON(balJson)
+
+const block = createBlock(
+  { header: { blockAccessListHash: bal.hash() } },
+  { common, skipConsensusFormatValidation: true },
+)
+
+console.log(bytesToHex(block.header.blockAccessListHash!))
+```
+
+For **`slotNumber`**, set the field explicitly when building blocks — `runBlock({ generate: true })` does not populate it yet. See `packages/block/examples/blockSlotNumber.ts` and the [EIP-7843 section](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/block#blocks-with-eip-7843-slot-number) in the README.
+
+### Changes
+
+- EIP-7928 `blockAccessListHash` header field, see PR [#4233](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4233)
+- EIP-7843 `slotNumber` header field, see PR [#4239](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4239)
+
 ## 10.1.1 - 2025-01-28
 
 - Deprecate Node.js 18 support, minimum Node.js version is now 20, see PR [#4180](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4180)
