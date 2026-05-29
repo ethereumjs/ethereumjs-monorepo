@@ -436,6 +436,14 @@ Note that this EIP has no effect on the resolution of the `BLOCKHASH` opcode, wh
 
 ### Amsterdam hardfork (experimental)
 
+This section is the **canonical overview** for experimental Amsterdam support: which library release maps to which spec snapshot, and where to read more. Amsterdam remains unstable — expect further `10.1.x` releases as the spec and testnets evolve.
+
+**Release ↔ spec tracking**
+
+| Release | Summary | EST fixtures | Testnet |
+| --- | --- | --- | --- |
+| `v10.1.2` | First experimental Amsterdam release: full 9-EIP `Hardfork.Amsterdam` bundle, BAL builder/validator APIs (7928), two-dimensional block gas (8037); passes v700 mixed EST slice. | [tests-bal@v7.1.0](https://github.com/ethereum/execution-specs/releases/tag/tests-bal@v7.1.0) | [BAL devnet-7](https://notes.ethereum.org/@ethpandaops/bal-devnet-7) |
+
 The `Hardfork.Amsterdam` bundle activates the following EIPs. Amsterdam test fixtures and execution-spec tests typically enable the full set together rather than individual EIPs in isolation.
 
 | EIP | Summary | Documentation |
