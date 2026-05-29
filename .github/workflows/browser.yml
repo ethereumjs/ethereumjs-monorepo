@@ -19,6 +19,8 @@ on:
 
 env:
   cwd: ${{github.workspace}}
+  # Keep in sync with package-lock.json playwright version.
+  PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-browser
@@ -28,6 +30,10 @@ jobs:
   test-all-browser:
     if: contains(join(github.event.pull_request.labels.*.name, ' '), 'test no browser') == false
     runs-on: ubuntu-latest
+    # Preinstalled Chromium (playwright@1.60.0) — no ~150MB download per run.
+    container:
+      image: mcr.microsoft.com/playwright:v1.60.0-noble
+      options: --ipc=host --init
     strategy:
       fail-fast: false
     steps:
@@ -64,10 +70,4 @@ jobs:
           path: ${{github.workspace}}/packages/ethereum-tests
           key: ${{ inputs.submodule-cache-key }}
 
-      - run: npm run install-browser-deps
-      - run: npx playwright install --with-deps
-
       - run: npm run test:browser --workspaces --if-present
-
-
-
