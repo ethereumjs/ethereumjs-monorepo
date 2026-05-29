@@ -8,14 +8,19 @@
  * Usage:
  *   tsx scripts/release-npm.ts [--bump-version=<version>] [--publish=<tag>] [--scope=<scope>]
  *
+ * With no flags, publishes current package versions to npm under the `latest` tag.
+ *
  * Examples:
+ *   # Publish current versions (default tag: latest)
+ *   tsx scripts/release-npm.ts
+ *
  *   # Bump versions only (no publish)
  *   tsx scripts/release-npm.ts --bump-version=10.1.0
  *
  *   # Bump versions and publish
  *   tsx scripts/release-npm.ts --bump-version=10.1.1-nightly.1 --publish=nightly
  *
- *   # Publish current versions (no bump)
+ *   # Publish current versions explicitly
  *   tsx scripts/release-npm.ts --publish=latest
  *
  *   # Fork release under a different npm scope
@@ -44,6 +49,22 @@ const ACTIVE_PACKAGES = [
   'statemanager',
   'tx',
   'util',
+  'vm',
+]
+
+// Dependency order for npm publish (deps must exist on the registry first)
+const PUBLISH_ORDER = [
+  'rlp',
+  'util',
+  'common',
+  'binarytree',
+  'genesis',
+  'tx',
+  'mpt',
+  'block',
+  'statemanager',
+  'evm',
+  'blockchain',
   'vm',
 ]
 
@@ -89,21 +110,13 @@ function parseArgs(): ParsedArgs {
   const otpArg = args.find((arg) => arg.startsWith('--otp='))
 
   const version = versionArg?.split('=')[1]
-  const tag = publishArg?.split('=')[1]
+  let tag = publishArg?.split('=')[1]
   const scope = scopeArg?.split('=')[1] ?? DEFAULT_SCOPE
   const otp = otpArg?.split('=')[1]
 
-  // Validate: at least one action must be specified
+  // No flags: publish current versions under `latest` (after a manual version bump)
   if (!version && !tag) {
-    console.error('Usage: tsx scripts/release-npm.ts [--bump-version=<version>] [--publish=<tag>] [--scope=<scope>] [--otp=<code>]')
-    console.error('')
-    console.error('Examples:')
-    console.error('  tsx scripts/release-npm.ts --bump-version=10.1.0')
-    console.error('  tsx scripts/release-npm.ts --bump-version=10.1.1-nightly.1 --publish=nightly')
-    console.error('  tsx scripts/release-npm.ts --publish=latest')
-    console.error('  tsx scripts/release-npm.ts --scope=feelyourprotocol --bump-version=8141.0.0 --publish=latest')
-    console.error('  tsx scripts/release-npm.ts --publish=latest --otp=123456')
-    process.exit(1)
+    tag = 'latest'
   }
 
   return { version, tag, scope, otp }
@@ -267,12 +280,38 @@ function buildPackages(packages: PackageInfo[]): void {
   console.log('\n✅ All packages built\n')
 }
 
+function packagesInPublishOrder(packages: PackageInfo[]): PackageInfo[] {
+  const byName = new Map(packages.map((pkg) => [pkg.name, pkg]))
+  return PUBLISH_ORDER.map((name) => {
+    const pkg = byName.get(name)
+    if (!pkg) {
+      throw new Error(`Publish order references unknown package: ${name}`)
+    }
+    return pkg
+  })
+}
+
+function verifyNpmAuth(): void {
+  try {
+    const user = execSync('npm whoami', { encoding: 'utf-8' }).trim()
+    console.log(`\n🔐 npm authenticated as ${user}\n`)
+  } catch {
+    console.error('\n❌ Not authenticated with npm.')
+    console.error('   Run `npm login` or configure a token in ~/.npmrc before publishing.')
+    console.error('   See DEVELOPER.md (Releases) for auth options.\n')
+    process.exit(1)
+  }
+}
+
 function publishPackages(packages: PackageInfo[], tag: string, isFork: boolean, otp?: string): void {
   const ignoreScripts = isFork ? ' --ignore-scripts' : ''
   const otpFlag = otp ? ` --otp=${otp}` : ''
+  const orderedPackages = packagesInPublishOrder(packages)
   console.log(`\n🚀 Publishing packages with tag "${tag}"${isFork ? ' (--ignore-scripts)' : ''}...\n`)
 
-  for (const pkg of packages) {
+  verifyNpmAuth()
+
+  for (const pkg of orderedPackages) {
     const displayName = pkg.packageJson.name
     console.log(`  Publishing ${displayName}...`)
     
@@ -396,7 +435,7 @@ async function main(): Promise<void> {
     if (tag) {
       publishPackages(packages, tag, isFork, otp)
     } else {
-      console.log('\n📋 Skipping publish (use --publish=<tag> to publish packages)\n')
+      console.log('\n📋 Skipping publish (use --publish=<tag> or run without flags after bumping)\n')
     }
 
     console.log('\n' + '='.repeat(60))

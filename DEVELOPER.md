@@ -79,38 +79,52 @@ Most release rounds are done as bugfix releases, including releases of non-final
 We have a release script that handles version bumping and publishing for all packages. It supports both regular releases and lightweight in-between releases (nightly, alpha).
 
 ```sh
-tsx scripts/release-npm.ts [--bump-version=<version>] [--publish=<tag>] [--scope=<scope>]
+tsx scripts/release-npm.ts [--bump-version=<version>] [--publish=<tag>] [--scope=<scope>] [--otp=<code>]
 ```
 
 **Options:**
 
-- `--bump-version=<version>` - Bump package versions to the specified version
-- `--publish=<tag>` - Publish packages with the specified npm tag
+- `--bump-version=<version>` - Bump package versions to the specified version (skips publish unless `--publish` is also set)
+- `--publish=<tag>` - Publish packages with the specified npm tag (default: `latest`)
 - `--scope=<scope>` - Publish under a different npm scope (default: `ethereumjs`, see [Fork Releases](#fork-releases-feel-your-protocol))
+- `--otp=<code>` - One-time password when npm 2FA is enabled
 
-At least one of `--bump-version` or `--publish` must be specified.
+With **no flags**, the script publishes the current package versions to npm under the `latest` tag (typical flow after a manual version bump and CHANGELOG prep).
 
-When publishing, ensure you are authenticated with npm via `npm login` beforehand.
+**npm authentication** (required for publish):
+
+- **Interactive (maintainer laptop):** `npm login` — stores a token in `~/.npmrc`. Use a [granular access token](https://docs.npmjs.com/creating-and-viewing-access-tokens) with publish access to the `@ethereumjs` scope (recommended over classic tokens).
+- **Token in config:** add `//registry.npmjs.org/:_authToken=<token>` to `~/.npmrc` (never commit tokens). Same granular publish token as above.
+- **2FA:** pass `--otp=<code>` when your npm account requires it.
+
+The script runs `npm whoami` before publishing and exits if you are not authenticated.
 
 **What the script does:**
 
-- **Active packages**: Updates version numbers and `@ethereumjs/*` dependency references
-- **Deprecated packages + testdata**: Only updates (active) `@ethereumjs/*` dependency references (keeps their own version unchanged, not published)
+- **Active packages**: Updates version numbers and `@ethereumjs/*` dependency references (with `--bump-version`), then publishes in dependency order (`rlp` → … → `vm`)
+- **Deprecated packages + testdata**: Only updates (active) `@ethereumjs/*` dependency references when bumping (keeps their own version unchanged, not published)
+- **`prepublishOnly` per package**: clean, build, and test run automatically via `npm publish` (can take a while for the full round)
 
 **Examples:**
 
 ```sh
+# Publish current versions (after bump + CHANGELOG prep) — most common
+tsx scripts/release-npm.ts
+
+# Same, explicit tag
+tsx scripts/release-npm.ts --publish=latest
+
 # Bump versions only (no publish) - for preparing a release
 tsx scripts/release-npm.ts --bump-version=10.1.0
 
-# Bump versions and publish - full release
+# Bump versions and publish - full release in one step
 tsx scripts/release-npm.ts --bump-version=10.1.0 --publish=latest
 
 # Lightweight nightly release
 tsx scripts/release-npm.ts --bump-version=10.1.1-nightly.1 --publish=nightly
 
-# Publish current versions without bumping
-tsx scripts/release-npm.ts --publish=latest
+# Publish with 2FA one-time password
+tsx scripts/release-npm.ts --otp=123456
 ```
 
 ##### Fork Releases (Feel Your Protocol)
