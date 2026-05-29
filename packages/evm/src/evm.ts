@@ -215,6 +215,11 @@ export class EVM implements EVMInterface {
   public readonly allowUnlimitedContractSize: boolean
   public readonly allowUnlimitedInitCodeSize: boolean
 
+  /**
+   * Accumulated block access list when EIP-7928 is active.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
   public readonly blockLevelAccessList?: BlockLevelAccessList
 
   /**
@@ -224,15 +229,22 @@ export class EVM implements EVMInterface {
    * draw from `stateGasReservoir` first; once exhausted, they fall through to
    * the regular `gasLeft`. Refunds (revert / exceptional halt / SELFDESTRUCT
    * of same-tx-created accounts) refill it.
-   * Initialized by runTx at the start of each transaction; 0 when EIP-8037 is
-   * inactive.
+   * Initialized by `runTx` at the start of each transaction; `0` when EIP-8037 is inactive.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
    */
   public stateGasReservoir: bigint = BIGINT_0
-  /** EIP-8037 cumulative state-gas used by the current transaction. */
+  /**
+   * EIP-8037 cumulative state-gas used by the current transaction.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
   public executionStateGasUsed: bigint = BIGINT_0
   /**
    * EIP-7928 CALL post-state OOG: set while handling post-target access failure so
-   * runTx drains the state-gas reservoir and the sender pays the full tx gas limit.
+   * `runTx` drains the state-gas reservoir and the sender pays the full tx gas limit.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
    */
   public eip7928CallPostTargetOog = false
   /**

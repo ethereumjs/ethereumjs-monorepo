@@ -327,6 +327,9 @@ export interface RunBlockOpts {
    * Block-level access list supplied with the block (e.g. from an execution payload).
    * When set and EIP-7928 is active, {@link runBlock} validates structure and header hash
    * before execution and RLP equality against the generated list after execution.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases. See `@ethereumjs/vm`
+   * README section `Amsterdam hardfork (experimental)` for release ↔ spec tracking.
    */
   blockAccessList?: BALJSONBlockAccessList | BlockLevelAccessList | Uint8Array
 }
@@ -383,8 +386,12 @@ export interface RunBlockResult extends Omit<ApplyBlockResult, 'bloom'> {
    */
   requests?: CLRequest<CLRequestType>[]
   /**
-   * The block level access list created during execution
-   * (if EIP-7928 is active)
+   * The block level access list created during execution when EIP-7928 is active.
+   * Populated by {@link runBlock} / {@link applyBlock}; use with `generate: true` for
+   * builder flows or pass via {@link RunBlockOpts.blockAccessList} for validation.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases. See `@ethereumjs/vm`
+   * README section `Amsterdam hardfork (experimental)` for release ↔ spec tracking.
    */
   blockLevelAccessList?: BlockLevelAccessList
 }
@@ -481,23 +488,27 @@ export interface RunTxResult extends EVMResult {
 
   /**
    * The amount of gas accounted for at block level.
-   * On EIP-7778 this excludes tx-level refund subtraction.
+   * Under EIP-7778 (Amsterdam) this excludes tx-level refund subtraction from header `gasUsed`.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
    */
   blockGasSpent: bigint
 
   /**
-   * EIP-8037 per-tx state-gas total (intrinsic_state_gas +
-   * execution_state_gas_used). Undefined when 8037 is inactive.
-   * Used by runBlock to track the block-level state-gas dimension and
-   * compute `gas_used = max(block_regular_gas_used, block_state_gas_used)`.
+   * EIP-8037 per-tx state-gas total (`intrinsic_state_gas + execution_state_gas_used`).
+   * Undefined when EIP-8037 is inactive. Used by `runBlock` to track the block-level
+   * state-gas dimension and compute `gas_used = max(block_regular_gas_used, block_state_gas_used)`.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
    */
   txStateGas?: bigint
 
   /**
-   * EIP-8037 per-tx regular-gas total (intrinsic_regular_gas +
-   * execution_regular_gas_used; with the EIP-7623 calldata floor applied
-   * via `max(tx_regular_gas, calldata_floor_gas_cost)` at the block level).
-   * Undefined when 8037 is inactive.
+   * EIP-8037 per-tx regular-gas total (`intrinsic_regular_gas + execution_regular_gas_used`,
+   * with the EIP-7623 calldata floor applied via `max(tx_regular_gas, calldata_floor_gas_cost)`
+   * at the block level). Undefined when EIP-8037 is inactive.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
    */
   txRegularGas?: bigint
 

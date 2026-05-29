@@ -182,14 +182,29 @@ export interface EVMInterface {
   events?: EventEmitter<EVMEvent>
   binaryTreeAccessWitness?: BinaryTreeAccessWitness
   systemBinaryTreeAccessWitness?: BinaryTreeAccessWitness
+  /**
+   * Accumulated block access list when EIP-7928 is active.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
   blockLevelAccessList?: BlockLevelAccessList
-  /** EIP-8037: per-tx state-gas reservoir (set by runTx, read/written by opcodes). */
+  /**
+   * EIP-8037 per-tx state-gas reservoir (set by `runTx`, read/written by opcodes).
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
   stateGasReservoir: bigint
-  /** EIP-8037: per-tx cumulative state-gas used. */
+  /**
+   * EIP-8037 per-tx cumulative state-gas used.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
   executionStateGasUsed: bigint
   /**
-   * EIP-7928: set during CALL post-target OOG so runTx can drain the state-gas
-   * reservoir on exceptional halt. Optional for custom {@link EVMInterface} implementations.
+   * EIP-7928: set during CALL post-target OOG so `runTx` can drain the state-gas reservoir
+   * on exceptional halt. Optional for custom {@link EVMInterface} implementations.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
    */
   eip7928CallPostTargetOog?: boolean
 }
@@ -269,6 +284,7 @@ export interface EVMOpts {
    * - Hardfork labels (e.g. `(Prague)`) indicate default activation on that fork
    * - `(Amsterdam, experimental)` and `(experimental)` mark unstable specs; behaviour can change on patch releases
    * - Release ↔ spec tracking: canonical Amsterdam overview in `@ethereumjs/vm` README (`#amsterdam-hardfork-experimental`)
+   * - Amsterdam-related fields and helpers may change on patch releases without a major bump
    */
   common?: Common
 
@@ -405,8 +421,10 @@ export interface EVMOpts {
   profiler?: EVMProfilerOpts
 
   /**
-   * If EIP-7928 is activated, a block-level access list can be provided here.
-   * If not provided, a new one will be created if EIP-7928 is activated
+   * Optional pre-built block access list when EIP-7928 is active.
+   * If omitted, {@link EVM} creates one automatically when the EIP is activated.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
    */
   blockLevelAccessList?: BlockLevelAccessList
 

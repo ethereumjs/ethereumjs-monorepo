@@ -63,7 +63,9 @@ export class BlockHeader {
   public readonly excessBlobGas?: bigint
   public readonly parentBeaconBlockRoot?: Uint8Array
   public readonly requestsHash?: Uint8Array
+  /** EIP-7928 block access list hash. Experimental (Amsterdam); may change on patch releases. */
   public readonly blockAccessListHash?: Uint8Array
+  /** EIP-7843 slot number. Experimental (Amsterdam); may change on patch releases. */
   public readonly slotNumber?: bigint
 
   public readonly common: Common
