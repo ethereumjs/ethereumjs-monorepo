@@ -64,7 +64,7 @@ Defined in: [precompiles/bn254/rustbn.ts:19](https://github.com/ethereumjs/ether
 
 > **mul**(`input`): `Uint8Array`
 
-Defined in: [precompiles/bn254/rustbn.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/bn254/rustbn.ts#L24)
+Defined in: [precompiles/bn254/rustbn.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/bn254/rustbn.ts#L25)
 
 #### Parameters
 
@@ -86,7 +86,7 @@ Defined in: [precompiles/bn254/rustbn.ts:24](https://github.com/ethereumjs/ether
 
 > **pairing**(`input`): `Uint8Array`
 
-Defined in: [precompiles/bn254/rustbn.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/bn254/rustbn.ts#L28)
+Defined in: [precompiles/bn254/rustbn.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/bn254/rustbn.ts#L30)
 
 #### Parameters
 

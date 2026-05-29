@@ -66,7 +66,7 @@ Defined in: [consensus/ethash.ts:19](https://github.com/ethereumjs/ethereumjs-mo
 
 > **genesisInit**(): `Promise`\<`void`\>
 
-Defined in: [consensus/ethash.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L64)
+Defined in: [consensus/ethash.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L63)
 
 Initialize genesis for consensus mechanism
 
@@ -84,7 +84,7 @@ Initialize genesis for consensus mechanism
 
 > **newBlock**(): `Promise`\<`void`\>
 
-Defined in: [consensus/ethash.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L69)
+Defined in: [consensus/ethash.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L68)
 
 Update consensus on new block
 
@@ -102,7 +102,7 @@ Update consensus on new block
 
 > **setup**(`__namedParameters`): `Promise`\<`void`\>
 
-Defined in: [consensus/ethash.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L65)
+Defined in: [consensus/ethash.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L64)
 
 Set up consensus mechanism
 
@@ -126,7 +126,7 @@ Set up consensus mechanism
 
 > **validateConsensus**(`block`): `Promise`\<`void`\>
 
-Defined in: [consensus/ethash.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L35)
+Defined in: [consensus/ethash.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L34)
 
 Validate block consensus parameters
 
@@ -152,7 +152,7 @@ block to be validated
 
 > **validateDifficulty**(`header`): `Promise`\<`void`\>
 
-Defined in: [consensus/ethash.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L50)
+Defined in: [consensus/ethash.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L49)
 
 Checks that the block's `difficulty` matches the canonical difficulty of the parent header.
 

@@ -8,7 +8,7 @@
 
 > **createBlockHeaderFromRLP**(`serializedHeaderData`, `opts`): [`BlockHeader`](../classes/BlockHeader.md)
 
-Defined in: [header/constructors.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/constructors.ts#L63)
+Defined in: [header/constructors.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/constructors.ts#L69)
 
 Static constructor to create a block header from a RLP-serialized header
 

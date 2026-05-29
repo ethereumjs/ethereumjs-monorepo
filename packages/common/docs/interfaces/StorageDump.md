@@ -6,7 +6,7 @@
 
 # Interface: StorageDump
 
-Defined in: [interfaces.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L12)
+Defined in: [common/src/interfaces.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L12)
 
 ## Indexable
 

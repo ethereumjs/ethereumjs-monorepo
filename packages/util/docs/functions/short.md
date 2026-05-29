@@ -8,7 +8,7 @@
 
 > **short**(`bytes`, `maxLength`): `string`
 
-Defined in: [packages/util/src/bytes.ts:315](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L315)
+Defined in: [packages/util/src/bytes.ts:341](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L341)
 
 Shortens a string  or Uint8Array's hex string representation to maxLength (default 50).
 

@@ -16,7 +16,7 @@ An object that represents the block header.
 
 > **new BlockHeader**(`headerData`, `opts`): `BlockHeader`
 
-Defined in: [header/header.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L95)
+Defined in: [header/header.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L99)
 
 This constructor takes the values, validates them, assigns them and freezes the object.
 
@@ -57,6 +57,16 @@ Defined in: [header/header.ts:62](https://github.com/ethereumjs/ethereumjs-monor
 
 ***
 
+### blockAccessListHash?
+
+> `readonly` `optional` **blockAccessListHash**: `Uint8Array`\<`ArrayBufferLike`\>
+
+Defined in: [header/header.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L67)
+
+EIP-7928 block access list hash. Experimental (Amsterdam); may change on patch releases.
+
+***
+
 ### coinbase
 
 > `readonly` **coinbase**: `Address`
@@ -69,7 +79,7 @@ Defined in: [header/header.ts:47](https://github.com/ethereumjs/ethereumjs-monor
 
 > `readonly` **common**: `Common`
 
-Defined in: [header/header.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L67)
+Defined in: [header/header.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L71)
 
 ***
 
@@ -177,6 +187,16 @@ Defined in: [header/header.ts:65](https://github.com/ethereumjs/ethereumjs-monor
 
 ***
 
+### slotNumber?
+
+> `readonly` `optional` **slotNumber**: `bigint`
+
+Defined in: [header/header.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L69)
+
+EIP-7843 slot number. Experimental (Amsterdam); may change on patch releases.
+
+***
+
 ### stateRoot
 
 > `readonly` **stateRoot**: `Uint8Array`
@@ -223,7 +243,7 @@ Defined in: [header/header.ts:61](https://github.com/ethereumjs/ethereumjs-monor
 
 > **get** **prevRandao**(): `Uint8Array`\<`ArrayBufferLike`\>
 
-Defined in: [header/header.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L78)
+Defined in: [header/header.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L82)
 
 EIP-4399: After merge to PoS, `mixHash` supplanted as `prevRandao`
 
@@ -237,7 +257,7 @@ EIP-4399: After merge to PoS, `mixHash` supplanted as `prevRandao`
 
 > **calcDataFee**(`numBlobs`): `bigint`
 
-Defined in: [header/header.ts:551](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L551)
+Defined in: [header/header.ts:594](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L594)
 
 Returns the total fee for blob gas spent for including blobs in block.
 
@@ -261,7 +281,7 @@ the total blob gas fee for numBlobs blobs
 
 > **calcNextBaseFee**(): `bigint`
 
-Defined in: [header/header.ts:500](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L500)
+Defined in: [header/header.ts:543](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L543)
 
 Calculates the base fee for a potential next block
 
@@ -275,7 +295,7 @@ Calculates the base fee for a potential next block
 
 > **calcNextBlobGasPrice**(`childCommon`): `bigint`
 
-Defined in: [header/header.ts:595](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L595)
+Defined in: [header/header.ts:638](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L638)
 
 Calculate the blob gas price of the block built on top of this one
 
@@ -297,7 +317,7 @@ The blob gas price
 
 > **calcNextExcessBlobGas**(`childCommon`): `bigint`
 
-Defined in: [header/header.ts:562](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L562)
+Defined in: [header/header.ts:605](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L605)
 
 Calculates the excess blob gas for next (hopefully) post EIP 4844 block.
 
@@ -317,7 +337,7 @@ Calculates the excess blob gas for next (hopefully) post EIP 4844 block.
 
 > **errorStr**(): `string`
 
-Defined in: [header/header.ts:810](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L810)
+Defined in: [header/header.ts:865](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L865)
 
 Return a compact error string representation of the object
 
@@ -331,7 +351,7 @@ Return a compact error string representation of the object
 
 > **ethashCanonicalDifficulty**(`parentBlockHeader`): `bigint`
 
-Defined in: [header/header.ts:666](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L666)
+Defined in: [header/header.ts:715](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L715)
 
 Returns the canonical difficulty for this block.
 
@@ -353,7 +373,7 @@ the header from the parent `Block` of this header
 
 > **getBlobGasPrice**(): `bigint`
 
-Defined in: [header/header.ts:538](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L538)
+Defined in: [header/header.ts:581](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L581)
 
 Returns the price per unit of blob gas for a blob transaction in the current/pending block
 
@@ -369,7 +389,7 @@ the price in gwei per unit of blob gas spent
 
 > **hash**(): `Uint8Array`
 
-Defined in: [header/header.ts:646](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L646)
+Defined in: [header/header.ts:695](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L695)
 
 Returns the hash of the block header.
 
@@ -383,7 +403,7 @@ Returns the hash of the block header.
 
 > **isGenesis**(): `boolean`
 
-Defined in: [header/header.ts:657](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L657)
+Defined in: [header/header.ts:706](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L706)
 
 Checks if the block header is a genesis header.
 
@@ -397,7 +417,7 @@ Checks if the block header is a genesis header.
 
 > **raw**(): [`BlockHeaderBytes`](../type-aliases/BlockHeaderBytes.md)
 
-Defined in: [header/header.ts:602](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L602)
+Defined in: [header/header.ts:645](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L645)
 
 Returns a Uint8Array Array of the raw Bytes in this header, in order.
 
@@ -411,7 +431,7 @@ Returns a Uint8Array Array of the raw Bytes in this header, in order.
 
 > **serialize**(): `Uint8Array`
 
-Defined in: [header/header.ts:737](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L737)
+Defined in: [header/header.ts:786](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L786)
 
 Returns the rlp encoding of the block header.
 
@@ -425,7 +445,7 @@ Returns the rlp encoding of the block header.
 
 > **toJSON**(): [`JSONHeader`](../interfaces/JSONHeader.md)
 
-Defined in: [header/header.ts:744](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L744)
+Defined in: [header/header.ts:793](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L793)
 
 Returns the block header in JSON format.
 
@@ -439,7 +459,7 @@ Returns the block header in JSON format.
 
 > **validateGasLimit**(`parentBlockHeader`): `void`
 
-Defined in: [header/header.ts:454](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L454)
+Defined in: [header/header.ts:497](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L497)
 
 Validates if the block gasLimit remains in the boundaries set by the protocol.
 Throws if out of bounds.

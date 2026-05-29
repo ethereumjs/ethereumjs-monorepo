@@ -184,7 +184,7 @@ Determines if this block is the genesis block.
 
 Defined in: [block/block.ts:121](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block/block.ts#L121)
 
-Returns a Array of the raw Bytes Arrays of this block, in order.
+Returns an array of the raw byte arrays for this block, in order.
 
 #### Returns
 

@@ -8,7 +8,7 @@
 
 > **EVMBN254Interface** = `object`
 
-Defined in: [types.ts:460](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L460)
+Defined in: [types.ts:515](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L515)
 
 High level wrapper for BN254 (alt_BN128) libraries
 used for the BN254 (alt_BN128) EC precompiles
@@ -19,7 +19,7 @@ used for the BN254 (alt_BN128) EC precompiles
 
 > **add**: (`input`) => `Uint8Array`
 
-Defined in: [types.ts:461](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L461)
+Defined in: [types.ts:516](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L516)
 
 #### Parameters
 
@@ -37,7 +37,7 @@ Defined in: [types.ts:461](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **mul**: (`input`) => `Uint8Array`
 
-Defined in: [types.ts:462](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L462)
+Defined in: [types.ts:517](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L517)
 
 #### Parameters
 
@@ -55,7 +55,7 @@ Defined in: [types.ts:462](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **pairing**: (`input`) => `Uint8Array`
 
-Defined in: [types.ts:463](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L463)
+Defined in: [types.ts:518](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L518)
 
 #### Parameters
 

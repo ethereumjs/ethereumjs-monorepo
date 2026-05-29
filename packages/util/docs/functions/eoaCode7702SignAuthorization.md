@@ -25,7 +25,7 @@ To get the JSON format, use `authorizationListBytesToJSON([signed])[0] to conver
 
 ### ecSign?
 
-(`msg`, `pk`, `ecSignOpts?`) => `Pick`\<`ReturnType`\<*typeof* `secp256k1.sign`\>, `"recovery"` \| `"r"` \| `"s"`\>
+(`msg`, `pk`, `ecSignOpts?`) => `Pick`\<`ReturnType`\<*typeof* `secp256k1.Signature.fromBytes`\>, `"recovery"` \| `"r"` \| `"s"`\>
 
 ## Returns
 

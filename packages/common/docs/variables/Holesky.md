@@ -8,4 +8,4 @@
 
 > `const` **Holesky**: [`ChainConfig`](../interfaces/ChainConfig.md)
 
-Defined in: [chains.ts:307](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/chains.ts#L307)
+Defined in: [common/src/chains.ts:343](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/chains.ts#L343)

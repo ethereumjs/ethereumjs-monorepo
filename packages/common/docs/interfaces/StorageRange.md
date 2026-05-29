@@ -6,7 +6,7 @@
 
 # Interface: StorageRange
 
-Defined in: [interfaces.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L19)
+Defined in: [common/src/interfaces.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L19)
 
 Object that can contain a set of storage keys associated with an account.
 
@@ -16,7 +16,7 @@ Object that can contain a set of storage keys associated with an account.
 
 > **nextKey**: `string` \| `null`
 
-Defined in: [interfaces.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L36)
+Defined in: [common/src/interfaces.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L36)
 
 The next (hashed) storage key after the greatest storage key
 contained in `storage`.
@@ -27,7 +27,7 @@ contained in `storage`.
 
 > **storage**: `object`
 
-Defined in: [interfaces.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L26)
+Defined in: [common/src/interfaces.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L26)
 
 A dictionary where the keys are hashed storage keys, and the values are
 objects containing the preimage of the hashed key (in `key`) and the

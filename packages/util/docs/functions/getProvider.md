@@ -8,7 +8,7 @@
 
 > **getProvider**(`provider`): `string`
 
-Defined in: [packages/util/src/provider.ts:66](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/provider.ts#L66)
+Defined in: [packages/util/src/provider.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/provider.ts#L90)
 
 ## Parameters
 

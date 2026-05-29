@@ -8,7 +8,7 @@
 
 > **VMProfilerOpts** = `object`
 
-Defined in: [vm/src/types.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L90)
+Defined in: [vm/src/types.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L92)
 
 ## Properties
 
@@ -16,7 +16,7 @@ Defined in: [vm/src/types.ts:90](https://github.com/ethereumjs/ethereumjs-monore
 
 > `optional` **reportAfterBlock**: `boolean`
 
-Defined in: [vm/src/types.ts:93](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L93)
+Defined in: [vm/src/types.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L95)
 
 ***
 
@@ -24,4 +24,4 @@ Defined in: [vm/src/types.ts:93](https://github.com/ethereumjs/ethereumjs-monore
 
 > `optional` **reportAfterTx**: `boolean`
 
-Defined in: [vm/src/types.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L92)
+Defined in: [vm/src/types.ts:94](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L94)

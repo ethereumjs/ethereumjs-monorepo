@@ -6,7 +6,7 @@
 
 # Interface: GethGenesisConfig
 
-Defined in: [gethGenesis.ts:6](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L6)
+Defined in: [common/src/gethGenesis.ts:6](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L6)
 
 Interface for Geth Genesis Config
 
@@ -16,7 +16,7 @@ Interface for Geth Genesis Config
 
 > `optional` **arrowGlacierBlock**: `number`
 
-Defined in: [gethGenesis.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L25)
+Defined in: [common/src/gethGenesis.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L25)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: [gethGenesis.ts:25](https://github.com/ethereumjs/ethereumjs-monorep
 
 > `optional` **berlinBlock**: `number`
 
-Defined in: [gethGenesis.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L21)
+Defined in: [common/src/gethGenesis.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L21)
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: [gethGenesis.ts:21](https://github.com/ethereumjs/ethereumjs-monorep
 
 > `optional` **blobSchedule**: [`GethGenesisBlobSchedule`](GethGenesisBlobSchedule.md)
 
-Defined in: [gethGenesis.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L51)
+Defined in: [common/src/gethGenesis.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L51)
 
 ***
 
@@ -40,7 +40,7 @@ Defined in: [gethGenesis.ts:51](https://github.com/ethereumjs/ethereumjs-monorep
 
 > `optional` **byzantiumBlock**: `number`
 
-Defined in: [gethGenesis.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L16)
+Defined in: [common/src/gethGenesis.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L16)
 
 ***
 
@@ -48,7 +48,7 @@ Defined in: [gethGenesis.ts:16](https://github.com/ethereumjs/ethereumjs-monorep
 
 > `optional` **cancunBlock**: `number`
 
-Defined in: [gethGenesis.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L24)
+Defined in: [common/src/gethGenesis.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L24)
 
 ***
 
@@ -56,7 +56,7 @@ Defined in: [gethGenesis.ts:24](https://github.com/ethereumjs/ethereumjs-monorep
 
 > `optional` **cancunTime**: `number`
 
-Defined in: [gethGenesis.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L29)
+Defined in: [common/src/gethGenesis.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L29)
 
 ***
 
@@ -64,7 +64,7 @@ Defined in: [gethGenesis.ts:29](https://github.com/ethereumjs/ethereumjs-monorep
 
 > **chainId**: `number`
 
-Defined in: [gethGenesis.ts:7](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L7)
+Defined in: [common/src/gethGenesis.ts:7](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L7)
 
 ***
 
@@ -72,7 +72,7 @@ Defined in: [gethGenesis.ts:7](https://github.com/ethereumjs/ethereumjs-monorepo
 
 > `optional` **clique**: `object`
 
-Defined in: [gethGenesis.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L34)
+Defined in: [common/src/gethGenesis.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L34)
 
 #### blockperiodseconds?
 
@@ -96,7 +96,7 @@ Defined in: [gethGenesis.ts:34](https://github.com/ethereumjs/ethereumjs-monorep
 
 > `optional` **constantinopleBlock**: `number`
 
-Defined in: [gethGenesis.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L17)
+Defined in: [common/src/gethGenesis.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L17)
 
 ***
 
@@ -104,7 +104,7 @@ Defined in: [gethGenesis.ts:17](https://github.com/ethereumjs/ethereumjs-monorep
 
 > `optional` **daoForkBlock**: `number`
 
-Defined in: [gethGenesis.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L10)
+Defined in: [common/src/gethGenesis.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L10)
 
 ***
 
@@ -112,7 +112,7 @@ Defined in: [gethGenesis.ts:10](https://github.com/ethereumjs/ethereumjs-monorep
 
 > `optional` **daoForkSupport**: `boolean`
 
-Defined in: [gethGenesis.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L11)
+Defined in: [common/src/gethGenesis.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L11)
 
 ***
 
@@ -120,7 +120,7 @@ Defined in: [gethGenesis.ts:11](https://github.com/ethereumjs/ethereumjs-monorep
 
 > `optional` **depositContractAddress**: `string`
 
-Defined in: [gethGenesis.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L8)
+Defined in: [common/src/gethGenesis.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L8)
 
 ***
 
@@ -128,7 +128,7 @@ Defined in: [gethGenesis.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo
 
 > `optional` **eip150Block**: `number`
 
-Defined in: [gethGenesis.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L12)
+Defined in: [common/src/gethGenesis.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L12)
 
 ***
 
@@ -136,7 +136,7 @@ Defined in: [gethGenesis.ts:12](https://github.com/ethereumjs/ethereumjs-monorep
 
 > `optional` **eip150Hash**: `string`
 
-Defined in: [gethGenesis.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L13)
+Defined in: [common/src/gethGenesis.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L13)
 
 ***
 
@@ -144,7 +144,7 @@ Defined in: [gethGenesis.ts:13](https://github.com/ethereumjs/ethereumjs-monorep
 
 > `optional` **eip155Block**: `number`
 
-Defined in: [gethGenesis.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L14)
+Defined in: [common/src/gethGenesis.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L14)
 
 ***
 
@@ -152,7 +152,7 @@ Defined in: [gethGenesis.ts:14](https://github.com/ethereumjs/ethereumjs-monorep
 
 > `optional` **eip158Block**: `number`
 
-Defined in: [gethGenesis.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L15)
+Defined in: [common/src/gethGenesis.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L15)
 
 ***
 
@@ -160,7 +160,7 @@ Defined in: [gethGenesis.ts:15](https://github.com/ethereumjs/ethereumjs-monorep
 
 > `optional` **ethash**: `object`
 
-Defined in: [gethGenesis.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L33)
+Defined in: [common/src/gethGenesis.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L33)
 
 ***
 
@@ -168,7 +168,7 @@ Defined in: [gethGenesis.ts:33](https://github.com/ethereumjs/ethereumjs-monorep
 
 > `optional` **grayGlacierBlock**: `number`
 
-Defined in: [gethGenesis.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L26)
+Defined in: [common/src/gethGenesis.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L26)
 
 ***
 
@@ -176,7 +176,7 @@ Defined in: [gethGenesis.ts:26](https://github.com/ethereumjs/ethereumjs-monorep
 
 > `optional` **homesteadBlock**: `number`
 
-Defined in: [gethGenesis.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L9)
+Defined in: [common/src/gethGenesis.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L9)
 
 ***
 
@@ -184,7 +184,7 @@ Defined in: [gethGenesis.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo
 
 > `optional` **istanbulBlock**: `number`
 
-Defined in: [gethGenesis.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L19)
+Defined in: [common/src/gethGenesis.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L19)
 
 ***
 
@@ -192,7 +192,7 @@ Defined in: [gethGenesis.ts:19](https://github.com/ethereumjs/ethereumjs-monorep
 
 > `optional` **londonBlock**: `number`
 
-Defined in: [gethGenesis.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L22)
+Defined in: [common/src/gethGenesis.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L22)
 
 ***
 
@@ -200,7 +200,7 @@ Defined in: [gethGenesis.ts:22](https://github.com/ethereumjs/ethereumjs-monorep
 
 > `optional` **mergeForkBlock**: `number`
 
-Defined in: [gethGenesis.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L23)
+Defined in: [common/src/gethGenesis.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L23)
 
 ***
 
@@ -208,7 +208,7 @@ Defined in: [gethGenesis.ts:23](https://github.com/ethereumjs/ethereumjs-monorep
 
 > `optional` **mergeNetsplitBlock**: `number`
 
-Defined in: [gethGenesis.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L27)
+Defined in: [common/src/gethGenesis.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L27)
 
 ***
 
@@ -216,7 +216,7 @@ Defined in: [gethGenesis.ts:27](https://github.com/ethereumjs/ethereumjs-monorep
 
 > `optional` **muirGlacierBlock**: `number`
 
-Defined in: [gethGenesis.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L20)
+Defined in: [common/src/gethGenesis.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L20)
 
 ***
 
@@ -224,7 +224,7 @@ Defined in: [gethGenesis.ts:20](https://github.com/ethereumjs/ethereumjs-monorep
 
 > `optional` **petersburgBlock**: `number`
 
-Defined in: [gethGenesis.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L18)
+Defined in: [common/src/gethGenesis.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L18)
 
 ***
 
@@ -232,7 +232,7 @@ Defined in: [gethGenesis.ts:18](https://github.com/ethereumjs/ethereumjs-monorep
 
 > `optional` **pragueTime**: `number`
 
-Defined in: [gethGenesis.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L30)
+Defined in: [common/src/gethGenesis.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L30)
 
 ***
 
@@ -240,7 +240,7 @@ Defined in: [gethGenesis.ts:30](https://github.com/ethereumjs/ethereumjs-monorep
 
 > `optional` **proofInBlocks**: `boolean`
 
-Defined in: [gethGenesis.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L52)
+Defined in: [common/src/gethGenesis.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L52)
 
 ***
 
@@ -248,7 +248,7 @@ Defined in: [gethGenesis.ts:52](https://github.com/ethereumjs/ethereumjs-monorep
 
 > `optional` **shanghaiTime**: `number`
 
-Defined in: [gethGenesis.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L28)
+Defined in: [common/src/gethGenesis.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L28)
 
 ***
 
@@ -256,7 +256,7 @@ Defined in: [gethGenesis.ts:28](https://github.com/ethereumjs/ethereumjs-monorep
 
 > `optional` **terminalTotalDifficulty**: `number`
 
-Defined in: [gethGenesis.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L31)
+Defined in: [common/src/gethGenesis.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L31)
 
 ***
 
@@ -264,7 +264,7 @@ Defined in: [gethGenesis.ts:31](https://github.com/ethereumjs/ethereumjs-monorep
 
 > `optional` **terminalTotalDifficultyPassed**: `boolean`
 
-Defined in: [gethGenesis.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L32)
+Defined in: [common/src/gethGenesis.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L32)
 
 ***
 
@@ -272,7 +272,7 @@ Defined in: [gethGenesis.ts:32](https://github.com/ethereumjs/ethereumjs-monorep
 
 > `optional` **trustedCheckpoint**: `object`
 
-Defined in: [gethGenesis.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L40)
+Defined in: [common/src/gethGenesis.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L40)
 
 #### bloomRoot
 
@@ -296,7 +296,7 @@ Defined in: [gethGenesis.ts:40](https://github.com/ethereumjs/ethereumjs-monorep
 
 > `optional` **trustedCheckpointOracle**: `object`
 
-Defined in: [gethGenesis.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L46)
+Defined in: [common/src/gethGenesis.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L46)
 
 #### address
 

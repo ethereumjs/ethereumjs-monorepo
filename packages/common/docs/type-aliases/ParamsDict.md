@@ -8,7 +8,7 @@
 
 > **ParamsDict** = `object`
 
-Defined in: [types.ts:185](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L185)
+Defined in: [common/src/types.ts:181](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L181)
 
 ## Index Signature
 

@@ -6,7 +6,7 @@
 
 # Interface: HardforkTransitionConfig
 
-Defined in: [types.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L59)
+Defined in: [common/src/types.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L59)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 > **block**: `number` \| `null`
 
-Defined in: [types.ts:61](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L61)
+Defined in: [common/src/types.ts:61](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L61)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [types.ts:61](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 > `optional` **forkHash**: `` `0x${string}` `` \| `null`
 
-Defined in: [types.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L63)
+Defined in: [common/src/types.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L63)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [types.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 > **name**: `string`
 
-Defined in: [types.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L60)
+Defined in: [common/src/types.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L60)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: [types.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 > `optional` **timestamp**: `string` \| `number`
 
-Defined in: [types.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L62)
+Defined in: [common/src/types.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L62)

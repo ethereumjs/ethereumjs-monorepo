@@ -219,7 +219,9 @@ Defined in: [2930/tx.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 > **addSignature**(`v`, `r`, `s`): `AccessList2930Tx`
 
-Defined in: [2930/tx.ts:273](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/2930/tx.ts#L273)
+Defined in: [2930/tx.ts:285](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/2930/tx.ts#L285)
+
+Adds the provided signature values and returns a new transaction instance.
 
 #### Parameters
 
@@ -227,17 +229,25 @@ Defined in: [2930/tx.ts:273](https://github.com/ethereumjs/ethereumjs-monorepo/b
 
 `bigint`
 
+Recovery parameter (y-parity)
+
 ##### r
+
+`r` component of the signature
 
 `bigint` | `Uint8Array`\<`ArrayBufferLike`\>
 
 ##### s
+
+`s` component of the signature
 
 `bigint` | `Uint8Array`\<`ArrayBufferLike`\>
 
 #### Returns
 
 `AccessList2930Tx`
+
+New `AccessList2930Tx` with the supplied signature
 
 #### Implementation of
 
@@ -249,7 +259,7 @@ Defined in: [2930/tx.ts:273](https://github.com/ethereumjs/ethereumjs-monorepo/b
 
 > **errorStr**(): `string`
 
-Defined in: [2930/tx.ts:338](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/2930/tx.ts#L338)
+Defined in: [2930/tx.ts:376](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/2930/tx.ts#L376)
 
 Return a compact error string representation of the object
 
@@ -303,7 +313,7 @@ Defined in: [2930/tx.ts:144](https://github.com/ethereumjs/ethereumjs-monorepo/b
 
 > **getHashedMessageToSign**(): `Uint8Array`
 
-Defined in: [2930/tx.ts:245](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/2930/tx.ts#L245)
+Defined in: [2930/tx.ts:247](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/2930/tx.ts#L247)
 
 Returns the hashed serialized unsigned tx, which can be used
 to sign the transaction (e.g. for sending to a hardware wallet).
@@ -314,6 +324,8 @@ serialized and doesn't need to be RLP encoded any more.
 #### Returns
 
 `Uint8Array`
+
+Keccak hash of the unsigned transaction payload
 
 #### Implementation of
 
@@ -346,7 +358,7 @@ to be paid for access lists (EIP-2930) and authority lists (EIP-7702).
 
 > **getMessageToSign**(): `Uint8Array`
 
-Defined in: [2930/tx.ts:234](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/2930/tx.ts#L234)
+Defined in: [2930/tx.ts:235](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/2930/tx.ts#L235)
 
 Returns the raw serialized unsigned tx, which can be used
 to sign the transaction (e.g. for sending to a hardware wallet).
@@ -362,6 +374,8 @@ const serializedMessage = tx.getMessageToSign() // use this for the HW wallet in
 
 `Uint8Array`
 
+Serialized unsigned transaction payload
+
 #### Implementation of
 
 [`TransactionInterface`](../interfaces/TransactionInterface.md).[`getMessageToSign`](../interfaces/TransactionInterface.md#getmessagetosign)
@@ -372,13 +386,15 @@ const serializedMessage = tx.getMessageToSign() // use this for the HW wallet in
 
 > **getMessageToVerifySignature**(): `Uint8Array`
 
-Defined in: [2930/tx.ts:262](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/2930/tx.ts#L262)
+Defined in: [2930/tx.ts:266](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/2930/tx.ts#L266)
 
 Computes a sha3-256 hash which can be used to verify the signature
 
 #### Returns
 
 `Uint8Array`
+
+Hash used when verifying the signature
 
 #### Implementation of
 
@@ -390,11 +406,15 @@ Computes a sha3-256 hash which can be used to verify the signature
 
 > **getSenderAddress**(): `Address`
 
-Defined in: [2930/tx.ts:323](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/2930/tx.ts#L323)
+Defined in: [2930/tx.ts:351](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/2930/tx.ts#L351)
+
+Returns the signer's address recovered from the signature.
 
 #### Returns
 
 `Address`
+
+Sender Address
 
 #### Implementation of
 
@@ -406,13 +426,15 @@ Defined in: [2930/tx.ts:323](https://github.com/ethereumjs/ethereumjs-monorepo/b
 
 > **getSenderPublicKey**(): `Uint8Array`
 
-Defined in: [2930/tx.ts:269](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/2930/tx.ts#L269)
+Defined in: [2930/tx.ts:274](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/2930/tx.ts#L274)
 
 Returns the public key of the sender
 
 #### Returns
 
 `Uint8Array`
+
+Sender public key
 
 #### Implementation of
 
@@ -442,11 +464,15 @@ The up front amount that an account must have for this transaction to be valid
 
 > **getValidationErrors**(): `string`[]
 
-Defined in: [2930/tx.ts:311](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/2930/tx.ts#L311)
+Defined in: [2930/tx.ts:328](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/2930/tx.ts#L328)
+
+Runs transaction validation and returns any discovered errors.
 
 #### Returns
 
 `string`[]
+
+Array of validation error messages
 
 #### Implementation of
 
@@ -458,7 +484,7 @@ Defined in: [2930/tx.ts:311](https://github.com/ethereumjs/ethereumjs-monorepo/b
 
 > **hash**(): `Uint8Array`
 
-Defined in: [2930/tx.ts:255](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/2930/tx.ts#L255)
+Defined in: [2930/tx.ts:258](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/2930/tx.ts#L258)
 
 Computes a sha3-256 hash of the serialized tx.
 
@@ -468,6 +494,8 @@ Use Transaction.getMessageToSign to get a tx hash for the purpose of signing.
 #### Returns
 
 `Uint8Array`
+
+Hash of the serialized signed transaction
 
 #### Implementation of
 
@@ -479,11 +507,15 @@ Use Transaction.getMessageToSign to get a tx hash for the purpose of signing.
 
 > **isSigned**(): `boolean`
 
-Defined in: [2930/tx.ts:331](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/2930/tx.ts#L331)
+Defined in: [2930/tx.ts:369](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/2930/tx.ts#L369)
+
+Reports whether the transaction already contains signature values.
 
 #### Returns
 
 `boolean`
+
+true if signature parts are present
 
 #### Implementation of
 
@@ -495,11 +527,13 @@ Defined in: [2930/tx.ts:331](https://github.com/ethereumjs/ethereumjs-monorepo/b
 
 > **isValid**(): `boolean`
 
-Defined in: [2930/tx.ts:315](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/2930/tx.ts#L315)
+Defined in: [2930/tx.ts:335](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/2930/tx.ts#L335)
 
 #### Returns
 
 `boolean`
+
+true if the transaction has no validation errors
 
 #### Implementation of
 
@@ -564,7 +598,9 @@ the RLP encoding of the values.
 
 > **sign**(`privateKey`, `extraEntropy`): `AccessList2930Tx`
 
-Defined in: [2930/tx.ts:327](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/2930/tx.ts#L327)
+Defined in: [2930/tx.ts:361](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/2930/tx.ts#L361)
+
+Signs the transaction with the provided private key and returns a new instance.
 
 #### Parameters
 
@@ -572,13 +608,19 @@ Defined in: [2930/tx.ts:327](https://github.com/ethereumjs/ethereumjs-monorepo/b
 
 `Uint8Array`
 
+32-byte private key
+
 ##### extraEntropy
+
+Optional entropy fed into the signing algorithm
 
 `boolean` | `Uint8Array`\<`ArrayBufferLike`\>
 
 #### Returns
 
 `AccessList2930Tx`
+
+Newly signed transaction
 
 #### Implementation of
 
@@ -645,13 +687,15 @@ If the tx's `to` is to the creation address
 
 > **toJSON**(): [`JSONTx`](../interfaces/JSONTx.md)
 
-Defined in: [2930/tx.ts:299](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/2930/tx.ts#L299)
+Defined in: [2930/tx.ts:312](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/2930/tx.ts#L312)
 
 Returns an object with the JSON representation of the transaction
 
 #### Returns
 
 [`JSONTx`](../interfaces/JSONTx.md)
+
+JSON encoding of the transaction
 
 #### Implementation of
 
@@ -663,11 +707,15 @@ Returns an object with the JSON representation of the transaction
 
 > **verifySignature**(): `boolean`
 
-Defined in: [2930/tx.ts:319](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/2930/tx.ts#L319)
+Defined in: [2930/tx.ts:343](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/2930/tx.ts#L343)
+
+Checks whether the signature currently attached to the transaction is valid.
 
 #### Returns
 
 `boolean`
+
+true if signature verification succeeds
 
 #### Implementation of
 

@@ -66,7 +66,7 @@ proof node list, if all-elements-proof where no proof is needed, proof should be
 
 ### useKeyHashingFunction
 
-[`HashKeysFunction`](../type-aliases/HashKeysFunction.md) = `keccak256`
+[`HashKeysFunction`](../type-aliases/HashKeysFunction.md) = `keccak_256`
 
 ## Returns
 

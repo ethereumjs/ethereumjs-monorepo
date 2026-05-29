@@ -6,7 +6,7 @@
 
 # Interface: JSONHeader
 
-Defined in: [types.ts:155](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L155)
+Defined in: [types.ts:167](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L167)
 
 An object with the block header's data represented as 0x-prefixed hex strings.
 
@@ -16,7 +16,7 @@ An object with the block header's data represented as 0x-prefixed hex strings.
 
 > `optional` **baseFeePerGas**: `` `0x${string}` ``
 
-Defined in: [types.ts:171](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L171)
+Defined in: [types.ts:183](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L183)
 
 ***
 
@@ -24,7 +24,17 @@ Defined in: [types.ts:171](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **blobGasUsed**: `` `0x${string}` ``
 
-Defined in: [types.ts:173](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L173)
+Defined in: [types.ts:185](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L185)
+
+***
+
+### blockAccessListHash?
+
+> `optional` **blockAccessListHash**: `` `0x${string}` ``
+
+Defined in: [types.ts:190](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L190)
+
+EIP-7928 (Amsterdam, experimental). May change on patch releases.
 
 ***
 
@@ -32,7 +42,7 @@ Defined in: [types.ts:173](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **coinbase**: `` `0x${string}` ``
 
-Defined in: [types.ts:158](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L158)
+Defined in: [types.ts:170](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L170)
 
 ***
 
@@ -40,7 +50,7 @@ Defined in: [types.ts:158](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **difficulty**: `` `0x${string}` ``
 
-Defined in: [types.ts:163](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L163)
+Defined in: [types.ts:175](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L175)
 
 ***
 
@@ -48,7 +58,7 @@ Defined in: [types.ts:163](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **excessBlobGas**: `` `0x${string}` ``
 
-Defined in: [types.ts:174](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L174)
+Defined in: [types.ts:186](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L186)
 
 ***
 
@@ -56,7 +66,7 @@ Defined in: [types.ts:174](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **extraData**: `` `0x${string}` ``
 
-Defined in: [types.ts:168](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L168)
+Defined in: [types.ts:180](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L180)
 
 ***
 
@@ -64,7 +74,7 @@ Defined in: [types.ts:168](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **gasLimit**: `` `0x${string}` ``
 
-Defined in: [types.ts:165](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L165)
+Defined in: [types.ts:177](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L177)
 
 ***
 
@@ -72,7 +82,7 @@ Defined in: [types.ts:165](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **gasUsed**: `` `0x${string}` ``
 
-Defined in: [types.ts:166](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L166)
+Defined in: [types.ts:178](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L178)
 
 ***
 
@@ -80,7 +90,7 @@ Defined in: [types.ts:166](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **logsBloom**: `` `0x${string}` ``
 
-Defined in: [types.ts:162](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L162)
+Defined in: [types.ts:174](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L174)
 
 ***
 
@@ -88,7 +98,7 @@ Defined in: [types.ts:162](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **mixHash**: `` `0x${string}` ``
 
-Defined in: [types.ts:169](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L169)
+Defined in: [types.ts:181](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L181)
 
 ***
 
@@ -96,7 +106,7 @@ Defined in: [types.ts:169](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **nonce**: `` `0x${string}` ``
 
-Defined in: [types.ts:170](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L170)
+Defined in: [types.ts:182](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L182)
 
 ***
 
@@ -104,7 +114,7 @@ Defined in: [types.ts:170](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **number**: `` `0x${string}` ``
 
-Defined in: [types.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L164)
+Defined in: [types.ts:176](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L176)
 
 ***
 
@@ -112,7 +122,7 @@ Defined in: [types.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **parentBeaconBlockRoot**: `` `0x${string}` ``
 
-Defined in: [types.ts:175](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L175)
+Defined in: [types.ts:187](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L187)
 
 ***
 
@@ -120,7 +130,7 @@ Defined in: [types.ts:175](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **parentHash**: `` `0x${string}` ``
 
-Defined in: [types.ts:156](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L156)
+Defined in: [types.ts:168](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L168)
 
 ***
 
@@ -128,7 +138,7 @@ Defined in: [types.ts:156](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **receiptTrie**: `` `0x${string}` ``
 
-Defined in: [types.ts:161](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L161)
+Defined in: [types.ts:173](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L173)
 
 ***
 
@@ -136,7 +146,17 @@ Defined in: [types.ts:161](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **requestsHash**: `` `0x${string}` ``
 
-Defined in: [types.ts:176](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L176)
+Defined in: [types.ts:188](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L188)
+
+***
+
+### slotNumber?
+
+> `optional` **slotNumber**: `` `0x${string}` ``
+
+Defined in: [types.ts:192](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L192)
+
+EIP-7843 (Amsterdam, experimental). May change on patch releases.
 
 ***
 
@@ -144,7 +164,7 @@ Defined in: [types.ts:176](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **stateRoot**: `` `0x${string}` ``
 
-Defined in: [types.ts:159](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L159)
+Defined in: [types.ts:171](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L171)
 
 ***
 
@@ -152,7 +172,7 @@ Defined in: [types.ts:159](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **timestamp**: `` `0x${string}` ``
 
-Defined in: [types.ts:167](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L167)
+Defined in: [types.ts:179](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L179)
 
 ***
 
@@ -160,7 +180,7 @@ Defined in: [types.ts:167](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **transactionsTrie**: `` `0x${string}` ``
 
-Defined in: [types.ts:160](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L160)
+Defined in: [types.ts:172](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L172)
 
 ***
 
@@ -168,7 +188,7 @@ Defined in: [types.ts:160](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **uncleHash**: `` `0x${string}` ``
 
-Defined in: [types.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L157)
+Defined in: [types.ts:169](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L169)
 
 ***
 
@@ -176,4 +196,4 @@ Defined in: [types.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **withdrawalsRoot**: `` `0x${string}` ``
 
-Defined in: [types.ts:172](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L172)
+Defined in: [types.ts:184](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L184)

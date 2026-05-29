@@ -6,7 +6,7 @@
 
 # Interface: RunTxOpts
 
-Defined in: [vm/src/types.ts:386](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L386)
+Defined in: [vm/src/types.ts:407](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L407)
 
 Options for the `runTx` method.
 
@@ -16,7 +16,7 @@ Options for the `runTx` method.
 
 > `optional` **block**: `Block`
 
-Defined in: [vm/src/types.ts:391](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L391)
+Defined in: [vm/src/types.ts:412](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L412)
 
 The `@ethereumjs/block` the `tx` belongs to.
 If omitted, a default blank block will be used.
@@ -27,7 +27,7 @@ If omitted, a default blank block will be used.
 
 > `optional` **blockGasUsed**: `bigint`
 
-Defined in: [vm/src/types.ts:439](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L439)
+Defined in: [vm/src/types.ts:460](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L460)
 
 To obtain an accurate tx receipt input the block gas used up until this tx.
 
@@ -37,7 +37,7 @@ To obtain an accurate tx receipt input the block gas used up until this tx.
 
 > `optional` **reportAccessList**: `boolean`
 
-Defined in: [vm/src/types.ts:428](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L428)
+Defined in: [vm/src/types.ts:449](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L449)
 
 If true, adds a generated EIP-2930 access list
 to the `RunTxResult` returned.
@@ -54,7 +54,7 @@ StateManager.generateAccessList must be implemented.
 
 > `optional` **reportPreimages**: `boolean`
 
-Defined in: [vm/src/types.ts:434](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L434)
+Defined in: [vm/src/types.ts:455](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L455)
 
 If true, adds a hashedKey -> preimages mapping of all touched accounts
 to the `RunTxResult` returned.
@@ -65,7 +65,7 @@ to the `RunTxResult` returned.
 
 > `optional` **skipBalance**: `boolean`
 
-Defined in: [vm/src/types.ts:404](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L404)
+Defined in: [vm/src/types.ts:425](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L425)
 
 Skip balance checks if true. Adds transaction cost to balance to ensure execution doesn't fail.
 
@@ -75,7 +75,7 @@ Skip balance checks if true. Adds transaction cost to balance to ensure executio
 
 > `optional` **skipBlockGasLimitValidation**: `boolean`
 
-Defined in: [vm/src/types.ts:410](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L410)
+Defined in: [vm/src/types.ts:431](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L431)
 
 If true, skips the validation of the tx's gas limit
 against the block's gas limit.
@@ -86,7 +86,7 @@ against the block's gas limit.
 
 > `optional` **skipHardForkValidation**: `boolean`
 
-Defined in: [vm/src/types.ts:416](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L416)
+Defined in: [vm/src/types.ts:437](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L437)
 
 If true, skips the hardfork validation of vm, block
 and tx
@@ -97,7 +97,7 @@ and tx
 
 > `optional` **skipNonce**: `boolean`
 
-Defined in: [vm/src/types.ts:399](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L399)
+Defined in: [vm/src/types.ts:420](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L420)
 
 If true, skips the nonce check
 
@@ -107,6 +107,6 @@ If true, skips the nonce check
 
 > **tx**: `TypedTransaction`
 
-Defined in: [vm/src/types.ts:395](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L395)
+Defined in: [vm/src/types.ts:416](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L416)
 
 An `@ethereumjs/tx` to run

@@ -41,6 +41,7 @@
 - [BinaryTreeAccessedState](type-aliases/BinaryTreeAccessedState.md)
 - [BinaryTreeAccessedStateType](type-aliases/BinaryTreeAccessedStateType.md)
 - [BinaryTreeAccessedStateWithAddress](type-aliases/BinaryTreeAccessedStateWithAddress.md)
+- [BpoSchedule](type-aliases/BpoSchedule.md)
 - [CasperConfig](type-aliases/CasperConfig.md)
 - [Chain](type-aliases/Chain.md)
 - [CliqueConfig](type-aliases/CliqueConfig.md)

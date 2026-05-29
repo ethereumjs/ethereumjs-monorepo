@@ -6,7 +6,7 @@
 
 # Class: BinaryTree
 
-Defined in: [binaryTree.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L38)
+Defined in: [binaryTree.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L39)
 
 The basic binary tree interface, use with `import { BinaryTree } from '@ethereumjs/binarytree'`.
 
@@ -20,7 +20,7 @@ A BinaryTree object can be created with the constructor method:
 
 > **new BinaryTree**(`opts`): `BinaryTree`
 
-Defined in: [binaryTree.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L59)
+Defined in: [binaryTree.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L60)
 
 Creates a new binary tree.
 
@@ -44,7 +44,7 @@ Note: in most cases, the static [createBinaryTree](../functions/createBinaryTree
 
 > **EMPTY\_TREE\_ROOT**: `Uint8Array`
 
-Defined in: [binaryTree.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L43)
+Defined in: [binaryTree.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L44)
 
 The root for an empty tree
 

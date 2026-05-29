@@ -14,7 +14,7 @@ Defined in: [packages/mpt/src/types.ts:38](https://github.com/ethereumjs/ethereu
 
 ### nodeRef
 
-`Uint8Array`
+[`NodeReferenceOrRawMPTNode`](NodeReferenceOrRawMPTNode.md)
 
 ### node
 

@@ -8,7 +8,7 @@
 
 > **Chain**: `object`
 
-Defined in: [enums.ts:3](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L3)
+Defined in: [common/src/enums.ts:3](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L3)
 
 ## Type Declaration
 

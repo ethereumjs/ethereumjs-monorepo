@@ -6,9 +6,9 @@
 
 # Function: createCommonFromGethGenesis()
 
-> **createCommonFromGethGenesis**(`genesisJSON`, `gethGenesis`): [`Common`](../classes/Common.md)
+> **createCommonFromGethGenesis**(`genesisJSON`, `__namedParameters`): [`Common`](../classes/Common.md)
 
-Defined in: [constructors.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/constructors.ts#L42)
+Defined in: [common/src/constructors.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/constructors.ts#L41)
 
 Static method to load and set common from a geth genesis object
 
@@ -18,14 +18,14 @@ Static method to load and set common from a geth genesis object
 
 [`GethGenesis`](../interfaces/GethGenesis.md)
 
-### gethGenesis
+GethGenesis object
+
+### \_\_namedParameters
 
 [`GethConfigOpts`](../interfaces/GethConfigOpts.md)
-
-GethGenesis object
 
 ## Returns
 
 [`Common`](../classes/Common.md)
 
-Common
+a new [Common](../classes/Common.md) object

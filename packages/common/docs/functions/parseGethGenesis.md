@@ -8,7 +8,7 @@
 
 > **parseGethGenesis**(`gethGenesis`, `name?`): `object`
 
-Defined in: [utils.ts:281](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/utils.ts#L281)
+Defined in: [common/src/utils.ts:281](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/utils.ts#L281)
 
 Parses a genesis object exported from Geth into parameters for Common instance
 

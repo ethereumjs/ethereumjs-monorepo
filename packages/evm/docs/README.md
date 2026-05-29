@@ -29,24 +29,36 @@
 - [EVMRunCodeOpts](interfaces/EVMRunCodeOpts.md)
 - [ExecResult](interfaces/ExecResult.md)
 - [InterpreterStep](interfaces/InterpreterStep.md)
+- [PrecompileFunc](interfaces/PrecompileFunc.md)
 - [PrecompileInput](interfaces/PrecompileInput.md)
 
 ## Type Aliases
 
+- [AddPrecompile](type-aliases/AddPrecompile.md)
 - [BinaryChunkAccessEvent](type-aliases/BinaryChunkAccessEvent.md)
 - [BinaryStemAccessEvent](type-aliases/BinaryStemAccessEvent.md)
 - [BinaryStemMeta](type-aliases/BinaryStemMeta.md)
+- [CustomPrecompile](type-aliases/CustomPrecompile.md)
+- [DeletePrecompile](type-aliases/DeletePrecompile.md)
 - [EVMBLSInterface](type-aliases/EVMBLSInterface.md)
 - [EVMBN254Interface](type-aliases/EVMBN254Interface.md)
 - [EVMPerformanceLogOutput](type-aliases/EVMPerformanceLogOutput.md)
 - [Log](type-aliases/Log.md)
+- [SelfdestructMap](type-aliases/SelfdestructMap.md)
 
 ## Variables
 
+- [EIP7708\_BURN\_TOPIC](variables/EIP7708_BURN_TOPIC.md)
+- [EIP7708\_SYSTEM\_ADDRESS](variables/EIP7708_SYSTEM_ADDRESS.md)
+- [EIP7708\_TRANSFER\_TOPIC](variables/EIP7708_TRANSFER_TOPIC.md)
 - [paramsEVM](variables/paramsEVM.md)
 
 ## Functions
 
+- [activeCostPerStateByte](functions/activeCostPerStateByte.md)
+- [computeIntrinsicGasDimensions8037](functions/computeIntrinsicGasDimensions8037.md)
+- [createEIP7708BurnLog](functions/createEIP7708BurnLog.md)
+- [createEIP7708TransferLog](functions/createEIP7708TransferLog.md)
 - [createEVM](functions/createEVM.md)
 - [decodeBinaryAccessState](functions/decodeBinaryAccessState.md)
 - [generateBinaryExecutionWitness](functions/generateBinaryExecutionWitness.md)

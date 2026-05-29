@@ -72,7 +72,7 @@ A `Uint8Array` for the root of a previously stored trie
 Defined in: [packages/mpt/src/types.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/types.ts#L70)
 
 Create as a secure MerklePatriciaTrie where the keys are automatically hashed using the
-**keccak256** hash function or alternatively the custom hash function provided.
+**keccak_256** hash function or alternatively the custom hash function provided.
 Default: `false`
 
 This is the flavor of the MerklePatriciaTrie which is used in production Ethereum networks
