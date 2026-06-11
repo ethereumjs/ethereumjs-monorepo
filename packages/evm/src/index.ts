@@ -29,6 +29,8 @@ import type {
   EVMRunCodeOpts,
   ExecResult,
   Log,
+  LogEvent,
+  LogOrigin,
   SelfdestructMap,
 } from './types.ts'
 export * from './logger.ts'
@@ -48,6 +50,8 @@ export type {
   ExecResult,
   InterpreterStep,
   Log,
+  LogEvent,
+  LogOrigin,
   SelfdestructMap,
   PrecompileFunc,
   PrecompileInput,

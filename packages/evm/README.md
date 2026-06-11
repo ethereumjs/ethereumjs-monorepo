@@ -165,6 +165,28 @@ See [`examples/emitLogs.ts`](./examples/emitLogs.ts) for a minimal `LOG1` byteco
 - A **reverted** top-level execution clears logs (same as on-chain).
 - For transaction receipts and block blooms, use `@ethereumjs/vm` — see [Receipts and event logs](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#receipts-and-event-logs).
 
+### Live tracing with the `log` event
+
+For live observation (including [EIP-7708](https://eips.ethereum.org/EIPS/eip-7708) synthetic logs that are not tied to a `LOGN` step), subscribe to `evm.events.on('log')`:
+
+```ts
+import type { LogEvent } from '@ethereumjs/evm'
+
+evm.events.on('log', (event: LogEvent) => {
+  const { log, origin, depth, address } = event
+  // origin: 'opcode' | 'callTransfer' | 'createTransfer' | 'selfdestructTransfer'
+  //         | 'selfdestructBurn' | 'finalizationBurn'
+  // address: executing frame; log[0] is the on-chain emitter (system address for EIP-7708)
+})
+```
+
+**Notes:**
+
+- Events are emitted **optimistically** when a log is created. If the enclosing frame later reverts, the log is removed from `ExecResult.logs` / the receipt, but the event is not retracted — correlate with `afterMessage` and `exceptionError` if needed.
+- Async listeners are **awaited** for synthetic logs (EIP-7708) and for VM finalization burns. For `LOGN` opcode logs, emission is fire-and-forget from the synchronous opcode handler (listeners run, but execution does not pause on them).
+- Post-transaction finalization burns (`finalizationBurn`) are emitted through the same EVM emitter from `@ethereumjs/vm` (`depth: -1`).
+- When no listeners are registered, emission is skipped (zero overhead).
+
 ## Examples
 
 See the [examples](./examples/) folder for different meaningful examples on how to use the EVM package and invoke certain aspects of it, e.g. running a bytecode snippet, listening to events, or to activate an EVM with a certain EIP for experimental purposes. Opcode-focused samples live under [`examples/opcodes/`](./examples/opcodes/) (e.g. [EIP-8024 DUPN/SWAPN/EXCHANGE](./examples/opcodes/0xe6-e8-eip8024-stack-opcodes.ts) on `Hardfork.Amsterdam`).
@@ -710,6 +732,7 @@ You can subscribe to the following events:
 - `beforeMessage`: Emits a `Message` right after running it.
 - `afterMessage`: Emits an `EVMResult` right after running a message.
 - `step`: Emits an `InterpreterStep` right before running an EVM step.
+- `log`: Emits a `LogEvent` when a log is created (`LOG0`–`LOG4` or EIP-7708 synthetic logs). See [Live tracing with the `log` event](#live-tracing-with-the-log-event).
 - `newContract`: Emits a `NewContractEvent` right before creating a contract. This event contains the deployment code, not the deployed code, as the creation message may not return such a code.
 
 #### Event listeners

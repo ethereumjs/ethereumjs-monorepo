@@ -284,7 +284,14 @@ async function processSelfdestructs(vm: VM, results: RunTxResult): Promise<void>
       const account = await vm.stateManager.getAccount(address)
       const finalizationBalance = account?.balance ?? BIGINT_0
       if (finalizationBalance > BIGINT_0) {
-        finalizationLogs.push(createEIP7708BurnLog(address, finalizationBalance))
+        const burnLog = createEIP7708BurnLog(address, finalizationBalance)
+        finalizationLogs.push(burnLog)
+        await vm.evm.emitLog({
+          log: burnLog,
+          origin: 'finalizationBurn',
+          depth: -1,
+          address,
+        })
       }
     }
 
