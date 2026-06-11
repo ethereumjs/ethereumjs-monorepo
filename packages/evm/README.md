@@ -128,9 +128,51 @@ Additionally, this example shows how to use events to listen to the inner workin
 
 This library by default uses JavaScript implementations for the basic standard crypto primitives like hashing or signature verification (for included txs). See `@ethereumjs/common` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for instructions on how to replace them with, e.g., a more performant WASM implementation by using a shared `common` instance.
 
+## Event logs
+
+The EVM records contract events as **logs**: a compact tuple reused across `@ethereumjs/evm`, `@ethereumjs/vm`, and (with field renaming) JSON-RPC.
+
+```ts
+type Log = [address: Uint8Array, topics: Uint8Array[], data: Uint8Array]
+//            emitter            indexed fields   unindexed payload
+```
+
+### Where logs come from
+
+| Source | When |
+| --- | --- |
+| `LOG0`–`LOG4` opcodes | Contract bytecode writes to memory, then logs `topics` + `data` |
+| [EIP-7708](https://eips.ethereum.org/EIPS/eip-7708) (Amsterdam) | Synthetic `Transfer` / `Burn` logs on native ETH movement via `runCall()` |
+
+### Reading logs from `runCode()` / `runCall()`
+
+Both methods return an [`ExecResult`](./docs/interfaces/ExecResult.md) with an optional `logs` array:
+
+```ts
+const result = await evm.runCode({ code, to: contractAddress, gasLimit: 100_000n })
+for (const log of result.logs ?? []) {
+  const [address, topics, data] = log
+  // bytesToHex(address), topics.map(bytesToHex), bytesToHex(data)
+}
+```
+
+See [`examples/emitLogs.ts`](./examples/emitLogs.ts) for a minimal `LOG1` bytecode snippet.
+
+**Notes:**
+
+- The log **emitter address** is the account whose code is executing (`message.to` / contract address), not necessarily `tx.origin`.
+- Nested calls **append** logs in execution order; a reverted inner call does not contribute logs to the outer result.
+- A **reverted** top-level execution clears logs (same as on-chain).
+- For transaction receipts and block blooms, use `@ethereumjs/vm` — see [Receipts and event logs](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#receipts-and-event-logs).
+
 ## Examples
 
 See the [examples](./examples/) folder for different meaningful examples on how to use the EVM package and invoke certain aspects of it, e.g. running a bytecode snippet, listening to events, or to activate an EVM with a certain EIP for experimental purposes. Opcode-focused samples live under [`examples/opcodes/`](./examples/opcodes/) (e.g. [EIP-8024 DUPN/SWAPN/EXCHANGE](./examples/opcodes/0xe6-e8-eip8024-stack-opcodes.ts) on `Hardfork.Amsterdam`).
+
+Noteworthy examples:
+
+1. [`examples/emitLogs.ts`](./examples/emitLogs.ts): Run `LOG1` bytecode and read `ExecResult.logs`.
+2. [`examples/runCode.ts`](./examples/runCode.ts): Trace opcode execution with the `step` event.
 
 ## Browser
 

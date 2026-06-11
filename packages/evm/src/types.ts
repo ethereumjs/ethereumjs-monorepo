@@ -472,7 +472,9 @@ export interface ExecResult {
    */
   returnValue: Uint8Array
   /**
-   * Array of logs that the contract emitted
+   * Logs emitted during execution (`LOG0`–`LOG4`, and fork-specific synthetic logs such as
+   * [EIP-7708](https://eips.ethereum.org/EIPS/eip-7708) on `runCall`). Cleared when execution
+   * reverts. See [Event logs](./README.md#event-logs) in this package.
    */
   logs?: Log[]
   /**
@@ -519,7 +521,13 @@ export type EVMBN254Interface = {
 }
 
 /**
- * Log that the contract emits.
+ * Log emitted during EVM execution.
+ *
+ * Tuple of `[emitterAddress, topics, data]` — the same shape used in transaction receipts
+ * (`receipt.logs`) and JSON-RPC log objects (before field renaming). See the
+ * [Event logs](./README.md#event-logs) section in this package and
+ * [Receipts and event logs](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#receipts-and-event-logs)
+ * in `@ethereumjs/vm`.
  */
 export type Log = [address: Uint8Array, topics: Uint8Array[], data: Uint8Array]
 
