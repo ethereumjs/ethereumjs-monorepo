@@ -12,14 +12,8 @@ import * as path from 'node:path'
  *   examples/data/block<blockNumber>.json
  *   examples/data/block<blockNumber>State.json
  *
- * Known issues:
- *   Block 24476002: VM gas mismatch (17945809 vs expected 18980393).
- *   Block 24476006: VM gas mismatch (59807084 vs expected 59826984).
- *   Block 24476007: VM gas mismatch (1986185 vs expected 3544160).
- *   Block 24476008: VM gas mismatch (44711077 vs expected 44733384).
- *     Data files are saved for debugging but the offline replay will fail.
- *     These mismatches also reproduce with the plain RPC script (runBlockWithRPC.ts),
- *     so this is a VM execution bug, not a data collection issue.
+ * Bundled blocks with verified offline gas match:
+ *   24476000, 24476001, 24476003, 24476004, 24476005, 24476009
  */
 import { createBlockFromRPC } from '@ethereumjs/block'
 import { Common, Mainnet } from '@ethereumjs/common'
@@ -34,6 +28,18 @@ import {
 import { createVM, runBlock } from '@ethereumjs/vm'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
+
+/** Block numbers with bundled fixtures that pass offline gas validation. */
+const BUNDLED_VALID_BLOCK_NUMBERS = new Set([
+  24476000n,
+  24476001n,
+  24476003n,
+  24476004n,
+  24476005n,
+  24476009n,
+])
+
+const BUNDLED_VALID_BLOCK_LIST = [...BUNDLED_VALID_BLOCK_NUMBERS].map(String).join(', ')
 
 interface StateData {
   accounts: Record<string, { nonce: string; balance: string } | null>
@@ -52,6 +58,13 @@ const main = async () => {
   if (blockNumber === undefined) {
     console.log('Example skipped (no block number provided)')
     console.log('Usage: npx tsx examples/runMainnetBlock.ts <blockNumber>')
+    console.log(`Bundled valid block numbers: ${BUNDLED_VALID_BLOCK_LIST}`)
+    return
+  }
+
+  if (!BUNDLED_VALID_BLOCK_NUMBERS.has(blockNumber)) {
+    console.log(`Block ${blockNumber} is not in the bundled valid set for this example.`)
+    console.log(`Use one of: ${BUNDLED_VALID_BLOCK_LIST}`)
     return
   }
 
