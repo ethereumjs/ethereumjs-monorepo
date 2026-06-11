@@ -108,6 +108,29 @@ void main()
 
 Additionally to the `VM.runTx()` method there is an API method `VM.runBlock()` which allows to run the whole block and execute all included transactions along.
 
+### Receipts and event logs
+
+`runTx()` and `runBlock()` surface logs through transaction receipts using the same [`Log`](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#event-logs) tuple as `@ethereumjs/evm`:
+
+```ts
+type Log = [address: Uint8Array, topics: Uint8Array[], data: Uint8Array]
+```
+
+| API | Where to read logs |
+| --- | --- |
+| `runTx()` | `result.receipt.logs` (also `result.execResult.logs` before receipt assembly) |
+| `runBlock()` | `result.results[i].receipt.logs` and `result.receipts[i].logs` |
+| Block header bloom | `result.logsBloom` on `RunBlockResult`; `result.bloom` on each `RunTxResult` |
+
+Logs from contract `LOG*` opcodes and fork-specific synthetic logs (e.g. [EIP-7708](#eip-7708-eth-transfer-and-burn-logs-amsterdam) transfer logs on Amsterdam) share this path — no separate receipt field.
+
+See [`examples/runTxTransferLogs.ts`](./examples/runTxTransferLogs.ts) for an Amsterdam value transfer that decodes an EIP-7708 `Transfer` log from `receipt.logs`. For bytecode-level emission see [`@ethereumjs/evm` Event logs](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#event-logs) and [`examples/emitLogs.ts`](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm/examples/emitLogs.ts).
+
+**Notes:**
+
+- Reverted transactions produce receipts with **empty** `logs` (Byzantium+ `status: 0`).
+- The debug logger sections below (`DEBUG=ethjs,...`) refer to **development tracing**, not EVM event logs.
+
 ### Running an RPC Mainnet Block
 
 It is possible to fetch a real mainnet block via JSON-RPC and execute it locally using the VM together with the `RPCStateManager` from the `@ethereumjs/statemanager` package, which fetches account and storage data on demand from a remote provider.
@@ -279,6 +302,8 @@ See the [examples](./examples/) folder for different meaningful examples on how 
 3. [./examples/runBlockBalGenerate.ts](./examples/runBlockBalGenerate.ts): Runs an Amsterdam block and reads the generated Block Level Access List (BAL).
 4. [./examples/runBlockBalValidate.ts](./examples/runBlockBalValidate.ts): Validates a block against a provided BAL from an execution payload.
 5. [./examples/runPoABlockFromTestdata.ts](./examples/runPoABlockFromTestdata.ts): Replays a bundled PoA block fixture offline (no RPC).
+6. [./examples/runTxTransferLogs.ts](./examples/runTxTransferLogs.ts): Reads EIP-7708 `Transfer` logs from a transaction receipt on Amsterdam.
+7. [./examples/emitLogs.ts](../evm/examples/emitLogs.ts) (`@ethereumjs/evm`): Emits a `LOG1` from bytecode via `runCode()`.
 
 ## Browser
 
@@ -668,7 +693,7 @@ See [Release ↔ spec tracking](#amsterdam-hardfork-experimental) above for the 
 
 See [Release ↔ spec tracking](#amsterdam-hardfork-experimental) above for the supported Amsterdam spec snapshot.
 
-[EIP-7708](https://eips.ethereum.org/EIPS/eip-7708) adds synthetic logs for native ETH transfers and balance burns. When active, value-bearing `CALL`/`CREATE` paths and certain `SELFDESTRUCT`/account-removal flows append logs from the system address (`0xfff…fff`) with `Transfer(address,address,uint256)` or `Burn(address,uint256)` topics. These appear in `RunTxResult.receipt.logs` like any other log — no VM API changes are needed beyond using `Hardfork.Amsterdam`.
+[EIP-7708](https://eips.ethereum.org/EIPS/eip-7708) adds synthetic logs for native ETH transfers and balance burns. When active, value-bearing `CALL`/`CREATE` paths and certain `SELFDESTRUCT`/account-removal flows append logs from the system address (`0xfff…fff`) with `Transfer(address,address,uint256)` or `Burn(address,uint256)` topics. These appear in `RunTxResult.receipt.logs` like any other log — no VM API changes are needed beyond using `Hardfork.Amsterdam`. See [`examples/runTxTransferLogs.ts`](./examples/runTxTransferLogs.ts).
 
 ## Events
 
