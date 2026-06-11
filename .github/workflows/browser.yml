@@ -36,10 +36,12 @@ jobs:
       # Deps/cache on the host runner (same pattern as util-build et al.).
       # actions/cache cannot reliably restore host-created caches inside a
       # container job, even with zstd installed — restore here, test in Docker.
-      - if: inputs.submodule-cache-key == 'none'
-        uses: actions/checkout@v5
+      # CI fix: always checkout so the lockfile is present for setup-node's
+      # `cache: 'npm'`. The workspace dep-cache restore further down can miss
+      # for fresh PRs and would otherwise leave the workspace empty.
+      - uses: actions/checkout@v5
         with:
-          submodules: recursive
+          submodules: ${{ inputs.submodule-cache-key == 'none' && 'recursive' || '' }}
 
       - if: inputs.dep-cache-key != 'none'
         uses: actions/cache/restore@v4
