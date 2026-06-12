@@ -119,6 +119,45 @@ export interface BinaryTreeAccessWitnessInterface {
   revert(): void
 }
 
+/**
+ * Minimal surface of a binary-tree-backed state manager as required for
+ * binary execution witness generation (see `generateBinaryExecutionWitness`
+ * in the `@ethereumjs/evm` package).
+ *
+ * `StatefulBinaryTreeStateManager` from `@ethereumjs/statemanager` implements
+ * this interface; custom state managers can implement it to support witness
+ * generation without depending on the concrete class.
+ *
+ * The `tree` shape is structural (rather than referencing the `BinaryTree`
+ * class) so that this package does not depend on `@ethereumjs/binarytree`;
+ * `BinaryTree` satisfies it.
+ */
+export interface BinaryTreeStateManagerInterface {
+  /**
+   * Gets the current state root of the underlying tree.
+   */
+  getStateRoot(): Promise<Uint8Array>
+  /**
+   * The underlying binary tree holding the state.
+   */
+  readonly tree: {
+    /**
+     * Gets (no argument) and/or sets (`Uint8Array` argument) the current root
+     * of the tree.
+     */
+    root(value?: Uint8Array | null): Uint8Array
+    /**
+     * Retrieves the values at the given `suffixes` of the node at `stem`.
+     */
+    get(stem: Uint8Array, suffixes: number[]): Promise<(Uint8Array | null)[]>
+    /**
+     * Runs `operation` while holding the tree's internal lock, releasing the
+     * lock when the returned promise settles.
+     */
+    withLock<T>(operation: () => Promise<T>): Promise<T>
+  }
+}
+
 /*
  * Generic StateManager interface corresponding with the @ethereumjs/statemanager package
  *

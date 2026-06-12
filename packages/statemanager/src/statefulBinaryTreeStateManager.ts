@@ -45,6 +45,7 @@ import type {
   AccountFields,
   BinaryTreeAccessWitnessInterface,
   BinaryTreeAccessedStateWithAddress,
+  BinaryTreeStateManagerInterface,
   GenesisState,
   StateManagerInterface,
   StorageDump,
@@ -56,7 +57,9 @@ import type { Caches } from './cache/caches.ts'
 import type { BinaryTreeState, StatefulBinaryTreeStateManagerOpts } from './types.ts'
 
 const ZEROVALUE = '0x0000000000000000000000000000000000000000000000000000000000000000'
-export class StatefulBinaryTreeStateManager implements StateManagerInterface {
+export class StatefulBinaryTreeStateManager
+  implements StateManagerInterface, BinaryTreeStateManagerInterface
+{
   protected _debug: Debugger
   protected _caches?: Caches
 
@@ -708,6 +711,15 @@ export class StatefulBinaryTreeStateManager implements StateManagerInterface {
       )
 
     return verifyPassed
+  }
+
+  /**
+   * The underlying binary tree holding the state, as exposed through
+   * {@link BinaryTreeStateManagerInterface} for interface-based consumers
+   * (e.g. execution witness generation in `@ethereumjs/evm`).
+   */
+  get tree(): BinaryTree {
+    return this._tree
   }
 
   getStateRoot(): Promise<Uint8Array> {

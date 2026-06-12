@@ -561,3 +561,24 @@ describe('insert', () => {
     )
   })
 })
+
+describe('withLock', () => {
+  it('should run the operation under the lock and return its result', async () => {
+    const tree = await createBinaryTree()
+    const result = await tree.withLock(async () => 42)
+    assert.strictEqual(result, 42)
+  })
+
+  it('should release the lock when the operation throws', async () => {
+    const tree = await createBinaryTree()
+    await expect(
+      tree.withLock(async () => {
+        throw new Error('boom')
+      }),
+    ).rejects.toThrow('boom')
+
+    // would hang forever if the lock leaked
+    const reacquired = await tree.withLock(async () => true)
+    assert.isTrue(reacquired)
+  })
+})
