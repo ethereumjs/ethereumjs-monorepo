@@ -1366,17 +1366,27 @@ export class EVM implements EVMInterface {
         this.blockLevelAccessList?.revert()
       }
       if (this.common.isActivatedEIP(8037)) {
-        // EIP-8037: restore reservoir + cumulative state-gas used to their
-        // values at frame entry, refunding any state-gas charged during the
-        // reverted frame and undoing any in-frame reservoir refills.
+        // EIP-8037 §"Gas accounting for halts and reverts": restore the
+        // reservoir + cumulative state-gas used to their frame-entry values,
+        // undoing all state-gas charged during the failed frame.
         //
-        // The snapshot pop restores the reservoir to its entry value, which
-        // implicitly refunds the reservoir-paid portion. The spec also wants
-        // the gas_left-spilled portion to be refunded to the parent's
-        // reservoir, so the parent (or tx) effectively gets credited for
-        // all state-gas charged on the reverted frame, not just the part
-        // that came from the reservoir. Compute the spilled portion and add
-        // it back on top.
+        // The snapshot pop restores the reservoir to its entry value, refunding
+        // the reservoir-paid portion. In addition, when a child call frame is
+        // entered and then reverts or halts, the spec refunds the gas_left-
+        // spilled portion of its state-gas charges to the parent reservoir too,
+        // so the parent (or tx) is credited for all state-gas charged on the
+        // failed frame ("all state-gas charged on the child frame is refunded
+        // to the parent frame's state_gas_reservoir").
+        //
+        // The exception is a STATIC_STATE_CHANGE: a CREATE/CREATE2 (or other
+        // state-modifying op) attempted in a static context aborts the EXECUTING
+        // frame *before any child call frame is entered*. The state-gas
+        // pre-charged for the would-be account creation is not associated with a
+        // child frame that the parent can reclaim; the executing frame instead
+        // exceptionally halts and consumes its gas_left, so the spilled portion
+        // stays consumed and is counted as regular gas (it must NOT be credited
+        // back to the reservoir).
+        const consumeSpilled = err.error === EVMError.errorMessages.STATIC_STATE_CHANGE
         const snap = this._stateGasSnapshots.pop()
         if (snap !== undefined) {
           const usedThisFrame = this.executionStateGasUsed - snap.used
@@ -1385,7 +1395,7 @@ export class EVM implements EVMInterface {
             usedThisFrame > reservoirPaidThisFrame
               ? usedThisFrame - reservoirPaidThisFrame
               : BIGINT_0
-          this.stateGasReservoir = snap.reservoir + spilledThisFrame
+          this.stateGasReservoir = snap.reservoir + (consumeSpilled ? BIGINT_0 : spilledThisFrame)
           this.executionStateGasUsed = snap.used
           this.createdAccountStateGas = snap.createdAccountStateGas
           this.createdAccountIntrinsicStateGas = snap.createdAccountIntrinsicStateGas
