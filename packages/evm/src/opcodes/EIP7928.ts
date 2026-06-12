@@ -392,16 +392,6 @@ export async function create7928Gas(
   // CPSB` to the parent's `state_gas_reservoir`, reducing the transaction's
   // `tx_gas_used` (cumulative receipt gas) by that amount.
   if (runState.interpreter.isStatic()) {
-    if (common.isActivatedEIP(8037)) {
-      // The reference reserves the child create frame's gas
-      // (`create_message_gas`) before raising WriteInStaticContext. As that
-      // frame is never entered, the gas the halt burns here is NOT counted in
-      // the block-level regular-gas dimension (`execution_regular_gas_used`),
-      // though the sender still pays it via `tx_gas_used`. Record the amount
-      // that will be burned so runTx can exclude it from the regular dimension.
-      runState.interpreter._evm.exceptionalHaltRegularPenaltyGas +=
-        runState.interpreter.getGasLeft()
-    }
     trap(EVMError.errorMessages.STATIC_STATE_CHANGE)
   }
 

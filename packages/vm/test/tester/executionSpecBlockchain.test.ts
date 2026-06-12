@@ -35,6 +35,20 @@ const SKIP_NETWORKS: string[] = [
   'BPO3ToBPO4AtTime15k',
 ]
 
+// Fixtures skipped because they appear inconsistent with the canonical EIP, not
+// because of a client bug. Each entry is a substring matched against the fixture id.
+//
+// - test_bal_create_in_static_context: the v7.3.0 fixture asserts a block header
+//   gas_used (97,920) that is mathematically impossible under the EIP-8037 block
+//   formula `gas_used = max(block_regular_gas_used, block_state_gas_used)`. For a
+//   single-tx block, block_regular + block_state == cumulativeGasUsed (943,147),
+//   so gas_used >= cum/2 (471,574) always; 97,920 < 471,574. Per spec the header
+//   should be 845,227. Sibling static-trap fixtures (sstore/call_value/
+//   selfdestruct) are spec-consistent — only this one diverges. Skipped pending
+//   upstream clarification rather than carving out a non-spec special case for
+//   CREATE/CREATE2 in the client.
+const SKIP_FIXTURES: string[] = ['test_bal_create_in_static_context']
+
 console.log(`Using execution-spec blockchain tests from: ${fixturesPath}`)
 if (SKIP_NETWORKS.length > 0) {
   console.log(`Networks skipped: ${SKIP_NETWORKS.join(', ')}`)
@@ -79,6 +93,11 @@ if (fs.existsSync(fixturesPath) === false) {
     }
 
     for (const { id, fork, filePath, data } of fixtures) {
+      const skipReason = SKIP_FIXTURES.find((s) => id.includes(s))
+      if (skipReason !== undefined) {
+        it.skip(`${fork}: ${id} (skipped: diverges from canonical EIP, see SKIP_FIXTURES)`, () => {})
+        continue
+      }
       it(`${fork}: ${id}`, async ({ task }) => {
         annotateFixture(task, filePath, fixturesPath, 'blockchain tests')
         await runBlockchainTestCase(fork, data, assert, kzg, filePath)

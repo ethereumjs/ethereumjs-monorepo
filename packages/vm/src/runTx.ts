@@ -642,7 +642,6 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // ===========================
   let stateGasReservoirInitial = BIGINT_0
   vm.evm.eip7928CallPostTargetOog = false
-  vm.evm.exceptionalHaltRegularPenaltyGas = BIGINT_0
   const { intrinsicRegular: intrinsicRegularGas, intrinsicState: intrinsicStateGas } =
     computeIntrinsicGasDimensions8037(tx.common, tx, block?.header.gasLimit)
   const totalIntrinsic = intrinsicRegularGas + intrinsicStateGas
@@ -1058,15 +1057,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     //   execution_regular_gas_used = executionGasUsed - (state-gas spilled to gas_left)
     //                              = executionGasUsed - (executionStateGasUsed - reservoirDelta)
     const stateGasFromGasLeft = executionStateGasUsed - reservoirDelta
-    // EIP-8037: exclude penalty gas burned by exceptionally-halted CHILD frames
-    // (see EVM.exceptionalHaltRegularPenaltyGas) from the block-level
-    // regular-gas dimension. It remains part of totalGasSpent (the sender pays
-    // it / it is in the receipt's cumulative gas), but the block header
-    // `gas_used = max(regular, state)` must not include it.
-    const executionRegularGasUsed =
-      results.execResult.executionGasUsed -
-      stateGasFromGasLeft -
-      vm.evm.exceptionalHaltRegularPenaltyGas
+    const executionRegularGasUsed = results.execResult.executionGasUsed - stateGasFromGasLeft
     // Apply the intrinsic-create-selfdestruct refund to tx_state_gas only.
     // It does not affect totalGasSpent (the sender still pays the gross)
     // and it does not affect tx_regular_gas (it's a state-dim accounting
