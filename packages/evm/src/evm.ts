@@ -248,6 +248,30 @@ export class EVM implements EVMInterface {
    */
   public eip7928CallPostTargetOog = false
   /**
+   * EIP-8037 cumulative "penalty" regular-gas burned by a CREATE/CREATE2 that
+   * traps on the static-context check, for the current transaction.
+   *
+   * In the EELS reference, `generic_create` reserves the would-be child frame's
+   * gas (`create_message_gas`, the EIP-150 63/64 slice) BEFORE raising
+   * WriteInStaticContext. Because that child frame is never entered, the
+   * reserved gas is not counted in `execution_regular_gas_used` even though the
+   * frame's remaining `gas_left` is burned and still charged to the sender (it
+   * stays in `tx_gas_used` / the receipt's cumulative gas). The net effect is
+   * that the gas burned by a static CREATE/CREATE2 is excluded from the
+   * block-level regular-gas dimension.
+   *
+   * This is specific to CREATE/CREATE2: SSTORE, CALL-with-value and
+   * SELFDESTRUCT static-context traps do NOT reserve a child frame and their
+   * burned gas IS counted in `execution_regular_gas_used`. `create7928Gas`
+   * records the burned amount here right before the static trap, and `runTx`
+   * subtracts it from the regular dimension so the block header
+   * `gas_used = max(regular, state)` excludes it. Reset by `runTx` at the start
+   * of each transaction.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
+  public exceptionalHaltRegularPenaltyGas: bigint = BIGINT_0
+  /**
    * EIP-8037 per-frame state-gas snapshots. Pushed on each message-level
    * journal.checkpoint() and popped on commit (drop) or revert / exceptional
    * halt (restore). Restoring on revert refunds all state-gas charges and
