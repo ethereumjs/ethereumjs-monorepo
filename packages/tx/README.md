@@ -33,6 +33,7 @@
 - [Transaction Factory](#transaction-factory)
 - [KZG Setup](#kzg-setup)
 - [Sending a Transaction](#sending-a-transaction)
+- [Architecture](#architecture)
 - [Browser](#browser)
 - [Hardware Wallets](#hardware-wallets)
 - [API](#api)
@@ -501,6 +502,26 @@ const tx = createLegacyTx(txData, { common })
 const signedTx = tx.sign(pk)
 console.log(bytesToHex(signedTx.hash())) // 0xbf98f6f8700812ed6f2314275070256e11945fa48afd80fb301265f6a41a2dc2
 ```
+
+## Architecture
+
+This package implements every Ethereum transaction type behind a common interface, with shared behavior factored into reusable "capability" mixins.
+
+### Internal Module Map
+
+- **One directory per typed transaction** — `legacy/`, `2930/` (EIP-2930 access list), `1559/` (EIP-1559 fee market), `4844/` (EIP-4844 blob), `7702/` (EIP-7702 set-code). Each contains the transaction class and its `createX` constructors.
+- **`capabilities/`** — shared logic mixed into the transaction classes: `legacy.ts`, `eip2718.ts` (typed-transaction envelope), `eip2930.ts` (access lists), `eip1559.ts` (fee market), `eip7702.ts` (authorization lists). This is how common signing/serialization behavior is reused across types without inheritance trees.
+- **`transactionFactory.ts`** — the type-dispatching entry points `createTx`, `createTxFromRLP`, `createTxFromBlockBodyData`: given raw data or RLP, they detect the type byte and build the right transaction.
+- **`types.ts`** — `TransactionType` (the type enum), the per-type `…CompatibleTx` interfaces and shared option/data types.
+- **`params.ts`** — `paramsTx`, the EIP-indexed parameter dictionary merged into `Common`.
+- **`util/`**, **`constants.ts`** — encoding helpers and shared constants.
+
+### Extension Points
+
+- **Type dispatch** — prefer the `transactionFactory.ts` `createTx*` functions over importing a specific type's constructor when the type is data-driven; they return the correct `TransactionType` automatically.
+- **Custom `Common`** — every transaction is built with a `Common` (`createTx(data, { common })`), which determines chain id, active hardfork and which transaction types/fields are valid.
+- **Custom parameters** — override `paramsTx` values via the `params` option where supported.
+- **KZG backend** (EIP-4844) — blob transactions require a KZG implementation to be configured on `Common`; see [KZG Setup](#kzg-setup).
 
 ## Browser
 

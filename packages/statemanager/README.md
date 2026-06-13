@@ -26,6 +26,7 @@
 - [SimpleStateManager](#simplestatemanager)
 - [RPCStateManager](#rpcstatemanager)
 - [Binary Tree (experimental)](#binary-tree-experimental)
+- [Architecture](#architecture)
 - [Browser](#browser)
 - [API](#api)
 - [Development](#development)
@@ -273,6 +274,30 @@ Refer to [this test script](./test/rpcStateManager.spec.ts) for complete example
 ## Binary Tree (experimental)
 
 The `StatefulBinaryTreeStateManager` is an experimental state manager built on top of the [binary tree](../binarytree/) implementation, intended for stateless-Ethereum research and early test networks. It is not yet sufficiently tested and its APIs are not yet stable; it should not be used in production.
+
+## Architecture
+
+This package provides several interchangeable state implementations behind a single contract, so consumers (`@ethereumjs/evm`, `@ethereumjs/vm`, or your own code) can swap the backing store without changing execution code.
+
+### The Contract
+
+The shared contract is **`StateManagerInterface`**, which is defined in `@ethereumjs/common` (`packages/common/src/interfaces.ts`), not in this package — `common` acts as the monorepo's interface hub. Every implementation here satisfies that interface, which covers account access (`getAccount`/`putAccount`/`deleteAccount`/`modifyAccountFields`), contract code and storage, state root management, and `checkpoint`/`commit`/`revert` for nested, revertible execution.
+
+### Internal Module Map
+
+- **`merkleStateManager.ts`** — `MerkleStateManager`: the production implementation, backed by a `MerklePatriciaTrie` from `@ethereumjs/mpt` (one account trie plus per-account storage tries). Use this for full Merkle-Patricia state and proof generation.
+- **`simpleStateManager.ts`** — `SimpleStateManager`: a minimal in-memory implementation with no trie and no state root, used as the EVM's default and for lightweight testing.
+- **`rpcStateManager.ts`** — `RPCStateManager`: reads state on demand from a remote node via JSON-RPC (fork-mainnet-style workflows).
+- **`statefulBinaryTreeStateManager.ts`** — `StatefulBinaryTreeStateManager`: experimental, backed by `@ethereumjs/binarytree` (EIP-7864).
+- **`cache/`** — shared account/storage caching used by the implementations.
+- **`proof/`** — proof construction and verification helpers.
+- **`types.ts`** — per-implementation option objects (`MerkleStateManagerOpts`, `SimpleStateManagerOpts`, `RPCStateManagerOpts`, `StatefulBinaryTreeStateManagerOpts`).
+
+### Extension Points
+
+- **Choosing an implementation** — pick the class that matches your backing store (Merkle trie, in-memory, RPC, binary tree) and pass it wherever a `stateManager` option is accepted (`createEVM({ stateManager })`, `createVM({ stateManager })`).
+- **Custom DB backend** (Merkle) — `MerkleStateManagerOpts` accepts a `trie`/DB, so you can persist to LevelDB, LMDB, an in-memory map, etc., via the `@ethereumjs/mpt` DB abstraction.
+- **Custom implementation** — anything implementing `StateManagerInterface` from `@ethereumjs/common` is a drop-in state manager; you do not need to subclass the provided ones.
 
 ## Browser
 
