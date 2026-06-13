@@ -1,7 +1,7 @@
 import { ConsensusType } from '@ethereumjs/common'
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
-import { Blob4844Tx, Capability } from '@ethereumjs/tx'
+import { Capability, isBlob4844Tx } from '@ethereumjs/tx'
 import {
   BIGINT_0,
   EthereumJSErrorWithoutCode,
@@ -211,7 +211,7 @@ export class Block {
       if (this.common.isActivatedEIP(4844)) {
         const blobGasLimit = this.common.getBlobGasSchedule().maxBlobGasPerBlock
         const blobGasPerBlob = this.common.param('blobGasPerBlob')
-        if (tx instanceof Blob4844Tx) {
+        if (isBlob4844Tx(tx)) {
           blobGasUsed += BigInt(tx.numBlobs()) * blobGasPerBlob
           if (blobGasUsed > blobGasLimit) {
             errs.push(
@@ -334,7 +334,7 @@ export class Block {
       let blobGasPrice
 
       for (const tx of this.transactions) {
-        if (tx instanceof Blob4844Tx) {
+        if (isBlob4844Tx(tx)) {
           blobGasPrice = blobGasPrice ?? this.header.getBlobGasPrice()
           if (tx.maxFeePerBlobGas < blobGasPrice) {
             throw EthereumJSErrorWithoutCode(
