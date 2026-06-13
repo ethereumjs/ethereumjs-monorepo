@@ -12,7 +12,7 @@
  */
 import { Block } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
-import { type InterpreterStep } from '@ethereumjs/evm'
+import type { InterpreterStep } from '@ethereumjs/evm'
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { Caches, MerkleStateManager } from '@ethereumjs/statemanager'
 import { Account, bytesToHex, createAddressFromString, toBytes } from '@ethereumjs/util'

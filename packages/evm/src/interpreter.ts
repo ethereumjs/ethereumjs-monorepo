@@ -23,7 +23,7 @@ import { EOFContainerMode, validateEOF } from './eof/container.ts'
 import { setupEOF } from './eof/setup.ts'
 import { ContainerSectionType } from './eof/verify.ts'
 import { EVMError, EVMErrorTypeString } from './errors.ts'
-import { type EVMPerformanceLogger, type Timer } from './logger.ts'
+import type { EVMPerformanceLogger, Timer } from './logger.ts'
 import { Memory } from './memory.ts'
 import { Message } from './message.ts'
 import {

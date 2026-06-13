@@ -1,4 +1,4 @@
-import { type PrefixedHexString } from '@ethereumjs/util'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 import type { BinaryTree } from '@ethereumjs/binarytree'
 import type { Common } from '@ethereumjs/common'
