@@ -60,6 +60,13 @@ import type {
 export class Blockchain implements BlockchainInterface {
   db: DB<Uint8Array | string, Uint8Array | string | DBObject>
   dbManager: DBManager
+  /**
+   * Typed event emitter ({@link BlockchainEvent}). **Always defined** — assigned in the constructor
+   * and never cleared, so consumers can subscribe without a guard. Note: the `BlockchainInterface`
+   * type declares `events` as optional (`events?:`) for backwards compatibility; the concrete
+   * `Blockchain` class strengthens it to always-defined. See "Events" in the repository
+   * `DEVELOPER.md`.
+   */
   events: EventEmitter<BlockchainEvent>
 
   private _genesisBlock?: Block /** The genesis block of this blockchain */

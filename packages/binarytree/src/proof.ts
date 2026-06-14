@@ -8,10 +8,10 @@ import type { BinaryNode } from './node/index.ts'
 import type { StemBinaryNode } from './node/stemNode.ts'
 
 /**
- * Saves the nodes from a proof into the tree.
+ * Builds a {@link BinaryTree} from the nodes contained in a proof.
  * @param proof
  */
-export async function binaryTreeFromProof(proof: Uint8Array[]): Promise<BinaryTree> {
+export async function createBinaryTreeFromProof(proof: Uint8Array[]): Promise<BinaryTree> {
   const proofTrie = await createBinaryTree()
   const putStack: [Uint8Array, BinaryNode][] = proof.map((bytes) => {
     const node = decodeBinaryNode(bytes)
@@ -21,6 +21,16 @@ export async function binaryTreeFromProof(proof: Uint8Array[]): Promise<BinaryTr
   const root = putStack[0][0]
   proofTrie.root(root)
   return proofTrie
+}
+
+/**
+ * Saves the nodes from a proof into the tree.
+ * @param proof
+ * @deprecated Use {@link createBinaryTreeFromProof} instead (aligns with the monorepo-wide
+ * `createXFromProof` constructor naming, cf. `createMPTFromProof`).
+ */
+export async function binaryTreeFromProof(proof: Uint8Array[]): Promise<BinaryTree> {
+  return createBinaryTreeFromProof(proof)
 }
 
 /**
@@ -36,7 +46,7 @@ export async function verifyBinaryProof(
   key: Uint8Array,
   proof: Uint8Array[],
 ): Promise<Uint8Array | null> {
-  const proofTrie = await binaryTreeFromProof(proof)
+  const proofTrie = await createBinaryTreeFromProof(proof)
   if (!equalsBytes(proofTrie.root(), rootHash)) {
     throw EthereumJSErrorWithoutCode('rootHash does not match proof root')
   }

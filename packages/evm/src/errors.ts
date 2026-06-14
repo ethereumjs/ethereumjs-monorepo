@@ -1,3 +1,5 @@
+import type { EthereumJSErrorLike } from '@ethereumjs/util'
+
 export type EVMErrorType = (typeof EVMErrorMessage)[keyof typeof EVMErrorMessage]
 
 export const EVMErrorTypeString = 'EVMError'
@@ -33,13 +35,55 @@ const EVMErrorMessage = {
   INVALID_PROOF: 'kzg proof invalid',
 } as const
 
-export class EVMError {
+/**
+ * Stable, machine-readable error codes mirroring the {@link EVMError.errorMessages} keys, namespaced
+ * with an `EVM_` prefix (e.g. `EVM_OUT_OF_GAS`).
+ *
+ * These align `EVMError` with the monorepo-wide error taxonomy — every EthereumJS error exposes a
+ * stable string `code` (see `EthereumJSErrorLike` in `@ethereumjs/util` and the "Error handling"
+ * section of the repository `DEVELOPER.md`) — **without reparenting** `EVMError` onto the
+ * `EthereumJSError` prototype chain, which would break `instanceof EVMError` checks downstream.
+ */
+export const EVMErrorCode = Object.fromEntries(
+  Object.keys(EVMErrorMessage).map((key) => [key, `EVM_${key}`] as [string, string]),
+) as Record<keyof typeof EVMErrorMessage, string>
+
+export type EVMErrorCodeType = (typeof EVMErrorCode)[keyof typeof EVMErrorCode]
+
+/** Fallback code used when a code cannot be derived from the error message. */
+export const EVMErrorUnknownCode = 'EVM_UNKNOWN'
+
+// Reverse map message-value -> code, used to derive a code from the (legacy) message-only
+// constructor call. A few messages are shared by more than one key (e.g. the generic and the
+// BLS-12-381 "invalid input length", or the BLS/BN254 "fp point not in field"); for those the code
+// resolves to one representative key. Callers needing an exact code can pass it explicitly as the
+// second constructor argument.
+const messageToCode: Record<string, string> = {}
+for (const key of Object.keys(EVMErrorMessage) as (keyof typeof EVMErrorMessage)[]) {
+  messageToCode[EVMErrorMessage[key]] = EVMErrorCode[key]
+}
+
+/**
+ * EVM execution error.
+ *
+ * Intentionally a standalone class (not extending `Error`, not on the `EthereumJSError` prototype
+ * chain) so that `instanceof EVMError` remains a reliable check. It nonetheless conforms to the
+ * shared {@link EthereumJSErrorLike} contract by exposing a stable `code`.
+ */
+export class EVMError implements EthereumJSErrorLike {
   error: EVMErrorType
   errorType: string
+  /**
+   * Stable, machine-readable error code (e.g. `EVM_OUT_OF_GAS`); see {@link EVMErrorCode}.
+   * Satisfies {@link EthereumJSErrorLike}.
+   */
+  readonly code: string
   static errorMessages: Record<keyof typeof EVMErrorMessage, EVMErrorType> = EVMErrorMessage
+  static errorCodes = EVMErrorCode
 
-  constructor(error: EVMErrorType) {
+  constructor(error: EVMErrorType, code?: string) {
     this.error = error
     this.errorType = EVMErrorTypeString
+    this.code = code ?? messageToCode[error] ?? EVMErrorUnknownCode
   }
 }

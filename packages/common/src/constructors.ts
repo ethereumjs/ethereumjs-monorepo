@@ -1,7 +1,26 @@
 import { Common, parseGethGenesis } from './index.ts'
 
 import type { GethGenesis } from './gethGenesis.ts'
-import type { BaseOpts, ChainConfig, GethConfigOpts } from './index.ts'
+import type { BaseOpts, ChainConfig, CommonOpts, GethConfigOpts } from './index.ts'
+
+/**
+ * Creates a {@link Common} object.
+ *
+ * Convenience factory that aligns `Common` construction with the monorepo-wide `createX()`
+ * convention. Equivalent to `new Common(opts)`; the public `Common` constructor remains fully
+ * supported.
+ *
+ * ```javascript
+ * import { Mainnet, createCommon } from '@ethereumjs/common'
+ *
+ * const common = createCommon({ chain: Mainnet })
+ * ```
+ *
+ * @param opts Common options, see {@link CommonOpts}
+ */
+export function createCommon(opts: CommonOpts): Common {
+  return new Common(opts)
+}
 
 /**
  * Creates a {@link Common} object for a custom chain, based on a standard one.

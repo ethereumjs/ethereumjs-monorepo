@@ -64,7 +64,10 @@ export class Address {
   }
 
   /**
-   * Returns a new Uint8Array representation of address.
+   * Returns a new Uint8Array representation of the raw 20-byte address.
+   *
+   * @remarks Despite the `toBytes` name this is **not** an RLP serialization (cf. the `serialize()`
+   * method on `Account`/`Block`/tx types); it is a defensive copy of the underlying address bytes.
    */
   toBytes(): Uint8Array {
     return new Uint8Array(this.bytes)

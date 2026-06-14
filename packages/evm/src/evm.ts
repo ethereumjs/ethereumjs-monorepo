@@ -200,6 +200,12 @@ export class EVM implements EVMInterface {
   protected _block?: Block
 
   public readonly common: Common
+  /**
+   * Typed event emitter ({@link EVMEvent}). **Always defined** — it is assigned in the constructor
+   * and never cleared, so consumers can subscribe without a guard. Note: the `EVMInterface` type
+   * declares `events` as optional (`events?:`) for backwards compatibility; the concrete `EVM`
+   * class strengthens it to always-defined. See "Events" in the repository `DEVELOPER.md`.
+   */
   public readonly events: EventEmitter<EVMEvent>
 
   public stateManager: StateManagerInterface
