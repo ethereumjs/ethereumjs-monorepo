@@ -16,7 +16,7 @@ a recommended additive resolution and an approval marker filled in during review
 - **Caveat on a few false positives:** `util/src/errors.ts` contains a *commented-out* `UsageError` /
   `UsageErrorType` block; these appear in a naive grep but are **not** real exports (tracked under
   D-ERR-2). Likewise a handful of `tx`/`evm` "exports" (`serialize`, `sign`, `hash`,
-  `trap`, `precompileNN`, …) are low-level helpers re-exported from `util/` subfolders — intentional
+  `trap`, `precompileNN`, …) are low-level helpers re-exported from `util/` subdirectories — intentional
   but not part of the "shaped" object API.
 - **Classification approach:** the 7 axes are about API *shape*. Construction / serialization /
   events / errors are classified per **class**; hex-bytes / options / async are classified per
@@ -299,7 +299,7 @@ Markers: ✅ approved · ⏭️ deferred-to-major · 💤 no-op/doc-only.
 | **D-NAME-1** | `tx`: bytes-array factory is `create1559FeeMarketTxFromBytesArray`, breaking the `FeeMarket1559` token order used by its siblings and the `FeeMarket1559Tx` class. | Add `createFeeMarket1559TxFromBytesArray` as a one-line re-export/wrapper delegating to the existing impl; mark `create1559FeeMarketTxFromBytesArray` `@deprecated Use {@link createFeeMarket1559TxFromBytesArray}`. | ✅ |
 | **D-NAME-2** | `binarytree`: proof→tree constructor is `binaryTreeFromProof`, the only "from proof" builder not prefixed `create` (cf. mpt `createMPTFromProof`). | Add `createBinaryTreeFromProof` wrapper; `@deprecate` `binaryTreeFromProof`. | ✅ |
 | **D-NAME-3** | `common`: constructed via `new Common(opts)` only — no createX factory, unlike the rest of the monorepo. | Add `createCommon(opts)` factory delegating to `new Common(opts)`. Do **not** deprecate the constructor (still supported); document `createCommon` as the convention-aligned form. | ✅ |
-| **D-NAME-4** | `statemanager`: all four managers use `new XStateManager(opts)` with no createX factories. | Add `createMerkleStateManager`, `createSimpleStateManager`, `createRPCStateManager`, `createStatefulBinaryTreeStateManager` factories delegating to the constructors. Constructors stay public/undeprecated. | ✅ |
+| **D-NAME-4** | `statemanager`: all four managers use `new XStateManager(opts)` with no createX factories. | Add `createMerkleStateManager`, `createSimpleStateManager`, `createRPCStateManager`, `createStatefulBinaryTreeStateManager` factories delegating to the constructors. Constructors stay public (not deprecated). | ✅ |
 | **D-SER-1** | `util`: `Withdrawal.toValue()` is a one-off serializer verb. | Distinct semantics from `toJSON` (typed object vs hex JSON). Leave as-is; not worth an alias. | 💤 |
 | **D-SER-2** | `util`: `Address.toBytes()` reads like RLP `serialize()` but returns the raw address bytes. | Doc-only clarification in JSDoc; no rename (would collide with the `serialize` meaning). | 💤 |
 | **D-EVT-1** | `events` typed optional in `EVMInterface`/`BlockchainInterface` but always defined at runtime. | Keep optional typing (compat); guarantee + document always-defined runtime; ensure event-map types exported from every `types.ts`. Runtime already always-defines. | ✅ |
