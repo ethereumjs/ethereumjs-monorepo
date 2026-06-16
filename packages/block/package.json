@@ -2,7 +2,10 @@
   "name": "@ethereumjs/block",
   "version": "10.1.2",
   "description": "Provides Block serialization and help functions",
-  "keywords": ["ethereum", "block"],
+  "keywords": [
+    "ethereum",
+    "block"
+  ],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/block#readme",
   "bugs": {
     "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+block%22"
@@ -26,7 +29,10 @@
       "require": "./dist/cjs/index.js"
     }
   },
-  "files": ["dist", "src"],
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
     "biome": "npx @biomejs/biome check",
     "biome:fix": "npx @biomejs/biome check --write",
@@ -51,11 +57,11 @@
   },
   "dependencies": {
     "@ethereumjs/common": "^10.1.2",
-    "@ethereumjs/rlp": "^10.1.2",
     "@ethereumjs/mpt": "^10.1.2",
+    "@ethereumjs/rlp": "^10.1.2",
     "@ethereumjs/tx": "^10.1.2",
     "@ethereumjs/util": "^10.1.2",
-    "@noble/curves": "^2.0.1",
+    "@noble/curves": "^2.2.0",
     "@noble/hashes": "^2.0.1"
   },
   "devDependencies": {

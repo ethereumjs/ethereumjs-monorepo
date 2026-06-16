@@ -2,7 +2,12 @@
   "name": "@ethereumjs/binarytree",
   "version": "10.1.2",
   "description": "Implementation of binary trees as used in Ethereum.",
-  "keywords": ["binary", "tree", "trie", "ethereum"],
+  "keywords": [
+    "binary",
+    "tree",
+    "trie",
+    "ethereum"
+  ],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/binarytree#readme",
   "bugs": {
     "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+binarytree%22"
@@ -32,7 +37,10 @@
       "require": "./dist/cjs/index.js"
     }
   },
-  "files": ["dist", "src"],
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
     "biome": "npx @biomejs/biome check",
     "biome:fix": "npx @biomejs/biome check --write",
@@ -57,11 +65,11 @@
     "@ethereumjs/rlp": "^10.1.2",
     "@ethereumjs/util": "^10.1.2",
     "@noble/hashes": "^2.0.1",
-    "debug": "^4.4.0",
+    "debug": "^4.4.3",
     "lru-cache": "11.0.2"
   },
   "devDependencies": {
-    "@types/debug": "^4.1.12"
+    "@types/debug": "^4.1.13"
   },
   "engines": {
     "node": ">=20"

@@ -2,7 +2,11 @@
   "name": "@ethereumjs/ethash",
   "version": "10.0.0",
   "description": "An implementation of the Ethash consensus algorithm in JavaScript",
-  "keywords": ["ethash", "ethereum", "POW"],
+  "keywords": [
+    "ethash",
+    "ethereum",
+    "POW"
+  ],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/ethash#readme",
   "bugs": {
     "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+ethash%22"
@@ -26,7 +30,10 @@
       "require": "./dist/cjs/index.js"
     }
   },
-  "files": ["dist", "src"],
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
     "biome": "npx @biomejs/biome check",
     "biome:fix": "npx @biomejs/biome check --write",

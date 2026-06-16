@@ -2,7 +2,11 @@
   "name": "@ethereumjs/util",
   "version": "10.1.2",
   "description": "A collection of utility functions for Ethereum",
-  "keywords": ["ethereum", "utilities", "utils"],
+  "keywords": [
+    "ethereum",
+    "utilities",
+    "utils"
+  ],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util#readme",
   "bugs": {
     "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+util%22"
@@ -70,7 +74,10 @@
       "require": "./dist/cjs/index.js"
     }
   },
-  "files": ["dist", "src"],
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
     "biome": "npx @biomejs/biome check",
     "biome:fix": "npx @biomejs/biome check --write",
@@ -95,7 +102,7 @@
   },
   "dependencies": {
     "@ethereumjs/rlp": "^10.1.2",
-    "@noble/curves": "^2.0.1",
+    "@noble/curves": "^2.2.0",
     "@noble/hashes": "^2.0.1"
   },
   "devDependencies": {

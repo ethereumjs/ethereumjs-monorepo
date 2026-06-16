@@ -39,7 +39,10 @@
       "require": "./dist/cjs/index.js"
     }
   },
-  "files": ["dist", "src"],
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
     "biome": "npx @biomejs/biome check",
     "biome:fix": "npx @biomejs/biome check --write",
@@ -64,11 +67,11 @@
   },
   "dependencies": {
     "@ethereumjs/util": "^10.1.2",
-    "eventemitter3": "^5.0.1"
+    "eventemitter3": "^5.0.4"
   },
   "devDependencies": {
-    "@noble/curves": "^2.0.1",
+    "@noble/curves": "^2.2.0",
     "@polkadot/util": "^13.4.3",
-    "@polkadot/wasm-crypto": "^7.4.1"
+    "@polkadot/wasm-crypto": "^7.5.4"
   }
 }

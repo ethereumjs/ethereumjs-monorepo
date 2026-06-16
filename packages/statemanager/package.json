@@ -2,7 +2,10 @@
   "name": "@ethereumjs/statemanager",
   "version": "10.1.2",
   "description": "An Ethereum statemanager implementation",
-  "keywords": ["ethereum", "statemanager"],
+  "keywords": [
+    "ethereum",
+    "statemanager"
+  ],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/statemanager#readme",
   "bugs": {
     "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+statemanager%22"
@@ -13,7 +16,9 @@
   },
   "license": "MPL-2.0",
   "author": "EthereumJS Team",
-  "contributors": ["g11tech <gajinder@g11.in>"],
+  "contributors": [
+    "g11tech <gajinder@g11.in>"
+  ],
   "type": "module",
   "sideEffects": false,
   "main": "dist/cjs/index.js",
@@ -27,7 +32,10 @@
       "require": "./dist/cjs/index.js"
     }
   },
-  "files": ["dist", "src"],
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
     "biome": "npx @biomejs/biome check",
     "biome:fix": "npx @biomejs/biome check --write",
@@ -49,18 +57,18 @@
   "dependencies": {
     "@ethereumjs/binarytree": "^10.1.2",
     "@ethereumjs/common": "^10.1.2",
-    "@ethereumjs/rlp": "^10.1.2",
     "@ethereumjs/mpt": "^10.1.2",
+    "@ethereumjs/rlp": "^10.1.2",
     "@ethereumjs/util": "^10.1.2",
     "@js-sdsl/ordered-map": "^4.4.2",
     "@noble/hashes": "^2.0.1",
-    "debug": "^4.4.0",
+    "debug": "^4.4.3",
     "lru-cache": "11.0.2"
   },
   "devDependencies": {
     "@ethereumjs/block": "^10.1.2",
     "@ethereumjs/genesis": "^10.1.2",
-    "@types/debug": "^4.1.12",
+    "@types/debug": "^4.1.13",
     "micro-eth-signer": "0.15.0"
   }
 }

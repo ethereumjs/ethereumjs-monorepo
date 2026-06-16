@@ -1,7 +1,9 @@
 {
   "name": "root",
   "private": true,
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "biome": "npx @biomejs/biome check",
     "biome:fix": "npx @biomejs/biome check --write",
@@ -43,20 +45,20 @@
     "@vitest/coverage-istanbul": "^4.0.0",
     "@vitest/coverage-v8": "^4.0.0",
     "@vitest/ui": "^4.0.0",
-    "cspell": "^8.17.5",
+    "cspell": "^8.19.4",
     "embedme": "1.22.1",
-    "eslint": "^9.22.0",
-    "eslint-plugin-import": "^2.31.0",
+    "eslint": "^9.39.4",
+    "eslint-plugin-import": "^2.32.0",
     "lint-staged": "15.5.0",
-    "lockfile-lint-api": "^5.9.1",
+    "lockfile-lint-api": "^5.9.2",
     "sort-package-json": "3.0.0",
-    "tsx": "^4.19.3",
-    "typedoc": "^0.28.3",
-    "typedoc-plugin-markdown": "^4.6.3",
-    "typescript": "^5.8.2",
-    "typescript-eslint": "^8.26.1",
-    "vite-plugin-top-level-await": "^1.5.0",
-    "vite-plugin-wasm": "^3.4.1",
+    "tsx": "^4.22.4",
+    "typedoc": "^0.28.19",
+    "typedoc-plugin-markdown": "^4.12.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.61.0",
+    "vite-plugin-top-level-await": "^1.6.0",
+    "vite-plugin-wasm": "^3.6.0",
     "vitest": "^4.0.0"
   },
   "optionalDependencies": {

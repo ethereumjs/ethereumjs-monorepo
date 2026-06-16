@@ -2,7 +2,10 @@
   "name": "@ethereumjs/tx",
   "version": "10.1.2",
   "description": "Implementation of the various Ethereum Transaction Types",
-  "keywords": ["ethereum", "transactions"],
+  "keywords": [
+    "ethereum",
+    "transactions"
+  ],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx#readme",
   "bugs": {
     "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+tx%22"
@@ -33,7 +36,10 @@
       "require": "./dist/cjs/index.js"
     }
   },
-  "files": ["dist", "src"],
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
     "biome": "npx @biomejs/biome check",
     "biome:fix": "npx @biomejs/biome check --write",
@@ -64,7 +70,7 @@
     "@ethereumjs/common": "^10.1.2",
     "@ethereumjs/rlp": "^10.1.2",
     "@ethereumjs/util": "^10.1.2",
-    "@noble/curves": "^2.0.1",
+    "@noble/curves": "^2.2.0",
     "@noble/hashes": "^2.0.1"
   },
   "devDependencies": {

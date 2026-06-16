@@ -2,7 +2,10 @@
   "name": "@ethereumjs/blockchain",
   "version": "10.1.2",
   "description": "A module to store and interact with blocks",
-  "keywords": ["ethereum", "blockchain"],
+  "keywords": [
+    "ethereum",
+    "blockchain"
+  ],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/blockchain#readme",
   "bugs": {
     "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+blockchain%22"
@@ -26,7 +29,10 @@
       "require": "./dist/cjs/index.js"
     }
   },
-  "files": ["dist", "src"],
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
     "biome": "npx @biomejs/biome check",
     "biome:fix": "npx @biomejs/biome check --write",
@@ -55,13 +61,13 @@
     "@ethereumjs/mpt": "^10.1.2",
     "@ethereumjs/rlp": "^10.1.2",
     "@ethereumjs/util": "^10.1.2",
-    "debug": "^4.4.0",
-    "eventemitter3": "^5.0.1",
+    "debug": "^4.4.3",
+    "eventemitter3": "^5.0.4",
     "lru-cache": "11.0.2"
   },
   "devDependencies": {
     "@ethereumjs/ethash": "^10.0.0",
-    "@types/debug": "^4.1.12"
+    "@types/debug": "^4.1.13"
   },
   "engines": {
     "node": ">=20"

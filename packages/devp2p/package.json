@@ -42,7 +42,10 @@
       "require": "./dist/cjs/index.js"
     }
   },
-  "files": ["dist", "src"],
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
     "biome": "npx @biomejs/biome check",
     "biome:fix": "npx @biomejs/biome check --write",
@@ -68,11 +71,11 @@
     "@ethereumjs/common": "^10.1.2",
     "@ethereumjs/rlp": "^10.1.2",
     "@ethereumjs/util": "^10.1.2",
-    "@noble/curves": "^2.0.1",
+    "@noble/curves": "^2.2.0",
     "@noble/hashes": "^2.0.1",
-    "@scure/base": "^1.2.4",
-    "debug": "^4.4.0",
-    "eventemitter3": "^5.0.1",
+    "@scure/base": "^1.2.6",
+    "debug": "^4.4.3",
+    "eventemitter3": "^5.0.4",
     "lru-cache": "11.0.2",
     "scanf": "1.2.0",
     "snappyjs": "^0.7.0"
@@ -81,7 +84,7 @@
     "@ethereumjs/block": "^10.1.2",
     "@ethereumjs/testdata": "1.0.0",
     "@ethereumjs/tx": "^10.1.2",
-    "@types/debug": "^4.1.12",
+    "@types/debug": "^4.1.13",
     "@types/k-bucket": "^5.0.4",
     "@types/node": "^22.13.10",
     "chalk": "^5.6.2"

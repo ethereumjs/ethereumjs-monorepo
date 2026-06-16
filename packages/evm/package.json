@@ -2,7 +2,12 @@
   "name": "@ethereumjs/evm",
   "version": "10.1.2",
   "description": "JavaScript Ethereum Virtual Machine (EVM) implementation",
-  "keywords": ["ethereum", "EVM", "JavaScript", "TypeScript"],
+  "keywords": [
+    "ethereum",
+    "EVM",
+    "JavaScript",
+    "TypeScript"
+  ],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#readme",
   "bugs": {
     "url": "https://github.com/ethereumjs/ethereumjs-monorepo/issues?q=is%3Aissue+label%3A%22package%3A+evm%22"
@@ -13,7 +18,9 @@
   },
   "license": "MPL-2.0",
   "author": "EthereumJS Team",
-  "contributors": ["Alex Beregszaszi <alex@rtfs.hu>"],
+  "contributors": [
+    "Alex Beregszaszi <alex@rtfs.hu>"
+  ],
   "type": "module",
   "sideEffects": false,
   "main": "dist/cjs/index.js",
@@ -27,7 +34,10 @@
       "require": "./dist/cjs/index.js"
     }
   },
-  "files": ["dist", "src"],
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
     "biome": "npx @biomejs/biome check",
     "biome:fix": "npx @biomejs/biome check --write",
@@ -58,27 +68,27 @@
     "@ethereumjs/common": "^10.1.2",
     "@ethereumjs/statemanager": "^10.1.2",
     "@ethereumjs/util": "^10.1.2",
-    "@noble/curves": "^2.0.1",
+    "@noble/curves": "^2.2.0",
     "@noble/hashes": "^2.0.1",
-    "debug": "^4.4.0",
-    "eventemitter3": "^5.0.1"
+    "debug": "^4.4.3",
+    "eventemitter3": "^5.0.4"
   },
   "devDependencies": {
     "@paulmillr/trusted-setups": "^0.2.0",
     "@types/benchmark": "^2.1.5",
-    "@types/debug": "^4.1.12",
+    "@types/debug": "^4.1.13",
     "@types/minimist": "^1.2.5",
     "@types/node-dir": "^0.0.37",
     "benchmark": "^2.1.4",
     "level": "^9.0.0",
     "mcl-wasm": "^1.8.0",
-    "memory-level": "^3.0.0",
+    "memory-level": "^3.1.0",
     "micro-eth-signer": "^0.15.0",
     "minimist": "^1.2.8",
     "node-dir": "^0.1.17",
     "rollup-plugin-visualizer": "^5.14.0",
     "rustbn-wasm": "^0.4.0",
-    "solc": "^0.8.28",
+    "solc": "^0.8.35",
     "split": "^1.0.1"
   },
   "engines": {
