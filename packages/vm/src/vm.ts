@@ -31,6 +31,11 @@ export class VM {
 
   readonly common: Common
 
+  /**
+   * Typed event emitter ({@link VMEvent}). **Always defined** — assigned in the constructor and
+   * never cleared, so consumers can subscribe without a guard. See "Events" in the repository
+   * `DEVELOPER.md`.
+   */
   readonly events: EventEmitter<VMEvent>
   /**
    * The EVM used for bytecode execution

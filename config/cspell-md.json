@@ -331,6 +331,10 @@
     "bytevector",
     "hoodi",
     "feelyourprotocol",
-    "snobal"
+    "snobal",
+    "epoc",
+    "reparent",
+    "reparented",
+    "reparenting"
   ]
 }

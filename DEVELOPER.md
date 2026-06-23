@@ -11,6 +11,13 @@ It is intended to be both an entrypoint for external contributors as well as a r
   - [Workflow](#workflow)
   - [Releases](#releases)
     - [Fork Releases (Feel Your Protocol)](#fork-releases-feel-your-protocol)
+- [API Conventions](#api-conventions)
+  - [Construction](#construction)
+  - [Serialization](#serialization)
+  - [Hex / bytes naming](#hex--bytes-naming)
+  - [Options objects](#options-objects)
+  - [Error handling](#error-handling)
+  - [Events](#events)
 - [Development Tools](#development-tools)
   - [TypeScript](#typescript)
   - [Linting](#linting)
@@ -175,6 +182,106 @@ To reset this setting:
 ```sh
 npm config delete script-shell
 ```
+
+## API Conventions
+
+These are the shared public-API conventions across the active packages. A full per-package audit of
+the current surface lives in [`docs/api-conventions-audit.md`](./docs/api-conventions-audit.md). The
+hard rule for every change is **additive only**: new canonical names may be added, legacy names get
+`@deprecated` JSDoc and keep working until a future major.
+
+### Construction
+
+Objects are built with free **`createX()`** factory functions (e.g. `createBlock`, `createTx`,
+`createCommon`, `createMerkleStateManager`), not by calling constructors directly. Variants encode
+the input format as a suffix, in a stable token order matching the class name:
+
+- `createX(data)` — from a data dictionary
+- `createXFromRLP(bytes)` — from an RLP-serialized value
+- `createXFromBytesArray(values)` — from a decoded values array
+- `createXFromRPC(...)` / `createXFromJSONRPCProvider(...)` — from JSON-RPC shapes
+- `createXFromProof(proof)` — rebuild a structure from a proof
+
+Public constructors generally remain usable, but the `createX` factory is the documented entry point.
+Lookups use `getX` (e.g. `getGenesis(chainId)`), not `createX`.
+
+### Serialization
+
+Classes that have a wire form expose the canonical triple:
+
+- **`raw(): …`** — the decoded values array (pre-encoding)
+- **`serialize(): Uint8Array`** — the RLP/typed-envelope byte encoding
+- **`toJSON(): JSON…`** — a JSON object with `0x`-prefixed hex string fields
+
+`toBytes()` (e.g. `Address.toBytes()`) means "the raw bytes of this value" and is **not** a synonym
+for `serialize()`.
+
+### Hex / bytes naming
+
+`@ethereumjs/util` defines the canonical converters; other packages reuse them rather than rolling
+their own. Names follow `xToY` and encode the `0x`-prefix expectation:
+
+- `bytesToHex` / `hexToBytes` — `0x`-**prefixed** `PrefixedHexString` ⟷ `Uint8Array`
+- `bytesToUnprefixedHex` / `unprefixedHexToBytes` — **unprefixed** hex ⟷ `Uint8Array`
+- `bigIntToBytes` / `bytesToBigInt`, `intToBytes` / `bytesToInt`, `bigIntToHex`, `intToHex`, …
+
+Signatures take `PrefixedHexString` for `0x`-strings and `Uint8Array` for raw bytes.
+
+### Options objects
+
+Constructors and run-methods take a single options object (positional args only for tiny leaf
+helpers). The shared vocabulary is consistent across packages: `common?: Common`, `hardfork?`,
+`setHardfork?: boolean`, `freeze?: boolean`, `cacheSize?: number`. New options must be **optional**;
+existing option fields are never renamed or removed.
+
+### Error handling
+
+Every EthereumJS error exposes a stable, machine-readable **`code: string`**. This is captured by the
+shared structural contract `EthereumJSErrorLike` (defined in `@ethereumjs/rlp`, re-exported from
+`@ethereumjs/util`):
+
+```ts
+export interface EthereumJSErrorLike {
+  readonly code: string
+}
+```
+
+Two error families conform to it:
+
+- **`EthereumJSError<T extends { code: string }>`** (in `@ethereumjs/rlp`, re-exported from
+  `@ethereumjs/util`) — extends `Error`, carries structured `type` metadata, and exposes `code`
+  (mirroring `type.code`), `getMetadata()` and `toObject()`. This is the preferred base for new
+  coded errors. The legacy `EthereumJSErrorWithoutCode(message?, stack?)` factory is `@deprecated`
+  in favour of constructing an `EthereumJSError` with a real code; migrating existing throw sites is
+  a gradual, per-package effort.
+- **`EVMError`** (in `@ethereumjs/evm`) — intentionally a standalone class (**not** extending
+  `Error`, **not** on the `EthereumJSError` prototype chain) so that `instanceof EVMError` stays a
+  reliable check. It conforms to `EthereumJSErrorLike` by exposing a stable `code` (e.g.
+  `EVM_OUT_OF_GAS`, see the `EVMErrorCode` map). It is **not** reparented — doing so would break
+  downstream `instanceof` checks. A handful of EVM error messages are shared by more than one code
+  key; the message-only constructor resolves those to one representative code, and an explicit code
+  can be passed as the second constructor argument when exactness matters.
+
+When adding a new error class, implement `EthereumJSErrorLike` (extend `EthereumJSError` unless an
+`instanceof` constraint forbids changing the prototype chain) and give it a stable, namespaced code.
+
+### Events
+
+Packages that emit events (`common`, `blockchain`, `evm`, `vm`) use [`eventemitter3`](https://github.com/primus/eventemitter3)
+with a **typed event map** exported from the package's `types.ts` (`CommonEvent`, `BlockchainEvent`,
+`EVMEvent`, `VMEvent`):
+
+```ts
+class EVM {
+  public readonly events: EventEmitter<EVMEvent>
+}
+```
+
+The `events` property is **always defined at runtime** — it is assigned in the constructor and never
+cleared, so consumers can subscribe (`instance.events.on(...)`) without a presence guard. For
+backwards compatibility some interface types (`EVMInterface`, `BlockchainInterface`) still declare
+`events?:` as optional; the concrete classes strengthen this to always-defined. New event-emitting
+classes should type `events` as non-optional and always assign it in the constructor.
 
 ## Development Tools
 

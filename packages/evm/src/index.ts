@@ -1,5 +1,5 @@
 import { EOFContainer, validateEOF } from './eof/container.ts'
-import { EVMError } from './errors.ts'
+import { EVMError, EVMErrorCode } from './errors.ts'
 import { EVM } from './evm.ts'
 import { Message } from './message.ts'
 import { getOpcodesForHF } from './opcodes/index.ts'
@@ -57,6 +57,7 @@ export {
   EOFContainer,
   EVM,
   EVMError,
+  EVMErrorCode,
   EVMMockBlockchain,
   getActivePrecompiles,
   getOpcodesForHF,
@@ -67,6 +68,8 @@ export {
   RustBN254,
   validateEOF,
 }
+
+export type { EVMErrorCodeType } from './errors.ts'
 
 export * from './binaryTreeAccessWitness.ts'
 export * from './constructors.ts'

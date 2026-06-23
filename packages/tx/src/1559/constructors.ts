@@ -35,7 +35,7 @@ export function createFeeMarket1559Tx(txData: TxData, opts: TxOptions = {}) {
  * Format: `[chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
  * accessList, signatureYParity, signatureR, signatureS]`
  */
-export function create1559FeeMarketTxFromBytesArray(values: TxValuesArray, opts: TxOptions = {}) {
+export function createFeeMarket1559TxFromBytesArray(values: TxValuesArray, opts: TxOptions = {}) {
   if (values.length !== 9 && values.length !== 12) {
     throw EthereumJSErrorWithoutCode(
       'Invalid EIP-1559 transaction. Only expecting 9 values (for unsigned tx) or 12 values (for signed tx).',
@@ -80,6 +80,16 @@ export function create1559FeeMarketTxFromBytesArray(values: TxValuesArray, opts:
 }
 
 /**
+ * Create a transaction from an array of byte encoded values ordered according to the devp2p network encoding.
+ *
+ * @deprecated Use {@link createFeeMarket1559TxFromBytesArray} instead (consistent `FeeMarket1559`
+ * token order, matching the `FeeMarket1559Tx` class and the sibling `createFeeMarket1559Tx*` factories).
+ */
+export function create1559FeeMarketTxFromBytesArray(values: TxValuesArray, opts: TxOptions = {}) {
+  return createFeeMarket1559TxFromBytesArray(values, opts)
+}
+
+/**
  * Instantiate a transaction from an RLP serialized tx.
  *
  * Format: `0x02 || rlp([chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
@@ -102,5 +112,5 @@ export function createFeeMarket1559TxFromRLP(serialized: Uint8Array, opts: TxOpt
     throw EthereumJSErrorWithoutCode('Invalid serialized tx input: must be array')
   }
 
-  return create1559FeeMarketTxFromBytesArray(values as TxValuesArray, opts)
+  return createFeeMarket1559TxFromBytesArray(values as TxValuesArray, opts)
 }
