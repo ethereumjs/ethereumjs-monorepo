@@ -11,6 +11,15 @@ It is intended to be both an entrypoint for external contributors as well as a r
   - [Workflow](#workflow)
   - [Releases](#releases)
     - [Fork Releases (Feel Your Protocol)](#fork-releases-feel-your-protocol)
+- [Conventions](#conventions)
+  - [Constructor Functions (`createX`)](#constructor-functions-createx)
+  - [Per-Package File Layout (`types.ts`, `constructors.ts`, `params.ts`)](#per-package-file-layout-typests-constructorsts-paramsts)
+  - [Options-Object Arguments](#options-object-arguments)
+  - [Events (`eventemitter3`)](#events-eventemitter3)
+  - [Errors](#errors)
+  - [Where EIP / Parameter Config Lives](#where-eip--parameter-config-lives)
+  - [Naming Rules (`createX`, `xToY`, `isX`)](#naming-rules-createx-xtoy-isx)
+  - [`.ts`-Extension ESM Imports](#ts-extension-esm-imports)
 - [Development Tools](#development-tools)
   - [TypeScript](#typescript)
   - [Linting](#linting)
@@ -175,6 +184,76 @@ To reset this setting:
 ```sh
 npm config delete script-shell
 ```
+
+## Conventions
+
+This chapter documents the recurring code patterns across the active packages **as they exist today** — it is descriptive, not aspirational. Some inconsistencies are called out honestly; a few are being actively worked on.
+
+### Constructor Functions (`createX`)
+
+Most objects are not created with a public `new X(...)` call. Instead each package exposes free-standing factory functions named `createX…`, typically grouped in a `constructors.ts` file. The class constructor is generally intended for internal/advanced use; the `createX` functions are the public entry points and often do async setup or input normalization the bare constructor cannot.
+
+Examples (verified):
+
+- `createBlock`, `createBlockFromRLP`, `createBlockFromRPC`, `createEmptyBlock` (`packages/block/src/block/constructors.ts`); `createBlockHeader`, `createBlockHeaderFromRLP` (`packages/block/src/header/constructors.ts`).
+- `createTx`, `createTxFromRLP`, `createTxFromBlockBodyData` (`packages/tx/src/transactionFactory.ts`).
+- `createAccount`, `createAddressFromString`, `createAddressFromPrivateKey`, `createContractAddress` (`packages/util/src/{account,address}.ts`).
+- `createCommonFromGethGenesis`, `createCustomCommon` (`packages/common/src/constructors.ts`).
+- `createEVM` (`packages/evm/src/constructors.ts`), `createVM` (`packages/vm/src/constructors.ts`).
+
+A common sub-pattern is `createXFromY` for alternate input formats (`…FromRLP`, `…FromRPC`, `…FromBytesArray`, `…FromString`, `…FromPrivateKey`).
+
+### Per-Package File Layout (`types.ts`, `constructors.ts`, `params.ts`)
+
+Active packages converge on a small set of conventionally named modules:
+
+- **`types.ts`** — public interfaces, option types and event maps for the package (e.g. `packages/evm/src/types.ts`, `packages/vm/src/types.ts`, `packages/tx/src/types.ts`, `packages/common/src/types.ts`). Larger packages may have nested `types.ts` files (e.g. `packages/tx/src/legacy/`).
+- **`constructors.ts`** — the `createX` factory functions described above (present in `binarytree`, `blockchain`, `common`, `evm`, `mpt`, `vm`; `block` and `tx` keep theirs in domain-specific files like `block/constructors.ts` and `transactionFactory.ts`).
+- **`params.ts`** — the package's EIP-indexed parameter dictionary (see [below](#where-eip--parameter-config-lives)).
+
+### Options-Object Arguments
+
+Constructors and `createX` functions take an options object rather than a positional argument list, named `XOpts` or `XOptions`. This keeps call sites readable and lets new optional fields be added without breaking existing callers. Examples: `EVMOpts` (`packages/evm/src/types.ts:220`), `VMOpts` (`packages/vm/src/types.ts:101`), `CommonOpts` (`packages/common/src/types.ts:144`), `BlockOptions` (`packages/block/src/types.ts:20`).
+
+### Events (`eventemitter3`)
+
+Packages that emit events expose an `events` property typed with [`eventemitter3`](https://github.com/primus/eventemitter3) and a corresponding event-map type in `types.ts`:
+
+- `EVM.events: EventEmitter<EVMEvent>` (`packages/evm/src/evm.ts:203`; map at `types.ts:153`)
+- `VM.events: EventEmitter<VMEvent>` (`packages/vm/src/vm.ts:34`; map at `types.ts:85`)
+- `Blockchain.events: EventEmitter<BlockchainEvent>` (`packages/blockchain/src/blockchain.ts:63`)
+- `Common.events: EventEmitter<CommonEvent>` (`packages/common/src/common.ts:64`)
+
+Note one inconsistency: on the concrete classes `events` is always defined, but in the corresponding *option* interfaces it is `events?` optional (e.g. `packages/evm/src/types.ts:182`, `packages/blockchain/src/types.ts:91`). Event handlers receive an optional `resolve` callback so emission can await async listeners.
+
+### Errors
+
+Error handling is **not yet uniform** across the monorepo (this is known and being addressed):
+
+- The generic base class is `EthereumJSError<T extends { code: string }>`, which extends the native `Error` and carries structured metadata. Despite the plan referring to it as living "in util", it is actually **defined in `packages/rlp/src/errors.ts`** and re-exported through `packages/util/src/errors.ts` (the zero-dependency `rlp` package is the lowest layer, so the base error lives there). `EthereumJSErrorWithoutCode(message)` is a `@deprecated` convenience wrapper that constructs one with a default code.
+- `EVM` defines its own `EVMError` class (`packages/evm/src/errors.ts:36`) which is **not** a subclass of `Error` and **not** an `EthereumJSError` — it is a plain class with `error` and `errorType` fields. This divergence is intentional to note, not to imitate.
+- Other packages variously throw `EthereumJSErrorWithoutCode(...)` or plain errors.
+
+When adding new errors, prefer `EthereumJSError` with a real `code`. The commented-out error-code machinery in `packages/util/src/errors.ts` is a work in progress; do not extend it ad hoc.
+
+### Where EIP / Parameter Config Lives
+
+There are two complementary mechanisms:
+
+1. **Hardfork / EIP activation** is owned by `@ethereumjs/common`: which hardforks exist (`packages/common/src/hardforks.ts`), which EIPs they activate (`packages/common/src/eips.ts`), and per-chain config (`packages/common/src/chains.ts`). Code gates behavior with `common.isActivatedEIP(n)` and `common.gteHardfork(...)`.
+2. **Numeric parameter values** (gas costs, limits, …) are **decentralized into each package** in a `params.ts` file exporting an EIP-indexed `ParamsDict`: `paramsEVM` (`packages/evm/src/params.ts`), `paramsVM` (`packages/vm/src/params.ts`), `paramsTx` (`packages/tx/src/params.ts`), `paramsBlock` (`packages/block/src/params.ts`). At construction time a package merges its dictionary into the shared `Common` via `common.updateParams(opts.params ?? paramsX)` (e.g. `packages/evm/src/evm.ts:384`, `packages/vm/src/vm.ts:72`). Values are then read with `common.param('name')`, resolved against the active hardfork/EIP set.
+
+So: **what is active** lives in `common`; **what each value is** lives next to the code that uses it, and is injected into `common` at runtime. Consumers can override parameters by passing a custom `params` option.
+
+### Naming Rules (`createX`, `xToY`, `isX`)
+
+- **`createX…`** — constructor/factory functions (see above).
+- **`xToY`** — pure converters between representations, e.g. `bytesToBigInt64`, `bytesToUtf8`, `hexToBigInt`, `bitsToBytes`, `withdrawalToBytesArray` (`packages/util/src/*.ts`).
+- **`isX`** — type guards / predicates, e.g. `isHexString`, `isAccessList`, `isLegacyTx`, `isBlob4844Tx`, `isEOACode7702Tx` (`packages/tx/src/*.ts`, `packages/util/src/*.ts`).
+
+### `.ts`-Extension ESM Imports
+
+Relative imports inside `src/` are written with explicit `.ts` extensions, e.g. `import { createEIP7708TransferLog } from './eip7708.ts'` (`packages/evm/src/evm.ts:25`). This is enabled by `allowImportingTsExtensions` + `rewriteRelativeImportExtensions` in the root `tsconfig.json`; the compiler rewrites the extension to `.js` in emitted output, so published code imports `.js` as normal. Always include the extension on relative imports.
 
 ## Development Tools
 
