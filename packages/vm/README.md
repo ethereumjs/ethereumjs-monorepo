@@ -358,6 +358,31 @@ With `VM` v7 a previously needed EEI interface for EVM/VM communication is not n
 
 With `VM` v6 the previously included `StateManager` has been extracted to its own package [@ethereumjs/statemanager](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/statemanager). The `StateManager` package provides a unified state interface and it is now also possible to provide a modified or custom `StateManager` to the VM via the optional `stateManager` constructor option.
 
+### Internal Module Map
+
+The VM is a thin orchestration layer that drives the `EVM` at the transaction and block level. Its core processing functions are free-standing (`runX(vm, opts)`), not methods:
+
+- **`vm.ts`** — the `VM` class: holds the `evm`, `stateManager`, `blockchain`, `common` and `events`, and merges `paramsVM` into `Common`.
+- **`runBlock.ts`** — `runBlock`: block-level processing (pre-state setup, transaction loop via `runTx`, withdrawals, requests, rewards, post-state validation). See [Internal Structure](#internal-structure) below for the step-by-step flow.
+- **`runTx.ts`** — `runTx`: transaction-level rules (nonce/balance/intrinsic-gas checks, EIP-1559/4844/7702 handling, access-list warming), the call into `vm.evm.runCall`, refund/coinbase accounting and receipt generation (`generateTxReceipt`).
+- **`buildBlock.ts`** — `buildBlock` / `BlockBuilder`: incremental block construction for block producers.
+- **`consumeBal.ts`** — EIP-7928 block-level access list consumption.
+- **`requests.ts`** — consensus-layer request (EIP-7685) extraction.
+- **`bloom/`** — logs-bloom computation.
+- **`params.ts`** — `paramsVM`, merged into `Common` at construction.
+- **`types.ts`** / **`constructors.ts`** — public types/option objects and the `createVM` factory.
+
+### Extension Points
+
+The `VM` is customized through `createVM` / `VMOpts` (`src/types.ts:101`); most of its behavior is delegated to injectable collaborators:
+
+- **Custom `EVM`** — `evm?` (or `evmOpts?`): pass an `EVM` you configured (e.g. with custom opcodes/precompiles — see the [EVM extension points](../evm/README.md#extension-points)). If omitted, the VM creates one.
+- **Custom state manager** — `stateManager?: StateManagerInterface` (`src/types.ts:27`): any `@ethereumjs/statemanager` implementation or your own.
+- **Custom blockchain** — `blockchain?` (`src/types.ts:31`): supplies block-hash lookups for the `BLOCKHASH`/`BLOBHASH` family; defaults to a minimal mock.
+- **Custom `Common`** — `common?` (`src/types.ts:23`): chain/hardfork/EIP configuration, shared with the inner `EVM`.
+- **Custom parameters** — `params?: ParamsDict`: override `paramsVM` values.
+- **Lifecycle hooks** — subscribe to `vm.events` (`beforeBlock`, `afterBlock`, `beforeTx`, `afterTx`) and `vm.evm.events` (`step`, `beforeMessage`, …) for tracing and instrumentation.
+
 ## Setup
 
 ### Chains
