@@ -8,6 +8,27 @@ import { wait } from '../integration/util.ts'
 
 import type { ChildProcessWithoutNullStreams } from 'child_process'
 
+/**
+ * Strips Node.js process warnings (e.g. `MaxListenersExceededWarning`,
+ * `ExperimentalWarning`, `DeprecationWarning`) from a stderr chunk and returns
+ * the remaining, meaningful output. These warnings are emitted to stderr by the
+ * spawned process but are not client errors, so they must not be treated as
+ * test failures. They are formatted as:
+ *
+ *   (node:12345) MaxListenersExceededWarning: Possible EventEmitter memory leak ...
+ *   (Use `node --trace-warnings ...` to show where the warning was created)
+ */
+function stripNodeWarnings(message: string): string {
+  return message
+    .split('\n')
+    .filter((line) => {
+      const trimmed = line.trim()
+      return !/^\(node:\d+\)\s.*Warning:/.test(trimmed) && !trimmed.startsWith('(Use `node')
+    })
+    .join('\n')
+    .trim()
+}
+
 export function clientRunHelper(
   cliArgs: string[],
   onData: (message: string, child: ChildProcessWithoutNullStreams, resolve: Function) => void,
@@ -15,7 +36,9 @@ export function clientRunHelper(
 ) {
   const file = require.resolve('../../bin/cli.ts')
   const child = spawn('tsx', [file, ...cliArgs])
-  // Increase max listeners to avoid Node.js warnings about memory leaks
+  // Increase max listeners to avoid Node.js warnings about memory leaks on the
+  // parent's handle to the child. Note this does not cover warnings emitted from
+  // within the spawned process itself, which are filtered out via stripNodeWarnings.
   child.setMaxListeners(20)
   return new Promise((resolve) => {
     child.stdout.on('data', async (data) => {
@@ -24,6 +47,9 @@ export function clientRunHelper(
     })
     child.stderr.on('data', (data) => {
       const message: string = data.toString()
+      // Node.js process warnings land on stderr but are not client errors; ignore
+      // a chunk that contains nothing but warnings.
+      if (stripNodeWarnings(message) === '') return
       if (shouldError) onData(message, child, resolve)
       else assert.fail(`stderr: ${message}`)
     })
