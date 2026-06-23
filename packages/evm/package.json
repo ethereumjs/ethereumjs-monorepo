@@ -54,7 +54,6 @@
     "visualize:bundle": "npx vite build --config=./vite.config.bundler.ts --emptyOutDir=false --outDir ."
   },
   "dependencies": {
-    "@ethereumjs/binarytree": "^10.1.2",
     "@ethereumjs/common": "^10.1.2",
     "@ethereumjs/statemanager": "^10.1.2",
     "@ethereumjs/util": "^10.1.2",
