@@ -7,7 +7,7 @@ import {
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { type MerkleStateManager } from '@ethereumjs/statemanager'
+import type { MerkleStateManager } from '@ethereumjs/statemanager'
 import { SIGNER_A, SIGNER_B, customChainConfig, goerliChainConfig } from '@ethereumjs/testdata'
 import {
   Capability,

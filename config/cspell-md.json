@@ -328,9 +328,13 @@
     "Unsnappy",
     "unsnappy",
     "ethportal",
+    "embedme",
+    "journaling",
+    "setcode",
     "bytevector",
     "hoodi",
     "feelyourprotocol",
-    "snobal"
+    "snobal",
+    "glamsterdam"
   ]
 }

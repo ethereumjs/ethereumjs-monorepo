@@ -566,12 +566,12 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       /* CREATE */
       0xf0,
       async function (runState, gas, common): Promise<bigint> {
-        if (runState.interpreter.isStatic()) {
-          trap(EVMError.errorMessages.STATIC_STATE_CHANGE)
-        }
         const [_value, offset, length] = runState.stack.peek(3)
 
         if (common.isActivatedEIP(7928)) {
+          // EIP-7928/EIP-8037: the static-context check is deferred into
+          // create7928Gas so it fires AFTER the new-account state-gas
+          // pre-charge (see EIP7928.ts).
           return create7928Gas(
             runState,
             gas,
@@ -579,6 +579,10 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
             { offset, length, preChargeLabel: 'CREATE pre-charges' },
             getCreateTargetAddressBytes,
           )
+        }
+
+        if (runState.interpreter.isStatic()) {
+          trap(EVMError.errorMessages.STATIC_STATE_CHANGE)
         }
 
         if (common.isActivatedEIP(2929)) {
@@ -694,14 +698,12 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       /* CREATE2 */
       0xf5,
       async function (runState, gas, common): Promise<bigint> {
-        if (runState.interpreter.isStatic()) {
-          trap(EVMError.errorMessages.STATIC_STATE_CHANGE)
-        }
-
         const [_value, offset, length, saltBigInt] = runState.stack.peek(4)
         const salt = setLengthLeft(bigIntToBytes(saltBigInt), 32)
 
         if (common.isActivatedEIP(7928)) {
+          // EIP-7928/EIP-8037: static-context check deferred into
+          // create7928Gas (fires after the new-account state-gas pre-charge).
           return create7928Gas(
             runState,
             gas,
@@ -715,6 +717,10 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
             },
             getCreateTargetAddressBytes,
           )
+        }
+
+        if (runState.interpreter.isStatic()) {
+          trap(EVMError.errorMessages.STATIC_STATE_CHANGE)
         }
 
         gas += subMemUsage(runState, offset, length, common)

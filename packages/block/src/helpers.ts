@@ -1,6 +1,6 @@
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
-import { Blob4844Tx } from '@ethereumjs/tx'
+import { isBlob4844Tx } from '@ethereumjs/tx'
 import {
   BIGINT_0,
   BIGINT_1,
@@ -11,7 +11,7 @@ import {
   toType,
 } from '@ethereumjs/util'
 
-import { type Common } from '@ethereumjs/common'
+import type { Common } from '@ethereumjs/common'
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { CLRequest, CLRequestType, PrefixedHexString, Withdrawal } from '@ethereumjs/util'
 import type { BlockHeaderBytes, HeaderData } from './types.ts'
@@ -123,7 +123,7 @@ export function getDifficulty(headerData: HeaderData): bigint | null {
 export const getNumBlobs = (transactions: TypedTransaction[]) => {
   let numBlobs = 0
   for (const tx of transactions) {
-    if (tx instanceof Blob4844Tx) {
+    if (isBlob4844Tx(tx)) {
       numBlobs += tx.blobVersionedHashes.length
     }
   }

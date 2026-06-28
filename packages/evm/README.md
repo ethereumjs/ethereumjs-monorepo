@@ -128,9 +128,51 @@ Additionally, this example shows how to use events to listen to the inner workin
 
 This library by default uses JavaScript implementations for the basic standard crypto primitives like hashing or signature verification (for included txs). See `@ethereumjs/common` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for instructions on how to replace them with, e.g., a more performant WASM implementation by using a shared `common` instance.
 
+## Event logs
+
+The EVM records contract events as **logs**: a compact tuple reused across `@ethereumjs/evm`, `@ethereumjs/vm`, and (with field renaming) JSON-RPC.
+
+```ts
+type Log = [address: Uint8Array, topics: Uint8Array[], data: Uint8Array]
+//            emitter            indexed fields   unindexed payload
+```
+
+### Where logs come from
+
+| Source | When |
+| --- | --- |
+| `LOG0`–`LOG4` opcodes | Contract bytecode writes to memory, then logs `topics` + `data` |
+| [EIP-7708](https://eips.ethereum.org/EIPS/eip-7708) (Amsterdam) | Synthetic `Transfer` / `Burn` logs on native ETH movement via `runCall()` |
+
+### Reading logs from `runCode()` / `runCall()`
+
+Both methods return an [`ExecResult`](./docs/interfaces/ExecResult.md) with an optional `logs` array:
+
+```ts
+const result = await evm.runCode({ code, to: contractAddress, gasLimit: 100_000n })
+for (const log of result.logs ?? []) {
+  const [address, topics, data] = log
+  // bytesToHex(address), topics.map(bytesToHex), bytesToHex(data)
+}
+```
+
+See [`examples/emitLogs.ts`](./examples/emitLogs.ts) for a minimal `LOG1` bytecode snippet.
+
+**Notes:**
+
+- The log **emitter address** is the account whose code is executing (`message.to` / contract address), not necessarily `tx.origin`.
+- Nested calls **append** logs in execution order; a reverted inner call does not contribute logs to the outer result.
+- A **reverted** top-level execution clears logs (same as on-chain).
+- For transaction receipts and block blooms, use `@ethereumjs/vm` — see [Receipts and event logs](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#receipts-and-event-logs).
+
 ## Examples
 
 See the [examples](./examples/) folder for different meaningful examples on how to use the EVM package and invoke certain aspects of it, e.g. running a bytecode snippet, listening to events, or to activate an EVM with a certain EIP for experimental purposes. Opcode-focused samples live under [`examples/opcodes/`](./examples/opcodes/) (e.g. [EIP-8024 DUPN/SWAPN/EXCHANGE](./examples/opcodes/0xe6-e8-eip8024-stack-opcodes.ts) on `Hardfork.Amsterdam`).
+
+Noteworthy examples:
+
+1. [`examples/emitLogs.ts`](./examples/emitLogs.ts): Run `LOG1` bytecode and read `ExecResult.logs`.
+2. [`examples/runCode.ts`](./examples/runCode.ts): Trace opcode execution with the `step` event.
 
 ## Browser
 
@@ -179,6 +221,33 @@ With the v2 release EVM, VM and StateManager have been substantially reworked in
 The interfaces (in a non-TypeScript sense) between these packages have been simplified and the `EEI` package has been completely removed. Most of the EEI related logic is now either handled internally or more generic functionality being taken over by the `@ethereumjs/statemanager` package.
 
 This allows for both a standalone EVM instantiation with reasonable defaults as well as for a simplified EVM -> VM passing if a customized EVM is needed.
+
+### Internal Module Map
+
+The package is organized around the bytecode-execution core:
+
+- **`evm.ts`** — the `EVM` class: message dispatch (`runCall`, `runCode`), `_executeCall` / `_executeCreate`, journal checkpointing, precompile dispatch and event emission.
+- **`interpreter.ts`** — the `Interpreter`: the fetch-decode-execute loop (`run`), per-opcode gas charging and handler dispatch, jump-destination analysis and the `step` event.
+- **`opcodes/`** — the opcode table and handlers: `codes.ts` (table assembly per hardfork), `functions.ts` (opcode implementations), `gas.ts` (dynamic gas), plus per-EIP opcode modules (`EIP1283.ts`, `EIP2200.ts`, `EIP2929.ts`, `EIP7928.ts`, `EIP8024.ts`).
+- **`precompiles/`** — precompiled contracts, one file per address (`01-ecrecover.ts` … `100-p256verify.ts`), with `index.ts` mapping address → implementation and `bls12_381/` / `bn254/` backends.
+- **`eof/`** — EOF (EIP-3540 et al.) container parsing, verification and setup.
+- **`journal.ts`** — state journaling: `checkpoint` / `commit` / `revert`, touched/created-account tracking, forwarding to the `StateManagerInterface`.
+- **`message.ts`** — the `Message` value object passed through call/create execution.
+- **`memory.ts`, `stack.ts`, `transientStorage.ts`** — per-frame execution state.
+- **`binaryTreeAccessWitness.ts`** — EIP-7864 access-witness generation.
+- **`params.ts`** — `paramsEVM`, the EIP-indexed gas/parameter dictionary merged into `Common`.
+- **`types.ts`** / **`constructors.ts`** — public types/option objects and the `createEVM` factory.
+
+### Extension Points
+
+The `EVM` is designed to be customized through `createEVM` / `EVMOpts` (`src/types.ts`):
+
+- **Custom opcodes** — `customOpcodes?: CustomOpcode[]` (`src/types.ts:343`): add, override or remove opcodes by number with your own handler and gas function.
+- **Custom precompiles** — `customPrecompiles?: CustomPrecompile[]` (`src/types.ts:351`): add or override precompiled contracts at a given address.
+- **Custom state manager** — `stateManager?: StateManagerInterface` (`src/types.ts:407`): any implementation of the interface from `@ethereumjs/common`. If omitted, a `SimpleStateManager` is created by default (`src/constructors.ts`).
+- **Custom `Common`** — `common?: Common` (`src/types.ts`): drives hardfork/EIP gating and parameter resolution.
+- **Custom parameters** — `params?: ParamsDict`: override the values in `paramsEVM` (e.g. tweak a gas cost) without forking the package.
+- **Custom crypto backends** — `bls?` / `bn254?` (`src/types.ts:370`, `:393`): plug in native BLS12-381 / BN254 implementations for the relevant precompiles.
 
 ## Supported Hardforks
 

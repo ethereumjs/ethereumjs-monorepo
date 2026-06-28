@@ -112,6 +112,21 @@ export class BinaryTree {
   }
 
   /**
+   * Runs `operation` while holding the tree's internal lock, releasing the
+   * lock when the returned promise settles. Use this to keep other lock-aware
+   * operations (e.g. `commit`/`revert`) from interleaving with a multi-step
+   * read sequence, such as reading values at several roots via `root()`/`get()`.
+   */
+  async withLock<T>(operation: () => Promise<T>): Promise<T> {
+    await this._lock.acquire()
+    try {
+      return await operation()
+    } finally {
+      this._lock.release()
+    }
+  }
+
+  /**
    * Checks if a given root exists.
    */
   async checkRoot(root: Uint8Array): Promise<boolean> {

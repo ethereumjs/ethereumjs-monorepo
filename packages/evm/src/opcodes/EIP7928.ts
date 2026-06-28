@@ -383,6 +383,18 @@ export async function create7928Gas(
     return eip7928PostTargetCreateOog(runState, common, gas)
   }
 
+  // EIP-8037 / EIP-7928: the static-context check is performed AFTER the
+  // new-account state-gas pre-charge above. This mirrors the EELS amsterdam
+  // (tests-bal) reference, where `generic_create` charges the state gas before
+  // the WriteInStaticContext check. When the CREATE/CREATE2 occurs in a static
+  // frame, the frame halts exceptionally; the per-frame state-gas snapshot
+  // restore (evm.ts) then refills the pre-charged `STATE_BYTES_PER_NEW_ACCOUNT *
+  // CPSB` to the parent's `state_gas_reservoir`, reducing the transaction's
+  // `tx_gas_used` (cumulative receipt gas) by that amount.
+  if (runState.interpreter.isStatic()) {
+    trap(EVMError.errorMessages.STATIC_STATE_CHANGE)
+  }
+
   let gasLimit = BigInt(runState.interpreter.getGasLeft()) - gas
   gasLimit = maxCallGas(gasLimit, gasLimit, runState, common)
 
