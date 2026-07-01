@@ -150,11 +150,42 @@ interface NewContractEvent {
   code: Uint8Array
 }
 
+/**
+ * Origin of a log emission for the `log` tracing event.
+ *
+ * @remarks Experimental (Amsterdam): may change on patch releases.
+ */
+export type LogOrigin =
+  | 'opcode'
+  | 'callTransfer'
+  | 'createTransfer'
+  | 'selfdestructTransfer'
+  | 'selfdestructBurn'
+  | 'finalizationBurn'
+
+/**
+ * Payload for the EVM `log` tracing event.
+ *
+ * The `log` tuple uses the on-chain emitter address (for EIP-7708 synthetic logs this is the
+ * system address). `address` is the executing call-frame address for attribution.
+ *
+ * @remarks Experimental (Amsterdam): may change on patch releases.
+ */
+export interface LogEvent {
+  log: Log
+  origin: LogOrigin
+  /** Call-frame depth (`-1` for post-tx finalization burns). */
+  depth: number
+  /** Executing frame address (contract context), not necessarily `log[0]`. */
+  address: Address
+}
+
 export type EVMEvent = {
   newContract: (data: NewContractEvent, resolve?: (result?: any) => void) => void
   beforeMessage: (data: Message, resolve?: (result?: any) => void) => void
   afterMessage: (data: EVMResult, resolve?: (result?: any) => void) => void
   step: (data: InterpreterStep, resolve?: (result?: any) => void) => void
+  log: (data: LogEvent, resolve?: (result?: any) => void) => void
 }
 
 export interface EVMInterface {
@@ -179,6 +210,7 @@ export interface EVMInterface {
   getPrecompile?(address: Address | PrefixedHexString): PrecompileFunc | undefined
   runCall(opts: EVMRunCallOpts): Promise<EVMResult>
   runCode(opts: EVMRunCodeOpts): Promise<ExecResult>
+  emitLog(event: LogEvent): Promise<void>
   events?: EventEmitter<EVMEvent>
   binaryTreeAccessWitness?: BinaryTreeAccessWitness
   systemBinaryTreeAccessWitness?: BinaryTreeAccessWitness

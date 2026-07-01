@@ -1407,6 +1407,12 @@ export class Interpreter {
         data,
       ]
       this._result.logs.push(transferLog)
+      await this._evm.emitLog({
+        log: transferLog,
+        origin: 'selfdestructTransfer',
+        depth: this._env.depth,
+        address: this._env.address,
+      })
     }
 
     // Add to beneficiary balance
@@ -1468,6 +1474,12 @@ export class Interpreter {
       const data = setLengthLeft(bigIntToBytes(contractBalance), 32)
       const burnLog: Log = [EIP7708_SYSTEM_ADDRESS, [EIP7708_BURN_TOPIC, contractTopic], data]
       this._result.logs.push(burnLog)
+      await this._evm.emitLog({
+        log: burnLog,
+        origin: 'selfdestructBurn',
+        depth: this._env.depth,
+        address: this._env.address,
+      })
     }
 
     // Set contract balance to 0
@@ -1503,6 +1515,12 @@ export class Interpreter {
 
     const log: Log = [this._env.address.bytes, topics, data]
     this._result.logs.push(log)
+    void this._evm.emitLog({
+      log,
+      origin: 'opcode',
+      depth: this._env.depth,
+      address: this._env.address,
+    })
   }
 
   private _getReturnCode(results: EVMResult, isEOFCreate = false) {

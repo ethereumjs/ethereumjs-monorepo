@@ -129,6 +129,7 @@ See [`examples/runTxTransferLogs.ts`](./examples/runTxTransferLogs.ts) for an Am
 **Notes:**
 
 - Reverted transactions produce receipts with **empty** `logs` (Byzantium+ `status: 0`).
+- For **live tracing** during execution, subscribe to `vm.evm.events.on('log')` — including EIP-7708 synthetic logs and post-tx finalization burns. See [`@ethereumjs/evm` — Live tracing with the `log` event](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#live-tracing-with-the-log-event).
 - The debug logger sections below (`DEBUG=ethjs,...`) refer to **development tracing**, not EVM event logs.
 
 ### Running an RPC Mainnet Block
@@ -732,6 +733,8 @@ You can subscribe to the following events:
 - `afterBlock`: Emits `AfterBlockEvent` right after running a block.
 - `beforeTx`: Emits a `Transaction` right before running it.
 - `afterTx`: Emits a `AfterTxEvent` right after running a transaction.
+
+For **log tracing** during execution (opcode `LOG*` and EIP-7708 synthetic logs), use `vm.evm.events.on('log')` — see [`@ethereumjs/evm` — Live tracing with the `log` event](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#live-tracing-with-the-log-event).
 
 Note, if subscribing to events with an async listener, specify the second parameter of your listener as a `resolve` function that must be called once your listener code has finished.
 
