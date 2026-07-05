@@ -19,7 +19,7 @@ import { EVMError } from '../errors.ts'
 import { DELEGATION_7702_FLAG } from '../types.ts'
 
 import { updateSstoreGasEIP1283 } from './EIP1283.ts'
-import { updateSstoreGasEIP2200 } from './EIP2200.ts'
+import { updateSstoreGasEIP2200, updateSstoreGasEIP8038 } from './EIP2200.ts'
 import {
   accessAddressEIP2929,
   accessStorageEIP2929,
@@ -223,6 +223,11 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           gas += accessAddressEIP2929(runState, address.bytes, common, charge2929Gas)
         }
 
+        // EIP-8038: additional code-reading cost on top of the account access
+        if (common.isActivatedEIP(8038)) {
+          gas += common.param('warmstoragereadGas')
+        }
+
         return gas
       },
     ],
@@ -251,6 +256,11 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         if (common.isActivatedEIP(2929)) {
           gas += accessAddressEIP2929(runState, address.bytes, common, charge2929Gas)
+        }
+
+        // EIP-8038: additional code-reading cost on top of the account access
+        if (common.isActivatedEIP(8038)) {
+          gas += common.param('warmstoragereadGas')
         }
 
         if (dataLength !== BIGINT_0) {
@@ -398,7 +408,21 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         const originalStorage = setLengthLeftStorage(
           await runState.interpreter.storageLoad(keyBytes, true, false),
         )
-        if (common.hardfork() === Hardfork.Constantinople) {
+        let sstoreCharge2929Gas = true
+        if (common.isActivatedEIP(8038)) {
+          // Amsterdam schedule: access cost (cold/warm) + flat write cost on
+          // the first change to the slot, with matching restore refunds.
+          // Access cost is charged inside; skip the 2929 access charge below.
+          gas += updateSstoreGasEIP8038(
+            runState,
+            currentStorage,
+            originalStorage,
+            setLengthLeftStorage(value),
+            keyBytes,
+            common,
+          )
+          sstoreCharge2929Gas = false
+        } else if (common.hardfork() === Hardfork.Constantinople) {
           gas += updateSstoreGasEIP1283(
             runState,
             currentStorage,
@@ -432,7 +456,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           )
         }
 
-        let charge2929Gas = true
+        let charge2929Gas = sstoreCharge2929Gas
         if (common.isActivatedEIP(6800) || common.isActivatedEIP(7864)) {
           const contract = runState.interpreter.getAddress()
           const coldAccessGas = runState.env.accessWitness!.writeAccountStorage(contract, key)
@@ -993,7 +1017,14 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
             // This technically checks if account is empty or non-existent
             const account = await runState.stateManager.getAccount(selfdestructToAddress)
             if (account === undefined || account.isEmpty()) {
-              newAccountGas = common.param('callNewAccountGas')
+              if (common.isActivatedEIP(8038)) {
+                // Amsterdam: positive balance sent to an empty account costs
+                // accountWriteGas (regular). The new-account state-gas portion
+                // is charged in the SELFDESTRUCT opcode handler (interpreter).
+                newAccountGas = common.param('accountWriteGas')
+              } else {
+                newAccountGas = common.param('callNewAccountGas')
+              }
             }
           }
         } else if (common.gteHardfork(Hardfork.TangerineWhistle)) {
