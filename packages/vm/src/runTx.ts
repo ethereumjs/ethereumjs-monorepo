@@ -104,6 +104,23 @@ async function processAuthorizationList(
   // their delegation-indicator refills against the original slot.
   const preDelegatedByAuthority = new Map<string, boolean>()
 
+  // EIP-8037: an invalid authorization refunds the full worst-case per-auth
+  // charge from the intrinsic cost: the state portion
+  // ((stateBytesPerNewAccount + stateBytesPerAuthBase) * costPerStateByte)
+  // to the state-gas reservoir and the regular accountWriteGas to the
+  // regular refund counter.
+  const is8037 = tx.common.isActivatedEIP(8037)
+  const invalidAuthStateRefund = is8037
+    ? (vm.common.param('stateBytesPerNewAccount') + vm.common.param('stateBytesPerAuthBase')) *
+      activeCostPerStateByte(vm.common, block?.header.gasLimit)
+    : BIGINT_0
+  const applyInvalidAuthRefund = () => {
+    if (is8037) {
+      existingAuthStateGasRefund += invalidAuthStateRefund
+      gasRefund += tx.common.param('accountWriteGas')
+    }
+  }
+
   for (let i = 0; i < authorizationList.length; i++) {
     const data = authorizationList[i]
 
@@ -111,6 +128,7 @@ async function processAuthorizationList(
     const chainId = data[0]
     const chainIdBN = bytesToBigInt(chainId)
     if (chainIdBN !== BIGINT_0 && chainIdBN !== vm.common.chainId()) {
+      applyInvalidAuthRefund()
       continue
     }
 
@@ -119,6 +137,7 @@ async function processAuthorizationList(
     if (bytesToBigInt(authorityNonce) >= MAX_UINT64) {
       // Authority nonce >= 2^64 - 1. Bumping this nonce by one will not make this fit in an uint64.
       // EIPs PR: https://github.com/ethereum/EIPs/pull/8938
+      applyInvalidAuthRefund()
       continue
     }
 
@@ -126,12 +145,14 @@ async function processAuthorizationList(
     const s = data[5]
     if (bytesToBigInt(s) > SECP256K1_ORDER_DIV_2) {
       // Malleability protection to avoid "flipping" a valid signature
+      applyInvalidAuthRefund()
       continue
     }
 
     // Validate yParity
     const yParity = bytesToBigInt(data[3])
     if (yParity > BIGINT_1) {
+      applyInvalidAuthRefund()
       continue
     }
 
@@ -141,6 +162,7 @@ async function processAuthorizationList(
       authority = eoaCode7702RecoverAuthority(data)
     } catch {
       // Invalid signature
+      applyInvalidAuthRefund()
       continue
     }
 
@@ -161,6 +183,7 @@ async function processAuthorizationList(
     if (account.isContract()) {
       const code = await vm.stateManager.getCode(authority)
       if (!equalsBytes(code.slice(0, 3), DELEGATION_7702_FLAG)) {
+        applyInvalidAuthRefund()
         continue
       }
     }
@@ -170,21 +193,25 @@ async function processAuthorizationList(
       // Edge case: caller is the authority (self-signing delegation)
       // Virtually bump the account nonce by one for comparison
       if (account.nonce + BIGINT_1 !== bytesToBigInt(authorityNonce)) {
+        applyInvalidAuthRefund()
         continue
       }
     } else if (account.nonce !== bytesToBigInt(authorityNonce)) {
+      applyInvalidAuthRefund()
       continue
     }
 
     // Calculate gas refund for existing accounts
-    // EIP-8037: under 8037, the existing-authority refund is moved to the
-    // state-gas reservoir (refund of stateBytesPerNewAccount × costPerStateByte), and is
-    // applied during authorization processing in a follow-up step. Skip the
-    // legacy regular-gas refund here to avoid producing a negative refund
-    // (under 8037 perEmptyAccountCost = 0, perAuthBaseGas = 7500).
+    // EIP-8037: under 8037, the existing-authority refund is split into the
+    // state-gas portion (stateBytesPerNewAccount × costPerStateByte, refilled
+    // below) and the regular accountWriteGas (refunded here, since the
+    // worst-case account write charged at intrinsic time is not needed).
     if (accountExists && !tx.common.isActivatedEIP(8037)) {
       const refund = tx.common.param('perEmptyAccountCost') - tx.common.param('perAuthBaseGas')
       gasRefund += refund
+    }
+    if (accountExists && is8037) {
+      gasRefund += tx.common.param('accountWriteGas')
     }
 
     // EIP-8037: intrinsic gas charges the worst-case state-gas cost
@@ -215,8 +242,8 @@ async function processAuthorizationList(
 
       let refillStateBytes = BIGINT_0
       // Account-leaf refill: refill the new-account portion when the authority
-      // leaf already exists (non-zero nonce, balance, or non-empty code).
-      if (!account.isEmpty()) {
+      // account already exists in the state trie.
+      if (accountExists) {
         refillStateBytes += stateBytesPerNewAccount
       }
       // Delegation-indicator refill.
@@ -224,6 +251,11 @@ async function processAuthorizationList(
         // Clearing (delegate to zero address) writes no indicator, so the
         // auth-base portion is always refilled.
         refillStateBytes += stateBytesPerAuthBase
+        if (curDelegated && !preDelegated) {
+          // Clearing a delegation that was set earlier in this transaction
+          // also reclaims the earlier in-tx indicator write.
+          refillStateBytes += stateBytesPerAuthBase
+        }
       } else if (curDelegated || preDelegated) {
         // Setting a delegation over an already-occupied indicator slot writes no
         // new bytes, so the auth-base portion is refilled.
@@ -643,7 +675,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   let stateGasReservoirInitial = BIGINT_0
   vm.evm.eip7928CallPostTargetOog = false
   const { intrinsicRegular: intrinsicRegularGas, intrinsicState: intrinsicStateGas } =
-    computeIntrinsicGasDimensions8037(tx.common, tx, block?.header.gasLimit)
+    computeIntrinsicGasDimensions8037(tx.common, tx, block?.header.gasLimit, caller)
   const totalIntrinsic = intrinsicRegularGas + intrinsicStateGas
 
   let gasLimit = tx.gasLimit
@@ -1038,11 +1070,31 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (
     vm.common.isActivatedEIP(8037) &&
     results.execResult.exceptionError?.error === EVMError.errorMessages.OUT_OF_GAS &&
-    vm.evm.eip7928CallPostTargetOog
+    vm.evm.eip7928CallPostTargetOog === true
   ) {
     vm.evm.stateGasReservoir = BIGINT_0
   }
   vm.evm.eip7928CallPostTargetOog = false
+
+  // EIP-8037: refund the intrinsic new-account state gas for a creation
+  // transaction whose target account was already alive or whose execution
+  // failed — in either case no new account leaf persists. The refund is
+  // credited to the reservoir (reducing tx_gas_used_before_refund via the
+  // reservoir delta) and subtracted from execution_state_gas_used (reducing
+  // tx_state_gas), per the pinned execution-specs Amsterdam revision.
+  if (
+    vm.common.isActivatedEIP(8037) &&
+    tx.to === undefined &&
+    (results.execResult.exceptionError !== undefined || vm.evm.createTxTargetAlive === true)
+  ) {
+    const newAccountStateGas =
+      vm.common.param('stateBytesPerNewAccount') *
+      activeCostPerStateByte(vm.common, block?.header.gasLimit)
+    vm.evm.stateGasReservoir += newAccountStateGas
+    vm.evm.executionStateGasUsed -= newAccountStateGas
+  }
+  vm.evm.createTxTargetAlive = false
+
   let totalGasSpentBeforeRefund = results.execResult.executionGasUsed + intrinsicGas
   if (vm.common.isActivatedEIP(8037)) {
     const executionStateGasUsed = vm.evm.executionStateGasUsed
@@ -1056,19 +1108,19 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     // (= executionStateGasUsed by definition), so:
     //   execution_regular_gas_used = executionGasUsed - (state-gas spilled to gas_left)
     //                              = executionGasUsed - (executionStateGasUsed - reservoirDelta)
-    const stateGasFromGasLeft = executionStateGasUsed - reservoirDelta
-    const executionRegularGasUsed = results.execResult.executionGasUsed - stateGasFromGasLeft
-    // Apply the intrinsic-create-selfdestruct refund to tx_state_gas only.
-    // It does not affect totalGasSpent (the sender still pays the gross)
-    // and it does not affect tx_regular_gas (it's a state-dim accounting
-    // adjustment that brings block_state_gas_used to 0 for an account that
-    // never persists).
-    results.txStateGas = intrinsicStateGas + executionStateGasUsed - txCreateIntrinsicStateGasRefund
-    // Per EIP-8037: block_regular_gas_used += max(tx_regular_gas, calldata_floor)
-    // Apply the EIP-7623 floor to the regular dimension here so runBlock can
-    // accumulate dimensions independently.
-    const txRegularGasRaw = intrinsicRegularGas + executionRegularGasUsed
-    results.txRegularGas = txRegularGasRaw > floorCost ? txRegularGasRaw : floorCost
+    // Per the pinned execution-specs Amsterdam revision:
+    //   tx_state_gas   = intrinsic_state + state_gas_used - state_refund
+    //                    (state refunds are already folded into
+    //                    executionStateGasUsed, which may be negative)
+    //   tx_regular_gas = tx_gas_used_before_refund - max(0, tx_state_gas)
+    // No refund subtraction and no calldata floor are applied to the
+    // block-level dimensions; the floor and refunds only affect the
+    // user-paid gas (totalGasSpent) and receipt cumulative gas.
+    const txStateGasRaw =
+      intrinsicStateGas + executionStateGasUsed - txCreateIntrinsicStateGasRefund
+    const txStateGasClamped = txStateGasRaw > BIGINT_0 ? txStateGasRaw : BIGINT_0
+    results.txStateGas = txStateGasClamped
+    results.txRegularGas = totalGasSpentBeforeRefund - txStateGasClamped
   }
   results.totalGasSpent = totalGasSpentBeforeRefund
   if (vm.DEBUG) {
@@ -1111,8 +1163,10 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
 
   // EIP-7778: block-level gas accounting does not subtract tx refunds.
   // For pre-7778 forks this equals the amount paid by the sender.
+  // (When EIP-8037 is also active, runBlock uses the txRegularGas/txStateGas
+  // dimensions instead of this field.)
   results.blockGasSpent = vm.common.isActivatedEIP(7778)
-    ? bigIntMax(results.totalGasSpent, floorCost)
+    ? bigIntMax(totalGasSpentBeforeRefund, floorCost)
     : results.totalGasSpent
 
   results.amountSpent = results.totalGasSpent * gasPrice

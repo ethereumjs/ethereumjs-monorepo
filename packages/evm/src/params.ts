@@ -415,8 +415,8 @@ export const paramsEVM: ParamsDict = {
    */
   7954: {
     // evm
-    maxCodeSize: 32768, // EIP-7954: Maximum length of contract code (raised from 24 KiB)
-    maxInitCodeSize: 65536, // EIP-7954: Maximum length of initialization code (raised from 48 KiB)
+    maxCodeSize: 65536, // EIP-7954: Maximum length of contract code (raised from 24 KiB)
+    maxInitCodeSize: 131072, // EIP-7954: Maximum length of initialization code (2 * maxCodeSize, raised from 48 KiB)
   },
   /**
    * State Creation Gas Cost Increase
@@ -426,19 +426,33 @@ export const paramsEVM: ParamsDict = {
    */
   8037: {
     // Regular-gas overrides (state portion is metered separately)
-    sstoreSetGas: 2900, // SSTORE 0->nonzero: regular gas (down from 20000); state portion = stateBytesPerStorageSet * costPerStateByte
-    sstoreInitEIP2200Gas: 2900, // EIP-2200 path uses this name for the create-slot regular cost; align with sstoreSetGas under 8037
-    sstoreInitRefundEIP2200Gas: 0, // Legacy refund for "create-then-clear-in-same-tx" is replaced by the state-gas reservoir refill
-    createGas: 9000, // CREATE base regular gas (down from 32000); state portion = (stateBytesPerNewAccount + L) * costPerStateByte
-    create2Gas: 9000, // CREATE2 base regular gas (down from 32000); state portion = (stateBytesPerNewAccount + L) * costPerStateByte
-    callNewAccountGas: 0, // CALL* to non-existent: regular gas (down from 25000); state portion = stateBytesPerNewAccount * costPerStateByte
+    createGas: 11000, // CREATE base regular gas (CREATE_ACCESS = ACCOUNT_WRITE + COLD_STORAGE_ACCESS); state portion = (stateBytesPerNewAccount + L) * costPerStateByte
+    create2Gas: 11000, // CREATE2 base regular gas (CREATE_ACCESS = ACCOUNT_WRITE + COLD_STORAGE_ACCESS); state portion = (stateBytesPerNewAccount + L) * costPerStateByte
+    callNewAccountGas: 0, // CALL* to non-existent: regular gas (down from 25000); state portion = stateBytesPerNewAccount * costPerStateByte (charged only for value-bearing calls)
     createDataGas: 0, // Per-byte regular cost of code deposit (down from 200); replaced by costPerStateByte state-gas plus a per-word hash cost (see codeDepositHashWordGas)
     codeDepositHashWordGas: 6, // Per 32-byte word regular hash cost on contract creation (6 * ceil(L/32))
     // New state-gas constants (used to compute state-gas charges)
-    costPerStateByte: 1530, // Cost per state byte (v7 fixtures)
-    stateBytesPerStorageSet: 64, // Bytes accounted per new storage slot (v7 fixtures)
-    stateBytesPerNewAccount: 120, // Bytes accounted per newly created account (v7 fixtures)
+    costPerStateByte: 1530, // Cost per state byte
+    stateBytesPerStorageSet: 64, // Bytes accounted per new storage slot
+    stateBytesPerNewAccount: 120, // Bytes accounted per newly created account
     stateBytesPerAuthBase: 23, // Bytes accounted per EIP-7702 authorization base
     systemMaxSstoresPerCall: 16, // Reservoir headroom for system contract calls
+  },
+  /**
+   * State Access Gas Cost Increase (Amsterdam, experimental).
+   * Repriced access/write constants per the pinned execution-specs Amsterdam
+   * gas schedule. The SSTORE model becomes: access cost (cold/warm) always,
+   * plus a flat storageWriteGas on the first change to a slot in the
+   * transaction (with a matching refund when the slot is restored), plus the
+   * EIP-8037 state-gas portion for newly set slots.
+   */
+  8038: {
+    // gasPrices
+    coldsloadGas: 3000, // COLD_STORAGE_ACCESS (up from 2100)
+    coldaccountaccessGas: 3000, // COLD_ACCOUNT_ACCESS (up from 2600)
+    storageWriteGas: 10000, // STORAGE_WRITE: charged on the first change to a storage slot per transaction
+    refundStorageClearGas: 12480, // REFUND_STORAGE_CLEAR = (STORAGE_WRITE + COLD_STORAGE_ACCESS) * 4800 / 5000
+    callValueTransferGas: 10300, // CALL_VALUE = ACCOUNT_WRITE (8000) + CALL_STIPEND (2300), up from 9000
+    accountWriteGas: 8000, // ACCOUNT_WRITE: positive-balance transfer to an empty account (e.g. SELFDESTRUCT beneficiary)
   },
 }
