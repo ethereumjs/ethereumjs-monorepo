@@ -338,15 +338,31 @@ async function processSelfdestructs(vm: VM, results: RunTxResult): Promise<void>
       }
     }
 
-    if (vm.common.isActivatedEIP(7708)) {
-      const account = await vm.stateManager.getAccount(address)
-      const finalizationBalance = account?.balance ?? BIGINT_0
-      if (finalizationBalance > BIGINT_0) {
-        finalizationLogs.push(createEIP7708BurnLog(address, finalizationBalance))
+    if (vm.common.isActivatedEIP(8246)) {
+      // EIP-8246: SELFDESTRUCT no longer burns ETH. Clear the account's
+      // nonce, code, and storage while preserving its balance (no burn log
+      // is emitted since nothing is burned). An account left with zero
+      // balance is EIP-161-empty and is cleaned up by the journal.
+      if ((await vm.stateManager.getAccount(address)) !== undefined) {
+        await vm.stateManager.putCode(address, new Uint8Array())
+        await vm.stateManager.clearStorage(address)
+        const account = await vm.stateManager.getAccount(address)
+        if (account !== undefined) {
+          account.nonce = BIGINT_0
+          await vm.evm.journal.putAccount(address, account)
+        }
       }
-    }
+    } else {
+      if (vm.common.isActivatedEIP(7708)) {
+        const account = await vm.stateManager.getAccount(address)
+        const finalizationBalance = account?.balance ?? BIGINT_0
+        if (finalizationBalance > BIGINT_0) {
+          finalizationLogs.push(createEIP7708BurnLog(address, finalizationBalance))
+        }
+      }
 
-    await vm.evm.journal.deleteAccount(address)
+      await vm.evm.journal.deleteAccount(address)
+    }
     destroyedForBAL.add(address.toString())
     if (vm.DEBUG) {
       debug(`tx selfdestruct on address=${address}`)
