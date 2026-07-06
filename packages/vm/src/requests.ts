@@ -136,6 +136,7 @@ export const accumulateRequests = async (
   vm: VM,
   txResults: RunTxResult[],
   blockGasLimit?: bigint,
+  generate = false,
 ): Promise<CLRequest<CLRequestType>[]> => {
   const requests: CLRequest<CLRequestType>[] = []
   const common = vm.common
@@ -165,6 +166,7 @@ export const accumulateRequests = async (
       CLRequestType.BuilderDeposit,
       'builderDepositContractAddress',
       blockGasLimit,
+      generate,
     )
     requests.push(builderDepositsRequest)
     const builderExitsRequest = await accumulateBuilderRequest(
@@ -172,6 +174,7 @@ export const accumulateRequests = async (
       CLRequestType.BuilderExit,
       'builderExitContractAddress',
       blockGasLimit,
+      generate,
     )
     requests.push(builderExitsRequest)
   }
@@ -185,8 +188,10 @@ export const accumulateRequests = async (
  * (deposit or exit) and wrap the returned data as a CL request.
  *
  * Per the pinned execution-specs Amsterdam revision this is a *checked*
- * system transaction: a missing/codeless contract or a failing call makes
- * the block invalid.
+ * system transaction when validating: a missing/codeless contract or a
+ * failing call makes the block invalid. When building a block (`generate`),
+ * a missing or failing contract yields an empty request instead (matching
+ * the withdrawal/consolidation accumulators).
  *
  * @remarks Experimental (Amsterdam): may change on patch releases.
  */
@@ -195,6 +200,7 @@ const accumulateBuilderRequest = async (
   requestType: typeof CLRequestType.BuilderDeposit | typeof CLRequestType.BuilderExit,
   contractAddressParam: 'builderDepositContractAddress' | 'builderExitContractAddress',
   blockGasLimit?: bigint,
+  generate = false,
 ): Promise<CLRequest<CLRequestType>> => {
   const addressBytes = setLengthLeft(bigIntToBytes(vm.common.param(contractAddressParam)), 20)
   const builderAddress = createAddressFromString(bytesToHex(addressBytes))
@@ -205,6 +211,9 @@ const accumulateBuilderRequest = async (
 
   const contractCode = await vm.stateManager.getCode(builderAddress)
   if (contractCode.length === 0) {
+    if (generate) {
+      return new CLRequest(requestType, new Uint8Array(0))
+    }
     throw EthereumJSErrorWithoutCode(
       `system contract empty: no code at builder request contract ${builderAddress}`,
     )
@@ -229,6 +238,9 @@ const accumulateBuilderRequest = async (
   }
 
   if (results.execResult.exceptionError !== undefined) {
+    if (generate) {
+      return new CLRequest(requestType, new Uint8Array(0))
+    }
     throw EthereumJSErrorWithoutCode(
       `system contract call failed: builder request contract ${builderAddress} (${results.execResult.exceptionError.error})`,
     )

@@ -216,7 +216,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
   if (block.common.isActivatedEIP(7685)) {
     const sha256Function = vm.common.customCrypto.sha256 ?? sha256
     try {
-      requests = await accumulateRequests(vm, result.results, block.header.gasLimit)
+      requests = await accumulateRequests(vm, result.results, block.header.gasLimit, generateFields)
     } catch (err) {
       // A checked system call failed (e.g. EIP-8282 builder request
       // contract missing or reverting): the block is invalid, revert it.
