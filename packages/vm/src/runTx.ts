@@ -1070,7 +1070,9 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (
     vm.common.isActivatedEIP(8037) &&
     results.execResult.exceptionError?.error === EVMError.errorMessages.OUT_OF_GAS &&
-    vm.evm.eip7928CallPostTargetOog === true
+    // Boolean() defeats control-flow narrowing: the flag is reset to `false`
+    // before execution but set by the EVM during runCall.
+    Boolean(vm.evm.eip7928CallPostTargetOog)
   ) {
     vm.evm.stateGasReservoir = BIGINT_0
   }
