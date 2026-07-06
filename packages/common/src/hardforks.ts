@@ -200,6 +200,6 @@ export const hardforksDict: HardforksDict = {
    * Status     : Draft (implementation incomplete + spec still moving!)
    */
   amsterdam: {
-    eips: [2780, 7708, 7843, 7778, 7928, 7954, 7976, 7981, 8024, 8037, 8038, 8246],
+    eips: [2780, 7708, 7843, 7778, 7928, 7954, 7976, 7981, 8024, 8037, 8038, 8246, 8282],
   },
 }

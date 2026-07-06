@@ -323,6 +323,9 @@ async function processSelfdestructs(vm: VM, results: RunTxResult): Promise<void>
   }
 
   const destroyedForBAL: Set<PrefixedHexString> = new Set()
+  // EIP-8246: post-clear balances of selfdestructed accounts, used by the
+  // BAL cleanup to decide whether the net balance change must be kept.
+  const finalBalancesForBAL: Map<PrefixedHexString, bigint> = new Map()
   const finalizationLogs: Log[] = []
   const sortedSelfdestructs = [...results.execResult.selfdestruct.entries()].sort(([a], [b]) =>
     a.localeCompare(b),
@@ -351,6 +354,9 @@ async function processSelfdestructs(vm: VM, results: RunTxResult): Promise<void>
           account.nonce = BIGINT_0
           await vm.evm.journal.putAccount(address, account)
         }
+        finalBalancesForBAL.set(address.toString(), account?.balance ?? BIGINT_0)
+      } else {
+        finalBalancesForBAL.set(address.toString(), BIGINT_0)
       }
     } else {
       if (vm.common.isActivatedEIP(7708)) {
@@ -374,7 +380,10 @@ async function processSelfdestructs(vm: VM, results: RunTxResult): Promise<void>
   }
 
   if (destroyedForBAL.size > 0 && vm.common.isActivatedEIP(7928)) {
-    vm.evm.blockLevelAccessList!.cleanupSelfdestructed([...destroyedForBAL])
+    vm.evm.blockLevelAccessList!.cleanupSelfdestructed(
+      [...destroyedForBAL],
+      vm.common.isActivatedEIP(8246) ? finalBalancesForBAL : undefined,
+    )
   }
 }
 
