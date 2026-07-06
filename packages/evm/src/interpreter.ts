@@ -1549,10 +1549,24 @@ export class Interpreter {
       }
     }
 
+    // EIP-8246: SELFDESTRUCT no longer burns ETH. A self-beneficiary keeps
+    // its balance (the account clearing at transaction end preserves the
+    // balance); zeroing only completes a transfer to a different account.
+    if (this.common.isActivatedEIP(8246) && toSelf) {
+      doModify = false
+    }
+
     // EIP-7708: Emit a Burn log (LOG2) for SELFDESTRUCT to self only when the balance
     // is actually zeroed (doModify=true, i.e. same-tx contract creation). Pre-existing
     // contracts where EIP-6780 prevents the burn should not emit a log.
-    if (this.common.isActivatedEIP(7708) && contractBalance > BIGINT_0 && toSelf && doModify) {
+    // Under EIP-8246 nothing is burned, so no burn log is ever emitted.
+    if (
+      this.common.isActivatedEIP(7708) &&
+      !this.common.isActivatedEIP(8246) &&
+      contractBalance > BIGINT_0 &&
+      toSelf &&
+      doModify
+    ) {
       const contractTopic = setLengthLeft(this._env.address.bytes, 32)
       const data = setLengthLeft(bigIntToBytes(contractBalance), 32)
       const burnLog: Log = [EIP7708_SYSTEM_ADDRESS, [EIP7708_BURN_TOPIC, contractTopic], data]

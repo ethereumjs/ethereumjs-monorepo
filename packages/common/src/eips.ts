@@ -630,4 +630,13 @@ export const eipsDict: EIPsDict = {
     minimumHardfork: Hardfork.Amsterdam,
     requiredEIPs: [2929],
   },
+  /**
+   * Description : SELFDESTRUCT no burn (Amsterdam, experimental)
+   * URL         : https://eips.ethereum.org/EIPS/eip-8246
+   * Status      : Draft
+   */
+  8246: {
+    minimumHardfork: Hardfork.Amsterdam,
+    requiredEIPs: [6780],
+  },
 }
