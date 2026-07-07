@@ -3,11 +3,14 @@ import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
 import {
   Account,
+  bigIntToBytes,
   bytesToHex,
   createAddressFromPrivateKey,
+  createAddressFromString,
   createZeroAddress,
   equalsBytes,
   hexToBytes,
+  setLengthLeft,
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
@@ -24,6 +27,17 @@ const recipient = createZeroAddress()
 
 async function fundSender(vm: Awaited<ReturnType<typeof createVM>>) {
   await vm.stateManager.putAccount(sender, new Account(0n, BigInt(1e18)))
+  // EIP-8282: deploy stub builder request contracts (checked system calls
+  // fail the block when the contracts are missing). STOP with no return
+  // data yields empty builder requests.
+  const stop = hexToBytes('0x00')
+  for (const param of ['builderDepositContractAddress', 'builderExitContractAddress'] as const) {
+    const address = createAddressFromString(
+      bytesToHex(setLengthLeft(bigIntToBytes(common.param(param)), 20)),
+    )
+    await vm.stateManager.putAccount(address, new Account(1n, 0n))
+    await vm.stateManager.putCode(address, stop)
+  }
 }
 
 function createTransferBlock() {

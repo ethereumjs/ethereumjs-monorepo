@@ -639,4 +639,13 @@ export const eipsDict: EIPsDict = {
     minimumHardfork: Hardfork.Amsterdam,
     requiredEIPs: [6780],
   },
+  /**
+   * Description : Builder execution requests (Amsterdam, experimental)
+   * URL         : https://eips.ethereum.org/EIPS/eip-8282
+   * Status      : Draft
+   */
+  8282: {
+    minimumHardfork: Hardfork.Amsterdam,
+    requiredEIPs: [7685],
+  },
 }

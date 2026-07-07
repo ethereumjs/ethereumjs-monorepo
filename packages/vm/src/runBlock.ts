@@ -215,7 +215,17 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
   let requests: CLRequest<CLRequestType>[] | undefined
   if (block.common.isActivatedEIP(7685)) {
     const sha256Function = vm.common.customCrypto.sha256 ?? sha256
-    requests = await accumulateRequests(vm, result.results, block.header.gasLimit)
+    try {
+      requests = await accumulateRequests(vm, result.results, block.header.gasLimit, generateFields)
+    } catch (err) {
+      // A checked system call failed (e.g. EIP-8282 builder request
+      // contract missing or reverting): the block is invalid, revert it.
+      await vm.evm.journal.revert()
+      if (vm.DEBUG) {
+        debug(`block checkpoint reverted`)
+      }
+      throw err
+    }
     requestsHash = genRequestsRoot(requests, sha256Function)
   }
 
@@ -579,7 +589,12 @@ export async function accumulateParentBlockHash(
   const code = await vm.stateManager.getCode(historyAddress)
 
   if (code.length === 0) {
-    // Exit early, system contract has no code so no storage is written
+    // Exit early, system contract has no code so no storage is written.
+    // EIP-7928: the attempted system-call access is still recorded in the
+    // block access list as an address-only entry.
+    if (vm.common.isActivatedEIP(7928)) {
+      vm.evm.blockLevelAccessList!.addAddress(historyAddress.toString())
+    }
     return
   }
 
@@ -632,6 +647,11 @@ export async function accumulateParentBeaconBlockRoot(vm: VM, root: Uint8Array, 
   if (code.length === 0) {
     // Exit early, system contract has no code so no storage is written
     // TODO: verify with Gabriel that this is fine regarding binary trees (should we put an empty account?)
+    // EIP-7928: the attempted system-call access is still recorded in the
+    // block access list as an address-only entry.
+    if (vm.common.isActivatedEIP(7928)) {
+      vm.evm.blockLevelAccessList!.addAddress(parentBeaconBlockRootAddress.toString())
+    }
     return
   }
   if (vm.common.isActivatedEIP(7928)) {
