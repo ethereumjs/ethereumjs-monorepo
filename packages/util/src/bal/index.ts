@@ -585,13 +585,14 @@ function compareLexicographicHexOrBytes(
 ): number {
   const aBytes = a instanceof Uint8Array ? a : hexToBytes(a)
   const bBytes = b instanceof Uint8Array ? b : hexToBytes(b)
-  const minLength = Math.min(aBytes.length, bBytes.length)
-  for (let i = 0; i < minLength; i++) {
-    if (aBytes[i] < bBytes[i]) return -1
-    if (aBytes[i] > bBytes[i]) return 1
+  const paddedA = new Uint8Array(32)
+  const paddedB = new Uint8Array(32)
+  paddedA.set(aBytes, 32 - aBytes.length)
+  paddedB.set(bBytes, 32 - bBytes.length)
+  for (let i = 0; i < 32; i++) {
+    if (paddedA[i] < paddedB[i]) return -1
+    if (paddedA[i] > paddedB[i]) return 1
   }
-  if (aBytes.length < bBytes.length) return -1
-  if (aBytes.length > bBytes.length) return 1
   return 0
 }
 
