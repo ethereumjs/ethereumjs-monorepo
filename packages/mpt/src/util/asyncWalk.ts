@@ -44,10 +44,7 @@ export async function* _walkTrie(
       yield { node, currentKey }
     }
     if (node instanceof BranchMPTNode) {
-      for (const [nibble, childNode] of node._branches.entries()) {
-        if (childNode === null) {
-          continue
-        }
+      for (const [nibble, childNode] of node.getChildren()) {
         const nextKey = [...currentKey, nibble]
         const _childNode: Uint8Array =
           childNode instanceof Uint8Array ? childNode : this.hash(RLP.encode(childNode))
