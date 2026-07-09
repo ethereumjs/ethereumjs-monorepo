@@ -196,7 +196,7 @@ async function main() {
   const trie = await createMPT()
   await trie.put(utf8ToBytes('key'), utf8ToBytes('val'))
 
-  await trie.walkTrie(trie.root(), async (nodeRef, node, currentKey, walkController) => {
+  await trie.walkTrie(trie.root(), (nodeRef, node, currentKey, walkController) => {
     if (node === null) return
     // ... do something with `node`
     walkController.allChildren(node, currentKey) // opt in to keep descending
