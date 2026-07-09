@@ -44,15 +44,18 @@ export async function* _walkTrie(
     }
     if (node instanceof BranchMPTNode) {
       for (const [nibble, childNode] of node._branches.entries()) {
+        if (childNode === null) {
+          continue
+        }
         const nextKey = [...currentKey, nibble]
         const _childNode: Uint8Array =
           childNode instanceof Uint8Array ? childNode : this.hash(RLP.encode(childNode))
-        yield* _walkTrie.bind(this)(_childNode, nextKey, onFound, filter, visited)
+        yield* _walkTrie.call(this, _childNode, nextKey, onFound, filter, visited)
       }
     } else if (node instanceof ExtensionMPTNode) {
       const childNode = node.value()
       const nextKey = [...currentKey, ...node._nibbles]
-      yield* _walkTrie.bind(this)(childNode, nextKey, onFound, filter, visited)
+      yield* _walkTrie.call(this, childNode, nextKey, onFound, filter, visited)
     }
   } catch {
     return
