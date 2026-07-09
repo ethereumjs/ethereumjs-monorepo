@@ -33,11 +33,11 @@ export async function* _walkTrie(
     return
   }
   try {
-    const node = await this.lookupNode(nodeHash)
-    const nodeHashHex = bytesToHex(this.hash(node.serialize()))
+    const nodeHashHex = bytesToHex(nodeHash)
     if (visited.has(nodeHashHex)) {
       return
     }
+    const node = await this.lookupNode(nodeHash)
     visited.add(nodeHashHex)
     await onFound(node, currentKey)
     if (await filter(node, currentKey)) {

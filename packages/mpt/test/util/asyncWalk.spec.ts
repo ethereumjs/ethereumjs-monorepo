@@ -152,15 +152,16 @@ async function twoLeafBranchTrie(trie: MerklePatriciaTrie) {
   return { key1, key2, value1, value2 }
 }
 
-describe('branch node child iteration', () => {
-  class CountingTrie extends MerklePatriciaTrie {
-    lookupCalls = 0
-    async lookupNode(node: Uint8Array | Uint8Array[]) {
-      this.lookupCalls++
-      return super.lookupNode(node)
-    }
+/** Counts calls to lookupNode, i.e. how many times the walk actually hit the DB. */
+class CountingTrie extends MerklePatriciaTrie {
+  lookupCalls = 0
+  async lookupNode(node: Uint8Array | Uint8Array[]) {
+    this.lookupCalls++
+    return super.lookupNode(node)
   }
+}
 
+describe('branch node child iteration', () => {
   it('walks only the populated slots of a branch node, without a DB lookup per empty slot', async () => {
     const trie = new CountingTrie()
     await twoLeafBranchTrie(trie)
@@ -251,13 +252,12 @@ describe('trie walk error handling', () => {
 })
 
 describe('visited set deduplication', () => {
-  it('does not yield a node whose hash is already present in the visited set', async () => {
-    const trie = new MerklePatriciaTrie()
+  it('skips both yielding and looking up a node whose hash is already in the visited set', async () => {
+    const trie = new CountingTrie()
     await trie.put(utf8ToBytes('key1'), utf8ToBytes('value1'))
     const rootHash = trie.root()
-    const rootNode = await trie.lookupNode(rootHash)
-    const rootHashHex = bytesToHex((trie as any).hash(rootNode.serialize()))
 
+    trie.lookupCalls = 0
     const results: { node: any; currentKey: number[] }[] = []
     for await (const entry of _walkTrie.call(
       trie,
@@ -265,11 +265,16 @@ describe('visited set deduplication', () => {
       [],
       undefined,
       undefined,
-      new Set<string>([rootHashHex]),
+      new Set<string>([bytesToHex(rootHash)]),
     )) {
       results.push(entry)
     }
 
     assert.strictEqual(results.length, 0, 'a node already in the visited set should be skipped')
+    assert.strictEqual(
+      trie.lookupCalls,
+      0,
+      'a node already in the visited set should not trigger a lookupNode/DB read',
+    )
   })
 })
