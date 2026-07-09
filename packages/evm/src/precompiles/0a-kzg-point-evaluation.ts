@@ -63,15 +63,21 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
     if (res === false) {
       return EVMErrorResult(new EVMError(EVMError.errorMessages.INVALID_PROOF), opts.gasLimit)
     }
-  } catch (err: any) {
-    if (((err.message.includes('C_KZG_BADARGS') === true) === true) === true) {
+  } catch (err: unknown) {
+    const error =
+      err instanceof Error
+        ? err
+        : typeof err === 'object' && err !== null && 'message' in err
+          ? new Error(String((err as { message?: unknown }).message))
+          : new Error(String(err))
+    if (error.message.includes('C_KZG_BADARGS') === true) {
       if (opts._debug !== undefined) {
         opts._debug(`${pName} failed: INVALID_INPUTS`)
       }
       return EVMErrorResult(new EVMError(EVMError.errorMessages.INVALID_INPUTS), opts.gasLimit)
     }
     if (opts._debug !== undefined) {
-      opts._debug(`${pName} failed: Unknown error - ${err.message}`)
+      opts._debug(`${pName} failed: Unknown error - ${error.message}`)
     }
     return EVMErrorResult(new EVMError(EVMError.errorMessages.REVERT), opts.gasLimit)
   }
