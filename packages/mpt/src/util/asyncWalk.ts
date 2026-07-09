@@ -34,9 +34,6 @@ export async function* _walkTrie(
   }
   try {
     const node = await this.lookupNode(nodeHash)
-    if (node === undefined) {
-      return
-    }
     const nodeHashHex = bytesToHex(this.hash(node.serialize()))
     if (visited.has(nodeHashHex)) {
       return
@@ -61,7 +58,9 @@ export async function* _walkTrie(
       const nextKey = [...currentKey, ...node._nibbles]
       yield* _walkTrie.call(this, childNode, nextKey, onFound, filter, visited)
     }
-  } catch {
-    return
+  } catch (error: any) {
+    if (error.message !== 'Missing node in DB') {
+      throw error
+    }
   }
 }
