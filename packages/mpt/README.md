@@ -181,6 +181,42 @@ async function main() {
 void main()
 ```
 
+### `walkTrieIterable` vs. `walkTrie` (`WalkController`)
+
+The package ships two different traversal implementations, and it's worth knowing which one you're reaching for:
+
+- **`walkTrieIterable`** (backed by the async generator in `src/util/asyncWalk.ts`, also used internally by `walkAllNodes`/`walkAllValueNodes`/`getValueMap`) yields `{ node, currentKey }` pairs one at a time for consumption with `for await`.
+- **`walkTrie`** (backed by `WalkController` in `src/util/walkController.ts`, also used internally by `findPath` and by pruning/integrity checks) is callback-driven: it calls your `onFound(nodeRef, node, currentKey, walkController)` for each node, and hands you the `walkController` to decide what happens next.
+
+```ts
+import { createMPT } from '@ethereumjs/mpt'
+import { utf8ToBytes } from '@ethereumjs/util'
+
+async function main() {
+  const trie = await createMPT()
+  await trie.put(utf8ToBytes('key'), utf8ToBytes('val'))
+
+  await trie.walkTrie(trie.root(), async (nodeRef, node, currentKey, walkController) => {
+    if (node === null) return
+    // ... do something with `node`
+    walkController.allChildren(node, currentKey) // opt in to keep descending
+  })
+}
+void main()
+```
+
+Use **`walkTrieIterable`** when:
+
+- You want plain `for await` control flow — `break`/early `return` stop the walk for free since it's a lazy generator.
+- You want every reachable node visited without extra bookkeeping — it always recurses into all children of branch/extension nodes automatically (a `filter` can control what gets *yielded*, but not what gets *traversed*).
+- The trie may be sparse or partially pruned: a `'Missing node in DB'` error only drops the affected subtree, and the walk quietly continues over sibling branches rather than failing outright.
+
+Use **`walkTrie`/`WalkController`** when:
+
+- You want DB reads to happen concurrently instead of one at a time — `WalkController` pipelines `lookupNode` calls through a `PrioritizedTaskExecutor` (pool size 500 by default), which matters for latency-bound backends (e.g. remote/networked DBs) on large tries.
+- You need per-node control over traversal — e.g. follow only one branch index instead of the whole subtree (this is how `findPath` walks down a single key's path via `walkController.onlyBranchIndex`), or decide dynamically whether to keep descending based on the node you just saw.
+- A missing node should be treated as a hard failure by default: `WalkController` rejects the entire walk on any `lookupNode` error. Callers that want pruning-tolerant behavior (like `findPath`) opt into that explicitly by catching and checking for the `'Missing node in DB'` message themselves.
+
 ## Merkle Patricia Tries
 
 ### Database Options
