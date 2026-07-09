@@ -89,11 +89,11 @@ describe('Precompiles: point evaluation', () => {
         chain: 'custom',
         hardfork: Hardfork.Cancun,
         customCrypto: {
-          kzg: {
+          kzg: Object.assign(Object.create(kzg), {
             verifyProof: () => {
               throw 'boom'
             },
-          },
+          }),
         },
       },
     )
@@ -132,11 +132,11 @@ describe('Precompiles: point evaluation', () => {
         chain: 'custom',
         hardfork: Hardfork.Cancun,
         customCrypto: {
-          kzg: {
+          kzg: Object.assign(Object.create(kzg), {
             verifyProof: () => {
               throw { message: 'C_KZG_BADARGS: malformed proof' }
             },
-          },
+          }),
         },
       },
     )
