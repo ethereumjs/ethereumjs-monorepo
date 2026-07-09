@@ -8,7 +8,7 @@ import type { MerklePatriciaTrie } from '../mpt.ts'
 import type { MPTNode } from '../types.ts'
 
 export type NodeFilter = (node: MPTNode, key: number[]) => Promise<boolean>
-export type OnFound = (node: MPTNode, key: number[]) => Promise<any>
+export type OnFound = (node: MPTNode, key: number[]) => Promise<void>
 
 /**
  * Walk MerklePatriciaTrie via async generator
@@ -34,13 +34,17 @@ export async function* _walkTrie(
   }
   try {
     const node = await this.lookupNode(nodeHash)
-    if (node === undefined || visited.has(bytesToHex(this.hash(node!.serialize())))) {
+    if (node === undefined) {
       return
     }
-    visited.add(bytesToHex(this.hash(node!.serialize())))
-    await onFound(node!, currentKey)
-    if (await filter(node!, currentKey)) {
-      yield { node: node!, currentKey }
+    const nodeHashHex = bytesToHex(this.hash(node.serialize()))
+    if (visited.has(nodeHashHex)) {
+      return
+    }
+    visited.add(nodeHashHex)
+    await onFound(node, currentKey)
+    if (await filter(node, currentKey)) {
+      yield { node, currentKey }
     }
     if (node instanceof BranchMPTNode) {
       for (const [nibble, childNode] of node._branches.entries()) {
