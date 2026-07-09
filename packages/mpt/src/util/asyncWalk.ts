@@ -8,7 +8,7 @@ import type { MerklePatriciaTrie } from '../mpt.ts'
 import type { MPTNode } from '../types.ts'
 
 export type NodeFilter = (node: MPTNode, key: number[]) => Promise<boolean>
-export type OnFound = (node: MPTNode, key: number[]) => Promise<void>
+export type OnFound = (node: MPTNode, key: number[]) => Promise<unknown>
 
 /**
  * Walk MerklePatriciaTrie via async generator
