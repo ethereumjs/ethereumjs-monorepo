@@ -55,6 +55,17 @@ import type {
 
 const debugGas = debugDefault('evm:gas')
 
+function isOutOfGasError(error: unknown): error is EVMError {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'errorType' in error &&
+    error.errorType === EVMErrorTypeString &&
+    'error' in error &&
+    error.error === EVMError.errorMessages.OUT_OF_GAS
+  )
+}
+
 export interface InterpreterOpts {
   pc?: number
   /** Logs to prepend to the result (e.g. EIP-7708 ETH transfer log from message-level value transfer) */
@@ -404,7 +415,17 @@ export class Interpreter {
       if (opInfo.dynamicGas) {
         // This function updates the gas in-place.
         // It needs the base fee, for correct gas limit calculation for the CALL opcodes
-        gas = await opEntry.gasHandler(this._runState, gas, this.common)
+        try {
+          gas = await opEntry.gasHandler(this._runState, gas, this.common)
+        } catch (error) {
+          if (
+            isOutOfGasError(error) &&
+            (this._evm.events.listenerCount('step') > 0 || this._evm.DEBUG)
+          ) {
+            await this._runStepHook(gas, this.getGasLeft(), memorySizeCache)
+          }
+          throw error
+        }
       }
 
       if (this._evm.events.listenerCount('step') > 0 || this._evm.DEBUG) {

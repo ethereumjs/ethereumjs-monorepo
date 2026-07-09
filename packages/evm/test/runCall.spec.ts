@@ -277,6 +277,35 @@ describe('RunCall tests', () => {
     )
   })
 
+  it('step event includes CALL when CALL dynamic gas calculation goes OOG', async () => {
+    const caller = new Address(hexToBytes('0x00000000000000000000000000000000000000ee'))
+    const address = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Homestead })
+    const evm = await createEVM({ common })
+    const code = '0x61FFFF60FF60006000600060EE6000F100'
+
+    const stepOpcodes: string[] = []
+
+    evm.events.on('step', (e) => {
+      stepOpcodes.push(e.opcode.name)
+    })
+
+    await evm.stateManager.putCode(address, hexToBytes(code))
+
+    const result = await evm.runCall({
+      caller,
+      to: address,
+      gasLimit: BigInt(200),
+    })
+
+    assert.strictEqual(
+      result.execResult.exceptionError?.error,
+      EVMError.errorMessages.OUT_OF_GAS,
+      'call went out of gas',
+    )
+    assert.strictEqual(stepOpcodes.at(-1), 'CALL', 'step event emitted for CALL before out-of-gas')
+  })
+
   it('ensure selfdestruct pays for creating new accounts', async () => {
     // setup the accounts for this test
     const caller = new Address(hexToBytes('0x00000000000000000000000000000000000000ee')) // caller address
