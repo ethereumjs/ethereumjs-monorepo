@@ -18,7 +18,7 @@ import * as EIP2718 from '../capabilities/eip2718.ts'
 import * as EIP2930 from '../capabilities/eip2930.ts'
 import * as Legacy from '../capabilities/legacy.ts'
 import { TransactionType, isAccessList } from '../types.ts'
-import { accessListBytesToJSON, accessListJSONToBytes } from '../util/access.ts'
+import { accessListJSONToBytes } from '../util/access.ts'
 import {
   getBaseJSON,
   getCommon,
@@ -508,7 +508,7 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
    * @returns JSON encoding of the transaction
    */
   toJSON(): JSONTx {
-    const accessListJSON = accessListBytesToJSON(this.accessList)
+    const accessListJSON = EIP2930.getAccessListJSON(this)
     const baseJSON = getBaseJSON(this)
 
     return {

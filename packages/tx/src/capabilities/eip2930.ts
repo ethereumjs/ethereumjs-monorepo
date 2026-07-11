@@ -1,13 +1,42 @@
 import * as Legacy from './legacy.ts'
 
 import { EthereumJSErrorWithoutCode } from '@ethereumjs/util'
-import type { EIP2930CompatibleTx } from '../types.ts'
+import type { AccessList, EIP2930CompatibleTx } from '../types.ts'
+import { accessListBytesToJSON } from '../util/access.ts'
 
 /**
  * The amount of gas paid for the data in this tx
  */
 export function getDataGas(tx: EIP2930CompatibleTx): bigint {
   return Legacy.getDataGas(tx) + getAccessListDataGas(tx)
+}
+
+/**
+ * Returns the access list of the tx in JSON format.
+ *
+ * For frozen txs the result is computed once, frozen (the tx cannot change
+ * anymore, so neither can its JSON representation) and cached, and repeated
+ * calls return the same frozen object. For non-frozen txs a fresh (mutable)
+ * copy is returned on every call, since the underlying access list bytes
+ * could still change.
+ */
+export function getAccessListJSON(tx: EIP2930CompatibleTx): AccessList {
+  if (tx.cache.accessListJSON !== undefined) {
+    return tx.cache.accessListJSON
+  }
+
+  const accessListJSON = accessListBytesToJSON(tx.accessList)
+
+  if (Object.isFrozen(tx)) {
+    for (const item of accessListJSON) {
+      Object.freeze(item.storageKeys)
+      Object.freeze(item)
+    }
+    Object.freeze(accessListJSON)
+    tx.cache.accessListJSON = accessListJSON
+  }
+
+  return accessListJSON
 }
 
 /**
