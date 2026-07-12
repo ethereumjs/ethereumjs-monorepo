@@ -19,7 +19,7 @@ export class BranchMPTNode {
   }
 
   value(v?: Uint8Array | null): Uint8Array | null {
-    if (v !== null && v !== undefined) {
+    if (v !== undefined) {
       this._value = v
     }
 
