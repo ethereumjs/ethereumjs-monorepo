@@ -34,6 +34,8 @@
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@eslint/js": "^9.22.0",
+    "@polkadot/util": "^13.4.3",
+    "@polkadot/x-randomvalues": "^13.4.3",
     "@types/estree": "^1.0.1",
     "@types/node": "22.13.10",
     "@typescript-eslint/eslint-plugin": "^8.26.1",
