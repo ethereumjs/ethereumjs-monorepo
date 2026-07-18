@@ -136,7 +136,7 @@ console.log(`Ethereum address ${address.toString()} created`)
 
 ## Module: [signature](src/signature.ts)
 
-Small helpers around signature validation, conversion, recovery as well as selected convenience wrappers for calls to the underlying crypo libraries, using the cryptographic primitive implementations from the [Noble](https://paulmillr.com/noble/) crypto library set. If possible for your use case it is recommended to use the underlying crypto libraries directly for robustness.
+Small helpers around signature validation, conversion, recovery as well as selected convenience wrappers for calls to the underlying crypto libraries, using the cryptographic primitive implementations from the [Noble](https://paulmillr.com/noble/) crypto library set. If possible for your use case it is recommended to use the underlying crypto libraries directly for robustness.
 
 ```ts
 // ./examples/signature.ts
