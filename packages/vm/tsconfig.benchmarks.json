@@ -4,7 +4,8 @@
     "lib": ["dom"],
     "sourceMap": false,
     "declaration": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "customConditions": []
   },
   "include": ["benchmarks/**.ts"]
 }

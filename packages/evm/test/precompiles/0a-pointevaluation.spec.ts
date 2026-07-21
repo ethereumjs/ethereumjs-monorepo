@@ -11,6 +11,7 @@ import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 import { assert, describe, it } from 'vitest'
 
 import { createEVM, getActivePrecompiles } from '../../src/index.ts'
+import { precompile0a } from '../../src/precompiles/0a-kzg-point-evaluation.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { PrecompileInput } from '../../src/index.ts'
@@ -79,5 +80,91 @@ describe('Precompiles: point evaluation', () => {
     }
     res = await pointEvaluation(optsWithInvalidCommitment)
     assert.include(res.exceptionError?.error, 'invalid input length', 'invalid input length')
+  })
+
+  it('should normalize unexpected thrown values to revert', async () => {
+    const common = createCommonFromGethGenesis(
+      (await import('@ethereumjs/testdata')).eip4844GethGenesis,
+      {
+        chain: 'custom',
+        hardfork: Hardfork.Cancun,
+        customCrypto: {
+          kzg: Object.assign(Object.create(kzg), {
+            verifyProof: () => {
+              throw 'boom'
+            },
+          }),
+        },
+      },
+    )
+
+    const evm = await createEVM({ common })
+    const testCase = {
+      commitment:
+        '0xc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000' as PrefixedHexString,
+      z: '0x0000000000000000000000000000000000000000000000000000000000000002' as PrefixedHexString,
+      y: '0x0000000000000000000000000000000000000000000000000000000000000000' as PrefixedHexString,
+      proof:
+        '0xc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000' as PrefixedHexString,
+    }
+    const versionedHash = computeVersionedHash(testCase.commitment as PrefixedHexString, 1)
+    const opts: PrecompileInput = {
+      data: concatBytes(
+        hexToBytes(versionedHash),
+        hexToBytes(testCase.z),
+        hexToBytes(testCase.y),
+        hexToBytes(testCase.commitment),
+        hexToBytes(testCase.proof),
+      ),
+      gasLimit: 0xfffffffffn,
+      _EVM: evm,
+      common,
+    }
+
+    const res = await precompile0a(opts)
+    assert.strictEqual(res.exceptionError?.error, 'revert')
+  })
+
+  it('should map object errors with C_KZG_BADARGS message to invalid inputs', async () => {
+    const common = createCommonFromGethGenesis(
+      (await import('@ethereumjs/testdata')).eip4844GethGenesis,
+      {
+        chain: 'custom',
+        hardfork: Hardfork.Cancun,
+        customCrypto: {
+          kzg: Object.assign(Object.create(kzg), {
+            verifyProof: () => {
+              throw { message: 'C_KZG_BADARGS: malformed proof' }
+            },
+          }),
+        },
+      },
+    )
+
+    const evm = await createEVM({ common })
+    const testCase = {
+      commitment:
+        '0xc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000' as PrefixedHexString,
+      z: '0x0000000000000000000000000000000000000000000000000000000000000002' as PrefixedHexString,
+      y: '0x0000000000000000000000000000000000000000000000000000000000000000' as PrefixedHexString,
+      proof:
+        '0xc00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000' as PrefixedHexString,
+    }
+    const versionedHash = computeVersionedHash(testCase.commitment as PrefixedHexString, 1)
+    const opts: PrecompileInput = {
+      data: concatBytes(
+        hexToBytes(versionedHash),
+        hexToBytes(testCase.z),
+        hexToBytes(testCase.y),
+        hexToBytes(testCase.commitment),
+        hexToBytes(testCase.proof),
+      ),
+      gasLimit: 0xfffffffffn,
+      _EVM: evm,
+      common,
+    }
+
+    const res = await precompile0a(opts)
+    assert.strictEqual(res.exceptionError?.error, 'kzg inputs invalid')
   })
 })
