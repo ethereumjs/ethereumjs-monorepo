@@ -77,7 +77,10 @@ describe('TransactionCache', () => {
         'repeated call should return the cached object',
       )
 
-      assert.isUndefined(tx.cache.dataFee)
+      // Note: use strictEqual (not isUndefined) here so the type of
+      // `tx.cache.dataFee` is not narrowed to `undefined` for the property
+      // access below (which getDataGas() populates but the compiler can't see).
+      assert.strictEqual(tx.cache.dataFee, undefined)
       const dataFee1 = tx.getDataGas()
       assert.strictEqual(tx.cache.dataFee?.value, dataFee1, 'dataFee should be cached')
       assert.strictEqual(tx.getDataGas(), dataFee1)
