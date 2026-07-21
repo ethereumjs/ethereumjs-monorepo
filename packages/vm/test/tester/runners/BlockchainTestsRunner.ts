@@ -269,7 +269,7 @@ export async function runBlockchainTest(options: any, testData: any, t: typeof a
   }
 
   t.equal(
-    bytesToHex(blockchain['_headHeaderHash']),
+    bytesToHex(blockchain['_headHeaderHash']!),
     '0x' + testData.lastblockhash,
     'correct last header block',
   )
