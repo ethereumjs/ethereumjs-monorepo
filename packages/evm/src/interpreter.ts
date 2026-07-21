@@ -43,7 +43,7 @@ import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import { stackDelta } from './eof/stackDelta.ts'
 import type { EVM } from './evm.ts'
 import type { Journal } from './journal.ts'
-import type { AsyncOpHandler, Opcode, OpcodeMapEntry } from './opcodes/index.ts'
+import type { AsyncOpHandler, Opcode, OpcodeMapEntry, SyncOpHandler } from './opcodes/index.ts'
 import type {
   Block,
   EOFEnv,
@@ -467,7 +467,7 @@ export class Interpreter {
       if (opInfo.isAsync) {
         await (opFn as AsyncOpHandler).apply(null, [this._runState, this.common])
       } else {
-        opFn.apply(null, [this._runState, this.common])
+        ;(opFn as SyncOpHandler).apply(null, [this._runState, this.common])
       }
       this._runState.env.accessWitness?.commit()
     } finally {

@@ -315,6 +315,11 @@ jobs:
         working-directory: ${{ github.workspace }}
 
       - name: Post bundle size summary to PR
+        # Fork PRs run with a read-only GITHUB_TOKEN and cannot post comments
+        # (403 "Resource not accessible by integration"). The bundle analysis
+        # itself has already succeeded by this point, so never let the comment
+        # step fail the job.
+        continue-on-error: true
         if: steps.bundle-analysis.outcome == 'success' || steps.bundle-analysis.outcome == 'failure'
         uses: actions/github-script@v7
         with:
