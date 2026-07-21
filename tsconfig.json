@@ -3,10 +3,9 @@
     "allowImportingTsExtensions": true,
     "allowSyntheticDefaultImports": true,
     "composite": true,
+    "customConditions": ["typescript"],
     "declaration": true,
     "declarationMap": true,
-    "downlevelIteration": true,
-    "esModuleInterop": false,
     "lib": ["ES2020", "DOM"],
     "module": "NodeNext",
     "moduleResolution": "nodenext",
@@ -16,6 +15,7 @@
     "sourceMap": true,
     "strict": true,
     "target": "es2020",
+    "types": ["node"],
     "verbatimModuleSyntax": true,
     "erasableSyntaxOnly": true
   }
