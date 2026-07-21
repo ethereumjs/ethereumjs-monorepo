@@ -51,8 +51,9 @@ export async function precompile0d(opts: PrecompileInput): Promise<ExecResult> {
   let returnValue
   try {
     returnValue = bls.addG2(opts.data)
-  } catch (e: any) {
-    return EVMErrorResult(e, opts.gasLimit)
+  } catch (e: unknown) {
+    const error = e instanceof EVMError ? e : new EVMError(EVMError.errorMessages.REVERT)
+    return EVMErrorResult(error, opts.gasLimit)
   }
 
   if (opts._debug !== undefined) {
