@@ -55,14 +55,12 @@ import type {
 
 const debugGas = debugDefault('evm:gas')
 
-function isOutOfGasError(error: unknown): error is EVMError {
+function isEVMError(error: unknown): error is EVMError {
   return (
     typeof error === 'object' &&
     error !== null &&
     'errorType' in error &&
-    error.errorType === EVMErrorTypeString &&
-    'error' in error &&
-    error.error === EVMError.errorMessages.OUT_OF_GAS
+    error.errorType === EVMErrorTypeString
   )
 }
 
@@ -418,8 +416,14 @@ export class Interpreter {
         try {
           gas = await opEntry.gasHandler(this._runState, gas, this.common)
         } catch (error) {
+          // Static-gas opcodes always emit a `step` event before their gas
+          // charge can fail (the hook below runs before `useGas` and the
+          // opcode handler). Dynamic gas handlers can throw the failure
+          // themselves, before that hook runs, so emit it here for any VM
+          // error to keep tracer output consistent across both paths.
+          // Non-VM errors are genuine bugs and are re-thrown untouched.
           if (
-            isOutOfGasError(error) &&
+            isEVMError(error) &&
             (this._evm.events.listenerCount('step') > 0 || this._evm.DEBUG)
           ) {
             await this._runStepHook(gas, this.getGasLeft(), memorySizeCache)

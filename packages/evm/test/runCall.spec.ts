@@ -306,6 +306,43 @@ describe('RunCall tests', () => {
     assert.strictEqual(stepOpcodes.at(-1), 'CALL', 'step event emitted for CALL before out-of-gas')
   })
 
+  it('step event includes the opcode when a dynamic gas handler throws a non-OOG VM error', async () => {
+    // SSTORE in a static context throws STATIC_STATE_CHANGE from its dynamic
+    // gas handler (before the gas is even charged). Like the OOG case above,
+    // the step event must still be emitted for the failing opcode.
+    const caller = new Address(hexToBytes('0x00000000000000000000000000000000000000ee'))
+    const address = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
+    const evm = await createEVM({ common })
+    // PUSH1 0x01 PUSH1 0x00 SSTORE
+    const code = '0x6001600055'
+
+    const stepOpcodes: string[] = []
+    evm.events.on('step', (e) => {
+      stepOpcodes.push(e.opcode.name)
+    })
+
+    await evm.stateManager.putCode(address, hexToBytes(code))
+
+    const result = await evm.runCall({
+      caller,
+      to: address,
+      gasLimit: BigInt(100000),
+      isStatic: true,
+    })
+
+    assert.strictEqual(
+      result.execResult.exceptionError?.error,
+      EVMError.errorMessages.STATIC_STATE_CHANGE,
+      'call reverted with static state change',
+    )
+    assert.strictEqual(
+      stepOpcodes.at(-1),
+      'SSTORE',
+      'step event emitted for SSTORE before static state change error',
+    )
+  })
+
   it('ensure selfdestruct pays for creating new accounts', async () => {
     // setup the accounts for this test
     const caller = new Address(hexToBytes('0x00000000000000000000000000000000000000ee')) // caller address
