@@ -312,4 +312,29 @@ describe('Pruned trie tests', () => {
       assert.strictEqual(dbKeys, 1, 'db is empty')
     }
   })
+
+  it('randomized: deleting all variable-length keys empties and prunes the trie', async () => {
+    for (let run = 0; run < 50; run++) {
+      const trie = new MerklePatriciaTrie({ useNodePruning: true })
+      const keys: Uint8Array[] = []
+      for (let i = 0; i < 40; i++) {
+        // 1-4 byte keys so some keys become prefixes of others - the case
+        // fixed-length fuzz tests structurally cannot reach.
+        const key = randomBytes(1 + Math.floor(Math.random() * 4))
+        keys.push(key)
+        await trie.put(key, randomBytes(3))
+      }
+      keys.sort(() => Math.random() - 0.5)
+      for (const key of keys) await trie.del(key)
+
+      for (const key of keys) {
+        assert.isNull(await trie.get(key), 'deleted key must read back null')
+      }
+      assert.isTrue(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
+      assert.isTrue(
+        equalsBytes(trie.root(), KECCAK256_RLP),
+        'trie is empty after deleting all keys',
+      )
+    }
+  })
 })
