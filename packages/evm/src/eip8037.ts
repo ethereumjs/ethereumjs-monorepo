@@ -22,6 +22,8 @@ export function activeCostPerStateByte(common: Common, _blockGasLimit?: bigint):
 interface IntrinsicDimensionsTx {
   type: number
   common: Common
+  value: bigint
+  to?: { bytes: Uint8Array }
   getIntrinsicGas(): bigint
   toCreationAddress(): boolean
   // EIP-7702 (type 4) txs expose an authorization list.
@@ -50,6 +52,7 @@ export function computeIntrinsicGasDimensions8037(
   common: Common,
   tx: IntrinsicDimensionsTx,
   blockGasLimit?: bigint,
+  sender?: { bytes: Uint8Array },
 ): { intrinsicRegular: bigint; intrinsicState: bigint } {
   const intrinsicRegular0 = tx.getIntrinsicGas()
   if (!common.isActivatedEIP(8037)) {
@@ -63,23 +66,49 @@ export function computeIntrinsicGasDimensions8037(
   // 7702 regular correction. getIntrinsicGas() (via getDataGas in
   // tx/capabilities/eip7702.ts) adds `authCount * perEmptyAccountCost` to
   // the regular intrinsic. Under EIP-8037 perEmptyAccountCost = 0 and the
-  // regular per-auth charge is perAuthBaseGas; add the missing amount here.
+  // regular per-auth charge is accountWriteGas + perAuthBaseGas; add the
+  // missing amount here.
   let authCount = 0
   let intrinsicRegular = intrinsicRegular0
   if (tx.type === 4 && Array.isArray(tx.authorizationList)) {
     authCount = tx.authorizationList.length
-    intrinsicRegular += BigInt(authCount) * common.param('perAuthBaseGas')
+    intrinsicRegular +=
+      BigInt(authCount) * (common.param('accountWriteGas') + common.param('perAuthBaseGas'))
   }
 
-  // State-dimension intrinsic: state portion of creation-tx new-account
-  // charge plus per-auth state base (new-account + auth-base bytes).
-  let intrinsicState = BIGINT_0
   let isCreate = false
   try {
     isCreate = tx.toCreationAddress()
   } catch {
     isCreate = false
   }
+
+  // EIP-2780 recipient/value components. Self-transfers (sender == to) skip
+  // the recipient and value charges entirely.
+  if (common.isActivatedEIP(2780)) {
+    const hasValue = tx.value > BIGINT_0
+    if (isCreate) {
+      // Creation recipient cost (CREATE_ACCESS, via txCreationGas) is already
+      // part of getIntrinsicGas(); a value-bearing create adds the EIP-7708
+      // transfer-log cost.
+      if (hasValue) {
+        intrinsicRegular += common.param('transferLogCost')
+      }
+    } else {
+      const isSelfTransfer =
+        sender !== undefined && tx.to !== undefined && equalsBytes8037(sender.bytes, tx.to.bytes)
+      if (!isSelfTransfer) {
+        intrinsicRegular += common.param('txRecipientAccessGas')
+        if (hasValue) {
+          intrinsicRegular += common.param('transferLogCost') + common.param('txValueCost')
+        }
+      }
+    }
+  }
+
+  // State-dimension intrinsic: state portion of creation-tx new-account
+  // charge plus per-auth state base (new-account + auth-base bytes).
+  let intrinsicState = BIGINT_0
   if (isCreate) {
     intrinsicState += stateBytesPerNewAccount * costPerStateByte
   }
@@ -89,4 +118,12 @@ export function computeIntrinsicGasDimensions8037(
   }
 
   return { intrinsicRegular, intrinsicState }
+}
+
+function equalsBytes8037(a: Uint8Array, b: Uint8Array): boolean {
+  if (a.length !== b.length) return false
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) return false
+  }
+  return true
 }

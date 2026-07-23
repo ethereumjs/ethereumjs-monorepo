@@ -207,6 +207,15 @@ export interface EVMInterface {
    * @remarks Experimental (Amsterdam): may change on patch releases.
    */
   eip7928CallPostTargetOog?: boolean
+  /**
+   * EIP-8037: whether the target account of a top-level creation transaction
+   * was already alive (EIP-161 non-empty) before creation; `runTx` refunds
+   * the intrinsic new-account state gas when true or the creation failed.
+   * Optional for custom {@link EVMInterface} implementations.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
+  createTxTargetAlive?: boolean
 }
 
 export type EVMProfilerOpts = {
@@ -493,6 +502,14 @@ export interface ExecResult {
    * Amount of blob gas consumed by the transaction
    */
   blobGasUsed?: bigint
+  /**
+   * EIP-8037: state gas paid from the frame's regular gas (spilled),
+   * including spill merged from successful child frames. Propagated to the
+   * parent frame's spill tracker on success; zeroed on frame failure.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
+  stateGasSpilled?: bigint
 }
 
 /**

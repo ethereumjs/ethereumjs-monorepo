@@ -136,6 +136,7 @@ export const accumulateRequests = async (
   vm: VM,
   txResults: RunTxResult[],
   blockGasLimit?: bigint,
+  generate = false,
 ): Promise<CLRequest<CLRequestType>[]> => {
   const requests: CLRequest<CLRequestType>[] = []
   const common = vm.common
@@ -159,8 +160,94 @@ export const accumulateRequests = async (
     requests.push(consolidationsRequest)
   }
 
+  if (common.isActivatedEIP(8282)) {
+    const builderDepositsRequest = await accumulateBuilderRequest(
+      vm,
+      CLRequestType.BuilderDeposit,
+      'builderDepositContractAddress',
+      blockGasLimit,
+      generate,
+    )
+    requests.push(builderDepositsRequest)
+    const builderExitsRequest = await accumulateBuilderRequest(
+      vm,
+      CLRequestType.BuilderExit,
+      'builderExitContractAddress',
+      blockGasLimit,
+      generate,
+    )
+    requests.push(builderExitsRequest)
+  }
+
   // requests are already type byte ordered by construction
   return requests
+}
+
+/**
+ * EIP-8282: run a checked system call against a builder request contract
+ * (deposit or exit) and wrap the returned data as a CL request.
+ *
+ * Per the pinned execution-specs Amsterdam revision this is a *checked*
+ * system transaction when validating: a missing/codeless contract or a
+ * failing call makes the block invalid. When building a block (`generate`),
+ * a missing or failing contract yields an empty request instead (matching
+ * the withdrawal/consolidation accumulators).
+ *
+ * @remarks Experimental (Amsterdam): may change on patch releases.
+ */
+const accumulateBuilderRequest = async (
+  vm: VM,
+  requestType: typeof CLRequestType.BuilderDeposit | typeof CLRequestType.BuilderExit,
+  contractAddressParam: 'builderDepositContractAddress' | 'builderExitContractAddress',
+  blockGasLimit?: bigint,
+  generate = false,
+): Promise<CLRequest<CLRequestType>> => {
+  const addressBytes = setLengthLeft(bigIntToBytes(vm.common.param(contractAddressParam)), 20)
+  const builderAddress = createAddressFromString(bytesToHex(addressBytes))
+
+  const systemAddressBytes = bigIntToAddressBytes(vm.common.param('systemAddress'))
+  const systemAddress = createAddressFromString(bytesToHex(systemAddressBytes))
+  const systemAccount = await vm.stateManager.getAccount(systemAddress)
+
+  const contractCode = await vm.stateManager.getCode(builderAddress)
+  if (contractCode.length === 0) {
+    if (generate) {
+      return new CLRequest(requestType, new Uint8Array(0))
+    }
+    throw EthereumJSErrorWithoutCode(
+      `system contract empty: no code at builder request contract ${builderAddress}`,
+    )
+  }
+
+  const systemAddressHex = systemAddress.toString()
+  const balSnapshot = cloneSystemAccessEntry(vm, systemAddressHex)
+  const { regular, reservoir } = computeSystemCallGas(vm, blockGasLimit)
+  const reservoirPrior = setupSystemCallReservoir(vm, reservoir)
+  const results = await vm.evm.runCall({
+    caller: systemAddress,
+    gasLimit: regular,
+    to: builderAddress,
+  })
+  teardownSystemCallReservoir(vm, reservoirPrior)
+  restoreSystemAccessEntry(vm, systemAddressHex, balSnapshot)
+
+  if (systemAccount === undefined) {
+    await vm.stateManager.deleteAccount(systemAddress)
+  } else {
+    await vm.stateManager.putAccount(systemAddress, systemAccount)
+  }
+
+  if (results.execResult.exceptionError !== undefined) {
+    if (generate) {
+      return new CLRequest(requestType, new Uint8Array(0))
+    }
+    throw EthereumJSErrorWithoutCode(
+      `system contract call failed: builder request contract ${builderAddress} (${results.execResult.exceptionError.error})`,
+    )
+  }
+
+  const resultsBytes = results.execResult.returnValue
+  return new CLRequest(requestType, resultsBytes)
 }
 
 const accumulateWithdrawalsRequest = async (
