@@ -879,8 +879,10 @@ export const handlers: Map<number, OpHandler> = new Map<number, OpHandler>([
           const prior = evm.createdAccountStateGas.get(addrKey) ?? BIGINT_0
           evm.createdAccountStateGas.set(addrKey, prior + amount)
         } else if (!currentIsZero && newIsZero) {
-          // 0 -> nonzero -> 0: clearing a slot created in this tx, refill reservoir
-          runState.interpreter.refillStateGasReservoir(amount, 'SSTORE clear')
+          // 0 -> nonzero -> 0: clearing a slot created in this tx, credit the
+          // state-gas refund in LIFO order (gasLeft first up to the frame's
+          // spilled amount, then the reservoir)
+          runState.interpreter.creditStateGasRefund(amount, 'SSTORE clear')
           // Symmetric: subtract from the per-address tracker so we don't
           // double-refund storage that was already cleared inside the tx.
           const addrKey = runState.interpreter.getAddress().toString()

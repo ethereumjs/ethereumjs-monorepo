@@ -109,6 +109,15 @@ export const eipsDict: EIPsDict = {
     minimumHardfork: Hardfork.Chainstart,
   },
   /**
+   * Description : Reduce intrinsic transaction gas (Amsterdam, experimental)
+   * URL         : https://eips.ethereum.org/EIPS/eip-2780
+   * Status      : Draft
+   */
+  2780: {
+    minimumHardfork: Hardfork.Chainstart,
+    requiredEIPs: [7708],
+  },
+  /**
    * Description : Gas cost increases for state access opcodes
    * URL         : https://eips.ethereum.org/EIPS/eip-2929
    * Status      : Final
@@ -611,5 +620,32 @@ export const eipsDict: EIPsDict = {
   8037: {
     minimumHardfork: Hardfork.Amsterdam,
     requiredEIPs: [2780, 6780, 7702, 7825, 7976, 7981],
+  },
+  /**
+   * Description : State Access Gas Cost Increase (Amsterdam, experimental)
+   * URL         : https://eips.ethereum.org/EIPS/eip-8038
+   * Status      : Draft
+   */
+  8038: {
+    minimumHardfork: Hardfork.Amsterdam,
+    requiredEIPs: [2929],
+  },
+  /**
+   * Description : SELFDESTRUCT no burn (Amsterdam, experimental)
+   * URL         : https://eips.ethereum.org/EIPS/eip-8246
+   * Status      : Draft
+   */
+  8246: {
+    minimumHardfork: Hardfork.Amsterdam,
+    requiredEIPs: [6780],
+  },
+  /**
+   * Description : Builder execution requests (Amsterdam, experimental)
+   * URL         : https://eips.ethereum.org/EIPS/eip-8282
+   * Status      : Draft
+   */
+  8282: {
+    minimumHardfork: Hardfork.Amsterdam,
+    requiredEIPs: [7685],
   },
 }
