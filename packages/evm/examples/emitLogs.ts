@@ -47,6 +47,8 @@ const main = async () => {
     console.log(`           topics=${formatted.topics.join(', ')}`)
     console.log(`           data=${formatted.data} (value=${bytesToBigInt(log[2])})`)
   }
+
+  // The same logs are also emitted live via evm.events.on('log', ...) during execution.
 }
 
 void main()
