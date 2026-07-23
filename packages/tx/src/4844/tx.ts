@@ -17,6 +17,7 @@ import * as EIP1559 from '../capabilities/eip1559.ts'
 import * as EIP2718 from '../capabilities/eip2718.ts'
 import * as EIP2930 from '../capabilities/eip2930.ts'
 import * as Legacy from '../capabilities/legacy.ts'
+import { paramsTx } from '../params.ts'
 import { TransactionType, isAccessList } from '../types.ts'
 import { accessListJSONToBytes } from '../util/access.ts'
 import {
@@ -30,7 +31,7 @@ import {
 import { createBlob4844Tx } from './constructors.ts'
 
 import type { Common } from '@ethereumjs/common'
-import type { Address, PrefixedHexString } from '@ethereumjs/util'
+import type { Address, BytesLike, PrefixedHexString } from '@ethereumjs/util'
 import type {
   AccessListBytes,
   TxData as AllTypesTxData,
@@ -50,6 +51,60 @@ export const NetworkWrapperType = {
   EIP7594: 1,
 } as const
 export type NetworkWrapperType = (typeof NetworkWrapperType)[keyof typeof NetworkWrapperType]
+
+const validateNetworkWrapperVersion = (
+  common: Common,
+  networkWrapperVersion?: NetworkWrapperType,
+) => {
+  if (networkWrapperVersion === undefined) {
+    return
+  }
+
+  switch (networkWrapperVersion) {
+    case NetworkWrapperType.EIP7594:
+      if (!common.isActivatedEIP(7594)) {
+        throw EthereumJSErrorWithoutCode(
+          'EIP-7594 not enabled on Common for EIP-7594 network wrapper version',
+        )
+      }
+      break
+
+    case NetworkWrapperType.EIP4844:
+      if (common.isActivatedEIP(7594)) {
+        throw EthereumJSErrorWithoutCode(
+          'EIP-7594 is active on Common for EIP-4844 network wrapper version',
+        )
+      }
+      break
+
+    default: {
+      const _exhaustiveCheck: never = networkWrapperVersion
+      throw EthereumJSErrorWithoutCode(`Invalid networkWrapperVersion=${_exhaustiveCheck}`)
+    }
+  }
+}
+
+export const validateBlob4844TxForkConstraints = ({
+  blobVersionedHashes,
+  common,
+  errorBuilder,
+  networkWrapperVersion,
+}: {
+  blobVersionedHashes: BytesLike[]
+  common: Common
+  errorBuilder?: (message: string) => string
+  networkWrapperVersion?: NetworkWrapperType
+}) => {
+  validateNetworkWrapperVersion(common, networkWrapperVersion)
+
+  if (common.isActivatedEIP(7594)) {
+    const maxBlobsPerTx = common.param('maxBlobsPerTx')
+    if (blobVersionedHashes.length > maxBlobsPerTx) {
+      const message = `${blobVersionedHashes.length} blobs exceeds max ${maxBlobsPerTx} blobs per tx (EIP-7594)`
+      throw EthereumJSErrorWithoutCode(errorBuilder !== undefined ? errorBuilder(message) : message)
+    }
+  }
+}
 
 /**
  * Typed transaction with a new gas fee market mechanism for transactions that include "blobs" of data
@@ -121,33 +176,16 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
     // Check networkWrapperVersion early, before sharedConstructor, to ensure proper error ordering
     // This validation needs to happen before EIP-7825 gas limit checks
     const common = getCommon(opts.common)
+    common.updateParams(opts.params ?? paramsTx)
     const networkWrapperVersion =
       txData.networkWrapperVersion !== undefined
         ? (bytesToInt(toBytes(txData.networkWrapperVersion)) as NetworkWrapperType)
         : undefined
-
-    if (networkWrapperVersion !== undefined) {
-      switch (networkWrapperVersion) {
-        case NetworkWrapperType.EIP7594:
-          if (!common.isActivatedEIP(7594)) {
-            throw EthereumJSErrorWithoutCode(
-              'EIP-7594 not enabled on Common for EIP-7594 network wrapper version',
-            )
-          }
-          break
-
-        case NetworkWrapperType.EIP4844:
-          if (common.isActivatedEIP(7594)) {
-            throw EthereumJSErrorWithoutCode(
-              'EIP-7594 is active on Common for EIP-4844 network wrapper version',
-            )
-          }
-          break
-
-        default:
-          throw EthereumJSErrorWithoutCode(`Invalid networkWrapperVersion=${networkWrapperVersion}`)
-      }
-    }
+    validateBlob4844TxForkConstraints({
+      blobVersionedHashes: txData.blobVersionedHashes ?? [],
+      common,
+      networkWrapperVersion,
+    })
 
     sharedConstructor(this, { ...txData, type: TransactionType.BlobEIP4844 }, opts)
     const {
@@ -243,17 +281,12 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
       throw EthereumJSErrorWithoutCode(msg)
     }
 
-    // EIP-7594 PeerDAS: Limit of 6 blobs per transaction
-    if (this.common.isActivatedEIP(7594)) {
-      const maxBlobsPerTx = this.common.param('maxBlobsPerTx')
-      if (this.blobVersionedHashes.length > maxBlobsPerTx) {
-        const msg = Legacy.errorMsg(
-          this,
-          `${this.blobVersionedHashes.length} blobs exceeds max ${maxBlobsPerTx} blobs per tx (EIP-7594)`,
-        )
-        throw EthereumJSErrorWithoutCode(msg)
-      }
-    }
+    validateBlob4844TxForkConstraints({
+      blobVersionedHashes: this.blobVersionedHashes,
+      common: this.common,
+      errorBuilder: (message) => Legacy.errorMsg(this, message),
+      networkWrapperVersion,
+    })
     if (this.blobVersionedHashes.length === 0) {
       const msg = Legacy.errorMsg(this, `tx should contain at least one blob`)
       throw EthereumJSErrorWithoutCode(msg)
