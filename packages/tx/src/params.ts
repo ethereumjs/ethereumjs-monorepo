@@ -58,6 +58,29 @@ export const paramsTx: ParamsDict = {
     totalCostFloorPerToken: 10,
   },
   /**
+   * Reduce intrinsic transaction gas (Amsterdam, experimental).
+   * The recipient/value components (COLD_ACCOUNT_ACCESS for plain calls,
+   * txValueCost + transferLogCost for value transfers) are added in the
+   * intrinsic-gas dimension splitter, which knows the sender (self-transfers
+   * skip the recipient and value charges).
+   */
+  2780: {
+    txGas: 12000, // TX_BASE: base sender cost per transaction (down from 21000)
+    txValueCost: 4244, // TX_VALUE_COST: extra regular gas for value-bearing non-self-transfer calls
+    transferLogCost: 1756, // TRANSFER_LOG_COST: regular gas for the EIP-7708 transfer log of the tx-level value transfer
+    txRecipientAccessGas: 3000, // Recipient cost for a non-self-transfer call (= COLD_ACCOUNT_ACCESS under EIP-8038)
+  },
+  /**
+   * Access list data pricing (Amsterdam, experimental).
+   * Repriced to match COLD_ACCOUNT_ACCESS / COLD_STORAGE_ACCESS under EIP-8038.
+   * The floor-token component (80 tokens/address + 128 tokens/storage key at
+   * totalCostFloorPerToken) is added in the access-list data gas calculation.
+   */
+  7981: {
+    accessListStorageKeyGas: 3000, // Gas cost per storage key in an Access List transaction (up from 1900)
+    accessListAddressGas: 3000, // Gas cost per address in an Access List transaction (up from 2400)
+  },
+  /**
 .  * Set EOA account code for one transaction
 .  */
   7702: {
@@ -83,7 +106,7 @@ export const paramsTx: ParamsDict = {
    */
   7954: {
     // format
-    maxInitCodeSize: 65536, // EIP-7954: Maximum length of initialization code (raised from 48 KiB)
+    maxInitCodeSize: 131072, // EIP-7954: Maximum length of initialization code (2 * maxCodeSize, raised from 48 KiB)
   },
   /**
    * Increase calldata floor cost (uniform 64 gas/byte floor)
@@ -98,8 +121,9 @@ export const paramsTx: ParamsDict = {
    * constants (see evm params block).
    */
   8037: {
-    perAuthBaseGas: 7500, // Regular gas per authorization (down from 12500); state portion = stateBytesPerAuthBase * costPerStateByte
-    perEmptyAccountCost: 0, // Regular gas for empty authority (down from 25000); state portion = stateBytesPerNewAccount * costPerStateByte (refunded if authority is non-empty)
-    txCreationGas: 9000, // Regular gas for a creation tx (down from 32000); state portion = stateBytesPerNewAccount * costPerStateByte
+    perAuthBaseGas: 7816, // REGULAR_PER_AUTH_BASE_COST: AUTH_TUPLE_BYTES (101) * totalCostFloorPerToken (16) + ecrecover (3000) + cold account access (3000) + 2 * warm access (200)
+    perEmptyAccountCost: 0, // Regular gas for empty authority (down from 25000); replaced by accountWriteGas + perAuthBaseGas plus the state-gas portion ((stateBytesPerNewAccount + stateBytesPerAuthBase) * costPerStateByte)
+    accountWriteGas: 8000, // ACCOUNT_WRITE: regular gas per authorization for the account write (refunded when the authority account already exists)
+    txCreationGas: 11000, // CREATE_ACCESS = ACCOUNT_WRITE (8000) + COLD_STORAGE_ACCESS (3000); state portion = stateBytesPerNewAccount * costPerStateByte
   },
 }

@@ -11,6 +11,8 @@ import {
   bytesToBigInt,
   bytesToHex,
   equalsBytes,
+  generateAddress,
+  generateAddress2,
   setLengthLeft,
   setLengthRight,
 } from '@ethereumjs/util'
@@ -133,6 +135,18 @@ export interface RunState {
   interpreter: Interpreter
   gasRefund: bigint // Tracks the current refund
   gasLeft: bigint // Current gas left
+  /**
+   * EIP-8037: state gas paid from `gasLeft` (spilled) in this frame,
+   * including spill merged from successful child frames. State-gas refunds
+   * credit `gasLeft` first up to this amount (LIFO), then the reservoir.
+   */
+  stateGasSpilled: bigint
+  /**
+   * EIP-8037: the new-account state gas charged by the most recent CALL
+   * opcode's gas handler; refunded if the call fails fast (depth limit /
+   * insufficient balance) before a child frame is entered.
+   */
+  lastCallNewAccountStateGas?: bigint
   returnBytes: Uint8Array /* Current bytes in the return Uint8Array. Cleared each time a CALL/CREATE is made in the current frame. */
 }
 
@@ -229,6 +243,7 @@ export class Interpreter {
       interpreter: this,
       gasRefund: env.gasRefund,
       gasLeft,
+      stateGasSpilled: BIGINT_0,
       returnBytes: new Uint8Array(0),
     }
     this.journal = journal
@@ -711,11 +726,37 @@ export class Interpreter {
         remaining,
         context !== undefined ? `state-gas spill: ${context}` : 'state-gas spill',
       )
+      this._runState.stateGasSpilled += remaining
     }
     evm.executionStateGasUsed += amount
     if (evm.DEBUG) {
       debugGas(
-        `${context !== undefined ? context + ': ' : ''}charged ${amount} state gas (reservoir=${evm.stateGasReservoir}, executionStateGasUsed=${evm.executionStateGasUsed}, gasLeft=${this._runState.gasLeft})`,
+        `${context !== undefined ? context + ': ' : ''}charged ${amount} state gas (reservoir=${evm.stateGasReservoir}, executionStateGasUsed=${evm.executionStateGasUsed}, gasLeft=${this._runState.gasLeft}, spilled=${this._runState.stateGasSpilled})`,
+      )
+    }
+  }
+
+  /**
+   * EIP-8037: credit a state-gas refund to the local frame, in LIFO order.
+   * State-gas charges draw from the reservoir first and from `gasLeft` last,
+   * so refunds credit the pool charged last first: `gasLeft` up to the
+   * frame's spilled amount, then the reservoir. Decrements
+   * `execution_state_gas_used` by the full amount.
+   * @param amount - The refund amount to credit
+   * @param context - Usage context for debugging
+   */
+  creditStateGasRefund(amount: bigint, context?: string): void {
+    if (amount === BIGINT_0) return
+    const evm = this._evm
+    const runState = this._runState
+    const fromGasLeft = amount < runState.stateGasSpilled ? amount : runState.stateGasSpilled
+    runState.gasLeft += fromGasLeft
+    runState.stateGasSpilled -= fromGasLeft
+    evm.stateGasReservoir += amount - fromGasLeft
+    evm.executionStateGasUsed -= amount
+    if (evm.DEBUG) {
+      debugGas(
+        `${context !== undefined ? context + ': ' : ''}credited ${amount} state gas refund (gasLeft +${fromGasLeft}, reservoir=${evm.stateGasReservoir}, executionStateGasUsed=${evm.executionStateGasUsed})`,
       )
     }
   }
@@ -1194,6 +1235,13 @@ export class Interpreter {
       this._env.depth >= Number(this.common.param('stackLimit')) ||
       (msg.delegatecall !== true && this._env.contract.balance < msg.value)
     ) {
+      // EIP-8037: the call fails fast before a child frame is entered, so
+      // the new-account state gas pre-charged at the CALL opcode is refunded.
+      const preCharged = this._runState.lastCallNewAccountStateGas ?? BIGINT_0
+      if (preCharged > BIGINT_0) {
+        this.creditStateGasRefund(preCharged, 'CALL fail-fast new_account')
+        this._runState.lastCallNewAccountStateGas = BIGINT_0
+      }
       return BIGINT_0
     }
 
@@ -1205,6 +1253,20 @@ export class Interpreter {
 
     // this should always be safe
     this.useGas(results.execResult.executionGasUsed, 'CALL, STATICCALL, DELEGATECALL, CALLCODE')
+
+    // EIP-8037: merge the successful child frame's spilled state gas into
+    // this frame's spill tracker (LIFO refunds may credit it back to
+    // gasLeft). Failed frames return stateGasSpilled = 0. On any child
+    // failure the new-account state gas pre-charged at the CALL opcode is
+    // refunded (no account leaf persists).
+    if (this.common.isActivatedEIP(8037)) {
+      this._runState.stateGasSpilled += results.execResult.stateGasSpilled ?? BIGINT_0
+      const preCharged = this._runState.lastCallNewAccountStateGas ?? BIGINT_0
+      if (results.execResult.exceptionError !== undefined && preCharged > BIGINT_0) {
+        this.creditStateGasRefund(preCharged, 'CALL child-failure new_account')
+      }
+      this._runState.lastCallNewAccountStateGas = BIGINT_0
+    }
 
     // Set return value
     if (
@@ -1254,20 +1316,20 @@ export class Interpreter {
     // empty the return data buffer
     this._runState.returnBytes = new Uint8Array(0)
 
-    // EIP-8037: helper to refund the pre-charged NEW_ACCOUNT state-gas
-    // when the CREATE short-circuits BEFORE a child frame is spawned
-    // (depth limit, insufficient balance, EIP-2681 nonce overflow,
-    // EIP-3860 oversized initcode). The pre-charge happened in
-    // opcodes/gas.ts; the runCall revert handler won't fire here since
-    // no child frame is created, so refund explicitly.
-    const refundCreatePreCharge = (): void => {
+    // EIP-8037: helper to refund the pre-charged NEW_ACCOUNT state-gas when
+    // no new account leaf persists: the CREATE short-circuits before a child
+    // frame is spawned (depth limit, insufficient balance, EIP-2681 nonce
+    // overflow, EIP-3860 oversized initcode), the creation frame fails
+    // (revert / halt / collision), or the target account was already alive.
+    // The pre-charge happened in opcodes/gas.ts; refunds credit this
+    // (parent) frame's pools in LIFO order.
+    const refundCreatePreCharge = (context: string): void => {
       if (!this.common.isActivatedEIP(8037)) return
       const stateBytesPerNewAccount = this.common.param('stateBytesPerNewAccount')
       const blockGasLimit = this._env.block.header.gasLimit
       const costPerStateByte = activeCostPerStateByte(this.common, blockGasLimit)
       const newAccountStateGas = stateBytesPerNewAccount * costPerStateByte
-      this._evm.stateGasReservoir += newAccountStateGas
-      this._evm.executionStateGasUsed -= newAccountStateGas
+      this.creditStateGasRefund(newAccountStateGas, context)
     }
 
     // Check if account has enough ether and max depth not exceeded
@@ -1275,14 +1337,24 @@ export class Interpreter {
       this._env.depth >= Number(this.common.param('stackLimit')) ||
       this._env.contract.balance < value
     ) {
-      refundCreatePreCharge()
+      refundCreatePreCharge('CREATE fail-fast new_account')
       return BIGINT_0
     }
 
     // EIP-2681 check
     if (this._env.contract.nonce >= MAX_UINT64) {
-      refundCreatePreCharge()
+      refundCreatePreCharge('CREATE fail-fast new_account')
       return BIGINT_0
+    }
+
+    // EIP-8038: warm the create target only now, after the fail-fast checks
+    // (an aborted create must not warm the address). Uses the pre-increment
+    // nonce, matching the address generated in `_executeCreate`.
+    if (this.common.isActivatedEIP(8038) && this.common.isActivatedEIP(2929)) {
+      const targetAddressBytes = salt
+        ? generateAddress2(this._env.address.bytes, salt, codeToRun)
+        : generateAddress(this._env.address.bytes, bigIntToBytes(this._env.contract.nonce))
+      this.journal.addWarmedAddress(targetAddressBytes)
     }
 
     this._env.contract.nonce += BIGINT_1
@@ -1300,7 +1372,7 @@ export class Interpreter {
         codeToRun.length > Number(this.common.param('maxInitCodeSize')) &&
         this._evm.allowUnlimitedInitCodeSize === false
       ) {
-        refundCreatePreCharge()
+        refundCreatePreCharge('CREATE fail-fast new_account')
         return BIGINT_0
       }
     }
@@ -1333,6 +1405,23 @@ export class Interpreter {
 
     // this should always be safe
     this.useGas(results.execResult.executionGasUsed, 'CREATE')
+
+    if (this.common.isActivatedEIP(8037)) {
+      if (results.execResult.exceptionError !== undefined) {
+        // Creation frame failed (revert / halt / collision): no account
+        // leaf persists, refund the pre-charged new-account state gas.
+        refundCreatePreCharge('CREATE failure new_account')
+      } else {
+        // Merge the successful child frame's spilled state gas into this
+        // frame's spill tracker (LIFO refunds may credit it to gasLeft).
+        this._runState.stateGasSpilled += results.execResult.stateGasSpilled ?? BIGINT_0
+        if (message.createdTargetAlive === true) {
+          // The create target was already alive (EIP-161 non-empty): no new
+          // account leaf was added, refund the new-account state gas.
+          refundCreatePreCharge('CREATE onto alive account new_account')
+        }
+      }
+    }
 
     // Set return buffer in case revert happened
     if (
@@ -1485,10 +1574,24 @@ export class Interpreter {
       }
     }
 
+    // EIP-8246: SELFDESTRUCT no longer burns ETH. A self-beneficiary keeps
+    // its balance (the account clearing at transaction end preserves the
+    // balance); zeroing only completes a transfer to a different account.
+    if (this.common.isActivatedEIP(8246) && toSelf) {
+      doModify = false
+    }
+
     // EIP-7708: Emit a Burn log (LOG2) for SELFDESTRUCT to self only when the balance
     // is actually zeroed (doModify=true, i.e. same-tx contract creation). Pre-existing
     // contracts where EIP-6780 prevents the burn should not emit a log.
-    if (this.common.isActivatedEIP(7708) && contractBalance > BIGINT_0 && toSelf && doModify) {
+    // Under EIP-8246 nothing is burned, so no burn log is ever emitted.
+    if (
+      this.common.isActivatedEIP(7708) &&
+      !this.common.isActivatedEIP(8246) &&
+      contractBalance > BIGINT_0 &&
+      toSelf &&
+      doModify
+    ) {
       const contractTopic = setLengthLeft(this._env.address.bytes, 32)
       const data = setLengthLeft(bigIntToBytes(contractBalance), 32)
       const burnLog: Log = [EIP7708_SYSTEM_ADDRESS, [EIP7708_BURN_TOPIC, contractTopic], data]
