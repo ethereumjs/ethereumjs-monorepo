@@ -61,6 +61,34 @@ async function getInternalPackages() {
 }
 
 /**
+ * Collect the union of every non-workspace dependency declared across all
+ * workspace packages. These are treated as `external` for every bundle so that
+ * external deps pulled in *transitively* through a workspace dependency are
+ * excluded too — not just the entry package's direct deps. Without this, deps
+ * such as `@noble/curves` or `lru-cache` get bundled (and duplicated across
+ * each package's nested node_modules), inflating the reported sizes with code
+ * that a consumer would install only once.
+ */
+async function getExternalDependencies(internalPackages) {
+  const external = new Set()
+  const entries = await readdir(packagesDir, { withFileTypes: true })
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue
+    const packageJson = await readJson(join(packagesDir, entry.name, 'package.json'))
+    if (!packageJson) continue
+    const deps = {
+      ...(packageJson.dependencies || {}),
+      ...(packageJson.peerDependencies || {}),
+      ...(packageJson.optionalDependencies || {}),
+    }
+    for (const dep of Object.keys(deps)) {
+      if (!internalPackages.has(dep)) external.add(dep)
+    }
+  }
+  return Array.from(external)
+}
+
+/**
  * Bundle and minify a package entry and return gzipped size
  */
 async function getBundledSize(entryPath, pkgDir, external) {
@@ -101,6 +129,7 @@ async function analyzePackages() {
   try {
     const packages = await readdir(packagesDir, { withFileTypes: true })
     const internalPackages = await getInternalPackages()
+    const external = await getExternalDependencies(internalPackages)
     const results = {}
     const errors = []
 
@@ -117,12 +146,6 @@ async function analyzePackages() {
       const entryPath = resolve(pkgDir, entryRel)
       try {
         await stat(entryPath)
-        const deps = {
-          ...(packageJson.dependencies || {}),
-          ...(packageJson.peerDependencies || {}),
-          ...(packageJson.optionalDependencies || {}),
-        }
-        const external = Object.keys(deps).filter((dep) => !internalPackages.has(dep))
         const size = await getBundledSize(entryPath, pkgDir, external)
         if (size > 0) {
           results[pkg.name] = size
