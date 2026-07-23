@@ -21,7 +21,7 @@ describe('[Util/genesisStateRoot]', () => {
 })
 
 it('should correctly derive mainnet stateRoot from ethereumjs genesis', async () => {
-  const stateRoot = await genesisMPTStateRoot(getGenesis(1) as GenesisState)
+  const stateRoot = await genesisMPTStateRoot((await getGenesis(1)) as GenesisState)
   assert.strictEqual(
     bytesToHex(stateRoot),
     '0xd7f8974fb5ac78d9ac099b9ad5018bedc2ce0a72dad1827a1709da30580f0544',
