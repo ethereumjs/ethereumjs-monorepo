@@ -1,5 +1,5 @@
 import { EthereumJSErrorWithoutCode, bytesToHex, equalsBytes } from '@ethereumjs/util'
-import * as ssz from 'micro-eth-signer/ssz.js'
+import * as ssz from 'micro-eth-signer/ssz'
 
 import { EraTypes, parseEntry, readEntry } from '../index.ts'
 
@@ -72,14 +72,18 @@ export const readBeaconState = async (eraData: Uint8Array) => {
   const stateSlot = indices.stateSlotIndex.startSlot
   // TODO: Add a helper to identify the fork programmatically so the right types can be selected based on fork number rather
   // than hardcoded as below
-  if (stateSlot < ssz.ForkSlots.Altair) return ssz.Phase0BeaconState.decode(data.data as Uint8Array)
+  if (stateSlot < ssz.ForkSlots.Altair) return ssz.Phase0BeaconState.decode(data.data as Uint8Array);
   else if (stateSlot < ssz.ForkSlots.Bellatrix)
-    return ssz.AltairBeaconState.decode(data.data as Uint8Array)
+    return ssz.AltairBeaconState.decode(data.data as Uint8Array);
   else if (stateSlot < ssz.ForkSlots.Capella)
-    return ssz.BellatrixBeaconState.decode(data.data as Uint8Array)
+    return ssz.BellatrixBeaconState.decode(data.data as Uint8Array);
   else if (stateSlot < ssz.ForkSlots.Deneb)
-    return ssz.CapellaBeaconState.decode(data.data as Uint8Array)
-  else return ssz.ETH2_TYPES.BeaconState.decode(data.data as Uint8Array)
+    return ssz.CapellaBeaconState.decode(data.data as Uint8Array);
+  else if (stateSlot < ssz.ForkSlots.Electra)
+    return ssz.ETH2_TYPES.BeaconState.decode(data.data as Uint8Array);
+  else if (stateSlot < ssz.ForkSlots.Fulu)
+    return ssz.ETH2_TYPES.BeaconStateElectra.decode(data.data as Uint8Array);
+  else return ssz.ETH2_TYPES.BeaconStateFulu.decode(data.data as Uint8Array);
 }
 
 /**
@@ -112,7 +116,11 @@ export const readBeaconBlock = async (eraData: Uint8Array, offset: number) => {
     return ssz.BellatrixSignedBeaconBlock.decode(data.data as Uint8Array)
   else if (slot < ssz.ForkSlots.Deneb)
     return ssz.CapellaSignedBeaconBlock.decode(data.data as Uint8Array)
-  else return ssz.ETH2_TYPES.SignedBeaconBlock.decode(data.data as Uint8Array)
+  else if (slot < ssz.ForkSlots.Electra)
+    return ssz.ETH2_TYPES.SignedBeaconBlock.decode(data.data as Uint8Array);
+  else if (slot < ssz.ForkSlots.Fulu)
+      return ssz.ElectraSignedBeaconBlock.decode(data.data as Uint8Array);
+  else return ssz.ElectraSignedBeaconBlock.decode(data.data as Uint8Array);
 }
 
 /**
