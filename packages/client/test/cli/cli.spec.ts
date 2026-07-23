@@ -718,7 +718,7 @@ describe('[CLI]', () => {
   }, 30000)
   // Client file and directory path options tests
   it('should start client with custom file path parameters', async () => {
-    const customGenesisJSON = JSON.stringify(getGenesis(11155111))
+    const customGenesisJSON = JSON.stringify(await getGenesis(11155111))
     const customChainJSON = `{
       "name": "customChain",
       "chainId": 11155111,

@@ -10,7 +10,7 @@ describe('genesis test', () => {
     for (const chainId of chainIds) {
       const { name } = ChainGenesis[chainId as unknown as Chain]
 
-      const genesisState = getGenesis(Number(chainId))
+      const genesisState = await getGenesis(Number(chainId))
       assert.isDefined(genesisState, `network=${name} chainId=${chainId} genesis should be found`)
     }
   })
