@@ -10,7 +10,12 @@ import { toBytes } from 'viem'
 import { createVM } from '../../src/constructors.ts'
 import { runTx } from '../../src/runTx.ts'
 import { makeBlockFromEnv, makeTx, setupPreConditions } from '../util.ts'
-import { loadExecutionSpecFixtures, parseTest } from './executionSpecTestLoader.ts'
+import {
+  loadExecutionSpecFixtures,
+  normalizeForkName,
+  parseStateTest,
+} from './executionSpecTestLoader.ts'
+import type { ParsedStateTest } from './executionSpecTypes.ts'
 import { annotateFixture } from './util/perDirectoryReporter.ts'
 
 const customFixturesPath = process.env.TEST_PATH ?? '../execution-spec-tests'
@@ -56,9 +61,9 @@ if (fs.existsSync(fixturesPath) === false) {
     for (const { id, fork, filePath, data } of fixtures) {
       it(`${fork}: ${id}`, async ({ task }) => {
         annotateFixture(task, filePath, fixturesPath, 'state tests')
-        const testCase = parseTest(fork, data)
+        const parsed = parseStateTest(fork, data)
         try {
-          await runStateTestCase(fork, testCase, assert, kzg)
+          await runStateTestCase(fork, parsed, kzg)
         } catch (e: any) {
           assert.fail(e?.toString() + e.stack)
         }
@@ -67,40 +72,39 @@ if (fs.existsSync(fixturesPath) === false) {
   })
 }
 
+/**
+ * Runs a single resolved state-test case: applies the pre-state, executes the
+ * transaction and asserts that the resulting state root matches the fixture.
+ */
 export async function runStateTestCase(
   fork: string,
-  testData: any,
-  t: typeof assert,
+  test: ParsedStateTest,
   kzg: microEthKZG,
+  t: typeof assert = assert,
 ) {
   const common = new Common({
     chain: Mainnet,
-    hardfork:
-      fork.toLowerCase() === 'frontier'
-        ? 'chainstart'
-        : fork.toLowerCase() === 'constantinoplefix'
-          ? 'petersburg'
-          : fork.toLowerCase(),
+    hardfork: normalizeForkName(fork),
     customCrypto: { kzg },
   })
-  const vm = await createVM({
-    common,
-  })
+  const vm = await createVM({ common })
 
-  await setupPreConditions(vm.stateManager, testData)
+  await setupPreConditions(vm.stateManager, { pre: test.pre })
 
+  // Try to build and run the transaction, recording what happened for the
+  // assertion message. The state-root check below is what actually decides
+  // pass/fail — a rejected or invalid tx simply leaves the state unchanged.
   let execInfo = ''
   let tx
-
   try {
-    tx = makeTx(testData.transaction, { common })
+    tx = makeTx(test.transaction, { common })
   } catch {
     execInfo = 'tx instantiation exception'
   }
 
-  if (tx) {
+  if (tx !== undefined) {
     if (tx.isValid()) {
-      const block = makeBlockFromEnv(testData.env, { common })
+      const block = makeBlockFromEnv(test.env, { common })
       try {
         await runTx(vm, { tx, block })
         execInfo = 'successful tx run'
@@ -112,10 +116,12 @@ export async function runStateTestCase(
     }
   }
 
-  const stateManagerStateRoot = await vm.stateManager.getStateRoot()
-  const testDataPostStateRoot = toBytes(testData.postStateRoot)
+  const stateRoot = await vm.stateManager.getStateRoot()
+  const expectedStateRoot = toBytes(test.postStateRoot)
 
-  const msg = `State Root should match test fixture.  Tx result: (${execInfo})`
-
-  t.deepEqual(stateManagerStateRoot, testDataPostStateRoot, msg)
+  t.deepEqual(
+    stateRoot,
+    expectedStateRoot,
+    `State root should match test fixture. Tx result: (${execInfo})`,
+  )
 }

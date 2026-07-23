@@ -45,7 +45,7 @@ import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import { stackDelta } from './eof/stackDelta.ts'
 import type { EVM } from './evm.ts'
 import type { Journal } from './journal.ts'
-import type { AsyncOpHandler, Opcode, OpcodeMapEntry } from './opcodes/index.ts'
+import type { AsyncOpHandler, Opcode, OpcodeMapEntry, SyncOpHandler } from './opcodes/index.ts'
 import type {
   Block,
   EOFEnv,
@@ -56,6 +56,15 @@ import type {
 } from './types.ts'
 
 const debugGas = debugDefault('evm:gas')
+
+function isEVMError(error: unknown): error is EVMError {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'errorType' in error &&
+    error.errorType === EVMErrorTypeString
+  )
+}
 
 export interface InterpreterOpts {
   pc?: number
@@ -419,7 +428,23 @@ export class Interpreter {
       if (opInfo.dynamicGas) {
         // This function updates the gas in-place.
         // It needs the base fee, for correct gas limit calculation for the CALL opcodes
-        gas = await opEntry.gasHandler(this._runState, gas, this.common)
+        try {
+          gas = await opEntry.gasHandler(this._runState, gas, this.common)
+        } catch (error) {
+          // Static-gas opcodes always emit a `step` event before their gas
+          // charge can fail (the hook below runs before `useGas` and the
+          // opcode handler). Dynamic gas handlers can throw the failure
+          // themselves, before that hook runs, so emit it here for any VM
+          // error to keep tracer output consistent across both paths.
+          // Non-VM errors are genuine bugs and are re-thrown untouched.
+          if (
+            isEVMError(error) &&
+            (this._evm.events.listenerCount('step') > 0 || this._evm.DEBUG)
+          ) {
+            await this._runStepHook(gas, this.getGasLeft(), memorySizeCache)
+          }
+          throw error
+        }
       }
 
       if (this._evm.events.listenerCount('step') > 0 || this._evm.DEBUG) {
@@ -461,7 +486,7 @@ export class Interpreter {
       if (opInfo.isAsync) {
         await (opFn as AsyncOpHandler).apply(null, [this._runState, this.common])
       } else {
-        opFn.apply(null, [this._runState, this.common])
+        ;(opFn as SyncOpHandler).apply(null, [this._runState, this.common])
       }
       this._runState.env.accessWitness?.commit()
     } finally {

@@ -63,7 +63,7 @@ export interface AsyncOpHandler {
 export type OpHandler = SyncOpHandler | AsyncOpHandler
 
 // the opcode functions
-export const handlers: Map<number, OpHandler> = new Map([
+export const handlers: Map<number, OpHandler> = new Map<number, OpHandler>([
   // 0x00: STOP
   [
     0x00,

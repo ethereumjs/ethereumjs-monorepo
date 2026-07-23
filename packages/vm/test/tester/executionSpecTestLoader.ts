@@ -12,16 +12,30 @@ import { TypeOutput, toType } from '@ethereumjs/util'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 
-export type ExecutionSpecFixtureType = 'state_tests' | 'blockchain_tests'
+import type {
+  BlockchainTestFixtureData,
+  ExecutionSpecFixture,
+  ExecutionSpecFixtureType,
+  FixtureConfig,
+  ParsedStateTest,
+  StateTestFixtureData,
+} from './executionSpecTypes.ts'
 
-export interface ExecutionSpecFixture {
-  id: string
-  fork: string
-  filePath: string
-  data: any
-}
+export type {
+  ExecutionSpecFixture,
+  ExecutionSpecFixtureType,
+} from './executionSpecTypes.ts'
 
-function findJSONFiles(root: string, fixtureType: ExecutionSpecFixtureType) {
+// ---------------------------------------------------------------------------
+// Fixture discovery / loading
+// ---------------------------------------------------------------------------
+
+/**
+ * Recursively collects `.json` fixture files under `root` that belong to the
+ * given fixture type. A file qualifies if its path contains a
+ * `/<fixtureType>/` segment or its immediate parent directory is `fixtureType`.
+ */
+function findJSONFiles(root: string, fixtureType: ExecutionSpecFixtureType): string[] {
   const files: string[] = []
   const stack = [root]
 
@@ -57,13 +71,29 @@ function findJSONFiles(root: string, fixtureType: ExecutionSpecFixtureType) {
 
 export function loadExecutionSpecFixtures(
   root: string,
+  fixtureType: 'state_tests',
+): ExecutionSpecFixture<StateTestFixtureData>[]
+export function loadExecutionSpecFixtures(
+  root: string,
+  fixtureType: 'blockchain_tests',
+): ExecutionSpecFixture<BlockchainTestFixtureData>[]
+/**
+ * Loads and flattens every fixture of `fixtureType` found under `root`.
+ *
+ * A single JSON file holds multiple named tests. Each test expands into one
+ * fixture entry per fork it targets:
+ * - state tests: one entry per key of the test's `post` object;
+ * - blockchain tests: a single entry, using the test's `network` field.
+ */
+export function loadExecutionSpecFixtures(
+  root: string,
   fixtureType: ExecutionSpecFixtureType,
 ): ExecutionSpecFixture[] {
   const files = findJSONFiles(root, fixtureType)
   const fixtures: ExecutionSpecFixture[] = []
 
   for (const filePath of files) {
-    let parsed: Record<string, any>
+    let parsed: Record<string, unknown>
     try {
       parsed = JSON.parse(fs.readFileSync(filePath, 'utf8'))
     } catch {
@@ -72,14 +102,15 @@ export function loadExecutionSpecFixtures(
 
     for (const [id, data] of Object.entries(parsed)) {
       if (fixtureType === 'state_tests') {
-        const forks = Object.keys((data as any).post ?? {})
-        for (const fork of forks) {
-          fixtures.push({ id, fork, filePath, data })
+        const test = data as StateTestFixtureData
+        for (const fork of Object.keys(test.post ?? {})) {
+          fixtures.push({ id, fork, filePath, data: test })
         }
       } else {
-        const fork = (data as any).network ?? (data as any).config?.network
+        const test = data as BlockchainTestFixtureData
+        const fork = test.network ?? test.config?.network
         if (fork !== undefined) {
-          fixtures.push({ id, fork, filePath, data })
+          fixtures.push({ id, fork, filePath, data: test })
         }
       }
     }
@@ -88,18 +119,24 @@ export function loadExecutionSpecFixtures(
   return fixtures
 }
 
-export function parseTest(fork: string, testData: any) {
-  const postState = testData['post']?.[fork]
-  const testCase = postState[0]
-  const testIndexes = testCase['indexes']
-  const tx = { ...testData.transaction }
+/**
+ * Resolves a state-test fixture for a single fork into an executable case.
+ *
+ * State-test transactions store `data`, `gasLimit` and `value` as parallel
+ * arrays; the post entry's `indexes` pick one element from each to form the
+ * concrete transaction this case should run.
+ */
+export function parseStateTest(fork: string, testData: StateTestFixtureData): ParsedStateTest {
+  const testCase = testData.post[fork][0]
+  const indexes = testCase.indexes
+  const tx: Record<string, unknown> = { ...testData.transaction }
 
-  tx.data = testData.transaction.data[testIndexes['data']]
-  tx.gasLimit = testData.transaction.gasLimit[testIndexes['gas']]
-  tx.value = testData.transaction.value[testIndexes['value']]
+  tx.data = testData.transaction.data[indexes.data]
+  tx.gasLimit = testData.transaction.gasLimit[indexes.gas]
+  tx.value = testData.transaction.value[indexes.value]
 
-  if (tx.accessLists !== undefined) {
-    tx.accessList = testData.transaction.accessLists[testIndexes['data']]
+  if (testData.transaction.accessLists !== undefined) {
+    tx.accessList = testData.transaction.accessLists[indexes.data]
     if (tx.chainId === undefined) {
       tx.chainId = 1
     }
@@ -107,101 +144,17 @@ export function parseTest(fork: string, testData: any) {
 
   return {
     transaction: tx,
-    postStateRoot: testCase['hash'],
-    logs: testCase['logs'],
-    env: testData['env'],
-    pre: testData['pre'],
-    expectException: testCase['expectException'],
+    postStateRoot: testCase.hash,
+    logs: testCase.logs,
+    env: testData.env,
+    pre: testData.pre,
+    expectException: testCase.expectException,
   }
 }
 
-function customHardforkHistory(fork: string): HardforkTransitionConfig[] {
-  // Include all hardforks from Mainnet up to and including the "from" hardfork
-  // This is necessary for gteHardfork() to work correctly
-  const mainnetHardforks = Mainnet.hardforks
-  const hardforks: HardforkTransitionConfig[] = []
-  let foundFrom = false
-  for (const hf of mainnetHardforks) {
-    if (hf.name === fork) {
-      foundFrom = true
-      // Add the "from" hardfork at block 0
-      hardforks.push({
-        name: fork,
-        block: 0,
-        timestamp: 0,
-      })
-      break
-    } else {
-      // Include all previous hardforks at block 0
-      hardforks.push({
-        name: hf.name,
-        block: null,
-        timestamp: 0,
-      })
-    }
-  }
-  if (!foundFrom) {
-    // If "from" hardfork not found in Mainnet hardforks, just add it
-    hardforks.push({
-      name: fork,
-      block: 0,
-      timestamp: 0,
-    })
-  }
-  return hardforks
-}
-
-function buildTransitionChainConfig(
-  blobSchedule: any,
-  from: string,
-  to: string,
-  timestamp: number,
-): ChainConfig {
-  const hardforks: HardforkTransitionConfig[] = customHardforkHistory(from)
-  // Add the "to" hardfork at the specified timestamp
-  hardforks.push({
-    name: to,
-    block: null,
-    timestamp,
-  })
-
-  const customHardforks: HardforksDict = {}
-  // Extract BPO parameters from blobSchedule
-  if (blobSchedule !== undefined) {
-    for (const [hfName, params] of Object.entries(blobSchedule)) {
-      const hfNameLower = hfName.toLowerCase()
-      if (hfNameLower.startsWith('bpo')) {
-        const bpoParams = params as any
-        customHardforks[hfNameLower] = {
-          params: {
-            target: toType(bpoParams.target, TypeOutput.Number),
-            max: toType(bpoParams.max, TypeOutput.Number),
-            blobGasPriceUpdateFraction: toType(bpoParams.baseFeeUpdateFraction, TypeOutput.Number),
-          },
-        }
-      }
-    }
-  }
-
-  // Build chain config with custom hardforks and additional hardforks in the hardforks list
-  const chainConfig: ChainConfig = {
-    ...Mainnet,
-    customHardforks,
-    defaultHardfork: from,
-    hardforks,
-    consensus: preMergeForks.includes(from)
-      ? {
-          type: ConsensusType.ProofOfStake,
-          algorithm: 'casper',
-        }
-      : {
-          type: ConsensusType.ProofOfWork,
-          algorithm: 'ethash',
-        },
-  }
-
-  return chainConfig
-}
+// ---------------------------------------------------------------------------
+// Common construction
+// ---------------------------------------------------------------------------
 
 const preMergeForks = [
   'chainstart',
@@ -220,64 +173,119 @@ const preMergeForks = [
   'grayGlacier',
 ]
 
-export function createCommonForFork(fork: string, testData?: any, kzg?: microEthKZG) {
-  const kzgInstance = kzg ?? new microEthKZG(trustedSetup)
+/** Matches transition-fork names, e.g. `OsakaToBPO1AtTime15k`. */
+const TRANSITION_FORK_REGEX = /^([A-Za-z0-9]+)To([A-Za-z0-9]+)AtTime(\d+)([Kk])?$/
 
-  try {
-    let forkLower = fork.toLowerCase()
-    if (forkLower === 'frontier') {
-      forkLower = 'chainstart'
-    } else if (forkLower === 'constantinoplefix') {
-      forkLower = 'petersburg'
+/**
+ * Maps a fixture fork name to the hardfork name used by `@ethereumjs/common`.
+ * Fixtures use a few historical aliases that differ from our internal names.
+ */
+export function normalizeForkName(fork: string): string {
+  const lower = fork.toLowerCase()
+  if (lower === 'frontier') return 'chainstart'
+  if (lower === 'constantinoplefix') return 'petersburg'
+  return lower
+}
+
+function consensusForFork(fork: string): ChainConfig['consensus'] {
+  return preMergeForks.includes(fork)
+    ? { type: ConsensusType.ProofOfWork, algorithm: 'ethash' }
+    : { type: ConsensusType.ProofOfStake, algorithm: 'casper' }
+}
+
+/**
+ * Builds the mainnet hardfork history with every fork up to and including
+ * `fork` present (so `gteHardfork()` resolves correctly), `fork` activated at
+ * block 0 and all earlier forks disabled.
+ */
+function hardforkHistoryUpTo(fork: string): HardforkTransitionConfig[] {
+  const hardforks: HardforkTransitionConfig[] = []
+  for (const hf of Mainnet.hardforks) {
+    if (hf.name === fork) {
+      hardforks.push({ name: fork, block: 0, timestamp: 0 })
+      return hardforks
     }
-    const hardforks: HardforkTransitionConfig[] = customHardforkHistory(forkLower)
-
-    const chainConfig: ChainConfig = {
-      ...Mainnet,
-      hardforks,
-      consensus: preMergeForks.includes(forkLower)
-        ? {
-            type: ConsensusType.ProofOfWork,
-            algorithm: 'ethash',
-          }
-        : {
-            type: ConsensusType.ProofOfStake,
-            algorithm: 'casper',
-          },
-      defaultHardfork: forkLower,
-    }
-    // Only set chainId if it's provided in testData, otherwise use Mainnet's chainId
-    if (testData?.config?.chainId !== undefined) {
-      chainConfig.chainId = testData.config.chainId
-    }
-    return new Common({
-      chain: chainConfig,
-      hardfork: forkLower,
-      customCrypto: { kzg: kzgInstance },
-    })
-  } catch {
-    // Transition Fork (e.g. OsakaToBPO1AtTime15K)
-
-    // Check if this is a transition fork
-    const transitionMatch = fork.match(/^([A-Za-z0-9]+)To([A-Za-z0-9]+)AtTime(\d+)([Kk])?$/)
-    if (transitionMatch === null) {
-      throw new Error(`Unable to parse transition fork: ${fork}`)
-    }
-
-    // extract fork names and timestamp
-    const [, fromFork, toFork, timestampStr, suffix] = transitionMatch
-    const from = fromFork.toLowerCase()
-    const to = toFork.toLowerCase()
-    let timestamp = Number(timestampStr)
-    if (suffix && suffix.toLowerCase() === 'k') {
-      timestamp *= 1000
-    }
-
-    const blobSchedule = testData.config.blobSchedule
-
-    // Build chain config with custom hardforks and blob schedule
-    const chainConfig = buildTransitionChainConfig(blobSchedule, from, to, timestamp)
-
-    return new Common({ chain: chainConfig, hardfork: from, customCrypto: { kzg: kzgInstance } })
+    hardforks.push({ name: hf.name, block: null, timestamp: 0 })
   }
+  // `fork` is not a known mainnet hardfork (e.g. a devnet fork): add it anyway.
+  hardforks.push({ name: fork, block: 0, timestamp: 0 })
+  return hardforks
+}
+
+/** Common for a single (non-transition) fork. */
+function createSingleForkCommon(
+  fork: string,
+  testData: { config?: FixtureConfig } | undefined,
+  kzg: microEthKZG,
+): Common {
+  const forkName = normalizeForkName(fork)
+  const chainConfig: ChainConfig = {
+    ...Mainnet,
+    hardforks: hardforkHistoryUpTo(forkName),
+    consensus: consensusForFork(forkName),
+    defaultHardfork: forkName,
+  }
+  // Only override chainId when the fixture specifies one; otherwise keep Mainnet's.
+  if (testData?.config?.chainId !== undefined) {
+    chainConfig.chainId = testData.config.chainId
+  }
+  return new Common({ chain: chainConfig, hardfork: forkName, customCrypto: { kzg } })
+}
+
+/** Common for a `<from>To<to>AtTime<n>` transition fork. */
+function createTransitionCommon(
+  match: RegExpMatchArray,
+  testData: { config?: FixtureConfig } | undefined,
+  kzg: microEthKZG,
+): Common {
+  const [, fromFork, toFork, timestampStr, suffix] = match
+  const from = fromFork.toLowerCase()
+  const to = toFork.toLowerCase()
+  const timestamp = Number(timestampStr) * (suffix?.toLowerCase() === 'k' ? 1000 : 1)
+
+  const hardforks = hardforkHistoryUpTo(from)
+  // The "to" fork activates at the transition timestamp.
+  hardforks.push({ name: to, block: null, timestamp })
+
+  // Extract BPO (blob parameter only) fork params from the fixture's blob schedule.
+  const customHardforks: HardforksDict = {}
+  const blobSchedule = testData?.config?.blobSchedule
+  if (blobSchedule !== undefined) {
+    for (const [hfName, params] of Object.entries(blobSchedule)) {
+      if (hfName.toLowerCase().startsWith('bpo')) {
+        customHardforks[hfName.toLowerCase()] = {
+          params: {
+            target: toType(params.target, TypeOutput.Number),
+            max: toType(params.max, TypeOutput.Number),
+            blobGasPriceUpdateFraction: toType(params.baseFeeUpdateFraction, TypeOutput.Number),
+          },
+        }
+      }
+    }
+  }
+
+  const chainConfig: ChainConfig = {
+    ...Mainnet,
+    customHardforks,
+    defaultHardfork: from,
+    hardforks,
+    consensus: consensusForFork(from),
+  }
+  return new Common({ chain: chainConfig, hardfork: from, customCrypto: { kzg } })
+}
+
+/**
+ * Returns the `Common` to run a fixture against. Handles both single forks
+ * (e.g. `Prague`) and transition forks (e.g. `OsakaToBPO1AtTime15k`).
+ */
+export function createCommonForFork(
+  fork: string,
+  testData?: { config?: FixtureConfig },
+  kzg?: microEthKZG,
+): Common {
+  const kzgInstance = kzg ?? new microEthKZG(trustedSetup)
+  const transitionMatch = fork.match(TRANSITION_FORK_REGEX)
+  return transitionMatch !== null
+    ? createTransitionCommon(transitionMatch, testData, kzgInstance)
+    : createSingleForkCommon(fork, testData, kzgInstance)
 }
