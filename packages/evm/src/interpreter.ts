@@ -552,7 +552,7 @@ export class Interpreter {
       depth: this._env.depth,
       address: this._env.address,
       account: this._env.contract,
-      memory: this._runState.memory._store.subarray(0, Number(memorySize) * 32),
+      memory: this._runState.memory._store.slice(0, Number(memorySize) * 32),
       memoryWordCount: memorySize,
       codeAddress: this._env.codeAddress,
       stateManager: this._runState.stateManager,
