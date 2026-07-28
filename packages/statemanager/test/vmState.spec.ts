@@ -24,7 +24,7 @@ describe('stateManager', () => {
     )
     const stateManager = new StateManager()
 
-    await stateManager.generateCanonicalGenesis(getGenesis(Chain.Mainnet))
+    await stateManager.generateCanonicalGenesis(await getGenesis(Chain.Mainnet))
     const stateRoot = await stateManager.getStateRoot()
 
     assert.deepEqual(
@@ -49,7 +49,7 @@ describe('stateManager', () => {
     for (const [chain, expectedStateRoot] of chains) {
       const stateManager = new MerkleStateManager()
 
-      await stateManager.generateCanonicalGenesis(getGenesis(chain))
+      await stateManager.generateCanonicalGenesis(await getGenesis(chain))
       const stateRoot = await stateManager.getStateRoot()
 
       assert.deepEqual(
