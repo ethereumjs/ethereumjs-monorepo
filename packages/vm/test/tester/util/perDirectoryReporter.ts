@@ -247,7 +247,7 @@ export default class PerDirectoryReporter implements Reporter {
     if (this.stats.size === 0) return
     const summary = buildRunSummary(this.label, this.stats)
     process.stdout.write(renderSummary(summary))
-    writeSummaryJson(summary)
+    writeSummaryJSON(summary)
   }
 }
 
@@ -338,7 +338,7 @@ function renderSummary(summary: RunSummary): string {
   return lines.join('\n') + '\n'
 }
 
-function writeSummaryJson(summary: RunSummary): void {
+function writeSummaryJSON(summary: RunSummary): void {
   const out = process.env.EST_SUMMARY_JSON
   if (out === undefined || out.length === 0) return
   try {

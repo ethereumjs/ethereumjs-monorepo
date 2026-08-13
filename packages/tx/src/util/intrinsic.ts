@@ -3,7 +3,7 @@ import { BIGINT_0, equalsBytes } from '@ethereumjs/util'
 import { Capability } from '../types.ts'
 
 import type { Address } from '@ethereumjs/util'
-import type { AccessListBytes, EIP7702CompatibleTx, LegacyTxInterface } from '../types.ts'
+import type { EIP2930CompatibleTx, EIP7702CompatibleTx, LegacyTxInterface } from '../types.ts'
 
 /**
  * Resolve the tx sender when the caller is not passed in (signed txs only).
@@ -102,7 +102,7 @@ export function countCalldataFloorTokens(tx: LegacyTxInterface): bigint {
     }
   }
   if (tx.common.isActivatedEIP(7981) && tx.supports(Capability.EIP2930AccessLists)) {
-    const accessList = (tx as { accessList: AccessListBytes }).accessList
+    const accessList = (tx as unknown as EIP2930CompatibleTx).accessList
     const totalSlots = accessList.reduce((sum, item) => sum + item[1].length, 0)
     tokens += BigInt((accessList.length * 20 + totalSlots * 32) * 4)
   }

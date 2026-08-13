@@ -94,7 +94,7 @@ export function eip7928PostTargetCreateOog(
   _runState: RunState,
   _common: Common,
   _gas: bigint,
-): bigint {
+): never {
   trap(EVMError.errorMessages.OUT_OF_GAS)
 }
 
