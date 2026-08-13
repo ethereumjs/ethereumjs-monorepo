@@ -13,7 +13,6 @@ import {
   setLengthLeft,
 } from '@ethereumjs/util'
 
-import { activeCostPerStateByte } from '../eip8037.ts'
 import { EOFErrorMessage } from '../eof/errors.ts'
 import { EVMError } from '../errors.ts'
 import { DELEGATION_7702_FLAG } from '../types.ts'
@@ -31,7 +30,7 @@ import {
   getAddressAccessCost,
   warmAddress,
 } from './EIP2929.ts'
-import { callFamilyGas, create7928Gas } from './EIP7928.ts'
+import { callFamilyGas, create7928Gas, createNewAccountStateGasIfCharged } from './EIP7928.ts'
 import {
   createAddressFromStackBigInt,
   divCeil,
@@ -635,15 +634,20 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         gas += subMemUsage(runState, offset, length, common)
 
         if (common.isActivatedEIP(8037)) {
-          const stateBytesPerNewAccount = common.param('stateBytesPerNewAccount')
-          const blockGasLimit = runState.env.block.header.gasLimit
-          const costPerStateByte = activeCostPerStateByte(common, blockGasLimit)
-          const newAccountStateGas = stateBytesPerNewAccount * costPerStateByte
+          const targetAddress = await getCreateTargetAddressBytes(runState, new Uint8Array())
+          const newAccountStateGas = await createNewAccountStateGasIfCharged(
+            runState,
+            common,
+            targetAddress,
+          )
           if (gas > BIGINT_0) {
             runState.interpreter.useGas(gas, 'CREATE pre-charges')
             gas = BIGINT_0
           }
-          runState.interpreter.chargeStateGas(newAccountStateGas, 'CREATE pre-charge new_account')
+          if (newAccountStateGas > BIGINT_0) {
+            runState.interpreter.chargeStateGas(newAccountStateGas, 'CREATE pre-charge new_account')
+          }
+          runState.lastCreateNewAccountStateGas = newAccountStateGas
         }
 
         let gasLimit = BigInt(runState.interpreter.getGasLeft()) - gas
@@ -775,15 +779,27 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         gas += common.param('keccak256WordGas') * divCeil(length, BIGINT_32)
 
         if (common.isActivatedEIP(8037)) {
-          const stateBytesPerNewAccount = common.param('stateBytesPerNewAccount')
-          const blockGasLimit = runState.env.block.header.gasLimit
-          const costPerStateByte = activeCostPerStateByte(common, blockGasLimit)
-          const newAccountStateGas = stateBytesPerNewAccount * costPerStateByte
+          let initCode = new Uint8Array(0)
+          if (length !== BIGINT_0) {
+            initCode = runState.memory.read(Number(offset), Number(length), true)
+          }
+          const targetAddress = await getCreateTargetAddressBytes(runState, initCode, salt)
+          const newAccountStateGas = await createNewAccountStateGasIfCharged(
+            runState,
+            common,
+            targetAddress,
+          )
           if (gas > BIGINT_0) {
             runState.interpreter.useGas(gas, 'CREATE2 pre-charges')
             gas = BIGINT_0
           }
-          runState.interpreter.chargeStateGas(newAccountStateGas, 'CREATE2 pre-charge new_account')
+          if (newAccountStateGas > BIGINT_0) {
+            runState.interpreter.chargeStateGas(
+              newAccountStateGas,
+              'CREATE2 pre-charge new_account',
+            )
+          }
+          runState.lastCreateNewAccountStateGas = newAccountStateGas
         }
 
         let gasLimit = runState.interpreter.getGasLeft() - gas

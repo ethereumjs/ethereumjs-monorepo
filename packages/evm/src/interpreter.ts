@@ -1,10 +1,13 @@
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import {
   Account,
+  Address,
   BIGINT_0,
   BIGINT_1,
   BIGINT_2,
   EthereumJSErrorWithoutCode,
+  KECCAK256_NULL,
+  KECCAK256_RLP,
   MAX_UINT64,
   bigIntToBytes,
   bigIntToHex,
@@ -41,7 +44,7 @@ import type {
   Common,
   StateManagerInterface,
 } from '@ethereumjs/common'
-import type { Address, PrefixedHexString } from '@ethereumjs/util'
+import type { PrefixedHexString } from '@ethereumjs/util'
 import { stackDelta } from './eof/stackDelta.ts'
 import type { EVM } from './evm.ts'
 import type { Journal } from './journal.ts'
@@ -147,6 +150,12 @@ export interface RunState {
    * insufficient balance) before a child frame is entered.
    */
   lastCallNewAccountStateGas?: bigint
+  /**
+   * EIP-8037: new-account state gas charged by the most recent CREATE/CREATE2
+   * gas handler (0 if the target already has nonce or code). Refunded when
+   * the create fails or the target was already alive.
+   */
+  lastCreateNewAccountStateGas?: bigint
   returnBytes: Uint8Array /* Current bytes in the return Uint8Array. Cleared each time a CALL/CREATE is made in the current frame. */
 }
 
@@ -1319,17 +1328,15 @@ export class Interpreter {
     // EIP-8037: helper to refund the pre-charged NEW_ACCOUNT state-gas when
     // no new account leaf persists: the CREATE short-circuits before a child
     // frame is spawned (depth limit, insufficient balance, EIP-2681 nonce
-    // overflow, EIP-3860 oversized initcode), the creation frame fails
-    // (revert / halt / collision), or the target account was already alive.
-    // The pre-charge happened in opcodes/gas.ts; refunds credit this
-    // (parent) frame's pools in LIFO order.
+    // overflow, EIP-3860 oversized initcode, collision), the creation frame
+    // fails (revert / halt), or the target account was already alive.
+    // The pre-charge happened in opcodes/gas.ts (0 if the target already had
+    // nonce or code); refunds credit this (parent) frame's pools in LIFO order.
     const refundCreatePreCharge = (context: string): void => {
-      if (!this.common.isActivatedEIP(8037)) return
-      const stateBytesPerNewAccount = this.common.param('stateBytesPerNewAccount')
-      const blockGasLimit = this._env.block.header.gasLimit
-      const costPerStateByte = activeCostPerStateByte(this.common, blockGasLimit)
-      const newAccountStateGas = stateBytesPerNewAccount * costPerStateByte
-      this.creditStateGasRefund(newAccountStateGas, context)
+      const preCharged = this._runState.lastCreateNewAccountStateGas ?? BIGINT_0
+      if (preCharged === BIGINT_0) return
+      this.creditStateGasRefund(preCharged, context)
+      this._runState.lastCreateNewAccountStateGas = BIGINT_0
     }
 
     // Check if account has enough ether and max depth not exceeded
@@ -1350,10 +1357,10 @@ export class Interpreter {
     // EIP-8038: warm the create target only now, after the fail-fast checks
     // (an aborted create must not warm the address). Uses the pre-increment
     // nonce, matching the address generated in `_executeCreate`.
+    const targetAddressBytes = salt
+      ? generateAddress2(this._env.address.bytes, salt, codeToRun)
+      : generateAddress(this._env.address.bytes, bigIntToBytes(this._env.contract.nonce))
     if (this.common.isActivatedEIP(8038) && this.common.isActivatedEIP(2929)) {
-      const targetAddressBytes = salt
-        ? generateAddress2(this._env.address.bytes, salt, codeToRun)
-        : generateAddress(this._env.address.bytes, bigIntToBytes(this._env.contract.nonce))
       this.journal.addWarmedAddress(targetAddressBytes)
     }
 
@@ -1365,6 +1372,25 @@ export class Interpreter {
         this._env.contract.nonce,
         this._evm.blockLevelAccessList!.blockAccessIndex,
       )
+    }
+
+    // EELS `generic_create`: a non-deployable target (nonce / code / storage)
+    // does not spawn a child. The 63/64 grant is consumed as regular gas on
+    // this frame; new-account state gas is refunded only if it was charged
+    // (storage-only collision — EIP-7610).
+    if (this.common.isActivatedEIP(7928)) {
+      const toAccount = await this._stateManager.getAccount(new Address(targetAddressBytes))
+      if (
+        toAccount !== undefined &&
+        (toAccount.nonce > BIGINT_0 ||
+          equalsBytes(toAccount.codeHash, KECCAK256_NULL) === false ||
+          equalsBytes(toAccount.storageRoot, KECCAK256_RLP) === false)
+      ) {
+        this.useGas(gasLimit, 'CREATE collision')
+        this._evm.blockLevelAccessList!.addAddress(bytesToHex(targetAddressBytes))
+        refundCreatePreCharge('CREATE collision new_account')
+        return BIGINT_0
+      }
     }
 
     if (this.common.isActivatedEIP(3860)) {
@@ -1408,8 +1434,9 @@ export class Interpreter {
 
     if (this.common.isActivatedEIP(8037)) {
       if (results.execResult.exceptionError !== undefined) {
-        // Creation frame failed (revert / halt / collision): no account
-        // leaf persists, refund the pre-charged new-account state gas.
+        // Creation frame failed (revert / halt): no account leaf persists,
+        // refund the pre-charged new-account state gas (0 if the target
+        // already had nonce or code and was never charged).
         refundCreatePreCharge('CREATE failure new_account')
       } else {
         // Merge the successful child frame's spilled state gas into this
