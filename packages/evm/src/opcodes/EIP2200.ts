@@ -9,46 +9,56 @@ import type { Common } from '@ethereumjs/common'
 import type { RunState } from '../interpreter.ts'
 
 /**
- * SSTORE gas per the Amsterdam gas schedule (EIP-8038, experimental):
- * - access cost (cold or warm) is always charged
+ * EIP-8038 / EIP-7928: gate the implicit SSTORE read.
+ *
+ * Cold access (3000) exceeds the EIP-2200 stipend (2300), so the stipend
+ * sentry alone is not enough. Fail before warming or reading if gas_left
+ * cannot cover max(access_cost, stipend + 1).
+ *
+ * Returns the access cost (cold or warm). The slot is warmed on success.
+ */
+export function chargeSstoreAccessEIP8038(
+  runState: RunState,
+  key: Uint8Array,
+  common: Common,
+): bigint {
+  const address = runState.interpreter.getAddress().bytes
+  const slotIsCold = !runState.interpreter.journal.isWarmedStorage(address, key)
+  const accessCost = slotIsCold ? common.param('coldsloadGas') : common.param('warmstoragereadGas')
+  const stipendPlus1 = common.param('sstoreSentryEIP2200Gas') + 1n
+  const gate = accessCost > stipendPlus1 ? accessCost : stipendPlus1
+  if (runState.interpreter.getGasLeft() < gate) {
+    trap(EVMError.errorMessages.OUT_OF_GAS)
+  }
+  if (slotIsCold) {
+    runState.interpreter.journal.addWarmedStorage(address, key)
+  }
+  return accessCost
+}
+
+/**
+ * SSTORE write-cost / refunds per the Amsterdam gas schedule (EIP-8038, experimental):
  * - a flat `storageWriteGas` is charged on the first change to the slot in
  *   the transaction, refunded if the slot is restored to its original value
  * - clearing an originally non-zero slot refunds `refundStorageClearGas`
  *   (reversed if the slot is later recreated)
- * The EIP-8037 state-gas portion for newly set slots is metered separately
- * in the SSTORE opcode handler.
- *
- * Returns the regular gas cost (including the access cost) and warms the
- * storage slot.
+ * Access cost is charged by {@link chargeSstoreAccessEIP8038} before the
+ * implicit storage read. The EIP-8037 state-gas portion for newly set slots
+ * is metered separately in the SSTORE opcode handler.
  */
 export function updateSstoreGasEIP8038(
   runState: RunState,
   currentStorage: Uint8Array,
   originalStorage: Uint8Array,
   value: Uint8Array,
-  key: Uint8Array,
+  _key: Uint8Array,
   common: Common,
 ): bigint {
-  // EIP-2200 sentry: fail if not enough gas is left to guarantee the stipend
-  if (runState.interpreter.getGasLeft() <= common.param('sstoreSentryEIP2200Gas')) {
-    trap(EVMError.errorMessages.OUT_OF_GAS)
-  }
-
-  const address = runState.interpreter.getAddress().bytes
-  const slotIsCold = !runState.interpreter.journal.isWarmedStorage(address, key)
-
-  // Access cost: cold or warm, always charged.
-  let gas: bigint
-  if (slotIsCold) {
-    runState.interpreter.journal.addWarmedStorage(address, key)
-    gas = common.param('coldsloadGas')
-  } else {
-    gas = common.param('warmstoragereadGas')
-  }
-
   const currentEqualsNew = equalsBytes(currentStorage, value)
   const originalEqualsCurrent = equalsBytes(originalStorage, currentStorage)
   const originalEqualsNew = equalsBytes(originalStorage, value)
+
+  let gas = 0n
 
   // Write cost: charged on the first change to the slot this transaction.
   if (originalEqualsCurrent && !currentEqualsNew) {
