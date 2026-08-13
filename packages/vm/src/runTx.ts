@@ -623,6 +623,13 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // ===========================
   const { tx, block } = opts
 
+  // API-only: RLP value is unsigned, so EST fixtures cannot encode this. Reject
+  // before gas debit / nonce bump so a mutated negative `tx.value` cannot leak
+  // a nonce increment through the nested prep checkpoint.
+  if (tx.value < BIGINT_0) {
+    throw EthereumJSErrorWithoutCode(`value field cannot be negative, received ${tx.value}`)
+  }
+
   /** The `beforeTx` event - emits the Transaction that is about to be processed */
   await vm._emit('beforeTx', tx)
 
@@ -1031,18 +1038,26 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       },
     } as RunTxResult
   } else {
-    results = (await vm.evm.runCall({
-      block,
-      gasPrice,
-      caller,
-      gasLimit,
-      to,
-      value,
-      data,
-      blobVersionedHashes,
-      accessWitness: txAccesses,
-      skipNonceIncrement: true,
-    })) as RunTxResult
+    try {
+      results = (await vm.evm.runCall({
+        block,
+        gasPrice,
+        caller,
+        gasLimit,
+        to,
+        value,
+        data,
+        blobVersionedHashes,
+        accessWitness: txAccesses,
+        skipNonceIncrement: true,
+      })) as RunTxResult
+    } catch (e) {
+      // Nested prep checkpoint is still open here (Message throws before the
+      // EVM's own message checkpoint). Revert it so the outer runTx catch can
+      // roll back the tx checkpoint (gas debit + nonce bump).
+      await vm.evm.journal.revert()
+      throw e
+    }
     if (vm.evm.eip2780PrepOog === true) {
       await vm.evm.journal.revert()
       if (vm.common.isActivatedEIP(8037)) {
