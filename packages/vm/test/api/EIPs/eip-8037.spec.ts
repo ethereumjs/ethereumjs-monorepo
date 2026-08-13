@@ -1,6 +1,7 @@
 import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { createLegacyTx } from '@ethereumjs/tx'
+import { EVMError } from '@ethereumjs/evm'
+import { createLegacyTx, getCalldataFloorGas } from '@ethereumjs/tx'
 import { Account, createAddressFromPrivateKey, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, expect, it } from 'vitest'
 
@@ -88,6 +89,26 @@ describe('EIP-8037 create-tx state gas at access (Amsterdam)', () => {
     assert.isUndefined(result.execResult.exceptionError)
     assert.isDefined(result.txStateGas)
     assert.isTrue((result.txStateGas ?? 0n) >= newAccountState)
+    const senderAfter = await vm.stateManager.getAccount(sender)
+    assert.strictEqual(senderAfter?.nonce, 1n)
+  })
+
+  it('credits new-account state-gas spill on create-tx REVERT (receipt = floor)', async () => {
+    const vm = await getVM()
+    // PUSH1 0 PUSH1 0 REVERT — EST value_contract_creation_tx init_reverts
+    const tx = createLegacyTx(
+      {
+        gasLimit: 1_000_000n,
+        gasPrice: 10n,
+        data: hexToBytes('0x60006000fd'),
+      },
+      { common },
+    ).sign(senderKey)
+
+    const result = await runTx(vm, { block: block(), tx, skipHardForkValidation: true })
+    assert.strictEqual(result.execResult.exceptionError?.error, EVMError.errorMessages.REVERT)
+    assert.strictEqual(result.totalGasSpent, getCalldataFloorGas(tx, sender))
+    assert.strictEqual(result.txStateGas, 0n)
     const senderAfter = await vm.stateManager.getAccount(sender)
     assert.strictEqual(senderAfter?.nonce, 1n)
   })

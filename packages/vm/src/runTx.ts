@@ -1121,8 +1121,9 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   vm.evm.eip7928CallPostTargetOog = false
 
   // EIP-8037: create-tx new-account state gas is charged at access in the
-  // EVM (after the frame snapshot). Failed / already-alive creates restore
-  // via snapshot pop; do not refund an intrinsic that is no longer charged.
+  // EVM (after the frame snapshot). Failed creates restore reservoir via
+  // snapshot pop; REVERT also credits the gas_left spill (stateGasSpilled).
+  // Do not refund an intrinsic that is no longer charged.
   vm.evm.createTxTargetAlive = false
 
   let totalGasSpentBeforeRefund = results.execResult.executionGasUsed + intrinsicGas

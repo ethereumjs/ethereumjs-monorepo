@@ -454,21 +454,31 @@ export class EVM implements EVMInterface {
 
   /**
    * Charge `amount` of EIP-8037 state-gas from the per-tx reservoir, spilling
-   * into `gasLimit`. Returns the remaining gasLimit, or `undefined` on OOG.
+   * into `gasLimit`. Returns remaining gasLimit and the slice spilled into
+   * regular gas, or `undefined` on OOG.
+   *
+   * The spilled slice must be added to `ExecResult.stateGasSpilled` so a
+   * later REVERT can credit it back (`refill_frame_state_gas`). Snapshot
+   * restore zeros reservoir / executionStateGasUsed but does not undo the
+   * `executionGasUsed += message.gasLimit - gasLimit` fold of this spill.
    */
-  private chargeFrameStateGas(amount: bigint, gasLimit: bigint): bigint | undefined {
-    if (amount === BIGINT_0) return gasLimit
+  private chargeFrameStateGas(
+    amount: bigint,
+    gasLimit: bigint,
+  ): { remaining: bigint; spilled: bigint } | undefined {
+    if (amount === BIGINT_0) return { remaining: gasLimit, spilled: BIGINT_0 }
+    let spilled = BIGINT_0
     if (this.stateGasReservoir >= amount) {
       this.stateGasReservoir -= amount
     } else if (this.stateGasReservoir + gasLimit >= amount) {
-      const remainder = amount - this.stateGasReservoir
+      spilled = amount - this.stateGasReservoir
       this.stateGasReservoir = BIGINT_0
-      gasLimit -= remainder
+      gasLimit -= spilled
     } else {
       return undefined
     }
     this.executionStateGasUsed += amount
-    return gasLimit
+    return { remaining: gasLimit, spilled }
   }
 
   protected async _executeCall(message: MessageWithTo): Promise<EVMResult> {
@@ -519,6 +529,7 @@ export class EVM implements EVMInterface {
     // delegation-resolution cold access. Reads pre-value-transfer state so
     // the EIP-161-empty check sees the recipient as it was at the start of
     // the frame.
+    let accessStateSpill = BIGINT_0
     if (message.depth === 0 && this.common.isActivatedEIP(2780) && !message.delegatecall) {
       // Dead recipient receiving value: charge the new-account state gas
       // (reservoir first, spilling into the frame's regular gas).
@@ -527,12 +538,13 @@ export class EVM implements EVMInterface {
         if (recipient === undefined || recipient.isEmpty()) {
           const amount =
             this.common.param('stateBytesPerNewAccount') * activeCostPerStateByte(this.common)
-          const next = this.chargeFrameStateGas(amount, gasLimit)
-          if (next === undefined) {
+          const charged = this.chargeFrameStateGas(amount, gasLimit)
+          if (charged === undefined) {
             this.eip2780PrepOog = true
             return { execResult: OOGResult(message.gasLimit) }
           }
-          gasLimit = next
+          gasLimit = charged.remaining
+          accessStateSpill += charged.spilled
         }
       }
       // Delegated recipient: charge warm or cold access for the delegation
@@ -716,6 +728,9 @@ export class EVM implements EVMInterface {
     }
 
     result.executionGasUsed += message.gasLimit - gasLimit
+    if (accessStateSpill > BIGINT_0) {
+      result.stateGasSpilled = (result.stateGasSpilled ?? BIGINT_0) + accessStateSpill
+    }
 
     // EIP-8037: the new-account state-gas charge is now pre-charged at the
     // CALL opcode (see callFamilyGas → finalizeCallMessageGas), matching the
@@ -797,16 +812,18 @@ export class EVM implements EVMInterface {
     // EIP-8037 top-frame create: transfer-log regular gas is intrinsic.
     // Charge new-account state gas at access from pre-state (skip if the
     // target is already alive).
+    let accessStateSpill = BIGINT_0
     if (message.depth === 0) {
       if (this.common.isActivatedEIP(8037) && message.createdTargetAlive !== true) {
         const amount =
           this.common.param('stateBytesPerNewAccount') * activeCostPerStateByte(this.common)
-        const next = this.chargeFrameStateGas(amount, gasLimit)
-        if (next === undefined) {
+        const charged = this.chargeFrameStateGas(amount, gasLimit)
+        if (charged === undefined) {
           this.eip2780PrepOog = true
           return { createdAddress: message.to, execResult: OOGResult(message.gasLimit) }
         }
-        gasLimit = next
+        gasLimit = charged.remaining
+        accessStateSpill += charged.spilled
       }
     }
 
@@ -951,6 +968,7 @@ export class EVM implements EVMInterface {
           exceptionError: errorMessage, // only defined if addToBalance failed
           returnValue: new Uint8Array(0),
           logs: eip7708CreateLog ? [eip7708CreateLog] : undefined,
+          stateGasSpilled: accessStateSpill > BIGINT_0 ? accessStateSpill : undefined,
         },
       }
     }
@@ -964,6 +982,9 @@ export class EVM implements EVMInterface {
       initialLogs: eip7708CreateLog ? [eip7708CreateLog] : undefined,
     })
     result.executionGasUsed += message.gasLimit - gasLimit
+    if (accessStateSpill > BIGINT_0) {
+      result.stateGasSpilled = (result.stateGasSpilled ?? BIGINT_0) + accessStateSpill
+    }
 
     // fee for size of the return value
     let totalGas = result.executionGasUsed
@@ -1476,13 +1497,10 @@ export class EVM implements EVMInterface {
           }
         }
         // The frame failed: its spilled state gas must not propagate to the
-        // parent frame's spill tracker.
+        // parent frame's spill tracker. Top-frame NEW_ACCOUNT spill is on
+        // this result and already credited above on REVERT; inner CREATE
+        // new-account gas is refunded by the interpreter's create() wrapper.
         result.execResult.stateGasSpilled = BIGINT_0
-        // EIP-8037: the new-account state gas pre-charged for a failed
-        // creation frame is refunded by the caller: the interpreter's
-        // `create()` wrapper for inner CREATE/CREATE2, or runTx for a
-        // top-level creation transaction. (Neither charge is part of the
-        // per-frame snapshot, so the snapshot pop doesn't credit it.)
       }
       if (this.DEBUG) {
         debug(`message checkpoint reverted`)
