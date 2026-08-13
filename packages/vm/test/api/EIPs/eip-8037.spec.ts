@@ -48,6 +48,10 @@ describe('EIP-8037 create-tx state gas at access (Amsterdam)', () => {
     const result = await runTx(vm, { block: block(), tx, skipHardForkValidation: true })
     // Runs past intrinsic; likely OOG on new-account state at access.
     assert.isDefined(result.execResult.exceptionError)
+    // EELS increments sender nonce before prepare_dispatch; prep OOG must not
+    // roll it back (no contract is created).
+    const senderAfter = await vm.stateManager.getAccount(sender)
+    assert.strictEqual(senderAfter?.nonce, 1n)
   })
 
   it('still rejects below the calldata floor', async () => {
@@ -84,5 +88,7 @@ describe('EIP-8037 create-tx state gas at access (Amsterdam)', () => {
     assert.isUndefined(result.execResult.exceptionError)
     assert.isDefined(result.txStateGas)
     assert.isTrue((result.txStateGas ?? 0n) >= newAccountState)
+    const senderAfter = await vm.stateManager.getAccount(sender)
+    assert.strictEqual(senderAfter?.nonce, 1n)
   })
 })

@@ -129,6 +129,17 @@ export interface EVMRunCallOpts extends EVMRunOpts {
    */
   skipBalance?: boolean
   /**
+   * If true, do not increment the caller nonce at depth 0. `runTx` increments
+   * the sender nonce before the nested prep checkpoint so a top-frame access
+   * OOG (EIP-2780 / EIP-8037) does not roll it back. Standalone `runCall`
+   * callers should leave this unset.
+   *
+   * Distinct from `RunTxOpts.skipNonce`, which skips the nonce *check*.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
+  skipNonceIncrement?: boolean
+  /**
    * If the call is a DELEGATECALL. Defaults to false.
    */
   delegatecall?: boolean

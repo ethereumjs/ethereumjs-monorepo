@@ -1347,7 +1347,7 @@ export class EVM implements EVMInterface {
       })
     }
 
-    if (message.depth === 0) {
+    if (message.depth === 0 && opts.skipNonceIncrement !== true) {
       if (!callerAccount) {
         callerAccount = await this.stateManager.getAccount(message.caller)
       }

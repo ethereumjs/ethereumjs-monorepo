@@ -79,6 +79,9 @@ Do **not** mix “what’s new upstream” and “what we need in EthereumJS” 
 1. Headline stats (pass/fail/total, runtime) + one callout for the dominant error cluster.
 2. **What's new** (upstream only: release-note deltas, new addresses, EIP list ⬆️). No implementation advice here.
 3. **What we need** (EthereumJS only): **numbered, well-scoped blocks** in implementation order. Put high-leverage / easy wins first (unblocks a lot of tests so later items are readable). Each block is one implementation unit. No restating the spec essay.
+   - **Target:** the numbered list is a path to **~100%** of the bumped mix (or ≥95% / the vast majority — say so if a handful of tests look like runner/fixture issues). Do not stop at the obvious EIP headlines if the first-round table still has large red directories.
+   - Build items from **both** the release-note spec deltas **and** the first-round error clusters / per-directory failures. A cluster that would still fail after the headline delta (floor vs `txGas`, create-tx nonce on prep OOG, 7702 receipt gas, …) gets its own numbered item.
+   - The leftover pass is a **mop-up** for interactions that only show up after earlier items, not the plan for hundreds of remaining tests.
 4. Per-EIP table with both sides: `EIP | What's new | What we need | Pass % | Packages`.
 5. Per-directory first-round table (from the reporter / JSON).
 6. Inventory gaps (fixture dirs vs `hardforks.ts` / `eips.ts`, address mismatches).
@@ -121,7 +124,7 @@ The numbered **What we need** blocks from the first-round report are the spec-de
 
 Do not commit or push unless asked.
 
-After those numbered items, if the bumped tree is not 100%, run a **leftover pass** (its own item: **fix remaining tests if not yet 100%**): re-run `:summary`, cluster remaining failures, then C1 (cluster plan) → C2 until 100% or a leftover is clearly a runner/fixture issue (ask). Do not treat earlier item done-when percentages as the end of the round. If they asked to add this pass and act immediately, skip the C1 stop.
+After those numbered items, if the bumped tree is not 100%, run a **leftover pass** (mop-up only: interactions that only show up after earlier items — not a second full backlog). Re-run `:summary`, cluster remaining failures, then C1 (cluster plan) → C2 until 100% or a leftover is clearly a runner/fixture issue (ask). Do not treat earlier item done-when percentages as the end of the round. If they asked to add this pass and act immediately, skip the C1 stop.
 
 ### C1 — strategy (stop for confirmation)
 
@@ -132,7 +135,7 @@ Work out a plan only. Do not edit production code in this step.
 - API: **backwards-compatible / preserving**. May *add* to the public API if it is useful to library users. Do not rename or change existing signatures to get the spec green.
 - Local tests: which `test/api/EIPs/eip-NNNN.spec.ts` (or existing suite) to add, matching nearby tests.
 - READMEs: which package READMEs to update (see below).
-- Done-when: local tests + named EST subsets (not “all 3707 green”). The leftover pass after numbered items is what drives the mix to 100%.
+- Done-when: local tests + named EST subsets (not “all 3707 green”). The numbered backlog should already cover a path to ~100%; the leftover pass is only for leftovers that appear after those items.
 
 **Chat:** canvas (same visual bar as first-round). Then STOP. Implementation is C2 after they confirm.
 

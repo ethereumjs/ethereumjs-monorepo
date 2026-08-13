@@ -947,6 +947,20 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     )
   }
 
+  // EELS `process_transaction` increments the sender nonce before
+  // `prepare_message` / `process_message_call`. The nested prep checkpoint
+  // below rolls back 7702 delegations (and top-frame access dirt) on prep
+  // OOG; the nonce bump must sit outside that layer.
+  fromAccount.nonce += BIGINT_1
+  await vm.evm.journal.putAccount(caller, fromAccount)
+  if (vm.common.isActivatedEIP(7928)) {
+    vm.evm.blockLevelAccessList!.addNonceChange(
+      caller.toString(),
+      fromAccount.nonce,
+      vm.evm.blockLevelAccessList!.blockAccessIndex,
+    )
+  }
+
   // EIP-8037: install the per-tx reservoir before 7702 auth processing so
   // access-time state-gas charges can draw from it. Auths used to refund a
   // worst-case intrinsic; v7 charges the actual write at access instead.
@@ -1034,6 +1048,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
       data,
       blobVersionedHashes,
       accessWitness: txAccesses,
+      skipNonceIncrement: true,
     })) as RunTxResult
     if (vm.evm.eip2780PrepOog === true) {
       await vm.evm.journal.revert()
