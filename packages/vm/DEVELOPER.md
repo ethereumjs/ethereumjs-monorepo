@@ -97,11 +97,17 @@ npm run test:est:dev:state
 npm run test:est:dev:blockchain
 ```
 
-`test:est:dev:blockchain` currently aliases a specific Amsterdam subtree (`test:est:dev:blockchain:glamsterdam-devnet-v611`). Extra scripts exist for older BAL snapshots (`:v301`, `:v200`). When the `dev/` tree changes, update these scripts so they still point at the folders you intend to run.
+`test:est:dev:blockchain` runs `dev/blockchain_tests/amsterdam/glamsterdam/` (unversioned; replace in place on each glamsterdam bump). Extra scripts exist for older BAL snapshots (`:v301`, `:v200`).
 
 `dev/state_tests` may be empty. `test:est:dev:state` then collects no tests and skips; that is expected until we add state fixtures there.
 
-Each EST script also enables [`perDirectoryReporter.ts`](./test/tester/util/perDirectoryReporter.ts), which prints a per-EIP / per-folder pass/fail table after the run.
+Each EST script also enables [`perDirectoryReporter.ts`](./test/tester/util/perDirectoryReporter.ts), which prints a per-EIP / per-folder pass/fail table and clustered failure messages after the run. For a first fixture bump, prefer the quiet summary (no per-test dump):
+
+```bash
+npm run test:est:dev:blockchain:summary
+```
+
+That writes `/tmp/est-dev-blockchain-summary.json`. CI keeps the verbose `test:est:dev:blockchain` script. The reporter writes JSON whenever `EST_SUMMARY_JSON` is set (the `:summary` script sets it).
 
 #### Run a subset
 
@@ -133,10 +139,12 @@ Blockchain fixtures for some BPO transition networks are skipped in the runner (
 
 #### Failure triage
 
-For a folder of blockchain fixtures, file-by-file with fixture metadata:
+A full EST run already prints per-directory counts and clustered error messages via [`perDirectoryReporter.ts`](./test/tester/util/perDirectoryReporter.ts). After a fixture bump, start there (`npm run test:est:dev:blockchain:summary`) rather than grepping vitest output.
+
+For a later file-by-file pass over one folder (slow; not for first-round):
 
 ```bash
-npm run test:analysis:report -- --folder=../execution-spec-tests/dev/blockchain_tests/amsterdam
+npm run test:analysis:report -- --folder=../execution-spec-tests/dev/blockchain_tests/amsterdam/glamsterdam/eip8282_builder_execution_requests
 ```
 
 Amsterdam blockchain tests also compare Block-Level Access Lists when the fixture includes them ([`balComparatorAI.ts`](./test/tester/util/balComparatorAI.ts)).
@@ -224,46 +232,64 @@ npm run test:blockchain -- --fork='London+3855+3860'
 
 ### Updating fixtures
 
-This is the procedure for bumping the EST snapshot. It is meant to be followed by a human or by an agent (see `.cursor/skills/update-est-fixtures`). If a round diverges, update this section so the next round stays a short prompt.
+Two git repos, two human gates. An agent can do the file work. See `.cursor/skills/update-est-fixtures`. If a round diverges, update this section.
 
-Work in **two git repos**: [execution-spec-tests-fixtures](https://github.com/ethereumjs/execution-spec-tests-fixtures) (the snapshot) and this monorepo (submodule pointer, npm scripts, VM code). Do not commit unless asked.
+Do not commit or push unless asked. **Exception:** if the user says **GO** and explicitly asks to commit and/or push Phase A, the agent may do that on the fixtures repo (never force-push).
 
-1. **Choose the release.** Read the current [fixtures README](../execution-spec-tests/README.md) and the [execution-specs releases](https://github.com/ethereum/execution-specs/releases). Decide `stable/` vs `dev/` from EthereumJS support, not from upstream tag names. Mainnet tags look like `tests@v20.0.1`; devnet tags look like `tests-glamsterdam-devnet@v7.0.0`.
+#### Replace vs add
 
-2. **Download and extract.** From a working directory (not necessarily either repo):
+For the ongoing **glamsterdam** line, default is **replace** the mixed Amsterdam tree in place at `dev/blockchain_tests/amsterdam/glamsterdam/` (unversioned on purpose so npm scripts do not churn). Do not leave an old versioned folder beside it. Upstream currently ships that tree as `blockchain_tests/for_amsterdam/amsterdam/`.
 
-   ```bash
-   gh release download tests-glamsterdam-devnet@v7.0.0 \
-     --repo ethereum/execution-specs --pattern '*.tar.gz'
-   tar -tzf fixtures.tar.gz | head
-   ```
+Historical BAL-only snapshots (`v200_…`, `v301_…`) are separate: keep them unless this round explicitly drops them.
 
-   Copy only the `state_tests` / `blockchain_tests` trees we consume. Do not import engine-x, benchmark, or other formats unless we have a runner for them.
+If it is unclear whether to replace or add, **ask** before deleting or adding a tree.
 
-3. **Place files and apply exclusions.** GitHub rejects files ≳100 MB. List skipped files in the fixtures README (current examples are the Osaka EIP-7934 RLP-limit blockchain tests). Keep `stable/` vs `dev/` layout consistent with the npm scripts in this package.
+#### Download once
 
-4. **Rewrite the fixtures README** so tags, dates, folders, and exclusions match the tree. That file is the inventory; it should not grow into a second testing guide.
+Upstream tarballs are large (often several hundred MB; `tests-glamsterdam-devnet@v7.0.0` is ~648 MB compressed). The agent should download them when practical, **once**:
 
-5. **Point the submodule** at the new fixtures commit, then from the monorepo root:
+- Destination: the fixtures repo. `.gitignore` already has `fixtures*`, which covers both `fixtures_*.tar.gz` and a `fixtures/` extract directory.
+- If a matching tarball is already on disk, reuse it (verify size / sha256 from the GitHub release asset). Do not download again.
+- Extract into `fixtures/` (gitignored). A stale extract from an older release can be replaced.
+- Copy only `state_tests` / `blockchain_tests` into `stable/` or `dev/`. Do not import `blockchain_tests_engine`, sync, transaction tests, or benchmarks unless we have a runner.
 
-   ```bash
-   git submodule update --init packages/execution-spec-tests
-   ```
+```bash
+# from execution-spec-tests-fixtures, only if the file is not already present
+gh release download tests-glamsterdam-devnet@v7.0.0 \
+  --repo ethereum/execution-specs --pattern '*.tar.gz'
+```
 
-   If `dev/` folder names changed, update `test:est:dev:*` scripts in [`package.json`](./package.json) and any CI assumptions in [`vm-pr.yml`](../../.github/workflows/vm-pr.yml).
+#### Phase A — fixtures repo (stop for commit / push / merge)
 
-6. **Run EST suites and fix code** until the “green” set above passes. Useful loop:
+1. **Choose the release** from [execution-specs releases](https://github.com/ethereum/execution-specs/releases) and the current [fixtures README](../execution-spec-tests/README.md). `stable/` vs `dev/` follows EthereumJS support. Confirm replace vs add (see above).
+2. **Download once**, extract, inspect layout (`tar -tzf … | head`).
+3. **Place trees**, apply GitHub size exclusions (≳100 MB; list them in the README), replace the previous glamsterdam folder when that is the policy for this round.
+4. **Rewrite the fixtures README** so tags, dates, folders, exclusions, and **JSON file counts** match the tree. Inventory only — not a second testing guide.
+5. **Stop** unless the GO explicitly asked to commit/push: summarize old vs new JSON counts, folders, exclusions, README diff. If GO included commit/push, do that on the fixtures repo (no force-push), then stop for merge if a PR is still required. Do not touch the monorepo submodule until they green-light Phase B.
 
-   ```bash
-   npm run test:est:stable:state
-   npm run test:est:stable:blockchain
-   npm run test:est:dev:state
-   npm run test:est:dev:blockchain
-   ```
+#### Phase B — monorepo (after green light)
 
-   Narrow with `TEST_PATH` / `TEST_FILE` / `TEST_CASE`, or `npm run test:analysis:report`. Update `SKIP_NETWORKS` only with a reason.
+The fixtures commit must be reachable. Prefer `origin/main` after merge. A **local SHA** from a sibling `execution-spec-tests-fixtures` checkout is fine for a first-round run (avoids a GitHub SSH / macOS Touch ID prompt). Fetch from `origin` only when the SHA is already on the remote; if that origin is `git@ssh.github.com`, tell the user they may need to confirm Touch ID before running it.
 
-7. **Confirm legacy Prague** (`npm run test:state`, `npm run test:blockchain`) unless this round explicitly retires that path.
+```bash
+# from ethereumjs-monorepo root — after merge
+git -C packages/execution-spec-tests fetch origin
+git -C packages/execution-spec-tests checkout origin/main   # or the merge SHA
+
+# or, before push, from the sibling fixtures repo:
+git -C packages/execution-spec-tests fetch <path-to-execution-spec-tests-fixtures> <sha>
+git -C packages/execution-spec-tests checkout <sha>
+```
+
+Then:
+
+1. Point `packages/execution-spec-tests` at that SHA (working tree / index only; do not commit unless asked).
+2. Update `test:est:*` scripts in [`package.json`](./package.json) if folder names changed, and CI in [`vm-pr.yml`](../../.github/workflows/vm-pr.yml) if it hard-codes paths. Prefer a stable `test:est:dev:blockchain` alias so versioned script names do not churn every bump. **Grep the old folder name** across the monorepo (`consumeBal.test.ts`, `generateLargeFixture.ts`, this file, the skill).
+3. **Inventory (no test run):** list `eipNNNN` folders in the bumped tree; diff against the hardfork `eips` list in [`hardforks.ts`](../common/src/hardforks.ts) and keys in [`eips.ts`](../common/src/eips.ts); read the upstream release notes and check [`params.ts`](./src/params.ts) (and Common EIP params) for address / constant drift.
+4. **First-round test run** of the suites this bump affects. Use `npm run test:est:dev:blockchain:summary` (plus `test:est:dev:state` if state fixtures were added). Do **not** use `test:analysis:report` here — it runs file-by-file. Do not try to get everything green yet.
+5. **Stop.** Report from the summary table / `/tmp/est-dev-blockchain-summary.json`: pass/fail, error clusters, fixture EIPs missing from Common, param/address mismatches, a short digest of the **upstream release notes**, and which EthereumJS packages likely need work. Implementation starts after this break.
+
+Legacy Prague (`test:state` / `test:blockchain`) is only required in this phase if the bump touched `stable/` or the runners.
 
 ## Package Tests
 
