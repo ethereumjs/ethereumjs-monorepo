@@ -176,6 +176,11 @@ describe('EIP-8037 inner CREATE new-account charge (Amsterdam)', () => {
     assert.isUndefined(result.execResult.exceptionError)
     const targetAfter = await vm.stateManager.getAccount(target)
     assert.strictEqual(targetAfter?.nonce, 0n)
+    // Factory nonce is not bumped: child OOG onto a balance-only target
+    // exceptional-halts the creating frame (fill receipts keep the charge
+    // as regular gas and revert the CREATE nonce increment).
+    const factoryAfter = await vm.stateManager.getAccount(factory)
+    assert.strictEqual(factoryAfter?.nonce, 1n)
   })
 
   it('does not charge new-account gas for a nonce collision (burned grant is full 63/64)', async () => {

@@ -152,10 +152,19 @@ export interface RunState {
   lastCallNewAccountStateGas?: bigint
   /**
    * EIP-8037: new-account state gas charged by the most recent CREATE/CREATE2
-   * gas handler (0 if the target already has nonce or code). Refunded when
-   * the create fails or the target was already alive.
+   * gas handler (0 if the target already has nonce or code). Refunded on
+   * fail-fast, REVERT, fresh-target halt, or success onto an already-alive
+   * account. Child exceptional halt onto a balance-only target is not
+   * refunded — see `eip8037BurnLeftoverAfterCreateHaltOntoAlive`.
    */
   lastCreateNewAccountStateGas?: bigint
+  /**
+   * EIP-8037: CREATE child exceptionally halted onto an already-alive
+   * (balance-only) target. The spilled NEW_ACCOUNT stays as regular gas;
+   * when this frame stops, leftover is burned and the frame exceptional-halts
+   * so the CREATE nonce bump is reverted while EIP-7928 BAL reads remain.
+   */
+  eip8037BurnLeftoverAfterCreateHaltOntoAlive?: boolean
   returnBytes: Uint8Array /* Current bytes in the return Uint8Array. Cleared each time a CALL/CREATE is made in the current frame. */
 }
 
@@ -401,6 +410,18 @@ export class Interpreter {
         }
         break
       }
+    }
+
+    if (
+      err === undefined &&
+      this._runState.eip8037BurnLeftoverAfterCreateHaltOntoAlive === true &&
+      this._runState.gasLeft > BIGINT_0
+    ) {
+      // Consume leftover and exceptional-halt this frame so the CREATE nonce
+      // bump is journal-reverted (fill post-state keeps the pre-create nonce)
+      // while EIP-7928 BAL reads from the following SSTORE remain.
+      this._runState.gasLeft = BIGINT_0
+      err = new EVMError(EVMError.errorMessages.OUT_OF_GAS)
     }
 
     if (timer !== undefined) {
@@ -1329,7 +1350,10 @@ export class Interpreter {
     // no new account leaf persists: the CREATE short-circuits before a child
     // frame is spawned (depth limit, insufficient balance, EIP-2681 nonce
     // overflow, EIP-3860 oversized initcode, collision), the creation frame
-    // fails (revert / halt), or the target account was already alive.
+    // REVERTs, a fresh target exceptionally-halts, or CREATE succeeds onto
+    // an already-alive account. Child exceptional halt onto a balance-only
+    // (alive) target is handled separately below — that charge is kept as
+    // regular gas so the 63/64 spill still appears on the receipt.
     // The pre-charge happened in opcodes/gas.ts (0 if the target already had
     // nonce or code); refunds credit this (parent) frame's pools in LIFO order.
     const refundCreatePreCharge = (context: string): void => {
@@ -1434,10 +1458,37 @@ export class Interpreter {
 
     if (this.common.isActivatedEIP(8037)) {
       if (results.execResult.exceptionError !== undefined) {
-        // Creation frame failed (revert / halt): no account leaf persists,
-        // refund the pre-charged new-account state gas (0 if the target
-        // already had nonce or code and was never charged).
-        refundCreatePreCharge('CREATE failure new_account')
+        // Creation frame failed: no new account leaf persists.
+        // REVERT and fail-fast / fresh-target OOG refund the pre-charge
+        // (EELS `credit_state_gas_refund` when `new_account_charged`).
+        // A child exceptional halt onto an already-alive target is the
+        // EIP-8037 spill path: we still charged NEW_ACCOUNT (balance-only
+        // is not nonce/code, so the 63/64 stipend shrinks) but EELS
+        // `new_account_charged = not is_account_alive` does not refund.
+        // Convert the spilled slice to regular gas — it already reduced
+        // gasLeft at charge time — without crediting leftover.
+        const haltedOntoAlive =
+          results.execResult.exceptionError.error !== EVMError.errorMessages.REVERT &&
+          message.createdTargetAlive === true
+        if (haltedOntoAlive) {
+          const preCharged = this._runState.lastCreateNewAccountStateGas ?? BIGINT_0
+          if (preCharged > BIGINT_0) {
+            const fromSpill =
+              preCharged < this._runState.stateGasSpilled
+                ? preCharged
+                : this._runState.stateGasSpilled
+            this._runState.stateGasSpilled -= fromSpill
+            this._evm.executionStateGasUsed -= fromSpill
+            const fromReservoir = preCharged - fromSpill
+            if (fromReservoir > BIGINT_0) {
+              this.refillStateGasReservoir(fromReservoir, 'CREATE halt onto alive reservoir')
+            }
+            this._runState.lastCreateNewAccountStateGas = BIGINT_0
+            this._runState.eip8037BurnLeftoverAfterCreateHaltOntoAlive = true
+          }
+        } else {
+          refundCreatePreCharge('CREATE failure new_account')
+        }
       } else {
         // Merge the successful child frame's spilled state gas into this
         // frame's spill tracker (LIFO refunds may credit it to gasLeft).
