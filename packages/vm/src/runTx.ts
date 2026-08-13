@@ -125,10 +125,6 @@ async function processAuthorizationList(
     vm.evm.executionStateGasUsed += amount
     return true
   }
-  const refillState = (amount: bigint) => {
-    vm.evm.stateGasReservoir += amount
-    vm.evm.executionStateGasUsed -= amount
-  }
 
   // Pre-8037: invalid auths are skipped. Under 8037 they also charge nothing
   // extra — perAuthBaseGas is already in intrinsic, and ACCOUNT_WRITE / state
@@ -202,15 +198,10 @@ async function processAuthorizationList(
       }
     }
 
-    // Nonce validation
-    if (caller.toString() === authority.toString()) {
-      // Edge case: caller is the authority (self-signing delegation)
-      // Virtually bump the account nonce by one for comparison
-      if (account.nonce + BIGINT_1 !== bytesToBigInt(authorityNonce)) {
-        applyInvalidAuthRefund()
-        continue
-      }
-    } else if (account.nonce !== bytesToBigInt(authorityNonce)) {
+    // Nonce validation. Sender nonce is incremented in `runTx` before this
+    // list (EELS `increment_nonce` before `set_delegation`), so self-signed
+    // auths compare against the already-bumped nonce — no virtual +1.
+    if (account.nonce !== bytesToBigInt(authorityNonce)) {
       applyInvalidAuthRefund()
       continue
     }
@@ -266,12 +257,8 @@ async function processAuthorizationList(
       if (!chargeState(chargeStateBytes * costPerStateByte)) {
         return { gasRefund, gasLimit, oog: true }
       }
-      // Clearing a delegation created earlier in this list writes no net
-      // indicator bytes — refill the in-tx charge.
-      if (clearing && curDelegated && !preDelegated && indicatorCharged.has(authorityHex)) {
-        refillState(stateBytesPerAuthBase * costPerStateByte)
-        indicatorCharged.delete(authorityHex)
-      }
+      // AUTH_BASE is charged at most once per authority and is never
+      // credited back (EELS: a set-then-clear in the same list keeps it).
     }
 
     // Update account nonce and store
@@ -984,6 +971,11 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // Process EIP-7702 authorization list (if applicable)
   let gasRefund = BIGINT_0
   let authOog = false
+  // Regular gas spent in set_delegation (ACCOUNT_WRITE, and any state-gas
+  // spill into gas_left). EELS charges these from the EVM gas meter so they
+  // are in tx.gas - gas_left; we take them from `gasLimit` before runCall
+  // and must add them back into user-paid / receipt gas.
+  const gasLeftBeforeAuths = gasLimit
   if (tx.supports(Capability.EIP7702EOACode)) {
     const result = await processAuthorizationList(
       vm,
@@ -997,6 +989,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     gasLimit = result.gasLimit
     authOog = result.oog
   }
+  const authRegularGas = gasLeftBeforeAuths - gasLimit
 
   if (vm.DEBUG) {
     debug(`Update fromAccount (caller) balance (-> ${fromAccount.balance}))`)
@@ -1137,12 +1130,17 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     const executionStateGasUsed = vm.evm.executionStateGasUsed
     const reservoirDelta = stateGasReservoirInitial - vm.evm.stateGasReservoir
     totalGasSpentBeforeRefund =
-      results.execResult.executionGasUsed + intrinsicRegularGas + intrinsicStateGas + reservoirDelta
+      results.execResult.executionGasUsed +
+      intrinsicRegularGas +
+      intrinsicStateGas +
+      reservoirDelta +
+      authRegularGas
     // Per-dimension breakdown for the runBlock 2D accumulator. Note that
-    // executionGasUsed reflects everything spent from `gas_left` (regular
-    // ops + state-gas spilled to gas_left). reservoirDelta is the slice of
-    // state-gas paid from the reservoir. Together they cover all state-gas
-    // (= executionStateGasUsed by definition), so:
+    // executionGasUsed is only the slice spent inside runCall. 7702
+    // ACCOUNT_WRITE (and auth state-gas spill into gas_left) is taken from
+    // `gasLimit` before runCall and added back as authRegularGas. reservoirDelta
+    // is the slice of state-gas paid from the reservoir. Together they cover
+    // all state-gas (= executionStateGasUsed by definition), so:
     //   execution_regular_gas_used = executionGasUsed - (state-gas spilled to gas_left)
     //                              = executionGasUsed - (executionStateGasUsed - reservoirDelta)
     // Per the pinned execution-specs Amsterdam revision:

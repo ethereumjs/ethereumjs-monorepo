@@ -1,10 +1,12 @@
 import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { createLegacyTx } from '@ethereumjs/tx'
+import { createEOACode7702Tx, createLegacyTx } from '@ethereumjs/tx'
 import {
   Account,
+  concatBytes,
   createAddressFromPrivateKey,
   createZeroAddress,
+  eoaCode7702SignAuthorization,
   hexToBytes,
 } from '@ethereumjs/util'
 import { assert, describe, expect, it } from 'vitest'
@@ -135,5 +137,40 @@ describe('EIP-2780 intrinsic gas (Amsterdam)', () => {
     await expect(runTx(vm, { block: block(), tx, skipHardForkValidation: true })).rejects.toThrow(
       /is lower than the minimum gas limit of/,
     )
+  })
+
+  it('includes 7702 ACCOUNT_WRITE in receipt gas (clearing, exact leftover)', async () => {
+    const vm = await getVM()
+    const authKey = hexToBytes(`0x${'30'.repeat(32)}`)
+    const authority = createAddressFromPrivateKey(authKey)
+    await vm.stateManager.putAccount(authority, new Account(0n, 1n))
+    await vm.stateManager.putCode(authority, concatBytes(hexToBytes('0xef0100'), recipient.bytes))
+
+    const c = txCommon()
+    const intrinsic = c.param('txGas') + extra2780Regular(c, 0n, false) + c.param('perAuthBaseGas')
+    const gasLimit = intrinsic + c.param('accountWriteGas')
+    const tx = createEOACode7702Tx(
+      {
+        to: recipient,
+        gasLimit,
+        maxFeePerGas: 10n,
+        maxPriorityFeePerGas: 10n,
+        authorizationList: [
+          eoaCode7702SignAuthorization(
+            {
+              chainId: '0x00',
+              address: `0x${'00'.repeat(20)}`,
+              nonce: '0x00',
+            },
+            authKey,
+          ),
+        ],
+      },
+      { common },
+    ).sign(senderKey)
+
+    const result = await runTx(vm, { block: block(), tx, skipHardForkValidation: true })
+    assert.isUndefined(result.execResult.exceptionError)
+    assert.strictEqual(result.totalGasSpent, gasLimit)
   })
 })

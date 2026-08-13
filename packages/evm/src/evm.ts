@@ -535,12 +535,18 @@ export class EVM implements EVMInterface {
           gasLimit = next
         }
       }
-      // Delegated recipient: charge a cold account access for the delegation
-      // resolution (the delegated address is warmed in _loadCode at depth 0).
+      // Delegated recipient: charge warm or cold access for the delegation
+      // target (EELS `prepare_dispatch`). Sender, coinbase, precompiles, and
+      // access-list addresses are already warm. The target is also warmed in
+      // `_loadCode` at depth 0.
       if (this.common.isActivatedEIP(7702)) {
         const recipientCode = await this.stateManager.getCode(message.to)
         if (equalsBytes(recipientCode.slice(0, 3), DELEGATION_7702_FLAG)) {
-          const cost = this.common.param('coldaccountaccessGas')
+          const delegated = recipientCode.slice(3, 23)
+          const alreadyWarm = this.journal.isWarmedAddress(delegated)
+          const cost = alreadyWarm
+            ? this.common.param('warmstoragereadGas')
+            : this.common.param('coldaccountaccessGas')
           if (gasLimit < cost) {
             this.eip2780PrepOog = true
             return { execResult: OOGResult(message.gasLimit) }
