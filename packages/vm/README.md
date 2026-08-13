@@ -497,10 +497,13 @@ This section is the **canonical overview** for experimental Amsterdam support: w
 | --- | --- | --- | --- |
 | `v10.1.2` | First experimental Amsterdam release: full 9-EIP `Hardfork.Amsterdam` bundle, BAL builder/validator APIs (7928), two-dimensional block gas (8037); passes v700 mixed EST slice. | [tests-bal@v7.1.0](https://github.com/ethereum/execution-specs/releases/tag/tests-bal@v7.1.0) | [BAL devnet-7](https://notes.ethereum.org/@ethpandaops/bal-devnet-7) |
 
+Master currently tracks [tests-glamsterdam-devnet@v7.0.0](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v7.0.0) for the mixed Amsterdam tree. EIP-2780 / EIP-8037: intrinsic gas is **state-independent** (`txGas` + calldata + create access + `perAuthBaseGas`); recipient/value/log costs, new-account state gas, and 7702 `ACCOUNT_WRITE` / auth state are charged at top-frame access. Remaining EST gaps are mostly receipt gas and calldata-floor boundary rejects — do not treat the whole mix as green.
+
 The `Hardfork.Amsterdam` bundle activates the following EIPs. Amsterdam test fixtures and execution-spec tests typically enable the full set together rather than individual EIPs in isolation.
 
 | EIP | Summary | Documentation |
 | --- | --- | --- |
+| [2780](https://eips.ethereum.org/EIPS/eip-2780) | State-independent intrinsic gas; recipient/value charged at top frame | [EIP-8037 section](#eip-8037-state-creation-gas-cost-increase-amsterdam) (intrinsic vs runtime) |
 | [7708](https://eips.ethereum.org/EIPS/eip-7708) | ETH transfers and burns emit logs | [EVM](#eip-7708-eth-transfer-and-burn-logs-amsterdam) (below), receipts from `runTx()` / `runBlock()` |
 | [7843](https://eips.ethereum.org/EIPS/eip-7843) | `SLOTNUM` opcode + `slotNumber` header field | [@ethereumjs/block](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/block#blocks-with-eip-7843-slot-number) |
 | [7778](https://eips.ethereum.org/EIPS/eip-7778) | Block gas accounting without refund subtraction | [EIP-7778 note](#eip-7778-block-gas-accounting-amsterdam) (below) |
@@ -693,7 +696,7 @@ See [Release ↔ spec tracking](#amsterdam-hardfork-experimental) above for the 
 
 **Block-level gas used:** instead of summing a single `gasUsed`, the block header field becomes `max(block_regular_gas_used, block_state_gas_used)`. Each transaction contributes to both dimensions via `RunTxResult.txRegularGas` and `RunTxResult.txStateGas` (undefined when EIP-8037 is inactive).
 
-**Pre-execution checks:** before running each tx, `runBlock()` verifies that the tx's regular and state gas contributions fit within the remaining capacity of each dimension (see `computeIntrinsicGasDimensions8037()` in `@ethereumjs/evm` for the intrinsic split).
+**Pre-execution checks:** before running each tx, `runBlock()` verifies that the tx's regular and state gas contributions fit within the remaining capacity of each dimension (see `computeIntrinsicGasDimensions8037()` in `@ethereumjs/evm` for the **state-independent** intrinsic split — no intrinsic state gas under v7). EIP-2780 recipient/value/log costs, new-account state gas, and 7702 `ACCOUNT_WRITE` / indicator state are charged during execution at the top frame, keyed on pre-state (self-transfers skip the regular extras; prep OOG rolls back 7702 delegations).
 
 **`RunTxResult` fields (EIP-8037 active):**
 

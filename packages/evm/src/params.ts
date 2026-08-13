@@ -411,6 +411,16 @@ export const paramsEVM: ParamsDict = {
     clzGas: 5, // Base fee of the CLZ opcode (matching MUL as per EIP-7939)
   },
   /**
+   * Reduce intrinsic transaction gas (Amsterdam, experimental).
+   * Recipient/value/log components are charged at the top frame here, not in
+   * `getIntrinsicGas()`. Keep in sync with `@ethereumjs/tx` `paramsTx[2780]`.
+   */
+  2780: {
+    txValueCost: 4244, // TX_VALUE_COST: extra regular gas for value-bearing non-self-transfer calls
+    transferLogCost: 1756, // TRANSFER_LOG_COST: regular gas for the EIP-7708 transfer log of the tx-level value transfer
+    txRecipientAccessGas: 3000, // Recipient cost for a non-self-transfer call (= COLD_ACCOUNT_ACCESS under EIP-8038)
+  },
+  /**
    * Increase max contract code size and initcode size
    */
   7954: {

@@ -308,6 +308,7 @@ Currently supported EIPs (sorted by EIP number):
 - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - Precompile for BLS12-381 curve operations (Prague)
 - [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565) - ModExp gas cost
 - [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718) - Transaction Types
+- [EIP-2780](https://eips.ethereum.org/EIPS/eip-2780) - Reduce intrinsic transaction gas (Amsterdam, experimental)
 - [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929) - Gas cost increases for state access opcodes
 - [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930) - Optional access list tx type
 - [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) - Serve historical block hashes in state (Prague)
@@ -512,7 +513,7 @@ These are `Common` parameters (`common.param('maxCodeSize')`) — no API changes
 
 See the [canonical Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) in `@ethereumjs/vm` for release ↔ spec tracking.
 
-State-gas accounting ([EIP-8037](https://eips.ethereum.org/EIPS/eip-8037)) and ETH transfer/burn logs ([EIP-7708](https://eips.ethereum.org/EIPS/eip-7708)) are implemented at the VM execution layer. See [@ethereumjs/vm Amsterdam docs](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) for `RunTxResult` fields, block gas dimensions, and receipt log behaviour.
+State-gas accounting ([EIP-8037](https://eips.ethereum.org/EIPS/eip-8037)) and ETH transfer/burn logs ([EIP-7708](https://eips.ethereum.org/EIPS/eip-7708)) are implemented at the VM execution layer. [EIP-2780](https://eips.ethereum.org/EIPS/eip-2780) recipient/value/log costs and new-account state gas are charged at the top frame (pre-state), not as intrinsic gas. See [@ethereumjs/vm Amsterdam docs](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) for `RunTxResult` fields, block gas dimensions, and receipt log behaviour.
 
 ### EIP-4844 Shard Blob Transactions Support (Cancun)
 

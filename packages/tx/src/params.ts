@@ -59,10 +59,10 @@ export const paramsTx: ParamsDict = {
   },
   /**
    * Reduce intrinsic transaction gas (Amsterdam, experimental).
-   * The recipient/value components (COLD_ACCOUNT_ACCESS for plain calls,
-   * txValueCost + transferLogCost for value transfers) are added in the
-   * intrinsic-gas dimension splitter, which knows the sender (self-transfers
-   * skip the recipient and value charges).
+   * `txGas` is the state-independent intrinsic base (`getIntrinsicGas()`).
+   * Recipient/value/log components are charged at the top frame in the EVM
+   * (self-transfers skip them), not in the intrinsic splitter. Charge constants
+   * are mirrored on `@ethereumjs/evm` `paramsEVM[2780]` for the EVM Common.
    */
   2780: {
     txGas: 12000, // TX_BASE: base sender cost per transaction (down from 21000)

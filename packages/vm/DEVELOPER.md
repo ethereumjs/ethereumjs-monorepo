@@ -234,7 +234,10 @@ npm run test:blockchain -- --fork='London+3855+3860'
 
 Two git repos, two human gates. An agent can do the file work. See `.cursor/skills/update-est-fixtures`. If a round diverges, update this section.
 
-Do not commit or push unless asked. **Exception:** if the user says **GO** and explicitly asks to commit and/or push Phase A, the agent may do that on the fixtures repo (never force-push).
+Do not commit or push unless asked. **Exceptions** (never force-push):
+
+- Phase A: if the user says **GO** and explicitly asks to commit and/or push, the agent may do that on the fixtures repo.
+- Phase B: if they explicitly ask to commit/push **as a new PR**, the agent may do that on the monorepo after the first-round report (see below).
 
 #### Replace vs add
 
@@ -287,7 +290,15 @@ Then:
 2. Update `test:est:*` scripts in [`package.json`](./package.json) if folder names changed, and CI in [`vm-pr.yml`](../../.github/workflows/vm-pr.yml) if it hard-codes paths. Prefer a stable `test:est:dev:blockchain` alias so versioned script names do not churn every bump. **Grep the old folder name** across the monorepo (`consumeBal.test.ts`, `generateLargeFixture.ts`, this file, the skill).
 3. **Inventory (no test run):** list `eipNNNN` folders in the bumped tree; diff against the hardfork `eips` list in [`hardforks.ts`](../common/src/hardforks.ts) and keys in [`eips.ts`](../common/src/eips.ts); read the upstream release notes and check [`params.ts`](./src/params.ts) (and Common EIP params) for address / constant drift.
 4. **First-round test run** of the suites this bump affects. Use `npm run test:est:dev:blockchain:summary` (plus `test:est:dev:state` if state fixtures were added). Do **not** use `test:analysis:report` here — it runs file-by-file. Do not try to get everything green yet.
-5. **Stop.** Report from the summary table / `/tmp/est-dev-blockchain-summary.json`: pass/fail, error clusters, fixture EIPs missing from Common, param/address mismatches, a short digest of the **upstream release notes**, and which EthereumJS packages likely need work. Implementation starts after this break.
+5. **Stop**, unless they asked to commit/push this step as a new PR. Report from `/tmp/est-dev-blockchain-summary.json` using the skill’s **First-round report (layout)**: headline stats, then **What's new** (upstream) and **What we need** (EthereumJS) as separate tables — not mixed prose — then per-EIP and per-directory numbers. Chat: canvas. PR body: markdown tables with the same split. Implementation starts after this break.
+
+If they asked for a Phase B PR: commit the wiring (submodule gitlink, scripts, leftover paths, playbook/skill) — not spec-delta implementation. Open a **new** monorepo PR. Title should name the upstream tag. Body is the first-round report in the two-table layout (What's new vs What we need) plus a link to the fixtures repo PR. Labels (exact names): `package: vm`, `PR state: merge ready`, `type: spec updates`, `type: tests`. CI `test:est:dev:blockchain` will fail until implementation; say so in the PR. Do not add `type: test skip dev VM` unless asked. Return the PR URL, then stop.
+
+#### Phase C — implementation (after first-round)
+
+Numbered **What we need** blocks from the first-round report are the backlog (high-leverage first). One item at a time. Each item is two gated steps (see `.cursor/skills/update-est-fixtures`): **C1 strategy** (where/how, EST folders, local tests, README — stop for confirmation) then **C2 implement** until that item’s tests pass (stop again). Preserve existing APIs; additions are OK. Update package READMEs: canonical Amsterdam overview in [`packages/vm/README.md`](./README.md); other packages link it and list the specs they implement. Add local `test/api/EIPs/` tests where they help.
+
+Do not start C2 in the same turn as C1. Do not commit unless asked.
 
 Legacy Prague (`test:state` / `test:blockchain`) is only required in this phase if the bump touched `stable/` or the runners.
 

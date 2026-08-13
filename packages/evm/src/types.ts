@@ -208,6 +208,13 @@ export interface EVMInterface {
    */
   eip7928CallPostTargetOog?: boolean
   /**
+   * EIP-2780 / EIP-8037: set when a top-frame access charge OOGs before opcodes.
+   * runTx reverts prepare-region 7702 delegations when this is true.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
+  eip2780PrepOog?: boolean
+  /**
    * EIP-8037: whether the target account of a top-level creation transaction
    * was already alive (EIP-161 non-empty) before creation; `runTx` refunds
    * the intrinsic new-account state gas when true or the creation failed.
@@ -239,6 +246,7 @@ export interface EVMOpts {
    * - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - Precompile for BLS12-381 curve operations (Prague)
    * - [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565) - ModExp gas cost
    * - [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718) - Transaction Types
+   * - [EIP-2780](https://eips.ethereum.org/EIPS/eip-2780) - Reduce intrinsic transaction gas (Amsterdam, experimental)
    * - [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929) - Gas cost increases for state access opcodes
    * - [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930) - Optional access list tx type
    * - [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) - Serve historical block hashes in state (Prague)
