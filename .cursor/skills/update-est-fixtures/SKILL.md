@@ -1,72 +1,82 @@
 ---
 name: update-est-fixtures
-description: Updates EthereumJS execution-spec test fixtures from an ethereum/execution-specs release, points the monorepo submodule, runs VM EST suites, and fixes failures until green. Use when the user asks to update EST, EELS, or execution-spec tests/fixtures, bump a fixture release (tests@vX or tests-glamsterdam-devnet@vX), or get VM spec tests green after a fixture change.
+description: Updates EthereumJS execution-spec test fixtures from an ethereum/execution-specs release, then (after a human merge) points the monorepo submodule, updates VM npm scripts, and reports a first test run. Use when the user asks to update EST, EELS, or execution-spec tests/fixtures, bump a fixture release (tests@vX or tests-glamsterdam-devnet@vX), or integrate a fixtures-repo change into the monorepo.
 ---
 
 # Update EST fixtures
 
-Human procedure (source of truth): `packages/vm/DEVELOPER.md` — section **Updating fixtures**, plus **What “green” means**. Read that file before changing fixtures or runners.
+Source of truth: `packages/vm/DEVELOPER.md` — **Updating fixtures** and **What “green” means**. Read that before changing files.
 
-This skill is a first-pass agent wrapper around that playbook. If a round is done differently, update the DEVELOPER.md playbook first, then this file.
+Two repos, two human gates. Do not commit or push unless asked. **Exception:** if GO explicitly asks to commit/push Phase A, do that on the fixtures repo (no force-push). If a round diverges, patch DEVELOPER.md first, then this file.
 
-## Before starting
+## Replace vs add
 
-- Two git repos: `execution-spec-tests-fixtures` (snapshot) and `ethereumjs-monorepo` (submodule, scripts, VM code).
-- Do not commit or push unless the user asks.
-- Do not import fixture formats we have no runner for (engine-x, benchmarks, …). We consume `state_tests` and `blockchain_tests`.
-- `stable/` vs `dev/` is **EthereumJS support**, not upstream `_stable` / `_develop` or tag names.
+- **Glamsterdam mixed tree:** default **replace** in place at `dev/blockchain_tests/amsterdam/glamsterdam/`. Upstream path: `blockchain_tests/for_amsterdam/amsterdam/`. Do not keep an old versioned folder beside it.
+- **BAL-only snapshots** (`v200_…`, `v301_…`): keep unless this round says drop them.
+- If unclear, **ask** before deleting or adding a tree.
 
-## Checklist
+## Download once
 
-Copy and track:
+Tarballs are large (~648 MB for `tests-glamsterdam-devnet@v7.0.0`). Download is preferred when practical, but only once:
+
+- Work in `execution-spec-tests-fixtures`. `.gitignore` `fixtures*` covers `fixtures_*.tar.gz` and `fixtures/`.
+- If the tarball is already on disk, reuse it (check size / sha256 from the GitHub asset). Do not re-download.
+- Extract to gitignored `fixtures/`. Copy only `state_tests` / `blockchain_tests` into `stable/` or `dev/`.
+
+## Phase A — fixtures repo
+
+Stop when the tree + README are ready. Commit/push only if GO asked for that. Otherwise the human commits, pushes, and merges.
 
 ```
-- [ ] Read fixtures README + choose release tag
-- [ ] Download tarball, inspect layout, copy only consumed trees
-- [ ] Place into stable/ and or dev/; apply GitHub size exclusions
-- [ ] Rewrite fixtures README (inventory only)
-- [ ] Point packages/execution-spec-tests submodule; fix npm scripts if folders moved
-- [ ] Run EST suites; fix VM/code/skips until green
-- [ ] Confirm legacy Prague unless this round retires it
-- [ ] If process diverged, patch DEVELOPER.md playbook (and this skill)
+- [ ] Confirm tag + stable vs dev + replace vs add
+- [ ] Download tarball once (or reuse); extract
+- [ ] Copy consumed trees; apply ≳100 MB exclusions
+- [ ] Replace previous glamsterdam folder when that is the policy
+- [ ] Rewrite fixtures README (tags, folders, exclusions, JSON counts)
+- [ ] Summarize: old vs new counts, what moved; STOP
 ```
 
-## Steps
+Summary must include old JSON count, new JSON count, folder names, exclusions, and a pointer to the upstream release.
 
-1. Read [execution-spec-tests-fixtures/README.md](https://github.com/ethereumjs/execution-spec-tests-fixtures/blob/main/README.md) (workspace copy if present) and [execution-specs releases](https://github.com/ethereum/execution-specs/releases). Confirm the exact tag with the user if it is ambiguous (`tests@v…` vs `tests-glamsterdam-devnet@v…`).
+## Phase B — monorepo (only after green light)
 
-2. Download:
+Fixtures commit must be reachable. Prefer `origin/main` after merge; a local SHA from the sibling fixtures checkout is fine for a first-round run (avoids GitHub SSH / macOS Touch ID).
 
-   ```bash
-   gh release download <tag> --repo ethereum/execution-specs --pattern '*.tar.gz'
-   tar -tzf fixtures.tar.gz | head
-   ```
+If `origin` fetch is required and remote is `git@ssh.github.com`, tell the user they may need to confirm Touch ID **before** running fetch. Prefer the local fetch when both workspaces are open:
 
-3. Copy selected `state_tests` / `blockchain_tests` into the fixtures repo. Skip files ≳100 MB; list them under exclusions in the README. Keep folder names aligned with `packages/vm/package.json` `test:est:*` scripts.
+```bash
+git -C packages/execution-spec-tests fetch origin
+git -C packages/execution-spec-tests checkout origin/main   # or the merge SHA
+# or, from the sibling fixtures repo:
+git -C packages/execution-spec-tests fetch <path-to-execution-spec-tests-fixtures> <sha>
+git -C packages/execution-spec-tests checkout <sha>
+```
 
-4. Rewrite the fixtures README so tags, dates, folders, and exclusions match the tree. Do not turn it into a testing guide.
+```
+- [ ] Point packages/execution-spec-tests at the new SHA (do not commit unless asked)
+- [ ] Update test:est:* in packages/vm/package.json if paths changed; CI if needed
+- [ ] Grep the old folder name across the monorepo (package.json, consumeBal.test.ts, generateLargeFixture.ts, DEVELOPER.md, this skill)
+- [ ] Inventory (no tests): fixture eipNNNN dirs vs packages/common/src/hardforks.ts (HF eips list) vs packages/common/src/eips.ts
+- [ ] Read upstream release notes; check packages/vm/src/params.ts (and Common EIP params) for address / constant drift
+- [ ] First-round: npm run test:est:dev:blockchain:summary (from packages/vm). Also test:est:dev:state if state fixtures were added
+- [ ] Report from the table + /tmp/est-dev-blockchain-summary.json; STOP
+```
 
-5. In the monorepo, point the `execution-spec-tests` submodule at the new fixtures commit. `git submodule update --init packages/execution-spec-tests`. If `dev/` paths changed, update `test:est:dev:*` in `packages/vm/package.json` and CI in `.github/workflows/vm-pr.yml`.
+Do **not** use `test:analysis:report` for first-round (file-by-file, too slow). Do not start implementation in the same turn as this first-round report.
 
-6. From `packages/vm`, run until the green set in DEVELOPER.md passes:
+### First-round report (required sections)
 
-   ```bash
-   npm run test:est:stable:state
-   npm run test:est:stable:blockchain
-   npm run test:est:dev:state
-   npm run test:est:dev:blockchain
-   ```
-
-   Narrow with `TEST_PATH`, `TEST_FILE`, `TEST_CASE`. Folder triage: `npm run test:analysis:report -- --folder=<path>`. Change `SKIP_NETWORKS` only with a reason.
-
-7. Unless this round explicitly drops them: `npm run test:state` and `npm run test:blockchain` (legacy Prague).
-
-## Green set
-
-Ordinary PR: API tests, EST stable state+blockchain, EST dev state+blockchain (empty `dev/state_tests` skip is OK), legacy Prague state+blockchain. Extended legacy forks are opt-in (`test all hardforks`).
+1. Totals + per-directory table (from the reporter).
+2. Top error clusters (reporter / JSON). Name the likely spec delta when a cluster matches release notes (e.g. `INTRINSIC_GAS_TOO_LOW` → EIP-2780/8037 gas split).
+3. Fixture `eipNNNN` folders **not** in the hardfork `eips` list or missing from `eips.ts` (those cannot pass until Common wires them).
+4. System-contract / param mismatches vs release notes (e.g. EIP-8282 addresses in `params.ts`).
+5. Short upstream release-note digest + likely packages (`vm`, `evm`, `common`, `util`, …).
 
 ## Do not
 
 - Treat archived `ethereum/execution-spec-tests` as the release source.
+- Import engine-x / benchmark / sync formats without a runner.
+- Re-download a tarball that is already present and valid.
+- Skip the Phase A or Phase B human gate.
 - Assume EST runners have `--jsontrace` / `--debug` / `--profile` / `--fork=HF+EIP`.
-- Copy large chunks of the legacy wrappers into the EST runners; re-implement if a flag is missing.
+- Dump or grep a full vitest default-reporter log when `:summary` + `EST_SUMMARY_JSON` exist.
