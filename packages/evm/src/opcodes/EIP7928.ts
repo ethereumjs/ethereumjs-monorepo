@@ -89,18 +89,13 @@ export function eip7928SchedulePostTargetCallOog(
   return runState.interpreter.getGasLeft()
 }
 
-/** Post-target CREATE OOG: charge accrued gas only; opcode pushes 0. */
+/** Post-target CREATE OOG: target is already in the BAL; exceptional-halt. */
 export function eip7928PostTargetCreateOog(
-  runState: RunState,
-  common: Common,
-  gas: bigint,
+  _runState: RunState,
+  _common: Common,
+  _gas: bigint,
 ): bigint {
-  if (!common.isActivatedEIP(7928)) {
-    trap(EVMError.errorMessages.OUT_OF_GAS)
-  }
-  runState.messageGasLimit = BIGINT_0
-  runState.eip7928PostTargetCreateOog = true
-  return gas
+  trap(EVMError.errorMessages.OUT_OF_GAS)
 }
 
 /** Post-target CALL OOG when 7928 is off (legacy: trap in gas handler). */
@@ -386,11 +381,6 @@ export async function create7928Gas(
     common,
     targetAddress,
   )
-  if (common.isActivatedEIP(8037)) {
-    if (!canAfford(runState, gas, newAccountStateGas)) {
-      trap(EVMError.errorMessages.OUT_OF_GAS)
-    }
-  }
 
   if (common.isActivatedEIP(2929) && !common.isActivatedEIP(8038)) {
     // Pre-Amsterdam: the create target is warmed during the gas step.
@@ -405,6 +395,12 @@ export async function create7928Gas(
   }
 
   if (common.isActivatedEIP(8037)) {
+    // EIP-8037 new-account OOG is post-target: record the created address
+    // first (BAL empty() entry), then halt the CREATE. Pre-target OOG on
+    // regular CREATE costs is `eip7928TrapPreTarget` above and must not
+    // add the address. Do not add on the success path — fail-fast aborts
+    // in interpreter `create()` (depth / balance / nonce) must not leave
+    // a BAL entry for a create that never accessed the target.
     if (!canAfford(runState, gas, newAccountStateGas)) {
       addAddressToBAL(runState, targetAddress, common)
       runState.lastCreateNewAccountStateGas = BIGINT_0

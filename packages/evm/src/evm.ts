@@ -550,10 +550,15 @@ export class EVM implements EVMInterface {
       // Delegated recipient: charge warm or cold access for the delegation
       // target (EELS `prepare_dispatch`). Sender, coinbase, precompiles, and
       // access-list addresses are already warm. The target is also warmed in
-      // `_loadCode` at depth 0.
+      // `_loadCode` at depth 0. Reading the indicator accesses the recipient;
+      // OOG on the delegation charge must keep that BAL entry and must not
+      // record `delegated_to` (`_loadCode` is skipped).
       if (this.common.isActivatedEIP(7702)) {
         const recipientCode = await this.stateManager.getCode(message.to)
         if (equalsBytes(recipientCode.slice(0, 3), DELEGATION_7702_FLAG)) {
+          if (this.common.isActivatedEIP(7928)) {
+            this.blockLevelAccessList!.addAddress(message.to.toString())
+          }
           const delegated = recipientCode.slice(3, 23)
           const alreadyWarm = this.journal.isWarmedAddress(delegated)
           const cost = alreadyWarm
