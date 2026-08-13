@@ -5,10 +5,12 @@ import {
   Account,
   bigIntToBytes,
   bytesToHex,
+  concatBytes,
   createAddressFromPrivateKey,
   createAddressFromString,
   createZeroAddress,
   equalsBytes,
+  generateAddress,
   hexToBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
@@ -127,5 +129,85 @@ describe('EIP-7928 Block Level Access Lists', () => {
       bytesToHex(sealedBlock!.header.blockAccessListHash!),
       bytesToHex(generated.blockLevelAccessList!.hash()),
     )
+  })
+
+  it('CREATE OOG on new-account state gas still records the created address in BAL', async () => {
+    const vm = await createVM({ common })
+    await fundSender(vm)
+
+    const factory = createAddressFromString(`0x${'11'.repeat(20)}`)
+    const created = createAddressFromString(
+      bytesToHex(generateAddress(factory.bytes, bigIntToBytes(1n))),
+    )
+    // PUSH1 0 PUSH1 0 PUSH1 0 CREATE STOP
+    await vm.stateManager.putAccount(factory, new Account(1n, 0n))
+    await vm.stateManager.putCode(factory, hexToBytes('0x600060006000f000'))
+
+    const intrinsic = common.param('txGas') + common.param('txRecipientAccessGas')
+    const na = common.param('stateBytesPerNewAccount') * common.param('costPerStateByte')
+    // CREATE regular costs (~11k + pushes) fit; new-account state gas does not.
+    const gasLimit = intrinsic + 50_000n
+    assert.isTrue(gasLimit < intrinsic + na)
+
+    const parentBlock = createBlock(
+      { header: { number: 1n } },
+      { common, skipConsensusFormatValidation: true },
+    )
+    const tx = createLegacyTx({ to: factory, gasLimit, gasPrice: 10n }).sign(senderKey)
+    const block = createBlock(
+      {
+        header: { number: 2n, gasLimit: 30_000_000n, baseFeePerGas: 1n },
+        transactions: [tx],
+      },
+      {
+        common,
+        skipConsensusFormatValidation: true,
+        calcDifficultyFromHeader: parentBlock.header,
+      },
+    )
+
+    const result = await runBlock(vm, { block, generate: true, skipBlockValidation: true })
+    const addresses = result.blockLevelAccessList!.toJSON().map((entry) => entry.address)
+    assert.isTrue(addresses.includes(created.toString()))
+  })
+
+  it('7702 top-frame delegation OOG records the recipient and not the delegation target', async () => {
+    const vm = await createVM({ common })
+    await fundSender(vm)
+
+    const target = createAddressFromString(`0x${'aa'.repeat(20)}`)
+    const delegatedTo = createAddressFromString(`0x${'bb'.repeat(20)}`)
+    await vm.stateManager.putAccount(target, new Account(1n, 0n))
+    await vm.stateManager.putCode(target, concatBytes(hexToBytes('0xef0100'), delegatedTo.bytes))
+    await vm.stateManager.putAccount(delegatedTo, new Account(1n, 0n))
+    await vm.stateManager.putCode(delegatedTo, hexToBytes('0x00'))
+
+    const intrinsic = common.param('txGas') + common.param('txRecipientAccessGas')
+    const cold = common.param('coldaccountaccessGas')
+    const parentBlock = createBlock(
+      { header: { number: 1n } },
+      { common, skipConsensusFormatValidation: true },
+    )
+    const tx = createLegacyTx({
+      to: target,
+      gasLimit: intrinsic + cold - 1n,
+      gasPrice: 10n,
+    }).sign(senderKey)
+    const block = createBlock(
+      {
+        header: { number: 2n, gasLimit: 30_000_000n, baseFeePerGas: 1n },
+        transactions: [tx],
+      },
+      {
+        common,
+        skipConsensusFormatValidation: true,
+        calcDifficultyFromHeader: parentBlock.header,
+      },
+    )
+
+    const result = await runBlock(vm, { block, generate: true, skipBlockValidation: true })
+    const addresses = result.blockLevelAccessList!.toJSON().map((entry) => entry.address)
+    assert.isTrue(addresses.includes(target.toString()))
+    assert.isFalse(addresses.includes(delegatedTo.toString()))
   })
 })

@@ -13,13 +13,16 @@ import {
   setLengthLeft,
 } from '@ethereumjs/util'
 
-import { activeCostPerStateByte } from '../eip8037.ts'
 import { EOFErrorMessage } from '../eof/errors.ts'
 import { EVMError } from '../errors.ts'
 import { DELEGATION_7702_FLAG } from '../types.ts'
 
 import { updateSstoreGasEIP1283 } from './EIP1283.ts'
-import { updateSstoreGasEIP2200, updateSstoreGasEIP8038 } from './EIP2200.ts'
+import {
+  chargeSstoreAccessEIP8038,
+  updateSstoreGasEIP2200,
+  updateSstoreGasEIP8038,
+} from './EIP2200.ts'
 import {
   accessAddressEIP2929,
   accessStorageEIP2929,
@@ -27,7 +30,7 @@ import {
   getAddressAccessCost,
   warmAddress,
 } from './EIP2929.ts'
-import { callFamilyGas, create7928Gas } from './EIP7928.ts'
+import { callFamilyGas, create7928Gas, createNewAccountStateGasIfCharged } from './EIP7928.ts'
 import {
   createAddressFromStackBigInt,
   divCeil,
@@ -401,18 +404,21 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         // Read current and original storage for gas calculation.
         // Pass trackBAL=false because we'll track the read manually below,
-        // but ONLY if the EIP-2200 sentry check passes (per EIP-7928).
-        const currentStorage = setLengthLeftStorage(
-          await runState.interpreter.storageLoad(keyBytes, false, false),
-        )
-        const originalStorage = setLengthLeftStorage(
-          await runState.interpreter.storageLoad(keyBytes, true, false),
-        )
+        // but ONLY after the access/stipend gate (EIP-7928 / EIP-8038).
+        const loadSlot = async () => ({
+          currentStorage: setLengthLeftStorage(
+            await runState.interpreter.storageLoad(keyBytes, false, false),
+          ),
+          originalStorage: setLengthLeftStorage(
+            await runState.interpreter.storageLoad(keyBytes, true, false),
+          ),
+        })
         let sstoreCharge2929Gas = true
         if (common.isActivatedEIP(8038)) {
-          // Amsterdam schedule: access cost (cold/warm) + flat write cost on
-          // the first change to the slot, with matching restore refunds.
-          // Access cost is charged inside; skip the 2929 access charge below.
+          // Access cost must be covered before the implicit read: cold access
+          // (3000) exceeds the EIP-2200 stipend (2300).
+          gas += chargeSstoreAccessEIP8038(runState, keyBytes, common)
+          const { currentStorage, originalStorage } = await loadSlot()
           gas += updateSstoreGasEIP8038(
             runState,
             currentStorage,
@@ -422,33 +428,36 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
             common,
           )
           sstoreCharge2929Gas = false
-        } else if (common.hardfork() === Hardfork.Constantinople) {
-          gas += updateSstoreGasEIP1283(
-            runState,
-            currentStorage,
-            originalStorage,
-            setLengthLeftStorage(value),
-            common,
-          )
-        } else if (common.gteHardfork(Hardfork.Istanbul)) {
-          if (!common.isActivatedEIP(6800) && !common.isActivatedEIP(7864)) {
-            gas += updateSstoreGasEIP2200(
+        } else {
+          const { currentStorage, originalStorage } = await loadSlot()
+          if (common.hardfork() === Hardfork.Constantinople) {
+            gas += updateSstoreGasEIP1283(
               runState,
               currentStorage,
               originalStorage,
               setLengthLeftStorage(value),
-              keyBytes,
               common,
             )
+          } else if (common.gteHardfork(Hardfork.Istanbul)) {
+            if (!common.isActivatedEIP(6800) && !common.isActivatedEIP(7864)) {
+              gas += updateSstoreGasEIP2200(
+                runState,
+                currentStorage,
+                originalStorage,
+                setLengthLeftStorage(value),
+                keyBytes,
+                common,
+              )
+            }
+          } else {
+            gas += updateSstoreGas(runState, currentStorage, setLengthLeftStorage(value), common)
           }
-        } else {
-          gas += updateSstoreGas(runState, currentStorage, setLengthLeftStorage(value), common)
         }
 
-        // If we reach here, the EIP-2200 sentry check passed (didn't trap).
+        // If we reach here, the access / EIP-2200 sentry check passed (didn't trap).
         // Per EIP-7928, now track the storage read for BAL. If the SSTORE
         // succeeds later, the write will remove this read (see addStorageWrite).
-        // If SSTORE fails with OOG after the sentry, the read remains in BAL.
+        // If SSTORE fails with OOG after the gate, the read remains in BAL.
         if (common.isActivatedEIP(7928)) {
           runState.interpreter._evm.blockLevelAccessList?.addStorageRead(
             runState.interpreter.getAddress().toString(),
@@ -625,15 +634,20 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         gas += subMemUsage(runState, offset, length, common)
 
         if (common.isActivatedEIP(8037)) {
-          const stateBytesPerNewAccount = common.param('stateBytesPerNewAccount')
-          const blockGasLimit = runState.env.block.header.gasLimit
-          const costPerStateByte = activeCostPerStateByte(common, blockGasLimit)
-          const newAccountStateGas = stateBytesPerNewAccount * costPerStateByte
+          const targetAddress = await getCreateTargetAddressBytes(runState, new Uint8Array())
+          const newAccountStateGas = await createNewAccountStateGasIfCharged(
+            runState,
+            common,
+            targetAddress,
+          )
           if (gas > BIGINT_0) {
             runState.interpreter.useGas(gas, 'CREATE pre-charges')
             gas = BIGINT_0
           }
-          runState.interpreter.chargeStateGas(newAccountStateGas, 'CREATE pre-charge new_account')
+          if (newAccountStateGas > BIGINT_0) {
+            runState.interpreter.chargeStateGas(newAccountStateGas, 'CREATE pre-charge new_account')
+          }
+          runState.lastCreateNewAccountStateGas = newAccountStateGas
         }
 
         let gasLimit = BigInt(runState.interpreter.getGasLeft()) - gas
@@ -765,15 +779,27 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         gas += common.param('keccak256WordGas') * divCeil(length, BIGINT_32)
 
         if (common.isActivatedEIP(8037)) {
-          const stateBytesPerNewAccount = common.param('stateBytesPerNewAccount')
-          const blockGasLimit = runState.env.block.header.gasLimit
-          const costPerStateByte = activeCostPerStateByte(common, blockGasLimit)
-          const newAccountStateGas = stateBytesPerNewAccount * costPerStateByte
+          let initCode = new Uint8Array(0)
+          if (length !== BIGINT_0) {
+            initCode = runState.memory.read(Number(offset), Number(length), true)
+          }
+          const targetAddress = await getCreateTargetAddressBytes(runState, initCode, salt)
+          const newAccountStateGas = await createNewAccountStateGasIfCharged(
+            runState,
+            common,
+            targetAddress,
+          )
           if (gas > BIGINT_0) {
             runState.interpreter.useGas(gas, 'CREATE2 pre-charges')
             gas = BIGINT_0
           }
-          runState.interpreter.chargeStateGas(newAccountStateGas, 'CREATE2 pre-charge new_account')
+          if (newAccountStateGas > BIGINT_0) {
+            runState.interpreter.chargeStateGas(
+              newAccountStateGas,
+              'CREATE2 pre-charge new_account',
+            )
+          }
+          runState.lastCreateNewAccountStateGas = newAccountStateGas
         }
 
         let gasLimit = runState.interpreter.getGasLeft() - gas

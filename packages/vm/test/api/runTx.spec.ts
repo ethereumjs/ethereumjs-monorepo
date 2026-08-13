@@ -727,6 +727,12 @@ describe('runTx() -> RunTxOptions', () => {
             'throws on negative call value',
           )
         }
+        const sender = await vm.stateManager.getAccount(createZeroAddress())
+        assert.strictEqual(
+          sender?.nonce ?? 0n,
+          0n,
+          'negative-value tx must not bump the sender nonce',
+        )
       }
     }
   })

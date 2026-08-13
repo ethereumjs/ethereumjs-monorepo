@@ -401,7 +401,7 @@ See the [canonical Amsterdam overview](https://github.com/ethereumjs/ethereumjs-
 
 On `Hardfork.Amsterdam` (experimental), two EIPs adjust the minimum gas a transaction must pay before execution:
 
-**[EIP-7976](https://eips.ethereum.org/EIPS/eip-7976) — calldata floor:** under EIP-7623, calldata is priced in **tokens** (1 per zero byte, 4 per non-zero byte pre-7976). EIP-7976 raises the floor to a uniform **4 tokens per byte** for all calldata bytes. The floor cost is `txGas + totalCostFloorPerToken × tokens` and is enforced in `getValidationErrors()` / intrinsic gas calculation for all tx types.
+**[EIP-7976](https://eips.ethereum.org/EIPS/eip-7976) — calldata floor:** under EIP-7623, calldata is priced in **tokens** (1 per zero byte, 4 per non-zero byte pre-7976). EIP-7976 raises the floor to a uniform **4 tokens per byte** for all calldata bytes. The floor cost is `floor_base + totalCostFloorPerToken × tokens`, where `floor_base` is the decomposed EIP-2780 regular intrinsic (`txGas` + recipient/value extras, or `txGas` + `txCreationGas` for creates). Self-transfers skip the extras. Enforced in `getValidationErrors()` / `getCalldataFloorGas()` for all tx types.
 
 **[EIP-7981](https://eips.ethereum.org/EIPS/eip-7981) — access-list floor:** for typed txs with an access list (types `1`, `2`, `3`, `4`), an additional floor charge applies to the raw access-list bytes: **20 bytes per address + 32 bytes per storage key**, each counted at 4 tokens per byte (`totalCostFloorPerToken × accessListBytes × 4`).
 
