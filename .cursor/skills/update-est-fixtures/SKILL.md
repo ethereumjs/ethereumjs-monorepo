@@ -117,9 +117,11 @@ Return the PR URL. Then STOP (implementation is Phase C).
 
 ## Phase C — implementation (one “what we need” item at a time)
 
-The numbered **What we need** blocks from the first-round report are the implementation backlog. Do not start item N+1 until item N is done, unless asked. Each item is **two steps**, each with a **manual stop** (so a different model can pick up the next step).
+The numbered **What we need** blocks from the first-round report are the spec-delta backlog. Do not start item N+1 until item N is done, unless asked. Each item is **two steps**, each with a **manual stop** (so a different model can pick up the next step).
 
 Do not commit or push unless asked.
+
+After those numbered items, if the bumped tree is not 100%, run a **leftover pass** (its own item: **fix remaining tests if not yet 100%**): re-run `:summary`, cluster remaining failures, then C1 (cluster plan) → C2 until 100% or a leftover is clearly a runner/fixture issue (ask). Do not treat earlier item done-when percentages as the end of the round. If they asked to add this pass and act immediately, skip the C1 stop.
 
 ### C1 — strategy (stop for confirmation)
 
@@ -130,7 +132,7 @@ Work out a plan only. Do not edit production code in this step.
 - API: **backwards-compatible / preserving**. May *add* to the public API if it is useful to library users. Do not rename or change existing signatures to get the spec green.
 - Local tests: which `test/api/EIPs/eip-NNNN.spec.ts` (or existing suite) to add, matching nearby tests.
 - READMEs: which package READMEs to update (see below).
-- Done-when: local tests + named EST subsets (not “all 3707 green”).
+- Done-when: local tests + named EST subsets (not “all 3707 green”). The leftover pass after numbered items is what drives the mix to 100%.
 
 **Chat:** canvas (same visual bar as first-round). Then STOP. Implementation is C2 after they confirm.
 

@@ -36,8 +36,9 @@ interface IntrinsicDimensionsTx {
  * Returns `{ intrinsicRegular, intrinsicState }` such that
  * `intrinsicRegular + intrinsicState` equals the tx's total **state-independent**
  * intrinsic charge under EIP-8037 (glamsterdam-devnet v7+). EIP-2780
- * recipient/value/log costs and new-account state gas are charged at
- * top-frame access, not here.
+ * recipient/value/log extras are part of `getIntrinsicGas()` (self-transfers
+ * skip them). New-account state gas and 7702 `ACCOUNT_WRITE` / auth state
+ * are charged at top-frame access, not here.
  *
  * Callers may then use the split for the per-tx block-gas pre-execution
  * checks:
@@ -63,14 +64,8 @@ export function computeIntrinsicGasDimensions8037(
     return { intrinsicRegular: intrinsicRegular0, intrinsicState: BIGINT_0 }
   }
 
-  // 7702: getIntrinsicGas() adds `authCount * perEmptyAccountCost` (0 under
-  // 8037). The state-independent remainder is perAuthBaseGas per list entry.
+  // 7702 perAuthBaseGas is already in getIntrinsicGas() under 8037.
   // ACCOUNT_WRITE and per-auth state gas are charged at access (runTx
   // processAuthorizationList), keyed on pre-state — not here.
-  let intrinsicRegular = intrinsicRegular0
-  if (tx.type === 4 && Array.isArray(tx.authorizationList)) {
-    intrinsicRegular += BigInt(tx.authorizationList.length) * common.param('perAuthBaseGas')
-  }
-
-  return { intrinsicRegular, intrinsicState: BIGINT_0 }
+  return { intrinsicRegular: intrinsicRegular0, intrinsicState: BIGINT_0 }
 }

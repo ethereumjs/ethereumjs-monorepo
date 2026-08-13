@@ -248,8 +248,8 @@ export class EVM implements EVMInterface {
    */
   public eip7928CallPostTargetOog = false
   /**
-   * EIP-2780 / EIP-8037: set when a top-frame access charge (recipient/value/log
-   * or create-tx new-account state) OOGs before opcodes run. runTx uses this to
+   * EIP-2780 / EIP-8037: set when a top-frame access charge (new-account
+   * state or 7702 delegation resolution) OOGs before opcodes run. runTx uses this to
    * revert 7702 delegations applied in the prepare region.
    *
    * @remarks Experimental (Amsterdam): may change on patch releases.
@@ -513,29 +513,13 @@ export class EVM implements EVMInterface {
       }
     }
 
-    // EIP-2780 top-frame charges (Amsterdam, experimental): applied at the
-    // top of a transaction's call frame, after authorizations and before any
-    // opcode runs. Reads pre-value-transfer state so the EIP-161-empty check
-    // sees the recipient as it was at the start of the frame. Recipient/value
-    // regular costs used to sit in intrinsic gas; v7 charges them here.
+    // EIP-2780 / EIP-8037 top-frame charges (Amsterdam, experimental):
+    // recipient/value/log regular gas is intrinsic (state-independent). What
+    // remains here depends on pre-state: new-account state gas and 7702
+    // delegation-resolution cold access. Reads pre-value-transfer state so
+    // the EIP-161-empty check sees the recipient as it was at the start of
+    // the frame.
     if (message.depth === 0 && this.common.isActivatedEIP(2780) && !message.delegatecall) {
-      const isSelfTransfer = equalsBytes(message.caller.bytes, message.to.bytes)
-      if (!isSelfTransfer) {
-        const recipientAccess = this.common.param('txRecipientAccessGas')
-        if (gasLimit < recipientAccess) {
-          this.eip2780PrepOog = true
-          return { execResult: OOGResult(message.gasLimit) }
-        }
-        gasLimit -= recipientAccess
-        if (message.value > BIGINT_0) {
-          const valueCost = this.common.param('txValueCost') + this.common.param('transferLogCost')
-          if (gasLimit < valueCost) {
-            this.eip2780PrepOog = true
-            return { execResult: OOGResult(message.gasLimit) }
-          }
-          gasLimit -= valueCost
-        }
-      }
       // Dead recipient receiving value: charge the new-account state gas
       // (reservoir first, spilling into the frame's regular gas).
       if (message.value > BIGINT_0) {
@@ -804,22 +788,10 @@ export class EVM implements EVMInterface {
       }
     }
 
-    // EIP-2780 / EIP-8037 top-frame create charges (v7): transfer-log regular
-    // cost and new-account state gas are no longer intrinsic. Charge at access
-    // from pre-state (skip new-account state if the target is already alive).
+    // EIP-8037 top-frame create: transfer-log regular gas is intrinsic.
+    // Charge new-account state gas at access from pre-state (skip if the
+    // target is already alive).
     if (message.depth === 0) {
-      if (this.common.isActivatedEIP(2780) && message.value > BIGINT_0) {
-        const isSelfCreate =
-          message.to !== undefined && equalsBytes(message.caller.bytes, message.to.bytes)
-        if (!isSelfCreate) {
-          const logCost = this.common.param('transferLogCost')
-          if (gasLimit < logCost) {
-            this.eip2780PrepOog = true
-            return { createdAddress: message.to, execResult: OOGResult(message.gasLimit) }
-          }
-          gasLimit -= logCost
-        }
-      }
       if (this.common.isActivatedEIP(8037) && message.createdTargetAlive !== true) {
         const amount =
           this.common.param('stateBytesPerNewAccount') * activeCostPerStateByte(this.common)

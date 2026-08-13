@@ -43,15 +43,16 @@ function block() {
   )
 }
 
-describe('EIP-2780 top-frame gas (Amsterdam)', () => {
-  it('rejects below state-independent intrinsic (txGas) only', async () => {
+describe('EIP-2780 intrinsic gas (Amsterdam)', () => {
+  it('rejects below txGas + recipient/value extras', async () => {
     const vm = await getVM()
-    const txGas = txCommon().param('txGas')
+    const c = txCommon()
+    const min = c.param('txGas') + extra2780Regular(c, 1n, false)
     const tx = createLegacyTx(
       {
         to: recipient,
         value: 1n,
-        gasLimit: txGas - 1n,
+        gasLimit: min - 1n,
         gasPrice: 10n,
       },
       { common },
@@ -62,25 +63,27 @@ describe('EIP-2780 top-frame gas (Amsterdam)', () => {
     )
   })
 
-  it('does not reject at intrinsic for a gasLimit between txGas and the old 21k bundle', async () => {
+  it('accepts a value transfer at the decomposed 21k intrinsic (existing recipient)', async () => {
     const vm = await getVM()
     await vm.stateManager.putAccount(recipient, new Account(0n, 1n))
-    const txGas = txCommon().param('txGas')
+    const c = txCommon()
+    const min = c.param('txGas') + extra2780Regular(c, 1n, false)
     const tx = createLegacyTx(
       {
         to: recipient,
         value: 1n,
-        gasLimit: txGas + 1n,
+        gasLimit: min,
         gasPrice: 10n,
       },
       { common },
     ).sign(senderKey)
 
     const result = await runTx(vm, { block: block(), tx, skipHardForkValidation: true })
-    assert.isDefined(result.execResult.exceptionError)
+    assert.isUndefined(result.execResult.exceptionError)
+    assert.strictEqual(result.totalGasSpent, min)
   })
 
-  it('intrinsic reject is independent of whether the recipient exists', async () => {
+  it('intrinsic reject does not depend on whether the recipient exists', async () => {
     const c = txCommon()
     const mid = c.param('txGas') + extra2780Regular(c, 1n, false) / 2n
     const makeTx = () =>
@@ -89,50 +92,48 @@ describe('EIP-2780 top-frame gas (Amsterdam)', () => {
       )
 
     const vmEmpty = await getVM()
-    const emptyResult = await runTx(vmEmpty, {
-      block: block(),
-      tx: makeTx(),
-      skipHardForkValidation: true,
-    })
+    await expect(
+      runTx(vmEmpty, { block: block(), tx: makeTx(), skipHardForkValidation: true }),
+    ).rejects.toThrow(/INTRINSIC_GAS_TOO_LOW/)
 
     const vmExisting = await getVM()
     await vmExisting.stateManager.putAccount(recipient, new Account(0n, 1n))
-    const existingResult = await runTx(vmExisting, {
-      block: block(),
-      tx: makeTx(),
-      skipHardForkValidation: true,
-    })
-
-    // Both pass the intrinsic check (would have thrown INTRINSIC_GAS_TOO_LOW
-    // when 2780 extras were still in the splitter). Runtime OOG is expected.
-    assert.isDefined(emptyResult.execResult.exceptionError)
-    assert.isDefined(existingResult.execResult.exceptionError)
+    await expect(
+      runTx(vmExisting, { block: block(), tx: makeTx(), skipHardForkValidation: true }),
+    ).rejects.toThrow(/INTRINSIC_GAS_TOO_LOW/)
   })
 
-  it('charges recipient/value/log at the frame, not in minGasLimit, for an existing recipient', async () => {
-    const vm = await getVM()
-    await vm.stateManager.putAccount(recipient, new Account(0n, 1n))
-    const c = txCommon()
-    const gasLimit = c.param('txGas') + extra2780Regular(c, 1n, false)
-    const tx = createLegacyTx(
-      { to: recipient, value: 1n, gasLimit: 1_000_000n, gasPrice: 10n },
-      { common },
-    ).sign(senderKey)
-
-    const result = await runTx(vm, { block: block(), tx, skipHardForkValidation: true })
-    assert.isUndefined(result.execResult.exceptionError)
-    assert.strictEqual(result.totalGasSpent, gasLimit)
-  })
-
-  it('self-transfer skips recipient and value charges', async () => {
+  it('self-transfer skips recipient and value extras', async () => {
     const vm = await getVM()
     const tx = createLegacyTx(
-      { to: sender, value: 1n, gasLimit: 1_000_000n, gasPrice: 10n },
+      { to: sender, value: 1n, gasLimit: txCommon().param('txGas'), gasPrice: 10n },
       { common },
     ).sign(senderKey)
 
     const result = await runTx(vm, { block: block(), tx, skipHardForkValidation: true })
     assert.isUndefined(result.execResult.exceptionError)
     assert.strictEqual(result.totalGasSpent, txCommon().param('txGas'))
+  })
+
+  it('calldata floor is anchored on TX_BASE + recipient extras, not txGas alone', async () => {
+    const vm = await getVM()
+    await vm.stateManager.putAccount(recipient, new Account(0n, 1n))
+    const c = txCommon()
+    const data = new Uint8Array(100).fill(1)
+    const floorTokens = BigInt(data.length) * 4n
+    const oldFloor = c.param('txGas') + c.param('totalCostFloorPerToken') * floorTokens
+    const newFloor = oldFloor + extra2780Regular(c, 0n, false)
+    // Between the pre-3120 floor (txGas only) and the v7 floor (txGas + recipient).
+    const gasLimit = (oldFloor + newFloor) / 2n
+    assert.isTrue(gasLimit > oldFloor)
+    assert.isTrue(gasLimit < newFloor)
+
+    const tx = createLegacyTx({ to: recipient, data, gasLimit, gasPrice: 10n }, { common }).sign(
+      senderKey,
+    )
+
+    await expect(runTx(vm, { block: block(), tx, skipHardForkValidation: true })).rejects.toThrow(
+      /is lower than the minimum gas limit of/,
+    )
   })
 })

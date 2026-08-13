@@ -412,8 +412,10 @@ export const paramsEVM: ParamsDict = {
   },
   /**
    * Reduce intrinsic transaction gas (Amsterdam, experimental).
-   * Recipient/value/log components are charged at the top frame here, not in
-   * `getIntrinsicGas()`. Keep in sync with `@ethereumjs/tx` `paramsTx[2780]`.
+   * Recipient/value/log extras are intrinsic on `@ethereumjs/tx`
+   * (`getIntrinsicGas()` / the calldata floor). The EVM still charges
+   * new-account state gas at the top frame. Keep in sync with
+   * `@ethereumjs/tx` `paramsTx[2780]`.
    */
   2780: {
     txValueCost: 4244, // TX_VALUE_COST: extra regular gas for value-bearing non-self-transfer calls

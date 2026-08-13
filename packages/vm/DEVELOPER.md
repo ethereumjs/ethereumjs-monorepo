@@ -296,9 +296,11 @@ If they asked for a Phase B PR: commit the wiring (submodule gitlink, scripts, l
 
 #### Phase C — implementation (after first-round)
 
-Numbered **What we need** blocks from the first-round report are the backlog (high-leverage first). One item at a time. Each item is two gated steps (see `.cursor/skills/update-est-fixtures`): **C1 strategy** (where/how, EST folders, local tests, README — stop for confirmation) then **C2 implement** until that item’s tests pass (stop again). Preserve existing APIs; additions are OK. Update package READMEs: canonical Amsterdam overview in [`packages/vm/README.md`](./README.md); other packages link it and list the specs they implement. Add local `test/api/EIPs/` tests where they help.
+Numbered **What we need** blocks from the first-round report are the spec-delta backlog (high-leverage first). One item at a time. Each item is two gated steps (see `.cursor/skills/update-est-fixtures`): **C1 strategy** (where/how, EST folders, local tests, README — stop for confirmation) then **C2 implement** until that item’s tests pass (stop again). Preserve existing APIs; additions are OK. Update package READMEs: canonical Amsterdam overview in [`packages/vm/README.md`](./README.md); other packages link it and list the specs they implement. Add local `test/api/EIPs/` tests where they help.
 
-Do not start C2 in the same turn as C1. Do not commit unless asked.
+**Leftover pass — fix remaining tests if not yet 100%:** after the numbered items, if the bumped tree is not green, that is its own item. Re-run `test:est:dev:blockchain:summary` (and `:state` if used). Cluster remaining failures (error message + folder). Same C1 then C2: C1 is the cluster plan (which failures share a root cause, which EST subsets prove a fix, what is a runner/fixture issue to ask about). C2 implements until those clusters are gone. Repeat until the mix is 100%, or stop and ask if a leftover is not an EthereumJS bug. Do not treat “good enough” folder percentages from earlier items as done.
+
+Do not start C2 in the same turn as C1, unless they asked to add this leftover pass and act on it immediately. Do not commit unless asked.
 
 Legacy Prague (`test:state` / `test:blockchain`) is only required in this phase if the bump touched `stable/` or the runners.
 

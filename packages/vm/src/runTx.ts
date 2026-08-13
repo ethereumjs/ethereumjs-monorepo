@@ -9,7 +9,7 @@ import {
   computeIntrinsicGasDimensions8037,
   createEIP7708BurnLog,
 } from '@ethereumjs/evm'
-import { Capability, isBlob4844Tx } from '@ethereumjs/tx'
+import { Capability, getCalldataFloorGas, isBlob4844Tx } from '@ethereumjs/tx'
 import {
   Account,
   Address,
@@ -675,29 +675,7 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   // ===========================
   // Validate gas limit against tx base fee (DataFee + TxFee + Creation Fee)
   const intrinsicGas = tx.getIntrinsicGas()
-  let floorCost = BIGINT_0
-
-  // EIP-7623: Calculate floor cost for calldata
-  if (vm.common.isActivatedEIP(7623)) {
-    // Tx should at least cover the floor price for tx data
-    let tokens = 0
-    if (vm.common.isActivatedEIP(7976)) {
-      // EIP-7976: uniform 4 tokens per byte regardless of zero/non-zero
-      tokens = tx.data.length * 4
-    } else {
-      for (let i = 0; i < tx.data.length; i++) {
-        tokens += tx.data[i] === 0 ? 1 : 4
-      }
-    }
-    // EIP-7981: include access list bytes in floor token count (20 bytes/address + 32 bytes/slot)
-    if (vm.common.isActivatedEIP(7981) && tx.supports(Capability.EIP2930AccessLists)) {
-      const accessList = (tx as AccessList2930Tx).accessList
-      const totalSlots = accessList.reduce((sum: number, item) => sum + item[1].length, 0)
-      tokens += (accessList.length * 20 + totalSlots * 32) * 4
-    }
-    floorCost =
-      tx.common.param('txGas') + tx.common.param('totalCostFloorPerToken') * BigInt(tokens)
-  }
+  const floorCost = getCalldataFloorGas(tx, caller)
 
   // ===========================
   // EIP-8037: split intrinsic gas into regular + state and initialize the
@@ -984,8 +962,9 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     ).createdAccountIntrinsicStateGas = new Map()
   }
 
-  // Nested checkpoint: 7702 auths + top-frame 2780 charges. Prep-region OOG
-  // reverts this layer (delegations roll back) without undoing the sender debit.
+  // Nested checkpoint: 7702 auths + top-frame state-dependent 2780 charges.
+  // Prep-region OOG reverts this layer (delegations roll back) without undoing
+  // the sender debit.
   await vm.evm.journal.checkpoint()
 
   // Process EIP-7702 authorization list (if applicable)
