@@ -157,6 +157,17 @@ Not yet on the EST runners: `--jsontrace`, `--debug`, `--profile`, `--fork=Hardf
 
 Deprecated, still used for Prague (default PR) and for older forks (nightly / `test all hardforks`). Wrappers: [`vitest-wrapper.ts`](./test/tester/vitest-wrapper.ts), [`vitest-wrapper-blockchain.ts`](./test/tester/vitest-wrapper-blockchain.ts). Config and skip lists: [`config.ts`](./test/tester/config.ts).
 
+Full-suite runs hash-shard fixture files across up to 4 worker processes (or `min(cpus, 4)`). Each worker only reads its files. CLI flags are unchanged. Filtered or debug runs stay on one process so output stays readable.
+
+```bash
+npm run test:state                 # Prague, sharded
+npm run test:blockchain
+npm run test:state -- --jobs=2     # cap workers
+npm run test:state -- --jobs=1     # single process (old behaviour)
+```
+
+Sharded runs print failures as they happen and a per-directory pass/fail table at the end (same reporter family as EST). `--test`, `--file`, `--jsontrace`, `--debug`, and `--profile` force a single worker and the default Vitest reporter.
+
 #### Default commands
 
 ```bash
@@ -178,11 +189,11 @@ npm run test:state:slow          # include SKIP_SLOW
 npm run test:blockchain:allForks
 ```
 
-Direct Vitest (same env the wrappers set):
+Direct Vitest (single process; same env the wrappers set). Prefer the npm scripts above so full-suite runs are sharded:
 
 ```bash
-VITE_FORK=Prague npx vitest test/tester/state.spec.ts
-VITE_FORK=Prague npx vitest test/tester/blockchain.spec.ts
+VITE_FORK=Prague npx vitest run test/tester/state.spec.ts
+VITE_FORK=Prague npx vitest run test/tester/blockchain.spec.ts
 ```
 
 #### Filter

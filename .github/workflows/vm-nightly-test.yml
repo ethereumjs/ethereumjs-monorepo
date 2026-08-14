@@ -83,7 +83,7 @@ jobs:
         if: steps.submodules-cache.outputs.cache-hit != 'true'
         run: git submodule update --init --recursive
 
-      - run: VITE_FORK=${{ matrix.fork }} VITE_VERIFY_TEST_AMOUNT_ALL_TESTS=1 npx vitest run --passWithNoTests test/tester/state.spec.ts
+      - run: npm run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
 
   test-vm-blockchain:
     if: github.repository == 'ethereumjs/ethereumjs-monorepo'
@@ -138,7 +138,7 @@ jobs:
         if: steps.submodules-cache.outputs.cache-hit != 'true'
         run: git submodule update --init --recursive
 
-      - run: VITE_FORK=${{ matrix.fork }} VITE_VERIFY_TEST_AMOUNT_ALL_TESTS=1 npx vitest run --passWithNoTests test/tester/blockchain.spec.ts
+      - run: npm run test:blockchain -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
 
   test-vm-slow:
     if: github.repository == 'ethereumjs/ethereumjs-monorepo'
@@ -178,4 +178,4 @@ jobs:
         if: steps.submodules-cache.outputs.cache-hit != 'true'
         run: git submodule update --init --recursive
 
-      - run: VITE_FILE=${{ matrix.testFile }} VITE_RUN_SKIPPED=slow npx vitest run test/tester/state.spec.ts
+      - run: npm run test:state -- --file=${{ matrix.testFile }} --runSkipped=slow
