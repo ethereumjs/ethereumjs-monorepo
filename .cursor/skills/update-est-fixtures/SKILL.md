@@ -7,10 +7,19 @@ description: Updates EthereumJS execution-spec test fixtures from an ethereum/ex
 
 Source of truth: `packages/vm/DEVELOPER.md` — **Updating fixtures** and **What “green” means**. Read that before changing files.
 
-Two repos, two human gates. Do not commit or push unless asked. **Exceptions** (never force-push):
+## Workflow gates (mandatory)
 
-- Phase A: if GO explicitly asks to commit/push, do that on the fixtures repo.
-- Phase B: if GO explicitly asks to commit/push **as a new PR**, do that on the monorepo after the first-round report (see below).
+This is a **multi-phase workflow with hard stops**. After each phase, **stop completely** — do not start the next phase in the same turn, even if the user said “let’s go” at the outset. “Let’s go” means begin the current phase; it does **not** waive later gates.
+
+| Phase | Agent does | Then **STOP** until human |
+| --- | --- | --- |
+| **A** — fixtures repo | Download, copy tree, README | **You** commit, push, open PR, **merge** on `execution-spec-tests-fixtures` |
+| **B** — monorepo wiring | Submodule pin, scripts, first-round `:summary`, report | Explicit **go** for Phase B; then **you** commit/push monorepo PR unless you asked the agent to |
+| **C** — implementation | One “what we need” item: C1 plan → stop → C2 implement → stop | Explicit **go** before each C1/C2 step |
+
+**Commits and pushes:** by default **the human** commits and pushes (fixtures repo after Phase A; monorepo after Phase B). The agent must **not** commit or push unless you **explicitly** ask for that step (e.g. “commit and push the fixtures repo”, “open the Phase B PR”). Never force-push.
+
+Phase B must not start until the Phase A merge commit is on `origin/main` (or you explicitly allow a local fixtures SHA for a dry-run only).
 
 If a round diverges, patch DEVELOPER.md first, then this file.
 
@@ -30,7 +39,9 @@ Tarballs are large (~648 MB for `tests-glamsterdam-devnet@v7.0.0`). Download is 
 
 ## Phase A — fixtures repo
 
-Stop when the tree + README are ready. Commit/push only if GO asked for that. Otherwise the human commits, pushes, and merges.
+**Scope:** `execution-spec-tests-fixtures` only. Do not touch the monorepo submodule in this phase.
+
+When the tree + README are ready, **stop**. Do not commit, push, or run monorepo tests unless explicitly asked. The human commits, pushes, merges the fixtures PR, then gives **go** for Phase B.
 
 ```
 - [ ] Confirm tag + stable vs dev + replace vs add
@@ -38,12 +49,15 @@ Stop when the tree + README are ready. Commit/push only if GO asked for that. Ot
 - [ ] Copy consumed trees; apply ≳100 MB exclusions
 - [ ] Replace previous glamsterdam folder when that is the policy
 - [ ] Rewrite fixtures README (tags, folders, exclusions, JSON counts)
-- [ ] Summarize: old vs new counts, what moved; STOP
+- [ ] Summarize: old vs new counts, what moved
+- [ ] **STOP** — wait for human merge on fixtures repo
 ```
 
-Summary must include old JSON count, new JSON count, folder names, exclusions, and a pointer to the upstream release.
+Summary must include old JSON count, new JSON count, folder names, exclusions, and a pointer to the upstream release. Confirm the working tree is ready for the human to commit (list any unstaged paths; tarball/extract dirs should stay gitignored).
 
-## Phase B — monorepo (only after green light)
+## Phase B — monorepo (only after explicit go)
+
+**Prerequisite:** Phase A merged on `execution-spec-tests-fixtures` (`origin/main`), unless the human explicitly allows a local fixtures SHA for a first-round dry-run.
 
 Fixtures commit must be reachable. Prefer `origin/main` after merge; a local SHA from the sibling fixtures checkout is fine for a first-round run (avoids GitHub SSH / macOS Touch ID).
 
@@ -65,10 +79,10 @@ git -C packages/execution-spec-tests checkout <sha>
 - [ ] Read upstream release notes; check packages/vm/src/params.ts (and Common EIP params) for address / constant drift
 - [ ] First-round: npm run test:est:dev:blockchain:summary (from packages/vm). Also test:est:dev:state if state fixtures were added
 - [ ] Report from the table + /tmp/est-dev-blockchain-summary.json
-- [ ] STOP, unless GO asked to commit/push this step as a new PR
+- [ ] **STOP** — wait for human review; commit/push monorepo PR only if explicitly asked
 ```
 
-Do **not** use `test:analysis:report` for first-round (file-by-file, too slow). Do not start implementation in the same turn as this first-round report.
+Do **not** use `test:analysis:report` for first-round (file-by-file, too slow). Do not start implementation in the same turn as this first-round report. Do not start Phase C in the same turn as the first-round report.
 
 ### First-round report (layout)
 
@@ -163,7 +177,9 @@ Verify with local tests first, then the EST folders named in C1 (`TEST_PATH=…/
 - Treat archived `ethereum/execution-spec-tests` as the release source.
 - Import engine-x / benchmark / sync formats without a runner.
 - Re-download a tarball that is already present and valid.
-- Skip the Phase A or Phase B human gate, or start C2 in the same turn as C1.
+- Skip a phase gate or continue into the next phase in the same turn (including Phase A → B, report → Phase C, C1 → C2).
+- Commit or push either repo unless the human explicitly asked for that step.
+- Touch the monorepo submodule during Phase A.
 - Assume EST runners have `--jsontrace` / `--debug` / `--profile` / `--fork=HF+EIP`.
 - Dump or grep a full vitest default-reporter log when `:summary` + `EST_SUMMARY_JSON` exist.
 - Mix “what’s new upstream” and “what we need” in the same bullets; dump first-round numbers as a markdown table in chat (use a canvas).
