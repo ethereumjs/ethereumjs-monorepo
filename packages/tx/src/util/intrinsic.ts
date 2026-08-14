@@ -33,17 +33,16 @@ function isCreateTx(tx: LegacyTxInterface): boolean {
 }
 
 /**
- * EIP-2780 regular-gas extras that sit in intrinsic (and the calldata floor
- * base) under glamsterdam-devnet v7: recipient cold access, value cost, and
- * transfer-log cost. Create txs already pay `txCreationGas` (CREATE_ACCESS)
- * via {@link getIntrinsicGas}; this helper only adds the value-bearing
- * transfer-log on top of that.
+ * EIP-2780 execution-gas extras that sit in intrinsic (and the calldata floor
+ * base): recipient cold access and `TX_VALUE_COST` for value-bearing txs.
+ * Create txs already pay `txCreationGas` (CREATE_ACCESS) via
+ * {@link getIntrinsicGas}; this helper adds `TX_VALUE_COST` when `value > 0`.
+ *
+ * Since glamsterdam-devnet v8, `TX_VALUE_COST` includes the EIP-7708 transfer
+ * log — do not add `transferLogCost` separately at the tx level.
  *
  * Self-transfers (`sender === tx.to`) skip the extras. When `sender` cannot
  * be resolved, a call is treated as a non-self-transfer (conservative).
- *
- * Matches `calculate_intrinsic_cost` in execution-specs Amsterdam
- * (`tests-glamsterdam-devnet@v7.0.0`).
  */
 export function getEip2780RecipientRegularGas(tx: LegacyTxInterface, sender?: Address): bigint {
   if (!tx.common.isActivatedEIP(2780)) {
@@ -51,7 +50,7 @@ export function getEip2780RecipientRegularGas(tx: LegacyTxInterface, sender?: Ad
   }
 
   if (isCreateTx(tx)) {
-    return tx.value > BIGINT_0 ? tx.common.param('transferLogCost') : BIGINT_0
+    return tx.value > BIGINT_0 ? tx.common.param('txValueCost') : BIGINT_0
   }
 
   const from = resolveSender(tx, sender)
@@ -61,7 +60,7 @@ export function getEip2780RecipientRegularGas(tx: LegacyTxInterface, sender?: Ad
 
   let extra = tx.common.param('txRecipientAccessGas')
   if (tx.value > BIGINT_0) {
-    extra += tx.common.param('txValueCost') + tx.common.param('transferLogCost')
+    extra += tx.common.param('txValueCost')
   }
   return extra
 }

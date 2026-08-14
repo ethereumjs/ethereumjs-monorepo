@@ -99,8 +99,8 @@ export function getIntrinsicGas(tx: LegacyTxInterface): bigint {
     const txCreationFee = tx.common.param('txCreationGas')
     if (txCreationFee) fee += txCreationFee
   }
-  // EIP-2780: recipient/value/log extras are state-independent (sender + tx
-  // fields) and belong in intrinsic, matching EELS `calculate_intrinsic_cost`.
+  // EIP-2780: recipient / TX_VALUE_COST extras are state-independent (sender +
+  // tx fields) and belong in intrinsic, matching EELS `calculate_intrinsic_cost`.
   fee += getEip2780RecipientRegularGas(tx)
   fee += getEip7702IntrinsicAuthGas(tx)
   return fee
