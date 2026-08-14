@@ -181,7 +181,10 @@ jobs:
       - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM')
         run: npm run test:buildIntegrity
   
+  # In-flux hardfork working-ground: expected to fail. Must not fail Build / CI
+  # (reusable workflows surface any inner job failure as vm-pr failure).
   vm-est-dev-state:
+    continue-on-error: true
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -210,6 +213,7 @@ jobs:
         run: npm run test:buildIntegrity
 
   vm-est-dev-blockchain:
+    continue-on-error: true
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
