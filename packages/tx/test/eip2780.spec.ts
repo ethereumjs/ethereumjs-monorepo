@@ -33,15 +33,14 @@ describe('EIP-2780 intrinsic / calldata floor (Amsterdam)', () => {
     assert.strictEqual(getEip2780RecipientRegularGas(tx), 0n)
   })
 
-  it('value-bearing create charges TX_VALUE_COST (v8 fold)', () => {
+  it('value-bearing create does not add TX_VALUE_COST to intrinsic', () => {
     const tx = createLegacyTx({ value: 1n, gasLimit: 100_000n, gasPrice: 10n }, { common }).sign(
       senderKey,
     )
-    const valueExtra = tx.common.param('txValueCost')
-    assert.strictEqual(getEip2780RecipientRegularGas(tx), valueExtra)
+    assert.strictEqual(getEip2780RecipientRegularGas(tx), 0n)
     assert.strictEqual(
       tx.getIntrinsicGas(),
-      tx.common.param('txGas') + tx.common.param('txCreationGas') + valueExtra,
+      tx.common.param('txGas') + tx.common.param('txCreationGas') + tx.getDataGas(),
     )
   })
 

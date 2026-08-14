@@ -50,7 +50,10 @@ export function getEip2780RecipientRegularGas(tx: LegacyTxInterface, sender?: Ad
   }
 
   if (isCreateTx(tx)) {
-    return tx.value > BIGINT_0 ? tx.common.param('txValueCost') : BIGINT_0
+    // Contract-creation txs pay CREATE_ACCESS via txCreationGas in getIntrinsicGas /
+    // getEip2780FloorBaseGas. TX_VALUE_COST does not apply at the intrinsic phase
+    // even when value > 0 (matches execution-specs / go-ethereum intrinsicBaseGasEIP2780).
+    return BIGINT_0
   }
 
   const from = resolveSender(tx, sender)

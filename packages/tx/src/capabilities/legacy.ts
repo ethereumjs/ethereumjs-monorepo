@@ -218,13 +218,13 @@ export function getValidationErrors(tx: LegacyTxInterface): string[] {
     errors.push('Invalid Signature')
   }
 
-  let intrinsicGas = tx.getIntrinsicGas()
+  let minGas = tx.getIntrinsicGas()
   if (tx.common.isActivatedEIP(7623)) {
-    intrinsicGas = bigIntMax(intrinsicGas, getCalldataFloorGas(tx))
+    minGas = bigIntMax(minGas, getCalldataFloorGas(tx))
   }
-  if (intrinsicGas > tx.gasLimit) {
+  if (minGas > tx.gasLimit) {
     errors.push(
-      `gasLimit is too low. The gasLimit is lower than the minimum gas limit of ${tx.getIntrinsicGas()}, the gas limit is: ${tx.gasLimit}`,
+      `gasLimit is too low. The gasLimit is lower than the minimum gas limit of ${minGas}, the gas limit is: ${tx.gasLimit}`,
     )
   }
 
