@@ -77,6 +77,28 @@ export interface RunSummary {
   errors: ErrorCluster[]
 }
 
+export function mergeRunSummaries(summaries: RunSummary[]): RunSummary {
+  const stats = new Map<string, DirStats>()
+  let label = 'tests'
+  for (const summary of summaries) {
+    if (summary.label.length > 0 && summary.label !== 'tests') label = summary.label
+    for (const d of summary.directories) {
+      const s = stats.get(d.dir) ?? emptyStats()
+      s.passed += d.passed
+      s.failed += d.failed
+      for (const e of d.errors) {
+        s.errors.set(e.message, (s.errors.get(e.message) ?? 0) + e.count)
+      }
+      stats.set(d.dir, s)
+    }
+  }
+  return buildRunSummary(label, stats)
+}
+
+export function renderRunSummary(summary: RunSummary): string {
+  return renderSummary(summary)
+}
+
 const COLORS = {
   green: '\x1b[32m',
   red: '\x1b[31m',
@@ -239,16 +261,37 @@ export default class PerDirectoryReporter implements Reporter {
       s.failed++
       const message = firstErrorMessage(testCase)
       if (message !== undefined) bumpError(s, message)
+      if (process.env.PRINT_TEST_FAILURES === '1' || process.env.LEGACY_PRINT_FAILURES === '1') {
+        printFailure(testCase, fp, message)
+      }
     }
     this.stats.set(dir, s)
   }
 
   onTestRunEnd(): void {
-    if (this.stats.size === 0) return
+    const hasJSON =
+      process.env.EST_SUMMARY_JSON !== undefined && process.env.EST_SUMMARY_JSON.length > 0
+    if (this.stats.size === 0 && hasJSON === false) return
     const summary = buildRunSummary(this.label, this.stats)
-    process.stdout.write(renderSummary(summary))
+    if (process.env.EST_SUMMARY_QUIET !== '1') {
+      process.stdout.write(renderSummary(summary))
+    }
     writeSummaryJSON(summary)
   }
+}
+
+function printFailure(testCase: TestCase, filePath: string, message: string | undefined): void {
+  const name =
+    (testCase as { fullName?: string; name?: string }).fullName ??
+    (testCase as { name?: string }).name ??
+    'unknown'
+  const lines = [`FAIL  ${name}`, `      ${filePath}`]
+  if (message !== undefined && message.length > 0) {
+    for (const line of message.split('\n')) {
+      lines.push(`      ${line}`)
+    }
+  }
+  process.stderr.write(`${lines.join('\n')}\n`)
 }
 
 function renderErrorTable(title: string, clusters: ErrorCluster[]): string[] {
@@ -343,7 +386,9 @@ function writeSummaryJSON(summary: RunSummary): void {
   if (out === undefined || out.length === 0) return
   try {
     fs.writeFileSync(out, `${JSON.stringify(summary, null, 2)}\n`)
-    process.stdout.write(`Wrote EST summary JSON to ${out}\n`)
+    if (process.env.EST_SUMMARY_QUIET !== '1') {
+      process.stdout.write(`Wrote EST summary JSON to ${out}\n`)
+    }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
     process.stderr.write(`Failed to write EST_SUMMARY_JSON (${out}): ${msg}\n`)

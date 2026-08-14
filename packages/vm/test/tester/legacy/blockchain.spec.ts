@@ -18,6 +18,7 @@ import { assert, afterAll, describe, it } from 'vitest'
 
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 
+import fs from 'fs'
 import path from 'path'
 import {
   type EVMBLSInterface,
@@ -28,6 +29,8 @@ import {
   RustBN254,
 } from '@ethereumjs/evm'
 import { initRustBN } from 'rustbn-wasm'
+import { annotateFixture } from '../util/perDirectoryReporter.ts'
+import { parseShardFromEnv } from '../util/shard.ts'
 import {
   DEFAULT_FORK_CONFIG,
   DEFAULT_TESTS_PATH,
@@ -83,9 +86,12 @@ const argv: {
 
   // numeric flags
   verifyTestAmountAllTests:
-    process.env.VITE_VERIFY_TEST_AMOUNT_ALL_TESTS !== undefined
-      ? Number(process.env.VITE_VERIFY_TEST_AMOUNT_ALL_TESTS)
-      : undefined,
+    process.env.VITE_VERIFY_TEST_AMOUNT_ALL_TESTS === 'true' ||
+    process.env.VITE_VERIFY_TEST_AMOUNT_ALL_TESTS === '1'
+      ? 1
+      : process.env.VITE_VERIFY_TEST_AMOUNT_ALL_TESTS !== undefined
+        ? Number(process.env.VITE_VERIFY_TEST_AMOUNT_ALL_TESTS)
+        : undefined,
   expectedTestAmount:
     process.env.VITE_EXPECTED_TEST_AMOUNT !== undefined
       ? Number(process.env.VITE_EXPECTED_TEST_AMOUNT)
@@ -163,6 +169,7 @@ const testGetterArgs: {
   excludeDir?: string
   testsPath?: string
   directory?: string
+  shard?: string
 } = {
   skipTests: getSkipTests(argv.skip, argv.runSkipped !== undefined ? 'NONE' : 'ALL'),
   runSkipped: getSkipTests(argv.runSkipped, 'NONE'),
@@ -172,6 +179,7 @@ const testGetterArgs: {
   dir: argv.dir,
   excludeDir: argv.excludeDir,
   testsPath: argv.testsPath,
+  shard: process.env.TEST_SHARD ?? process.env.VITE_SHARD,
 }
 
 interface LoadedTest {
@@ -180,6 +188,8 @@ interface LoadedTest {
   subDir: string
   testName: string
   testData: any
+  filePath: string
+  suiteRoot: string
 }
 const allTests: LoadedTest[] = []
 const dirs = getTestDirs(FORK_CONFIG_VM, 'BlockchainTests')
@@ -193,6 +203,8 @@ for (const dir of dirs) {
   }
 
   const tests: LoadedTest[] = []
+  const testsPath = testGetterArgs.testsPath ?? DEFAULT_TESTS_PATH
+  const suiteRoot = argv.customTestsPath ?? path.join(testsPath, dir)
   try {
     await getTestsFromArgs(
       dir,
@@ -200,7 +212,15 @@ for (const dir of dirs) {
         const runSkipped = testGetterArgs.runSkipped
         const inRunSkipped = runSkipped.includes(fileName)
         if (runSkipped.length === 0 || inRunSkipped === true) {
-          tests.push({ dir, fileName, subDir, testName, testData })
+          tests.push({
+            dir,
+            fileName,
+            subDir,
+            testName,
+            testData,
+            filePath: path.join(testGetterArgs.directory!, subDir),
+            suiteRoot,
+          })
         }
       },
       testGetterArgs,
@@ -235,8 +255,9 @@ describe('BlockchainTests', () => {
     return
   }
 
-  for (const { subDir, testName, testData } of filteredTests) {
-    it(`file: ${subDir} test: ${testName}`, async () => {
+  for (const { subDir, testName, testData, filePath, suiteRoot } of filteredTests) {
+    it(`file: ${subDir} test: ${testName}`, async ({ task }) => {
+      annotateFixture(task, filePath, suiteRoot, 'BlockchainTests')
       try {
         await runBlockchainTest(runnerArgs, testData, assert)
       } catch (e: any) {
@@ -246,6 +267,11 @@ describe('BlockchainTests', () => {
   }
 
   afterAll(() => {
+    const countFile = process.env.VITE_SHARD_COUNT_FILE
+    if (countFile !== undefined && countFile.length > 0) {
+      fs.writeFileSync(countFile, `${runnerArgs.testCount}\n`)
+    }
+    if (parseShardFromEnv() !== undefined) return
     if (expectedTests !== undefined) {
       assert.isTrue(
         runnerArgs.testCount >= expectedTests,
