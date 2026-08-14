@@ -348,7 +348,7 @@ Commands area available on both root and package levels.
 
 The project uses [Vitest](https://vitest.dev/) for testing with [c8](https://vitest.dev/guide/coverage.html) for code coverage.
 
-PR CI (`Build`) runs package tests for the lowest-touched workspace packages and everything that depends on them (`scripts/ci-affected.mjs`). Lint, typecheck, and examples always run. Pushes to `master`, workflow dispatch, and shared-config changes (`.github/`, `config/`, lockfile, ...) still run the full matrix. Nightlies are unchanged.
+PR CI (`Build`) runs package tests for the lowest-touched workspace packages and everything that depends on them (`scripts/ci-affected.mjs`). Lint, typecheck, and examples always run. Pushes to `master`, workflow dispatch, and shared-config changes (`.github/`, `config/`, lockfile, ...) still run the full matrix. Nightly runs are unchanged.
 
 Set the required status check to **`Build / CI`** (the aggregator). Per-package jobs may be skipped; that aggregator is what must pass.
 
