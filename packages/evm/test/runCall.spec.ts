@@ -720,6 +720,30 @@ describe('RunCall tests', () => {
     assert.isTrue(verifyMemoryExpanded, 'memory did expand')
   })
 
+  it('step event memory snapshots are not mutated by later writes', async () => {
+    const evm = await createEVM()
+    // PUSH1 0x01 PUSH1 0x00 MSTORE
+    // PUSH1 0x02 PUSH1 0x00 MSTORE
+    // STOP
+    const code = hexToBytes('0x6001600052600260005200')
+    const mstoreMemories: Uint8Array[] = []
+
+    evm.events.on('step', (e) => {
+      if (e.opcode.name === 'MSTORE') {
+        mstoreMemories.push(e.memory)
+      }
+    })
+
+    await evm.runCode({ code })
+
+    assert.strictEqual(mstoreMemories.length, 2)
+    assert.strictEqual(bytesToHex(mstoreMemories[0]), '0x')
+    assert.strictEqual(
+      bytesToHex(mstoreMemories[1]),
+      '0x0000000000000000000000000000000000000000000000000000000000000001',
+    )
+  })
+
   it('ensure code deposit errors are logged correctly (>= Homestead)', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
     const evm = await createEVM({ common })
