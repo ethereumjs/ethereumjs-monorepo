@@ -64,6 +64,16 @@ describe('decode', function () {
     expect(fn).toThrowError(/Signature verification failed/)
   })
 
+  it('throw an error when the signature segment is tampered (incl. length mismatch)', function () {
+    const parts = token.split('.')
+    const tampered = [parts[0], parts[1], 'AA'].join('.')
+    expect(jwt.decode.bind(null, tampered, key)).toThrowError(/Signature verification failed/)
+    const flipped = [parts[0], parts[1], parts[2]!.replace(/.$/, (c) => (c === 'A' ? 'B' : 'A'))].join(
+      '.',
+    )
+    expect(jwt.decode.bind(null, flipped, key)).toThrowError(/Signature verification failed/)
+  })
+
   it('throw an error when the token is not yet active (optional nbf claim)', function () {
     const nbf = (Date.now() + 1000) / 1000
     const token = jwt.encode({ foo: 'bar', nbf }, key)
