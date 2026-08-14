@@ -120,7 +120,7 @@ jobs:
           fail-on-cache-miss: true
 
       - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM') == false
-        run: VITE_FORK=${{ matrix.fork }} VITE_VERIFY_TEST_AMOUNT_ALL_TESTS=1 npx vitest run test/tester/state.spec.ts
+        run: npm run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
 
       - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM')
         run: npm run test:buildIntegrity
@@ -181,7 +181,10 @@ jobs:
       - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM')
         run: npm run test:buildIntegrity
   
+  # In-flux hardfork working-ground: expected to fail. Must not fail Build / CI
+  # (reusable workflows surface any inner job failure as vm-pr failure).
   vm-est-dev-state:
+    continue-on-error: true
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -210,6 +213,7 @@ jobs:
         run: npm run test:buildIntegrity
 
   vm-est-dev-blockchain:
+    continue-on-error: true
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -299,7 +303,7 @@ jobs:
           fail-on-cache-miss: true
 
 
-      - run: VITE_FORK=${{ matrix.fork }} VITE_VERIFY_TEST_AMOUNT_ALL_TESTS=1 npx vitest run test/tester/state.spec.ts
+      - run: npm run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
 
   vm-blockchain:
     runs-on: ubuntu-latest

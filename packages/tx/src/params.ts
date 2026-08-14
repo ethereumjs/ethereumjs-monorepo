@@ -59,20 +59,22 @@ export const paramsTx: ParamsDict = {
   },
   /**
    * Reduce intrinsic transaction gas (Amsterdam, experimental).
-   * The recipient/value components (COLD_ACCOUNT_ACCESS for plain calls,
-   * txValueCost + transferLogCost for value transfers) are added in the
-   * intrinsic-gas dimension splitter, which knows the sender (self-transfers
-   * skip the recipient and value charges).
+   * `txGas` is TX_BASE. Recipient/value/log extras are also intrinsic
+   * (self-transfers skip them) and anchor the EIP-7623 calldata floor
+   * together with TX_BASE / CREATE_ACCESS. Charge constants are mirrored
+   * on `@ethereumjs/evm` `paramsEVM[2780]` for the EVM Common. New-account
+   * state gas stays an access-time charge in the EVM.
    */
   2780: {
     txGas: 12000, // TX_BASE: base sender cost per transaction (down from 21000)
-    txValueCost: 4244, // TX_VALUE_COST: extra regular gas for value-bearing non-self-transfer calls
-    transferLogCost: 1756, // TRANSFER_LOG_COST: regular gas for the EIP-7708 transfer log of the tx-level value transfer
+    txValueCost: 6000, // TX_VALUE_COST: recipient balance write + EIP-7708 transfer log (folded since glamsterdam-devnet v8)
+    transferLogCost: 1756, // TRANSFER_LOG_COST: in-EVM EIP-7708 emission sites only (not tx-level intrinsic since v8)
     txRecipientAccessGas: 3000, // Recipient cost for a non-self-transfer call (= COLD_ACCOUNT_ACCESS under EIP-8038)
   },
   /**
    * Access list data pricing (Amsterdam, experimental).
-   * Repriced to match COLD_ACCOUNT_ACCESS / COLD_STORAGE_ACCESS under EIP-8038.
+   * Repriced to match COLD_ACCOUNT_ACCESS / COLD_STORAGE_ACCESS under EIP-8038
+   * before v8. EIP-8038 then sets intrinsic to cold minus WARM_ACCESS (2900).
    * The floor-token component (80 tokens/address + 128 tokens/storage key at
    * totalCostFloorPerToken) is added in the access-list data gas calculation.
    */
@@ -125,5 +127,17 @@ export const paramsTx: ParamsDict = {
     perEmptyAccountCost: 0, // Regular gas for empty authority (down from 25000); replaced by accountWriteGas + perAuthBaseGas plus the state-gas portion ((stateBytesPerNewAccount + stateBytesPerAuthBase) * costPerStateByte)
     accountWriteGas: 8000, // ACCOUNT_WRITE: regular gas per authorization for the account write (refunded when the authority account already exists)
     txCreationGas: 11000, // CREATE_ACCESS = ACCOUNT_WRITE (8000) + COLD_STORAGE_ACCESS (3000); state portion = stateBytesPerNewAccount * costPerStateByte
+  },
+  /**
+   * State-access gas cost update — access-list intrinsic repriced to
+   * `COLD_*_ACCESS - WARM_ACCESS` (2900 per address, 2000 per storage key
+   * under v8.1.0). Overrides EIP-7981's 3000/3000 execution component; the
+   * 7981 floor-token charge on access-list bytes is unchanged.
+   */
+  8038: {
+    accessListStorageKeyGas: 2000, // COLD_STORAGE_ACCESS - WARM_ACCESS (2100 - 100)
+    accessListAddressGas: 2900, // COLD_ACCOUNT_ACCESS - WARM_ACCESS (3000 - 100)
+    accountWriteGas: 9000, // ACCOUNT_WRITE (overrides 8037's 8000)
+    txCreationGas: 12000, // CREATE_ACCESS = ACCOUNT_WRITE + COLD_ACCOUNT_ACCESS
   },
 }

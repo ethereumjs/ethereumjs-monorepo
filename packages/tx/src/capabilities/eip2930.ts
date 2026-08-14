@@ -52,7 +52,8 @@ function getAccessListDataGas(tx: EIP2930CompatibleTx): bigint {
 
   let cost = addresses * accessListAddressCost + totalSlots * accessListStorageKeyCost
 
-  // EIP-7981: add floor cost for access list bytes (20 bytes/address + 32 bytes/slot, 4 tokens/byte)
+  // EIP-7981: add floor cost for access list bytes (20 bytes/address + 32 bytes/slot, 4 tokens/byte).
+  // Under EIP-8038 the per-item execution component above is cold − WARM_ACCESS (2900); floor unchanged.
   if (common.isActivatedEIP(7981)) {
     const accessListBytes = addresses * 20n + totalSlots * 32n
     cost += common.param('totalCostFloorPerToken') * accessListBytes * 4n
