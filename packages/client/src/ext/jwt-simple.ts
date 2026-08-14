@@ -77,7 +77,12 @@ function sign(input: any, key: string, method: string, type: string) {
 
 function verify(input: any, key: string, method: string, type: string, signature: string) {
   if (type === 'hmac') {
-    return signature === sign(input, key, method, type)
+    // Engine API JWT auth path (util/rpc checkHeaderAuth). Prefer constant-time
+    // compare so HMAC verification does not short-circuit on prefix mismatch.
+    const expected = sign(input, key, method, type)
+    const a = Buffer.from(signature)
+    const b = Buffer.from(expected)
+    return a.length === b.length && crypto.timingSafeEqual(a, b)
   } else if (type === 'sign') {
     return crypto
       .createVerify(method)

@@ -271,13 +271,15 @@ export class MerklePatriciaTrie {
     await this._lock.acquire()
     const appliedKey = skipKeyTransform ? key : this.appliedKey(key)
     const { node, stack } = await this.findPath(appliedKey)
+    const nodeHasValue =
+      node !== null && (!(node instanceof BranchMPTNode) || node.value() !== null)
 
     let ops: BatchDBOp[] = []
     // Only delete if the `key` currently has any value
-    if (this._opts.useNodePruning && node !== null) {
+    if (this._opts.useNodePruning && nodeHasValue) {
       ops = this._createPruneDeleteOps(stack)
     }
-    if (node) {
+    if (nodeHasValue) {
       await this._deleteNode(appliedKey, stack)
     }
     if (this._opts.useNodePruning) {
@@ -700,6 +702,40 @@ export class MerklePatriciaTrie {
 
     const branchNodes: [number, NodeReferenceOrRawMPTNode][] = lastNode.getChildren()
 
+    if (branchNodes.length === 0) {
+      const branchValue = lastNode.value()
+
+      if (branchValue !== null) {
+        // A branch with no children but with a value represents a terminal key.
+        // Replace it with a leaf so the key path is not lost during pruning.
+        const leafNode = new LeafMPTNode([], branchValue)
+        if (parentNode instanceof ExtensionMPTNode) {
+          leafNode.key(parentNode.key())
+          stack.push(leafNode)
+        } else {
+          if (parentNode instanceof BranchMPTNode) stack.push(parentNode)
+          stack.push(leafNode)
+        }
+        await this.saveStack(pathNibbles, stack, opStack)
+        return
+      }
+
+      // An empty branch has no value and no children, so remove it from the
+      // trie instead of persisting an unreachable structural node.
+      if (parentNode === undefined || parentNode instanceof ExtensionMPTNode) {
+        this.root(this.EMPTY_TRIE_ROOT)
+        return
+      }
+
+      if (!(parentNode instanceof BranchMPTNode)) {
+        throw EthereumJSErrorWithoutCode('Expected branch node')
+      }
+      parentNode.setBranch(pathNibbles.pop()!, null)
+      stack.push(parentNode)
+      await this.saveStack(pathNibbles, stack, opStack)
+      return
+    }
+
     if (branchNodes.length === 1) {
       // add the one remaining branch node to node above it
       const branchNode = branchNodes[0][1]
@@ -879,7 +915,9 @@ export class MerklePatriciaTrie {
             walkController.allChildren(node, currentKeyNibbles)
           }
           if (node instanceof ExtensionMPTNode) {
-            if (bytesToUnprefixedHex(node.value()) === dbKeyHex) {
+            // Inline child nodes are not stored in the DB and therefore do not
+            // correspond to a database key that can be checked here.
+            if (!isRawMPTNode(node.value()) && bytesToUnprefixedHex(node.value()) === dbKeyHex) {
               found = true
               return
             }

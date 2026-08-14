@@ -11,7 +11,7 @@ import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 
 import { buildBlock, createVM } from '../../src/index.ts'
 import { rewardAccount } from '../../src/runBlock.ts'
-import { getCommon } from '../tester/config.ts'
+import { getCommon } from '../tester/legacy/config.ts'
 import { makeBlockFromEnv, makeParentBlockHeader, setupPreConditions } from '../util.ts'
 
 import { normalizeNumbers, stepTraceJSON, summaryTraceJSON } from './helpers.ts'

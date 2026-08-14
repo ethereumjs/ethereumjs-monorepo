@@ -87,7 +87,7 @@ export function setLengthLeftStorage(value: Uint8Array) {
 /**
  * Wraps error message as EVMError
  */
-export function trap(err: string) {
+export function trap(err: string): never {
   // TODO: facilitate extra data along with errors
   throw new EVMError(err as EVMErrorType)
 }

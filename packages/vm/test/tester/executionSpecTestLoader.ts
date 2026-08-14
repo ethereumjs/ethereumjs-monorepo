@@ -20,6 +20,7 @@ import type {
   ParsedStateTest,
   StateTestFixtureData,
 } from './executionSpecTypes.ts'
+import { fileBelongsToShard, parseShardFromEnv } from './util/shard.ts'
 
 export type {
   ExecutionSpecFixture,
@@ -89,7 +90,12 @@ export function loadExecutionSpecFixtures(
   root: string,
   fixtureType: ExecutionSpecFixtureType,
 ): ExecutionSpecFixture[] {
-  const files = findJSONFiles(root, fixtureType)
+  const shard = parseShardFromEnv()
+  const files = findJSONFiles(root, fixtureType).filter((filePath) => {
+    if (shard === undefined) return true
+    const rel = path.relative(root, filePath).split(path.sep).join('/')
+    return fileBelongsToShard(rel, shard)
+  })
   const fixtures: ExecutionSpecFixture[] = []
 
   for (const filePath of files) {
