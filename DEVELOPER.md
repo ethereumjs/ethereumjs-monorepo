@@ -350,7 +350,7 @@ The project uses [Vitest](https://vitest.dev/) for testing with [c8](https://vit
 
 PR CI (`Build`) runs package tests for the lowest-touched workspace packages and everything that depends on them (`scripts/ci-affected.mjs`). Lint, typecheck, and examples always run. Pushes to `master`, workflow dispatch, and shared-config changes (`.github/`, `config/`, lockfile, ...) still run the full matrix. Nightly runs are unchanged.
 
-Set the required status check to **`Build / CI`** (the aggregator). Per-package jobs may be skipped; that aggregator is what must pass.
+Set the required status check to **`Build / CI`**. Per-package jobs may be skipped; that summary job is what must pass. In-flux EST dev suites (`vm-est-dev`) run when VM is affected but are not part of that gate.
 
 #### General
 

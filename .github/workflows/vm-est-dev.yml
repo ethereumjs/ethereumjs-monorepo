@@ -1,0 +1,98 @@
+name: VM EST dev
+on:
+  workflow_call:
+    inputs:
+      dep-cache-key:
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      dep-cache-key:
+        required: false
+        default: 'none'
+
+env:
+  cwd: ${{github.workspace}}/packages/vm
+
+defaults:
+  run:
+    working-directory: packages/vm
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-vm-est-dev
+  cancel-in-progress: true
+
+jobs:
+  # In-flux hardfork working-ground: expected to fail. continue-on-error plus
+  # omission from Build / CI means this cannot delay or fail the merge gate.
+  vm-est-dev-state:
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v5
+
+      - if: inputs.dep-cache-key != 'none'
+        uses: actions/cache/restore@v4
+        id: dep-cache
+        with:
+          path: ${{github.workspace}}
+          key: ${{ inputs.dep-cache-key }}
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: 'npm'
+
+      - name: Install Dependencies (if not restored from cache)
+        if: steps.dep-cache.outputs.cache-hit != 'true'
+        run: npm ci
+        working-directory: ${{ github.workspace }}
+
+      - name: Init execution-spec-tests
+        run: git submodule update --init --depth=1 -- packages/execution-spec-tests
+        working-directory: ${{ github.workspace }}
+
+      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip dev VM') == false
+        run: npm run test:est:dev:state
+
+      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip dev VM')
+        run: npm run test:buildIntegrity
+
+  vm-est-dev-blockchain:
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v5
+
+      - if: inputs.dep-cache-key != 'none'
+        uses: actions/cache/restore@v4
+        id: dep-cache
+        with:
+          path: ${{github.workspace}}
+          key: ${{ inputs.dep-cache-key }}
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: 'npm'
+
+      - name: Install Dependencies (if not restored from cache)
+        if: steps.dep-cache.outputs.cache-hit != 'true'
+        run: npm ci
+        working-directory: ${{ github.workspace }}
+
+      - name: Init execution-spec-tests
+        run: git submodule update --init --depth=1 -- packages/execution-spec-tests
+        working-directory: ${{ github.workspace }}
+
+      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip dev VM') == false
+        run: npm run test:est:dev:blockchain
+
+      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip dev VM')
+        run: npm run test:buildIntegrity

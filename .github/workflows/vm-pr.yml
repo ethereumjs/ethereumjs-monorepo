@@ -130,11 +130,14 @@ jobs:
     strategy:
       fail-fast: false
     steps:
-      # For now we always clone the repo and submodules (no cache)
-      - name: Checkout
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
+
+      - if: inputs.dep-cache-key != 'none'
+        uses: actions/cache/restore@v4
+        id: dep-cache
         with:
-          submodules: recursive
+          path: ${{github.workspace}}
+          key: ${{ inputs.dep-cache-key }}
 
       - name: Use Node.js 24
         uses: actions/setup-node@v6
@@ -145,6 +148,10 @@ jobs:
       - name: Install Dependencies (if not restored from cache)
         if: steps.dep-cache.outputs.cache-hit != 'true'
         run: npm ci
+        working-directory: ${{ github.workspace }}
+
+      - name: Init execution-spec-tests
+        run: git submodule update --init --depth=1 -- packages/execution-spec-tests
         working-directory: ${{ github.workspace }}
 
       - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM') == false
@@ -158,11 +165,14 @@ jobs:
     strategy:
       fail-fast: false
     steps:
-      # For now we always clone the repo and submodules (no cache)
-      - name: Checkout
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
+
+      - if: inputs.dep-cache-key != 'none'
+        uses: actions/cache/restore@v4
+        id: dep-cache
         with:
-          submodules: recursive
+          path: ${{github.workspace}}
+          key: ${{ inputs.dep-cache-key }}
 
       - name: Use Node.js 24
         uses: actions/setup-node@v6
@@ -173,72 +183,16 @@ jobs:
       - name: Install Dependencies (if not restored from cache)
         if: steps.dep-cache.outputs.cache-hit != 'true'
         run: npm ci
+        working-directory: ${{ github.workspace }}
+
+      - name: Init execution-spec-tests
+        run: git submodule update --init --depth=1 -- packages/execution-spec-tests
         working-directory: ${{ github.workspace }}
 
       - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM') == false
         run: npm run test:est:stable:blockchain
 
       - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM')
-        run: npm run test:buildIntegrity
-  
-  # In-flux hardfork working-ground: expected to fail. Must not fail Build / CI
-  # (reusable workflows surface any inner job failure as vm-pr failure).
-  vm-est-dev-state:
-    continue-on-error: true
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-    steps:
-      # For now we always clone the repo and submodules (no cache)
-      - name: Checkout
-        uses: actions/checkout@v5
-        with:
-          submodules: recursive
-
-      - name: Use Node.js 24
-        uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: 'npm'
-
-      - name: Install Dependencies (if not restored from cache)
-        if: steps.dep-cache.outputs.cache-hit != 'true'
-        run: npm ci
-        working-directory: ${{ github.workspace }}
-
-      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip dev VM') == false
-        run: npm run test:est:dev:state
-
-      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip dev VM')
-        run: npm run test:buildIntegrity
-
-  vm-est-dev-blockchain:
-    continue-on-error: true
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-    steps:
-      # For now we always clone the repo and submodules (no cache)
-      - name: Checkout
-        uses: actions/checkout@v5
-        with:
-          submodules: recursive
-
-      - name: Use Node.js 24
-        uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: 'npm'
-
-      - name: Install Dependencies (if not restored from cache)
-        if: steps.dep-cache.outputs.cache-hit != 'true'
-        run: npm ci
-        working-directory: ${{ github.workspace }}
-
-      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip dev VM') == false
-        run: npm run test:est:dev:blockchain
-
-      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip dev VM')
         run: npm run test:buildIntegrity
 
   vm-state-extended:

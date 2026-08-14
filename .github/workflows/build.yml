@@ -15,16 +15,16 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # ethereum-tests only — do not recursive-clone execution-spec-tests here.
+  # EST jobs init that submodule themselves and must not wait on this job.
   checkout-submodules:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v5
-        with:
-          submodules: recursive
 
       - id: create-cache-key
-        run: echo "submodule-cache-key=$(git submodule | head -n 1)" >> $GITHUB_OUTPUT
+        run: echo "submodule-cache-key=$(git rev-parse HEAD:packages/ethereum-tests)" >> $GITHUB_OUTPUT
         shell: bash
 
       - uses: actions/cache/restore@v4
@@ -34,14 +34,18 @@ jobs:
           path: ${{github.workspace}}/packages/ethereum-tests
 
       - if: steps.submodules-cache-restore.outputs.cache-hit != 'true'
+        name: Init ethereum-tests
+        run: git submodule update --init --depth=1 -- packages/ethereum-tests
+
+      - if: steps.submodules-cache-restore.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         id: submodule-cache-save
         with:
           path: ${{github.workspace}}/packages/ethereum-tests
-          key: submodule-${{ steps.create-cache-key.outputs.submodule-cache-key}}
+          key: submodule-${{ steps.create-cache-key.outputs.submodule-cache-key }}
 
     outputs:
-      submodule-cache-key: submodule-${{ steps.create-cache-key.outputs.submodule-cache-key}}
+      submodule-cache-key: submodule-${{ steps.create-cache-key.outputs.submodule-cache-key }}
 
   build:
     runs-on: ubuntu-latest
@@ -121,7 +125,7 @@ jobs:
         run: node scripts/ci-affected.mjs
 
   binarytree:
-    needs: [build, checkout-submodules, detect]
+    needs: [build, detect]
     if: needs.detect.outputs.binarytree == 'true'
     uses: ./.github/workflows/binarytree-build.yml
     secrets: inherit
@@ -256,11 +260,20 @@ jobs:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
   typecheck:
-    needs: [build, checkout-submodules]
+    needs: [build]
     uses: ./.github/workflows/typecheck.yml
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
-      submodule-cache-key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
+
+  # In-flux hardfork working-ground. Not in the CI gate — must not delay or fail it.
+  vm-est-dev:
+    continue-on-error: true
+    needs: [build, detect]
+    if: needs.detect.outputs['vm-pr'] == 'true'
+    uses: ./.github/workflows/vm-est-dev.yml
+    secrets: inherit
+    with:
+      dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
   # Sole required check: skipped package jobs count as success; failures fail the gate.
   ci-success:
