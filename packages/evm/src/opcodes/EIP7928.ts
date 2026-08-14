@@ -48,10 +48,9 @@ export function newAccountStateGasCost(common: Common, runState: RunState): bigi
 /**
  * EIP-8037 CREATE/CREATE2 new-account state gas for this target.
  *
- * Charge unless the account already has a nonce or code (alive collision).
- * Balance-only and storage-only (EIP-7610) targets are still charged — the
- * former so a `gas_left` spill reduces the 63/64 child stipend, the latter
- * refunded on the collision short-circuit.
+ * Charge only when the target is absent or EIP-161 empty (matches EELS
+ * `is_account_alive` / CALL `createsNewAccount`). Storage-only (EIP-7610)
+ * targets are still charged and refunded on the collision short-circuit.
  */
 export async function createNewAccountStateGasIfCharged(
   runState: RunState,
@@ -62,10 +61,7 @@ export async function createNewAccountStateGasIfCharged(
     return BIGINT_0
   }
   const account = await runState.stateManager.getAccount(new Address(targetAddress))
-  if (
-    account !== undefined &&
-    (account.nonce > BIGINT_0 || equalsBytes(account.codeHash, KECCAK256_NULL) === false)
-  ) {
+  if (account !== undefined && !account.isEmpty()) {
     return BIGINT_0
   }
   return newAccountStateGasCost(common, runState)
