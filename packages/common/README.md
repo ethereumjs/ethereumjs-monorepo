@@ -89,7 +89,7 @@ Here are some simple usage examples:
 console.log('Below are the known bootstrap nodes')
 console.log(c.bootstrapNodes()) // Array with current nodes
 
-// Instantiate with an EIP activated (with pre-EIP hardfork)
+// Instantiate with an EIP activated on a pre-schedule hardfork (`EIPConfig.minimumHardfork`)
 c = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
 console.log(`EIP 7702 is active -- ${c.isActivatedEIP(7702)}`)
 
@@ -401,6 +401,7 @@ The following EIPs are currently supported (sorted by EIP number):
 - [EIP-7954](https://eips.ethereum.org/EIPS/eip-7954) - Increase max contract and initcode size (Amsterdam, experimental)
 - [EIP-7976](https://eips.ethereum.org/EIPS/eip-7976) - Increase calldata floor cost (Amsterdam, experimental)
 - [EIP-7981](https://eips.ethereum.org/EIPS/eip-7981) - Access list data pricing (Amsterdam, experimental)
+- [EIP-7997](https://eips.ethereum.org/EIPS/eip-7997) - Deterministic CREATE2 factory predeploy (Amsterdam, experimental)
 - [EIP-8024](https://eips.ethereum.org/EIPS/eip-8024) - DUPN, SWAPN and EXCHANGE instructions (Amsterdam, experimental)
 - [EIP-8037](https://eips.ethereum.org/EIPS/eip-8037) - State creation gas cost increase (Amsterdam, experimental)
 

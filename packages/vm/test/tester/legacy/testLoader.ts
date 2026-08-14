@@ -12,11 +12,43 @@
  */
 import * as fs from 'fs'
 import * as path from 'path'
-import * as dir from 'node-dir'
 
+import { fileBelongsToShard, parseShard } from '../util/shard.ts'
 import { DEFAULT_TESTS_PATH } from './config.ts'
 
 const falsePredicate = () => false
+
+function listTestFiles(
+  directory: string,
+  fileFilter: RegExp | string[] | undefined,
+  excludeDir: RegExp | string[] | undefined,
+): string[] {
+  const nameMatches = (name: string) => {
+    if (fileFilter instanceof RegExp) return fileFilter.test(name)
+    if (Array.isArray(fileFilter)) return fileFilter.includes(name)
+    return name.endsWith('.json')
+  }
+  const skipDir = (name: string) => {
+    if (excludeDir instanceof RegExp) return excludeDir.test(name)
+    if (Array.isArray(excludeDir)) return excludeDir.includes(name)
+    return false
+  }
+
+  const out: string[] = []
+  const walk = (current: string) => {
+    const entries = fs.readdirSync(current, { withFileTypes: true })
+    for (const entry of entries) {
+      const full = path.join(current, entry.name)
+      if (entry.isDirectory()) {
+        if (skipDir(entry.name) === false) walk(full)
+        continue
+      }
+      if (entry.isFile() && nameMatches(entry.name)) out.push(full)
+    }
+  }
+  walk(directory)
+  return out.sort()
+}
 
 /**
  * Returns the list of test files matching the given parameters
@@ -33,44 +65,28 @@ export async function getTests(
   skipPredicate: (...args: any[]) => boolean = falsePredicate,
   directory: string,
   excludeDir: RegExp | string[] = [],
+  shardSpec?: string,
 ): Promise<string[]> {
-  const options = {
-    match: fileFilter,
-    excludeDir,
-  }
-  return new Promise((resolve, reject) => {
-    const finishedCallback = (err: Error | undefined, files: string[]) => {
-      if (err) {
-        reject(err)
-        return
-      }
-      resolve(files)
-    }
-    const fileCallback = async (
-      err: Error | undefined,
-      content: string | Uint8Array,
-      fileName: string,
-      next: Function,
-    ) => {
-      if (err) {
-        reject(err)
-        return
-      }
-      const subDir = fileName.substr(directory.length + 1)
-      const parsedFileName = path.parse(fileName).name
-      content = content instanceof Uint8Array ? content.toString() : content
-      const testsByName = JSON.parse(content)
-      const testNames = Object.keys(testsByName)
-      for (const testName of testNames) {
-        if (!skipPredicate(testName, testsByName[testName])) {
-          await onFile(parsedFileName, subDir, testName, testsByName[testName])
-        }
-      }
-      next()
-    }
-
-    dir.readFiles(directory, options, fileCallback, finishedCallback)
+  const shard = parseShard(shardSpec)
+  const files = listTestFiles(directory, fileFilter, excludeDir).filter((fileName) => {
+    if (shard === undefined) return true
+    const rel = path.relative(directory, fileName)
+    return fileBelongsToShard(rel, shard)
   })
+
+  for (const fileName of files) {
+    const content = fs.readFileSync(fileName, 'utf8')
+    const subDir = path.relative(directory, fileName)
+    const parsedFileName = path.parse(fileName).name
+    const testsByName = JSON.parse(content)
+    const testNames = Object.keys(testsByName)
+    for (const testName of testNames) {
+      if (!skipPredicate(testName, testsByName[testName])) {
+        await onFile(parsedFileName, subDir, testName, testsByName[testName])
+      }
+    }
+  }
+  return files
 }
 
 function skipTest(testName: string, skipList = []) {
@@ -161,7 +177,7 @@ export async function getTestsFromArgs(testType: string, onFile: Function, args:
     }
   }
 
-  return getTests(onFile, fileFilter, skipFn, args.directory, excludeDir)
+  return getTests(onFile, fileFilter, skipFn, args.directory, excludeDir, args.shard)
 }
 
 /**

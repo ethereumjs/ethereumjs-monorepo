@@ -2,8 +2,8 @@
 #############################################################
 # Manual test file for state test runner option sanity checks
 #
-# Evoke from repository root with
-# ./test/tester/scripts/state-test-run-test.sh
+# Evoke from packages/vm with
+# ./test/tester/legacy/scripts/state-test-run-test.sh
 #############################################################
 
 npm run test:state -- --test='stackOverflow'
