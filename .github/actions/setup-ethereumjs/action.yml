@@ -1,0 +1,70 @@
+name: Setup EthereumJS
+description: Checkout, restore this run's built workspace, install on cache miss, optional fixture submodules
+
+inputs:
+  dep-cache-key:
+    description: Full-workspace cache key from the build job (`none` skips restore)
+    required: false
+    default: 'none'
+  node-version:
+    description: Node.js version
+    required: false
+    default: '24'
+  install-command:
+    description: Install command used when the workspace cache misses
+    required: false
+    default: 'npm ci'
+  ethereum-tests:
+    description: Restore or init packages/ethereum-tests
+    required: false
+    default: 'false'
+  ethereum-tests-key:
+    description: ethereum-tests cache key (`none` inits from git when ethereum-tests is true)
+    required: false
+    default: 'none'
+  execution-spec-tests:
+    description: Init packages/execution-spec-tests (depth 1)
+    required: false
+    default: 'false'
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v5
+
+    - if: ${{ inputs.dep-cache-key != 'none' }}
+      uses: actions/cache/restore@v4
+      id: dep-cache
+      with:
+        path: ${{ github.workspace }}
+        key: ${{ inputs.dep-cache-key }}
+
+    - uses: actions/setup-node@v6
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: npm
+
+    - if: ${{ steps.dep-cache.outputs.cache-hit != 'true' }}
+      name: Install dependencies
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      run: ${{ inputs.install-command }}
+
+    - if: ${{ inputs.ethereum-tests == 'true' && inputs.ethereum-tests-key != 'none' }}
+      uses: actions/cache/restore@v4
+      with:
+        path: ${{ github.workspace }}/packages/ethereum-tests
+        key: ${{ inputs.ethereum-tests-key }}
+        fail-on-cache-miss: true
+
+    - if: ${{ inputs.ethereum-tests == 'true' && inputs.ethereum-tests-key == 'none' }}
+      name: Init ethereum-tests
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      run: git submodule update --init --depth=1 -- packages/ethereum-tests
+
+    - if: ${{ inputs.execution-spec-tests == 'true' }}
+      name: Init execution-spec-tests
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      run: git submodule update --init --depth=1 -- packages/execution-spec-tests

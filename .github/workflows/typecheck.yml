@@ -19,25 +19,9 @@ jobs:
   typecheck:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-
-      - if: inputs.dep-cache-key != 'none'
-        uses: actions/cache/restore@v4
-        id: dep-cache
+      - uses: ./.github/actions/setup-ethereumjs
         with:
-          path: ${{github.workspace}}
-          key: ${{ inputs.dep-cache-key }}
-
-      - name: Use Node.js 24
-        uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: 'npm'
-
-      - name: Install Dependencies (if not restored from cache)
-        if: steps.dep-cache.outputs.cache-hit != 'true'
-        run: npm ci
-        working-directory: ${{ github.workspace }}
+          dep-cache-key: ${{ inputs.dep-cache-key }}
 
       - run: npm run tsc --workspaces
         working-directory: ${{ github.workspace }}

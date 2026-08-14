@@ -43,9 +43,9 @@ export const EXTRA_PATH_PACKAGES = {
 /**
  * Skippable jobs in `.github/workflows/build.yml`.
  * A job runs if any listed package is in the affected set (changed ∪ dependents).
- * `browser` runs when any workspace package is affected.
+ * `browser` and `examples` run when any workspace package is affected.
  *
- * Always-on (not listed here): lint, typecheck, examples.
+ * Always-on (not listed here): lint, typecheck.
  */
 export const SKIPPABLE_JOBS = {
   binarytree: ['binarytree'],
@@ -56,6 +56,7 @@ export const SKIPPABLE_JOBS = {
   common: ['common'],
   devp2p: ['devp2p'],
   evm: ['evm'],
+  examples: '*',
   mpt: ['mpt'],
   static: ['rlp', 'ethash', 'genesis', 'wallet'],
   statemanager: ['statemanager'],
@@ -64,6 +65,21 @@ export const SKIPPABLE_JOBS = {
   'vm-pr': ['vm'],
   noCompile: ['client'],
 }
+
+/** Jobs that collect coverage only when a listed package was directly changed. */
+export const COVERAGE_JOBS = [
+  'binarytree',
+  'block',
+  'blockchain',
+  'common',
+  'evm',
+  'mpt',
+  'static',
+  'statemanager',
+  'tx',
+  'util',
+  'vm-pr',
+]
 
 export function isIgnorablePath(file) {
   return file.replaceAll('\\', '/').endsWith('.md')
@@ -208,6 +224,28 @@ export function allJobs(run) {
   return jobs
 }
 
+/**
+ * Coverage for a skippable job only when one of its packages was directly changed.
+ * Dependents still run tests, but without coverage instrumentation.
+ */
+export function coverageFlags(changed, jobs) {
+  const flags = {}
+  for (const job of COVERAGE_JOBS) {
+    const pkgs = SKIPPABLE_JOBS[job]
+    flags[`${job}_coverage`] =
+      jobs[job] === true && Array.isArray(pkgs) && pkgs.some((pkg) => changed.has(pkg))
+  }
+  return flags
+}
+
+/** Comma-separated npm workspace names for `--workspace=` filters. */
+export function npmWorkspacesFromAffected(affected, packages) {
+  return sorted(affected)
+    .map((dir) => packages.get(dir)?.name)
+    .filter((name) => name != null && name !== '')
+    .join(',')
+}
+
 export function computeAffected({ files, forceAll, packages }) {
   if (forceAll) {
     return {
@@ -258,17 +296,28 @@ function gitChangedFiles(baseSha, headSha) {
     .filter(Boolean)
 }
 
-function writeOutputs(jobs, { githubOutput, stepSummary, forceAll, changed, affected, files }) {
-  const lines = Object.entries(jobs).map(([job, run]) => `${job}=${run ? 'true' : 'false'}`)
+function writeOutputs(
+  jobs,
+  { githubOutput, stepSummary, forceAll, changed, affected, files, coverage, workspaces },
+) {
+  const lines = [
+    ...Object.entries(jobs).map(([job, run]) => `${job}=${run ? 'true' : 'false'}`),
+    ...Object.entries(coverage).map(([key, run]) => `${key}=${run ? 'true' : 'false'}`),
+    `workspaces=${workspaces}`,
+  ]
   const running = Object.entries(jobs)
     .filter(([, run]) => run)
     .map(([job]) => job)
+  const coverageJobs = Object.entries(coverage)
+    .filter(([, run]) => run)
+    .map(([key]) => key.replace(/_coverage$/, ''))
   const summary = [
     `Force all: ${forceAll ? 'yes' : 'no'}`,
     `Changed files: ${files.length}`,
     `Changed packages: ${sorted(changed).join(', ') || '(none)'}`,
     `Affected packages: ${sorted(affected).join(', ') || '(none)'}`,
     `Jobs: ${running.join(', ') || '(none skippable)'}`,
+    `Coverage: ${coverageJobs.join(', ') || '(none)'}`,
   ].join('\n')
 
   if (githubOutput !== undefined) {
@@ -315,6 +364,8 @@ export function main(argv = process.argv.slice(2), env = process.env) {
   }
 
   const result = computeAffected({ files, forceAll, packages })
+  const coverage = coverageFlags(result.changed, result.jobs)
+  const workspaces = npmWorkspacesFromAffected(result.affected, packages)
   writeOutputs(result.jobs, {
     githubOutput: env.GITHUB_OUTPUT,
     stepSummary: env.GITHUB_STEP_SUMMARY,
@@ -322,6 +373,8 @@ export function main(argv = process.argv.slice(2), env = process.env) {
     changed: result.changed,
     affected: result.affected,
     files,
+    coverage,
+    workspaces,
   })
   return result
 }

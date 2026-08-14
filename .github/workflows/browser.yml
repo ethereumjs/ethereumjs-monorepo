@@ -6,8 +6,12 @@ on:
         required: true
         type: string
       submodule-cache-key:
-          required: true
-          type: string
+        required: true
+        type: string
+      workspaces:
+        required: false
+        type: string
+        default: ''
   workflow_dispatch:
     inputs:
       dep-cache-key:
@@ -16,10 +20,13 @@ on:
       submodule-cache-key:
         required: false
         default: 'none'
+      workspaces:
+        required: false
+        type: string
+        default: ''
 
 env:
   cwd: ${{github.workspace}}
-  # Keep in sync with package-lock.json playwright version.
   PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
 
 concurrency:
@@ -33,44 +40,28 @@ jobs:
     strategy:
       fail-fast: false
     steps:
-      # Deps/cache on the host runner (same pattern as util-build et al.).
-      # actions/cache cannot reliably restore host-created caches inside a
-      # container job, even with zstd installed — restore here, test in Docker.
-      # CI fix: always checkout so the lockfile is present for setup-node's
-      # `cache: 'npm'`. The workspace dep-cache restore further down can miss
-      # for fresh PRs and would otherwise leave the workspace empty.
-      - uses: actions/checkout@v5
+      # Restore on the host, then test in Docker. actions/cache cannot reliably
+      # restore host-created caches inside a container job.
+      - uses: ./.github/actions/setup-ethereumjs
         with:
-          submodules: ${{ inputs.submodule-cache-key == 'none' && 'recursive' || '' }}
-
-      - if: inputs.dep-cache-key != 'none'
-        uses: actions/cache/restore@v4
-        id: dep-cache
-        with:
-          path: ${{github.workspace}}
-          key: ${{ inputs.dep-cache-key }}
-
-      - name: Use Node.js 24
-        uses: actions/setup-node@v6
-        with:
-          node-version: 24
-
-      - name: Install Dependencies (if not restored from cache)
-        if: steps.dep-cache.outputs.cache-hit != 'true'
-        run: npm ci
-        working-directory: ${{ github.workspace }}
-
-      - if: inputs.submodule-cache-key != 'none'
-        uses: actions/cache/restore@v4
-        name: Restore ethereum-tests from cache if available
-        id: submodules-cache
-        with:
-          path: ${{github.workspace}}/packages/ethereum-tests
-          key: ${{ inputs.submodule-cache-key }}
+          dep-cache-key: ${{ inputs.dep-cache-key }}
+          ethereum-tests: 'true'
+          ethereum-tests-key: ${{ inputs.submodule-cache-key }}
 
       # Preinstalled Chromium (playwright@1.60.0) — no ~150MB download per run.
       - name: Run browser tests (Playwright container)
+        env:
+          WORKSPACES: ${{ inputs.workspaces }}
         run: |
+          args=(--workspaces)
+          if [ -n "$WORKSPACES" ]; then
+            args=()
+            IFS=',' read -ra WS <<< "$WORKSPACES"
+            for w in "${WS[@]}"; do
+              w="${w// /}"
+              [ -n "$w" ] && args+=(--workspace="$w")
+            done
+          fi
           docker run --rm \
             --ipc=host \
             --init \
@@ -80,4 +71,4 @@ jobs:
             -e PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
             -e CI=true \
             mcr.microsoft.com/playwright:v1.60.0-noble \
-            npm run test:browser --workspaces --if-present
+            npm run test:browser --if-present "${args[@]}"

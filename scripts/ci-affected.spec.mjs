@@ -4,16 +4,19 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, it } from 'node:test'
 import {
+  COVERAGE_JOBS,
   SKIPPABLE_JOBS,
   buildRuntimeDependentsMap,
   changedPackagesFromFiles,
   computeAffected,
+  coverageFlags,
   expandDependents,
   extraPackagesFromPath,
   isForceAllPath,
   isIgnorablePath,
   jobsFromAffected,
   loadWorkspace,
+  npmWorkspacesFromAffected,
   packageDirFromPath,
   shouldForceAllEvent,
   REPO_ROOT,
@@ -92,6 +95,7 @@ describe('dependents expansion', () => {
     assert.equal(vmJobs.mpt, false)
     assert.equal(vmJobs.util, false)
     assert.equal(vmJobs.static, false)
+    assert.equal(vmJobs.examples, true)
   })
 })
 
@@ -132,6 +136,7 @@ describe('computeAffected', () => {
     assert.equal(result.jobs.mpt, false)
     assert.equal(result.jobs['vm-pr'], false)
     assert.equal(result.jobs.browser, false)
+    assert.equal(result.jobs.examples, false)
   })
 
   it('treats EST fixture changes as a VM change', () => {
@@ -192,6 +197,47 @@ describe('real workspace graph', () => {
     assert.equal(mptOnly.jobs['vm-pr'], true)
     assert.equal(mptOnly.jobs.util, false)
     assert.equal(mptOnly.affected.has('util'), false)
+  })
+
+  it('collects coverage only for directly changed packages', () => {
+    const packages = loadWorkspace()
+    const vmOnly = computeAffected({
+      files: ['packages/vm/src/runBlock.ts'],
+      forceAll: false,
+      packages,
+    })
+    const vmCoverage = coverageFlags(vmOnly.changed, vmOnly.jobs)
+    assert.equal(vmCoverage['vm-pr_coverage'], true)
+    assert.equal(vmCoverage.mpt_coverage, false)
+    assert.equal(vmCoverage.client_coverage, undefined)
+
+    const mptOnly = computeAffected({
+      files: ['packages/mpt/src/index.ts'],
+      forceAll: false,
+      packages,
+    })
+    const mptCoverage = coverageFlags(mptOnly.changed, mptOnly.jobs)
+    assert.equal(mptCoverage.mpt_coverage, true)
+    assert.equal(mptCoverage['vm-pr_coverage'], false)
+    assert.equal(mptOnly.jobs['vm-pr'], true)
+
+    const workspaces = npmWorkspacesFromAffected(vmOnly.affected, packages)
+    assert.equal(workspaces.includes('@ethereumjs/vm'), true)
+    assert.equal(workspaces.includes('@ethereumjs/client'), true)
+    assert.equal(workspaces.includes('@ethereumjs/mpt'), false)
+  })
+
+  it('force-all enables coverage for every coverage job', () => {
+    const packages = loadWorkspace()
+    const result = computeAffected({
+      files: ['packages/vm/src/runBlock.ts'],
+      forceAll: true,
+      packages,
+    })
+    const flags = coverageFlags(result.changed, result.jobs)
+    for (const job of COVERAGE_JOBS) {
+      assert.equal(flags[`${job}_coverage`], true, job)
+    }
   })
 
   it('testdata changes run test consumers without a block→util cycle', () => {
@@ -256,5 +302,12 @@ describe('CI workflow sync', () => {
         `build.yml should gate job "${job}" on detect output`,
       )
     }
+    for (const job of COVERAGE_JOBS) {
+      assert.ok(
+        yml.includes(`${job}_coverage`) || yml.includes(`'${job}_coverage'`),
+        `build.yml should pass coverage flag for "${job}"`,
+      )
+    }
+    assert.ok(yml.includes('workspaces:'), 'build.yml should pass affected workspaces')
   })
 })

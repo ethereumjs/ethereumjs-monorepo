@@ -6,8 +6,12 @@ on:
         required: true
         type: string
       submodule-cache-key:
-          required: true
-          type: string
+        required: true
+        type: string
+      run-coverage:
+        required: false
+        type: boolean
+        default: true
   workflow_dispatch:
     inputs:
       dep-cache-key:
@@ -16,9 +20,14 @@ on:
       submodule-cache-key:
         required: false
         default: 'none'
+      run-coverage:
+        required: false
+        type: boolean
+        default: true
 
 env:
   cwd: ${{github.workspace}}/packages/vm
+  RUN_COVERAGE: ${{ inputs.run-coverage }}
 
 defaults:
   run:
@@ -32,45 +41,21 @@ jobs:
   vm-api:
     runs-on: ubuntu-latest
     steps:
-      # We clone the repo and submodules if triggered from work-flow dispatch
-      # CI fix: always checkout so the lockfile is present for setup-node's
-      # `cache: 'npm'`. The workspace dep-cache restore further down can miss
-      # for fresh PRs and would otherwise leave the workspace empty.
-      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup-ethereumjs
         with:
-          submodules: ${{ inputs.submodule-cache-key == 'none' && 'recursive' || '' }}
+          dep-cache-key: ${{ inputs.dep-cache-key }}
+          ethereum-tests: 'true'
+          ethereum-tests-key: ${{ inputs.submodule-cache-key }}
 
-      # We restore the code/deps from cache if triggered from workflow_call (i.e. have valid cache key)
-      - if: inputs.dep-cache-key != 'none'
-        uses: actions/cache/restore@v4
-        id: dep-cache
-        with:
-          path: ${{github.workspace}}
-          key: ${{ inputs.dep-cache-key }}
+      - run: |
+          if [ "$RUN_COVERAGE" = "false" ]; then
+            npm run test:API
+          else
+            npm run coverage
+          fi
 
-      - name: Use Node.js 24
-        uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: 'npm'
-
-      - name: Install Dependencies (if not restored from cache)
-        if: steps.dep-cache.outputs.cache-hit != 'true'
-        run: npm ci
-        working-directory: ${{ github.workspace }}
-
-      - if: inputs.submodule-cache-key != 'none'
-        uses: actions/cache/restore@v4
-        name: Initialize ethereum-tests
-        id: submodules-cache
-        with:
-          path: ${{github.workspace}}/packages/ethereum-tests
-          key: ${{ inputs.submodule-cache-key}}
-          fail-on-cache-miss: true
-
-      - run: npm run coverage
-
-      - uses: codecov/codecov-action@v4
+      - if: env.RUN_COVERAGE != 'false'
+        uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ${{ env.cwd }}/coverage/lcov.info
@@ -83,41 +68,11 @@ jobs:
         fork: ['Prague']
       fail-fast: false
     steps:
-      # We clone the repo and submodules if triggered from work-flow dispatch
-      # CI fix: always checkout so the lockfile is present for setup-node's
-      # `cache: 'npm'`. The workspace dep-cache restore further down can miss
-      # for fresh PRs and would otherwise leave the workspace empty.
-      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup-ethereumjs
         with:
-          submodules: ${{ inputs.submodule-cache-key == 'none' && 'recursive' || '' }}
-
-      # We restore the code/deps from cache if triggered from workflow_call (i.e. have valid cache key)
-      - if: inputs.dep-cache-key != 'none'
-        uses: actions/cache/restore@v4
-        id: dep-cache
-        with:
-          path: ${{github.workspace}}
-          key: ${{ inputs.dep-cache-key }}
-
-      - name: Use Node.js 24
-        uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: 'npm'
-
-      - name: Install Dependencies (if not restored from cache)
-        if: steps.dep-cache.outputs.cache-hit != 'true'
-        run: npm ci
-        working-directory: ${{ github.workspace }}
-
-      - if: inputs.submodule-cache-key != 'none'
-        uses: actions/cache/restore@v4
-        name: Initialize ethereum-tests
-        id: submodules-cache
-        with:
-          path: ${{github.workspace}}/packages/ethereum-tests
-          key: ${{ inputs.submodule-cache-key}}
-          fail-on-cache-miss: true
+          dep-cache-key: ${{ inputs.dep-cache-key }}
+          ethereum-tests: 'true'
+          ethereum-tests-key: ${{ inputs.submodule-cache-key }}
 
       - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM') == false
         run: npm run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
@@ -130,29 +85,10 @@ jobs:
     strategy:
       fail-fast: false
     steps:
-      - uses: actions/checkout@v5
-
-      - if: inputs.dep-cache-key != 'none'
-        uses: actions/cache/restore@v4
-        id: dep-cache
+      - uses: ./.github/actions/setup-ethereumjs
         with:
-          path: ${{github.workspace}}
-          key: ${{ inputs.dep-cache-key }}
-
-      - name: Use Node.js 24
-        uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: 'npm'
-
-      - name: Install Dependencies (if not restored from cache)
-        if: steps.dep-cache.outputs.cache-hit != 'true'
-        run: npm ci
-        working-directory: ${{ github.workspace }}
-
-      - name: Init execution-spec-tests
-        run: git submodule update --init --depth=1 -- packages/execution-spec-tests
-        working-directory: ${{ github.workspace }}
+          dep-cache-key: ${{ inputs.dep-cache-key }}
+          execution-spec-tests: 'true'
 
       - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM') == false
         run: npm run test:est:stable:state
@@ -165,29 +101,10 @@ jobs:
     strategy:
       fail-fast: false
     steps:
-      - uses: actions/checkout@v5
-
-      - if: inputs.dep-cache-key != 'none'
-        uses: actions/cache/restore@v4
-        id: dep-cache
+      - uses: ./.github/actions/setup-ethereumjs
         with:
-          path: ${{github.workspace}}
-          key: ${{ inputs.dep-cache-key }}
-
-      - name: Use Node.js 24
-        uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: 'npm'
-
-      - name: Install Dependencies (if not restored from cache)
-        if: steps.dep-cache.outputs.cache-hit != 'true'
-        run: npm ci
-        working-directory: ${{ github.workspace }}
-
-      - name: Init execution-spec-tests
-        run: git submodule update --init --depth=1 -- packages/execution-spec-tests
-        working-directory: ${{ github.workspace }}
+          dep-cache-key: ${{ inputs.dep-cache-key }}
+          execution-spec-tests: 'true'
 
       - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM') == false
         run: npm run test:est:stable:blockchain
@@ -219,43 +136,11 @@ jobs:
           ]
       fail-fast: false
     steps:
-      # We clone the repo and submodules if triggered from work-flow dispatch
-      # CI fix: always checkout so the lockfile is present for setup-node's
-      # `cache: 'npm'`. The workspace dep-cache restore further down can miss
-      # for fresh PRs and would otherwise leave the workspace empty.
-      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup-ethereumjs
         with:
-          submodules: ${{ inputs.submodule-cache-key == 'none' && 'recursive' || '' }}
-
-      # We restore the code/deps from cache if triggered from workflow_call (i.e. have valid cache key)
-      - if: inputs.dep-cache-key != 'none'
-        uses: actions/cache/restore@v4
-        id: dep-cache
-        with:
-          path: ${{github.workspace}}
-          key: ${{ inputs.dep-cache-key }}
-
-      - name: Use Node.js 24
-        uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: 'npm'
-
-      - name: Install Dependencies (if not restored from cache)
-        if: steps.dep-cache.outputs.cache-hit != 'true'
-        run: npm ci
-        working-directory: ${{ github.workspace }}
-
-
-      - if: inputs.submodule-cache-key != 'none'
-        uses: actions/cache/restore@v4
-        name: Initialize ethereum-tests
-        id: submodules-cache
-        with:
-          path: ${{github.workspace}}/packages/ethereum-tests
-          key: ${{ inputs.submodule-cache-key}}
-          fail-on-cache-miss: true
-
+          dep-cache-key: ${{ inputs.dep-cache-key }}
+          ethereum-tests: 'true'
+          ethereum-tests-key: ${{ inputs.submodule-cache-key }}
 
       - run: npm run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
 
@@ -273,41 +158,11 @@ jobs:
           ]
       fail-fast: false
     steps:
-      # We clone the repo and submodules if triggered from work-flow dispatch
-      # CI fix: always checkout so the lockfile is present for setup-node's
-      # `cache: 'npm'`. The workspace dep-cache restore further down can miss
-      # for fresh PRs and would otherwise leave the workspace empty.
-      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup-ethereumjs
         with:
-          submodules: ${{ inputs.submodule-cache-key == 'none' && 'recursive' || '' }}
-
-      # We restore the code/deps from cache if triggered from workflow_call (i.e. have valid cache key)
-      - if: inputs.dep-cache-key != 'none'
-        uses: actions/cache/restore@v4
-        id: dep-cache
-        with:
-          path: ${{github.workspace}}
-          key: ${{ inputs.dep-cache-key }}
-
-      - name: Use Node.js 24
-        uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: 'npm'
-
-      - name: Install Dependencies (if not restored from cache)
-        if: steps.dep-cache.outputs.cache-hit != 'true'
-        run: npm ci
-        working-directory: ${{ github.workspace }}
-
-      - if: inputs.submodule-cache-key != 'none'
-        uses: actions/cache/restore@v4
-        name: Initialize ethereum-tests
-        id: submodules-cache
-        with:
-          path: ${{github.workspace}}/packages/ethereum-tests
-          key: ${{ inputs.submodule-cache-key}}
-          fail-on-cache-miss: true
+          dep-cache-key: ${{ inputs.dep-cache-key }}
+          ethereum-tests: 'true'
+          ethereum-tests-key: ${{ inputs.submodule-cache-key }}
 
       - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM') == false
         run: npm run test:blockchain -- ${{ matrix.args }}
@@ -346,71 +201,20 @@ jobs:
           ]
       fail-fast: false
     steps:
-      # We clone the repo and submodules if triggered from work-flow dispatch
-      # CI fix: always checkout so the lockfile is present for setup-node's
-      # `cache: 'npm'`. The workspace dep-cache restore further down can miss
-      # for fresh PRs and would otherwise leave the workspace empty.
-      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup-ethereumjs
         with:
-          submodules: ${{ inputs.submodule-cache-key == 'none' && 'recursive' || '' }}
-
-      # We restore the code/deps from cache if triggered from workflow_call (i.e. have valid cache key)
-      - if: inputs.dep-cache-key != 'none'
-        uses: actions/cache/restore@v4
-        id: dep-cache
-        with:
-          path: ${{github.workspace}}
-          key: ${{ inputs.dep-cache-key }}
-
-      - name: Use Node.js 24
-        uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: 'npm'
-
-      - name: Install Dependencies (if not restored from cache)
-        if: steps.dep-cache.outputs.cache-hit != 'true'
-        run: npm ci
-        working-directory: ${{ github.workspace }}
-
-      - if: inputs.submodule-cache-key != 'none'
-        uses: actions/cache/restore@v4
-        name: Initialize ethereum-tests
-        id: submodules-cache
-        with:
-          path: ${{github.workspace}}/packages/ethereum-tests
-          key: ${{ inputs.submodule-cache-key}}
-          fail-on-cache-miss: true
+          dep-cache-key: ${{ inputs.dep-cache-key }}
+          ethereum-tests: 'true'
+          ethereum-tests-key: ${{ inputs.submodule-cache-key }}
 
       - run: npm run test:blockchain -- ${{ matrix.args }}
 
   vm-benchmarks:
     runs-on: ubuntu-latest
     steps:
-      # We clone the repo and submodules if triggered from work-flow dispatch
-      # CI fix: always checkout so the lockfile is present for setup-node's
-      # `cache: 'npm'`. The workspace dep-cache restore further down can miss
-      # for fresh PRs and would otherwise leave the workspace empty.
-      - uses: actions/checkout@v5
-
-      # We restore the code/deps from cache if triggered from workflow_call (i.e. have valid cache key)
-      - if: inputs.dep-cache-key != 'none'
-        uses: actions/cache/restore@v4
-        id: dep-cache
+      - uses: ./.github/actions/setup-ethereumjs
         with:
-          path: ${{github.workspace}}
-          key: ${{ inputs.dep-cache-key }}
-
-      - name: Use Node.js 24
-        uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: 'npm'
-
-      - name: Install Dependencies (if not restored from cache)
-        if: steps.dep-cache.outputs.cache-hit != 'true'
-        run: npm ci
-        working-directory: ${{ github.workspace }}
+          dep-cache-key: ${{ inputs.dep-cache-key }}
 
       - run: npm run build:benchmarks
         working-directory: ${{ env.cwd }}
