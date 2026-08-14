@@ -183,10 +183,12 @@ function createFactoryCode(initcode: Uint8Array) {
 }
 
 describe('EIP-8037 inner CREATE new-account charge (Amsterdam)', () => {
-  it('spills new-account gas into gas_left and reduces the child stipend (create OOGs)', async () => {
+  it('does not charge new-account state gas for an existing balance-only target (CREATE succeeds)', async () => {
     const vm = await getVM()
     const target = createTarget()
-    // Initcode: PUSH1 0 PUSH3 0x070f60 MSTORE RETURN empty — ~451k memory expansion
+    // Initcode: PUSH1 0 PUSH3 0x070f60 MSTORE RETURN empty — would OOG only if
+    // NEW_ACCOUNT state gas were wrongly pre-charged on this EIP-161 non-empty
+    // target (balance-only). Matches EST no_account_charge_on_existing_account.
     const initcode = hexToBytes('0x600062070f605260006000f3')
     await vm.stateManager.putAccount(factory, new Account(1n, 0n))
     await vm.stateManager.putCode(factory, createFactoryCode(initcode))
@@ -201,12 +203,9 @@ describe('EIP-8037 inner CREATE new-account charge (Amsterdam)', () => {
     const result = await runTx(vm, { block: block(), tx, skipHardForkValidation: true })
     assert.isUndefined(result.execResult.exceptionError)
     const targetAfter = await vm.stateManager.getAccount(target)
-    assert.strictEqual(targetAfter?.nonce, 0n)
-    // Factory nonce is not bumped: child OOG onto a balance-only target
-    // exceptional-halts the creating frame (fill receipts keep the charge
-    // as regular gas and revert the CREATE nonce increment).
+    assert.strictEqual(targetAfter?.nonce, 1n)
     const factoryAfter = await vm.stateManager.getAccount(factory)
-    assert.strictEqual(factoryAfter?.nonce, 1n)
+    assert.strictEqual(factoryAfter?.nonce, 2n)
   })
 
   it('does not charge new-account gas for a nonce collision (burned grant is full 63/64)', async () => {
