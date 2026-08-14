@@ -111,7 +111,20 @@ export class SimpleStateManager implements StateManagerInterface {
     this.topStorageStack().set(`${address.toString()}_${bytesToHex(key)}`, value)
   }
 
-  async clearStorage(): Promise<void> {}
+  async clearStorage(address: Address): Promise<void> {
+    // The storage map is flat and keyed by `${address.toString()}_${slot}` (see
+    // getStorage/putStorage), so clearing an account's storage means scanning all
+    // keys and deleting those matching the address prefix. This is O(total
+    // storage); a per-account storage layout would make it O(that account). The
+    // originalStorageCache is intentionally not touched: it caches pre-call
+    // "original" values for SSTORE gas-refund math, which are defined relative to
+    // the transaction boundary and must not be invalidated by an in-call mutation.
+    const stack = this.topStorageStack()
+    const prefix = `${address.toString()}_`
+    for (const key of stack.keys()) {
+      if (key.startsWith(prefix)) stack.delete(key)
+    }
+  }
 
   async checkpoint(): Promise<void> {
     this.checkpointSync()

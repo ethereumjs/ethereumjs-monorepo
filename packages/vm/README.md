@@ -497,10 +497,13 @@ This section is the **canonical overview** for experimental Amsterdam support: w
 | --- | --- | --- | --- |
 | `v10.1.2` | First experimental Amsterdam release: full 9-EIP `Hardfork.Amsterdam` bundle, BAL builder/validator APIs (7928), two-dimensional block gas (8037); passes v700 mixed EST slice. | [tests-bal@v7.1.0](https://github.com/ethereum/execution-specs/releases/tag/tests-bal@v7.1.0) | [BAL devnet-7](https://notes.ethereum.org/@ethpandaops/bal-devnet-7) |
 
+Master currently tracks [tests-glamsterdam-devnet@v7.2.1](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v7.2.1) for the mixed Amsterdam tree. EIP-2780 / EIP-8037: intrinsic regular gas is **state-independent** (`txGas` + recipient/value/log extras + calldata + create access + `perAuthBaseGas`); the calldata floor is anchored on `TX_BASE` + those recipient extras ([execution-specs#3120](https://github.com/ethereum/execution-specs/pull/3120)). Under v7.2.0+, the floor also binds each tx's **block regular-gas** contribution (`max(pre_refund_regular, floor)`). New-account state gas and 7702 `ACCOUNT_WRITE` / auth state are charged at top-frame access (`ACCOUNT_WRITE` counts toward receipt gas). Sender nonce is incremented before that prep layer (create-tx `NEW_ACCOUNT` OOG still bumps nonce). Create-tx `NEW_ACCOUNT` spill into `gas_left` is credited on REVERT so receipt gas can hit the calldata floor. Inner CREATE child OOG onto a balance-only target keeps the spilled `NEW_ACCOUNT` as regular gas (no leftover credit) and exceptional-halts the creating frame.
+
 The `Hardfork.Amsterdam` bundle activates the following EIPs. Amsterdam test fixtures and execution-spec tests typically enable the full set together rather than individual EIPs in isolation.
 
 | EIP | Summary | Documentation |
 | --- | --- | --- |
+| [2780](https://eips.ethereum.org/EIPS/eip-2780) | Intrinsic includes recipient/value extras; floor anchored on that base | [EIP-8037 section](#eip-8037-state-creation-gas-cost-increase-amsterdam) (intrinsic vs runtime) |
 | [7708](https://eips.ethereum.org/EIPS/eip-7708) | ETH transfers and burns emit logs | [EVM](#eip-7708-eth-transfer-and-burn-logs-amsterdam) (below), receipts from `runTx()` / `runBlock()` |
 | [7843](https://eips.ethereum.org/EIPS/eip-7843) | `SLOTNUM` opcode + `slotNumber` header field | [@ethereumjs/block](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/block#blocks-with-eip-7843-slot-number) |
 | [7778](https://eips.ethereum.org/EIPS/eip-7778) | Block gas accounting without refund subtraction | [EIP-7778 note](#eip-7778-block-gas-accounting-amsterdam) (below) |
@@ -508,8 +511,11 @@ The `Hardfork.Amsterdam` bundle activates the following EIPs. Amsterdam test fix
 | [7954](https://eips.ethereum.org/EIPS/eip-7954) | Raised max contract / initcode size | [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#eip-7954-contract-and-initcode-size-limits-amsterdam) |
 | [7976](https://eips.ethereum.org/EIPS/eip-7976) | Uniform calldata floor pricing | [@ethereumjs/tx](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx#amsterdam-transaction-validation-eip-7976-eip-7981) |
 | [7981](https://eips.ethereum.org/EIPS/eip-7981) | Access-list byte floor pricing | [@ethereumjs/tx](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx#amsterdam-transaction-validation-eip-7976-eip-7981) |
+| [7997](https://eips.ethereum.org/EIPS/eip-7997) | Deterministic CREATE2 factory predeploy | Catalog only — clients must not inject at the fork boundary |
 | [8024](https://eips.ethereum.org/EIPS/eip-8024) | `DUPN`, `SWAPN`, `EXCHANGE` stack opcodes | [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#eip-8024-stack-opcodes-amsterdam) |
 | [8037](https://eips.ethereum.org/EIPS/eip-8037) | Two-dimensional block gas + state-gas reservoir | [EIP-8037 section](#eip-8037-state-creation-gas-cost-increase-amsterdam) (below) |
+| [8038](https://eips.ethereum.org/EIPS/eip-8038) | State-access gas; SSTORE access cost before implicit read | [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#eip-8037-and-eip-7708-amsterdam) |
+| [8282](https://eips.ethereum.org/EIPS/eip-8282) | Builder deposit/exit request predeploys (v7 mined addresses) | `runBlock()` / `accumulateRequests`; addresses in `packages/vm/src/params.ts` |
 
 **Activation:** `new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })`. See [Release ↔ spec tracking](#amsterdam-hardfork-experimental) above for supported spec snapshots; behaviour may change on patch releases.
 
@@ -693,7 +699,7 @@ See [Release ↔ spec tracking](#amsterdam-hardfork-experimental) above for the 
 
 **Block-level gas used:** instead of summing a single `gasUsed`, the block header field becomes `max(block_regular_gas_used, block_state_gas_used)`. Each transaction contributes to both dimensions via `RunTxResult.txRegularGas` and `RunTxResult.txStateGas` (undefined when EIP-8037 is inactive).
 
-**Pre-execution checks:** before running each tx, `runBlock()` verifies that the tx's regular and state gas contributions fit within the remaining capacity of each dimension (see `computeIntrinsicGasDimensions8037()` in `@ethereumjs/evm` for the intrinsic split).
+**Pre-execution checks:** before running each tx, `runBlock()` verifies that the tx's regular and state gas contributions fit within the remaining capacity of each dimension (see `computeIntrinsicGasDimensions8037()` in `@ethereumjs/evm` for the **state-independent** intrinsic split — no intrinsic state gas under v7). EIP-2780 recipient/value/log extras are part of `getIntrinsicGas()` and the calldata floor (self-transfers skip them). New-account state gas and 7702 `ACCOUNT_WRITE` / indicator state are charged during execution at the top frame, keyed on pre-state (prep OOG rolls back 7702 delegations). `ACCOUNT_WRITE` is taken from leftover regular gas and counted in receipt `totalGasSpent`. The sender nonce is incremented before that nested prep layer, so a create-tx `NEW_ACCOUNT` OOG still bumps nonce (no contract is created). On a create-tx REVERT, `NEW_ACCOUNT` spill into `gas_left` is credited back (`refill_frame_state_gas`); receipt `totalGasSpent` still floors to calldata minimum. Inner CREATE/CREATE2 charges new-account state gas unless the target already has nonce or code; a collision consumes the 63/64 grant as regular gas without spawning a child. A child exceptional halt onto a balance-only (already-alive) target keeps that charge as regular gas and exceptional-halts the creating frame (nonce bump reverted, BAL reads kept). CREATE new-account OOG is post-target (the created address is in the BAL); 7702 top-frame delegation OOG records the recipient and not the delegation target.
 
 **`RunTxResult` fields (EIP-8037 active):**
 

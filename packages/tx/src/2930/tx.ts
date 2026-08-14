@@ -27,7 +27,7 @@ import type {
   TransactionInterface,
   TxOptions,
 } from '../types.ts'
-import { accessListBytesToJSON, accessListJSONToBytes } from '../util/access.ts'
+import { accessListJSONToBytes } from '../util/access.ts'
 
 export type TxData = AllTypesTxData[typeof TransactionType.AccessListEIP2930]
 export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.AccessListEIP2930]
@@ -310,7 +310,7 @@ export class AccessList2930Tx
    * @returns JSON encoding of the transaction
    */
   toJSON(): JSONTx {
-    const accessListJSON = accessListBytesToJSON(this.accessList)
+    const accessListJSON = EIP2930.getAccessListJSON(this)
     const baseJSON = getBaseJSON(this)
 
     return {

@@ -19,8 +19,8 @@ import { Account, bytesToHex, createAddressFromString, toBytes } from '@ethereum
 import type { assert } from 'vitest'
 
 import type { StateManagerInterface } from '@ethereumjs/common'
-import { createVM, runTx } from '../../../src/index.ts'
-import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util.ts'
+import { createVM, runTx } from '../../../../src/index.ts'
+import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../../util.ts'
 
 function logComment(message: string): void {
   console.log(`[TEST] ${message}`)

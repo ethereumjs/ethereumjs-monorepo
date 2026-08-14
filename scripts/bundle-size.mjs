@@ -6,7 +6,7 @@
 
 import { readdir, stat, readFile, writeFile } from 'fs/promises'
 import { gzipSync } from 'zlib'
-import { join, resolve } from 'path'
+import { join, relative, resolve } from 'path'
 import { build } from 'esbuild'
 
 const packagesDir = join(process.cwd(), 'packages')
@@ -61,7 +61,42 @@ async function getInternalPackages() {
 }
 
 /**
- * Bundle and minify a package entry and return gzipped size
+ * Collect the union of every non-workspace dependency declared across all
+ * workspace packages. These are treated as `external` for every bundle so that
+ * external deps pulled in *transitively* through a workspace dependency are
+ * excluded too — not just the entry package's direct deps. Without this, deps
+ * such as `@noble/curves` or `lru-cache` get bundled (and duplicated across
+ * each package's nested node_modules), inflating the reported sizes with code
+ * that a consumer would install only once.
+ */
+async function getExternalDependencies(internalPackages) {
+  const external = new Set()
+  const entries = await readdir(packagesDir, { withFileTypes: true })
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue
+    const packageJson = await readJson(join(packagesDir, entry.name, 'package.json'))
+    if (!packageJson) continue
+    const deps = {
+      ...(packageJson.dependencies || {}),
+      ...(packageJson.peerDependencies || {}),
+      ...(packageJson.optionalDependencies || {}),
+    }
+    for (const dep of Object.keys(deps)) {
+      if (!internalPackages.has(dep)) external.add(dep)
+    }
+  }
+  return Array.from(external)
+}
+
+/**
+ * Bundle and minify a package entry and return the gzipped size of its *entry
+ * chunk* — the code a consumer eagerly loads when importing the package.
+ *
+ * Code splitting is enabled so that modules pulled in via dynamic `import()`
+ * land in separate on-demand chunks instead of being inlined into the entry.
+ * A consumer only pays for those chunks when the corresponding code path runs,
+ * so they are excluded from the reported number (e.g. `@ethereumjs/genesis`
+ * lazy-loads each chain's multi-hundred-KB allocation this way).
  */
 async function getBundledSize(entryPath, pkgDir, external) {
   const result = await build({
@@ -74,6 +109,11 @@ async function getBundledSize(entryPath, pkgDir, external) {
     minify: true,
     sourcemap: false,
     write: false,
+    splitting: true,
+    // Required by esbuild when `splitting` is enabled; nothing is written to
+    // disk because `write: false` keeps the output in memory.
+    outdir: 'bundle-size-analysis',
+    metafile: true,
     logLevel: 'silent',
     absWorkingDir: pkgDir,
     external,
@@ -83,8 +123,15 @@ async function getBundledSize(entryPath, pkgDir, external) {
   })
 
   if (!result.outputFiles || result.outputFiles.length === 0) return 0
-  const output = result.outputFiles[0].text
-  return gzipSync(Buffer.from(output)).length
+
+  // The entry chunk is the single output esbuild flags with an `entryPoint` in
+  // the metafile; every other output is a shared or dynamically-imported chunk.
+  const outputs = result.metafile?.outputs ?? {}
+  const entryFile =
+    result.outputFiles.find((file) => outputs[relative(pkgDir, file.path)]?.entryPoint) ??
+    result.outputFiles[0]
+
+  return gzipSync(Buffer.from(entryFile.text)).length
 }
 
 /**
@@ -101,6 +148,7 @@ async function analyzePackages() {
   try {
     const packages = await readdir(packagesDir, { withFileTypes: true })
     const internalPackages = await getInternalPackages()
+    const external = await getExternalDependencies(internalPackages)
     const results = {}
     const errors = []
 
@@ -117,12 +165,6 @@ async function analyzePackages() {
       const entryPath = resolve(pkgDir, entryRel)
       try {
         await stat(entryPath)
-        const deps = {
-          ...(packageJson.dependencies || {}),
-          ...(packageJson.peerDependencies || {}),
-          ...(packageJson.optionalDependencies || {}),
-        }
-        const external = Object.keys(deps).filter((dep) => !internalPackages.has(dep))
         const size = await getBundledSize(entryPath, pkgDir, external)
         if (size > 0) {
           results[pkg.name] = size
@@ -243,7 +285,7 @@ async function main() {
       console.log('## 📦 Bundle Size Analysis\n')
       console.log(table)
       console.log(
-        '\n_Values are minified+gzipped bundles of each package entry. Workspace deps are bundled; external deps are excluded._\n'
+        '\n_Values are the minified+gzipped entry chunk of each package — the code eagerly loaded on import. Workspace deps are bundled; external deps and dynamically-imported (lazy) chunks are excluded._\n'
       )
     } catch (error) {
       if (error.code === 'ENOENT') {

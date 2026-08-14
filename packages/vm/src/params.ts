@@ -101,4 +101,14 @@ export const paramsVM: ParamsDict = {
     maxBlobGasPerBlock: 1179648, // The max blob gas allowable per block
     blobGasPriceUpdateFraction: 5007716, // The denominator used in the exponential when calculating a blob gas price
   },
+  /**
+   * Builder execution requests (Amsterdam, experimental)
+   */
+  8282: {
+    // config
+    systemAddress: SYSTEM_ADDRESS, // The system address to perform operations on the builder request contracts
+    builderDepositContractAddress: '0x0000BFF46984E3725691FA540A8C7589300D8282', // Address of the builder deposit contract (glamsterdam-devnet v7)
+    builderExitContractAddress: '0x000064D678505AD48F8CCB093BC65613800E8282', // Address of the builder exit contract (glamsterdam-devnet v7)
+    systemCallGasLimit: 30_000_000, // EIP-8282 system call gas limit
+  },
 }

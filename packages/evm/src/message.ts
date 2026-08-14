@@ -74,6 +74,14 @@ export class Message {
    */
   blobVersionedHashes?: PrefixedHexString[]
   accessWitness?: BinaryTreeAccessWitnessInterface
+  /**
+   * EIP-8037: set by the EVM during creation-message execution when the
+   * create target account was already alive (EIP-161 non-empty). The caller
+   * refunds the new-account state gas in that case.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
+  createdTargetAlive?: boolean
 
   constructor(opts: MessageOpts) {
     this.to = opts.to

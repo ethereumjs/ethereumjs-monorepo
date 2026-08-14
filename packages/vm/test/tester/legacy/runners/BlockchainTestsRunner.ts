@@ -28,8 +28,8 @@ import {
 } from '@ethereumjs/util'
 import { assert } from 'vitest'
 
-import { buildBlock, createVM, runBlock } from '../../../src/index.ts'
-import { setupPreConditions, verifyPostConditions } from '../../util.ts'
+import { buildBlock, createVM, runBlock } from '../../../../src/index.ts'
+import { setupPreConditions, verifyPostConditions } from '../../../util.ts'
 
 import type { Block } from '@ethereumjs/block'
 import type { Blockchain, ConsensusDict } from '@ethereumjs/blockchain'
@@ -269,7 +269,7 @@ export async function runBlockchainTest(options: any, testData: any, t: typeof a
   }
 
   t.equal(
-    bytesToHex(blockchain['_headHeaderHash']),
+    bytesToHex(blockchain['_headHeaderHash']!),
     '0x' + testData.lastblockhash,
     'correct last header block',
   )

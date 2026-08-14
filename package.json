@@ -1,7 +1,9 @@
 {
   "name": "root",
   "private": true,
-  "workspaces": ["packages/*"],
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "biome": "npx @biomejs/biome check",
     "biome:fix": "npx @biomejs/biome check --write",
@@ -34,6 +36,8 @@
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@eslint/js": "^9.22.0",
+    "@polkadot/util": "^13.4.3",
+    "@polkadot/x-randomvalues": "^13.4.3",
     "@types/estree": "^1.0.1",
     "@types/node": "22.13.10",
     "@typescript-eslint/eslint-plugin": "^8.26.1",
@@ -49,11 +53,12 @@
     "eslint-plugin-import": "^2.31.0",
     "lint-staged": "15.5.0",
     "lockfile-lint-api": "^5.9.1",
+    "playwright": "1.60.0",
     "sort-package-json": "3.0.0",
     "tsx": "^4.19.3",
     "typedoc": "^0.28.3",
     "typedoc-plugin-markdown": "^4.6.3",
-    "typescript": "^5.8.2",
+    "typescript": "^7.0.2",
     "typescript-eslint": "^8.26.1",
     "vite-plugin-top-level-await": "^1.5.0",
     "vite-plugin-wasm": "^3.4.1",

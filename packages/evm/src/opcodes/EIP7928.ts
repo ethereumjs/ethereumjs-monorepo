@@ -1,5 +1,12 @@
 import { Hardfork } from '@ethereumjs/common'
-import { BIGINT_0, BIGINT_31, BIGINT_32 } from '@ethereumjs/util'
+import {
+  Address,
+  BIGINT_0,
+  BIGINT_31,
+  BIGINT_32,
+  KECCAK256_NULL,
+  equalsBytes,
+} from '@ethereumjs/util'
 
 import { activeCostPerStateByte } from '../eip8037.ts'
 import { EVMError } from '../errors.ts'
@@ -13,7 +20,6 @@ import {
 import { maxCallGas, subMemUsage, trap, writeCallOutput } from './util.ts'
 
 import type { Common } from '@ethereumjs/common'
-import type { Address } from '@ethereumjs/util'
 import type { RunState } from '../interpreter.ts'
 
 /** Set by the gas handler; consumed in {@link Interpreter.runStep} after gas is charged. */
@@ -39,6 +45,28 @@ export function newAccountStateGasCost(common: Common, runState: RunState): bigi
   return stateBytesPerNewAccount * costPerStateByte
 }
 
+/**
+ * EIP-8037 CREATE/CREATE2 new-account state gas for this target.
+ *
+ * Charge only when the target is absent or EIP-161 empty (matches EELS
+ * `is_account_alive` / CALL `createsNewAccount`). Storage-only (EIP-7610)
+ * targets are still charged and refunded on the collision short-circuit.
+ */
+export async function createNewAccountStateGasIfCharged(
+  runState: RunState,
+  common: Common,
+  targetAddress: Uint8Array,
+): Promise<bigint> {
+  if (!common.isActivatedEIP(8037)) {
+    return BIGINT_0
+  }
+  const account = await runState.stateManager.getAccount(new Address(targetAddress))
+  if (account !== undefined && !account.isEmpty()) {
+    return BIGINT_0
+  }
+  return newAccountStateGasCost(common, runState)
+}
+
 /** Pre-target OOG: trap before any target access / BAL entry. */
 export function eip7928TrapPreTarget(runState: RunState, common: Common, gas: bigint): void {
   if (common.isActivatedEIP(7928) && gas > runState.interpreter.getGasLeft()) {
@@ -57,18 +85,13 @@ export function eip7928SchedulePostTargetCallOog(
   return runState.interpreter.getGasLeft()
 }
 
-/** Post-target CREATE OOG: charge accrued gas only; opcode pushes 0. */
+/** Post-target CREATE OOG: target is already in the BAL; exceptional-halt. */
 export function eip7928PostTargetCreateOog(
-  runState: RunState,
-  common: Common,
-  gas: bigint,
-): bigint {
-  if (!common.isActivatedEIP(7928)) {
-    trap(EVMError.errorMessages.OUT_OF_GAS)
-  }
-  runState.messageGasLimit = BIGINT_0
-  runState.eip7928PostTargetCreateOog = true
-  return gas
+  _runState: RunState,
+  _common: Common,
+  _gas: bigint,
+): never {
+  trap(EVMError.errorMessages.OUT_OF_GAS)
 }
 
 /** Post-target CALL OOG when 7928 is off (legacy: trap in gas handler). */
@@ -156,17 +179,17 @@ function finalizeCallMessageGas(
   }
 
   // EIP-8037: pre-charge the new-account state-gas BEFORE the inner call
-  // runs. This matches the EELS amsterdam (tests-bal) reference, where
+  // runs. This matches the pinned execution-specs Amsterdam reference, where
   // `charge_state_gas(STATE_BYTES_PER_NEW_ACCOUNT * COST_PER_STATE_BYTE)`
   // happens in the CALL opcode body before the sub-frame is processed and
-  // before the insufficient-balance check. The charge is unconditional
-  // (per spec it sticks even when the sub-call later fails for insufficient
-  // balance or reverts), so we charge here rather than after frame exit.
-  // The post-frame charge in evm.ts is skipped under EIP-8037 to avoid
-  // double-counting (see `_executeCall` post-execution block).
+  // before the insufficient-balance check. The charge sticks when the
+  // sub-call reverts or halts; it is refunded only when the call fails fast
+  // (depth limit / insufficient balance) before a child frame is entered
+  // (see `_baseCall`).
   if (common.isActivatedEIP(8037) && newAccountStateGas > BIGINT_0) {
     runState.interpreter.chargeStateGas(newAccountStateGas, 'CALL pre-charge new_account')
   }
+  runState.lastCallNewAccountStateGas = common.isActivatedEIP(8037) ? newAccountStateGas : BIGINT_0
 
   runState.messageGasLimit = gasLimit
   return gas
@@ -349,14 +372,17 @@ export async function create7928Gas(
   }
   const targetAddress = await getCreateTargetAddressBytes(runState, initCode, salt)
 
-  const newAccountStateGas = newAccountStateGasCost(common, runState)
-  if (common.isActivatedEIP(8037)) {
-    if (!canAfford(runState, gas, newAccountStateGas)) {
-      trap(EVMError.errorMessages.OUT_OF_GAS)
-    }
-  }
+  const newAccountStateGas = await createNewAccountStateGasIfCharged(
+    runState,
+    common,
+    targetAddress,
+  )
 
-  if (common.isActivatedEIP(2929)) {
+  if (common.isActivatedEIP(2929) && !common.isActivatedEIP(8038)) {
+    // Pre-Amsterdam: the create target is warmed during the gas step.
+    // Under EIP-8038 warming happens only after the fail-fast checks
+    // (depth / balance / nonce overflow) in the interpreter `create()`
+    // wrapper, so an aborted create does not warm the address.
     warmAddress(runState, targetAddress)
   }
 
@@ -365,19 +391,30 @@ export async function create7928Gas(
   }
 
   if (common.isActivatedEIP(8037)) {
+    // EIP-8037 new-account OOG is post-target: record the created address
+    // first (BAL empty() entry), then halt the CREATE. Pre-target OOG on
+    // regular CREATE costs is `eip7928TrapPreTarget` above and must not
+    // add the address. Do not add on the success path — fail-fast aborts
+    // in interpreter `create()` (depth / balance / nonce) must not leave
+    // a BAL entry for a create that never accessed the target.
     if (!canAfford(runState, gas, newAccountStateGas)) {
       addAddressToBAL(runState, targetAddress, common)
+      runState.lastCreateNewAccountStateGas = BIGINT_0
       return eip7928PostTargetCreateOog(runState, common, gas)
     }
     if (gas > runState.interpreter.getGasLeft()) {
       addAddressToBAL(runState, targetAddress, common)
+      runState.lastCreateNewAccountStateGas = BIGINT_0
       return eip7928PostTargetCreateOog(runState, common, gas)
     }
     if (gas > BIGINT_0) {
       runState.interpreter.useGas(gas, preChargeLabel)
       gas = BIGINT_0
     }
-    runState.interpreter.chargeStateGas(newAccountStateGas, `${preChargeLabel} new_account`)
+    if (newAccountStateGas > BIGINT_0) {
+      runState.interpreter.chargeStateGas(newAccountStateGas, `${preChargeLabel} new_account`)
+    }
+    runState.lastCreateNewAccountStateGas = newAccountStateGas
   } else if (gas > runState.interpreter.getGasLeft()) {
     addAddressToBAL(runState, targetAddress, common)
     return eip7928PostTargetCreateOog(runState, common, gas)

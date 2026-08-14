@@ -5,7 +5,6 @@ import {
   bigIntToHex,
   bigIntToUnpaddedBytes,
   bytesToBigInt,
-  eoaCode7702AuthorizationListBytesItemToJSON,
   eoaCode7702AuthorizationListJSONItemToBytes,
   isEOACode7702AuthorizationList,
   toBytes,
@@ -39,7 +38,7 @@ import type {
   TransactionInterface,
   TxOptions,
 } from '../types.ts'
-import { accessListBytesToJSON, accessListJSONToBytes } from '../util/access.ts'
+import { accessListJSONToBytes } from '../util/access.ts'
 
 export type TxData = AllTypesTxData[typeof TransactionType.EOACodeEIP7702]
 export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.EOACodeEIP7702]
@@ -368,10 +367,8 @@ export class EOACode7702Tx implements TransactionInterface<typeof TransactionTyp
    * @returns JSON encoding of the transaction
    */
   toJSON(): JSONTx {
-    const accessListJSON = accessListBytesToJSON(this.accessList)
-    const authorizationList = this.authorizationList.map((item) =>
-      eoaCode7702AuthorizationListBytesItemToJSON(item),
-    )
+    const accessListJSON = EIP2930.getAccessListJSON(this)
+    const authorizationList = EIP7702.getAuthorizationListJSON(this)
 
     const baseJSON = getBaseJSON(this)
 

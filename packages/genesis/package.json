@@ -23,35 +23,50 @@
         "typescript": "./src/index.ts",
         "default": "./dist/esm/index.js"
       },
-      "require": "./dist/cjs/index.js"
+      "require": {
+        "typescript": "./src/index.ts",
+        "default": "./dist/cjs/index.js"
+      }
     },
     "./holesky": {
       "import": {
         "typescript": "./dist/esm/genesisStates/holesky.js",
         "default": "./dist/esm/genesisStates/holesky.js"
       },
-      "require": "./dist/cjs/genesisStates/holesky.js"
+      "require": {
+        "typescript": "./dist/esm/genesisStates/holesky.js",
+        "default": "./dist/cjs/genesisStates/holesky.js"
+      }
     },
     "./hoodi": {
       "import": {
         "typescript": "./dist/esm/genesisStates/hoodi.js",
         "default": "./dist/esm/genesisStates/hoodi.js"
       },
-      "require": "./dist/cjs/genesisStates/hoodi.js"
+      "require": {
+        "typescript": "./dist/esm/genesisStates/hoodi.js",
+        "default": "./dist/cjs/genesisStates/hoodi.js"
+      }
     },
     "./mainnet": {
       "import": {
         "typescript": "./dist/esm/genesisStates/mainnet.js",
         "default": "./dist/esm/genesisStates/mainnet.js"
       },
-      "require": "./dist/cjs/genesisStates/mainnet.js"
+      "require": {
+        "typescript": "./dist/esm/genesisStates/mainnet.js",
+        "default": "./dist/cjs/genesisStates/mainnet.js"
+      }
     },
     "./sepolia": {
       "import": {
         "typescript": "./dist/esm/genesisStates/sepolia.js",
         "default": "./dist/esm/genesisStates/sepolia.js"
       },
-      "require": "./dist/cjs/genesisStates/sepolia.js"
+      "require": {
+        "typescript": "./dist/esm/genesisStates/sepolia.js",
+        "default": "./dist/cjs/genesisStates/sepolia.js"
+      }
     }
   },
   "files": ["dist", "src"],

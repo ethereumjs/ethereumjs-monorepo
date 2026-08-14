@@ -548,7 +548,10 @@ export class BlockLevelAccessList {
    *
    * @remarks Experimental (Amsterdam): may change on patch releases.
    */
-  public cleanupSelfdestructed(addresses: Array<BALAddressHex>): void {
+  public cleanupSelfdestructed(
+    addresses: Array<BALAddressHex>,
+    finalBalances?: Map<BALAddressHex, bigint>,
+  ): void {
     for (const address of addresses) {
       const access = this.accesses[address]
       if (access === undefined) {
@@ -564,14 +567,21 @@ export class BlockLevelAccessList {
       access.nonceChanges.clear()
       access.codeChanges = []
 
-      // EIP-7928: If the account had a positive pre-transaction balance,
-      // the balance change to zero MUST be recorded.
-      // The balance change to 0 is already added during SELFDESTRUCT execution.
-      // We only clear balance changes if pre-transaction balance was 0 (no actual change).
       const originalBalance = this.originalBalances.get(address)
-      if (originalBalance === undefined || originalBalance === BigInt(0)) {
-        // Pre-transaction balance was 0 or unknown - clear balance changes
-        // (0 -> 0 is no change, so nothing to record)
+      if (finalBalances !== undefined) {
+        // EIP-8246: SELFDESTRUCT preserves the account balance. Keep the
+        // recorded balance changes only when the balance changed net over
+        // the transaction (final != pre-transaction).
+        const finalBalance = finalBalances.get(address) ?? BigInt(0)
+        if (finalBalance === (originalBalance ?? BigInt(0))) {
+          access.balanceChanges.clear()
+        }
+      } else if (originalBalance === undefined || originalBalance === BigInt(0)) {
+        // EIP-7928 (pre-8246 destruction semantics): if the account had a
+        // positive pre-transaction balance, the balance change to zero MUST
+        // be recorded (already added during SELFDESTRUCT execution). Clear
+        // balance changes only when the pre-transaction balance was 0
+        // (0 -> 0 is no change, so nothing to record).
         access.balanceChanges.clear()
       }
       // If originalBalance > 0, keep the balance changes (which should show balance = 0)
