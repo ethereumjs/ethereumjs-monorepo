@@ -307,8 +307,8 @@ jobs:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
   # In-flux hardfork working-ground. Not in the CI gate — must not delay or fail it.
+  # `continue-on-error` is not valid on reusable workflow jobs (GitHub then requires runs-on).
   vm-est-dev:
-    continue-on-error: true
     needs: [build, detect]
     if: needs.detect.outputs['vm-pr'] == 'true'
     uses: ./.github/workflows/vm-est-dev.yml
