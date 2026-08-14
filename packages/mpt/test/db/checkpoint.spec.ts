@@ -150,4 +150,25 @@ describe('DB tests', () => {
     await db.revert()
     assert.deepEqual(await db.get(k), v, 'after revert (first CP): v1')
   })
+
+  it('Checkpointing: cacheSize > 0 does not mask a checkpointed put/del from a later get()', async () => {
+    const cachedDb = new CheckpointDB({ db: new MapDB(), cacheSize: 100 })
+    await cachedDb.put(k, v)
+    assert.deepEqual(await cachedDb.get(k), v, 'before CP: v1 (also populates _cache)')
+
+    cachedDb.checkpoint(hexToBytes('0x01'))
+    await cachedDb.put(k, v2)
+    assert.deepEqual(
+      await cachedDb.get(k),
+      v2,
+      'after put (update) in open checkpoint: v2, not stale v1',
+    )
+
+    await cachedDb.del(k)
+    assert.deepEqual(
+      await cachedDb.get(k),
+      undefined,
+      'after del in open checkpoint: undefined, not stale v1',
+    )
+  })
 })

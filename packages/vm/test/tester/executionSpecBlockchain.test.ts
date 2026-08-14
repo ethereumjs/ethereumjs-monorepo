@@ -20,12 +20,13 @@ import {
 import { keccak_256 } from '@noble/hashes/sha3.js'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
-import type { VM } from '../../src/index.ts'
+import type { AfterTxEvent, VM } from '../../src/index.ts'
 import { createVM, runBlock } from '../../src/index.ts'
 import { setupPreConditions } from '../util.ts'
 import { createCommonForFork, loadExecutionSpecFixtures } from './executionSpecTestLoader.ts'
 import type { BlockchainTestFixtureData } from './executionSpecTypes.ts'
 import { compareBAL } from './util/balComparatorAI.ts'
+import { attachHeaderDiagnosis, getHeaderDiagnosis } from './util/headerMismatchDiagnosis.ts'
 import { annotateFixture } from './util/perDirectoryReporter.ts'
 
 const customFixturesPath = process.env.TEST_PATH ?? '../execution-spec-tests'
@@ -149,12 +150,19 @@ async function runBlocks(
   t: typeof assert,
 ): Promise<Error | undefined> {
   let parentBlock = genesisBlock
+  const txBuffer: AfterTxEvent[] = []
+  const onAfterTx = (event: AfterTxEvent) => {
+    txBuffer.push(event)
+  }
+  vm.events.on('afterTx', onAfterTx)
 
   try {
     for (const { rlp, expectException, blockAccessList, rlp_decoded } of testData.blocks) {
+      txBuffer.length = 0
       const providedBalJson = blockAccessList ?? rlp_decoded?.blockAccessList
+      let block: Block | undefined
       try {
-        const block = createBlockFromRLP(hexToBytes(rlp), { common: vm.common, setHardfork: true })
+        block = createBlockFromRLP(hexToBytes(rlp), { common: vm.common, setHardfork: true })
 
         // Enforce the provided BAL inside runBlock only for invalid-block tests.
         // Other Amsterdam v7 fixtures may ship a reference BAL without requiring
@@ -181,6 +189,9 @@ async function runBlocks(
         // Re-throw genuinely unexpected errors; otherwise verify the failure
         // matches the exception the fixture expects.
         if (expectException === undefined) {
+          if (block !== undefined) {
+            await attachHeaderDiagnosis(e, block, txBuffer, vm.common)
+          }
           throw e
         }
         assertExpectedException(expectException, e, t)
@@ -188,6 +199,8 @@ async function runBlocks(
     }
   } catch (e: any) {
     return e
+  } finally {
+    vm.events.removeListener('afterTx', onAfterTx)
   }
   return undefined
 }
@@ -315,10 +328,18 @@ async function collectPostStateFailures(
  * Combines an optional block-run error with post-state failure messages into a
  * single thrown Error. When a block-run error is the root cause, its stack is
  * preserved so vitest's source-mapped frames still point at the original throw.
+ * Header-mismatch diagnosis (if attached) is appended as a separate section so
+ * the original VM `error.message` stays the first line.
  */
 function throwCombinedFailure(runError: Error | undefined, postFailures: string[]): never {
   const sections: string[] = []
-  if (runError !== undefined) sections.push(runError.message)
+  if (runError !== undefined) {
+    sections.push(runError.message)
+    const diagnosis = getHeaderDiagnosis(runError)
+    if (diagnosis !== undefined) {
+      sections.push(diagnosis)
+    }
+  }
   if (postFailures.length > 0) {
     const header =
       postFailures.length === 1

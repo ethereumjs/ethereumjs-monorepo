@@ -2,6 +2,13 @@ import { Hardfork } from './enums.ts'
 
 import type { EIPsDict } from './types.ts'
 
+/**
+ * EIP catalog for `Common`.
+ *
+ * `minimumHardfork` is the earliest fork where the EIP can be enabled in isolation
+ * (prerequisites already present). It is not the fork that schedules the EIP — that
+ * is `hardforks.ts` → `eips` — and is therefore at least one hardfork earlier.
+ */
 export const eipsDict: EIPsDict = {
   /**
    * Frontier/Chainstart
@@ -611,6 +618,16 @@ export const eipsDict: EIPsDict = {
   7981: {
     minimumHardfork: Hardfork.Amsterdam,
     requiredEIPs: [2930, 7976],
+  },
+  /**
+   * Description : Deterministic CREATE2 factory predeploy (Amsterdam, experimental)
+   * URL         : https://eips.ethereum.org/EIPS/eip-7997
+   * Status      : Review
+   */
+  7997: {
+    // CREATE2 (EIP-1014) is Constantinople; factory bytecode needs nothing later.
+    minimumHardfork: Hardfork.Constantinople,
+    requiredEIPs: [],
   },
   /**
    * Description : State Creation Gas Cost Increase

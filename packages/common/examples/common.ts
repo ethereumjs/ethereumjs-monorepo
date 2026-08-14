@@ -10,7 +10,7 @@ let c = new Common({ chain: Mainnet })
 console.log('Below are the known bootstrap nodes')
 console.log(c.bootstrapNodes()) // Array with current nodes
 
-// Instantiate with an EIP activated (with pre-EIP hardfork)
+// Instantiate with an EIP activated on a pre-schedule hardfork (`EIPConfig.minimumHardfork`)
 c = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
 console.log(`EIP 7702 is active -- ${c.isActivatedEIP(7702)}`)
 

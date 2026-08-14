@@ -28,8 +28,8 @@ import {
 } from '@ethereumjs/util'
 import { assert } from 'vitest'
 
-import { buildBlock, createVM, runBlock } from '../../../src/index.ts'
-import { setupPreConditions, verifyPostConditions } from '../../util.ts'
+import { buildBlock, createVM, runBlock } from '../../../../src/index.ts'
+import { setupPreConditions, verifyPostConditions } from '../../../util.ts'
 
 import type { Block } from '@ethereumjs/block'
 import type { Blockchain, ConsensusDict } from '@ethereumjs/blockchain'
