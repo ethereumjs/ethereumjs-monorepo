@@ -130,12 +130,14 @@ export const paramsTx: ParamsDict = {
   },
   /**
    * State-access gas cost update — access-list intrinsic repriced to
-   * `COLD_*_ACCESS - WARM_ACCESS` (2900 per address/key under v8 constants).
-   * Overrides EIP-7981's 3000/3000 execution component; the 7981 floor-token
-   * charge on access-list bytes is unchanged.
+   * `COLD_*_ACCESS - WARM_ACCESS` (2900 per address, 2000 per storage key
+   * under v8.1.0). Overrides EIP-7981's 3000/3000 execution component; the
+   * 7981 floor-token charge on access-list bytes is unchanged.
    */
   8038: {
-    accessListStorageKeyGas: 2900, // COLD_STORAGE_ACCESS - WARM_ACCESS
-    accessListAddressGas: 2900, // COLD_ACCOUNT_ACCESS - WARM_ACCESS
+    accessListStorageKeyGas: 2000, // COLD_STORAGE_ACCESS - WARM_ACCESS (2100 - 100)
+    accessListAddressGas: 2900, // COLD_ACCOUNT_ACCESS - WARM_ACCESS (3000 - 100)
+    accountWriteGas: 9000, // ACCOUNT_WRITE (overrides 8037's 8000)
+    txCreationGas: 12000, // CREATE_ACCESS = ACCOUNT_WRITE + COLD_ACCOUNT_ACCESS
   },
 }

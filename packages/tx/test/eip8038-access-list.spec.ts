@@ -14,7 +14,7 @@ const address = hexToBytes(`0x${'11'.repeat(20)}`)
 const slot = hexToBytes(`0x${'22'.repeat(32)}`)
 
 describe('EIP-8038 access-list intrinsic (Amsterdam)', () => {
-  it('charges cold − WARM_ACCESS per address and storage key', () => {
+  it('charges cold − WARM_ACCESS per address (2900) and storage key (2000)', () => {
     const tx = createAccessList2930Tx(
       {
         chainId: 1n,
@@ -26,14 +26,19 @@ describe('EIP-8038 access-list intrinsic (Amsterdam)', () => {
       { common },
     )
 
-    const perItem = common.param('accessListAddressGas')
-    assert.strictEqual(perItem, 2900n)
-    assert.strictEqual(common.param('accessListStorageKeyGas'), 2900n)
+    const perAddress = common.param('accessListAddressGas')
+    const perStorageKey = common.param('accessListStorageKeyGas')
+    assert.strictEqual(perAddress, 2900n)
+    assert.strictEqual(perStorageKey, 2000n)
 
     const floorBytes = (20n + 32n) * 4n
     const floorCost = common.param('totalCostFloorPerToken') * floorBytes
     const expected =
-      common.param('txGas') + common.param('txRecipientAccessGas') + perItem + perItem + floorCost
+      common.param('txGas') +
+      common.param('txRecipientAccessGas') +
+      perAddress +
+      perStorageKey +
+      floorCost
     assert.strictEqual(tx.getIntrinsicGas(), expected)
   })
 })

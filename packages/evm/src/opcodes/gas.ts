@@ -415,8 +415,8 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         })
         let sstoreCharge2929Gas = true
         if (common.isActivatedEIP(8038)) {
-          // Access cost must be covered before the implicit read: cold access
-          // (3000) exceeds the EIP-2200 stipend (2300).
+          // Access cost must be covered before the implicit read; gate is
+          // max(cold access, EIP-2200 stipend + 1).
           gas += chargeSstoreAccessEIP8038(runState, keyBytes, common)
           const { currentStorage, originalStorage } = await loadSlot()
           gas += updateSstoreGasEIP8038(
