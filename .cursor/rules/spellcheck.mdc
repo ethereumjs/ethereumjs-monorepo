@@ -1,0 +1,17 @@
+---
+description: After edits, run cspell and reword unknown words instead of adding dictionary entries
+alwaysApply: true
+---
+
+# Spellcheck after edits
+
+CI runs `npm run spellcheck` (`cspell` via `config/cspell-md.json` and `config/cspell-ts.json`). Failures are common and cheap to prevent.
+
+## When finishing a change
+
+1. Run `npm run spellcheck` (or `npm run spellcheck:md` / `spellcheck:ts` for the files you touched).
+2. If cspell flags a word, **do not** add it to the dictionary by default.
+3. **Reword** to a dictionary word or a shorter common phrase (`Nightlies` → `nightly runs`, `skippable` → `optional`, `aggregator` → `summary job` if flagged).
+4. Add to `config/cspell-md.json` / `config/cspell-ts.json` only for necessary domain terms (EIPs, protocol names, proper nouns) that have no reasonable substitute. If unsure, ask before adding.
+
+Do not leave spellcheck failures for CI to catch.

@@ -160,6 +160,12 @@ export interface HardforkByOpts {
 }
 
 export type EIPConfig = {
+  /**
+   * Earliest hardfork where this EIP can be activated in isolation, i.e. the
+   * fork that already provides its prerequisites. This is **not** the hardfork
+   * that schedules the EIP (that list lives on `HardforkConfig.eips`). It is
+   * therefore at least one hardfork before the scheduling fork.
+   */
   minimumHardfork: Hardfork
   requiredEIPs?: number[]
 }

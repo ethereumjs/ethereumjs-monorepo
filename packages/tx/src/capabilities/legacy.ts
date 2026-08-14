@@ -14,6 +14,11 @@ import { secp256k1 } from '@noble/curves/secp256k1.js'
 import { keccak_256 } from '@noble/hashes/sha3.js'
 
 import { Capability, TransactionType } from '../types.ts'
+import {
+  getCalldataFloorGas,
+  getEip2780RecipientRegularGas,
+  getEip7702IntrinsicAuthGas,
+} from '../util/intrinsic.ts'
 
 import type { LegacyTx } from '../legacy/tx.ts'
 import type { LegacyTxInterface, Transaction } from '../types.ts'
@@ -94,6 +99,10 @@ export function getIntrinsicGas(tx: LegacyTxInterface): bigint {
     const txCreationFee = tx.common.param('txCreationGas')
     if (txCreationFee) fee += txCreationFee
   }
+  // EIP-2780: recipient / TX_VALUE_COST extras are state-independent (sender +
+  // tx fields) and belong in intrinsic, matching EELS `calculate_intrinsic_cost`.
+  fee += getEip2780RecipientRegularGas(tx)
+  fee += getEip7702IntrinsicAuthGas(tx)
   return fee
 }
 
@@ -209,24 +218,13 @@ export function getValidationErrors(tx: LegacyTxInterface): string[] {
     errors.push('Invalid Signature')
   }
 
-  let intrinsicGas = tx.getIntrinsicGas()
+  let minGas = tx.getIntrinsicGas()
   if (tx.common.isActivatedEIP(7623)) {
-    let tokens = 0
-    if (tx.common.isActivatedEIP(7976)) {
-      // EIP-7976: uniform 4 tokens per byte regardless of zero/non-zero
-      tokens = tx.data.length * 4
-    } else {
-      for (let i = 0; i < tx.data.length; i++) {
-        tokens += tx.data[i] === 0 ? 1 : 4
-      }
-    }
-    const floorCost =
-      tx.common.param('txGas') + tx.common.param('totalCostFloorPerToken') * BigInt(tokens)
-    intrinsicGas = bigIntMax(intrinsicGas, floorCost)
+    minGas = bigIntMax(minGas, getCalldataFloorGas(tx))
   }
-  if (intrinsicGas > tx.gasLimit) {
+  if (minGas > tx.gasLimit) {
     errors.push(
-      `gasLimit is too low. The gasLimit is lower than the minimum gas limit of ${tx.getIntrinsicGas()}, the gas limit is: ${tx.gasLimit}`,
+      `gasLimit is too low. The gasLimit is lower than the minimum gas limit of ${minGas}, the gas limit is: ${tx.gasLimit}`,
     )
   }
 
