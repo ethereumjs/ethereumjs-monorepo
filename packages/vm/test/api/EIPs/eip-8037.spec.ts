@@ -102,6 +102,32 @@ describe('EIP-8037 create-tx state gas at access (Amsterdam)', () => {
     assert.strictEqual(senderAfter?.nonce, 1n)
   })
 
+  it('binds calldata floor to txRegularGas for block accounting', async () => {
+    const vm = await getVM()
+    const stopCallee = createAddressFromString(`0x${'33'.repeat(20)}`)
+    await vm.stateManager.putAccount(stopCallee, new Account(0n, 0n))
+    await vm.stateManager.putCode(stopCallee, hexToBytes('0x00'))
+
+    const calldata = new Uint8Array(2000)
+    const tx = createLegacyTx(
+      {
+        to: stopCallee,
+        data: calldata,
+        gasLimit: 1_000_000n,
+        gasPrice: 10n,
+      },
+      { common },
+    ).sign(senderKey)
+
+    const floor = getCalldataFloorGas(tx, sender)
+    const result = await runTx(vm, { block: block(), tx, skipHardForkValidation: true })
+    assert.isUndefined(result.execResult.exceptionError)
+    assert.isDefined(result.txRegularGas)
+    assert.strictEqual(result.txRegularGas, floor)
+    assert.strictEqual(result.txStateGas, 0n)
+    assert.isTrue(floor > tx.common.param('txGas') + 5000n)
+  })
+
   it('credits new-account state-gas spill on create-tx REVERT (receipt = floor)', async () => {
     const vm = await getVM()
     // PUSH1 0 PUSH1 0 REVERT — EST value_contract_creation_tx init_reverts

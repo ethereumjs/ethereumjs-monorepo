@@ -1163,15 +1163,15 @@ async function _runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
     //   tx_state_gas   = intrinsic_state + state_gas_used - state_refund
     //                    (state refunds are already folded into
     //                    executionStateGasUsed, which may be negative)
-    //   tx_regular_gas = tx_gas_used_before_refund - max(0, tx_state_gas)
-    // No refund subtraction and no calldata floor are applied to the
-    // block-level dimensions; the floor and refunds only affect the
-    // user-paid gas (totalGasSpent) and receipt cumulative gas.
+    //   tx_regular_gas = max(tx_gas_used_before_refund - max(0, tx_state_gas), calldata_floor)
+    // Refunds apply only to totalGasSpent / receipt cumulative gas, not to the
+    // block-level dimensions (EIP-7778 header gasUsed uses the 2D max).
     const txStateGasRaw =
       intrinsicStateGas + executionStateGasUsed - txCreateIntrinsicStateGasRefund
     const txStateGasClamped = txStateGasRaw > BIGINT_0 ? txStateGasRaw : BIGINT_0
     results.txStateGas = txStateGasClamped
-    results.txRegularGas = totalGasSpentBeforeRefund - txStateGasClamped
+    const txRegularGasRaw = totalGasSpentBeforeRefund - txStateGasClamped
+    results.txRegularGas = bigIntMax(txRegularGasRaw, floorCost)
   }
   results.totalGasSpent = totalGasSpentBeforeRefund
   if (vm.DEBUG) {
