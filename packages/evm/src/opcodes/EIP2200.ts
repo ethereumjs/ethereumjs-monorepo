@@ -11,9 +11,9 @@ import type { RunState } from '../interpreter.ts'
 /**
  * EIP-8038 / EIP-7928: gate the implicit SSTORE read.
  *
- * Cold access (3000) exceeds the EIP-2200 stipend (2300), so the stipend
- * sentry alone is not enough. Fail before warming or reading if gas_left
- * cannot cover max(access_cost, stipend + 1).
+ * Cold access (2100 under v8.1.0) can be below the EIP-2200 stipend (2300), so
+ * the gate is max(access_cost, stipend + 1). Fail before warming or reading if
+ * gas_left cannot cover that gate.
  *
  * Returns the access cost (cold or warm). The slot is warmed on success.
  */

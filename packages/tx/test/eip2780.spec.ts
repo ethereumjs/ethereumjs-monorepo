@@ -19,8 +19,7 @@ describe('EIP-2780 intrinsic / calldata floor (Amsterdam)', () => {
     const expected =
       tx.common.param('txGas') +
       tx.common.param('txRecipientAccessGas') +
-      tx.common.param('txValueCost') +
-      tx.common.param('transferLogCost')
+      tx.common.param('txValueCost')
     assert.strictEqual(tx.getIntrinsicGas(), expected)
     assert.strictEqual(getEip2780RecipientRegularGas(tx), expected - tx.common.param('txGas'))
   })
@@ -32,6 +31,17 @@ describe('EIP-2780 intrinsic / calldata floor (Amsterdam)', () => {
     ).sign(senderKey)
     assert.strictEqual(tx.getIntrinsicGas(), tx.common.param('txGas'))
     assert.strictEqual(getEip2780RecipientRegularGas(tx), 0n)
+  })
+
+  it('value-bearing create does not add TX_VALUE_COST to intrinsic', () => {
+    const tx = createLegacyTx({ value: 1n, gasLimit: 100_000n, gasPrice: 10n }, { common }).sign(
+      senderKey,
+    )
+    assert.strictEqual(getEip2780RecipientRegularGas(tx), 0n)
+    assert.strictEqual(
+      tx.getIntrinsicGas(),
+      tx.common.param('txGas') + tx.common.param('txCreationGas') + tx.getDataGas(),
+    )
   })
 
   it('calldata floor uses TX_BASE + recipient extras', () => {

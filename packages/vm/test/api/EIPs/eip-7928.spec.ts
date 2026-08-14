@@ -171,6 +171,51 @@ describe('EIP-7928 Block Level Access Lists', () => {
     assert.isTrue(addresses.includes(created.toString()))
   })
 
+  it('value CALL OOG before target access does not record the call target in BAL', async () => {
+    const vm = await createVM({ common })
+    await fundSender(vm)
+
+    const caller = createAddressFromString(`0x${'44'.repeat(20)}`)
+    const target = createAddressFromString(`0x${'55'.repeat(20)}`)
+    await vm.stateManager.putAccount(caller, new Account(1n, 0n))
+    // PUSH1 1 PUSH1 0 PUSH1 0 PUSH20 target GAS CALL STOP — value=1, gas=0 (OOG before target)
+    await vm.stateManager.putCode(
+      caller,
+      concatBytes(
+        hexToBytes('0x6001'),
+        hexToBytes('0x6000'),
+        hexToBytes('0x6000'),
+        hexToBytes('0x73'),
+        target.bytes,
+        hexToBytes('0x5a'),
+        hexToBytes('0xf1'),
+        hexToBytes('0x00'),
+      ),
+    )
+
+    const parentBlock = createBlock(
+      { header: { number: 1n } },
+      { common, skipConsensusFormatValidation: true },
+    )
+    const tx = createLegacyTx({ to: caller, gasLimit: 100_000n, gasPrice: 10n }).sign(senderKey)
+    const block = createBlock(
+      {
+        header: { number: 2n, gasLimit: 30_000_000n, baseFeePerGas: 1n },
+        transactions: [tx],
+      },
+      {
+        common,
+        skipConsensusFormatValidation: true,
+        calcDifficultyFromHeader: parentBlock.header,
+      },
+    )
+
+    const result = await runBlock(vm, { block, generate: true, skipBlockValidation: true })
+    const addresses = result.blockLevelAccessList!.toJSON().map((entry) => entry.address)
+    assert.isTrue(addresses.includes(caller.toString()))
+    assert.isFalse(addresses.includes(target.toString()))
+  })
+
   it('7702 top-frame delegation OOG records the recipient and not the delegation target', async () => {
     const vm = await createVM({ common })
     await fundSender(vm)

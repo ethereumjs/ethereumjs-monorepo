@@ -23,26 +23,46 @@ function storageReads(vm: Awaited<ReturnType<typeof createVM>>) {
   return entry?.storageReads ?? []
 }
 
-describe('EIP-8038 SSTORE access-before-read (Amsterdam)', () => {
-  it('does not record a BAL storage read when gas covers the stipend but not cold access', async () => {
+describe('EIP-8038 gas constants (Amsterdam, v8.1.0)', () => {
+  it('uses the revised glamsterdam-devnet schedule', async () => {
     const vm = await getVM()
-    const stipendPlus1 = vm.common.param('sstoreSentryEIP2200Gas') + 1n
+    const c = vm.common
+    assert.strictEqual(c.param('coldsloadGas'), 2100n)
+    assert.strictEqual(c.param('coldaccountaccessGas'), 3000n)
+    assert.strictEqual(c.param('accountWriteGas'), 9000n)
+    assert.strictEqual(c.param('callValueTransferGas'), 11300n)
+    assert.strictEqual(c.param('refundStorageClearGas'), 11616n)
+    assert.strictEqual(c.param('createGas'), 12000n)
+    assert.strictEqual(c.param('create2Gas'), 12000n)
+  })
+})
+
+function sstoreAccessGate(common: Awaited<ReturnType<typeof createVM>>['common']) {
+  const coldAccess = common.param('coldsloadGas')
+  const stipendPlus1 = common.param('sstoreSentryEIP2200Gas') + 1n
+  return coldAccess > stipendPlus1 ? coldAccess : stipendPlus1
+}
+
+describe('EIP-8038 SSTORE access-before-read (Amsterdam)', () => {
+  it('does not record a BAL storage read when gas cannot cover the access gate', async () => {
+    const vm = await getVM()
+    const gate = sstoreAccessGate(vm.common)
     const result = await vm.evm.runCall({
       caller: contract,
       to: contract,
-      gasLimit: pushCost + stipendPlus1,
+      gasLimit: pushCost + gate - 1n,
     })
     assert.isDefined(result.execResult.exceptionError)
     assert.strictEqual(storageReads(vm).length, 0)
   })
 
-  it('records a BAL storage read when cold access is covered but the write is not', async () => {
+  it('records a BAL storage read when the access gate is covered but the write is not', async () => {
     const vm = await getVM()
-    const coldAccess = vm.common.param('coldsloadGas')
+    const gate = sstoreAccessGate(vm.common)
     const result = await vm.evm.runCall({
       caller: contract,
       to: contract,
-      gasLimit: pushCost + coldAccess,
+      gasLimit: pushCost + gate,
     })
     assert.isDefined(result.execResult.exceptionError)
     assert.isAbove(storageReads(vm).length, 0)

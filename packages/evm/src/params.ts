@@ -418,8 +418,8 @@ export const paramsEVM: ParamsDict = {
    * `@ethereumjs/tx` `paramsTx[2780]`.
    */
   2780: {
-    txValueCost: 4244, // TX_VALUE_COST: extra regular gas for value-bearing non-self-transfer calls
-    transferLogCost: 1756, // TRANSFER_LOG_COST: regular gas for the EIP-7708 transfer log of the tx-level value transfer
+    txValueCost: 6000, // TX_VALUE_COST: recipient balance write + EIP-7708 transfer log (folded since glamsterdam-devnet v8)
+    transferLogCost: 1756, // TRANSFER_LOG_COST: in-EVM EIP-7708 emission sites only (not tx-level intrinsic since v8)
     txRecipientAccessGas: 3000, // Recipient cost for a non-self-transfer call (= COLD_ACCOUNT_ACCESS under EIP-8038)
   },
   /**
@@ -459,12 +459,14 @@ export const paramsEVM: ParamsDict = {
    * EIP-8037 state-gas portion for newly set slots.
    */
   8038: {
-    // gasPrices
-    coldsloadGas: 3000, // COLD_STORAGE_ACCESS (up from 2100)
-    coldaccountaccessGas: 3000, // COLD_ACCOUNT_ACCESS (up from 2600)
+    // gasPrices — glamsterdam-devnet v8.1.0 revised schedule (EIPs#12083)
+    coldsloadGas: 2100, // COLD_STORAGE_ACCESS unchanged from pre-8038
+    coldaccountaccessGas: 3000, // COLD_ACCOUNT_ACCESS (+15% from 2600)
     storageWriteGas: 10000, // STORAGE_WRITE: charged on the first change to a storage slot per transaction
-    refundStorageClearGas: 12480, // REFUND_STORAGE_CLEAR = (STORAGE_WRITE + COLD_STORAGE_ACCESS) * 4800 / 5000
-    callValueTransferGas: 10300, // CALL_VALUE = ACCOUNT_WRITE (8000) + CALL_STIPEND (2300), up from 9000
-    accountWriteGas: 8000, // ACCOUNT_WRITE: positive-balance transfer to an empty account (e.g. SELFDESTRUCT beneficiary)
+    refundStorageClearGas: 11616, // STORAGE_CLEAR_REFUND = (STORAGE_WRITE + COLD_STORAGE_ACCESS) * 4800 / 5000
+    callValueTransferGas: 11300, // CALL_VALUE = ACCOUNT_WRITE (9000) + CALL_STIPEND (2300)
+    accountWriteGas: 9000, // ACCOUNT_WRITE: per-operation account leaf write surcharge
+    createGas: 12000, // CREATE_ACCESS = ACCOUNT_WRITE + COLD_ACCOUNT_ACCESS
+    create2Gas: 12000, // CREATE_ACCESS = ACCOUNT_WRITE + COLD_ACCOUNT_ACCESS
   },
 }

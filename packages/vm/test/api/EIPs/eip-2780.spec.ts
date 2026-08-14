@@ -27,7 +27,7 @@ function extra2780Regular(c: Common, txValue: bigint, selfTransfer: boolean) {
   if (selfTransfer) return 0n
   let extra = c.param('txRecipientAccessGas')
   if (txValue > 0n) {
-    extra += c.param('txValueCost') + c.param('transferLogCost')
+    extra += c.param('txValueCost')
   }
   return extra
 }

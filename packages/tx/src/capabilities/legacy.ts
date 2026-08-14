@@ -99,8 +99,8 @@ export function getIntrinsicGas(tx: LegacyTxInterface): bigint {
     const txCreationFee = tx.common.param('txCreationGas')
     if (txCreationFee) fee += txCreationFee
   }
-  // EIP-2780: recipient/value/log extras are state-independent (sender + tx
-  // fields) and belong in intrinsic, matching EELS `calculate_intrinsic_cost`.
+  // EIP-2780: recipient / TX_VALUE_COST extras are state-independent (sender +
+  // tx fields) and belong in intrinsic, matching EELS `calculate_intrinsic_cost`.
   fee += getEip2780RecipientRegularGas(tx)
   fee += getEip7702IntrinsicAuthGas(tx)
   return fee
@@ -218,13 +218,13 @@ export function getValidationErrors(tx: LegacyTxInterface): string[] {
     errors.push('Invalid Signature')
   }
 
-  let intrinsicGas = tx.getIntrinsicGas()
+  let minGas = tx.getIntrinsicGas()
   if (tx.common.isActivatedEIP(7623)) {
-    intrinsicGas = bigIntMax(intrinsicGas, getCalldataFloorGas(tx))
+    minGas = bigIntMax(minGas, getCalldataFloorGas(tx))
   }
-  if (intrinsicGas > tx.gasLimit) {
+  if (minGas > tx.gasLimit) {
     errors.push(
-      `gasLimit is too low. The gasLimit is lower than the minimum gas limit of ${tx.getIntrinsicGas()}, the gas limit is: ${tx.gasLimit}`,
+      `gasLimit is too low. The gasLimit is lower than the minimum gas limit of ${minGas}, the gas limit is: ${tx.gasLimit}`,
     )
   }
 
