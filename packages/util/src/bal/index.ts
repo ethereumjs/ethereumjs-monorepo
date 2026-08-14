@@ -10,6 +10,7 @@ import {
 } from '../bytes.ts'
 import { padToEven } from '../internal.ts'
 import type { PrefixedHexString } from '../types.ts'
+import { compareStorageSlotKeys } from './compareStorageSlotKeys.ts'
 
 // Base types which can be used for JSON, internal representation and raw format.
 type BALAddressHex = PrefixedHexString // bytes20
@@ -246,7 +247,7 @@ export class BlockLevelAccessList {
       const storageChanges = (
         Object.entries(data.storageChanges) as [BALStorageKeyHex, BALRawStorageChange[]][]
       )
-        .sort((a, b) => compareLexicographicHexOrBytes(a[0], b[0]))
+        .sort((a, b) => compareStorageSlotKeys(a[0], b[0]))
         .map(([slot, changes]) => [
           normalizeHexForRLP(slot),
           changes
@@ -260,7 +261,7 @@ export class BlockLevelAccessList {
       // Normalize storage reads for canonical RLP encoding (0 -> empty bytes)
       const storageReads = Array.from(data.storageReads)
         .map(normalizeHexForRLP)
-        .sort((a, b) => compareLexicographicHexOrBytes(a, b))
+        .sort((a, b) => compareStorageSlotKeys(a, b))
 
       const balanceChanges = Array.from(data.balanceChanges.entries())
         .sort(([a], [b]) => a - b)
@@ -587,23 +588,6 @@ export class BlockLevelAccessList {
       // If originalBalance > 0, keep the balance changes (which should show balance = 0)
     }
   }
-}
-
-function compareLexicographicHexOrBytes(
-  a: PrefixedHexString | Uint8Array,
-  b: PrefixedHexString | Uint8Array,
-): number {
-  const aBytes = a instanceof Uint8Array ? a : hexToBytes(a)
-  const bBytes = b instanceof Uint8Array ? b : hexToBytes(b)
-  const paddedA = new Uint8Array(32)
-  const paddedB = new Uint8Array(32)
-  paddedA.set(aBytes, 32 - aBytes.length)
-  paddedB.set(bBytes, 32 - bBytes.length)
-  for (let i = 0; i < 32; i++) {
-    if (paddedA[i] < paddedB[i]) return -1
-    if (paddedA[i] > paddedB[i]) return 1
-  }
-  return 0
 }
 
 /**

@@ -183,6 +183,34 @@ describe('JSON', () => {
     assert.deepEqual(bytesToHex(bal.serialize()), bytesToHex(expected))
   })
 
+  it('should sort mixed-length storage keys by numeric value in raw()', () => {
+    const address = '0x00000000000000000000000000000000000000aa' as const
+    const bal = createBlockLevelAccessList()
+    bal.blockAccessIndex = 0
+    bal.addAddress(address)
+    // Insert in reverse numeric order; raw() must emit 0x02 before 0x0100.
+    bal.addStorageWrite(address, hexToBytes('0x0100'), hexToBytes('0x99'), 0)
+    bal.addStorageWrite(address, hexToBytes('0x02'), hexToBytes('0x42'), 0)
+
+    const changeSlots = bal
+      .raw()[0][1]
+      .map(([slot]) => (typeof slot === 'string' ? slot : bytesToHex(slot)))
+    assert.deepEqual(changeSlots, ['0x02', '0x0100'])
+  })
+
+  it('should sort mixed-length storage read keys by numeric value in raw()', () => {
+    const address = '0x00000000000000000000000000000000000000bb' as const
+    const bal = createBlockLevelAccessList()
+    bal.addAddress(address)
+    bal.addStorageRead(address, hexToBytes('0x0100'))
+    bal.addStorageRead(address, hexToBytes('0x02'))
+
+    const readSlots = bal
+      .raw()[0][2]
+      .map((slot) => (typeof slot === 'string' ? slot : bytesToHex(slot)))
+    assert.deepEqual(readSlots, ['0x02', '0x0100'])
+  })
+
   it('should include an accessed system address with empty change lists when serializing', () => {
     const bal = createBlockLevelAccessListFromJSON([
       {

@@ -5,6 +5,7 @@ import { bytesToHex, equalsBytes, hexToBytes } from '../bytes.ts'
 import { SYSTEM_ADDRESS } from '../constants.ts'
 import { EthereumJSErrorWithoutCode } from '../errors.ts'
 import type { PrefixedHexString } from '../types.ts'
+import { compareStorageSlotKeys } from './compareStorageSlotKeys.ts'
 import {
   type BALJSONAccountChanges,
   type BALJSONBlockAccessList,
@@ -229,7 +230,7 @@ function validateBlockAccessListJSONAccount(account: BALJSONAccountChanges): voi
 
   let prevSlot: PrefixedHexString | undefined
   for (const slotChange of account.storageChanges) {
-    if (prevSlot !== undefined && compareLexicographicHex(prevSlot, slotChange.slot) >= 0) {
+    if (prevSlot !== undefined && compareStorageSlotKeys(prevSlot, slotChange.slot) >= 0) {
       throwInvalidBlockAccessList('storage slots are not sorted')
     }
     prevSlot = slotChange.slot
@@ -245,7 +246,7 @@ function validateBlockAccessListJSONAccount(account: BALJSONAccountChanges): voi
   let prevRead: PrefixedHexString | undefined
   const seenReads = new Set<PrefixedHexString>()
   for (const slot of account.storageReads) {
-    if (prevRead !== undefined && compareLexicographicHex(prevRead, slot) >= 0) {
+    if (prevRead !== undefined && compareStorageSlotKeys(prevRead, slot) >= 0) {
       throwInvalidBlockAccessList('storage reads are not sorted')
     }
     if (seenReads.has(slot)) {
@@ -272,7 +273,7 @@ function validateBlockAccessListJSONAccount(account: BALJSONAccountChanges): voi
 function validateStorageChanges(storageChanges: BALRawAccountChanges[1]): void {
   let prevSlot: PrefixedHexString | undefined
   for (const [slot, changes] of storageChanges) {
-    if (prevSlot !== undefined && compareLexicographicHex(prevSlot, slot) >= 0) {
+    if (prevSlot !== undefined && compareStorageSlotKeys(prevSlot, slot) >= 0) {
       throwInvalidBlockAccessList('storage slots are not sorted')
     }
     prevSlot = slot
@@ -293,7 +294,7 @@ function validateStorageReads(
 
   for (const slot of storageReads) {
     const slotHex = typeof slot === 'string' ? slot : bytesToHex(slot)
-    if (prevRead !== undefined && compareLexicographicHex(prevRead, slotHex) >= 0) {
+    if (prevRead !== undefined && compareStorageSlotKeys(prevRead, slotHex) >= 0) {
       throwInvalidBlockAccessList('storage reads are not sorted')
     }
     if (seenReads.has(slotHex)) {
@@ -350,10 +351,8 @@ function validateAddress(address: PrefixedHexString): void {
   hexToBytes(address)
 }
 
-// Accepts both hex strings and raw bytes because BlockLevelAccessList.raw()
-// runs slot/read keys through normalizeHexForRLP, which returns Uint8Array
-// for the canonical zero-slot case (an empty bytes encoding). The validator
-// sees both shapes when comparing slots that have been normalized for RLP.
+// Address ordering in JSON/raw validation (20-byte keys; variable-length slot
+// ordering uses compareStorageSlotKeys instead).
 function compareLexicographicHex(
   a: PrefixedHexString | Uint8Array,
   b: PrefixedHexString | Uint8Array,
