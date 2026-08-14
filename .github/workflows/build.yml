@@ -79,15 +79,58 @@ jobs:
     outputs:
       dep-cache-key: ${{ steps.dep-cache.outputs.cache-primary-key }}-${{ github.run_id }}
 
+  # PR: tests for lowest-touched packages + dependents. Master / dispatch / shared
+  # config (see scripts/ci-affected.mjs) still run the full matrix.
+  # Keep skippable job ids in sync with SKIPPABLE_JOBS in that script.
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      binarytree: ${{ steps.affected.outputs.binarytree }}
+      block: ${{ steps.affected.outputs.block }}
+      blockchain: ${{ steps.affected.outputs.blockchain }}
+      browser: ${{ steps.affected.outputs.browser }}
+      client: ${{ steps.affected.outputs.client }}
+      common: ${{ steps.affected.outputs.common }}
+      devp2p: ${{ steps.affected.outputs.devp2p }}
+      evm: ${{ steps.affected.outputs.evm }}
+      mpt: ${{ steps.affected.outputs.mpt }}
+      static: ${{ steps.affected.outputs.static }}
+      statemanager: ${{ steps.affected.outputs.statemanager }}
+      tx: ${{ steps.affected.outputs.tx }}
+      util: ${{ steps.affected.outputs.util }}
+      vm-pr: ${{ steps.affected.outputs['vm-pr'] }}
+      noCompile: ${{ steps.affected.outputs.noCompile }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+
+      - name: Fetch PR base
+        if: github.event_name == 'pull_request'
+        run: git fetch --no-tags --depth=1 origin ${{ github.event.pull_request.base.sha }}
+
+      - name: Verify affected-job selector
+        run: node --test scripts/ci-affected.spec.mjs
+
+      - name: Compute affected CI jobs
+        id: affected
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.sha }}
+        run: node scripts/ci-affected.mjs
+
   binarytree:
-    needs: [build, checkout-submodules]
+    needs: [build, checkout-submodules, detect]
+    if: needs.detect.outputs.binarytree == 'true'
     uses: ./.github/workflows/binarytree-build.yml
     secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
   block:
-    needs: [build, checkout-submodules]
+    needs: [build, checkout-submodules, detect]
+    if: needs.detect.outputs.block == 'true'
     uses: ./.github/workflows/block-build.yml
     secrets: inherit
     with:
@@ -95,42 +138,48 @@ jobs:
       submodule-cache-key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
 
   blockchain:
-    needs: build
+    needs: [build, detect]
+    if: needs.detect.outputs.blockchain == 'true'
     uses: ./.github/workflows/blockchain-build.yml
     secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
   browser:
-    needs: [build, checkout-submodules]
+    needs: [build, checkout-submodules, detect]
+    if: needs.detect.outputs.browser == 'true'
     uses: ./.github/workflows/browser.yml
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
       submodule-cache-key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
 
   client:
-    needs: build
+    needs: [build, detect]
+    if: needs.detect.outputs.client == 'true'
     uses: ./.github/workflows/client-build.yml
     secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
   common:
-    needs: build
+    needs: [build, detect]
+    if: needs.detect.outputs.common == 'true'
     uses: ./.github/workflows/common-build.yml
     secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
   devp2p:
-    needs: build
+    needs: [build, detect]
+    if: needs.detect.outputs.devp2p == 'true'
     uses: ./.github/workflows/devp2p-build.yml
     secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
   evm:
-    needs: [build, checkout-submodules]
+    needs: [build, checkout-submodules, detect]
+    if: needs.detect.outputs.evm == 'true'
     uses: ./.github/workflows/evm-build.yml
     secrets: inherit
     with:
@@ -144,28 +193,32 @@ jobs:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
   mpt:
-    needs: build
+    needs: [build, detect]
+    if: needs.detect.outputs.mpt == 'true'
     uses: ./.github/workflows/mpt-build.yml
     secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
   static:
-    needs: build
+    needs: [build, detect]
+    if: needs.detect.outputs.static == 'true'
     uses: ./.github/workflows/rlp-ethash-genesis-wallet-build.yml
     secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
   statemanager:
-    needs: build
+    needs: [build, detect]
+    if: needs.detect.outputs.statemanager == 'true'
     uses: ./.github/workflows/statemanager-build.yml
     secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
   tx:
-    needs: [build, checkout-submodules]
+    needs: [build, checkout-submodules, detect]
+    if: needs.detect.outputs.tx == 'true'
     uses: ./.github/workflows/tx-build.yml
     secrets: inherit
     with:
@@ -173,14 +226,16 @@ jobs:
       submodule-cache-key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
 
   util:
-    needs: build
+    needs: [build, detect]
+    if: needs.detect.outputs.util == 'true'
     uses: ./.github/workflows/util-build.yml
     secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
   vm-pr:
-    needs: [build, checkout-submodules]
+    needs: [build, checkout-submodules, detect]
+    if: needs.detect.outputs['vm-pr'] == 'true'
     uses: ./.github/workflows/vm-pr.yml
     secrets: inherit
     with:
@@ -194,7 +249,8 @@ jobs:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
   noCompile:
-    needs: build
+    needs: [build, detect]
+    if: needs.detect.outputs.noCompile == 'true'
     uses: ./.github/workflows/noCompile.yml
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
@@ -205,6 +261,48 @@ jobs:
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
       submodule-cache-key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
+
+  # Sole required check: skipped package jobs count as success; failures fail the gate.
+  ci-success:
+    name: CI
+    needs:
+      - build
+      - checkout-submodules
+      - detect
+      - binarytree
+      - block
+      - blockchain
+      - browser
+      - client
+      - common
+      - devp2p
+      - evm
+      - examples
+      - mpt
+      - static
+      - statemanager
+      - tx
+      - util
+      - vm-pr
+      - lint
+      - noCompile
+      - typecheck
+    if: always() && !cancelled()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check required jobs
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          node -e '
+            const needs = JSON.parse(process.env.RESULTS)
+            const failed = Object.entries(needs).filter(([, job]) => !["success", "skipped"].includes(job.result))
+            if (failed.length > 0) {
+              console.error(failed.map(([name, job]) => name + "=" + job.result).join("\n"))
+              process.exit(1)
+            }
+            console.log("All required jobs passed or skipped")
+          '
 
   bundle-size:
     needs: [build]
