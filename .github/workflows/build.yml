@@ -15,16 +15,16 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # ethereum-tests only — do not recursive-clone execution-spec-tests here.
+  # EST jobs init that submodule themselves and must not wait on this job.
   checkout-submodules:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v5
-        with:
-          submodules: recursive
 
       - id: create-cache-key
-        run: echo "submodule-cache-key=$(git submodule | head -n 1)" >> $GITHUB_OUTPUT
+        run: echo "submodule-cache-key=$(git rev-parse HEAD:packages/ethereum-tests)" >> $GITHUB_OUTPUT
         shell: bash
 
       - uses: actions/cache/restore@v4
@@ -34,14 +34,18 @@ jobs:
           path: ${{github.workspace}}/packages/ethereum-tests
 
       - if: steps.submodules-cache-restore.outputs.cache-hit != 'true'
+        name: Init ethereum-tests
+        run: git submodule update --init --depth=1 -- packages/ethereum-tests
+
+      - if: steps.submodules-cache-restore.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         id: submodule-cache-save
         with:
           path: ${{github.workspace}}/packages/ethereum-tests
-          key: submodule-${{ steps.create-cache-key.outputs.submodule-cache-key}}
+          key: submodule-${{ steps.create-cache-key.outputs.submodule-cache-key }}
 
     outputs:
-      submodule-cache-key: submodule-${{ steps.create-cache-key.outputs.submodule-cache-key}}
+      submodule-cache-key: submodule-${{ steps.create-cache-key.outputs.submodule-cache-key }}
 
   build:
     runs-on: ubuntu-latest
@@ -49,11 +53,15 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - id: keys
+        run: echo "dep-cache-key=npm-${{ hashFiles('package-lock.json') }}-${{ github.run_id }}" >> "$GITHUB_OUTPUT"
+
       - uses: actions/cache/restore@v4
-        id: dep-cache
+        id: npm-modules
         with:
-          path: ${{github.workspace}}/node_modules
-          key: npm-${{ hashFiles('package-lock.json') }}
+          path: |
+            **/node_modules
+          key: npm-modules-${{ hashFiles('package-lock.json') }}
 
       - name: Use Node.js 24
         uses: actions/setup-node@v6
@@ -61,23 +69,33 @@ jobs:
           node-version: 24
           cache: 'npm'
 
-      - run: npm ci
-        working-directory: ${{github.workspace}}
+      - name: Install
+        if: steps.npm-modules.outputs.cache-hit != 'true'
+        run: npm ci
+        working-directory: ${{ github.workspace }}
 
-      - name: Cache dependencies
+      # Cache hit skipped npm ci (and its postinstall build). Rebuild this commit.
+      - name: Build packages
+        if: steps.npm-modules.outputs.cache-hit == 'true'
+        run: npm run build --workspaces --if-present
+        working-directory: ${{ github.workspace }}
+
+      - name: Save node_modules
+        if: steps.npm-modules.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
-          path: ${{github.workspace}}
-          key: npm-${{ hashFiles('package-lock.json') }}
+          path: |
+            **/node_modules
+          key: npm-modules-${{ hashFiles('package-lock.json') }}
 
-      - name: Cache build
+      - name: Save build workspace
         uses: actions/cache/save@v4
         with:
-          path: ${{github.workspace}}
-          key: npm-${{ hashFiles('package-lock.json') }}-${{ github.run_id }}
+          path: ${{ github.workspace }}
+          key: ${{ steps.keys.outputs.dep-cache-key }}
 
     outputs:
-      dep-cache-key: ${{ steps.dep-cache.outputs.cache-primary-key }}-${{ github.run_id }}
+      dep-cache-key: ${{ steps.keys.outputs.dep-cache-key }}
 
   # PR: tests for lowest-touched packages + dependents. Master / dispatch / shared
   # config (see scripts/ci-affected.mjs) still run the full matrix.
@@ -93,6 +111,7 @@ jobs:
       common: ${{ steps.affected.outputs.common }}
       devp2p: ${{ steps.affected.outputs.devp2p }}
       evm: ${{ steps.affected.outputs.evm }}
+      examples: ${{ steps.affected.outputs.examples }}
       mpt: ${{ steps.affected.outputs.mpt }}
       static: ${{ steps.affected.outputs.static }}
       statemanager: ${{ steps.affected.outputs.statemanager }}
@@ -100,6 +119,18 @@ jobs:
       util: ${{ steps.affected.outputs.util }}
       vm-pr: ${{ steps.affected.outputs['vm-pr'] }}
       noCompile: ${{ steps.affected.outputs.noCompile }}
+      binarytree_coverage: ${{ steps.affected.outputs.binarytree_coverage }}
+      block_coverage: ${{ steps.affected.outputs.block_coverage }}
+      blockchain_coverage: ${{ steps.affected.outputs.blockchain_coverage }}
+      common_coverage: ${{ steps.affected.outputs.common_coverage }}
+      evm_coverage: ${{ steps.affected.outputs.evm_coverage }}
+      mpt_coverage: ${{ steps.affected.outputs.mpt_coverage }}
+      static_coverage: ${{ steps.affected.outputs.static_coverage }}
+      statemanager_coverage: ${{ steps.affected.outputs.statemanager_coverage }}
+      tx_coverage: ${{ steps.affected.outputs.tx_coverage }}
+      util_coverage: ${{ steps.affected.outputs.util_coverage }}
+      vm-pr_coverage: ${{ steps.affected.outputs['vm-pr_coverage'] }}
+      workspaces: ${{ steps.affected.outputs.workspaces }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -121,12 +152,13 @@ jobs:
         run: node scripts/ci-affected.mjs
 
   binarytree:
-    needs: [build, checkout-submodules, detect]
+    needs: [build, detect]
     if: needs.detect.outputs.binarytree == 'true'
     uses: ./.github/workflows/binarytree-build.yml
     secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+      run-coverage: ${{ needs.detect.outputs.binarytree_coverage == 'true' }}
 
   block:
     needs: [build, checkout-submodules, detect]
@@ -136,6 +168,7 @@ jobs:
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
       submodule-cache-key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
+      run-coverage: ${{ needs.detect.outputs.block_coverage == 'true' }}
 
   blockchain:
     needs: [build, detect]
@@ -144,6 +177,7 @@ jobs:
     secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+      run-coverage: ${{ needs.detect.outputs.blockchain_coverage == 'true' }}
 
   browser:
     needs: [build, checkout-submodules, detect]
@@ -152,6 +186,7 @@ jobs:
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
       submodule-cache-key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
+      workspaces: ${{ needs.detect.outputs.workspaces }}
 
   client:
     needs: [build, detect]
@@ -168,6 +203,7 @@ jobs:
     secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+      run-coverage: ${{ needs.detect.outputs.common_coverage == 'true' }}
 
   devp2p:
     needs: [build, detect]
@@ -185,12 +221,15 @@ jobs:
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
       submodule-cache-key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
+      run-coverage: ${{ needs.detect.outputs.evm_coverage == 'true' }}
 
   examples:
-    needs: build
+    needs: [build, detect]
+    if: needs.detect.outputs.examples == 'true'
     uses: ./.github/workflows/examples.yml
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+      workspaces: ${{ needs.detect.outputs.workspaces }}
 
   mpt:
     needs: [build, detect]
@@ -199,6 +238,7 @@ jobs:
     secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+      run-coverage: ${{ needs.detect.outputs.mpt_coverage == 'true' }}
 
   static:
     needs: [build, detect]
@@ -207,6 +247,7 @@ jobs:
     secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+      run-coverage: ${{ needs.detect.outputs.static_coverage == 'true' }}
 
   statemanager:
     needs: [build, detect]
@@ -215,6 +256,7 @@ jobs:
     secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+      run-coverage: ${{ needs.detect.outputs.statemanager_coverage == 'true' }}
 
   tx:
     needs: [build, checkout-submodules, detect]
@@ -224,6 +266,7 @@ jobs:
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
       submodule-cache-key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
+      run-coverage: ${{ needs.detect.outputs.tx_coverage == 'true' }}
 
   util:
     needs: [build, detect]
@@ -232,6 +275,7 @@ jobs:
     secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+      run-coverage: ${{ needs.detect.outputs.util_coverage == 'true' }}
 
   vm-pr:
     needs: [build, checkout-submodules, detect]
@@ -241,6 +285,7 @@ jobs:
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
       submodule-cache-key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
+      run-coverage: ${{ needs.detect.outputs['vm-pr_coverage'] == 'true' }}
 
   lint:
     needs: build
@@ -261,6 +306,16 @@ jobs:
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
       submodule-cache-key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
+
+  # In-flux hardfork working-ground. Not in the CI gate — must not delay or fail it.
+  # `continue-on-error` is not valid on reusable workflow jobs (GitHub then requires runs-on).
+  vm-est-dev:
+    needs: [build, detect]
+    if: needs.detect.outputs['vm-pr'] == 'true'
+    uses: ./.github/workflows/vm-est-dev.yml
+    secrets: inherit
+    with:
+      dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
   # Sole required check: skipped package jobs count as success; failures fail the gate.
   ci-success:
