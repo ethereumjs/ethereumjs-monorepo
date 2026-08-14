@@ -29,7 +29,7 @@ There are two official fixture sources, plus package-level tests:
 | Suite | Source | Runners | Typical use |
 | --- | --- | --- | --- |
 | Execution-spec tests (EST) | Curated snapshot of [execution-specs](https://github.com/ethereum/execution-specs) releases | [`executionSpecState.test.ts`](./test/tester/executionSpecState.test.ts), [`executionSpecBlockchain.test.ts`](./test/tester/executionSpecBlockchain.test.ts) | Default consensus tests (Osaka+, Amsterdam/dev) |
-| Legacy Ethereum tests | [ethereum/tests](https://github.com/ethereum/tests) (deprecated) | [`state.spec.ts`](./test/tester/state.spec.ts), [`blockchain.spec.ts`](./test/tester/blockchain.spec.ts) | Prague and older forks still in CI |
+| Legacy Ethereum tests | [ethereum/tests](https://github.com/ethereum/tests) (deprecated) | [`legacy/state.spec.ts`](./test/tester/legacy/state.spec.ts), [`legacy/blockchain.spec.ts`](./test/tester/legacy/blockchain.spec.ts) | Prague and older forks still in CI |
 | Package tests | `test/api/` | `npm run test:API` | Unit / API tests for VM itself |
 
 EST is the primary consensus suite. The legacy runners still matter for older forks and still expose some flags the EST runners do not. If you find legacy-only functionality that should exist on the EST runners, re-implement it in the new runner files — do not copy large chunks of the old wrappers across.
@@ -88,6 +88,8 @@ What is currently in the snapshot (release tags, folders, GitHub size exclusions
 
 Runners discover `.json` fixtures under `TEST_PATH` (default `../execution-spec-tests`) and flatten them into Vitest cases. Scripts pin `TEST_PATH` to `stable/` or `dev/` subtrees.
 
+Full-suite EST runs hash-shard fixture **files** across up to 4 worker processes (`min(cpus, 4)`), same as the legacy runner. Each worker only `JSON.parse`s its files. Override with `--jobs=N` or `EST_JOBS`. `TEST_FILE` / `TEST_CASE` stay on one process with the default Vitest reporter.
+
 #### Default commands
 
 ```bash
@@ -95,41 +97,49 @@ npm run test:est:stable:state
 npm run test:est:stable:blockchain
 npm run test:est:dev:state
 npm run test:est:dev:blockchain
+
+npm run test:est:stable:state -- --jobs=2
+EST_JOBS=1 npm run test:est:stable:blockchain
 ```
 
 `test:est:dev:blockchain` runs `dev/blockchain_tests/amsterdam/glamsterdam/` (unversioned; replace in place on each glamsterdam bump). Extra scripts exist for older BAL snapshots (`:v301`, `:v200`).
 
 `dev/state_tests` may be empty. `test:est:dev:state` then collects no tests and skips; that is expected until we add state fixtures there.
 
-Each EST script also enables [`perDirectoryReporter.ts`](./test/tester/util/perDirectoryReporter.ts), which prints a per-EIP / per-folder pass/fail table and clustered failure messages after the run. For a first fixture bump, prefer the quiet summary (no per-test dump):
+Sharded runs print failures as they happen and one merged per-directory table at the end ([`perDirectoryReporter.ts`](./test/tester/util/perDirectoryReporter.ts)). For a first fixture bump, prefer the quiet summary (no per-test dump):
 
 ```bash
 npm run test:est:dev:blockchain:summary
 ```
 
-That writes `/tmp/est-dev-blockchain-summary.json`. CI keeps the verbose `test:est:dev:blockchain` script. The reporter writes JSON whenever `EST_SUMMARY_JSON` is set (the `:summary` script sets it).
+That writes `/tmp/est-dev-blockchain-summary.json` (merged across workers). CI keeps the `test:est:dev:blockchain` script. The wrapper writes JSON whenever `EST_SUMMARY_JSON` is set (the `:summary` script sets it).
 
 #### Run a subset
 
 ```bash
-# Directory (or any subtree)
+# Directory (or any subtree). Invoke the wrapper so the npm script does not overwrite TEST_PATH.
+TEST_PATH=../execution-spec-tests/stable/state_tests/osaka \
+  tsx ./test/tester/est-wrapper.ts state --jobs=1
+
+# Single file (with or without .json) — always one process
+TEST_FILE=test_p256verify.json npm run test:est:stable:state
+
+# Case name substring — always one process
+TEST_PATH=../execution-spec-tests/dev/blockchain_tests/amsterdam \
+  TEST_CASE=eip7928 \
+  tsx ./test/tester/est-wrapper.ts blockchain
+```
+
+`TEST_FILE` matches the basename. `TEST_CASE` is a substring of the fixture id.
+
+Direct Vitest (single process) still works:
+
+```bash
 TEST_PATH=../execution-spec-tests/stable/state_tests/osaka \
   npx vitest run --reporter=default \
   --reporter=./test/tester/util/perDirectoryReporter.ts \
   test/tester/executionSpecState.test.ts
-
-# Single file (with or without .json)
-TEST_PATH=../execution-spec-tests/stable/state_tests \
-  TEST_FILE=test_p256verify.json \
-  npx vitest run test/tester/executionSpecState.test.ts
-
-# Case name substring
-TEST_PATH=../execution-spec-tests/dev/blockchain_tests/amsterdam \
-  TEST_CASE=eip7928 \
-  npx vitest run test/tester/executionSpecBlockchain.test.ts
 ```
-
-`TEST_FILE` matches the basename. `TEST_CASE` is a substring of the fixture id.
 
 #### CI
 
@@ -155,7 +165,7 @@ Not yet on the EST runners: `--jsontrace`, `--debug`, `--profile`, `--fork=Hardf
 
 ### Legacy `ethereum/tests` (secondary)
 
-Deprecated, still used for Prague (default PR) and for older forks (nightly / `test all hardforks`). Wrappers: [`vitest-wrapper.ts`](./test/tester/vitest-wrapper.ts), [`vitest-wrapper-blockchain.ts`](./test/tester/vitest-wrapper-blockchain.ts). Config and skip lists: [`config.ts`](./test/tester/config.ts).
+Deprecated, still used for Prague (default PR) and for older forks (nightly / `test all hardforks`). Lives under [`test/tester/legacy/`](./test/tester/legacy/). Wrappers: [`vitest-wrapper.ts`](./test/tester/legacy/vitest-wrapper.ts), [`vitest-wrapper-blockchain.ts`](./test/tester/legacy/vitest-wrapper-blockchain.ts). Config and skip lists: [`config.ts`](./test/tester/legacy/config.ts).
 
 Full-suite runs hash-shard fixture files across up to 4 worker processes (or `min(cpus, 4)`). Each worker only reads its files. CLI flags are unchanged. Filtered or debug runs stay on one process so output stays readable.
 
@@ -192,8 +202,8 @@ npm run test:blockchain:allForks
 Direct Vitest (single process; same env the wrappers set). Prefer the npm scripts above so full-suite runs are sharded:
 
 ```bash
-VITE_FORK=Prague npx vitest run test/tester/state.spec.ts
-VITE_FORK=Prague npx vitest run test/tester/blockchain.spec.ts
+VITE_FORK=Prague npx vitest run test/tester/legacy/state.spec.ts
+VITE_FORK=Prague npx vitest run test/tester/legacy/blockchain.spec.ts
 ```
 
 #### Filter
@@ -216,7 +226,7 @@ npm run test:state -- --customStateTest='{path_to_file}'
 
 #### Skip lists
 
-`BROKEN`, `PERMANENT`, and `SLOW` in [`config.ts`](./test/tester/config.ts). Default: skip all three.
+`BROKEN`, `PERMANENT`, and `SLOW` in [`config.ts`](./test/tester/legacy/config.ts). Default: skip all three.
 
 ```bash
 npm run test:state -- --skip=BROKEN,PERMANENT   # include SLOW
@@ -411,7 +421,7 @@ These still exist but assume the **legacy** runner (and in one case TAP output).
 
 ```bash
 NODE_OPTIONS="--max-old-space-size=4096" clinic flame -- \
-  VITE_EXCLUDE_DIR='GeneralStateTests' npx vitest test/tester/blockchain.spec.ts
+  VITE_EXCLUDE_DIR='GeneralStateTests' npx vitest test/tester/legacy/blockchain.spec.ts
 ```
 
 [`scripts/diffTester.sh`](./scripts/diffTester.sh) checks out another branch, runs one state-test file N times, then runs the same on the current branch. Run from `packages/vm`, preferably with `master` checked out:

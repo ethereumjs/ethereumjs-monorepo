@@ -13,8 +13,8 @@
 import * as fs from 'fs'
 import * as path from 'path'
 
+import { fileBelongsToShard, parseShard } from '../util/shard.ts'
 import { DEFAULT_TESTS_PATH } from './config.ts'
-import { fileBelongsToShard, parseShard } from './util/shard.ts'
 
 const falsePredicate = () => false
 

@@ -29,6 +29,8 @@ import {
   RustBN254,
 } from '@ethereumjs/evm'
 import { initRustBN } from 'rustbn-wasm'
+import { annotateFixture } from '../util/perDirectoryReporter.ts'
+import { parseShardFromEnv } from '../util/shard.ts'
 import {
   DEFAULT_FORK_CONFIG,
   DEFAULT_TESTS_PATH,
@@ -40,8 +42,6 @@ import {
 } from './config.ts'
 import { runBlockchainTest } from './runners/BlockchainTestsRunner.ts'
 import { getTestsFromArgs } from './testLoader.ts'
-import { annotateFixture } from './util/perDirectoryReporter.ts'
-import { parseShard } from './util/shard.ts'
 
 // use VITE_ as prefix for env arguments
 const argv: {
@@ -179,7 +179,7 @@ const testGetterArgs: {
   dir: argv.dir,
   excludeDir: argv.excludeDir,
   testsPath: argv.testsPath,
-  shard: process.env.VITE_SHARD,
+  shard: process.env.TEST_SHARD ?? process.env.VITE_SHARD,
 }
 
 interface LoadedTest {
@@ -271,7 +271,7 @@ describe('BlockchainTests', () => {
     if (countFile !== undefined && countFile.length > 0) {
       fs.writeFileSync(countFile, `${runnerArgs.testCount}\n`)
     }
-    if (parseShard(process.env.VITE_SHARD) !== undefined) return
+    if (parseShardFromEnv() !== undefined) return
     if (expectedTests !== undefined) {
       assert.isTrue(
         runnerArgs.testCount >= expectedTests,

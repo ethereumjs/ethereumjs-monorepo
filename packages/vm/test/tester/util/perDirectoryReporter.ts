@@ -261,7 +261,7 @@ export default class PerDirectoryReporter implements Reporter {
       s.failed++
       const message = firstErrorMessage(testCase)
       if (message !== undefined) bumpError(s, message)
-      if (process.env.LEGACY_PRINT_FAILURES === '1') {
+      if (process.env.PRINT_TEST_FAILURES === '1' || process.env.LEGACY_PRINT_FAILURES === '1') {
         printFailure(testCase, fp, message)
       }
     }
@@ -269,9 +269,9 @@ export default class PerDirectoryReporter implements Reporter {
   }
 
   onTestRunEnd(): void {
-    const hasJson =
+    const hasJSON =
       process.env.EST_SUMMARY_JSON !== undefined && process.env.EST_SUMMARY_JSON.length > 0
-    if (this.stats.size === 0 && hasJson === false) return
+    if (this.stats.size === 0 && hasJSON === false) return
     const summary = buildRunSummary(this.label, this.stats)
     if (process.env.EST_SUMMARY_QUIET !== '1') {
       process.stdout.write(renderSummary(summary))

@@ -1,11 +1,15 @@
 /**
- * Hash-based file sharding for the legacy ethereum/tests runner.
+ * Hash-based file sharding for consensus test runners.
  * Each fixture path maps to exactly one bucket in `0 .. total-1`.
  */
 
 export interface Shard {
   index: number
   total: number
+}
+
+export function parseShardFromEnv(): Shard | undefined {
+  return parseShard(process.env.TEST_SHARD ?? process.env.VITE_SHARD)
 }
 
 /**
@@ -16,14 +20,14 @@ export function parseShard(value: string | undefined): Shard | undefined {
   if (value === undefined || value.length === 0) return undefined
   const match = /^(\d+)\/(\d+)$/.exec(value)
   if (match === null) {
-    throw new Error(`Invalid VITE_SHARD="${value}", expected i/n with 0 <= i < n`)
+    throw new Error(`Invalid TEST_SHARD="${value}", expected i/n with 0 <= i < n`)
   }
   const index = Number(match[1])
   const total = Number(match[2])
   const invalid =
     !Number.isInteger(index) || !Number.isInteger(total) || total < 1 || index < 0 || index >= total
   if (invalid) {
-    throw new Error(`Invalid VITE_SHARD="${value}", expected i/n with 0 <= i < n`)
+    throw new Error(`Invalid TEST_SHARD="${value}", expected i/n with 0 <= i < n`)
   }
   if (total === 1) return undefined
   return { index, total }
