@@ -41,6 +41,7 @@ jobs:
   vm-api:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v5
       - uses: ./.github/actions/setup-ethereumjs
         with:
           dep-cache-key: ${{ inputs.dep-cache-key }}
@@ -68,6 +69,7 @@ jobs:
         fork: ['Prague']
       fail-fast: false
     steps:
+      - uses: actions/checkout@v5
       - uses: ./.github/actions/setup-ethereumjs
         with:
           dep-cache-key: ${{ inputs.dep-cache-key }}
@@ -85,6 +87,7 @@ jobs:
     strategy:
       fail-fast: false
     steps:
+      - uses: actions/checkout@v5
       - uses: ./.github/actions/setup-ethereumjs
         with:
           dep-cache-key: ${{ inputs.dep-cache-key }}
@@ -101,6 +104,7 @@ jobs:
     strategy:
       fail-fast: false
     steps:
+      - uses: actions/checkout@v5
       - uses: ./.github/actions/setup-ethereumjs
         with:
           dep-cache-key: ${{ inputs.dep-cache-key }}
@@ -136,6 +140,7 @@ jobs:
           ]
       fail-fast: false
     steps:
+      - uses: actions/checkout@v5
       - uses: ./.github/actions/setup-ethereumjs
         with:
           dep-cache-key: ${{ inputs.dep-cache-key }}
@@ -158,6 +163,7 @@ jobs:
           ]
       fail-fast: false
     steps:
+      - uses: actions/checkout@v5
       - uses: ./.github/actions/setup-ethereumjs
         with:
           dep-cache-key: ${{ inputs.dep-cache-key }}
@@ -201,6 +207,7 @@ jobs:
           ]
       fail-fast: false
     steps:
+      - uses: actions/checkout@v5
       - uses: ./.github/actions/setup-ethereumjs
         with:
           dep-cache-key: ${{ inputs.dep-cache-key }}
@@ -212,6 +219,7 @@ jobs:
   vm-benchmarks:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v5
       - uses: ./.github/actions/setup-ethereumjs
         with:
           dep-cache-key: ${{ inputs.dep-cache-key }}

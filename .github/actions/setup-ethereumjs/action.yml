@@ -1,5 +1,5 @@
 name: Setup EthereumJS
-description: Checkout, restore this run's built workspace, install on cache miss, optional fixture submodules
+description: Restore this run's built workspace, install on cache miss, optional fixture submodules. Callers must checkout first so this local action can be resolved.
 
 inputs:
   dep-cache-key:
@@ -30,8 +30,6 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: actions/checkout@v5
-
     - if: ${{ inputs.dep-cache-key != 'none' }}
       uses: actions/cache/restore@v4
       id: dep-cache

@@ -35,6 +35,7 @@ jobs:
   test-blockchain:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v5
       - uses: ./.github/actions/setup-ethereumjs
         with:
           dep-cache-key: ${{ inputs.dep-cache-key }}
