@@ -464,7 +464,7 @@ export const paramsEVM: ParamsDict = {
     coldaccountaccessGas: 3000, // COLD_ACCOUNT_ACCESS (+15% from 2600)
     storageWriteGas: 10000, // STORAGE_WRITE: charged on the first change to a storage slot per transaction
     refundStorageClearGas: 11616, // STORAGE_CLEAR_REFUND = (STORAGE_WRITE + COLD_STORAGE_ACCESS) * 4800 / 5000
-    callValueTransferGas: 11200, // CALL_VALUE = ACCOUNT_WRITE (9000) + CALL_STIPEND (2300)
+    callValueTransferGas: 11300, // CALL_VALUE = ACCOUNT_WRITE (9000) + CALL_STIPEND (2300)
     accountWriteGas: 9000, // ACCOUNT_WRITE: per-operation account leaf write surcharge
     createGas: 12000, // CREATE_ACCESS = ACCOUNT_WRITE + COLD_ACCOUNT_ACCESS
     create2Gas: 12000, // CREATE_ACCESS = ACCOUNT_WRITE + COLD_ACCOUNT_ACCESS

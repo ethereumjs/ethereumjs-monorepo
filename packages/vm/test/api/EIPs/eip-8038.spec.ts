@@ -30,7 +30,7 @@ describe('EIP-8038 gas constants (Amsterdam, v8.1.0)', () => {
     assert.strictEqual(c.param('coldsloadGas'), 2100n)
     assert.strictEqual(c.param('coldaccountaccessGas'), 3000n)
     assert.strictEqual(c.param('accountWriteGas'), 9000n)
-    assert.strictEqual(c.param('callValueTransferGas'), 11200n)
+    assert.strictEqual(c.param('callValueTransferGas'), 11300n)
     assert.strictEqual(c.param('refundStorageClearGas'), 11616n)
     assert.strictEqual(c.param('createGas'), 12000n)
     assert.strictEqual(c.param('create2Gas'), 12000n)
