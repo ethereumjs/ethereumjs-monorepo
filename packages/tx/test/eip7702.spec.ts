@@ -5,13 +5,19 @@ import {
   MAX_UINT64,
   bigIntToHex,
   bytesToHex,
+  concatBytes,
   createAddressFromPrivateKey,
   createZeroAddress,
   hexToBytes,
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createEOACode7702Tx } from '../src/index.ts'
+import {
+  createEOACode7702Tx,
+  createEOACode7702TxFromBytesArray,
+  createEOACode7702TxFromRLP,
+  createFeeMarket1559Tx,
+} from '../src/index.ts'
 
 import type { EOACode7702AuthorizationListItem, PrefixedHexString } from '@ethereumjs/util'
 import type { TxData } from '../src/7702/tx.ts'
@@ -159,5 +165,52 @@ describe('[EOACode7702Transaction]', () => {
       new Uint8Array([1]),
       'chainId 0x0001 should be normalized to [1]',
     )
+  })
+
+  it('serialize() / createEOACode7702TxFromRLP() / createEOACode7702TxFromBytesArray()', () => {
+    const txn = createEOACode7702Tx(
+      {
+        value: 1,
+        maxFeePerGas: 1,
+        maxPriorityFeePerGas: 1,
+        accessList: [],
+        ...getTxData(),
+        chainId: 1,
+        gasLimit: 100000,
+        to: createZeroAddress(),
+        data: new Uint8Array(1),
+      },
+      { common },
+    )
+
+    const serialized = txn.serialize()
+    assert.strictEqual(serialized[0], 4, 'type byte is 0x04')
+
+    const fromRlp = createEOACode7702TxFromRLP(serialized, { common })
+    assert.strictEqual(fromRlp.type, 4)
+    assert.deepEqual(fromRlp.serialize(), serialized)
+
+    const fromRaw = createEOACode7702TxFromBytesArray(txn.raw(), { common })
+    assert.deepEqual(fromRaw.serialize(), serialized)
+
+    const signed = txn.sign(pkey)
+    const decodedSigned = createEOACode7702TxFromRLP(signed.serialize(), { common })
+    assert.isTrue(decodedSigned.getSenderAddress().equals(signed.getSenderAddress()))
+
+    const eip1559 = createFeeMarket1559Tx(
+      { chainId: 1, gasLimit: 21000, maxFeePerGas: 1, maxPriorityFeePerGas: 1 },
+      { common },
+    )
+    assert.throws(() => {
+      createEOACode7702TxFromRLP(eip1559.serialize(), { common })
+    })
+
+    assert.throws(() => {
+      createEOACode7702TxFromRLP(concatBytes(new Uint8Array([4]), new Uint8Array([5])), { common })
+    })
+
+    assert.throws(() => {
+      createEOACode7702TxFromBytesArray([] as never, { common })
+    })
   })
 })

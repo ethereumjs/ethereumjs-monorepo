@@ -1,6 +1,7 @@
 import { assert, describe, it } from 'vitest'
 
 import {
+  SECP256K1_ORDER,
   bigIntToBytes,
   ecrecover,
   fromRPCSig,
@@ -8,6 +9,7 @@ import {
   hexToBytes,
   isValidSignature,
   privateToPublic,
+  setLengthLeft,
   toCompactSig,
   toRPCSig,
   utf8ToBytes,
@@ -136,6 +138,11 @@ describe('isValidSignature', () => {
     const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
     const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     assert.isFalse(isValidSignature(BigInt(29), r, s))
+  })
+  it('should fail when s is greater than or equal to the curve order', () => {
+    const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
+    const s = setLengthLeft(bigIntToBytes(SECP256K1_ORDER), 32)
+    assert.isFalse(isValidSignature(BigInt(27), r, s))
   })
   it('should fail when on homestead and s > secp256k1n/2', () => {
     const SECP256K1_N_DIV_2 = BigInt(
@@ -292,6 +299,9 @@ describe('message sig', () => {
   it('should throw on invalid v value', () => {
     assert.throws(function () {
       toRPCSig(BigInt(2), r, s)
+    })
+    assert.throws(function () {
+      toCompactSig(BigInt(21), r, s)
     })
   })
 })

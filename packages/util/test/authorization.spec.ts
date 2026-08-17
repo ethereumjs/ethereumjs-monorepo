@@ -85,6 +85,15 @@ describe('Authorization lists', () => {
     )
   })
 
+  it('JSON to bytes throws if a required field is missing', () => {
+    const incomplete = { ...SAMPLE_AUTH, s: undefined }
+    assert.throws(() => {
+      eoaCode7702AuthorizationListJSONItemToBytes(
+        incomplete as unknown as EOACode7702AuthorizationListItem,
+      )
+    })
+  })
+
   it('sign() / recoverAuthority()', () => {
     const signedFromBytes = eoaCode7702SignAuthorization(unsignedBytesItem, PRIVATE_KEY)
     const signedFromJSON = eoaCode7702SignAuthorization(unsignedJSONItem, PRIVATE_KEY)
