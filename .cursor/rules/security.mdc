@@ -1,0 +1,32 @@
+---
+description: Security trust tiers and constraints for EthereumJS libraries
+alwaysApply: true
+---
+
+# Security (libraries)
+
+EthereumJS is a protocol-library vendor. A wrong tx hash, sender recovery, or signature can move funds. A wrong EVM result is a consensus bug. Do not undo the v10 dependency diet.
+
+## Trust tiers
+
+- **S0 (funds / identity):** `packages/tx`, `packages/util` (`signature.ts`, `account.ts`, `authorization.ts`). Extra review. Do not change expected hashes or signature vectors unless the EIP/spec changed.
+- **S1 (consensus):** `packages/evm` (especially `precompiles/`), `packages/vm`. Spec tests (legacy + execution-spec tests) are the security control. Do not skip or weaken vectors to go green.
+- **S2:** `rlp`, `block`, `mpt`, `statemanager` — decode, freeze, proofs/roots.
+- **S3:** `packages/common` `customCrypto` — replaces keccak / ecsign / ecrecover / KZG for the whole stack. WASM backends stay opt-in; keep the README warning.
+- **S4 (deprecated, still on npm):** `wallet`, `client`, `devp2p`. Containment only — no new features, no new runtime deps.
+- **S5:** genesis, binarytree, e2store, testdata, ethash.
+
+## Do not
+
+- Add a **runtime** dependency without an explicit human ask. Noble (`@noble/*`, `@scure/base`) is the crypto set.
+- Edit EST/legacy fixtures, expected hashes, or `continue-on-error` to make CI pass.
+- Turn on WASM / `customCrypto` as a default performance fix.
+
+## Do
+
+- Prefer fixing production code over relaxing tests.
+- Keep tx/block `freeze` default unless the caller opts out.
+- Keep solid test coverage on every active library. Give extra review and extra tests to S0 behavior (sign, recover, hash, freeze).
+- If an npm advisory appears: classify runtime vs dev, and active libs vs deprecated packages, before adding a root `overrides` entry.
+
+Disclosure process (`SECURITY.md`) is not defined yet — do not invent a bounty or contact path.
