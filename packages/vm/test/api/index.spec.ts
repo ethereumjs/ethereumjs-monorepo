@@ -25,7 +25,7 @@ import type { MerkleStateManager } from '@ethereumjs/statemanager'
  * opcodes.spec.ts (getActiveOpcodes())
  */
 
-describe('VM -> basic instantiation / boolean switches', () => {
+describe('[VM/Constructors]: basic instantiation', () => {
   it('should instantiate without params', async () => {
     const vm = await createVM()
     assert.isDefined(vm.stateManager)
@@ -47,7 +47,7 @@ describe('VM -> basic instantiation / boolean switches', () => {
   })
 })
 
-describe('VM -> Default EVM / Custom EVM Opts', () => {
+describe('[VM/Constructors]: default and custom EVM', () => {
   it('Default EVM should have correct default EVM opts', async () => {
     const vm = await createVM()
     assert.isFalse((vm.evm as EVM).allowUnlimitedContractSize, 'allowUnlimitedContractSize=false')
@@ -107,7 +107,7 @@ describe('VM -> Default EVM / Custom EVM Opts', () => {
   })
 })
 
-describe('VM -> supportedHardforks', () => {
+describe('[VM/Constructors]: supported hardforks', () => {
   it('should throw when common is set to an unsupported hardfork', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai })
     const prevSupported = EVM['supportedHardforks']
@@ -171,7 +171,7 @@ describe('VM -> supportedHardforks', () => {
   })
 })
 
-describe('VM -> common (chain, HFs, EIPs)', () => {
+describe('[VM/Constructors]: common chain and EIP options', () => {
   it('should accept a common object as option', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
 
@@ -222,7 +222,7 @@ describe('VM -> common (chain, HFs, EIPs)', () => {
   })
 })
 
-describe('VM -> setHardfork, blockchain', () => {
+describe('[VM/Constructors]: setHardfork and shallow copy', () => {
   it('setHardfork', async () => {
     const common = createCustomCommon(testnetMergeChainConfig, Mainnet, {
       hardfork: Hardfork.Istanbul,

@@ -180,7 +180,7 @@ describe('[AccessList2930Tx]', () => {
     const expectedHash = hexToBytes(
       '0x78528e2724aa359c58c13e43a7c467eb721ce8d410c2a12ee62943a3aaefb60b',
     )
-    assert.deepEqual(unsignedTx.getHashedMessageToSign(), expectedHash), 'correct hashed version'
+    assert.deepEqual(unsignedTx.getHashedMessageToSign(), expectedHash, 'correct hashed version')
 
     const expectedSerialization = hexToBytes(
       '0x01f858018080809401010101010101010101010101010101010101018083010200f838f7940101010101010101010101010101010101010101e1a00101010101010101010101010101010101010101010101010101010101010101',

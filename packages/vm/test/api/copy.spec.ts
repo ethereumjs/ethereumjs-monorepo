@@ -3,7 +3,7 @@ import { assert, describe, it } from 'vitest'
 
 import { setupVM } from './utils.ts'
 
-describe('VM Copy Test', () => {
+describe('[VM/shallowCopy]: state manager copy', () => {
   it('should pass copy of state manager', async () => {
     const vm = await setupVM()
     const account = createAccount({

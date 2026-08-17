@@ -3,7 +3,7 @@ import { assert, describe, it } from 'vitest'
 
 import type { BatchDBOp } from '@ethereumjs/util'
 
-describe('DB tests', () => {
+describe('[MPT/MapDB]: batch operations', () => {
   const db = new MapDB<Uint8Array, Uint8Array>()
 
   const k = utf8ToBytes('k1')

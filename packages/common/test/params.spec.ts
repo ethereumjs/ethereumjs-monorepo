@@ -23,7 +23,7 @@ describe('[Common]: Parameter instantiation / params option / Updates', () => {
     msg = 'Should reset all parameters on resetParams() and properly rebuild cache'
     assert.strictEqual(c.param('bn254AddGas'), BigInt(250), msg)
     assert.throws(() => {
-      c.param('bn254MulGas'), BigInt(250)
+      c.param('bn254MulGas')
     })
 
     msg = 'Should not side-manipulate the original params file during updating internally'

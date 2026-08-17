@@ -225,7 +225,7 @@ describe('EIP 2935: historical block hashes', () => {
       const blocksToBuild = 500
       const commonGetHistoryServeWindow = eip2935ActiveAtCommon(0, historyAddressBigInt)
       commonGetHistoryServeWindow.setEIPs([2935])
-      commonGetHistoryServeWindow.updateParams(paramsVM)
+      commonGetHistoryServeWindow.updateParams(JSON.parse(JSON.stringify(paramsVM)))
       const common = eip2935ActiveAtCommon(blocksActivation, historyAddressBigInt)
       const historyServeWindow = commonGetHistoryServeWindow.param('historyServeWindow')
 

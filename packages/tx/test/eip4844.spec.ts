@@ -616,54 +616,56 @@ describe('hash() and signature verification', () => {
   })
 })
 
-it('getEffectivePriorityFee()', () => {
-  for (const kzg of kzgs) {
-    const common = createCommonFromGethGenesis(eip4844GethGenesis, {
-      chain: 'customChain',
-      hardfork: Hardfork.Cancun,
-      customCrypto: { kzg: kzg.lib },
-    })
-    const tx = createBlob4844Tx(
-      {
-        maxFeePerGas: 10,
-        maxPriorityFeePerGas: 8,
-        to: createZeroAddress(),
-        blobVersionedHashes: [concatBytes(new Uint8Array([1]), randomBytes(31))],
-      },
-      { common },
-    )
-    assert.strictEqual(
-      tx.getEffectivePriorityFee(BigInt(10)),
-      BigInt(0),
-      `getEffectivePriorityFee with baseFee=10 (${kzg.label})`,
-    )
-    assert.strictEqual(
-      tx.getEffectivePriorityFee(BigInt(9)),
-      BigInt(1),
-      `getEffectivePriorityFee with baseFee=9 (${kzg.label})`,
-    )
-    assert.strictEqual(
-      tx.getEffectivePriorityFee(BigInt(8)),
-      BigInt(2),
-      `getEffectivePriorityFee with baseFee=8 (${kzg.label})`,
-    )
-    assert.strictEqual(
-      tx.getEffectivePriorityFee(BigInt(2)),
-      BigInt(8),
-      `getEffectivePriorityFee with baseFee=2 (${kzg.label})`,
-    )
-    assert.strictEqual(
-      tx.getEffectivePriorityFee(BigInt(1)),
-      BigInt(8),
-      `getEffectivePriorityFee with baseFee=1 (${kzg.label})`,
-    )
-    assert.strictEqual(
-      tx.getEffectivePriorityFee(BigInt(0)),
-      BigInt(8),
-      `getEffectivePriorityFee with baseFee=0 (${kzg.label})`,
-    )
-    assert.throws(() => tx.getEffectivePriorityFee(BigInt(11)))
-  }
+describe('[Blob4844Tx]: getEffectivePriorityFee', () => {
+  it('getEffectivePriorityFee()', () => {
+    for (const kzg of kzgs) {
+      const common = createCommonFromGethGenesis(eip4844GethGenesis, {
+        chain: 'customChain',
+        hardfork: Hardfork.Cancun,
+        customCrypto: { kzg: kzg.lib },
+      })
+      const tx = createBlob4844Tx(
+        {
+          maxFeePerGas: 10,
+          maxPriorityFeePerGas: 8,
+          to: createZeroAddress(),
+          blobVersionedHashes: [concatBytes(new Uint8Array([1]), randomBytes(31))],
+        },
+        { common },
+      )
+      assert.strictEqual(
+        tx.getEffectivePriorityFee(BigInt(10)),
+        BigInt(0),
+        `getEffectivePriorityFee with baseFee=10 (${kzg.label})`,
+      )
+      assert.strictEqual(
+        tx.getEffectivePriorityFee(BigInt(9)),
+        BigInt(1),
+        `getEffectivePriorityFee with baseFee=9 (${kzg.label})`,
+      )
+      assert.strictEqual(
+        tx.getEffectivePriorityFee(BigInt(8)),
+        BigInt(2),
+        `getEffectivePriorityFee with baseFee=8 (${kzg.label})`,
+      )
+      assert.strictEqual(
+        tx.getEffectivePriorityFee(BigInt(2)),
+        BigInt(8),
+        `getEffectivePriorityFee with baseFee=2 (${kzg.label})`,
+      )
+      assert.strictEqual(
+        tx.getEffectivePriorityFee(BigInt(1)),
+        BigInt(8),
+        `getEffectivePriorityFee with baseFee=1 (${kzg.label})`,
+      )
+      assert.strictEqual(
+        tx.getEffectivePriorityFee(BigInt(0)),
+        BigInt(8),
+        `getEffectivePriorityFee with baseFee=0 (${kzg.label})`,
+      )
+      assert.throws(() => tx.getEffectivePriorityFee(BigInt(11)))
+    }
+  })
 })
 
 describe('Network wrapper deserialization test', () => {

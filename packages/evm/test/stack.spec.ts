@@ -14,7 +14,7 @@ import { Stack } from '../src/stack.ts'
 
 import { createAccount } from './utils.ts'
 
-describe('Stack', () => {
+describe('[EVM/Stack]: unit', () => {
   it('should be empty initially', () => {
     const s = new Stack()
     assert.strictEqual(s.length, 0)

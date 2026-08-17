@@ -36,7 +36,7 @@ const EXPECTED_RLP_BYTES = hexToBytes(
 const PRIVATE_KEY = hexToBytes('0x45A915E4D060149EB4365960E6A7A45F334393093061116B197E3240065FF2D8')
 const EXPECTED_SIGNER = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
 
-describe('Authorization lists', () => {
+describe('[Util/Authorization]: EIP-7702', () => {
   const item = eoaCode7702AuthorizationListJSONItemToBytes(SAMPLE_AUTH)
   const [chainId, address, nonce] = item
   const unsignedBytesItem: EOACode7702AuthorizationListBytesItemUnsigned = [chainId, address, nonce]
@@ -115,5 +115,21 @@ describe('Authorization lists', () => {
 
     assert.isTrue(EXPECTED_SIGNER.equals(recoveredBytesAddress), 'bytes: recovered correct signer')
     assert.isTrue(EXPECTED_SIGNER.equals(recoveredJSONAddress), 'json: recovered correct signer')
+  })
+
+  it('eoaCode7702AuthorizationListJSONItemToBytes() rejects invalid address hex', () => {
+    const bad = { ...SAMPLE_AUTH, address: '0x-invalid-address' as `0x${string}` }
+    assert.throws(() => eoaCode7702AuthorizationListJSONItemToBytes(bad))
+  })
+
+  it('eoaCode7702RecoverAuthority() rejects tampered signature', () => {
+    const tampered = { ...SAMPLE_AUTH, s: `0x${'00'.repeat(32)}` as `0x${string}` }
+    assert.throws(() => eoaCode7702RecoverAuthority(tampered))
+  })
+
+  it('eoaCode7702SignAuthorization() rejects non-Uint8Array private key', () => {
+    assert.throws(() =>
+      eoaCode7702SignAuthorization(unsignedBytesItem, 'not-a-key' as unknown as Uint8Array),
+    )
   })
 })

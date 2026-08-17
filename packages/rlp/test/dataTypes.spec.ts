@@ -6,16 +6,28 @@ import { bytesToUtf8 } from './utils.ts'
 
 const { bytesToHex, concatBytes, hexToBytes, utf8ToBytes } = utils
 
-describe('utils', () => {
-  it('should decode 0x-prefixed hex strings', () => {
+describe('[RLP]: utils', () => {
+  it('hexToBytes() decodes 0x-prefixed hex strings', () => {
     assert.deepEqual(hexToBytes('0xcafe0123'), Uint8Array.from([0xca, 0xfe, 0x01, 0x23]))
   })
-  it('should decode non 0x-prefixed hex strings', () => {
+  it('hexToBytes() decodes non 0x-prefixed hex strings', () => {
     assert.deepEqual(hexToBytes('cafe0123'), Uint8Array.from([0xca, 0xfe, 0x01, 0x23]))
+  })
+
+  it('hexToBytes() rejects unpadded odd-length hex', () => {
+    assert.throws(() => hexToBytes('abc'))
+  })
+
+  it('hexToBytes() rejects non-hex characters', () => {
+    assert.throws(() => hexToBytes('zz'))
+  })
+
+  it('hexToBytes() rejects non-string input', () => {
+    assert.throws(() => hexToBytes(123 as unknown as string))
   })
 })
 
-describe('invalid RLPs', () => {
+describe('[RLP]: invalid inputs', () => {
   const errCases = [
     // prettier-ignore
     {
@@ -74,7 +86,7 @@ describe('invalid RLPs', () => {
   }
 })
 
-describe('RLP encoding (string)', () => {
+describe('[RLP]: encode (string)', () => {
   it('should return itself if single byte and less than 0x7f', () => {
     const encodedSelf = RLP.encode('a')
     assert.deepEqual(bytesToUtf8(encodedSelf), 'a')
@@ -102,7 +114,7 @@ describe('RLP encoding (string)', () => {
   })
 })
 
-describe('RLP encoding (list)', () => {
+describe('[RLP]: encode (list)', () => {
   it('length of list 0-55 should return (0xc0+len(data)) plus data', () => {
     const encodedArrayOfStrings = RLP.encode(['dog', 'god', 'cat'])
     assert.deepEqual(13, encodedArrayOfStrings.length)
@@ -132,7 +144,7 @@ describe('RLP encoding (list)', () => {
   })
 })
 
-describe('RLP encoding (BigInt)', () => {
+describe('[RLP]: encode (BigInt)', () => {
   it('should encode a BigInt value', () => {
     const encoded = RLP.encode(BigInt(3))
     assert.deepEqual(encoded[0], 3)
@@ -155,9 +167,12 @@ describe('RLP encoding (BigInt)', () => {
   it('it should handle zero', () => {
     assert.deepEqual(bytesToHex(RLP.encode(BigInt(0))), '80')
   })
+  it('encode() rejects negative BigInt', () => {
+    assert.throws(() => RLP.encode(BigInt(-1)))
+  })
 })
 
-describe('RLP encoding (integer)', () => {
+describe('[RLP]: encode (integer)', () => {
   it('length of int = 1, less than 0x7f, similar to string', () => {
     const encodedNumber = RLP.encode(15)
     assert.deepEqual(1, encodedNumber.length)
@@ -172,8 +187,16 @@ describe('RLP encoding (integer)', () => {
     assert.deepEqual(encodedNumber[2], 0)
   })
 
+  it('encode() rejects negative integer', () => {
+    assert.throws(() => RLP.encode(-1))
+  })
+
   it('it should handle zero', () => {
     assert.deepEqual(bytesToHex(RLP.encode(0)), '80')
+  })
+
+  it('encode() rejects unsupported type', () => {
+    assert.throws(() => RLP.encode({} as never))
   })
 })
 
@@ -385,85 +408,49 @@ describe('empty values', () => {
   })
 })
 
-describe('bad values', () => {
-  it('wrong encoded a zero', () => {
+describe('[RLP]: bad values', () => {
+  it('decode() throws on wrong encoded zero', () => {
     const val = hexToBytes(
       'f9005f030182520894b94f5374fce5edbc8e2a8697c15331677e6ebf0b0a801ca098ff921201554726367d2be8c804a7ff89ccf285ebc57dff8ae4c44b9c19ac4aa08887321be575c8095f789dd4c743dfe42c1820f9231f98a962b210e3ac2452a3',
     )
-    let result
-    try {
-      result = RLP.decode(val)
-    } catch {
-      // pass
-    }
-    assert.deepEqual(result, undefined)
+    assert.throws(() => RLP.decode(val))
   })
 
-  it('invalid length', () => {
+  it('decode() throws on invalid length', () => {
     const a = hexToBytes(
       'f86081000182520894b94f5374fce5edbc8e2a8697c15331677e6ebf0b0a801ca098ff921201554726367d2be8c804a7ff89ccf285ebc57dff8ae4c44b9c19ac4aa08887321be575c8095f789dd4c743dfe42c1820f9231f98a962b210e3ac2452a3',
     )
-
-    let result
-    try {
-      result = RLP.decode(a)
-    } catch {
-      // pass
-    }
-    assert.deepEqual(result, undefined)
+    assert.throws(() => RLP.decode(a))
   })
 
-  it('extra data at end', () => {
+  it('decode() throws on extra data at end (variant 1)', () => {
     const c =
       'f90260f901f9a02a3c692012a15502ba9c39f3aebb36694eed978c74b52e6c0cf210d301dbf325a01dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347948888f1f195afa192cfee860698584c030f4c9db1a0ef1552a40b7165c3cd773806b9e0c165b75356e0314bf0706f279c729f51e017a0b6c9fd1447d0b414a1f05957927746f58ef5a2ebde17db631d460eaf6a93b18da0bc37d79753ad738a6dac4921e57392f145d8887476de3f783dfa7edae9283e52b90100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008302000001832fefd8825208845509814280a00451dd53d9c09f3cfb627b51d9d80632ed801f6330ee584bffc26caac9b9249f88c7bffe5ebd94cc2ff861f85f800a82c35094095e7baea6a6c7c4c2dfeb977efac326af552d870a801ba098c3a099885a281885f487fd37550de16436e8c47874cd213531b10fe751617fa044b6b81011ce57bffcaf610bf728fb8a7237ad261ea2d937423d78eb9e137076c0ef'
 
-    const a = hexToBytes(c)
-
-    let result
-    try {
-      result = RLP.decode(a)
-    } catch {
-      // pass
-    }
-    assert.deepEqual(result, undefined)
+    assert.throws(() => RLP.decode(hexToBytes(c)))
   })
 
-  it('extra data at end', () => {
+  it('decode() throws on extra data at end (variant 2)', () => {
     const c =
       'f9ffffffc260f901f9a02a3c692012a15502ba9c39f3aebb36694eed978c74b52e6c0cf210d301dbf325a01dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347948888f1f195afa192cfee860698584c030f4c9db1a0ef1552a40b7165c3cd773806b9e0c165b75356e0314bf0706f279c729f51e017a0b6c9fd1447d0b414a1f05957927746f58ef5a2ebde17db631d460eaf6a93b18da0bc37d79753ad738a6dac4921e57392f145d8887476de3f783dfa7edae9283e52b90100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008302000001832fefd8825208845509814280a00451dd53d9c09f3cfb627b51d9d80632ed801f6330ee584bffc26caac9b9249f88c7bffe5ebd94cc2ff861f85f800a82c35094095e7baea6a6c7c4c2dfeb977efac326af552d870a801ba098c3a099885a281885f487fd37550de16436e8c47874cd213531b10fe751617fa044b6b81011ce57bffcaf610bf728fb8a7237ad261ea2d937423d78eb9e137076c0'
 
-    const a = hexToBytes(c)
-
-    let result
-    try {
-      result = RLP.decode(a)
-    } catch {
-      // pass
-    }
-    assert.deepEqual(result, undefined)
+    assert.throws(() => RLP.decode(hexToBytes(c)))
   })
 
-  it('list length longer than data', () => {
+  it('decode() throws when list length exceeds data', () => {
     const c =
       'f9ffffffc260f901f9a02a3c692012a15502ba9c39f3aebb36694eed978c74b52e6c0cf210d301dbf325a01dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347948888f1f195afa192cfee860698584c030f4c9db1a0ef1552a40b7165c3cd773806b9e0c165b75356e0314bf0706f279c729f51e017a0b6c9fd1447d0b414a1f05957927746f58ef5a2ebde17db631d460eaf6a93b18da0bc37d79753ad738a6dac4921e57392f145d8887476de3f783dfa7edae9283e52b90100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008302000001832fefd8825208845509814280a00451dd53d9c09f3cfb627b51d9d80632ed801f6330ee584bffc26caac9b9249f88c7bffe5ebd94cc2ff861f85f800a82c35094095e7baea6a6c7c4c2dfeb977efac326af552d870a801ba098c3a099885a281885f487fd37550de16436e8c47874cd213531b10fe751617fa044b6b81011ce57bffcaf610bf728fb8a7237ad261ea2d937423d78eb9e137076c0'
 
-    const a = hexToBytes(c)
-
-    let result
-    try {
-      result = RLP.decode(a)
-    } catch {
-      // pass
-    }
-    assert.deepEqual(result, undefined)
+    assert.throws(() => RLP.decode(hexToBytes(c)))
   })
 })
 
-describe('hex prefix', () => {
-  it('should have the same value', () => {
-    const a = RLP.encode('0x88f')
-    const b = RLP.encode('88f')
-    assert.notDeepEqual(bytesToHex(a), bytesToHex(b)) // ???
+describe('[RLP]: string vs hex encoding', () => {
+  it("encode() treats '0x88f' as a UTF-8 string, not hex bytes", () => {
+    const withPrefix = RLP.encode('0x88f')
+    const without = RLP.encode('88f')
+    assert.notDeepEqual(bytesToHex(withPrefix), bytesToHex(without))
+    assert.deepEqual(bytesToHex(withPrefix), bytesToHex(RLP.encode('0x88f')))
   })
 })
 

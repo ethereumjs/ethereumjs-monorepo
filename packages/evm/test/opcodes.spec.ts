@@ -3,7 +3,7 @@ import { assert, describe, it } from 'vitest'
 
 import { createEVM } from '../src/index.ts'
 
-describe('EVM -> getActiveOpcodes()', () => {
+describe('[EVM]: getActiveOpcodes()', () => {
   const DIFFICULTY_PREVRANDAO = 0x44
   const CHAINID = 0x46 //istanbul opcode
 

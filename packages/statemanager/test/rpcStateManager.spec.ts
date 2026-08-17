@@ -321,7 +321,7 @@ describe('runBlock test', () => {
   })
 })
 
-describe('blockchain', () =>
+describe('[RPCStateManager]: blockchain blockhash', () => {
   it('uses blockhash', async () => {
     const blockchain = new RPCBlockChain(provider) as unknown as EVMMockBlockchainInterface
     const blockTag = 1n
@@ -348,9 +348,10 @@ describe('blockchain', () =>
       bytesToHex(res.execResult.returnValue),
       '0x794a1bef434928ce3aadd2f5eced2bf72ac714a30e9e4ab5965d7d9760300d84',
     )
-  }))
+  })
+})
 
-describe('Should return same value as MerkleStateManager when account does not exist', () => {
+describe('[RPCStateManager]: Merkle parity', () => {
   it('should work', async () => {
     const rpcState = new RPCStateManager({ provider, blockTag: 1n })
     const defaultState = new MerkleStateManager()

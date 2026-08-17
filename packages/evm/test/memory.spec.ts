@@ -4,7 +4,7 @@ import { Memory } from '../src/memory.ts'
 
 const CONTAINER_SIZE = 8192
 
-describe('Memory', () => {
+describe('[EVM/Memory]: unit', () => {
   const m = new Memory()
   it('should have CONTAINER_SIZE capacity initially', () => {
     assert.strictEqual(m._store.length, CONTAINER_SIZE)

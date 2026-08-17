@@ -7,8 +7,6 @@ export default mergeConfig(
     test: {
       exclude: [
         ...configDefaults.exclude,
-        // process.nextTick is not a function
-        'test/stream.spec.ts',
         // process is not defined
         'test/util/log.spec.ts',
       ],
