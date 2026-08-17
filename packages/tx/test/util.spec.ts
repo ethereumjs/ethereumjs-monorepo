@@ -4,7 +4,7 @@ import { assert, describe, it } from 'vitest'
 import { valueOverflowCheck } from '../src/util/internal.ts'
 
 describe('Helper methods should be correct', () => {
-  it('valueBoundaryCheck()', () => {
+  it('valueOverflowCheck()', () => {
     try {
       valueOverflowCheck({ a: MAX_INTEGER }, 256, true)
     } catch (err: any) {

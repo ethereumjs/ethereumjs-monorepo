@@ -27,6 +27,11 @@ EthereumJS is a protocol-library vendor. A wrong tx hash, sender recovery, or si
 - Prefer fixing production code over relaxing tests.
 - Keep tx/block `freeze` default unless the caller opts out.
 - Keep solid test coverage on every active library. Give extra review and extra tests to S0 behavior (sign, recover, hash, freeze).
+- Cover **wrong usage**, not only happy-path logic. Wallet/dapp integrations pass unexpected JS values. A negative fee or value must throw — never wrap to a huge unsigned amount. Guard and test decimal, `NaN`, `Infinity`, and non-numeric junk on every fee/value field of every active tx type (`gasPrice`, `maxFeePerGas`, `maxPriorityFeePerGas`, `maxFeePerBlobGas`, `gasLimit`, `value`, `nonce`).
 - If an npm advisory appears: classify runtime vs dev, and active libs vs deprecated packages, before adding a root `overrides` entry.
+
+## EIP-4844 tests (KZG)
+
+Loading a real KZG trusted setup makes the tx suite much slower. Put 4844 in the **shared type matrix** (`base.spec.ts`, `transactionFactory.spec.ts`) with a **stub** `customCrypto.kzg` and canonical txs (`blobVersionedHashes` only — no blobs, proofs, or `getBlobs`). Real KZG + network wrapper belongs only in `eip4844.spec.ts` / `eip7594.spec.ts`. Do not copy those `beforeAll` setups into the matrix.
 
 Disclosure process (`SECURITY.md`) is not defined yet — do not invent a bounty or contact path.

@@ -50,7 +50,7 @@ function getTxData(override: Partial<EOACode7702AuthorizationListItem> = {}): Tx
   }
 }
 
-describe('[EOACode7702Transaction]', () => {
+describe('[EOACode7702Tx]', () => {
   it('sign()', () => {
     const txn = createEOACode7702Tx(
       {

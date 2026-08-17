@@ -18,55 +18,6 @@ const validSlot = hexToBytes(`0x${'01'.repeat(32)}`)
 const chainId = BigInt(4)
 
 describe('[FeeMarket1559Tx]', () => {
-  it(`cannot input decimal or negative values`, () => {
-    const values = [
-      'maxFeePerGas',
-      'maxPriorityFeePerGas',
-      'chainId',
-      'nonce',
-      'gasLimit',
-      'value',
-      'v',
-      'r',
-      's',
-    ]
-    const cases = [
-      10.1,
-      '10.1',
-      '0xaa.1',
-      -10.1,
-      -1,
-      BigInt(-10),
-      '-100',
-      '-10.1',
-      '-0xaa',
-      Infinity,
-      -Infinity,
-      NaN,
-      {},
-      true,
-      false,
-      () => {},
-      Number.MAX_SAFE_INTEGER + 1,
-    ]
-    for (const value of values) {
-      const txData: any = {}
-      for (const testCase of cases) {
-        if (
-          !(
-            value === 'chainId' &&
-            ((typeof testCase === 'number' && isNaN(testCase)) || testCase === false)
-          )
-        ) {
-          txData[value] = testCase
-          assert.throws(() => {
-            createFeeMarket1559Tx(txData)
-          })
-        }
-      }
-    }
-  })
-
   it('getUpfrontCost()', () => {
     const tx = createFeeMarket1559Tx(
       {

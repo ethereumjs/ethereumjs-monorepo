@@ -1,7 +1,10 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import {
+  MAX_INTEGER,
   SECP256K1_ORDER,
   bytesToBigInt,
+  bytesToHex,
+  concatBytes,
   equalsBytes,
   hexToBytes,
   privateToPublic,
@@ -11,7 +14,9 @@ import { assert, describe, it } from 'vitest'
 
 import {
   AccessList2930Tx,
+  Blob4844Tx,
   Capability,
+  EOACode7702Tx,
   FeeMarket1559Tx,
   LegacyTx,
   TransactionType,
@@ -19,6 +24,12 @@ import {
   createAccessList2930Tx,
   createAccessList2930TxFromBytesArray,
   createAccessList2930TxFromRLP,
+  createBlob4844Tx,
+  createBlob4844TxFromBytesArray,
+  createBlob4844TxFromRLP,
+  createEOACode7702Tx,
+  createEOACode7702TxFromBytesArray,
+  createEOACode7702TxFromRLP,
   createFeeMarket1559Tx,
   createFeeMarket1559TxFromRLP,
   createLegacyTx,
@@ -30,115 +41,296 @@ import {
 import { eip1559TxsData } from './testData/eip1559txs.ts'
 import { eip2930TxsData } from './testData/eip2930txs.ts'
 import { txsData } from './testData/txs.ts'
+import {
+  BLOB_VERSIONED_HASH_BYTES,
+  INVALID_NUMERIC_INPUTS,
+  MATRIX_PRIVATE_KEY,
+  NEGATIVE_FEE_INPUTS,
+  TEST_AUTHORIZATION_LIST_BYTES,
+  TEST_RECIPIENT_BYTES,
+  blobTxDefaults,
+  cancunCommon,
+  eoaCodeTxDefaults,
+  londonCommon,
+  pragueCommon,
+  stubKzg,
+} from './txTypeMatrix.ts'
 
+import type { AccessList } from '../src/index.ts'
 import type { AccessList2930TxData, FeeMarketEIP1559TxData, LegacyTxData } from '../src/index.ts'
 
-describe('[BaseTransaction]', () => {
-  // EIP-2930 is not enabled in Common by default (2021-03-06)
-  const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
+const privateKeyHex = bytesToHex(MATRIX_PRIVATE_KEY).slice(2)
 
-  const legacyTxs: LegacyTx[] = []
-  for (const tx of txsData.slice(0, 4)) {
-    legacyTxs.push(createLegacyTx(tx.data as LegacyTxData, { common }))
-  }
+const blobTxData = {
+  ...blobTxDefaults,
+  chainId: 1,
+  gasLimit: 21000,
+  maxFeePerGas: 1,
+  maxPriorityFeePerGas: 1,
+  maxFeePerBlobGas: 1,
+}
+const blobSigned = createBlob4844Tx(blobTxData, { common: cancunCommon }).sign(MATRIX_PRIVATE_KEY)
 
-  const eip2930Txs: AccessList2930Tx[] = []
-  for (const tx of eip2930TxsData) {
-    eip2930Txs.push(createAccessList2930Tx(tx.data as AccessList2930TxData, { common }))
-  }
+const eoaTxData = {
+  ...eoaCodeTxDefaults,
+  chainId: 1,
+  gasLimit: 21000,
+  maxFeePerGas: 1,
+  maxPriorityFeePerGas: 1,
+}
+const eoaSigned = createEOACode7702Tx(eoaTxData, { common: pragueCommon }).sign(MATRIX_PRIVATE_KEY)
 
-  const eip1559Txs: FeeMarket1559Tx[] = []
-  for (const tx of eip1559TxsData) {
-    eip1559Txs.push(createFeeMarket1559Tx(tx.data as FeeMarketEIP1559TxData, { common }))
-  }
+const legacyTxs: LegacyTx[] = []
+for (const tx of txsData.slice(0, 4)) {
+  legacyTxs.push(createLegacyTx(tx.data as LegacyTxData, { common: londonCommon }))
+}
 
-  const zero = new Uint8Array(0)
-  const txTypes = [
-    {
-      class: LegacyTx,
-      name: 'LegacyTx',
-      type: TransactionType.Legacy,
-      values: Array(6).fill(zero),
-      txs: legacyTxs,
-      fixtures: txsData,
-      activeCapabilities: [],
-      create: {
-        txData: createLegacyTx,
-        rlp: createLegacyTxFromRLP,
-        bytesArray: createLegacyTxFromBytesArray,
-      },
-      notActiveCapabilities: [
-        Capability.EIP1559FeeMarket,
-        Capability.EIP2718TypedTransaction,
-        Capability.EIP2930AccessLists,
-        9999,
-      ],
+const eip2930Txs: AccessList2930Tx[] = []
+for (const tx of eip2930TxsData) {
+  eip2930Txs.push(createAccessList2930Tx(tx.data as AccessList2930TxData, { common: londonCommon }))
+}
+
+const eip1559Txs: FeeMarket1559Tx[] = []
+for (const tx of eip1559TxsData) {
+  eip1559Txs.push(
+    createFeeMarket1559Tx(tx.data as FeeMarketEIP1559TxData, { common: londonCommon }),
+  )
+}
+
+const zero = new Uint8Array(0)
+const validAddress = hexToBytes(`0x${'01'.repeat(20)}`)
+const validSlot = hexToBytes(`0x${'01'.repeat(32)}`)
+
+const txTypes = [
+  {
+    class: LegacyTx,
+    name: 'LegacyTx',
+    type: TransactionType.Legacy,
+    eip2718: false,
+    hasAccessList: false,
+    common: londonCommon,
+    txData: {},
+    values: Array(6).fill(zero),
+    txs: legacyTxs,
+    fixtures: txsData,
+    numericFields: ['gasPrice', 'gasLimit', 'nonce', 'value', 'v', 'r', 's'],
+    feeFields: ['gasPrice', 'value', 'gasLimit'],
+    activeCapabilities: [],
+    create: {
+      txData: createLegacyTx,
+      rlp: createLegacyTxFromRLP,
+      bytesArray: createLegacyTxFromBytesArray,
     },
-    {
-      class: AccessList2930Tx,
-      name: 'AccessList2930Tx',
-      type: TransactionType.AccessListEIP2930,
-      values: [new Uint8Array([1])].concat(Array(7).fill(zero)),
-      txs: eip2930Txs,
-      fixtures: eip2930TxsData,
-      activeCapabilities: [Capability.EIP2718TypedTransaction, Capability.EIP2930AccessLists],
-      create: {
-        txData: createAccessList2930Tx,
-        rlp: createAccessList2930TxFromRLP,
-        bytesArray: createAccessList2930TxFromBytesArray,
-      },
-      notActiveCapabilities: [Capability.EIP1559FeeMarket, 9999],
+    notActiveCapabilities: [
+      Capability.EIP1559FeeMarket,
+      Capability.EIP2718TypedTransaction,
+      Capability.EIP2930AccessLists,
+      Capability.EIP7702EOACode,
+      9999,
+    ],
+  },
+  {
+    class: AccessList2930Tx,
+    name: 'AccessList2930Tx',
+    type: TransactionType.AccessListEIP2930,
+    eip2718: true,
+    hasAccessList: true,
+    common: londonCommon,
+    txData: {},
+    values: [new Uint8Array([1])].concat(Array(7).fill(zero)),
+    txs: eip2930Txs,
+    fixtures: eip2930TxsData,
+    numericFields: ['chainId', 'nonce', 'gasPrice', 'gasLimit', 'value', 'v', 'r', 's'],
+    feeFields: ['gasPrice', 'value', 'gasLimit'],
+    activeCapabilities: [Capability.EIP2718TypedTransaction, Capability.EIP2930AccessLists],
+    create: {
+      txData: createAccessList2930Tx,
+      rlp: createAccessList2930TxFromRLP,
+      bytesArray: createAccessList2930TxFromBytesArray,
     },
-    {
-      class: FeeMarket1559Tx,
-      name: 'FeeMarket1559Tx',
-      type: TransactionType.FeeMarketEIP1559,
-      values: [new Uint8Array([1])].concat(Array(8).fill(zero)),
-      txs: eip1559Txs,
-      fixtures: eip1559TxsData,
-      activeCapabilities: [
-        Capability.EIP1559FeeMarket,
-        Capability.EIP2718TypedTransaction,
-        Capability.EIP2930AccessLists,
-      ],
-      create: {
-        txData: createFeeMarket1559Tx,
-        rlp: createFeeMarket1559TxFromRLP,
-        bytesArray: create1559FeeMarketTxFromBytesArray,
-      },
-      notActiveCapabilities: [9999],
+    notActiveCapabilities: [Capability.EIP1559FeeMarket, Capability.EIP7702EOACode, 9999],
+  },
+  {
+    class: FeeMarket1559Tx,
+    name: 'FeeMarket1559Tx',
+    type: TransactionType.FeeMarketEIP1559,
+    eip2718: true,
+    hasAccessList: true,
+    common: londonCommon,
+    txData: {},
+    values: [new Uint8Array([1])].concat(Array(8).fill(zero)),
+    txs: eip1559Txs,
+    fixtures: eip1559TxsData,
+    numericFields: [
+      'maxFeePerGas',
+      'maxPriorityFeePerGas',
+      'chainId',
+      'nonce',
+      'gasLimit',
+      'value',
+      'v',
+      'r',
+      's',
+    ],
+    feeFields: ['maxFeePerGas', 'maxPriorityFeePerGas', 'value', 'gasLimit'],
+    activeCapabilities: [
+      Capability.EIP1559FeeMarket,
+      Capability.EIP2718TypedTransaction,
+      Capability.EIP2930AccessLists,
+    ],
+    create: {
+      txData: createFeeMarket1559Tx,
+      rlp: createFeeMarket1559TxFromRLP,
+      bytesArray: create1559FeeMarketTxFromBytesArray,
     },
-  ]
+    notActiveCapabilities: [Capability.EIP7702EOACode, 9999],
+  },
+  {
+    class: Blob4844Tx,
+    name: 'Blob4844Tx',
+    type: TransactionType.BlobEIP4844,
+    eip2718: true,
+    hasAccessList: true,
+    common: cancunCommon,
+    txData: blobTxDefaults,
+    values: [
+      new Uint8Array([1]),
+      zero,
+      zero,
+      zero,
+      zero,
+      TEST_RECIPIENT_BYTES,
+      zero,
+      zero,
+      [],
+      zero,
+      [BLOB_VERSIONED_HASH_BYTES],
+    ],
+    txs: [blobSigned],
+    fixtures: [
+      {
+        data: {
+          ...blobTxData,
+          v: blobSigned.v,
+          r: blobSigned.r,
+          s: blobSigned.s,
+        },
+        privateKey: privateKeyHex,
+        sendersAddress: blobSigned.getSenderAddress().toString().slice(2),
+      },
+    ],
+    numericFields: [
+      'maxFeePerGas',
+      'maxPriorityFeePerGas',
+      'maxFeePerBlobGas',
+      'chainId',
+      'nonce',
+      'gasLimit',
+      'value',
+      'v',
+      'r',
+      's',
+    ],
+    feeFields: ['maxFeePerGas', 'maxPriorityFeePerGas', 'maxFeePerBlobGas', 'value', 'gasLimit'],
+    activeCapabilities: [
+      Capability.EIP1559FeeMarket,
+      Capability.EIP2718TypedTransaction,
+      Capability.EIP2930AccessLists,
+    ],
+    create: {
+      txData: createBlob4844Tx,
+      rlp: createBlob4844TxFromRLP,
+      bytesArray: createBlob4844TxFromBytesArray,
+    },
+    notActiveCapabilities: [Capability.EIP7702EOACode, 9999],
+  },
+  {
+    class: EOACode7702Tx,
+    name: 'EOACode7702Tx',
+    type: TransactionType.EOACodeEIP7702,
+    eip2718: true,
+    hasAccessList: true,
+    common: pragueCommon,
+    txData: eoaCodeTxDefaults,
+    values: [
+      new Uint8Array([1]),
+      zero,
+      zero,
+      zero,
+      zero,
+      TEST_RECIPIENT_BYTES,
+      zero,
+      zero,
+      [],
+      TEST_AUTHORIZATION_LIST_BYTES,
+    ],
+    txs: [eoaSigned],
+    fixtures: [
+      {
+        data: {
+          ...eoaTxData,
+          v: eoaSigned.v,
+          r: eoaSigned.r,
+          s: eoaSigned.s,
+        },
+        privateKey: privateKeyHex,
+        sendersAddress: eoaSigned.getSenderAddress().toString().slice(2),
+      },
+    ],
+    numericFields: [
+      'maxFeePerGas',
+      'maxPriorityFeePerGas',
+      'chainId',
+      'nonce',
+      'gasLimit',
+      'value',
+      'v',
+      'r',
+      's',
+    ],
+    feeFields: ['maxFeePerGas', 'maxPriorityFeePerGas', 'value', 'gasLimit'],
+    activeCapabilities: [
+      Capability.EIP1559FeeMarket,
+      Capability.EIP2718TypedTransaction,
+      Capability.EIP2930AccessLists,
+      Capability.EIP7702EOACode,
+    ],
+    create: {
+      txData: createEOACode7702Tx,
+      rlp: createEOACode7702TxFromRLP,
+      bytesArray: createEOACode7702TxFromBytesArray,
+    },
+    notActiveCapabilities: [9999],
+  },
+]
 
+describe('[LegacyTx / AccessList2930Tx / FeeMarket1559Tx / Blob4844Tx / EOACode7702Tx]', () => {
   it('Initialization', () => {
     for (const txType of txTypes) {
-      let tx = txType.create.txData({}, { common })
+      let tx = txType.create.txData(txType.txData, { common: txType.common })
       assert.strictEqual(
         tx.common.hardfork(),
-        'london',
+        txType.common.hardfork(),
         `${txType.name}: should initialize with correct HF provided`,
       )
       assert.isFrozen(tx, `${txType.name}: tx should be frozen by default`)
 
-      const initCommon = new Common({
-        chain: Mainnet,
-        hardfork: Hardfork.London,
-      })
-      tx = txType.create.txData({}, { common: initCommon })
+      const initCommon = txType.common.copy()
+      tx = txType.create.txData(txType.txData, { common: initCommon })
       assert.strictEqual(
         tx.common.hardfork(),
-        'london',
+        txType.common.hardfork(),
         `${txType.name}: should initialize with correct HF provided`,
       )
 
       initCommon.setHardfork(Hardfork.Byzantium)
       assert.strictEqual(
         tx.common.hardfork(),
-        'london',
+        txType.common.hardfork(),
         `${txType.name}: should stay on correct HF if outer common HF changes`,
       )
 
-      tx = txType.create.txData({}, { common, freeze: false })
+      tx = txType.create.txData(txType.txData, { common: txType.common, freeze: false })
       assert.isNotFrozen(
         tx,
         `${txType.name}: tx should not be frozen when freeze deactivated in options`,
@@ -146,19 +338,17 @@ describe('[BaseTransaction]', () => {
 
       const params = JSON.parse(JSON.stringify(paramsTx))
       params['1']['txGas'] = 30000 // 21000
-      tx = txType.create.txData({}, { common, params })
+      tx = txType.create.txData(txType.txData, { common: txType.common, params })
       assert.strictEqual(
         tx.common.param('txGas'),
         BigInt(30000),
         'should use custom parameters provided',
       )
 
-      // Perform the same test as above, but now using a different construction method. This also implies that passing on the
-      // options object works as expected.
-      tx = txType.create.txData({}, { common, freeze: false })
+      tx = txType.create.txData(txType.txData, { common: txType.common, freeze: false })
       const rlpData = tx.serialize()
 
-      tx = txType.create.rlp(rlpData, { common })
+      tx = txType.create.rlp(rlpData, { common: txType.common })
       assert.strictEqual(
         tx.type,
         txType.type,
@@ -167,16 +357,16 @@ describe('[BaseTransaction]', () => {
 
       assert.isFrozen(tx, `${txType.name}: tx should be frozen by default`)
 
-      tx = txType.create.rlp(rlpData, { common, freeze: false })
+      tx = txType.create.rlp(rlpData, { common: txType.common, freeze: false })
       assert.isNotFrozen(
         tx,
         `${txType.name}: tx should not be frozen when freeze deactivated in options`,
       )
 
-      tx = txType.create.bytesArray(txType.values as any, { common })
+      tx = txType.create.bytesArray(txType.values as any, { common: txType.common })
       assert.isFrozen(tx, `${txType.name}: tx should be frozen by default`)
 
-      tx = txType.create.bytesArray(txType.values as any, { common, freeze: false })
+      tx = txType.create.bytesArray(txType.values as any, { common: txType.common, freeze: false })
       assert.isNotFrozen(
         tx,
         `${txType.name}: tx should not be frozen when freeze deactivated in options`,
@@ -184,7 +374,7 @@ describe('[BaseTransaction]', () => {
     }
   })
 
-  it('createWithdrawalFromBytesArray()', () => {
+  it('create*FromBytesArray() rejects leading zeroes', () => {
     let rlpData: any = legacyTxs[0].raw()
     rlpData[0] = hexToBytes('0x0')
     try {
@@ -229,17 +419,235 @@ describe('[BaseTransaction]', () => {
         'should throw with maxPriorityFeePerGas with leading zeroes',
       )
     }
+    rlpData = blobSigned.raw()
+    rlpData[9] = hexToBytes('0x0')
+    try {
+      createBlob4844TxFromBytesArray(rlpData, { common: cancunCommon })
+      assert.fail('should have thrown when maxFeePerBlobGas has leading zeroes')
+    } catch (err: any) {
+      assert.isTrue(
+        err.message.includes('maxFeePerBlobGas cannot have leading zeroes'),
+        'should throw with maxFeePerBlobGas with leading zeroes',
+      )
+    }
+    rlpData = eoaSigned.raw()
+    rlpData[2] = hexToBytes('0x0')
+    try {
+      createEOACode7702TxFromBytesArray(rlpData, { common: pragueCommon })
+      assert.fail('should have thrown when maxPriorityFeePerGas has leading zeroes')
+    } catch (err: any) {
+      assert.isTrue(
+        err.message.includes('maxPriorityFeePerGas cannot have leading zeroes'),
+        'should throw with maxPriorityFeePerGas with leading zeroes',
+      )
+    }
+  })
+
+  it('Blob4844Tx rejects maxFeePerBlobGas above MAX_INTEGER', () => {
+    try {
+      createBlob4844Tx(
+        { ...blobTxDefaults, maxFeePerBlobGas: MAX_INTEGER + 1n },
+        { common: cancunCommon },
+      )
+      assert.fail('should have thrown when maxFeePerBlobGas exceeds MAX_INTEGER')
+    } catch (err: any) {
+      assert.isTrue(
+        err.message.includes('maxFeePerBlobGas cannot exceed MAX_INTEGER'),
+        'throws when maxFeePerBlobGas exceeds MAX_INTEGER',
+      )
+    }
+  })
+
+  it('cannot input decimal or negative values', () => {
+    for (const txType of txTypes) {
+      for (const field of txType.numericFields) {
+        for (const testCase of INVALID_NUMERIC_INPUTS) {
+          if (
+            field === 'chainId' &&
+            ((typeof testCase === 'number' && Number.isNaN(testCase)) || testCase === false)
+          ) {
+            continue
+          }
+          const txData: any = { ...txType.txData, [field]: testCase }
+          assert.throws(
+            () => {
+              txType.create.txData(txData, { common: txType.common })
+            },
+            undefined,
+            undefined,
+            `${txType.name}: ${field} = ${String(testCase)}`,
+          )
+        }
+      }
+    }
+  })
+
+  it('rejects negative fee fields (does not wrap to a huge fee)', () => {
+    for (const txType of txTypes) {
+      for (const field of txType.feeFields) {
+        for (const testCase of NEGATIVE_FEE_INPUTS) {
+          const txData: any = { ...txType.txData, [field]: testCase }
+          assert.throws(
+            () => {
+              txType.create.txData(txData, { common: txType.common })
+            },
+            undefined,
+            undefined,
+            `${txType.name}: ${field} must not accept ${String(testCase)}`,
+          )
+        }
+      }
+    }
+  })
+
+  it('Initialization / Getter -> typed tx fromTxData() guards', () => {
+    for (const txType of txTypes) {
+      if (!txType.eip2718) continue
+
+      const unsupportedCommon = new Common({
+        chain: Mainnet,
+        hardfork: Hardfork.Istanbul,
+        customCrypto: { kzg: stubKzg },
+      })
+      assert.throws(
+        () => {
+          txType.create.txData(txType.txData, { common: unsupportedCommon })
+        },
+        undefined,
+        undefined,
+        `should throw on a pre-Berlin Hardfork (${txType.name})`,
+      )
+
+      assert.throws(
+        () => {
+          txType.create.txData({ ...txType.txData, chainId: 2 }, { common: txType.common })
+        },
+        undefined,
+        undefined,
+        `should reject transactions with wrong chain ID (${txType.name})`,
+      )
+
+      assert.throws(
+        () => {
+          txType.create.txData({ ...txType.txData, v: 2 }, { common: txType.common })
+        },
+        undefined,
+        undefined,
+        `should reject transactions with invalid yParity (v) values (${txType.name})`,
+      )
+    }
+  })
+
+  it('Initialization / Getter -> fromSerializedTx() error cases', () => {
+    for (const txType of txTypes) {
+      if (!txType.eip2718) continue
+
+      try {
+        txType.create.rlp(new Uint8Array([99]), { common: txType.common })
+      } catch (e: any) {
+        assert.isTrue(
+          e.message.includes('wrong tx type') === true,
+          `should throw on wrong tx type (${txType.name})`,
+        )
+      }
+
+      try {
+        const serialized = concatBytes(new Uint8Array([txType.type]), new Uint8Array([5]))
+        txType.create.rlp(serialized, { common: txType.common })
+      } catch (e: any) {
+        assert.isTrue(
+          e.message.includes('must be array') === true,
+          `should throw when RLP payload not an array (${txType.name})`,
+        )
+      }
+
+      try {
+        const serialized = concatBytes(new Uint8Array([txType.type]), hexToBytes('0xc0'))
+        txType.create.rlp(serialized, { common: txType.common })
+      } catch (e: any) {
+        assert.isTrue(
+          e.message.includes('values (for unsigned tx)'),
+          `should throw with invalid number of values (${txType.name})`,
+        )
+      }
+    }
+  })
+
+  it('Access Lists -> success cases', () => {
+    const access: AccessList = [
+      {
+        address: bytesToHex(validAddress),
+        storageKeys: [bytesToHex(validSlot)],
+      },
+    ]
+    for (const txType of txTypes) {
+      if (!txType.hasAccessList) continue
+
+      const txn = txType.create.txData(
+        {
+          ...txType.txData,
+          accessList: access,
+          chainId: 1,
+        },
+        { common: txType.common },
+      )
+
+      const bytes = txn.accessList
+      const JSON = txn.toJSON().accessList
+
+      assert.isTrue(equalsBytes(bytes[0][0], validAddress))
+      assert.isTrue(equalsBytes(bytes[0][1][0], validSlot))
+      assert.deepEqual(JSON, access, `should allow json-typed access lists (${txType.name})`)
+
+      const txnRaw = txType.create.txData(
+        {
+          ...txType.txData,
+          accessList: bytes,
+          chainId: 1,
+        },
+        { common: txType.common },
+      )
+      assert.deepEqual(
+        txnRaw.toJSON().accessList,
+        access,
+        `should allow bytes-typed access lists (${txType.name})`,
+      )
+    }
+  })
+
+  it('Access Lists -> error cases', () => {
+    for (const txType of txTypes) {
+      if (!txType.hasAccessList) continue
+
+      const invalidLists: any[] = [
+        [[hexToBytes(`0x${'01'.repeat(21)}`), []]],
+        [[validAddress, [hexToBytes(`0x${'01'.repeat(31)}`)]]],
+        [[]],
+        [[validAddress]],
+        [[validAddress, validSlot]],
+        [[validAddress, [], []]],
+      ]
+      for (const accessList of invalidLists) {
+        assert.throws(
+          () => {
+            txType.create.txData(
+              { ...txType.txData, chainId: 1, accessList },
+              { common: txType.common },
+            )
+          },
+          undefined,
+          undefined,
+          txType.name,
+        )
+      }
+    }
   })
 
   it('serialize()', () => {
     for (const txType of txTypes) {
       for (const tx of txType.txs) {
         assert.isDefined(
-          txType.create.rlp(tx.serialize(), { common }),
-          `${txType.name}: should do roundtrip serialize() -> fromSerializedTx()`,
-        )
-        assert.isDefined(
-          txType.create.rlp(tx.serialize(), { common }),
+          txType.create.rlp(tx.serialize(), { common: txType.common }),
           `${txType.name}: should do roundtrip serialize() -> fromSerializedTx()`,
         )
       }
@@ -269,8 +677,8 @@ describe('[BaseTransaction]', () => {
     for (const txType of txTypes) {
       for (const tx of txType.txs) {
         assert.isDefined(
-          txType.create.bytesArray(tx.raw() as any, { common }),
-          `${txType.name}: should do roundtrip raw() -> createWithdrawalFromBytesArray()`,
+          txType.create.bytesArray(tx.raw() as any, { common: txType.common }),
+          `${txType.name}: should do roundtrip raw() -> create*FromBytesArray()`,
         )
       }
     }
@@ -287,9 +695,8 @@ describe('[BaseTransaction]', () => {
   it('verifySignature() -> invalid', () => {
     for (const txType of txTypes) {
       for (const txFixture of txType.fixtures.slice(0, 4)) {
-        // set `s` to a single zero
-        txFixture.data.s = '0x' + '0'
-        const tx = txType.create.txData((txFixture as any).data, { common })
+        const data = { ...txFixture.data, s: '0x0' }
+        const tx = txType.create.txData(data as any, { common: txType.common })
         assert.strictEqual(
           tx.verifySignature(),
           false,
@@ -323,19 +730,37 @@ describe('[BaseTransaction]', () => {
     }
   })
 
+  it('hash() throws on unsigned tx', () => {
+    for (const txType of txTypes) {
+      const tx = txType.create.txData(txType.txData, { common: txType.common })
+      assert.throws(
+        () => {
+          tx.hash()
+        },
+        undefined,
+        undefined,
+        `should throw calling hash with unsigned tx (${txType.name})`,
+      )
+      assert.throws(() => {
+        tx.getSenderPublicKey()
+      })
+    }
+  })
+
   it('isSigned() -> returns correct values', () => {
     for (const txType of txTypes) {
       const txs = [
         ...txType.txs,
-        // add unsigned variants
         ...txType.txs.map((tx) =>
-          //@ts-expect-error Not sure why this is now throwing
-          txType.create.txData({
-            ...tx,
-            v: undefined,
-            r: undefined,
-            s: undefined,
-          }),
+          txType.create.txData(
+            {
+              ...tx,
+              v: undefined,
+              r: undefined,
+              s: undefined,
+            },
+            { common: txType.common },
+          ),
         ),
       ]
       for (const tx of txs) {
@@ -382,19 +807,17 @@ describe('[BaseTransaction]', () => {
   })
 
   it('getSenderPublicKey() -> should throw if s-value is greater than secp256k1n/2', () => {
-    // EIP-2: All transaction signatures whose s-value is greater than secp256k1n/2 are considered invalid.
-    // Reasoning: https://ethereum.stackexchange.com/a/55728
     for (const txType of txTypes) {
       for (const [i, tx] of txType.txs.entries()) {
         const { privateKey } = txType.fixtures[i]
         if (privateKey !== undefined) {
-          let signedTx = tx.sign(hexToBytes(`0x${privateKey}`))
-          signedTx = JSON.parse(JSON.stringify(signedTx)) // deep clone
-          // @ts-expect-error -- Assign to read-only property
-          signedTx.s = SECP256K1_ORDER + BigInt(1)
+          const signedTx = tx.sign(hexToBytes(`0x${privateKey}`))
+          const mutated = Object.assign(Object.create(Object.getPrototypeOf(signedTx)), signedTx, {
+            s: SECP256K1_ORDER + BigInt(1),
+          })
           assert.throws(
             () => {
-              signedTx.getSenderPublicKey()
+              mutated.getSenderPublicKey()
             },
             undefined,
             undefined,
@@ -405,7 +828,7 @@ describe('[BaseTransaction]', () => {
     }
   })
 
-  it('verifySignature()', () => {
+  it('verifySignature() after sign()', () => {
     for (const txType of txTypes) {
       for (const [i, tx] of txType.txs.entries()) {
         const { privateKey } = txType.fixtures[i]
@@ -414,6 +837,18 @@ describe('[BaseTransaction]', () => {
           assert.isTrue(signedTx.verifySignature(), `${txType.name}: should verify signing it`)
         }
       }
+    }
+  })
+
+  it('getDataGas()', () => {
+    for (const txType of txTypes) {
+      const frozen = txType.create.txData(txType.txData, { common: txType.common })
+      const unfrozen = txType.create.txData(txType.txData, { common: txType.common, freeze: false })
+      assert.strictEqual(
+        frozen.getDataGas(),
+        unfrozen.getDataGas(),
+        `${txType.name}: frozen and unfrozen txs should report the same data gas`,
+      )
     }
   })
 

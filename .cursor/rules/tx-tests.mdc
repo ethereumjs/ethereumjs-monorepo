@@ -1,0 +1,31 @@
+---
+description: Shared tx type matrix, 4844 KZG test cost, and describe/filename hygiene
+globs: packages/tx/**/*.ts
+alwaysApply: false
+---
+
+# Tx tests
+
+`@ethereumjs/tx` is not a 1:1 `src/` to `test/` tree. Types share `capabilities/`. Official vectors stay in `transactionRunner.spec.ts` and `t9n.spec.ts`.
+
+## Shared matrix
+
+`base.spec.ts` and `transactionFactory.spec.ts` must cover **every active tx type**: Legacy, 2930, 1559, 4844, 7702. Type/EIP files (`legacy.spec.ts`, `eip1559.spec.ts`, `eip2930.spec.ts`, `eip4844.spec.ts`, `eip7702.spec.ts`, …) only hold what the matrix cannot do (EIP-specific costing, hedged 1000-sign loops, real KZG/network wrapper, official hash vectors).
+
+When you add a tx type or a constructor behavior that applies to more than one type, add it to the matrix first.
+
+## EIP-4844 / KZG
+
+`createBlob4844Tx` (and FromRLP / FromBytesArray) **always** requires `common.customCrypto.kzg`, even for canonical form with no blobs. Instantiating `micro-eth-signer` + `trustedSetup` is slow.
+
+In the matrix: stub `kzg` (`{} as KZG` is enough if you never call it) and pass `to` + at least one versioned hash (`0x01` + 31 zero bytes). Do not generate blobs or proofs. Keep real KZG in `eip4844.spec.ts` / `eip7594.spec.ts` only (those files are already excluded from browser tests).
+
+## User coverage
+
+Logic coverage is not enough. Reject decimal, negative, `NaN`, `Infinity`, and non-numeric junk on fee and value fields so a bad wallet integration cannot wrap a negative into a huge fee. See `security.mdc`.
+
+## Hygiene
+
+- `describe()` titles use class names (`[LegacyTx]`, `[FeeMarket1559Tx]`, `[Blob4844Tx]`, `[EOACode7702Tx]`). Multi-type files list the classes.
+- `it()` names match the function under test (`createLegacyTxFromBytesArray`, `valueOverflowCheck`) — not leftover names from other packages.
+- EIP spec files are `eipNNNN.spec.ts` (not `eipNNNN-access-list.spec.ts`).

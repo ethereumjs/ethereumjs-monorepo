@@ -13,7 +13,7 @@ const common = new Common({
 const address = hexToBytes(`0x${'11'.repeat(20)}`)
 const slot = hexToBytes(`0x${'22'.repeat(32)}`)
 
-describe('EIP-8038 access-list intrinsic (Amsterdam)', () => {
+describe('[EIP-8038 access-list intrinsic]', () => {
   it('charges cold − WARM_ACCESS per address (2900) and storage key (2000)', () => {
     const tx = createAccessList2930Tx(
       {

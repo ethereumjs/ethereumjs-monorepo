@@ -36,6 +36,9 @@ import type { BlobEIP4844TxData } from '../src/index.ts'
 const pk = randomBytes(32)
 let kzgs: Array<{ lib: KZG; label: string; common: any }> = []
 
+// Real KZG trusted setup — slow. Canonical 4844 coverage without blobs lives in
+// base.spec.ts / transactionFactory.spec.ts with a stub kzg.
+
 beforeAll(async () => {
   const jsKzg = new microEthKZG(trustedSetup) as KZG
   //const wasmKzg = (await loadKZG()) as KZG
