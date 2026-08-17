@@ -30,8 +30,10 @@ It is intended to be both an entrypoint for external contributors as well as a r
   - [Linking to an External Library](#linking-to-an-external-library)
   - [Shared Dependencies](#shared-dependencies)
 - [Additional Docs](#additional-docs)
+  - [Architecture](#architecture)
   - [VM](#vm)
   - [Client](#client)
+  - [Agents](#agents)
 
 ## Monorepo
 
@@ -346,9 +348,9 @@ Commands area available on both root and package levels.
 
 ### Testing
 
-The project uses [Vitest](https://vitest.dev/) for testing with [c8](https://vitest.dev/guide/coverage.html) for code coverage.
+The project uses [Vitest](https://vitest.dev/) for testing with Vitest coverage (v8 and istanbul providers).
 
-PR CI (`Build`) runs package tests for the lowest-touched workspace packages and everything that depends on them (`scripts/ci-affected.mjs`). Lint and typecheck always run. Examples and browser tests run for affected packages. Coverage is collected only for packages with direct changes; dependents run tests without coverage. Pushes to `master`, workflow dispatch, and shared-config changes (`.github/`, `config/`, lockfile, ...) still run the full matrix. Nightly runs are unchanged.
+PR CI (`Build`) runs package tests for the lowest-touched workspace packages and everything that depends on them (`scripts/ci-affected.mjs`). Lint, typecheck, and runtime `npm audit` always run. Examples and browser tests run for affected packages. Coverage is collected only for packages with direct changes; dependents run tests without coverage. Pushes to `master`, workflow dispatch, and shared-config changes (`.github/`, `config/`, lockfile, ...) still run the full matrix. Nightly runs are unchanged.
 
 Set the required status check to **`Build / CI`**. Per-package jobs may be skipped; that summary job is what must pass. In-flux EST dev suites (`vm-est-dev`) run when VM is affected but are not part of that gate.
 
@@ -423,6 +425,10 @@ Common development dependencies (e.g. `eslint`, `biome`) are defined in the root
 
 There are selected additional developer docs available to get more deep on certain topics. The following is an overview.
 
+### Architecture
+
+[Architecture](./ARCHITECTURE.md) for package responsibilities, the dependency graph, and how a block flows through execution.
+
 ### VM
 
 [VM Docs](./packages/vm/DEVELOPER.md) for testing, debugging and VM/EVM profiling.
@@ -430,3 +436,7 @@ There are selected additional developer docs available to get more deep on certa
 ### Client
 
 [Client Docs](./packages/client/DEVELOPER.md) for running Hive tests.
+
+### Agents
+
+[Agent notes](./AGENTS.md) is a short entrypoint for coding agents (pointers only; conventions stay in this file).

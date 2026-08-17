@@ -45,7 +45,7 @@ export const EXTRA_PATH_PACKAGES = {
  * A job runs if any listed package is in the affected set (changed ∪ dependents).
  * `browser` and `examples` run when any workspace package is affected.
  *
- * Always-on (not listed here): lint, typecheck.
+ * Always-on (not listed here): lint, typecheck, audit.
  */
 export const SKIPPABLE_JOBS = {
   binarytree: ['binarytree'],

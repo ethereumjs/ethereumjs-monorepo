@@ -9,7 +9,7 @@ const senderKey = hexToBytes(`0x${'20'.repeat(32)}`)
 const sender = createAddressFromPrivateKey(senderKey)
 const recipient = createZeroAddress()
 
-describe('EIP-2780 intrinsic / calldata floor (Amsterdam)', () => {
+describe('[EIP-2780 intrinsic / calldata floor]', () => {
   it('getIntrinsicGas includes recipient/value extras for a signed call', () => {
     const tx = createLegacyTx(
       { to: recipient, value: 1n, gasLimit: 21_000n, gasPrice: 10n },

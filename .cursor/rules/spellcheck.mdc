@@ -5,7 +5,7 @@ alwaysApply: true
 
 # Spellcheck after edits
 
-CI runs `npm run spellcheck` (`cspell` via `config/cspell-md.json` and `config/cspell-ts.json`). Failures are common and cheap to prevent.
+CI runs `npm run spellcheck` (`cspell` via `config/cspell-md.json` and `config/cspell-ts.json`). Failures are common and cheap to prevent. Typecheck is a separate always-on finish step (`typecheck.mdc`).
 
 ## When finishing a change
 

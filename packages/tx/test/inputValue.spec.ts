@@ -6,10 +6,14 @@ import {
   TransactionType,
   create1559FeeMarketTxFromBytesArray,
   createAccessList2930TxFromBytesArray,
+  createBlob4844TxFromBytesArray,
+  createEOACode7702TxFromBytesArray,
   createLegacyTx,
   createLegacyTxFromBytesArray,
   createTx,
 } from '../src/index.ts'
+
+import { blobTxDefaults, cancunCommon, eoaCodeTxDefaults, pragueCommon } from './txTypeMatrix.ts'
 
 import type { AddressLike, BigIntLike, BytesLike, PrefixedHexString } from '@ethereumjs/util'
 import type { TxValuesArray } from '../src/index.ts'
@@ -145,14 +149,19 @@ describe('[Transaction Input Values]', () => {
 
 describe('[Invalid Array Input values]', () => {
   it('should work', () => {
-    const txTypes = [
-      TransactionType.Legacy,
-      TransactionType.AccessListEIP2930,
-      TransactionType.FeeMarketEIP1559,
+    const cases = [
+      { type: TransactionType.Legacy, txData: {}, common: undefined as any },
+      { type: TransactionType.AccessListEIP2930, txData: {}, common: undefined },
+      { type: TransactionType.FeeMarketEIP1559, txData: {}, common: undefined },
+      { type: TransactionType.BlobEIP4844, txData: blobTxDefaults, common: cancunCommon },
+      { type: TransactionType.EOACodeEIP7702, txData: eoaCodeTxDefaults, common: pragueCommon },
     ]
     for (const signed of [false, true]) {
-      for (const txType of txTypes) {
-        let tx = createTx({ type: txType })
+      for (const txCase of cases) {
+        let tx = createTx(
+          { type: txCase.type, ...txCase.txData },
+          txCase.common !== undefined ? { common: txCase.common } : {},
+        )
         if (signed) {
           tx = tx.sign(hexToBytes(`0x${'42'.repeat(32)}`))
         }
@@ -160,7 +169,7 @@ describe('[Invalid Array Input values]', () => {
         for (let x = 0; x < rawValues.length; x++) {
           // @ts-expect-error -- Testing wrong input
           rawValues[x] = [1, 2, 3]
-          switch (txType) {
+          switch (txCase.type) {
             case TransactionType.Legacy:
               assert.throws(() =>
                 createLegacyTxFromBytesArray(
@@ -182,6 +191,22 @@ describe('[Invalid Array Input values]', () => {
                 ),
               )
               break
+            case TransactionType.BlobEIP4844:
+              assert.throws(() =>
+                createBlob4844TxFromBytesArray(
+                  rawValues as TxValuesArray[typeof TransactionType.BlobEIP4844],
+                  { common: cancunCommon },
+                ),
+              )
+              break
+            case TransactionType.EOACodeEIP7702:
+              assert.throws(() =>
+                createEOACode7702TxFromBytesArray(
+                  rawValues as TxValuesArray[typeof TransactionType.EOACodeEIP7702],
+                  { common: pragueCommon },
+                ),
+              )
+              break
           }
         }
       }
@@ -191,7 +216,12 @@ describe('[Invalid Array Input values]', () => {
 
 describe('[Invalid Access Lists]', () => {
   it('should work', () => {
-    const txTypes = [TransactionType.AccessListEIP2930, TransactionType.FeeMarketEIP1559]
+    const txTypes = [
+      TransactionType.AccessListEIP2930,
+      TransactionType.FeeMarketEIP1559,
+      TransactionType.BlobEIP4844,
+      TransactionType.EOACodeEIP7702,
+    ]
     const invalidAccessLists = [
       [[]], // does not have an address and does not have slots
       [[[], []]], // the address is an array
@@ -216,32 +246,52 @@ describe('[Invalid Access Lists]', () => {
     ]
     for (const signed of [false, true]) {
       for (const txType of txTypes) {
+        const extra =
+          txType === TransactionType.BlobEIP4844
+            ? blobTxDefaults
+            : txType === TransactionType.EOACodeEIP7702
+              ? eoaCodeTxDefaults
+              : {}
+        const opts =
+          txType === TransactionType.BlobEIP4844
+            ? { common: cancunCommon }
+            : txType === TransactionType.EOACodeEIP7702
+              ? { common: pragueCommon }
+              : {}
         for (const invalidAccessListItem of invalidAccessLists) {
           let tx
           try {
-            tx = createTx({
-              type: txType,
-              // @ts-expect-error -- Testing wrong input
-              accessList: invalidAccessListItem,
-            })
+            tx = createTx(
+              {
+                type: txType,
+                ...extra,
+                // @ts-expect-error -- Testing wrong input
+                accessList: invalidAccessListItem,
+              },
+              opts,
+            )
             if (signed) {
               tx = tx.sign(hexToBytes(`0x${'42'.repeat(32)}`))
             }
             assert.fail('did not fail on `fromTxData`')
           } catch {
             assert.isTrue(true, 'failed ok on decoding in `fromTxData`')
-            tx = createTx({ type: txType })
+            tx = createTx({ type: txType, ...extra }, opts)
             if (signed) {
               tx = tx.sign(hexToBytes(`0x${'42'.repeat(32)}`))
             }
           }
           const rawValues = tx!.raw()
 
-          if (txType === TransactionType.AccessListEIP2930 && rawValues[7].length === 0) {
+          if (txType === TransactionType.AccessListEIP2930 && rawValues[7]?.length === 0) {
             // @ts-expect-error -- Testing wrong input
             rawValues[7] = invalidAccessListItem
-            // @ts-expect-error -- Testing wrong input
-          } else if (txType === TransactionType.FeeMarketEIP1559 && rawValues[8].length === 0) {
+          } else if (
+            (txType === TransactionType.FeeMarketEIP1559 ||
+              txType === TransactionType.BlobEIP4844 ||
+              txType === TransactionType.EOACodeEIP7702) &&
+            rawValues[8]?.length === 0
+          ) {
             // @ts-expect-error -- Testing wrong input
             rawValues[8] = invalidAccessListItem
           }
@@ -258,6 +308,22 @@ describe('[Invalid Access Lists]', () => {
               assert.throws(() =>
                 create1559FeeMarketTxFromBytesArray(
                   rawValues as TxValuesArray[typeof TransactionType.FeeMarketEIP1559],
+                ),
+              )
+              break
+            case TransactionType.BlobEIP4844:
+              assert.throws(() =>
+                createBlob4844TxFromBytesArray(
+                  rawValues as TxValuesArray[typeof TransactionType.BlobEIP4844],
+                  { common: cancunCommon },
+                ),
+              )
+              break
+            case TransactionType.EOACodeEIP7702:
+              assert.throws(() =>
+                createEOACode7702TxFromBytesArray(
+                  rawValues as TxValuesArray[typeof TransactionType.EOACodeEIP7702],
+                  { common: pragueCommon },
                 ),
               )
               break

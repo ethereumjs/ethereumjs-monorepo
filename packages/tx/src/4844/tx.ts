@@ -209,6 +209,7 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
     this.maxFeePerBlobGas = bytesToBigInt(
       toBytes((maxFeePerBlobGas ?? '') === '' ? '0x' : maxFeePerBlobGas),
     )
+    valueOverflowCheck({ maxFeePerBlobGas: this.maxFeePerBlobGas })
 
     this.blobVersionedHashes = (txData.blobVersionedHashes ?? []).map((vh) =>
       toType(vh, TypeOutput.PrefixedHexString),
