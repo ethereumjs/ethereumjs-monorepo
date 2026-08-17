@@ -52,6 +52,8 @@ export function validateNotArray(values: { [key: string]: any }) {
     'type',
     'baseFee',
     'maxFeePerGas',
+    'maxPriorityFeePerGas',
+    'maxFeePerBlobGas',
     'chainId',
   ]
   for (const [key, value] of Object.entries(values)) {
