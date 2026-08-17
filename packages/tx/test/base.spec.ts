@@ -591,6 +591,7 @@ describe('[LegacyTx / AccessList2930Tx / FeeMarket1559Tx / Blob4844Tx / EOACode7
         },
         { common: txType.common },
       )
+      if (!('accessList' in txn)) continue
 
       const bytes = txn.accessList
       const JSON = txn.toJSON().accessList
@@ -752,13 +753,14 @@ describe('[LegacyTx / AccessList2930Tx / FeeMarket1559Tx / Blob4844Tx / EOACode7
       const txs = [
         ...txType.txs,
         ...txType.txs.map((tx) =>
+          // Matrix `create.txData` is a union of factories; a live tx spread is TxData at runtime.
           txType.create.txData(
             {
               ...tx,
               v: undefined,
               r: undefined,
               s: undefined,
-            },
+            } as never,
             { common: txType.common },
           ),
         ),

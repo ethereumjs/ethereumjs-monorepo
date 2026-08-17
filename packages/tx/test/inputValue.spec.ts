@@ -283,14 +283,14 @@ describe('[Invalid Access Lists]', () => {
           }
           const rawValues = tx!.raw()
 
-          if (txType === TransactionType.AccessListEIP2930 && rawValues[7].length === 0) {
+          if (txType === TransactionType.AccessListEIP2930 && rawValues[7]?.length === 0) {
             // @ts-expect-error -- Testing wrong input
             rawValues[7] = invalidAccessListItem
           } else if (
             (txType === TransactionType.FeeMarketEIP1559 ||
               txType === TransactionType.BlobEIP4844 ||
               txType === TransactionType.EOACodeEIP7702) &&
-            rawValues[8].length === 0
+            rawValues[8]?.length === 0
           ) {
             // @ts-expect-error -- Testing wrong input
             rawValues[8] = invalidAccessListItem
