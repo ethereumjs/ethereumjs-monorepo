@@ -1,0 +1,26 @@
+---
+description: CI job budget, fail-fast gates, and affected-package selection for GitHub Actions
+alwaysApply: true
+---
+
+# CI constraints
+
+EthereumJS PR CI is the **`Build`** workflow (`.github/workflows/build.yml`). The required status check is **`Build / CI`** (the `ci-success` summary job). Per-package jobs may be **skipped**; skipped counts as success.
+
+## Goals
+
+1. **Job budget** — GitHub concurrent job limits are tight. Prefer **one runner, many steps** over many small jobs. The `static` reusable workflow (rlp + ethash + genesis + wallet) is the pattern: bundle cheap related work, do not split without reason.
+2. **Fail fast** — Prefer cheap repo-wide gates before expensive test matrices when restructuring CI. Today lint, typecheck, and spellcheck run in parallel with tests; **`audit`** is its own always-on job (`Build / npm audit (runtime)`).
+3. **Wall time** — Keep the critical path short: restore the `build` workspace cache (`setup-ethereumjs`), avoid duplicate `npm ci` in separate workflows.
+4. **Resources** — PR CI uses affected selection (`scripts/ci-affected.mjs`); do not expand to full matrix without cause. Workflows use concurrency cancel-in-progress. Informational jobs (`bundle-size`, in-flux `vm-est-dev`) stay out of the gate.
+
+## When changing CI
+
+- Update **`SKIPPABLE_JOBS`** / **`COVERAGE_JOBS`** in `scripts/ci-affected.mjs` when adding or renaming a skippable test job; keep `scripts/ci-affected.spec.mjs` green.
+- Shared config paths (`.github/`, `config/`, lockfile, root tsconfig/eslint) force **full matrix** — expect that when touching them.
+- **`npm audit`**: CI job runs `npm audit --omit=dev --audit-level=high` (runtime tree only). Dev-toolchain advisories are classified, not blindly lockfile-fixed on a library release.
+- Document human-facing behavior in `DEVELOPER.md` § Testing / CI, not only in workflow YAML.
+
+## Agent finish steps vs CI
+
+Local **typecheck** and **spellcheck** (always-on rules) catch what the gate job will catch. CI still owns the authoritative run on the restored build cache.
