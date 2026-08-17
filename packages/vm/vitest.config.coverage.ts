@@ -1,20 +1,23 @@
-import { defineConfig } from 'vitest/config'
+import { defineConfig, mergeConfig } from 'vitest/config'
+import baseConfig from '../../config/vitest.config.mts'
 
-export default defineConfig({
-  plugins: [],
-  optimizeDeps: {
-    exclude: ['kzg-wasm'],
-  },
-  test: {
-    coverage: {
-      provider: 'v8',
-      enabled: true,
-      reporter: ['lcov'],
+export default mergeConfig(
+  baseConfig,
+  defineConfig({
+    optimizeDeps: {
+      exclude: ['kzg-wasm'],
     },
-    exclude: [
-      'test/tester/legacy/state.spec.ts',
-      'test/tester/legacy/blockchain.spec.ts',
-      'test/tester/consumeBal.test.ts',
-    ],
-  },
-})
+    test: {
+      coverage: {
+        provider: 'v8',
+        enabled: true,
+        reporter: ['lcov'],
+      },
+      exclude: [
+        'test/tester/legacy/state.spec.ts',
+        'test/tester/legacy/blockchain.spec.ts',
+        'test/tester/consumeBal.test.ts',
+      ],
+    },
+  }),
+)

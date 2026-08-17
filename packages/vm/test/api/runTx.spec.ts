@@ -52,7 +52,7 @@ const TRANSACTION_TYPES = [
 
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
 
-describe('runTx() -> successful API parameter usage', async () => {
+describe('[VM/runTx]: successful API parameter usage', async () => {
   async function simpleRun(vm: VM, msg: string) {
     for (const txType of TRANSACTION_TYPES) {
       const tx = getTransaction(vm.common, txType.type, true)
@@ -252,7 +252,7 @@ describe('runTx() -> successful API parameter usage', async () => {
   })
 })
 
-describe('runTx() -> API parameter usage/data errors', () => {
+describe('[VM/runTx]: API parameter usage and data errors', () => {
   it('Typed Transaction with HF set to pre-Berlin', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     const vm = await createVM({ common })
@@ -427,7 +427,7 @@ describe('runTx() -> API parameter usage/data errors', () => {
   })
 })
 
-describe('runTx() -> runtime behavior', () => {
+describe('[VM/runTx]: runtime behavior', () => {
   it('storage cache', async () => {
     for (const txType of TRANSACTION_TYPES) {
       const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
@@ -473,7 +473,7 @@ describe('runTx() -> runtime behavior', () => {
   })
 })
 
-describe('runTx() -> runtime errors', () => {
+describe('[VM/runTx]: runtime errors', () => {
   it('account balance overflows (call)', async () => {
     for (const txType of TRANSACTION_TYPES) {
       const vm = await createVM({ common })
@@ -531,7 +531,7 @@ describe('runTx() -> runtime errors', () => {
 })
 
 // TODO: complete on result values and add more usage scenario test cases
-describe('runTx() -> API return values', () => {
+describe('[VM/runTx]: API return values', () => {
   it('simple run, common return values', async () => {
     for (const txType of TRANSACTION_TYPES) {
       const vm = await createVM({ common })
@@ -621,7 +621,7 @@ describe('runTx() -> API return values', () => {
   })
 })
 
-describe('runTx() -> consensus bugs', () => {
+describe('[VM/runTx]: consensus bugs', () => {
   it('validate out-of-gas does not give any refunds', async () => {
     // There was a consensus bug in the following mainnet tx:
     // 0xe3b0fb0a45bc905d1f98baabaadd194901267d02de74cdad187b7feb8920d7b3
@@ -704,7 +704,7 @@ describe('runTx() -> consensus bugs', () => {
   })
 })
 
-describe('runTx() -> RunTxOptions', () => {
+describe('[VM/runTx]: RunTxOptions', () => {
   it('should throw on negative value args', async () => {
     const vm = await createVM({ common })
     await setBalance(vm, createZeroAddress(), BigInt(10000000000))
@@ -863,7 +863,7 @@ it('Validate SELFDESTRUCT does not charge new account gas when calling CALLER an
   )
 })
 
-describe('EIP 4844 transaction tests', () => {
+describe('[VM/runTx]: EIP-4844 transactions', () => {
   const kzg = new microEthKZG(trustedSetup)
   it('should work', async () => {
     const { eip4844GethGenesis } = await import('@ethereumjs/testdata')
