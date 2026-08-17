@@ -35,22 +35,13 @@ export async function precompile0c(opts: PrecompileInput): Promise<ExecResult> {
   // on this eventually to be "floored" pair number should happen before the input length modulo
   // validation (same for g2msm)
   const numPairs = Math.floor(inputData.length / 160)
-  const gasUsedPerPair = opts.common.param('bls12381G1MulGas') ?? BigInt(0)
+  const gasUsedPerPair = opts.common.param('bls12381G1MulGas')
   const gasUsed = msmGasUsed(numPairs, gasUsedPerPair, BLS_GAS_DISCOUNT_PAIRS_G1)
 
   if (!gasLimitCheck(opts, gasUsed, pName)) {
     return OOGResult(opts.gasLimit)
   }
 
-  if (inputData.length % 160 !== 0) {
-    if (opts._debug !== undefined) {
-      opts._debug(`${pName} failed: Invalid input length length=${inputData.length}`)
-    }
-    return EVMErrorResult(
-      new EVMError(EVMError.errorMessages.BLS_12_381_INVALID_INPUT_LENGTH),
-      opts.gasLimit,
-    )
-  }
   if (!moduloLengthCheck(opts, 160, pName)) {
     return EVMErrorResult(
       new EVMError(EVMError.errorMessages.BLS_12_381_INVALID_INPUT_LENGTH),
@@ -78,11 +69,12 @@ export async function precompile0c(opts: PrecompileInput): Promise<ExecResult> {
   let returnValue
   try {
     returnValue = bls.msmG1(opts.data)
-  } catch (e: any) {
+  } catch (e: unknown) {
+    const error = e instanceof EVMError ? e : new EVMError(EVMError.errorMessages.REVERT)
     if (opts._debug !== undefined) {
-      opts._debug(`${pName} failed: ${e.message}`)
+      opts._debug(`${pName} failed: ${e instanceof Error ? e.message : undefined}`)
     }
-    return EVMErrorResult(e, opts.gasLimit)
+    return EVMErrorResult(error, opts.gasLimit)
   }
 
   if (opts._debug !== undefined) {

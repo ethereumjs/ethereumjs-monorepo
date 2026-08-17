@@ -6,9 +6,9 @@ import {
   unprefixedHexToBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 import { base64 } from '@scure/base'
 import { decrypt } from 'ethereum-cryptography/aes.js'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
 import { pbkdf2Sync } from 'ethereum-cryptography/pbkdf2.js'
 import { md5 } from 'js-md5'
 
@@ -173,7 +173,7 @@ export async function fromEtherWallet(
  * Third Party API: Import a brain wallet used by Ether.Camp
  */
 export function fromEtherCamp(passphrase: string): Wallet {
-  return new Wallet(keccak256(utf8ToBytes(passphrase)))
+  return new Wallet(keccak_256(utf8ToBytes(passphrase)))
 }
 
 /**

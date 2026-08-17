@@ -6,25 +6,17 @@
 
 # Interface: JSONBlock
 
-Defined in: [types.ts:159](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L159)
+Defined in: [types.ts:154](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L154)
 
 An object with the block's data represented as strings.
 
 ## Properties
 
-### executionWitness?
-
-> `optional` **executionWitness**: `null` \| `VerkleExecutionWitness`
-
-Defined in: [types.ts:167](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L167)
-
-***
-
 ### header?
 
 > `optional` **header**: [`JSONHeader`](JSONHeader.md)
 
-Defined in: [types.ts:163](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L163)
+Defined in: [types.ts:158](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L158)
 
 Header data for the block
 
@@ -34,7 +26,7 @@ Header data for the block
 
 > `optional` **transactions**: `JSONTx`[]
 
-Defined in: [types.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L164)
+Defined in: [types.ts:159](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L159)
 
 ***
 
@@ -42,7 +34,7 @@ Defined in: [types.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **uncleHeaders**: [`JSONHeader`](JSONHeader.md)[]
 
-Defined in: [types.ts:165](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L165)
+Defined in: [types.ts:160](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L160)
 
 ***
 
@@ -50,4 +42,4 @@ Defined in: [types.ts:165](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **withdrawals**: `JSONRPCWithdrawal`[]
 
-Defined in: [types.ts:166](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L166)
+Defined in: [types.ts:161](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L161)

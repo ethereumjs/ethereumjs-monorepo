@@ -1,11 +1,11 @@
 import { hexToBytes } from '@ethereumjs/util'
-import { publicKeyCreate } from 'ethereum-cryptography/secp256k1-compat.js'
+import { secp256k1 } from '@noble/curves/secp256k1.js'
 import { assert, describe, it } from 'vitest'
 
 import * as message from '../src/dpt/message.ts'
 
 const privateKey = hexToBytes('0xb71c71a67e1177ad4e901695e1b4b9ee17ae16c6668d313eac2f96dbcda3f291')
-const publicKey = publicKeyCreate(privateKey, false)
+const publicKey = secp256k1.getPublicKey(privateKey, false)
 describe('DPT message tests', () => {
   it('ping packet with version 4, additional list elements', () => {
     const bytes = hexToBytes(

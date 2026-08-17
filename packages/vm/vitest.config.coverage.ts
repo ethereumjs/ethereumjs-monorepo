@@ -1,8 +1,7 @@
-import topLevelAwait from 'vite-plugin-top-level-await'
 import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
-  plugins: [topLevelAwait()],
+  plugins: [],
   optimizeDeps: {
     exclude: ['kzg-wasm'],
   },
@@ -10,8 +9,12 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       enabled: true,
-      all: true,
       reporter: ['lcov'],
     },
+    exclude: [
+      'test/tester/legacy/state.spec.ts',
+      'test/tester/legacy/blockchain.spec.ts',
+      'test/tester/consumeBal.test.ts',
+    ],
   },
 })

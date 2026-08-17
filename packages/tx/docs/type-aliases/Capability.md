@@ -8,4 +8,4 @@
 
 > **Capability** = *typeof* [`Capability`](../variables/Capability.md)\[keyof *typeof* [`Capability`](../variables/Capability.md)\]
 
-Defined in: [types.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L16)
+Defined in: [types.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L18)

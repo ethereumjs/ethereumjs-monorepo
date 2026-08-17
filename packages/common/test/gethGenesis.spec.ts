@@ -170,8 +170,20 @@ describe('[Utils/Parse]', () => {
           max: 91,
           baseFeeUpdateFraction: 13338477,
         },
+        bpo1: {
+          target: 71,
+          max: 101,
+          baseFeeUpdateFraction: 23338477,
+        },
+        bpo2: {
+          target: 81,
+          max: 111,
+          baseFeeUpdateFraction: 33338477,
+        },
       },
       pragueTime: 1736942378,
+      bpo1Time: 1736942478,
+      bpo2Time: 1736942578,
     }
     Object.assign(customData.config, customConfigData)
 
@@ -202,7 +214,19 @@ describe('[Utils/Parse]', () => {
         Hardfork.Prague,
         blobGasPerBlob * BigInt(customConfigData.blobSchedule.prague.target),
         blobGasPerBlob * BigInt(customConfigData.blobSchedule.prague.max),
-        13338477,
+        customConfigData.blobSchedule.prague.baseFeeUpdateFraction,
+      ],
+      [
+        Hardfork.Bpo1,
+        blobGasPerBlob * BigInt(customConfigData.blobSchedule.bpo1.target),
+        blobGasPerBlob * BigInt(customConfigData.blobSchedule.bpo1.max),
+        customConfigData.blobSchedule.bpo1.baseFeeUpdateFraction,
+      ],
+      [
+        Hardfork.Bpo2,
+        blobGasPerBlob * BigInt(customConfigData.blobSchedule.bpo2.target),
+        blobGasPerBlob * BigInt(customConfigData.blobSchedule.bpo2.max),
+        customConfigData.blobSchedule.bpo2.baseFeeUpdateFraction,
       ],
     ]
     for (const [testHf, testTarget, testMax, testUpdateFraction] of testCases) {

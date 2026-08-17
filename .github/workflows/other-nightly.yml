@@ -1,0 +1,77 @@
+name: Ethash/Client Nightly
+on:
+  schedule:
+    - cron: 0 1 * * *
+  workflow_dispatch:
+
+env:
+  cwd: ${{github.workspace}}/packages/vm # Doesn't apper to matter
+
+jobs:
+  test-ethash:
+    if: github.repository == 'ethereumjs/ethereumjs-monorepo'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: 'npm'
+
+      - run: npm ci
+        working-directory: ${{github.workspace}}
+
+      - run: npm run test
+        working-directory: ${{ github.workspace }}/packages/ethash
+
+  test-client:
+    if: github.repository == 'ethereumjs/ethereumjs-monorepo'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: 'npm'
+
+      - run: npm ci
+        working-directory: ${{github.workspace}}
+
+      - run: npm run test
+        working-directory: ${{ github.workspace }}/packages/client
+
+  test-devp2p:
+    if: github.repository == 'ethereumjs/ethereumjs-monorepo'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: 'npm'
+
+      - run: npm ci
+        working-directory: ${{github.workspace}}
+
+      - run: npm run test
+        working-directory: ${{ github.workspace }}/packages/devp2p
+
+  test-wallet:
+    if: github.repository == 'ethereumjs/ethereumjs-monorepo'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: 'npm'
+
+      - run: npm ci
+        working-directory: ${{github.workspace}}
+
+      - run: npm run test:node
+        working-directory: ${{ github.workspace }}/packages/wallet

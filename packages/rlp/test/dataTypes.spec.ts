@@ -6,6 +6,15 @@ import { bytesToUtf8 } from './utils.ts'
 
 const { bytesToHex, concatBytes, hexToBytes, utf8ToBytes } = utils
 
+describe('utils', () => {
+  it('should decode 0x-prefixed hex strings', () => {
+    assert.deepEqual(hexToBytes('0xcafe0123'), Uint8Array.from([0xca, 0xfe, 0x01, 0x23]))
+  })
+  it('should decode non 0x-prefixed hex strings', () => {
+    assert.deepEqual(hexToBytes('cafe0123'), Uint8Array.from([0xca, 0xfe, 0x01, 0x23]))
+  })
+})
+
 describe('invalid RLPs', () => {
   const errCases = [
     // prettier-ignore

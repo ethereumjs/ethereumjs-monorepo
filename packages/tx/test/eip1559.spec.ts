@@ -7,7 +7,7 @@ import { createFeeMarket1559Tx } from '../src/index.ts'
 
 import { eip1559Data } from './testData/eip1559.ts' // Source: Besu
 
-import { secp256k1 } from 'ethereum-cryptography/secp256k1'
+import { secp256k1 } from '@noble/curves/secp256k1.js'
 import type { JSONTx } from '../src/index.ts'
 
 const common = createCustomCommon({ chainId: 4 }, Mainnet)
@@ -155,10 +155,21 @@ describe('[FeeMarket1559Tx]', () => {
     const tx = createFeeMarket1559Tx({})
 
     const msgHash = tx.getHashedMessageToSign()
-    const { recovery, r, s } = secp256k1.sign(msgHash, privKey, { extraEntropy: false })
+    // Use same options as Legacy.sign internally uses
+    const signatureBytes = secp256k1.sign(msgHash, privKey, {
+      extraEntropy: false,
+      format: 'recovered',
+      prehash: false,
+    })
+    const { recovery, r, s } = secp256k1.Signature.fromBytes(signatureBytes, 'recovered')
 
-    const signedTx = tx.sign(privKey)
+    if (recovery === undefined) {
+      throw new Error('Invalid signature recovery')
+    }
+
     const addSignatureTx = tx.addSignature(BigInt(recovery), r, s)
+    // Sign separately to get a signed tx to compare with
+    const signedTx = tx.sign(privKey)
 
     assert.deepEqual(signedTx.toJSON(), addSignatureTx.toJSON())
   })
@@ -168,7 +179,16 @@ describe('[FeeMarket1559Tx]', () => {
     const tx = createFeeMarket1559Tx({})
 
     const msgHash = tx.getHashedMessageToSign()
-    const { recovery, r, s } = secp256k1.sign(msgHash, privKey)
+    // Must use format: 'recovered' to get 65-byte signature with recovery byte
+    const signatureBytes = secp256k1.sign(msgHash, privKey, {
+      format: 'recovered',
+      prehash: false,
+    })
+    const { recovery, r, s } = secp256k1.Signature.fromBytes(signatureBytes, 'recovered')
+
+    if (recovery === undefined) {
+      throw new Error('Invalid signature recovery')
+    }
 
     assert.throws(() => {
       // This will throw, since we now try to set either v=27 or v=28

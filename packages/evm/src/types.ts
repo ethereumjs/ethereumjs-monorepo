@@ -3,9 +3,8 @@ import type {
   Common,
   ParamsDict,
   StateManagerInterface,
-  VerkleAccessWitnessInterface,
 } from '@ethereumjs/common'
-import type { Account, Address, PrefixedHexString } from '@ethereumjs/util'
+import type { Account, Address, BlockLevelAccessList, PrefixedHexString } from '@ethereumjs/util'
 import type { EventEmitter } from 'eventemitter3'
 import type { BinaryTreeAccessWitness } from './binaryTreeAccessWitness.ts'
 import type { EOFContainer } from './eof/container.ts'
@@ -16,7 +15,6 @@ import type { AsyncDynamicGasHandler, SyncDynamicGasHandler } from './opcodes/ga
 import type { OpHandler } from './opcodes/index.ts'
 import type { CustomPrecompile } from './precompiles/index.ts'
 import type { PrecompileFunc } from './precompiles/types.ts'
-import type { VerkleAccessWitness } from './verkleAccessWitness.ts'
 
 export type DeleteOpcode = {
   opcode: number
@@ -29,6 +27,8 @@ export type AddOpcode = {
   gasFunction?: AsyncDynamicGasHandler | SyncDynamicGasHandler
   logicFunction: OpHandler
 }
+
+export type SelfdestructMap = Map<PrefixedHexString, PrefixedHexString>
 
 export type CustomOpcode = AddOpcode | DeleteOpcode
 
@@ -87,9 +87,9 @@ interface EVMRunOpts {
    */
   isStatic?: boolean
   /**
-   * Addresses to selfdestruct. Defaults to the empty set.
+   * Selfdestructed addresses mapped to their beneficiary. Defaults to the empty map.
    */
-  selfdestruct?: Set<PrefixedHexString>
+  selfdestruct?: SelfdestructMap
   /**
    * The address of the account that is executing this code (`address(this)`). Defaults to the zero address.
    */
@@ -129,6 +129,17 @@ export interface EVMRunCallOpts extends EVMRunOpts {
    */
   skipBalance?: boolean
   /**
+   * If true, do not increment the caller nonce at depth 0. `runTx` increments
+   * the sender nonce before the nested prep checkpoint so a top-frame access
+   * OOG (EIP-2780 / EIP-8037) does not roll it back. Standalone `runCall`
+   * callers should leave this unset.
+   *
+   * Distinct from `RunTxOpts.skipNonce`, which skips the nonce *check*.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
+  skipNonceIncrement?: boolean
+  /**
    * If the call is a DELEGATECALL. Defaults to false.
    */
   delegatecall?: boolean
@@ -141,7 +152,7 @@ export interface EVMRunCallOpts extends EVMRunOpts {
    */
   message?: Message
 
-  accessWitness?: VerkleAccessWitnessInterface | BinaryTreeAccessWitnessInterface
+  accessWitness?: BinaryTreeAccessWitnessInterface
 }
 
 interface NewContractEvent {
@@ -176,13 +187,53 @@ export interface EVMInterface {
   }
   stateManager: StateManagerInterface
   precompiles: Map<string, PrecompileFunc>
+  getPrecompile?(address: Address | PrefixedHexString): PrecompileFunc | undefined
   runCall(opts: EVMRunCallOpts): Promise<EVMResult>
   runCode(opts: EVMRunCodeOpts): Promise<ExecResult>
   events?: EventEmitter<EVMEvent>
-  verkleAccessWitness?: VerkleAccessWitness
-  systemVerkleAccessWitness?: VerkleAccessWitness
   binaryTreeAccessWitness?: BinaryTreeAccessWitness
   systemBinaryTreeAccessWitness?: BinaryTreeAccessWitness
+  /**
+   * Accumulated block access list when EIP-7928 is active.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
+  blockLevelAccessList?: BlockLevelAccessList
+  /**
+   * EIP-8037 per-tx state-gas reservoir (set by `runTx`, read/written by opcodes).
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
+  stateGasReservoir: bigint
+  /**
+   * EIP-8037 per-tx cumulative state-gas used.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
+  executionStateGasUsed: bigint
+  /**
+   * EIP-7928: set during CALL post-target OOG so `runTx` can drain the state-gas reservoir
+   * on exceptional halt. Optional for custom {@link EVMInterface} implementations.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
+  eip7928CallPostTargetOog?: boolean
+  /**
+   * EIP-2780 / EIP-8037: set when a top-frame access charge OOGs before opcodes.
+   * runTx reverts prepare-region 7702 delegations when this is true.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
+  eip2780PrepOog?: boolean
+  /**
+   * EIP-8037: whether the target account of a top-level creation transaction
+   * was already alive (EIP-161 non-empty) before creation; `runTx` refunds
+   * the intrinsic new-account state gas when true or the creation failed.
+   * Optional for custom {@link EVMInterface} implementations.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
+  createTxTargetAlive?: boolean
 }
 
 export type EVMProfilerOpts = {
@@ -199,23 +250,25 @@ export interface EVMOpts {
    *
    * ### Supported EIPs
    *
+   * Sorted by EIP number:
+   *
    * - [EIP-1153](https://eips.ethereum.org/EIPS/eip-1153) - Transient storage opcodes (Cancun)
    * - [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) - Fee market change for ETH 1.0 chain
    * - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - Precompile for BLS12-381 curve operations (Prague)
    * - [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565) - ModExp gas cost
-   * - [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718) - Typed Transaction Envelope
-   * - [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) - Serve historical block hashes from state (Prague)
-   * - [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929) - gas cost increases for state access opcodes
+   * - [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718) - Transaction Types
+   * - [EIP-2780](https://eips.ethereum.org/EIPS/eip-2780) - Reduce intrinsic transaction gas (Amsterdam, experimental)
+   * - [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929) - Gas cost increases for state access opcodes
    * - [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930) - Optional access list tx type
-   * - [EIP-3074](https://eips.ethereum.org/EIPS/eip-3074) - AUTH and AUTHCALL opcodes
-   * - [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198) - Base fee Opcode
+   * - [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) - Serve historical block hashes in state (Prague)
+   * - [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198) - Base fee opcode
    * - [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529) - Reduction in refunds
    * - [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541) - Reject new contracts starting with the 0xEF byte
    * - [EIP-3554](https://eips.ethereum.org/EIPS/eip-3554) - Difficulty Bomb Delay to December 2021 (only PoW networks)
    * - [EIP-3607](https://eips.ethereum.org/EIPS/eip-3607) - Reject transactions from senders with deployed code
    * - [EIP-3651](https://eips.ethereum.org/EIPS/eip-3651) - Warm COINBASE (Shanghai)
    * - [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675) - Upgrade consensus to Proof-of-Stake
-   * - [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855) - Push0 opcode (Shanghai)
+   * - [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855) - PUSH0 opcode (Shanghai)
    * - [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) - Limit and meter initcode (Shanghai)
    * - [EIP-4345](https://eips.ethereum.org/EIPS/eip-4345) - Difficulty Bomb Delay to June 2022
    * - [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399) - Supplant DIFFICULTY opcode with PREVRANDAO (Merge)
@@ -229,16 +282,37 @@ export interface EVMOpts {
    * - [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002) - Execution layer triggerable exits (Prague)
    * - [EIP-7251](https://eips.ethereum.org/EIPS/eip-7251) - Increase the MAX_EFFECTIVE_BALANCE (Prague)
    * - [EIP-7516](https://eips.ethereum.org/EIPS/eip-7516) - BLOBBASEFEE opcode (Cancun)
+   * - [EIP-7594](https://eips.ethereum.org/EIPS/eip-7594) - PeerDAS blob transactions (Osaka)
    * - [EIP-7623](https://eips.ethereum.org/EIPS/eip-7623) - Increase calldata cost (Prague)
    * - [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) - General purpose execution layer requests (Prague)
    * - [EIP-7691](https://eips.ethereum.org/EIPS/eip-7691) - Blob throughput increase (Prague)
-   * - [EIP-7692](https://eips.ethereum.org/EIPS/eip-7692) - EVM Object Format (EOF) v1 (`experimental`)
+   * - [EIP-7692](https://eips.ethereum.org/EIPS/eip-7692) - EVM Object Format (EOF) v1 (experimental)
    * - [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) - Set EOA account code (Prague)
-   * - [EIP-7709](https://eips.ethereum.org/EIPS/eip-7709) - Read BLOCKHASH from storage and update cost (Verkle)
+   * - [EIP-7708](https://eips.ethereum.org/EIPS/eip-7708) - ETH transfers emit a log (Amsterdam, experimental)
+   * - [EIP-7709](https://eips.ethereum.org/EIPS/eip-7709) - Read BLOCKHASH from storage and update cost (Verkle, experimental)
+   * - [EIP-7778](https://eips.ethereum.org/EIPS/eip-7778) - Block-level gas accounting without refunds (Amsterdam, experimental)
+   * - [EIP-7823](https://eips.ethereum.org/EIPS/eip-7823) - Set upper bounds for MODEXP (Osaka)
+   * - [EIP-7825](https://eips.ethereum.org/EIPS/eip-7825) - Transaction gas limit cap (Osaka)
+   * - [EIP-7843](https://eips.ethereum.org/EIPS/eip-7843) - SLOTNUM opcode (Amsterdam, experimental)
+   * - [EIP-7864](https://eips.ethereum.org/EIPS/eip-7864) - Ethereum state using a unified binary tree (experimental)
+   * - [EIP-7883](https://eips.ethereum.org/EIPS/eip-7883) - ModExp gas cost increase (Osaka)
+   * - [EIP-7918](https://eips.ethereum.org/EIPS/eip-7918) - Blob base fee bounded by execution cost (Osaka)
+   * - [EIP-7928](https://eips.ethereum.org/EIPS/eip-7928) - Block Level Access Lists (Amsterdam, experimental)
+   * - [EIP-7934](https://eips.ethereum.org/EIPS/eip-7934) - RLP Execution Block Size Limit (Osaka)
+   * - [EIP-7939](https://eips.ethereum.org/EIPS/eip-7939) - Count leading zeros (CLZ) opcode (Osaka)
+   * - [EIP-7951](https://eips.ethereum.org/EIPS/eip-7951) - Precompile for secp256r1 curve support (Osaka)
+   * - [EIP-7954](https://eips.ethereum.org/EIPS/eip-7954) - Increase max contract and initcode size (Amsterdam, experimental)
+   * - [EIP-7976](https://eips.ethereum.org/EIPS/eip-7976) - Increase calldata floor cost (Amsterdam, experimental)
+   * - [EIP-7981](https://eips.ethereum.org/EIPS/eip-7981) - Access list data pricing (Amsterdam, experimental)
+   * - [EIP-8024](https://eips.ethereum.org/EIPS/eip-8024) - DUPN, SWAPN and EXCHANGE instructions (Amsterdam, experimental)
+   * - [EIP-8037](https://eips.ethereum.org/EIPS/eip-8037) - State creation gas cost increase (Amsterdam, experimental)
    *
    * *Annotations:*
    *
-   * - `experimental`: behaviour can change on patch versions
+   * - Hardfork labels (e.g. `(Prague)`) indicate default activation on that fork
+   * - `(Amsterdam, experimental)` and `(experimental)` mark unstable specs; behaviour can change on patch releases
+   * - Release ↔ spec tracking: canonical Amsterdam overview in `@ethereumjs/vm` README (`#amsterdam-hardfork-experimental`)
+   * - Amsterdam-related fields and helpers may change on patch releases without a major bump
    */
   common?: Common
 
@@ -355,7 +429,7 @@ export interface EVMOpts {
    * `@ethereumjs/statemanager` package.
    *
    * The `@ethereumjs/statemanager` package also provides a variety of state manager
-   * implementations for different needs (MPT-tree backed, RPC, experimental verkle)
+   * implementations for different needs (MPT-tree backed, RPC, experimental binary tree)
    * which can be used by this option as a replacement.
    */
   stateManager?: StateManagerInterface
@@ -373,6 +447,14 @@ export interface EVMOpts {
    *
    */
   profiler?: EVMProfilerOpts
+
+  /**
+   * Optional pre-built block access list when EIP-7928 is active.
+   * If omitted, {@link EVM} creates one automatically when the EIP is activated.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
+  blockLevelAccessList?: BlockLevelAccessList
 
   /**
    * When running the EVM with PoA consensus, the `cliqueSigner` function from the `@ethereumjs/block` class
@@ -418,13 +500,15 @@ export interface ExecResult {
    */
   returnValue: Uint8Array
   /**
-   * Array of logs that the contract emitted
+   * Logs emitted during execution (`LOG0`–`LOG4`, and fork-specific synthetic logs such as
+   * [EIP-7708](https://eips.ethereum.org/EIPS/eip-7708) on `runCall`). Cleared when execution
+   * reverts. See [Event logs](./README.md#event-logs) in this package.
    */
   logs?: Log[]
   /**
-   * A set of accounts to selfdestruct
+   * Selfdestructed accounts mapped to their beneficiary
    */
-  selfdestruct?: Set<PrefixedHexString>
+  selfdestruct?: SelfdestructMap
   /**
    * Map of addresses which were created (used in EIP 6780)
    */
@@ -437,6 +521,14 @@ export interface ExecResult {
    * Amount of blob gas consumed by the transaction
    */
   blobGasUsed?: bigint
+  /**
+   * EIP-8037: state gas paid from the frame's regular gas (spilled),
+   * including spill merged from successful child frames. Propagated to the
+   * parent frame's spill tracker on success; zeroed on frame failure.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
+  stateGasSpilled?: bigint
 }
 
 /**
@@ -446,9 +538,7 @@ export interface ExecResult {
 export type EVMBLSInterface = {
   init?(): void
   addG1(input: Uint8Array): Uint8Array
-  mulG1(input: Uint8Array): Uint8Array
   addG2(input: Uint8Array): Uint8Array
-  mulG2(input: Uint8Array): Uint8Array
   mapFPtoG1(input: Uint8Array): Uint8Array
   mapFP2toG2(input: Uint8Array): Uint8Array
   msmG1(input: Uint8Array): Uint8Array
@@ -467,7 +557,13 @@ export type EVMBN254Interface = {
 }
 
 /**
- * Log that the contract emits.
+ * Log emitted during EVM execution.
+ *
+ * Tuple of `[emitterAddress, topics, data]` — the same shape used in transaction receipts
+ * (`receipt.logs`) and JSON-RPC log objects (before field renaming). See the
+ * [Event logs](./README.md#event-logs) section in this package and
+ * [Receipts and event logs](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#receipts-and-event-logs)
+ * in `@ethereumjs/vm`.
  */
 export type Log = [address: Uint8Array, topics: Uint8Array[], data: Uint8Array]
 
@@ -480,6 +576,7 @@ export type Block = {
     prevRandao: Uint8Array
     gasLimit: bigint
     baseFeePerGas?: bigint
+    slotNumber?: bigint
     getBlobGasPrice(): bigint | undefined
   }
 }

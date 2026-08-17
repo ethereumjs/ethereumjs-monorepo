@@ -6,7 +6,7 @@
 
 # Function: formatEntry()
 
-> **formatEntry**(`entry`): `Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
+> **formatEntry**(`entry`): `Promise`\<`Uint8Array`\<`ArrayBuffer`\>\>
 
 Defined in: [packages/e2store/src/e2store.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/e2store.ts#L76)
 
@@ -28,6 +28,6 @@ Format e2store entry
 
 ## Returns
 
-`Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
+`Promise`\<`Uint8Array`\<`ArrayBuffer`\>\>
 
 serialized entry

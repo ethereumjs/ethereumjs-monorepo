@@ -8,4 +8,4 @@
 
 > **TransactionType** = *typeof* [`TransactionType`](../variables/TransactionType.md)\[keyof *typeof* [`TransactionType`](../variables/TransactionType.md)\]
 
-Defined in: [types.ts:153](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L153)
+Defined in: [types.ts:146](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L146)

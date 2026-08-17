@@ -6,27 +6,17 @@
 
 # Interface: BlockData
 
-Defined in: [types.ts:117](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L117)
+Defined in: [types.ts:126](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L126)
 
 A block's data.
 
 ## Properties
 
-### executionWitness?
-
-> `optional` **executionWitness**: `null` \| `VerkleExecutionWitness`
-
-Defined in: [types.ts:128](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L128)
-
-EIP-6800: Verkle Proof Data (experimental)
-
-***
-
 ### header?
 
 > `optional` **header**: [`HeaderData`](HeaderData.md)
 
-Defined in: [types.ts:121](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L121)
+Defined in: [types.ts:130](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L130)
 
 Header data for the block
 
@@ -36,7 +26,7 @@ Header data for the block
 
 > `optional` **transactions**: (`LegacyTxData` \| `AccessList2930TxData` \| `FeeMarketEIP1559TxData` \| `BlobEIP4844TxData` \| `EOACode7702TxData`)[]
 
-Defined in: [types.ts:122](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L122)
+Defined in: [types.ts:131](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L131)
 
 ***
 
@@ -44,7 +34,7 @@ Defined in: [types.ts:122](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **uncleHeaders**: [`HeaderData`](HeaderData.md)[]
 
-Defined in: [types.ts:123](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L123)
+Defined in: [types.ts:132](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L132)
 
 ***
 
@@ -52,4 +42,4 @@ Defined in: [types.ts:123](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **withdrawals**: `WithdrawalData`[]
 
-Defined in: [types.ts:124](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L124)
+Defined in: [types.ts:133](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L133)

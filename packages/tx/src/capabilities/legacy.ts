@@ -10,18 +10,34 @@ import {
   publicToAddress,
   unpadBytes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { secp256k1 } from '@noble/curves/secp256k1.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 
 import { Capability, TransactionType } from '../types.ts'
+import {
+  getCalldataFloorGas,
+  getEip2780RecipientRegularGas,
+  getEip7702IntrinsicAuthGas,
+} from '../util/intrinsic.ts'
 
-import { secp256k1 } from 'ethereum-cryptography/secp256k1'
 import type { LegacyTx } from '../legacy/tx.ts'
 import type { LegacyTxInterface, Transaction } from '../types.ts'
 
+/**
+ * Creates an error message with transaction context
+ * @param tx - The transaction interface
+ * @param msg - The error message
+ * @returns Formatted error message with transaction context
+ */
 export function errorMsg(tx: LegacyTxInterface, msg: string) {
   return `${msg} (${tx.errorStr()})`
 }
 
+/**
+ * Checks if a transaction is signed
+ * @param tx - The transaction interface
+ * @returns true if the transaction is signed
+ */
 export function isSigned(tx: LegacyTxInterface): boolean {
   const { v, r, s } = tx
   if (v === undefined || r === undefined || s === undefined) {
@@ -73,29 +89,48 @@ export function getIntrinsicGas(tx: LegacyTxInterface): bigint {
   const txFee = tx.common.param('txGas')
   let fee = tx.getDataGas()
   if (txFee) fee += txFee
-  if (tx.common.gteHardfork('homestead') && tx.toCreationAddress()) {
+  let isContractCreation = false
+  try {
+    isContractCreation = tx.toCreationAddress()
+  } catch {
+    isContractCreation = false
+  }
+  if (tx.common.gteHardfork('homestead') && isContractCreation) {
     const txCreationFee = tx.common.param('txCreationGas')
     if (txCreationFee) fee += txCreationFee
   }
+  // EIP-2780: recipient / TX_VALUE_COST extras are state-independent (sender +
+  // tx fields) and belong in intrinsic, matching EELS `calculate_intrinsic_cost`.
+  fee += getEip2780RecipientRegularGas(tx)
+  fee += getEip7702IntrinsicAuthGas(tx)
   return fee
 }
 
+/**
+ * Checks if the transaction targets the creation address (deploys a contract).
+ * @param tx - Transaction interface to inspect
+ * @returns true if the transaction's `to` is undefined or empty
+ */
 export function toCreationAddress(tx: LegacyTxInterface): boolean {
   return tx.to === undefined || tx.to.bytes.length === 0
 }
 
+/**
+ * Computes the keccak_256 hash of a signed legacy transaction.
+ * @param tx - Transaction to hash
+ * @returns Hash of the serialized transaction
+ * @throws EthereumJSErrorWithoutCode if the transaction is unsigned
+ */
 export function hash(tx: LegacyTxInterface): Uint8Array {
   if (!tx.isSigned()) {
     const msg = errorMsg(tx, 'Cannot call hash method if transaction is not signed')
     throw EthereumJSErrorWithoutCode(msg)
   }
 
-  const keccakFunction = tx.common.customCrypto.keccak256 ?? keccak256
+  const keccakFunction = tx.common.customCrypto.keccak256 ?? keccak_256
 
   if (Object.isFrozen(tx)) {
-    if (!tx.cache.hash) {
-      tx.cache.hash = keccakFunction(tx.serialize())
-    }
+    tx.cache.hash ??= keccakFunction(tx.serialize())
     return tx.cache.hash
   }
 
@@ -117,6 +152,12 @@ export function validateHighS(tx: LegacyTxInterface): void {
   }
 }
 
+/**
+ * Recovers the sender's public key from the transaction signature.
+ * @param tx - Transaction from which the public key should be derived
+ * @returns The uncompressed sender public key
+ * @throws EthereumJSErrorWithoutCode if the signature is invalid
+ */
 export function getSenderPublicKey(tx: LegacyTxInterface): Uint8Array {
   if (tx.cache.senderPubKey !== undefined) {
     return tx.cache.senderPubKey
@@ -147,6 +188,13 @@ export function getSenderPublicKey(tx: LegacyTxInterface): Uint8Array {
   }
 }
 
+/**
+ * Calculates the effective priority fee for a legacy-style transaction.
+ * @param gasPrice - Gas price specified on the transaction
+ * @param baseFee - Optional base fee from the block when operating on L2s that mimic 1559 behavior
+ * @returns The priority fee portion that can be paid to the block producer
+ * @throws EthereumJSErrorWithoutCode if the base fee exceeds the gas price
+ */
 export function getEffectivePriorityFee(gasPrice: bigint, baseFee: bigint | undefined): bigint {
   if (baseFee !== undefined && baseFee > gasPrice) {
     throw EthereumJSErrorWithoutCode('Tx cannot pay baseFee')
@@ -170,19 +218,13 @@ export function getValidationErrors(tx: LegacyTxInterface): string[] {
     errors.push('Invalid Signature')
   }
 
-  let intrinsicGas = tx.getIntrinsicGas()
+  let minGas = tx.getIntrinsicGas()
   if (tx.common.isActivatedEIP(7623)) {
-    let tokens = 0
-    for (let i = 0; i < tx.data.length; i++) {
-      tokens += tx.data[i] === 0 ? 1 : 4
-    }
-    const floorCost =
-      tx.common.param('txGas') + tx.common.param('totalCostFloorPerToken') * BigInt(tokens)
-    intrinsicGas = bigIntMax(intrinsicGas, floorCost)
+    minGas = bigIntMax(minGas, getCalldataFloorGas(tx))
   }
-  if (intrinsicGas > tx.gasLimit) {
+  if (minGas > tx.gasLimit) {
     errors.push(
-      `gasLimit is too low. The gasLimit is lower than the minimum gas limit of ${tx.getIntrinsicGas()}, the gas limit is: ${tx.gasLimit}`,
+      `gasLimit is too low. The gasLimit is lower than the minimum gas limit of ${minGas}, the gas limit is: ${tx.gasLimit}`,
     )
   }
 
@@ -257,7 +299,17 @@ export function sign(
 
   const msgHash = tx.getHashedMessageToSign()
   const ecSignFunction = tx.common.customCrypto?.ecsign ?? secp256k1.sign
-  const { recovery, r, s } = ecSignFunction(msgHash, privateKey, { extraEntropy })
+
+  const signatureBytes = ecSignFunction(msgHash, privateKey, {
+    extraEntropy,
+    format: 'recovered',
+    prehash: false,
+  })
+  const { recovery, r, s } = secp256k1.Signature.fromBytes(signatureBytes, 'recovered')
+
+  if (recovery === undefined) {
+    throw EthereumJSErrorWithoutCode('Invalid signature recovery')
+  }
   const signedTx = tx.addSignature(BigInt(recovery), r, s, true)
 
   // Hack part 2
@@ -272,6 +324,11 @@ export function sign(
 }
 
 // TODO maybe move this to shared methods (util.ts in features)
+/**
+ * Builds a compact string that summarizes common transaction fields for error messages.
+ * @param tx - Transaction used to assemble the postfix
+ * @returns A formatted string containing tx type, hash, nonce, value, signature status, and hardfork
+ */
 export function getSharedErrorPostfix(tx: LegacyTxInterface) {
   let hash = ''
   try {

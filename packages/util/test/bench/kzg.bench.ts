@@ -2,7 +2,10 @@ import { getBlobs } from '@ethereumjs/util'
 import { loadKZG } from 'kzg-wasm'
 import { bench, describe } from 'vitest'
 
-import { jsKZG } from '../kzg.spec.ts'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
+
+const jsKZG = new microEthKZG(trustedSetup)
 
 /**
  * These benchmarks compare performance of various KZG related functions for our two supported backends

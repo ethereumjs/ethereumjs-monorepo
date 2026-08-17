@@ -6,6 +6,144 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 10.1.2 - 2026-05-29
+
+### Release round overview
+
+Welcome to **`10.1.2`** — a coordinated release across all active `@ethereumjs/*` libraries on the **`10.1.x`** line. If you have been following the upcoming Amsterdam hardfork, this is our **first experimental preview** ready to try out: a largely complete **nine-EIP `Hardfork.Amsterdam` bundle**, currently aligned with [tests-bal@v7.1.0](https://github.com/ethereum/execution-specs/releases/tag/tests-bal@v7.1.0) and [BAL devnet-7](https://notes.ethereum.org/@ethpandaops/bal-devnet-7).
+
+Amsterdam is still in flux — **please do not use this in production yet** — and we expect further **`10.1.x`** releases as the spec and official tests evolve. The sections below cover **this package only**; for the full fork picture (EIP list, examples, release ↔ spec tracking), see the [@ethereumjs/vm Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental). On Osaka or earlier hardforks? Nothing changes unless you explicitly select `Hardfork.Amsterdam`.
+
+### `@ethereumjs/evm`
+
+`@ethereumjs/evm` is the low-level EVM interpreter: opcodes, precompiles, gas metering, and message-call semantics. Within the `10.1.2` round, Amsterdam changes land here first — new instructions, revised size limits, state-gas accounting inside the interpreter, and BAL footprint recording on `evm.blockLevelAccessList`. The VM wraps these details into `runBlock()` / `runTx()`; use the EVM directly when building tracers, custom runners, or `runCall()`-style tools.
+
+### At a glance
+
+- **EIP-8024** stack opcodes `DUPN`, `SWAPN`, `EXCHANGE` with immediate validation at decode time.
+- **EIP-7954** raised max contract code and initcode size (via `common.param('maxCodeSize')`).
+- **EIP-8037** state-gas reservoir on the EVM instance — state-touching ops draw from `evm.stateGasReservoir` before spilling into regular gas.
+- **EIP-7708** synthetic `Transfer` / `Burn` logs on value-moving paths; **EIP-7843** `SLOTNUM` opcode.
+- **EIP-7928** automatic state-access recording on `evm.blockLevelAccessList` when active.
+- Custom precompile API improvements (`PrefixedHexString`, `getPrecompile`, exported types), see PR [#4261](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4261).
+
+### Amsterdam (experimental)
+
+> Behaviour may change in subsequent `10.1.x` patch releases.
+> **Spec snapshot:** [tests-bal@v7.1.0](https://github.com/ethereum/execution-specs/releases/tag/tests-bal@v7.1.0) · **Testnet:** [BAL devnet-7](https://notes.ethereum.org/@ethpandaops/bal-devnet-7)
+> Fork overview: [Amsterdam hardfork (experimental)](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental)
+
+**EIP-8024** adds three stack-manipulation opcodes, each with a single-byte immediate (validated at decode — invalid immediates trap):
+
+```ts
+import { EVM } from '@ethereumjs/evm'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })
+const evm = await EVM.create({ common })
+
+// DUPN/SWAPN/EXCHANGE behave like extended DUP/SWAP variants;
+// gas: dupnGas / swapnGas / exchangeGas (default 3 each)
+```
+
+When **EIP-7928** is active, every state-touching operation appends to `evm.blockLevelAccessList` during `runCall()` / internal message execution. The VM reads this object after each transaction to build the block-level list. For BAL builder/validator flows see [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#eip-7928-block-level-access-lists-amsterdam).
+
+Further Amsterdam notes: [EIP-8024](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#eip-8024-stack-opcodes-amsterdam), [EIP-7954](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#eip-7954-contract-and-initcode-size-limits-amsterdam), [EIP-8037 / EIP-7708](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#eip-8037-and-eip-7708-amsterdam).
+
+### Changes
+
+- EIP-8024 stack opcodes, see PR [#4248](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4248), [#4302](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4302)
+- EIP-7954 max contract and initcode size, see PR [#4299](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4299)
+- EIP-8037 state-gas accounting and reservoir logic, see PR [#4285](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4285), [#4293](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4293), [#4301](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4301), [#4304](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4304)
+- EIP-7708 / EIP-7843 execution changes, see PR [#4239](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4239), [#4251](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4251), [#4263](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4263), [#4301](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4301)
+- EIP-7928 BAL accumulation during message execution, see PR [#4233](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4233), [#4304](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4304)
+
+## 10.1.1 - 2025-01-28
+
+- Ensure `codeAddress` in step event is correctly set, see PR [#4189](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4189)
+- BLS precompile optimizations and cleanup of unused operations, see PR [#4201](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4201)
+- Deprecate Node.js 18 support, minimum Node.js version is now 20, see PR [#4180](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4180)
+- Add Node.js 24 support, see PR [#4194](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4194)
+- Dependency update: `@noble/curves` to v2, see PR [#4179](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4179)
+
+## 10.1.0 - 2025-11-06
+
+- Extended modexp precompile debug messages, PR [#4124](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4124)
+- More ArrayBuffer type assignment fixes, PR [#4109](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4109)
+- Cleanup unused dependencies and fix dependency categorization, PR [#4146](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4146)
+- Remove Verkle package support, PR [#4145](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4145)
+
+### EIP-7823 - Set upper bounds for MODEXP
+
+The MODEXP precompile (address `0x05`) now enforces an upper bound of 8192 bits (1024 bytes) on each input field (base, exponent, modulus). If any input exceeds this limit, the precompile execution stops, returns an error, and consumes all gas. This change improves security and makes the precompile more suitable for future EVMMAX replacement.
+
+```typescript
+import { EVM } from '@ethereumjs/evm'
+import { Common, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: 'mainnet', hardfork: Hardfork.Osaka })
+const evm = await EVM.create({ common })
+
+// MODEXP call with inputs exceeding 1024 bytes will now fail
+// Inputs within the limit continue to work as before
+```
+
+### EIP-7883 - ModExp Gas Cost Increase
+
+The MODEXP precompile gas cost calculation has been updated according to EIP-7883. The minimum gas cost has been increased from 200 to 500, and the pricing algorithm has been adjusted with increased complexity calculations for larger inputs. The multiplier for exponents larger than 32 bytes has been doubled from 8 to 16.
+
+```typescript
+import { EVM } from '@ethereumjs/evm'
+import { Common, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: 'mainnet', hardfork: Hardfork.Osaka })
+const evm = await EVM.create({ common })
+
+// MODEXP calls will now consume more gas according to the new pricing formula
+// The minimum cost is now 500 gas (previously 200)
+```
+
+### EIP-7939 - Count leading zeros (CLZ) opcode
+
+A new opcode `CLZ` (0x1e) has been added that counts the number of leading zero bits in a 256-bit word. If the input is zero, it returns 256. The opcode has a gas cost of 5 gas.
+
+```typescript
+import { EVM } from '@ethereumjs/evm'
+import { Common, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: 'mainnet', hardfork: Hardfork.Osaka })
+const evm = await EVM.create({ common })
+
+// CLZ opcode can be used in EVM bytecode:
+// PUSH1 0x01  // Push 1 to stack
+// CLZ         // Count leading zeros: returns 255
+// PUSH1 0x00  // Push 0 to stack  
+// CLZ         // Returns 256
+```
+
+### EIP-7951 - Precompile for secp256r1 Curve Support
+
+A new precompile `P256VERIFY` has been added at address `0x100` for ECDSA signature verification over the secp256r1 curve (also known as P-256 or prime256v1). This enables native support for signatures from modern secure hardware including Apple Secure Enclave, Android Keystore, and FIDO2/WebAuthn devices. The precompile costs 6900 gas and expects 160 bytes of input (32 bytes each for message hash, r, s, public key x, and public key y).
+
+```typescript
+import { EVM } from '@ethereumjs/evm'
+import { Common, Hardfork } from '@ethereumjs/common'
+import { hexToBytes } from '@ethereumjs/util'
+
+const common = new Common({ chain: 'mainnet', hardfork: Hardfork.Osaka })
+const evm = await EVM.create({ common })
+
+// P256VERIFY precompile usage:
+// Input: 160 bytes = [msgHash (32) | r (32) | s (32) | qx (32) | qy (32)]
+// Output: 32 bytes with 0x00...01 for valid signature, empty for invalid
+const input = hexToBytes('0x...') // 160 bytes
+const result = await evm.runCall({
+  to: '0x0000000000000000000000000000000000000100',
+  data: input,
+  gasLimit: 10000n
+})
+```
+
 ## 10.0.0 - 2025-04-29
 
 ### Overview

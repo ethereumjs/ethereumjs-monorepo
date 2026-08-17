@@ -5,8 +5,10 @@ import {
   MAX_INTEGER,
   MAX_UINT64,
   bytesToBigInt,
+  eoaCode7702AuthorizationListBytesItemToJSON,
   validateNoLeadingZeroes,
 } from '@ethereumjs/util'
+import type { EOACode7702AuthorizationList } from '@ethereumjs/util'
 import type { EIP7702CompatibleTx } from '../types.ts'
 
 /**
@@ -21,8 +23,37 @@ export function getDataGas(tx: EIP7702CompatibleTx): bigint {
 }
 
 /**
+ * Returns the authorization list of the tx in JSON format.
+ *
+ * For frozen txs the result is computed once, frozen (the tx cannot change
+ * anymore, so neither can its JSON representation) and cached, and repeated
+ * calls return the same frozen object. For non-frozen txs a fresh (mutable)
+ * copy is returned on every call, since the underlying authorization list
+ * bytes could still change.
+ */
+export function getAuthorizationListJSON(tx: EIP7702CompatibleTx): EOACode7702AuthorizationList {
+  if (tx.cache.authorityListJSON !== undefined) {
+    return tx.cache.authorityListJSON
+  }
+
+  const authorityListJSON = tx.authorizationList.map((item) =>
+    eoaCode7702AuthorizationListBytesItemToJSON(item),
+  )
+
+  if (Object.isFrozen(tx)) {
+    for (const item of authorityListJSON) {
+      Object.freeze(item)
+    }
+    Object.freeze(authorityListJSON)
+    tx.cache.authorityListJSON = authorityListJSON
+  }
+
+  return authorityListJSON
+}
+
+/**
  * Checks if the authorization list is valid. Throws if invalid.
- * @param authorizationList
+ * @param tx - Transaction whose authorization list should be validated
  */
 export function verifyAuthorizationList(tx: EIP7702CompatibleTx) {
   const authorizationList = tx.authorizationList

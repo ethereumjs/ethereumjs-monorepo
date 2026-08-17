@@ -7,7 +7,6 @@ import type {
   Address,
   BinaryTreeExecutionWitness,
   PrefixedHexString,
-  VerkleExecutionWitness,
 } from '@ethereumjs/util'
 
 export interface StorageDump {
@@ -58,7 +57,7 @@ export type Proof = {
 }
 
 /**
- * Verkle related
+ * Binary tree related
  *
  * Experimental (do not implement)
  */
@@ -120,54 +119,43 @@ export interface BinaryTreeAccessWitnessInterface {
   revert(): void
 }
 
-export type VerkleAccessedStateType =
-  (typeof VerkleAccessedStateType)[keyof typeof VerkleAccessedStateType]
-
-export const VerkleAccessedStateType = {
-  BasicData: 'basicData',
-  CodeHash: 'codeHash',
-  Code: 'code',
-  Storage: 'storage',
-} as const
-
-export type RawVerkleAccessedState = {
-  address: Address
-  treeIndex: number | bigint
-  chunkIndex: number
-  chunkKey: PrefixedHexString
-}
-
-export type VerkleAccessedState =
-  | {
-      type: Exclude<
-        VerkleAccessedStateType,
-        typeof VerkleAccessedStateType.Code | typeof VerkleAccessedStateType.Storage
-      >
-    }
-  | { type: typeof VerkleAccessedStateType.Code; codeOffset: number }
-  | { type: typeof VerkleAccessedStateType.Storage; slot: bigint }
-
-export type VerkleAccessedStateWithAddress = VerkleAccessedState & {
-  address: Address
-  chunkKey: PrefixedHexString
-}
-export interface VerkleAccessWitnessInterface {
-  accesses(): Generator<VerkleAccessedStateWithAddress>
-  rawAccesses(): Generator<RawVerkleAccessedState>
-  debugWitnessCost(): void
-  readAccountBasicData(address: Address): bigint
-  writeAccountBasicData(address: Address): bigint
-  readAccountCodeHash(address: Address): bigint
-  writeAccountCodeHash(address: Address): bigint
-  readAccountHeader(address: Address): bigint
-  writeAccountHeader(address: Address): bigint
-  readAccountCodeChunks(contract: Address, startPc: number, endPc: number): bigint
-  writeAccountCodeChunks(contract: Address, startPc: number, endPc: number): bigint
-  readAccountStorage(contract: Address, storageSlot: bigint): bigint
-  writeAccountStorage(contract: Address, storageSlot: bigint): bigint
-  merge(accessWitness: VerkleAccessWitnessInterface): void
-  commit(): void
-  revert(): void
+/**
+ * Minimal surface of a binary-tree-backed state manager as required for
+ * binary execution witness generation (see `generateBinaryExecutionWitness`
+ * in the `@ethereumjs/evm` package).
+ *
+ * `StatefulBinaryTreeStateManager` from `@ethereumjs/statemanager` implements
+ * this interface; custom state managers can implement it to support witness
+ * generation without depending on the concrete class.
+ *
+ * The `tree` shape is structural (rather than referencing the `BinaryTree`
+ * class) so that this package does not depend on `@ethereumjs/binarytree`;
+ * `BinaryTree` satisfies it.
+ */
+export interface BinaryTreeStateManagerInterface {
+  /**
+   * Gets the current state root of the underlying tree.
+   */
+  getStateRoot(): Promise<Uint8Array>
+  /**
+   * The underlying binary tree holding the state.
+   */
+  readonly tree: {
+    /**
+     * Gets (no argument) and/or sets (`Uint8Array` argument) the current root
+     * of the tree.
+     */
+    root(value?: Uint8Array | null): Uint8Array
+    /**
+     * Retrieves the values at the given `suffixes` of the node at `stem`.
+     */
+    get(stem: Uint8Array, suffixes: number[]): Promise<(Uint8Array | null)[]>
+    /**
+     * Runs `operation` while holding the tree's internal lock, releasing the
+     * lock when the returned promise settles.
+     */
+    withLock<T>(operation: () => Promise<T>): Promise<T>
+  }
 }
 
 /*
@@ -226,11 +214,6 @@ export interface StateManagerInterface {
     clear(): void
   }
   generateCanonicalGenesis?(initState: any): Promise<void> // TODO make input more typesafe
-  initVerkleExecutionWitness?(
-    blockNum: bigint,
-    executionWitness?: VerkleExecutionWitness | null,
-  ): void
-  verifyVerklePostState?(accessWitness: VerkleAccessWitnessInterface): Promise<boolean>
   initBinaryTreeExecutionWitness?(
     blockNum: bigint,
     executionWitness?: BinaryTreeExecutionWitness | null,

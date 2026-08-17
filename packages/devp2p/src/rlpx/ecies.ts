@@ -2,18 +2,15 @@ import * as crypto from 'crypto'
 import { RLP } from '@ethereumjs/rlp'
 import {
   EthereumJSErrorWithoutCode,
-  bigIntToBytes,
   bytesToInt,
   concatBytes,
   hexToBytes,
   intToBytes,
-  setLengthLeft,
 } from '@ethereumjs/util'
+import { secp256k1 } from '@noble/curves/secp256k1.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
+import { randomBytes } from '@noble/hashes/utils.js'
 import debugDefault from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { getRandomBytesSync } from 'ethereum-cryptography/random.js'
-import { ecdh, ecdsaRecover } from 'ethereum-cryptography/secp256k1-compat.js'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
 
 import { assertEq, genPrivateKey, id2pk, pk2id, unstrictDecode, xor, zfill } from '../util.ts'
 
@@ -26,13 +23,10 @@ const debug = debugDefault('devp2p:rlpx:peer')
 
 function ecdhX(publicKey: Uint8Array, privateKey: Uint8Array) {
   // return (publicKey * privateKey).x
-  function hashfn(x: Uint8Array, y: Uint8Array) {
-    const pubKey = new Uint8Array(33)
-    pubKey[0] = (y[31] & 1) === 0 ? 0x02 : 0x03
-    pubKey.set(x, 1)
-    return pubKey.subarray(1)
-  }
-  return ecdh(publicKey, privateKey, { hashfn }, new Uint8Array(32))
+  // Get shared secret using noble curves - returns compressed public key (33 bytes)
+  const sharedSecret = secp256k1.getSharedSecret(privateKey, publicKey)
+  // Extract x coordinate from the shared secret point (first 32 bytes after the prefix)
+  return sharedSecret.subarray(1, 33)
 }
 
 // a straight rip from python interop w/go ecies implementation
@@ -92,13 +86,31 @@ export class ECIES {
     this._publicKey = id2pk(id)
     this._remotePublicKey = remoteId !== null ? id2pk(remoteId) : null
 
-    this._nonce = getRandomBytesSync(32)
+    this._nonce = randomBytes(32)
     this._ephemeralPrivateKey = genPrivateKey()
     this._ephemeralPublicKey = secp256k1.getPublicKey(this._ephemeralPrivateKey, false)
 
-    this._keccakFunction = common?.customCrypto.keccak256 ?? keccak256
-    this._ecdsaSign = common?.customCrypto.ecsign ?? secp256k1.sign
-    this._ecdsaRecover = common?.customCrypto.ecdsaRecover ?? ecdsaRecover
+    this._keccakFunction = common?.customCrypto.keccak256 ?? keccak_256
+    this._ecdsaSign =
+      common?.customCrypto.ecsign ??
+      ((msg: Uint8Array, pk: Uint8Array) => {
+        // noble/curves returns: recovery[1] + r[32] + s[32]
+        // ECIES expects: r[32] + s[32] + recovery[1]
+        const sigBytes = secp256k1.sign(msg, pk, { format: 'recovered', prehash: false })
+        const recovery = sigBytes[0]
+        const r = sigBytes.subarray(1, 33)
+        const s = sigBytes.subarray(33, 65)
+        return concatBytes(r, s, new Uint8Array([recovery]))
+      })
+
+    this._ecdsaRecover =
+      common?.customCrypto.ecdsaRecover ??
+      ((sig: Uint8Array, recId: number, hash: Uint8Array) => {
+        // sig is: r[32] + s[32] (64 bytes compact), recId is separate
+        const signature = secp256k1.Signature.fromBytes(sig)
+        const point = signature.addRecoveryBit(recId).recoverPublicKey(hash)
+        return point.toBytes(false)
+      })
   }
 
   _encryptMessage(
@@ -113,7 +125,7 @@ export class ECIES {
     const mKey = crypto.createHash('sha256').update(key.subarray(16, 32)).digest() // MAC key
 
     // encrypt
-    const IV = getRandomBytesSync(16)
+    const IV = randomBytes(16)
     const cipher = crypto.createCipheriv('aes-128-ctr', ekey, IV)
     const encryptedData = Uint8Array.from(cipher.update(data))
     const dataIV = concatBytes(IV, encryptedData)
@@ -194,11 +206,7 @@ export class ECIES {
     const x = ecdhX(this._remotePublicKey, this._privateKey)
     const sig = this._ecdsaSign(xor(x, this._nonce), this._ephemeralPrivateKey)
     const data = [
-      concatBytes(
-        setLengthLeft(bigIntToBytes(sig.r), 32),
-        setLengthLeft(bigIntToBytes(sig.s), 32),
-        Uint8Array.from([sig.recovery]),
-      ),
+      sig,
       // this._keccakFunction(pk2id(this._ephemeralPublicKey)),
       pk2id(this._publicKey),
       this._nonce,
@@ -206,7 +214,7 @@ export class ECIES {
     ]
 
     const dataRLP = RLP.encode(data)
-    const pad = getRandomBytesSync(100 + Math.floor(Math.random() * 151)) // Random padding between 100, 250
+    const pad = randomBytes(100 + Math.floor(Math.random() * 151)) // Random padding between 100, 250
     const authMsg = concatBytes(dataRLP, pad)
     const overheadLength = 113
     const sharedMacData = intToBytes(authMsg.length + overheadLength)
@@ -221,9 +229,7 @@ export class ECIES {
     const x = ecdhX(this._remotePublicKey, this._privateKey)
     const sig = this._ecdsaSign(xor(x, this._nonce), this._ephemeralPrivateKey)
     const data = concatBytes(
-      bigIntToBytes(sig.r),
-      bigIntToBytes(sig.s),
-      Uint8Array.from([sig.recovery]),
+      sig,
       this._keccakFunction(pk2id(this._ephemeralPublicKey)),
       pk2id(this._publicKey),
       this._nonce,
@@ -304,7 +310,7 @@ export class ECIES {
     const data = [pk2id(this._ephemeralPublicKey), this._nonce, Uint8Array.from([0x04])]
 
     const dataRLP = RLP.encode(data)
-    const pad = getRandomBytesSync(100 + Math.floor(Math.random() * 151)) // Random padding between 100, 250
+    const pad = randomBytes(100 + Math.floor(Math.random() * 151)) // Random padding between 100, 250
     const ackMsg = concatBytes(dataRLP, pad)
     const overheadLength = 113
     const sharedMacData = intToBytes(ackMsg.length + overheadLength)
@@ -367,7 +373,7 @@ export class ECIES {
     const bufSize = zfill(intToBytes(size), 3)
     const headerData = RLP.encode([0, 0]) // [capability-id, context-id] (currently unused in spec)
     let header = concatBytes(bufSize, headerData)
-    header = zfill(header, 16, false)
+    header = zfill(header, 16, false) as Uint8Array<ArrayBuffer>
     if (!this._egressAes) return
     header = Uint8Array.from(this._egressAes.update(header))
 

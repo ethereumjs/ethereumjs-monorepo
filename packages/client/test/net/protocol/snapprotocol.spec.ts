@@ -10,7 +10,7 @@ import {
   hexToBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 import { assert, describe, it } from 'vitest'
 
 import { Chain } from '../../../src/blockchain/index.ts'
@@ -209,7 +209,7 @@ describe('[SnapProtocol]', () => {
       assert.fail(`AccountRange proof verification failed with message=${(e as Error).message}`)
     }
     assert.isTrue(
-      equalsBytes(keccak256(proof[0]), stateRoot),
+      equalsBytes(keccak_256(proof[0]), stateRoot),
       'Proof should link to the requested stateRoot',
     )
   })
@@ -224,7 +224,7 @@ describe('[SnapProtocol]', () => {
     const limit = hexToBytes('0x0000000000000000000000000f00000000000000000000000000000000000010')
     const bytes = BigInt(5000000)
     const accounts = [
-      keccak256(hexToBytes('0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')),
+      keccak_256(hexToBytes('0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')),
       hexToBytes('0x0000000000000000000000000f00000000000000000000000000000000000010'),
     ]
 
@@ -364,7 +364,7 @@ describe('[SnapProtocol]', () => {
       assert.fail(`StorageRange proof verification failed with message=${(e as Error).message}`)
     }
     assert.isTrue(
-      equalsBytes(keccak256(proof[0]), lastAccountStorageRoot),
+      equalsBytes(keccak_256(proof[0]), lastAccountStorageRoot),
       'Proof should link to the accounts storageRoot',
     )
   })
@@ -375,7 +375,7 @@ describe('[SnapProtocol]', () => {
     const p = new SnapProtocol({ config, chain })
     const reqId = BigInt(1)
     const hashes = [
-      keccak256(hexToBytes('0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')),
+      keccak_256(hexToBytes('0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')),
       hexToBytes('0x0000000000000000000000000f00000000000000000000000000000000000010'),
     ]
     const bytes = BigInt(5000000)
@@ -463,7 +463,7 @@ describe('[SnapProtocol]', () => {
     )
     const code = codes[0]
     assert.isTrue(
-      equalsBytes(keccak256(code), codeHash),
+      equalsBytes(keccak_256(code), codeHash),
       'Code should match the requested codeHash',
     )
   })

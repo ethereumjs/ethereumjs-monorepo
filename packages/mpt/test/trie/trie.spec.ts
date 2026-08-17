@@ -15,7 +15,7 @@ import {
   unprefixedHexToBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 import { assert, describe, it } from 'vitest'
 
 import { ROOT_DB_KEY as BASE_DB_KEY, MerklePatriciaTrie, createMPT } from '../../src/index.ts'
@@ -37,7 +37,7 @@ for (const { constructor, defaults, title } of [
 
   let ROOT_DB_KEY: Uint8Array
   if (IS_SECURE_TRIE) {
-    ROOT_DB_KEY = keccak256(BASE_DB_KEY)
+    ROOT_DB_KEY = keccak_256(BASE_DB_KEY)
   } else {
     ROOT_DB_KEY = BASE_DB_KEY
   }

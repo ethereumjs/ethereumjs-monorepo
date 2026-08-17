@@ -1,12 +1,6 @@
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { TransactionType, createTx } from '@ethereumjs/tx'
-import {
-  Account,
-  blobsToCommitments,
-  computeVersionedHash,
-  getBlobs,
-  hexToBytes,
-} from '@ethereumjs/util'
+import { Account, blobsToCommitments, computeVersionedHash, getBlobs } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 
 import { createVM } from '../../src/index.ts'
@@ -15,6 +9,7 @@ import { LevelDB } from './level.ts'
 
 import type { Block } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
+import { SIGNER_G } from '@ethereumjs/testdata'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import type { VMOpts } from '../../src/types.ts'
 import type { VM } from '../../src/vm.ts'
@@ -114,10 +109,7 @@ export function getTransaction(
   const tx = createTx(txParams, { common, freeze: false })
 
   if (sign) {
-    const privateKey = hexToBytes(
-      '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-    )
-    return tx.sign(privateKey)
+    return tx.sign(SIGNER_G.privateKey)
   }
 
   return tx

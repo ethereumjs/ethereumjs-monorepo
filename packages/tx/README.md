@@ -9,11 +9,12 @@
 | Implements schema and functions for the different Ethereum transaction types |
 | ---------------------------------------------------------------------------- |
 
-- 🦄 All tx types up till **Pectra**
+- 🦄 All tx types up to **Osaka**
 - 🌴 Tree-shakeable API
 - 👷🏼 Controlled dependency set (1 external + `@Noble` crypto)
 - 🎼 Unified tx type API
 - 📲 New type for **EIP-7702** account abstraction
+- 🔮 `EIP-7594` PeerDAS Blob Transactions
 - 🛵 190KB bundle size (all tx types) (47KB gzipped)
 - 🏄🏾‍♂️ WASM-free default + Fully browser ready
 
@@ -23,9 +24,16 @@
 - [Getting Started](#getting-started)
 - [Chain and Hardfork Support](#chain-and-hardfork-support)
 - [Transaction Types](#transaction-types)
+  - [Gas Fee Market Transactions (EIP-1559)](#gas-fee-market-transactions-eip-1559)
+  - [Access List Transactions (EIP-2930)](#access-list-transactions-eip-2930)
+  - [Blob Transactions (EIP-4844 / EIP-7594)](#blob-transactions-eip-4844--eip-7594)
+  - [EOA Code Transaction (EIP-7702)](#eoa-code-transaction-eip-7702)
+  - [Legacy Transactions](#legacy-transactions)
+  - [Amsterdam transaction validation (EIP-7976, EIP-7981)](#amsterdam-transaction-validation-eip-7976-eip-7981)
 - [Transaction Factory](#transaction-factory)
 - [KZG Setup](#kzg-setup)
 - [Sending a Transaction](#sending-a-transaction)
+- [Architecture](#architecture)
 - [Browser](#browser)
 - [Hardware Wallets](#hardware-wallets)
 - [API](#api)
@@ -44,7 +52,7 @@ npm install @ethereumjs/tx
 
 ### Static Constructor Methods
 
-To instantiate a tx it is not recommended to use the constructor directly. Instead each tx type comes with the following set of static constructor methods which helps on instantiation depending on the input data format:
+To instantiate a tx, it is not recommended to use the constructor directly. Instead each tx type comes with the following set of static constructor methods which help instantiate depending on the input data format:
 
 - `public static fromTxData(txData: TxData, opts: TxOptions = {})`: instantiate from a data dictionary
 - `public static fromSerializedTx(serialized: Uint8Array, opts: TxOptions = {})`: instantiate from a serialized tx
@@ -75,6 +83,7 @@ Hardforks adding features and/or tx types:
 | `london`         | `v3.2.0`   | `EIP-1559` Transactions                                                                                 |
 | `cancun`         | `v5.0.0`   | `EIP-4844` Transactions                                                                                 |
 | `prague`         | `v10.0.0`  | `EIP-7702` Transactions                                                                                 |
+| `amsterdam`      | `v10.x`    | `EIP-7976` / `EIP-7981` floor pricing, bundled with other Amsterdam EIPs (experimental)                 |
 
 ## Transaction Types
 
@@ -87,6 +96,7 @@ This library supports the following transaction types ([EIP-2718](https://eips.e
 - [Blob Transactions (EIP-4844)](#blob-transactions-eip-4844)
 - [EOA Code Transaction (EIP-7702)](#eoa-code-transaction-eip-7702)
 - [Legacy Transactions](#legacy-transactions) (original Ethereum txs)
+- [Amsterdam transaction validation (EIP-7976, EIP-7981)](#amsterdam-transaction-validation-eip-7976-eip-7981)
 
 ### Gas Fee Market Transactions (EIP-1559)
 
@@ -95,7 +105,7 @@ This library supports the following transaction types ([EIP-2718](https://eips.e
 - Activation: `london`
 - Type: `2`
 
-This is the recommended tx type starting with the activation of the `london` HF, see the following code snipped for an example on how to instantiate:
+This is the recommended tx type starting with the activation of the `london` HF, see the following code snippet for an example on how to instantiate:
 
 ```ts
 // ./examples/londonTx.ts
@@ -135,7 +145,7 @@ console.log(bytesToHex(tx.hash())) // 0x6f9ef69ccb1de1aea64e511efd6542541008ced3
 - Activation: `berlin`
 - Type: `1`
 
-This transaction type has been introduced along the `berlin` HF. See the following code snipped for an example on how to instantiate:
+This transaction type has been introduced along the `berlin` HF. See the following code snippet for an example on how to instantiate:
 
 ```ts
 // ./examples/accessListTx.ts
@@ -176,20 +186,27 @@ console.log(bytesToHex(tx.hash())) // 0x9150cdebad74e88b038e6c6b964d99af705f9c08
 ```
 
 For generating access lists from tx data based on a certain network state there is a `reportAccessList` option
-on the `Vm.runTx()` method of the `@ethereumjs/vm` `TypeScript` VM implementation.
+on the `VM.runTx()` method of the `@ethereumjs/vm` `TypeScript` VM implementation.
 
-### Blob Transactions (EIP-4844)
+### Blob Transactions (EIP-4844 / EIP-7594)
 
 - Class: `BlobEIP4844Tx`
-- EIP: [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844)
-- Activation: `cancun`
+- EIPs: [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844), [EIP-7594](https://eips.ethereum.org/EIPS/eip-7594)
+- Activation: `cancun` (EIP-4844), `osaka` (EIP-7594)
 - Type: `3`
 
+#### Introduction
+
 This library supports the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844).
+Additionally it is able to process blobs in the "PeerDAS way" - introduced with [EIP-7594](https://eips.ethereum.org/EIPS/eip-7594) along the
+`osaka` hardfork and generate cell proofs instead of blob proofs.
 
 **Note:** This functionality needs a manual KZG library installation and global initialization, see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
 
-See the following code snipped for an example on how to instantiate:
+#### Example
+
+See the following code snippet for an example on how to create a blob transaction, one for EIP-4844 only 
+and one taking EIP-7594 into the mix:
 
 ```ts
 // ./examples/blobTx.ts
@@ -197,58 +214,103 @@ See the following code snipped for an example on how to instantiate:
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import type { BlobEIP4844TxData } from '@ethereumjs/tx'
 import { createBlob4844Tx } from '@ethereumjs/tx'
-import { bytesToHex, randomBytes } from '@ethereumjs/util'
-import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
-import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
+import { bytesToHex, getBlobs, randomBytes } from '@ethereumjs/util'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 
 const main = async () => {
   const kzg = new microEthKZG(trustedSetup)
-  const common = new Common({
+  // EIP-4844 only
+  const common4844 = new Common({
     chain: Mainnet,
     hardfork: Hardfork.Cancun,
     customCrypto: { kzg },
   })
 
-  const txData: BlobEIP4844TxData = {
-    data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
-    gasLimit: '0x02625a00',
-    maxPriorityFeePerGas: '0x01',
-    maxFeePerGas: '0xff',
-    maxFeePerBlobGas: '0xfff',
-    nonce: '0x00',
-    to: '0xcccccccccccccccccccccccccccccccccccccccc',
-    value: '0x0186a0',
-    v: '0x01',
-    r: '0xafb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9',
-    s: '0x479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64',
-    chainId: '0x01',
-    accessList: [],
-    type: '0x05',
-    blobsData: ['abcd'],
+  // EIP-4844 and EIP-7594
+  const common4844and7594 = new Common({
+    chain: Mainnet,
+    hardfork: Hardfork.Osaka,
+    customCrypto: { kzg },
+  })
+  const setups = [
+    {
+      title: 'Blob transaction (EIP-4844 only)',
+      common: common4844,
+      proofAmountComment: 'one proof per blob',
+    },
+    {
+      title: 'Blob transaction (EIP-4844 + EIP-7594)',
+      common: common4844and7594,
+      proofAmountComment: '128 cells per blob + one proof per cell -> NUM_BLOBS * 128 proofs',
+    },
+  ]
+
+  for (const setup of setups) {
+    console.log(`\n${setup.title}:`)
+    console.log('---------------------------------------')
+
+    const blobsData = ['blob 1', 'blob 2', 'blob 3']
+    console.log(`Blobs (Data) : "${blobsData.join('", "')}"`)
+    // Final format, filled with a lot of 0s, added marker
+    const blobs = getBlobs(blobsData)
+
+    console.log('Generating tx...')
+
+    const txData: BlobEIP4844TxData = {
+      data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+      gasLimit: 16_000_000n,
+      maxPriorityFeePerGas: '0x01',
+      maxFeePerGas: '0xff',
+      maxFeePerBlobGas: '0xfff',
+      nonce: '0x00',
+      to: '0xcccccccccccccccccccccccccccccccccccccccc',
+      value: '0x0186a0',
+      v: '0x01',
+      r: '0xafb6e247b1c490e284053c87ab5f6b59e219d51f743f7a4d83e400782bc7e4b9',
+      s: '0x479a268e0e0acd4de3f1e28e4fac2a6b32a4195e8dfa9d19147abe8807aa6f64',
+      chainId: '0x01',
+      accessList: [],
+      type: '0x05',
+      blobs,
+    }
+
+    const tx = createBlob4844Tx(txData, { common: setup.common })
+
+    console.log(`Tx hash               : ${bytesToHex(tx.hash())}`)
+    console.log(`Num blobs             : ${tx.numBlobs()}`)
+    console.log(`Blob versioned hashes : ${tx.blobVersionedHashes.join(', ')}`)
+    console.log(`KZG commitments       : ${tx.kzgCommitments!.join(', ')}`)
+    console.log(`First KZG (cell) proof: ${tx.kzgProofs![0]}`)
+    console.log(`Num KZG (cell) proofs : ${tx.kzgProofs!.length} (${setup.proofAmountComment})`)
   }
-
-  const tx = createBlob4844Tx(txData, { common })
-
-  console.log(bytesToHex(tx.hash())) //0x3c3e7c5e09c250d2200bcc3530f4a9088d7e3fb4ea3f4fccfd09f535a3539e84
 
   // To send a transaction via RPC, you can something like this:
   // const rawTx = tx.sign(privateKeyBytes).serializeNetworkWrapper()
   // myRPCClient.request('eth_sendRawTransaction', [rawTx]) // submits a transaction via RPC
+  //
+  // Also see ./sendRawSepoliaTx.ts example
 }
 
 void main()
 
 ```
 
-Note that `versionedHashes` and `kzgCommitments` have a real length of 32 bytes, `blobs` have a real length of `4096` bytes and values are trimmed here for brevity.
+**Note:** `versionedHashes` and `kzgCommitments` have a real length of 32 bytes, `blobs` have a real length of `4096` bytes and values are trimmed here for brevity.
 
-Alternatively, you can pass a `blobsData` property with an array of strings corresponding to a set of blobs and the `fromTxData` constructor will derive the corresponding `blobs`, `versionedHashes`, `kzgCommitments`, and `kzgProofs` for you.
+You can either pass in blobs as the initial `blobsData` (the data you want to store in the blob) - and the final `blobs` format (filled with a lot of 0s, added marker) will be derived for you - or you can pass in the final `blobs` format directly as bytes. `versionedHashes`, `kzgCommitments` and `kzgProofs` are either derived or taken from the values passed in.
+
+The `kzgProofs` field is used for both blob proofs (EIP-4844) and cell proofs (EIP-7594). Note that the amount of proofs increases by a factor of 128 when EIP-7594 is activated, since proofs are then computed per cell instead of per blob (128 cells per blob).
+
+For manually deriving commitments, proofs and versioned hashes, there are dedicated helpers available in the [@ethereumjs/util](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util) package.
 
 #### Serialization
 
 Blob transactions can be serialized in two ways.
-1) `tx.serialize()` - the standard serialization returns an RLP-encoded `uint8Array` that conforms to the transaction as represented after it is included in a block 
-2) `tx.serializeNetworkWrapper()` - this serialization format includes the `blobs` in the encoded data and is the format specified for transactions that are being submitted to/gossipped around the mempool.  If you are constructing a transaction to submit via JSON-RPC, use this format.
+1) `tx.serialize()` - the standard serialization returns an RLP-encoded `Uint8Array` that conforms to the transaction as represented after it is included in a block 
+2) `tx.serializeNetworkWrapper()` - this serialization format includes the `blobs` in the encoded data and is the format specified for transactions that are being submitted to/gossipped around the mempool.  **If you are constructing a transaction to submit via JSON-RPC, use this format.**
+
+See the [Send Raw Sepolia Tx](./examples/sendRawSepoliaTx.ts) example for a detailed example on how to send a blob transaction via JSON-RPC.
 
 See the [Blob Transaction Tests](./test/eip4844.spec.ts) for additional examples of usage in instantiating, serializing, and deserializing these transactions.
 
@@ -259,7 +321,7 @@ See the [Blob Transaction Tests](./test/eip4844.spec.ts) for additional examples
 - Activation: `prague`
 - Type: `4`
 
-This tx type allows to run code in the context of an EOA and therefore extend the functionality which can be "reached" from respectively integrated into the scope of an otherwise limited EOA account.
+This tx type lets you run code in the context of an EOA, extending the functionality available to an otherwise limited account.
 
 The following is a simple example how to use an `EOACodeEIP7702Tx` with one authorization list item:
 
@@ -301,7 +363,7 @@ console.log(
 - Activation: `chainstart` (with modifications along the road, see HF section below)
 - Type: `0` (internal)
 
-Legacy transaction are still valid transaction within Ethereum `mainnet` but will likely be deprecated at some point.
+Legacy transactions are still valid transactions within Ethereum `mainnet` but will likely be deprecated at some point.
 See this [example script](./examples/transactions.ts) or the following code example on how to use.
 
 ```ts
@@ -333,9 +395,23 @@ console.log(bytesToHex(signedTx.hash())) // 0x894b72d87f8333fccd29d1b3aca39af69d
 
 ```
 
+### Amsterdam transaction validation (EIP-7976, EIP-7981)
+
+See the [canonical Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) in `@ethereumjs/vm` for release ↔ spec tracking.
+
+On `Hardfork.Amsterdam` (experimental), two EIPs adjust the minimum gas a transaction must pay before execution:
+
+**[EIP-7976](https://eips.ethereum.org/EIPS/eip-7976) — calldata floor:** under EIP-7623, calldata is priced in **tokens** (1 per zero byte, 4 per non-zero byte pre-7976). EIP-7976 raises the floor to a uniform **4 tokens per byte** for all calldata bytes. The floor cost is `floor_base + totalCostFloorPerToken × tokens`, where `floor_base` is the decomposed EIP-2780 execution intrinsic (`txGas` + recipient/`TX_VALUE_COST` extras for calls, or `txGas` + `txCreationGas` for creates — **not** `TX_VALUE_COST` on value creates). Since glamsterdam-devnet v8, `TX_VALUE_COST` (6000) includes the EIP-7708 transfer log — it is not added separately. Self-transfers skip the extras. Enforced in `getValidationErrors()` / `getCalldataFloorGas()` for all tx types.
+
+**[EIP-7981](https://eips.ethereum.org/EIPS/eip-7981) — access-list floor:** for typed txs with an access list (types `1`, `2`, `3`, `4`), an additional floor charge applies to the raw access-list bytes: **20 bytes per address + 32 bytes per storage key**, each counted at 4 tokens per byte (`totalCostFloorPerToken × accessListBytes × 4`). Since glamsterdam-devnet v8 (EIP-8038), the separate execution component is **`COLD_*_ACCESS − WARM_ACCESS`**: **2900 per address**, **2000 per storage key** (v8.1.0 revised schedule), not the pre-v8 3000/3000 from EIP-7981 alone.
+
+Both floors feed into EIP-8037 block-level regular-gas accounting in the VM: `RunTxResult.txRegularGas = max(raw_regular_gas, calldata_floor)`. See [@ethereumjs/vm EIP-8037 docs](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#eip-8037-state-creation-gas-cost-increase-amsterdam).
+
+**Example:** Amsterdam txs in tests typically need `baseFeePerGas: 1n` on the block header and a sufficiently high `gasPrice` / `maxFeePerGas` on legacy/1559 txs to satisfy the 1559 base-fee check alongside the new floors.
+
 ## Transaction Factory
 
-If you only know on runtime which tx type will be used within your code or if you want to keep your code transparent to tx types, this library comes with a `TransactionFactory` for your convenience which can be used as follows:
+If you only know at runtime which tx type will be used within your code or if you want to keep your code transparent to tx types, this library comes with a `TransactionFactory` for your convenience which can be used as follows:
 
 ```ts
 // ./examples/txFactory.ts
@@ -357,7 +433,7 @@ if (tx.supports(Capability.EIP1559FeeMarket)) {
 }
 ```
 
-The correct tx type class for instantiation will then be chosen on runtime based on the data provided as an input.
+The correct tx type class for instantiation will then be chosen at runtime based on the data provided as an input.
 
 `TransactionFactory` supports the following static constructor methods:
 
@@ -370,14 +446,14 @@ The correct tx type class for instantiation will then be chosen on runtime based
 
 This library fully supports `EIP-4844` blob transactions. For blob transactions and other KZG related proof functionality (e.g. for EVM precompiles) KZG has to be manually installed and initialized in the `common` instance to be used in instantiating blob transactions.
 
-As a first step add the [micro-eth-signer](https://github.com/paulmillr/micro-eth-signer) package for KZG and [@paulmillr/trusted-setups](https://github.com/paulmillr/trusted-setups) for the trusted setup data as dependencies to your `package.json` file and install the libraries. Then initialization can then be done like the following:
+As a first step add the [micro-eth-signer](https://github.com/paulmillr/micro-eth-signer) package for KZG and [@paulmillr/trusted-setups](https://github.com/paulmillr/trusted-setups) for the trusted setup data as dependencies to your `package.json` file and install the libraries. Then initialization can be done like the following:
 
 ```ts
 // ./examples/initKzg.ts
 
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
-import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 
 const main = async () => {
   const kzg = new microEthKZG(trustedSetup)
@@ -427,6 +503,26 @@ const signedTx = tx.sign(pk)
 console.log(bytesToHex(signedTx.hash())) // 0xbf98f6f8700812ed6f2314275070256e11945fa48afd80fb301265f6a41a2dc2
 ```
 
+## Architecture
+
+This package implements every Ethereum transaction type behind a common interface, with shared behavior factored into reusable "capability" mixins.
+
+### Internal Module Map
+
+- **One directory per typed transaction** — `legacy/`, `2930/` (EIP-2930 access list), `1559/` (EIP-1559 fee market), `4844/` (EIP-4844 blob), `7702/` (EIP-7702 set-code). Each contains the transaction class and its `createX` constructors.
+- **`capabilities/`** — shared logic mixed into the transaction classes: `legacy.ts`, `eip2718.ts` (typed-transaction envelope), `eip2930.ts` (access lists), `eip1559.ts` (fee market), `eip7702.ts` (authorization lists). This is how common signing/serialization behavior is reused across types without inheritance trees.
+- **`transactionFactory.ts`** — the type-dispatching entry points `createTx`, `createTxFromRLP`, `createTxFromBlockBodyData`: given raw data or RLP, they detect the type byte and build the right transaction.
+- **`types.ts`** — `TransactionType` (the type enum), the per-type `…CompatibleTx` interfaces and shared option/data types.
+- **`params.ts`** — `paramsTx`, the EIP-indexed parameter dictionary merged into `Common`.
+- **`util/`**, **`constants.ts`** — encoding helpers and shared constants.
+
+### Extension Points
+
+- **Type dispatch** — prefer the `transactionFactory.ts` `createTx*` functions over importing a specific type's constructor when the type is data-driven; they return the correct `TransactionType` automatically.
+- **Custom `Common`** — every transaction is built with a `Common` (`createTx(data, { common })`), which determines chain id, active hardfork and which transaction types/fields are valid.
+- **Custom parameters** — override `paramsTx` values via the `params` option where supported.
+- **KZG backend** (EIP-4844) — blob transactions require a KZG implementation to be configured on `Common`; see [KZG Setup](#kzg-setup).
+
 ## Browser
 
 We provide hybrid ESM/CJS builds for all our libraries. With the v10 breaking release round from Spring 2025, all libraries are "pure-JS" by default and we have eliminated all hard-wired WASM code. Additionally we have substantially lowered the bundle sizes, reduced the number of dependencies, and cut out all usages of Node.js-specific primitives (like the Node.js event emitter).
@@ -441,45 +537,81 @@ To sign a tx with a hardware or external wallet use `tx.getMessageToSign()` to r
 
 A legacy transaction will return a Buffer list of the values, and a Typed Transaction ([EIP-2718](https://eips.ethereum.org/EIPS/eip-2718)) will return the serialized output.
 
-Here is an example of signing txs with `@ledgerhq/hw-app-eth` as of `v6.5.0`:
-
+Here is an example of signing txs with `@ledgerhq/hw-app-eth` with `v6.45.4` and `@ledgerhq/hw-transport-node-hid` with `v6.29.5`:
 ```ts
-import { Chain, Common } from '@ethereumjs/common'
-import { LegacyTransaction, FeeMarketEIP1559Transaction } from '@ethereumjs/tx'
-import { bytesToHex } from '@ethereumjs/util'
+// examples/ledgerSigner.mts
+
+import { Common, Sepolia } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
+import {
+  type FeeMarketEIP1559TxData,
+  type LegacyTxData,
+  createFeeMarket1559Tx,
+  createLegacyTx,
+} from '@ethereumjs/tx'
+import { bytesToHex } from '@ethereumjs/util'
 import Eth from '@ledgerhq/hw-app-eth'
+import TransportNodeHid from '@ledgerhq/hw-transport-node-hid'
 
-const eth = new Eth(transport)
-const common = new Common({ chain: Chain.Sepolia })
+const transport = await TransportNodeHid.default.open()
+const eth = new Eth.default(transport)
+const common = new Common({ chain: Sepolia })
 
-let txData: any = { value: 1 }
-let tx: LegacyTransaction | FeeMarketEIP1559Transaction
-let unsignedTx: Uint8Array[] | Uint8Array
-let signedTx: typeof tx
+// Signing with the first key of the derivation path
 const bip32Path = "44'/60'/0'/0/0"
+
+const legacyTxData: LegacyTxData = {
+  nonce: '0x0',
+  gasPrice: '0x09184e72a000',
+  gasLimit: '0x2710',
+  to: '0x0000000000000000000000000000000000000000',
+  value: '0x00',
+  data: '0x7f7465737432000000000000000000000000000000000000000000000000000000600057',
+}
+
+const eip1559TxData: FeeMarketEIP1559TxData = {
+  data: '0x1a8451e600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+  gasLimit: '0x02625a00',
+  maxPriorityFeePerGas: '0x01',
+  maxFeePerGas: '0xff',
+  nonce: '0x00',
+  to: '0xcccccccccccccccccccccccccccccccccccccccc',
+  value: '0x0186a0',
+  accessList: [],
+  type: '0x02',
+}
 
 const run = async () => {
   // Signing a legacy tx
-  tx = LegacyTransaction.fromTxData(txData, { common })
-  tx = tx.getMessageToSign()
-  // ledger signTransaction API expects it to be serialized
-  let { v, r, s } = await eth.signTransaction(bip32Path, RLP.encode(tx))
-  tx.addSignature(v, r, s, true)
-  let from = tx.getSenderAddress().toString()
-  console.log(`signedTx: ${bytesToHex(tx.serialize())}\nfrom: ${from}`)
+  const tx1 = createLegacyTx(legacyTxData, { common })
+  const unsignedTx1 = tx1.getMessageToSign()
+  // Ledger signTransaction API expects it to be serialized
+  // Ledger returns unprefixed hex strings without 0x for v, r, s values
+  const { v, r, s } = await eth.signTransaction(
+    bip32Path,
+    bytesToHex(RLP.encode(unsignedTx1)).slice(2),
+    null,
+  )
+  const signedTx1 = tx1.addSignature(BigInt(`0x${v}`), BigInt(`0x${r}`), BigInt(`0x${s}`))
+  const from = signedTx1.getSenderAddress().toString()
+  console.log(`signedTx: ${bytesToHex(tx1.serialize())}\nfrom: ${from}`)
 
   // Signing a 1559 tx
-  txData = { value: 1 }
-  tx = FeeMarketEIP1559Transaction.fromTxData(txData, { common })
-  tx = tx.getMessageToSign()
-  ;({ v, r, s } = await eth.signTransaction(bip32Path, unsignedTx)) // this syntax is: object destructuring - assignment without declaration
-  tx.addSignature(v, r, s)
-  from = tx.getSenderAddress().toString()
-  console.log(`signedTx: ${bytesToHex(tx.serialize())}\nfrom: ${from}`)
+  const tx2 = createFeeMarket1559Tx(eip1559TxData, { common })
+  // Ledger returns unprefixed hex strings without 0x for v, r, s values
+  const unsignedTx2 = tx2.getMessageToSign()
+  const { v2, r2, s2 } = await eth.signTransaction(
+    bip32Path,
+    bytesToHex(unsignedTx2).slice(2),
+    null,
+  )
+  const signedTx2 = tx2.addSignature(BigInt(`0x${v2}`), BigInt(`0x${r2}`), BigInt(`0x${s2}`))
+  const from2 = signedTx2.getSenderAddress().toString()
+  console.log(`signedTx: ${bytesToHex(tx2.serialize())}\nfrom: ${from2}`)
 }
 
 run()
+
 ```
 
 ## API
@@ -508,7 +640,7 @@ Using ESM will give you additional advantages over CJS beyond browser usage like
 
 ## EthereumJS
 
-The `EthereumJS` GitHub organization and its repositories are managed by the Ethereum Foundation JavaScript team, see our [website](https://ethereumjs.github.io/) for a team introduction. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
+The `EthereumJS` GitHub organization and its repositories are managed by members of the former Ethereum Foundation JavaScript team and the broader Ethereum community. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
 
 ## License
 

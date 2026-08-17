@@ -1,7 +1,6 @@
 import { createMPTFromProof } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
 import { bytesToBigInt, hexToBytes } from '@ethereumjs/util'
-import * as td from 'testdouble'
 import { assert, describe, it, vi } from 'vitest'
 
 import { Chain } from '../../../src/blockchain/index.ts'
@@ -35,8 +34,8 @@ describe('[AccountFetcher]', async () => {
     idle() {}
     ban() {}
   }
-  PeerPool.prototype.idle = td.func<any>()
-  PeerPool.prototype.ban = td.func<any>()
+  PeerPool.prototype.idle = vi.fn()
+  PeerPool.prototype.ban = vi.fn()
 
   const { AccountFetcher } = await import('../../../src/sync/fetcher/accountfetcher.ts')
 
@@ -261,8 +260,7 @@ describe('[AccountFetcher]', async () => {
       count: BigInt(2) ** BigInt(256) - BigInt(1),
     })
     const task = { count: BigInt(2) ** BigInt(256) - BigInt(1), first: _zeroElementProofOrigin }
-    const mockedGetAccountRange = td.func<any>()
-    td.when(mockedGetAccountRange(td.matchers.anything())).thenReturn({
+    const mockedGetAccountRange = vi.fn().mockReturnValue({
       reqId: BigInt(1),
       accounts: [],
       proof: _zeroElementProof,
@@ -300,8 +298,7 @@ describe('[AccountFetcher]', async () => {
     })
     const task = { count: BigInt(2) ** BigInt(256) - BigInt(1), first: _zeroElementProofOrigin }
 
-    const mockedGetAccountRange = td.func<any>()
-    td.when(mockedGetAccountRange(td.matchers.anything())).thenReturn({
+    const mockedGetAccountRange = vi.fn().mockReturnValue({
       reqId: BigInt(1),
       accounts: [],
       proof: _zeroElementProof,

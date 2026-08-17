@@ -9,7 +9,7 @@ import {
   toBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 
 import { createBlockchain } from '../src/index.ts'
 
@@ -104,7 +104,7 @@ export const generateConsecutiveBlock = (
     },
   )
 
-  const block = new Block(header, undefined, undefined, undefined, { common }, undefined)
+  const block = new Block(header, undefined, undefined, undefined, { common })
 
   return block
 }
@@ -200,7 +200,7 @@ function generateBlock(
   const number = parentBlock.header.number + BigInt(1)
   const timestamp = parentBlock.header.timestamp + BigInt(1)
 
-  const uncleHash = keccak256(RLP.encode(uncles.map((uh) => uh.raw())))
+  const uncleHash = keccak_256(RLP.encode(uncles.map((uh) => uh.raw())))
 
   const londonHfBlock = common.hardforkBlock(Hardfork.London)
   const baseFeePerGas =

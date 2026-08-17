@@ -182,7 +182,7 @@ export class StorageFetcher extends Fetcher<JobTask, StorageData[][], StorageDat
     }
     const { first, count } = task.storageRequests[0]
     const limit = bigIntToBytes(first + BigInt(count))
-    return setLengthLeft(limit, 32)
+    return setLengthLeft(limit, 32, { allowTruncate: true })
   }
 
   private isMissingRightRange(

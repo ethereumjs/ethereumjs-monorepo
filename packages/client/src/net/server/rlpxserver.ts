@@ -105,6 +105,7 @@ export class RlpxServer extends Server {
         ports: { discovery: this.config.port, listener: this.config.port },
       }
     }
+    // Using deprecated bytesToUnprefixedHex for performance: used for string building in enode URL construction.
     const id = bytesToUnprefixedHex(this.rlpx.id)
     return {
       enode: `enode://${id}@${listenAddr}`,
@@ -265,6 +266,7 @@ export class RlpxServer extends Server {
       })
 
       this.rlpx.events.on('peer:added', async (rlpxPeer: Devp2pRLPxPeer) => {
+        // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for peer lookups.
         let peer: RlpxPeer | null = new RlpxPeer({
           config: this.config,
           id: bytesToUnprefixedHex(rlpxPeer.getId()!),
@@ -287,6 +289,7 @@ export class RlpxServer extends Server {
       })
 
       this.rlpx.events.on('peer:removed', (rlpxPeer: Devp2pRLPxPeer, reason: any) => {
+        // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for peer lookups.
         const id = bytesToUnprefixedHex(rlpxPeer.getId() as Uint8Array)
         const peer = this.peers.get(id)
         if (peer) {

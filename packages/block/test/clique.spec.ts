@@ -1,5 +1,5 @@
 import { Common, Hardfork } from '@ethereumjs/common'
-import { Address, createZeroAddress, hexToBytes } from '@ethereumjs/util'
+import { createZeroAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import {
@@ -13,7 +13,7 @@ import {
   createSealedCliqueBlockHeader,
 } from '../src/index.ts'
 
-import { goerliChainConfig } from '@ethereumjs/testdata'
+import { SIGNER_A, goerliChainConfig } from '@ethereumjs/testdata'
 
 describe('[Header]: Clique PoA Functionality', () => {
   const common = new Common({ chain: goerliChainConfig, hardfork: Hardfork.Chainstart })
@@ -83,22 +83,8 @@ describe('[Header]: Clique PoA Functionality', () => {
     )
   })
 
-  type Signer = {
-    address: Address
-    privateKey: Uint8Array
-    publicKey: Uint8Array
-  }
-
-  const A: Signer = {
-    address: new Address(hexToBytes('0x0b90087d864e82a284dca15923f3776de6bb016f')),
-    privateKey: hexToBytes('0x64bf9cc30328b0e42387b3c82c614e6386259136235e20c1357bd11cdee86993'),
-    publicKey: hexToBytes(
-      '0x40b2ebdf4b53206d2d3d3d59e7e2f13b1ea68305aec71d5d24cefe7f24ecae886d241f9267f04702d7f693655eb7b4aa23f30dcd0c3c5f2b970aad7c8a828195',
-    ),
-  }
-
   it('Signing', () => {
-    const cliqueSignerKey = A.privateKey
+    const cliqueSignerKey = SIGNER_A.privateKey
 
     let header = createSealedCliqueBlockHeader(
       { number: 1, extraData: new Uint8Array(97) },
@@ -107,9 +93,9 @@ describe('[Header]: Clique PoA Functionality', () => {
     )
 
     assert.strictEqual(header.extraData.length, 97)
-    assert.isTrue(cliqueVerifySignature(header, [A.address]), 'should verify signature')
+    assert.isTrue(cliqueVerifySignature(header, [SIGNER_A.address]), 'should verify signature')
     assert.isTrue(
-      cliqueSigner(header).equals(A.address),
+      cliqueSigner(header).equals(SIGNER_A.address),
       'should recover the correct signer address',
     )
 

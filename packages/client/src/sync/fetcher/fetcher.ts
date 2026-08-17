@@ -1,4 +1,5 @@
 import { Readable, Writable } from 'stream'
+import { isDebugEnabled } from '@ethereumjs/util'
 import debug from 'debug'
 
 import { Heap } from '../../ext/qheap.ts'
@@ -73,8 +74,7 @@ export abstract class Fetcher<JobTask, JobResult, StorageItem> extends Readable 
   constructor(options: FetcherOptions) {
     super({ ...options, objectMode: true })
 
-    this.DEBUG =
-      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+    this.DEBUG = isDebugEnabled('ethjs')
 
     this.config = options.config
     this.debug = debug('client:fetcher:#')

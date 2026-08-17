@@ -2,9 +2,9 @@ import { assert, describe, it } from 'vitest'
 
 import { ENR } from '../src/dns/index.ts'
 
-import { testData } from './testdata.ts'
+import { devp2pTestData } from '@ethereumjs/testdata'
 
-const dns = testData.dns
+const dns = devp2pTestData.dns
 
 describe('ENR tests', () => {
   // Root DNS entries

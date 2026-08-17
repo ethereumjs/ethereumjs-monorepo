@@ -1,12 +1,9 @@
 import { BIGINT_0, EthereumJSErrorWithoutCode, createZeroAddress } from '@ethereumjs/util'
 
-import type {
-  BinaryTreeAccessWitnessInterface,
-  VerkleAccessWitnessInterface,
-} from '@ethereumjs/common'
+import type { BinaryTreeAccessWitnessInterface } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import type { PrecompileFunc } from './precompiles/index.ts'
-import type { EOFEnv } from './types.ts'
+import type { EOFEnv, SelfdestructMap } from './types.ts'
 
 const defaults = {
   value: BIGINT_0,
@@ -33,9 +30,9 @@ interface MessageOpts {
   isCompiled?: boolean
   salt?: Uint8Array
   /**
-   * A set of addresses to selfdestruct, see {@link Message.selfdestruct}
+   * Selfdestructed addresses mapped to their beneficiary, see {@link Message.selfdestruct}
    */
-  selfdestruct?: Set<PrefixedHexString>
+  selfdestruct?: SelfdestructMap
   /**
    * Map of addresses which were created (used in EIP 6780)
    */
@@ -43,7 +40,7 @@ interface MessageOpts {
   delegatecall?: boolean
   gasRefund?: bigint
   blobVersionedHashes?: PrefixedHexString[]
-  accessWitness?: VerkleAccessWitnessInterface | BinaryTreeAccessWitnessInterface
+  accessWitness?: BinaryTreeAccessWitnessInterface
 }
 
 export class Message {
@@ -63,9 +60,9 @@ export class Message {
   eof?: EOFEnv
   chargeCodeAccesses?: boolean
   /**
-   * Set of addresses to selfdestruct. Key is the unprefixed address.
+   * Selfdestructed addresses mapped to their beneficiary.
    */
-  selfdestruct?: Set<PrefixedHexString>
+  selfdestruct?: SelfdestructMap
   /**
    * Map of addresses which were created (used in EIP 6780)
    */
@@ -76,7 +73,15 @@ export class Message {
    * List of versioned hashes if message is a blob transaction in the outer VM
    */
   blobVersionedHashes?: PrefixedHexString[]
-  accessWitness?: VerkleAccessWitnessInterface | BinaryTreeAccessWitnessInterface
+  accessWitness?: BinaryTreeAccessWitnessInterface
+  /**
+   * EIP-8037: set by the EVM during creation-message execution when the
+   * create target account was already alive (EIP-161 non-empty). The caller
+   * refunds the new-account state gas in that case.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
+  createdTargetAlive?: boolean
 
   constructor(opts: MessageOpts) {
     this.to = opts.to

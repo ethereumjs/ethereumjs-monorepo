@@ -32,8 +32,7 @@ export class DNS {
 
     this._common = options.common
 
-    this.DEBUG =
-      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+    this.DEBUG = globalThis.process?.env?.DEBUG?.includes('ethjs') ?? false
   }
 
   /**

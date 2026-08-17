@@ -10,7 +10,7 @@
 
 Defined in: [config.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L25)
 
-## Type declaration
+## Type Declaration
 
 ### Full
 

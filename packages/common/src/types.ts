@@ -1,5 +1,5 @@
-import type { BigIntLike, KZG, PrefixedHexString, VerkleCrypto } from '@ethereumjs/util'
-import type { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
+import type { BigIntLike, KZG, PrefixedHexString } from '@ethereumjs/util'
+import type { secp256k1 } from '@noble/curves/secp256k1.js'
 import type { ConsensusAlgorithm, ConsensusType, Hardfork } from './enums.ts'
 
 export interface ChainName {
@@ -86,14 +86,9 @@ export interface CustomCrypto {
     chainId?: bigint,
   ) => Uint8Array
   sha256?: (msg: Uint8Array) => Uint8Array
-  ecsign?: (
-    msg: Uint8Array,
-    pk: Uint8Array,
-    ecSignOpts?: { extraEntropy?: Uint8Array | boolean },
-  ) => Pick<ReturnType<typeof secp256k1.sign>, 'recovery' | 'r' | 's'>
+  ecsign?: typeof secp256k1.sign
   ecdsaRecover?: (sig: Uint8Array, recId: number, hash: Uint8Array) => Uint8Array
   kzg?: KZG
-  verkle?: VerkleCrypto
 }
 
 export interface BaseOpts {
@@ -165,6 +160,12 @@ export interface HardforkByOpts {
 }
 
 export type EIPConfig = {
+  /**
+   * Earliest hardfork where this EIP can be activated in isolation, i.e. the
+   * fork that already provides its prerequisites. This is **not** the hardfork
+   * that schedules the EIP (that list lives on `HardforkConfig.eips`). It is
+   * therefore at least one hardfork before the scheduling fork.
+   */
   minimumHardfork: Hardfork
   requiredEIPs?: number[]
 }
@@ -189,4 +190,10 @@ export type ParamsDict = {
 
 export type HardforksDict = {
   [key: string]: HardforkConfig
+}
+
+export type BpoSchedule = {
+  targetBlobGasPerBlock: bigint
+  maxBlobGasPerBlock: bigint
+  blobGasPriceUpdateFraction: bigint
 }

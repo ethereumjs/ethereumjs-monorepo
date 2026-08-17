@@ -12,7 +12,7 @@ Defined in: [packages/devp2p/src/types.ts:19](https://github.com/ethereumjs/ethe
 
 ### close
 
-> **close**: \[`any`, `null` \| `boolean`\]
+> **close**: \[`any`, `boolean` \| `null`\]
 
 Defined in: [packages/devp2p/src/types.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L22)
 

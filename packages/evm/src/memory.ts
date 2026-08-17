@@ -66,10 +66,10 @@ export class Memory {
    * @param size - How many bytes to read
    * @param avoidCopy - Avoid memory copy if possible for performance reasons (optional)
    */
-  read(offset: number, size: number, avoidCopy?: boolean): Uint8Array {
+  read(offset: number, size: number, avoidCopy?: boolean): Uint8Array<ArrayBuffer> {
     this.extend(offset, size)
 
-    const loaded = this._store.subarray(offset, offset + size)
+    const loaded = this._store.subarray(offset, offset + size) as Uint8Array<ArrayBuffer>
     if (avoidCopy === true) {
       return loaded
     }

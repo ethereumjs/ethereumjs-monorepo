@@ -25,7 +25,8 @@
 - [MerkleStateManager](#merklestatemanager)
 - [SimpleStateManager](#simplestatemanager)
 - [RPCStateManager](#rpcstatemanager)
-- [Verkle (experimental)](#verkle-state-managers-experimental)
+- [Binary Tree (experimental)](#binary-tree-experimental)
+- [Architecture](#architecture)
 - [Browser](#browser)
 - [API](#api)
 - [Development](#development)
@@ -52,8 +53,7 @@ This library includes several different implementations that all implement the `
 - [`SimpleStateManager`](./src/simpleStateManager.ts) -a minimally functional (and dependency minimized) version of the state manager suitable for most basic EVM bytecode operations
 - [`MerkleStateManager`](./src/stateManager.ts) - a Merkle-Patricia Trie-based `MerkleStateManager` implementation that is used by the `@ethereumjs/client` and `@ethereumjs/vm`
 - [`RPCStateManager`](./src/rpcStateManager.ts) - a light-weight implementation that sources state and history data from an external JSON-RPC provider
-- [`StatefulVerkleStateManager`](./src/statefulVerkleStateManager.ts) - an experimental implementation of a stateful verkle state manager
-- [`StatelessVerkleStateManager`](./src/statelessVerkleStateManager.ts) - an experimental implementation of a "stateless" state manager that uses Verkle proofs to provide necessary state access for processing verkle-trie based blocks
+- [`StatefulBinaryTreeStateManager`](./src/statefulBinaryTreeStateManager.ts) - an experimental implementation of a stateful binary tree state manager
 
 It also includes a checkpoint/revert/commit mechanism to either persist or revert state changes and provides a sophisticated caching mechanism under the hood to reduce the need reading state accesses from disk.
 
@@ -271,11 +271,33 @@ Note: Failing to provide the `RPCBlockChain` instance when instantiating the EVM
 
 Refer to [this test script](./test/rpcStateManager.spec.ts) for complete examples of running transactions and blocks in the `vm` with data sourced from a provider.
 
-## Verkle (experimental)
+## Binary Tree (experimental)
 
-There are two new verkle related state managers integrated into the code base. These state managers are very experimental and meant to be used for connecting to early [Verkle Tree](https://eips.ethereum.org/EIPS/eip-6800) test networks (Kaustinen). These state managers are not yet sufficiently tested and APIs are not yet stable and it therefore should not be used in production.
+The `StatefulBinaryTreeStateManager` is an experimental state manager built on top of the [binary tree](../binarytree/) implementation, intended for stateless-Ethereum research and early test networks. It is not yet sufficiently tested and its APIs are not yet stable; it should not be used in production.
 
-See [PRs around Verkle](https://github.com/search?q=repo%3Aethereumjs%2Fethereumjs-monorepo+verkle&type=pullrequests) in our monorepo for an entrypoint if you are interested in our current Verkle related work.
+## Architecture
+
+This package provides several interchangeable state implementations behind a single contract, so consumers (`@ethereumjs/evm`, `@ethereumjs/vm`, or your own code) can swap the backing store without changing execution code.
+
+### The Contract
+
+The shared contract is **`StateManagerInterface`**, which is defined in `@ethereumjs/common` (`packages/common/src/interfaces.ts`), not in this package — `common` acts as the monorepo's interface hub. Every implementation here satisfies that interface, which covers account access (`getAccount`/`putAccount`/`deleteAccount`/`modifyAccountFields`), contract code and storage, state root management, and `checkpoint`/`commit`/`revert` for nested, revertible execution.
+
+### Internal Module Map
+
+- **`merkleStateManager.ts`** — `MerkleStateManager`: the production implementation, backed by a `MerklePatriciaTrie` from `@ethereumjs/mpt` (one account trie plus per-account storage tries). Use this for full Merkle-Patricia state and proof generation.
+- **`simpleStateManager.ts`** — `SimpleStateManager`: a minimal in-memory implementation with no trie and no state root, used as the EVM's default and for lightweight testing.
+- **`rpcStateManager.ts`** — `RPCStateManager`: reads state on demand from a remote node via JSON-RPC (fork-mainnet-style workflows).
+- **`statefulBinaryTreeStateManager.ts`** — `StatefulBinaryTreeStateManager`: experimental, backed by `@ethereumjs/binarytree` (EIP-7864).
+- **`cache/`** — shared account/storage caching used by the implementations.
+- **`proof/`** — proof construction and verification helpers.
+- **`types.ts`** — per-implementation option objects (`MerkleStateManagerOpts`, `SimpleStateManagerOpts`, `RPCStateManagerOpts`, `StatefulBinaryTreeStateManagerOpts`).
+
+### Extension Points
+
+- **Choosing an implementation** — pick the class that matches your backing store (Merkle trie, in-memory, RPC, binary tree) and pass it wherever a `stateManager` option is accepted (`createEVM({ stateManager })`, `createVM({ stateManager })`).
+- **Custom DB backend** (Merkle) — `MerkleStateManagerOpts` accepts a `trie`/DB, so you can persist to LevelDB, LMDB, an in-memory map, etc., via the `@ethereumjs/mpt` DB abstraction.
+- **Custom implementation** — anything implementing `StateManagerInterface` from `@ethereumjs/common` is a drop-in state manager; you do not need to subclass the provided ones.
 
 ## Browser
 
@@ -313,7 +335,7 @@ Developer documentation - currently mainly with information on testing and debug
 
 ## EthereumJS
 
-The `EthereumJS` GitHub organization and its repositories are managed by the Ethereum Foundation JavaScript team, see our [website](https://ethereumjs.github.io/) for a team introduction. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
+The `EthereumJS` GitHub organization and its repositories are managed by members of the former Ethereum Foundation JavaScript team and the broader Ethereum community. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
 
 ## License
 

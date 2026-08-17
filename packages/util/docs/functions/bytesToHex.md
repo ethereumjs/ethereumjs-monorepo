@@ -8,7 +8,7 @@
 
 > **bytesToHex**(`bytes`): `` `0x${string}` ``
 
-Defined in: [packages/util/src/bytes.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L43)
+Defined in: [packages/util/src/bytes.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L42)
 
 Converts a Uint8Array to a [PrefixedHexString](../type-aliases/PrefixedHexString.md)
 

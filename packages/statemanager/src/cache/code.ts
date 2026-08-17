@@ -71,6 +71,7 @@ export class CodeCache extends Cache {
    * @param code - Bytecode or undefined if code doesn't exist.
    */
   put(address: Address, code: Uint8Array | undefined): void {
+    // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for cache lookups.
     const addressHex = bytesToUnprefixedHex(address.bytes)
     this._saveCachePreState(addressHex)
     const elem = {
@@ -94,6 +95,7 @@ export class CodeCache extends Cache {
    * @param address - Account address for which code is being fetched.
    */
   get(address: Address): CodeCacheElement | undefined {
+    // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for cache lookups.
     const addressHex = bytesToUnprefixedHex(address.bytes)
     if (this.DEBUG) {
       this._debug(`Get code ${addressHex}`)
@@ -118,6 +120,7 @@ export class CodeCache extends Cache {
    * @param address - Account address for which code is being fetched.
    */
   del(address: Address): void {
+    // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for cache lookups.
     const addressHex = bytesToUnprefixedHex(address.bytes)
     this._saveCachePreState(addressHex)
     if (this.DEBUG) {

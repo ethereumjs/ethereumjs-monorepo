@@ -4,7 +4,7 @@
 
 import { createLegacyTx, createLegacyTxFromBytesArray } from '@ethereumjs/tx'
 import type { PrefixedHexString } from '@ethereumjs/util'
-import { bytesToHex, hexToBytes } from '@ethereumjs/util'
+import { bytesToHex, hexToBytes, randomBytes } from '@ethereumjs/util'
 
 // We create an unsigned transaction.
 // Notice we don't set the `to` field because we are creating a new contract.
@@ -17,8 +17,8 @@ const tx = createLegacyTx({
   data: '0x7f4e616d65526567000000000000000000000000000000000000000000000000003057307f4e616d6552656700000000000000000000000000000000000000000000000000573360455760415160566000396000f20036602259604556330e0f600f5933ff33560f601e5960003356576000335700604158600035560f602b590033560f60365960003356573360003557600035335700',
 })
 
-// We sign the transaction with this private key.
-const privateKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
+// We sign the transaction with a random private key (for illustration purposes).
+const privateKey = randomBytes(32)
 
 const signedTx = tx.sign(privateKey)
 

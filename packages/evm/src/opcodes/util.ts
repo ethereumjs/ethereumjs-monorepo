@@ -13,7 +13,7 @@ import {
   setLengthLeft,
   setLengthRight,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 
 import { EVMError } from '../errors.ts'
 
@@ -87,16 +87,22 @@ export function setLengthLeftStorage(value: Uint8Array) {
 /**
  * Wraps error message as EVMError
  */
-export function trap(err: string) {
+export function trap(err: string): never {
   // TODO: facilitate extra data along with errors
   throw new EVMError(err as EVMErrorType)
+}
+
+export function readImmediateByteOrZero(runState: RunState): number {
+  const immediate = runState.code[runState.programCounter] ?? 0
+  runState.programCounter++
+  return immediate
 }
 
 /**
  * Error message helper - generates location string
  */
 export function describeLocation(runState: RunState): string {
-  const keccakFunction = runState.interpreter._evm.common.customCrypto.keccak256 ?? keccak256
+  const keccakFunction = runState.interpreter._evm.common.customCrypto.keccak256 ?? keccak_256
   const hash = bytesToHex(keccakFunction(runState.interpreter.getCode()))
   const address = runState.interpreter.getAddress().toString()
   const pc = runState.programCounter - 1

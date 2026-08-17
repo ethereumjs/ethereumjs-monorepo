@@ -1,6 +1,5 @@
 import { createBlock } from '@ethereumjs/block'
 import { MemoryLevel } from 'memory-level'
-import * as td from 'testdouble'
 import { assert, describe, it, vi } from 'vitest'
 
 import { Chain } from '../../src/blockchain/index.ts'
@@ -21,17 +20,21 @@ describe('[BeaconSynchronizer]', async () => {
       this.peers = []
     }
   }
-  PeerPool.prototype.open = td.func<any>()
-  PeerPool.prototype.close = td.func<any>()
-  PeerPool.prototype.idle = td.func<any>()
+  PeerPool.prototype.open = vi.fn()
+  PeerPool.prototype.close = vi.fn()
+  PeerPool.prototype.idle = vi.fn()
 
-  ReverseBlockFetcher.prototype.fetch = td.func<any>()
-  ReverseBlockFetcher.prototype.clear = td.func<any>()
-  ReverseBlockFetcher.prototype.destroy = td.func<any>()
+  ReverseBlockFetcher.prototype.fetch = vi.fn()
+  ReverseBlockFetcher.prototype.clear = vi.fn()
+  ReverseBlockFetcher.prototype.destroy = vi.fn()
 
-  vi.doMock('../../src/sync/fetcher/reverseblockfetcher.ts', () =>
-    td.constructor(ReverseBlockFetcher),
-  )
+  vi.doMock('../../src/sync/fetcher/reverseblockfetcher.ts', () => ({
+    ReverseBlockFetcher: vi.fn().mockImplementation(() => ({
+      fetch: ReverseBlockFetcher.prototype.fetch,
+      clear: ReverseBlockFetcher.prototype.clear,
+      destroy: ReverseBlockFetcher.prototype.destroy,
+    })),
+  }))
   const { BeaconSynchronizer } = await import('../../src/sync/beaconsync.ts')
 
   it('should initialize correctly', async () => {
@@ -50,10 +53,9 @@ describe('[BeaconSynchronizer]', async () => {
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
     /// @ts-expect-error -- Assigning simpler config for testing
-    sync.pool.open = td.func<PeerPool['open']>()
+    sync.pool.open = vi.fn().mockResolvedValue(null)
     /// @ts-expect-error -- Assigning simpler config for testing
     sync.pool.peers = []
-    td.when((sync as any).pool.open()).thenResolve(null)
     await sync.open()
     assert.isTrue(true, 'opened')
     await sync.close()
@@ -66,7 +68,7 @@ describe('[BeaconSynchronizer]', async () => {
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
     const peer = {
-      eth: { getBlockHeaders: td.func(), status: { bestHash: 'hash' } },
+      eth: { getBlockHeaders: vi.fn(), status: { bestHash: 'hash' } },
       latest: async () => {
         return {
           number: BigInt(5),
@@ -75,7 +77,7 @@ describe('[BeaconSynchronizer]', async () => {
       },
     }
     const headers = [{ number: BigInt(5) }]
-    td.when(peer.eth.getBlockHeaders({ block: 'hash', max: 1 })).thenResolve([BigInt(1), headers])
+    peer.eth.getBlockHeaders.mockResolvedValue([BigInt(1), headers])
     const latest = await peer.latest()
     assert.strictEqual(latest?.number, BigInt(5), 'got height')
     await sync.stop()
@@ -91,7 +93,7 @@ describe('[BeaconSynchronizer]', async () => {
     sync.running = true
     const peers = [
       {
-        eth: { getBlockHeaders: td.func(), status: { bestHash: 'hash1' }, inbound: false },
+        eth: { getBlockHeaders: vi.fn(), status: { bestHash: 'hash1' }, inbound: false },
         latest: () => {
           return {
             number: BigInt(5),
@@ -100,7 +102,7 @@ describe('[BeaconSynchronizer]', async () => {
         },
       },
       {
-        eth: { getBlockHeaders: td.func(), status: { bestHash: 'hash2' }, inbound: false },
+        eth: { getBlockHeaders: vi.fn(), status: { bestHash: 'hash2' }, inbound: false },
         latest: () => {
           return {
             number: BigInt(10),
@@ -109,14 +111,8 @@ describe('[BeaconSynchronizer]', async () => {
         },
       },
     ]
-    td.when(peers[0].eth.getBlockHeaders({ block: 'hash1', max: 1 })).thenResolve([
-      BigInt(1),
-      [{ number: BigInt(5) }],
-    ])
-    td.when(peers[1].eth.getBlockHeaders({ block: 'hash2', max: 1 })).thenResolve([
-      BigInt(1),
-      [{ number: BigInt(10) }],
-    ])
+    peers[0].eth.getBlockHeaders.mockResolvedValue([BigInt(1), [{ number: BigInt(5) }]])
+    peers[1].eth.getBlockHeaders.mockResolvedValue([BigInt(1), [{ number: BigInt(10) }]])
     /// @ts-expect-error -- Assigning simpler config for testing
     sync.pool = { peers }
     sync['forceSync'] = true
@@ -135,12 +131,11 @@ describe('[BeaconSynchronizer]', async () => {
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
-    skeleton['getSyncStatus'] = td.func<(typeof skeleton)['getSyncStatus']>()
+    skeleton['getSyncStatus'] = vi.fn()
     await skeleton.open()
 
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
-    sync.best = td.func<(typeof sync)['best']>()
-    td.when(sync.best()).thenResolve({
+    sync.best = vi.fn().mockResolvedValue({
       latest: () => {
         return {
           number: BigInt(2),
@@ -148,7 +143,7 @@ describe('[BeaconSynchronizer]', async () => {
         }
       },
     } as any)
-    td.when(ReverseBlockFetcher.prototype.fetch(), { delay: 100, times: 3 }).thenResolve(false)
+    ;(ReverseBlockFetcher.prototype.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(false)
     skeleton['status'].progress.subchains = [
       /// @ts-expect-error -- Assigning simpler config for testing
       { head: BigInt(10), tail: BigInt(6) },
@@ -195,11 +190,10 @@ describe('[BeaconSynchronizer]', async () => {
     const pool = new PeerPool() as any
     const chain = await Chain.create({ config })
     const skeleton = new Skeleton({ chain, config, metaDB: new MemoryLevel() })
-    skeleton['getSyncStatus'] = td.func<(typeof skeleton)['getSyncStatus']>()
+    skeleton['getSyncStatus'] = vi.fn()
     await skeleton.open()
     const sync = new BeaconSynchronizer({ config, pool, chain, execution, skeleton })
-    sync.best = td.func<(typeof sync)['best']>()
-    td.when(sync.best()).thenResolve({
+    sync.best = vi.fn().mockResolvedValue({
       latest: () => {
         return {
           number: BigInt(2),
@@ -207,7 +201,7 @@ describe('[BeaconSynchronizer]', async () => {
         }
       },
     } as any)
-    td.when(ReverseBlockFetcher.prototype.fetch(), { delay: 100, times: 1 }).thenResolve(false)
+    ;(ReverseBlockFetcher.prototype.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(false)
     /// @ts-expect-error -- Assigning simpler config for testing
     skeleton.status.progress.subchains = [{ head: BigInt(10), tail: BigInt(6) }]
     sync['chain'] = {
@@ -273,9 +267,5 @@ describe('[BeaconSynchronizer]', async () => {
     )
     await sync.stop()
     await sync.close()
-  })
-
-  it('should reset td', () => {
-    td.reset()
   })
 })

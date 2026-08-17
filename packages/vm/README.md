@@ -13,11 +13,12 @@ Ethereum `mainnet` compatible execution context for
 [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm)
 to build and run blocks and txs and update state.
 
-- 🦄 All hardforks up till **Pectra**
+- 🦄 All hardforks up till **Osaka** (**Amsterdam** in development)
 - 🌴 Tree-shakeable API
 - 👷🏼 Controlled dependency set (7 external + `@Noble` crypto)
 - 🧩 Flexible EIP on/off engine
 - 📲 **EIP-7702** ready
+- 📋 **EIP-7928** Block Level Access Lists (Amsterdam, experimental)
 - 📬 Flexible state retrieval (Merkle, RPC,...)
 - 🔎 Passes official #Ethereum tests
 - 🛵 668KB bundle size (170KB gzipped)
@@ -27,13 +28,34 @@ to build and run blocks and txs and update state.
 
 - [Installation](#installation)
 - [Usage](#usage)
+  - [Running a Transaction](#running-a-transaction)
+  - [Running an RPC Mainnet Block](#running-an-rpc-mainnet-block)
+  - [Building a Block](#building-a-block)
+  - [WASM Crypto Support](#wasm-crypto-support)
 - [Examples](#examples)
 - [Browser](#browser)
 - [API](#api)
+  - [Docs](#docs)
+  - [Hybrid CJS/ESM Builds](#hybrid-cjsesm-builds)
 - [Architecture](#architecture)
+  - [VM/EVM Relation](#vmevm-relation)
+  - [State and Blockchain Information](#state-and-blockchain-information)
 - [Setup](#setup)
+  - [Chains](#chains)
+  - [Hardforks](#hardforks)
+  - [Custom Genesis State](#custom-genesis-state)
 - [Supported EIPs](#supported-eips)
+  - [EIP-4844 Shard Blob Transactions Support (Cancun)](#eip-4844-shard-blob-transactions-support-cancun)
+  - [EIP-7702 EAO Code Transactions Support (Prague)](#eip-7702-eao-code-transactions-support-prague)
+  - [EIP-7685 Requests Support (Prague)](#eip-7685-requests-support-prague)
+  - [EIP-2935 Serve Historical Block Hashes from State (Prague)](#eip-2935-serve-historical-block-hashes-from-state-prague)
+  - [Amsterdam hardfork (experimental)](#amsterdam-hardfork-experimental)
+  - [EIP-7928 Block Level Access Lists (Amsterdam)](#eip-7928-block-level-access-lists-amsterdam)
+  - [EIP-8037 State creation gas cost increase (Amsterdam)](#eip-8037-state-creation-gas-cost-increase-amsterdam)
 - [Events](#events)
+  - [Tracing Events](#tracing-events)
+  - [Asynchronous event handlers](#asynchronous-event-handlers)
+  - [Synchronous event handlers](#synchronous-event-handlers)
 - [Understanding the VM](#understanding-the-vm)
 - [Internal Structure](#internal-structure)
 - [Development](#development)
@@ -59,23 +81,25 @@ npm install @ethereumjs/vm
 
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
-import { createZeroAddress } from '@ethereumjs/util'
+import { createAccount, createAddressFromPrivateKey, createZeroAddress, hexToBytes } from '@ethereumjs/util'
 import { createVM, runTx } from '@ethereumjs/vm'
 
 const main = async () => {
   const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai })
   const vm = await createVM({ common })
 
+  const senderKey = hexToBytes(`0x${'20'.repeat(32)}`)
+  const sender = createAddressFromPrivateKey(senderKey)
+  await vm.stateManager.putAccount(sender, createAccount({ nonce: 0n, balance: BigInt(1e18) }))
+
   const tx = createLegacyTx({
-    gasLimit: BigInt(21000),
-    gasPrice: BigInt(1000000000),
-    value: BigInt(1),
+    gasLimit: 21000n,
+    gasPrice: 1_000_000_000n,
+    value: 1n,
     to: createZeroAddress(),
-    v: BigInt(37),
-    r: BigInt('62886504200765677832366398998081608852310526822767264927793100349258111544447'),
-    s: BigInt('21948396863567062449199529794141973192314514851405455194940751428901681436138'),
-  })
-  const res = await runTx(vm, { tx, skipBalance: true })
+  }).sign(senderKey)
+
+  const res = await runTx(vm, { tx })
   console.log(res.totalGasSpent) // 21000n - gas cost for simple ETH transfer
 }
 
@@ -83,6 +107,133 @@ void main()
 ```
 
 Additionally to the `VM.runTx()` method there is an API method `VM.runBlock()` which allows to run the whole block and execute all included transactions along.
+
+### Receipts and event logs
+
+`runTx()` and `runBlock()` surface logs through transaction receipts using the same [`Log`](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#event-logs) tuple as `@ethereumjs/evm`:
+
+```ts
+type Log = [address: Uint8Array, topics: Uint8Array[], data: Uint8Array]
+```
+
+| API | Where to read logs |
+| --- | --- |
+| `runTx()` | `result.receipt.logs` (also `result.execResult.logs` before receipt assembly) |
+| `runBlock()` | `result.results[i].receipt.logs` and `result.receipts[i].logs` |
+| Block header bloom | `result.logsBloom` on `RunBlockResult`; `result.bloom` on each `RunTxResult` |
+
+Logs from contract `LOG*` opcodes and fork-specific synthetic logs (e.g. [EIP-7708](#eip-7708-eth-transfer-and-burn-logs-amsterdam) transfer logs on Amsterdam) share this path — no separate receipt field.
+
+See [`examples/runTxTransferLogs.ts`](./examples/runTxTransferLogs.ts) for an Amsterdam value transfer that decodes an EIP-7708 `Transfer` log from `receipt.logs`. For bytecode-level emission see [`@ethereumjs/evm` Event logs](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#event-logs) and [`examples/emitLogs.ts`](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm/examples/emitLogs.ts).
+
+**Notes:**
+
+- Reverted transactions produce receipts with **empty** `logs` (Byzantium+ `status: 0`).
+- The debug logger sections below (`DEBUG=ethjs,...`) refer to **development tracing**, not EVM event logs.
+
+### Running an RPC Mainnet Block
+
+It is possible to fetch a real mainnet block via JSON-RPC and execute it locally using the VM together with the `RPCStateManager` from the `@ethereumjs/statemanager` package, which fetches account and storage data on demand from a remote provider.
+
+> **Note:** Running recent mainnet blocks will generate **thousands of RPC requests** (one for each account/storage access during EVM execution). Make sure your RPC provider can handle the load and be mindful of rate limits and quotas.
+
+```ts
+// ./examples/runBlockWithRPC.ts
+
+import { createBlockFromJSONRPCProvider } from '@ethereumjs/block'
+import { Common, Mainnet } from '@ethereumjs/common'
+import { RPCStateManager } from '@ethereumjs/statemanager'
+import { bytesToHex } from '@ethereumjs/util'
+import { createVM, runBlock } from '@ethereumjs/vm'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
+
+const main = async () => {
+  const providerUrl = process.argv[2]
+  let blockNumber: bigint | undefined
+  try {
+    blockNumber = process.argv[3] !== undefined ? BigInt(process.argv[3]) : undefined
+  } catch {
+    // argument is not a valid block number
+  }
+
+  if (providerUrl === undefined || blockNumber === undefined) {
+    console.log('Example skipped (real-world RPC scenario)')
+    console.log('Usage: npx tsx runBlockWithRPC.ts <providerUrl> <blockNumber>')
+    return
+  }
+
+  const kzg = new microEthKZG(trustedSetup)
+  const common = new Common({ chain: Mainnet, customCrypto: { kzg } })
+
+  // 1. Fetch block from RPC
+  console.log(`Fetching block ${blockNumber} from ${providerUrl}...`)
+  const block = await createBlockFromJSONRPCProvider(providerUrl, blockNumber, {
+    common,
+    setHardfork: true,
+  })
+
+  console.log(`Block ${block.header.number} fetched successfully`)
+  console.log(`  Hash:         ${bytesToHex(block.hash())}`)
+  console.log(`  Parent hash:  ${bytesToHex(block.header.parentHash)}`)
+  console.log(`  State root:   ${bytesToHex(block.header.stateRoot)}`)
+  console.log(`  Transactions: ${block.transactions.length}`)
+  console.log(`  Gas used:     ${block.header.gasUsed}`)
+  console.log(`  Hardfork:     ${block.common.hardfork()}`)
+
+  // 2. Set up RPC state manager pointing to the parent block (pre-state)
+  const stateManager = new RPCStateManager({
+    provider: providerUrl,
+    blockTag: blockNumber - 1n,
+    common,
+  })
+
+  // 3. Create VM with the RPC state manager
+  const vm = await createVM({ common, stateManager, setHardfork: true })
+
+  // 4. Run the block
+  console.log(`\nRunning block ${blockNumber} (${block.transactions.length} txs)...`)
+  const startTime = performance.now()
+
+  const result = await runBlock(vm, {
+    block,
+    generate: true,
+    skipHeaderValidation: true,
+    skipBlockValidation: true,
+  })
+
+  const elapsed = ((performance.now() - startTime) / 1000).toFixed(1)
+
+  // 5. Display results
+  console.log(`\nBlock execution completed in ${elapsed}s`)
+  console.log(`  Tx results:     ${result.results.length}`)
+  console.log(`  Receipts root:  ${bytesToHex(result.receiptsRoot)}`)
+
+  console.log(`\n  Gas used:       ${result.gasUsed} (expected: ${block.header.gasUsed})`)
+  if (result.gasUsed === block.header.gasUsed) {
+    console.log(`  Gas used MATCHES expected block header value`)
+  } else {
+    console.log(`  Gas used MISMATCH`)
+  }
+
+  // Note: State root comparison is informational only.
+  // RPCStateManager cannot produce valid Merkle state roots since it
+  // doesn't maintain a local trie -- it fetches state on demand via RPC.
+  console.log(`\n  Computed state root: ${bytesToHex(result.stateRoot)}`)
+  console.log(`  Expected state root: ${bytesToHex(block.header.stateRoot)}`)
+  console.log(`  (State root comparison is not meaningful with RPCStateManager,`)
+  console.log(`   which does not maintain a local Merkle trie)`)
+}
+
+void main()
+
+```
+
+Run with:
+
+```sh
+npx tsx examples/runBlockWithRPC.ts <providerUrl> <blockNumber>
+```
 
 ### Building a Block
 
@@ -94,18 +245,18 @@ The following non-complete example gives some illustration on how to use the Blo
 // ./examples/buildBlock.ts
 
 import { createBlock } from '@ethereumjs/block'
-import { Common, Mainnet } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
 import { Account, bytesToHex, createAddressFromPrivateKey, hexToBytes } from '@ethereumjs/util'
 import { buildBlock, createVM } from '@ethereumjs/vm'
 
 const main = async () => {
-  const common = new Common({ chain: Mainnet })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Prague })
   const vm = await createVM({ common })
 
   const parentBlock = createBlock(
     { header: { number: 1n } },
-    { skipConsensusFormatValidation: true },
+    { common, skipConsensusFormatValidation: true },
   )
   const headerData = {
     number: 2n,
@@ -148,6 +299,11 @@ See the [examples](./examples/) folder for different meaningful examples on how 
 
 1. [./examples/run-blockchain](./examples/run-blockchain.ts): Loads tests data, including accounts and blocks, and runs all of them in the VM.
 2. [./examples/run-solidity-contract](./examples/run-solidity-contract.ts): Compiles a Solidity contract, and calls constant and non-constant functions.
+3. [./examples/runBlockBalGenerate.ts](./examples/runBlockBalGenerate.ts): Runs an Amsterdam block and reads the generated Block Level Access List (BAL).
+4. [./examples/runBlockBalValidate.ts](./examples/runBlockBalValidate.ts): Validates a block against a provided BAL from an execution payload.
+5. [./examples/runPoABlockFromTestdata.ts](./examples/runPoABlockFromTestdata.ts): Replays a bundled PoA block fixture offline (no RPC).
+6. [./examples/runTxTransferLogs.ts](./examples/runTxTransferLogs.ts): Reads EIP-7708 `Transfer` logs from a transaction receipt on Amsterdam.
+7. [./examples/emitLogs.ts](../evm/examples/emitLogs.ts) (`@ethereumjs/evm`): Emits a `LOG1` from bytecode via `runCode()`.
 
 ## Browser
 
@@ -202,6 +358,31 @@ With `VM` v7 a previously needed EEI interface for EVM/VM communication is not n
 
 With `VM` v6 the previously included `StateManager` has been extracted to its own package [@ethereumjs/statemanager](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/statemanager). The `StateManager` package provides a unified state interface and it is now also possible to provide a modified or custom `StateManager` to the VM via the optional `stateManager` constructor option.
 
+### Internal Module Map
+
+The VM is a thin orchestration layer that drives the `EVM` at the transaction and block level. Its core processing functions are free-standing (`runX(vm, opts)`), not methods:
+
+- **`vm.ts`** — the `VM` class: holds the `evm`, `stateManager`, `blockchain`, `common` and `events`, and merges `paramsVM` into `Common`.
+- **`runBlock.ts`** — `runBlock`: block-level processing (pre-state setup, transaction loop via `runTx`, withdrawals, requests, rewards, post-state validation). See [Internal Structure](#internal-structure) below for the step-by-step flow.
+- **`runTx.ts`** — `runTx`: transaction-level rules (nonce/balance/intrinsic-gas checks, EIP-1559/4844/7702 handling, access-list warming), the call into `vm.evm.runCall`, refund/coinbase accounting and receipt generation (`generateTxReceipt`).
+- **`buildBlock.ts`** — `buildBlock` / `BlockBuilder`: incremental block construction for block producers.
+- **`consumeBal.ts`** — EIP-7928 block-level access list consumption.
+- **`requests.ts`** — consensus-layer request (EIP-7685) extraction.
+- **`bloom/`** — logs-bloom computation.
+- **`params.ts`** — `paramsVM`, merged into `Common` at construction.
+- **`types.ts`** / **`constructors.ts`** — public types/option objects and the `createVM` factory.
+
+### Extension Points
+
+The `VM` is customized through `createVM` / `VMOpts` (`src/types.ts:101`); most of its behavior is delegated to injectable collaborators:
+
+- **Custom `EVM`** — `evm?` (or `evmOpts?`): pass an `EVM` you configured (e.g. with custom opcodes/precompiles — see the [EVM extension points](../evm/README.md#extension-points)). If omitted, the VM creates one.
+- **Custom state manager** — `stateManager?: StateManagerInterface` (`src/types.ts:27`): any `@ethereumjs/statemanager` implementation or your own.
+- **Custom blockchain** — `blockchain?` (`src/types.ts:31`): supplies block-hash lookups for the `BLOCKHASH`/`BLOBHASH` family; defaults to a minimal mock.
+- **Custom `Common`** — `common?` (`src/types.ts:23`): chain/hardfork/EIP configuration, shared with the inner `EVM`.
+- **Custom parameters** — `params?: ParamsDict`: override `paramsVM` values.
+- **Lifecycle hooks** — subscribe to `vm.events` (`beforeBlock`, `afterBlock`, `beforeTx`, `afterTx`) and `vm.evm.events` (`step`, `beforeMessage`, …) for tracing and instrumentation.
+
 ## Setup
 
 ### Chains
@@ -218,7 +399,7 @@ An explicit HF in the `VM` - which is then passed on to the inner `EVM` - can be
 
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
-import { createZeroAddress } from '@ethereumjs/util'
+import { createAccount, createAddressFromPrivateKey, createZeroAddress, hexToBytes } from '@ethereumjs/util'
 import { createVM, runTx } from '@ethereumjs/vm'
 
 const main = async () => {
@@ -243,21 +424,21 @@ const main = async () => {
 
   const vm = await createVM()
   await vm.stateManager.generateCanonicalGenesis!(genesisState)
-  const account = await vm.stateManager.getAccount(
-    createAddressFromString('0x000d836201318ec6899a67540690382780743280'),
-  )
+  const accountAddress = '0x000d836201318ec6899a67540690382780743280'
+  const account = await vm.stateManager.getAccount(createAddressFromString(accountAddress))
 
   if (account === undefined) {
     throw new Error('Account does not exist: failed to import genesis state')
   }
 
   console.log(
-    `This balance for account 0x000d836201318ec6899a67540690382780743280 in this chain's genesis state is ${Number(
+    `This balance for account ${accountAddress} in this chain's genesis state is ${Number(
       account?.balance,
     )}`,
   )
 }
 void main()
+
 ```
 
 Genesis state can be configured to contain both EOAs as well as (system) contracts with initial storage values set.
@@ -276,9 +457,12 @@ import { createVM } from '@ethereumjs/vm'
 const main = async () => {
   const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
   const vm = await createVM({ common })
-  console.log(`EIP 7702 is active in isolation on top of the Cancun HF - ${vm.common.isActivatedEIP(7702)}`)
+  console.log(
+    `EIP 7702 is active in isolation on top of the Cancun HF - ${vm.common.isActivatedEIP(7702)}`,
+  )
 }
 void main()
+
 ```
 
 For a list with supported EIPs see the [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm) documentation.
@@ -302,6 +486,245 @@ This library supports blocks including [EIP-7685](https://eips.ethereum.org/EIPS
 Starting with `v8.1.0` the VM supports [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) which stores the latest 8192 block hashes in the storage of a system contract.
 
 Note that this EIP has no effect on the resolution of the `BLOCKHASH` opcode, which will be a separate activation taking place by the integration of [EIP-7709](https://eips.ethereum.org/EIPS/eip-7709) in a respective Verkle/Stateless hardfork.
+
+### Amsterdam hardfork (experimental)
+
+This section is the **canonical overview** for experimental Amsterdam support: which library release maps to which spec snapshot, and where to read more. Amsterdam remains unstable — expect further `10.1.x` releases as the spec and testnets evolve.
+
+**Release ↔ spec tracking**
+
+| Release | Summary | EST fixtures | Testnet |
+| --- | --- | --- | --- |
+| `v10.1.2` | First experimental Amsterdam release: full 9-EIP `Hardfork.Amsterdam` bundle, BAL builder/validator APIs (7928), two-dimensional block gas (8037); passes v700 mixed EST slice. | [tests-bal@v7.1.0](https://github.com/ethereum/execution-specs/releases/tag/tests-bal@v7.1.0) | [BAL devnet-7](https://notes.ethereum.org/@ethpandaops/bal-devnet-7) |
+
+Master currently tracks [tests-glamsterdam-devnet@v7.2.1](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v7.2.1) for the mixed Amsterdam tree. EIP-2780 / EIP-8037: intrinsic regular gas is **state-independent** (`txGas` + recipient/value/log extras + calldata + create access + `perAuthBaseGas`); the calldata floor is anchored on `TX_BASE` + those recipient extras ([execution-specs#3120](https://github.com/ethereum/execution-specs/pull/3120)). Under v7.2.0+, the floor also binds each tx's **block regular-gas** contribution (`max(pre_refund_regular, floor)`). New-account state gas and 7702 `ACCOUNT_WRITE` / auth state are charged at top-frame access (`ACCOUNT_WRITE` counts toward receipt gas). Sender nonce is incremented before that prep layer (create-tx `NEW_ACCOUNT` OOG still bumps nonce). Create-tx `NEW_ACCOUNT` spill into `gas_left` is credited on REVERT so receipt gas can hit the calldata floor. Inner CREATE child OOG onto a balance-only target keeps the spilled `NEW_ACCOUNT` as regular gas (no leftover credit) and exceptional-halts the creating frame.
+
+The `Hardfork.Amsterdam` bundle activates the following EIPs. Amsterdam test fixtures and execution-spec tests typically enable the full set together rather than individual EIPs in isolation.
+
+| EIP | Summary | Documentation |
+| --- | --- | --- |
+| [2780](https://eips.ethereum.org/EIPS/eip-2780) | Intrinsic includes recipient/value extras; floor anchored on that base | [EIP-8037 section](#eip-8037-state-creation-gas-cost-increase-amsterdam) (intrinsic vs runtime) |
+| [7708](https://eips.ethereum.org/EIPS/eip-7708) | ETH transfers and burns emit logs | [EVM](#eip-7708-eth-transfer-and-burn-logs-amsterdam) (below), receipts from `runTx()` / `runBlock()` |
+| [7843](https://eips.ethereum.org/EIPS/eip-7843) | `SLOTNUM` opcode + `slotNumber` header field | [@ethereumjs/block](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/block#blocks-with-eip-7843-slot-number) |
+| [7778](https://eips.ethereum.org/EIPS/eip-7778) | Block gas accounting without refund subtraction | [EIP-7778 note](#eip-7778-block-gas-accounting-amsterdam) (below) |
+| [7928](https://eips.ethereum.org/EIPS/eip-7928) | Block Level Access Lists | [EIP-7928 section](#eip-7928-block-level-access-lists-amsterdam) (below) |
+| [7954](https://eips.ethereum.org/EIPS/eip-7954) | Raised max contract / initcode size | [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#eip-7954-contract-and-initcode-size-limits-amsterdam) |
+| [7976](https://eips.ethereum.org/EIPS/eip-7976) | Uniform calldata floor pricing | [@ethereumjs/tx](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx#amsterdam-transaction-validation-eip-7976-eip-7981) |
+| [7981](https://eips.ethereum.org/EIPS/eip-7981) | Access-list byte floor pricing | [@ethereumjs/tx](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx#amsterdam-transaction-validation-eip-7976-eip-7981) |
+| [7997](https://eips.ethereum.org/EIPS/eip-7997) | Deterministic CREATE2 factory predeploy | Catalog only — clients must not inject at the fork boundary |
+| [8024](https://eips.ethereum.org/EIPS/eip-8024) | `DUPN`, `SWAPN`, `EXCHANGE` stack opcodes | [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#eip-8024-stack-opcodes-amsterdam) |
+| [8037](https://eips.ethereum.org/EIPS/eip-8037) | Two-dimensional block gas + state-gas reservoir | [EIP-8037 section](#eip-8037-state-creation-gas-cost-increase-amsterdam) (below) |
+| [8038](https://eips.ethereum.org/EIPS/eip-8038) | State-access gas; SSTORE access cost before implicit read | [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#eip-8037-and-eip-7708-amsterdam) |
+| [8282](https://eips.ethereum.org/EIPS/eip-8282) | Builder deposit/exit request predeploys (v7 mined addresses) | `runBlock()` / `accumulateRequests`; addresses in `packages/vm/src/params.ts` |
+
+**Activation:** `new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })`. See [Release ↔ spec tracking](#amsterdam-hardfork-experimental) above for supported spec snapshots; behaviour may change on patch releases.
+
+### EIP-7928 Block Level Access Lists (Amsterdam)
+
+[EIP-7928](https://eips.ethereum.org/EIPS/eip-7928) adds a block-level access list (BAL) committed via `blockAccessListHash` in the block header. When EIP-7928 is active, the VM accumulates state accesses automatically during `runBlock()` / `runTx()` — no extra opt-in flag is required. See [Release ↔ spec tracking](#amsterdam-hardfork-experimental) above for the EST / testnet snapshot this release targets.
+
+**Activation:** use `Hardfork.Amsterdam` (experimental).
+
+**Block builder flow (`generate: true`):** execute the block, read `RunBlockResult.blockLevelAccessList`, and use the returned block from the `afterBlock` event — its header includes `blockAccessListHash` (set from `bal.hash()`).
+
+```ts
+// ./examples/runBlockBalGenerate.ts
+
+import { createBlock } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createLegacyTx } from '@ethereumjs/tx'
+import {
+  Account,
+  bytesToHex,
+  createAddressFromPrivateKey,
+  createZeroAddress,
+  hexToBytes,
+} from '@ethereumjs/util'
+import { createVM, runBlock } from '@ethereumjs/vm'
+
+import type { AfterBlockEvent } from '@ethereumjs/vm'
+
+const main = async () => {
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })
+  const vm = await createVM({ common })
+
+  const senderKey = hexToBytes(`0x${'20'.repeat(32)}`)
+  const sender = createAddressFromPrivateKey(senderKey)
+  await vm.stateManager.putAccount(sender, new Account(0n, BigInt(1e18)))
+
+  const parentBlock = createBlock(
+    { header: { number: 1n } },
+    { common, skipConsensusFormatValidation: true },
+  )
+  const tx = createLegacyTx({
+    gasLimit: 21000n,
+    gasPrice: 10n,
+    value: 1n,
+    to: createZeroAddress(),
+  }).sign(senderKey)
+
+  const block = createBlock(
+    {
+      header: { number: 2n, gasLimit: 30_000_000n, baseFeePerGas: 1n },
+      transactions: [tx],
+    },
+    {
+      common,
+      skipConsensusFormatValidation: true,
+      calcDifficultyFromHeader: parentBlock.header,
+    },
+  )
+
+  let afterBlock: AfterBlockEvent | undefined
+  vm.events.once('afterBlock', (event) => {
+    afterBlock = event
+  })
+
+  const result = await runBlock(vm, {
+    block,
+    generate: true,
+    skipBlockValidation: true,
+  })
+
+  const bal = result.blockLevelAccessList!
+  console.log(`BAL accounts: ${bal.toJSON().length}`)
+  console.log(`blockAccessListHash: ${bytesToHex(afterBlock!.block.header.blockAccessListHash!)}`)
+  console.log(`hash matches result: ${bytesToHex(bal.hash())}`)
+}
+
+void main()
+
+```
+
+**Block validator flow:** pass the BAL from an execution payload via `RunBlockOpts.blockAccessList` (JSON, RLP bytes, or a `BlockLevelAccessList` instance). `runBlock()` validates structure and header hash before execution and checks equality against the generated list afterward.
+
+```ts
+// ./examples/runBlockBalValidate.ts
+
+import { createBlock } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createLegacyTx } from '@ethereumjs/tx'
+import {
+  Account,
+  bytesToHex,
+  createAddressFromPrivateKey,
+  createZeroAddress,
+  hexToBytes,
+} from '@ethereumjs/util'
+import { createVM, runBlock } from '@ethereumjs/vm'
+
+import type { Block } from '@ethereumjs/block'
+
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })
+
+const senderKey = hexToBytes(`0x${'20'.repeat(32)}`)
+const sender = createAddressFromPrivateKey(senderKey)
+
+async function fundSender(vm: Awaited<ReturnType<typeof createVM>>) {
+  await vm.stateManager.putAccount(sender, new Account(0n, BigInt(1e18)))
+}
+
+function createTransferBlock() {
+  const parentBlock = createBlock(
+    { header: { number: 1n } },
+    { common, skipConsensusFormatValidation: true },
+  )
+  const tx = createLegacyTx({
+    gasLimit: 21000n,
+    gasPrice: 10n,
+    value: 1n,
+    to: createZeroAddress(),
+  }).sign(senderKey)
+
+  return createBlock(
+    {
+      header: { number: 2n, gasLimit: 30_000_000n, baseFeePerGas: 1n },
+      transactions: [tx],
+    },
+    {
+      common,
+      skipConsensusFormatValidation: true,
+      calcDifficultyFromHeader: parentBlock.header,
+    },
+  )
+}
+
+const main = async () => {
+  const vm = await createVM({ common })
+  await fundSender(vm)
+
+  let sealedBlock: Block | undefined
+  vm.events.once('afterBlock', (event) => {
+    sealedBlock = event.block
+  })
+
+  const generated = await runBlock(vm, {
+    block: createTransferBlock(),
+    generate: true,
+    skipBlockValidation: true,
+  })
+
+  const balJson = generated.blockLevelAccessList!.toJSON()
+  console.log(`Generated BAL with ${balJson.length} account(s)`)
+  console.log(`blockAccessListHash: ${bytesToHex(sealedBlock!.header.blockAccessListHash!)}`)
+
+  const vm2 = await createVM({ common })
+  await fundSender(vm2)
+
+  await runBlock(vm2, {
+    block: sealedBlock!,
+    blockAccessList: balJson,
+    skipBlockValidation: true,
+  })
+
+  console.log('Provided blockAccessList validated successfully against execution')
+}
+
+void main()
+
+```
+
+**Offline parsing / validation:** see the [@ethereumjs/util BAL module](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util#module-bal) for `BlockLevelAccessList`, JSON/RLP helpers, and validation utilities.
+
+**Notes:**
+
+- Amsterdam test fixtures often bundle additional EIPs (e.g. EIP-8037); use `Hardfork.Amsterdam` rather than activating EIP-7928 in isolation.
+- `buildBlock()` does not yet populate `blockAccessListHash` automatically — use `runBlock({ generate: true })` for now.
+
+### EIP-8037 State creation gas cost increase (Amsterdam)
+
+See [Release ↔ spec tracking](#amsterdam-hardfork-experimental) above for the supported Amsterdam spec snapshot.
+
+[EIP-8037](https://eips.ethereum.org/EIPS/eip-8037) splits block gas into two independent dimensions — **regular** and **state** — and introduces a per-transaction **state-gas reservoir** for state-touching operations. When active, `runBlock()` and `runTx()` handle this automatically; no extra opt-in is required.
+
+**Block-level gas used:** instead of summing a single `gasUsed`, the block header field becomes `max(block_regular_gas_used, block_state_gas_used)`. Each transaction contributes to both dimensions via `RunTxResult.txRegularGas` and `RunTxResult.txStateGas` (undefined when EIP-8037 is inactive).
+
+**Pre-execution checks:** before running each tx, `runBlock()` verifies that the tx's regular and state gas contributions fit within the remaining capacity of each dimension (see `computeIntrinsicGasDimensions8037()` in `@ethereumjs/evm` for the **state-independent** intrinsic split — no intrinsic state gas under v7). EIP-2780 recipient/value/log extras are part of `getIntrinsicGas()` and the calldata floor (self-transfers skip them). New-account state gas and 7702 `ACCOUNT_WRITE` / indicator state are charged during execution at the top frame, keyed on pre-state (prep OOG rolls back 7702 delegations). `ACCOUNT_WRITE` is taken from leftover regular gas and counted in receipt `totalGasSpent`. The sender nonce is incremented before that nested prep layer, so a create-tx `NEW_ACCOUNT` OOG still bumps nonce (no contract is created). On a create-tx REVERT, `NEW_ACCOUNT` spill into `gas_left` is credited back (`refill_frame_state_gas`); receipt `totalGasSpent` still floors to calldata minimum. Inner CREATE/CREATE2 charges new-account state gas unless the target already has nonce or code; a collision consumes the 63/64 grant as regular gas without spawning a child. A child exceptional halt onto a balance-only (already-alive) target keeps that charge as regular gas and exceptional-halts the creating frame (nonce bump reverted, BAL reads kept). CREATE new-account OOG is post-target (the created address is in the BAL); 7702 top-frame delegation OOG records the recipient and not the delegation target.
+
+**`RunTxResult` fields (EIP-8037 active):**
+
+| Field | Meaning |
+| --- | --- |
+| `txRegularGas` | Regular-dimension total for this tx (`max(raw_regular, calldata_floor)` per EIP-7623/EIP-7976) |
+| `txStateGas` | State-dimension total (intrinsic state + execution state gas, net of create/selfdestruct refunds) |
+| `blockGasSpent` | Amount counted toward block gas (see EIP-7778 below) |
+| `totalGasSpent` | Amount actually paid by the sender (includes refund subtraction) |
+
+**State-gas reservoir:** during execution the EVM maintains `evm.stateGasReservoir`, initialized from the tx's state-gas budget. State-touching opcodes draw from the reservoir first; overflow spills into `gas_left`. The delta is reflected in `txStateGas`.
+
+**Dependency:** EIP-8037 requires [EIP-7825](https://eips.ethereum.org/EIPS/eip-7825) (`maxTransactionGasLimit`) — both are active on `Hardfork.Amsterdam`.
+
+### EIP-7778 Block gas accounting (Amsterdam)
+
+See [Release ↔ spec tracking](#amsterdam-hardfork-experimental) above for the supported Amsterdam spec snapshot.
+
+[EIP-7778](https://eips.ethereum.org/EIPS/eip-7778) changes how gas refunds affect block-level accounting. `RunTxResult.totalGasSpent` is what the sender pays (refunds subtracted). `RunTxResult.blockGasSpent` is what counts toward the block header's `gasUsed` — under EIP-7778 this **does not** subtract tx-level refunds (`blockGasSpent = max(totalGasSpent, floorCost)`). Receipt `cumulativeGasUsed` still uses the pre-7778 refund semantics via a separate accumulator inside `runBlock()`.
+
+### EIP-7708 ETH transfer and burn logs (Amsterdam)
+
+See [Release ↔ spec tracking](#amsterdam-hardfork-experimental) above for the supported Amsterdam spec snapshot.
+
+[EIP-7708](https://eips.ethereum.org/EIPS/eip-7708) adds synthetic logs for native ETH transfers and balance burns. When active, value-bearing `CALL`/`CREATE` paths and certain `SELFDESTRUCT`/account-removal flows append logs from the system address (`0xfff…fff`) with `Transfer(address,address,uint256)` or `Burn(address,uint256)` topics. These appear in `RunTxResult.receipt.logs` like any other log — no VM API changes are needed beyond using `Hardfork.Amsterdam`. See [`examples/runTxTransferLogs.ts`](./examples/runTxTransferLogs.ts).
 
 ## Events
 
@@ -446,7 +869,7 @@ Developer documentation - currently mainly with information on testing and debug
 
 ## EthereumJS
 
-The `EthereumJS` GitHub organization and its repositories are managed by the Ethereum Foundation JavaScript team, see our [website](https://ethereumjs.github.io/) for a team introduction. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
+The `EthereumJS` GitHub organization and its repositories are managed by members of the former Ethereum Foundation JavaScript team and the broader Ethereum community. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
 
 ## License
 

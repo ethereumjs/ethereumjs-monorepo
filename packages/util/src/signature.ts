@@ -1,5 +1,5 @@
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
+import { secp256k1 } from '@noble/curves/secp256k1.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 
 import {
   bigIntToBytes,
@@ -55,9 +55,9 @@ export const ecrecover = function (
     throw EthereumJSErrorWithoutCode('Invalid signature v value')
   }
 
-  const sig = secp256k1.Signature.fromCompact(signature).addRecoveryBit(Number(recovery))
+  const sig = secp256k1.Signature.fromBytes(signature).addRecoveryBit(Number(recovery))
   const senderPubKey = sig.recoverPublicKey(msgHash)
-  return senderPubKey.toRawBytes(false).slice(1)
+  return senderPubKey.toBytes(false).slice(1)
 }
 
 /**
@@ -198,5 +198,5 @@ export const isValidSignature = function (
 export const hashPersonalMessage = function (message: Uint8Array): Uint8Array {
   assertIsBytes(message)
   const prefix = utf8ToBytes(`\u0019Ethereum Signed Message:\n${message.length}`)
-  return keccak256(concatBytes(prefix, message))
+  return keccak_256(concatBytes(prefix, message))
 }

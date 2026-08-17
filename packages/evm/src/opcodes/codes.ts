@@ -285,7 +285,7 @@ const hardforkOpcodes: { hardfork: Hardfork; opcodes: OpcodeEntry }[] = [
 
 const eipOpcodes: { eip: number; opcodes: OpcodeEntry }[] = [
   {
-    eip: 663,
+    eip: 8024,
     opcodes: {
       0xe6: defaultOp('DUPN'),
       0xe7: defaultOp('SWAPN'),
@@ -369,10 +369,22 @@ const eipOpcodes: { eip: number; opcodes: OpcodeEntry }[] = [
     },
   },
   {
+    eip: 7843,
+    opcodes: {
+      0x4b: asyncOp('SLOTNUM'),
+    },
+  },
+  {
     eip: 7620,
     opcodes: {
       0xec: asyncAndDynamicGasOp('EOFCREATE'),
       0xee: asyncAndDynamicGasOp('RETURNCONTRACT'),
+    },
+  },
+  {
+    eip: 7939,
+    opcodes: {
+      0x1e: defaultOp('CLZ'),
     },
   },
 ]

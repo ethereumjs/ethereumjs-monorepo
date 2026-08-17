@@ -26,11 +26,11 @@ Defined in: [packages/util/src/binaryTree.ts:44](https://github.com/ethereumjs/e
 
 #### currentValue
 
-> **currentValue**: `null` \| `` `0x${string}` ``
+> **currentValue**: `` `0x${string}` `` \| `null`
 
 #### newValue
 
-> **newValue**: `null` \| `` `0x${string}` ``
+> **newValue**: `` `0x${string}` `` \| `null`
 
 #### suffix
 

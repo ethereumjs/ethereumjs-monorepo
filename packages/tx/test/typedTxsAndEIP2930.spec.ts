@@ -26,7 +26,7 @@ import {
   paramsTx,
 } from '../src/index.ts'
 
-import { secp256k1 } from 'ethereum-cryptography/secp256k1'
+import { secp256k1 } from '@noble/curves/secp256k1.js'
 import type { TxData } from '../src/2930/tx.ts'
 import type { AccessList, AccessListBytesItem, JSONTx } from '../src/index.ts'
 
@@ -402,10 +402,14 @@ describe('[AccessList2930Tx / FeeMarket1559Tx] -> EIP-2930 Compatibility', () =>
     const tx = createAccessList2930Tx({})
 
     const msgHash = tx.getHashedMessageToSign()
-    const { recovery, r, s } = secp256k1.sign(msgHash, privKey)
+    const signatureBytes = secp256k1.sign(msgHash, privKey, {
+      format: 'recovered',
+      prehash: false,
+    })
+    const { recovery, r, s } = secp256k1.Signature.fromBytes(signatureBytes, 'recovered')
 
     const signedTx = tx.sign(privKey)
-    const addSignatureTx = tx.addSignature(BigInt(recovery), r, s)
+    const addSignatureTx = tx.addSignature(BigInt(recovery!), r, s)
 
     assert.deepEqual(signedTx.toJSON(), addSignatureTx.toJSON())
   })
@@ -415,11 +419,16 @@ describe('[AccessList2930Tx / FeeMarket1559Tx] -> EIP-2930 Compatibility', () =>
     const tx = createAccessList2930Tx({})
 
     const msgHash = tx.getHashedMessageToSign()
-    const { recovery, r, s } = secp256k1.sign(msgHash, privKey)
+    const signatureBytes = secp256k1.sign(msgHash, privKey, {
+      format: 'recovered',
+      prehash: false,
+    })
+
+    const { recovery, r, s } = secp256k1.Signature.fromBytes(signatureBytes, 'recovered')
 
     assert.throws(() => {
       // This will throw, since we now try to set either v=27 or v=28
-      tx.addSignature(BigInt(recovery) + BigInt(27), r, s)
+      tx.addSignature(BigInt(recovery!) + BigInt(27), r, s)
     })
   })
 

@@ -10,6 +10,14 @@ export const CLRequestType = {
   Deposit: 0,
   Withdrawal: 1,
   Consolidation: 2,
+  /**
+   * EIP-8282 builder deposit request (Amsterdam, experimental)
+   */
+  BuilderDeposit: 3,
+  /**
+   * EIP-8282 builder exit request (Amsterdam, experimental)
+   */
+  BuilderExit: 4,
 } as const
 
 export interface RequestJSON {
@@ -42,6 +50,10 @@ export function createCLRequest(bytes: Uint8Array): CLRequest<CLRequestType> {
       return new CLRequest(CLRequestType.Withdrawal, bytes.subarray(1))
     case CLRequestType.Consolidation:
       return new CLRequest(CLRequestType.Consolidation, bytes.subarray(1))
+    case CLRequestType.BuilderDeposit:
+      return new CLRequest(CLRequestType.BuilderDeposit, bytes.subarray(1))
+    case CLRequestType.BuilderExit:
+      return new CLRequest(CLRequestType.BuilderExit, bytes.subarray(1))
     default:
       throw Error(`Invalid request type=${bytes[0]}`)
   }

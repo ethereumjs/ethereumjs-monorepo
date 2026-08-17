@@ -10,7 +10,7 @@
 
 Defined in: [wallet.ts:163](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/wallet/src/wallet.ts#L163)
 
-## Type declaration
+## Type Declaration
 
 ### PBKDF
 

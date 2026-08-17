@@ -1,4 +1,5 @@
 import type { ParamsDict } from '@ethereumjs/common'
+import { SYSTEM_ADDRESS } from '@ethereumjs/util'
 
 export const paramsVM: ParamsDict = {
   /**
@@ -42,7 +43,7 @@ export const paramsVM: ParamsDict = {
     // config
     historyStorageAddress: '0x0000F90827F1C53A10CB7A02335B175320002935', // The address where the historical blockhashes are stored
     historyServeWindow: 8191, // The amount of blocks to be served by the historical blockhash contract
-    systemAddress: '0xfffffffffffffffffffffffffffffffffffffffe', // The system address
+    systemAddress: SYSTEM_ADDRESS, // The system address
   },
   /**
 .  * Reduction in refunds
@@ -75,9 +76,10 @@ export const paramsVM: ParamsDict = {
    */
   7002: {
     // config
-    systemAddress: '0xfffffffffffffffffffffffffffffffffffffffe', // The system address to perform operations on the withdrawal requests predeploy address
+    systemAddress: SYSTEM_ADDRESS, // The system address to perform operations on the withdrawal requests predeploy address
     // See: https://github.com/ethereum/EIPs/pull/8934/files
     withdrawalRequestPredeployAddress: '0x00000961EF480EB55E80D19AD83579A64C007002', // Address of the validator excess address
+    systemCallGasLimit: 30_000_000, // EIP-7002 system call gas limit
   },
 
   /**
@@ -85,9 +87,10 @@ export const paramsVM: ParamsDict = {
    */
   7251: {
     // config
-    systemAddress: '0xfffffffffffffffffffffffffffffffffffffffe', // The system address to perform operations on the consolidation requests predeploy address
+    systemAddress: SYSTEM_ADDRESS, // The system address to perform operations on the consolidation requests predeploy address
     // See: https://github.com/ethereum/EIPs/pull/8934/files
     consolidationRequestPredeployAddress: '0x0000BBDDC7CE488642FB579F8B00F3A590007251', // Address of the consolidations contract
+    systemCallGasLimit: 30_000_000, // EIP-7251 system call gas limit
   },
   /**
 .  * Shard Blob Transactions
@@ -97,5 +100,15 @@ export const paramsVM: ParamsDict = {
     targetBlobGasPerBlock: 786432, // The target blob gas consumed per block
     maxBlobGasPerBlock: 1179648, // The max blob gas allowable per block
     blobGasPriceUpdateFraction: 5007716, // The denominator used in the exponential when calculating a blob gas price
+  },
+  /**
+   * Builder execution requests (Amsterdam, experimental)
+   */
+  8282: {
+    // config
+    systemAddress: SYSTEM_ADDRESS, // The system address to perform operations on the builder request contracts
+    builderDepositContractAddress: '0x0000BFF46984E3725691FA540A8C7589300D8282', // Address of the builder deposit contract (glamsterdam-devnet v7)
+    builderExitContractAddress: '0x000064D678505AD48F8CCB093BC65613800E8282', // Address of the builder exit contract (glamsterdam-devnet v7)
+    systemCallGasLimit: 30_000_000, // EIP-8282 system call gas limit
   },
 }

@@ -6,7 +6,7 @@
 
 # Interface: BuilderOpts
 
-Defined in: [vm/src/types.ts:192](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L192)
+Defined in: [vm/src/types.ts:194](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L194)
 
 Options for the block builder.
 
@@ -39,7 +39,7 @@ Note that this option has no effect on networks other than PoW/Ethash networks
 
 > `optional` **cliqueSigner**: `Uint8Array`\<`ArrayBufferLike`\>
 
-Defined in: [vm/src/types.ts:207](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L207)
+Defined in: [vm/src/types.ts:209](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L209)
 
 Provide a clique signer's privateKey to seal this block.
 Will throw if provided on a non-PoA chain.
@@ -65,18 +65,6 @@ Current default hardfork: `merge`
 #### Inherited from
 
 `BlockOptions.common`
-
-***
-
-### executionWitness?
-
-> `optional` **executionWitness**: `VerkleExecutionWitness`
-
-Defined in: block/dist/esm/types.d.ts:72
-
-#### Inherited from
-
-`BlockOptions.executionWitness`
 
 ***
 
@@ -133,7 +121,7 @@ params['1']['minGasLimit'] = 3000 // 5000
 
 > `optional` **putBlockIntoBlockchain**: `boolean`
 
-Defined in: [vm/src/types.ts:202](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L202)
+Defined in: [vm/src/types.ts:204](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L204)
 
 Whether to put the block into the vm's blockchain after building it.
 This is useful for completing a full cycle when building a block so

@@ -7,16 +7,19 @@ import { Event } from '../../../src/types.ts'
 describe('[RlpxPeer]', async () => {
   vi.mock('@ethereumjs/devp2p', async () => {
     const devp2p = await vi.importActual<any>('@ethereumjs/devp2p')
-    const RLPx = vi.fn().mockImplementation(() => {
-      return {
-        events: new EventEmitter(),
-        connect: vi.fn(),
+
+    // Create a proper constructor mock for RLPx
+    class RLPxMock {
+      events = new EventEmitter()
+      connect = vi.fn()
+      constructor() {
+        // Constructor can be empty, properties are initialized above
       }
-    })
+    }
 
     return {
       ...devp2p,
-      RLPx,
+      RLPx: RLPxMock,
     }
   })
 

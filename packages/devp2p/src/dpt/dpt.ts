@@ -4,8 +4,8 @@ import {
   bytesToUnprefixedHex,
   randomBytes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
+import { secp256k1 } from '@noble/curves/secp256k1.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 import { EventEmitter } from 'eventemitter3'
 
 import { DNS } from '../dns/index.ts'
@@ -62,7 +62,7 @@ export class DPT {
     this._onlyConfirmed = options.onlyConfirmed ?? false
     this._confirmedPeers = new Set()
 
-    this._keccakFunction = options.common?.customCrypto.keccak256 ?? keccak256
+    this._keccakFunction = options.common?.customCrypto.keccak256 ?? keccak_256
 
     this._kbucket = new KBucket(this.id)
     this._kbucket.events.on('added', (peer: PeerInfo) => this.events.emit('peer:added', peer))
@@ -90,8 +90,7 @@ export class DPT {
     const refreshIntervalSubdivided = Math.floor((options.refreshInterval ?? 60000) / 10) // 60 sec * 1000
     this._refreshIntervalId = setInterval(() => this.refresh(), refreshIntervalSubdivided)
 
-    this.DEBUG =
-      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+    this.DEBUG = globalThis.process?.env?.DEBUG?.includes('ethjs') ?? false
   }
 
   bind(...args: any[]): void {
@@ -142,6 +141,7 @@ export class DPT {
     try {
       peer = await this.addPeer(peer)
       if (peer.id !== undefined) {
+        // Using deprecated bytesToUnprefixedHex for performance: used as Set keys for peer tracking.
         this._confirmedPeers.add(bytesToUnprefixedHex(peer.id))
       }
     } catch (error: any) {
@@ -205,6 +205,7 @@ export class DPT {
   getClosestPeers(id: Uint8Array) {
     let peers = this._kbucket.closest(id)
     if (this._onlyConfirmed && this._confirmedPeers.size > 0) {
+      // Using deprecated bytesToUnprefixedHex for performance: used as Set keys for peer filtering.
       peers = peers.filter((peer) =>
         this._confirmedPeers.has(bytesToUnprefixedHex(peer.id as Uint8Array)) ? true : false,
       )
@@ -215,6 +216,7 @@ export class DPT {
   removePeer(obj: string | PeerInfo | Uint8Array) {
     const peer = this._kbucket.get(obj)
     if (peer?.id !== undefined) {
+      // Using deprecated bytesToUnprefixedHex for performance: used as Set keys for peer tracking.
       this._confirmedPeers.delete(bytesToUnprefixedHex(peer.id as Uint8Array))
     }
     this._kbucket.remove(obj)
@@ -247,6 +249,7 @@ export class DPT {
         const selector = bytesToInt((peer.id as Uint8Array).subarray(0, 1)) % 10
         let confirmed = true
         if (this._onlyConfirmed && this._confirmedPeers.size > 0) {
+          // Using deprecated bytesToUnprefixedHex for performance: used as Set keys for peer filtering.
           const id = bytesToUnprefixedHex(peer.id as Uint8Array)
           if (!this._confirmedPeers.has(id)) {
             confirmed = false

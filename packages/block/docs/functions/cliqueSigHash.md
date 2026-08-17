@@ -8,7 +8,7 @@
 
 > **cliqueSigHash**(`header`): `Uint8Array`\<`ArrayBufferLike`\>
 
-Defined in: [consensus/clique.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/consensus/clique.ts#L41)
+Defined in: [consensus/clique.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/consensus/clique.ts#L38)
 
 PoA clique signature hash without the seal.
 

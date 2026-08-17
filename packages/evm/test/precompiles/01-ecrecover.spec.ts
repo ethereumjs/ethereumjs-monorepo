@@ -1,6 +1,6 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { bytesToHex, bytesToUnprefixedHex, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 import { assert, describe, it } from 'vitest'
 
 import { createEVM, getActivePrecompiles } from '../../src/index.ts'
@@ -23,7 +23,7 @@ describe('Precompiles: ECRECOVER', () => {
     const addressStr = '0000000000000000000000000000000000000001'
     const ECRECOVER = getActivePrecompiles(common).get(addressStr)!
 
-    const prefixedMessage = bytesToUnprefixedHex(keccak256(hexToBytes(`0x${prefix}${_hash}`)))
+    const prefixedMessage = bytesToUnprefixedHex(keccak_256(hexToBytes(`0x${prefix}${_hash}`)))
     const data = hexToBytes(`0x${prefixedMessage}${_v}${_r}${_s}`)
     let result = await ECRECOVER({
       data,

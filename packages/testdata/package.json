@@ -11,7 +11,10 @@
         "typescript": "./src/index.ts",
         "default": "./dist/esm/index.js"
       },
-      "require": "./dist/cjs/index.js"
+      "require": {
+        "typescript": "./src/index.ts",
+        "default": "./dist/cjs/index.js"
+      }
     }
   },
   "files": ["dist", "src"],
@@ -23,7 +26,7 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "devDependencies": {
-    "@ethereumjs/block": "^10.0.0",
-    "@ethereumjs/util": "^10.0.0"
+    "@ethereumjs/block": "^10.1.2",
+    "@ethereumjs/util": "^10.1.2"
   }
 }

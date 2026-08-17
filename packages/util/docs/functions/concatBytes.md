@@ -6,9 +6,9 @@
 
 # Function: concatBytes()
 
-> **concatBytes**(...`arrays`): `Uint8Array`
+> **concatBytes**(...`arrays`): `Uint8Array`\<`ArrayBuffer`\>
 
-Defined in: [packages/util/src/bytes.ts:431](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L431)
+Defined in: [packages/util/src/bytes.ts:457](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L457)
 
 This mirrors the functionality of the `ethereum-cryptography` export except
 it skips the check to validate that every element of `arrays` is indeed a `uint8Array`
@@ -24,7 +24,7 @@ an array of Uint8Arrays
 
 ## Returns
 
-`Uint8Array`
+`Uint8Array`\<`ArrayBuffer`\>
 
 one Uint8Array with all the elements of the original set
 works like `Buffer.concat`

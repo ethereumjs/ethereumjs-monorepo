@@ -13,7 +13,7 @@ Defined in: [7702/constructors.ts:38](https://github.com/ethereumjs/ethereumjs-m
 Create a transaction from an array of byte encoded values ordered according to the devp2p network encoding - format noted below.
 
 Format: `[chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
-accessList, signatureYParity, signatureR, signatureS]`
+accessList, authorityList, signatureYParity, signatureR, signatureS]`
 
 ## Parameters
 

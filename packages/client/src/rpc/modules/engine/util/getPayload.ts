@@ -3,7 +3,7 @@ import { bigIntToHex, bytesToHex } from '@ethereumjs/util'
 import type { Block, ExecutionPayload } from '@ethereumjs/block'
 import type { CLRequest, CLRequestType } from '@ethereumjs/util'
 import type { BlobsBundle } from '../../../../miner/index.ts'
-import type { BlobsBundleV1 } from '../types.ts'
+import type { BlobsBundleV1OrV2 } from '../types.ts'
 
 /**
  * Formats a block to {@link ExecutionPayloadV1}.
@@ -20,7 +20,7 @@ export const blockToExecutionPayload = (
     delete executionPayload.parentBeaconBlockRoot
   }
 
-  const blobsBundle: BlobsBundleV1 | undefined = bundle ?? undefined
+  const blobsBundle: BlobsBundleV1OrV2 | undefined = bundle ?? undefined
 
   // ethereumjs does not provide any transaction censoring detection (yet) to suggest
   // overriding builder/mev-boost blocks

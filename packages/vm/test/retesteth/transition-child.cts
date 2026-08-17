@@ -9,7 +9,7 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { BlockBuilder } from '../../dist/cjs/buildBlock.js'
 import { VM } from '../../dist/cjs/index.js'
-import { getCommon } from '../tester/config.ts'
+import { getCommon } from '../tester/legacy/config.ts'
 import { makeBlockFromEnv, setupPreConditions } from '../util.ts'
 
 import type { TypedTransaction } from '@ethereumjs/tx'

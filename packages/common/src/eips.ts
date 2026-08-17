@@ -2,6 +2,13 @@ import { Hardfork } from './enums.ts'
 
 import type { EIPsDict } from './types.ts'
 
+/**
+ * EIP catalog for `Common`.
+ *
+ * `minimumHardfork` is the earliest fork where the EIP can be enabled in isolation
+ * (prerequisites already present). It is not the fork that schedules the EIP — that
+ * is `hardforks.ts` → `eips` — and is therefore at least one hardfork earlier.
+ */
 export const eipsDict: EIPsDict = {
   /**
    * Frontier/Chainstart
@@ -59,13 +66,13 @@ export const eipsDict: EIPsDict = {
     minimumHardfork: Hardfork.Istanbul,
   },
   /**
-   * Description : SWAPN, DUPN and EXCHANGE instructions
-   * URL         : https://github.com/ethereum/EIPs/blob/bd421962b4e241aa2b00a85d9cf4e57770bdb954/EIPS/eip-663.md
+   * Description : DUPN, SWAPN and EXCHANGE instructions
+   * URL         : https://eips.ethereum.org/EIPS/eip-8024
    * Status      : Review
    */
-  663: {
-    minimumHardfork: Hardfork.Chainstart,
-    requiredEIPs: [3540, 5450],
+  8024: {
+    minimumHardfork: Hardfork.Amsterdam,
+    requiredEIPs: [],
   },
   /**
    * Description : Transient storage opcodes
@@ -107,6 +114,15 @@ export const eipsDict: EIPsDict = {
    */
   2718: {
     minimumHardfork: Hardfork.Chainstart,
+  },
+  /**
+   * Description : Reduce intrinsic transaction gas (Amsterdam, experimental)
+   * URL         : https://eips.ethereum.org/EIPS/eip-2780
+   * Status      : Draft
+   */
+  2780: {
+    minimumHardfork: Hardfork.Chainstart,
+    requiredEIPs: [7708],
   },
   /**
    * Description : Gas cost increases for state access opcodes
@@ -336,14 +352,6 @@ export const eipsDict: EIPsDict = {
     minimumHardfork: Hardfork.London,
   },
   /**
-   * Description : Ethereum state using a unified verkle tree (experimental)
-   * URL         : https://eips.ethereum.org/EIPS/eip-6800
-   * Status      : Draft
-   */
-  6800: {
-    minimumHardfork: Hardfork.London,
-  },
-  /**
    * Description : Execution layer triggerable withdrawals (experimental)
    * URL         : https://github.com/ethereum/EIPs/blob/3b5fcad6b35782f8aaeba7d4ac26004e8fbd720f/EIPS/eip-7002.md
    * Status      : Review
@@ -394,6 +402,15 @@ export const eipsDict: EIPsDict = {
     requiredEIPs: [4844],
   },
   /**
+   * Description : Peerdas blob transactions
+   * URL         : hhttps://eips.ethereum.org/EIPS/eip-7594
+   * Status      : Review
+   */
+  7594: {
+    minimumHardfork: Hardfork.Paris,
+    requiredEIPs: [4844],
+  },
+  /**
    * Description : EOF Contract Creation
    * URL         : https://github.com/ethereum/EIPs/blob/dd32a34cfe4473bce143641bfffe4fd67e1987ab/EIPS/eip-7620.md
    * Status      : Review
@@ -434,13 +451,22 @@ export const eipsDict: EIPsDict = {
     requiredEIPs: [4844],
   },
   /**
+   * Description : Blob base fee bounded by execution cost
+   * URL         : https://eips.ethereum.org/EIPS/eip-7918
+   * Status      : Last Call
+   */
+  7918: {
+    minimumHardfork: Hardfork.Paris,
+    requiredEIPs: [4844],
+  },
+  /**
    * Description : EVM Object Format (EOFv1) Meta
    * URL         : https://github.com/ethereum/EIPs/blob/4153e95befd0264082de3c4c2fe3a85cc74d3152/EIPS/eip-7692.md
    * Status      : Draft
    */
   7692: {
     minimumHardfork: Hardfork.Cancun,
-    requiredEIPs: [663, 3540, 3670, 4200, 4750, 5450, 6206, 7069, 7480, 7620, 7698],
+    requiredEIPs: [3540, 3670, 4200, 4750, 5450, 6206, 7069, 7480, 7620, 7698],
   },
   /**
    * Description : EOF - Creation transaction
@@ -462,6 +488,14 @@ export const eipsDict: EIPsDict = {
     requiredEIPs: [2718, 2929, 2930],
   },
   /**
+   * Description : Set upper bounds for MODEXP
+   * URL         : https://eips.ethereum.org/EIPS/eip-7823
+   * Status      : Review
+   */
+  7823: {
+    minimumHardfork: Hardfork.Byzantium,
+  },
+  /**
    * Description : Use historical block hashes saved in state for BLOCKHASH
    * URL         : https://eips.ethereum.org/EIPS/eip-7709
    * Status      : Final
@@ -471,11 +505,164 @@ export const eipsDict: EIPsDict = {
     requiredEIPs: [2935],
   },
   /**
+   * Description : Transaction Gas Limit Cap
+   * URL         : https://eips.ethereum.org/EIPS/eip-7825
+   * Status      : Draft
+   */
+  7825: {
+    minimumHardfork: Hardfork.Chainstart,
+    requiredEIPs: [],
+  },
+  /**
    * Description : Ethereum state using a unified binary tree (experimental)
    * URL         : hhttps://eips.ethereum.org/EIPS/eip-7864
    * Status      : Draft
    */
   7864: {
     minimumHardfork: Hardfork.London,
+  },
+  /**
+   * Description : EIP-7883: ModExp Gas Cost Increase
+   * URL         : hhttps://eips.ethereum.org/EIPS/eip-7883
+   * Status      : Draft
+   */
+  7883: {
+    minimumHardfork: Hardfork.Chainstart,
+  },
+  /**
+   * Description : Block-level gas accounting without refunds
+   * URL         : https://eips.ethereum.org/EIPS/eip-7778
+   * Status      : Draft
+   */
+  7778: {
+    minimumHardfork: Hardfork.Amsterdam,
+    requiredEIPs: [],
+  },
+  /**
+   * Description : Block Level Access Lists (BAL)
+   * URL         : https://eips.ethereum.org/EIPS/eip-7928
+   * Status      : Draft (in development, do not use in production)
+   */
+  7928: {
+    minimumHardfork: Hardfork.Prague,
+    requiredEIPs: [],
+  },
+  /**
+   * Description : Count leading zeros (CLZ) opcode
+   * URL         : https://eips.ethereum.org/EIPS/eip-7939
+   * Status      : Draft
+   */
+  7939: {
+    minimumHardfork: Hardfork.Chainstart,
+    requiredEIPs: [],
+  },
+  /**
+   * Description : Precompile for secp256r1 Curve Support
+   * URL         : https://eips.ethereum.org/EIPS/eip-7951
+   * Status      : Draft
+   */
+  7951: {
+    minimumHardfork: Hardfork.Chainstart,
+    requiredEIPs: [],
+  },
+  /**
+   * Description : RLP Execution Block Size Limit
+   * URL         : https://eips.ethereum.org/EIPS/eip-7934
+   * Status      : Last Call
+   */
+  7934: {
+    minimumHardfork: Hardfork.Chainstart,
+    requiredEIPs: [],
+  },
+  /**
+   * Description : ETH transfers emit a log
+   * URL         : https://eips.ethereum.org/EIPS/eip-7708
+   * Status      : Draft
+   */
+  7708: {
+    minimumHardfork: Hardfork.Chainstart,
+    requiredEIPs: [1559, 4788, 6780],
+  },
+  /**
+   * Description : SLOTNUM opcode
+   * URL         : https://eips.ethereum.org/EIPS/eip-7843
+   * Status      : Draft
+   */
+  7843: {
+    minimumHardfork: Hardfork.Cancun,
+    requiredEIPs: [],
+  },
+  /**
+   * Description : Increase max contract code size (24 → 32 KiB) and initcode size (48 → 64 KiB)
+   * URL         : https://eips.ethereum.org/EIPS/eip-7954
+   * Status      : Draft
+   */
+  7954: {
+    minimumHardfork: Hardfork.Amsterdam,
+    requiredEIPs: [],
+  },
+  /**
+   * Description : Increase calldata floor cost
+   * URL         : https://eips.ethereum.org/EIPS/eip-7976
+   * Status      : Draft
+   */
+  7976: {
+    minimumHardfork: Hardfork.Chainstart,
+    requiredEIPs: [7623],
+  },
+  /**
+   * Description : Access list data pricing
+   * URL         : https://eips.ethereum.org/EIPS/eip-7981
+   * Status      : Draft
+   */
+  7981: {
+    minimumHardfork: Hardfork.Amsterdam,
+    requiredEIPs: [2930, 7976],
+  },
+  /**
+   * Description : Deterministic CREATE2 factory predeploy (Amsterdam, experimental)
+   * URL         : https://eips.ethereum.org/EIPS/eip-7997
+   * Status      : Review
+   */
+  7997: {
+    // CREATE2 (EIP-1014) is Constantinople; factory bytecode needs nothing later.
+    minimumHardfork: Hardfork.Constantinople,
+    requiredEIPs: [],
+  },
+  /**
+   * Description : State Creation Gas Cost Increase
+   * URL         : https://eips.ethereum.org/EIPS/eip-8037
+   * Status      : Draft
+   */
+  8037: {
+    minimumHardfork: Hardfork.Amsterdam,
+    requiredEIPs: [2780, 6780, 7702, 7825, 7976, 7981],
+  },
+  /**
+   * Description : State Access Gas Cost Increase (Amsterdam, experimental)
+   * URL         : https://eips.ethereum.org/EIPS/eip-8038
+   * Status      : Draft
+   */
+  8038: {
+    minimumHardfork: Hardfork.Amsterdam,
+    requiredEIPs: [2929],
+  },
+  /**
+   * Description : SELFDESTRUCT no burn (Amsterdam, experimental)
+   * URL         : https://eips.ethereum.org/EIPS/eip-8246
+   * Status      : Draft
+   */
+  8246: {
+    minimumHardfork: Hardfork.Amsterdam,
+    requiredEIPs: [6780],
+  },
+  /**
+   * Description : Builder execution requests (Amsterdam, experimental)
+   * URL         : https://eips.ethereum.org/EIPS/eip-8282
+   * Status      : Draft
+   */
+  8282: {
+    minimumHardfork: Hardfork.Amsterdam,
+    requiredEIPs: [7685],
   },
 }

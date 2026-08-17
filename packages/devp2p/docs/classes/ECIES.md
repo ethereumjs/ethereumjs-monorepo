@@ -54,7 +54,7 @@ Defined in: [packages/devp2p/src/rlpx/ecies.ts:133](https://github.com/ethereumj
 
 ##### sharedMacData
 
-`null` | `Uint8Array`\<`ArrayBufferLike`\>
+`Uint8Array`\<`ArrayBufferLike`\> | `null`
 
 #### Returns
 
@@ -64,7 +64,7 @@ Defined in: [packages/devp2p/src/rlpx/ecies.ts:133](https://github.com/ethereumj
 
 ### \_encryptMessage()
 
-> **\_encryptMessage**(`data`, `sharedMacData`): `undefined` \| `Uint8Array`\<`ArrayBufferLike`\>
+> **\_encryptMessage**(`data`, `sharedMacData`): `Uint8Array`\<`ArrayBufferLike`\> \| `undefined`
 
 Defined in: [packages/devp2p/src/rlpx/ecies.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L104)
 
@@ -76,11 +76,11 @@ Defined in: [packages/devp2p/src/rlpx/ecies.ts:104](https://github.com/ethereumj
 
 ##### sharedMacData
 
-`null` | `Uint8Array`\<`ArrayBufferLike`\>
+`Uint8Array`\<`ArrayBufferLike`\> | `null`
 
 #### Returns
 
-`undefined` \| `Uint8Array`\<`ArrayBufferLike`\>
+`Uint8Array`\<`ArrayBufferLike`\> \| `undefined`
 
 ***
 
@@ -108,55 +108,55 @@ Defined in: [packages/devp2p/src/rlpx/ecies.ts:168](https://github.com/ethereumj
 
 ### createAckEIP8()
 
-> **createAckEIP8**(): `undefined` \| `Uint8Array`\<`ArrayBufferLike`\>
+> **createAckEIP8**(): `Uint8Array`\<`ArrayBufferLike`\> \| `undefined`
 
 Defined in: [packages/devp2p/src/rlpx/ecies.ts:303](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L303)
 
 #### Returns
 
-`undefined` \| `Uint8Array`\<`ArrayBufferLike`\>
+`Uint8Array`\<`ArrayBufferLike`\> \| `undefined`
 
 ***
 
 ### createAckOld()
 
-> **createAckOld**(): `undefined` \| `Uint8Array`\<`ArrayBufferLike`\>
+> **createAckOld**(): `Uint8Array`\<`ArrayBufferLike`\> \| `undefined`
 
 Defined in: [packages/devp2p/src/rlpx/ecies.ts:320](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L320)
 
 #### Returns
 
-`undefined` \| `Uint8Array`\<`ArrayBufferLike`\>
+`Uint8Array`\<`ArrayBufferLike`\> \| `undefined`
 
 ***
 
 ### createAuthEIP8()
 
-> **createAuthEIP8**(): `undefined` \| `Uint8Array`\<`ArrayBufferLike`\>
+> **createAuthEIP8**(): `Uint8Array`\<`ArrayBufferLike`\> \| `undefined`
 
 Defined in: [packages/devp2p/src/rlpx/ecies.ts:192](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L192)
 
 #### Returns
 
-`undefined` \| `Uint8Array`\<`ArrayBufferLike`\>
+`Uint8Array`\<`ArrayBufferLike`\> \| `undefined`
 
 ***
 
 ### createAuthNonEIP8()
 
-> **createAuthNonEIP8**(): `undefined` \| `Uint8Array`\<`ArrayBufferLike`\>
+> **createAuthNonEIP8**(): `Uint8Array`\<`ArrayBufferLike`\> \| `undefined`
 
 Defined in: [packages/devp2p/src/rlpx/ecies.ts:219](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L219)
 
 #### Returns
 
-`undefined` \| `Uint8Array`\<`ArrayBufferLike`\>
+`Uint8Array`\<`ArrayBufferLike`\> \| `undefined`
 
 ***
 
 ### createBlockHeader()
 
-> **createBlockHeader**(`size`): `undefined` \| `Uint8Array`\<`ArrayBufferLike`\>
+> **createBlockHeader**(`size`): `Uint8Array`\<`ArrayBufferLike`\> \| `undefined`
 
 Defined in: [packages/devp2p/src/rlpx/ecies.ts:366](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L366)
 
@@ -168,13 +168,13 @@ Defined in: [packages/devp2p/src/rlpx/ecies.ts:366](https://github.com/ethereumj
 
 #### Returns
 
-`undefined` \| `Uint8Array`\<`ArrayBufferLike`\>
+`Uint8Array`\<`ArrayBufferLike`\> \| `undefined`
 
 ***
 
 ### createBody()
 
-> **createBody**(`data`): `undefined` \| `Uint8Array`\<`ArrayBufferLike`\>
+> **createBody**(`data`): `Uint8Array`\<`ArrayBufferLike`\> \| `undefined`
 
 Defined in: [packages/devp2p/src/rlpx/ecies.ts:397](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L397)
 
@@ -186,7 +186,7 @@ Defined in: [packages/devp2p/src/rlpx/ecies.ts:397](https://github.com/ethereumj
 
 #### Returns
 
-`undefined` \| `Uint8Array`\<`ArrayBufferLike`\>
+`Uint8Array`\<`ArrayBufferLike`\> \| `undefined`
 
 ***
 
@@ -222,7 +222,7 @@ Defined in: [packages/devp2p/src/rlpx/ecies.ts:330](https://github.com/ethereumj
 
 ##### sharedMacData
 
-`null` | `Uint8Array`\<`ArrayBufferLike`\>
+`Uint8Array`\<`ArrayBufferLike`\> | `null`
 
 #### Returns
 
@@ -250,7 +250,7 @@ Defined in: [packages/devp2p/src/rlpx/ecies.ts:297](https://github.com/ethereumj
 
 ### parseAuthPlain()
 
-> **parseAuthPlain**(`data`, `sharedMacData`): `undefined` \| `Uint8Array`\<`ArrayBufferLike`\>
+> **parseAuthPlain**(`data`, `sharedMacData`): `Uint8Array`\<`ArrayBufferLike`\> \| `undefined`
 
 Defined in: [packages/devp2p/src/rlpx/ecies.ts:237](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L237)
 
@@ -262,17 +262,17 @@ Defined in: [packages/devp2p/src/rlpx/ecies.ts:237](https://github.com/ethereumj
 
 ##### sharedMacData
 
-`null` | `Uint8Array`\<`ArrayBufferLike`\>
+`Uint8Array`\<`ArrayBufferLike`\> | `null`
 
 #### Returns
 
-`undefined` \| `Uint8Array`\<`ArrayBufferLike`\>
+`Uint8Array`\<`ArrayBufferLike`\> \| `undefined`
 
 ***
 
 ### parseBody()
 
-> **parseBody**(`data`): `undefined` \| `Uint8Array`\<`ArrayBufferLike`\>
+> **parseBody**(`data`): `Uint8Array`\<`ArrayBufferLike`\> \| `undefined`
 
 Defined in: [packages/devp2p/src/rlpx/ecies.ts:408](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L408)
 
@@ -284,13 +284,13 @@ Defined in: [packages/devp2p/src/rlpx/ecies.ts:408](https://github.com/ethereumj
 
 #### Returns
 
-`undefined` \| `Uint8Array`\<`ArrayBufferLike`\>
+`Uint8Array`\<`ArrayBufferLike`\> \| `undefined`
 
 ***
 
 ### parseHeader()
 
-> **parseHeader**(`data`): `undefined` \| `number`
+> **parseHeader**(`data`): `number` \| `undefined`
 
 Defined in: [packages/devp2p/src/rlpx/ecies.ts:381](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/ecies.ts#L381)
 
@@ -302,4 +302,4 @@ Defined in: [packages/devp2p/src/rlpx/ecies.ts:381](https://github.com/ethereumj
 
 #### Returns
 
-`undefined` \| `number`
+`number` \| `undefined`

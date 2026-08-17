@@ -62,8 +62,7 @@ export class Server {
 
     this._common = options.common
 
-    this.DEBUG =
-      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+    this.DEBUG = globalThis.process?.env?.DEBUG?.includes('ethjs') ?? false
   }
 
   bind(...args: any[]) {
@@ -101,6 +100,7 @@ export class Server {
     })
 
     const deferred = createDeferred()
+    // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for request tracking.
     const rKey = bytesToUnprefixedHex(hash)
     this._requests.set(rKey, {
       peer,
@@ -191,6 +191,7 @@ export class Server {
       }
 
       case 'pong': {
+        // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for request lookups.
         const rKey = bytesToUnprefixedHex(info.data.hash)
         const request = this._requests.get(rKey)
         if (request !== undefined) {

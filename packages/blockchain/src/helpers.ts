@@ -11,7 +11,7 @@ import type { Chain, Common, GenesisState } from '@ethereumjs/common'
  */
 
 /**
- * Verkle or Merkle genesis root
+ * Merkle genesis root
  * @param genesisState
  * @param common
  * @returns
@@ -25,11 +25,7 @@ export async function genGenesisStateRoot(
     blockNumber: 0,
     timestamp: genCommon.genesis().timestamp,
   })
-  if (genCommon.isActivatedEIP(6800)) {
-    throw Error(`Verkle tree state not yet supported`)
-  } else {
-    return genesisMPTStateRoot(genesisState)
-  }
+  return genesisMPTStateRoot(genesisState)
 }
 
 /**

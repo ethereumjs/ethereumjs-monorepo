@@ -6,8 +6,8 @@ import {
   hexToBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
-import { sha256 } from 'ethereum-cryptography/sha256.js'
+import { sha256 } from '@noble/hashes/sha2.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 import { assert, describe, it } from 'vitest'
 
 import { MerklePatriciaTrie, ROOT_DB_KEY, createMPT } from '../../src/index.ts'
@@ -90,7 +90,7 @@ describe('testing checkpoints', () => {
   */
   it('Checkpointing: nested checkpoints -> with pruning, verify that checkpoints are deep-copied', async () => {
     const KEY = utf8ToBytes('last_block_height')
-    const KEY_ROOT = keccak256(ROOT_DB_KEY)
+    const KEY_ROOT = keccak_256(ROOT_DB_KEY)
 
     // Initialize State
     const CommittedState = await createMPT({

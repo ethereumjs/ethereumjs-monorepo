@@ -8,7 +8,7 @@
 
 > **addHexPrefix**(`str`): `` `0x${string}` ``
 
-Defined in: [packages/util/src/bytes.ts:296](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L296)
+Defined in: [packages/util/src/bytes.ts:322](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L322)
 
 Adds "0x" to a given `string` if it does not already start with "0x".
 

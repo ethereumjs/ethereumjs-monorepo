@@ -1,6 +1,6 @@
 import { assert, describe, it } from 'vitest'
 
-import { testData } from '../testdata.ts'
+import { devp2pTestData } from '@ethereumjs/testdata'
 
 import * as util from './util.ts'
 
@@ -142,7 +142,7 @@ describe('DPT simulator tests', () => {
 
     const mockDns = {
       resolve: () => {
-        return [[testData.dns.enr]]
+        return [[devp2pTestData.dns.enr]]
       },
     }
     dpts[0]._addPeerBatch = () => {

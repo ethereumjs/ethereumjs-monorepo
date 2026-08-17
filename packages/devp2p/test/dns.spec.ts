@@ -1,21 +1,20 @@
-import * as td from 'testdouble'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, it, vi } from 'vitest'
 
 import { DNS } from '../src/dns/index.ts'
 
-import { testData } from './testdata.ts'
+import { devp2pTestData } from '@ethereumjs/testdata'
 
 describe('DNS', () => {
-  const mockData = testData.dns
-  const mockDns = td.replace('dns') as any
+  const mockData = devp2pTestData.dns
+  const mockDns = {
+    resolve: vi.fn(),
+  }
 
   let dns: DNS
   function initializeDns() {
     dns = new DNS()
-    // td is not intercepting the native `dns` import in ../src/dns
-    // even if it's imported after the td.replace statement above.
-    // (td.replaceEsm can address this problem for Node >= 13)
-    // This manually sets the fixture:
+    // Using __setNativeDNSModuleResolve to inject the mock dns module
+    // This allows us to mock the native `dns` module for testing
     dns.__setNativeDNSModuleResolve(mockDns)
   }
 
@@ -36,16 +35,19 @@ describe('DNS', () => {
     `${partialBranchB},${branchDomainB}`,
   ]
 
-  // Note: once td.when is asked to throw for an input it will always throw.
+  // Note: once a mock is asked to throw for an input it will always throw.
   // Input can't be re-used for a passing case.
   const errorBranchA = `enrtree-branch:${branchDomainC}`
   const errorBranchB = `enrtree-branch:${branchDomainD}`
 
-  td.when(mockDns.resolve(host, 'TXT')).thenReturn([[mockData.enrRoot]])
+  mockDns.resolve.mockReturnValue([[mockData.enrRoot]])
 
   it('retrieves a single peer', async () => {
-    td.when(mockDns.resolve(`${rootDomain}.${host}`, 'TXT')).thenReturn([[singleBranch]])
-    td.when(mockDns.resolve(`${branchDomainA}.${host}`, 'TXT')).thenReturn([[mockData.enrA]])
+    mockDns.resolve.mockImplementation((domain: string) => {
+      if (domain === `${rootDomain}.${host}`) return Promise.resolve([[singleBranch]])
+      if (domain === `${branchDomainA}.${host}`) return Promise.resolve([[mockData.enrA]])
+      return Promise.resolve([[mockData.enrRoot]])
+    })
 
     initializeDns()
     const peers = await dns.getPeers(1, [mockData.enrTree])
@@ -56,9 +58,12 @@ describe('DNS', () => {
   })
 
   it('retrieves all peers (2) when maxQuantity larger than DNS tree size', async () => {
-    td.when(mockDns.resolve(`${rootDomain}.${host}`, 'TXT')).thenReturn([[doubleBranch]])
-    td.when(mockDns.resolve(`${branchDomainA}.${host}`, 'TXT')).thenReturn([[mockData.enrA]])
-    td.when(mockDns.resolve(`${branchDomainB}.${host}`, 'TXT')).thenReturn([[mockData.enrB]])
+    mockDns.resolve.mockImplementation((domain: string) => {
+      if (domain === `${rootDomain}.${host}`) return Promise.resolve([[doubleBranch]])
+      if (domain === `${branchDomainA}.${host}`) return Promise.resolve([[mockData.enrA]])
+      if (domain === `${branchDomainB}.${host}`) return Promise.resolve([[mockData.enrB]])
+      return Promise.resolve([[mockData.enrRoot]])
+    })
 
     initializeDns()
     const peers = await dns.getPeers(50, [mockData.enrTree])
@@ -68,12 +73,14 @@ describe('DNS', () => {
   })
 
   it('retrieves all peers (3) when branch entries are composed of multiple strings', async () => {
-    td.when(mockDns.resolve(`${rootDomain}.${host}`, 'TXT')).thenReturn([multiComponentBranch])
-    td.when(mockDns.resolve(`${branchDomainA}.${host}`, 'TXT')).thenReturn([[mockData.enr]])
-    td.when(mockDns.resolve(`${branchDomainB}.${host}`, 'TXT')).thenReturn([[mockData.enrA]])
-    td.when(mockDns.resolve(`${partialBranchA}${partialBranchB}.${host}`, 'TXT')).thenReturn([
-      [mockData.enrB],
-    ])
+    mockDns.resolve.mockImplementation((domain: string) => {
+      if (domain === `${rootDomain}.${host}`) return Promise.resolve([multiComponentBranch])
+      if (domain === `${branchDomainA}.${host}`) return Promise.resolve([[mockData.enr]])
+      if (domain === `${branchDomainB}.${host}`) return Promise.resolve([[mockData.enrA]])
+      if (domain === `${partialBranchA}${partialBranchB}.${host}`)
+        return Promise.resolve([[mockData.enrB]])
+      return Promise.resolve([[mockData.enrRoot]])
+    })
 
     initializeDns()
     const peers = await dns.getPeers(50, [mockData.enrTree])
@@ -87,8 +94,11 @@ describe('DNS', () => {
   it('it tolerates circular branch references', async () => {
     // root --> branchA
     // branchA --> branchA
-    td.when(mockDns.resolve(`${rootDomain}.${host}`, 'TXT')).thenReturn([[singleBranch]])
-    td.when(mockDns.resolve(`${branchDomainA}.${host}`, 'TXT')).thenReturn([[singleBranch]])
+    mockDns.resolve.mockImplementation((domain: string) => {
+      if (domain === `${rootDomain}.${host}`) return Promise.resolve([[singleBranch]])
+      if (domain === `${branchDomainA}.${host}`) return Promise.resolve([[singleBranch]])
+      return Promise.resolve([[mockData.enrRoot]])
+    })
 
     initializeDns()
     const peers = await dns.getPeers(1, [mockData.enrTree])
@@ -96,25 +106,34 @@ describe('DNS', () => {
   })
 
   it('recovers when dns.resolve returns empty', async () => {
-    td.when(mockDns.resolve(`${rootDomain}.${host}`, 'TXT')).thenReturn([[singleBranch]])
-
     // Empty response case
-    td.when(mockDns.resolve(`${branchDomainA}.${host}`, 'TXT')).thenReturn([])
+    mockDns.resolve.mockImplementation((domain: string) => {
+      if (domain === `${rootDomain}.${host}`) return Promise.resolve([[singleBranch]])
+      if (domain === `${branchDomainA}.${host}`) return Promise.resolve([])
+      return Promise.resolve([[mockData.enrRoot]])
+    })
 
     initializeDns()
     let peers = await dns.getPeers(1, [mockData.enrTree])
     assert.strictEqual(peers.length, 0, 'method resolves when dns response is [] (zero peers)')
 
     // No TXT records case
-    td.when(mockDns.resolve(`${branchDomainA}.${host}`, 'TXT')).thenReturn([[]])
+    mockDns.resolve.mockImplementation((domain: string) => {
+      if (domain === `${rootDomain}.${host}`) return Promise.resolve([[singleBranch]])
+      if (domain === `${branchDomainA}.${host}`) return Promise.resolve([[]])
+      return Promise.resolve([[mockData.enrRoot]])
+    })
 
     peers = await dns.getPeers(1, [mockData.enrTree])
     assert.strictEqual(peers.length, 0, 'method resolves when dns response is [[]] (zero peers)')
   })
 
   it('ignores domain fetching errors', async () => {
-    td.when(mockDns.resolve(`${rootDomain}.${host}`, 'TXT')).thenReturn([[errorBranchA]])
-    td.when(mockDns.resolve(`${branchDomainC}.${host}`, 'TXT')).thenThrow(new Error('failure'))
+    mockDns.resolve.mockImplementation((domain: string) => {
+      if (domain === `${rootDomain}.${host}`) return Promise.resolve([[errorBranchA]])
+      if (domain === `${branchDomainC}.${host}`) return Promise.reject(new Error('failure'))
+      return Promise.resolve([[mockData.enrRoot]])
+    })
 
     initializeDns()
     const peers = await dns.getPeers(1, [mockData.enrTree])
@@ -122,9 +141,11 @@ describe('DNS', () => {
   })
 
   it('ignores unrecognized TXT record formats', async () => {
-    td.when(mockDns.resolve(`${rootDomain}.${host}`, 'TXT')).thenReturn([
-      [mockData.enrBranchBadPrefix],
-    ])
+    mockDns.resolve.mockImplementation((domain: string) => {
+      if (domain === `${rootDomain}.${host}`)
+        return Promise.resolve([[mockData.enrBranchBadPrefix]])
+      return Promise.resolve([[mockData.enrRoot]])
+    })
 
     initializeDns()
     const peers = await dns.getPeers(1, [mockData.enrTree])
@@ -132,8 +153,11 @@ describe('DNS', () => {
   })
 
   it('caches peers it previously fetched', async () => {
-    td.when(mockDns.resolve(`${rootDomain}.${host}`, 'TXT')).thenReturn([[errorBranchB]])
-    td.when(mockDns.resolve(`${branchDomainD}.${host}`, 'TXT')).thenReturn([[mockData.enrA]])
+    mockDns.resolve.mockImplementation((domain: string) => {
+      if (domain === `${rootDomain}.${host}`) return Promise.resolve([[errorBranchB]])
+      if (domain === `${branchDomainD}.${host}`) return Promise.resolve([[mockData.enrA]])
+      return Promise.resolve([[mockData.enrRoot]])
+    })
 
     // Run initial fetch...
     initializeDns()
@@ -142,7 +166,11 @@ describe('DNS', () => {
 
     // Specify that a subsequent network call retrieving the same peer should throw.
     // This test passes only if the peer is fetched from cache
-    td.when(mockDns.resolve(`${branchDomainD}.${host}`, 'TXT')).thenThrow(new Error('failure'))
+    mockDns.resolve.mockImplementation((domain: string) => {
+      if (domain === `${rootDomain}.${host}`) return Promise.resolve([[errorBranchB]])
+      if (domain === `${branchDomainD}.${host}`) return Promise.reject(new Error('failure'))
+      return Promise.resolve([[mockData.enrRoot]])
+    })
 
     const peersB = await dns.getPeers(1, [mockData.enrTree])
     assert.strictEqual(peersB.length, 1, 'returns a cached peer')
@@ -153,8 +181,8 @@ describe('DNS', () => {
     )
   })
 
-  it('should reset td', () => {
-    td.reset()
+  it('should reset mocks', () => {
+    vi.clearAllMocks()
   })
 })
 
@@ -164,23 +192,19 @@ describe('DNS: (integration)', () => {
   const enrTree = `enrtree://${publicKey}@${goerliDNS}`
   const ipTestRegex = /^\d+\.\d+\.\d+\.\d+$/ // e.g 123.44.55.77
 
-  it(
-    'should retrieve 5 PeerInfos for goerli',
-    async () => {
-      // Google's dns server address. Needs to be set explicitly to run in CI
-      const dns = new DNS({ dnsServerAddress: '8.8.8.8' })
-      const peers = await dns.getPeers(5, [enrTree])
+  it('should retrieve 5 PeerInfos for goerli', { timeout: 10000 }, async () => {
+    // Google's dns server address. Needs to be set explicitly to run in CI
+    const dns = new DNS({ dnsServerAddress: '8.8.8.8' })
+    const peers = await dns.getPeers(5, [enrTree])
 
-      assert.strictEqual(peers.length, 5, 'returns 5 peers')
+    assert.strictEqual(peers.length, 5, 'returns 5 peers')
 
-      const seen: string[] = []
-      for (const peer of peers) {
-        assert.isDefined(peer.address)
-        assert.match(peer.address, ipTestRegex, 'address is a valid ip')
-        assert.notInclude(seen, peer.address, 'peer is not duplicate')
-        seen.push(peer.address)
-      }
-    },
-    { timeout: 10000 },
-  )
+    const seen: string[] = []
+    for (const peer of peers) {
+      assert.isDefined(peer.address)
+      assert.match(peer.address, ipTestRegex, 'address is a valid ip')
+      assert.notInclude(seen, peer.address, 'peer is not duplicate')
+      seen.push(peer.address)
+    }
+  })
 })

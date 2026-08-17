@@ -4,9 +4,13 @@ import { EVM } from './evm.ts'
 import { Message } from './message.ts'
 import { getOpcodesForHF } from './opcodes/index.ts'
 import {
+  type AddPrecompile,
+  type CustomPrecompile,
+  type DeletePrecompile,
   MCLBLS,
   NobleBLS,
   NobleBN254,
+  type PrecompileFunc,
   type PrecompileInput,
   RustBN254,
   getActivePrecompiles,
@@ -25,10 +29,14 @@ import type {
   EVMRunCodeOpts,
   ExecResult,
   Log,
+  SelfdestructMap,
 } from './types.ts'
 export * from './logger.ts'
 
 export type {
+  AddPrecompile,
+  CustomPrecompile,
+  DeletePrecompile,
   EVMBLSInterface,
   EVMBN254Interface,
   EVMInterface,
@@ -40,6 +48,8 @@ export type {
   ExecResult,
   InterpreterStep,
   Log,
+  SelfdestructMap,
+  PrecompileFunc,
   PrecompileInput,
 }
 
@@ -60,5 +70,6 @@ export {
 
 export * from './binaryTreeAccessWitness.ts'
 export * from './constructors.ts'
+export * from './eip7708.ts'
+export * from './eip8037.ts'
 export * from './params.ts'
-export * from './verkleAccessWitness.ts'

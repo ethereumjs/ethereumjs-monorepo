@@ -16,7 +16,7 @@ export async function precompile0d(opts: PrecompileInput): Promise<ExecResult> {
   const bls = (opts._EVM as EVM)['_bls']!
 
   // note: the gas used is constant; even if the input is incorrect.
-  const gasUsed = opts.common.param('bls12381G2AddGas') ?? BigInt(0)
+  const gasUsed = opts.common.param('bls12381G2AddGas')
   if (!gasLimitCheck(opts, gasUsed, pName)) {
     return OOGResult(opts.gasLimit)
   }
@@ -51,8 +51,9 @@ export async function precompile0d(opts: PrecompileInput): Promise<ExecResult> {
   let returnValue
   try {
     returnValue = bls.addG2(opts.data)
-  } catch (e: any) {
-    return EVMErrorResult(e, opts.gasLimit)
+  } catch (e: unknown) {
+    const error = e instanceof EVMError ? e : new EVMError(EVMError.errorMessages.REVERT)
+    return EVMErrorResult(error, opts.gasLimit)
   }
 
   if (opts._debug !== undefined) {

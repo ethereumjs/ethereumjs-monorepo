@@ -6,9 +6,9 @@
 
 # Function: fetchFromProvider()
 
-> **fetchFromProvider**(`url`, `params`): `Promise`\<`any`\>
+> **fetchFromProvider**(`url`, `params`, `options?`): `Promise`\<`any`\>
 
-Defined in: [packages/util/src/provider.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/provider.ts#L26)
+Defined in: [packages/util/src/provider.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/provider.ts#L32)
 
 Makes a simple RPC call to a remote Ethereum JSON-RPC provider and passes through the response.
 No parameter or response validation is done.
@@ -27,6 +27,12 @@ the URL for the JSON RPC provider
 
 the parameters for the JSON-RPC method - refer to
 https://ethereum.org/en/developers/docs/apis/json-rpc/ for details on RPC methods
+
+### options?
+
+[`FetchFromProviderOptions`](../type-aliases/FetchFromProviderOptions.md)
+
+optional settings (e.g. timeout)
 
 ## Returns
 

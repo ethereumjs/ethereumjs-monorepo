@@ -348,7 +348,7 @@ export class AccountFetcher extends Fetcher<JobTask, AccountData[], AccountData>
     const { task } = job
     const { first, count } = task
     const limit = bigIntToBytes(first + BigInt(count) - BIGINT_1)
-    return setLengthLeft(limit, 32)
+    return setLengthLeft(limit, 32, { allowTruncate: true })
   }
 
   private isMissingRightRange(

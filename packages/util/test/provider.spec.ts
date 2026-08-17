@@ -91,6 +91,31 @@ describe('fetchFromProvider', () => {
     vi.unstubAllGlobals()
   })
 
+  it('should abort the request when the timeout is exceeded', async () => {
+    vi.stubGlobal('fetch', async (_url: string, req: any) => {
+      // Simulate a slow provider by waiting until the signal aborts
+      return new Promise((_resolve, reject) => {
+        req.signal.addEventListener('abort', () => {
+          reject(req.signal.reason)
+        })
+      })
+    })
+    try {
+      await fetchFromProvider(
+        providerUrl,
+        { method: 'eth_getBalance', params: ['0xabcd'] },
+        { timeout: 50 },
+      )
+      assert.fail('should throw')
+    } catch (err: any) {
+      assert.isTrue(
+        err.name === 'TimeoutError' || err.name === 'AbortError',
+        'throws a TimeoutError or AbortError',
+      )
+    }
+    vi.unstubAllGlobals()
+  })
+
   it('handles the corner case of res.text() failing because of a network error not receiving the full response', async () => {
     vi.stubGlobal('fetch', async (_url: string, _req: any) => {
       return {

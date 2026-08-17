@@ -1,5 +1,5 @@
-FROM node:22-alpine
-RUN apk update && apk add --no-cache bash git g++ make python3 && rm -rf /var/cache/apk/*
+FROM node:22.4-slim
+RUN apt-get update && apt-get install -y git g++ make python3 python3-setuptools && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /ethereumjs-monorepo
 
@@ -22,7 +22,6 @@ COPY packages/rlp/dist packages/rlp/dist
 COPY packages/statemanager/dist packages/statemanager/dist
 COPY packages/tx/dist packages/tx/dist
 COPY packages/util/dist packages/util/dist
-COPY packages/verkle/dist packages/verkle/dist
 COPY packages/vm/dist packages/vm/dist
 COPY packages/wallet/dist packages/wallet/dist
 
@@ -42,7 +41,6 @@ COPY packages/rlp/package.json packages/rlp/package.json
 COPY packages/statemanager/package.json packages/statemanager/package.json
 COPY packages/tx/package.json packages/tx/package.json
 COPY packages/util/package.json packages/util/package.json
-COPY packages/verkle/package.json packages/verkle/package.json
 COPY packages/vm/package.json packages/vm/package.json
 COPY packages/wallet/package.json packages/wallet/package.json
 

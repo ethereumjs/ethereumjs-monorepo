@@ -21,6 +21,10 @@ export class Stack {
     return this._len
   }
 
+  /**
+   * Pushes a new bigint onto the stack.
+   * @param value - Value to push (must fit within the configured max height)
+   */
   push(value: bigint) {
     if (this._len >= this._maxHeight) {
       throw new EVMError(EVMError.errorMessages.STACK_OVERFLOW)
@@ -30,6 +34,10 @@ export class Stack {
     this._store[this._len++] = value
   }
 
+  /**
+   * Pops the top value from the stack.
+   * @returns The value removed from the stack
+   */
   pop(): bigint {
     if (this._len < 1) {
       throw new EVMError(EVMError.errorMessages.STACK_UNDERFLOW)
@@ -43,9 +51,9 @@ export class Stack {
   }
 
   /**
-   * Pop multiple items from stack. Top of stack is first item
-   * in returned array.
-   * @param num - Number of items to pop
+   * Pops multiple items from the stack with the top-most item returned first.
+   * @param num - Number of items to pop (defaults to 1)
+   * @returns Array containing the popped values
    */
   popN(num: number = 1): bigint[] {
     if (this._len < num) {
@@ -68,9 +76,10 @@ export class Stack {
   }
 
   /**
-   * Return items from the stack
-   * @param num Number of items to return
-   * @throws {@link ERROR.STACK_UNDERFLOW}
+   * Returns items from the stack without removing them.
+   * @param num - Number of items to return (defaults to 1)
+   * @returns Array of items, with index 0 representing the top of the stack
+   * @throws {@link EVMError} with code STACK_UNDERFLOW if there are not enough items on the stack
    */
   peek(num: number = 1): bigint[] {
     const peekArray: bigint[] = Array(num)
@@ -87,8 +96,8 @@ export class Stack {
   }
 
   /**
-   * Swap top of stack with an item in the stack.
-   * @param position - Index of item from top of the stack (0-indexed)
+   * Swaps the top of the stack with another item.
+   * @param position - Zero-based index from the top of the stack (0 swaps with the top itself)
    */
   swap(position: number) {
     if (this._len <= position) {
@@ -104,14 +113,14 @@ export class Stack {
     storageCached[i] = tmp
   }
 
-  /**
-   * Pushes a copy of an item in the stack.
-   * @param position - Index of item to be copied (1-indexed)
-   */
   // I would say that we do not need this method any more
   // since you can't copy a primitive data type
   // Nevertheless not sure if we "loose" something here?
   // Will keep commented out for now
+  /**
+   * Pushes a copy of an item deeper in the stack.
+   * @param position - One-based index of the item to duplicate
+   */
   dup(position: number) {
     const len = this._len
     if (len < position) {
@@ -128,9 +137,9 @@ export class Stack {
   }
 
   /**
-   * Swap number 1 with number 2 on the stack
-   * @param swap1
-   * @param swap2
+   * Swaps two arbitrary entries relative to the top of the stack.
+   * @param swap1 - Distance from the top (0 = top element) for the first entry
+   * @param swap2 - Distance from the top for the second entry
    */
   exchange(swap1: number, swap2: number) {
     const headIndex = this._len - 1

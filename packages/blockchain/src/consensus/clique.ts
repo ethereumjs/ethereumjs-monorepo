@@ -18,6 +18,7 @@ import {
   bytesToBigInt,
   equalsBytes,
   hexToBytes,
+  isDebugEnabled,
   toType,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
@@ -30,7 +31,9 @@ import type { Consensus, ConsensusOptions } from '../types.ts'
 const debug = debugDefault('blockchain:clique')
 
 // Magic nonce number to vote on adding a new signer
-export const CLIQUE_NONCE_AUTH = hexToBytes('0xffffffffffffffff')
+export const CLIQUE_NONCE_AUTH = new Uint8Array(
+  hexToBytes('0xffffffffffffffff').buffer as ArrayBuffer,
+)
 // Magic nonce number to vote on removing a signer.
 export const CLIQUE_NONCE_DROP = new Uint8Array(8)
 
@@ -119,9 +122,7 @@ export class CliqueConsensus implements Consensus {
   DEBUG: boolean // Guard for debug logs
   constructor() {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
-    // Additional window check is to prevent vite browser bundling (and potentially other) to break
-    this.DEBUG =
-      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+    this.DEBUG = isDebugEnabled('ethjs')
 
     this.algorithm = ConsensusAlgorithm.Clique
   }

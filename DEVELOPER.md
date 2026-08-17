@@ -9,15 +9,26 @@ It is intended to be both an entrypoint for external contributors as well as a r
 - [Monorepo](#monorepo)
   - [Structure](#structure)
   - [Workflow](#workflow)
+  - [Releases](#releases)
+    - [Fork Releases (Feel Your Protocol)](#fork-releases-feel-your-protocol)
+- [Conventions](#conventions)
+  - [Constructor Functions (`createX`)](#constructor-functions-createx)
+  - [Per-Package File Layout (`types.ts`, `constructors.ts`, `params.ts`)](#per-package-file-layout-typests-constructorsts-paramsts)
+  - [Options-Object Arguments](#options-object-arguments)
+  - [Events (`eventemitter3`)](#events-eventemitter3)
+  - [Errors](#errors)
+  - [Where EIP / Parameter Config Lives](#where-eip--parameter-config-lives)
+  - [Naming Rules (`createX`, `xToY`, `isX`)](#naming-rules-createx-xtoy-isx)
+  - [`.ts`-Extension ESM Imports](#ts-extension-esm-imports)
 - [Development Tools](#development-tools)
   - [TypeScript](#typescript)
   - [Linting](#linting)
   - [Spellcheck](#spellcheck)
   - [Testing](#testing)
-  - [Documentation](#documentation)V
+  - [Documentation](#documentation)
 - [Advanced Topics](#advanced-topics)
-  - [E2E Testing](#e2e-testing)
-  - [Cross-Package Development](#cross-package-development)
+  - [Linking to an External Library](#linking-to-an-external-library)
+  - [Shared Dependencies](#shared-dependencies)
 - [Additional Docs](#additional-docs)
   - [VM](#vm)
   - [Client](#client)
@@ -32,7 +43,8 @@ The EthereumJS project uses [npm workspaces](https://docs.npmjs.com/cli/v7/using
 
 - `/packages` - Contains all EthereumJS packages
 - `/config` - Shared configuration files and scripts
-- `packages/ethereum-tests` - Git submodule with Ethereum test vectors
+- `packages/ethereum-tests` - Git submodule with Ethereum test vectors (legacy)
+- `packages/execution-spec-tests` - Git submodule with selected execution-spec-tests fixtures
 
 ### Scripts
 
@@ -61,13 +73,103 @@ To focus on a single package (e.g., VM):
 3. Run a specific test: `npx vitest test/path/to/test.spec.ts`
 4. Build just that package: `npm run build --workspace=@ethereumjs/vm`
 
-#### Cross-Package Development
+### Releases
 
-All packages include a `typescript` entry in the exports map that allows direct use of TypeScript sources without recompilation:
+#### Overview
 
-- Run tests with TypeScript sources: `npx vitest --config ../../config/vitest.config.mts test/myTest.spec.ts`
-- Run TypeScript scripts: `tsx --conditions=typescript myScript.ts`
-- Set environment variable for bash scripts: `NODE_OPTIONS='--conditions=typescript' (if running Node 22+)`
+Releases are done in sync for all [active packages](./README.md#active-packages) and all libraries are always bumped to a same new version number. Library combinations with matching versions are CI tested and ensured to be compatible with each other.
+
+Most release rounds are done as bugfix releases, including releases of non-finalized EIP versions. Minor releases are done for hardfork finalization and otherwise outstanding selected features. Major release rounds are rarely done and are reserved to bundle structural breaking changes which come along significant changes to the API.
+
+#### Process
+
+##### Version/Dependency Update & Publish Script
+
+We have a release script that handles version bumping and publishing for all packages. It supports both regular releases and lightweight in-between releases (nightly, alpha).
+
+```sh
+tsx scripts/release-npm.ts [--bump-version=<version>] [--publish=<tag>] [--scope=<scope>] [--otp=<code>]
+```
+
+**Options:**
+
+- `--bump-version=<version>` - Bump package versions to the specified version (skips publish unless `--publish` is also set)
+- `--publish=<tag>` - Publish packages with the specified npm tag (default: `latest`)
+- `--scope=<scope>` - Publish under a different npm scope (default: `ethereumjs`, see [Fork Releases](#fork-releases-feel-your-protocol))
+- `--otp=<code>` - One-time password when npm 2FA is enabled
+
+With **no flags**, the script publishes the current package versions to npm under the `latest` tag (typical flow after a manual version bump and CHANGELOG prep).
+
+**npm authentication** (required for publish):
+
+- **Interactive (maintainer laptop):** `npm login` — stores a token in `~/.npmrc`. Use a [granular access token](https://docs.npmjs.com/creating-and-viewing-access-tokens) with publish access to the `@ethereumjs` scope (recommended over classic tokens).
+- **Token in config:** add a registry `_authToken` entry to `~/.npmrc` (see [npm registry auth](https://docs.npmjs.com/cli/v10/using-npm/registry); never commit tokens). Same granular publish token as above.
+- **2FA:** pass `--otp=<code>` when your npm account requires it.
+
+The script runs `npm whoami` before publishing and exits if you are not authenticated.
+
+**What the script does:**
+
+- **Active packages**: Updates version numbers and `@ethereumjs/*` dependency references (with `--bump-version`), then publishes in dependency order (`rlp` → … → `vm`)
+- **Deprecated packages + testdata**: Only updates (active) `@ethereumjs/*` dependency references when bumping (keeps their own version unchanged, not published)
+- **`prepublishOnly` per package**: clean, build, and test run automatically via `npm publish` (can take a while for the full round)
+
+**Examples:**
+
+```sh
+# Publish current versions (after bump + CHANGELOG prep) — most common
+tsx scripts/release-npm.ts
+
+# Same, explicit tag
+tsx scripts/release-npm.ts --publish=latest
+
+# Bump versions only (no publish) - for preparing a release
+tsx scripts/release-npm.ts --bump-version=10.1.0
+
+# Bump versions and publish - full release in one step
+tsx scripts/release-npm.ts --bump-version=10.1.0 --publish=latest
+
+# Lightweight nightly release
+tsx scripts/release-npm.ts --bump-version=10.1.1-nightly.1 --publish=nightly
+
+# Publish with 2FA one-time password
+tsx scripts/release-npm.ts --otp=123456
+```
+
+##### Fork Releases (Feel Your Protocol)
+
+The release script supports publishing all packages under a different npm scope via the `--scope` flag. This is used by [Feel Your Protocol](https://feelyourprotocol.org) to publish fork releases from feature branches (e.g. EIP prototype implementations) that can be integrated as separate dependencies alongside the official `@ethereumjs/*` packages.
+
+```sh
+# Publish all packages under @feelyourprotocol scope
+tsx scripts/release-npm.ts --scope=feelyourprotocol --bump-version=8141.0.0 --publish=latest
+```
+
+When `--scope` is set to a value other than `ethereumjs`, the script:
+
+- Rewrites package names: `@ethereumjs/evm` → `@<scope>/evm`
+- Rewrites inter-package dependency references to match the new scope
+- Rewrites `@ethereumjs/` import paths in all source files under `src/`
+- Skips deps-only packages (not published, rewriting would break local dev)
+- Publishes with `--access=public` (required for new scoped npm orgs)
+
+The `--scope` flag is fully generic and not tied to any specific npm org.
+
+##### CHANGELOG Preparation
+
+The following prompt has been tested with Cursor IDE to work well for CHANGELOG updates (please update placeholders in the first paragraph accordingly):
+
+```markdown
+I want to do a new release round for all active packages listed in @README.md. Version bump has already been done, see an exemplary [ REFERENCE package.json FILE ] file, release is target for today. Last release round has been done on [ ENTER DATE IN FORMAT: April 29 2025 ] along commit [ ENTER COMMIT HASH, e.g.: 9e461f54312bf20c710b43ab73f7d3ad753f8765 ]. An exemplary CHANGELOG.md file is [ REFERENCE e.g. block CHANGELOG.md file ].
+
+Can you please add new sections in the CHANGELOG files and add one-line summaries for the user-facing changes? For this please go for the commits since last release, one commit represents one PR due to our (squash) merge policy. You can leave out PRs only updating documentation, code in the examples folder or tests. Also tooling infrastructure (linting,...) and CI updating PRs can be left out. New support for new and deprecation for older Node.js as well as TypeScript versions should be added. Version updates for external dependencies - so not from within the monorepo - should be added as well.
+
+Here is an example for the format of a change/PR entry:
+
+- New default hardfork: `Shanghai` -> `Cancun`, see PR [#3566](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3566)
+
+For the CHANGELOG files you have not added lines in this step please nevertheless add a CHANGELOG entry (we do releases for all active packages no matter the changeset) and enter the following sentence: Maintenance release, no active changes.
+```
 
 #### Windows Users Note
 
@@ -82,6 +184,76 @@ To reset this setting:
 ```sh
 npm config delete script-shell
 ```
+
+## Conventions
+
+This chapter documents the recurring code patterns across the active packages **as they exist today** — it is descriptive, not aspirational. Some inconsistencies are called out honestly; a few are being actively worked on.
+
+### Constructor Functions (`createX`)
+
+Most objects are not created with a public `new X(...)` call. Instead each package exposes free-standing factory functions named `createX…`, typically grouped in a `constructors.ts` file. The class constructor is generally intended for internal/advanced use; the `createX` functions are the public entry points and often do async setup or input normalization the bare constructor cannot.
+
+Examples (verified):
+
+- `createBlock`, `createBlockFromRLP`, `createBlockFromRPC`, `createEmptyBlock` (`packages/block/src/block/constructors.ts`); `createBlockHeader`, `createBlockHeaderFromRLP` (`packages/block/src/header/constructors.ts`).
+- `createTx`, `createTxFromRLP`, `createTxFromBlockBodyData` (`packages/tx/src/transactionFactory.ts`).
+- `createAccount`, `createAddressFromString`, `createAddressFromPrivateKey`, `createContractAddress` (`packages/util/src/{account,address}.ts`).
+- `createCommonFromGethGenesis`, `createCustomCommon` (`packages/common/src/constructors.ts`).
+- `createEVM` (`packages/evm/src/constructors.ts`), `createVM` (`packages/vm/src/constructors.ts`).
+
+A common sub-pattern is `createXFromY` for alternate input formats (`…FromRLP`, `…FromRPC`, `…FromBytesArray`, `…FromString`, `…FromPrivateKey`).
+
+### Per-Package File Layout (`types.ts`, `constructors.ts`, `params.ts`)
+
+Active packages converge on a small set of conventionally named modules:
+
+- **`types.ts`** — public interfaces, option types and event maps for the package (e.g. `packages/evm/src/types.ts`, `packages/vm/src/types.ts`, `packages/tx/src/types.ts`, `packages/common/src/types.ts`). Larger packages may have nested `types.ts` files (e.g. `packages/tx/src/legacy/`).
+- **`constructors.ts`** — the `createX` factory functions described above (present in `binarytree`, `blockchain`, `common`, `evm`, `mpt`, `vm`; `block` and `tx` keep theirs in domain-specific files like `block/constructors.ts` and `transactionFactory.ts`).
+- **`params.ts`** — the package's EIP-indexed parameter dictionary (see [below](#where-eip--parameter-config-lives)).
+
+### Options-Object Arguments
+
+Constructors and `createX` functions take an options object rather than a positional argument list, named `XOpts` or `XOptions`. This keeps call sites readable and lets new optional fields be added without breaking existing callers. Examples: `EVMOpts` (`packages/evm/src/types.ts:220`), `VMOpts` (`packages/vm/src/types.ts:101`), `CommonOpts` (`packages/common/src/types.ts:144`), `BlockOptions` (`packages/block/src/types.ts:20`).
+
+### Events (`eventemitter3`)
+
+Packages that emit events expose an `events` property typed with [`eventemitter3`](https://github.com/primus/eventemitter3) and a corresponding event-map type in `types.ts`:
+
+- `EVM.events: EventEmitter<EVMEvent>` (`packages/evm/src/evm.ts:203`; map at `types.ts:153`)
+- `VM.events: EventEmitter<VMEvent>` (`packages/vm/src/vm.ts:34`; map at `types.ts:85`)
+- `Blockchain.events: EventEmitter<BlockchainEvent>` (`packages/blockchain/src/blockchain.ts:63`)
+- `Common.events: EventEmitter<CommonEvent>` (`packages/common/src/common.ts:64`)
+
+Note one inconsistency: on the concrete classes `events` is always defined, but in the corresponding *option* interfaces it is `events?` optional (e.g. `packages/evm/src/types.ts:182`, `packages/blockchain/src/types.ts:91`). Event handlers receive an optional `resolve` callback so emission can await async listeners.
+
+### Errors
+
+Error handling is **not yet uniform** across the monorepo (this is known and being addressed):
+
+- The generic base class is `EthereumJSError<T extends { code: string }>`, which extends the native `Error` and carries structured metadata. Despite the plan referring to it as living "in util", it is actually **defined in `packages/rlp/src/errors.ts`** and re-exported through `packages/util/src/errors.ts` (the zero-dependency `rlp` package is the lowest layer, so the base error lives there). `EthereumJSErrorWithoutCode(message)` is a `@deprecated` convenience wrapper that constructs one with a default code.
+- `EVM` defines its own `EVMError` class (`packages/evm/src/errors.ts:36`) which is **not** a subclass of `Error` and **not** an `EthereumJSError` — it is a plain class with `error` and `errorType` fields. This divergence is intentional to note, not to imitate.
+- Other packages variously throw `EthereumJSErrorWithoutCode(...)` or plain errors.
+
+When adding new errors, prefer `EthereumJSError` with a real `code`. The commented-out error-code machinery in `packages/util/src/errors.ts` is a work in progress; do not extend it ad hoc.
+
+### Where EIP / Parameter Config Lives
+
+There are two complementary mechanisms:
+
+1. **Hardfork / EIP activation** is owned by `@ethereumjs/common`: which hardforks exist (`packages/common/src/hardforks.ts`), which EIPs they activate (`packages/common/src/eips.ts`), and per-chain config (`packages/common/src/chains.ts`). Code gates behavior with `common.isActivatedEIP(n)` and `common.gteHardfork(...)`.
+2. **Numeric parameter values** (gas costs, limits, …) are **decentralized into each package** in a `params.ts` file exporting an EIP-indexed `ParamsDict`: `paramsEVM` (`packages/evm/src/params.ts`), `paramsVM` (`packages/vm/src/params.ts`), `paramsTx` (`packages/tx/src/params.ts`), `paramsBlock` (`packages/block/src/params.ts`). At construction time a package merges its dictionary into the shared `Common` via `common.updateParams(opts.params ?? paramsX)` (e.g. `packages/evm/src/evm.ts:384`, `packages/vm/src/vm.ts:72`). Values are then read with `common.param('name')`, resolved against the active hardfork/EIP set.
+
+So: **what is active** lives in `common`; **what each value is** lives next to the code that uses it, and is injected into `common` at runtime. Consumers can override parameters by passing a custom `params` option.
+
+### Naming Rules (`createX`, `xToY`, `isX`)
+
+- **`createX…`** — constructor/factory functions (see above).
+- **`xToY`** — pure converters between representations, e.g. `bytesToBigInt64`, `bytesToUtf8`, `hexToBigInt`, `bitsToBytes`, `withdrawalToBytesArray` (`packages/util/src/*.ts`).
+- **`isX`** — type guards / predicates, e.g. `isHexString`, `isAccessList`, `isLegacyTx`, `isBlob4844Tx`, `isEOACode7702Tx` (`packages/tx/src/*.ts`, `packages/util/src/*.ts`).
+
+### `.ts`-Extension ESM Imports
+
+Relative imports inside `src/` are written with explicit `.ts` extensions, e.g. `import { createEIP7708TransferLog } from './eip7708.ts'` (`packages/evm/src/evm.ts:25`). This is enabled by `allowImportingTsExtensions` + `rewriteRelativeImportExtensions` in the root `tsconfig.json`; the compiler rewrites the extension to `.js` in emitted output, so published code imports `.js` as normal. Always include the extension on relative imports.
 
 ## Development Tools
 
@@ -176,6 +348,10 @@ Commands area available on both root and package levels.
 
 The project uses [Vitest](https://vitest.dev/) for testing with [c8](https://vitest.dev/guide/coverage.html) for code coverage.
 
+PR CI (`Build`) runs package tests for the lowest-touched workspace packages and everything that depends on them (`scripts/ci-affected.mjs`). Lint and typecheck always run. Examples and browser tests run for affected packages. Coverage is collected only for packages with direct changes; dependents run tests without coverage. Pushes to `master`, workflow dispatch, and shared-config changes (`.github/`, `config/`, lockfile, ...) still run the full matrix. Nightly runs are unchanged.
+
+Set the required status check to **`Build / CI`**. Per-package jobs may be skipped; that summary job is what must pass. In-flux EST dev suites (`vm-est-dev`) run when VM is affected but are not part of that gate.
+
 #### General
 
 Each package includes one or more test scripts.  To run all tests in any package, use `npm run test`.  Refer to the package.json for more specifics.
@@ -188,7 +364,18 @@ npx vitest test/path/to/test.spec.ts
 
 #### Browser
 
-We use `vitest` with [playwright](https://playwright.dev/) to run browser tests.  When running browser tests with `npm run test:browser`, ensure you have a version of the Chromium browser installed.  If not, you can run `npx playwright install --with-deps` to install a supported version.
+We use `vitest` with [playwright](https://playwright.dev/) to run browser tests in real Chromium (headless).
+
+**Local:** browser tests are optional unless you are working on bundling or browser-specific behaviour. Install Chromium once (Chromium only — not the full Playwright browser set):
+
+```sh
+npm run install-browser-deps
+# equivalent to: npx playwright install chromium
+```
+
+Then run `npm run test:browser` in a package, or `npm run test:browser` from the monorepo root.
+
+**CI:** deps are restored on the host runner (same cache as other jobs). Browser tests run in the official [Playwright Docker image](https://playwright.dev/docs/docker) (`mcr.microsoft.com/playwright:v1.60.0-noble`) via `docker run` — preinstalled browsers, no Chromium download per run. Keep the image tag in `.github/workflows/browser.yml` in sync with the `playwright` version in `package-lock.json`.
 
 ## Advanced Topics
 

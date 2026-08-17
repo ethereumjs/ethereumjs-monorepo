@@ -6,6 +6,131 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 10.1.2 - 2026-05-29
+
+### Release round overview
+
+Welcome to **`10.1.2`** — a coordinated release across all active `@ethereumjs/*` libraries on the **`10.1.x`** line. If you have been following the upcoming Amsterdam hardfork, this is our **first experimental preview** ready to try out: a largely complete **nine-EIP `Hardfork.Amsterdam` bundle**, currently aligned with [tests-bal@v7.1.0](https://github.com/ethereum/execution-specs/releases/tag/tests-bal@v7.1.0) and [BAL devnet-7](https://notes.ethereum.org/@ethpandaops/bal-devnet-7).
+
+Amsterdam is still in flux — **please do not use this in production yet** — and we expect further **`10.1.x`** releases as the spec and official tests evolve. The sections below cover **this package only**; for the full fork picture (EIP list, examples, release ↔ spec tracking), see the [@ethereumjs/vm Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental). On Osaka or earlier hardforks? Nothing changes unless you explicitly select `Hardfork.Amsterdam`.
+
+### `@ethereumjs/tx`
+
+`@ethereumjs/tx` defines typed transactions, intrinsic gas calculation, and pre-execution validation — the layer that decides whether a transaction is well-formed and what minimum gas it must carry *before* the VM ever runs it. Within the `10.1.2` round, Amsterdam adds two floor-pricing EIPs that tighten those minimums and feed directly into EIP-8037 regular-gas accounting downstream.
+
+If you construct or validate transactions for Amsterdam testnets or EST fixtures, these floors are usually why a seemingly small tx suddenly needs a higher `gasLimit` or a non-zero `baseFeePerGas` on the containing block.
+
+### At a glance
+
+- **[EIP-7976](https://eips.ethereum.org/EIPS/eip-7976)** — uniform calldata floor: 4 tokens per calldata byte (replacing the zero/non-zero split for floor purposes).
+- **[EIP-7981](https://eips.ethereum.org/EIPS/eip-7981)** — access-list byte floor for typed txs (types 1–4): `(20 × addresses + 32 × keys) × 4 tokens per byte`.
+- Both enforced in `getValidationErrors()` and intrinsic gas helpers when `Hardfork.Amsterdam` is active.
+
+### Amsterdam (experimental)
+
+> Behaviour may change in subsequent `10.1.x` patch releases.
+> **Spec snapshot:** [tests-bal@v7.1.0](https://github.com/ethereum/execution-specs/releases/tag/tests-bal@v7.1.0) · **Testnet:** [BAL devnet-7](https://notes.ethereum.org/@ethpandaops/bal-devnet-7)
+> Fork overview: [Amsterdam hardfork (experimental)](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental)
+
+The calldata floor means `txRegularGas` in the VM becomes (conceptually) `max(raw_regular_gas, calldata_floor)` under EIP-8037. When writing tests, set `baseFeePerGas: 1n` on the block header and ensure `gasPrice` / `maxFeePerGas` on the tx is high enough to satisfy EIP-1559 checks alongside the new floors:
+
+```ts
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createLegacyTx } from '@ethereumjs/tx'
+
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })
+
+const tx = createLegacyTx(
+  {
+    gasLimit: 100_000n,
+    gasPrice: 10n,
+    data: new Uint8Array(100), // calldata floor scales with byte count
+  },
+  { common },
+)
+
+const errors = tx.getValidationErrors()
+// [] when gasLimit covers max(intrinsic, floor)
+```
+
+See the [Amsterdam transaction validation](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx#amsterdam-transaction-validation-eip-7976-eip-7981) section for the full token arithmetic and interaction with EIP-8037.
+
+### Changes
+
+- EIP-7976 calldata floor cost, see PR [#4280](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4280)
+- EIP-7981 access-list floor cost, see PR [#4282](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4282)
+
+## 10.1.1 - 2025-01-28
+
+- EIP-7702: Fix unpadding of bytes for hex-string "0x0" inputs in authorization list fields, see PR [#4209](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4209)
+- Deprecate Node.js 18 support, minimum Node.js version is now 20, see PR [#4180](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4180)
+- Add Node.js 24 support, see PR [#4194](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4194)
+- Dependency update: `@noble/curves` to v2, see PR [#4179](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4179)
+
+## 10.1.0 - 2025-11-06
+
+- `tx: throw on toCreationAddress for 4844 and 7702`, PR [#4162](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4162)
+- `tx: improve JSDoc annotations`, PR [#4161](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4161)
+- `4844 Tx Constructor Consistency and UX`, PR [#4155](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4155)
+- `valueBoundaryCheck chores`, PR [#4083](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4083)
+- `updates regarding blobtx serialization`, PR [#4065](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4065)
+
+### EIP-7594 - PeerDAS - Peer Data Availability Sampling
+
+Support for EIP-7594 PeerDAS blob transactions has been added. This extends EIP-4844 blob transactions with data availability sampling capabilities. PeerDAS transactions use network wrapper version 1 and include cell proofs instead of blob proofs. The transaction library now supports creating and validating PeerDAS transactions with a maximum of 6 blobs per transaction.
+
+```typescript
+import { Blob4844Tx } from '@ethereumjs/tx'
+import { Common, Hardfork } from '@ethereumjs/common'
+import { hexToBytes } from '@ethereumjs/util'
+
+const common = new Common({ chain: 'mainnet', hardfork: Hardfork.Osaka })
+
+// Create a PeerDAS blob transaction (network wrapper version 1)
+const tx = Blob4844Tx.fromTxData({
+  chainId: common.chainId(),
+  nonce: 0n,
+  maxFeePerGas: 1000000000n,
+  maxPriorityFeePerGas: 1000000000n,
+  maxFeePerBlobGas: 1000000000n,
+  gasLimit: 100000n,
+  to: '0x...',
+  value: 0n,
+  blobVersionedHashes: ['0x...'],
+  blobs: ['0x...'], // Blob data
+  kzgCommitments: ['0x...'],
+  kzgProofs: ['0x...'], // Cell proofs for PeerDAS
+  networkWrapperVersion: 1 // EIP-7594
+}, { common })
+```
+
+### EIP-7825 - Transaction Gas Limit Cap
+
+EIP-7825 support has been implemented, introducing a protocol-level cap of 16,777,216 gas (2^24) for individual transactions. The transaction library now validates that transaction gas limits do not exceed this cap. Transactions with gas limits above the cap will be rejected during construction.
+
+```typescript
+import { LegacyTx } from '@ethereumjs/tx'
+import { Common, Hardfork } from '@ethereumjs/common'
+
+const common = new Common({ chain: 'mainnet', hardfork: Hardfork.Osaka })
+
+// Transaction with gas limit exceeding 16,777,216 will throw an error
+try {
+  const tx = LegacyTx.fromTxData({
+    gasLimit: 20000000n, // Exceeds EIP-7825 cap
+    // ... other fields
+  }, { common })
+} catch (error) {
+  // Error: Gas limit exceeds maximum allowed by EIP-7825
+}
+
+// Valid transaction with gas limit within the cap
+const validTx = LegacyTx.fromTxData({
+  gasLimit: 10000000n, // Within EIP-7825 cap
+  // ... other fields
+}, { common })
+```
+
 ## 10.0.0 - 2025-04-29
 
 ### Overview

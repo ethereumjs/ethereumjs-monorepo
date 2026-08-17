@@ -18,7 +18,7 @@ Options for running a call (or create) operation with `EVM.runCall()`
 
 ### accessWitness?
 
-> `optional` **accessWitness**: `VerkleAccessWitnessInterface` \| `BinaryTreeAccessWitnessInterface`
+> `optional` **accessWitness**: `BinaryTreeAccessWitnessInterface`
 
 Defined in: [types.ts:144](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L144)
 
@@ -226,11 +226,11 @@ An optional salt to pass to CREATE2.
 
 ### selfdestruct?
 
-> `optional` **selfdestruct**: `Set`\<`` `0x${string}` ``\>
+> `optional` **selfdestruct**: [`SelfdestructMap`](../type-aliases/SelfdestructMap.md)
 
 Defined in: [types.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L92)
 
-Addresses to selfdestruct. Defaults to the empty set.
+Selfdestructed addresses mapped to their beneficiary. Defaults to the empty map.
 
 #### Inherited from
 

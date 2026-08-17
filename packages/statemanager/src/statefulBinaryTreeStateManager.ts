@@ -27,15 +27,16 @@ import {
   getBinaryTreeStem,
   hexToBigInt,
   hexToBytes,
+  isDebugEnabled,
   padToEven,
   setLengthLeft,
   setLengthRight,
   short,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
-import { blake3 } from '@noble/hashes/blake3'
+import { blake3 } from '@noble/hashes/blake3.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 import debugDefault from 'debug'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 import { OriginalStorageCache } from './cache/originalStorageCache.ts'
 import { modifyAccountFields } from './util.ts'
@@ -44,6 +45,7 @@ import type {
   AccountFields,
   BinaryTreeAccessWitnessInterface,
   BinaryTreeAccessedStateWithAddress,
+  BinaryTreeStateManagerInterface,
   GenesisState,
   StateManagerInterface,
   StorageDump,
@@ -55,7 +57,9 @@ import type { Caches } from './cache/caches.ts'
 import type { BinaryTreeState, StatefulBinaryTreeStateManagerOpts } from './types.ts'
 
 const ZEROVALUE = '0x0000000000000000000000000000000000000000000000000000000000000000'
-export class StatefulBinaryTreeStateManager implements StateManagerInterface {
+export class StatefulBinaryTreeStateManager
+  implements StateManagerInterface, BinaryTreeStateManagerInterface
+{
   protected _debug: Debugger
   protected _caches?: Caches
 
@@ -85,9 +89,7 @@ export class StatefulBinaryTreeStateManager implements StateManagerInterface {
 
   constructor(opts: StatefulBinaryTreeStateManagerOpts) {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
-    // Additional window check is to prevent vite browser bundling (and potentially other) to break
-    this.DEBUG =
-      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+    this.DEBUG = isDebugEnabled('ethjs')
 
     this._checkpointCount = 0
 
@@ -107,7 +109,7 @@ export class StatefulBinaryTreeStateManager implements StateManagerInterface {
     this._debug = debugDefault('statemanager:binarytree')
     this.originalStorageCache = new OriginalStorageCache(this.getStorage.bind(this))
     this._caches = opts.caches
-    this.keccakFunction = keccak256
+    this.keccakFunction = keccak_256
     this.preStateRoot = new Uint8Array(32) // Initial state root is zeroes
   }
 
@@ -270,7 +272,7 @@ export class StatefulBinaryTreeStateManager implements StateManagerInterface {
 
     this._caches?.code?.put(address, value)
 
-    const codeHash = keccak256(value)
+    const codeHash = keccak_256(value)
     if (equalsBytes(codeHash, KECCAK256_NULL)) {
       // If the code hash is the null hash, no code has to be stored
       return
@@ -709,6 +711,15 @@ export class StatefulBinaryTreeStateManager implements StateManagerInterface {
       )
 
     return verifyPassed
+  }
+
+  /**
+   * The underlying binary tree holding the state, as exposed through
+   * {@link BinaryTreeStateManagerInterface} for interface-based consumers
+   * (e.g. execution witness generation in `@ethereumjs/evm`).
+   */
+  get tree(): BinaryTree {
+    return this._tree
   }
 
   getStateRoot(): Promise<Uint8Array> {

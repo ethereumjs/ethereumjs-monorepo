@@ -154,8 +154,7 @@ export class Peer {
     if (this._remoteId !== null) {
       this._sendAuth()
     }
-    this.DEBUG =
-      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+    this.DEBUG = globalThis.process?.env?.DEBUG?.includes('ethjs') ?? false
   }
 
   /**

@@ -7,11 +7,13 @@
   },
   "files": {
     "ignoreUnknown": true,
+    "maxSize": 15000000,
     "ignore": [
       "**/node_modules/**",
       "**/dist/**",
       "**/coverage/**",
       "**/ethereum-tests/**",
+      "**/execution-spec-tests/**",
       "**/config/**",
       "**/4844-interop/**",
       "**/scripts/**",

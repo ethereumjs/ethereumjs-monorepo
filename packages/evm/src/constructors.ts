@@ -28,6 +28,9 @@ export async function createEVM(createOpts?: EVMOpts) {
   }
 
   if (opts.stateManager === undefined) {
+    // Intentionally the only runtime import from @ethereumjs/statemanager in
+    // this package (sane zero-config default); all other state manager usage
+    // must go through the interfaces in @ethereumjs/common.
     opts.stateManager = new SimpleStateManager()
   }
 

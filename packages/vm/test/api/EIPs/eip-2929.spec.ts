@@ -5,20 +5,21 @@ import { assert, describe, it } from 'vitest'
 
 import { createVM, runTx } from '../../../src/index.ts'
 
+import type { InterpreterStep } from '@ethereumjs/evm'
+import { SIGNER_A } from '@ethereumjs/testdata'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 // Test cases source: https://gist.github.com/holiman/174548cad102096858583c6fbbb0649a
 describe('EIP 2929: gas cost tests', () => {
   const initialGas = BigInt(0xffffffffff)
   const address = new Address(hexToBytes('0x000000000000000000000000636F6E7472616374'))
-  const senderKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
   const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin, eips: [2929] })
 
   const runTest = async function (test: any) {
     let i = 0
     let currentGas = initialGas
     const vm = await createVM({ common })
-    vm.evm.events!.on('step', function (step, resolve) {
+    const handler = function (step: InterpreterStep) {
       const gasUsed = currentGas - step.gasLeft
       currentGas = step.gasLeft
 
@@ -45,8 +46,8 @@ describe('EIP 2929: gas cost tests', () => {
         }
       }
       i++
-      resolve?.()
-    })
+    }
+    vm.evm.events!.on('step', handler)
 
     await vm.stateManager.putCode(address, hexToBytes(test.code))
 
@@ -55,20 +56,19 @@ describe('EIP 2929: gas cost tests', () => {
       to: address, // call to the contract address,
     })
 
-    const tx = unsignedTx.sign(senderKey)
+    const tx = unsignedTx.sign(SIGNER_A.privateKey)
 
     const result = await runTx(vm, { tx, skipHardForkValidation: true })
 
     const totalGasUsed = initialGas - currentGas
     assert.strictEqual(true, totalGasUsed === BigInt(test.totalGasUsed) + BigInt(21000)) // Add tx upfront cost.
+    vm.evm.events!.removeListener('step', handler)
     return result
   }
 
   const runCodeTest = async function (code: PrefixedHexString, expectedGasUsed: bigint) {
     // setup the accounts for this test
-    const privateKey = hexToBytes(
-      '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-    )
+    const privateKey = SIGNER_A.privateKey
     const contractAddress = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
 
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin, eips: [2929] })

@@ -1,4 +1,4 @@
-import * as ssz from 'micro-eth-signer/ssz'
+import * as ssz from 'micro-eth-signer/ssz.js'
 
 export type e2StoreEntry = {
   type: Uint8Array

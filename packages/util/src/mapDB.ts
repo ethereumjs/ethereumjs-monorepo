@@ -19,11 +19,13 @@ export class MapDB<
   }
 
   async put(key: TKey, val: TValue): Promise<void> {
+    // Using deprecated bytesToUnprefixedHex for performance: used as Map keys (string encoding).
     const dbKey = key instanceof Uint8Array ? bytesToUnprefixedHex(key) : key.toString()
     this._database.set(dbKey as TKey, val)
   }
 
   async del(key: TKey): Promise<void> {
+    // Using deprecated bytesToUnprefixedHex for performance: used as Map keys (string encoding).
     const dbKey = key instanceof Uint8Array ? bytesToUnprefixedHex(key) : key.toString()
     this._database.delete(dbKey as TKey)
   }

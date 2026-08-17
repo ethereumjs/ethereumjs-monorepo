@@ -2,7 +2,7 @@ import { createBlock, genRequestsRoot } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createCLRequest, equalsBytes, hexToBytes } from '@ethereumjs/util'
-import { sha256 } from 'ethereum-cryptography/sha256.js'
+import { sha256 } from '@noble/hashes/sha2.js'
 import { assert, describe, expect, it } from 'vitest'
 
 import { buildBlock, createVM, runBlock } from '../../../src/index.ts'

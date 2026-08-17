@@ -5,17 +5,24 @@ on:
       dep-cache-key:
         required: false
         type: string
+        default: 'none'
+      run-coverage:
+        required: false
+        type: boolean
+        default: true
   workflow_dispatch:
     inputs:
       dep-cache-key:
         required: false
         default: 'none'
-      submodule-cache-key:
+      run-coverage:
         required: false
-        default: 'none'
+        type: boolean
+        default: true
 
 env:
   cwd: ${{github.workspace}}/packages/binarytree
+  RUN_COVERAGE: ${{ inputs.run-coverage }}
 
 defaults:
   run:
@@ -30,27 +37,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # We clone the repo and submodules if triggered from work-flow dispatch
-      - if: inputs.submodule-cache-key == 'none'
-        uses: actions/checkout@v4
-
-      # We restore the code/deps from cache if triggered from workflow_call (i.e. have valid cache key)
-      - if: inputs.dep-cache-key != 'none'
-        uses: actions/cache/restore@v4
-        id: dep-cache
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup-ethereumjs
         with:
-          path: ${{github.workspace}}
-          key: ${{ inputs.dep-cache-key }}
+          dep-cache-key: ${{ inputs.dep-cache-key }}
 
-      - name: Use Node.js 20
-        uses: actions/setup-node@v4
+      - run: |
+          if [ "$RUN_COVERAGE" = "false" ]; then
+            npm run test:node
+          else
+            npm run coverage
+          fi
+      - if: env.RUN_COVERAGE != 'false'
+        uses: codecov/codecov-action@v4
         with:
-          node-version: 20
-          cache: 'npm'
-
-      - name: Install Dependencies (if not restored from cache)
-        if: steps.dep-cache.outputs.cache-hit != 'true'
-        run: npm ci
-        working-directory: ${{ github.workspace }}
-
-      - run: npm run test
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ${{ env.cwd }}/coverage/lcov.info
+          flags: binarytree

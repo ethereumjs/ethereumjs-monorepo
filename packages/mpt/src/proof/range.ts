@@ -1,5 +1,5 @@
 import { EthereumJSErrorWithoutCode, equalsBytes } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 
 import { createMPTFromProof } from '../index.ts'
 import { MerklePatriciaTrie } from '../mpt.ts'
@@ -424,7 +424,7 @@ export async function verifyMerkleRangeProof(
   keysRaw: Uint8Array[],
   values: Uint8Array[],
   proof: Uint8Array[] | null,
-  useKeyHashingFunction: HashKeysFunction = keccak256,
+  useKeyHashingFunction: HashKeysFunction = keccak_256,
 ): Promise<boolean> {
   // Convert Uint8Array keys to nibbles
   const firstKey = firstKeyRaw !== null ? bytesToNibbles(firstKeyRaw) : null

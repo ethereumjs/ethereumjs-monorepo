@@ -47,4 +47,11 @@ export const paramsTest: ParamsDict = {
     // gasPrices
     bls12381G1AddGas: 500, // Gas cost of a single BLS12-381 G1 addition precompile-call
   },
+  /**
+   * RLP Execution Block Size Limit
+   */
+  7934: {
+    // vm
+    maxRlpBlockSize: 8_388_608, // 8 MiB (MAX_BLOCK_SIZE - SAFETY_MARGIN)
+  },
 }

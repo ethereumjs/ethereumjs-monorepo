@@ -1,2 +1,2 @@
 export * from './constructors.ts'
-export { Blob4844Tx } from './tx.ts'
+export { Blob4844Tx, NetworkWrapperType } from './tx.ts'

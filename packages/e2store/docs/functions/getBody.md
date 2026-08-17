@@ -6,7 +6,7 @@
 
 # Function: getBody()
 
-> **getBody**(`DB`, `blockHash`, `blockNumber`): `Promise`\<`undefined` \| `BlockBodyBytes`\>
+> **getBody**(`DB`, `blockHash`, `blockNumber`): `Promise`\<`BlockBodyBytes` \| `undefined`\>
 
 Defined in: [packages/e2store/src/exportHistory.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/exportHistory.ts#L54)
 
@@ -28,4 +28,4 @@ Fetches body of a block given its hash and number.
 
 ## Returns
 
-`Promise`\<`undefined` \| `BlockBodyBytes`\>
+`Promise`\<`BlockBodyBytes` \| `undefined`\>

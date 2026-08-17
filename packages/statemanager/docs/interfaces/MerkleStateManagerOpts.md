@@ -6,7 +6,7 @@
 
 # Interface: MerkleStateManagerOpts
 
-Defined in: [types.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L33)
+Defined in: [types.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L32)
 
 Options for constructing a StateManager.
 
@@ -20,7 +20,7 @@ Options for constructing a StateManager.
 
 > `optional` **caches**: [`Caches`](../classes/Caches.md)
 
-Defined in: [types.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L65)
+Defined in: [types.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L64)
 
 Options to enable and configure the use of a cache account, code and storage
 This can be useful for speeding up reads, especially when the trie is large.
@@ -34,7 +34,7 @@ Default: false
 
 > `optional` **common**: `Common`
 
-Defined in: [types.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L15)
+Defined in: [types.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L14)
 
 The common to use
 
@@ -48,7 +48,7 @@ The common to use
 
 > `optional` **prefixCodeHashes**: `boolean`
 
-Defined in: [types.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L44)
+Defined in: [types.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L43)
 
 Option to prefix codehashes in the database. This defaults to `true`.
 If this is disabled, note that it is possible to corrupt the trie, by deploying code
@@ -61,7 +61,7 @@ E.g. by putting the code `0x80` into the empty trie, will lead to a corrupted tr
 
 > `optional` **prefixStorageTrieKeys**: `boolean`
 
-Defined in: [types.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L56)
+Defined in: [types.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L55)
 
 Option to prefix the keys for the storage tries with the first 7 bytes from the
 associated account address. Activating this option gives a noticeable performance
@@ -78,6 +78,6 @@ Default: false (for backwards compatibility reasons)
 
 > `optional` **trie**: `MerklePatriciaTrie`
 
-Defined in: [types.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L37)
+Defined in: [types.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L36)
 
 A MerklePatriciaTrie instance

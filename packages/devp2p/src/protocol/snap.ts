@@ -40,8 +40,7 @@ export class SNAP extends Protocol {
 
   constructor(version: number, peer: Peer, send: SendMethod) {
     super(peer, send, ProtocolType.SNAP, version, SnapMessageCodes)
-    this.DEBUG =
-      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+    this.DEBUG = globalThis.process?.env?.DEBUG?.includes('ethjs') ?? false
   }
 
   static snap = { name: 'snap', version: 1, length: 8, constructor: SNAP }

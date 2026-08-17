@@ -56,6 +56,54 @@ describe('Pruned trie tests', () => {
     }
   })
 
+  it('should retain a promoted node when pruning variable-length keys', async () => {
+    for (const useRootPersistence of [false, true]) {
+      const trie = new MerklePatriciaTrie({ useNodePruning: true, useRootPersistence })
+
+      await trie.put(hexToBytes('0x51'), utf8ToBytes('16d0'))
+      await trie.put(hexToBytes('0x57179cc0'), utf8ToBytes('3dbc'))
+      await trie.put(hexToBytes('0x04'), utf8ToBytes('721'))
+      await trie.put(hexToBytes('0x04c7'), utf8ToBytes('967'))
+      await trie.del(hexToBytes('0x04c7'))
+      await trie.del(hexToBytes('0x04'))
+
+      assert.isTrue(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
+      assert.deepEqual(await trie.get(hexToBytes('0x51')), utf8ToBytes('16d0'))
+      assert.deepEqual(await trie.get(hexToBytes('0x57179cc0')), utf8ToBytes('3dbc'))
+      assert.isNull(await trie.get(hexToBytes('0x04')))
+      assert.isNull(await trie.get(hexToBytes('0x04c7')))
+    }
+  })
+
+  it('should collapse an empty branch after deleting a longer key first', async () => {
+    const trie = new MerklePatriciaTrie({ useNodePruning: true })
+
+    await trie.put(hexToBytes('0x7170'), utf8ToBytes('long'))
+    await trie.put(hexToBytes('0x71'), utf8ToBytes('short'))
+    await trie.del(hexToBytes('0x7170'))
+    await trie.del(hexToBytes('0x71'))
+
+    assert.isTrue(equalsBytes(trie.root(), KECCAK256_RLP), 'trie is empty')
+    assert.isTrue(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
+    assert.isEmpty((trie['_db'].db as any)._database.keys(), 'db should be empty')
+  })
+
+  it('should not mutate pruning state when deleting a missing prefix key twice', async () => {
+    const trie = new MerklePatriciaTrie({ useNodePruning: true })
+
+    await trie.put(hexToBytes('0xda767b99'), utf8ToBytes('d14'))
+    await trie.put(hexToBytes('0x2949'), utf8ToBytes('3c90'))
+    await trie.put(hexToBytes('0x29'), utf8ToBytes('1ca3'))
+    await trie.del(hexToBytes('0x2949'))
+    await trie.put(hexToBytes('0xdfc7c2'), utf8ToBytes('1f55'))
+    await trie.del(hexToBytes('0x29'))
+    await trie.del(hexToBytes('0x29'))
+
+    assert.isTrue(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
+    assert.deepEqual(await trie.get(hexToBytes('0xda767b99')), utf8ToBytes('d14'))
+    assert.deepEqual(await trie.get(hexToBytes('0xdfc7c2')), utf8ToBytes('1f55'))
+  })
+
   it('should not prune if the same value is put twice', async () => {
     const trie = new MerklePatriciaTrie()
     const key = utf8ToBytes('01')
@@ -262,6 +310,31 @@ describe('Pruned trie tests', () => {
         dbKeys++
       }
       assert.strictEqual(dbKeys, 1, 'db is empty')
+    }
+  })
+
+  it('randomized: deleting all variable-length keys empties and prunes the trie', async () => {
+    for (let run = 0; run < 50; run++) {
+      const trie = new MerklePatriciaTrie({ useNodePruning: true })
+      const keys: Uint8Array[] = []
+      for (let i = 0; i < 40; i++) {
+        // 1-4 byte keys so some keys become prefixes of others - the case
+        // fixed-length fuzz tests structurally cannot reach.
+        const key = randomBytes(1 + Math.floor(Math.random() * 4))
+        keys.push(key)
+        await trie.put(key, randomBytes(3))
+      }
+      keys.sort(() => Math.random() - 0.5)
+      for (const key of keys) await trie.del(key)
+
+      for (const key of keys) {
+        assert.isNull(await trie.get(key), 'deleted key must read back null')
+      }
+      assert.isTrue(await trie.verifyPrunedIntegrity(), 'trie is correctly pruned')
+      assert.isTrue(
+        equalsBytes(trie.root(), KECCAK256_RLP),
+        'trie is empty after deleting all keys',
+      )
     }
   })
 })

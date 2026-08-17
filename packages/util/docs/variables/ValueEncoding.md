@@ -10,7 +10,7 @@
 
 Defined in: [packages/util/src/db.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L17)
 
-## Type declaration
+## Type Declaration
 
 ### Bytes
 

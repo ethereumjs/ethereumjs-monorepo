@@ -8,7 +8,7 @@ import type { MerklePatriciaTrie } from '../mpt.ts'
 import type { MPTNode } from '../types.ts'
 
 export type NodeFilter = (node: MPTNode, key: number[]) => Promise<boolean>
-export type OnFound = (node: MPTNode, key: number[]) => Promise<any>
+export type OnFound = (node: MPTNode, key: number[]) => Promise<unknown>
 
 /**
  * Walk MerklePatriciaTrie via async generator
@@ -33,28 +33,31 @@ export async function* _walkTrie(
     return
   }
   try {
-    const node = await this.lookupNode(nodeHash)
-    if (node === undefined || visited.has(bytesToHex(this.hash(node!.serialize())))) {
+    const nodeHashHex = bytesToHex(nodeHash)
+    if (visited.has(nodeHashHex)) {
       return
     }
-    visited.add(bytesToHex(this.hash(node!.serialize())))
-    await onFound(node!, currentKey)
-    if (await filter(node!, currentKey)) {
-      yield { node: node!, currentKey }
+    const node = await this.lookupNode(nodeHash)
+    visited.add(nodeHashHex)
+    await onFound(node, currentKey)
+    if (await filter(node, currentKey)) {
+      yield { node, currentKey }
     }
     if (node instanceof BranchMPTNode) {
-      for (const [nibble, childNode] of node._branches.entries()) {
+      for (const [nibble, childNode] of node.getChildren()) {
         const nextKey = [...currentKey, nibble]
         const _childNode: Uint8Array =
           childNode instanceof Uint8Array ? childNode : this.hash(RLP.encode(childNode))
-        yield* _walkTrie.bind(this)(_childNode, nextKey, onFound, filter, visited)
+        yield* _walkTrie.call(this, _childNode, nextKey, onFound, filter, visited)
       }
     } else if (node instanceof ExtensionMPTNode) {
       const childNode = node.value()
       const nextKey = [...currentKey, ...node._nibbles]
-      yield* _walkTrie.bind(this)(childNode, nextKey, onFound, filter, visited)
+      yield* _walkTrie.call(this, childNode, nextKey, onFound, filter, visited)
     }
-  } catch {
-    return
+  } catch (error: any) {
+    if (error.message !== 'Missing node in DB') {
+      throw error
+    }
   }
 }

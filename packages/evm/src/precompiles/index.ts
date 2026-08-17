@@ -1,5 +1,5 @@
 import { Hardfork } from '@ethereumjs/common'
-import { type Address, bytesToUnprefixedHex } from '@ethereumjs/util'
+import { type Address, type PrefixedHexString, bytesToUnprefixedHex } from '@ethereumjs/util'
 
 import { precompile0a } from './0a-kzg-point-evaluation.ts'
 import { precompile0b } from './0b-bls12-g1add.ts'
@@ -18,6 +18,7 @@ import { precompile08 } from './08-bn254-pairing.ts'
 import { precompile09 } from './09-blake2f.ts'
 import { precompile10 } from './10-bls12-map-fp-to-g1.ts'
 import { precompile11 } from './11-bls12-map-fp2-to-g2.ts'
+import { precompile100 } from './100-p256verify.ts'
 import { MCLBLS, NobleBLS } from './bls12_381/index.ts'
 import { NobleBN254, RustBN254 } from './bn254/index.ts'
 
@@ -213,6 +214,15 @@ const precompileEntries: PrecompileEntry[] = [
     precompile: precompile11,
     name: 'BLS12_MAP_FP_TO_G2 (0x11)',
   },
+  {
+    address: '0000000000000000000000000000000000000100',
+    check: {
+      type: PrecompileAvailabilityCheck.EIP,
+      param: 7951,
+    },
+    precompile: precompile100,
+    name: 'P256VERIFY (0x100)',
+  },
 ]
 
 const precompiles: Precompiles = {
@@ -233,18 +243,49 @@ const precompiles: Precompiles = {
   [BYTES_19 + '0f']: precompile0f,
   [BYTES_19 + '10']: precompile10,
   [BYTES_19 + '11']: precompile11,
+  '0000000000000000000000000000000000000100': precompile100,
 }
 
+/**
+ * Specifies a precompile to remove from the EVM.
+ * The address can be an `Address` instance or a `0x`-prefixed hex string.
+ */
 type DeletePrecompile = {
-  address: Address
+  address: Address | PrefixedHexString
 }
 
+/**
+ * Specifies a precompile to add to (or override in) the EVM.
+ * The address can be an `Address` instance or a `0x`-prefixed hex string.
+ */
 type AddPrecompile = {
-  address: Address
+  address: Address | PrefixedHexString
   function: PrecompileFunc
 }
 
+/**
+ * A custom precompile entry: either an addition/override or a deletion.
+ *
+ * ```ts
+ * // Add a custom precompile at a new address
+ * const add: CustomPrecompile = {
+ *   address: '0x0000000000000000000000000000000000ff0001',
+ *   function: myPrecompileImpl,
+ * }
+ * // Delete an existing precompile
+ * const del: CustomPrecompile = {
+ *   address: '0x0000000000000000000000000000000000000002',
+ * }
+ * ```
+ */
 type CustomPrecompile = AddPrecompile | DeletePrecompile
+
+function resolvePrecompileAddress(address: Address | PrefixedHexString): string {
+  if (typeof address === 'string') {
+    return address.slice(2).padStart(40, '0').toLowerCase()
+  }
+  return bytesToUnprefixedHex(address.bytes)
+}
 
 function getActivePrecompiles(
   common: Common,
@@ -254,7 +295,7 @@ function getActivePrecompiles(
   if (customPrecompiles) {
     for (const precompile of customPrecompiles) {
       precompileMap.set(
-        bytesToUnprefixedHex(precompile.address.bytes),
+        resolvePrecompileAddress(precompile.address),
         'function' in precompile ? precompile.function : undefined,
       )
     }

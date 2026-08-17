@@ -164,11 +164,11 @@ Defined in: [types.ts:107](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 ### selfdestruct?
 
-> `optional` **selfdestruct**: `Set`\<`` `0x${string}` ``\>
+> `optional` **selfdestruct**: [`SelfdestructMap`](../type-aliases/SelfdestructMap.md)
 
 Defined in: [types.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L92)
 
-Addresses to selfdestruct. Defaults to the empty set.
+Selfdestructed addresses mapped to their beneficiary. Defaults to the empty map.
 
 #### Inherited from
 

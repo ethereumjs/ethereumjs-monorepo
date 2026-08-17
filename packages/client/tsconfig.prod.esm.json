@@ -1,9 +1,9 @@
 {
-  "extends": "../../config/tsconfig.prod.esm.json",
+  "extends": "../../tsconfig.prod.esm.json",
   "include": ["bin", "src", "package.json"],
   "compilerOptions": {
     "outDir": "dist/esm",
-    "typeRoots": ["node_modules/@types", "src/@types"],
+    "typeRoots": ["../../node_modules/@types", "node_modules/@types", "src/@types"],
     "allowSyntheticDefaultImports": true
   },
   "references": [

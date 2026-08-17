@@ -8,7 +8,11 @@ import {
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
-import { Blob4844Tx, createMinimal4844TxFromNetworkWrapper } from '@ethereumjs/tx'
+import {
+  Blob4844Tx,
+  NetworkWrapperType,
+  createMinimal4844TxFromNetworkWrapper,
+} from '@ethereumjs/tx'
 import {
   Address,
   BIGINT_0,
@@ -18,12 +22,13 @@ import {
   GWEI_TO_WEI,
   KECCAK256_RLP,
   TypeOutput,
+  bytesToBigInt,
   createWithdrawal,
   createZeroAddress,
   toBytes,
   toType,
 } from '@ethereumjs/util'
-import { sha256 } from 'ethereum-cryptography/sha256.js'
+import { sha256 } from '@noble/hashes/sha2.js'
 
 import { Bloom } from './bloom/index.ts'
 import { runTx } from './index.ts'
@@ -202,7 +207,7 @@ export class BlockBuilder {
       // as per the implementation of other clients geth/nethermind
       // although this should never happen as no withdrawals with 0
       // amount should ever land up here.
-      if (amount === 0n) continue
+      if (amount === BIGINT_0) continue
       // Withdrawal amount is represented in Gwei so needs to be
       // converted to wei
       await rewardAccount(this.vm.evm, address, amount * GWEI_TO_WEI, this.vm.common)
@@ -233,7 +238,6 @@ export class BlockBuilder {
     // cannot be greater than the remaining gas in the block
     const blockGasLimit = toType(this.headerData.gasLimit, TypeOutput.BigInt)
 
-    const blobGasLimit = this.vm.common.param('maxBlobGasPerBlock')
     const blobGasPerBlob = this.vm.common.param('blobGasPerBlob')
 
     const blockGasRemaining = blockGasLimit - this.gasUsed
@@ -244,6 +248,19 @@ export class BlockBuilder {
     }
     let blobGasUsed = undefined
     if (tx instanceof Blob4844Tx) {
+      const { maxBlobGasPerBlock: blobGasLimit } = this.vm.common.getBlobGasSchedule()
+      if (
+        tx.networkWrapperVersion === NetworkWrapperType.EIP4844 &&
+        this.vm.common.isActivatedEIP(7594)
+      ) {
+        throw Error('eip4844 blob transaction for eip7594 activated fork')
+      } else if (
+        tx.networkWrapperVersion === NetworkWrapperType.EIP7594 &&
+        !this.vm.common.isActivatedEIP(7594)
+      ) {
+        throw Error('eip7594 blob transaction but eip not yet activated')
+      }
+
       if (this.blockOpts.common?.isActivatedEIP(4844) === false) {
         throw Error('eip4844 not activated yet for adding a blob transaction')
       }
@@ -349,7 +366,13 @@ export class BlockBuilder {
     let requestsHash
     if (this.vm.common.isActivatedEIP(7685)) {
       const sha256Function = this.vm.common.customCrypto.sha256 ?? sha256
-      requests = await accumulateRequests(this.vm, this.transactionResults)
+      requests = await accumulateRequests(
+        this.vm,
+        this.transactionResults,
+        this.headerData.gasLimit !== undefined
+          ? bytesToBigInt(toBytes(this.headerData.gasLimit))
+          : undefined,
+      )
       requestsHash = genRequestsRoot(requests, sha256Function)
     }
 

@@ -94,7 +94,7 @@ export class ETH extends Protocol {
     }
 
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
-    this.DEBUG = process?.env?.DEBUG?.includes('ethjs') ?? false
+    this.DEBUG = globalThis.process?.env?.DEBUG?.includes('ethjs') ?? false
   }
 
   static eth62 = { name: 'eth', version: 62, length: 8, constructor: ETH }
@@ -286,6 +286,7 @@ export class ETH extends Protocol {
   }
 
   _forkHashFromForkId(forkId: Uint8Array): string {
+    // Using deprecated bytesToUnprefixedHex for performance: used for string conversion in protocol handling.
     return bytesToUnprefixedHex(forkId)
   }
 

@@ -6,7 +6,7 @@
 
 # Interface: TransactionCache
 
-Defined in: [types.ts:140](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L140)
+Defined in: [types.ts:133](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L133)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [types.ts:140](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **dataFee**: `object`
 
-Defined in: [types.ts:142](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L142)
+Defined in: [types.ts:135](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L135)
 
 #### hardfork
 
@@ -30,7 +30,7 @@ Defined in: [types.ts:142](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **hash**: `Uint8Array`\<`ArrayBufferLike`\>
 
-Defined in: [types.ts:141](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L141)
+Defined in: [types.ts:134](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L134)
 
 ***
 
@@ -38,4 +38,4 @@ Defined in: [types.ts:141](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **senderPubKey**: `Uint8Array`\<`ArrayBufferLike`\>
 
-Defined in: [types.ts:146](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L146)
+Defined in: [types.ts:139](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L139)

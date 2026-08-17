@@ -8,7 +8,7 @@
 
 > **intToBytes**(`i`): `Uint8Array`
 
-Defined in: [packages/util/src/bytes.ts:108](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L108)
+Defined in: [packages/util/src/bytes.ts:110](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L110)
 
 Converts an number to a Uint8Array
 

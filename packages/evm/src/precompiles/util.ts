@@ -5,10 +5,10 @@ import type { PrecompileInput } from './index.ts'
 /**
  * Checks that the gas used remain under the gas limit.
  *
- * @param opts
- * @param gasUsed
- * @param pName
- * @returns
+ * @param opts - Precompile input wrapper
+ * @param gasUsed - Amount of gas consumed by the precompile
+ * @param pName - Human readable precompile name for logging
+ * @returns `true` if the gas usage is within the provided limit
  */
 export const gasLimitCheck = (opts: PrecompileInput, gasUsed: bigint, pName: string) => {
   if (opts._debug !== undefined) {
@@ -31,10 +31,10 @@ export const gasLimitCheck = (opts: PrecompileInput, gasUsed: bigint, pName: str
 /**
  * Checks that the length of the provided data is equal to `length`.
  *
- * @param opts
- * @param length
- * @param pName
- * @returns
+ * @param opts - Precompile input wrapper
+ * @param length - Required data length in bytes
+ * @param pName - Human readable precompile name for logging
+ * @returns `true` if the provided data matches the required length
  */
 export const equalityLengthCheck = (opts: PrecompileInput, length: number, pName: string) => {
   if (opts.data.length !== length) {
@@ -52,10 +52,10 @@ export const equalityLengthCheck = (opts: PrecompileInput, length: number, pName
  * Checks that the total length of the provided data input can be subdivided into k equal parts
  * with `length` (without leaving some remainder bytes).
  *
- * @param opts
- * @param length
- * @param pName
- * @returns
+ * @param opts - Precompile input wrapper
+ * @param length - Required chunk size
+ * @param pName - Human readable precompile name for logging
+ * @returns `true` if the length is divisible by the chunk size
  */
 export const moduloLengthCheck = (opts: PrecompileInput, length: number, pName: string) => {
   if (opts.data.length % length !== 0) {

@@ -1,10 +1,11 @@
 {
-  "extends": "../../config/tsconfig.json",
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
     "lib": ["dom"],
     "sourceMap": false,
     "declaration": false,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "customConditions": []
   },
   "include": ["benchmarks/**.ts"]
 }

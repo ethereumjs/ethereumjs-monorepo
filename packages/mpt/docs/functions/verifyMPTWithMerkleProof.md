@@ -6,7 +6,7 @@
 
 # Function: verifyMPTWithMerkleProof()
 
-> **verifyMPTWithMerkleProof**(`trie`, `rootHash`, `key`, `proof`): `Promise`\<`null` \| `Uint8Array`\<`ArrayBufferLike`\>\>
+> **verifyMPTWithMerkleProof**(`trie`, `rootHash`, `key`, `proof`): `Promise`\<`Uint8Array`\<`ArrayBufferLike`\> \| `null`\>
 
 Defined in: [packages/mpt/src/proof/proof.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/proof/proof.ts#L96)
 
@@ -41,7 +41,7 @@ an EIP-1186 proof to verify the key against
 
 ## Returns
 
-`Promise`\<`null` \| `Uint8Array`\<`ArrayBufferLike`\>\>
+`Promise`\<`Uint8Array`\<`ArrayBufferLike`\> \| `null`\>
 
 The value from the key, or null if valid proof of non-existence.
 

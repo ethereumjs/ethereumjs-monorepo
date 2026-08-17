@@ -9,7 +9,9 @@ import type {
 } from '@ethereumjs/evm'
 import type { AccessList, TypedTransaction } from '@ethereumjs/tx'
 import type {
+  BALJSONBlockAccessList,
   BigIntLike,
+  BlockLevelAccessList,
   CLRequest,
   CLRequestType,
   PrefixedHexString,
@@ -275,11 +277,6 @@ export interface RunBlockOpts {
   generate?: boolean
 
   /**
-   * The stateRoot of the parent. Used for verifying the witness proofs in the context of Verkle.
-   */
-  parentStateRoot?: Uint8Array
-
-  /**
    * If true, will skip "Block validation":
    * Block validation validates the header (with respect to the blockchain),
    * the transactions, the transaction trie and the uncle hash.
@@ -319,6 +316,22 @@ export interface RunBlockOpts {
    * to the `RunTxResult` returned.
    */
   reportPreimages?: boolean
+
+  /**
+   * If true, will validate block size limit (EIP-7934) when validating block data.
+   * Defaults to false.
+   */
+  validateBlockSize?: boolean
+
+  /**
+   * Block-level access list supplied with the block (e.g. from an execution payload).
+   * When set and EIP-7928 is active, {@link runBlock} validates structure and header hash
+   * before execution and RLP equality against the generated list after execution.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases. See `@ethereumjs/vm`
+   * README section `Amsterdam hardfork (experimental)` for release ↔ spec tracking.
+   */
+  blockAccessList?: BALJSONBlockAccessList | BlockLevelAccessList | Uint8Array
 }
 
 /**
@@ -372,6 +385,15 @@ export interface RunBlockResult extends Omit<ApplyBlockResult, 'bloom'> {
    * Any CL requests that were processed in the course of this block
    */
   requests?: CLRequest<CLRequestType>[]
+  /**
+   * The block level access list created during execution when EIP-7928 is active.
+   * Populated by {@link runBlock} / {@link applyBlock}; use with `generate: true` for
+   * builder flows or pass via {@link RunBlockOpts.blockAccessList} for validation.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases. See `@ethereumjs/vm`
+   * README section `Amsterdam hardfork (experimental)` for release ↔ spec tracking.
+   */
+  blockLevelAccessList?: BlockLevelAccessList
 }
 
 export interface AfterBlockEvent extends RunBlockResult {
@@ -463,6 +485,32 @@ export interface RunTxResult extends EVMResult {
    * which consists of calldata cost, intrinsic cost and optionally the access list costs
    */
   totalGasSpent: bigint
+
+  /**
+   * The amount of gas accounted for at block level.
+   * Under EIP-7778 (Amsterdam) this excludes tx-level refund subtraction from header `gasUsed`.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
+  blockGasSpent: bigint
+
+  /**
+   * EIP-8037 per-tx state-gas total (`intrinsic_state_gas + execution_state_gas_used`).
+   * Undefined when EIP-8037 is inactive. Used by `runBlock` to track the block-level
+   * state-gas dimension and compute `gas_used = max(block_regular_gas_used, block_state_gas_used)`.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
+  txStateGas?: bigint
+
+  /**
+   * EIP-8037 per-tx regular-gas total (`intrinsic_regular_gas + execution_regular_gas_used`,
+   * with the EIP-7623 calldata floor applied via `max(tx_regular_gas, calldata_floor_gas_cost)`
+   * at the block level). Undefined when EIP-8037 is inactive.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
+  txRegularGas?: bigint
 
   /**
    * The amount of gas as that was refunded during the transaction (i.e. `gasUsed = totalGasConsumed - gasRefund`)

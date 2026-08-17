@@ -8,7 +8,7 @@
 
 > **equalsBits**(`bits1`, `bits2`): `boolean`
 
-Defined in: [packages/util/src/bytes.ts:589](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L589)
+Defined in: [packages/util/src/bytes.ts:649](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L649)
 
 Checks whether two arrays of bits are equal.
 

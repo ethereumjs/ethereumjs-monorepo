@@ -1,17 +1,18 @@
 import type { PrefixedHexString } from '@ethereumjs/util'
-import type { StemAccessEvent, StemMeta } from './verkleAccessWitness.ts'
+import type { BinaryStemAccessEvent, BinaryStemMeta } from './binaryTreeAccessWitness.ts'
+
 export class StemCache {
-  cache: Map<PrefixedHexString, StemAccessEvent & StemMeta>
+  cache: Map<PrefixedHexString, BinaryStemAccessEvent & BinaryStemMeta>
 
   constructor() {
-    this.cache = new Map<PrefixedHexString, StemAccessEvent & StemMeta>()
+    this.cache = new Map<PrefixedHexString, BinaryStemAccessEvent & BinaryStemMeta>()
   }
 
-  set(stemKey: PrefixedHexString, accessedStem: StemAccessEvent & StemMeta) {
+  set(stemKey: PrefixedHexString, accessedStem: BinaryStemAccessEvent & BinaryStemMeta) {
     this.cache.set(stemKey, accessedStem)
   }
 
-  get(stemHex: PrefixedHexString): (StemAccessEvent & StemMeta) | undefined {
+  get(stemHex: PrefixedHexString): (BinaryStemAccessEvent & BinaryStemMeta) | undefined {
     return this.cache.get(stemHex)
   }
 
@@ -19,8 +20,8 @@ export class StemCache {
     this.cache.delete(stemHex)
   }
 
-  commit(): [PrefixedHexString, StemAccessEvent & StemMeta][] {
-    const items: [PrefixedHexString, StemAccessEvent & StemMeta][] = Array.from(
+  commit(): [PrefixedHexString, BinaryStemAccessEvent & BinaryStemMeta][] {
+    const items: [PrefixedHexString, BinaryStemAccessEvent & BinaryStemMeta][] = Array.from(
       this.cache.entries(),
     )
     this.clear()
@@ -36,7 +37,7 @@ export class StemCache {
 
   /**
    * Returns the size of the cache
-   * @returns
+   * @returns Number of cached stems currently stored
    */
   size() {
     return this.cache.size

@@ -18,5 +18,9 @@ export const setupMetrics = () => {
       name: 'blob_eip_4844_transactions_in_transaction_pool',
       help: 'Number of blob EIP 4844 transactions in the client transaction pool',
     }),
+    blobEIP7594TxGauge: new promClient.Gauge({
+      name: 'blob_eip_7594_transactions_in_transaction_pool',
+      help: 'Number of blob EIP 7594 transactions in the client transaction pool',
+    }),
   }
 }

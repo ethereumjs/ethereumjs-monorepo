@@ -8,9 +8,9 @@
 
 > **commitmentsToVersionedHashes**(`commitments`): `` `0x${string}` ``[]
 
-Defined in: [packages/util/src/blobs.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/blobs.ts#L104)
+Defined in: [packages/util/src/blobs.ts:147](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/blobs.ts#L147)
 
-Generate an array of versioned hashes from corresponding kzg commitments
+EIP-4844: Generate an array of versioned hashes from corresponding kzg commitments
 
 ## Parameters
 

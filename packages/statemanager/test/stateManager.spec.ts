@@ -1,9 +1,10 @@
+import { SIGNER_F, SIGNER_G } from '@ethereumjs/testdata'
+
 import { MerklePatriciaTrie, createMPT, createMPTFromProof } from '@ethereumjs/mpt'
 import {
   Account,
   KECCAK256_RLP,
   bigIntToBytes,
-  createAddressFromPrivateKey,
   createAddressFromString,
   createZeroAddress,
   equalsBytes,
@@ -312,10 +313,8 @@ describe('StateManager -> General', () => {
     async () => {
       const trie = await createMPT({ useKeyHashing: false })
       const sm = new MerkleStateManager({ trie })
-      const pk = hexToBytes('0x9f12aab647a25a81f821a5a0beec3330cd057b2346af4fb09d7a807e896701ea')
-      const pk2 = hexToBytes('0x8724f27e2ce3714af01af3220478849db68a03c0f84edf1721d73d9a6139ad1c')
-      const address = createAddressFromPrivateKey(pk)
-      const address2 = createAddressFromPrivateKey(pk2)
+      const address = SIGNER_F.address
+      const address2 = SIGNER_G.address
       const account = new Account()
       const account2 = new Account(undefined, 100n)
       await sm.putAccount(address, account)

@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/rlp",
-  "version": "10.0.0",
+  "version": "10.1.2",
   "description": "Recursive Length Prefix Encoding Module",
   "keywords": ["rlp", "ethereum"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/rlp#readme",
@@ -31,7 +31,10 @@
         "typescript": "./src/index.ts",
         "default": "./dist/esm/index.js"
       },
-      "require": "./dist/cjs/index.js"
+      "require": {
+        "typescript": "./src/index.ts",
+        "default": "./dist/cjs/index.js"
+      }
     }
   },
   "bin": {
@@ -62,9 +65,10 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "devDependencies": {
+    "@types/benchmark": "^2.1.5",
     "benchmark": "^2.1.4"
   }
 }

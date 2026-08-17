@@ -8,7 +8,7 @@
 
 > **bytesToInt32**(`bytes`, `littleEndian`): `number`
 
-Defined in: [packages/util/src/bytes.ts:449](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L449)
+Defined in: [packages/util/src/bytes.ts:475](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L475)
 
 ## Parameters
 

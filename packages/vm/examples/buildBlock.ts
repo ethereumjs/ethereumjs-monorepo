@@ -1,16 +1,16 @@
 import { createBlock } from '@ethereumjs/block'
-import { Common, Mainnet } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
 import { Account, bytesToHex, createAddressFromPrivateKey, hexToBytes } from '@ethereumjs/util'
 import { buildBlock, createVM } from '@ethereumjs/vm'
 
 const main = async () => {
-  const common = new Common({ chain: Mainnet })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Prague })
   const vm = await createVM({ common })
 
   const parentBlock = createBlock(
     { header: { number: 1n } },
-    { skipConsensusFormatValidation: true },
+    { common, skipConsensusFormatValidation: true },
   )
   const headerData = {
     number: 2n,

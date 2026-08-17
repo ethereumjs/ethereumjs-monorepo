@@ -11,7 +11,7 @@ import {
   hexToBytes,
   randomBytes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 import { assert, describe, it } from 'vitest'
 
 import { MerkleStateManager } from '../src/index.ts'
@@ -122,7 +122,7 @@ describe('ProofStateManager', () => {
     let stateRoot: Uint8Array | undefined
     for (const proofData of ropstenValidAccountData.accountProof) {
       const bufferData = hexToBytes(proofData)
-      const key = keccak256(bufferData)
+      const key = keccak_256(bufferData)
       if (stateRoot === undefined) {
         stateRoot = key
       }
@@ -146,7 +146,7 @@ describe('ProofStateManager', () => {
     let stateRoot: Uint8Array | undefined
     for (const proofData of ropstenNonexistentAccountData.accountProof) {
       const bufferData = hexToBytes(proofData)
-      const key = keccak256(bufferData)
+      const key = keccak_256(bufferData)
       if (stateRoot === undefined) {
         stateRoot = key
       }
@@ -170,7 +170,7 @@ describe('ProofStateManager', () => {
     let stateRoot: Uint8Array | undefined
     for (const proofData of ropstenContractWithStorageData.accountProof) {
       const bufferData = hexToBytes(proofData)
-      const key = keccak256(bufferData)
+      const key = keccak_256(bufferData)
       if (stateRoot === undefined) {
         stateRoot = key
       }
@@ -182,12 +182,12 @@ describe('ProofStateManager', () => {
     for (const storageProofsData of ropstenContractWithStorageData.storageProof) {
       storageKeys.push(hexToBytes(storageProofsData.key))
       for (const storageProofData of storageProofsData.proof) {
-        const key = keccak256(hexToBytes(storageProofData))
+        const key = keccak_256(hexToBytes(storageProofData))
         await storageTrie['_db'].put(key, hexToBytes(storageProofData))
       }
     }
     storageTrie.root(hexToBytes(storageRoot))
-    const addressHex = bytesToUnprefixedHex(keccak256(address.bytes))
+    const addressHex = bytesToUnprefixedHex(keccak_256(address.bytes))
     stateManager['_storageTries'][addressHex] = storageTrie
     trie.root(stateRoot!)
 
@@ -208,7 +208,7 @@ describe('ProofStateManager', () => {
     let stateRoot: Uint8Array | undefined
     for (const proofData of ropstenContractWithStorageData.accountProof) {
       const bufferData = hexToBytes(proofData)
-      const key = keccak256(bufferData)
+      const key = keccak_256(bufferData)
       if (stateRoot === undefined) {
         stateRoot = key
       }
@@ -220,7 +220,7 @@ describe('ProofStateManager', () => {
     for (const storageProofsData of ropstenContractWithStorageData.storageProof) {
       storageKeys.push(hexToBytes(storageProofsData.key))
       for (const storageProofData of storageProofsData.proof) {
-        const key = keccak256(hexToBytes(storageProofData))
+        const key = keccak_256(hexToBytes(storageProofData))
         await storageTrie['_db'].put(key, hexToBytes(storageProofData))
       }
     }
@@ -274,7 +274,7 @@ describe('ProofStateManager', () => {
     let stateRoot: Uint8Array | undefined
     for (const proofData of ropstenNonexistentAccountData.accountProof) {
       const bufferData = hexToBytes(proofData)
-      const key = keccak256(bufferData)
+      const key = keccak_256(bufferData)
       if (stateRoot === undefined) {
         stateRoot = key
       }

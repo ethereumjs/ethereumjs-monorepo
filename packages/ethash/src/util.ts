@@ -1,5 +1,5 @@
+import { keccak_256 } from '@noble/hashes/sha3.js'
 import { isProbablyPrime } from 'bigint-crypto-utils'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
 
 export const params = {
   DATASET_BYTES_INIT: 1073741824, // 2^30
@@ -50,7 +50,7 @@ export function getEpoc(blockNumber: bigint) {
  */
 export function getSeed(seed: Uint8Array, begin: number, end: number) {
   for (let i = begin; i < end; i++) {
-    seed = keccak256(seed)
+    seed = keccak_256(seed)
   }
   return seed
 }

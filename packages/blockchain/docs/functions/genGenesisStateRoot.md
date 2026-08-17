@@ -10,7 +10,7 @@
 
 Defined in: [helpers.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/helpers.ts#L19)
 
-Verkle or Merkle genesis root
+Merkle genesis root
 
 ## Parameters
 

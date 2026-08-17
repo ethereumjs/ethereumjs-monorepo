@@ -8,7 +8,9 @@
 
 > **isBlob4844Tx**(`tx`): `tx is Blob4844Tx`
 
-Defined in: [types.ts:185](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L185)
+Defined in: [types.ts:198](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L198)
+
+Type guard to check if transaction is a Blob EIP-4844 transaction
 
 ## Parameters
 
@@ -16,6 +18,10 @@ Defined in: [types.ts:185](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 [`TypedTransaction`](../type-aliases/TypedTransaction.md)
 
+The transaction to check
+
 ## Returns
 
 `tx is Blob4844Tx`
+
+true if transaction is Blob EIP-4844 type

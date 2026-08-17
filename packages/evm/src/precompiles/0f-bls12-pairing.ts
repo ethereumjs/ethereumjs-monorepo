@@ -15,7 +15,7 @@ export async function precompile0f(opts: PrecompileInput): Promise<ExecResult> {
   const pName = getPrecompileName('11')
   const bls = (opts._EVM as EVM)['_bls']!
 
-  const baseGas = opts.common.param('bls12381PairingBaseGas') ?? BigInt(0)
+  const baseGas = opts.common.param('bls12381PairingBaseGas')
 
   // TODO: confirm that this is not a thing for the other precompiles
   if (opts.data.length === 0) {
@@ -28,7 +28,7 @@ export async function precompile0f(opts: PrecompileInput): Promise<ExecResult> {
     )
   }
 
-  const gasUsedPerPair = opts.common.param('bls12381PairingPerPairGas') ?? BigInt(0)
+  const gasUsedPerPair = opts.common.param('bls12381PairingPerPairGas')
 
   // TODO: For this precompile it is the only exception that the length check is placed before the
   // gas check. I will keep it there to not side-change the existing implementation, but we should
@@ -68,11 +68,12 @@ export async function precompile0f(opts: PrecompileInput): Promise<ExecResult> {
   let returnValue
   try {
     returnValue = bls.pairingCheck(opts.data)
-  } catch (e: any) {
+  } catch (e: unknown) {
+    const error = e instanceof EVMError ? e : new EVMError(EVMError.errorMessages.REVERT)
     if (opts._debug !== undefined) {
-      opts._debug(`${pName} failed: ${e.message}`)
+      opts._debug(`${pName} failed: ${e instanceof Error ? e.message : undefined}`)
     }
-    return EVMErrorResult(e, opts.gasLimit)
+    return EVMErrorResult(error, opts.gasLimit)
   }
 
   if (opts._debug !== undefined) {

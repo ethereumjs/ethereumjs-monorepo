@@ -52,6 +52,12 @@ const crc = (current: Uint8Array, previous?: number) => {
   return crc ^ -1
 }
 
+/**
+ * Calculates the CRC32 checksum of `current`.
+ * @param current Input data
+ * @param previous Optional previous CRC to continue a multi-part calculation
+ * @returns Unsigned CRC32 checksum
+ */
 export const crc32 = (current: Uint8Array, previous?: number) => {
   return crc(current, previous) >>> 0
 }

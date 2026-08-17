@@ -1,5 +1,5 @@
 import { concatBytes, equalsBytes } from '@ethereumjs/util'
-import * as ssz from 'micro-eth-signer/ssz'
+import * as ssz from 'micro-eth-signer/ssz.js'
 
 import {
   EpochAccumulator,

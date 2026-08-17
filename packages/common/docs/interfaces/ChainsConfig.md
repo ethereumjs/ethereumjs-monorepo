@@ -6,7 +6,7 @@
 
 # Interface: ChainsConfig
 
-Defined in: [types.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L8)
+Defined in: [common/src/types.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L8)
 
 ## Indexable
 

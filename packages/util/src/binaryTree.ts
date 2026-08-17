@@ -279,14 +279,14 @@ export function decodeBinaryTreeLeafBasicData(
  */
 export function encodeBinaryTreeLeafBasicData(account: Account): Uint8Array {
   const encodedVersion = setLengthLeft(
-    int32ToBytes(account.version),
+    intToBytes(account.version),
     BINARY_TREE_VERSION_BYTES_LENGTH,
   )
   // Per EIP-7864, bytes 1-4 are reserved for future use
   const reservedBytes = new Uint8Array([0, 0, 0, 0])
   const encodedNonce = setLengthLeft(bigIntToBytes(account.nonce), BINARY_TREE_NONCE_BYTES_LENGTH)
   const encodedCodeSize = setLengthLeft(
-    int32ToBytes(account.codeSize),
+    intToBytes(account.codeSize),
     BINARY_TREE_CODE_SIZE_BYTES_LENGTH,
   )
   const encodedBalance = setLengthLeft(

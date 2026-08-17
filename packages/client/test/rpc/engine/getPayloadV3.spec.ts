@@ -1,6 +1,6 @@
 import { Hardfork } from '@ethereumjs/common'
 import { MerkleStateManager } from '@ethereumjs/statemanager'
-import { eip4844GethGenesis } from '@ethereumjs/testdata'
+import { SIGNER_H, eip4844GethGenesis } from '@ethereumjs/testdata'
 import { createTx } from '@ethereumjs/tx'
 import {
   Account,
@@ -8,13 +8,11 @@ import {
   blobsToCommitments,
   blobsToProofs,
   commitmentsToVersionedHashes,
-  createAddressFromPrivateKey,
   createZeroAddress,
   getBlobs,
-  hexToBytes,
 } from '@ethereumjs/util'
-import { trustedSetup } from '@paulmillr/trusted-setups/fast.js'
-import { KZG as microEthKZG } from 'micro-eth-signer/kzg'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 import { assert, describe, it } from 'vitest'
 
 import { INVALID_PARAMS } from '../../../src/rpc/error-code.ts'
@@ -90,8 +88,7 @@ describe(method, () => {
 
     const rpc = getRPCClient(server)
     common.setHardfork(Hardfork.Cancun)
-    const pkey = hexToBytes('0x9c9996335451aab4fc4eac58e31a8c300e095cdbcee532d53d09280e83360355')
-    const address = createAddressFromPrivateKey(pkey)
+    const address = SIGNER_H.address
     await service.execution.vm.stateManager.putAccount(address, new Account())
     const account = await service.execution.vm.stateManager.getAccount(address)
     account!.balance = 0xfffffffffffffffn
@@ -108,6 +105,7 @@ describe(method, () => {
     const tx = createTx(
       {
         type: 0x03,
+        networkWrapperVersion: 0,
         blobVersionedHashes: txVersionedHashes,
         blobs: txBlobs,
         kzgCommitments: txCommitments,
@@ -119,7 +117,7 @@ describe(method, () => {
         to: createZeroAddress(),
       },
       { common },
-    ).sign(pkey)
+    ).sign(SIGNER_H.privateKey)
 
     await service.txPool.add(tx, true)
 

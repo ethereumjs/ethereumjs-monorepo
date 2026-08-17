@@ -6,7 +6,7 @@
 
 # Interface: RunBlockResult
 
-Defined in: [vm/src/types.ts:357](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L357)
+Defined in: [vm/src/types.ts:370](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L370)
 
 Result of [runBlock](../functions/runBlock.md)
 
@@ -20,17 +20,34 @@ Result of [runBlock](../functions/runBlock.md)
 
 ## Properties
 
+### blockLevelAccessList?
+
+> `optional` **blockLevelAccessList**: `BlockLevelAccessList`
+
+Defined in: [vm/src/types.ts:396](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L396)
+
+The block level access list created during execution when EIP-7928 is active.
+Populated by [runBlock](../functions/runBlock.md) / applyBlock; use with `generate: true` for
+builder flows or pass via [RunBlockOpts.blockAccessList](RunBlockOpts.md#blockaccesslist) for validation.
+
+#### Remarks
+
+Experimental (Amsterdam): may change on patch releases. See `@ethereumjs/vm`
+README section `Amsterdam hardfork (experimental)` for release ↔ spec tracking.
+
+***
+
 ### gasUsed
 
 > **gasUsed**: `bigint`
 
-Defined in: [vm/src/types.ts:335](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L335)
+Defined in: [vm/src/types.ts:348](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L348)
 
 The gas used after executing the block
 
 #### Inherited from
 
-`Omit.gasUsed`
+[`ApplyBlockResult`](ApplyBlockResult.md).[`gasUsed`](ApplyBlockResult.md#gasused)
 
 ***
 
@@ -38,7 +55,7 @@ The gas used after executing the block
 
 > **logsBloom**: `Uint8Array`
 
-Defined in: [vm/src/types.ts:365](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L365)
+Defined in: [vm/src/types.ts:378](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L378)
 
 The bloom filter of the LOGs (events) after executing the block
 
@@ -48,13 +65,13 @@ The bloom filter of the LOGs (events) after executing the block
 
 > `optional` **preimages**: `Map`\<`` `0x${string}` ``, `Uint8Array`\<`ArrayBufferLike`\>\>
 
-Defined in: [vm/src/types.ts:351](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L351)
+Defined in: [vm/src/types.ts:364](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L364)
 
 Preimages mapping of the touched accounts from the block (see reportPreimages option)
 
 #### Inherited from
 
-`Omit.preimages`
+[`ApplyBlockResult`](ApplyBlockResult.md).[`preimages`](ApplyBlockResult.md#preimages)
 
 ***
 
@@ -62,13 +79,13 @@ Preimages mapping of the touched accounts from the block (see reportPreimages op
 
 > **receipts**: [`TxReceipt`](../type-aliases/TxReceipt.md)[]
 
-Defined in: [vm/src/types.ts:343](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L343)
+Defined in: [vm/src/types.ts:356](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L356)
 
 Receipts generated for transactions in the block
 
 #### Inherited from
 
-`Omit.receipts`
+[`ApplyBlockResult`](ApplyBlockResult.md).[`receipts`](ApplyBlockResult.md#receipts)
 
 ***
 
@@ -76,13 +93,13 @@ Receipts generated for transactions in the block
 
 > **receiptsRoot**: `Uint8Array`
 
-Defined in: [vm/src/types.ts:339](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L339)
+Defined in: [vm/src/types.ts:352](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L352)
 
 The receipt root after executing the block
 
 #### Inherited from
 
-`Omit.receiptsRoot`
+[`ApplyBlockResult`](ApplyBlockResult.md).[`receiptsRoot`](ApplyBlockResult.md#receiptsroot)
 
 ***
 
@@ -90,7 +107,7 @@ The receipt root after executing the block
 
 > `optional` **requests**: `CLRequest`\<`CLRequestType`\>[]
 
-Defined in: [vm/src/types.ts:374](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L374)
+Defined in: [vm/src/types.ts:387](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L387)
 
 Any CL requests that were processed in the course of this block
 
@@ -100,7 +117,7 @@ Any CL requests that were processed in the course of this block
 
 > `optional` **requestsHash**: `Uint8Array`\<`ArrayBufferLike`\>
 
-Defined in: [vm/src/types.ts:370](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L370)
+Defined in: [vm/src/types.ts:383](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L383)
 
 The requestsHash for any CL requests in the block
 
@@ -110,13 +127,13 @@ The requestsHash for any CL requests in the block
 
 > **results**: [`RunTxResult`](RunTxResult.md)[]
 
-Defined in: [vm/src/types.ts:347](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L347)
+Defined in: [vm/src/types.ts:360](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L360)
 
 Results of executing the transactions in the block
 
 #### Inherited from
 
-`Omit.results`
+[`ApplyBlockResult`](ApplyBlockResult.md).[`results`](ApplyBlockResult.md#results)
 
 ***
 
@@ -124,6 +141,6 @@ Results of executing the transactions in the block
 
 > **stateRoot**: `Uint8Array`
 
-Defined in: [vm/src/types.ts:361](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L361)
+Defined in: [vm/src/types.ts:374](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L374)
 
 The stateRoot after executing the block

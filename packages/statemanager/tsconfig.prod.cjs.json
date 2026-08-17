@@ -1,5 +1,5 @@
 {
-  "extends": "../../config/tsconfig.prod.cjs.json",
+  "extends": "../../tsconfig.prod.cjs.json",
   "compilerOptions": {
     "rootDir": "src",
     "outDir": "dist/cjs",
@@ -10,7 +10,6 @@
     { "path": "../common/tsconfig.prod.cjs.json" },
     { "path": "../mpt/tsconfig.prod.cjs.json" },
     { "path": "../util/tsconfig.prod.cjs.json" },
-    { "path": "../verkle/tsconfig.prod.cjs.json" },
     { "path": "../binarytree/tsconfig.prod.cjs.json" }
   ]
 }

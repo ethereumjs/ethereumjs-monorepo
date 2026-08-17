@@ -30,7 +30,7 @@ export async function precompile0e(opts: PrecompileInput): Promise<ExecResult> {
   }
 
   const numPairs = Math.floor(opts.data.length / 288)
-  const gasUsedPerPair = opts.common.param('bls12381G2MulGas') ?? BigInt(0)
+  const gasUsedPerPair = opts.common.param('bls12381G2MulGas')
   const gasUsed = msmGasUsed(numPairs, gasUsedPerPair, BLS_GAS_DISCOUNT_PAIRS_G2)
 
   if (!gasLimitCheck(opts, gasUsed, pName)) {
@@ -66,11 +66,12 @@ export async function precompile0e(opts: PrecompileInput): Promise<ExecResult> {
   let returnValue
   try {
     returnValue = bls.msmG2(opts.data)
-  } catch (e: any) {
+  } catch (e: unknown) {
+    const error = e instanceof EVMError ? e : new EVMError(EVMError.errorMessages.REVERT)
     if (opts._debug !== undefined) {
-      opts._debug(`${pName} failed: ${e.message}`)
+      opts._debug(`${pName} failed: ${e instanceof Error ? e.message : undefined}`)
     }
-    return EVMErrorResult(e, opts.gasLimit)
+    return EVMErrorResult(error, opts.gasLimit)
   }
 
   if (opts._debug !== undefined) {

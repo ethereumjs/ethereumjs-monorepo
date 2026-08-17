@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 10.1.2 - 2026-05-29
+
+### Release round overview
+
+Welcome to **`10.1.2`** — a coordinated release across all active `@ethereumjs/*` libraries on the **`10.1.x`** line. If you have been following the upcoming Amsterdam hardfork, this is our **first experimental preview** ready to try out: a largely complete **nine-EIP `Hardfork.Amsterdam` bundle**, currently aligned with [tests-bal@v7.1.0](https://github.com/ethereum/execution-specs/releases/tag/tests-bal@v7.1.0) and [BAL devnet-7](https://notes.ethereum.org/@ethpandaops/bal-devnet-7).
+
+Amsterdam is still in flux — **please do not use this in production yet** — and we expect further **`10.1.x`** releases as the spec and official tests evolve. The sections below cover **this package only**; for the full fork picture (EIP list, examples, release ↔ spec tracking), see the [@ethereumjs/vm Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental). On Osaka or earlier hardforks? Nothing changes unless you explicitly select `Hardfork.Amsterdam`.
+
+### `@ethereumjs/binarytree`
+
+`@ethereumjs/binarytree` implements the binary trie structure used by certain state-manager code paths (Verkle-adjacent experiments and specialized backends). Amsterdam work in the `10.1.2` round focused on the Merkle + BAL execution path; binarytree bumps in version only to keep the monorepo on a uniform `@ethereumjs/*` dependency line. No public API changes.
+
+## 10.1.1 - 2025-01-28
+
+- Deprecate Node.js 18 support, minimum Node.js version is now 20, see PR [#4180](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4180)
+- Add Node.js 24 support, see PR [#4194](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4194)
+- Dependency update: `@noble/hashes` to v2, see PR [#4184](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4184)
+
+## 10.1.0 - 2025-11-06
+
+Maintenance release, no active changes.
+
 ## 10.0.0 (EXPERIMENTAL) - 2025-04-29
 
 **Note:** This library is in an **experimental** stage and should not be used in production!

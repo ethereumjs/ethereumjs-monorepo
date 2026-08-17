@@ -10,7 +10,7 @@
 
 Defined in: [node/types.ts:4](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/node/types.ts#L4)
 
-## Type declaration
+## Type Declaration
 
 ### Internal
 

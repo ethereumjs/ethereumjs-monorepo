@@ -106,9 +106,10 @@ describe('EIP-7002 tests', () => {
     )
 
     let generatedBlock: Block
-    vm.events.on('afterBlock', (e) => {
+    const handler = (e: any) => {
       generatedBlock = e.block
-    })
+    }
+    vm.events.once('afterBlock', handler)
 
     let runBlockResults = await runBlock(vm, {
       block: block2,

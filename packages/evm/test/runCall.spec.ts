@@ -1,5 +1,5 @@
 import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
-import { eip4844GethGenesis } from '@ethereumjs/testdata'
+import { SIGNER_G, eip4844GethGenesis } from '@ethereumjs/testdata'
 import {
   Account,
   Address,
@@ -7,14 +7,13 @@ import {
   bytesToBigInt,
   bytesToHex,
   concatBytes,
-  createAddressFromPrivateKey,
   createAddressFromString,
   createZeroAddress,
   hexToBytes,
   padToEven,
   unpadBytes,
 } from '@ethereumjs/util'
-import { keccak256 } from 'ethereum-cryptography/keccak.js'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 import { assert, describe, it } from 'vitest'
 
 import { EVMError } from '../src/errors.ts'
@@ -27,7 +26,7 @@ import type { EVMRunCallOpts } from '../src/types.ts'
 function create2address(sourceAddress: Address, codeHash: Uint8Array, salt: Uint8Array): Address {
   const rlp_proc_bytes = hexToBytes('0xff')
   const hashBytes = concatBytes(rlp_proc_bytes, sourceAddress.bytes, salt, codeHash)
-  return new Address(keccak256(hashBytes).slice(12))
+  return new Address(keccak_256(hashBytes).slice(12))
 }
 
 describe('RunCall tests', () => {
@@ -74,7 +73,7 @@ describe('RunCall tests', () => {
 
     await evm.stateManager.putCode(contractAddress, hexToBytes(code)) // setup the contract code
     await evm.stateManager.putAccount(caller, new Account(BigInt(0), BigInt(0x11111111))) // give the calling account a big balance so we don't run out of funds
-    const codeHash = keccak256(new Uint8Array())
+    const codeHash = keccak_256(new Uint8Array())
     for (let value = 0; value <= 1000; value += 20) {
       // setup the call arguments
       const runCallArgs = {
@@ -275,6 +274,72 @@ describe('RunCall tests', () => {
       result.execResult.exceptionError?.error,
       EVMError.errorMessages.OUT_OF_GAS,
       'call went out of gas',
+    )
+  })
+
+  it('step event includes CALL when CALL dynamic gas calculation goes OOG', async () => {
+    const caller = new Address(hexToBytes('0x00000000000000000000000000000000000000ee'))
+    const address = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Homestead })
+    const evm = await createEVM({ common })
+    const code = '0x61FFFF60FF60006000600060EE6000F100'
+
+    const stepOpcodes: string[] = []
+
+    evm.events.on('step', (e) => {
+      stepOpcodes.push(e.opcode.name)
+    })
+
+    await evm.stateManager.putCode(address, hexToBytes(code))
+
+    const result = await evm.runCall({
+      caller,
+      to: address,
+      gasLimit: BigInt(200),
+    })
+
+    assert.strictEqual(
+      result.execResult.exceptionError?.error,
+      EVMError.errorMessages.OUT_OF_GAS,
+      'call went out of gas',
+    )
+    assert.strictEqual(stepOpcodes.at(-1), 'CALL', 'step event emitted for CALL before out-of-gas')
+  })
+
+  it('step event includes the opcode when a dynamic gas handler throws a non-OOG VM error', async () => {
+    // SSTORE in a static context throws STATIC_STATE_CHANGE from its dynamic
+    // gas handler (before the gas is even charged). Like the OOG case above,
+    // the step event must still be emitted for the failing opcode.
+    const caller = new Address(hexToBytes('0x00000000000000000000000000000000000000ee'))
+    const address = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
+    const evm = await createEVM({ common })
+    // PUSH1 0x01 PUSH1 0x00 SSTORE
+    const code = '0x6001600055'
+
+    const stepOpcodes: string[] = []
+    evm.events.on('step', (e) => {
+      stepOpcodes.push(e.opcode.name)
+    })
+
+    await evm.stateManager.putCode(address, hexToBytes(code))
+
+    const result = await evm.runCall({
+      caller,
+      to: address,
+      gasLimit: BigInt(100000),
+      isStatic: true,
+    })
+
+    assert.strictEqual(
+      result.execResult.exceptionError?.error,
+      EVMError.errorMessages.STATIC_STATE_CHANGE,
+      'call reverted with static state change',
+    )
+    assert.strictEqual(
+      stepOpcodes.at(-1),
+      'SSTORE',
+      'step event emitted for SSTORE before static state change error',
     )
   })
 
@@ -495,10 +560,8 @@ describe('RunCall tests', () => {
     const contractCode = hexToBytes('0x00') // 00: STOP
     const contractAddress = createAddressFromString('0x000000000000000000000000636F6E7472616374')
     await evm.stateManager.putCode(contractAddress, contractCode)
-    const senderKey = hexToBytes(
-      '0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109',
-    )
-    const sender = createAddressFromPrivateKey(senderKey)
+
+    const sender = SIGNER_G.address
 
     const runCallArgs = {
       gasLimit: BigInt(21000),
@@ -655,6 +718,30 @@ describe('RunCall tests', () => {
     })
     await evm.runCall(runCallArgs)
     assert.isTrue(verifyMemoryExpanded, 'memory did expand')
+  })
+
+  it('step event memory snapshots are not mutated by later writes', async () => {
+    const evm = await createEVM()
+    // PUSH1 0x01 PUSH1 0x00 MSTORE
+    // PUSH1 0x02 PUSH1 0x00 MSTORE
+    // STOP
+    const code = hexToBytes('0x6001600052600260005200')
+    const mstoreMemories: Uint8Array[] = []
+
+    evm.events.on('step', (e) => {
+      if (e.opcode.name === 'MSTORE') {
+        mstoreMemories.push(e.memory)
+      }
+    })
+
+    await evm.runCode({ code })
+
+    assert.strictEqual(mstoreMemories.length, 2)
+    assert.strictEqual(bytesToHex(mstoreMemories[0]), '0x')
+    assert.strictEqual(
+      bytesToHex(mstoreMemories[1]),
+      '0x0000000000000000000000000000000000000000000000000000000000000001',
+    )
   })
 
   it('ensure code deposit errors are logged correctly (>= Homestead)', async () => {

@@ -10,7 +10,7 @@ const main = async () => {
   const block = createBlock({}, { common })
 
   // Method invocations within EthereumJS library instantiations where the common
-  // instance above is passed will now use the custom keccak256 implementation
+  // instance above is passed will now use the custom keccak_256 implementation
   console.log(block.hash())
 }
 

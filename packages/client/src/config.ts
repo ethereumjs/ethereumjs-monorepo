@@ -329,14 +329,6 @@ export interface ConfigOptions {
   savePreimages?: boolean
 
   /**
-   * Enables stateless verkle block execution (default: false)
-   */
-  statelessVerkle?: boolean
-  statefulVerkle?: boolean
-  startExecution?: boolean
-  ignoreStatelessInvalidExecs?: boolean
-
-  /**
    * The cache for blobs and proofs to support CL import blocks
    */
   blobsAndProofsCacheBlocks?: number
@@ -462,11 +454,6 @@ export class Config {
   public readonly useStringValueTrieDB: boolean
   public readonly savePreimages: boolean
 
-  public readonly statelessVerkle: boolean
-  public readonly statefulVerkle: boolean
-  public readonly startExecution: boolean
-  public readonly ignoreStatelessInvalidExecs: boolean
-
   public readonly blobsAndProofsCacheBlocks: number
 
   public readonly rpcEthMaxPayload: string
@@ -558,11 +545,6 @@ export class Config {
     this.enableSnapSync = options.enableSnapSync ?? false
     this.useStringValueTrieDB = options.useStringValueTrieDB ?? false
 
-    this.statelessVerkle = options.statelessVerkle ?? false
-    this.statefulVerkle = options.statefulVerkle ?? false
-    this.startExecution = options.startExecution ?? false
-    this.ignoreStatelessInvalidExecs = options.ignoreStatelessInvalidExecs ?? false
-
     this.metrics = options.prometheusMetrics
 
     // Start it off as synchronized if this is configured to mine or as single node
@@ -620,7 +602,7 @@ export class Config {
       if (height >= (this.syncTargetHeight ?? BIGINT_0)) {
         this.syncTargetHeight = height
         this.lastSyncDate =
-          typeof latest.timestamp === 'bigint' && latest.timestamp > 0n
+          typeof latest.timestamp === 'bigint' && latest.timestamp > BIGINT_0
             ? Number(latest.timestamp) * 1000
             : Date.now()
 

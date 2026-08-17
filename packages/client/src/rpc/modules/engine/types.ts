@@ -61,7 +61,10 @@ export type ForkchoiceResponseV1 = {
   payloadId: Bytes8 | null
 }
 
-export type BlobsBundleV1 = {
+/**
+ * BlobsBundle V1 & V2 are just the same object type only different is proofs are cell proofs in V2
+ */
+export type BlobsBundleV1OrV2 = {
   commitments: Bytes48[]
   blobs: Blob[]
   proofs: Bytes48[]
@@ -75,6 +78,11 @@ export type ExecutionPayloadBodyV1 = {
 export type BlobAndProofV1 = {
   blob: PrefixedHexString
   proof: PrefixedHexString
+}
+
+export type BlobAndProofV2 = {
+  blob: PrefixedHexString
+  proofs: PrefixedHexString[]
 }
 
 export type ChainCache = {

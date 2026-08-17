@@ -170,9 +170,9 @@ function asciiToBase16(char: number): number | undefined {
  * @example hexToBytes('0xcafe0123') // Uint8Array.from([0xca, 0xfe, 0x01, 0x23])
  */
 export function hexToBytes(hex: string): Uint8Array {
-  if (hex.slice(0, 2) === '0x') hex = hex.slice(0, 2)
   if (typeof hex !== 'string')
     throw EthereumJSErrorWithoutCode('hex string expected, got ' + typeof hex)
+  if (hex.slice(0, 2) === '0x') hex = hex.slice(2)
   const hl = hex.length
   const al = hl / 2
   if (hl % 2)

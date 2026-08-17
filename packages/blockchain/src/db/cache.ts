@@ -14,6 +14,7 @@ export class Cache<V> {
 
   set(key: string | Uint8Array, value: V): void {
     if (key instanceof Uint8Array) {
+      // Using deprecated bytesToUnprefixedHex for performance: used as LRU cache keys (string encoding).
       key = bytesToUnprefixedHex(key)
     }
     this._cache.set(key, { value })
@@ -21,6 +22,7 @@ export class Cache<V> {
 
   get(key: string | Uint8Array): V | undefined {
     if (key instanceof Uint8Array) {
+      // Using deprecated bytesToUnprefixedHex for performance: used as LRU cache keys (string encoding).
       key = bytesToUnprefixedHex(key)
     }
     const elem = this._cache.get(key)
@@ -29,6 +31,7 @@ export class Cache<V> {
 
   del(key: string | Uint8Array): void {
     if (key instanceof Uint8Array) {
+      // Using deprecated bytesToUnprefixedHex for performance: used as LRU cache keys (string encoding).
       key = bytesToUnprefixedHex(key)
     }
     this._cache.delete(key)

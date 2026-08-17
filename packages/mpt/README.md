@@ -6,7 +6,7 @@
 [![Code Coverage][mpt-coverage-badge]][mpt-coverage-link]
 [![Discord][discord-badge]][discord-link]
 
-| Implementation of the [Modified Merkle Patricia Trie](https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-mpt/) as specified in the [Ethereum Yellow Paper](http://gavwood.com/Paper.pdf) |
+| Implementation of the [Modified Merkle Patricia Trie](https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-trie/) as specified in the [Ethereum Yellow Paper](http://gavwood.com/Paper.pdf) |
 | ---------------------------------------------------------------------------- |
 
 - 🔭 Highly scalable
@@ -44,7 +44,7 @@ npm install @ethereumjs/mpt
 
 ## Getting Started
 
-This class implements the basic [Modified Merkle Patricia Trie](https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-mpt/) in the `Trie` base class, which you can use with the `useKeyHashing` option set to `true` to create a Merkle Patricia Trie which stores values under the `keccak256` hash of its keys (this is the Trie flavor which is used in Ethereum production systems).
+This class implements the basic [Modified Merkle Patricia Trie](https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-trie/) in the `Trie` base class, which you can use with the `useKeyHashing` option set to `true` to create a Merkle Patricia Trie which stores values under the `keccak256` hash of its keys (this is the Trie flavor which is used in Ethereum production systems).
 
 Checkpointing functionality to `Trie` through the methods `checkpoint`, `commit` and `revert`.
 
@@ -181,11 +181,47 @@ async function main() {
 void main()
 ```
 
+### `walkTrieIterable` vs. `walkTrie` (`WalkController`)
+
+The package ships two different traversal implementations, and it's worth knowing which one you're reaching for:
+
+- **`walkTrieIterable`** (backed by the async generator in `src/util/asyncWalk.ts`, also used internally by `walkAllNodes`/`walkAllValueNodes`/`getValueMap`) yields `{ node, currentKey }` pairs one at a time for consumption with `for await`.
+- **`walkTrie`** (backed by `WalkController` in `src/util/walkController.ts`, also used internally by `findPath` and by pruning/integrity checks) is callback-driven: it calls your `onFound(nodeRef, node, currentKey, walkController)` for each node, and hands you the `walkController` to decide what happens next.
+
+```ts
+import { createMPT } from '@ethereumjs/mpt'
+import { utf8ToBytes } from '@ethereumjs/util'
+
+async function main() {
+  const trie = await createMPT()
+  await trie.put(utf8ToBytes('key'), utf8ToBytes('val'))
+
+  await trie.walkTrie(trie.root(), (nodeRef, node, currentKey, walkController) => {
+    if (node === null) return
+    // ... do something with `node`
+    walkController.allChildren(node, currentKey) // opt in to keep descending
+  })
+}
+void main()
+```
+
+Use **`walkTrieIterable`** when:
+
+- You want plain `for await` control flow — `break`/early `return` stop the walk for free since it's a lazy generator.
+- You want every reachable node visited without extra bookkeeping — it always recurses into all children of branch/extension nodes automatically (a `filter` can control what gets *yielded*, but not what gets *traversed*).
+- The trie may be sparse or partially pruned: a `'Missing node in DB'` error only drops the affected subtree, and the walk quietly continues over sibling branches rather than failing outright.
+
+Use **`walkTrie`/`WalkController`** when:
+
+- You want DB reads to happen concurrently instead of one at a time — `WalkController` pipelines `lookupNode` calls through a `PrioritizedTaskExecutor` (pool size 500 by default), which matters for latency-bound backends (e.g. remote/networked DBs) on large tries.
+- You need per-node control over traversal — e.g. follow only one branch index instead of the whole subtree (this is how `findPath` walks down a single key's path via `walkController.onlyBranchIndex`), or decide dynamically whether to keep descending based on the node you just saw.
+- A missing node should be treated as a hard failure by default: `WalkController` rejects the entire walk on any `lookupNode` error. Callers that want pruning-tolerant behavior (like `findPath`) opt into that explicitly by catching and checking for the `'Missing node in DB'` message themselves.
+
 ## Merkle Patricia Tries
 
 ### Database Options
 
-The `DB` opt in the `MPTOpts` allows you to use any database that conforms to the `DB` interface to store the trie data in. We provide several [examples](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie/examples) for database implementations. The [level.js](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie/examples/level.js) example is used in the `ethereumjs client` while [lmdb.js](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie/examples/lmdb.js) is an alternative implementation that uses the popular [LMDB](https://en.wikipedia.org/wiki/Lightning_Memory-Mapped_Database) as its underlying database.
+The `DB` opt in the `MPTOpts` allows you to use any database that conforms to the `DB` interface to store the trie data in. We provide several [examples](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/mpt/examples) for database implementations. The [level.js](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/mpt/examples/level.js) example is used in the `ethereumjs client` while [lmdb.js](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/mpt/examples/lmdb.js) is an alternative implementation that uses the popular [LMDB](https://en.wikipedia.org/wiki/Lightning_Memory-Mapped_Database) as its underlying database.
 
 If no `db` option is provided, an in-memory database powered by [a Javascript Map](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map) will fulfill this role (imported from `@ethereumjs/util`, see [mapDB](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/mapDB.ts) module).
 
@@ -430,7 +466,7 @@ Additional log selections can be added with a comma separated list (no spaces). 
 
 ## EthereumJS
 
-The `EthereumJS` GitHub organization and its repositories are managed by the Ethereum Foundation JavaScript team, see our [website](https://ethereumjs.github.io/) for a team introduction. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
+The `EthereumJS` GitHub organization and its repositories are managed by members of the former Ethereum Foundation JavaScript team and the broader Ethereum community. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
 
 ## License
 

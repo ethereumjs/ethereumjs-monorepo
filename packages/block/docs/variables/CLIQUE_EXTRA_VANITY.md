@@ -8,4 +8,4 @@
 
 > `const` **CLIQUE\_EXTRA\_VANITY**: `32` = `32`
 
-Defined in: [consensus/clique.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/consensus/clique.ts#L24)
+Defined in: [consensus/clique.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/consensus/clique.ts#L21)

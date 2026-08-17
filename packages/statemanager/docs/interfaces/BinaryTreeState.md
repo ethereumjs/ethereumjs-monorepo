@@ -6,8 +6,8 @@
 
 # Interface: BinaryTreeState
 
-Defined in: [types.ts:88](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L88)
+Defined in: [types.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L81)
 
 ## Indexable
 
-\[`key`: `` `0x${string}` ``\]: `null` \| `` `0x${string}` ``
+\[`key`: `` `0x${string}` ``\]: `` `0x${string}` `` \| `null`

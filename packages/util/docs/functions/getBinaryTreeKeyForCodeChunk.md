@@ -6,7 +6,7 @@
 
 # Function: getBinaryTreeKeyForCodeChunk()
 
-> **getBinaryTreeKeyForCodeChunk**(`address`, `chunkId`, `hashFunction`): `Uint8Array`\<`ArrayBufferLike`\>
+> **getBinaryTreeKeyForCodeChunk**(`address`, `chunkId`, `hashFunction`): `Uint8Array`\<`ArrayBuffer`\>
 
 Defined in: [packages/util/src/binaryTree.ts:169](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L169)
 
@@ -34,6 +34,6 @@ The hash function used for BinaryTree-related operations.
 
 ## Returns
 
-`Uint8Array`\<`ArrayBufferLike`\>
+`Uint8Array`\<`ArrayBuffer`\>
 
 - The BinaryTree tree key as a byte array.

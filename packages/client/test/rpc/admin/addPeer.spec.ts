@@ -1,7 +1,7 @@
 import { DPT } from '@ethereumjs/devp2p'
-import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
+import { SIGNER_A } from '@ethereumjs/testdata'
 import { Config } from '../../../src/index.ts'
 import { PeerPool } from '../../../src/net/peerpool.ts'
 import { RlpxServer } from '../../../src/net/server/index.ts'
@@ -11,16 +11,12 @@ const method = 'admin_addPeer'
 const localEndpointInfo = { address: '0.0.0.0', tcpPort: 30303 }
 const peerPort = 30304
 
-// NOTE: the `privateKey` currently cannot be 0x-prefixed in `./net/server/server.ts`
-const privateKey = 'dc6457099f127cf0bac78de8b297df04951281909db4f58b43def7c7151e765d'
-const privateKeyBytes = hexToBytes(`0x${privateKey}`)
-
 describe(method, () => {
   it('works', async () => {
     const localPeerClient = await createClient({ opened: true, noPeers: true })
     const remotePeerClient = await createClient({ opened: true, noPeers: true })
     const rpc = getRPCClient(startRPC(createManager(localPeerClient).getMethods()))
-    const dpt = new DPT(privateKeyBytes, {
+    const dpt = new DPT(SIGNER_A.privateKey, {
       endpoint: localEndpointInfo,
     })
 
@@ -33,7 +29,7 @@ describe(method, () => {
     const remoteConfig = new Config({ accountCache: 10000, storageCache: 1000, port: peerPort })
     const remoteServer = new RlpxServer({
       config: remoteConfig,
-      key: privateKey,
+      key: SIGNER_A.privateKey,
     })
     await remoteServer.start()
     ;(remotePeerClient.service.pool.config as any) = {

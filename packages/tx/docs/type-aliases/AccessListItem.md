@@ -8,7 +8,7 @@
 
 > **AccessListItem** = `object`
 
-Defined in: [types.ts:597](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L597)
+Defined in: [types.ts:653](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L653)
 
 ## Properties
 
@@ -16,7 +16,7 @@ Defined in: [types.ts:597](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **address**: `PrefixedHexString`
 
-Defined in: [types.ts:598](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L598)
+Defined in: [types.ts:654](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L654)
 
 ***
 
@@ -24,4 +24,4 @@ Defined in: [types.ts:598](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **storageKeys**: `PrefixedHexString`[]
 
-Defined in: [types.ts:599](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L599)
+Defined in: [types.ts:655](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L655)

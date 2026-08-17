@@ -3,7 +3,7 @@
 import assert from 'assert'
 import { Common, Mainnet } from '@ethereumjs/common'
 import { equalsBytes, randomBytes } from '@ethereumjs/util'
-import { secp256k1 } from 'ethereum-cryptography/secp256k1.js'
+import { secp256k1 } from '@noble/curves/secp256k1.js'
 import { EventEmitter } from 'eventemitter3'
 import { describe, expect, it, vi } from 'vitest'
 
@@ -64,16 +64,19 @@ describe('RLPx', () => {
 
   it('should connect to a peer', async () => {
     vi.mock('net', () => {
-      const Socket = vi.fn().mockImplementation(() => {
-        return {
-          on: vi.fn(),
-          once: vi.fn(),
-          setTimeout: () => {},
-          connect: vi.fn().mockImplementation(() => {
-            return 'mocked resolve!'
-          }),
+      // Create a proper constructor mock for Socket
+      class SocketMock {
+        on = vi.fn()
+        once = vi.fn()
+        setTimeout = vi.fn()
+        connect = vi.fn().mockImplementation(() => {
+          return 'mocked resolve!'
+        })
+        constructor() {
+          // Constructor can be empty, properties are initialized above
         }
-      })
+      }
+
       return {
         createServer: () => {
           return {
@@ -82,7 +85,7 @@ describe('RLPx', () => {
             address: () => '0.0.0.0',
           }
         },
-        Socket,
+        Socket: SocketMock,
       }
     })
     vi.mock('../src/util.ts', async () => {

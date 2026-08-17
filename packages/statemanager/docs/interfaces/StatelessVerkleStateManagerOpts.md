@@ -6,7 +6,7 @@
 
 # Interface: StatelessVerkleStateManagerOpts
 
-Defined in: [types.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L71)
+Defined in: [types.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L70)
 
 Options dictionary.
 
@@ -20,7 +20,7 @@ Options dictionary.
 
 > `optional` **caches**: [`Caches`](../classes/Caches.md)
 
-Defined in: [types.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L73)
+Defined in: [types.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L72)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: [types.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 > **common**: `Common`
 
-Defined in: [types.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L72)
+Defined in: [types.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L71)
 
 The common to use
 

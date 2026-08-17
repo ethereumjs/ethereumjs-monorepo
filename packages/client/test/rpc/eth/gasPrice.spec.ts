@@ -2,7 +2,7 @@ import { createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
 import { bigIntToHex, intToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { powData } from '../../testdata/geth-genesis/pow.ts'
+import { powData } from '@ethereumjs/testdata'
 import {
   dummy,
   getRPCClient,

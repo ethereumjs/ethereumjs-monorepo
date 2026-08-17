@@ -1,4 +1,4 @@
-const { ValidateHost, ValidateScheme, ParseLockfile } = require('lockfile-lint-api')
+import { ValidateHost, ValidateScheme, ParseLockfile } from 'lockfile-lint-api'
 
 // path to the lockfile
 const lockfilePath = './package-lock.json'

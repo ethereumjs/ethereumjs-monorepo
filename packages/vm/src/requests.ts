@@ -1,5 +1,8 @@
 import { Mainnet } from '@ethereumjs/common'
+import { activeCostPerStateByte } from '@ethereumjs/evm'
+import type { BlockLevelAccessList, PrefixedHexString } from '@ethereumjs/util'
 import {
+  BIGINT_0,
   CLRequest,
   CLRequestType,
   EthereumJSErrorWithoutCode,
@@ -15,6 +18,60 @@ import {
 import type { RunTxResult } from './types.ts'
 import type { VM } from './vm.ts'
 
+/**
+ * EIP-8037 system-call gas split.
+ *   regular gas_left   = 30_000_000 (unchanged)
+ *   reservoir          = stateBytesPerStorageSet * costPerStateByte(blockGasLimit) * 16
+ *
+ * Returns the regular gas portion (passed to runCall) and the reservoir
+ * portion (set on vm.evm before the call). The block argument is required
+ * under 8037 so costPerStateByte scales with the current block's gas limit.
+ */
+function computeSystemCallGas(
+  vm: VM,
+  blockGasLimit?: bigint,
+): { regular: bigint; reservoir: bigint } {
+  const regular = vm.common.param('systemCallGasLimit')
+  if (!vm.common.isActivatedEIP(8037)) {
+    return { regular, reservoir: BIGINT_0 }
+  }
+  const stateBytesPerStorageSet = vm.common.param('stateBytesPerStorageSet')
+  const systemMaxSstoresPerCall = BigInt(16)
+  const costPerStateByte = activeCostPerStateByte(vm.common, blockGasLimit)
+  const reservoir = stateBytesPerStorageSet * costPerStateByte * systemMaxSstoresPerCall
+  return { regular, reservoir }
+}
+
+/**
+ * Snapshot/restore the per-EVM 8037 reservoir state around a system call
+ * so the system call's state-gas accounting is isolated from any
+ * concurrent tx-level reservoir.
+ */
+function setupSystemCallReservoir(vm: VM, reservoir: bigint) {
+  if (!vm.common.isActivatedEIP(8037)) return null
+  const evm = vm.evm
+  const prior = {
+    reservoir: evm.stateGasReservoir,
+    used: evm.executionStateGasUsed,
+    snapshots: (evm as unknown as { _stateGasSnapshots: unknown[] })._stateGasSnapshots,
+  }
+  evm.stateGasReservoir = reservoir
+  evm.executionStateGasUsed = BIGINT_0
+  ;(evm as unknown as { _stateGasSnapshots: unknown[] })._stateGasSnapshots = []
+  return prior
+}
+
+function teardownSystemCallReservoir(
+  vm: VM,
+  prior: { reservoir: bigint; used: bigint; snapshots: unknown[] } | null,
+) {
+  if (prior === null) return
+  const evm = vm.evm
+  evm.stateGasReservoir = prior.reservoir
+  evm.executionStateGasUsed = prior.used
+  ;(evm as unknown as { _stateGasSnapshots: unknown[] })._stateGasSnapshots = prior.snapshots
+}
+
 const DEPOSIT_TOPIC = '0x649bbc62d0e31342afea4e5cd82d4049e7e1ee912fc0889aa790803be39038c5'
 const PUBKEY_OFFSET = BigInt(160)
 const WITHDRAWAL_CREDENTIALS_OFFSET = BigInt(256)
@@ -29,6 +86,46 @@ const INDEX_SIZE = BigInt(8)
 const LOG_SIZE = 576
 const LOG_LAYOUT_MISMATCH = 'invalid deposit log: unsupported data layout'
 
+function cloneSystemAccessEntry(vm: VM, systemAddressHex: PrefixedHexString) {
+  const access = vm.evm.blockLevelAccessList?.accesses[systemAddressHex]
+  if (access === undefined) {
+    return undefined
+  }
+
+  const storageChanges: typeof access.storageChanges = {}
+  for (const [slot, changes] of Object.entries(access.storageChanges)) {
+    storageChanges[slot as PrefixedHexString] = changes.map(
+      ([index, value]) => [index, value] as const,
+    )
+  }
+
+  return {
+    nonceChanges: new Map(access.nonceChanges),
+    balanceChanges: new Map(access.balanceChanges),
+    codeChanges: access.codeChanges.map(([index, code]) => [index, code] as const),
+    storageChanges,
+    storageReads: new Set(access.storageReads),
+  }
+}
+
+function restoreSystemAccessEntry(
+  vm: VM,
+  systemAddressHex: PrefixedHexString,
+  snapshot: ReturnType<typeof cloneSystemAccessEntry>,
+) {
+  const bal = vm.evm.blockLevelAccessList
+  if (bal === undefined) {
+    return
+  }
+
+  if (snapshot === undefined) {
+    delete bal.accesses[systemAddressHex]
+    return
+  }
+
+  bal.accesses[systemAddressHex] = snapshot as BlockLevelAccessList['accesses'][PrefixedHexString]
+}
+
 /**
  * This helper method generates a list of all CL requests that can be included in a pending block
  * @param vm VM instance (used in deriving partial withdrawal requests)
@@ -38,6 +135,8 @@ const LOG_LAYOUT_MISMATCH = 'invalid deposit log: unsupported data layout'
 export const accumulateRequests = async (
   vm: VM,
   txResults: RunTxResult[],
+  blockGasLimit?: bigint,
+  generate = false,
 ): Promise<CLRequest<CLRequestType>[]> => {
   const requests: CLRequest<CLRequestType>[] = []
   const common = vm.common
@@ -52,21 +151,108 @@ export const accumulateRequests = async (
   }
 
   if (common.isActivatedEIP(7002)) {
-    const withdrawalsRequest = await accumulateWithdrawalsRequest(vm)
+    const withdrawalsRequest = await accumulateWithdrawalsRequest(vm, blockGasLimit)
     requests.push(withdrawalsRequest)
   }
 
   if (common.isActivatedEIP(7251)) {
-    const consolidationsRequest = await accumulateConsolidationsRequest(vm)
+    const consolidationsRequest = await accumulateConsolidationsRequest(vm, blockGasLimit)
     requests.push(consolidationsRequest)
+  }
+
+  if (common.isActivatedEIP(8282)) {
+    const builderDepositsRequest = await accumulateBuilderRequest(
+      vm,
+      CLRequestType.BuilderDeposit,
+      'builderDepositContractAddress',
+      blockGasLimit,
+      generate,
+    )
+    requests.push(builderDepositsRequest)
+    const builderExitsRequest = await accumulateBuilderRequest(
+      vm,
+      CLRequestType.BuilderExit,
+      'builderExitContractAddress',
+      blockGasLimit,
+      generate,
+    )
+    requests.push(builderExitsRequest)
   }
 
   // requests are already type byte ordered by construction
   return requests
 }
 
+/**
+ * EIP-8282: run a checked system call against a builder request contract
+ * (deposit or exit) and wrap the returned data as a CL request.
+ *
+ * Per the pinned execution-specs Amsterdam revision this is a *checked*
+ * system transaction when validating: a missing/codeless contract or a
+ * failing call makes the block invalid. When building a block (`generate`),
+ * a missing or failing contract yields an empty request instead (matching
+ * the withdrawal/consolidation accumulators).
+ *
+ * @remarks Experimental (Amsterdam): may change on patch releases.
+ */
+const accumulateBuilderRequest = async (
+  vm: VM,
+  requestType: typeof CLRequestType.BuilderDeposit | typeof CLRequestType.BuilderExit,
+  contractAddressParam: 'builderDepositContractAddress' | 'builderExitContractAddress',
+  blockGasLimit?: bigint,
+  generate = false,
+): Promise<CLRequest<CLRequestType>> => {
+  const addressBytes = setLengthLeft(bigIntToBytes(vm.common.param(contractAddressParam)), 20)
+  const builderAddress = createAddressFromString(bytesToHex(addressBytes))
+
+  const systemAddressBytes = bigIntToAddressBytes(vm.common.param('systemAddress'))
+  const systemAddress = createAddressFromString(bytesToHex(systemAddressBytes))
+  const systemAccount = await vm.stateManager.getAccount(systemAddress)
+
+  const contractCode = await vm.stateManager.getCode(builderAddress)
+  if (contractCode.length === 0) {
+    if (generate) {
+      return new CLRequest(requestType, new Uint8Array(0))
+    }
+    throw EthereumJSErrorWithoutCode(
+      `system contract empty: no code at builder request contract ${builderAddress}`,
+    )
+  }
+
+  const systemAddressHex = systemAddress.toString()
+  const balSnapshot = cloneSystemAccessEntry(vm, systemAddressHex)
+  const { regular, reservoir } = computeSystemCallGas(vm, blockGasLimit)
+  const reservoirPrior = setupSystemCallReservoir(vm, reservoir)
+  const results = await vm.evm.runCall({
+    caller: systemAddress,
+    gasLimit: regular,
+    to: builderAddress,
+  })
+  teardownSystemCallReservoir(vm, reservoirPrior)
+  restoreSystemAccessEntry(vm, systemAddressHex, balSnapshot)
+
+  if (systemAccount === undefined) {
+    await vm.stateManager.deleteAccount(systemAddress)
+  } else {
+    await vm.stateManager.putAccount(systemAddress, systemAccount)
+  }
+
+  if (results.execResult.exceptionError !== undefined) {
+    if (generate) {
+      return new CLRequest(requestType, new Uint8Array(0))
+    }
+    throw EthereumJSErrorWithoutCode(
+      `system contract call failed: builder request contract ${builderAddress} (${results.execResult.exceptionError.error})`,
+    )
+  }
+
+  const resultsBytes = results.execResult.returnValue
+  return new CLRequest(requestType, resultsBytes)
+}
+
 const accumulateWithdrawalsRequest = async (
   vm: VM,
+  blockGasLimit?: bigint,
 ): Promise<CLRequest<typeof CLRequestType.Withdrawal>> => {
   // Partial withdrawals logic
   const addressBytes = setLengthLeft(
@@ -85,11 +271,17 @@ const accumulateWithdrawalsRequest = async (
     return new CLRequest(CLRequestType.Withdrawal, new Uint8Array())
   }
 
+  const systemAddressHex = systemAddress.toString()
+  const balSnapshot = cloneSystemAccessEntry(vm, systemAddressHex)
+  const { regular, reservoir } = computeSystemCallGas(vm, blockGasLimit)
+  const reservoirPrior = setupSystemCallReservoir(vm, reservoir)
   const results = await vm.evm.runCall({
     caller: systemAddress,
-    gasLimit: BigInt(1_000_000),
+    gasLimit: regular,
     to: withdrawalsAddress,
   })
+  teardownSystemCallReservoir(vm, reservoirPrior)
+  restoreSystemAccessEntry(vm, systemAddressHex, balSnapshot)
 
   if (systemAccount === undefined) {
     await vm.stateManager.deleteAccount(systemAddress)
@@ -103,6 +295,7 @@ const accumulateWithdrawalsRequest = async (
 
 const accumulateConsolidationsRequest = async (
   vm: VM,
+  blockGasLimit?: bigint,
 ): Promise<CLRequest<typeof CLRequestType.Consolidation>> => {
   // Partial withdrawals logic
   const addressBytes = setLengthLeft(
@@ -121,11 +314,17 @@ const accumulateConsolidationsRequest = async (
     return new CLRequest(CLRequestType.Consolidation, new Uint8Array(0))
   }
 
+  const systemAddressHex = systemAddress.toString()
+  const balSnapshot = cloneSystemAccessEntry(vm, systemAddressHex)
+  const { regular, reservoir } = computeSystemCallGas(vm, blockGasLimit)
+  const reservoirPrior = setupSystemCallReservoir(vm, reservoir)
   const results = await vm.evm.runCall({
     caller: systemAddress,
-    gasLimit: BigInt(1_000_000),
+    gasLimit: regular,
     to: consolidationsAddress,
   })
+  teardownSystemCallReservoir(vm, reservoirPrior)
+  restoreSystemAccessEntry(vm, systemAddressHex, balSnapshot)
 
   if (systemAccount === undefined) {
     await vm.stateManager.deleteAccount(systemAddress)

@@ -6,7 +6,7 @@ import {
   createCommonFromGethGenesis,
   createCustomCommon,
 } from '@ethereumjs/common'
-import { postMergeGethGenesis } from '@ethereumjs/testdata'
+import { mergeTestnetChainConfig, postMergeGethGenesis } from '@ethereumjs/testdata'
 import { equalsBytes, utf8ToBytes } from '@ethereumjs/util'
 import { MemoryLevel } from 'memory-level'
 import { assert, describe, it } from 'vitest'
@@ -16,7 +16,6 @@ import { Config } from '../../src/config.ts'
 import { Skeleton, errReorgDenied, errSyncMerged } from '../../src/sync/index.ts'
 import { short } from '../../src/util/index.ts'
 import { wait } from '../integration/util.ts'
-import { mergeTestnetData } from '../testdata/common/mergeTestnet.ts'
 
 import type { Block } from '@ethereumjs/block'
 type Subchain = {
@@ -820,7 +819,7 @@ describe('[Skeleton] / setHead', async () => {
   })
 
   it('should abort filling the canonical chain if the terminal block is invalid', async () => {
-    const common = createCustomCommon(mergeTestnetData, Mainnet)
+    const common = createCustomCommon(mergeTestnetChainConfig, Mainnet)
     common.setHardforkBy({ blockNumber: BigInt(0) })
     const config = new Config({
       common,

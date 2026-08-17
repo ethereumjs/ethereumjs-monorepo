@@ -2,3 +2,8 @@
 	path = packages/ethereum-tests
 	url = https://github.com/ethereum/tests.git
 	branch = develop
+	
+[submodule "execution-spec-tests"]
+	path = packages/execution-spec-tests
+	url = https://github.com/ethereumjs/execution-spec-tests-fixtures.git
+	branch = main

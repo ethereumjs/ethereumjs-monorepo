@@ -10,7 +10,7 @@
 
 Defined in: [packages/devp2p/src/types.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L69)
 
-## Type declaration
+## Type Declaration
 
 ### ALREADY\_CONNECTED
 
