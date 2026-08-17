@@ -24,7 +24,7 @@ for (let i = 0; i < 100; i++) {
   keyValuePairs.push({ originalKey: key, hashedKey, value })
 }
 
-describe('binary tree proof', async () => {
+describe('[BinaryTree/Proof]: create and verify', async () => {
   const tree1 = await createBinaryTree()
 
   // Insert each key/value pair into the tree.
@@ -76,5 +76,16 @@ describe('binary tree proof', async () => {
     const proof = await tree1.createBinaryProof(fakeKey)
     const proofValue = await verifyBinaryProof(tree1.root(), fakeKey, proof)
     assert.deepEqual(proofValue, undefined, 'verify proof of non-existence should return undefined')
+  })
+
+  it('verifyBinaryProof() rejects proof with wrong root', async () => {
+    const proof = await tree1.createBinaryProof(keyValuePairs[0].hashedKey)
+    const wrongRoot = new Uint8Array(32).fill(9)
+    try {
+      await verifyBinaryProof(wrongRoot, keyValuePairs[0].hashedKey, proof)
+      assert.fail('should throw when proof root does not match')
+    } catch (err: any) {
+      assert.include(err.message, 'rootHash does not match proof root')
+    }
   })
 })
