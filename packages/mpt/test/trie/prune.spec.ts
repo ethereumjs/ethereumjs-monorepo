@@ -5,7 +5,7 @@ import { MerklePatriciaTrie, createMPT, isRawMPTNode } from '../../src/index.ts'
 
 import type { BranchMPTNode } from '../../src/index.ts'
 
-describe('Pruned trie tests', () => {
+describe('[MPT/Prune]: node pruning', () => {
   it('should default to not prune the trie', async () => {
     const trie = new MerklePatriciaTrie()
     const key = utf8ToBytes('test')
@@ -19,7 +19,7 @@ describe('Pruned trie tests', () => {
     assert.strictEqual((trie['_db'].db as any)._database.size, 6, 'DB size correct')
   })
 
-  it('should prune simple trie', async () => {
+  it('should prune simple trie (overwrites)', async () => {
     const trie = new MerklePatriciaTrie({ useNodePruning: true })
     const key = utf8ToBytes('test')
     await trie.put(key, utf8ToBytes('1'))
@@ -32,7 +32,7 @@ describe('Pruned trie tests', () => {
     assert.strictEqual((trie['_db'].db as any)._database.size, 1, 'DB size correct')
   })
 
-  it('should prune simple trie', async () => {
+  it('should prune simple trie (delete and re-put)', async () => {
     const trie = new MerklePatriciaTrie({ useNodePruning: true })
     const key = utf8ToBytes('test')
     await trie.put(key, utf8ToBytes('1'))

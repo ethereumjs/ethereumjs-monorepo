@@ -220,7 +220,7 @@ describe('[FeeMarket1559Tx]', () => {
     const expectedHash = hexToBytes(
       '0xfa81814f7dd57bad435657a05eabdba2815f41e3f15ddd6139027e7db56b0dea',
     )
-    assert.deepEqual(unsignedTx.getHashedMessageToSign(), expectedHash), 'correct hashed version'
+    assert.deepEqual(unsignedTx.getHashedMessageToSign(), expectedHash, 'correct hashed version')
 
     const expectedSerialization = hexToBytes(
       '0x02f85904808080809401010101010101010101010101010101010101018083010200f838f7940101010101010101010101010101010101010101e1a00101010101010101010101010101010101010101010101010101010101010101',

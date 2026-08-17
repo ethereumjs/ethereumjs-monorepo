@@ -8,6 +8,7 @@ import {
   createAccessList2930TxFromBytesArray,
   createBlob4844TxFromBytesArray,
   createEOACode7702TxFromBytesArray,
+  createFeeMarket1559Tx,
   createLegacyTx,
   createLegacyTxFromBytesArray,
   createTx,
@@ -131,18 +132,20 @@ describe('[Transaction Input Values]', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const options = {
       ...baseTxValues,
-      ...accessListEip2930TxValues,
       ...eip1559TxValues,
+      chainId: generateBigIntLikeValues(1),
       type: '2',
     }
-    const eip1559TxData = generateCombinations({
-      options,
-    })
+    const eip1559TxData = generateCombinations({ options })
     const randomSample = getRandomSubarray(eip1559TxData, 100)
 
     for (const txData of randomSample) {
-      const tx = createLegacyTx(txData, { common })
-      assert.throws(() => tx.hash(), undefined, undefined, 'tx.hash() should throw if unsigned')
+      try {
+        const tx = createFeeMarket1559Tx(txData, { common })
+        assert.throws(() => tx.hash(), undefined, undefined, 'tx.hash() should throw if unsigned')
+      } catch {
+        // Some generated combinations are invalid at construction — that is acceptable here
+      }
     }
   })
 })

@@ -5,7 +5,7 @@ import { CheckpointDB } from '../../src/index.ts'
 
 import type { BatchDBOp } from '@ethereumjs/util'
 
-describe('DB tests', () => {
+describe('[MPT/CheckpointDB]: checkpointing', () => {
   let db: CheckpointDB
   const k = utf8ToBytes('k1')
   const v = utf8ToBytes('v1')

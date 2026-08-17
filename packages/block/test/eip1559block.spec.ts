@@ -181,7 +181,7 @@ describe('EIP1559 tests', () => {
     assert.isTrue(true, 'should correctly validate subsequent EIP-1559 blocks')
   })
 
-  it('Header -> validate() -> gas usage', async () => {
+  it('Header -> validate() -> gas usage exceeds elasticity', async () => {
     try {
       createBlockHeader(
         {
@@ -208,7 +208,7 @@ describe('EIP1559 tests', () => {
     }
   })
 
-  it('Header -> validate() -> gas usage', async () => {
+  it('Header -> validate() -> gas usage at elasticity limit', async () => {
     createBlockHeader(
       {
         number: BigInt(1),
@@ -317,7 +317,7 @@ describe('EIP1559 tests', () => {
     )
   })
 
-  it('Header -> validateGasLimit() -> error cases', async () => {
+  it('Header -> validateGasLimit() -> error on increase too much', async () => {
     let parentGasLimit = genesis.header.gasLimit * BigInt(2)
     let header = createBlockHeader(
       {
@@ -367,7 +367,7 @@ describe('EIP1559 tests', () => {
     }
   })
 
-  it('Header -> validateGasLimit() -> error cases', async () => {
+  it('Header -> validateGasLimit() -> error on decrease too much', async () => {
     let parentGasLimit = genesis.header.gasLimit * BigInt(2)
     let header = createBlockHeader(
       {
