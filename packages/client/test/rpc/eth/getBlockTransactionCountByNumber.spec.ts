@@ -32,7 +32,7 @@ describe(method, () => {
     assert.notEqual(execution, undefined, 'should have valid execution')
     const { vm } = execution
 
-    await vm.stateManager.generateCanonicalGenesis!(getGenesis(1))
+    await vm.stateManager.generateCanonicalGenesis!(await getGenesis(1))
 
     const address = createAddressFromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 
@@ -79,7 +79,7 @@ describe(method, () => {
     assert.notEqual(execution, undefined, 'should have valid execution')
     const { vm } = execution
 
-    await vm.stateManager.generateCanonicalGenesis!(getGenesis(1))
+    await vm.stateManager.generateCanonicalGenesis!(await getGenesis(1))
 
     const address = createAddressFromString('0xccfd725760a68823ff1e062f4cc97e1360e8d997')
 

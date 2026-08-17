@@ -108,7 +108,7 @@ export function createManager(client: EthereumClient) {
 
 export async function createClient(clientOpts: Partial<CreateClientOptions> = {}) {
   const common: Common = clientOpts.commonChain ?? new Common({ chain: Mainnet })
-  const genesisState = clientOpts.genesisState ?? getGenesis(Number(common.chainId())) ?? {}
+  const genesisState = clientOpts.genesisState ?? (await getGenesis(Number(common.chainId()))) ?? {}
   const config = new Config({
     minerCoinbase:
       clientOpts.minerCoinbase !== undefined

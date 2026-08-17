@@ -28,7 +28,7 @@ describe(method, () => {
     const { execution } = client.service
     assert.notEqual(execution, undefined, 'should have valid execution')
     const { vm } = execution
-    await vm.stateManager.generateCanonicalGenesis!(getGenesis(1))
+    await vm.stateManager.generateCanonicalGenesis!(await getGenesis(1))
     const gasLimit = 2000000
     const parent = await blockchain.getCanonicalHeadHeader()
     const block = createBlock(

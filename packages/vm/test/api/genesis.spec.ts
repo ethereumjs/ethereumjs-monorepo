@@ -8,7 +8,7 @@ import { createVM } from '../../src/index.ts'
 describe('genesis', () => {
   it('should initialize with predefined genesis states', async () => {
     const f = async () => {
-      const genesisState = getGenesis(Chain.Mainnet)
+      const genesisState = await getGenesis(Chain.Mainnet)
 
       const blockchain = await createBlockchain({ genesisState })
       await createVM({ blockchain })

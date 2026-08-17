@@ -420,7 +420,7 @@ import { createAddressFromString } from '@ethereumjs/util'
 import { createVM } from '@ethereumjs/vm'
 
 const main = async () => {
-  const genesisState = getGenesis(Chain.Mainnet)
+  const genesisState = await getGenesis(Chain.Mainnet)
 
   const vm = await createVM()
   await vm.stateManager.generateCanonicalGenesis!(genesisState)

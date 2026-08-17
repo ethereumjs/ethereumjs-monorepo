@@ -241,7 +241,8 @@ export class VMExecution extends Execution {
 
       if (number === BIGINT_0) {
         const genesisState =
-          this.chain['_customGenesisState'] ?? getGenesis(Number(blockchain.common.chainId()))
+          this.chain['_customGenesisState'] ??
+          (await getGenesis(Number(blockchain.common.chainId())))
         if (!genesisState && !('generateCanonicalGenesis' in this.vm.stateManager)) {
           throw EthereumJSErrorWithoutCode('genesisState not available')
         } else {
