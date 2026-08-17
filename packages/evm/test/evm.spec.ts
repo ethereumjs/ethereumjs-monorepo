@@ -5,7 +5,7 @@ import { createEVM, paramsEVM } from '../src/index.ts'
 // TODO: This whole file was missing for quite some time and now (July 2024)
 // has been side introduced along another PR. We should add basic initialization
 // tests for options and the like.
-describe('initialization', () => {
+describe('[EVM]: initialization', () => {
   it('basic initialization', async () => {
     const evm = await createEVM()
     const msg = 'should use the correct parameter defaults'
