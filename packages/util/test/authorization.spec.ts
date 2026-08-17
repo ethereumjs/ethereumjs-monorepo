@@ -118,7 +118,7 @@ describe('[Util/Authorization]: EIP-7702', () => {
   })
 
   it('eoaCode7702AuthorizationListJSONItemToBytes() rejects invalid address hex', () => {
-    const bad = { ...SAMPLE_AUTH, address: '0xnothex' as `0x${string}` }
+    const bad = { ...SAMPLE_AUTH, address: '0x-invalid-address' as `0x${string}` }
     assert.throws(() => eoaCode7702AuthorizationListJSONItemToBytes(bad))
   })
 
