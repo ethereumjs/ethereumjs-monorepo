@@ -4,7 +4,7 @@ import { Lock } from '../src/index.ts'
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
-describe('Lock class', () => {
+describe('[Util/Lock]: mutual exclusion', () => {
   it('should lock', async () => {
     let global = 0
     const lock = new Lock()
@@ -25,7 +25,7 @@ describe('Lock class', () => {
   })
 })
 
-describe('Lock class: acquire', () => {
+describe('[Util/Lock]: acquire', () => {
   it('should return true when permits are available', async () => {
     const lock = new Lock()
     const result = await lock.acquire()
@@ -41,7 +41,7 @@ describe('Lock class: acquire', () => {
   })
 })
 
-describe('Lock class: acquire', () => {
+describe('[Util/Lock]: release', () => {
   it('should increase the number of permits', () => {
     const lock = new Lock()
     lock.release()

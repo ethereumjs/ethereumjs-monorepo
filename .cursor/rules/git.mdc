@@ -1,0 +1,12 @@
+---
+description: Git conventions for renames and moves — preserve history in diffs
+alwaysApply: true
+---
+
+# Git renames
+
+- **Renames and moves:** use `git mv <src> <dest>` for files and directories. Do not `mv` + `git add`/`git rm`, and do not use editor "Save As" + delete the old file.
+- **Why:** `git mv` produces rename detection in diffs (`R` status), keeps `git log --follow` working, and makes PR review tractable during test restructures and refactors alike.
+- **Same commit:** rename and update all import/require paths in one commit when possible.
+- **Case-only renames (macOS):** two-step if needed — `git mv Foo.ts tmp.ts && git mv tmp.ts foo.ts` — so Git registers the case change.
+- **Bulk renames:** still one `git mv` per path; verify with `git status` (should show `renamed:` not `deleted:` + `new file:`).

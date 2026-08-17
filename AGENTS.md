@@ -12,11 +12,12 @@ Short entrypoint for coding agents in this monorepo. Human documentation lives i
 
 ## Cursor
 
-Always-on rules: [`.cursor/rules/`](.cursor/rules/) (ci, typecheck, spellcheck, security). Tx tests: [`.cursor/rules/tx-tests.mdc`](.cursor/rules/tx-tests.mdc). Skills: [`.cursor/skills/`](.cursor/skills/) — use `update-est-fixtures` when bumping execution-spec test fixtures.
+Always-on rules: [`.cursor/rules/`](.cursor/rules/) (ci, typecheck, spellcheck, security, git). API tests: [`.cursor/rules/api-tests.mdc`](.cursor/rules/api-tests.mdc). Tx-specific: [`.cursor/rules/tx-tests.mdc`](.cursor/rules/tx-tests.mdc). Skills: [`.cursor/skills/`](.cursor/skills/) — use `update-est-fixtures` when bumping execution-spec test fixtures.
 
 ## Habits
 
 - Follow `DEVELOPER.md` conventions (`createX`, options objects, `.ts` ESM imports).
 - Do not commit unless asked.
+- Rename or move files with `git mv` so diffs keep history (see [`.cursor/rules/git.mdc`](.cursor/rules/git.mdc)).
 - After edits, run typecheck (`npm run tsc` in the touched package) and spellcheck on the files you touched.
 - Keep a change set to one kind of work (docs/policy, or tests, or product code) unless the user explicitly asks to mix them.

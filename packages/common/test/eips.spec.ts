@@ -81,4 +81,15 @@ describe('[Common/EIPs]: Initialization / Chain params', () => {
       new Common({ chain: Mainnet, hardfork: Hardfork.Byzantium, eips: [7997] })
     }, /7997 cannot be activated/)
   })
+
+  it('setEIPs() after construction', () => {
+    const c = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
+    c.setEIPs([2718, 2929, 2930])
+    assert.deepEqual(c.eips(), [2718, 2929, 2930])
+
+    assert.throws(() => c.setEIPs([1_000_000]), /not supported$/)
+
+    const c2 = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
+    assert.throws(() => c2.setEIPs([2930]), /requires EIP/)
+  })
 })

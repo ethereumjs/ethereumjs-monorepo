@@ -1,0 +1,96 @@
+---
+description: API test naming, structure, helpers, coverage, and performance conventions
+globs: packages/{rlp,util,common,tx,block,mpt,evm,statemanager,blockchain,binarytree,genesis,vm}/test/**/*.ts
+alwaysApply: false
+---
+
+# API tests
+
+Vitest API/unit/integration tests for active `@ethereumjs/*` libraries. Consensus runners and benchmarks are out of scope here.
+
+## Scope
+
+**In scope:** each package's `test/` tree (for VM: `test/api/` only).
+
+**Out of scope:**
+
+- VM consensus runners: `packages/vm/test/tester/**` (legacy state/blockchain, EST)
+- Benchmarks: `test/bench/`, `test/benchmark/`
+- Deprecated packages (`client`, `devp2p`, `ethash`, `wallet`) — containment only per `security.mdc`
+
+**Special-care runners** (do not delete or weaken without explicit intent):
+
+- `packages/tx/test/transactionRunner.spec.ts`, `t9n.spec.ts` (ethereum-tests submodule; fork-split scripts)
+- `packages/mpt/test/official.spec.ts`, `packages/rlp/test/official.spec.ts`
+- EVM EOF/submodule readers under `packages/evm/test/eips/`
+- VM `test/api/tester/**` (diagnostic helpers, not consensus)
+
+After test edits: `npm run tsc` in touched packages, spellcheck on touched files (`typecheck.mdc`, `spellcheck.mdc`).
+
+## Directory layout
+
+**Default:** flat `test/<area>.spec.ts` aligned with `src/` modules.
+
+**Use subdirs when justified:**
+
+| Pattern | Example | When |
+|---------|---------|------|
+| Mirror `src/` subtree | `mpt/test/trie/`, `util/test/bal/` | Package has distinct subsystems |
+| Fixture dirs | `block/test/testdata/`, `rlp/test/fixture/` | Large static vectors |
+| Shared helpers | `tx/test/testData/`, `tx/txTypeMatrix.ts` | Cross-spec constants |
+| EIP-scoped specs | `eip1559.spec.ts`, `vm/test/api/EIPs/` | EIP-only behavior not shared across types |
+| Official runners | `official.spec.ts`, `transactionRunner.spec.ts` | Submodule / vendored vectors |
+
+Do not force 1:1 `src/` ↔ `test/` when types share capabilities (tx is the reference: matrix + EIP files).
+
+## File naming and renames
+
+- Spec files: `*.spec.ts`
+- **Renames:** always `git mv old new` — never delete + recreate. Update imports in the same commit (`git.mdc`).
+- **Module-aligned:** `<module>.spec.ts` (`bytes.spec.ts`, `header.spec.ts`)
+- **EIP-scoped:** `eipNNNN.spec.ts` — no redundant suffixes
+- **Integration / RPC:** pick one style per package and stay consistent within that package
+- **Official vectors:** `official.spec.ts` or `<domain>Runner.spec.ts`
+
+## describe / it naming
+
+- **describe:** bracketed scope tag — `[Common]: Hardfork logic`, `[LegacyTx]`, `[RLP]: encode`
+  - Multi-type files: list types in the tag
+  - Subsystems: nest describes (`MapDB` → `get`)
+- **it:** name the function or behavior under test — `'ecrecover() rejects invalid v'`, not leftover names from other packages
+- **Official vector loops:** one `it` per vector when failures must pinpoint a case (rlp); batched single `it` when startup cost dominates (mpt official) — do not regress wall time when splitting
+
+## Shared helpers and fixtures
+
+Reuse order:
+
+1. Local `test/helpers.ts`, `test/utils.ts`, or `<feature>Matrix.ts`
+2. `@ethereumjs/testdata` for cross-package chain configs, genesis, blocks, signers, BAL vectors
+3. Package-local `test/testdata/` for large domain fixtures not yet generic enough
+4. Submodules (`ethereum-tests`) only in dedicated runner specs — never in shared matrices
+
+**Matrix pattern** (reference: `packages/tx/test/txTypeMatrix.ts`): export shared constants, stub crypto, invalid-input tables; drive cross-variant tests with a typed array + `for` loop in base-style specs; EIP files hold only what the matrix cannot express.
+
+## Coverage expectations
+
+- Logic coverage alone is insufficient for **S0** paths — see `security.mdc` (wrong JS inputs on fee/value/nonce and similar guard rails)
+- Prefer testing public API (`createX`, factories, serializers) over private helpers
+- Close obvious gaps: uncovered error paths, alternate constructors, freeze/opt-out
+- Do not weaken or skip official vectors to raise coverage
+
+## Performance
+
+- Do not slow the default suite during restructure
+- Isolate expensive setup (real KZG/WASM/crypto) in dedicated specs with long `beforeAll` timeout; stub in shared matrices (`security.mdc` EIP-4844 note)
+- Keep env-specific tests in package `vitest.config.browser.mts` exclude lists
+- Keep official runner fork splits, batched loops, and CI exclusions
+- Prefer pre-baked TS fixtures over disk walks in hot paths
+
+## Vitest mechanics
+
+- `describe` / `it` + `assert` from `vitest`
+- Manual `for` loops over tables preferred over `it.each` (tx pattern)
+- `describe.skipIf(isBrowser)` for Node-only tests
+- Typecheck includes `test/` — guard union types in matrix loops
+
+Tx-specific matrix, KZG, and runner rules: `tx-tests.mdc`.
