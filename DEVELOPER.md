@@ -350,7 +350,7 @@ Commands area available on both root and package levels.
 
 The project uses [Vitest](https://vitest.dev/) for testing with Vitest coverage (v8 and istanbul providers).
 
-PR CI (`Build`) runs package tests for the lowest-touched workspace packages and everything that depends on them (`scripts/ci-affected.mjs`). Lint and typecheck always run. Examples and browser tests run for affected packages. Coverage is collected only for packages with direct changes; dependents run tests without coverage. Pushes to `master`, workflow dispatch, and shared-config changes (`.github/`, `config/`, lockfile, ...) still run the full matrix. Nightly runs are unchanged.
+PR CI (`Build`) runs package tests for the lowest-touched workspace packages and everything that depends on them (`scripts/ci-affected.mjs`). Lint, typecheck, and runtime `npm audit` always run. Examples and browser tests run for affected packages. Coverage is collected only for packages with direct changes; dependents run tests without coverage. Pushes to `master`, workflow dispatch, and shared-config changes (`.github/`, `config/`, lockfile, ...) still run the full matrix. Nightly runs are unchanged.
 
 Set the required status check to **`Build / CI`**. Per-package jobs may be skipped; that summary job is what must pass. In-flux EST dev suites (`vm-est-dev`) run when VM is affected but are not part of that gate.
 

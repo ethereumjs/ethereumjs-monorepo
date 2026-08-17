@@ -307,6 +307,20 @@ jobs:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
       submodule-cache-key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
 
+  audit:
+    name: npm audit (runtime)
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/setup-ethereumjs
+        with:
+          dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+
+      - name: npm audit --omit=dev --audit-level=high
+        run: npm audit --omit=dev --audit-level=high
+        working-directory: ${{ github.workspace }}
+
   # In-flux hardfork working-ground. Not in the CI gate — must not delay or fail it.
   # `continue-on-error` is not valid on reusable workflow jobs (GitHub then requires runs-on).
   vm-est-dev:
@@ -342,6 +356,7 @@ jobs:
       - lint
       - noCompile
       - typecheck
+      - audit
     if: always() && !cancelled()
     runs-on: ubuntu-latest
     steps:
