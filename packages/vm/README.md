@@ -9,6 +9,8 @@
 | Execution Context for the Ethereum EVM Implementation. |
 | ------------------------------------------------------ |
 
+Runnable examples live in [`examples/`](./examples/) (helpers and bundled block fixtures under [`examples/data/`](./examples/data/)).
+
 Ethereum `mainnet` compatible execution context for
 [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm)
 to build and run blocks and txs and update state.
@@ -27,35 +29,20 @@ to build and run blocks and txs and update state.
 ## Table of Contents
 
 - [Installation](#installation)
-- [Usage](#usage)
-  - [Running a Transaction](#running-a-transaction)
-  - [Running an RPC Mainnet Block](#running-an-rpc-mainnet-block)
-  - [Building a Block](#building-a-block)
-  - [WASM Crypto Support](#wasm-crypto-support)
-- [Examples](#examples)
+- [Getting Started](#getting-started)
+- [Run a Block](#run-a-block)
+- [Build a Block](#build-a-block)
+- [Receipts and Event Logs](#receipts-and-event-logs)
+- [Events](#events)
+- [Genesis State](#genesis-state)
+- [EIP Activation](#eip-activation)
+- [RPC Mainnet Block](#rpc-mainnet-block)
+- [Offline Mainnet Block](#offline-mainnet-block)
 - [Browser](#browser)
 - [API](#api)
-  - [Docs](#docs)
-  - [Hybrid CJS/ESM Builds](#hybrid-cjsesm-builds)
 - [Architecture](#architecture)
-  - [VM/EVM Relation](#vmevm-relation)
-  - [State and Blockchain Information](#state-and-blockchain-information)
 - [Setup](#setup)
-  - [Chains](#chains)
-  - [Hardforks](#hardforks)
-  - [Custom Genesis State](#custom-genesis-state)
 - [Supported EIPs](#supported-eips)
-  - [EIP-4844 Shard Blob Transactions Support (Cancun)](#eip-4844-shard-blob-transactions-support-cancun)
-  - [EIP-7702 EAO Code Transactions Support (Prague)](#eip-7702-eao-code-transactions-support-prague)
-  - [EIP-7685 Requests Support (Prague)](#eip-7685-requests-support-prague)
-  - [EIP-2935 Serve Historical Block Hashes from State (Prague)](#eip-2935-serve-historical-block-hashes-from-state-prague)
-  - [Amsterdam hardfork (experimental)](#amsterdam-hardfork-experimental)
-  - [EIP-7928 Block Level Access Lists (Amsterdam)](#eip-7928-block-level-access-lists-amsterdam)
-  - [EIP-8037 State creation gas cost increase (Amsterdam)](#eip-8037-state-creation-gas-cost-increase-amsterdam)
-- [Events](#events)
-  - [Tracing Events](#tracing-events)
-  - [Asynchronous event handlers](#asynchronous-event-handlers)
-  - [Synchronous event handlers](#synchronous-event-handlers)
 - [Understanding the VM](#understanding-the-vm)
 - [Internal Structure](#internal-structure)
 - [Development](#development)
@@ -70,11 +57,11 @@ To obtain the latest version, simply require the project using `npm`:
 npm install @ethereumjs/vm
 ```
 
-**Note:** Starting with the Dencun hardfork `EIP-4844` related functionality has become an integrated part of the EVM functionality with the activation of the point evaluation precompile. For this precompile to work a separate installation of the KGZ library is necessary (we decided not to bundle due to large bundle sizes), see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
+**Note:** Starting with the Dencun hardfork, EIP-4844 point-evaluation precompile (`0x0a`) requires a separate KZG library install — see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup).
 
-## Usage
+## Getting Started
 
-### Running a Transaction
+Use `createVM()` and `runTx()` to execute a signed transaction against an in-memory state:
 
 ```ts
 // ./examples/runTx.ts
@@ -106,140 +93,38 @@ const main = async () => {
 void main()
 ```
 
-Additionally to the `VM.runTx()` method there is an API method `VM.runBlock()` which allows to run the whole block and execute all included transactions along.
+`runBlock()` executes every transaction in a block (rewards, withdrawals, requests, receipts). Access the inner EVM via `vm.evm` — see [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm).
 
-### Receipts and event logs
+## Run a Block
 
-`runTx()` and `runBlock()` surface logs through transaction receipts using the same [`Log`](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#event-logs) tuple as `@ethereumjs/evm`:
-
-```ts
-type Log = [address: Uint8Array, topics: Uint8Array[], data: Uint8Array]
-```
-
-| API | Where to read logs |
-| --- | --- |
-| `runTx()` | `result.receipt.logs` (also `result.execResult.logs` before receipt assembly) |
-| `runBlock()` | `result.results[i].receipt.logs` and `result.receipts[i].logs` |
-| Block header bloom | `result.logsBloom` on `RunBlockResult`; `result.bloom` on each `RunTxResult` |
-
-Logs from contract `LOG*` opcodes and fork-specific synthetic logs (e.g. [EIP-7708](#eip-7708-eth-transfer-and-burn-logs-amsterdam) transfer logs on Amsterdam) share this path — no separate receipt field.
-
-See [`examples/runTxTransferLogs.ts`](./examples/runTxTransferLogs.ts) for an Amsterdam value transfer that decodes an EIP-7708 `Transfer` log from `receipt.logs`. For bytecode-level emission see [`@ethereumjs/evm` Event logs](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#event-logs) and [`examples/emitLogs.ts`](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm/examples/emitLogs.ts).
-
-**Notes:**
-
-- Reverted transactions produce receipts with **empty** `logs` (Byzantium+ `status: 0`).
-- The debug logger sections below (`DEBUG=ethjs,...`) refer to **development tracing**, not EVM event logs.
-
-### Running an RPC Mainnet Block
-
-It is possible to fetch a real mainnet block via JSON-RPC and execute it locally using the VM together with the `RPCStateManager` from the `@ethereumjs/statemanager` package, which fetches account and storage data on demand from a remote provider.
-
-> **Note:** Running recent mainnet blocks will generate **thousands of RPC requests** (one for each account/storage access during EVM execution). Make sure your RPC provider can handle the load and be mindful of rate limits and quotas.
+Replay a bundled PoA block fixture offline (no RPC):
 
 ```ts
-// ./examples/runBlockWithRPC.ts
+// ./examples/runPoABlockFromTestdata.ts
 
-import { createBlockFromJSONRPCProvider } from '@ethereumjs/block'
-import { Common, Mainnet } from '@ethereumjs/common'
-import { RPCStateManager } from '@ethereumjs/statemanager'
+import { createBlock } from '@ethereumjs/block'
+import { Common } from '@ethereumjs/common'
+import { goerliBlocks, goerliChainConfig } from '@ethereumjs/testdata'
 import { bytesToHex } from '@ethereumjs/util'
 import { createVM, runBlock } from '@ethereumjs/vm'
-import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
-import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 
 const main = async () => {
-  const providerUrl = process.argv[2]
-  let blockNumber: bigint | undefined
-  try {
-    blockNumber = process.argv[3] !== undefined ? BigInt(process.argv[3]) : undefined
-  } catch {
-    // argument is not a valid block number
-  }
+  const common = new Common({ chain: goerliChainConfig, hardfork: 'london' })
+  const vm = await createVM({ common })
 
-  if (providerUrl === undefined || blockNumber === undefined) {
-    console.log('Example skipped (real-world RPC scenario)')
-    console.log('Usage: npx tsx runBlockWithRPC.ts <providerUrl> <blockNumber>')
-    return
-  }
-
-  const kzg = new microEthKZG(trustedSetup)
-  const common = new Common({ chain: Mainnet, customCrypto: { kzg } })
-
-  // 1. Fetch block from RPC
-  console.log(`Fetching block ${blockNumber} from ${providerUrl}...`)
-  const block = await createBlockFromJSONRPCProvider(providerUrl, blockNumber, {
-    common,
-    setHardfork: true,
-  })
-
-  console.log(`Block ${block.header.number} fetched successfully`)
-  console.log(`  Hash:         ${bytesToHex(block.hash())}`)
-  console.log(`  Parent hash:  ${bytesToHex(block.header.parentHash)}`)
-  console.log(`  State root:   ${bytesToHex(block.header.stateRoot)}`)
-  console.log(`  Transactions: ${block.transactions.length}`)
-  console.log(`  Gas used:     ${block.header.gasUsed}`)
-  console.log(`  Hardfork:     ${block.common.hardfork()}`)
-
-  // 2. Set up RPC state manager pointing to the parent block (pre-state)
-  const stateManager = new RPCStateManager({
-    provider: providerUrl,
-    blockTag: blockNumber - 1n,
-    common,
-  })
-
-  // 3. Create VM with the RPC state manager
-  const vm = await createVM({ common, stateManager, setHardfork: true })
-
-  // 4. Run the block
-  console.log(`\nRunning block ${blockNumber} (${block.transactions.length} txs)...`)
-  const startTime = performance.now()
-
-  const result = await runBlock(vm, {
-    block,
-    generate: true,
-    skipHeaderValidation: true,
-    skipBlockValidation: true,
-  })
-
-  const elapsed = ((performance.now() - startTime) / 1000).toFixed(1)
-
-  // 5. Display results
-  console.log(`\nBlock execution completed in ${elapsed}s`)
-  console.log(`  Tx results:     ${result.results.length}`)
-  console.log(`  Receipts root:  ${bytesToHex(result.receiptsRoot)}`)
-
-  console.log(`\n  Gas used:       ${result.gasUsed} (expected: ${block.header.gasUsed})`)
-  if (result.gasUsed === block.header.gasUsed) {
-    console.log(`  Gas used MATCHES expected block header value`)
-  } else {
-    console.log(`  Gas used MISMATCH`)
-  }
-
-  // Note: State root comparison is informational only.
-  // RPCStateManager cannot produce valid Merkle state roots since it
-  // doesn't maintain a local trie -- it fetches state on demand via RPC.
-  console.log(`\n  Computed state root: ${bytesToHex(result.stateRoot)}`)
-  console.log(`  Expected state root: ${bytesToHex(block.header.stateRoot)}`)
-  console.log(`  (State root comparison is not meaningful with RPCStateManager,`)
-  console.log(`   which does not maintain a local Merkle trie)`)
+  const block = createBlock(goerliBlocks[0], { common })
+  const result = await runBlock(vm, { block, generate: true, skipHeaderValidation: true }) // we skip header validation since we are running a block without the full Ethereum history available
+  console.log(`The state root for the block is ${bytesToHex(result.stateRoot)}`)
 }
 
 void main()
-
 ```
 
-Run with:
+For multi-block replay with a local `@ethereumjs/blockchain`, see [`examples/runBlockchain.ts`](./examples/runBlockchain.ts).
 
-```sh
-npx tsx examples/runBlockWithRPC.ts <providerUrl> <blockNumber>
-```
+## Build a Block
 
-### Building a Block
-
-The VM package can also be used to construct a new valid block by executing and then integrating txs one-by-one.
-
-The following non-complete example gives some illustration on how to use the Block Builder API:
+Use `buildBlock()` to execute transactions incrementally and assemble a valid block header:
 
 ```ts
 // ./examples/buildBlock.ts
@@ -286,24 +171,252 @@ const main = async () => {
 }
 
 void main()
-
 ```
 
-### WASM Crypto Support
+## Receipts and Event Logs
 
-This library by default uses JavaScript implementations for the basic standard crypto primitives like hashing or signature verification (for included txs). See `@ethereumjs/common` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for instructions on how to replace with e.g. a more performant WASM implementation by using a shared `common` instance.
+`runTx()` and `runBlock()` surface logs through transaction receipts using the same [`Log`](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#event-logs) tuple as `@ethereumjs/evm`:
 
-## Examples
+```ts
+type Log = [address: Uint8Array, topics: Uint8Array[], data: Uint8Array]
+```
 
-See the [examples](./examples/) folder for different meaningful examples on how to use the VM package and invoke certain aspects of it, e.g. running a complete block, a certain tx or using event listeners, among others. Some noteworthy examples to point out:
+| API | Where to read logs |
+| --- | --- |
+| `runTx()` | `result.receipt.logs` |
+| `runBlock()` | `result.results[i].receipt.logs` and `result.receipts[i].logs` |
+| Block header bloom | `result.logsBloom` on `RunBlockResult` |
 
-1. [./examples/runBlockchain](./examples/runBlockchain.ts): Loads tests data, including accounts and blocks, and runs all of them in the VM.
-2. [./examples/runSolidityContract](./examples/runSolidityContract.ts): Compiles a Solidity contract, and calls constant and non-constant functions.
-3. [./examples/runBlockBalGenerate.ts](./examples/runBlockBalGenerate.ts): Runs an Amsterdam block and reads the generated Block Level Access List (BAL).
-4. [./examples/runBlockBalValidate.ts](./examples/runBlockBalValidate.ts): Validates a block against a provided BAL from an execution payload.
-5. [./examples/runPoABlockFromTestdata.ts](./examples/runPoABlockFromTestdata.ts): Replays a bundled PoA block fixture offline (no RPC).
-6. [./examples/runTxTransferLogs.ts](./examples/runTxTransferLogs.ts): Reads EIP-7708 `Transfer` logs from a transaction receipt on Amsterdam.
-7. [./examples/emitLogs.ts](../evm/examples/emitLogs.ts) (`@ethereumjs/evm`): Emits a `LOG1` from bytecode via `runCode()`.
+On Amsterdam, [EIP-7708](#eip-7708-eth-transfer-and-burn-logs-amsterdam) adds synthetic `Transfer` / `Burn` logs for native ETH movement. Reverted transactions produce receipts with empty `logs` (Byzantium+ `status: 0`).
+
+```ts
+// ./examples/runTxTransferLogs.ts
+
+import { createBlock } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { EIP7708_SYSTEM_ADDRESS, EIP7708_TRANSFER_TOPIC } from '@ethereumjs/evm'
+import { createLegacyTx } from '@ethereumjs/tx'
+import {
+  bytesToBigInt,
+  bytesToHex,
+  createAccount,
+  createAddressFromPrivateKey,
+  createZeroAddress,
+  equalsBytes,
+  hexToBytes,
+} from '@ethereumjs/util'
+import { createVM, runTx } from '@ethereumjs/vm'
+
+import type { Log } from '@ethereumjs/evm'
+
+/** Pretty-print a Log tuple for console output (not an RPC formatter). */
+function formatLog(log: Log) {
+  const [address, topics, data] = log
+  return {
+    address: bytesToHex(address),
+    topics: topics.map((topic) => bytesToHex(topic)),
+    data: bytesToHex(data),
+  }
+}
+
+/** Decode an EIP-7708 Transfer log (LOG3-shaped) when topics match. */
+function decodeEIP7708TransferLog(log: Log) {
+  const [address, topics, data] = log
+  if (topics.length !== 3 || !equalsBytes(topics[0], EIP7708_TRANSFER_TOPIC)) {
+    return undefined
+  }
+  if (!equalsBytes(address, EIP7708_SYSTEM_ADDRESS)) {
+    return undefined
+  }
+  return {
+    from: bytesToHex(topics[1].slice(-20)),
+    to: bytesToHex(topics[2].slice(-20)),
+    value: bytesToBigInt(data),
+  }
+}
+
+const main = async () => {
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })
+  const vm = await createVM({ common })
+
+  const senderKey = hexToBytes(`0x${'20'.repeat(32)}`)
+  const sender = createAddressFromPrivateKey(senderKey)
+  await vm.stateManager.putAccount(sender, createAccount({ nonce: 0n, balance: BigInt(1e18) }))
+
+  const block = createBlock(
+    { header: { number: 1n, gasLimit: 30_000_000n, baseFeePerGas: 1n } },
+    { common, skipConsensusFormatValidation: true },
+  )
+
+  const tx = createLegacyTx(
+    {
+      gasLimit: 100_000n,
+      gasPrice: 10n,
+      value: 1_000_000_000_000_000n,
+      to: createZeroAddress(),
+    },
+    { common },
+  ).sign(senderKey)
+
+  const result = await runTx(vm, { tx, block })
+  const logs = result.receipt.logs
+
+  console.log(`Receipt contains ${logs.length} log(s)`)
+  for (const [index, log] of logs.entries()) {
+    const formatted = formatLog(log)
+    console.log(`  log[${index}] address=${formatted.address}`)
+    console.log(`           topics=${formatted.topics.join(', ')}`)
+    console.log(`           data=${formatted.data}`)
+
+    const transfer = decodeEIP7708TransferLog(log)
+    if (transfer !== undefined) {
+      console.log(
+        `           → EIP-7708 Transfer from ${transfer.from} to ${transfer.to} value=${transfer.value} wei`,
+      )
+    }
+  }
+}
+
+void main()
+```
+
+For bytecode-level `LOG*` emission see [`@ethereumjs/evm` emitLogs example](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm/examples/emitLogs.ts).
+
+## Events
+
+Subscribe to `beforeBlock`, `afterBlock`, `beforeTx`, and `afterTx`. Async listeners receive a `resolve` callback:
+
+```ts
+// ./examples/eventListener.ts
+
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createLegacyTx } from '@ethereumjs/tx'
+import {
+  bytesToHex,
+  createAccount,
+  createAddressFromPrivateKey,
+  createZeroAddress,
+  hexToBytes,
+} from '@ethereumjs/util'
+import { createVM, runTx } from '@ethereumjs/vm'
+
+const main = async () => {
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai })
+  const vm = await createVM({ common })
+
+  const senderKey = hexToBytes(`0x${'20'.repeat(32)}`)
+  const sender = createAddressFromPrivateKey(senderKey)
+  await vm.stateManager.putAccount(sender, createAccount({ nonce: 0n, balance: BigInt(1e18) }))
+
+  vm.events.on('afterTx', (event, resolve) => {
+    console.log('asynchronous listener to afterTx', bytesToHex(event.transaction.hash()))
+    resolve?.()
+  })
+
+  vm.events.on('afterTx', (event) => {
+    console.log('synchronous listener to afterTx', bytesToHex(event.transaction.hash()))
+  })
+
+  const tx = createLegacyTx({
+    gasLimit: 21000n,
+    gasPrice: 1_000_000_000n,
+    value: 1n,
+    to: createZeroAddress(),
+  }).sign(senderKey)
+
+  const res = await runTx(vm, { tx })
+  console.log(res.totalGasSpent)
+}
+
+void main()
+```
+
+EVM-level events (`step`, `beforeMessage`, …) are on `vm.evm.events` — see [@ethereumjs/evm Events](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#events).
+
+## Genesis State
+
+Load canonical genesis allocations via `@ethereumjs/genesis`:
+
+```ts
+// ./examples/vmWithGenesisState.ts
+
+import { Chain } from '@ethereumjs/common'
+import { getGenesis } from '@ethereumjs/genesis'
+import { createAddressFromString } from '@ethereumjs/util'
+import { createVM } from '@ethereumjs/vm'
+
+const main = async () => {
+  const genesisState = getGenesis(Chain.Mainnet)
+
+  const vm = await createVM()
+  await vm.stateManager.generateCanonicalGenesis!(genesisState)
+  const accountAddress = '0x000d836201318ec6899a67540690382780743280'
+  const account = await vm.stateManager.getAccount(createAddressFromString(accountAddress))
+
+  if (account === undefined) {
+    throw new Error('Account does not exist: failed to import genesis state')
+  }
+
+  console.log(
+    `This balance for account ${accountAddress} in this chain's genesis state is ${Number(
+      account?.balance,
+    )}`,
+  )
+}
+
+void main()
+```
+
+## EIP Activation
+
+Toggle individual EIPs on top of a hardfork via `Common` `eips`:
+
+```ts
+// ./examples/vmWithEIPs.ts
+
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createVM } from '@ethereumjs/vm'
+
+const main = async () => {
+  const commonCancun = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun })
+  const vm = await createVM({ common: commonCancun })
+  console.log(`EIP-4844 active on Cancun: ${vm.common.isActivatedEIP(4844)}`)
+
+  const common7702 = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
+  const vm7702 = await createVM({ common: common7702 })
+  console.log(
+    `EIP-7702 active in isolation on Cancun: ${vm7702.common.isActivatedEIP(7702)}`,
+  )
+}
+
+void main()
+```
+
+See [Supported EIPs](#supported-eips) and [@ethereumjs/evm Supported EIPs](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#supported-eips). WASM crypto backends: [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common).
+
+## RPC Mainnet Block
+
+Fetch a live mainnet block via JSON-RPC and execute it with [`RPCStateManager`](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/statemanager) (on-demand account/storage fetches). See [`examples/runBlockWithRPC.ts`](./examples/runBlockWithRPC.ts).
+
+> **Note:** Recent mainnet blocks trigger **thousands of RPC requests**. Mind rate limits and quotas.
+
+```sh
+npx tsx examples/runBlockWithRPC.ts <providerUrl> <blockNumber>
+```
+
+Skips cleanly in CI when no RPC URL is provided.
+
+## Offline Mainnet Block
+
+Replay bundled mainnet block fixtures from [`examples/data/`](./examples/data/) — no network required. Defaults to block `24476000` when run without arguments:
+
+```sh
+npx tsx examples/runMainnetBlock.ts [blockNumber]
+```
+
+Bundled blocks with verified offline gas match: `24476000`, `24476001`, `24476003`, `24476004`, `24476005`, `24476009`.
+
+Additional examples: [`runSolidityContract.ts`](./examples/runSolidityContract.ts) (compile + deploy + call), [`runBlockBalGenerate.ts`](./examples/runBlockBalGenerate.ts) / [`runBlockBalValidate.ts`](./examples/runBlockBalValidate.ts) (EIP-7928 BAL), [`runBlockchain.ts`](./examples/runBlockchain.ts) (multi-block mock chain).
 
 ## Browser
 
@@ -390,82 +503,15 @@ Beside the default Proof-of-Stake setup coming with the `Common` library default
 
 ### Hardforks
 
-For hardfork support see the [Hardfork Support](../evm#hardfork-support) section from the underlying `@ethereumjs/evm` instance.
-
-An explicit HF in the `VM` - which is then passed on to the inner `EVM` - can be set with:
-
-```ts
-// ./examples/runTx.ts#L1-L8
-
-import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { createLegacyTx } from '@ethereumjs/tx'
-import { createAccount, createAddressFromPrivateKey, createZeroAddress, hexToBytes } from '@ethereumjs/util'
-import { createVM, runTx } from '@ethereumjs/vm'
-
-const main = async () => {
-  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai })
-  const vm = await createVM({ common })
-```
+Pass `hardfork` on `Common` when creating the VM — see [Getting Started](#getting-started). Full hardfork list: [@ethereumjs/evm Supported Hardforks](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#supported-hardforks).
 
 ### Custom Genesis State
 
-For initializing a custom genesis state you can use the `genesisState` constructor option in the `Blockchain` and `VM` library in a similar way this had been done in the `Common` library before.
-
-```ts
-// ./examples/vmWithGenesisState.ts
-
-import { Chain } from '@ethereumjs/common'
-import { getGenesis } from '@ethereumjs/genesis'
-import { createAddressFromString } from '@ethereumjs/util'
-import { createVM } from '@ethereumjs/vm'
-
-const main = async () => {
-  const genesisState = getGenesis(Chain.Mainnet)
-
-  const vm = await createVM()
-  await vm.stateManager.generateCanonicalGenesis!(genesisState)
-  const accountAddress = '0x000d836201318ec6899a67540690382780743280'
-  const account = await vm.stateManager.getAccount(createAddressFromString(accountAddress))
-
-  if (account === undefined) {
-    throw new Error('Account does not exist: failed to import genesis state')
-  }
-
-  console.log(
-    `This balance for account ${accountAddress} in this chain's genesis state is ${Number(
-      account?.balance,
-    )}`,
-  )
-}
-void main()
-
-```
-
-Genesis state can be configured to contain both EOAs as well as (system) contracts with initial storage values set.
+See [Genesis State](#genesis-state) for loading canonical allocations. Genesis state can include EOAs and system contracts with initial storage.
 
 ## Supported EIPs
 
-It is possible to individually activate EIP support in the VM by instantiate the `Common` instance passed
-with the respective EIPs, e.g.:
-
-```ts
-// ./examples/vmWithEIPs.ts
-
-import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { createVM } from '@ethereumjs/vm'
-
-const main = async () => {
-  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
-  const vm = await createVM({ common })
-  console.log(
-    `EIP 7702 is active in isolation on top of the Cancun HF - ${vm.common.isActivatedEIP(7702)}`,
-  )
-}
-void main()
-
-```
-
-For a list with supported EIPs see the [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm) documentation.
+Individual EIP activation is shown in [EIP Activation](#eip-activation). For the full EIP list see [@ethereumjs/evm Supported EIPs](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#supported-eips).
 
 ### EIP-4844 Shard Blob Transactions Support (Cancun)
 
@@ -724,66 +770,7 @@ See [Release ↔ spec tracking](#amsterdam-hardfork-experimental) above for the 
 
 See [Release ↔ spec tracking](#amsterdam-hardfork-experimental) above for the supported Amsterdam spec snapshot.
 
-[EIP-7708](https://eips.ethereum.org/EIPS/eip-7708) adds synthetic logs for native ETH transfers and balance burns. When active, value-bearing `CALL`/`CREATE` paths and certain `SELFDESTRUCT`/account-removal flows append logs from the system address (`0xfff…fff`) with `Transfer(address,address,uint256)` or `Burn(address,uint256)` topics. These appear in `RunTxResult.receipt.logs` like any other log — no VM API changes are needed beyond using `Hardfork.Amsterdam`. See [`examples/runTxTransferLogs.ts`](./examples/runTxTransferLogs.ts).
-
-## Events
-
-### Tracing Events
-
-Our `TypeScript` VM emits events that support async listeners (using [EventEmitter3](https://github.com/primus/eventemitter3)).
-
-You can subscribe to the following events:
-
-- `beforeBlock`: Emits a `Block` right before running it.
-- `afterBlock`: Emits `AfterBlockEvent` right after running a block.
-- `beforeTx`: Emits a `Transaction` right before running it.
-- `afterTx`: Emits a `AfterTxEvent` right after running a transaction.
-
-Note, if subscribing to events with an async listener, specify the second parameter of your listener as a `resolve` function that must be called once your listener code has finished.
-
-```ts
-// ./examples/eventListener.ts#L10-L19
-
-// Setup an event listener on the `afterTx` event
-vm.events.on('afterTx', (event, resolve) => {
-  console.log('asynchronous listener to afterTx', bytesToHex(event.transaction.hash()))
-  // we need to call resolve() to avoid the event listener hanging
-  resolve?.()
-})
-
-vm.events.on('afterTx', (event) => {
-  console.log('synchronous listener to afterTx', bytesToHex(event.transaction.hash()))
-})
-```
-
-Please note that there are additional EVM-specific events in the [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm) package.
-
-### Asynchronous event handlers
-
-You can perform asynchronous operations from within an event handler
-and prevent the VM to keep running until they finish.
-
-In order to do that, your event handler has to accept two arguments.
-The first one will be the event object, and the second one a function.
-The VM won't continue until you call this function.
-
-If an exception is passed to that function, or thrown from within the
-handler or a function called by it, the exception will bubble into the
-VM and interrupt it, possibly corrupting its state. It's strongly
-recommended not to do that.
-
-### Synchronous event handlers
-
-If you want to perform synchronous operations, you don't need
-to receive a function as the handler's second argument, nor call it.
-
-Note that if your event handler receives multiple arguments, the second
-one will be the continuation function, and it must be called.
-
-If an exception is thrown from within the handler or a function called
-by it, the exception will bubble into the VM and interrupt it, possibly
-corrupting its state. It's strongly recommended not to throw from within
-event handlers.
+[EIP-7708](https://eips.ethereum.org/EIPS/eip-7708) adds synthetic logs for native ETH transfers and balance burns. When active, value-bearing `CALL`/`CREATE` paths and certain `SELFDESTRUCT`/account-removal flows append logs from the system address (`0xfff…fff`) with `Transfer(address,address,uint256)` or `Burn(address,uint256)` topics. These appear in `RunTxResult.receipt.logs` like any other log — no VM API changes are needed beyond using `Hardfork.Amsterdam`. See [Receipts and Event Logs](#receipts-and-event-logs).
 
 ## Understanding the VM
 

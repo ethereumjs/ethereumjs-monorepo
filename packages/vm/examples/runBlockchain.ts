@@ -1,10 +1,4 @@
-// The example does these things:
-//
-// 1. Instantiates a VM and a Blockchain
-// 2. Creates the accounts from ../utils/blockchain-mock-data "pre" attribute
-// 3. Creates a genesis block
-// 4. Puts the blocks from ../utils/blockchain-mock-data "blocks" attribute into the Blockchain
-// 5. Runs the Blockchain on the VM.
+// Loads mock blockchain test data, sets up accounts, and replays blocks with runBlock().
 
 import { createBlock, createBlockFromRLP } from '@ethereumjs/block'
 import { EthashConsensus, createBlockchain } from '@ethereumjs/blockchain'

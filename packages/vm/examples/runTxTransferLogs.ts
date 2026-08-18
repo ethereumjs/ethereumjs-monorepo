@@ -1,8 +1,3 @@
-/**
- * Run a value transfer on Hardfork.Amsterdam and inspect EIP-7708 Transfer logs in the receipt.
- *
- * Usage: npx tsx examples/runTxTransferLogs.ts
- */
 import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { EIP7708_SYSTEM_ADDRESS, EIP7708_TRANSFER_TOPIC } from '@ethereumjs/evm'
