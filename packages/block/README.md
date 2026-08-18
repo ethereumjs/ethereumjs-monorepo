@@ -21,11 +21,19 @@
 - 🛵 324KB bundle size (81KB gzipped)
 - 🏄🏾‍♂️ WASM-free default + Fully browser ready
 
+Runnable examples live in [`examples/`](./examples/).
+
 ## Table of Contents
 
 - [Installation](#installation)
 - [Getting Started](#getting-started)
-- [EIP Integrations](#eip-integrations)
+- [Creating Blocks](#creating-blocks)
+- [EIP-1559 Base Fee](#eip-1559-base-fee)
+- [EIP-4895 Withdrawals](#eip-4895-withdrawals)
+- [EIP-4844 Blob Blocks](#eip-4844-blob-blocks)
+- [EIP-7685 CL Requests](#eip-7685-cl-requests)
+- [EIP-7928 Block Access List Hash](#eip-7928-block-access-list-hash)
+- [EIP-7843 Slot Number](#eip-7843-slot-number)
 - [Consensus Types](#consensus-types)
 - [Browser](#browser)
 - [API](#api)
@@ -35,39 +43,15 @@
 
 ## Installation
 
-To obtain the latest version, simply install the project using `npm`:
-
 ```shell
 npm install @ethereumjs/block
 ```
 
-**Note:** If you want to work with `EIP-4844` related functionality, you will have additional initialization steps for the **KZG setup**, see related section below.
+**Note:** For `EIP-4844` blob blocks you need a KZG setup on `Common` — see [@ethereumjs/tx KZG setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx#kzg-setup).
 
 ## Getting Started
 
-### Instantiation
-
-There are several standalone functions to instantiate a `Block`:
-
-- `createBlock(blockData: BlockData = {}, opts?: BlockOptions)`
-- `createEmptyBlock(headerData: HeaderData, opts?: BlockOptions)`
-- `createBlockFromBytesArray(values: BlockBytes, opts?: BlockOptions)`
-- `createBlockFromRLP(serialized: Uint8Array, opts?: BlockOptions)`
-- `createBlockFromRPC(blockParams: JSONRPCBlock, uncles?: any[], opts?: BlockOptions)`
-- `createBlockFromJSONRPCProvider(provider: string | EthersProvider, blockTag: string | bigint, opts: BlockOptions)`
-- `createBlockFromExecutionPayload(payload: ExecutionPayload, opts?: BlockOptions)`
-- `createBlockFromBeaconPayloadJSON(payload: BeaconPayloadJSON, opts?: BlockOptions)`
-- `createSealedCliqueBlock(blockData: BlockData = {}, cliqueSigner: Uint8Array, opts?: BlockOptions)`
-
-For `BlockHeader` instantiation, there are similar standalone functions:
-
-- `createBlockHeader(headerData: HeaderData = {}, opts?: BlockOptions)`
-- `createBlockHeaderFromBytesArray(values: BlockHeaderBytes, opts?: BlockOptions)`
-- `createBlockHeaderFromRLP(serializedHeaderData: Uint8Array, opts?: BlockOptions)`
-- `createBlockHeaderFromRPC(blockParams: JSONRPCBlock, options?: BlockOptions)`
-- `createSealedCliqueBlockHeader(headerData: HeaderData = {}, cliqueSigner: Uint8Array, opts?: BlockOptions)`
-
-Instantiation Example:
+`Block` and `BlockHeader` objects are created via standalone factory functions (not `new Block()`). Properties are frozen by default (`freeze: false` to opt out).
 
 ```ts
 // ./examples/createBlockHeader.ts
@@ -87,29 +71,91 @@ const header = createBlockHeader(headerData)
 console.log(`Created block header with hash=${bytesToHex(header.hash())}`)
 ```
 
-Properties of a `Block` or `BlockHeader` object are frozen with `Object.freeze()` which gives you enhanced security and consistency properties when working with the instantiated object. This behavior can be modified using the `freeze` option in the constructor if needed.
+Main constructors:
 
-API Usage Example:
+| Factory | Purpose |
+| --- | --- |
+| `createBlock()` | Full block from `BlockData` |
+| `createEmptyBlock()` | Block with header only |
+| `createBlockFromRLP()` | Decode serialized block bytes |
+| `createBlockFromRPC()` / `createBlockFromJSONRPCProvider()` | From JSON-RPC block object |
+| `createBlockFromExecutionPayload()` / `createBlockFromBeaconPayloadJSON()` | From CL execution payload |
+| `createBlockHeader()` | Header-only variants of the above |
+
+Trie helpers: `genTransactionsTrieRoot()`, `genWithdrawalsTrieRoot()`, `genRequestsRoot()`.
+
+## Creating Blocks
+
+### With transactions
 
 ```ts
-// ./examples/1559.ts#L46-L50
+// ./examples/createBlockWithTxs.ts
 
-try {
-  await blockWithMatchingBaseFee.validateData()
-} catch (err) {
-  console.log(err) // block validation fails
+import { createBlock, genTransactionsTrieRoot } from '@ethereumjs/block'
+import { Common, Mainnet } from '@ethereumjs/common'
+import { createFeeMarket1559Tx } from '@ethereumjs/tx'
+import { bytesToHex, createAddressFromString, hexToBytes } from '@ethereumjs/util'
+
+const main = async () => {
+  const common = new Common({ chain: Mainnet })
+  const privateKey = hexToBytes('0xe331b6d69882b4cb4ea581d88e0b604039a3de5967688d3dcffdd2270c0fd109')
+
+  const tx = createFeeMarket1559Tx(
+    {
+      type: 2,
+      nonce: 0n,
+      gasLimit: 21_000n,
+      maxFeePerGas: 100n,
+      maxPriorityFeePerGas: 1n,
+      to: createAddressFromString('0xcccccccccccccccccccccccccccccccccccccccc'),
+      value: 1n,
+    },
+    { common },
+  ).sign(privateKey)
+
+  const block = createBlock({ transactions: [tx] }, { common, skipConsensusFormatValidation: true })
+  const transactionsRoot = await genTransactionsTrieRoot(block.transactions)
+
+  console.log(`Block with ${block.transactions.length} transaction(s)`)
+  console.log(`Transactions root: ${bytesToHex(transactionsRoot)}`)
 }
+
+void main()
 ```
 
-### WASM Crypto Support
+### RLP round-trip
 
-This library by default uses JavaScript implementations for the basic standard crypto primitives like hashing or signature verification (for included txs). See `@ethereumjs/common` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for instructions on how to replace with e.g. a more performant WASM implementation by using a shared `common` instance.
+```ts
+// ./examples/blockFromRLP.ts
 
-## EIP Integrations
+import { createBlock, createBlockFromRLP } from '@ethereumjs/block'
+import { Common, Mainnet } from '@ethereumjs/common'
+import { bytesToHex } from '@ethereumjs/util'
 
-### Blocks with an EIP-1559 Fee Market
+const common = new Common({ chain: Mainnet })
 
-By default (since `Hardfork.London`) blocks created with this library are [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) compatible.
+const block = createBlock(
+  {
+    header: {
+      number: 1n,
+      gasLimit: 30_000_000n,
+    },
+  },
+  { common, skipConsensusFormatValidation: true },
+)
+
+const serialized = block.serialize()
+const decoded = createBlockFromRLP(serialized, { common })
+
+console.log(`Serialized ${serialized.length} bytes`)
+console.log(`Round-trip hash match: ${bytesToHex(decoded.hash()) === bytesToHex(block.hash())}`)
+```
+
+Call `await block.validateData()` to run consensus and transaction checks. Use `skipConsensusFormatValidation: true` in examples and tests when header fields are intentionally incomplete.
+
+## EIP-1559 Base Fee
+
+Blocks created with default Mainnet `Common` are [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) compatible. `BlockHeader.calcNextBaseFee()` computes the base fee for the child block.
 
 ```ts
 // ./examples/1559.ts
@@ -162,14 +208,13 @@ console.log(blockWithMatchingBaseFee.getTransactionsValidationErrors()) // inval
 try {
   await blockWithMatchingBaseFee.validateData()
 } catch (err) {
-  console.log(err) // block validation fails
+  console.log(`Expected validation failure: ${(err as Error).message.split('\n')[0]}`)
 }
-
 ```
 
-### Blocks with EIP-4895 Beacon Chain Withdrawals
+## EIP-4895 Withdrawals
 
-Starting with the `v4.1.0` release there is support for [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) beacon chain withdrawals (`Hardfork.Shanghai` or higher). To create a block containing system-level withdrawals, the `withdrawals` data option together with a matching `withdrawalsRoot` can be used:
+Shanghai+ blocks carry beacon-chain withdrawals. Provide `withdrawals` and a matching `withdrawalsRoot`:
 
 ```ts
 // ./examples/withdrawals.ts
@@ -204,14 +249,13 @@ const block = createBlock(
 )
 
 console.log(`Block with ${block.withdrawals!.length} withdrawal(s) created`)
-
 ```
 
-Validation of the withdrawals trie can be manually triggered with the newly introduced async `Block.withdrawalsTrieIsValid()` method.
+Validate the withdrawals trie with `await block.withdrawalsTrieIsValid()`.
 
-### Blocks with EIP-4844 Shard Blob Transactions
+## EIP-4844 Blob Blocks
 
-This library supports the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) (`Hardfork.Cancun` or higher), see the following example:
+Cancun+ blocks include `excessBlobGas` and `blobGasUsed`. Blob txs require KZG on `Common`:
 
 ```ts
 // ./examples/eip4844Block.ts
@@ -260,16 +304,64 @@ const main = async () => {
 }
 
 void main()
-
 ```
 
-**Note:** Working with blob transactions needs a manual KZG library installation and global initialization, see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
+Blob gas pricing from the header:
 
-### Blocks with EIP-7928 Block Access List Hash
+```ts
+// ./examples/blobGasPrice.ts
+
+import { createBlockHeader } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun })
+const header = createBlockHeader({ excessBlobGas: 1_000_000n }, { common })
+
+console.log(`Blob gas price at excessBlobGas=1_000_000: ${header.getBlobGasPrice()}`)
+```
+
+## EIP-7685 CL Requests
+
+Prague+ blocks carry a `requestsHash` over sorted consensus-layer requests. Use `genRequestsRoot()` and `@ethereumjs/util` request types:
+
+```ts
+// ./examples/clrequests.ts
+
+import { createBlock, genRequestsRoot } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { bytesToHex, createCLRequest, hexToBytes } from '@ethereumjs/util'
+import { sha256 } from '@noble/hashes/sha2.js'
+
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Prague })
+
+const depositData = hexToBytes(
+  '0x00ac842878bb70009552a4cfcad801d6e659c50bd50d7d03306790cb455ce7363c5b6972f0159d170f625a99b2064dbefc010000000000000000000000818ccb1c4eda80270b04d6df822b1e72dd83c3030040597307000000a747f75c72d0cf0d2b52504c7385b516f0523e2f0842416399f42b4aee5c6384a5674f6426b1cc3d0827886fa9b909e616f5c9f61f986013ed2b9bf37071cbae951136265b549f44e3c8e26233c0433e9124b7fd0dc86e82f9fedfc0a179d7690000000000000000',
+)
+const withdrawalData = hexToBytes(
+  '0x01000000000000000000000000000000000000000001000000000000000000000de0b6b3a7640000',
+)
+const consolidationData = hexToBytes('0x020000000100000000000000000000000000000000000001')
+
+// Requests must be sorted by type (Deposit=0, Withdrawal=1, Consolidation=2)
+const requests = [
+  createCLRequest(depositData),
+  createCLRequest(withdrawalData),
+  createCLRequest(consolidationData),
+]
+
+const requestsHash = genRequestsRoot(requests, sha256)
+const block = createBlock({ header: { requestsHash } }, { common })
+
+console.log(`Created ${requests.length} CL requests`)
+console.log(`requestsHash: ${bytesToHex(requestsHash)}`)
+console.log(`Block hash: ${bytesToHex(block.hash())}`)
+```
+
+## EIP-7928 Block Access List Hash
 
 See the [canonical Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) in `@ethereumjs/vm` for release ↔ spec tracking.
 
-When [EIP-7928](https://eips.ethereum.org/EIPS/eip-7928) is active (`Hardfork.Amsterdam`, experimental), blocks carry a `blockAccessListHash` header field (32 bytes). The hash is `keccak256(rlp(bal))` over the canonical BAL encoding — compute it with `@ethereumjs/util` or obtain it from `runBlock({ generate: true })` in the VM (see [@ethereumjs/vm BAL docs](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#eip-7928-block-level-access-lists-amsterdam)).
+When [EIP-7928](https://eips.ethereum.org/EIPS/eip-7928) is active (`Hardfork.Amsterdam`, experimental), blocks carry a `blockAccessListHash` header field. Compute it with `@ethereumjs/util` or obtain it from `runBlock({ generate: true })` in the VM.
 
 ```ts
 // ./examples/blockAccessListHash.ts
@@ -308,16 +400,11 @@ const main = () => {
 }
 
 void main()
-
 ```
 
-### Blocks with EIP-7843 slot number
+## EIP-7843 Slot Number
 
-See the [canonical Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) in `@ethereumjs/vm` for release ↔ spec tracking.
-
-When [EIP-7843](https://eips.ethereum.org/EIPS/eip-7843) is active (`Hardfork.Amsterdam`, experimental), blocks carry a `slotNumber` header field (64-bit quantity). The EVM exposes the value via the `SLOTNUM` opcode during execution.
-
-**Important:** `runBlock({ generate: true })` does **not** populate `slotNumber` automatically — set it explicitly when constructing or generating blocks. Consensus validation requires the field when EIP-7843 is active.
+When [EIP-7843](https://eips.ethereum.org/EIPS/eip-7843) is active (`Hardfork.Amsterdam`, experimental), blocks carry a `slotNumber` header field. Set it explicitly when constructing blocks — `runBlock({ generate: true })` does not populate it automatically.
 
 ```ts
 // ./examples/blockSlotNumber.ts
@@ -341,83 +428,13 @@ const main = () => {
 }
 
 void main()
-
 ```
 
-### Blocks with EIP-7685 Consensus Layer Requests
+## Consensus Types
 
-Starting with v10 this library supports requests to the consensus layer which have been introduced with [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) (`Hardfork.Prague` or higher). See the `@ethereumjs/util` [Request](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util#module-request) README section for an overview of current request types.
+### Proof-of-Stake (default)
 
-```ts
-// ./examples/clrequests.ts
-
-import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { CLRequestType, bytesToHex, createCLRequest, hexToBytes } from '@ethereumjs/util'
-import { sha256 } from '@noble/hashes/sha2.js'
-
-import { createBlock, genRequestsRoot } from '../src'
-
-// Enable EIP-7685 to support CLRequests
-const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7685] })
-
-// Create examples of the three CLRequest types
-const createExampleRequests = () => {
-  // Create a deposit request (type 0)
-  const depositData = hexToBytes(
-    '0x00ac842878bb70009552a4cfcad801d6e659c50bd50d7d03306790cb455ce7363c5b6972f0159d170f625a99b2064dbefc010000000000000000000000818ccb1c4eda80270b04d6df822b1e72dd83c3030040597307000000a747f75c72d0cf0d2b52504c7385b516f0523e2f0842416399f42b4aee5c6384a5674f6426b1cc3d0827886fa9b909e616f5c9f61f986013ed2b9bf37071cbae951136265b549f44e3c8e26233c0433e9124b7fd0dc86e82f9fedfc0a179d7690000000000000000',
-  )
-  const depositRequest = createCLRequest(depositData)
-
-  // Create a withdrawal request (type 1)
-  const withdrawalData = hexToBytes(
-    '0x01000000000000000000000000000000000000000001000000000000000000000de0b6b3a7640000',
-  )
-  const withdrawalRequest = createCLRequest(withdrawalData)
-
-  // Create a consolidation request (type 2)
-  const consolidationData = hexToBytes('0x020000000100000000000000000000000000000000000001')
-  const consolidationRequest = createCLRequest(consolidationData)
-
-  // CLRequests must be sorted by type (Deposit=0, Withdrawal=1, Consolidation=2)
-  return [depositRequest, withdrawalRequest, consolidationRequest]
-}
-
-// Generate a block with CLRequests
-function createBlockWithCLRequests() {
-  const requests = createExampleRequests()
-  console.log(`Created ${requests.length} CLRequests:`)
-
-  for (const req of requests) {
-    console.log(
-      `- Type: ${req.type} (${Object.keys(CLRequestType).find(
-        (k) => CLRequestType[k as keyof typeof CLRequestType] === req.type,
-      )})`,
-    )
-  }
-
-  // Generate the requestsHash by hashing all the CLRequests
-  const requestsHash = genRequestsRoot(requests, sha256)
-  console.log(`Generated requestsHash: 0x${bytesToHex(requestsHash)}`)
-
-  // Create a block with the CLRequests hash
-  const block = createBlock({ header: { requestsHash } }, { common })
-  console.log(`Created block hash: 0x${bytesToHex(block.hash())}`)
-
-  return block
-}
-
-// Execute
-createBlockWithCLRequests()
-
-```
-
-### Consensus Types
-
-### Proof-of-Stake
-
-By default (`Hardfork.Paris` (aka: Merge) and higher) blocks are created as Proof-of-Stake blocks. These blocks come with their own set of header field simplifications and associated validation rules. The difficulty is set to `0` since not relevant anymore, just to name an example. For a full list of changes see [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675).
-
-You can instantiate a Merge/PoS block like this:
+Post-merge blocks (`Hardfork.Paris` and higher) use PoS header rules — difficulty `0`, no ommers, and related [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675) changes:
 
 ```ts
 // ./examples/pos.ts
@@ -437,9 +454,9 @@ const block = createBlock(
 console.log(`Proof-of-Stake (default) block created with hardfork=${block.common.hardfork()}`)
 ```
 
-### Ethash/PoW
+### Ethash / PoW
 
-Blocks before the Merge or blocks on dedicated PoW chains are created as Proof-of-work blocks. An Ethash/PoW block can be instantiated as follows:
+Pre-merge or dedicated PoW chains:
 
 ```ts
 // ./examples/pow.ts
@@ -456,13 +473,11 @@ createBlock({}, { common })
 console.log(`Old Proof-of-Work block created`)
 ```
 
-To calculate the difficulty when creating the block pass in the block option `calcDifficultyFromHeader` with the preceding (parent) `BlockHeader`.
+Pass `calcDifficultyFromHeader` with the parent header to auto-compute difficulty.
 
-### Clique/PoA
+### Clique / PoA
 
-Clique is a standalone Proof-of-Authority protocol which had been in use for older Ethereum testnets (like e.g. the `Goerli` testnet). This library still supports Clique/PoA so that blocks from those testnets can still be read.
-
-A clique block can be instantiated as follows:
+For historical PoA testnet blocks (e.g. Goerli). Use `createSealedCliqueBlock()` with a `cliqueSigner` key to seal on instantiation:
 
 ```ts
 // ./examples/clique.ts
@@ -478,17 +493,9 @@ console.log(common.consensusAlgorithm()) // 'clique'
 
 createBlock({ header: { extraData: new Uint8Array(97) } }, { common })
 console.log(`Old Clique Proof-of-Authority block created`)
-
 ```
 
-For sealing a block on instantiation you can use the `cliqueSigner` constructor option:
-
-```ts
-const cliqueSigner = hexToBytes('PRIVATE_KEY_HEX_STRING')
-const block = createSealedCliqueBlock(blockData, cliqueSigner)
-```
-
-See the API docs for detailed documentation on Clique/PoA related utility methods. Note that these methods will throw if called in a non-Clique/PoA context.
+Clique utility functions (`cliqueSigner`, `cliqueVerifySignature`, …) throw outside a PoA context.
 
 ## Browser
 
@@ -498,34 +505,17 @@ It is easily possible to run a browser build of one of the EthereumJS libraries 
 
 ## API
 
-### Docs
+Generated TypeDoc [documentation](./docs/README.md).
 
-Generated TypeDoc API [Documentation](./docs/README.md)
+Every `Block` / `BlockHeader` is built with a `Common` instance that determines the active hardfork, EIP set, and validation rules. See [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for chain configuration.
 
-### Hybrid CJS/ESM Builds
-
-With the breaking releases from Summer 2023 we have started to ship our libraries with both CommonJS (`cjs` folder) and ESM builds (`esm` folder), see `package.json` for the detailed setup.
-
-If you use an ES6-style `import` in your code, the ESM build will be used:
-
-```ts
-import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
-```
-
-If you use Node.js specific `require`, the CJS build will be used:
-
-```ts
-const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
-```
-
-Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking which CJS cannot provide.
-
+WASM crypto backends can be plugged in via `Common.customCrypto` — see the [common README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common#custom-cryptography-wasm--kzg).
 
 ## Testing
 
-Tests in the `tests` directory are partly outdated and testing is primarily done by running the `BlockchainTests` from within the [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm) package.
+Tests in the `tests` directory are partly outdated; primary coverage comes from `BlockchainTests` in [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm).
 
-To avoid bloating this repository with [ethereum/tests](https://github.com/ethereum/tests) JSON files, we usually copy specific JSON files and wrap them with some metadata (source, date, commit hash). There's a helper to aid in that process and can be found at [wrap-ethereum-test.sh](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/scripts/wrap-ethereum-test.sh).
+To wrap [ethereum/tests](https://github.com/ethereum/tests) JSON fixtures locally, use [wrap-ethereum-test.sh](./scripts/wrap-ethereum-test.sh).
 
 ## EthereumJS
 

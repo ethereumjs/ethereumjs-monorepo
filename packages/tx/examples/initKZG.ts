@@ -11,7 +11,7 @@ const main = async () => {
     customCrypto: { kzg },
   })
 
-  console.log(common.customCrypto.kzg) // should output the KZG API as an object
+  console.log(`KZG configured: ${Boolean(common.customCrypto.kzg)}`)
 }
 
 void main()
