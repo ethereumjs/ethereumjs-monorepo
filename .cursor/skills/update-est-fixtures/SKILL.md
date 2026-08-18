@@ -74,7 +74,7 @@ git -C packages/execution-spec-tests checkout <sha>
 ```
 - [ ] Point packages/execution-spec-tests at the new SHA (do not commit unless asked)
 - [ ] Update test:est:* in packages/vm/package.json if paths changed; CI if needed
-- [ ] Grep the old folder name across the monorepo (package.json, consumeBal.test.ts, generateLargeFixture.ts, DEVELOPER.md, this skill)
+- [ ] Grep the old folder name across the monorepo (package.json, consumeBAL.test.ts, generateLargeFixture.ts, DEVELOPER.md, this skill)
 - [ ] Inventory (no tests): fixture eipNNNN dirs vs packages/common/src/hardforks.ts (HF eips list) vs packages/common/src/eips.ts
 - [ ] Read upstream release notes; check packages/vm/src/params.ts (and Common EIP params) for address / constant drift
 - [ ] First-round: npm run test:est:dev:blockchain:summary (from packages/vm). Also test:est:dev:state if state fixtures were added

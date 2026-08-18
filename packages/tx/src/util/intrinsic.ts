@@ -1,4 +1,4 @@
-import { BIGINT_0, equalsBytes } from '@ethereumjs/util'
+import { BIGINT_0, bigIntMax, equalsBytes } from '@ethereumjs/util'
 
 import { Capability } from '../types.ts'
 
@@ -129,6 +129,22 @@ export function getCalldataFloorGas(tx: LegacyTxInterface, sender?: Address): bi
     getEip2780FloorBaseGas(tx, sender) +
     tx.common.param('totalCostFloorPerToken') * countCalldataFloorTokens(tx)
   )
+}
+
+/**
+ * Minimum `gasLimit` for the tx to pass {@link TransactionInterface.isValid}:
+ * `max(getIntrinsicGas(), getCalldataFloorGas())` when EIP-7623 is active,
+ * otherwise intrinsic gas alone.
+ *
+ * Does not include EIP-8037 first-touch state gas (that depends on pre-state;
+ * see `estimateTxGasDimensions()` on `@ethereumjs/vm`).
+ */
+export function getMinimumGasLimit(tx: LegacyTxInterface, sender?: Address): bigint {
+  const intrinsic = tx.getIntrinsicGas()
+  if (!tx.common.isActivatedEIP(7623)) {
+    return intrinsic
+  }
+  return bigIntMax(intrinsic, getCalldataFloorGas(tx, sender))
 }
 
 /**

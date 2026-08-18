@@ -174,6 +174,8 @@ const main = async () => {
 void main()
 ```
 
+On `Hardfork.Amsterdam`, `buildBlock()` also writes `blockAccessListHash` and defaults `slotNumber` from the parent when unset — see [`buildBlockBAL.ts`](./examples/buildBlockBAL.ts).
+
 ## Receipts and Event Logs
 
 `runTx()` and `runBlock()` surface logs through transaction receipts using the same [`Log`](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#event-logs) tuple as `@ethereumjs/evm`:
@@ -195,15 +197,13 @@ On Amsterdam, [EIP-7708](#eip-7708-eth-transfer-and-burn-logs-amsterdam) adds sy
 
 import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { EIP7708_SYSTEM_ADDRESS, EIP7708_TRANSFER_TOPIC } from '@ethereumjs/evm'
+import { decodeEIP7708TransferLog } from '@ethereumjs/evm'
 import { createLegacyTx } from '@ethereumjs/tx'
 import {
-  bytesToBigInt,
   bytesToHex,
   createAccount,
   createAddressFromPrivateKey,
   createZeroAddress,
-  equalsBytes,
   hexToBytes,
 } from '@ethereumjs/util'
 import { createVM, runTx } from '@ethereumjs/vm'
@@ -217,22 +217,6 @@ function formatLog(log: Log) {
     address: bytesToHex(address),
     topics: topics.map((topic) => bytesToHex(topic)),
     data: bytesToHex(data),
-  }
-}
-
-/** Decode an EIP-7708 Transfer log (LOG3-shaped) when topics match. */
-function decodeEIP7708TransferLog(log: Log) {
-  const [address, topics, data] = log
-  if (topics.length !== 3 || !equalsBytes(topics[0], EIP7708_TRANSFER_TOPIC)) {
-    return undefined
-  }
-  if (!equalsBytes(address, EIP7708_SYSTEM_ADDRESS)) {
-    return undefined
-  }
-  return {
-    from: bytesToHex(topics[1].slice(-20)),
-    to: bytesToHex(topics[2].slice(-20)),
-    value: bytesToBigInt(data),
   }
 }
 
@@ -251,7 +235,7 @@ const main = async () => {
 
   const tx = createLegacyTx(
     {
-      gasLimit: 100_000n,
+      gasLimit: 300_000n,
       gasPrice: 10n,
       value: 1_000_000_000_000_000n,
       to: createZeroAddress(),
@@ -299,7 +283,7 @@ import {
   createAddressFromString,
   hexToBytes,
 } from '@ethereumjs/util'
-import { createVM, runTx } from '@ethereumjs/vm'
+import { createVM, estimateTxGasDimensions, runTx } from '@ethereumjs/vm'
 
 const main = async () => {
   const common = new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })
@@ -325,6 +309,11 @@ const main = async () => {
     { common },
   ).sign(senderKey)
 
+  const estimate = await estimateTxGasDimensions(vm, tx)
+  console.log(`Estimate regular/floor: ${estimate.minimumGasLimit}`)
+  console.log(`Estimate first-touch state: ${estimate.estimatedStateGas}`)
+  console.log(`Recommended gasLimit: ${estimate.recommendedGasLimit}`)
+
   const res = await runTx(vm, { tx, block })
 
   console.log(`Sender paid (totalGasSpent):     ${res.totalGasSpent}`)
@@ -336,7 +325,7 @@ const main = async () => {
 void main()
 ```
 
-Wallets that still assume "21_000 covers a transfer" will OOG on first-touch recipients. Set `gasLimit` to cover **both** dimensions. See [EIP-8037](#eip-8037-state-creation-gas-cost-increase-amsterdam) for the full field table.
+Wallets that still assume "21_000 covers a transfer" will OOG on first-touch recipients. Set `gasLimit` to cover **both** dimensions. `estimateTxGasDimensions(vm, tx)` reads current state and returns a recommended limit without executing. See [EIP-8037](#eip-8037-state-creation-gas-cost-increase-amsterdam) for the full field table.
 
 ## Events
 
@@ -472,7 +461,7 @@ npx tsx examples/runMainnetBlock.ts [blockNumber]
 
 Bundled blocks with verified offline gas match: `24476000`, `24476001`, `24476003`, `24476004`, `24476005`, `24476009`.
 
-Additional examples: [`runSolidityContract.ts`](./examples/runSolidityContract.ts) (compile + deploy + call), [`runBlockBalGenerate.ts`](./examples/runBlockBalGenerate.ts) / [`runBlockBalValidate.ts`](./examples/runBlockBalValidate.ts) (EIP-7928 BAL), [`runBlockchain.ts`](./examples/runBlockchain.ts) (multi-block mock chain).
+Additional examples: [`runSolidityContract.ts`](./examples/runSolidityContract.ts) (compile + deploy + call), [`runBlockBALGenerate.ts`](./examples/runBlockBALGenerate.ts) / [`runBlockBALValidate.ts`](./examples/runBlockBALValidate.ts) / [`buildBlockBAL.ts`](./examples/buildBlockBAL.ts) (EIP-7928 BAL), [`runBlockchain.ts`](./examples/runBlockchain.ts) (multi-block mock chain).
 
 ## Browser
 
@@ -535,7 +524,7 @@ The VM is a thin orchestration layer that drives the `EVM` at the transaction an
 - **`runBlock.ts`** — `runBlock`: block-level processing (pre-state setup, transaction loop via `runTx`, withdrawals, requests, rewards, post-state validation). See [Internal Structure](#internal-structure) below for the step-by-step flow.
 - **`runTx.ts`** — `runTx`: transaction-level rules (nonce/balance/intrinsic-gas checks, EIP-1559/4844/7702 handling, access-list warming), the call into `vm.evm.runCall`, refund/coinbase accounting and receipt generation (`generateTxReceipt`).
 - **`buildBlock.ts`** — `buildBlock` / `BlockBuilder`: incremental block construction for block producers.
-- **`consumeBal.ts`** — EIP-7928 block-level access list consumption.
+- **`consumeBAL.ts`** — EIP-7928 block-level access list consumption (`consumeBAL()`).
 - **`requests.ts`** — consensus-layer request (EIP-7685) extraction.
 - **`bloom/`** — logs-bloom computation.
 - **`params.ts`** — `paramsVM`, merged into `Common` at construction.
@@ -631,7 +620,7 @@ The `Hardfork.Amsterdam` bundle activates the following EIPs. Amsterdam test fix
 **Block builder flow (`generate: true`):** execute the block, read `RunBlockResult.blockLevelAccessList`, and use the returned block from the `afterBlock` event — its header includes `blockAccessListHash` (set from `bal.hash()`).
 
 ```ts
-// ./examples/runBlockBalGenerate.ts
+// ./examples/runBlockBALGenerate.ts
 
 import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
@@ -702,7 +691,7 @@ void main()
 **Block validator flow:** pass the BAL from an execution payload via `RunBlockOpts.blockAccessList` (JSON, RLP bytes, or a `BlockLevelAccessList` instance). `runBlock()` validates structure and header hash before execution and checks equality against the generated list afterward.
 
 ```ts
-// ./examples/runBlockBalValidate.ts
+// ./examples/runBlockBALValidate.ts
 
 import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
@@ -792,7 +781,7 @@ void main()
 **Notes:**
 
 - Amsterdam test fixtures often bundle additional EIPs (e.g. EIP-8037); use `Hardfork.Amsterdam` rather than activating EIP-7928 in isolation.
-- `buildBlock()` does not yet populate `blockAccessListHash` automatically — use `runBlock({ generate: true })` for now.
+- `buildBlock()` writes `blockAccessListHash` from the accumulated BAL and defaults `slotNumber` to `parent.slotNumber + 1` when the field is omitted. `runBlock({ generate: true })` still does not invent a consensus slot number.
 
 ### EIP-8037 State creation gas cost increase (Amsterdam)
 

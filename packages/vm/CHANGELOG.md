@@ -37,7 +37,7 @@ Amsterdam is still in flux — **please do not use this in production yet** — 
 
 When EIP-7928 is active the VM accumulates state accesses automatically during execution — no separate opt-in flag. For **block building**, run the block with `generate: true` and read the BAL from the result; the `afterBlock` event delivers a block whose header already carries the matching `blockAccessListHash`. For **validation**, pass a known BAL (JSON, RLP, or `BlockLevelAccessList`) via `blockAccessList`; the VM checks structure and hash before execution and compares against the list produced afterward.
 
-Full walkthrough: `packages/vm/examples/runBlockBalGenerate.ts` and `runBlockBalValidate.ts`. The validator example below shows the round-trip pattern:
+Full walkthrough: `packages/vm/examples/runBlockBALGenerate.ts` and `runBlockBALValidate.ts`. The validator example below shows the round-trip pattern:
 
 ```ts
 import { createBlock } from '@ethereumjs/block'

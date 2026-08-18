@@ -2,7 +2,12 @@ import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createAddressFromPrivateKey, createZeroAddress, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createLegacyTx, getCalldataFloorGas, getEip2780RecipientRegularGas } from '../src/index.ts'
+import {
+  createLegacyTx,
+  getCalldataFloorGas,
+  getEip2780RecipientRegularGas,
+  getMinimumGasLimit,
+} from '../src/index.ts'
 
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })
 const senderKey = hexToBytes(`0x${'20'.repeat(32)}`)
@@ -56,5 +61,27 @@ describe('[EIP-2780 intrinsic / calldata floor]', () => {
       extras +
       tx.common.param('totalCostFloorPerToken') * BigInt(data.length) * 4n
     assert.strictEqual(getCalldataFloorGas(tx), expected)
+  })
+
+  it('getMinimumGasLimit is max(intrinsic, floor) and names the floor in validation', () => {
+    const empty = createLegacyTx(
+      { to: recipient, value: 1n, gasLimit: 21_000n, gasPrice: 10n },
+      { common },
+    )
+    assert.strictEqual(empty.getMinimumGasLimit(), empty.getIntrinsicGas())
+    assert.strictEqual(getMinimumGasLimit(empty), empty.getMinimumGasLimit())
+
+    const data = new Uint8Array(100).fill(1)
+    const call = createLegacyTx(
+      { to: recipient, data, gasLimit: 21_000n, gasPrice: 10n },
+      { common },
+    )
+    const floor = getCalldataFloorGas(call)
+    assert.isTrue(floor > call.getIntrinsicGas())
+    assert.strictEqual(call.getMinimumGasLimit(), floor)
+    const errors = call.getValidationErrors()
+    assert.match(errors[0] ?? '', /gasLimit is too low/)
+    assert.match(errors[0] ?? '', /minimum gas limit of/)
+    assert.match(errors[0] ?? '', /calldata floor/)
   })
 })

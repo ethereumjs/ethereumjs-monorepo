@@ -14,7 +14,7 @@ import {
 import { keccak_256 } from '@noble/hashes/sha3.js'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
-import { consumeBal } from '../../src/consumeBal.ts'
+import { consumeBAL } from '../../src/consumeBAL.ts'
 import { createVM } from '../../src/index.ts'
 import { setupPreConditions } from '../util.ts'
 import { createCommonForFork, loadExecutionSpecFixtures } from './executionSpecTestLoader.ts'
@@ -27,15 +27,15 @@ const kzg = new microEthKZG(trustedSetup)
 
 const fixtures = loadExecutionSpecFixtures(fixturesPath, 'blockchain_tests')
 
-describe('consumeBal', () => {
+describe('consumeBAL', () => {
   for (const { id, fork, data } of fixtures) {
     it(`${fork}: ${id}`, async () => {
-      await consumeBalTestCase(fork, data, assert, kzg)
+      await consumeBALTestCase(fork, data, assert, kzg)
     })
   }
 })
 
-export async function consumeBalTestCase(
+export async function consumeBALTestCase(
   fork: string,
   testData: any,
   t: typeof assert,
@@ -71,7 +71,7 @@ export async function consumeBalTestCase(
 
   for (const { blockAccessList, blockHeader } of testData.blocks) {
     if (blockAccessList !== undefined) {
-      await consumeBal(vm, blockAccessList, hexToBytes(blockHeader.stateRoot))
+      await consumeBAL(vm, blockAccessList, hexToBytes(blockHeader.stateRoot))
     }
   }
 

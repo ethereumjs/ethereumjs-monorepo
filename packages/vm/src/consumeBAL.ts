@@ -11,7 +11,7 @@ import {
 } from '@ethereumjs/util'
 import type { VM } from './vm.ts'
 
-export async function consumeBal(
+export async function consumeBAL(
   vm: VM,
   bal: BALJSONBlockAccessList,
   expectedStateRoot?: Uint8Array,

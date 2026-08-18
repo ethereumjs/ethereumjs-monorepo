@@ -373,6 +373,14 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
   }
 
   /**
+   * `max(getIntrinsicGas(), calldata floor)` when EIP-7623 is active, otherwise intrinsic.
+   * Does not include EIP-8037 first-touch state gas.
+   */
+  getMinimumGasLimit(): bigint {
+    return Legacy.getMinimumGasLimit(this)
+  }
+
+  /**
    * Returns a Uint8Array Array of the raw Bytes of the EIP-4844 transaction, in order.
    *
    * Format: [chain_id, nonce, max_priority_fee_per_gas, max_fee_per_gas, gas_limit, to, value, data,

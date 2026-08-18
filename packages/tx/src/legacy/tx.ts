@@ -308,6 +308,15 @@ export class LegacyTx implements TransactionInterface<typeof TransactionType.Leg
   getIntrinsicGas(): bigint {
     return Legacy.getIntrinsicGas(this)
   }
+
+  /**
+   * `max(getIntrinsicGas(), calldata floor)` when EIP-7623 is active, otherwise intrinsic.
+   * Does not include EIP-8037 first-touch state gas.
+   */
+  getMinimumGasLimit(): bigint {
+    return Legacy.getMinimumGasLimit(this)
+  }
+
   /**
    * The up front amount that an account must have for this transaction to be valid
    */

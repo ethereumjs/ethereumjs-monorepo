@@ -192,6 +192,14 @@ export class FeeMarket1559Tx
     return Legacy.getIntrinsicGas(this)
   }
 
+  /**
+   * `max(getIntrinsicGas(), calldata floor)` when EIP-7623 is active, otherwise intrinsic.
+   * Does not include EIP-8037 first-touch state gas.
+   */
+  getMinimumGasLimit(): bigint {
+    return Legacy.getMinimumGasLimit(this)
+  }
+
   // TODO figure out if this is necessary
   /**
    * If the tx's `to` is to the creation address

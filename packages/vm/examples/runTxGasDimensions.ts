@@ -7,7 +7,7 @@ import {
   createAddressFromString,
   hexToBytes,
 } from '@ethereumjs/util'
-import { createVM, runTx } from '@ethereumjs/vm'
+import { createVM, estimateTxGasDimensions, runTx } from '@ethereumjs/vm'
 
 const main = async () => {
   const common = new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })
@@ -32,6 +32,11 @@ const main = async () => {
     },
     { common },
   ).sign(senderKey)
+
+  const estimate = await estimateTxGasDimensions(vm, tx)
+  console.log(`Estimate regular/floor: ${estimate.minimumGasLimit}`)
+  console.log(`Estimate first-touch state: ${estimate.estimatedStateGas}`)
+  console.log(`Recommended gasLimit: ${estimate.recommendedGasLimit}`)
 
   const res = await runTx(vm, { tx, block })
 

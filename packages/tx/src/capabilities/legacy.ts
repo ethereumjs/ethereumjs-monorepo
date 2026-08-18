@@ -3,7 +3,6 @@ import {
   BIGINT_0,
   EthereumJSErrorWithoutCode,
   SECP256K1_ORDER_DIV_2,
-  bigIntMax,
   bigIntToUnpaddedBytes,
   bytesToHex,
   ecrecover,
@@ -18,7 +17,10 @@ import {
   getCalldataFloorGas,
   getEip2780RecipientRegularGas,
   getEip7702IntrinsicAuthGas,
+  getMinimumGasLimit,
 } from '../util/intrinsic.ts'
+
+export { getMinimumGasLimit }
 
 import type { LegacyTx } from '../legacy/tx.ts'
 import type { LegacyTxInterface, Transaction } from '../types.ts'
@@ -218,13 +220,16 @@ export function getValidationErrors(tx: LegacyTxInterface): string[] {
     errors.push('Invalid Signature')
   }
 
-  let minGas = tx.getIntrinsicGas()
-  if (tx.common.isActivatedEIP(7623)) {
-    minGas = bigIntMax(minGas, getCalldataFloorGas(tx))
-  }
+  const intrinsic = tx.getIntrinsicGas()
+  const floor = tx.common.isActivatedEIP(7623) ? getCalldataFloorGas(tx) : BIGINT_0
+  const minGas = getMinimumGasLimit(tx)
   if (minGas > tx.gasLimit) {
+    const bound =
+      floor > intrinsic
+        ? `calldata floor ${floor} (intrinsic ${intrinsic})`
+        : `intrinsic gas ${intrinsic}`
     errors.push(
-      `gasLimit is too low. The gasLimit is lower than the minimum gas limit of ${minGas}, the gas limit is: ${tx.gasLimit}`,
+      `gasLimit is too low. The gasLimit is lower than the minimum gas limit of ${minGas} (${bound}), the gas limit is: ${tx.gasLimit}`,
     )
   }
 

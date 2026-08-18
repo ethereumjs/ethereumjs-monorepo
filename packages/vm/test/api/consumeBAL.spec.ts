@@ -10,12 +10,12 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { consumeBal } from '../../src/consumeBal.ts'
+import { consumeBAL } from '../../src/consumeBAL.ts'
 
 import { setupVM } from './utils.ts'
 
-describe('[VM/consumeBal]: apply block access list', () => {
-  it('consumeBal() applies balance and storage changes from balSimpleJSON', async () => {
+describe('[VM/consumeBAL]: apply block access list', () => {
+  it('consumeBAL() applies balance and storage changes from balSimpleJSON', async () => {
     const vm = await setupVM()
     const bal = balSimpleJSON.filter(
       (entry) =>
@@ -24,7 +24,7 @@ describe('[VM/consumeBal]: apply block access list', () => {
         entry.nonceChanges.length > 0,
     ) as BALJSONBlockAccessList
 
-    await consumeBal(vm, bal)
+    await consumeBAL(vm, bal)
 
     const balanceAddr = createAddressFromString('0x2adc25665018aa1fe0e6bc666dac8fc2697ff9ba')
     const balanceAccount = await vm.stateManager.getAccount(balanceAddr)
@@ -42,12 +42,12 @@ describe('[VM/consumeBal]: apply block access list', () => {
     assert.isTrue(equalsBytes(storage, expectedStorage))
   })
 
-  it('consumeBal() deletes empty EIP-161 accounts instead of writing zero balance', async () => {
+  it('consumeBAL() deletes empty EIP-161 accounts instead of writing zero balance', async () => {
     const vm = await setupVM()
     const address = createAddressFromString('0x000000000000000000000000000000000000dead')
     await vm.stateManager.putAccount(address, createAccount({ balance: 1n }))
 
-    await consumeBal(vm, [
+    await consumeBAL(vm, [
       {
         address: address.toString() as PrefixedHexString,
         nonceChanges: [],
@@ -61,12 +61,12 @@ describe('[VM/consumeBal]: apply block access list', () => {
     assert.isUndefined(await vm.stateManager.getAccount(address))
   })
 
-  it('consumeBal() throws when expected state root does not match', async () => {
+  it('consumeBAL() throws when expected state root does not match', async () => {
     const vm = await setupVM()
     const wrongRoot = hexToBytes(('0x' + '11'.repeat(32)) as PrefixedHexString)
 
     try {
-      await consumeBal(vm, [], wrongRoot)
+      await consumeBAL(vm, [], wrongRoot)
       assert.fail('should throw on state root mismatch')
     } catch (e: unknown) {
       assert.match((e as Error).message, /Expected state root/)

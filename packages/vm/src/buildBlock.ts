@@ -23,10 +23,12 @@ import {
   KECCAK256_RLP,
   TypeOutput,
   bytesToBigInt,
+  createBlockLevelAccessList,
   createWithdrawal,
   createZeroAddress,
   toBytes,
   toType,
+  validateBlockAccessListGasLimit,
 } from '@ethereumjs/util'
 import { sha256 } from '@noble/hashes/sha2.js'
 
@@ -127,6 +129,15 @@ export class BlockBuilder {
       typeof this.headerData.excessBlobGas === 'undefined'
     ) {
       this.headerData.excessBlobGas = opts.parentBlock.header.calcNextExcessBlobGas(this.vm.common)
+    }
+
+    if (this.vm.common.isActivatedEIP(7843) && typeof this.headerData.slotNumber === 'undefined') {
+      const parentSlot = opts.parentBlock.header.slotNumber
+      this.headerData.slotNumber = parentSlot !== undefined ? parentSlot + BIGINT_1 : BIGINT_0
+    }
+
+    if (this.vm.common.isActivatedEIP(7928)) {
+      this.vm.evm.blockLevelAccessList = createBlockLevelAccessList()
     }
   }
 
@@ -291,6 +302,10 @@ export class BlockBuilder {
     const blockData = { header, transactions: this.transactions }
     const block = createBlock(blockData, this.blockOpts)
 
+    if (this.vm.common.isActivatedEIP(7928) && this.vm.evm.blockLevelAccessList !== undefined) {
+      this.vm.evm.blockLevelAccessList.blockAccessIndex = this.transactions.length + 1
+    }
+
     const result = await runTx(this.vm, { tx, block, skipHardForkValidation })
 
     // If tx is a blob transaction, remove blobs/kzg commitments before adding to block per EIP-4844
@@ -342,6 +357,9 @@ export class BlockBuilder {
     if (consensusType === ConsensusType.ProofOfWork) {
       await this.rewardMiner()
     }
+    if (this.vm.common.isActivatedEIP(7928) && this.vm.evm.blockLevelAccessList !== undefined) {
+      this.vm.evm.blockLevelAccessList.blockAccessIndex = this.transactions.length + 1
+    }
     await this.processWithdrawals()
 
     const transactionsTrie = await this.transactionsTrie()
@@ -372,13 +390,14 @@ export class BlockBuilder {
         this.headerData.gasLimit !== undefined
           ? bytesToBigInt(toBytes(this.headerData.gasLimit))
           : undefined,
+        true,
       )
       requestsHash = genRequestsRoot(requests, sha256Function)
     }
 
     // get stateRoot after all the accumulateRequests etc have been done
     const stateRoot = await this.vm.stateManager.getStateRoot()
-    const headerData = {
+    const headerData: HeaderData = {
       ...this.headerData,
       stateRoot,
       transactionsTrie,
@@ -390,6 +409,12 @@ export class BlockBuilder {
       // correct excessBlobGas should already be part of headerData used above
       blobGasUsed,
       requestsHash,
+    }
+
+    if (this.vm.common.isActivatedEIP(7928) && this.vm.evm.blockLevelAccessList !== undefined) {
+      const gasLimit = toType(this.headerData.gasLimit, TypeOutput.BigInt)
+      validateBlockAccessListGasLimit(this.vm.evm.blockLevelAccessList, gasLimit)
+      headerData.blockAccessListHash = this.vm.evm.blockLevelAccessList.hash()
     }
 
     if (consensusType === ConsensusType.ProofOfWork) {
@@ -421,7 +446,7 @@ export class BlockBuilder {
       this.checkpointed = false
     }
 
-    return { block, requests }
+    return { block, requests, blockLevelAccessList: this.vm.evm.blockLevelAccessList }
   }
 
   async initState() {

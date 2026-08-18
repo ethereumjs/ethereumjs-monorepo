@@ -12,6 +12,7 @@ const main = () => {
     console.log(label)
     console.log(`  intrinsic: ${tx.getIntrinsicGas()}`)
     console.log(`  floor:     ${getCalldataFloorGas(tx)}`)
+    console.log(`  minimum:   ${tx.getMinimumGasLimit()}`)
     console.log(`  gasLimit:  ${tx.gasLimit}`)
     console.log(`  valid:     ${tx.isValid()}`)
   }

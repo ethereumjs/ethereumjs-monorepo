@@ -1,7 +1,11 @@
 import {
   type Address,
+  type PrefixedHexString,
   SYSTEM_ADDRESS_BYTES,
   bigIntToBytes,
+  bytesToBigInt,
+  bytesToHex,
+  equalsBytes,
   hexToBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
@@ -56,4 +60,49 @@ export function createEIP7708BurnLog(account: Address, value: bigint): Log {
   const accountTopic = setLengthLeft(account.bytes, 32)
   const data = setLengthLeft(bigIntToBytes(value), 32)
   return [EIP7708_SYSTEM_ADDRESS, [EIP7708_BURN_TOPIC, accountTopic], data]
+}
+
+/**
+ * Decodes an EIP-7708 Transfer log. Returns `undefined` if the log is not a
+ * system-address `Transfer(address,address,uint256)` (wrong emitter or topics).
+ *
+ * @remarks Experimental (Amsterdam): may change on patch releases.
+ */
+export function decodeEIP7708TransferLog(
+  log: Log,
+): { from: PrefixedHexString; to: PrefixedHexString; value: bigint } | undefined {
+  const [address, topics, data] = log
+  if (topics.length !== 3 || !equalsBytes(topics[0], EIP7708_TRANSFER_TOPIC)) {
+    return undefined
+  }
+  if (!equalsBytes(address, EIP7708_SYSTEM_ADDRESS)) {
+    return undefined
+  }
+  return {
+    from: bytesToHex(topics[1].slice(-20)),
+    to: bytesToHex(topics[2].slice(-20)),
+    value: bytesToBigInt(data),
+  }
+}
+
+/**
+ * Decodes an EIP-7708 Burn log. Returns `undefined` if the log is not a
+ * system-address `Burn(address,uint256)` (wrong emitter or topics).
+ *
+ * @remarks Experimental (Amsterdam): may change on patch releases.
+ */
+export function decodeEIP7708BurnLog(
+  log: Log,
+): { account: PrefixedHexString; value: bigint } | undefined {
+  const [address, topics, data] = log
+  if (topics.length !== 2 || !equalsBytes(topics[0], EIP7708_BURN_TOPIC)) {
+    return undefined
+  }
+  if (!equalsBytes(address, EIP7708_SYSTEM_ADDRESS)) {
+    return undefined
+  }
+  return {
+    account: bytesToHex(topics[1].slice(-20)),
+    value: bytesToBigInt(data),
+  }
 }

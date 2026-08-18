@@ -607,7 +607,7 @@ See [sendRawSepoliaTx.ts](./examples/sendRawSepoliaTx.ts) for submitting a signe
 
 See the [canonical Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) in `@ethereumjs/vm`.
 
-On `Hardfork.Amsterdam` (experimental), [EIP-2780](https://eips.ethereum.org/EIPS/eip-2780) folds recipient/value extras into `getIntrinsicGas()`, [EIP-7976](https://eips.ethereum.org/EIPS/eip-7976) raises the calldata floor, and [EIP-7981](https://eips.ethereum.org/EIPS/eip-7981) adds access-list bytes to the same floor. Wallets should treat the sendable gas limit as `max(getIntrinsicGas(), getCalldataFloorGas(tx))` — empty transfers can still use 21_000, but calldata and access lists often cannot:
+On `Hardfork.Amsterdam` (experimental), [EIP-2780](https://eips.ethereum.org/EIPS/eip-2780) folds recipient/value extras into `getIntrinsicGas()`, [EIP-7976](https://eips.ethereum.org/EIPS/eip-7976) raises the calldata floor, and [EIP-7981](https://eips.ethereum.org/EIPS/eip-7981) adds access-list bytes to the same floor. Wallets should use `tx.getMinimumGasLimit()` (`max(intrinsic, floor)`) for the tx-level bound — empty transfers can still use 21_000, but calldata and access lists often cannot. First-touch state gas is **not** in that bound; use `estimateTxGasDimensions()` on `@ethereumjs/vm` against current state:
 
 ```ts
 // ./examples/calldataFloorGas.ts
@@ -626,6 +626,7 @@ const main = () => {
     console.log(label)
     console.log(`  intrinsic: ${tx.getIntrinsicGas()}`)
     console.log(`  floor:     ${getCalldataFloorGas(tx)}`)
+    console.log(`  minimum:   ${tx.getMinimumGasLimit()}`)
     console.log(`  gasLimit:  ${tx.gasLimit}`)
     console.log(`  valid:     ${tx.isValid()}`)
   }

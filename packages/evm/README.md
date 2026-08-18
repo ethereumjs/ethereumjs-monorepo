@@ -606,7 +606,7 @@ Runnable walkthrough: [`examples/opcodes/eip8024StackOpcodes.ts`](./examples/opc
 
 See the [canonical Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) in `@ethereumjs/vm` for release ↔ spec tracking.
 
-[EIP-7843](https://eips.ethereum.org/EIPS/eip-7843) adds `SLOTNUM` (`0x4b`), which pushes the executing block's consensus `slotNumber` onto the stack. Pass a block header that sets the field — a default blank block has none and the opcode throws:
+[EIP-7843](https://eips.ethereum.org/EIPS/eip-7843) adds `SLOTNUM` (`0x4b`), which pushes the executing block's consensus `slotNumber` onto the stack. Pass a block header that sets the field. A stand-alone `runCode()` without a block uses a mock header with `slotNumber: 0n`:
 
 ```ts
 // ./examples/opcodes/eip7843SlotnumOpcode.ts
