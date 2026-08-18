@@ -6,7 +6,7 @@ const main = async () => {
     customOpcodes: [
       {
         opcode: 0x21,
-        opcodeName: 'PUSHONE',
+        opcodeName: 'PUSH_ONE',
         baseFee: 3,
         gasFunction(_runState, gas) {
           return gas
