@@ -1,4 +1,4 @@
-import { bytesToHex, ecrecover, hexToBytes } from '@ethereumjs/util'
+import { createAddressFromPublicKey, ecrecover, hexToBytes } from '@ethereumjs/util'
 
 const chainId = BigInt(3) // EIP-155 chain ID encoded in v (must match the signature)
 
@@ -8,5 +8,4 @@ const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f2280404
 const v = BigInt(41)
 
 const pubkey = ecrecover(ecHash, v, r, s, chainId)
-
-console.log(`Recovered public key ${bytesToHex(pubkey)} from valid signature values`)
+console.log(`Recovered address: ${createAddressFromPublicKey(pubkey).toString()}`)

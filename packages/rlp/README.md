@@ -9,41 +9,114 @@
 | [Recursive Length Prefix](https://ethereum.org/en/developers/docs/data-structures-and-encoding/rlp) encoding for Node.js and the browser. |
 | ----------------------------------------------------------------------------------------------------------------------------------------- |
 
+RLP serializes nested byte arrays — the wire format behind Ethereum transactions, blocks, and trie nodes. This package exposes a small `encode` / `decode` API plus lightweight byte helpers that do not depend on `@ethereumjs/util`.
+
+Runnable examples live in [`examples/`](./examples/).
+
 ## Table of Contents
 
 - [Installation](#installation)
-- [Usage](#usage)
+- [Getting Started](#getting-started)
+- [Scalar Input Types](#scalar-input-types)
+- [Stream Decoding](#stream-decoding)
+- [CLI](#cli)
 - [Browser](#browser)
 - [API](#api)
-- [CLI](#cli)
 - [EthereumJS](#ethereumjs)
 - [License](#license)
 
 ## Installation
 
-To obtain the latest version, simply require the project using `npm`:
-
 ```shell
 npm install @ethereumjs/rlp
 ```
 
-Install with `-g` if you want to use the CLI.
+Install with `-g` if you want to use the [CLI](#cli).
 
-## Usage
+## Getting Started
 
 ```ts
 // ./examples/encodeDecode.ts
 
-import assert from 'assert'
 import { RLP } from '@ethereumjs/rlp'
 
 const nestedList = [[], [[]], [[], [[]]]]
 const encoded = RLP.encode(nestedList)
 const decoded = RLP.decode(encoded)
-assert.deepStrictEqual(decoded, nestedList, 'decoded output does not match original')
-console.log('assert.deepStrictEqual would have thrown if the decoded output did not match')
 
+console.log(`Encoded ${encoded.length} bytes`)
+console.log(`Decoded top-level is array: ${Array.isArray(decoded)}`)
 ```
+
+`RLP.encode()` accepts nested arrays of scalars (see below) and always returns a `Uint8Array`. `RLP.decode()` returns a `NestedUint8Array` — nested lists of `Uint8Array` leaves.
+
+## Scalar Input Types
+
+Strings, numbers, bigint, and `0x`-prefixed hex are accepted on encode. Each scalar becomes a byte string in the output.
+
+```ts
+// ./examples/scalarTypes.ts
+
+import { RLP, utils } from '@ethereumjs/rlp'
+
+const { bytesToHex } = utils
+
+// Strings, numbers, bigint, and 0x-prefixed hex all encode to Uint8Array output
+console.log(`encode('dog'): ${bytesToHex(RLP.encode('dog'))}`)
+console.log(`encode(15): ${bytesToHex(RLP.encode(15))}`)
+console.log(`encode(15n): ${bytesToHex(RLP.encode(15n))}`)
+console.log(`encode('0x01'): ${bytesToHex(RLP.encode('0x01'))}`)
+console.log(`encode(['cat','dog']): ${bytesToHex(RLP.encode(['cat', 'dog']))}`)
+```
+
+## Stream Decoding
+
+Pass `stream: true` to decode only the first RLP item and receive the unconsumed remainder. Useful when a buffer holds multiple back-to-back RLP values.
+
+The package also exports `RLP.utils` (`hexToBytes`, `bytesToHex`, `utf8ToBytes`, `concatBytes`) for byte work without pulling in `@ethereumjs/util`.
+
+```ts
+// ./examples/decodeStream.ts
+
+import { RLP, utils } from '@ethereumjs/rlp'
+
+const { bytesToHex, concatBytes, hexToBytes } = utils
+
+// Stream mode decodes the first RLP item and returns the remainder buffer
+const buffer = concatBytes(RLP.encode(1), RLP.encode('hello'), RLP.encode([2, 3]))
+
+let decoded = RLP.decode(buffer, true)
+console.log(`item 1: ${bytesToHex(decoded.data as Uint8Array)}`)
+
+decoded = RLP.decode(decoded.remainder, true)
+console.log(`item 2: ${new TextDecoder().decode(decoded.data as Uint8Array)}`)
+
+decoded = RLP.decode(decoded.remainder, true)
+const list = decoded.data as Uint8Array[]
+console.log(`item 3: [${list.map((x) => bytesToHex(x)).join(', ')}]`)
+console.log(`remainder length: ${decoded.remainder.length}`)
+
+// utils: hex ↔ bytes without pulling in @ethereumjs/util
+console.log(`hexToBytes('0x05'): ${bytesToHex(hexToBytes('0x05'))}`)
+```
+
+By default, `decode()` throws if trailing bytes remain after the first RLP sequence.
+
+## CLI
+
+When installed globally:
+
+```shell
+rlp encode '<JSON string>'
+rlp decode <0x-prefixed hex string>
+```
+
+Examples:
+
+- `rlp encode '5'` → `0x05`
+- `rlp encode '[5]'` → `0xc105`
+- `rlp encode '["cat", "dog"]'` → `0xc88363617483646f67`
+- `rlp decode 0xc88363617483646f67` → `["cat","dog"]`
 
 ## Browser
 
@@ -53,21 +126,22 @@ It is easily possible to run a browser build of one of the EthereumJS libraries 
 
 ## API
 
-`RLP.encode(plain)` - RLP encodes an `Array`, `Uint8Array` or `String` and returns a `Uint8Array`.
+### `RLP.encode(input)`
 
-`RLP.decode(encoded, [stream=false])` - Decodes an RLP encoded `Uint8Array`, `Array` or `String` and returns a `Uint8Array` or `NestedUint8Array`. If `stream` is enabled, it will just decode the first rlp sequence in the Uint8Array. By default, it would throw an error if there are more bytes in Uint8Array than used by the rlp sequence.
+RLP-encodes an `Array`, `Uint8Array`, `string`, `number`, `bigint`, or `null`/`undefined` and returns a `Uint8Array`.
 
-## CLI
+### `RLP.decode(input, stream?)`
 
-`rlp encode <JSON string>`\
-`rlp decode <0x-prefixed hex string>`
+Decodes an RLP-encoded `Uint8Array`, `Array`, or `string`. Returns a `Uint8Array` or `NestedUint8Array`. With `stream: true`, returns `{ data, remainder }` and decodes only the first sequence.
 
-### Examples
+### `RLP.utils`
 
-- `rlp encode '5'` -> `0x05`
-- `rlp encode '[5]'` -> `0xc105`
-- `rlp encode '["cat", "dog"]'` -> `0xc88363617483646f67`
-- `rlp decode 0xc88363617483646f67` -> `["cat","dog"]`
+- `hexToBytes(hex)` — parse a hex string (with or without `0x`) to `Uint8Array`
+- `bytesToHex(bytes)` — format bytes as a `0x`-prefixed hex string
+- `utf8ToBytes(str)` — encode a UTF-8 string to bytes
+- `concatBytes(...arrays)` — concatenate byte arrays
+
+Types: `Input`, `NestedUint8Array`, `Decoded`. See [source](./src/index.ts).
 
 ## EthereumJS
 
