@@ -7,7 +7,7 @@ const txData = hexToBytes(
 )
 
 const common = createCustomCommon({ chainId: 3 }, Mainnet)
-common.setHardfork(Hardfork.Petersburg)
+common.setHardfork(Hardfork.Prague)
 const tx = createLegacyTxFromRLP(txData, { common })
 
 if (

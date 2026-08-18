@@ -1,6 +1,6 @@
 import { bytesToHex, ecrecover, hexToBytes } from '@ethereumjs/util'
 
-const chainId = BigInt(3) // Ropsten
+const chainId = BigInt(3) // EIP-155 chain ID encoded in v (must match the signature)
 
 const ecHash = hexToBytes('0x82ff40c0a986c6a5cfad4ddf4c3aa6996f1a7837f9c398e17e5de5cbd5a12b28')
 const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')

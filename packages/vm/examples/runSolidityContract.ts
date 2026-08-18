@@ -30,7 +30,7 @@ const __dirname = path.dirname(__filename) // get the name of the directory
  * For more info about it, go to https://solidity.readthedocs.io/en/v0.5.10/using-the-compiler.html#compiler-input-and-output-json-description
  *
  * Note: this example uses the `solc` and `viem` devDependencies from the `@ethereumjs/vm` package.
- * From the monorepo root run `npm install` before `npx tsx examples/run-solidity-contract.ts`.
+ * From the monorepo root run `npm install` before `npx tsx examples/runSolidityContract.ts`.
  */
 function getSolcInput() {
   return {

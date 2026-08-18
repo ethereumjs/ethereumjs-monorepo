@@ -32,7 +32,7 @@ Install with `-g` if you want to use the CLI.
 ## Usage
 
 ```ts
-// ./examples/simple.ts
+// ./examples/encodeDecode.ts
 
 import assert from 'assert'
 import { RLP } from '@ethereumjs/rlp'

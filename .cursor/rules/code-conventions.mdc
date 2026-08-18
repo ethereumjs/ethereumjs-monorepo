@@ -1,0 +1,32 @@
+---
+description: Naming, acronym casing, and backwards-compatibility constraints for public API
+globs: packages/**/src/**,packages/**/examples/**
+alwaysApply: false
+---
+
+# Code conventions
+
+## Acronym casing
+
+Protocol and tech acronyms stay **fully uppercase** inside identifiers and file names (within camelCase boundaries):
+
+| Context | Example |
+|---------|---------|
+| Identifier | `initKZG`, `customRPC`, `parseJSON`, `isEVM` |
+| File name | `initKZG.ts`, `eip1559Tx.ts`, `fromRPC.ts` |
+| Avoid | `initKzg`, `customRpc`, `londonTx` (prefer EIP or current term) |
+
+Common acronyms: `KZG`, `EVM`, `JSON`, `RPC`, `EIP`, `RLP`, `MPT`, `BAL`, `EOA`, `KECCAK` (when part of a symbol name).
+
+## Backwards compatibility (public API)
+
+**Do not rename** exported symbols, public module paths, or documented entry points without an **explicit human ask** and a breaking-release plan. Downstream consumers depend on stable import paths and names.
+
+This applies to `packages/*/src/`, package `exports` in `package.json`, and CLI commands.
+
+**Exception — examples:** `packages/*/examples/**` is not public API. Example files may be renamed or removed during cleanup (`git mv`; see `git.mdc`). Update README embed markers and `browser.html` references in the same change.
+
+## Related rules
+
+- Example quality and naming: `examples.mdc`
+- Git renames: `git.mdc` (`alwaysApply`)

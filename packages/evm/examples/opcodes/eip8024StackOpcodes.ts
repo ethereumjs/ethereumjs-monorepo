@@ -8,7 +8,7 @@ import { type EVM, createEVM } from '@ethereumjs/evm'
 // (n = 17..235) using a single-byte immediate per opcode.
 //
 // Run from packages/evm:
-//   npx tsx examples/opcodes/0xe6-e8-eip8024-stack-opcodes.ts
+//   npx tsx examples/opcodes/eip8024StackOpcodes.ts
 
 const DUPN = 0xe6
 const SWAPN = 0xe7

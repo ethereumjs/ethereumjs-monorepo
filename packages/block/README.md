@@ -70,7 +70,7 @@ For `BlockHeader` instantiation, there are similar standalone functions:
 Instantiation Example:
 
 ```ts
-// ./examples/simple.ts
+// ./examples/createBlockHeader.ts
 
 import { createBlockHeader } from '@ethereumjs/block'
 import { bytesToHex } from '@ethereumjs/util'
@@ -214,7 +214,7 @@ Validation of the withdrawals trie can be manually triggered with the newly intr
 This library supports the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) (`Hardfork.Cancun` or higher), see the following example:
 
 ```ts
-// ./examples/4844.ts
+// ./examples/eip4844Block.ts
 
 import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'

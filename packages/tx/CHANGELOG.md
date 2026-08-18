@@ -345,7 +345,7 @@ This release introduces support for a non-final version of [EIP-7702](https://ei
 The following is a simple example how to use an `EOACodeEIP7702Transaction` with one authorization list item:
 
 ```ts
-// ./examples/EOACodeTx.ts
+// ./examples/eoaCode7702Tx.ts
 
 import { Chain, Common, Hardfork } from '@ethereumjs/common'
 import { EOACodeEIP7702Transaction } from '@ethereumjs/tx'

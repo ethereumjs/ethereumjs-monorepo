@@ -79,7 +79,7 @@ Everyday building blocks — bytes, accounts, addresses, signatures, constants, 
 Byte-related helper and conversion functions.
 
 ```ts
-// ./examples/bytes.ts
+// ./examples/bytesConversions.ts
 
 import { bytesToBigInt } from '@ethereumjs/util'
 
@@ -139,7 +139,7 @@ console.log(`Ethereum address ${address.toString()} created`)
 Small helpers around signature validation, conversion, recovery as well as selected convenience wrappers for calls to the underlying crypo libraries, using the cryptographic primitive implementations from the [Noble](https://paulmillr.com/noble/) crypto library set. If possible for your use case it is recommended to use the underlying crypto libraries directly for robustness.
 
 ```ts
-// ./examples/signature.ts
+// ./examples/ecrecover.ts
 
 import { bytesToHex, ecrecover, hexToBytes } from '@ethereumjs/util'
 
@@ -157,16 +157,7 @@ console.log(`Recovered public key ${bytesToHex(pubkey)} from valid signature val
 
 ## Module: [constants](src/constants.ts)
 
-Exposed constants (e.g. `KECCAK256_NULL_S` for string representation of Keccak-256 hash of null)
-
-```ts
-// ./examples/constants.ts
-
-import { BIGINT_2EXP96, KECCAK256_NULL_S } from '@ethereumjs/util'
-
-console.log(`The keccak-256 hash of null: ${KECCAK256_NULL_S}`)
-console.log(`BigInt constants (performance), e.g. BIGINT_2EXP96: ${BIGINT_2EXP96}`)
-```
+Exposed constants (e.g. `KECCAK256_NULL_S` for string representation of Keccak-256 hash of null). See [`bytesConversions.ts`](./examples/bytesConversions.ts) for usage together with byte helpers.
 
 ## Module: [types](src/types.ts)
 
@@ -181,7 +172,7 @@ Fork-specific types and helpers — BAL, blobs, authorization lists, CL requests
 Helpers for [EIP-7928](https://eips.ethereum.org/EIPS/eip-7928) Block Level Access Lists (BAL): the `BlockLevelAccessList` class, JSON/RLP conversion, hashing, and validation utilities. Use this module for offline fixture checks or tooling; block execution and BAL accumulation live in [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#eip-7928-block-level-access-lists-amsterdam). See the [canonical Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) for release ↔ spec tracking.
 
 ```ts
-// ./examples/bal.ts
+// ./examples/blockAccessList.ts
 
 import {
   bytesToHex,

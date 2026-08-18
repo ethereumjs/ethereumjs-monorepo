@@ -57,7 +57,7 @@ This package provides the core Ethereum Virtual Machine (EVM) implementation whi
 The following is the simplest example for an EVM instantiation with reasonable defaults for state and blockchain information (like blockhashes):
 
 ```ts
-// ./examples/simple.ts
+// ./examples/runBytecode.ts
 
 import { createEVM } from '@ethereumjs/evm'
 import { hexToBytes } from '@ethereumjs/util'
@@ -167,7 +167,7 @@ See [`examples/emitLogs.ts`](./examples/emitLogs.ts) for a minimal `LOG1` byteco
 
 ## Examples
 
-See the [examples](./examples/) folder for different meaningful examples on how to use the EVM package and invoke certain aspects of it, e.g. running a bytecode snippet, listening to events, or to activate an EVM with a certain EIP for experimental purposes. Opcode-focused samples live under [`examples/opcodes/`](./examples/opcodes/) (e.g. [EIP-8024 DUPN/SWAPN/EXCHANGE](./examples/opcodes/0xe6-e8-eip8024-stack-opcodes.ts) on `Hardfork.Amsterdam`).
+See the [examples](./examples/) folder for different meaningful examples on how to use the EVM package and invoke certain aspects of it, e.g. running a bytecode snippet, listening to events, or to activate an EVM with a certain EIP for experimental purposes. Opcode-focused samples live under [`examples/opcodes/`](./examples/opcodes/) (e.g. [EIP-8024 DUPN/SWAPN/EXCHANGE](./examples/opcodes/eip8024StackOpcodes.ts) on `Hardfork.Amsterdam`).
 
 Noteworthy examples:
 
@@ -284,7 +284,7 @@ along the `Common` instance to the outer `@ethereumjs/vm` instance.
 If you want to activate an EIP not currently active on the hardfork your `common` instance is set to, it is possible to individually activate EIP support in the EVM by specifying the desired EIPs using the `eips` property in your `CommonOpts` setup, e.g.:
 
 ```ts
-// ./examples/eips.ts
+// ./examples/activateEIP7702.ts
 
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createEVM } from '@ethereumjs/evm'
@@ -381,7 +381,7 @@ See the [canonical Amsterdam overview](https://github.com/ethereumjs/ethereumjs-
 The opcodes are active on `Hardfork.Amsterdam` and validated at decode time (invalid immediates trap). Gas costs: `dupnGas`, `swapnGas`, `exchangeGas` (default 3 each). They are supported in legacy bytecode and in EOF containers.
 
 ```ts
-// ./examples/opcodes/0xe6-e8-eip8024-stack-opcodes.ts
+// ./examples/opcodes/eip8024StackOpcodes.ts
 
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { type EVM, createEVM } from '@ethereumjs/evm'
@@ -393,7 +393,7 @@ import { type EVM, createEVM } from '@ethereumjs/evm'
 // (n = 17..235) using a single-byte immediate per opcode.
 //
 // Run from packages/evm:
-//   npx tsx examples/opcodes/0xe6-e8-eip8024-stack-opcodes.ts
+//   npx tsx examples/opcodes/eip8024StackOpcodes.ts
 
 const DUPN = 0xe6
 const SWAPN = 0xe7
@@ -491,10 +491,10 @@ void main().catch((err) => {
 Run the full walkthrough (DUPN, SWAPN, and EXCHANGE) from `packages/evm`:
 
 ```sh
-npx tsx examples/opcodes/0xe6-e8-eip8024-stack-opcodes.ts
+npx tsx examples/opcodes/eip8024StackOpcodes.ts
 ```
 
-See also [CLZ (EIP-7939)](./examples/opcodes/0x1e-CLZ-count-leading-zeros.ts) for another Amsterdam/Osaka-era opcode example pattern.
+See also [CLZ (EIP-7939)](./examples/opcodes/eip7939ClzOpcode.ts) for another Amsterdam/Osaka-era opcode example pattern.
 
 ### EIP-7954 contract and initcode size limits (Amsterdam)
 
@@ -530,7 +530,7 @@ In our `examples` folder we provide a helper function for simple direct precompi
 This is an example of a simple precompile run (BLS12_G1ADD precompile):
 
 ```ts
-// ./examples/precompiles/0b-bls12-g1add.ts
+// ./examples/precompiles/bls12G1AddPrecompile.ts
 
 import { runPrecompile } from './util.ts'
 
@@ -574,7 +574,7 @@ The Osaka hardfork introduces some behavioral changes with [EIP-7823](https://ei
 You can use the following example as a starting point to compare on the changes between hardforks:
 
 ```ts
-// ./examples/precompiles/05-modexp.ts
+// ./examples/precompiles/modexpPrecompile.ts
 
 import { Hardfork } from '@ethereumjs/common'
 import { runPrecompile } from './util.ts'

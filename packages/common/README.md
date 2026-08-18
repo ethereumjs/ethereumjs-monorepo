@@ -65,7 +65,7 @@ const { Common, Chain, Hardfork } = require('@ethereumjs/common')
 All parameters can be accessed through the `Common` class, instantiated with an object containing either the `chain` (e.g. 'Mainnet') or the `chain` together with a specific `hardfork` provided:
 
 ```ts
-// ./examples/common.ts#L1-L7
+// ./examples/instantiation.ts#L1-L7
 
 import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 
@@ -83,7 +83,7 @@ Current `DEFAULT_HARDFORK`: `Hardfork.Prague`
 Here are some simple usage examples:
 
 ```ts
-// ./examples/common.ts#L9-L23
+// ./examples/instantiation.ts#L9-L23
 
 // Get bootstrap nodes for chain/network
 console.log('Below are the known bootstrap nodes')
@@ -136,7 +136,7 @@ void main()
 The KZG library used for EIP-4844 Blob Transactions is initialized by `common` under the `common.customCrypto` property and is then used throughout the `Ethereumjs` stack wherever KZG cryptography is required. Below is an example of how to initialize (assuming you are using the `c-kzg` package as your KZG cryptography library).
 
 ```ts
-// ./examples/initKzg.ts
+// ./examples/initKZG.ts
 
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
@@ -264,7 +264,7 @@ has both config specification for the chain as well as the genesis state specifi
 common from such configuration in the following manner:
 
 ```ts
-// ./examples/fromGeth.ts
+// ./examples/fromGethGenesis.ts
 
 import { createCommonFromGethGenesis } from '@ethereumjs/common'
 import { postMergeGethGenesis } from '@ethereumjs/testdata'
@@ -289,7 +289,7 @@ console.log(`The London forkhash for this custom chain is ${common.forkHash('lon
 The `hardfork` can be set in constructor like this:
 
 ```ts
-// ./examples/common.ts#L1-L4
+// ./examples/instantiation.ts#L1-L4
 
 import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 

@@ -8,8 +8,8 @@
     "test/**/*.ts",
     "examples/**/*.ts",
     "scripts/**/*.ts",
-    "examples/simple.ts",
-    "examples/peer-communication.ts",
+    "examples/dptDiscovery.ts",
+    "examples/peerCommunication.ts",
     "examples/peer-communication-les.ts",
     "scripts/singlePeerRun.ts"
   ]

@@ -12,4 +12,4 @@ const common = createCommonFromGethGenesis(postMergeGethGenesis, {
 // after calculating it via `blockchain`)
 common.setForkHashes(genesisHash)
 
-console.log(`The London forkhash for this custom chain is ${common.forkHash('london')}`)
+console.log(`Hardfork is ${common.hardfork()} (Prague fork hash: ${common.forkHash('prague')})`)

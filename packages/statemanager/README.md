@@ -176,7 +176,7 @@ The `SimpleStateManager` is a dependency-minimized simple state manager implemen
 This state manager can be instantiated and used as follows:
 
 ```ts
-// ./examples/simple.ts
+// ./examples/simpleStateManager.ts
 
 import { Account, createAddressFromPrivateKey, randomBytes } from '@ethereumjs/util'
 

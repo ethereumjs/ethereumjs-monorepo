@@ -297,8 +297,8 @@ This library by default uses JavaScript implementations for the basic standard c
 
 See the [examples](./examples/) folder for different meaningful examples on how to use the VM package and invoke certain aspects of it, e.g. running a complete block, a certain tx or using event listeners, among others. Some noteworthy examples to point out:
 
-1. [./examples/run-blockchain](./examples/run-blockchain.ts): Loads tests data, including accounts and blocks, and runs all of them in the VM.
-2. [./examples/run-solidity-contract](./examples/run-solidity-contract.ts): Compiles a Solidity contract, and calls constant and non-constant functions.
+1. [./examples/runBlockchain](./examples/runBlockchain.ts): Loads tests data, including accounts and blocks, and runs all of them in the VM.
+2. [./examples/runSolidityContract](./examples/runSolidityContract.ts): Compiles a Solidity contract, and calls constant and non-constant functions.
 3. [./examples/runBlockBalGenerate.ts](./examples/runBlockBalGenerate.ts): Runs an Amsterdam block and reads the generated Block Level Access List (BAL).
 4. [./examples/runBlockBalValidate.ts](./examples/runBlockBalValidate.ts): Validates a block against a provided BAL from an execution payload.
 5. [./examples/runPoABlockFromTestdata.ts](./examples/runPoABlockFromTestdata.ts): Replays a bundled PoA block fixture offline (no RPC).

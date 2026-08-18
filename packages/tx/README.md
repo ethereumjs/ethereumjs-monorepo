@@ -108,7 +108,7 @@ This library supports the following transaction types ([EIP-2718](https://eips.e
 This is the recommended tx type starting with the activation of the `london` HF, see the following code snippet for an example on how to instantiate:
 
 ```ts
-// ./examples/londonTx.ts
+// ./examples/eip1559Tx.ts
 
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import type { FeeMarketEIP1559TxData } from '@ethereumjs/tx'
@@ -326,7 +326,7 @@ This tx type lets you run code in the context of an EOA, extending the functiona
 The following is a simple example how to use an `EOACodeEIP7702Tx` with one authorization list item:
 
 ```ts
-// ./examples/EOACodeTx.ts
+// ./examples/eoaCode7702Tx.ts
 
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createEOACode7702Tx } from '@ethereumjs/tx'
@@ -449,7 +449,7 @@ This library fully supports `EIP-4844` blob transactions. For blob transactions 
 As a first step add the [micro-eth-signer](https://github.com/paulmillr/micro-eth-signer) package for KZG and [@paulmillr/trusted-setups](https://github.com/paulmillr/trusted-setups) for the trusted setup data as dependencies to your `package.json` file and install the libraries. Then initialization can be done like the following:
 
 ```ts
-// ./examples/initKzg.ts
+// ./examples/initKZG.ts
 
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'

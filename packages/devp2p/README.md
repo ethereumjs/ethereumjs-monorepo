@@ -38,7 +38,7 @@ and make heavy use of the Node.js network stack.
 You can react on events from the network like this:
 
 ```ts
-// ./examples/peer-communication.ts#L65-L65
+// ./examples/peerCommunication.ts#L65-L65
 
 
 ```
@@ -47,16 +47,16 @@ You can react on events from the network like this:
 
 Basic example to connect to some bootstrap nodes and get basic peer info:
 
-- [simple](examples/simple.cts)
+- [dptDiscovery](examples/dptDiscovery.ts)
 
 Communicate with peers to read new transaction and block information:
 
-- [peer-communication](examples/peer-communication.cts)
+- [peerCommunication](examples/peerCommunication.ts)
 
 Run an example with:
 
 ```
-DEBUG=ethjs,devp2p:* node -r tsx/register ./examples/peer-communication.cts
+DEBUG=ethjs,devp2p:* node -r tsx/register ./examples/peerCommunication.ts
 ```
 
 ## API
@@ -101,7 +101,7 @@ void main()
 Add some bootstrap nodes (or some custom nodes with `dpt.addPeer()`):
 
 ```ts
-// ./examples/peer-communication.ts#L321-L325
+// ./examples/peerCommunication.ts#L321-L325
 
     console.error(chalk.bold.red(`DPT bootstrap error: ${err.stack ?? err}`))
   })
@@ -257,7 +257,7 @@ Send the initial status message with `sendStatus()`, then wait for the correspon
 to arrive to start the communication.
 
 ```ts
-// ./examples/peer-communication.ts#L96-L106
+// ./examples/peerCommunication.ts#L96-L106
 
   genesisHash: hexToBytes('0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'),
 })
@@ -275,7 +275,7 @@ eth.events.once('status', () => {
 Wait for follow-up messages to arrive, send your responses.
 
 ```ts
-// ./examples/peer-communication.ts#L116-L119
+// ./examples/peerCommunication.ts#L116-L119
 
   requests.msgTypes[code]++
 } else {
@@ -283,7 +283,7 @@ Wait for follow-up messages to arrive, send your responses.
 }
 ```
 
-See the `peer-communication.ts` example for a more detailed use case.
+See the `peerCommunication.ts` example for a more detailed use case.
 
 ### API
 

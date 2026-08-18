@@ -46,7 +46,7 @@ The library also supports reorg scenarios e.g. by allowing to add a new block wi
 The following is an example to instantiate a simple Blockchain object, put blocks into the blockchain and then iterate through the blocks added:
 
 ```ts
-// ./examples/simple.ts
+// ./examples/iterateChain.ts
 
 import { createBlock } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'

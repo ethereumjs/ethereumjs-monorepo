@@ -8,6 +8,28 @@ alwaysApply: false
 
 Runnable examples live in `packages/<pkg>/examples/`. They are the **source of truth** for short README snippets; longer or niche demos stay in `examples/` only.
 
+Examples are **not** public API — rename, merge, or remove freely during cleanup (use `git mv`; see `git.mdc`). Public library symbols follow `code-conventions.mdc`.
+
+## What makes a good example
+
+- **One topic per file** — the name should tell you what it demonstrates without opening it.
+- **Short but expressive** — lowerCamelCase file names (`emitLogs.ts`, `eip1559Tx.ts`, `initKZG.ts`). Avoid vague names (`common.ts`, `simple.ts`) when something specific fits.
+- **Acronym casing** — same as production code (`initKZG.ts`, not `initKzg.ts`); see `code-conventions.mdc`.
+- **Current chain context** — use Mainnet (or a clearly labeled custom chain) with a recent default hardfork. Avoid deprecated testnet names (Ropsten, Goerli) and hardfork-era labels readers no longer recognize (`londonTx` → prefer `eip1559Tx.ts` or similar).
+- **Non-trivial** — show a real library workflow; skip one-liner demos that add CI time without teaching anything. Merge tiny snippets into a sibling example or drop them if the README section can use a richer neighbor.
+- **Runnable in CI** — no interaction, no required secrets, no flaky network (see below).
+
+## Naming and cleanup
+
+| Prefer | Avoid |
+|--------|-------|
+| `decodeOpcodes.ts` | `decode-opcodes.ts` (kebab-case) |
+| `emitLogs.ts` | Mixed styles across a package |
+| `eip1559Tx.ts`, `customChainIdTx.ts` | `londonTx.ts`, `custom-chain-id-tx.ts` |
+| `fromGethGenesis.ts` | `fromGeth.ts` (too vague) |
+
+When removing an example, check README embeds (`grep examples/` in the package README). Either drop the section, point elsewhere, or embed a better example so docs do not gap.
+
 ## Which packages
 
 Most active library packages have an `examples/` folder and `examples` / `examples:build` scripts in `package.json`. Not every workspace package does (e.g. `binarytree`, `testdata`, fixture submodules). When adding a new library package, follow the existing pattern.
@@ -34,7 +56,7 @@ Prefer flat `examples/` when possible; use nested folders only when the set is l
 Short examples that fit a docs section are embedded in the package `README.md` via [embedme](https://github.com/zackarychapple/embedme).
 
 1. Edit the file under `examples/` (never hand-edit embedded code blocks in the README).
-2. In the README, keep a fence whose first line is the embedme marker, e.g. `// ./examples/simple.ts`.
+2. In the README, keep a fence whose first line is the embedme marker, e.g. `// ./examples/encodeDecode.ts`.
 3. Sync: `npm run examples:build` in the package (`npx embedme README.md`).
 
 Embedme adds the header comment automatically. Pick README candidates that are short and map cleanly to a topic; link to `examples/` for the rest.

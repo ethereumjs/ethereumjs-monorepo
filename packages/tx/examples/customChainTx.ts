@@ -1,4 +1,4 @@
-import { Mainnet, createCustomCommon } from '@ethereumjs/common'
+import { Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
 import { createAddressFromPrivateKey, hexToBytes } from '@ethereumjs/util'
 
@@ -13,7 +13,7 @@ const customCommon = createCustomCommon(
   },
   Mainnet,
   {
-    hardfork: 'petersburg',
+    hardfork: Hardfork.Prague,
   },
 )
 
