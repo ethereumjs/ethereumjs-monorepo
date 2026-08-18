@@ -250,7 +250,7 @@ const main = async () => {
 void main()
 ```
 
-See [Supported EIPs](#supported-eips) for the full list. Opcode-focused samples: [`examples/opcodes/`](./examples/opcodes/) ([EIP-8024](./examples/opcodes/eip8024StackOpcodes.ts), [EIP-7939 CLZ](./examples/opcodes/eip7939ClzOpcode.ts)).
+See [Supported EIPs](#supported-eips) for the full list. Opcode-focused samples: [`examples/opcodes/`](./examples/opcodes/) ([EIP-8024](./examples/opcodes/eip8024StackOpcodes.ts), [EIP-7843 SLOTNUM](./examples/opcodes/eip7843SlotnumOpcode.ts), [EIP-7939 CLZ](./examples/opcodes/eip7939ClzOpcode.ts)).
 
 **Note:** Starting with the Dencun hardfork, EIP-4844 point-evaluation precompile (`0x0a`) requires a separate KZG library install — see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup).
 
@@ -574,6 +574,9 @@ Individual EIP activation is shown in [EIP Activation](#eip-activation). Current
 - [EIP-7981](https://eips.ethereum.org/EIPS/eip-7981) - Access list data pricing (Amsterdam, experimental)
 - [EIP-8024](https://eips.ethereum.org/EIPS/eip-8024) - DUPN, SWAPN and EXCHANGE instructions (Amsterdam, experimental)
 - [EIP-8037](https://eips.ethereum.org/EIPS/eip-8037) - State creation gas cost increase (Amsterdam, experimental)
+- [EIP-8038](https://eips.ethereum.org/EIPS/eip-8038) - State access gas cost increase (Amsterdam, experimental)
+- [EIP-8246](https://eips.ethereum.org/EIPS/eip-8246) - SELFDESTRUCT no burn (Amsterdam, experimental)
+- [EIP-8282](https://eips.ethereum.org/EIPS/eip-8282) - Builder execution requests (Amsterdam, experimental)
 
 Annotations:
 
@@ -597,7 +600,49 @@ See the [canonical Amsterdam overview](https://github.com/ethereumjs/ethereumjs-
 
 The opcodes are active on `Hardfork.Amsterdam` and validated at decode time (invalid immediates trap). Gas costs: `dupnGas`, `swapnGas`, `exchangeGas` (default 3 each). They are supported in legacy bytecode and in EOF containers.
 
-Runnable walkthrough: [`examples/opcodes/eip8024StackOpcodes.ts`](./examples/opcodes/eip8024StackOpcodes.ts). See also [CLZ (EIP-7939)](./examples/opcodes/eip7939ClzOpcode.ts).
+Runnable walkthrough: [`examples/opcodes/eip8024StackOpcodes.ts`](./examples/opcodes/eip8024StackOpcodes.ts). See also [CLZ (EIP-7939)](./examples/opcodes/eip7939ClzOpcode.ts) and [SLOTNUM (EIP-7843)](#eip-7843-slotnum-opcode-amsterdam).
+
+### EIP-7843 SLOTNUM opcode (Amsterdam)
+
+See the [canonical Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) in `@ethereumjs/vm` for release ↔ spec tracking.
+
+[EIP-7843](https://eips.ethereum.org/EIPS/eip-7843) adds `SLOTNUM` (`0x4b`), which pushes the executing block's consensus `slotNumber` onto the stack. Pass a block header that sets the field — a default blank block has none and the opcode throws:
+
+```ts
+// ./examples/opcodes/eip7843SlotnumOpcode.ts
+
+import { createBlock } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createEVM } from '@ethereumjs/evm'
+
+const SLOTNUM = 0x4b
+const STOP = 0x00
+
+const main = async () => {
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })
+  const evm = await createEVM({ common })
+
+  const slotNumber = 42n
+  const block = createBlock(
+    { header: { slotNumber, gasLimit: 30_000_000n } },
+    { common, skipConsensusFormatValidation: true },
+  )
+
+  const res = await evm.runCode({
+    code: Uint8Array.from([SLOTNUM, STOP]),
+    block,
+    gasLimit: 100_000n,
+  })
+
+  const [top] = res.runState!.stack.peek(1)
+  console.log(`SLOTNUM read consensus slot ${top} (header.slotNumber=${slotNumber})`)
+  console.log(`Gas used: ${res.executionGasUsed}`)
+}
+
+void main()
+```
+
+Header construction: [`@ethereumjs/block` slot number](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/block#eip-7843-slot-number).
 
 ### EIP-7954 contract and initcode size limits (Amsterdam)
 

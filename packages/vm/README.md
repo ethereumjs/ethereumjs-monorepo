@@ -33,6 +33,7 @@ to build and run blocks and txs and update state.
 - [Run a Block](#run-a-block)
 - [Build a Block](#build-a-block)
 - [Receipts and Event Logs](#receipts-and-event-logs)
+- [Amsterdam Gas Dimensions](#amsterdam-gas-dimensions)
 - [Events](#events)
 - [Genesis State](#genesis-state)
 - [EIP Activation](#eip-activation)
@@ -281,6 +282,61 @@ void main()
 ```
 
 For bytecode-level `LOG*` emission see [`@ethereumjs/evm` emitLogs example](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm/examples/emitLogs.ts).
+
+## Amsterdam Gas Dimensions
+
+[EIP-8037](https://eips.ethereum.org/EIPS/eip-8037) splits execution into **regular** and **state** gas. A 1-wei transfer to a fresh account still costs 21_000 regular gas — and about 183_600 state gas (`120 × 1530`) for the new account. `runTx()` reports both dimensions plus what the sender pays vs what the block counts ([EIP-7778](https://eips.ethereum.org/EIPS/eip-7778)):
+
+```ts
+// ./examples/runTxGasDimensions.ts
+
+import { createBlock } from '@ethereumjs/block'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createLegacyTx } from '@ethereumjs/tx'
+import {
+  createAccount,
+  createAddressFromPrivateKey,
+  createAddressFromString,
+  hexToBytes,
+} from '@ethereumjs/util'
+import { createVM, runTx } from '@ethereumjs/vm'
+
+const main = async () => {
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })
+  const vm = await createVM({ common })
+
+  const senderKey = hexToBytes(`0x${'20'.repeat(32)}`)
+  const sender = createAddressFromPrivateKey(senderKey)
+  await vm.stateManager.putAccount(sender, createAccount({ nonce: 0n, balance: BigInt(1e18) }))
+
+  const recipient = createAddressFromString('0x00000000000000000000000000000000000000aa')
+  const block = createBlock(
+    { header: { number: 1n, gasLimit: 30_000_000n, baseFeePerGas: 1n } },
+    { common, skipConsensusFormatValidation: true },
+  )
+
+  const tx = createLegacyTx(
+    {
+      gasLimit: 300_000n,
+      gasPrice: 10n,
+      value: 1n,
+      to: recipient,
+    },
+    { common },
+  ).sign(senderKey)
+
+  const res = await runTx(vm, { tx, block })
+
+  console.log(`Sender paid (totalGasSpent):     ${res.totalGasSpent}`)
+  console.log(`Block counts (blockGasSpent):    ${res.blockGasSpent}`)
+  console.log(`Regular dimension (txRegularGas): ${res.txRegularGas}`)
+  console.log(`State dimension (txStateGas):     ${res.txStateGas}`)
+}
+
+void main()
+```
+
+Wallets that still assume "21_000 covers a transfer" will OOG on first-touch recipients. Set `gasLimit` to cover **both** dimensions. See [EIP-8037](#eip-8037-state-creation-gas-cost-increase-amsterdam) for the full field table.
 
 ## Events
 
@@ -561,6 +617,7 @@ The `Hardfork.Amsterdam` bundle activates the following EIPs. Amsterdam test fix
 | [8024](https://eips.ethereum.org/EIPS/eip-8024) | `DUPN`, `SWAPN`, `EXCHANGE` stack opcodes | [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#eip-8024-stack-opcodes-amsterdam) |
 | [8037](https://eips.ethereum.org/EIPS/eip-8037) | Two-dimensional block gas + state-gas reservoir | [EIP-8037 section](#eip-8037-state-creation-gas-cost-increase-amsterdam) (below) |
 | [8038](https://eips.ethereum.org/EIPS/eip-8038) | State-access gas; SSTORE access cost before implicit read | [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#eip-8037-and-eip-7708-amsterdam) |
+| [8246](https://eips.ethereum.org/EIPS/eip-8246) | SELFDESTRUCT no longer burns ETH | EVM `SELFDESTRUCT` + journal; no burn log under EIP-7708 |
 | [8282](https://eips.ethereum.org/EIPS/eip-8282) | Builder deposit/exit request predeploys (v7 mined addresses) | `runBlock()` / `accumulateRequests`; addresses in `packages/vm/src/params.ts` |
 
 **Activation:** `new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })`. See [Release ↔ spec tracking](#amsterdam-hardfork-experimental) above for supported spec snapshots; behaviour may change on patch releases.
@@ -741,7 +798,7 @@ void main()
 
 See [Release ↔ spec tracking](#amsterdam-hardfork-experimental) above for the supported Amsterdam spec snapshot.
 
-[EIP-8037](https://eips.ethereum.org/EIPS/eip-8037) splits block gas into two independent dimensions — **regular** and **state** — and introduces a per-transaction **state-gas reservoir** for state-touching operations. When active, `runBlock()` and `runTx()` handle this automatically; no extra opt-in is required.
+[EIP-8037](https://eips.ethereum.org/EIPS/eip-8037) splits block gas into two independent dimensions — **regular** and **state** — and introduces a per-transaction **state-gas reservoir** for state-touching operations. When active, `runBlock()` and `runTx()` handle this automatically; no extra opt-in is required. For a first-touch value transfer that reports both dimensions, see [Amsterdam Gas Dimensions](#amsterdam-gas-dimensions).
 
 **Block-level gas used:** instead of summing a single `gasUsed`, the block header field becomes `max(block_regular_gas_used, block_state_gas_used)`. Each transaction contributes to both dimensions via `RunTxResult.txRegularGas` and `RunTxResult.txStateGas` (undefined when EIP-8037 is inactive).
 
