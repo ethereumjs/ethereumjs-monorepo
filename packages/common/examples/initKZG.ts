@@ -9,7 +9,7 @@ const main = async () => {
     hardfork: Hardfork.Cancun,
     customCrypto: { kzg },
   })
-  console.log(common.customCrypto.kzg) // Should print the initialized KZG interface
+  console.log(common.customCrypto.kzg !== undefined)
 }
 
 void main()
