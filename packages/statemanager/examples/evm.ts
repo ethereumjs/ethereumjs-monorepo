@@ -7,7 +7,8 @@ const main = async () => {
     const blockchain = new RPCBlockChain(provider)
     const blockTag = 1n
     const state = new RPCStateManager({ provider, blockTag })
-    const evm = await createEVM({ blockchain, stateManager: state }) // note that evm is ready to run BLOCKHASH opcodes (over RPC)
+    const evm = await createEVM({ blockchain, stateManager: state })
+    console.log(`EVM ready with RPC state at block ${blockTag}`)
   } catch (e) {
     console.log(e.message) // fetch would fail because provider url is not real. please replace provider with a valid RPC url string.
   }
