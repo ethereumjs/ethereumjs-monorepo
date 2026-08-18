@@ -9,44 +9,55 @@
 | A module to store and interact with blocks. |
 | ------------------------------------------- |
 
+Stores a sequential chain of [@ethereumjs/block](../block) blocks, tracks the canonical head, and supports reorgs via `putBlock()`. Used by `@ethereumjs/client` and `@ethereumjs/vm`.
+
+Runnable examples live in [`examples/`](./examples/).
+
 ## Table of Contents
 
 - [Installation](#installation)
 - [Getting Started](#getting-started)
-- [EIP Integrations](#eip-integrations)
+- [Block Lookup](#block-lookup)
+- [Chain Iteration](#chain-iteration)
+- [Hardfork by Head](#hardfork-by-head)
+- [Custom Genesis](#custom-genesis)
 - [Consensus Types](#consensus-types)
+- [Supported Block Features](#supported-block-features)
+- [Events and Debugging](#events-and-debugging)
 - [Browser](#browser)
 - [API](#api)
-- [Testing](#testing)
 - [EthereumJS](#ethereumjs)
 - [License](#license)
 
 ## Installation
 
-To obtain the latest version, simply install the project using `npm`:
-
 ```shell
 npm install @ethereumjs/blockchain
 ```
 
-**Note:** If you want to work with `EIP-4844` related functionality, you will have additional initialization steps for the **KZG setup**, see related section below.
-
 ## Getting Started
 
-### Introduction
-
-The `Blockchain` package represents an Ethereum-compatible blockchain storing a sequential chain of [@ethereumjs/block](../block) blocks and holding information about the current canonical head block as well as the context the chain is operating in (e.g. the hardfork rules the current head block adheres to).
-
-New blocks can be added to the blockchain. Validation ensures that the block format adheres to the given chain rules (with the `Blockchain.validateBlock()` function) and consensus rules (`Blockchain.consensus.validateConsensus()`).
-
-The library also supports reorg scenarios e.g. by allowing to add a new block with `Blockchain.putBlock()` which follows a different canonical path to the head than given by the current canonical head block.
-
-## Examples
-
-The following is an example to instantiate a simple Blockchain object, put blocks into the blockchain and then iterate through the blocks added:
+Use `createBlockchain()` — it awaits async initialization (genesis setup, consensus wiring):
 
 ```ts
-// ./examples/simple.ts
+import { createBlockchain } from '@ethereumjs/blockchain'
+import { Common, Mainnet } from '@ethereumjs/common'
+
+const common = new Common({ chain: Mainnet })
+const blockchain = await createBlockchain({ common })
+console.log(`Genesis hash: ${blockchain.genesisBlock.hash()}`)
+```
+
+Main constructors: `createBlockchain()`, `createBlockchainFromBlocksData()`.
+
+Pass `validateBlocks: false` / `validateConsensus: false` in examples and tests when blocks are intentionally incomplete.
+
+## Block Lookup
+
+Retrieve blocks by number or hash after adding them with `putBlock()`:
+
+```ts
+// ./examples/getBlock.ts
 
 import { createBlock } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
@@ -54,15 +65,68 @@ import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { bytesToHex } from '@ethereumjs/util'
 
 const main = async () => {
-  const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
-  // Use the safe static constructor which awaits the init method
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Prague })
   const blockchain = await createBlockchain({
-    validateBlocks: false, // Skipping validation so we can make a simple chain without having to provide complete blocks
+    validateBlocks: false,
     validateConsensus: false,
     common,
   })
 
-  // We use minimal data to provide a sequence of blocks (increasing number, difficulty, and then setting parent hash to previous block)
+  const block1 = createBlock(
+    {
+      header: {
+        number: 1n,
+        parentHash: blockchain.genesisBlock.hash(),
+        difficulty: blockchain.genesisBlock.header.difficulty + 1n,
+      },
+    },
+    { common, setHardfork: true },
+  )
+  const block2 = createBlock(
+    {
+      header: {
+        number: 2n,
+        parentHash: block1.header.hash(),
+        difficulty: block1.header.difficulty + 1n,
+      },
+    },
+    { common, setHardfork: true },
+  )
+  await blockchain.putBlock(block1)
+  await blockchain.putBlock(block2)
+
+  const byNumber = await blockchain.getBlock(2n)
+  const byHash = await blockchain.getBlock(block2.hash())
+
+  console.log(`Block ${byNumber.header.number} hash: ${bytesToHex(byNumber.hash())}`)
+  console.log(`Lookup by hash matches: ${bytesToHex(byHash.hash()) === bytesToHex(block2.hash())}`)
+}
+
+void main()
+```
+
+Also: `getBlocks()`, `getIteratorHead()`, `getLatestHeader()`.
+
+## Chain Iteration
+
+Walk the canonical chain with `iterator()`:
+
+```ts
+// ./examples/iterateChain.ts
+
+import { createBlock } from '@ethereumjs/block'
+import { createBlockchain } from '@ethereumjs/blockchain'
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { bytesToHex } from '@ethereumjs/util'
+
+const main = async () => {
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Prague })
+  const blockchain = await createBlockchain({
+    validateBlocks: false,
+    validateConsensus: false,
+    common,
+  })
+
   const block = createBlock(
     {
       header: {
@@ -83,61 +147,40 @@ const main = async () => {
     },
     { common, setHardfork: true },
   )
-  // See @ethereumjs/block for more details on how to create a block
   await blockchain.putBlock(block)
   await blockchain.putBlock(block2)
 
-  // We iterate over the blocks in the chain to the current head (block 2)
   await blockchain.iterator('i', (block) => {
     const blockNumber = block.header.number.toString()
     const blockHash = bytesToHex(block.hash())
     console.log(`Block ${blockNumber}: ${blockHash}`)
   })
-
-  // Block 1: 0xa1a061528d74ba81f560e1ebc4f29d6b58171fc13b72b876cdffe6e43b01bdc5
-  // Block 2: 0x5583be91cf9fb14f5dbeb03ad56e8cef19d1728f267c35a25ba5a355a528f602
 }
 void main()
 ```
 
-More examples can be found in the [examples](./examples/) folder.
+## Hardfork by Head
 
-## Setup
+Pin `Common` hardfork to the current head block number on init:
 
-### Block Storage
+```ts
+// ./examples/hardforkByHead.ts
 
-For storing blocks different backends can be used. The database needs to conform to the [DB](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts) interface provided in the `@ethereumjs/util` package (since this is used in other places as well).
+import { createBlockchain } from '@ethereumjs/blockchain'
+import { Common, Mainnet } from '@ethereumjs/common'
 
-By default the blockchain package uses a [MapDB](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/mapDB.ts) non-persistent data storage which is also generically provided in the `@ethereumjs/util` package.
+const main = async () => {
+  const common = new Common({ chain: Mainnet })
+  await createBlockchain({ common, hardforkByHeadBlockNumber: true })
+  console.log(`Hardfork at genesis head: ${common.hardfork()}`)
+}
 
-If you need a persistent data store for your use case you can consider using the wrapper we have written within our [client](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/execution/level.ts) library.
+void main()
+```
 
-### Consensus
+## Custom Genesis
 
-Starting with v6 there is a dedicated consensus class for each type of supported consensus, `Ethash`, `Clique` and `Casper` (PoS, this one is rather the do-nothing part of `Casper` and letting the respective consensus/beacon client do the hard work! 🙂). Each consensus class adheres to a common interface `Consensus` implementing the following five methods in a consensus-specific way:
-
-- `genesisInit(genesisBlock: Block): Promise<void>`
-- `setup(): Promise<void>`
-- `validateConsensus(block: Block): Promise<void>`
-- `validateDifficulty(header: BlockHeader): Promise<void>`
-- `newBlock(block: Block, commonAncestor?: BlockHeader, ancientHeaders?: BlockHeader[]): Promise<void>`
-
-#### Custom Consensus Algorithms
-
-Also part of V6, you can also create a custom consensus class implementing the above interface and pass it into the `Blockchain` constructor using the `consensus` option at instantiation. See [this test script](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/test/customConsensus.spec.ts) for a complete example of how write and use a custom consensus implementation.
-
-Note, if you construct a blockchain with a custom consensus implementation, transition checks for switching from PoW to PoS are disabled so defining a merge hardfork will have no impact on the consensus mechanism defined for the chain.
-
-## Custom Genesis State
-
-### Genesis State
-
-Genesis state for the 4 supported networks (mainnet, sepolia, hoodi, holesky) is stored in an auxiliary package [@ethereumjs/genesis](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/genesis), from which it can be included if needed (for most - especially VM - use cases it is not necessary), see PR [#2844](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2844).
-
-
-### Custom genesis from a Geth genesis config
-
-For many custom chains we might come across a genesis configuration, which can be used to build both chain config as well the genesis state (and hence the genesis block as well to start off with)
+Build a chain from a Geth genesis JSON file:
 
 ```ts
 // ./examples/gethGenesis.ts
@@ -148,7 +191,6 @@ import { postMergeGethGenesis } from '@ethereumjs/testdata'
 import { bytesToHex } from '@ethereumjs/util'
 
 const main = async () => {
-  // Load geth genesis file
   const common = createCommonFromGethGenesis(postMergeGethGenesis, { chain: 'customChain' })
   const genesisState = parseGethGenesisState(postMergeGethGenesis)
   const blockchain = await createBlockchain({
@@ -163,91 +205,70 @@ const main = async () => {
 }
 
 void main()
-
 ```
 
-The genesis block from the initialized `Blockchain` can be retrieved via the `Blockchain.genesisBlock` getter. For creating a genesis block from the params in `@ethereumjs/common`, the `createGenesisBlock(stateRoot: Buffer): Block` method can be used.
+Built-in network genesis state lives in [@ethereumjs/genesis](../genesis). Access the genesis block via `blockchain.genesisBlock`.
 
-## Supported Blocks and Tx Types
+## Consensus Types
 
-### EIP-1559 Support
+| Algorithm | Class | Notes |
+| --- | --- | --- |
+| PoS (default post-merge) | `CasperConsensus` | Difficulty `0`, beacon client does validation |
+| PoW (pre-merge) | `EthashConsensus` | Ethash difficulty rules |
+| PoA (historical testnets) | `CliqueConsensus` | Goerli-style signer voting |
 
-This library supports the handling of `EIP-1559` blocks and transactions starting with the `v5.3.0` release.
+Clique example:
 
-### EIP-4844 Shard Blob Transactions Support
+```ts
+// ./examples/clique.ts
 
-This library supports the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844).
+import { CliqueConsensus, createBlockchain } from '@ethereumjs/blockchain'
+import { Common, ConsensusAlgorithm, Hardfork } from '@ethereumjs/common'
+import { goerliChainConfig } from '@ethereumjs/testdata'
 
-The blockchain library now allows for blob transactions to be validated and included in a chain where EIP-4844 activated either by hardfork or standalone EIP.
+import type { ConsensusDict } from '@ethereumjs/blockchain'
 
-**Note:** Working with blob transactions needs a manual KZG library installation and global initialization, see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
+const main = async () => {
+  const common = new Common({ chain: goerliChainConfig, hardfork: Hardfork.London })
 
-### EIP-7685 Requests Support
+  const consensusDict: ConsensusDict = {}
+  consensusDict[ConsensusAlgorithm.Clique] = new CliqueConsensus()
+  const blockchain = await createBlockchain({
+    consensusDict,
+    common,
+  })
+  console.log(`Created blockchain with ${blockchain.consensus!.algorithm} consensus algorithm`)
+}
 
-This library supports blocks including the [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) requests to the consensus layer (like e.g. deposit or withdrawal requests).
+void main()
+```
+
+Custom consensus: implement the `Consensus` interface and pass via `consensusDict` or `consensus` option. See [customConsensus.spec.ts](./test/customConsensus.spec.ts).
+
+### Storage
+
+Default DB is in-memory `MapDB`. For persistence, pass a `DB`-conforming backend (see [@ethereumjs/client level wrapper](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/execution/level.ts)).
+
+## Supported Block Features
+
+- **EIP-1559** — base fee blocks (default post-London)
+- **EIP-4844** — blob txs (requires KZG on `Common`, see [@ethereumjs/tx](../tx#kzg-setup))
+- **EIP-7685** — CL requests in block headers
+- **EIP-4895** — withdrawals
+
+## Events and Debugging
+
+`blockchain.events` emits `deletedCanonicalBlocks` on reorgs.
+
+Debug loggers: `blockchain:#`, `blockchain:clique`, `blockchain:ethash`. Enable with `DEBUG=ethjs,blockchain:clique`.
 
 ## Browser
 
-We provide hybrid ESM/CJS builds for all our libraries. With the v10 breaking release round from Spring 2025, all libraries are "pure-JS" by default and we have eliminated all hard-wired WASM code. Additionally we have substantially lowered the bundle sizes, reduced the number of dependencies, and cut out all usages of Node.js-specific primitives (like the Node.js event emitter).
-
-It is easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
+Hybrid ESM/CJS builds are provided. See [./examples/browser.html](./examples/browser.html).
 
 ## API
 
-### Docs
-
-Generated TypeDoc API [Documentation](./docs/README.md)
-
-### Hybrid CJS/ESM Builds
-
-With the breaking releases from Summer 2023 we have started to ship our libraries with both CommonJS (`cjs` folder) and ESM builds (`esm` folder), see `package.json` for the detailed setup.
-
-If you use an ES6-style `import` in your code files from the ESM build will be used:
-
-```ts
-import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
-```
-
-If you use Node.js specific `require`, the CJS build will be used:
-
-```ts
-const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
-```
-
-Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking which CJS can not provide.
-
-## Events
-
-The `Blockchain` class has a public property `events` which contains an `EventEmitter` (using [EventEmitter3](https://github.com/primus/eventemitter3)). Following events are emitted on which you can react within your code:
-
-| Event                    | Description                                 |
-| ------------------------ | ------------------------------------------- |
-| `deletedCanonicalBlocks` | Emitted when blocks are reorged and deleted |
-
-## Debugging
-
-This library uses the [debug](https://github.com/visionmedia/debug) debugging utility package.
-
-The following initial logger is currently available:
-
-| Logger              | Description                                                              |
-| ------------------- | ------------------------------------------------------------------------ |
-| `blockchain:#`      | Core blockchain operations like when a block or header is put or deleted |
-| `blockchain:clique` | Clique consensus operations like updating the vote and/or signer list    |
-| `blockchain:ethash` | Ethash consensus operations like PoW block or header validation          |
-
-The following is an example for a logger run:
-
-Run with the clique logger:
-
-```shell
-DEBUG=ethjs,blockchain:clique tsx test.ts
-```
-
-`ethjs` **must** be included in the `DEBUG` environment variables to enable **any** logs.
-Additional log selections can be added with a comma separated list (no spaces). Logs with extensions can be enabled with a colon `:`, and `*` can be used to include all extensions (currently do not apply for blockchain debugging, example taken from another library).
-
-`DEBUG=ethjs,statemanager:cache:*,trie,statemanager:merkle npx vitest test/statemanager.spec.ts`
+Generated TypeDoc [documentation](./docs/README.md).
 
 ## EthereumJS
 

@@ -9,6 +9,8 @@
 | TypeScript implementation of the Ethereum EVM. |
 | ---------------------------------------------- |
 
+Runnable examples live in [`examples/`](./examples/) (including [`precompiles/`](./examples/precompiles/) and [`opcodes/`](./examples/opcodes/) subfolders).
+
 - 🦄 All hardforks up to **Osaka** (**Amsterdam** in development)
 - 🌴 Tree-shakeable API
 - 👷🏼 Controlled dependency set (7 external + `@Noble` crypto)
@@ -23,14 +25,20 @@
 
 - [Installation](#installation)
 - [Getting Started](#getting-started)
-- [Examples](#examples)
+- [State, Blockchain, and Tracing](#state-blockchain-and-tracing)
+- [Contract Calls (`runCall`)](#contract-calls-runcall)
+- [Event Logs](#event-logs)
+- [EIP Activation](#eip-activation)
+- [Events](#events)
+- [Custom Precompiles](#custom-precompiles)
+- [Custom Opcodes](#custom-opcodes)
+- [Opcode Decoding](#opcode-decoding)
 - [Browser](#browser)
 - [API](#api)
 - [Architecture](#architecture)
 - [Supported Hardforks](#supported-hardforks)
 - [Supported EIPs](#supported-eips)
 - [Precompiles](#precompiles)
-- [Events](#events)
 - [Understanding the EVM](#understanding-the-evm)
 - [Profiling the EVM](#profiling-the-evm)
 - [Development](#development)
@@ -52,12 +60,10 @@ This package provides the core Ethereum Virtual Machine (EVM) implementation whi
 
 ## Getting Started
 
-### Basic
-
-The following is the simplest example for an EVM instantiation with reasonable defaults for state and blockchain information (like blockhashes):
+Use `createEVM()` for a standalone instance with a default `SimpleStateManager` and mock blockchain. `runCode()` executes raw bytecode without a full transaction context:
 
 ```ts
-// ./examples/simple.ts
+// ./examples/runBytecode.ts
 
 import { createEVM } from '@ethereumjs/evm'
 import { hexToBytes } from '@ethereumjs/util'
@@ -71,9 +77,9 @@ const main = async () => {
 void main()
 ```
 
-### Blockchain, State and Events
+## State, Blockchain, and Tracing
 
-If you want the EVM to run against a specific state, you need an `@ethereumjs/statemanager`. An `@ethereumjs/blockchain` instance can be passed in to provide access to external interface information like a blockhash:
+For stateful execution, pass a `@ethereumjs/statemanager` instance. An optional `@ethereumjs/blockchain` provides blockhash access. Subscribe to `step` events to trace opcode execution:
 
 ```ts
 // ./examples/withBlockchain.ts
@@ -121,58 +127,289 @@ const main = async () => {
 void main()
 ```
 
-Additionally, this example shows how to use events to listen to the inner workings and procedural updates
-(`step` event) of the EVM.
+WASM crypto backends can replace the default JavaScript implementations — see [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for `customCrypto` setup.
 
-### WASM Crypto Support
+## Contract Calls (`runCall`)
 
-This library by default uses JavaScript implementations for the basic standard crypto primitives like hashing or signature verification (for included txs). See `@ethereumjs/common` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for instructions on how to replace them with, e.g., a more performant WASM implementation by using a shared `common` instance.
+`runCall()` runs the full message path (checkpointing, value transfer, nonce updates). Put contract code on the state manager, then call the address:
 
-## Event logs
+```ts
+// ./examples/runCallWithState.ts
 
-The EVM records contract events as **logs**: a compact tuple reused across `@ethereumjs/evm`, `@ethereumjs/vm`, and (with field renaming) JSON-RPC.
+import { createEVM } from '@ethereumjs/evm'
+import { Account, bytesToHex, createAddressFromString, hexToBytes } from '@ethereumjs/util'
+
+const main = async () => {
+  const evm = await createEVM()
+  const caller = createAddressFromString('0x00000000000000000000000000000000000000ee')
+  const contract = createAddressFromString('0x00000000000000000000000000000000000000c0')
+
+  // PUSH1 03 PUSH1 05 ADD — store 8 at memory[0], RETURN 32 bytes
+  const code = hexToBytes('0x600360050160005260206000F3')
+  await evm.stateManager.putCode(contract, code)
+  await evm.stateManager.putAccount(caller, new Account(0n, 1_000_000_000_000n))
+
+  const result = await evm.runCall({
+    caller,
+    to: contract,
+    gasLimit: 100_000n,
+  })
+
+  console.log(`Return value: ${bytesToHex(result.execResult.returnValue)}`)
+  console.log(`Gas used: ${result.execResult.executionGasUsed}`)
+}
+
+void main()
+```
+
+For async event listeners on `runCall`, see [Events](#events).
+
+## Event Logs
+
+The EVM records contract events as **logs** — a compact tuple reused across `@ethereumjs/evm`, `@ethereumjs/vm`, and (with field renaming) JSON-RPC:
 
 ```ts
 type Log = [address: Uint8Array, topics: Uint8Array[], data: Uint8Array]
 //            emitter            indexed fields   unindexed payload
 ```
 
-### Where logs come from
+Logs come from `LOG0`–`LOG4` opcodes during execution, and (with [EIP-7708](https://eips.ethereum.org/EIPS/eip-7708) on Amsterdam) synthetic `Transfer` / `Burn` logs on native ETH movement via `runCall()`.
 
-| Source | When |
-| --- | --- |
-| `LOG0`–`LOG4` opcodes | Contract bytecode writes to memory, then logs `topics` + `data` |
-| [EIP-7708](https://eips.ethereum.org/EIPS/eip-7708) (Amsterdam) | Synthetic `Transfer` / `Burn` logs on native ETH movement via `runCall()` |
-
-### Reading logs from `runCode()` / `runCall()`
-
-Both methods return an [`ExecResult`](./docs/interfaces/ExecResult.md) with an optional `logs` array:
+Both `runCode()` and `runCall()` return an [`ExecResult`](./docs/interfaces/ExecResult.md) with an optional `logs` array. Nested calls append logs in execution order; a reverted top-level execution clears them. For transaction receipts and block blooms, use `@ethereumjs/vm`.
 
 ```ts
-const result = await evm.runCode({ code, to: contractAddress, gasLimit: 100_000n })
-for (const log of result.logs ?? []) {
+// ./examples/emitLogs.ts
+
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createEVM } from '@ethereumjs/evm'
+import { bytesToBigInt, bytesToHex, createAddressFromString, hexToBytes } from '@ethereumjs/util'
+
+import type { Log } from '@ethereumjs/evm'
+
+/** Pretty-print a Log tuple for console output (not an RPC formatter). */
+function formatLog(log: Log) {
   const [address, topics, data] = log
-  // bytesToHex(address), topics.map(bytesToHex), bytesToHex(data)
+  return {
+    address: bytesToHex(address),
+    topics: topics.map((topic) => bytesToHex(topic)),
+    data: bytesToHex(data),
+  }
 }
+
+const main = async () => {
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai })
+  const evm = await createEVM({ common })
+
+  const contract = createAddressFromString('0x00000000000000000000000000000000000000c0')
+
+  // MSTORE a 32-byte data word at offset 0, then LOG1 with one topic.
+  // Stack at LOG1 (bottom → top): memOffset, memLength, topic1
+  const topic = hexToBytes(`0x${'11'.repeat(32)}`)
+  const dataWord = hexToBytes(`0x${'00'.repeat(31)}42`)
+  const code = hexToBytes(
+    `0x7f${bytesToHex(dataWord).slice(2)}6000527f${bytesToHex(topic).slice(2)}60206000a100`,
+  )
+
+  const result = await evm.runCode({
+    code,
+    to: contract,
+    gasLimit: 100_000n,
+  })
+
+  const logs = result.logs ?? []
+  console.log(`Emitted ${logs.length} log(s) from ${contract.toString()}`)
+  for (const [index, log] of logs.entries()) {
+    const formatted = formatLog(log)
+    console.log(`  log[${index}] address=${formatted.address}`)
+    console.log(`           topics=${formatted.topics.join(', ')}`)
+    console.log(`           data=${formatted.data} (value=${bytesToBigInt(log[2])})`)
+  }
+}
+
+void main()
 ```
 
-See [`examples/emitLogs.ts`](./examples/emitLogs.ts) for a minimal `LOG1` bytecode snippet.
+## EIP Activation
 
-**Notes:**
+Activate individual EIPs on top of a hardfork via `Common` `eips`:
 
-- The log **emitter address** is the account whose code is executing (`message.to` / contract address), not necessarily `tx.origin`.
-- Nested calls **append** logs in execution order; a reverted inner call does not contribute logs to the outer result.
-- A **reverted** top-level execution clears logs (same as on-chain).
-- For transaction receipts and block blooms, use `@ethereumjs/vm` — see [Receipts and event logs](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#receipts-and-event-logs).
+```ts
+// ./examples/activateEIP7702.ts
 
-## Examples
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createEVM } from '@ethereumjs/evm'
 
-See the [examples](./examples/) folder for different meaningful examples on how to use the EVM package and invoke certain aspects of it, e.g. running a bytecode snippet, listening to events, or to activate an EVM with a certain EIP for experimental purposes. Opcode-focused samples live under [`examples/opcodes/`](./examples/opcodes/) (e.g. [EIP-8024 DUPN/SWAPN/EXCHANGE](./examples/opcodes/0xe6-e8-eip8024-stack-opcodes.ts) on `Hardfork.Amsterdam`).
+const main = async () => {
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
+  const evm = await createEVM({ common })
+  console.log(
+    `EIP 7702 is active in isolation on top of the Cancun HF - ${evm.common.isActivatedEIP(7702)}`,
+  )
+}
 
-Noteworthy examples:
+void main()
+```
 
-1. [`examples/emitLogs.ts`](./examples/emitLogs.ts): Run `LOG1` bytecode and read `ExecResult.logs`.
-2. [`examples/runCode.ts`](./examples/runCode.ts): Trace opcode execution with the `step` event.
+See [Supported EIPs](#supported-eips) for the full list. Opcode-focused samples: [`examples/opcodes/`](./examples/opcodes/) ([EIP-8024](./examples/opcodes/eip8024StackOpcodes.ts), [EIP-7939 CLZ](./examples/opcodes/eip7939ClzOpcode.ts)).
+
+**Note:** Starting with the Dencun hardfork, EIP-4844 point-evaluation precompile (`0x0a`) requires a separate KZG library install — see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup).
+
+## Events
+
+The EVM emits events via [EventEmitter3](https://github.com/primus/eventemitter3). Subscribe to `beforeMessage`, `afterMessage`, `step`, and `newContract`. Async listeners receive a `resolve` callback that must be called when finished:
+
+```ts
+// ./examples/eventListener.ts
+
+import { createEVM } from '@ethereumjs/evm'
+import { createAddressFromString, hexToBytes } from '@ethereumjs/util'
+
+const main = async () => {
+  const evm = await createEVM()
+
+  evm.events.on('beforeMessage', (event) => {
+    console.log('synchronous listener to beforeMessage', event)
+  })
+  evm.events.on('afterMessage', (event, resolve) => {
+    console.log('asynchronous listener to afterMessage', event)
+    // we need to call resolve() to avoid the event listener hanging
+    resolve?.()
+  })
+  const res = await evm.runCall({
+    to: createAddressFromString('0x0000000000000000000000000000000000000000'),
+    value: 0n,
+    data: hexToBytes('0x6001'), // PUSH1 01 -- simple bytecode to push 1 onto the stack
+  })
+  console.log(res.execResult.executionGasUsed) // 0n
+}
+
+void main()
+```
+
+If an exception is thrown from an async handler, it bubbles into the EVM and may corrupt state — avoid that in production tracing.
+
+## Custom Precompiles
+
+Register custom precompiles at arbitrary addresses — add new ones, override built-ins, or delete by address only:
+
+```ts
+// ./examples/precompiles/customPrecompile.ts
+
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createEVM } from '@ethereumjs/evm'
+import {
+  bigIntToBytes,
+  bytesToBigInt,
+  bytesToHex,
+  createAddressFromString,
+  setLengthLeft,
+} from '@ethereumjs/util'
+
+import type { ExecResult, PrecompileInput } from '@ethereumjs/evm'
+
+// Custom precompile that adds two 32-byte big-endian unsigned integers (mod 2^256).
+const ADDITION_GAS = 15n
+
+function additionPrecompile(input: PrecompileInput): ExecResult {
+  const a = bytesToBigInt(input.data.subarray(0, 32))
+  const b = bytesToBigInt(input.data.subarray(32, 64))
+  const sum = (a + b) % 2n ** 256n
+  return {
+    executionGasUsed: ADDITION_GAS,
+    returnValue: setLengthLeft(bigIntToBytes(sum), 32),
+  }
+}
+
+const main = async () => {
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Prague })
+  const ADDRESS = '0x000000000000000000000000000000000000ff01'
+
+  // Register the custom precompile with a hex string address
+  const evm = await createEVM({
+    common,
+    customPrecompiles: [{ address: ADDRESS, function: additionPrecompile }],
+  })
+
+  // Verify it is registered
+  const fn = evm.getPrecompile(ADDRESS)
+  console.log(`Precompile registered at ${ADDRESS}: ${fn !== undefined}`)
+
+  // Build call data: two 32-byte values (7 + 35)
+  const a = setLengthLeft(bigIntToBytes(7n), 32)
+  const b = setLengthLeft(bigIntToBytes(35n), 32)
+  const callData = new Uint8Array(64)
+  callData.set(a, 0)
+  callData.set(b, 32)
+
+  // Execute via runCall
+  const result = await evm.runCall({
+    to: createAddressFromString(ADDRESS),
+    gasLimit: BigInt(30000),
+    data: callData,
+  })
+
+  console.log('--------------------------------')
+  console.log('Custom Addition Precompile')
+  console.log(`Input    : 7 + 35`)
+  console.log(
+    `Result   : ${bytesToBigInt(result.execResult.returnValue)} (${bytesToHex(result.execResult.returnValue)})`,
+  )
+  console.log(`Gas used : ${result.execResult.executionGasUsed}`)
+  console.log('--------------------------------')
+}
+
+void main()
+```
+
+Use `evm.getPrecompile(address)` to retrieve built-in or custom precompiles. Override by registering at the same address; delete with `{ address: '0x...' }` only.
+
+More precompile demos: [`examples/precompiles/`](./examples/precompiles/) (MODEXP, BLS12-381, P256 verify, …).
+
+## Custom Opcodes
+
+Add, override, or remove opcodes via `customOpcodes` on `createEVM()`:
+
+```ts
+// ./examples/customOpcode.ts
+
+import { createEVM } from '@ethereumjs/evm'
+import { hexToBytes } from '@ethereumjs/util'
+
+const main = async () => {
+  const evm = await createEVM({
+    customOpcodes: [
+      {
+        opcode: 0x21,
+        opcodeName: 'PUSH_ONE',
+        baseFee: 3,
+        gasFunction(_runState, gas) {
+          return gas
+        },
+        logicFunction(runState) {
+          runState.stack.push(1n)
+        },
+      },
+    ],
+  })
+
+  const res = await evm.runCode({
+    code: hexToBytes('0x21'),
+    gasLimit: 100_000n,
+  })
+
+  const [top] = res.runState!.stack.peek(1)
+  console.log(`Stack top after custom opcode: ${top}`)
+  console.log(`Gas used: ${res.executionGasUsed}`)
+}
+
+void main()
+```
+
+Pass `{ opcode: 0x01 }` (no handler) to delete a built-in opcode for that EVM instance.
+
+## Opcode Decoding
+
+Inspect the opcode table for a hardfork with `getOpcodesForHF()` — see [`examples/decodeOpcodes.ts`](./examples/decodeOpcodes.ts) for a minimal disassembly walkthrough.
 
 ## Browser
 
@@ -281,27 +518,7 @@ along the `Common` instance to the outer `@ethereumjs/vm` instance.
 
 ## Supported EIPs
 
-If you want to activate an EIP not currently active on the hardfork your `common` instance is set to, it is possible to individually activate EIP support in the EVM by specifying the desired EIPs using the `eips` property in your `CommonOpts` setup, e.g.:
-
-```ts
-// ./examples/eips.ts
-
-import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { createEVM } from '@ethereumjs/evm'
-
-const main = async () => {
-  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
-  const evm = await createEVM({ common })
-  console.log(
-    `EIP 7702 is active in isolation on top of the Cancun HF - ${evm.common.isActivatedEIP(7702)}`,
-  )
-}
-
-void main()
-
-```
-
-Currently supported EIPs (sorted by EIP number):
+Individual EIP activation is shown in [EIP Activation](#eip-activation). Currently supported EIPs (sorted by EIP number):
 
 - [EIP-1153](https://eips.ethereum.org/EIPS/eip-1153) - Transient storage opcodes (Cancun)
 - [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) - Fee market change for ETH 1.0 chain
@@ -380,121 +597,7 @@ See the [canonical Amsterdam overview](https://github.com/ethereumjs/ethereumjs-
 
 The opcodes are active on `Hardfork.Amsterdam` and validated at decode time (invalid immediates trap). Gas costs: `dupnGas`, `swapnGas`, `exchangeGas` (default 3 each). They are supported in legacy bytecode and in EOF containers.
 
-```ts
-// ./examples/opcodes/0xe6-e8-eip8024-stack-opcodes.ts
-
-import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { type EVM, createEVM } from '@ethereumjs/evm'
-
-// EIP-8024 stack opcodes (0xe6 DUPN, 0xe7 SWAPN, 0xe8 EXCHANGE)
-// https://eips.ethereum.org/EIPS/eip-8024
-//
-// Active on Hardfork.Amsterdam. These extend DUP/SWAP to deep stack depths
-// (n = 17..235) using a single-byte immediate per opcode.
-//
-// Run from packages/evm:
-//   npx tsx examples/opcodes/0xe6-e8-eip8024-stack-opcodes.ts
-
-const DUPN = 0xe6
-const SWAPN = 0xe7
-const EXCHANGE = 0xe8
-const STOP = 0x00
-const PUSH1 = 0x60
-
-/** Encode DUPN / SWAPN immediate for one-based depth n (17..235). Spec: n = (x + 145) mod 256 */
-const encodeSingleImmediate = (n: number): number => {
-  if (n < 17 || n > 235) {
-    throw new Error(`DUPN/SWAPN depth must be 17..235, got ${n}`)
-  }
-  return (n - 145) & 0xff
-}
-
-/** Push consecutive values 1..count (bottom = 1, top = count) */
-const buildPushSequence = (count: number): Uint8Array => {
-  const bytes = new Uint8Array(count * 2)
-  for (let i = 0; i < count; i++) {
-    bytes[i * 2] = PUSH1
-    bytes[i * 2 + 1] = i + 1
-  }
-  return bytes
-}
-
-const concatBytes = (...parts: Uint8Array[]): Uint8Array => {
-  const total = parts.reduce((sum, part) => sum + part.length, 0)
-  const out = new Uint8Array(total)
-  let offset = 0
-  for (const part of parts) {
-    out.set(part, offset)
-    offset += part.length
-  }
-  return out
-}
-
-const stackTop = (evmResult: Awaited<ReturnType<EVM['runCode']>>, n: number): number[] => {
-  const stack = evmResult.runState?.stack
-  if (!stack) {
-    throw new Error('Missing runState stack in result')
-  }
-  return stack.peek(n).map((word) => Number(word)).reverse()
-}
-
-const runCase = async (evm: EVM, label: string, code: Uint8Array) => {
-  const res = await evm.runCode({ code, gasLimit: 1_000_000n })
-  console.log('--------------------------------')
-  console.log(label)
-  console.log(`stack (top ${Math.min(5, stackTop(res, 5).length)} shown, top last):`, stackTop(res, 5))
-  console.log(`gas used: ${res.executionGasUsed}`)
-}
-
-const main = async () => {
-  const common = new Common({
-    chain: Mainnet,
-    hardfork: Hardfork.Amsterdam,
-  })
-  const evm = await createEVM({ common })
-
-  // Stack [1..18], top = 18. DUPN depth 17 duplicates the item at 17 (value 2) onto the top.
-  await runCase(
-    evm,
-    'DUPN (0xe6): duplicate stack item at depth 17',
-    concatBytes(
-      buildPushSequence(18),
-      Uint8Array.from([DUPN, encodeSingleImmediate(17), STOP]),
-    ),
-  )
-
-  // Stack [1..18], top = 18. SWAPN depth 17 swaps top with the item at depth 17 (value 2).
-  await runCase(
-    evm,
-    'SWAPN (0xe7): swap top with item at depth 17',
-    concatBytes(
-      buildPushSequence(18),
-      Uint8Array.from([SWAPN, encodeSingleImmediate(17), STOP]),
-    ),
-  )
-
-  // Stack [1..20], top = 20. EXCHANGE immediate 0x8e swaps the 1st and 2nd slots below the top (18 <-> 19).
-  await runCase(
-    evm,
-    'EXCHANGE (0xe8): swap 1st and 2nd slots below top (immediate 0x8e)',
-    concatBytes(buildPushSequence(20), Uint8Array.from([EXCHANGE, 0x8e, STOP])),
-  )
-  console.log('--------------------------------')
-}
-
-void main().catch((err) => {
-  console.error(err)
-  process.exitCode = 1
-})
-```
-
-Run the full walkthrough (DUPN, SWAPN, and EXCHANGE) from `packages/evm`:
-
-```sh
-npx tsx examples/opcodes/0xe6-e8-eip8024-stack-opcodes.ts
-```
-
-See also [CLZ (EIP-7939)](./examples/opcodes/0x1e-CLZ-count-leading-zeros.ts) for another Amsterdam/Osaka-era opcode example pattern.
+Runnable walkthrough: [`examples/opcodes/eip8024StackOpcodes.ts`](./examples/opcodes/eip8024StackOpcodes.ts). See also [CLZ (EIP-7939)](./examples/opcodes/eip7939ClzOpcode.ts).
 
 ### EIP-7954 contract and initcode size limits (Amsterdam)
 
@@ -530,7 +633,7 @@ In our `examples` folder we provide a helper function for simple direct precompi
 This is an example of a simple precompile run (BLS12_G1ADD precompile):
 
 ```ts
-// ./examples/precompiles/0b-bls12-g1add.ts
+// ./examples/precompiles/bls12G1AddPrecompile.ts
 
 import { runPrecompile } from './util.ts'
 
@@ -574,7 +677,7 @@ The Osaka hardfork introduces some behavioral changes with [EIP-7823](https://ei
 You can use the following example as a starting point to compare on the changes between hardforks:
 
 ```ts
-// ./examples/precompiles/05-modexp.ts
+// ./examples/precompiles/modexpPrecompile.ts
 
 import { Hardfork } from '@ethereumjs/common'
 import { runPrecompile } from './util.ts'
@@ -615,7 +718,7 @@ The Osaka hardfork introduces a new precompile for secp256r1 curve support with 
 The following example code allows you to generate input values for the precompile using Noble Curves [v2.0.0](https://github.com/paulmillr/noble-curves/releases/tag/2.0.0) or later.
 
 ```ts
-// No direct examples integration (library version not taken in as a dependency)
+/* Noble curves snippet — not wired as a runnable example (extra dependency). */
 import { p256 } from '@noble/curves/nist.js'
 import { sha256 } from '@noble/hashes/sha2.js'
 import { bigIntToHex, bytesToHex } from '@ethereumjs/util'
@@ -636,137 +739,7 @@ const sigS = bytesToHex(sig).substring(64 + 2)
 
 ### Custom Precompiles
 
-The EVM supports registering custom precompiles at arbitrary addresses. Custom precompiles can **add** new precompiles, **override** existing ones, or **delete** built-in precompiles.
-
-Pass an array of `CustomPrecompile` entries to the `customPrecompiles` option when creating the EVM:
-
-```ts
-// ./examples/precompiles/customPrecompile.ts
-
-import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { createEVM } from '@ethereumjs/evm'
-import {
-  bigIntToBytes,
-  bytesToBigInt,
-  bytesToHex,
-  createAddressFromString,
-  setLengthLeft,
-} from '@ethereumjs/util'
-
-import type { ExecResult, PrecompileInput } from '@ethereumjs/evm'
-
-// Custom precompile that adds two 32-byte big-endian unsigned integers (mod 2^256).
-const ADDITION_GAS = 15n
-
-function additionPrecompile(input: PrecompileInput): ExecResult {
-  const a = bytesToBigInt(input.data.subarray(0, 32))
-  const b = bytesToBigInt(input.data.subarray(32, 64))
-  const sum = (a + b) % 2n ** 256n
-  return {
-    executionGasUsed: ADDITION_GAS,
-    returnValue: setLengthLeft(bigIntToBytes(sum), 32),
-  }
-}
-
-const main = async () => {
-  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Prague })
-  const ADDRESS = '0x000000000000000000000000000000000000ff01'
-
-  // Register the custom precompile with a hex string address
-  const evm = await createEVM({
-    common,
-    customPrecompiles: [{ address: ADDRESS, function: additionPrecompile }],
-  })
-
-  // Verify it is registered
-  const fn = evm.getPrecompile(ADDRESS)
-  console.log(`Precompile registered at ${ADDRESS}: ${fn !== undefined}`)
-
-  // Build call data: two 32-byte values (7 + 35)
-  const a = setLengthLeft(bigIntToBytes(7n), 32)
-  const b = setLengthLeft(bigIntToBytes(35n), 32)
-  const callData = new Uint8Array(64)
-  callData.set(a, 0)
-  callData.set(b, 32)
-
-  // Execute via runCall
-  const result = await evm.runCall({
-    to: createAddressFromString(ADDRESS),
-    gasLimit: BigInt(30000),
-    data: callData,
-  })
-
-  console.log('--------------------------------')
-  console.log('Custom Addition Precompile')
-  console.log(`Input    : 7 + 35`)
-  console.log(`Result   : ${bytesToBigInt(result.execResult.returnValue)} (${bytesToHex(result.execResult.returnValue)})`)
-  console.log(`Gas used : ${result.execResult.executionGasUsed}`)
-  console.log('--------------------------------')
-}
-
-void main()
-
-```
-
-The address for custom precompiles can be specified as either an `Address` instance or a `0x`-prefixed hex string. All relevant types (`CustomPrecompile`, `AddPrecompile`, `DeletePrecompile`, `PrecompileFunc`, `PrecompileInput`) are exported from `@ethereumjs/evm`.
-
-You can use `evm.getPrecompile(address)` to retrieve a registered precompile function at any address (works for both built-in and custom precompiles):
-
-```ts
-const fn = evm.getPrecompile('0x0000000000000000000000000000000000000002') // SHA256
-const custom = evm.getPrecompile('0x000000000000000000000000000000000000ff01') // custom
-```
-
-To **override** a built-in precompile, register a custom precompile at the same address. To **delete** a precompile, pass an entry with only the `address` field (no `function`):
-
-```ts
-const evm = await createEVM({
-  customPrecompiles: [
-    { address: '0x0000000000000000000000000000000000000002' }, // deletes SHA256
-  ],
-})
-```
-
-## Events
-
-### Tracing Events
-
-The EVM emits events that support async listeners (using [EventEmitter3](https://github.com/primus/eventemitter3)).
-
-You can subscribe to the following events:
-
-- `beforeMessage`: Emits a `Message` right after running it.
-- `afterMessage`: Emits an `EVMResult` right after running a message.
-- `step`: Emits an `InterpreterStep` right before running an EVM step.
-- `newContract`: Emits a `NewContractEvent` right before creating a contract. This event contains the deployment code, not the deployed code, as the creation message may not return such a code.
-
-#### Event listeners
-
-You can perform asynchronous operations from within an event handler
-and prevent the EVM from continuing until they finish.
-
-If subscribing to events with an async listener, specify the second
-parameter of your listener as a `resolve` function that must be called once your listener code has finished.
-
-See below for example usage:
-
-```ts
-// ./examples/eventListener.ts#L7-L14
-
-evm.events.on('beforeMessage', (event) => {
-  console.log('synchronous listener to beforeMessage', event)
-})
-evm.events.on('afterMessage', (event, resolve) => {
-  console.log('asynchronous listener to beforeMessage', event)
-  // we need to call resolve() to avoid the event listener hanging
-  resolve?.()
-})
-```
-
-If an exception is passed to that function, or thrown from within the
-handler or a function called by it, the exception will bubble into the
-EVM and interrupt it, possibly corrupting its state. It's strongly
-recommended not to do that.
+See [Custom Precompiles](#custom-precompiles) for registration, override, and deletion patterns.
 
 ## Understanding the EVM
 

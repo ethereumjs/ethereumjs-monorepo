@@ -1,8 +1,3 @@
-/**
- * Emit a LOG1 from hand-written bytecode and read logs from ExecResult.
- *
- * Usage: npx tsx examples/emitLogs.ts
- */
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createEVM } from '@ethereumjs/evm'
 import { bytesToBigInt, bytesToHex, createAddressFromString, hexToBytes } from '@ethereumjs/util'

@@ -12,7 +12,7 @@ Short entrypoint for coding agents in this monorepo. Human documentation lives i
 
 ## Cursor
 
-Always-on rules: [`.cursor/rules/`](.cursor/rules/) (ci, typecheck, spellcheck, security, git). API tests: [`.cursor/rules/api-tests.mdc`](.cursor/rules/api-tests.mdc). Tx-specific: [`.cursor/rules/tx-tests.mdc`](.cursor/rules/tx-tests.mdc). Skills: [`.cursor/skills/`](.cursor/skills/) — use `update-est-fixtures` when bumping execution-spec test fixtures.
+Always-on rules: [`.cursor/rules/`](.cursor/rules/) (ci, typecheck, spellcheck, security, git). Code style: [`.cursor/rules/code-conventions.mdc`](.cursor/rules/code-conventions.mdc). API tests: [`.cursor/rules/api-tests.mdc`](.cursor/rules/api-tests.mdc). Examples: [`.cursor/rules/examples.mdc`](.cursor/rules/examples.mdc). Tx-specific: [`.cursor/rules/tx-tests.mdc`](.cursor/rules/tx-tests.mdc). Skills: [`.cursor/skills/`](.cursor/skills/) — use `update-est-fixtures` when bumping execution-spec test fixtures.
 
 ## Habits
 

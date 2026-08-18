@@ -19,15 +19,21 @@
 - 👷🏼 Controlled dependency set (`@noble` crypto + minimal externals)
 - 🏄🏾‍♂️ WASM-free default + fully browser ready
 
+Everything is re-exported from the package root; deep imports are not necessary. Runnable examples live in [`examples/`](./examples/).
+
 ## Table of Contents
 
 - [Installation](#installation)
 - [Getting Started](#getting-started)
-- [At a glance](#at-a-glance)
-- [Module guide](#module-guide)
-  - [Core primitives](#core-primitives)
-  - [Fork & protocol helpers](#fork--protocol-helpers)
-  - [Storage & integration](#storage--integration)
+- [Bytes and Units](#bytes-and-units)
+- [Accounts and Addresses](#accounts-and-addresses)
+- [Signatures](#signatures)
+- [EIP-7702 Authorization Lists](#eip-7702-authorization-lists)
+- [EIP-7685 CL Requests](#eip-7685-cl-requests)
+- [EIP-4895 Withdrawals](#eip-4895-withdrawals)
+- [EIP-4844 / EIP-7594 Blobs](#eip-4844--eip-7594-blobs)
+- [EIP-7928 Block Access Lists](#eip-7928-block-access-lists)
+- [Storage](#storage)
 - [Browser](#browser)
 - [API](#api)
 - [EthereumJS](#ethereumjs)
@@ -35,63 +41,71 @@
 
 ## Installation
 
-To obtain the latest version, simply require the project using `npm`:
-
 ```shell
 npm install @ethereumjs/util
 ```
 
 ## Getting Started
 
-`@ethereumjs/util` bundles small, focused helpers used across the monorepo — from byte conversion and accounts to fork-specific types (BAL, blobs, CL requests). Everything is re-exported from the package root; deep imports are not necessary:
-
 ```ts
 import { hexToBytes, isValidChecksumAddress } from '@ethereumjs/util'
 ```
 
-See [At a glance](#at-a-glance) for common entry points, or browse the [module guide](#module-guide) below grouped by role.
+Use the sections below as a map from task to module. Source files are grouped under [`src/`](./src/).
 
-## At a glance
-
-| If you need… | Module | Details |
+| If you need… | Start here | Example |
 | --- | --- | --- |
-| BAL JSON/RLP, validation, header hash | [`bal`](#module-bal) | Offline tooling; execution in [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#eip-7928-block-level-access-lists-amsterdam) |
-| Blob / cell proofs (4844, PeerDAS) | [`blobs`](#module-blobs) | KZG commitments, versioned hashes |
-| Hex ↔ bytes ↔ bigint conversion | [`bytes`](#module-bytes) | Most-used helpers |
-| Accounts (full or partial) | [`account`](#module-account) | State trie account objects |
-| Ethereum addresses | [`address`](#module-address) | Creation, validation, conversion |
-| Sign / recover secp256k1 | [`signature`](#module-signature) | Thin wrappers over `@noble` |
-| EIP-7702 auth list signing | [`authorization`](#module-authorization) | Prague+ |
-| CL requests (7685) | [`request`](#module-request) | Deposits, exits, consolidations |
-| Beacon withdrawals (4895) | [`withdrawal`](#module-withdrawal) | Block withdrawal objects |
-| Trie / blockchain storage | [`db`](#module-db) / [`mapDB`](#module-mapdb) | Pluggable key-value API |
+| Hex ↔ bytes ↔ bigint | [`bytes.ts`](./src/bytes.ts) | [`bytesConversions.ts`](./examples/bytesConversions.ts) |
+| Wei / gwei / ether | [`units.ts`](./src/units.ts) | [`units.ts`](./examples/units.ts) |
+| State trie accounts | [`account.ts`](./src/account.ts) | [`account.ts`](./examples/account.ts) |
+| Ethereum addresses | [`address.ts`](./src/address.ts) | [`address.ts`](./examples/address.ts) |
+| secp256k1 recovery | [`signature.ts`](./src/signature.ts) | [`ecrecover.ts`](./examples/ecrecover.ts) |
+| EIP-7702 auth signing | [`authorization.ts`](./src/authorization.ts) | [`eoaCode7702Authorization.ts`](./examples/eoaCode7702Authorization.ts) |
+| CL requests (7685) | [`request.ts`](./src/request.ts) | [`clRequest.ts`](./examples/clRequest.ts) |
+| Beacon withdrawals | [`withdrawal.ts`](./src/withdrawal.ts) | [`withdrawal.ts`](./examples/withdrawal.ts) |
+| Blob / cell proofs | [`blobs.ts`](./src/blobs.ts) | [`blobs.ts`](./examples/blobs.ts) |
+| BAL JSON/RLP/hash | [`bal/`](./src/bal/) | [`blockAccessList.ts`](./examples/blockAccessList.ts) |
+| In-memory DB | [`mapDB.ts`](./src/mapDB.ts) | [`mapDB.ts`](./examples/mapDB.ts) |
 
-## Module guide
+## Bytes and Units
 
-Modules are grouped by role. Each section keeps the `## Module: [name]` anchors used elsewhere in the docs.
-
-### Core primitives
-
-Everyday building blocks — bytes, accounts, addresses, signatures, constants, and shared types.
-
-## Module: [bytes](src/bytes.ts)
-
-Byte-related helper and conversion functions.
+Byte conversion helpers and shared constants (`KECCAK256_NULL_S`, `BIGINT_2EXP96`, …) live in [`bytes.ts`](./src/bytes.ts) and [`constants.ts`](./src/constants.ts).
 
 ```ts
-// ./examples/bytes.ts
+// ./examples/bytesConversions.ts
 
-import { bytesToBigInt } from '@ethereumjs/util'
+import {
+  BIGINT_2EXP96,
+  KECCAK256_NULL_S,
+  bytesToBigInt,
+  bytesToHex,
+  hexToBytes,
+} from '@ethereumjs/util'
 
 const bytesValue = new Uint8Array([97])
-const bigIntValue = bytesToBigInt(bytesValue)
+console.log(`bytesToBigInt: ${bytesToBigInt(bytesValue)}`)
+console.log(`bytesToHex: ${bytesToHex(bytesValue)}`)
+console.log(`hexToBytes length: ${hexToBytes('0x61').length}`)
 
-console.log(`Converted value: ${bigIntValue}`)
+console.log(`KECCAK256 null hash: ${KECCAK256_NULL_S}`)
+console.log(`BIGINT_2EXP96: ${BIGINT_2EXP96}`)
 ```
 
-## Module: [account](src/account.ts)
+For human-readable amounts, use `Units` — values are bigint wei:
 
-Class representing an `Account` and providing private/public key and address-related functionality (creation, validation, conversion). It is not recommended to use this constructor directly. Instead use the static factory methods to assist in creating an Account from varying data types.
+```ts
+// ./examples/units.ts
+
+import { Units } from '@ethereumjs/util'
+
+console.log(`1 ether = ${Units.ether(1)} wei`)
+console.log(`2 gwei = ${Units.gwei(2)} wei`)
+console.log(`0.5 ether in wei would be: ${Units.ether(1) / 2n} (use bigint math on wei values)`)
+```
+
+## Accounts and Addresses
+
+`createAccount()` builds a full MPT account object. For Verkle or other partial contexts, `createPartialAccount()` omits unset fields (v9.1+).
 
 ```ts
 // ./examples/account.ts
@@ -107,8 +121,6 @@ const account = createAccount({
 console.log(`Account with nonce=${account.nonce} and balance=${account.balance} created`)
 ```
 
-For Verkle or other contexts it can be useful to create partial accounts not containing all the account parameters. This is supported starting with v9.1.0:
-
 ```ts
 // ./examples/accountPartial.ts
 
@@ -121,29 +133,31 @@ const account = createPartialAccount({
 console.log(`Partial account with nonce=${account.nonce} and balance=${account.balance} created`)
 ```
 
-## Module: [address](src/address.ts)
-
-Class representing an Ethereum `Address` with instantiation helpers and validation methods.
+Address helpers cover parsing, validation, and derivation from keys or contract nonces:
 
 ```ts
 // ./examples/address.ts
 
-import { createAddressFromString } from '@ethereumjs/util'
+import { createAddressFromPrivateKey, createContractAddress, hexToBytes } from '@ethereumjs/util'
 
-const address = createAddressFromString('0x2f015c60e0be116b1f0cd534704db9c92118fb6a')
-console.log(`Ethereum address ${address.toString()} created`)
+const privateKey = hexToBytes('0x45A915E4D060149EB4365960E6A7A45F334393093061116B197E3240065FF2D8')
+const eoa = createAddressFromPrivateKey(privateKey)
+const contract = createContractAddress(eoa, 0n)
+
+console.log(`EOA ${eoa.toString()}`)
+console.log(`First contract for nonce 0: ${contract.toString()}`)
 ```
 
-## Module: [signature](src/signature.ts)
+## Signatures
 
-Small helpers around signature validation, conversion, recovery as well as selected convenience wrappers for calls to the underlying crypo libraries, using the cryptographic primitive implementations from the [Noble](https://paulmillr.com/noble/) crypto library set. If possible for your use case it is recommended to use the underlying crypto libraries directly for robustness.
+Thin wrappers around `@noble/secp256k1` for recovery and validation. Prefer the underlying Noble libraries directly when you need full control.
 
 ```ts
-// ./examples/signature.ts
+// ./examples/ecrecover.ts
 
-import { bytesToHex, ecrecover, hexToBytes } from '@ethereumjs/util'
+import { createAddressFromPublicKey, ecrecover, hexToBytes } from '@ethereumjs/util'
 
-const chainId = BigInt(3) // Ropsten
+const chainId = BigInt(3) // EIP-155 chain ID encoded in v (must match the signature)
 
 const ecHash = hexToBytes('0x82ff40c0a986c6a5cfad4ddf4c3aa6996f1a7837f9c398e17e5de5cbd5a12b28')
 const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
@@ -151,72 +165,78 @@ const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f2280404
 const v = BigInt(41)
 
 const pubkey = ecrecover(ecHash, v, r, s, chainId)
-
-console.log(`Recovered public key ${bytesToHex(pubkey)} from valid signature values`)
+console.log(`Recovered address: ${createAddressFromPublicKey(pubkey).toString()}`)
 ```
 
-## Module: [constants](src/constants.ts)
+## EIP-7702 Authorization Lists
 
-Exposed constants (e.g. `KECCAK256_NULL_S` for string representation of Keccak-256 hash of null)
-
-```ts
-// ./examples/constants.ts
-
-import { BIGINT_2EXP96, KECCAK256_NULL_S } from '@ethereumjs/util'
-
-console.log(`The keccak-256 hash of null: ${KECCAK256_NULL_S}`)
-console.log(`BigInt constants (performance), e.g. BIGINT_2EXP96: ${BIGINT_2EXP96}`)
-```
-
-## Module: [types](src/types.ts)
-
-Various TypeScript types. Direct usage is not recommended, type structure might change in the future.
-
-### Fork & protocol helpers
-
-Fork-specific types and helpers — BAL, blobs, authorization lists, CL requests, withdrawals.
-
-## Module: [bal](src/bal/index.ts)
-
-Helpers for [EIP-7928](https://eips.ethereum.org/EIPS/eip-7928) Block Level Access Lists (BAL): the `BlockLevelAccessList` class, JSON/RLP conversion, hashing, and validation utilities. Use this module for offline fixture checks or tooling; block execution and BAL accumulation live in [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#eip-7928-block-level-access-lists-amsterdam). See the [canonical Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) for release ↔ spec tracking.
+Prague+ EOAs can delegate code via signed authorization tuples. Helpers cover signing, recovery, and JSON ↔ bytes conversion — see [`authorization.ts`](./src/authorization.ts).
 
 ```ts
-// ./examples/bal.ts
+// ./examples/eoaCode7702Authorization.ts
 
 import {
-  bytesToHex,
-  createBlockLevelAccessListFromJSON,
-  validateBlockAccessListHashFromJSON,
-  validateBlockAccessListStructure,
+  eoaCode7702AuthorizationListBytesItemToJSON,
+  eoaCode7702RecoverAuthority,
+  eoaCode7702SignAuthorization,
+  hexToBytes,
 } from '@ethereumjs/util'
 
-const main = () => {
-  const balJson = [
-    {
-      address: '0x0000000000000000000000000000000000000001',
-      storageChanges: [],
-      storageReads: [],
-      balanceChanges: [{ blockAccessIndex: '0x01', postBalance: '0x03e8' }],
-      nonceChanges: [],
-      codeChanges: [],
-    },
-  ]
+const privateKey = hexToBytes('0x45A915E4D060149EB4365960E6A7A45F334393093061116B197E3240065FF2D8')
 
-  const bal = createBlockLevelAccessListFromJSON(balJson)
-  validateBlockAccessListStructure(bal)
-  validateBlockAccessListHashFromJSON(balJson, bal.hash())
-
-  console.log(`BAL account count: ${bal.toJSON().length}`)
-  console.log(`BAL hash: ${bytesToHex(bal.hash())}`)
+const unsigned = {
+  chainId: '0x',
+  address: '0x0000000000000000000000000000000000001000',
+  nonce: '0x',
 }
 
-void main()
+const signed = eoaCode7702SignAuthorization(unsigned, privateKey)
+const authority = eoaCode7702RecoverAuthority(signed)
 
+console.log(`Recovered authority: ${authority.toString()}`)
+console.log(`Signed item: ${JSON.stringify(eoaCode7702AuthorizationListBytesItemToJSON(signed))}`)
 ```
 
-## Module: [blobs](src/blobs.ts)
+## EIP-7685 CL Requests
 
-Module providing helpers around EIP-4844 blobs for creating blobs, associated KZG commitments and proofs as well as versioned hashes. It also provides helpers for EIP-7594 conformant blobs for creating extended cells and corresponding proofs.
+`CLRequest` wraps typed execution-layer requests to the consensus layer (deposits, withdrawals, consolidations). Block-level usage is documented in [@ethereumjs/block](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/block).
+
+```ts
+// ./examples/clRequest.ts
+
+import { CLRequest, CLRequestType, hexToBytes } from '@ethereumjs/util'
+
+// Payload layout is defined by the Prague EL request types (see @ethereumjs/block)
+const depositPayload = hexToBytes(`0x${'ab'.repeat(48)}`)
+const request = new CLRequest(CLRequestType.Deposit, depositPayload)
+
+console.log(`CLRequest type=${request.type} (Deposit)`)
+console.log(`Data length: ${request.data.length} bytes`)
+```
+
+Request types: `Deposit` (6110), `Withdrawal` (7002), `Consolidation` (7251), plus experimental builder types for Amsterdam.
+
+## EIP-4895 Withdrawals
+
+```ts
+// ./examples/withdrawal.ts
+
+import { createWithdrawal } from '@ethereumjs/util'
+
+const withdrawal = createWithdrawal({
+  index: 0n,
+  validatorIndex: 65535n,
+  address: '0x0000000000000000000000000000000000000000',
+  amount: 0n,
+})
+
+console.log('Withdrawal object created:')
+console.log(withdrawal.toJSON())
+```
+
+## EIP-4844 / EIP-7594 Blobs
+
+Helpers for KZG commitments, blob proofs, versioned hashes, and PeerDAS cell proofs. Requires a `KZG` implementation — see [@ethereumjs/tx KZG setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup).
 
 ```ts
 // ./examples/blobs.ts
@@ -258,66 +278,69 @@ console.log(`Versioned hash              : ${versionedHash}`)
 console.log(`Blob proof (EIP-4844)       : ${blobProof}`)
 console.log(`First cell proof (EIP-7594) : ${cellProofs[0]}`)
 console.log(`Num cell proofs (EIP-7594)  : ${cellProofs.length}`)
-
 ```
 
-## Module: [authorization](src/authorization.ts)
+## EIP-7928 Block Access Lists
 
-Module with `EIP-7702` authorization list signing utilities.
-
-## Module: [request](src/request.ts)
-
-Module with a compact generic request class for [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) general purpose execution layer requests to the CL (Prague hardfork) with the possibility to set `data` and a `type` conforming to the following request types:
-
-- [EIP-6110](https://eips.ethereum.org/EIPS/eip-6110): `DepositRequest` (Prague Hardfork)
-- [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002): `WithdrawalRequest` (Prague Hardfork)
-- [EIP-7251](https://eips.ethereum.org/EIPS/eip-7251): `ConsolidationRequest` (Prague Hardfork)
-
-These request types are mainly used within the [@ethereumjs/block](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/block) library where applied usage instructions are provided in the README.
-
-## Module: [withdrawal](src/withdrawal.ts)
-
-Class representing an `EIP-4895` `Withdrawal` with different constructors as well as conversion and output helpers.
+Helpers for [EIP-7928](https://eips.ethereum.org/EIPS/eip-7928) Block Level Access Lists (BAL): JSON/RLP conversion, hashing, and validation. Use for offline fixture checks or tooling; block execution and BAL accumulation live in [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#eip-7928-block-level-access-lists-amsterdam).
 
 ```ts
-// ./examples/withdrawal.ts
+// ./examples/blockAccessList.ts
 
-import { createWithdrawal } from '@ethereumjs/util'
+import {
+  bytesToHex,
+  createBlockLevelAccessListFromJSON,
+  validateBlockAccessListHashFromJSON,
+  validateBlockAccessListStructure,
+} from '@ethereumjs/util'
 
-const withdrawal = createWithdrawal({
-  index: 0n,
-  validatorIndex: 65535n,
-  address: '0x0000000000000000000000000000000000000000',
-  amount: 0n,
-})
+const main = () => {
+  const balJson = [
+    {
+      address: '0x0000000000000000000000000000000000000001',
+      storageChanges: [],
+      storageReads: [],
+      balanceChanges: [{ blockAccessIndex: '0x01', postBalance: '0x03e8' }],
+      nonceChanges: [],
+      codeChanges: [],
+    },
+  ]
 
-console.log('Withdrawal object created:')
-console.log(withdrawal.toJSON())
+  const bal = createBlockLevelAccessListFromJSON(balJson)
+  validateBlockAccessListStructure(bal)
+  validateBlockAccessListHashFromJSON(balJson, bal.hash())
+
+  console.log(`BAL account count: ${bal.toJSON().length}`)
+  console.log(`BAL hash: ${bytesToHex(bal.hash())}`)
+}
+
+void main()
 ```
 
-### Storage & integration
+## Storage
 
-Database abstractions, KZG typing, genesis helpers, and legacy internal utilities.
+`MapDB` is a minimal in-memory implementation of the shared `DB` interface used by trie and blockchain packages:
 
-## Module: [db](src/db.ts)
+```ts
+// ./examples/mapDB.ts
 
-DB interface for database abstraction (Blockchain, Trie), see e.g. [@ethereumjs/trie recipes](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie/recipes/level.ts)) for usage.
+import { MapDB, hexToBytes } from '@ethereumjs/util'
 
-## Module: [mapDB](src/mapDB.ts)
+const main = async () => {
+  const db = new MapDB<string, Uint8Array>()
+  const key = 'state-key'
+  const value = hexToBytes('0xdeadbeef')
 
-Simple map DB implementation using the `DB` interface (see above).
+  await db.put(key, value)
+  const read = await db.get(key)
 
-## Module: [kzg](src/kzg.ts)
+  console.log(`Stored and read back ${read?.length} bytes`)
+}
 
-KZG interface (used for 4844 blob txs), see [@ethereumjs/tx](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) README for main usage instructions.
+void main()
+```
 
-## Module: [genesis](src/genesis.ts)
-
-Genesis related interfaces and helpers.
-
-## Module: [internal](src/internal.ts)
-
-Internalized simple helper methods like `isHexString`. Note that methods from this module might get deprecated in the future. Prefer the documented helpers in [API → ethjs-util methods](#ethjs-util-methods) when available.
+For persistent storage, see [@ethereumjs/trie recipes](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie/recipes/level.ts). KZG typing lives in [`kzg.ts`](./src/kzg.ts); genesis helpers in [`genesis.ts`](./src/genesis.ts).
 
 ## Browser
 
@@ -357,7 +380,6 @@ The following methods are available by an internalized version of the [ethjs-uti
 - getBinarySize
 - stripHexPrefix
 - isHexString
-- isHexString
 - padToEven
 - fromAscii
 - fromUtf8
@@ -370,6 +392,8 @@ They can be imported by name:
 ```ts
 import { stripHexPrefix } from '@ethereumjs/util'
 ```
+
+Prefer the documented helpers in [`bytes.ts`](./src/bytes.ts) and [`address.ts`](./src/address.ts) for new code when an equivalent exists.
 
 ## EthereumJS
 

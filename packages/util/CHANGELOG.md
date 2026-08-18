@@ -32,7 +32,7 @@ This package also picks up two cross-environment fixes: `Account.isEmpty()` for 
 > **Spec snapshot:** [tests-bal@v7.1.0](https://github.com/ethereum/execution-specs/releases/tag/tests-bal@v7.1.0) · **Testnet:** [BAL devnet-7](https://notes.ethereum.org/@ethpandaops/bal-devnet-7)
 > Fork overview: [Amsterdam hardfork (experimental)](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental)
 
-Typical Util workflow: ingest a BAL JSON fixture (from a test vector or RPC payload), validate structure and gas-limit footprint, and verify the hash against an expected `blockAccessListHash`. Example from `packages/util/examples/bal.ts`:
+Typical Util workflow: ingest a BAL JSON fixture (from a test vector or RPC payload), validate structure and gas-limit footprint, and verify the hash against an expected `blockAccessListHash`. Example from `packages/util/examples/blockAccessList.ts`:
 
 ```ts
 import {

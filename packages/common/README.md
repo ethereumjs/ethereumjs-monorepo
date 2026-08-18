@@ -9,36 +9,28 @@
 | Resources common to all EthereumJS implementations. |
 | --------------------------------------------------- |
 
+`Common` holds the **chain configuration**, **active hardfork**, **EIP set**, and **protocol parameters** shared across the EthereumJS libraries. Instantiate one `Common` per network context and pass it to `tx`, `block`, `evm`, `vm`, and related packages.
+
+Runnable examples live in [`examples/`](./examples/).
+
 ## Table of Contents
 
-- [@ethereumjs/common `v10`](#ethereumjscommon-v10)
-  - [Table of Contents](#table-of-contents)
-  - [Installation](#installation)
-  - [Getting Started](#getting-started)
-    - [import / require](#import--require)
-    - [Parameters](#parameters)
-  - [Custom Cryptography Primitives (WASM)](#custom-cryptography-primitives-wasm)
-    - [Example 1: keccak256 Hashing](#example-1-keccak256-hashing)
-    - [Example 2: KZG](#example-2-kzg)
-  - [Browser](#browser)
-  - [API](#api)
-    - [Docs](#docs)
-    - [Hybrid CJS/ESM Builds](#hybrid-cjsesm-builds)
-  - [Events](#events)
-    - [Chains and Genesis](#chains-and-genesis)
-    - [Working with Private/Custom Chains](#working-with-privatecustom-chains)
-      - [Initialize using Geth's genesis json](#initialize-using-geths-genesis-json)
-  - [Hardfork Support and Usage](#hardfork-support-and-usage)
-    - [Active Hardforks](#active-hardforks)
-    - [Future Hardforks](#future-hardforks)
-    - [Parameter Access](#parameter-access)
-  - [Supported EIPs](#supported-eips)
-  - [EthereumJS](#ethereumjs)
-  - [License](#license)
+- [Installation](#installation)
+- [Getting Started](#getting-started)
+- [Chain Presets](#chain-presets)
+- [Hardfork Selection](#hardfork-selection)
+- [Parameter Access](#parameter-access)
+- [Blob Gas Schedule](#blob-gas-schedule)
+- [EIP Activation](#eip-activation)
+- [Events](#events)
+- [Custom and Private Chains](#custom-and-private-chains)
+- [Custom Cryptography (WASM / KZG)](#custom-cryptography-wasm--kzg)
+- [Browser](#browser)
+- [API](#api)
+- [EthereumJS](#ethereumjs)
+- [License](#license)
 
 ## Installation
-
-To obtain the latest version, simply require the project using `npm`:
 
 ```shell
 npm install @ethereumjs/common
@@ -51,302 +43,175 @@ npm install @ethereumjs/common
 import (ESM, TypeScript):
 
 ```ts
-import { Chain, Common, Hardfork } from '@ethereumjs/common'
+import { Chain, Common, Hardfork, Mainnet } from '@ethereumjs/common'
 ```
 
 require (CommonJS, Node.js):
 
 ```ts
-const { Common, Chain, Hardfork } = require('@ethereumjs/common')
+const { Common, Hardfork, Mainnet } = require('@ethereumjs/common')
 ```
 
-### Parameters
+### Instantiate `Common`
 
-All parameters can be accessed through the `Common` class, instantiated with an object containing either the `chain` (e.g. 'Mainnet') or the `chain` together with a specific `hardfork` provided:
-
-```ts
-// ./examples/common.ts#L1-L7
-
-import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
-
-// With enums:
-const commonWithEnums = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun })
-
-// Instantiate with the chain (and the default hardfork)
-let c = new Common({ chain: Mainnet })
-```
-
-If no hardfork is provided, the common is initialized with the default hardfork.
-
-Current `DEFAULT_HARDFORK`: `Hardfork.Prague`
-
-Here are some simple usage examples:
+Pick a built-in chain preset (`Mainnet`, `Sepolia`, …) and optionally pin a hardfork. When omitted, the chain's `defaultHardfork` is used (`Hardfork.Prague` on Mainnet today).
 
 ```ts
-// ./examples/common.ts#L9-L23
-
-// Get bootstrap nodes for chain/network
-console.log('Below are the known bootstrap nodes')
-console.log(c.bootstrapNodes()) // Array with current nodes
-
-// Instantiate with an EIP activated on a pre-schedule hardfork (`EIPConfig.minimumHardfork`)
-c = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
-console.log(`EIP 7702 is active -- ${c.isActivatedEIP(7702)}`)
-
-// Instantiate common with custom chainID
-const commonWithCustomChainId = createCustomCommon({ chainId: 1234 }, Mainnet)
-console.log(`The current chain ID is ${commonWithCustomChainId.chainId()}`)
-```
-
-## Custom Cryptography Primitives (WASM)
-
-All EthereumJS packages use cryptographic primitives from the audited `ethereum-cryptography` library by default. These primitives, including `keccak256`, `sha256`, and elliptic curve signature methods, are all written in native JavaScript and therefore have the potential downside of being less performant than alternative cryptography modules written in other languages and then compiled to WASM. If cryptography performance is a bottleneck in your usage of the EthereumJS libraries, you can provide your own primitives to the `Common` constructor and they will be used in place of the defaults. Depending on how your preferred primitives are implemented, you may need to write wrapper methods around them so they conform to the interface exposed by the [`common.customCrypto` property](./src/types.ts).
-
-Note: replacing native JS crypto primitives with WASM based libraries comes with new security assumptions (additional external dependencies, unauditability of WASM code). It is therefore recommended to evaluate your usage context before applying!
-
-### Example 1: keccak256 Hashing
-
-The following is an example using the [@polkadot/wasm-crypto](https://github.com/polkadot-js/wasm/tree/master/packages/wasm-crypto) package:
-
-```ts
-// ./examples/customCrypto.ts
-
-import { createBlock } from '@ethereumjs/block'
-import { Common, Mainnet } from '@ethereumjs/common'
-import { keccak256, waitReady } from '@polkadot/wasm-crypto'
-
-const main = async () => {
-  // @polkadot/wasm-crypto specific initialization
-  await waitReady()
-
-  const common = new Common({ chain: Mainnet, customCrypto: { keccak256 } })
-  const block = createBlock({}, { common })
-
-  // Method invocations within EthereumJS library instantiations where the common
-  // instance above is passed will now use the custom keccak_256 implementation
-  console.log(block.hash())
-}
-
-void main()
-
-```
-
-### Example 2: KZG
-
-The KZG library used for EIP-4844 Blob Transactions is initialized by `common` under the `common.customCrypto` property and is then used throughout the `Ethereumjs` stack wherever KZG cryptography is required. Below is an example of how to initialize (assuming you are using the `c-kzg` package as your KZG cryptography library).
-
-```ts
-// ./examples/initKzg.ts
+// ./examples/instantiation.ts
 
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
-import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 
-const main = async () => {
-  const kzg = new microEthKZG(trustedSetup)
-  const common = new Common({
-    chain: Mainnet,
-    hardfork: Hardfork.Cancun,
-    customCrypto: { kzg },
-  })
-  console.log(common.customCrypto.kzg) // Should print the initialized KZG interface
+const withHardfork = new Common({ chain: Mainnet, hardfork: Hardfork.Prague })
+const withDefault = new Common({ chain: Mainnet })
+
+console.log(`Explicit hardfork: ${withHardfork.hardfork()}`)
+console.log(
+  `Default hardfork: ${withDefault.hardfork()} (DEFAULT_HARDFORK=${withDefault.DEFAULT_HARDFORK})`,
+)
+```
+
+## Chain Presets
+
+Built-in presets: `Mainnet`, `Sepolia`, `Holesky`, `Hoodi`. Each exposes `chainId()`, `genesis()`, `hardforks()`, `bootstrapNodes()`, `dnsNetworks()`, and consensus metadata.
+
+```ts
+// ./examples/testnetChains.ts
+
+import { Common, Holesky, Hoodi, Mainnet, Sepolia } from '@ethereumjs/common'
+
+for (const chain of [Mainnet, Sepolia, Holesky, Hoodi]) {
+  const common = new Common({ chain })
+  console.log(
+    `${common.chainName()}: chainId=${common.chainId()} hardfork=${common.hardfork()} bootstrapNodes=${common.bootstrapNodes().length}`,
+  )
+}
+```
+
+Chain fields are defined in [`chains.ts`](./src/chains.ts) and the `ChainConfig` type in [`types.ts`](./src/types.ts).
+
+## Hardfork Selection
+
+### Pin at construction
+
+Set `hardfork` in the constructor when you know the fork up front (tests, single-fork tooling).
+
+### Resolve from block headers
+
+For block replay, syncing, or VM runs, use `getHardforkBy()` / `setHardforkBy()`. Pre-merge forks use **block number**; post-merge forks need **timestamp** (and typically block number as well).
+
+```ts
+// ./examples/hardforkByBlock.ts
+
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+
+const common = new Common({ chain: Mainnet })
+
+// Pre-merge: block number alone determines the active hardfork
+console.log(`HF at block 12_965_000 (London): ${common.getHardforkBy({ blockNumber: 12_965_000n })}`)
+common.setHardforkBy({ blockNumber: 12_965_000n })
+console.log(`After setHardforkBy: ${common.hardfork()}`)
+
+// Post-merge: pass timestamp (and block number) for timestamp-based forks
+common.setHardforkBy({ blockNumber: 19_000_000n, timestamp: 1_710_338_135n })
+console.log(`HF at Cancun timestamp: ${common.hardfork()}`)
+
+common.setHardforkBy({ blockNumber: 19_000_000n, timestamp: 1_746_612_311n })
+console.log(`HF at Prague timestamp: ${common.hardfork()}`)
+console.log(`Prague active on block 19M: ${common.hardforkIsActiveOnBlock(Hardfork.Prague, 19_000_000n)}`)
+```
+
+This mirrors what `@ethereumjs/vm` does when executing a block.
+
+### Supported hardforks
+
+Past and upcoming hardforks include `chainstart` through `osaka`, plus in-development `amsterdam`. `Hardfork.Prague` is the current Mainnet default; `Hardfork.Amsterdam` is experimental — see the [canonical Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) in `@ethereumjs/vm` for release ↔ spec tracking.
+
+## Parameter Access
+
+Hardfork and EIP parameters (gas costs, limits, rewards, …) are read with `param()`, `paramByHardfork()`, and `paramByBlock()`. Parameter definitions live in [`hardforks.ts`](./src/hardforks.ts) and [`eips.ts`](./src/eips.ts).
+
+```ts
+// ./examples/paramAccess.ts
+
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+
+// Hardfork-local params (defined on the BPO hardfork schedule)
+const bpo = new Common({ chain: Mainnet, hardfork: Hardfork.Bpo1 })
+console.log(`BPO target blob count: ${bpo.param('target')}`)
+
+// Downstream packages ship default EIP param sets; inject manually on standalone Common
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
+common.updateParams({ 1559: { initialBaseFee: 1_000_000_000 } })
+console.log(`London initialBaseFee: ${common.param('initialBaseFee')}`)
+
+// paramByBlock() picks the hardfork active at a block (then reads the param)
+console.log(`HF at block 12_965_000: ${common.getHardforkBy({ blockNumber: 12_965_000n })}`)
+console.log(
+  `initialBaseFee at block 12_965_000: ${common.paramByBlock('initialBaseFee', 12_965_000n)}`,
+)
+```
+
+Downstream packages may supply extra param dictionaries (e.g. `@ethereumjs/tx` `paramsTx` for tx-specific EIP params). Pass them via the constructor `params` option when needed.
+
+## Blob Gas Schedule
+
+EIP-4844 blob gas limits and EIP-7892 BPO schedule changes are exposed through `getBlobGasSchedule()`. BPO hardforks (`Bpo1`, …) carry `target` / `max` on the hardfork definition; earlier forks need EIP-4844 params (merged automatically when using `@ethereumjs/vm` / `@ethereumjs/evm`, or via `updateParams()` on standalone `Common`).
+
+```ts
+// ./examples/blobGasSchedule.ts
+
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+
+const blob4844Params = {
+  targetBlobGasPerBlock: 393216,
+  maxBlobGasPerBlock: 786432,
+  blobGasPriceUpdateFraction: 3338477,
+  blobGasPerBlob: 131072,
 }
 
-void main()
+// Pre-BPO: EIP-4844 param names
+const cancun = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun })
+cancun.updateParams({ 4844: blob4844Params })
+const cancunSchedule = cancun.getBlobGasSchedule()
+console.log(
+  `Cancun: target=${cancunSchedule.targetBlobGasPerBlock} max=${cancunSchedule.maxBlobGasPerBlock}`,
+)
+
+// BPO hardforks: target/max counts are on the HF; multiply by blobGasPerBlob
+for (const hardfork of [Hardfork.Bpo1, Hardfork.Bpo2]) {
+  const common = new Common({ chain: Mainnet, hardfork })
+  common.updateParams({ 4844: { blobGasPerBlob: blob4844Params.blobGasPerBlob } })
+  const schedule = common.getBlobGasSchedule()
+  console.log(
+    `${hardfork}: target=${schedule.targetBlobGasPerBlock} max=${schedule.maxBlobGasPerBlock} updateFraction=${schedule.blobGasPriceUpdateFraction}`,
+  )
+}
 ```
 
-## Browser
+## EIP Activation
 
-We provide hybrid ESM/CJS builds for all our libraries. With the v10 breaking release round from Spring 2025 all libraries are "pure-JS" by default and we have eliminated all hard-wired WASM code. Additionally we have substantially lowered the bundle sizes, reduced the number of dependencies and cut out all usages of Node.js specific primitives (like the Node.js event emitter).
-
-It is easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
-
-## API
-
-### Docs
-
-See the API documentation for a full list of functions for accessing specific chain and
-dependent hardfork parameters. There are also additional helper functions like
-`paramByBlock (topic, name, blockNumber)` or `hardforkIsActiveOnBlock (hardfork, blockNumber)`
-to ease `blockNumber` based access to parameters.
-
-Generated TypeDoc API [Documentation](./docs/README.md)
-
-### Hybrid CJS/ESM Builds
-
-With the breaking releases from Summer 2023 we have started to ship our libraries with both CommonJS (`cjs` folder) and ESM builds (`esm` folder), see `package.json` for the detailed setup.
-
-If you use an ES6-style `import` in your code files from the ESM build will be used:
+EIPs activate through the hardfork schedule and/or the constructor `eips` array. Query with `isActivatedEIP()`.
 
 ```ts
-import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
+// ./examples/activateEIPs.ts
+
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+
+// Default-on via hardfork schedule (Prague ships EIP-7702)
+const prague = new Common({ chain: Mainnet, hardfork: Hardfork.Prague })
+console.log(`EIP-7702 on Prague: ${prague.isActivatedEIP(7702)}`)
+
+// Opt-in before schedule: activate on an earlier hardfork via constructor `eips`
+const early7702 = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
+console.log(`EIP-7702 forced on Cancun: ${early7702.isActivatedEIP(7702)}`)
+
+// Experimental Amsterdam fork (in development)
+const amsterdam = new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })
+console.log(`EIP-7928 BAL on Amsterdam: ${amsterdam.isActivatedEIP(7928)}`)
+console.log(`EIP-7708 transfer logs: ${amsterdam.isActivatedEIP(7708)}`)
 ```
 
-If you use Node.js specific `require`, the CJS build will be used:
-
-```ts
-const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
-```
-
-Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking which CJS can not provide.
-
-## Events
-
-The `Common` class has a public property `events` which contains an `EventEmitter` (using [EventEmitter3](https://github.com/primus/eventemitter3)). Following events are emitted on which you can react within your code:
-
-| Event             | Description                                                |
-| ----------------- | ---------------------------------------------------------- |
-| `hardforkChanged` | Emitted when a hardfork change occurs in the Common object |
-
-### Chains and Genesis
-
-The `chain` can be set in the constructor like this:
-
-```ts
-import { Common, Mainnet } from '@ethereumjs/common'
-const common = new Common({ chain: Mainnet })
-```
-
-Supported chains:
-
-- `mainnet` (`Mainnet`)
-- `sepolia` (`Sepolia`) (`v2.6.1`+)
-- `holesky` (`Holesky`) (`v4.1.0`+)
-- `hoodi` (`Hoodi`) (`v10+` (new versioning scheme))
-- Private/custom chain parameters
-
-The following chain-specific parameters are provided:
-
-- `name`
-- `chainId`
-- `networkId`
-- `consensusType` (e.g. `pow` or `poa`)
-- `consensusAlgorithm` (e.g. `ethash` or `clique`)
-- `consensusConfig` (depends on `consensusAlgorithm`, e.g. `period` and `epoch` for `clique`)
-- `genesis` block header values
-- `hardforks` block numbers
-- `bootstrapNodes` list
-- `dnsNetworks` list ([EIP-1459](https://eips.ethereum.org/EIPS/eip-1459)-compliant list of DNS networks for peer discovery)
-
-To get an overview of the different parameters have a look at one of the chain configurations in the `chains.ts` configuration
-file, or to the `Chain` type in [./src/types.ts](./src/types.ts).
-
-### Working with Private/Custom Chains
-
-Starting with the `v10` release series using custom chain configurations has been simplified and consolidated in a single API `createCustomCommon()`. This constructor can be used both to make simple chain ID adjustments and keep the rest of the config conforming to a given "base chain":
-
-```ts
-import { createCustomCommon, Mainnet } from '@ethereumjs/common'
- 
-createCustomCommon({chainId: 123}, Mainnet)
-```
-
-See the `Tx` library [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx) for how to use such a `Common` instance in the context of sending txs to L2 networks.
-
-Beyond that, it is possible to customize to a fully custom chain by passing in a complete configuration object as first parameter:
-
-```ts
-// ./examples/customChain.ts
-
-import { Mainnet, createCustomCommon } from '@ethereumjs/common'
-import { customChainConfig } from '@ethereumjs/testdata'
-
-// Add custom chain config
-const common1 = createCustomCommon(customChainConfig, Mainnet)
-console.log(`Common is instantiated with custom chain parameters - ${common1.chainName()}`)
-
-```
-
-#### Initialize using Geth's genesis json
-
-For lots of custom chains (e.g., devnets and testnets), you might come across a genesis json config which
-has both config specification for the chain as well as the genesis state specification. You can derive the
-common from such configuration in the following manner:
-
-```ts
-// ./examples/fromGeth.ts
-
-import { createCommonFromGethGenesis } from '@ethereumjs/common'
-import { postMergeGethGenesis } from '@ethereumjs/testdata'
-import { hexToBytes } from '@ethereumjs/util'
-
-const genesisHash = hexToBytes('0x3b8fb240d288781d4aac94d3fd16809ee413bc99294a085798a589dae51ddd4a')
-// Load geth genesis JSON file into lets say `genesisJSON` and optional `chain` and `genesisHash`
-const common = createCommonFromGethGenesis(postMergeGethGenesis, {
-  chain: 'customChain',
-  genesisHash,
-})
-// If you don't have `genesisHash` while initiating common, you can later configure common (for e.g.
-// after calculating it via `blockchain`)
-common.setForkHashes(genesisHash)
-
-console.log(`The London forkhash for this custom chain is ${common.forkHash('london')}`)
-
-```
-
-## Hardfork Support and Usage
-
-The `hardfork` can be set in constructor like this:
-
-```ts
-// ./examples/common.ts#L1-L4
-
-import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
-
-// With enums:
-const commonWithEnums = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun })
-```
-
-### Active Hardforks
-
-There are currently parameter changes by the following past and future hardforks
-supported by the library:
-
-- `chainstart` (`Hardfork.Chainstart`)
-- `homestead` (`Hardfork.Homestead`)
-- `dao` (`Hardfork.Dao`)
-- `tangerineWhistle` (`Hardfork.TangerineWhistle`)
-- `spuriousDragon` (`Hardfork.SpuriousDragon`)
-- `byzantium` (`Hardfork.Byzantium`)
-- `constantinople` (`Hardfork.Constantinople`)
-- `petersburg` (`Hardfork.Petersburg`) (aka `constantinopleFix`, apply together with `constantinople`)
-- `istanbul` (`Hardfork.Istanbul`)
-- `muirGlacier` (`Hardfork.MuirGlacier`)
-- `berlin` (`Hardfork.Berlin`) (since `v2.2.0`)
-- `london` (`Hardfork.London`) (since `v2.4.0`)
-- `merge` (`Hardfork.Merge`) (since `v2.5.0`)
-- `shanghai` (`Hardfork.Shanghai`) (since `v3.1.0`)
-- `cancun` (`Hardfork.Cancun`) (since `v4.2.0`)
-- `prague` (`Hardfork.Prague`) (`DEFAULT_HARDFORK`) (since `v10`)
-- `osaka` (`Hardfork.Osaka`) (since `v10.1.0`)
-- `amsterdam` (`Hardfork.Amsterdam`) (IN DEVELOPMENT)
-
-### Future Hardforks
-
-The next upcoming HF `Hardfork.Amsterdam` is currently in development (started January 2026). See the [canonical Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) in `@ethereumjs/vm` for release ↔ spec tracking.
-
-### Parameter Access
-
-For hardfork-specific parameter access with the `param()` and `paramByBlock()` functions
-you can use the following `topics`:
-
-- `gasConfig`
-- `gasPrices`
-- `vm`
-- `pow`
-- `sharding`
-
-See one of the hardfork configurations in the `hardforks.ts` file
-for an overview. For consistency, the chain start (`chainstart`) is considered an own
-hardfork.
-
-## Supported EIPs
-
-EIPs are native citizens within the library and can be activated like this:
-
-```ts
-const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
-```
+### Supported EIPs
 
 The following EIPs are currently supported (sorted by EIP number):
 
@@ -411,9 +276,173 @@ Annotations:
 - `(Amsterdam, experimental)` and `(experimental)` mark unstable specs; behaviour may change on patch releases
 - Release ↔ spec tracking: [canonical Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) in `@ethereumjs/vm`
 
+## Events
+
+`common.events` is an [EventEmitter3](https://github.com/primus/eventemitter3) instance:
+
+| Event             | Description                                                |
+| ----------------- | ---------------------------------------------------------- |
+| `hardforkChanged` | Emitted when `setHardfork()` changes the active hardfork   |
+
+```ts
+// ./examples/hardforkEvents.ts
+
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
+
+common.events.on('hardforkChanged', (hardfork) => {
+  console.log(`hardforkChanged event: ${hardfork}`)
+})
+
+common.setHardfork(Hardfork.Prague)
+```
+
+## Custom and Private Chains
+
+`createCustomCommon()` adjusts a base preset or supplies a full `ChainConfig`. Use it for L2 chain IDs, devnets, and PoA networks.
+
+### Chain ID override (L2 pattern)
+
+```ts
+// ./examples/customChainId.ts
+
+import { Mainnet, createCustomCommon } from '@ethereumjs/common'
+
+// Keep Mainnet params but override chainId — typical for L2 / private networks
+const l2Common = createCustomCommon({ chainId: 42161 }, Mainnet)
+
+console.log(`chainId=${l2Common.chainId()} name=${l2Common.chainName()}`)
+console.log(`Hardfork schedule inherited (${l2Common.hardforks().length} entries)`)
+```
+
+See the [`@ethereumjs/tx` README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx) for signing with a custom `Common`.
+
+### Full custom `ChainConfig`
+
+```ts
+// ./examples/customChain.ts
+
+import { Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
+import { customChainConfig } from '@ethereumjs/testdata'
+
+const common = createCustomCommon(customChainConfig, Mainnet)
+
+console.log(`Chain ${common.chainName()} (chainId=${common.chainId()})`)
+console.log(`Hardfork at block 4: ${common.getHardforkBy({ blockNumber: 4n })}`)
+console.log(`Bootstrap nodes: ${common.bootstrapNodes().length}`)
+
+common.setHardfork(Hardfork.Byzantium)
+console.log(`Active hardfork on custom chain: ${common.hardfork()}`)
+```
+
+### PoA / Clique consensus metadata
+
+```ts
+// ./examples/consensusConfig.ts
+
+import { Common, Hardfork } from '@ethereumjs/common'
+import { testnetMergeChainConfig } from '@ethereumjs/testdata'
+
+const common = new Common({ chain: testnetMergeChainConfig, hardfork: Hardfork.London })
+
+console.log(`consensusType: ${common.consensusType()}`)
+console.log(`consensusAlgorithm: ${common.consensusAlgorithm()}`)
+
+const clique = common.consensusConfig()
+console.log(`clique period=${clique.period}s epoch=${clique.epoch} blocks`)
+```
+
+### From Geth genesis JSON
+
+For devnets and testnets, derive `Common` from a Geth `genesis.json` (chain config + alloc):
+
+```ts
+// ./examples/fromGethGenesis.ts
+
+import { createCommonFromGethGenesis } from '@ethereumjs/common'
+import { postMergeGethGenesis } from '@ethereumjs/testdata'
+import { hexToBytes } from '@ethereumjs/util'
+
+const genesisHash = hexToBytes('0x3b8fb240d288781d4aac94d3fd16809ee413bc99294a085798a589dae51ddd4a')
+const common = createCommonFromGethGenesis(postMergeGethGenesis, {
+  chain: 'customChain',
+  genesisHash,
+})
+// Defer genesisHash when unknown at init time — set later after computing the genesis block hash
+common.setForkHashes(genesisHash)
+
+console.log(`Hardfork is ${common.hardfork()} chainId=${common.chainId()}`)
+console.log(`Paris fork hash: ${common.forkHash('paris')}`)
+```
+
+## Custom Cryptography (WASM / KZG)
+
+By default, EthereumJS uses audited pure-JS crypto from `ethereum-cryptography`. For performance or blob/KZG support, pass replacements on `customCrypto` ([`types.ts`](./src/types.ts)).
+
+Note: WASM backends add supply-chain and audit surface. Evaluate before enabling in production.
+
+### keccak256 (WASM example)
+
+```ts
+// ./examples/customCrypto.ts
+
+import { createBlock } from '@ethereumjs/block'
+import { Common, Mainnet } from '@ethereumjs/common'
+import { keccak256, waitReady } from '@polkadot/wasm-crypto'
+
+const main = async () => {
+  await waitReady()
+
+  const common = new Common({ chain: Mainnet, customCrypto: { keccak256 } })
+  const block = createBlock({}, { common })
+
+  // Downstream calls on objects sharing this `common` use the custom hash
+  console.log(block.hash())
+}
+
+void main()
+```
+
+### KZG for EIP-4844 / PeerDAS
+
+KZG is required for blob transactions (EIP-4844) and cell proofs (EIP-7594). Wire any library implementing the [`KZG` interface](./src/types.ts); the example below uses `micro-eth-signer`:
+
+```ts
+// ./examples/initKZG.ts
+
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
+import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
+
+const main = async () => {
+  const kzg = new microEthKZG(trustedSetup)
+  const common = new Common({
+    chain: Mainnet,
+    hardfork: Hardfork.Cancun,
+    customCrypto: { kzg },
+  })
+  console.log(common.customCrypto.kzg !== undefined)
+}
+
+void main()
+```
+
+## Browser
+
+Hybrid ESM/CJS builds ship with v10; libraries are pure JS by default (no hard-wired WASM). See [`examples/browser.html`](./examples/browser.html) for a local dev-server setup.
+
+## API
+
+Generated TypeDoc: [Documentation](./docs/README.md)
+
+Helper methods include `paramByBlock()`, `hardforkIsActiveOnBlock()`, `forkHash()`, `setForkHashes()`, `copy()`, and `updateParams()` for advanced overrides.
+
+Hybrid CJS/ESM builds: ESM `import` resolves to `dist/esm/`; Node `require` resolves to `dist/cjs/`.
+
 ## EthereumJS
 
-The `EthereumJS` GitHub organization and its repositories are managed by members of the former Ethereum Foundation JavaScript team and the broader Ethereum community. If you want to join for work or carry out improvements on the libraries see the [developer docs](../../DEVELOPER.md) for an overview of current standards and tools and review our [code of conduct](../../CODE_OF_CONDUCT.md).
+The `EthereumJS` GitHub organization and its repositories are managed by members of the former Ethereum Foundation JavaScript team and the broader Ethereum community. See [developer docs](../../DEVELOPER.md) and [code of conduct](../../CODE_OF_CONDUCT.md).
 
 ## License
 

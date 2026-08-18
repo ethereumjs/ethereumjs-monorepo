@@ -14,18 +14,20 @@
 - 👷🏼 Controlled dependency set (5 external + `@Noble` crypto)
 - ⏳ Checkpoints + Diff-based Caches
 - 🔌 Unified interface (for custom SMs)
-- 🎁 3 SMs included (Merkle/Simple/RPC)
+- 🎁 4 SMs included (Merkle / Simple / RPC / Binary Tree)
 - 🛵 233KB bundle size (for Merkle SM) (63KB gzipped)
 - 🏄🏾‍♂️ WASM-free default + Fully browser ready
+
+Runnable examples live in [`examples/`](./examples/).
 
 ## Table of Contents
 
 - [Installation](#installation)
-- [Getting Started](#getting-started)
+- [Overview](#overview)
 - [MerkleStateManager](#merklestatemanager)
 - [SimpleStateManager](#simplestatemanager)
 - [RPCStateManager](#rpcstatemanager)
-- [Binary Tree (experimental)](#binary-tree-experimental)
+- [Binary Tree State Manager (experimental)](#binary-tree-state-manager-experimental)
 - [Architecture](#architecture)
 - [Browser](#browser)
 - [API](#api)
@@ -33,37 +35,28 @@
 - [EthereumJS](#ethereumjs)
 - [License](#license)
 
-
 ## Installation
-
-To obtain the latest version, simply require the project using `npm`:
 
 ```shell
 npm install @ethereumjs/statemanager
 ```
 
-## Getting Started
+## Overview
 
-### Overview
+The `StateManager` interface (defined in `@ethereumjs/common`) exposes account, code, and storage access for `@ethereumjs/evm` and `@ethereumjs/vm`. This package ships four implementations:
 
-The `StateManager` provides high-level access and manipulation methods to and for the Ethereum state, thinking in terms of accounts or contract code rather then the storage operations of the underlying data structure (e.g. a [Trie](../trie/)).
+| Implementation | Backing store | Use when |
+| --- | --- | --- |
+| `MerkleStateManager` | `@ethereumjs/mpt` tries | Production, proofs, state roots |
+| `SimpleStateManager` | In-memory maps | Lightweight EVM runs, tests |
+| `RPCStateManager` | JSON-RPC provider | Fork/mainnet replay without local state |
+| `StatefulBinaryTreeStateManager` | `@ethereumjs/binarytree` | EIP-7864 research (experimental) |
 
-This library includes several different implementations that all implement the `StateManager` interface which is accepted by the `vm` library. These include:
+All implementations support nested `checkpoint()` / `commit()` / `revert()` for revertible execution.
 
-- [`SimpleStateManager`](./src/simpleStateManager.ts) -a minimally functional (and dependency minimized) version of the state manager suitable for most basic EVM bytecode operations
-- [`MerkleStateManager`](./src/stateManager.ts) - a Merkle-Patricia Trie-based `MerkleStateManager` implementation that is used by the `@ethereumjs/client` and `@ethereumjs/vm`
-- [`RPCStateManager`](./src/rpcStateManager.ts) - a light-weight implementation that sources state and history data from an external JSON-RPC provider
-- [`StatefulBinaryTreeStateManager`](./src/statefulBinaryTreeStateManager.ts) - an experimental implementation of a stateful binary tree state manager
+## MerkleStateManager
 
-It also includes a checkpoint/revert/commit mechanism to either persist or revert state changes and provides a sophisticated caching mechanism under the hood to reduce the need reading state accesses from disk.
-
-### WASM Crypto Support
-
-This library by default uses JavaScript implementations for the basic standard crypto primitives like hashing for underlying trie keys. See `@ethereumjs/common` [README](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for instructions on how to replace with e.g. a more performant WASM implementation by using a shared `common` instance.
-
-## `MerkleStateManager`
-
-### Usage example
+Production state manager used by `@ethereumjs/client` and `@ethereumjs/vm`. Backed by account and storage Merkle Patricia Tries.
 
 ```ts
 // ./examples/basicUsage.ts
@@ -80,7 +73,6 @@ const main = async () => {
   await stateManager.commit()
   await stateManager.flush()
 
-  // Account at address 0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b has balance 1000
   console.log(
     `Account at address ${address.toString()} has balance ${
       (await stateManager.getAccount(address))?.balance
@@ -90,30 +82,64 @@ const main = async () => {
 void main()
 ```
 
-### Account, Storage and Code Caches
-
-Starting with the v2 release and complemented by the v2.1 release the StateManager comes with a significantly more elaborate caching mechanism for account, storage and code caches.
-
-There are now two cache options available: an unbounded cache (`CacheType.ORDERED_MAP`) for short-lived usage scenarios (this one is the default cache) and a fixed-size cache (`CacheType.LRU`) for a long-lived large cache scenario.
-
-Caches now "survive" a flush operation and especially long-lived usage scenarios will benefit from increased performance by a growing and more "knowing" cache leading to less and less trie reads.
-
-Have a look at the extended `CacheOptions` on how to use and leverage the new cache system.
-
-### Instantiating from Proofs
-
-The `MerkleStateManager` has a standalone constructor function `fromMerkleStateProof` that accepts one or more [EIP-1186](https://eips.ethereum.org/EIPS/eip-1186) [proofs](./src/stateManager.ts) and will instantiate a `MerkleStateManager` with a partial trie containing the state provided by the proof(s). Be aware that this constructor accepts the `StateManagerOpts` dictionary as a third parameter (i.e. `fromMerkleStateProof(proof, safe, opts)`).
-
-Therefore, if you need to use a customized trie (e.g. one that does not use key hashing) or specify caching options, you can pass them in here. If you do instantiate a trie and pass it into the `createTrieFromProof` constructor, you also need to instantiate the trie using the corresponding `createStateManagerFromProof` constructor to ensure the state root matches when the proof data is added to the trie, consider an example:
+### Checkpoints
 
 ```ts
-const newTrie = await createTrieFromProof(proof, { useKeyHashing: false })
-const partialSM = await fromMerkleStateProof([proof], true, {
-  trie: newTrie,
-})
+// ./examples/checkpointRevert.ts
+
+import { MerkleStateManager } from '@ethereumjs/statemanager'
+import { Account, Address, hexToBytes } from '@ethereumjs/util'
+
+const main = async () => {
+  const sm = new MerkleStateManager()
+  const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
+
+  await sm.checkpoint()
+  await sm.putAccount(address, new Account(0n, 1000n))
+  await sm.revert()
+  console.log(`After revert: ${(await sm.getAccount(address))?.balance ?? 'none'}`)
+
+  await sm.checkpoint()
+  await sm.putAccount(address, new Account(0n, 2000n))
+  await sm.commit()
+  await sm.flush()
+  console.log(`After commit: ${(await sm.getAccount(address))?.balance}`)
+}
+
+void main()
 ```
 
-See below example for common usage:
+### Code and storage
+
+```ts
+// ./examples/storageAndCode.ts
+
+import { MerkleStateManager } from '@ethereumjs/statemanager'
+import { Account, Address, hexToBytes } from '@ethereumjs/util'
+
+const main = async () => {
+  const sm = new MerkleStateManager()
+  const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
+  const storageKey = hexToBytes(
+    '0x0000000000000000000000000000000000000000000000000000000000000001',
+  )
+  const code = hexToBytes('0x60016001600155')
+
+  await sm.putAccount(address, new Account(0n, 0n))
+  await sm.putCode(address, code)
+  await sm.putStorage(address, storageKey, hexToBytes('0x01'))
+
+  console.log(`Code length: ${(await sm.getCode(address)).length} bytes`)
+  const slot = await sm.getStorage(address, storageKey)
+  console.log(`Storage value: ${slot[0]}`)
+}
+
+void main()
+```
+
+### EIP-1186 proofs
+
+Build partial state from merkle proofs with `getMerkleStateProof()`, `fromMerkleStateProof()`, and `addMerkleStateProofData()`:
 
 ```ts
 // ./examples/fromProofInstantiation.ts
@@ -127,7 +153,6 @@ import {
 import { Address, hexToBytes } from '@ethereumjs/util'
 
 const main = async () => {
-  // setup `stateManager` with some existing address
   const stateManager = new MerkleStateManager()
   const contractAddress = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
   const byteCode = hexToBytes('0x67ffffffffffffffff600160006000fb')
@@ -151,54 +176,43 @@ const main = async () => {
   ])
   const partialStateManager = await fromMerkleStateProof(proof)
 
-  // To add more proof data, use `addMerkleStateProofData`
   await addMerkleStateProofData(partialStateManager, proofWithStorage)
-  console.log(await partialStateManager.getCode(contractAddress)) // contract bytecode is not included in proof
-  console.log(await partialStateManager.getStorage(contractAddress, storageKey1), storageValue1) // should match
-  console.log(await partialStateManager.getStorage(contractAddress, storageKey2), storageValue2) // should match
+  console.log(await partialStateManager.getCode(contractAddress))
+  console.log(await partialStateManager.getStorage(contractAddress, storageKey1), storageValue1)
+  console.log(await partialStateManager.getStorage(contractAddress, storageKey2), storageValue2)
 
   const accountFromNewSM = await partialStateManager.getAccount(contractAddress)
   const accountFromOldSM = await stateManager.getAccount(contractAddress)
-  console.log(accountFromNewSM, accountFromOldSM) // should match
-
-  const slot1FromNewSM = await stateManager.getStorage(contractAddress, storageKey1)
-  const slot2FromNewSM = await stateManager.getStorage(contractAddress, storageKey2)
-  console.log(slot1FromNewSM, storageValue1) // should match
-  console.log(slot2FromNewSM, storageValue2) // should match
+  console.log(accountFromNewSM, accountFromOldSM)
 }
 void main()
 ```
 
-## `SimpleStateManager`
+## SimpleStateManager
 
-The `SimpleStateManager` is a dependency-minimized simple state manager implementation. While this state manager implementation lacks the implementations of some non-core functionality as well as proof related logic (e.g. `setStateRoot()`) it is suitable for a lot use cases where things like sophisticated caching or state root handling is not needed.
-
-This state manager can be instantiated and used as follows:
+Minimal in-memory implementation — no trie, no state root, no proofs. Default for lightweight `@ethereumjs/evm` usage.
 
 ```ts
-// ./examples/simple.ts
+// ./examples/simpleStateManager.ts
 
+import { SimpleStateManager } from '@ethereumjs/statemanager'
 import { Account, createAddressFromPrivateKey, randomBytes } from '@ethereumjs/util'
-
-import { SimpleStateManager } from '../src/index.ts'
 
 const main = async () => {
   const sm = new SimpleStateManager()
   const address = createAddressFromPrivateKey(randomBytes(32))
   const account = new Account(0n, 0xfffffn)
   await sm.putAccount(address, account)
-  console.log(await sm.getAccount(address))
+  const read = await sm.getAccount(address)
+  console.log(`Account balance: ${read?.balance}`)
 }
 
 void main()
-
 ```
 
-## `RPCStateManager`
+## RPCStateManager
 
-The `RPCStateManager` can be be used with any JSON-RPC provider that supports the `eth` namespace. Instantiate the `VM` and pass in an `RPCStateManager` to run transactions against accounts sourced from the provider or to run blocks pulled from the provider at any specified block height.
-
-A simple example of usage:
+Sources state from a JSON-RPC provider. Requires a fixed block number — not `latest`/`pending`.
 
 ```ts
 // ./examples/rpcStateManager.ts
@@ -214,124 +228,55 @@ const main = async () => {
     const account = await stateManager.getAccount(vitalikDotEth)
     console.log('Vitalik has a current ETH balance of ', account?.balance)
   } catch (e) {
-    console.log(e.message) // fetch fails because provider url is not real. please replace provider with a valid rpc url string.
+    console.log(e.message)
   }
 }
 void main()
 ```
 
-**Note:** Usage of this StateManager can cause a heavy load regarding state request API calls, so be careful (or at least: aware) if used in combination with a JSON-RPC provider connecting to a third-party API service like Infura!
+Pair with `RPCBlockChain` for `BLOCKHASH` opcode support — see [`evm.ts`](./examples/evm.ts).
 
-### Points on `RPCStateManager` usage
+## Binary Tree State Manager (experimental)
 
-#### Instantiating the EVM
-
-In order to have an EVM instance that supports the BLOCKHASH opcode (which requires access to block history), you must instantiate both the `RPCStateManager` and the `RpcBlockChain` and use that when initializing your EVM instance as below:
+[`StatefulBinaryTreeStateManager`](./src/statefulBinaryTreeStateManager.ts) uses [@ethereumjs/binarytree](../binarytree/) (EIP-7864):
 
 ```ts
-// ./examples/evm.ts
+// ./examples/binaryTreeStateManager.ts
 
-import { createEVM } from '@ethereumjs/evm'
-import { RPCBlockChain, RPCStateManager } from '@ethereumjs/statemanager'
+import { Common, Mainnet } from '@ethereumjs/common'
+import { StatefulBinaryTreeStateManager } from '@ethereumjs/statemanager'
+import { Account, createAddressFromString } from '@ethereumjs/util'
 
 const main = async () => {
-  try {
-    const provider = 'https://path.to.my.provider.com'
-    const blockchain = new RPCBlockChain(provider)
-    const blockTag = 1n
-    const state = new RPCStateManager({ provider, blockTag })
-    const evm = await createEVM({ blockchain, stateManager: state }) // note that evm is ready to run BLOCKHASH opcodes (over RPC)
-  } catch (e) {
-    console.log(e.message) // fetch would fail because provider url is not real. please replace provider with a valid RPC url string.
-  }
+  const common = new Common({ chain: Mainnet, eips: [7864] })
+  const sm = new StatefulBinaryTreeStateManager({ common })
+  const address = createAddressFromString('0x9e5ef720fa2cdfa5291eb7e711cfd2e62196f4b3')
+
+  await sm.putAccount(address, new Account(1n, 1000n))
+  const account = await sm.getAccount(address)
+  console.log(`Binary tree SM balance: ${account?.balance}`)
 }
+
 void main()
 ```
 
-Note: Failing to provide the `RPCBlockChain` instance when instantiating the EVM means that the `BLOCKHASH` opcode will fail to work correctly during EVM execution.
-
-#### Provider selection
-
-- The provider you select must support the `eth_getProof`, `eth_getCode`, and `eth_getStorageAt` RPC methods.
-- Not all providers support retrieving state from all block heights so refer to your provider's documentation. Trying to use a block height not supported by your provider (e.g. any block older than the last 256 for CloudFlare) will result in RPC errors when using the state manager.
-
-#### Block Tag selection
-
-- You have to pass a block number or `earliest` in the constructor that specifies the block height you want to pull state from.
-- The `latest`/`pending` values supported by the Ethereum JSON-RPC are not supported as longer running scripts run the risk of state values changing as blocks are mined while your script is running.
-- If using a very recent block as your block tag, be aware that reorgs could occur and potentially alter the state you are interacting with.
-- If you want to rerun transactions from block X or run block X, you need to specify the block tag as X-1 in the state manager constructor to ensure you are pulling the state values at the point in time the transactions or block was run.
-
-#### Potential gotchas
-
-- The RPC State Manager cannot compute valid state roots when running blocks as it does not have access to the entire Ethereum state trie so can not compute correct state roots, either for the account trie or for storage tries.
-- If you are replaying mainnet transactions and an account or account storage is touched by multiple transactions in a block, you must replay those transactions in order (with regard to their position in that block) or calculated gas will likely be different than actual gas consumed.
-
-#### Further reference
-
-Refer to [this test script](./test/rpcStateManager.spec.ts) for complete examples of running transactions and blocks in the `vm` with data sourced from a provider.
-
-## Binary Tree (experimental)
-
-The `StatefulBinaryTreeStateManager` is an experimental state manager built on top of the [binary tree](../binarytree/) implementation, intended for stateless-Ethereum research and early test networks. It is not yet sufficiently tested and its APIs are not yet stable; it should not be used in production.
+Not production-ready.
 
 ## Architecture
 
-This package provides several interchangeable state implementations behind a single contract, so consumers (`@ethereumjs/evm`, `@ethereumjs/vm`, or your own code) can swap the backing store without changing execution code.
-
-### The Contract
-
-The shared contract is **`StateManagerInterface`**, which is defined in `@ethereumjs/common` (`packages/common/src/interfaces.ts`), not in this package — `common` acts as the monorepo's interface hub. Every implementation here satisfies that interface, which covers account access (`getAccount`/`putAccount`/`deleteAccount`/`modifyAccountFields`), contract code and storage, state root management, and `checkpoint`/`commit`/`revert` for nested, revertible execution.
-
-### Internal Module Map
-
-- **`merkleStateManager.ts`** — `MerkleStateManager`: the production implementation, backed by a `MerklePatriciaTrie` from `@ethereumjs/mpt` (one account trie plus per-account storage tries). Use this for full Merkle-Patricia state and proof generation.
-- **`simpleStateManager.ts`** — `SimpleStateManager`: a minimal in-memory implementation with no trie and no state root, used as the EVM's default and for lightweight testing.
-- **`rpcStateManager.ts`** — `RPCStateManager`: reads state on demand from a remote node via JSON-RPC (fork-mainnet-style workflows).
-- **`statefulBinaryTreeStateManager.ts`** — `StatefulBinaryTreeStateManager`: experimental, backed by `@ethereumjs/binarytree` (EIP-7864).
-- **`cache/`** — shared account/storage caching used by the implementations.
-- **`proof/`** — proof construction and verification helpers.
-- **`types.ts`** — per-implementation option objects (`MerkleStateManagerOpts`, `SimpleStateManagerOpts`, `RPCStateManagerOpts`, `StatefulBinaryTreeStateManagerOpts`).
-
-### Extension Points
-
-- **Choosing an implementation** — pick the class that matches your backing store (Merkle trie, in-memory, RPC, binary tree) and pass it wherever a `stateManager` option is accepted (`createEVM({ stateManager })`, `createVM({ stateManager })`).
-- **Custom DB backend** (Merkle) — `MerkleStateManagerOpts` accepts a `trie`/DB, so you can persist to LevelDB, LMDB, an in-memory map, etc., via the `@ethereumjs/mpt` DB abstraction.
-- **Custom implementation** — anything implementing `StateManagerInterface` from `@ethereumjs/common` is a drop-in state manager; you do not need to subclass the provided ones.
+All implementations satisfy `StateManagerInterface` from `@ethereumjs/common`. Custom implementations can implement that interface directly.
 
 ## Browser
 
-We provide hybrid ESM/CJS builds for all our libraries. With the v10 breaking release round from Spring 2025, all libraries are "pure-JS" by default and we have eliminated all hard-wired WASM code. Additionally we have substantially lowered the bundle sizes, reduced the number of dependencies, and cut out all usages of Node.js-specific primitives (like the Node.js event emitter).
-
-It is easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
+Hybrid ESM/CJS builds are provided. See [./examples/browser.html](./examples/browser.html).
 
 ## API
 
-### Docs
-
-Generated TypeDoc API [Documentation](./docs/README.md)
-
-### Hybrid CJS/ESM Builds
-
-With the breaking releases from Summer 2023 we have started to ship our libraries with both CommonJS (`cjs` folder) and ESM builds (`esm` folder), see `package.json` for the detailed setup.
-
-If you use an ES6-style `import` in your code files from the ESM build will be used:
-
-```ts
-import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
-```
-
-If you use Node.js specific `require`, the CJS build will be used:
-
-```ts
-const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
-```
-
-Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking which CJS can not provide.
+Generated TypeDoc [documentation](./docs/README.md).
 
 ## Development
 
-Developer documentation - currently mainly with information on testing and debugging - can be found [here](./DEVELOPER.md).
+See [DEVELOPER.md](./DEVELOPER.md).
 
 ## EthereumJS
 

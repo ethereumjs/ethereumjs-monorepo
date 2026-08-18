@@ -34,7 +34,7 @@ npm i @ethereumjs/genesis
 ## Usage
 
 ```ts
-// ./examples/simple.ts
+// ./examples/mainnetGenesis.ts
 
 import { Chain } from '@ethereumjs/common' // or directly use chain ID
 import { getGenesis } from '@ethereumjs/genesis'
