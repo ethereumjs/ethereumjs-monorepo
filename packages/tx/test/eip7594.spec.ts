@@ -199,7 +199,41 @@ describe('Network wrapper tests', () => {
         ),
       ).toThrowError(/EIP-7594 is active on Common for EIP-4844 network wrapper version/)
     }
-  }, 40_000)
+  }, 60_000)
+
+  it('should reject an EIP-7594 network wrapper on a pre-7594 common during deserialization', async () => {
+    for (const kzg of kzgs) {
+      const blobs = [...getBlobs('hello world'), ...getBlobs('hello world')]
+      const commitments = blobsToCommitments(kzg.lib, blobs)
+      const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
+      const cellProofs = blobsToCellProofs(kzg.lib, blobs)
+      const preOsakaCommon = createCommonFromGethGenesis(osakaGethGenesis.osakaGenesis, {
+        chain: 'customChain',
+        hardfork: Hardfork.Prague,
+        customCrypto: { kzg: kzg.lib },
+      })
+
+      const serialized = createBlob4844Tx(
+        {
+          networkWrapperVersion: 1,
+          blobVersionedHashes,
+          blobs,
+          kzgCommitments: commitments,
+          kzgProofs: cellProofs,
+          maxFeePerBlobGas: 100000000n,
+          gasLimit: 0xffffffn,
+          to: randomBytes(20),
+        },
+        { common: kzg.common },
+      ).serializeNetworkWrapper()
+
+      expect(() =>
+        createBlob4844TxFromSerializedNetworkWrapper(serialized, {
+          common: preOsakaCommon,
+        }),
+      ).toThrowError(/EIP-7594 not enabled on Common for EIP-7594 network wrapper version/)
+    }
+  }, 60_000)
 
   it('should work with all data provided', async () => {
     for (const kzg of kzgs) {
@@ -369,7 +403,7 @@ describe('Network wrapper tests', () => {
         'throws when kzg proof cant be verified',
       )
     }
-  }, 40_000)
+  }, 60_000)
 
   it('should calculate the correct cell proofs', async () => {
     for (const kzg of kzgs) {

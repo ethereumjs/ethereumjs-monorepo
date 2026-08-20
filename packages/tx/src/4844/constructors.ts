@@ -22,7 +22,7 @@ import { paramsTx } from '../params.ts'
 import { TransactionType } from '../types.ts'
 import { accessListBytesToJSON } from '../util/access.ts'
 
-import { Blob4844Tx, NetworkWrapperType } from './tx.ts'
+import { Blob4844Tx, NetworkWrapperType, validateBlob4844TxForkConstraints } from './tx.ts'
 
 import type { KZG, PrefixedHexString } from '@ethereumjs/util'
 import type {
@@ -382,6 +382,12 @@ export function createBlob4844TxFromSerializedNetworkWrapper(
   ) {
     throw Error(`Invalid networkWrapperVersion=${networkWrapperVersionInt}`)
   }
+
+  validateBlob4844TxForkConstraints({
+    blobVersionedHashes: decodedTx.blobVersionedHashes,
+    common: commonCopy,
+    networkWrapperVersion: networkWrapperVersionInt,
+  })
 
   validateBlobTransactionNetworkWrapper(
     networkWrapperVersionInt,
