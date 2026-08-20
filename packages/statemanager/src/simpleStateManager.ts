@@ -2,10 +2,11 @@ import { Account, EthereumJSErrorWithoutCode, bytesToHex } from '@ethereumjs/uti
 import { keccak_256 } from '@noble/hashes/sha3.js'
 
 import { OriginalStorageCache } from './cache/originalStorageCache.ts'
+import { consumeBAL as consumeBALUtil } from './consumeBAL.ts'
 import { modifyAccountFields } from './util.ts'
 
 import type { AccountFields, Common, StateManagerInterface } from '@ethereumjs/common'
-import type { Address, PrefixedHexString } from '@ethereumjs/util'
+import type { Address, BALJSONBlockAccessList, PrefixedHexString } from '@ethereumjs/util'
 import type { SimpleStateManagerOpts } from './index.ts'
 
 /**
@@ -152,6 +153,16 @@ export class SimpleStateManager implements StateManagerInterface {
       copy.storageStack.push(new Map(this.storageStack[i]))
     }
     return copy
+  }
+
+  /**
+   * Apply an EIP-7928 BAL onto this state. See {@link consumeBAL}.
+   * Do not pass `expectedStateRoot` — this manager does not implement state roots.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
+  async consumeBAL(bal: BALJSONBlockAccessList, expectedStateRoot?: Uint8Array): Promise<void> {
+    return consumeBALUtil(this, bal, expectedStateRoot)
   }
 
   // State root functionality not implemented

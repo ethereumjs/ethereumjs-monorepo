@@ -524,7 +524,6 @@ The VM is a thin orchestration layer that drives the `EVM` at the transaction an
 - **`runBlock.ts`** — `runBlock`: block-level processing (pre-state setup, transaction loop via `runTx`, withdrawals, requests, rewards, post-state validation). See [Internal Structure](#internal-structure) below for the step-by-step flow.
 - **`runTx.ts`** — `runTx`: transaction-level rules (nonce/balance/intrinsic-gas checks, EIP-1559/4844/7702 handling, access-list warming), the call into `vm.evm.runCall`, refund/coinbase accounting and receipt generation (`generateTxReceipt`).
 - **`buildBlock.ts`** — `buildBlock` / `BlockBuilder`: incremental block construction for block producers.
-- **`consumeBAL.ts`** — EIP-7928 block-level access list consumption (`consumeBAL()`).
 - **`requests.ts`** — consensus-layer request (EIP-7685) extraction.
 - **`bloom/`** — logs-bloom computation.
 - **`params.ts`** — `paramsVM`, merged into `Common` at construction.
@@ -776,7 +775,7 @@ void main()
 
 ```
 
-**Offline parsing / validation:** see the [@ethereumjs/util BAL module](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util#module-bal) for `BlockLevelAccessList`, JSON/RLP helpers, and validation utilities.
+**Offline parsing / validation:** see the [@ethereumjs/util BAL module](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util#module-bal) for `BlockLevelAccessList`, JSON/RLP helpers, and validation utilities. To apply a BAL onto state without executing the block, use `stateManager.consumeBAL(bal)` from `@ethereumjs/statemanager`.
 
 **Notes:**
 

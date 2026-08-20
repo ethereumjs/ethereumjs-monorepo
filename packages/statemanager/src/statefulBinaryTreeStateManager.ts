@@ -1,7 +1,12 @@
 import { BinaryTree } from '@ethereumjs/binarytree'
 import { BinaryTreeAccessedStateType } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import type { Address, BinaryTreeExecutionWitness, PrefixedHexString } from '@ethereumjs/util'
+import type {
+  Address,
+  BALJSONBlockAccessList,
+  BinaryTreeExecutionWitness,
+  PrefixedHexString,
+} from '@ethereumjs/util'
 import {
   Account,
   BINARY_TREE_CODE_CHUNK_SIZE,
@@ -39,6 +44,7 @@ import { keccak_256 } from '@noble/hashes/sha3.js'
 import debugDefault from 'debug'
 
 import { OriginalStorageCache } from './cache/originalStorageCache.ts'
+import { consumeBAL as consumeBALUtil } from './consumeBAL.ts'
 import { modifyAccountFields } from './util.ts'
 
 import type {
@@ -724,6 +730,15 @@ export class StatefulBinaryTreeStateManager
 
   getStateRoot(): Promise<Uint8Array> {
     return Promise.resolve(this._tree.root())
+  }
+
+  /**
+   * Apply an EIP-7928 BAL onto this state. See {@link consumeBAL}.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
+  async consumeBAL(bal: BALJSONBlockAccessList, expectedStateRoot?: Uint8Array): Promise<void> {
+    return consumeBALUtil(this, bal, expectedStateRoot)
   }
 
   setStateRoot(stateRoot: Uint8Array, clearCache?: boolean): Promise<void> {

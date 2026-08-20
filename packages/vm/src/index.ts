@@ -1,7 +1,6 @@
 export { Bloom } from './bloom/index.ts'
 export { BlockBuilder, BuildStatus } from './buildBlock.ts'
 export { buildBlock } from './buildBlock.ts'
-export { consumeBAL } from './consumeBAL.ts'
 export * from './constructors.ts'
 export { estimateTxGasDimensions } from './estimateTxGasDimensions.ts'
 export type { TxGasDimensionsEstimate } from './estimateTxGasDimensions.ts'

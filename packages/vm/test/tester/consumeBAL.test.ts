@@ -4,6 +4,7 @@ import path from 'path'
 
 import { createBlock } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
+import { consumeBAL } from '@ethereumjs/statemanager'
 import {
   bytesToHex,
   createAddressFromString,
@@ -14,7 +15,6 @@ import {
 import { keccak_256 } from '@noble/hashes/sha3.js'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
-import { consumeBAL } from '../../src/consumeBAL.ts'
 import { createVM } from '../../src/index.ts'
 import { setupPreConditions } from '../util.ts'
 import { createCommonForFork, loadExecutionSpecFixtures } from './executionSpecTestLoader.ts'
@@ -71,7 +71,7 @@ export async function consumeBALTestCase(
 
   for (const { blockAccessList, blockHeader } of testData.blocks) {
     if (blockAccessList !== undefined) {
-      await consumeBAL(vm, blockAccessList, hexToBytes(blockHeader.stateRoot))
+      await consumeBAL(vm.stateManager, blockAccessList, hexToBytes(blockHeader.stateRoot))
     }
   }
 

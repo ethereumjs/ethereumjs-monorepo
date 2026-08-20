@@ -18,10 +18,11 @@ import { keccak_256 } from '@noble/hashes/sha3.js'
 import debugDefault from 'debug'
 
 import { Caches, OriginalStorageCache } from './cache/index.ts'
+import { consumeBAL as consumeBALUtil } from './consumeBAL.ts'
 import { modifyAccountFields } from './util.ts'
 
 import type { AccountFields, StateManagerInterface, StorageDump } from '@ethereumjs/common'
-import type { Address } from '@ethereumjs/util'
+import type { Address, BALJSONBlockAccessList } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 import type { RPCStateManagerOpts } from './index.ts'
 
@@ -343,6 +344,15 @@ export class RPCStateManager implements StateManagerInterface {
    */
   getStateRoot = async () => {
     return new Uint8Array(32)
+  }
+
+  /**
+   * Apply an EIP-7928 BAL onto this state. See {@link consumeBAL}.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
+  async consumeBAL(bal: BALJSONBlockAccessList, expectedStateRoot?: Uint8Array): Promise<void> {
+    return consumeBALUtil(this, bal, expectedStateRoot)
   }
 
   /**

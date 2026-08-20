@@ -9,13 +9,25 @@ import {
   hexToBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
-import type { VM } from './vm.ts'
 
+import type { StateManagerInterface } from '@ethereumjs/common'
+
+/**
+ * Apply an EIP-7928 block-level access list onto `stateManager` without
+ * executing transactions. Last post-balance / nonce / code / storage win;
+ * EIP-161 empty accounts are deleted. Optionally checks `expectedStateRoot`.
+ *
+ * Shared by every state manager in this package (`sm.consumeBAL(...)`).
+ * Custom `StateManagerInterface` implementations can call this helper or
+ * leave `consumeBAL` unimplemented (it is optional on the interface).
+ *
+ * @remarks Experimental (Amsterdam): may change on patch releases.
+ */
 export async function consumeBAL(
-  vm: VM,
+  stateManager: StateManagerInterface,
   bal: BALJSONBlockAccessList,
   expectedStateRoot?: Uint8Array,
-) {
+): Promise<void> {
   for (const acc of bal) {
     if (
       acc.balanceChanges.length === 0 &&
@@ -36,11 +48,11 @@ export async function consumeBAL(
       lastNonceChange?.postNonce !== undefined ? hexToBigInt(lastNonceChange.postNonce) : undefined
     const code = acc.codeChanges.slice(-1)[0]?.newCode ?? undefined
     if (code !== undefined) {
-      await vm.stateManager.putCode(address, hexToBytes(code))
+      await stateManager.putCode(address, hexToBytes(code))
     }
 
     // Read the account after any code update to get the current codeHash
-    const existingAccount = await vm.stateManager.getAccount(address)
+    const existingAccount = await stateManager.getAccount(address)
     const finalBalance = balance ?? existingAccount?.balance ?? 0n
     const finalNonce = nonce ?? existingAccount?.nonce ?? 0n
     const finalCodeHash = existingAccount?.codeHash ?? KECCAK256_NULL
@@ -55,15 +67,15 @@ export async function consumeBAL(
       // entry into the trie. This correctly handles contracts created and selfdestructed
       // in the same transaction, where the BAL records postBalance=0 but EVM deletes
       // the account entirely.
-      await vm.stateManager.deleteAccount(address)
+      await stateManager.deleteAccount(address)
     } else {
-      await vm.stateManager.modifyAccountFields(address, {
+      await stateManager.modifyAccountFields(address, {
         balance,
         nonce,
       })
       for (const storage of acc.storageChanges) {
         const value = storage.slotChanges.slice(-1)[0].postValue
-        await vm.stateManager.putStorage(
+        await stateManager.putStorage(
           address,
           setLengthLeft(hexToBytes(storage.slot), 32),
           setLengthLeft(hexToBytes(value), 32),
@@ -71,10 +83,12 @@ export async function consumeBAL(
       }
     }
   }
-  const stateRoot = await vm.stateManager.getStateRoot()
-  if (expectedStateRoot && !equalsBytes(expectedStateRoot, stateRoot)) {
-    throw EthereumJSErrorWithoutCode(
-      `Expected state root ${bytesToHex(expectedStateRoot)} but got ${bytesToHex(stateRoot)}`,
-    )
+  if (expectedStateRoot !== undefined) {
+    const stateRoot = await stateManager.getStateRoot()
+    if (!equalsBytes(expectedStateRoot, stateRoot)) {
+      throw EthereumJSErrorWithoutCode(
+        `Expected state root ${bytesToHex(expectedStateRoot)} but got ${bytesToHex(stateRoot)}`,
+      )
+    }
   }
 }

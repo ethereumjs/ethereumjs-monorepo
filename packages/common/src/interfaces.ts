@@ -5,6 +5,7 @@
 import type {
   Account,
   Address,
+  BALJSONBlockAccessList,
   BinaryTreeExecutionWitness,
   PrefixedHexString,
 } from '@ethereumjs/util'
@@ -205,6 +206,13 @@ export interface StateManagerInterface {
   // Client RPC
   dumpStorage?(address: Address): Promise<StorageDump>
   dumpStorageRange?(address: Address, startKey: bigint, limit: number): Promise<StorageRange>
+  /**
+   * Apply an EIP-7928 block-level access list onto this state (no EVM execution).
+   * Implementations in `@ethereumjs/statemanager` forward to the shared `consumeBAL()` helper.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
+  consumeBAL?(bal: BALJSONBlockAccessList, expectedStateRoot?: Uint8Array): Promise<void>
 
   /*
    * EVM/VM Specific Functionality

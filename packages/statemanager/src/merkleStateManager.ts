@@ -22,6 +22,7 @@ import { keccak_256 } from '@noble/hashes/sha3.js'
 import debugDefault from 'debug'
 
 import { OriginalStorageCache } from './cache/index.ts'
+import { consumeBAL as consumeBALUtil } from './consumeBAL.ts'
 import type { Caches, MerkleStateManagerOpts } from './index.ts'
 import { modifyAccountFields } from './util.ts'
 
@@ -31,7 +32,7 @@ import type {
   StorageDump,
   StorageRange,
 } from '@ethereumjs/common'
-import type { Address, DB } from '@ethereumjs/util'
+import type { Address, BALJSONBlockAccessList, DB } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
 /**
@@ -733,5 +734,14 @@ export class MerkleStateManager implements StateManagerInterface {
    */
   getAppliedKey(address: Uint8Array): Uint8Array {
     return this._trie['appliedKey'](address)
+  }
+
+  /**
+   * Apply an EIP-7928 BAL onto this state. See {@link consumeBAL}.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
+  async consumeBAL(bal: BALJSONBlockAccessList, expectedStateRoot?: Uint8Array): Promise<void> {
+    return consumeBALUtil(this, bal, expectedStateRoot)
   }
 }
