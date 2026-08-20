@@ -667,8 +667,8 @@ See the [canonical Amsterdam overview](https://github.com/ethereumjs/ethereumjs-
 
 | Parameter | Pre-7954 | Post-7954 |
 | --- | --- | --- |
-| `maxCodeSize` | 24 KiB (24576) | 32 KiB (32768) |
-| `maxInitCodeSize` | 48 KiB (49152) | 64 KiB (65536) |
+| `maxCodeSize` | 24 KiB (24576) | 64 KiB (65536) |
+| `maxInitCodeSize` | 48 KiB (49152) | 128 KiB (131072) |
 
 These are `Common` parameters (`common.param('maxCodeSize')`) — no API changes beyond using the Amsterdam hardfork.
 
