@@ -15,7 +15,9 @@ Runnable examples live in [`examples/`](./examples/) (including [`precompiles/`]
 - 🌴 Tree-shakeable API
 - 👷🏼 Controlled dependency set (7 external + `@Noble` crypto)
 - 🧩 Flexible EIP on/off engine
-- 🛠️ Custom precompiles
+- 🔧 Custom opcodes and precompiles
+- 📜 **EIP-7708** Transfer logs and **EIP-8037** state gas (Amsterdam, experimental)
+- 🧮 **EIP-8024** stack opcodes and **EIP-7843** `SLOTNUM` (Amsterdam, experimental)
 - 🚀 Built-in profiler
 - 🪢 User-friendly colored debugging
 - 🛵 422KB bundle size (110KB gzipped)
@@ -25,26 +27,20 @@ Runnable examples live in [`examples/`](./examples/) (including [`precompiles/`]
 
 - [Installation](#installation)
 - [Getting Started](#getting-started)
-- [State, Blockchain, and Tracing](#state-blockchain-and-tracing)
 - [Contract Calls (`runCall`)](#contract-calls-runcall)
-- [Event Logs](#event-logs)
+- [Amsterdam (experimental)](#amsterdam-experimental)
 - [EIP Activation](#eip-activation)
-- [Events](#events)
-- [Custom Precompiles](#custom-precompiles)
-- [Custom Opcodes](#custom-opcodes)
-- [Opcode Decoding](#opcode-decoding)
+- [Customizing the EVM](#customizing-the-evm)
+- [Observability](#observability)
+- [Precompiles](#precompiles)
 - [Browser](#browser)
 - [API](#api)
 - [Architecture](#architecture)
 - [Supported Hardforks](#supported-hardforks)
 - [Supported EIPs](#supported-eips)
-- [Precompiles](#precompiles)
-- [Understanding the EVM](#understanding-the-evm)
-- [Profiling the EVM](#profiling-the-evm)
 - [Development](#development)
 - [EthereumJS](#ethereumjs)
 - [License](#license)
-
 
 ## Installation
 
@@ -54,13 +50,18 @@ To obtain the latest version, simply require the project using `npm`:
 npm install @ethereumjs/evm
 ```
 
-This package provides the core Ethereum Virtual Machine (EVM) implementation which is capable of executing EVM-compatible bytecode. The package has been extracted from the [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm) package along the VM `v6` release.
-
-**Note:** Starting with the Dencun hardfork `EIP-4844` related functionality has become an integrated part of the EVM functionality with the activation of the point evaluation precompile. For this precompile to work a separate installation of the KZG library is necessary (we decided not to bundle due to large bundle sizes), see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
+**Note:** Starting with the Dencun hardfork, the EIP-4844 point-evaluation precompile (`0x0a`) requires a separate KZG library install — see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup).
 
 ## Getting Started
 
-Use `createEVM()` for a standalone instance with a default `SimpleStateManager` and mock blockchain. `runCode()` executes raw bytecode without a full transaction context:
+Use `@ethereumjs/evm` when you need bytecode or message execution without full transaction/block processing. For signed transactions, receipts, and block assembly, use [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm).
+
+| API | Use when |
+| --- | --- |
+| `runCode()` | Executing raw bytecode (tests, sandboxes, utilities) |
+| `runCall()` | Full message path: checkpoints, value transfer, nonce updates |
+
+`createEVM()` returns a standalone instance with a default `SimpleStateManager` and mock blockchain:
 
 ```ts
 // ./examples/runBytecode.ts
@@ -77,61 +78,20 @@ const main = async () => {
 void main()
 ```
 
-## State, Blockchain, and Tracing
-
-For stateful execution, pass a `@ethereumjs/statemanager` instance. An optional `@ethereumjs/blockchain` provides blockhash access. Subscribe to `step` events to trace opcode execution:
+Pin a hardfork via `Common` when you need rules beyond the default (`prague`):
 
 ```ts
-// ./examples/withBlockchain.ts
-
-import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createEVM } from '@ethereumjs/evm'
-import { MerkleStateManager } from '@ethereumjs/statemanager'
-import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 
-import type { PrefixedHexString } from '@ethereumjs/util'
-
-const main = async () => {
-  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai })
-  const stateManager = new MerkleStateManager()
-  const blockchain = await createBlockchain()
-
-  const evm = await createEVM({
-    common,
-    stateManager,
-    blockchain,
-  })
-
-  const STOP = '00'
-  const ADD = '01'
-  const PUSH1 = '60'
-
-  // Note that numbers added are hex values, so '20' would be '32' as decimal e.g.
-  const code = [PUSH1, '03', PUSH1, '05', ADD, STOP]
-
-  evm.events.on('step', function (data) {
-    // Note that data.stack is not immutable, i.e. it is a reference to the vm's internal stack object
-    console.log(`Opcode: ${data.opcode.name}\tStack: ${data.stack}`)
-  })
-
-  const results = await evm.runCode({
-    code: hexToBytes(('0x' + code.join('')) as PrefixedHexString),
-    gasLimit: BigInt(0xffff),
-  })
-
-  console.log(`Returned: ${bytesToHex(results.returnValue)}`)
-  console.log(`gasUsed: ${results.executionGasUsed.toString()}`)
-}
-
-void main()
+const evm = await createEVM({
+  common: new Common({ chain: Mainnet, hardfork: Hardfork.Prague }),
+})
 ```
-
-WASM crypto backends can replace the default JavaScript implementations — see [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for `customCrypto` setup.
 
 ## Contract Calls (`runCall`)
 
-`runCall()` runs the full message path (checkpointing, value transfer, nonce updates). Put contract code on the state manager, then call the address:
+`runCall()` runs the full message path. Put contract code on the state manager, then call the address:
 
 ```ts
 // ./examples/runCallWithState.ts
@@ -162,41 +122,108 @@ const main = async () => {
 void main()
 ```
 
+**State and blockchain.** Pass a `@ethereumjs/statemanager` instance for persistent accounts and storage; an optional `@ethereumjs/blockchain` provides `BLOCKHASH` access. See [`withBlockchain.ts`](./examples/withBlockchain.ts) for wiring with `MerkleStateManager`. WASM crypto backends can replace the default JavaScript implementations — see [@ethereumjs/common](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/common) for `customCrypto` setup.
+
 For async event listeners on `runCall`, see [Events](#events).
 
-## Event Logs
+## Amsterdam (experimental)
 
-The EVM records contract events as **logs** — a compact tuple reused across `@ethereumjs/evm`, `@ethereumjs/vm`, and (with field renaming) JSON-RPC:
+Amsterdam is the current development hardfork. Behaviour is unstable — expect further `10.1.x` releases as the spec evolves. Release ↔ spec tracking and the full EIP bundle live in the [canonical Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) in `@ethereumjs/vm`.
+
+**Activation:** `new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })`.
+
+| EIP | EVM-layer summary | Detail |
+| --- | --- | --- |
+| [8024](https://eips.ethereum.org/EIPS/eip-8024) | `DUPN`, `SWAPN`, `EXCHANGE` stack opcodes | [below](#eip-8024-stack-opcodes-amsterdam) |
+| [7843](https://eips.ethereum.org/EIPS/eip-7843) | `SLOTNUM` opcode + `slotNumber` header field | [below](#eip-7843-slotnum-opcode-amsterdam) |
+| [7954](https://eips.ethereum.org/EIPS/eip-7954) | Raised max contract / initcode size | [below](#eip-7954-contract-and-initcode-size-limits-amsterdam) |
+| [7708](https://eips.ethereum.org/EIPS/eip-7708) | Synthetic `Transfer` logs on value-bearing calls | [below](#eip-7708-eth-transfer-logs-amsterdam) |
+| [8037](https://eips.ethereum.org/EIPS/eip-8037) / [8038](https://eips.ethereum.org/EIPS/eip-8038) | Two-dimensional state gas reservoir | [below](#eip-8037-state-creation-gas-amsterdam) |
+| [7928](https://eips.ethereum.org/EIPS/eip-7928) | Block Level Access Lists | [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#eip-7928-block-level-access-lists-amsterdam) — accumulates on `evm.blockLevelAccessList` |
+| [8246](https://eips.ethereum.org/EIPS/eip-8246) | SELFDESTRUCT no longer burns ETH | Journal / `SELFDESTRUCT` behaviour |
+| [8282](https://eips.ethereum.org/EIPS/eip-8282) | Builder execution requests | `@ethereumjs/vm` `runBlock()` / `accumulateRequests` |
+
+Tx-level Amsterdam rules (intrinsic gas, calldata floor, access-list pricing): [@ethereumjs/tx Amsterdam Validation](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx#amsterdam-validation).
+
+### EIP-8024 stack opcodes (Amsterdam)
+
+[EIP-8024](https://eips.ethereum.org/EIPS/eip-8024) adds three backward-compatible stack manipulation opcodes, each with a single-byte immediate operand:
+
+| Opcode | Byte | Effect |
+| --- | --- | --- |
+| `DUPN` | `0xe6` | Duplicate the stack item at depth `n` (immediate encodes `n`) |
+| `SWAPN` | `0xe7` | Swap the top item with the item at depth `n` |
+| `EXCHANGE` | `0xe8` | Exchange items at depths `x` and `y` (pair immediate) |
+
+The opcodes are active on `Hardfork.Amsterdam` and validated at decode time (invalid immediates trap). Gas costs: `dupnGas`, `swapnGas`, `exchangeGas` (default 3 each). They are supported in legacy bytecode and in EOF containers.
+
+Runnable walkthrough: [`examples/opcodes/eip8024StackOpcodes.ts`](./examples/opcodes/eip8024StackOpcodes.ts). See also [CLZ (EIP-7939)](./examples/opcodes/eip7939ClzOpcode.ts) (Osaka) and [SLOTNUM (EIP-7843)](#eip-7843-slotnum-opcode-amsterdam).
+
+### EIP-7843 SLOTNUM opcode (Amsterdam)
+
+[EIP-7843](https://eips.ethereum.org/EIPS/eip-7843) adds `SLOTNUM` (`0x4b`), which pushes the executing block's consensus `slotNumber` onto the stack. Pass a block header that sets the field. A stand-alone `runCode()` without a block uses a mock header with `slotNumber: 0n`:
 
 ```ts
-type Log = [address: Uint8Array, topics: Uint8Array[], data: Uint8Array]
-//            emitter            indexed fields   unindexed payload
-```
+// ./examples/opcodes/eip7843SlotnumOpcode.ts
 
-The example below emits a `LOG1` from bytecode. Native ETH `Transfer` logs are not opcodes: with [EIP-7708](#eip-7708-eth-transfer-logs-amsterdam) on Amsterdam they are created by `runCall()` on value-bearing calls. `Burn` logs are produced later in `@ethereumjs/vm` `runTx()` finalization.
-
-Both `runCode()` and `runCall()` return an [`ExecResult`](./docs/interfaces/ExecResult.md) with an optional `logs` array. Nested calls append logs in execution order; a reverted top-level execution clears them. For transaction receipts and block blooms, use `@ethereumjs/vm`.
-
-```ts
-// ./examples/emitLogs.ts
-
+import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createEVM } from '@ethereumjs/evm'
-import {
-  bytesToBigInt,
-  bytesToHex,
-  concatBytes,
-  createAddressFromString,
-  hexToBytes,
-} from '@ethereumjs/util'
+
+const SLOTNUM = 0x4b
+const STOP = 0x00
+
+const main = async () => {
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })
+  const evm = await createEVM({ common })
+
+  const slotNumber = 42n
+  const block = createBlock(
+    { header: { slotNumber, gasLimit: 30_000_000n } },
+    { common, skipConsensusFormatValidation: true },
+  )
+
+  const res = await evm.runCode({
+    code: Uint8Array.from([SLOTNUM, STOP]),
+    block,
+    gasLimit: 100_000n,
+  })
+
+  const [top] = res.runState!.stack.peek(1)
+  console.log(`SLOTNUM read consensus slot ${top} (header.slotNumber=${slotNumber})`)
+  console.log(`Gas used: ${res.executionGasUsed}`)
+}
+
+void main()
+```
+
+Header construction: [`@ethereumjs/block` slot number](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/block#eip-7843-slot-number).
+
+### EIP-7954 contract and initcode size limits (Amsterdam)
+
+[EIP-7954](https://eips.ethereum.org/EIPS/eip-7954) raises the EVM size limits when active on `Hardfork.Amsterdam`:
+
+| Parameter | Pre-7954 | Post-7954 |
+| --- | --- | --- |
+| `maxCodeSize` | 24 KiB (24576) | 64 KiB (65536) |
+| `maxInitCodeSize` | 48 KiB (49152) | 128 KiB (131072) |
+
+These are `Common` parameters (`common.param('maxCodeSize')`) — no API changes beyond using the Amsterdam hardfork.
+
+### EIP-7708 ETH transfer logs (Amsterdam)
+
+[EIP-7708](https://eips.ethereum.org/EIPS/eip-7708) emits a system-address `Transfer(address,address,uint256)` log on value-bearing `CALL`/`CREATE`. `runCall()` returns it on `execResult.logs` even when the recipient has no code. Use `decodeEIP7708TransferLog()` to pick Transfer logs out of mixed opcode logs.
+
+`Burn` logs are created in `@ethereumjs/vm` `runTx()` finalization, not by a stand-alone `runCall()`. For receipts see the [`runTxTransferLogs`](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm/examples/runTxTransferLogs.ts) example.
+
+```ts
+// ./examples/eip7708TransferLog.ts
+
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createEVM, decodeEIP7708TransferLog } from '@ethereumjs/evm'
+import { bytesToHex, createAccount, createAddressFromString } from '@ethereumjs/util'
 
 import type { Log } from '@ethereumjs/evm'
-
-const PUSH32 = 0x7f
-const PUSH1 = 0x60
-const MSTORE = 0x52
-const LOG1 = 0xa1
-const STOP = 0x00
 
 /** Pretty-print a Log tuple for console output (not an RPC formatter). */
 function formatLog(log: Log) {
@@ -209,41 +236,58 @@ function formatLog(log: Log) {
 }
 
 const main = async () => {
-  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Prague })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })
   const evm = await createEVM({ common })
 
-  const contract = createAddressFromString('0x00000000000000000000000000000000000000c0')
+  const caller = createAddressFromString('0x00000000000000000000000000000000000000ee')
+  const recipient = createAddressFromString('0x00000000000000000000000000000000000000aa')
+  await evm.stateManager.putAccount(caller, createAccount({ nonce: 0n, balance: BigInt(1e18) }))
 
-  // MSTORE 32 bytes at offset 0, then LOG1. LOG1 pops (top first): memOffset, memLength, topic.
-  const topic = hexToBytes(`0x${'11'.repeat(32)}`)
-  const dataWord = hexToBytes(`0x${'00'.repeat(31)}42`)
-  const code = concatBytes(
-    Uint8Array.from([PUSH32]),
-    dataWord,
-    Uint8Array.from([PUSH1, 0x00, MSTORE]),
-    Uint8Array.from([PUSH32]),
-    topic,
-    Uint8Array.from([PUSH1, 0x20, PUSH1, 0x00, LOG1, STOP]),
-  )
-
-  const result = await evm.runCode({
-    code,
-    to: contract,
-    gasLimit: 100_000n,
+  // Value-bearing CALL with no bytecode still emits a system-address Transfer log.
+  const result = await evm.runCall({
+    caller,
+    to: recipient,
+    value: 1n,
+    gasLimit: 300_000n,
   })
 
-  const logs = result.logs ?? []
-  console.log(`Emitted ${logs.length} log(s) from ${contract.toString()}`)
+  const logs = result.execResult.logs ?? []
+  console.log(`runCall emitted ${logs.length} log(s)`)
   for (const [index, log] of logs.entries()) {
     const formatted = formatLog(log)
     console.log(`  log[${index}] emitter=${formatted.address}`)
     console.log(`           topics=${formatted.topics.join(', ')}`)
-    console.log(`           data=${formatted.data} (value=${bytesToBigInt(log[2])})`)
+    console.log(`           data=${formatted.data}`)
+
+    const transfer = decodeEIP7708TransferLog(log)
+    if (transfer !== undefined) {
+      console.log(
+        `           → EIP-7708 Transfer from ${transfer.from} to ${transfer.to} value=${transfer.value} wei`,
+      )
+    }
   }
 }
 
 void main()
 ```
+
+### EIP-8037 state-creation gas (Amsterdam)
+
+[EIP-8037](https://eips.ethereum.org/EIPS/eip-8037) splits gas into **regular** and **state** dimensions. State-touching opcodes draw from `evm.stateGasReservoir` first; overflow spills into `gas_left`. `runTx()` sizes the reservoir from the tx budget. A stand-alone `runCall()` starts at `0` unless you set it.
+
+Inner `CREATE` / `CREATE2` charges new-account state gas unless the target already has nonce or code. A create collision burns the 63/64 stipend without a child frame.
+
+Helpers (used by `@ethereumjs/vm`, available for custom runners):
+
+| Helper | Role |
+| --- | --- |
+| `computeIntrinsicGasDimensions8037()` | Intrinsic gas is regular-only under current v7 rules (`intrinsicState` is `0`) |
+| `txExceedsAvailableBlockGas8037()` | Per-tx block inclusion: regular bound is `min(TX_MAX, tx.gas)`, state bound is full `tx.gas` |
+| `activeCostPerStateByte()` | `costPerStateByte` from `Common` |
+
+[EIP-8038](https://eips.ethereum.org/EIPS/eip-8038) (same fork) raises state-access costs and charges SSTORE access **before** the implicit storage read (`max(access cost, stipend + 1)`).
+
+Transaction results, header `gasUsed = max(regular, state)`, and wallet `gasLimit` guidance: [@ethereumjs/vm EIP-8037](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#eip-8037-state-creation-gas-cost-increase-amsterdam).
 
 ## EIP Activation
 
@@ -266,45 +310,62 @@ const main = async () => {
 void main()
 ```
 
-See [Supported EIPs](#supported-eips) for the full list. Opcode-focused samples: [`examples/opcodes/`](./examples/opcodes/) ([EIP-8024](./examples/opcodes/eip8024StackOpcodes.ts), [EIP-7843 SLOTNUM](./examples/opcodes/eip7843SlotnumOpcode.ts), [EIP-7939 CLZ](./examples/opcodes/eip7939ClzOpcode.ts)).
+See [Supported EIPs](#supported-eips) for the full index. Opcode-focused samples: [`examples/opcodes/`](./examples/opcodes/) ([EIP-8024](./examples/opcodes/eip8024StackOpcodes.ts), [EIP-7843 SLOTNUM](./examples/opcodes/eip7843SlotnumOpcode.ts), [EIP-7939 CLZ](./examples/opcodes/eip7939ClzOpcode.ts)).
 
-**Note:** Starting with the Dencun hardfork, EIP-4844 point-evaluation precompile (`0x0a`) requires a separate KZG library install — see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup).
+## Customizing the EVM
 
-## Events
+The `EVM` is customized through `createEVM` / `EVMOpts`:
 
-The EVM emits events via [EventEmitter3](https://github.com/primus/eventemitter3). Subscribe to `beforeMessage`, `afterMessage`, `step`, and `newContract`. Async listeners receive a `resolve` callback that must be called when finished:
+- **Custom opcodes** — `customOpcodes`: add, override, or remove opcodes by number (handler + gas function).
+- **Custom precompiles** — `customPrecompiles`: add or override a precompile at an address.
+- **Custom state manager** — `stateManager`: any `StateManagerInterface`. Default is `SimpleStateManager`.
+- **Custom `Common`** — hardfork / EIP gating and parameter resolution.
+- **Custom parameters** — `params`: override `paramsEVM` values (for example a gas cost) without forking the package.
+- **Custom crypto backends** — `bls` / `bn254`: native BLS12-381 / BN254 for the relevant precompiles.
+
+### Custom Opcodes
+
+Add, override, or remove opcodes via `customOpcodes` on `createEVM()`:
 
 ```ts
-// ./examples/eventListener.ts
+// ./examples/customOpcode.ts
 
 import { createEVM } from '@ethereumjs/evm'
-import { createAddressFromString, hexToBytes } from '@ethereumjs/util'
+import { hexToBytes } from '@ethereumjs/util'
 
 const main = async () => {
-  const evm = await createEVM()
+  const evm = await createEVM({
+    customOpcodes: [
+      {
+        opcode: 0x21,
+        opcodeName: 'PUSH_ONE',
+        baseFee: 3,
+        gasFunction(_runState, gas) {
+          return gas
+        },
+        logicFunction(runState) {
+          runState.stack.push(1n)
+        },
+      },
+    ],
+  })
 
-  evm.events.on('beforeMessage', (event) => {
-    console.log('synchronous listener to beforeMessage', event)
+  const res = await evm.runCode({
+    code: hexToBytes('0x21'),
+    gasLimit: 100_000n,
   })
-  evm.events.on('afterMessage', (event, resolve) => {
-    console.log('asynchronous listener to afterMessage', event)
-    // we need to call resolve() to avoid the event listener hanging
-    resolve?.()
-  })
-  const res = await evm.runCall({
-    to: createAddressFromString('0x0000000000000000000000000000000000000000'),
-    value: 0n,
-    data: hexToBytes('0x6001'), // PUSH1 01 -- simple bytecode to push 1 onto the stack
-  })
-  console.log(res.execResult.executionGasUsed) // 0n
+
+  const [top] = res.runState!.stack.peek(1)
+  console.log(`Stack top after custom opcode: ${top}`)
+  console.log(`Gas used: ${res.executionGasUsed}`)
 }
 
 void main()
 ```
 
-If an exception is thrown from an async handler, it bubbles into the EVM and may corrupt state — avoid that in production tracing.
+Pass `{ opcode: 0x01 }` (no handler) to delete a built-in opcode for that EVM instance.
 
-## Custom Precompiles
+### Custom Precompiles
 
 Register custom precompiles at arbitrary addresses — add new ones, override built-ins, or delete by address only:
 
@@ -381,393 +442,107 @@ Use `evm.getPrecompile(address)` to retrieve built-in or custom precompiles. Ove
 
 More precompile demos: [`examples/precompiles/`](./examples/precompiles/) (MODEXP, BLS12-381, P256 verify, …).
 
-## Custom Opcodes
-
-Add, override, or remove opcodes via `customOpcodes` on `createEVM()`:
-
-```ts
-// ./examples/customOpcode.ts
-
-import { createEVM } from '@ethereumjs/evm'
-import { hexToBytes } from '@ethereumjs/util'
-
-const main = async () => {
-  const evm = await createEVM({
-    customOpcodes: [
-      {
-        opcode: 0x21,
-        opcodeName: 'PUSH_ONE',
-        baseFee: 3,
-        gasFunction(_runState, gas) {
-          return gas
-        },
-        logicFunction(runState) {
-          runState.stack.push(1n)
-        },
-      },
-    ],
-  })
-
-  const res = await evm.runCode({
-    code: hexToBytes('0x21'),
-    gasLimit: 100_000n,
-  })
-
-  const [top] = res.runState!.stack.peek(1)
-  console.log(`Stack top after custom opcode: ${top}`)
-  console.log(`Gas used: ${res.executionGasUsed}`)
-}
-
-void main()
-```
-
-Pass `{ opcode: 0x01 }` (no handler) to delete a built-in opcode for that EVM instance.
-
-## Opcode Decoding
+### Opcode table
 
 Inspect the opcode table for a hardfork with `getOpcodesForHF()` — see [`examples/decodeOpcodes.ts`](./examples/decodeOpcodes.ts) for a minimal disassembly walkthrough.
 
-## Browser
+## Observability
 
-We provide hybrid ESM/CJS builds for all our libraries. With the v10 breaking release round from Spring 2025, all libraries are "pure-JS" by default and we have eliminated all hard-wired WASM code. Additionally we have substantially lowered the bundle sizes, reduced the number of dependencies, and cut out all usages of Node.js-specific primitives (like the Node.js event emitter).
+### Events
 
-It is easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
-
-## API
-
-### Docs
-
-For documentation on `EVM` instantiation, exposed API and emitted `events` see generated [API docs](./docs/README.md).
-
-### Hybrid CJS/ESM Builds
-
-With the breaking releases from Summer 2023 we have started to ship our libraries with both CommonJS (`cjs` folder) and ESM builds (`esm` folder), see `package.json` for the detailed setup.
-
-If you use an ES6-style `import` in your code files, the ESM build will be used:
+The EVM emits events via [EventEmitter3](https://github.com/primus/eventemitter3). Subscribe to `beforeMessage`, `afterMessage`, `step`, and `newContract`. Async listeners receive a `resolve` callback that must be called when finished:
 
 ```ts
-import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
-```
+// ./examples/eventListener.ts
 
-If you use Node.js specific `require`, the CJS build will be used:
-
-```ts
-const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
-```
-
-Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking which CJS can not provide.
-
-## Architecture
-
-### VM/EVM Relation
-
-This package contains the inner Ethereum Virtual Machine core functionality which was included in the [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm) package up to v5 and has been extracted along the v6 release.
-
-This will make it easier to customize the inner EVM, which can now be passed as an optional argument to the outer `VM` instance.
-
-### State and Blockchain Information
-
-For the EVM to properly work it needs access to a respective execution environment (to e.g. request on information like block hashes) as well as the connection to an outer account and contract state.
-
-With the v2 release EVM, VM and StateManager have been substantially reworked in this regard, see PR [#2649](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2649/) and PR [#2702](https://github.com/ethereumjs/ethereumjs-monorepo/pull/2702) for further deepening context.
-
-The interfaces (in a non-TypeScript sense) between these packages have been simplified and the `EEI` package has been completely removed. Most of the EEI related logic is now either handled internally or more generic functionality being taken over by the `@ethereumjs/statemanager` package.
-
-This allows for both a standalone EVM instantiation with reasonable defaults as well as for a simplified EVM -> VM passing if a customized EVM is needed.
-
-### Layout
-
-`createEVM()` / `runCall()` / `runCode()` sit on the `EVM` class. Bytecode runs in the interpreter; opcodes and precompiles are hardfork-gated tables. Call order is in [Internal Structure](#internal-structure). How this package sits in the monorepo: [ARCHITECTURE.md](../../ARCHITECTURE.md).
-
-| Area | Role |
-| --- | --- |
-| `evm.ts` | Message dispatch (`runCall`, `runCode`), checkpoints, precompile dispatch |
-| `interpreter.ts` | Fetch-decode-execute loop, gas, `step` events |
-| `opcodes/`, `precompiles/` | Opcode and precompile handlers |
-| `journal.ts` | Checkpoint / commit / revert onto `StateManagerInterface` |
-| `eof/` | EOF container parse and verify |
-| `params.ts` | `paramsEVM`, merged into `Common` |
-
-Per-frame stack/memory, the `Message` object, and EIP-7864 witnesses live next to those files. `createEVM` and public option types are in `constructors.ts` / `types.ts`.
-
-### Extension Points
-
-The `EVM` is customized through `createEVM` / `EVMOpts`:
-
-- **Custom opcodes** — `customOpcodes`: add, override, or remove opcodes by number (handler + gas function).
-- **Custom precompiles** — `customPrecompiles`: add or override a precompile at an address.
-- **Custom state manager** — `stateManager`: any `StateManagerInterface`. Default is `SimpleStateManager`.
-- **Custom `Common`** — hardfork / EIP gating and parameter resolution.
-- **Custom parameters** — `params`: override `paramsEVM` values (for example a gas cost) without forking the package.
-- **Custom crypto backends** — `bls` / `bn254`: native BLS12-381 / BN254 for the relevant precompiles.
-
-## Supported Hardforks
-
-The EthereumJS EVM implements all hardforks from `Frontier` (`chainstart`) up to the latest active mainnet hardfork.
-
-Currently the following hardfork rules are supported:
-
-- `chainstart` (a.k.a. Frontier)
-- `homestead`
-- `tangerineWhistle`
-- `spuriousDragon`
-- `byzantium`
-- `constantinople`
-- `petersburg`
-- `istanbul`
-- `muirGlacier` (only `mainnet`)
-- `berlin` (`v5.2.0`+)
-- `london` (`v5.4.0`+)
-- `arrowGlacier` (only `mainnet`) (`v5.6.0`+)
-- `merge`
-- `shanghai` (`v2.0.0`+)
-- `cancun` (`v2.0.0`+)
-- `prague` (`v10`+)
-- `osaka` (`v10.1.0`+)
-- `amsterdam` (IN DEVELOPMENT)
-
-Default: `prague` (taken from `Common.DEFAULT_HARDFORK`)
-
-A specific hardfork EVM ruleset can be activated by passing in the hardfork
-along the `Common` instance to the outer `@ethereumjs/vm` instance.
-
-## Supported EIPs
-
-Individual EIP activation is shown in [EIP Activation](#eip-activation). Currently supported EIPs (sorted by EIP number):
-
-- [EIP-1153](https://eips.ethereum.org/EIPS/eip-1153) - Transient storage opcodes (Cancun)
-- [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559) - Fee market change for ETH 1.0 chain
-- [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - Precompile for BLS12-381 curve operations (Prague)
-- [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565) - ModExp gas cost
-- [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718) - Transaction Types
-- [EIP-2780](https://eips.ethereum.org/EIPS/eip-2780) - Reduce intrinsic transaction gas (Amsterdam, experimental)
-- [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929) - Gas cost increases for state access opcodes
-- [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930) - Optional access list tx type
-- [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) - Serve historical block hashes in state (Prague)
-- [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198) - Base fee opcode
-- [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529) - Reduction in refunds
-- [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541) - Reject new contracts starting with the 0xEF byte
-- [EIP-3554](https://eips.ethereum.org/EIPS/eip-3554) - Difficulty Bomb Delay to December 2021 (only PoW networks)
-- [EIP-3607](https://eips.ethereum.org/EIPS/eip-3607) - Reject transactions from senders with deployed code
-- [EIP-3651](https://eips.ethereum.org/EIPS/eip-3651) - Warm COINBASE (Shanghai)
-- [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675) - Upgrade consensus to Proof-of-Stake
-- [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855) - PUSH0 opcode (Shanghai)
-- [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) - Limit and meter initcode (Shanghai)
-- [EIP-4345](https://eips.ethereum.org/EIPS/eip-4345) - Difficulty Bomb Delay to June 2022
-- [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399) - Supplant DIFFICULTY opcode with PREVRANDAO (Merge)
-- [EIP-4788](https://eips.ethereum.org/EIPS/eip-4788) - Beacon block root in the EVM (Cancun)
-- [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) - Shard Blob Transactions (Cancun)
-- [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) - Beacon chain push withdrawals as operations (Shanghai)
-- [EIP-5133](https://eips.ethereum.org/EIPS/eip-5133) - Delaying Difficulty Bomb to mid-September 2022 (Gray Glacier)
-- [EIP-5656](https://eips.ethereum.org/EIPS/eip-5656) - MCOPY - Memory copying instruction (Cancun)
-- [EIP-6110](https://eips.ethereum.org/EIPS/eip-6110) - Supply validator deposits on chain (Prague)
-- [EIP-6780](https://eips.ethereum.org/EIPS/eip-6780) - SELFDESTRUCT only in same transaction (Cancun)
-- [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002) - Execution layer triggerable exits (Prague)
-- [EIP-7251](https://eips.ethereum.org/EIPS/eip-7251) - Increase the MAX_EFFECTIVE_BALANCE (Prague)
-- [EIP-7516](https://eips.ethereum.org/EIPS/eip-7516) - BLOBBASEFEE opcode (Cancun)
-- [EIP-7594](https://eips.ethereum.org/EIPS/eip-7594) - PeerDAS blob transactions (Osaka)
-- [EIP-7623](https://eips.ethereum.org/EIPS/eip-7623) - Increase calldata cost (Prague)
-- [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) - General purpose execution layer requests (Prague)
-- [EIP-7691](https://eips.ethereum.org/EIPS/eip-7691) - Blob throughput increase (Prague)
-- [EIP-7692](https://eips.ethereum.org/EIPS/eip-7692) - EVM Object Format (EOF) v1 (experimental)
-- [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) - Set EOA account code (Prague)
-- [EIP-7708](https://eips.ethereum.org/EIPS/eip-7708) - ETH transfers emit a log (Amsterdam, experimental) — [example](#eip-7708-eth-transfer-logs-amsterdam)
-- [EIP-7709](https://eips.ethereum.org/EIPS/eip-7709) - Read BLOCKHASH from storage and update cost (Verkle, experimental)
-- [EIP-7778](https://eips.ethereum.org/EIPS/eip-7778) - Block-level gas accounting without refunds (Amsterdam, experimental)
-- [EIP-7823](https://eips.ethereum.org/EIPS/eip-7823) - Set upper bounds for MODEXP (Osaka)
-- [EIP-7825](https://eips.ethereum.org/EIPS/eip-7825) - Transaction gas limit cap (Osaka)
-- [EIP-7843](https://eips.ethereum.org/EIPS/eip-7843) - SLOTNUM opcode (Amsterdam, experimental)
-- [EIP-7864](https://eips.ethereum.org/EIPS/eip-7864) - Ethereum state using a unified binary tree (experimental)
-- [EIP-7883](https://eips.ethereum.org/EIPS/eip-7883) - ModExp gas cost increase (Osaka)
-- [EIP-7918](https://eips.ethereum.org/EIPS/eip-7918) - Blob base fee bounded by execution cost (Osaka)
-- [EIP-7928](https://eips.ethereum.org/EIPS/eip-7928) - Block Level Access Lists (Amsterdam, experimental)
-- [EIP-7934](https://eips.ethereum.org/EIPS/eip-7934) - RLP Execution Block Size Limit (Osaka)
-- [EIP-7939](https://eips.ethereum.org/EIPS/eip-7939) - Count leading zeros (CLZ) opcode (Osaka)
-- [EIP-7951](https://eips.ethereum.org/EIPS/eip-7951) - Precompile for secp256r1 curve support (Osaka)
-- [EIP-7954](https://eips.ethereum.org/EIPS/eip-7954) - Increase max contract and initcode size (Amsterdam, experimental)
-- [EIP-7976](https://eips.ethereum.org/EIPS/eip-7976) - Increase calldata floor cost (Amsterdam, experimental)
-- [EIP-7981](https://eips.ethereum.org/EIPS/eip-7981) - Access list data pricing (Amsterdam, experimental)
-- [EIP-8024](https://eips.ethereum.org/EIPS/eip-8024) - DUPN, SWAPN and EXCHANGE instructions (Amsterdam, experimental)
-- [EIP-8037](https://eips.ethereum.org/EIPS/eip-8037) - State creation gas cost increase (Amsterdam, experimental) — [notes](#eip-8037-state-creation-gas-amsterdam)
-- [EIP-8038](https://eips.ethereum.org/EIPS/eip-8038) - State access gas cost increase (Amsterdam, experimental) — [notes](#eip-8037-state-creation-gas-amsterdam)
-- [EIP-8246](https://eips.ethereum.org/EIPS/eip-8246) - SELFDESTRUCT no burn (Amsterdam, experimental)
-- [EIP-8282](https://eips.ethereum.org/EIPS/eip-8282) - Builder execution requests (Amsterdam, experimental)
-
-Annotations:
-
-- Hardfork labels (e.g. `(Prague)`) indicate default activation on that fork
-- `(Amsterdam, experimental)` and `(experimental)` mark unstable specs; behaviour may change on patch releases
-- Release ↔ spec tracking: [canonical Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) in `@ethereumjs/vm`
-
-When EIP-7928 is active, BAL data accumulates on `evm.blockLevelAccessList` during execution. For typical usage see [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#eip-7928-block-level-access-lists-amsterdam).
-
-### EIP-8024 stack opcodes (Amsterdam)
-
-See the [canonical Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) in `@ethereumjs/vm` for release ↔ spec tracking.
-
-[EIP-8024](https://eips.ethereum.org/EIPS/eip-8024) adds three backward-compatible stack manipulation opcodes, each with a single-byte immediate operand:
-
-| Opcode | Byte | Effect |
-| --- | --- | --- |
-| `DUPN` | `0xe6` | Duplicate the stack item at depth `n` (immediate encodes `n`) |
-| `SWAPN` | `0xe7` | Swap the top item with the item at depth `n` |
-| `EXCHANGE` | `0xe8` | Exchange items at depths `x` and `y` (pair immediate) |
-
-The opcodes are active on `Hardfork.Amsterdam` and validated at decode time (invalid immediates trap). Gas costs: `dupnGas`, `swapnGas`, `exchangeGas` (default 3 each). They are supported in legacy bytecode and in EOF containers.
-
-Runnable walkthrough: [`examples/opcodes/eip8024StackOpcodes.ts`](./examples/opcodes/eip8024StackOpcodes.ts). See also [CLZ (EIP-7939)](./examples/opcodes/eip7939ClzOpcode.ts) and [SLOTNUM (EIP-7843)](#eip-7843-slotnum-opcode-amsterdam).
-
-### EIP-7843 SLOTNUM opcode (Amsterdam)
-
-See the [canonical Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) in `@ethereumjs/vm` for release ↔ spec tracking.
-
-[EIP-7843](https://eips.ethereum.org/EIPS/eip-7843) adds `SLOTNUM` (`0x4b`), which pushes the executing block's consensus `slotNumber` onto the stack. Pass a block header that sets the field. A stand-alone `runCode()` without a block uses a mock header with `slotNumber: 0n`:
-
-```ts
-// ./examples/opcodes/eip7843SlotnumOpcode.ts
-
-import { createBlock } from '@ethereumjs/block'
-import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createEVM } from '@ethereumjs/evm'
-
-const SLOTNUM = 0x4b
-const STOP = 0x00
+import { createAddressFromString, hexToBytes } from '@ethereumjs/util'
 
 const main = async () => {
-  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })
-  const evm = await createEVM({ common })
+  const evm = await createEVM()
 
-  const slotNumber = 42n
-  const block = createBlock(
-    { header: { slotNumber, gasLimit: 30_000_000n } },
-    { common, skipConsensusFormatValidation: true },
-  )
-
-  const res = await evm.runCode({
-    code: Uint8Array.from([SLOTNUM, STOP]),
-    block,
-    gasLimit: 100_000n,
+  evm.events.on('beforeMessage', (event) => {
+    console.log('synchronous listener to beforeMessage', event)
   })
-
-  const [top] = res.runState!.stack.peek(1)
-  console.log(`SLOTNUM read consensus slot ${top} (header.slotNumber=${slotNumber})`)
-  console.log(`Gas used: ${res.executionGasUsed}`)
+  evm.events.on('afterMessage', (event, resolve) => {
+    console.log('asynchronous listener to afterMessage', event)
+    // we need to call resolve() to avoid the event listener hanging
+    resolve?.()
+  })
+  const res = await evm.runCall({
+    to: createAddressFromString('0x0000000000000000000000000000000000000000'),
+    value: 0n,
+    data: hexToBytes('0x6001'), // PUSH1 01 -- simple bytecode to push 1 onto the stack
+  })
+  console.log(res.execResult.executionGasUsed) // 0n
 }
 
 void main()
 ```
 
-Header construction: [`@ethereumjs/block` slot number](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/block#eip-7843-slot-number).
+If an exception is thrown from an async handler, it bubbles into the EVM and may corrupt state — avoid that in production tracing.
 
-### EIP-7954 contract and initcode size limits (Amsterdam)
+For opcode-level `step` tracing with state and blockchain wired in, see [`withBlockchain.ts`](./examples/withBlockchain.ts).
 
-See the [canonical Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) in `@ethereumjs/vm` for release ↔ spec tracking.
+### Event Logs
 
-[EIP-7954](https://eips.ethereum.org/EIPS/eip-7954) raises the EVM size limits when active on `Hardfork.Amsterdam`:
-
-| Parameter | Pre-7954 | Post-7954 |
-| --- | --- | --- |
-| `maxCodeSize` | 24 KiB (24576) | 64 KiB (65536) |
-| `maxInitCodeSize` | 48 KiB (49152) | 128 KiB (131072) |
-
-These are `Common` parameters (`common.param('maxCodeSize')`) — no API changes beyond using the Amsterdam hardfork.
-
-### EIP-7708 ETH transfer logs (Amsterdam)
-
-See the [canonical Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) in `@ethereumjs/vm` for release ↔ spec tracking.
-
-[EIP-7708](https://eips.ethereum.org/EIPS/eip-7708) emits a system-address `Transfer(address,address,uint256)` log on value-bearing `CALL`/`CREATE`. `runCall()` returns it on `execResult.logs` even when the recipient has no code. Use `decodeEIP7708TransferLog()` to pick Transfer logs out of mixed opcode logs.
-
-`Burn` logs are created in `@ethereumjs/vm` `runTx()` finalization, not by a stand-alone `runCall()`. For receipts see the [`runTxTransferLogs`](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm/examples/runTxTransferLogs.ts) example.
+The EVM records contract events as **logs** — a compact tuple reused across `@ethereumjs/evm`, `@ethereumjs/vm`, and (with field renaming) JSON-RPC:
 
 ```ts
-// ./examples/eip7708TransferLog.ts
-
-import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { createEVM, decodeEIP7708TransferLog } from '@ethereumjs/evm'
-import { bytesToHex, createAccount, createAddressFromString } from '@ethereumjs/util'
-
-import type { Log } from '@ethereumjs/evm'
-
-/** Pretty-print a Log tuple for console output (not an RPC formatter). */
-function formatLog(log: Log) {
-  const [address, topics, data] = log
-  return {
-    address: bytesToHex(address),
-    topics: topics.map((topic) => bytesToHex(topic)),
-    data: bytesToHex(data),
-  }
-}
-
-const main = async () => {
-  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })
-  const evm = await createEVM({ common })
-
-  const caller = createAddressFromString('0x00000000000000000000000000000000000000ee')
-  const recipient = createAddressFromString('0x00000000000000000000000000000000000000aa')
-  await evm.stateManager.putAccount(caller, createAccount({ nonce: 0n, balance: BigInt(1e18) }))
-
-  // Value-bearing CALL with no bytecode still emits a system-address Transfer log.
-  const result = await evm.runCall({
-    caller,
-    to: recipient,
-    value: 1n,
-    gasLimit: 300_000n,
-  })
-
-  const logs = result.execResult.logs ?? []
-  console.log(`runCall emitted ${logs.length} log(s)`)
-  for (const [index, log] of logs.entries()) {
-    const formatted = formatLog(log)
-    console.log(`  log[${index}] emitter=${formatted.address}`)
-    console.log(`           topics=${formatted.topics.join(', ')}`)
-    console.log(`           data=${formatted.data}`)
-
-    const transfer = decodeEIP7708TransferLog(log)
-    if (transfer !== undefined) {
-      console.log(
-        `           → EIP-7708 Transfer from ${transfer.from} to ${transfer.to} value=${transfer.value} wei`,
-      )
-    }
-  }
-}
-
-void main()
+type Log = [address: Uint8Array, topics: Uint8Array[], data: Uint8Array]
+//            emitter            indexed fields   unindexed payload
 ```
 
-### EIP-8037 state-creation gas (Amsterdam)
+Both `runCode()` and `runCall()` return an [`ExecResult`](./docs/interfaces/ExecResult.md) with an optional `logs` array. Nested calls append logs in execution order; a reverted top-level execution clears them. For transaction receipts and block blooms, use `@ethereumjs/vm`.
 
-See the [canonical Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) in `@ethereumjs/vm` for release ↔ spec tracking.
+Bytecode `LOG*` emission: [`examples/emitLogs.ts`](./examples/emitLogs.ts). Native ETH `Transfer` logs on Amsterdam: [EIP-7708](#eip-7708-eth-transfer-logs-amsterdam).
 
-[EIP-8037](https://eips.ethereum.org/EIPS/eip-8037) splits gas into **regular** and **state** dimensions. State-touching opcodes draw from `evm.stateGasReservoir` first; overflow spills into `gas_left`. `runTx()` sizes the reservoir from the tx budget. A stand-alone `runCall()` starts at `0` unless you set it.
+### Debug logging
 
-Inner `CREATE` / `CREATE2` charges new-account state gas unless the target already has nonce or code. A create collision burns the 63/64 stipend without a child frame.
+Hierarchically structured debug loggers use the [debug](https://github.com/visionmedia/debug) library. Activate on the CLI with `DEBUG=ethjs,[Logger Selection]`:
 
-Helpers (used by `@ethereumjs/vm`, available for custom runners):
+![EthereumJS EVM Debug Logger](./debug.png?raw=true)
 
-| Helper | Role |
-| --- | --- |
-| `computeIntrinsicGasDimensions8037()` | Intrinsic gas is regular-only under current v7 rules (`intrinsicState` is `0`) |
-| `txExceedsAvailableBlockGas8037()` | Per-tx block inclusion: regular bound is `min(TX_MAX, tx.gas)`, state bound is full `tx.gas` |
-| `activeCostPerStateByte()` | `costPerStateByte` from `Common` |
+| Logger                             | Description                                         |
+| ---------------------------------- | --------------------------------------------------- |
+| `evm:evm`                          |  EVM control flow, CALL or CREATE message execution |
+| `evm:gas`                          |  EVM gas logger                                     |
+| `evm:precompiles`                  |  EVM precompiles logger                             |
+| `evm:journal`                      |  EVM journal logger                                 |
+| `evm:ops`                          |  Opcode traces                                      |
+| `evm:ops:[Lower-case opcode name]` | Traces on a specific opcode                         |
 
-[EIP-8038](https://eips.ethereum.org/EIPS/eip-8038) (same fork) raises state-access costs and charges SSTORE access **before** the implicit storage read (`max(access cost, stipend + 1)`).
+Examples:
 
-Transaction results, header `gasUsed = max(regular, state)`, and wallet `gasLimit` guidance: [@ethereumjs/vm EIP-8037](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#eip-8037-state-creation-gas-cost-increase-amsterdam).
+```shell
+DEBUG=ethjs,evm tsx test.ts
+DEBUG=ethjs,evm:*,evm:*:* tsx test.ts
+DEBUG=ethjs,evm,evm:ops:sstore,evm:*:gas tsx test.ts
+```
 
-### EIP-4844 Shard Blob Transactions Support (Cancun)
+`ethjs` **must** be included in the `DEBUG` environment variables to enable **any** logs.
 
-This library supports the blob transaction type introduced with [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844). EIP-4844 comes with a dedicated opcode `BLOBHASH` and has added a new point evaluation precompile at address `0x0a`.
+### Profiling the EVM
 
-**Note:** Usage of the point evaluation precompile needs a manual KZG library installation and global initialization, see [KZG Setup](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx/README.md#kzg-setup) for instructions.
+Built-in profiling detects performance bottlenecks. The profiler is most useful when run through the EthereumJS [client](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client) for realistic tx and state sizes.
+
+Sync the client on mainnet or a larger testnet to the desired block, then run without sync using `--executeBlocks` and `--vmProfileBlocks` (or `--vmProfileTxs`):
+
+```shell
+npm run client:start -- --sync=none --vmProfileBlocks --executeBlocks=962720
+```
+
+![EthereumJS EVM Profiler](./profiler.png?raw=true)
+
+The `total (ms)` column shows where time is spent relative to call count. Optimize for `Mgas/s` (gas processed per second). With a 30 Mio gas limit and 12 sec slot time, a rough minimum is `30M / 12 sec ≈ 2.5 Mgas/s`.
+
+Note: profiler results for some opcodes (notably `SSTORE`) are distorted because checkpoint commit cost is not attributed to the opcode.
 
 ## Precompiles
 
-This library supports all EVM precompiles up to the `Osaka` hardfork.
+This library supports all EVM precompiles up to the `Osaka` hardfork. The [`examples/precompiles/`](./examples/precompiles/) folder provides a `runPrecompile()` helper for direct runs.
 
-In our `examples` folder we provide a helper function for simple direct precompile runs in the `precompiles` folder.
-
-This is an example of a simple precompile run (BLS12_G1ADD precompile):
+BLS12_G1ADD example:
 
 ```ts
 // ./examples/precompiles/bls12G1AddPrecompile.ts
@@ -791,12 +566,11 @@ void main()
 
 ```
 
-
 ### EIP-2537 BLS Precompiles (Prague)
 
-Starting with `v10` the EVM supports the BLS precompiles introduced with [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) in its final version introduced with the `Prague` hardfork. These precompiles run natively using the [@noble/curves](https://github.com/paulmillr/noble-curves) library (❤️ to `@paulmillr`!).
+Starting with `v10` the EVM supports the BLS precompiles introduced with [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537). These run natively using [@noble/curves](https://github.com/paulmillr/noble-curves).
 
-An alternative WASM implementation (using [bls-wasm](https://github.com/herumi/bls-wasm)) can be optionally used like this if needed for performance reasons:
+An alternative WASM implementation (using [bls-wasm](https://github.com/herumi/bls-wasm)) can be optionally used for performance:
 
 ```ts
 import { EVM, MCLBLS } from '@ethereumjs/evm'
@@ -809,9 +583,7 @@ const evm = await createEVM({ common, bls })
 
 ### EIP-7823/EIP-7883 MODEXP Precompile (Osaka)
 
-The Osaka hardfork introduces some behavioral changes with [EIP-7823](https://eips.ethereum.org/EIPS/eip-7823) as well as a gas cost increase for the MODEXP precompile with [EIP-7883](https://eips.ethereum.org/EIPS/eip-7883).
-
-You can use the following example as a starting point to compare on the changes between hardforks:
+The Osaka hardfork introduces behavioral changes with [EIP-7823](https://eips.ethereum.org/EIPS/eip-7823) and a gas cost increase for MODEXP with [EIP-7883](https://eips.ethereum.org/EIPS/eip-7883):
 
 ```ts
 // ./examples/precompiles/modexpPrecompile.ts
@@ -850,177 +622,157 @@ void main()
 
 ### EIP-7951 Precompile for secp256r1 Curve Support (Osaka)
 
-The Osaka hardfork introduces a new precompile for secp256r1 curve support with [EIP-7951](https://eips.ethereum.org/EIPS/eip-7951).
+The Osaka hardfork introduces secp256r1 curve support with [EIP-7951](https://eips.ethereum.org/EIPS/eip-7951). See [`p256VerifyPrecompile.ts`](./examples/precompiles/p256VerifyPrecompile.ts). Input values can be generated with Noble Curves [v2.0.0](https://github.com/paulmillr/noble-curves/releases/tag/2.0.0) or later.
 
-The following example code allows you to generate input values for the precompile using Noble Curves [v2.0.0](https://github.com/paulmillr/noble-curves/releases/tag/2.0.0) or later.
+For custom precompile registration, see [Custom Precompiles](#custom-precompiles).
+
+## Browser
+
+We provide hybrid ESM/CJS builds for all our libraries. With the v10 breaking release round from Spring 2025, all libraries are "pure-JS" by default and we have eliminated all hard-wired WASM code. Additionally we have substantially lowered the bundle sizes, reduced the number of dependencies, and cut out all usages of Node.js-specific primitives (like the Node.js event emitter).
+
+It is easily possible to run a browser build of one of the EthereumJS libraries within a modern browser using the provided ESM build. For a setup example see [./examples/browser.html](./examples/browser.html).
+
+## API
+
+### Docs
+
+For documentation on `EVM` instantiation, exposed API and emitted `events` see generated [API docs](./docs/README.md).
+
+### Hybrid CJS/ESM Builds
+
+With the breaking releases from Summer 2023 we have started to ship our libraries with both CommonJS (`cjs` folder) and ESM builds (`esm` folder), see `package.json` for the detailed setup.
+
+If you use an ES6-style `import` in your code files, the ESM build will be used:
 
 ```ts
-/* Noble curves snippet — not wired as a runnable example (extra dependency). */
-import { p256 } from '@noble/curves/nist.js'
-import { sha256 } from '@noble/hashes/sha2.js'
-import { bigIntToHex, bytesToHex } from '@ethereumjs/util'
-
-// Private/public key
-const { secretKey, publicKey } = p256.keygen()
-const pointPubKey = p256.Point.fromBytes(publicKey)
-const pointX = bigIntToHex(pointPubKey.X)
-const pointY = bigIntToHex(pointPubKey.Y)
-
-// Message (hash) / signature
-const msg = new TextEncoder().encode('Hello Fusaka!')
-const sig = p256.sign(msg, secretKey, { lowS: false, prehash: false })
-const msgHash = bytesToHex(sha256(msg))
-const sigR = bytesToHex(sig).substring(2, 64 + 2)
-const sigS = bytesToHex(sig).substring(64 + 2)
+import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
 ```
 
-### Custom Precompiles
+If you use Node.js specific `require`, the CJS build will be used:
 
-See [Custom Precompiles](#custom-precompiles) for registration, override, and deletion patterns.
-
-## Understanding the EVM
-
-If you want to understand your EVM runs we have added a hierarchically structured list of debug loggers for your convenience which can be activated in arbitrary combinations. We also use these loggers internally for development and testing. These loggers use the [debug](https://github.com/visionmedia/debug) library and can be activated on the CLI with `DEBUG=ethjs,[Logger Selection] node [Your Script to Run].js` and produce output like the following:
-
-![EthereumJS EVM Debug Logger](./debug.png?raw=true)
-
-The following loggers are currently available:
-
-| Logger                             | Description                                         |
-| ---------------------------------- | --------------------------------------------------- |
-| `evm:evm`                          |  EVM control flow, CALL or CREATE message execution |
-| `evm:gas`                          |  EVM gas logger                                     |
-| `evm:precompiles`                  |  EVM precompiles logger                             |
-| `evm:journal`                      |  EVM journal logger                                 |
-| `evm:ops`                          |  Opcode traces                                      |
-| `evm:ops:[Lower-case opcode name]` | Traces on a specific opcode                         |
-
-Here are some examples of useful logger combinations.
-
-Run one specific logger:
-
-```shell
-DEBUG=ethjs,evm tsx test.ts
+```ts
+const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
 ```
 
-Run all loggers currently available:
+Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking which CJS can not provide.
 
-```shell
-DEBUG=ethjs,evm:*,evm:*:* tsx test.ts
-```
+## Architecture
 
-Run only the gas loggers:
+### VM/EVM Relation
 
-```shell
-DEBUG=ethjs,evm:*:gas tsx test.ts
-```
+This package contains the inner Ethereum Virtual Machine core functionality which was included in the [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm) package up to v5 and has been extracted along the v6 release. A customized EVM can be passed as an optional argument to the outer `VM` instance.
 
-Excluding the ops logger:
+Monorepo context: [ARCHITECTURE.md](../../ARCHITECTURE.md).
 
-```shell
-DEBUG=ethjs,evm:*,evm:*:*,-evm:ops tsx test.ts
-```
+### Layout
 
-Run some specific loggers including a logger specifically logging the `SSTORE` executions from the EVM (this is from the screenshot above):
+`createEVM()` / `runCall()` / `runCode()` sit on the `EVM` class. Bytecode runs in the interpreter; opcodes and precompiles are hardfork-gated tables.
 
-```shell
-DEBUG=ethjs,evm,evm:ops:sstore,evm:*:gas tsx test.ts
-```
+| Area | Role |
+| --- | --- |
+| `evm.ts` | Message dispatch (`runCall`, `runCode`), checkpoints, precompile dispatch |
+| `interpreter.ts` | Fetch-decode-execute loop, gas, `step` events |
+| `opcodes/`, `precompiles/` | Opcode and precompile handlers |
+| `journal.ts` | Checkpoint / commit / revert onto `StateManagerInterface` |
+| `eof/` | EOF container parse and verify |
+| `params.ts` | `paramsEVM`, merged into `Common` |
 
-`ethjs` **must** be included in the `DEBUG` environment variables to enable **any** logs.
-Additional log selections can be added with a comma separated list (no spaces). Logs with extensions can be enabled with a colon `:`, and `*` can be used to include all extensions.
-
-`DEBUG=ethjs,evm:journal,evm:ops:* npx vitest test/runCall.spec.ts`
+Per-frame stack/memory, the `Message` object, and EIP-7864 witnesses live next to those files. `createEVM` and public option types are in `constructors.ts` / `types.ts`.
 
 ### Internal Structure
 
-The EVM processes state changes through a hierarchical flow of execution:
+**`runCall`** — message execution (calls and creates): checkpoint state, set execution environment, handle value transfer and nonce updates, delegate to `_executeCall` / `_executeCreate` (both call `runInterpreter`), commit or revert, emit `beforeMessage` / `afterMessage`.
 
-#### Top Level: Message Execution (`runCall`)
-The `runCall` method handles the execution of messages, which can be either contract calls or contract creations:
-- Creates a checkpoint in the state
-- Sets up the execution environment (block context, transaction origin, etc.)
-- Manages account nonce updates
-- Handles value transfers between accounts
-- Delegates to either `_executeCall` or `_executeCreate` based on whether the message has a `to` address
-- **Both `_executeCall` and `_executeCreate` call into `runInterpreter` to actually execute the bytecode**
-- Processes any errors or exceptions
-- Manages selfdestruct sets and created contract addresses
-- Commits or reverts state changes based on execution result
-- Triggers events (`beforeMessage`, `afterMessage`)
+**`runCode`** — direct bytecode helper: minimal message context, calls `runInterpreter` without full message handling.
 
-#### Code Execution (`runCode` / `runInterpreter`)
-The `runCode` method is a helper for directly running EVM bytecode (e.g., for testing or utility purposes) without the full message/transaction context:
-- Sets up a minimal message context for code execution
-- **Directly calls `runInterpreter` to execute the provided bytecode**
-- Does not go through the full message handling logic of `runCall`
+**Interpreter** — fetch-decode-execute loop: jump analysis, gas (static + dynamic), opcode handlers, `step` events. `CALL` / `CREATE` / `DELEGATECALL` re-enter `runCall`.
 
-The `runInterpreter` method is used by both `runCall` (via `_executeCall`/`_executeCreate`) and `runCode` to process the actual bytecode.
+**Journal** — checkpointing and reversion; transient storage (EIP-1153) has its own checkpoint mechanism.
 
-#### Bytecode Processing (Interpreter)
-The Interpreter class is the core bytecode processor:
-- Manages execution state (program counter, stack, memory, gas)
-- Executes a loop that:
-  - Analyzes jump destinations
-  - Fetches the next opcode
-  - Calculates gas costs (static and dynamic)
-  - Executes the opcode handler
-  - Updates the program counter
-  - Emits step events for debugging/tracing
-- Handles stack, memory, and storage operations
-- Processes call and creation operations by delegating back to the EVM
+## Supported Hardforks
 
-#### Opcode Functions
-Each opcode has an associated handler function that:
-- Validates inputs
-- Calculates dynamic gas costs
-- Performs the opcode's logic (stack operations, memory operations, etc.)
-- Updates the EVM state
-- The program counter is incremented in between the execution of the gas handler and opcode logic handler functions, this should be considered e.g. if parsing immediate input parameters
-- Special opcodes like `CALL`, `CREATE`, `DELEGATECALL` create a new message and call back to the EVM's `runCall` method
+The EthereumJS EVM implements all hardforks from `Frontier` (`chainstart`) through **Osaka**, plus **Amsterdam** (experimental, in development).
 
-#### Journal and State Management
-- State changes are tracked in a journal system
-- The journal supports checkpointing and reversion
-- Transient storage (EIP-1153) has its own checkpoint mechanism
-- When a message completes successfully, changes are committed to the state
-- On failure (exceptions), changes are reverted
+| Range | Hardforks |
+| --- | --- |
+| Early | `chainstart` through `istanbul`, `muirGlacier` (mainnet only) |
+| Berlin → Merge | `berlin`, `london`, `arrowGlacier` (mainnet only), `merge` |
+| Recent | `shanghai`, `cancun`, `prague` (default), `osaka`, `amsterdam` (experimental) |
 
-This layered architecture provides separation of concerns while allowing for the complex interactions needed to execute smart contracts on the Ethereum platform.
+Default: `prague` (`Common.DEFAULT_HARDFORK`). Activate a ruleset by passing `hardfork` on the `Common` instance to `createEVM()` or the outer `@ethereumjs/vm`.
 
-## Profiling the EVM
+## Supported EIPs
 
-The EthereumJS EVM comes with built-in profiling capabilities to detect performance bottlenecks and to generally support the targeted evolution of the JavaScript EVM performance.
+Individual EIP activation is shown in [EIP Activation](#eip-activation). Amsterdam how-tos: [Amsterdam (experimental)](#amsterdam-experimental). Release ↔ spec tracking: [@ethereumjs/vm Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental).
 
-While the EVM has a dedicated `profiler` setting to activate, the profiler is most useful when run through the EthereumJS [client](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client) since this gives the most realistic conditions providing both real-world txs and a meaningful state size.
+Hardfork labels indicate default activation on that fork. `(Amsterdam, experimental)` and `(experimental)` mark unstable specs.
 
-To repeatedly run the EVM profiler within the client sync the client on mainnet or a larger testnet to the desired block. Then the profiler should be run without sync (to not distort the results) by using the `--executeBlocks` and the `--vmProfileBlocks` (or `--vmProfileTxs`) flags in conjunction like:
+### Shanghai / Merge
 
-```shell
-npm run client:start -- --sync=none --vmProfileBlocks --executeBlocks=962720
-```
+- [EIP-3651](https://eips.ethereum.org/EIPS/eip-3651) - Warm COINBASE (Shanghai)
+- [EIP-3675](https://eips.ethereum.org/EIPS/eip-3675) - Upgrade consensus to Proof-of-Stake
+- [EIP-3855](https://eips.ethereum.org/EIPS/eip-3855) - PUSH0 opcode (Shanghai)
+- [EIP-3860](https://eips.ethereum.org/EIPS/eip-3860) - Limit and meter initcode (Shanghai)
+- [EIP-4399](https://eips.ethereum.org/EIPS/eip-4399) - Supplant DIFFICULTY opcode with PREVRANDAO (Merge)
+- [EIP-4895](https://eips.ethereum.org/EIPS/eip-4895) - Beacon chain push withdrawals as operations (Shanghai)
 
-This will give a profile output like the following:
+### Cancun
 
-![EthereumJS EVM Profiler](./profiler.png?raw=true)
+- [EIP-1153](https://eips.ethereum.org/EIPS/eip-1153) - Transient storage opcodes
+- [EIP-4788](https://eips.ethereum.org/EIPS/eip-4788) - Beacon block root in the EVM
+- [EIP-4844](https://eips.ethereum.org/EIPS/eip-4844) - Shard Blob Transactions (`BLOBHASH`, point eval precompile `0x0a`)
+- [EIP-5656](https://eips.ethereum.org/EIPS/eip-5656) - MCOPY
+- [EIP-6780](https://eips.ethereum.org/EIPS/eip-6780) - SELFDESTRUCT only in same transaction
+- [EIP-7516](https://eips.ethereum.org/EIPS/eip-7516) - BLOBBASEFEE opcode
 
-The `total (ms)` column gives you a good overview what takes the most significant amount of time, to be put in relation with the number of calls.
+### Prague
 
-The number to optimize for is the `Mgas/s` value. This value indicates how much gas (being a measure for the computational cost for an opcode) can be processed by the second.
+- [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - BLS12-381 precompiles
+- [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) - Serve historical block hashes in state
+- [EIP-6110](https://eips.ethereum.org/EIPS/eip-6110) - Supply validator deposits on chain
+- [EIP-7002](https://eips.ethereum.org/EIPS/eip-7002) - Execution layer triggerable exits
+- [EIP-7251](https://eips.ethereum.org/EIPS/eip-7251) - Increase the MAX_EFFECTIVE_BALANCE
+- [EIP-7623](https://eips.ethereum.org/EIPS/eip-7623) - Increase calldata cost
+- [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) - General purpose execution layer requests
+- [EIP-7691](https://eips.ethereum.org/EIPS/eip-7691) - Blob throughput increase
+- [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) - Set EOA account code
 
-A good measure to putting this relation with is by taking both the Ethereum gas limit (the max amount of "computation" per block) and the time/slot into account. With a gas limit of 30 Mio and a 12 sec slot time this leads to a following (very) minimum `Mgas/s` value:
+### Osaka
 
-```shell
-30M / 12 sec = 2.5 Million gas per second
-```
+- [EIP-7594](https://eips.ethereum.org/EIPS/eip-7594) - PeerDAS blob transactions
+- [EIP-7823](https://eips.ethereum.org/EIPS/eip-7823) - Set upper bounds for MODEXP
+- [EIP-7825](https://eips.ethereum.org/EIPS/eip-7825) - Transaction gas limit cap
+- [EIP-7883](https://eips.ethereum.org/EIPS/eip-7883) - ModExp gas cost increase
+- [EIP-7918](https://eips.ethereum.org/EIPS/eip-7918) - Blob base fee bounded by execution cost
+- [EIP-7934](https://eips.ethereum.org/EIPS/eip-7934) - RLP Execution Block Size Limit
+- [EIP-7939](https://eips.ethereum.org/EIPS/eip-7939) - Count leading zeros (CLZ) opcode
+- [EIP-7951](https://eips.ethereum.org/EIPS/eip-7951) - Precompile for secp256r1 curve support
 
-Note that this is nevertheless a very theoretical value but pretty valuable for some first rough orientation though.
+### Amsterdam (experimental)
 
-Another note: profiler results for at least some opcodes are heavily distorted, first to mention the `SSTORE` opcode where the major "cost" occurs after block execution on checkpoint commit, which is not taken into account by the profiler.
+- [EIP-2780](https://eips.ethereum.org/EIPS/eip-2780) - Reduce intrinsic transaction gas — [@ethereumjs/tx](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx#amsterdam-validation)
+- [EIP-7708](https://eips.ethereum.org/EIPS/eip-7708) - ETH transfers emit a log — [notes](#eip-7708-eth-transfer-logs-amsterdam)
+- [EIP-7778](https://eips.ethereum.org/EIPS/eip-7778) - Block-level gas accounting without refunds — [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#eip-7778-block-gas-accounting-amsterdam)
+- [EIP-7843](https://eips.ethereum.org/EIPS/eip-7843) - SLOTNUM opcode — [notes](#eip-7843-slotnum-opcode-amsterdam)
+- [EIP-7928](https://eips.ethereum.org/EIPS/eip-7928) - Block Level Access Lists — [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#eip-7928-block-level-access-lists-amsterdam)
+- [EIP-7954](https://eips.ethereum.org/EIPS/eip-7954) - Increase max contract and initcode size — [notes](#eip-7954-contract-and-initcode-size-limits-amsterdam)
+- [EIP-7976](https://eips.ethereum.org/EIPS/eip-7976) - Increase calldata floor cost — [@ethereumjs/tx](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx#amsterdam-validation)
+- [EIP-7981](https://eips.ethereum.org/EIPS/eip-7981) - Access list data pricing — [@ethereumjs/tx](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx#amsterdam-validation)
+- [EIP-8024](https://eips.ethereum.org/EIPS/eip-8024) - DUPN, SWAPN and EXCHANGE instructions — [notes](#eip-8024-stack-opcodes-amsterdam)
+- [EIP-8037](https://eips.ethereum.org/EIPS/eip-8037) - State creation gas cost increase — [notes](#eip-8037-state-creation-gas-amsterdam)
+- [EIP-8038](https://eips.ethereum.org/EIPS/eip-8038) - State access gas cost increase — [notes](#eip-8037-state-creation-gas-amsterdam)
+- [EIP-8246](https://eips.ethereum.org/EIPS/eip-8246) - SELFDESTRUCT no burn
+- [EIP-8282](https://eips.ethereum.org/EIPS/eip-8282) - Builder execution requests
 
-Generally all results should rather encourage and need "self thinking" 😋 and are not suited to be blindly taken over without a deeper understanding/grasping of the underlying measurement conditions.
+### Experimental / cross-layer
 
-Happy EVM Profiling! 🎉 🤩
+- [EIP-7692](https://eips.ethereum.org/EIPS/eip-7692) - EVM Object Format (EOF) v1
+- [EIP-7709](https://eips.ethereum.org/EIPS/eip-7709) - Read BLOCKHASH from storage (Verkle)
+- [EIP-7864](https://eips.ethereum.org/EIPS/eip-7864) - Ethereum state using a unified binary tree
+
+### Legacy / primarily tx or chain layer
+
+- [EIP-1559](https://eips.ethereum.org/EIPS/eip-1559), [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565), [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718), [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929), [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930), [EIP-3198](https://eips.ethereum.org/EIPS/eip-3198), [EIP-3529](https://eips.ethereum.org/EIPS/eip-3529), [EIP-3541](https://eips.ethereum.org/EIPS/eip-3541), [EIP-3554](https://eips.ethereum.org/EIPS/eip-3554), [EIP-3607](https://eips.ethereum.org/EIPS/eip-3607), [EIP-4345](https://eips.ethereum.org/EIPS/eip-4345), [EIP-5133](https://eips.ethereum.org/EIPS/eip-5133)
 
 ## Development
 
