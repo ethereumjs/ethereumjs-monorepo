@@ -48,7 +48,7 @@ const evm = await EVM.create({ common })
 
 When **EIP-7928** is active, every state-touching operation appends to `evm.blockLevelAccessList` during `runCall()` / internal message execution. The VM reads this object after each transaction to build the block-level list. For BAL builder/validator flows see [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#eip-7928-block-level-access-lists-amsterdam).
 
-Further Amsterdam notes: [EIP-8024](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#eip-8024-stack-opcodes-amsterdam), [EIP-7954](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#eip-7954-contract-and-initcode-size-limits-amsterdam), [EIP-8037 / EIP-7708](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#eip-8037-and-eip-7708-amsterdam).
+Further Amsterdam notes: [EIP-8024](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#eip-8024-stack-opcodes-amsterdam), [EIP-7954](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#eip-7954-contract-and-initcode-size-limits-amsterdam), [EIP-7708](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#eip-7708-eth-transfer-logs-amsterdam), [EIP-8037](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#eip-8037-state-creation-gas-amsterdam).
 
 ### Changes
 

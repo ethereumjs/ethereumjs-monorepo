@@ -173,7 +173,7 @@ type Log = [address: Uint8Array, topics: Uint8Array[], data: Uint8Array]
 //            emitter            indexed fields   unindexed payload
 ```
 
-Logs come from `LOG0`–`LOG4` opcodes during execution, and (with [EIP-7708](https://eips.ethereum.org/EIPS/eip-7708) on Amsterdam) synthetic `Transfer` / `Burn` logs on native ETH movement via `runCall()`.
+The example below emits a `LOG1` from bytecode. Native ETH `Transfer` logs are not opcodes: with [EIP-7708](#eip-7708-eth-transfer-logs-amsterdam) on Amsterdam they are created by `runCall()` on value-bearing calls. `Burn` logs are produced later in `@ethereumjs/vm` `runTx()` finalization.
 
 Both `runCode()` and `runCall()` return an [`ExecResult`](./docs/interfaces/ExecResult.md) with an optional `logs` array. Nested calls append logs in execution order; a reverted top-level execution clears them. For transaction receipts and block blooms, use `@ethereumjs/vm`.
 
@@ -182,9 +182,21 @@ Both `runCode()` and `runCall()` return an [`ExecResult`](./docs/interfaces/Exec
 
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createEVM } from '@ethereumjs/evm'
-import { bytesToBigInt, bytesToHex, createAddressFromString, hexToBytes } from '@ethereumjs/util'
+import {
+  bytesToBigInt,
+  bytesToHex,
+  concatBytes,
+  createAddressFromString,
+  hexToBytes,
+} from '@ethereumjs/util'
 
 import type { Log } from '@ethereumjs/evm'
+
+const PUSH32 = 0x7f
+const PUSH1 = 0x60
+const MSTORE = 0x52
+const LOG1 = 0xa1
+const STOP = 0x00
 
 /** Pretty-print a Log tuple for console output (not an RPC formatter). */
 function formatLog(log: Log) {
@@ -197,17 +209,21 @@ function formatLog(log: Log) {
 }
 
 const main = async () => {
-  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Prague })
   const evm = await createEVM({ common })
 
   const contract = createAddressFromString('0x00000000000000000000000000000000000000c0')
 
-  // MSTORE a 32-byte data word at offset 0, then LOG1 with one topic.
-  // Stack at LOG1 (bottom → top): memOffset, memLength, topic1
+  // MSTORE 32 bytes at offset 0, then LOG1. LOG1 pops (top first): memOffset, memLength, topic.
   const topic = hexToBytes(`0x${'11'.repeat(32)}`)
   const dataWord = hexToBytes(`0x${'00'.repeat(31)}42`)
-  const code = hexToBytes(
-    `0x7f${bytesToHex(dataWord).slice(2)}6000527f${bytesToHex(topic).slice(2)}60206000a100`,
+  const code = concatBytes(
+    Uint8Array.from([PUSH32]),
+    dataWord,
+    Uint8Array.from([PUSH1, 0x00, MSTORE]),
+    Uint8Array.from([PUSH32]),
+    topic,
+    Uint8Array.from([PUSH1, 0x20, PUSH1, 0x00, LOG1, STOP]),
   )
 
   const result = await evm.runCode({
@@ -220,7 +236,7 @@ const main = async () => {
   console.log(`Emitted ${logs.length} log(s) from ${contract.toString()}`)
   for (const [index, log] of logs.entries()) {
     const formatted = formatLog(log)
-    console.log(`  log[${index}] address=${formatted.address}`)
+    console.log(`  log[${index}] emitter=${formatted.address}`)
     console.log(`           topics=${formatted.topics.join(', ')}`)
     console.log(`           data=${formatted.data} (value=${bytesToBigInt(log[2])})`)
   }
@@ -556,7 +572,7 @@ Individual EIP activation is shown in [EIP Activation](#eip-activation). Current
 - [EIP-7691](https://eips.ethereum.org/EIPS/eip-7691) - Blob throughput increase (Prague)
 - [EIP-7692](https://eips.ethereum.org/EIPS/eip-7692) - EVM Object Format (EOF) v1 (experimental)
 - [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) - Set EOA account code (Prague)
-- [EIP-7708](https://eips.ethereum.org/EIPS/eip-7708) - ETH transfers emit a log (Amsterdam, experimental)
+- [EIP-7708](https://eips.ethereum.org/EIPS/eip-7708) - ETH transfers emit a log (Amsterdam, experimental) — [example](#eip-7708-eth-transfer-logs-amsterdam)
 - [EIP-7709](https://eips.ethereum.org/EIPS/eip-7709) - Read BLOCKHASH from storage and update cost (Verkle, experimental)
 - [EIP-7778](https://eips.ethereum.org/EIPS/eip-7778) - Block-level gas accounting without refunds (Amsterdam, experimental)
 - [EIP-7823](https://eips.ethereum.org/EIPS/eip-7823) - Set upper bounds for MODEXP (Osaka)
@@ -657,11 +673,74 @@ See the [canonical Amsterdam overview](https://github.com/ethereumjs/ethereumjs-
 
 These are `Common` parameters (`common.param('maxCodeSize')`) — no API changes beyond using the Amsterdam hardfork.
 
-### EIP-8037 and EIP-7708 (Amsterdam)
+### EIP-7708 ETH transfer logs (Amsterdam)
 
 See the [canonical Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) in `@ethereumjs/vm` for release ↔ spec tracking.
 
-State-gas accounting ([EIP-8037](https://eips.ethereum.org/EIPS/eip-8037)) and ETH transfer/burn logs ([EIP-7708](https://eips.ethereum.org/EIPS/eip-7708)) are implemented at the VM execution layer. [EIP-2780](https://eips.ethereum.org/EIPS/eip-2780) recipient/value/log extras are intrinsic (`getIntrinsicGas()` / the calldata floor); new-account state gas is charged at the top frame (pre-state). Inner CREATE/CREATE2 charges that state gas unless the target already has nonce or code, and a collision burns the 63/64 grant without a child frame. A child exceptional halt onto a balance-only target keeps the spilled `NEW_ACCOUNT` as regular gas and exceptional-halts the creating frame. CREATE new-account OOG is post-target (BAL records the created address); 7702 top-frame delegation OOG records the recipient and not the delegation target. `runTx` increments the sender nonce before that nested prep checkpoint (`runCall({ skipNonceIncrement: true })`), so a create-tx `NEW_ACCOUNT` OOG still bumps nonce and a self-signed 7702 auth compares against the already-bumped nonce. Top-frame `NEW_ACCOUNT` spill into `gas_left` is recorded on `stateGasSpilled` and credited on REVERT. 7702 `ACCOUNT_WRITE` is taken from leftover regular gas before `runCall` and counted in receipt gas. Top-frame delegation-target access is warm or cold (sender, coinbase, precompiles, access list). [EIP-8038](https://eips.ethereum.org/EIPS/eip-8038) SSTORE checks `max(access_cost, stipend + 1)` before the implicit storage read (cold access is 3000, above the 2300 stipend). See [@ethereumjs/vm Amsterdam docs](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) for `RunTxResult` fields, block gas dimensions, and receipt log behaviour.
+[EIP-7708](https://eips.ethereum.org/EIPS/eip-7708) emits a system-address `Transfer(address,address,uint256)` log on value-bearing `CALL`/`CREATE`. `runCall()` returns it on `execResult.logs` even when the recipient has no code. Use `decodeEIP7708TransferLog()` to pick Transfer logs out of mixed opcode logs.
+
+`Burn` logs are created in `@ethereumjs/vm` `runTx()` finalization, not by a stand-alone `runCall()`. For receipts see the [`runTxTransferLogs`](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm/examples/runTxTransferLogs.ts) example.
+
+```ts
+// ./examples/eip7708TransferLog.ts
+
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createEVM, decodeEIP7708TransferLog } from '@ethereumjs/evm'
+import { bytesToHex, createAccount, createAddressFromString } from '@ethereumjs/util'
+
+import type { Log } from '@ethereumjs/evm'
+
+/** Pretty-print a Log tuple for console output (not an RPC formatter). */
+function formatLog(log: Log) {
+  const [address, topics, data] = log
+  return {
+    address: bytesToHex(address),
+    topics: topics.map((topic) => bytesToHex(topic)),
+    data: bytesToHex(data),
+  }
+}
+
+const main = async () => {
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })
+  const evm = await createEVM({ common })
+
+  const caller = createAddressFromString('0x00000000000000000000000000000000000000ee')
+  const recipient = createAddressFromString('0x00000000000000000000000000000000000000aa')
+  await evm.stateManager.putAccount(caller, createAccount({ nonce: 0n, balance: BigInt(1e18) }))
+
+  // Value-bearing CALL with no bytecode still emits a system-address Transfer log.
+  const result = await evm.runCall({
+    caller,
+    to: recipient,
+    value: 1n,
+    gasLimit: 300_000n,
+  })
+
+  const logs = result.execResult.logs ?? []
+  console.log(`runCall emitted ${logs.length} log(s)`)
+  for (const [index, log] of logs.entries()) {
+    const formatted = formatLog(log)
+    console.log(`  log[${index}] emitter=${formatted.address}`)
+    console.log(`           topics=${formatted.topics.join(', ')}`)
+    console.log(`           data=${formatted.data}`)
+
+    const transfer = decodeEIP7708TransferLog(log)
+    if (transfer !== undefined) {
+      console.log(
+        `           → EIP-7708 Transfer from ${transfer.from} to ${transfer.to} value=${transfer.value} wei`,
+      )
+    }
+  }
+}
+
+void main()
+```
+
+### EIP-8037 state-creation gas (Amsterdam)
+
+See the [canonical Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) in `@ethereumjs/vm` for release ↔ spec tracking.
+
+For Transfer logs see [EIP-7708](#eip-7708-eth-transfer-logs-amsterdam). State-gas accounting ([EIP-8037](https://eips.ethereum.org/EIPS/eip-8037)) and ETH transfer/burn logs ([EIP-7708](https://eips.ethereum.org/EIPS/eip-7708)) are implemented at the VM execution layer. [EIP-2780](https://eips.ethereum.org/EIPS/eip-2780) recipient/value/log extras are intrinsic (`getIntrinsicGas()` / the calldata floor); new-account state gas is charged at the top frame (pre-state). Inner CREATE/CREATE2 charges that state gas unless the target already has nonce or code, and a collision burns the 63/64 grant without a child frame. A child exceptional halt onto a balance-only target keeps the spilled `NEW_ACCOUNT` as regular gas and exceptional-halts the creating frame. CREATE new-account OOG is post-target (BAL records the created address); 7702 top-frame delegation OOG records the recipient and not the delegation target. `runTx` increments the sender nonce before that nested prep checkpoint (`runCall({ skipNonceIncrement: true })`), so a create-tx `NEW_ACCOUNT` OOG still bumps nonce and a self-signed 7702 auth compares against the already-bumped nonce. Top-frame `NEW_ACCOUNT` spill into `gas_left` is recorded on `stateGasSpilled` and credited on REVERT. 7702 `ACCOUNT_WRITE` is taken from leftover regular gas before `runCall` and counted in receipt gas. Top-frame delegation-target access is warm or cold (sender, coinbase, precompiles, access list). [EIP-8038](https://eips.ethereum.org/EIPS/eip-8038) SSTORE checks `max(access_cost, stipend + 1)` before the implicit storage read (cold access is 3000, above the 2300 stipend). See [@ethereumjs/vm Amsterdam docs](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) for `RunTxResult` fields, block gas dimensions, and receipt log behaviour.
 
 ### EIP-4844 Shard Blob Transactions Support (Cancun)
 

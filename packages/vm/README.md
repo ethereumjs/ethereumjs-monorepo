@@ -265,7 +265,7 @@ const main = async () => {
 void main()
 ```
 
-For bytecode-level `LOG*` emission see [`@ethereumjs/evm` emitLogs example](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm/examples/emitLogs.ts).
+For bytecode-level `LOG*` emission see [`@ethereumjs/evm` emitLogs example](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm/examples/emitLogs.ts). For EVM-layer Transfer logs from `runCall()` (no receipt) see [`eip7708TransferLog.ts`](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm/examples/eip7708TransferLog.ts).
 
 ## Amsterdam Gas Dimensions
 
@@ -605,7 +605,7 @@ The `Hardfork.Amsterdam` bundle activates the following EIPs. Amsterdam test fix
 | [7997](https://eips.ethereum.org/EIPS/eip-7997) | Deterministic CREATE2 factory predeploy | Catalog only — clients must not inject at the fork boundary |
 | [8024](https://eips.ethereum.org/EIPS/eip-8024) | `DUPN`, `SWAPN`, `EXCHANGE` stack opcodes | [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#eip-8024-stack-opcodes-amsterdam) |
 | [8037](https://eips.ethereum.org/EIPS/eip-8037) | Two-dimensional block gas + state-gas reservoir | [EIP-8037 section](#eip-8037-state-creation-gas-cost-increase-amsterdam) (below) |
-| [8038](https://eips.ethereum.org/EIPS/eip-8038) | State-access gas; SSTORE access cost before implicit read | [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#eip-8037-and-eip-7708-amsterdam) |
+| [8038](https://eips.ethereum.org/EIPS/eip-8038) | State-access gas; SSTORE access cost before implicit read | [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#eip-8037-state-creation-gas-amsterdam) |
 | [8246](https://eips.ethereum.org/EIPS/eip-8246) | SELFDESTRUCT no longer burns ETH | EVM `SELFDESTRUCT` + journal; no burn log under EIP-7708 |
 | [8282](https://eips.ethereum.org/EIPS/eip-8282) | Builder deposit/exit request predeploys (v7 mined addresses) | `runBlock()` / `accumulateRequests`; addresses in `packages/vm/src/params.ts` |
 
@@ -816,7 +816,7 @@ See [Release ↔ spec tracking](#amsterdam-hardfork-experimental) above for the 
 
 See [Release ↔ spec tracking](#amsterdam-hardfork-experimental) above for the supported Amsterdam spec snapshot.
 
-[EIP-7708](https://eips.ethereum.org/EIPS/eip-7708) adds synthetic logs for native ETH transfers and balance burns. When active, value-bearing `CALL`/`CREATE` paths and certain `SELFDESTRUCT`/account-removal flows append logs from the system address (`0xfff…fff`) with `Transfer(address,address,uint256)` or `Burn(address,uint256)` topics. These appear in `RunTxResult.receipt.logs` like any other log — no VM API changes are needed beyond using `Hardfork.Amsterdam`. See [Receipts and Event Logs](#receipts-and-event-logs).
+[EIP-7708](https://eips.ethereum.org/EIPS/eip-7708) adds synthetic logs for native ETH transfers and balance burns. When active, value-bearing `CALL`/`CREATE` paths and certain `SELFDESTRUCT`/account-removal flows append logs from the system address (`0xfff…fff`) with `Transfer(address,address,uint256)` or `Burn(address,uint256)` topics. These appear in `RunTxResult.receipt.logs` like any other log — no VM API changes are needed beyond using `Hardfork.Amsterdam`. See [Receipts and Event Logs](#receipts-and-event-logs). For a stand-alone `runCall()` Transfer (no receipt) see the [`@ethereumjs/evm` EIP-7708 example](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm/examples/eip7708TransferLog.ts).
 
 ## Understanding the VM
 
