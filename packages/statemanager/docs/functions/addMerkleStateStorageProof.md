@@ -32,7 +32,7 @@ The root hash of the storage trie
 
 ### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 The address
 

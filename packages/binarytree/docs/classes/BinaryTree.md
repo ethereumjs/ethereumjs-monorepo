@@ -110,7 +110,7 @@ If not during a checkpoint phase
 
 Defined in: [binaryTree.ts:600](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L600)
 
-Creates a proof from a tree and key that can be verified using BinaryTree.verifyBinaryProof.
+Creates a proof from a tree and key that can be verified using [verifyBinaryProof](../functions/verifyBinaryProof.md).
 
 #### Parameters
 
@@ -425,7 +425,7 @@ If the nearest node is an internal node, its child reference is updated.
 
 ##### stemNode
 
-`StemBinaryNode`
+[`StemBinaryNode`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/docs/classes/StemBinaryNode.md)
 
 The child stem node that will be referenced by the new/updated internal node.
 

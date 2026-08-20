@@ -20,7 +20,7 @@ Build an EIP-1186 proof from a [MerkleStateManager](../classes/MerkleStateManage
 
 ### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Account to prove
 

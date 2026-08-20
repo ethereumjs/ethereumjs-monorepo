@@ -22,7 +22,7 @@ Size for the account cache (max number of accounts)
 
 ### accounts?
 
-> `optional` **accounts?**: \[`Address`, `Uint8Array`\<`ArrayBufferLike`\>\][]
+> `optional` **accounts?**: \[[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md), `Uint8Array`\<`ArrayBufferLike`\>\][]
 
 Defined in: [config.ts:265](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L265)
 
@@ -66,11 +66,11 @@ Size for the code cache (max number of contracts)
 
 ### common?
 
-> `optional` **common?**: `Common`
+> `optional` **common?**: [`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 Defined in: [config.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L39)
 
-Specify the chain by providing a Common instance,
+Specify the chain by providing a [Common](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md) instance,
 the common instance will not be modified by client
 
 Default: 'mainnet' Common
@@ -340,7 +340,7 @@ Default: `false`
 
 ### minerCoinbase?
 
-> `optional` **minerCoinbase?**: `Address`
+> `optional` **minerCoinbase?**: [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Defined in: [config.ts:271](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L271)
 
@@ -573,7 +573,7 @@ trie items as `string`, instead of the more performant `Uint8Array`
 
 ### vm?
 
-> `optional` **vm?**: `VM`
+> `optional` **vm?**: [`VM`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/docs/classes/VM.md)
 
 Defined in: [config.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L74)
 

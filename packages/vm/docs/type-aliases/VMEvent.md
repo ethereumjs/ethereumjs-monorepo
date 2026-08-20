@@ -68,7 +68,7 @@ Defined in: [vm/src/types.ts:88](https://github.com/ethereumjs/ethereumjs-monore
 
 ##### data
 
-`Block`
+[`Block`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/Block.md)
 
 ##### resolve?
 

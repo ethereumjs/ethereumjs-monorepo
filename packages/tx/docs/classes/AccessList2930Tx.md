@@ -77,7 +77,7 @@ Defined in: [2930/tx.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 ### common
 
-> `readonly` **common**: `Common`
+> `readonly` **common**: [`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 Defined in: [2930/tx.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/2930/tx.ts#L65)
 
@@ -157,7 +157,7 @@ Defined in: [2930/tx.ts:61](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 ### to?
 
-> `readonly` `optional` **to?**: `Address`
+> `readonly` `optional` **to?**: [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Defined in: [2930/tx.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/2930/tx.ts#L54)
 
@@ -423,7 +423,7 @@ Does not include EIP-8037 first-touch state gas.
 
 ### getSenderAddress()
 
-> **getSenderAddress**(): `Address`
+> **getSenderAddress**(): [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Defined in: [2930/tx.ts:361](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/2930/tx.ts#L361)
 
@@ -431,9 +431,9 @@ Returns the signer's address recovered from the signature.
 
 #### Returns
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
-Sender Address
+Sender [Address](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Implementation of
 
@@ -508,7 +508,7 @@ Defined in: [2930/tx.ts:268](https://github.com/ethereumjs/ethereumjs-monorepo/b
 Computes a sha3-256 hash of the serialized tx.
 
 This method can only be used for signed txs (it throws otherwise).
-Use Transaction.getMessageToSign to get a tx hash for the purpose of signing.
+Use [AccessList2930Tx.getMessageToSign](#getmessagetosign) to get a tx hash for the purpose of signing.
 
 #### Returns
 
@@ -572,7 +572,7 @@ Format: `[chainId, nonce, gasPrice, gasLimit, to, value, data, accessList,
 signatureYParity (v), signatureR (r), signatureS (s)]`
 
 Use [AccessList2930Tx.serialize](#serialize) to add a transaction to a block
-with createBlockFromBytesArray.
+with [@ethereumjs/block!createBlockFromBytesArray](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/functions/createBlockFromBytesArray.md).
 
 For an unsigned tx this method uses the empty Bytes values for the
 signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant

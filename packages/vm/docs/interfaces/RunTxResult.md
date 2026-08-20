@@ -67,7 +67,7 @@ Experimental (Amsterdam): may change on patch releases.
 
 ### bloom
 
-> **bloom**: `Bloom`
+> **bloom**: [`Bloom`](../classes/Bloom.md)
 
 Defined in: [vm/src/types.ts:477](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L477)
 
@@ -77,7 +77,7 @@ Bloom filter resulted from transaction
 
 ### createdAddress?
 
-> `optional` **createdAddress?**: `Address`
+> `optional` **createdAddress?**: [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Defined in: [evm/src/types.ts:484](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L484)
 
@@ -95,7 +95,7 @@ Address of created account during transaction, if any
 
 Defined in: [evm/src/types.ts:488](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L488)
 
-Contains the results from running the code, if any, as described in runCode
+Contains the results from running the code, if any, as described in [@ethereumjs/evm!EVM.runCode](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/docs/classes/EVM.md#runCode).
 
 #### Inherited from
 

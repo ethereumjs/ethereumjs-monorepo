@@ -24,7 +24,7 @@ have a look at the [`@ethereumjs/statemanager` package docs](https://github.com/
 
 ## Implements
 
-- `StateManagerInterface`
+- [`StateManagerInterface`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/StateManagerInterface.md)
 
 ## Constructors
 
@@ -64,7 +64,7 @@ Defined in: [simpleStateManager.ts:29](https://github.com/ethereumjs/ethereumjs-
 
 ### common?
 
-> `readonly` `optional` **common?**: `Common`
+> `readonly` `optional` **common?**: [`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 Defined in: [simpleStateManager.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L37)
 
@@ -92,7 +92,7 @@ Defined in: [simpleStateManager.ts:32](https://github.com/ethereumjs/ethereumjs-
 
 ###### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ###### key
 
@@ -158,7 +158,7 @@ Defined in: [simpleStateManager.ts:115](https://github.com/ethereumjs/ethereumjs
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Returns
 
@@ -229,7 +229,7 @@ Defined in: [simpleStateManager.ts:78](https://github.com/ethereumjs/ethereumjs-
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Returns
 
@@ -263,7 +263,7 @@ Defined in: [simpleStateManager.ts:70](https://github.com/ethereumjs/ethereumjs-
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Returns
 
@@ -285,7 +285,7 @@ Defined in: [simpleStateManager.ts:86](https://github.com/ethereumjs/ethereumjs-
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Returns
 
@@ -307,7 +307,7 @@ Defined in: [simpleStateManager.ts:100](https://github.com/ethereumjs/ethereumjs
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Returns
 
@@ -345,7 +345,7 @@ Defined in: [simpleStateManager.ts:105](https://github.com/ethereumjs/ethereumjs
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ##### key
 
@@ -387,7 +387,7 @@ Defined in: [simpleStateManager.ts:82](https://github.com/ethereumjs/ethereumjs-
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ##### accountFields
 
@@ -413,7 +413,7 @@ Defined in: [simpleStateManager.ts:74](https://github.com/ethereumjs/ethereumjs-
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ##### account?
 
@@ -439,7 +439,7 @@ Defined in: [simpleStateManager.ts:90](https://github.com/ethereumjs/ethereumjs-
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ##### value
 
@@ -465,7 +465,7 @@ Defined in: [simpleStateManager.ts:111](https://github.com/ethereumjs/ethereumjs
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ##### key
 
@@ -519,13 +519,13 @@ Defined in: [simpleStateManager.ts:172](https://github.com/ethereumjs/ethereumjs
 
 ### shallowCopy()
 
-> **shallowCopy**(): `StateManagerInterface`
+> **shallowCopy**(): [`StateManagerInterface`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/StateManagerInterface.md)
 
 Defined in: [simpleStateManager.ts:148](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L148)
 
 #### Returns
 
-`StateManagerInterface`
+[`StateManagerInterface`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/StateManagerInterface.md)
 
 #### Implementation of
 

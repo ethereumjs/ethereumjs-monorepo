@@ -28,7 +28,7 @@ Defined in: [packages/devp2p/src/types.ts:280](https://github.com/ethereumjs/eth
 
 ### common
 
-> **common**: `Common`
+> **common**: [`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 Defined in: [packages/devp2p/src/types.ts:282](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L282)
 

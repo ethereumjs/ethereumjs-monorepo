@@ -8,14 +8,14 @@
 
 Defined in: [statefulBinaryTreeStateManager.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L72)
 
-StateManagerInterface backed by an EIP-7864 BinaryTree.
+[@ethereumjs/common!StateManagerInterface](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/StateManagerInterface.md) backed by an EIP-7864 [@ethereumjs/binarytree!BinaryTree](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/docs/classes/BinaryTree.md).
 
 Supports execution witnesses, binary-tree access lists, and checkpointing for VM use.
 
 ## Implements
 
-- `StateManagerInterface`
-- `BinaryTreeStateManagerInterface`
+- [`StateManagerInterface`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/StateManagerInterface.md)
+- [`BinaryTreeStateManagerInterface`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/BinaryTreeStateManagerInterface.md)
 
 ## Constructors
 
@@ -79,17 +79,17 @@ Defined in: [statefulBinaryTreeStateManager.ts:78](https://github.com/ethereumjs
 
 #### Get Signature
 
-> **get** **tree**(): `BinaryTree`
+> **get** **tree**(): [`BinaryTree`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/docs/classes/BinaryTree.md)
 
 Defined in: [statefulBinaryTreeStateManager.ts:733](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L733)
 
 The underlying binary tree holding the state, as exposed through
-BinaryTreeStateManagerInterface for interface-based consumers
+[BinaryTreeStateManagerInterface](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/BinaryTreeStateManagerInterface.md) for interface-based consumers
 (e.g. execution witness generation in `@ethereumjs/evm`).
 
 ##### Returns
 
-`BinaryTree`
+[`BinaryTree`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/docs/classes/BinaryTree.md)
 
 #### Implementation of
 
@@ -107,7 +107,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:770](https://github.com/ethereumj
 
 ##### \_address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ##### \_codeOffset
 
@@ -165,7 +165,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:460](https://github.com/ethereumj
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Returns
 
@@ -237,7 +237,7 @@ Deletes an account from state under the provided `address`.
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Address of the account which should be deleted
 
@@ -261,7 +261,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:758](https://github.com/ethereumj
 
 ##### \_address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Returns
 
@@ -275,7 +275,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:758](https://github.com/ethereumj
 
 ### dumpStorageRange()?
 
-> `optional` **dumpStorageRange**(`_address`, `_startKey`, `_limit`): `Promise`\<`StorageRange`\>
+> `optional` **dumpStorageRange**(`_address`, `_startKey`, `_limit`): `Promise`\<[`StorageRange`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/StorageRange.md)\>
 
 Defined in: [statefulBinaryTreeStateManager.ts:761](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L761)
 
@@ -283,7 +283,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:761](https://github.com/ethereumj
 
 ##### \_address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ##### \_startKey
 
@@ -295,7 +295,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:761](https://github.com/ethereumj
 
 #### Returns
 
-`Promise`\<`StorageRange`\>
+`Promise`\<[`StorageRange`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/StorageRange.md)\>
 
 #### Implementation of
 
@@ -325,7 +325,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:773](https://github.com/ethereumj
 
 ##### genesisState
 
-`GenesisState`
+[`GenesisState`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/GenesisState.md)
 
 #### Returns
 
@@ -349,7 +349,7 @@ Gets the account associated with `address` or `undefined` if account does not ex
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Address of the `account` to get
 
@@ -373,7 +373,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:338](https://github.com/ethereumj
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Returns
 
@@ -395,7 +395,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:413](https://github.com/ethereumj
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Returns
 
@@ -451,7 +451,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:422](https://github.com/ethereumj
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ##### key
 
@@ -503,7 +503,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:179](https://github.com/ethereumj
 
 ##### executionWitness?
 
-`BinaryTreeExecutionWitness` \| `null`
+[`BinaryTreeExecutionWitness`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/interfaces/BinaryTreeExecutionWitness.md) \| `null`
 
 #### Returns
 
@@ -525,7 +525,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:277](https://github.com/ethereumj
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ##### accountFields
 
@@ -553,7 +553,7 @@ Saves an account into state under the provided `address`.
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Address under which to store `account`
 
@@ -583,7 +583,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:280](https://github.com/ethereumj
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ##### value
 
@@ -609,7 +609,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:448](https://github.com/ethereumj
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ##### key
 
@@ -673,7 +673,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:750](https://github.com/ethereumj
 
 ### shallowCopy()
 
-> **shallowCopy**(`_downlevelCaches?`): `StateManagerInterface`
+> **shallowCopy**(`_downlevelCaches?`): [`StateManagerInterface`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/StateManagerInterface.md)
 
 Defined in: [statefulBinaryTreeStateManager.ts:767](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L767)
 
@@ -685,7 +685,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:767](https://github.com/ethereumj
 
 #### Returns
 
-`StateManagerInterface`
+[`StateManagerInterface`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/StateManagerInterface.md)
 
 #### Implementation of
 

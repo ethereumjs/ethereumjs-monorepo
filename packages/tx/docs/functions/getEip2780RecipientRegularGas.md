@@ -13,7 +13,7 @@ Defined in: [util/intrinsic.ts:47](https://github.com/ethereumjs/ethereumjs-mono
 EIP-2780 execution-gas extras that sit in intrinsic (and the calldata floor
 base): recipient cold access and `TX_VALUE_COST` for value-bearing txs.
 Create txs already pay `txCreationGas` (CREATE_ACCESS) via
-getIntrinsicGas; this helper adds `TX_VALUE_COST` when `value > 0`.
+`tx.getIntrinsicGas()`; this helper adds `TX_VALUE_COST` when `value > 0`.
 
 Since glamsterdam-devnet v8, `TX_VALUE_COST` includes the EIP-7708 transfer
 log — do not add `transferLogCost` separately at the tx level.
@@ -29,7 +29,7 @@ be resolved, a call is treated as a non-self-transfer (conservative).
 
 ### sender?
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ## Returns
 

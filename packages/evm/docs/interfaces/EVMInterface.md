@@ -8,7 +8,7 @@
 
 Defined in: [types.ts:181](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L181)
 
-Public EVM surface used by VM and stand-alone callers.
+Public EVM surface used by [@ethereumjs/vm!VM](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/docs/classes/VM.md) and stand-alone callers.
 
 ## Properties
 
@@ -36,7 +36,7 @@ Experimental (Amsterdam): may change on patch releases.
 
 ### common
 
-> **common**: `Common`
+> **common**: [`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 Defined in: [types.ts:182](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L182)
 
@@ -205,7 +205,7 @@ Defined in: [types.ts:183](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 ###### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ##### Returns
 
@@ -219,7 +219,7 @@ Defined in: [types.ts:183](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 ###### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ###### account
 
@@ -279,7 +279,7 @@ Experimental (Amsterdam): may change on patch releases.
 
 ### stateManager
 
-> **stateManager**: `StateManagerInterface`
+> **stateManager**: [`StateManagerInterface`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/StateManagerInterface.md)
 
 Defined in: [types.ts:198](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L198)
 
@@ -303,7 +303,7 @@ Defined in: [types.ts:200](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 ##### address
 
-`` `0x${string}` `` \| `Address`
+`` `0x${string}` `` \| [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Returns
 

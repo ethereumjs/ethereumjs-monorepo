@@ -391,7 +391,7 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
    * access_list, max_fee_per_data_gas, blob_versioned_hashes, y_parity, r, s]`.
    *
    * Use {@link Blob4844Tx.serialize} to add a transaction to a block
-   * with {@link createBlockFromBytesArray}.
+   * with {@link @ethereumjs/block!createBlockFromBytesArray}.
    *
    * For an unsigned tx this method uses the empty Bytes values for the
    * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant

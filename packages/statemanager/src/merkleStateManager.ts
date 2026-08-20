@@ -47,7 +47,7 @@ import type { Debugger } from 'debug'
 export const CODEHASH_PREFIX = utf8ToBytes('c')
 
 /**
- * Default {@link StateManagerInterface} implementation for the VM.
+ * Default {@link @ethereumjs/common!StateManagerInterface} implementation for the VM.
  *
  * The state manager abstracts from the underlying data store
  * by providing higher level access to accounts, contract code
@@ -437,7 +437,7 @@ export class MerkleStateManager implements StateManagerInterface {
   }
 
   /**
-   * Checkpoints the current state of this {@link StateManagerInterface} instance.
+   * Checkpoints the current state of this {@link @ethereumjs/common!StateManagerInterface} instance.
    * State changes that follow can then be committed by calling
    * `commit` or `reverted` by calling rollback.
    */
@@ -598,7 +598,7 @@ export class MerkleStateManager implements StateManagerInterface {
    @param address - The address of the `account` to return storage for.
    @param startKey - The bigint representation of the smallest storage key that will be returned.
    * @param limit Maximum number of storage entries to return
-   * @returns {@link StorageRange} with at most `limit` entries and optional `nextKey`
+   * @returns {@link @ethereumjs/common!StorageRange} with at most `limit` entries and optional `nextKey`
    */
   async dumpStorageRange(address: Address, startKey: bigint, limit: number): Promise<StorageRange> {
     if (!Number.isSafeInteger(limit) || limit < 0) {

@@ -18,7 +18,7 @@ Builds account and storage tries with key hashing enabled.
 
 ### genesisState
 
-`GenesisState`
+[`GenesisState`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/GenesisState.md)
 
 ## Returns
 

@@ -16,8 +16,8 @@ import type { VMOpts } from './types.ts'
 /**
  * Async factory for initializing a {@link VM} with sensible defaults.
  *
- * Supplies mainnet {@link Common}, {@link EVMMockBlockchain}, {@link MerkleStateManager},
- * and a nested {@link createEVM} instance when not provided.
+ * Supplies mainnet {@link @ethereumjs/common!Common}, {@link @ethereumjs/evm!EVMMockBlockchain}, {@link @ethereumjs/statemanager!MerkleStateManager},
+ * and a nested {@link @ethereumjs/evm!createEVM} instance when not provided.
  *
  * @throws If both `evm` and `evmOpts` are set, or if conflicting profiler options are enabled
  */

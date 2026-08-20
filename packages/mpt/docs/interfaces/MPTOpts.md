@@ -36,7 +36,7 @@ Defined in: [types.ts:118](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 ### db?
 
-> `optional` **db?**: `DB`\<`string`, `string` \| `Uint8Array`\<`ArrayBufferLike`\>\>
+> `optional` **db?**: [`DB`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/interfaces/DB.md)\<`string`, `string` \| `Uint8Array`\<`ArrayBufferLike`\>\>
 
 Defined in: [types.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/types.ts#L58)
 

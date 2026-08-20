@@ -630,7 +630,7 @@ export class Interpreter {
      * @property opcode - Next opcode metadata (name, fees, async flag, hex code)
      * @property gasLeft - Gas remaining in the current frame
      * @property gasRefund - Current refund counter
-     * @property stateManager - Active {@link StateManagerInterface}
+     * @property stateManager - Active {@link @ethereumjs/common!StateManagerInterface}
      * @property stack - Stack items as bigints
      * @property account - Executing contract account
      * @property address - Address of the executing account

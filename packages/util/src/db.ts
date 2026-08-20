@@ -66,7 +66,7 @@ export interface DB<
   /**
    * Writes a value directly to db.
    * @param key The key as a `TValue`
-   * @param value The value to be stored
+   * @param val The value to be stored
    */
   put(key: TKey, val: TValue, opts?: EncodingOpts): Promise<void>
 

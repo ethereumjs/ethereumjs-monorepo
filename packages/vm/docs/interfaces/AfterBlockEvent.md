@@ -18,7 +18,7 @@ Emitted by [VM](../classes/VM.md) after a block finishes processing via [runBloc
 
 ### block
 
-> **block**: `Block`
+> **block**: [`Block`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/Block.md)
 
 Defined in: [vm/src/types.ts:408](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L408)
 
@@ -33,7 +33,7 @@ The block which just finished processing
 Defined in: [vm/src/types.ts:402](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L402)
 
 The block level access list created during execution when EIP-7928 is active.
-Populated by [runBlock](../functions/runBlock.md) / applyBlock; use with `generate: true` for
+Populated by [runBlock](../functions/runBlock.md); use with `generate: true` for
 builder flows or pass via [RunBlockOpts.blockAccessList](RunBlockOpts.md#blockaccesslist) for validation.
 
 #### Remarks

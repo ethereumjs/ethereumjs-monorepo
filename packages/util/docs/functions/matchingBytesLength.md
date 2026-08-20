@@ -8,7 +8,7 @@
 
 > **matchingBytesLength**(`bytes1`, `bytes2`): `number`
 
-Defined in: [packages/util/src/bytes.ts:567](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L567)
+Defined in: [packages/util/src/bytes.ts:564](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L564)
 
 Compares two byte arrays and returns the count of consecutively matching items from the start.
 

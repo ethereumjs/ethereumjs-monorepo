@@ -22,7 +22,7 @@ leave `consumeBAL` unimplemented (it is optional on the interface).
 
 ### stateManager
 
-`StateManagerInterface`
+[`StateManagerInterface`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/StateManagerInterface.md)
 
 ### bal
 

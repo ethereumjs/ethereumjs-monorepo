@@ -80,7 +80,7 @@ Defined in: [types.ts:517](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 Logs emitted during execution (`LOG0`–`LOG4`, and fork-specific synthetic logs such as
 [EIP-7708](https://eips.ethereum.org/EIPS/eip-7708) on `runCall`). Cleared when execution
-reverts. See [Event logs](./README.md#event-logs) in this package.
+reverts. See the package README section on event logs.
 
 ***
 

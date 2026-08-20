@@ -190,7 +190,7 @@ Defined in: [binaryTreeAccessWitness.ts:109](https://github.com/ethereumjs/ether
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Returns
 
@@ -212,7 +212,7 @@ Defined in: [binaryTreeAccessWitness.ts:143](https://github.com/ethereumjs/ether
 
 ##### contract
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ##### startPc
 
@@ -242,7 +242,7 @@ Defined in: [binaryTreeAccessWitness.ts:117](https://github.com/ethereumjs/ether
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Returns
 
@@ -264,7 +264,7 @@ Defined in: [binaryTreeAccessWitness.ts:125](https://github.com/ethereumjs/ether
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Returns
 
@@ -286,7 +286,7 @@ Defined in: [binaryTreeAccessWitness.ts:161](https://github.com/ethereumjs/ether
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ##### storageSlot
 
@@ -328,7 +328,7 @@ Defined in: [binaryTreeAccessWitness.ts:230](https://github.com/ethereumjs/ether
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ##### treeIndex
 
@@ -360,7 +360,7 @@ Defined in: [binaryTreeAccessWitness.ts:191](https://github.com/ethereumjs/ether
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ##### treeIndex
 
@@ -392,7 +392,7 @@ Defined in: [binaryTreeAccessWitness.ts:181](https://github.com/ethereumjs/ether
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ##### treeIndex
 
@@ -418,7 +418,7 @@ Defined in: [binaryTreeAccessWitness.ts:171](https://github.com/ethereumjs/ether
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ##### treeIndex
 
@@ -444,7 +444,7 @@ Defined in: [binaryTreeAccessWitness.ts:113](https://github.com/ethereumjs/ether
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Returns
 
@@ -466,7 +466,7 @@ Defined in: [binaryTreeAccessWitness.ts:152](https://github.com/ethereumjs/ether
 
 ##### contract
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ##### startPc
 
@@ -496,7 +496,7 @@ Defined in: [binaryTreeAccessWitness.ts:121](https://github.com/ethereumjs/ether
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Returns
 
@@ -518,7 +518,7 @@ Defined in: [binaryTreeAccessWitness.ts:134](https://github.com/ethereumjs/ether
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Returns
 
@@ -540,7 +540,7 @@ Defined in: [binaryTreeAccessWitness.ts:166](https://github.com/ethereumjs/ether
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ##### storageSlot
 

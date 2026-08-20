@@ -216,7 +216,7 @@ Defined in: [mpt.ts:134](https://github.com/ethereumjs/ethereumjs-monorepo/blob/
 
 ##### db?
 
-`DB`\<`string`, `string` \| `Uint8Array`\<`ArrayBufferLike`\>\>
+[`DB`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/interfaces/DB.md)\<`string`, `string` \| `Uint8Array`\<`ArrayBufferLike`\>\>
 
 ##### valueEncoding?
 
@@ -494,6 +494,8 @@ wiring each node's references (extension value, branch slot) to its child's hash
 ##### pathNibbles
 
 [`Nibbles`](../type-aliases/Nibbles.md)
+
+nibble path that corresponds to the stack
 
 ##### stack
 

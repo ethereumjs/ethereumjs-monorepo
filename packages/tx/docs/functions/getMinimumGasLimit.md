@@ -25,7 +25,7 @@ see `estimateTxGasDimensions()` on `@ethereumjs/vm`).
 
 ### sender?
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ## Returns
 

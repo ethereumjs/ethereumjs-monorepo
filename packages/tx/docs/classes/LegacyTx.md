@@ -58,7 +58,7 @@ Defined in: [legacy/tx.ts:109](https://github.com/ethereumjs/ethereumjs-monorepo
 
 ### common
 
-> `readonly` **common**: `Common`
+> `readonly` **common**: [`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 Defined in: [legacy/tx.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L104)
 
@@ -138,7 +138,7 @@ Defined in: [legacy/tx.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/
 
 ### to?
 
-> `readonly` `optional` **to?**: `Address`
+> `readonly` `optional` **to?**: [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Defined in: [legacy/tx.ts:94](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L94)
 
@@ -417,7 +417,7 @@ Does not include EIP-8037 first-touch state gas.
 
 ### getSenderAddress()
 
-> **getSenderAddress**(): `Address`
+> **getSenderAddress**(): [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Defined in: [legacy/tx.ts:446](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L446)
 
@@ -425,9 +425,9 @@ Returns the recovered sender address.
 
 #### Returns
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
-Sender Address
+Sender [Address](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Implementation of
 
@@ -502,7 +502,7 @@ Defined in: [legacy/tx.ts:336](https://github.com/ethereumjs/ethereumjs-monorepo
 Computes a sha3-256 hash of the serialized tx.
 
 This method can only be used for signed txs (it throws otherwise).
-Use Transaction.getMessageToSign to get a tx hash for the purpose of signing.
+Use [LegacyTx.getMessageToSign](#getmessagetosign) to get a tx hash for the purpose of signing.
 
 #### Returns
 
@@ -567,12 +567,12 @@ Returns a Uint8Array Array of the raw Bytes of the legacy transaction, in order.
 Format: `[nonce, gasPrice, gasLimit, to, value, data, v, r, s]`
 
 For legacy txs this is also the correct format to add transactions
-to a block with createBlockFromBytesArray (use the `serialize()` method
+to a block with [@ethereumjs/block!createBlockFromBytesArray](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/functions/createBlockFromBytesArray.md) (use the `serialize()` method
 for typed txs).
 
 For an unsigned tx this method returns the empty Bytes values
 for the signature parameters `v`, `r` and `s`. For an EIP-155 compliant
-representation have a look at Transaction.getMessageToSign.
+representation have a look at [LegacyTx.getMessageToSign](#getmessagetosign).
 
 #### Returns
 
@@ -596,7 +596,7 @@ Format: `rlp([nonce, gasPrice, gasLimit, to, value, data, v, r, s])`
 
 For an unsigned tx this method uses the empty Uint8Array values for the
 signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
-representation for external signing use Transaction.getMessageToSign.
+representation for external signing use [LegacyTx.getMessageToSign](#getmessagetosign).
 
 #### Returns
 

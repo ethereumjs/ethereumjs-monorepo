@@ -8,13 +8,13 @@
 
 Defined in: [vm/src/types.ts:346](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L346)
 
-Result of applyBlock
+Result returned internally by [runBlock](../functions/runBlock.md) after executing all transactions in a block.
 
 ## Properties
 
 ### bloom
 
-> **bloom**: `Bloom`
+> **bloom**: [`Bloom`](../classes/Bloom.md)
 
 Defined in: [vm/src/types.ts:350](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L350)
 

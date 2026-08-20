@@ -12,7 +12,7 @@ Defined in: [enums.ts:4](https://github.com/ethereumjs/ethereumjs-monorepo/blob/
 
 Well-known Ethereum chain IDs.
 
-Use with getGenesis from `@ethereumjs/genesis` or pass a [ChainConfig](../interfaces/ChainConfig.md)
+Use with [@ethereumjs/genesis!getGenesis](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/genesis/docs/functions/getGenesis.md) or pass a [ChainConfig](../interfaces/ChainConfig.md)
 from `chains.ts` (e.g. [Mainnet](Mainnet.md)) to [Common](../classes/Common.md).
 
 ## Type Declaration

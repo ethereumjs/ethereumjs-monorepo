@@ -199,7 +199,7 @@ Marks address as deleted in cache.
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Address
 
@@ -236,7 +236,7 @@ Returns the queried account or undefined if account doesn't exist
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Address of account
 
@@ -258,7 +258,7 @@ Puts account to cache under its address.
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Address of account
 

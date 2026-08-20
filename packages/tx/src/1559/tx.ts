@@ -84,7 +84,7 @@ export class FeeMarket1559Tx
    *
    * It is not recommended to use this constructor directly. Instead use
    * the module-level factory functions such as {@link createFeeMarket1559Tx},
-   * {@link createFeeMarket1559TxFromRLP}, and {@link createFeeMarket1559TxFromBytesArray}.
+   * {@link createFeeMarket1559TxFromRLP}, and {@link create1559FeeMarketTxFromBytesArray}.
    */
   public constructor(txData: TxData, opts: TxOptions = {}) {
     sharedConstructor(this, { ...txData, type: TransactionType.FeeMarketEIP1559 }, opts)
@@ -217,7 +217,7 @@ export class FeeMarket1559Tx
    * accessList, signatureYParity, signatureR, signatureS]`
    *
    * Use {@link FeeMarket1559Tx.serialize} to add a transaction to a block
-   * with {@link createBlockFromBytesArray}.
+   * with {@link @ethereumjs/block!createBlockFromBytesArray}.
    *
    * For an unsigned tx this method uses the empty Bytes values for the
    * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant

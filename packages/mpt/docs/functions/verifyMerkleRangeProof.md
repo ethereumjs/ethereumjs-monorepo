@@ -44,13 +44,19 @@ root hash of state trie this proof is being verified against.
 
 `Uint8Array`\<`ArrayBufferLike`\> \| `null`
 
+first key of range being proven (bytes, or `null`).
+
 ### lastKeyRaw
 
 `Uint8Array`\<`ArrayBufferLike`\> \| `null`
 
+last key of range being proven (bytes, or `null`).
+
 ### keysRaw
 
 `Uint8Array`\<`ArrayBufferLike`\>[]
+
+key list of leaf data being proven.
 
 ### values
 
@@ -62,11 +68,13 @@ value list of leaf data being proven, one-to-one correspondence with keys.
 
 `Uint8Array`\<`ArrayBufferLike`\>[] \| `null`
 
-proof node list, if all-elements-proof where no proof is needed, proof should be null, and both `firstKey` and `lastKey` must be null as well
+proof node list, or `null` for an all-elements proof (both keys must be `null` too)
 
 ### useKeyHashingFunction?
 
 [`HashKeysFunction`](../type-aliases/HashKeysFunction.md) = `keccak_256`
+
+hash function for secure trie key hashing (default: keccak256)
 
 ## Returns
 

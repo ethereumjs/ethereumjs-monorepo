@@ -11,11 +11,11 @@ Defined in: [db/checkpointDB.ts:18](https://github.com/ethereumjs/ethereumjs-mon
 Checkpoint-aware DB wrapper with optional LRU node cache.
 
 Writes during a checkpoint go to an in-memory diff map; commit flushes to the
-underlying DB.
+underlying [DB](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/interfaces/DB.md).
 
 ## Implements
 
-- `DB`
+- [`DB`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/interfaces/DB.md)
 
 ## Constructors
 
@@ -97,7 +97,7 @@ Defined in: [db/checkpointDB.ts:19](https://github.com/ethereumjs/ethereumjs-mon
 
 ### db
 
-> **db**: `DB`\<`string`, `string` \| `Uint8Array`\<`ArrayBufferLike`\>\>
+> **db**: [`DB`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/interfaces/DB.md)\<`string`, `string` \| `Uint8Array`\<`ArrayBufferLike`\>\>
 
 Defined in: [db/checkpointDB.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/db/checkpointDB.ts#L20)
 

@@ -189,7 +189,7 @@ Remove all cached storage slots for an account.
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Account whose storage map should be cleared
 
@@ -225,7 +225,7 @@ Marks storage key for address as deleted in cache.
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Address
 
@@ -253,7 +253,7 @@ Dumps the RLP-encoded storage values for an `account` specified by `address`.
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Account to dump from the cache
 
@@ -294,7 +294,7 @@ undefined: slot is not in cache
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Address of account
 
@@ -324,7 +324,7 @@ Puts storage value to cache under address_key cache key.
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Account address
 
@@ -337,6 +337,8 @@ Storage key
 ##### value
 
 `Uint8Array`
+
+RLP-encoded storage value
 
 #### Returns
 

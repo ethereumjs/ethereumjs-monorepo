@@ -25,7 +25,7 @@ See execution-specs#3120: the floor is anchored on this base rather than
 
 ### sender?
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ## Returns
 

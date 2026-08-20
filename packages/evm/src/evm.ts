@@ -351,7 +351,6 @@ export class EVM implements EVMInterface {
    * use the async {@link createEVM} constructor instead (same API).
    *
    * @param opts The EVM options
-   * @param bn128 Initialized bn128 WASM object for precompile usage (internal)
    */
   constructor(opts: EVMOpts) {
     this.common = opts.common!

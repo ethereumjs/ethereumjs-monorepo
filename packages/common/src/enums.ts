@@ -6,7 +6,7 @@ export type Chain = (typeof Chain)[keyof typeof Chain]
 /**
  * Well-known Ethereum chain IDs.
  *
- * Use with {@link getGenesis} from `@ethereumjs/genesis` or pass a {@link ChainConfig}
+ * Use with {@link @ethereumjs/genesis!getGenesis} or pass a {@link ChainConfig}
  * from `chains.ts` (e.g. {@link Mainnet}) to {@link Common}.
  */
 export const Chain = {

@@ -17,6 +17,6 @@ The address can be an `Address` instance or a `0x`-prefixed hex string.
 
 ### address
 
-> **address**: `Address` \| `PrefixedHexString`
+> **address**: [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md) \| `PrefixedHexString`
 
 Defined in: [precompiles/index.ts:257](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/index.ts#L257)

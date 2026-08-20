@@ -24,7 +24,7 @@ An EVM instance can be created with the constructor method:
 
 > **new EVM**(`opts`): `EVM`
 
-Defined in: [evm.ts:356](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L356)
+Defined in: [evm.ts:355](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L355)
 
 Creates new EVM object
 
@@ -100,7 +100,7 @@ Experimental (Amsterdam): may change on patch releases.
 
 ### common
 
-> `readonly` **common**: `Common`
+> `readonly` **common**: [`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 Defined in: [evm.ts:206](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L206)
 
@@ -268,7 +268,7 @@ Experimental (Amsterdam): may change on patch releases.
 
 ### stateManager
 
-> **stateManager**: `StateManagerInterface`
+> **stateManager**: [`StateManagerInterface`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/StateManagerInterface.md)
 
 Defined in: [evm.ts:209](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L209)
 
@@ -330,7 +330,7 @@ Defined in: [evm.ts:321](https://github.com/ethereumjs/ethereumjs-monorepo/blob/
 
 > **clearPerformanceLogs**(): `void`
 
-Defined in: [evm.ts:1740](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L1740)
+Defined in: [evm.ts:1739](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L1739)
 
 #### Returns
 
@@ -342,7 +342,7 @@ Defined in: [evm.ts:1740](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 > **getActiveOpcodes**(): `OpcodeList`
 
-Defined in: [evm.ts:450](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L450)
+Defined in: [evm.ts:449](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L449)
 
 Returns a list with the currently activated opcodes
 available for EVM execution
@@ -357,7 +357,7 @@ available for EVM execution
 
 > **getPerformanceLogs**(): `object`
 
-Defined in: [evm.ts:1736](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L1736)
+Defined in: [evm.ts:1735](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L1735)
 
 #### Returns
 
@@ -377,7 +377,7 @@ Defined in: [evm.ts:1736](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 > **getPrecompile**(`address`): [`PrecompileFunc`](../interfaces/PrecompileFunc.md) \| `undefined`
 
-Defined in: [evm.ts:1583](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L1583)
+Defined in: [evm.ts:1582](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L1582)
 
 Returns the precompile function registered at the given address,
 or `undefined` if no precompile is active there.
@@ -395,7 +395,7 @@ const fn = evm.getPrecompile('0x000000000000000000000000000000000000ff01')
 
 ##### address
 
-`` `0x${string}` `` \| `Address`
+`` `0x${string}` `` \| [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Returns
 
@@ -411,7 +411,7 @@ const fn = evm.getPrecompile('0x000000000000000000000000000000000000ff01')
 
 > **runCall**(`opts`): `Promise`\<[`EVMResult`](../interfaces/EVMResult.md)\>
 
-Defined in: [evm.ts:1328](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L1328)
+Defined in: [evm.ts:1327](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L1327)
 
 Executes an EVM message, determining whether it's a call or create
 based on the `to` address. It checkpoints the state and reverts changes
@@ -437,7 +437,7 @@ if an exception happens during the message execution.
 
 > **runCode**(`opts`): `Promise`\<[`ExecResult`](../interfaces/ExecResult.md)\>
 
-Defined in: [evm.ts:1546](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L1546)
+Defined in: [evm.ts:1545](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L1545)
 
 Bound to the global VM and therefore
 shouldn't be used directly from the evm class
@@ -462,7 +462,7 @@ shouldn't be used directly from the evm class
 
 > **shallowCopy**(): `EVM`
 
-Defined in: [evm.ts:1722](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L1722)
+Defined in: [evm.ts:1721](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L1721)
 
 This method copies the EVM, current HF and EIP settings
 and returns a new EVM instance.

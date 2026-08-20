@@ -16,11 +16,11 @@ Compute the Merkle Patricia trie root of a custom genesis state.
 
 ### genesisState
 
-`GenesisState`
+[`GenesisState`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/GenesisState.md)
 
 ### common
 
-`Common`
+[`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 ## Returns
 

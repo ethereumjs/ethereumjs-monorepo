@@ -16,11 +16,11 @@ Builds an EIP-7708 ETH transfer log for CALL/CREATE value moves.
 
 ### from
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ### to
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ### value
 

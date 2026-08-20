@@ -85,7 +85,7 @@ Defined in: [7702/tx.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 ### common
 
-> `readonly` **common**: `Common`
+> `readonly` **common**: [`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 Defined in: [7702/tx.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/7702/tx.ts#L76)
 
@@ -173,7 +173,7 @@ Defined in: [7702/tx.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 ### to?
 
-> `readonly` `optional` **to?**: `Address`
+> `readonly` `optional` **to?**: [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Defined in: [7702/tx.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/7702/tx.ts#L62)
 
@@ -443,7 +443,7 @@ Does not include EIP-8037 first-touch state gas.
 
 ### getSenderAddress()
 
-> **getSenderAddress**(): `Address`
+> **getSenderAddress**(): [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Defined in: [7702/tx.ts:422](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/7702/tx.ts#L422)
 
@@ -451,9 +451,9 @@ Returns the recovered sender address.
 
 #### Returns
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
-Sender Address
+Sender [Address](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Implementation of
 
@@ -536,7 +536,7 @@ Defined in: [7702/tx.ts:323](https://github.com/ethereumjs/ethereumjs-monorepo/b
 Computes a sha3-256 hash of the serialized tx.
 
 This method can only be used for signed txs (it throws otherwise).
-Use EOACode7702Transaction.getMessageToSign to get a tx hash for the purpose of signing.
+Use [EOACode7702Tx.getMessageToSign](#getmessagetosign) to get a tx hash for the purpose of signing.
 
 #### Returns
 
@@ -599,12 +599,12 @@ Returns a Uint8Array Array of the raw Bytes of the EIP-7702 transaction, in orde
 Format: `[chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
 accessList, authorizationList, signatureYParity, signatureR, signatureS]`
 
-Use EOACode7702Transaction.serialize to add a transaction to a block
-with createBlockFromBytesArray.
+Use [EOACode7702Tx.serialize](#serialize) to add a transaction to a block
+with [@ethereumjs/block!createBlockFromBytesArray](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/functions/createBlockFromBytesArray.md).
 
 For an unsigned tx this method uses the empty Bytes values for the
 signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
-representation for external signing use EOACode7702Transaction.getMessageToSign.
+representation for external signing use [EOACode7702Tx.getMessageToSign](#getmessagetosign).
 
 #### Returns
 

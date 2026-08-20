@@ -16,11 +16,11 @@ Returns the genesis state root if chain is well known or an empty state's root o
 
 ### chainId
 
-`Chain`
+[`Chain`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/variables/Chain.md)
 
 ### common
 
-`Common`
+[`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 ## Returns
 

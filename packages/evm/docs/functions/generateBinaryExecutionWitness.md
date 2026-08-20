@@ -6,21 +6,21 @@
 
 # Function: generateBinaryExecutionWitness()
 
-> **generateBinaryExecutionWitness**(`stateManager`, `accessWitness`, `parentStateRoot`): `Promise`\<`BinaryTreeExecutionWitness`\>
+> **generateBinaryExecutionWitness**(`stateManager`, `accessWitness`, `parentStateRoot`): `Promise`\<[`BinaryTreeExecutionWitness`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/interfaces/BinaryTreeExecutionWitness.md)\>
 
 Defined in: [binaryTreeAccessWitness.ts:395](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L395)
 
-Generate a BinaryTreeExecutionWitness from a state manager and an access witness.
+Generate a [BinaryTreeExecutionWitness](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/interfaces/BinaryTreeExecutionWitness.md) from a state manager and an access witness.
 
 ## Parameters
 
 ### stateManager
 
-`BinaryTreeStateManagerInterface`
+[`BinaryTreeStateManagerInterface`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/BinaryTreeStateManagerInterface.md)
 
 The state manager containing the state to generate the witness for.
 Any state manager exposing the binary tree surface works (see
-BinaryTreeStateManagerInterface), e.g. `StatefulBinaryTreeStateManager`
+[BinaryTreeStateManagerInterface](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/BinaryTreeStateManagerInterface.md)), e.g. `StatefulBinaryTreeStateManager`
 from `@ethereumjs/statemanager`.
 
 ### accessWitness
@@ -37,6 +37,6 @@ The parent state root (i.e. prestate root) to generate the witness for.
 
 ## Returns
 
-`Promise`\<`BinaryTreeExecutionWitness`\>
+`Promise`\<[`BinaryTreeExecutionWitness`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/interfaces/BinaryTreeExecutionWitness.md)\>
 
 The generated binary tree execution witness

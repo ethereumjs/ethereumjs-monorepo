@@ -70,7 +70,7 @@ EIP-7928 block access list hash. Experimental (Amsterdam); may change on patch r
 
 ### coinbase
 
-> `readonly` **coinbase**: `Address`
+> `readonly` **coinbase**: [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Defined in: [header/header.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L47)
 
@@ -78,7 +78,7 @@ Defined in: [header/header.ts:47](https://github.com/ethereumjs/ethereumjs-monor
 
 ### common
 
-> `readonly` **common**: `Common`
+> `readonly` **common**: [`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 Defined in: [header/header.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/header.ts#L71)
 
@@ -304,7 +304,7 @@ Calculate the blob gas price of the block built on top of this one
 
 ##### childCommon
 
-`Common`
+[`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 #### Returns
 
@@ -326,7 +326,7 @@ Calculates the excess blob gas for next (hopefully) post EIP 4844 block.
 
 ##### childCommon
 
-`Common`
+[`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 #### Returns
 

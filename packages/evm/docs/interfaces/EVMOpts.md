@@ -122,7 +122,7 @@ const evm = await createEVM({ bn254: new RustBN254(bn254) })
 
 ### cliqueSigner?
 
-> `optional` **cliqueSigner?**: (`header`) => `Address`
+> `optional` **cliqueSigner?**: (`header`) => [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Defined in: [types.ts:474](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L474)
 
@@ -140,7 +140,7 @@ must be provided along with a `BlockHeader` so that the coinbase can be correctl
 
 ###### coinbase
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ###### difficulty
 
@@ -170,17 +170,17 @@ must be provided along with a `BlockHeader` so that the coinbase can be correctl
 
 #### Returns
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ***
 
 ### common?
 
-> `optional` **common?**: `Common`
+> `optional` **common?**: [`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 Defined in: [types.ts:327](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L327)
 
-Use a Common instance for EVM instantiation.
+Use a [@ethereumjs/common!Common](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md) instance for EVM instantiation.
 
 ### Supported EIPs
 
@@ -252,7 +252,7 @@ Sorted by EIP number:
 
 ### customOpcodes?
 
-> `optional` **customOpcodes?**: `CustomOpcode`[]
+> `optional` **customOpcodes?**: [`CustomOpcode`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/docs/type-aliases/CustomOpcode.md)[]
 
 Defined in: [types.ts:381](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L381)
 
@@ -320,6 +320,6 @@ Optional performance profiler settings for opcode and precompile timing.
 
 ### stateManager?
 
-> `optional` **stateManager?**: `StateManagerInterface`
+> `optional` **stateManager?**: [`StateManagerInterface`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/StateManagerInterface.md)
 
 Defined in: [types.ts:445](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L445)

@@ -20,7 +20,7 @@ Defined in: [index.ts:169](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 ##### cacheDB?
 
-`DB`\<`number`, `DBObject`\>
+[`DB`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/interfaces/DB.md)\<`number`, `DBObject`\>
 
 #### Returns
 
@@ -38,7 +38,7 @@ Defined in: [index.ts:163](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 ### cacheDB?
 
-> `optional` **cacheDB?**: `DB`\<`number`, `DBObject`\>
+> `optional` **cacheDB?**: [`DB`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/interfaces/DB.md)\<`number`, `DBObject`\>
 
 Defined in: [index.ts:162](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L162)
 
@@ -94,7 +94,7 @@ Defined in: [index.ts:369](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 ##### header
 
-`BlockHeader`
+[`BlockHeader`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/BlockHeader.md)
 
 #### Returns
 
@@ -145,7 +145,7 @@ To mine a `BlockHeader` or `Block`, use the one-liner `await ethash.getMiner(blo
 
 ##### mineObject
 
-`BlockHeader` \| `Block`
+[`BlockHeader`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/BlockHeader.md) \| [`Block`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/Block.md)
 
 Object to mine on, either a `BlockHeader` or a `Block`
 
@@ -261,7 +261,7 @@ Defined in: [index.ts:379](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 ##### block
 
-`Block`
+[`Block`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/Block.md)
 
 #### Returns
 

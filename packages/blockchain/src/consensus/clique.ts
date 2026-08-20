@@ -111,7 +111,7 @@ export class CliqueConsensus implements Consensus {
   public _cliqueLatestVotes: CliqueLatestVotes = []
 
   /**
-   * List of signers for the last consecutive {@link Blockchain.cliqueSignerLimit} blocks.
+   * List of signers for the last consecutive Clique signer-limit blocks.
    * Kept as a snapshot for quickly checking for "recently signed" error.
    * Format: [ [BLOCK_NUMBER, SIGNER_ADDRESS], ...]
    *
@@ -519,7 +519,7 @@ export class CliqueConsensus implements Consensus {
   /**
    * Update snapshot of latest clique block signers.
    * Used for checking for 'recently signed' error.
-   * Length trimmed to {@link Blockchain.cliqueSignerLimit}.
+   * Length trimmed to the Clique signer limit.
    * @param header BlockHeader
    * @hidden
    */

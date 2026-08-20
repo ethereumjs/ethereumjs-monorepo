@@ -8,7 +8,7 @@ type EVMPerformanceLogEntry = {
   dynamicGasUsed?: number
 }
 
-/** Aggregated opcode or precompile timing row for {@link emitEVMProfile}. */
+/** Aggregated opcode or precompile timing row for {@link @ethereumjs/vm!emitEVMProfile}. */
 export type EVMPerformanceLogOutput = {
   calls: number // Amount this opcode/precompile was called
   totalTime: number // Amount of seconds taken for this opcode/precompile (rounded to 3 digits)

@@ -16,7 +16,7 @@ Callback invoked for each block during [BlockchainInterface.iterator](../interfa
 
 ### block
 
-`Block`
+[`Block`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/Block.md)
 
 ### reorg
 

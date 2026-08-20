@@ -306,7 +306,7 @@ export const generateBinaryTreeChunkSuffixes = (numChunks: number) => {
  * Helper method for generating the code stems necessary for putting code
  * @param numChunks the number of code chunks to be put
  * @param address the address of the account getting the code
- * @param hashFunction an initialized {@link BinaryTreeCrypto} object
+ * @param hashFunction Keccak/Blake3 (or compatible) hash used for stem generation
  * @returns an array of stems for putting code
  */
 export function generateBinaryTreeCodeStems(

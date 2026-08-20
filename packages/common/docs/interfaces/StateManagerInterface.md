@@ -36,7 +36,7 @@ Defined in: [interfaces.ts:231](https://github.com/ethereumjs/ethereumjs-monorep
 
 ###### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ###### key
 
@@ -58,7 +58,7 @@ Defined in: [interfaces.ts:241](https://github.com/ethereumjs/ethereumjs-monorep
 
 ##### contract
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ##### programCounter
 
@@ -104,7 +104,7 @@ Defined in: [interfaces.ts:195](https://github.com/ethereumjs/ethereumjs-monorep
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Returns
 
@@ -163,7 +163,7 @@ Defined in: [interfaces.ts:184](https://github.com/ethereumjs/ethereumjs-monorep
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Returns
 
@@ -181,7 +181,7 @@ Defined in: [interfaces.ts:218](https://github.com/ethereumjs/ethereumjs-monorep
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Returns
 
@@ -199,7 +199,7 @@ Defined in: [interfaces.ts:219](https://github.com/ethereumjs/ethereumjs-monorep
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ##### startKey
 
@@ -243,7 +243,7 @@ Defined in: [interfaces.ts:182](https://github.com/ethereumjs/ethereumjs-monorep
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Returns
 
@@ -279,7 +279,7 @@ Defined in: [interfaces.ts:189](https://github.com/ethereumjs/ethereumjs-monorep
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Returns
 
@@ -297,7 +297,7 @@ Defined in: [interfaces.ts:190](https://github.com/ethereumjs/ethereumjs-monorep
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Returns
 
@@ -327,7 +327,7 @@ Defined in: [interfaces.ts:193](https://github.com/ethereumjs/ethereumjs-monorep
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ##### key
 
@@ -371,7 +371,7 @@ Defined in: [interfaces.ts:236](https://github.com/ethereumjs/ethereumjs-monorep
 
 ##### executionWitness?
 
-`BinaryTreeExecutionWitness` \| `null`
+[`BinaryTreeExecutionWitness`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/interfaces/BinaryTreeExecutionWitness.md) \| `null`
 
 #### Returns
 
@@ -389,7 +389,7 @@ Defined in: [interfaces.ts:185](https://github.com/ethereumjs/ethereumjs-monorep
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ##### accountFields
 
@@ -411,7 +411,7 @@ Defined in: [interfaces.ts:183](https://github.com/ethereumjs/ethereumjs-monorep
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ##### account?
 
@@ -433,7 +433,7 @@ Defined in: [interfaces.ts:188](https://github.com/ethereumjs/ethereumjs-monorep
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ##### value
 
@@ -455,7 +455,7 @@ Defined in: [interfaces.ts:194](https://github.com/ethereumjs/ethereumjs-monorep
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ##### key
 

@@ -14,18 +14,18 @@ import type { BlockHeader } from './index.ts'
 
 /**
  * An object to set to which blockchain the blocks and their headers belong. This could be specified
- * using a {@link Common} object, or `chain` and `hardfork`. Defaults to mainnet without specifying a
+ * using a {@link @ethereumjs/common!Common} object, or `chain` and `hardfork`. Defaults to mainnet without specifying a
  * hardfork.
  */
 export interface BlockOptions {
   /**
-   * A {@link Common} object defining the chain and the hardfork a block/block header belongs to.
+   * A {@link @ethereumjs/common!Common} object defining the chain and the hardfork a block/block header belongs to.
    *
    * Object will be internally copied so that tx behavior don't incidentally
    * change on future HF changes.
    *
-   * Default: {@link Common} object set to `mainnet` and the HF currently defined as the default
-   * hardfork in the {@link Common} class.
+   * Default: {@link @ethereumjs/common!Common} object set to `mainnet` and the HF currently defined as the default
+   * hardfork in the {@link @ethereumjs/common!Common} class.
    *
    * Current default hardfork: `merge`
    */
@@ -34,7 +34,7 @@ export interface BlockOptions {
    * Set the hardfork either by timestamp (for HFs from Shanghai onwards) or by block number
    * for older Hfs.
    *
-   * Default: `false` (HF is set to whatever default HF is set by the {@link Common} instance)
+   * Default: `false` (HF is set to whatever default HF is set by the {@link @ethereumjs/common!Common} instance)
    */
   setHardfork?: boolean
   /**

@@ -308,7 +308,7 @@ export class RPCStateManager implements StateManagerInterface {
   }
 
   /**
-   * Checkpoints the current state of this {@link StateManagerInterface} instance.
+   * Checkpoints the current state of this {@link @ethereumjs/common!StateManagerInterface} instance.
    * State changes that follow can then be committed by calling
    * `commit` or `reverted` by calling rollback.
    */

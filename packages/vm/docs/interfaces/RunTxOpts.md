@@ -14,11 +14,11 @@ Options for the `runTx` method.
 
 ### block?
 
-> `optional` **block?**: `Block`
+> `optional` **block?**: [`Block`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/Block.md)
 
 Defined in: [vm/src/types.ts:419](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L419)
 
-The Block the transaction belongs to.
+The [Block](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/Block.md) the transaction belongs to.
 If omitted, a default blank block is used.
 
 ***
@@ -45,8 +45,8 @@ to the `RunTxResult` returned.
 Option works with all tx types. EIP-2929 needs to
 be activated (included in `berlin` HF).
 
-Note: if this option is used with a custom StateManagerInterface implementation,
-StateManagerInterface.generateAccessList must be implemented.
+Note: if this option is used with a custom [@ethereumjs/common!StateManagerInterface](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/StateManagerInterface.md) implementation,
+`generateAccessList()` must be implemented on that class.
 
 ***
 

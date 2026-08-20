@@ -30,7 +30,7 @@ the address of the account getting the code
 
 (`input`) => `Uint8Array`
 
-an initialized BinaryTreeCrypto object
+Keccak/Blake3 (or compatible) hash used for stem generation
 
 ## Returns
 

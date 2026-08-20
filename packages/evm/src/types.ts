@@ -177,7 +177,7 @@ export type EVMEvent = {
   step: (data: InterpreterStep, resolve?: (result?: any) => void) => void
 }
 
-/** Public EVM surface used by {@link VM} and stand-alone callers. */
+/** Public EVM surface used by {@link @ethereumjs/vm!VM} and stand-alone callers. */
 export interface EVMInterface {
   common: Common
   journal: {
@@ -256,7 +256,7 @@ export type EVMProfilerOpts = {
  */
 export interface EVMOpts {
   /**
-   * Use a {@link Common} instance for EVM instantiation.
+   * Use a {@link @ethereumjs/common!Common} instance for EVM instantiation.
    *
    * ### Supported EIPs
    *
@@ -483,7 +483,7 @@ export interface EVMResult {
    */
   createdAddress?: Address
   /**
-   * Contains the results from running the code, if any, as described in {@link runCode}
+   * Contains the results from running the code, if any, as described in {@link @ethereumjs/evm!EVM.runCode}.
    */
   execResult: ExecResult
 }
@@ -512,7 +512,7 @@ export interface ExecResult {
   /**
    * Logs emitted during execution (`LOG0`–`LOG4`, and fork-specific synthetic logs such as
    * [EIP-7708](https://eips.ethereum.org/EIPS/eip-7708) on `runCall`). Cleared when execution
-   * reverts. See [Event logs](./README.md#event-logs) in this package.
+   * reverts. See the package README section on event logs.
    */
   logs?: Log[]
   /**
@@ -570,8 +570,8 @@ export type EVMBN254Interface = {
  * Log emitted during EVM execution.
  *
  * Tuple of `[emitterAddress, topics, data]` — the same shape used in transaction receipts
- * (`receipt.logs`) and JSON-RPC log objects (before field renaming). See the
- * [Event logs](./README.md#event-logs) section in this package and
+ * (`receipt.logs`) and JSON-RPC log objects (before field renaming). See the package README
+ * section on event logs and
  * [Receipts and event logs](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#receipts-and-event-logs)
  * in `@ethereumjs/vm`.
  */

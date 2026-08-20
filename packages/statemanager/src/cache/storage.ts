@@ -78,7 +78,7 @@ export class StorageCache extends Cache {
    * Puts storage value to cache under address_key cache key.
    * @param address - Account address
    * @param key - Storage key
-   * @param val - RLP-encoded storage value
+   * @param value - RLP-encoded storage value
    */
   put(address: Address, key: Uint8Array, value: Uint8Array): void {
     // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for cache lookups.

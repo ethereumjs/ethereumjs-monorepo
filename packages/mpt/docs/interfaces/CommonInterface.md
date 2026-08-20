@@ -8,7 +8,7 @@
 
 Defined in: [types.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/types.ts#L29)
 
-Shared subset of Common used internally by `@ethereumjs/mpt`.
+Shared subset of [@ethereumjs/common!Common](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md) used internally by `@ethereumjs/mpt`.
 
 ## Properties
 

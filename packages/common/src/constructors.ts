@@ -7,7 +7,7 @@ import type { BaseOpts, ChainConfig, GethConfigOpts } from './index.ts'
  * Creates a {@link Common} object for a custom chain, based on a standard one.
  *
  * It uses all the {@link Chain} parameters from the {@link baseChain} option except the ones overridden
- * in a provided {@link chainParamsOrName} dictionary. Some usage example:
+ * in a provided `partialConfig` object. Some usage example:
  *
  * ```javascript
  * import { createCustomCommon, Mainnet } from '@ethereumjs/common'

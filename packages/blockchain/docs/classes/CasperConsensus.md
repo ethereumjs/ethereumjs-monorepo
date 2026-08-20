@@ -124,7 +124,7 @@ Validates header difficulty against parent and consensus rules.
 
 ##### header
 
-`BlockHeader`
+[`BlockHeader`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/BlockHeader.md)
 
 #### Returns
 

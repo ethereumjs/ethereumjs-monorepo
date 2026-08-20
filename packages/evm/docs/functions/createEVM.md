@@ -12,8 +12,8 @@ Defined in: [constructors.ts:19](https://github.com/ethereumjs/ethereumjs-monore
 
 Async factory for initializing an [EVM](../classes/EVM.md) with sensible defaults.
 
-Supplies a [NobleBN254](../classes/NobleBN254.md) precompile backend, mainnet Common,
-[EVMMockBlockchain](../classes/EVMMockBlockchain.md), and SimpleStateManager when not provided.
+Supplies a [NobleBN254](../classes/NobleBN254.md) precompile backend, mainnet [@ethereumjs/common!Common](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md),
+[EVMMockBlockchain](../classes/EVMMockBlockchain.md), and [@ethereumjs/statemanager!SimpleStateManager](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/docs/classes/SimpleStateManager.md) when not provided.
 
 ## Parameters
 

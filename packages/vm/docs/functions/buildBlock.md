@@ -12,7 +12,7 @@ Defined in: [vm/src/buildBlock.ts:544](https://github.com/ethereumjs/ethereumjs-
 
 Incrementally assembles a block by executing transactions against a [VM](../classes/VM.md).
 
-Opens a StateManagerInterface checkpoint; commits on [BlockBuilder.build](../classes/BlockBuilder.md#build)
+Opens a [@ethereumjs/common!StateManagerInterface](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/StateManagerInterface.md) checkpoint; commits on [BlockBuilder.build](../classes/BlockBuilder.md#build)
 or reverts with [BlockBuilder.revert](../classes/BlockBuilder.md#revert). See [BuildBlockOpts](../interfaces/BuildBlockOpts.md) for parent block
 and header defaults.
 

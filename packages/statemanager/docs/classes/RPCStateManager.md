@@ -15,7 +15,7 @@ fixed block tag. Suitable for simulations against live or archive nodes.
 
 ## Implements
 
-- `StateManagerInterface`
+- [`StateManagerInterface`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/StateManagerInterface.md)
 
 ## Constructors
 
@@ -39,7 +39,7 @@ Defined in: [rpcStateManager.ts:47](https://github.com/ethereumjs/ethereumjs-mon
 
 ### common
 
-> `readonly` **common**: `Common`
+> `readonly` **common**: [`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 Defined in: [rpcStateManager.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L45)
 
@@ -63,7 +63,7 @@ Defined in: [rpcStateManager.ts:41](https://github.com/ethereumjs/ethereumjs-mon
 
 Defined in: [rpcStateManager.ts:315](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L315)
 
-Checkpoints the current state of this StateManagerInterface instance.
+Checkpoints the current state of this [@ethereumjs/common!StateManagerInterface](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/StateManagerInterface.md) instance.
 State changes that follow can then be committed by calling
 `commit` or `reverted` by calling rollback.
 
@@ -108,7 +108,7 @@ Clears all storage entries for the account corresponding to `address`.
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Address to clear the storage of
 
@@ -187,7 +187,7 @@ Deletes an account from state under the provided `address`.
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Address of the account which should be deleted
 
@@ -213,7 +213,7 @@ Dumps the RLP-encoded storage values for an `account` specified by `address`.
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Account whose storage should be dumped
 
@@ -253,7 +253,7 @@ Gets the account associated with `address` or `undefined` if account does not ex
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Address of the `account` to get
 
@@ -308,7 +308,7 @@ Gets the code corresponding to the provided `address`.
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Address to get the code for
 
@@ -334,7 +334,7 @@ Defined in: [rpcStateManager.ts:119](https://github.com/ethereumjs/ethereumjs-mo
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Returns
 
@@ -379,7 +379,7 @@ the shortest representation of the stored value.
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Address of the account to get the storage for
 
@@ -435,7 +435,7 @@ fields, then saves the account into state. Account fields can include
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Address of the account to modify
 
@@ -467,7 +467,7 @@ Saves an account into state under the provided `address`.
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Address under which to store `account`
 
@@ -500,7 +500,7 @@ corresponding to `address` to reference this.
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Address of the `account` to add the `code` for
 
@@ -533,7 +533,7 @@ corresponding to `address` at the provided `key`.
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Address to set a storage value for
 

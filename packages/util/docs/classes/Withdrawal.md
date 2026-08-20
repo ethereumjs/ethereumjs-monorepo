@@ -19,8 +19,8 @@ Representation of EIP-4895 withdrawal data
 Defined in: [packages/util/src/withdrawal.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L72)
 
 This constructor assigns and validates the values.
-Use the module-level factory functions such as [createWithdrawal](../functions/createWithdrawal.md),
-[createWithdrawalFromBytesArray](../functions/createWithdrawalFromBytesArray.md), and createWithdrawalFromRLP.
+Use the module-level factory functions such as [createWithdrawal](../functions/createWithdrawal.md)
+and [createWithdrawalFromBytesArray](../functions/createWithdrawalFromBytesArray.md).
 Its amount is in Gwei to match CL representation and for eventual ssz withdrawalsRoot
 
 #### Parameters

@@ -134,7 +134,7 @@ Validate block consensus parameters
 
 ##### block
 
-`Block`
+[`Block`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/Block.md)
 
 block to be validated
 
@@ -160,7 +160,7 @@ Checks that the block's `difficulty` matches the canonical difficulty of the par
 
 ##### header
 
-`BlockHeader`
+[`BlockHeader`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/BlockHeader.md)
 
 header of block to be checked
 

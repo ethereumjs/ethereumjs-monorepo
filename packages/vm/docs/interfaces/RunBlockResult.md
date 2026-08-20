@@ -27,7 +27,7 @@ Result of [runBlock](../functions/runBlock.md)
 Defined in: [vm/src/types.ts:402](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L402)
 
 The block level access list created during execution when EIP-7928 is active.
-Populated by [runBlock](../functions/runBlock.md) / applyBlock; use with `generate: true` for
+Populated by [runBlock](../functions/runBlock.md); use with `generate: true` for
 builder flows or pass via [RunBlockOpts.blockAccessList](RunBlockOpts.md#blockaccesslist) for validation.
 
 #### Remarks

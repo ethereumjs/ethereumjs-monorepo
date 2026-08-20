@@ -25,16 +25,16 @@ Gas cost for initcode size analysis will still be charged. Use with caution.
 
 ### common?
 
-> `optional` **common?**: `Common`
+> `optional` **common?**: [`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 Defined in: [types.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L71)
 
-A Common object defining the chain and hardfork for the transaction.
+A [@ethereumjs/common!Common](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md) object defining the chain and hardfork for the transaction.
 
 Object will be internally copied so that tx behavior don't incidentally
 change on future HF changes.
 
-Default: Common object set to `mainnet` and the default hardfork as defined in the Common class.
+Default: [@ethereumjs/common!Common](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md) object set to `mainnet` and the default hardfork as defined in the [@ethereumjs/common!Common](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md) class.
 
 Current default hardfork: `istanbul`
 

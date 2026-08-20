@@ -327,7 +327,7 @@ export const validateNoLeadingZeroes = (values: { [key: string]: Uint8Array | un
 }
 
 /**
- * Converts a {@link bigint} to a `0x` prefixed hex string
+ * Converts a `bigint` to a `0x` prefixed hex string
  * @param num the bigint to convert
  */
 export const bigIntToHex = (num: bigint): PrefixedHexString => {
@@ -427,10 +427,11 @@ export const concatBytes = (...arrays: Uint8Array[]): Uint8Array<ArrayBuffer> =>
 }
 
 /**
- * @notice Convert a Uint8Array to a 32-bit integer
- * @param bytes The input Uint8Array from which to read the 32-bit integer.
- * @param littleEndian True for little-endian, undefined or false for big-endian.
- * @returns The 32-bit integer read from the input Uint8Array.
+ * Convert a Uint8Array to a 32-bit integer.
+ *
+ * @param bytes The input bytes from which to read the integer
+ * @param littleEndian True for little-endian, false for big-endian (default)
+ * @returns The 32-bit integer
  */
 export function bytesToInt32(bytes: Uint8Array, littleEndian: boolean = false): number {
   if (bytes.length < 4) {
@@ -441,10 +442,11 @@ export function bytesToInt32(bytes: Uint8Array, littleEndian: boolean = false): 
 }
 
 /**
- * @notice Convert a Uint8Array to a 64-bit bigint
- * @param bytes The input Uint8Array from which to read the 64-bit bigint.
- * @param littleEndian True for little-endian, undefined or false for big-endian.
- * @returns The 64-bit bigint read from the input Uint8Array.
+ * Convert a Uint8Array to a 64-bit bigint.
+ *
+ * @param bytes The input bytes from which to read the bigint
+ * @param littleEndian True for little-endian, false for big-endian (default)
+ * @returns The 64-bit bigint
  */
 export function bytesToBigInt64(bytes: Uint8Array, littleEndian: boolean = false): bigint {
   if (bytes.length < 8) {
@@ -455,10 +457,10 @@ export function bytesToBigInt64(bytes: Uint8Array, littleEndian: boolean = false
 }
 
 /**
- * @notice Convert a 32-bit integer to a Uint8Array.
- * @param value The 32-bit integer to convert.
- * @param littleEndian True for little-endian, undefined or false for big-endian.
- * @returns A Uint8Array of length 4 containing the integer.
+ * Convert a 32-bit integer to an 8-byte Uint8Array.
+ *
+ * @param value The 32-bit integer to convert
+ * @param littleEndian True for little-endian, false for big-endian (default)
  */
 export function int32ToBytes(value: number, littleEndian: boolean = false): Uint8Array {
   const buffer = new ArrayBuffer(4)
@@ -468,10 +470,10 @@ export function int32ToBytes(value: number, littleEndian: boolean = false): Uint
 }
 
 /**
- * @notice Convert a 64-bit bigint to a Uint8Array.
- * @param value The 64-bit bigint to convert.
- * @param littleEndian True for little-endian, undefined or false for big-endian.
- * @returns A Uint8Array of length 8 containing the bigint.
+ * Convert a 64-bit bigint to an 8-byte Uint8Array.
+ *
+ * @param value The 64-bit bigint to convert
+ * @param littleEndian True for little-endian, false for big-endian (default)
  */
 export function bigInt64ToBytes(value: bigint, littleEndian: boolean = false): Uint8Array {
   const buffer = new ArrayBuffer(8)
@@ -483,11 +485,10 @@ export function bigInt64ToBytes(value: bigint, littleEndian: boolean = false): U
 export { utf8ToBytes } from '@noble/hashes/utils.js'
 
 /**
- * @notice Converts a Uint8Array to a UTF-8 string.
- * Implementation copied from ethereum-cryptography https://github.com/ethereum/js-ethereum-cryptography/blob/31f980b2847545d33268f2510ba38a3836202a44/src/utils.ts#L22-L27
- * @param bytes - The input Uint8Array to convert.
- * @returns The UTF-8 string.
- * @throws If input triggers TypeError If the input is not a Uint8Array.
+ * Convert a Uint8Array to a UTF-8 string.
+ *
+ * @param bytes The input bytes to decode
+ * @throws If the input is not a Uint8Array
  */
 export function bytesToUtf8(bytes: Uint8Array): string {
   if (!(bytes instanceof Uint8Array)) {
@@ -497,11 +498,7 @@ export function bytesToUtf8(bytes: Uint8Array): string {
 }
 
 /**
- * @notice Compares two Uint8Arrays and returns true if they are equal.
- * Implementation copied from ethereum-cryptography https://github.com/ethereum/js-ethereum-cryptography/blob/main/src/utils.ts#L35-L45
- * @param a - The first Uint8Array to compare.
- * @param b - The second Uint8Array to compare.
- * @returns True if the Uint8Arrays are equal, false otherwise.
+ * Compare two Uint8Arrays for byte-wise equality.
  */
 export function equalsBytes(a: Uint8Array, b: Uint8Array): boolean {
   if (a.length !== b.length) {

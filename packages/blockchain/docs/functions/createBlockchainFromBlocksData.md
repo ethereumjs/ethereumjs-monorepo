@@ -18,7 +18,7 @@ Initialize a blockchain and append a sequence of blocks from plain data.
 
 `BlockData`[]
 
-Blocks readable by createBlock
+Blocks readable by [createBlock](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/functions/createBlock.md)
 
 ### opts?
 

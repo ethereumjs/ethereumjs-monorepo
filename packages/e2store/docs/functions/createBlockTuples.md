@@ -16,7 +16,7 @@ Builds era1 block tuples and cumulative header records from execution-layer bloc
 
 ### blocks
 
-`Block`[]
+[`Block`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/Block.md)[]
 
 ### blockReceipts
 

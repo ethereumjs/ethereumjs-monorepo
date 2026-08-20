@@ -120,7 +120,7 @@ the remaining gas in the block (EIP-8037: per-dimension remaining).
 
 ### build()
 
-> **build**(`sealOpts?`): `Promise`\<\{ `block`: `Block`; `blockLevelAccessList`: `BlockLevelAccessList` \| `undefined`; `requests`: `CLRequest`\<`CLRequestType`\>[] \| `undefined`; \}\>
+> **build**(`sealOpts?`): `Promise`\<\{ `block`: [`Block`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/Block.md); `blockLevelAccessList`: `BlockLevelAccessList` \| `undefined`; `requests`: `CLRequest`\<`CLRequestType`\>[] \| `undefined`; \}\>
 
 Defined in: [vm/src/buildBlock.ts:396](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L396)
 
@@ -145,7 +145,7 @@ lifecycle of a pending block so need to be provided only when the block is final
 
 #### Returns
 
-`Promise`\<\{ `block`: `Block`; `blockLevelAccessList`: `BlockLevelAccessList` \| `undefined`; `requests`: `CLRequest`\<`CLRequestType`\>[] \| `undefined`; \}\>
+`Promise`\<\{ `block`: [`Block`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/Block.md); `blockLevelAccessList`: `BlockLevelAccessList` \| `undefined`; `requests`: `CLRequest`\<`CLRequestType`\>[] \| `undefined`; \}\>
 
 ***
 

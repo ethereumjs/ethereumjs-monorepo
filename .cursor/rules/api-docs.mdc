@@ -13,6 +13,7 @@ Types come from TypeScript signatures — comments explain **meaning**, not type
 
 - One-line **summary** (required): what it does, not how.
 - Prefer `{@link Symbol}` for cross-references (`createLegacyTx`, `StateManagerInterface`).
+- **Cross-package links:** TypeDoc runs per package. Bare `{@link Common}` fails outside `@ethereumjs/common`. Use package-qualified links: `{@link @ethereumjs/common!Common}`, `{@link @ethereumjs/block!createBlockFromBytesArray}`. URLs are mapped in [`config/typedoc-external-links.mjs`](../../config/typedoc-external-links.mjs) (wired via [`config/typedoc.mjs`](../../config/typedoc.mjs)).
 - v10 factories: document module-level `createX` functions; deprecated class constructors point to them via `@deprecated` + `@see`.
 
 ## `@param` / `@returns`

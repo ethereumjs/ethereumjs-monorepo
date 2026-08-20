@@ -7,6 +7,7 @@
 ## Classes
 
 - [BlockBuilder](classes/BlockBuilder.md)
+- [Bloom](classes/Bloom.md)
 - [VM](classes/VM.md)
 
 ## Interfaces

@@ -16,7 +16,7 @@ Builds an EIP-7708 burn log (LOG2) for an account balance removed on selfdestruc
 
 ### account
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ### value
 

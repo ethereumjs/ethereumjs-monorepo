@@ -3,7 +3,7 @@ import { BIGINT_0 } from '@ethereumjs/util'
 import type { Common } from '@ethereumjs/common'
 
 /**
- * Returns the active EIP-8037 cost per state byte from {@link Common}.
+ * Returns the active EIP-8037 cost per state byte from {@link @ethereumjs/common!Common}.
  *
  * Under v7 fixtures this is the flat `costPerStateByte` parameter; the
  * optional block gas limit is reserved for a future derived formula.

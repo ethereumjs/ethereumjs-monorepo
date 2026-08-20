@@ -12,17 +12,17 @@ Defined in: [opcodes/codes.ts:431](https://github.com/ethereumjs/ethereumjs-mono
 
 Returns opcode handlers and gas tables for the active hardfork and EIPs.
 
-Merges fork-specific and EIP-specific opcode overrides with optional CustomOpcode entries.
+Merges fork-specific and EIP-specific opcode overrides with optional [CustomOpcode](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/docs/type-aliases/CustomOpcode.md) entries.
 
 ## Parameters
 
 ### common
 
-`Common`
+[`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 ### customOpcodes?
 
-`CustomOpcode`[]
+[`CustomOpcode`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/docs/type-aliases/CustomOpcode.md)[]
 
 ## Returns
 

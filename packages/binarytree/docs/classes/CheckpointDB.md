@@ -12,7 +12,7 @@ Checkpoint-aware DB wrapper with optional LRU node cache for binary trees.
 
 ## Implements
 
-- `DB`
+- [`DB`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/interfaces/DB.md)
 
 ## Constructors
 
@@ -94,7 +94,7 @@ Defined in: [db/checkpoint.ts:16](https://github.com/ethereumjs/ethereumjs-monor
 
 ### db
 
-> **db**: `DB`\<`string`, `string` \| `Uint8Array`\<`ArrayBufferLike`\>\>
+> **db**: [`DB`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/interfaces/DB.md)\<`string`, `string` \| `Uint8Array`\<`ArrayBufferLike`\>\>
 
 Defined in: [db/checkpoint.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/db/checkpoint.ts#L17)
 

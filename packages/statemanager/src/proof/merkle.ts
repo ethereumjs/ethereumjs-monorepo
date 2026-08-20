@@ -153,10 +153,11 @@ export async function fromMerkleStateProof(
 }
 
 /**
- * Add proof(s) into an already existing trie
+ * Add proof(s) into an already existing trie.
+ *
  * @param proof The proof(s) retrieved from `getProof`
- * @param verifyRoot verify that all proof root nodes match statemanager's stateroot - should be
- * set to `false` when constructing a state manager where the underlying trie has proof nodes from different state roots
+ * @param safe When `false`, skip verifying that proof roots match the trie root (useful when
+ * merging proofs from different state roots)
  */
 export async function addMerkleStateProofData(
   sm: MerkleStateManager,

@@ -10,7 +10,7 @@
 
 Defined in: [logger.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L12)
 
-Aggregated opcode or precompile timing row for emitEVMProfile.
+Aggregated opcode or precompile timing row for [@ethereumjs/vm!emitEVMProfile](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/docs/functions/emitEVMProfile.md).
 
 ## Properties
 

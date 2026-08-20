@@ -32,7 +32,7 @@ Defined in: [message.ts:87](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 ### \_codeAddress?
 
-> `optional` **\_codeAddress?**: `Address`
+> `optional` **\_codeAddress?**: [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Defined in: [message.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L57)
 
@@ -58,7 +58,7 @@ List of versioned hashes if message is a blob transaction in the outer VM
 
 ### caller
 
-> **caller**: `Address`
+> **caller**: [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Defined in: [message.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L50)
 
@@ -206,7 +206,7 @@ Selfdestructed addresses mapped to their beneficiary.
 
 ### to?
 
-> `optional` **to?**: `Address`
+> `optional` **to?**: [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Defined in: [message.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L48)
 
@@ -224,7 +224,7 @@ Defined in: [message.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 #### Get Signature
 
-> **get** **codeAddress**(): `Address`
+> **get** **codeAddress**(): [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Defined in: [message.ts:114](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L114)
 
@@ -232,4 +232,4 @@ Note: should only be called in instances where `_codeAddress` or `to` is defined
 
 ##### Returns
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)

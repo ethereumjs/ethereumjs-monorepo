@@ -28,7 +28,7 @@ Read-through caches for account, code, and storage.
 
 ### common?
 
-> `optional` **common?**: `Common`
+> `optional` **common?**: [`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 Defined in: [types.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L14)
 
@@ -62,8 +62,8 @@ Node hash function (defaults to the tree's hash function).
 
 ### tree?
 
-> `optional` **tree?**: `BinaryTree`
+> `optional` **tree?**: [`BinaryTree`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/docs/classes/BinaryTree.md)
 
 Defined in: [types.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L81)
 
-Pre-existing BinaryTree instance.
+Pre-existing [BinaryTree](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/docs/classes/BinaryTree.md) instance.

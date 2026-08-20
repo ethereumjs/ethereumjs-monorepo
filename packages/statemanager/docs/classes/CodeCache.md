@@ -203,7 +203,7 @@ Marks code as deleted in the cache.
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Account address for which code is being fetched.
 
@@ -240,7 +240,7 @@ Returns the queried code or undefined if it doesn't exist.
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Account address for which code is being fetched.
 
@@ -262,7 +262,7 @@ Puts code into the cache under its hash.
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Address of account code is being modified for.
 

@@ -10,7 +10,7 @@
 
 Defined in: [eip8037.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/eip8037.ts#L13)
 
-Returns the active EIP-8037 cost per state byte from Common.
+Returns the active EIP-8037 cost per state byte from [@ethereumjs/common!Common](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md).
 
 Under v7 fixtures this is the flat `costPerStateByte` parameter; the
 optional block gas limit is reserved for a future derived formula.
@@ -19,7 +19,7 @@ optional block gas limit is reserved for a future derived formula.
 
 ### common
 
-`Common`
+[`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 ### \_blockGasLimit?
 

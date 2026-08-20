@@ -35,7 +35,7 @@ Defaults used for any values not provided.
 
 ### parentBlock
 
-> **parentBlock**: `Block`
+> **parentBlock**: [`Block`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/Block.md)
 
 Defined in: [vm/src/types.ts:225](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L225)
 

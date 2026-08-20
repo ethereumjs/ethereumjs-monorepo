@@ -32,7 +32,7 @@ Default: false
 
 ### common?
 
-> `optional` **common?**: `Common`
+> `optional` **common?**: [`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 Defined in: [types.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L14)
 
@@ -76,8 +76,8 @@ Default: false (for backwards compatibility reasons)
 
 ### trie?
 
-> `optional` **trie?**: `MerklePatriciaTrie`
+> `optional` **trie?**: [`MerklePatriciaTrie`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/docs/classes/MerklePatriciaTrie.md)
 
 Defined in: [types.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L39)
 
-A MerklePatriciaTrie instance
+A [MerklePatriciaTrie](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/docs/classes/MerklePatriciaTrie.md) instance

@@ -12,4 +12,4 @@ Defined in: [params.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 Transaction-related EIP parameters keyed by EIP number.
 
-Passed to Common via [TxOptions.params](../interfaces/TxOptions.md#params) to override gas costs and limits.
+Passed to [@ethereumjs/common!Common](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md) via [TxOptions.params](../interfaces/TxOptions.md#params) to override gas costs and limits.

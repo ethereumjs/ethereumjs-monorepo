@@ -36,7 +36,7 @@ type JournalHeight = number
 /**
  * Tracks warm addresses and storage slots for EIP-2929 access lists and journal checkpoints.
  *
- * Wraps the underlying {@link StateManagerInterface} for transactional account updates.
+ * Wraps the underlying {@link @ethereumjs/common!StateManagerInterface} for transactional account updates.
  */
 export class Journal {
   private stateManager: StateManagerInterface

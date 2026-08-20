@@ -24,7 +24,7 @@ Defined in: [types.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 ##### data
 
-`Block`[]
+[`Block`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/Block.md)[]
 
 ##### resolve?
 

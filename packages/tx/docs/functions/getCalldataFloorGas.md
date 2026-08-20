@@ -27,7 +27,7 @@ Returns `0` when EIP-7623 is not active.
 
 ### sender?
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ## Returns
 

@@ -46,7 +46,7 @@ The `block` the `tx` belongs to. If omitted a default blank block will be used.
 
 ### caller?
 
-> `optional` **caller?**: `Address`
+> `optional` **caller?**: [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Defined in: [types.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L69)
 
@@ -144,7 +144,7 @@ If the call should be executed statically. Defaults to false.
 
 ### origin?
 
-> `optional` **origin?**: `Address`
+> `optional` **origin?**: [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Defined in: [types.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L65)
 
@@ -182,7 +182,7 @@ Selfdestructed addresses mapped to their beneficiary. Defaults to the empty map.
 
 ### to?
 
-> `optional` **to?**: `Address`
+> `optional` **to?**: [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Defined in: [types.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L101)
 

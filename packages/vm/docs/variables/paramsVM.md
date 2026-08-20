@@ -10,4 +10,4 @@
 
 Defined in: [vm/src/params.ts:5](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/params.ts#L5)
 
-Default VM parameters keyed by EIP, passed to Common.updateParams.
+Default VM parameters keyed by EIP, passed to [@ethereumjs/common!Common](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md) via `opts.params`.

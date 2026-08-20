@@ -53,7 +53,7 @@ The hash of the block to be deleted
 
 ### getBlock()
 
-> **getBlock**(`blockId`): `Promise`\<`Block`\>
+> **getBlock**(`blockId`): `Promise`\<[`Block`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/Block.md)\>
 
 Defined in: [types.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L35)
 
@@ -67,13 +67,13 @@ Returns a block by its hash or number.
 
 #### Returns
 
-`Promise`\<`Block`\>
+`Promise`\<[`Block`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/Block.md)\>
 
 ***
 
 ### getCanonicalHeadBlock()
 
-> **getCanonicalHeadBlock**(): `Promise`\<`Block`\>
+> **getCanonicalHeadBlock**(): `Promise`\<[`Block`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/Block.md)\>
 
 Defined in: [types.ts:88](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L88)
 
@@ -81,13 +81,13 @@ Returns the latest full block in the canonical chain.
 
 #### Returns
 
-`Promise`\<`Block`\>
+`Promise`\<[`Block`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/Block.md)\>
 
 ***
 
 ### getIteratorHead()
 
-> **getIteratorHead**(`name?`): `Promise`\<`Block`\>
+> **getIteratorHead**(`name?`): `Promise`\<[`Block`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/Block.md)\>
 
 Defined in: [types.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L70)
 
@@ -103,7 +103,7 @@ Optional name of the iterator head (default: 'vm')
 
 #### Returns
 
-`Promise`\<`Block`\>
+`Promise`\<[`Block`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/Block.md)\>
 
 ***
 
@@ -183,7 +183,7 @@ Adds a block to the blockchain.
 
 ##### block
 
-`Block`
+[`Block`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/Block.md)
 
 The block to be added to the blockchain.
 
@@ -248,7 +248,7 @@ Validates a block header, throwing if invalid. It is being validated against the
 
 ##### header
 
-`BlockHeader`
+[`BlockHeader`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/BlockHeader.md)
 
 header to be validated
 

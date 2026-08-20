@@ -49,7 +49,7 @@ Defined in: [packages/devp2p/src/rlpx/peer.ts:79](https://github.com/ethereumjs/
 
 ### common
 
-> **common**: `Common`
+> **common**: [`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 Defined in: [packages/devp2p/src/rlpx/peer.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/peer.ts#L81)
 

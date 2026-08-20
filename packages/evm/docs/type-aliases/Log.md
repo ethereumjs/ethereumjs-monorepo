@@ -13,7 +13,7 @@ Defined in: [types.ts:578](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 Log emitted during EVM execution.
 
 Tuple of `[emitterAddress, topics, data]` — the same shape used in transaction receipts
-(`receipt.logs`) and JSON-RPC log objects (before field renaming). See the
-[Event logs](./README.md#event-logs) section in this package and
+(`receipt.logs`) and JSON-RPC log objects (before field renaming). See the package README
+section on event logs and
 [Receipts and event logs](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#receipts-and-event-logs)
 in `@ethereumjs/vm`.

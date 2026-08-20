@@ -65,7 +65,7 @@ import type { BinaryTreeState, StatefulBinaryTreeStateManagerOpts } from './type
 const ZEROVALUE = '0x0000000000000000000000000000000000000000000000000000000000000000'
 
 /**
- * {@link StateManagerInterface} backed by an EIP-7864 {@link BinaryTree}.
+ * {@link @ethereumjs/common!StateManagerInterface} backed by an EIP-7864 {@link @ethereumjs/binarytree!BinaryTree}.
  *
  * Supports execution witnesses, binary-tree access lists, and checkpointing for VM use.
  */

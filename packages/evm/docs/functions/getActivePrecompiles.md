@@ -18,7 +18,7 @@ Custom additions override built-ins at the same address; deletions set the addre
 
 ### common
 
-`Common`
+[`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 ### customPrecompiles?
 

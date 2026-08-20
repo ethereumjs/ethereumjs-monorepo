@@ -108,7 +108,7 @@ Defined in: [cache/caches.ts:78](https://github.com/ethereumjs/ethereumjs-monore
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Returns
 

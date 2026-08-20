@@ -104,7 +104,7 @@ export interface GenesisOptions {
   genesisBlock?: Block
 
   /**
-   * If you are using a custom chain {@link Common}, pass the genesis state.
+   * If you are using a custom chain {@link @ethereumjs/common!Common}, pass the genesis state.
    *
    * Pattern 1 (with genesis state see {@link GenesisState} for format):
    *
@@ -115,7 +115,7 @@ export interface GenesisOptions {
    * ```
    *
    * Pattern 2 (with complex genesis state, containing contract accounts and storage).
-   * Note that in {@link AccountState} there are two
+   * Note that in {@link @ethereumjs/common!AccountState} there are two
    * accepted types. This allows to easily insert accounts in the genesis state:
    *
    * A complex genesis state with Contract and EoA states would have the following format:
@@ -145,7 +145,7 @@ export type ConsensusDict = {
  */
 export interface BlockchainOptions extends GenesisOptions {
   /**
-   * Specify the chain and hardfork by passing a {@link Common} instance.
+   * Specify the chain and hardfork by passing a {@link @ethereumjs/common!Common} instance.
    *
    * If not provided this defaults to chain `mainnet` and hardfork `chainstart`
    *
@@ -159,7 +159,7 @@ export interface BlockchainOptions extends GenesisOptions {
    * threshold (merge HF) the calculated TD is additionally taken into account
    * for HF determination.
    *
-   * Default: `false` (HF is set to whatever default HF is set by the {@link Common} instance)
+   * Default: `false` (HF is set to whatever default HF is set by the {@link @ethereumjs/common!Common} instance)
    */
   hardforkByHeadBlockNumber?: boolean
 

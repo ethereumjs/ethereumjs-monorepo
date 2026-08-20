@@ -16,7 +16,7 @@ Low-level binary-tree access record before normalization.
 
 ### address
 
-> **address**: `Address`
+> **address**: [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Defined in: [interfaces.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L91)
 

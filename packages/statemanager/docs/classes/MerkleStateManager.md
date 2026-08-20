@@ -8,7 +8,7 @@
 
 Defined in: [merkleStateManager.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L64)
 
-Default StateManagerInterface implementation for the VM.
+Default [@ethereumjs/common!StateManagerInterface](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/StateManagerInterface.md) implementation for the VM.
 
 The state manager abstracts from the underlying data store
 by providing higher level access to accounts, contract code
@@ -24,7 +24,7 @@ for many basic use cases.
 
 ## Implements
 
-- `StateManagerInterface`
+- [`StateManagerInterface`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/StateManagerInterface.md)
 
 ## Constructors
 
@@ -50,7 +50,7 @@ Instantiate a Merkle-backed state manager.
 
 ### common
 
-> `readonly` **common**: `Common`
+> `readonly` **common**: [`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 Defined in: [merkleStateManager.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L76)
 
@@ -74,7 +74,7 @@ Defined in: [merkleStateManager.ts:68](https://github.com/ethereumjs/ethereumjs-
 
 Defined in: [merkleStateManager.ts:444](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L444)
 
-Checkpoints the current state of this StateManagerInterface instance.
+Checkpoints the current state of this [@ethereumjs/common!StateManagerInterface](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/StateManagerInterface.md) instance.
 State changes that follow can then be committed by calling
 `commit` or `reverted` by calling rollback.
 
@@ -118,7 +118,7 @@ Clears all storage entries for the account corresponding to `address`.
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Address to clear the storage of
 
@@ -195,7 +195,7 @@ Deletes an account from state under the provided `address`.
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Address of the account which should be deleted
 
@@ -221,7 +221,7 @@ Dumps the RLP-encoded storage values for an `account` specified by `address`.
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Account whose storage should be dumped
 
@@ -239,7 +239,7 @@ Hex-keyed map of storage slots (values as unprefixed hex strings)
 
 ### dumpStorageRange()
 
-> **dumpStorageRange**(`address`, `startKey`, `limit`): `Promise`\<`StorageRange`\>
+> **dumpStorageRange**(`address`, `startKey`, `limit`): `Promise`\<[`StorageRange`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/StorageRange.md)\>
 
 Defined in: [merkleStateManager.ts:603](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L603)
 
@@ -250,7 +250,7 @@ starting from `startKey` or greater.
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 The address of the `account` to return storage for.
 
@@ -270,9 +270,9 @@ Maximum number of storage entries to return
 
 #### Returns
 
-`Promise`\<`StorageRange`\>
+`Promise`\<[`StorageRange`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/StorageRange.md)\>
 
-StorageRange with at most `limit` entries and optional `nextKey`
+[@ethereumjs/common!StorageRange](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/StorageRange.md) with at most `limit` entries and optional `nextKey`
 
 #### Implementation of
 
@@ -333,7 +333,7 @@ Gets the account associated with `address` or `undefined` if account does not ex
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Address of the `account` to get
 
@@ -388,7 +388,7 @@ Gets the code corresponding to the provided `address`.
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Address to get the code for
 
@@ -414,7 +414,7 @@ Defined in: [merkleStateManager.ts:247](https://github.com/ethereumjs/ethereumjs
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Returns
 
@@ -461,7 +461,7 @@ the shortest representation of the stored value.
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Address of the account to get the storage for
 
@@ -523,7 +523,7 @@ fields, then saves the account into state. Account fields can include
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Address of the account to modify
 
@@ -555,7 +555,7 @@ Saves an account into state under the provided `address`.
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Address under which to store `account`
 
@@ -588,7 +588,7 @@ corresponding to `address` to reference this.
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Address of the `account` to add the `code` for
 
@@ -621,7 +621,7 @@ corresponding to `address` at the provided `key`.
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Address to set a storage value for
 

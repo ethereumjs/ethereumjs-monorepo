@@ -23,7 +23,7 @@ Verifies the signature of the block (last 65 bytes of extraData field)
 
 ### signerList
 
-`Address`[]
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)[]
 
 ## Returns
 

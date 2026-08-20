@@ -128,6 +128,8 @@ The key as a `TValue`
 
 `TValue`
 
+The value to be stored
+
 ##### opts?
 
 [`EncodingOpts`](../type-aliases/EncodingOpts.md)

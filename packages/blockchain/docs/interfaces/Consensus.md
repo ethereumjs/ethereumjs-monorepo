@@ -32,7 +32,7 @@ Initialize genesis for consensus mechanism
 
 ##### genesisBlock
 
-`Block`
+[`Block`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/Block.md)
 
 genesis block
 
@@ -54,19 +54,19 @@ Update consensus on new block
 
 ##### block
 
-`Block`
+[`Block`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/Block.md)
 
 new block
 
 ##### commonAncestor?
 
-`BlockHeader`
+[`BlockHeader`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/BlockHeader.md)
 
 common ancestor block header (optional)
 
 ##### ancientHeaders?
 
-`BlockHeader`[]
+[`BlockHeader`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/BlockHeader.md)[]
 
 array of ancestor block headers (optional)
 
@@ -108,7 +108,7 @@ Validate block consensus parameters
 
 ##### block
 
-`Block`
+[`Block`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/Block.md)
 
 block to be validated
 
@@ -130,7 +130,7 @@ Validates header difficulty against parent and consensus rules.
 
 ##### header
 
-`BlockHeader`
+[`BlockHeader`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/BlockHeader.md)
 
 #### Returns
 

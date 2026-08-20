@@ -527,7 +527,7 @@ export class BlockBuilder {
 /**
  * Incrementally assembles a block by executing transactions against a {@link VM}.
  *
- * Opens a {@link StateManagerInterface} checkpoint; commits on {@link BlockBuilder.build}
+ * Opens a {@link @ethereumjs/common!StateManagerInterface} checkpoint; commits on {@link BlockBuilder.build}
  * or reverts with {@link BlockBuilder.revert}. See {@link BuildBlockOpts} for parent block
  * and header defaults.
  *

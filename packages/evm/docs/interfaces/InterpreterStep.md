@@ -22,7 +22,7 @@ Defined in: [interpreter.ts:195](https://github.com/ethereumjs/ethereumjs-monore
 
 ### address
 
-> **address**: `Address`
+> **address**: [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Defined in: [interpreter.ts:196](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L196)
 
@@ -30,7 +30,7 @@ Defined in: [interpreter.ts:196](https://github.com/ethereumjs/ethereumjs-monore
 
 ### codeAddress
 
-> **codeAddress**: `Address`
+> **codeAddress**: [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Defined in: [interpreter.ts:199](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L199)
 
@@ -154,7 +154,7 @@ Defined in: [interpreter.ts:185](https://github.com/ethereumjs/ethereumjs-monore
 
 ### stateManager
 
-> **stateManager**: `StateManagerInterface`
+> **stateManager**: [`StateManagerInterface`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/StateManagerInterface.md)
 
 Defined in: [interpreter.ts:184](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L184)
 

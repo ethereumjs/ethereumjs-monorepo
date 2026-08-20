@@ -20,7 +20,7 @@ Fetch an EIP-1186 proof from the RPC provider backing a [RPCStateManager](../cla
 
 ### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Account to prove
 

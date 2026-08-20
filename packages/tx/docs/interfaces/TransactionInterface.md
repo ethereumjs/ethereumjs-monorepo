@@ -33,7 +33,7 @@ Defined in: [types.ts:238](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 ### common
 
-> `readonly` **common**: `Common`
+> `readonly` **common**: [`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 Defined in: [types.ts:229](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L229)
 
@@ -81,7 +81,7 @@ Defined in: [types.ts:237](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 ### to?
 
-> `readonly` `optional` **to?**: `Address`
+> `readonly` `optional` **to?**: [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Defined in: [types.ts:232](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L232)
 
@@ -238,13 +238,13 @@ Does not include EIP-8037 first-touch state gas.
 
 ### getSenderAddress()
 
-> **getSenderAddress**(): `Address`
+> **getSenderAddress**(): [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Defined in: [types.ts:261](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L261)
 
 #### Returns
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ***
 

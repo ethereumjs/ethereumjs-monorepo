@@ -30,7 +30,7 @@ Defined in: [precompiles/types.ts:15](https://github.com/ethereumjs/ethereumjs-m
 
 ### common
 
-> **common**: `Common`
+> **common**: [`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 Defined in: [precompiles/types.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/types.ts#L14)
 

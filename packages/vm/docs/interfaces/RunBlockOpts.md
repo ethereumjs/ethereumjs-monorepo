@@ -14,11 +14,11 @@ Options for running a block.
 
 ### block
 
-> **block**: `Block`
+> **block**: [`Block`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/Block.md)
 
 Defined in: [vm/src/types.ts:264](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L264)
 
-The Block to process
+The [Block](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/Block.md) to process
 
 ***
 
@@ -96,7 +96,7 @@ Defined in: [vm/src/types.ts:318](https://github.com/ethereumjs/ethereumjs-monor
 Set the hardfork either by timestamp (for HFs from Shanghai onwards) or by block number
 for older Hfs.
 
-Default: `false` (HF is set to whatever default HF is set by the Common instance)
+Default: `false` (HF is set to whatever default HF is set by the [@ethereumjs/common!Common](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md) instance)
 
 ***
 

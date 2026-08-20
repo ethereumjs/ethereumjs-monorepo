@@ -54,7 +54,7 @@ The blockchain the VM operates on
 
 ### common
 
-> `readonly` **common**: `Common`
+> `readonly` **common**: [`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 Defined in: [vm/src/vm.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L32)
 
@@ -80,7 +80,7 @@ The EVM used for bytecode execution
 
 ### stateManager
 
-> `readonly` **stateManager**: `StateManagerInterface`
+> `readonly` **stateManager**: [`StateManagerInterface`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/StateManagerInterface.md)
 
 Defined in: [vm/src/vm.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L25)
 

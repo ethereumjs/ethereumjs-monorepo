@@ -12,4 +12,4 @@ Defined in: [params.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 Block-related EIP parameters keyed by EIP number.
 
-Passed to Common via [BlockOptions.params](../interfaces/BlockOptions.md#params) to override gas limits and header rules.
+Passed to [@ethereumjs/common!Common](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md) via [BlockOptions.params](../interfaces/BlockOptions.md#params) to override gas limits and header rules.

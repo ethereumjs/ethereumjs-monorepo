@@ -16,7 +16,7 @@ Binary-tree access event including address and chunk key.
 
 ### address
 
-> **address**: `Address`
+> **address**: [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ### chunkKey
 

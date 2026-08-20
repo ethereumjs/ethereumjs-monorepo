@@ -59,12 +59,12 @@ export const Capability = {
  */
 export interface TxOptions {
   /**
-   * A {@link Common} object defining the chain and hardfork for the transaction.
+   * A {@link @ethereumjs/common!Common} object defining the chain and hardfork for the transaction.
    *
    * Object will be internally copied so that tx behavior don't incidentally
    * change on future HF changes.
    *
-   * Default: {@link Common} object set to `mainnet` and the default hardfork as defined in the {@link Common} class.
+   * Default: {@link @ethereumjs/common!Common} object set to `mainnet` and the default hardfork as defined in the {@link @ethereumjs/common!Common} class.
    *
    * Current default hardfork: `istanbul`
    */
@@ -561,7 +561,7 @@ type FeeMarketEIP1559TxValuesArray = [
 ]
 
 /**
- * Bytes values array for a {@link EOACode7702Transaction}
+ * Bytes values array for a {@link EOACode7702Tx}
  */
 type EOACode7702TxValuesArray = [
   Uint8Array,

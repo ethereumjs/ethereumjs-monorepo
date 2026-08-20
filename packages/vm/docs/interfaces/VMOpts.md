@@ -38,17 +38,17 @@ Default: `false`
 
 Defined in: [vm/src/types.ts:134](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L134)
 
-A Blockchain object for storing/retrieving blocks
+A [@ethereumjs/blockchain!Blockchain](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/docs/classes/Blockchain.md) object for storing/retrieving blocks
 
 ***
 
 ### common?
 
-> `optional` **common?**: `Common`
+> `optional` **common?**: [`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 Defined in: [vm/src/types.ts:126](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L126)
 
-Use a Common instance
+Use a [@ethereumjs/common!Common](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md) instance
 if you want to change the chain setup.
 
 ### Possible Values
@@ -138,14 +138,14 @@ for older Hfs.
 Additionally it is possible to pass in a specific TD value to support live-Merge-HF
 transitions. Note that this should only be needed in very rare and specific scenarios.
 
-Default: `false` (HF is set to whatever default HF is set by the Common instance)
+Default: `false` (HF is set to whatever default HF is set by the [@ethereumjs/common!Common](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md) instance)
 
 ***
 
 ### stateManager?
 
-> `optional` **stateManager?**: `StateManagerInterface`
+> `optional` **stateManager?**: [`StateManagerInterface`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/StateManagerInterface.md)
 
 Defined in: [vm/src/types.ts:130](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L130)
 
-A StateManagerInterface implementation to use as the state store
+A [@ethereumjs/common!StateManagerInterface](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/StateManagerInterface.md) implementation to use as the state store

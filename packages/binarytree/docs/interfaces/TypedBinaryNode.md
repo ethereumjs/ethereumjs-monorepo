@@ -22,6 +22,6 @@ Defined in: [node/types.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo
 
 ### 1
 
-> **1**: `StemBinaryNode`
+> **1**: [`StemBinaryNode`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/docs/classes/StemBinaryNode.md)
 
 Defined in: [node/types.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/node/types.ts#L16)

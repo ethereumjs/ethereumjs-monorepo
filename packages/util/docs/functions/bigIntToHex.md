@@ -10,7 +10,7 @@
 
 Defined in: [packages/util/src/bytes.ts:333](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L333)
 
-Converts a bigint to a `0x` prefixed hex string
+Converts a `bigint` to a `0x` prefixed hex string
 
 ## Parameters
 

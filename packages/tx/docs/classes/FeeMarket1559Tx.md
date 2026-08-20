@@ -29,7 +29,7 @@ This constructor takes the values, validates them, assigns them and freezes the 
 
 It is not recommended to use this constructor directly. Instead use
 the module-level factory functions such as [createFeeMarket1559Tx](../functions/createFeeMarket1559Tx.md),
-[createFeeMarket1559TxFromRLP](../functions/createFeeMarket1559TxFromRLP.md), and createFeeMarket1559TxFromBytesArray.
+[createFeeMarket1559TxFromRLP](../functions/createFeeMarket1559TxFromRLP.md), and [create1559FeeMarketTxFromBytesArray](../functions/create1559FeeMarketTxFromBytesArray.md).
 
 #### Parameters
 
@@ -77,7 +77,7 @@ Defined in: [1559/tx.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 ### common
 
-> `readonly` **common**: `Common`
+> `readonly` **common**: [`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 Defined in: [1559/tx.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/1559/tx.ts#L69)
 
@@ -165,7 +165,7 @@ Defined in: [1559/tx.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 ### to?
 
-> `readonly` `optional` **to?**: `Address`
+> `readonly` `optional` **to?**: [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Defined in: [1559/tx.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/1559/tx.ts#L56)
 
@@ -437,7 +437,7 @@ Does not include EIP-8037 first-touch state gas.
 
 ### getSenderAddress()
 
-> **getSenderAddress**(): `Address`
+> **getSenderAddress**(): [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Defined in: [1559/tx.ts:387](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/1559/tx.ts#L387)
 
@@ -445,9 +445,9 @@ Recovers the sender address from the signature.
 
 #### Returns
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
-Sender Address
+Sender [Address](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Implementation of
 
@@ -594,7 +594,7 @@ Format: `[chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, valu
 accessList, signatureYParity, signatureR, signatureS]`
 
 Use [FeeMarket1559Tx.serialize](#serialize) to add a transaction to a block
-with createBlockFromBytesArray.
+with [@ethereumjs/block!createBlockFromBytesArray](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/functions/createBlockFromBytesArray.md).
 
 For an unsigned tx this method uses the empty Bytes values for the
 signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant

@@ -75,7 +75,7 @@ The record components are:
 
 ##### common?
 
-`Common`
+[`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 #### Returns
 
@@ -107,7 +107,7 @@ domains and their public key can be found in: go-ethereum/params/bootnodes
 
 ##### common?
 
-`Common`
+[`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 #### Returns
 

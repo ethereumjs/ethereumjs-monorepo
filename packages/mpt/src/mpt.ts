@@ -765,7 +765,7 @@ export class MerklePatriciaTrie {
    * Persists the modified node stack to the DB. Processes nodes from leaf toward root,
    * wiring each node's references (extension value, branch slot) to its child's hash.
    *
-   * @param key - nibble path that corresponds to the stack
+   * @param pathNibbles - nibble path that corresponds to the stack
    * @param stack - nodes from findPath/update, bottom (leaf) to top (root)
    * @param opStack - put/del operations accumulated by _formatNode
    */

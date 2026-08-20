@@ -25,7 +25,7 @@ export type BranchMPTNodeBranchValue = NodeReferenceOrRawMPTNode | null
 /** EIP-1186 proof: serialized trie nodes from root to leaf. */
 export type Proof = Uint8Array[]
 
-/** Shared subset of {@link Common} used internally by `@ethereumjs/mpt`. */
+/** Shared subset of {@link @ethereumjs/common!Common} used internally by `@ethereumjs/mpt`. */
 export interface CommonInterface {
   customCrypto: {
     keccak256?: (msg: Uint8Array) => Uint8Array

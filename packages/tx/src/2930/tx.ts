@@ -194,7 +194,7 @@ export class AccessList2930Tx
    * signatureYParity (v), signatureR (r), signatureS (s)]`
    *
    * Use {@link AccessList2930Tx.serialize} to add a transaction to a block
-   * with {@link createBlockFromBytesArray}.
+   * with {@link @ethereumjs/block!createBlockFromBytesArray}.
    *
    * For an unsigned tx this method uses the empty Bytes values for the
    * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
@@ -262,7 +262,7 @@ export class AccessList2930Tx
    * Computes a sha3-256 hash of the serialized tx.
    *
    * This method can only be used for signed txs (it throws otherwise).
-   * Use {@link Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
+   * Use {@link AccessList2930Tx.getMessageToSign} to get a tx hash for the purpose of signing.
    * @returns Hash of the serialized signed transaction
    */
   hash(): Uint8Array {

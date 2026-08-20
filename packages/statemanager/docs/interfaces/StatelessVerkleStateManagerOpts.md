@@ -26,7 +26,7 @@ Defined in: [types.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 ### common
 
-> **common**: `Common`
+> **common**: [`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 Defined in: [types.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L72)
 
