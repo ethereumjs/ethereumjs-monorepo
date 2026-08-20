@@ -79,9 +79,23 @@ To focus on a single package (e.g., VM):
 
 #### Overview
 
-Releases are done in sync for all [active packages](./README.md#active-packages) and all libraries are always bumped to a same new version number. Library combinations with matching versions are CI tested and ensured to be compatible with each other.
+Releases are done in sync for all [active packages](./README.md#package-map) and all libraries are always bumped to a same new version number. Library combinations with matching versions are CI tested and ensured to be compatible with each other.
 
 Most release rounds are done as bugfix releases, including releases of non-finalized EIP versions. Minor releases are done for hardfork finalization and otherwise outstanding selected features. Major release rounds are rarely done and are reserved to bundle structural breaking changes which come along significant changes to the API.
+
+#### Branches
+
+| Branch | Release series | Status | Description |
+| ------ | -------------- | ------ | ----------- |
+| [`master`](https://github.com/ethereumjs/ethereumjs-monorepo) | v10 (aligned versioning) | Active | Current working branch |
+| [`maintenance-v8`](https://github.com/ethereumjs/ethereumjs-monorepo/tree/maintenance-v8) | v7 / v8 | Maintenance | Bugfix releases for v8 (v7 included) |
+| [`maintenance-v6`](https://github.com/ethereumjs/ethereumjs-monorepo/tree/maintenance-v6) | v6 | Maintenance | Bugfix releases for v6 |
+
+Breaking releases are mostly done in sync for all libraries (latest exceptions: VM v8, EVM v3). From the spring 2025 series onward, active package versions share the same major number so compatible combinations are easy to spot.
+
+Older release cycles up to VM v7/v8 were named after the `@ethereumjs/vm` version. Open PRs against the current working branch unless you are backporting; if unsure which branch to target, ask on [Discord](https://discord.gg/TNwARpR).
+
+To inspect code for a specific release, use [tags](https://github.com/ethereumjs/ethereumjs-monorepo/tags).
 
 #### Process
 

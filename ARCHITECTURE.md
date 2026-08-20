@@ -11,8 +11,8 @@ relative to the repository root and were verified against the source at the time
 of writing.
 
 > **Deprecated packages**: `@ethereumjs/client`, `@ethereumjs/devp2p` and
-> `@ethereumjs/wallet` are deprecated and no longer updated (see the
-> "Deprecated Packages" section in [README.md](./README.md)). They are not
+> `@ethereumjs/wallet` are deprecated and no longer updated (see the collapsed
+> **Deprecated packages** section in [README.md](./README.md)). They are not
 > covered here.
 
 ## Package Responsibility Matrix

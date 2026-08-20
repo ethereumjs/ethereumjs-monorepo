@@ -4,7 +4,7 @@ Short entrypoint for coding agents in this monorepo. Human documentation lives i
 
 ## Docs
 
-- [README.md](README.md) — packages and setup
+- [README.md](README.md) — monorepo landing page (entry points, package map, quick start)
 - [DEVELOPER.md](DEVELOPER.md) — workspaces, conventions, releases, tooling
 - [ARCHITECTURE.md](ARCHITECTURE.md) — how packages fit together
 - [packages/vm/DEVELOPER.md](packages/vm/DEVELOPER.md) — VM / execution-spec tests
