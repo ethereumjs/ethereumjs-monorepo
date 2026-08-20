@@ -516,29 +516,30 @@ With `VM` v7 a previously needed EEI interface for EVM/VM communication is not n
 
 With `VM` v6 the previously included `StateManager` has been extracted to its own package [@ethereumjs/statemanager](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/statemanager). The `StateManager` package provides a unified state interface and it is now also possible to provide a modified or custom `StateManager` to the VM via the optional `stateManager` constructor option.
 
-### Internal Module Map
+### Layout
 
-The VM is a thin orchestration layer that drives the `EVM` at the transaction and block level. Its core processing functions are free-standing (`runX(vm, opts)`), not methods:
+The VM is a thin orchestration layer that drives the `EVM` at the transaction and block level. Processing functions are free-standing (`runX(vm, opts)`), not methods. Step-by-step `runBlock` flow: [Internal Structure](#internal-structure).
 
-- **`vm.ts`** — the `VM` class: holds the `evm`, `stateManager`, `blockchain`, `common` and `events`, and merges `paramsVM` into `Common`.
-- **`runBlock.ts`** — `runBlock`: block-level processing (pre-state setup, transaction loop via `runTx`, withdrawals, requests, rewards, post-state validation). See [Internal Structure](#internal-structure) below for the step-by-step flow.
-- **`runTx.ts`** — `runTx`: transaction-level rules (nonce/balance/intrinsic-gas checks, EIP-1559/4844/7702 handling, access-list warming), the call into `vm.evm.runCall`, refund/coinbase accounting and receipt generation (`generateTxReceipt`).
-- **`buildBlock.ts`** — `buildBlock` / `BlockBuilder`: incremental block construction for block producers.
-- **`requests.ts`** — consensus-layer request (EIP-7685) extraction.
-- **`bloom/`** — logs-bloom computation.
-- **`params.ts`** — `paramsVM`, merged into `Common` at construction.
-- **`types.ts`** / **`constructors.ts`** — public types/option objects and the `createVM` factory.
+| Module | Role |
+| --- | --- |
+| `vm.ts` | Holds `evm`, `stateManager`, `blockchain`, `common`, `events` |
+| `runBlock.ts` | Block processing (tx loop, withdrawals, requests, rewards, post-state) |
+| `runTx.ts` | Tx rules, `runCall`, refunds, receipts |
+| `buildBlock.ts` | Incremental block construction |
+| `requests.ts` | EIP-7685 request extraction |
+
+Receipts bloom, `paramsVM`, and `createVM` live in `bloom/`, `params.ts`, and `constructors.ts`.
 
 ### Extension Points
 
-The `VM` is customized through `createVM` / `VMOpts` (`src/types.ts:101`); most of its behavior is delegated to injectable collaborators:
+The `VM` is customized through `createVM` / `VMOpts`; most behaviour is delegated to injectable collaborators:
 
-- **Custom `EVM`** — `evm?` (or `evmOpts?`): pass an `EVM` you configured (e.g. with custom opcodes/precompiles — see the [EVM extension points](../evm/README.md#extension-points)). If omitted, the VM creates one.
-- **Custom state manager** — `stateManager?: StateManagerInterface` (`src/types.ts:27`): any `@ethereumjs/statemanager` implementation or your own.
-- **Custom blockchain** — `blockchain?` (`src/types.ts:31`): supplies block-hash lookups for the `BLOCKHASH`/`BLOBHASH` family; defaults to a minimal mock.
-- **Custom `Common`** — `common?` (`src/types.ts:23`): chain/hardfork/EIP configuration, shared with the inner `EVM`.
-- **Custom parameters** — `params?: ParamsDict`: override `paramsVM` values.
-- **Lifecycle hooks** — subscribe to `vm.events` (`beforeBlock`, `afterBlock`, `beforeTx`, `afterTx`) and `vm.evm.events` (`step`, `beforeMessage`, …) for tracing and instrumentation.
+- **Custom `EVM`** — `evm` (or `evmOpts`): pass an `EVM` you configured (for example with custom opcodes or precompiles — see the [EVM extension points](../evm/README.md#extension-points)). If omitted, the VM creates one.
+- **Custom state manager** — `stateManager`: any `StateManagerInterface`.
+- **Custom blockchain** — supplies block-hash lookups for `BLOCKHASH` / `BLOBHASH`; defaults to a minimal mock.
+- **Custom `Common`** — chain / hardfork / EIP configuration, shared with the inner `EVM`.
+- **Custom parameters** — `params`: override `paramsVM` values.
+- **Lifecycle hooks** — subscribe to `vm.events` (`beforeBlock`, `afterBlock`, `beforeTx`, `afterTx`) and `vm.evm.events` (`step`, `beforeMessage`, …) for tracing.
 
 ## Setup
 
@@ -587,7 +588,7 @@ This section is the **canonical overview** for experimental Amsterdam support: w
 | --- | --- | --- | --- |
 | `v10.1.2` | First experimental Amsterdam release: full 9-EIP `Hardfork.Amsterdam` bundle, BAL builder/validator APIs (7928), two-dimensional block gas (8037); passes v700 mixed EST slice. | [tests-bal@v7.1.0](https://github.com/ethereum/execution-specs/releases/tag/tests-bal@v7.1.0) | [BAL devnet-7](https://notes.ethereum.org/@ethpandaops/bal-devnet-7) |
 
-Master currently tracks [tests-glamsterdam-devnet@v7.2.1](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v7.2.1) for the mixed Amsterdam tree. EIP-2780 / EIP-8037: intrinsic regular gas is **state-independent** (`txGas` + recipient/value/log extras + calldata + create access + `perAuthBaseGas`); the calldata floor is anchored on `TX_BASE` + those recipient extras ([execution-specs#3120](https://github.com/ethereum/execution-specs/pull/3120)). Under v7.2.0+, the floor also binds each tx's **block regular-gas** contribution (`max(pre_refund_regular, floor)`). New-account state gas and 7702 `ACCOUNT_WRITE` / auth state are charged at top-frame access (`ACCOUNT_WRITE` counts toward receipt gas). Sender nonce is incremented before that prep layer (create-tx `NEW_ACCOUNT` OOG still bumps nonce). Create-tx `NEW_ACCOUNT` spill into `gas_left` is credited on REVERT so receipt gas can hit the calldata floor. Inner CREATE child OOG onto a balance-only target keeps the spilled `NEW_ACCOUNT` as regular gas (no leftover credit) and exceptional-halts the creating frame.
+Master currently tracks [tests-glamsterdam-devnet@v7.2.1](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v7.2.1) for the mixed Amsterdam tree. Intrinsic vs runtime charging for EIP-2780 / EIP-8037 is in the [EIP-8037 section](#eip-8037-state-creation-gas-cost-increase-amsterdam) below.
 
 The `Hardfork.Amsterdam` bundle activates the following EIPs. Amsterdam test fixtures and execution-spec tests typically enable the full set together rather than individual EIPs in isolation.
 
@@ -786,22 +787,24 @@ void main()
 
 See [Release ↔ spec tracking](#amsterdam-hardfork-experimental) above for the supported Amsterdam spec snapshot.
 
-[EIP-8037](https://eips.ethereum.org/EIPS/eip-8037) splits block gas into two independent dimensions — **regular** and **state** — and introduces a per-transaction **state-gas reservoir** for state-touching operations. When active, `runBlock()`, `runTx()`, and `buildBlock()` handle this automatically; no extra opt-in is required. For a first-touch value transfer that reports both dimensions, see [Amsterdam Gas Dimensions](#amsterdam-gas-dimensions).
+[EIP-8037](https://eips.ethereum.org/EIPS/eip-8037) splits block gas into **regular** and **state** dimensions. `runBlock()`, `runTx()`, and `buildBlock()` apply this automatically. Header `gasUsed` is `max(block_regular_gas, block_state_gas)`. For a first-touch transfer that reports both dimensions, see [Amsterdam Gas Dimensions](#amsterdam-gas-dimensions).
 
-**Block-level gas used:** instead of summing a single `gasUsed`, the block header field becomes `max(block_regular_gas_used, block_state_gas_used)`. Each transaction contributes to both dimensions via `RunTxResult.txRegularGas` and `RunTxResult.txStateGas` (undefined when EIP-8037 is inactive).
+**Charging (v7 fixtures):**
 
-**Pre-execution checks:** before running each tx, `runBlock()` and `buildBlock()` verify that the tx fits the remaining capacity of each dimension (`min(TX_MAX, tx.gas)` vs remaining regular, `tx.gas` vs remaining state — `txExceedsAvailableBlockGas8037()` in `@ethereumjs/evm`). Intrinsic gas is state-independent under v7 (`computeIntrinsicGasDimensions8037()`); EIP-2780 recipient/value/log extras are part of `getIntrinsicGas()` and the calldata floor (self-transfers skip them). New-account state gas and 7702 `ACCOUNT_WRITE` / indicator state are charged during execution at the top frame, keyed on pre-state (prep OOG rolls back 7702 delegations). `ACCOUNT_WRITE` is taken from leftover regular gas and counted in receipt `totalGasSpent`. The sender nonce is incremented before that nested prep layer, so a create-tx `NEW_ACCOUNT` OOG still bumps nonce (no contract is created). On a create-tx REVERT, `NEW_ACCOUNT` spill into `gas_left` is credited back (`refill_frame_state_gas`); receipt `totalGasSpent` still floors to calldata minimum. Inner CREATE/CREATE2 charges new-account state gas unless the target already has nonce or code; a collision consumes the 63/64 grant as regular gas without spawning a child. A child exceptional halt onto a balance-only (already-alive) target keeps that charge as regular gas and exceptional-halts the creating frame (nonce bump reverted, BAL reads kept). CREATE new-account OOG is post-target (the created address is in the BAL); 7702 top-frame delegation OOG records the recipient and not the delegation target.
+- Intrinsic gas (including [EIP-2780](https://eips.ethereum.org/EIPS/eip-2780) recipient/value extras) is **regular** and state-independent. The calldata floor is anchored on that same base ([execution-specs#3120](https://github.com/ethereum/execution-specs/pull/3120)) and also binds the tx's block regular-gas contribution.
+- New-account state gas and 7702 `ACCOUNT_WRITE` are charged at top-frame access (pre-state). `ACCOUNT_WRITE` counts toward receipt `totalGasSpent`.
+- Block inclusion (`txExceedsAvailableBlockGas8037()` in `@ethereumjs/evm`): remaining regular vs `min(TX_MAX, tx.gas)`, remaining state vs `tx.gas`.
 
 **`RunTxResult` fields (EIP-8037 active):**
 
 | Field | Meaning |
 | --- | --- |
-| `txRegularGas` | Regular-dimension total for this tx (`max(raw_regular, calldata_floor)` per EIP-7623/EIP-7976) |
-| `txStateGas` | State-dimension total (intrinsic state + execution state gas, net of create/selfdestruct refunds) |
+| `txRegularGas` | Regular-dimension total (`max(raw_regular, calldata_floor)` per EIP-7623 / EIP-7976) |
+| `txStateGas` | State-dimension total (execution state gas, net of create / selfdestruct refunds) |
 | `blockGasSpent` | Amount counted toward block gas (see EIP-7778 below) |
-| `totalGasSpent` | Amount actually paid by the sender (includes refund subtraction) |
+| `totalGasSpent` | Amount paid by the sender (refunds subtracted) |
 
-**State-gas reservoir:** during execution the EVM maintains `evm.stateGasReservoir`, initialized from the tx's state-gas budget. State-touching opcodes draw from the reservoir first; overflow spills into `gas_left`. The delta is reflected in `txStateGas`.
+Opcode-level reservoir behaviour and CREATE charging: [@ethereumjs/evm EIP-8037](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#eip-8037-state-creation-gas-amsterdam).
 
 **Dependency:** EIP-8037 requires [EIP-7825](https://eips.ethereum.org/EIPS/eip-7825) (`maxTransactionGasLimit`) — both are active on `Hardfork.Amsterdam`.
 

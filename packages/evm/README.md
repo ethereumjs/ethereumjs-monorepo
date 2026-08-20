@@ -475,32 +475,31 @@ The interfaces (in a non-TypeScript sense) between these packages have been simp
 
 This allows for both a standalone EVM instantiation with reasonable defaults as well as for a simplified EVM -> VM passing if a customized EVM is needed.
 
-### Internal Module Map
+### Layout
 
-The package is organized around the bytecode-execution core:
+`createEVM()` / `runCall()` / `runCode()` sit on the `EVM` class. Bytecode runs in the interpreter; opcodes and precompiles are hardfork-gated tables. Call order is in [Internal Structure](#internal-structure). How this package sits in the monorepo: [ARCHITECTURE.md](../../ARCHITECTURE.md).
 
-- **`evm.ts`** — the `EVM` class: message dispatch (`runCall`, `runCode`), `_executeCall` / `_executeCreate`, journal checkpointing, precompile dispatch and event emission.
-- **`interpreter.ts`** — the `Interpreter`: the fetch-decode-execute loop (`run`), per-opcode gas charging and handler dispatch, jump-destination analysis and the `step` event.
-- **`opcodes/`** — the opcode table and handlers: `codes.ts` (table assembly per hardfork), `functions.ts` (opcode implementations), `gas.ts` (dynamic gas), plus per-EIP opcode modules (`EIP1283.ts`, `EIP2200.ts`, `EIP2929.ts`, `EIP7928.ts`, `EIP8024.ts`).
-- **`precompiles/`** — precompiled contracts, one file per address (`01-ecrecover.ts` … `100-p256verify.ts`), with `index.ts` mapping address → implementation and `bls12_381/` / `bn254/` backends.
-- **`eof/`** — EOF (EIP-3540 et al.) container parsing, verification and setup.
-- **`journal.ts`** — state journaling: `checkpoint` / `commit` / `revert`, touched/created-account tracking, forwarding to the `StateManagerInterface`.
-- **`message.ts`** — the `Message` value object passed through call/create execution.
-- **`memory.ts`, `stack.ts`, `transientStorage.ts`** — per-frame execution state.
-- **`binaryTreeAccessWitness.ts`** — EIP-7864 access-witness generation.
-- **`params.ts`** — `paramsEVM`, the EIP-indexed gas/parameter dictionary merged into `Common`.
-- **`types.ts`** / **`constructors.ts`** — public types/option objects and the `createEVM` factory.
+| Area | Role |
+| --- | --- |
+| `evm.ts` | Message dispatch (`runCall`, `runCode`), checkpoints, precompile dispatch |
+| `interpreter.ts` | Fetch-decode-execute loop, gas, `step` events |
+| `opcodes/`, `precompiles/` | Opcode and precompile handlers |
+| `journal.ts` | Checkpoint / commit / revert onto `StateManagerInterface` |
+| `eof/` | EOF container parse and verify |
+| `params.ts` | `paramsEVM`, merged into `Common` |
+
+Per-frame stack/memory, the `Message` object, and EIP-7864 witnesses live next to those files. `createEVM` and public option types are in `constructors.ts` / `types.ts`.
 
 ### Extension Points
 
-The `EVM` is designed to be customized through `createEVM` / `EVMOpts` (`src/types.ts`):
+The `EVM` is customized through `createEVM` / `EVMOpts`:
 
-- **Custom opcodes** — `customOpcodes?: CustomOpcode[]` (`src/types.ts:343`): add, override or remove opcodes by number with your own handler and gas function.
-- **Custom precompiles** — `customPrecompiles?: CustomPrecompile[]` (`src/types.ts:351`): add or override precompiled contracts at a given address.
-- **Custom state manager** — `stateManager?: StateManagerInterface` (`src/types.ts:407`): any implementation of the interface from `@ethereumjs/common`. If omitted, a `SimpleStateManager` is created by default (`src/constructors.ts`).
-- **Custom `Common`** — `common?: Common` (`src/types.ts`): drives hardfork/EIP gating and parameter resolution.
-- **Custom parameters** — `params?: ParamsDict`: override the values in `paramsEVM` (e.g. tweak a gas cost) without forking the package.
-- **Custom crypto backends** — `bls?` / `bn254?` (`src/types.ts:370`, `:393`): plug in native BLS12-381 / BN254 implementations for the relevant precompiles.
+- **Custom opcodes** — `customOpcodes`: add, override, or remove opcodes by number (handler + gas function).
+- **Custom precompiles** — `customPrecompiles`: add or override a precompile at an address.
+- **Custom state manager** — `stateManager`: any `StateManagerInterface`. Default is `SimpleStateManager`.
+- **Custom `Common`** — hardfork / EIP gating and parameter resolution.
+- **Custom parameters** — `params`: override `paramsEVM` values (for example a gas cost) without forking the package.
+- **Custom crypto backends** — `bls` / `bn254`: native BLS12-381 / BN254 for the relevant precompiles.
 
 ## Supported Hardforks
 
@@ -589,8 +588,8 @@ Individual EIP activation is shown in [EIP Activation](#eip-activation). Current
 - [EIP-7976](https://eips.ethereum.org/EIPS/eip-7976) - Increase calldata floor cost (Amsterdam, experimental)
 - [EIP-7981](https://eips.ethereum.org/EIPS/eip-7981) - Access list data pricing (Amsterdam, experimental)
 - [EIP-8024](https://eips.ethereum.org/EIPS/eip-8024) - DUPN, SWAPN and EXCHANGE instructions (Amsterdam, experimental)
-- [EIP-8037](https://eips.ethereum.org/EIPS/eip-8037) - State creation gas cost increase (Amsterdam, experimental)
-- [EIP-8038](https://eips.ethereum.org/EIPS/eip-8038) - State access gas cost increase (Amsterdam, experimental)
+- [EIP-8037](https://eips.ethereum.org/EIPS/eip-8037) - State creation gas cost increase (Amsterdam, experimental) — [notes](#eip-8037-state-creation-gas-amsterdam)
+- [EIP-8038](https://eips.ethereum.org/EIPS/eip-8038) - State access gas cost increase (Amsterdam, experimental) — [notes](#eip-8037-state-creation-gas-amsterdam)
 - [EIP-8246](https://eips.ethereum.org/EIPS/eip-8246) - SELFDESTRUCT no burn (Amsterdam, experimental)
 - [EIP-8282](https://eips.ethereum.org/EIPS/eip-8282) - Builder execution requests (Amsterdam, experimental)
 
@@ -740,7 +739,21 @@ void main()
 
 See the [canonical Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) in `@ethereumjs/vm` for release ↔ spec tracking.
 
-For Transfer logs see [EIP-7708](#eip-7708-eth-transfer-logs-amsterdam). State-gas accounting ([EIP-8037](https://eips.ethereum.org/EIPS/eip-8037)) and ETH transfer/burn logs ([EIP-7708](https://eips.ethereum.org/EIPS/eip-7708)) are implemented at the VM execution layer. [EIP-2780](https://eips.ethereum.org/EIPS/eip-2780) recipient/value/log extras are intrinsic (`getIntrinsicGas()` / the calldata floor); new-account state gas is charged at the top frame (pre-state). Inner CREATE/CREATE2 charges that state gas unless the target already has nonce or code, and a collision burns the 63/64 grant without a child frame. A child exceptional halt onto a balance-only target keeps the spilled `NEW_ACCOUNT` as regular gas and exceptional-halts the creating frame. CREATE new-account OOG is post-target (BAL records the created address); 7702 top-frame delegation OOG records the recipient and not the delegation target. `runTx` increments the sender nonce before that nested prep checkpoint (`runCall({ skipNonceIncrement: true })`), so a create-tx `NEW_ACCOUNT` OOG still bumps nonce and a self-signed 7702 auth compares against the already-bumped nonce. Top-frame `NEW_ACCOUNT` spill into `gas_left` is recorded on `stateGasSpilled` and credited on REVERT. 7702 `ACCOUNT_WRITE` is taken from leftover regular gas before `runCall` and counted in receipt gas. Top-frame delegation-target access is warm or cold (sender, coinbase, precompiles, access list). [EIP-8038](https://eips.ethereum.org/EIPS/eip-8038) SSTORE checks `max(access_cost, stipend + 1)` before the implicit storage read (cold access is 3000, above the 2300 stipend). See [@ethereumjs/vm Amsterdam docs](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) for `RunTxResult` fields, block gas dimensions, and receipt log behaviour.
+[EIP-8037](https://eips.ethereum.org/EIPS/eip-8037) splits gas into **regular** and **state** dimensions. State-touching opcodes draw from `evm.stateGasReservoir` first; overflow spills into `gas_left`. `runTx()` sizes the reservoir from the tx budget. A stand-alone `runCall()` starts at `0` unless you set it.
+
+Inner `CREATE` / `CREATE2` charges new-account state gas unless the target already has nonce or code. A create collision burns the 63/64 stipend without a child frame.
+
+Helpers (used by `@ethereumjs/vm`, available for custom runners):
+
+| Helper | Role |
+| --- | --- |
+| `computeIntrinsicGasDimensions8037()` | Intrinsic gas is regular-only under current v7 rules (`intrinsicState` is `0`) |
+| `txExceedsAvailableBlockGas8037()` | Per-tx block inclusion: regular bound is `min(TX_MAX, tx.gas)`, state bound is full `tx.gas` |
+| `activeCostPerStateByte()` | `costPerStateByte` from `Common` |
+
+[EIP-8038](https://eips.ethereum.org/EIPS/eip-8038) (same fork) raises state-access costs and charges SSTORE access **before** the implicit storage read (`max(access cost, stipend + 1)`).
+
+Transaction results, header `gasUsed = max(regular, state)`, and wallet `gasLimit` guidance: [@ethereumjs/vm EIP-8037](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#eip-8037-state-creation-gas-cost-increase-amsterdam).
 
 ### EIP-4844 Shard Blob Transactions Support (Cancun)
 
