@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/assets/ethereumjs-layers.svg" width="720" alt="EthereumJS package layers">
+  <img src="docs/assets/ethereumjs-layers.png" width="720" alt="EthereumJS package layers: execution, state, protocol, configuration, codec">
 </p>
 
 # EthereumJS Monorepo

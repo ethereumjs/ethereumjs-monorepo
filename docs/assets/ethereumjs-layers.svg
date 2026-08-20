@@ -22,13 +22,13 @@
     </linearGradient>
   </defs>
   <rect x="40" y="8" width="640" height="18" rx="4" fill="url(#g1)"/>
-  <text x="360" y="21" text-anchor="middle" fill="#ffffff" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Execution  vm · evm</text>
+  <text x="360" y="21" text-anchor="middle" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="600">Execution - vm, evm</text>
   <rect x="40" y="30" width="640" height="18" rx="4" fill="url(#g2)"/>
-  <text x="360" y="43" text-anchor="middle" fill="#ffffff" font-family="system-ui, sans-serif" font-size="11" font-weight="600">State  statemanager · mpt · binarytree</text>
+  <text x="360" y="43" text-anchor="middle" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="600">State - statemanager, mpt, binarytree</text>
   <rect x="40" y="52" width="640" height="18" rx="4" fill="url(#g3)"/>
-  <text x="360" y="65" text-anchor="middle" fill="#ffffff" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Protocol  tx · block · blockchain</text>
+  <text x="360" y="65" text-anchor="middle" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="600">Protocol - tx, block, blockchain</text>
   <rect x="40" y="74" width="640" height="18" rx="4" fill="url(#g4)"/>
-  <text x="360" y="87" text-anchor="middle" fill="#ffffff" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Configuration  common · genesis</text>
+  <text x="360" y="87" text-anchor="middle" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="600">Configuration - common, genesis</text>
   <rect x="40" y="96" width="640" height="18" rx="4" fill="url(#g5)"/>
-  <text x="360" y="109" text-anchor="middle" fill="#ffffff" font-family="system-ui, sans-serif" font-size="11" font-weight="600">Codec and primitives  rlp · util</text>
+  <text x="360" y="109" text-anchor="middle" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="600">Codec and primitives - rlp, util</text>
 </svg>
