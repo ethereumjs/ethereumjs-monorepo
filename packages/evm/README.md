@@ -208,7 +208,9 @@ Header construction: [`@ethereumjs/block` slot number](https://github.com/ethere
 | `maxCodeSize` | 24 KiB (24576) | 64 KiB (65536) |
 | `maxInitCodeSize` | 48 KiB (49152) | 128 KiB (131072) |
 
-These are `Common` parameters (`common.param('maxCodeSize')`) — no API changes beyond using the Amsterdam hardfork.
+These are `Common` parameters — after `createEVM()` merges `paramsEVM`, read them with `evm.common.param('maxCodeSize')` and `evm.common.param('maxInitCodeSize')`. No separate API beyond selecting the Amsterdam hardfork. `@ethereumjs/tx` rejects initcode above `maxInitCodeSize` at construction time; the EVM enforces the same limit on `CREATE` / `CREATE2` and caps deployed runtime code at `maxCodeSize`.
+
+Runnable walkthrough: [`examples/eip7954MaxCodeSize.ts`](./examples/eip7954MaxCodeSize.ts) — compares Prague vs Amsterdam limits and deploys a 24577-byte contract (one byte above the legacy cap). Prague fails with `code size to deposit exceeds maximum code size`; Amsterdam succeeds (large deploys need generous `gasLimit` under EIP-8037 state-gas). For the transaction path use `@ethereumjs/vm` `runTx()`.
 
 ### EIP-7708 ETH transfer logs (Amsterdam)
 
