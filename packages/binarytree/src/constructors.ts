@@ -12,6 +12,16 @@ import { ROOT_DB_KEY } from './types.ts'
 
 import type { BinaryTreeOpts } from './types.ts'
 
+/**
+ * Creates a Binary Tree instance (EIP-7864 state tree).
+ *
+ * Preferred entry point over constructing {@link BinaryTree} directly.
+ * Applies sensible defaults (`MapDB`, Blake3 hashing) and initializes an empty
+ * root node when no persisted root is found.
+ *
+ * @param opts Partial tree configuration (database, root persistence, cache size, hash function)
+ * @returns Initialized binary tree ready for reads and writes
+ */
 export async function createBinaryTree(opts?: Partial<BinaryTreeOpts>) {
   const key = bytesToHex(ROOT_DB_KEY)
 

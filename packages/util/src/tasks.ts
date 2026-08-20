@@ -3,6 +3,7 @@ interface Task {
   fn: Function
 }
 
+/** Run async tasks with priority ordering and concurrency limits. */
 export class PrioritizedTaskExecutor {
   /** The maximum size of the pool */
   private maxPoolSize: number

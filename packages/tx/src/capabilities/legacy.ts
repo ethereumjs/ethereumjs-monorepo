@@ -211,7 +211,8 @@ export function getEffectivePriorityFee(gasPrice: bigint, baseFee: bigint | unde
 
 /**
  * Validates the transaction signature and minimum gas requirements.
- * @returns {string[]} an array of error strings
+ *
+ * @returns Human-readable error strings; empty when valid
  */
 export function getValidationErrors(tx: LegacyTxInterface): string[] {
   const errors = []
@@ -237,8 +238,9 @@ export function getValidationErrors(tx: LegacyTxInterface): string[] {
 }
 
 /**
- * Validates the transaction signature and minimum gas requirements.
- * @returns {boolean} true if the transaction is valid, false otherwise
+ * Returns whether the transaction passes signature and minimum-gas checks.
+ *
+ * @returns `true` when {@link getValidationErrors} is empty
  */
 export function isValid(tx: LegacyTxInterface): boolean {
   const errors = tx.getValidationErrors()
@@ -274,6 +276,8 @@ export function getSenderAddress(tx: LegacyTxInterface): Address {
  * ```javascript
  * const signedTx = tx.sign(privateKey)
  * ```
+ *
+ * @throws If `privateKey` is not 32 bytes
  */
 export function sign(
   tx: LegacyTxInterface,

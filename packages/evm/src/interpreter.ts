@@ -70,13 +70,14 @@ function isEVMError(error: unknown): error is EVMError {
 }
 
 export interface InterpreterOpts {
+  /** Initial program counter when resuming execution */
   pc?: number
   /** Logs to prepend to the result (e.g. EIP-7708 ETH transfer log from message-level value transfer) */
   initialLogs?: Log[]
 }
 
 /**
- * Immediate (unprocessed) result of running an EVM bytecode.
+ * Immediate (unprocessed) result of running EVM bytecode in the interpreter.
  */
 export interface RunResult {
   logs: Log[]
@@ -92,6 +93,7 @@ export interface RunResult {
   createdAddresses?: Set<PrefixedHexString>
 }
 
+/** Execution environment for a single interpreter frame. */
 export interface Env {
   address: Address
   caller: Address
@@ -116,6 +118,7 @@ export interface Env {
   initialLogs?: Log[]
 }
 
+/** Mutable interpreter state updated on each opcode step. */
 export interface RunState {
   programCounter: number
   opCode: number
@@ -168,11 +171,13 @@ export interface RunState {
   returnBytes: Uint8Array /* Current bytes in the return Uint8Array. Cleared each time a CALL/CREATE is made in the current frame. */
 }
 
+/** Interpreter run outcome, including the final {@link RunState} and any exception. */
 export interface InterpreterResult {
   runState: RunState
   exceptionError?: EVMError
 }
 
+/** Payload emitted on each EVM `step` event during bytecode execution. */
 export interface InterpreterStep {
   gasLeft: bigint
   gasRefund: bigint
@@ -618,33 +623,26 @@ export class Interpreter {
     }
 
     /**
-     * The `step` event for trace output
+     * The `step` event for trace output.
      *
      * @event Event: step
-     * @type {Object}
-     * @property {Number} pc representing the program counter
-     * @property {Object} opcode the next opcode to be ran
-     * @property {string}     opcode.name
-     * @property {fee}        opcode.number Base fee of the opcode
-     * @property {dynamicFee} opcode.dynamicFee Dynamic opcode fee
-     * @property {boolean}    opcode.isAsync opcode is async
-     * @property {number}     opcode.code opcode code
-     * @property {BigInt} gasLeft amount of gasLeft
-     * @property {BigInt} gasRefund gas refund
-     * @property {StateManager} stateManager a {@link StateManager} instance
-     * @property {Array} stack an `Array` of `Uint8Arrays` containing the stack
-     * @property {Array} returnStack the return stack
-     * @property {Account} account the Account which owns the code running
-     * @property {Address} address the address of the `account`
-     * @property {Number} depth the current number of calls deep the contract is
-     * @property {Uint8Array} memory the memory of the EVM as a `Uint8Array`
-     * @property {BigInt} memoryWordCount current size of memory in words
-     * @property {Address} codeAddress the address of the code which is currently being ran (this differs from `address` in a `DELEGATECALL` and `CALLCODE` call)
-     * @property {number} eofSection the current EOF code section referenced by the PC
-     * @property {Uint8Array} immediate the immediate argument of the opcode
-     * @property {Uint8Array} error the error data of the opcode (only present for REVERT)
-     * @property {number} eofFunctionDepth the depth of the function call (only present for EOF)
-     * @property {Array} storage an array of tuples, where each tuple contains a storage key and value
+     * @property pc - Program counter before the opcode runs
+     * @property opcode - Next opcode metadata (name, fees, async flag, hex code)
+     * @property gasLeft - Gas remaining in the current frame
+     * @property gasRefund - Current refund counter
+     * @property stateManager - Active {@link StateManagerInterface}
+     * @property stack - Stack items as bigints
+     * @property account - Executing contract account
+     * @property address - Address of the executing account
+     * @property depth - Current call depth
+     * @property memory - EVM memory snapshot
+     * @property memoryWordCount - Memory size in 32-byte words
+     * @property codeAddress - Address whose code is running (differs under DELEGATECALL)
+     * @property eofSection - Active EOF code section index
+     * @property immediate - Opcode immediate bytes, when present
+     * @property error - Revert data bytes, when the opcode is REVERT
+     * @property eofFunctionDepth - CALLF return-stack depth for EOF
+     * @property storage - Storage key/value tuples touched by the step
      */
     await this._evm['_emit']('step', eventObj)
   }

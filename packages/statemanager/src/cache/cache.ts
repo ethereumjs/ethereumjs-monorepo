@@ -3,6 +3,7 @@ import debugDefault from 'debug'
 
 import type { Debugger } from 'debug'
 
+/** Base class for state manager LRU/ordered-map caches. */
 export class Cache {
   _debug: Debugger
 

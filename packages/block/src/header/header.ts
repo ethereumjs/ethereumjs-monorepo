@@ -92,8 +92,9 @@ export class BlockHeader {
   /**
    * This constructor takes the values, validates them, assigns them and freezes the object.
    *
-   * @deprecated Use the public static factory methods to assist in creating a Header object from
-   * varying data types. For a default empty header, use {@link createBlockHeader}.
+   * @deprecated Use the module-level factory functions such as {@link createBlockHeader},
+   * {@link createBlockHeaderFromRLP}, and {@link createBlockHeaderFromBytesArray} to create
+   * a BlockHeader from varying data types.
    *
    */
   constructor(headerData: HeaderData, opts: BlockOptions = {}) {

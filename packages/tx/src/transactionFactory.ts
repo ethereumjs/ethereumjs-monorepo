@@ -22,10 +22,12 @@ import { normalizeTxParams } from './util/general.ts'
 import type { EthersProvider } from '@ethereumjs/util'
 import type { Transaction, TxData, TxOptions, TypedTxData } from './types.ts'
 /**
- * Create a transaction from a `txData` object
+ * Instantiate a transaction; the `type` field selects the concrete {@link TypedTransaction} class.
  *
- * @param txData - The transaction data. The `type` field will determine which transaction type is returned (if undefined, creates a legacy transaction)
- * @param txOptions - Options to pass on to the constructor of the transaction
+ * When `type` is omitted a legacy transaction is created.
+ *
+ * @throws If the `type` field is not supported
+ * @throws If delegated type-specific factory validation fails
  */
 export function createTx<T extends TransactionType>(
   txData: TypedTxData,
@@ -54,10 +56,10 @@ export function createTx<T extends TransactionType>(
 }
 
 /**
- * This method tries to decode serialized data.
+ * Decode an RLP-serialized transaction (legacy or EIP-2718 typed).
  *
- * @param data - The data Uint8Array
- * @param txOptions - The transaction options
+ * @throws If the typed tx ID is unknown
+ * @throws If delegated type-specific factory validation fails
  */
 export function createTxFromRLP<T extends TransactionType>(
   data: Uint8Array,
@@ -83,13 +85,10 @@ export function createTxFromRLP<T extends TransactionType>(
 }
 
 /**
- * When decoding a BlockBody, in the transactions field, a field is either:
- * A Uint8Array (a TypedTransaction - encoded as TransactionType || rlp(TransactionPayload))
- * A Uint8Array[] (Legacy Transaction)
- * This method returns the right transaction.
+ * Decode a transaction from block-body RLP (typed bytes or legacy value array).
  *
- * @param data - A Uint8Array or Uint8Array[]
- * @param txOptions - The transaction options
+ * @throws If `data` is neither a `Uint8Array` nor a `Uint8Array[]`
+ * @throws If delegated factory validation fails
  */
 export function createTxFromBlockBodyData(
   data: Uint8Array | Uint8Array[],
@@ -106,11 +105,11 @@ export function createTxFromBlockBodyData(
 }
 
 /**
- * Method to decode data retrieved from RPC, such as `eth_getTransactionByHash`
- * Note that this normalizes some of the parameters
- * @param txData The RPC-encoded data
- * @param txOptions The transaction options
- * @returns A promise that resolves with the instantiated transaction
+ * Instantiate a transaction from JSON-RPC fields (`eth_getTransactionByHash` shape).
+ *
+ * Numeric and hex fields are normalized before construction.
+ *
+ * @throws If delegated {@link createTx} validation fails
  */
 export async function createTxFromRPC<T extends TransactionType>(
   txData: TxData[T],
@@ -120,11 +119,10 @@ export async function createTxFromRPC<T extends TransactionType>(
 }
 
 /**
- *  Method to retrieve a transaction from the provider
- * @param provider - a url string for a JSON-RPC provider or an Ethers JSONRPCProvider object
- * @param txHash - Transaction hash
- * @param txOptions - The transaction options
- * @returns the transaction specified by `txHash`
+ * Fetch a transaction by hash from a JSON-RPC provider and instantiate it.
+ *
+ * @throws If the provider returns no data for the hash
+ * @throws If delegated {@link createTxFromRPC} validation fails
  */
 export async function createTxFromJSONRPCProvider(
   provider: string | EthersProvider,

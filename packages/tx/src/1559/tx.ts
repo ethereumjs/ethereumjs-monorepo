@@ -31,7 +31,9 @@ import type {
 } from '../types.ts'
 import { accessListJSONToBytes } from '../util/access.ts'
 
+/** Plain-object input for {@link FeeMarket1559Tx}. */
 export type TxData = AllTypesTxData[typeof TransactionType.FeeMarketEIP1559]
+/** Devp2p byte-array encoding for {@link FeeMarket1559Tx}. */
 export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.FeeMarketEIP1559]
 
 /**
@@ -81,8 +83,8 @@ export class FeeMarket1559Tx
    * This constructor takes the values, validates them, assigns them and freezes the object.
    *
    * It is not recommended to use this constructor directly. Instead use
-   * the static factory methods to assist in creating a Transaction object from
-   * varying data types.
+   * the module-level factory functions such as {@link createFeeMarket1559Tx},
+   * {@link createFeeMarket1559TxFromRLP}, and {@link createFeeMarket1559TxFromBytesArray}.
    */
   public constructor(txData: TxData, opts: TxOptions = {}) {
     sharedConstructor(this, { ...txData, type: TransactionType.FeeMarketEIP1559 }, opts)

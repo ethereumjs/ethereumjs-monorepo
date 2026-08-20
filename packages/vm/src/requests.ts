@@ -127,10 +127,9 @@ function restoreSystemAccessEntry(
 }
 
 /**
- * This helper method generates a list of all CL requests that can be included in a pending block
- * @param vm VM instance (used in deriving partial withdrawal requests)
- * @param txResults (used in deriving deposit requests)
- * @returns a list of CL requests in ascending order by type
+ * Collects consensus-layer requests (deposits, withdrawals, consolidations) from block execution.
+ *
+ * @param generate - When true, include requests derived from execution even if not yet in state
  */
 export const accumulateRequests = async (
   vm: VM,

@@ -132,11 +132,13 @@ type Mutable<T> = {
 }
 
 /**
- * Shared constructor logic for all transaction types
+ * Shared constructor logic for all transaction types.
+ *
  * Note: Uses Mutable type to write to readonly properties. Only call this in transaction constructors.
- * @param tx - Mutable transaction interface to initialize
- * @param txData - Transaction data
- * @param opts - Transaction options
+ *
+ * @throws If fee or value fields overflow or are non-numeric
+ * @throws If gas limit or nonce exceed EIP bounds
+ * @throws If init code size exceeds EIP-3860 on contract-creation txs
  */
 export function sharedConstructor(
   tx: Mutable<TransactionInterface>,

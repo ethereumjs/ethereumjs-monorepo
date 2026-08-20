@@ -85,26 +85,47 @@ export interface BlockOptions {
  * A block header's data.
  */
 export interface HeaderData {
+  /** Hash of the parent block header. */
   parentHash?: BytesLike
+  /** Keccak256 hash of the uncle headers list. */
   uncleHash?: BytesLike
+  /** Beneficiary address (miner/coinbase). */
   coinbase?: AddressLike
+  /** State trie root after executing this block. */
   stateRoot?: BytesLike
+  /** Transactions trie root. */
   transactionsTrie?: BytesLike
+  /** Receipts trie root. */
   receiptTrie?: BytesLike
+  /** Bloom filter of block logs. */
   logsBloom?: BytesLike
+  /** Block difficulty (PoW) or Clique turn indicator (PoA). */
   difficulty?: BigIntLike
+  /** Canonical block height. */
   number?: BigIntLike
+  /** Maximum gas allowed in this block. */
   gasLimit?: BigIntLike
+  /** Total gas used by all transactions. */
   gasUsed?: BigIntLike
+  /** Unix timestamp when the block was collated. */
   timestamp?: BigIntLike
+  /** Arbitrary extra data (Clique seal lives here on PoA chains). */
   extraData?: BytesLike
+  /** Mix hash / prevRandao (PoW mix digest or post-merge randomness). */
   mixHash?: BytesLike
+  /** PoW nonce (8 bytes) or Clique vote nonce. */
   nonce?: BytesLike
+  /** EIP-1559 base fee per gas; required from London activation block onward. */
   baseFeePerGas?: BigIntLike
+  /** Withdrawals trie root (EIP-4895). */
   withdrawalsRoot?: BytesLike
+  /** Total blob gas consumed in this block (EIP-4844). */
   blobGasUsed?: BigIntLike
+  /** Running excess blob gas after this block (EIP-4844). */
   excessBlobGas?: BigIntLike
+  /** Parent beacon block root (EIP-4788). */
   parentBeaconBlockRoot?: BytesLike
+  /** Requests trie root (EIP-7685). */
   requestsHash?: BytesLike
   /**
    * 32-byte `keccak256(rlp(bal))` commitment when [EIP-7928](https://eips.ethereum.org/EIPS/eip-7928) is active.
@@ -133,19 +154,24 @@ export interface BlockData {
   withdrawals?: Array<WithdrawalData>
 }
 
+/** RLP-encoded withdrawal tuples for block serialization. */
 export type WithdrawalsBytes = WithdrawalBytes[]
 
+/** Full block RLP tuple: header, transactions, uncles, and optional withdrawals. */
 export type BlockBytes =
   | [BlockHeaderBytes, TransactionsBytes, UncleHeadersBytes]
   | [BlockHeaderBytes, TransactionsBytes, UncleHeadersBytes, WithdrawalsBytes]
   | [BlockHeaderBytes, TransactionsBytes, UncleHeadersBytes, WithdrawalsBytes]
 
+/** RLP-encoded header field values in canonical order. */
 export type BlockHeaderBytes = Uint8Array[]
+/** Block body RLP tuple (transactions, uncles, optional withdrawals). */
 export type BlockBodyBytes = [TransactionsBytes, UncleHeadersBytes, WithdrawalsBytes?]
 /**
  * TransactionsBytes can be an array of serialized txs for Typed Transactions or an array of Uint8Array Arrays for legacy transactions.
  */
 export type TransactionsBytes = Uint8Array[][] | Uint8Array[]
+/** RLP-encoded uncle header field arrays. */
 export type UncleHeadersBytes = Uint8Array[][]
 
 /**
@@ -227,6 +253,7 @@ export interface JSONRPCBlock {
   slotNumber?: PrefixedHexString // EIP-7843 (Amsterdam, experimental): QUANTITY, 64 Bits
 }
 
+/** Withdrawal entry in beacon/Engine API v1 hex encoding. */
 export type WithdrawalV1 = {
   index: PrefixedHexString // Quantity, 8 Bytes
   validatorIndex: PrefixedHexString // Quantity, 8 bytes
@@ -234,7 +261,7 @@ export type WithdrawalV1 = {
   amount: PrefixedHexString // Quantity, 32 bytes
 }
 
-// Note: all these strings are 0x-prefixed
+/** Execution payload from the Engine API / beacon `execution_payload`. */
 export type ExecutionPayload = {
   parentHash: PrefixedHexString // DATA, 32 Bytes
   feeRecipient: PrefixedHexString // DATA, 20 Bytes

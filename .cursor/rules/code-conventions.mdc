@@ -28,5 +28,6 @@ This applies to `packages/*/src/`, package `exports` in `package.json`, and CLI 
 
 ## Related rules
 
+- Public API documentation: `api-docs.mdc`
 - Example quality and naming: `examples.mdc`
 - Git renames: `git.mdc` (`alwaysApply`)

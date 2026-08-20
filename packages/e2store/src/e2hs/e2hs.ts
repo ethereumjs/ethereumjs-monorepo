@@ -10,10 +10,10 @@ import { readE2HSTupleAtOffset } from './blockTuple.ts'
 // block-tuple :=  CompressedHeaderWithProof | CompressedBody | CompressedReceipts
 
 /**
- * Format E2HS
- * @param data array of block tuples
- * @param epoch epoch index
- * @returns serialized E2HS
+ * Format an e2hs file from block tuples and an epoch index.
+ *
+ * @param data Block tuples (header with proof, body, receipts)
+ * @param epoch Epoch number written into the block index
  */
 export const formatE2HS = async (
   data: Array<{

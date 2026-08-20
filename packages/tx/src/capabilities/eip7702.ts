@@ -52,8 +52,9 @@ export function getAuthorizationListJSON(tx: EIP7702CompatibleTx): EOACode7702Au
 }
 
 /**
- * Checks if the authorization list is valid. Throws if invalid.
- * @param tx - Transaction whose authorization list should be validated
+ * Verifies the authorization list shape and field bounds.
+ *
+ * @throws If the list is empty or any entry is not 6 fields with valid lengths
  */
 export function verifyAuthorizationList(tx: EIP7702CompatibleTx) {
   const authorizationList = tx.authorizationList

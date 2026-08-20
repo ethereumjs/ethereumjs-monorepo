@@ -5,6 +5,7 @@ import { BinaryNodeType } from './types.ts'
 
 import type { BinaryNodeOptions, ChildBinaryNode } from './types.ts'
 
+/** Binary tree internal (branch) node with two child references. */
 export class InternalBinaryNode {
   public children: Array<ChildBinaryNode | null>
 
@@ -94,8 +95,7 @@ export class InternalBinaryNode {
    *         - `pathLength` is a one-byte Uint8Array representing the number of meaningful bits in the child’s path.
    *         - `packedPathBytes` is the packed byte representation of the child's bit path (as produced by `bitsToBytes`).
    *
-   * @returns {Uint8Array[]} An array of Uint8Arrays representing the node's serialized internal data.
-   * @dev When decoding, the stored child path (an RLP-encoded tuple) must be converted back into the original bit array.
+   * @returns Raw RLP array: type byte, child hashes, then RLP-encoded child paths
    */
 
   raw(): Uint8Array[] {

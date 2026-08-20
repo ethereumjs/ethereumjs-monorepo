@@ -40,7 +40,9 @@ import type {
 } from '../types.ts'
 import { accessListJSONToBytes } from '../util/access.ts'
 
+/** Plain-object input for {@link EOACode7702Tx}. */
 export type TxData = AllTypesTxData[typeof TransactionType.EOACodeEIP7702]
+/** Devp2p byte-array encoding for {@link EOACode7702Tx}. */
 export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.EOACodeEIP7702]
 
 /**
@@ -88,8 +90,8 @@ export class EOACode7702Tx implements TransactionInterface<typeof TransactionTyp
    * This constructor takes the values, validates them, assigns them and freezes the object.
    *
    * It is not recommended to use this constructor directly. Instead use
-   * the static factory methods to assist in creating a Transaction object from
-   * varying data types.
+   * the module-level factory functions such as {@link createEOACode7702Tx},
+   * {@link createEOACode7702TxFromRLP}, and {@link createEOACode7702TxFromBytesArray}.
    */
   public constructor(txData: TxData, opts: TxOptions = {}) {
     sharedConstructor(this, { ...txData, type: TransactionType.EOACodeEIP7702 }, opts)

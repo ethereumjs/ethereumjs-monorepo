@@ -1,6 +1,7 @@
 import type { ParamsDict } from '@ethereumjs/common'
 import { SYSTEM_ADDRESS } from '@ethereumjs/util'
 
+/** Default EVM gas parameters keyed by EIP, passed to {@link Common.updateParams}. */
 export const paramsEVM: ParamsDict = {
   /**
    * Frontier/Chainstart

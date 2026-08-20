@@ -10,6 +10,7 @@ import type { EVM } from '../evm.ts'
 import type { ExecResult } from '../types.ts'
 import type { PrecompileInput } from './types.ts'
 
+/** BN254 G1 addition precompile (0x06). */
 export function precompile06(opts: PrecompileInput): ExecResult {
   const pName = getPrecompileName('06')
   const gasUsed = opts.common.param('bn254AddGas')

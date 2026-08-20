@@ -17,22 +17,27 @@ import type { CustomPrecompile } from './precompiles/index.ts'
 import type { PrecompileFunc } from './precompiles/types.ts'
 
 export type DeleteOpcode = {
+  /** Opcode number to remove from the instruction set */
   opcode: number
 }
 
 export type AddOpcode = {
+  /** Opcode number that invokes the custom handler */
   opcode: number
+  /** Opcode name (shown in `step` events) */
   opcodeName: string
+  /** Base gas fee charged before dynamic gas */
   baseFee: number
   gasFunction?: AsyncDynamicGasHandler | SyncDynamicGasHandler
   logicFunction: OpHandler
 }
 
+/** Map of selfdestructed addresses to their beneficiary (hex strings). */
 export type SelfdestructMap = Map<PrefixedHexString, PrefixedHexString>
 
 export type CustomOpcode = AddOpcode | DeleteOpcode
 
-// Typeguard
+/** Type guard for {@link AddOpcode} entries in a custom opcode list. */
 export function isAddOpcode(customOpcode: CustomOpcode): customOpcode is AddOpcode {
   return (
     'opcode' in customOpcode &&
@@ -100,9 +105,12 @@ interface EVMRunOpts {
   blobVersionedHashes?: PrefixedHexString[]
 }
 
+/**
+ * Options for {@link EVM.runCode}.
+ */
 export interface EVMRunCodeOpts extends EVMRunOpts {
-  /*
-   * The initial program counter. Defaults to `0`
+  /**
+   * Initial program counter. Defaults to `0`.
    */
   pc?: number
 }
@@ -161,6 +169,7 @@ interface NewContractEvent {
   code: Uint8Array
 }
 
+/** Lifecycle events emitted during EVM message and opcode execution. */
 export type EVMEvent = {
   newContract: (data: NewContractEvent, resolve?: (result?: any) => void) => void
   beforeMessage: (data: Message, resolve?: (result?: any) => void) => void
@@ -168,6 +177,7 @@ export type EVMEvent = {
   step: (data: InterpreterStep, resolve?: (result?: any) => void) => void
 }
 
+/** Public EVM surface used by {@link VM} and stand-alone callers. */
 export interface EVMInterface {
   common: Common
   journal: {
@@ -237,8 +247,8 @@ export interface EVMInterface {
 }
 
 export type EVMProfilerOpts = {
+  /** When true, collect opcode and precompile timing data */
   enabled: boolean
-  // extra options here (such as use X hardfork for gas)
 }
 
 /**
@@ -444,7 +454,7 @@ export interface EVMOpts {
   blockchain?: EVMMockBlockchainInterface
 
   /**
-   *
+   * Optional performance profiler settings for opcode and precompile timing.
    */
   profiler?: EVMProfilerOpts
 
@@ -567,6 +577,7 @@ export type EVMBN254Interface = {
  */
 export type Log = [address: Uint8Array, topics: Uint8Array[], data: Uint8Array]
 
+/** Minimal block header fields available to the EVM during execution. */
 export type Block = {
   header: {
     number: bigint
@@ -581,6 +592,7 @@ export type Block = {
   }
 }
 
+/** EIP-1153 transient storage keyed by address and 32-byte slot. */
 export interface TransientStorageInterface {
   get(addr: Address, key: Uint8Array): Uint8Array
   put(addr: Address, key: Uint8Array, value: Uint8Array): void
@@ -591,16 +603,19 @@ export interface TransientStorageInterface {
   clear(): void
 }
 
+/** Minimal block reference returned by {@link EVMMockBlockchainInterface.getBlock}. */
 export type EVMMockBlock = {
   hash(): Uint8Array
 }
 
+/** Lightweight blockchain interface used by stand-alone EVM execution. */
 export interface EVMMockBlockchainInterface {
   getBlock(blockId: number): Promise<EVMMockBlock>
   putBlock(block: EVMMockBlock): Promise<void>
   shallowCopy(): EVMMockBlockchainInterface
 }
 
+/** In-memory mock blockchain for tests and stand-alone {@link createEVM} defaults. */
 export class EVMMockBlockchain implements EVMMockBlockchainInterface {
   async getBlock() {
     return {
@@ -615,7 +630,7 @@ export class EVMMockBlockchain implements EVMMockBlockchainInterface {
   }
 }
 
-// EOF type which holds the execution-related data for EOF
+/** EOF execution context attached to {@link Env} when running container bytecode. */
 export type EOFEnv = {
   container: EOFContainer
   eofRunState: {
@@ -623,5 +638,5 @@ export type EOFEnv = {
   }
 }
 
-// EIP-7702 flag: if contract code starts with these 3 bytes, it is a 7702-delegated EOA
+/** EIP-7702 delegation prefix (`0xef0100`) at the start of delegated EOA code. */
 export const DELEGATION_7702_FLAG = new Uint8Array([0xef, 0x01, 0x00])

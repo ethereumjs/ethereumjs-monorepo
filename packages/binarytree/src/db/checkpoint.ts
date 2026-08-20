@@ -10,8 +10,7 @@ import type { BatchDBOp, DB, EncodingOpts } from '@ethereumjs/util'
 import type { Checkpoint, CheckpointDBOpts } from '../types.ts'
 
 /**
- * DB is a thin wrapper around the underlying levelup db,
- * which validates inputs and sets encoding type.
+ * Checkpoint-aware DB wrapper with optional LRU node cache for binary trees.
  */
 export class CheckpointDB implements DB {
   public checkpoints: Checkpoint[]
@@ -63,8 +62,9 @@ export class CheckpointDB implements DB {
   }
 
   /**
-   * Flush the checkpoints and use the given checkpoints instead.
-   * @param {Checkpoint[]} checkpoints
+   * Replace the checkpoint stack with a copy of the given checkpoints.
+   *
+   * @param checkpoints Checkpoints to adopt (maps are cloned)
    */
   setCheckpoints(checkpoints: Checkpoint[]) {
     this.checkpoints = []
@@ -85,8 +85,9 @@ export class CheckpointDB implements DB {
   }
 
   /**
-   * Adds a new checkpoint to the stack
-   * @param root
+   * Push a new checkpoint onto the stack.
+   *
+   * @param root Tree root hash at this checkpoint boundary
    */
   checkpoint(root: Uint8Array) {
     this.checkpoints.push({ keyValueMap: new Map<string, Uint8Array>(), root })

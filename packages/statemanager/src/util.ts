@@ -3,6 +3,11 @@ import { Account, bytesToHex } from '@ethereumjs/util'
 import type { AccountFields, StateManagerInterface } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 
+/**
+ * Merge partial account field updates into an existing account (or create one).
+ *
+ * Used by state manager `modifyAccountFields` implementations.
+ */
 export async function modifyAccountFields(
   stateManager: StateManagerInterface,
   address: Address,

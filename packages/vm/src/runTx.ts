@@ -470,7 +470,11 @@ async function updateMinerBalance(
 }
 
 /**
- * @ignore
+ * Executes a single transaction against the VM state and returns the receipt.
+ *
+ * Options are documented on {@link RunTxOpts}. Emits `beforeTx` / `afterTx` on the VM.
+ *
+ * @throws If balance, nonce, or hardfork validation fails, or execution reverts
  */
 export async function runTx(vm: VM, opts: RunTxOpts): Promise<RunTxResult> {
   if (vm['_opts'].profilerOpts?.reportAfterTx === true) {

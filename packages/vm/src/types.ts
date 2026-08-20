@@ -18,6 +18,7 @@ import type {
   WithdrawalData,
 } from '@ethereumjs/util'
 import type { Bloom } from './bloom/index.ts'
+/** Union of pre- and post-Byzantium transaction receipts. */
 export type TxReceipt = PreByzantiumTxReceipt | PostByzantiumTxReceipt | EIP4844BlobTxReceipt
 
 /**
@@ -78,10 +79,11 @@ export interface EIP4844BlobTxReceipt extends PostByzantiumTxReceipt {
 }
 
 export type EVMProfilerOpts = {
+  /** When true, collect opcode and precompile timing data on the nested EVM */
   enabled: boolean
-  // extra options here (such as use X hardfork for gas)
 }
 
+/** VM lifecycle events emitted around block and transaction processing. */
 export type VMEvent = {
   beforeBlock: (data: Block, resolve?: (result?: any) => void) => void
   afterBlock: (data: AfterBlockEvent, resolve?: (result?: any) => void) => void
@@ -90,8 +92,9 @@ export type VMEvent = {
 }
 
 export type VMProfilerOpts = {
-  //evmProfilerOpts: EVMProfilerOpts
+  /** Log opcode/precompile profiles after each transaction */
   reportAfterTx?: boolean
+  /** Log opcode/precompile profiles after each block */
   reportAfterBlock?: boolean
 }
 
@@ -122,7 +125,7 @@ export interface VMOpts {
    */
   common?: Common
   /**
-   * A {@link StateManager} instance to use as the state store
+   * A {@link StateManagerInterface} implementation to use as the state store
    */
   stateManager?: StateManagerInterface
   /**
@@ -185,6 +188,9 @@ export interface VMOpts {
    */
   evmOpts?: EVMOpts
 
+  /**
+   * Optional VM performance profiler settings (mutually exclusive report targets).
+   */
   profilerOpts?: VMProfilerOpts
 }
 
@@ -253,7 +259,7 @@ export interface SealBlockOpts {
  */
 export interface RunBlockOpts {
   /**
-   * The @ethereumjs/block to process
+   * The {@link Block} to process
    */
   block: Block
   /**
@@ -396,8 +402,9 @@ export interface RunBlockResult extends Omit<ApplyBlockResult, 'bloom'> {
   blockLevelAccessList?: BlockLevelAccessList
 }
 
+/** Emitted by {@link VM} after a block finishes processing via {@link runBlock}. */
 export interface AfterBlockEvent extends RunBlockResult {
-  // The block which just finished processing
+  /** The block which just finished processing */
   block: Block
 }
 
@@ -406,12 +413,12 @@ export interface AfterBlockEvent extends RunBlockResult {
  */
 export interface RunTxOpts {
   /**
-   * The `@ethereumjs/block` the `tx` belongs to.
-   * If omitted, a default blank block will be used.
+   * The {@link Block} the transaction belongs to.
+   * If omitted, a default blank block is used.
    */
   block?: Block
   /**
-   * An `@ethereumjs/tx` to run
+   * Signed transaction to execute
    */
   tx: TypedTransaction
   /**
@@ -443,8 +450,8 @@ export interface RunTxOpts {
    * Option works with all tx types. EIP-2929 needs to
    * be activated (included in `berlin` HF).
    *
-   * Note: if this option is used with a custom {@link StateManager} implementation
-   * {@link StateManager.generateAccessList} must be implemented.
+   * Note: if this option is used with a custom {@link StateManagerInterface} implementation,
+   * {@link StateManagerInterface.generateAccessList} must be implemented.
    */
   reportAccessList?: boolean
 
@@ -538,9 +545,8 @@ export interface RunTxResult extends EVMResult {
   blobGasUsed?: bigint
 }
 
+/** Emitted by {@link VM} after a transaction finishes processing via {@link runTx}. */
 export interface AfterTxEvent extends RunTxResult {
-  /**
-   * The transaction which just got finished
-   */
+  /** The transaction which just finished processing */
   transaction: TypedTransaction
 }

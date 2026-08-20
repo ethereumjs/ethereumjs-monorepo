@@ -10,6 +10,7 @@ import type { EVM } from '../evm.ts'
 import type { ExecResult } from '../types.ts'
 import type { PrecompileInput } from './types.ts'
 
+/** BN254 G1 scalar multiplication precompile (0x07). */
 export function precompile07(opts: PrecompileInput): ExecResult {
   const pName = getPrecompileName('07')
   const gasUsed = opts.common.param('bn254MulGas')

@@ -1,0 +1,69 @@
+---
+description: JSDoc/TSDoc conventions for public API symbols in active packages
+globs: packages/**/src/**
+alwaysApply: false
+---
+
+# Public API documentation
+
+TypeDoc reads JSDoc on exported symbols (`packages/*/src/`, generated to `packages/*/docs/`).
+Types come from TypeScript signatures — comments explain **meaning**, not types.
+
+## Every public export
+
+- One-line **summary** (required): what it does, not how.
+- Prefer `{@link Symbol}` for cross-references (`createLegacyTx`, `StateManagerInterface`).
+- v10 factories: document module-level `createX` functions; deprecated class constructors point to them via `@deprecated` + `@see`.
+
+## `@param` / `@returns`
+
+| Tag | Use when |
+|-----|----------|
+| `@param name` | Semantics, units, encoding, defaults, or EIP/hardfork conditions — **not** obvious from name + type |
+| `@returns` | Return semantics not obvious from the type (`undefined` meaning, side effects, async init) |
+| `@throws` | Invalid input throws (especially tx, util signing, fee/value fields) |
+| `@example` | High-traffic entry points (`createVM`, `createLegacyTx`, `runBlock`) |
+
+**Do not** use `@param {Type}` or `@returns {Type}` — legacy JS; TypeScript owns types.
+
+**Skip** bare `@param opts` when `*Opts` / `*Data` interfaces document each property.
+
+## Interfaces and options objects
+
+Document non-obvious properties on the interface (`TxOptions`, `VMOpts`, `MPTOpts`), including defaults and when a field applies.
+
+## Phase out
+
+- `{Type}` in `@param` / `@returns`
+- Name-only tags with no description (`@param blockData` alone)
+- “Static factory methods” — say `createBlock`, `createLegacyTx`, etc.
+- `{@link StateManager}` — use `{@link StateManagerInterface}` or a concrete impl
+
+## Examples
+
+```typescript
+// ❌ redundant types + bare param names
+/**
+ * @param {TxData} txData
+ * @param {TxOptions} opts
+ * @returns {LegacyTx}
+ */
+
+// ✅ summary + semantics; types from signature
+/**
+ * Instantiate a legacy transaction from a plain data object.
+ *
+ * All `txData` fields are optional; unsigned txs omit `v`/`r`/`s`.
+ * Pass `opts.common` when the chain ID must match EIP-155 `v`.
+ *
+ * @throws If fee or value fields overflow or are non-numeric
+ */
+
+// ✅ options documented on the interface, not repeated on every factory
+/** A {@link Common} instance; copied internally so HF changes do not leak. */
+common?: Common
+```
+
+## Finish
+
+After doc edits in touched packages: `npm run tsc` (per package or `--workspaces`) and spellcheck on changed files.

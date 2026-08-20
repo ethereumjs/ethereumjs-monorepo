@@ -4,8 +4,10 @@ import type { DB, DBObject } from '@ethereumjs/util'
 import type { EventEmitter } from 'eventemitter3'
 import type { Blockchain } from './index.ts'
 
+/** Callback invoked for each block during {@link BlockchainInterface.iterator}. */
 export type OnBlock = (block: Block, reorg: boolean) => Promise<void> | void
 
+/** Event map emitted by {@link Blockchain.events}. */
 export type BlockchainEvent = {
   deletedCanonicalBlocks: (data: Block[], resolve?: (result?: any) => void) => void
 }
@@ -133,6 +135,7 @@ export interface GenesisOptions {
   genesisStateRoot?: Uint8Array
 }
 
+/** Maps consensus algorithm names to {@link Consensus} implementations. */
 export type ConsensusDict = {
   [consensusAlgorithm: ConsensusAlgorithm | string]: Consensus
 }
@@ -233,6 +236,7 @@ export interface Consensus {
    */
   validateConsensus(block: Block): Promise<void>
 
+  /** Validates header difficulty against parent and consensus rules. */
   validateDifficulty(header: BlockHeader): Promise<void>
 
   /**
@@ -249,8 +253,9 @@ export interface Consensus {
 }
 
 /**
- * Options when initializing a class that implements the Consensus interface.
+ * Options passed when initializing a {@link Consensus} implementation.
  */
 export interface ConsensusOptions {
+  /** Blockchain instance the consensus module operates on. */
   blockchain: Blockchain
 }

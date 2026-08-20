@@ -1,5 +1,10 @@
 import type { ParamsDict } from '@ethereumjs/common'
 
+/**
+ * Transaction-related EIP parameters keyed by EIP number.
+ *
+ * Passed to {@link Common} via {@link TxOptions.params} to override gas costs and limits.
+ */
 export const paramsTx: ParamsDict = {
   /**
    * Frontier/Chainstart

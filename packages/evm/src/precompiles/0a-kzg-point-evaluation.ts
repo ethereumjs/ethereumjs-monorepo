@@ -16,12 +16,14 @@ import { gasLimitCheck } from './util.ts'
 import type { ExecResult } from '../types.ts'
 import type { PrecompileInput } from './types.ts'
 
+/** BLS12-381 base-field modulus (EIP-4844 blob field). */
 export const BLS_MODULUS = BigInt(
   '52435875175126190479447740508185965837690552500527637822603658699938581184513',
 )
 
 const modulusBuffer = setLengthLeft(bigIntToBytes(BLS_MODULUS), 32)
 
+/** KZG point evaluation precompile (0x0a, EIP-4844). */
 export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
   const pName = getPrecompileName('0a')
   if (opts.common.customCrypto?.kzg === undefined) {

@@ -1,5 +1,6 @@
 import type { HardforksDict } from './types.ts'
 
+/** Built-in hardfork metadata keyed by hardfork name. */
 export const hardforksDict: HardforksDict = {
   /**
    * Description: Start of the Ethereum main chain

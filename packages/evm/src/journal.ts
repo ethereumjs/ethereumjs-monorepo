@@ -33,6 +33,11 @@ type JournalDiffItem = [Set<AddressString>, Map<AddressString, Set<SlotString>>,
 
 type JournalHeight = number
 
+/**
+ * Tracks warm addresses and storage slots for EIP-2929 access lists and journal checkpoints.
+ *
+ * Wraps the underlying {@link StateManagerInterface} for transactional account updates.
+ */
 export class Journal {
   private stateManager: StateManagerInterface
   private common: Common
@@ -232,8 +237,7 @@ export class Journal {
   }
 
   /**
-   * Returns true if the address is warm in the current context
-   * @param address - The address (as a Uint8Array) to check
+   * Returns true if the address is warm in the current context.
    */
   isWarmedAddress(address: Uint8Array): boolean {
     // Using deprecated bytesToUnprefixedHex for performance: this is a hot path used in Map/Set lookups.
@@ -243,8 +247,7 @@ export class Journal {
   }
 
   /**
-   * Add a warm address in the current context
-   * @param addressArr - The address (as a Uint8Array) to check
+   * Marks an address as warm in the current context.
    */
   addWarmedAddress(addressArr: Uint8Array): void {
     // Using deprecated bytesToUnprefixedHex for performance: this is a hot path used in Map/Set operations.
@@ -262,9 +265,7 @@ export class Journal {
   }
 
   /**
-   * Returns true if the slot of the address is warm
-   * @param address - The address (as a Uint8Array) to check
-   * @param slot - The slot (as a Uint8Array) to check
+   * Returns true if the storage slot is warm for the given contract address.
    */
   isWarmedStorage(address: Uint8Array, slot: Uint8Array): boolean {
     // Using deprecated bytesToUnprefixedHex for performance: this is a hot path used in Map/Set lookups.
@@ -285,9 +286,7 @@ export class Journal {
   }
 
   /**
-   * Mark the storage slot in the address as warm in the current context
-   * @param address - The address (as a Uint8Array) to check
-   * @param slot - The slot (as a Uint8Array) to check
+   * Marks a storage slot as warm for the given contract address.
    */
   addWarmedStorage(address: Uint8Array, slot: Uint8Array): void {
     // Using deprecated bytesToUnprefixedHex for performance: this is a hot path used in Map/Set operations.

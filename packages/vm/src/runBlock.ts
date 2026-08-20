@@ -75,14 +75,18 @@ const withdrawalsRewardsCommitLabel = 'Withdrawals, Rewards, EVM journal commit'
 const entireBlockLabel = 'Entire block'
 
 /**
- * Processes the `block` running all of the transactions it contains and updating the miner's account
+ * Executes a block's transactions, updates miner rewards, and optionally validates header fields.
  *
- * vm method modifies the state if successfully executed and header fields are valid.
- * state modifications will be reverted if an exception is raised during execution or validation.
+ * Commits state on success; reverts the block checkpoint if execution or validation fails.
+ * Options are documented on {@link RunBlockOpts}; defaults include `generate: false`.
  *
- * @param {VM} vm
- * @param {RunBlockOpts} opts - Default values for options:
- *  - `generate`: false
+ * @throws If header or block validation fails, receipts or roots mismatch expected values,
+ * or a transaction reverts when validation is enabled
+ *
+ * @example
+ * ```ts
+ * const result = await runBlock(vm, { block, generate: true })
+ * ```
  */
 export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResult> {
   if (vm['_opts'].profilerOpts?.reportAfterBlock === true) {
@@ -111,8 +115,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
    * The `beforeBlock` event.
    *
    * @event Event: beforeBlock
-   * @type {Object}
-   * @property {Block} block emits the block that is about to be processed
+   * @property block - Block about to be processed
    */
   await vm._emit('beforeBlock', block)
 
@@ -416,8 +419,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
    * The `afterBlock` event
    *
    * @event Event: afterBlock
-   * @type {AfterBlockEvent}
-   * @property {AfterBlockEvent} result emits the results of processing a block
+   * @property result - {@link AfterBlockEvent} with block execution results
    */
   await vm._emit('afterBlock', afterBlockEvent)
   if (vm.DEBUG) {
@@ -446,12 +448,9 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
 }
 
 /**
- * Validates and applies a block, computing the results of
- * applying its transactions. vm method doesn't modify the
- * block itself. It computes the block rewards and puts
- * them on state (but doesn't persist the changes).
- * @param {Block} block
- * @param {RunBlockOpts} opts
+ * Validates and applies a block, computing receipts and gas usage without persisting state.
+ *
+ * Computes block rewards and writes them to the journal (not committed until the caller commits).
  */
 async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<ApplyBlockResult> {
   // Validate block
@@ -626,6 +625,11 @@ export async function accumulateParentBlockHash(
   await vm.evm.journal.cleanup()
 }
 
+/**
+ * Stores the parent beacon block root in the EIP-4788 system contract ring buffer.
+ *
+ * Called during block processing when EIP-4788 is active.
+ */
 export async function accumulateParentBeaconBlockRoot(vm: VM, root: Uint8Array, timestamp: bigint) {
   if (!vm.common.isActivatedEIP(4788)) {
     throw EthereumJSErrorWithoutCode(
@@ -686,11 +690,9 @@ export async function accumulateParentBeaconBlockRoot(vm: VM, root: Uint8Array, 
 }
 
 /**
- * Applies the transactions in a block, computing the receipts
- * as well as gas usage and some relevant data. vm method is
- * side-effect free (it doesn't modify the block nor the state).
- * @param {Block} block
- * @param {RunBlockOpts} opts
+ * Runs each transaction in a block and aggregates receipts, gas usage, and bloom data.
+ *
+ * Does not modify the block object; state changes stay within the active journal checkpoint.
  */
 async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
   if (enableProfiler) {
@@ -880,6 +882,12 @@ function calculateOmmerReward(
   return reward
 }
 
+/**
+ * Computes the total block reward for the miner including ommer (nibling) rewards.
+ *
+ * @param minerReward Base reward per block for the current hardfork
+ * @param ommersNum Number of included ommer headers
+ */
 export function calculateMinerReward(minerReward: bigint, ommersNum: number): bigint {
   // calculate nibling reward
   const niblingReward = minerReward / BigInt(32)
@@ -888,6 +896,11 @@ export function calculateMinerReward(minerReward: bigint, ommersNum: number): bi
   return reward
 }
 
+/**
+ * Credits `reward` wei to `address`, creating the account if needed.
+ *
+ * Used for miner and ommer payouts during block processing.
+ */
 export async function rewardAccount(
   evm: EVMInterface,
   address: Address,

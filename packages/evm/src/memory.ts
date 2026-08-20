@@ -60,11 +60,9 @@ export class Memory {
   }
 
   /**
-   * Reads a slice of memory from `offset` till `offset + size` as a `Uint8Array`.
-   * It fills up the difference between memory's length and `offset + size` with zeros.
-   * @param offset - Starting position
-   * @param size - How many bytes to read
-   * @param avoidCopy - Avoid memory copy if possible for performance reasons (optional)
+   * Reads a memory slice from `offset` through `offset + size`, zero-filling past the current length.
+   *
+   * @param avoidCopy - When true, return a subarray view instead of copying (caller must not mutate)
    */
   read(offset: number, size: number, avoidCopy?: boolean): Uint8Array<ArrayBuffer> {
     this.extend(offset, size)

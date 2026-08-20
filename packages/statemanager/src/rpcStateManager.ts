@@ -28,6 +28,12 @@ import type { RPCStateManagerOpts } from './index.ts'
 
 const KECCAK256_RLP_EMPTY_ACCOUNT = RLP.encode(new Account().serialize()).slice(2)
 
+/**
+ * State manager backed by an Ethereum JSON-RPC provider.
+ *
+ * Reads account and storage data via `eth_getProof` / related RPC methods at a
+ * fixed block tag. Suitable for simulations against live or archive nodes.
+ */
 export class RPCStateManager implements StateManagerInterface {
   protected _provider: string
   protected _caches: Caches
@@ -94,9 +100,9 @@ export class RPCStateManager implements StateManagerInterface {
 
   /**
    * Gets the code corresponding to the provided `address`.
-   * @param address - Address to get the `code` for
-   * @returns {Promise<Uint8Array>} - Resolves with the code corresponding to the provided address.
-   * Returns an empty `Uint8Array` if the account has no associated code.
+   *
+   * @param address Address to get the code for
+   * @returns Contract bytecode, or an empty array when no code is stored
    */
   async getCode(address: Address): Promise<Uint8Array> {
     let codeBytes = this._caches.code?.get(address)?.code
@@ -130,10 +136,8 @@ export class RPCStateManager implements StateManagerInterface {
    * Gets the storage value associated with the provided `address` and `key`. This method returns
    * the shortest representation of the stored value.
    * @param address - Address of the account to get the storage for
-   * @param key - Key in the account's storage to get the value for. Must be 32 bytes long.
-   * @returns {Uint8Array} - The storage value for the account
-   * corresponding to the provided address at the provided key.
-   * If this does not exist an empty `Uint8Array` is returned.
+   * @param key Storage slot (32 bytes)
+   * @returns RLP-decoded storage value, or empty bytes when unset
    */
   async getStorage(address: Address, key: Uint8Array): Promise<Uint8Array> {
     // Check storage slot in cache
@@ -180,10 +184,8 @@ export class RPCStateManager implements StateManagerInterface {
 
   /**
    * Dumps the RLP-encoded storage values for an `account` specified by `address`.
-   * @param address - The address of the `account` to return storage for
-   * @returns {Promise<StorageDump>} - The state of the account as an `Object` map.
-   * Keys are the storage keys, values are the storage values as strings.
-   * Both are represented as `0x` prefixed hex strings.
+   * @param address Account whose storage should be dumped
+   * @returns Hex-keyed map of storage slots (values as `0x`-prefixed strings)
    */
   dumpStorage(address: Address): Promise<StorageDump> {
     const storageMap = this._caches.storage?.dump(address)
@@ -298,15 +300,15 @@ export class RPCStateManager implements StateManagerInterface {
   /**
    * Returns the applied key for a given address
    * Used for saving preimages
-   * @param address - The address to return the applied key
-   * @returns {Uint8Array} - The applied key (e.g. hashed address)
+   * @param address Address bytes (typically 20-byte account address)
+   * @returns Key after trie key hashing (e.g. keccak of the address)
    */
   getAppliedKey(address: Uint8Array): Uint8Array {
     return this.keccakFunction(address)
   }
 
   /**
-   * Checkpoints the current state of the StateManager instance.
+   * Checkpoints the current state of this {@link StateManagerInterface} instance.
    * State changes that follow can then be committed by calling
    * `commit` or `reverted` by calling rollback.
    */

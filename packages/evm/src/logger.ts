@@ -8,6 +8,7 @@ type EVMPerformanceLogEntry = {
   dynamicGasUsed?: number
 }
 
+/** Aggregated opcode or precompile timing row for {@link emitEVMProfile}. */
 export type EVMPerformanceLogOutput = {
   calls: number // Amount this opcode/precompile was called
   totalTime: number // Amount of seconds taken for this opcode/precompile (rounded to 3 digits)
@@ -31,6 +32,7 @@ const slotTime = 12 // Time in seconds per slot
 // Normalize constant to check if execution time is above one block per slot (>=1) or not (<1)
 const bpsNormalizer = blockGasLimit / slotTime
 
+/** High-resolution timer used by {@link EVMPerformanceLogger}. */
 export class Timer {
   private startTime: number
   private runTime = 0
@@ -54,6 +56,7 @@ export class Timer {
   }
 }
 
+/** Collects opcode and precompile execution timings when profiling is enabled. */
 export class EVMPerformanceLogger {
   private opcodes!: EVMPerformanceLogs
   private precompiles!: EVMPerformanceLogs

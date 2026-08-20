@@ -5,14 +5,10 @@ import { isHexString } from './internal.ts'
 import type { Address } from './address.ts'
 import type { ToBytesInputTypes } from './bytes.ts'
 
-/*
- * A type that represents an input that can be converted to a BigInt.
- */
+/** Value that can be coerced to a bigint. */
 export type BigIntLike = bigint | PrefixedHexString | number | Uint8Array
 
-/*
- * A type that represents an input that can be converted to a Uint8Array.
- */
+/** Value that can be coerced to bytes. */
 export type BytesLike =
   | Uint8Array
   | number[]
@@ -21,14 +17,10 @@ export type BytesLike =
   | TransformableToBytes
   | PrefixedHexString
 
-/*
- * A type that represents a number-like string.
- */
+/** Template-literal type for decimal numeric strings. */
 export type NumericString = `${number}`
 
-/*
- * A type that represents a `0x`-prefixed hex string.
- */
+/** Template-literal type for `0x`-prefixed hex strings. */
 export type PrefixedHexString = `0x${string}`
 
 /**
@@ -36,12 +28,15 @@ export type PrefixedHexString = `0x${string}`
  */
 export type AddressLike = Address | Uint8Array | PrefixedHexString
 
+/** Object that can export itself as bytes via `toBytes()`. */
 export interface TransformableToBytes {
   toBytes?(): Uint8Array
 }
 
+/** Tree of byte arrays produced by nested RLP lists. */
 export type NestedUint8Array = Array<Uint8Array | NestedUint8Array>
 
+/** Type guard for {@link NestedUint8Array}. */
 export function isNestedUint8Array(value: unknown): value is NestedUint8Array {
   if (!Array.isArray(value)) {
     return false
@@ -58,8 +53,10 @@ export function isNestedUint8Array(value: unknown): value is NestedUint8Array {
   return true
 }
 
+/** Target output format for {@link toType}. */
 export type TypeOutput = (typeof TypeOutput)[keyof typeof TypeOutput]
 
+/** Target output format for {@link toType}. */
 export const TypeOutput = {
   Number: 0,
   BigInt: 1,
@@ -67,6 +64,7 @@ export const TypeOutput = {
   PrefixedHexString: 3,
 } as const
 
+/** Return type map keyed by {@link TypeOutput}. */
 export type TypeOutputReturnType = {
   [TypeOutput.Number]: number
   [TypeOutput.BigInt]: bigint
@@ -81,11 +79,14 @@ export type TypeOutputReturnType = {
  * @param outputType type to output
  */
 export function toType<T extends TypeOutput>(input: null, outputType: T): null
+/** Coerce an input value to a selected output representation. */
 export function toType<T extends TypeOutput>(input: undefined, outputType: T): undefined
+/** Coerce an input value to a selected output representation. */
 export function toType<T extends TypeOutput>(
   input: ToBytesInputTypes,
   outputType: T,
 ): TypeOutputReturnType[T]
+/** Coerce an input value to a selected output representation. */
 export function toType<T extends TypeOutput>(
   input: ToBytesInputTypes,
   outputType: T,
@@ -137,6 +138,7 @@ export type EOACode7702AuthorizationListItemUnsigned = {
   nonce: PrefixedHexString
 }
 
+/** Signed EIP-7702 authorization list entry (JSON form). */
 export type EOACode7702AuthorizationListItem = {
   yParity: PrefixedHexString
   r: PrefixedHexString
@@ -144,6 +146,7 @@ export type EOACode7702AuthorizationListItem = {
 } & EOACode7702AuthorizationListItemUnsigned
 
 // Tuple of [chain_id, address, nonce, y_parity, r, s]
+/** Signed EIP-7702 authorization tuple in bytes form. */
 export type EOACode7702AuthorizationListBytesItem = [
   Uint8Array,
   Uint8Array,
@@ -152,11 +155,15 @@ export type EOACode7702AuthorizationListBytesItem = [
   Uint8Array,
   Uint8Array,
 ]
+/** Array of byte-form EIP-7702 authorization tuples. */
 export type EOACode7702AuthorizationListBytes = EOACode7702AuthorizationListBytesItem[]
+/** Array of JSON-form EIP-7702 authorization entries. */
 export type EOACode7702AuthorizationList = EOACode7702AuthorizationListItem[]
 
+/** Unsigned EIP-7702 authorization tuple in bytes form. */
 export type EOACode7702AuthorizationListBytesItemUnsigned = [Uint8Array, Uint8Array, Uint8Array]
 
+/** Type guard for byte-form EIP-7702 authorization lists. */
 export function isEOACode7702AuthorizationListBytes(
   input: EOACode7702AuthorizationListBytes | EOACode7702AuthorizationList,
 ): input is EOACode7702AuthorizationListBytes {
@@ -170,6 +177,7 @@ export function isEOACode7702AuthorizationListBytes(
   return false
 }
 
+/** Type guard for JSON-form EIP-7702 authorization lists. */
 export function isEOACode7702AuthorizationList(
   input: EOACode7702AuthorizationListBytes | EOACode7702AuthorizationList,
 ): input is EOACode7702AuthorizationList {

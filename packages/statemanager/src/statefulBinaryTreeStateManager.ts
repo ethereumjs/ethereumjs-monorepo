@@ -63,6 +63,12 @@ import type { Caches } from './cache/caches.ts'
 import type { BinaryTreeState, StatefulBinaryTreeStateManagerOpts } from './types.ts'
 
 const ZEROVALUE = '0x0000000000000000000000000000000000000000000000000000000000000000'
+
+/**
+ * {@link StateManagerInterface} backed by an EIP-7864 {@link BinaryTree}.
+ *
+ * Supports execution witnesses, binary-tree access lists, and checkpointing for VM use.
+ */
 export class StatefulBinaryTreeStateManager
   implements StateManagerInterface, BinaryTreeStateManagerInterface
 {

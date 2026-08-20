@@ -16,8 +16,11 @@ import type { TypedTransaction } from '@ethereumjs/tx'
 import type { CLRequest, CLRequestType, PrefixedHexString, Withdrawal } from '@ethereumjs/util'
 import type { BlockHeaderBytes, HeaderData } from './types.ts'
 /**
- * Returns a 0x-prefixed hex number string from a hex string or string integer.
- * @param {string} input string to check, convert, and return
+ * Converts a decimal string or 0x-prefixed hex string to normalized hex.
+ *
+ * @param input - Decimal integer string or `0x`-prefixed hex
+ *
+ * @throws If `input` is neither a valid hex string nor a decimal integer string
  */
 export const numberToHex = function (input?: string): PrefixedHexString | undefined {
   if (input === undefined) return undefined
@@ -147,9 +150,7 @@ export const fakeExponential = (factor: bigint, numerator: bigint, denominator: 
 }
 
 /**
- * Returns the blob gas price depending upon the `excessBlobGas` value
- * @param excessBlobGas
- * @param common
+ * Returns the blob gas price from excess blob gas (EIP-4844 fake exponential).
  */
 export const computeBlobGasPrice = (excessBlobGas: bigint, common: Common) => {
   return fakeExponential(

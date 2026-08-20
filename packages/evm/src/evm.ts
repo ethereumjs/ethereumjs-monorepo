@@ -1718,8 +1718,6 @@ export class EVM implements EVMInterface {
    *
    * Note: this is only a shallow copy and both EVM instances
    * will point to the same underlying state DB.
-   *
-   * @returns EVM
    */
   public shallowCopy(): EVM {
     const common = this.common.copy()

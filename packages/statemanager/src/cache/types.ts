@@ -1,10 +1,13 @@
+/** Cache backend kind for account/code/storage caches. */
 export type CacheType = (typeof CacheType)[keyof typeof CacheType]
 
+/** Supported cache implementations. */
 export const CacheType = {
   LRU: 'lru',
   ORDERED_MAP: 'ordered_map',
 } as const
 
+/** Per-cache sizing and implementation options. */
 export interface CacheOpts {
   /**
    * Size of the cache (only for LRU cache)
@@ -31,8 +34,12 @@ export interface CacheOpts {
   type: CacheType
 }
 
+/** Cache configuration passed into {@link Caches} / state manager constructors. */
 export interface CachesStateManagerOpts {
+  /** Account cache options. */
   account?: Partial<CacheOpts>
+  /** Contract code cache options. */
   code?: Partial<CacheOpts>
+  /** Storage slot cache options. */
   storage?: Partial<CacheOpts>
 }

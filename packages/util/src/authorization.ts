@@ -22,11 +22,12 @@ import type {
   EOACode7702AuthorizationListItemUnsigned,
 } from './types.ts'
 
+/** EIP-7702 authority signing prefix byte (`0x05`). */
 export const EOA_CODE_7702_AUTHORITY_SIGNING_MAGIC = hexToBytes('0x05')
 
 /**
  * Converts an authorization list to a JSON format
- * @param authorizationList
+
  * @returns authorizationList in JSON format
  */
 export function eoaCode7702AuthorizationListBytesItemToJSON(
@@ -45,7 +46,7 @@ export function eoaCode7702AuthorizationListBytesItemToJSON(
 
 /**
  * Converts an authority list in JSON to a bytes format
- * @param authorizationList
+
  * @returns bytes format of the authority list
  */
 export function eoaCode7702AuthorizationListJSONItemToBytes(
@@ -107,7 +108,7 @@ export function eoaCode7702AuthorizationMessageToSign(
 
 /**
  * Hashes the RLP-encoded message to sign
- * @param input
+
  * @returns
  */
 export function eoaCode7702AuthorizationHashedMessageToSign(
@@ -119,9 +120,9 @@ export function eoaCode7702AuthorizationHashedMessageToSign(
 /**
  * Signs an authorization list item and returns it in `bytes` format.
  * To get the JSON format, use `authorizationListBytesToJSON([signed])[0] to convert it`
- * @param input
- * @param privateKey
- * @param ecSign
+
+
+
  * @returns
  */
 export function eoaCode7702SignAuthorization(
@@ -160,6 +161,7 @@ export function eoaCode7702SignAuthorization(
   ]
 }
 
+/** Recover the authority address from a signed EIP-7702 authorization tuple. */
 export function eoaCode7702RecoverAuthority(
   input: EOACode7702AuthorizationListItem | EOACode7702AuthorizationListBytesItem,
 ): Address {

@@ -346,6 +346,10 @@ Commands area available on both root and package levels.
 }
 ```
 
+### Documentation
+
+Public API reference is generated with [TypeDoc](https://typedoc.org/) (`npm run docs:build --workspaces`, output under `packages/*/docs/`). JSDoc conventions for exported symbols are defined in [`.cursor/rules/api-docs.mdc`](.cursor/rules/api-docs.mdc) (also linked from [AGENTS.md](./AGENTS.md)).
+
 ### Testing
 
 The project uses [Vitest](https://vitest.dev/) for testing with Vitest coverage (v8 and istanbul providers).

@@ -95,17 +95,17 @@ function eip7702WarmAddress(runState: RunState, delegationAddress: Uint8Array): 
  * These functions are therefore not read-only
  */
 
-// The dynamic gas handler methods take a runState and a gas BN
-// The gas BN is necessary, since the base fee needs to be included,
-// to calculate the max call gas for the call opcodes correctly.
+/** Async dynamic gas handler; may read state before returning total gas cost. */
 export interface AsyncDynamicGasHandler {
   (runState: RunState, gas: bigint, common: Common): Promise<bigint>
 }
 
+/** Sync dynamic gas handler returning total gas cost including base fee. */
 export interface SyncDynamicGasHandler {
   (runState: RunState, gas: bigint, common: Common): bigint
 }
 
+/** Dynamic gas handlers indexed by opcode byte (includes base fee in `gas`). */
 export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynamicGasHandler> =
   new Map<number, AsyncDynamicGasHandler>([
     [

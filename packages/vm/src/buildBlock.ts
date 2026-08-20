@@ -51,6 +51,14 @@ import type { BuildBlockOpts, BuilderOpts, RunTxResult, SealBlockOpts } from './
 import type { VM } from './vm.ts'
 
 export type BuildStatus = (typeof BuildStatus)[keyof typeof BuildStatus]
+
+/**
+ * Status of an in-progress {@link BlockBuilder} session.
+ *
+ * - `pending` — builder initialized, no transactions committed yet
+ * - `build` — at least one transaction was successfully included
+ * - `reverted` — the last transaction was reverted and excluded from the block
+ */
 export const BuildStatus = {
   Reverted: 'reverted',
   Build: 'build',
@@ -61,6 +69,11 @@ type BlockStatus =
   | { status: typeof BuildStatus.Pending | typeof BuildStatus.Reverted }
   | { status: typeof BuildStatus.Build; block: Block }
 
+/**
+ * Incrementally assembles a block by executing transactions against a {@link VM}.
+ *
+ * Created via {@link buildBlock}; seals the header and transactions trie when finalized.
+ */
 export class BlockBuilder {
   /**
    * Cumulative gas used by transactions added to the block (header `gasUsed`).
@@ -512,19 +525,21 @@ export class BlockBuilder {
 }
 
 /**
- * Build a block on top of the current state
- * by adding one transaction at a time.
+ * Incrementally assembles a block by executing transactions against a {@link VM}.
  *
- * Creates a checkpoint on the StateManager and modifies the state
- * as transactions are run. The checkpoint is committed on {@link BlockBuilder.build}
- * or discarded with {@link BlockBuilder.revert}.
+ * Opens a {@link StateManagerInterface} checkpoint; commits on {@link BlockBuilder.build}
+ * or reverts with {@link BlockBuilder.revert}. See {@link BuildBlockOpts} for parent block
+ * and header defaults.
  *
- * @param {VM} vm
- * @param {BuildBlockOpts} opts
- * @returns An instance of {@link BlockBuilder} with methods:
- * - {@link BlockBuilder.addTransaction}
- * - {@link BlockBuilder.build}
- * - {@link BlockBuilder.revert}
+ * @returns {@link BlockBuilder} for {@link BlockBuilder.addTransaction},
+ * {@link BlockBuilder.build}, and {@link BlockBuilder.revert}
+ *
+ * @example
+ * ```ts
+ * const builder = await buildBlock(vm, { parentBlock })
+ * await builder.addTransaction(signedTx)
+ * const { block } = await builder.build()
+ * ```
  */
 export async function buildBlock(vm: VM, opts: BuildBlockOpts): Promise<BlockBuilder> {
   const blockBuilder = new BlockBuilder(vm, opts)

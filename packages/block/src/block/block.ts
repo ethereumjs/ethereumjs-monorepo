@@ -70,7 +70,8 @@ export class Block {
   /**
    * This constructor takes the values, validates them, assigns them and freezes the object.
    *
-   * @deprecated Use the static factory methods (see {@link Block} for an overview) to assist in creating
+   * @deprecated Use the module-level factory functions such as {@link createBlock},
+   * {@link createBlockFromRLP}, and {@link createBlockFromBytesArray} to create
    * a Block object from varying data types and options.
    */
   constructor(
@@ -186,7 +187,8 @@ export class Block {
 
   /**
    * Validates transaction signatures and minimum gas requirements.
-   * @returns {string[]} an array of error strings
+   *
+   * @returns Human-readable error strings; empty when all txs are valid
    */
   getTransactionsValidationErrors(): string[] {
     const errors: string[] = []

@@ -2,9 +2,9 @@ import { Writable } from 'stream'
 import { concatBytes } from '@ethereumjs/util'
 import { createCompressStream, createUncompressStream } from './snappy-stream/index.ts'
 /**
- * Compress data using snappy
- * @param uncompressedData
- * @returns compressed data
+ * Compress data with Snappy framed encoding (e2store wire format).
+ *
+ * @param uncompressedData Raw bytes to compress
  */
 export async function compressData(uncompressedData: Uint8Array): Promise<Uint8Array> {
   return new Promise((resolve, reject) => {
@@ -38,6 +38,7 @@ export async function compressData(uncompressedData: Uint8Array): Promise<Uint8A
   })
 }
 
+/** Decompress Snappy-framed e2store payload bytes. */
 export async function decompressData(compressedData: Uint8Array) {
   const unsnappy = createUncompressStream({ asBuffer: true })
   const destroy = () => {

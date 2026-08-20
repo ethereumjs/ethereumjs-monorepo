@@ -5,6 +5,7 @@ import { type CacheOpts, CacheType, type CachesStateManagerOpts } from './types.
 
 import type { Address } from '@ethereumjs/util'
 
+/** Bundled account, code, and storage caches with shared checkpointing. */
 export class Caches {
   account?: AccountCache
   code?: CodeCache

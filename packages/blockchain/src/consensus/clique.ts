@@ -30,11 +30,11 @@ import type { Consensus, ConsensusOptions } from '../types.ts'
 
 const debug = debugDefault('blockchain:clique')
 
-// Magic nonce number to vote on adding a new signer
+/** Clique vote nonce encoding "authorize signer" (EIP-225). */
 export const CLIQUE_NONCE_AUTH = new Uint8Array(
   hexToBytes('0xffffffffffffffff').buffer as ArrayBuffer,
 )
-// Magic nonce number to vote on removing a signer.
+/** Clique vote nonce encoding "drop signer" (EIP-225). */
 export const CLIQUE_NONCE_DROP = new Uint8Array(8)
 
 const CLIQUE_SIGNERS_KEY = 'CliqueSigners'
@@ -234,8 +234,8 @@ export class CliqueConsensus implements Consensus {
   }
 
   /**
-   * Save signer state to db
-   * @param signerState
+   * Save signer state to db.
+   *
    * @hidden
    */
   private async cliqueUpdateSignerStates(signerState?: CliqueSignerState) {

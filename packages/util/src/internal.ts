@@ -28,10 +28,9 @@ import { EthereumJSErrorWithoutCode } from './errors.ts'
 import type { PrefixedHexString } from './types.ts'
 
 /**
- * Returns a boolean on whether or not the the input starts with '0x' and matches the optional length
- * @param {string} value the string input value
- * @param {number|undefined} length the optional length of the hex string in bytes
- * @returns {boolean} Whether or not the string is a valid PrefixedHexString matching the optional length
+ * Return whether `value` is a `0x`-prefixed hex string, optionally requiring an exact byte length.
+ *
+ * @param length When set, the hex body must contain exactly this many bytes
  */
 export function isHexString(value: string, length?: number): value is PrefixedHexString {
   if (typeof value !== 'string' || !value.match(/^0x[0-9A-Fa-f]*$/)) return false
@@ -41,11 +40,7 @@ export function isHexString(value: string, length?: number): value is PrefixedHe
   return true
 }
 
-/**
- * Removes '0x' from a given `String` if present
- * @param str the string value
- * @returns the string without 0x prefix
- */
+/** Remove a leading `0x` prefix when present. @throws If the input is not a string */
 export const stripHexPrefix = (str: string): string => {
   if (typeof str !== 'string')
     throw EthereumJSErrorWithoutCode(
@@ -55,11 +50,7 @@ export const stripHexPrefix = (str: string): string => {
   return isHexString(str) ? str.slice(2) : str
 }
 
-/**
- * Pads a `String` to have an even length
- * @param value
- * @return output
- */
+/** Pad a hex string to an even number of nibbles. @throws If the input is not a string */
 export function padToEven(value: string): string {
   let a = value
 
@@ -74,11 +65,7 @@ export function padToEven(value: string): string {
   return a
 }
 
-/**
- * Get the binary size of a string
- * @param str
- * @returns the number of bytes contained within the string
- */
+/** Return the UTF-8 byte length of a string. @throws If the input is not a string */
 export function getBinarySize(str: string) {
   if (typeof str !== 'string') {
     throw EthereumJSErrorWithoutCode(
@@ -90,12 +77,10 @@ export function getBinarySize(str: string) {
 }
 
 /**
- * Returns TRUE if the first specified array contains all elements
- * from the second one. FALSE otherwise.
+ * Return whether `superset` contains every element of `subset`.
  *
- * @param superset
- * @param subset
- *
+ * When `some` is true, succeed if any subset element is present instead of all.
+ * @throws If either argument is not an array
  */
 export function arrayContainsArray(
   superset: unknown[],
@@ -116,12 +101,7 @@ export function arrayContainsArray(
   return subset[some === true ? 'some' : 'every']((value) => superset.indexOf(value) >= 0)
 }
 
-/**
- * Should be called to get ascii from its hex representation
- *
- * @param string in hex
- * @returns ascii string representation of hex value
- */
+/** Decode a hex string (optional `0x` prefix) into an ASCII string. */
 export function toAscii(hex: string): string {
   let str = ''
   let i = 0
@@ -137,14 +117,7 @@ export function toAscii(hex: string): string {
   return str
 }
 
-/**
- * Should be called to get hex representation (prefixed by 0x) of utf8 string.
- * Strips leading and trailing 0's.
- *
- * @param string
- * @param optional padding
- * @returns hex representation of input string
- */
+/** Encode a UTF-8 string as a compact `0x`-prefixed hex value with outer zero nibbles stripped. */
 export function fromUtf8(stringValue: string) {
   const str = utf8ToBytes(stringValue)
 
@@ -153,13 +126,7 @@ export function fromUtf8(stringValue: string) {
   return `0x${padToEven(bytesToUnprefixedHex(str)).replace(/^0+|0+$/g, '')}`
 }
 
-/**
- * Should be called to get hex representation (prefixed by 0x) of ascii string
- *
- * @param  string
- * @param  optional padding
- * @returns  hex representation of input string
- */
+/** Encode an ASCII string as a `0x`-prefixed hex value. */
 export function fromAscii(stringValue: string) {
   let hex = ''
   for (let i = 0; i < stringValue.length; i++) {
@@ -172,15 +139,14 @@ export function fromAscii(stringValue: string) {
 }
 
 /**
- * Returns the keys from an array of objects.
+ * Collect string values for `key` from each object in `params`.
+ *
  * @example
  * ```js
  * getKeys([{a: '1', b: '2'}, {a: '3', b: '4'}], 'a') => ['1', '3']
- *````
- * @param  params
- * @param  key
- * @param  allowEmpty
- * @returns output just a simple array of output keys
+ * ```
+ * @param allowEmpty When true, missing values become empty strings instead of throwing
+ * @throws If `params` is not an array or a selected value is not a string
  */
 export function getKeys(params: Record<string, string>[], key: string, allowEmpty?: boolean) {
   if (!Array.isArray(params)) {

@@ -52,17 +52,20 @@ import {
 import type { Common } from '@ethereumjs/common'
 import type { RunState } from '../interpreter.ts'
 
+/** Synchronous opcode implementation invoked from the interpreter loop. */
 export interface SyncOpHandler {
   (runState: RunState, common: Common): void
 }
 
+/** Async opcode implementation (state reads, nested calls). */
 export interface AsyncOpHandler {
   (runState: RunState, common: Common): Promise<void>
 }
 
+/** Union of sync and async opcode handlers keyed by opcode byte. */
 export type OpHandler = SyncOpHandler | AsyncOpHandler
 
-// the opcode functions
+/** Default opcode logic handlers indexed by opcode byte. */
 export const handlers: Map<number, OpHandler> = new Map<number, OpHandler>([
   // 0x00: STOP
   [

@@ -13,8 +13,10 @@ type DatabaseKey = {
   blockHash?: Uint8Array
 }
 
+/** LevelDB sublevel target identifiers for execution-client block export. */
 export type DBTarget = (typeof DBTarget)[keyof typeof DBTarget]
 
+/** Numeric sublevel codes used when reading chain/meta databases. */
 export const DBTarget = {
   NumberToHash: 4,
   TotalDifficulty: 5,
@@ -22,8 +24,10 @@ export const DBTarget = {
   Header: 7,
 } as const
 
+/** Meta-database key type identifiers. */
 export type DBKey = (typeof DBKey)[keyof typeof DBKey]
 
+/** Meta-database key codes (e.g. receipts). */
 export const DBKey = {
   Receipts: 0,
 } as const
@@ -38,11 +42,13 @@ async function dbGet(DB: BlockDB, dbOperationTarget: DBTarget, key?: DatabaseKey
   })
 }
 
+/** Resolve a canonical block number to its block hash in a LevelDB chain database. */
 export async function numberToHash(DB: BlockDB, number: bigint): Promise<Uint8Array> {
   const hash = await dbGet(DB, DBTarget.NumberToHash, { blockNumber: number })
   return hash
 }
 
+/** Read an RLP-encoded block header from a LevelDB chain database. */
 export async function getHeader(DB: BlockDB, hash: Uint8Array, number: bigint) {
   const header = await dbGet(DB, DBTarget.Header, { blockHash: hash, blockNumber: number })
   return header as Uint8Array
@@ -60,11 +66,13 @@ export async function getBody(
   return body !== undefined ? (RLP.decode(body) as BlockBodyBytes) : undefined
 }
 
+/** Read total difficulty for a block from the chain database. */
 export async function getTotalDifficulty(DB: BlockDB, hash: Uint8Array, number: bigint) {
   const td = await dbGet(DB, DBTarget.TotalDifficulty, { blockHash: hash, blockNumber: number })
   return bytesToBigInt(RLP.decode(td) as Uint8Array)
 }
 
+/** Fetch RLP-encoded header and body for a block by number. */
 export async function getBlock(DB: BlockDB, number: bigint) {
   const hash = await numberToHash(DB, number)
   const header = await getHeader(DB, hash, number)
@@ -76,6 +84,7 @@ export async function getBlock(DB: BlockDB, number: bigint) {
   return { header, body }
 }
 
+/** Read RLP-encoded receipts for a block hash from the meta database. */
 export async function getBlockReceipts(DB: BlockDB, blockHash: Uint8Array): Promise<Uint8Array> {
   const dbKey = concatBytes(intToBytes(DBKey.Receipts), blockHash)
   const receipts = await DB.get(dbKey)

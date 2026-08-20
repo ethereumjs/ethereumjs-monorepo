@@ -390,10 +390,7 @@ const eipOpcodes: { eip: number; opcodes: OpcodeEntry }[] = [
 ]
 
 /**
- * Convert basic opcode info dictionary into complete OpcodeList instance.
- *
- * @param opcodes {Object} Receive basic opcodes info dictionary.
- * @returns {OpcodeList} Complete Opcode list
+ * Convert basic opcode metadata into a complete {@link OpcodeList}.
  */
 function createOpcodes(opcodes: OpcodeEntryFee): OpcodeList {
   const result: OpcodeList = new Map()
@@ -427,11 +424,9 @@ export type OpcodeMapEntry = {
 export type OpcodeMap = OpcodeMapEntry[]
 
 /**
- * Get suitable opcodes for the required hardfork.
+ * Returns opcode handlers and gas tables for the active hardfork and EIPs.
  *
- * @param common {Common} Ethereumjs Common metadata object.
- * @param customOpcodes List with custom opcodes (see EVM `customOpcodes` option description).
- * @returns {OpcodeList} Opcodes dictionary object.
+ * Merges fork-specific and EIP-specific opcode overrides with optional {@link CustomOpcode} entries.
  */
 export function getOpcodesForHF(common: Common, customOpcodes?: CustomOpcode[]): OpcodeContext {
   let opcodeBuilder: any = { ...opcodes }

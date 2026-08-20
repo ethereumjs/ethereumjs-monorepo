@@ -53,22 +53,10 @@ import type { OnFound } from './util/asyncWalk.ts'
 /**
  * The basic trie interface, use with `import { MerklePatriciaTrie } from '@ethereumjs/mpt'`.
  *
- * A MerklePatriciaTrie object can be created with the constructor method:
+ * Preferred entry point: {@link createMPT}. For proof-backed sparse tries: {@link createMPTFromProof}.
  *
- * - {@link createMPT}
- *
- * A sparse MerklePatriciaTrie object can be created from a merkle proof:
- *
- * - {@link createMPTFromProof}
- */
-/**
- * Merkle Patricia Trie - a space-optimized trie where each node with only one child
- * is merged with its parent. Used for Ethereum state and storage.
- *
- * Node types:
- * - Branch: 16-way branch + optional value (for keys ending at this node)
- * - Extension: short path (nibbles) → child node
- * - Leaf: remaining path (nibbles) → value
+ * Merkle Patricia Trie — a space-optimized trie where single-child nodes merge with their parent.
+ * Node types: branch (16-way + optional value), extension (shared path), leaf (terminal value).
  */
 export class MerklePatriciaTrie {
   /** Options with defaults applied */
@@ -98,9 +86,8 @@ export class MerklePatriciaTrie {
 
   /**
    * Creates a new trie.
-   * @param opts Options for instantiating the trie
    *
-   * Note: in most cases, {@link createMPT} constructor should be used.  It uses the same API but provides sensible defaults
+   * @deprecated Use {@link createMPT} instead; it applies the same options with sensible defaults.
    */
   constructor(opts?: MPTOpts) {
     if (opts?.valueEncoding !== undefined && opts.db === undefined) {
@@ -210,11 +197,9 @@ export class MerklePatriciaTrie {
   }
 
   /**
-   * Stores a given `value` at the given `key` or do a delete if `value` is empty
-   * (delete operations are only executed on DB with `deleteFromDB` set to `true`)
-   * @param key
-   * @param value
-   * @returns A Promise that resolves once value is stored.
+   * Stores `value` at `key`, or deletes the key when `value` is empty.
+   *
+   * Deletes only reach the backing DB when node pruning is enabled.
    */
   async put(
     key: Uint8Array,
@@ -261,10 +246,9 @@ export class MerklePatriciaTrie {
   }
 
   /**
-   * Deletes a value given a `key` from the trie
-   * (delete operations are only executed on DB with `deleteFromDB` set to `true`)
-   * @param key
-   * @returns A Promise that resolves once value is deleted.
+   * Deletes the value at `key`.
+   *
+   * Physical DB deletes occur only when node pruning is enabled.
    */
   async del(key: Uint8Array, skipKeyTransform: boolean = false): Promise<void> {
     this.DEBUG && this.debug(`Key: ${bytesToHex(key)}`, ['del'])
@@ -426,10 +410,10 @@ export class MerklePatriciaTrie {
   }
 
   /**
-   * Walks a trie until finished.
-   * @param root
-   * @param onFound - callback to call when a node is found. This schedules new tasks. If no tasks are available, the Promise resolves.
-   * @returns Resolves when finished walking trie.
+   * Walk the trie from `root`, invoking `onFound` for each visited node.
+   *
+   * @param root Root hash to start from
+   * @param onFound Callback that may schedule further child visits via the walk controller
    */
   async walkTrie(root: Uint8Array, onFound: FoundNodeFunction): Promise<void> {
     await WalkController.newWalk(onFound, this, root)
@@ -860,7 +844,7 @@ export class MerklePatriciaTrie {
    *  , { type: 'put', key: Uint8Array.from('occupation'), value: Uint8Array.from('Clown') }
    * ]
    * await trie.batch(ops)
-   * @param ops
+   * @param ops Put/delete operations applied in order
    */
   async batch(ops: BatchDBOp[], skipKeyTransform?: boolean): Promise<void> {
     for (const op of ops) {
