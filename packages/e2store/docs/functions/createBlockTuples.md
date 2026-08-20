@@ -8,7 +8,9 @@
 
 > **createBlockTuples**(`blocks`, `blockReceipts`, `td`): `Promise`\<\{ `blockTuples`: `object`[]; `headerRecords`: `object`[]; `totalDifficulty`: `bigint`; \}\>
 
-Defined in: [packages/e2store/src/era1/blockTuple.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/era1/blockTuple.ts#L8)
+Defined in: [packages/e2store/src/era1/blockTuple.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/era1/blockTuple.ts#L9)
+
+Builds era1 block tuples and cumulative header records from execution-layer blocks.
 
 ## Parameters
 

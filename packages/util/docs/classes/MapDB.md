@@ -6,7 +6,9 @@
 
 # Class: MapDB\<TKey, TValue\>
 
-Defined in: [packages/util/src/mapDB.ts:5](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/mapDB.ts#L5)
+Defined in: [packages/util/src/mapDB.ts:6](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/mapDB.ts#L6)
+
+In-memory [DB](../interfaces/DB.md) backed by a JavaScript `Map`.
 
 ## Type Parameters
 
@@ -28,7 +30,7 @@ Defined in: [packages/util/src/mapDB.ts:5](https://github.com/ethereumjs/ethereu
 
 > **new MapDB**\<`TKey`, `TValue`\>(`database?`): `MapDB`\<`TKey`, `TValue`\>
 
-Defined in: [packages/util/src/mapDB.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/mapDB.ts#L12)
+Defined in: [packages/util/src/mapDB.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/mapDB.ts#L13)
 
 #### Parameters
 
@@ -46,7 +48,7 @@ Defined in: [packages/util/src/mapDB.ts:12](https://github.com/ethereumjs/ethere
 
 > **\_database**: `Map`\<`TKey`, `TValue`\>
 
-Defined in: [packages/util/src/mapDB.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/mapDB.ts#L10)
+Defined in: [packages/util/src/mapDB.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/mapDB.ts#L11)
 
 ## Methods
 
@@ -54,7 +56,7 @@ Defined in: [packages/util/src/mapDB.ts:10](https://github.com/ethereumjs/ethere
 
 > **batch**(`opStack`): `Promise`\<`void`\>
 
-Defined in: [packages/util/src/mapDB.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/mapDB.ts#L33)
+Defined in: [packages/util/src/mapDB.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/mapDB.ts#L34)
 
 Performs a batch operation on db.
 
@@ -80,7 +82,7 @@ A stack of levelup operations
 
 > **del**(`key`): `Promise`\<`void`\>
 
-Defined in: [packages/util/src/mapDB.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/mapDB.ts#L27)
+Defined in: [packages/util/src/mapDB.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/mapDB.ts#L28)
 
 Removes a raw value in the underlying db.
 
@@ -104,7 +106,7 @@ Removes a raw value in the underlying db.
 
 > **get**(`key`): `Promise`\<`TValue` \| `undefined`\>
 
-Defined in: [packages/util/src/mapDB.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/mapDB.ts#L16)
+Defined in: [packages/util/src/mapDB.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/mapDB.ts#L17)
 
 Retrieves a raw value from db.
 
@@ -130,7 +132,7 @@ A Promise that resolves to `Uint8Array` if a value is found or `undefined` if no
 
 > **open**(): `Promise`\<`void`\>
 
-Defined in: [packages/util/src/mapDB.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/mapDB.ts#L54)
+Defined in: [packages/util/src/mapDB.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/mapDB.ts#L55)
 
 Opens the database -- if applicable
 
@@ -148,7 +150,7 @@ Opens the database -- if applicable
 
 > **put**(`key`, `val`): `Promise`\<`void`\>
 
-Defined in: [packages/util/src/mapDB.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/mapDB.ts#L21)
+Defined in: [packages/util/src/mapDB.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/mapDB.ts#L22)
 
 Writes a value directly to db.
 
@@ -178,7 +180,7 @@ The key as a `TValue`
 
 > **shallowCopy**(): [`DB`](../interfaces/DB.md)\<`TKey`, `TValue`\>
 
-Defined in: [packages/util/src/mapDB.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/mapDB.ts#L50)
+Defined in: [packages/util/src/mapDB.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/mapDB.ts#L51)
 
 Note that the returned shallow copy will share the underlying database with the original
 

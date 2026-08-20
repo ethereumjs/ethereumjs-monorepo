@@ -8,7 +8,9 @@
 
 > **getHeaderRecords**(`bytes`): `Promise`\<`object`[]\>
 
-Defined in: [packages/e2store/src/era1/era1.ts:123](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/era1/era1.ts#L123)
+Defined in: [packages/e2store/src/era1/era1.ts:127](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/era1/era1.ts#L127)
+
+Builds header records (block hash + total difficulty) from all block tuples in an era1 file.
 
 ## Parameters
 

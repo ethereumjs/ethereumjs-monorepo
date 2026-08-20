@@ -8,7 +8,7 @@
 
 > **eoaCode7702AuthorizationListBytesItemToJSON**(`authorizationList`): [`EOACode7702AuthorizationListItem`](../type-aliases/EOACode7702AuthorizationListItem.md)
 
-Defined in: [packages/util/src/authorization.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/authorization.ts#L32)
+Defined in: [packages/util/src/authorization.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/authorization.ts#L33)
 
 Converts an authorization list to a JSON format
 

@@ -8,7 +8,9 @@
 
 > **isStemBinaryNode**(`node`): `node is StemBinaryNode`
 
-Defined in: [node/util.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/node/util.ts#L36)
+Defined in: [node/util.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/node/util.ts#L41)
+
+Type guard for StemBinaryNode.
 
 ## Parameters
 

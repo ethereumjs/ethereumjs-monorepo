@@ -8,7 +8,7 @@
 
 > **generateAddress2**(`from`, `salt`, `initCode`): `Uint8Array`
 
-Defined in: [packages/util/src/account.ts:473](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L473)
+Defined in: [packages/util/src/account.ts:495](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L495)
 
 Generates an address for a contract created using CREATE2.
 

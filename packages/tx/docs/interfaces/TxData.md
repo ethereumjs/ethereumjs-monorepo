@@ -6,7 +6,9 @@
 
 # Interface: TxData
 
-Defined in: [types.ts:290](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L290)
+Defined in: [types.ts:319](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L319)
+
+Maps each [TransactionType](../variables/TransactionType.md) to its plain-object data shape.
 
 ## Properties
 
@@ -14,7 +16,7 @@ Defined in: [types.ts:290](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **0**: [`LegacyTxData`](../type-aliases/LegacyTxData.md)
 
-Defined in: [types.ts:291](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L291)
+Defined in: [types.ts:320](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L320)
 
 ***
 
@@ -22,7 +24,7 @@ Defined in: [types.ts:291](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **1**: [`AccessList2930TxData`](AccessList2930TxData.md)
 
-Defined in: [types.ts:292](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L292)
+Defined in: [types.ts:321](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L321)
 
 ***
 
@@ -30,7 +32,7 @@ Defined in: [types.ts:292](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **2**: [`FeeMarketEIP1559TxData`](FeeMarketEIP1559TxData.md)
 
-Defined in: [types.ts:293](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L293)
+Defined in: [types.ts:322](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L322)
 
 ***
 
@@ -38,7 +40,7 @@ Defined in: [types.ts:293](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **3**: [`BlobEIP4844TxData`](BlobEIP4844TxData.md)
 
-Defined in: [types.ts:294](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L294)
+Defined in: [types.ts:323](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L323)
 
 ***
 
@@ -46,4 +48,4 @@ Defined in: [types.ts:294](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **4**: [`EOACode7702TxData`](EOACode7702TxData.md)
 
-Defined in: [types.ts:295](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L295)
+Defined in: [types.ts:324](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L324)

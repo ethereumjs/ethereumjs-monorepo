@@ -60,7 +60,7 @@ Defined in: [packages/devp2p/src/rlpx/rlpx.ts:35](https://github.com/ethereumjs/
 
 > **\_connectToPeer**(`peer`): `void`
 
-Defined in: [packages/devp2p/src/rlpx/rlpx.ts:210](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L210)
+Defined in: [packages/devp2p/src/rlpx/rlpx.ts:212](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L212)
 
 #### Parameters
 
@@ -78,7 +78,7 @@ Defined in: [packages/devp2p/src/rlpx/rlpx.ts:210](https://github.com/ethereumjs
 
 > **\_getOpenQueueSlots**(): `number`
 
-Defined in: [packages/devp2p/src/rlpx/rlpx.ts:206](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L206)
+Defined in: [packages/devp2p/src/rlpx/rlpx.ts:208](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L208)
 
 #### Returns
 
@@ -90,7 +90,7 @@ Defined in: [packages/devp2p/src/rlpx/rlpx.ts:206](https://github.com/ethereumjs
 
 > **\_getOpenSlots**(): `number`
 
-Defined in: [packages/devp2p/src/rlpx/rlpx.ts:202](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L202)
+Defined in: [packages/devp2p/src/rlpx/rlpx.ts:204](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L204)
 
 #### Returns
 
@@ -102,7 +102,7 @@ Defined in: [packages/devp2p/src/rlpx/rlpx.ts:202](https://github.com/ethereumjs
 
 > **\_isAlive**(): `boolean`
 
-Defined in: [packages/devp2p/src/rlpx/rlpx.ts:194](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L194)
+Defined in: [packages/devp2p/src/rlpx/rlpx.ts:196](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L196)
 
 #### Returns
 
@@ -114,7 +114,7 @@ Defined in: [packages/devp2p/src/rlpx/rlpx.ts:194](https://github.com/ethereumjs
 
 > **\_isAliveCheck**(): `void`
 
-Defined in: [packages/devp2p/src/rlpx/rlpx.ts:198](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L198)
+Defined in: [packages/devp2p/src/rlpx/rlpx.ts:200](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L200)
 
 #### Returns
 
@@ -126,7 +126,7 @@ Defined in: [packages/devp2p/src/rlpx/rlpx.ts:198](https://github.com/ethereumjs
 
 > **\_onConnect**(`socket`, `peerId`): `void`
 
-Defined in: [packages/devp2p/src/rlpx/rlpx.ts:219](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L219)
+Defined in: [packages/devp2p/src/rlpx/rlpx.ts:221](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L221)
 
 #### Parameters
 
@@ -136,7 +136,7 @@ Defined in: [packages/devp2p/src/rlpx/rlpx.ts:219](https://github.com/ethereumjs
 
 ##### peerId
 
-`Uint8Array`\<`ArrayBufferLike`\> | `null`
+`Uint8Array`\<`ArrayBufferLike`\> \| `null`
 
 #### Returns
 
@@ -148,7 +148,7 @@ Defined in: [packages/devp2p/src/rlpx/rlpx.ts:219](https://github.com/ethereumjs
 
 > **\_refillConnections**(): `void`
 
-Defined in: [packages/devp2p/src/rlpx/rlpx.ts:306](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L306)
+Defined in: [packages/devp2p/src/rlpx/rlpx.ts:310](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L310)
 
 #### Returns
 
@@ -196,7 +196,7 @@ Defined in: [packages/devp2p/src/rlpx/rlpx.ts:134](https://github.com/ethereumjs
 
 > **disconnect**(`id`): `void`
 
-Defined in: [packages/devp2p/src/rlpx/rlpx.ts:187](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L187)
+Defined in: [packages/devp2p/src/rlpx/rlpx.ts:188](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L188)
 
 #### Parameters
 
@@ -214,7 +214,7 @@ Defined in: [packages/devp2p/src/rlpx/rlpx.ts:187](https://github.com/ethereumjs
 
 > **getPeers**(): [`Peer`](Peer.md)[]
 
-Defined in: [packages/devp2p/src/rlpx/rlpx.ts:183](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L183)
+Defined in: [packages/devp2p/src/rlpx/rlpx.ts:184](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/rlpx.ts#L184)
 
 #### Returns
 

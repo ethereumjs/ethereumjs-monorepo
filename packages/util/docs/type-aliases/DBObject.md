@@ -8,7 +8,9 @@
 
 > **DBObject** = `object`
 
-Defined in: [packages/util/src/db.ts:1](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L1)
+Defined in: [packages/util/src/db.ts:2](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L2)
+
+Key/value record stored in a [DB](../interfaces/DB.md).
 
 ## Index Signature
 

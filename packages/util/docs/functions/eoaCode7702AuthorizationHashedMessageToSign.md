@@ -8,7 +8,7 @@
 
 > **eoaCode7702AuthorizationHashedMessageToSign**(`input`): `Uint8Array`\<`ArrayBufferLike`\>
 
-Defined in: [packages/util/src/authorization.ts:113](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/authorization.ts#L113)
+Defined in: [packages/util/src/authorization.ts:114](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/authorization.ts#L114)
 
 Hashes the RLP-encoded message to sign
 
@@ -16,7 +16,7 @@ Hashes the RLP-encoded message to sign
 
 ### input
 
-[`EOACode7702AuthorizationListItemUnsigned`](../type-aliases/EOACode7702AuthorizationListItemUnsigned.md) | [`EOACode7702AuthorizationListBytesItemUnsigned`](../type-aliases/EOACode7702AuthorizationListBytesItemUnsigned.md)
+[`EOACode7702AuthorizationListItemUnsigned`](../type-aliases/EOACode7702AuthorizationListItemUnsigned.md) \| [`EOACode7702AuthorizationListBytesItemUnsigned`](../type-aliases/EOACode7702AuthorizationListBytesItemUnsigned.md)
 
 ## Returns
 

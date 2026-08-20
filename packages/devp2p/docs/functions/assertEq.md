@@ -8,7 +8,7 @@
 
 > **assertEq**(`expected`, `actual`, `msg`, `debug`, `messageName?`): `void`
 
-Defined in: [packages/devp2p/src/util.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L51)
+Defined in: [packages/devp2p/src/util.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L53)
 
 ## Parameters
 

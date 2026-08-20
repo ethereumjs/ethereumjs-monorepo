@@ -8,6 +8,8 @@
 
 Defined in: [packages/util/src/binaryTree.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L42)
 
+Stem and suffix diffs for one binary-tree state access.
+
 ## Properties
 
 ### stem

@@ -6,7 +6,11 @@
 
 # Interface: StateManagerInterface
 
-Defined in: [common/src/interfaces.ts:126](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L126)
+Defined in: [interfaces.ts:177](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L177)
+
+Core state access surface implemented by EthereumJS state managers.
+
+Matches the `@ethereumjs/statemanager` package API.
 
 ## Properties
 
@@ -14,7 +18,7 @@ Defined in: [common/src/interfaces.ts:126](https://github.com/ethereumjs/ethereu
 
 > **originalStorageCache**: `object`
 
-Defined in: [common/src/interfaces.ts:173](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L173)
+Defined in: [interfaces.ts:231](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L231)
 
 #### clear()
 
@@ -48,7 +52,7 @@ Defined in: [common/src/interfaces.ts:173](https://github.com/ethereumjs/ethereu
 
 > `optional` **checkChunkWitnessPresent**(`contract`, `programCounter`): `Promise`\<`boolean`\>
 
-Defined in: [common/src/interfaces.ts:183](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L183)
+Defined in: [interfaces.ts:241](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L241)
 
 #### Parameters
 
@@ -70,7 +74,7 @@ Defined in: [common/src/interfaces.ts:183](https://github.com/ethereumjs/ethereu
 
 > **checkpoint**(): `Promise`\<`void`\>
 
-Defined in: [common/src/interfaces.ts:149](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L149)
+Defined in: [interfaces.ts:200](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L200)
 
 #### Returns
 
@@ -82,7 +86,7 @@ Defined in: [common/src/interfaces.ts:149](https://github.com/ethereumjs/ethereu
 
 > **clearCaches**(): `void`
 
-Defined in: [common/src/interfaces.ts:189](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L189)
+Defined in: [interfaces.ts:247](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L247)
 
 #### Returns
 
@@ -94,7 +98,7 @@ Defined in: [common/src/interfaces.ts:189](https://github.com/ethereumjs/ethereu
 
 > **clearStorage**(`address`): `Promise`\<`void`\>
 
-Defined in: [common/src/interfaces.ts:144](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L144)
+Defined in: [interfaces.ts:195](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L195)
 
 #### Parameters
 
@@ -112,7 +116,7 @@ Defined in: [common/src/interfaces.ts:144](https://github.com/ethereumjs/ethereu
 
 > **commit**(): `Promise`\<`void`\>
 
-Defined in: [common/src/interfaces.ts:150](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L150)
+Defined in: [interfaces.ts:201](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L201)
 
 #### Returns
 
@@ -120,11 +124,40 @@ Defined in: [common/src/interfaces.ts:150](https://github.com/ethereumjs/ethereu
 
 ***
 
+### consumeBAL()?
+
+> `optional` **consumeBAL**(`bal`, `expectedStateRoot?`): `Promise`\<`void`\>
+
+Defined in: [interfaces.ts:226](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L226)
+
+Apply an EIP-7928 block-level access list onto this state (no EVM execution).
+Implementations in `@ethereumjs/statemanager` forward to the shared `consumeBAL()` helper.
+
+#### Parameters
+
+##### bal
+
+`BALJSONBlockAccessList`
+
+##### expectedStateRoot?
+
+`Uint8Array`\<`ArrayBufferLike`\>
+
+#### Returns
+
+`Promise`\<`void`\>
+
+#### Remarks
+
+Experimental (Amsterdam): may change on patch releases.
+
+***
+
 ### deleteAccount()
 
 > **deleteAccount**(`address`): `Promise`\<`void`\>
 
-Defined in: [common/src/interfaces.ts:133](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L133)
+Defined in: [interfaces.ts:184](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L184)
 
 #### Parameters
 
@@ -142,7 +175,7 @@ Defined in: [common/src/interfaces.ts:133](https://github.com/ethereumjs/ethereu
 
 > `optional` **dumpStorage**(`address`): `Promise`\<[`StorageDump`](StorageDump.md)\>
 
-Defined in: [common/src/interfaces.ts:167](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L167)
+Defined in: [interfaces.ts:218](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L218)
 
 #### Parameters
 
@@ -160,7 +193,7 @@ Defined in: [common/src/interfaces.ts:167](https://github.com/ethereumjs/ethereu
 
 > `optional` **dumpStorageRange**(`address`, `startKey`, `limit`): `Promise`\<[`StorageRange`](StorageRange.md)\>
 
-Defined in: [common/src/interfaces.ts:168](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L168)
+Defined in: [interfaces.ts:219](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L219)
 
 #### Parameters
 
@@ -186,7 +219,7 @@ Defined in: [common/src/interfaces.ts:168](https://github.com/ethereumjs/ethereu
 
 > `optional` **generateCanonicalGenesis**(`initState`): `Promise`\<`void`\>
 
-Defined in: [common/src/interfaces.ts:177](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L177)
+Defined in: [interfaces.ts:235](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L235)
 
 #### Parameters
 
@@ -204,7 +237,7 @@ Defined in: [common/src/interfaces.ts:177](https://github.com/ethereumjs/ethereu
 
 > **getAccount**(`address`): `Promise`\<`Account` \| `undefined`\>
 
-Defined in: [common/src/interfaces.ts:131](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L131)
+Defined in: [interfaces.ts:182](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L182)
 
 #### Parameters
 
@@ -222,7 +255,7 @@ Defined in: [common/src/interfaces.ts:131](https://github.com/ethereumjs/ethereu
 
 > `optional` **getAppliedKey**(`address`): `Uint8Array`
 
-Defined in: [common/src/interfaces.ts:184](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L184)
+Defined in: [interfaces.ts:242](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L242)
 
 #### Parameters
 
@@ -240,7 +273,7 @@ Defined in: [common/src/interfaces.ts:184](https://github.com/ethereumjs/ethereu
 
 > **getCode**(`address`): `Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
 
-Defined in: [common/src/interfaces.ts:138](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L138)
+Defined in: [interfaces.ts:189](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L189)
 
 #### Parameters
 
@@ -258,7 +291,7 @@ Defined in: [common/src/interfaces.ts:138](https://github.com/ethereumjs/ethereu
 
 > **getCodeSize**(`address`): `Promise`\<`number`\>
 
-Defined in: [common/src/interfaces.ts:139](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L139)
+Defined in: [interfaces.ts:190](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L190)
 
 #### Parameters
 
@@ -276,7 +309,7 @@ Defined in: [common/src/interfaces.ts:139](https://github.com/ethereumjs/ethereu
 
 > **getStateRoot**(): `Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
 
-Defined in: [common/src/interfaces.ts:156](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L156)
+Defined in: [interfaces.ts:207](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L207)
 
 #### Returns
 
@@ -288,7 +321,7 @@ Defined in: [common/src/interfaces.ts:156](https://github.com/ethereumjs/ethereu
 
 > **getStorage**(`address`, `key`): `Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
 
-Defined in: [common/src/interfaces.ts:142](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L142)
+Defined in: [interfaces.ts:193](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L193)
 
 #### Parameters
 
@@ -310,7 +343,7 @@ Defined in: [common/src/interfaces.ts:142](https://github.com/ethereumjs/ethereu
 
 > **hasStateRoot**(`root`): `Promise`\<`boolean`\>
 
-Defined in: [common/src/interfaces.ts:158](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L158)
+Defined in: [interfaces.ts:209](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L209)
 
 #### Parameters
 
@@ -328,7 +361,7 @@ Defined in: [common/src/interfaces.ts:158](https://github.com/ethereumjs/ethereu
 
 > `optional` **initBinaryTreeExecutionWitness**(`blockNum`, `executionWitness?`): `void`
 
-Defined in: [common/src/interfaces.ts:178](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L178)
+Defined in: [interfaces.ts:236](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L236)
 
 #### Parameters
 
@@ -338,7 +371,7 @@ Defined in: [common/src/interfaces.ts:178](https://github.com/ethereumjs/ethereu
 
 ##### executionWitness?
 
-`BinaryTreeExecutionWitness` | `null`
+`BinaryTreeExecutionWitness` \| `null`
 
 #### Returns
 
@@ -350,7 +383,7 @@ Defined in: [common/src/interfaces.ts:178](https://github.com/ethereumjs/ethereu
 
 > **modifyAccountFields**(`address`, `accountFields`): `Promise`\<`void`\>
 
-Defined in: [common/src/interfaces.ts:134](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L134)
+Defined in: [interfaces.ts:185](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L185)
 
 #### Parameters
 
@@ -372,7 +405,7 @@ Defined in: [common/src/interfaces.ts:134](https://github.com/ethereumjs/ethereu
 
 > **putAccount**(`address`, `account?`): `Promise`\<`void`\>
 
-Defined in: [common/src/interfaces.ts:132](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L132)
+Defined in: [interfaces.ts:183](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L183)
 
 #### Parameters
 
@@ -394,7 +427,7 @@ Defined in: [common/src/interfaces.ts:132](https://github.com/ethereumjs/ethereu
 
 > **putCode**(`address`, `value`): `Promise`\<`void`\>
 
-Defined in: [common/src/interfaces.ts:137](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L137)
+Defined in: [interfaces.ts:188](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L188)
 
 #### Parameters
 
@@ -416,7 +449,7 @@ Defined in: [common/src/interfaces.ts:137](https://github.com/ethereumjs/ethereu
 
 > **putStorage**(`address`, `key`, `value`): `Promise`\<`void`\>
 
-Defined in: [common/src/interfaces.ts:143](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L143)
+Defined in: [interfaces.ts:194](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L194)
 
 #### Parameters
 
@@ -442,7 +475,7 @@ Defined in: [common/src/interfaces.ts:143](https://github.com/ethereumjs/ethereu
 
 > **revert**(): `Promise`\<`void`\>
 
-Defined in: [common/src/interfaces.ts:151](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L151)
+Defined in: [interfaces.ts:202](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L202)
 
 #### Returns
 
@@ -454,7 +487,7 @@ Defined in: [common/src/interfaces.ts:151](https://github.com/ethereumjs/ethereu
 
 > **setStateRoot**(`stateRoot`, `clearCache?`): `Promise`\<`void`\>
 
-Defined in: [common/src/interfaces.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L157)
+Defined in: [interfaces.ts:208](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L208)
 
 #### Parameters
 
@@ -476,7 +509,7 @@ Defined in: [common/src/interfaces.ts:157](https://github.com/ethereumjs/ethereu
 
 > **shallowCopy**(`downlevelCaches?`): `StateManagerInterface`
 
-Defined in: [common/src/interfaces.ts:190](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L190)
+Defined in: [interfaces.ts:248](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L248)
 
 #### Parameters
 
@@ -494,7 +527,7 @@ Defined in: [common/src/interfaces.ts:190](https://github.com/ethereumjs/ethereu
 
 > `optional` **verifyBinaryTreePostState**(`accessWitness`): `Promise`\<`boolean`\>
 
-Defined in: [common/src/interfaces.ts:182](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L182)
+Defined in: [interfaces.ts:240](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L240)
 
 #### Parameters
 

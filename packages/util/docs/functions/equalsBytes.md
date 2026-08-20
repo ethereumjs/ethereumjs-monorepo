@@ -8,7 +8,7 @@
 
 > **equalsBytes**(`a`, `b`): `boolean`
 
-Defined in: [packages/util/src/bytes.ts:547](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L547)
+Defined in: [packages/util/src/bytes.ts:506](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L506)
 
 ## Parameters
 

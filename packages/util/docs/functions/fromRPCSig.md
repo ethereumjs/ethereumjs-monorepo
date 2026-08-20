@@ -8,7 +8,7 @@
 
 > **fromRPCSig**(`sig`): `object`
 
-Defined in: [packages/util/src/signature.ts:116](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L116)
+Defined in: [packages/util/src/signature.ts:117](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L117)
 
 Convert signature format of the `eth_sign` RPC method to signature parameters
 

@@ -8,7 +8,9 @@
 
 > **hexToKeybytes**(`hex`): `Uint8Array`\<`ArrayBuffer`\>
 
-Defined in: [packages/mpt/src/util/encoding.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/util/encoding.ts#L46)
+Defined in: [util/encoding.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/util/encoding.ts#L48)
+
+Convert a hex (nibble) key to keybytes, stripping an optional terminator nibble.
 
 ## Parameters
 

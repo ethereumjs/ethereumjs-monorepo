@@ -6,7 +6,7 @@
 
 # Interface: RunBlockResult
 
-Defined in: [vm/src/types.ts:370](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L370)
+Defined in: [vm/src/types.ts:376](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L376)
 
 Result of [runBlock](../functions/runBlock.md)
 
@@ -22,9 +22,9 @@ Result of [runBlock](../functions/runBlock.md)
 
 ### blockLevelAccessList?
 
-> `optional` **blockLevelAccessList**: `BlockLevelAccessList`
+> `optional` **blockLevelAccessList?**: `BlockLevelAccessList`
 
-Defined in: [vm/src/types.ts:396](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L396)
+Defined in: [vm/src/types.ts:402](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L402)
 
 The block level access list created during execution when EIP-7928 is active.
 Populated by [runBlock](../functions/runBlock.md) / applyBlock; use with `generate: true` for
@@ -41,7 +41,7 @@ README section `Amsterdam hardfork (experimental)` for release ↔ spec tracking
 
 > **gasUsed**: `bigint`
 
-Defined in: [vm/src/types.ts:348](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L348)
+Defined in: [vm/src/types.ts:354](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L354)
 
 The gas used after executing the block
 
@@ -55,7 +55,7 @@ The gas used after executing the block
 
 > **logsBloom**: `Uint8Array`
 
-Defined in: [vm/src/types.ts:378](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L378)
+Defined in: [vm/src/types.ts:384](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L384)
 
 The bloom filter of the LOGs (events) after executing the block
 
@@ -63,9 +63,9 @@ The bloom filter of the LOGs (events) after executing the block
 
 ### preimages?
 
-> `optional` **preimages**: `Map`\<`` `0x${string}` ``, `Uint8Array`\<`ArrayBufferLike`\>\>
+> `optional` **preimages?**: `Map`\<`` `0x${string}` ``, `Uint8Array`\<`ArrayBufferLike`\>\>
 
-Defined in: [vm/src/types.ts:364](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L364)
+Defined in: [vm/src/types.ts:370](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L370)
 
 Preimages mapping of the touched accounts from the block (see reportPreimages option)
 
@@ -79,7 +79,7 @@ Preimages mapping of the touched accounts from the block (see reportPreimages op
 
 > **receipts**: [`TxReceipt`](../type-aliases/TxReceipt.md)[]
 
-Defined in: [vm/src/types.ts:356](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L356)
+Defined in: [vm/src/types.ts:362](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L362)
 
 Receipts generated for transactions in the block
 
@@ -93,7 +93,7 @@ Receipts generated for transactions in the block
 
 > **receiptsRoot**: `Uint8Array`
 
-Defined in: [vm/src/types.ts:352](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L352)
+Defined in: [vm/src/types.ts:358](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L358)
 
 The receipt root after executing the block
 
@@ -105,9 +105,9 @@ The receipt root after executing the block
 
 ### requests?
 
-> `optional` **requests**: `CLRequest`\<`CLRequestType`\>[]
+> `optional` **requests?**: `CLRequest`\<`CLRequestType`\>[]
 
-Defined in: [vm/src/types.ts:387](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L387)
+Defined in: [vm/src/types.ts:393](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L393)
 
 Any CL requests that were processed in the course of this block
 
@@ -115,9 +115,9 @@ Any CL requests that were processed in the course of this block
 
 ### requestsHash?
 
-> `optional` **requestsHash**: `Uint8Array`\<`ArrayBufferLike`\>
+> `optional` **requestsHash?**: `Uint8Array`\<`ArrayBufferLike`\>
 
-Defined in: [vm/src/types.ts:383](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L383)
+Defined in: [vm/src/types.ts:389](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L389)
 
 The requestsHash for any CL requests in the block
 
@@ -127,7 +127,7 @@ The requestsHash for any CL requests in the block
 
 > **results**: [`RunTxResult`](RunTxResult.md)[]
 
-Defined in: [vm/src/types.ts:360](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L360)
+Defined in: [vm/src/types.ts:366](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L366)
 
 Results of executing the transactions in the block
 
@@ -141,6 +141,6 @@ Results of executing the transactions in the block
 
 > **stateRoot**: `Uint8Array`
 
-Defined in: [vm/src/types.ts:374](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L374)
+Defined in: [vm/src/types.ts:380](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L380)
 
 The stateRoot after executing the block

@@ -8,6 +8,12 @@
 
 > **Log** = \[`Uint8Array`, `Uint8Array`[], `Uint8Array`\]
 
-Defined in: [types.ts:524](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L524)
+Defined in: [types.ts:578](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L578)
 
-Log that the contract emits.
+Log emitted during EVM execution.
+
+Tuple of `[emitterAddress, topics, data]` — the same shape used in transaction receipts
+(`receipt.logs`) and JSON-RPC log objects (before field renaming). See the
+[Event logs](./README.md#event-logs) section in this package and
+[Receipts and event logs](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#receipts-and-event-logs)
+in `@ethereumjs/vm`.

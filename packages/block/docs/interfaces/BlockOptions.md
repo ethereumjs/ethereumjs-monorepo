@@ -16,7 +16,7 @@ hardfork.
 
 ### calcDifficultyFromHeader?
 
-> `optional` **calcDifficultyFromHeader**: [`BlockHeader`](../classes/BlockHeader.md)
+> `optional` **calcDifficultyFromHeader?**: [`BlockHeader`](../classes/BlockHeader.md)
 
 Defined in: [types.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L65)
 
@@ -31,7 +31,7 @@ Note that this option has no effect on networks other than PoW/Ethash networks
 
 ### common?
 
-> `optional` **common**: `Common`
+> `optional` **common?**: `Common`
 
 Defined in: [types.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L32)
 
@@ -49,7 +49,7 @@ Current default hardfork: `merge`
 
 ### freeze?
 
-> `optional` **freeze**: `boolean`
+> `optional` **freeze?**: `boolean`
 
 Defined in: [types.ts:77](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L77)
 
@@ -67,7 +67,7 @@ Default: true
 
 ### params?
 
-> `optional` **params**: `ParamsDict`
+> `optional` **params?**: `ParamsDict`
 
 Defined in: [types.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L56)
 
@@ -90,7 +90,7 @@ params['1']['minGasLimit'] = 3000 // 5000
 
 ### setHardfork?
 
-> `optional` **setHardfork**: `boolean`
+> `optional` **setHardfork?**: `boolean`
 
 Defined in: [types.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L39)
 
@@ -103,7 +103,7 @@ Default: `false` (HF is set to whatever default HF is set by the Common instance
 
 ### skipConsensusFormatValidation?
 
-> `optional` **skipConsensusFormatValidation**: `boolean`
+> `optional` **skipConsensusFormatValidation?**: `boolean`
 
 Defined in: [types.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L81)
 

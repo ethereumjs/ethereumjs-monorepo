@@ -8,7 +8,7 @@
 
 > `const` **EIP7708\_SYSTEM\_ADDRESS**: `Uint8Array`\<`ArrayBufferLike`\> = `SYSTEM_ADDRESS_BYTES`
 
-Defined in: [eip7708.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/eip7708.ts#L15)
+Defined in: [eip7708.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/eip7708.ts#L19)
 
 EIP-7708 system address (canonical `SYSTEM_ADDRESS_BYTES` from `@ethereumjs/util`).
 

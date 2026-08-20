@@ -8,7 +8,7 @@
 
 > **AddPrecompile** = `object`
 
-Defined in: [precompiles/index.ts:261](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/index.ts#L261)
+Defined in: [precompiles/index.ts:264](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/index.ts#L264)
 
 Specifies a precompile to add to (or override in) the EVM.
 The address can be an `Address` instance or a `0x`-prefixed hex string.
@@ -19,7 +19,7 @@ The address can be an `Address` instance or a `0x`-prefixed hex string.
 
 > **address**: `Address` \| `PrefixedHexString`
 
-Defined in: [precompiles/index.ts:262](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/index.ts#L262)
+Defined in: [precompiles/index.ts:265](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/index.ts#L265)
 
 ***
 
@@ -27,4 +27,4 @@ Defined in: [precompiles/index.ts:262](https://github.com/ethereumjs/ethereumjs-
 
 > **function**: [`PrecompileFunc`](../interfaces/PrecompileFunc.md)
 
-Defined in: [precompiles/index.ts:263](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/index.ts#L263)
+Defined in: [precompiles/index.ts:266](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/index.ts#L266)

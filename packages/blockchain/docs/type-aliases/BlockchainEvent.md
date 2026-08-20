@@ -8,15 +8,17 @@
 
 > **BlockchainEvent** = `object`
 
-Defined in: [types.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L9)
+Defined in: [types.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L11)
+
+Event map emitted by [Blockchain.events](../classes/Blockchain.md#events).
 
 ## Properties
 
-### deletedCanonicalBlocks()
+### deletedCanonicalBlocks
 
 > **deletedCanonicalBlocks**: (`data`, `resolve?`) => `void`
 
-Defined in: [types.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L10)
+Defined in: [types.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L12)
 
 #### Parameters
 

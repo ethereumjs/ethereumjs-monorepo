@@ -12,7 +12,7 @@ Defined in: [packages/devp2p/src/types.ts:25](https://github.com/ethereumjs/ethe
 
 ### message
 
-> **message**: \[`0` \| `1` \| `2` \| `3` \| `4` \| `5` \| `6` \| `7` \| `8` \| `9` \| `10` \| `13` \| `14` \| `15` \| `16`, `Uint8Array`\<`ArrayBufferLike`\> \| `NestedUint8Array`\]
+> **message**: \[`0` \| `1` \| `2` \| `3` \| `4` \| `5` \| `6` \| `7` \| `8` \| `9` \| `10` \| `13` \| `14` \| `15` \| `16`, `NestedUint8Array` \| `Uint8Array`\<`ArrayBufferLike`\>\]
 
 Defined in: [packages/devp2p/src/types.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L26)
 
@@ -34,7 +34,7 @@ Defined in: [packages/devp2p/src/types.ts:27](https://github.com/ethereumjs/ethe
 
 #### forkId?
 
-> `optional` **forkId**: `Uint8Array`\<`ArrayBufferLike`\> \| `Uint8Array`\<`ArrayBufferLike`\>[]
+> `optional` **forkId?**: `Uint8Array`\<`ArrayBufferLike`\> \| `Uint8Array`\<`ArrayBufferLike`\>[]
 
 #### genesisHash
 

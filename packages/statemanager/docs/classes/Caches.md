@@ -6,19 +6,21 @@
 
 # Class: Caches
 
-Defined in: [cache/caches.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/caches.ts#L8)
+Defined in: [cache/caches.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/caches.ts#L9)
+
+Bundled account, code, and storage caches with shared checkpointing.
 
 ## Constructors
 
 ### Constructor
 
-> **new Caches**(`opts`): `Caches`
+> **new Caches**(`opts?`): `Caches`
 
-Defined in: [cache/caches.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/caches.ts#L15)
+Defined in: [cache/caches.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/caches.ts#L16)
 
 #### Parameters
 
-##### opts
+##### opts?
 
 [`CachesStateManagerOpts`](../interfaces/CachesStateManagerOpts.md) = `{}`
 
@@ -30,17 +32,17 @@ Defined in: [cache/caches.ts:15](https://github.com/ethereumjs/ethereumjs-monore
 
 ### account?
 
-> `optional` **account**: [`AccountCache`](AccountCache.md)
+> `optional` **account?**: [`AccountCache`](AccountCache.md)
 
-Defined in: [cache/caches.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/caches.ts#L9)
+Defined in: [cache/caches.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/caches.ts#L10)
 
 ***
 
 ### code?
 
-> `optional` **code**: [`CodeCache`](CodeCache.md)
+> `optional` **code?**: [`CodeCache`](CodeCache.md)
 
-Defined in: [cache/caches.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/caches.ts#L10)
+Defined in: [cache/caches.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/caches.ts#L11)
 
 ***
 
@@ -48,15 +50,15 @@ Defined in: [cache/caches.ts:10](https://github.com/ethereumjs/ethereumjs-monore
 
 > **settings**: `Record`\<`"account"` \| `"code"` \| `"storage"`, [`CacheOpts`](../interfaces/CacheOpts.md)\>
 
-Defined in: [cache/caches.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/caches.ts#L13)
+Defined in: [cache/caches.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/caches.ts#L14)
 
 ***
 
 ### storage?
 
-> `optional` **storage**: [`StorageCache`](StorageCache.md)
+> `optional` **storage?**: [`StorageCache`](StorageCache.md)
 
-Defined in: [cache/caches.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/caches.ts#L11)
+Defined in: [cache/caches.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/caches.ts#L12)
 
 ## Methods
 
@@ -64,7 +66,7 @@ Defined in: [cache/caches.ts:11](https://github.com/ethereumjs/ethereumjs-monore
 
 > **checkpoint**(): `void`
 
-Defined in: [cache/caches.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/caches.ts#L59)
+Defined in: [cache/caches.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/caches.ts#L60)
 
 #### Returns
 
@@ -76,7 +78,7 @@ Defined in: [cache/caches.ts:59](https://github.com/ethereumjs/ethereumjs-monore
 
 > **clear**(): `void`
 
-Defined in: [cache/caches.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/caches.ts#L65)
+Defined in: [cache/caches.ts:66](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/caches.ts#L66)
 
 #### Returns
 
@@ -88,7 +90,7 @@ Defined in: [cache/caches.ts:65](https://github.com/ethereumjs/ethereumjs-monore
 
 > **commit**(): `void`
 
-Defined in: [cache/caches.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/caches.ts#L71)
+Defined in: [cache/caches.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/caches.ts#L72)
 
 #### Returns
 
@@ -100,7 +102,7 @@ Defined in: [cache/caches.ts:71](https://github.com/ethereumjs/ethereumjs-monore
 
 > **deleteAccount**(`address`): `void`
 
-Defined in: [cache/caches.ts:77](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/caches.ts#L77)
+Defined in: [cache/caches.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/caches.ts#L78)
 
 #### Parameters
 
@@ -118,7 +120,7 @@ Defined in: [cache/caches.ts:77](https://github.com/ethereumjs/ethereumjs-monore
 
 > **revert**(): `void`
 
-Defined in: [cache/caches.ts:120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/caches.ts#L120)
+Defined in: [cache/caches.ts:121](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/caches.ts#L121)
 
 #### Returns
 
@@ -130,7 +132,7 @@ Defined in: [cache/caches.ts:120](https://github.com/ethereumjs/ethereumjs-monor
 
 > **shallowCopy**(`downlevelCaches`): `Caches` \| `undefined`
 
-Defined in: [cache/caches.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/caches.ts#L83)
+Defined in: [cache/caches.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/caches.ts#L84)
 
 #### Parameters
 

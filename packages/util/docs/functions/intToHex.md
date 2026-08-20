@@ -8,9 +8,9 @@
 
 > **intToHex**(`i`): `` `0x${string}` ``
 
-Defined in: [packages/util/src/bytes.ts:98](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L98)
+Defined in: [packages/util/src/bytes.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L92)
 
-Converts a number into a [PrefixedHexString](../type-aliases/PrefixedHexString.md)
+Convert a non-negative safe integer to a `0x`-prefixed hex string.
 
 ## Parameters
 
@@ -21,3 +21,7 @@ Converts a number into a [PrefixedHexString](../type-aliases/PrefixedHexString.m
 ## Returns
 
 `` `0x${string}` ``
+
+## Throws
+
+If the input is invalid

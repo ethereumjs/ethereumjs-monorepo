@@ -8,7 +8,7 @@
 
 > **isAccessList**(`input`): `input is AccessList`
 
-Defined in: [types.ts:129](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L129)
+Defined in: [types.ts:130](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L130)
 
 Type guard to check if input is AccessList format
 
@@ -16,9 +16,9 @@ Type guard to check if input is AccessList format
 
 ### input
 
-The input to check
+[`AccessListBytes`](../type-aliases/AccessListBytes.md) \| [`AccessList`](../type-aliases/AccessList.md)
 
-[`AccessListBytes`](../type-aliases/AccessListBytes.md) | [`AccessList`](../type-aliases/AccessList.md)
+The input to check
 
 ## Returns
 

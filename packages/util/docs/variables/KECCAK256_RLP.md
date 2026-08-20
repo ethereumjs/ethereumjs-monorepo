@@ -8,6 +8,6 @@
 
 > `const` **KECCAK256\_RLP**: `Uint8Array`\<`ArrayBufferLike`\>
 
-Defined in: [packages/util/src/constants.ts:66](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L66)
+Defined in: [packages/util/src/constants.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L68)
 
 Keccak-256 hash of the RLP of null

@@ -8,7 +8,7 @@
 
 > **bytesToUtf8**(`bytes`): `string`
 
-Defined in: [packages/util/src/bytes.ts:533](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L533)
+Defined in: [packages/util/src/bytes.ts:492](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L492)
 
 ## Parameters
 
@@ -31,4 +31,4 @@ Implementation copied from ethereum-cryptography https://github.com/ethereum/js-
 
 ## Throws
 
-If the input is not a Uint8Array.
+If input triggers TypeError If the input is not a Uint8Array.

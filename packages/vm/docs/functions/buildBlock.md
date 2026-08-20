@@ -8,14 +8,13 @@
 
 > **buildBlock**(`vm`, `opts`): `Promise`\<[`BlockBuilder`](../classes/BlockBuilder.md)\>
 
-Defined in: [vm/src/buildBlock.ts:473](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L473)
+Defined in: [vm/src/buildBlock.ts:544](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/buildBlock.ts#L544)
 
-Build a block on top of the current state
-by adding one transaction at a time.
+Incrementally assembles a block by executing transactions against a [VM](../classes/VM.md).
 
-Creates a checkpoint on the StateManager and modifies the state
-as transactions are run. The checkpoint is committed on [BlockBuilder.build](../classes/BlockBuilder.md#build)
-or discarded with [BlockBuilder.revert](../classes/BlockBuilder.md#revert).
+Opens a StateManagerInterface checkpoint; commits on [BlockBuilder.build](../classes/BlockBuilder.md#build)
+or reverts with [BlockBuilder.revert](../classes/BlockBuilder.md#revert). See [BuildBlockOpts](../interfaces/BuildBlockOpts.md) for parent block
+and header defaults.
 
 ## Parameters
 
@@ -31,7 +30,13 @@ or discarded with [BlockBuilder.revert](../classes/BlockBuilder.md#revert).
 
 `Promise`\<[`BlockBuilder`](../classes/BlockBuilder.md)\>
 
-An instance of [BlockBuilder](../classes/BlockBuilder.md) with methods:
-- [BlockBuilder.addTransaction](../classes/BlockBuilder.md#addtransaction)
-- [BlockBuilder.build](../classes/BlockBuilder.md#build)
-- [BlockBuilder.revert](../classes/BlockBuilder.md#revert)
+[BlockBuilder](../classes/BlockBuilder.md) for [BlockBuilder.addTransaction](../classes/BlockBuilder.md#addtransaction),
+[BlockBuilder.build](../classes/BlockBuilder.md#build), and [BlockBuilder.revert](../classes/BlockBuilder.md#revert)
+
+## Example
+
+```ts
+const builder = await buildBlock(vm, { parentBlock })
+await builder.addTransaction(signedTx)
+const { block } = await builder.build()
+```

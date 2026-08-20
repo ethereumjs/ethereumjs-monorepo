@@ -8,7 +8,7 @@
 
 > **generateAddress**(`from`, `nonce`): `Uint8Array`
 
-Defined in: [packages/util/src/account.ts:453](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L453)
+Defined in: [packages/util/src/account.ts:475](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L475)
 
 Generates an address of a newly created contract.
 

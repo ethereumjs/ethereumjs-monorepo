@@ -43,7 +43,7 @@
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "npx vitest run -c ../../config/vitest.config.coverage.mts --exclude='./test/transactionRunner.spec.ts' --exclude='./test/t9n.spec.ts'",
-    "docs:build": "typedoc --options typedoc.mjs",
+    "docs:build": "../../config/cli/typedoc.sh --options typedoc.mjs",
     "examples": "tsx ../../scripts/examples-runner.ts -- tx",
     "examples:build": "npx embedme README.md",
     "lint": "npm run biome && eslint  --config ./eslint.config.mjs .",

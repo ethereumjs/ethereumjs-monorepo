@@ -8,7 +8,7 @@
 
 > **encode**\<`T`\>(`typename`, `data`, `privateKey`, `common?`): `Uint8Array`\<`ArrayBuffer`\>
 
-Defined in: [packages/devp2p/src/dpt/message.ts:185](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/message.ts#L185)
+Defined in: [packages/devp2p/src/dpt/message.ts:182](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/message.ts#L182)
 
 ## Type Parameters
 

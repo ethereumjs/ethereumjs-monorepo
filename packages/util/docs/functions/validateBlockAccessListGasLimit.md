@@ -8,7 +8,7 @@
 
 > **validateBlockAccessListGasLimit**(`bal`, `blockGasLimit`): `void`
 
-Defined in: [packages/util/src/bal/validation.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/validation.ts#L42)
+Defined in: [packages/util/src/bal/validation.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/validation.ts#L43)
 
 Ensures `bal_items <= block_gas_limit // ITEM_COST` (EIP-7928).
 

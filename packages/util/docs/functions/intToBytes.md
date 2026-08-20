@@ -8,9 +8,9 @@
 
 > **intToBytes**(`i`): `Uint8Array`
 
-Defined in: [packages/util/src/bytes.ts:110](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L110)
+Defined in: [packages/util/src/bytes.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L100)
 
-Converts an number to a Uint8Array
+Convert a non-negative safe integer to minimal big-endian bytes.
 
 ## Parameters
 

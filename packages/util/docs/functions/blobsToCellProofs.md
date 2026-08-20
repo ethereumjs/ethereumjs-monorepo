@@ -8,7 +8,7 @@
 
 > **blobsToCellProofs**(`kzg`, `blobs`): `` `0x${string}` ``[]
 
-Defined in: [packages/util/src/blobs.ts:207](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/blobs.ts#L207)
+Defined in: [packages/util/src/blobs.ts:208](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/blobs.ts#L208)
 
 EIP-7594: Computes cell proofs for the given blobs.
 

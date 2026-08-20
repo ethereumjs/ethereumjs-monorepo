@@ -6,7 +6,9 @@
 
 # Interface: BinaryTreeOpts
 
-Defined in: [types.ts:5](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/types.ts#L5)
+Defined in: [types.ts:6](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/types.ts#L6)
+
+Options for [createBinaryTree](../functions/createBinaryTree.md) and [BinaryTree](../classes/BinaryTree.md).
 
 ## Properties
 
@@ -14,7 +16,7 @@ Defined in: [types.ts:5](https://github.com/ethereumjs/ethereumjs-monorepo/blob/
 
 > **cacheSize**: `number`
 
-Defined in: [types.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/types.ts#L26)
+Defined in: [types.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/types.ts#L27)
 
 LRU cache for tree nodes to allow for faster node retrieval.
 
@@ -26,17 +28,17 @@ Default: 0 (deactivated)
 
 > **db**: `DB`\<`string`, `string` \| `Uint8Array`\<`ArrayBufferLike`\>\>
 
-Defined in: [types.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/types.ts#L9)
+Defined in: [types.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/types.ts#L10)
 
 A database instance.
 
 ***
 
-### hashFunction()
+### hashFunction
 
 > **hashFunction**: (`msg`) => `Uint8Array`
 
-Defined in: [types.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/types.ts#L31)
+Defined in: [types.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/types.ts#L32)
 
 Hash function used for hashing the tree nodes.
 
@@ -54,9 +56,9 @@ Hash function used for hashing the tree nodes.
 
 ### root?
 
-> `optional` **root**: `Uint8Array`\<`ArrayBufferLike`\>
+> `optional` **root?**: `Uint8Array`\<`ArrayBufferLike`\>
 
-Defined in: [types.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/types.ts#L14)
+Defined in: [types.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/types.ts#L15)
 
 A `Uint8Array` for the root of a previously stored tree
 
@@ -66,6 +68,6 @@ A `Uint8Array` for the root of a previously stored tree
 
 > **useRootPersistence**: `boolean`
 
-Defined in: [types.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/types.ts#L19)
+Defined in: [types.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/types.ts#L20)
 
 Store the root inside the database after every `write` operation

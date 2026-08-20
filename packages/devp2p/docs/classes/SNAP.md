@@ -48,7 +48,7 @@ Defined in: [packages/devp2p/src/protocol/snap.ts:41](https://github.com/ethereu
 
 > `static` **snap**: `object`
 
-Defined in: [packages/devp2p/src/protocol/snap.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/snap.ts#L47)
+Defined in: [packages/devp2p/src/protocol/snap.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/snap.ts#L46)
 
 #### constructor
 
@@ -72,7 +72,7 @@ Defined in: [packages/devp2p/src/protocol/snap.ts:47](https://github.com/ethereu
 
 > **\_handleMessage**(`code`, `data`): `void`
 
-Defined in: [packages/devp2p/src/protocol/snap.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/snap.ts#L49)
+Defined in: [packages/devp2p/src/protocol/snap.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/snap.ts#L48)
 
 Abstract method to handle incoming messages
 
@@ -100,7 +100,7 @@ Abstract method to handle incoming messages
 
 > **getMsgPrefix**(`msgCode`): `string`
 
-Defined in: [packages/devp2p/src/protocol/snap.ts:123](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/snap.ts#L123)
+Defined in: [packages/devp2p/src/protocol/snap.ts:122](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/snap.ts#L122)
 
 #### Parameters
 
@@ -118,7 +118,7 @@ Defined in: [packages/devp2p/src/protocol/snap.ts:123](https://github.com/ethere
 
 > **getVersion**(): `number`
 
-Defined in: [packages/devp2p/src/protocol/snap.ts:127](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/snap.ts#L127)
+Defined in: [packages/devp2p/src/protocol/snap.ts:126](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/snap.ts#L126)
 
 #### Returns
 
@@ -130,7 +130,7 @@ Defined in: [packages/devp2p/src/protocol/snap.ts:127](https://github.com/ethere
 
 > **sendMessage**(`code`, `payload`): `void`
 
-Defined in: [packages/devp2p/src/protocol/snap.ts:88](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/snap.ts#L88)
+Defined in: [packages/devp2p/src/protocol/snap.ts:87](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/snap.ts#L87)
 
 #### Parameters
 
@@ -156,7 +156,7 @@ Payload (including reqId, e.g. `[1, [437000, 1, 0, 0]]`)
 
 > **sendStatus**(): `void`
 
-Defined in: [packages/devp2p/src/protocol/snap.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/snap.ts#L79)
+Defined in: [packages/devp2p/src/protocol/snap.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/snap.ts#L78)
 
 #### Returns
 

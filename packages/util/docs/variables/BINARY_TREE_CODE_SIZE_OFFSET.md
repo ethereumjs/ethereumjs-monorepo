@@ -8,4 +8,6 @@
 
 > `const` **BINARY\_TREE\_CODE\_SIZE\_OFFSET**: `5` = `5`
 
-Defined in: [packages/util/src/binaryTree.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L91)
+Defined in: [packages/util/src/binaryTree.ts:97](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L97)
+
+Binary-tree layout constant `CODE_SIZE_OFFSET` (EIP-7864).

@@ -8,7 +8,7 @@
 
 > **verifyMerkleStateProof**(`sm`, `proof`): `Promise`\<`boolean`\>
 
-Defined in: [proof/merkle.ts:187](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/proof/merkle.ts#L187)
+Defined in: [proof/merkle.ts:190](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/proof/merkle.ts#L190)
 
 Verify an EIP-1186 proof. Throws if proof is invalid, otherwise returns true.
 

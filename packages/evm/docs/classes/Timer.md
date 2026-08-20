@@ -6,7 +6,9 @@
 
 # Class: Timer
 
-Defined in: [logger.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L34)
+Defined in: [logger.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L36)
+
+High-resolution timer used by [EVMPerformanceLogger](EVMPerformanceLogger.md).
 
 ## Constructors
 
@@ -14,7 +16,7 @@ Defined in: [logger.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **new Timer**(`tag`): `Timer`
 
-Defined in: [logger.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L39)
+Defined in: [logger.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L41)
 
 #### Parameters
 
@@ -32,7 +34,7 @@ Defined in: [logger.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **tag**: `string`
 
-Defined in: [logger.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L37)
+Defined in: [logger.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L39)
 
 ## Methods
 
@@ -40,7 +42,7 @@ Defined in: [logger.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **pause**(): `void`
 
-Defined in: [logger.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L44)
+Defined in: [logger.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L46)
 
 #### Returns
 
@@ -52,7 +54,7 @@ Defined in: [logger.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **time**(): `number`
 
-Defined in: [logger.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L52)
+Defined in: [logger.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L54)
 
 #### Returns
 
@@ -64,7 +66,7 @@ Defined in: [logger.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **unpause**(): `void`
 
-Defined in: [logger.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L48)
+Defined in: [logger.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L50)
 
 #### Returns
 

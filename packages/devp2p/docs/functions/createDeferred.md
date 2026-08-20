@@ -8,7 +8,7 @@
 
 > **createDeferred**\<`T`\>(): [`Deferred`](../classes/Deferred.md)\<`T`\>
 
-Defined in: [packages/devp2p/src/util.ts:112](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L112)
+Defined in: [packages/devp2p/src/util.ts:114](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L114)
 
 ## Type Parameters
 

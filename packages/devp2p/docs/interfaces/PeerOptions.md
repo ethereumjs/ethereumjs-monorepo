@@ -12,7 +12,7 @@ Defined in: [packages/devp2p/src/types.ts:279](https://github.com/ethereumjs/eth
 
 ### capabilities?
 
-> `optional` **capabilities**: [`Capabilities`](Capabilities.md)[]
+> `optional` **capabilities?**: [`Capabilities`](Capabilities.md)[]
 
 Defined in: [packages/devp2p/src/types.ts:281](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L281)
 
@@ -36,7 +36,7 @@ Defined in: [packages/devp2p/src/types.ts:282](https://github.com/ethereumjs/eth
 
 ### EIP8?
 
-> `optional` **EIP8**: `boolean` \| `Uint8Array`\<`ArrayBufferLike`\>
+> `optional` **EIP8?**: `boolean` \| `Uint8Array`\<`ArrayBufferLike`\>
 
 Defined in: [packages/devp2p/src/types.ts:287](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L287)
 
@@ -68,7 +68,7 @@ Defined in: [packages/devp2p/src/types.ts:288](https://github.com/ethereumjs/eth
 
 ### remoteClientIdFilter?
 
-> `optional` **remoteClientIdFilter**: `string`[]
+> `optional` **remoteClientIdFilter?**: `string`[]
 
 Defined in: [packages/devp2p/src/types.ts:285](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L285)
 

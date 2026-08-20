@@ -8,4 +8,6 @@
 
 > `const` **SHA256\_NULL**: `Uint8Array`\<`ArrayBufferLike`\>
 
-Defined in: [packages/util/src/constants.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L68)
+Defined in: [packages/util/src/constants.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L71)
+
+SHA-256 hash of the empty byte string.

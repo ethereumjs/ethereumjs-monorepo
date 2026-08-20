@@ -8,7 +8,7 @@
 
 > `const` **EIP7708\_BURN\_TOPIC**: `Uint8Array`\<`ArrayBufferLike`\>
 
-Defined in: [eip7708.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/eip7708.ts#L33)
+Defined in: [eip7708.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/eip7708.ts#L37)
 
 EIP-7708: `keccak256('Burn(address,uint256)')`.
 LOG2 topic for burn logs on same-tx selfdestruct and account removal.

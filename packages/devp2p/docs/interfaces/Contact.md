@@ -16,7 +16,7 @@ Defined in: [packages/devp2p/src/types.ts:274](https://github.com/ethereumjs/eth
 
 ### address?
 
-> `optional` **address**: `string`
+> `optional` **address?**: `string`
 
 Defined in: [packages/devp2p/src/types.ts:268](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L268)
 
@@ -40,7 +40,7 @@ Defined in: [packages/devp2p/src/types.ts:275](https://github.com/ethereumjs/eth
 
 ### tcpPort?
 
-> `optional` **tcpPort**: `number` \| `null`
+> `optional` **tcpPort?**: `number` \| `null`
 
 Defined in: [packages/devp2p/src/types.ts:270](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L270)
 
@@ -52,7 +52,7 @@ Defined in: [packages/devp2p/src/types.ts:270](https://github.com/ethereumjs/eth
 
 ### udpPort?
 
-> `optional` **udpPort**: `number` \| `null`
+> `optional` **udpPort?**: `number` \| `null`
 
 Defined in: [packages/devp2p/src/types.ts:269](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L269)
 

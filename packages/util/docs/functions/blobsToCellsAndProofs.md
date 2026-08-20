@@ -8,7 +8,7 @@
 
 > **blobsToCellsAndProofs**(`kzg`, `blobs`): \[`` `0x${string}` ``[], `` `0x${string}` ``[], `number`[]\]
 
-Defined in: [packages/util/src/blobs.ts:179](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/blobs.ts#L179)
+Defined in: [packages/util/src/blobs.ts:180](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/blobs.ts#L180)
 
 EIP-7594: Computes extended cells and corresponding proofs for the given blobs.
 

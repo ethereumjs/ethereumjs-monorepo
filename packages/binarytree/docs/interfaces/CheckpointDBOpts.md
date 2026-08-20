@@ -6,15 +6,15 @@
 
 # Interface: CheckpointDBOpts
 
-Defined in: [types.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/types.ts#L34)
+Defined in: [types.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/types.ts#L35)
 
 ## Properties
 
 ### cacheSize?
 
-> `optional` **cacheSize**: `number`
+> `optional` **cacheSize?**: `number`
 
-Defined in: [types.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/types.ts#L48)
+Defined in: [types.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/types.ts#L49)
 
 Cache size (default: 0)
 
@@ -24,7 +24,7 @@ Cache size (default: 0)
 
 > **db**: `DB`\<`string`, `string` \| `Uint8Array`\<`ArrayBufferLike`\>\>
 
-Defined in: [types.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/types.ts#L38)
+Defined in: [types.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/types.ts#L39)
 
 A database instance.
 
@@ -32,8 +32,8 @@ A database instance.
 
 ### valueEncoding?
 
-> `optional` **valueEncoding**: `ValueEncoding`
+> `optional` **valueEncoding?**: `ValueEncoding`
 
-Defined in: [types.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/types.ts#L43)
+Defined in: [types.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/types.ts#L44)
 
 ValueEncoding of the database (the values which are `put`/`get` in the db are of this type). Defaults to `string`

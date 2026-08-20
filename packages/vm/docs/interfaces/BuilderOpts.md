@@ -6,7 +6,7 @@
 
 # Interface: BuilderOpts
 
-Defined in: [vm/src/types.ts:194](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L194)
+Defined in: [vm/src/types.ts:200](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L200)
 
 Options for the block builder.
 
@@ -18,9 +18,9 @@ Options for the block builder.
 
 ### calcDifficultyFromHeader?
 
-> `optional` **calcDifficultyFromHeader**: `BlockHeader`
+> `optional` **calcDifficultyFromHeader?**: `BlockHeader`
 
-Defined in: block/dist/esm/types.d.ts:55
+Defined in: [block/src/types.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L65)
 
 If a preceding BlockHeader (usually the parent header) is given the preceding
 header will be used to calculate the difficulty for this block and the calculated
@@ -37,9 +37,9 @@ Note that this option has no effect on networks other than PoW/Ethash networks
 
 ### cliqueSigner?
 
-> `optional` **cliqueSigner**: `Uint8Array`\<`ArrayBufferLike`\>
+> `optional` **cliqueSigner?**: `Uint8Array`\<`ArrayBufferLike`\>
 
-Defined in: [vm/src/types.ts:209](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L209)
+Defined in: [vm/src/types.ts:215](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L215)
 
 Provide a clique signer's privateKey to seal this block.
 Will throw if provided on a non-PoA chain.
@@ -48,9 +48,9 @@ Will throw if provided on a non-PoA chain.
 
 ### common?
 
-> `optional` **common**: `Common`
+> `optional` **common?**: `Common`
 
-Defined in: block/dist/esm/types.d.ts:22
+Defined in: [block/src/types.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L32)
 
 A Common object defining the chain and the hardfork a block/block header belongs to.
 
@@ -70,9 +70,9 @@ Current default hardfork: `merge`
 
 ### freeze?
 
-> `optional` **freeze**: `boolean`
+> `optional` **freeze?**: `boolean`
 
-Defined in: block/dist/esm/types.d.ts:67
+Defined in: [block/src/types.ts:77](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L77)
 
 A block object by default gets frozen along initialization. This gives you
 strong additional security guarantees on the consistency of the block parameters.
@@ -92,9 +92,9 @@ Default: true
 
 ### params?
 
-> `optional` **params**: `ParamsDict`
+> `optional` **params?**: `ParamsDict`
 
-Defined in: block/dist/esm/types.d.ts:46
+Defined in: [block/src/types.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L56)
 
 Block parameters sorted by EIP can be found in the exported `paramsBlock` dictionary,
 which is internally passed to the associated `@ethereumjs/common` instance which
@@ -119,9 +119,9 @@ params['1']['minGasLimit'] = 3000 // 5000
 
 ### putBlockIntoBlockchain?
 
-> `optional` **putBlockIntoBlockchain**: `boolean`
+> `optional` **putBlockIntoBlockchain?**: `boolean`
 
-Defined in: [vm/src/types.ts:204](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L204)
+Defined in: [vm/src/types.ts:210](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L210)
 
 Whether to put the block into the vm's blockchain after building it.
 This is useful for completing a full cycle when building a block so
@@ -135,9 +135,9 @@ Default: true
 
 ### setHardfork?
 
-> `optional` **setHardfork**: `boolean`
+> `optional` **setHardfork?**: `boolean`
 
-Defined in: block/dist/esm/types.d.ts:29
+Defined in: [block/src/types.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L39)
 
 Set the hardfork either by timestamp (for HFs from Shanghai onwards) or by block number
 for older Hfs.
@@ -152,9 +152,9 @@ Default: `false` (HF is set to whatever default HF is set by the Common instance
 
 ### skipConsensusFormatValidation?
 
-> `optional` **skipConsensusFormatValidation**: `boolean`
+> `optional` **skipConsensusFormatValidation?**: `boolean`
 
-Defined in: block/dist/esm/types.d.ts:71
+Defined in: [block/src/types.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L81)
 
 Skip consensus format validation checks on header if set. Defaults to false.
 

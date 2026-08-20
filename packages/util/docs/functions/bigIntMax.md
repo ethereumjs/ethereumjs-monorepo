@@ -8,7 +8,7 @@
 
 > **bigIntMax**(...`args`): `bigint`
 
-Defined in: [packages/util/src/bytes.ts:386](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L386)
+Defined in: [packages/util/src/bytes.ts:341](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L341)
 
 Calculates max bigint from an array of bigints
 

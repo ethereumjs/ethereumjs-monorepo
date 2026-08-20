@@ -350,6 +350,8 @@ Commands area available on both root and package levels.
 
 Public API reference is generated with [TypeDoc](https://typedoc.org/) (`npm run docs:build --workspaces`, output under `packages/*/docs/`). JSDoc conventions for exported symbols are defined in [`.cursor/rules/api-docs.mdc`](.cursor/rules/api-docs.mdc) (also linked from [AGENTS.md](./AGENTS.md)).
 
+TypeDoc 0.28 requires the classic TypeScript 6 compiler API and does not work with the root `typescript@7` used for `tsc`. Package `docs:build` scripts call [`config/cli/typedoc.sh`](config/cli/typedoc.sh), which loads TypeScript 6 via [`config/typedoc/register.mjs`](config/typedoc/register.mjs) (`typescript-6` npm alias). For a single package from its directory: `npm run docs:build`, or `../../config/cli/typedoc.sh --options typedoc.mjs` — not bare `typedoc`.
+
 ### Testing
 
 The project uses [Vitest](https://vitest.dev/) for testing with Vitest coverage (v8 and istanbul providers).

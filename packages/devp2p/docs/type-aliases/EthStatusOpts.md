@@ -30,7 +30,7 @@ Defined in: [packages/devp2p/src/protocol/eth.ts:31](https://github.com/ethereum
 
 ### latestBlock?
 
-> `optional` **latestBlock**: `Uint8Array`
+> `optional` **latestBlock?**: `Uint8Array`
 
 Defined in: [packages/devp2p/src/protocol/eth.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L30)
 

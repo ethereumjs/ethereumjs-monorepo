@@ -29,7 +29,7 @@ A Blockchain object can be created with the constructor method:
 
 ### Constructor
 
-> **new Blockchain**(`opts`): `Blockchain`
+> **new Blockchain**(`opts?`): `Blockchain`
 
 Defined in: [blockchain.ts:114](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L114)
 
@@ -37,7 +37,7 @@ Creates new Blockchain object.
 
 #### Parameters
 
-##### opts
+##### opts?
 
 [`BlockchainOptions`](../interfaces/BlockchainOptions.md) = `{}`
 
@@ -121,7 +121,7 @@ or undefined if non available
 
 > **get** **genesisBlock**(): `Block`
 
-Defined in: [blockchain.ts:1311](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L1311)
+Defined in: [blockchain.ts:1313](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L1313)
 
 The genesis Block for the blockchain.
 
@@ -157,7 +157,7 @@ Defined in: [blockchain.ts:1272](https://github.com/ethereumjs/ethereumjs-monore
 
 > **createGenesisBlock**(`stateRoot`): `Block`
 
-Defined in: [blockchain.ts:1321](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L1321)
+Defined in: [blockchain.ts:1323](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L1323)
 
 Creates a genesis Block for the blockchain with params from Common.genesis
 
@@ -221,11 +221,11 @@ block will be the canonical block at that number in the chain
 
 ##### blockId
 
+`number` \| `bigint` \| `Uint8Array`\<`ArrayBufferLike`\>
+
 The block's hash or number. If a hash is provided, then
 this will be immediately looked up, otherwise it will wait until we have
 unlocked the DB
-
-`number` | `bigint` | `Uint8Array`\<`ArrayBufferLike`\>
 
 #### Returns
 
@@ -250,9 +250,9 @@ Looks up many blocks relative to blockId Note: due to `GetBlockHeaders
 
 ##### blockId
 
-The block's hash or number
+`number` \| `bigint` \| `Uint8Array`\<`ArrayBufferLike`\>
 
-`number` | `bigint` | `Uint8Array`\<`ArrayBufferLike`\>
+The block's hash or number
 
 ##### maxBlocks
 
@@ -332,7 +332,7 @@ Returns the latest header in the canonical chain.
 
 ### getIteratorHead()
 
-> **getIteratorHead**(`name`): `Promise`\<`Block`\>
+> **getIteratorHead**(`name?`): `Promise`\<`Block`\>
 
 Defined in: [blockchain.ts:220](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L220)
 
@@ -345,7 +345,7 @@ has not been run. This matches the behavior of [Blockchain.iterator](#iterator).
 
 #### Parameters
 
-##### name
+##### name?
 
 `string` = `'vm'`
 
@@ -363,7 +363,7 @@ Optional name of the iterator head (default: 'vm')
 
 ### getIteratorHeadSafe()
 
-> **getIteratorHeadSafe**(`name`): `Promise`\<`Block` \| `undefined`\>
+> **getIteratorHeadSafe**(`name?`): `Promise`\<`Block` \| `undefined`\>
 
 Defined in: [blockchain.ts:231](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L231)
 
@@ -371,7 +371,7 @@ This method differs from `getIteratorHead`. If the head is not found, it returns
 
 #### Parameters
 
-##### name
+##### name?
 
 `string` = `'vm'`
 
@@ -620,11 +620,9 @@ The number to which chain should be reset to
 
 > **safeNumberToHash**(`number`): `Promise`\<`false` \| `Uint8Array`\<`ArrayBufferLike`\>\>
 
-Defined in: [blockchain.ts:1303](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L1303)
+Defined in: [blockchain.ts:1305](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/blockchain.ts#L1305)
 
-This method either returns a Uint8Array if there exists one in the DB or if it
-does not exist then return false If DB throws
-any other error, this function throws.
+Look up a canonical block hash by number without throwing when absent.
 
 #### Parameters
 
@@ -632,9 +630,17 @@ any other error, this function throws.
 
 `bigint`
 
+Canonical block height to resolve
+
 #### Returns
 
 `Promise`\<`false` \| `Uint8Array`\<`ArrayBufferLike`\>\>
+
+Block hash bytes, or `false` when not in the canonical chain
+
+#### Throws
+
+If the DB returns an unexpected error
 
 ***
 

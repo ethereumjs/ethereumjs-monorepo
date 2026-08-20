@@ -8,7 +8,7 @@
 
 > **validateBlockAccessListHashFromJSON**(`json`, `expectedHash`): `void`
 
-Defined in: [packages/util/src/bal/validation.ts:121](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/validation.ts#L121)
+Defined in: [packages/util/src/bal/validation.ts:122](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/validation.ts#L122)
 
 Verifies the header hash against the JSON-ordered RLP encoding.
 

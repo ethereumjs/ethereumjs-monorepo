@@ -6,11 +6,16 @@
 
 # Class: StatefulBinaryTreeStateManager
 
-Defined in: [statefulBinaryTreeStateManager.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L59)
+Defined in: [statefulBinaryTreeStateManager.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L72)
+
+StateManagerInterface backed by an EIP-7864 BinaryTree.
+
+Supports execution witnesses, binary-tree access lists, and checkpointing for VM use.
 
 ## Implements
 
 - `StateManagerInterface`
+- `BinaryTreeStateManagerInterface`
 
 ## Constructors
 
@@ -18,7 +23,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:59](https://github.com/ethereumjs
 
 > **new StatefulBinaryTreeStateManager**(`opts`): `StatefulBinaryTreeStateManager`
 
-Defined in: [statefulBinaryTreeStateManager.ts:87](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L87)
+Defined in: [statefulBinaryTreeStateManager.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L102)
 
 #### Parameters
 
@@ -32,11 +37,11 @@ Defined in: [statefulBinaryTreeStateManager.ts:87](https://github.com/ethereumjs
 
 ## Properties
 
-### hashFunction()
+### hashFunction
 
 > **hashFunction**: (`input`) => `Uint8Array`
 
-Defined in: [statefulBinaryTreeStateManager.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L65)
+Defined in: [statefulBinaryTreeStateManager.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L80)
 
 #### Parameters
 
@@ -54,7 +59,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:65](https://github.com/ethereumjs
 
 > **originalStorageCache**: [`OriginalStorageCache`](OriginalStorageCache.md)
 
-Defined in: [statefulBinaryTreeStateManager.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L64)
+Defined in: [statefulBinaryTreeStateManager.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L79)
 
 #### Implementation of
 
@@ -66,7 +71,29 @@ Defined in: [statefulBinaryTreeStateManager.ts:64](https://github.com/ethereumjs
 
 > **preStateRoot**: `Uint8Array`
 
-Defined in: [statefulBinaryTreeStateManager.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L63)
+Defined in: [statefulBinaryTreeStateManager.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L78)
+
+## Accessors
+
+### tree
+
+#### Get Signature
+
+> **get** **tree**(): `BinaryTree`
+
+Defined in: [statefulBinaryTreeStateManager.ts:733](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L733)
+
+The underlying binary tree holding the state, as exposed through
+BinaryTreeStateManagerInterface for interface-based consumers
+(e.g. execution witness generation in `@ethereumjs/evm`).
+
+##### Returns
+
+`BinaryTree`
+
+#### Implementation of
+
+`BinaryTreeStateManagerInterface.tree`
 
 ## Methods
 
@@ -74,7 +101,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:63](https://github.com/ethereumjs
 
 > **checkChunkWitnessPresent**(`_address`, `_codeOffset`): `Promise`\<`boolean`\>
 
-Defined in: [statefulBinaryTreeStateManager.ts:737](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L737)
+Defined in: [statefulBinaryTreeStateManager.ts:770](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L770)
 
 #### Parameters
 
@@ -100,7 +127,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:737](https://github.com/ethereumj
 
 > **checkpoint**(): `Promise`\<`void`\>
 
-Defined in: [statefulBinaryTreeStateManager.ts:449](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L449)
+Defined in: [statefulBinaryTreeStateManager.ts:464](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L464)
 
 #### Returns
 
@@ -116,7 +143,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:449](https://github.com/ethereumj
 
 > **clearCaches**(): `void`
 
-Defined in: [statefulBinaryTreeStateManager.ts:731](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L731)
+Defined in: [statefulBinaryTreeStateManager.ts:764](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L764)
 
 #### Returns
 
@@ -132,7 +159,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:731](https://github.com/ethereumj
 
 > **clearStorage**(`address`): `Promise`\<`void`\>
 
-Defined in: [statefulBinaryTreeStateManager.ts:445](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L445)
+Defined in: [statefulBinaryTreeStateManager.ts:460](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L460)
 
 #### Parameters
 
@@ -154,7 +181,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:445](https://github.com/ethereumj
 
 > **commit**(): `Promise`\<`void`\>
 
-Defined in: [statefulBinaryTreeStateManager.ts:454](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L454)
+Defined in: [statefulBinaryTreeStateManager.ts:469](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L469)
 
 #### Returns
 
@@ -166,11 +193,43 @@ Defined in: [statefulBinaryTreeStateManager.ts:454](https://github.com/ethereumj
 
 ***
 
+### consumeBAL()
+
+> **consumeBAL**(`bal`, `expectedStateRoot?`): `Promise`\<`void`\>
+
+Defined in: [statefulBinaryTreeStateManager.ts:746](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L746)
+
+Apply an EIP-7928 BAL onto this state. See [consumeBAL](#consumebal).
+
+#### Parameters
+
+##### bal
+
+`BALJSONBlockAccessList`
+
+##### expectedStateRoot?
+
+`Uint8Array`\<`ArrayBufferLike`\>
+
+#### Returns
+
+`Promise`\<`void`\>
+
+#### Remarks
+
+Experimental (Amsterdam): may change on patch releases.
+
+#### Implementation of
+
+`StateManagerInterface.consumeBAL`
+
+***
+
 ### deleteAccount()
 
 > **deleteAccount**(`address`): `Promise`\<`void`\>
 
-Defined in: [statefulBinaryTreeStateManager.ts:244](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L244)
+Defined in: [statefulBinaryTreeStateManager.ts:259](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L259)
 
 Deletes an account from state under the provided `address`.
 
@@ -196,7 +255,7 @@ Address of the account which should be deleted
 
 > `optional` **dumpStorage**(`_address`): `Promise`\<`StorageDump`\>
 
-Defined in: [statefulBinaryTreeStateManager.ts:725](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L725)
+Defined in: [statefulBinaryTreeStateManager.ts:758](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L758)
 
 #### Parameters
 
@@ -218,7 +277,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:725](https://github.com/ethereumj
 
 > `optional` **dumpStorageRange**(`_address`, `_startKey`, `_limit`): `Promise`\<`StorageRange`\>
 
-Defined in: [statefulBinaryTreeStateManager.ts:728](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L728)
+Defined in: [statefulBinaryTreeStateManager.ts:761](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L761)
 
 #### Parameters
 
@@ -248,7 +307,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:728](https://github.com/ethereumj
 
 > **flush**(): `Promise`\<`void`\>
 
-Defined in: [statefulBinaryTreeStateManager.ts:480](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L480)
+Defined in: [statefulBinaryTreeStateManager.ts:495](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L495)
 
 #### Returns
 
@@ -260,7 +319,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:480](https://github.com/ethereumj
 
 > **generateCanonicalGenesis**(`genesisState`): `Promise`\<`void`\>
 
-Defined in: [statefulBinaryTreeStateManager.ts:740](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L740)
+Defined in: [statefulBinaryTreeStateManager.ts:773](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L773)
 
 #### Parameters
 
@@ -282,7 +341,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:740](https://github.com/ethereumj
 
 > **getAccount**(`address`): `Promise`\<`Account` \| `undefined`\>
 
-Defined in: [statefulBinaryTreeStateManager.ts:117](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L117)
+Defined in: [statefulBinaryTreeStateManager.ts:132](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L132)
 
 Gets the account associated with `address` or `undefined` if account does not exist
 
@@ -308,7 +367,7 @@ Address of the `account` to get
 
 > **getCode**(`address`): `Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
 
-Defined in: [statefulBinaryTreeStateManager.ts:323](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L323)
+Defined in: [statefulBinaryTreeStateManager.ts:338](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L338)
 
 #### Parameters
 
@@ -330,7 +389,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:323](https://github.com/ethereumj
 
 > **getCodeSize**(`address`): `Promise`\<`number`\>
 
-Defined in: [statefulBinaryTreeStateManager.ts:398](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L398)
+Defined in: [statefulBinaryTreeStateManager.ts:413](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L413)
 
 #### Parameters
 
@@ -352,7 +411,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:398](https://github.com/ethereumj
 
 > **getComputedValue**(`accessedState`): `Promise`\<`` `0x${string}` `` \| `null`\>
 
-Defined in: [statefulBinaryTreeStateManager.ts:520](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L520)
+Defined in: [statefulBinaryTreeStateManager.ts:535](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L535)
 
 #### Parameters
 
@@ -370,7 +429,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:520](https://github.com/ethereumj
 
 > **getStateRoot**(): `Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
 
-Defined in: [statefulBinaryTreeStateManager.ts:713](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L713)
+Defined in: [statefulBinaryTreeStateManager.ts:737](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L737)
 
 #### Returns
 
@@ -386,7 +445,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:713](https://github.com/ethereumj
 
 > **getStorage**(`address`, `key`): `Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
 
-Defined in: [statefulBinaryTreeStateManager.ts:407](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L407)
+Defined in: [statefulBinaryTreeStateManager.ts:422](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L422)
 
 #### Parameters
 
@@ -412,7 +471,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:407](https://github.com/ethereumj
 
 > **hasStateRoot**(`root`): `Promise`\<`boolean`\>
 
-Defined in: [statefulBinaryTreeStateManager.ts:722](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L722)
+Defined in: [statefulBinaryTreeStateManager.ts:755](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L755)
 
 #### Parameters
 
@@ -434,7 +493,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:722](https://github.com/ethereumj
 
 > **initBinaryTreeExecutionWitness**(`_blockNum`, `executionWitness?`): `void`
 
-Defined in: [statefulBinaryTreeStateManager.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L164)
+Defined in: [statefulBinaryTreeStateManager.ts:179](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L179)
 
 #### Parameters
 
@@ -444,7 +503,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:164](https://github.com/ethereumj
 
 ##### executionWitness?
 
-`BinaryTreeExecutionWitness` | `null`
+`BinaryTreeExecutionWitness` \| `null`
 
 #### Returns
 
@@ -460,7 +519,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:164](https://github.com/ethereumj
 
 > **modifyAccountFields**(`address`, `accountFields`): `Promise`\<`void`\>
 
-Defined in: [statefulBinaryTreeStateManager.ts:262](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L262)
+Defined in: [statefulBinaryTreeStateManager.ts:277](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L277)
 
 #### Parameters
 
@@ -486,7 +545,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:262](https://github.com/ethereumj
 
 > **putAccount**(`address`, `account?`): `Promise`\<`void`\>
 
-Defined in: [statefulBinaryTreeStateManager.ts:208](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L208)
+Defined in: [statefulBinaryTreeStateManager.ts:223](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L223)
 
 Saves an account into state under the provided `address`.
 
@@ -518,7 +577,7 @@ The account to store or undefined if to be deleted
 
 > **putCode**(`address`, `value`): `Promise`\<`void`\>
 
-Defined in: [statefulBinaryTreeStateManager.ts:265](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L265)
+Defined in: [statefulBinaryTreeStateManager.ts:280](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L280)
 
 #### Parameters
 
@@ -544,7 +603,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:265](https://github.com/ethereumj
 
 > **putStorage**(`address`, `key`, `value`): `Promise`\<`void`\>
 
-Defined in: [statefulBinaryTreeStateManager.ts:433](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L433)
+Defined in: [statefulBinaryTreeStateManager.ts:448](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L448)
 
 #### Parameters
 
@@ -574,7 +633,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:433](https://github.com/ethereumj
 
 > **revert**(): `Promise`\<`void`\>
 
-Defined in: [statefulBinaryTreeStateManager.ts:468](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L468)
+Defined in: [statefulBinaryTreeStateManager.ts:483](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L483)
 
 #### Returns
 
@@ -590,7 +649,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:468](https://github.com/ethereumj
 
 > **setStateRoot**(`stateRoot`, `clearCache?`): `Promise`\<`void`\>
 
-Defined in: [statefulBinaryTreeStateManager.ts:717](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L717)
+Defined in: [statefulBinaryTreeStateManager.ts:750](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L750)
 
 #### Parameters
 
@@ -616,7 +675,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:717](https://github.com/ethereumj
 
 > **shallowCopy**(`_downlevelCaches?`): `StateManagerInterface`
 
-Defined in: [statefulBinaryTreeStateManager.ts:734](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L734)
+Defined in: [statefulBinaryTreeStateManager.ts:767](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L767)
 
 #### Parameters
 
@@ -638,7 +697,7 @@ Defined in: [statefulBinaryTreeStateManager.ts:734](https://github.com/ethereumj
 
 > **verifyBinaryTreePostState**(`accessWitness`): `Promise`\<`boolean`\>
 
-Defined in: [statefulBinaryTreeStateManager.ts:614](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L614)
+Defined in: [statefulBinaryTreeStateManager.ts:629](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/statefulBinaryTreeStateManager.ts#L629)
 
 #### Parameters
 

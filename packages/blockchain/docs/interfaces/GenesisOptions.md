@@ -6,7 +6,7 @@
 
 # Interface: GenesisOptions
 
-Defined in: [types.ts:94](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L94)
+Defined in: [types.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L96)
 
 ## Extended by
 
@@ -16,9 +16,9 @@ Defined in: [types.ts:94](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 ### genesisBlock?
 
-> `optional` **genesisBlock**: `Block`
+> `optional` **genesisBlock?**: `Block`
 
-Defined in: [types.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L102)
+Defined in: [types.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L104)
 
 The blockchain only initializes successfully if it has a genesis block. If
 there is no block available in the DB and a `genesisBlock` is provided,
@@ -30,9 +30,9 @@ provided from the `common` will be used.
 
 ### genesisState?
 
-> `optional` **genesisState**: `GenesisState`
+> `optional` **genesisState?**: `GenesisState`
 
-Defined in: [types.ts:128](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L128)
+Defined in: [types.ts:130](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L130)
 
 If you are using a custom chain Common, pass the genesis state.
 
@@ -61,8 +61,8 @@ A complex genesis state with Contract and EoA states would have the following fo
 
 ### genesisStateRoot?
 
-> `optional` **genesisStateRoot**: `Uint8Array`\<`ArrayBufferLike`\>
+> `optional` **genesisStateRoot?**: `Uint8Array`\<`ArrayBufferLike`\>
 
-Defined in: [types.ts:133](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L133)
+Defined in: [types.ts:135](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L135)
 
 State root of the genesis state

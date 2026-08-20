@@ -6,7 +6,9 @@
 
 # Class: BinaryTreeAccessWitness
 
-Defined in: [binaryTreeAccessWitness.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L92)
+Defined in: [binaryTreeAccessWitness.ts:93](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L93)
+
+Tracks binary-tree stem and chunk accesses for EIP-7864 witness costing.
 
 ## Implements
 
@@ -18,7 +20,7 @@ Defined in: [binaryTreeAccessWitness.ts:92](https://github.com/ethereumjs/ethere
 
 > **new BinaryTreeAccessWitness**(`opts`): `BinaryTreeAccessWitness`
 
-Defined in: [binaryTreeAccessWitness.ts:98](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L98)
+Defined in: [binaryTreeAccessWitness.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L99)
 
 #### Parameters
 
@@ -46,7 +48,7 @@ Defined in: [binaryTreeAccessWitness.ts:98](https://github.com/ethereumjs/ethere
 
 > **chunkCache**: `ChunkCache`
 
-Defined in: [binaryTreeAccessWitness.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L96)
+Defined in: [binaryTreeAccessWitness.ts:97](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L97)
 
 ***
 
@@ -54,15 +56,15 @@ Defined in: [binaryTreeAccessWitness.ts:96](https://github.com/ethereumjs/ethere
 
 > **chunks**: `Map`\<`` `0x${string}` ``, [`BinaryChunkAccessEvent`](../type-aliases/BinaryChunkAccessEvent.md)\>
 
-Defined in: [binaryTreeAccessWitness.ts:94](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L94)
+Defined in: [binaryTreeAccessWitness.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L95)
 
 ***
 
-### hashFunction()
+### hashFunction
 
 > **hashFunction**: (`msg`) => `Uint8Array`
 
-Defined in: [binaryTreeAccessWitness.ts:97](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L97)
+Defined in: [binaryTreeAccessWitness.ts:98](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L98)
 
 #### Parameters
 
@@ -80,7 +82,7 @@ Defined in: [binaryTreeAccessWitness.ts:97](https://github.com/ethereumjs/ethere
 
 > **stemCache**: `StemCache`
 
-Defined in: [binaryTreeAccessWitness.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L95)
+Defined in: [binaryTreeAccessWitness.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L96)
 
 ***
 
@@ -88,7 +90,7 @@ Defined in: [binaryTreeAccessWitness.ts:95](https://github.com/ethereumjs/ethere
 
 > **stems**: `Map`\<`` `0x${string}` ``, [`BinaryStemAccessEvent`](../type-aliases/BinaryStemAccessEvent.md) & [`BinaryStemMeta`](../type-aliases/BinaryStemMeta.md)\>
 
-Defined in: [binaryTreeAccessWitness.ts:93](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L93)
+Defined in: [binaryTreeAccessWitness.ts:94](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L94)
 
 ## Methods
 
@@ -96,7 +98,7 @@ Defined in: [binaryTreeAccessWitness.ts:93](https://github.com/ethereumjs/ethere
 
 > **accesses**(): `Generator`\<`BinaryTreeAccessedStateWithAddress`\>
 
-Defined in: [binaryTreeAccessWitness.ts:375](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L375)
+Defined in: [binaryTreeAccessWitness.ts:376](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L376)
 
 #### Returns
 
@@ -112,7 +114,7 @@ Defined in: [binaryTreeAccessWitness.ts:375](https://github.com/ethereumjs/ether
 
 > **commit**(): `void`
 
-Defined in: [binaryTreeAccessWitness.ts:310](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L310)
+Defined in: [binaryTreeAccessWitness.ts:311](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L311)
 
 #### Returns
 
@@ -128,7 +130,7 @@ Defined in: [binaryTreeAccessWitness.ts:310](https://github.com/ethereumjs/ether
 
 > **debugWitnessCost**(): `void`
 
-Defined in: [binaryTreeAccessWitness.ts:327](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L327)
+Defined in: [binaryTreeAccessWitness.ts:328](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L328)
 
 #### Returns
 
@@ -144,7 +146,7 @@ Defined in: [binaryTreeAccessWitness.ts:327](https://github.com/ethereumjs/ether
 
 > **merge**(`accessWitness`): `void`
 
-Defined in: [binaryTreeAccessWitness.ts:285](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L285)
+Defined in: [binaryTreeAccessWitness.ts:286](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L286)
 
 #### Parameters
 
@@ -166,7 +168,7 @@ Defined in: [binaryTreeAccessWitness.ts:285](https://github.com/ethereumjs/ether
 
 > **rawAccesses**(): `Generator`\<`RawBinaryTreeAccessedState`\>
 
-Defined in: [binaryTreeAccessWitness.ts:360](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L360)
+Defined in: [binaryTreeAccessWitness.ts:361](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L361)
 
 #### Returns
 
@@ -182,7 +184,7 @@ Defined in: [binaryTreeAccessWitness.ts:360](https://github.com/ethereumjs/ether
 
 > **readAccountBasicData**(`address`): `bigint`
 
-Defined in: [binaryTreeAccessWitness.ts:108](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L108)
+Defined in: [binaryTreeAccessWitness.ts:109](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L109)
 
 #### Parameters
 
@@ -204,7 +206,7 @@ Defined in: [binaryTreeAccessWitness.ts:108](https://github.com/ethereumjs/ether
 
 > **readAccountCodeChunks**(`contract`, `startPc`, `endPc`): `bigint`
 
-Defined in: [binaryTreeAccessWitness.ts:142](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L142)
+Defined in: [binaryTreeAccessWitness.ts:143](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L143)
 
 #### Parameters
 
@@ -234,7 +236,7 @@ Defined in: [binaryTreeAccessWitness.ts:142](https://github.com/ethereumjs/ether
 
 > **readAccountCodeHash**(`address`): `bigint`
 
-Defined in: [binaryTreeAccessWitness.ts:116](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L116)
+Defined in: [binaryTreeAccessWitness.ts:117](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L117)
 
 #### Parameters
 
@@ -256,7 +258,7 @@ Defined in: [binaryTreeAccessWitness.ts:116](https://github.com/ethereumjs/ether
 
 > **readAccountHeader**(`address`): `bigint`
 
-Defined in: [binaryTreeAccessWitness.ts:124](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L124)
+Defined in: [binaryTreeAccessWitness.ts:125](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L125)
 
 #### Parameters
 
@@ -278,7 +280,7 @@ Defined in: [binaryTreeAccessWitness.ts:124](https://github.com/ethereumjs/ether
 
 > **readAccountStorage**(`address`, `storageSlot`): `bigint`
 
-Defined in: [binaryTreeAccessWitness.ts:160](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L160)
+Defined in: [binaryTreeAccessWitness.ts:161](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L161)
 
 #### Parameters
 
@@ -304,7 +306,7 @@ Defined in: [binaryTreeAccessWitness.ts:160](https://github.com/ethereumjs/ether
 
 > **revert**(): `void`
 
-Defined in: [binaryTreeAccessWitness.ts:322](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L322)
+Defined in: [binaryTreeAccessWitness.ts:323](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L323)
 
 #### Returns
 
@@ -318,9 +320,9 @@ Defined in: [binaryTreeAccessWitness.ts:322](https://github.com/ethereumjs/ether
 
 ### touchAddress()
 
-> **touchAddress**(`address`, `treeIndex`, `subIndex`, `__namedParameters`): `AccessEventFlags`
+> **touchAddress**(`address`, `treeIndex`, `subIndex`, `__namedParameters?`): `AccessEventFlags`
 
-Defined in: [binaryTreeAccessWitness.ts:229](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L229)
+Defined in: [binaryTreeAccessWitness.ts:230](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L230)
 
 #### Parameters
 
@@ -330,13 +332,13 @@ Defined in: [binaryTreeAccessWitness.ts:229](https://github.com/ethereumjs/ether
 
 ##### treeIndex
 
-`number` | `bigint`
+`number` \| `bigint`
 
 ##### subIndex
 
-`number` | `Uint8Array`\<`ArrayBufferLike`\>
+`number` \| `Uint8Array`\<`ArrayBufferLike`\>
 
-##### \_\_namedParameters
+##### \_\_namedParameters?
 
 ###### isWrite?
 
@@ -352,7 +354,7 @@ Defined in: [binaryTreeAccessWitness.ts:229](https://github.com/ethereumjs/ether
 
 > **touchAddressAndComputeGas**(`address`, `treeIndex`, `subIndex`, `__namedParameters`): `bigint`
 
-Defined in: [binaryTreeAccessWitness.ts:190](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L190)
+Defined in: [binaryTreeAccessWitness.ts:191](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L191)
 
 #### Parameters
 
@@ -362,11 +364,11 @@ Defined in: [binaryTreeAccessWitness.ts:190](https://github.com/ethereumjs/ether
 
 ##### treeIndex
 
-`number` | `bigint`
+`number` \| `bigint`
 
 ##### subIndex
 
-`number` | `Uint8Array`\<`ArrayBufferLike`\>
+`number` \| `Uint8Array`\<`ArrayBufferLike`\>
 
 ##### \_\_namedParameters
 
@@ -384,7 +386,7 @@ Defined in: [binaryTreeAccessWitness.ts:190](https://github.com/ethereumjs/ether
 
 > **touchAddressOnReadAndComputeGas**(`address`, `treeIndex`, `subIndex`): `bigint`
 
-Defined in: [binaryTreeAccessWitness.ts:180](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L180)
+Defined in: [binaryTreeAccessWitness.ts:181](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L181)
 
 #### Parameters
 
@@ -394,11 +396,11 @@ Defined in: [binaryTreeAccessWitness.ts:180](https://github.com/ethereumjs/ether
 
 ##### treeIndex
 
-`number` | `bigint`
+`number` \| `bigint`
 
 ##### subIndex
 
-`number` | `Uint8Array`\<`ArrayBufferLike`\>
+`number` \| `Uint8Array`\<`ArrayBufferLike`\>
 
 #### Returns
 
@@ -410,7 +412,7 @@ Defined in: [binaryTreeAccessWitness.ts:180](https://github.com/ethereumjs/ether
 
 > **touchAddressOnWriteAndComputeGas**(`address`, `treeIndex`, `subIndex`): `bigint`
 
-Defined in: [binaryTreeAccessWitness.ts:170](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L170)
+Defined in: [binaryTreeAccessWitness.ts:171](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L171)
 
 #### Parameters
 
@@ -420,11 +422,11 @@ Defined in: [binaryTreeAccessWitness.ts:170](https://github.com/ethereumjs/ether
 
 ##### treeIndex
 
-`number` | `bigint`
+`number` \| `bigint`
 
 ##### subIndex
 
-`number` | `Uint8Array`\<`ArrayBufferLike`\>
+`number` \| `Uint8Array`\<`ArrayBufferLike`\>
 
 #### Returns
 
@@ -436,7 +438,7 @@ Defined in: [binaryTreeAccessWitness.ts:170](https://github.com/ethereumjs/ether
 
 > **writeAccountBasicData**(`address`): `bigint`
 
-Defined in: [binaryTreeAccessWitness.ts:112](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L112)
+Defined in: [binaryTreeAccessWitness.ts:113](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L113)
 
 #### Parameters
 
@@ -458,7 +460,7 @@ Defined in: [binaryTreeAccessWitness.ts:112](https://github.com/ethereumjs/ether
 
 > **writeAccountCodeChunks**(`contract`, `startPc`, `endPc`): `bigint`
 
-Defined in: [binaryTreeAccessWitness.ts:151](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L151)
+Defined in: [binaryTreeAccessWitness.ts:152](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L152)
 
 #### Parameters
 
@@ -488,7 +490,7 @@ Defined in: [binaryTreeAccessWitness.ts:151](https://github.com/ethereumjs/ether
 
 > **writeAccountCodeHash**(`address`): `bigint`
 
-Defined in: [binaryTreeAccessWitness.ts:120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L120)
+Defined in: [binaryTreeAccessWitness.ts:121](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L121)
 
 #### Parameters
 
@@ -510,7 +512,7 @@ Defined in: [binaryTreeAccessWitness.ts:120](https://github.com/ethereumjs/ether
 
 > **writeAccountHeader**(`address`): `bigint`
 
-Defined in: [binaryTreeAccessWitness.ts:133](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L133)
+Defined in: [binaryTreeAccessWitness.ts:134](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L134)
 
 #### Parameters
 
@@ -532,7 +534,7 @@ Defined in: [binaryTreeAccessWitness.ts:133](https://github.com/ethereumjs/ether
 
 > **writeAccountStorage**(`address`, `storageSlot`): `bigint`
 
-Defined in: [binaryTreeAccessWitness.ts:165](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L165)
+Defined in: [binaryTreeAccessWitness.ts:166](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L166)
 
 #### Parameters
 

@@ -8,7 +8,9 @@
 
 > **nibblesToBytes**(`nibbles`): `Uint8Array`\<`ArrayBuffer`\>
 
-Defined in: [packages/mpt/src/util/encoding.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/util/encoding.ts#L37)
+Defined in: [util/encoding.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/util/encoding.ts#L38)
+
+Pack an even-length nibble byte sequence into bytes.
 
 ## Parameters
 

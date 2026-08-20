@@ -6,7 +6,7 @@
 
 # Interface: BALJSONStorageChange
 
-Defined in: [packages/util/src/bal/index.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L76)
+Defined in: [packages/util/src/bal/index.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L79)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [packages/util/src/bal/index.ts:76](https://github.com/ethereumjs/et
 
 > **blockAccessIndex**: `` `0x${string}` ``
 
-Defined in: [packages/util/src/bal/index.ts:77](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L77)
+Defined in: [packages/util/src/bal/index.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L80)
 
 ***
 
@@ -22,4 +22,4 @@ Defined in: [packages/util/src/bal/index.ts:77](https://github.com/ethereumjs/et
 
 > **postValue**: `` `0x${string}` ``
 
-Defined in: [packages/util/src/bal/index.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L78)
+Defined in: [packages/util/src/bal/index.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L81)

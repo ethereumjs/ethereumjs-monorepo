@@ -6,7 +6,7 @@
 
 # Class: RPCBlockChain
 
-Defined in: [rpcStateManager.ts:361](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L361)
+Defined in: [rpcStateManager.ts:373](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L373)
 
 ## Constructors
 
@@ -14,7 +14,7 @@ Defined in: [rpcStateManager.ts:361](https://github.com/ethereumjs/ethereumjs-mo
 
 > **new RPCBlockChain**(`provider`): `RPCBlockChain`
 
-Defined in: [rpcStateManager.ts:363](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L363)
+Defined in: [rpcStateManager.ts:375](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L375)
 
 #### Parameters
 
@@ -32,7 +32,7 @@ Defined in: [rpcStateManager.ts:363](https://github.com/ethereumjs/ethereumjs-mo
 
 > `readonly` **provider**: `string`
 
-Defined in: [rpcStateManager.ts:362](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L362)
+Defined in: [rpcStateManager.ts:374](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L374)
 
 ## Methods
 
@@ -40,7 +40,7 @@ Defined in: [rpcStateManager.ts:362](https://github.com/ethereumjs/ethereumjs-mo
 
 > **getBlock**(`blockId`): `Promise`\<\{ `hash`: () => `Uint8Array`\<`ArrayBufferLike`\>; \}\>
 
-Defined in: [rpcStateManager.ts:368](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L368)
+Defined in: [rpcStateManager.ts:380](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L380)
 
 #### Parameters
 
@@ -58,7 +58,7 @@ Defined in: [rpcStateManager.ts:368](https://github.com/ethereumjs/ethereumjs-mo
 
 > **shallowCopy**(): `RPCBlockChain`
 
-Defined in: [rpcStateManager.ts:378](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L378)
+Defined in: [rpcStateManager.ts:390](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/rpcStateManager.ts#L390)
 
 #### Returns
 

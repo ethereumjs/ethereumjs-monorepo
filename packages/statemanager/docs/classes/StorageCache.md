@@ -6,7 +6,9 @@
 
 # Class: StorageCache
 
-Defined in: [cache/storage.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/storage.ts#L20)
+Defined in: [cache/storage.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/storage.ts#L21)
+
+In-memory storage slot cache with checkpoint/revert support.
 
 ## Extends
 
@@ -18,7 +20,7 @@ Defined in: [cache/storage.ts:20](https://github.com/ethereumjs/ethereumjs-monor
 
 > **new StorageCache**(`opts`): `StorageCache`
 
-Defined in: [cache/storage.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/storage.ts#L35)
+Defined in: [cache/storage.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/storage.ts#L36)
 
 #### Parameters
 
@@ -40,7 +42,7 @@ Defined in: [cache/storage.ts:35](https://github.com/ethereumjs/ethereumjs-monor
 
 > **\_checkpoints**: `number` = `0`
 
-Defined in: [cache/cache.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/cache.ts#L9)
+Defined in: [cache/cache.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/cache.ts#L10)
 
 #### Inherited from
 
@@ -52,7 +54,7 @@ Defined in: [cache/cache.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo
 
 > **\_debug**: `Debugger`
 
-Defined in: [cache/cache.ts:7](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/cache.ts#L7)
+Defined in: [cache/cache.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/cache.ts#L8)
 
 #### Inherited from
 
@@ -64,7 +66,7 @@ Defined in: [cache/cache.ts:7](https://github.com/ethereumjs/ethereumjs-monorepo
 
 > **\_diffCache**: `Map`\<`string`, `DiffStorageCacheMap`\>[] = `[]`
 
-Defined in: [cache/storage.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/storage.ts#L33)
+Defined in: [cache/storage.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/storage.ts#L34)
 
 Diff cache collecting the state of the cache
 at the beginning of checkpoint height
@@ -80,7 +82,7 @@ before.
 
 > **\_lruCache**: `LRUCache`\<`string`, `StorageCacheMap`, `unknown`\> \| `undefined`
 
-Defined in: [cache/storage.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/storage.ts#L21)
+Defined in: [cache/storage.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/storage.ts#L22)
 
 ***
 
@@ -88,7 +90,7 @@ Defined in: [cache/storage.ts:21](https://github.com/ethereumjs/ethereumjs-monor
 
 > **\_orderedMapCache**: `OrderedMap`\<`string`, `StorageCacheMap`\> \| `undefined`
 
-Defined in: [cache/storage.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/storage.ts#L22)
+Defined in: [cache/storage.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/storage.ts#L23)
 
 ***
 
@@ -96,7 +98,7 @@ Defined in: [cache/storage.ts:22](https://github.com/ethereumjs/ethereumjs-monor
 
 > **\_stats**: `object`
 
-Defined in: [cache/cache.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/cache.ts#L11)
+Defined in: [cache/cache.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/cache.ts#L12)
 
 #### deletions
 
@@ -128,7 +130,7 @@ Defined in: [cache/cache.ts:11](https://github.com/ethereumjs/ethereumjs-monorep
 
 > **\_saveCachePreState**(`addressHex`, `keyHex`): `void`
 
-Defined in: [cache/storage.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/storage.ts#L53)
+Defined in: [cache/storage.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/storage.ts#L54)
 
 #### Parameters
 
@@ -150,7 +152,7 @@ Defined in: [cache/storage.ts:53](https://github.com/ethereumjs/ethereumjs-monor
 
 > **checkpoint**(): `void`
 
-Defined in: [cache/storage.ts:302](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/storage.ts#L302)
+Defined in: [cache/storage.ts:304](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/storage.ts#L304)
 
 Marks current state of cache as checkpoint, which can
 later on be reverted or committed.
@@ -179,15 +181,17 @@ Clears cache.
 
 > **clearStorage**(`address`): `void`
 
-Defined in: [cache/storage.ts:176](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/storage.ts#L176)
+Defined in: [cache/storage.ts:178](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/storage.ts#L178)
 
-Deletes all storage slots for address from the cache
+Remove all cached storage slots for an account.
 
 #### Parameters
 
 ##### address
 
 `Address`
+
+Account whose storage map should be cleared
 
 #### Returns
 
@@ -199,7 +203,7 @@ Deletes all storage slots for address from the cache
 
 > **commit**(): `void`
 
-Defined in: [cache/storage.ts:269](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/storage.ts#L269)
+Defined in: [cache/storage.ts:271](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/storage.ts#L271)
 
 Commits to current state of cache (no effect on trie).
 
@@ -213,7 +217,7 @@ Commits to current state of cache (no effect on trie).
 
 > **del**(`address`, `key`): `void`
 
-Defined in: [cache/storage.ts:146](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/storage.ts#L146)
+Defined in: [cache/storage.ts:147](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/storage.ts#L147)
 
 Marks storage key for address as deleted in cache.
 
@@ -251,13 +255,13 @@ Dumps the RLP-encoded storage values for an `account` specified by `address`.
 
 `Address`
 
-The address of the `account` to return storage for
+Account to dump from the cache
 
 #### Returns
 
 `StorageCacheMap` \| `undefined`
 
-- The storage values for the `account` or undefined if the `account` is not in the cache
+Map of slot hex keys to values, or `undefined` when the account is not cached
 
 ***
 
@@ -265,7 +269,7 @@ The address of the `account` to return storage for
 
 > **flush**(): \[`string`, `string`, `Uint8Array`\<`ArrayBufferLike`\> \| `undefined`\][]
 
-Defined in: [cache/storage.ts:189](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/storage.ts#L189)
+Defined in: [cache/storage.ts:191](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/storage.ts#L191)
 
 Flushes cache by returning storage slots that have been modified
 or deleted and resetting the diff cache (at checkpoint height).
@@ -280,7 +284,7 @@ or deleted and resetting the diff cache (at checkpoint height).
 
 > **get**(`address`, `key`): `Uint8Array`\<`ArrayBufferLike`\> \| `undefined`
 
-Defined in: [cache/storage.ts:121](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/storage.ts#L121)
+Defined in: [cache/storage.ts:122](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/storage.ts#L122)
 
 Returns the queried slot as the RLP encoded storage value
 hexToBytes('0x80'): slot is known to be empty
@@ -312,7 +316,7 @@ Storage value or undefined
 
 > **put**(`address`, `key`, `value`): `void`
 
-Defined in: [cache/storage.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/storage.ts#L82)
+Defined in: [cache/storage.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/storage.ts#L83)
 
 Puts storage value to cache under address_key cache key.
 
@@ -344,7 +348,7 @@ Storage key
 
 > **revert**(): `void`
 
-Defined in: [cache/storage.ts:227](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/storage.ts#L227)
+Defined in: [cache/storage.ts:229](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/storage.ts#L229)
 
 Revert changes to cache last checkpoint (no effect on trie).
 
@@ -358,9 +362,9 @@ Revert changes to cache last checkpoint (no effect on trie).
 
 > **size**(): `number`
 
-Defined in: [cache/storage.ts:314](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/storage.ts#L314)
+Defined in: [cache/storage.ts:313](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/storage.ts#L313)
 
-Returns the size of the cache
+Current number of accounts with cached storage maps.
 
 #### Returns
 
@@ -370,17 +374,19 @@ Returns the size of the cache
 
 ### stats()
 
-> **stats**(`reset`): `object`
+> **stats**(`reset?`): `object`
 
 Defined in: [cache/storage.ts:326](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/storage.ts#L326)
 
-Returns a dict with cache stats
+Read/write statistics for this cache.
 
 #### Parameters
 
-##### reset
+##### reset?
 
 `boolean` = `true`
+
+When `true` (default), zero counters after reading
 
 #### Returns
 

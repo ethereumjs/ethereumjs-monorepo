@@ -6,9 +6,9 @@
 
 # Interface: StatelessVerkleStateManagerOpts
 
-Defined in: [types.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L70)
+Defined in: [types.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L71)
 
-Options dictionary.
+Options for a stateless Verkle-backed state manager (requires `common` with verkle crypto).
 
 ## Extends
 
@@ -18,9 +18,9 @@ Options dictionary.
 
 ### caches?
 
-> `optional` **caches**: [`Caches`](../classes/Caches.md)
+> `optional` **caches?**: [`Caches`](../classes/Caches.md)
 
-Defined in: [types.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L72)
+Defined in: [types.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L73)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: [types.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 > **common**: `Common`
 
-Defined in: [types.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L71)
+Defined in: [types.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L72)
 
 The common to use
 

@@ -8,7 +8,7 @@
 
 > **ipToBytes**(`ip`, `bytes?`, `offset?`): `Uint8Array`
 
-Defined in: [packages/devp2p/src/util.ts:161](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L161)
+Defined in: [packages/devp2p/src/util.ts:163](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L163)
 
 ## Parameters
 

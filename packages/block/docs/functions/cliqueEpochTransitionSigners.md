@@ -8,7 +8,7 @@
 
 > **cliqueEpochTransitionSigners**(`header`): `Address`[]
 
-Defined in: [consensus/clique.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/consensus/clique.ts#L83)
+Defined in: [consensus/clique.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/consensus/clique.ts#L86)
 
 Returns a list of signers
 (only clique PoA, throws otherwise)

@@ -8,10 +8,9 @@
 
 > **createMPTFromProof**(`proof`, `trieOpts?`): `Promise`\<[`MerklePatriciaTrie`](../classes/MerklePatriciaTrie.md)\>
 
-Defined in: [packages/mpt/src/constructors.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/constructors.ts#L64)
+Defined in: [constructors.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/constructors.ts#L74)
 
-Create a trie from a given (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof. A proof contains the encoded trie nodes
-from the root node to the leaf node storing state data.
+Reconstruct a sparse trie from an EIP-1186 proof.
 
 ## Parameters
 
@@ -19,16 +18,16 @@ from the root node to the leaf node storing state data.
 
 [`Proof`](../type-aliases/Proof.md)
 
-an EIP-1186 proof to create trie from
+Serialized trie nodes from root to the proven leaf
 
 ### trieOpts?
 
 [`MPTOpts`](../interfaces/MPTOpts.md)
 
-trie opts to be applied to returned trie
+Options for the returned trie (root verification, key hashing, etc.)
 
 ## Returns
 
 `Promise`\<[`MerklePatriciaTrie`](../classes/MerklePatriciaTrie.md)\>
 
-new trie created from given proof
+Trie populated with proof nodes, root set from the proof

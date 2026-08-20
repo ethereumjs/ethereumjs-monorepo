@@ -8,7 +8,9 @@
 
 > **chunkifyBinaryTreeCode**(`code`): `Uint8Array`\<`ArrayBufferLike`\>[]
 
-Defined in: [packages/util/src/binaryTree.ts:179](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L179)
+Defined in: [packages/util/src/binaryTree.ts:185](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L185)
+
+Split contract bytecode into binary-tree code chunks (EIP-7864).
 
 ## Parameters
 

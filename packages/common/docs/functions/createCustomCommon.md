@@ -6,9 +6,9 @@
 
 # Function: createCustomCommon()
 
-> **createCustomCommon**(`partialConfig`, `baseChain`, `opts`): [`Common`](../classes/Common.md)
+> **createCustomCommon**(`partialConfig`, `baseChain`, `opts?`): [`Common`](../classes/Common.md)
 
-Defined in: [common/src/constructors.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/constructors.ts#L22)
+Defined in: [constructors.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/constructors.ts#L22)
 
 Creates a [Common](../classes/Common.md) object for a custom chain, based on a standard one.
 
@@ -35,7 +35,7 @@ Custom parameter dict
 
 `ChainConfig` chain configuration taken as a base chain, e.g. `Mainnet` (exported at root level)
 
-### opts
+### opts?
 
 [`BaseOpts`](../interfaces/BaseOpts.md) = `{}`
 

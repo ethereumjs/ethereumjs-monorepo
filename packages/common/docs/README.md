@@ -12,6 +12,7 @@
 
 - [BaseOpts](interfaces/BaseOpts.md)
 - [BinaryTreeAccessWitnessInterface](interfaces/BinaryTreeAccessWitnessInterface.md)
+- [BinaryTreeStateManagerInterface](interfaces/BinaryTreeStateManagerInterface.md)
 - [BootstrapNodeConfig](interfaces/BootstrapNodeConfig.md)
 - [ChainConfig](interfaces/ChainConfig.md)
 - [ChainName](interfaces/ChainName.md)

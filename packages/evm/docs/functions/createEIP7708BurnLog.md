@@ -8,9 +8,9 @@
 
 > **createEIP7708BurnLog**(`account`, `value`): [`Log`](../type-aliases/Log.md)
 
-Defined in: [eip7708.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/eip7708.ts#L55)
+Defined in: [eip7708.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/eip7708.ts#L58)
 
-Creates an EIP-7708 burn log (LOG2) for a burned account balance.
+Builds an EIP-7708 burn log (LOG2) for an account balance removed on selfdestruct.
 
 ## Parameters
 

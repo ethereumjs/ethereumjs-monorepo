@@ -8,7 +8,7 @@
 
 > **createBlockLevelAccessListFromJSON**(`json`): [`BlockLevelAccessList`](../classes/BlockLevelAccessList.md)
 
-Defined in: [packages/util/src/bal/index.ts:612](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L612)
+Defined in: [packages/util/src/bal/index.ts:622](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L622)
 
 Parses a JSON block access list (fixture / Engine API order).
 

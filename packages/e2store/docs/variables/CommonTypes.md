@@ -8,7 +8,9 @@
 
 > `const` **CommonTypes**: `object`
 
-Defined in: [packages/e2store/src/types.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/types.ts#L8)
+Defined in: [packages/e2store/src/types.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/types.ts#L12)
+
+Shared e2store type tags (version, block index).
 
 ## Type Declaration
 

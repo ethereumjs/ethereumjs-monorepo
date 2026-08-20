@@ -8,6 +8,6 @@
 
 > `const` **RLP\_EMPTY\_STRING**: `Uint8Array`\<`ArrayBuffer`\>
 
-Defined in: [packages/util/src/constants.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L73)
+Defined in: [packages/util/src/constants.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L76)
 
 RLP encoded empty string

@@ -8,7 +8,9 @@
 
 > **BinaryTreeAccessedStateWithAddress** = [`BinaryTreeAccessedState`](BinaryTreeAccessedState.md) & `object`
 
-Defined in: [common/src/interfaces.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L99)
+Defined in: [interfaces.ts:109](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L109)
+
+Binary-tree access event including address and chunk key.
 
 ## Type Declaration
 

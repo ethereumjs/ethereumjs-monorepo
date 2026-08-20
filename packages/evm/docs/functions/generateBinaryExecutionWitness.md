@@ -8,7 +8,7 @@
 
 > **generateBinaryExecutionWitness**(`stateManager`, `accessWitness`, `parentStateRoot`): `Promise`\<`BinaryTreeExecutionWitness`\>
 
-Defined in: [binaryTreeAccessWitness.ts:391](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L391)
+Defined in: [binaryTreeAccessWitness.ts:395](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/binaryTreeAccessWitness.ts#L395)
 
 Generate a BinaryTreeExecutionWitness from a state manager and an access witness.
 
@@ -16,9 +16,12 @@ Generate a BinaryTreeExecutionWitness from a state manager and an access witness
 
 ### stateManager
 
-`StatefulBinaryTreeStateManager`
+`BinaryTreeStateManagerInterface`
 
 The state manager containing the state to generate the witness for.
+Any state manager exposing the binary tree surface works (see
+BinaryTreeStateManagerInterface), e.g. `StatefulBinaryTreeStateManager`
+from `@ethereumjs/statemanager`.
 
 ### accessWitness
 

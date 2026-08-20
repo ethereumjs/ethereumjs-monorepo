@@ -8,7 +8,7 @@
 
 > **toChecksumAddress**(`hexAddress`, `eip1191ChainId?`): `` `0x${string}` ``
 
-Defined in: [packages/util/src/account.ts:408](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L408)
+Defined in: [packages/util/src/account.ts:430](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L430)
 
 Returns a checksummed address.
 

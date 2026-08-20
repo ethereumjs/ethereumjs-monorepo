@@ -6,20 +6,22 @@
 
 # Interface: HardforkByOpts
 
-Defined in: [common/src/types.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L157)
+Defined in: [types.ts:171](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L171)
+
+Block number or timestamp used to select a hardfork.
 
 ## Properties
 
 ### blockNumber?
 
-> `optional` **blockNumber**: `BigIntLike`
+> `optional` **blockNumber?**: `BigIntLike`
 
-Defined in: [common/src/types.ts:158](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L158)
+Defined in: [types.ts:172](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L172)
 
 ***
 
 ### timestamp?
 
-> `optional` **timestamp**: `BigIntLike`
+> `optional` **timestamp?**: `BigIntLike`
 
-Defined in: [common/src/types.ts:159](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L159)
+Defined in: [types.ts:173](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L173)

@@ -8,9 +8,9 @@
 
 > **createBlockHeaderFromRPC**(`blockParams`, `options?`): [`BlockHeader`](../classes/BlockHeader.md)
 
-Defined in: [header/constructors.ts:112](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/constructors.ts#L112)
+Defined in: [header/constructors.ts:111](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/constructors.ts#L111)
 
-Creates a new block header object from Ethereum JSON RPC.
+Instantiate a block header from JSON-RPC block fields.
 
 ## Parameters
 
@@ -18,13 +18,11 @@ Creates a new block header object from Ethereum JSON RPC.
 
 [`JSONRPCBlock`](../interfaces/JSONRPCBlock.md)
 
-Ethereum JSON RPC of block (eth_getBlockByNumber)
+`eth_getBlockByNumber` / `eth_getBlockByHash` response
 
 ### options?
 
 [`BlockOptions`](../interfaces/BlockOptions.md)
-
-An object describing the blockchain
 
 ## Returns
 

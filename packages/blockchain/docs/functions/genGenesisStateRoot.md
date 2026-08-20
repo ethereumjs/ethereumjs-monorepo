@@ -8,9 +8,9 @@
 
 > **genGenesisStateRoot**(`genesisState`, `common`): `Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
 
-Defined in: [helpers.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/helpers.ts#L19)
+Defined in: [helpers.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/helpers.ts#L9)
 
-Merkle genesis root
+Compute the Merkle Patricia trie root of a custom genesis state.
 
 ## Parameters
 

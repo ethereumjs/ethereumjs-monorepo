@@ -8,15 +8,17 @@
 
 > **VMEvent** = `object`
 
-Defined in: [vm/src/types.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L85)
+Defined in: [vm/src/types.ts:87](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L87)
+
+VM lifecycle events emitted around block and transaction processing.
 
 ## Properties
 
-### afterBlock()
+### afterBlock
 
 > **afterBlock**: (`data`, `resolve?`) => `void`
 
-Defined in: [vm/src/types.ts:87](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L87)
+Defined in: [vm/src/types.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L89)
 
 #### Parameters
 
@@ -34,11 +36,11 @@ Defined in: [vm/src/types.ts:87](https://github.com/ethereumjs/ethereumjs-monore
 
 ***
 
-### afterTx()
+### afterTx
 
 > **afterTx**: (`data`, `resolve?`) => `void`
 
-Defined in: [vm/src/types.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L89)
+Defined in: [vm/src/types.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L91)
 
 #### Parameters
 
@@ -56,11 +58,11 @@ Defined in: [vm/src/types.ts:89](https://github.com/ethereumjs/ethereumjs-monore
 
 ***
 
-### beforeBlock()
+### beforeBlock
 
 > **beforeBlock**: (`data`, `resolve?`) => `void`
 
-Defined in: [vm/src/types.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L86)
+Defined in: [vm/src/types.ts:88](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L88)
 
 #### Parameters
 
@@ -78,11 +80,11 @@ Defined in: [vm/src/types.ts:86](https://github.com/ethereumjs/ethereumjs-monore
 
 ***
 
-### beforeTx()
+### beforeTx
 
 > **beforeTx**: (`data`, `resolve?`) => `void`
 
-Defined in: [vm/src/types.ts:88](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L88)
+Defined in: [vm/src/types.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L90)
 
 #### Parameters
 

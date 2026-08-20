@@ -8,7 +8,7 @@
 
 > **isFeeMarket1559TxData**(`txData`): `txData is FeeMarketEIP1559TxData`
 
-Defined in: [types.ts:325](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L325)
+Defined in: [types.ts:355](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L355)
 
 Type guard to check if transaction data is Fee Market EIP-1559 transaction data
 

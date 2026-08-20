@@ -6,7 +6,9 @@
 
 # Interface: CommonInterface
 
-Defined in: [packages/mpt/src/types.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/types.ts#L26)
+Defined in: [types.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/types.ts#L29)
+
+Shared subset of Common used internally by `@ethereumjs/mpt`.
 
 ## Properties
 
@@ -14,11 +16,11 @@ Defined in: [packages/mpt/src/types.ts:26](https://github.com/ethereumjs/ethereu
 
 > **customCrypto**: `object`
 
-Defined in: [packages/mpt/src/types.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/types.ts#L27)
+Defined in: [types.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/types.ts#L30)
 
-#### keccak256()?
+#### keccak256?
 
-> `optional` **keccak256**: (`msg`) => `Uint8Array`
+> `optional` **keccak256?**: (`msg`) => `Uint8Array`
 
 ##### Parameters
 

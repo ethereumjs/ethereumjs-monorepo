@@ -8,7 +8,9 @@
 
 > **DBKey**: `object`
 
-Defined in: [packages/e2store/src/exportHistory.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/exportHistory.ts#L25)
+Defined in: [packages/e2store/src/exportHistory.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/exportHistory.ts#L28)
+
+Meta-database key codes (e.g. receipts).
 
 ## Type Declaration
 

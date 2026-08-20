@@ -8,7 +8,9 @@
 
 > `const` **VERSION**: `object`
 
-Defined in: [packages/e2store/src/types.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/types.ts#L22)
+Defined in: [packages/e2store/src/types.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/types.ts#L27)
+
+Empty version entry written at the start of e2store files.
 
 ## Type Declaration
 

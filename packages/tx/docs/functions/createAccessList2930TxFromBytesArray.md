@@ -6,14 +6,13 @@
 
 # Function: createAccessList2930TxFromBytesArray()
 
-> **createAccessList2930TxFromBytesArray**(`values`, `opts`): [`AccessList2930Tx`](../classes/AccessList2930Tx.md)
+> **createAccessList2930TxFromBytesArray**(`values`, `opts?`): [`AccessList2930Tx`](../classes/AccessList2930Tx.md)
 
-Defined in: [2930/constructors.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/2930/constructors.ts#L38)
+Defined in: [2930/constructors.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/2930/constructors.ts#L41)
 
-Create a transaction from an array of byte encoded values ordered according to the devp2p network encoding - format noted below.
+Instantiate an EIP-2930 transaction from devp2p byte-array encoding.
 
-Format: `[chainId, nonce, gasPrice, gasLimit, to, value, data, accessList,
-signatureYParity (v), signatureR (r), signatureS (s)]`
+Format: `[chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, v, r, s]`
 
 ## Parameters
 
@@ -21,10 +20,26 @@ signatureYParity (v), signatureR (r), signatureS (s)]`
 
 `AccessList2930TxValuesArray`
 
-### opts
+### opts?
 
 [`TxOptions`](../interfaces/TxOptions.md) = `{}`
 
 ## Returns
 
 [`AccessList2930Tx`](../classes/AccessList2930Tx.md)
+
+## Throws
+
+If the values array length is not 8 (unsigned) or 11 (signed)
+
+## Throws
+
+If `chainId` or signature fields are nested arrays
+
+## Throws
+
+If numeric fields contain leading zeroes
+
+## Throws
+
+If constructor validation fails (see [createAccessList2930Tx](createAccessList2930Tx.md))

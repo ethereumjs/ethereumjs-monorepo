@@ -6,13 +6,13 @@
 
 # Function: validateEOF()
 
-> **validateEOF**(`input`, `evm`, `containerMode`, `eofMode`): [`EOFContainer`](../classes/EOFContainer.md)
+> **validateEOF**(`input`, `evm`, `containerMode?`, `eofMode?`): [`EOFContainer`](../classes/EOFContainer.md)
 
-Defined in: [eof/container.ts:476](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/eof/container.ts#L476)
+Defined in: [eof/container.ts:481](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/eof/container.ts#L481)
 
-This method validates the EOF. It also performs deeper validation of the body, such as stack/opcode validation
-This is ONLY necessary when trying to deploy contracts from a transaction: these can submit containers which are invalid
-Since all deployed EOF containers are valid by definition, `validateEOF` does not need to be called each time an EOF contract is called
+Validates an EOF container for deployment (header, body, opcode/stack rules, subcontainers).
+
+Call before accepting transaction-submitted containers; on-chain deployed EOF code is already valid.
 
 ## Parameters
 
@@ -20,28 +20,26 @@ Since all deployed EOF containers are valid by definition, `validateEOF` does no
 
 `Uint8Array`
 
-Full container buffer
-
 ### evm
 
 [`EVM`](../classes/EVM.md)
 
-EVM, to read opcodes from
-
-### containerMode
+### containerMode?
 
 `ContainerSectionType` = `ContainerSectionType.RuntimeCode`
 
-Container mode to validate on
+Whether the container is runtime, init, or deployment code.
 
-### eofMode
+### eofMode?
 
 `EOFContainerMode` = `EOFContainerMode.Default`
-
-EOF mode to run in
 
 ## Returns
 
 [`EOFContainer`](../classes/EOFContainer.md)
 
-The decoded EOF container
+Parsed [EOFContainer](../classes/EOFContainer.md) when validation succeeds.
+
+## Throws
+
+On header, body, opcode, stack, or subcontainer validation failures.

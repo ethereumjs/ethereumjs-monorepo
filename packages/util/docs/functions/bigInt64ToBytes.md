@@ -6,9 +6,9 @@
 
 # Function: bigInt64ToBytes()
 
-> **bigInt64ToBytes**(`value`, `littleEndian`): `Uint8Array`
+> **bigInt64ToBytes**(`value`, `littleEndian?`): `Uint8Array`
 
-Defined in: [packages/util/src/bytes.ts:516](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L516)
+Defined in: [packages/util/src/bytes.ts:476](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L476)
 
 ## Parameters
 
@@ -18,7 +18,7 @@ Defined in: [packages/util/src/bytes.ts:516](https://github.com/ethereumjs/ether
 
 The 64-bit bigint to convert.
 
-### littleEndian
+### littleEndian?
 
 `boolean` = `false`
 

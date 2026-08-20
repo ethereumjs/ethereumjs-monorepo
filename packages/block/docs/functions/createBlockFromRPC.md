@@ -6,11 +6,11 @@
 
 # Function: createBlockFromRPC()
 
-> **createBlockFromRPC**(`blockParams`, `uncles`, `options?`): [`Block`](../classes/Block.md)
+> **createBlockFromRPC**(`blockParams`, `uncles?`, `options?`): [`Block`](../classes/Block.md)
 
-Defined in: [block/constructors.ts:216](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block/constructors.ts#L216)
+Defined in: [block/constructors.ts:207](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block/constructors.ts#L207)
 
-Creates a new block object from Ethereum JSON RPC.
+Instantiate a block from JSON-RPC block and uncle responses.
 
 ## Parameters
 
@@ -18,13 +18,13 @@ Creates a new block object from Ethereum JSON RPC.
 
 [`JSONRPCBlock`](../interfaces/JSONRPCBlock.md)
 
-Ethereum JSON RPC of block (eth_getBlockByNumber)
+`eth_getBlockByNumber` / `eth_getBlockByHash` response
 
-### uncles
+### uncles?
 
 `any`[] = `[]`
 
-Optional list of Ethereum JSON RPC of uncles (eth_getUncleByBlockHashAndIndex)
+Optional uncle headers from `eth_getUncleByBlockHashAndIndex`
 
 ### options?
 
@@ -33,5 +33,3 @@ Optional list of Ethereum JSON RPC of uncles (eth_getUncleByBlockHashAndIndex)
 ## Returns
 
 [`Block`](../classes/Block.md)
-
-a new [Block](../classes/Block.md) object

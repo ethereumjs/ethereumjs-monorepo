@@ -8,6 +8,6 @@
 
 > **AddressLike** = [`Address`](../classes/Address.md) \| `Uint8Array` \| [`PrefixedHexString`](PrefixedHexString.md)
 
-Defined in: [packages/util/src/types.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L37)
+Defined in: [packages/util/src/types.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L29)
 
 A type that represents an input that can be converted to an Address.

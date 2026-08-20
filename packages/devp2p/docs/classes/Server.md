@@ -108,7 +108,7 @@ Defined in: [packages/devp2p/src/dpt/server.ts:139](https://github.com/ethereumj
 
 > **bind**(...`args`): `void`
 
-Defined in: [packages/devp2p/src/dpt/server.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L69)
+Defined in: [packages/devp2p/src/dpt/server.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L68)
 
 #### Parameters
 
@@ -126,7 +126,7 @@ Defined in: [packages/devp2p/src/dpt/server.ts:69](https://github.com/ethereumjs
 
 > **destroy**(...`args`): `void`
 
-Defined in: [packages/devp2p/src/dpt/server.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L78)
+Defined in: [packages/devp2p/src/dpt/server.ts:77](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L77)
 
 #### Parameters
 
@@ -166,7 +166,7 @@ Defined in: [packages/devp2p/src/dpt/server.ts:130](https://github.com/ethereumj
 
 > **ping**(`peer`): `Promise`\<`any`\>
 
-Defined in: [packages/devp2p/src/dpt/server.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L90)
+Defined in: [packages/devp2p/src/dpt/server.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/server.ts#L89)
 
 #### Parameters
 

@@ -8,6 +8,6 @@
 
 > `const` **ChainGenesis**: `Record`\<[`Chain`](../type-aliases/Chain.md), `GenesisState`\>
 
-Defined in: [common/src/enums.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L36)
+Defined in: [enums.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L43)
 
 GenesisState info about well known ethereum chains

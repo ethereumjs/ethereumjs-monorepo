@@ -8,13 +8,15 @@
 
 > **isRawMPTNode**(`n`): `n is Uint8Array<ArrayBufferLike>[]`
 
-Defined in: [packages/mpt/src/node/util.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/node/util.ts#L25)
+Defined in: [node/util.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/node/util.ts#L27)
+
+Type guard: value is a raw (non-RLP-wrapped) node array.
 
 ## Parameters
 
 ### n
 
-`Uint8Array`\<`ArrayBufferLike`\> | `NestedUint8Array`
+`Uint8Array`\<`ArrayBufferLike`\> \| `NestedUint8Array`
 
 ## Returns
 

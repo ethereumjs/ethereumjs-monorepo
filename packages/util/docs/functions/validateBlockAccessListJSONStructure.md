@@ -8,7 +8,7 @@
 
 > **validateBlockAccessListJSONStructure**(`json`): `void`
 
-Defined in: [packages/util/src/bal/validation.ts:77](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/validation.ts#L77)
+Defined in: [packages/util/src/bal/validation.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/validation.ts#L78)
 
 Validates lexicographic ordering, uniqueness, and field constraints of a
 block access list in JSON fixture / Engine API form.

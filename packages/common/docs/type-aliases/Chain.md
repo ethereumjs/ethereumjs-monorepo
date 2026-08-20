@@ -8,4 +8,6 @@
 
 > **Chain** = *typeof* [`Chain`](../variables/Chain.md)\[keyof *typeof* [`Chain`](../variables/Chain.md)\]
 
-Defined in: [common/src/enums.ts:3](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L3)
+Defined in: [enums.ts:4](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L4)
+
+Numeric chain identifier enum.

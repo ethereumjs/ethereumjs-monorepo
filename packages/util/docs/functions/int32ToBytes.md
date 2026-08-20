@@ -6,9 +6,9 @@
 
 # Function: int32ToBytes()
 
-> **int32ToBytes**(`value`, `littleEndian`): `Uint8Array`
+> **int32ToBytes**(`value`, `littleEndian?`): `Uint8Array`
 
-Defined in: [packages/util/src/bytes.ts:503](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L503)
+Defined in: [packages/util/src/bytes.ts:463](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L463)
 
 ## Parameters
 
@@ -18,7 +18,7 @@ Defined in: [packages/util/src/bytes.ts:503](https://github.com/ethereumjs/ether
 
 The 32-bit integer to convert.
 
-### littleEndian
+### littleEndian?
 
 `boolean` = `false`
 

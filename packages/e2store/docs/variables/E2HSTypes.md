@@ -8,7 +8,7 @@
 
 > `const` **E2HSTypes**: `object`
 
-Defined in: [packages/e2store/src/types.ts:66](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/types.ts#L66)
+Defined in: [packages/e2store/src/types.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/types.ts#L72)
 
 E2HS Type Identifiers
 Version                     = { type: [0x65, 0x32], data: nil }

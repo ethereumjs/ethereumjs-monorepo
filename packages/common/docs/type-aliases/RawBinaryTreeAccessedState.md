@@ -8,7 +8,9 @@
 
 > **RawBinaryTreeAccessedState** = `object`
 
-Defined in: [common/src/interfaces.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L82)
+Defined in: [interfaces.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L90)
+
+Low-level binary-tree access record before normalization.
 
 ## Properties
 
@@ -16,7 +18,7 @@ Defined in: [common/src/interfaces.ts:82](https://github.com/ethereumjs/ethereum
 
 > **address**: `Address`
 
-Defined in: [common/src/interfaces.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L83)
+Defined in: [interfaces.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L91)
 
 ***
 
@@ -24,7 +26,7 @@ Defined in: [common/src/interfaces.ts:83](https://github.com/ethereumjs/ethereum
 
 > **chunkIndex**: `number`
 
-Defined in: [common/src/interfaces.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L85)
+Defined in: [interfaces.ts:93](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L93)
 
 ***
 
@@ -32,7 +34,7 @@ Defined in: [common/src/interfaces.ts:85](https://github.com/ethereumjs/ethereum
 
 > **chunkKey**: `PrefixedHexString`
 
-Defined in: [common/src/interfaces.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L86)
+Defined in: [interfaces.ts:94](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L94)
 
 ***
 
@@ -40,4 +42,4 @@ Defined in: [common/src/interfaces.ts:86](https://github.com/ethereumjs/ethereum
 
 > **treeIndex**: `number` \| `bigint`
 
-Defined in: [common/src/interfaces.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L84)
+Defined in: [interfaces.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L92)

@@ -6,12 +6,13 @@
 
 # Function: createTxFromRPC()
 
-> **createTxFromRPC**\<`T`\>(`txData`, `txOptions`): `Promise`\<[`Transaction`](../interfaces/Transaction.md)\[`T`\]\>
+> **createTxFromRPC**\<`T`\>(`txData`, `txOptions?`): `Promise`\<[`Transaction`](../interfaces/Transaction.md)\[`T`\]\>
 
-Defined in: [transactionFactory.ts:115](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L115)
+Defined in: [transactionFactory.ts:114](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L114)
 
-Method to decode data retrieved from RPC, such as `eth_getTransactionByHash`
-Note that this normalizes some of the parameters
+Instantiate a transaction from JSON-RPC fields (`eth_getTransactionByHash` shape).
+
+Numeric and hex fields are normalized before construction.
 
 ## Type Parameters
 
@@ -25,16 +26,14 @@ Note that this normalizes some of the parameters
 
 [`TxData`](../interfaces/TxData.md)\[`T`\]
 
-The RPC-encoded data
-
-### txOptions
+### txOptions?
 
 [`TxOptions`](../interfaces/TxOptions.md) = `{}`
-
-The transaction options
 
 ## Returns
 
 `Promise`\<[`Transaction`](../interfaces/Transaction.md)\[`T`\]\>
 
-A promise that resolves with the instantiated transaction
+## Throws
+
+If delegated [createTx](createTx.md) validation fails

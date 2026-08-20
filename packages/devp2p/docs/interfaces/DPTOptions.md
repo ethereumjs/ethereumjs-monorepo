@@ -12,7 +12,7 @@ Defined in: [packages/devp2p/src/types.ts:113](https://github.com/ethereumjs/eth
 
 ### common?
 
-> `optional` **common**: `Common`
+> `optional` **common?**: `Common`
 
 Defined in: [packages/devp2p/src/types.ts:192](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L192)
 
@@ -22,7 +22,7 @@ Common instance to allow for crypto primitive (e.g. keccak) replacement
 
 ### createSocket?
 
-> `optional` **createSocket**: `Function`
+> `optional` **createSocket?**: `Function`
 
 Defined in: [packages/devp2p/src/types.ts:133](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L133)
 
@@ -34,7 +34,7 @@ Default: dgram-created socket
 
 ### dnsAddr?
 
-> `optional` **dnsAddr**: `string`
+> `optional` **dnsAddr?**: `string`
 
 Defined in: [packages/devp2p/src/types.ts:187](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L187)
 
@@ -44,7 +44,7 @@ DNS server to query DNS TXT records from for peer discovery
 
 ### dnsNetworks?
 
-> `optional` **dnsNetworks**: `string`[]
+> `optional` **dnsNetworks?**: `string`[]
 
 Defined in: [packages/devp2p/src/types.ts:182](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L182)
 
@@ -56,7 +56,7 @@ Default: (network dependent)
 
 ### dnsRefreshQuantity?
 
-> `optional` **dnsRefreshQuantity**: `number`
+> `optional` **dnsRefreshQuantity?**: `number`
 
 Defined in: [packages/devp2p/src/types.ts:175](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L175)
 
@@ -69,7 +69,7 @@ Default: 25
 
 ### endpoint?
 
-> `optional` **endpoint**: [`PeerInfo`](PeerInfo.md)
+> `optional` **endpoint?**: [`PeerInfo`](PeerInfo.md)
 
 Defined in: [packages/devp2p/src/types.ts:126](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L126)
 
@@ -81,7 +81,7 @@ Default: 0.0.0.0, no UDP or TCP port provided
 
 ### onlyConfirmed?
 
-> `optional` **onlyConfirmed**: `boolean`
+> `optional` **onlyConfirmed?**: `boolean`
 
 Defined in: [packages/devp2p/src/types.ts:160](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L160)
 
@@ -98,7 +98,7 @@ Default: false
 
 ### refreshInterval?
 
-> `optional` **refreshInterval**: `number`
+> `optional` **refreshInterval?**: `number`
 
 Defined in: [packages/devp2p/src/types.ts:140](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L140)
 
@@ -110,7 +110,7 @@ Default: 60s
 
 ### shouldFindNeighbours?
 
-> `optional` **shouldFindNeighbours**: `boolean`
+> `optional` **shouldFindNeighbours?**: `boolean`
 
 Defined in: [packages/devp2p/src/types.ts:148](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L148)
 
@@ -123,7 +123,7 @@ Default: true
 
 ### shouldGetDnsPeers?
 
-> `optional` **shouldGetDnsPeers**: `boolean`
+> `optional` **shouldGetDnsPeers?**: `boolean`
 
 Defined in: [packages/devp2p/src/types.ts:167](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L167)
 
@@ -135,7 +135,7 @@ Default: false
 
 ### timeout?
 
-> `optional` **timeout**: `number`
+> `optional` **timeout?**: `number`
 
 Defined in: [packages/devp2p/src/types.ts:119](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L119)
 

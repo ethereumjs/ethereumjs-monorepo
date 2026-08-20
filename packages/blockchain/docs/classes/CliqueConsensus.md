@@ -204,9 +204,9 @@ new block
 
 ##### commonAncestor
 
-common ancestor block header (optional)
+`BlockHeader` \| `undefined`
 
-`BlockHeader` | `undefined`
+common ancestor block header (optional)
 
 #### Returns
 
@@ -275,6 +275,8 @@ block to be validated
 > **validateDifficulty**(`header`): `Promise`\<`void`\>
 
 Defined in: [consensus/clique.ts:179](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/clique.ts#L179)
+
+Validates header difficulty against parent and consensus rules.
 
 #### Parameters
 

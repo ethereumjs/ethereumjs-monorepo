@@ -6,14 +6,16 @@
 
 # Interface: SetLengthOpts
 
-Defined in: [packages/util/src/bytes.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L157)
+Defined in: [packages/util/src/bytes.ts:147](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L147)
+
+Options for [setLengthLeft](../functions/setLengthLeft.md) and [setLengthRight](../functions/setLengthRight.md).
 
 ## Properties
 
 ### allowTruncate?
 
-> `optional` **allowTruncate**: `boolean`
+> `optional` **allowTruncate?**: `boolean`
 
-Defined in: [packages/util/src/bytes.ts:159](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L159)
+Defined in: [packages/util/src/bytes.ts:149](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L149)
 
 Allow truncation if msg exceeds length. Default: false

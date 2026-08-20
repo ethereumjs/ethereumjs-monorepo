@@ -8,7 +8,7 @@
 
 > **eoaCode7702AuthorizationMessageToSign**(`input`): `Uint8Array`\<`ArrayBuffer`\>
 
-Defined in: [packages/util/src/authorization.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/authorization.ts#L89)
+Defined in: [packages/util/src/authorization.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/authorization.ts#L90)
 
 Returns the bytes (RLP-encoded) to sign
 
@@ -16,9 +16,9 @@ Returns the bytes (RLP-encoded) to sign
 
 ### input
 
-Either the bytes or the object format of the authorization list item
+[`EOACode7702AuthorizationListItemUnsigned`](../type-aliases/EOACode7702AuthorizationListItemUnsigned.md) \| [`EOACode7702AuthorizationListBytesItemUnsigned`](../type-aliases/EOACode7702AuthorizationListBytesItemUnsigned.md)
 
-[`EOACode7702AuthorizationListItemUnsigned`](../type-aliases/EOACode7702AuthorizationListItemUnsigned.md) | [`EOACode7702AuthorizationListBytesItemUnsigned`](../type-aliases/EOACode7702AuthorizationListBytesItemUnsigned.md)
+Either the bytes or the object format of the authorization list item
 
 ## Returns
 

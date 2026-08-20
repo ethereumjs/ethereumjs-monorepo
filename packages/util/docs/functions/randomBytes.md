@@ -8,7 +8,7 @@
 
 > **randomBytes**(`length`): `Uint8Array`
 
-Defined in: [packages/util/src/bytes.ts:445](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L445)
+Defined in: [packages/util/src/bytes.ts:405](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L405)
 
 Generates a Uint8Array of random bytes of specified length.
 

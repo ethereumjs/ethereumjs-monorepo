@@ -8,12 +8,15 @@
 
 > **createBlob4844Tx**(`txData`, `opts?`): [`Blob4844Tx`](../classes/Blob4844Tx.md)
 
-Defined in: [4844/constructors.ts:125](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/constructors.ts#L125)
+Defined in: [4844/constructors.ts:103](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/constructors.ts#L103)
 
-Instantiate a Blob4844Tx transaction from a data dictionary.
+Instantiate a [Blob4844Tx](../classes/Blob4844Tx.md) from a plain data object.
 
-If blobs are provided the tx will be instantiated in the "Network Wrapper" format,
-otherwise in the canonical form represented on-chain.
+With `blobs` or `blobsData` present the tx is built in network-wrapper form;
+otherwise the on-chain canonical form (versioned hashes only) is used.
+
+Requires `opts.common.customCrypto.kzg`. When blobs are supplied, commitments,
+versioned hashes, and proofs are derived automatically.
 
 ## Parameters
 
@@ -21,47 +24,26 @@ otherwise in the canonical form represented on-chain.
 
 [`BlobEIP4844TxData`](../interfaces/BlobEIP4844TxData.md)
 
-Transaction data object containing:
-  - `chainId` - Chain ID (will be set automatically if not provided)
-  - `nonce` - Transaction nonce
-  - `maxPriorityFeePerGas` - Maximum priority fee per gas (EIP-1559)
-  - `maxFeePerGas` - Maximum fee per gas (EIP-1559)
-  - `gasLimit` - Gas limit for the transaction
-  - `to` - Recipient address (optional for contract creation)
-  - `value` - Value to transfer in wei
-  - `data` - Transaction data
-  - `accessList` - Access list for EIP-2930 (optional)
-  - `maxFeePerBlobGas` - Maximum fee per blob gas (EIP-4844)
-  - `blobVersionedHashes` - Versioned hashes for blob validation
-  - `v`, `r`, `s` - Signature components (for signed transactions)
-  - `blobs` - Raw blob data (optional, will derive commitments/proofs)
-  - `blobsData` - Array of strings to construct blobs from (optional)
-  - `kzgCommitments` - KZG commitments (optional, derived from blobs if not provided)
-  - `kzgProofs` - KZG proofs (optional, derived from blobs if not provided)
-  - `networkWrapperVersion` - Network wrapper version (0=EIP-4844, 1=EIP-7594)
-
 ### opts?
 
 [`TxOptions`](../interfaces/TxOptions.md)
-
-Transaction options including Common instance with KZG initialized
 
 ## Returns
 
 [`Blob4844Tx`](../classes/Blob4844Tx.md)
 
-A new Blob4844Tx instance
+## Throws
+
+If `customCrypto.kzg` is not initialized on [TxOptions.common](../interfaces/TxOptions.md#common)
 
 ## Throws
 
-If KZG is not initialized in Common
+If both `blobsData` and `blobs` are provided
 
 ## Throws
 
-If both blobsData and blobs are provided
+If fee or value fields overflow or are non-numeric
 
-Notes:
-- Requires a Common instance with `customCrypto.kzg` initialized
-- Cannot provide both `blobsData` and `blobs` simultaneously
-- If `blobs` or `blobsData` is provided, `kzgCommitments`, `blobVersionedHashes`, and `kzgProofs` will be automatically derived
-- KZG proof type depends on EIP-7594 activation: per-Blob proofs (EIP-4844) or per-Cell proofs (EIP-7594)
+## Throws
+
+If gas limit or nonce exceed EIP bounds

@@ -6,11 +6,11 @@
 
 # Function: getMerkleStateProof()
 
-> **getMerkleStateProof**(`sm`, `address`, `storageSlots`): `Promise`\<`Proof`\>
+> **getMerkleStateProof**(`sm`, `address`, `storageSlots?`): `Promise`\<`Proof`\>
 
-Defined in: [proof/merkle.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/proof/merkle.ts#L35)
+Defined in: [proof/merkle.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/proof/merkle.ts#L36)
 
-Get an EIP-1186 proof
+Build an EIP-1186 proof from a [MerkleStateManager](../classes/MerkleStateManager.md).
 
 ## Parameters
 
@@ -22,13 +22,13 @@ Get an EIP-1186 proof
 
 `Address`
 
-address to get proof of
+Account to prove
 
-### storageSlots
+### storageSlots?
 
 `Uint8Array`\<`ArrayBufferLike`\>[] = `[]`
 
-storage slots to get proof of
+Storage keys to include in the proof (defaults to none)
 
 ## Returns
 
