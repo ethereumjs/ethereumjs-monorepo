@@ -16,7 +16,7 @@ export default mergeConfig(
       exclude: [
         'test/tester/legacy/state.spec.ts',
         'test/tester/legacy/blockchain.spec.ts',
-        'test/tester/consumeBal.test.ts',
+        'test/tester/consumeBAL.test.ts',
       ],
     },
   }),

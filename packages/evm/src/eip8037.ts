@@ -33,23 +33,20 @@ interface IntrinsicDimensionsTx {
 /**
  * EIP-8037 intrinsic-gas decomposition.
  *
- * Returns `{ intrinsicRegular, intrinsicState }` such that
- * `intrinsicRegular + intrinsicState` equals the tx's total **state-independent**
- * intrinsic charge under EIP-8037 (glamsterdam-devnet v7+). EIP-2780
- * recipient/value/log extras are part of `getIntrinsicGas()` (self-transfers
- * skip them). New-account state gas and 7702 `ACCOUNT_WRITE` / auth state
- * are charged at top-frame access, not here.
+ * Under glamsterdam-devnet v7+, intrinsic gas is entirely **regular**
+ * (EIP-2780 state-independent). New-account and 7702 auth/write state gas
+ * are charged at top-frame access, so this returns
+ * `{ intrinsicRegular: tx.getIntrinsicGas(), intrinsicState: 0n }` whether
+ * EIP-8037 is active or not.
  *
- * Callers may then use the split for the per-tx block-gas pre-execution
- * checks:
+ * Block inclusion does **not** subtract this split from `tx.gas`. Use
+ * {@link txExceedsAvailableBlockGas8037} (`min(TX_MAX, tx.gas)` vs remaining
+ * regular, `tx.gas` vs remaining state). Reservoir sizing in `runTx()` still
+ * uses `intrinsicRegular`:
  *
- *   regular check: min(TX_MAX, tx.gas - intrinsicState) > regular_available  → reject
- *   state check:   (tx.gas - intrinsicRegular)         > state_available     → reject
- *
- * and for sizing the EIP-8037 state-gas reservoir.
- *
- * When EIP-8037 is not active, returns `{ intrinsicRegular: tx.getIntrinsicGas(),
- * intrinsicState: 0n }` so callers can use a single code path.
+ *   execution_gas = tx.gas - intrinsic
+ *   gas_left      = min(TX_MAX - intrinsicRegular, execution_gas)
+ *   reservoir     = execution_gas - gas_left
  *
  * @remarks Experimental (Amsterdam): may change on patch releases.
  */
@@ -68,4 +65,30 @@ export function computeIntrinsicGasDimensions8037(
   // ACCOUNT_WRITE and per-auth state gas are charged at access (runTx
   // processAuthorizationList), keyed on pre-state — not here.
   return { intrinsicRegular: intrinsicRegular0, intrinsicState: BIGINT_0 }
+}
+
+/**
+ * EIP-8037 per-tx block inclusion check (v7+).
+ *
+ * Rejects when `min(TX_MAX, tx.gas) > regular_available` or
+ * `tx.gas > state_available`, where
+ * `*_available = block.gas_limit - block_*_gas_used`.
+ *
+ * `TX_MAX` caps only the regular bound; the state check uses uncapped `tx.gas`.
+ *
+ * @remarks Experimental (Amsterdam): may change on patch releases.
+ */
+export function txExceedsAvailableBlockGas8037(
+  txGasLimit: bigint,
+  txMaxGasLimit: bigint,
+  blockGasLimit: bigint,
+  blockRegularGasUsed: bigint,
+  blockStateGasUsed: bigint,
+): boolean {
+  const regularAvailable =
+    blockGasLimit > blockRegularGasUsed ? blockGasLimit - blockRegularGasUsed : BIGINT_0
+  const stateAvailable =
+    blockGasLimit > blockStateGasUsed ? blockGasLimit - blockStateGasUsed : BIGINT_0
+  const txRegularBound = txGasLimit < txMaxGasLimit ? txGasLimit : txMaxGasLimit
+  return txRegularBound > regularAvailable || txGasLimit > stateAvailable
 }

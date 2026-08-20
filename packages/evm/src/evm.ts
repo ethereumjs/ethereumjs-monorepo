@@ -152,6 +152,10 @@ export function defaultBlock(): Block {
       prevRandao: new Uint8Array(32),
       gasLimit: BIGINT_0,
       baseFeePerGas: undefined,
+      // EIP-7843 SLOTNUM: mock header uses slot 0 so stand-alone `runCode()`
+      // does not throw when the opcode is active. Real blocks still set the
+      // consensus field explicitly (or inherit the BlockHeader default of 0n).
+      slotNumber: BIGINT_0,
       getBlobGasPrice: () => undefined,
     },
   }

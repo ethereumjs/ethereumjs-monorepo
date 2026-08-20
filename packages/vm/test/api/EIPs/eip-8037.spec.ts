@@ -14,7 +14,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, expect, it } from 'vitest'
 
-import { createVM, runTx } from '../../../src/index.ts'
+import { buildBlock, createVM, runTx } from '../../../src/index.ts'
 
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })
 
@@ -251,5 +251,76 @@ describe('EIP-8037 inner CREATE new-account charge (Amsterdam)', () => {
     const na = vm.common.param('stateBytesPerNewAccount') * vm.common.param('costPerStateByte')
     // Wrongly charging NA before 63/64 would shrink the burned grant by ~63/64 of NA.
     assert.isTrue(collision.totalGasSpent - success.totalGasSpent > (na * 63n) / 64n / 4n)
+  })
+})
+
+describe('EIP-8037 buildBlock block gas (Amsterdam)', () => {
+  async function amsterdamBuilder(vm: Awaited<ReturnType<typeof getVM>>, gasLimit: bigint) {
+    const parentBlock = createBlock(
+      { header: { number: 1n, gasLimit } },
+      { common, skipConsensusFormatValidation: true },
+    )
+    return buildBlock(vm, {
+      parentBlock,
+      headerData: { number: 2n, gasLimit, baseFeePerGas: 1n },
+      blockOpts: {
+        skipConsensusFormatValidation: true,
+        freeze: false,
+        putBlockIntoBlockchain: false,
+        calcDifficultyFromHeader: parentBlock.header,
+      },
+    })
+  }
+
+  it('writes header gasUsed as max(regular, state)', async () => {
+    const vm = await getVM()
+    const blockBuilder = await amsterdamBuilder(vm, 30_000_000n)
+    const recipient = createAddressFromString('0x00000000000000000000000000000000000000aa')
+    const tx = createLegacyTx(
+      { gasLimit: 300_000n, gasPrice: 10n, value: 1n, to: recipient },
+      { common },
+    ).sign(senderKey)
+
+    const result = await blockBuilder.addTransaction(tx)
+    const { block } = await blockBuilder.build()
+
+    assert.isDefined(result.txStateGas)
+    assert.isDefined(result.txRegularGas)
+    const expected =
+      result.txStateGas! > result.txRegularGas! ? result.txStateGas! : result.txRegularGas!
+    assert.strictEqual(block.header.gasUsed, expected)
+    assert.strictEqual(blockBuilder.gasUsed, expected)
+    assert.isTrue(result.totalGasSpent > block.header.gasUsed)
+  })
+
+  it('rejects a second first-touch tx that overflows remaining state gas', async () => {
+    const vm = await getVM()
+    const blockBuilder = await amsterdamBuilder(vm, 400_000n)
+    const first = createLegacyTx(
+      {
+        nonce: 0n,
+        gasLimit: 300_000n,
+        gasPrice: 10n,
+        value: 1n,
+        to: createAddressFromString('0x00000000000000000000000000000000000000aa'),
+      },
+      { common },
+    ).sign(senderKey)
+    await blockBuilder.addTransaction(first)
+
+    const second = createLegacyTx(
+      {
+        nonce: 1n,
+        gasLimit: 300_000n,
+        gasPrice: 10n,
+        value: 1n,
+        to: createAddressFromString('0x00000000000000000000000000000000000000bb'),
+      },
+      { common },
+    ).sign(senderKey)
+
+    await expect(blockBuilder.addTransaction(second)).rejects.toThrow(
+      /higher gas limit than the remaining gas/,
+    )
   })
 })

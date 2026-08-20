@@ -224,6 +224,14 @@ export class EOACode7702Tx implements TransactionInterface<typeof TransactionTyp
   }
 
   /**
+   * `max(getIntrinsicGas(), calldata floor)` when EIP-7623 is active, otherwise intrinsic.
+   * Does not include EIP-8037 first-touch state gas.
+   */
+  getMinimumGasLimit(): bigint {
+    return Legacy.getMinimumGasLimit(this)
+  }
+
+  /**
    * EOACode7702Tx cannot create contracts
    */
   toCreationAddress(): never {

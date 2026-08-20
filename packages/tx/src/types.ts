@@ -221,6 +221,11 @@ export interface TransactionInterface<T extends TransactionType = TransactionTyp
   type: TransactionType
   txOptions: TxOptions
   getIntrinsicGas(): bigint
+  /**
+   * `max(intrinsic, calldata floor)` when EIP-7623 is active, otherwise intrinsic.
+   * Does not include EIP-8037 first-touch state gas.
+   */
+  getMinimumGasLimit(): bigint
   getDataGas(): bigint
   getUpfrontCost(): bigint
   toCreationAddress(): boolean

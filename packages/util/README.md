@@ -317,6 +317,8 @@ const main = () => {
 void main()
 ```
 
+`bal.get(address)` returns the per-account storage/balance/nonce/code entry without walking `toJSON()`.
+
 ## Storage
 
 `MapDB` is a minimal in-memory implementation of the shared `DB` interface used by trie and blockchain packages:

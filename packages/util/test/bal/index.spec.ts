@@ -61,6 +61,17 @@ describe('Basic initialization', () => {
     assert.deepEqual(bytesToHex(bal.hash()), balSimpleHash)
   })
 
+  it('get() returns the per-account access entry', () => {
+    const bal = new BlockLevelAccessList(balSimple)
+    const address = '0x2adc25665018aa1fe0e6bc666dac8fc2697ff9ba'
+    const entry = bal.get(address)
+    assert.isDefined(entry)
+    assert.equal(entry!.balanceChanges.size, 2)
+    assert.deepEqual(entry!.balanceChanges.get(1), '0xf618')
+    assert.strictEqual(bal.get(address.toUpperCase() as PrefixedHexString), entry)
+    assert.isUndefined(bal.get('0x0000000000000000000000000000000000000000'))
+  })
+
   it('hashes and RLP should match', () => {
     let bal = new BlockLevelAccessList()
     assert.deepEqual(bytesToHex(bal.hash()), KECCAK256_RLP_ARRAY_S)

@@ -53,7 +53,7 @@ const errors = tx.getValidationErrors()
 // [] when gasLimit covers max(intrinsic, floor)
 ```
 
-See the [Amsterdam transaction validation](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx#amsterdam-transaction-validation-eip-7976-eip-7981) section for the full token arithmetic and interaction with EIP-8037.
+See the [Amsterdam Validation](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx#amsterdam-validation) section for the full token arithmetic and interaction with EIP-8037.
 
 ### Changes
 

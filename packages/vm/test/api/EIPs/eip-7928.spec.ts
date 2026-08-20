@@ -16,7 +16,7 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { createVM, runBlock } from '../../../src/index.ts'
+import { buildBlock, createVM, runBlock } from '../../../src/index.ts'
 
 import type { Block } from '@ethereumjs/block'
 import type { AfterBlockEvent } from '../../../src/types.ts'
@@ -254,5 +254,39 @@ describe('EIP-7928 Block Level Access Lists', () => {
     const addresses = result.blockLevelAccessList!.toJSON().map((entry) => entry.address)
     assert.isTrue(addresses.includes(target.toString()))
     assert.isFalse(addresses.includes(delegatedTo.toString()))
+  })
+
+  it('buildBlock() writes blockAccessListHash and slotNumber', async () => {
+    const vm = await createVM({ common })
+    await fundSender(vm)
+
+    const parentBlock = createBlock(
+      { header: { number: 1n, gasLimit: 30_000_000n } },
+      { common, skipConsensusFormatValidation: true },
+    )
+
+    const blockBuilder = await buildBlock(vm, {
+      parentBlock,
+      headerData: { number: 2n, gasLimit: 30_000_000n, baseFeePerGas: 1n },
+      blockOpts: {
+        skipConsensusFormatValidation: true,
+        freeze: false,
+        putBlockIntoBlockchain: false,
+        calcDifficultyFromHeader: parentBlock.header,
+      },
+    })
+
+    const tx = createLegacyTx(
+      { gasLimit: 300_000n, gasPrice: 10n, value: 1n, to: recipient },
+      { common },
+    ).sign(senderKey)
+    await blockBuilder.addTransaction(tx)
+    const { block, blockLevelAccessList } = await blockBuilder.build()
+
+    assert.isDefined(block.header.blockAccessListHash)
+    assert.isDefined(blockLevelAccessList)
+    assert.isTrue(equalsBytes(block.header.blockAccessListHash!, blockLevelAccessList!.hash()))
+    assert.strictEqual(block.header.slotNumber, (parentBlock.header.slotNumber ?? 0n) + 1n)
+    assert.isAbove(blockLevelAccessList!.toJSON().length, 0)
   })
 })
