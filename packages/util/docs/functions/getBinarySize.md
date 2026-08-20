@@ -8,9 +8,9 @@
 
 > **getBinarySize**(`str`): `number`
 
-Defined in: [packages/util/src/internal.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L82)
+Defined in: [packages/util/src/internal.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L69)
 
-Get the binary size of a string
+Return the UTF-8 byte length of a string.
 
 ## Parameters
 
@@ -22,4 +22,6 @@ Get the binary size of a string
 
 `number`
 
-the number of bytes contained within the string
+## Throws
+
+If the input is not a string

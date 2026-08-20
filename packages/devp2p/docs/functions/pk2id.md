@@ -8,7 +8,7 @@
 
 > **pk2id**(`pk`): `Uint8Array`
 
-Defined in: [packages/devp2p/src/util.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L24)
+Defined in: [packages/devp2p/src/util.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L23)
 
 ## Parameters
 

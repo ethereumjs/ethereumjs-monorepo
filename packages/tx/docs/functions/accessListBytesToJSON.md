@@ -8,9 +8,9 @@
 
 > **accessListBytesToJSON**(`accessList`): [`AccessList`](../type-aliases/AccessList.md)
 
-Defined in: [util/access.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/util/access.ts#L11)
+Defined in: [util/access.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/util/access.ts#L9)
 
-Converts an access list in bytes to a JSON format
+Converts an access list from bytes to JSON (0x-prefixed hex addresses and storage keys).
 
 ## Parameters
 
@@ -21,5 +21,3 @@ Converts an access list in bytes to a JSON format
 ## Returns
 
 [`AccessList`](../type-aliases/AccessList.md)
-
-JSON format of the access list

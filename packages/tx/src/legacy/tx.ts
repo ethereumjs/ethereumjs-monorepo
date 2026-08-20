@@ -30,7 +30,9 @@ import type {
   TxOptions,
 } from '../types.ts'
 
+/** Plain-object input for {@link LegacyTx}. */
 export type TxData = AllTypesTxData[typeof TransactionType.Legacy]
+/** Devp2p byte-array encoding for {@link LegacyTx}. */
 export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.Legacy]
 
 function meetsEIP155(_v: bigint, chainId: bigint) {
@@ -60,7 +62,7 @@ function validateVAndExtractChainID(common: Common, _v?: bigint): bigint | undef
   if (v !== undefined && v !== 0 && common.gteHardfork('spuriousDragon') && v !== 27 && v !== 28) {
     if (!meetsEIP155(BigInt(v), common.chainId())) {
       throw EthereumJSErrorWithoutCode(
-        `Incompatible EIP155-based V ${v} and chain id ${common.chainId()}. See the Common parameter of the Transaction constructor to set the chain id.`,
+        `Incompatible EIP155-based V ${v} and chain id ${common.chainId()}. Pass a matching \`common\` option to createLegacyTx (or the relevant create*Tx factory).`,
       )
     }
     // Derive the original chain ID
@@ -117,8 +119,8 @@ export class LegacyTx implements TransactionInterface<typeof TransactionType.Leg
    * This constructor takes the values, validates them, assigns them and freezes the object.
    *
    * It is not recommended to use this constructor directly. Instead use
-   * the static factory methods to assist in creating a Transaction object from
-   * varying data types.
+   * the module-level factory functions such as {@link createLegacyTx},
+   * {@link createLegacyTxFromRLP}, and {@link createLegacyTxFromBytesArray}.
    */
   public constructor(txData: TxData, opts: TxOptions = {}) {
     sharedConstructor(this, txData, opts)
@@ -207,12 +209,12 @@ export class LegacyTx implements TransactionInterface<typeof TransactionType.Leg
    * Format: `[nonce, gasPrice, gasLimit, to, value, data, v, r, s]`
    *
    * For legacy txs this is also the correct format to add transactions
-   * to a block with {@link createBlockFromBytesArray} (use the `serialize()` method
+   * to a block with {@link @ethereumjs/block!createBlockFromBytesArray} (use the `serialize()` method
    * for typed txs).
    *
    * For an unsigned tx this method returns the empty Bytes values
    * for the signature parameters `v`, `r` and `s`. For an EIP-155 compliant
-   * representation have a look at {@link Transaction.getMessageToSign}.
+   * representation have a look at {@link LegacyTx.getMessageToSign}.
    */
   raw(): TxValuesArray {
     return [
@@ -235,7 +237,7 @@ export class LegacyTx implements TransactionInterface<typeof TransactionType.Leg
    *
    * For an unsigned tx this method uses the empty Uint8Array values for the
    * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
-   * representation for external signing use {@link Transaction.getMessageToSign}.
+   * representation for external signing use {@link LegacyTx.getMessageToSign}.
    */
   serialize(): Uint8Array {
     return RLP.encode(this.raw())
@@ -328,7 +330,7 @@ export class LegacyTx implements TransactionInterface<typeof TransactionType.Leg
    * Computes a sha3-256 hash of the serialized tx.
    *
    * This method can only be used for signed txs (it throws otherwise).
-   * Use {@link Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
+   * Use {@link LegacyTx.getMessageToSign} to get a tx hash for the purpose of signing.
    * @returns Hash of the serialized signed transaction
    */
   hash(): Uint8Array {

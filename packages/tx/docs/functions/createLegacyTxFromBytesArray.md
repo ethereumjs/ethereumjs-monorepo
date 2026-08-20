@@ -6,11 +6,11 @@
 
 # Function: createLegacyTxFromBytesArray()
 
-> **createLegacyTxFromBytesArray**(`values`, `opts`): [`LegacyTx`](../classes/LegacyTx.md)
+> **createLegacyTxFromBytesArray**(`values`, `opts?`): [`LegacyTx`](../classes/LegacyTx.md)
 
-Defined in: [legacy/constructors.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/constructors.ts#L26)
+Defined in: [legacy/constructors.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/constructors.ts#L31)
 
-Create a transaction from an array of byte encoded values ordered according to the devp2p network encoding - format noted below.
+Instantiate a legacy transaction from devp2p byte-array encoding.
 
 Format: `[nonce, gasPrice, gasLimit, to, value, data, v, r, s]`
 
@@ -20,10 +20,22 @@ Format: `[nonce, gasPrice, gasLimit, to, value, data, v, r, s]`
 
 `LegacyTxValuesArray`
 
-### opts
+### opts?
 
 [`TxOptions`](../interfaces/TxOptions.md) = `{}`
 
 ## Returns
 
 [`LegacyTx`](../classes/LegacyTx.md)
+
+## Throws
+
+If the values array length is not 6 (unsigned) or 9 (signed)
+
+## Throws
+
+If numeric fields contain leading zeroes
+
+## Throws
+
+If constructor validation fails (see [createLegacyTx](createLegacyTx.md))

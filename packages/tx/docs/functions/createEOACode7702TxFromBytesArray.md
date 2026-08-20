@@ -6,11 +6,11 @@
 
 # Function: createEOACode7702TxFromBytesArray()
 
-> **createEOACode7702TxFromBytesArray**(`values`, `opts`): [`EOACode7702Tx`](../classes/EOACode7702Tx.md)
+> **createEOACode7702TxFromBytesArray**(`values`, `opts?`): [`EOACode7702Tx`](../classes/EOACode7702Tx.md)
 
-Defined in: [7702/constructors.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/7702/constructors.ts#L38)
+Defined in: [7702/constructors.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/7702/constructors.ts#L42)
 
-Create a transaction from an array of byte encoded values ordered according to the devp2p network encoding - format noted below.
+Instantiate an EIP-7702 transaction from devp2p byte-array encoding.
 
 Format: `[chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
 accessList, authorityList, signatureYParity, signatureR, signatureS]`
@@ -21,10 +21,26 @@ accessList, authorityList, signatureYParity, signatureR, signatureS]`
 
 `EOACode7702TxValuesArray`
 
-### opts
+### opts?
 
 [`TxOptions`](../interfaces/TxOptions.md) = `{}`
 
 ## Returns
 
 [`EOACode7702Tx`](../classes/EOACode7702Tx.md)
+
+## Throws
+
+If the values array length is not 10 (unsigned) or 13 (signed)
+
+## Throws
+
+If `chainId` or signature fields are nested arrays
+
+## Throws
+
+If numeric fields contain leading zeroes
+
+## Throws
+
+If constructor validation fails (see [createEOACode7702Tx](createEOACode7702Tx.md))

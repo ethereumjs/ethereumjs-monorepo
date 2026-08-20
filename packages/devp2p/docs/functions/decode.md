@@ -8,7 +8,7 @@
 
 > **decode**(`bytes`, `common?`): `object`
 
-Defined in: [packages/devp2p/src/dpt/message.ts:203](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/message.ts#L203)
+Defined in: [packages/devp2p/src/dpt/message.ts:206](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/message.ts#L206)
 
 ## Parameters
 
@@ -18,7 +18,7 @@ Defined in: [packages/devp2p/src/dpt/message.ts:203](https://github.com/ethereum
 
 ### common?
 
-`Common`
+[`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 ## Returns
 

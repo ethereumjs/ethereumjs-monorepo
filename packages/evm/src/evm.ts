@@ -351,7 +351,6 @@ export class EVM implements EVMInterface {
    * use the async {@link createEVM} constructor instead (same API).
    *
    * @param opts The EVM options
-   * @param bn128 Initialized bn128 WASM object for precompile usage (internal)
    */
   constructor(opts: EVMOpts) {
     this.common = opts.common!
@@ -1718,8 +1717,6 @@ export class EVM implements EVMInterface {
    *
    * Note: this is only a shallow copy and both EVM instances
    * will point to the same underlying state DB.
-   *
-   * @returns EVM
    */
   public shallowCopy(): EVM {
     const common = this.common.copy()

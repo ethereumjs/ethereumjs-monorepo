@@ -8,7 +8,9 @@
 
 > **ExecutionPayload** = `object`
 
-Defined in: [types.ts:238](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L238)
+Defined in: [types.ts:265](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L265)
+
+Execution payload from the Engine API / beacon `execution_payload`.
 
 ## Properties
 
@@ -16,23 +18,23 @@ Defined in: [types.ts:238](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **baseFeePerGas**: `PrefixedHexString`
 
-Defined in: [types.ts:250](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L250)
+Defined in: [types.ts:277](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L277)
 
 ***
 
 ### blobGasUsed?
 
-> `optional` **blobGasUsed**: `PrefixedHexString`
+> `optional` **blobGasUsed?**: `PrefixedHexString`
 
-Defined in: [types.ts:254](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L254)
+Defined in: [types.ts:281](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L281)
 
 ***
 
 ### blockAccessListHash?
 
-> `optional` **blockAccessListHash**: `PrefixedHexString`
+> `optional` **blockAccessListHash?**: `PrefixedHexString`
 
-Defined in: [types.ts:258](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L258)
+Defined in: [types.ts:285](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L285)
 
 ***
 
@@ -40,7 +42,7 @@ Defined in: [types.ts:258](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **blockHash**: `PrefixedHexString`
 
-Defined in: [types.ts:251](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L251)
+Defined in: [types.ts:278](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L278)
 
 ***
 
@@ -48,15 +50,15 @@ Defined in: [types.ts:251](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **blockNumber**: `PrefixedHexString`
 
-Defined in: [types.ts:245](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L245)
+Defined in: [types.ts:272](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L272)
 
 ***
 
 ### excessBlobGas?
 
-> `optional` **excessBlobGas**: `PrefixedHexString`
+> `optional` **excessBlobGas?**: `PrefixedHexString`
 
-Defined in: [types.ts:255](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L255)
+Defined in: [types.ts:282](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L282)
 
 ***
 
@@ -64,7 +66,7 @@ Defined in: [types.ts:255](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **extraData**: `PrefixedHexString`
 
-Defined in: [types.ts:249](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L249)
+Defined in: [types.ts:276](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L276)
 
 ***
 
@@ -72,7 +74,7 @@ Defined in: [types.ts:249](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **feeRecipient**: `PrefixedHexString`
 
-Defined in: [types.ts:240](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L240)
+Defined in: [types.ts:267](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L267)
 
 ***
 
@@ -80,7 +82,7 @@ Defined in: [types.ts:240](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **gasLimit**: `PrefixedHexString`
 
-Defined in: [types.ts:246](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L246)
+Defined in: [types.ts:273](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L273)
 
 ***
 
@@ -88,7 +90,7 @@ Defined in: [types.ts:246](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **gasUsed**: `PrefixedHexString`
 
-Defined in: [types.ts:247](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L247)
+Defined in: [types.ts:274](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L274)
 
 ***
 
@@ -96,15 +98,15 @@ Defined in: [types.ts:247](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **logsBloom**: `PrefixedHexString`
 
-Defined in: [types.ts:243](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L243)
+Defined in: [types.ts:270](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L270)
 
 ***
 
 ### parentBeaconBlockRoot?
 
-> `optional` **parentBeaconBlockRoot**: `PrefixedHexString`
+> `optional` **parentBeaconBlockRoot?**: `PrefixedHexString`
 
-Defined in: [types.ts:256](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L256)
+Defined in: [types.ts:283](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L283)
 
 ***
 
@@ -112,7 +114,7 @@ Defined in: [types.ts:256](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **parentHash**: `PrefixedHexString`
 
-Defined in: [types.ts:239](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L239)
+Defined in: [types.ts:266](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L266)
 
 ***
 
@@ -120,7 +122,7 @@ Defined in: [types.ts:239](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **prevRandao**: `PrefixedHexString`
 
-Defined in: [types.ts:244](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L244)
+Defined in: [types.ts:271](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L271)
 
 ***
 
@@ -128,23 +130,23 @@ Defined in: [types.ts:244](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **receiptsRoot**: `PrefixedHexString`
 
-Defined in: [types.ts:242](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L242)
+Defined in: [types.ts:269](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L269)
 
 ***
 
 ### requestsHash?
 
-> `optional` **requestsHash**: `PrefixedHexString`
+> `optional` **requestsHash?**: `PrefixedHexString`
 
-Defined in: [types.ts:257](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L257)
+Defined in: [types.ts:284](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L284)
 
 ***
 
 ### slotNumber?
 
-> `optional` **slotNumber**: `PrefixedHexString`
+> `optional` **slotNumber?**: `PrefixedHexString`
 
-Defined in: [types.ts:259](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L259)
+Defined in: [types.ts:286](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L286)
 
 ***
 
@@ -152,7 +154,7 @@ Defined in: [types.ts:259](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **stateRoot**: `PrefixedHexString`
 
-Defined in: [types.ts:241](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L241)
+Defined in: [types.ts:268](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L268)
 
 ***
 
@@ -160,7 +162,7 @@ Defined in: [types.ts:241](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **timestamp**: `PrefixedHexString`
 
-Defined in: [types.ts:248](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L248)
+Defined in: [types.ts:275](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L275)
 
 ***
 
@@ -168,12 +170,12 @@ Defined in: [types.ts:248](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **transactions**: `PrefixedHexString`[]
 
-Defined in: [types.ts:252](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L252)
+Defined in: [types.ts:279](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L279)
 
 ***
 
 ### withdrawals?
 
-> `optional` **withdrawals**: [`WithdrawalV1`](WithdrawalV1.md)[]
+> `optional` **withdrawals?**: [`WithdrawalV1`](WithdrawalV1.md)[]
 
-Defined in: [types.ts:253](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L253)
+Defined in: [types.ts:280](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L280)

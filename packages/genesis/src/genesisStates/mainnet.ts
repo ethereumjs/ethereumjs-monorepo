@@ -1,5 +1,6 @@
 import type { GenesisState } from '@ethereumjs/common'
 
+/** Ethereum mainnet genesis allocation map. */
 export const mainnetGenesis: GenesisState = {
   '0x000d836201318ec6899a67540690382780743280': '0xad78ebc5ac6200000',
   '0x001762430ea9c3a26e5749afdb70da5f78ddbb8c': '0xad78ebc5ac6200000',

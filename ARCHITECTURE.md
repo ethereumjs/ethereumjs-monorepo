@@ -11,8 +11,8 @@ relative to the repository root and were verified against the source at the time
 of writing.
 
 > **Deprecated packages**: `@ethereumjs/client`, `@ethereumjs/devp2p` and
-> `@ethereumjs/wallet` are deprecated and no longer updated (see the
-> "Deprecated Packages" section in [README.md](./README.md)). They are not
+> `@ethereumjs/wallet` are deprecated and no longer updated (see the collapsed
+> **Deprecated packages** section in [README.md](./README.md)). They are not
 > covered here.
 
 ## Package Responsibility Matrix
@@ -255,7 +255,8 @@ bundlers fall through to `dist/esm` / `dist/cjs`.
 
 Two mechanisms, both per-package:
 
-- **typedoc**: `npm run docs:build` runs `typedoc` with each package's
+- **typedoc**: `npm run docs:build` runs [`config/cli/typedoc.sh`](./config/cli/typedoc.sh)
+  (TypeScript 6 hook for TypeDoc; see `DEVELOPER.md` § Documentation) with each package's
   `typedoc.mjs`, which extends [`config/typedoc.mjs`](./config/typedoc.mjs)
   (`typedoc-plugin-markdown`, output to `<package>/docs`).
 - **embedme**: `npm run examples:build` runs `embedme README.md` — README code

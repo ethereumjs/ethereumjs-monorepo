@@ -4,7 +4,7 @@
 
 [@ethereumjs/devp2p](../README.md) / SendMethod
 
-# Type Alias: SendMethod()
+# Type Alias: SendMethod
 
 > **SendMethod** = (`code`, `data`) => `any`
 

@@ -8,7 +8,7 @@
 
 > **isLegacyTxData**(`txData`): `txData is LegacyTxData`
 
-Defined in: [types.ts:305](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L305)
+Defined in: [types.ts:335](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L335)
 
 Type guard to check if transaction data is Legacy transaction data
 

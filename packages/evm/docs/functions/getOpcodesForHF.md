@@ -8,26 +8,22 @@
 
 > **getOpcodesForHF**(`common`, `customOpcodes?`): `OpcodeContext`
 
-Defined in: [opcodes/codes.ts:436](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/opcodes/codes.ts#L436)
+Defined in: [opcodes/codes.ts:431](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/opcodes/codes.ts#L431)
 
-Get suitable opcodes for the required hardfork.
+Returns opcode handlers and gas tables for the active hardfork and EIPs.
+
+Merges fork-specific and EIP-specific opcode overrides with optional [CustomOpcode](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/docs/type-aliases/CustomOpcode.md) entries.
 
 ## Parameters
 
 ### common
 
-`Common`
-
-{Common} Ethereumjs Common metadata object.
+[`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 ### customOpcodes?
 
-`CustomOpcode`[]
-
-List with custom opcodes (see EVM `customOpcodes` option description).
+[`CustomOpcode`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/docs/type-aliases/CustomOpcode.md)[]
 
 ## Returns
 
 `OpcodeContext`
-
-Opcodes dictionary object.

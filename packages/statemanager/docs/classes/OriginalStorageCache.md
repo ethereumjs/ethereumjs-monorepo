@@ -57,7 +57,7 @@ Defined in: [cache/originalStorageCache.ts:24](https://github.com/ethereumjs/eth
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ##### key
 
@@ -79,7 +79,7 @@ Defined in: [cache/originalStorageCache.ts:40](https://github.com/ethereumjs/eth
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ##### key
 

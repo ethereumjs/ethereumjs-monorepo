@@ -26,13 +26,13 @@ Defined in: [packages/devp2p/src/dpt/ban-list.ts:16](https://github.com/ethereum
 
 > **add**(`obj`, `maxAge?`): `void`
 
-Defined in: [packages/devp2p/src/dpt/ban-list.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/ban-list.ts#L22)
+Defined in: [packages/devp2p/src/dpt/ban-list.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/ban-list.ts#L21)
 
 #### Parameters
 
 ##### obj
 
-`string` | [`PeerInfo`](../interfaces/PeerInfo.md) | `Uint8Array`\<`ArrayBufferLike`\>
+`string` \| `Uint8Array`\<`ArrayBufferLike`\> \| [`PeerInfo`](../interfaces/PeerInfo.md)
 
 ##### maxAge?
 
@@ -48,13 +48,13 @@ Defined in: [packages/devp2p/src/dpt/ban-list.ts:22](https://github.com/ethereum
 
 > **has**(`obj`): `boolean`
 
-Defined in: [packages/devp2p/src/dpt/ban-list.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/ban-list.ts#L31)
+Defined in: [packages/devp2p/src/dpt/ban-list.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dpt/ban-list.ts#L30)
 
 #### Parameters
 
 ##### obj
 
-`string` | [`PeerInfo`](../interfaces/PeerInfo.md) | `Uint8Array`\<`ArrayBufferLike`\>
+`string` \| `Uint8Array`\<`ArrayBufferLike`\> \| [`PeerInfo`](../interfaces/PeerInfo.md)
 
 #### Returns
 

@@ -94,13 +94,9 @@ export function updateSstoreGasEIP8038(
 }
 
 /**
- * Adjusts gas usage and refunds of SStore ops per EIP-2200 (Istanbul)
+ * Adjusts SSTORE gas usage and refunds per EIP-2200 (Istanbul).
  *
- * @param {RunState} runState
- * @param {Uint8Array}   currentStorage
- * @param {Uint8Array}   originalStorage
- * @param {Uint8Array}   value
- * @param {Common}   common
+ * Enforces the SSTORE sentry gas check before applying net gas and refund rules.
  */
 export function updateSstoreGasEIP2200(
   runState: RunState,

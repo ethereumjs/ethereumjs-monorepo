@@ -43,6 +43,7 @@ interface MessageOpts {
   accessWitness?: BinaryTreeAccessWitnessInterface
 }
 
+/** Call or create message passed into {@link EVM.runCall}. */
 export class Message {
   to?: Address
   value: bigint
@@ -119,4 +120,5 @@ export class Message {
   }
 }
 
+/** {@link Message} with a required `to` address (post-resolution). */
 export type MessageWithTo = Message & Pick<Required<MessageOpts>, 'to'>

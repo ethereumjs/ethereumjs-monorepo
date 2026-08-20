@@ -15,6 +15,7 @@ import type { AccessList2930Tx } from './2930/tx.ts'
 import type { Blob4844Tx } from './4844/tx.ts'
 import type { EOACode7702Tx } from './7702/tx.ts'
 import type { LegacyTx } from './legacy/tx.ts'
+/** Union of numeric capability identifiers queryable via {@link TransactionInterface.supports}. */
 export type Capability = (typeof Capability)[keyof typeof Capability]
 
 /**
@@ -58,12 +59,12 @@ export const Capability = {
  */
 export interface TxOptions {
   /**
-   * A {@link Common} object defining the chain and hardfork for the transaction.
+   * A {@link @ethereumjs/common!Common} object defining the chain and hardfork for the transaction.
    *
    * Object will be internally copied so that tx behavior don't incidentally
    * change on future HF changes.
    *
-   * Default: {@link Common} object set to `mainnet` and the default hardfork as defined in the {@link Common} class.
+   * Default: {@link @ethereumjs/common!Common} object set to `mainnet` and the default hardfork as defined in the {@link @ethereumjs/common!Common} class.
    *
    * Current default hardfork: `istanbul`
    */
@@ -130,19 +131,30 @@ export function isAccessList(input: AccessListBytes | AccessList): input is Acce
   return !isAccessListBytes(input) // This is exactly the same method, except the output is negated.
 }
 
+/** Per-instance cache populated when {@link TxOptions.freeze} is enabled. */
 export interface TransactionCache {
+  /** Cached transaction hash (populated when `freeze` is enabled) */
   hash?: Uint8Array
+  /** Cached data fee for blob transactions */
   dataFee?: {
     value: bigint
     hardfork: string | Hardfork
   }
+  /** Cached sender public key from signature recovery */
   senderPubKey?: Uint8Array
+  /** Cached JSON representation of the access list */
   accessListJSON?: AccessList
+  /** Cached JSON representation of the EIP-7702 authority list */
   authorityListJSON?: EOACode7702AuthorizationList
 }
 
 export type TransactionType = (typeof TransactionType)[keyof typeof TransactionType]
 
+/**
+ * Numeric identifiers for typed transactions (EIP-2718).
+ *
+ * Maps to the concrete tx classes in the {@link Transaction} lookup type.
+ */
 export const TransactionType = {
   Legacy: 0,
   AccessListEIP2930: 1,
@@ -151,6 +163,11 @@ export const TransactionType = {
   EOACodeEIP7702: 4,
 } as const
 
+/**
+ * Maps each {@link TransactionType} numeric ID to its concrete transaction class.
+ *
+ * Use {@link TypedTransaction} for a value that may be any supported tx type.
+ */
 export interface Transaction {
   [TransactionType.Legacy]: LegacyTx
   [TransactionType.FeeMarketEIP1559]: FeeMarket1559Tx
@@ -159,6 +176,7 @@ export interface Transaction {
   [TransactionType.EOACodeEIP7702]: EOACode7702Tx
 }
 
+/** Any supported typed transaction instance. */
 export type TypedTransaction = Transaction[TransactionType]
 
 /**
@@ -206,6 +224,7 @@ export function isEOACode7702Tx(tx: TypedTransaction): tx is EOACode7702Tx {
   return tx.type === TransactionType.EOACodeEIP7702
 }
 
+/** Common method surface shared by all transaction classes. */
 export interface TransactionInterface<T extends TransactionType = TransactionType> {
   readonly common: Common
   readonly nonce: bigint
@@ -253,26 +272,31 @@ export interface TransactionInterface<T extends TransactionType = TransactionTyp
   ): Transaction[T]
 }
 
+/** Legacy (type-0) transaction interface. */
 export interface LegacyTxInterface<T extends TransactionType = TransactionType>
   extends TransactionInterface<T> {}
 
+/** EIP-2718 typed transaction with an explicit `chainId`. */
 export interface EIP2718CompatibleTx<T extends TransactionType = TransactionType>
   extends TransactionInterface<T> {
   readonly chainId: bigint
   getMessageToSign(): Uint8Array
 }
 
+/** EIP-2930 transaction with an access list. */
 export interface EIP2930CompatibleTx<T extends TransactionType = TransactionType>
   extends EIP2718CompatibleTx<T> {
   readonly accessList: AccessListBytes
 }
 
+/** EIP-1559 fee-market transaction. */
 export interface EIP1559CompatibleTx<T extends TransactionType = TransactionType>
   extends EIP2930CompatibleTx<T> {
   readonly maxPriorityFeePerGas: bigint
   readonly maxFeePerGas: bigint
 }
 
+/** EIP-4844 blob-carrying transaction. */
 export interface EIP4844CompatibleTx<T extends TransactionType = TransactionType>
   extends EIP1559CompatibleTx<T> {
   readonly maxFeePerBlobGas: bigint
@@ -284,12 +308,14 @@ export interface EIP4844CompatibleTx<T extends TransactionType = TransactionType
   numBlobs(): number
 }
 
+/** EIP-7702 transaction with an authorization list. */
 export interface EIP7702CompatibleTx<T extends TransactionType = TransactionType>
   extends EIP1559CompatibleTx<T> {
   // ChainID, Address, [nonce], y_parity, r, s
   readonly authorizationList: EOACode7702AuthorizationListBytes
 }
 
+/** Maps each {@link TransactionType} to its plain-object data shape. */
 export interface TxData {
   [TransactionType.Legacy]: LegacyTxData
   [TransactionType.AccessListEIP2930]: AccessList2930TxData
@@ -298,6 +324,7 @@ export interface TxData {
   [TransactionType.EOACodeEIP7702]: EOACode7702TxData
 }
 
+/** Plain-object input for any supported transaction type. */
 export type TypedTxData = TxData[TransactionType]
 
 /**
@@ -478,9 +505,13 @@ export interface BlobEIP4844TxData extends FeeMarketEIP1559TxData {
  * {@link EOACode7702Tx} data.
  */
 export interface EOACode7702TxData extends FeeMarketEIP1559TxData {
+  /**
+   * EIP-7702 authority list; each entry authorizes temporary EOA code delegation.
+   */
   authorizationList?: EOACode7702AuthorizationListBytes | EOACode7702AuthorizationList | never
 }
 
+/** Maps each {@link TransactionType} to its devp2p byte-array encoding. */
 export interface TxValuesArray {
   [TransactionType.Legacy]: LegacyTxValuesArray
   [TransactionType.AccessListEIP2930]: AccessList2930TxValuesArray
@@ -530,7 +561,7 @@ type FeeMarketEIP1559TxValuesArray = [
 ]
 
 /**
- * Bytes values array for a {@link EOACode7702Transaction}
+ * Bytes values array for a {@link EOACode7702Tx}
  */
 type EOACode7702TxValuesArray = [
   Uint8Array,
@@ -568,6 +599,7 @@ type BlobEIP4844TxValuesArray = [
   Uint8Array?,
 ]
 
+/** EIP-4844 network-wrapper RLP tuple (tx values + blobs + commitments + proofs). */
 export type BlobEIP4844NetworkValuesArray = [
   BlobEIP4844TxValuesArray,
   Uint8Array[],
@@ -575,6 +607,7 @@ export type BlobEIP4844NetworkValuesArray = [
   Uint8Array[],
 ]
 
+/** EIP-7594 network-wrapper RLP tuple (includes wrapper version byte). */
 export type BlobEIP7594NetworkValuesArray = [
   BlobEIP4844TxValuesArray,
   Uint8Array,
@@ -621,7 +654,9 @@ export type JSONBlobTxNetworkWrapper = JSONTx & {
   kzgProofs: PrefixedHexString[]
 }
 
-/*
+/**
+ * JSON-RPC transaction object shape (`eth_getTransactionByHash`).
+ *
  * Based on https://ethereum.org/en/developers/docs/apis/json-rpc/
  */
 export interface JSONRPCTx {
@@ -653,6 +688,7 @@ export interface JSONRPCTx {
  * Access List types
  */
 
+/** Single access-list entry with hex address and storage keys. */
 export type AccessListItem = {
   address: PrefixedHexString
   storageKeys: PrefixedHexString[]
@@ -661,6 +697,9 @@ export type AccessListItem = {
 /*
  * An Access List as a tuple of [address: Uint8Array, storageKeys: Uint8Array[]]
  */
+/** Access-list tuple of `[address, storageKeys]` in bytes. */
 export type AccessListBytesItem = [Uint8Array, Uint8Array[]]
+/** Access list as an array of byte tuples. */
 export type AccessListBytes = AccessListBytesItem[]
+/** Access list as JSON hex strings. */
 export type AccessList = AccessListItem[]

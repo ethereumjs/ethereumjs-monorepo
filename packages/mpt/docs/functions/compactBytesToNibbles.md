@@ -8,7 +8,9 @@
 
 > **compactBytesToNibbles**(`compact`): `Uint8Array`\<`ArrayBufferLike`\>
 
-Defined in: [packages/mpt/src/util/encoding.ts:94](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/util/encoding.ts#L94)
+Defined in: [util/encoding.ts:98](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/util/encoding.ts#L98)
+
+Decode compact bytes back to a nibble path.
 
 ## Parameters
 

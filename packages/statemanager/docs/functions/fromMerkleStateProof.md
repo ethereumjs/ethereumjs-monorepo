@@ -6,35 +6,36 @@
 
 # Function: fromMerkleStateProof()
 
-> **fromMerkleStateProof**(`proof`, `safe`, `opts`): `Promise`\<[`MerkleStateManager`](../classes/MerkleStateManager.md)\>
+> **fromMerkleStateProof**(`proof`, `safe?`, `opts?`): `Promise`\<[`MerkleStateManager`](../classes/MerkleStateManager.md)\>
 
-Defined in: [proof/merkle.ts:116](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/proof/merkle.ts#L116)
+Defined in: [proof/merkle.ts:119](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/proof/merkle.ts#L119)
 
-Create a StateManager and initialize this with proof(s) gotten previously from getProof
-This generates a (partial) StateManager where one can retrieve all items from the proof
+Create a [MerkleStateManager](../classes/MerkleStateManager.md) preloaded with EIP-1186 proof data.
+
+Yields a partial manager from which all proven accounts and slots can be read.
 
 ## Parameters
 
 ### proof
 
-Either a proof retrieved from `getProof`, or an array of those proofs
+`Proof` \| `Proof`[]
 
-`Proof` | `Proof`[]
+One proof or array of proofs from [getMerkleStateProof](getMerkleStateProof.md)
 
-### safe
+### safe?
 
 `boolean` = `false`
 
-Whether or not to verify that the roots of the proof items match the reported roots
+When `true`, verify proof roots against reported account/storage roots
 
-### opts
+### opts?
 
 [`MerkleStateManagerOpts`](../interfaces/MerkleStateManagerOpts.md) = `{}`
 
-a dictionary of StateManager opts
+Options passed to the new [MerkleStateManager](../classes/MerkleStateManager.md)
 
 ## Returns
 
 `Promise`\<[`MerkleStateManager`](../classes/MerkleStateManager.md)\>
 
-A new MerkleStateManager with elements from the given proof included in its backing state trie
+Manager with proof nodes merged into its backing tries

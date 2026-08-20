@@ -8,7 +8,9 @@
 
 > **StorageProof** = `object`
 
-Defined in: [common/src/interfaces.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L43)
+Defined in: [interfaces.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L47)
+
+Merkle proof for one storage slot.
 
 ## Properties
 
@@ -16,7 +18,7 @@ Defined in: [common/src/interfaces.ts:43](https://github.com/ethereumjs/ethereum
 
 > **key**: `PrefixedHexString`
 
-Defined in: [common/src/interfaces.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L44)
+Defined in: [interfaces.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L48)
 
 ***
 
@@ -24,7 +26,7 @@ Defined in: [common/src/interfaces.ts:44](https://github.com/ethereumjs/ethereum
 
 > **proof**: `PrefixedHexString`[]
 
-Defined in: [common/src/interfaces.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L45)
+Defined in: [interfaces.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L49)
 
 ***
 
@@ -32,4 +34,4 @@ Defined in: [common/src/interfaces.ts:45](https://github.com/ethereumjs/ethereum
 
 > **value**: `PrefixedHexString`
 
-Defined in: [common/src/interfaces.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L46)
+Defined in: [interfaces.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L50)

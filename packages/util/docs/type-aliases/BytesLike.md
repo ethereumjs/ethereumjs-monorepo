@@ -8,4 +8,6 @@
 
 > **BytesLike** = `Uint8Array` \| `number`[] \| `number` \| `bigint` \| [`TransformableToBytes`](../interfaces/TransformableToBytes.md) \| [`PrefixedHexString`](PrefixedHexString.md)
 
-Defined in: [packages/util/src/types.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L16)
+Defined in: [packages/util/src/types.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L12)
+
+Value that can be coerced to bytes.

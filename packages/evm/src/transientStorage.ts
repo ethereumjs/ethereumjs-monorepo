@@ -13,6 +13,7 @@ interface TransientStorageModification {
 
 type TransientStorageJournal = TransientStorageModification[]
 
+/** EIP-1153 transient storage with checkpoint/revert support. */
 export class TransientStorage implements TransientStorageInterface {
   /**
    * The current values of the transient storage, keyed by contract address and then slot

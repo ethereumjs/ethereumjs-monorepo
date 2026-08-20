@@ -6,9 +6,11 @@
 
 # Function: parseEntry()
 
-> **parseEntry**(`entry`): `Promise`\<\{ `data`: `number` \| `bigint`; `type`: `Uint8Array`\<`ArrayBufferLike`\>; \} \| \{ `data`: `Uint8Array`\<`ArrayBufferLike`\> \| `NestedUint8Array` \| \{ `txs`: `number` \| `NestedUint8Array` \| `Uint8Array`\<`ArrayBufferLike`\>; `uncles`: `number` \| `NestedUint8Array` \| `Uint8Array`\<`ArrayBufferLike`\>; `withdrawals`: `number` \| `NestedUint8Array` \| `Uint8Array`\<`ArrayBufferLike`\>; \}; `type`: `Uint8Array`\<`ArrayBufferLike`\>; \}\>
+> **parseEntry**(`entry`): `Promise`\<\{ `data`: `number` \| `bigint`; `type`: `Uint8Array`\<`ArrayBufferLike`\>; \} \| \{ `data`: `NestedUint8Array` \| `Uint8Array`\<`ArrayBufferLike`\> \| \{ `txs`: `number` \| `Uint8Array`\<`ArrayBufferLike`\> \| `NestedUint8Array`; `uncles`: `number` \| `Uint8Array`\<`ArrayBufferLike`\> \| `NestedUint8Array`; `withdrawals`: `number` \| `Uint8Array`\<`ArrayBufferLike`\> \| `NestedUint8Array`; \}; `type`: `Uint8Array`\<`ArrayBufferLike`\>; \}\>
 
-Defined in: [packages/e2store/src/e2store.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/e2store.ts#L16)
+Defined in: [packages/e2store/src/e2store.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/e2store.ts#L17)
+
+Decompress and decode an e2store entry based on its type tag.
 
 ## Parameters
 
@@ -18,4 +20,4 @@ Defined in: [packages/e2store/src/e2store.ts:16](https://github.com/ethereumjs/e
 
 ## Returns
 
-`Promise`\<\{ `data`: `number` \| `bigint`; `type`: `Uint8Array`\<`ArrayBufferLike`\>; \} \| \{ `data`: `Uint8Array`\<`ArrayBufferLike`\> \| `NestedUint8Array` \| \{ `txs`: `number` \| `NestedUint8Array` \| `Uint8Array`\<`ArrayBufferLike`\>; `uncles`: `number` \| `NestedUint8Array` \| `Uint8Array`\<`ArrayBufferLike`\>; `withdrawals`: `number` \| `NestedUint8Array` \| `Uint8Array`\<`ArrayBufferLike`\>; \}; `type`: `Uint8Array`\<`ArrayBufferLike`\>; \}\>
+`Promise`\<\{ `data`: `number` \| `bigint`; `type`: `Uint8Array`\<`ArrayBufferLike`\>; \} \| \{ `data`: `NestedUint8Array` \| `Uint8Array`\<`ArrayBufferLike`\> \| \{ `txs`: `number` \| `Uint8Array`\<`ArrayBufferLike`\> \| `NestedUint8Array`; `uncles`: `number` \| `Uint8Array`\<`ArrayBufferLike`\> \| `NestedUint8Array`; `withdrawals`: `number` \| `Uint8Array`\<`ArrayBufferLike`\> \| `NestedUint8Array`; \}; `type`: `Uint8Array`\<`ArrayBufferLike`\>; \}\>

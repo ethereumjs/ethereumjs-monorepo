@@ -6,29 +6,30 @@
 
 # Function: createTxFromBlockBodyData()
 
-> **createTxFromBlockBodyData**(`data`, `txOptions`): [`LegacyTx`](../classes/LegacyTx.md) \| [`AccessList2930Tx`](../classes/AccessList2930Tx.md) \| [`FeeMarket1559Tx`](../classes/FeeMarket1559Tx.md) \| [`Blob4844Tx`](../classes/Blob4844Tx.md) \| [`EOACode7702Tx`](../classes/EOACode7702Tx.md)
+> **createTxFromBlockBodyData**(`data`, `txOptions?`): [`LegacyTx`](../classes/LegacyTx.md) \| [`AccessList2930Tx`](../classes/AccessList2930Tx.md) \| [`FeeMarket1559Tx`](../classes/FeeMarket1559Tx.md) \| [`EOACode7702Tx`](../classes/EOACode7702Tx.md) \| [`Blob4844Tx`](../classes/Blob4844Tx.md)
 
-Defined in: [transactionFactory.ts:94](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L94)
+Defined in: [transactionFactory.ts:93](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L93)
 
-When decoding a BlockBody, in the transactions field, a field is either:
-A Uint8Array (a TypedTransaction - encoded as TransactionType || rlp(TransactionPayload))
-A Uint8Array[] (Legacy Transaction)
-This method returns the right transaction.
+Decode a transaction from block-body RLP (typed bytes or legacy value array).
 
 ## Parameters
 
 ### data
 
-A Uint8Array or Uint8Array[]
+`Uint8Array`\<`ArrayBufferLike`\> \| `Uint8Array`\<`ArrayBufferLike`\>[]
 
-`Uint8Array`\<`ArrayBufferLike`\> | `Uint8Array`\<`ArrayBufferLike`\>[]
-
-### txOptions
+### txOptions?
 
 [`TxOptions`](../interfaces/TxOptions.md) = `{}`
 
-The transaction options
-
 ## Returns
 
-[`LegacyTx`](../classes/LegacyTx.md) \| [`AccessList2930Tx`](../classes/AccessList2930Tx.md) \| [`FeeMarket1559Tx`](../classes/FeeMarket1559Tx.md) \| [`Blob4844Tx`](../classes/Blob4844Tx.md) \| [`EOACode7702Tx`](../classes/EOACode7702Tx.md)
+[`LegacyTx`](../classes/LegacyTx.md) \| [`AccessList2930Tx`](../classes/AccessList2930Tx.md) \| [`FeeMarket1559Tx`](../classes/FeeMarket1559Tx.md) \| [`EOACode7702Tx`](../classes/EOACode7702Tx.md) \| [`Blob4844Tx`](../classes/Blob4844Tx.md)
+
+## Throws
+
+If `data` is neither a `Uint8Array` nor a `Uint8Array[]`
+
+## Throws
+
+If delegated factory validation fails

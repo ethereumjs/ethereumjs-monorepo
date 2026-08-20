@@ -8,4 +8,6 @@
 
 > `const` **BINARY\_TREE\_CODE\_SIZE\_BYTES\_LENGTH**: `3` = `3`
 
-Defined in: [packages/util/src/binaryTree.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L96)
+Defined in: [packages/util/src/binaryTree.ts:106](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L106)
+
+Binary-tree layout constant `CODE_SIZE_BYTES_LENGTH` (EIP-7864).

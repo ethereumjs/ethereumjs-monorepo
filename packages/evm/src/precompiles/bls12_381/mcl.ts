@@ -22,12 +22,10 @@ import {
 import type { EVMBLSInterface } from '../../types.ts'
 
 /**
- * Converts an Uint8Array to a MCL G1 point. Raises errors if the point is not on the curve
- * and (if activated) if the point is in the subgroup / order check.
- * @param input Input Uint8Array. Should be 128 bytes
- * @param mcl MCL instance
- * @param verifyOrder Perform the subgroup check (defaults to true)
- * @returns MCL G1 point
+ * Decodes a 128-byte G1 point for the MCL backend.
+ *
+ * @param verifyOrder - When true, reject points outside the prime-order subgroup
+ * @throws If the point is not on the BLS12-381 curve
  */
 function BLS12_381_ToG1Point(input: Uint8Array, mcl: any, verifyOrder = true): any {
   if (equalsBytes(input, BLS_G1_INFINITY_POINT_BYTES)) {
@@ -109,12 +107,10 @@ function BLS12_381_ToFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Arr
 }
 
 /**
- * Converts an Uint8Array to a MCL G2 point. Raises errors if the point is not on the curve
- * and (if activated) if the point is in the subgroup / order check.
- * @param input Input Uint8Array. Should be 256 bytes
- * @param mcl MCL instance
- * @param verifyOrder Perform the subgroup check (defaults to true)
- * @returns MCL G2 point
+ * Decodes a 256-byte G2 point for the MCL backend.
+ *
+ * @param verifyOrder - When true, reject points outside the prime-order subgroup
+ * @throws If the point is not on the BLS12-381 curve
  */
 function BLS12_381_ToG2Point(input: Uint8Array, mcl: any, verifyOrder = true): any {
   if (equalsBytes(input, BLS_G2_INFINITY_POINT_BYTES)) {

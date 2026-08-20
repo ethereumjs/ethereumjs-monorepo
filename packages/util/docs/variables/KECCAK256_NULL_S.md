@@ -8,6 +8,6 @@
 
 > `const` **KECCAK256\_NULL\_S**: `"0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"` = `'0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470'`
 
-Defined in: [packages/util/src/constants.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L40)
+Defined in: [packages/util/src/constants.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L42)
 
 Keccak-256 hash of null

@@ -75,7 +75,7 @@ The record components are:
 
 ##### common?
 
-`Common`
+[`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 #### Returns
 
@@ -87,7 +87,7 @@ The record components are:
 
 > `static` **parseAndVerifyRoot**(`root`, `publicKey`, `common?`): `string`
 
-Defined in: [packages/devp2p/src/dns/enr.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dns/enr.ts#L99)
+Defined in: [packages/devp2p/src/dns/enr.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dns/enr.ts#L104)
 
 Extracts the branch subdomain referenced by a DNS tree root string after verifying
 the root record signature with its base32 compressed public key. Geth's top level DNS
@@ -107,7 +107,7 @@ domains and their public key can be found in: go-ethereum/params/bootnodes
 
 ##### common?
 
-`Common`
+[`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 #### Returns
 
@@ -121,7 +121,7 @@ subdomain subdomain to retrieve branch records from.
 
 > `static` **parseBranch**(`branch`): `string`[]
 
-Defined in: [packages/devp2p/src/dns/enr.ts:178](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dns/enr.ts#L178)
+Defined in: [packages/devp2p/src/dns/enr.ts:183](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dns/enr.ts#L183)
 
 Returns subdomains listed in an ENR branch entry. These in turn lead to
 either further branch entries or ENR records.
@@ -142,7 +142,7 @@ either further branch entries or ENR records.
 
 > `static` **parseTree**(`tree`): `ENRTreeValues`
 
-Defined in: [packages/devp2p/src/dns/enr.ts:153](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dns/enr.ts#L153)
+Defined in: [packages/devp2p/src/dns/enr.ts:158](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dns/enr.ts#L158)
 
 Returns the public key and top level domain of an ENR tree entry.
 The domain is the starting point for traversing a set of linked DNS TXT records

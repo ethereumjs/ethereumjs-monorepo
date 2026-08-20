@@ -63,8 +63,9 @@ function getAccessListDataGas(tx: EIP2930CompatibleTx): bigint {
 }
 
 /**
- * Verifies an access list. Throws if invalid.
- * @param tx - Transaction whose access list should be validated
+ * Verifies an access list shape and field lengths.
+ *
+ * @throws If any entry is not `[address, storageKeys]` with 20-byte address and 32-byte slots
  */
 export function verifyAccessList(tx: EIP2930CompatibleTx) {
   const accessList = tx.accessList

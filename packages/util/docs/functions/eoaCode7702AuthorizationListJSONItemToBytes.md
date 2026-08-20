@@ -8,7 +8,7 @@
 
 > **eoaCode7702AuthorizationListJSONItemToBytes**(`authorizationList`): [`EOACode7702AuthorizationListBytesItem`](../type-aliases/EOACode7702AuthorizationListBytesItem.md)
 
-Defined in: [packages/util/src/authorization.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/authorization.ts#L51)
+Defined in: [packages/util/src/authorization.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/authorization.ts#L52)
 
 Converts an authority list in JSON to a bytes format
 

@@ -47,6 +47,7 @@ type BALRawAccountChanges = [
 type BALRawBlockAccessList = BALRawAccountChanges[]
 
 // Internal representation of the access list.
+/** Per-account access summary inside a block-level access list. */
 export type BALAccountAccess = {
   nonceChanges: Map<BALAccessIndexNumber, BALNonceHex>
   balanceChanges: Map<BALAccessIndexNumber, BALBalanceHex>
@@ -55,6 +56,7 @@ export type BALAccountAccess = {
   storageReads: Set<BALStorageKeyHex>
 }
 
+/** Map of account addresses to {@link BALAccountAccess} records. */
 export type Accesses = Record<BALAddressHex, BALAccountAccess>
 
 // JSON representation types (all numeric values as hex strings for JSON serialization)

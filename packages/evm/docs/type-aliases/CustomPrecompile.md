@@ -8,7 +8,7 @@
 
 > **CustomPrecompile** = [`AddPrecompile`](AddPrecompile.md) \| [`DeletePrecompile`](DeletePrecompile.md)
 
-Defined in: [precompiles/index.ts:281](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/index.ts#L281)
+Defined in: [precompiles/index.ts:284](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/index.ts#L284)
 
 A custom precompile entry: either an addition/override or a deletion.
 

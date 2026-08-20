@@ -35,6 +35,7 @@ export function canAfford(runState: RunState, regularGas: bigint, stateGas = BIG
   return regularGas + stateGas <= gasLeft + reservoir
 }
 
+/** EIP-8037 new-account state gas for the current hardfork and block gas limit. */
 export function newAccountStateGasCost(common: Common, runState: RunState): bigint {
   if (!common.isActivatedEIP(8037)) {
     return BIGINT_0

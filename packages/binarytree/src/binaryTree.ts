@@ -594,7 +594,7 @@ export class BinaryTree {
   }
 
   /**
-   * Creates a proof from a tree and key that can be verified using {@link BinaryTree.verifyBinaryProof}.
+   * Creates a proof from a tree and key that can be verified using {@link verifyBinaryProof}.
    * @param key a 32 byte binary tree key (31 byte stem + 1 byte suffix)
    */
   async createBinaryProof(key: Uint8Array): Promise<Uint8Array[]> {

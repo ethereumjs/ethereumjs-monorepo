@@ -30,11 +30,11 @@ import type { Consensus, ConsensusOptions } from '../types.ts'
 
 const debug = debugDefault('blockchain:clique')
 
-// Magic nonce number to vote on adding a new signer
+/** Clique vote nonce encoding "authorize signer" (EIP-225). */
 export const CLIQUE_NONCE_AUTH = new Uint8Array(
   hexToBytes('0xffffffffffffffff').buffer as ArrayBuffer,
 )
-// Magic nonce number to vote on removing a signer.
+/** Clique vote nonce encoding "drop signer" (EIP-225). */
 export const CLIQUE_NONCE_DROP = new Uint8Array(8)
 
 const CLIQUE_SIGNERS_KEY = 'CliqueSigners'
@@ -111,7 +111,7 @@ export class CliqueConsensus implements Consensus {
   public _cliqueLatestVotes: CliqueLatestVotes = []
 
   /**
-   * List of signers for the last consecutive {@link Blockchain.cliqueSignerLimit} blocks.
+   * List of signers for the last consecutive Clique signer-limit blocks.
    * Kept as a snapshot for quickly checking for "recently signed" error.
    * Format: [ [BLOCK_NUMBER, SIGNER_ADDRESS], ...]
    *
@@ -234,8 +234,8 @@ export class CliqueConsensus implements Consensus {
   }
 
   /**
-   * Save signer state to db
-   * @param signerState
+   * Save signer state to db.
+   *
    * @hidden
    */
   private async cliqueUpdateSignerStates(signerState?: CliqueSignerState) {
@@ -519,7 +519,7 @@ export class CliqueConsensus implements Consensus {
   /**
    * Update snapshot of latest clique block signers.
    * Used for checking for 'recently signed' error.
-   * Length trimmed to {@link Blockchain.cliqueSignerLimit}.
+   * Length trimmed to the Clique signer limit.
    * @param header BlockHeader
    * @hidden
    */

@@ -8,9 +8,9 @@
 
 > **hexToBytes**(`hex`): `Uint8Array`
 
-Defined in: [packages/util/src/bytes.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L26)
+Defined in: [packages/util/src/bytes.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L25)
 
-Converts a [PrefixedHexString](../type-aliases/PrefixedHexString.md) to a Uint8Array
+Convert a `0x`-prefixed hex string to bytes.
 
 ## Parameters
 
@@ -18,14 +18,10 @@ Converts a [PrefixedHexString](../type-aliases/PrefixedHexString.md) to a Uint8A
 
 `` `0x${string}` ``
 
-The 0x-prefixed hex string to convert
-
 ## Returns
 
 `Uint8Array`
 
-The converted bytes
-
 ## Throws
 
-If the input is not a valid 0x-prefixed hex string
+If the input is not `0x`-prefixed

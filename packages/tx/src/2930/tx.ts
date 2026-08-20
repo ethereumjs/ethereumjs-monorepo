@@ -29,7 +29,9 @@ import type {
 } from '../types.ts'
 import { accessListJSONToBytes } from '../util/access.ts'
 
+/** Plain-object input for {@link AccessList2930Tx}. */
 export type TxData = AllTypesTxData[typeof TransactionType.AccessListEIP2930]
+/** Devp2p byte-array encoding for {@link AccessList2930Tx}. */
 export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.AccessListEIP2930]
 
 /**
@@ -77,8 +79,8 @@ export class AccessList2930Tx
    * This constructor takes the values, validates them, assigns them and freezes the object.
    *
    * It is not recommended to use this constructor directly. Instead use
-   * the static factory methods to assist in creating a Transaction object from
-   * varying data types.
+   * the module-level factory functions such as {@link createAccessList2930Tx},
+   * {@link createAccessList2930TxFromRLP}, and {@link createAccessList2930TxFromBytesArray}.
    */
   public constructor(txData: TxData, opts: TxOptions = {}) {
     sharedConstructor(this, { ...txData, type: TransactionType.AccessListEIP2930 }, opts)
@@ -192,7 +194,7 @@ export class AccessList2930Tx
    * signatureYParity (v), signatureR (r), signatureS (s)]`
    *
    * Use {@link AccessList2930Tx.serialize} to add a transaction to a block
-   * with {@link createBlockFromBytesArray}.
+   * with {@link @ethereumjs/block!createBlockFromBytesArray}.
    *
    * For an unsigned tx this method uses the empty Bytes values for the
    * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
@@ -260,7 +262,7 @@ export class AccessList2930Tx
    * Computes a sha3-256 hash of the serialized tx.
    *
    * This method can only be used for signed txs (it throws otherwise).
-   * Use {@link Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
+   * Use {@link AccessList2930Tx.getMessageToSign} to get a tx hash for the purpose of signing.
    * @returns Hash of the serialized signed transaction
    */
   hash(): Uint8Array {

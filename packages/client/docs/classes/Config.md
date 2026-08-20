@@ -12,13 +12,13 @@ Defined in: [config.ts:342](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 ### Constructor
 
-> **new Config**(`options`): `Config`
+> **new Config**(`options?`): `Config`
 
 Defined in: [config.ts:463](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L463)
 
 #### Parameters
 
-##### options
+##### options?
 
 [`ConfigOptions`](../interfaces/ConfigOptions.md) = `{}`
 
@@ -38,7 +38,7 @@ Defined in: [config.ts:411](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 ### accounts
 
-> `readonly` **accounts**: \[`Address`, `Uint8Array`\<`ArrayBufferLike`\>\][]
+> `readonly` **accounts**: \[[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md), `Uint8Array`\<`ArrayBufferLike`\>\][]
 
 Defined in: [config.ts:420](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L420)
 
@@ -54,7 +54,7 @@ Defined in: [config.ts:445](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 ### bootnodes?
 
-> `readonly` `optional` **bootnodes**: `Multiaddr`[]
+> `readonly` `optional` **bootnodes?**: `Multiaddr`[]
 
 Defined in: [config.ts:397](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L397)
 
@@ -62,7 +62,7 @@ Defined in: [config.ts:397](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 ### chainCommon
 
-> `readonly` **chainCommon**: `Common`
+> `readonly` **chainCommon**: [`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 Defined in: [config.ts:456](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L456)
 
@@ -161,7 +161,7 @@ components of the client
 
 ### execCommon
 
-> `readonly` **execCommon**: `Common`
+> `readonly` **execCommon**: [`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 Defined in: [config.ts:457](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L457)
 
@@ -177,7 +177,7 @@ Defined in: [config.ts:409](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 ### extIP?
 
-> `readonly` `optional` **extIP**: `string`
+> `readonly` `optional` **extIP?**: `string`
 
 Defined in: [config.ts:399](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L399)
 
@@ -211,7 +211,7 @@ lastSyncDate in ms
 
 ### lastSynchronized?
 
-> `optional` **lastSynchronized**: `boolean`
+> `optional` **lastSynchronized?**: `boolean`
 
 Defined in: [config.ts:448](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L448)
 
@@ -307,7 +307,7 @@ Defined in: [config.ts:418](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 ### minerCoinbase?
 
-> `readonly` `optional` **minerCoinbase**: `Address`
+> `readonly` `optional` **minerCoinbase?**: [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Defined in: [config.ts:421](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L421)
 
@@ -323,7 +323,7 @@ Defined in: [config.ts:406](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 ### multiaddrs?
 
-> `readonly` `optional` **multiaddrs**: `Multiaddr`[]
+> `readonly` `optional` **multiaddrs?**: `Multiaddr`[]
 
 Defined in: [config.ts:400](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L400)
 
@@ -339,7 +339,7 @@ Defined in: [config.ts:410](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 ### port?
 
-> `readonly` `optional` **port**: `number`
+> `readonly` `optional` **port?**: `number`
 
 Defined in: [config.ts:398](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L398)
 
@@ -469,7 +469,7 @@ Defined in: [config.ts:393](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 ### syncTargetHeight?
 
-> `optional` **syncTargetHeight**: `bigint`
+> `optional` **syncTargetHeight?**: `bigint`
 
 Defined in: [config.ts:452](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L452)
 
@@ -503,7 +503,7 @@ Defined in: [config.ts:442](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 ### vm?
 
-> `readonly` `optional` **vm**: `VM`
+> `readonly` `optional` **vm?**: [`VM`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/docs/classes/VM.md)
 
 Defined in: [config.ts:394](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L394)
 
@@ -511,7 +511,7 @@ Defined in: [config.ts:394](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 ### vmProfilerOpts?
 
-> `readonly` `optional` **vmProfilerOpts**: `VMProfilerOpts`
+> `readonly` `optional` **vmProfilerOpts?**: `VMProfilerOpts`
 
 Defined in: [config.ts:422](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L422)
 
@@ -535,7 +535,7 @@ Defined in: [config.ts:390](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 ### CHAIN\_DEFAULT
 
-> `readonly` `static` **CHAIN\_DEFAULT**: `ChainConfig` = `Mainnet`
+> `readonly` `static` **CHAIN\_DEFAULT**: [`ChainConfig`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/ChainConfig.md) = `Mainnet`
 
 Defined in: [config.ts:349](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/config.ts#L349)
 
@@ -806,7 +806,7 @@ is enabled based on chainName.
 
 ##### option
 
-`boolean` | `undefined`
+`boolean` \| `undefined`
 
 #### Returns
 
@@ -850,7 +850,7 @@ Defined in: [config.ts:688](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 ##### msgs
 
-`string` | `string`[]
+`string` \| `string`[]
 
 ##### meta?
 
@@ -874,7 +874,7 @@ Update the synchronized state of the chain
 
 ##### latest?
 
-`BlockHeader` | `null`
+[`BlockHeader`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/BlockHeader.md) \| `null`
 
 ##### emitSyncEvent?
 
@@ -906,7 +906,7 @@ Gets the client private key from the config db.
 
 ##### common
 
-`Common`
+[`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 #### Returns
 

@@ -6,7 +6,9 @@
 
 # Class: Units
 
-Defined in: [packages/util/src/units.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/units.ts#L25)
+Defined in: [packages/util/src/units.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/units.ts#L32)
+
+Helpers for converting between ether, gwei, and wei denominations.
 
 ## Constructors
 
@@ -24,23 +26,23 @@ Defined in: [packages/util/src/units.ts:25](https://github.com/ethereumjs/ethere
 
 > `static` **ether**(`amount`): `bigint`
 
-Defined in: [packages/util/src/units.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/units.ts#L41)
+Defined in: [packages/util/src/units.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/units.ts#L47)
 
-Convert a number or bigint input of ether to wei
+Convert ether units to wei.
 
 #### Parameters
 
 ##### amount
 
-amount of units of ether to convert to wei
-
-`number` | `bigint`
+`number` \| `bigint`
 
 #### Returns
 
 `bigint`
 
-amount of units in wei
+#### Throws
+
+If `amount` is negative or a non-integer number
 
 ***
 
@@ -48,23 +50,23 @@ amount of units in wei
 
 > `static` **gwei**(`amount`): `bigint`
 
-Defined in: [packages/util/src/units.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/units.ts#L52)
+Defined in: [packages/util/src/units.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/units.ts#L57)
 
-Convert a number or bigint input of gwei to wei
+Convert gwei units to wei.
 
 #### Parameters
 
 ##### amount
 
-amount of units of gwei to convert to wei
-
-`number` | `bigint`
+`number` \| `bigint`
 
 #### Returns
 
 `bigint`
 
-amount of units in wei
+#### Throws
+
+If `amount` is negative or a non-integer number
 
 ***
 
@@ -72,13 +74,13 @@ amount of units in wei
 
 > `static` **validateInput**(`amount`): `void`
 
-Defined in: [packages/util/src/units.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/units.ts#L26)
+Defined in: [packages/util/src/units.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/units.ts#L33)
 
 #### Parameters
 
 ##### amount
 
-`number` | `bigint`
+`number` \| `bigint`
 
 #### Returns
 

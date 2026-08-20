@@ -8,9 +8,9 @@
 
 > **getKeys**(`params`, `key`, `allowEmpty?`): `string`[]
 
-Defined in: [packages/util/src/internal.ts:185](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L185)
+Defined in: [packages/util/src/internal.ts:151](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L151)
 
-Returns the keys from an array of objects.
+Collect string values for `key` from each object in `params`.
 
 ## Parameters
 
@@ -26,6 +26,8 @@ Returns the keys from an array of objects.
 
 `boolean`
 
+When true, missing values become empty strings instead of throwing
+
 ## Returns
 
 `string`[]
@@ -34,8 +36,8 @@ Returns the keys from an array of objects.
 
 ```js
 getKeys([{a: '1', b: '2'}, {a: '3', b: '4'}], 'a') => ['1', '3']
-````
-@param  params
-@param  key
-@param  allowEmpty
-@returns output just a simple array of output keys
+```
+
+## Throws
+
+If `params` is not an array or a selected value is not a string

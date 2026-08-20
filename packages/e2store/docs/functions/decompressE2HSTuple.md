@@ -8,7 +8,7 @@
 
 > **decompressE2HSTuple**(`__namedParameters`): `Promise`\<`EncodedBlockTuple`\>
 
-Defined in: [packages/e2store/src/e2hs/blockTuple.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/e2hs/blockTuple.ts#L9)
+Defined in: [packages/e2store/src/e2hs/blockTuple.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/e2hs/blockTuple.ts#L10)
 
 ## Parameters
 

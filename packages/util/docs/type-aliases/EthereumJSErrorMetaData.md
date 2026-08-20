@@ -8,7 +8,7 @@
 
 > **EthereumJSErrorMetaData** = `Record`\<`string`, `string` \| `number` \| `null`\>
 
-Defined in: packages/rlp/dist/esm/errors.d.ts:8
+Defined in: [packages/rlp/src/errors.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/rlp/src/errors.ts#L8)
 
 Generic EthereumJS error class with metadata attached
 

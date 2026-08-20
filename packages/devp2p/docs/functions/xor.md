@@ -8,7 +8,7 @@
 
 > **xor**(`a`, `b`): `Uint8Array`
 
-Defined in: [packages/devp2p/src/util.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L42)
+Defined in: [packages/devp2p/src/util.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L44)
 
 ## Parameters
 

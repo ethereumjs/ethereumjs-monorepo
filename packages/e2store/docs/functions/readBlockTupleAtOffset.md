@@ -8,7 +8,9 @@
 
 > **readBlockTupleAtOffset**(`bytes`, `recordStart`, `offset`): `object`
 
-Defined in: [packages/e2store/src/era1/blockTuple.ts:66](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/era1/blockTuple.ts#L66)
+Defined in: [packages/e2store/src/era1/blockTuple.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/era1/blockTuple.ts#L69)
+
+Reads the four consecutive e2store entries that form one block tuple at `offset`.
 
 ## Parameters
 

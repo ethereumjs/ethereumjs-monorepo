@@ -6,7 +6,7 @@
 
 # Class: BlockLevelAccessList
 
-Defined in: [packages/util/src/bal/index.ts:117](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L117)
+Defined in: [packages/util/src/bal/index.ts:120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L120)
 
 In-memory [EIP-7928](https://eips.ethereum.org/EIPS/eip-7928) block access list with
 canonical RLP/JSON encoding, checkpointing, and mutation helpers used by the VM during execution.
@@ -20,13 +20,13 @@ See `@ethereumjs/vm` README section `Amsterdam hardfork (experimental)` for rele
 
 ### Constructor
 
-> **new BlockLevelAccessList**(`accesses`): `BlockLevelAccessList`
+> **new BlockLevelAccessList**(`accesses?`): `BlockLevelAccessList`
 
-Defined in: [packages/util/src/bal/index.ts:128](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L128)
+Defined in: [packages/util/src/bal/index.ts:131](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L131)
 
 #### Parameters
 
-##### accesses
+##### accesses?
 
 [`Accesses`](../type-aliases/Accesses.md) = `{}`
 
@@ -40,7 +40,7 @@ Defined in: [packages/util/src/bal/index.ts:128](https://github.com/ethereumjs/e
 
 > **accesses**: [`Accesses`](../type-aliases/Accesses.md)
 
-Defined in: [packages/util/src/bal/index.ts:119](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L119)
+Defined in: [packages/util/src/bal/index.ts:122](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L122)
 
 Account-level access entries keyed by address.
 
@@ -50,7 +50,7 @@ Account-level access entries keyed by address.
 
 > **blockAccessIndex**: `number`
 
-Defined in: [packages/util/src/bal/index.ts:121](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L121)
+Defined in: [packages/util/src/bal/index.ts:124](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L124)
 
 Current block access index (transaction or system phase) for new change records.
 
@@ -60,7 +60,7 @@ Current block access index (transaction or system phase) for new change records.
 
 > **addAddress**(`address`): `void`
 
-Defined in: [packages/util/src/bal/index.ts:287](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L287)
+Defined in: [packages/util/src/bal/index.ts:303](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L303)
 
 #### Parameters
 
@@ -78,7 +78,7 @@ Defined in: [packages/util/src/bal/index.ts:287](https://github.com/ethereumjs/e
 
 > **addBalanceChange**(`address`, `balance`, `blockAccessIndex`, `originalBalance?`): `void`
 
-Defined in: [packages/util/src/bal/index.ts:378](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L378)
+Defined in: [packages/util/src/bal/index.ts:394](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L394)
 
 #### Parameters
 
@@ -108,7 +108,7 @@ Defined in: [packages/util/src/bal/index.ts:378](https://github.com/ethereumjs/e
 
 > **addCodeChange**(`address`, `code`, `blockAccessIndex`, `originalCode?`): `void`
 
-Defined in: [packages/util/src/bal/index.ts:435](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L435)
+Defined in: [packages/util/src/bal/index.ts:451](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L451)
 
 #### Parameters
 
@@ -138,7 +138,7 @@ Defined in: [packages/util/src/bal/index.ts:435](https://github.com/ethereumjs/e
 
 > **addNonceChange**(`address`, `nonce`, `blockAccessIndex`): `void`
 
-Defined in: [packages/util/src/bal/index.ts:424](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L424)
+Defined in: [packages/util/src/bal/index.ts:440](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L440)
 
 #### Parameters
 
@@ -164,7 +164,7 @@ Defined in: [packages/util/src/bal/index.ts:424](https://github.com/ethereumjs/e
 
 > **addStorageRead**(`address`, `storageKey`): `void`
 
-Defined in: [packages/util/src/bal/index.ts:366](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L366)
+Defined in: [packages/util/src/bal/index.ts:382](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L382)
 
 #### Parameters
 
@@ -186,7 +186,7 @@ Defined in: [packages/util/src/bal/index.ts:366](https://github.com/ethereumjs/e
 
 > **addStorageWrite**(`address`, `storageKey`, `value`, `blockAccessIndex`, `originalValue?`): `void`
 
-Defined in: [packages/util/src/bal/index.ts:300](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L300)
+Defined in: [packages/util/src/bal/index.ts:316](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L316)
 
 #### Parameters
 
@@ -220,7 +220,7 @@ Defined in: [packages/util/src/bal/index.ts:300](https://github.com/ethereumjs/e
 
 > **checkpoint**(): `void`
 
-Defined in: [packages/util/src/bal/index.ts:151](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L151)
+Defined in: [packages/util/src/bal/index.ts:154](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L154)
 
 #### Returns
 
@@ -232,7 +232,7 @@ Defined in: [packages/util/src/bal/index.ts:151](https://github.com/ethereumjs/e
 
 > **cleanupNetZeroBalanceChanges**(): `void`
 
-Defined in: [packages/util/src/bal/index.ts:402](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L402)
+Defined in: [packages/util/src/bal/index.ts:418](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L418)
 
 EIP-7928: Remove balance changes for addresses where final balance equals first balance.
 Call this at the end of each transaction to clean up net-zero balance changes.
@@ -245,9 +245,9 @@ Call this at the end of each transaction to clean up net-zero balance changes.
 
 ### cleanupSelfdestructed()
 
-> **cleanupSelfdestructed**(`addresses`): `void`
+> **cleanupSelfdestructed**(`addresses`, `finalBalances?`): `void`
 
-Defined in: [packages/util/src/bal/index.ts:551](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L551)
+Defined in: [packages/util/src/bal/index.ts:567](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L567)
 
 For selfdestructed accounts, drop state changes while preserving read footprints.
 Any `storageChanges` are converted to `storageReads`. Per EIP-7928, a positive
@@ -258,6 +258,10 @@ pre-transaction balance reduced to zero via `SELFDESTRUCT` keeps the balance cha
 ##### addresses
 
 `` `0x${string}` ``[]
+
+##### finalBalances?
+
+`Map`\<`` `0x${string}` ``, `bigint`\>
 
 #### Returns
 
@@ -273,7 +277,7 @@ Experimental (Amsterdam): may change on patch releases.
 
 > **commit**(): `void`
 
-Defined in: [packages/util/src/bal/index.ts:158](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L158)
+Defined in: [packages/util/src/bal/index.ts:161](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L161)
 
 #### Returns
 
@@ -281,11 +285,36 @@ Defined in: [packages/util/src/bal/index.ts:158](https://github.com/ethereumjs/e
 
 ***
 
+### get()
+
+> **get**(`address`): [`BALAccountAccess`](../type-aliases/BALAccountAccess.md) \| `undefined`
+
+Defined in: [packages/util/src/bal/index.ts:296](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L296)
+
+Lookup the per-account access entry without walking [toJSON](#tojson).
+Address keys are lower-case `0x`-prefixed hex (same as `Address.toString()`).
+
+#### Parameters
+
+##### address
+
+`string` \| [`Address`](Address.md)
+
+#### Returns
+
+[`BALAccountAccess`](../type-aliases/BALAccountAccess.md) \| `undefined`
+
+#### Remarks
+
+Experimental (Amsterdam): may change on patch releases.
+
+***
+
 ### hash()
 
 > **hash**(): `Uint8Array`
 
-Defined in: [packages/util/src/bal/index.ts:147](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L147)
+Defined in: [packages/util/src/bal/index.ts:150](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L150)
 
 Header commitment `keccak256(serialize())` used as `blockAccessListHash`.
 
@@ -303,7 +332,7 @@ Experimental (Amsterdam): may change on patch releases.
 
 > **raw**(): `BALRawBlockAccessList`
 
-Defined in: [packages/util/src/bal/index.ts:234](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L234)
+Defined in: [packages/util/src/bal/index.ts:237](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L237)
 
 Canonical sorted tuple view used for RLP and validation.
 
@@ -321,7 +350,7 @@ Experimental (Amsterdam): may change on patch releases.
 
 > **revert**(): `void`
 
-Defined in: [packages/util/src/bal/index.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L164)
+Defined in: [packages/util/src/bal/index.ts:167](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L167)
 
 #### Returns
 
@@ -333,7 +362,7 @@ Defined in: [packages/util/src/bal/index.ts:164](https://github.com/ethereumjs/e
 
 > **serialize**(): `Uint8Array`
 
-Defined in: [packages/util/src/bal/index.ts:138](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L138)
+Defined in: [packages/util/src/bal/index.ts:141](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L141)
 
 Canonical RLP encoding of the access list (`RLP.encode(raw())`).
 
@@ -351,7 +380,7 @@ Experimental (Amsterdam): may change on patch releases.
 
 > **toJSON**(): [`BALJSONBlockAccessList`](../type-aliases/BALJSONBlockAccessList.md)
 
-Defined in: [packages/util/src/bal/index.ts:485](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L485)
+Defined in: [packages/util/src/bal/index.ts:501](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L501)
 
 Converts the internal representation to JSON fixture / Engine API form.
 Inverse of [createBlockLevelAccessListFromJSON](../functions/createBlockLevelAccessListFromJSON.md).

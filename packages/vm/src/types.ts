@@ -18,6 +18,7 @@ import type {
   WithdrawalData,
 } from '@ethereumjs/util'
 import type { Bloom } from './bloom/index.ts'
+/** Union of pre- and post-Byzantium transaction receipts. */
 export type TxReceipt = PreByzantiumTxReceipt | PostByzantiumTxReceipt | EIP4844BlobTxReceipt
 
 /**
@@ -78,10 +79,11 @@ export interface EIP4844BlobTxReceipt extends PostByzantiumTxReceipt {
 }
 
 export type EVMProfilerOpts = {
+  /** When true, collect opcode and precompile timing data on the nested EVM */
   enabled: boolean
-  // extra options here (such as use X hardfork for gas)
 }
 
+/** VM lifecycle events emitted around block and transaction processing. */
 export type VMEvent = {
   beforeBlock: (data: Block, resolve?: (result?: any) => void) => void
   afterBlock: (data: AfterBlockEvent, resolve?: (result?: any) => void) => void
@@ -90,8 +92,9 @@ export type VMEvent = {
 }
 
 export type VMProfilerOpts = {
-  //evmProfilerOpts: EVMProfilerOpts
+  /** Log opcode/precompile profiles after each transaction */
   reportAfterTx?: boolean
+  /** Log opcode/precompile profiles after each block */
   reportAfterBlock?: boolean
 }
 
@@ -100,7 +103,7 @@ export type VMProfilerOpts = {
  */
 export interface VMOpts {
   /**
-   * Use a {@link Common} instance
+   * Use a {@link @ethereumjs/common!Common} instance
    * if you want to change the chain setup.
    *
    * ### Possible Values
@@ -122,11 +125,11 @@ export interface VMOpts {
    */
   common?: Common
   /**
-   * A {@link StateManager} instance to use as the state store
+   * A {@link @ethereumjs/common!StateManagerInterface} implementation to use as the state store
    */
   stateManager?: StateManagerInterface
   /**
-   * A {@link Blockchain} object for storing/retrieving blocks
+   * A {@link @ethereumjs/blockchain!Blockchain} object for storing/retrieving blocks
    */
   blockchain?: EVMMockBlockchainInterface
   /**
@@ -151,7 +154,7 @@ export interface VMOpts {
    * Additionally it is possible to pass in a specific TD value to support live-Merge-HF
    * transitions. Note that this should only be needed in very rare and specific scenarios.
    *
-   * Default: `false` (HF is set to whatever default HF is set by the {@link Common} instance)
+   * Default: `false` (HF is set to whatever default HF is set by the {@link @ethereumjs/common!Common} instance)
    */
   setHardfork?: boolean | BigIntLike
   /**
@@ -185,6 +188,9 @@ export interface VMOpts {
    */
   evmOpts?: EVMOpts
 
+  /**
+   * Optional VM performance profiler settings (mutually exclusive report targets).
+   */
   profilerOpts?: VMProfilerOpts
 }
 
@@ -253,7 +259,7 @@ export interface SealBlockOpts {
  */
 export interface RunBlockOpts {
   /**
-   * The @ethereumjs/block to process
+   * The {@link Block} to process
    */
   block: Block
   /**
@@ -307,7 +313,7 @@ export interface RunBlockOpts {
    * Set the hardfork either by timestamp (for HFs from Shanghai onwards) or by block number
    * for older Hfs.
    *
-   * Default: `false` (HF is set to whatever default HF is set by the {@link Common} instance)
+   * Default: `false` (HF is set to whatever default HF is set by the {@link @ethereumjs/common!Common} instance)
    */
   setHardfork?: boolean
 
@@ -335,7 +341,7 @@ export interface RunBlockOpts {
 }
 
 /**
- * Result of {@link applyBlock}
+ * Result returned internally by {@link runBlock} after executing all transactions in a block.
  */
 export interface ApplyBlockResult {
   /**
@@ -387,7 +393,7 @@ export interface RunBlockResult extends Omit<ApplyBlockResult, 'bloom'> {
   requests?: CLRequest<CLRequestType>[]
   /**
    * The block level access list created during execution when EIP-7928 is active.
-   * Populated by {@link runBlock} / {@link applyBlock}; use with `generate: true` for
+   * Populated by {@link runBlock}; use with `generate: true` for
    * builder flows or pass via {@link RunBlockOpts.blockAccessList} for validation.
    *
    * @remarks Experimental (Amsterdam): may change on patch releases. See `@ethereumjs/vm`
@@ -396,8 +402,9 @@ export interface RunBlockResult extends Omit<ApplyBlockResult, 'bloom'> {
   blockLevelAccessList?: BlockLevelAccessList
 }
 
+/** Emitted by {@link VM} after a block finishes processing via {@link runBlock}. */
 export interface AfterBlockEvent extends RunBlockResult {
-  // The block which just finished processing
+  /** The block which just finished processing */
   block: Block
 }
 
@@ -406,12 +413,12 @@ export interface AfterBlockEvent extends RunBlockResult {
  */
 export interface RunTxOpts {
   /**
-   * The `@ethereumjs/block` the `tx` belongs to.
-   * If omitted, a default blank block will be used.
+   * The {@link Block} the transaction belongs to.
+   * If omitted, a default blank block is used.
    */
   block?: Block
   /**
-   * An `@ethereumjs/tx` to run
+   * Signed transaction to execute
    */
   tx: TypedTransaction
   /**
@@ -443,8 +450,8 @@ export interface RunTxOpts {
    * Option works with all tx types. EIP-2929 needs to
    * be activated (included in `berlin` HF).
    *
-   * Note: if this option is used with a custom {@link StateManager} implementation
-   * {@link StateManager.generateAccessList} must be implemented.
+   * Note: if this option is used with a custom {@link @ethereumjs/common!StateManagerInterface} implementation,
+   * `generateAccessList()` must be implemented on that class.
    */
   reportAccessList?: boolean
 
@@ -538,9 +545,8 @@ export interface RunTxResult extends EVMResult {
   blobGasUsed?: bigint
 }
 
+/** Emitted by {@link VM} after a transaction finishes processing via {@link runTx}. */
 export interface AfterTxEvent extends RunTxResult {
-  /**
-   * The transaction which just got finished
-   */
+  /** The transaction which just finished processing */
   transaction: TypedTransaction
 }

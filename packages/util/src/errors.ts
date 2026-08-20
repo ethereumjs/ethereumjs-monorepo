@@ -6,6 +6,7 @@ import {
   EthereumJSErrorWithoutCode,
 } from '@ethereumjs/rlp'
 
+/** Re-export RLP error types shared across EthereumJS packages. */
 export {
   DEFAULT_ERROR_CODE,
   EthereumJSError,

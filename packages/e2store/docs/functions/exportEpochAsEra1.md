@@ -6,9 +6,9 @@
 
 # Function: exportEpochAsEra1()
 
-> **exportEpochAsEra1**(`epoch`, `dataDir`, `outputDir`, `chain`): `Promise`\<`void`\>
+> **exportEpochAsEra1**(`epoch`, `dataDir`, `outputDir?`, `chain?`): `Promise`\<`void`\>
 
-Defined in: [packages/e2store/src/exportHistory.ts:144](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/exportHistory.ts#L144)
+Defined in: [packages/e2store/src/exportHistory.ts:153](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/exportHistory.ts#L153)
 
 ## Parameters
 
@@ -20,11 +20,11 @@ Defined in: [packages/e2store/src/exportHistory.ts:144](https://github.com/ether
 
 `string`
 
-### outputDir
+### outputDir?
 
 `string` = `dataDir`
 
-### chain
+### chain?
 
 `string` = `'mainnet'`
 

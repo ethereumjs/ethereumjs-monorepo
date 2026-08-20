@@ -6,11 +6,11 @@
 
 # Function: bytesToBigInt()
 
-> **bytesToBigInt**(`bytes`, `littleEndian`): `bigint`
+> **bytesToBigInt**(`bytes`, `littleEndian?`): `bigint`
 
-Defined in: [packages/util/src/bytes.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L60)
+Defined in: [packages/util/src/bytes.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L59)
 
-Converts a Uint8Array to a bigint
+Interpret bytes as an unsigned big-endian integer (optionally little-endian).
 
 ## Parameters
 
@@ -18,11 +18,11 @@ Converts a Uint8Array to a bigint
 
 `Uint8Array`
 
-the bytes to convert
-
-### littleEndian
+### littleEndian?
 
 `boolean` = `false`
+
+When true, reverse byte order before conversion
 
 ## Returns
 

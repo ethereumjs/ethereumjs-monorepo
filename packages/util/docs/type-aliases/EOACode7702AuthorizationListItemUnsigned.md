@@ -8,7 +8,7 @@
 
 > **EOACode7702AuthorizationListItemUnsigned** = `object`
 
-Defined in: [packages/util/src/types.ts:134](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L134)
+Defined in: [packages/util/src/types.ts:135](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L135)
 
 EIP-7702 Authorization list types
 
@@ -18,7 +18,7 @@ EIP-7702 Authorization list types
 
 > **address**: [`PrefixedHexString`](PrefixedHexString.md)
 
-Defined in: [packages/util/src/types.ts:136](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L136)
+Defined in: [packages/util/src/types.ts:137](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L137)
 
 ***
 
@@ -26,7 +26,7 @@ Defined in: [packages/util/src/types.ts:136](https://github.com/ethereumjs/ether
 
 > **chainId**: [`PrefixedHexString`](PrefixedHexString.md)
 
-Defined in: [packages/util/src/types.ts:135](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L135)
+Defined in: [packages/util/src/types.ts:136](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L136)
 
 ***
 
@@ -34,4 +34,4 @@ Defined in: [packages/util/src/types.ts:135](https://github.com/ethereumjs/ether
 
 > **nonce**: [`PrefixedHexString`](PrefixedHexString.md)
 
-Defined in: [packages/util/src/types.ts:137](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L137)
+Defined in: [packages/util/src/types.ts:138](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L138)

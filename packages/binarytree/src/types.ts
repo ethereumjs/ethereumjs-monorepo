@@ -2,6 +2,7 @@ import { utf8ToBytes } from '@ethereumjs/util'
 
 import type { DB, ValueEncoding } from '@ethereumjs/util'
 
+/** Options for {@link createBinaryTree} and {@link BinaryTree}. */
 export interface BinaryTreeOpts {
   /**
    * A database instance.
@@ -55,4 +56,5 @@ export type Checkpoint = {
   root: Uint8Array
 }
 
+/** Internal DB key used when `useRootPersistence` stores the tree root. */
 export const ROOT_DB_KEY = utf8ToBytes('__root__')

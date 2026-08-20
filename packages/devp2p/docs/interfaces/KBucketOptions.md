@@ -10,9 +10,9 @@ Defined in: [packages/devp2p/src/types.ts:230](https://github.com/ethereumjs/eth
 
 ## Properties
 
-### arbiter()?
+### arbiter?
 
-> `optional` **arbiter**: (`incumbent`, `candidate`) => [`Contact`](Contact.md)
+> `optional` **arbiter?**: (`incumbent`, `candidate`) => [`Contact`](Contact.md)
 
 Defined in: [packages/devp2p/src/types.ts:256](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L256)
 
@@ -36,9 +36,9 @@ Defaults to vectorClock arbiter function.
 
 ***
 
-### distance()?
+### distance?
 
-> `optional` **distance**: (`firstId`, `secondId`) => `number`
+> `optional` **distance?**: (`firstId`, `secondId`) => `number`
 
 Defined in: [packages/devp2p/src/types.ts:250](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L250)
 
@@ -62,7 +62,7 @@ An optional distance function that gets two id Uint8Arrays and return distance b
 
 ### localNodeId?
 
-> `optional` **localNodeId**: `Uint8Array`\<`ArrayBufferLike`\>
+> `optional` **localNodeId?**: `Uint8Array`\<`ArrayBufferLike`\>
 
 Defined in: [packages/devp2p/src/types.ts:235](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L235)
 
@@ -73,7 +73,7 @@ If not provided, a local node id will be created via `randomBytes(20)`.
 
 ### metadata?
 
-> `optional` **metadata**: `object`
+> `optional` **metadata?**: `object`
 
 Defined in: [packages/devp2p/src/types.ts:263](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L263)
 
@@ -86,7 +86,7 @@ implementation-specific data.
 
 ### numberOfNodesPerKBucket?
 
-> `optional` **numberOfNodesPerKBucket**: `number`
+> `optional` **numberOfNodesPerKBucket?**: `number`
 
 Defined in: [packages/devp2p/src/types.ts:240](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L240)
 
@@ -97,7 +97,7 @@ Defaults to 20.
 
 ### numberOfNodesToPing?
 
-> `optional` **numberOfNodesToPing**: `number`
+> `optional` **numberOfNodesToPing?**: `number`
 
 Defined in: [packages/devp2p/src/types.ts:246](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L246)
 

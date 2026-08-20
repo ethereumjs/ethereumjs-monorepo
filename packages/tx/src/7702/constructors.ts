@@ -16,24 +16,28 @@ import type { TxOptions } from '../types.ts'
 import type { TxData, TxValuesArray } from './tx.ts'
 
 /**
- * Instantiate a transaction from a data dictionary.
+ * Instantiate an EIP-7702 EOA-code transaction from a plain data object.
  *
- * Format: { chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
- * accessList, v, r, s }
+ * `chainId` defaults from {@link TxOptions.common} when omitted.
  *
- * Notes:
- * - `chainId` will be set automatically if not provided
- * - All parameters are optional and have some basic default values
+ * @throws If fee or value fields overflow or are non-numeric
+ * @throws If gas limit or nonce exceed EIP bounds
+ * @throws If init code size exceeds EIP-3860 on contract-creation txs
  */
 export function createEOACode7702Tx(txData: TxData, opts: TxOptions = {}) {
   return new EOACode7702Tx(txData, opts)
 }
 
 /**
- * Create a transaction from an array of byte encoded values ordered according to the devp2p network encoding - format noted below.
+ * Instantiate an EIP-7702 transaction from devp2p byte-array encoding.
  *
  * Format: `[chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
  * accessList, authorityList, signatureYParity, signatureR, signatureS]`
+ *
+ * @throws If the values array length is not 10 (unsigned) or 13 (signed)
+ * @throws If `chainId` or signature fields are nested arrays
+ * @throws If numeric fields contain leading zeroes
+ * @throws If constructor validation fails (see {@link createEOACode7702Tx})
  */
 export function createEOACode7702TxFromBytesArray(values: TxValuesArray, opts: TxOptions = {}) {
   if (values.length !== 10 && values.length !== 13) {
@@ -82,10 +86,14 @@ export function createEOACode7702TxFromBytesArray(values: TxValuesArray, opts: T
 }
 
 /**
- * Instantiate a transaction from a RLP serialized tx.
+ * Instantiate an EIP-7702 transaction from RLP-serialized bytes.
  *
  * Format: `0x04 || rlp([chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
- * accessList, signatureYParity, signatureR, signatureS])`
+ * accessList, authorityList, signatureYParity, signatureR, signatureS])`
+ *
+ * @throws If the leading type byte is not `0x04`
+ * @throws If RLP decode result is not an array
+ * @throws If decoded values fail {@link createEOACode7702TxFromBytesArray} checks
  */
 export function createEOACode7702TxFromRLP(serialized: Uint8Array, opts: TxOptions = {}) {
   if (

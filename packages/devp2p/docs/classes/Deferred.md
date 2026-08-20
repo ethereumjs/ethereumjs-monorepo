@@ -6,7 +6,7 @@
 
 # Class: Deferred\<T\>
 
-Defined in: [packages/devp2p/src/util.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L100)
+Defined in: [packages/devp2p/src/util.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L102)
 
 ## Type Parameters
 
@@ -20,7 +20,7 @@ Defined in: [packages/devp2p/src/util.ts:100](https://github.com/ethereumjs/ethe
 
 > **new Deferred**\<`T`\>(): `Deferred`\<`T`\>
 
-Defined in: [packages/devp2p/src/util.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L104)
+Defined in: [packages/devp2p/src/util.ts:106](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L106)
 
 #### Returns
 
@@ -32,15 +32,15 @@ Defined in: [packages/devp2p/src/util.ts:104](https://github.com/ethereumjs/ethe
 
 > **promise**: `Promise`\<`T`\>
 
-Defined in: [packages/devp2p/src/util.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L101)
+Defined in: [packages/devp2p/src/util.ts:103](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L103)
 
 ***
 
-### reject()
+### reject
 
 > **reject**: (...`args`) => `any`
 
-Defined in: [packages/devp2p/src/util.ts:103](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L103)
+Defined in: [packages/devp2p/src/util.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L105)
 
 #### Parameters
 
@@ -54,11 +54,11 @@ Defined in: [packages/devp2p/src/util.ts:103](https://github.com/ethereumjs/ethe
 
 ***
 
-### resolve()
+### resolve
 
 > **resolve**: (...`args`) => `any`
 
-Defined in: [packages/devp2p/src/util.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L102)
+Defined in: [packages/devp2p/src/util.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L104)
 
 #### Parameters
 

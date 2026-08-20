@@ -6,7 +6,9 @@
 
 # Class: CLRequest\<T\>
 
-Defined in: [packages/util/src/request.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/request.ts#L20)
+Defined in: [packages/util/src/request.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/request.ts#L33)
+
+Typed wrapper around a consensus-layer request byte payload.
 
 ## Type Parameters
 
@@ -20,7 +22,7 @@ Defined in: [packages/util/src/request.ts:20](https://github.com/ethereumjs/ethe
 
 > **new CLRequest**\<`T`\>(`requestType`, `requestData`): `CLRequest`\<`T`\>
 
-Defined in: [packages/util/src/request.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/request.ts#L32)
+Defined in: [packages/util/src/request.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/request.ts#L45)
 
 #### Parameters
 
@@ -42,7 +44,7 @@ Defined in: [packages/util/src/request.ts:32](https://github.com/ethereumjs/ethe
 
 > `readonly` **bytes**: `Uint8Array`
 
-Defined in: [packages/util/src/request.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/request.ts#L22)
+Defined in: [packages/util/src/request.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/request.ts#L35)
 
 ## Accessors
 
@@ -52,7 +54,7 @@ Defined in: [packages/util/src/request.ts:22](https://github.com/ethereumjs/ethe
 
 > **get** **data**(): `Uint8Array`\<`ArrayBufferLike`\>
 
-Defined in: [packages/util/src/request.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/request.ts#L28)
+Defined in: [packages/util/src/request.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/request.ts#L41)
 
 ##### Returns
 
@@ -66,7 +68,7 @@ Defined in: [packages/util/src/request.ts:28](https://github.com/ethereumjs/ethe
 
 > **get** **type**(): `T`
 
-Defined in: [packages/util/src/request.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/request.ts#L24)
+Defined in: [packages/util/src/request.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/request.ts#L37)
 
 ##### Returns
 

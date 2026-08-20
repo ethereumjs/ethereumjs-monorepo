@@ -8,15 +8,15 @@
 
 > **getProvider**(`provider`): `string`
 
-Defined in: [packages/util/src/provider.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/provider.ts#L90)
+Defined in: [packages/util/src/provider.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/provider.ts#L91)
 
 ## Parameters
 
 ### provider
 
-a URL string or [EthersProvider](../interfaces/EthersProvider.md)
+`string` \| [`EthersProvider`](../interfaces/EthersProvider.md)
 
-`string` | [`EthersProvider`](../interfaces/EthersProvider.md)
+a URL string or [EthersProvider](../interfaces/EthersProvider.md)
 
 ## Returns
 

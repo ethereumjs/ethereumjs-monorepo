@@ -6,7 +6,7 @@
 
 # Class: SimpleStateManager
 
-Defined in: [simpleStateManager.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L26)
+Defined in: [simpleStateManager.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L27)
 
 Simple and dependency-free state manager for basic state access use cases
 where a merkle-patricia or binary tree backed state manager is too heavy-weight.
@@ -24,19 +24,19 @@ have a look at the [`@ethereumjs/statemanager` package docs](https://github.com/
 
 ## Implements
 
-- `StateManagerInterface`
+- [`StateManagerInterface`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/StateManagerInterface.md)
 
 ## Constructors
 
 ### Constructor
 
-> **new SimpleStateManager**(`opts`): `SimpleStateManager`
+> **new SimpleStateManager**(`opts?`): `SimpleStateManager`
 
-Defined in: [simpleStateManager.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L38)
+Defined in: [simpleStateManager.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L39)
 
 #### Parameters
 
-##### opts
+##### opts?
 
 [`SimpleStateManagerOpts`](../interfaces/SimpleStateManagerOpts.md) = `{}`
 
@@ -50,7 +50,7 @@ Defined in: [simpleStateManager.ts:38](https://github.com/ethereumjs/ethereumjs-
 
 > **accountStack**: `Map`\<`` `0x${string}` ``, `Account` \| `undefined`\>[] = `[]`
 
-Defined in: [simpleStateManager.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L27)
+Defined in: [simpleStateManager.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L28)
 
 ***
 
@@ -58,15 +58,15 @@ Defined in: [simpleStateManager.ts:27](https://github.com/ethereumjs/ethereumjs-
 
 > **codeStack**: `Map`\<`` `0x${string}` ``, `Uint8Array`\<`ArrayBufferLike`\>\>[] = `[]`
 
-Defined in: [simpleStateManager.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L28)
+Defined in: [simpleStateManager.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L29)
 
 ***
 
 ### common?
 
-> `readonly` `optional` **common**: `Common`
+> `readonly` `optional` **common?**: [`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
-Defined in: [simpleStateManager.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L36)
+Defined in: [simpleStateManager.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L37)
 
 ***
 
@@ -74,7 +74,7 @@ Defined in: [simpleStateManager.ts:36](https://github.com/ethereumjs/ethereumjs-
 
 > **originalStorageCache**: `object`
 
-Defined in: [simpleStateManager.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L31)
+Defined in: [simpleStateManager.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L32)
 
 #### clear()
 
@@ -92,7 +92,7 @@ Defined in: [simpleStateManager.ts:31](https://github.com/ethereumjs/ethereumjs-
 
 ###### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ###### key
 
@@ -112,7 +112,7 @@ Defined in: [simpleStateManager.ts:31](https://github.com/ethereumjs/ethereumjs-
 
 > **storageStack**: `Map`\<`string`, `Uint8Array`\<`ArrayBufferLike`\>\>[] = `[]`
 
-Defined in: [simpleStateManager.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L29)
+Defined in: [simpleStateManager.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L30)
 
 ## Methods
 
@@ -120,7 +120,7 @@ Defined in: [simpleStateManager.ts:29](https://github.com/ethereumjs/ethereumjs-
 
 > **checkpoint**(): `Promise`\<`void`\>
 
-Defined in: [simpleStateManager.ts:116](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L116)
+Defined in: [simpleStateManager.ts:130](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L130)
 
 #### Returns
 
@@ -136,7 +136,7 @@ Defined in: [simpleStateManager.ts:116](https://github.com/ethereumjs/ethereumjs
 
 > **clearCaches**(): `void`
 
-Defined in: [simpleStateManager.ts:132](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L132)
+Defined in: [simpleStateManager.ts:146](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L146)
 
 #### Returns
 
@@ -150,9 +150,15 @@ Defined in: [simpleStateManager.ts:132](https://github.com/ethereumjs/ethereumjs
 
 ### clearStorage()
 
-> **clearStorage**(): `Promise`\<`void`\>
+> **clearStorage**(`address`): `Promise`\<`void`\>
 
-Defined in: [simpleStateManager.ts:114](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L114)
+Defined in: [simpleStateManager.ts:115](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L115)
+
+#### Parameters
+
+##### address
+
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Returns
 
@@ -168,7 +174,7 @@ Defined in: [simpleStateManager.ts:114](https://github.com/ethereumjs/ethereumjs
 
 > **commit**(): `Promise`\<`void`\>
 
-Defined in: [simpleStateManager.ts:119](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L119)
+Defined in: [simpleStateManager.ts:133](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L133)
 
 #### Returns
 
@@ -180,17 +186,50 @@ Defined in: [simpleStateManager.ts:119](https://github.com/ethereumjs/ethereumjs
 
 ***
 
+### consumeBAL()
+
+> **consumeBAL**(`bal`, `expectedStateRoot?`): `Promise`\<`void`\>
+
+Defined in: [simpleStateManager.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L164)
+
+Apply an EIP-7928 BAL onto this state. See [consumeBAL](#consumebal).
+Do not pass `expectedStateRoot` — this manager does not implement state roots.
+
+#### Parameters
+
+##### bal
+
+`BALJSONBlockAccessList`
+
+##### expectedStateRoot?
+
+`Uint8Array`\<`ArrayBufferLike`\>
+
+#### Returns
+
+`Promise`\<`void`\>
+
+#### Remarks
+
+Experimental (Amsterdam): may change on patch releases.
+
+#### Implementation of
+
+`StateManagerInterface.consumeBAL`
+
+***
+
 ### deleteAccount()
 
 > **deleteAccount**(`address`): `Promise`\<`void`\>
 
-Defined in: [simpleStateManager.ts:77](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L77)
+Defined in: [simpleStateManager.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L78)
 
 #### Parameters
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Returns
 
@@ -206,7 +245,7 @@ Defined in: [simpleStateManager.ts:77](https://github.com/ethereumjs/ethereumjs-
 
 > **flush**(): `Promise`\<`void`\>
 
-Defined in: [simpleStateManager.ts:131](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L131)
+Defined in: [simpleStateManager.ts:145](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L145)
 
 #### Returns
 
@@ -218,13 +257,13 @@ Defined in: [simpleStateManager.ts:131](https://github.com/ethereumjs/ethereumjs
 
 > **getAccount**(`address`): `Promise`\<`Account` \| `undefined`\>
 
-Defined in: [simpleStateManager.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L69)
+Defined in: [simpleStateManager.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L70)
 
 #### Parameters
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Returns
 
@@ -240,13 +279,13 @@ Defined in: [simpleStateManager.ts:69](https://github.com/ethereumjs/ethereumjs-
 
 > **getCode**(`address`): `Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
 
-Defined in: [simpleStateManager.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L85)
+Defined in: [simpleStateManager.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L86)
 
 #### Parameters
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Returns
 
@@ -262,13 +301,13 @@ Defined in: [simpleStateManager.ts:85](https://github.com/ethereumjs/ethereumjs-
 
 > **getCodeSize**(`address`): `Promise`\<`number`\>
 
-Defined in: [simpleStateManager.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L99)
+Defined in: [simpleStateManager.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L100)
 
 #### Parameters
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Returns
 
@@ -284,7 +323,7 @@ Defined in: [simpleStateManager.ts:99](https://github.com/ethereumjs/ethereumjs-
 
 > **getStateRoot**(): `Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
 
-Defined in: [simpleStateManager.ts:145](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L145)
+Defined in: [simpleStateManager.ts:169](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L169)
 
 #### Returns
 
@@ -300,13 +339,13 @@ Defined in: [simpleStateManager.ts:145](https://github.com/ethereumjs/ethereumjs
 
 > **getStorage**(`address`, `key`): `Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
 
-Defined in: [simpleStateManager.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L104)
+Defined in: [simpleStateManager.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L105)
 
 #### Parameters
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ##### key
 
@@ -326,7 +365,7 @@ Defined in: [simpleStateManager.ts:104](https://github.com/ethereumjs/ethereumjs
 
 > **hasStateRoot**(): `Promise`\<`boolean`\>
 
-Defined in: [simpleStateManager.ts:151](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L151)
+Defined in: [simpleStateManager.ts:175](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L175)
 
 #### Returns
 
@@ -342,13 +381,13 @@ Defined in: [simpleStateManager.ts:151](https://github.com/ethereumjs/ethereumjs
 
 > **modifyAccountFields**(`address`, `accountFields`): `Promise`\<`void`\>
 
-Defined in: [simpleStateManager.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L81)
+Defined in: [simpleStateManager.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L82)
 
 #### Parameters
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ##### accountFields
 
@@ -368,13 +407,13 @@ Defined in: [simpleStateManager.ts:81](https://github.com/ethereumjs/ethereumjs-
 
 > **putAccount**(`address`, `account?`): `Promise`\<`void`\>
 
-Defined in: [simpleStateManager.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L73)
+Defined in: [simpleStateManager.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L74)
 
 #### Parameters
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ##### account?
 
@@ -394,13 +433,13 @@ Defined in: [simpleStateManager.ts:73](https://github.com/ethereumjs/ethereumjs-
 
 > **putCode**(`address`, `value`): `Promise`\<`void`\>
 
-Defined in: [simpleStateManager.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L89)
+Defined in: [simpleStateManager.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L90)
 
 #### Parameters
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ##### value
 
@@ -420,13 +459,13 @@ Defined in: [simpleStateManager.ts:89](https://github.com/ethereumjs/ethereumjs-
 
 > **putStorage**(`address`, `key`, `value`): `Promise`\<`void`\>
 
-Defined in: [simpleStateManager.ts:110](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L110)
+Defined in: [simpleStateManager.ts:111](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L111)
 
 #### Parameters
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ##### key
 
@@ -450,7 +489,7 @@ Defined in: [simpleStateManager.ts:110](https://github.com/ethereumjs/ethereumjs
 
 > **revert**(): `Promise`\<`void`\>
 
-Defined in: [simpleStateManager.ts:125](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L125)
+Defined in: [simpleStateManager.ts:139](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L139)
 
 #### Returns
 
@@ -466,7 +505,7 @@ Defined in: [simpleStateManager.ts:125](https://github.com/ethereumjs/ethereumjs
 
 > **setStateRoot**(): `Promise`\<`void`\>
 
-Defined in: [simpleStateManager.ts:148](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L148)
+Defined in: [simpleStateManager.ts:172](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L172)
 
 #### Returns
 
@@ -480,13 +519,13 @@ Defined in: [simpleStateManager.ts:148](https://github.com/ethereumjs/ethereumjs
 
 ### shallowCopy()
 
-> **shallowCopy**(): `StateManagerInterface`
+> **shallowCopy**(): [`StateManagerInterface`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/StateManagerInterface.md)
 
-Defined in: [simpleStateManager.ts:134](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L134)
+Defined in: [simpleStateManager.ts:148](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/simpleStateManager.ts#L148)
 
 #### Returns
 
-`StateManagerInterface`
+[`StateManagerInterface`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/StateManagerInterface.md)
 
 #### Implementation of
 

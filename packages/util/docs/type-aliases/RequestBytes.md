@@ -8,4 +8,6 @@
 
 > **RequestBytes** = `Uint8Array`
 
-Defined in: [packages/util/src/request.ts:5](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/request.ts#L5)
+Defined in: [packages/util/src/request.ts:6](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/request.ts#L6)
+
+Opaque consensus-layer request payload bytes.

@@ -8,19 +8,18 @@
 
 > **activeCostPerStateByte**(`common`, `_blockGasLimit?`): `bigint`
 
-Defined in: [eip8037.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/eip8037.ts#L14)
+Defined in: [eip8037.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/eip8037.ts#L13)
 
-EIP-8037 cost-per-state-byte. Under the v7 fixtures the value is a flat
-constant (sourced from the `costPerStateByte` common parameter) rather than
-the earlier draft's block-gas-limit-derived value. The helper is kept so
-callers do not need to know whether the value is constant or derived; a
-future spec revision could re-introduce a derivation here.
+Returns the active EIP-8037 cost per state byte from [@ethereumjs/common!Common](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md).
+
+Under v7 fixtures this is the flat `costPerStateByte` parameter; the
+optional block gas limit is reserved for a future derived formula.
 
 ## Parameters
 
 ### common
 
-`Common`
+[`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 ### \_blockGasLimit?
 

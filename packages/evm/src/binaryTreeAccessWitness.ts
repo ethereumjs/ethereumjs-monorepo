@@ -41,14 +41,16 @@ const WitnessBranchWriteCost = BigInt(3000)
 const WitnessChunkWriteCost = BigInt(500)
 const WitnessChunkFillCost = BigInt(6200)
 
-// read is a default access event if stem or chunk is present
+/** Stem-level binary-tree access event (read by default; optional write). */
 export type BinaryStemAccessEvent = { write?: boolean }
 
+/** Chunk-level access event, including optional fill for previously empty chunks. */
 export type BinaryChunkAccessEvent = BinaryStemAccessEvent & { fill?: boolean }
 
-// Since stem is hashed (could chang for binary), it is useful to maintain the reverse relationship
+/** Reverse lookup from stem hash to contract address and tree index. */
 export type BinaryStemMeta = { address: Address; treeIndex: number | bigint }
 
+/** Maps a binary-tree stem/chunk index pair to a typed accessed-state descriptor. */
 export function decodeBinaryAccessState(
   treeIndex: number | bigint,
   chunkIndex: number,
@@ -87,6 +89,7 @@ export function decodeBinaryAccessState(
   }
 }
 
+/** Tracks binary-tree stem and chunk accesses for EIP-7864 witness costing. */
 export class BinaryTreeAccessWitness implements BinaryTreeAccessWitnessInterface {
   stems: Map<PrefixedHexString, BinaryStemAccessEvent & BinaryStemMeta>
   chunks: Map<PrefixedHexString, BinaryChunkAccessEvent>

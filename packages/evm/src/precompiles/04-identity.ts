@@ -8,6 +8,7 @@ import { gasLimitCheck } from './util.ts'
 import type { ExecResult } from '../types.ts'
 import type { PrecompileInput } from './types.ts'
 
+/** IDENTITY precompile (0x04): return input bytes unchanged (memory copy). */
 export function precompile04(opts: PrecompileInput): ExecResult {
   const pName = getPrecompileName('04')
   const data = opts.data

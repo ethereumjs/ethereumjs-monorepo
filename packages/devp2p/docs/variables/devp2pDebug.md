@@ -8,4 +8,4 @@
 
 > `const` **devp2pDebug**: `Debugger`
 
-Defined in: [packages/devp2p/src/util.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L17)
+Defined in: [packages/devp2p/src/util.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L16)

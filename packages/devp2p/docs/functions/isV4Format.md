@@ -8,7 +8,7 @@
 
 > **isV4Format**(`ip`): `boolean`
 
-Defined in: [packages/devp2p/src/util.ts:153](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L153)
+Defined in: [packages/devp2p/src/util.ts:155](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L155)
 
 ## Parameters
 

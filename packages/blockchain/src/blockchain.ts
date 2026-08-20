@@ -1295,10 +1295,12 @@ export class Blockchain implements BlockchainInterface {
   }
 
   /**
-   * This method either returns a Uint8Array if there exists one in the DB or if it
-   * does not exist then return false If DB throws
-   * any other error, this function throws.
-   * @param number
+   * Look up a canonical block hash by number without throwing when absent.
+   *
+   * @param number - Canonical block height to resolve
+   *
+   * @returns Block hash bytes, or `false` when not in the canonical chain
+   * @throws If the DB returns an unexpected error
    */
   async safeNumberToHash(number: bigint): Promise<Uint8Array | false> {
     const hash = await this.dbManager.numberToHash(number)

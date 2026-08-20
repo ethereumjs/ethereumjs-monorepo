@@ -11,6 +11,7 @@ import { equalityLengthCheck, gasLimitCheck } from './util.ts'
 import type { ExecResult } from '../types.ts'
 import type { PrecompileInput } from './types.ts'
 
+/** BLS12-381 G1 point addition precompile (0x0b, EIP-2537). */
 export async function precompile0b(opts: PrecompileInput): Promise<ExecResult> {
   const pName = getPrecompileName('0b')
   const bls = (opts._EVM as EVM)['_bls']!

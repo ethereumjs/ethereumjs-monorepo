@@ -8,7 +8,7 @@
 
 > **getBlob**(`data`): `` `0x${string}` ``
 
-Defined in: [packages/util/src/blobs.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/blobs.ts#L39)
+Defined in: [packages/util/src/blobs.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/blobs.ts#L40)
 
 Converts arbitrary byte data into EIP-4844 blob format.
 Splits data into 4096 field elements of 32 bytes each, with proper alignment.

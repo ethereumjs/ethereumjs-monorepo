@@ -6,22 +6,26 @@
 
 # Function: createBlockHeader()
 
-> **createBlockHeader**(`headerData`, `opts`): [`BlockHeader`](../classes/BlockHeader.md)
+> **createBlockHeader**(`headerData?`, `opts?`): [`BlockHeader`](../classes/BlockHeader.md)
 
-Defined in: [header/constructors.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/constructors.ts#L16)
+Defined in: [header/constructors.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/header/constructors.ts#L15)
 
-Static constructor to create a block header from a header data dictionary
+Instantiate a block header from [HeaderData](../interfaces/HeaderData.md).
 
 ## Parameters
 
-### headerData
+### headerData?
 
 [`HeaderData`](../interfaces/HeaderData.md) = `{}`
 
-### opts
+### opts?
 
 [`BlockOptions`](../interfaces/BlockOptions.md) = `{}`
 
 ## Returns
 
 [`BlockHeader`](../classes/BlockHeader.md)
+
+## Throws
+
+If header field validation fails in the [BlockHeader](../classes/BlockHeader.md) constructor

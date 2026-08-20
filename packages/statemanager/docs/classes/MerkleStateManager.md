@@ -6,9 +6,9 @@
 
 # Class: MerkleStateManager
 
-Defined in: [merkleStateManager.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L62)
+Defined in: [merkleStateManager.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L64)
 
-Default StateManager implementation for the VM.
+Default [@ethereumjs/common!StateManagerInterface](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/StateManagerInterface.md) implementation for the VM.
 
 The state manager abstracts from the underlying data store
 by providing higher level access to accounts, contract code
@@ -24,21 +24,21 @@ for many basic use cases.
 
 ## Implements
 
-- `StateManagerInterface`
+- [`StateManagerInterface`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/StateManagerInterface.md)
 
 ## Constructors
 
 ### Constructor
 
-> **new MerkleStateManager**(`opts`): `MerkleStateManager`
+> **new MerkleStateManager**(`opts?`): `MerkleStateManager`
 
-Defined in: [merkleStateManager.ts:93](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L93)
+Defined in: [merkleStateManager.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L95)
 
-Instantiate the StateManager interface.
+Instantiate a Merkle-backed state manager.
 
 #### Parameters
 
-##### opts
+##### opts?
 
 [`MerkleStateManagerOpts`](../interfaces/MerkleStateManagerOpts.md) = `{}`
 
@@ -50,9 +50,9 @@ Instantiate the StateManager interface.
 
 ### common
 
-> `readonly` **common**: `Common`
+> `readonly` **common**: [`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
-Defined in: [merkleStateManager.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L74)
+Defined in: [merkleStateManager.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L76)
 
 ***
 
@@ -60,7 +60,7 @@ Defined in: [merkleStateManager.ts:74](https://github.com/ethereumjs/ethereumjs-
 
 > **originalStorageCache**: [`OriginalStorageCache`](OriginalStorageCache.md)
 
-Defined in: [merkleStateManager.ts:66](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L66)
+Defined in: [merkleStateManager.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L68)
 
 #### Implementation of
 
@@ -72,9 +72,9 @@ Defined in: [merkleStateManager.ts:66](https://github.com/ethereumjs/ethereumjs-
 
 > **checkpoint**(): `Promise`\<`void`\>
 
-Defined in: [merkleStateManager.ts:443](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L443)
+Defined in: [merkleStateManager.ts:444](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L444)
 
-Checkpoints the current state of the StateManager instance.
+Checkpoints the current state of this [@ethereumjs/common!StateManagerInterface](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/StateManagerInterface.md) instance.
 State changes that follow can then be committed by calling
 `commit` or `reverted` by calling rollback.
 
@@ -92,7 +92,7 @@ State changes that follow can then be committed by calling
 
 > **clearCaches**(): `void`
 
-Defined in: [merkleStateManager.ts:724](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L724)
+Defined in: [merkleStateManager.ts:722](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L722)
 
 Clears all underlying caches
 
@@ -110,7 +110,7 @@ Clears all underlying caches
 
 > **clearStorage**(`address`): `Promise`\<`void`\>
 
-Defined in: [merkleStateManager.ts:426](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L426)
+Defined in: [merkleStateManager.ts:427](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L427)
 
 Clears all storage entries for the account corresponding to `address`.
 
@@ -118,7 +118,7 @@ Clears all storage entries for the account corresponding to `address`.
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Address to clear the storage of
 
@@ -136,7 +136,7 @@ Address to clear the storage of
 
 > **commit**(): `Promise`\<`void`\>
 
-Defined in: [merkleStateManager.ts:453](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L453)
+Defined in: [merkleStateManager.ts:454](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L454)
 
 Commits the current change-set to the instance since the
 last call to checkpoint.
@@ -151,11 +151,43 @@ last call to checkpoint.
 
 ***
 
+### consumeBAL()
+
+> **consumeBAL**(`bal`, `expectedStateRoot?`): `Promise`\<`void`\>
+
+Defined in: [merkleStateManager.ts:741](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L741)
+
+Apply an EIP-7928 BAL onto this state. See [consumeBAL](#consumebal).
+
+#### Parameters
+
+##### bal
+
+`BALJSONBlockAccessList`
+
+##### expectedStateRoot?
+
+`Uint8Array`\<`ArrayBufferLike`\>
+
+#### Returns
+
+`Promise`\<`void`\>
+
+#### Remarks
+
+Experimental (Amsterdam): may change on patch releases.
+
+#### Implementation of
+
+`StateManagerInterface.consumeBAL`
+
+***
+
 ### deleteAccount()
 
 > **deleteAccount**(`address`): `Promise`\<`void`\>
 
-Defined in: [merkleStateManager.ts:181](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L181)
+Defined in: [merkleStateManager.ts:183](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L183)
 
 Deletes an account from state under the provided `address`.
 
@@ -163,7 +195,7 @@ Deletes an account from state under the provided `address`.
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Address of the account which should be deleted
 
@@ -181,7 +213,7 @@ Address of the account which should be deleted
 
 > **dumpStorage**(`address`): `Promise`\<`StorageDump`\>
 
-Defined in: [merkleStateManager.ts:583](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L583)
+Defined in: [merkleStateManager.ts:582](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L582)
 
 Dumps the RLP-encoded storage values for an `account` specified by `address`.
 
@@ -189,17 +221,15 @@ Dumps the RLP-encoded storage values for an `account` specified by `address`.
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
-The address of the `account` to return storage for
+Account whose storage should be dumped
 
 #### Returns
 
 `Promise`\<`StorageDump`\>
 
-- The state of the account as an `Object` map.
-Keys are are the storage keys, values are the storage values as strings.
-Both are represented as hex strings without the `0x` prefix.
+Hex-keyed map of storage slots (values as unprefixed hex strings)
 
 #### Implementation of
 
@@ -209,9 +239,9 @@ Both are represented as hex strings without the `0x` prefix.
 
 ### dumpStorageRange()
 
-> **dumpStorageRange**(`address`, `startKey`, `limit`): `Promise`\<`StorageRange`\>
+> **dumpStorageRange**(`address`, `startKey`, `limit`): `Promise`\<[`StorageRange`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/StorageRange.md)\>
 
-Defined in: [merkleStateManager.ts:605](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L605)
+Defined in: [merkleStateManager.ts:603](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L603)
 
 Dumps a limited number of RLP-encoded storage values for an account specified by `address`,
 starting from `startKey` or greater.
@@ -220,7 +250,7 @@ starting from `startKey` or greater.
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 The address of the `account` to return storage for.
 
@@ -229,19 +259,20 @@ The address of the `account` to return storage for.
 `bigint`
 
 The bigint representation of the smallest storage key that will be returned.
+*
 
 ##### limit
 
 `number`
 
-The maximum number of storage values that will be returned.
+Maximum number of storage entries to return
+*
 
 #### Returns
 
-`Promise`\<`StorageRange`\>
+`Promise`\<[`StorageRange`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/StorageRange.md)\>
 
-- A StorageRange object that will contain at most `limit` entries in its `storage` field.
-The object will also contain `nextKey`, the next (hashed) storage key after the range included in `storage`.
+[@ethereumjs/common!StorageRange](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/StorageRange.md) with at most `limit` entries and optional `nextKey`
 
 #### Implementation of
 
@@ -253,7 +284,7 @@ The object will also contain `nextKey`, the next (hashed) storage key after the 
 
 > **flush**(): `Promise`\<`void`\>
 
-Defined in: [merkleStateManager.ts:491](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L491)
+Defined in: [merkleStateManager.ts:492](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L492)
 
 Writes all cache items to the trie
 
@@ -267,7 +298,7 @@ Writes all cache items to the trie
 
 > **generateCanonicalGenesis**(`initState`): `Promise`\<`void`\>
 
-Defined in: [merkleStateManager.ts:641](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L641)
+Defined in: [merkleStateManager.ts:639](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L639)
 
 Initializes the provided genesis state into the state trie.
 Will error if there are uncommitted checkpoints on the instance.
@@ -294,7 +325,7 @@ address -> balance | [balance, code, storage]
 
 > **getAccount**(`address`): `Promise`\<`Account` \| `undefined`\>
 
-Defined in: [merkleStateManager.ts:120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L120)
+Defined in: [merkleStateManager.ts:122](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L122)
 
 Gets the account associated with `address` or `undefined` if account does not exist
 
@@ -302,7 +333,7 @@ Gets the account associated with `address` or `undefined` if account does not ex
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Address of the `account` to get
 
@@ -320,7 +351,7 @@ Address of the `account` to get
 
 > **getAppliedKey**(`address`): `Uint8Array`
 
-Defined in: [merkleStateManager.ts:734](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L734)
+Defined in: [merkleStateManager.ts:732](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L732)
 
 Returns the applied key for a given address
 Used for saving preimages
@@ -331,13 +362,13 @@ Used for saving preimages
 
 `Uint8Array`
 
-The address to return the applied key
+Address bytes used for preimage recording
 
 #### Returns
 
 `Uint8Array`
 
-- The applied key (e.g. hashed address)
+Key after trie key hashing (e.g. keccak of the address)
 
 #### Implementation of
 
@@ -349,7 +380,7 @@ The address to return the applied key
 
 > **getCode**(`address`): `Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
 
-Defined in: [merkleStateManager.ts:225](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L225)
+Defined in: [merkleStateManager.ts:226](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L226)
 
 Gets the code corresponding to the provided `address`.
 
@@ -357,16 +388,15 @@ Gets the code corresponding to the provided `address`.
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
-Address to get the `code` for
+Address to get the code for
 
 #### Returns
 
 `Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
 
--  Resolves with the code corresponding to the provided address.
-Returns an empty `Uint8Array` if the account has no associated code.
+Contract bytecode, or an empty array when no code is stored
 
 #### Implementation of
 
@@ -378,13 +408,13 @@ Returns an empty `Uint8Array` if the account has no associated code.
 
 > **getCodeSize**(`address`): `Promise`\<`number`\>
 
-Defined in: [merkleStateManager.ts:246](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L246)
+Defined in: [merkleStateManager.ts:247](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L247)
 
 #### Parameters
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Returns
 
@@ -400,17 +430,17 @@ Defined in: [merkleStateManager.ts:246](https://github.com/ethereumjs/ethereumjs
 
 > **getStateRoot**(): `Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
 
-Defined in: [merkleStateManager.ts:547](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L547)
+Defined in: [merkleStateManager.ts:548](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L548)
 
 Gets the state-root of the Merkle-Patricia trie representation
-of the state of this StateManager. Will error if there are uncommitted
+of the state of this manager. Will error if there are uncommitted
 checkpoints on the instance.
 
 #### Returns
 
 `Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
 
-- Returns the state-root of the `StateManager`
+Account trie root hash
 
 #### Implementation of
 
@@ -422,7 +452,7 @@ checkpoints on the instance.
 
 > **getStorage**(`address`, `key`): `Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
 
-Defined in: [merkleStateManager.ts:319](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L319)
+Defined in: [merkleStateManager.ts:320](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L320)
 
 Gets the storage value associated with the provided `address` and `key`. This method returns
 the shortest representation of the stored value.
@@ -431,7 +461,7 @@ the shortest representation of the stored value.
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Address of the account to get the storage for
 
@@ -459,7 +489,7 @@ If this does not exist an empty `Uint8Array` is returned.
 
 > **hasStateRoot**(`root`): `Promise`\<`boolean`\>
 
-Defined in: [merkleStateManager.ts:677](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L677)
+Defined in: [merkleStateManager.ts:675](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L675)
 
 Checks whether there is a state corresponding to a stateRoot
 
@@ -483,7 +513,7 @@ Checks whether there is a state corresponding to a stateRoot
 
 > **modifyAccountFields**(`address`, `accountFields`): `Promise`\<`void`\>
 
-Defined in: [merkleStateManager.ts:173](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L173)
+Defined in: [merkleStateManager.ts:175](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L175)
 
 Gets the account associated with `address`, modifies the given account
 fields, then saves the account into state. Account fields can include
@@ -493,7 +523,7 @@ fields, then saves the account into state. Account fields can include
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Address of the account to modify
 
@@ -517,7 +547,7 @@ Object containing account fields and values to modify
 
 > **putAccount**(`address`, `account`): `Promise`\<`void`\>
 
-Defined in: [merkleStateManager.ts:140](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L140)
+Defined in: [merkleStateManager.ts:142](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L142)
 
 Saves an account into state under the provided `address`.
 
@@ -525,15 +555,15 @@ Saves an account into state under the provided `address`.
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Address under which to store `account`
 
 ##### account
 
-The account to store or undefined if to be deleted
+`Account` \| `undefined`
 
-`Account` | `undefined`
+The account to store or undefined if to be deleted
 
 #### Returns
 
@@ -549,7 +579,7 @@ The account to store or undefined if to be deleted
 
 > **putCode**(`address`, `value`): `Promise`\<`void`\>
 
-Defined in: [merkleStateManager.ts:199](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L199)
+Defined in: [merkleStateManager.ts:201](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L201)
 
 Adds `value` to the state trie as code, and sets `codeHash` on the account
 corresponding to `address` to reference this.
@@ -558,7 +588,7 @@ corresponding to `address` to reference this.
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Address of the `account` to add the `code` for
 
@@ -582,7 +612,7 @@ The value of the `code`
 
 > **putStorage**(`address`, `key`, `value`): `Promise`\<`void`\>
 
-Defined in: [merkleStateManager.ts:403](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L403)
+Defined in: [merkleStateManager.ts:404](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L404)
 
 Adds value to the state trie for the `account`
 corresponding to `address` at the provided `key`.
@@ -591,7 +621,7 @@ corresponding to `address` at the provided `key`.
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Address to set a storage value for
 
@@ -623,7 +653,7 @@ If it is a empty or filled with zeros, deletes the value.
 
 > **revert**(): `Promise`\<`void`\>
 
-Defined in: [merkleStateManager.ts:473](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L473)
+Defined in: [merkleStateManager.ts:474](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L474)
 
 Reverts the current change-set to the instance since the
 last call to checkpoint.
@@ -640,9 +670,9 @@ last call to checkpoint.
 
 ### setStateRoot()
 
-> **setStateRoot**(`stateRoot`, `clearCache`): `Promise`\<`void`\>
+> **setStateRoot**(`stateRoot`, `clearCache?`): `Promise`\<`void`\>
 
-Defined in: [merkleStateManager.ts:559](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L559)
+Defined in: [merkleStateManager.ts:560](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L560)
 
 Sets the state of the instance to that represented
 by the provided `stateRoot`. Will error if there are uncommitted
@@ -657,7 +687,7 @@ the state trie.
 
 The state-root to reset the instance to
 
-##### clearCache
+##### clearCache?
 
 `boolean` = `true`
 
@@ -673,11 +703,11 @@ The state-root to reset the instance to
 
 ### shallowCopy()
 
-> **shallowCopy**(`downlevelCaches`): `MerkleStateManager`
+> **shallowCopy**(`downlevelCaches?`): `MerkleStateManager`
 
-Defined in: [merkleStateManager.ts:703](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L703)
+Defined in: [merkleStateManager.ts:701](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/merkleStateManager.ts#L701)
 
-Copies the current instance of the `StateManager`
+Copies the current MerkleStateManager at the last fully committed point.
 at the last fully committed point, i.e. as if all current
 checkpoints were reverted.
 
@@ -700,7 +730,7 @@ Cache values are generally not copied along regardless of the
 
 #### Parameters
 
-##### downlevelCaches
+##### downlevelCaches?
 
 `boolean` = `true`
 

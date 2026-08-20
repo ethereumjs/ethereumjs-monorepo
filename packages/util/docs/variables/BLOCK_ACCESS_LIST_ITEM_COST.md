@@ -8,7 +8,7 @@
 
 > `const` **BLOCK\_ACCESS\_LIST\_ITEM\_COST**: `2000` = `2000`
 
-Defined in: [packages/util/src/bal/validation.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/validation.ts#L20)
+Defined in: [packages/util/src/bal/validation.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/validation.ts#L21)
 
 EIP-7928 gas cost attributed to each BAL item (one address or one storage key).
 

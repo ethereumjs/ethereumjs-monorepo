@@ -8,11 +8,11 @@
 
 > **toBytes**(`v`): `Uint8Array`
 
-Defined in: [packages/util/src/bytes.ts:260](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L260)
+Defined in: [packages/util/src/bytes.ts:234](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L234)
 
-Attempts to turn a value into a `Uint8Array`.
-Inputs supported: `Buffer`, `Uint8Array`, `String` (hex-prefixed), `Number`, null/undefined, `BigInt` and other objects
-with a `toArray()` or `toBytes()` method.
+Coerce supported JavaScript values to bytes.
+
+Accepts hex strings, numbers, bigints, arrays, objects with `toBytes()`, and null/undefined (empty bytes).
 
 ## Parameters
 
@@ -20,8 +20,10 @@ with a `toArray()` or `toBytes()` method.
 
 [`ToBytesInputTypes`](../type-aliases/ToBytesInputTypes.md)
 
-the value
-
 ## Returns
 
 `Uint8Array`
+
+## Throws
+
+On invalid strings, negative bigints, or unsupported types

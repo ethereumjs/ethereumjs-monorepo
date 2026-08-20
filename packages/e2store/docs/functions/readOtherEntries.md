@@ -10,6 +10,8 @@
 
 Defined in: [packages/e2store/src/era1/era1.ts:98](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/era1/era1.ts#L98)
 
+Reads trailing entries between the last block tuple and the accumulator root.
+
 ## Parameters
 
 ### bytes

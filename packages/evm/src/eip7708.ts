@@ -39,8 +39,7 @@ export const EIP7708_BURN_TOPIC = hexToBytes(
 )
 
 /**
- * Creates an EIP-7708 ETH transfer log (used for CALL/CREATE value transfers).
- * Logs are emitted from the system address with `Transfer(address,address,uint256)` topics.
+ * Builds an EIP-7708 ETH transfer log for CALL/CREATE value moves.
  *
  * @remarks Experimental (Amsterdam): may change on patch releases.
  */
@@ -52,7 +51,7 @@ export function createEIP7708TransferLog(from: Address, to: Address, value: bigi
 }
 
 /**
- * Creates an EIP-7708 burn log (LOG2) for a burned account balance.
+ * Builds an EIP-7708 burn log (LOG2) for an account balance removed on selfdestruct.
  *
  * @remarks Experimental (Amsterdam): may change on patch releases.
  */
@@ -63,9 +62,9 @@ export function createEIP7708BurnLog(account: Address, value: bigint): Log {
 }
 
 /**
- * Decodes an EIP-7708 Transfer log. Returns `undefined` if the log is not a
- * system-address `Transfer(address,address,uint256)` (wrong emitter or topics).
+ * Parses a system-address EIP-7708 Transfer log into from/to/value.
  *
+ * @returns `undefined` when the emitter or topics do not match EIP-7708 transfer layout.
  * @remarks Experimental (Amsterdam): may change on patch releases.
  */
 export function decodeEIP7708TransferLog(
@@ -86,9 +85,9 @@ export function decodeEIP7708TransferLog(
 }
 
 /**
- * Decodes an EIP-7708 Burn log. Returns `undefined` if the log is not a
- * system-address `Burn(address,uint256)` (wrong emitter or topics).
+ * Parses a system-address EIP-7708 Burn log into account/value.
  *
+ * @returns `undefined` when the emitter or topics do not match EIP-7708 burn layout.
  * @remarks Experimental (Amsterdam): may change on patch releases.
  */
 export function decodeEIP7708BurnLog(

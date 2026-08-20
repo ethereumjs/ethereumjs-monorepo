@@ -8,7 +8,9 @@
 
 > **decodeRawMPTNode**(`raw`): [`BranchMPTNode`](../classes/BranchMPTNode.md) \| [`ExtensionMPTNode`](../classes/ExtensionMPTNode.md) \| [`LeafMPTNode`](../classes/LeafMPTNode.md)
 
-Defined in: [packages/mpt/src/node/util.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/node/util.ts#L11)
+Defined in: [node/util.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/node/util.ts#L12)
+
+Decode a raw RLP node array into a typed MPT node.
 
 ## Parameters
 

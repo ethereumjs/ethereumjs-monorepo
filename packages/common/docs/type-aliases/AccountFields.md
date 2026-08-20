@@ -8,4 +8,6 @@
 
 > **AccountFields** = `Partial`\<`Pick`\<`Account`, `"nonce"` \| `"balance"` \| `"storageRoot"` \| `"codeHash"` \| `"codeSize"`\>\>
 
-Defined in: [common/src/interfaces.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L39)
+Defined in: [interfaces.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L42)
+
+Partial account fields for [StateManagerInterface.modifyAccountFields](../interfaces/StateManagerInterface.md#modifyaccountfields).

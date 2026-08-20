@@ -3,8 +3,14 @@ import { EthereumJSErrorWithoutCode } from './errors.ts'
 
 /** Conversion constants to wei */
 export const GWEI_TO_WEI = BigInt(10 ** 9) // Multiplier to convert from Gwei to Wei
+/** Multiplier to convert whole ether units to wei. */
 export const ETHER_TO_WEI = BigInt(10 ** 18) // Multiplier to convert from Ether to Wei
 
+/**
+ * Formats `numerator / denominator` as a fixed-point decimal string.
+ *
+ * @param maxDecimalFactor Power-of-ten scale for fractional digits (e.g. `1000n` → three decimals)
+ */
 export function formatBigDecimal(
   numerator: bigint,
   denominator: bigint,
@@ -22,6 +28,7 @@ export function formatBigDecimal(
   return `${full}.${'0'.repeat(zerosPostDecimal)}${fraction}`
 }
 
+/** Helpers for converting between ether, gwei, and wei denominations. */
 export class Units {
   static validateInput(amount: number | bigint): void {
     if (typeof amount === 'number' && !Number.isInteger(amount)) {
@@ -33,10 +40,9 @@ export class Units {
   }
 
   /**
-   * Convert a number or bigint input of ether to wei
+   * Convert ether units to wei.
    *
-   * @param {number | bigint} amount amount of units of ether to convert to wei
-   * @returns {bigint} amount of units in wei
+   * @throws If `amount` is negative or a non-integer number
    */
   static ether(amount: number | bigint): bigint {
     Units.validateInput(amount)
@@ -44,10 +50,9 @@ export class Units {
   }
 
   /**
-   * Convert a number or bigint input of gwei to wei
+   * Convert gwei units to wei.
    *
-   * @param amount amount of units of gwei to convert to wei
-   * @returns {bigint} amount of units in wei
+   * @throws If `amount` is negative or a non-integer number
    */
   static gwei(amount: number | bigint): bigint {
     Units.validateInput(amount)

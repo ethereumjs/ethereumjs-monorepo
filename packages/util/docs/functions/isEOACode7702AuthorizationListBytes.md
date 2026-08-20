@@ -8,13 +8,15 @@
 
 > **isEOACode7702AuthorizationListBytes**(`input`): `input is EOACode7702AuthorizationListBytes`
 
-Defined in: [packages/util/src/types.ts:160](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L160)
+Defined in: [packages/util/src/types.ts:167](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L167)
+
+Type guard for byte-form EIP-7702 authorization lists.
 
 ## Parameters
 
 ### input
 
-[`EOACode7702AuthorizationListBytes`](../type-aliases/EOACode7702AuthorizationListBytes.md) | [`EOACode7702AuthorizationList`](../type-aliases/EOACode7702AuthorizationList.md)
+[`EOACode7702AuthorizationListBytes`](../type-aliases/EOACode7702AuthorizationListBytes.md) \| [`EOACode7702AuthorizationList`](../type-aliases/EOACode7702AuthorizationList.md)
 
 ## Returns
 

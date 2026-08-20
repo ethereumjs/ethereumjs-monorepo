@@ -6,7 +6,7 @@
 
 # Class: LegacyTx
 
-Defined in: [legacy/tx.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L82)
+Defined in: [legacy/tx.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L84)
 
 An Ethereum non-typed (legacy) transaction
 
@@ -18,15 +18,15 @@ An Ethereum non-typed (legacy) transaction
 
 ### Constructor
 
-> **new LegacyTx**(`txData`, `opts`): `LegacyTx`
+> **new LegacyTx**(`txData`, `opts?`): `LegacyTx`
 
-Defined in: [legacy/tx.ts:123](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L123)
+Defined in: [legacy/tx.ts:125](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L125)
 
 This constructor takes the values, validates them, assigns them and freezes the object.
 
 It is not recommended to use this constructor directly. Instead use
-the static factory methods to assist in creating a Transaction object from
-varying data types.
+the module-level factory functions such as [createLegacyTx](../functions/createLegacyTx.md),
+[createLegacyTxFromRLP](../functions/createLegacyTxFromRLP.md), and [createLegacyTxFromBytesArray](../functions/createLegacyTxFromBytesArray.md).
 
 #### Parameters
 
@@ -34,7 +34,7 @@ varying data types.
 
 [`LegacyTxData`](../type-aliases/LegacyTxData.md)
 
-##### opts
+##### opts?
 
 [`TxOptions`](../interfaces/TxOptions.md) = `{}`
 
@@ -48,7 +48,7 @@ varying data types.
 
 > `readonly` **cache**: [`TransactionCache`](../interfaces/TransactionCache.md) = `{}`
 
-Defined in: [legacy/tx.ts:107](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L107)
+Defined in: [legacy/tx.ts:109](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L109)
 
 #### Implementation of
 
@@ -58,9 +58,9 @@ Defined in: [legacy/tx.ts:107](https://github.com/ethereumjs/ethereumjs-monorepo
 
 ### common
 
-> `readonly` **common**: `Common`
+> `readonly` **common**: [`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
-Defined in: [legacy/tx.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L102)
+Defined in: [legacy/tx.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L104)
 
 #### Implementation of
 
@@ -72,7 +72,7 @@ Defined in: [legacy/tx.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo
 
 > `readonly` **data**: `Uint8Array`
 
-Defined in: [legacy/tx.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L91)
+Defined in: [legacy/tx.ts:93](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L93)
 
 #### Implementation of
 
@@ -84,7 +84,7 @@ Defined in: [legacy/tx.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/
 
 > `readonly` **gasLimit**: `bigint`
 
-Defined in: [legacy/tx.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L89)
+Defined in: [legacy/tx.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L91)
 
 #### Implementation of
 
@@ -96,7 +96,7 @@ Defined in: [legacy/tx.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/
 
 > `readonly` **gasPrice**: `bigint`
 
-Defined in: [legacy/tx.ts:87](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L87)
+Defined in: [legacy/tx.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L89)
 
 ***
 
@@ -104,7 +104,7 @@ Defined in: [legacy/tx.ts:87](https://github.com/ethereumjs/ethereumjs-monorepo/
 
 > `readonly` **nonce**: `bigint`
 
-Defined in: [legacy/tx.ts:88](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L88)
+Defined in: [legacy/tx.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L90)
 
 #### Implementation of
 
@@ -114,9 +114,9 @@ Defined in: [legacy/tx.ts:88](https://github.com/ethereumjs/ethereumjs-monorepo/
 
 ### r?
 
-> `readonly` `optional` **r**: `bigint`
+> `readonly` `optional` **r?**: `bigint`
 
-Defined in: [legacy/tx.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L96)
+Defined in: [legacy/tx.ts:98](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L98)
 
 #### Implementation of
 
@@ -126,9 +126,9 @@ Defined in: [legacy/tx.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/
 
 ### s?
 
-> `readonly` `optional` **s**: `bigint`
+> `readonly` `optional` **s?**: `bigint`
 
-Defined in: [legacy/tx.ts:97](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L97)
+Defined in: [legacy/tx.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L99)
 
 #### Implementation of
 
@@ -138,9 +138,9 @@ Defined in: [legacy/tx.ts:97](https://github.com/ethereumjs/ethereumjs-monorepo/
 
 ### to?
 
-> `readonly` `optional` **to**: `Address`
+> `readonly` `optional` **to?**: [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
-Defined in: [legacy/tx.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L92)
+Defined in: [legacy/tx.ts:94](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L94)
 
 #### Implementation of
 
@@ -152,7 +152,7 @@ Defined in: [legacy/tx.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/
 
 > `readonly` **txOptions**: [`TxOptions`](../interfaces/TxOptions.md)
 
-Defined in: [legacy/tx.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L105)
+Defined in: [legacy/tx.ts:107](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L107)
 
 #### Implementation of
 
@@ -164,7 +164,7 @@ Defined in: [legacy/tx.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo
 
 > **type**: `0` = `TransactionType.Legacy`
 
-Defined in: [legacy/tx.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L84)
+Defined in: [legacy/tx.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L86)
 
 #### Implementation of
 
@@ -174,9 +174,9 @@ Defined in: [legacy/tx.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/
 
 ### v?
 
-> `readonly` `optional` **v**: `bigint`
+> `readonly` `optional` **v?**: `bigint`
 
-Defined in: [legacy/tx.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L95)
+Defined in: [legacy/tx.ts:97](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L97)
 
 #### Implementation of
 
@@ -188,7 +188,7 @@ Defined in: [legacy/tx.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/
 
 > `readonly` **value**: `bigint`
 
-Defined in: [legacy/tx.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L90)
+Defined in: [legacy/tx.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L92)
 
 #### Implementation of
 
@@ -198,9 +198,9 @@ Defined in: [legacy/tx.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/
 
 ### addSignature()
 
-> **addSignature**(`v`, `r`, `s`, `convertV`): `LegacyTx`
+> **addSignature**(`v`, `r`, `s`, `convertV?`): `LegacyTx`
 
-Defined in: [legacy/tx.ts:357](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L357)
+Defined in: [legacy/tx.ts:368](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L368)
 
 Adds a signature (or replaces an existing one) and returns a new transaction instance.
 
@@ -214,17 +214,17 @@ Recovery parameter, potentially unconverted when `convertV` is false
 
 ##### r
 
-`r` value of the signature
+`bigint` \| `Uint8Array`\<`ArrayBufferLike`\>
 
-`bigint` | `Uint8Array`\<`ArrayBufferLike`\>
+`r` value of the signature
 
 ##### s
 
+`bigint` \| `Uint8Array`\<`ArrayBufferLike`\>
+
 `s` value of the signature
 
-`bigint` | `Uint8Array`\<`ArrayBufferLike`\>
-
-##### convertV
+##### convertV?
 
 `boolean` = `false`
 
@@ -246,7 +246,7 @@ A new `LegacyTx` that includes the provided signature
 
 > **errorStr**(): `string`
 
-Defined in: [legacy/tx.ts:453](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L453)
+Defined in: [legacy/tx.ts:464](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L464)
 
 Return a compact error string representation of the object
 
@@ -266,7 +266,7 @@ Human-readable error summary
 
 > **getDataGas**(): `bigint`
 
-Defined in: [legacy/tx.ts:290](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L290)
+Defined in: [legacy/tx.ts:292](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L292)
 
 The amount of gas paid for the data in this tx
 
@@ -284,7 +284,7 @@ The amount of gas paid for the data in this tx
 
 > **getEffectivePriorityFee**(`baseFee?`): `bigint`
 
-Defined in: [legacy/tx.ts:200](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L200)
+Defined in: [legacy/tx.ts:202](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L202)
 
 Computes the effective priority fee for this legacy transaction, optionally considering a base fee.
 
@@ -308,7 +308,7 @@ Priority fee portion denominated in wei
 
 > **getHashedMessageToSign**(): `Uint8Array`\<`ArrayBufferLike`\>
 
-Defined in: [legacy/tx.ts:282](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L282)
+Defined in: [legacy/tx.ts:284](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L284)
 
 Returns the hashed serialized unsigned tx, which can be used
 to sign the transaction (e.g. for sending to a hardware wallet).
@@ -329,7 +329,7 @@ Hash of the unsigned transaction payload
 
 > **getIntrinsicGas**(): `bigint`
 
-Defined in: [legacy/tx.ts:308](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L308)
+Defined in: [legacy/tx.ts:310](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L310)
 
 The minimum gas limit which the tx to have to be valid.
 This covers costs as the standard fee (21000 gas), the data fee (paid for each calldata byte),
@@ -350,7 +350,7 @@ to be paid for access lists (EIP-2930) and authority lists (EIP-7702).
 
 > **getMessageToSign**(): `Uint8Array`\<`ArrayBufferLike`\>[]
 
-Defined in: [legacy/tx.ts:258](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L258)
+Defined in: [legacy/tx.ts:260](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L260)
 
 Returns the raw unsigned tx, which can be used
 to sign the transaction (e.g. for sending to a hardware wallet).
@@ -380,7 +380,7 @@ Array representing the unsigned transaction fields
 
 > **getMessageToVerifySignature**(): `Uint8Array`\<`ArrayBufferLike`\>
 
-Defined in: [legacy/tx.ts:333](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L333)
+Defined in: [legacy/tx.ts:344](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L344)
 
 Computes a sha3-256 hash which can be used to verify the signature
 
@@ -396,19 +396,38 @@ Hash used when verifying the signature
 
 ***
 
+### getMinimumGasLimit()
+
+> **getMinimumGasLimit**(): `bigint`
+
+Defined in: [legacy/tx.ts:318](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L318)
+
+`max(getIntrinsicGas(), calldata floor)` when EIP-7623 is active, otherwise intrinsic.
+Does not include EIP-8037 first-touch state gas.
+
+#### Returns
+
+`bigint`
+
+#### Implementation of
+
+[`TransactionInterface`](../interfaces/TransactionInterface.md).[`getMinimumGasLimit`](../interfaces/TransactionInterface.md#getminimumgaslimit)
+
+***
+
 ### getSenderAddress()
 
-> **getSenderAddress**(): `Address`
+> **getSenderAddress**(): [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
-Defined in: [legacy/tx.ts:435](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L435)
+Defined in: [legacy/tx.ts:446](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L446)
 
 Returns the recovered sender address.
 
 #### Returns
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
-Sender Address
+Sender [Address](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Implementation of
 
@@ -420,7 +439,7 @@ Sender Address
 
 > **getSenderPublicKey**(): `Uint8Array`
 
-Defined in: [legacy/tx.ts:345](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L345)
+Defined in: [legacy/tx.ts:356](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L356)
 
 Returns the public key of the sender
 
@@ -440,7 +459,7 @@ Sender public key
 
 > **getUpfrontCost**(): `bigint`
 
-Defined in: [legacy/tx.ts:314](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L314)
+Defined in: [legacy/tx.ts:325](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L325)
 
 The up front amount that an account must have for this transaction to be valid
 
@@ -458,7 +477,7 @@ The up front amount that an account must have for this transaction to be valid
 
 > **getValidationErrors**(): `string`[]
 
-Defined in: [legacy/tx.ts:411](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L411)
+Defined in: [legacy/tx.ts:422](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L422)
 
 Validates the transaction and returns any encountered errors.
 
@@ -478,12 +497,12 @@ Array containing validation error messages
 
 > **hash**(): `Uint8Array`
 
-Defined in: [legacy/tx.ts:325](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L325)
+Defined in: [legacy/tx.ts:336](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L336)
 
 Computes a sha3-256 hash of the serialized tx.
 
 This method can only be used for signed txs (it throws otherwise).
-Use Transaction.getMessageToSign to get a tx hash for the purpose of signing.
+Use [LegacyTx.getMessageToSign](#getmessagetosign) to get a tx hash for the purpose of signing.
 
 #### Returns
 
@@ -501,7 +520,7 @@ Hash of the serialized signed transaction
 
 > **isSigned**(): `boolean`
 
-Defined in: [legacy/tx.ts:191](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L191)
+Defined in: [legacy/tx.ts:193](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L193)
 
 Indicates whether the transaction already contains signature values.
 
@@ -521,7 +540,7 @@ true if `v`, `r`, and `s` are populated
 
 > **isValid**(): `boolean`
 
-Defined in: [legacy/tx.ts:419](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L419)
+Defined in: [legacy/tx.ts:430](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L430)
 
 Determines whether the transaction passes all validation checks.
 
@@ -541,19 +560,19 @@ true if no validation errors were found
 
 > **raw**(): `LegacyTxValuesArray`
 
-Defined in: [legacy/tx.ts:217](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L217)
+Defined in: [legacy/tx.ts:219](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L219)
 
 Returns a Uint8Array Array of the raw Bytes of the legacy transaction, in order.
 
 Format: `[nonce, gasPrice, gasLimit, to, value, data, v, r, s]`
 
 For legacy txs this is also the correct format to add transactions
-to a block with createBlockFromBytesArray (use the `serialize()` method
+to a block with [@ethereumjs/block!createBlockFromBytesArray](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/functions/createBlockFromBytesArray.md) (use the `serialize()` method
 for typed txs).
 
 For an unsigned tx this method returns the empty Bytes values
 for the signature parameters `v`, `r` and `s`. For an EIP-155 compliant
-representation have a look at Transaction.getMessageToSign.
+representation have a look at [LegacyTx.getMessageToSign](#getmessagetosign).
 
 #### Returns
 
@@ -569,7 +588,7 @@ representation have a look at Transaction.getMessageToSign.
 
 > **serialize**(): `Uint8Array`
 
-Defined in: [legacy/tx.ts:240](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L240)
+Defined in: [legacy/tx.ts:242](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L242)
 
 Returns the serialized encoding of the legacy transaction.
 
@@ -577,7 +596,7 @@ Format: `rlp([nonce, gasPrice, gasLimit, to, value, data, v, r, s])`
 
 For an unsigned tx this method uses the empty Uint8Array values for the
 signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
-representation for external signing use Transaction.getMessageToSign.
+representation for external signing use [LegacyTx.getMessageToSign](#getmessagetosign).
 
 #### Returns
 
@@ -591,9 +610,9 @@ representation for external signing use Transaction.getMessageToSign.
 
 ### sign()
 
-> **sign**(`privateKey`, `extraEntropy`): `LegacyTx`
+> **sign**(`privateKey`, `extraEntropy?`): `LegacyTx`
 
-Defined in: [legacy/tx.ts:445](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L445)
+Defined in: [legacy/tx.ts:456](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L456)
 
 Signs the transaction with the provided private key and returns the new signed instance.
 
@@ -605,11 +624,11 @@ Signs the transaction with the provided private key and returns the new signed i
 
 32-byte private key used to sign the transaction
 
-##### extraEntropy
+##### extraEntropy?
+
+`boolean` \| `Uint8Array`\<`ArrayBufferLike`\>
 
 Optional entropy passed to the signing routine
-
-`boolean` | `Uint8Array`\<`ArrayBufferLike`\>
 
 #### Returns
 
@@ -627,7 +646,7 @@ A new signed `LegacyTx`
 
 > **supports**(`capability`): `boolean`
 
-Defined in: [legacy/tx.ts:183](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L183)
+Defined in: [legacy/tx.ts:185](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L185)
 
 Checks if a tx type defining capability is active
 on a tx, for example the EIP-1559 fee market mechanism
@@ -664,7 +683,7 @@ on all supported capabilities.
 
 > **toCreationAddress**(): `boolean`
 
-Defined in: [legacy/tx.ts:298](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L298)
+Defined in: [legacy/tx.ts:300](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L300)
 
 If the tx's `to` is to the creation address
 
@@ -682,7 +701,7 @@ If the tx's `to` is to the creation address
 
 > **toJSON**(): [`JSONTx`](../interfaces/JSONTx.md)
 
-Defined in: [legacy/tx.ts:398](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L398)
+Defined in: [legacy/tx.ts:409](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L409)
 
 Returns an object with the JSON representation of the transaction.
 
@@ -702,7 +721,7 @@ JSON encoding of the transaction
 
 > **verifySignature**(): `boolean`
 
-Defined in: [legacy/tx.ts:427](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L427)
+Defined in: [legacy/tx.ts:438](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/tx.ts#L438)
 
 Checks whether the stored signature can be successfully verified.
 

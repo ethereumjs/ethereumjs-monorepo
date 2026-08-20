@@ -18,6 +18,7 @@ type AccountCacheElement = {
   accountRLP: Uint8Array | undefined
 }
 
+/** In-memory account cache with checkpoint/revert support. */
 export class AccountCache extends Cache {
   _lruCache: LRUCache<string, AccountCacheElement> | undefined
   _orderedMapCache: OrderedMap<string, AccountCacheElement> | undefined
@@ -231,8 +232,7 @@ export class AccountCache extends Cache {
   }
 
   /**
-   * Returns the size of the cache
-   * @returns
+   * Current number of cached accounts.
    */
   size() {
     if (this._lruCache) {
@@ -243,8 +243,9 @@ export class AccountCache extends Cache {
   }
 
   /**
-   * Returns a dict with cache stats
-   * @param reset
+   * Read/write statistics for this cache.
+   *
+   * @param reset When `true` (default), zero counters after reading
    */
   stats(reset = true) {
     const stats = { ...this._stats }

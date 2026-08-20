@@ -40,7 +40,9 @@ import type {
 } from '../types.ts'
 import { accessListJSONToBytes } from '../util/access.ts'
 
+/** Plain-object input for {@link EOACode7702Tx}. */
 export type TxData = AllTypesTxData[typeof TransactionType.EOACodeEIP7702]
+/** Devp2p byte-array encoding for {@link EOACode7702Tx}. */
 export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.EOACodeEIP7702]
 
 /**
@@ -88,8 +90,8 @@ export class EOACode7702Tx implements TransactionInterface<typeof TransactionTyp
    * This constructor takes the values, validates them, assigns them and freezes the object.
    *
    * It is not recommended to use this constructor directly. Instead use
-   * the static factory methods to assist in creating a Transaction object from
-   * varying data types.
+   * the module-level factory functions such as {@link createEOACode7702Tx},
+   * {@link createEOACode7702TxFromRLP}, and {@link createEOACode7702TxFromBytesArray}.
    */
   public constructor(txData: TxData, opts: TxOptions = {}) {
     sharedConstructor(this, { ...txData, type: TransactionType.EOACodeEIP7702 }, opts)
@@ -244,12 +246,12 @@ export class EOACode7702Tx implements TransactionInterface<typeof TransactionTyp
    * Format: `[chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
    * accessList, authorizationList, signatureYParity, signatureR, signatureS]`
    *
-   * Use {@link EOACode7702Transaction.serialize} to add a transaction to a block
-   * with {@link createBlockFromBytesArray}.
+   * Use {@link EOACode7702Tx.serialize} to add a transaction to a block
+   * with {@link @ethereumjs/block!createBlockFromBytesArray}.
    *
    * For an unsigned tx this method uses the empty Bytes values for the
    * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
-   * representation for external signing use {@link EOACode7702Transaction.getMessageToSign}.
+   * representation for external signing use {@link EOACode7702Tx.getMessageToSign}.
    */
   raw(): TxValuesArray {
     return [
@@ -315,7 +317,7 @@ export class EOACode7702Tx implements TransactionInterface<typeof TransactionTyp
    * Computes a sha3-256 hash of the serialized tx.
    *
    * This method can only be used for signed txs (it throws otherwise).
-   * Use {@link EOACode7702Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
+   * Use {@link EOACode7702Tx.getMessageToSign} to get a tx hash for the purpose of signing.
    * @returns Hash of the serialized signed transaction
    */
   public hash(): Uint8Array {

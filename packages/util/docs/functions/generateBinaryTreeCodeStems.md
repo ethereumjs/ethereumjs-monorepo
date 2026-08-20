@@ -8,7 +8,7 @@
 
 > **generateBinaryTreeCodeStems**(`numChunks`, `address`, `hashFunction`): `Uint8Array`\<`ArrayBufferLike`\>[]
 
-Defined in: [packages/util/src/binaryTree.ts:325](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L325)
+Defined in: [packages/util/src/binaryTree.ts:312](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L312)
 
 Helper method for generating the code stems necessary for putting code
 
@@ -30,7 +30,7 @@ the address of the account getting the code
 
 (`input`) => `Uint8Array`
 
-an initialized BinaryTreeCrypto object
+Keccak/Blake3 (or compatible) hash used for stem generation
 
 ## Returns
 

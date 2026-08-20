@@ -8,15 +8,15 @@
 
 > **formatEntry**(`entry`): `Promise`\<`Uint8Array`\<`ArrayBuffer`\>\>
 
-Defined in: [packages/e2store/src/e2store.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/e2store.ts#L76)
+Defined in: [packages/e2store/src/e2store.ts:77](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/e2store.ts#L77)
 
-Format e2store entry
+Format e2store entry for writing.
 
 ## Parameters
 
 ### entry
 
-{ type: entry type, data: uncompressed data }
+Type tag and uncompressed payload (compressed unless total difficulty / version)
 
 #### data
 
@@ -29,5 +29,3 @@ Format e2store entry
 ## Returns
 
 `Promise`\<`Uint8Array`\<`ArrayBuffer`\>\>
-
-serialized entry

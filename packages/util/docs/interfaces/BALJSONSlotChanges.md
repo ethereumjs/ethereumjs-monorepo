@@ -6,7 +6,7 @@
 
 # Interface: BALJSONSlotChanges
 
-Defined in: [packages/util/src/bal/index.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L81)
+Defined in: [packages/util/src/bal/index.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L84)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [packages/util/src/bal/index.ts:81](https://github.com/ethereumjs/et
 
 > **slot**: `` `0x${string}` ``
 
-Defined in: [packages/util/src/bal/index.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L82)
+Defined in: [packages/util/src/bal/index.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L85)
 
 ***
 
@@ -22,4 +22,4 @@ Defined in: [packages/util/src/bal/index.ts:82](https://github.com/ethereumjs/et
 
 > **slotChanges**: [`BALJSONStorageChange`](BALJSONStorageChange.md)[]
 
-Defined in: [packages/util/src/bal/index.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L83)
+Defined in: [packages/util/src/bal/index.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L86)

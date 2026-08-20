@@ -8,9 +8,9 @@
 
 > **getBinaryTreeKeyForCodeChunk**(`address`, `chunkId`, `hashFunction`): `Uint8Array`\<`ArrayBuffer`\>
 
-Defined in: [packages/util/src/binaryTree.ts:169](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L169)
+Defined in: [packages/util/src/binaryTree.ts:174](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L174)
 
-Asynchronously calculates the BinaryTree tree key for the specified code chunk ID.
+Build the binary-tree key for a contract code chunk.
 
 ## Parameters
 
@@ -18,22 +18,16 @@ Asynchronously calculates the BinaryTree tree key for the specified code chunk I
 
 [`Address`](../classes/Address.md)
 
-The account address to access code for.
-
 ### chunkId
 
 `number`
-
-The ID of the code chunk to retrieve.
 
 ### hashFunction
 
 (`input`) => `Uint8Array`
 
-The hash function used for BinaryTree-related operations.
+Hash used to derive the address stem
 
 ## Returns
 
 `Uint8Array`\<`ArrayBuffer`\>
-
-- The BinaryTree tree key as a byte array.

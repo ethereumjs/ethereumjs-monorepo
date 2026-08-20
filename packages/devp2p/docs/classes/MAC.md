@@ -6,7 +6,7 @@
 
 # Class: MAC
 
-Defined in: [packages/devp2p/src/rlpx/mac.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/mac.ts#L8)
+Defined in: [packages/devp2p/src/rlpx/mac.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/mac.ts#L9)
 
 ## Constructors
 
@@ -14,7 +14,7 @@ Defined in: [packages/devp2p/src/rlpx/mac.ts:8](https://github.com/ethereumjs/et
 
 > **new MAC**(`secret`): `MAC`
 
-Defined in: [packages/devp2p/src/rlpx/mac.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/mac.ts#L11)
+Defined in: [packages/devp2p/src/rlpx/mac.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/mac.ts#L12)
 
 #### Parameters
 
@@ -32,7 +32,7 @@ Defined in: [packages/devp2p/src/rlpx/mac.ts:11](https://github.com/ethereumjs/e
 
 > **digest**(): `Uint8Array`\<`ArrayBuffer`\>
 
-Defined in: [packages/devp2p/src/rlpx/mac.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/mac.ts#L34)
+Defined in: [packages/devp2p/src/rlpx/mac.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/mac.ts#L35)
 
 #### Returns
 
@@ -44,13 +44,13 @@ Defined in: [packages/devp2p/src/rlpx/mac.ts:34](https://github.com/ethereumjs/e
 
 > **update**(`data`): `void`
 
-Defined in: [packages/devp2p/src/rlpx/mac.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/mac.ts#L16)
+Defined in: [packages/devp2p/src/rlpx/mac.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/mac.ts#L17)
 
 #### Parameters
 
 ##### data
 
-`string` | `Uint8Array`\<`ArrayBufferLike`\>
+`string` \| `Uint8Array`\<`ArrayBufferLike`\>
 
 #### Returns
 
@@ -62,13 +62,13 @@ Defined in: [packages/devp2p/src/rlpx/mac.ts:16](https://github.com/ethereumjs/e
 
 > **updateBody**(`data`): `void`
 
-Defined in: [packages/devp2p/src/rlpx/mac.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/mac.ts#L26)
+Defined in: [packages/devp2p/src/rlpx/mac.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/mac.ts#L27)
 
 #### Parameters
 
 ##### data
 
-`string` | `Uint8Array`\<`ArrayBufferLike`\>
+`string` \| `Uint8Array`\<`ArrayBufferLike`\>
 
 #### Returns
 
@@ -80,13 +80,13 @@ Defined in: [packages/devp2p/src/rlpx/mac.ts:26](https://github.com/ethereumjs/e
 
 > **updateHeader**(`data`): `void`
 
-Defined in: [packages/devp2p/src/rlpx/mac.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/mac.ts#L20)
+Defined in: [packages/devp2p/src/rlpx/mac.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/rlpx/mac.ts#L21)
 
 #### Parameters
 
 ##### data
 
-`string` | `Uint8Array`\<`ArrayBufferLike`\>
+`string` \| `Uint8Array`\<`ArrayBufferLike`\>
 
 #### Returns
 

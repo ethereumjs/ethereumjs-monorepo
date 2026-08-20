@@ -8,28 +8,30 @@
 
 > **HardforkConfig** = `object`
 
-Defined in: [common/src/types.ts:171](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L171)
+Defined in: [types.ts:194](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L194)
+
+Hardfork-specific EIP and parameter overrides.
 
 ## Properties
 
 ### consensus?
 
-> `optional` **consensus**: `ConsensusConfig`
+> `optional` **consensus?**: `ConsensusConfig`
 
-Defined in: [common/src/types.ts:173](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L173)
+Defined in: [types.ts:196](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L196)
 
 ***
 
 ### eips?
 
-> `optional` **eips**: `number`[]
+> `optional` **eips?**: `number`[]
 
-Defined in: [common/src/types.ts:172](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L172)
+Defined in: [types.ts:195](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L195)
 
 ***
 
 ### params?
 
-> `optional` **params**: [`ParamsConfig`](ParamsConfig.md)
+> `optional` **params?**: [`ParamsConfig`](ParamsConfig.md)
 
-Defined in: [common/src/types.ts:174](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L174)
+Defined in: [types.ts:197](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L197)
