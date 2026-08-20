@@ -588,20 +588,20 @@ This section is the **canonical overview** for experimental Amsterdam support: w
 | --- | --- | --- | --- |
 | `v10.1.2` | First experimental Amsterdam release: full 9-EIP `Hardfork.Amsterdam` bundle, BAL builder/validator APIs (7928), two-dimensional block gas (8037); passes v700 mixed EST slice. | [tests-bal@v7.1.0](https://github.com/ethereum/execution-specs/releases/tag/tests-bal@v7.1.0) | [BAL devnet-7](https://notes.ethereum.org/@ethpandaops/bal-devnet-7) |
 
-Master currently tracks [tests-glamsterdam-devnet@v7.2.1](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v7.2.1) for the mixed Amsterdam tree. Intrinsic vs runtime charging for EIP-2780 / EIP-8037 is in the [EIP-8037 section](#eip-8037-state-creation-gas-cost-increase-amsterdam) below.
+Master currently tracks [tests-glamsterdam-devnet@v7.2.1](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v7.2.1) for the mixed Amsterdam tree. Tx-level intrinsic vs calldata floor: [@ethereumjs/tx Amsterdam Validation](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx#amsterdam-validation). Runtime new-account state gas: [EIP-8037 section](#eip-8037-state-creation-gas-cost-increase-amsterdam) below.
 
 The `Hardfork.Amsterdam` bundle activates the following EIPs. Amsterdam test fixtures and execution-spec tests typically enable the full set together rather than individual EIPs in isolation.
 
 | EIP | Summary | Documentation |
 | --- | --- | --- |
-| [2780](https://eips.ethereum.org/EIPS/eip-2780) | Intrinsic includes recipient/value extras; floor anchored on that base | [EIP-8037 section](#eip-8037-state-creation-gas-cost-increase-amsterdam) (intrinsic vs runtime) |
+| [2780](https://eips.ethereum.org/EIPS/eip-2780) | Intrinsic includes recipient/value extras; floor anchored on that base | [@ethereumjs/tx](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx#amsterdam-validation) |
 | [7708](https://eips.ethereum.org/EIPS/eip-7708) | ETH transfers and burns emit logs | [EVM](#eip-7708-eth-transfer-and-burn-logs-amsterdam) (below), receipts from `runTx()` / `runBlock()` |
 | [7843](https://eips.ethereum.org/EIPS/eip-7843) | `SLOTNUM` opcode + `slotNumber` header field | [@ethereumjs/block](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/block#blocks-with-eip-7843-slot-number) |
 | [7778](https://eips.ethereum.org/EIPS/eip-7778) | Block gas accounting without refund subtraction | [EIP-7778 note](#eip-7778-block-gas-accounting-amsterdam) (below) |
 | [7928](https://eips.ethereum.org/EIPS/eip-7928) | Block Level Access Lists | [EIP-7928 section](#eip-7928-block-level-access-lists-amsterdam) (below) |
 | [7954](https://eips.ethereum.org/EIPS/eip-7954) | Raised max contract / initcode size | [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#eip-7954-contract-and-initcode-size-limits-amsterdam) |
-| [7976](https://eips.ethereum.org/EIPS/eip-7976) | Uniform calldata floor pricing | [@ethereumjs/tx](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx#amsterdam-transaction-validation-eip-7976-eip-7981) |
-| [7981](https://eips.ethereum.org/EIPS/eip-7981) | Access-list byte floor pricing | [@ethereumjs/tx](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx#amsterdam-transaction-validation-eip-7976-eip-7981) |
+| [7976](https://eips.ethereum.org/EIPS/eip-7976) | Uniform calldata floor pricing | [@ethereumjs/tx](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx#amsterdam-validation) |
+| [7981](https://eips.ethereum.org/EIPS/eip-7981) | Access-list byte floor pricing | [@ethereumjs/tx](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx#amsterdam-validation) |
 | [7997](https://eips.ethereum.org/EIPS/eip-7997) | Deterministic CREATE2 factory predeploy | Catalog only — clients must not inject at the fork boundary |
 | [8024](https://eips.ethereum.org/EIPS/eip-8024) | `DUPN`, `SWAPN`, `EXCHANGE` stack opcodes | [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#eip-8024-stack-opcodes-amsterdam) |
 | [8037](https://eips.ethereum.org/EIPS/eip-8037) | Two-dimensional block gas + state-gas reservoir | [EIP-8037 section](#eip-8037-state-creation-gas-cost-increase-amsterdam) (below) |
@@ -791,7 +791,7 @@ See [Release ↔ spec tracking](#amsterdam-hardfork-experimental) above for the 
 
 **Charging (v7 fixtures):**
 
-- Intrinsic gas (including [EIP-2780](https://eips.ethereum.org/EIPS/eip-2780) recipient/value extras) is **regular** and state-independent. The calldata floor is anchored on that same base ([execution-specs#3120](https://github.com/ethereum/execution-specs/pull/3120)) and also binds the tx's block regular-gas contribution.
+- Intrinsic gas and the calldata floor are **regular** and computed on `@ethereumjs/tx` (`getMinimumGasLimit()`). See [Amsterdam Validation](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx#amsterdam-validation). `txRegularGas` is `max(raw_regular, floor)`.
 - New-account state gas and 7702 `ACCOUNT_WRITE` are charged at top-frame access (pre-state). `ACCOUNT_WRITE` counts toward receipt `totalGasSpent`.
 - Block inclusion (`txExceedsAvailableBlockGas8037()` in `@ethereumjs/evm`): remaining regular vs `min(TX_MAX, tx.gas)`, remaining state vs `tx.gas`.
 
