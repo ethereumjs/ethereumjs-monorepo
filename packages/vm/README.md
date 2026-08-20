@@ -205,12 +205,12 @@ The `Hardfork.Amsterdam` bundle activates the following EIPs. Amsterdam test fix
 | [7954](https://eips.ethereum.org/EIPS/eip-7954) | Raised max contract / initcode size | [@ethereumjs/evm EIP-7954](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#eip-7954-contract-and-initcode-size-limits-amsterdam) ([`eip7954MaxCodeSize.ts`](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm/examples/eip7954MaxCodeSize.ts)) |
 | [7976](https://eips.ethereum.org/EIPS/eip-7976) | Uniform calldata floor pricing | [@ethereumjs/tx](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx#amsterdam-validation) |
 | [7981](https://eips.ethereum.org/EIPS/eip-7981) | Access-list byte floor pricing | [@ethereumjs/tx](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx#amsterdam-validation) |
-| [7997](https://eips.ethereum.org/EIPS/eip-7997) | Deterministic CREATE2 factory predeploy | Catalog only — clients must not inject at the fork boundary |
+| [7997](https://eips.ethereum.org/EIPS/eip-7997) | Deterministic CREATE2 factory at fixed address | [EIP-7997](#eip-7997-deterministic-create2-factory-amsterdam) ([`eip7997Create2Factory.ts`](./examples/eip7997Create2Factory.ts)) |
 | [8024](https://eips.ethereum.org/EIPS/eip-8024) | `DUPN`, `SWAPN`, `EXCHANGE` stack opcodes | [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#eip-8024-stack-opcodes-amsterdam) |
 | [8037](https://eips.ethereum.org/EIPS/eip-8037) | Two-dimensional block gas + state-gas reservoir | [EIP-8037](#eip-8037-state-creation-gas-cost-increase-amsterdam) |
 | [8038](https://eips.ethereum.org/EIPS/eip-8038) | State-access gas; SSTORE access cost before implicit read | [@ethereumjs/evm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#eip-8037-state-creation-gas-amsterdam) |
 | [8246](https://eips.ethereum.org/EIPS/eip-8246) | SELFDESTRUCT no longer burns ETH | EVM `SELFDESTRUCT` + journal; no burn log under EIP-7708 |
-| [8282](https://eips.ethereum.org/EIPS/eip-8282) | Builder deposit/exit request predeploys (v7 mined addresses) | `runBlock()` / `accumulateRequests`; addresses in `packages/vm/src/params.ts` |
+| [8282](https://eips.ethereum.org/EIPS/eip-8282) | Builder deposit/exit request contracts (v7 mined addresses) | [EIP-8282](#eip-8282-builder-execution-requests-amsterdam) ([`eip8282BuilderRequests.ts`](./examples/eip8282BuilderRequests.ts)) |
 
 **Activation:** `new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })`.
 
@@ -359,6 +359,29 @@ void main()
 
 - Amsterdam test fixtures often bundle additional EIPs (e.g. EIP-8037); use `Hardfork.Amsterdam` rather than activating EIP-7928 in isolation.
 - `buildBlock()` writes `blockAccessListHash` from the accumulated BAL and defaults `slotNumber` to `parent.slotNumber + 1` when the field is omitted. `runBlock({ generate: true })` still does not invent a consensus slot number.
+
+### EIP-8282 Builder execution requests (Amsterdam)
+
+[EIP-8282](https://eips.ethereum.org/EIPS/eip-8282) adds builder deposit and exit CL requests at the end of each block. When EIP-7685 is active (Prague+), `runBlock()` and `buildBlock()` call `accumulateRequests()` automatically — builder requests are appended after deposit / withdrawal / consolidation requests when EIP-8282 is active on `Hardfork.Amsterdam`.
+
+| Request | `CLRequestType` | Contract param |
+| --- | --- | --- |
+| Builder deposit | `3` (`BuilderDeposit`) | `builderDepositContractAddress` |
+| Builder exit | `4` (`BuilderExit`) | `builderExitContractAddress` |
+
+Glamsterdam-devnet v7 mined addresses live in `packages/vm/src/params.ts`. Each request is produced by a **checked system call** from the system address to the corresponding system contract. When **validating** a block, a missing or codeless contract (or a reverting call) makes the block invalid. When **building** (`generate: true`), a missing or failing contract yields an empty request instead — same pattern as withdrawal / consolidation accumulators.
+
+Custom Amsterdam state must include both builder request contracts before validating blocks. EST fixtures and devnets ship full contract bytecode; for local demos a `STOP` contract is enough to satisfy the checked call and return empty request data.
+
+Runnable walkthrough: [`examples/eip8282BuilderRequests.ts`](./examples/eip8282BuilderRequests.ts). Builder stubs are also seeded in [`runBlockBALValidate.ts`](./examples/runBlockBALValidate.ts) because Amsterdam BAL validation runs the same system calls.
+
+### EIP-7997 Deterministic CREATE2 factory (Amsterdam)
+
+[EIP-7997](https://eips.ethereum.org/EIPS/eip-7997) catalogues the well-known CREATE2 factory at `0x4e59b44847b379578588920ca78fbf26c0b4956c` (Nick's deployer). The factory expects calldata `salt (32 bytes) || initcode`, forwards the call's ETH value to `CREATE2`, and returns the 20-byte deployed address on success.
+
+EthereumJS activates EIP-7997 on `Hardfork.Amsterdam` but **does not inject** the factory at the fork boundary — per the EIP, client software must not check or deploy it automatically. Seed the account yourself (`nonce: 1`, runtime code from the EIP) in genesis or test pre-state, as execution-spec tests do.
+
+Runnable walkthrough: [`examples/eip7997Create2Factory.ts`](./examples/eip7997Create2Factory.ts) — manual factory setup and a CREATE2 deploy via `runTx()`.
 
 ### EIP-8037 State creation gas cost increase (Amsterdam)
 

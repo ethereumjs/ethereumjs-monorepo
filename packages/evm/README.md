@@ -141,7 +141,7 @@ Amsterdam is the current development hardfork. Behaviour is unstable — expect 
 | [8037](https://eips.ethereum.org/EIPS/eip-8037) / [8038](https://eips.ethereum.org/EIPS/eip-8038) | Two-dimensional state gas reservoir | [below](#eip-8037-state-creation-gas-amsterdam) |
 | [7928](https://eips.ethereum.org/EIPS/eip-7928) | Block Level Access Lists | [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#eip-7928-block-level-access-lists-amsterdam) — accumulates on `evm.blockLevelAccessList` |
 | [8246](https://eips.ethereum.org/EIPS/eip-8246) | SELFDESTRUCT no longer burns ETH | Journal / `SELFDESTRUCT` behaviour |
-| [8282](https://eips.ethereum.org/EIPS/eip-8282) | Builder execution requests | `@ethereumjs/vm` `runBlock()` / `accumulateRequests` |
+| [8282](https://eips.ethereum.org/EIPS/eip-8282) | Builder execution requests | [@ethereumjs/vm EIP-8282](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#eip-8282-builder-execution-requests-amsterdam) |
 
 Tx-level Amsterdam rules (intrinsic gas, calldata floor, access-list pricing): [@ethereumjs/tx Amsterdam Validation](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx#amsterdam-validation).
 
@@ -764,7 +764,7 @@ Hardfork labels indicate default activation on that fork. `(Amsterdam, experimen
 - [EIP-8037](https://eips.ethereum.org/EIPS/eip-8037) - State creation gas cost increase — [notes](#eip-8037-state-creation-gas-amsterdam)
 - [EIP-8038](https://eips.ethereum.org/EIPS/eip-8038) - State access gas cost increase — [notes](#eip-8037-state-creation-gas-amsterdam)
 - [EIP-8246](https://eips.ethereum.org/EIPS/eip-8246) - SELFDESTRUCT no burn
-- [EIP-8282](https://eips.ethereum.org/EIPS/eip-8282) - Builder execution requests
+- [EIP-8282](https://eips.ethereum.org/EIPS/eip-8282) - Builder execution requests — [@ethereumjs/vm](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#eip-8282-builder-execution-requests-amsterdam)
 
 ### Experimental / cross-layer
 

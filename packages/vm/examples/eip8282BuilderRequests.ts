@@ -3,6 +3,7 @@ import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
 import {
   Account,
+  CLRequestType,
   bigIntToBytes,
   bytesToHex,
   createAddressFromPrivateKey,
@@ -13,18 +14,14 @@ import {
 } from '@ethereumjs/util'
 import { createVM, runBlock } from '@ethereumjs/vm'
 
-import type { Block } from '@ethereumjs/block'
-
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })
 
 const senderKey = hexToBytes(`0x${'20'.repeat(32)}`)
 const sender = createAddressFromPrivateKey(senderKey)
 
-async function fundSender(vm: Awaited<ReturnType<typeof createVM>>) {
-  await vm.stateManager.putAccount(sender, new Account(0n, BigInt(1e18)))
-  // EIP-8282: deploy stub builder request contracts — validating an
-  // Amsterdam block fails when the checked system-call contracts are
-  // missing. STOP with no return data yields empty builder requests.
+async function seedBuilderRequestContracts(vm: Awaited<ReturnType<typeof createVM>>) {
+  // Checked system calls: validating a block fails when these contracts are missing.
+  // STOP with no return data yields empty builder deposit/exit requests.
   const stop = hexToBytes('0x00')
   for (const param of ['builderDepositContractAddress', 'builderExitContractAddress'] as const) {
     const address = createAddressFromString(
@@ -62,33 +59,32 @@ function createTransferBlock() {
 
 const main = async () => {
   const vm = await createVM({ common })
-  await fundSender(vm)
+  console.log(
+    `Builder deposit contract: ${bytesToHex(setLengthLeft(bigIntToBytes(vm.common.param('builderDepositContractAddress')), 20))}`,
+  )
+  console.log(
+    `Builder exit contract:    ${bytesToHex(setLengthLeft(bigIntToBytes(vm.common.param('builderExitContractAddress')), 20))}`,
+  )
 
-  let sealedBlock: Block | undefined
-  vm.events.once('afterBlock', (event) => {
-    sealedBlock = event.block
-  })
+  await vm.stateManager.putAccount(sender, new Account(0n, BigInt(1e18)))
+  await seedBuilderRequestContracts(vm)
 
-  const generated = await runBlock(vm, {
+  const result = await runBlock(vm, {
     block: createTransferBlock(),
     generate: true,
     skipBlockValidation: true,
   })
 
-  const balJson = generated.blockLevelAccessList!.toJSON()
-  console.log(`Generated BAL with ${balJson.length} account(s)`)
-  console.log(`blockAccessListHash: ${bytesToHex(sealedBlock!.header.blockAccessListHash!)}`)
+  const builderRequests = (result.requests ?? []).filter(
+    (req) => req.type === CLRequestType.BuilderDeposit || req.type === CLRequestType.BuilderExit,
+  )
 
-  const vm2 = await createVM({ common })
-  await fundSender(vm2)
+  for (const req of builderRequests) {
+    const label = req.type === CLRequestType.BuilderDeposit ? 'BuilderDeposit' : 'BuilderExit'
+    console.log(`${label} (type ${req.type}): ${req.data.length} byte(s)`)
+  }
 
-  await runBlock(vm2, {
-    block: sealedBlock!,
-    blockAccessList: balJson,
-    skipBlockValidation: true,
-  })
-
-  console.log('Provided blockAccessList validated successfully against execution')
+  console.log(`requestsHash: ${bytesToHex(result.requestsHash!)}`)
 }
 
 void main()
