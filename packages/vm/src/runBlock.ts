@@ -1,6 +1,6 @@
 import { createBlock, genRequestsRoot } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
-import { type EVM, type EVMInterface } from '@ethereumjs/evm'
+import { type EVM, type EVMInterface, txExceedsAvailableBlockGas8037 } from '@ethereumjs/evm'
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
 import { TransactionType } from '@ethereumjs/tx'
@@ -733,27 +733,20 @@ async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
       )
     }
 
-    // EIP-8037 pre-execution check (spec):
-    //   regular: min(TX_MAX_GAS_LIMIT, tx.gas - intrinsic_state) > regular_available  → reject
-    //   state:   tx.gas - intrinsic_regular                       > state_available    → reject
-    // where *_available = block.gas_limit - block_*_gas_used.
-    // EIP-8037 per-dimension inclusion check (per the pinned execution-specs
-    // Amsterdam revision):
-    //   min(TX_MAX_GAS_LIMIT, tx.gas) > regular_gas_available → reject
-    //   tx.gas > state_gas_available                          → reject
-    // Pre-EIP-8037 keeps the original check (`tx.gasLimit + gasUsed <= block.gasLimit`).
+    // EIP-8037 per-dimension inclusion (v7+):
+    //   min(TX_MAX, tx.gas) > regular_available → reject
+    //   tx.gas              > state_available    → reject
+    // Pre-EIP-8037 keeps `tx.gasLimit + gasUsed <= block.gasLimit`.
     if (vm.common.isActivatedEIP(8037)) {
-      const txMax = tx.common.param('maxTransactionGasLimit')
-      const regularAvailable =
-        block.header.gasLimit > blockRegularGasUsed
-          ? block.header.gasLimit - blockRegularGasUsed
-          : BIGINT_0
-      const stateAvailable =
-        block.header.gasLimit > blockStateGasUsed
-          ? block.header.gasLimit - blockStateGasUsed
-          : BIGINT_0
-      const txRegularBound = tx.gasLimit < txMax ? tx.gasLimit : txMax
-      if (txRegularBound > regularAvailable || tx.gasLimit > stateAvailable) {
+      if (
+        txExceedsAvailableBlockGas8037(
+          tx.gasLimit,
+          tx.common.param('maxTransactionGasLimit'),
+          block.header.gasLimit,
+          blockRegularGasUsed,
+          blockStateGasUsed,
+        )
+      ) {
         const msg = _errorMsg('tx has a higher gas limit than the block', vm, block)
         throw EthereumJSErrorWithoutCode(msg)
       }
