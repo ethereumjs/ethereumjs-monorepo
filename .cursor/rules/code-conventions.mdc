@@ -18,6 +18,25 @@ Protocol and tech acronyms stay **fully uppercase** inside identifiers and file 
 
 Common acronyms: `KZG`, `EVM`, `JSON`, `RPC`, `EIP`, `RLP`, `MPT`, `BAL`, `EOA`, `KECCAK` (when part of a symbol name).
 
+## Factories and naming
+
+- **`createX…`** — public entry points for constructing objects (e.g. `createVM`, `createLegacyTx`, `createBlockFromRLP`). Prefer these over `new Class(...)` for callers.
+- **`createXFromY…`** — alternate input formats (`FromRLP`, `FromRPC`, `FromBytesArray`, `FromString`).
+- **`xToY`** — pure converters between representations (`bytesToBigInt`, `hexToBytes`, `withdrawalToBytesArray`).
+- **`isX`** — type guards and predicates (`isLegacyTx`, `isHexString`).
+
+## Options objects
+
+Constructors and `createX` functions take a single options object (`XOpts` / `XOptions`), not long positional argument lists. Document non-obvious fields on the interface in `types.ts`.
+
+## ESM imports
+
+Relative imports inside `src/` use explicit `.ts` extensions (e.g. `from './evm.ts'`). The root `tsconfig.json` rewrites them to `.js` in emitted output. Always include the extension on relative imports.
+
+## File layout and EIP params
+
+Per-package layout (`types.ts`, `constructors.ts`, `params.ts`) and the common vs package params split are documented in [DEVELOPER.md](../../DEVELOPER.md) § Conventions — do not duplicate that essay here.
+
 ## Backwards compatibility (public API)
 
 **Do not rename** exported symbols, public module paths, or documented entry points without an **explicit human ask** and a breaking-release plan. Downstream consumers depend on stable import paths and names.
@@ -31,3 +50,4 @@ This applies to `packages/*/src/`, package `exports` in `package.json`, and CLI 
 - Public API documentation: `api-docs.mdc`
 - Example quality and naming: `examples.mdc`
 - Git renames: `git.mdc` (`alwaysApply`)
+- Releases: `releases.mdc`

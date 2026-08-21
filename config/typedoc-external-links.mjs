@@ -7,7 +7,7 @@ function doc(pkg, section, name) {
 
 /**
  * Cross-package {@link} targets for per-package TypeDoc runs.
- * See DEVELOPER.md § Documentation.
+ * See DEVELOPER.md § Tooling.
  */
 export const externalSymbolLinkMappings = {
   global: {

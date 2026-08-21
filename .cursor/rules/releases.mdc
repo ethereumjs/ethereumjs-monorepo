@@ -1,0 +1,37 @@
+---
+description: npm release invariants — version bumps, CHANGELOG include/omit, never publish without ask
+globs: scripts/release-npm.ts,scripts/release-github.ts,packages/*/CHANGELOG.md,packages/*/package.json
+alwaysApply: false
+---
+
+# Releases
+
+Human versioning policy: [DEVELOPER.md](../../DEVELOPER.md) § Releases.
+
+**Coordinated release rounds** are the [`release-round` skill](../skills/release-round/SKILL.md). This rule is the seatbelt when editing CHANGELOGs, `package.json`, or release scripts. CLI flags and auth live in the script headers; CHANGELOG craft in [changelog.md](../skills/release-round/changelog.md).
+
+Major (breaking) rounds and nightlies need a dedicated procedure. Fork `--scope` publishes (not this skill): see the `release-npm.ts` header.
+
+## Do not
+
+- Publish to npm unless the human explicitly asked in this session.
+- Run `npm publish` outside `scripts/release-npm.ts` unless the human directs otherwise.
+- Skip hooks (`--no-verify`) or weaken `prepublishOnly`.
+- Invent the active package list from README — use `ACTIVE_PACKAGES` in `scripts/release-npm.ts`.
+- Commit tokens or `_authToken` entries.
+
+## Active vs deps-only
+
+**Active** (`ACTIVE_PACKAGES`): version bump + publish in `PUBLISH_ORDER`. **Deps-only** (`client`, `devp2p`, `ethash`, `wallet`, `testdata`): update `@ethereumjs/*` refs only; own version unchanged; not published.
+
+All active packages share the **same new version number** on each round.
+
+## CHANGELOG include / omit
+
+Update **every** active package `CHANGELOG.md`, even with no user-facing changes.
+
+**Include:** user-facing behavior, API, or defaults; Node/TS support; external (non-monorepo) dependency bumps.
+
+**Omit entirely:** docs-only; `examples/`-only; tests-only; lint, spellcheck, CI, or other tooling-only PRs.
+
+**No included PRs:** still add a version section with `Maintenance release, no active changes`.
