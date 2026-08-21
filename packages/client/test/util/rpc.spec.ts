@@ -32,6 +32,7 @@ describe('[Util/RPC]', () => {
         const httpServer = createRPCServerListener({
           server,
           withEngineMiddleware: { jwtSecret: new Uint8Array(32) },
+          maxPayload: Config.RPC_ETH_MAXPAYLOAD_DEFAULT,
         })
         const wsServer = createWsRPCServerListener({
           server,
@@ -74,6 +75,7 @@ describe('[Util/RPC]', () => {
     const httpServer = createRPCServerListener({
       server,
       withEngineMiddleware: { jwtSecret: new Uint8Array(32) },
+      maxPayload: Config.RPC_ENGINE_MAXPAYLOAD_DEFAULT,
     })
     const wsServer = createWsRPCServerListener({
       server,
@@ -83,6 +85,96 @@ describe('[Util/RPC]', () => {
       httpServer !== undefined && wsServer !== undefined,
       'should return http and ws servers',
     )
+  })
+  it('should reject oversized RPC payloads', async () => {
+    const config = new Config({
+      accountCache: 10000,
+      storageCache: 1000,
+      rpcEthMaxPayload: '1kb',
+      rpcEngineMaxPayload: '10mb',
+    })
+    const client = await EthereumClient.create({ config, metaDB: new MemoryLevel() })
+
+    const manager = new RPCManager(client, config)
+    const { logger } = config
+    const methodConfig = Object.values(MethodConfig)[0]
+    const { server } = createRPCServer(manager, {
+      methodConfig,
+      rpcDebug: 'eth',
+      logger,
+      rpcDebugVerbose: undefined as any,
+    })
+
+    const ethHttpServer = createRPCServerListener({
+      server,
+      withEngineMiddleware: undefined,
+      maxPayload: config.rpcEthMaxPayload,
+    })
+
+    const engineHttpServer = createRPCServerListener({
+      server,
+      withEngineMiddleware: undefined,
+      maxPayload: config.rpcEngineMaxPayload,
+    })
+
+    const ethPort = 8545
+    const enginePort = 8551
+
+    ethHttpServer.listen(ethPort)
+    engineHttpServer.listen(enginePort)
+
+    const oversizedEthPayload = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'eth_getBlockByNumber',
+      params: ['latest', true],
+      data: 'eth'.repeat(2500),
+    })
+
+    const oversizedEnginePayload = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'engine_newPayloadV2',
+      params: [
+        {
+          baseFeePerGas: '0x',
+          blockHash: '0x',
+          blockNumber: '0x',
+          extraData: '0x'.repeat(2500),
+          feeRecipient: '0x',
+          gasLimit: '0x',
+          gasUsed: '0x',
+          logsBloom: '0x',
+          parentHash: '0x',
+          prevRandao: '0x',
+          receiptsRoot: '0x',
+          stateRoot: '0x',
+          timestamp: '0x',
+          transactions: [],
+        },
+      ],
+    })
+
+    const resEth = await fetch(`http://localhost:${ethPort}`, {
+      method: 'POST',
+      body: oversizedEthPayload,
+      headers: { 'Content-Type': 'application/json' },
+    })
+
+    const resEngine = await fetch(`http://localhost:${enginePort}`, {
+      method: 'POST',
+      body: oversizedEnginePayload,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
+    assert.strictEqual(
+      resEth.status,
+      413,
+      'ETH server should reject oversized payload with 413 status',
+    )
+    assert.strictEqual(resEngine.status, 200, 'ENGINE server should accept oversized payload')
   })
 })
 
