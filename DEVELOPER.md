@@ -32,7 +32,7 @@
 | Package graph, execution flow | [ARCHITECTURE.md](./ARCHITECTURE.md) |
 | Public API JSDoc | [api-docs.mdc](.cursor/rules/api-docs.mdc) |
 | Examples and embedme | [examples.mdc](.cursor/rules/examples.mdc) |
-| npm releases and CHANGELOG | [releases.mdc](.cursor/rules/releases.mdc) |
+| npm releases and CHANGELOG | [release-round skill](.cursor/skills/release-round/SKILL.md), invariants in [releases.mdc](.cursor/rules/releases.mdc) |
 
 ### Code patterns
 
@@ -233,7 +233,7 @@ Active packages ([README § Package map](./README.md#package-map)) ship **in syn
 
 Open PRs against the working branch unless backporting. Past releases: [tags](https://github.com/ethereumjs/ethereumjs-monorepo/tags).
 
-**Procedure** — [releases.mdc](.cursor/rules/releases.mdc) (CHANGELOG rules, npm auth, fork `--scope`). Script: [release-npm.ts](./scripts/release-npm.ts). Do not publish without an explicit maintainer request.
+**Procedure** — [release-round skill](.cursor/skills/release-round/SKILL.md) (six gated phases: intent, CHANGELOG, bump, publish, verify, announce). Invariants: [releases.mdc](.cursor/rules/releases.mdc). Commands live in the script headers ([release-npm.ts](./scripts/release-npm.ts), [release-github.ts](./scripts/release-github.ts)). Do not publish without an explicit maintainer request.
 
 ---
 
@@ -265,7 +265,7 @@ Rules: [`.cursor/rules/`](.cursor/rules/) (plain markdown + YAML front matter �
 | `examples` | `examples/`, READMEs | Run embedme after README edits |
 | `api-tests` | active `test/` | VM consensus runners out of scope |
 | `tx-tests` | `packages/tx` | 4844 matrix uses stub KZG |
-| `releases` | CHANGELOG, release script | Never publish without approval |
+| `releases` | CHANGELOG, release scripts | Procedure: `release-round` skill; never publish without approval |
 
 **Skill:** [update-est-fixtures](.cursor/skills/update-est-fixtures/SKILL.md) — EST fixture bumps only.
 
