@@ -6,6 +6,52 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 10.1.3 - 2026-08-21
+
+### Release round overview
+
+Welcome to **`10.1.3`** — a coordinated release across all active `@ethereumjs/*` libraries on the **`10.1.x`** line. If you have been experimenting with the upcoming Amsterdam hardfork, this is our **close-to-ready preview**: the full **14-EIP `Hardfork.Amsterdam` bundle** is implemented and aligned with [tests-glamsterdam-devnet@v8.1.0](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v8.1.0) and **glamsterdam-devnet-8**. Public APIs and spec alignment are largely stable — a good time to try BAL builder/validator flows, two-dimensional block gas, builder requests, and the rest of the Amsterdam surface — but Amsterdam remains **experimental** and **must not be used in production**; spec or API shifts can still happen in later `10.1.x` patches.
+
+The sections below cover **this package only**; for the full EIP list, examples, and release ↔ spec tracking, see the [@ethereumjs/vm Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental). On Osaka or earlier hardforks? Nothing changes unless you explicitly select `Hardfork.Amsterdam`.
+
+### `@ethereumjs/tx`
+
+`@ethereumjs/tx` defines typed transactions and pre-execution validation. Within the `10.1.3` round Amsterdam tx semantics are **complete for glamsterdam-devnet v8.1.0**: **EIP-2780** revises the intrinsic gas base, **EIP-8038** prices access-list bytes under the new schedule, and **`getMinimumGasLimit()`** on every tx type returns the max of intrinsic and floor gas — the value integrators should use when sizing `gasLimit` for Amsterdam fixtures.
+
+### At a glance
+
+- **EIP-2780** — intrinsic gas includes recipient/value extras; calldata floor anchored on that base.
+- **EIP-8038** — access-list and authority-list byte costs under the glamsterdam schedule.
+- **`getMinimumGasLimit()`** on legacy, 2930, 1559, 4844, and 7702 txs.
+- Access/authority list entries restored in JSON cache serialization, see PR [#4350](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4350).
+- **Spec snapshot:** [tests-glamsterdam-devnet@v8.1.0](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v8.1.0).
+
+### Amsterdam (experimental)
+
+> Behaviour may still change in subsequent `10.1.x` patch releases.
+> **Spec snapshot:** [tests-glamsterdam-devnet@v8.1.0](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v8.1.0) · **Testnet:** glamsterdam-devnet-8
+> Fork overview: [Amsterdam hardfork (experimental)](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental)
+
+```ts
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+import { createLegacyTx } from '@ethereumjs/tx'
+
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })
+const tx = createLegacyTx({ gasLimit: 100_000n, gasPrice: 10n, data: new Uint8Array(100) }, { common })
+
+tx.getMinimumGasLimit() // max(intrinsic, calldata floor, access-list floor, …)
+tx.getValidationErrors() // [] when gasLimit is sufficient
+```
+
+See `packages/tx/examples/calldataFloorGas.ts` and the [Amsterdam validation](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx#amsterdam-validation) README section.
+
+### Changes
+
+- EIP-2780 intrinsic gas and EIP-8038 access-list pricing, see PR [#4361](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4361), [#4364](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4364)
+- Amsterdam gas schedule alignment, see PR [#4337](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4337)
+- `getMinimumGasLimit()` on all active tx types, see PR [#4372](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4372)
+- Access/authority list JSON cache items, see PR [#4350](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4350)
+
 ## 10.1.2 - 2026-05-29
 
 ### Release round overview

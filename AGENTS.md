@@ -20,6 +20,7 @@ Skills: [`.cursor/skills/`](.cursor/skills/) — use `release-round` for coordin
 
 ## Habits
 
+- **Hardfork status:** keep the [README hardfork table](./README.md#hardfork-status) current when fork progress changes; details stay in package READMEs (Amsterdam → [vm README](./packages/vm/README.md#amsterdam-hardfork-experimental)).
 - Conventions: [DEVELOPER.md](DEVELOPER.md) § Conventions + [`code-conventions.mdc`](.cursor/rules/code-conventions.mdc).
 - Releases: [`release-round` skill](.cursor/skills/release-round/SKILL.md) (gated procedure); invariants in [`.cursor/rules/releases.mdc`](.cursor/rules/releases.mdc) — never publish without explicit human ask.
 - Do not commit unless asked.
