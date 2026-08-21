@@ -190,7 +190,7 @@ This section is the **canonical overview** for experimental Amsterdam support: w
 | Release | Summary | EST fixtures | Date | Testnet |
 | --- | --- | --- | --- | --- |
 | `v10.1.2` (npm) | First experimental Amsterdam release: full 9-EIP `Hardfork.Amsterdam` bundle, BAL builder/validator APIs (7928), two-dimensional block gas (8037); passes v700 mixed EST slice. | [tests-bal@v7.1.0](https://github.com/ethereum/execution-specs/releases/tag/tests-bal@v7.1.0) | 2026-05-13 | [BAL devnet-7](https://notes.ethereum.org/@ethpandaops/bal-devnet-7) |
-| `master` (unreleased) | Development branch: full Amsterdam EIP mix on `Hardfork.Amsterdam`; work toward the next `10.1.x` patch. | [tests-glamsterdam-devnet@v8.1.0](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v8.1.0) | 2026-08-05 | glamsterdam-devnet-8 |
+| `v10.1.3` (npm) | Close-to-ready Amsterdam preview: full 14-EIP bundle, glamsterdam-devnet v8.1.0 alignment, gas-schedule and BAL fixes, builder requests (8282), expanded examples and `consumeBAL()` on `@ethereumjs/statemanager`. | [tests-glamsterdam-devnet@v8.1.0](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v8.1.0) | 2026-08-21 | glamsterdam-devnet-8 |
 
 Tx-level intrinsic vs calldata floor: [@ethereumjs/tx Amsterdam Validation](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx#amsterdam-validation). Opcode-level reservoir behaviour: [@ethereumjs/evm Amsterdam](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#amsterdam-experimental).
 
