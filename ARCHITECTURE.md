@@ -256,7 +256,7 @@ bundlers fall through to `dist/esm` / `dist/cjs`.
 Two mechanisms, both per-package:
 
 - **typedoc**: `npm run docs:build` runs [`config/cli/typedoc.sh`](./config/cli/typedoc.sh)
-  (TypeScript 6 hook for TypeDoc; see `DEVELOPER.md` § Documentation) with each package's
+  (TypeScript 6 hook for TypeDoc; see `DEVELOPER.md` § Tooling) with each package's
   `typedoc.mjs`, which extends [`config/typedoc.mjs`](./config/typedoc.mjs)
   (`typedoc-plugin-markdown`, output to `<package>/docs`).
 - **embedme**: `npm run examples:build` runs `embedme README.md` — README code

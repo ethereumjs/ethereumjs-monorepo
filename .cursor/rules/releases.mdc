@@ -1,0 +1,117 @@
+---
+description: npm release rounds, version bumps, CHANGELOG updates, and fork scope publishes
+globs: scripts/release-npm.ts,packages/*/CHANGELOG.md,packages/*/package.json
+alwaysApply: false
+---
+
+# Releases
+
+Human-facing versioning policy lives in [DEVELOPER.md](../../DEVELOPER.md) § Releases. This rule is the operational procedure for agents.
+
+## Do not
+
+- Publish to npm unless the human explicitly asked in this session.
+- Run `npm publish` outside `scripts/release-npm.ts` unless the human directs otherwise.
+- Skip hooks (`--no-verify`) or weaken `prepublishOnly` (clean, build, test per package).
+- Invent the active package list from README — use `ACTIVE_PACKAGES` in `scripts/release-npm.ts`.
+
+## Active vs deps-only packages
+
+**Active** (`ACTIVE_PACKAGES` in `scripts/release-npm.ts`): version bump + publish in dependency order (`PUBLISH_ORDER`: `rlp` → … → `vm`).
+
+**Deps-only** (`DEPS_ONLY_PACKAGES`): `client`, `devp2p`, `ethash`, `wallet`, `testdata` — only `@ethereumjs/*` dependency references updated on bump; own version unchanged; not published.
+
+All active packages share the **same new version number** on each release round.
+
+## Command surface
+
+```sh
+tsx scripts/release-npm.ts [--bump-version=<version>] [--publish=<tag>] [--scope=<scope>] [--otp=<code>]
+```
+
+| Flag | Meaning |
+|------|---------|
+| (none) | Publish current versions to npm (`latest`) — typical after manual bump + CHANGELOG prep |
+| `--bump-version=<version>` | Bump active package versions and deps; skip publish unless `--publish` is also set |
+| `--publish=<tag>` | Publish (default tag: `latest`) |
+| `--scope=<scope>` | Fork scope (default `ethereumjs`); see below |
+| `--otp=<code>` | npm 2FA one-time password |
+
+**Examples:**
+
+```sh
+tsx scripts/release-npm.ts                                    # publish current versions
+tsx scripts/release-npm.ts --bump-version=10.1.0              # bump only
+tsx scripts/release-npm.ts --bump-version=10.1.0 --publish=latest
+tsx scripts/release-npm.ts --bump-version=10.1.1-nightly.1 --publish=nightly
+tsx scripts/release-npm.ts --otp=123456
+```
+
+## npm authentication
+
+- Script runs `npm whoami` before publish; exits if not authenticated.
+- **Interactive:** `npm login` with a granular access token for `@ethereumjs` publish scope.
+- **2FA:** pass `--otp=<code>` when required.
+- Never commit tokens or `_authToken` entries to the repo.
+
+## Fork releases (`--scope` ≠ `ethereumjs`)
+
+Used by [Feel Your Protocol](https://feelyourprotocol.org) and similar fork scopes. When scope is not `ethereumjs`:
+
+- Rewrites package names: `@ethereumjs/evm` → `@<scope>/evm`
+- Rewrites inter-package `dependencies` / `devDependencies` to the new scope
+- Rewrites `@ethereumjs/` import paths under each package `src/`
+- Skips deps-only packages (not published; rewriting would break local dev)
+- Publishes with `--access=public`
+
+The `--scope` flag is generic; not tied to a specific npm org.
+
+## CHANGELOG updates
+
+Update **every** active package `CHANGELOG.md` for the release, even when a package had no user-facing changes.
+
+### Version header
+
+Add a new section at the top for the target version and release date (date = day of release, agreed with the human).
+
+### One bullet per squash-merged PR
+
+Since `master` uses squash merges, **one commit since the last release tag ≈ one PR**. One bullet per included PR.
+
+**Format:**
+
+```markdown
+- Short user-facing summary, see PR [#NNNN](https://github.com/ethereumjs/ethereumjs-monorepo/pull/NNNN)
+```
+
+### Include in bullets
+
+- User-facing behavior, API, or default changes
+- New or dropped Node.js or TypeScript version support
+- External dependency version bumps (npm packages **outside** the monorepo)
+
+### Omit from bullets (skip the PR entirely)
+
+- Documentation-only changes
+- Changes confined to `examples/`
+- Tests-only changes
+- Lint, spellcheck, CI, or other tooling/infrastructure-only PRs
+
+### Packages with no included PRs
+
+Still add a CHANGELOG section for that package:
+
+```markdown
+- Maintenance release, no active changes
+```
+
+### Finding commits since last release
+
+Use the last release date and/or commit hash the human provides, or compare against the previous release tag in [tags](https://github.com/ethereumjs/ethereumjs-monorepo/tags).
+
+## Typical maintainer flow
+
+1. Human decides version and release date.
+2. Agent (or maintainer) updates CHANGELOGs per rules above.
+3. `--bump-version` updates `package.json` files and internal `@ethereumjs/*` refs.
+4. Human reviews; then publish with `tsx scripts/release-npm.ts` (or bump + publish in one step).
