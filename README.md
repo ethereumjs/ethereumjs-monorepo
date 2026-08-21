@@ -15,11 +15,18 @@
 
 Composable, spec-tested building blocks for the [Ethereum](https://ethereum.org) execution layer: EVM execution, transactions, blocks, state, tries, and chain configuration. Use them in Node.js or the browser — tree-shakeable, Noble crypto by default, WASM-free unless you opt in.
 
-- **Spec-tested execution** — `@ethereumjs/vm` and `@ethereumjs/evm` track mainnet hardforks (Osaka today; Amsterdam in development)
+- **Spec-tested execution** — tracks mainnet hardforks ([status ↓](#hardfork-status))
 - **Composable primitives** — mix `tx`, `block`, `mpt`, `statemanager`, and friends instead of pulling in a full client
 - **Browser-ready** — controlled dependency set; package READMEs cover bundler and KZG setup where needed
 
 Maintained by former members of the [Ethereum Foundation](https://ethereum.foundation/) JavaScript team and the broader Ethereum community.
+
+## Hardfork status
+
+| Fork | Status |
+| --- | --- |
+| **Osaka** | Mainnet today — stable on npm |
+| **Amsterdam** | In development - see status [here](./packages/vm/README.md#amsterdam-hardfork-experimental) |
 
 ## What do you want to do?
 
