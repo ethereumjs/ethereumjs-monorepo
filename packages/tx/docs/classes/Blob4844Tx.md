@@ -6,7 +6,7 @@
 
 # Class: Blob4844Tx
 
-Defined in: [4844/tx.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L64)
+Defined in: [4844/tx.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L68)
 
 Typed transaction with a new gas fee market mechanism for transactions that include "blobs" of data
 
@@ -25,15 +25,15 @@ If blobs are passed in the tx automatically switches to "Network Wrapper" format
 
 ### Constructor
 
-> **new Blob4844Tx**(`txData`, `opts`): `Blob4844Tx`
+> **new Blob4844Tx**(`txData`, `opts?`): `Blob4844Tx`
 
-Defined in: [4844/tx.ts:120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L120)
+Defined in: [4844/tx.ts:124](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L124)
 
 This constructor takes the values, validates them, assigns them and freezes the object.
 
 It is not recommended to use this constructor directly. Instead use
-the static constructors or factory methods to assist in creating a Transaction object from
-varying data types.
+the module-level factory functions such as [createBlob4844Tx](../functions/createBlob4844Tx.md),
+[createBlob4844TxFromRLP](../functions/createBlob4844TxFromRLP.md), and [createBlob4844TxFromBytesArray](../functions/createBlob4844TxFromBytesArray.md).
 
 #### Parameters
 
@@ -41,7 +41,7 @@ varying data types.
 
 [`BlobEIP4844TxData`](../interfaces/BlobEIP4844TxData.md)
 
-##### opts
+##### opts?
 
 [`TxOptions`](../interfaces/TxOptions.md) = `{}`
 
@@ -55,15 +55,15 @@ varying data types.
 
 > `readonly` **accessList**: [`AccessListBytes`](../type-aliases/AccessListBytes.md)
 
-Defined in: [4844/tx.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L73)
+Defined in: [4844/tx.ts:77](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L77)
 
 ***
 
 ### blobs?
 
-> `optional` **blobs**: `` `0x${string}` ``[]
+> `optional` **blobs?**: `` `0x${string}` ``[]
 
-Defined in: [4844/tx.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L96)
+Defined in: [4844/tx.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L100)
 
 ***
 
@@ -71,7 +71,7 @@ Defined in: [4844/tx.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 > **blobVersionedHashes**: `` `0x${string}` ``[]
 
-Defined in: [4844/tx.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L78)
+Defined in: [4844/tx.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L82)
 
 ***
 
@@ -79,7 +79,7 @@ Defined in: [4844/tx.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 > `readonly` **cache**: [`TransactionCache`](../interfaces/TransactionCache.md) = `{}`
 
-Defined in: [4844/tx.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L104)
+Defined in: [4844/tx.ts:108](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L108)
 
 #### Implementation of
 
@@ -91,15 +91,15 @@ Defined in: [4844/tx.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/b
 
 > `readonly` **chainId**: `bigint`
 
-Defined in: [4844/tx.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L74)
+Defined in: [4844/tx.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L78)
 
 ***
 
 ### common
 
-> `readonly` **common**: `Common`
+> `readonly` **common**: [`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
-Defined in: [4844/tx.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L100)
+Defined in: [4844/tx.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L104)
 
 #### Implementation of
 
@@ -111,7 +111,7 @@ Defined in: [4844/tx.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/b
 
 > `readonly` **data**: `Uint8Array`
 
-Defined in: [4844/tx.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L71)
+Defined in: [4844/tx.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L75)
 
 #### Implementation of
 
@@ -123,7 +123,7 @@ Defined in: [4844/tx.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 > `readonly` **gasLimit**: `bigint`
 
-Defined in: [4844/tx.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L69)
+Defined in: [4844/tx.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L73)
 
 #### Implementation of
 
@@ -133,17 +133,17 @@ Defined in: [4844/tx.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 ### kzgCommitments?
 
-> `optional` **kzgCommitments**: `` `0x${string}` ``[]
+> `optional` **kzgCommitments?**: `` `0x${string}` ``[]
 
-Defined in: [4844/tx.ts:97](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L97)
+Defined in: [4844/tx.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L101)
 
 ***
 
 ### kzgProofs?
 
-> `optional` **kzgProofs**: `` `0x${string}` ``[]
+> `optional` **kzgProofs?**: `` `0x${string}` ``[]
 
-Defined in: [4844/tx.ts:98](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L98)
+Defined in: [4844/tx.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L102)
 
 ***
 
@@ -151,7 +151,7 @@ Defined in: [4844/tx.ts:98](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 > `readonly` **maxFeePerBlobGas**: `bigint`
 
-Defined in: [4844/tx.ts:77](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L77)
+Defined in: [4844/tx.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L81)
 
 ***
 
@@ -159,7 +159,7 @@ Defined in: [4844/tx.ts:77](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 > `readonly` **maxFeePerGas**: `bigint`
 
-Defined in: [4844/tx.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L76)
+Defined in: [4844/tx.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L80)
 
 ***
 
@@ -167,15 +167,15 @@ Defined in: [4844/tx.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 > `readonly` **maxPriorityFeePerGas**: `bigint`
 
-Defined in: [4844/tx.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L75)
+Defined in: [4844/tx.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L79)
 
 ***
 
 ### networkWrapperVersion?
 
-> `optional` **networkWrapperVersion**: [`NetworkWrapperType`](../type-aliases/NetworkWrapperType.md)
+> `optional` **networkWrapperVersion?**: [`NetworkWrapperType`](../type-aliases/NetworkWrapperType.md)
 
-Defined in: [4844/tx.ts:93](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L93)
+Defined in: [4844/tx.ts:97](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L97)
 
 This property is set if the tx is in "Network Wrapper" format.
 
@@ -189,7 +189,7 @@ Possible values:
 
 > `readonly` **nonce**: `bigint`
 
-Defined in: [4844/tx.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L68)
+Defined in: [4844/tx.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L72)
 
 #### Implementation of
 
@@ -199,9 +199,9 @@ Defined in: [4844/tx.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 ### r?
 
-> `readonly` `optional` **r**: `bigint`
+> `readonly` `optional` **r?**: `bigint`
 
-Defined in: [4844/tx.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L82)
+Defined in: [4844/tx.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L86)
 
 #### Implementation of
 
@@ -211,9 +211,9 @@ Defined in: [4844/tx.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 ### s?
 
-> `readonly` `optional` **s**: `bigint`
+> `readonly` `optional` **s?**: `bigint`
 
-Defined in: [4844/tx.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L83)
+Defined in: [4844/tx.ts:87](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L87)
 
 #### Implementation of
 
@@ -223,9 +223,9 @@ Defined in: [4844/tx.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 ### to?
 
-> `readonly` `optional` **to**: `Address`
+> `readonly` `optional` **to?**: [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
-Defined in: [4844/tx.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L72)
+Defined in: [4844/tx.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L76)
 
 #### Implementation of
 
@@ -237,7 +237,7 @@ Defined in: [4844/tx.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 > `readonly` **txOptions**: [`TxOptions`](../interfaces/TxOptions.md)
 
-Defined in: [4844/tx.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L102)
+Defined in: [4844/tx.ts:106](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L106)
 
 #### Implementation of
 
@@ -249,7 +249,7 @@ Defined in: [4844/tx.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/b
 
 > **type**: `3` = `TransactionType.BlobEIP4844`
 
-Defined in: [4844/tx.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L65)
+Defined in: [4844/tx.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L69)
 
 #### Implementation of
 
@@ -259,9 +259,9 @@ Defined in: [4844/tx.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 ### v?
 
-> `readonly` `optional` **v**: `bigint`
+> `readonly` `optional` **v?**: `bigint`
 
-Defined in: [4844/tx.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L81)
+Defined in: [4844/tx.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L85)
 
 #### Implementation of
 
@@ -273,7 +273,7 @@ Defined in: [4844/tx.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 > `readonly` **value**: `bigint`
 
-Defined in: [4844/tx.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L70)
+Defined in: [4844/tx.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L74)
 
 #### Implementation of
 
@@ -285,7 +285,7 @@ Defined in: [4844/tx.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 > **addSignature**(`v`, `r`, `s`): `Blob4844Tx`
 
-Defined in: [4844/tx.ts:532](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L532)
+Defined in: [4844/tx.ts:545](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L545)
 
 Adds signature values (and optional network wrapper fields) and returns a new transaction.
 
@@ -299,15 +299,15 @@ Recovery parameter
 
 ##### r
 
-Signature `r` value
+`bigint` \| `Uint8Array`\<`ArrayBufferLike`\>
 
-`bigint` | `Uint8Array`\<`ArrayBufferLike`\>
+Signature `r` value
 
 ##### s
 
-Signature `s` value
+`bigint` \| `Uint8Array`\<`ArrayBufferLike`\>
 
-`bigint` | `Uint8Array`\<`ArrayBufferLike`\>
+Signature `s` value
 
 #### Returns
 
@@ -325,7 +325,7 @@ New `Blob4844Tx` instance containing the signature
 
 > **errorStr**(): `string`
 
-Defined in: [4844/tx.ts:620](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L620)
+Defined in: [4844/tx.ts:633](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L633)
 
 Return a compact error string representation of the object
 
@@ -345,7 +345,7 @@ Human-readable error summary
 
 > **getDataGas**(): `bigint`
 
-Defined in: [4844/tx.ts:346](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L346)
+Defined in: [4844/tx.ts:351](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L351)
 
 The amount of gas paid for the data in this tx
 
@@ -363,7 +363,7 @@ The amount of gas paid for the data in this tx
 
 > **getEffectivePriorityFee**(`baseFee`): `bigint`
 
-Defined in: [4844/tx.ts:339](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L339)
+Defined in: [4844/tx.ts:344](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L344)
 
 Returns the minimum of calculated priority fee (from maxFeePerGas and baseFee) and maxPriorityFeePerGas
 
@@ -385,7 +385,7 @@ Base fee retrieved from block
 
 > **getHashedMessageToSign**(): `Uint8Array`
 
-Defined in: [4844/tx.ts:475](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L475)
+Defined in: [4844/tx.ts:488](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L488)
 
 Returns the hashed serialized unsigned tx, which can be used
 to sign the transaction (e.g. for sending to a hardware wallet).
@@ -409,7 +409,7 @@ Keccak hash of the unsigned transaction payload
 
 > **getIntrinsicGas**(): `bigint`
 
-Defined in: [4844/tx.ts:370](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L370)
+Defined in: [4844/tx.ts:375](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L375)
 
 The minimum gas limit which the tx to have to be valid.
 This covers costs as the standard fee (21000 gas), the data fee (paid for each calldata byte),
@@ -430,7 +430,7 @@ to be paid for access lists (EIP-2930) and authority lists (EIP-7702).
 
 > **getMessageToSign**(): `Uint8Array`
 
-Defined in: [4844/tx.ts:463](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L463)
+Defined in: [4844/tx.ts:476](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L476)
 
 Returns the raw serialized unsigned tx, which can be used
 to sign the transaction (e.g. for sending to a hardware wallet).
@@ -458,7 +458,7 @@ Serialized unsigned transaction payload
 
 > **getMessageToVerifySignature**(): `Uint8Array`
 
-Defined in: [4844/tx.ts:494](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L494)
+Defined in: [4844/tx.ts:507](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L507)
 
 Returns the hashed unsigned transaction that should be used for signature verification.
 
@@ -474,19 +474,38 @@ Hash of the unsigned transaction payload
 
 ***
 
+### getMinimumGasLimit()
+
+> **getMinimumGasLimit**(): `bigint`
+
+Defined in: [4844/tx.ts:383](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L383)
+
+`max(getIntrinsicGas(), calldata floor)` when EIP-7623 is active, otherwise intrinsic.
+Does not include EIP-8037 first-touch state gas.
+
+#### Returns
+
+`bigint`
+
+#### Implementation of
+
+[`TransactionInterface`](../interfaces/TransactionInterface.md).[`getMinimumGasLimit`](../interfaces/TransactionInterface.md#getminimumgaslimit)
+
+***
+
 ### getSenderAddress()
 
-> **getSenderAddress**(): `Address`
+> **getSenderAddress**(): [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
-Defined in: [4844/tx.ts:589](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L589)
+Defined in: [4844/tx.ts:602](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L602)
 
 Returns the recovered sender address.
 
 #### Returns
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
-Sender Address
+Sender [Address](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Implementation of
 
@@ -498,7 +517,7 @@ Sender Address
 
 > **getSenderPublicKey**(): `Uint8Array`
 
-Defined in: [4844/tx.ts:502](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L502)
+Defined in: [4844/tx.ts:515](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L515)
 
 Returns the public key of the sender
 
@@ -516,15 +535,15 @@ Sender public key
 
 ### getUpfrontCost()
 
-> **getUpfrontCost**(`baseFee`): `bigint`
+> **getUpfrontCost**(`baseFee?`): `bigint`
 
-Defined in: [4844/tx.ts:354](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L354)
+Defined in: [4844/tx.ts:359](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L359)
 
 The up front amount that an account must have for this transaction to be valid
 
 #### Parameters
 
-##### baseFee
+##### baseFee?
 
 `bigint` = `BIGINT_0`
 
@@ -544,7 +563,7 @@ The base fee of the block (will be set to 0 if not provided)
 
 > **getValidationErrors**(): `string`[]
 
-Defined in: [4844/tx.ts:566](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L566)
+Defined in: [4844/tx.ts:579](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L579)
 
 Returns validation errors for this transaction, if any.
 
@@ -564,7 +583,7 @@ Array of validation error messages
 
 > **hash**(): `Uint8Array`
 
-Defined in: [4844/tx.ts:486](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L486)
+Defined in: [4844/tx.ts:499](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L499)
 
 Computes a sha3-256 hash of the serialized tx.
 
@@ -587,7 +606,7 @@ Hash of the serialized signed transaction
 
 > **isSigned**(): `boolean`
 
-Defined in: [4844/tx.ts:607](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L607)
+Defined in: [4844/tx.ts:620](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L620)
 
 Indicates whether the transaction already carries signature values.
 
@@ -607,7 +626,7 @@ true if signature parts are present
 
 > **isValid**(): `boolean`
 
-Defined in: [4844/tx.ts:573](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L573)
+Defined in: [4844/tx.ts:586](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L586)
 
 #### Returns
 
@@ -625,7 +644,7 @@ true if the transaction has no validation errors
 
 > **numBlobs**(): `number`
 
-Defined in: [4844/tx.ts:629](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L629)
+Defined in: [4844/tx.ts:642](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L642)
 
 #### Returns
 
@@ -639,7 +658,7 @@ the number of blobs included with this transaction
 
 > **raw**(): `BlobEIP4844TxValuesArray`
 
-Defined in: [4844/tx.ts:387](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L387)
+Defined in: [4844/tx.ts:400](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L400)
 
 Returns a Uint8Array Array of the raw Bytes of the EIP-4844 transaction, in order.
 
@@ -647,7 +666,7 @@ Format: [chain_id, nonce, max_priority_fee_per_gas, max_fee_per_gas, gas_limit, 
 access_list, max_fee_per_data_gas, blob_versioned_hashes, y_parity, r, s]`.
 
 Use [Blob4844Tx.serialize](#serialize) to add a transaction to a block
-with createBlockFromBytesArray.
+with [@ethereumjs/block!createBlockFromBytesArray](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/functions/createBlockFromBytesArray.md).
 
 For an unsigned tx this method uses the empty Bytes values for the
 signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
@@ -667,7 +686,7 @@ representation for external signing use [Blob4844Tx.getMessageToSign](#getmessag
 
 > **serialize**(): `Uint8Array`
 
-Defined in: [4844/tx.ts:416](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L416)
+Defined in: [4844/tx.ts:429](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L429)
 
 Returns the serialized encoding of the EIP-4844 transaction.
 
@@ -692,7 +711,7 @@ the RLP encoding of the values.
 
 > **serializeNetworkWrapper**(): `Uint8Array`
 
-Defined in: [4844/tx.ts:425](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L425)
+Defined in: [4844/tx.ts:438](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L438)
 
 #### Returns
 
@@ -706,9 +725,9 @@ submitting a transaction via RPC.
 
 ### sign()
 
-> **sign**(`privateKey`, `extraEntropy`): `Blob4844Tx`
+> **sign**(`privateKey`, `extraEntropy?`): `Blob4844Tx`
 
-Defined in: [4844/tx.ts:599](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L599)
+Defined in: [4844/tx.ts:612](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L612)
 
 Signs the transaction with the provided private key and returns the signed instance.
 
@@ -720,11 +739,11 @@ Signs the transaction with the provided private key and returns the signed insta
 
 32-byte private key used for signing
 
-##### extraEntropy
+##### extraEntropy?
+
+`boolean` \| `Uint8Array`\<`ArrayBufferLike`\>
 
 Optional entropy passed to the signing routine
-
-`boolean` | `Uint8Array`\<`ArrayBufferLike`\>
 
 #### Returns
 
@@ -742,7 +761,7 @@ Newly signed transaction
 
 > **supports**(`capability`): `boolean`
 
-Defined in: [4844/tx.ts:331](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L331)
+Defined in: [4844/tx.ts:336](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L336)
 
 Checks if a tx type defining capability is active
 on a tx, for example the EIP-1559 fee market mechanism
@@ -779,7 +798,7 @@ on all supported capabilities.
 
 > **toCreationAddress**(): `never`
 
-Defined in: [4844/tx.ts:360](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L360)
+Defined in: [4844/tx.ts:365](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L365)
 
 Blob4844Tx cannot create contracts
 
@@ -797,7 +816,7 @@ Blob4844Tx cannot create contracts
 
 > **toJSON**(): [`JSONTx`](../interfaces/JSONTx.md)
 
-Defined in: [4844/tx.ts:510](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L510)
+Defined in: [4844/tx.ts:523](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L523)
 
 Produces a JSON representation compliant with the execution API.
 
@@ -817,7 +836,7 @@ JSON encoding of the transaction
 
 > **verifySignature**(): `boolean`
 
-Defined in: [4844/tx.ts:581](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L581)
+Defined in: [4844/tx.ts:594](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L594)
 
 Verifies whether the attached signature is valid.
 

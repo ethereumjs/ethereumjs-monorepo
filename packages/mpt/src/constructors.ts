@@ -11,6 +11,16 @@ import { MerklePatriciaTrie, ROOT_DB_KEY, updateMPTFromMerkleProof } from './ind
 
 import type { MPTOpts, Proof } from './index.ts'
 
+/**
+ * Creates a Merkle Patricia Trie instance.
+ *
+ * Preferred entry point over constructing {@link MerklePatriciaTrie} directly.
+ * When `useRootPersistence` is enabled and a database is provided, loads or stores
+ * the trie root under the internal root key.
+ *
+ * @param opts Trie configuration (database, root, key hashing, value encoding, etc.)
+ * @returns Initialized trie ready for reads and writes
+ */
 export async function createMPT(opts?: MPTOpts) {
   const keccakFunction =
     opts?.common?.customCrypto.keccak256 ?? opts?.useKeyHashingFunction ?? keccak_256
@@ -55,11 +65,11 @@ export async function createMPT(opts?: MPTOpts) {
 }
 
 /**
- * Create a trie from a given (EIP-1186)[https://eips.ethereum.org/EIPS/eip-1186] proof. A proof contains the encoded trie nodes
- * from the root node to the leaf node storing state data.
- * @param proof an EIP-1186 proof to create trie from
- * @param trieOpts trie opts to be applied to returned trie
- * @returns new trie created from given proof
+ * Reconstruct a sparse trie from an EIP-1186 proof.
+ *
+ * @param proof Serialized trie nodes from root to the proven leaf
+ * @param trieOpts Options for the returned trie (root verification, key hashing, etc.)
+ * @returns Trie populated with proof nodes, root set from the proof
  */
 export async function createMPTFromProof(proof: Proof, trieOpts?: MPTOpts) {
   const shouldVerifyRoot = trieOpts?.root !== undefined

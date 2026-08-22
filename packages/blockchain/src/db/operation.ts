@@ -13,6 +13,7 @@ import {
 
 import type { CacheMap } from './manager.ts'
 
+/** Database target identifiers for blockchain persistence operations. */
 export type DBTarget = (typeof DBTarget)[keyof typeof DBTarget]
 
 export const DBTarget = {
@@ -41,7 +42,7 @@ export interface DBOpData {
   value?: Uint8Array | object
 }
 
-// a Database Key is identified by a block hash, a block number, or both
+/** Key identifying a block by hash, number, or both. */
 export type DatabaseKey = {
   blockNumber?: bigint
   blockHash?: Uint8Array

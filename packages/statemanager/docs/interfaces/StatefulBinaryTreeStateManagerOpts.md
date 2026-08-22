@@ -6,7 +6,9 @@
 
 # Interface: StatefulBinaryTreeStateManagerOpts
 
-Defined in: [types.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L75)
+Defined in: [types.ts:77](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L77)
+
+Options for constructing a [StatefulBinaryTreeStateManager](../classes/StatefulBinaryTreeStateManager.md).
 
 ## Extends
 
@@ -16,15 +18,17 @@ Defined in: [types.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 ### caches?
 
-> `optional` **caches**: [`Caches`](../classes/Caches.md)
+> `optional` **caches?**: [`Caches`](../classes/Caches.md)
 
-Defined in: [types.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L78)
+Defined in: [types.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L83)
+
+Read-through caches for account, code, and storage.
 
 ***
 
 ### common?
 
-> `optional` **common**: `Common`
+> `optional` **common?**: [`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 Defined in: [types.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L14)
 
@@ -36,11 +40,13 @@ The common to use
 
 ***
 
-### hashFunction()?
+### hashFunction?
 
-> `optional` **hashFunction**: (`data`) => `Uint8Array`
+> `optional` **hashFunction?**: (`data`) => `Uint8Array`
 
-Defined in: [types.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L76)
+Defined in: [types.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L79)
+
+Node hash function (defaults to the tree's hash function).
 
 #### Parameters
 
@@ -56,6 +62,8 @@ Defined in: [types.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 ### tree?
 
-> `optional` **tree**: `BinaryTree`
+> `optional` **tree?**: [`BinaryTree`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/docs/classes/BinaryTree.md)
 
-Defined in: [types.ts:77](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L77)
+Defined in: [types.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L81)
+
+Pre-existing [BinaryTree](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/docs/classes/BinaryTree.md) instance.

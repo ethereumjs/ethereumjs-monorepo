@@ -6,7 +6,9 @@
 
 # Class: ExtensionMPTNode
 
-Defined in: [packages/mpt/src/node/extension.ts:5](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/node/extension.ts#L5)
+Defined in: [node/extension.ts:6](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/node/extension.ts#L6)
+
+Extension MPT node: shared path prefix pointing to a child.
 
 ## Extends
 
@@ -18,7 +20,7 @@ Defined in: [packages/mpt/src/node/extension.ts:5](https://github.com/ethereumjs
 
 > **new ExtensionMPTNode**(`nibbles`, `value`): `ExtensionMPTNode`
 
-Defined in: [packages/mpt/src/node/extension.ts:6](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/node/extension.ts#L6)
+Defined in: [node/extension.ts:7](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/node/extension.ts#L7)
 
 #### Parameters
 
@@ -44,7 +46,7 @@ Defined in: [packages/mpt/src/node/extension.ts:6](https://github.com/ethereumjs
 
 > **\_isLeaf**: `boolean`
 
-Defined in: [packages/mpt/src/node/extensionOrLeafNodeBase.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/node/extensionOrLeafNodeBase.ts#L11)
+Defined in: [node/extensionOrLeafNodeBase.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/node/extensionOrLeafNodeBase.ts#L12)
 
 #### Inherited from
 
@@ -56,7 +58,7 @@ Defined in: [packages/mpt/src/node/extensionOrLeafNodeBase.ts:11](https://github
 
 > **\_nibbles**: [`Nibbles`](../type-aliases/Nibbles.md)
 
-Defined in: [packages/mpt/src/node/extensionOrLeafNodeBase.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/node/extensionOrLeafNodeBase.ts#L9)
+Defined in: [node/extensionOrLeafNodeBase.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/node/extensionOrLeafNodeBase.ts#L10)
 
 #### Inherited from
 
@@ -68,7 +70,7 @@ Defined in: [packages/mpt/src/node/extensionOrLeafNodeBase.ts:9](https://github.
 
 > **\_value**: `Uint8Array`
 
-Defined in: [packages/mpt/src/node/extensionOrLeafNodeBase.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/node/extensionOrLeafNodeBase.ts#L10)
+Defined in: [node/extensionOrLeafNodeBase.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/node/extensionOrLeafNodeBase.ts#L11)
 
 #### Inherited from
 
@@ -80,7 +82,7 @@ Defined in: [packages/mpt/src/node/extensionOrLeafNodeBase.ts:10](https://github
 
 > **encodedKey**(): [`Nibbles`](../type-aliases/Nibbles.md)
 
-Defined in: [packages/mpt/src/node/extensionOrLeafNodeBase.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/node/extensionOrLeafNodeBase.ts#L23)
+Defined in: [node/extensionOrLeafNodeBase.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/node/extensionOrLeafNodeBase.ts#L24)
 
 #### Returns
 
@@ -96,7 +98,7 @@ Defined in: [packages/mpt/src/node/extensionOrLeafNodeBase.ts:23](https://github
 
 > **key**(`k?`): [`Nibbles`](../type-aliases/Nibbles.md)
 
-Defined in: [packages/mpt/src/node/extensionOrLeafNodeBase.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/node/extensionOrLeafNodeBase.ts#L27)
+Defined in: [node/extensionOrLeafNodeBase.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/node/extensionOrLeafNodeBase.ts#L28)
 
 #### Parameters
 
@@ -118,7 +120,7 @@ Defined in: [packages/mpt/src/node/extensionOrLeafNodeBase.ts:27](https://github
 
 > **keyLength**(): `number`
 
-Defined in: [packages/mpt/src/node/extensionOrLeafNodeBase.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/node/extensionOrLeafNodeBase.ts#L35)
+Defined in: [node/extensionOrLeafNodeBase.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/node/extensionOrLeafNodeBase.ts#L36)
 
 #### Returns
 
@@ -134,7 +136,7 @@ Defined in: [packages/mpt/src/node/extensionOrLeafNodeBase.ts:35](https://github
 
 > **raw**(): [`RawExtensionMPTNode`](../type-aliases/RawExtensionMPTNode.md)
 
-Defined in: [packages/mpt/src/node/extension.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/node/extension.ts#L10)
+Defined in: [node/extension.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/node/extension.ts#L11)
 
 #### Returns
 
@@ -150,7 +152,7 @@ Defined in: [packages/mpt/src/node/extension.ts:10](https://github.com/ethereumj
 
 > **serialize**(): `Uint8Array`
 
-Defined in: [packages/mpt/src/node/extensionOrLeafNodeBase.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/node/extensionOrLeafNodeBase.ts#L51)
+Defined in: [node/extensionOrLeafNodeBase.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/node/extensionOrLeafNodeBase.ts#L52)
 
 #### Returns
 
@@ -166,7 +168,7 @@ Defined in: [packages/mpt/src/node/extensionOrLeafNodeBase.ts:51](https://github
 
 > **value**(`v?`): `Uint8Array`\<`ArrayBufferLike`\>
 
-Defined in: [packages/mpt/src/node/extensionOrLeafNodeBase.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/node/extensionOrLeafNodeBase.ts#L39)
+Defined in: [node/extensionOrLeafNodeBase.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/node/extensionOrLeafNodeBase.ts#L40)
 
 #### Parameters
 
@@ -188,7 +190,7 @@ Defined in: [packages/mpt/src/node/extensionOrLeafNodeBase.ts:39](https://github
 
 > `static` **decodeKey**(`key`): [`Nibbles`](../type-aliases/Nibbles.md)
 
-Defined in: [packages/mpt/src/node/extensionOrLeafNodeBase.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/node/extensionOrLeafNodeBase.ts#L19)
+Defined in: [node/extensionOrLeafNodeBase.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/node/extensionOrLeafNodeBase.ts#L20)
 
 #### Parameters
 

@@ -152,6 +152,10 @@ export function defaultBlock(): Block {
       prevRandao: new Uint8Array(32),
       gasLimit: BIGINT_0,
       baseFeePerGas: undefined,
+      // EIP-7843 SLOTNUM: mock header uses slot 0 so stand-alone `runCode()`
+      // does not throw when the opcode is active. Real blocks still set the
+      // consensus field explicitly (or inherit the BlockHeader default of 0n).
+      slotNumber: BIGINT_0,
       getBlobGasPrice: () => undefined,
     },
   }
@@ -347,7 +351,6 @@ export class EVM implements EVMInterface {
    * use the async {@link createEVM} constructor instead (same API).
    *
    * @param opts The EVM options
-   * @param bn128 Initialized bn128 WASM object for precompile usage (internal)
    */
   constructor(opts: EVMOpts) {
     this.common = opts.common!
@@ -1714,8 +1717,6 @@ export class EVM implements EVMInterface {
    *
    * Note: this is only a shallow copy and both EVM instances
    * will point to the same underlying state DB.
-   *
-   * @returns EVM
    */
   public shallowCopy(): EVM {
     const common = this.common.copy()

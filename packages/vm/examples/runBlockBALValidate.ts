@@ -28,7 +28,7 @@ async function fundSender(vm: Awaited<ReturnType<typeof createVM>>) {
   const stop = hexToBytes('0x00')
   for (const param of ['builderDepositContractAddress', 'builderExitContractAddress'] as const) {
     const address = createAddressFromString(
-      bytesToHex(setLengthLeft(bigIntToBytes(common.param(param)), 20)),
+      bytesToHex(setLengthLeft(bigIntToBytes(vm.common.param(param)), 20)),
     )
     await vm.stateManager.putAccount(address, new Account(1n, 0n))
     await vm.stateManager.putCode(address, stop)

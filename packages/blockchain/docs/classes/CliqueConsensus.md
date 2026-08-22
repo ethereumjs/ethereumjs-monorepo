@@ -38,7 +38,7 @@ Defined in: [consensus/clique.ts:123](https://github.com/ethereumjs/ethereumjs-m
 
 Defined in: [consensus/clique.ts:120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/clique.ts#L120)
 
-List of signers for the last consecutive Blockchain.cliqueSignerLimit blocks.
+List of signers for the last consecutive Clique signer-limit blocks.
 Kept as a snapshot for quickly checking for "recently signed" error.
 Format: [ [BLOCK_NUMBER, SIGNER_ADDRESS], ...]
 
@@ -116,7 +116,7 @@ Defined in: [consensus/clique.ts:122](https://github.com/ethereumjs/ethereumjs-m
 
 ### cliqueActiveSigners()
 
-> **cliqueActiveSigners**(`blockNum`): `Address`[]
+> **cliqueActiveSigners**(`blockNum`): [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)[]
 
 Defined in: [consensus/clique.ts:448](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/clique.ts#L448)
 
@@ -130,7 +130,7 @@ Returns a list with the current block signers
 
 #### Returns
 
-`Address`[]
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)[]
 
 ***
 
@@ -146,7 +146,7 @@ Helper to determine if a signer is in or out of turn for the next block.
 
 ##### signer
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 The signer address
 
@@ -172,7 +172,7 @@ Initialize genesis for consensus mechanism
 
 ##### genesisBlock
 
-`Block`
+[`Block`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/Block.md)
 
 genesis block
 
@@ -198,15 +198,15 @@ Update consensus on new block
 
 ##### block
 
-`Block`
+[`Block`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/Block.md)
 
 new block
 
 ##### commonAncestor
 
-common ancestor block header (optional)
+[`BlockHeader`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/BlockHeader.md) \| `undefined`
 
-`BlockHeader` | `undefined`
+common ancestor block header (optional)
 
 #### Returns
 
@@ -256,7 +256,7 @@ Validate block consensus parameters
 
 ##### block
 
-`Block`
+[`Block`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/Block.md)
 
 block to be validated
 
@@ -276,11 +276,13 @@ block to be validated
 
 Defined in: [consensus/clique.ts:179](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/clique.ts#L179)
 
+Validates header difficulty against parent and consensus rules.
+
 #### Parameters
 
 ##### header
 
-`BlockHeader`
+[`BlockHeader`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/BlockHeader.md)
 
 #### Returns
 

@@ -12,13 +12,13 @@ Defined in: [packages/devp2p/src/dns/dns.ts:18](https://github.com/ethereumjs/et
 
 ### Constructor
 
-> **new DNS**(`options`): `DNS`
+> **new DNS**(`options?`): `DNS`
 
 Defined in: [packages/devp2p/src/dns/dns.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dns/dns.ts#L26)
 
 #### Parameters
 
-##### options
+##### options?
 
 [`DNSOptions`](../type-aliases/DNSOptions.md) = `{}`
 
@@ -32,7 +32,7 @@ Defined in: [packages/devp2p/src/dns/dns.ts:26](https://github.com/ethereumjs/et
 
 > **\_\_setNativeDNSModuleResolve**(`mock`): `void`
 
-Defined in: [packages/devp2p/src/dns/dns.ts:216](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dns/dns.ts#L216)
+Defined in: [packages/devp2p/src/dns/dns.ts:215](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dns/dns.ts#L215)
 
 Only used for testing. A stopgap to enable successful
 TestDouble mocking of the native `dns` module.
@@ -55,7 +55,7 @@ TestDouble fn
 
 > **getPeers**(`maxQuantity`, `dnsNetworks`): `Promise`\<[`PeerInfo`](../interfaces/PeerInfo.md)[]\>
 
-Defined in: [packages/devp2p/src/dns/dns.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dns/dns.ts#L49)
+Defined in: [packages/devp2p/src/dns/dns.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/dns/dns.ts#L48)
 
 Returns a list of verified peers listed in an EIP-1459 DNS tree. Method may
 return fewer peers than requested if `maxQuantity` is larger than the number

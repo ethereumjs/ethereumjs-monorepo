@@ -6,7 +6,7 @@
 
 # Class: WalkController
 
-Defined in: [packages/mpt/src/util/walkController.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/util/walkController.ts#L14)
+Defined in: [util/walkController.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/util/walkController.ts#L14)
 
 Interface to control how the trie is being traversed. Schedules node visits via a
 prioritized task queue and invokes the provided callback for each node.
@@ -19,7 +19,7 @@ Used by [MerklePatriciaTrie.findPath](MerklePatriciaTrie.md#findpath), [MerklePa
 
 > `readonly` **onNode**: [`FoundNodeFunction`](../type-aliases/FoundNodeFunction.md)
 
-Defined in: [packages/mpt/src/util/walkController.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/util/walkController.ts#L16)
+Defined in: [util/walkController.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/util/walkController.ts#L16)
 
 The [FoundNodeFunction](../type-aliases/FoundNodeFunction.md) to call when a node is found.
 
@@ -29,7 +29,7 @@ The [FoundNodeFunction](../type-aliases/FoundNodeFunction.md) to call when a nod
 
 > `readonly` **taskExecutor**: `PrioritizedTaskExecutor`
 
-Defined in: [packages/mpt/src/util/walkController.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/util/walkController.ts#L19)
+Defined in: [util/walkController.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/util/walkController.ts#L19)
 
 Task executor that prioritizes node visits (shorter paths first).
 
@@ -39,7 +39,7 @@ Task executor that prioritizes node visits (shorter paths first).
 
 > `readonly` **trie**: [`MerklePatriciaTrie`](MerklePatriciaTrie.md)
 
-Defined in: [packages/mpt/src/util/walkController.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/util/walkController.ts#L22)
+Defined in: [util/walkController.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/util/walkController.ts#L22)
 
 The trie being walked.
 
@@ -47,9 +47,9 @@ The trie being walked.
 
 ### allChildren()
 
-> **allChildren**(`node`, `currentKeyNibbles`): `void`
+> **allChildren**(`node`, `currentKeyNibbles?`): `void`
 
-Defined in: [packages/mpt/src/util/walkController.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/util/walkController.ts#L84)
+Defined in: [util/walkController.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/util/walkController.ts#L84)
 
 Runs all children of a node. Priority of these nodes is the key length of the children.
 Used when walking an Extension or when exploring all branches of a Branch node.
@@ -62,7 +62,7 @@ Used when walking an Extension or when exploring all branches of a Branch node.
 
 Node to get all children of and call onNode on.
 
-##### currentKeyNibbles
+##### currentKeyNibbles?
 
 [`Nibbles`](../type-aliases/Nibbles.md) = `[]`
 
@@ -79,9 +79,9 @@ The current key (nibbles) which would yield the `node` when
 
 ### onlyBranchIndex()
 
-> **onlyBranchIndex**(`node`, `currentKeyNibbles`, `childIndex`, `priority?`): `void`
+> **onlyBranchIndex**(`node`, `currentKeyNibbles?`, `childIndex`, `priority?`): `void`
 
-Defined in: [packages/mpt/src/util/walkController.ts:144](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/util/walkController.ts#L144)
+Defined in: [util/walkController.ts:144](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/util/walkController.ts#L144)
 
 Pushes a branch of a certain BranchMPTNode to the event queue.
 Used by findPath when following a specific key (only one child index is traversed).
@@ -94,7 +94,7 @@ Used by findPath when following a specific key (only one child index is traverse
 
 The BranchMPTNode to select a branch on.
 
-##### currentKeyNibbles
+##### currentKeyNibbles?
 
 [`Nibbles`](../type-aliases/Nibbles.md) = `[]`
 
@@ -126,9 +126,9 @@ If `node` is not a BranchMPTNode or if the branch at `childIndex` is empty.
 
 ### pushNodeToQueue()
 
-> **pushNodeToQueue**(`nodeRef`, `currentKeyNibbles`, `priority?`): `void`
+> **pushNodeToQueue**(`nodeRef`, `currentKeyNibbles?`, `priority?`): `void`
 
-Defined in: [packages/mpt/src/util/walkController.ts:114](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/util/walkController.ts#L114)
+Defined in: [util/walkController.ts:114](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/util/walkController.ts#L114)
 
 Pushes a node to the queue. If the queue has capacity, the node is executed immediately,
 otherwise it is queued for later execution.
@@ -141,7 +141,7 @@ otherwise it is queued for later execution.
 
 A node reference (32-byte keccak hash or raw encoding) to enqueue.
 
-##### currentKeyNibbles
+##### currentKeyNibbles?
 
 [`Nibbles`](../type-aliases/Nibbles.md) = `[]`
 
@@ -165,7 +165,7 @@ Optional priority. Defaults to key length.
 
 > `static` **newWalk**(`onNode`, `trie`, `rootHash`, `poolSize?`): `Promise`\<`void`\>
 
-Defined in: [packages/mpt/src/util/walkController.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/util/walkController.ts#L50)
+Defined in: [util/walkController.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/util/walkController.ts#L50)
 
 Creates and starts an async walk over a trie from the given root.
 Resolves when all reachable nodes have been visited and no new tasks were scheduled.

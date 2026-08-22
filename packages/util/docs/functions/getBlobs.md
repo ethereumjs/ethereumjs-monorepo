@@ -8,7 +8,7 @@
 
 > **getBlobs**(`input`): `` `0x${string}` ``[]
 
-Defined in: [packages/util/src/blobs.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/blobs.ts#L62)
+Defined in: [packages/util/src/blobs.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/blobs.ts#L63)
 
 EIP-4844: Converts UTF-8 string(s) into EIP-4844 blob format.
 
@@ -20,9 +20,9 @@ Multiple inputs are processed sequentially, with each input contributing its own
 
 ### input
 
-Single UTF-8 string or array of UTF-8 strings to encode
+`string` \| `string`[]
 
-`string` | `string`[]
+Single UTF-8 string or array of UTF-8 strings to encode
 
 ## Returns
 

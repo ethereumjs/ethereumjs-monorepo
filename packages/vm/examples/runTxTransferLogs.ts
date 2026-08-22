@@ -1,14 +1,12 @@
 import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { EIP7708_SYSTEM_ADDRESS, EIP7708_TRANSFER_TOPIC } from '@ethereumjs/evm'
+import { decodeEIP7708TransferLog } from '@ethereumjs/evm'
 import { createLegacyTx } from '@ethereumjs/tx'
 import {
-  bytesToBigInt,
   bytesToHex,
   createAccount,
   createAddressFromPrivateKey,
   createZeroAddress,
-  equalsBytes,
   hexToBytes,
 } from '@ethereumjs/util'
 import { createVM, runTx } from '@ethereumjs/vm'
@@ -22,22 +20,6 @@ function formatLog(log: Log) {
     address: bytesToHex(address),
     topics: topics.map((topic) => bytesToHex(topic)),
     data: bytesToHex(data),
-  }
-}
-
-/** Decode an EIP-7708 Transfer log (LOG3-shaped) when topics match. */
-function decodeEIP7708TransferLog(log: Log) {
-  const [address, topics, data] = log
-  if (topics.length !== 3 || !equalsBytes(topics[0], EIP7708_TRANSFER_TOPIC)) {
-    return undefined
-  }
-  if (!equalsBytes(address, EIP7708_SYSTEM_ADDRESS)) {
-    return undefined
-  }
-  return {
-    from: bytesToHex(topics[1].slice(-20)),
-    to: bytesToHex(topics[2].slice(-20)),
-    value: bytesToBigInt(data),
   }
 }
 
@@ -56,7 +38,7 @@ const main = async () => {
 
   const tx = createLegacyTx(
     {
-      gasLimit: 100_000n,
+      gasLimit: 300_000n,
       gasPrice: 10n,
       value: 1_000_000_000_000_000n,
       to: createZeroAddress(),

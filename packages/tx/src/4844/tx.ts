@@ -42,13 +42,17 @@ import type {
   TxOptions,
 } from '../types.ts'
 
+/** Plain-object input for {@link Blob4844Tx}. */
 export type TxData = AllTypesTxData[typeof TransactionType.BlobEIP4844]
+/** Devp2p byte-array encoding for {@link Blob4844Tx}. */
 export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.BlobEIP4844]
 
+/** Network-wrapper version identifiers for blob tx gossip. */
 export const NetworkWrapperType = {
   EIP4844: 0,
   EIP7594: 1,
 } as const
+/** Numeric network-wrapper version (EIP-4844 or EIP-7594). */
 export type NetworkWrapperType = (typeof NetworkWrapperType)[keyof typeof NetworkWrapperType]
 
 /**
@@ -114,8 +118,8 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
    * This constructor takes the values, validates them, assigns them and freezes the object.
    *
    * It is not recommended to use this constructor directly. Instead use
-   * the static constructors or factory methods to assist in creating a Transaction object from
-   * varying data types.
+   * the module-level factory functions such as {@link createBlob4844Tx},
+   * {@link createBlob4844TxFromRLP}, and {@link createBlob4844TxFromBytesArray}.
    */
   constructor(txData: TxData, opts: TxOptions = {}) {
     // Check networkWrapperVersion early, before sharedConstructor, to ensure proper error ordering
@@ -373,13 +377,21 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
   }
 
   /**
+   * `max(getIntrinsicGas(), calldata floor)` when EIP-7623 is active, otherwise intrinsic.
+   * Does not include EIP-8037 first-touch state gas.
+   */
+  getMinimumGasLimit(): bigint {
+    return Legacy.getMinimumGasLimit(this)
+  }
+
+  /**
    * Returns a Uint8Array Array of the raw Bytes of the EIP-4844 transaction, in order.
    *
    * Format: [chain_id, nonce, max_priority_fee_per_gas, max_fee_per_gas, gas_limit, to, value, data,
    * access_list, max_fee_per_data_gas, blob_versioned_hashes, y_parity, r, s]`.
    *
    * Use {@link Blob4844Tx.serialize} to add a transaction to a block
-   * with {@link createBlockFromBytesArray}.
+   * with {@link @ethereumjs/block!createBlockFromBytesArray}.
    *
    * For an unsigned tx this method uses the empty Bytes values for the
    * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant

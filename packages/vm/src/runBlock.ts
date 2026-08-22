@@ -1,6 +1,6 @@
 import { createBlock, genRequestsRoot } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
-import { type EVM, type EVMInterface } from '@ethereumjs/evm'
+import { type EVM, type EVMInterface, txExceedsAvailableBlockGas8037 } from '@ethereumjs/evm'
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
 import { TransactionType } from '@ethereumjs/tx'
@@ -75,14 +75,18 @@ const withdrawalsRewardsCommitLabel = 'Withdrawals, Rewards, EVM journal commit'
 const entireBlockLabel = 'Entire block'
 
 /**
- * Processes the `block` running all of the transactions it contains and updating the miner's account
+ * Executes a block's transactions, updates miner rewards, and optionally validates header fields.
  *
- * vm method modifies the state if successfully executed and header fields are valid.
- * state modifications will be reverted if an exception is raised during execution or validation.
+ * Commits state on success; reverts the block checkpoint if execution or validation fails.
+ * Options are documented on {@link RunBlockOpts}; defaults include `generate: false`.
  *
- * @param {VM} vm
- * @param {RunBlockOpts} opts - Default values for options:
- *  - `generate`: false
+ * @throws If header or block validation fails, receipts or roots mismatch expected values,
+ * or a transaction reverts when validation is enabled
+ *
+ * @example
+ * ```ts
+ * const result = await runBlock(vm, { block, generate: true })
+ * ```
  */
 export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResult> {
   if (vm['_opts'].profilerOpts?.reportAfterBlock === true) {
@@ -111,8 +115,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
    * The `beforeBlock` event.
    *
    * @event Event: beforeBlock
-   * @type {Object}
-   * @property {Block} block emits the block that is about to be processed
+   * @property block - Block about to be processed
    */
   await vm._emit('beforeBlock', block)
 
@@ -416,8 +419,7 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
    * The `afterBlock` event
    *
    * @event Event: afterBlock
-   * @type {AfterBlockEvent}
-   * @property {AfterBlockEvent} result emits the results of processing a block
+   * @property result - {@link AfterBlockEvent} with block execution results
    */
   await vm._emit('afterBlock', afterBlockEvent)
   if (vm.DEBUG) {
@@ -446,12 +448,9 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
 }
 
 /**
- * Validates and applies a block, computing the results of
- * applying its transactions. vm method doesn't modify the
- * block itself. It computes the block rewards and puts
- * them on state (but doesn't persist the changes).
- * @param {Block} block
- * @param {RunBlockOpts} opts
+ * Validates and applies a block, computing receipts and gas usage without persisting state.
+ *
+ * Computes block rewards and writes them to the journal (not committed until the caller commits).
  */
 async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<ApplyBlockResult> {
   // Validate block
@@ -626,6 +625,11 @@ export async function accumulateParentBlockHash(
   await vm.evm.journal.cleanup()
 }
 
+/**
+ * Stores the parent beacon block root in the EIP-4788 system contract ring buffer.
+ *
+ * Called during block processing when EIP-4788 is active.
+ */
 export async function accumulateParentBeaconBlockRoot(vm: VM, root: Uint8Array, timestamp: bigint) {
   if (!vm.common.isActivatedEIP(4788)) {
     throw EthereumJSErrorWithoutCode(
@@ -686,11 +690,9 @@ export async function accumulateParentBeaconBlockRoot(vm: VM, root: Uint8Array, 
 }
 
 /**
- * Applies the transactions in a block, computing the receipts
- * as well as gas usage and some relevant data. vm method is
- * side-effect free (it doesn't modify the block nor the state).
- * @param {Block} block
- * @param {RunBlockOpts} opts
+ * Runs each transaction in a block and aggregates receipts, gas usage, and bloom data.
+ *
+ * Does not modify the block object; state changes stay within the active journal checkpoint.
  */
 async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
   if (enableProfiler) {
@@ -733,27 +735,20 @@ async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
       )
     }
 
-    // EIP-8037 pre-execution check (spec):
-    //   regular: min(TX_MAX_GAS_LIMIT, tx.gas - intrinsic_state) > regular_available  → reject
-    //   state:   tx.gas - intrinsic_regular                       > state_available    → reject
-    // where *_available = block.gas_limit - block_*_gas_used.
-    // EIP-8037 per-dimension inclusion check (per the pinned execution-specs
-    // Amsterdam revision):
-    //   min(TX_MAX_GAS_LIMIT, tx.gas) > regular_gas_available → reject
-    //   tx.gas > state_gas_available                          → reject
-    // Pre-EIP-8037 keeps the original check (`tx.gasLimit + gasUsed <= block.gasLimit`).
+    // EIP-8037 per-dimension inclusion (v7+):
+    //   min(TX_MAX, tx.gas) > regular_available → reject
+    //   tx.gas              > state_available    → reject
+    // Pre-EIP-8037 keeps `tx.gasLimit + gasUsed <= block.gasLimit`.
     if (vm.common.isActivatedEIP(8037)) {
-      const txMax = tx.common.param('maxTransactionGasLimit')
-      const regularAvailable =
-        block.header.gasLimit > blockRegularGasUsed
-          ? block.header.gasLimit - blockRegularGasUsed
-          : BIGINT_0
-      const stateAvailable =
-        block.header.gasLimit > blockStateGasUsed
-          ? block.header.gasLimit - blockStateGasUsed
-          : BIGINT_0
-      const txRegularBound = tx.gasLimit < txMax ? tx.gasLimit : txMax
-      if (txRegularBound > regularAvailable || tx.gasLimit > stateAvailable) {
+      if (
+        txExceedsAvailableBlockGas8037(
+          tx.gasLimit,
+          tx.common.param('maxTransactionGasLimit'),
+          block.header.gasLimit,
+          blockRegularGasUsed,
+          blockStateGasUsed,
+        )
+      ) {
         const msg = _errorMsg('tx has a higher gas limit than the block', vm, block)
         throw EthereumJSErrorWithoutCode(msg)
       }
@@ -887,6 +882,12 @@ function calculateOmmerReward(
   return reward
 }
 
+/**
+ * Computes the total block reward for the miner including ommer (nibling) rewards.
+ *
+ * @param minerReward Base reward per block for the current hardfork
+ * @param ommersNum Number of included ommer headers
+ */
 export function calculateMinerReward(minerReward: bigint, ommersNum: number): bigint {
   // calculate nibling reward
   const niblingReward = minerReward / BigInt(32)
@@ -895,6 +896,11 @@ export function calculateMinerReward(minerReward: bigint, ommersNum: number): bi
   return reward
 }
 
+/**
+ * Credits `reward` wei to `address`, creating the account if needed.
+ *
+ * Used for miner and ommer payouts during block processing.
+ */
 export async function rewardAccount(
   evm: EVMInterface,
   address: Address,

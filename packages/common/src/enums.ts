@@ -1,7 +1,14 @@
 import { BIGINT_0, hexToBytes } from '@ethereumjs/util'
 
+/** Numeric chain identifier enum. */
 export type Chain = (typeof Chain)[keyof typeof Chain]
 
+/**
+ * Well-known Ethereum chain IDs.
+ *
+ * Use with {@link @ethereumjs/genesis!getGenesis} or pass a {@link ChainConfig}
+ * from `chains.ts` (e.g. {@link Mainnet}) to {@link Common}.
+ */
 export const Chain = {
   Mainnet: 1,
   Sepolia: 11155111,
@@ -9,7 +16,7 @@ export const Chain = {
   Hoodi: 560048,
 } as const
 
-// Reverse mapping: from numeric value back to the key name
+/** Maps numeric {@link Chain} IDs back to their enum key names (e.g. `1` → `"Mainnet"`). */
 export const ChainNameFromNumber: { [key in Chain]: string } = Object.entries(Chain).reduce(
   (acc, [key, value]) => {
     acc[value as Chain] = key
@@ -56,8 +63,14 @@ export const ChainGenesis: Record<Chain, GenesisState> = {
   },
 }
 
+/** Named Ethereum hardfork enum. */
 export type Hardfork = (typeof Hardfork)[keyof typeof Hardfork]
 
+/**
+ * Named Ethereum hardfork identifiers used by {@link Common}.
+ *
+ * Hardfork order and activation conditions are defined per chain in {@link ChainConfig}.
+ */
 export const Hardfork = {
   Chainstart: 'chainstart',
   Homestead: 'homestead',
@@ -87,16 +100,20 @@ export const Hardfork = {
   Amsterdam: 'amsterdam',
 } as const
 
+/** Consensus engine family enum. */
 export type ConsensusType = (typeof ConsensusType)[keyof typeof ConsensusType]
 
+/** Consensus engine family enum. */
 export const ConsensusType = {
   ProofOfStake: 'pos',
   ProofOfWork: 'pow',
   ProofOfAuthority: 'poa',
 } as const
 
+/** Consensus algorithm identifier enum. */
 export type ConsensusAlgorithm = (typeof ConsensusAlgorithm)[keyof typeof ConsensusAlgorithm]
 
+/** Consensus algorithm identifier enum. */
 export const ConsensusAlgorithm = {
   Ethash: 'ethash',
   Clique: 'clique',

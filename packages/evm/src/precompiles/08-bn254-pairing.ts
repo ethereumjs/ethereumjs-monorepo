@@ -10,6 +10,7 @@ import type { EVM } from '../evm.ts'
 import type { ExecResult } from '../types.ts'
 import type { PrecompileInput } from './types.ts'
 
+/** BN254 pairing check precompile (0x08). */
 export function precompile08(opts: PrecompileInput): ExecResult {
   const pName = getPrecompileName('08')
   if (!moduloLengthCheck(opts, 192, pName)) {

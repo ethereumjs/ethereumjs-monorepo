@@ -8,7 +8,9 @@
 
 > **ParamsConfig** = `object`
 
-Defined in: [common/src/types.ts:167](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L167)
+Defined in: [types.ts:189](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L189)
+
+Hardfork parameter key/value map.
 
 ## Index Signature
 

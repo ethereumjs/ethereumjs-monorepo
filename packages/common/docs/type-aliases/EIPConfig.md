@@ -8,7 +8,9 @@
 
 > **EIPConfig** = `object`
 
-Defined in: [common/src/types.ts:162](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L162)
+Defined in: [types.ts:177](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L177)
+
+Minimum hardfork and prerequisite EIPs for activating one EIP.
 
 ## Properties
 
@@ -16,12 +18,17 @@ Defined in: [common/src/types.ts:162](https://github.com/ethereumjs/ethereumjs-m
 
 > **minimumHardfork**: [`Hardfork`](Hardfork.md)
 
-Defined in: [common/src/types.ts:163](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L163)
+Defined in: [types.ts:184](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L184)
+
+Earliest hardfork where this EIP can be activated in isolation, i.e. the
+fork that already provides its prerequisites. This is **not** the hardfork
+that schedules the EIP (that list lives on `HardforkConfig.eips`). It is
+therefore at least one hardfork before the scheduling fork.
 
 ***
 
 ### requiredEIPs?
 
-> `optional` **requiredEIPs**: `number`[]
+> `optional` **requiredEIPs?**: `number`[]
 
-Defined in: [common/src/types.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L164)
+Defined in: [types.ts:185](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L185)

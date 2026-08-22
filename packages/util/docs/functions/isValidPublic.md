@@ -6,9 +6,9 @@
 
 # Function: isValidPublic()
 
-> **isValidPublic**(`publicKey`, `sanitize`): `boolean`
+> **isValidPublic**(`publicKey`, `sanitize?`): `boolean`
 
-Defined in: [packages/util/src/account.ts:507](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L507)
+Defined in: [packages/util/src/account.ts:529](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L529)
 
 Checks if the public key satisfies the rules of the curve secp256k1
 and the requirements of Ethereum.
@@ -21,7 +21,7 @@ and the requirements of Ethereum.
 
 The two points of an uncompressed key, unless sanitize is enabled
 
-### sanitize
+### sanitize?
 
 `boolean` = `false`
 

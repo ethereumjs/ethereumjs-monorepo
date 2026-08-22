@@ -8,9 +8,9 @@
 
 > **verifyBinaryProof**(`rootHash`, `key`, `proof`): `Promise`\<`Uint8Array`\<`ArrayBufferLike`\> \| `null`\>
 
-Defined in: [proof.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/proof.ts#L34)
+Defined in: [proof.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/proof.ts#L36)
 
-Verifies a proof.
+Verify a binary tree proof for `key` against `rootHash`.
 
 ## Parameters
 
@@ -18,20 +18,26 @@ Verifies a proof.
 
 `Uint8Array`
 
+Expected tree root
+
 ### key
 
 `Uint8Array`
+
+Full 32-byte key (stem + suffix)
 
 ### proof
 
 `Uint8Array`\<`ArrayBufferLike`\>[]
 
+Serialized nodes along the key path
+
 ## Returns
 
 `Promise`\<`Uint8Array`\<`ArrayBufferLike`\> \| `null`\>
 
-The value from the key, or null if valid proof of non-existence.
+Proven value, or `null` for a valid non-existence proof
 
 ## Throws
 
-If proof is found to be invalid.
+If the proof is invalid

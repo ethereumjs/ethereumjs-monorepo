@@ -6,8 +6,10 @@
 
 # Interface: ChainsConfig
 
-Defined in: [common/src/types.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L8)
+Defined in: [types.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L10)
+
+Registry of chain configs and name aliases.
 
 ## Indexable
 
-\[`key`: `string`\]: [`ChainName`](ChainName.md) \| [`ChainConfig`](ChainConfig.md)
+> \[`key`: `string`\]: [`ChainName`](ChainName.md) \| [`ChainConfig`](ChainConfig.md)

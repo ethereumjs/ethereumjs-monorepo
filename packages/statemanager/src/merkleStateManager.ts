@@ -22,6 +22,7 @@ import { keccak_256 } from '@noble/hashes/sha3.js'
 import debugDefault from 'debug'
 
 import { OriginalStorageCache } from './cache/index.ts'
+import { consumeBAL as consumeBALUtil } from './consumeBAL.ts'
 import type { Caches, MerkleStateManagerOpts } from './index.ts'
 import { modifyAccountFields } from './util.ts'
 
@@ -31,7 +32,7 @@ import type {
   StorageDump,
   StorageRange,
 } from '@ethereumjs/common'
-import type { Address, DB } from '@ethereumjs/util'
+import type { Address, BALJSONBlockAccessList, DB } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 
 /**
@@ -42,10 +43,11 @@ import type { Debugger } from 'debug'
  * will be the same as the hash of the empty trie which leads to
  * misbehaviour in the underlying trie library.
  */
+/** DB key prefix that distinguishes contract code from empty trie nodes. */
 export const CODEHASH_PREFIX = utf8ToBytes('c')
 
 /**
- * Default StateManager implementation for the VM.
+ * Default {@link @ethereumjs/common!StateManagerInterface} implementation for the VM.
  *
  * The state manager abstracts from the underlying data store
  * by providing higher level access to accounts, contract code
@@ -88,7 +90,7 @@ export class MerkleStateManager implements StateManagerInterface {
   protected readonly DEBUG: boolean = false
 
   /**
-   * Instantiate the StateManager interface.
+   * Instantiate a Merkle-backed state manager.
    */
   constructor(opts: MerkleStateManagerOpts = {}) {
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
@@ -218,9 +220,8 @@ export class MerkleStateManager implements StateManagerInterface {
 
   /**
    * Gets the code corresponding to the provided `address`.
-   * @param address - Address to get the `code` for
-   * @returns {Promise<Uint8Array>} -  Resolves with the code corresponding to the provided address.
-   * Returns an empty `Uint8Array` if the account has no associated code.
+   * @param address Address to get the code for
+   * @returns Contract bytecode, or an empty array when no code is stored
    */
   async getCode(address: Address): Promise<Uint8Array> {
     const elem = this._caches?.code?.get(address)
@@ -436,7 +437,7 @@ export class MerkleStateManager implements StateManagerInterface {
   }
 
   /**
-   * Checkpoints the current state of the StateManager instance.
+   * Checkpoints the current state of this {@link @ethereumjs/common!StateManagerInterface} instance.
    * State changes that follow can then be committed by calling
    * `commit` or `reverted` by calling rollback.
    */
@@ -540,9 +541,9 @@ export class MerkleStateManager implements StateManagerInterface {
 
   /**
    * Gets the state-root of the Merkle-Patricia trie representation
-   * of the state of this StateManager. Will error if there are uncommitted
+   * of the state of this manager. Will error if there are uncommitted
    * checkpoints on the instance.
-   * @returns {Promise<Uint8Array>} - Returns the state-root of the `StateManager`
+   * @returns Account trie root hash
    */
   async getStateRoot(): Promise<Uint8Array> {
     await this.flush()
@@ -575,10 +576,8 @@ export class MerkleStateManager implements StateManagerInterface {
 
   /**
    * Dumps the RLP-encoded storage values for an `account` specified by `address`.
-   * @param address - The address of the `account` to return storage for
-   * @returns {Promise<StorageDump>} - The state of the account as an `Object` map.
-   * Keys are are the storage keys, values are the storage values as strings.
-   * Both are represented as hex strings without the `0x` prefix.
+   * @param address Account whose storage should be dumped
+   * @returns Hex-keyed map of storage slots (values as unprefixed hex strings)
    */
   async dumpStorage(address: Address): Promise<StorageDump> {
     await this.flush()
@@ -598,9 +597,8 @@ export class MerkleStateManager implements StateManagerInterface {
    starting from `startKey` or greater.
    @param address - The address of the `account` to return storage for.
    @param startKey - The bigint representation of the smallest storage key that will be returned.
-   @param limit - The maximum number of storage values that will be returned.
-   @returns {Promise<StorageRange>} - A {@link StorageRange} object that will contain at most `limit` entries in its `storage` field.
-   The object will also contain `nextKey`, the next (hashed) storage key after the range included in `storage`.
+   * @param limit Maximum number of storage entries to return
+   * @returns {@link @ethereumjs/common!StorageRange} with at most `limit` entries and optional `nextKey`
    */
   async dumpStorageRange(address: Address, startKey: bigint, limit: number): Promise<StorageRange> {
     if (!Number.isSafeInteger(limit) || limit < 0) {
@@ -679,7 +677,7 @@ export class MerkleStateManager implements StateManagerInterface {
   }
 
   /**
-   * Copies the current instance of the `StateManager`
+   * Copies the current {@link MerkleStateManager} at the last fully committed point.
    * at the last fully committed point, i.e. as if all current
    * checkpoints were reverted.
    *
@@ -728,10 +726,19 @@ export class MerkleStateManager implements StateManagerInterface {
   /**
    * Returns the applied key for a given address
    * Used for saving preimages
-   * @param address - The address to return the applied key
-   * @returns {Uint8Array} - The applied key (e.g. hashed address)
+   * @param address Address bytes used for preimage recording
+   * @returns Key after trie key hashing (e.g. keccak of the address)
    */
   getAppliedKey(address: Uint8Array): Uint8Array {
     return this._trie['appliedKey'](address)
+  }
+
+  /**
+   * Apply an EIP-7928 BAL onto this state. See {@link consumeBAL}.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
+  async consumeBAL(bal: BALJSONBlockAccessList, expectedStateRoot?: Uint8Array): Promise<void> {
+    return consumeBALUtil(this, bal, expectedStateRoot)
   }
 }

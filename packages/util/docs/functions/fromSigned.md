@@ -8,17 +8,15 @@
 
 > **fromSigned**(`num`): `bigint`
 
-Defined in: [packages/util/src/bytes.ts:304](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L304)
+Defined in: [packages/util/src/bytes.ts:274](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L274)
 
-Interprets a `Uint8Array` as a signed integer and returns a `BigInt`. Assumes 256-bit numbers.
+Interpret bytes as a 256-bit signed integer.
 
 ## Parameters
 
 ### num
 
 `Uint8Array`
-
-Signed integer value
 
 ## Returns
 

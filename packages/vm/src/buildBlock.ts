@@ -6,6 +6,7 @@ import {
   genWithdrawalsTrieRoot,
 } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
+import { txExceedsAvailableBlockGas8037 } from '@ethereumjs/evm'
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
 import {
@@ -23,10 +24,12 @@ import {
   KECCAK256_RLP,
   TypeOutput,
   bytesToBigInt,
+  createBlockLevelAccessList,
   createWithdrawal,
   createZeroAddress,
   toBytes,
   toType,
+  validateBlockAccessListGasLimit,
 } from '@ethereumjs/util'
 import { sha256 } from '@noble/hashes/sha2.js'
 
@@ -48,6 +51,14 @@ import type { BuildBlockOpts, BuilderOpts, RunTxResult, SealBlockOpts } from './
 import type { VM } from './vm.ts'
 
 export type BuildStatus = (typeof BuildStatus)[keyof typeof BuildStatus]
+
+/**
+ * Status of an in-progress {@link BlockBuilder} session.
+ *
+ * - `pending` — builder initialized, no transactions committed yet
+ * - `build` — at least one transaction was successfully included
+ * - `reverted` — the last transaction was reverted and excluded from the block
+ */
 export const BuildStatus = {
   Reverted: 'reverted',
   Build: 'build',
@@ -58,11 +69,25 @@ type BlockStatus =
   | { status: typeof BuildStatus.Pending | typeof BuildStatus.Reverted }
   | { status: typeof BuildStatus.Build; block: Block }
 
+/**
+ * Incrementally assembles a block by executing transactions against a {@link VM}.
+ *
+ * Created via {@link buildBlock}; seals the header and transactions trie when finalized.
+ */
 export class BlockBuilder {
   /**
-   * The cumulative gas used by the transactions added to the block.
+   * Cumulative gas used by transactions added to the block (header `gasUsed`).
+   * Under EIP-8037 this is `max(regular, state)` of the two dimensions.
    */
   gasUsed = BIGINT_0
+  /**
+   * EIP-8037 regular-dimension accumulator (0 when the EIP is inactive).
+   */
+  private blockRegularGasUsed = BIGINT_0
+  /**
+   * EIP-8037 state-dimension accumulator (0 when the EIP is inactive).
+   */
+  private blockStateGasUsed = BIGINT_0
   /**
    *  The cumulative blob gas used by the blobs in a block
    */
@@ -127,6 +152,15 @@ export class BlockBuilder {
       typeof this.headerData.excessBlobGas === 'undefined'
     ) {
       this.headerData.excessBlobGas = opts.parentBlock.header.calcNextExcessBlobGas(this.vm.common)
+    }
+
+    if (this.vm.common.isActivatedEIP(7843) && typeof this.headerData.slotNumber === 'undefined') {
+      const parentSlot = opts.parentBlock.header.slotNumber
+      this.headerData.slotNumber = parentSlot !== undefined ? parentSlot + BIGINT_1 : BIGINT_0
+    }
+
+    if (this.vm.common.isActivatedEIP(7928)) {
+      this.vm.evm.blockLevelAccessList = createBlockLevelAccessList()
     }
   }
 
@@ -218,7 +252,7 @@ export class BlockBuilder {
    * Run and add a transaction to the block being built.
    * Please note that this modifies the state of the VM.
    * Throws if the transaction's gasLimit is greater than
-   * the remaining gas in the block.
+   * the remaining gas in the block (EIP-8037: per-dimension remaining).
    */
   async addTransaction(
     tx: TypedTransaction,
@@ -234,14 +268,26 @@ export class BlockBuilder {
       this.checkpointed = true
     }
 
-    // According to the Yellow Paper, a transaction's gas limit
-    // cannot be greater than the remaining gas in the block
+    // Yellow Paper / EIP-8037: a tx gas limit cannot exceed remaining block gas.
     const blockGasLimit = toType(this.headerData.gasLimit, TypeOutput.BigInt)
 
     const blobGasPerBlob = this.vm.common.param('blobGasPerBlob')
 
-    const blockGasRemaining = blockGasLimit - this.gasUsed
-    if (tx.gasLimit > blockGasRemaining) {
+    if (this.vm.common.isActivatedEIP(8037)) {
+      if (
+        txExceedsAvailableBlockGas8037(
+          tx.gasLimit,
+          tx.common.param('maxTransactionGasLimit'),
+          blockGasLimit,
+          this.blockRegularGasUsed,
+          this.blockStateGasUsed,
+        )
+      ) {
+        throw EthereumJSErrorWithoutCode(
+          'tx has a higher gas limit than the remaining gas in the block',
+        )
+      }
+    } else if (tx.gasLimit > blockGasLimit - this.gasUsed) {
       throw EthereumJSErrorWithoutCode(
         'tx has a higher gas limit than the remaining gas in the block',
       )
@@ -291,6 +337,10 @@ export class BlockBuilder {
     const blockData = { header, transactions: this.transactions }
     const block = createBlock(blockData, this.blockOpts)
 
+    if (this.vm.common.isActivatedEIP(7928) && this.vm.evm.blockLevelAccessList !== undefined) {
+      this.vm.evm.blockLevelAccessList.blockAccessIndex = this.transactions.length + 1
+    }
+
     const result = await runTx(this.vm, { tx, block, skipHardForkValidation })
 
     // If tx is a blob transaction, remove blobs/kzg commitments before adding to block per EIP-4844
@@ -303,7 +353,16 @@ export class BlockBuilder {
     }
     this.transactions.push(tx)
     this.transactionResults.push(result)
-    this.gasUsed += result.totalGasSpent
+    if (this.vm.common.isActivatedEIP(8037) && result.txRegularGas !== undefined) {
+      this.blockRegularGasUsed += result.txRegularGas
+      this.blockStateGasUsed += result.txStateGas ?? BIGINT_0
+      this.gasUsed =
+        this.blockRegularGasUsed > this.blockStateGasUsed
+          ? this.blockRegularGasUsed
+          : this.blockStateGasUsed
+    } else {
+      this.gasUsed += result.blockGasSpent
+    }
     this._minerValue += result.minerValue
 
     return result
@@ -342,6 +401,9 @@ export class BlockBuilder {
     if (consensusType === ConsensusType.ProofOfWork) {
       await this.rewardMiner()
     }
+    if (this.vm.common.isActivatedEIP(7928) && this.vm.evm.blockLevelAccessList !== undefined) {
+      this.vm.evm.blockLevelAccessList.blockAccessIndex = this.transactions.length + 1
+    }
     await this.processWithdrawals()
 
     const transactionsTrie = await this.transactionsTrie()
@@ -372,13 +434,14 @@ export class BlockBuilder {
         this.headerData.gasLimit !== undefined
           ? bytesToBigInt(toBytes(this.headerData.gasLimit))
           : undefined,
+        true,
       )
       requestsHash = genRequestsRoot(requests, sha256Function)
     }
 
     // get stateRoot after all the accumulateRequests etc have been done
     const stateRoot = await this.vm.stateManager.getStateRoot()
-    const headerData = {
+    const headerData: HeaderData = {
       ...this.headerData,
       stateRoot,
       transactionsTrie,
@@ -390,6 +453,12 @@ export class BlockBuilder {
       // correct excessBlobGas should already be part of headerData used above
       blobGasUsed,
       requestsHash,
+    }
+
+    if (this.vm.common.isActivatedEIP(7928) && this.vm.evm.blockLevelAccessList !== undefined) {
+      const gasLimit = toType(this.headerData.gasLimit, TypeOutput.BigInt)
+      validateBlockAccessListGasLimit(this.vm.evm.blockLevelAccessList, gasLimit)
+      headerData.blockAccessListHash = this.vm.evm.blockLevelAccessList.hash()
     }
 
     if (consensusType === ConsensusType.ProofOfWork) {
@@ -421,7 +490,7 @@ export class BlockBuilder {
       this.checkpointed = false
     }
 
-    return { block, requests }
+    return { block, requests, blockLevelAccessList: this.vm.evm.blockLevelAccessList }
   }
 
   async initState() {
@@ -456,19 +525,21 @@ export class BlockBuilder {
 }
 
 /**
- * Build a block on top of the current state
- * by adding one transaction at a time.
+ * Incrementally assembles a block by executing transactions against a {@link VM}.
  *
- * Creates a checkpoint on the StateManager and modifies the state
- * as transactions are run. The checkpoint is committed on {@link BlockBuilder.build}
- * or discarded with {@link BlockBuilder.revert}.
+ * Opens a {@link @ethereumjs/common!StateManagerInterface} checkpoint; commits on {@link BlockBuilder.build}
+ * or reverts with {@link BlockBuilder.revert}. See {@link BuildBlockOpts} for parent block
+ * and header defaults.
  *
- * @param {VM} vm
- * @param {BuildBlockOpts} opts
- * @returns An instance of {@link BlockBuilder} with methods:
- * - {@link BlockBuilder.addTransaction}
- * - {@link BlockBuilder.build}
- * - {@link BlockBuilder.revert}
+ * @returns {@link BlockBuilder} for {@link BlockBuilder.addTransaction},
+ * {@link BlockBuilder.build}, and {@link BlockBuilder.revert}
+ *
+ * @example
+ * ```ts
+ * const builder = await buildBlock(vm, { parentBlock })
+ * await builder.addTransaction(signedTx)
+ * const { block } = await builder.build()
+ * ```
  */
 export async function buildBlock(vm: VM, opts: BuildBlockOpts): Promise<BlockBuilder> {
   const blockBuilder = new BlockBuilder(vm, opts)

@@ -24,6 +24,7 @@ import type { RunState } from '../interpreter.ts'
 
 const MASK_160 = (BIGINT_1 << BIGINT_160) - BIGINT_1
 
+/** Non-negative modular reduction (`a mod b`, with `b > 0`). */
 export function mod(a: bigint, b: bigint) {
   let r = a % b
   if (r < BIGINT_0) {
@@ -32,14 +33,17 @@ export function mod(a: bigint, b: bigint) {
   return r
 }
 
+/** Interprets a 256-bit word as a signed two's-complement integer. */
 export function fromTwos(a: bigint) {
   return BigInt.asIntN(256, a)
 }
 
+/** Wraps a signed integer into an unsigned 256-bit word. */
 export function toTwos(a: bigint) {
   return BigInt.asUintN(256, a)
 }
 
+/** Absolute value for bigint operands. */
 export function abs(a: bigint) {
   if (a > 0) {
     return a
@@ -48,6 +52,7 @@ export function abs(a: bigint) {
 }
 
 const N = BigInt(115792089237316195423570985008687907853269984665640564039457584007913129639936)
+/** Modular exponentiation over the EVM 256-bit field. */
 export function exponentiation(bas: bigint, exp: bigint) {
   let t = BIGINT_1
   while (exp > BIGINT_0) {
@@ -61,9 +66,7 @@ export function exponentiation(bas: bigint, exp: bigint) {
 }
 
 /**
- * Create an address from a stack item (256 bit integer).
- * This wrapper ensures that the value is masked to 160 bits.
- * @param value 160-bit integer
+ * Creates an {@link Address} from a stack word, masking to 160 bits.
  */
 export function createAddressFromStackBigInt(value: bigint): Address {
   const maskedValue = value & MASK_160
@@ -71,9 +74,7 @@ export function createAddressFromStackBigInt(value: bigint): Address {
 }
 
 /**
- * Proxy function for @ethereumjs/util's setLengthLeft, except it returns a zero
- * length Uint8Array in case the Uint8Array is full of zeros.
- * @param value Uint8Array which we want to pad
+ * Left-pads a storage value to 32 bytes, returning an empty buffer when the value is all zeros.
  */
 export function setLengthLeftStorage(value: Uint8Array) {
   if (equalsBytes(value, new Uint8Array(value.length))) {
@@ -85,13 +86,14 @@ export function setLengthLeftStorage(value: Uint8Array) {
 }
 
 /**
- * Wraps error message as EVMError
+ * Throws an {@link EVMError} with the given message (never returns).
  */
 export function trap(err: string): never {
   // TODO: facilitate extra data along with errors
   throw new EVMError(err as EVMErrorType)
 }
 
+/** Reads the next bytecode byte and advances the program counter (zero when past EOF). */
 export function readImmediateByteOrZero(runState: RunState): number {
   const immediate = runState.code[runState.programCounter] ?? 0
   runState.programCounter++
@@ -99,7 +101,7 @@ export function readImmediateByteOrZero(runState: RunState): number {
 }
 
 /**
- * Error message helper - generates location string
+ * Builds a `codeHash/address:pc` location string for error messages.
  */
 export function describeLocation(runState: RunState): string {
   const keccakFunction = runState.interpreter._evm.common.customCrypto.keccak256 ?? keccak_256
@@ -110,11 +112,7 @@ export function describeLocation(runState: RunState): string {
 }
 
 /**
- * Find Ceil(a / b)
- *
- * @param {bigint} a
- * @param {bigint} b
- * @return {bigint}
+ * Ceiling division for bigint values (`ceil(a / b)`).
  */
 export function divCeil(a: bigint, b: bigint): bigint {
   const div = a / b
@@ -128,8 +126,7 @@ export function divCeil(a: bigint, b: bigint): bigint {
 }
 
 /**
- * Returns an overflow-safe slice of an array. It right-pads
- * the data with zeros to `length`.
+ * Returns an overflow-safe slice of calldata or memory, right-padded with zeros.
  */
 export function getDataSlice(data: Uint8Array, offset: bigint, length: bigint): Uint8Array {
   const len = BigInt(data.length)
@@ -150,11 +147,7 @@ export function getDataSlice(data: Uint8Array, offset: bigint, length: bigint): 
 }
 
 /**
- * Get full opcode name from its name and code.
- *
- * @param code Integer code of opcode.
- * @param name Short name of the opcode.
- * @returns Full opcode name
+ * Expands PUSH/LOG/DUP/SWAP opcode names with their immediate index.
  */
 export function getFullname(code: number, name: string): string {
   switch (name) {
@@ -175,19 +168,14 @@ export function getFullname(code: number, name: string): string {
 }
 
 /**
- * Checks if a jump is valid given a destination (defined as a 1 in the validJumps array)
+ * Returns true when `dest` is a valid JUMPDEST for the current bytecode.
  */
 export function jumpIsValid(runState: RunState, dest: number): boolean {
   return runState.validJumps[dest] === 1
 }
 
 /**
- * Returns an overflow-safe slice of an array. It right-pads
- * the data with zeros to `length`.
- * @param gasLimit requested gas Limit
- * @param gasLeft current gas left
- * @param runState the current runState
- * @param common the common
+ * Caps forwarded call gas per EIP-150 (Tangerine Whistle) rules.
  */
 export function maxCallGas(
   gasLimit: bigint,
@@ -204,7 +192,7 @@ export function maxCallGas(
 }
 
 /**
- * Subtracts the amount needed for memory usage from `runState.gasLeft`
+ * Charges memory expansion gas and updates the frame's memory word count.
  */
 export function subMemUsage(runState: RunState, offset: bigint, length: bigint, common: Common) {
   // YP (225): access with zero length will not extend the memory
@@ -231,7 +219,7 @@ export function subMemUsage(runState: RunState, offset: bigint, length: bigint, 
 }
 
 /**
- * Writes data returned by evm.call* methods to memory
+ * Copies child-call return data into the caller's memory buffer.
  */
 export function writeCallOutput(runState: RunState, outOffset: bigint, outLength: bigint) {
   const returnData = runState.interpreter.getReturnData()
@@ -248,7 +236,7 @@ export function writeCallOutput(runState: RunState, outOffset: bigint, outLength
 }
 
 /**
- * The first rule set of SSTORE rules, which are the rules pre-Constantinople and in Petersburg
+ * Pre-Constantinople SSTORE gas and refund rules (Frontier through Petersburg).
  */
 export function updateSstoreGas(
   runState: RunState,

@@ -8,7 +8,7 @@
 
 > **getPresetChainConfig**(`chain`): [`ChainConfig`](../interfaces/ChainConfig.md)
 
-Defined in: [common/src/utils.ts:308](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/utils.ts#L308)
+Defined in: [utils.ts:308](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/utils.ts#L308)
 
 Return the preset chain config for one of the predefined chain configurations
 
@@ -16,9 +16,9 @@ Return the preset chain config for one of the predefined chain configurations
 
 ### chain
 
-the representing a network name (e.g. 'mainnet') or number representing the chain ID
+`string` \| `number`
 
-`string` | `number`
+the representing a network name (e.g. 'mainnet') or number representing the chain ID
 
 ## Returns
 

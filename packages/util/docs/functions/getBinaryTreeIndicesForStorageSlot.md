@@ -8,10 +8,9 @@
 
 > **getBinaryTreeIndicesForStorageSlot**(`storageKey`): `object`
 
-Defined in: [packages/util/src/binaryTree.ts:133](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L133)
+Defined in: [packages/util/src/binaryTree.ts:145](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L145)
 
-Calculates the position of the storage key in the BinaryTree tree, determining
-both the tree index (the node in the tree) and the subindex (the position within the node).
+Map a storage slot to its binary-tree node index and in-node subindex.
 
 ## Parameters
 
@@ -19,13 +18,9 @@ both the tree index (the node in the tree) and the subindex (the position within
 
 `bigint`
 
-The key representing a specific storage slot.
-
 ## Returns
 
 `object`
-
-- An object containing the tree index and subindex
 
 ### subIndex
 

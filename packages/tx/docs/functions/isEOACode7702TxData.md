@@ -8,7 +8,7 @@
 
 > **isEOACode7702TxData**(`txData`): `txData is EOACode7702TxData`
 
-Defined in: [types.ts:345](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L345)
+Defined in: [types.ts:375](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L375)
 
 Type guard to check if transaction data is EOA Code EIP-7702 transaction data
 

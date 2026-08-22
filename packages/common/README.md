@@ -205,10 +205,12 @@ console.log(`EIP-7702 on Prague: ${prague.isActivatedEIP(7702)}`)
 const early7702 = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7702] })
 console.log(`EIP-7702 forced on Cancun: ${early7702.isActivatedEIP(7702)}`)
 
-// Experimental Amsterdam fork (in development)
+// Experimental Amsterdam fork (in development) — full bundle via Hardfork.Amsterdam
 const amsterdam = new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })
 console.log(`EIP-7928 BAL on Amsterdam: ${amsterdam.isActivatedEIP(7928)}`)
 console.log(`EIP-7708 transfer logs: ${amsterdam.isActivatedEIP(7708)}`)
+console.log(`EIP-8037 two-dimensional gas: ${amsterdam.isActivatedEIP(8037)}`)
+console.log(`EIP-7843 SLOTNUM / slotNumber: ${amsterdam.isActivatedEIP(7843)}`)
 ```
 
 ### Supported EIPs
@@ -269,6 +271,9 @@ The following EIPs are currently supported (sorted by EIP number):
 - [EIP-7997](https://eips.ethereum.org/EIPS/eip-7997) - Deterministic CREATE2 factory predeploy (Amsterdam, experimental)
 - [EIP-8024](https://eips.ethereum.org/EIPS/eip-8024) - DUPN, SWAPN and EXCHANGE instructions (Amsterdam, experimental)
 - [EIP-8037](https://eips.ethereum.org/EIPS/eip-8037) - State creation gas cost increase (Amsterdam, experimental)
+- [EIP-8038](https://eips.ethereum.org/EIPS/eip-8038) - State access gas cost increase (Amsterdam, experimental)
+- [EIP-8246](https://eips.ethereum.org/EIPS/eip-8246) - SELFDESTRUCT no burn (Amsterdam, experimental)
+- [EIP-8282](https://eips.ethereum.org/EIPS/eip-8282) - Builder execution requests (Amsterdam, experimental)
 
 Annotations:
 

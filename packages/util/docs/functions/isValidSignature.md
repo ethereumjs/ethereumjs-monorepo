@@ -6,9 +6,9 @@
 
 # Function: isValidSignature()
 
-> **isValidSignature**(`v`, `r`, `s`, `homesteadOrLater`, `chainId?`): `boolean`
+> **isValidSignature**(`v`, `r`, `s`, `homesteadOrLater?`, `chainId?`): `boolean`
 
-Defined in: [packages/util/src/signature.ts:158](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L158)
+Defined in: [packages/util/src/signature.ts:159](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L159)
 
 Validate a ECDSA signature.
 NOTE: Accepts `v === 0 | v === 1` for EIP1559 transactions
@@ -27,7 +27,7 @@ NOTE: Accepts `v === 0 | v === 1` for EIP1559 transactions
 
 `Uint8Array`
 
-### homesteadOrLater
+### homesteadOrLater?
 
 `boolean` = `true`
 

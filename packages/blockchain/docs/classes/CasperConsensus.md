@@ -118,11 +118,13 @@ Validate block consensus parameters
 
 Defined in: [consensus/casper.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/casper.ts#L23)
 
+Validates header difficulty against parent and consensus rules.
+
 #### Parameters
 
 ##### header
 
-`BlockHeader`
+[`BlockHeader`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/BlockHeader.md)
 
 #### Returns
 

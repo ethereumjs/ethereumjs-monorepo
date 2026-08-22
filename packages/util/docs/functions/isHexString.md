@@ -8,9 +8,9 @@
 
 > **isHexString**(`value`, `length?`): `` value is `0x${string}` ``
 
-Defined in: [packages/util/src/internal.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L36)
+Defined in: [packages/util/src/internal.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L35)
 
-Returns a boolean on whether or not the the input starts with '0x' and matches the optional length
+Return whether `value` is a `0x`-prefixed hex string, optionally requiring an exact byte length.
 
 ## Parameters
 
@@ -18,16 +18,12 @@ Returns a boolean on whether or not the the input starts with '0x' and matches t
 
 `string`
 
-the string input value
-
 ### length?
 
 `number`
 
-the optional length of the hex string in bytes
+When set, the hex body must contain exactly this many bytes
 
 ## Returns
 
 `` value is `0x${string}` ``
-
-Whether or not the string is a valid PrefixedHexString matching the optional length

@@ -21,13 +21,16 @@ export interface SimpleStateManagerOpts extends BaseStateManagerOpts {
   // Keep this as an alias so that it might be able to extend in the future
 }
 
+/** Options for constructing a {@link RPCStateManager}. */
 export interface RPCStateManagerOpts extends BaseStateManagerOpts {
+  /** HTTP(S) JSON-RPC endpoint URL */
   provider: string
+  /** Block number (hex) or `'earliest'` to pin state reads */
   blockTag: bigint | 'earliest'
 }
 
 /**
- * Options for constructing a {@link StateManager}.
+ * Options for constructing a {@link MerkleStateManager}.
  */
 export interface MerkleStateManagerOpts extends BaseStateManagerOpts {
   /**
@@ -64,34 +67,40 @@ export interface MerkleStateManagerOpts extends BaseStateManagerOpts {
   caches?: Caches
 }
 
-/**
- * Options dictionary.
- */
+/** Options for a stateless Verkle-backed state manager (requires `common` with verkle crypto). */
 export interface StatelessVerkleStateManagerOpts extends BaseStateManagerOpts {
   common: Common // Common required since it provides verkleCrypto through customCrypto
   caches?: Caches
 }
 
+/** Options for constructing a {@link StatefulBinaryTreeStateManager}. */
 export interface StatefulBinaryTreeStateManagerOpts extends BaseStateManagerOpts {
+  /** Node hash function (defaults to the tree's hash function). */
   hashFunction?: (data: Uint8Array) => Uint8Array
+  /** Pre-existing {@link BinaryTree} instance. */
   tree?: BinaryTree
+  /** Read-through caches for account, code, and storage. */
   caches?: Caches
 }
 
+/** Binary tree state keyed by hex address with hex slot values. */
 export interface BinaryTreeState {
   [key: PrefixedHexString]: PrefixedHexString | null
 }
 
+/** Same as {@link BinaryTreeState} with encoded hex values. */
 export interface EncodedBinaryTreeState {
   [key: PrefixedHexString]: PrefixedHexString | null
 }
 
+/** Single storage slot entry within an EIP-1186 proof. */
 export type StorageProof = {
   key: PrefixedHexString
   proof: PrefixedHexString[]
   value: PrefixedHexString
 }
 
+/** EIP-1186 account proof returned by `eth_getProof` and related helpers. */
 export type Proof = {
   address: PrefixedHexString
   balance: PrefixedHexString

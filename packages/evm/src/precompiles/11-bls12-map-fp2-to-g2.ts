@@ -11,6 +11,7 @@ import { equalityLengthCheck, gasLimitCheck } from './util.ts'
 import type { ExecResult } from '../types.ts'
 import type { PrecompileInput } from './types.ts'
 
+/** BLS12-381 field-element-to-G2 map precompile (0x11, EIP-2537). */
 export async function precompile11(opts: PrecompileInput): Promise<ExecResult> {
   const pName = getPrecompileName('13')
   const bls = (opts._EVM as EVM)['_bls']!

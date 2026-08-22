@@ -8,4 +8,6 @@
 
 > `const` **ROOT\_DB\_KEY**: `Uint8Array`\<`ArrayBufferLike`\>
 
-Defined in: [packages/mpt/src/types.ts:151](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/types.ts#L151)
+Defined in: [types.ts:166](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/types.ts#L166)
+
+Internal DB key used when `useRootPersistence` stores the trie root.

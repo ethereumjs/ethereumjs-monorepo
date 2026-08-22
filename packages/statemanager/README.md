@@ -266,6 +266,8 @@ Not production-ready.
 
 All implementations satisfy `StateManagerInterface` from `@ethereumjs/common`. Custom implementations can implement that interface directly.
 
+Optional `consumeBAL(bal, expectedStateRoot?)` applies an [EIP-7928](https://eips.ethereum.org/EIPS/eip-7928) block-level access list onto state without EVM execution (last post-balance / nonce / code / storage; EIP-161 empty-account deletes). Every implementation in this package forwards to a shared `consumeBAL()` helper.
+
 ## Browser
 
 Hybrid ESM/CJS builds are provided. See [./examples/browser.html](./examples/browser.html).

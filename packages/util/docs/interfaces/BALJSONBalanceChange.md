@@ -6,7 +6,7 @@
 
 # Interface: BALJSONBalanceChange
 
-Defined in: [packages/util/src/bal/index.ts:61](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L61)
+Defined in: [packages/util/src/bal/index.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L64)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [packages/util/src/bal/index.ts:61](https://github.com/ethereumjs/et
 
 > **blockAccessIndex**: `` `0x${string}` ``
 
-Defined in: [packages/util/src/bal/index.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L62)
+Defined in: [packages/util/src/bal/index.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L65)
 
 ***
 
@@ -22,4 +22,4 @@ Defined in: [packages/util/src/bal/index.ts:62](https://github.com/ethereumjs/et
 
 > **postBalance**: `` `0x${string}` ``
 
-Defined in: [packages/util/src/bal/index.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L63)
+Defined in: [packages/util/src/bal/index.ts:66](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L66)

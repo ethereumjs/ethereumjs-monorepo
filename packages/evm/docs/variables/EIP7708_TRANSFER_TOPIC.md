@@ -8,7 +8,7 @@
 
 > `const` **EIP7708\_TRANSFER\_TOPIC**: `Uint8Array`\<`ArrayBufferLike`\>
 
-Defined in: [eip7708.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/eip7708.ts#L23)
+Defined in: [eip7708.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/eip7708.ts#L27)
 
 EIP-7708: `keccak256('Transfer(address,address,uint256)')`.
 Matches the ERC-20 Transfer event signature.

@@ -2,24 +2,30 @@ import type { BigIntLike, KZG, PrefixedHexString } from '@ethereumjs/util'
 import type { secp256k1 } from '@noble/curves/secp256k1.js'
 import type { ConsensusAlgorithm, ConsensusType, Hardfork } from './enums.ts'
 
+/** Map of chain IDs to human-readable chain names. */
 export interface ChainName {
   [chainId: string]: string
 }
+/** Registry of chain configs and name aliases. */
 export interface ChainsConfig {
   [key: string]: ChainConfig | ChainName
 }
 
+/** Event map for {@link Common} hardfork change notifications. */
 export interface CommonEvent {
   hardforkChanged: [hardfork: string]
 }
 
+/** Clique proof-of-authority consensus parameters. */
 export type CliqueConfig = {
   period: number
   epoch: number
 }
 
+/** Ethash consensus parameters (currently empty). */
 export type EthashConfig = {}
 
+/** Casper consensus parameters (currently empty). */
 export type CasperConfig = {}
 
 type ConsensusConfig = {
@@ -30,6 +36,7 @@ type ConsensusConfig = {
   casper?: CasperConfig
 }
 
+/** Full chain specification consumed by {@link Common}. */
 export interface ChainConfig {
   name: string
   chainId: number | string
@@ -45,6 +52,7 @@ export interface ChainConfig {
   depositContractAddress?: PrefixedHexString
 }
 
+/** Genesis block header fields for a chain config. */
 export interface GenesisBlockConfig {
   timestamp?: PrefixedHexString
   gasLimit: number | PrefixedHexString
@@ -56,6 +64,7 @@ export interface GenesisBlockConfig {
   requestsHash?: PrefixedHexString
 }
 
+/** Block or timestamp at which a hardfork activates. */
 export interface HardforkTransitionConfig {
   name: Hardfork | string
   block: number | null // null is used for hardforks that should not be applied -- since `undefined` isn't a valid value in JSON
@@ -63,6 +72,7 @@ export interface HardforkTransitionConfig {
   forkHash?: PrefixedHexString | null
 }
 
+/** ENR/bootstrap node entry for a chain config. */
 export interface BootstrapNodeConfig {
   ip: string
   port: number | string
@@ -73,6 +83,7 @@ export interface BootstrapNodeConfig {
   comment: string
 }
 
+/** CustomCrypto type. */
 export interface CustomCrypto {
   /**
    * Interface for providing custom cryptographic primitives in place of `ethereum-cryptography` variants
@@ -91,6 +102,7 @@ export interface CustomCrypto {
   kzg?: KZG
 }
 
+/** BaseOpts type. */
 export interface BaseOpts {
   /**
    * String identifier ('byzantium') for hardfork or {@link Hardfork} enum.
@@ -149,16 +161,19 @@ export interface CommonOpts extends BaseOpts {
   chain: ChainConfig
 }
 
+/** Options when constructing {@link Common} from a geth genesis file. */
 export interface GethConfigOpts extends BaseOpts {
   chain?: string
   genesisHash?: Uint8Array
 }
 
+/** Block number or timestamp used to select a hardfork. */
 export interface HardforkByOpts {
   blockNumber?: BigIntLike
   timestamp?: BigIntLike
 }
 
+/** Minimum hardfork and prerequisite EIPs for activating one EIP. */
 export type EIPConfig = {
   /**
    * Earliest hardfork where this EIP can be activated in isolation, i.e. the
@@ -170,28 +185,34 @@ export type EIPConfig = {
   requiredEIPs?: number[]
 }
 
+/** Hardfork parameter key/value map. */
 export type ParamsConfig = {
   [key: string]: number | string | null
 }
 
+/** Hardfork-specific EIP and parameter overrides. */
 export type HardforkConfig = {
   eips?: number[]
   consensus?: ConsensusConfig
   params?: ParamsConfig
 }
 
+/** Dictionary of EIP metadata keyed by EIP number. */
 export type EIPsDict = {
   [key: string]: EIPConfig
 }
 
+/** Dictionary of parameter sets keyed by identifier. */
 export type ParamsDict = {
   [key: string]: ParamsConfig
 }
 
+/** Dictionary of hardfork configs keyed by name. */
 export type HardforksDict = {
   [key: string]: HardforkConfig
 }
 
+/** Blob gas schedule parameters for a blob-parameter-only fork. */
 export type BpoSchedule = {
   targetBlobGasPerBlock: bigint
   maxBlobGasPerBlock: bigint

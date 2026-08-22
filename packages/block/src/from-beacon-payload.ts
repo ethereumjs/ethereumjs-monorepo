@@ -10,8 +10,8 @@ type BeaconWithdrawal = {
   amount: PrefixedHexString
 }
 
-// Payload JSON that one gets using the beacon apis
-// curl localhost:5052/eth/v2/beacon/blocks/56610 | jq .data.message.body.execution_payload
+// Payload JSON from beacon REST: GET /eth/v2/beacon/blocks/{slot}
+/** Beacon REST `execution_payload` object (snake_case field names). */
 export type BeaconPayloadJSON = {
   parent_hash: PrefixedHexString
   fee_recipient: PrefixedHexString

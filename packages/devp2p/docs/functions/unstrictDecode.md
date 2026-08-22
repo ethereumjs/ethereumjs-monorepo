@@ -6,9 +6,9 @@
 
 # Function: unstrictDecode()
 
-> **unstrictDecode**(`value`): `Uint8Array`\<`ArrayBufferLike`\> \| `NestedUint8Array`
+> **unstrictDecode**(`value`): `NestedUint8Array` \| `Uint8Array`\<`ArrayBufferLike`\>
 
-Defined in: [packages/devp2p/src/util.ts:116](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L116)
+Defined in: [packages/devp2p/src/util.ts:118](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L118)
 
 ## Parameters
 
@@ -18,4 +18,4 @@ Defined in: [packages/devp2p/src/util.ts:116](https://github.com/ethereumjs/ethe
 
 ## Returns
 
-`Uint8Array`\<`ArrayBufferLike`\> \| `NestedUint8Array`
+`NestedUint8Array` \| `Uint8Array`\<`ArrayBufferLike`\>

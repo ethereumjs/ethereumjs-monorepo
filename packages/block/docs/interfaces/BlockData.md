@@ -6,7 +6,7 @@
 
 # Interface: BlockData
 
-Defined in: [types.ts:126](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L126)
+Defined in: [types.ts:147](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L147)
 
 A block's data.
 
@@ -14,9 +14,9 @@ A block's data.
 
 ### header?
 
-> `optional` **header**: [`HeaderData`](HeaderData.md)
+> `optional` **header?**: [`HeaderData`](HeaderData.md)
 
-Defined in: [types.ts:130](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L130)
+Defined in: [types.ts:151](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L151)
 
 Header data for the block
 
@@ -24,22 +24,22 @@ Header data for the block
 
 ### transactions?
 
-> `optional` **transactions**: (`LegacyTxData` \| `AccessList2930TxData` \| `FeeMarketEIP1559TxData` \| `BlobEIP4844TxData` \| `EOACode7702TxData`)[]
+> `optional` **transactions?**: (`LegacyTxData` \| `AccessList2930TxData` \| `FeeMarketEIP1559TxData` \| `EOACode7702TxData` \| `BlobEIP4844TxData`)[]
 
-Defined in: [types.ts:131](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L131)
+Defined in: [types.ts:152](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L152)
 
 ***
 
 ### uncleHeaders?
 
-> `optional` **uncleHeaders**: [`HeaderData`](HeaderData.md)[]
+> `optional` **uncleHeaders?**: [`HeaderData`](HeaderData.md)[]
 
-Defined in: [types.ts:132](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L132)
+Defined in: [types.ts:153](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L153)
 
 ***
 
 ### withdrawals?
 
-> `optional` **withdrawals**: `WithdrawalData`[]
+> `optional` **withdrawals?**: `WithdrawalData`[]
 
-Defined in: [types.ts:133](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L133)
+Defined in: [types.ts:154](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L154)

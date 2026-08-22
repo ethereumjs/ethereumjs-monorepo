@@ -20,7 +20,7 @@ Defined in: [index.ts:169](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 ##### cacheDB?
 
-`DB`\<`number`, `DBObject`\>
+[`DB`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/interfaces/DB.md)\<`number`, `DBObject`\>
 
 #### Returns
 
@@ -38,7 +38,7 @@ Defined in: [index.ts:163](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 ### cacheDB?
 
-> `optional` **cacheDB**: `DB`\<`number`, `DBObject`\>
+> `optional` **cacheDB?**: [`DB`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/interfaces/DB.md)\<`number`, `DBObject`\>
 
 Defined in: [index.ts:162](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L162)
 
@@ -46,7 +46,7 @@ Defined in: [index.ts:162](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 ### cacheSize?
 
-> `optional` **cacheSize**: `number`
+> `optional` **cacheSize?**: `number`
 
 Defined in: [index.ts:166](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L166)
 
@@ -62,7 +62,7 @@ Defined in: [index.ts:161](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 ### epoc?
 
-> `optional` **epoc**: `number`
+> `optional` **epoc?**: `number`
 
 Defined in: [index.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L164)
 
@@ -70,7 +70,7 @@ Defined in: [index.ts:164](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 ### fullSize?
 
-> `optional` **fullSize**: `number`
+> `optional` **fullSize?**: `number`
 
 Defined in: [index.ts:165](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L165)
 
@@ -78,7 +78,7 @@ Defined in: [index.ts:165](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 ### seed?
 
-> `optional` **seed**: `Uint8Array`\<`ArrayBufferLike`\>
+> `optional` **seed?**: `Uint8Array`\<`ArrayBufferLike`\>
 
 Defined in: [index.ts:167](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L167)
 
@@ -94,7 +94,7 @@ Defined in: [index.ts:369](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 ##### header
 
-`BlockHeader`
+[`BlockHeader`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/BlockHeader.md)
 
 #### Returns
 
@@ -145,9 +145,9 @@ To mine a `BlockHeader` or `Block`, use the one-liner `await ethash.getMiner(blo
 
 ##### mineObject
 
-Object to mine on, either a `BlockHeader` or a `Block`
+[`BlockHeader`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/BlockHeader.md) \| [`Block`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/Block.md)
 
-`BlockHeader` | `Block`
+Object to mine on, either a `BlockHeader` or a `Block`
 
 #### Returns
 
@@ -261,7 +261,7 @@ Defined in: [index.ts:379](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 ##### block
 
-`Block`
+[`Block`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/Block.md)
 
 #### Returns
 

@@ -6,7 +6,9 @@
 
 # Class: EVMPerformanceLogger
 
-Defined in: [logger.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L57)
+Defined in: [logger.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L60)
+
+Collects opcode and precompile execution timings when profiling is enabled.
 
 ## Constructors
 
@@ -14,7 +16,7 @@ Defined in: [logger.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **new EVMPerformanceLogger**(): `EVMPerformanceLogger`
 
-Defined in: [logger.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L63)
+Defined in: [logger.ts:66](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L66)
 
 #### Returns
 
@@ -26,7 +28,7 @@ Defined in: [logger.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **clear**(): `void`
 
-Defined in: [logger.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L67)
+Defined in: [logger.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L70)
 
 #### Returns
 
@@ -38,7 +40,7 @@ Defined in: [logger.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **getLogs**(): `object`
 
-Defined in: [logger.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L72)
+Defined in: [logger.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L75)
 
 #### Returns
 
@@ -58,7 +60,7 @@ Defined in: [logger.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **hasTimer**(): `boolean`
 
-Defined in: [logger.ts:110](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L110)
+Defined in: [logger.ts:113](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L113)
 
 #### Returns
 
@@ -70,7 +72,7 @@ Defined in: [logger.ts:110](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 > **pauseTimer**(): [`Timer`](Timer.md)
 
-Defined in: [logger.ts:126](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L126)
+Defined in: [logger.ts:129](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L129)
 
 #### Returns
 
@@ -82,7 +84,7 @@ Defined in: [logger.ts:126](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 > **startTimer**(`tag`): [`Timer`](Timer.md)
 
-Defined in: [logger.ts:116](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L116)
+Defined in: [logger.ts:119](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L119)
 
 #### Parameters
 
@@ -98,9 +100,9 @@ Defined in: [logger.ts:116](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 ### stopTimer()
 
-> **stopTimer**(`timer`, `gasUsed`, `targetTimer`, `staticGas?`, `dynamicGas?`): `void`
+> **stopTimer**(`timer`, `gasUsed`, `targetTimer?`, `staticGas?`, `dynamicGas?`): `void`
 
-Defined in: [logger.ts:146](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L146)
+Defined in: [logger.ts:149](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L149)
 
 #### Parameters
 
@@ -112,9 +114,9 @@ Defined in: [logger.ts:146](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 `number`
 
-##### targetTimer
+##### targetTimer?
 
-`"precompiles"` | `"opcodes"`
+`"precompiles"` \| `"opcodes"`
 
 ##### staticGas?
 
@@ -134,7 +136,7 @@ Defined in: [logger.ts:146](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 > **unpauseTimer**(`timer`): `void`
 
-Defined in: [logger.ts:137](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L137)
+Defined in: [logger.ts:140](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L140)
 
 #### Parameters
 

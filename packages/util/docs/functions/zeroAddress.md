@@ -8,7 +8,7 @@
 
 > **zeroAddress**(): `` `0x${string}` ``
 
-Defined in: [packages/util/src/account.ts:583](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L583)
+Defined in: [packages/util/src/account.ts:606](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L606)
 
 Returns the zero address.
 

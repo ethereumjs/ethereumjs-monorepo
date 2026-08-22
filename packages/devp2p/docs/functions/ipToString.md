@@ -8,7 +8,7 @@
 
 > **ipToString**(`bytes`, `offset?`, `length?`): `string`
 
-Defined in: [packages/devp2p/src/util.ts:125](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L125)
+Defined in: [packages/devp2p/src/util.ts:127](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L127)
 
 ************************* ***********************************************************
 

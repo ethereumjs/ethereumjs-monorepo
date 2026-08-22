@@ -8,7 +8,9 @@
 
 > **EVMPerformanceLogOutput** = `object`
 
-Defined in: [logger.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L11)
+Defined in: [logger.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L12)
+
+Aggregated opcode or precompile timing row for [@ethereumjs/vm!emitEVMProfile](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/docs/functions/emitEVMProfile.md).
 
 ## Properties
 
@@ -16,7 +18,7 @@ Defined in: [logger.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **avgTimePerCall**: `number`
 
-Defined in: [logger.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L14)
+Defined in: [logger.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L15)
 
 ***
 
@@ -24,7 +26,7 @@ Defined in: [logger.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **blocksPerSlot**: `number`
 
-Defined in: [logger.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L17)
+Defined in: [logger.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L18)
 
 ***
 
@@ -32,15 +34,15 @@ Defined in: [logger.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **calls**: `number`
 
-Defined in: [logger.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L12)
+Defined in: [logger.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L13)
 
 ***
 
 ### dynamicGasUsed?
 
-> `optional` **dynamicGasUsed**: `number`
+> `optional` **dynamicGasUsed?**: `number`
 
-Defined in: [logger.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L20)
+Defined in: [logger.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L21)
 
 ***
 
@@ -48,7 +50,7 @@ Defined in: [logger.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **gasUsed**: `number`
 
-Defined in: [logger.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L15)
+Defined in: [logger.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L16)
 
 ***
 
@@ -56,23 +58,23 @@ Defined in: [logger.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **millionGasPerSecond**: `number`
 
-Defined in: [logger.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L16)
+Defined in: [logger.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L17)
 
 ***
 
 ### staticGas?
 
-> `optional` **staticGas**: `number`
+> `optional` **staticGas?**: `number`
 
-Defined in: [logger.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L21)
+Defined in: [logger.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L22)
 
 ***
 
 ### staticGasUsed?
 
-> `optional` **staticGasUsed**: `number`
+> `optional` **staticGasUsed?**: `number`
 
-Defined in: [logger.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L19)
+Defined in: [logger.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L20)
 
 ***
 
@@ -80,7 +82,7 @@ Defined in: [logger.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **tag**: `string`
 
-Defined in: [logger.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L18)
+Defined in: [logger.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L19)
 
 ***
 
@@ -88,4 +90,4 @@ Defined in: [logger.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **totalTime**: `number`
 
-Defined in: [logger.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L13)
+Defined in: [logger.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/logger.ts#L14)

@@ -14,7 +14,7 @@ Defined in: [packages/devp2p/src/protocol/eth.ts:25](https://github.com/ethereum
 
 ## Indexable
 
-\[`n`: `number`\]: `Uint8Array`\<`ArrayBufferLike`\> \| `Uint8Array`\<`ArrayBufferLike`\>[]
+> \[`n`: `number`\]: `Uint8Array`\<`ArrayBufferLike`\> \| `Uint8Array`\<`ArrayBufferLike`\>[]
 
 ## Properties
 
@@ -22,7 +22,7 @@ Defined in: [packages/devp2p/src/protocol/eth.ts:25](https://github.com/ethereum
 
 > `readonly` **\[unscopables\]**: `object`
 
-Defined in: node\_modules/typescript/lib/lib.es2015.symbol.wellknown.d.ts:97
+Defined in: node\_modules/typescript-6/lib/lib.es2015.symbol.wellknown.d.ts:95
 
 Is an object whose properties have the value 'true'
 when they will be absent when used in a 'with' statement.
@@ -33,148 +33,148 @@ when they will be absent when used in a 'with' statement.
 
 #### \[iterator\]?
 
-> `optional` **\[iterator\]**: `boolean`
+> `optional` **\[iterator\]?**: `boolean`
 
 #### \[unscopables\]?
 
-> `readonly` `optional` **\[unscopables\]**: `boolean`
+> `readonly` `optional` **\[unscopables\]?**: `boolean`
 
 Is an object whose properties have the value 'true'
 when they will be absent when used in a 'with' statement.
 
 #### at?
 
-> `optional` **at**: `boolean`
+> `optional` **at?**: `boolean`
 
 #### concat?
 
-> `optional` **concat**: `boolean`
+> `optional` **concat?**: `boolean`
 
 #### copyWithin?
 
-> `optional` **copyWithin**: `boolean`
+> `optional` **copyWithin?**: `boolean`
 
 #### entries?
 
-> `optional` **entries**: `boolean`
+> `optional` **entries?**: `boolean`
 
 #### every?
 
-> `optional` **every**: `boolean`
+> `optional` **every?**: `boolean`
 
 #### fill?
 
-> `optional` **fill**: `boolean`
+> `optional` **fill?**: `boolean`
 
 #### filter?
 
-> `optional` **filter**: `boolean`
+> `optional` **filter?**: `boolean`
 
 #### find?
 
-> `optional` **find**: `boolean`
+> `optional` **find?**: `boolean`
 
 #### findIndex?
 
-> `optional` **findIndex**: `boolean`
+> `optional` **findIndex?**: `boolean`
 
 #### flat?
 
-> `optional` **flat**: `boolean`
+> `optional` **flat?**: `boolean`
 
 #### flatMap?
 
-> `optional` **flatMap**: `boolean`
+> `optional` **flatMap?**: `boolean`
 
 #### forEach?
 
-> `optional` **forEach**: `boolean`
+> `optional` **forEach?**: `boolean`
 
 #### includes?
 
-> `optional` **includes**: `boolean`
+> `optional` **includes?**: `boolean`
 
 #### indexOf?
 
-> `optional` **indexOf**: `boolean`
+> `optional` **indexOf?**: `boolean`
 
 #### join?
 
-> `optional` **join**: `boolean`
+> `optional` **join?**: `boolean`
 
 #### keys?
 
-> `optional` **keys**: `boolean`
+> `optional` **keys?**: `boolean`
 
 #### lastIndexOf?
 
-> `optional` **lastIndexOf**: `boolean`
+> `optional` **lastIndexOf?**: `boolean`
 
 #### length?
 
-> `optional` **length**: `boolean`
+> `optional` **length?**: `boolean`
 
 Gets or sets the length of the array. This is a number one higher than the highest index in the array.
 
 #### map?
 
-> `optional` **map**: `boolean`
+> `optional` **map?**: `boolean`
 
 #### pop?
 
-> `optional` **pop**: `boolean`
+> `optional` **pop?**: `boolean`
 
 #### push?
 
-> `optional` **push**: `boolean`
+> `optional` **push?**: `boolean`
 
 #### reduce?
 
-> `optional` **reduce**: `boolean`
+> `optional` **reduce?**: `boolean`
 
 #### reduceRight?
 
-> `optional` **reduceRight**: `boolean`
+> `optional` **reduceRight?**: `boolean`
 
 #### reverse?
 
-> `optional` **reverse**: `boolean`
+> `optional` **reverse?**: `boolean`
 
 #### shift?
 
-> `optional` **shift**: `boolean`
+> `optional` **shift?**: `boolean`
 
 #### slice?
 
-> `optional` **slice**: `boolean`
+> `optional` **slice?**: `boolean`
 
 #### some?
 
-> `optional` **some**: `boolean`
+> `optional` **some?**: `boolean`
 
 #### sort?
 
-> `optional` **sort**: `boolean`
+> `optional` **sort?**: `boolean`
 
 #### splice?
 
-> `optional` **splice**: `boolean`
+> `optional` **splice?**: `boolean`
 
 #### toLocaleString?
 
-> `optional` **toLocaleString**: `boolean`
+> `optional` **toLocaleString?**: `boolean`
 
 #### toString?
 
-> `optional` **toString**: `boolean`
+> `optional` **toString?**: `boolean`
 
 #### unshift?
 
-> `optional` **unshift**: `boolean`
+> `optional` **unshift?**: `boolean`
 
 #### values?
 
-> `optional` **values**: `boolean`
+> `optional` **values?**: `boolean`
 
 #### Inherited from
 
@@ -186,7 +186,7 @@ Gets or sets the length of the array. This is a number one higher than the highe
 
 > **length**: `number`
 
-Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1329
+Defined in: node\_modules/typescript-6/lib/lib.es5.d.ts:1327
 
 Gets or sets the length of the array. This is a number one higher than the highest index in the array.
 
@@ -200,7 +200,7 @@ Gets or sets the length of the array. This is a number one higher than the highe
 
 > **\[iterator\]**(): `ArrayIterator`\<`Uint8Array`\<`ArrayBufferLike`\> \| `Uint8Array`\<`ArrayBufferLike`\>[]\>
 
-Defined in: node\_modules/typescript/lib/lib.es2015.iterable.d.ts:78
+Defined in: node\_modules/typescript-6/lib/lib.es2015.iterable.d.ts:76
 
 Iterator
 
@@ -242,7 +242,7 @@ Defined in: node\_modules/@types/node/compatibility/indexable.d.ts:7
 
 > **concat**(...`items`): (`Uint8Array`\<`ArrayBufferLike`\> \| `Uint8Array`\<`ArrayBufferLike`\>[])[]
 
-Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1353
+Defined in: node\_modules/typescript-6/lib/lib.es5.d.ts:1351
 
 Combines two or more arrays.
 This method returns a new array without modifying any existing arrays.
@@ -267,7 +267,7 @@ Additional arrays and/or items to add to the end of the array.
 
 > **concat**(...`items`): (`Uint8Array`\<`ArrayBufferLike`\> \| `Uint8Array`\<`ArrayBufferLike`\>[])[]
 
-Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1359
+Defined in: node\_modules/typescript-6/lib/lib.es5.d.ts:1357
 
 Combines two or more arrays.
 This method returns a new array without modifying any existing arrays.
@@ -294,7 +294,7 @@ Additional arrays and/or items to add to the end of the array.
 
 > **copyWithin**(`target`, `start`, `end?`): `this`
 
-Defined in: node\_modules/typescript/lib/lib.es2015.core.d.ts:62
+Defined in: node\_modules/typescript-6/lib/lib.es2015.core.d.ts:60
 
 Returns the this object after copying a section of the array identified by start and end
 to the same array starting at position target
@@ -335,7 +335,7 @@ If not specified, length of the this object is used as its default value.
 
 > **entries**(): `ArrayIterator`\<\[`number`, `Uint8Array`\<`ArrayBufferLike`\> \| `Uint8Array`\<`ArrayBufferLike`\>[]\]\>
 
-Defined in: node\_modules/typescript/lib/lib.es2015.iterable.d.ts:83
+Defined in: node\_modules/typescript-6/lib/lib.es2015.iterable.d.ts:81
 
 Returns an iterable of key, value pairs for every entry in the array
 
@@ -355,7 +355,7 @@ Returns an iterable of key, value pairs for every entry in the array
 
 > **every**\<`S`\>(`predicate`, `thisArg?`): `this is S[]`
 
-Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1440
+Defined in: node\_modules/typescript-6/lib/lib.es5.d.ts:1438
 
 Determines whether all the members of an array satisfy the specified test.
 
@@ -394,7 +394,7 @@ If thisArg is omitted, undefined is used as the this value.
 
 > **every**(`predicate`, `thisArg?`): `boolean`
 
-Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1449
+Defined in: node\_modules/typescript-6/lib/lib.es5.d.ts:1447
 
 Determines whether all the members of an array satisfy the specified test.
 
@@ -429,7 +429,7 @@ If thisArg is omitted, undefined is used as the this value.
 
 > **fill**(`value`, `start?`, `end?`): `this`
 
-Defined in: node\_modules/typescript/lib/lib.es2015.core.d.ts:51
+Defined in: node\_modules/typescript-6/lib/lib.es2015.core.d.ts:49
 
 Changes all array elements from `start` to `end` index to a static `value` and returns the modified array
 
@@ -437,9 +437,9 @@ Changes all array elements from `start` to `end` index to a static `value` and r
 
 ##### value
 
-value to fill array section with
+`Uint8Array`\<`ArrayBufferLike`\> \| `Uint8Array`\<`ArrayBufferLike`\>[]
 
-`Uint8Array`\<`ArrayBufferLike`\> | `Uint8Array`\<`ArrayBufferLike`\>[]
+value to fill array section with
 
 ##### start?
 
@@ -471,7 +471,7 @@ length+end.
 
 > **filter**\<`S`\>(`predicate`, `thisArg?`): `S`[]
 
-Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1476
+Defined in: node\_modules/typescript-6/lib/lib.es5.d.ts:1474
 
 Returns the elements of an array that meet the condition specified in a callback function.
 
@@ -507,7 +507,7 @@ An object to which the this keyword can refer in the predicate function. If this
 
 > **filter**(`predicate`, `thisArg?`): (`Uint8Array`\<`ArrayBufferLike`\> \| `Uint8Array`\<`ArrayBufferLike`\>[])[]
 
-Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1482
+Defined in: node\_modules/typescript-6/lib/lib.es5.d.ts:1480
 
 Returns the elements of an array that meet the condition specified in a callback function.
 
@@ -541,7 +541,7 @@ An object to which the this keyword can refer in the predicate function. If this
 
 > **find**\<`S`\>(`predicate`, `thisArg?`): `S` \| `undefined`
 
-Defined in: node\_modules/typescript/lib/lib.es2015.core.d.ts:29
+Defined in: node\_modules/typescript-6/lib/lib.es2015.core.d.ts:27
 
 Returns the value of the first element in the array where predicate is true, and undefined
 otherwise.
@@ -581,7 +581,7 @@ predicate. If it is not provided, undefined is used instead.
 
 > **find**(`predicate`, `thisArg?`): `Uint8Array`\<`ArrayBufferLike`\> \| `Uint8Array`\<`ArrayBufferLike`\>[] \| `undefined`
 
-Defined in: node\_modules/typescript/lib/lib.es2015.core.d.ts:30
+Defined in: node\_modules/typescript-6/lib/lib.es2015.core.d.ts:28
 
 ##### Parameters
 
@@ -607,7 +607,7 @@ Defined in: node\_modules/typescript/lib/lib.es2015.core.d.ts:30
 
 > **findIndex**(`predicate`, `thisArg?`): `number`
 
-Defined in: node\_modules/typescript/lib/lib.es2015.core.d.ts:41
+Defined in: node\_modules/typescript-6/lib/lib.es2015.core.d.ts:39
 
 Returns the index of the first element in the array where predicate is true, and -1
 otherwise.
@@ -643,7 +643,7 @@ predicate. If it is not provided, undefined is used instead.
 
 > **flat**\<`A`, `D`\>(`this`, `depth?`): `FlatArray`\<`A`, `D`\>[]
 
-Defined in: node\_modules/typescript/lib/lib.es2019.array.d.ts:75
+Defined in: node\_modules/typescript-6/lib/lib.es2019.array.d.ts:73
 
 Returns a new array with all sub-array elements concatenated into it recursively up to the
 specified depth.
@@ -684,7 +684,7 @@ The maximum recursion depth
 
 > **flatMap**\<`U`, `This`\>(`callback`, `thisArg?`): `U`[]
 
-Defined in: node\_modules/typescript/lib/lib.es2019.array.d.ts:64
+Defined in: node\_modules/typescript-6/lib/lib.es2019.array.d.ts:62
 
 Calls a defined callback function on each element of an array. Then, flattens the result into
 a new array.
@@ -730,7 +730,7 @@ thisArg is omitted, undefined is used as the this value.
 
 > **forEach**(`callbackfn`, `thisArg?`): `void`
 
-Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1464
+Defined in: node\_modules/typescript-6/lib/lib.es5.d.ts:1462
 
 Performs the specified action for each element in an array.
 
@@ -762,7 +762,7 @@ An object to which the this keyword can refer in the callbackfn function. If thi
 
 > **includes**(`searchElement`, `fromIndex?`): `boolean`
 
-Defined in: node\_modules/typescript/lib/lib.es2016.array.include.d.ts:25
+Defined in: node\_modules/typescript-6/lib/lib.es2016.array.include.d.ts:23
 
 Determines whether an array includes a certain element, returning true or false as appropriate.
 
@@ -770,9 +770,9 @@ Determines whether an array includes a certain element, returning true or false 
 
 ##### searchElement
 
-The element to search for.
+`Uint8Array`\<`ArrayBufferLike`\> \| `Uint8Array`\<`ArrayBufferLike`\>[]
 
-`Uint8Array`\<`ArrayBufferLike`\> | `Uint8Array`\<`ArrayBufferLike`\>[]
+The element to search for.
 
 ##### fromIndex?
 
@@ -794,7 +794,7 @@ The position in this array at which to begin searching for searchElement.
 
 > **indexOf**(`searchElement`, `fromIndex?`): `number`
 
-Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1425
+Defined in: node\_modules/typescript-6/lib/lib.es5.d.ts:1423
 
 Returns the index of the first occurrence of a value in an array, or -1 if it is not present.
 
@@ -802,9 +802,9 @@ Returns the index of the first occurrence of a value in an array, or -1 if it is
 
 ##### searchElement
 
-The value to locate in the array.
+`Uint8Array`\<`ArrayBufferLike`\> \| `Uint8Array`\<`ArrayBufferLike`\>[]
 
-`Uint8Array`\<`ArrayBufferLike`\> | `Uint8Array`\<`ArrayBufferLike`\>[]
+The value to locate in the array.
 
 ##### fromIndex?
 
@@ -826,7 +826,7 @@ The array index at which to begin the search. If fromIndex is omitted, the searc
 
 > **join**(`separator?`): `string`
 
-Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1364
+Defined in: node\_modules/typescript-6/lib/lib.es5.d.ts:1362
 
 Adds all the elements of an array into a string, separated by the specified separator string.
 
@@ -852,7 +852,7 @@ A string used to separate one element of the array from the next in the resultin
 
 > **keys**(): `ArrayIterator`\<`number`\>
 
-Defined in: node\_modules/typescript/lib/lib.es2015.iterable.d.ts:88
+Defined in: node\_modules/typescript-6/lib/lib.es2015.iterable.d.ts:86
 
 Returns an iterable of keys in the array
 
@@ -870,7 +870,7 @@ Returns an iterable of keys in the array
 
 > **lastIndexOf**(`searchElement`, `fromIndex?`): `number`
 
-Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1431
+Defined in: node\_modules/typescript-6/lib/lib.es5.d.ts:1429
 
 Returns the index of the last occurrence of a specified value in an array, or -1 if it is not present.
 
@@ -878,9 +878,9 @@ Returns the index of the last occurrence of a specified value in an array, or -1
 
 ##### searchElement
 
-The value to locate in the array.
+`Uint8Array`\<`ArrayBufferLike`\> \| `Uint8Array`\<`ArrayBufferLike`\>[]
 
-`Uint8Array`\<`ArrayBufferLike`\> | `Uint8Array`\<`ArrayBufferLike`\>[]
+The value to locate in the array.
 
 ##### fromIndex?
 
@@ -902,7 +902,7 @@ The array index at which to begin searching backward. If fromIndex is omitted, t
 
 > **map**\<`U`\>(`callbackfn`, `thisArg?`): `U`[]
 
-Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1470
+Defined in: node\_modules/typescript-6/lib/lib.es5.d.ts:1468
 
 Calls a defined callback function on each element of an array, and returns an array that contains the results.
 
@@ -940,7 +940,7 @@ An object to which the this keyword can refer in the callbackfn function. If thi
 
 > **pop**(): `Uint8Array`\<`ArrayBufferLike`\> \| `Uint8Array`\<`ArrayBufferLike`\>[] \| `undefined`
 
-Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1342
+Defined in: node\_modules/typescript-6/lib/lib.es5.d.ts:1340
 
 Removes the last element from an array and returns it.
 If the array is empty, undefined is returned and the array is not modified.
@@ -959,7 +959,7 @@ If the array is empty, undefined is returned and the array is not modified.
 
 > **push**(...`items`): `number`
 
-Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1347
+Defined in: node\_modules/typescript-6/lib/lib.es5.d.ts:1345
 
 Appends new elements to the end of an array, and returns the new length of the array.
 
@@ -987,7 +987,7 @@ New elements to add to the array.
 
 > **reduce**(`callbackfn`): `Uint8Array`\<`ArrayBufferLike`\> \| `Uint8Array`\<`ArrayBufferLike`\>[]
 
-Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1488
+Defined in: node\_modules/typescript-6/lib/lib.es5.d.ts:1486
 
 Calls the specified callback function for all the elements in an array. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
 
@@ -1011,7 +1011,7 @@ A function that accepts up to four arguments. The reduce method calls the callba
 
 > **reduce**(`callbackfn`, `initialValue`): `Uint8Array`\<`ArrayBufferLike`\> \| `Uint8Array`\<`ArrayBufferLike`\>[]
 
-Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1489
+Defined in: node\_modules/typescript-6/lib/lib.es5.d.ts:1487
 
 ##### Parameters
 
@@ -1021,7 +1021,7 @@ Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1489
 
 ###### initialValue
 
-`Uint8Array`\<`ArrayBufferLike`\> | `Uint8Array`\<`ArrayBufferLike`\>[]
+`Uint8Array`\<`ArrayBufferLike`\> \| `Uint8Array`\<`ArrayBufferLike`\>[]
 
 ##### Returns
 
@@ -1035,7 +1035,7 @@ Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1489
 
 > **reduce**\<`U`\>(`callbackfn`, `initialValue`): `U`
 
-Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1495
+Defined in: node\_modules/typescript-6/lib/lib.es5.d.ts:1493
 
 Calls the specified callback function for all the elements in an array. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
 
@@ -1075,7 +1075,7 @@ If initialValue is specified, it is used as the initial value to start the accum
 
 > **reduceRight**(`callbackfn`): `Uint8Array`\<`ArrayBufferLike`\> \| `Uint8Array`\<`ArrayBufferLike`\>[]
 
-Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1501
+Defined in: node\_modules/typescript-6/lib/lib.es5.d.ts:1499
 
 Calls the specified callback function for all the elements in an array, in descending order. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
 
@@ -1099,7 +1099,7 @@ A function that accepts up to four arguments. The reduceRight method calls the c
 
 > **reduceRight**(`callbackfn`, `initialValue`): `Uint8Array`\<`ArrayBufferLike`\> \| `Uint8Array`\<`ArrayBufferLike`\>[]
 
-Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1502
+Defined in: node\_modules/typescript-6/lib/lib.es5.d.ts:1500
 
 ##### Parameters
 
@@ -1109,7 +1109,7 @@ Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1502
 
 ###### initialValue
 
-`Uint8Array`\<`ArrayBufferLike`\> | `Uint8Array`\<`ArrayBufferLike`\>[]
+`Uint8Array`\<`ArrayBufferLike`\> \| `Uint8Array`\<`ArrayBufferLike`\>[]
 
 ##### Returns
 
@@ -1123,7 +1123,7 @@ Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1502
 
 > **reduceRight**\<`U`\>(`callbackfn`, `initialValue`): `U`
 
-Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1508
+Defined in: node\_modules/typescript-6/lib/lib.es5.d.ts:1506
 
 Calls the specified callback function for all the elements in an array, in descending order. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
 
@@ -1161,7 +1161,7 @@ If initialValue is specified, it is used as the initial value to start the accum
 
 > **reverse**(): (`Uint8Array`\<`ArrayBufferLike`\> \| `Uint8Array`\<`ArrayBufferLike`\>[])[]
 
-Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1369
+Defined in: node\_modules/typescript-6/lib/lib.es5.d.ts:1367
 
 Reverses the elements in an array in place.
 This method mutates the array and returns a reference to the same array.
@@ -1180,7 +1180,7 @@ This method mutates the array and returns a reference to the same array.
 
 > **shift**(): `Uint8Array`\<`ArrayBufferLike`\> \| `Uint8Array`\<`ArrayBufferLike`\>[] \| `undefined`
 
-Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1374
+Defined in: node\_modules/typescript-6/lib/lib.es5.d.ts:1372
 
 Removes the first element from an array and returns it.
 If the array is empty, undefined is returned and the array is not modified.
@@ -1199,7 +1199,7 @@ If the array is empty, undefined is returned and the array is not modified.
 
 > **slice**(`start?`, `end?`): (`Uint8Array`\<`ArrayBufferLike`\> \| `Uint8Array`\<`ArrayBufferLike`\>[])[]
 
-Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1384
+Defined in: node\_modules/typescript-6/lib/lib.es5.d.ts:1382
 
 Returns a copy of a section of an array.
 For both start and end, a negative index can be used to indicate an offset from the end of the array.
@@ -1235,7 +1235,7 @@ If end is undefined, then the slice extends to the end of the array.
 
 > **some**(`predicate`, `thisArg?`): `boolean`
 
-Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1458
+Defined in: node\_modules/typescript-6/lib/lib.es5.d.ts:1456
 
 Determines whether the specified callback function returns true for any element of an array.
 
@@ -1270,7 +1270,7 @@ If thisArg is omitted, undefined is used as the this value.
 
 > **sort**(`compareFn?`): `this`
 
-Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1395
+Defined in: node\_modules/typescript-6/lib/lib.es5.d.ts:1393
 
 Sorts an array in place.
 This method mutates the array and returns a reference to the same array.
@@ -1304,7 +1304,7 @@ value otherwise. If omitted, the elements are sorted in ascending, UTF-16 code u
 
 > **splice**(`start`, `deleteCount?`): (`Uint8Array`\<`ArrayBufferLike`\> \| `Uint8Array`\<`ArrayBufferLike`\>[])[]
 
-Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1404
+Defined in: node\_modules/typescript-6/lib/lib.es5.d.ts:1402
 
 Removes elements from an array and, if necessary, inserts new elements in their place, returning the deleted elements.
 
@@ -1338,7 +1338,7 @@ An array containing the elements that were deleted.
 
 > **splice**(`start`, `deleteCount`, ...`items`): (`Uint8Array`\<`ArrayBufferLike`\> \| `Uint8Array`\<`ArrayBufferLike`\>[])[]
 
-Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1414
+Defined in: node\_modules/typescript-6/lib/lib.es5.d.ts:1412
 
 Removes elements from an array and, if necessary, inserts new elements in their place, returning the deleted elements.
 
@@ -1382,7 +1382,7 @@ An array containing the elements that were deleted.
 
 > **toLocaleString**(): `string`
 
-Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1337
+Defined in: node\_modules/typescript-6/lib/lib.es5.d.ts:1335
 
 Returns a string representation of an array. The elements are converted to string using their toLocaleString methods.
 
@@ -1398,13 +1398,13 @@ Returns a string representation of an array. The elements are converted to strin
 
 > **toLocaleString**(`locales`, `options?`): `string`
 
-Defined in: node\_modules/typescript/lib/lib.es2015.core.d.ts:64
+Defined in: node\_modules/typescript-6/lib/lib.es2015.core.d.ts:62
 
 ##### Parameters
 
 ###### locales
 
-`string` | `string`[]
+`string` \| `string`[]
 
 ###### options?
 
@@ -1424,7 +1424,7 @@ Defined in: node\_modules/typescript/lib/lib.es2015.core.d.ts:64
 
 > **toString**(): `string`
 
-Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1333
+Defined in: node\_modules/typescript-6/lib/lib.es5.d.ts:1331
 
 Returns a string representation of an array.
 
@@ -1442,7 +1442,7 @@ Returns a string representation of an array.
 
 > **unshift**(...`items`): `number`
 
-Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1419
+Defined in: node\_modules/typescript-6/lib/lib.es5.d.ts:1417
 
 Inserts new elements at the start of an array, and returns the new length of the array.
 
@@ -1468,7 +1468,7 @@ Elements to insert at the start of the array.
 
 > **values**(): `ArrayIterator`\<`Uint8Array`\<`ArrayBufferLike`\> \| `Uint8Array`\<`ArrayBufferLike`\>[]\>
 
-Defined in: node\_modules/typescript/lib/lib.es2015.iterable.d.ts:93
+Defined in: node\_modules/typescript-6/lib/lib.es2015.iterable.d.ts:91
 
 Returns an iterable of values in the array
 

@@ -2,6 +2,7 @@ import { bytesToUnprefixedHex } from './bytes.ts'
 
 import type { BatchDBOp, DB, DBObject } from './db.ts'
 
+/** In-memory {@link DB} backed by a JavaScript `Map`. */
 export class MapDB<
   TKey extends Uint8Array | string | number,
   TValue extends Uint8Array | string | DBObject,

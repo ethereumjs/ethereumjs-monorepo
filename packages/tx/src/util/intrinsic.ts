@@ -1,4 +1,4 @@
-import { BIGINT_0, equalsBytes } from '@ethereumjs/util'
+import { BIGINT_0, bigIntMax, equalsBytes } from '@ethereumjs/util'
 
 import { Capability } from '../types.ts'
 
@@ -36,7 +36,7 @@ function isCreateTx(tx: LegacyTxInterface): boolean {
  * EIP-2780 execution-gas extras that sit in intrinsic (and the calldata floor
  * base): recipient cold access and `TX_VALUE_COST` for value-bearing txs.
  * Create txs already pay `txCreationGas` (CREATE_ACCESS) via
- * {@link getIntrinsicGas}; this helper adds `TX_VALUE_COST` when `value > 0`.
+ * `tx.getIntrinsicGas()`; this helper adds `TX_VALUE_COST` when `value > 0`.
  *
  * Since glamsterdam-devnet v8, `TX_VALUE_COST` includes the EIP-7708 transfer
  * log — do not add `transferLogCost` separately at the tx level.
@@ -129,6 +129,22 @@ export function getCalldataFloorGas(tx: LegacyTxInterface, sender?: Address): bi
     getEip2780FloorBaseGas(tx, sender) +
     tx.common.param('totalCostFloorPerToken') * countCalldataFloorTokens(tx)
   )
+}
+
+/**
+ * Minimum `gasLimit` for the tx to pass {@link TransactionInterface.isValid}:
+ * `max(getIntrinsicGas(), getCalldataFloorGas())` when EIP-7623 is active,
+ * otherwise intrinsic gas alone.
+ *
+ * Does not include EIP-8037 first-touch state gas (that depends on pre-state;
+ * see `estimateTxGasDimensions()` on `@ethereumjs/vm`).
+ */
+export function getMinimumGasLimit(tx: LegacyTxInterface, sender?: Address): bigint {
+  const intrinsic = tx.getIntrinsicGas()
+  if (!tx.common.isActivatedEIP(7623)) {
+    return intrinsic
+  }
+  return bigIntMax(intrinsic, getCalldataFloorGas(tx, sender))
 }
 
 /**

@@ -8,4 +8,6 @@
 
 > **CasperConfig** = `object`
 
-Defined in: [common/src/types.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L23)
+Defined in: [types.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L29)
+
+Casper consensus parameters (currently empty).

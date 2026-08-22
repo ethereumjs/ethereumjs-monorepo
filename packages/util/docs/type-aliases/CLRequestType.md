@@ -8,4 +8,6 @@
 
 > **CLRequestType** = *typeof* [`CLRequestType`](../variables/CLRequestType.md)\[keyof *typeof* [`CLRequestType`](../variables/CLRequestType.md)\]
 
-Defined in: [packages/util/src/request.ts:7](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/request.ts#L7)
+Defined in: [packages/util/src/request.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/request.ts#L9)
+
+Discriminator for consensus-layer request types.

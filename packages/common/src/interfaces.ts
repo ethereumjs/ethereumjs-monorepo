@@ -5,10 +5,12 @@
 import type {
   Account,
   Address,
+  BALJSONBlockAccessList,
   BinaryTreeExecutionWitness,
   PrefixedHexString,
 } from '@ethereumjs/util'
 
+/** Flat map of hashed storage keys to hex values. */
 export interface StorageDump {
   [key: string]: string
 }
@@ -36,16 +38,19 @@ export interface StorageRange {
   nextKey: string | null
 }
 
+/** Partial account fields for {@link StateManagerInterface.modifyAccountFields}. */
 export type AccountFields = Partial<
   Pick<Account, 'nonce' | 'balance' | 'storageRoot' | 'codeHash' | 'codeSize'>
 >
 
+/** Merkle proof for one storage slot. */
 export type StorageProof = {
   key: PrefixedHexString
   proof: PrefixedHexString[]
   value: PrefixedHexString
 }
 
+/** Merkle proof bundle for an account and its storage. */
 export type Proof = {
   address: PrefixedHexString
   balance: PrefixedHexString
@@ -69,9 +74,11 @@ export type AccessEventFlags = {
   chunkFill: boolean
 }
 
+/** Kind of binary-tree state accessed during execution. */
 export type BinaryTreeAccessedStateType =
   (typeof BinaryTreeAccessedStateType)[keyof typeof BinaryTreeAccessedStateType]
 
+/** Kind of binary-tree state accessed during execution. */
 export const BinaryTreeAccessedStateType = {
   BasicData: 'basicData',
   CodeHash: 'codeHash',
@@ -79,6 +86,7 @@ export const BinaryTreeAccessedStateType = {
   Storage: 'storage',
 } as const
 
+/** Low-level binary-tree access record before normalization. */
 export type RawBinaryTreeAccessedState = {
   address: Address
   treeIndex: number | bigint
@@ -86,6 +94,7 @@ export type RawBinaryTreeAccessedState = {
   chunkKey: PrefixedHexString
 }
 
+/** Normalized binary-tree access event emitted by the EVM. */
 export type BinaryTreeAccessedState =
   | {
       type: Exclude<
@@ -96,10 +105,12 @@ export type BinaryTreeAccessedState =
   | { type: typeof BinaryTreeAccessedStateType.Code; codeOffset: number }
   | { type: typeof BinaryTreeAccessedStateType.Storage; slot: bigint }
 
+/** Binary-tree access event including address and chunk key. */
 export type BinaryTreeAccessedStateWithAddress = BinaryTreeAccessedState & {
   address: Address
   chunkKey: PrefixedHexString
 }
+/** Witness interface tracking binary-tree access gas costs. */
 export interface BinaryTreeAccessWitnessInterface {
   accesses(): Generator<BinaryTreeAccessedStateWithAddress>
   rawAccesses(): Generator<RawBinaryTreeAccessedState>
@@ -158,9 +169,10 @@ export interface BinaryTreeStateManagerInterface {
   }
 }
 
-/*
- * Generic StateManager interface corresponding with the @ethereumjs/statemanager package
+/**
+ * Core state access surface implemented by EthereumJS state managers.
  *
+ * Matches the `@ethereumjs/statemanager` package API.
  */
 export interface StateManagerInterface {
   /*
@@ -205,6 +217,13 @@ export interface StateManagerInterface {
   // Client RPC
   dumpStorage?(address: Address): Promise<StorageDump>
   dumpStorageRange?(address: Address, startKey: bigint, limit: number): Promise<StorageRange>
+  /**
+   * Apply an EIP-7928 block-level access list onto this state (no EVM execution).
+   * Implementations in `@ethereumjs/statemanager` forward to the shared `consumeBAL()` helper.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
+  consumeBAL?(bal: BALJSONBlockAccessList, expectedStateRoot?: Uint8Array): Promise<void>
 
   /*
    * EVM/VM Specific Functionality

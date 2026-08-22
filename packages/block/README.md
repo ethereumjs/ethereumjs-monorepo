@@ -404,7 +404,7 @@ void main()
 
 ## EIP-7843 Slot Number
 
-When [EIP-7843](https://eips.ethereum.org/EIPS/eip-7843) is active (`Hardfork.Amsterdam`, experimental), blocks carry a `slotNumber` header field. Set it explicitly when constructing blocks — `runBlock({ generate: true })` does not populate it automatically.
+When [EIP-7843](https://eips.ethereum.org/EIPS/eip-7843) is active (`Hardfork.Amsterdam`, experimental), blocks carry a `slotNumber` header field. Set it explicitly when constructing blocks, or let `buildBlock()` default it from `parent.slotNumber + 1`. `runBlock({ generate: true })` does not invent a consensus slot. The EVM `SLOTNUM` opcode (`0x4b`) reads this field — see [`@ethereumjs/evm` SLOTNUM](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#eip-7843-slotnum-opcode-amsterdam).
 
 ```ts
 // ./examples/blockSlotNumber.ts

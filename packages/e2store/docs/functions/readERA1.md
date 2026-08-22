@@ -8,7 +8,9 @@
 
 > **readERA1**(`bytes`): `Promise`\<`AsyncGenerator`\<\{ `bodyEntry`: [`e2StoreEntry`](../type-aliases/e2StoreEntry.md); `headerEntry`: [`e2StoreEntry`](../type-aliases/e2StoreEntry.md); `receiptsEntry`: [`e2StoreEntry`](../type-aliases/e2StoreEntry.md); `totalDifficultyEntry`: [`e2StoreEntry`](../type-aliases/e2StoreEntry.md); \}, `void`, `unknown`\>\>
 
-Defined in: [packages/e2store/src/era1/era1.ts:117](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/era1/era1.ts#L117)
+Defined in: [packages/e2store/src/era1/era1.ts:120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/era1/era1.ts#L120)
+
+Async generator over decompressed block tuples in an era1 file.
 
 ## Parameters
 

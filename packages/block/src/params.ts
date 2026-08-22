@@ -1,5 +1,10 @@
 import type { ParamsDict } from '@ethereumjs/common'
 
+/**
+ * Block-related EIP parameters keyed by EIP number.
+ *
+ * Passed to {@link @ethereumjs/common!Common} via {@link BlockOptions.params} to override gas limits and header rules.
+ */
 export const paramsBlock: ParamsDict = {
   /**
    * Frontier/Chainstart

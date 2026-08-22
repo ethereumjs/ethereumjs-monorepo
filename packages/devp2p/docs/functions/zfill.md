@@ -6,9 +6,9 @@
 
 # Function: zfill()
 
-> **zfill**(`bytes`, `size`, `leftpad`): `Uint8Array`
+> **zfill**(`bytes`, `size`, `leftpad?`): `Uint8Array`
 
-Defined in: [packages/devp2p/src/util.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L35)
+Defined in: [packages/devp2p/src/util.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L37)
 
 ## Parameters
 
@@ -20,7 +20,7 @@ Defined in: [packages/devp2p/src/util.ts:35](https://github.com/ethereumjs/ether
 
 `number`
 
-### leftpad
+### leftpad?
 
 `boolean` = `true`
 

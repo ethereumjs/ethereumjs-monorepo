@@ -6,7 +6,7 @@
 
 # Class: EthereumJSError\<T\>
 
-Defined in: packages/rlp/dist/esm/errors.d.ts:19
+Defined in: [packages/rlp/src/errors.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/rlp/src/errors.ts#L26)
 
 Generic EthereumJS error with attached metadata
 
@@ -26,7 +26,7 @@ Generic EthereumJS error with attached metadata
 
 > **new EthereumJSError**\<`T`\>(`type`, `message?`, `stack?`): `EthereumJSError`\<`T`\>
 
-Defined in: packages/rlp/dist/esm/errors.d.ts:23
+Defined in: [packages/rlp/src/errors.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/rlp/src/errors.ts#L28)
 
 #### Parameters
 
@@ -56,7 +56,7 @@ Defined in: packages/rlp/dist/esm/errors.d.ts:23
 
 > **message**: `string`
 
-Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1077
+Defined in: node\_modules/typescript-6/lib/lib.es5.d.ts:1075
 
 #### Inherited from
 
@@ -68,7 +68,7 @@ Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1077
 
 > **name**: `string`
 
-Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1076
+Defined in: node\_modules/typescript-6/lib/lib.es5.d.ts:1074
 
 #### Inherited from
 
@@ -78,9 +78,9 @@ Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1076
 
 ### stack?
 
-> `optional` **stack**: `string`
+> `optional` **stack?**: `string`
 
-Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1078
+Defined in: node\_modules/typescript-6/lib/lib.es5.d.ts:1076
 
 #### Inherited from
 
@@ -92,13 +92,13 @@ Defined in: node\_modules/typescript/lib/lib.es5.d.ts:1078
 
 > **type**: `T`
 
-Defined in: packages/rlp/dist/esm/errors.d.ts:22
+Defined in: [packages/rlp/src/errors.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/rlp/src/errors.ts#L27)
 
 ***
 
-### prepareStackTrace()?
+### prepareStackTrace?
 
-> `static` `optional` **prepareStackTrace**: (`err`, `stackTraces`) => `any`
+> `static` `optional` **prepareStackTrace?**: (`err`, `stackTraces`) => `any`
 
 Defined in: node\_modules/@types/node/globals.d.ts:143
 
@@ -144,7 +144,7 @@ Defined in: node\_modules/@types/node/globals.d.ts:145
 
 > **getMetadata**(): [`EthereumJSErrorMetaData`](../type-aliases/EthereumJSErrorMetaData.md)
 
-Defined in: packages/rlp/dist/esm/errors.d.ts:24
+Defined in: [packages/rlp/src/errors.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/rlp/src/errors.ts#L34)
 
 #### Returns
 
@@ -156,7 +156,7 @@ Defined in: packages/rlp/dist/esm/errors.d.ts:24
 
 > **toObject**(): [`EthereumJSErrorObject`](../type-aliases/EthereumJSErrorObject.md)
 
-Defined in: packages/rlp/dist/esm/errors.d.ts:28
+Defined in: [packages/rlp/src/errors.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/rlp/src/errors.ts#L41)
 
 Get the metadata and the stacktrace for the error.
 

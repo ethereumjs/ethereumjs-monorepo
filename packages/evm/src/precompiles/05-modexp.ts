@@ -87,6 +87,7 @@ function getAdjustedExponentLength(data: Uint8Array, opts: PrecompileInput): big
   return adjustedExpLen
 }
 
+/** Modular exponentiation helper used by the MODEXP precompile. */
 export function expMod(a: bigint, power: bigint, modulo: bigint) {
   if (power === BIGINT_0) {
     return BIGINT_1 % modulo
@@ -100,6 +101,7 @@ export function expMod(a: bigint, power: bigint, modulo: bigint) {
   return res
 }
 
+/** MODEXP precompile (0x05): big-endian modular exponentiation. */
 export function precompile05(opts: PrecompileInput): ExecResult {
   const pName = getPrecompileName('05')
   const data = opts.data.length < 96 ? setLengthRight(opts.data, 96) : opts.data

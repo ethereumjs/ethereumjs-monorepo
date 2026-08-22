@@ -8,4 +8,6 @@
 
 > **EOACode7702AuthorizationListBytesItem** = \[`Uint8Array`, `Uint8Array`, `Uint8Array`, `Uint8Array`, `Uint8Array`, `Uint8Array`\]
 
-Defined in: [packages/util/src/types.ts:147](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L147)
+Defined in: [packages/util/src/types.ts:150](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L150)
+
+Signed EIP-7702 authorization tuple in bytes form.

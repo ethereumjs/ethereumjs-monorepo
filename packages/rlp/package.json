@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/rlp",
-  "version": "10.1.2",
+  "version": "10.1.3",
   "description": "Recursive Length Prefix Encoding Module",
   "keywords": ["rlp", "ethereum"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/rlp#readme",
@@ -50,6 +50,7 @@
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.mts",
     "coverage:istanbul": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.istanbul.mts",
+    "docs:build": "../../config/cli/typedoc.sh --options typedoc.mjs",
     "examples": "tsx ../../scripts/examples-runner.ts -- rlp",
     "examples:build": "npx embedme README.md",
     "lint": "npm run biome && eslint  --config ./eslint.config.mjs .",

@@ -6,7 +6,7 @@
 
 # Class: EVM
 
-Defined in: [evm.ts:167](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L167)
+Defined in: [evm.ts:171](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L171)
 
 The EVM (Ethereum Virtual Machine) is responsible for executing EVM bytecode, processing transactions, and managing state changes. It handles both contract calls and contract creation operations.
 
@@ -24,7 +24,7 @@ An EVM instance can be created with the constructor method:
 
 > **new EVM**(`opts`): `EVM`
 
-Defined in: [evm.ts:340](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L340)
+Defined in: [evm.ts:355](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L355)
 
 Creates new EVM object
 
@@ -52,7 +52,7 @@ use the async [createEVM](../functions/createEVM.md) constructor instead (same A
 
 > `readonly` **allowUnlimitedContractSize**: `boolean`
 
-Defined in: [evm.ts:215](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L215)
+Defined in: [evm.ts:219](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L219)
 
 ***
 
@@ -60,15 +60,15 @@ Defined in: [evm.ts:215](https://github.com/ethereumjs/ethereumjs-monorepo/blob/
 
 > `readonly` **allowUnlimitedInitCodeSize**: `boolean`
 
-Defined in: [evm.ts:216](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L216)
+Defined in: [evm.ts:220](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L220)
 
 ***
 
 ### binaryAccessWitness?
 
-> `optional` **binaryAccessWitness**: [`BinaryTreeAccessWitness`](BinaryTreeAccessWitness.md)
+> `optional` **binaryAccessWitness?**: [`BinaryTreeAccessWitness`](BinaryTreeAccessWitness.md)
 
-Defined in: [evm.ts:208](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L208)
+Defined in: [evm.ts:212](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L212)
 
 ***
 
@@ -76,15 +76,15 @@ Defined in: [evm.ts:208](https://github.com/ethereumjs/ethereumjs-monorepo/blob/
 
 > **blockchain**: [`EVMMockBlockchainInterface`](../interfaces/EVMMockBlockchainInterface.md)
 
-Defined in: [evm.ts:206](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L206)
+Defined in: [evm.ts:210](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L210)
 
 ***
 
 ### blockLevelAccessList?
 
-> `readonly` `optional` **blockLevelAccessList**: `BlockLevelAccessList`
+> `readonly` `optional` **blockLevelAccessList?**: `BlockLevelAccessList`
 
-Defined in: [evm.ts:223](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L223)
+Defined in: [evm.ts:227](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L227)
 
 Accumulated block access list when EIP-7928 is active.
 
@@ -100,9 +100,9 @@ Experimental (Amsterdam): may change on patch releases.
 
 ### common
 
-> `readonly` **common**: `Common`
+> `readonly` **common**: [`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
-Defined in: [evm.ts:202](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L202)
+Defined in: [evm.ts:206](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L206)
 
 #### Implementation of
 
@@ -114,16 +114,12 @@ Defined in: [evm.ts:202](https://github.com/ethereumjs/ethereumjs-monorepo/blob/
 
 > **createdAccountIntrinsicStateGas**: `Map`\<`` `0x${string}` ``, `bigint`\>
 
-Defined in: [evm.ts:288](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L288)
+Defined in: [evm.ts:304](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L304)
 
-EIP-8037 (v7): intrinsic state-gas tracking for depth=0 creation
-transactions. The intrinsic stateBytesPerNewAccount * costPerStateByte
-is paid up-front in runTx and isn't part of stateGasCreate. On a same-tx
-SELFDESTRUCT of the freshly-created contract, runTx refunds the STATE
-dimension only (decrement execution_state_gas_used) — the reservoir is
-NOT credited, so the user still pays the gross intrinsic. This realizes
-the v7 spec note "tx doesn't over charge for an account that never
-persists" at the block_state_gas_used level.
+EIP-8037 (v7): previously tracked intrinsic new-account state gas for
+depth=0 creation txs. New-account state gas is now charged at access
+(same map as inner CREATE: `createdAccountStateGas`). Kept for API
+compatibility; reset per tx, not written on the v7 path.
 
 ***
 
@@ -131,7 +127,7 @@ persists" at the block_state_gas_used level.
 
 > **createdAccountStateGas**: `Map`\<`` `0x${string}` ``, `bigint`\>
 
-Defined in: [evm.ts:277](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L277)
+Defined in: [evm.ts:297](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L297)
 
 EIP-8037 SELFDESTRUCT deferred refund support.
 Per-address record of the state-gas charged for account creation
@@ -145,11 +141,51 @@ follow-up.
 
 ***
 
+### createTxTargetAlive
+
+> **createTxTargetAlive**: `boolean` = `false`
+
+Defined in: [evm.ts:269](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L269)
+
+EIP-8037: whether the target account of a top-level creation transaction
+was already alive (EIP-161 non-empty) before creation. runTx refunds the
+intrinsic new-account state gas when this is true or the creation failed.
+
+#### Remarks
+
+Experimental (Amsterdam): may change on patch releases.
+
+#### Implementation of
+
+[`EVMInterface`](../interfaces/EVMInterface.md).[`createTxTargetAlive`](../interfaces/EVMInterface.md#createtxtargetalive)
+
+***
+
+### eip2780PrepOog
+
+> **eip2780PrepOog**: `boolean` = `false`
+
+Defined in: [evm.ts:261](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L261)
+
+EIP-2780 / EIP-8037: set when a top-frame access charge (new-account
+state or 7702 delegation resolution) OOGs before opcodes run. runTx uses this to
+revert 7702 delegations applied in the prepare region.
+
+#### Remarks
+
+Experimental (Amsterdam): may change on patch releases.
+
+#### Implementation of
+
+[`EVMInterface`](../interfaces/EVMInterface.md).[`eip2780PrepOog`](../interfaces/EVMInterface.md#eip2780prepoog)
+
+***
+
 ### eip7928CallPostTargetOog
 
 > **eip7928CallPostTargetOog**: `boolean` = `false`
 
-Defined in: [evm.ts:249](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L249)
+Defined in: [evm.ts:253](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L253)
 
 EIP-7928 CALL post-state OOG: set while handling post-target access failure so
 `runTx` drains the state-gas reservoir and the sender pays the full tx gas limit.
@@ -168,7 +204,7 @@ Experimental (Amsterdam): may change on patch releases.
 
 > `readonly` **events**: `EventEmitter`\<`EVMEvent`\>
 
-Defined in: [evm.ts:203](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L203)
+Defined in: [evm.ts:207](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L207)
 
 #### Implementation of
 
@@ -180,7 +216,7 @@ Defined in: [evm.ts:203](https://github.com/ethereumjs/ethereumjs-monorepo/blob/
 
 > **executionStateGasUsed**: `bigint` = `BIGINT_0`
 
-Defined in: [evm.ts:242](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L242)
+Defined in: [evm.ts:246](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L246)
 
 EIP-8037 cumulative state-gas used by the current transaction.
 
@@ -198,7 +234,7 @@ Experimental (Amsterdam): may change on patch releases.
 
 > **journal**: `Journal`
 
-Defined in: [evm.ts:207](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L207)
+Defined in: [evm.ts:211](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L211)
 
 #### Implementation of
 
@@ -210,7 +246,7 @@ Defined in: [evm.ts:207](https://github.com/ethereumjs/ethereumjs-monorepo/blob/
 
 > **stateGasReservoir**: `bigint` = `BIGINT_0`
 
-Defined in: [evm.ts:236](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L236)
+Defined in: [evm.ts:240](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L240)
 
 EIP-8037 transaction-level state-gas reservoir.
 Holds gas paid by the user that exceeds the EIP-7825 regular-gas budget
@@ -232,9 +268,9 @@ Experimental (Amsterdam): may change on patch releases.
 
 ### stateManager
 
-> **stateManager**: `StateManagerInterface`
+> **stateManager**: [`StateManagerInterface`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/StateManagerInterface.md)
 
-Defined in: [evm.ts:205](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L205)
+Defined in: [evm.ts:209](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L209)
 
 #### Implementation of
 
@@ -244,9 +280,9 @@ Defined in: [evm.ts:205](https://github.com/ethereumjs/ethereumjs-monorepo/blob/
 
 ### systemBinaryAccessWitness?
 
-> `optional` **systemBinaryAccessWitness**: [`BinaryTreeAccessWitness`](BinaryTreeAccessWitness.md)
+> `optional` **systemBinaryAccessWitness?**: [`BinaryTreeAccessWitness`](BinaryTreeAccessWitness.md)
 
-Defined in: [evm.ts:209](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L209)
+Defined in: [evm.ts:213](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L213)
 
 ***
 
@@ -254,7 +290,7 @@ Defined in: [evm.ts:209](https://github.com/ethereumjs/ethereumjs-monorepo/blob/
 
 > `readonly` **transientStorage**: `TransientStorage`
 
-Defined in: [evm.ts:211](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L211)
+Defined in: [evm.ts:215](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L215)
 
 ## Accessors
 
@@ -264,7 +300,7 @@ Defined in: [evm.ts:211](https://github.com/ethereumjs/ethereumjs-monorepo/blob/
 
 > **get** **opcodes**(): `OpcodeList`
 
-Defined in: [evm.ts:309](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L309)
+Defined in: [evm.ts:325](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L325)
 
 ##### Returns
 
@@ -278,7 +314,7 @@ Defined in: [evm.ts:309](https://github.com/ethereumjs/ethereumjs-monorepo/blob/
 
 > **get** **precompiles**(): `Map`\<`string`, [`PrecompileFunc`](../interfaces/PrecompileFunc.md)\>
 
-Defined in: [evm.ts:305](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L305)
+Defined in: [evm.ts:321](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L321)
 
 ##### Returns
 
@@ -294,7 +330,7 @@ Defined in: [evm.ts:305](https://github.com/ethereumjs/ethereumjs-monorepo/blob/
 
 > **clearPerformanceLogs**(): `void`
 
-Defined in: [evm.ts:1638](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L1638)
+Defined in: [evm.ts:1739](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L1739)
 
 #### Returns
 
@@ -306,7 +342,7 @@ Defined in: [evm.ts:1638](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 > **getActiveOpcodes**(): `OpcodeList`
 
-Defined in: [evm.ts:434](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L434)
+Defined in: [evm.ts:449](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L449)
 
 Returns a list with the currently activated opcodes
 available for EVM execution
@@ -321,7 +357,7 @@ available for EVM execution
 
 > **getPerformanceLogs**(): `object`
 
-Defined in: [evm.ts:1634](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L1634)
+Defined in: [evm.ts:1735](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L1735)
 
 #### Returns
 
@@ -341,7 +377,7 @@ Defined in: [evm.ts:1634](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 > **getPrecompile**(`address`): [`PrecompileFunc`](../interfaces/PrecompileFunc.md) \| `undefined`
 
-Defined in: [evm.ts:1479](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L1479)
+Defined in: [evm.ts:1582](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L1582)
 
 Returns the precompile function registered at the given address,
 or `undefined` if no precompile is active there.
@@ -359,7 +395,7 @@ const fn = evm.getPrecompile('0x000000000000000000000000000000000000ff01')
 
 ##### address
 
-`` `0x${string}` `` | `Address`
+`` `0x${string}` `` \| [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Returns
 
@@ -375,7 +411,7 @@ const fn = evm.getPrecompile('0x000000000000000000000000000000000000ff01')
 
 > **runCall**(`opts`): `Promise`\<[`EVMResult`](../interfaces/EVMResult.md)\>
 
-Defined in: [evm.ts:1209](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L1209)
+Defined in: [evm.ts:1327](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L1327)
 
 Executes an EVM message, determining whether it's a call or create
 based on the `to` address. It checkpoints the state and reverts changes
@@ -401,7 +437,7 @@ if an exception happens during the message execution.
 
 > **runCode**(`opts`): `Promise`\<[`ExecResult`](../interfaces/ExecResult.md)\>
 
-Defined in: [evm.ts:1442](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L1442)
+Defined in: [evm.ts:1545](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L1545)
 
 Bound to the global VM and therefore
 shouldn't be used directly from the evm class
@@ -426,7 +462,7 @@ shouldn't be used directly from the evm class
 
 > **shallowCopy**(): `EVM`
 
-Defined in: [evm.ts:1620](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L1620)
+Defined in: [evm.ts:1721](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/evm.ts#L1721)
 
 This method copies the EVM, current HF and EIP settings
 and returns a new EVM instance.
@@ -437,5 +473,3 @@ will point to the same underlying state DB.
 #### Returns
 
 `EVM`
-
-EVM

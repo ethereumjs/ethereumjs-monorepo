@@ -8,4 +8,6 @@
 
 > `const` **BINARY\_TREE\_CODE\_CHUNK\_SIZE**: `31` = `31`
 
-Defined in: [packages/util/src/binaryTree.ts:103](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L103)
+Defined in: [packages/util/src/binaryTree.ts:118](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L118)
+
+Binary-tree layout constant `CODE_CHUNK_SIZE` (EIP-7864).

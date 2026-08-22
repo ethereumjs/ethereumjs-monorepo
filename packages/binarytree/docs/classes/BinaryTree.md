@@ -54,7 +54,7 @@ The root for an empty tree
 
 > **checkpoint**(): `void`
 
-Defined in: [binaryTree.ts:652](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L652)
+Defined in: [binaryTree.ts:667](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L667)
 
 Creates a checkpoint that can later be reverted to or committed.
 After this is called, all changes can be reverted until `commit` is called.
@@ -69,7 +69,7 @@ After this is called, all changes can be reverted until `commit` is called.
 
 > **checkRoot**(`root`): `Promise`\<`boolean`\>
 
-Defined in: [binaryTree.ts:117](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L117)
+Defined in: [binaryTree.ts:132](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L132)
 
 Checks if a given root exists.
 
@@ -89,7 +89,7 @@ Checks if a given root exists.
 
 > **commit**(): `Promise`\<`void`\>
 
-Defined in: [binaryTree.ts:661](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L661)
+Defined in: [binaryTree.ts:676](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L676)
 
 Commits a checkpoint to disk, if current checkpoint is not nested.
 If nested, only sets the parent checkpoint as current checkpoint.
@@ -108,9 +108,9 @@ If not during a checkpoint phase
 
 > **createBinaryProof**(`key`): `Promise`\<`Uint8Array`\<`ArrayBufferLike`\>[]\>
 
-Defined in: [binaryTree.ts:585](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L585)
+Defined in: [binaryTree.ts:600](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L600)
 
-Creates a proof from a tree and key that can be verified using BinaryTree.verifyBinaryProof.
+Creates a proof from a tree and key that can be verified using [verifyBinaryProof](../functions/verifyBinaryProof.md).
 
 #### Parameters
 
@@ -130,7 +130,7 @@ a 32 byte binary tree key (31 byte stem + 1 byte suffix)
 
 > **createReadStream**(): `any`
 
-Defined in: [binaryTree.ts:603](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L603)
+Defined in: [binaryTree.ts:618](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L618)
 
 The `data` event is given an `Object` that has two properties; the `key` and the `value`. Both should be Uint8Arrays.
 
@@ -146,7 +146,7 @@ Returns a [stream](https://nodejs.org/dist/latest-v12.x/docs/api/stream.html#str
 
 > **createRootNode**(): `Promise`\<`void`\>
 
-Defined in: [binaryTree.ts:538](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L538)
+Defined in: [binaryTree.ts:553](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L553)
 
 Create empty root node for initializing an empty tree.
 
@@ -160,7 +160,7 @@ Create empty root node for initializing an empty tree.
 
 > **del**(`stem`, `suffixes`): `Promise`\<`void`\>
 
-Defined in: [binaryTree.ts:530](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L530)
+Defined in: [binaryTree.ts:545](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L545)
 
 Deletes a given `key` from the tree.
 
@@ -190,7 +190,7 @@ A Promise that resolves once the key is deleted.
 
 > **findPath**(`keyInBytes`): `Promise`\<`Path`\>
 
-Defined in: [binaryTree.ts:417](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L417)
+Defined in: [binaryTree.ts:432](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L432)
 
 Tries to find a path to the node for the given key.
 It returns a `Path` object containing:
@@ -218,7 +218,7 @@ A Promise that resolves to a Path object.
 
 > **flushCheckpoints**(): `void`
 
-Defined in: [binaryTree.ts:691](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L691)
+Defined in: [binaryTree.ts:706](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L706)
 
 Flushes all checkpoints, restoring the initial checkpoint state.
 
@@ -232,7 +232,7 @@ Flushes all checkpoints, restoring the initial checkpoint state.
 
 > **get**(`stem`, `suffixes`): `Promise`\<(`Uint8Array`\<`ArrayBufferLike`\> \| `null`)[]\>
 
-Defined in: [binaryTree.ts:137](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L137)
+Defined in: [binaryTree.ts:152](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L152)
 
 Gets values at a given binary tree `stem` and set of suffixes
 
@@ -263,7 +263,7 @@ If the stem is not found, will return an empty array.
 
 > **hasCheckpoints**(): `boolean`
 
-Defined in: [binaryTree.ts:644](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L644)
+Defined in: [binaryTree.ts:659](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L659)
 
 Is the tree during a checkpoint phase?
 
@@ -277,7 +277,7 @@ Is the tree during a checkpoint phase?
 
 > **persistRoot**(): `Promise`\<`void`\>
 
-Defined in: [binaryTree.ts:635](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L635)
+Defined in: [binaryTree.ts:650](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L650)
 
 Persists the root hash in the underlying database
 
@@ -291,7 +291,7 @@ Persists the root hash in the underlying database
 
 > **put**(`stem`, `suffixes`, `values`): `Promise`\<`void`\>
 
-Defined in: [binaryTree.ts:167](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L167)
+Defined in: [binaryTree.ts:182](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L182)
 
 Stores a given `value` at the given `key` or performs a deletion if `value` is null.
 
@@ -327,7 +327,7 @@ A Promise that resolves once the value is stored.
 
 > **revert**(): `Promise`\<`void`\>
 
-Defined in: [binaryTree.ts:677](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L677)
+Defined in: [binaryTree.ts:692](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L692)
 
 Reverts the tree to the state it was at when `checkpoint` was first called.
 If during a nested checkpoint, sets root to most recent checkpoint, and sets
@@ -351,7 +351,7 @@ Gets and/or Sets the current root of the `tree`
 
 ##### value?
 
-`Uint8Array`\<`ArrayBufferLike`\> | `null`
+`Uint8Array`\<`ArrayBufferLike`\> \| `null`
 
 #### Returns
 
@@ -363,7 +363,7 @@ Gets and/or Sets the current root of the `tree`
 
 > **saveStack**(`putStack`): `Promise`\<`void`\>
 
-Defined in: [binaryTree.ts:570](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L570)
+Defined in: [binaryTree.ts:585](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L585)
 
 Saves a stack of nodes to the database.
 
@@ -383,9 +383,9 @@ an array of tuples of keys (the partial path of the node in the trie) and nodes 
 
 ### shallowCopy()
 
-> **shallowCopy**(`includeCheckpoints`): `BinaryTree`
+> **shallowCopy**(`includeCheckpoints?`): `BinaryTree`
 
-Defined in: [binaryTree.ts:619](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L619)
+Defined in: [binaryTree.ts:634](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L634)
 
 Returns a copy of the underlying tree.
 
@@ -398,7 +398,7 @@ being deactivated.
 
 #### Parameters
 
-##### includeCheckpoints
+##### includeCheckpoints?
 
 `boolean` = `true`
 
@@ -414,7 +414,7 @@ If true and during a checkpoint, the copy will contain the checkpointing metadat
 
 > **updateBranch**(`stemNode`, `nearestNode`, `pathToNode`, `pathToParent`): `object`[] \| `undefined`
 
-Defined in: [binaryTree.ts:353](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L353)
+Defined in: [binaryTree.ts:368](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L368)
 
 Helper method for updating or creating the parent internal node for a given stem node.
 If the nearest node is a stem node with a different stem, a new internal node is created
@@ -425,7 +425,7 @@ If the nearest node is an internal node, its child reference is updated.
 
 ##### stemNode
 
-`StemBinaryNode`
+[`StemBinaryNode`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/docs/classes/StemBinaryNode.md)
 
 The child stem node that will be referenced by the new/updated internal node.
 
@@ -451,3 +451,32 @@ The path (in bits) to `nearestNode` as known from the trie.
 
 An array of nodes and their partial paths from the new stem node to the branch parent node
          or `undefined` if no changes were made.
+
+***
+
+### withLock()
+
+> **withLock**\<`T`\>(`operation`): `Promise`\<`T`\>
+
+Defined in: [binaryTree.ts:120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/binaryTree.ts#L120)
+
+Runs `operation` while holding the tree's internal lock, releasing the
+lock when the returned promise settles. Use this to keep other lock-aware
+operations (e.g. `commit`/`revert`) from interleaving with a multi-step
+read sequence, such as reading values at several roots via `root()`/`get()`.
+
+#### Type Parameters
+
+##### T
+
+`T`
+
+#### Parameters
+
+##### operation
+
+() => `Promise`\<`T`\>
+
+#### Returns
+
+`Promise`\<`T`\>

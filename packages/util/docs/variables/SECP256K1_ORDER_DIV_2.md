@@ -8,4 +8,6 @@
 
 > `const` **SECP256K1\_ORDER\_DIV\_2**: `bigint`
 
-Defined in: [packages/util/src/constants.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L28)
+Defined in: [packages/util/src/constants.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L30)
+
+Half of the secp256k1 curve order (used in signature malleability checks).

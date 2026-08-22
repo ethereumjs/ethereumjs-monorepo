@@ -6,6 +6,7 @@ import { parseArgs } from 'node:util'
 
 import { createBlock, createBlockFromRLP } from '@ethereumjs/block'
 import { createBlockchain } from '@ethereumjs/blockchain'
+import { consumeBAL } from '@ethereumjs/statemanager'
 import {
   bytesToHex,
   createAddressFromString,
@@ -17,7 +18,6 @@ import { keccak_256 } from '@noble/hashes/sha3.js'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 
-import { consumeBal } from '../../../src/consumeBal.ts'
 import { createVM, runBlock } from '../../../src/index.ts'
 import { setupPreConditions } from '../../util.ts'
 import {
@@ -39,7 +39,7 @@ type BenchmarkStats = {
 type FixtureBenchmarkResult = {
   fixture: ExecutionSpecFixture
   runBlock: BenchmarkStats
-  consumeBal: BenchmarkStats
+  consumeBAL: BenchmarkStats
 }
 
 function msBetween(start: bigint, end: bigint) {
@@ -196,7 +196,7 @@ async function benchmarkRunBlock(
   }
 }
 
-async function benchmarkConsumeBal(
+async function benchmarkConsumeBAL(
   fixture: ExecutionSpecFixture,
   kzg: microEthKZG,
 ): Promise<BenchmarkStats> {
@@ -210,8 +210,8 @@ async function benchmarkConsumeBal(
       undefined,
       `benchmark runner only supports successful blocks, got expectException=${expectException ?? 'undefined'}`,
     )
-    assert.ok(blockAccessList !== undefined, 'missing blockAccessList for consumeBal benchmark')
-    await consumeBal(vm, blockAccessList, hexToBytes(blockHeader.stateRoot))
+    assert.ok(blockAccessList !== undefined, 'missing blockAccessList for consumeBAL benchmark')
+    await consumeBAL(vm.stateManager, blockAccessList, hexToBytes(blockHeader.stateRoot))
   }
   const afterProcess = hrtime.bigint()
 
@@ -236,14 +236,14 @@ function printReport(results: FixtureBenchmarkResult[]) {
   console.log('BAL vs runBlock benchmark')
   console.log('')
 
-  for (const { fixture, runBlock, consumeBal } of results) {
-    const speedup = runBlock.processMs / consumeBal.processMs
+  for (const { fixture, runBlock, consumeBAL } of results) {
+    const speedup = runBlock.processMs / consumeBAL.processMs
     console.log(`${fixture.fork}: ${fixture.id}`)
     console.log(
       `  runBlock   setup=${formatMs(runBlock.setupMs)}ms process=${formatMs(runBlock.processMs)}ms validate=${formatMs(runBlock.validateMs)}ms total=${formatMs(runBlock.totalMs)}ms`,
     )
     console.log(
-      `  consumeBal setup=${formatMs(consumeBal.setupMs)}ms process=${formatMs(consumeBal.processMs)}ms validate=${formatMs(consumeBal.validateMs)}ms total=${formatMs(consumeBal.totalMs)}ms`,
+      `  consumeBAL setup=${formatMs(consumeBAL.setupMs)}ms process=${formatMs(consumeBAL.processMs)}ms validate=${formatMs(consumeBAL.validateMs)}ms total=${formatMs(consumeBAL.totalMs)}ms`,
     )
     console.log(`  process speedup=${speedup.toFixed(2)}x`)
     console.log('')
@@ -255,15 +255,15 @@ function printReport(results: FixtureBenchmarkResult[]) {
       acc.runBlock.processMs += result.runBlock.processMs
       acc.runBlock.validateMs += result.runBlock.validateMs
       acc.runBlock.totalMs += result.runBlock.totalMs
-      acc.consumeBal.setupMs += result.consumeBal.setupMs
-      acc.consumeBal.processMs += result.consumeBal.processMs
-      acc.consumeBal.validateMs += result.consumeBal.validateMs
-      acc.consumeBal.totalMs += result.consumeBal.totalMs
+      acc.consumeBAL.setupMs += result.consumeBAL.setupMs
+      acc.consumeBAL.processMs += result.consumeBAL.processMs
+      acc.consumeBAL.validateMs += result.consumeBAL.validateMs
+      acc.consumeBAL.totalMs += result.consumeBAL.totalMs
       return acc
     },
     {
       runBlock: { setupMs: 0, processMs: 0, validateMs: 0, totalMs: 0 },
-      consumeBal: { setupMs: 0, processMs: 0, validateMs: 0, totalMs: 0 },
+      consumeBAL: { setupMs: 0, processMs: 0, validateMs: 0, totalMs: 0 },
     },
   )
 
@@ -272,10 +272,10 @@ function printReport(results: FixtureBenchmarkResult[]) {
     `  runBlock   setup=${formatMs(totals.runBlock.setupMs)}ms process=${formatMs(totals.runBlock.processMs)}ms validate=${formatMs(totals.runBlock.validateMs)}ms total=${formatMs(totals.runBlock.totalMs)}ms`,
   )
   console.log(
-    `  consumeBal setup=${formatMs(totals.consumeBal.setupMs)}ms process=${formatMs(totals.consumeBal.processMs)}ms validate=${formatMs(totals.consumeBal.validateMs)}ms total=${formatMs(totals.consumeBal.totalMs)}ms`,
+    `  consumeBAL setup=${formatMs(totals.consumeBAL.setupMs)}ms process=${formatMs(totals.consumeBAL.processMs)}ms validate=${formatMs(totals.consumeBAL.validateMs)}ms total=${formatMs(totals.consumeBAL.totalMs)}ms`,
   )
   console.log(
-    `  total process speedup=${(totals.runBlock.processMs / totals.consumeBal.processMs).toFixed(2)}x`,
+    `  total process speedup=${(totals.runBlock.processMs / totals.consumeBAL.processMs).toFixed(2)}x`,
   )
 }
 
@@ -335,11 +335,11 @@ async function main() {
 
   for (const fixture of fixtures) {
     const runBlockStats = await benchmarkRunBlock(fixture, kzg)
-    const consumeBalStats = await benchmarkConsumeBal(fixture, kzg)
+    const consumeBALStats = await benchmarkConsumeBAL(fixture, kzg)
     results.push({
       fixture,
       runBlock: runBlockStats,
-      consumeBal: consumeBalStats,
+      consumeBAL: consumeBALStats,
     })
   }
 

@@ -8,7 +8,7 @@
 
 > **formatLogData**(`data`, `verbose`): `string`
 
-Defined in: [packages/devp2p/src/util.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L91)
+Defined in: [packages/devp2p/src/util.ts:93](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L93)
 
 ## Parameters
 

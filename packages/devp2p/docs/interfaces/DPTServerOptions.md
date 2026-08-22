@@ -12,7 +12,7 @@ Defined in: [packages/devp2p/src/types.ts:195](https://github.com/ethereumjs/eth
 
 ### common?
 
-> `optional` **common**: `Common`
+> `optional` **common?**: [`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 Defined in: [packages/devp2p/src/types.ts:220](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L220)
 
@@ -22,7 +22,7 @@ Common instance to allow for crypto primitive (e.g. keccak) replacement
 
 ### createSocket?
 
-> `optional` **createSocket**: `Function`
+> `optional` **createSocket?**: `Function`
 
 Defined in: [packages/devp2p/src/types.ts:215](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L215)
 
@@ -34,7 +34,7 @@ Default: dgram-created socket
 
 ### endpoint?
 
-> `optional` **endpoint**: [`PeerInfo`](PeerInfo.md)
+> `optional` **endpoint?**: [`PeerInfo`](PeerInfo.md)
 
 Defined in: [packages/devp2p/src/types.ts:208](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L208)
 
@@ -46,7 +46,7 @@ Default: 0.0.0.0, no UDP or TCP port provided
 
 ### timeout?
 
-> `optional` **timeout**: `number`
+> `optional` **timeout?**: `number`
 
 Defined in: [packages/devp2p/src/types.ts:201](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L201)
 

@@ -6,17 +6,19 @@
 
 # Class: EOFContainer
 
-Defined in: [eof/container.ts:437](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/eof/container.ts#L437)
+Defined in: [eof/container.ts:444](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/eof/container.ts#L444)
 
-Main constructor for the EOFContainer
+Parsed EOF container (EIP-3540 header + body).
 
 ## Constructors
 
 ### Constructor
 
-> **new EOFContainer**(`buf`, `eofMode`, `dataSectionAllowedSmaller`): `EOFContainer`
+> **new EOFContainer**(`buf`, `eofMode?`, `dataSectionAllowedSmaller?`): `EOFContainer`
 
-Defined in: [eof/container.ts:449](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/eof/container.ts#L449)
+Defined in: [eof/container.ts:455](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/eof/container.ts#L455)
+
+Parses and validates an EOF container from raw bytes.
 
 #### Parameters
 
@@ -24,19 +26,15 @@ Defined in: [eof/container.ts:449](https://github.com/ethereumjs/ethereumjs-mono
 
 `Uint8Array`
 
-Entire container buffer
-
-##### eofMode
+##### eofMode?
 
 `EOFContainerMode` = `EOFContainerMode.Default`
 
-Container mode to validate the container on
-
-##### dataSectionAllowedSmaller
+##### dataSectionAllowedSmaller?
 
 `boolean` = `false`
 
-`true` if the data section is allowed to be smaller than the data section size in the header
+When `true`, the body data section may be shorter than the header size (deployment subcontainers).
 
 #### Returns
 
@@ -48,7 +46,7 @@ Container mode to validate the container on
 
 > **body**: `EOFBody`
 
-Defined in: [eof/container.ts:439](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/eof/container.ts#L439)
+Defined in: [eof/container.ts:446](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/eof/container.ts#L446)
 
 ***
 
@@ -56,7 +54,7 @@ Defined in: [eof/container.ts:439](https://github.com/ethereumjs/ethereumjs-mono
 
 > **buffer**: `Uint8Array`
 
-Defined in: [eof/container.ts:440](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/eof/container.ts#L440)
+Defined in: [eof/container.ts:447](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/eof/container.ts#L447)
 
 ***
 
@@ -64,7 +62,7 @@ Defined in: [eof/container.ts:440](https://github.com/ethereumjs/ethereumjs-mono
 
 > **eofMode**: `EOFContainerMode`
 
-Defined in: [eof/container.ts:441](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/eof/container.ts#L441)
+Defined in: [eof/container.ts:448](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/eof/container.ts#L448)
 
 ***
 
@@ -72,4 +70,4 @@ Defined in: [eof/container.ts:441](https://github.com/ethereumjs/ethereumjs-mono
 
 > **header**: `EOFHeader`
 
-Defined in: [eof/container.ts:438](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/eof/container.ts#L438)
+Defined in: [eof/container.ts:445](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/eof/container.ts#L445)

@@ -8,7 +8,9 @@
 
 > **Checkpoint** = `object`
 
-Defined in: [packages/mpt/src/types.ts:144](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/types.ts#L144)
+Defined in: [types.ts:157](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/types.ts#L157)
+
+In-memory diff layer for a trie checkpoint (keys stored as unprefixed hex strings).
 
 ## Properties
 
@@ -16,7 +18,7 @@ Defined in: [packages/mpt/src/types.ts:144](https://github.com/ethereumjs/ethere
 
 > **keyValueMap**: `Map`\<`string`, `Uint8Array` \| `undefined`\>
 
-Defined in: [packages/mpt/src/types.ts:147](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/types.ts#L147)
+Defined in: [types.ts:160](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/types.ts#L160)
 
 ***
 
@@ -24,4 +26,6 @@ Defined in: [packages/mpt/src/types.ts:147](https://github.com/ethereumjs/ethere
 
 > **root**: `Uint8Array`
 
-Defined in: [packages/mpt/src/types.ts:148](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/types.ts#L148)
+Defined in: [types.ts:162](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/types.ts#L162)
+
+Trie root hash at the time this checkpoint was opened.

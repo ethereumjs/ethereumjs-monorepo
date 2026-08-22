@@ -13,6 +13,7 @@ import { CommonTypes, Era1Types, EraTypes } from './types.ts'
 
 import type { e2StoreEntry } from './types.ts'
 
+/** Decompress and decode an e2store entry based on its type tag. */
 export async function parseEntry(entry: e2StoreEntry) {
   if (equalsBytes(entry.type, Era1Types.TotalDifficulty)) {
     return { type: entry.type, data: uint256.decode(entry.data) }
@@ -69,9 +70,9 @@ export const readEntry = (bytes: Uint8Array): e2StoreEntry => {
 }
 
 /**
- * Format e2store entry
- * @param entry { type: entry type, data: uncompressed data }
- * @returns serialized entry
+ * Format e2store entry for writing.
+ *
+ * @param entry Type tag and uncompressed payload (compressed unless total difficulty / version)
  */
 export const formatEntry = async ({
   type,

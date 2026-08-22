@@ -8,7 +8,9 @@
 
 > **BpoSchedule** = `object`
 
-Defined in: [common/src/types.ts:189](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L189)
+Defined in: [types.ts:216](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L216)
+
+Blob gas schedule parameters for a blob-parameter-only fork.
 
 ## Properties
 
@@ -16,7 +18,7 @@ Defined in: [common/src/types.ts:189](https://github.com/ethereumjs/ethereumjs-m
 
 > **blobGasPriceUpdateFraction**: `bigint`
 
-Defined in: [common/src/types.ts:192](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L192)
+Defined in: [types.ts:219](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L219)
 
 ***
 
@@ -24,7 +26,7 @@ Defined in: [common/src/types.ts:192](https://github.com/ethereumjs/ethereumjs-m
 
 > **maxBlobGasPerBlock**: `bigint`
 
-Defined in: [common/src/types.ts:191](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L191)
+Defined in: [types.ts:218](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L218)
 
 ***
 
@@ -32,4 +34,4 @@ Defined in: [common/src/types.ts:191](https://github.com/ethereumjs/ethereumjs-m
 
 > **targetBlobGasPerBlock**: `bigint`
 
-Defined in: [common/src/types.ts:190](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L190)
+Defined in: [types.ts:217](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L217)

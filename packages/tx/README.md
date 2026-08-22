@@ -62,7 +62,7 @@ import { createFeeMarket1559Tx } from '@ethereumjs/tx'
 | `london` | EIP-1559 fee market (type 2) |
 | `cancun` | EIP-4844 blob (type 3) |
 | `prague` | EIP-7702 set-code (type 4) |
-| `amsterdam` | EIP-7976 / EIP-7981 floor pricing (experimental) |
+| `amsterdam` | EIP-2780 intrinsic split; EIP-7976 / EIP-7981 floor (experimental) |
 
 Properties are frozen by default (`freeze: false` to opt out).
 
@@ -607,31 +607,84 @@ See [sendRawSepoliaTx.ts](./examples/sendRawSepoliaTx.ts) for submitting a signe
 
 See the [canonical Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental) in `@ethereumjs/vm`.
 
-On `Hardfork.Amsterdam` (experimental), [EIP-7976](https://eips.ethereum.org/EIPS/eip-7976) raises the calldata floor and [EIP-7981](https://eips.ethereum.org/EIPS/eip-7981) adds an access-list byte floor. Both feed into `getValidationErrors()`:
+Intrinsic gas and the calldata floor are **two meters**. Wallets take `max` of both (`getMinimumGasLimit()`). They share EIP-2780's recipient/value extras as a common base; they are not two names for the same formula.
+
+**Intrinsic ([EIP-2780](https://eips.ethereum.org/EIPS/eip-2780))** splits the old flat 21_000. A value transfer to another account is still 21_000:
+
+| Part | Gas |
+| --- | --- |
+| `TX_BASE` (`txGas`) | 12_000 |
+| Recipient access | 3_000 |
+| Value (+ transfer log) | 6_000 |
+
+Self-transfers skip the extras (12_000). `getIntrinsicGas()` still adds calldata execution cost, create, access-list, and 7702 auth on top.
+
+**Calldata floor ([EIP-7623](https://eips.ethereum.org/EIPS/eip-7623), raised by [EIP-7976](https://eips.ethereum.org/EIPS/eip-7976))** is `floor_base + totalCostFloorPerToken × tokens`. Prague introduced the floor so data-heavy txs cannot underpay. Amsterdam's EIP-7976 counts **4 tokens per calldata byte** (zero and non-zero alike) and sets `totalCostFloorPerToken` to 16 → 64 gas per byte. [EIP-7981](https://eips.ethereum.org/EIPS/eip-7981) adds access-list bytes to the same token count. EIP-2780 extras are the floor **base** (`TX_BASE` + recipient/value), not a second floor.
+
+**Minimum `gasLimit`:** `getMinimumGasLimit()` = `max(intrinsic, floor)`. Empty transfers still pass 21_000 (intrinsic ≥ floor). Calldata often cannot. First-touch state gas ([EIP-8037](https://eips.ethereum.org/EIPS/eip-8037)) is **not** in this bound — use `estimateTxGasDimensions()` on `@ethereumjs/vm`.
 
 ```ts
 // ./examples/calldataFloorGas.ts
 
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { createLegacyTx, getCalldataFloorGas } from '@ethereumjs/tx'
-import { createZeroAddress } from '@ethereumjs/util'
+import {
+  countCalldataFloorTokens,
+  createLegacyTx,
+  getCalldataFloorGas,
+  getEip2780FloorBaseGas,
+  getEip2780RecipientRegularGas,
+} from '@ethereumjs/tx'
+import { createAddressFromPrivateKey, createZeroAddress, hexToBytes } from '@ethereumjs/util'
 
-const common = new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })
+import type { LegacyTxInterface } from '@ethereumjs/tx'
 
-const data = new Uint8Array(10).fill(1)
-const tx = createLegacyTx(
-  {
-    to: createZeroAddress(),
-    data,
-    gasLimit: 21_000n,
-    gasPrice: 10n,
-  },
-  { common },
-)
+const main = () => {
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })
+  const senderKey = hexToBytes(`0x${'20'.repeat(32)}`)
+  const sender = createAddressFromPrivateKey(senderKey)
+  const other = createZeroAddress()
 
-console.log(`Calldata floor gas (EIP-7976): ${getCalldataFloorGas(tx)}`)
-console.log(`Validation errors: ${tx.getValidationErrors().join(', ') || 'none'}`)
+  const report = (label: string, tx: LegacyTxInterface) => {
+    console.log(label)
+    console.log(`  TX_BASE:      ${tx.common.param('txGas')}`)
+    console.log(`  2780 extras:  ${getEip2780RecipientRegularGas(tx)}`)
+    console.log(`  floor base:   ${getEip2780FloorBaseGas(tx)}`)
+    console.log(`  floor tokens: ${countCalldataFloorTokens(tx)}`)
+    console.log(`  intrinsic:    ${tx.getIntrinsicGas()}`)
+    console.log(`  floor:        ${getCalldataFloorGas(tx)}`)
+    console.log(`  minimum:      ${tx.getMinimumGasLimit()}`)
+    console.log(`  gasLimit:     ${tx.gasLimit} valid=${tx.isValid()}`)
+  }
+
+  report(
+    'Value transfer to another account (still 21_000)',
+    createLegacyTx(
+      { to: other, value: 1n, gasLimit: 21_000n, gasPrice: 10n },
+      { common },
+    ).sign(senderKey),
+  )
+
+  report(
+    'Self-transfer (2780 extras skipped)',
+    createLegacyTx(
+      { to: sender, value: 1n, gasLimit: 21_000n, gasPrice: 10n },
+      { common },
+    ).sign(senderKey),
+  )
+
+  report(
+    '100 calldata bytes (7976 floor exceeds 21_000)',
+    createLegacyTx(
+      { to: other, data: new Uint8Array(100).fill(1), gasLimit: 21_000n, gasPrice: 10n },
+      { common },
+    ).sign(senderKey),
+  )
+}
+
+void main()
 ```
+
+First-touch state gas is still a VM concern: [`@ethereumjs/vm` Amsterdam gas dimensions](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-gas-dimensions).
 
 ## Architecture
 

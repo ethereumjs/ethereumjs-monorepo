@@ -3,11 +3,10 @@ import { BIGINT_0 } from '@ethereumjs/util'
 import type { Common } from '@ethereumjs/common'
 
 /**
- * EIP-8037 cost-per-state-byte. Under the v7 fixtures the value is a flat
- * constant (sourced from the `costPerStateByte` common parameter) rather than
- * the earlier draft's block-gas-limit-derived value. The helper is kept so
- * callers do not need to know whether the value is constant or derived; a
- * future spec revision could re-introduce a derivation here.
+ * Returns the active EIP-8037 cost per state byte from {@link @ethereumjs/common!Common}.
+ *
+ * Under v7 fixtures this is the flat `costPerStateByte` parameter; the
+ * optional block gas limit is reserved for a future derived formula.
  *
  * @remarks Experimental (Amsterdam): may change on patch releases.
  */
@@ -16,41 +15,39 @@ export function activeCostPerStateByte(common: Common, _blockGasLimit?: bigint):
 }
 
 /**
- * Minimal shape of a tx needed to split intrinsic gas into the EIP-8037
- * regular/state dimensions. Avoids a `@ethereumjs/tx` import cycle here.
+ * Minimal transaction surface for EIP-8037 intrinsic-gas splitting (avoids a `@ethereumjs/tx` cycle).
  */
 interface IntrinsicDimensionsTx {
   type: number
   common: Common
   value: bigint
+  /** Present for calls; omitted for contract creation. */
   to?: { bytes: Uint8Array }
   getIntrinsicGas(): bigint
   toCreationAddress(): boolean
-  // EIP-7702 (type 4) txs expose an authorization list.
+  /** Set on EIP-7702 (type 4) transactions with an authorization list. */
   authorizationList?: unknown[]
 }
 
 /**
  * EIP-8037 intrinsic-gas decomposition.
  *
- * Returns `{ intrinsicRegular, intrinsicState }` such that
- * `intrinsicRegular + intrinsicState` equals the tx's total **state-independent**
- * intrinsic charge under EIP-8037 (glamsterdam-devnet v7+). EIP-2780
- * recipient/value/log extras are part of `getIntrinsicGas()` (self-transfers
- * skip them). New-account state gas and 7702 `ACCOUNT_WRITE` / auth state
- * are charged at top-frame access, not here.
+ * Under glamsterdam-devnet v7+, intrinsic gas is entirely **regular**
+ * (EIP-2780 state-independent). New-account and 7702 auth/write state gas
+ * are charged at top-frame access, so this returns
+ * `{ intrinsicRegular: tx.getIntrinsicGas(), intrinsicState: 0n }` whether
+ * EIP-8037 is active or not.
  *
- * Callers may then use the split for the per-tx block-gas pre-execution
- * checks:
+ * Block inclusion does **not** subtract this split from `tx.gas`. Use
+ * {@link txExceedsAvailableBlockGas8037} (`min(TX_MAX, tx.gas)` vs remaining
+ * regular, `tx.gas` vs remaining state). Reservoir sizing in `runTx()` uses
+ * `intrinsicRegular`:
  *
- *   regular check: min(TX_MAX, tx.gas - intrinsicState) > regular_available  → reject
- *   state check:   (tx.gas - intrinsicRegular)         > state_available     → reject
+ *   execution_gas = tx.gas - intrinsic
+ *   gas_left      = min(TX_MAX - intrinsicRegular, execution_gas)
+ *   reservoir     = execution_gas - gas_left
  *
- * and for sizing the EIP-8037 state-gas reservoir.
- *
- * When EIP-8037 is not active, returns `{ intrinsicRegular: tx.getIntrinsicGas(),
- * intrinsicState: 0n }` so callers can use a single code path.
- *
+ * @param blockGasLimit Reserved for a future derived `costPerStateByte`; unused under v7.
  * @remarks Experimental (Amsterdam): may change on patch releases.
  */
 export function computeIntrinsicGasDimensions8037(
@@ -68,4 +65,31 @@ export function computeIntrinsicGasDimensions8037(
   // ACCOUNT_WRITE and per-auth state gas are charged at access (runTx
   // processAuthorizationList), keyed on pre-state — not here.
   return { intrinsicRegular: intrinsicRegular0, intrinsicState: BIGINT_0 }
+}
+
+/**
+ * EIP-8037 per-tx block inclusion check (v7+).
+ *
+ * Rejects when `min(TX_MAX, tx.gas) > regular_available` or
+ * `tx.gas > state_available`, where
+ * `*_available = block.gas_limit - block_*_gas_used`.
+ *
+ * `TX_MAX` caps only the regular bound; the state check uses uncapped `tx.gas`.
+ *
+ * @returns `true` when either dimension would exceed the block's remaining gas.
+ * @remarks Experimental (Amsterdam): may change on patch releases.
+ */
+export function txExceedsAvailableBlockGas8037(
+  txGasLimit: bigint,
+  txMaxGasLimit: bigint,
+  blockGasLimit: bigint,
+  blockRegularGasUsed: bigint,
+  blockStateGasUsed: bigint,
+): boolean {
+  const regularAvailable =
+    blockGasLimit > blockRegularGasUsed ? blockGasLimit - blockRegularGasUsed : BIGINT_0
+  const stateAvailable =
+    blockGasLimit > blockStateGasUsed ? blockGasLimit - blockStateGasUsed : BIGINT_0
+  const txRegularBound = txGasLimit < txMaxGasLimit ? txGasLimit : txMaxGasLimit
+  return txRegularBound > regularAvailable || txGasLimit > stateAvailable
 }

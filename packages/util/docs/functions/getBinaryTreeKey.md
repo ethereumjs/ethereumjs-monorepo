@@ -8,7 +8,9 @@
 
 > **getBinaryTreeKey**(`stem`, `leaf`): `Uint8Array`\<`ArrayBuffer`\>
 
-Defined in: [packages/util/src/binaryTree.ts:116](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L116)
+Defined in: [packages/util/src/binaryTree.ts:133](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L133)
+
+Combine a 31-byte stem with a leaf suffix to form a binary-tree key (node width 256).
 
 ## Parameters
 
@@ -16,22 +18,12 @@ Defined in: [packages/util/src/binaryTree.ts:116](https://github.com/ethereumjs/
 
 `Uint8Array`
 
-The 31-bytes binary tree stem as a Uint8Array.
-
 ### leaf
 
-`Uint8Array`\<`ArrayBufferLike`\> | [`BinaryTreeLeafType`](../type-aliases/BinaryTreeLeafType.md)
+`Uint8Array`\<`ArrayBufferLike`\> \| [`BinaryTreeLeafType`](../type-aliases/BinaryTreeLeafType.md)
+
+[BinaryTreeLeafType](../variables/BinaryTreeLeafType.md) constant or raw suffix bytes
 
 ## Returns
 
 `Uint8Array`\<`ArrayBuffer`\>
-
-The tree key as a Uint8Array.
-
-## Dev
-
-Returns the tree key for a given binary tree stem, and sub index.
-
-## Dev
-
-Assumes that the tree node width = 256

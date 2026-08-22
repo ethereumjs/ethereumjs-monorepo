@@ -87,40 +87,18 @@ const validateBlobTransactionNetworkWrapper = (
 }
 
 /**
- * Instantiate a Blob4844Tx transaction from a data dictionary.
+ * Instantiate a {@link Blob4844Tx} from a plain data object.
  *
- * If blobs are provided the tx will be instantiated in the "Network Wrapper" format,
- * otherwise in the canonical form represented on-chain.
+ * With `blobs` or `blobsData` present the tx is built in network-wrapper form;
+ * otherwise the on-chain canonical form (versioned hashes only) is used.
  *
- * @param txData - Transaction data object containing:
- *   - `chainId` - Chain ID (will be set automatically if not provided)
- *   - `nonce` - Transaction nonce
- *   - `maxPriorityFeePerGas` - Maximum priority fee per gas (EIP-1559)
- *   - `maxFeePerGas` - Maximum fee per gas (EIP-1559)
- *   - `gasLimit` - Gas limit for the transaction
- *   - `to` - Recipient address (optional for contract creation)
- *   - `value` - Value to transfer in wei
- *   - `data` - Transaction data
- *   - `accessList` - Access list for EIP-2930 (optional)
- *   - `maxFeePerBlobGas` - Maximum fee per blob gas (EIP-4844)
- *   - `blobVersionedHashes` - Versioned hashes for blob validation
- *   - `v`, `r`, `s` - Signature components (for signed transactions)
- *   - `blobs` - Raw blob data (optional, will derive commitments/proofs)
- *   - `blobsData` - Array of strings to construct blobs from (optional)
- *   - `kzgCommitments` - KZG commitments (optional, derived from blobs if not provided)
- *   - `kzgProofs` - KZG proofs (optional, derived from blobs if not provided)
- *   - `networkWrapperVersion` - Network wrapper version (0=EIP-4844, 1=EIP-7594)
- * @param opts - Transaction options including Common instance with KZG initialized
- * @returns A new Blob4844Tx instance
+ * Requires `opts.common.customCrypto.kzg`. When blobs are supplied, commitments,
+ * versioned hashes, and proofs are derived automatically.
  *
- * @throws {EthereumJSErrorWithoutCode} If KZG is not initialized in Common
- * @throws {EthereumJSErrorWithoutCode} If both blobsData and blobs are provided
- *
- * Notes:
- * - Requires a Common instance with `customCrypto.kzg` initialized
- * - Cannot provide both `blobsData` and `blobs` simultaneously
- * - If `blobs` or `blobsData` is provided, `kzgCommitments`, `blobVersionedHashes`, and `kzgProofs` will be automatically derived
- * - KZG proof type depends on EIP-7594 activation: per-Blob proofs (EIP-4844) or per-Cell proofs (EIP-7594)
+ * @throws If `customCrypto.kzg` is not initialized on {@link TxOptions.common}
+ * @throws If both `blobsData` and `blobs` are provided
+ * @throws If fee or value fields overflow or are non-numeric
+ * @throws If gas limit or nonce exceed EIP bounds
  */
 export function createBlob4844Tx(txData: TxData, opts?: TxOptions) {
   if (opts?.common?.customCrypto?.kzg === undefined) {
@@ -158,37 +136,18 @@ export function createBlob4844Tx(txData: TxData, opts?: TxOptions) {
 }
 
 /**
- * Create a Blob4844Tx transaction from an array of byte encoded values ordered according to the devp2p network encoding.
- * Only canonical format supported, otherwise use `createBlob4844TxFromSerializedNetworkWrapper()`.
+ * Instantiate a {@link Blob4844Tx} from devp2p byte-array encoding (canonical form only).
  *
- * @param values - Array of byte encoded values containing:
- *   - `chainId` - Chain ID as Uint8Array
- *   - `nonce` - Transaction nonce as Uint8Array
- *   - `maxPriorityFeePerGas` - Maximum priority fee per gas (EIP-1559) as Uint8Array
- *   - `maxFeePerGas` - Maximum fee per gas (EIP-1559) as Uint8Array
- *   - `gasLimit` - Gas limit for the transaction as Uint8Array
- *   - `to` - Recipient address as Uint8Array (optional for contract creation)
- *   - `value` - Value to transfer in wei as Uint8Array
- *   - `data` - Transaction data as Uint8Array
- *   - `accessList` - Access list for EIP-2930 as Uint8Array (optional)
- *   - `maxFeePerBlobGas` - Maximum fee per blob gas (EIP-4844) as Uint8Array
- *   - `blobVersionedHashes` - Versioned hashes for blob validation as Uint8Array[]
- *   - `v` - Signature recovery ID as Uint8Array (for signed transactions)
- *   - `r` - Signature r component as Uint8Array (for signed transactions)
- *   - `s` - Signature s component as Uint8Array (for signed transactions)
- * @param opts - Transaction options including Common instance with KZG initialized
- * @returns A new Blob4844Tx instance
- *
- * @throws {EthereumJSErrorWithoutCode} If KZG is not initialized in Common
- * @throws {EthereumJSErrorWithoutCode} If values array length is not 11 (unsigned) or 14 (signed)
+ * For network-wrapper blobs use {@link createBlob4844TxFromSerializedNetworkWrapper}.
  *
  * Format: `[chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
  * accessList, maxFeePerBlobGas, blobVersionedHashes, v, r, s]`
  *
- * Notes:
- * - Requires a Common instance with `customCrypto.kzg` initialized
- * - Supports both unsigned (11 values) and signed (14 values) transaction formats
- * - All numeric values must be provided as Uint8Array byte representations
+ * @throws If `customCrypto.kzg` is not initialized on {@link TxOptions.common}
+ * @throws If the values array length is not 11 (unsigned) or 14 (signed)
+ * @throws If `chainId` or signature fields are nested arrays
+ * @throws If numeric fields contain leading zeroes
+ * @throws If constructor validation fails (see {@link createBlob4844Tx})
  */
 export function createBlob4844TxFromBytesArray(values: TxValuesArray, opts: TxOptions = {}) {
   if (opts.common?.customCrypto?.kzg === undefined) {
@@ -255,25 +214,15 @@ export function createBlob4844TxFromBytesArray(values: TxValuesArray, opts: TxOp
 }
 
 /**
- * Instantiate a Blob4844Tx transaction from an RLP serialized transaction.
- * Only canonical format supported, otherwise use `createBlob4844TxFromSerializedNetworkWrapper()`.
- *
- * @param serialized - RLP serialized transaction data as Uint8Array
- * @param opts - Transaction options including Common instance with KZG initialized
- * @returns A new Blob4844Tx instance
- *
- * @throws {EthereumJSErrorWithoutCode} If KZG is not initialized in Common
- * @throws {EthereumJSErrorWithoutCode} If serialized data is not a valid EIP-4844 transaction
- * @throws {EthereumJSErrorWithoutCode} If RLP decoded data is not an array
+ * Instantiate a {@link Blob4844Tx} from RLP-serialized bytes (canonical form only).
  *
  * Format: `0x03 || rlp([chain_id, nonce, max_priority_fee_per_gas, max_fee_per_gas, gas_limit, to, value, data,
  * access_list, max_fee_per_blob_gas, blob_versioned_hashes, y_parity, r, s])`
  *
- * Notes:
- * - Requires a Common instance with `customCrypto.kzg` initialized
- * - Transaction type byte must be 0x03 (BlobEIP4844)
- * - RLP payload must decode to an array of transaction fields
- * - Delegates to `createBlob4844TxFromBytesArray` for actual construction
+ * @throws If `customCrypto.kzg` is not initialized on {@link TxOptions.common}
+ * @throws If the leading type byte is not `0x03`
+ * @throws If RLP decode result is not an array
+ * @throws If decoded values fail {@link createBlob4844TxFromBytesArray} checks
  */
 export function createBlob4844TxFromRLP(serialized: Uint8Array, opts: TxOptions = {}) {
   if (opts.common?.customCrypto?.kzg === undefined) {
@@ -300,32 +249,19 @@ export function createBlob4844TxFromRLP(serialized: Uint8Array, opts: TxOptions 
 }
 
 /**
- * Creates a Blob4844Tx transaction from the network encoding of a blob transaction wrapper.
- * This function handles the "Network Wrapper" format that includes blobs, commitments, and proofs.
+ * Instantiate a {@link Blob4844Tx} from a network-wrapper RLP payload (blobs + KZG proofs).
  *
- * @param serialized - Serialized BlobTransactionNetworkWrapper as Uint8Array
- * @param opts - Transaction options including Common instance with KZG initialized
- * @returns A new Blob4844Tx instance with network wrapper data
+ * EIP-4844: `0x03 || rlp([tx_values, blobs, kzg_commitments, kzg_proofs])`
+ * EIP-7594: `0x03 || rlp([tx_values, network_wrapper_version, blobs, kzg_commitments, kzg_proofs])`
  *
- * @throws {EthereumJSErrorWithoutCode} If Common instance is not provided
- * @throws {EthereumJSErrorWithoutCode} If KZG is not initialized in Common
- * @throws {EthereumJSErrorWithoutCode} If serialized data is not a valid EIP-4844 transaction
- * @throws {Error} If network wrapper has invalid number of values (not 4 or 5)
- * @throws {Error} If transaction has no valid `to` address
- * @throws {Error} If network wrapper version is invalid
- * @throws {EthereumJSErrorWithoutCode} If KZG verification fails
- * @throws {EthereumJSErrorWithoutCode} If versioned hashes don't match commitments
- *
- * Network Wrapper Formats:
- * - EIP-4844: `0x03 || rlp([tx_values, blobs, kzg_commitments, kzg_proofs])` (4 values)
- * - EIP-7594: `0x03 || rlp([tx_values, network_wrapper_version, blobs, kzg_commitments, kzg_proofs])` (5 values)
- *
- * Notes:
- * - Requires a Common instance with `customCrypto.kzg` initialized
- * - Validates KZG proofs against blobs and commitments
- * - Verifies versioned hashes match computed commitments
- * - Supports both EIP-4844 and EIP-7594 network wrapper formats
- * - Transaction is frozen by default unless `opts.freeze` is set to false
+ * @throws If {@link TxOptions.common} is missing
+ * @throws If `customCrypto.kzg` is not initialized
+ * @throws If the leading type byte is not `0x03`
+ * @throws If the wrapper has other than 4 or 5 RLP elements
+ * @throws If the decoded tx has no `to` address
+ * @throws If the network wrapper version is invalid
+ * @throws If KZG proof verification fails
+ * @throws If versioned hashes do not match commitments
  */
 export function createBlob4844TxFromSerializedNetworkWrapper(
   serialized: Uint8Array,
@@ -409,11 +345,10 @@ export function createBlob4844TxFromSerializedNetworkWrapper(
 }
 
 /**
- * Creates the minimal representation of a blob transaction from the network wrapper version.
- * The minimal representation is used when adding transactions to an execution payload/block
- * @param txData a {@link Blob4844Tx} containing optional blobs/kzg commitments
- * @param opts - dictionary of {@link TxOptions}
- * @returns the "minimal" representation of a Blob4844Tx (i.e. transaction object minus blobs and kzg commitments)
+ * Strip blobs and KZG data from a network-wrapper tx for block inclusion.
+ *
+ * @throws If `customCrypto.kzg` is not initialized on {@link TxOptions.common}
+ * @throws If delegated {@link createBlob4844Tx} validation fails
  */
 export function createMinimal4844TxFromNetworkWrapper(
   txData: Blob4844Tx,
@@ -441,11 +376,9 @@ export function createMinimal4844TxFromNetworkWrapper(
 }
 
 /**
- * Returns the EIP 4844 transaction network wrapper in JSON format similar to toJSON, including
- * blobs, commitments, and proofs fields
- * @param serialized a buffer representing a serialized BlobTransactionNetworkWrapper
- * @param opts any TxOptions defined
- * @returns JSONBlobTxNetworkWrapper with blobs, KZG commitments, and KZG proofs fields
+ * Decode a blob network wrapper and return its JSON representation including blobs and proofs.
+ *
+ * @throws If {@link createBlob4844TxFromSerializedNetworkWrapper} validation fails
  */
 export function blobTxNetworkWrapperToJSON(
   serialized: Uint8Array,

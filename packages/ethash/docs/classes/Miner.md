@@ -22,9 +22,9 @@ Create a Miner object
 
 ##### mineObject
 
-The object to mine on, either a `BlockHeader` or a `Block` object
+[`BlockHeader`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/BlockHeader.md) \| [`Block`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/Block.md)
 
-`BlockHeader` | `Block`
+The object to mine on, either a `BlockHeader` or a `Block` object
 
 ##### ethash
 
@@ -40,7 +40,7 @@ Ethash object to use for mining
 
 ### solution?
 
-> `optional` **solution**: [`Solution`](../type-aliases/Solution.md)
+> `optional` **solution?**: [`Solution`](../type-aliases/Solution.md)
 
 Defined in: [index.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L52)
 
@@ -48,7 +48,7 @@ Defined in: [index.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 ### iterate()
 
-> **iterate**(`iterations`): `Promise`\<[`Solution`](../type-aliases/Solution.md) \| `undefined`\>
+> **iterate**(`iterations?`): `Promise`\<[`Solution`](../type-aliases/Solution.md) \| `undefined`\>
 
 Defined in: [index.ts:114](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L114)
 
@@ -56,7 +56,7 @@ Iterate `iterations` times over nonces to find a valid PoW. Caches solution if o
 
 #### Parameters
 
-##### iterations
+##### iterations?
 
 `number` = `0`
 
@@ -72,7 +72,7 @@ Number of iterations to iterate over. If `-1` is passed, the loop runs until a s
 
 ### mine()
 
-> **mine**(`iterations`): `Promise`\<`BlockHeader` \| `Block` \| `undefined`\>
+> **mine**(`iterations?`): `Promise`\<[`BlockHeader`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/BlockHeader.md) \| [`Block`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/Block.md) \| `undefined`\>
 
 Defined in: [index.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/ethash/src/index.ts#L91)
 
@@ -80,7 +80,7 @@ Iterate `iterations` time over nonces, returns a `BlockHeader` or `Block` if a s
 
 #### Parameters
 
-##### iterations
+##### iterations?
 
 `number` = `0`
 
@@ -88,7 +88,7 @@ Number of iterations to iterate over. If `-1` is passed, the loop runs until a s
 
 #### Returns
 
-`Promise`\<`BlockHeader` \| `Block` \| `undefined`\>
+`Promise`\<[`BlockHeader`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/BlockHeader.md) \| [`Block`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/Block.md) \| `undefined`\>
 
 - `undefined` if no solution was found within the iterations, or a `BlockHeader` or `Block`
           with valid PoW based upon what was passed in the constructor

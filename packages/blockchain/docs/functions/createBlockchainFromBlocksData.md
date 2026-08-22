@@ -6,12 +6,11 @@
 
 # Function: createBlockchainFromBlocksData()
 
-> **createBlockchainFromBlocksData**(`blocksData`, `opts`): `Promise`\<[`Blockchain`](../classes/Blockchain.md)\>
+> **createBlockchainFromBlocksData**(`blocksData`, `opts?`): `Promise`\<[`Blockchain`](../classes/Blockchain.md)\>
 
-Defined in: [constructors.ts:106](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/constructors.ts#L106)
+Defined in: [constructors.ts:112](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/constructors.ts#L112)
 
-Creates a blockchain from a list of block objects,
-objects must be readable by createBlock
+Initialize a blockchain and append a sequence of blocks from plain data.
 
 ## Parameters
 
@@ -19,12 +18,20 @@ objects must be readable by createBlock
 
 `BlockData`[]
 
-### opts
+Blocks readable by [createBlock](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/functions/createBlock.md)
+
+### opts?
 
 [`BlockchainOptions`](../interfaces/BlockchainOptions.md) = `{}`
-
-Constructor options, see [BlockchainOptions](../interfaces/BlockchainOptions.md)
 
 ## Returns
 
 `Promise`\<[`Blockchain`](../classes/Blockchain.md)\>
+
+## Throws
+
+If genesis initialization fails
+
+## Throws
+
+If any [Blockchain.putBlock](../classes/Blockchain.md#putblock) validation fails

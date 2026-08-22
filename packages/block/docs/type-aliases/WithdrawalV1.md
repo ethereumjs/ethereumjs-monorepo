@@ -8,7 +8,9 @@
 
 > **WithdrawalV1** = `object`
 
-Defined in: [types.ts:230](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L230)
+Defined in: [types.ts:257](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L257)
+
+Withdrawal entry in beacon/Engine API v1 hex encoding.
 
 ## Properties
 
@@ -16,7 +18,7 @@ Defined in: [types.ts:230](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **address**: `PrefixedHexString`
 
-Defined in: [types.ts:233](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L233)
+Defined in: [types.ts:260](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L260)
 
 ***
 
@@ -24,7 +26,7 @@ Defined in: [types.ts:233](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **amount**: `PrefixedHexString`
 
-Defined in: [types.ts:234](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L234)
+Defined in: [types.ts:261](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L261)
 
 ***
 
@@ -32,7 +34,7 @@ Defined in: [types.ts:234](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **index**: `PrefixedHexString`
 
-Defined in: [types.ts:231](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L231)
+Defined in: [types.ts:258](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L258)
 
 ***
 
@@ -40,4 +42,4 @@ Defined in: [types.ts:231](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **validatorIndex**: `PrefixedHexString`
 
-Defined in: [types.ts:232](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L232)
+Defined in: [types.ts:259](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L259)

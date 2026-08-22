@@ -6,26 +6,23 @@
 
 # Function: short()
 
-> **short**(`bytes`, `maxLength`): `string`
+> **short**(`bytes`, `maxLength?`): `string`
 
-Defined in: [packages/util/src/bytes.ts:341](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L341)
+Defined in: [packages/util/src/bytes.ts:297](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L297)
 
-Shortens a string  or Uint8Array's hex string representation to maxLength (default 50).
-
-Examples:
-
-Input:  '657468657265756d000000000000000000000000000000000000000000000000'
-Output: '657468657265756d0000000000000000000000000000000000…'
+Truncate a hex string or bytes display for logging.
 
 ## Parameters
 
 ### bytes
 
-`string` | `Uint8Array`\<`ArrayBufferLike`\>
+`string` \| `Uint8Array`\<`ArrayBufferLike`\>
 
-### maxLength
+### maxLength?
 
 `number` = `50`
+
+Maximum visible characters excluding the ellipsis (default 50)
 
 ## Returns
 

@@ -20,7 +20,7 @@ Defined in: [packages/devp2p/src/types.ts:301](https://github.com/ethereumjs/eth
 
 ### clientId?
 
-> `optional` **clientId**: `Uint8Array`\<`ArrayBufferLike`\>
+> `optional` **clientId?**: `Uint8Array`\<`ArrayBufferLike`\>
 
 Defined in: [packages/devp2p/src/types.ts:294](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L294)
 
@@ -28,7 +28,7 @@ Defined in: [packages/devp2p/src/types.ts:294](https://github.com/ethereumjs/eth
 
 ### common
 
-> **common**: `Common`
+> **common**: [`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 Defined in: [packages/devp2p/src/types.ts:302](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L302)
 
@@ -36,7 +36,7 @@ Defined in: [packages/devp2p/src/types.ts:302](https://github.com/ethereumjs/eth
 
 ### dpt?
 
-> `optional` **dpt**: [`DPT`](../classes/DPT.md) \| `null`
+> `optional` **dpt?**: [`DPT`](../classes/DPT.md) \| `null`
 
 Defined in: [packages/devp2p/src/types.ts:297](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L297)
 
@@ -44,7 +44,7 @@ Defined in: [packages/devp2p/src/types.ts:297](https://github.com/ethereumjs/eth
 
 ### listenPort?
 
-> `optional` **listenPort**: `number` \| `null`
+> `optional` **listenPort?**: `number` \| `null`
 
 Defined in: [packages/devp2p/src/types.ts:303](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L303)
 
@@ -52,7 +52,7 @@ Defined in: [packages/devp2p/src/types.ts:303](https://github.com/ethereumjs/eth
 
 ### maxPeers?
 
-> `optional` **maxPeers**: `number`
+> `optional` **maxPeers?**: `number`
 
 Defined in: [packages/devp2p/src/types.ts:299](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L299)
 
@@ -60,7 +60,7 @@ Defined in: [packages/devp2p/src/types.ts:299](https://github.com/ethereumjs/eth
 
 ### remoteClientIdFilter?
 
-> `optional` **remoteClientIdFilter**: `string`[]
+> `optional` **remoteClientIdFilter?**: `string`[]
 
 Defined in: [packages/devp2p/src/types.ts:300](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L300)
 
@@ -68,6 +68,6 @@ Defined in: [packages/devp2p/src/types.ts:300](https://github.com/ethereumjs/eth
 
 ### timeout?
 
-> `optional` **timeout**: `number`
+> `optional` **timeout?**: `number`
 
 Defined in: [packages/devp2p/src/types.ts:296](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/types.ts#L296)

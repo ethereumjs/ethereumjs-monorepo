@@ -8,7 +8,9 @@
 
 > **getBlockIndex**(`bytes`): `object`
 
-Defined in: [packages/e2store/src/blockIndex.ts:6](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/blockIndex.ts#L6)
+Defined in: [packages/e2store/src/blockIndex.ts:7](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/blockIndex.ts#L7)
+
+Locate and parse the trailing block-index entry in an e2hs byte stream.
 
 ## Parameters
 

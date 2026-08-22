@@ -6,12 +6,11 @@
 
 # Function: getGenesis()
 
-> **getGenesis**(`chainId`): `GenesisState` \| `undefined`
+> **getGenesis**(`chainId`): [`GenesisState`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/GenesisState.md) \| `undefined`
 
-Defined in: [index.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/genesis/src/index.ts#L15)
+Defined in: [index.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/genesis/src/index.ts#L16)
 
-Utility to get the genesisState of a well known network
-@param: chainId of the network
+Returns the genesis state for a well-known Ethereum network.
 
 ## Parameters
 
@@ -19,8 +18,10 @@ Utility to get the genesisState of a well known network
 
 `number`
 
+Numeric chain identifier (see [Chain](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/variables/Chain.md) in `@ethereumjs/common`)
+
 ## Returns
 
-`GenesisState` \| `undefined`
+[`GenesisState`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/GenesisState.md) \| `undefined`
 
-genesisState of the chain
+Genesis state map keyed by address, or `undefined` if the chain is not supported

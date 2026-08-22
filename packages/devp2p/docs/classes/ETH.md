@@ -234,7 +234,7 @@ Defined in: [packages/devp2p/src/protocol/eth.ts:288](https://github.com/ethereu
 
 > **\_getStatusString**(`status`): `string`
 
-Defined in: [packages/devp2p/src/protocol/eth.ts:296](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L296)
+Defined in: [packages/devp2p/src/protocol/eth.ts:297](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L297)
 
 #### Parameters
 
@@ -292,7 +292,7 @@ Defined in: [packages/devp2p/src/protocol/eth.ts:226](https://github.com/ethereu
 
 > **\_nextForkFromForkId**(`forkId`): `number`
 
-Defined in: [packages/devp2p/src/protocol/eth.ts:292](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L292)
+Defined in: [packages/devp2p/src/protocol/eth.ts:293](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L293)
 
 #### Parameters
 
@@ -332,7 +332,7 @@ Remote fork ID
 
 > **getMsgPrefix**(`msgCode`): `string`
 
-Defined in: [packages/devp2p/src/protocol/eth.ts:419](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L419)
+Defined in: [packages/devp2p/src/protocol/eth.ts:420](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L420)
 
 #### Parameters
 
@@ -362,7 +362,7 @@ Defined in: [packages/devp2p/src/protocol/eth.ts:284](https://github.com/ethereu
 
 > **sendMessage**(`code`, `payload`): `void`
 
-Defined in: [packages/devp2p/src/protocol/eth.ts:366](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L366)
+Defined in: [packages/devp2p/src/protocol/eth.ts:367](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L367)
 
 #### Parameters
 
@@ -384,7 +384,7 @@ Defined in: [packages/devp2p/src/protocol/eth.ts:366](https://github.com/ethereu
 
 > **sendStatus**(`status`): `void`
 
-Defined in: [packages/devp2p/src/protocol/eth.ts:316](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L316)
+Defined in: [packages/devp2p/src/protocol/eth.ts:317](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/protocol/eth.ts#L317)
 
 #### Parameters
 

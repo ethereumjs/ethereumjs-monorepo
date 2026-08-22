@@ -3,7 +3,6 @@ import {
   BIGINT_0,
   EthereumJSErrorWithoutCode,
   SECP256K1_ORDER_DIV_2,
-  bigIntMax,
   bigIntToUnpaddedBytes,
   bytesToHex,
   ecrecover,
@@ -18,7 +17,10 @@ import {
   getCalldataFloorGas,
   getEip2780RecipientRegularGas,
   getEip7702IntrinsicAuthGas,
+  getMinimumGasLimit,
 } from '../util/intrinsic.ts'
+
+export { getMinimumGasLimit }
 
 import type { LegacyTx } from '../legacy/tx.ts'
 import type { LegacyTxInterface, Transaction } from '../types.ts'
@@ -209,7 +211,8 @@ export function getEffectivePriorityFee(gasPrice: bigint, baseFee: bigint | unde
 
 /**
  * Validates the transaction signature and minimum gas requirements.
- * @returns {string[]} an array of error strings
+ *
+ * @returns Human-readable error strings; empty when valid
  */
 export function getValidationErrors(tx: LegacyTxInterface): string[] {
   const errors = []
@@ -218,13 +221,16 @@ export function getValidationErrors(tx: LegacyTxInterface): string[] {
     errors.push('Invalid Signature')
   }
 
-  let minGas = tx.getIntrinsicGas()
-  if (tx.common.isActivatedEIP(7623)) {
-    minGas = bigIntMax(minGas, getCalldataFloorGas(tx))
-  }
+  const intrinsic = tx.getIntrinsicGas()
+  const floor = tx.common.isActivatedEIP(7623) ? getCalldataFloorGas(tx) : BIGINT_0
+  const minGas = getMinimumGasLimit(tx)
   if (minGas > tx.gasLimit) {
+    const bound =
+      floor > intrinsic
+        ? `calldata floor ${floor} (intrinsic ${intrinsic})`
+        : `intrinsic gas ${intrinsic}`
     errors.push(
-      `gasLimit is too low. The gasLimit is lower than the minimum gas limit of ${minGas}, the gas limit is: ${tx.gasLimit}`,
+      `gasLimit is too low. The gasLimit is lower than the minimum gas limit of ${minGas} (${bound}), the gas limit is: ${tx.gasLimit}`,
     )
   }
 
@@ -232,8 +238,9 @@ export function getValidationErrors(tx: LegacyTxInterface): string[] {
 }
 
 /**
- * Validates the transaction signature and minimum gas requirements.
- * @returns {boolean} true if the transaction is valid, false otherwise
+ * Returns whether the transaction passes signature and minimum-gas checks.
+ *
+ * @returns `true` when {@link getValidationErrors} is empty
  */
 export function isValid(tx: LegacyTxInterface): boolean {
   const errors = tx.getValidationErrors()
@@ -269,6 +276,8 @@ export function getSenderAddress(tx: LegacyTxInterface): Address {
  * ```javascript
  * const signedTx = tx.sign(privateKey)
  * ```
+ *
+ * @throws If `privateKey` is not 32 bytes
  */
 export function sign(
   tx: LegacyTxInterface,

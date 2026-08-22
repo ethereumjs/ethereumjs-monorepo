@@ -16,24 +16,27 @@ import type { AccessList, TxOptions } from '../types.ts'
 import type { TxData, TxValuesArray } from './tx.ts'
 
 /**
- * Instantiate a transaction from a data dictionary.
+ * Instantiate an EIP-2930 access-list transaction from a plain data object.
  *
- * Format: { chainId, nonce, gasPrice, gasLimit, to, value, data, accessList,
- * v, r, s }
+ * `chainId` defaults from {@link TxOptions.common} when omitted.
  *
- * Notes:
- * - `chainId` will be set automatically if not provided
- * - All parameters are optional and have some basic default values
+ * @throws If fee or value fields overflow or are non-numeric
+ * @throws If gas limit or nonce exceed EIP bounds
+ * @throws If init code size exceeds EIP-3860 on contract-creation txs
  */
 export function createAccessList2930Tx(txData: TxData, opts: TxOptions = {}) {
   return new AccessList2930Tx(txData, opts)
 }
 
 /**
- * Create a transaction from an array of byte encoded values ordered according to the devp2p network encoding - format noted below.
+ * Instantiate an EIP-2930 transaction from devp2p byte-array encoding.
  *
- * Format: `[chainId, nonce, gasPrice, gasLimit, to, value, data, accessList,
- * signatureYParity (v), signatureR (r), signatureS (s)]`
+ * Format: `[chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, v, r, s]`
+ *
+ * @throws If the values array length is not 8 (unsigned) or 11 (signed)
+ * @throws If `chainId` or signature fields are nested arrays
+ * @throws If numeric fields contain leading zeroes
+ * @throws If constructor validation fails (see {@link createAccessList2930Tx})
  */
 export function createAccessList2930TxFromBytesArray(values: TxValuesArray, opts: TxOptions = {}) {
   if (values.length !== 8 && values.length !== 11) {
@@ -68,10 +71,13 @@ export function createAccessList2930TxFromBytesArray(values: TxValuesArray, opts
 }
 
 /**
- * Instantiate a transaction from a RLP serialized tx.
+ * Instantiate an EIP-2930 transaction from RLP-serialized bytes.
  *
- * Format: `0x01 || rlp([chainId, nonce, gasPrice, gasLimit, to, value, data, accessList,
- * signatureYParity (v), signatureR (r), signatureS (s)])`
+ * Format: `0x01 || rlp([chainId, nonce, gasPrice, gasLimit, to, value, data, accessList, v, r, s])`
+ *
+ * @throws If the leading type byte is not `0x01`
+ * @throws If RLP decode result is not an array
+ * @throws If decoded values fail {@link createAccessList2930TxFromBytesArray} checks
  */
 export function createAccessList2930TxFromRLP(serialized: Uint8Array, opts: TxOptions = {}) {
   if (

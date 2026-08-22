@@ -8,7 +8,9 @@
 
 > **BatchDBOp**\<`TKey`, `TValue`\> = [`PutBatch`](../interfaces/PutBatch.md)\<`TKey`, `TValue`\> \| [`DelBatch`](../interfaces/DelBatch.md)\<`TKey`\>
 
-Defined in: [packages/util/src/db.ts:4](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L4)
+Defined in: [packages/util/src/db.ts:6](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L6)
+
+Batch write or delete operation for a [DB](../interfaces/DB.md).
 
 ## Type Parameters
 

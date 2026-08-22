@@ -8,4 +8,4 @@
 
 > `const` **EpochAccumulator**: `SSZCoder`\<`object`[]\>
 
-Defined in: [packages/e2store/src/types.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/types.ts#L36)
+Defined in: [packages/e2store/src/types.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/types.ts#L41)

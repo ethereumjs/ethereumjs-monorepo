@@ -1,6 +1,7 @@
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { BinaryStemAccessEvent, BinaryStemMeta } from './binaryTreeAccessWitness.ts'
 
+/** Checkpointed cache of binary-tree stem access events and metadata. */
 export class StemCache {
   cache: Map<PrefixedHexString, BinaryStemAccessEvent & BinaryStemMeta>
 

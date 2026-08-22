@@ -1,9 +1,7 @@
 {
   "name": "root",
   "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
+  "workspaces": ["packages/*"],
   "scripts": {
     "biome": "npx @biomejs/biome check",
     "biome:fix": "npx @biomejs/biome check --write",
@@ -56,9 +54,10 @@
     "playwright": "1.60.0",
     "sort-package-json": "3.0.0",
     "tsx": "^4.19.3",
-    "typedoc": "^0.28.3",
+    "typedoc": "^0.28.20",
     "typedoc-plugin-markdown": "^4.6.3",
     "typescript": "^7.0.2",
+    "typescript-6": "npm:typescript@~6.0.3",
     "typescript-eslint": "^8.26.1",
     "vite-plugin-top-level-await": "^1.5.0",
     "vite-plugin-wasm": "^3.4.1",

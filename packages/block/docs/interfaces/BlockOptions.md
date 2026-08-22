@@ -9,14 +9,14 @@
 Defined in: [types.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L20)
 
 An object to set to which blockchain the blocks and their headers belong. This could be specified
-using a Common object, or `chain` and `hardfork`. Defaults to mainnet without specifying a
+using a [@ethereumjs/common!Common](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md) object, or `chain` and `hardfork`. Defaults to mainnet without specifying a
 hardfork.
 
 ## Properties
 
 ### calcDifficultyFromHeader?
 
-> `optional` **calcDifficultyFromHeader**: [`BlockHeader`](../classes/BlockHeader.md)
+> `optional` **calcDifficultyFromHeader?**: [`BlockHeader`](../classes/BlockHeader.md)
 
 Defined in: [types.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L65)
 
@@ -31,17 +31,17 @@ Note that this option has no effect on networks other than PoW/Ethash networks
 
 ### common?
 
-> `optional` **common**: `Common`
+> `optional` **common?**: [`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
 Defined in: [types.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L32)
 
-A Common object defining the chain and the hardfork a block/block header belongs to.
+A [@ethereumjs/common!Common](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md) object defining the chain and the hardfork a block/block header belongs to.
 
 Object will be internally copied so that tx behavior don't incidentally
 change on future HF changes.
 
-Default: Common object set to `mainnet` and the HF currently defined as the default
-hardfork in the Common class.
+Default: [@ethereumjs/common!Common](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md) object set to `mainnet` and the HF currently defined as the default
+hardfork in the [@ethereumjs/common!Common](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md) class.
 
 Current default hardfork: `merge`
 
@@ -49,7 +49,7 @@ Current default hardfork: `merge`
 
 ### freeze?
 
-> `optional` **freeze**: `boolean`
+> `optional` **freeze?**: `boolean`
 
 Defined in: [types.ts:77](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L77)
 
@@ -67,7 +67,7 @@ Default: true
 
 ### params?
 
-> `optional` **params**: `ParamsDict`
+> `optional` **params?**: `ParamsDict`
 
 Defined in: [types.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L56)
 
@@ -90,20 +90,20 @@ params['1']['minGasLimit'] = 3000 // 5000
 
 ### setHardfork?
 
-> `optional` **setHardfork**: `boolean`
+> `optional` **setHardfork?**: `boolean`
 
 Defined in: [types.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L39)
 
 Set the hardfork either by timestamp (for HFs from Shanghai onwards) or by block number
 for older Hfs.
 
-Default: `false` (HF is set to whatever default HF is set by the Common instance)
+Default: `false` (HF is set to whatever default HF is set by the [@ethereumjs/common!Common](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md) instance)
 
 ***
 
 ### skipConsensusFormatValidation?
 
-> `optional` **skipConsensusFormatValidation**: `boolean`
+> `optional` **skipConsensusFormatValidation?**: `boolean`
 
 Defined in: [types.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/types.ts#L81)
 

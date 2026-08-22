@@ -8,7 +8,7 @@
 
 > **formatLogId**(`id`, `verbose`): `string`
 
-Defined in: [packages/devp2p/src/util.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L82)
+Defined in: [packages/devp2p/src/util.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/devp2p/src/util.ts#L84)
 
 ## Parameters
 

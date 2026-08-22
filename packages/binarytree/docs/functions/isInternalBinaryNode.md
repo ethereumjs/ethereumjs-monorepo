@@ -8,7 +8,9 @@
 
 > **isInternalBinaryNode**(`node`): `node is InternalBinaryNode`
 
-Defined in: [node/util.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/node/util.ts#L32)
+Defined in: [node/util.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/node/util.ts#L36)
+
+Type guard for [InternalBinaryNode](../classes/InternalBinaryNode.md).
 
 ## Parameters
 

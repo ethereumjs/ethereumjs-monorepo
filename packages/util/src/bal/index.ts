@@ -1,5 +1,6 @@
 import { RLP } from '@ethereumjs/rlp'
 import { keccak_256 } from '@noble/hashes/sha3.js'
+import type { Address } from '../address.ts'
 import {
   bigIntToBytes,
   bigIntToHex,
@@ -46,16 +47,17 @@ type BALRawAccountChanges = [
 type BALRawBlockAccessList = BALRawAccountChanges[]
 
 // Internal representation of the access list.
-export type Accesses = Record<
-  BALAddressHex,
-  {
-    nonceChanges: Map<BALAccessIndexNumber, BALNonceHex>
-    balanceChanges: Map<BALAccessIndexNumber, BALBalanceHex>
-    codeChanges: BALRawCodeChange[]
-    storageChanges: Record<BALStorageKeyHex, BALRawStorageChange[]>
-    storageReads: Set<BALStorageKeyHex>
-  }
->
+/** Per-account access summary inside a block-level access list. */
+export type BALAccountAccess = {
+  nonceChanges: Map<BALAccessIndexNumber, BALNonceHex>
+  balanceChanges: Map<BALAccessIndexNumber, BALBalanceHex>
+  codeChanges: BALRawCodeChange[]
+  storageChanges: Record<BALStorageKeyHex, BALRawStorageChange[]>
+  storageReads: Set<BALStorageKeyHex>
+}
+
+/** Map of account addresses to {@link BALAccountAccess} records. */
+export type Accesses = Record<BALAddressHex, BALAccountAccess>
 
 // JSON representation types (all numeric values as hex strings for JSON serialization)
 // JSON change types
@@ -283,6 +285,19 @@ export class BlockLevelAccessList {
     }
 
     return bal
+  }
+
+  /**
+   * Lookup the per-account access entry without walking {@link toJSON}.
+   * Address keys are lower-case `0x`-prefixed hex (same as `Address.toString()`).
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
+  public get(address: Address | string): BALAccountAccess | undefined {
+    const key = (
+      typeof address === 'string' ? address : address.toString()
+    ).toLowerCase() as BALAddressHex
+    return this.accesses[key]
   }
 
   public addAddress(address: BALAddressHex): void {

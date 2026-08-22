@@ -2,12 +2,17 @@ import { EthereumJSErrorWithoutCode } from './errors.ts'
 
 export * from './errors.ts'
 
+/** Input accepted by {@link encode} and {@link decode} (scalars, byte arrays, or nested arrays). */
 export type Input = string | number | bigint | Uint8Array | Array<Input> | null | undefined
 
+/** Nested structure of byte arrays returned when decoding RLP lists. */
 export type NestedUint8Array = Array<Uint8Array | NestedUint8Array>
 
+/** Result of streaming RLP decode ({@link decode} with `stream: true`). */
 export interface Decoded {
+  /** Decoded payload (byte string or nested list) */
   data: Uint8Array | NestedUint8Array
+  /** Unconsumed trailing bytes after the decoded item */
   remainder: Uint8Array
 }
 
@@ -35,9 +40,9 @@ function encodeLength(len: number, offset: number): Uint8Array {
 /**
  * Slices a Uint8Array, throws if the slice goes out-of-bounds of the Uint8Array.
  * E.g. `safeSlice(hexToBytes('aa'), 1, 2)` will throw.
- * @param input
- * @param start
- * @param end
+
+
+
  */
 function safeSlice(input: Uint8Array, start: number, end: number) {
   if (end > input.length) {
@@ -167,7 +172,10 @@ function asciiToBase16(char: number): number | undefined {
 }
 
 /**
+ * Convert a hex string (with or without `0x`) into bytes.
+ *
  * @example hexToBytes('0xcafe0123') // Uint8Array.from([0xca, 0xfe, 0x01, 0x23])
+ * @throws If the input is not valid hex or has an odd number of nibbles
  */
 export function hexToBytes(hex: string): Uint8Array {
   if (typeof hex !== 'string')
@@ -264,12 +272,10 @@ function toBytes(v: Input): Uint8Array {
 }
 
 /**
- * RLP Encoding based on https://ethereum.org/en/developers/docs/data-structures-and-encoding/rlp/
- * This function takes in data, converts it to Uint8Array if not,
- * and adds a length for recursion.
- * @param input Will be converted to Uint8Array
- * @returns Uint8Array of encoded data
- **/
+ * RLP-encode a scalar value or nested list.
+ *
+ * @see https://ethereum.org/en/developers/docs/data-structures-and-encoding/rlp/
+ */
 export function encode(input: Input): Uint8Array {
   if (Array.isArray(input)) {
     const output: Uint8Array[] = []
@@ -289,13 +295,16 @@ export function encode(input: Input): Uint8Array {
 }
 
 /**
- * RLP Decoding based on https://ethereum.org/en/developers/docs/data-structures-and-encoding/rlp/
- * @param input Will be converted to Uint8Array
- * @param stream Is the input a stream (false by default)
- * @returns decoded Array of Uint8Arrays containing the original message
- **/
+ * RLP-decode a byte payload, optionally returning unconsumed trailing bytes.
+ *
+ * @param stream When true, return a {@link Decoded} object instead of throwing on trailing data
+ * @throws If non-stream decoding leaves a non-empty remainder
+ * @see https://ethereum.org/en/developers/docs/data-structures-and-encoding/rlp/
+ */
 export function decode(input: Input, stream?: false): Uint8Array | NestedUint8Array
+/** decode helper. */
 export function decode(input: Input, stream?: true): Decoded
+/** decode helper. */
 export function decode(input: Input, stream = false): Uint8Array | NestedUint8Array | Decoded {
   if (typeof input === 'undefined' || input === null || (input as any).length === 0) {
     return Uint8Array.from([])
@@ -317,6 +326,7 @@ export function decode(input: Input, stream = false): Uint8Array | NestedUint8Ar
   return decoded.data
 }
 
+/** Low-level helpers shared by the encode/decode implementation. */
 export const utils = {
   bytesToHex,
   concatBytes,
@@ -324,4 +334,5 @@ export const utils = {
   utf8ToBytes,
 }
 
+/** Namespace object exposing {@link encode} and {@link decode}. */
 export const RLP = { encode, decode }

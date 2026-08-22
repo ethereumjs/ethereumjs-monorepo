@@ -13,7 +13,9 @@ import { MerklePatriciaTrie } from '../mpt.ts'
 import type { AccountState, GenesisState } from '@ethereumjs/common'
 
 /**
- * Derives the stateRoot of the genesis block based on genesis allocations
+ * Compute the state root for a genesis allocation map.
+ *
+ * Builds account and storage tries with key hashing enabled.
  */
 export async function genesisMPTStateRoot(genesisState: GenesisState) {
   const trie = new MerklePatriciaTrie({ useKeyHashing: true })

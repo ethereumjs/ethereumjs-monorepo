@@ -8,4 +8,6 @@
 
 > `const` **MAX\_WITHDRAWALS\_PER\_PAYLOAD**: `16` = `16`
 
-Defined in: [packages/util/src/constants.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L75)
+Defined in: [packages/util/src/constants.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L79)
+
+Maximum withdrawals allowed per execution payload (EIP-4895).

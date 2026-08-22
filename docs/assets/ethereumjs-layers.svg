@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 120" role="img" aria-label="EthereumJS package layers">
+  <defs>
+    <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#627eea"/>
+      <stop offset="100%" stop-color="#8b9cf7"/>
+    </linearGradient>
+    <linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#4f6ae6"/>
+      <stop offset="100%" stop-color="#7a8ef0"/>
+    </linearGradient>
+    <linearGradient id="g3" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3d58d9"/>
+      <stop offset="100%" stop-color="#6b7fe8"/>
+    </linearGradient>
+    <linearGradient id="g4" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3348c4"/>
+      <stop offset="100%" stop-color="#5c70df"/>
+    </linearGradient>
+    <linearGradient id="g5" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#293bb0"/>
+      <stop offset="100%" stop-color="#4d61d6"/>
+    </linearGradient>
+  </defs>
+  <rect x="40" y="8" width="640" height="18" rx="4" fill="url(#g1)"/>
+  <text x="360" y="21" text-anchor="middle" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="600">Execution - vm, evm</text>
+  <rect x="40" y="30" width="640" height="18" rx="4" fill="url(#g2)"/>
+  <text x="360" y="43" text-anchor="middle" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="600">State - statemanager, mpt, binarytree</text>
+  <rect x="40" y="52" width="640" height="18" rx="4" fill="url(#g3)"/>
+  <text x="360" y="65" text-anchor="middle" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="600">Protocol - tx, block, blockchain</text>
+  <rect x="40" y="74" width="640" height="18" rx="4" fill="url(#g4)"/>
+  <text x="360" y="87" text-anchor="middle" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="600">Configuration - common, genesis</text>
+  <rect x="40" y="96" width="640" height="18" rx="4" fill="url(#g5)"/>
+  <text x="360" y="109" text-anchor="middle" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="600">Codec and primitives - rlp, util</text>
+</svg>

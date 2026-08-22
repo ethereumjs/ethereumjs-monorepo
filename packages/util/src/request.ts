@@ -2,10 +2,13 @@ import { concatBytes } from './bytes.ts'
 
 import type { PrefixedHexString } from './types.ts'
 
+/** Opaque consensus-layer request payload bytes. */
 export type RequestBytes = Uint8Array
 
+/** Discriminator for consensus-layer request types. */
 export type CLRequestType = (typeof CLRequestType)[keyof typeof CLRequestType]
 
+/** Discriminator for consensus-layer request types. */
 export const CLRequestType = {
   Deposit: 0,
   Withdrawal: 1,
@@ -20,11 +23,13 @@ export const CLRequestType = {
   BuilderExit: 4,
 } as const
 
+/** JSON-RPC shape of a consensus-layer request. */
 export interface RequestJSON {
   type: PrefixedHexString
   data: PrefixedHexString
 }
 
+/** Typed wrapper around a consensus-layer request byte payload. */
 export class CLRequest<T extends CLRequestType> {
   // for easy use
   public readonly bytes: Uint8Array
@@ -42,6 +47,7 @@ export class CLRequest<T extends CLRequestType> {
   }
 }
 
+/** Parse request bytes into a {@link CLRequest}. */
 export function createCLRequest(bytes: Uint8Array): CLRequest<CLRequestType> {
   switch (bytes[0]) {
     case CLRequestType.Deposit:

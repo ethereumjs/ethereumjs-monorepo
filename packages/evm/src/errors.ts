@@ -1,5 +1,7 @@
+/** EVM execution error message literals keyed by error name. */
 export type EVMErrorType = (typeof EVMErrorMessage)[keyof typeof EVMErrorMessage]
 
+/** Discriminator string stored on {@link EVMError} instances. */
 export const EVMErrorTypeString = 'EVMError'
 
 const EVMErrorMessage = {
@@ -33,6 +35,7 @@ const EVMErrorMessage = {
   INVALID_PROOF: 'kzg proof invalid',
 } as const
 
+/** Typed error thrown by the EVM on exceptional halt conditions. */
 export class EVMError {
   error: EVMErrorType
   errorType: string

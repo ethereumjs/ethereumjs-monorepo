@@ -8,7 +8,7 @@
 
 > **cliqueVerifySignature**(`header`, `signerList`): `boolean`
 
-Defined in: [consensus/clique.ts:125](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/consensus/clique.ts#L125)
+Defined in: [consensus/clique.ts:128](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/consensus/clique.ts#L128)
 
 Verifies the signature of the block (last 65 bytes of extraData field)
 (only clique PoA, throws otherwise)
@@ -23,7 +23,7 @@ Verifies the signature of the block (last 65 bytes of extraData field)
 
 ### signerList
 
-`Address`[]
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)[]
 
 ## Returns
 

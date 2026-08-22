@@ -8,7 +8,7 @@
 
 > **JSONBlobTxNetworkWrapper** = [`JSONTx`](../interfaces/JSONTx.md) & `object`
 
-Defined in: [types.ts:614](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L614)
+Defined in: [types.ts:650](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L650)
 
 ## Type Declaration
 
