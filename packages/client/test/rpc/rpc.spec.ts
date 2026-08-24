@@ -110,6 +110,42 @@ describe('JSON-RPC call', () => {
     }
   })
 
+  it('auth protected server with a token that omits iat', async () => {
+    const token = encode({}, jwtSecret as never as string, 'HS256' as TAlgorithm)
+    const server = startRPC({}, undefined, { jwtSecret })
+    const rpc = Client.http({
+      port: (server.address()! as AddressInfo).port,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+    try {
+      await rpc.request('plaintext', [])
+      assert.fail('should have thrown an error')
+    } catch (err: any) {
+      assert.strictEqual(err.code, 401, 'errored with token missing iat')
+      assert.isTrue(err.message.includes('Missing jwt iat') === true, 'missing required iat')
+    }
+  })
+
+  it('auth protected server with a non-numeric iat', async () => {
+    const token = encode({ iat: 'now' }, jwtSecret as never as string, 'HS256' as TAlgorithm)
+    const server = startRPC({}, undefined, { jwtSecret })
+    const rpc = Client.http({
+      port: (server.address()! as AddressInfo).port,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+    try {
+      await rpc.request('plaintext', [])
+      assert.fail('should have thrown an error')
+    } catch (err: any) {
+      assert.strictEqual(err.code, 401, 'errored with non-numeric iat')
+      assert.isTrue(err.message.includes('Missing jwt iat') === true, 'non-numeric iat rejected')
+    }
+  })
+
   it('auth protected server with unprotected method without token', async () => {
     const server = startRPC({}, undefined, {
       jwtSecret,
