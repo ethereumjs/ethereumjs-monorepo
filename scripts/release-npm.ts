@@ -6,7 +6,7 @@
  * Optionally publishes under a different npm scope (e.g. for fork releases).
  *
  * Usage:
- *   tsx scripts/release-npm.ts [--bump-version=<version>] [--publish=<tag>] [--scope=<scope>]
+ *   tsx scripts/release-npm.ts [--bump-version=<version>] [--publish=<tag>] [--scope=<scope>] [--start-with=<package>]
  *
  * With no flags, publishes current package versions to npm under the `latest` tag.
  *
@@ -22,6 +22,9 @@
  *
  *   # Publish current versions explicitly
  *   tsx scripts/release-npm.ts --publish=latest
+ *
+ *   # Resume an interrupted publish (dependency order in PUBLISH_ORDER)
+ *   tsx scripts/release-npm.ts --publish=latest --start-with=util
  *
  *   # Fork release under a different npm scope
  *   tsx scripts/release-npm.ts --scope=feelyourprotocol --bump-version=8141.0.0 --publish=latest
@@ -98,6 +101,7 @@ interface ParsedArgs {
   tag?: string
   scope: string
   otp?: string
+  startWith?: string
 }
 
 function parseArgs(): ParsedArgs {
@@ -108,18 +112,26 @@ function parseArgs(): ParsedArgs {
   const publishArg = args.find((arg) => arg.startsWith('--publish='))
   const scopeArg = args.find((arg) => arg.startsWith('--scope='))
   const otpArg = args.find((arg) => arg.startsWith('--otp='))
+  const startWithArg = args.find((arg) => arg.startsWith('--start-with='))
 
   const version = versionArg?.split('=')[1]
   let tag = publishArg?.split('=')[1]
   const scope = scopeArg?.split('=')[1] ?? DEFAULT_SCOPE
   const otp = otpArg?.split('=')[1]
+  const startWith = startWithArg?.split('=')[1]
 
   // No flags: publish current versions under `latest` (after a manual version bump)
   if (!version && !tag) {
     tag = 'latest'
   }
 
-  return { version, tag, scope, otp }
+  if (startWith && !PUBLISH_ORDER.includes(startWith)) {
+    console.error(`Error: Unknown package "${startWith}" for --start-with`)
+    console.error(`Valid packages: ${PUBLISH_ORDER.join(', ')}`)
+    process.exit(1)
+  }
+
+  return { version, tag, scope, otp, startWith }
 }
 
 function readPackageJson(packagePath: string): PackageJson {
@@ -303,10 +315,25 @@ function verifyNpmAuth(): void {
   }
 }
 
-function publishPackages(packages: PackageInfo[], tag: string, isFork: boolean, otp?: string): void {
+function publishPackages(
+  packages: PackageInfo[],
+  tag: string,
+  isFork: boolean,
+  otp?: string,
+  startWith?: string,
+): void {
   const ignoreScripts = isFork ? ' --ignore-scripts' : ''
   const otpFlag = otp ? ` --otp=${otp}` : ''
-  const orderedPackages = packagesInPublishOrder(packages)
+  let orderedPackages = packagesInPublishOrder(packages)
+
+  if (startWith) {
+    const startIndex = PUBLISH_ORDER.indexOf(startWith)
+    orderedPackages = orderedPackages.slice(startIndex)
+    console.log(
+      `\n📦 Resuming npm publish from "${startWith}" (${orderedPackages.length} packages remaining)...\n`,
+    )
+  }
+
   console.log(`\n🚀 Publishing packages with tag "${tag}"${isFork ? ' (--ignore-scripts)' : ''}...\n`)
 
   verifyNpmAuth()
@@ -314,16 +341,23 @@ function publishPackages(packages: PackageInfo[], tag: string, isFork: boolean, 
   for (const pkg of orderedPackages) {
     const displayName = pkg.packageJson.name
     console.log(`  Publishing ${displayName}...`)
-    
-    try {    
+
+    try {
       execSync(`npm publish --tag=${tag} --access=public${ignoreScripts}${otpFlag}`, {
         cwd: pkg.path,
         stdio: 'inherit',
       })
-      
+
       console.log(`  ✅ ${displayName} published successfully\n`)
     } catch (error) {
       console.error(`  ❌ Failed to publish ${displayName}`)
+      const nextIndex = orderedPackages.indexOf(pkg) + 1
+      if (nextIndex < orderedPackages.length) {
+        const otpSuffix = otp ? ` --otp=${otp}` : ''
+        console.error(
+          `  To resume, run: tsx scripts/release-npm.ts --publish=${tag} --start-with=${orderedPackages[nextIndex].name}${otpSuffix}`,
+        )
+      }
       throw error
     }
   }
@@ -332,7 +366,7 @@ function publishPackages(packages: PackageInfo[], tag: string, isFork: boolean, 
 }
 
 async function main(): Promise<void> {
-  const { version, tag, scope, otp } = parseArgs()
+  const { version, tag, scope, otp, startWith } = parseArgs()
   const isFork = scope !== DEFAULT_SCOPE
 
   console.log('\n' + '='.repeat(60))
@@ -340,6 +374,9 @@ async function main(): Promise<void> {
   console.log('='.repeat(60))
   console.log(`Bump version: ${version ?? 'no'}`)
   console.log(`Publish: ${tag ? `yes (tag: ${tag})` : 'no'}`)
+  if (startWith) {
+    console.log(`Start with: ${startWith}`)
+  }
   if (isFork) {
     console.log(`Scope: @${scope} (fork release)`)
   }
@@ -433,7 +470,7 @@ async function main(): Promise<void> {
     // Fork releases use --ignore-scripts to skip prepublishOnly (which would
     // clean + rebuild and fail since TS can't resolve the rewritten scope).
     if (tag) {
-      publishPackages(packages, tag, isFork, otp)
+      publishPackages(packages, tag, isFork, otp, startWith)
     } else {
       console.log('\n📋 Skipping publish (use --publish=<tag> or run without flags after bumping)\n')
     }
