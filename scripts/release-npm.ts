@@ -26,10 +26,13 @@
  *   # Resume an interrupted publish (dependency order in PUBLISH_ORDER)
  *   tsx scripts/release-npm.ts --publish=latest --start-with=util
  *
+ * Maintainer default: `npm login` (2FA in browser; skip follow-up checks if offered),
+ * then `--publish=latest` with no --otp. See release-round skill Phase 4.
+ *
  *   # Fork release under a different npm scope
  *   tsx scripts/release-npm.ts --scope=feelyourprotocol --bump-version=8141.0.0 --publish=latest
  *
- *   # Publish with 2FA one-time password
+ *   # Optional: per-command OTP (CI / Publish-token 2FA — not the usual maintainer flow)
  *   tsx scripts/release-npm.ts --publish=latest --otp=123456
  */
 

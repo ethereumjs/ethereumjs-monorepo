@@ -107,14 +107,30 @@ Then:
 
 ## Phase 4 — Publish (human executes)
 
-Ask first: npm token / OTP ready? `gh auth status` or `GITHUB_TOKEN` ready?
+Ask first: `npm whoami` works? `gh auth status` or `GITHUB_TOKEN` ready?
+
+**Do not suggest `--otp=` by default** — EthereumJS maintainers publish after **`npm login`**, not per-command OTP. See auth below.
 
 Give these commands; **do not run them** unless the human explicitly asks the agent to:
 
 ```sh
-tsx scripts/release-npm.ts --publish=latest --otp=<code>
+tsx scripts/release-npm.ts --publish=latest
 tsx scripts/release-github.ts --version=<version>
 ```
+
+### npm auth (maintainer default)
+
+1. **`npm login`** in the terminal (once per session).
+2. Complete **2FA in the browser** when prompted.
+3. If npm offers to **skip follow-up checks** for this login, accept — that is what makes a long multi-package publish workable **without** passing `--otp` on every `npm publish`.
+4. Confirm: **`npm whoami`** prints your username.
+5. Run **`tsx scripts/release-npm.ts --publish=latest`** with **no `--otp` flag**.
+
+The release script forwards `--otp=` only when explicitly passed. With a normal `npm login` session, **omit it** — do not ask the human for a fresh authenticator code per package or per script run.
+
+Resume interrupted npm publish: `tsx scripts/release-npm.ts --publish=latest --start-with=<package>` (still no `--otp` unless the human uses a different auth setup).
+
+**When `--otp=` applies (not our default):** headless/CI, granular **Publish** tokens with per-operation 2FA, or when `npm login` did not establish a publish-capable session. **Automation** tokens skip `--otp` entirely but are a separate workflow — do not substitute unless the human asks.
 
 Notes for the human:
 
