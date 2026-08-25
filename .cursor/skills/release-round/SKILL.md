@@ -133,9 +133,11 @@ Automate where possible:
 ```
 - [ ] npm view @ethereumjs/<pkg> version for each ACTIVE_PACKAGES entry
 - [ ] gh release list / tags for @ethereumjs/<pkg>@<version>
-- [ ] Temp-dir smoke: npm install @ethereumjs/vm@<version> and import createVM (or npm pack)
+- [ ] Temp-dir smoke (fresh dir + online metadata): `npm i @ethereumjs/vm@<version> --prefer-online` then `import { createVM } from '@ethereumjs/vm'` — avoids stale local cache right after publish
 - [ ] Spot-check one GitHub release body vs CHANGELOG extract
 ```
+
+Right after publish, a local npm cache can still hold old registry metadata and fail installs for `@ethereumjs/tx@^<version>` even when the version is live — run the smoke check in a **new empty directory** with `--prefer-online`. This is **not** the monorepo `min-release-age` setting (that applies only inside this repo’s tree).
 
 Report mismatches; do not “fix” the registry. Summarize — then **STOP** until GO for phase 6.
 
