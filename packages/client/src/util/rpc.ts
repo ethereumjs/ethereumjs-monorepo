@@ -176,7 +176,14 @@ function checkHeaderAuth(req: any, jwtSecret: Uint8Array): void {
   const token = header.trim().split(' ')[1]
   if (!token) throw Error(`Missing jwt token`)
   const claims = decode(token.trim(), jwtSecret as never as string, false, algorithm)
-  const drift = Math.abs(new Date().getTime() - claims.iat * 1000) ?? 0
+  // Engine API requires `iat` (execution-apis engine/authentication.md).
+  // `undefined * 1000` is NaN, and `NaN > ALLOWED_DRIFT` is false, so a
+  // missing or non-numeric iat used to skip the freshness window entirely.
+  const iat = claims.iat
+  if (typeof iat !== 'number' || !Number.isFinite(iat)) {
+    throw Error(`Missing jwt iat claim`)
+  }
+  const drift = Math.abs(new Date().getTime() - iat * 1000)
   if (drift > ALLOWED_DRIFT) {
     throw Error(`Stale jwt token drift=${drift}, allowed=${ALLOWED_DRIFT}`)
   }
