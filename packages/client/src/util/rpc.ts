@@ -33,6 +33,7 @@ type CreateRPCServerListenerOpts = {
   withEngineMiddleware?: WithEngineMiddleware
 }
 type CreateWSServerOpts = CreateRPCServerListenerOpts & { httpServer?: jayson.HttpServer }
+type CreateHTTPServerOpts = CreateRPCServerListenerOpts & { maxPayload?: string }
 type WithEngineMiddleware = { jwtSecret: Uint8Array; unlessFn?: (req: IncomingMessage) => boolean }
 
 export type MethodConfig = (typeof MethodConfig)[keyof typeof MethodConfig]
@@ -182,13 +183,13 @@ function checkHeaderAuth(req: any, jwtSecret: Uint8Array): void {
   }
 }
 
-export function createRPCServerListener(opts: CreateRPCServerListenerOpts): jayson.HttpServer {
-  const { server, withEngineMiddleware, RPCCors } = opts
+export function createRPCServerListener(opts: CreateHTTPServerOpts): jayson.HttpServer {
+  const { server, withEngineMiddleware, RPCCors, maxPayload } = opts
 
   const app = Connect()
   if (typeof RPCCors === 'string') app.use(cors({ origin: RPCCors }))
   // GOSSIP_MAX_SIZE_BELLATRIX is proposed to be 10MiB
-  app.use(JSONParser({ limit: '11mb' }))
+  app.use(JSONParser({ limit: maxPayload }))
 
   if (withEngineMiddleware) {
     const { jwtSecret, unlessFn } = withEngineMiddleware

@@ -142,6 +142,8 @@ export interface ClientOpts {
   engineNewpayloadMaxExecute?: number
   skipEngineExec?: boolean
   useJsCrypto?: boolean
+  rpcEthMaxPayload?: string
+  rpcEngineMaxPayload?: string
 }
 
 export type PrometheusMetrics = {

@@ -37,6 +37,8 @@ export type RPCArgs = {
   jwtSecret?: string
   rpcEngineAuth: boolean
   rpcCors: string
+  rpcEthMaxPayload: string
+  rpcEngineMaxPayload: string
 }
 
 /**
@@ -98,7 +100,10 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
     rpcCors,
     rpcDebug,
     rpcDebugVerbose,
+    rpcEthMaxPayload,
+    rpcEngineMaxPayload,
   } = args
+
   const manager = new RPCManager(client, config)
   const { logger } = config
   const jwtSecret =
@@ -137,6 +142,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
                     : req.body.method.includes('engine_') === false,
               }
             : undefined,
+        maxPayload: rpcEthMaxPayload,
       })
       rpcHttpServer.listen(rpcPort, rpcAddr)
       logger?.info(
@@ -192,6 +198,7 @@ export function startRPCServers(client: EthereumClient, args: RPCArgs) {
             jwtSecret,
           }
         : undefined,
+      maxPayload: rpcEngineMaxPayload,
     })
     rpcHttpServer.listen(rpcEnginePort, rpcEngineAddr)
     logger?.info(
