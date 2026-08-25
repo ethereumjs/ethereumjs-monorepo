@@ -171,7 +171,7 @@ Deliver a **paste-ready kit** (human posts — no Twitter/Discord MCP):
 2. Discord — slightly longer post
 3. Optional third channel only if emphasis warrants it
 
-**Visuals (v1):** text first. Optional simple release card via image generation if helpful. Code-snippet images are a follow-up.
+**Visuals:** scannable layout (see announce.md § Visual grammar). Optional snippet PNGs via `npm run snippet:png`. Attach manually; do not auto-post.
 
 ---
 

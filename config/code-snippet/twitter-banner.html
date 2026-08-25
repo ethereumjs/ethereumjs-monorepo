@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html,
+      body {
+        width: 1500px;
+        height: 500px;
+        overflow: hidden;
+        background: #0d1117;
+      }
+
+      .banner {
+        position: relative;
+        width: 1500px;
+        height: 500px;
+        background:
+          radial-gradient(ellipse 70% 90% at 78% 42%, rgba(88, 166, 255, 0.09), transparent 55%),
+          linear-gradient(180deg, #161b22 0%, #0d1117 100%);
+      }
+
+      .accent {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 8px;
+        background: linear-gradient(180deg, #58a6ff 0%, #a371f7 55%, #3fb950 100%);
+      }
+
+      .meta {
+        position: absolute;
+        top: 32px;
+        right: 48px;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        color: #8b949e;
+      }
+
+      .meta span {
+        color: #58a6ff;
+      }
+
+      .code {
+        position: absolute;
+        left: 96px;
+        right: 64px;
+        top: 92px;
+        bottom: 88px;
+      }
+
+      .code pre {
+        margin: 0 !important;
+        padding: 0 !important;
+        background: transparent !important;
+        counter-reset: line;
+      }
+
+      .code code {
+        font-size: 22px;
+        line-height: 1.62;
+        font-family:
+          ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono",
+          monospace;
+      }
+
+      .code .line {
+        display: block;
+      }
+
+      .code .line::before {
+        counter-increment: line;
+        content: counter(line);
+        display: inline-block;
+        width: 2.2em;
+        margin-right: 1.4em;
+        text-align: right;
+        color: #484f58;
+        user-select: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="banner" id="banner">
+      <div class="accent"></div>
+      <div class="meta"><span>@ethereumjs</span> · Ethereum Layer 1, in JavaScript</div>
+      <div class="code">{{HIGHLIGHTED_CODE}}</div>
+    </div>
+  </body>
+</html>

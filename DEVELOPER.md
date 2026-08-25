@@ -195,6 +195,7 @@ One command and one config pointer per tool. Agent finish steps are in the linke
 | Tests | `npm run test` | Vitest per package | [api-tests.mdc](.cursor/rules/api-tests.mdc), [tx-tests.mdc](.cursor/rules/tx-tests.mdc) |
 | API docs | `npm run docs:build` | `config/cli/typedoc.sh`, `typedoc/` | [api-docs.mdc](.cursor/rules/api-docs.mdc) |
 | Examples | `npm run examples` | `packages/*/examples/` | [examples.mdc](.cursor/rules/examples.mdc) |
+| Snippet PNGs | `npm run snippet:png` | `config/code-snippet/` | — |
 | CI | PR check **`Build / CI`** | `.github/workflows/` | [ci.mdc](.cursor/rules/ci.mdc) |
 
 ### Notes
@@ -210,6 +211,8 @@ VM consensus runners: [packages/vm/DEVELOPER.md](./packages/vm/DEVELOPER.md).
 **Documentation** — TypeDoc 0.28 needs TS 6; monorepo `tsc` uses TS 7. Always use [`config/cli/typedoc.sh`](./config/cli/typedoc.sh), not bare `typedoc`. Cross-package `{@link}` → [`typedoc-external-links.mjs`](./config/typedoc-external-links.mjs).
 
 **Examples** — README snippets sync via embedme: `npm run examples:build` in a package after editing `examples/`.
+
+**Snippet PNGs** — release/social images from `packages/*/examples/` only (local files, Playwright screenshot). Once: `npm run install-browser-deps`. Example: `npm run snippet:png -- --file=packages/vm/examples/runTxGasDimensions.ts --out=tmp/announce/vm.png`. Output defaults to `tmp/announce/`.
 
 ---
 
