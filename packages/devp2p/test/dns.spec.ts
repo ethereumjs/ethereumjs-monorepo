@@ -208,3 +208,20 @@ describe('DNS: (integration)', () => {
     }
   })
 })
+
+describe('DNS root lookup failure', () => {
+  it('does not reject getPeers when the very first DNS lookup fails', async () => {
+    const mockDns = { resolve: vi.fn() }
+    mockDns.resolve.mockImplementation(() =>
+      Promise.reject(new Error('queryTxt ECONNREFUSED all.holesky.ethdisco.net')),
+    )
+
+    const dns = new DNS()
+    dns.__setNativeDNSModuleResolve(mockDns)
+
+    const peers = await dns.getPeers(1, [
+      'enrtree://AM5FCQLWIZX2QFPNJAP7VUERCCRNGRHWZG3YYHIUV7BVDQ5FDPRT2@nodes.example.org',
+    ])
+    assert.strictEqual(peers.length, 0, 'returns no peers instead of throwing')
+  })
+})

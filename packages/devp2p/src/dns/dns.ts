@@ -82,13 +82,14 @@ export class DNS {
    * @return {PeerInfo | null}
    */
   private async _search(subdomain: string, context: SearchContext): Promise<PeerInfo | null> {
-    const entry = await this._getTXTRecord(subdomain, context)
-    context.visits[subdomain] = true
-
+    let entry: string
     let next: string
     let branches: string[]
 
     try {
+      entry = await this._getTXTRecord(subdomain, context)
+      context.visits[subdomain] = true
+
       switch (this._getEntryType(entry)) {
         case ENR.ROOT_PREFIX:
           next = ENR.parseAndVerifyRoot(entry, context.publicKey, this._common)
