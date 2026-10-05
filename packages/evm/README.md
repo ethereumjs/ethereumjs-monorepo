@@ -486,6 +486,8 @@ If an exception is thrown from an async handler, it bubbles into the EVM and may
 
 For opcode-level `step` tracing with state and blockchain wired in, see [`withBlockchain.ts`](./examples/withBlockchain.ts).
 
+The `step` event fires before an instruction executes. For `PUSH0` through `PUSH32`, its optional `pushData` field contains the big-endian bytes of the value about to be pushed. `PUSH0` uses a single zero byte; missing argument bytes in truncated `PUSH1` through `PUSH32` instructions are right-padded with zeros. The `immediate` field continues to contain only the raw argument bytes present in the bytecode. Other opcodes leave `pushData` undefined.
+
 ### Event Logs
 
 The EVM records contract events as **logs** — a compact tuple reused across `@ethereumjs/evm`, `@ethereumjs/vm`, and (with field renaming) JSON-RPC:

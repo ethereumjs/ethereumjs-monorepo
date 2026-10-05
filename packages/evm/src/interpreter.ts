@@ -199,6 +199,12 @@ export interface InterpreterStep {
   codeAddress: Address
   eofSection?: number // Current EOF section being executed
   immediate?: Uint8Array // Immediate argument of the opcode
+  /**
+   * Big-endian bytes of the value about to be pushed by PUSH0 through PUSH32.
+   * PUSH0 uses a single zero byte. Missing PUSH argument bytes are right-padded with zeros.
+   * Undefined for other opcodes; unlike `immediate`, this includes execution padding.
+   */
+  pushData?: Uint8Array
   eofFunctionDepth?: number // Depth of CALLF return stack
   error?: Uint8Array // Error bytes returned if revert occurs
   storage?: [PrefixedHexString, PrefixedHexString][]
@@ -571,6 +577,13 @@ export class Interpreter {
       )
     }
 
+    let pushData: Uint8Array | undefined
+    if (opcodeInfo.code === 0x5f) {
+      pushData = new Uint8Array([0])
+    } else if (opcodeInfo.code >= 0x60 && opcodeInfo.code <= 0x7f) {
+      pushData = setLengthRight(immediate!, opcodeInfo.code - 0x5f)
+    }
+
     // Create event object for step
     const eventObj: InterpreterStep = {
       pc: this._runState.programCounter,
@@ -593,6 +606,7 @@ export class Interpreter {
       stateManager: this._runState.stateManager,
       eofSection: section,
       immediate,
+      pushData,
       error,
       eofFunctionDepth:
         this._env.eof !== undefined ? this._env.eof?.eofRunState.returnStack.length + 1 : undefined,
@@ -640,6 +654,7 @@ export class Interpreter {
      * @property codeAddress - Address whose code is running (differs under DELEGATECALL)
      * @property eofSection - Active EOF code section index
      * @property immediate - Opcode immediate bytes, when present
+     * @property pushData - Bytes about to be pushed by PUSH0 through PUSH32, including zero padding
      * @property error - Revert data bytes, when the opcode is REVERT
      * @property eofFunctionDepth - CALLF return-stack depth for EOF
      * @property storage - Storage key/value tuples touched by the step
