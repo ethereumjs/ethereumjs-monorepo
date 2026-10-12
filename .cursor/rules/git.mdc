@@ -66,7 +66,6 @@ These **change CI behavior** — add or remove deliberately; **when in doubt, pr
 | Label | Effect (summary) |
 | --- | --- |
 | `type: test all hardforks` | Extra VM state/blockchain runs across hardforks (`vm-pr.yml`) |
-| `type: test client` | Runs client build workflow |
 | `type: test devp2p` | Runs devp2p build workflow |
 | `type: test verkle` | Verkle-related test path |
 | `type: test no browser` | Skips browser workflow |

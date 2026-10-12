@@ -57,7 +57,7 @@
 | Topic | Where |
 | ----- | ----- |
 | VM consensus fixtures, profiling | [packages/vm/DEVELOPER.md](./packages/vm/DEVELOPER.md) |
-| Hive tests (deprecated client) | [packages/client/DEVELOPER.md](./packages/client/DEVELOPER.md) |
+| Archived execution client (Hive notes) | [archive/client/DEVELOPER.md](./archive/client/DEVELOPER.md) |
 | EST fixture bumps | [update-est-fixtures skill](.cursor/skills/update-est-fixtures/SKILL.md) |
 
 ---
@@ -292,6 +292,6 @@ Package-specific depth stays in package `DEVELOPER.md` files. [AGENTS.md](./AGEN
 | --- | ------ |
 | [ARCHITECTURE.md](./ARCHITECTURE.md) | Responsibilities, dependency graph, `runBlock` flow |
 | [packages/vm/DEVELOPER.md](./packages/vm/DEVELOPER.md) | EST / legacy tests, debugging, profiling |
-| [packages/client/DEVELOPER.md](./packages/client/DEVELOPER.md) | Hive (deprecated `@ethereumjs/client`) |
+| [archive/client/DEVELOPER.md](./archive/client/DEVELOPER.md) | Hive notes for archived `@ethereumjs/client` |
 | [CONTRIBUTING.md](./.github/CONTRIBUTING.md) | How to contribute |
 | [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) | Community standards |

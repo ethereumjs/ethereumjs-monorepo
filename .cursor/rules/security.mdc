@@ -13,7 +13,7 @@ EthereumJS is a protocol-library vendor. A wrong tx hash, sender recovery, or si
 - **S1 (consensus):** `packages/evm` (especially `precompiles/`), `packages/vm`. Spec tests (legacy + execution-spec tests) are the security control. Do not skip or weaken vectors to go green.
 - **S2:** `rlp`, `block`, `mpt`, `statemanager` — decode, freeze, proofs/roots.
 - **S3:** `packages/common` `customCrypto` — replaces keccak / ecsign / ecrecover / KZG for the whole stack. WASM backends stay opt-in; keep the README warning.
-- **S4 (deprecated, still on npm):** `wallet`, `client`, `devp2p`. Containment only — no new features, no new runtime deps.
+- **S4 (deprecated, still on npm):** `wallet`, `devp2p`. Containment only — no new features, no new runtime deps. **`client`** lives under [`archive/client`](../../archive/client) (not a workspace; ignore `package.json.stale` for dependency inventory).
 - **S5:** genesis, binarytree, e2store, testdata, ethash.
 
 ## Do not

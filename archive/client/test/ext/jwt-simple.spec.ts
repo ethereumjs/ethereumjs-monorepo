@@ -68,9 +68,11 @@ describe('decode', function () {
     const parts = token.split('.')
     const tampered = [parts[0], parts[1], 'AA'].join('.')
     expect(jwt.decode.bind(null, tampered, key)).toThrowError(/Signature verification failed/)
-    const flipped = [parts[0], parts[1], parts[2]!.replace(/.$/, (c) => (c === 'A' ? 'B' : 'A'))].join(
-      '.',
-    )
+    const flipped = [
+      parts[0],
+      parts[1],
+      parts[2]!.replace(/.$/, (c) => (c === 'A' ? 'B' : 'A')),
+    ].join('.')
     expect(jwt.decode.bind(null, flipped, key)).toThrowError(/Signature verification failed/)
   })
 
