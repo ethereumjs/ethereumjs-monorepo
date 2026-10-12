@@ -1,5 +1,5 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
-import { createLegacyTx } from '@ethereumjs/tx'
+import { createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
 import { createAddressFromString, hexToBytes, privateToAddress } from '@ethereumjs/util'
 import { bench, describe } from 'vitest'
 
@@ -53,6 +53,32 @@ const contractCallTx = createLegacyTx(
   { common },
 ).sign(privateKey)
 
+const type2TransferTx = createFeeMarket1559Tx(
+  {
+    chainId: BigInt(1),
+    nonce: 0,
+    maxPriorityFeePerGas: BigInt(1),
+    maxFeePerGas: BigInt(20),
+    gasLimit: BigInt(21_000),
+    to: createAddressFromString('0x0000000000000000000000000000000000000001'),
+    value: BigInt(1),
+    data: new Uint8Array(0),
+    accessList: [],
+  },
+  { common },
+).sign(privateKey)
+
+const deployContractTx = createLegacyTx(
+  {
+    nonce: 0,
+    gasPrice: BigInt(10),
+    gasLimit: BigInt(500_000),
+    value: BigInt(0),
+    data: STORAGE_CONTRACT,
+  },
+  { common },
+).sign(privateKey)
+
 describe('vm', () => {
   bench('vm block simple transfers', async () => {
     const runVm = await createVm()
@@ -65,5 +91,15 @@ describe('vm', () => {
     const runVm = await createVm()
     await runVm.stateManager.putCode(contractAddr, STORAGE_CONTRACT)
     await runTx(runVm, { tx: contractCallTx, skipBalance: true, skipNonce: true })
+  })
+
+  bench('vm type2 transfer runTx', async () => {
+    const runVm = await createVm()
+    await runTx(runVm, { tx: type2TransferTx, skipBalance: true, skipNonce: true })
+  })
+
+  bench('vm contract deploy create', async () => {
+    const runVm = await createVm()
+    await runTx(runVm, { tx: deployContractTx, skipBalance: true, skipNonce: true })
   })
 })

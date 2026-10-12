@@ -28,4 +28,19 @@ describe('statemanager', () => {
     await sm.putStorage(address, slot, hexToBytes('0x65'))
     await sm.revert()
   })
+
+  bench('statemanager cold getStorage', async () => {
+    const sm = new SimpleStateManager()
+    await sm.getStorage(address, slot)
+  })
+
+  bench('statemanager nested checkpoint commit', async () => {
+    const sm = await warmedManager()
+    await sm.checkpoint()
+    await sm.putStorage(address, slot, hexToBytes('0x66'))
+    await sm.checkpoint()
+    await sm.putStorage(address, slot, hexToBytes('0x67'))
+    await sm.commit()
+    await sm.commit()
+  })
 })
