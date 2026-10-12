@@ -5,7 +5,6 @@ import { bench, describe } from 'vitest'
 
 const KEY_SIZE = 32
 const ROUNDS = 1000
-const ROUNDS_LARGE = 5000
 const ERA = 9
 
 function precomputeKeys(): Uint8Array[] {
@@ -58,18 +57,6 @@ describe('mpt', () => {
       await trie.put(key, key)
     }
     trie.root()
-  })
-
-  bench('mpt put 5k-9-32', async () => {
-    const trie = new MerklePatriciaTrie({ db: new MapDB() })
-    let key = new Uint8Array(KEY_SIZE)
-    for (let i = 0; i <= ROUNDS_LARGE; i++) {
-      key = keccak_256(key)
-      await trie.put(key, key)
-      if (i % ERA === 0) {
-        key = trie.root()
-      }
-    }
   })
 
   bench('mpt del 1k after warm', async () => {

@@ -31,15 +31,10 @@ const caller = createAddressFromString('0x' + 'ee'.repeat(20))
 const evm = await createEVM({ common })
 const precompiles = getActivePrecompiles(common)
 const sha256Pre = precompiles.get('0000000000000000000000000000000000000002')!
-const modexpPre = precompiles.get('0000000000000000000000000000000000000005')!
 const bn254AddPre = precompiles.get('0000000000000000000000000000000000000006')!
 const bn254MulPre = precompiles.get('0000000000000000000000000000000000000007')!
 
 const SHA256_INPUT = hexToBytes(`0x${'ab'.repeat(32)}`)
-const MODEXP_INPUT = hexToBytes(
-  '0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001',
-)
-
 const warmStorageEvm = await createEVM({ common })
 await warmStorageEvm.stateManager.putAccount(contract, new Account(undefined, BigInt(1e18)))
 await warmStorageEvm.stateManager.putCode(contract, WARM_SLOAD_CODE)
@@ -95,15 +90,6 @@ describe('evm', () => {
     await sha256Pre({
       data: SHA256_INPUT,
       gasLimit: BigInt(0xffff),
-      common,
-      _EVM: evm,
-    })
-  })
-
-  bench('evm modexp precompile', async () => {
-    await modexpPre({
-      data: MODEXP_INPUT,
-      gasLimit: BigInt(0xffff_ffff),
       common,
       _EVM: evm,
     })

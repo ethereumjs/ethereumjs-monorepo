@@ -19,7 +19,7 @@ const benchPackages = [
   'vm',
 ] as const
 
-const enableCodSpeed = process.env.CODSPEED_ENV === 'true' || process.env.GITHUB_ACTIONS === 'true'
+const enableCodSpeed = process.env.CODSPEED_ENV === 'true'
 
 export default defineConfig({
   root: repoRoot,

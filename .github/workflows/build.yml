@@ -1,7 +1,8 @@
 name: Build
 on:
   pull_request:
-    types: [opened, reopened, synchronize]
+    # labeled / unlabeled: Performance benchmarks skip or resume on PR state: WIP
+    types: [opened, reopened, synchronize, ready_for_review, labeled, unlabeled]
   push:
     branches: [master]
     tags: ['*']
@@ -373,6 +374,61 @@ jobs:
             }
             console.log("All required jobs passed or skipped")
           '
+
+  performance-benchmarks:
+    name: Performance benchmarks
+    needs: [build]
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    if: >-
+      always() && needs.build.result == 'success' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' &&
+      github.event.pull_request.draft == false &&
+      contains(join(github.event.pull_request.labels.*.name, ' '), 'PR state: WIP') == false))
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write
+      checks: write
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: dorny/paths-filter@v2
+        id: bench-paths
+        with:
+          filters: |
+            bench:
+              - 'packages/binarytree/**'
+              - 'packages/block/**'
+              - 'packages/evm/**'
+              - 'packages/mpt/**'
+              - 'packages/rlp/**'
+              - 'packages/statemanager/**'
+              - 'packages/tx/**'
+              - 'packages/util/**'
+              - 'packages/vm/**'
+              - 'config/vitest-bench.mts'
+              - '.github/workflows/build.yml'
+              - 'package.json'
+              - 'package-lock.json'
+
+      - name: No bench-relevant changes
+        if: steps.bench-paths.outputs.bench != 'true'
+        run: echo "Skipping — no performance benchmark paths in this event."
+
+      - uses: ./.github/actions/setup-ethereumjs
+        if: steps.bench-paths.outputs.bench == 'true'
+        with:
+          dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+
+      - name: Run benchmarks
+        if: steps.bench-paths.outputs.bench == 'true'
+        uses: CodSpeedHQ/action@f842b9a3ffe213dbb81768fd7f7eeb4dfcf1c369 # v5.4.2
+        with:
+          mode: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' && 'simulation' || 'walltime' }}
+          run: npm run bench
+          cache-instruments: 'true'
 
   bundle-size:
     needs: [build]

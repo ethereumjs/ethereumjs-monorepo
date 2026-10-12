@@ -202,11 +202,11 @@ One command and one config pointer per tool. Agent finish steps are in the linke
 
 ### Performance benchmarks
 
-Hot-path packages share one Vitest bench suite (`packages/*/benchmarks/*.bench.ts`). Local runs use wall time; **CodSpeed CPU simulation** runs on path-filtered PRs and `master` pushes via [`.github/workflows/bench.yml`](.github/workflows/bench.yml) (informational until **CodSpeed Performance Analysis** is required in branch protection).
+Hot-path packages share one Vitest bench suite (`packages/*/benchmarks/*.bench.ts`; heavy local-only cases use `*.local.bench.ts`). Local: `npm run bench` (wall time). CI: **`performance-benchmarks`** job in [`.github/workflows/build.yml`](.github/workflows/build.yml) — restores the same workspace cache as test jobs (`needs: build`), runs only when bench paths changed, **skips PRs labeled `PR state: WIP`**, uses CodSpeed **`walltime` on PRs** and **`simulation` on `master` pushes** (baseline). Informational until **CodSpeed Performance Analysis** is required in branch protection.
 
 Install the [CodSpeed GitHub App](https://github.com/marketplace/codspeed-continuous-performance-analysis) on the org repo before expecting PR reports.
 
-After several stable PRs, enable the CodSpeed status check in GitHub branch protection. If the check flaps, raise the project regression threshold in CodSpeed (toward 15–20%) before making it required. Intentional slowdowns can be acknowledged in the CodSpeed UI.
+**Maintainer (one-time / when ready):** after stable `master` simulation runs, optionally require **CodSpeed Performance Analysis** in branch protection (not `Build / CI`). Tune regression threshold in CodSpeed (toward 15–20% if flaky). Acknowledge intentional regressions in the CodSpeed UI.
 
 ### Notes
 

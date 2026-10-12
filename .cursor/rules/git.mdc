@@ -47,7 +47,7 @@ Update this when the PR is created and again when intent changes (including afte
 
 | Label | When |
 | --- | --- |
-| `PR state: WIP` | More commits or known follow-up expected before review/merge |
+| `PR state: WIP` | More commits or known follow-up expected before review/merge; **Performance benchmarks** CI skips while this label is on the PR |
 | `PR state: merge ready` | Author expects the PR to be complete and mergeable (default when handing off for review unless told otherwise) |
 | `PR state: needs review` | Human explicitly asked for review attention (instead of or in addition to signaling readiness — use **instead of** `merge ready`, not both) |
 
