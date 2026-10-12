@@ -7,6 +7,7 @@
 import { readdir, stat, readFile, writeFile } from 'fs/promises'
 import { gzipSync } from 'zlib'
 import { join, relative, resolve } from 'path'
+import { pathToFileURL } from 'url'
 import { build } from 'esbuild'
 
 const packagesDir = join(process.cwd(), 'packages')
@@ -186,59 +187,116 @@ async function analyzePackages() {
   }
 }
 
+const UNCHANGED_PERCENT_EPS = 0.01
+
+function classifyRow(currentSize, baselineSize) {
+  if (baselineSize === 0 && currentSize === 0) return null
+  if (baselineSize === 0) {
+    return { kind: 'new', currentSize, baselineSize, diffBytes: currentSize, diffPercent: null }
+  }
+  if (currentSize === 0) {
+    return { kind: 'removed', currentSize, baselineSize, diffBytes: -baselineSize, diffPercent: null }
+  }
+  const diffBytes = currentSize - baselineSize
+  const diffPercent = (diffBytes / baselineSize) * 100
+  if (Math.abs(diffPercent) < UNCHANGED_PERCENT_EPS) {
+    return { kind: 'unchanged', currentSize, baselineSize, diffBytes, diffPercent }
+  }
+  return {
+    kind: diffBytes > 0 ? 'up' : 'down',
+    currentSize,
+    baselineSize,
+    diffBytes,
+    diffPercent,
+  }
+}
+
+function formatDiffCell(row) {
+  if (row.kind === 'new') return '🆕 new package'
+  if (row.kind === 'removed') return '🗑️ removed'
+  if (row.kind === 'unchanged') return '±0%'
+  const sign = row.diffBytes > 0 ? '+' : ''
+  const emoji = row.diffBytes > 0 ? '🔴' : '🟢'
+  return `${emoji} ${sign}${formatKB(row.diffBytes)} (${sign}${row.diffPercent.toFixed(2)}%)`
+}
+
+function markdownTable(headers, rows) {
+  const sep = headers.map(() => '---')
+  const lines = [
+    `| ${headers.join(' | ')} |`,
+    `| ${sep.join(' | ')} |`,
+    ...rows.map((cells) => `| ${cells.join(' | ')} |`),
+  ]
+  return lines.join('\n')
+}
+
 /**
- * Compare results and generate markdown table
+ * Compare results and generate compact markdown for PR comments.
  */
-function generateComparisonTable(current, baseline) {
-  const allPackages = new Set([...Object.keys(current), ...Object.keys(baseline)])
+function generateMarkdownReport(current, baseline) {
+  const allPackages = Array.from(new Set([...Object.keys(current), ...Object.keys(baseline)])).sort()
   const rows = []
-  
-  for (const pkg of Array.from(allPackages).sort()) {
+
+  for (const pkg of allPackages) {
     const currentSize = current[pkg] || 0
     const baselineSize = baseline[pkg] || 0
-    
-    if (baselineSize === 0 && currentSize === 0) continue
-    
-    let sizeDisplay = formatKB(currentSize)
-    let diffDisplay = ''
-    
-    if (baselineSize === 0) {
-      diffDisplay = '🆕 NEW'
-    } else if (currentSize === 0) {
-      diffDisplay = '🗑️ REMOVED'
-    } else {
-      const diffBytes = currentSize - baselineSize
-      const diffPercent = ((diffBytes / baselineSize) * 100)
-      
-      if (Math.abs(diffPercent) < 0.01) {
-        diffDisplay = '⚪ ±0%'
-      } else if (diffBytes > 0) {
-        diffDisplay = `🔴 +${formatKB(diffBytes)} (+${diffPercent.toFixed(2)}%)`
-      } else {
-        diffDisplay = `🟢 ${formatKB(diffBytes)} (${diffPercent.toFixed(2)}%)`
-      }
-    }
-    
+    const classified = classifyRow(currentSize, baselineSize)
+    if (!classified) continue
     rows.push({
       package: pkg,
-      size: sizeDisplay,
-      diff: diffDisplay,
+      size: formatKB(currentSize),
+      diff: formatDiffCell(classified),
+      sortKey: Math.abs(classified.diffPercent ?? 1000),
+      ...classified,
     })
   }
-  
+
   if (rows.length === 0) {
-    return 'No packages found to compare.'
+    return '## 📦 Bundle size\n\nNo packages found to compare.\n'
   }
-  
-  let table = '| Package | Size (min+gzip) | Δ |\n'
-  table += '|---------|-----------------|---|\n'
-  
-  for (const row of rows) {
-    table += `| ${row.package} | ${row.size} | ${row.diff} |\n`
+
+  const changed = rows.filter((r) => r.kind !== 'unchanged')
+  const unchangedCount = rows.length - changed.length
+  const header = '## 📦 Bundle size · min+gzip entry\n'
+  const footnote =
+    '\n_Entry chunk only — workspace deps bundled; npm dependencies and lazy-loaded chunks excluded._\n'
+
+  if (changed.length === 0) {
+    return (
+      header +
+      `\n✅ **Unchanged vs baseline** — ${rows.length} packages checked; none differ by more than ${UNCHANGED_PERCENT_EPS}%.\n` +
+      footnote
+    )
   }
-  
-  return table
+
+  changed.sort((a, b) => b.sortKey - a.sortKey)
+
+  const increases = changed.filter((r) => r.kind === 'up').length
+  const decreases = changed.filter((r) => r.kind === 'down').length
+  const summaryBits = [`**${changed.length}** of **${rows.length}** packages changed`]
+  if (increases) summaryBits.push(`${increases} larger`)
+  if (decreases) summaryBits.push(`${decreases} smaller`)
+  if (unchangedCount) summaryBits.push(`${unchangedCount} unchanged (omitted)`)
+
+  let body = `\n${summaryBits.join(' · ')}\n\n`
+  body += markdownTable(
+    ['Package', 'Size', 'Δ vs baseline'],
+    changed.map((r) => [`\`${r.package}\``, r.size, r.diff]),
+  )
+
+  if (unchangedCount > 0) {
+    const unchangedRows = rows
+      .filter((r) => r.kind === 'unchanged')
+      .map((r) => [`\`${r.package}\``, r.size])
+    body += `\n\n<details>\n<summary>All sizes (${rows.length} packages)</summary>\n\n`
+    body += markdownTable(['Package', 'Size'], unchangedRows)
+    body += '\n\n</details>'
+  }
+
+  return header + body + footnote
 }
+
+export { generateMarkdownReport, classifyRow, UNCHANGED_PERCENT_EPS }
 
 /**
  * Parse command line arguments
@@ -281,12 +339,8 @@ async function main() {
         process.exit(1)
       }
       
-      const table = generateComparisonTable(current, baseline)
-      console.log('## 📦 Bundle Size Analysis\n')
-      console.log(table)
-      console.log(
-        '\n_Values are the minified+gzipped entry chunk of each package — the code eagerly loaded on import. Workspace deps are bundled; external deps and dynamically-imported (lazy) chunks are excluded._\n'
-      )
+      const report = generateMarkdownReport(current, baseline)
+      console.log(report)
     } catch (error) {
       if (error.code === 'ENOENT') {
         console.error(`❌ Baseline file not found: ${args.baseline}`)
@@ -314,7 +368,11 @@ async function main() {
   }
 }
 
-main().catch((error) => {
-  console.error('❌ Error:', error.message)
-  process.exit(1)
-})
+const isDirectRun =
+  process.argv[1] !== undefined && import.meta.url === pathToFileURL(process.argv[1]).href
+if (isDirectRun) {
+  main().catch((error) => {
+    console.error('❌ Error:', error.message)
+    process.exit(1)
+  })
+}
