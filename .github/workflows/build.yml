@@ -1,8 +1,9 @@
 name: Build
 on:
   pull_request:
-    # labeled / unlabeled: Performance benchmarks skip or resume on PR state: WIP
-    types: [opened, reopened, synchronize, ready_for_review, labeled, unlabeled]
+    # synchronize re-reads labels. Performance benchmarks run only when
+    # "type: test performance" is set on that push.
+    types: [opened, reopened, synchronize, ready_for_review]
   push:
     branches: [master]
     tags: ['*']
@@ -366,7 +367,7 @@ jobs:
       (github.event_name == 'push' || github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'pull_request' &&
       github.event.pull_request.draft == false &&
-      contains(join(github.event.pull_request.labels.*.name, ' '), 'PR state: WIP') == false))
+      contains(github.event.pull_request.labels.*.name, 'type: test performance')))
     permissions:
       contents: read
       id-token: write
@@ -375,8 +376,10 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      # Master and manual runs stay path-filtered. A labeled PR always measures.
       - uses: dorny/paths-filter@v2
         id: bench-paths
+        if: github.event_name != 'pull_request'
         with:
           filters: |
             bench:
@@ -395,19 +398,19 @@ jobs:
               - 'package-lock.json'
 
       - name: No bench-relevant changes
-        if: steps.bench-paths.outputs.bench != 'true'
+        if: github.event_name != 'pull_request' && steps.bench-paths.outputs.bench != 'true'
         run: echo "Skipping — no performance benchmark paths in this event."
 
       - uses: ./.github/actions/setup-ethereumjs
-        if: steps.bench-paths.outputs.bench == 'true'
+        if: github.event_name == 'pull_request' || steps.bench-paths.outputs.bench == 'true'
         with:
           dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
       - name: Run benchmarks
-        if: steps.bench-paths.outputs.bench == 'true'
+        if: github.event_name == 'pull_request' || steps.bench-paths.outputs.bench == 'true'
         uses: CodSpeedHQ/action@f842b9a3ffe213dbb81768fd7f7eeb4dfcf1c369 # v5.4.2
         with:
-          mode: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' && 'simulation' || 'walltime' }}
+          mode: simulation
           run: npm run bench
           cache-instruments: 'true'
 
