@@ -99,6 +99,7 @@ npm install
 | `npm run build --workspaces` | Production build |
 | `npm run docs:build --workspaces` | TypeDoc → `packages/*/docs/` |
 | `npm run clean` | Drop build artifacts + `node_modules` |
+| `npm run bench` | Vitest performance suite (CodSpeed in CI) |
 
 **Single package** (example: `@ethereumjs/vm`)
 
@@ -197,6 +198,15 @@ One command and one config pointer per tool. Agent finish steps are in the linke
 | Examples | `npm run examples` | `packages/*/examples/` | [examples.mdc](.cursor/rules/examples.mdc) |
 | Snippet PNGs | `npm run snippet:png` | `config/code-snippet/` | — |
 | CI | PR check **`Build / CI`** | `.github/workflows/` | [ci.mdc](.cursor/rules/ci.mdc) |
+| Performance benchmarks | `npm run bench` | [config/vitest-bench.mts](./config/vitest-bench.mts) | [benchmarks.mdc](.cursor/rules/benchmarks.mdc) |
+
+### Performance benchmarks
+
+Hot-path packages share one Vitest bench suite (`packages/*/benchmarks/*.bench.ts`; heavy local-only cases use `*.local.bench.ts`). Local: `npm run bench` (wall time). CI: **`performance-benchmarks`** job in [`.github/workflows/build.yml`](.github/workflows/build.yml) — restores the same workspace cache as test jobs (`needs: build`), runs only when bench paths changed, **skips PRs labeled `PR state: WIP`**, uses CodSpeed **wall-time on PRs** and **simulation on `master` pushes** (baseline). Informational until **CodSpeed Performance Analysis** is required in branch protection.
+
+Install the [CodSpeed GitHub App](https://github.com/marketplace/codspeed-continuous-performance-analysis) on the org repo before expecting PR reports.
+
+**Maintainer (one-time / when ready):** after stable `master` simulation runs, optionally require **CodSpeed Performance Analysis** in branch protection (not `Build / CI`). Tune regression threshold in CodSpeed (toward 15–20% if flaky). Acknowledge intentional regressions in the CodSpeed UI.
 
 ### Notes
 
@@ -262,7 +272,7 @@ Rules: [`.cursor/rules/`](.cursor/rules/) (plain markdown + YAML front matter �
 
 | Rule | Scope | Remember |
 | ---- | ----- | -------- |
-| `ci`, `typecheck`, `spellcheck`, `git`, `security` | Always on | Do not weaken tests or skip hooks |
+| `ci`, `typecheck`, `spellcheck`, `git`, `security` | Always on | Git rule: explicit ask for commit/push/PR/merge; commit-only ≠ push; PR labels when asked |
 | `code-conventions` | `src/`, `examples/` | No public API renames without human ask |
 | `api-docs` | `src/` | Cross-package `{@link @ethereumjs/pkg!Symbol}` |
 | `examples` | `examples/`, READMEs | Run embedme after README edits |

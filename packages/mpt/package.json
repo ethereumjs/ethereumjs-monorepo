@@ -32,7 +32,6 @@
   },
   "files": ["dist", "src"],
   "scripts": {
-    "benchmarks": "node -r tsx/register --max-old-space-size=8024 benchmarks",
     "biome": "npx @biomejs/biome check",
     "biome:fix": "npx @biomejs/biome check --write",
     "build": "../../config/cli/ts-build.sh",
@@ -49,7 +48,6 @@
     "spellcheck": "npm run spellcheck:ts && npm run spellcheck:md",
     "spellcheck:ts": "npx cspell --gitignore -c ../../config/cspell-ts.json \"./**/*.ts\" --cache --show-suggestions --show-context",
     "spellcheck:md": "npx cspell --gitignore -c ../../config/cspell-md.json \"**.md\" --cache --show-suggestions --show-context",
-    "profiling": "tsc --target ES5 benchmarks/random.ts && 0x benchmarks/random.js",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "npx vitest run --config=./vitest.config.browser.mts",
     "test:node": "npx vitest run -c ../../config/vitest.config.mts",
@@ -65,13 +63,11 @@
   "devDependencies": {
     "@awasm/noble": "^0.1.1",
     "@ethereumjs/genesis": "^10.1.3",
-    "@types/benchmark": "^2.1.5",
     "@types/debug": "^4.1.12",
     "abstract-level": "^3.0.1",
     "level": "^9.0.0",
     "lmdb": "^3.2.6",
-    "memory-level": "^3.0.0",
-    "@paulmillr/jsbt": "^0.5.0"
+    "memory-level": "^3.0.0"
   },
   "engines": {
     "node": ">=20"
