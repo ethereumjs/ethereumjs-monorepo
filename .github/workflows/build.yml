@@ -1,8 +1,9 @@
 name: Build
 on:
   pull_request:
-    # labeled / unlabeled: Performance benchmarks skip or resume on PR state: WIP
-    types: [opened, reopened, synchronize, ready_for_review, labeled, unlabeled]
+    # synchronize re-reads labels. Performance benchmarks run only when
+    # "type: test performance" is set on that push.
+    types: [opened, reopened, synchronize, ready_for_review]
   push:
     branches: [master]
     tags: ['*']
@@ -108,7 +109,6 @@ jobs:
       block: ${{ steps.affected.outputs.block }}
       blockchain: ${{ steps.affected.outputs.blockchain }}
       browser: ${{ steps.affected.outputs.browser }}
-      client: ${{ steps.affected.outputs.client }}
       common: ${{ steps.affected.outputs.common }}
       devp2p: ${{ steps.affected.outputs.devp2p }}
       evm: ${{ steps.affected.outputs.evm }}
@@ -119,7 +119,6 @@ jobs:
       tx: ${{ steps.affected.outputs.tx }}
       util: ${{ steps.affected.outputs.util }}
       vm-pr: ${{ steps.affected.outputs['vm-pr'] }}
-      noCompile: ${{ steps.affected.outputs.noCompile }}
       binarytree_coverage: ${{ steps.affected.outputs.binarytree_coverage }}
       block_coverage: ${{ steps.affected.outputs.block_coverage }}
       blockchain_coverage: ${{ steps.affected.outputs.blockchain_coverage }}
@@ -188,14 +187,6 @@ jobs:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
       submodule-cache-key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
       workspaces: ${{ needs.detect.outputs.workspaces }}
-
-  client:
-    needs: [build, detect]
-    if: needs.detect.outputs.client == 'true'
-    uses: ./.github/workflows/client-build.yml
-    secrets: inherit
-    with:
-      dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
   common:
     needs: [build, detect]
@@ -294,13 +285,6 @@ jobs:
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
-  noCompile:
-    needs: [build, detect]
-    if: needs.detect.outputs.noCompile == 'true'
-    uses: ./.github/workflows/noCompile.yml
-    with:
-      dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
-
   typecheck:
     needs: [build, checkout-submodules]
     uses: ./.github/workflows/typecheck.yml
@@ -343,7 +327,6 @@ jobs:
       - block
       - blockchain
       - browser
-      - client
       - common
       - devp2p
       - evm
@@ -355,7 +338,6 @@ jobs:
       - util
       - vm-pr
       - lint
-      - noCompile
       - typecheck
       - audit
     if: always() && !cancelled()
@@ -385,7 +367,7 @@ jobs:
       (github.event_name == 'push' || github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'pull_request' &&
       github.event.pull_request.draft == false &&
-      contains(join(github.event.pull_request.labels.*.name, ' '), 'PR state: WIP') == false))
+      contains(github.event.pull_request.labels.*.name, 'type: test performance')))
     permissions:
       contents: read
       id-token: write
@@ -394,8 +376,10 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      # Master and manual runs stay path-filtered. A labeled PR always measures.
       - uses: dorny/paths-filter@v2
         id: bench-paths
+        if: github.event_name != 'pull_request'
         with:
           filters: |
             bench:
@@ -414,19 +398,19 @@ jobs:
               - 'package-lock.json'
 
       - name: No bench-relevant changes
-        if: steps.bench-paths.outputs.bench != 'true'
+        if: github.event_name != 'pull_request' && steps.bench-paths.outputs.bench != 'true'
         run: echo "Skipping — no performance benchmark paths in this event."
 
       - uses: ./.github/actions/setup-ethereumjs
-        if: steps.bench-paths.outputs.bench == 'true'
+        if: github.event_name == 'pull_request' || steps.bench-paths.outputs.bench == 'true'
         with:
           dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
       - name: Run benchmarks
-        if: steps.bench-paths.outputs.bench == 'true'
+        if: github.event_name == 'pull_request' || steps.bench-paths.outputs.bench == 'true'
         uses: CodSpeedHQ/action@f842b9a3ffe213dbb81768fd7f7eeb4dfcf1c369 # v5.4.2
         with:
-          mode: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' && 'simulation' || 'walltime' }}
+          mode: simulation
           run: npm run bench
           cache-instruments: 'true'
 

@@ -52,7 +52,6 @@ export const SKIPPABLE_JOBS = {
   block: ['block'],
   blockchain: ['blockchain'],
   browser: '*',
-  client: ['client'],
   common: ['common'],
   devp2p: ['devp2p'],
   evm: ['evm'],
@@ -63,7 +62,6 @@ export const SKIPPABLE_JOBS = {
   tx: ['tx'],
   util: ['util'],
   'vm-pr': ['vm'],
-  noCompile: ['client'],
 }
 
 /** Jobs that collect coverage only when a listed package was directly changed. */

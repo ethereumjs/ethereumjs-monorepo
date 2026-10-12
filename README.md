@@ -180,7 +180,7 @@ Tooling, CI, conventions, and release process: **[DEVELOPER.md](./DEVELOPER.md)*
 
 | Package | Role |
 | ------- | ---- |
-| [`@ethereumjs/client`](./packages/client) | Full execution client (deprecated) |
+| [`@ethereumjs/client`](./archive/client) | Full execution client (archived; not installed — see [archive/README.md](./archive/README.md)) |
 | [`@ethereumjs/devp2p`](./packages/devp2p) | devp2p networking (deprecated) |
 | [`@ethereumjs/wallet`](./packages/wallet) | Key management helpers (deprecated) |
 

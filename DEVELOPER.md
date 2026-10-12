@@ -57,7 +57,7 @@
 | Topic | Where |
 | ----- | ----- |
 | VM consensus fixtures, profiling | [packages/vm/DEVELOPER.md](./packages/vm/DEVELOPER.md) |
-| Hive tests (deprecated client) | [packages/client/DEVELOPER.md](./packages/client/DEVELOPER.md) |
+| Archived execution client (Hive notes) | [archive/client/DEVELOPER.md](./archive/client/DEVELOPER.md) |
 | EST fixture bumps | [update-est-fixtures skill](.cursor/skills/update-est-fixtures/SKILL.md) |
 
 ---
@@ -202,7 +202,7 @@ One command and one config pointer per tool. Agent finish steps are in the linke
 
 ### Performance benchmarks
 
-Hot-path packages share one Vitest bench suite (`packages/*/benchmarks/*.bench.ts`; heavy local-only cases use `*.local.bench.ts`). Local: `npm run bench` (wall time). CI: **`performance-benchmarks`** job in [`.github/workflows/build.yml`](.github/workflows/build.yml) — restores the same workspace cache as test jobs (`needs: build`), runs only when bench paths changed, **skips PRs labeled `PR state: WIP`**, uses CodSpeed **wall-time on PRs** and **simulation on `master` pushes** (baseline). Informational until **CodSpeed Performance Analysis** is required in branch protection.
+Hot-path packages share one Vitest bench suite (`packages/*/benchmarks/*.bench.ts`; heavy local-only cases use `*.local.bench.ts`). Local: `npm run bench` (wall time). CI: **`performance-benchmarks`** job in [`.github/workflows/build.yml`](.github/workflows/build.yml) — restores the same workspace cache as test jobs (`needs: build`) and runs CodSpeed **simulation** for pull requests and for `master`. A pull request runs the suite only when it has the **`type: test performance`** label; each push reads that label again. `master` and manual runs stay path-filtered and record the baseline. Informational until **CodSpeed Performance Analysis** is required in branch protection.
 
 Install the [CodSpeed GitHub App](https://github.com/marketplace/codspeed-continuous-performance-analysis) on the org repo before expecting PR reports.
 
@@ -292,6 +292,6 @@ Package-specific depth stays in package `DEVELOPER.md` files. [AGENTS.md](./AGEN
 | --- | ------ |
 | [ARCHITECTURE.md](./ARCHITECTURE.md) | Responsibilities, dependency graph, `runBlock` flow |
 | [packages/vm/DEVELOPER.md](./packages/vm/DEVELOPER.md) | EST / legacy tests, debugging, profiling |
-| [packages/client/DEVELOPER.md](./packages/client/DEVELOPER.md) | Hive (deprecated `@ethereumjs/client`) |
+| [archive/client/DEVELOPER.md](./archive/client/DEVELOPER.md) | Hive notes for archived `@ethereumjs/client` |
 | [CONTRIBUTING.md](./.github/CONTRIBUTING.md) | How to contribute |
 | [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) | Community standards |

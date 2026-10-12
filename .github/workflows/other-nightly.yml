@@ -1,4 +1,4 @@
-name: Ethash/Client Nightly
+name: Ethash Nightly
 on:
   schedule:
     - cron: 0 1 * * *
@@ -24,23 +24,6 @@ jobs:
 
       - run: npm run test
         working-directory: ${{ github.workspace }}/packages/ethash
-
-  test-client:
-    if: github.repository == 'ethereumjs/ethereumjs-monorepo'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: 'npm'
-
-      - run: npm ci
-        working-directory: ${{github.workspace}}
-
-      - run: npm run test
-        working-directory: ${{ github.workspace }}/packages/client
 
   test-devp2p:
     if: github.repository == 'ethereumjs/ethereumjs-monorepo'

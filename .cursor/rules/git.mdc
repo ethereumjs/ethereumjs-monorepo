@@ -47,7 +47,7 @@ Update this when the PR is created and again when intent changes (including afte
 
 | Label | When |
 | --- | --- |
-| `PR state: WIP` | More commits or known follow-up expected before review/merge; **Performance benchmarks** CI skips while this label is on the PR |
+| `PR state: WIP` | More commits or known follow-up expected before review/merge |
 | `PR state: merge ready` | Author expects the PR to be complete and mergeable (default when handing off for review unless told otherwise) |
 | `PR state: needs review` | Human explicitly asked for review attention (instead of or in addition to signaling readiness — use **instead of** `merge ready`, not both) |
 
@@ -66,12 +66,14 @@ These **change CI behavior** — add or remove deliberately; **when in doubt, pr
 | Label | Effect (summary) |
 | --- | --- |
 | `type: test all hardforks` | Extra VM state/blockchain runs across hardforks (`vm-pr.yml`) |
-| `type: test client` | Runs client build workflow |
 | `type: test devp2p` | Runs devp2p build workflow |
 | `type: test verkle` | Verkle-related test path |
 | `type: test no browser` | Skips browser workflow |
 | `type: test skip most stable VM` | Skips most stable VM jobs in `vm-pr.yml` |
 | `type: test skip dev VM` | Skips dev VM EST jobs |
+| `type: test performance` | Runs the CodSpeed simulation job (`performance-benchmarks`) on this PR. Each push reads the label again |
+
+Set **`type: test performance`** when the diff can change the speed of a hot-path library (`rlp`, `util`, `mpt`, `evm`, `vm`, `tx`, `block`, `statemanager`, `binarytree`), a benchmark, or a dependency those paths execute. Decide at PR open, then again before every later push: the workflow reads labels on that push. Remove the label when the remaining diff can no longer change that speed. The ordinary type label `type: performance` does not start the job.
 
 Remove a skip label when the PR no longer justifies skipping that coverage.
 
@@ -80,5 +82,5 @@ Remove a skip label when the PR no longer justifies skipping that coverage.
 1. Infer packages from the diff; apply matching `package: …` (+ `package: monorepo` when appropriate).
 2. Set one `PR state: …` label.
 3. Set matching non-test `type: …` label(s).
-4. Add or drop test-trigger/skip `type: test …` labels only when justified; default to **not** skipping heavy suites.
+4. Add or drop test-trigger/skip `type: test …` labels only when justified. Set `type: test performance` when the diff may change hot-path speed, and re-check that before each push. Default to **not** skipping heavy suites.
 5. Leave all other label families unset.

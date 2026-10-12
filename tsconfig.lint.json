@@ -10,12 +10,7 @@
     "./packages/**/*.mjs",
     "./packages/**/*.mts"
   ],
-  "exclude": [
-    "./packages/client/devnets",
-    "./packages/client/archive",
-    "**/ethereum-tests/**/*",
-    "package.json"
-  ],
+  "exclude": ["**/ethereum-tests/**/*", "package.json"],
   "compilerOptions": {
     "noEmit": true
   }
