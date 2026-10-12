@@ -65,6 +65,8 @@
     "eventemitter3": "^5.0.1"
   },
   "devDependencies": {
+    "@polkadot/util": "^13.4.3",
+    "@polkadot/wasm-crypto": "^7.4.1",
     "@paulmillr/trusted-setups": "^0.2.0",
     "@types/debug": "^4.1.12",
     "@types/minimist": "^1.2.5",

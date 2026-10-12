@@ -72,6 +72,8 @@
   },
   "devDependencies": {
     "@ethereumjs/testdata": "1.0.0",
+    "@polkadot/util": "^13.4.3",
+    "@polkadot/wasm-crypto": "^7.4.1",
     "@paulmillr/trusted-setups": "^0.2.0",
     "@types/minimist": "^1.2.5",
     "@types/node-dir": "^0.0.37",
