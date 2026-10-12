@@ -1,7 +1,22 @@
 ---
-description: Git conventions — renames, PR labels, and review state on GitHub
+description: Git conventions — when to commit/push/PR, renames, PR labels
 alwaysApply: true
 ---
+
+# Remote git (agents)
+
+Unless the human **explicitly** asks, do **not**:
+
+- `git commit`
+- `git push` (or force-push)
+- `gh pr create` / open or merge pull requests
+- `gh pr merge` or other merge-to-default flows
+
+**Commit alone is not permission to push.** Phrases like “commit”, “commit your changes”, or “commit if ready” mean **local commit only** — stop after `git commit` succeeds unless the same message also asks to push (e.g. “commit and push”, “push the branch”).
+
+**Separate permissions:** push requires an explicit push (or ship) ask; opening a PR requires an explicit PR ask; merging requires an explicit merge ask (including round-trip / release skills that say GO). Updating PR title, body, or labels after a push is fine only when a prior instruction already covered that PR or the human asked to update it.
+
+Working-tree **inspection** (`git status`, `git diff`, `git log`) is always fine. Do not stash, checkout, rebase, or rewrite history unless asked.
 
 # Git renames
 
