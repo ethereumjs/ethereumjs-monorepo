@@ -19,11 +19,10 @@ const benchPackages = [
   'vm',
 ] as const
 
-const enableCodSpeed = process.env.CODSPEED_ENV === 'true'
-
 export default defineConfig({
   root: repoRoot,
-  plugins: enableCodSpeed ? [codspeedPlugin()] : [],
+  // Always register; no-ops locally without CodSpeed instrumentation (see plugin README).
+  plugins: [codspeedPlugin()],
   test: {
     environment: 'node',
     include: benchPackages.map((pkg) => `packages/${pkg}/benchmarks/**/*.bench.ts`),
