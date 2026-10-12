@@ -72,7 +72,8 @@ jobs:
         run: npm run build --workspaces --if-present
 
       - name: Run benchmarks
-        uses: CodSpeedHQ/action@v5
+        # Pin to immutable release commit (v5.4.2); update via reviewed bump only.
+        uses: CodSpeedHQ/action@f842b9a3ffe213dbb81768fd7f7eeb4dfcf1c369 # v5.4.2
         with:
           mode: simulation
           run: npm run bench

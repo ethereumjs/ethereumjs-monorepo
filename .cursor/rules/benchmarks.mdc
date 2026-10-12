@@ -30,6 +30,12 @@ npm run bench
 
 Without CodSpeed instrumentation this uses plain Vitest/tinybench (wall time). Compare regressions in CI or on the CodSpeed dashboard after push.
 
+## CI security
+
+- Pin **`CodSpeedHQ/action`** to a **full release commit SHA** (version comment in `bench.yml`), not a mutable `@v*` tag — same supply-chain practice as [GitHub’s secure use guidance](https://docs.github.com/en/actions/reference/security/secure-use).
+- Authenticate with **OIDC** (`permissions.id-token: write` on the bench job); do not add a long-lived CodSpeed token to the workflow unless OIDC is unavailable.
+- Keep job permissions minimal (`contents: read` plus what CodSpeed needs for checks and PR comments).
+
 ## Docs
 
 Human overview: [DEVELOPER.md](../../DEVELOPER.md) § Performance benchmarks. VM **0x** flamegraphs remain local-only in [packages/vm/DEVELOPER.md](../../packages/vm/DEVELOPER.md).
