@@ -92,6 +92,7 @@
     "@types/debug": "^4.1.12",
     "@types/minimist": "^1.2.5",
     "@types/node-dir": "^0.0.37",
+    "@types/yargs": "^17.0.35",
     "mcl-wasm": "^1.8.0",
     "micro-eth-signer": "^0.15.0",
     "minimist": "^1.2.8",
