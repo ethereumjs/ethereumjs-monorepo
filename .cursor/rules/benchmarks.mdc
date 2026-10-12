@@ -8,7 +8,7 @@ globs:
 
 # Benchmarks
 
-One harness for the monorepo: **Vitest `bench()`** in `packages/<pkg>/benchmarks/*.bench.ts`, run locally with `npm run bench` from the repo root. CI runs in the **`Build`** workflow job **`performance-benchmarks`** (`.github/workflows/build.yml`): reuses the **`build` job workspace cache**, path-filtered, **skipped on PRs with `PR state: WIP`**, **`walltime` on PRs**, **`simulation` on `master` pushes** (CodSpeed baseline). Not part of required **`Build / CI`** until branch protection enables **CodSpeed Performance Analysis**. Heavy cases live in `**/*.local.bench.ts` (excluded from CI).
+One harness for the monorepo: **Vitest `bench()`** in `packages/<pkg>/benchmarks/*.bench.ts`, run locally with `npm run bench` from the repo root. CI runs in the **`Build`** workflow job **`performance-benchmarks`** (`.github/workflows/build.yml`): reuses the **`build` job workspace cache**, path-filtered, **skipped on PRs with `PR state: WIP`**, **wall-time on PRs**, **simulation on `master` pushes** (CodSpeed baseline). Not part of required **`Build / CI`** until branch protection enables **CodSpeed Performance Analysis**. Heavy cases live in `**/*.local.bench.ts` (excluded from CI).
 
 ## Adding a case
 
