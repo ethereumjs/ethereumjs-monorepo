@@ -30,7 +30,7 @@ export async function createMPT(opts?: MPTOpts) {
     opts?.valueEncoding === ValueEncoding.Bytes ? ValueEncoding.Bytes : ValueEncoding.String
 
   if (opts?.useKeyHashing === true) {
-    key = keccakFunction.call(undefined, ROOT_DB_KEY) as Uint8Array
+    key = keccakFunction.call(undefined, ROOT_DB_KEY) as Uint8Array<ArrayBuffer>
   }
   if (opts?.keyPrefix !== undefined) {
     key = concatBytes(opts.keyPrefix, key)

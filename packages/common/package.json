@@ -71,7 +71,7 @@
   },
   "devDependencies": {
     "@ethereumjs/testdata": "^1.0.0",
-    "@noble/curves": "^2.0.1",
+    "@noble/curves": "^2.4.0",
     "@polkadot/util": "^13.4.3",
     "@polkadot/wasm-crypto": "^7.4.1"
   }
