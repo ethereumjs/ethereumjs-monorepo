@@ -99,6 +99,7 @@ npm install
 | `npm run build --workspaces` | Production build |
 | `npm run docs:build --workspaces` | TypeDoc → `packages/*/docs/` |
 | `npm run clean` | Drop build artifacts + `node_modules` |
+| `npm run bench` | Vitest performance suite (CodSpeed in CI) |
 
 **Single package** (example: `@ethereumjs/vm`)
 
@@ -197,6 +198,15 @@ One command and one config pointer per tool. Agent finish steps are in the linke
 | Examples | `npm run examples` | `packages/*/examples/` | [examples.mdc](.cursor/rules/examples.mdc) |
 | Snippet PNGs | `npm run snippet:png` | `config/code-snippet/` | — |
 | CI | PR check **`Build / CI`** | `.github/workflows/` | [ci.mdc](.cursor/rules/ci.mdc) |
+| Performance benchmarks | `npm run bench` | [config/vitest-bench.mts](./config/vitest-bench.mts) | [benchmarks.mdc](.cursor/rules/benchmarks.mdc) |
+
+### Performance benchmarks
+
+Hot-path packages share one Vitest bench suite (`packages/*/benchmarks/*.bench.ts`). Local runs use wall time; **CodSpeed CPU simulation** runs on path-filtered PRs and `master` pushes via [`.github/workflows/bench.yml`](.github/workflows/bench.yml) (informational until **CodSpeed Performance Analysis** is required in branch protection).
+
+Install the [CodSpeed GitHub App](https://github.com/marketplace/codspeed-continuous-performance-analysis) on the org repo before expecting PR reports.
+
+After several stable PRs, enable the CodSpeed status check in GitHub branch protection. If the check flaps, raise the project regression threshold in CodSpeed (toward 15–20%) before making it required. Intentional slowdowns can be acknowledged in the CodSpeed UI.
 
 ### Notes
 

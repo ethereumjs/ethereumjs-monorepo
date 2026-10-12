@@ -393,25 +393,17 @@ npm run test:state -- --test='CreateCollisionToEmpty' --data=0 --gas=1 --value=0
 
 `--profile` is not wired up on the EST runners yet.
 
-### Mainnet block benchmarks
+### Vitest performance suite
 
-Historical numbers for `master`: [ethereumjs.github.io … /dev/bench/vm](http://ethereumjs.github.io/ethereumjs-monorepo/dev/bench/vm).
-
-Build compiled JS first so `tsx` does not dominate the profile:
+VM stack cases live in `packages/vm/benchmarks/*.bench.ts` and run with the rest of the hot-path packages from the repo root:
 
 ```bash
-npm run build:benchmarks
-npm run benchmarks -- mainnetBlocks
-npm run benchmarks -- mainnetBlocks:10
+npm run bench
 ```
 
-Flamegraphs with [0x](https://github.com/davidmarkclements/0x):
+CI uses CodSpeed CPU simulation (see root [DEVELOPER.md](../../DEVELOPER.md) § Performance benchmarks). For deep dives, opcode-level cases are in `packages/evm/benchmarks/`.
 
-```bash
-npm run profiling -- mainnetBlocks:10
-```
-
-Open the link it prints. For flame-graph reading, see e.g. [this overview](https://blog.codecentric.de/en/2017/09/jvm-fire-using-flame-graphs-analyse-performance/) (the non-Java parts).
+Flamegraphs with [0x](https://github.com/davidmarkclements/0x) remain a local-only tool: profile a small script or test with `npx 0x -- node …` after building packages. For flame-graph reading, see e.g. [this overview](https://blog.codecentric.de/en/2017/09/jvm-fire-using-flame-graphs-analyse-performance/) (the non-Java parts).
 
 ### Older helpers
 

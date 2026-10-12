@@ -1,0 +1,35 @@
+---
+description: Performance benchmarks (Vitest bench + CodSpeed CI)
+globs:
+  - packages/*/benchmarks/**
+  - config/vitest-bench.mts
+  - .github/workflows/bench.yml
+---
+
+# Benchmarks
+
+One harness for the monorepo: **Vitest `bench()`** in `packages/<pkg>/benchmarks/*.bench.ts`, run locally with `npm run bench` from the repo root. CI uses **CodSpeed CPU simulation** (`.github/workflows/bench.yml`); it is **not** part of the required `Build / CI` gate until branch protection enables the CodSpeed check.
+
+## Adding a case
+
+1. Put the file under `packages/<pkg>/benchmarks/` with suffix `.bench.ts`.
+2. **Setup outside the callback** — build VMs, tries, encoded fixtures, and prefunded state at **module scope** (or helpers called from the top of the bench body). Vitest bench mode does **not** run `beforeAll` / `beforeEach`. The `bench()` body should be the hot path only.
+3. **In-memory only** in CI — no LevelDB, no mainnet fixtures, no syscall-heavy I/O.
+4. Do **not** add benchmark.js, jsbt, mitata, or per-package bench runners.
+5. Name benches for the report: `rlp encode short list`, `mpt put 1k-9-32`, `evm warm sload`, etc.
+
+## Hot-path packages
+
+`rlp`, `util`, `mpt`, `evm`, `vm`, `tx`, `block`, `statemanager`, `binarytree`. Deprecated or cold packages stay out of the suite.
+
+## Local run
+
+```sh
+npm run bench
+```
+
+Without CodSpeed instrumentation this uses plain Vitest/tinybench (wall time). Compare regressions in CI or on the CodSpeed dashboard after push.
+
+## Docs
+
+Human overview: [DEVELOPER.md](../../DEVELOPER.md) § Performance benchmarks. VM **0x** flamegraphs remain local-only in [packages/vm/DEVELOPER.md](../../packages/vm/DEVELOPER.md).

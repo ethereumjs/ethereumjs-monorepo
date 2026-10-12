@@ -1,0 +1,78 @@
+name: Performance benchmarks
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'packages/binarytree/**'
+      - 'packages/block/**'
+      - 'packages/evm/**'
+      - 'packages/mpt/**'
+      - 'packages/rlp/**'
+      - 'packages/statemanager/**'
+      - 'packages/tx/**'
+      - 'packages/util/**'
+      - 'packages/vm/**'
+      - 'config/vitest-bench.mts'
+      - '.github/workflows/bench.yml'
+      - 'package.json'
+      - 'package-lock.json'
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+    paths:
+      - 'packages/binarytree/**'
+      - 'packages/block/**'
+      - 'packages/evm/**'
+      - 'packages/mpt/**'
+      - 'packages/rlp/**'
+      - 'packages/statemanager/**'
+      - 'packages/tx/**'
+      - 'packages/util/**'
+      - 'packages/vm/**'
+      - 'config/vitest-bench.mts'
+      - '.github/workflows/bench.yml'
+      - 'package.json'
+      - 'package-lock.json'
+  workflow_dispatch:
+
+concurrency:
+  group: bench-${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  codspeed:
+    name: CodSpeed simulation
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write
+      checks: write
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/cache/restore@v4
+        id: npm-modules
+        with:
+          path: |
+            **/node_modules
+          key: npm-modules-${{ hashFiles('package-lock.json') }}
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        if: steps.npm-modules.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: Build packages
+        run: npm run build --workspaces --if-present
+
+      - name: Run benchmarks
+        uses: CodSpeedHQ/action@v5
+        with:
+          mode: simulation
+          run: npm run bench
