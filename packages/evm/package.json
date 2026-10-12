@@ -62,7 +62,7 @@
     "@noble/curves": "^2.4.0",
     "@noble/hashes": "^2.4.0",
     "debug": "4.4.3",
-    "eventemitter3": "^5.0.1"
+    "eventemitter3": "5.0.4"
   },
   "devDependencies": {
     "@polkadot/util": "^13.4.3",

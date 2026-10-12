@@ -75,7 +75,7 @@
     "@noble/hashes": "^2.4.0",
     "@scure/base": "^1.2.4",
     "debug": "4.4.3",
-    "eventemitter3": "^5.0.1",
+    "eventemitter3": "5.0.4",
     "lru-cache": "11.0.2",
     "scanf": "1.2.0",
     "snappyjs": "^0.7.0"
