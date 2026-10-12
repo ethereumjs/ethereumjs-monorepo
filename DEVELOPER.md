@@ -272,7 +272,7 @@ Rules: [`.cursor/rules/`](.cursor/rules/) (plain markdown + YAML front matter â€
 
 | Rule | Scope | Remember |
 | ---- | ----- | -------- |
-| `ci`, `typecheck`, `spellcheck`, `git`, `security` | Always on | Do not weaken tests or skip hooks |
+| `ci`, `typecheck`, `spellcheck`, `git`, `security` | Always on | Git rule includes PR label taxonomy; do not weaken tests or skip hooks |
 | `code-conventions` | `src/`, `examples/` | No public API renames without human ask |
 | `api-docs` | `src/` | Cross-package `{@link @ethereumjs/pkg!Symbol}` |
 | `examples` | `examples/`, READMEs | Run embedme after README edits |

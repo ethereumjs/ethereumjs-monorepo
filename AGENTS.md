@@ -24,6 +24,6 @@ Skills: [`.cursor/skills/`](.cursor/skills/) — use `release-round` for coordin
 - Conventions: [DEVELOPER.md](DEVELOPER.md) § Conventions + [`code-conventions.mdc`](.cursor/rules/code-conventions.mdc).
 - Releases: [`release-round` skill](.cursor/skills/release-round/SKILL.md) (gated procedure); invariants in [`.cursor/rules/releases.mdc`](.cursor/rules/releases.mdc) — never publish without explicit human ask.
 - Do not commit unless asked.
-- Rename or move files with `git mv` ([`git.mdc`](.cursor/rules/git.mdc)).
+- Rename or move files with `git mv` ([`git.mdc`](.cursor/rules/git.mdc)). On new or updated PRs, apply `package:`, `PR state:`, and `type:` labels per that rule (exact GitHub names).
 - After edits: `npm run tsc` in touched packages and spellcheck on changed files ([`typecheck.mdc`](.cursor/rules/typecheck.mdc), [`spellcheck.mdc`](.cursor/rules/spellcheck.mdc)).
 - Keep a change set to one kind of work (docs/policy, tests, or product code) unless the user explicitly asks to mix them.
