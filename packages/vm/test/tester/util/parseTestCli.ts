@@ -1,5 +1,7 @@
 import { parseArgs } from 'node:util'
 
+import type { T8NOptions } from '../../t8n/types.ts'
+
 /** Parsed legacy ethereum/tests Vitest wrapper flags (formerly minimist). */
 export type LegacyVitestArgv = {
   fork?: string
@@ -77,4 +79,67 @@ export function parseEstWrapperArgv(args: string[]): { jobs?: string } {
     strict: false,
   })
   return { jobs: values.jobs as string | undefined }
+}
+
+const t8nCliOptions = {
+  'state.fork': { type: 'string' },
+  'state.chainid': { type: 'string', default: '1' },
+  'state.reward': { type: 'string', default: '-1' },
+  'input.alloc': { type: 'string' },
+  'input.txs': { type: 'string' },
+  'input.env': { type: 'string' },
+  'output.basedir': { type: 'string' },
+  'output.result': { type: 'string' },
+  'output.alloc': { type: 'string' },
+  'output.body': { type: 'string' },
+  log: { type: 'boolean', default: false },
+  trace: { type: 'boolean', default: false },
+} as const
+
+const t8nRequiredKeys = [
+  'state.fork',
+  'input.alloc',
+  'input.txs',
+  'input.env',
+  'output.basedir',
+  'output.result',
+  'output.alloc',
+] as const
+
+export function parseT8nArgv(args: string[]): T8NOptions {
+  const { values } = parseArgs({
+    args,
+    options: t8nCliOptions,
+    strict: true,
+  })
+
+  for (const key of t8nRequiredKeys) {
+    const value = values[key]
+    if (typeof value !== 'string' || value.length === 0) {
+      throw new Error(`Missing required option: --${key}`)
+    }
+  }
+
+  const chainid = (values['state.chainid'] as string | undefined) ?? '1'
+  const reward = (values['state.reward'] as string | undefined) ?? '-1'
+
+  return {
+    state: {
+      fork: values['state.fork'] as string,
+      chainid: BigInt(chainid),
+      reward: BigInt(reward),
+    },
+    input: {
+      alloc: values['input.alloc'] as string,
+      txs: values['input.txs'] as string,
+      env: values['input.env'] as string,
+    },
+    output: {
+      basedir: values['output.basedir'] as string,
+      result: values['output.result'] as string,
+      alloc: values['output.alloc'] as string,
+    },
+    log: values.log === true,
+    trace: values.trace === true,
+  }
 }

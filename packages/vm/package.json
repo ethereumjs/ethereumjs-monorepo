@@ -88,11 +88,9 @@
     "@ethereumjs/ethash": "^10.0.0",
     "@noble/curves": "^2.4.0",
     "@types/debug": "^4.1.12",
-    "@types/yargs": "^17.0.35",
     "mcl-wasm": "^1.8.0",
     "solc": "^0.8.28",
-    "viem": "^2.38.6",
-    "yargs": "^17.7.2"
+    "viem": "^2.38.6"
   },
   "engines": {
     "node": ">=22"
