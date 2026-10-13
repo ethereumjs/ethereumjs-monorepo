@@ -97,14 +97,14 @@ export class CheckpointDB implements DB {
   }
 
   /**
-   * Commits the latest checkpoint
+   * Commits the latest checkpoint.
    */
   async commit() {
-    const { keyValueMap } = this.checkpoints.pop()!
+    const checkpoint = this.checkpoints.pop()!
     if (!this.hasCheckpoints()) {
       // This was the final checkpoint, we should now commit and flush everything to disk
       const batchOp: BatchDBOp[] = []
-      for (const [key, value] of keyValueMap.entries()) {
+      for (const [key, value] of checkpoint.keyValueMap.entries()) {
         if (value === undefined) {
           batchOp.push({
             type: 'del',
@@ -118,11 +118,17 @@ export class CheckpointDB implements DB {
           })
         }
       }
-      await this.batch(batchOp)
+
+      try {
+        await this.batch(batchOp)
+      } catch (error) {
+        this.checkpoints.push(checkpoint)
+        throw error
+      }
     } else {
       // dump everything into the current (higher level) diff cache
       const currentKeyValueMap = this.checkpoints[this.checkpoints.length - 1].keyValueMap
-      for (const [key, value] of keyValueMap.entries()) {
+      for (const [key, value] of checkpoint.keyValueMap.entries()) {
         currentKeyValueMap.set(key, value)
       }
     }

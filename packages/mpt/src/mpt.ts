@@ -219,30 +219,30 @@ export class MerklePatriciaTrie {
       return this.del(key)
     }
 
-    await this._lock.acquire()
-    const appliedKey = skipKeyTransform ? key : this.appliedKey(key)
-    if (equalsBytes(this.root(), this.EMPTY_TRIE_ROOT)) {
-      await this._createInitialNode(appliedKey, value)
-    } else {
-      const { remaining, stack } = await this.findPath(appliedKey)
-      let ops: BatchDBOp[] = []
-      if (this._opts.useNodePruning) {
-        const val = await this.get(key)
-        // Only delete keys if it either does not exist, or if it gets updated
-        // (The update will update the hash of the node, thus we can delete the original leaf node)
-        if (val === null || !equalsBytes(val, value)) {
-          ops = this._createPruneDeleteOps(stack)
+    await this._withLock(async () => {
+      const appliedKey = skipKeyTransform ? key : this.appliedKey(key)
+      if (equalsBytes(this.root(), this.EMPTY_TRIE_ROOT)) {
+        await this._createInitialNode(appliedKey, value)
+      } else {
+        const { remaining, stack } = await this.findPath(appliedKey)
+        let ops: BatchDBOp[] = []
+        if (this._opts.useNodePruning) {
+          const val = await this.get(key)
+          // Only delete keys if it either does not exist, or if it gets updated
+          // (The update will update the hash of the node, thus we can delete the original leaf node)
+          if (val === null || !equalsBytes(val, value)) {
+            ops = this._createPruneDeleteOps(stack)
+          }
+        }
+        // then update
+        await this._updateNode(appliedKey, value, remaining, stack)
+        if (this._opts.useNodePruning) {
+          // Only after updating the node we can delete the keyHashes
+          await this._db.batch(ops)
         }
       }
-      // then update
-      await this._updateNode(appliedKey, value, remaining, stack)
-      if (this._opts.useNodePruning) {
-        // Only after updating the node we can delete the keyHashes
-        await this._db.batch(ops)
-      }
-    }
-    await this.persistRoot()
-    this._lock.release()
+      await this.persistRoot()
+    })
   }
 
   /**
@@ -252,26 +252,38 @@ export class MerklePatriciaTrie {
    */
   async del(key: Uint8Array, skipKeyTransform: boolean = false): Promise<void> {
     this.DEBUG && this.debug(`Key: ${bytesToHex(key)}`, ['del'])
-    await this._lock.acquire()
-    const appliedKey = skipKeyTransform ? key : this.appliedKey(key)
-    const { node, stack } = await this.findPath(appliedKey)
-    const nodeHasValue =
-      node !== null && (!(node instanceof BranchMPTNode) || node.value() !== null)
+    await this._withLock(async () => {
+      const appliedKey = skipKeyTransform ? key : this.appliedKey(key)
+      const { node, stack } = await this.findPath(appliedKey)
+      const nodeHasValue =
+        node !== null && (!(node instanceof BranchMPTNode) || node.value() !== null)
 
-    let ops: BatchDBOp[] = []
-    // Only delete if the `key` currently has any value
-    if (this._opts.useNodePruning && nodeHasValue) {
-      ops = this._createPruneDeleteOps(stack)
+      let ops: BatchDBOp[] = []
+      // Only delete if the `key` currently has any value
+      if (this._opts.useNodePruning && nodeHasValue) {
+        ops = this._createPruneDeleteOps(stack)
+      }
+      if (nodeHasValue) {
+        await this._deleteNode(appliedKey, stack)
+      }
+      if (this._opts.useNodePruning) {
+        // Only after deleting the node it is possible to delete the keyHashes
+        await this._db.batch(ops)
+      }
+      await this.persistRoot()
+    })
+  }
+
+  /**
+   * Runs an operation while holding the trie lock, releasing it even if the operation throws.
+   */
+  protected async _withLock<T>(operation: () => Promise<T>): Promise<T> {
+    await this._lock.acquire()
+    try {
+      return await operation()
+    } finally {
+      this._lock.release()
     }
-    if (nodeHasValue) {
-      await this._deleteNode(appliedKey, stack)
-    }
-    if (this._opts.useNodePruning) {
-      // Only after deleting the node it is possible to delete the keyHashes
-      await this._db.batch(ops)
-    }
-    await this.persistRoot()
-    this._lock.release()
   }
 
   // ─── Path finding ───────────────────────────────────────────────────────────
@@ -1037,10 +1049,10 @@ export class MerklePatriciaTrie {
       throw EthereumJSErrorWithoutCode('trying to commit when not checkpointed')
     }
     this.DEBUG && this.debug(`${bytesToHex(this.root())}`, ['commit'])
-    await this._lock.acquire()
-    await this._db.commit()
-    await this.persistRoot()
-    this._lock.release()
+    await this._withLock(async () => {
+      await this._db.commit()
+      await this.persistRoot()
+    })
   }
 
   /**
@@ -1054,10 +1066,10 @@ export class MerklePatriciaTrie {
     }
 
     this.DEBUG && this.debug(`${bytesToHex(this.root())}`, ['revert', 'before'])
-    await this._lock.acquire()
-    this.root(await this._db.revert())
-    await this.persistRoot()
-    this._lock.release()
+    await this._withLock(async () => {
+      this.root(await this._db.revert())
+      await this.persistRoot()
+    })
     this.DEBUG && this.debug(`${bytesToHex(this.root())}`, ['revert', 'after'])
   }
 
