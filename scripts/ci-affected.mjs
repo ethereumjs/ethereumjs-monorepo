@@ -53,7 +53,6 @@ export const SKIPPABLE_JOBS = {
   blockchain: ['blockchain'],
   browser: '*',
   common: ['common'],
-  devp2p: ['devp2p'],
   evm: ['evm'],
   examples: '*',
   mpt: ['mpt'],

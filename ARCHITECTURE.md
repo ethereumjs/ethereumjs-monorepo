@@ -10,10 +10,10 @@ transactions, state, EVM) but is new to this codebase. All file references are
 relative to the repository root and were verified against the source at the time
 of writing.
 
-> **Deprecated packages**: `@ethereumjs/devp2p` and `@ethereumjs/wallet` are
-> deprecated and no longer updated. `@ethereumjs/client` is **archived** under
-> [`archive/client`](./archive/client) (not a workspace). See [README.md](./README.md).
-> They are not covered here.
+> **Deprecated packages**: `@ethereumjs/wallet` is deprecated and no longer
+> updated. `@ethereumjs/client` and `@ethereumjs/devp2p` are **archived** under
+> [`archive/client`](./archive/client) and [`archive/devp2p`](./archive/devp2p)
+> (not workspaces). See [README.md](./README.md). They are not covered here.
 
 ## Package Responsibility Matrix
 

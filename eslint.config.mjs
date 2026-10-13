@@ -183,14 +183,7 @@ export default [
     },
   },
   {
-    files: ['packages/devp2p/**'],
-    rules: {
-      'no-console': 'off',
-      '@typescript-eslint/no-unused-vars': 'off',
-    },
-  },
-  {
-    files: ['packages/devp2p/src/ext/**', '**/test/**/*.ts'],
+    files: ['**/test/**/*.ts'],
     rules: {
       'no-restricted-syntax': 'off',
       'no-restricted-properties': [

@@ -36,7 +36,7 @@ Apply **one or more** package labels for every package **substantially** changed
 
 | Path / scope | Label |
 | --- | --- |
-| `packages/<name>/` (active library) | `package: <name>` — use the folder name (`statemanager`, `devp2p`, `binarytree`, …) |
+| `packages/<name>/` (active library) | `package: <name>` — use the folder name (`statemanager`, `binarytree`, `genesis`, …) |
 | Root / cross-cutting repo infra | `package: monorepo` — e.g. `.github/`, `config/`, root `package.json`, `scripts/`, `.cursor/`, shared CI, monorepo docs |
 
 Monorepo-wide PRs often need **`package: monorepo` plus** each substantially touched package. Pure single-package work uses only that package label. If the change is **only** repo infra with no meaningful package delta, `package: monorepo` alone is enough.
@@ -66,7 +66,6 @@ These **change CI behavior** — add or remove deliberately; **when in doubt, pr
 | Label | Effect (summary) |
 | --- | --- |
 | `type: test all hardforks` | Extra VM state/blockchain runs across hardforks (`vm-pr.yml`) |
-| `type: test devp2p` | Runs devp2p build workflow |
 | `type: test verkle` | Verkle-related test path |
 | `type: test no browser` | Skips browser workflow |
 | `type: test skip most stable VM` | Skips most stable VM jobs in `vm-pr.yml` |

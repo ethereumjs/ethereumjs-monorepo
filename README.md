@@ -181,7 +181,7 @@ Tooling, CI, conventions, and release process: **[DEVELOPER.md](./DEVELOPER.md)*
 | Package | Role |
 | ------- | ---- |
 | [`@ethereumjs/client`](./archive/client) | Full execution client (archived; not installed — see [archive/README.md](./archive/README.md)) |
-| [`@ethereumjs/devp2p`](./packages/devp2p) | devp2p networking (deprecated) |
+| [`@ethereumjs/devp2p`](./archive/devp2p) | devp2p networking (archived; not installed — see [archive/README.md](./archive/README.md)) |
 | [`@ethereumjs/wallet`](./packages/wallet) | Key management helpers (deprecated) |
 
 Still on npm for migration reference; do not start new projects on these packages.
