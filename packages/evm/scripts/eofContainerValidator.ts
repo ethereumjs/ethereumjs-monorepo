@@ -1,6 +1,7 @@
+import * as readline from 'node:readline'
+
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { unprefixedHexToBytes } from '@ethereumjs/util'
-import split from 'split'
 
 import { createEVM, validateEOF } from '../src/index.ts'
 
@@ -16,7 +17,7 @@ common.setHardfork(Hardfork.Prague)
 common.setEIPs([663, 3540, 3670, 4200, 4750, 5450, 6206, 7069, 7480, 7620, 7692, 7698])
 const evm = await createEVM({ common })
 
-function processLine(line) {
+function processLine(line: string) {
   if (line.length === 0) {
     process.exit()
   }
@@ -33,4 +34,6 @@ function processLine(line) {
   }
 }
 
-process.stdin.pipe(split()).on('data', processLine)
+const rl = readline.createInterface({ input: process.stdin, crlfDelay: Infinity })
+rl.on('line', processLine)
+rl.on('close', () => process.exit(0))
