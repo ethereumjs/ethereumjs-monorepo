@@ -38,7 +38,7 @@ function block() {
   )
 }
 
-describe('EIP-8037 create-tx state gas at access (Amsterdam)', () => {
+describe('[VM/EIP-8037]: create-tx state gas at access (Amsterdam)', () => {
   it('does not fold new-account state gas into the intrinsic reject', async () => {
     const vm = await getVM()
     const c = txCommon()
@@ -182,7 +182,7 @@ function createFactoryCode(initcode: Uint8Array) {
   )
 }
 
-describe('EIP-8037 inner CREATE new-account charge (Amsterdam)', () => {
+describe('[VM/EIP-8037]: inner CREATE new-account charge (Amsterdam)', () => {
   it('does not charge new-account state gas for an existing balance-only target (CREATE succeeds)', async () => {
     const vm = await getVM()
     const target = createTarget()
@@ -254,7 +254,7 @@ describe('EIP-8037 inner CREATE new-account charge (Amsterdam)', () => {
   })
 })
 
-describe('EIP-8037 buildBlock block gas (Amsterdam)', () => {
+describe('[VM/EIP-8037]: buildBlock block gas (Amsterdam)', () => {
   async function amsterdamBuilder(vm: Awaited<ReturnType<typeof getVM>>, gasLimit: bigint) {
     const parentBlock = createBlock(
       { header: { number: 1n, gasLimit } },

@@ -3,7 +3,7 @@ import { assert, describe, it } from 'vitest'
 
 import { getCommon } from '../../tester/legacy/config.ts'
 
-describe('test runner config tests', () => {
+describe('[VM/T8nTool]: runner config', () => {
   it('initializes common with the right hardfork', () => {
     const common = getCommon('byzantium')
     assert.strictEqual(common.hardfork(), Hardfork.Byzantium)

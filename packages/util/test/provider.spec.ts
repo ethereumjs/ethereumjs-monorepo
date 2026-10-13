@@ -12,7 +12,7 @@ const fakeEthersProvider = {
   },
 }
 
-describe('getProvider', () => {
+describe('[Util]: getProvider', () => {
   it('normalizes string and ethers-style provider URLs', () => {
     assert.strictEqual(
       getProvider(providerUrl),
@@ -34,7 +34,7 @@ describe('getProvider', () => {
   })
 })
 
-describe('fetchFromProvider', () => {
+describe('[Util]: fetchFromProvider', () => {
   it('returns the response of the jsonrpc request', async () => {
     vi.stubGlobal('fetch', async (_url: string, _req: any) => {
       return {

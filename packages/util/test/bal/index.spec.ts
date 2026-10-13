@@ -25,7 +25,7 @@ import { bytesToHex, hexToBytes } from '../../src/bytes.ts'
 import { KECCAK256_RLP_ARRAY_S, SYSTEM_ADDRESS } from '../../src/constants.ts'
 import type { PrefixedHexString } from '../../src/types.ts'
 
-describe('Basic initialization', () => {
+describe('[Util]: basic initialization', () => {
   it('creates an empty access list', () => {
     const bal = createBlockLevelAccessList()
     assert.isNotNull(bal)
@@ -90,7 +90,7 @@ describe('Basic initialization', () => {
   })
 })
 
-describe('JSON', () => {
+describe('[Util/BAL]: JSON', () => {
   it('converts to JSON', () => {
     const bal = createBlockLevelAccessListFromJSON(
       balAllTransactionTypesJSON as BALJSONBlockAccessList,
@@ -312,7 +312,7 @@ describe('JSON', () => {
   })
 })
 
-describe('RLP', () => {
+describe('[Util/BAL]: RLP', () => {
   it('serialize() should produce correct RLP output', () => {
     let bal = new BlockLevelAccessList(balSimple)
     assert.deepEqual(bytesToHex(bal.serialize()), balSimpleRLP)

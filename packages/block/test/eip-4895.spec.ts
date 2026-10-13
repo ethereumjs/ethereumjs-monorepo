@@ -34,7 +34,7 @@ common.hardforkBlock = function (hardfork: string | undefined) {
   return BigInt(0)
 }
 
-describe('EIP4895 tests', () => {
+describe('[Block/EIP-4895]: behavior', () => {
   it('generate withdrawalsRoot', async () => {
     // get withdrawalsArray
     const gethBlockBytesArray = RLP.decode(hexToBytes(gethWithdrawals8BlockRlp))

@@ -65,7 +65,7 @@ function makeBlock(baseFee: bigint, transaction: TypedTransaction, txType: Trans
   return block
 }
 
-describe('EIP1559 tests', () => {
+describe('[VM/EIP-1559]: behavior', () => {
   it('test EIP1559 with all transaction types', async () => {
     const tx = new FeeMarket1559Tx(
       {

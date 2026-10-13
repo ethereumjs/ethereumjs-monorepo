@@ -9,7 +9,7 @@ import type { KZG } from '../src/kzg.ts'
 
 const jsKZG = new microEthKZG(trustedSetup)
 
-describe('KZG API tests', () => {
+describe('[Util/KZG]: API', () => {
   let wasmKZG: KZG
   beforeAll(async () => {
     wasmKZG = await loadKZG()

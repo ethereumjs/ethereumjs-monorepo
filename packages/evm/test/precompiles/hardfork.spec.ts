@@ -4,7 +4,7 @@ import { assert, describe, it } from 'vitest'
 
 import { createEVM, getActivePrecompiles } from '../../src/index.ts'
 
-describe('Precompiles: hardfork availability', () => {
+describe('[EVM/Precompile]: precompiles: hardfork availability', () => {
   it('Test BN254PAIRING availability', async () => {
     const ECPAIR_AddressStr = '0000000000000000000000000000000000000008'
     const ECPAIR_Address = new Address(hexToBytes(`0x${ECPAIR_AddressStr}`))

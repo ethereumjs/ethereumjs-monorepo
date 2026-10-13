@@ -16,7 +16,7 @@ import {
 
 const buf = utf8ToBytes('hello')
 
-describe('internal', () => {
+describe('[Util]: internal', () => {
   it('isHexString', () => {
     assert.isTrue(isHexString('0x123'))
     assert.isTrue(isHexString('0xabc'))
@@ -68,7 +68,7 @@ describe('internal', () => {
     )
   })
 
-  describe('padToEven', () => {
+  describe('[Util]: padToEven', () => {
     it('pads odd-length string to even', () => {
       assert.strictEqual(padToEven('123'), '0123')
     })
@@ -78,13 +78,13 @@ describe('internal', () => {
     })
   })
 
-  describe('getBinarySize', () => {
+  describe('[Util]: getBinarySize', () => {
     it('returns the correct binary size of a string', () => {
       assert.strictEqual(getBinarySize('Hello, World!'), 13)
     })
   })
 
-  describe('arrayContainsArray', () => {
+  describe('[Util]: arrayContainsArray', () => {
     it('returns true when the first array contains all elements of the second', () => {
       assert.isTrue(arrayContainsArray([1, 2, 3, 4, 5], [3, 4]))
     })
@@ -98,7 +98,7 @@ describe('internal', () => {
     })
   })
 
-  describe('fromUtf8', () => {
+  describe('[Util]: fromUtf8', () => {
     it('converts a UTF-8 string to a hex string', () => {
       assert.strictEqual(fromUtf8('Hello, World!'), '0x48656c6c6f2c20576f726c6421')
     })
@@ -108,13 +108,13 @@ describe('internal', () => {
     })
   })
 
-  describe('fromAscii', () => {
+  describe('[Util]: fromAscii', () => {
     it('converts an ASCII string to a hex string', () => {
       assert.strictEqual(fromAscii('Hello, World!'), '0x48656c6c6f2c20576f726c6421')
     })
   })
 
-  describe('getKeys', () => {
+  describe('[Util]: getKeys', () => {
     it('extracts keys from an array of objects', () => {
       const input = [
         { a: '1', b: '2' },

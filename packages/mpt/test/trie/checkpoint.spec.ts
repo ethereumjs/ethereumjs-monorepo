@@ -13,7 +13,7 @@ import { assert, beforeEach, describe, it } from 'vitest'
 import { MerklePatriciaTrie, ROOT_DB_KEY, createMPT } from '../../src/index.ts'
 
 describe('[MPT/Trie]: checkpoints', () => {
-  describe('after initial puts', () => {
+  describe('[MPT/Trie]: after initial puts', () => {
     let trie: MerklePatriciaTrie
     let preRoot: string
 
@@ -43,7 +43,7 @@ describe('[MPT/Trie]: checkpoints', () => {
     assert.strictEqual((trieCopy as any)._opts.cacheSize, 0)
   })
 
-  describe('after checkpoint and cache puts', () => {
+  describe('[MPT/Trie]: after checkpoint and cache puts', () => {
     let trie: MerklePatriciaTrie
     let postRoot: string
 

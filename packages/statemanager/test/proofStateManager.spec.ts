@@ -23,7 +23,7 @@ import { ropstenValidAccountData } from './testdata/ropsten_validAccount.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
-describe('ProofStateManager', () => {
+describe('[StateManager/Proof]: RPC and local proofs', () => {
   it(`returns quantity-encoded RPC representation`, async () => {
     const address = createZeroAddress()
     const key = new Uint8Array(32)

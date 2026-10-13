@@ -7,7 +7,7 @@ import { createVM } from '../../../src/index.ts'
 
 import type { VM } from '../../../src/index.ts'
 
-describe('Istanbul: EIP-1108 tests', () => {
+describe('[VM/EIP]: istanbul: EIP-1108 tests', () => {
   let vm: VM
   const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
   beforeAll(async () => {

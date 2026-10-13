@@ -13,7 +13,7 @@ import { MerklePatriciaTrie } from '../src/index.ts'
 const key = new Uint8Array([11])
 const value = new Uint8Array([255, 255])
 
-describe('encoding hex prefixes', () => {
+describe('[MPT]: encoding hex prefixes', () => {
   it('produces identical roots for hex and prefixed-hex key encodings', async () => {
     const trie = new MerklePatriciaTrie()
     const trie2 = new MerklePatriciaTrie()
@@ -24,7 +24,7 @@ describe('encoding hex prefixes', () => {
   })
 })
 
-describe('support for Uint8Array', () => {
+describe('[MPT]: Uint8Array value encoding', () => {
   it('uses Uint8Array in memory by default', async () => {
     const trie = new MerklePatriciaTrie()
     const db = trie['_db'].db as MapDB<any, any>

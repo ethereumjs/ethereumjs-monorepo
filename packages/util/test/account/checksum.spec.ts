@@ -94,7 +94,7 @@ describe('[Util/Account]: checksum addresses', () => {
     ],
   }
 
-  describe('toChecksumAddress', () => {
+  describe('[Util/Account]: toChecksumAddress', () => {
     it('toChecksumAddress() matches EIP-55 vectors', () => {
       for (let i = 0; i < eip55ChecksumAddresses.length; i++) {
         const tmp = eip55ChecksumAddresses[i]
@@ -102,7 +102,7 @@ describe('[Util/Account]: checksum addresses', () => {
       }
     })
 
-    describe('EIP1191', () => {
+    describe('[EIP-1191]: behavior', () => {
       it('toChecksumAddress() matches EIP-1191 vectors per chainId', () => {
         for (const [chainId, addresses] of Object.entries(eip1191ChecksumAddresses)) {
           for (const addr of addresses) {
@@ -155,7 +155,7 @@ describe('[Util/Account]: checksum addresses', () => {
     })
   })
 
-  describe('isValidChecksumAddress', () => {
+  describe('[Util/Account]: isValidChecksumAddress', () => {
     it('isValidChecksumAddress() accepts EIP-55 checksums', () => {
       for (let i = 0; i < eip55ChecksumAddresses.length; i++) {
         assert.isTrue(isValidChecksumAddress(eip55ChecksumAddresses[i]))
@@ -163,7 +163,7 @@ describe('[Util/Account]: checksum addresses', () => {
       assert.isFalse(isValidChecksumAddress('0x2f015c60e0be116b1f0cd534704db9c92118fb6a'))
     })
 
-    describe('EIP1191', () => {
+    describe('[EIP-1191]: behavior', () => {
       it('isValidChecksumAddress() accepts EIP-1191 checksums', () => {
         for (const [chainId, addresses] of Object.entries(eip1191ChecksumAddresses)) {
           for (const addr of addresses) {
@@ -200,7 +200,7 @@ describe('[Util/Account]: checksum addresses', () => {
     })
   })
 
-  describe('isValidAddress', () => {
+  describe('[Util/Account]: isValidAddress', () => {
     it('isValidAddress() accepts valid 20-byte hex addresses', () => {
       assert.isTrue(isValidAddress('0x2f015c60e0be116b1f0cd534704db9c92118fb6a'))
       assert.isTrue(isValidAddress('0x52908400098527886E0F7030069857D2E4169EE7'))

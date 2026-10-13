@@ -3,7 +3,7 @@ import { assert, describe, it } from 'vitest'
 
 import { MerklePatriciaTrie } from '../../src/index.ts'
 
-describe('TRIE > findPath', async () => {
+describe('[MPT/Trie]: findPath', async () => {
   const keys = Array.from({ length: 200 }, () => randomBytes(8))
   const trie = new MerklePatriciaTrie()
   for (const [i, k] of keys.entries()) {
@@ -36,7 +36,7 @@ describe('TRIE > findPath', async () => {
     }
   }
 })
-describe('TRIE (secure) > findPath', async () => {
+describe('[MPT/Trie]: secure findPath', async () => {
   const keys = Array.from({ length: 1000 }, () => randomBytes(20))
   const trie = new MerklePatriciaTrie({ useKeyHashing: true })
   for (const [i, k] of keys.entries()) {

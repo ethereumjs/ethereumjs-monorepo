@@ -160,7 +160,7 @@ function arrToStringArr(arr: any): any {
   })
 }
 
-describe('geth tests', () => {
+describe('[RLP]: official geth vectors', () => {
   for (const gethCase of gethCases) {
     const input = hexToBytes(gethCase.input)
     it('pass Geth test', () => {

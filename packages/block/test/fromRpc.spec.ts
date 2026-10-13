@@ -25,7 +25,7 @@ import { testdataFromRPCData } from './testdata/testdata-from-rpc.ts'
 import type { JSONRPCTx, LegacyTx } from '@ethereumjs/tx'
 import type { JSONRPCBlock } from '../src/index.ts'
 
-describe('[fromRPC]: block #2924874', () => {
+describe('[Block/fromRPC]: block #2924874', () => {
   const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
 
   it('creates a block with transactions with valid signatures', () => {
@@ -41,7 +41,7 @@ describe('[fromRPC]: block #2924874', () => {
   })
 })
 
-describe('[fromRPC]:', () => {
+describe('[Block/fromRPC]:', () => {
   it('creates a block when JSON tx value is an integer string', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const valueAsIntegerString = '1'
@@ -126,7 +126,7 @@ describe('[fromRPC]:', () => {
   })
 })
 
-describe('[fromRPC] - Alchemy/Infura API block responses', () => {
+describe('[Block/fromRPC] - Alchemy/Infura API block responses', () => {
   it('creates pre merge block from Alchemy API response to eth_getBlockByHash', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const block = createBlockFromRPC(alchemy14151203Data, [], { common })

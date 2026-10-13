@@ -97,7 +97,7 @@ describe('[Block/EIP-4844]: header', () => {
   })
 })
 
-describe('blob gas tests', () => {
+describe('[Block/EIP-4844]: blob gas', () => {
   const kzg = new microEthKZG(trustedSetup)
 
   const common = createCommonFromGethGenesis(eip4844GethGenesis, {
@@ -162,7 +162,7 @@ describe('blob gas tests', () => {
     assert.strictEqual(nextBlobGas, BigInt(7)) // TODO verify that this is correct
   })
 
-  describe('EIP-7918: Blob base fee bounded by execution cost', () => {
+  describe('[Block/EIP-7918]: blob base fee bounded by execution cost', () => {
     const osakaCommon = createCommonFromGethGenesis(eip4844GethGenesis, {
       chain: 'customChain',
       hardfork: Hardfork.Cancun,
@@ -262,7 +262,7 @@ describe('blob gas tests', () => {
   })
 })
 
-describe('transaction validation tests', () => {
+describe('[Block/EIP-4844]: transaction validation', () => {
   const kzg = new microEthKZG(trustedSetup)
 
   const common = createCommonFromGethGenesis(eip4844GethGenesis, {
@@ -373,7 +373,7 @@ describe('transaction validation tests', () => {
   })
 })
 
-describe('fake exponential', () => {
+describe('[Block/EIP-4844]: fake exponential', () => {
   it('matches geth fake exponential test vectors', () => {
     // Test inputs borrowed from geth - https://github.com/mdehoog/go-ethereum/blob/a915d56f1d52906470ddce1bda7fa916044b6f95/consensus/misc/eip4844_test.go#L26
     const testInputs = [

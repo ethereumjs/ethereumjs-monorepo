@@ -24,7 +24,7 @@ import { setBalance } from '../utils.ts'
 const pk = hexToBytes(`0x${'20'.repeat(32)}`)
 const sender = bytesToHex(privateToAddress(pk))
 
-describe('EIP4844 tests', () => {
+describe('[VM/EIP-4844]: behavior', () => {
   const kzg = new microEthKZG(trustedSetup)
   it('builds a block correctly with blobs', async () => {
     const common = createCommonFromGethGenesis(eip4844GethGenesis, {

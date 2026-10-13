@@ -31,7 +31,7 @@ const testCases = [
   { original: BigInt(1), code: '0x600060005560016000556000600055', used: 10218, refund: 19800 }, // 1 -> 0 -> 1 -> 0
 ]
 
-describe('Constantinople: EIP-1283', () => {
+describe('[VM/Constantinople/EIP-1283]: behavior', () => {
   it('net-metering SSTORE', async () => {
     const caller = new Address(hexToBytes('0x0000000000000000000000000000000000000000'))
     const addr = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))

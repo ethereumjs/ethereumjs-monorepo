@@ -2,7 +2,7 @@ import { assert, describe, it } from 'vitest'
 
 import { MapDB } from '../src/index.ts'
 
-describe('MapDB: get', () => {
+describe('[Util]: mapDB: get', () => {
   it('returns the value for an existing key', async () => {
     const database = new Map()
     database.set('key1', 'value1')
@@ -22,7 +22,7 @@ describe('MapDB: get', () => {
   })
 })
 
-describe('MapDB: put', () => {
+describe('[Util]: mapDB: put', () => {
   it('adds a key-value pair to the database', async () => {
     const mapDB = new MapDB()
 
@@ -33,7 +33,7 @@ describe('MapDB: put', () => {
   })
 })
 
-describe('MapDB: del', () => {
+describe('[Util]: mapDB: del', () => {
   it('removes a key-value pair from the database', async () => {
     const database = new Map()
     database.set('key1', 'value1')
@@ -46,7 +46,7 @@ describe('MapDB: del', () => {
   })
 })
 
-describe('MapDB: batch', () => {
+describe('[Util]: mapDB: batch', () => {
   it('performs batch operations correctly', async () => {
     const mapDB = new MapDB()
 
@@ -66,7 +66,7 @@ describe('MapDB: batch', () => {
   })
 })
 
-describe('MapDB: shallowCopy', () => {
+describe('[Util]: mapDB: shallowCopy', () => {
   it('reuses underlying database in case of a shallowCopy', async () => {
     const database = new Map()
     database.set('key1', 'value1')
@@ -84,7 +84,7 @@ describe('MapDB: shallowCopy', () => {
   })
 })
 
-describe('MapDB: open', () => {
+describe('[Util]: mapDB: open', () => {
   it('returns a resolved promise', async () => {
     const mapDB = new MapDB()
 

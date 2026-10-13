@@ -4,7 +4,7 @@ import { assert, describe, it } from 'vitest'
 import { createMPTFromProof, createMerkleProof, verifyMPTWithMerkleProof } from '../../src/index.ts'
 import { MerklePatriciaTrie } from '../../src/mpt.ts'
 
-describe('Run MerklePatriciaTrie script with DEBUG enabled', async () => {
+describe('[MPT/Util/log]: debug script', async () => {
   const trie_entries: [string, string | null][] = [
     ['do', 'verb'],
     ['ether', 'wookiedoo'], // cspell:disable-line

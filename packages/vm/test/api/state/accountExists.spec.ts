@@ -6,7 +6,7 @@ import { createVM } from '../../../src/index.ts'
 
 import type { MerkleStateManager } from '@ethereumjs/statemanager'
 
-describe('correctly apply new account gas fee on pre-Spurious Dragon hardforks', () => {
+describe('[VM/AccountExists]: new-account gas before Spurious Dragon', () => {
   it('charges new-account gas on Homestead when callee exists in state', async () => {
     // This transaction https://etherscan.io/tx/0x26ea8719eeca5737f8ca872bca1ac53cea9bf6e11462dd83317c2e66a4e43d7b produced an error
     // in our VM where we were not applying the new account gas fee (25k) for account creation in hardforks before Spurious Dragon
@@ -52,7 +52,7 @@ describe('correctly apply new account gas fee on pre-Spurious Dragon hardforks',
   })
 })
 
-describe('do not apply new account gas fee for empty account in DB on pre-Spurious Dragon hardforks', () => {
+describe('[VM/AccountExists]: skip new-account gas for empty trie account', () => {
   it('skips new-account gas when empty callee is already in the trie', async () => {
     // setup the accounts for this test
     const caller = new Address(hexToBytes('0x1747de68ae74afa4e00f8ef79b9c875a339cda70')) // caller address

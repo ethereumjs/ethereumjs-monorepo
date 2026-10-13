@@ -76,7 +76,7 @@ const malformedCases = [
   },
 ]
 
-describe('Precompiles: BLAKE2F', () => {
+describe('[EVM/Precompile]: precompiles: BLAKE2F', () => {
   let evm: EVM
   let common: Common
   let addressStr: string

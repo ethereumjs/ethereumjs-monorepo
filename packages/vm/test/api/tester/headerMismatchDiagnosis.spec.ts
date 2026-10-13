@@ -35,8 +35,8 @@ function stubTx(overrides: Record<string, unknown> = {}): AfterTxEvent {
   } as unknown as AfterTxEvent
 }
 
-describe('headerMismatchDiagnosis', () => {
-  describe('isHeaderMismatchError', () => {
+describe('[VM/Tester]: header mismatch diagnosis', () => {
+  describe('[VM]: isHeaderMismatchError', () => {
     it('matches post-execution header errors', () => {
       assert.isTrue(
         isHeaderMismatchError('invalid receiptTrie (vm hf=amsterdam -> block number=1)'),
@@ -57,7 +57,7 @@ describe('headerMismatchDiagnosis', () => {
     })
   })
 
-  describe('classifyHeaderMismatch', () => {
+  describe('[VM]: classifyHeaderMismatch', () => {
     it('classifies gas / logs / status / mixed / incomplete', () => {
       assert.equal(
         classifyHeaderMismatch({
@@ -125,7 +125,7 @@ describe('headerMismatchDiagnosis', () => {
     })
   })
 
-  describe('foldHeaderGasUsed', () => {
+  describe('[VM]: foldHeaderGasUsed', () => {
     it('sums blockGasSpent when EIP-8037 is inactive', () => {
       const txs = [
         stubTx({ blockGasSpent: 21000n }),
@@ -144,7 +144,7 @@ describe('headerMismatchDiagnosis', () => {
     })
   })
 
-  describe('formatTxLine', () => {
+  describe('[VM]: formatTxLine', () => {
     it('includes status, gas, and exception when present', () => {
       const tx = stubTx({
         execResult: { exceptionError: { error: 'out of gas' } },
@@ -169,7 +169,7 @@ describe('headerMismatchDiagnosis', () => {
     })
   })
 
-  describe('formatHeaderMismatchDiagnosis', () => {
+  describe('[VM]: formatHeaderMismatchDiagnosis', () => {
     it('reports a match matrix for an empty block', async () => {
       const block = createBlock({}, { common: prague, skipConsensusFormatValidation: true })
       const text = await formatHeaderMismatchDiagnosis(block, [], prague)
@@ -217,7 +217,7 @@ describe('headerMismatchDiagnosis', () => {
     })
   })
 
-  describe('attachHeaderDiagnosis', () => {
+  describe('[VM]: attachHeaderDiagnosis', () => {
     it('attaches diagnosis without changing error.message', async () => {
       const block = createBlock(
         { header: { gasUsed: 1n, receiptTrie: KECCAK256_RLP } },

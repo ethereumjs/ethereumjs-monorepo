@@ -16,7 +16,7 @@ interface Test {
   transactions: TypedTransaction[]
 }
 
-describe('EIP 1153: transient storage', () => {
+describe('[VM/EIP-1153]: transient storage', () => {
   const initialGas = BigInt(0xffffffffff)
   const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin, eips: [1153] })
 

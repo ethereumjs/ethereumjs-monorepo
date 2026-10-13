@@ -12,7 +12,7 @@ import { generateConsecutiveBlock } from './util.ts'
 import type { Block } from '@ethereumjs/block'
 import type { ConsensusDict } from '../src/index.ts'
 
-describe('reorg tests', () => {
+describe('[Blockchain]: reorgs', () => {
   it('reorg the chain if the total difficulty is higher on a lower block number than the current head block', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.MuirGlacier })
     const genesis = createBlock(

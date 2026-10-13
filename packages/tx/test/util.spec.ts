@@ -3,7 +3,7 @@ import { assert, describe, it } from 'vitest'
 
 import { valueOverflowCheck } from '../src/util/internal.ts'
 
-describe('Helper methods should be correct', () => {
+describe('[Tx]: helper methods should be correct', () => {
   it('valueOverflowCheck()', () => {
     try {
       valueOverflowCheck({ a: MAX_INTEGER }, 256, true)

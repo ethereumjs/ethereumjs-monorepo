@@ -11,7 +11,7 @@ import { assert, describe, it } from 'vitest'
 
 import { createEVM, getActivePrecompiles } from '../src/index.ts'
 
-describe('custom crypto', () => {
+describe('[EVM]: custom crypto', () => {
   it('uses custom sha256 function', async () => {
     const customSha256 = (msg: Uint8Array) => {
       msg[0] = 0xff

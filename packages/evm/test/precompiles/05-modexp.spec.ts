@@ -11,7 +11,7 @@ import type { EVM } from '../../src/index.ts'
 import type { PrecompileFunc } from '../../src/precompiles/types.ts'
 
 const fuzzerTests = testData.data as PrefixedHexString[][]
-describe('Precompiles: MODEXP', () => {
+describe('[EVM/Precompile]: precompiles: MODEXP', () => {
   let common: Common
   let evm: EVM
   let addressStr: string

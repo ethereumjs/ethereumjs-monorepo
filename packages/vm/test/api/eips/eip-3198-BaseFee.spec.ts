@@ -55,7 +55,7 @@ function makeBlock(baseFee: bigint, transaction: TypedTransaction) {
   return block
 }
 
-describe('EIP3198 tests', () => {
+describe('[VM/EIP-3198]: behavior', () => {
   it('test EIP3198 gas fee and correct value', async () => {
     // Initial base fee for EIP1559
     const fee = BigInt(1000000000)

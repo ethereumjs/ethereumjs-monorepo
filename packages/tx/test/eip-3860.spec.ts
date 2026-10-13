@@ -19,7 +19,7 @@ const txTypes = [
   //TransactionType.BlobEIP4844, // Explicitly commented out: BlobEIP4844 txs cannot create contracts
 ]
 const addressZero = createZeroAddress()
-describe('[EIP3860 tests]', () => {
+describe('[Tx/EIP-3860]: initcode size limit', () => {
   it(`instantiates create txs with MAX_INITCODE_SIZE`, () => {
     const data = new Uint8Array(Number(maxInitCodeSize))
     for (const txType of txTypes) {
@@ -68,7 +68,7 @@ describe('[EIP3860 tests]', () => {
     }
   })
 
-  describe('Should allow txs with MAX_INITCODE_SIZE+1 data if allowUnlimitedInitCodeSize is active', () => {
+  describe('[Tx/EIP-3860]: allowUnlimitedInitCodeSize bypass', () => {
     it('allows MAX_INITCODE_SIZE+1 data when allowUnlimitedInitCodeSize is set', () => {
       const data = new Uint8Array(Number(maxInitCodeSize) + 1)
       for (const txType of txTypes) {
@@ -82,7 +82,7 @@ describe('[EIP3860 tests]', () => {
     })
   })
 
-  describe('Should charge initcode analysis gas is allowUnlimitedInitCodeSize is active', () => {
+  describe('[Tx/EIP-3860]: initcode analysis gas with allowUnlimitedInitCodeSize', () => {
     it('still charges initcode analysis gas when allowUnlimitedInitCodeSize is set', () => {
       const data = new Uint8Array(Number(maxInitCodeSize))
       for (const txType of txTypes) {

@@ -14,7 +14,7 @@ const isBrowser = new Function('try {return this===window;}catch(e){ return fals
 
 const StateManager = MerkleStateManager
 
-describe('stateManager', () => {
+describe('[StateManager]: VM integration', () => {
   it(`generates the genesis state root correctly for mainnet from common`, async () => {
     if (isBrowser() === true) {
       return
@@ -61,7 +61,7 @@ describe('stateManager', () => {
   })
 })
 
-describe('Original storage cache', async () => {
+describe('[StateManager]: original storage cache', async () => {
   const stateManager = new MerkleStateManager()
 
   const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))

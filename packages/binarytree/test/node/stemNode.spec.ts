@@ -4,7 +4,7 @@ import { assert, describe, it } from 'vitest'
 import { BinaryNodeType, decodeBinaryNode } from '../../src/index.ts'
 import { StemBinaryNode } from '../../src/node/stemNode.ts'
 
-describe('StemBinaryNode', () => {
+describe('[BinaryTree/StemNode]: layout', () => {
   it('round-trip encode and decode a stem node', () => {
     // Create a 31-byte stem (for example, all 0x01 bytes)
     const stem = hexToBytes(`0x${'01'.repeat(31)}`)

@@ -17,7 +17,7 @@ import { eip1404ExamplesData } from './testdata/eip1014Examples.ts'
 
 import type { PrefixedHexString } from '../src/index.ts'
 
-describe('Address', () => {
+describe('[Util]: address', () => {
   const ZERO_ADDR_S = '0x0000000000000000000000000000000000000000'
 
   it('validates address length', () => {

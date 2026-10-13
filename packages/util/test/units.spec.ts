@@ -2,7 +2,7 @@ import { assert, describe, it } from 'vitest'
 
 import { Units, formatBigDecimal } from '../src/index.ts'
 
-describe('formatBigDecimal', function () {
+describe('[Util]: formatBigDecimal', function () {
   const testCases: [bigint, bigint, bigint, string][] = [
     [BigInt('103797739275696858'), BigInt('1000000000000000000'), BigInt('100000'), '0.10379'],
     [BigInt('103797739275696858'), BigInt('1000000000000000000'), BigInt('1000'), '0.103'],
@@ -21,8 +21,8 @@ describe('formatBigDecimal', function () {
   }
 })
 
-describe('Units', () => {
-  describe('ether()', () => {
+describe('[Util]: units', () => {
+  describe('[Util]: ether()', () => {
     it('converts 1 ether to wei', () => {
       const result = Units.ether(1)
       assert.strictEqual(result, BigInt(10 ** 18))
@@ -56,7 +56,7 @@ describe('Units', () => {
     })
   })
 
-  describe('gwei()', () => {
+  describe('[Util]: gwei()', () => {
     it('converts 1 gwei to wei', () => {
       const result = Units.gwei(1)
       assert.strictEqual(result, BigInt(10 ** 9))

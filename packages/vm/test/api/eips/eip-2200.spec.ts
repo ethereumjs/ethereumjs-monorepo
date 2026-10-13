@@ -42,7 +42,7 @@ const testCases = [
   { original:BigInt(1), gas: BigInt(2307), code: '6001600055', used: 806, refund: 0 }, // 1 -> 1 (2301 sentry + 2xPUSH)*/
 ]
 
-describe('Istanbul: EIP-2200', () => {
+describe('[VM/Istanbul/EIP-2200]: behavior', () => {
   it('net-metering SSTORE', async () => {
     const caller = new Address(hexToBytes('0x0000000000000000000000000000000000000000'))
     const addr = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))

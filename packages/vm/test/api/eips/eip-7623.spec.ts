@@ -39,7 +39,7 @@ async function getVM(common: Common) {
   return vm
 }
 
-describe('EIP 7623 calldata cost increase tests', () => {
+describe('[VM/EIP-7623]: calldata cost increase', () => {
   it('charges floor gas', async () => {
     const vm = await getVM(common)
 

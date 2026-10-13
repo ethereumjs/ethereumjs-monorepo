@@ -11,7 +11,7 @@ import { Caches, MerkleStateManager } from '../src/index.ts'
 
 import { createAccountWithDefaults } from './util.ts'
 
-describe('StateManager -> General/Account', () => {
+describe('[StateManager]: general account', () => {
   for (const accountCacheOpts of [{ size: 1000 }, { size: 0 }]) {
     it(`set the state root to empty`, async () => {
       const stateManager = new MerkleStateManager({

@@ -13,7 +13,7 @@ const testCases = [
 
 // SELFBALANCE PUSH8 0x00 MSTORE8 PUSH8 0x01 PUSH8 0x00 RETURN
 const code = ['47', '60', '00', '53', '60', '01', '60', '00', 'f3']
-describe('Istanbul: EIP-1884', () => {
+describe('[VM/Istanbul/EIP-1884]: behavior', () => {
   it('SELFBALANCE', async () => {
     const addr = new Address(hexToBytes('0x00000000000000000000000000000000000000ff'))
     const runCodeArgs = {

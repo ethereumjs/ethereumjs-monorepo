@@ -157,7 +157,7 @@ async function runBlockTest(input: {
   assert.strictEqual(ret.callStatus, expCallStatus, 'call status ok')
 }
 
-describe('should run beaconroot precompile correctly', async () => {
+describe('[VM/EIP-4788]: beacon root precompile', async () => {
   it('run precompile with known timestamp', async () => {
     await runBlockTest({
       timestamp: BigInt(12),

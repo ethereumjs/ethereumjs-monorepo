@@ -44,7 +44,7 @@ const EIPs: Record<string, number[] | undefined> = {
   'London+3860': [3860],
 }
 
-describe('TransactionTests', async () => {
+describe('[Tx]: transactionTests', async () => {
   const fileFilterRegex = file !== undefined ? new RegExp(file + '[^\\w]') : undefined
   await getTests(
     (

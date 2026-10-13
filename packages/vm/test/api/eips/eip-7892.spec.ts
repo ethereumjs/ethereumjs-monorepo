@@ -23,7 +23,7 @@ import { setBalance } from '../utils.ts'
 const pk = hexToBytes(`0x${'20'.repeat(32)}`)
 const sender = bytesToHex(privateToAddress(pk))
 
-describe('EIP-7892 BPO tests', () => {
+describe('[VM/EIP-7892]: bPO', () => {
   const kzg = new microEthKZG(trustedSetup)
 
   it('accepts block with BPO1 blob parameters', async () => {

@@ -5,7 +5,7 @@ import { createBlock } from '../src/index.ts'
 
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })
 
-describe('EIP7928 tests', () => {
+describe('[Block/EIP-7928]: behavior', () => {
   it('accepts and correctly assign new blockAccessListHash field (main constructor)', () => {
     const blockAccessListHash = randomBytes(32)
     const block = createBlock(

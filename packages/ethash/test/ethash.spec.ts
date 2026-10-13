@@ -12,7 +12,7 @@ const ethash = new Ethash()
 const tests = Object.keys(ethashTests) as (keyof typeof ethashTests)[]
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
 
-describe('POW tests', () => {
+describe('[Ethash]: PoW vectors', () => {
   it('matches ethash fixture vectors for cache sizes and PoW output', async () => {
     for (const key of tests) {
       const test = ethashTests[key]

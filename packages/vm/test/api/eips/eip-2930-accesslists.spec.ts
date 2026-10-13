@@ -26,7 +26,7 @@ const validSlot = hexToBytes(`0x${'00'.repeat(32)}`)
 // setup the accounts for this test
 const contractAddress = new Address(validAddress)
 
-describe('EIP-2930 Optional Access Lists tests', () => {
+describe('[VM/EIP-2930]: optional Access Lists', () => {
   it('VM should charge the right gas when using access list transactions', async () => {
     const access = [
       {

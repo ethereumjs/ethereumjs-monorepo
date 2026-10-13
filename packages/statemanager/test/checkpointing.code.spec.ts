@@ -15,7 +15,7 @@ const codeEval = async (
   assert.deepEqual(accountCMP!.codeHash, root, 'account code root should be equal')
 }
 
-describe('StateManager -> Code Checkpointing', () => {
+describe('[StateManager]: code checkpointing', () => {
   const address = new Address(hexToBytes(`0x${'11'.repeat(20)}`))
 
   const stateManagers = [MerkleStateManager, SimpleStateManager]

@@ -12,7 +12,7 @@ import {
   bytesToHex,
 } from '../src/index.ts'
 
-describe('constants', () => {
+describe('[Util]: constants', () => {
   it('matchs constants', () => {
     assert.strictEqual(
       MAX_INTEGER.toString(16),

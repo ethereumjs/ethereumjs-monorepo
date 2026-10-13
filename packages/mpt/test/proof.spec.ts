@@ -10,7 +10,7 @@ import {
   verifyMerkleProof,
 } from '../src/index.ts'
 
-describe('simple merkle proofs generation and verification', () => {
+describe('[MPT/Proof]: simple merkle proofs', () => {
   it('create a merkle proof and verify it', async () => {
     const trie = new MerklePatriciaTrie()
 

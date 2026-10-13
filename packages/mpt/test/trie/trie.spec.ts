@@ -49,7 +49,7 @@ for (const { constructor, defaults, title } of [
     EXPECTED_ROOTS = '0x99650c730bbb99f6f58ce8b09bca2a8d90b36ac662e71bf81ec401ed23d199fb'
   }
 
-  describe(`${title} (Persistence)`, () => {
+  describe(`[MPT/Trie]: ${title} (Persistence)`, () => {
     it('creates an instance via createMPT and defaults to `false` with a database', async () => {
       assert.isFalse(
         (await createMPT({ ...defaults, db: new MapDB() }))['_opts'].useRootPersistence,
@@ -158,7 +158,7 @@ for (const { constructor, defaults, title } of [
     })
   })
 
-  describe(`${title} (Check Root)`, async () => {
+  describe(`[MPT/Trie]: ${title} (Check Root)`, async () => {
     const keyvals = Array.from({ length: 100 }, () => {
       const key = randomBytes(20)
       const value = randomBytes(10)
@@ -230,7 +230,7 @@ for (const { constructor, defaults, title } of [
   })
 }
 
-describe('keyHashingFunction', async () => {
+describe('[MPT/Trie]: keyHashingFunction', async () => {
   it('uses correct hash function', async () => {
     const keyHashingFunction = (msg: Uint8Array) => {
       return concatBytes(msg, Uint8Array.from([1]))
@@ -280,7 +280,7 @@ describe('keyHashingFunction', async () => {
   })
 })
 
-describe('getValueMap', async () => {
+describe('[MPT/Trie]: getValueMap', async () => {
   const trie = await createMPT({})
   const entries: [Uint8Array, PrefixedHexString][] = [
     [bigIntToBytes(0x01n), `0x${'0a'.repeat(32)}`],

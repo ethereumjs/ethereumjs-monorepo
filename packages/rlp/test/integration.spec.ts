@@ -7,7 +7,7 @@ import { bytesToUtf8 } from './utils.ts'
 
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 
-describe('Distribution', () => {
+describe('[RLP]: distribution smoke', () => {
   it('is able to execute functionality from distribution build', () => {
     const encodedSelf = RLP.encode('a')
     assert.deepEqual(bytesToUtf8(encodedSelf), 'a')

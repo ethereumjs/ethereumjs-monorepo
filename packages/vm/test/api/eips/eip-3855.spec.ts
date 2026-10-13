@@ -5,7 +5,7 @@ import { assert, describe, it } from 'vitest'
 import { EVMError, type InterpreterStep } from '@ethereumjs/evm'
 import { createVM } from '../../../src/index.ts'
 
-describe('EIP 3855 tests', () => {
+describe('[VM/EIP-3855]: behavior', () => {
   const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart, eips: [3855] })
   const commonNoEIP3855 = new Common({
     chain: Mainnet,

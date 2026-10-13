@@ -293,7 +293,7 @@ describe('[VM/Constructors]: setHardfork and shallow copy', () => {
       'setHardfork options match',
     )
   })
-  describe('Ensure that precompile activation creates non-empty accounts', () => {
+  describe('[VM]: ensure that precompile activation creates non-empty accounts', () => {
     it('omits callNewAccount gas when activatePrecompiles seeds precompile accounts', async () => {
       // setup the accounts for this test
       const caller = createAddressFromString('0x00000000000000000000000000000000000000ee') // caller address

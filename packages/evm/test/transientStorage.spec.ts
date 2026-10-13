@@ -11,7 +11,7 @@ import { assert, describe, it } from 'vitest'
 import { createEVM } from '../src/index.ts'
 import { TransientStorage } from '../src/transientStorage.ts'
 
-describe('Transient Storage', () => {
+describe('[EVM]: transient Storage', () => {
   it('set and get storage', () => {
     const transientStorage = new TransientStorage()
 

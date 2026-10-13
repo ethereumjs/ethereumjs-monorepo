@@ -13,7 +13,7 @@ const testCases = [
 // CHAINID PUSH8 0x00 MSTORE8 PUSH8 0x01 PUSH8 0x00 RETURN
 const code = ['46', '60', '00', '53', '60', '01', '60', '00', 'f3']
 
-describe('Istanbul: EIP-1344', () => {
+describe('[VM/Istanbul/EIP-1344]: behavior', () => {
   it('CHAINID', async () => {
     const runCodeArgs = {
       code: hexToBytes(`0x${code.join('')}`),

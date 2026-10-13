@@ -33,7 +33,7 @@ function customPrecompileNoInput(): ExecResult {
   }
 }
 
-describe('EVM -> custom precompiles', () => {
+describe('[EVM]: evm — custom precompiles', () => {
   it('works on precompiles without input arguments', async () => {
     const EVMOverride = await createEVM({
       customPrecompiles: [

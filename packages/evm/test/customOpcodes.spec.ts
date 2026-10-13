@@ -6,7 +6,7 @@ import { createEVM } from '../src/index.ts'
 import type { RunState } from '../src/interpreter.ts'
 import type { AddOpcode } from '../src/types.ts'
 
-describe('VM: custom opcodes', () => {
+describe('[EVM]: custom opcodes', () => {
   const fee = 333
   const logicFee = BigInt(33)
   const totalFee = BigInt(fee) + logicFee

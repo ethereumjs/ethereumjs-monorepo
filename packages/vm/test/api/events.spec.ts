@@ -6,7 +6,7 @@ import { assert, describe, it } from 'vitest'
 import { SIGNER_A } from '@ethereumjs/testdata'
 import { createVM, runBlock, runTx } from '../../src/index.ts'
 
-describe('VM events', () => {
+describe('[VM]: events', () => {
   it('emits the Block before running it', async () => {
     const vm = await createVM()
 

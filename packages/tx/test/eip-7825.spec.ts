@@ -22,7 +22,7 @@ const txTypes = [
   { type: TransactionType.EOACodeEIP7702, txData: eoaCodeTxDefaults },
 ]
 
-describe('[EIP-7825]', () => {
+describe('[Tx/EIP-7825]: transaction gas limit cap', () => {
   it(`keeps zero gas limit default for Osaka txs`, () => {
     for (const txType of txTypes) {
       const tx = createTx({ type: txType.type, ...txType.txData }, { common })

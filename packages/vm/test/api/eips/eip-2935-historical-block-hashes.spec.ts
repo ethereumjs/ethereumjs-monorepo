@@ -125,7 +125,7 @@ const deploymentConfigs = [
   ],
 ]
 
-describe('EIP 2935: historical block hashes', () => {
+describe('[VM/EIP-2935]: historical block hashes', () => {
   for (const deploymentConfig of deploymentConfigs) {
     const [
       contract2935CodeHex,

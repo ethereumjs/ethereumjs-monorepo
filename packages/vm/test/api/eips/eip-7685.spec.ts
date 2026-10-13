@@ -22,7 +22,7 @@ function getRandomDepositRequest(): CLRequest<CLRequestType> {
 
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7685] })
 
-describe('EIP-7685 runBlock tests', () => {
+describe('[VM/EIP-7685]: runBlock', () => {
   it('does not error when a valid requestsHash is provided', async () => {
     const vm = await setupVM({ common })
     const emptyBlock = createBlock({}, { common })
@@ -72,7 +72,7 @@ describe('EIP-7685 runBlock tests', () => {
   })
 })
 
-describe('EIP 7685 buildBlock tests', () => {
+describe('[VM/EIP-7685]: buildBlock', () => {
   it('builds a block without a request and a valid requestsHash', async () => {
     const common = new Common({
       chain: Mainnet,

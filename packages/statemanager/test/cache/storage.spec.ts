@@ -3,7 +3,7 @@ import { assert, describe, it } from 'vitest'
 
 import { CacheType, StorageCache } from '../../src/cache/index.ts'
 
-describe('Storage Cache: initialization', () => {
+describe('[StateManager/StorageCache]: initialization', () => {
   for (const type of [CacheType.LRU, CacheType.ORDERED_MAP]) {
     it(`initializes`, async () => {
       const cache = new StorageCache({ size: 100, type })
@@ -13,7 +13,7 @@ describe('Storage Cache: initialization', () => {
   }
 })
 
-describe('Storage Cache: put and get account', () => {
+describe('[StateManager/StorageCache]: put and get account', () => {
   for (const type of [CacheType.LRU, CacheType.ORDERED_MAP]) {
     const cache = new StorageCache({ size: 100, type })
 
@@ -46,7 +46,7 @@ describe('Storage Cache: put and get account', () => {
   }
 })
 
-describe('Storage Cache: checkpointing', () => {
+describe('[StateManager/StorageCache]: checkpointing', () => {
   for (const type of [CacheType.LRU, CacheType.ORDERED_MAP]) {
     const addr = new Address(hexToBytes(`0x${'10'.repeat(20)}`))
     const key = hexToBytes('0x01')

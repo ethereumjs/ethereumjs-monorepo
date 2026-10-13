@@ -15,7 +15,7 @@ import {
 
 const kzg = new microEthKZG(trustedSetup)
 
-describe('getBlobs()', () => {
+describe('[Util]: getBlobs()', () => {
   it('returns an array of PrefixedHexString blobs', () => {
     const input = 'test input'
     const blobs = getBlobs(input)
@@ -43,7 +43,7 @@ describe('getBlobs()', () => {
   })
 })
 
-describe('computeVersionedHash()', () => {
+describe('[Util]: computeVersionedHash()', () => {
   it('returns a versioned hash', () => {
     const commitment = new Uint8Array([1, 2, 3])
     const blobCommitmentVersion = 0x01
@@ -53,7 +53,7 @@ describe('computeVersionedHash()', () => {
   })
 })
 
-describe('commitmentsToVersionedHashes()', () => {
+describe('[Util]: commitmentsToVersionedHashes()', () => {
   it('returns an array of versioned hashes', () => {
     const commitments = [new Uint8Array([1, 2, 3]), new Uint8Array([4, 5, 6])]
     const blobVersionedHashes = commitmentsToVersionedHashes(
@@ -84,7 +84,7 @@ describe('[Util/Blobs]: blobsToProofs', () => {
   }, 30_000)
 })
 
-describe('blobsToCellsAndProofs()', () => {
+describe('[Util]: blobsToCellsAndProofs()', () => {
   it('returns an array of cells and proofs', () => {
     const blobs = getBlobs(['0x01', '0x02'])
     const cellsAndProofs = blobsToCellsAndProofs(kzg, blobs)
@@ -102,7 +102,7 @@ describe('blobsToCellsAndProofs()', () => {
   }, 40000)
 })
 
-describe('blobsToCellProofs()', () => {
+describe('[Util]: blobsToCellProofs()', () => {
   it('returns an array of cell proofs', () => {
     const blobs = getBlobs(['0x01', '0x02'])
     const proofs = blobsToCellProofs(kzg, blobs)

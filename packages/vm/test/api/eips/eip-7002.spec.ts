@@ -66,7 +66,7 @@ function generateTx(nonce: bigint) {
   }).sign(pkey)
 }
 
-describe('EIP-7002 tests', () => {
+describe('[VM/EIP-7002]: behavior', () => {
   it('create requests', async () => {
     const vm = await setupVM({ common })
     const block = createBlock(

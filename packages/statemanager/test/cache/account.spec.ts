@@ -4,7 +4,7 @@ import { assert, describe, it } from 'vitest'
 import { AccountCache, CacheType } from '../../src/cache/index.ts'
 import { createAccountWithDefaults } from '../util.ts'
 
-describe('Account Cache: initialization', () => {
+describe('[StateManager/AccountCache]: initialization', () => {
   for (const type of [CacheType.LRU, CacheType.ORDERED_MAP]) {
     it(`initializes`, async () => {
       const cache = new AccountCache({ size: 100, type })
@@ -14,7 +14,7 @@ describe('Account Cache: initialization', () => {
   }
 })
 
-describe('Account Cache: put and get account', () => {
+describe('[StateManager/AccountCache]: put and get account', () => {
   for (const type of [CacheType.LRU, CacheType.ORDERED_MAP]) {
     const cache = new AccountCache({ size: 100, type })
 
@@ -47,7 +47,7 @@ describe('Account Cache: put and get account', () => {
   }
 })
 
-describe('Account Cache: checkpointing', () => {
+describe('[StateManager/AccountCache]: checkpointing', () => {
   for (const type of [CacheType.LRU, CacheType.ORDERED_MAP]) {
     const cache = new AccountCache({ size: 100, type })
 

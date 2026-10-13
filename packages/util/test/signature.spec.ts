@@ -106,7 +106,7 @@ describe('[Util/Signature]: ecrecover', () => {
   })
 })
 
-describe('hashPersonalMessage', () => {
+describe('[Util]: hashPersonalMessage', () => {
   it('produces a deterministic hash', () => {
     const h = hashPersonalMessage(utf8ToBytes('Hello world'))
     assert.deepEqual(
@@ -122,7 +122,7 @@ describe('hashPersonalMessage', () => {
   })
 })
 
-describe('isValidSignature', () => {
+describe('[Util]: isValidSignature', () => {
   it('fails on an invalid signature (shorter r))', () => {
     const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1ab')
     const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
@@ -208,7 +208,7 @@ describe('isValidSignature', () => {
   })
 })
 
-describe('message sig', () => {
+describe('[Util]: message sig', () => {
   const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
   const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
 

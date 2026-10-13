@@ -7,7 +7,7 @@ import { createVM } from '../../../src/index.ts'
 // See https://github.com/holiman/go-ethereum/blob/2c99023b68c573ba24a5b01db13e000bd9b82417/core/vm/testdata/precompiles/modexp_eip2565.json
 import { eip2565Data } from '../testdata/eip-2565.ts'
 
-describe('EIP-2565 ModExp gas cost tests', () => {
+describe('[VM/EIP-2565]: modExp gas cost', () => {
   it('Test return data, gas cost and execution status against testdata', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Byzantium, eips: [2565] })
     const vm = await createVM({ common })

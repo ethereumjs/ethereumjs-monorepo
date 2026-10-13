@@ -58,7 +58,7 @@ const MSTORE8 = '53'
 const MCOPY = '5E'
 const STOP = '00'
 
-describe('should test mcopy', () => {
+describe('[EVM/EIP-5656]: MCOPY opcode', () => {
   for (const situation of situations) {
     it('produces correct output', async () => {
       // create bytecode

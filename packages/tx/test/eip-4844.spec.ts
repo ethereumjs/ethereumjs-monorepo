@@ -65,7 +65,7 @@ beforeAll(async () => {
   kzgs = [jsKzgSetup]
 }, 60000)
 
-describe('EIP4844 addSignature tests', () => {
+describe('[Tx/EIP-4844]: addSignature', () => {
   it('addSignature() -> correctly adds correct signature values', () => {
     for (const kzg of kzgs) {
       const privateKey = pk
@@ -144,7 +144,7 @@ describe('EIP4844 addSignature tests', () => {
   })
 })
 
-describe('EIP4844 constructor tests - valid scenarios', () => {
+describe('[Tx/EIP-4844]: constructor tests - valid scenarios', () => {
   it('instantiates, serializes, and signs blob txs with unique hedged hashes', () => {
     for (const kzg of kzgs) {
       const txData = {
@@ -196,7 +196,7 @@ describe('EIP4844 constructor tests - valid scenarios', () => {
   })
 })
 
-describe('fromTxData using from a json', () => {
+describe('[Tx]: fromTxData using from a json', () => {
   it('parses JSON-style blob tx fields and matches fixture hash', () => {
     for (const kzg of kzgs) {
       const txData = {
@@ -269,7 +269,7 @@ describe('fromTxData using from a json', () => {
   })
 })
 
-describe('EIP4844 constructor tests - invalid scenarios', () => {
+describe('[Tx/EIP-4844]: constructor tests - invalid scenarios', () => {
   it('rejects invalid versioned hashes and per-block blob gas limits', () => {
     for (const kzg of kzgs) {
       const baseTxData = {
@@ -338,7 +338,7 @@ describe('EIP4844 constructor tests - invalid scenarios', () => {
   })
 })
 
-describe('Network wrapper tests', () => {
+describe('[Tx]: network wrapper tests', () => {
   it('round-trips signed blob tx through network wrapper JSON', async () => {
     for (const kzg of kzgs) {
       const common = createCommonFromGethGenesis(eip4844GethGenesis, {
@@ -567,7 +567,7 @@ describe('Network wrapper tests', () => {
   }, 20_000)
 })
 
-describe('hash() and signature verification', () => {
+describe('[Tx]: hash() and signature verification', () => {
   it('hashes unsigned blob tx and recovers sender from signature', async () => {
     for (const kzg of kzgs) {
       const common = createCommonFromGethGenesis(eip4844GethGenesis, {
@@ -668,7 +668,7 @@ describe('[Blob4844Tx]: getEffectivePriorityFee', () => {
   })
 })
 
-describe('Network wrapper deserialization test', () => {
+describe('[Tx]: network wrapper deserialization test', () => {
   it('deserializes network wrapper from JSON fixture', async () => {
     for (const kzg of kzgs) {
       const common = createCommonFromGethGenesis(eip4844GethGenesis, {

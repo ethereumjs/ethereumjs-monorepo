@@ -67,7 +67,7 @@ function createTransferBlock() {
   )
 }
 
-describe('EIP-7928 Block Level Access Lists', () => {
+describe('[VM/EIP-7928]: block Level Access Lists', () => {
   it('runBlock(generate: true) sets blockAccessListHash on the returned block', async () => {
     const vm = await createVM({ common })
     await fundSender(vm)

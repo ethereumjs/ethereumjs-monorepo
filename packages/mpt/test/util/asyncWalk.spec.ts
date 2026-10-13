@@ -15,7 +15,7 @@ import { trieTestData } from '../fixtures/trieTest.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
 
-describe('walk the tries from official tests', async () => {
+describe('[MPT/Util/asyncWalk]: walk the tries from official tests', async () => {
   const testNames = Object.keys(trieTestData.tests) as (keyof typeof trieTestData.tests)[]
 
   for await (const testName of testNames) {
@@ -27,7 +27,7 @@ describe('walk the tries from official tests', async () => {
       const testStrings: Map<string, [string, string | null]> = new Map()
       for await (const [idx, input] of inputs.entries()) {
         const stringPair: [string, string] = [inputs[idx][0]!, inputs[idx][1] ?? 'null']
-        describe(`put: ${stringPair}`, async () => {
+        describe(`[MPT/Util]: put: ${stringPair}`, async () => {
           const processedInput = input.map((item) => {
             if (item === null) {
               return null
@@ -47,7 +47,7 @@ describe('walk the tries from official tests', async () => {
           trie.flushCheckpoints()
           testKeys.set(bytesToHex(processedInput[0]), processedInput[1])
           testStrings.set(bytesToHex(processedInput[0]), stringPair)
-          describe(`should get all keys`, async () => {
+          describe(`[MPT/Util/asyncWalk]: get all keys`, async () => {
             for await (const [key, val] of testKeys.entries()) {
               const retrieved = await trie.get(hexToBytes(key))
               it(`get ${testStrings.get(key)}`, async () => {
@@ -64,7 +64,7 @@ describe('walk the tries from official tests', async () => {
   }
 })
 
-describe('walk a sparse trie', async () => {
+describe('[MPT/Util/asyncWalk]: walk a sparse trie', async () => {
   const trie = new MerklePatriciaTrie()
   const inputs = trieTestData.tests.jeff.in
   const expect = trieTestData.tests.jeff.root
@@ -161,7 +161,7 @@ class CountingTrie extends MerklePatriciaTrie {
   }
 }
 
-describe('branch node child iteration', () => {
+describe('[MPT/Util/asyncWalk]: branch node child iteration', () => {
   it('walks only the populated slots of a branch node, without a DB lookup per empty slot', async () => {
     const trie = new CountingTrie()
     await twoLeafBranchTrie(trie)
@@ -189,7 +189,7 @@ describe('branch node child iteration', () => {
   })
 })
 
-describe('trie walk error handling', () => {
+describe('[MPT/Util/asyncWalk]: trie walk error handling', () => {
   it('silently skips a subtree with a missing node while still walking sibling branches', async () => {
     const trie = new MerklePatriciaTrie()
     const { key1 } = await twoLeafBranchTrie(trie)
@@ -251,7 +251,7 @@ describe('trie walk error handling', () => {
   })
 })
 
-describe('visited set deduplication', () => {
+describe('[MPT/Util/asyncWalk]: visited set deduplication', () => {
   it('skips both yielding and looking up a node whose hash is already in the visited set', async () => {
     const trie = new CountingTrie()
     await trie.put(utf8ToBytes('key1'), utf8ToBytes('value1'))

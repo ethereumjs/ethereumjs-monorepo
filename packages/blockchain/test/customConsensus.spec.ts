@@ -46,7 +46,7 @@ customChainConfig.consensus.algorithm = 'fibonacci'
 const consensusDict: ConsensusDict = {}
 consensusDict['fibonacci'] = new fibonacciConsensus()
 
-describe('Optional consensus parameter in blockchain constructor', () => {
+describe('[Blockchain/CustomConsensus]: optional consensus parameter', () => {
   it('blockchain constructor should work with custom consensus', async () => {
     const common = new Common({ chain: customChainConfig, hardfork: Hardfork.Chainstart })
     try {
@@ -62,7 +62,7 @@ describe('Optional consensus parameter in blockchain constructor', () => {
   })
 })
 
-describe('Custom consensus validation rules', () => {
+describe('[Blockchain/CustomConsensus]: validation rules', () => {
   it('validates custom consensus rules', async () => {
     const common = new Common({ chain: customChainConfig, hardfork: Hardfork.Chainstart })
     const blockchain = await createBlockchain({ common, validateConsensus: true, consensusDict })
@@ -139,7 +139,7 @@ describe('Custom consensus validation rules', () => {
   })
 })
 
-describe('consensus transition checks', () => {
+describe('[Blockchain/CustomConsensus]: transition checks', () => {
   it('transitions correctly', async () => {
     const common = new Common({ chain: customChainConfig, hardfork: Hardfork.Chainstart })
     const blockchain = await createBlockchain({ common, validateConsensus: true, consensusDict })

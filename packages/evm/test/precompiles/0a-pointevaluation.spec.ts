@@ -20,7 +20,7 @@ const BLS_MODULUS = BigInt(
   '52435875175126190479447740508185965837690552500527637822603658699938581184513',
 )
 
-describe('Precompiles: point evaluation', () => {
+describe('[EVM/Precompile]: precompiles: point evaluation', () => {
   it('evaluates KZG point precompile and rejects invalid proofs', async () => {
     const { eip4844GethGenesis } = await import('@ethereumjs/testdata')
 

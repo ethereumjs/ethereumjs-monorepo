@@ -32,7 +32,7 @@ const provider = process.env.PROVIDER ?? 'http://cheese'
 // from Infura/Alchemy or your favorite web3 provider when running the test.  Below is an example command:
 // `PROVIDER=https://mainnet.infura.io/v3/[mySuperS3cretproviderKey] npx vitest run test/rpcStateManager.spec.ts
 
-describe('RPC State Manager initialization tests', async () => {
+describe('[StateManager/RPC]: initialization', async () => {
   vi.mock('@ethereumjs/util', async () => {
     const util = await vi.importActual('@ethereumjs/util')
     return {
@@ -78,7 +78,7 @@ describe('RPC State Manager initialization tests', async () => {
   })
 })
 
-describe('RPC State Manager API tests', () => {
+describe('[StateManager/RPC]: account API', () => {
   it('fetches accounts, caches puts, and verifies Merkle proofs', async () => {
     const state = new RPCStateManager({ provider, blockTag: 1n })
     const vitalikDotEth = createAddressFromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
@@ -239,7 +239,7 @@ describe('RPC State Manager API tests', () => {
   })
 })
 
-describe('runTx custom transaction test', () => {
+describe('[StateManager/RPC]: runTx transfer', () => {
   it('runs a signed fee-market transfer against mocked RPC state', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
 
@@ -265,7 +265,7 @@ describe('runTx custom transaction test', () => {
   })
 })
 
-describe('runTx test: replay mainnet transactions', () => {
+describe('[StateManager/RPC]: replay mainnet tx', () => {
   it('replays a mainnet London transfer with historical block tag', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
 
@@ -287,7 +287,7 @@ describe('runTx test: replay mainnet transactions', () => {
   })
 })
 
-describe('runBlock test', () => {
+describe('[StateManager/RPC]: runBlock', () => {
   it('runs a historical block and matches header gasUsed', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
 
@@ -321,7 +321,7 @@ describe('runBlock test', () => {
   })
 })
 
-describe('[RPCStateManager]: blockchain blockhash', () => {
+describe('[StateManager/RPC]: blockchain blockhash', () => {
   it('uses blockhash', async () => {
     const blockchain = new RPCBlockChain(provider) as unknown as EVMMockBlockchainInterface
     const blockTag = 1n
@@ -351,7 +351,7 @@ describe('[RPCStateManager]: blockchain blockhash', () => {
   })
 })
 
-describe('[RPCStateManager]: Merkle parity', () => {
+describe('[StateManager/RPC]: Merkle parity', () => {
   it('matches MerkleStateManager for missing accounts', async () => {
     const rpcState = new RPCStateManager({ provider, blockTag: 1n })
     const defaultState = new MerkleStateManager()

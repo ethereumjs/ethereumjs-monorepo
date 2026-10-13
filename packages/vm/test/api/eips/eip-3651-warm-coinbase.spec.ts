@@ -42,7 +42,7 @@ async function getVM(common: Common) {
   return vm
 }
 
-describe('EIP 3651 tests', () => {
+describe('[VM/EIP-3651]: behavior', () => {
   it('invalid contract code transactions', async () => {
     const vm = await getVM(common)
 

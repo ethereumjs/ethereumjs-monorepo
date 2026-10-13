@@ -20,7 +20,7 @@ const storageEval = async (
   }
 }
 
-describe('StateManager -> Storage Checkpointing', () => {
+describe('[StateManager]: storage checkpointing', () => {
   const address = new Address(hexToBytes(`0x${'11'.repeat(20)}`))
 
   const stateManagers = [

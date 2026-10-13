@@ -5,7 +5,7 @@ import { assert, describe, it } from 'vitest'
 
 import { createVM, runTx } from '../../../src/index.ts'
 
-describe('EIP-3607 tests', () => {
+describe('[VM/EIP-3607]: behavior', () => {
   const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
   const precompileAddr = createAddressFromString('0x0000000000000000000000000000000000000001')
 

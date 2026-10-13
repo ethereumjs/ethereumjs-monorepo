@@ -42,7 +42,7 @@ async function getVM(common: Common) {
   return vm
 }
 
-describe('EIP 6780 tests', () => {
+describe('[VM/EIP-6780]: behavior', () => {
   it('destroys contract if selfdestructed in same tx as it was created', async () => {
     const vm = await getVM(common)
 

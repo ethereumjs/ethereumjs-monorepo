@@ -20,7 +20,7 @@ import type { PrefixedHexString } from '@ethereumjs/util'
 
 const hashFunction = blake3
 
-describe('Binary Tree API tests', () => {
+describe('[StateManager/BinaryTree]: API', () => {
   it('put/get/delete an account (with no storage/code from the trie)', async () => {
     const common = new Common({
       chain: Mainnet,
@@ -85,7 +85,7 @@ describe('Binary Tree API tests', () => {
   })
 })
 
-describe('caching functionality works', () => {
+describe('[StateManager/BinaryTree]: caching', () => {
   it('caches accounts and then write to trie', async () => {
     const common = new Common({
       chain: Mainnet,

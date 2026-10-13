@@ -57,8 +57,8 @@ const authorizationListItem: EOACode7702AuthorizationListItem = {
   s: ones32,
 }
 
-describe('TransactionCache', () => {
-  describe('hash / senderPubKey / dataFee', () => {
+describe('[Tx]: transactionCache', () => {
+  describe('[Tx]: hash / senderPubKey / dataFee', () => {
     it('caches on a frozen tx and return the cached value on repeated calls', () => {
       const tx = createLegacyTx({ data: '0x010200' }, { common }).sign(pKey)
       assert.isTrue(Object.isFrozen(tx))
@@ -121,7 +121,7 @@ describe('TransactionCache', () => {
     })
   })
 
-  describe('accessListJSON', () => {
+  describe('[Tx]: accessListJSON', () => {
     // All four tx types whose toJSON() includes the access list
     const txTypes = [
       {
@@ -193,7 +193,7 @@ describe('TransactionCache', () => {
     }
   })
 
-  describe('authorityListJSON', () => {
+  describe('[Tx]: authorityListJSON', () => {
     it('EOACode7702Tx: should cache and freeze the JSON on a frozen tx', () => {
       const tx = createEOACode7702Tx(
         { authorizationList: [authorizationListItem], to },

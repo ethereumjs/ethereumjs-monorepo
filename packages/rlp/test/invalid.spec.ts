@@ -77,7 +77,7 @@ const invalidGethCases: string[] = [
   'F8020004',
 ]
 
-describe('invalid geth tests', () => {
+describe('[RLP]: invalid geth vectors', () => {
   for (const gethCase of invalidGethCases) {
     const input = hexToBytes(gethCase)
     it('pass Geth test', () => {

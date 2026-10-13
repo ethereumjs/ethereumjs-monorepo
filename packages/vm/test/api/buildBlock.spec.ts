@@ -25,7 +25,7 @@ import { setBalance } from './utils.ts'
 import type { Blockchain, ConsensusDict } from '@ethereumjs/blockchain'
 import { SIGNER_A } from '@ethereumjs/testdata'
 
-describe('BlockBuilder', () => {
+describe('[VM/BlockBuilder]: buildBlock API', () => {
   it('builds a valid block', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     const genesisBlock = createBlock({ header: { gasLimit: 50000 } }, { common })

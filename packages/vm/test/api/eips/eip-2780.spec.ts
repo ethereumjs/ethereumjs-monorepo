@@ -45,7 +45,7 @@ function block() {
   )
 }
 
-describe('EIP-2780 intrinsic gas (Amsterdam)', () => {
+describe('[VM/EIP-2780]: intrinsic gas (Amsterdam)', () => {
   it('rejects below txGas + recipient/value extras', async () => {
     const vm = await getVM()
     const c = txCommon()

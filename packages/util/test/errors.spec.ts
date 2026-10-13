@@ -5,7 +5,7 @@ import { DEFAULT_ERROR_CODE, EthereumJSError, EthereumJSErrorWithoutCode } from 
 const TEST_ERROR_CODE = 'TEST_ERROR_CODE'
 const TEST_MSG = 'test error message'
 
-describe('EthereumJSError', () => {
+describe('[Util]: ethereumJSError', () => {
   it('creates an error with a code', () => {
     const error = new EthereumJSError({ code: TEST_ERROR_CODE }, TEST_MSG)
     assert.strictEqual(error.type.code, TEST_ERROR_CODE)

@@ -40,7 +40,7 @@ function verifyAccount(
   assert.isTrue(equalsBytes(account.storageRoot, state.storageRoot))
 }
 
-describe('StateManager -> General', () => {
+describe('[StateManager]: general', () => {
   it(`instantiates`, async () => {
     const sm = new MerkleStateManager()
 

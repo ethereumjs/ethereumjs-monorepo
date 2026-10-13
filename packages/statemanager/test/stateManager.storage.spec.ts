@@ -15,7 +15,7 @@ import { Caches, MerkleStateManager } from '../src/index.ts'
 import { createAccountWithDefaults } from './util.ts'
 
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
-describe('StateManager -> Storage', () => {
+describe('[StateManager]: storage', () => {
   for (const storageCacheOpts of [{ size: 1000 }, { size: 0 }]) {
     for (const prefixStorageTrieKeys of [false, true]) {
       it.skipIf(isBrowser() === true)(`should dump storage`, async () => {

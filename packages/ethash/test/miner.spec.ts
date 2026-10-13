@@ -11,7 +11,7 @@ import type { DBObject } from '@ethereumjs/util'
 const cacheDb = new MapDB<number, DBObject>()
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Petersburg })
 
-describe('Miner', () => {
+describe('[Ethash/Miner]: getMiner and mine', () => {
   it('Check if miner works as expected', async () => {
     const e = new Ethash(cacheDb)
 

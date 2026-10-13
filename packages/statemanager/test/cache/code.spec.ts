@@ -3,7 +3,7 @@ import { assert, describe, it } from 'vitest'
 
 import { CacheType, CodeCache } from '../../src/cache/index.ts'
 
-describe('Code Cache: initialization', () => {
+describe('[StateManager/CodeCache]: initialization', () => {
   for (const type of [CacheType.LRU, CacheType.ORDERED_MAP]) {
     it(`initializes`, async () => {
       const cache = new CodeCache({ size: 100, type })
@@ -13,7 +13,7 @@ describe('Code Cache: initialization', () => {
   }
 })
 
-describe('Code Cache: put and get code', () => {
+describe('[StateManager/CodeCache]: put and get code', () => {
   for (const type of [CacheType.LRU, CacheType.ORDERED_MAP]) {
     const cache = new CodeCache({ size: 100, type })
 
@@ -45,7 +45,7 @@ describe('Code Cache: put and get code', () => {
   }
 })
 
-describe('Code Cache: checkpointing', () => {
+describe('[StateManager/CodeCache]: checkpointing', () => {
   for (const type of [CacheType.LRU, CacheType.ORDERED_MAP]) {
     const cache = new CodeCache({ size: 100, type })
 

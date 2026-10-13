@@ -61,7 +61,7 @@ beforeAll(async () => {
   kzgs = [jsKzgSetup]
 }, 50000)
 
-describe('EIP4844 non network wrapper constructor tests - valid scenarios', () => {
+describe('[Tx/EIP-4844]: non network wrapper constructor tests - valid scenarios', () => {
   it('round-trips blob txs through factory, RLP, and hedged signatures', () => {
     for (const kzg of kzgs) {
       const txData = {
@@ -110,7 +110,7 @@ describe('EIP4844 non network wrapper constructor tests - valid scenarios', () =
   })
 })
 
-describe('fromTxData using from a json', () => {
+describe('[Tx]: fromTxData using from a json', () => {
   it('builds blob txs from JSON txData with versioned hashes only', () => {
     for (const kzg of kzgs) {
       const txData = {
@@ -183,7 +183,7 @@ describe('fromTxData using from a json', () => {
   })
 })
 
-describe('Network wrapper tests', () => {
+describe('[Tx]: network wrapper tests', () => {
   it('does not work with wrong network wrapper version', async () => {
     for (const kzg of kzgs) {
       expect(() =>

@@ -13,7 +13,7 @@ import { createAccountWithDefaults } from './util.ts'
 
 import type { AccountData } from '@ethereumjs/util'
 
-describe('StateManager -> Code', () => {
+describe('[StateManager]: code', () => {
   for (const accountCacheOpts of [{ size: 1000 }, { size: 0 }]) {
     for (const codeCacheOpts of [{ size: 1000 }, { size: 0 }]) {
       it(`stores codehashes using a prefix`, async () => {

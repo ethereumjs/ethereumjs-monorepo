@@ -31,7 +31,7 @@ common.hardforkBlock = function (hardfork: string | undefined) {
   return BigInt(0)
 }
 
-describe('EIP1559 tests', () => {
+describe('[Block/EIP-1559]: behavior', () => {
   it('Header -> Initialization', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     assert.throws(

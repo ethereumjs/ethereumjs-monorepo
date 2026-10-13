@@ -23,7 +23,7 @@ function storageReads(vm: Awaited<ReturnType<typeof createVM>>) {
   return entry?.storageReads ?? []
 }
 
-describe('EIP-8038 gas constants (Amsterdam, v8.1.0)', () => {
+describe('[VM/EIP-8038]: gas constants (Amsterdam, v8.1.0)', () => {
   it('uses the revised glamsterdam-devnet schedule', async () => {
     const vm = await getVM()
     const c = vm.common
@@ -43,7 +43,7 @@ function sstoreAccessGate(common: Awaited<ReturnType<typeof createVM>>['common']
   return coldAccess > stipendPlus1 ? coldAccess : stipendPlus1
 }
 
-describe('EIP-8038 SSTORE access-before-read (Amsterdam)', () => {
+describe('[VM/EIP-8038]: sSTORE access-before-read (Amsterdam)', () => {
   it('does not record a BAL storage read when gas cannot cover the access gate', async () => {
     const vm = await getVM()
     const gate = sstoreAccessGate(vm.common)

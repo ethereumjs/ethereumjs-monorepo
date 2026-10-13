@@ -108,7 +108,7 @@ async function runTest(authorizationListOpts: GetAuthListOpts[], expect: Uint8Ar
   assert.isTrue(equalsBytes(unpadBytes(expect), value))
 }
 
-describe('EIP 7702: set code to EOA accounts', () => {
+describe('[VM/EIP-7702]: set code to EOA accounts', () => {
   it('do basic functionality', async () => {
     // Basic test: store 1 in slot 1
     await runTest(
@@ -239,7 +239,7 @@ describe('EIP 7702: set code to EOA accounts', () => {
   })
 })
 
-describe('test EIP-7702 opcodes', () => {
+describe('[VM/EIP]: eIP-7702 opcodes', () => {
   it('report EXTCODESIZE/EXTCODEHASH/EXTCODECOPY opcodes', async () => {
     // extcodesize and extcodehash
     const deploymentAddress = createZeroAddress()

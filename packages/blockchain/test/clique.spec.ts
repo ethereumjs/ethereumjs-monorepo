@@ -149,7 +149,7 @@ const addNextBlock = async (
   return block
 }
 
-describe('Clique: Initialization', () => {
+describe('[Blockchain/Clique]: initialization', () => {
   it('initializes a clique blockchain', async () => {
     const common = new Common({ chain: goerliChainConfig, hardfork: Hardfork.Chainstart })
     const consensusDict: ConsensusDict = {}
@@ -763,7 +763,7 @@ describe('Clique: Initialization', () => {
   })
 })
 
-describe('clique: reorgs', () => {
+describe('[Blockchain/Clique]: reorgs', () => {
   it('Two signers, voting to add one other signer, then reorg and revoke this addition', async () => {
     const { blocks, blockchain } = await initWithSigners([SIGNER_A, SIGNER_B])
     const genesis = blocks[0]

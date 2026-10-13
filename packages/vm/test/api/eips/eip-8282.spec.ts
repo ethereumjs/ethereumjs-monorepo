@@ -13,7 +13,7 @@ function paramAddress(
   return bytesToHex(setLengthLeft(bigIntToBytes(vm.common.param(name)), 20))
 }
 
-describe('EIP-8282 builder request addresses (Amsterdam)', () => {
+describe('[VM/EIP-8282]: builder request addresses (Amsterdam)', () => {
   it('uses the glamsterdam-devnet v7 mined deposit and exit addresses', async () => {
     const vm = await createVM({ common })
     assert.strictEqual(

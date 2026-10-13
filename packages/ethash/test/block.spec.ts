@@ -14,7 +14,7 @@ import type { PrefixedHexString } from '@ethereumjs/util'
 
 const cacheDB = new MapDB()
 
-describe('Verify POW for valid and invalid blocks', () => {
+describe('[Ethash]: verify PoW on blocks', () => {
   it('accepts valid PoW blocks and rejects invalid RLP fixtures', async () => {
     const e = new Ethash(cacheDB as any)
 

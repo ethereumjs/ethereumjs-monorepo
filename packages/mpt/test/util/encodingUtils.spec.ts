@@ -14,7 +14,7 @@ import { nibblesTypeToPackedBytes } from '../../src/util/nibbles.ts'
 
 import type { Nibbles } from '../../src/types.ts'
 
-describe('encoding', () => {
+describe('[MPT/Util]: encoding helpers', () => {
   it('nibblesToCompactBytes and compactBytesToNibbles should encode hex data correctly', () => {
     const tests = [
       { hex: new Uint8Array(), compact: hexToBytes('0x00') },
