@@ -1,10 +1,9 @@
+import { type LegacyVitestArgv, parseLegacyVitestArgv } from '../../util/parseTestCli.ts'
 /**
  * Process pool for the legacy ethereum/tests Vitest wrappers.
  * Full-suite runs hash-shard fixture files across workers; filtered / debug
  * runs stay on a single process with the default Vitest reporter.
  */
-import minimist from 'minimist'
-
 import { parseJobs, runShardedVitest } from '../../util/shardedVitestPool.ts'
 import { getExpectedTests } from '../config.ts'
 
@@ -23,7 +22,7 @@ function truthyFlag(value: unknown): boolean {
   return value === true || value === 1 || value === '1' || value === 'true'
 }
 
-function forceSingleProcess(argv: minimist.ParsedArgs): boolean {
+function forceSingleProcess(argv: LegacyVitestArgv): boolean {
   return (
     argv.test !== undefined ||
     argv.file !== undefined ||
@@ -34,13 +33,13 @@ function forceSingleProcess(argv: minimist.ParsedArgs): boolean {
   )
 }
 
-function resolveJobs(argv: minimist.ParsedArgs): number {
+function resolveJobs(argv: LegacyVitestArgv): number {
   if (forceSingleProcess(argv)) return 1
   if (argv.jobs !== undefined) return parseJobs(argv.jobs)
   return parseJobs(undefined)
 }
 
-function applyCliEnv(argv: minimist.ParsedArgs): NodeJS.ProcessEnv {
+function applyCliEnv(argv: LegacyVitestArgv): NodeJS.ProcessEnv {
   const env: NodeJS.ProcessEnv = { ...process.env }
   setEnv(env, 'VITE_FORK', argv.fork ?? env.VITE_FORK ?? 'Prague')
   setEnv(env, 'VITE_TEST', argv.test)
@@ -72,7 +71,7 @@ function applyCliEnv(argv: minimist.ParsedArgs): NodeJS.ProcessEnv {
 }
 
 export async function runLegacyVitest(suite: LegacySuite): Promise<void> {
-  const argv = minimist(process.argv.slice(2))
+  const argv = parseLegacyVitestArgv(process.argv.slice(2))
   const env = applyCliEnv(argv)
   const spec = SPEC[suite]
   const fork = env.VITE_FORK ?? 'Prague'

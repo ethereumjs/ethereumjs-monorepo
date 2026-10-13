@@ -9,7 +9,7 @@ inputs:
   node-version:
     description: Node.js version
     required: false
-    default: '24'
+    default: '26'
   install-command:
     description: Install command used when the workspace cache misses
     required: false
@@ -31,13 +31,13 @@ runs:
   using: composite
   steps:
     - if: ${{ inputs.dep-cache-key != 'none' }}
-      uses: actions/cache/restore@v4
+      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
       id: dep-cache
       with:
         path: ${{ github.workspace }}
         key: ${{ inputs.dep-cache-key }}
 
-    - uses: actions/setup-node@v6
+    - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
       with:
         node-version: ${{ inputs.node-version }}
         cache: npm
@@ -49,7 +49,7 @@ runs:
       run: ${{ inputs.install-command }}
 
     - if: ${{ inputs.ethereum-tests == 'true' && inputs.ethereum-tests-key != 'none' }}
-      uses: actions/cache/restore@v4
+      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
       with:
         path: ${{ github.workspace }}/packages/ethereum-tests
         key: ${{ inputs.ethereum-tests-key }}

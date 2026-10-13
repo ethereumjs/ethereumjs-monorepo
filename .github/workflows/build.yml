@@ -23,13 +23,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
       - id: create-cache-key
         run: echo "submodule-cache-key=$(git rev-parse HEAD:packages/ethereum-tests)" >> $GITHUB_OUTPUT
         shell: bash
 
-      - uses: actions/cache/restore@v4
+      - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         id: submodules-cache-restore
         with:
           key: submodule-${{ steps.create-cache-key.outputs.submodule-cache-key }}
@@ -40,7 +40,7 @@ jobs:
         run: git submodule update --init --depth=1 -- packages/ethereum-tests
 
       - if: steps.submodules-cache-restore.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         id: submodule-cache-save
         with:
           path: ${{github.workspace}}/packages/ethereum-tests
@@ -53,22 +53,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
       - id: keys
         run: echo "dep-cache-key=npm-${{ hashFiles('package-lock.json') }}-${{ github.run_id }}" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/cache/restore@v4
+      - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         id: npm-modules
         with:
           path: |
             **/node_modules
           key: npm-modules-${{ hashFiles('package-lock.json') }}
 
-      - name: Use Node.js 24
-        uses: actions/setup-node@v6
+      - name: Use Node.js 26
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
-          node-version: 24
+          node-version: 26
           cache: 'npm'
 
       - name: Install
@@ -84,14 +84,14 @@ jobs:
 
       - name: Save node_modules
         if: steps.npm-modules.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: |
             **/node_modules
           key: npm-modules-${{ hashFiles('package-lock.json') }}
 
       - name: Save build workspace
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: ${{ github.workspace }}
           key: ${{ steps.keys.outputs.dep-cache-key }}
@@ -131,7 +131,7 @@ jobs:
       vm-pr_coverage: ${{ steps.affected.outputs['vm-pr_coverage'] }}
       workspaces: ${{ steps.affected.outputs.workspaces }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           fetch-depth: 1
 
@@ -288,7 +288,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - uses: ./.github/actions/setup-ethereumjs
         with:
           dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
@@ -364,28 +364,38 @@ jobs:
       pull-requests: write
       checks: write
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
-      # Master and manual runs stay path-filtered. A labeled PR always measures.
-      - uses: dorny/paths-filter@v2
+      # Master pushes stay path-filtered. Manual dispatch and a labeled PR always measure.
+      - name: Bench-relevant paths
         id: bench-paths
         if: github.event_name != 'pull_request'
-        with:
-          filters: |
-            bench:
-              - 'packages/binarytree/**'
-              - 'packages/block/**'
-              - 'packages/evm/**'
-              - 'packages/mpt/**'
-              - 'packages/rlp/**'
-              - 'packages/statemanager/**'
-              - 'packages/tx/**'
-              - 'packages/util/**'
-              - 'packages/vm/**'
-              - 'config/vitest-bench.mts'
-              - '.github/workflows/build.yml'
-              - 'package.json'
-              - 'package-lock.json'
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE: ${{ github.event.before }}
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "bench=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            echo "bench=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git fetch --no-tags --depth=1 origin "$BEFORE"
+          bench=false
+          while IFS= read -r f; do
+            [ -z "$f" ] && continue
+            case "$f" in
+              packages/binarytree/*|packages/block/*|packages/evm/*|packages/mpt/*|packages/rlp/*|packages/statemanager/*|packages/tx/*|packages/util/*|packages/vm/*|config/vitest-bench.mts|.github/workflows/build.yml|package.json|package-lock.json)
+                bench=true
+                break
+                ;;
+            esac
+          done <<< "$(git diff --name-only "$BEFORE" "$SHA")"
+          echo "bench=$bench" >> "$GITHUB_OUTPUT"
 
       - name: No bench-relevant changes
         if: github.event_name != 'pull_request' && steps.bench-paths.outputs.bench != 'true'
@@ -411,20 +421,20 @@ jobs:
     if: github.event_name == 'pull_request'
     steps:
       - name: Checkout current branch
-        uses: actions/checkout@v5
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           fetch-depth: 0
 
-      - uses: actions/cache/restore@v4
+      - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         id: dep-cache
         with:
           path: ${{github.workspace}}
           key: ${{ needs.build.outputs.dep-cache-key }}
 
-      - name: Use Node.js 24
-        uses: actions/setup-node@v6
+      - name: Use Node.js 26
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
-          node-version: 24
+          node-version: 26
           cache: 'npm'
 
       - name: Install Dependencies (if not restored from cache)
@@ -433,7 +443,7 @@ jobs:
         working-directory: ${{ github.workspace }}
 
       - name: Checkout master for baseline
-        uses: actions/checkout@v5
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           ref: master
           path: baseline-workspace
@@ -519,7 +529,7 @@ jobs:
         # step fail the job.
         continue-on-error: true
         if: steps.bundle-analysis.outcome == 'success' || steps.bundle-analysis.outcome == 'failure'
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |

@@ -87,7 +87,7 @@ git submodule update --init
 npm install
 ```
 
-Use **Node.js 24** locally (matches CI). With [nvm](https://github.com/nvm-sh/nvm) or [fnm](https://github.com/Schniz/fnm), run `nvm use` / `fnm use` in the repo root — `.nvmrc` pins that version.
+Published packages require **Node.js 22** or newer. Use **Node.js 26** locally (matches CI). With [nvm](https://github.com/nvm-sh/nvm) or [fnm](https://github.com/Schniz/fnm), run `nvm use` / `fnm use` in the repo root — `.nvmrc` pins that version.
 
 ### Commands at a glance
 
@@ -157,6 +157,7 @@ Exceptions: `packages/tx` → `transactionFactory.ts`; `packages/block` → `blo
 - **Options** — constructors and `createX` take one options object (`EVMOpts`, `VMOpts`, …), not long positional lists. Document non-obvious fields on the interface.
 - **Events** — `eventemitter3` on `EVM`, `VM`, `Blockchain`, `Common`; event maps in `types.ts`; `events?` optional on option types.
 - **ESM imports** — relative paths inside `src/` use explicit `.ts` extensions (rewritten to `.js` in output).
+- **Browser-first `src/`** — no Node built-in imports in shipped library code; tests, scripts, and examples may use Node. Details and exceptions (`e2store`, archived client): [code-conventions.mdc](.cursor/rules/code-conventions.mdc) § Browser-first production code.
 
 ### Errors
 
@@ -204,7 +205,7 @@ One command and one config pointer per tool. Agent finish steps are in the linke
 
 ### Performance benchmarks
 
-Hot-path packages share one Vitest bench suite (`packages/*/benchmarks/*.bench.ts`; heavy local-only cases use `*.local.bench.ts`). Local: `npm run bench` (wall time). CI: **`performance-benchmarks`** job in [`.github/workflows/build.yml`](.github/workflows/build.yml) — restores the same workspace cache as test jobs (`needs: build`) and runs CodSpeed **simulation** for pull requests and for `master`. A pull request runs the suite only when it has the **`type: test performance`** label; each push reads that label again. `master` and manual runs stay path-filtered and record the baseline. Informational until **CodSpeed Performance Analysis** is required in branch protection.
+Hot-path packages share one Vitest bench suite (`packages/*/benchmarks/*.bench.ts`; heavy local-only cases use `*.local.bench.ts`). Local: `npm run bench` (wall time). CI: **`performance-benchmarks`** job in [`.github/workflows/build.yml`](.github/workflows/build.yml) — restores the same workspace cache as test jobs (`needs: build`) and runs CodSpeed **simulation** for pull requests and for `master`. A pull request runs the suite only when it has the **`type: test performance`** label; each push reads that label again. `master` pushes stay path-filtered. A manual run always measures. Both record the baseline. Informational until **CodSpeed Performance Analysis** is required in branch protection.
 
 Install the [CodSpeed GitHub App](https://github.com/marketplace/codspeed-continuous-performance-analysis) on the org repo before expecting PR reports.
 
@@ -264,7 +265,7 @@ cd path/to/your/project && npm link @ethereumjs/package-name
 # rebuild after changes; unlink when done
 ```
 
-**Shared toolchain** — `eslint`, `biome`, `typescript`, … live in the root `package.json`.
+**Shared toolchain** — `eslint`, `biome`, `typescript`, … live in the root `package.json`. Categories and update practice: [dependencies.mdc](.cursor/rules/dependencies.mdc).
 
 **Security** — wrong hashes or EVM results are consensus bugs. Trust tiers: [security.mdc](.cursor/rules/security.mdc). Extra care on `tx`, `util` signing, and `evm` / `vm` spec tests.
 
@@ -276,8 +277,8 @@ Rules: [`.cursor/rules/`](.cursor/rules/) (plain markdown + YAML front matter �
 
 | Rule | Scope | Remember |
 | ---- | ----- | -------- |
-| `ci`, `typecheck`, `spellcheck`, `git`, `security` | Always on | Git rule: explicit ask for commit/push/PR/merge; commit-only ≠ push; PR labels when asked |
-| `code-conventions` | `src/`, `examples/` | No public API renames without human ask |
+| `ci`, `typecheck`, `spellcheck`, `git`, `security`, `dependencies` | Always on | Git rule: explicit ask for commit/push/PR/merge; commit-only ≠ push; PR labels when asked |
+| `code-conventions` | `src/`, `examples/` | No public API renames; no Node built-ins in `src/` (browser-first) |
 | `api-docs` | `src/` | Cross-package `{@link @ethereumjs/pkg!Symbol}` |
 | `examples` | `examples/`, READMEs | Run embedme after README edits |
 | `api-tests` | active `test/` | VM consensus runners out of scope |

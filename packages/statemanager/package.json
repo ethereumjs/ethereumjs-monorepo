@@ -63,8 +63,9 @@
   "devDependencies": {
     "@ethereumjs/block": "^10.1.3",
     "@ethereumjs/genesis": "^10.1.3",
-    "@ethereumjs/testdata": "1.0.0",
-    "@types/debug": "^4.1.12",
-    "micro-eth-signer": "0.15.0"
+    "@types/debug": "^4.1.12"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

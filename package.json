@@ -41,12 +41,12 @@
     "@biomejs/biome": "1.9.4",
     "@codspeed/vitest-plugin": "^5.7.1",
     "@eslint/js": "^9.22.0",
+    "@ethereumjs/testdata": "1.0.0",
+    "@paulmillr/trusted-setups": "^0.2.0",
     "@polkadot/util": "^13.4.3",
+    "@polkadot/wasm-crypto": "^7.4.1",
     "@polkadot/x-randomvalues": "^13.4.3",
-    "@types/estree": "^1.0.1",
     "@types/node": "22.13.10",
-    "@typescript-eslint/eslint-plugin": "^8.26.1",
-    "@typescript-eslint/parser": "^8.26.1",
     "@vitest/browser": "^4.1.8",
     "@vitest/browser-playwright": "^4.1.8",
     "@vitest/coverage-istanbul": "^4.1.8",
@@ -56,10 +56,12 @@
     "embedme": "1.22.1",
     "eslint": "^9.22.0",
     "eslint-plugin-import": "^2.31.0",
+    "kzg-wasm": "1.0.0",
     "lint-staged": "15.5.0",
     "lockfile-lint-api": "^5.9.1",
+    "micro-eth-signer": "^0.15.0",
     "playwright": "1.60.0",
-    "shiki": "4.4.3",
+    "shiki": "4.5.0",
     "sort-package-json": "3.0.0",
     "tsx": "^4.19.3",
     "typedoc": "^0.28.20",
@@ -85,7 +87,7 @@
     }
   },
   "engines": {
-    "node": ">=20",
+    "node": ">=22",
     "npm": ">=9"
   }
 }

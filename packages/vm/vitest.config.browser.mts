@@ -22,6 +22,8 @@ export default mergeConfig(
         'test/tester/executionSpecBlockchain.test.ts',
         'test/tester/executionSpecState.test.ts',
         'test/tester/consumeBAL.test.ts',
+        // node:util.parseArgs (CLI helpers are Node-only)
+        'test/tester/util/parseTestCli.spec.ts',
       ],
     },
     resolve: {
