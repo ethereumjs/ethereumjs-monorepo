@@ -44,6 +44,7 @@
     "@ethereumjs/testdata": "1.0.0",
     "@paulmillr/trusted-setups": "^0.2.0",
     "@polkadot/util": "^13.4.3",
+    "@polkadot/wasm-crypto": "^7.4.1",
     "@polkadot/x-randomvalues": "^13.4.3",
     "@types/node": "22.13.10",
     "@vitest/browser": "^4.1.8",

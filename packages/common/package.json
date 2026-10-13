@@ -70,9 +70,7 @@
     "eventemitter3": "5.0.4"
   },
   "devDependencies": {
-    "@noble/curves": "^2.4.0",
-    "@polkadot/util": "^13.4.3",
-    "@polkadot/wasm-crypto": "^7.4.1"
+    "@noble/curves": "^2.4.0"
   },
   "engines": {
     "node": ">=22"

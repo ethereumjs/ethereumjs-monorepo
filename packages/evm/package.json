@@ -65,8 +65,6 @@
     "eventemitter3": "5.0.4"
   },
   "devDependencies": {
-    "@polkadot/util": "^13.4.3",
-    "@polkadot/wasm-crypto": "^7.4.1",
     "@types/debug": "^4.1.12",
     "@types/minimist": "^1.2.5",
     "@types/node-dir": "^0.0.37",
