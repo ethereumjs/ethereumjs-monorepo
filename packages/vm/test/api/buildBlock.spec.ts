@@ -19,11 +19,11 @@ import { concatBytes, createAccount, createZeroAddress } from '@ethereumjs/util'
 import { assert, describe, expect, it } from 'vitest'
 
 import { buildBlock, createVM, runBlock } from '../../src/index.ts'
-
 import { setBalance } from './utils.ts'
 
 import type { Blockchain, ConsensusDict } from '@ethereumjs/blockchain'
 import { SIGNER_A } from '@ethereumjs/testdata'
+import type { TypedTransaction } from '@ethereumjs/tx'
 
 describe('BlockBuilder', () => {
   it('should build a valid block', async () => {
@@ -89,6 +89,56 @@ describe('BlockBuilder', () => {
       0,
       'should have the correct number of tx receipts',
     )
+  })
+
+  it('should revert builder state if post-run bookkeeping fails', async () => {
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
+    const genesisBlock = createBlock({ header: { gasLimit: 50000 } }, { common })
+    const blockchain = await createBlockchain({ genesisBlock, common, validateConsensus: false })
+    const vm = await createVM({ common, blockchain })
+
+    await setBalance(vm, SIGNER_A.address)
+
+    const blockBuilder = await buildBlock(vm, {
+      parentBlock: genesisBlock,
+      blockOpts: { calcDifficultyFromHeader: genesisBlock.header, freeze: false },
+    })
+    const originalStateRoot = await vm.stateManager.getStateRoot()
+
+    const transactions = (blockBuilder as any).transactions as TypedTransaction[]
+    const originalPush = transactions.push.bind(transactions)
+
+    const tx = createLegacyTx(
+      { to: createZeroAddress(), value: 1000, gasLimit: 21000, gasPrice: 1 },
+      { common, freeze: false },
+    ).sign(SIGNER_A.privateKey)
+
+    try {
+      transactions.push = (() => {
+        throw new Error('synthetic bookkeeping failure')
+      }) as typeof transactions.push
+
+      await expect(blockBuilder.addTransaction(tx)).rejects.toThrow(/synthetic bookkeeping failure/)
+    } finally {
+      transactions.push = originalPush
+    }
+
+    assert.strictEqual(blockBuilder.gasUsed, 0n, 'gas used should be rolled back')
+    assert.strictEqual(blockBuilder.minerValue, 0n, 'miner value should be rolled back')
+    assert.strictEqual(blockBuilder.transactionReceipts.length, 0, 'receipts should be rolled back')
+    assert.deepEqual(
+      await vm.stateManager.getStateRoot(),
+      originalStateRoot,
+      'state root should be rolled back',
+    )
+
+    const { block } = await blockBuilder.build()
+    assert.strictEqual(
+      block.transactions.length,
+      0,
+      'failed tx should not be included in the block',
+    )
+    assert.strictEqual(block.header.gasUsed, 0n, 'failed tx should not affect block gas accounting')
   })
 
   it('should correctly seal a PoW block', async () => {
