@@ -162,3 +162,63 @@ describe('[MPT/Trie]: checkpoints', () => {
     assert.strictEqual(bytesToUtf8((await CommittedState.get(KEY))!), '2')
   })
 })
+
+describe('[MPT/Trie]: checkpoints with DB failures', () => {
+  const setup = async () => {
+    const db = new MapDB<string, string | Uint8Array>()
+    const trie = await createMPT({ db })
+    await trie.put(utf8ToBytes('do'), utf8ToBytes('verb'))
+    trie.checkpoint()
+    return { db, trie, root: trie.root() }
+  }
+
+  it('reverts after a put fails to read from the DB', async () => {
+    const { db, trie, root } = await setup()
+    db.get = async () => {
+      throw new Error('read failed')
+    }
+
+    try {
+      await trie.put(utf8ToBytes('doge'), utf8ToBytes('coin'))
+      assert.fail('put should throw when DB read fails')
+    } catch (e: unknown) {
+      assert.match((e as Error).message, /read failed/)
+    }
+    await trie.revert()
+    assert.deepEqual(trie.root(), root)
+  })
+
+  it('reverts after a del fails to read from the DB', async () => {
+    const { db, trie, root } = await setup()
+    db.get = async () => {
+      throw new Error('read failed')
+    }
+
+    try {
+      await trie.del(utf8ToBytes('do'))
+      assert.fail('del should throw when DB read fails')
+    } catch (e: unknown) {
+      assert.match((e as Error).message, /read failed/)
+    }
+    await trie.revert()
+    assert.deepEqual(trie.root(), root)
+  })
+
+  it('reverts after a commit fails to flush to the DB', async () => {
+    const { db, trie, root } = await setup()
+    db.batch = async () => {
+      throw new Error('flush failed')
+    }
+    await trie.put(utf8ToBytes('doge'), utf8ToBytes('coin'))
+
+    try {
+      await trie.commit()
+      assert.fail('commit should throw when DB flush fails')
+    } catch (e: unknown) {
+      assert.match((e as Error).message, /flush failed/)
+    }
+    await trie.revert()
+    assert.deepEqual(trie.root(), root)
+    assert.isNull(await trie.get(utf8ToBytes('doge')))
+  })
+})

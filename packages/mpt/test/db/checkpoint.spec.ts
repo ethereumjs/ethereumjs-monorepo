@@ -1,5 +1,5 @@
 import { MapDB, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
-import { assert, beforeEach, describe, it } from 'vitest'
+import { assert, beforeEach, describe, expect, it } from 'vitest'
 
 import { CheckpointDB } from '../../src/index.ts'
 
@@ -170,5 +170,23 @@ describe('[MPT/CheckpointDB]: checkpointing', () => {
       undefined,
       'after del in open checkpoint: undefined, not stale v1',
     )
+  })
+
+  it('Checkpointing: failed flush keeps the checkpoint so it can be reverted', async () => {
+    const mapDb = new MapDB<string, string | Uint8Array>()
+    mapDb.batch = async () => {
+      throw new Error('flush failed')
+    }
+    const failingDb = new CheckpointDB({ db: mapDb })
+    const root = hexToBytes('0x01')
+
+    failingDb.checkpoint(root)
+    await failingDb.put(k, v)
+
+    await expect(failingDb.commit()).rejects.toThrow('flush failed')
+    assert.strictEqual(failingDb.checkpoints.length, 1, 'checkpoint restored')
+    assert.deepEqual(await failingDb.get(k), v, 'uncommitted value still visible')
+    assert.strictEqual(await failingDb.revert(), root, 'checkpoint root returned')
+    assert.deepEqual(await failingDb.get(k), undefined, 'after revert: undefined')
   })
 })
