@@ -14,6 +14,8 @@ Frozen snapshot of the deprecated execution client. Do **not** treat `client/pac
 
 There is no CI check that restore still works.
 
+Root `Dockerfile`, `docker/`, and the disabled docker-image CI workflow were removed; use EthPandaOps images or hive `clients/ethereumjs` Dockerfiles for client containers.
+
 ## `@ethereumjs/devp2p` (`devp2p/`)
 
 Frozen snapshot of the deprecated devp2p stack. Do **not** treat `devp2p/package.json.stale` as a live dependency manifest (for audits, dependency updates, or agent inventories).

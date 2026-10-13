@@ -2,7 +2,7 @@
 
 ## Running Hive Tests
 
-In order to run hive tests on edited code (so not the latest remote `master` branch), see [how to install hive](https://github.com/ethereum/hive/blob/master/docs/commandline.md). Now, in order to run EthereumJS, in the newly cloned hive folder, go to `clients/ethereumjs` and `git clone git@github.com:ethereumjs/ethereumjs-monorepo.git` there. It is not possible (due to how Docker works) to use a symlink to the monorepo. To use the local code in the just cloned directory, ensure that inside the ethereumjs client folder, you have moved the original `Dockerfile` (using this, always the remote `master` branch is used) and moved `Dockerfile.local` to `Dockerfile`.
+In order to run hive tests on edited code (so not the latest remote `master` branch), see [how to install hive](https://github.com/ethereum/hive/blob/master/docs/commandline.md). Now, in order to run EthereumJS, in the newly cloned hive folder, go to `clients/ethereumjs` and `git clone git@github.com:ethereumjs/ethereumjs-monorepo.git` there. It is not possible (due to how Docker works) to use a symlink to the monorepo. To use the local code in the just cloned directory, ensure that inside the **hive** `clients/ethereumjs` folder (not this monorepo root), you have moved the original `Dockerfile` (using this, always the remote `master` branch is used) and moved `Dockerfile.local` to `Dockerfile`.
 
 One can now run hive tests. Example commands:
 
@@ -18,6 +18,6 @@ This command runs a specific test, namely `Invalid Missing Ancestor Syncing ReOr
 
 ### Running Hive Faster (development mode tests)
 
-When changing code in the cloned monorepo, it is noted that re-running hive is rather slow. In order to make this faster, see [this PR](https://github.com/jochem-brouwer/hive/pull/1). The state of the PR should be leading, but in order for it to work, ensure that `.dockerignore`, `Dockerfile` and `ethereumjs.sh` are copied into the `clients/ethereumjs` folder of the hive repo.
+When changing code in the cloned monorepo, it is noted that re-running hive is rather slow. In order to make this faster, see [this PR](https://github.com/jochem-brouwer/hive/pull/1). The state of the PR should be leading, but in order for it to work, ensure that `.dockerignore`, `Dockerfile`, and `ethereumjs.sh` from that hive client folder are in place under `clients/ethereumjs` (the monorepo no longer ships a root Dockerfile).
 
 This runner will use `tsx` (better debug output!) and is taking advantage of Docker's caching mechanism in order to ensure that any changes of code will get imported on a fresh start of a hive run fast.
