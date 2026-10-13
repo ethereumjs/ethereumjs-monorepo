@@ -699,7 +699,7 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun })
 const evm = new EVM({ common })
 ```
 
-See the VM [EIP-6780 API test file](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/test/api/EIPs/eip-6780-selfdestruct-same-tx.spec.ts) for a respective test scenario on the bytecode level.
+See the VM [EIP-6780 API test file](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/test/api/eips/eip-6780-selfdestruct-same-tx.spec.ts) for a respective test scenario on the bytecode level.
 
 ## Opcode Renamings: SHA3 -> KECCAK, DIFFICULTY -> PREVRANDAO (post Merge)
 

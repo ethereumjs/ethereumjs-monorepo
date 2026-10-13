@@ -8,7 +8,7 @@ import { createAccountWithDefaults } from '../utils.ts'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 /**
- * Tests taken from https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1283.md
+ * Tests taken from https://eips.ethereum.org/EIPS/eip-1283
  */
 
 const testCases = [
