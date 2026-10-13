@@ -1,10 +1,14 @@
 import * as ssz from 'micro-eth-signer/ssz.js'
 
+/** Parsed e2store entry header and payload bytes. */
 export type e2StoreEntry = {
+  /** Two-byte type tag identifying the entry kind. */
   type: Uint8Array
+  /** Entry payload (often Snappy-compressed). */
   data: Uint8Array
 }
 
+/** Shared e2store type tags (version, block index). */
 export const CommonTypes = {
   Version: new Uint8Array([0x65, 0x32]),
   BlockIndex: new Uint8Array([0x66, 0x32]),
@@ -19,6 +23,7 @@ export const Era1Types = {
   AccumulatorRoot: new Uint8Array([0x07, 0x00]),
 } as const
 
+/** Empty version entry written at the start of e2store files. */
 export const VERSION = {
   type: CommonTypes.Version,
   data: new Uint8Array([]),
@@ -48,6 +53,7 @@ export const EraTypes = {
   SlotIndex: new Uint8Array([0x69, 0x32]),
 }
 
+/** Slot index metadata embedded in an era file. */
 export type SlotIndex = {
   startSlot: number
   recordStart: number

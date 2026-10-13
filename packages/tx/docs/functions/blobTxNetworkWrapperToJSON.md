@@ -8,10 +8,9 @@
 
 > **blobTxNetworkWrapperToJSON**(`serialized`, `opts?`): [`JSONBlobTxNetworkWrapper`](../type-aliases/JSONBlobTxNetworkWrapper.md)
 
-Defined in: [4844/constructors.ts:450](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/constructors.ts#L450)
+Defined in: [4844/constructors.ts:383](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/constructors.ts#L383)
 
-Returns the EIP 4844 transaction network wrapper in JSON format similar to toJSON, including
-blobs, commitments, and proofs fields
+Decode a blob network wrapper and return its JSON representation including blobs and proofs.
 
 ## Parameters
 
@@ -19,16 +18,14 @@ blobs, commitments, and proofs fields
 
 `Uint8Array`
 
-a buffer representing a serialized BlobTransactionNetworkWrapper
-
 ### opts?
 
 [`TxOptions`](../interfaces/TxOptions.md)
-
-any TxOptions defined
 
 ## Returns
 
 [`JSONBlobTxNetworkWrapper`](../type-aliases/JSONBlobTxNetworkWrapper.md)
 
-JSONBlobTxNetworkWrapper with blobs, KZG commitments, and KZG proofs fields
+## Throws
+
+If [createBlob4844TxFromSerializedNetworkWrapper](createBlob4844TxFromSerializedNetworkWrapper.md) validation fails

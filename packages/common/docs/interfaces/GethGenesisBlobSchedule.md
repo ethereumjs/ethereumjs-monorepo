@@ -12,4 +12,4 @@ Interface for blob schedule in Geth Genesis (EIP-7840)
 
 ## Indexable
 
-\[`fork`: `string`\]: `object`
+> \[`fork`: `string`\]: `object`

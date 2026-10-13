@@ -7,9 +7,10 @@ const config = defineConfig({
     coverage: {
       provider: 'v8',
       enabled: true,
-      all: true,
       include: ['src/**'],
-      reportsDirectory: './coverage/v8',
+      // CI uploads coverage/lcov.info. Default Vitest reporters do not emit lcov.
+      reporter: ['text', 'lcov'],
+      reportsDirectory: './coverage',
     },
   },
   optimizeDeps: {

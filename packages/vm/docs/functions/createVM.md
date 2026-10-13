@@ -6,20 +6,25 @@
 
 # Function: createVM()
 
-> **createVM**(`opts`): `Promise`\<[`VM`](../classes/VM.md)\>
+> **createVM**(`opts?`): `Promise`\<[`VM`](../classes/VM.md)\>
 
-Defined in: [vm/src/constructors.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/constructors.ts#L21)
+Defined in: [vm/src/constructors.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/constructors.ts#L24)
 
-VM async constructor. Creates engine instance and initializes it.
+Async factory for initializing a [VM](../classes/VM.md) with sensible defaults.
+
+Supplies mainnet [@ethereumjs/common!Common](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md), [@ethereumjs/evm!EVMMockBlockchain](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/docs/classes/EVMMockBlockchain.md), [@ethereumjs/statemanager!MerkleStateManager](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/docs/classes/MerkleStateManager.md),
+and a nested [@ethereumjs/evm!createEVM](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/docs/functions/createEVM.md) instance when not provided.
 
 ## Parameters
 
-### opts
+### opts?
 
 [`VMOpts`](../interfaces/VMOpts.md) = `{}`
-
-VM engine constructor options
 
 ## Returns
 
 `Promise`\<[`VM`](../classes/VM.md)\>
+
+## Throws
+
+If both `evm` and `evmOpts` are set, or if conflicting profiler options are enabled

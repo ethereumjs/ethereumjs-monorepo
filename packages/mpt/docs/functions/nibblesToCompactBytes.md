@@ -8,7 +8,9 @@
 
 > **nibblesToCompactBytes**(`nibbles`): `Uint8Array`\<`ArrayBuffer`\>
 
-Defined in: [packages/mpt/src/util/encoding.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/util/encoding.ts#L58)
+Defined in: [util/encoding.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/util/encoding.ts#L60)
+
+Encode hex nibbles into compact (hex-prefix) bytes for trie storage.
 
 ## Parameters
 

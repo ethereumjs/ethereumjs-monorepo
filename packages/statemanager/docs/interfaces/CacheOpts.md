@@ -6,7 +6,9 @@
 
 # Interface: CacheOpts
 
-Defined in: [cache/types.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/types.ts#L8)
+Defined in: [cache/types.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/types.ts#L11)
+
+Per-cache sizing and implementation options.
 
 ## Properties
 
@@ -14,7 +16,7 @@ Defined in: [cache/types.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo
 
 > **size**: `number`
 
-Defined in: [cache/types.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/types.ts#L19)
+Defined in: [cache/types.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/types.ts#L22)
 
 Size of the cache (only for LRU cache)
 
@@ -31,7 +33,7 @@ old modifications resulting in an incomplete set of trie-flushed accounts.
 
 > **type**: [`CacheType`](../type-aliases/CacheType.md)
 
-Defined in: [cache/types.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/types.ts#L31)
+Defined in: [cache/types.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/types.ts#L34)
 
 Cache type to use.
 

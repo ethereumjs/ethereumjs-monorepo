@@ -5,6 +5,7 @@ import { parseEntry, readEntry } from '../index.ts'
 
 import type { e2StoreEntry } from '../index.ts'
 
+/** Builds era1 block tuples and cumulative header records from execution-layer blocks. */
 export async function createBlockTuples(blocks: Block[], blockReceipts: Uint8Array[], td: bigint) {
   const blockTuples: {
     header: Uint8Array
@@ -45,6 +46,7 @@ export async function createBlockTuples(blocks: Block[], blockReceipts: Uint8Arr
   }
 }
 
+/** Decompresses the four entries of one era1 block tuple. */
 export async function parseBlockTuple({
   headerEntry,
   bodyEntry,
@@ -63,6 +65,7 @@ export async function parseBlockTuple({
   return { header, body, receipts, totalDifficulty }
 }
 
+/** Reads the four consecutive e2store entries that form one block tuple at `offset`. */
 export function readBlockTupleAtOffset(bytes: Uint8Array, recordStart: number, offset: number) {
   const headerEntry = readEntry(bytes.slice(recordStart + offset))
   const headerLength = headerEntry.data.length + 8
@@ -78,6 +81,7 @@ export function readBlockTupleAtOffset(bytes: Uint8Array, recordStart: number, o
   return { headerEntry, bodyEntry, receiptsEntry, totalDifficultyEntry, length: totalLength }
 }
 
+/** Reconstructs an execution-layer {@link Block} from decompressed header and body entries. */
 export function blockFromTuple({ header, body }: { header: any; body: any }) {
   const valuesArray = [header.data, body.data.txs, body.data.uncles, body.data.withdrawals]
   const block = createBlockFromBytesArray(valuesArray as BlockBytes, { setHardfork: true })

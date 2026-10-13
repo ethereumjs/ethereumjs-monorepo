@@ -8,9 +8,9 @@
 
 > **nibbleTypeToByteType**(`arr`): `Uint8Array`
 
-Defined in: [packages/mpt/src/util/encoding.ts:115](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/util/encoding.ts#L115)
+Defined in: [util/encoding.ts:118](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/util/encoding.ts#L118)
 
-Converts each nibble into a single byte
+Convert each nibble to a single byte (lower four bits only).
 
 ## Parameters
 
@@ -18,10 +18,8 @@ Converts each nibble into a single byte
 
 [`Nibbles`](../type-aliases/Nibbles.md)
 
-Nibble typed nibble array
+Nibble array
 
 ## Returns
 
 `Uint8Array`
-
-Uint8Array typed byte array

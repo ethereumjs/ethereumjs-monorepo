@@ -12,6 +12,7 @@ import type { BlockHeader } from '@ethereumjs/block'
  * and the DB operations from `db/operation.ts` and also handles the right encoding of the keys
  */
 
+/** Build a DB put operation for total difficulty at a block. */
 function DBSetTD(TD: bigint, blockNumber: bigint, blockHash: Uint8Array): DBOp {
   return DBOp.set(DBTarget.TotalDifficulty, RLP.encode(TD), {
     blockNumber,
@@ -26,6 +27,7 @@ function DBSetTD(TD: bigint, blockNumber: bigint, blockHash: Uint8Array): DBOp {
  * - A "Set Body Operation" is only added if the body is not empty (it has transactions/uncles) or if the block is the genesis block
  * (if there is a header but no block saved the DB will implicitly assume the block to be empty)
  */
+/** Build DB put operations for a block header and optional body. */
 function DBSetBlockOrHeader(blockBody: Block | BlockHeader): DBOp[] {
   const header: BlockHeader = blockBody instanceof Block ? blockBody.header : blockBody
   const dbOps = []
@@ -56,6 +58,7 @@ function DBSetBlockOrHeader(blockBody: Block | BlockHeader): DBOp[] {
   return dbOps
 }
 
+/** Build a DB put operation mapping block hash to canonical number. */
 function DBSetHashToNumber(blockHash: Uint8Array, blockNumber: bigint): DBOp {
   const blockNumber8Byte = bytesBE8(blockNumber)
   return DBOp.set(DBTarget.HashToNumber, blockNumber8Byte, {
@@ -63,6 +66,7 @@ function DBSetHashToNumber(blockHash: Uint8Array, blockNumber: bigint): DBOp {
   })
 }
 
+/** Build DB put operations for hash↔number index lookups. */
 function DBSaveLookups(blockHash: Uint8Array, blockNumber: bigint, skipNumIndex?: boolean): DBOp[] {
   const ops = []
   if (skipNumIndex !== true) {

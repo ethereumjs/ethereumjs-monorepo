@@ -8,8 +8,9 @@ import type { BinaryNode } from './node/index.ts'
 import type { StemBinaryNode } from './node/stemNode.ts'
 
 /**
- * Saves the nodes from a proof into the tree.
- * @param proof
+ * Load proof nodes into a new binary tree and set its root.
+ *
+ * @param proof Serialized binary tree nodes along a key path
  */
 export async function binaryTreeFromProof(proof: Uint8Array[]): Promise<BinaryTree> {
   const proofTrie = await createBinaryTree()
@@ -24,12 +25,13 @@ export async function binaryTreeFromProof(proof: Uint8Array[]): Promise<BinaryTr
 }
 
 /**
- * Verifies a proof.
- * @param rootHash
- * @param key
- * @param proof
- * @throws If proof is found to be invalid.
- * @returns The value from the key, or null if valid proof of non-existence.
+ * Verify a binary tree proof for `key` against `rootHash`.
+ *
+ * @param rootHash Expected tree root
+ * @param key Full 32-byte key (stem + suffix)
+ * @param proof Serialized nodes along the key path
+ * @throws If the proof is invalid
+ * @returns Proven value, or `null` for a valid non-existence proof
  */
 export async function verifyBinaryProof(
   rootHash: Uint8Array,

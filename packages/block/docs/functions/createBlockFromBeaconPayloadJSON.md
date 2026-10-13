@@ -8,9 +8,9 @@
 
 > **createBlockFromBeaconPayloadJSON**(`payload`, `opts?`): `Promise`\<[`Block`](../classes/Block.md)\>
 
-Defined in: [block/constructors.ts:365](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block/constructors.ts#L365)
+Defined in: [block/constructors.ts:361](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block/constructors.ts#L361)
 
-Method to retrieve a block from a beacon payload JSON
+Instantiate a block from a beacon REST `execution_payload` JSON object.
 
 ## Parameters
 
@@ -18,16 +18,14 @@ Method to retrieve a block from a beacon payload JSON
 
 [`BeaconPayloadJSON`](../type-aliases/BeaconPayloadJSON.md)
 
-JSON of a beacon beacon fetched from beacon apis
-
 ### opts?
 
 [`BlockOptions`](../interfaces/BlockOptions.md)
-
-[BlockOptions](../interfaces/BlockOptions.md)
 
 ## Returns
 
 `Promise`\<[`Block`](../classes/Block.md)\>
 
-the block constructed block
+## Throws
+
+If delegated [createBlockFromExecutionPayload](createBlockFromExecutionPayload.md) validation fails

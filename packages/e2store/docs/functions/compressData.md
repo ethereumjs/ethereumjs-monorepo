@@ -10,7 +10,7 @@
 
 Defined in: [packages/e2store/src/snappy.ts:9](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/snappy.ts#L9)
 
-Compress data using snappy
+Compress data with Snappy framed encoding (e2store wire format).
 
 ## Parameters
 
@@ -18,8 +18,8 @@ Compress data using snappy
 
 `Uint8Array`
 
+Raw bytes to compress
+
 ## Returns
 
 `Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
-
-compressed data

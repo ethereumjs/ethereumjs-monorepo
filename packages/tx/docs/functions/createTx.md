@@ -6,11 +6,13 @@
 
 # Function: createTx()
 
-> **createTx**\<`T`\>(`txData`, `txOptions`): [`Transaction`](../interfaces/Transaction.md)\[`T`\]
+> **createTx**\<`T`\>(`txData`, `txOptions?`): [`Transaction`](../interfaces/Transaction.md)\[`T`\]
 
-Defined in: [transactionFactory.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L30)
+Defined in: [transactionFactory.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L32)
 
-Create a transaction from a `txData` object
+Instantiate a transaction; the `type` field selects the concrete [TypedTransaction](../type-aliases/TypedTransaction.md) class.
+
+When `type` is omitted a legacy transaction is created.
 
 ## Type Parameters
 
@@ -24,14 +26,18 @@ Create a transaction from a `txData` object
 
 [`TypedTxData`](../type-aliases/TypedTxData.md)
 
-The transaction data. The `type` field will determine which transaction type is returned (if undefined, creates a legacy transaction)
-
-### txOptions
+### txOptions?
 
 [`TxOptions`](../interfaces/TxOptions.md) = `{}`
-
-Options to pass on to the constructor of the transaction
 
 ## Returns
 
 [`Transaction`](../interfaces/Transaction.md)\[`T`\]
+
+## Throws
+
+If the `type` field is not supported
+
+## Throws
+
+If delegated type-specific factory validation fails

@@ -12,4 +12,4 @@ Interface for account allocation in Geth Genesis
 
 ## Indexable
 
-\[`address`: `string`\]: `object`
+> \[`address`: `string`\]: `object`

@@ -16,20 +16,20 @@ jobs:
   test-vm-state:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           submodules: recursive
 
-      - uses: actions/cache/restore@v4
+      - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         id: dep-cache
         with:
           path: ${{github.workspace}}
           key: npm-${{ hashFiles('package-lock.json') }}
 
-      - name: Use Node.js 24
-        uses: actions/setup-node@v6
+      - name: Use Node.js 26
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
-          node-version: 24
+          node-version: 26
           cache: 'npm'
 
       - name: Install Dependencies (if not restored from cache)
@@ -42,20 +42,20 @@ jobs:
   test-vm-blockchain:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           submodules: recursive
 
-      - uses: actions/cache/restore@v4
+      - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         id: dep-cache
         with:
           path: ${{github.workspace}}
           key: npm-${{ hashFiles('package-lock.json') }}
 
-      - name: Use Node.js 24
-        uses: actions/setup-node@v6
+      - name: Use Node.js 26
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
-          node-version: 24
+          node-version: 26
           cache: 'npm'
 
       - name: Install Dependencies (if not restored from cache)

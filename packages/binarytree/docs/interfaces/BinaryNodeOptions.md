@@ -6,7 +6,9 @@
 
 # Interface: BinaryNodeOptions
 
-Defined in: [node/types.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/node/types.ts#L36)
+Defined in: [node/types.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/node/types.ts#L43)
+
+Constructor options keyed by [BinaryNodeType](../variables/BinaryNodeType.md).
 
 ## Properties
 
@@ -14,7 +16,7 @@ Defined in: [node/types.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo
 
 > **0**: `InternalBinaryNodeOptions`
 
-Defined in: [node/types.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/node/types.ts#L37)
+Defined in: [node/types.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/node/types.ts#L44)
 
 ***
 
@@ -22,4 +24,4 @@ Defined in: [node/types.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo
 
 > **1**: `StemBinaryNodeOptions`
 
-Defined in: [node/types.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/node/types.ts#L38)
+Defined in: [node/types.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/node/types.ts#L45)

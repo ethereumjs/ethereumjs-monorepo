@@ -17,6 +17,7 @@ import { gasLimitCheck } from './util.ts'
 import type { ExecResult } from '../types.ts'
 import type { PrecompileInput } from './types.ts'
 
+/** ECRECOVER precompile (0x01): recover the signer address from an secp256k1 signature. */
 export function precompile01(opts: PrecompileInput): ExecResult {
   const pName = getPrecompileName('01')
   const ecrecoverFunction = opts.common.customCrypto.ecrecover ?? ecrecover

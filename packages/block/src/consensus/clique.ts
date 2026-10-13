@@ -18,11 +18,14 @@ import type { CliqueConfig } from '@ethereumjs/common'
 import type { BlockHeader } from '../index.ts'
 
 // Fixed number of extra-data prefix bytes reserved for signer vanity
+/** Bytes reserved at the start of Clique `extraData` for signer vanity (EIP-225). */
 export const CLIQUE_EXTRA_VANITY = 32
 // Fixed number of extra-data suffix bytes reserved for signer seal
+/** Bytes reserved at the end of Clique `extraData` for the secp256k1 seal (EIP-225). */
 export const CLIQUE_EXTRA_SEAL = 65
 
 // This function is not exported in the index file to keep it internal
+/** Assert that `header` belongs to a Clique PoA chain; used by internal Clique helpers. */
 export function requireClique(header: BlockHeader, name: string) {
   if (header.common.consensusAlgorithm() !== ConsensusAlgorithm.Clique) {
     const msg = header['_errorMsg'](

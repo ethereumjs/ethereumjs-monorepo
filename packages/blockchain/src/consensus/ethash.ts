@@ -7,6 +7,7 @@ import type { Debugger } from 'debug'
 import type { Blockchain } from '../index.ts'
 import type { Consensus, ConsensusOptions } from '../types.ts'
 
+/** Minimal Ethash interface required by {@link EthashConsensus}. */
 export type MinimalEthashInterface = {
   cacheDB?: any
   verifyPOW(block: Block): Promise<boolean>

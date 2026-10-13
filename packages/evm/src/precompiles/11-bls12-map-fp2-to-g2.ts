@@ -11,6 +11,7 @@ import { equalityLengthCheck, gasLimitCheck } from './util.ts'
 import type { ExecResult } from '../types.ts'
 import type { PrecompileInput } from './types.ts'
 
+/** BLS12-381 field-element-to-G2 map precompile (0x11, EIP-2537). */
 export async function precompile11(opts: PrecompileInput): Promise<ExecResult> {
   const pName = getPrecompileName('13')
   const bls = (opts._EVM as EVM)['_bls']!
@@ -43,11 +44,12 @@ export async function precompile11(opts: PrecompileInput): Promise<ExecResult> {
   let returnValue
   try {
     returnValue = bls.mapFP2toG2(opts.data)
-  } catch (e: any) {
+  } catch (e: unknown) {
+    const error = e instanceof EVMError ? e : new EVMError(EVMError.errorMessages.REVERT)
     if (opts._debug !== undefined) {
-      opts._debug(`${pName} failed: ${e.message}`)
+      opts._debug(`${pName} failed: ${e instanceof Error ? e.message : undefined}`)
     }
-    return EVMErrorResult(e, opts.gasLimit)
+    return EVMErrorResult(error, opts.gasLimit)
   }
 
   if (opts._debug !== undefined) {

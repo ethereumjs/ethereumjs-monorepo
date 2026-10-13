@@ -13,6 +13,7 @@ export default mergeConfig(
         'test/eip4844.spec.ts',
         'test/eip7594.spec.ts',
         'test/t9n.spec.ts',
+        'test/wasmCrypto.spec.ts',
       ],
     },
   }),

@@ -16,12 +16,10 @@ const main = async () => {
 
   // Dump all the leaf node values to an object
   const dump = await trie.getValueMap()
-  console.log(dump)
+  console.log(`All leaf values: ${Object.keys(dump.values).length} entries`)
 
-  // Dump a subset of leaf nodes with a starting key and limit
-  // This will only dump the first two keys from the trie
   const selectiveDump = await trie.getValueMap(1n, 2)
-  console.log(selectiveDump)
+  console.log(`Selective dump: ${Object.keys(selectiveDump.values).length} entries`)
 }
 
 void main()

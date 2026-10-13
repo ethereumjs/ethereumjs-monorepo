@@ -8,7 +8,9 @@
 
 > **e2StoreEntry** = `object`
 
-Defined in: [packages/e2store/src/types.ts:3](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/types.ts#L3)
+Defined in: [packages/e2store/src/types.ts:4](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/types.ts#L4)
+
+Parsed e2store entry header and payload bytes.
 
 ## Properties
 
@@ -16,7 +18,9 @@ Defined in: [packages/e2store/src/types.ts:3](https://github.com/ethereumjs/ethe
 
 > **data**: `Uint8Array`
 
-Defined in: [packages/e2store/src/types.ts:5](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/types.ts#L5)
+Defined in: [packages/e2store/src/types.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/types.ts#L8)
+
+Entry payload (often Snappy-compressed).
 
 ***
 
@@ -24,4 +28,6 @@ Defined in: [packages/e2store/src/types.ts:5](https://github.com/ethereumjs/ethe
 
 > **type**: `Uint8Array`
 
-Defined in: [packages/e2store/src/types.ts:4](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/types.ts#L4)
+Defined in: [packages/e2store/src/types.ts:6](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/types.ts#L6)
+
+Two-byte type tag identifying the entry kind.

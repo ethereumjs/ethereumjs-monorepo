@@ -3,6 +3,7 @@ import type {
   BinaryTreeAccessWitnessInterface,
   BinaryTreeAccessedState,
   BinaryTreeAccessedStateWithAddress,
+  BinaryTreeStateManagerInterface,
   RawBinaryTreeAccessedState,
 } from '@ethereumjs/common'
 import { BinaryTreeAccessedStateType } from '@ethereumjs/common'
@@ -25,9 +26,6 @@ import {
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 
-import type { BinaryTree } from '@ethereumjs/binarytree'
-import type { StatefulBinaryTreeStateManager } from '@ethereumjs/statemanager'
-
 import type { Address, BinaryTreeExecutionWitness, PrefixedHexString } from '@ethereumjs/util'
 import { ChunkCache } from './chunkCache.ts'
 import { StemCache } from './stemCache.ts'
@@ -43,14 +41,16 @@ const WitnessBranchWriteCost = BigInt(3000)
 const WitnessChunkWriteCost = BigInt(500)
 const WitnessChunkFillCost = BigInt(6200)
 
-// read is a default access event if stem or chunk is present
+/** Stem-level binary-tree access event (read by default; optional write). */
 export type BinaryStemAccessEvent = { write?: boolean }
 
+/** Chunk-level access event, including optional fill for previously empty chunks. */
 export type BinaryChunkAccessEvent = BinaryStemAccessEvent & { fill?: boolean }
 
-// Since stem is hashed (could chang for binary), it is useful to maintain the reverse relationship
+/** Reverse lookup from stem hash to contract address and tree index. */
 export type BinaryStemMeta = { address: Address; treeIndex: number | bigint }
 
+/** Maps a binary-tree stem/chunk index pair to a typed accessed-state descriptor. */
 export function decodeBinaryAccessState(
   treeIndex: number | bigint,
   chunkIndex: number,
@@ -89,6 +89,7 @@ export function decodeBinaryAccessState(
   }
 }
 
+/** Tracks binary-tree stem and chunk accesses for EIP-7864 witness costing. */
 export class BinaryTreeAccessWitness implements BinaryTreeAccessWitnessInterface {
   stems: Map<PrefixedHexString, BinaryStemAccessEvent & BinaryStemMeta>
   chunks: Map<PrefixedHexString, BinaryChunkAccessEvent>
@@ -384,64 +385,67 @@ export class BinaryTreeAccessWitness implements BinaryTreeAccessWitnessInterface
 /**
  * Generate a {@link BinaryTreeExecutionWitness} from a state manager and an access witness.
  * @param stateManager - The state manager containing the state to generate the witness for.
+ * Any state manager exposing the binary tree surface works (see
+ * {@link BinaryTreeStateManagerInterface}), e.g. `StatefulBinaryTreeStateManager`
+ * from `@ethereumjs/statemanager`.
  * @param accessWitness - The access witness containing the accessed states.
  * @param parentStateRoot - The parent state root (i.e. prestate root) to generate the witness for.
  * @returns The generated binary tree execution witness
  */
 export const generateBinaryExecutionWitness = async (
-  stateManager: StatefulBinaryTreeStateManager,
+  stateManager: BinaryTreeStateManagerInterface,
   accessWitness: BinaryTreeAccessWitness,
   parentStateRoot: Uint8Array,
 ): Promise<BinaryTreeExecutionWitness> => {
-  const tree = stateManager['_tree'] as BinaryTree
-  await tree['_lock'].acquire()
-  const postStateRoot = await stateManager.getStateRoot()
-  const ew: BinaryTreeExecutionWitness = {
-    stateDiff: [],
-    parentStateRoot: bytesToHex(parentStateRoot),
-    proof: undefined as any, // Binary proofs are not implemented
-  }
+  const tree = stateManager.tree
+  return tree.withLock(async () => {
+    const postStateRoot = await stateManager.getStateRoot()
+    const ew: BinaryTreeExecutionWitness = {
+      stateDiff: [],
+      parentStateRoot: bytesToHex(parentStateRoot),
+      proof: undefined as any, // Binary proofs are not implemented
+    }
 
-  // Generate a map of all stems with their accessed suffixes
-  const accessedSuffixes = new Map<PrefixedHexString, number[]>()
-  for (const chunkKey of accessWitness['chunks'].keys()) {
-    const stem = chunkKey.slice(0, 64) as PrefixedHexString
-    if (accessedSuffixes.has(stem)) {
+    // Generate a map of all stems with their accessed suffixes
+    const accessedSuffixes = new Map<PrefixedHexString, number[]>()
+    for (const chunkKey of accessWitness.chunks.keys()) {
+      const stem = chunkKey.slice(0, 64) as PrefixedHexString
+      if (accessedSuffixes.has(stem)) {
+        const suffixes = accessedSuffixes.get(stem)
+        suffixes!.push(parseInt(chunkKey.slice(64), 16))
+        accessedSuffixes.set(stem, suffixes!)
+      } else {
+        accessedSuffixes.set(stem, [parseInt(chunkKey.slice(64), 16)])
+      }
+    }
+
+    // Get values from the tree for each stem and suffix
+    for (const stem of accessedSuffixes.keys()) {
+      tree.root(parentStateRoot)
       const suffixes = accessedSuffixes.get(stem)
-      suffixes!.push(parseInt(chunkKey.slice(64), 16))
-      accessedSuffixes.set(stem, suffixes!)
-    } else {
-      accessedSuffixes.set(stem, [parseInt(chunkKey.slice(64), 16)])
+      if (suffixes === undefined || suffixes.length === 0) continue
+      const currentValues = await tree.get(hexToBytes(stem), suffixes)
+      tree.root(postStateRoot)
+      const newValues = await tree.get(hexToBytes(stem), suffixes)
+      const stemStateDiff = []
+      for (let x = 0; x < suffixes.length; x++) {
+        // skip if both are the same
+        const currentValue = currentValues[x]
+        const newValue = newValues[x]
+        if (
+          currentValue instanceof Uint8Array &&
+          newValue instanceof Uint8Array &&
+          equalsBytes(currentValue, newValue)
+        )
+          continue
+        stemStateDiff.push({
+          suffix: suffixes[x],
+          currentValue: currentValue ? bytesToHex(currentValue) : null,
+          newValue: newValue ? bytesToHex(newValue) : null,
+        })
+      }
+      ew.stateDiff.push({ stem, suffixDiffs: stemStateDiff })
     }
-  }
-
-  // Get values from the tree for each stem and suffix
-  for (const stem of accessedSuffixes.keys()) {
-    tree.root(parentStateRoot)
-    const suffixes = accessedSuffixes.get(stem)
-    if (suffixes === undefined || suffixes.length === 0) continue
-    const currentValues = await tree.get(hexToBytes(stem), suffixes)
-    tree.root(postStateRoot)
-    const newValues = await tree.get(hexToBytes(stem), suffixes)
-    const stemStateDiff = []
-    for (let x = 0; x < suffixes.length; x++) {
-      // skip if both are the same
-      const currentValue = currentValues[x]
-      const newValue = newValues[x]
-      if (
-        currentValue instanceof Uint8Array &&
-        newValue instanceof Uint8Array &&
-        equalsBytes(currentValue, newValue)
-      )
-        continue
-      stemStateDiff.push({
-        suffix: suffixes[x],
-        currentValue: currentValue ? bytesToHex(currentValue) : null,
-        newValue: newValue ? bytesToHex(newValue) : null,
-      })
-    }
-    ew.stateDiff.push({ stem, suffixDiffs: stemStateDiff })
-  }
-  tree['_lock'].release()
-  return ew
+    return ew
+  })
 }

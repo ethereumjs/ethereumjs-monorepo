@@ -12,7 +12,7 @@ Defined in: [thirdparty.ts:195](https://github.com/ethereumjs/ethereumjs-monorep
 
 ## Type Declaration
 
-### fromEtherCamp()
+### fromEtherCamp
 
 > **fromEtherCamp**: (`passphrase`) => [`Wallet`](../../../../classes/Wallet.md)
 
@@ -28,7 +28,7 @@ Third Party API: Import a brain wallet used by Ether.Camp
 
 [`Wallet`](../../../../classes/Wallet.md)
 
-### fromEtherWallet()
+### fromEtherWallet
 
 > **fromEtherWallet**: (`input`, `password`) => `Promise`\<[`Wallet`](../../../../classes/Wallet.md)\>
 
@@ -36,7 +36,7 @@ Third Party API: Import a brain wallet used by Ether.Camp
 
 ##### input
 
-`string` | [`EtherWalletOptions`](../interfaces/EtherWalletOptions.md)
+`string` \| [`EtherWalletOptions`](../interfaces/EtherWalletOptions.md)
 
 ##### password
 
@@ -46,7 +46,7 @@ Third Party API: Import a brain wallet used by Ether.Camp
 
 `Promise`\<[`Wallet`](../../../../classes/Wallet.md)\>
 
-### fromQuorumWallet()
+### fromQuorumWallet
 
 > **fromQuorumWallet**: (`passphrase`, `userid`) => [`Wallet`](../../../../classes/Wallet.md)
 

@@ -6,7 +6,7 @@
 
 # Class: CliqueConsensus
 
-Defined in: [consensus/clique.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/clique.ts#L70)
+Defined in: [consensus/clique.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/clique.ts#L71)
 
 This class encapsulates Clique-related consensus functionality when used with the Blockchain class.
 Note: reorgs which happen between epoch transitions, which change the internal voting state over the reorg
@@ -24,7 +24,7 @@ Now replay all blocks on top of it. This should validate the chain up to the new
 
 > **new CliqueConsensus**(): `CliqueConsensus`
 
-Defined in: [consensus/clique.ts:122](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/clique.ts#L122)
+Defined in: [consensus/clique.ts:123](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/clique.ts#L123)
 
 #### Returns
 
@@ -36,9 +36,9 @@ Defined in: [consensus/clique.ts:122](https://github.com/ethereumjs/ethereumjs-m
 
 > **\_cliqueLatestBlockSigners**: `CliqueLatestBlockSigners` = `[]`
 
-Defined in: [consensus/clique.ts:119](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/clique.ts#L119)
+Defined in: [consensus/clique.ts:120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/clique.ts#L120)
 
-List of signers for the last consecutive Blockchain.cliqueSignerLimit blocks.
+List of signers for the last consecutive Clique signer-limit blocks.
 Kept as a snapshot for quickly checking for "recently signed" error.
 Format: [ [BLOCK_NUMBER, SIGNER_ADDRESS], ...]
 
@@ -50,7 +50,7 @@ On reorgs elements from the array are removed until BLOCK_NUMBER > REORG_BLOCK.
 
 > **\_cliqueLatestSignerStates**: `CliqueLatestSignerStates` = `[]`
 
-Defined in: [consensus/clique.ts:94](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/clique.ts#L94)
+Defined in: [consensus/clique.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/clique.ts#L95)
 
 List with the latest signer states checkpointed on blocks where
 a change (added new or removed a signer) occurred.
@@ -69,7 +69,7 @@ Always keep at least one item on the stack.
 
 > **\_cliqueLatestVotes**: `CliqueLatestVotes` = `[]`
 
-Defined in: [consensus/clique.ts:110](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/clique.ts#L110)
+Defined in: [consensus/clique.ts:111](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/clique.ts#L111)
 
 List with the latest signer votes.
 
@@ -90,7 +90,7 @@ On reorgs elements from the array are removed until BLOCK_NUMBER > REORG_BLOCK.
 
 > **algorithm**: `ConsensusAlgorithm`
 
-Defined in: [consensus/clique.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/clique.ts#L72)
+Defined in: [consensus/clique.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/clique.ts#L73)
 
 #### Implementation of
 
@@ -102,7 +102,7 @@ Defined in: [consensus/clique.ts:72](https://github.com/ethereumjs/ethereumjs-mo
 
 > **blockchain**: [`Blockchain`](Blockchain.md) \| `undefined`
 
-Defined in: [consensus/clique.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/clique.ts#L71)
+Defined in: [consensus/clique.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/clique.ts#L72)
 
 ***
 
@@ -110,15 +110,15 @@ Defined in: [consensus/clique.ts:71](https://github.com/ethereumjs/ethereumjs-mo
 
 > **DEBUG**: `boolean`
 
-Defined in: [consensus/clique.ts:121](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/clique.ts#L121)
+Defined in: [consensus/clique.ts:122](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/clique.ts#L122)
 
 ## Methods
 
 ### cliqueActiveSigners()
 
-> **cliqueActiveSigners**(`blockNum`): `Address`[]
+> **cliqueActiveSigners**(`blockNum`): [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)[]
 
-Defined in: [consensus/clique.ts:449](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/clique.ts#L449)
+Defined in: [consensus/clique.ts:448](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/clique.ts#L448)
 
 Returns a list with the current block signers
 
@@ -130,7 +130,7 @@ Returns a list with the current block signers
 
 #### Returns
 
-`Address`[]
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)[]
 
 ***
 
@@ -138,7 +138,7 @@ Returns a list with the current block signers
 
 > **cliqueSignerInTurn**(`signer`, `blockNum`): `Promise`\<`boolean`\>
 
-Defined in: [consensus/clique.ts:624](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/clique.ts#L624)
+Defined in: [consensus/clique.ts:623](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/clique.ts#L623)
 
 Helper to determine if a signer is in or out of turn for the next block.
 
@@ -146,7 +146,7 @@ Helper to determine if a signer is in or out of turn for the next block.
 
 ##### signer
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 The signer address
 
@@ -164,7 +164,7 @@ The signer address
 
 > **genesisInit**(`genesisBlock`): `Promise`\<`void`\>
 
-Defined in: [consensus/clique.ts:145](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/clique.ts#L145)
+Defined in: [consensus/clique.ts:144](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/clique.ts#L144)
 
 Initialize genesis for consensus mechanism
 
@@ -172,7 +172,7 @@ Initialize genesis for consensus mechanism
 
 ##### genesisBlock
 
-`Block`
+[`Block`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/Block.md)
 
 genesis block
 
@@ -190,7 +190,7 @@ genesis block
 
 > **newBlock**(`block`, `commonAncestor`): `Promise`\<`void`\>
 
-Defined in: [consensus/clique.ts:209](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/clique.ts#L209)
+Defined in: [consensus/clique.ts:208](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/clique.ts#L208)
 
 Update consensus on new block
 
@@ -198,15 +198,15 @@ Update consensus on new block
 
 ##### block
 
-`Block`
+[`Block`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/Block.md)
 
 new block
 
 ##### commonAncestor
 
-common ancestor block header (optional)
+[`BlockHeader`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/BlockHeader.md) \| `undefined`
 
-`BlockHeader` | `undefined`
+common ancestor block header (optional)
 
 #### Returns
 
@@ -222,7 +222,7 @@ common ancestor block header (optional)
 
 > **setup**(`param`): `Promise`\<`void`\>
 
-Defined in: [consensus/clique.ts:137](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/clique.ts#L137)
+Defined in: [consensus/clique.ts:136](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/clique.ts#L136)
 
 #### Parameters
 
@@ -248,7 +248,7 @@ Note: this method must be called before consensus checks are used or type errors
 
 > **validateConsensus**(`block`): `Promise`\<`void`\>
 
-Defined in: [consensus/clique.ts:149](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/clique.ts#L149)
+Defined in: [consensus/clique.ts:148](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/clique.ts#L148)
 
 Validate block consensus parameters
 
@@ -256,7 +256,7 @@ Validate block consensus parameters
 
 ##### block
 
-`Block`
+[`Block`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/Block.md)
 
 block to be validated
 
@@ -274,13 +274,15 @@ block to be validated
 
 > **validateDifficulty**(`header`): `Promise`\<`void`\>
 
-Defined in: [consensus/clique.ts:180](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/clique.ts#L180)
+Defined in: [consensus/clique.ts:179](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/clique.ts#L179)
+
+Validates header difficulty against parent and consensus rules.
 
 #### Parameters
 
 ##### header
 
-`BlockHeader`
+[`BlockHeader`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/BlockHeader.md)
 
 #### Returns
 

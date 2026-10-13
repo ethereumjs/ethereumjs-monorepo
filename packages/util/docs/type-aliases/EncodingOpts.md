@@ -8,20 +8,22 @@
 
 > **EncodingOpts** = `object`
 
-Defined in: [packages/util/src/db.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L25)
+Defined in: [packages/util/src/db.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L32)
+
+Encoding options passed to [DB](../interfaces/DB.md) get/put operations.
 
 ## Properties
 
 ### keyEncoding?
 
-> `optional` **keyEncoding**: [`KeyEncoding`](KeyEncoding.md)
+> `optional` **keyEncoding?**: [`KeyEncoding`](KeyEncoding.md)
 
-Defined in: [packages/util/src/db.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L26)
+Defined in: [packages/util/src/db.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L33)
 
 ***
 
 ### valueEncoding?
 
-> `optional` **valueEncoding**: [`ValueEncoding`](ValueEncoding.md)
+> `optional` **valueEncoding?**: [`ValueEncoding`](ValueEncoding.md)
 
-Defined in: [packages/util/src/db.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L27)
+Defined in: [packages/util/src/db.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L34)

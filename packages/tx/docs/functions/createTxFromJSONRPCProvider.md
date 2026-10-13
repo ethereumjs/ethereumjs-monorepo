@@ -6,34 +6,34 @@
 
 # Function: createTxFromJSONRPCProvider()
 
-> **createTxFromJSONRPCProvider**(`provider`, `txHash`, `txOptions?`): `Promise`\<[`LegacyTx`](../classes/LegacyTx.md) \| [`AccessList2930Tx`](../classes/AccessList2930Tx.md) \| [`FeeMarket1559Tx`](../classes/FeeMarket1559Tx.md) \| [`Blob4844Tx`](../classes/Blob4844Tx.md) \| [`EOACode7702Tx`](../classes/EOACode7702Tx.md)\>
+> **createTxFromJSONRPCProvider**(`provider`, `txHash`, `txOptions?`): `Promise`\<[`LegacyTx`](../classes/LegacyTx.md) \| [`AccessList2930Tx`](../classes/AccessList2930Tx.md) \| [`FeeMarket1559Tx`](../classes/FeeMarket1559Tx.md) \| [`EOACode7702Tx`](../classes/EOACode7702Tx.md) \| [`Blob4844Tx`](../classes/Blob4844Tx.md)\>
 
-Defined in: [transactionFactory.ts:129](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L129)
+Defined in: [transactionFactory.ts:127](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/transactionFactory.ts#L127)
 
-Method to retrieve a transaction from the provider
+Fetch a transaction by hash from a JSON-RPC provider and instantiate it.
 
 ## Parameters
 
 ### provider
 
-a url string for a JSON-RPC provider or an Ethers JSONRPCProvider object
-
-`string` | `EthersProvider`
+`string` \| `EthersProvider`
 
 ### txHash
 
 `string`
 
-Transaction hash
-
 ### txOptions?
 
 [`TxOptions`](../interfaces/TxOptions.md)
 
-The transaction options
-
 ## Returns
 
-`Promise`\<[`LegacyTx`](../classes/LegacyTx.md) \| [`AccessList2930Tx`](../classes/AccessList2930Tx.md) \| [`FeeMarket1559Tx`](../classes/FeeMarket1559Tx.md) \| [`Blob4844Tx`](../classes/Blob4844Tx.md) \| [`EOACode7702Tx`](../classes/EOACode7702Tx.md)\>
+`Promise`\<[`LegacyTx`](../classes/LegacyTx.md) \| [`AccessList2930Tx`](../classes/AccessList2930Tx.md) \| [`FeeMarket1559Tx`](../classes/FeeMarket1559Tx.md) \| [`EOACode7702Tx`](../classes/EOACode7702Tx.md) \| [`Blob4844Tx`](../classes/Blob4844Tx.md)\>
 
-the transaction specified by `txHash`
+## Throws
+
+If the provider returns no data for the hash
+
+## Throws
+
+If delegated [createTxFromRPC](createTxFromRPC.md) validation fails

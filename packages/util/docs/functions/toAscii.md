@@ -8,9 +8,9 @@
 
 > **toAscii**(`hex`): `string`
 
-Defined in: [packages/util/src/internal.ts:125](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L125)
+Defined in: [packages/util/src/internal.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L105)
 
-Should be called to get ascii from its hex representation
+Decode a hex string (optional `0x` prefix) into an ASCII string.
 
 ## Parameters
 
@@ -21,5 +21,3 @@ Should be called to get ascii from its hex representation
 ## Returns
 
 `string`
-
-ascii string representation of hex value

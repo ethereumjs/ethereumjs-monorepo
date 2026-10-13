@@ -127,6 +127,7 @@ const SIGMA82 = new Uint8Array(
   }),
 )
 
+/** BLAKE2b compression function used by the BLAKE2f precompile. */
 export function F(h: Uint32Array, m: Uint32Array, t: Uint32Array, f: boolean, rounds: number) {
   const v = new Uint32Array(32)
   let i = 0
@@ -171,6 +172,7 @@ export function F(h: Uint32Array, m: Uint32Array, t: Uint32Array, f: boolean, ro
   }
 }
 
+/** BLAKE2f precompile (0x09): one round of the BLAKE2b compression function. */
 export function precompile09(opts: PrecompileInput): ExecResult {
   const pName = getPrecompileName('09')
   const data = opts.data

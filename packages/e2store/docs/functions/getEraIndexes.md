@@ -8,9 +8,9 @@
 
 > **getEraIndexes**(`eraContents`): `object`
 
-Defined in: [packages/e2store/src/era/era.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/era/era.ts#L46)
+Defined in: [packages/e2store/src/era/era.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/era/era.ts#L47)
 
-Reads a an era file and extracts the State and Block slot indices
+Extracts state and optional block [SlotIndex](../type-aliases/SlotIndex.md) records from a serialized era file.
 
 ## Parameters
 
@@ -18,13 +18,11 @@ Reads a an era file and extracts the State and Block slot indices
 
 `Uint8Array`
 
-a bytestring representing a serialized era file
-
 ## Returns
 
 `object`
 
-a dictionary containing the State and Block Slot Indices (if present)
+Block index is `undefined` when `startSlot === 0` (state-only era).
 
 ### blockSlotIndex
 

@@ -8,7 +8,9 @@
 
 > `const` **NetworkWrapperType**: `object`
 
-Defined in: [4844/tx.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L47)
+Defined in: [4844/tx.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/tx.ts#L51)
+
+Network-wrapper version identifiers for blob tx gossip.
 
 ## Type Declaration
 

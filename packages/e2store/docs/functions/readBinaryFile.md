@@ -8,7 +8,9 @@
 
 > **readBinaryFile**(`path`): `Uint8Array`\<`ArrayBuffer`\>
 
-Defined in: [packages/e2store/src/index.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/index.ts#L12)
+Defined in: [packages/e2store/src/index.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/index.ts#L13)
+
+Reads a file from disk into a `Uint8Array` (for era / e2store fixture loading).
 
 ## Parameters
 

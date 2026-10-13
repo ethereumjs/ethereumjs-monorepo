@@ -7,7 +7,7 @@ import { numberToBytes } from './utils.ts'
 
 const { bytesToHex, hexToBytes } = utils
 
-describe('official tests', () => {
+describe('[RLP]: official vectors', () => {
   for (const [testName, test] of Object.entries(rlpTestData.tests)) {
     it(`should pass ${testName}`, () => {
       let incoming: any = test.in

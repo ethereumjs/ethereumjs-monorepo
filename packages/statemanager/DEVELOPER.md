@@ -19,12 +19,10 @@ The following initial logger is currently available:
 
 | Logger                          | Description                                              |
 | ------------------------------- | -------------------------------------------------------- |
-| `statemanager:merkle`           | Operations happening on the `MerkleStateManager`         |
-| `statemanager:rpc`              | Operations happening on the `RPCStateManager`            |
-| `statemanager:verkle:stateful`  | Operations happening on the `StatefulVerkleStateManager` |
-| `statemanager:verkle:stateless` | Operations accessing verkle witnesses                    |
-| `statemanager:verkle:aw`        | Operations accessing verkle witnesses                    |
-| `statemanager:cache`            | Operations accessing statemanager caches                 |
+| `statemanager:merkle`           | Operations happening on the `MerkleStateManager`              |
+| `statemanager:rpc`              | Operations happening on the `RPCStateManager`                 |
+| `statemanager:binarytree`       | Operations happening on the `StatefulBinaryTreeStateManager`  |
+| `statemanager:cache`            | Operations accessing statemanager caches                      |
 | `statemanager:cache:code`       | Operations accessing statemanager code cache             |
 | `statemanager:cache:account`    | Operations accessing statemanager account cache          |
 | `statemanager:cache:storage`    | Operations accessing statemanager storage cache          |

@@ -6,7 +6,7 @@
 
 # Class: EthashConsensus
 
-Defined in: [consensus/ethash.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L18)
+Defined in: [consensus/ethash.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L19)
 
 This class encapsulates Ethash-related consensus functionality when used with the Blockchain class.
 
@@ -20,7 +20,7 @@ This class encapsulates Ethash-related consensus functionality when used with th
 
 > **new EthashConsensus**(`ethash`): `EthashConsensus`
 
-Defined in: [consensus/ethash.ts:26](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L26)
+Defined in: [consensus/ethash.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L27)
 
 #### Parameters
 
@@ -38,7 +38,7 @@ Defined in: [consensus/ethash.ts:26](https://github.com/ethereumjs/ethereumjs-mo
 
 > **\_ethash**: `MinimalEthashInterface`
 
-Defined in: [consensus/ethash.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L21)
+Defined in: [consensus/ethash.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L22)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: [consensus/ethash.ts:21](https://github.com/ethereumjs/ethereumjs-mo
 
 > **algorithm**: `ConsensusAlgorithm`
 
-Defined in: [consensus/ethash.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L20)
+Defined in: [consensus/ethash.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L21)
 
 #### Implementation of
 
@@ -58,7 +58,7 @@ Defined in: [consensus/ethash.ts:20](https://github.com/ethereumjs/ethereumjs-mo
 
 > **blockchain**: [`Blockchain`](Blockchain.md) \| `undefined`
 
-Defined in: [consensus/ethash.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L19)
+Defined in: [consensus/ethash.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/consensus/ethash.ts#L20)
 
 ## Methods
 
@@ -134,7 +134,7 @@ Validate block consensus parameters
 
 ##### block
 
-`Block`
+[`Block`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/Block.md)
 
 block to be validated
 
@@ -160,7 +160,7 @@ Checks that the block's `difficulty` matches the canonical difficulty of the par
 
 ##### header
 
-`BlockHeader`
+[`BlockHeader`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/docs/classes/BlockHeader.md)
 
 header of block to be checked
 

@@ -8,20 +8,20 @@ import { BlockHeader } from '../index.ts'
 import type { BlockHeaderBytes, BlockOptions, HeaderData, JSONRPCBlock } from '../types.ts'
 
 /**
- * Static constructor to create a block header from a header data dictionary
+ * Instantiate a block header from {@link HeaderData}.
  *
- * @param headerData
- * @param opts
+ * @throws If header field validation fails in the {@link BlockHeader} constructor
  */
 export function createBlockHeader(headerData: HeaderData = {}, opts: BlockOptions = {}) {
   return new BlockHeader(headerData, opts)
 }
 
 /**
- * Static constructor to create a block header from an array of bytes values
+ * Instantiate a block header from RLP-encoded field values.
  *
- * @param values
- * @param opts
+ * @throws If the values array length is out of range (15–23 fields)
+ * @throws If required EIP fields are missing for the active hardfork
+ * @throws If header field validation fails in the {@link BlockHeader} constructor
  */
 export function createBlockHeaderFromBytesArray(values: BlockHeaderBytes, opts: BlockOptions = {}) {
   const headerData = valuesArrayToHeaderData(values)
@@ -61,10 +61,10 @@ export function createBlockHeaderFromBytesArray(values: BlockHeaderBytes, opts: 
 }
 
 /**
- * Static constructor to create a block header from a RLP-serialized header
+ * Instantiate a block header from RLP-serialized bytes.
  *
- * @param serializedHeaderData
- * @param opts
+ * @throws If RLP decode result is not an array
+ * @throws If decoded values fail {@link createBlockHeaderFromBytesArray} checks
  */
 export function createBlockHeaderFromRLP(
   serializedHeaderData: Uint8Array,
@@ -104,10 +104,9 @@ export function createSealedCliqueBlockHeader(
 }
 
 /**
- * Creates a new block header object from Ethereum JSON RPC.
+ * Instantiate a block header from JSON-RPC block fields.
  *
- * @param blockParams - Ethereum JSON RPC of block (eth_getBlockByNumber)
- * @param options - An object describing the blockchain
+ * @param blockParams - `eth_getBlockByNumber` / `eth_getBlockByHash` response
  */
 export function createBlockHeaderFromRPC(blockParams: JSONRPCBlock, options?: BlockOptions) {
   const {

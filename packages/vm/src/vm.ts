@@ -62,10 +62,8 @@ export class VM {
   /**
    * Instantiates a new {@link VM} Object.
    *
-   * @deprecated The direct usage of this constructor is discouraged since
-   * non-finalized async initialization might lead to side effects. Please
-   * use the async {@link createVM} constructor instead (same API).
-   * @param opts
+   * @deprecated Use {@link createVM} instead — async initialization avoids side effects
+   * from partially constructed instances.
    */
   constructor(opts: VMOpts = {}) {
     this.common = opts.common!

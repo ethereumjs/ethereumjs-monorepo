@@ -1,4 +1,4 @@
-name: Ethash/Client Nightly
+name: Ethash Nightly
 on:
   schedule:
     - cron: 0 1 * * *
@@ -12,11 +12,11 @@ jobs:
     if: github.repository == 'ethereumjs/ethereumjs-monorepo'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
-          node-version: 24
+          node-version: 26
           cache: 'npm'
 
       - run: npm ci
@@ -25,49 +25,15 @@ jobs:
       - run: npm run test
         working-directory: ${{ github.workspace }}/packages/ethash
 
-  test-client:
-    if: github.repository == 'ethereumjs/ethereumjs-monorepo'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: 'npm'
-
-      - run: npm ci
-        working-directory: ${{github.workspace}}
-
-      - run: npm run test
-        working-directory: ${{ github.workspace }}/packages/client
-
-  test-devp2p:
-    if: github.repository == 'ethereumjs/ethereumjs-monorepo'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: 'npm'
-
-      - run: npm ci
-        working-directory: ${{github.workspace}}
-
-      - run: npm run test
-        working-directory: ${{ github.workspace }}/packages/devp2p
-
   test-wallet:
     if: github.repository == 'ethereumjs/ethereumjs-monorepo'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
-          node-version: 24
+          node-version: 26
           cache: 'npm'
 
       - run: npm ci

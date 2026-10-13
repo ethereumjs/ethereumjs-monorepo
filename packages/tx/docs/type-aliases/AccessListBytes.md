@@ -8,4 +8,6 @@
 
 > **AccessListBytes** = [`AccessListBytesItem`](AccessListBytesItem.md)[]
 
-Defined in: [types.ts:662](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L662)
+Defined in: [types.ts:703](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L703)
+
+Access list as an array of byte tuples.

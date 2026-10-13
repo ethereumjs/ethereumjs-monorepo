@@ -1,6 +1,7 @@
 import { assert, describe, it } from 'vitest'
 
 import {
+  SECP256K1_ORDER,
   bigIntToBytes,
   ecrecover,
   fromRPCSig,
@@ -8,6 +9,7 @@ import {
   hexToBytes,
   isValidSignature,
   privateToPublic,
+  setLengthLeft,
   toCompactSig,
   toRPCSig,
   utf8ToBytes,
@@ -17,7 +19,7 @@ const ecHash = hexToBytes('0x82ff40c0a986c6a5cfad4ddf4c3aa6996f1a7837f9c398e17e5
 const ecPrivKey = hexToBytes('0x3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7e3084dece32a3ca1')
 const chainId = BigInt(3) // ropsten
 
-describe('ecrecover', () => {
+describe('[Util/Signature]: ecrecover', () => {
   it('should recover a public key', () => {
     const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
     const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
@@ -96,6 +98,12 @@ describe('ecrecover', () => {
     const sender = ecrecover(msgHash, v, r, s, chainID)
     assert.deepEqual(sender, senderPubKey, 'sender pubkey correct (Buffer)')
   })
+
+  it('ecrecover() rejects non-Uint8Array msgHash', () => {
+    const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
+    const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
+    assert.throws(() => ecrecover('not-bytes' as unknown as Uint8Array, BigInt(27), r, s))
+  })
 })
 
 describe('hashPersonalMessage', () => {
@@ -136,6 +144,11 @@ describe('isValidSignature', () => {
     const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
     const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     assert.isFalse(isValidSignature(BigInt(29), r, s))
+  })
+  it('should fail when s is greater than or equal to the curve order', () => {
+    const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
+    const s = setLengthLeft(bigIntToBytes(SECP256K1_ORDER), 32)
+    assert.isFalse(isValidSignature(BigInt(27), r, s))
   })
   it('should fail when on homestead and s > secp256k1n/2', () => {
     const SECP256K1_N_DIV_2 = BigInt(
@@ -188,6 +201,12 @@ describe('isValidSignature', () => {
     const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     const v = BigInt(chainId * BigInt(2) + BigInt(35))
     assert.isTrue(isValidSignature(v, r, s, false, chainId))
+  })
+
+  it('isValidSignature() returns false for non-Uint8Array r/s', () => {
+    const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
+    const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
+    assert.isFalse(isValidSignature(BigInt(27), 'bad-r' as unknown as Uint8Array, s))
   })
 })
 
@@ -292,6 +311,9 @@ describe('message sig', () => {
   it('should throw on invalid v value', () => {
     assert.throws(function () {
       toRPCSig(BigInt(2), r, s)
+    })
+    assert.throws(function () {
+      toCompactSig(BigInt(21), r, s)
     })
   })
 })

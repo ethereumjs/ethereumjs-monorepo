@@ -53,22 +53,10 @@ import type { OnFound } from './util/asyncWalk.ts'
 /**
  * The basic trie interface, use with `import { MerklePatriciaTrie } from '@ethereumjs/mpt'`.
  *
- * A MerklePatriciaTrie object can be created with the constructor method:
+ * Preferred entry point: {@link createMPT}. For proof-backed sparse tries: {@link createMPTFromProof}.
  *
- * - {@link createMPT}
- *
- * A sparse MerklePatriciaTrie object can be created from a merkle proof:
- *
- * - {@link createMPTFromProof}
- */
-/**
- * Merkle Patricia Trie - a space-optimized trie where each node with only one child
- * is merged with its parent. Used for Ethereum state and storage.
- *
- * Node types:
- * - Branch: 16-way branch + optional value (for keys ending at this node)
- * - Extension: short path (nibbles) → child node
- * - Leaf: remaining path (nibbles) → value
+ * Merkle Patricia Trie — a space-optimized trie where single-child nodes merge with their parent.
+ * Node types: branch (16-way + optional value), extension (shared path), leaf (terminal value).
  */
 export class MerklePatriciaTrie {
   /** Options with defaults applied */
@@ -98,9 +86,8 @@ export class MerklePatriciaTrie {
 
   /**
    * Creates a new trie.
-   * @param opts Options for instantiating the trie
    *
-   * Note: in most cases, {@link createMPT} constructor should be used.  It uses the same API but provides sensible defaults
+   * @deprecated Use {@link createMPT} instead; it applies the same options with sensible defaults.
    */
   constructor(opts?: MPTOpts) {
     if (opts?.valueEncoding !== undefined && opts.db === undefined) {
@@ -210,11 +197,9 @@ export class MerklePatriciaTrie {
   }
 
   /**
-   * Stores a given `value` at the given `key` or do a delete if `value` is empty
-   * (delete operations are only executed on DB with `deleteFromDB` set to `true`)
-   * @param key
-   * @param value
-   * @returns A Promise that resolves once value is stored.
+   * Stores `value` at `key`, or deletes the key when `value` is empty.
+   *
+   * Deletes only reach the backing DB when node pruning is enabled.
    */
   async put(
     key: Uint8Array,
@@ -234,58 +219,71 @@ export class MerklePatriciaTrie {
       return this.del(key)
     }
 
-    await this._lock.acquire()
-    const appliedKey = skipKeyTransform ? key : this.appliedKey(key)
-    if (equalsBytes(this.root(), this.EMPTY_TRIE_ROOT)) {
-      await this._createInitialNode(appliedKey, value)
-    } else {
-      const { remaining, stack } = await this.findPath(appliedKey)
-      let ops: BatchDBOp[] = []
-      if (this._opts.useNodePruning) {
-        const val = await this.get(key)
-        // Only delete keys if it either does not exist, or if it gets updated
-        // (The update will update the hash of the node, thus we can delete the original leaf node)
-        if (val === null || !equalsBytes(val, value)) {
-          ops = this._createPruneDeleteOps(stack)
+    await this._withLock(async () => {
+      const appliedKey = skipKeyTransform ? key : this.appliedKey(key)
+      if (equalsBytes(this.root(), this.EMPTY_TRIE_ROOT)) {
+        await this._createInitialNode(appliedKey, value)
+      } else {
+        const { remaining, stack } = await this.findPath(appliedKey)
+        let ops: BatchDBOp[] = []
+        if (this._opts.useNodePruning) {
+          const val = await this.get(key)
+          // Only delete keys if it either does not exist, or if it gets updated
+          // (The update will update the hash of the node, thus we can delete the original leaf node)
+          if (val === null || !equalsBytes(val, value)) {
+            ops = this._createPruneDeleteOps(stack)
+          }
+        }
+        // then update
+        await this._updateNode(appliedKey, value, remaining, stack)
+        if (this._opts.useNodePruning) {
+          // Only after updating the node we can delete the keyHashes
+          await this._db.batch(ops)
         }
       }
-      // then update
-      await this._updateNode(appliedKey, value, remaining, stack)
-      if (this._opts.useNodePruning) {
-        // Only after updating the node we can delete the keyHashes
-        await this._db.batch(ops)
-      }
-    }
-    await this.persistRoot()
-    this._lock.release()
+      await this.persistRoot()
+    })
   }
 
   /**
-   * Deletes a value given a `key` from the trie
-   * (delete operations are only executed on DB with `deleteFromDB` set to `true`)
-   * @param key
-   * @returns A Promise that resolves once value is deleted.
+   * Deletes the value at `key`.
+   *
+   * Physical DB deletes occur only when node pruning is enabled.
    */
   async del(key: Uint8Array, skipKeyTransform: boolean = false): Promise<void> {
     this.DEBUG && this.debug(`Key: ${bytesToHex(key)}`, ['del'])
-    await this._lock.acquire()
-    const appliedKey = skipKeyTransform ? key : this.appliedKey(key)
-    const { node, stack } = await this.findPath(appliedKey)
+    await this._withLock(async () => {
+      const appliedKey = skipKeyTransform ? key : this.appliedKey(key)
+      const { node, stack } = await this.findPath(appliedKey)
+      const nodeHasValue =
+        node !== null && (!(node instanceof BranchMPTNode) || node.value() !== null)
 
-    let ops: BatchDBOp[] = []
-    // Only delete if the `key` currently has any value
-    if (this._opts.useNodePruning && node !== null) {
-      ops = this._createPruneDeleteOps(stack)
+      let ops: BatchDBOp[] = []
+      // Only delete if the `key` currently has any value
+      if (this._opts.useNodePruning && nodeHasValue) {
+        ops = this._createPruneDeleteOps(stack)
+      }
+      if (nodeHasValue) {
+        await this._deleteNode(appliedKey, stack)
+      }
+      if (this._opts.useNodePruning) {
+        // Only after deleting the node it is possible to delete the keyHashes
+        await this._db.batch(ops)
+      }
+      await this.persistRoot()
+    })
+  }
+
+  /**
+   * Runs an operation while holding the trie lock, releasing it even if the operation throws.
+   */
+  protected async _withLock<T>(operation: () => Promise<T>): Promise<T> {
+    await this._lock.acquire()
+    try {
+      return await operation()
+    } finally {
+      this._lock.release()
     }
-    if (node) {
-      await this._deleteNode(appliedKey, stack)
-    }
-    if (this._opts.useNodePruning) {
-      // Only after deleting the node it is possible to delete the keyHashes
-      await this._db.batch(ops)
-    }
-    await this.persistRoot()
-    this._lock.release()
   }
 
   // ─── Path finding ───────────────────────────────────────────────────────────
@@ -424,10 +422,10 @@ export class MerklePatriciaTrie {
   }
 
   /**
-   * Walks a trie until finished.
-   * @param root
-   * @param onFound - callback to call when a node is found. This schedules new tasks. If no tasks are available, the Promise resolves.
-   * @returns Resolves when finished walking trie.
+   * Walk the trie from `root`, invoking `onFound` for each visited node.
+   *
+   * @param root Root hash to start from
+   * @param onFound Callback that may schedule further child visits via the walk controller
    */
   async walkTrie(root: Uint8Array, onFound: FoundNodeFunction): Promise<void> {
     await WalkController.newWalk(onFound, this, root)
@@ -700,6 +698,40 @@ export class MerklePatriciaTrie {
 
     const branchNodes: [number, NodeReferenceOrRawMPTNode][] = lastNode.getChildren()
 
+    if (branchNodes.length === 0) {
+      const branchValue = lastNode.value()
+
+      if (branchValue !== null) {
+        // A branch with no children but with a value represents a terminal key.
+        // Replace it with a leaf so the key path is not lost during pruning.
+        const leafNode = new LeafMPTNode([], branchValue)
+        if (parentNode instanceof ExtensionMPTNode) {
+          leafNode.key(parentNode.key())
+          stack.push(leafNode)
+        } else {
+          if (parentNode instanceof BranchMPTNode) stack.push(parentNode)
+          stack.push(leafNode)
+        }
+        await this.saveStack(pathNibbles, stack, opStack)
+        return
+      }
+
+      // An empty branch has no value and no children, so remove it from the
+      // trie instead of persisting an unreachable structural node.
+      if (parentNode === undefined || parentNode instanceof ExtensionMPTNode) {
+        this.root(this.EMPTY_TRIE_ROOT)
+        return
+      }
+
+      if (!(parentNode instanceof BranchMPTNode)) {
+        throw EthereumJSErrorWithoutCode('Expected branch node')
+      }
+      parentNode.setBranch(pathNibbles.pop()!, null)
+      stack.push(parentNode)
+      await this.saveStack(pathNibbles, stack, opStack)
+      return
+    }
+
     if (branchNodes.length === 1) {
       // add the one remaining branch node to node above it
       const branchNode = branchNodes[0][1]
@@ -745,7 +777,7 @@ export class MerklePatriciaTrie {
    * Persists the modified node stack to the DB. Processes nodes from leaf toward root,
    * wiring each node's references (extension value, branch slot) to its child's hash.
    *
-   * @param key - nibble path that corresponds to the stack
+   * @param pathNibbles - nibble path that corresponds to the stack
    * @param stack - nodes from findPath/update, bottom (leaf) to top (root)
    * @param opStack - put/del operations accumulated by _formatNode
    */
@@ -824,7 +856,7 @@ export class MerklePatriciaTrie {
    *  , { type: 'put', key: Uint8Array.from('occupation'), value: Uint8Array.from('Clown') }
    * ]
    * await trie.batch(ops)
-   * @param ops
+   * @param ops Put/delete operations applied in order
    */
   async batch(ops: BatchDBOp[], skipKeyTransform?: boolean): Promise<void> {
     for (const op of ops) {
@@ -879,7 +911,9 @@ export class MerklePatriciaTrie {
             walkController.allChildren(node, currentKeyNibbles)
           }
           if (node instanceof ExtensionMPTNode) {
-            if (bytesToUnprefixedHex(node.value()) === dbKeyHex) {
+            // Inline child nodes are not stored in the DB and therefore do not
+            // correspond to a database key that can be checked here.
+            if (!isRawMPTNode(node.value()) && bytesToUnprefixedHex(node.value()) === dbKeyHex) {
               found = true
               return
             }
@@ -1015,10 +1049,10 @@ export class MerklePatriciaTrie {
       throw EthereumJSErrorWithoutCode('trying to commit when not checkpointed')
     }
     this.DEBUG && this.debug(`${bytesToHex(this.root())}`, ['commit'])
-    await this._lock.acquire()
-    await this._db.commit()
-    await this.persistRoot()
-    this._lock.release()
+    await this._withLock(async () => {
+      await this._db.commit()
+      await this.persistRoot()
+    })
   }
 
   /**
@@ -1032,10 +1066,10 @@ export class MerklePatriciaTrie {
     }
 
     this.DEBUG && this.debug(`${bytesToHex(this.root())}`, ['revert', 'before'])
-    await this._lock.acquire()
-    this.root(await this._db.revert())
-    await this.persistRoot()
-    this._lock.release()
+    await this._withLock(async () => {
+      this.root(await this._db.revert())
+      await this.persistRoot()
+    })
     this.DEBUG && this.debug(`${bytesToHex(this.root())}`, ['revert', 'after'])
   }
 

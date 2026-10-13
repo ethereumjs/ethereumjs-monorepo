@@ -27,6 +27,7 @@ export interface JSONRPCWithdrawal {
   amount: PrefixedHexString // QUANTITY - bigint amount in Gwei 8 bytes
 }
 
+/** Withdrawal payload as a four-tuple of byte arrays. */
 export type WithdrawalBytes = [Uint8Array, Uint8Array, Uint8Array, Uint8Array]
 /**
  * Convert a withdrawal to a byte array
@@ -64,7 +65,8 @@ export class Withdrawal {
 
   /**
    * This constructor assigns and validates the values.
-   * Use the static factory methods to assist in creating a Withdrawal object from varying data types.
+   * Use the module-level factory functions such as {@link createWithdrawal}
+   * and {@link createWithdrawalFromBytesArray}.
    * Its amount is in Gwei to match CL representation and for eventual ssz withdrawalsRoot
    */
   constructor(index: bigint, validatorIndex: bigint, address: Address, amount: bigint) {

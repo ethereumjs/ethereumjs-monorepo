@@ -21,9 +21,15 @@ export * from './account.ts'
 /**
  * Block level access list
  *
+ * Helpers for [EIP-7928](https://eips.ethereum.org/EIPS/eip-7928) on `Hardfork.Amsterdam`.
+ *
  * EXPERIMENTAL: DO NOT USE IN PRODUCTION!
+ *
+ * @remarks Experimental (Amsterdam): public API and behaviour may change on patch releases.
+ * See `@ethereumjs/vm` README section `Amsterdam hardfork (experimental)` for release ↔ spec tracking.
  */
-export * from './bal.ts'
+export * from './bal/index.ts'
+export * from './bal/validation.ts'
 
 /**
  * Address type
@@ -54,13 +60,6 @@ export * from './bytes.ts'
  * Helpful TypeScript types
  */
 export * from './types.ts'
-
-/**
- * Block level access list
- *
- * EXPERIMENTAL: DO NOT USE IN PRODUCTION!
- */
-export * from './bal.ts'
 
 /**
  * Export ethjs-util methods

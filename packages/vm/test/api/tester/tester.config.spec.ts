@@ -1,7 +1,7 @@
 import { Hardfork } from '@ethereumjs/common'
 import { assert, describe, it } from 'vitest'
 
-import { getCommon } from '../../tester/config.ts'
+import { getCommon } from '../../tester/legacy/config.ts'
 
 describe('test runner config tests', () => {
   it('should initialize common with the right hardfork', () => {

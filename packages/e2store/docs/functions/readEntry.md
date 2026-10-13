@@ -8,7 +8,7 @@
 
 > **readEntry**(`bytes`): [`e2StoreEntry`](../type-aliases/e2StoreEntry.md)
 
-Defined in: [packages/e2store/src/e2store.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/e2store.ts#L50)
+Defined in: [packages/e2store/src/e2store.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/e2store.ts#L51)
 
 Reads the first e2Store formatted entry from a string of bytes
 

@@ -6,7 +6,7 @@ import { invalidData } from './fixture/invalid.ts'
 
 const { hexToBytes } = utils
 
-describe('invalid tests', () => {
+describe('[RLP]: invalid vectors', () => {
   for (const [testName, test] of Object.entries(invalidData.tests)) {
     it(`should pass ${testName}`, () => {
       let { out } = test

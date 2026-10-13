@@ -8,7 +8,7 @@
 
 > **validateNoLeadingZeroes**(`values`): `void`
 
-Defined in: [packages/util/src/bytes.ts:337](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L337)
+Defined in: [packages/util/src/bytes.ts:319](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L319)
 
 Checks provided Uint8Array for leading zeroes and throws if found.
 

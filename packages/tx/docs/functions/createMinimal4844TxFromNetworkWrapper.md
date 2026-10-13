@@ -8,10 +8,9 @@
 
 > **createMinimal4844TxFromNetworkWrapper**(`txData`, `opts?`): [`Blob4844Tx`](../classes/Blob4844Tx.md)
 
-Defined in: [4844/constructors.ts:418](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/constructors.ts#L418)
+Defined in: [4844/constructors.ts:353](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/4844/constructors.ts#L353)
 
-Creates the minimal representation of a blob transaction from the network wrapper version.
-The minimal representation is used when adding transactions to an execution payload/block
+Strip blobs and KZG data from a network-wrapper tx for block inclusion.
 
 ## Parameters
 
@@ -19,16 +18,18 @@ The minimal representation is used when adding transactions to an execution payl
 
 [`Blob4844Tx`](../classes/Blob4844Tx.md)
 
-a [Blob4844Tx](../classes/Blob4844Tx.md) containing optional blobs/kzg commitments
-
 ### opts?
 
 [`TxOptions`](../interfaces/TxOptions.md)
-
-dictionary of [TxOptions](../interfaces/TxOptions.md)
 
 ## Returns
 
 [`Blob4844Tx`](../classes/Blob4844Tx.md)
 
-the "minimal" representation of a Blob4844Tx (i.e. transaction object minus blobs and kzg commitments)
+## Throws
+
+If `customCrypto.kzg` is not initialized on [TxOptions.common](../interfaces/TxOptions.md#common)
+
+## Throws
+
+If delegated [createBlob4844Tx](createBlob4844Tx.md) validation fails

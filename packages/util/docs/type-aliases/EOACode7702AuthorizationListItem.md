@@ -8,7 +8,9 @@
 
 > **EOACode7702AuthorizationListItem** = `object` & [`EOACode7702AuthorizationListItemUnsigned`](EOACode7702AuthorizationListItemUnsigned.md)
 
-Defined in: [packages/util/src/types.ts:140](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L140)
+Defined in: [packages/util/src/types.ts:142](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L142)
+
+Signed EIP-7702 authorization list entry (JSON form).
 
 ## Type Declaration
 

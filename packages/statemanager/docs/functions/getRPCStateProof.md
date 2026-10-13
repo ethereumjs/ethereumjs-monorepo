@@ -6,11 +6,11 @@
 
 # Function: getRPCStateProof()
 
-> **getRPCStateProof**(`sm`, `address`, `storageSlots`): `Promise`\<[`Proof`](../type-aliases/Proof.md)\>
+> **getRPCStateProof**(`sm`, `address`, `storageSlots?`): `Promise`\<[`Proof`](../type-aliases/Proof.md)\>
 
 Defined in: [proof/rpc.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/proof/rpc.ts#L12)
 
-Get an EIP-1186 proof from the provider
+Fetch an EIP-1186 proof from the RPC provider backing a [RPCStateManager](../classes/RPCStateManager.md).
 
 ## Parameters
 
@@ -20,18 +20,16 @@ Get an EIP-1186 proof from the provider
 
 ### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
-address to get proof of
+Account to prove
 
-### storageSlots
+### storageSlots?
 
 `Uint8Array`\<`ArrayBufferLike`\>[] = `[]`
 
-storage slots to get proof of
+Storage keys to include (defaults to none)
 
 ## Returns
 
 `Promise`\<[`Proof`](../type-aliases/Proof.md)\>
-
-an EIP-1186 formatted proof

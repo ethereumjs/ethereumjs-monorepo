@@ -43,6 +43,7 @@ interface MessageOpts {
   accessWitness?: BinaryTreeAccessWitnessInterface
 }
 
+/** Call or create message passed into {@link EVM.runCall}. */
 export class Message {
   to?: Address
   value: bigint
@@ -74,6 +75,14 @@ export class Message {
    */
   blobVersionedHashes?: PrefixedHexString[]
   accessWitness?: BinaryTreeAccessWitnessInterface
+  /**
+   * EIP-8037: set by the EVM during creation-message execution when the
+   * create target account was already alive (EIP-161 non-empty). The caller
+   * refunds the new-account state gas in that case.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
+  createdTargetAlive?: boolean
 
   constructor(opts: MessageOpts) {
     this.to = opts.to
@@ -111,4 +120,5 @@ export class Message {
   }
 }
 
+/** {@link Message} with a required `to` address (post-resolution). */
 export type MessageWithTo = Message & Pick<Required<MessageOpts>, 'to'>

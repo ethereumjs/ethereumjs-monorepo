@@ -5,6 +5,7 @@ type rpcParams = {
   params: (string | string[] | boolean | number)[]
 }
 
+/** Options for {@link fetchFromProvider}. */
 export type FetchFromProviderOptions = {
   /** Request timeout in milliseconds (default: 60000) */
   timeout?: number

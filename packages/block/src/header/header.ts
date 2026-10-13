@@ -63,7 +63,9 @@ export class BlockHeader {
   public readonly excessBlobGas?: bigint
   public readonly parentBeaconBlockRoot?: Uint8Array
   public readonly requestsHash?: Uint8Array
+  /** EIP-7928 block access list hash. Experimental (Amsterdam); may change on patch releases. */
   public readonly blockAccessListHash?: Uint8Array
+  /** EIP-7843 slot number. Experimental (Amsterdam); may change on patch releases. */
   public readonly slotNumber?: bigint
 
   public readonly common: Common
@@ -90,8 +92,9 @@ export class BlockHeader {
   /**
    * This constructor takes the values, validates them, assigns them and freezes the object.
    *
-   * @deprecated Use the public static factory methods to assist in creating a Header object from
-   * varying data types. For a default empty header, use {@link createBlockHeader}.
+   * @deprecated Use the module-level factory functions such as {@link createBlockHeader},
+   * {@link createBlockHeaderFromRLP}, and {@link createBlockHeaderFromBytesArray} to create
+   * a BlockHeader from varying data types.
    *
    */
   constructor(headerData: HeaderData, opts: BlockOptions = {}) {

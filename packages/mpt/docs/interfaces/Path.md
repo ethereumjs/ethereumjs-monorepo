@@ -6,7 +6,9 @@
 
 # Interface: Path
 
-Defined in: [packages/mpt/src/types.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/types.ts#L32)
+Defined in: [types.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/types.ts#L36)
+
+Result of [MerklePatriciaTrie.findPath](../classes/MerklePatriciaTrie.md#findpath): target node, unmatched nibbles, and path stack.
 
 ## Properties
 
@@ -14,7 +16,7 @@ Defined in: [packages/mpt/src/types.ts:32](https://github.com/ethereumjs/ethereu
 
 > **node**: [`MPTNode`](../type-aliases/MPTNode.md) \| `null`
 
-Defined in: [packages/mpt/src/types.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/types.ts#L33)
+Defined in: [types.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/types.ts#L37)
 
 ***
 
@@ -22,7 +24,7 @@ Defined in: [packages/mpt/src/types.ts:33](https://github.com/ethereumjs/ethereu
 
 > **remaining**: [`Nibbles`](../type-aliases/Nibbles.md)
 
-Defined in: [packages/mpt/src/types.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/types.ts#L34)
+Defined in: [types.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/types.ts#L38)
 
 ***
 
@@ -30,4 +32,4 @@ Defined in: [packages/mpt/src/types.ts:34](https://github.com/ethereumjs/ethereu
 
 > **stack**: [`MPTNode`](../type-aliases/MPTNode.md)[]
 
-Defined in: [packages/mpt/src/types.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/types.ts#L35)
+Defined in: [types.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/types.ts#L39)

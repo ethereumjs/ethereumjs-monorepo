@@ -10,6 +10,8 @@ export default mergeConfig(
         // readDirSync method not provided fs mock for vite
         'test/precompiles/eip-2537-bls.spec.ts',
         'test/eips/eof-header-validation.spec.ts',
+        'test/precompiles/wasmCrypto.spec.ts',
+        'test/precompiles/bn254Wasm.spec.ts',
       ],
     },
   }),

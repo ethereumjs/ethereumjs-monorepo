@@ -9,6 +9,7 @@ import { gasLimitCheck } from './util.ts'
 import type { ExecResult } from '../types.ts'
 import type { PrecompileInput } from './types.ts'
 
+/** RIPEMD160 precompile (0x03): RIPEMD-160 hash of input, left-padded to 32 bytes. */
 export function precompile03(opts: PrecompileInput): ExecResult {
   const pName = getPrecompileName('03')
   const data = opts.data

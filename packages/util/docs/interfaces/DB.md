@@ -6,7 +6,9 @@
 
 # Interface: DB\<TKey, TValue\>
 
-Defined in: [packages/util/src/db.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L45)
+Defined in: [packages/util/src/db.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L55)
+
+Minimal async key/value database interface used across EthereumJS.
 
 ## Type Parameters
 
@@ -24,7 +26,7 @@ Defined in: [packages/util/src/db.ts:45](https://github.com/ethereumjs/ethereumj
 
 > **batch**(`opStack`): `Promise`\<`void`\>
 
-Defined in: [packages/util/src/db.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L73)
+Defined in: [packages/util/src/db.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L83)
 
 Performs a batch operation on db.
 
@@ -46,7 +48,7 @@ A stack of levelup operations
 
 > **del**(`key`, `opts?`): `Promise`\<`void`\>
 
-Defined in: [packages/util/src/db.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L67)
+Defined in: [packages/util/src/db.ts:77](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L77)
 
 Removes a raw value in the underlying db.
 
@@ -70,7 +72,7 @@ Removes a raw value in the underlying db.
 
 > **get**(`key`, `opts?`): `Promise`\<`TValue` \| `undefined`\>
 
-Defined in: [packages/util/src/db.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L54)
+Defined in: [packages/util/src/db.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L64)
 
 Retrieves a raw value from db.
 
@@ -96,7 +98,7 @@ A Promise that resolves to `Uint8Array` if a value is found or `undefined` if no
 
 > **open**(): `Promise`\<`void`\>
 
-Defined in: [packages/util/src/db.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L84)
+Defined in: [packages/util/src/db.ts:94](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L94)
 
 Opens the database -- if applicable
 
@@ -110,7 +112,7 @@ Opens the database -- if applicable
 
 > **put**(`key`, `val`, `opts?`): `Promise`\<`void`\>
 
-Defined in: [packages/util/src/db.ts:61](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L61)
+Defined in: [packages/util/src/db.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L71)
 
 Writes a value directly to db.
 
@@ -126,6 +128,8 @@ The key as a `TValue`
 
 `TValue`
 
+The value to be stored
+
 ##### opts?
 
 [`EncodingOpts`](../type-aliases/EncodingOpts.md)
@@ -140,7 +144,7 @@ The key as a `TValue`
 
 > **shallowCopy**(): `DB`\<`TKey`, `TValue`\>
 
-Defined in: [packages/util/src/db.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L79)
+Defined in: [packages/util/src/db.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L89)
 
 Returns a copy of the DB instance, with a reference
 to the **same** underlying db instance.

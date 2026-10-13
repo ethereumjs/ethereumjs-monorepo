@@ -8,7 +8,9 @@
 
 > **DBTarget**: `object`
 
-Defined in: [packages/e2store/src/exportHistory.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/exportHistory.ts#L16)
+Defined in: [packages/e2store/src/exportHistory.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/exportHistory.ts#L17)
+
+Numeric sublevel codes used when reading chain/meta databases.
 
 ## Type Declaration
 

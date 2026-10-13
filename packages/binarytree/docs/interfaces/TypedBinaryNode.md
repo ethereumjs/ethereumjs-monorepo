@@ -6,7 +6,9 @@
 
 # Interface: TypedBinaryNode
 
-Defined in: [node/types.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/node/types.ts#L10)
+Defined in: [node/types.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/node/types.ts#L14)
+
+Maps each [BinaryNodeType](../variables/BinaryNodeType.md) to its concrete node class.
 
 ## Properties
 
@@ -14,12 +16,12 @@ Defined in: [node/types.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo
 
 > **0**: [`InternalBinaryNode`](../classes/InternalBinaryNode.md)
 
-Defined in: [node/types.ts:11](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/node/types.ts#L11)
+Defined in: [node/types.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/node/types.ts#L15)
 
 ***
 
 ### 1
 
-> **1**: `StemBinaryNode`
+> **1**: [`StemBinaryNode`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/docs/classes/StemBinaryNode.md)
 
-Defined in: [node/types.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/node/types.ts#L12)
+Defined in: [node/types.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/binarytree/src/node/types.ts#L16)

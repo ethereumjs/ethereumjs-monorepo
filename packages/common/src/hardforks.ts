@@ -1,5 +1,6 @@
 import type { HardforksDict } from './types.ts'
 
+/** Built-in hardfork metadata keyed by hardfork name. */
 export const hardforksDict: HardforksDict = {
   /**
    * Description: Start of the Ethereum main chain
@@ -200,6 +201,6 @@ export const hardforksDict: HardforksDict = {
    * Status     : Draft (implementation incomplete + spec still moving!)
    */
   amsterdam: {
-    eips: [7708, 7843, 7778, 7928, 8024],
+    eips: [2780, 7708, 7843, 7778, 7928, 7954, 7976, 7981, 7997, 8024, 8037, 8038, 8246, 8282],
   },
 }

@@ -24,9 +24,9 @@ const ZERO_BUFFER = new Uint8Array(32)
 const ONE_BUFFER = concatBytes(new Uint8Array(31), hexToBytes('0x01'))
 
 /**
- * Converts an Uint8Array to a Noble G1 point.
- * @param input Input Uint8Array. Should be 64 bytes
- * @returns Noble G1 point
+ * Decodes a 64-byte G1 point from precompile input.
+ *
+ * @throws If coordinates are not on the BN254 curve
  */
 function toG1Point(input: Uint8Array) {
   if (equalsBytes(input, G1_INFINITY_POINT_BYTES) === true) {
@@ -66,10 +66,9 @@ function toFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Array) {
 }
 
 /**
- * Converts an Uint8Array to a Noble G2 point. Raises errors if the point is not on the curve
- * and (if activated) if the point is in the subgroup / order check.
- * @param input Input Uint8Array. Should be 256 bytes
- * @returns Noble G2 point
+ * Decodes a 128-byte G2 point from precompile input.
+ *
+ * @throws If coordinates are not on the BN254 curve or fail subgroup checks
  */
 function toG2Point(input: Uint8Array) {
   if (equalsBytes(input, G2_INFINITY_POINT_BYTES) === true) {

@@ -9,6 +9,7 @@ export * from './snappy.ts'
 export * from './types.ts'
 export * from './blockIndex.ts'
 
+/** Reads a file from disk into a `Uint8Array` (for era / e2store fixture loading). */
 export function readBinaryFile(path: string) {
   return new Uint8Array(readFileSync(path))
 }

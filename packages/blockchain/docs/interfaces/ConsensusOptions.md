@@ -6,9 +6,9 @@
 
 # Interface: ConsensusOptions
 
-Defined in: [types.ts:254](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L254)
+Defined in: [types.ts:258](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L258)
 
-Options when initializing a class that implements the Consensus interface.
+Options passed when initializing a [Consensus](Consensus.md) implementation.
 
 ## Properties
 
@@ -16,4 +16,6 @@ Options when initializing a class that implements the Consensus interface.
 
 > **blockchain**: [`Blockchain`](../classes/Blockchain.md)
 
-Defined in: [types.ts:255](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L255)
+Defined in: [types.ts:260](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L260)
+
+Blockchain instance the consensus module operates on.

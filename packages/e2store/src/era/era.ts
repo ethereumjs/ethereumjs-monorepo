@@ -6,9 +6,10 @@ import { EraTypes, parseEntry, readEntry } from '../index.ts'
 import type { SlotIndex } from '../index.ts'
 
 /**
- * Reads a Slot Index from the end of a bytestring representing an era file
- * @param bytes a Uint8Array bytestring representing a {@link SlotIndex} plus any arbitrary prefixed data
- * @returns a deserialized {@link SlotIndex}
+ * Parses the trailing {@link SlotIndex} record from an era file byte string.
+ *
+ * @param bytes Full era buffer; the index is read from the end.
+ * @throws If the trailing entry is not a SlotIndex type.
  */
 export const readSlotIndex = (bytes: Uint8Array): SlotIndex => {
   const recordEnd = bytes.length
@@ -39,9 +40,9 @@ export const readSlotIndex = (bytes: Uint8Array): SlotIndex => {
 }
 
 /**
- * Reads a an era file and extracts the State and Block slot indices
- * @param eraContents a bytestring representing a serialized era file
- * @returns a dictionary containing the State and Block Slot Indices (if present)
+ * Extracts state and optional block {@link SlotIndex} records from a serialized era file.
+ *
+ * @returns Block index is `undefined` when `startSlot === 0` (state-only era).
  */
 export const getEraIndexes = (
   eraContents: Uint8Array,
@@ -55,10 +56,10 @@ export const getEraIndexes = (
 }
 
 /**
+ * Reads and SSZ-decodes the compressed beacon state snapshot from an era file.
  *
- * @param eraData a bytestring representing an era file
- * @returns a BeaconState object of the type corresponding to the fork the state snapshot occurred at
- * @throws if BeaconState cannot be found
+ * Fork-specific SSZ types are selected from the state slot number.
+ * @throws If the state entry is missing or not CompressedBeaconState.
  */
 export const readBeaconState = async (eraData: Uint8Array) => {
   const indices = getEraIndexes(eraData)
@@ -83,10 +84,10 @@ export const readBeaconState = async (eraData: Uint8Array) => {
 }
 
 /**
+ * Reads and SSZ-decodes one signed beacon block from an era file by slot offset index.
  *
- * @param eraData a bytestring representing an era file
- * @returns a decompressed SignedBeaconBlock object of the same time as returned by {@link ssz.ETH2_TYPES.SignedBeaconBlock}
- * @throws if SignedBeaconBlock is not found when reading an entry
+ * @param offset Index into the block slot index (not the consensus slot number).
+ * @throws If the block entry is missing or not CompressedSignedBeaconBlockType.
  */
 export const readBeaconBlock = async (eraData: Uint8Array, offset: number) => {
   const indices = getEraIndexes(eraData)
@@ -116,9 +117,9 @@ export const readBeaconBlock = async (eraData: Uint8Array, offset: number) => {
 }
 
 /**
- * Reads a an era file and yields a stream of decompressed SignedBeaconBlocks
- * @param eraFile Uint8Array a serialized era file
- * @returns a stream of decompressed SignedBeaconBlocks or undefined if no blocks are present
+ * Async generator over non-empty signed beacon blocks in an era file.
+ *
+ * Skips slots whose offset is zero (empty slot placeholders).
  */
 export async function* readBlocksFromEra(eraFile: Uint8Array) {
   const indices = getEraIndexes(eraFile)

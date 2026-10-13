@@ -16,9 +16,9 @@ Return the preset chain config for one of the predefined chain configurations
 
 ### chain
 
-the representing a network name (e.g. 'mainnet') or number representing the chain ID
+`string` \| `number`
 
-`string` | `number`
+the representing a network name (e.g. 'mainnet') or number representing the chain ID
 
 ## Returns
 

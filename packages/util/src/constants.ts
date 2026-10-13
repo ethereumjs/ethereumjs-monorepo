@@ -24,7 +24,9 @@ export const MAX_INTEGER_BIGINT = BigInt(
   '115792089237316195423570985008687907853269984665640564039457584007913129639935',
 )
 
+/** Order of the secp256k1 curve. */
 export const SECP256K1_ORDER = secp256k1.Point.CURVE().n
+/** Half of the secp256k1 curve order (used in signature malleability checks). */
 export const SECP256K1_ORDER_DIV_2 = SECP256K1_ORDER / BigInt(2)
 
 /**
@@ -65,6 +67,7 @@ export const KECCAK256_RLP_S = '0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cad
  */
 export const KECCAK256_RLP = hexToBytes(KECCAK256_RLP_S)
 
+/** SHA-256 hash of the empty byte string. */
 export const SHA256_NULL = sha256(new Uint8Array())
 
 /**
@@ -72,8 +75,10 @@ export const SHA256_NULL = sha256(new Uint8Array())
  */
 export const RLP_EMPTY_STRING = Uint8Array.from([0x80])
 
+/** Maximum withdrawals allowed per execution payload (EIP-4895). */
 export const MAX_WITHDRAWALS_PER_PAYLOAD = 16
 
+/** Unpadded hex address of the RIPEMD160 precompile. */
 export const RIPEMD160_ADDRESS_STRING = '0000000000000000000000000000000000000003'
 
 /**
@@ -81,6 +86,7 @@ export const RIPEMD160_ADDRESS_STRING = '000000000000000000000000000000000000000
  * Single canonical definition to avoid duplication across packages.
  */
 export const SYSTEM_ADDRESS = '0xfffffffffffffffffffffffffffffffffffffffe'
+/** 20-byte encoding of {@link SYSTEM_ADDRESS}. */
 export const SYSTEM_ADDRESS_BYTES = hexToBytes(SYSTEM_ADDRESS)
 
 /**
@@ -88,7 +94,9 @@ export const SYSTEM_ADDRESS_BYTES = hexToBytes(SYSTEM_ADDRESS)
  * Maximum RLP-encoded block size to 10 MiB, with a 2 MiB margin for beacon block sizes
  */
 export const MAX_BLOCK_SIZE = 10_485_760 // 10 MiB
+/** Beacon block size margin reserved under EIP-7934. */
 export const SAFETY_MARGIN = 2_097_152 // 2 MiB
+/** Maximum RLP-encoded execution block size (EIP-7934). */
 export const MAX_RLP_BLOCK_SIZE = MAX_BLOCK_SIZE - SAFETY_MARGIN // 8 MiB
 
 /**
@@ -97,29 +105,51 @@ export const MAX_RLP_BLOCK_SIZE = MAX_BLOCK_SIZE - SAFETY_MARGIN // 8 MiB
 
 export const BIGINT_NEG1 = BigInt(-1)
 
+/** BigInt literal for 0. */
 export const BIGINT_0 = BigInt(0)
+/** BigInt literal for 1. */
 export const BIGINT_1 = BigInt(1)
+/** BigInt literal for 2. */
 export const BIGINT_2 = BigInt(2)
+/** BigInt literal for 3. */
 export const BIGINT_3 = BigInt(3)
+/** BigInt literal for 7. */
 export const BIGINT_7 = BigInt(7)
+/** BigInt literal for 8. */
 export const BIGINT_8 = BigInt(8)
 
+/** BigInt literal for 27. */
 export const BIGINT_27 = BigInt(27)
+/** BigInt literal for 28. */
 export const BIGINT_28 = BigInt(28)
+/** BigInt literal for 31. */
 export const BIGINT_31 = BigInt(31)
+/** BigInt literal for 32. */
 export const BIGINT_32 = BigInt(32)
+/** BigInt literal for 64. */
 export const BIGINT_64 = BigInt(64)
 
+/** BigInt literal for 128. */
 export const BIGINT_128 = BigInt(128)
+/** BigInt literal for 255. */
 export const BIGINT_255 = BigInt(255)
+/** BigInt literal for 256. */
 export const BIGINT_256 = BigInt(256)
 
+/** BigInt literal for 96. */
 export const BIGINT_96 = BigInt(96)
+/** BigInt literal for 100. */
 export const BIGINT_100 = BigInt(100)
+/** BigInt literal for 160. */
 export const BIGINT_160 = BigInt(160)
+/** BigInt literal for 224. */
 export const BIGINT_224 = BigInt(224)
+/** BigInt literal for 2^96. */
 export const BIGINT_2EXP96 = BigInt(79228162514264337593543950336)
+/** BigInt literal for 2^160. */
 export const BIGINT_2EXP160 = BigInt(1461501637330902918203684832716283019655932542976)
+/** BigInt literal for 2^224. */
 export const BIGINT_2EXP224 =
   BigInt(26959946667150639794667015087019630673637144422540572481103610249216)
+/** BigInt literal for 2^256. */
 export const BIGINT_2EXP256 = BIGINT_2 ** BIGINT_256

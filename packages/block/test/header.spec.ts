@@ -124,7 +124,7 @@ describe('[Block]: Header functions', () => {
     }
   })
 
-  it('Initialization -> createWithdrawalFromBytesArray()', () => {
+  it('Initialization -> createBlockHeaderFromBytesArray()', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const zero = new Uint8Array(0)
     const headerArray = []
@@ -148,7 +148,7 @@ describe('[Block]: Header functions', () => {
     assert.isNotFrozen(header, 'block should not be frozen when freeze deactivated in options')
   })
 
-  it('Initialization -> createWithdrawalFromBytesArray() -> error cases', () => {
+  it('Initialization -> createBlockHeaderFromBytesArray() -> error cases', () => {
     const headerArray = Array(25).fill(new Uint8Array(0))
 
     // mock header data (if set to new Uint8Array() header throws)

@@ -6,7 +6,7 @@
 
 # Function: cliqueSigner()
 
-> **cliqueSigner**(`header`): `Address`
+> **cliqueSigner**(`header`): [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Defined in: [consensus/clique.ts:108](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/consensus/clique.ts#L108)
 
@@ -20,4 +20,4 @@ Returns the signer address
 
 ## Returns
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)

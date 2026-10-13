@@ -21,13 +21,19 @@ import { stripHexPrefix } from './internal.ts'
 
 import type { BigIntLike, BytesLike, NestedUint8Array, PrefixedHexString } from './types.ts'
 
+/** Plain-object fields for constructing an {@link Account}. */
 export interface AccountData {
+  /** Account nonce */
   nonce?: BigIntLike
+  /** Account balance in wei */
   balance?: BigIntLike
+  /** Storage trie root hash */
   storageRoot?: BytesLike
+  /** Keccak-256 hash of the contract bytecode (or empty-account sentinel) */
   codeHash?: BytesLike
 }
 
+/** Partial account fields for stateless / witness-based access (null marks unloaded fields). */
 export interface PartialAccountData {
   nonce?: BigIntLike | null
   balance?: BigIntLike | null
@@ -37,11 +43,12 @@ export interface PartialAccountData {
   version?: BigIntLike | null
 }
 
+/** RLP account body as a four-tuple of byte arrays. */
 export type AccountBodyBytes = [Uint8Array, Uint8Array, Uint8Array, Uint8Array]
 
 /**
  * Handles the null indicator for RLP encoded accounts
- * @returns {null} is the null indicator is 0
+ * @returns is the null indicator is 0
  * @returns The unchanged value is the null indicator is 1
  * @throws if the null indicator is > 1
  * @throws if the length of values is < 2
@@ -301,6 +308,11 @@ export class Account {
 
 // Account constructors
 
+/**
+ * Creates an account from a plain data object with all required fields present.
+ *
+ * @param accountData Account fields (`nonce`, `balance`, `storageRoot`, `codeHash`)
+ */
 export function createAccount(accountData: AccountData) {
   const { nonce, balance, storageRoot, codeHash } = accountData
   if (nonce === null || balance === null || storageRoot === null || codeHash === null) {
@@ -315,12 +327,20 @@ export function createAccount(accountData: AccountData) {
   )
 }
 
+/**
+ * Creates an account from an RLP-decoded values array:
+ * `[nonce, balance, storageRoot, codeHash]`.
+ */
 export function createAccountFromBytesArray(values: Uint8Array[]) {
   const [nonce, balance, storageRoot, codeHash] = values
 
   return new Account(bytesToBigInt(nonce), bytesToBigInt(balance), storageRoot, codeHash)
 }
 
+/**
+ * Creates a partially loaded account for stateless execution.
+ * Fields may be `null` when not available from a witness.
+ */
 export function createPartialAccount(partialAccountData: PartialAccountData) {
   const { nonce, balance, storageRoot, codeHash, codeSize, version } = partialAccountData
 
@@ -345,6 +365,7 @@ export function createPartialAccount(partialAccountData: PartialAccountData) {
   )
 }
 
+/** Creates an account from an RLP-serialized account body. */
 export function createAccountFromRLP(serialized: Uint8Array) {
   const values = RLP.decode(serialized) as Uint8Array[]
 
@@ -355,6 +376,7 @@ export function createAccountFromRLP(serialized: Uint8Array) {
   return createAccountFromBytesArray(values)
 }
 
+/** Creates a partially loaded account from an RLP-serialized slim account body. */
 export function createPartialAccountFromRLP(serialized: Uint8Array) {
   const values = RLP.decode(serialized)
 
@@ -546,6 +568,7 @@ export const pubToAddress = function (pubKey: Uint8Array, sanitize: boolean = fa
   // Only take the lower 160bits of the hash
   return keccak_256(pubKey).subarray(-20)
 }
+/** Alias for {@link pubToAddress}. */
 export const publicToAddress = pubToAddress
 
 /**
@@ -598,6 +621,7 @@ export const isZeroAddress = function (hexAddress: string): boolean {
   return zeroAddr === hexAddress
 }
 
+/** Expand a slim RLP account body to the full four-field layout. */
 export function accountBodyFromSlim(body: AccountBodyBytes) {
   const [nonce, balance, storageRoot, codeHash] = body
   return [
@@ -609,6 +633,7 @@ export function accountBodyFromSlim(body: AccountBodyBytes) {
 }
 
 const emptyUint8Arr = new Uint8Array(0)
+/** Compress an account body to the slim RLP layout when possible. */
 export function accountBodyToSlim(body: AccountBodyBytes) {
   const [nonce, balance, storageRoot, codeHash] = body
   return [

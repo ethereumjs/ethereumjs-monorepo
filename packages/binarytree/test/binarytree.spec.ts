@@ -5,7 +5,7 @@ import { assert, describe, expect, it } from 'vitest'
 import { createBinaryTree } from '../src/index.ts'
 import { dumpLeafValues, dumpNodeHashes } from '../src/util.ts'
 
-describe('insert', () => {
+describe('[BinaryTree/Insert]: put and root', () => {
   it('should not destroy a previous root', async () => {
     const tree = await createBinaryTree({ useRootPersistence: true })
     await tree.put(
@@ -559,5 +559,26 @@ describe('insert', () => {
       equalsBytes(initialRoot, recoveredRoot),
       'Recovered root should match initial root',
     )
+  })
+})
+
+describe('[BinaryTree]: withLock', () => {
+  it('should run the operation under the lock and return its result', async () => {
+    const tree = await createBinaryTree()
+    const result = await tree.withLock(async () => 42)
+    assert.strictEqual(result, 42)
+  })
+
+  it('should release the lock when the operation throws', async () => {
+    const tree = await createBinaryTree()
+    await expect(
+      tree.withLock(async () => {
+        throw new Error('boom')
+      }),
+    ).rejects.toThrow('boom')
+
+    // would hang forever if the lock leaked
+    const reacquired = await tree.withLock(async () => true)
+    assert.isTrue(reacquired)
   })
 })

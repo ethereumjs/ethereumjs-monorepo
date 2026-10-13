@@ -6,9 +6,11 @@
 
 # Function: getBinaryTreeStem()
 
-> **getBinaryTreeStem**(`hashFunction`, `address`, `treeIndex`): `Uint8Array`
+> **getBinaryTreeStem**(`hashFunction`, `address`, `treeIndex?`): `Uint8Array`
 
-Defined in: [packages/util/src/binaryTree.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L23)
+Defined in: [packages/util/src/binaryTree.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L22)
+
+Build the 31-byte binary-tree stem for an address and tree index (EIP-7864).
 
 ## Parameters
 
@@ -16,26 +18,18 @@ Defined in: [packages/util/src/binaryTree.ts:23](https://github.com/ethereumjs/e
 
 (`value`) => `Uint8Array`
 
-The hashFunction for the binary tree
+Hash used to derive the stem from the padded address and index
 
 ### address
 
 [`Address`](../classes/Address.md)
 
-The address to generate the tree key for.
+### treeIndex?
 
-### treeIndex
+`number` \| `bigint`
 
-The index of the tree to generate the key for. Defaults to 0.
-
-`number` | `bigint`
+Tree index; defaults to `0`
 
 ## Returns
 
 `Uint8Array`
-
-The 31-bytes binary tree stem as a Uint8Array.
-
-## Dev
-
-Returns the 31-bytes binary tree stem for a given address and tree index.

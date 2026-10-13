@@ -8,7 +8,9 @@
 
 > **StorageProof** = `object`
 
-Defined in: [types.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L89)
+Defined in: [types.ts:97](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L97)
+
+Single storage slot entry within an EIP-1186 proof.
 
 ## Properties
 
@@ -16,7 +18,7 @@ Defined in: [types.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 > **key**: `PrefixedHexString`
 
-Defined in: [types.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L90)
+Defined in: [types.ts:98](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L98)
 
 ***
 
@@ -24,7 +26,7 @@ Defined in: [types.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 > **proof**: `PrefixedHexString`[]
 
-Defined in: [types.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L91)
+Defined in: [types.ts:99](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L99)
 
 ***
 
@@ -32,4 +34,4 @@ Defined in: [types.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 > **value**: `PrefixedHexString`
 
-Defined in: [types.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L92)
+Defined in: [types.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/types.ts#L100)

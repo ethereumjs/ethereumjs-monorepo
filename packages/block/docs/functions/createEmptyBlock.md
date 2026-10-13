@@ -8,10 +8,9 @@
 
 > **createEmptyBlock**(`headerData`, `opts?`): [`Block`](../classes/Block.md)
 
-Defined in: [block/constructors.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block/constructors.ts#L102)
+Defined in: [block/constructors.ts:97](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block/constructors.ts#L97)
 
-Simple static constructor if only an empty block is needed
-(tree shaking advantages since it does not draw all the tx constructors in)
+Instantiate an empty block (header only) via [createBlockHeader](createBlockHeader.md).
 
 ## Parameters
 

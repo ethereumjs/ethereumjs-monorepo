@@ -1,36 +1,42 @@
 import { ConsensusAlgorithm } from '@ethereumjs/common'
 import {
   Account,
+  Address,
   BIGINT_0,
   BIGINT_1,
   BIGINT_2,
   EthereumJSErrorWithoutCode,
+  KECCAK256_NULL,
+  KECCAK256_RLP,
   MAX_UINT64,
   bigIntToBytes,
   bigIntToHex,
   bytesToBigInt,
   bytesToHex,
   equalsBytes,
+  generateAddress,
+  generateAddress2,
   setLengthLeft,
   setLengthRight,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
 
-import {
-  EIP7708_SELFDESTRUCT_TOPIC,
-  EIP7708_SYSTEM_ADDRESS,
-  EIP7708_TRANSFER_TOPIC,
-} from './eip7708.ts'
+import { EIP7708_BURN_TOPIC, EIP7708_SYSTEM_ADDRESS, EIP7708_TRANSFER_TOPIC } from './eip7708.ts'
+import { activeCostPerStateByte } from './eip8037.ts'
 import { FORMAT, MAGIC, VERSION } from './eof/constants.ts'
 import { EOFContainerMode, validateEOF } from './eof/container.ts'
 import { setupEOF } from './eof/setup.ts'
 import { ContainerSectionType } from './eof/verify.ts'
 import { EVMError, EVMErrorTypeString } from './errors.ts'
-import { type EVMPerformanceLogger, type Timer } from './logger.ts'
+import type { EVMPerformanceLogger, Timer } from './logger.ts'
 import { Memory } from './memory.ts'
 import { Message } from './message.ts'
+import {
+  type Eip7928PostTargetCallOog,
+  consumeEip7928PostTargetCallOog,
+} from './opcodes/EIP7928.ts'
+import { isEIP8024PairImmediateValid, isEIP8024SingleImmediateValid } from './opcodes/EIP8024.ts'
 import { trap } from './opcodes/index.ts'
-import { isEIP8024PairImmediateValid, isEIP8024SingleImmediateValid } from './opcodes/util.ts'
 import { Stack } from './stack.ts'
 
 import type {
@@ -38,11 +44,11 @@ import type {
   Common,
   StateManagerInterface,
 } from '@ethereumjs/common'
-import type { Address, PrefixedHexString } from '@ethereumjs/util'
+import type { PrefixedHexString } from '@ethereumjs/util'
 import { stackDelta } from './eof/stackDelta.ts'
 import type { EVM } from './evm.ts'
 import type { Journal } from './journal.ts'
-import type { AsyncOpHandler, Opcode, OpcodeMapEntry } from './opcodes/index.ts'
+import type { AsyncOpHandler, Opcode, OpcodeMapEntry, SyncOpHandler } from './opcodes/index.ts'
 import type {
   Block,
   EOFEnv,
@@ -54,14 +60,24 @@ import type {
 
 const debugGas = debugDefault('evm:gas')
 
+function isEVMError(error: unknown): error is EVMError {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'errorType' in error &&
+    error.errorType === EVMErrorTypeString
+  )
+}
+
 export interface InterpreterOpts {
+  /** Initial program counter when resuming execution */
   pc?: number
   /** Logs to prepend to the result (e.g. EIP-7708 ETH transfer log from message-level value transfer) */
   initialLogs?: Log[]
 }
 
 /**
- * Immediate (unprocessed) result of running an EVM bytecode.
+ * Immediate (unprocessed) result of running EVM bytecode in the interpreter.
  */
 export interface RunResult {
   logs: Log[]
@@ -77,6 +93,7 @@ export interface RunResult {
   createdAddresses?: Set<PrefixedHexString>
 }
 
+/** Execution environment for a single interpreter frame. */
 export interface Env {
   address: Address
   caller: Address
@@ -101,6 +118,7 @@ export interface Env {
   initialLogs?: Log[]
 }
 
+/** Mutable interpreter state updated on each opcode step. */
 export interface RunState {
   programCounter: number
   opCode: number
@@ -116,17 +134,50 @@ export interface RunState {
   blockchain: EVMMockBlockchainInterface
   env: Env
   messageGasLimit?: bigint // Cache value from `gas.ts` to save gas limit for a message call
+  /** EIP-7928 CALL post-target OOG: cleared in runStep after output is zeroed. */
+  eip7928PostTargetCallOog?: Eip7928PostTargetCallOog
+  /** EIP-7928 CREATE post-target OOG: signals the CREATE/CREATE2 handler to push 0 without executing. */
+  eip7928PostTargetCreateOog?: boolean
   interpreter: Interpreter
   gasRefund: bigint // Tracks the current refund
   gasLeft: bigint // Current gas left
+  /**
+   * EIP-8037: state gas paid from `gasLeft` (spilled) in this frame,
+   * including spill merged from successful child frames. State-gas refunds
+   * credit `gasLeft` first up to this amount (LIFO), then the reservoir.
+   */
+  stateGasSpilled: bigint
+  /**
+   * EIP-8037: the new-account state gas charged by the most recent CALL
+   * opcode's gas handler; refunded if the call fails fast (depth limit /
+   * insufficient balance) before a child frame is entered.
+   */
+  lastCallNewAccountStateGas?: bigint
+  /**
+   * EIP-8037: new-account state gas charged by the most recent CREATE/CREATE2
+   * gas handler (0 if the target already has nonce or code). Refunded on
+   * fail-fast, REVERT, fresh-target halt, or success onto an already-alive
+   * account. Child exceptional halt onto a balance-only target is not
+   * refunded — see `eip8037BurnLeftoverAfterCreateHaltOntoAlive`.
+   */
+  lastCreateNewAccountStateGas?: bigint
+  /**
+   * EIP-8037: CREATE child exceptionally halted onto an already-alive
+   * (balance-only) target. The spilled NEW_ACCOUNT stays as regular gas;
+   * when this frame stops, leftover is burned and the frame exceptional-halts
+   * so the CREATE nonce bump is reverted while EIP-7928 BAL reads remain.
+   */
+  eip8037BurnLeftoverAfterCreateHaltOntoAlive?: boolean
   returnBytes: Uint8Array /* Current bytes in the return Uint8Array. Cleared each time a CALL/CREATE is made in the current frame. */
 }
 
+/** Interpreter run outcome, including the final {@link RunState} and any exception. */
 export interface InterpreterResult {
   runState: RunState
   exceptionError?: EVMError
 }
 
+/** Payload emitted on each EVM `step` event during bytecode execution. */
 export interface InterpreterStep {
   gasLeft: bigint
   gasRefund: bigint
@@ -215,6 +266,7 @@ export class Interpreter {
       interpreter: this,
       gasRefund: env.gasRefund,
       gasLeft,
+      stateGasSpilled: BIGINT_0,
       returnBytes: new Uint8Array(0),
     }
     this.journal = journal
@@ -365,6 +417,18 @@ export class Interpreter {
       }
     }
 
+    if (
+      err === undefined &&
+      this._runState.eip8037BurnLeftoverAfterCreateHaltOntoAlive === true &&
+      this._runState.gasLeft > BIGINT_0
+    ) {
+      // Consume leftover and exceptional-halt this frame so the CREATE nonce
+      // bump is journal-reverted (fill post-state keeps the pre-create nonce)
+      // while EIP-7928 BAL reads from the following SSTORE remain.
+      this._runState.gasLeft = BIGINT_0
+      err = new EVMError(EVMError.errorMessages.OUT_OF_GAS)
+    }
+
     if (timer !== undefined) {
       this.performanceLogger.stopTimer(overheadTimer!, 0)
       this.performanceLogger.unpauseTimer(timer)
@@ -399,7 +463,23 @@ export class Interpreter {
       if (opInfo.dynamicGas) {
         // This function updates the gas in-place.
         // It needs the base fee, for correct gas limit calculation for the CALL opcodes
-        gas = await opEntry.gasHandler(this._runState, gas, this.common)
+        try {
+          gas = await opEntry.gasHandler(this._runState, gas, this.common)
+        } catch (error) {
+          // Static-gas opcodes always emit a `step` event before their gas
+          // charge can fail (the hook below runs before `useGas` and the
+          // opcode handler). Dynamic gas handlers can throw the failure
+          // themselves, before that hook runs, so emit it here for any VM
+          // error to keep tracer output consistent across both paths.
+          // Non-VM errors are genuine bugs and are re-thrown untouched.
+          if (
+            isEVMError(error) &&
+            (this._evm.events.listenerCount('step') > 0 || this._evm.DEBUG)
+          ) {
+            await this._runStepHook(gas, this.getGasLeft(), memorySizeCache)
+          }
+          throw error
+        }
       }
 
       if (this._evm.events.listenerCount('step') > 0 || this._evm.DEBUG) {
@@ -433,13 +513,15 @@ export class Interpreter {
       // Advance program counter
       this._runState.programCounter++
 
+      consumeEip7928PostTargetCallOog(this._runState)
+
       // Execute opcode handler
       const opFn = opEntry.opHandler
 
       if (opInfo.isAsync) {
         await (opFn as AsyncOpHandler).apply(null, [this._runState, this.common])
       } else {
-        opFn.apply(null, [this._runState, this.common])
+        ;(opFn as SyncOpHandler).apply(null, [this._runState, this.common])
       }
       this._runState.env.accessWitness?.commit()
     } finally {
@@ -505,7 +587,7 @@ export class Interpreter {
       depth: this._env.depth,
       address: this._env.address,
       account: this._env.contract,
-      memory: this._runState.memory._store.subarray(0, Number(memorySize) * 32),
+      memory: this._runState.memory._store.slice(0, Number(memorySize) * 32),
       memoryWordCount: memorySize,
       codeAddress: this._env.codeAddress,
       stateManager: this._runState.stateManager,
@@ -541,33 +623,26 @@ export class Interpreter {
     }
 
     /**
-     * The `step` event for trace output
+     * The `step` event for trace output.
      *
      * @event Event: step
-     * @type {Object}
-     * @property {Number} pc representing the program counter
-     * @property {Object} opcode the next opcode to be ran
-     * @property {string}     opcode.name
-     * @property {fee}        opcode.number Base fee of the opcode
-     * @property {dynamicFee} opcode.dynamicFee Dynamic opcode fee
-     * @property {boolean}    opcode.isAsync opcode is async
-     * @property {number}     opcode.code opcode code
-     * @property {BigInt} gasLeft amount of gasLeft
-     * @property {BigInt} gasRefund gas refund
-     * @property {StateManager} stateManager a {@link StateManager} instance
-     * @property {Array} stack an `Array` of `Uint8Arrays` containing the stack
-     * @property {Array} returnStack the return stack
-     * @property {Account} account the Account which owns the code running
-     * @property {Address} address the address of the `account`
-     * @property {Number} depth the current number of calls deep the contract is
-     * @property {Uint8Array} memory the memory of the EVM as a `Uint8Array`
-     * @property {BigInt} memoryWordCount current size of memory in words
-     * @property {Address} codeAddress the address of the code which is currently being ran (this differs from `address` in a `DELEGATECALL` and `CALLCODE` call)
-     * @property {number} eofSection the current EOF code section referenced by the PC
-     * @property {Uint8Array} immediate the immediate argument of the opcode
-     * @property {Uint8Array} error the error data of the opcode (only present for REVERT)
-     * @property {number} eofFunctionDepth the depth of the function call (only present for EOF)
-     * @property {Array} storage an array of tuples, where each tuple contains a storage key and value
+     * @property pc - Program counter before the opcode runs
+     * @property opcode - Next opcode metadata (name, fees, async flag, hex code)
+     * @property gasLeft - Gas remaining in the current frame
+     * @property gasRefund - Current refund counter
+     * @property stateManager - Active {@link @ethereumjs/common!StateManagerInterface}
+     * @property stack - Stack items as bigints
+     * @property account - Executing contract account
+     * @property address - Address of the executing account
+     * @property depth - Current call depth
+     * @property memory - EVM memory snapshot
+     * @property memoryWordCount - Memory size in 32-byte words
+     * @property codeAddress - Address whose code is running (differs under DELEGATECALL)
+     * @property eofSection - Active EOF code section index
+     * @property immediate - Opcode immediate bytes, when present
+     * @property error - Revert data bytes, when the opcode is REVERT
+     * @property eofFunctionDepth - CALLF return-stack depth for EOF
+     * @property storage - Storage key/value tuples touched by the step
      */
     await this._evm['_emit']('step', eventObj)
   }
@@ -654,6 +729,85 @@ export class Interpreter {
       )
     }
     this._runState.gasRefund += amount
+  }
+
+  /**
+   * EIP-8037: Charge state-gas. Draws from the per-tx state-gas reservoir
+   * first; if the reservoir is exhausted, the remainder is taken from the
+   * regular `gasLeft` (which may OOG). Increments `execution_state_gas_used`
+   * by the full charged amount.
+   * @param amount - Amount of state gas to charge
+   * @param context - Usage context for debugging
+   * @throws if both pools combined are insufficient (out of gas)
+   */
+  chargeStateGas(amount: bigint, context?: string): void {
+    if (amount === BIGINT_0) return
+    const evm = this._evm
+    let remaining = amount
+    if (evm.stateGasReservoir > BIGINT_0) {
+      const fromReservoir = remaining < evm.stateGasReservoir ? remaining : evm.stateGasReservoir
+      evm.stateGasReservoir -= fromReservoir
+      remaining -= fromReservoir
+    }
+    if (remaining > BIGINT_0) {
+      this.useGas(
+        remaining,
+        context !== undefined ? `state-gas spill: ${context}` : 'state-gas spill',
+      )
+      this._runState.stateGasSpilled += remaining
+    }
+    evm.executionStateGasUsed += amount
+    if (evm.DEBUG) {
+      debugGas(
+        `${context !== undefined ? context + ': ' : ''}charged ${amount} state gas (reservoir=${evm.stateGasReservoir}, executionStateGasUsed=${evm.executionStateGasUsed}, gasLeft=${this._runState.gasLeft}, spilled=${this._runState.stateGasSpilled})`,
+      )
+    }
+  }
+
+  /**
+   * EIP-8037: credit a state-gas refund to the local frame, in LIFO order.
+   * State-gas charges draw from the reservoir first and from `gasLeft` last,
+   * so refunds credit the pool charged last first: `gasLeft` up to the
+   * frame's spilled amount, then the reservoir. Decrements
+   * `execution_state_gas_used` by the full amount.
+   * @param amount - The refund amount to credit
+   * @param context - Usage context for debugging
+   */
+  creditStateGasRefund(amount: bigint, context?: string): void {
+    if (amount === BIGINT_0) return
+    const evm = this._evm
+    const runState = this._runState
+    const fromGasLeft = amount < runState.stateGasSpilled ? amount : runState.stateGasSpilled
+    runState.gasLeft += fromGasLeft
+    runState.stateGasSpilled -= fromGasLeft
+    evm.stateGasReservoir += amount - fromGasLeft
+    evm.executionStateGasUsed -= amount
+    if (evm.DEBUG) {
+      debugGas(
+        `${context !== undefined ? context + ': ' : ''}credited ${amount} state gas refund (gasLeft +${fromGasLeft}, reservoir=${evm.stateGasReservoir}, executionStateGasUsed=${evm.executionStateGasUsed})`,
+      )
+    }
+  }
+
+  /**
+   * EIP-8037: Refill the state-gas reservoir, e.g. on revert / exceptional
+   * halt or on SSTORE clear-back-to-zero where the slot was zero at tx start.
+   * Increments `stateGasReservoir` and decrements `execution_state_gas_used`
+   * by the same amount. Refills always go to the reservoir, regardless of
+   * whether the original charge spilled to gas_left.
+   * @param amount - Amount of state gas to refill
+   * @param context - Usage context for debugging
+   */
+  refillStateGasReservoir(amount: bigint, context?: string): void {
+    if (amount === BIGINT_0) return
+    const evm = this._evm
+    evm.stateGasReservoir += amount
+    evm.executionStateGasUsed -= amount
+    if (evm.DEBUG) {
+      debugGas(
+        `${context !== undefined ? context + ': ' : ''}refilled ${amount} state gas (reservoir=${evm.stateGasReservoir}, executionStateGasUsed=${evm.executionStateGasUsed})`,
+      )
+    }
   }
 
   /**
@@ -1109,6 +1263,13 @@ export class Interpreter {
       this._env.depth >= Number(this.common.param('stackLimit')) ||
       (msg.delegatecall !== true && this._env.contract.balance < msg.value)
     ) {
+      // EIP-8037: the call fails fast before a child frame is entered, so
+      // the new-account state gas pre-charged at the CALL opcode is refunded.
+      const preCharged = this._runState.lastCallNewAccountStateGas ?? BIGINT_0
+      if (preCharged > BIGINT_0) {
+        this.creditStateGasRefund(preCharged, 'CALL fail-fast new_account')
+        this._runState.lastCallNewAccountStateGas = BIGINT_0
+      }
       return BIGINT_0
     }
 
@@ -1120,6 +1281,20 @@ export class Interpreter {
 
     // this should always be safe
     this.useGas(results.execResult.executionGasUsed, 'CALL, STATICCALL, DELEGATECALL, CALLCODE')
+
+    // EIP-8037: merge the successful child frame's spilled state gas into
+    // this frame's spill tracker (LIFO refunds may credit it back to
+    // gasLeft). Failed frames return stateGasSpilled = 0. On any child
+    // failure the new-account state gas pre-charged at the CALL opcode is
+    // refunded (no account leaf persists).
+    if (this.common.isActivatedEIP(8037)) {
+      this._runState.stateGasSpilled += results.execResult.stateGasSpilled ?? BIGINT_0
+      const preCharged = this._runState.lastCallNewAccountStateGas ?? BIGINT_0
+      if (results.execResult.exceptionError !== undefined && preCharged > BIGINT_0) {
+        this.creditStateGasRefund(preCharged, 'CALL child-failure new_account')
+      }
+      this._runState.lastCallNewAccountStateGas = BIGINT_0
+    }
 
     // Set return value
     if (
@@ -1169,17 +1344,46 @@ export class Interpreter {
     // empty the return data buffer
     this._runState.returnBytes = new Uint8Array(0)
 
+    // EIP-8037: helper to refund the pre-charged NEW_ACCOUNT state-gas when
+    // no new account leaf persists: the CREATE short-circuits before a child
+    // frame is spawned (depth limit, insufficient balance, EIP-2681 nonce
+    // overflow, EIP-3860 oversized initcode, collision), the creation frame
+    // REVERTs, a fresh target exceptionally-halts, or CREATE succeeds onto
+    // an already-alive account. Child exceptional halt onto a balance-only
+    // (alive) target is handled separately below — that charge is kept as
+    // regular gas so the 63/64 spill still appears on the receipt.
+    // The pre-charge happened in opcodes/gas.ts (0 if the target already had
+    // nonce or code); refunds credit this (parent) frame's pools in LIFO order.
+    const refundCreatePreCharge = (context: string): void => {
+      const preCharged = this._runState.lastCreateNewAccountStateGas ?? BIGINT_0
+      if (preCharged === BIGINT_0) return
+      this.creditStateGasRefund(preCharged, context)
+      this._runState.lastCreateNewAccountStateGas = BIGINT_0
+    }
+
     // Check if account has enough ether and max depth not exceeded
     if (
       this._env.depth >= Number(this.common.param('stackLimit')) ||
       this._env.contract.balance < value
     ) {
+      refundCreatePreCharge('CREATE fail-fast new_account')
       return BIGINT_0
     }
 
     // EIP-2681 check
     if (this._env.contract.nonce >= MAX_UINT64) {
+      refundCreatePreCharge('CREATE fail-fast new_account')
       return BIGINT_0
+    }
+
+    // EIP-8038: warm the create target only now, after the fail-fast checks
+    // (an aborted create must not warm the address). Uses the pre-increment
+    // nonce, matching the address generated in `_executeCreate`.
+    const targetAddressBytes = salt
+      ? generateAddress2(this._env.address.bytes, salt, codeToRun)
+      : generateAddress(this._env.address.bytes, bigIntToBytes(this._env.contract.nonce))
+    if (this.common.isActivatedEIP(8038) && this.common.isActivatedEIP(2929)) {
+      this.journal.addWarmedAddress(targetAddressBytes)
     }
 
     this._env.contract.nonce += BIGINT_1
@@ -1192,11 +1396,31 @@ export class Interpreter {
       )
     }
 
+    // EELS `generic_create`: a non-deployable target (nonce / code / storage)
+    // does not spawn a child. The 63/64 grant is consumed as regular gas on
+    // this frame; new-account state gas is refunded only if it was charged
+    // (storage-only collision — EIP-7610).
+    if (this.common.isActivatedEIP(7928)) {
+      const toAccount = await this._stateManager.getAccount(new Address(targetAddressBytes))
+      if (
+        toAccount !== undefined &&
+        (toAccount.nonce > BIGINT_0 ||
+          equalsBytes(toAccount.codeHash, KECCAK256_NULL) === false ||
+          equalsBytes(toAccount.storageRoot, KECCAK256_RLP) === false)
+      ) {
+        this.useGas(gasLimit, 'CREATE collision')
+        this._evm.blockLevelAccessList!.addAddress(bytesToHex(targetAddressBytes))
+        refundCreatePreCharge('CREATE collision new_account')
+        return BIGINT_0
+      }
+    }
+
     if (this.common.isActivatedEIP(3860)) {
       if (
         codeToRun.length > Number(this.common.param('maxInitCodeSize')) &&
         this._evm.allowUnlimitedInitCodeSize === false
       ) {
+        refundCreatePreCharge('CREATE fail-fast new_account')
         return BIGINT_0
       }
     }
@@ -1229,6 +1453,51 @@ export class Interpreter {
 
     // this should always be safe
     this.useGas(results.execResult.executionGasUsed, 'CREATE')
+
+    if (this.common.isActivatedEIP(8037)) {
+      if (results.execResult.exceptionError !== undefined) {
+        // Creation frame failed: no new account leaf persists.
+        // REVERT and fail-fast / fresh-target OOG refund the pre-charge
+        // (EELS `credit_state_gas_refund` when `new_account_charged`).
+        // A child exceptional halt onto an already-alive target is the
+        // EIP-8037 spill path: we still charged NEW_ACCOUNT (balance-only
+        // is not nonce/code, so the 63/64 stipend shrinks) but EELS
+        // `new_account_charged = not is_account_alive` does not refund.
+        // Convert the spilled slice to regular gas — it already reduced
+        // gasLeft at charge time — without crediting leftover.
+        const haltedOntoAlive =
+          results.execResult.exceptionError.error !== EVMError.errorMessages.REVERT &&
+          message.createdTargetAlive === true
+        if (haltedOntoAlive) {
+          const preCharged = this._runState.lastCreateNewAccountStateGas ?? BIGINT_0
+          if (preCharged > BIGINT_0) {
+            const fromSpill =
+              preCharged < this._runState.stateGasSpilled
+                ? preCharged
+                : this._runState.stateGasSpilled
+            this._runState.stateGasSpilled -= fromSpill
+            this._evm.executionStateGasUsed -= fromSpill
+            const fromReservoir = preCharged - fromSpill
+            if (fromReservoir > BIGINT_0) {
+              this.refillStateGasReservoir(fromReservoir, 'CREATE halt onto alive reservoir')
+            }
+            this._runState.lastCreateNewAccountStateGas = BIGINT_0
+            this._runState.eip8037BurnLeftoverAfterCreateHaltOntoAlive = true
+          }
+        } else {
+          refundCreatePreCharge('CREATE failure new_account')
+        }
+      } else {
+        // Merge the successful child frame's spilled state gas into this
+        // frame's spill tracker (LIFO refunds may credit it to gasLeft).
+        this._runState.stateGasSpilled += results.execResult.stateGasSpilled ?? BIGINT_0
+        if (message.createdTargetAlive === true) {
+          // The create target was already alive (EIP-161 non-empty): no new
+          // account leaf was added, refund the new-account state gas.
+          refundCreatePreCharge('CREATE onto alive account new_account')
+        }
+      }
+    }
 
     // Set return buffer in case revert happened
     if (
@@ -1331,8 +1600,10 @@ export class Interpreter {
     }
 
     // Add to beneficiary balance
+    let beneficiaryWasNew = false
     if (!toSelf) {
       let toAccount = await this._stateManager.getAccount(toAddress)
+      beneficiaryWasNew = toAccount === undefined || toAccount.isEmpty()
       if (!toAccount) {
         toAccount = new Account()
       }
@@ -1347,6 +1618,21 @@ export class Interpreter {
           originalBalance,
         )
       }
+    }
+
+    // EIP-8037: SELFDESTRUCT that transfers value to a non-existent beneficiary
+    // creates a new account. Charge stateBytesPerNewAccount * costPerStateByte.
+    if (
+      this.common.isActivatedEIP(8037) &&
+      !toSelf &&
+      beneficiaryWasNew &&
+      contractBalance > BIGINT_0
+    ) {
+      const stateBytesPerNewAccount = this.common.param('stateBytesPerNewAccount')
+      const blockGasLimit = this._env.block.header.gasLimit
+      const costPerStateByte = activeCostPerStateByte(this.common, blockGasLimit)
+      const charge = stateBytesPerNewAccount * costPerStateByte
+      this.chargeStateGas(charge, 'SELFDESTRUCT new beneficiary')
     }
 
     // Modify the account (set balance to 0) flag
@@ -1364,18 +1650,28 @@ export class Interpreter {
       }
     }
 
-    // EIP-7708: Emit a Selfdestruct log for SELFDESTRUCT to self only when the balance
+    // EIP-8246: SELFDESTRUCT no longer burns ETH. A self-beneficiary keeps
+    // its balance (the account clearing at transaction end preserves the
+    // balance); zeroing only completes a transfer to a different account.
+    if (this.common.isActivatedEIP(8246) && toSelf) {
+      doModify = false
+    }
+
+    // EIP-7708: Emit a Burn log (LOG2) for SELFDESTRUCT to self only when the balance
     // is actually zeroed (doModify=true, i.e. same-tx contract creation). Pre-existing
     // contracts where EIP-6780 prevents the burn should not emit a log.
-    if (this.common.isActivatedEIP(7708) && contractBalance > BIGINT_0 && toSelf && doModify) {
+    // Under EIP-8246 nothing is burned, so no burn log is ever emitted.
+    if (
+      this.common.isActivatedEIP(7708) &&
+      !this.common.isActivatedEIP(8246) &&
+      contractBalance > BIGINT_0 &&
+      toSelf &&
+      doModify
+    ) {
       const contractTopic = setLengthLeft(this._env.address.bytes, 32)
       const data = setLengthLeft(bigIntToBytes(contractBalance), 32)
-      const selfdestructLog: Log = [
-        EIP7708_SYSTEM_ADDRESS,
-        [EIP7708_SELFDESTRUCT_TOPIC, contractTopic],
-        data,
-      ]
-      this._result.logs.push(selfdestructLog)
+      const burnLog: Log = [EIP7708_SYSTEM_ADDRESS, [EIP7708_BURN_TOPIC, contractTopic], data]
+      this._result.logs.push(burnLog)
     }
 
     // Set contract balance to 0

@@ -4,21 +4,23 @@
 
 [@ethereumjs/mpt](../README.md) / FoundNodeFunction
 
-# Type Alias: FoundNodeFunction()
+# Type Alias: FoundNodeFunction
 
 > **FoundNodeFunction** = (`nodeRef`, `node`, `key`, `walkController`) => `void`
 
-Defined in: [packages/mpt/src/types.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/types.ts#L38)
+Defined in: [types.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/types.ts#L43)
+
+Callback invoked for each node during a trie walk.
 
 ## Parameters
 
 ### nodeRef
 
-`Uint8Array`
+[`NodeReferenceOrRawMPTNode`](NodeReferenceOrRawMPTNode.md)
 
 ### node
 
-[`MPTNode`](MPTNode.md) | `null`
+[`MPTNode`](MPTNode.md) \| `null`
 
 ### key
 

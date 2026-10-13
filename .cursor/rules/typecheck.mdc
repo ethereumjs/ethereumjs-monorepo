@@ -1,0 +1,16 @@
+---
+description: After TS edits, run tsc in the touched package; a green test run is not tsc
+alwaysApply: true
+---
+
+# Typecheck after edits
+
+CI always runs `npm run tsc --workspaces` (`tsc -p ./tsconfig.json --noEmit` per package). Package `tsconfig.json` includes `test/`, so a test-only error fails the job even when `npm test` is green.
+
+## When finishing a change
+
+1. Run `npm run tsc` in each package you edited (`cd packages/tx && npm run tsc`). If several packages changed, `npm run tsc --workspaces` from the repo root (same as CI).
+2. Fix the errors. A mixed-type loop (e.g. the tx matrix) does not narrow: guard with `'accessList' in tx` or similar before reading a field that only some types have. Spreading a class instance into a union of `create*` factories needs a cast or a typed `txData` object — do not leave that for CI.
+3. Do not leave typecheck failures for CI to catch.
+
+`npm test` does not run `tsc`.

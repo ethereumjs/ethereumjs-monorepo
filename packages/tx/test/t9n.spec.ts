@@ -1,10 +1,9 @@
 import * as fs from 'fs'
+import { parseArgs } from 'node:util'
 import path from 'path'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { bytesToHex, hexToBigInt, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
-import * as yargs from 'yargs'
-import { hideBin } from 'yargs/helpers'
 
 import { createTxFromRLP } from '../src/transactionFactory.ts'
 
@@ -42,16 +41,18 @@ const forkMap: { [key: string]: string } = {
   ConstantinopleFix: Hardfork.Petersburg,
 }
 
-const args: T9NArgs = yargs
-  .default(hideBin(process.argv))
-  .parserConfiguration({
-    'dot-notation': false,
-  })
-  .option('dir', {
-    describe: 'Directory to road t9n tests from',
-    default: '../ethereum-tests/TransactionTests',
-    string: true,
-  }).argv as T9NArgs
+const defaultT9nDir = '../ethereum-tests/TransactionTests'
+const { values: t9nArgv } = parseArgs({
+  args: process.argv.slice(2),
+  options: {
+    dir: { type: 'string', default: defaultT9nDir },
+  },
+  strict: false,
+})
+const dirArg = t9nArgv.dir
+const args: T9NArgs = {
+  dir: typeof dirArg === 'string' ? dirArg : defaultT9nDir,
+}
 
 function getFork(fork: string) {
   const f = forkMap[fork] ?? fork

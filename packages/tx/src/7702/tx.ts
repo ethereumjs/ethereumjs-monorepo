@@ -5,7 +5,6 @@ import {
   bigIntToHex,
   bigIntToUnpaddedBytes,
   bytesToBigInt,
-  eoaCode7702AuthorizationListBytesItemToJSON,
   eoaCode7702AuthorizationListJSONItemToBytes,
   isEOACode7702AuthorizationList,
   toBytes,
@@ -39,9 +38,11 @@ import type {
   TransactionInterface,
   TxOptions,
 } from '../types.ts'
-import { accessListBytesToJSON, accessListJSONToBytes } from '../util/access.ts'
+import { accessListJSONToBytes } from '../util/access.ts'
 
+/** Plain-object input for {@link EOACode7702Tx}. */
 export type TxData = AllTypesTxData[typeof TransactionType.EOACodeEIP7702]
+/** Devp2p byte-array encoding for {@link EOACode7702Tx}. */
 export type TxValuesArray = AllTypesTxValuesArray[typeof TransactionType.EOACodeEIP7702]
 
 /**
@@ -89,8 +90,8 @@ export class EOACode7702Tx implements TransactionInterface<typeof TransactionTyp
    * This constructor takes the values, validates them, assigns them and freezes the object.
    *
    * It is not recommended to use this constructor directly. Instead use
-   * the static factory methods to assist in creating a Transaction object from
-   * varying data types.
+   * the module-level factory functions such as {@link createEOACode7702Tx},
+   * {@link createEOACode7702TxFromRLP}, and {@link createEOACode7702TxFromBytesArray}.
    */
   public constructor(txData: TxData, opts: TxOptions = {}) {
     sharedConstructor(this, { ...txData, type: TransactionType.EOACodeEIP7702 }, opts)
@@ -225,6 +226,14 @@ export class EOACode7702Tx implements TransactionInterface<typeof TransactionTyp
   }
 
   /**
+   * `max(getIntrinsicGas(), calldata floor)` when EIP-7623 is active, otherwise intrinsic.
+   * Does not include EIP-8037 first-touch state gas.
+   */
+  getMinimumGasLimit(): bigint {
+    return Legacy.getMinimumGasLimit(this)
+  }
+
+  /**
    * EOACode7702Tx cannot create contracts
    */
   toCreationAddress(): never {
@@ -237,12 +246,12 @@ export class EOACode7702Tx implements TransactionInterface<typeof TransactionTyp
    * Format: `[chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
    * accessList, authorizationList, signatureYParity, signatureR, signatureS]`
    *
-   * Use {@link EOACode7702Transaction.serialize} to add a transaction to a block
-   * with {@link createBlockFromBytesArray}.
+   * Use {@link EOACode7702Tx.serialize} to add a transaction to a block
+   * with {@link @ethereumjs/block!createBlockFromBytesArray}.
    *
    * For an unsigned tx this method uses the empty Bytes values for the
    * signature parameters `v`, `r` and `s` for encoding. For an EIP-155 compliant
-   * representation for external signing use {@link EOACode7702Transaction.getMessageToSign}.
+   * representation for external signing use {@link EOACode7702Tx.getMessageToSign}.
    */
   raw(): TxValuesArray {
     return [
@@ -308,7 +317,7 @@ export class EOACode7702Tx implements TransactionInterface<typeof TransactionTyp
    * Computes a sha3-256 hash of the serialized tx.
    *
    * This method can only be used for signed txs (it throws otherwise).
-   * Use {@link EOACode7702Transaction.getMessageToSign} to get a tx hash for the purpose of signing.
+   * Use {@link EOACode7702Tx.getMessageToSign} to get a tx hash for the purpose of signing.
    * @returns Hash of the serialized signed transaction
    */
   public hash(): Uint8Array {
@@ -368,10 +377,8 @@ export class EOACode7702Tx implements TransactionInterface<typeof TransactionTyp
    * @returns JSON encoding of the transaction
    */
   toJSON(): JSONTx {
-    const accessListJSON = accessListBytesToJSON(this.accessList)
-    const authorizationList = this.authorizationList.map((item) =>
-      eoaCode7702AuthorizationListBytesItemToJSON(item),
-    )
+    const accessListJSON = EIP2930.getAccessListJSON(this)
+    const authorizationList = EIP7702.getAuthorizationListJSON(this)
 
     const baseJSON = getBaseJSON(this)
 

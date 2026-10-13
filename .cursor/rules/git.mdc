@@ -1,0 +1,124 @@
+---
+description: Git conventions — when to commit/push/PR, renames, PR title/body, labels
+alwaysApply: true
+---
+
+# Remote git (agents)
+
+Unless the human **explicitly** asks, do **not**:
+
+- `git commit`
+- `git push` (or force-push)
+- `gh pr create` / open or merge pull requests
+- `gh pr merge` or other merge-to-default flows
+- change the current branch — no `git checkout`, `git switch`, `git checkout -b`, or `git switch -c`, and **no switching back** to another branch when a task finishes (leave the checkout where the ship work landed)
+
+**Commit alone is not permission to push.** Phrases like “commit”, “commit your changes”, or “commit if ready” mean **local commit only** — stop after `git commit` succeeds unless the same message also asks to push (e.g. “commit and push”, “push the branch”).
+
+**Separate permissions:** push requires an explicit push (or ship) ask; opening a PR requires an explicit PR ask; merging requires an explicit merge ask (including round-trip / release skills that say GO). A **push** to a branch that already has a PR includes refreshing that PR’s **title and body** when essence changed ([After each push](#after-each-push-existing-pr)); label-only updates are not enough. Opening a new PR still requires an explicit PR ask.
+
+Working-tree **inspection** (`git status`, `git diff`, `git log`) is always fine. Do not stash, rebase, or rewrite history unless asked. Branch changes belong in the list above — including “helpful” restores of the branch the human had open at the start of the chat.
+
+# Git renames
+
+- **Renames and moves:** use `git mv <src> <dest>` for files and directories. Do not `mv` + `git add`/`git rm`, and do not use editor "Save As" + delete the old file.
+- **Why:** `git mv` produces rename detection in diffs (`R` status), keeps `git log --follow` working, and makes PR review tractable during test restructures and refactors alike.
+- **Same commit:** rename and update all import/require paths in one commit when possible.
+- **Case-only renames (macOS):** two-step if needed — `git mv Foo.ts tmp.ts && git mv tmp.ts foo.ts` — so Git registers the case change.
+- **Bulk renames:** still one `git mv` per path; verify with `git status` (should show `renamed:` not `deleted:` + `new file:`).
+
+# Pull request labels
+
+Use **exact** GitHub label names (including spaces after colons, e.g. `package: vm`). When opening or materially updating a PR, set labels via `gh pr edit`. **Do not** add unrelated labels (`prio:`, `eval:`, `effort:`, `good first issue`, `breaking`, `hardfork:`, `target:`, `dependencies`, `javascript`, `AI Usage`, …) unless a human explicitly asks.
+
+## Package labels (`package: …`)
+
+Apply **one or more** package labels for every package **substantially** changed in the PR (real behavior, APIs, benchmarks, tests, or package-scoped docs — not a drive-by one-liner in an unrelated package).
+
+| Path / scope | Label |
+| --- | --- |
+| `packages/<name>/` (active library) | `package: <name>` — use the folder name (`statemanager`, `binarytree`, `genesis`, …) |
+| Root / cross-cutting repo infra | `package: monorepo` — e.g. `.github/`, `config/`, root `package.json`, `scripts/`, `.cursor/`, shared CI, monorepo docs |
+
+Monorepo-wide PRs often need **`package: monorepo` plus** each substantially touched package. Pure single-package work uses only that package label. If the change is **only** repo infra with no meaningful package delta, `package: monorepo` alone is enough.
+
+## PR state (`PR state: …`) — pick exactly one
+
+Update this when the PR is created and again when intent changes (including after pushes that finish or reopen work).
+
+| Label | When |
+| --- | --- |
+| `PR state: WIP` | More commits or known follow-up expected before review/merge |
+| `PR state: merge ready` | Author expects the PR to be complete and mergeable (default when handing off for review unless told otherwise) |
+| `PR state: needs review` | Human explicitly asked for review attention (instead of or in addition to signaling readiness — use **instead of** `merge ready`, not both) |
+
+Replace the previous PR state label when switching (remove the old `PR state: …` label). Do not set `PR state: needs changes`, `do-not-merge`, or `open discussion` unless a maintainer workflow requires it.
+
+## Type labels (`type: …`) — non-test
+
+Add **one or more** that describe the work (ordinary taxonomy, not CI triggers):
+
+`type: bug`, `type: feature`, `type: enhancement`, `type: docs`, `type: refactor`, `type: tests`, `type: performance`, `type: security`, `type: CI`, `type: meta`, `type: maintenance`, `type: release`, `type: spec updates`, `type: external`, `type: discussion / question`
+
+## Test-triggering and test-skipping types
+
+These **change CI behavior** — add or remove deliberately; **when in doubt, prefer more testing** (do not add skip labels to save CI unless the human asked or the change clearly cannot affect that runner).
+
+| Label | Effect (summary) |
+| --- | --- |
+| `type: test all hardforks` | Extra VM state/blockchain runs across hardforks (`vm-pr.yml`) |
+| `type: test verkle` | Verkle-related test path |
+| `type: test no browser` | Skips browser workflow |
+| `type: test skip most stable VM` | Skips most stable VM jobs in `vm-pr.yml` |
+| `type: test skip dev VM` | Skips dev VM EST jobs |
+| `type: test performance` | Runs the CodSpeed simulation job (`performance-benchmarks`) on this PR. Each push reads the label again |
+
+Set **`type: test performance`** when the diff can change the speed of a hot-path library (`rlp`, `util`, `mpt`, `evm`, `vm`, `tx`, `block`, `statemanager`, `binarytree`), a benchmark, or a dependency those paths execute. Decide at PR open, then again before every later push: the workflow reads labels on that push. Remove the label when the remaining diff can no longer change that speed. The ordinary type label `type: performance` does not start the job.
+
+Remove a skip label when the PR no longer justifies skipping that coverage.
+
+# Pull requests
+
+When opening or updating a PR (`gh pr create`, `gh pr edit`), use an **essence** title and body — not a commit changelog, not a generic “Summary / Test plan” template with checkbox lists.
+
+The title and body describe the **weighted substance** of the branch. Leave side tasks out (a lint fix, a one-line drive-by, scaffolding). Not the latest commit message alone. Not a bare package name.
+
+**Title.** One line. No conventional-commit prefix (`feat:`, `fix:`). One noun phrase per substantial theme, separated by ` / `, heaviest first. Package- or fork-scoped work may name the scope in parentheses when it helps reviewers.
+
+```
+Archive devp2p outside workspace / CI and release cleanup
+VM EST dev job / skip label wiring in ci-affected
+Tx matrix / guard negative fee fields on all types
+```
+
+When later commits change what the branch is really about, retitle. Do not keep the first commit’s wording.
+
+**Body.** Mirror the title parts as `##` sections in the same order. The heading text is the segment between ` / ` in the title. One theme per section.
+
+Choose the shape that fits:
+
+- **Overview** — a short opening when the section needs one sentence of context.
+- **Prose** — behavior or motivation (what changed and why it matters for review).
+- **Table** — parallel facts (packages touched, CI jobs, label intent, breaking notes).
+
+Do **not** add empty `## Test plan` sections or unchecked todo checklists unless the human asked for them. If verification is worth stating, one short prose line or a tight bullet list under the relevant `##` section is enough.
+
+Do not open a second PR for the same branch.
+
+## After each push (existing PR)
+
+When a push succeeds and `gh pr view <branch>` finds an open PR, **update that PR’s title and body** (`gh pr edit`) in the same turn if the branch’s cumulative essence changed — new themes, dropped scope, or rebalanced weight. Apply **both** title and body together; do not refresh labels alone and leave a stale title or description.
+
+This is part of a normal **push** or **ship** handoff when a PR already exists (see [Remote git](#remote-git-agents)); it is not optional “only if the human remembers.” Skip only when the push was a no-essence delta (e.g. CI fix that does not change what the PR is about).
+
+When opening a PR immediately after a push (human asked to open PRs), set title and body once at create time; on **later** pushes, edit the same PR again.
+
+## Agent checklist
+
+1. Infer packages from the diff; apply matching `package: …` (+ `package: monorepo` when appropriate).
+2. Set one `PR state: …` label.
+3. Set matching non-test `type: …` label(s).
+4. Add or drop test-trigger/skip `type: test …` labels only when justified. Set `type: test performance` when the diff may change hot-path speed, and re-check that before each push. Default to **not** skipping heavy suites.
+5. Leave all other label families unset.
+6. On PR create or material update: essence title and matching `##` body ([Pull requests](#pull-requests)); no Summary/Test plan boilerplate.
+7. After each push to a branch with an open PR: `gh pr edit` **title and body** when essence changed ([After each push](#after-each-push-existing-pr)).

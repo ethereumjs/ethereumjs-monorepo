@@ -6,7 +6,7 @@
 
 # Interface: BinaryTreeExecutionWitness
 
-Defined in: [packages/util/src/binaryTree.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L58)
+Defined in: [packages/util/src/binaryTree.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L59)
 
 Experimental, object format could eventual change.
 An object that provides the state and proof necessary for binary tree stateless execution
@@ -17,7 +17,7 @@ An object that provides the state and proof necessary for binary tree stateless 
 
 > **parentStateRoot**: `` `0x${string}` ``
 
-Defined in: [packages/util/src/binaryTree.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L62)
+Defined in: [packages/util/src/binaryTree.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L63)
 
 The stateRoot of the parent block
 
@@ -27,7 +27,7 @@ The stateRoot of the parent block
 
 > **proof**: `any`
 
-Defined in: [packages/util/src/binaryTree.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L73)
+Defined in: [packages/util/src/binaryTree.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L74)
 
 The proof for the block.
 Proves that the provided stateDiff belongs to the canonical binary tree.
@@ -38,7 +38,7 @@ Proves that the provided stateDiff belongs to the canonical binary tree.
 
 > **stateDiff**: [`BinaryTreeStateDiff`](BinaryTreeStateDiff.md)[]
 
-Defined in: [packages/util/src/binaryTree.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L68)
+Defined in: [packages/util/src/binaryTree.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L69)
 
 An array of state diffs.
 Each item corresponding to state accesses or state modifications of the block.

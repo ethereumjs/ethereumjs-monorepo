@@ -6,7 +6,9 @@
 
 # Interface: BinaryTreeAccessWitnessInterface
 
-Defined in: [interfaces.ts:103](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L103)
+Defined in: [interfaces.ts:114](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L114)
+
+Witness interface tracking binary-tree access gas costs.
 
 ## Methods
 
@@ -14,7 +16,7 @@ Defined in: [interfaces.ts:103](https://github.com/ethereumjs/ethereumjs-monorep
 
 > **accesses**(): `Generator`\<[`BinaryTreeAccessedStateWithAddress`](../type-aliases/BinaryTreeAccessedStateWithAddress.md)\>
 
-Defined in: [interfaces.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L104)
+Defined in: [interfaces.ts:115](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L115)
 
 #### Returns
 
@@ -26,7 +28,7 @@ Defined in: [interfaces.ts:104](https://github.com/ethereumjs/ethereumjs-monorep
 
 > **commit**(): `void`
 
-Defined in: [interfaces.ts:118](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L118)
+Defined in: [interfaces.ts:129](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L129)
 
 #### Returns
 
@@ -38,7 +40,7 @@ Defined in: [interfaces.ts:118](https://github.com/ethereumjs/ethereumjs-monorep
 
 > **debugWitnessCost**(): `void`
 
-Defined in: [interfaces.ts:106](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L106)
+Defined in: [interfaces.ts:117](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L117)
 
 #### Returns
 
@@ -50,7 +52,7 @@ Defined in: [interfaces.ts:106](https://github.com/ethereumjs/ethereumjs-monorep
 
 > **merge**(`accessWitness`): `void`
 
-Defined in: [interfaces.ts:117](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L117)
+Defined in: [interfaces.ts:128](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L128)
 
 #### Parameters
 
@@ -68,7 +70,7 @@ Defined in: [interfaces.ts:117](https://github.com/ethereumjs/ethereumjs-monorep
 
 > **rawAccesses**(): `Generator`\<[`RawBinaryTreeAccessedState`](../type-aliases/RawBinaryTreeAccessedState.md)\>
 
-Defined in: [interfaces.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L105)
+Defined in: [interfaces.ts:116](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L116)
 
 #### Returns
 
@@ -80,13 +82,13 @@ Defined in: [interfaces.ts:105](https://github.com/ethereumjs/ethereumjs-monorep
 
 > **readAccountBasicData**(`address`): `bigint`
 
-Defined in: [interfaces.ts:107](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L107)
+Defined in: [interfaces.ts:118](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L118)
 
 #### Parameters
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Returns
 
@@ -98,13 +100,13 @@ Defined in: [interfaces.ts:107](https://github.com/ethereumjs/ethereumjs-monorep
 
 > **readAccountCodeChunks**(`contract`, `startPc`, `endPc`): `bigint`
 
-Defined in: [interfaces.ts:113](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L113)
+Defined in: [interfaces.ts:124](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L124)
 
 #### Parameters
 
 ##### contract
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ##### startPc
 
@@ -124,13 +126,13 @@ Defined in: [interfaces.ts:113](https://github.com/ethereumjs/ethereumjs-monorep
 
 > **readAccountCodeHash**(`address`): `bigint`
 
-Defined in: [interfaces.ts:109](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L109)
+Defined in: [interfaces.ts:120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L120)
 
 #### Parameters
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Returns
 
@@ -142,13 +144,13 @@ Defined in: [interfaces.ts:109](https://github.com/ethereumjs/ethereumjs-monorep
 
 > **readAccountHeader**(`address`): `bigint`
 
-Defined in: [interfaces.ts:111](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L111)
+Defined in: [interfaces.ts:122](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L122)
 
 #### Parameters
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Returns
 
@@ -160,13 +162,13 @@ Defined in: [interfaces.ts:111](https://github.com/ethereumjs/ethereumjs-monorep
 
 > **readAccountStorage**(`contract`, `storageSlot`): `bigint`
 
-Defined in: [interfaces.ts:115](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L115)
+Defined in: [interfaces.ts:126](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L126)
 
 #### Parameters
 
 ##### contract
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ##### storageSlot
 
@@ -182,7 +184,7 @@ Defined in: [interfaces.ts:115](https://github.com/ethereumjs/ethereumjs-monorep
 
 > **revert**(): `void`
 
-Defined in: [interfaces.ts:119](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L119)
+Defined in: [interfaces.ts:130](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L130)
 
 #### Returns
 
@@ -194,13 +196,13 @@ Defined in: [interfaces.ts:119](https://github.com/ethereumjs/ethereumjs-monorep
 
 > **writeAccountBasicData**(`address`): `bigint`
 
-Defined in: [interfaces.ts:108](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L108)
+Defined in: [interfaces.ts:119](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L119)
 
 #### Parameters
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Returns
 
@@ -212,13 +214,13 @@ Defined in: [interfaces.ts:108](https://github.com/ethereumjs/ethereumjs-monorep
 
 > **writeAccountCodeChunks**(`contract`, `startPc`, `endPc`): `bigint`
 
-Defined in: [interfaces.ts:114](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L114)
+Defined in: [interfaces.ts:125](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L125)
 
 #### Parameters
 
 ##### contract
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ##### startPc
 
@@ -238,13 +240,13 @@ Defined in: [interfaces.ts:114](https://github.com/ethereumjs/ethereumjs-monorep
 
 > **writeAccountCodeHash**(`address`): `bigint`
 
-Defined in: [interfaces.ts:110](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L110)
+Defined in: [interfaces.ts:121](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L121)
 
 #### Parameters
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Returns
 
@@ -256,13 +258,13 @@ Defined in: [interfaces.ts:110](https://github.com/ethereumjs/ethereumjs-monorep
 
 > **writeAccountHeader**(`address`): `bigint`
 
-Defined in: [interfaces.ts:112](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L112)
+Defined in: [interfaces.ts:123](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L123)
 
 #### Parameters
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 #### Returns
 
@@ -274,13 +276,13 @@ Defined in: [interfaces.ts:112](https://github.com/ethereumjs/ethereumjs-monorep
 
 > **writeAccountStorage**(`contract`, `storageSlot`): `bigint`
 
-Defined in: [interfaces.ts:116](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L116)
+Defined in: [interfaces.ts:127](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L127)
 
 #### Parameters
 
 ##### contract
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ##### storageSlot
 

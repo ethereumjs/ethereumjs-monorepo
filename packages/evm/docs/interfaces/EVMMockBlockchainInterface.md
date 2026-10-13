@@ -6,7 +6,9 @@
 
 # Interface: EVMMockBlockchainInterface
 
-Defined in: [types.ts:498](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L498)
+Defined in: [types.ts:612](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L612)
+
+Lightweight blockchain interface used by stand-alone EVM execution.
 
 ## Methods
 
@@ -14,7 +16,7 @@ Defined in: [types.ts:498](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **getBlock**(`blockId`): `Promise`\<`EVMMockBlock`\>
 
-Defined in: [types.ts:499](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L499)
+Defined in: [types.ts:613](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L613)
 
 #### Parameters
 
@@ -32,7 +34,7 @@ Defined in: [types.ts:499](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **putBlock**(`block`): `Promise`\<`void`\>
 
-Defined in: [types.ts:500](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L500)
+Defined in: [types.ts:614](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L614)
 
 #### Parameters
 
@@ -50,7 +52,7 @@ Defined in: [types.ts:500](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **shallowCopy**(): `EVMMockBlockchainInterface`
 
-Defined in: [types.ts:501](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L501)
+Defined in: [types.ts:615](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L615)
 
 #### Returns
 

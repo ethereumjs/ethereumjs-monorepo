@@ -67,4 +67,29 @@ describe('[Common/EIPs]: Initialization / Chain params', () => {
     msg = 'should return correct value'
     assert.strictEqual(c.eipTimestamp(3651), BigInt(1681338455), msg)
   })
+
+  it('EIP-7997 is activated on Hardfork.Amsterdam', () => {
+    const c = new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })
+    assert.isTrue(c.isActivatedEIP(7997), 'Amsterdam activates EIP-7997')
+  })
+
+  it('EIP-7997 can run in isolation from Constantinople (CREATE2)', () => {
+    assert.doesNotThrow(() => {
+      new Common({ chain: Mainnet, hardfork: Hardfork.Constantinople, eips: [7997] })
+    }, 'minimumHardfork is Constantinople, not Amsterdam')
+    assert.throws(() => {
+      new Common({ chain: Mainnet, hardfork: Hardfork.Byzantium, eips: [7997] })
+    }, /7997 cannot be activated/)
+  })
+
+  it('setEIPs() after construction', () => {
+    const c = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin })
+    c.setEIPs([2718, 2929, 2930])
+    assert.deepEqual(c.eips(), [2718, 2929, 2930])
+
+    assert.throws(() => c.setEIPs([1_000_000]), /not supported$/)
+
+    const c2 = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
+    assert.throws(() => c2.setEIPs([2930]), /requires EIP/)
+  })
 })

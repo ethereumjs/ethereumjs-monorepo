@@ -5,6 +5,7 @@ import type { Common } from '@ethereumjs/common'
 
 const BYTE_SIZE = 256
 
+/** 2048-bit Ethereum bloom filter used in block headers and transaction receipts. */
 export class Bloom {
   bitvector: Uint8Array
   keccakFunction: (msg: Uint8Array) => Uint8Array
@@ -28,8 +29,7 @@ export class Bloom {
   }
 
   /**
-   * Adds an element to a bit vector of a 64 byte bloom filter.
-   * @param e - The element to add
+   * Adds a 20-byte log topic or address entry to the bloom filter.
    */
   add(e: Uint8Array) {
     e = this.keccakFunction(e)
@@ -65,8 +65,7 @@ export class Bloom {
   }
 
   /**
-   * Checks if multiple topics are in a bloom.
-   * @returns `true` if every topic is in the bloom
+   * Returns true when every topic is present in the bloom.
    */
   multiCheck(topics: Uint8Array[]): boolean {
     return topics.every((t: Uint8Array) => this.check(t))

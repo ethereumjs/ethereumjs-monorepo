@@ -8,7 +8,7 @@
 
 > **generateBinaryTreeChunkSuffixes**(`numChunks`): `number`[]
 
-Defined in: [packages/util/src/binaryTree.ts:304](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L304)
+Defined in: [packages/util/src/binaryTree.ts:291](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L291)
 
 Helper method to generate the suffixes for code chunks for putting code
 

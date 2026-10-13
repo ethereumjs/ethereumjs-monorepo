@@ -6,15 +6,15 @@
 
 # Function: createBlock()
 
-> **createBlock**(`blockData`, `opts?`): [`Block`](../classes/Block.md)
+> **createBlock**(`blockData?`, `opts?`): [`Block`](../classes/Block.md)
 
-Defined in: [block/constructors.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block/constructors.ts#L51)
+Defined in: [block/constructors.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block/constructors.ts#L50)
 
-Static constructor to create a block from a block data dictionary
+Instantiate a block from [BlockData](../interfaces/BlockData.md).
 
 ## Parameters
 
-### blockData
+### blockData?
 
 [`BlockData`](../interfaces/BlockData.md) = `{}`
 
@@ -25,3 +25,7 @@ Static constructor to create a block from a block data dictionary
 ## Returns
 
 [`Block`](../classes/Block.md)
+
+## Throws
+
+If header, transaction, or uncle validation fails

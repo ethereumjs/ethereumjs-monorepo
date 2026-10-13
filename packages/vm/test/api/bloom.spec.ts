@@ -5,7 +5,7 @@ import { Bloom } from '../../src/bloom/index.ts'
 
 const byteSize = 256
 
-describe('bloom', () => {
+describe('[VM/Bloom]: bitvector operations', () => {
   it('should initialize without params', () => {
     const b = new Bloom()
     assert.deepEqual(b.bitvector, new Uint8Array(byteSize), 'should be empty')

@@ -8,7 +8,9 @@
 
 > **createCLRequest**(`bytes`): [`CLRequest`](../classes/CLRequest.md)\<[`CLRequestType`](../type-aliases/CLRequestType.md)\>
 
-Defined in: [packages/util/src/request.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/request.ts#L37)
+Defined in: [packages/util/src/request.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/request.ts#L51)
+
+Parse request bytes into a [CLRequest](../classes/CLRequest.md).
 
 ## Parameters
 

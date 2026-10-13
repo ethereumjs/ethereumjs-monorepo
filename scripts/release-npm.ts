@@ -6,22 +6,33 @@
  * Optionally publishes under a different npm scope (e.g. for fork releases).
  *
  * Usage:
- *   tsx scripts/release-npm.ts [--bump-version=<version>] [--publish=<tag>] [--scope=<scope>]
+ *   tsx scripts/release-npm.ts [--bump-version=<version>] [--publish=<tag>] [--scope=<scope>] [--start-with=<package>]
+ *
+ * With no flags, publishes current package versions to npm under the `latest` tag.
  *
  * Examples:
+ *   # Publish current versions (default tag: latest)
+ *   tsx scripts/release-npm.ts
+ *
  *   # Bump versions only (no publish)
  *   tsx scripts/release-npm.ts --bump-version=10.1.0
  *
  *   # Bump versions and publish
  *   tsx scripts/release-npm.ts --bump-version=10.1.1-nightly.1 --publish=nightly
  *
- *   # Publish current versions (no bump)
+ *   # Publish current versions explicitly
  *   tsx scripts/release-npm.ts --publish=latest
+ *
+ *   # Resume an interrupted publish (dependency order in PUBLISH_ORDER)
+ *   tsx scripts/release-npm.ts --publish=latest --start-with=util
+ *
+ * Maintainer default: `npm login` (2FA in browser; skip follow-up checks if offered),
+ * then `--publish=latest` with no --otp. See release-round skill Phase 4.
  *
  *   # Fork release under a different npm scope
  *   tsx scripts/release-npm.ts --scope=feelyourprotocol --bump-version=8141.0.0 --publish=latest
  *
- *   # Publish with 2FA one-time password
+ *   # Optional: per-command OTP (CI / Publish-token 2FA — not the usual maintainer flow)
  *   tsx scripts/release-npm.ts --publish=latest --otp=123456
  */
 
@@ -47,11 +58,25 @@ const ACTIVE_PACKAGES = [
   'vm',
 ]
 
+// Dependency order for npm publish (deps must exist on the registry first)
+const PUBLISH_ORDER = [
+  'rlp',
+  'util',
+  'common',
+  'binarytree',
+  'genesis',
+  'tx',
+  'mpt',
+  'block',
+  'statemanager',
+  'evm',
+  'blockchain',
+  'vm',
+]
+
 // Deprecated packages + testdata (only dependencies updated, not published)
 // These packages keep their own version but need @ethereumjs/* deps updated
 const DEPS_ONLY_PACKAGES = [
-  'client',
-  'devp2p',
   'ethash',
   'wallet',
   'testdata',
@@ -77,6 +102,7 @@ interface ParsedArgs {
   tag?: string
   scope: string
   otp?: string
+  startWith?: string
 }
 
 function parseArgs(): ParsedArgs {
@@ -87,26 +113,26 @@ function parseArgs(): ParsedArgs {
   const publishArg = args.find((arg) => arg.startsWith('--publish='))
   const scopeArg = args.find((arg) => arg.startsWith('--scope='))
   const otpArg = args.find((arg) => arg.startsWith('--otp='))
+  const startWithArg = args.find((arg) => arg.startsWith('--start-with='))
 
   const version = versionArg?.split('=')[1]
-  const tag = publishArg?.split('=')[1]
+  let tag = publishArg?.split('=')[1]
   const scope = scopeArg?.split('=')[1] ?? DEFAULT_SCOPE
   const otp = otpArg?.split('=')[1]
+  const startWith = startWithArg?.split('=')[1]
 
-  // Validate: at least one action must be specified
+  // No flags: publish current versions under `latest` (after a manual version bump)
   if (!version && !tag) {
-    console.error('Usage: tsx scripts/release-npm.ts [--bump-version=<version>] [--publish=<tag>] [--scope=<scope>] [--otp=<code>]')
-    console.error('')
-    console.error('Examples:')
-    console.error('  tsx scripts/release-npm.ts --bump-version=10.1.0')
-    console.error('  tsx scripts/release-npm.ts --bump-version=10.1.1-nightly.1 --publish=nightly')
-    console.error('  tsx scripts/release-npm.ts --publish=latest')
-    console.error('  tsx scripts/release-npm.ts --scope=feelyourprotocol --bump-version=8141.0.0 --publish=latest')
-    console.error('  tsx scripts/release-npm.ts --publish=latest --otp=123456')
+    tag = 'latest'
+  }
+
+  if (startWith && !PUBLISH_ORDER.includes(startWith)) {
+    console.error(`Error: Unknown package "${startWith}" for --start-with`)
+    console.error(`Valid packages: ${PUBLISH_ORDER.join(', ')}`)
     process.exit(1)
   }
 
-  return { version, tag, scope, otp }
+  return { version, tag, scope, otp, startWith }
 }
 
 function readPackageJson(packagePath: string): PackageJson {
@@ -267,24 +293,72 @@ function buildPackages(packages: PackageInfo[]): void {
   console.log('\n✅ All packages built\n')
 }
 
-function publishPackages(packages: PackageInfo[], tag: string, isFork: boolean, otp?: string): void {
+function packagesInPublishOrder(packages: PackageInfo[]): PackageInfo[] {
+  const byName = new Map(packages.map((pkg) => [pkg.name, pkg]))
+  return PUBLISH_ORDER.map((name) => {
+    const pkg = byName.get(name)
+    if (!pkg) {
+      throw new Error(`Publish order references unknown package: ${name}`)
+    }
+    return pkg
+  })
+}
+
+function verifyNpmAuth(): void {
+  try {
+    const user = execSync('npm whoami', { encoding: 'utf-8' }).trim()
+    console.log(`\n🔐 npm authenticated as ${user}\n`)
+  } catch {
+    console.error('\n❌ Not authenticated with npm.')
+    console.error('   Run `npm login` or configure a token in ~/.npmrc before publishing.')
+    console.error('   See DEVELOPER.md (Releases) for auth options.\n')
+    process.exit(1)
+  }
+}
+
+function publishPackages(
+  packages: PackageInfo[],
+  tag: string,
+  isFork: boolean,
+  otp?: string,
+  startWith?: string,
+): void {
   const ignoreScripts = isFork ? ' --ignore-scripts' : ''
   const otpFlag = otp ? ` --otp=${otp}` : ''
+  let orderedPackages = packagesInPublishOrder(packages)
+
+  if (startWith) {
+    const startIndex = PUBLISH_ORDER.indexOf(startWith)
+    orderedPackages = orderedPackages.slice(startIndex)
+    console.log(
+      `\n📦 Resuming npm publish from "${startWith}" (${orderedPackages.length} packages remaining)...\n`,
+    )
+  }
+
   console.log(`\n🚀 Publishing packages with tag "${tag}"${isFork ? ' (--ignore-scripts)' : ''}...\n`)
 
-  for (const pkg of packages) {
+  verifyNpmAuth()
+
+  for (const pkg of orderedPackages) {
     const displayName = pkg.packageJson.name
     console.log(`  Publishing ${displayName}...`)
-    
-    try {    
+
+    try {
       execSync(`npm publish --tag=${tag} --access=public${ignoreScripts}${otpFlag}`, {
         cwd: pkg.path,
         stdio: 'inherit',
       })
-      
+
       console.log(`  ✅ ${displayName} published successfully\n`)
     } catch (error) {
       console.error(`  ❌ Failed to publish ${displayName}`)
+      const nextIndex = orderedPackages.indexOf(pkg) + 1
+      if (nextIndex < orderedPackages.length) {
+        const otpSuffix = otp ? ` --otp=${otp}` : ''
+        console.error(
+          `  To resume, run: tsx scripts/release-npm.ts --publish=${tag} --start-with=${orderedPackages[nextIndex].name}${otpSuffix}`,
+        )
+      }
       throw error
     }
   }
@@ -293,7 +367,7 @@ function publishPackages(packages: PackageInfo[], tag: string, isFork: boolean, 
 }
 
 async function main(): Promise<void> {
-  const { version, tag, scope, otp } = parseArgs()
+  const { version, tag, scope, otp, startWith } = parseArgs()
   const isFork = scope !== DEFAULT_SCOPE
 
   console.log('\n' + '='.repeat(60))
@@ -301,6 +375,9 @@ async function main(): Promise<void> {
   console.log('='.repeat(60))
   console.log(`Bump version: ${version ?? 'no'}`)
   console.log(`Publish: ${tag ? `yes (tag: ${tag})` : 'no'}`)
+  if (startWith) {
+    console.log(`Start with: ${startWith}`)
+  }
   if (isFork) {
     console.log(`Scope: @${scope} (fork release)`)
   }
@@ -394,9 +471,9 @@ async function main(): Promise<void> {
     // Fork releases use --ignore-scripts to skip prepublishOnly (which would
     // clean + rebuild and fail since TS can't resolve the rewritten scope).
     if (tag) {
-      publishPackages(packages, tag, isFork, otp)
+      publishPackages(packages, tag, isFork, otp, startWith)
     } else {
-      console.log('\n📋 Skipping publish (use --publish=<tag> to publish packages)\n')
+      console.log('\n📋 Skipping publish (use --publish=<tag> or run without flags after bumping)\n')
     }
 
     console.log('\n' + '='.repeat(60))

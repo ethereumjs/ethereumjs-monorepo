@@ -14,9 +14,12 @@ import { VM } from './vm.ts'
 import type { VMOpts } from './types.ts'
 
 /**
- * VM async constructor. Creates engine instance and initializes it.
+ * Async factory for initializing a {@link VM} with sensible defaults.
  *
- * @param opts VM engine constructor options
+ * Supplies mainnet {@link @ethereumjs/common!Common}, {@link @ethereumjs/evm!EVMMockBlockchain}, {@link @ethereumjs/statemanager!MerkleStateManager},
+ * and a nested {@link @ethereumjs/evm!createEVM} instance when not provided.
+ *
+ * @throws If both `evm` and `evmOpts` are set, or if conflicting profiler options are enabled
  */
 export async function createVM(opts: VMOpts = {}): Promise<VM> {
   // Save if a `StateManager` was passed (for activatePrecompiles)

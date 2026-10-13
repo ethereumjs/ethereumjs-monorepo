@@ -15,6 +15,7 @@ import { gasLimitCheck, moduloLengthCheck } from './util.ts'
 import type { ExecResult } from '../types.ts'
 import type { PrecompileInput } from './types.ts'
 
+/** BLS12-381 G2 multi-scalar multiplication precompile (0x0e, EIP-2537). */
 export async function precompile0e(opts: PrecompileInput): Promise<ExecResult> {
   const pName = getPrecompileName('10')
   const bls = (opts._EVM as EVM)['_bls']!
@@ -66,11 +67,12 @@ export async function precompile0e(opts: PrecompileInput): Promise<ExecResult> {
   let returnValue
   try {
     returnValue = bls.msmG2(opts.data)
-  } catch (e: any) {
+  } catch (e: unknown) {
+    const error = e instanceof EVMError ? e : new EVMError(EVMError.errorMessages.REVERT)
     if (opts._debug !== undefined) {
-      opts._debug(`${pName} failed: ${e.message}`)
+      opts._debug(`${pName} failed: ${e instanceof Error ? e.message : undefined}`)
     }
-    return EVMErrorResult(e, opts.gasLimit)
+    return EVMErrorResult(error, opts.gasLimit)
   }
 
   if (opts._debug !== undefined) {
