@@ -12,7 +12,7 @@ Short entrypoint for coding agents in this monorepo. Human documentation lives i
 
 ## Cursor
 
-Always-on rules: [`.cursor/rules/`](.cursor/rules/) — `ci`, `typecheck`, `spellcheck`, `security`, `git`.
+Always-on rules: [`.cursor/rules/`](.cursor/rules/) — `ci`, `typecheck`, `spellcheck`, `security`, `git`, `dependencies`.
 
 Topic rules (load when relevant): [`code-conventions.mdc`](.cursor/rules/code-conventions.mdc), [`api-docs.mdc`](.cursor/rules/api-docs.mdc), [`examples.mdc`](.cursor/rules/examples.mdc), [`api-tests.mdc`](.cursor/rules/api-tests.mdc), [`tx-tests.mdc`](.cursor/rules/tx-tests.mdc), [`releases.mdc`](.cursor/rules/releases.mdc), [`benchmarks.mdc`](.cursor/rules/benchmarks.mdc).
 

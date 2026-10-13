@@ -264,7 +264,7 @@ cd path/to/your/project && npm link @ethereumjs/package-name
 # rebuild after changes; unlink when done
 ```
 
-**Shared toolchain** — `eslint`, `biome`, `typescript`, … live in the root `package.json`.
+**Shared toolchain** — `eslint`, `biome`, `typescript`, … live in the root `package.json`. Categories and update practice: [dependencies.mdc](.cursor/rules/dependencies.mdc).
 
 **Security** — wrong hashes or EVM results are consensus bugs. Trust tiers: [security.mdc](.cursor/rules/security.mdc). Extra care on `tx`, `util` signing, and `evm` / `vm` spec tests.
 
@@ -276,7 +276,7 @@ Rules: [`.cursor/rules/`](.cursor/rules/) (plain markdown + YAML front matter �
 
 | Rule | Scope | Remember |
 | ---- | ----- | -------- |
-| `ci`, `typecheck`, `spellcheck`, `git`, `security` | Always on | Git rule: explicit ask for commit/push/PR/merge; commit-only ≠ push; PR labels when asked |
+| `ci`, `typecheck`, `spellcheck`, `git`, `security`, `dependencies` | Always on | Git rule: explicit ask for commit/push/PR/merge; commit-only ≠ push; PR labels when asked |
 | `code-conventions` | `src/`, `examples/` | No public API renames without human ask |
 | `api-docs` | `src/` | Cross-package `{@link @ethereumjs/pkg!Symbol}` |
 | `examples` | `examples/`, READMEs | Run embedme after README edits |
