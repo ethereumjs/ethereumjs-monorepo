@@ -42,7 +42,7 @@ jobs:
     steps:
       # Restore on the host, then test in Docker. actions/cache cannot reliably
       # restore host-created caches inside a container job.
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - uses: ./.github/actions/setup-ethereumjs
         with:
           dep-cache-key: ${{ inputs.dep-cache-key }}
