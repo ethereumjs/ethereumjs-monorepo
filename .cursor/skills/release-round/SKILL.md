@@ -153,7 +153,7 @@ Automate where possible:
 - [ ] Spot-check one GitHub release body vs CHANGELOG extract
 ```
 
-Right after publish, a local npm cache can still hold old registry metadata and fail installs for `@ethereumjs/tx@^<version>` even when the version is live — run the smoke check in a **new empty directory** with `--prefer-online`. This is **not** the monorepo `min-release-age` setting (that applies only inside this repo’s tree).
+Right after publish, a local npm cache can still hold old registry metadata and fail installs for `@ethereumjs/tx@^<version>` even when the version is live — run the smoke check in a **new empty directory** with `--prefer-online`. Root [`.npmrc`](../../../.npmrc) sets `min-release-age=3` for third-party deps; `@ethereumjs/*` is on `min-release-age-exclude` so registry smokes work the same day. For a one-off install of a young **external** package from this tree, use `npm install … --min-release-age=0`.
 
 Report mismatches; do not “fix” the registry. Summarize — then **STOP** until GO for phase 6.
 
