@@ -66,16 +66,11 @@
   },
   "devDependencies": {
     "@types/debug": "^4.1.12",
-    "@types/minimist": "^1.2.5",
     "@types/node-dir": "^0.0.37",
-    "level": "^9.0.0",
     "mcl-wasm": "^1.8.0",
-    "memory-level": "^3.0.0",
-    "minimist": "^1.2.8",
     "node-dir": "^0.1.17",
     "rollup-plugin-visualizer": "^5.14.0",
     "rustbn-wasm": "^0.4.0",
-    "solc": "^0.8.28",
     "split": "^1.0.1"
   },
   "engines": {
