@@ -15,7 +15,7 @@ Unless the human **explicitly** asks, do **not**:
 
 **Commit alone is not permission to push.** Phrases like “commit”, “commit your changes”, or “commit if ready” mean **local commit only** — stop after `git commit` succeeds unless the same message also asks to push (e.g. “commit and push”, “push the branch”).
 
-**Separate permissions:** push requires an explicit push (or ship) ask; opening a PR requires an explicit PR ask; merging requires an explicit merge ask (including round-trip / release skills that say GO). Updating PR title, body, or labels after a push is fine only when a prior instruction already covered that PR or the human asked to update it.
+**Separate permissions:** push requires an explicit push (or ship) ask; opening a PR requires an explicit PR ask; merging requires an explicit merge ask (including round-trip / release skills that say GO). A **push** to a branch that already has a PR includes refreshing that PR’s **title and body** when essence changed ([After each push](#after-each-push-existing-pr)); label-only updates are not enough. Opening a new PR still requires an explicit PR ask.
 
 Working-tree **inspection** (`git status`, `git diff`, `git log`) is always fine. Do not stash, rebase, or rewrite history unless asked. Branch changes belong in the list above — including “helpful” restores of the branch the human had open at the start of the chat.
 
@@ -103,7 +103,15 @@ Choose the shape that fits:
 
 Do **not** add empty `## Test plan` sections or unchecked todo checklists unless the human asked for them. If verification is worth stating, one short prose line or a tight bullet list under the relevant `##` section is enough.
 
-When a push changes the branch essence, update the existing PR title and body (`gh pr edit`). Do not open a second PR.
+Do not open a second PR for the same branch.
+
+## After each push (existing PR)
+
+When a push succeeds and `gh pr view <branch>` finds an open PR, **update that PR’s title and body** (`gh pr edit`) in the same turn if the branch’s cumulative essence changed — new themes, dropped scope, or rebalanced weight. Apply **both** title and body together; do not refresh labels alone and leave a stale title or description.
+
+This is part of a normal **push** or **ship** handoff when a PR already exists (see [Remote git](#remote-git-agents)); it is not optional “only if the human remembers.” Skip only when the push was a no-essence delta (e.g. CI fix that does not change what the PR is about).
+
+When opening a PR immediately after a push (human asked to open PRs), set title and body once at create time; on **later** pushes, edit the same PR again.
 
 ## Agent checklist
 
@@ -113,3 +121,4 @@ When a push changes the branch essence, update the existing PR title and body (`
 4. Add or drop test-trigger/skip `type: test …` labels only when justified. Set `type: test performance` when the diff may change hot-path speed, and re-check that before each push. Default to **not** skipping heavy suites.
 5. Leave all other label families unset.
 6. On PR create or material update: essence title and matching `##` body ([Pull requests](#pull-requests)); no Summary/Test plan boilerplate.
+7. After each push to a branch with an open PR: `gh pr edit` **title and body** when essence changed ([After each push](#after-each-push-existing-pr)).
