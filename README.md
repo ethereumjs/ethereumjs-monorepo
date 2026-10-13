@@ -2,9 +2,19 @@
   <img src="https://user-images.githubusercontent.com/47108/78779352-d0839500-796a-11ea-9468-fd2a0b3fe1ef.png" width="280" alt="EthereumJS">
 </p>
 
-<p align="center">
-  <img src="docs/assets/ethereumjs-layers.png" width="720" alt="EthereumJS package layers: execution, state, protocol, configuration, codec">
-</p>
+<div align="center">
+
+| Layer | Packages |
+| --- | --- |
+| **Execution** | `vm`, `evm` |
+| **State** | `statemanager`, `mpt`, `binarytree` |
+| **Protocol** | `tx`, `block`, `blockchain` |
+| **Configuration** | `common`, `genesis` |
+| **Codec & primitives** | `rlp`, `util` |
+
+[Package map ↓](#package-map)
+
+</div>
 
 # EthereumJS Monorepo
 
