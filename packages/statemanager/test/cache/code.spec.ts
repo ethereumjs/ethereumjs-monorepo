@@ -3,9 +3,9 @@ import { assert, describe, it } from 'vitest'
 
 import { CacheType, CodeCache } from '../../src/cache/index.ts'
 
-describe('Code Cache: initialization', () => {
+describe('[StateManager/CodeCache]: initialization', () => {
   for (const type of [CacheType.LRU, CacheType.ORDERED_MAP]) {
-    it(`should initialize`, async () => {
+    it(`initializes`, async () => {
       const cache = new CodeCache({ size: 100, type })
 
       assert.strictEqual(cache._checkpoints, 0, 'initializes given code cache')
@@ -13,30 +13,30 @@ describe('Code Cache: initialization', () => {
   }
 })
 
-describe('Code Cache: put and get code', () => {
+describe('[StateManager/CodeCache]: put and get code', () => {
   for (const type of [CacheType.LRU, CacheType.ORDERED_MAP]) {
     const cache = new CodeCache({ size: 100, type })
 
     const addr = new Address(hexToBytes(`0x${'10'.repeat(20)}`))
     const code = hexToBytes('0xdeadbeef') // Example code
 
-    it('should return undefined for code if not present in the cache', async () => {
+    it('returns undefined for code if not present in the cache', async () => {
       const elem = cache.get(addr)
       assert.isTrue(elem === undefined)
     })
 
-    it(`should put code`, async () => {
+    it(`puts code`, async () => {
       cache.put(addr, code)
       const elem = cache.get(addr)
       assert.isTrue(elem !== undefined && elem.code && equalsBytes(elem.code, code))
     })
 
-    it(`should flush`, async () => {
+    it(`flushes cached code`, async () => {
       const items = cache.flush()
       assert.strictEqual(items.length, 1)
     })
 
-    it(`should delete code from cache`, async () => {
+    it(`deletes code from cache`, async () => {
       cache.del(addr)
 
       const elem = cache.get(addr)
@@ -45,7 +45,7 @@ describe('Code Cache: put and get code', () => {
   }
 })
 
-describe('Code Cache: checkpointing', () => {
+describe('[StateManager/CodeCache]: checkpointing', () => {
   for (const type of [CacheType.LRU, CacheType.ORDERED_MAP]) {
     const cache = new CodeCache({ size: 100, type })
 
@@ -53,7 +53,7 @@ describe('Code Cache: checkpointing', () => {
     const code1 = hexToBytes('0xdeadbeef') // Example code
     const code2 = hexToBytes('0x00ff00ff') // Example code
 
-    it(`should revert to correct state`, async () => {
+    it(`reverts to correct state`, async () => {
       cache.put(addr, code1)
       cache.checkpoint()
       cache.put(addr, code2)

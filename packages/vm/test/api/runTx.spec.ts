@@ -142,7 +142,7 @@ describe('[VM/runTx]: successful API parameter usage', async () => {
     assert.isTrue(true, 'runTx should not fail with mismatching hardforks if validation skipped')
   })
 
-  it('should use passed in blockGasUsed to generate tx receipt', async () => {
+  it('uses passed in blockGasUsed to generate tx receipt', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     const vm = await createVM({ common })
 
@@ -390,7 +390,7 @@ describe('[VM/runTx]: API parameter usage and data errors', () => {
     }
   })
 
-  it('should throw on wrong nonces', async () => {
+  it('throws on wrong nonces', async () => {
     const vm = await createVM({ common })
     const tx = getTransaction(common, 2, true, '0x0', false)
     const address = tx.getSenderAddress()
@@ -705,7 +705,7 @@ describe('[VM/runTx]: consensus bugs', () => {
 })
 
 describe('[VM/runTx]: RunTxOptions', () => {
-  it('should throw on negative value args', async () => {
+  it('throws on negative value args', async () => {
     const vm = await createVM({ common })
     await setBalance(vm, createZeroAddress(), BigInt(10000000000))
     for (const txType of TRANSACTION_TYPES) {
@@ -865,7 +865,7 @@ it('Validate SELFDESTRUCT does not charge new account gas when calling CALLER an
 
 describe('[VM/runTx]: EIP-4844 transactions', () => {
   const kzg = new microEthKZG(trustedSetup)
-  it('should work', async () => {
+  it('runs a Cancun blob transaction and reports blob gas used', async () => {
     const { eip4844GethGenesis } = await import('@ethereumjs/testdata')
     const common = createCommonFromGethGenesis(eip4844GethGenesis, {
       chain: 'customChain',

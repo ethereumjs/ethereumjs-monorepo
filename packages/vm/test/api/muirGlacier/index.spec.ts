@@ -5,8 +5,8 @@ import { assert, describe, it } from 'vitest'
 import type { MerkleStateManager } from '@ethereumjs/statemanager'
 import { createVM } from '../../../src/index.ts'
 
-describe('General MuirGlacier VM tests', () => {
-  it('should accept muirGlacier hardfork option for supported chains', async () => {
+describe('[VM]: general MuirGlacier VM tests', () => {
+  it('accepts muirGlacier hardfork option for supported chains', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.MuirGlacier })
     const vm = await createVM({ common })
     assert.isDefined(vm.stateManager)

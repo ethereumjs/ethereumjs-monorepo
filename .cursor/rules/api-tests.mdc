@@ -1,6 +1,6 @@
 ---
 description: API test naming, structure, helpers, coverage, and performance conventions
-globs: packages/{rlp,util,common,tx,block,mpt,evm,statemanager,blockchain,binarytree,genesis,vm}/test/**/*.ts
+globs: packages/{rlp,util,common,tx,block,mpt,evm,statemanager,blockchain,binarytree,genesis,e2store,vm}/test/**/*.ts
 alwaysApply: false
 ---
 
@@ -14,7 +14,7 @@ Vitest API/unit/integration tests for active `@ethereumjs/*` libraries. Consensu
 
 **Out of scope:**
 
-- VM consensus runners: `packages/vm/test/tester/**` (legacy state/blockchain, EST)
+- VM consensus runners: `packages/vm/test/tester/**` (legacy state/blockchain, EST), `t8n/`, `retesteth/`
 - Benchmarks: `test/bench/`, `test/benchmark/`
 - Deprecated packages (`ethash`, `wallet`) — containment only per `security.mdc`. **`client`** and **`devp2p`** are archived under `archive/` (not CI-tested).
 
@@ -24,41 +24,65 @@ Vitest API/unit/integration tests for active `@ethereumjs/*` libraries. Consensu
 - `packages/mpt/test/official.spec.ts`, `packages/rlp/test/official.spec.ts`
 - EVM EOF/submodule readers under `packages/evm/test/eips/`
 - VM `test/api/tester/**` (diagnostic helpers, not consensus)
+- Block `difficulty.spec.ts` (ethereum-tests JSON vectors)
 
 After test edits: `npm run tsc` in touched packages, spellcheck on touched files (`typecheck.mdc`, `spellcheck.mdc`).
 
-## Directory layout
+## File layout
 
-**Default:** flat `test/<area>.spec.ts` aligned with `src/` modules.
+**One concern per file:** one export surface, one EIP, or one subsystem operation. A long file with several top-level `describe`s for the same API (see `packages/vm/test/api/runTx.spec.ts`) stays one file. A single `describe` mixing unrelated exports should split. ~400 lines is a review signal, not a hard limit.
 
-**Use subdirs when justified:**
+**Names:**
+
+- Module-aligned: `<module>.spec.ts` (`bytes.spec.ts`, `header.spec.ts`)
+- EIP: `eip-NNNN.spec.ts`. Add a short slug only when two files would collide (`eip-6780-selfdestruct.spec.ts`). No `eipNNNNblock` or package suffix in the filename — the package is the scope.
+- Precompiles: keep address index (`01-ecrecover.spec.ts`)
+- Official vectors: `official.spec.ts` or `<domain>Runner.spec.ts`
+- `index.spec.ts` only for the package entry surface, not as a junk drawer
+- **Renames:** always `git mv` — never delete + recreate. Update imports in the same commit (`git.mdc`).
+
+## Folders
+
+**Default:** flat `test/*.spec.ts`.
+
+**Subdirs when:**
 
 | Pattern | Example | When |
 |---------|---------|------|
-| Mirror `src/` subtree | `mpt/test/trie/`, `util/test/bal/` | Package has distinct subsystems |
-| Fixture dirs | `block/test/testdata/`, `rlp/test/fixture/` | Large static vectors |
-| Shared helpers | `tx/test/testData/`, `tx/txTypeMatrix.ts` | Cross-spec constants |
-| EIP-scoped specs | `eip1559.spec.ts`, `vm/test/api/EIPs/` | EIP-only behavior not shared across types |
-| Official runners | `official.spec.ts`, `transactionRunner.spec.ts` | Submodule / vendored vectors |
+| Subsystem (3+ specs) | `mpt/test/trie/`, `util/test/bal/`, `evm/test/opcodes/` | Distinct subsystems |
+| EIP directory | `test/eips/` | Four or more EIP specs in one package |
+| Fixtures | `testdata/`, `fixtures/` | Large static vectors as TS modules |
+| Shared helpers | `txTypeMatrix.ts`, `test/helpers.ts` | Cross-spec constants — never export helpers from a `.spec.ts` |
 
-Do not force 1:1 `src/` ↔ `test/` when types share capabilities (tx is the reference: matrix + EIP files).
-
-## File naming and renames
-
-- Spec files: `*.spec.ts`
-- **Renames:** always `git mv old new` — never delete + recreate. Update imports in the same commit (`git.mdc`).
-- **Module-aligned:** `<module>.spec.ts` (`bytes.spec.ts`, `header.spec.ts`)
-- **EIP-scoped:** `eipNNNN.spec.ts` — no redundant suffixes
-- **Integration / RPC:** pick one style per package and stay consistent within that package
-- **Official vectors:** `official.spec.ts` or `<domain>Runner.spec.ts`
+Fork-era bundles that are not a single EIP (`muirGlacier/`) may stay. Do not force 1:1 `src/` ↔ `test/` when types share capabilities (tx: matrix + EIP files).
 
 ## describe / it naming
 
-- **describe:** bracketed scope tag — `[Common]: Hardfork logic`, `[LegacyTx]`, `[RLP]: encode`
-  - Multi-type files: list types in the tag
-  - Subsystems: nest describes (`MapDB` → `get`)
-- **it:** name the function or behavior under test — `'ecrecover() rejects invalid v'`, not leftover names from other packages
-- **Official vector loops:** one `it` per vector when failures must pinpoint a case (rlp); batched single `it` when startup cost dominates (mpt official) — do not regress wall time when splitting
+**describe:** `[Area]: group`
+
+Area is package or subsystem: `[Util/Bytes]`, `[Tx/LegacyTx]`, `[VM/runTx]`, `[EVM/Precompile/01]`, `[StateManager/Code]`, `[MPT/Trie]`, `[Blockchain/Clique]`, `[RLP]: encode`.
+
+- Several top-level describes in one file share the same area prefix and differ by group.
+- One nested `describe` for a variant. A third nesting level means split the file.
+- Cartesian `for` loops: every varying axis appears in the title so two sibling describes never share a name.
+
+**it:** present tense, the outcome, **unique within the file**. No leading `should`.
+
+- Name the function when the describe is wider than one function: `hexToBytes() rejects odd-length hex`.
+- When the describe is the function, the `it` is only the case.
+- Matrix/table loops: interpolate the variant in the title.
+- Avoid: `should work`, `should fail`, bare `Initialization`, `it('setup')`.
+
+**Official vector loops:** one `it` per vector when failures must pinpoint a case (rlp); batched single `it` when startup cost dominates (mpt official) — comment why; do not regress wall time when splitting.
+
+## How to write a case
+
+- `import { assert, describe, it } from 'vitest'`. New tests use **`assert`**, not `expect`.
+- Sync failure: `assert.throws(() => fn(), /message/)` from `vitest`. Async: `try { await fn() ; assert.fail('…') } catch (e: unknown) { assert.match((e as Error).message, /…/) }` — Vitest-only, no `node:assert`. Do not use `assert.isTrue(true)` to mark a loop that already asserted inside.
+- Tables: `for` registering one `it` per row; title includes the label. Not `it.each` (union types do not narrow in `it.each`).
+- Each `it` builds its own state or uses `beforeEach`. No order coupling across `it`s.
+- Prefer public API (`createX`, factories, serializers). **S0** junk inputs: `security.mdc`.
+- `describe.skipIf(isBrowser)` for Node-only tests. Typecheck includes `test/` — guard unions in matrix loops.
 
 ## Shared helpers and fixtures
 
@@ -69,28 +93,25 @@ Reuse order:
 3. Package-local `test/testdata/` for large domain fixtures not yet generic enough
 4. Submodules (`ethereum-tests`) only in dedicated runner specs — never in shared matrices
 
-**Matrix pattern** (reference: `packages/tx/test/txTypeMatrix.ts`): export shared constants, stub crypto, invalid-input tables; drive cross-variant tests with a typed array + `for` loop in base-style specs; EIP files hold only what the matrix cannot express.
+**Tx matrix** (`packages/tx/test/txTypeMatrix.ts`): `@ethereumjs/tx` is not 1:1 `src/` ↔ `test/`. Types share `capabilities/`. `base.spec.ts` and `transactionFactory.spec.ts` must cover **every active tx type** (Legacy, 2930, 1559, 4844, 7702). EIP files (`eip-1559.spec.ts`, …) hold only what the matrix cannot express. When you add a tx type or behavior that applies to more than one type, extend the matrix first. Multi-type describes list the classes in the tag.
 
-## Coverage expectations
+**EIP-4844 / KZG:** `createBlob4844Tx` (and FromRLP / FromBytesArray) always requires `common.customCrypto.kzg`. Real KZG setup is slow. In the matrix: stub `kzg` (`{} as KZG` if never called) and pass `to` + at least one versioned hash (`0x01` + 31 zero bytes). No blobs or proofs in the matrix. Real KZG stays in `eip-4844.spec.ts` / `eip-7594.spec.ts` only (browser-excluded).
 
-- Logic coverage alone is insufficient for **S0** paths — see `security.mdc` (wrong JS inputs on fee/value/nonce and similar guard rails)
-- Prefer testing public API (`createX`, factories, serializers) over private helpers
-- Close obvious gaps: uncovered error paths, alternate constructors, freeze/opt-out
-- Do not weaken or skip official vectors to raise coverage
+## Coverage and performance
 
-## Performance
+- Logic coverage alone is insufficient for **S0** paths — see `security.mdc`.
+- Do not weaken or skip official vectors to raise coverage.
+- Do not slow the default suite during restructure.
+- Isolate expensive setup (real KZG/WASM/crypto) in dedicated specs with long `beforeAll` timeout; stub in shared matrices.
+- Keep env-specific tests in package `vitest.config.browser.mts` exclude lists.
+- Keep official runner fork splits, batched loops, and CI exclusions.
+- Prefer pre-baked TS fixtures over disk walks in hot paths.
 
-- Do not slow the default suite during restructure
-- Isolate expensive setup (real KZG/WASM/crypto) in dedicated specs with long `beforeAll` timeout; stub in shared matrices (`security.mdc` EIP-4844 note)
-- Keep env-specific tests in package `vitest.config.browser.mts` exclude lists
-- Keep official runner fork splits, batched loops, and CI exclusions
-- Prefer pre-baked TS fixtures over disk walks in hot paths
+## Decision flow
 
-## Vitest mechanics
+When adding or moving a case:
 
-- `describe` / `it` + `assert` from `vitest`
-- Manual `for` loops over tables preferred over `it.each` (tx pattern)
-- `describe.skipIf(isBrowser)` for Node-only tests
-- Typecheck includes `test/` — guard union types in matrix loops
-
-Tx-specific matrix, KZG, and runner rules: `tx-tests.mdc`.
+1. One export surface or one EIP? → own spec file (or existing file for that surface).
+2. Same API, several groups (success / errors / return values)? → several top-level `[Area]: group` describes in one file.
+3. Only a variant of one group? → one nested `describe`.
+4. Otherwise → split the file.

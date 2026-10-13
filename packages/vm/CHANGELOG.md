@@ -659,7 +659,7 @@ const common = new Common({ chain: Chain.Mainnet, hardfork: Hardfork.Cancun })
 const vm = await VM.create({ common })
 ```
 
-See the VM [EIP-6780 API test file](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/test/api/EIPs/eip-6780-selfdestruct-same-tx.spec.ts) for a respective test scenario on the bytecode level.
+See the VM [EIP-6780 API test file](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/test/api/eips/eip-6780-selfdestruct-same-tx.spec.ts) for a respective test scenario on the bytecode level.
 
 ## Opcode Renamings (EVM): SHA3 -> KECCAK, DIFFICULTY -> PREVRANDAO (post Merge)
 
@@ -865,7 +865,7 @@ import { Common, Chain } from '@ethereumjs/common'
 const common = new Common({ chain: Chain.Mainnet, eips: [4895] })
 ```
 
-In the VM withdrawals blocks can now both be executed with `VM.runBlock()` and build with `VM.buildBlock()` (for a more complex example you can have a look at the EIP tests in `test/api/EIPs/eip-4895-withdrawals.spec.ts`).
+In the VM withdrawals blocks can now both be executed with `VM.runBlock()` and build with `VM.buildBlock()` (for a more complex example you can have a look at the EIP tests in `test/api/eips/eip-4895-withdrawals.spec.ts`).
 
 ### Hardfork-By-Time Support
 

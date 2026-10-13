@@ -8,59 +8,68 @@ import {
 } from '@ethereumjs/util'
 import { sha256 } from '@noble/hashes/sha2.js'
 import { keccak_256 } from '@noble/hashes/sha3.js'
-import { assert, describe, expect, it } from 'vitest'
+import { assert, beforeEach, describe, it } from 'vitest'
 
 import { MerklePatriciaTrie, ROOT_DB_KEY, createMPT } from '../../src/index.ts'
 
-describe('testing checkpoints', () => {
-  let trie: MerklePatriciaTrie
-  let trieCopy: MerklePatriciaTrie
-  let preRoot: string
-  let postRoot: string
+describe('[MPT/Trie]: checkpoints', () => {
+  describe('[MPT/Trie]: after initial puts', () => {
+    let trie: MerklePatriciaTrie
+    let preRoot: string
 
-  it('setup', async () => {
-    trie = new MerklePatriciaTrie()
-    await trie.put(utf8ToBytes('do'), utf8ToBytes('verb'))
-    await trie.put(utf8ToBytes('doge'), utf8ToBytes('coin'))
-    preRoot = bytesToHex(trie.root())
+    beforeEach(async () => {
+      trie = new MerklePatriciaTrie()
+      await trie.put(utf8ToBytes('do'), utf8ToBytes('verb'))
+      await trie.put(utf8ToBytes('doge'), utf8ToBytes('coin'))
+      preRoot = bytesToHex(trie.root())
+    })
+
+    it('shallowCopy() reads values from the original trie', async () => {
+      const trieCopy = trie.shallowCopy()
+      assert.strictEqual(bytesToHex(trieCopy.root()), preRoot)
+      const res = await trieCopy.get(utf8ToBytes('do'))
+      assert.isTrue(equalsBytes(utf8ToBytes('verb'), res!))
+    })
+
+    it('checkpoint() marks the trie as checkpointed', () => {
+      trie.checkpoint()
+      assert.isTrue(trie.hasCheckpoints())
+    })
   })
 
-  it('should copy trie and get value added to original trie', async () => {
-    trieCopy = trie.shallowCopy()
-    assert.strictEqual(bytesToHex(trieCopy.root()), preRoot)
-    const res = await trieCopy.get(utf8ToBytes('do'))
-    assert.isTrue(equalsBytes(utf8ToBytes('verb'), res!))
-  })
-
-  it('should deactivate cache on copy()', async () => {
+  it('shallowCopy() deactivates cache when source trie uses cache', async () => {
     const trie = new MerklePatriciaTrie({ cacheSize: 100 })
-    trieCopy = trie.shallowCopy()
+    const trieCopy = trie.shallowCopy()
     assert.strictEqual((trieCopy as any)._opts.cacheSize, 0)
   })
 
-  it('should create a checkpoint', () => {
-    trie.checkpoint()
-    assert.isTrue(trie.hasCheckpoints())
+  describe('[MPT/Trie]: after checkpoint and cache puts', () => {
+    let trie: MerklePatriciaTrie
+    let postRoot: string
+
+    beforeEach(async () => {
+      trie = new MerklePatriciaTrie()
+      await trie.put(utf8ToBytes('do'), utf8ToBytes('verb'))
+      await trie.put(utf8ToBytes('doge'), utf8ToBytes('coin'))
+      trie.checkpoint()
+      await trie.put(utf8ToBytes('test'), utf8ToBytes('something'))
+      await trie.put(utf8ToBytes('love'), utf8ToBytes('emotion'))
+      postRoot = bytesToHex(trie.root())
+    })
+
+    it('shallowCopy() reads upstream and cache values after checkpoint', async () => {
+      const trieCopy = trie.shallowCopy()
+      assert.strictEqual(bytesToHex(trieCopy.root()), postRoot)
+      assert.strictEqual(trieCopy['_db'].checkpoints.length, 1)
+      assert.isTrue(trieCopy.hasCheckpoints())
+      const res = await trieCopy.get(utf8ToBytes('do'))
+      assert.isTrue(equalsBytes(utf8ToBytes('verb'), res!))
+      const res2 = await trieCopy.get(utf8ToBytes('love'))
+      assert.isTrue(equalsBytes(utf8ToBytes('emotion'), res2!))
+    })
   })
 
-  it('should save to the cache', async () => {
-    await trie.put(utf8ToBytes('test'), utf8ToBytes('something'))
-    await trie.put(utf8ToBytes('love'), utf8ToBytes('emotion'))
-    postRoot = bytesToHex(trie.root())
-  })
-
-  it('should copy trie and get upstream and cache values after checkpoint', async () => {
-    trieCopy = trie.shallowCopy()
-    assert.strictEqual(bytesToHex(trieCopy.root()), postRoot)
-    assert.strictEqual(trieCopy['_db'].checkpoints.length, 1)
-    assert.isTrue(trieCopy.hasCheckpoints())
-    const res = await trieCopy.get(utf8ToBytes('do'))
-    assert.isTrue(equalsBytes(utf8ToBytes('verb'), res!))
-    const res2 = await trieCopy.get(utf8ToBytes('love'))
-    assert.isTrue(equalsBytes(utf8ToBytes('emotion'), res2!))
-  })
-
-  it('should copy trie and use the correct hash function', async () => {
+  it('shallowCopy() preserves custom key hashing function', async () => {
     const trie = new MerklePatriciaTrie({
       db: new MapDB(),
       useKeyHashing: true,
@@ -154,7 +163,7 @@ describe('testing checkpoints', () => {
   })
 })
 
-describe('testing checkpoints with DB failures', () => {
+describe('[MPT/Trie]: checkpoints with DB failures', () => {
   const setup = async () => {
     const db = new MapDB<string, string | Uint8Array>()
     const trie = await createMPT({ db })
@@ -163,36 +172,51 @@ describe('testing checkpoints with DB failures', () => {
     return { db, trie, root: trie.root() }
   }
 
-  it('should revert after a put fails to read from the DB', async () => {
+  it('reverts after a put fails to read from the DB', async () => {
     const { db, trie, root } = await setup()
     db.get = async () => {
       throw new Error('read failed')
     }
 
-    await expect(trie.put(utf8ToBytes('doge'), utf8ToBytes('coin'))).rejects.toThrow('read failed')
+    try {
+      await trie.put(utf8ToBytes('doge'), utf8ToBytes('coin'))
+      assert.fail('put should throw when DB read fails')
+    } catch (e: unknown) {
+      assert.match((e as Error).message, /read failed/)
+    }
     await trie.revert()
     assert.deepEqual(trie.root(), root)
   })
 
-  it('should revert after a del fails to read from the DB', async () => {
+  it('reverts after a del fails to read from the DB', async () => {
     const { db, trie, root } = await setup()
     db.get = async () => {
       throw new Error('read failed')
     }
 
-    await expect(trie.del(utf8ToBytes('do'))).rejects.toThrow('read failed')
+    try {
+      await trie.del(utf8ToBytes('do'))
+      assert.fail('del should throw when DB read fails')
+    } catch (e: unknown) {
+      assert.match((e as Error).message, /read failed/)
+    }
     await trie.revert()
     assert.deepEqual(trie.root(), root)
   })
 
-  it('should revert after a commit fails to flush to the DB', async () => {
+  it('reverts after a commit fails to flush to the DB', async () => {
     const { db, trie, root } = await setup()
     db.batch = async () => {
       throw new Error('flush failed')
     }
     await trie.put(utf8ToBytes('doge'), utf8ToBytes('coin'))
 
-    await expect(trie.commit()).rejects.toThrow('flush failed')
+    try {
+      await trie.commit()
+      assert.fail('commit should throw when DB flush fails')
+    } catch (e: unknown) {
+      assert.match((e as Error).message, /flush failed/)
+    }
     await trie.revert()
     assert.deepEqual(trie.root(), root)
     assert.isNull(await trie.get(utf8ToBytes('doge')))

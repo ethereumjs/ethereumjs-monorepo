@@ -34,7 +34,7 @@ async function wasmCustomCrypto(): Promise<CustomCrypto> {
   }
 }
 
-describe('customCrypto WASM backend (legacy tx)', () => {
+describe('[Tx]: customCrypto WASM backend (legacy tx)', () => {
   beforeAll(async () => {
     await waitReady()
   })

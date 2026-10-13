@@ -4,7 +4,7 @@ import { assert, describe, it } from 'vitest'
 
 import { NobleBN254, RustBN254 } from '../../src/precompiles/bn254/index.ts'
 
-describe('BN254 WASM backend', () => {
+describe('[EVM/Precompile]: bN254 WASM backend', () => {
   it('add and mul match noble', async () => {
     const noble = new NobleBN254()
     const rustbn = await initRustBN()

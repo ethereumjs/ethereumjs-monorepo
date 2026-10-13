@@ -1,7 +1,7 @@
 import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
-import { assert, describe, expect, it } from 'vitest'
+import { assert, describe, it } from 'vitest'
 
 import { createBlockFromBeaconPayloadJSON, createBlockHeader } from '../src/index.ts'
 
@@ -40,21 +40,23 @@ describe('[fromExecutionPayloadJSON]: 4844 devnet 5', () => {
     }
   })
 
-  it('should validate block hash', async () => {
-    await expect(
-      createBlockFromBeaconPayloadJSON(
+  it('validates block hash', async () => {
+    try {
+      await createBlockFromBeaconPayloadJSON(
         {
           ...payloadSlot87335Data,
           block_hash: payloadSlot87475Data.block_hash,
         },
         { common },
-      ),
-      'should have failed constructing the block',
-    ).rejects.toThrow('Invalid blockHash')
+      )
+      assert.fail('should have failed constructing the block')
+    } catch (e: unknown) {
+      assert.match((e as Error).message, /Invalid blockHash/)
+    }
   })
 
-  it('should validate excess blob gas', async () => {
-    await expect(async () => {
+  it('validates excess blob gas', async () => {
+    try {
       const block = await createBlockFromBeaconPayloadJSON(
         {
           ...payloadSlot87475Data,
@@ -64,6 +66,9 @@ describe('[fromExecutionPayloadJSON]: 4844 devnet 5', () => {
       )
       const parentHeader = createBlockHeader({ excessBlobGas: BigInt(0) }, { common })
       block.validateBlobTransactions(parentHeader)
-    }, 'should fail constructing the block').rejects.toThrow('block excessBlobGas mismatch')
+      assert.fail('should fail constructing the block')
+    } catch (e: unknown) {
+      assert.match((e as Error).message, /block excessBlobGas mismatch/)
+    }
   })
 })

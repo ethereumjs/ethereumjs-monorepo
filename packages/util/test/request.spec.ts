@@ -5,7 +5,7 @@ import { CLRequestType, createCLRequest } from '../src/request.ts'
 
 import type { CLRequest } from '../src/request.ts'
 
-describe('Requests', () => {
+describe('[Util]: requests', () => {
   const testCases: [string, { [key: string]: Uint8Array }, CLRequestType][] = [
     [
       'DepositRequest',

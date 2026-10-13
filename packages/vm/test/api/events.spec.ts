@@ -6,8 +6,8 @@ import { assert, describe, it } from 'vitest'
 import { SIGNER_A } from '@ethereumjs/testdata'
 import { createVM, runBlock, runTx } from '../../src/index.ts'
 
-describe('VM events', () => {
-  it('should emit the Block before running it', async () => {
+describe('[VM]: events', () => {
+  it('emits the Block before running it', async () => {
     const vm = await createVM()
 
     let emitted
@@ -27,7 +27,7 @@ describe('VM events', () => {
     assert.strictEqual(emitted, block)
   })
 
-  it('should emit a RunBlockResult after running a block', async () => {
+  it('emits a RunBlockResult after running a block', async () => {
     const vm = await createVM()
 
     let emitted
@@ -48,7 +48,7 @@ describe('VM events', () => {
     assert.deepEqual((emitted as any).results, [])
   })
 
-  it('should emit the Transaction before running it', async () => {
+  it('emits the Transaction before running it', async () => {
     const vm = await createVM()
 
     let emitted
@@ -68,7 +68,7 @@ describe('VM events', () => {
     assert.strictEqual(emitted, tx)
   })
 
-  it('should emit RunTxResult after running a tx', async () => {
+  it('emits RunTxResult after running a tx', async () => {
     const vm = await createVM()
     await vm.stateManager.putAccount(SIGNER_A.address, new Account(BigInt(0), BigInt(0x11111111)))
     let emitted: any
@@ -89,7 +89,7 @@ describe('VM events', () => {
     assert.strictEqual(bytesToHex(emitted.execResult.returnValue), '0x')
   })
 
-  it('should emit the Message before running it', async () => {
+  it('emits the Message before running it', async () => {
     const vm = await createVM()
     await vm.stateManager.putAccount(SIGNER_A.address, new Account(BigInt(0), BigInt(0x11111111)))
     let emitted: any
@@ -112,7 +112,7 @@ describe('VM events', () => {
     assert.strictEqual(bytesToHex(emitted.code), '0x')
   })
 
-  it('should emit EVMResult after running a message', async () => {
+  it('emits EVMResult after running a message', async () => {
     const vm = await createVM()
     await vm.stateManager.putAccount(SIGNER_A.address, new Account(BigInt(0), BigInt(0x11111111)))
     let emitted: any
@@ -134,7 +134,7 @@ describe('VM events', () => {
     assert.strictEqual(bytesToHex(emitted.execResult.returnValue), '0x')
   })
 
-  it('should emit InterpreterStep on each step', async () => {
+  it('emits InterpreterStep on each step', async () => {
     const vm = await createVM()
 
     let lastEmitted
@@ -158,7 +158,7 @@ describe('VM events', () => {
     vm.evm.events!.removeListener('step', handler)
   })
 
-  it('should emit a NewContractEvent on new contracts', async () => {
+  it('emits a NewContractEvent on new contracts', async () => {
     const vm = await createVM()
 
     let emitted: any

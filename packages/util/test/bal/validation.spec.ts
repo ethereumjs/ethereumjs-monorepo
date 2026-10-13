@@ -35,7 +35,7 @@ type EstInvalidFixtureBlock = {
 
 type EstInvalidFixture = Record<string, { blocks: EstInvalidFixtureBlock[] }>
 
-describe('validateBlockAccessListJSONStructure', () => {
+describe('[Util]: validateBlockAccessListJSONStructure', () => {
   it('accepts valid fixture JSON', () => {
     validateBlockAccessListJSONStructure(balSimpleJSON as BALJSONBlockAccessList)
     validateBlockAccessListJSONStructure(balAllTransactionTypesJSON as BALJSONBlockAccessList)
@@ -144,7 +144,7 @@ describe('validateBlockAccessListJSONStructure', () => {
   })
 })
 
-describe('validateBlockAccessListStructure', () => {
+describe('[Util]: validateBlockAccessListStructure', () => {
   it('accepts valid internal access lists', () => {
     const bal = new BlockLevelAccessList(balSimple)
     validateBlockAccessListStructure(bal)
@@ -180,7 +180,7 @@ describe('validateBlockAccessListStructure', () => {
   })
 })
 
-describe('validateBlockAccessListHash', () => {
+describe('[Util]: validateBlockAccessListHash', () => {
   it('accepts matching header hash', () => {
     const bal = createBlockLevelAccessListFromJSON(balSimpleJSON as BALJSONBlockAccessList)
     validateBlockAccessListHash(bal, bal.hash())
@@ -196,7 +196,7 @@ describe('validateBlockAccessListHash', () => {
   })
 })
 
-describe('equalsBlockAccessList', () => {
+describe('[Util]: equalsBlockAccessList', () => {
   it('compares canonical RLP equality', () => {
     const a = createBlockLevelAccessListFromJSON(balSimpleJSON as BALJSONBlockAccessList)
     const b = new BlockLevelAccessList(balSimple)
@@ -204,7 +204,7 @@ describe('equalsBlockAccessList', () => {
   })
 })
 
-describe('execution-spec invalid BAL fixtures', () => {
+describe('[Util]: execution-spec invalid BAL fixtures', () => {
   it('rejects duplicate accounts and detects account reordering', () => {
     const dupJSON = Object.values(balInvalidDuplicateAccountJSON as EstInvalidFixture)[0].blocks[0]
       .rlp_decoded.blockAccessList
@@ -228,7 +228,7 @@ describe('execution-spec invalid BAL fixtures', () => {
   })
 })
 
-describe('validateBlockAccessListGasLimit', () => {
+describe('[Util]: validateBlockAccessListGasLimit', () => {
   // Minimal fixture mirroring bal_gas_limit_boundary (4 addresses + 11 storage keys = 15 items)
   const boundaryBalJson: BALJSONBlockAccessList = [
     {

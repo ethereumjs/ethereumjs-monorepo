@@ -15,8 +15,8 @@ import {
 
 const kzg = new microEthKZG(trustedSetup)
 
-describe('getBlobs()', () => {
-  it('should return an array of PrefixedHexString blobs', () => {
+describe('[Util]: getBlobs()', () => {
+  it('returns an array of PrefixedHexString blobs', () => {
     const input = 'test input'
     const blobs = getBlobs(input)
     assert(Array.isArray(blobs))
@@ -24,17 +24,17 @@ describe('getBlobs()', () => {
     for (const blob of blobs) assert(typeof blob === 'string' && blob.slice(0, 2) === '0x')
   })
 
-  it('should throw for invalid blob data', () => {
+  it('throws for invalid blob data', () => {
     const input = ''
     assert.throws(() => getBlobs(input), Error, 'invalid blob data')
   })
 
-  it('should throw for too large blob data', () => {
+  it('throws for too large blob data', () => {
     const input = 'a'.repeat(131072 * 6) // exceeds MAX_BLOB_BYTES_PER_TX * MAX_BLOBS_PER_TX
     assert.throws(() => getBlobs(input), Error, 'blob data is too large')
   })
 
-  it('should allow for multiple inputs', () => {
+  it('allows for multiple inputs', () => {
     const input = ['test input', 'test input 2']
     const blobs = getBlobs(input)
     assert(Array.isArray(blobs))
@@ -43,8 +43,8 @@ describe('getBlobs()', () => {
   })
 })
 
-describe('computeVersionedHash()', () => {
-  it('should return a versioned hash', () => {
+describe('[Util]: computeVersionedHash()', () => {
+  it('returns a versioned hash', () => {
     const commitment = new Uint8Array([1, 2, 3])
     const blobCommitmentVersion = 0x01
     const versionedHash = computeVersionedHash(bytesToHex(commitment), blobCommitmentVersion)
@@ -53,8 +53,8 @@ describe('computeVersionedHash()', () => {
   })
 })
 
-describe('commitmentsToVersionedHashes()', () => {
-  it('should return an array of versioned hashes', () => {
+describe('[Util]: commitmentsToVersionedHashes()', () => {
+  it('returns an array of versioned hashes', () => {
     const commitments = [new Uint8Array([1, 2, 3]), new Uint8Array([4, 5, 6])]
     const blobVersionedHashes = commitmentsToVersionedHashes(
       commitments.map((com) => bytesToHex(com)),
@@ -68,8 +68,8 @@ describe('commitmentsToVersionedHashes()', () => {
   })
 })
 
-describe('blobsToProofs()', () => {
-  it('should return an array of proofs', () => {
+describe('[Util/Blobs]: blobsToProofs', () => {
+  it('blobsToProofs() returns expected proof array', () => {
     const blobs = getBlobs(['0x01', '0x02'])
     const commitments = blobsToCommitments(kzg, blobs)
     const proofs = blobsToProofs(kzg, blobs, commitments)
@@ -81,11 +81,11 @@ describe('blobsToProofs()', () => {
     ]
     assert.deepEqual(proofs, expectedProofs)
     assert.lengthOf(proofs, 2)
-  })
+  }, 30_000)
 })
 
-describe('blobsToCellsAndProofs()', () => {
-  it('should return an array of cells and proofs', () => {
+describe('[Util]: blobsToCellsAndProofs()', () => {
+  it('returns an array of cells and proofs', () => {
     const blobs = getBlobs(['0x01', '0x02'])
     const cellsAndProofs = blobsToCellsAndProofs(kzg, blobs)
     assert(Array.isArray(cellsAndProofs))
@@ -102,8 +102,8 @@ describe('blobsToCellsAndProofs()', () => {
   }, 40000)
 })
 
-describe('blobsToCellProofs()', () => {
-  it('should return an array of cell proofs', () => {
+describe('[Util]: blobsToCellProofs()', () => {
+  it('returns an array of cell proofs', () => {
     const blobs = getBlobs(['0x01', '0x02'])
     const proofs = blobsToCellProofs(kzg, blobs)
     assert(Array.isArray(proofs))

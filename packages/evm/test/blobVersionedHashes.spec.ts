@@ -14,8 +14,8 @@ import { createEVM } from '../src/index.ts'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { EVMRunCallOpts } from '../src/types.ts'
 
-describe('BLOBHASH / access blobVersionedHashes in calldata', () => {
-  it('should work', async () => {
+describe('[EVM/BLOBHASH]: access blobVersionedHashes in calldata', () => {
+  it('returns versioned hash index 0 from top-level calldata', async () => {
     // setup the evm
     const { eip4844GethGenesis } = await import('@ethereumjs/testdata')
     const common = createCommonFromGethGenesis(eip4844GethGenesis, {
@@ -44,8 +44,8 @@ describe('BLOBHASH / access blobVersionedHashes in calldata', () => {
   })
 })
 
-describe(`BLOBHASH: access blobVersionedHashes within contract calls`, () => {
-  it('should work', async () => {
+describe(`[EVM/BLOBHASH]: access blobVersionedHashes within contract calls`, () => {
+  it('propagates blob hashes through CALL, CALLCODE, DELEGATECALL, and STATICCALL', async () => {
     // setup the evm
     const { eip4844GethGenesis } = await import('@ethereumjs/testdata')
     const common = createCommonFromGethGenesis(eip4844GethGenesis, {
@@ -94,8 +94,8 @@ describe(`BLOBHASH: access blobVersionedHashes within contract calls`, () => {
   })
 })
 
-describe(`BLOBHASH: access blobVersionedHashes in a CREATE/CREATE2 frame`, () => {
-  it('should work', async () => {
+describe(`[EVM/BLOBHASH]: access blobVersionedHashes in CREATE/CREATE2 frames`, () => {
+  it('exposes blob hashes inside CREATE and CREATE2 init code', async () => {
     // setup the evm
     const { eip4844GethGenesis } = await import('@ethereumjs/testdata')
     const common = createCommonFromGethGenesis(eip4844GethGenesis, {

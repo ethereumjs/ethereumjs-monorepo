@@ -14,8 +14,8 @@ const isBrowser = new Function('try {return this===window;}catch(e){ return fals
 
 const StateManager = MerkleStateManager
 
-describe('stateManager', () => {
-  it(`should generate the genesis state root correctly for mainnet from common`, async () => {
+describe('[StateManager]: VM integration', () => {
+  it(`generates the genesis state root correctly for mainnet from common`, async () => {
     if (isBrowser() === true) {
       return
     }
@@ -34,7 +34,7 @@ describe('stateManager', () => {
     )
   }, 30_000)
 
-  it(`should generate the genesis state root correctly for all other chains`, async () => {
+  it(`generates the genesis state root correctly for all other chains`, async () => {
     const chains: [Chain, Uint8Array][] = [
       [
         Chain.Sepolia,
@@ -61,7 +61,7 @@ describe('stateManager', () => {
   })
 })
 
-describe('Original storage cache', async () => {
+describe('[StateManager]: original storage cache', async () => {
   const stateManager = new MerkleStateManager()
 
   const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
@@ -71,7 +71,7 @@ describe('Original storage cache', async () => {
   const key = hexToBytes('0x1234567890123456789012345678901234567890123456789012345678901234')
   const value = hexToBytes('0x1234')
 
-  it(`should initially have empty storage value`, async () => {
+  it(`has empty storage value initially`, async () => {
     await stateManager.checkpoint()
     const res = await stateManager.getStorage(address, key)
     assert.deepEqual(res, new Uint8Array(0))
@@ -82,18 +82,18 @@ describe('Original storage cache', async () => {
     await stateManager.commit()
   })
 
-  it(`should set original storage value`, async () => {
+  it(`set original storage value`, async () => {
     await stateManager.putStorage(address, key, value)
     const res = await stateManager.getStorage(address, key)
     assert.deepEqual(res, value)
   })
 
-  it(`should get original storage value`, async () => {
+  it(`get original storage value`, async () => {
     const res = await stateManager.originalStorageCache.get(address, key)
     assert.deepEqual(res, value)
   })
 
-  it(`should return correct original value after modification`, async () => {
+  it(`returns correct original value after modification`, async () => {
     const newValue = hexToBytes('0x1235')
     await stateManager.putStorage(address, key, newValue)
     const res = await stateManager.getStorage(address, key)
@@ -103,7 +103,7 @@ describe('Original storage cache', async () => {
     assert.deepEqual(origRes, value)
   })
 
-  it(`should cache keys separately`, async () => {
+  it(`caches keys separately`, async () => {
     const key2 = hexToBytes('0x0000000000000000000000000000000000000000000000000000000000000012')
     const value2 = utf8ToBytes('12')
     const value3 = utf8ToBytes('123')

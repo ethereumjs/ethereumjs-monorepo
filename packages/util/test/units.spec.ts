@@ -2,7 +2,7 @@ import { assert, describe, it } from 'vitest'
 
 import { Units, formatBigDecimal } from '../src/index.ts'
 
-describe('formatBigDecimal', function () {
+describe('[Util]: formatBigDecimal', function () {
   const testCases: [bigint, bigint, bigint, string][] = [
     [BigInt('103797739275696858'), BigInt('1000000000000000000'), BigInt('100000'), '0.10379'],
     [BigInt('103797739275696858'), BigInt('1000000000000000000'), BigInt('1000'), '0.103'],
@@ -21,70 +21,70 @@ describe('formatBigDecimal', function () {
   }
 })
 
-describe('Units', () => {
-  describe('ether()', () => {
-    it('should convert 1 ether to wei', () => {
+describe('[Util]: units', () => {
+  describe('[Util]: ether()', () => {
+    it('converts 1 ether to wei', () => {
       const result = Units.ether(1)
       assert.strictEqual(result, BigInt(10 ** 18))
     })
 
-    it('should convert 0 ether to wei', () => {
+    it('converts 0 ether to wei', () => {
       const result = Units.ether(0)
       assert.strictEqual(result, BigInt(0))
     })
 
-    it('should convert a large number of ether to wei', () => {
+    it('converts a large number of ether to wei', () => {
       const result = Units.ether(1000000)
       assert.strictEqual(result, BigInt(1000000) * BigInt(10 ** 18))
     })
 
-    it('should throw error when a non-integer number is used', () => {
+    it('throws error when a non-integer number is used', () => {
       assert.throws(() => {
         Units.ether(0.5)
       }, 'Input must be an integer number')
     })
 
-    it('should throw error when a negative number is used', () => {
+    it('throws error when a negative number is used', () => {
       assert.throws(() => {
         Units.ether(-1)
       }, 'Input must be a positive number')
     })
 
-    it('should convert a bigint amount of ether to wei', () => {
+    it('converts a bigint amount of ether to wei', () => {
       const result = Units.ether(BigInt(2))
       assert.strictEqual(result, BigInt(2) * BigInt(10 ** 18))
     })
   })
 
-  describe('gwei()', () => {
-    it('should convert 1 gwei to wei', () => {
+  describe('[Util]: gwei()', () => {
+    it('converts 1 gwei to wei', () => {
       const result = Units.gwei(1)
       assert.strictEqual(result, BigInt(10 ** 9))
     })
 
-    it('should convert 0 gwei to wei', () => {
+    it('converts 0 gwei to wei', () => {
       const result = Units.gwei(0)
       assert.strictEqual(result, BigInt(0))
     })
 
-    it('should convert a large number of gwei to wei', () => {
+    it('converts a large number of gwei to wei', () => {
       const result = Units.gwei(1000000)
       assert.strictEqual(result, BigInt(1000000) * BigInt(10 ** 9))
     })
 
-    it('should throw error when a non-integer number is used', () => {
+    it('throws error when a non-integer number is used', () => {
       assert.throws(function () {
         Units.gwei(0.5)
       }, 'Input must be an integer number')
     })
 
-    it('should throw error when a negative number is used', () => {
+    it('throws error when a negative number is used', () => {
       assert.throws(() => {
         Units.gwei(-1)
       }, 'Input must be a positive number')
     })
 
-    it('should convert a bigint amount of gwei to wei', () => {
+    it('converts a bigint amount of gwei to wei', () => {
       const result = Units.gwei(BigInt(2))
       assert.strictEqual(result, BigInt(2) * BigInt(10 ** 9))
     })

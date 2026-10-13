@@ -15,8 +15,8 @@ async function getEVM() {
 
 // Note: currently 0xE3 (RETF) and 0xE4 (JUMPF) need to be added to the valid opcodes list, otherwise 1 test will fail
 
-describe('EOF: should run a simple contract', async () => {
-  it('should run without failing', async () => {
+describe('[EVM/EIP]: eOF: should run a simple contract', async () => {
+  it('run without failing', async () => {
     const evm = await getEVM()
     const code = hexToBytes('0xef000101000402000100030400010000800001305000ef')
 
@@ -38,7 +38,7 @@ describe('EOF: should run a simple contract', async () => {
     // This costs 4 gas
     assert.strictEqual(result.execResult.executionGasUsed, BigInt(4))
   })
-  it('should initialize code positions correctly', async () => {
+  it('initializes code positions correctly', async () => {
     const code = hexToBytes(
       ('0xef0001' +
         '010008' +

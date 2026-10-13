@@ -6,7 +6,7 @@ import { Bloom } from '../../src/bloom/index.ts'
 const byteSize = 256
 
 describe('[VM/Bloom]: bitvector operations', () => {
-  it('should initialize without params', () => {
+  it('initializes without params', () => {
     const b = new Bloom()
     assert.deepEqual(b.bitvector, new Uint8Array(byteSize), 'should be empty')
   })
@@ -20,7 +20,7 @@ describe('[VM/Bloom]: bitvector operations', () => {
     )
   })
 
-  it('should contain values of hardcoded bitvector', () => {
+  it('contains values of hardcoded bitvector', () => {
     const hex =
       '0x00000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000010000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000200000020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000'
     const vector = hexToBytes(hex)
@@ -35,14 +35,14 @@ describe('[VM/Bloom]: bitvector operations', () => {
     assert.isFalse(b.check(utf8ToBytes('random value')), 'should not contain string "random value"')
   })
 
-  it('should correctly add value', () => {
+  it('add value', () => {
     const b = new Bloom()
     b.add(utf8ToBytes('value'))
     const found = b.check(utf8ToBytes('value'))
     assert.isTrue(found, 'should contain added value')
   })
 
-  it('should check multiple values', () => {
+  it('checks multiple values', () => {
     const b = new Bloom()
     b.add(utf8ToBytes('value 1'))
     b.add(utf8ToBytes('value 2'))
@@ -50,7 +50,7 @@ describe('[VM/Bloom]: bitvector operations', () => {
     assert.isTrue(found, 'should contain both values')
   })
 
-  it('should or two filters', () => {
+  it('ors two filters', () => {
     const b1 = new Bloom()
     b1.add(utf8ToBytes('value 1'))
     const b2 = new Bloom()
@@ -60,7 +60,7 @@ describe('[VM/Bloom]: bitvector operations', () => {
     assert.isTrue(b1.check(utf8ToBytes('value 2')), 'should contain "value 2" after or')
   })
 
-  it('should generate the correct bloom filter value', () => {
+  it('generates the correct bloom filter value', () => {
     const bloom = new Bloom()
     bloom.add(hexToBytes('0x1d7022f5b17d2f8b695918fb48fa1089c9f85401'))
     bloom.add(hexToBytes('0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925'))

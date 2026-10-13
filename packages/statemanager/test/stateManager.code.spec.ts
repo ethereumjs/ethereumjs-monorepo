@@ -13,10 +13,10 @@ import { createAccountWithDefaults } from './util.ts'
 
 import type { AccountData } from '@ethereumjs/util'
 
-describe('StateManager -> Code', () => {
+describe('[StateManager]: code', () => {
   for (const accountCacheOpts of [{ size: 1000 }, { size: 0 }]) {
     for (const codeCacheOpts of [{ size: 1000 }, { size: 0 }]) {
-      it(`should store codehashes using a prefix`, async () => {
+      it(`stores codehashes using a prefix`, async () => {
         /*
           This test is mostly an example of why a code prefix is necessary
           I an address, we put two storage values. The preimage of the (storage trie) root hash is known
@@ -87,7 +87,7 @@ describe('StateManager -> Code', () => {
         assert.isEmpty(codeSlot2, 'slot 1 is empty')
       })
 
-      it(`should set and get code`, async () => {
+      it(`set and get code`, async () => {
         const stateManager = new MerkleStateManager({
           caches: new Caches({ account: accountCacheOpts, code: codeCacheOpts }),
         })
@@ -107,7 +107,7 @@ describe('StateManager -> Code', () => {
         assert.isTrue(equalsBytes(code, codeRetrieved))
       })
 
-      it(`should not get code if is not contract`, async () => {
+      it(`does not get code if is not contract`, async () => {
         const stateManager = new MerkleStateManager({
           caches: new Caches({ account: accountCacheOpts, code: codeCacheOpts }),
         })
@@ -122,7 +122,7 @@ describe('StateManager -> Code', () => {
         assert.isTrue(equalsBytes(code, new Uint8Array(0)))
       })
 
-      it(`should set empty code`, async () => {
+      it(`set empty code`, async () => {
         const stateManager = new MerkleStateManager({
           caches: new Caches({ account: accountCacheOpts, code: codeCacheOpts }),
         })
@@ -139,7 +139,7 @@ describe('StateManager -> Code', () => {
         assert.isTrue(equalsBytes(codeRetrieved, new Uint8Array(0)))
       })
 
-      it(`should prefix codehashes by default`, async () => {
+      it(`prefixes codehashes by default`, async () => {
         const stateManager = new MerkleStateManager({
           caches: new Caches({ account: accountCacheOpts, code: codeCacheOpts }),
         })
@@ -150,7 +150,7 @@ describe('StateManager -> Code', () => {
         assert.isTrue(equalsBytes(codeRetrieved, code))
       })
 
-      it(`should not prefix codehashes if prefixCodeHashes = false`, async () => {
+      it(`does not prefix codehashes if prefixCodeHashes = false`, async () => {
         const stateManager = new MerkleStateManager({
           prefixCodeHashes: false,
           caches: new Caches({ account: accountCacheOpts, code: codeCacheOpts }),

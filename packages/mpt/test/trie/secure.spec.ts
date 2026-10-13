@@ -18,7 +18,7 @@ import {
 } from '../../src/index.ts'
 import { trieTestSecureTrieData } from '../fixtures/trieTestSecureTrie.ts'
 
-describe('SecureTrie', () => {
+describe('[MPT/SecureTrie]: behavior', () => {
   const trie = new MerklePatriciaTrie({ useKeyHashing: true, db: new MapDB() })
   const k = utf8ToBytes('foo')
   const v = utf8ToBytes('bar')
@@ -52,7 +52,7 @@ describe('SecureTrie', () => {
   })
 })
 
-describe('SecureTrie proof', () => {
+describe('[MPT/SecureTrie]: proof', () => {
   it('create a merkle proof and verify it with a single short key', async () => {
     const trie = new MerklePatriciaTrie({ useKeyHashing: true, db: new MapDB() })
     await trie.put(utf8ToBytes('key1aa'), utf8ToBytes('01234'))
@@ -79,7 +79,7 @@ describe('SecureTrie proof', () => {
   })
 })
 
-describe('secure tests', () => {
+describe('[MPT/SecureTrie]: vectors', () => {
   let trie = new MerklePatriciaTrie({ useKeyHashing: true, db: new MapDB() })
 
   it('empty values', async () => {
@@ -161,8 +161,8 @@ const g = hexToBytes(
 )
 const gk = hexToBytes('0x095e7baea6a6c7c4c2dfeb977efac326af552d87')
 
-describe('secure tests should not crash', () => {
-  it('should work', async () => {
+describe('[MPT/SecureTrie]: nested checkpoints and commits', () => {
+  it('survives nested checkpoints and commits on hashed keys', async () => {
     await trie.put(ak, a)
     await trie.put(bk, b)
     await trie.put(ck, c)
@@ -177,7 +177,7 @@ describe('secure tests should not crash', () => {
   })
 })
 
-describe('SecureTrie.copy', () => {
+describe('[MPT/SecureTrie]: .copy', () => {
   it('created copy includes values added after checkpoint', async () => {
     const trie = new MerklePatriciaTrie({ useKeyHashing: true, db: new MapDB() })
 

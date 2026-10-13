@@ -50,7 +50,6 @@
 | Spellcheck finish steps | [spellcheck.mdc](.cursor/rules/spellcheck.mdc) |
 | Security trust tiers | [security.mdc](.cursor/rules/security.mdc) |
 | API tests (Vitest) | [api-tests.mdc](.cursor/rules/api-tests.mdc) |
-| Tx tests | [tx-tests.mdc](.cursor/rules/tx-tests.mdc) |
 
 ### Package-specific
 
@@ -196,7 +195,7 @@ One command and one config pointer per tool. Agent finish steps are in the linke
 | TypeScript | `npm run tsc` / `build` | `config/tsconfig*.json` | [typecheck.mdc](.cursor/rules/typecheck.mdc) |
 | Lint | `npm run lint` / `lint:fix` | `eslint.config.mjs` per package | — |
 | Spellcheck | `npm run spellcheck` | `config/cspell-*.json` | [spellcheck.mdc](.cursor/rules/spellcheck.mdc) |
-| Tests | `npm run test` | Vitest per package | [api-tests.mdc](.cursor/rules/api-tests.mdc), [tx-tests.mdc](.cursor/rules/tx-tests.mdc) |
+| Tests | `npm run test` | Vitest per package | [api-tests.mdc](.cursor/rules/api-tests.mdc) |
 | API docs | `npm run docs:build` | `config/cli/typedoc.sh`, `typedoc/` | [api-docs.mdc](.cursor/rules/api-docs.mdc) |
 | Examples | `npm run examples` | `packages/*/examples/` | [examples.mdc](.cursor/rules/examples.mdc) |
 | Snippet PNGs | `npm run snippet:png` | `config/code-snippet/` | — |
@@ -281,8 +280,7 @@ Rules: [`.cursor/rules/`](.cursor/rules/) (plain markdown + YAML front matter �
 | `code-conventions` | `src/`, `examples/` | No public API renames; no Node built-ins in `src/` (browser-first) |
 | `api-docs` | `src/` | Cross-package `{@link @ethereumjs/pkg!Symbol}` |
 | `examples` | `examples/`, READMEs | Run embedme after README edits |
-| `api-tests` | active `test/` | VM consensus runners out of scope |
-| `tx-tests` | `packages/tx` | 4844 matrix uses stub KZG |
+| `api-tests` | active `test/` | VM consensus runners out of scope; tx matrix + stub KZG in rule |
 | `releases` | CHANGELOG, release scripts | Procedure: `release-round` skill; never publish without approval |
 
 **Skill:** [update-est-fixtures](.cursor/skills/update-est-fixtures/SKILL.md) — EST fixture bumps only.

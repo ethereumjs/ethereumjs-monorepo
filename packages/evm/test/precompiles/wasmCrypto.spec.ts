@@ -51,7 +51,7 @@ async function wasmCustomCrypto(): Promise<CustomCrypto> {
 const KECCAK_CODE = hexToBytes(`0x7f${'ab'.repeat(32)}20${'50'.repeat(8)}`)
 const SHA256_INPUT = hexToBytes(`0x${'ab'.repeat(32)}`)
 
-describe('customCrypto WASM backend (EVM)', () => {
+describe('[EVM/Precompile]: customCrypto WASM backend (EVM)', () => {
   beforeAll(async () => {
     await waitReady()
   })

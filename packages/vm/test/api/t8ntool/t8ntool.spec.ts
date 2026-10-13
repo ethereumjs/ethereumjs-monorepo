@@ -45,8 +45,8 @@ const args: T8NOptions = {
 
 // The test will run the TransitionTool using the inputs, and then compare if the output matches
 
-describe('test runner config tests', () => {
-  it('should run t8ntool with inputs and report the expected output', async () => {
+describe('[VM/T8nTool]: runner config', () => {
+  it('run t8ntool with inputs and report the expected output', async () => {
     await TransitionTool.run(args)
     const expectedResult = JSON.parse(readFileSync(`${t8nDir}output/result.json`).toString())
     const expectedAlloc = JSON.parse(readFileSync(`${t8nDir}output/alloc.json`).toString())
@@ -56,8 +56,8 @@ describe('test runner config tests', () => {
     assert.deepStrictEqual(reportedAlloc, expectedAlloc, 'alloc matches expected alloc')
   })
 })
-describe('trace tests', async () => {
-  it('should produce a valid step trace for a legacy contract', async () => {
+describe('[VM/T8nTool]: trace output', async () => {
+  it('produces a valid step trace for a legacy contract', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun })
     const sm = new MerkleStateManager({ common })
     const vm = await createVM({ common, stateManager: sm })
@@ -86,7 +86,7 @@ describe('trace tests', async () => {
     vm.evm.events!.removeListener('step', stepHandler)
     vm.events!.removeListener('afterTx', afterTxHandler)
   })
-  it('should produce a trace of the correct length', async () => {
+  it('produces a trace of the correct length', async () => {
     const common = new Common({
       hardfork: Hardfork.Prague,
       chain: Mainnet,
@@ -128,7 +128,7 @@ describe('trace tests', async () => {
     vm.evm.events!.removeListener('step', stepHandler)
     vm.events!.removeListener('afterTx', afterTxHandler)
   })
-  it('should execute an EOF contract with 2 code sections linked by CALLF', async () => {
+  it('executes an EOF contract with 2 code sections linked by CALLF', async () => {
     const common = new Common({
       hardfork: Hardfork.Prague,
       chain: Mainnet,

@@ -14,7 +14,7 @@ import { createEVM } from '../../src/index.ts'
 const pkey = hexToBytes(`0x${'20'.repeat(32)}`)
 const sender = new Address(privateToAddress(pkey))
 
-describe('EIP 3860 tests', () => {
+describe('[EVM/EIP-3860]: behavior', () => {
   it('code exceeds max initcode size', async () => {
     const common = new Common({
       chain: Mainnet,

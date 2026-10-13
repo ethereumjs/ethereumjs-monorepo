@@ -33,7 +33,7 @@ describe('[Block]: CLRequests tests', () => {
     return createCLRequest(consolidationData)
   }
 
-  it('should create a block with deposit request', () => {
+  it('creates a block with deposit request', () => {
     const depositRequest = createDepositRequest()
     assert.strictEqual(depositRequest.type, CLRequestType.Deposit, 'should be a deposit request')
 
@@ -52,7 +52,7 @@ describe('[Block]: CLRequests tests', () => {
     )
   })
 
-  it('should create a block with withdrawal request', () => {
+  it('creates a block with withdrawal request', () => {
     const withdrawalRequest = createWithdrawalRequest()
     assert.strictEqual(
       withdrawalRequest.type,
@@ -75,7 +75,7 @@ describe('[Block]: CLRequests tests', () => {
     )
   })
 
-  it('should create a block with consolidation request', () => {
+  it('creates a block with consolidation request', () => {
     const consolidationRequest = createConsolidationRequest()
     assert.strictEqual(
       consolidationRequest.type,
@@ -98,7 +98,7 @@ describe('[Block]: CLRequests tests', () => {
     )
   })
 
-  it('should create a block with multiple CLRequests', () => {
+  it('creates a block with multiple CLRequests', () => {
     const depositRequest = createDepositRequest()
     const withdrawalRequest = createWithdrawalRequest()
     const consolidationRequest = createConsolidationRequest()
@@ -121,7 +121,7 @@ describe('[Block]: CLRequests tests', () => {
     )
   })
 
-  it('should validate the requests are sorted by type', () => {
+  it('validates the requests are sorted by type', () => {
     const depositRequest = createDepositRequest()
     const withdrawalRequest = createWithdrawalRequest()
 

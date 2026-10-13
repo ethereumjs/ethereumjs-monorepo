@@ -687,7 +687,7 @@ Individual EIP activation is shown in [EIP Activation](#eip-activation). Amsterd
 
 ### Prague
 
-- [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) — EOA code transactions — see [@ethereumjs/tx](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx#eip-7702-set-code-transactions) and [test setup](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/test/api/EIPs/eip-7702.spec.ts)
+- [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) — EOA code transactions — see [@ethereumjs/tx](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx#eip-7702-set-code-transactions) and [test setup](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/test/api/eips/eip-7702.spec.ts)
 - [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) — Consensus layer requests in blocks
 - [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) — Historical block hashes in state (does not change `BLOCKHASH` opcode resolution until EIP-7709)
 

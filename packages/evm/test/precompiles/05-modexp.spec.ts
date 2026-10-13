@@ -11,7 +11,7 @@ import type { EVM } from '../../src/index.ts'
 import type { PrecompileFunc } from '../../src/precompiles/types.ts'
 
 const fuzzerTests = testData.data as PrefixedHexString[][]
-describe('Precompiles: MODEXP', () => {
+describe('[EVM/Precompile]: precompiles: MODEXP', () => {
   let common: Common
   let evm: EVM
   let addressStr: string
@@ -40,7 +40,7 @@ describe('Precompiles: MODEXP', () => {
     })
   }
 
-  it('should correctly right-pad data if input length is too short', async () => {
+  it('right-pad data if input length is too short', async () => {
     const gas = BigInt(0xffff)
     const result = await MODEXP({
       data: hexToBytes('0x41'),

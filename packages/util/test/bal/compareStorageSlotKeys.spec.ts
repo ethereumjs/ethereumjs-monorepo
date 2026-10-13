@@ -3,7 +3,7 @@ import { assert, describe, it } from 'vitest'
 import { compareStorageSlotKeys } from '../../src/bal/compareStorageSlotKeys.ts'
 import type { PrefixedHexString } from '../../src/types.ts'
 
-describe('compareStorageSlotKeys', () => {
+describe('[Util]: compareStorageSlotKeys', () => {
   it('sorts minimal-representation keys by numeric value, not byte prefix', () => {
     const slot2: PrefixedHexString = '0x02'
     const slot256: PrefixedHexString = '0x0100'

@@ -15,7 +15,7 @@ import { Caches, MerkleStateManager } from '../src/index.ts'
 import { createAccountWithDefaults } from './util.ts'
 
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
-describe('StateManager -> Storage', () => {
+describe('[StateManager]: storage', () => {
   for (const storageCacheOpts of [{ size: 1000 }, { size: 0 }]) {
     for (const prefixStorageTrieKeys of [false, true]) {
       it.skipIf(isBrowser() === true)(`should dump storage`, async () => {
@@ -37,7 +37,7 @@ describe('StateManager -> Storage', () => {
         assert.deepEqual(data, expect, 'should dump storage value')
       })
 
-      it("should validate the key's length when modifying a contract's storage", async () => {
+      it("validates the key's length when modifying a contract's storage", async () => {
         const stateManager = new MerkleStateManager({
           prefixStorageTrieKeys,
           caches: new Caches({ storage: storageCacheOpts }),
@@ -56,7 +56,7 @@ describe('StateManager -> Storage', () => {
         assert.fail('Should have failed')
       })
 
-      it("should validate the key's length when reading a contract's storage", async () => {
+      it("validates the key's length when reading a contract's storage", async () => {
         const stateManager = new MerkleStateManager({
           prefixStorageTrieKeys,
           caches: new Caches({ storage: storageCacheOpts }),
@@ -75,7 +75,7 @@ describe('StateManager -> Storage', () => {
         assert.fail('Should have failed')
       })
 
-      it(`should throw on storage values larger than 32 bytes`, async () => {
+      it(`throws on storage values larger than 32 bytes`, async () => {
         const stateManager = new MerkleStateManager({
           prefixStorageTrieKeys,
           caches: new Caches({ storage: storageCacheOpts }),
@@ -94,7 +94,7 @@ describe('StateManager -> Storage', () => {
         }
       })
 
-      it(`should strip zeros of storage values`, async () => {
+      it(`strips zeros of storage values`, async () => {
         const stateManager = new MerkleStateManager({
           prefixStorageTrieKeys,
           caches: new Caches({ storage: storageCacheOpts }),
@@ -119,7 +119,7 @@ describe('StateManager -> Storage', () => {
         assert.isTrue(equalsBytes(slot1, expect1), 'value of 1 byte padded correctly')
       })
 
-      it(`should delete storage values which only consist of zero bytes`, async () => {
+      it(`deletes storage values which only consist of zero bytes`, async () => {
         const address = createZeroAddress()
         const key = new Uint8Array(32)
 
@@ -153,7 +153,7 @@ describe('StateManager -> Storage', () => {
         }
       })
 
-      it(`should not strip trailing zeros`, async () => {
+      it(`does not strip trailing zeros`, async () => {
         const stateManager = new MerkleStateManager({
           prefixStorageTrieKeys,
           caches: new Caches({ storage: storageCacheOpts }),

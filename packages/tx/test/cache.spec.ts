@@ -57,9 +57,9 @@ const authorizationListItem: EOACode7702AuthorizationListItem = {
   s: ones32,
 }
 
-describe('TransactionCache', () => {
-  describe('hash / senderPubKey / dataFee', () => {
-    it('should cache on a frozen tx and return the cached value on repeated calls', () => {
+describe('[Tx]: transactionCache', () => {
+  describe('[Tx]: hash / senderPubKey / dataFee', () => {
+    it('caches on a frozen tx and return the cached value on repeated calls', () => {
       const tx = createLegacyTx({ data: '0x010200' }, { common }).sign(pKey)
       assert.isTrue(Object.isFrozen(tx))
 
@@ -86,7 +86,7 @@ describe('TransactionCache', () => {
       assert.strictEqual(tx.getDataGas(), dataFee1)
     })
 
-    it('should not cache on a non-frozen tx', () => {
+    it('does not cache on a non-frozen tx', () => {
       const tx = createLegacyTx({ data: '0x010200' }, { common, freeze: false }).sign(pKey)
       assert.isFalse(Object.isFrozen(tx))
 
@@ -103,7 +103,7 @@ describe('TransactionCache', () => {
       assert.isUndefined(tx.cache.dataFee, 'dataFee should not be cached')
     })
 
-    it('should recompute values on a non-frozen tx when the tx data changes', () => {
+    it('recomputes values on a non-frozen tx when the tx data changes', () => {
       // This is the reason non-frozen txs must not cache: their contents can
       // still change, which would turn a cached value stale.
       const tx = createLegacyTx({ data: '0x00' }, { common, freeze: false })
@@ -121,7 +121,7 @@ describe('TransactionCache', () => {
     })
   })
 
-  describe('accessListJSON', () => {
+  describe('[Tx]: accessListJSON', () => {
     // All four tx types whose toJSON() includes the access list
     const txTypes = [
       {
@@ -193,7 +193,7 @@ describe('TransactionCache', () => {
     }
   })
 
-  describe('authorityListJSON', () => {
+  describe('[Tx]: authorityListJSON', () => {
     it('EOACode7702Tx: should cache and freeze the JSON on a frozen tx', () => {
       const tx = createEOACode7702Tx(
         { authorizationList: [authorizationListItem], to },

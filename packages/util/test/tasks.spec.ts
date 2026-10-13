@@ -4,8 +4,8 @@ import { PrioritizedTaskExecutor } from '../src/index.ts'
 
 const taskExecutor = new PrioritizedTaskExecutor(2)
 
-describe('prioritized task executor test', () => {
-  it('should work', () => {
+describe('[Util]: prioritized task executor test', () => {
+  it('executes prioritized tasks in expected order with concurrency limit 2', () => {
     const tasks = [1, 2, 3, 4]
     const callbacks = [] as any
     const executionOrder = [] as any

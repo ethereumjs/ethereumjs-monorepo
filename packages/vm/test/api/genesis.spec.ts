@@ -5,8 +5,8 @@ import { assert, describe, it } from 'vitest'
 
 import { createVM } from '../../src/index.ts'
 
-describe('genesis', () => {
-  it('should initialize with predefined genesis states', async () => {
+describe('[VM]: genesis', () => {
+  it('initializes with predefined genesis states', async () => {
     const f = async () => {
       const genesisState = getGenesis(Chain.Mainnet)
 

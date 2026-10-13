@@ -2,7 +2,7 @@ import { assert, afterEach, beforeEach, describe, it } from 'vitest'
 
 import { isDebugEnabled } from '../src/index.ts'
 
-describe('isDebugEnabled', () => {
+describe('[Util]: isDebugEnabled', () => {
   let savedProcess: typeof globalThis.process
 
   beforeEach(() => {

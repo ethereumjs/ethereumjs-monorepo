@@ -17,7 +17,7 @@ import {
   utf8ToBytes,
 } from '@ethereumjs/util'
 import { createVM, runBlock, runTx } from '@ethereumjs/vm'
-import { assert, describe, expect, it, vi } from 'vitest'
+import { assert, describe, it, vi } from 'vitest'
 
 import { MerkleStateManager } from '../src/merkleStateManager.ts'
 import { getRPCStateProof } from '../src/proof/index.ts'
@@ -32,7 +32,7 @@ const provider = process.env.PROVIDER ?? 'http://cheese'
 // from Infura/Alchemy or your favorite web3 provider when running the test.  Below is an example command:
 // `PROVIDER=https://mainnet.infura.io/v3/[mySuperS3cretproviderKey] npx vitest run test/rpcStateManager.spec.ts
 
-describe('RPC State Manager initialization tests', async () => {
+describe('[StateManager/RPC]: initialization', async () => {
   vi.mock('@ethereumjs/util', async () => {
     const util = await vi.importActual('@ethereumjs/util')
     return {
@@ -45,7 +45,7 @@ describe('RPC State Manager initialization tests', async () => {
   })
   await import('@ethereumjs/util')
 
-  it('should work', () => {
+  it('constructs with valid provider URLs and rejects invalid ones', () => {
     let state = new RPCStateManager({ provider, blockTag: 1n })
     assert.instanceOf(state, RPCStateManager, 'was able to instantiate state manager')
     assert.strictEqual(
@@ -78,8 +78,8 @@ describe('RPC State Manager initialization tests', async () => {
   })
 })
 
-describe('RPC State Manager API tests', () => {
-  it('should work', async () => {
+describe('[StateManager/RPC]: account API', () => {
+  it('fetches accounts, caches puts, and verifies Merkle proofs', async () => {
     const state = new RPCStateManager({ provider, blockTag: 1n })
     const vitalikDotEth = createAddressFromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
     const account = await state.getAccount(vitalikDotEth)
@@ -121,9 +121,12 @@ describe('RPC State Manager API tests', () => {
     )
     assert.isNotEmpty(storageSlot, 'was able to retrieve storage slot 1 for the UNI contract')
 
-    await expect(async () => {
+    try {
       await state.getStorage(UniswapERC20ContractAddress, setLengthLeft(bigIntToBytes(1n), 31))
-    }).rejects.toThrowError('Storage key must be 32 bytes long')
+      assert.fail('getStorage should reject non-32-byte keys')
+    } catch (e: unknown) {
+      assert.match((e as Error).message, /Storage key must be 32 bytes long/)
+    }
 
     await state.putStorage(
       UniswapERC20ContractAddress,
@@ -239,8 +242,8 @@ describe('RPC State Manager API tests', () => {
   })
 })
 
-describe('runTx custom transaction test', () => {
-  it('should work', async () => {
+describe('[StateManager/RPC]: runTx transfer', () => {
+  it('runs a signed fee-market transfer against mocked RPC state', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
 
     const state = new RPCStateManager({ provider, blockTag: 1n })
@@ -265,8 +268,8 @@ describe('runTx custom transaction test', () => {
   })
 })
 
-describe('runTx test: replay mainnet transactions', () => {
-  it('should work', async () => {
+describe('[StateManager/RPC]: replay mainnet tx', () => {
+  it('replays a mainnet London transfer with historical block tag', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
 
     const blockTag = 15496077n
@@ -287,8 +290,8 @@ describe('runTx test: replay mainnet transactions', () => {
   })
 })
 
-describe('runBlock test', () => {
-  it('should work', async () => {
+describe('[StateManager/RPC]: runBlock', () => {
+  it('runs a historical block and matches header gasUsed', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
 
     const blockTag = 500000n
@@ -321,7 +324,7 @@ describe('runBlock test', () => {
   })
 })
 
-describe('[RPCStateManager]: blockchain blockhash', () => {
+describe('[StateManager/RPC]: blockchain blockhash', () => {
   it('uses blockhash', async () => {
     const blockchain = new RPCBlockChain(provider) as unknown as EVMMockBlockchainInterface
     const blockTag = 1n
@@ -351,8 +354,8 @@ describe('[RPCStateManager]: blockchain blockhash', () => {
   })
 })
 
-describe('[RPCStateManager]: Merkle parity', () => {
-  it('should work', async () => {
+describe('[StateManager/RPC]: Merkle parity', () => {
+  it('matches MerkleStateManager for missing accounts', async () => {
     const rpcState = new RPCStateManager({ provider, blockTag: 1n })
     const defaultState = new MerkleStateManager()
 

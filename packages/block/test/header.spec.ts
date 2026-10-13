@@ -27,8 +27,8 @@ import type { CliqueConfig } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { BlockHeader } from '../src/index.ts'
 
-describe('[Block]: Header functions', () => {
-  it('should create with default constructor', () => {
+describe('[Block/Header]: initialization', () => {
+  it('creates with default constructor', () => {
     function compareDefaultHeader(header: BlockHeader) {
       assert.isTrue(equalsBytes(header.parentHash, new Uint8Array(32)))
       assert.isTrue(equalsBytes(header.uncleHash, KECCAK256_RLP_ARRAY))
@@ -182,8 +182,10 @@ describe('[Block]: Header functions', () => {
     const header = createBlockHeader({ extraData: new Uint8Array(97) }, { common })
     assert.isDefined(bytesToHex(header.hash()), 'default block should initialize')
   })
+})
 
-  it('should validate extraData', () => {
+describe('[Block/Header]: validation', () => {
+  it('validates extraData', () => {
     // PoW
     let common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     let genesis = createBlock({}, { common })
@@ -271,7 +273,7 @@ describe('[Block]: Header functions', () => {
     )
   })
 
-  it('should skip consensusFormatValidation if flag is set to false', () => {
+  it('skips consensusFormatValidation if flag is set to false', () => {
     const common = new Common({ chain: goerliChainConfig, hardfork: Hardfork.Chainstart })
 
     assert.doesNotThrow(
@@ -427,7 +429,10 @@ describe('[Block]: Header functions', () => {
     }
       })
 */
-  it('should test validateGasLimit()', () => {
+})
+
+describe('[Block/Header]: gas limit hash and defaults', () => {
+  it('validateGasLimit()', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const testData = bcBlockGasLimitTestData.tests.BlockGasLimit2p63m1
 
@@ -444,7 +449,7 @@ describe('[Block]: Header functions', () => {
     }
   })
 
-  it('should test isGenesis()', () => {
+  it('isGenesis()', () => {
     const header1 = createBlockHeader({ number: 1 })
     assert.strictEqual(header1.isGenesis(), false)
 
@@ -452,7 +457,7 @@ describe('[Block]: Header functions', () => {
     assert.strictEqual(header2.isGenesis(), true)
   })
 
-  it('should test hash() function', () => {
+  it('hash() function', () => {
     let common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     let header = createBlockHeader(mainnetBlocks[0]['header'], { common })
     assert.strictEqual(
@@ -470,7 +475,7 @@ describe('[Block]: Header functions', () => {
     )
   })
 
-  it('should be able to initialize shanghai header with correct hardfork defaults', () => {
+  it('is able to initialize shanghai header with correct hardfork defaults', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai })
     const header = createBlockHeader({}, { common })
     assert.strictEqual(

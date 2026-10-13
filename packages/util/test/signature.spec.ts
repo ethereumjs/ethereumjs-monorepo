@@ -20,21 +20,21 @@ const ecPrivKey = hexToBytes('0x3c9229289a6125f7fdf1885a77bb12c37a8d3b4962d936f7
 const chainId = BigInt(3) // ropsten
 
 describe('[Util/Signature]: ecrecover', () => {
-  it('should recover a public key', () => {
+  it('recovers a public key', () => {
     const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
     const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     const v = BigInt(27)
     const pubkey = ecrecover(ecHash, v, r, s)
     assert.deepEqual(pubkey, privateToPublic(ecPrivKey))
   })
-  it('should recover a public key (chainId = 3)', () => {
+  it('recovers a public key (chainId = 3)', () => {
     const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
     const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     const v = BigInt(41)
     const pubkey = ecrecover(ecHash, v, r, s, chainId)
     assert.deepEqual(pubkey, privateToPublic(ecPrivKey))
   })
-  it('should recover a public key (chainId = 150)', () => {
+  it('recovers a public key (chainId = 150)', () => {
     const chainId = BigInt(150)
     const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
     const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
@@ -42,35 +42,35 @@ describe('[Util/Signature]: ecrecover', () => {
     const pubkey = ecrecover(ecHash, v, r, s, chainId)
     assert.deepEqual(pubkey, privateToPublic(ecPrivKey))
   })
-  it('should recover a public key (v = 0)', () => {
+  it('recovers a public key (v = 0)', () => {
     const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
     const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     const v = BigInt(0)
     const pubkey = ecrecover(ecHash, v, r, s)
     assert.deepEqual(pubkey, privateToPublic(ecPrivKey))
   })
-  it('should fail on an invalid signature (v = 21)', () => {
+  it('fails on an invalid signature (v = 21)', () => {
     const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
     const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     assert.throws(function () {
       ecrecover(ecHash, BigInt(21), r, s)
     })
   })
-  it('should fail on an invalid signature (v = 29)', () => {
+  it('fails on an invalid signature (v = 29)', () => {
     const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
     const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     assert.throws(function () {
       ecrecover(ecHash, BigInt(29), r, s)
     })
   })
-  it('should fail on an invalid signature (swapped points)', () => {
+  it('fails on an invalid signature (swapped points)', () => {
     const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
     const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     assert.throws(function () {
       ecrecover(ecHash, BigInt(27), s, r)
     })
   })
-  it('should return the right sender when using very high chain id / v values', () => {
+  it('returns the right sender when using very high chain id / v values', () => {
     // This data is from a transaction of the YoloV3 network, block 77, txhash c6121a23ca17b8ff70d4706c7d134920c1da43c8329444c96b4c63a55af1c760
     /*
       {
@@ -106,51 +106,49 @@ describe('[Util/Signature]: ecrecover', () => {
   })
 })
 
-describe('hashPersonalMessage', () => {
-  it('should produce a deterministic hash', () => {
+describe('[Util]: hashPersonalMessage', () => {
+  it('produces a deterministic hash', () => {
     const h = hashPersonalMessage(utf8ToBytes('Hello world'))
     assert.deepEqual(
       h,
       hexToBytes('0x8144a6fa26be252b86456491fbcd43c1de7e022241845ffea1c3df066f7cfede'),
     )
   })
-  it('should throw if input is not a Uint8Array', () => {
-    try {
+  it('hashPersonalMessage() rejects non-Uint8Array input', () => {
+    assert.throws(() => {
       // @ts-expect-error -- This syntax is not allowed when 'erasableSyntaxOnly' is enabled.
       hashPersonalMessage((<unknown>[0, 1, 2, 3, 4]) as Uint8Array)
-    } catch (err: any) {
-      assert.isTrue(err.message.includes('This method only supports Uint8Array'))
-    }
+    }, /This method only supports Uint8Array/)
   })
 })
 
-describe('isValidSignature', () => {
-  it('should fail on an invalid signature (shorter r))', () => {
+describe('[Util]: isValidSignature', () => {
+  it('fails on an invalid signature (shorter r))', () => {
     const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1ab')
     const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     assert.isFalse(isValidSignature(BigInt(27), r, s))
   })
-  it('should fail on an invalid signature (shorter s))', () => {
+  it('fails on an invalid signature (shorter s))', () => {
     const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
     const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca')
     assert.isFalse(isValidSignature(BigInt(27), r, s))
   })
-  it('should fail on an invalid signature (v = 21)', () => {
+  it('fails on an invalid signature (v = 21)', () => {
     const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
     const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     assert.isFalse(isValidSignature(BigInt(21), r, s))
   })
-  it('should fail on an invalid signature (v = 29)', () => {
+  it('fails on an invalid signature (v = 29)', () => {
     const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
     const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     assert.isFalse(isValidSignature(BigInt(29), r, s))
   })
-  it('should fail when s is greater than or equal to the curve order', () => {
+  it('fails when s is greater than or equal to the curve order', () => {
     const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
     const s = setLengthLeft(bigIntToBytes(SECP256K1_ORDER), 32)
     assert.isFalse(isValidSignature(BigInt(27), r, s))
   })
-  it('should fail when on homestead and s > secp256k1n/2', () => {
+  it('fails when on homestead and s > secp256k1n/2', () => {
     const SECP256K1_N_DIV_2 = BigInt(
       '0x7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0',
     )
@@ -161,7 +159,7 @@ describe('isValidSignature', () => {
     const v = BigInt(27)
     assert.isFalse(isValidSignature(v, r, s, true))
   })
-  it('should not fail when not on homestead but s > secp256k1n/2', () => {
+  it('does not fail when not on homestead but s > secp256k1n/2', () => {
     const SECP256K1_N_DIV_2 = BigInt(
       '0x7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0',
     )
@@ -171,31 +169,31 @@ describe('isValidSignature', () => {
     const v = BigInt(27)
     assert.isTrue(isValidSignature(v, r, s, false))
   })
-  it('should work otherwise', () => {
+  it('works otherwise', () => {
     const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
     const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     const v = BigInt(27)
     assert.isTrue(isValidSignature(v, r, s))
   })
-  it('should work otherwise (v=0)', () => {
+  it('works otherwise (v=0)', () => {
     const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
     const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     const v = BigInt(0)
     assert.isTrue(isValidSignature(v, r, s))
   })
-  it('should work otherwise (v=1)', () => {
+  it('works otherwise (v=1)', () => {
     const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
     const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     const v = BigInt(1)
     assert.isTrue(isValidSignature(v, r, s))
   })
-  it('should work otherwise (chainId=3)', () => {
+  it('works otherwise (chainId=3)', () => {
     const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
     const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
     const v = BigInt(41)
     assert.isTrue(isValidSignature(v, r, s, false, chainId))
   })
-  it('should work otherwise (chainId=150)', () => {
+  it('works otherwise (chainId=150)', () => {
     const chainId = BigInt(150)
     const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
     const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
@@ -210,11 +208,11 @@ describe('isValidSignature', () => {
   })
 })
 
-describe('message sig', () => {
+describe('[Util]: message sig', () => {
   const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
   const s = hexToBytes('0x129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66')
 
-  it('should return hex strings that the RPC can use', () => {
+  it('returns hex strings that the RPC can use', () => {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca661b'
     assert.strictEqual(toRPCSig(BigInt(27), r, s), sig)
@@ -225,7 +223,7 @@ describe('message sig', () => {
     })
   })
 
-  it('should support compact signature representation (EIP-2098)', () => {
+  it('supports compact signature representation (EIP-2098)', () => {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'
     assert.strictEqual(toCompactSig(BigInt(27), r, s), sig)
@@ -236,7 +234,7 @@ describe('message sig', () => {
     })
   })
 
-  it('should support compact signature representation (EIP-2098) (v=0)', () => {
+  it('supports compact signature representation (EIP-2098) (v=0)', () => {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'
     assert.strictEqual(toCompactSig(BigInt(0), r, s), sig)
@@ -247,7 +245,7 @@ describe('message sig', () => {
     })
   })
 
-  it('should support compact signature representation 2 (EIP-2098)', () => {
+  it('supports compact signature representation 2 (EIP-2098)', () => {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9929ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'
     assert.strictEqual(toCompactSig(BigInt(28), r, s), sig)
@@ -258,7 +256,7 @@ describe('message sig', () => {
     })
   })
 
-  it('should support compact signature representation 2 (EIP-2098) (v=1)', () => {
+  it('supports compact signature representation 2 (EIP-2098) (v=1)', () => {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9929ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'
     assert.strictEqual(toCompactSig(BigInt(1), r, s), sig)
@@ -269,7 +267,7 @@ describe('message sig', () => {
     })
   })
 
-  it('should return hex strings that the RPC can use (chainId=150)', () => {
+  it('returns hex strings that the RPC can use (chainId=150)', () => {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66014f'
     const chainId = BigInt(150)
@@ -282,7 +280,7 @@ describe('message sig', () => {
     })
   })
 
-  it('should return hex strings that the RPC can use (chainId larger than MAX_SAFE_INTEGER)', () => {
+  it('returns hex strings that the RPC can use (chainId larger than MAX_SAFE_INTEGER)', () => {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66f2ded8deec6714'
     const chainID = BigInt('34180983699157880')
@@ -290,7 +288,7 @@ describe('message sig', () => {
     assert.deepEqual(toRPCSig(v, r, s, chainID), sig)
   })
 
-  it('should throw on shorter length', () => {
+  it('throws on shorter length', () => {
     assert.throws(function () {
       fromRPCSig('0x')
     })
@@ -308,7 +306,7 @@ describe('message sig', () => {
     )
   })
 
-  it('should throw on invalid v value', () => {
+  it('throws on invalid v value', () => {
     assert.throws(function () {
       toRPCSig(BigInt(2), r, s)
     })

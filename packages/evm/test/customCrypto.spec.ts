@@ -11,8 +11,8 @@ import { assert, describe, it } from 'vitest'
 
 import { createEVM, getActivePrecompiles } from '../src/index.ts'
 
-describe('custom crypto', () => {
-  it('should use custom sha256 function', async () => {
+describe('[EVM]: custom crypto', () => {
+  it('uses custom sha256 function', async () => {
     const customSha256 = (msg: Uint8Array) => {
       msg[0] = 0xff
       return msg
@@ -34,7 +34,7 @@ describe('custom crypto', () => {
     assert.strictEqual(result.returnValue[0], 0xff, 'used custom sha256 hashing function')
   })
 
-  it('should use custom ecrecover function', async () => {
+  it('uses custom ecrecover function', async () => {
     const customEcrecover = (_msg: Uint8Array) => {
       return hexToBytes(
         '0x84b2586da9b582d3cb260e8fd136129c734f3c80453f48a68e8217ea0b81e08342520f318d202f27a548ad8d3f814ca76d0ee621de2cc510c29e2db4d4f39418',

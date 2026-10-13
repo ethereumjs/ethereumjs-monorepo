@@ -1,0 +1,80 @@
+import { assert, describe, it } from 'vitest'
+
+import {
+  addHexPrefix,
+  bigIntToAddressBytes,
+  bigIntToBytes,
+  bigIntToHex,
+  bigIntToUnpaddedBytes,
+  bitsToBytes,
+  bytesToBigInt,
+  bytesToBits,
+  bytesToHex,
+  bytesToInt,
+  createAddressFromString,
+  equalsBits,
+  equalsBytes,
+  fromSigned,
+  hexToBytes,
+  intToBytes,
+  intToHex,
+  intToUnpaddedBytes,
+  isZeroAddress,
+  matchingBitsLength,
+  matchingBytesLength,
+  setLengthLeft,
+  setLengthRight,
+  short,
+  toBytes,
+  toUnsigned,
+  unpadArray,
+  unpadBytes,
+  unpadHex,
+  unprefixedHexToBytes,
+  validateNoLeadingZeroes,
+  zeroAddress,
+} from '../../src/index.ts'
+
+describe('[Util/Bytes]: matchingBytesLength', () => {
+  it('returns 0 when both arrays are empty', () => {
+    const bytes1 = new Uint8Array([])
+    const bytes2 = new Uint8Array([])
+    assert.strictEqual(matchingBytesLength(bytes1, bytes2), 0)
+  })
+
+  it('returns 0 when one of the arrays is empty', () => {
+    const bytes1 = new Uint8Array([1, 2, 3])
+    const bytes2 = new Uint8Array([])
+    assert.strictEqual(matchingBytesLength(bytes1, bytes2), 0)
+  })
+
+  it('returns 0 when arrays have no matching elements', () => {
+    const bytes1 = new Uint8Array([1, 2, 3])
+    const bytes2 = new Uint8Array([4, 5, 6])
+    assert.strictEqual(matchingBytesLength(bytes1, bytes2), 0)
+  })
+
+  it('handles arrays with same elements but different lengths', () => {
+    const bytes1 = new Uint8Array([1, 2, 3])
+    const bytes2 = new Uint8Array([1, 2, 3, 4])
+    assert.strictEqual(matchingBytesLength(bytes1, bytes2), 3)
+  })
+
+  it('handles arrays with matching elements at end', () => {
+    const bytes1 = new Uint8Array([1, 2, 3])
+    const bytes2 = new Uint8Array([0, 1, 2, 3])
+    assert.strictEqual(matchingBytesLength(bytes1, bytes2), 0)
+  })
+
+  it('handles arrays with matching elements at start', () => {
+    const bytes1 = new Uint8Array([1, 2, 3])
+    const bytes2 = new Uint8Array([1, 2, 3, 4, 5])
+    assert.strictEqual(matchingBytesLength(bytes1, bytes2), 3)
+  })
+
+  it('handles arrays with large number of elements', () => {
+    const bytes1 = new Uint8Array(Array.from({ length: 1000000 }, (_, i) => i))
+    const bytes2 = new Uint8Array(Array.from({ length: 1000000 }, (_, i) => i))
+    assert.strictEqual(matchingBytesLength(bytes1, bytes2), 1000000)
+  })
+})

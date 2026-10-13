@@ -17,7 +17,7 @@ async function getEVM() {
   return evm
 }
 
-describe('EIP 5450 tests', async () => {
+describe('[EVM/EIP-5450]: behavior', async () => {
   const evm = await getEVM()
   for (const key in testData.validInvalid.vectors) {
     it(`Container validation tests ${key}`, () => {

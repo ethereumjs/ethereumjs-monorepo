@@ -16,7 +16,7 @@ import {
 import { Ethash } from '@ethereumjs/ethash'
 import { createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
 import { concatBytes, createAccount, createZeroAddress } from '@ethereumjs/util'
-import { assert, describe, expect, it } from 'vitest'
+import { assert, describe, it } from 'vitest'
 
 import { buildBlock, createVM, runBlock } from '../../src/index.ts'
 
@@ -25,8 +25,8 @@ import { setBalance } from './utils.ts'
 import type { Blockchain, ConsensusDict } from '@ethereumjs/blockchain'
 import { SIGNER_A } from '@ethereumjs/testdata'
 
-describe('BlockBuilder', () => {
-  it('should build a valid block', async () => {
+describe('[VM/BlockBuilder]: buildBlock API', () => {
+  it('builds a valid block', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     const genesisBlock = createBlock({ header: { gasLimit: 50000 } }, { common })
     const blockchain = await createBlockchain({ genesisBlock, common, validateConsensus: false })
@@ -62,7 +62,7 @@ describe('BlockBuilder', () => {
     assert.deepEqual(result.logsBloom, block.header.logsBloom)
   })
 
-  it('should throw if adding a transaction exceeds the block gas limit', async () => {
+  it('throws if adding a transaction exceeds the block gas limit', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     const vm = await createVM({ common })
     const genesis = createBlock({}, { common })
@@ -91,7 +91,7 @@ describe('BlockBuilder', () => {
     )
   })
 
-  it('should correctly seal a PoW block', async () => {
+  it('seal a PoW block', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     const genesisBlock = createBlock({ header: { gasLimit: 50000 } }, { common })
 
@@ -133,7 +133,7 @@ describe('BlockBuilder', () => {
     )
   })
 
-  it('should correctly seal a PoA block', async () => {
+  it('seal a PoA block', async () => {
     // const common = new Common({ chain: Chain.Rinkeby, hardfork: Hardfork.Istanbul })
     const consensusConfig = {
       clique: {
@@ -228,7 +228,7 @@ describe('BlockBuilder', () => {
     )
   })
 
-  it('should throw if block already built or reverted', async () => {
+  it('throws if block already built or reverted', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     const genesisBlock = createBlock({ header: { gasLimit: 50000 } }, { common })
     const blockchain = await createBlockchain({ genesisBlock, common, validateConsensus: false })
@@ -282,7 +282,7 @@ describe('BlockBuilder', () => {
     }
   })
 
-  it('should build a block without any txs', async () => {
+  it('builds a block without any txs', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     const genesisBlock = createBlock({ header: { gasLimit: 50000 } }, { common })
     const blockchain = await createBlockchain({ genesisBlock, common, validateConsensus: false })
@@ -304,7 +304,7 @@ describe('BlockBuilder', () => {
     assert.deepEqual(result.logsBloom, block.header.logsBloom)
   })
 
-  it('should build a 1559 block with legacy and 1559 txs', async () => {
+  it('builds a 1559 block with legacy and 1559 txs', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London, eips: [1559] })
     const genesisBlock = createBlock(
       { header: { gasLimit: 50000, baseFeePerGas: 100 } },
@@ -335,10 +335,12 @@ describe('BlockBuilder', () => {
     ).sign(SIGNER_A.privateKey)
 
     for (const tx of [tx1, tx2]) {
-      await expect(async () => {
+      try {
         await blockBuilder.addTransaction(tx)
-        assert.fail('should throw error')
-      }).rejects.toThrow(/is less than the block's baseFeePerGas/)
+        assert.fail('addTransaction should reject underpriced tx')
+      } catch (e: unknown) {
+        assert.match((e as Error).message, /is less than the block's baseFeePerGas/)
+      }
     }
 
     // Set up correctly priced txs

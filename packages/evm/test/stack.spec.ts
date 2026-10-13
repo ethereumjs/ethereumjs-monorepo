@@ -15,7 +15,7 @@ import { Stack } from '../src/stack.ts'
 import { createAccount } from './utils.ts'
 
 describe('[EVM/Stack]: unit', () => {
-  it('should be empty initially', () => {
+  it('is empty initially', () => {
     const s = new Stack()
     assert.strictEqual(s.length, 0)
     assert.throws(() => s.pop())
@@ -27,7 +27,7 @@ describe('[EVM/Stack]: unit', () => {
     assert.throws(() => s.popN(1))
   })
 
-  it('should push item', () => {
+  it('pushes item', () => {
     const s = new Stack()
     s.push(BigInt(5))
     assert.strictEqual(s.pop(), BigInt(5))
@@ -52,7 +52,7 @@ describe('[EVM/Stack]: unit', () => {
     assert.deepEqual(s.popN(2), [BigInt(7), BigInt(5)])
   })
 
-  it('should throw on overflow', () => {
+  it('throws on overflow', () => {
     const s = new Stack()
     for (let i = 0; i < 1024; i++) {
       s.push(BigInt(i))
@@ -68,7 +68,7 @@ describe('[EVM/Stack]: unit', () => {
     assert.throws(() => s.push(BigInt(1023)))
   })
 
-  it('should swap top with itself', () => {
+  it('swaps top with itself', () => {
     const s = new Stack()
     s.push(BigInt(5))
     s.swap(0)
@@ -81,7 +81,7 @@ describe('[EVM/Stack]: unit', () => {
     assert.throws(() => s.swap(1))
   })
 
-  it('should swap', () => {
+  it('swaps', () => {
     const s = new Stack()
     s.push(BigInt(5))
     s.push(BigInt(7))
@@ -96,7 +96,7 @@ describe('[EVM/Stack]: unit', () => {
     assert.throws(() => s.dup(2))
   })
 
-  it('should dup', () => {
+  it('duplicates stack item with dup()', () => {
     const s = new Stack()
     s.push(BigInt(5))
     s.push(BigInt(7))

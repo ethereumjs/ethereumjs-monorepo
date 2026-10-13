@@ -147,7 +147,7 @@ Work out a plan only. Do not edit production code in this step.
 - Structural: where to integrate (packages/files), what already exists vs what vN changed.
 - Efficient path: order of edits, which EST folders prove the item, what to ignore until later items.
 - API: **backwards-compatible / preserving**. May *add* to the public API if it is useful to library users. Do not rename or change existing signatures to get the spec green.
-- Local tests: which `test/api/EIPs/eip-NNNN.spec.ts` (or existing suite) to add, matching nearby tests.
+- Local tests: which `test/api/eips/eip-NNNN.spec.ts` (or existing suite) to add, matching nearby tests.
 - READMEs: which package READMEs to update (see below).
 - Done-when: local tests + named EST subsets (not “all 3707 green”). The numbered backlog should already cover a path to ~100%; the leftover pass is only for leftovers that appear after those items.
 
@@ -158,7 +158,7 @@ Work out a plan only. Do not edit production code in this step.
 Implement until the item’s done-when holds. Then STOP.
 
 - Keep API stable; additions only if useful.
-- Add local EIP tests that fit the existing `packages/<pkg>/test/` layout (`vm/test/api/EIPs/` is the usual home for fork behaviour). These speed up the next EST run and future local work.
+- Add local EIP tests that fit the existing `packages/<pkg>/test/` layout (`vm/test/api/eips/` is the usual home for fork behaviour). These speed up the next EST run and future local work.
 - README updates (concise, consistent):
   - Canonical Amsterdam overview: `packages/vm/README.md` → **Amsterdam hardfork (experimental)** (EIP list + which specs this release implements / which EST snapshot).
   - Other touched packages (`evm`, `tx`, `common`, `block`, `util`, …): a short Amsterdam note in the natural hardfork/EIP place, linking that canonical section. If the package has no such note yet, add one there — same heading style (`Amsterdam hardfork (experimental)` or `See the canonical Amsterdam overview…`).

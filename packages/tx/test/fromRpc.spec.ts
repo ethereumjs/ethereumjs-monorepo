@@ -23,7 +23,7 @@ const txTypes = [
 ]
 
 describe('[fromJSONRPCProvider]', () => {
-  it('should work', async () => {
+  it('fetches tx by hash and throws when RPC returns null', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const provider = 'https://my.json.rpc.provider.com:8545'
 
@@ -78,7 +78,7 @@ describe('[fromJSONRPCProvider]', () => {
 })
 
 describe('[normalizeTxParams]', () => {
-  it('should work', () => {
+  it('maps gas to gasLimit and preserves hashable fields', () => {
     const normedTx = normalizeTxParams(rpcTxData)
     const tx = createTx(normedTx)
     assert.strictEqual(normedTx.gasLimit, 21000n, 'correctly converted "gas" to "gasLimit"')
@@ -90,8 +90,8 @@ describe('[normalizeTxParams]', () => {
   })
 })
 
-describe('fromRPC: interpret v/r/s values of 0x0 as undefined for Optimism system txs', () => {
-  it('should work', async () => {
+describe('[Tx]: fromRPC: interpret v/r/s values of 0x0 as undefined for Optimism system txs', () => {
+  it('leaves v, r, and s undefined for Optimism system txs', async () => {
     for (const txType of txTypes) {
       const tx = await createTxFromRPC({ ...optimismTxData, type: txType } as TypedTxData)
       assert.isUndefined(tx.v)
@@ -104,8 +104,8 @@ describe('fromRPC: interpret v/r/s values of 0x0 as undefined for Optimism syste
 // This test ensures that "normal" txs of non-legacy type are correctly decoded if the
 // `v` value is 0. This is the case in ~50% of the EIP2930 and EIP1559 txs
 // The `v` value is either 0 or 1 there.
-describe('fromRPC: ensure `v="0x0"` is correctly decoded for signed txs', () => {
-  it('should work', async () => {
+describe('[Tx]: fromRPC: ensure `v="0x0"` is correctly decoded for signed txs', () => {
+  it('marks typed txs with v=0x0 as signed', async () => {
     for (const txType of txTypes) {
       if (txType === TransactionType.Legacy) {
         // legacy tx cannot have v=0

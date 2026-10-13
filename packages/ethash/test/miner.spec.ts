@@ -11,7 +11,7 @@ import type { DBObject } from '@ethereumjs/util'
 const cacheDb = new MapDB<number, DBObject>()
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Petersburg })
 
-describe('Miner', () => {
+describe('[Ethash/Miner]: getMiner and mine', () => {
   it('Check if miner works as expected', async () => {
     const e = new Ethash(cacheDb)
 
@@ -117,7 +117,7 @@ describe('Miner', () => {
     )
   })
 
-  it('Should keep common when mining blocks or headers', async () => {
+  it('preserves chain name and hardfork on mined block headers', async () => {
     const e = new Ethash(cacheDb as any)
 
     const block = createBlock(

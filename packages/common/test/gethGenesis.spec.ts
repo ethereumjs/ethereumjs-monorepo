@@ -11,7 +11,7 @@ import { parseGethGenesisState } from '../src/gethGenesis.ts'
 import { Hardfork, Mainnet, createCommonFromGethGenesis, parseGethGenesis } from '../src/index.ts'
 
 describe('[Common/genesis]', () => {
-  it('should properly generate stateRoot from gethGenesis', () => {
+  it('generates stateRoot from gethGenesis correctly', () => {
     const genesisState = parseGethGenesisState(kilnGethGenesis)
     // just check for deposit contract inclusion
     assert.exists(genesisState['0x4242424242424242424242424242424242424242'][1])
@@ -26,8 +26,8 @@ describe('[Common/genesis]', () => {
   })
 })
 
-describe('[Utils/Parse]', () => {
-  it('should parse geth params file', async () => {
+describe('[Common/GethGenesis]: parse', () => {
+  it('parses geth params file', async () => {
     const params = parseGethGenesis(eip4844GethGenesis)
     assert.strictEqual(
       params.genesis.nonce,
@@ -36,14 +36,14 @@ describe('[Utils/Parse]', () => {
     )
   })
 
-  it('should throw with invalid Spurious Dragon blocks', async () => {
+  it('throws with invalid Spurious Dragon blocks', async () => {
     const f = () => {
       parseGethGenesis(invalidSpuriousDragonGethGenesis, 'bad_params')
     }
     assert.throws(f, undefined, undefined, 'should throw')
   })
 
-  it('should import poa network params correctly', async () => {
+  it('imports poa network params correctly', async () => {
     let params = parseGethGenesis(goerliGethGenesis, 'poa')
     assert.strictEqual(params.genesis.nonce, '0x0000000000000000', 'nonce is formatted correctly')
     assert.deepEqual(
@@ -66,18 +66,18 @@ describe('[Utils/Parse]', () => {
     )
   })
 
-  it('should generate expected hash with london block zero and base fee per gas defined', async () => {
+  it('generates expected hash with london block zero and base fee per gas defined', async () => {
     const params = parseGethGenesis(postMergeGethGenesis, 'post-merge')
     assert.strictEqual(params.genesis.baseFeePerGas, postMergeGethGenesis.baseFeePerGas)
   })
 
-  it('should successfully parse genesis file with no extraData', async () => {
+  it('parses genesis file with no extraData', async () => {
     const params = parseGethGenesis({ ...postMergeGethGenesis, extraData: '' }, 'noExtraData')
     assert.strictEqual(params.genesis.extraData, '0x', 'extraData set to 0x')
     assert.strictEqual(params.genesis.nonce, '0x0000000000000042', 'nonce parsed correctly')
   })
 
-  it('should set merge to block 0 when terminalTotalDifficultyPassed is true', () => {
+  it('set merge to block 0 when terminalTotalDifficultyPassed is true', () => {
     const mergeAtGenesisData = {} as any
     Object.assign(mergeAtGenesisData, postMergeGethGenesis)
     mergeAtGenesisData.config.terminalTotalDifficultyPassed = true
@@ -85,7 +85,7 @@ describe('[Utils/Parse]', () => {
     assert.strictEqual(common.hardforks().slice(-1)[0].block, 0)
   })
 
-  it('should successfully assign mainnet deposit contract address when none provided', async () => {
+  it('assigns mainnet deposit contract address when none provided', async () => {
     const common = createCommonFromGethGenesis(postMergeGethGenesis, {
       chain: 'customChain',
     })
@@ -99,7 +99,7 @@ describe('[Utils/Parse]', () => {
     )
   })
 
-  it('should correctly parse deposit contract address', async () => {
+  it('parse deposit contract address', async () => {
     // clone json out to not have side effects
     const customData = JSON.parse(JSON.stringify(postMergeGethGenesis))
     Object.assign(customData.config, {
@@ -118,7 +118,7 @@ describe('[Utils/Parse]', () => {
       'should parse correct address',
     )
   })
-  it('should add MergeNetSplitBlock if not present when Shanghai is present', () => {
+  it('adds MergeNetSplitBlock if not present when Shanghai is present', () => {
     const genesisJSON = postMergeGethGenesis
     genesisJSON.config.shanghaiTime = Date.now()
     const common = createCommonFromGethGenesis(genesisJSON, {})
@@ -127,7 +127,7 @@ describe('[Utils/Parse]', () => {
       12,
     )
   })
-  it('should not add Paris and MergeNetsplitBlock if Shanghai and ttdPassed are not present ', () => {
+  it('does not add Paris and MergeNetsplitBlock if Shanghai and ttdPassed are not present ', () => {
     const genesisJSON = postMergeGethGenesis
     delete genesisJSON.config.shanghaiTime
     delete genesisJSON.config.terminalTotalDifficultyPassed
@@ -143,7 +143,7 @@ describe('[Utils/Parse]', () => {
     )
   })
 
-  it('should assign correct blob schedule', () => {
+  it('assigns correct blob schedule', () => {
     // clone json out to not have side effects
     const customData = JSON.parse(JSON.stringify(postMergeGethGenesis))
     const customConfigData = {
@@ -246,7 +246,7 @@ describe('[Utils/Parse]', () => {
     }
   })
 
-  it('should throw on invalid blob schedules', () => {
+  it('throws on invalid blob schedules', () => {
     const customData = JSON.parse(JSON.stringify(postMergeGethGenesis))
     const customConfigData = {
       chainId: 3151908,

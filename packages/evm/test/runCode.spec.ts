@@ -21,7 +21,7 @@ const testCases = [
 ]
 
 describe('[EVM/runCode]: initial program counter', () => {
-  it('should work', async () => {
+  it('honors initial program counter and range errors', async () => {
     const evm = await createEVM()
 
     for (const [i, testData] of testCases.entries()) {
@@ -57,7 +57,7 @@ describe('[EVM/runCode]: initial program counter', () => {
 })
 
 describe('[EVM/runCode]: interpreter', () => {
-  it('should return a EVMError as an exceptionError on the result', async () => {
+  it('returns a EVMError as an exceptionError on the result', async () => {
     const evm = await createEVM()
 
     const INVALID_opcode = 'fe'
@@ -76,7 +76,7 @@ describe('[EVM/runCode]: interpreter', () => {
     assert.isTrue(result?.exceptionError?.error.includes('invalid opcode'))
   })
 
-  it('should throw on non-EVMError', async () => {
+  it('throws on non-EVMError', async () => {
     const evm = await createEVM()
     // NOTE: due to now throwing on `getStorage` if account does not exist
     // this now means that if `runCode` is called and the address it runs on (default: zero address)
@@ -105,7 +105,7 @@ describe('[EVM/runCode]: interpreter', () => {
 })
 
 describe('[EVM/runCode]: RunCodeOptions', () => {
-  it('should throw on negative value args', async () => {
+  it('throws on negative value args', async () => {
     const evm = await createEVM()
 
     const runCodeArgs = {
