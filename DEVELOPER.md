@@ -157,6 +157,7 @@ Exceptions: `packages/tx` → `transactionFactory.ts`; `packages/block` → `blo
 - **Options** — constructors and `createX` take one options object (`EVMOpts`, `VMOpts`, …), not long positional lists. Document non-obvious fields on the interface.
 - **Events** — `eventemitter3` on `EVM`, `VM`, `Blockchain`, `Common`; event maps in `types.ts`; `events?` optional on option types.
 - **ESM imports** — relative paths inside `src/` use explicit `.ts` extensions (rewritten to `.js` in output).
+- **Browser-first `src/`** — no Node built-in imports in shipped library code; tests, scripts, and examples may use Node. Details and exceptions (`e2store`, archived client): [code-conventions.mdc](.cursor/rules/code-conventions.mdc) § Browser-first production code.
 
 ### Errors
 
@@ -277,7 +278,7 @@ Rules: [`.cursor/rules/`](.cursor/rules/) (plain markdown + YAML front matter �
 | Rule | Scope | Remember |
 | ---- | ----- | -------- |
 | `ci`, `typecheck`, `spellcheck`, `git`, `security`, `dependencies` | Always on | Git rule: explicit ask for commit/push/PR/merge; commit-only ≠ push; PR labels when asked |
-| `code-conventions` | `src/`, `examples/` | No public API renames without human ask |
+| `code-conventions` | `src/`, `examples/` | No public API renames; no Node built-ins in `src/` (browser-first) |
 | `api-docs` | `src/` | Cross-package `{@link @ethereumjs/pkg!Symbol}` |
 | `examples` | `examples/`, READMEs | Run embedme after README edits |
 | `api-tests` | active `test/` | VM consensus runners out of scope |
