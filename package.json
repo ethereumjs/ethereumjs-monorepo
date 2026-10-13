@@ -34,6 +34,9 @@
     "spellcheck:md": "npx cspell --gitignore -e \"./packages/ethereum-tests\" -e \"./archive/**\" -e \"./packages/**/docs\" -c ./config/cspell-md.json \"**.md\" --cache --show-suggestions --show-context",
     "tsc": "npm run tsc --workspaces --if-present"
   },
+  "lint-staged": {
+    "*.{js,json,md,ts}": "npx @biomejs/biome check --write --no-errors-on-unmatched"
+  },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@codspeed/vitest-plugin": "^5.7.1",

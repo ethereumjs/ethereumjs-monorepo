@@ -110,7 +110,6 @@ jobs:
       blockchain: ${{ steps.affected.outputs.blockchain }}
       browser: ${{ steps.affected.outputs.browser }}
       common: ${{ steps.affected.outputs.common }}
-      devp2p: ${{ steps.affected.outputs.devp2p }}
       evm: ${{ steps.affected.outputs.evm }}
       examples: ${{ steps.affected.outputs.examples }}
       mpt: ${{ steps.affected.outputs.mpt }}
@@ -196,14 +195,6 @@ jobs:
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
       run-coverage: ${{ needs.detect.outputs.common_coverage == 'true' }}
-
-  devp2p:
-    needs: [build, detect]
-    if: needs.detect.outputs.devp2p == 'true'
-    uses: ./.github/workflows/devp2p-build.yml
-    secrets: inherit
-    with:
-      dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
   evm:
     needs: [build, checkout-submodules, detect]
@@ -328,7 +319,6 @@ jobs:
       - blockchain
       - browser
       - common
-      - devp2p
       - evm
       - examples
       - mpt

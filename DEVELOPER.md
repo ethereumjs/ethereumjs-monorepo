@@ -87,6 +87,8 @@ git submodule update --init
 npm install
 ```
 
+Use **Node.js 24** locally (matches CI). With [nvm](https://github.com/nvm-sh/nvm) or [fnm](https://github.com/Schniz/fnm), run `nvm use` / `fnm use` in the repo root — `.nvmrc` pins that version.
+
 ### Commands at a glance
 
 **Repo root**
@@ -223,6 +225,8 @@ VM consensus runners: [packages/vm/DEVELOPER.md](./packages/vm/DEVELOPER.md).
 **Examples** — README snippets sync via embedme: `npm run examples:build` in a package after editing `examples/`.
 
 **Snippet PNGs** — release/social images from `packages/*/examples/` only (local files, Playwright screenshot). Once: `npm run install-browser-deps`. Example: `npm run snippet:png -- --file=packages/vm/examples/runTxGasDimensions.ts --out=tmp/announce/vm.png`. Output defaults to `tmp/announce/`.
+
+**npm / `.npmrc`** — `min-release-age=3` (npm 11.10+) blocks third-party versions published in the last three days under this repo. `@ethereumjs/*` is on `min-release-age-exclude` so post-publish registry smokes work the same day. To install a young **external** package from here, use `npm install … --min-release-age=0`.
 
 ---
 

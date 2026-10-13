@@ -30,7 +30,6 @@ export const FORCE_ALL_FILES = new Set([
   'tsconfig.lint.json',
   'tsconfig.prod.cjs.json',
   'tsconfig.prod.esm.json',
-  'lint-staged.config.js',
   'codecov.yml',
 ])
 
@@ -53,7 +52,6 @@ export const SKIPPABLE_JOBS = {
   blockchain: ['blockchain'],
   browser: '*',
   common: ['common'],
-  devp2p: ['devp2p'],
   evm: ['evm'],
   examples: '*',
   mpt: ['mpt'],

@@ -77,12 +77,7 @@ Alternatively, an image from the most recent stable release can be accessed via:
 docker pull ethpandaops/ethereumjs:stable
 ```
 
-You can also build your own image by going to the repository
-root directory and run:
-
-```shell
-docker build . -f Dockerfile --tag ethereumjs:latest
-```
+This monorepo no longer ships a root `Dockerfile` or docker-compose stack. For custom client images, use the [hive](https://github.com/ethereum/hive) `clients/ethereumjs` Docker setup or EthPandaOps build pipelines.
 
 You may now do appropriate directory/file mounts for `data` dir and `jwtsecret` file and provide their path appropriately in the `client` run command.
 
@@ -246,7 +241,7 @@ The [ethereum-package](https://github.com/ethpandaops/ethereum-package) is a Kur
 
 To get things started, clone the repo and follow the [quickstart guide](https://github.com/ethpandaops/ethereum-package?tab=readme-ov-file#quickstart) provided. You need to install both Kurtosis and Docker.
 
-Build our client Docker image as described [here](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/client#docker).
+Use a published client image (see [Docker](#docker) above) or build via hive / EthPandaOps; this archive tree is not wired for monorepo-root docker builds.
 
 #### Network Setup
 
