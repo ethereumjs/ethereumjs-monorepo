@@ -11,7 +11,7 @@ import { parseGethGenesisState } from '../src/gethGenesis.ts'
 import { Hardfork, Mainnet, createCommonFromGethGenesis, parseGethGenesis } from '../src/index.ts'
 
 describe('[Common/genesis]', () => {
-  it('properlys generate stateRoot from gethGenesis', () => {
+  it('generates stateRoot from gethGenesis correctly', () => {
     const genesisState = parseGethGenesisState(kilnGethGenesis)
     // just check for deposit contract inclusion
     assert.exists(genesisState['0x4242424242424242424242424242424242424242'][1])
@@ -71,7 +71,7 @@ describe('[Common/GethGenesis]: parse', () => {
     assert.strictEqual(params.genesis.baseFeePerGas, postMergeGethGenesis.baseFeePerGas)
   })
 
-  it('successfullys parse genesis file with no extraData', async () => {
+  it('parses genesis file with no extraData', async () => {
     const params = parseGethGenesis({ ...postMergeGethGenesis, extraData: '' }, 'noExtraData')
     assert.strictEqual(params.genesis.extraData, '0x', 'extraData set to 0x')
     assert.strictEqual(params.genesis.nonce, '0x0000000000000042', 'nonce parsed correctly')
@@ -85,7 +85,7 @@ describe('[Common/GethGenesis]: parse', () => {
     assert.strictEqual(common.hardforks().slice(-1)[0].block, 0)
   })
 
-  it('successfullys assign mainnet deposit contract address when none provided', async () => {
+  it('assigns mainnet deposit contract address when none provided', async () => {
     const common = createCommonFromGethGenesis(postMergeGethGenesis, {
       chain: 'customChain',
     })

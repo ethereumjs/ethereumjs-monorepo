@@ -69,7 +69,8 @@ function transformShouldTitle(title) {
       const verb = m[1]
       const rest = m[2] ?? ''
       const irregular = new Set(['pass', 'is', 'has', 'does', 'go', 'do', 'be', 'run', 'set', 'get'])
-      if (!irregular.has(verb) && !verb.endsWith('s')) {
+      const adverbLike = verb.endsWith('ly') || verb === 'only' || verb === 'also'
+      if (!irregular.has(verb) && !verb.endsWith('s') && !adverbLike) {
         out = `${verb}s${rest}`
       }
     }

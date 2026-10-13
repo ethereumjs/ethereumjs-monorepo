@@ -146,7 +146,7 @@ describe('[Util/BAL]: JSON', () => {
     assert.deepEqual(bytesToHex(bal.hash()), balAllTransactionTypesHash)
   })
 
-  it('canonicallys serialize quantity-like storage slots and values from JSON', () => {
+  it('serializes quantity-like storage slots and values from JSON canonically', () => {
     const bal = createBlockLevelAccessListFromJSON([
       {
         address: '0x0000000000000000000000000000000000000001',

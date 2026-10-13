@@ -36,7 +36,7 @@ import {
 } from '../../src/index.ts'
 
 describe('[Util/Bytes]: unpadBytes', () => {
-  it('unpads a Uint8Array', () => {
+  it('removes padding from a Uint8Array', () => {
     const bytes = hexToBytes('0x0000000006600')
     const r = unpadBytes(bytes)
     assert.deepEqual(r, hexToBytes('0x6600'))
@@ -66,7 +66,7 @@ describe('[Util/Bytes]: unpadBytes', () => {
 })
 
 describe('[Util/Bytes]: unpadArray', () => {
-  it('unpads an Array', () => {
+  it('removes padding from an Array', () => {
     const arr = [0, 0, 0, 1]
     const r = unpadArray(arr)
     assert.deepEqual(r, [1])
@@ -79,7 +79,7 @@ describe('[Util/Bytes]: unpadArray', () => {
 })
 
 describe('[Util/Bytes]: unpadHex', () => {
-  it('unpads a hex prefixed string', () => {
+  it('removes padding from a hex prefixed string', () => {
     const str = '0x0000000006600'
     const r = unpadHex(str)
     assert.strictEqual(r, '0x6600')

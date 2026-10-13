@@ -151,7 +151,7 @@ describe('[Blockchain/Iterator]: iterator', () => {
     assert.strictEqual(i, 1)
   })
 
-  it('catchs iterator func error', async () => {
+  it('catches iterator func error', async () => {
     const { blockchain, error } = await generateBlockchain(25)
     assert.strictEqual(error, null, 'no error')
     try {

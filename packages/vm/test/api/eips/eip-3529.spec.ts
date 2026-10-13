@@ -113,7 +113,7 @@ const testCases = [
 describe('[VM/EIP-3529]: behavior', () => {
   const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin, eips: [3529] })
 
-  it('verifys EIP test cases', async () => {
+  it('verifies EIP test cases', async () => {
     const vm = await createVM({ common })
 
     let gasRefund: bigint

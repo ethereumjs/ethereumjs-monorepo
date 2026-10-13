@@ -32,7 +32,7 @@ describe('[StateManager/StorageCache]: put and get account', () => {
       assert.isTrue(elem !== undefined && equalsBytes(elem, value))
     })
 
-    it(`flushs`, async () => {
+    it(`flushes cached storage`, async () => {
       const items = cache.flush()
       assert.strictEqual(items.length, 1)
     })

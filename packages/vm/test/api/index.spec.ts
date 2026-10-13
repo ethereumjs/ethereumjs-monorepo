@@ -186,7 +186,7 @@ describe('[VM/Constructors]: common chain and EIP options', () => {
     )
   })
 
-  it('onlys accept valid chain and fork', async () => {
+  it('only accepts valid chain and fork', async () => {
     let common = createCustomCommon({ chainId: 3 }, Mainnet)
     common.setHardfork(Hardfork.Byzantium)
     let vm = await createVM({ common })

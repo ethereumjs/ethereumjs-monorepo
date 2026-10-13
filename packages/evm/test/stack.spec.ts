@@ -27,7 +27,7 @@ describe('[EVM/Stack]: unit', () => {
     assert.throws(() => s.popN(1))
   })
 
-  it('pushs item', () => {
+  it('pushes item', () => {
     const s = new Stack()
     s.push(BigInt(5))
     assert.strictEqual(s.pop(), BigInt(5))
@@ -96,7 +96,7 @@ describe('[EVM/Stack]: unit', () => {
     assert.throws(() => s.dup(2))
   })
 
-  it('dups', () => {
+  it('duplicates stack item with dup()', () => {
     const s = new Stack()
     s.push(BigInt(5))
     s.push(BigInt(7))

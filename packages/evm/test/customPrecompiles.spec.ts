@@ -153,7 +153,7 @@ describe('[EVM]: evm — custom precompiles', () => {
       'restored sha precompile - gas correct',
     )
   })
-  it('copys custom precompiles', async () => {
+  it('copies custom precompiles', async () => {
     const evm = await createEVM({
       customPrecompiles: [
         {

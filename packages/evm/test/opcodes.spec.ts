@@ -35,7 +35,7 @@ describe('[EVM]: getActiveOpcodes()', () => {
     )
   })
 
-  it('switchs DIFFICULTY opcode name to PREVRANDAO when >= Merge HF', async () => {
+  it('switches DIFFICULTY opcode name to PREVRANDAO when >= Merge HF', async () => {
     let common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     let evm = await createEVM({ common })
     assert.strictEqual(

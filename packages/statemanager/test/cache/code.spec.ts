@@ -31,7 +31,7 @@ describe('[StateManager/CodeCache]: put and get code', () => {
       assert.isTrue(elem !== undefined && elem.code && equalsBytes(elem.code, code))
     })
 
-    it(`flushs`, async () => {
+    it(`flushes cached code`, async () => {
       const items = cache.flush()
       assert.strictEqual(items.length, 1)
     })

@@ -745,7 +745,7 @@ describe('[Blockchain]: initialization', () => {
     assert.strictEqual(head.header.number, BigInt(0), 'correct block number')
   })
 
-  it('onlys initialize with supported consensus validation options', async () => {
+  it('only initializes with supported consensus validation options', async () => {
     let common = new Common({ chain: Mainnet })
     try {
       await createBlockchain({ common, validateConsensus: true })

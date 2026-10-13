@@ -33,7 +33,7 @@ describe('[StateManager/AccountCache]: put and get account', () => {
       assert.isTrue(elem !== undefined && elem.accountRLP && equalsBytes(elem.accountRLP, accRLP))
     })
 
-    it(`flushs`, async () => {
+    it(`flushes cached accounts`, async () => {
       const items = cache.flush()
       assert.strictEqual(items.length, 1)
     })

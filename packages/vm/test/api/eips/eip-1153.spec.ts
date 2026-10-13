@@ -71,7 +71,7 @@ describe('[VM/EIP-1153]: transient storage', () => {
     return results
   }
 
-  it('tloads and tstore', async () => {
+  it('TLOAD and TSTORE transient storage opcodes', async () => {
     const code = '0x600260015d60015c60005260206000F3'
     const returndata = new Uint8Array(32)
     returndata[31] = 0x02

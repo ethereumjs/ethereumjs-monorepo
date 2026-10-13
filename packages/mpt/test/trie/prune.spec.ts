@@ -197,7 +197,7 @@ describe('[MPT/Prune]: node pruning', () => {
     }
   })
 
-  it('successfullys delete branch nodes that are <32 bytes length with node pruning', async () => {
+  it('deletes branch nodes that are <32 bytes length with node pruning', async () => {
     // This test case was added after issue #3333 uncovered a problem with pruning trie paths that reference
     // nodes with their unhashed values (occurs when nodes are less than <32 bytes).
     const trie = new MerklePatriciaTrie({

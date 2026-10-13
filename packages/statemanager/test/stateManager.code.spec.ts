@@ -139,7 +139,7 @@ describe('[StateManager]: code', () => {
         assert.isTrue(equalsBytes(codeRetrieved, new Uint8Array(0)))
       })
 
-      it(`prefixs codehashes by default`, async () => {
+      it(`prefixes codehashes by default`, async () => {
         const stateManager = new MerkleStateManager({
           caches: new Caches({ account: accountCacheOpts, code: codeCacheOpts }),
         })

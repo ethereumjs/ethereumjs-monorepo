@@ -71,7 +71,7 @@ describe('[StateManager]: original storage cache', async () => {
   const key = hexToBytes('0x1234567890123456789012345678901234567890123456789012345678901234')
   const value = hexToBytes('0x1234')
 
-  it(`initiallys have empty storage value`, async () => {
+  it(`has empty storage value initially`, async () => {
     await stateManager.checkpoint()
     const res = await stateManager.getStorage(address, key)
     assert.deepEqual(res, new Uint8Array(0))

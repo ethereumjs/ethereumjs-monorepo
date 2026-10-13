@@ -133,7 +133,7 @@ describe('[StateManager]: general account', () => {
       assert.isDefined(await stateManager.getAccount(address))
     })
 
-    it(`modifys account fields correctly`, async () => {
+    it(`modifies account fields correctly`, async () => {
       const stateManager = new MerkleStateManager({
         caches: new Caches({ account: accountCacheOpts }),
       })
