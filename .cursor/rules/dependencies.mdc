@@ -27,6 +27,14 @@ Trust tiers for library code: [security.mdc](security.mdc). CI audit job: [ci.md
 
 Deprecated `wallet`: no new runtime deps ([security.mdc](security.mdc) S4).
 
+## Dev dependencies
+
+The shared toolchain stays in the root manifest only: lint, format, the test runner, TypeScript, docs, repo scripts, and unpublished workspace test data (`@ethereumjs/testdata`). Packages do not redeclare those.
+
+A package `devDependencies` entry is local to that package: a test or example helper, types for one of its runtime dependencies, an opt-in backend, or an `@ethereumjs/*` package imported by that package's tests and not shipped.
+
+When the same devDependency is listed more than once, every copy uses the same version range and the same specifier style, caret or exact. A test-only `@ethereumjs/*` range matches that package's current version, the same way a runtime workspace range does.
+
 ## Update practice
 
 Add a row when a new habit sticks. Do not paste package inventories here.
@@ -48,3 +56,4 @@ Add a row when a new habit sticks. Do not paste package inventories here.
 - Add a second crypto stack, or turn WASM / `customCrypto` on by default.
 - `npm audit fix --force`, or a blanket `overrides` entry, to go green.
 - Treat `archive/*/package.json.stale` as installed or current.
+- Give one devDependency a different range, or a different caret-versus-exact style, in another manifest.

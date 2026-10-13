@@ -86,7 +86,6 @@
   "devDependencies": {
     "@ethereumjs/blockchain": "^10.1.3",
     "@ethereumjs/ethash": "^10.0.0",
-    "@ethereumjs/testdata": "1.0.0",
     "@noble/curves": "^2.4.0",
     "@paulmillr/trusted-setups": "^0.2.0",
     "@types/debug": "^4.1.12",

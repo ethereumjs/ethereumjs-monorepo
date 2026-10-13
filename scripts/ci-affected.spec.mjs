@@ -231,7 +231,7 @@ describe('real workspace graph', () => {
     }
   })
 
-  it('testdata changes run test consumers without a block→util cycle', () => {
+  it('testdata changes run every library test job without a block to util cycle', () => {
     const packages = loadWorkspace()
     const testdataOnly = computeAffected({
       files: ['packages/testdata/src/index.ts'],
@@ -240,7 +240,10 @@ describe('real workspace graph', () => {
     })
     assert.equal(testdataOnly.jobs.util, true)
     assert.equal(testdataOnly.jobs.block, true)
+    assert.equal(testdataOnly.jobs.mpt, true)
+    assert.equal(testdataOnly.jobs.static, true)
     assert.equal(testdataOnly.jobs['vm-pr'], true)
+    assert.equal(testdataOnly.changed.has('util'), false)
 
     const blockOnly = computeAffected({
       files: ['packages/block/src/index.ts'],

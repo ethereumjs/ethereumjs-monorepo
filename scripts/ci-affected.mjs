@@ -154,7 +154,7 @@ export function buildRuntimeDependentsMap(packages) {
 /**
  * dir -> packages that list it in `devDependencies`.
  * Used only for the originally changed packages so test-helper cycles
- * (testdata ↔ block/util) do not pull the whole stack.
+ * (testdata's own devDependencies on block and util) do not pull the stack.
  */
 export function buildDevConsumersMap(packages) {
   return buildReverseMap(packages, (pkg) => pkg.devDeps ?? [])
@@ -260,6 +260,12 @@ export function computeAffected({ files, forceAll, packages }) {
     for (const consumer of devConsumers.get(pkg) ?? []) {
       seeds.add(consumer)
     }
+  }
+  // @ethereumjs/testdata is a root devDependency, so no package manifest lists it.
+  // A testdata change still seeds every library. Testdata's own devDependencies
+  // stay out of this seed, which keeps a block change from pulling util.
+  if (changed.has('testdata')) {
+    for (const dir of packages.keys()) seeds.add(dir)
   }
   const affected = expandDependents(seeds, runtimeDependents)
   return {

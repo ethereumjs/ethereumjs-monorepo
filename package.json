@@ -41,6 +41,7 @@
     "@biomejs/biome": "1.9.4",
     "@codspeed/vitest-plugin": "^5.7.1",
     "@eslint/js": "^9.22.0",
+    "@ethereumjs/testdata": "1.0.0",
     "@polkadot/util": "^13.4.3",
     "@polkadot/x-randomvalues": "^13.4.3",
     "@types/node": "22.13.10",

@@ -102,7 +102,6 @@
     "@noble/hashes": "^2.4.0"
   },
   "devDependencies": {
-    "@ethereumjs/testdata": "1.0.0",
     "@paulmillr/trusted-setups": "^0.2.0",
     "kzg-wasm": "1.0.0",
     "micro-eth-signer": "^0.15.0"
