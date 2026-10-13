@@ -27,7 +27,6 @@ export default [
       'archive/**',
       '**/devnets/**',
       '**/eslint/**',
-      '**/lint-staged.config.js',
       '**/tsconfig.lint.json',
       '**/package.json',
     ],
