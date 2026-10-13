@@ -1,9 +1,8 @@
+import { parseEstWrapperArgv } from './util/parseTestCli.ts'
 /**
  * Hash-shards EST fixture files across worker processes.
  * TEST_FILE / TEST_CASE stay single-process with the default Vitest reporter.
  */
-import minimist from 'minimist'
-
 import { defaultJobCount, parseJobs, runShardedVitest } from './util/shardedVitestPool.ts'
 
 const REPORTER = './test/tester/util/perDirectoryReporter.ts'
@@ -26,7 +25,7 @@ function forceSingleProcess(): boolean {
   )
 }
 
-function resolveJobs(argv: minimist.ParsedArgs): number {
+function resolveJobs(argv: { jobs?: string }): number {
   if (forceSingleProcess()) return 1
   if (argv.jobs !== undefined) return parseJobs(argv.jobs)
   if (process.env.EST_JOBS !== undefined && process.env.EST_JOBS.length > 0) {
@@ -52,7 +51,7 @@ if (isSuite(suiteArg) === false) {
   process.exit(1)
 }
 
-const argv = minimist(process.argv.slice(3))
+const argv = parseEstWrapperArgv(process.argv.slice(3))
 const jobs = resolveJobs(argv)
 const mergedSummaryJSON = process.env.EST_SUMMARY_JSON
 const label = suiteArg === 'state' ? 'state tests' : 'blockchain tests'

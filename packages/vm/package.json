@@ -88,10 +88,8 @@
     "@ethereumjs/ethash": "^10.0.0",
     "@noble/curves": "^2.4.0",
     "@types/debug": "^4.1.12",
-    "@types/minimist": "^1.2.5",
     "@types/yargs": "^17.0.35",
     "mcl-wasm": "^1.8.0",
-    "minimist": "^1.2.8",
     "solc": "^0.8.28",
     "viem": "^2.38.6",
     "yargs": "^17.7.2"
