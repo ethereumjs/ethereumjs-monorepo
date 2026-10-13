@@ -11,12 +11,13 @@ Unless the human **explicitly** asks, do **not**:
 - `git push` (or force-push)
 - `gh pr create` / open or merge pull requests
 - `gh pr merge` or other merge-to-default flows
+- change the current branch — no `git checkout`, `git switch`, `git checkout -b`, or `git switch -c`, and **no switching back** to another branch when a task finishes (leave the checkout where the ship work landed)
 
 **Commit alone is not permission to push.** Phrases like “commit”, “commit your changes”, or “commit if ready” mean **local commit only** — stop after `git commit` succeeds unless the same message also asks to push (e.g. “commit and push”, “push the branch”).
 
 **Separate permissions:** push requires an explicit push (or ship) ask; opening a PR requires an explicit PR ask; merging requires an explicit merge ask (including round-trip / release skills that say GO). Updating PR title, body, or labels after a push is fine only when a prior instruction already covered that PR or the human asked to update it.
 
-Working-tree **inspection** (`git status`, `git diff`, `git log`) is always fine. Do not stash, checkout, rebase, or rewrite history unless asked.
+Working-tree **inspection** (`git status`, `git diff`, `git log`) is always fine. Do not stash, rebase, or rewrite history unless asked. Branch changes belong in the list above — including “helpful” restores of the branch the human had open at the start of the chat.
 
 # Git renames
 
