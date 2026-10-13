@@ -23,14 +23,14 @@ const txTypes = [
 ]
 
 describe('[EIP-7825]', () => {
-  it(`Should continue to use 0 gas limit default for Osaka tx`, () => {
+  it(`keeps zero gas limit default for Osaka txs`, () => {
     for (const txType of txTypes) {
       const tx = createTx({ type: txType.type, ...txType.txData }, { common })
       assert.strictEqual(tx.gasLimit, BigInt(0))
     }
   })
 
-  it(`Should not throw for gas limit on cap`, () => {
+  it(`accepts gas limit exactly at Osaka cap`, () => {
     for (const txType of txTypes) {
       assert.doesNotThrow(() =>
         createTx(
@@ -41,7 +41,7 @@ describe('[EIP-7825]', () => {
     }
   })
 
-  it(`Should throw for gas limit over cap`, () => {
+  it(`rejects gas limit above Osaka cap`, () => {
     for (const txType of txTypes) {
       assert.throws(() =>
         createTx(

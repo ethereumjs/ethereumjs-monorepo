@@ -5,7 +5,7 @@ import { assert, describe, it } from 'vitest'
 import { createBlock, createBlockHeader } from '../src/index.ts'
 
 describe('EIP4788 header tests', () => {
-  it('should work', () => {
+  it('rejects parentBeaconBlockRoot when EIP-4788 is inactive', () => {
     const earlyCommon = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [4788] })
 

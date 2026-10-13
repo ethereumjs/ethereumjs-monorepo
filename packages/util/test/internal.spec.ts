@@ -69,53 +69,53 @@ describe('internal', () => {
   })
 
   describe('padToEven', () => {
-    it('should pad odd-length string to even', () => {
+    it('pads odd-length string to even', () => {
       assert.strictEqual(padToEven('123'), '0123')
     })
 
-    it('should not pad even-length string', () => {
+    it('does not pad even-length string', () => {
       assert.strictEqual(padToEven('1234'), '1234')
     })
   })
 
   describe('getBinarySize', () => {
-    it('should return the correct binary size of a string', () => {
+    it('returns the correct binary size of a string', () => {
       assert.strictEqual(getBinarySize('Hello, World!'), 13)
     })
   })
 
   describe('arrayContainsArray', () => {
-    it('should return true when the first array contains all elements of the second', () => {
+    it('returns true when the first array contains all elements of the second', () => {
       assert.isTrue(arrayContainsArray([1, 2, 3, 4, 5], [3, 4]))
     })
 
-    it('should return false when the first array does not contain any elements of the second', () => {
+    it('returns false when the first array does not contain any elements of the second', () => {
       assert.isFalse(arrayContainsArray([1, 2, 3, 4, 5], [6, 7]))
     })
 
-    it('should return false when the first array contains some but not all elements of the second', () => {
+    it('returns false when the first array contains some but not all elements of the second', () => {
       assert.isFalse(arrayContainsArray([1, 2, 3, 4, 5], [5, 6]))
     })
   })
 
   describe('fromUtf8', () => {
-    it('should convert a UTF-8 string to a hex string', () => {
+    it('converts a UTF-8 string to a hex string', () => {
       assert.strictEqual(fromUtf8('Hello, World!'), '0x48656c6c6f2c20576f726c6421')
     })
 
-    it('should convert a UTF-8 string with 2-byte characters to a hex string', () => {
+    it('converts a UTF-8 string with 2-byte characters to a hex string', () => {
       assert.strictEqual(fromUtf8('ϋύϒϗϘϢϰЂ'), '0xcf8bcf8dcf92cf97cf98cfa2cfb0d082')
     })
   })
 
   describe('fromAscii', () => {
-    it('should convert an ASCII string to a hex string', () => {
+    it('converts an ASCII string to a hex string', () => {
       assert.strictEqual(fromAscii('Hello, World!'), '0x48656c6c6f2c20576f726c6421')
     })
   })
 
   describe('getKeys', () => {
-    it('should extract keys from an array of objects', () => {
+    it('extracts keys from an array of objects', () => {
       const input = [
         { a: '1', b: '2' },
         { a: '3', b: '4' },

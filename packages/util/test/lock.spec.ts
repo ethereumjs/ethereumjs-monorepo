@@ -5,7 +5,7 @@ import { Lock } from '../src/index.ts'
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
 describe('[Util/Lock]: mutual exclusion', () => {
-  it('should lock', async () => {
+  it('locks', async () => {
     let global = 0
     const lock = new Lock()
 
@@ -26,13 +26,13 @@ describe('[Util/Lock]: mutual exclusion', () => {
 })
 
 describe('[Util/Lock]: acquire', () => {
-  it('should return true when permits are available', async () => {
+  it('returns true when permits are available', async () => {
     const lock = new Lock()
     const result = await lock.acquire()
     assert.strictEqual(result, true, 'should return true')
   })
 
-  it('should return a promise when no permits are available', async () => {
+  it('returns a promise when no permits are available', async () => {
     const lock = new Lock()
     await lock.acquire()
 
@@ -42,13 +42,13 @@ describe('[Util/Lock]: acquire', () => {
 })
 
 describe('[Util/Lock]: release', () => {
-  it('should increase the number of permits', () => {
+  it('increases the number of permits', () => {
     const lock = new Lock()
     lock.release()
     assert.strictEqual(lock['permits'], 2, 'should increase permits by 1')
   })
 
-  it('should resolve the waiting promise when permits are released', async () => {
+  it('resolves the waiting promise when permits are released', async () => {
     const lock = new Lock()
     await lock.acquire() // Start waiting
 

@@ -40,7 +40,7 @@ describe('[fromExecutionPayloadJSON]: 4844 devnet 5', () => {
     }
   })
 
-  it('should validate block hash', async () => {
+  it('validates block hash', async () => {
     await expect(
       createBlockFromBeaconPayloadJSON(
         {
@@ -53,7 +53,7 @@ describe('[fromExecutionPayloadJSON]: 4844 devnet 5', () => {
     ).rejects.toThrow('Invalid blockHash')
   })
 
-  it('should validate excess blob gas', async () => {
+  it('validates excess blob gas', async () => {
     await expect(async () => {
       const block = await createBlockFromBeaconPayloadJSON(
         {

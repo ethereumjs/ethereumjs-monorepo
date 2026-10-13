@@ -8,7 +8,7 @@ import { BinaryTreeAccessWitness, generateBinaryExecutionWitness } from '../src/
 import type { BinaryTreeStateManagerInterface } from '@ethereumjs/common'
 
 describe('generateBinaryExecutionWitness', () => {
-  it('should generate a witness for accessed state from any BinaryTreeStateManagerInterface', async () => {
+  it('generates a witness for accessed state from any BinaryTreeStateManagerInterface', async () => {
     const common = new Common({ chain: Mainnet, eips: [7864] })
     const sm: BinaryTreeStateManagerInterface & StatefulBinaryTreeStateManager =
       new StatefulBinaryTreeStateManager({ common })
@@ -35,7 +35,7 @@ describe('generateBinaryExecutionWitness', () => {
     }
   })
 
-  it('should release the tree lock after generating a witness', async () => {
+  it('releases the tree lock after generating a witness', async () => {
     const common = new Common({ chain: Mainnet, eips: [7864] })
     const sm = new StatefulBinaryTreeStateManager({ common })
 

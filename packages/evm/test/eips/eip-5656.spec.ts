@@ -60,7 +60,7 @@ const STOP = '00'
 
 describe('should test mcopy', () => {
   for (const situation of situations) {
-    it('should produce correct output', async () => {
+    it('produces correct output', async () => {
       // create bytecode
       let bytecode = '0x'
       // prepare the memory

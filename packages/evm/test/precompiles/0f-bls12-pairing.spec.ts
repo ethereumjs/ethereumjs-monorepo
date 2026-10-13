@@ -10,7 +10,7 @@ import { precompile0f } from '../../src/precompiles/0f-bls12-pairing.ts'
 import type { PrecompileInput } from '../../src/index.ts'
 
 describe('Precompiles: bls12-381 pairing check', () => {
-  it('should normalize a non-EVMError thrown by the underlying bls library to revert', async () => {
+  it('normalizes a non-EVMError thrown by the underlying bls library to revert', async () => {
     await mcl.init(mcl.BLS12_381)
     const realBls = new MCLBLS(mcl)
     // Delegate every method to the real MCLBLS instance except pairingCheck,

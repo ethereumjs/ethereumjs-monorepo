@@ -28,7 +28,7 @@ import type { PrefixedHexString } from '@ethereumjs/util'
 import type { BlockHeader } from '../src/index.ts'
 
 describe('[Block/Header]: initialization', () => {
-  it('should create with default constructor', () => {
+  it('creates with default constructor', () => {
     function compareDefaultHeader(header: BlockHeader) {
       assert.isTrue(equalsBytes(header.parentHash, new Uint8Array(32)))
       assert.isTrue(equalsBytes(header.uncleHash, KECCAK256_RLP_ARRAY))
@@ -185,7 +185,7 @@ describe('[Block/Header]: initialization', () => {
 })
 
 describe('[Block/Header]: validation', () => {
-  it('should validate extraData', () => {
+  it('validates extraData', () => {
     // PoW
     let common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     let genesis = createBlock({}, { common })
@@ -273,7 +273,7 @@ describe('[Block/Header]: validation', () => {
     )
   })
 
-  it('should skip consensusFormatValidation if flag is set to false', () => {
+  it('skips consensusFormatValidation if flag is set to false', () => {
     const common = new Common({ chain: goerliChainConfig, hardfork: Hardfork.Chainstart })
 
     assert.doesNotThrow(
@@ -432,7 +432,7 @@ describe('[Block/Header]: validation', () => {
 })
 
 describe('[Block/Header]: gas limit hash and defaults', () => {
-  it('should test validateGasLimit()', () => {
+  it('validateGasLimit()', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const testData = bcBlockGasLimitTestData.tests.BlockGasLimit2p63m1
 
@@ -449,7 +449,7 @@ describe('[Block/Header]: gas limit hash and defaults', () => {
     }
   })
 
-  it('should test isGenesis()', () => {
+  it('isGenesis()', () => {
     const header1 = createBlockHeader({ number: 1 })
     assert.strictEqual(header1.isGenesis(), false)
 
@@ -457,7 +457,7 @@ describe('[Block/Header]: gas limit hash and defaults', () => {
     assert.strictEqual(header2.isGenesis(), true)
   })
 
-  it('should test hash() function', () => {
+  it('hash() function', () => {
     let common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     let header = createBlockHeader(mainnetBlocks[0]['header'], { common })
     assert.strictEqual(
@@ -475,7 +475,7 @@ describe('[Block/Header]: gas limit hash and defaults', () => {
     )
   })
 
-  it('should be able to initialize shanghai header with correct hardfork defaults', () => {
+  it('is able to initialize shanghai header with correct hardfork defaults', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai })
     const header = createBlockHeader({}, { common })
     assert.strictEqual(

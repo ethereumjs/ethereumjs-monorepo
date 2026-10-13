@@ -40,7 +40,7 @@ describe('Precompiles: MODEXP', () => {
     })
   }
 
-  it('should correctly right-pad data if input length is too short', async () => {
+  it('right-pad data if input length is too short', async () => {
     const gas = BigInt(0xffff)
     const result = await MODEXP({
       data: hexToBytes('0x41'),

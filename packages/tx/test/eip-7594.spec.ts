@@ -62,7 +62,7 @@ beforeAll(async () => {
 }, 50000)
 
 describe('EIP4844 non network wrapper constructor tests - valid scenarios', () => {
-  it('should work', () => {
+  it('round-trips blob txs through factory, RLP, and hedged signatures', () => {
     for (const kzg of kzgs) {
       const txData = {
         type: 0x03,
@@ -111,7 +111,7 @@ describe('EIP4844 non network wrapper constructor tests - valid scenarios', () =
 })
 
 describe('fromTxData using from a json', () => {
-  it('should work', () => {
+  it('builds blob txs from JSON txData with versioned hashes only', () => {
     for (const kzg of kzgs) {
       const txData = {
         type: '0x3',
@@ -184,7 +184,7 @@ describe('fromTxData using from a json', () => {
 })
 
 describe('Network wrapper tests', () => {
-  it('should not work with wrong network wrapper version', async () => {
+  it('does not work with wrong network wrapper version', async () => {
     for (const kzg of kzgs) {
       expect(() =>
         createBlob4844Tx(
@@ -201,7 +201,7 @@ describe('Network wrapper tests', () => {
     }
   }, 40_000)
 
-  it('should work with all data provided', async () => {
+  it('works with all data provided', async () => {
     for (const kzg of kzgs) {
       const blobs = [...getBlobs('hello world'), ...getBlobs('hello world')]
       const commitments = blobsToCommitments(kzg.lib, blobs)
@@ -371,7 +371,7 @@ describe('Network wrapper tests', () => {
     }
   }, 40_000)
 
-  it('should calculate the correct cell proofs', async () => {
+  it('calculates the correct cell proofs', async () => {
     for (const kzg of kzgs) {
       const tx = await createBlob4844Tx(
         {

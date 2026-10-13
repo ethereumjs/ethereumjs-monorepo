@@ -26,7 +26,7 @@ const sender = bytesToHex(privateToAddress(pk))
 
 describe('EIP4844 tests', () => {
   const kzg = new microEthKZG(trustedSetup)
-  it('should build a block correctly with blobs', async () => {
+  it('builds a block correctly with blobs', async () => {
     const common = createCommonFromGethGenesis(eip4844GethGenesis, {
       chain: 'eip4844',
       hardfork: Hardfork.Cancun,

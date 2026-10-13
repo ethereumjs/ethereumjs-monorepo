@@ -36,26 +36,26 @@ import {
 } from '../../src/index.ts'
 
 describe('[Util/Bytes]: bytesToBigInt', () => {
-  it('should pass on correct input', () => {
+  it('pass on correct input', () => {
     const buf = hexToBytes('0x123')
     assert.strictEqual(BigInt(0x123), bytesToBigInt(buf))
   })
-  it('should return 0n for empty Uint8Array', () => {
+  it('returns 0n for empty Uint8Array', () => {
     assert.strictEqual(bytesToBigInt(new Uint8Array(0)), 0n)
   })
-  it('should throw if input is not a Uint8Array', () => {
+  it('throws if input is not a Uint8Array', () => {
     assert.throws(function () {
       // @ts-expect-error -- Testing invalid input
       bytesToBigInt([1, 2, 3])
     }, /This method only supports Uint8Array/)
   })
-  it('should not mutate input when littleEndian is true', () => {
+  it('does not mutate input when littleEndian is true', () => {
     const bytes = new Uint8Array([0x01, 0x02, 0x03])
     const original = new Uint8Array([0x01, 0x02, 0x03])
     bytesToBigInt(bytes, true)
     assert.deepEqual(bytes, original)
   })
-  it('should correctly convert littleEndian bytes', () => {
+  it('convert littleEndian bytes', () => {
     // 0x030201 in big-endian = 0x010203 in little-endian
     const bytes = new Uint8Array([0x01, 0x02, 0x03])
     assert.strictEqual(bytesToBigInt(bytes, true), BigInt(0x030201))
@@ -63,14 +63,14 @@ describe('[Util/Bytes]: bytesToBigInt', () => {
 })
 
 describe('[Util/Bytes]: bigIntToBytes', () => {
-  it('should pass on correct input', () => {
+  it('pass on correct input', () => {
     const num = BigInt(0x123)
     assert.deepEqual(hexToBytes('0x123'), bigIntToBytes(num))
   })
 })
 
 describe('[Util/Bytes]: bigIntToUnpaddedBytes', () => {
-  it('should equal unpadded buffer value', () => {
+  it('equals unpadded buffer value', () => {
     assert.deepEqual(bigIntToUnpaddedBytes(BigInt(0)), Uint8Array.from([]))
     assert.deepEqual(bigIntToUnpaddedBytes(BigInt(100)), hexToBytes('0x64'))
   })
@@ -96,7 +96,7 @@ describe('[Util/Bytes]: bigIntToAddressBytes', () => {
   ]
 
   for (const [addressHex, addressBigInt, isSafe] of testCases) {
-    it('should correctly convert', () => {
+    it('convert', () => {
       const addressHexFromBigInt = bytesToHex(bigIntToAddressBytes(addressBigInt as bigint, false))
       assert.strictEqual(
         addressHex,
@@ -111,14 +111,14 @@ describe('[Util/Bytes]: bigIntToAddressBytes', () => {
 })
 
 describe('[Util/Bytes]: intToUnpaddedBytes', () => {
-  it('should equal unpadded buffer value', () => {
+  it('equals unpadded buffer value', () => {
     assert.deepEqual(intToUnpaddedBytes(0), Uint8Array.from([]))
     assert.deepEqual(intToUnpaddedBytes(100), hexToBytes('0x64'))
   })
 })
 
 describe('[Util/Bytes]: bigIntToHex', () => {
-  it('should pass on correct input', () => {
+  it('pass on correct input', () => {
     assert.strictEqual(bigIntToHex(BigInt(1)), '0x1')
   })
 })

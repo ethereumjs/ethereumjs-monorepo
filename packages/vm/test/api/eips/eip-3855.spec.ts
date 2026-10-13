@@ -13,7 +13,7 @@ describe('EIP 3855 tests', () => {
     eips: [],
   })
 
-  it('should correctly use push0 opcode', async () => {
+  it('use push0 opcode', async () => {
     const vm = await createVM({ common })
     let stack: bigint[]
     const handler = (e: InterpreterStep) => {
@@ -32,7 +32,7 @@ describe('EIP 3855 tests', () => {
     vm.evm.events!.removeListener('step', handler)
   })
 
-  it('should correctly use push0 to create a stack with stack limit length', async () => {
+  it('use push0 to create a stack with stack limit length', async () => {
     const vm = await createVM({ common })
     let stack: bigint[] = []
     const handler = (e: InterpreterStep) => {
@@ -57,7 +57,7 @@ describe('EIP 3855 tests', () => {
     vm.evm.events!.removeListener('step', handler)
   })
 
-  it('should correctly use push0 to create a stack with stack limit + 1 length', async () => {
+  it('use push0 to create a stack with stack limit + 1 length', async () => {
     const vm = await createVM({ common })
 
     const depth = Number(common.param('stackLimit')!) + 1

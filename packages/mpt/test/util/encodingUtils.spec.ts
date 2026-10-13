@@ -74,7 +74,7 @@ describe('encoding', () => {
     }
   })
 
-  it('should return the correct hex-encoded key in "hex" encoding', () => {
+  it('returns the correct hex-encoded key in "hex" encoding', () => {
     const path = 'aabbcc' // cspell:disable-line
     const extension: Nibbles = [10, 11, 12]
     const result = pathToHexKey(path, extension, 'hex')
@@ -91,7 +91,7 @@ describe('encoding', () => {
     )
   })
 
-  it('should return the correct hex-encoded key in "keybyte" encoding', () => {
+  it('returns the correct hex-encoded key in "keybyte" encoding', () => {
     const path = '112233'
     const extension: Nibbles = [13, 14, 15]
     const result = pathToHexKey(path, extension, 'keybyte')
@@ -108,7 +108,7 @@ describe('encoding', () => {
     )
   })
 
-  it('should throw an error when retType is invalid', () => {
+  it('throws an error when retType is invalid', () => {
     const path = 'abcdef'
     const extension: Nibbles = [1, 2, 3]
 
@@ -120,7 +120,7 @@ describe('encoding', () => {
     )
   })
 
-  it('should merge and format pathStrings into paths', () => {
+  it('merges and format pathStrings into paths', () => {
     // should merge all syncPaths that have the same base account path
     const pathStrings = ['0a', '0a/0b', '0a/0c', '0a/0d', '0e', '0e/0a', '0f']
     const paths = mergeAndFormatKeyPaths(pathStrings)

@@ -21,7 +21,7 @@ const BLS_MODULUS = BigInt(
 )
 
 describe('Precompiles: point evaluation', () => {
-  it('should work', async () => {
+  it('evaluates KZG point precompile and rejects invalid proofs', async () => {
     const { eip4844GethGenesis } = await import('@ethereumjs/testdata')
 
     const common = createCommonFromGethGenesis(eip4844GethGenesis, {
@@ -82,7 +82,7 @@ describe('Precompiles: point evaluation', () => {
     assert.include(res.exceptionError?.error, 'invalid input length', 'invalid input length')
   })
 
-  it('should normalize unexpected thrown values to revert', async () => {
+  it('normalizes unexpected thrown values to revert', async () => {
     const common = createCommonFromGethGenesis(
       (await import('@ethereumjs/testdata')).eip4844GethGenesis,
       {
@@ -125,7 +125,7 @@ describe('Precompiles: point evaluation', () => {
     assert.strictEqual(res.exceptionError?.error, 'revert')
   })
 
-  it('should map object errors with C_KZG_BADARGS message to invalid inputs', async () => {
+  it('maps object errors with C_KZG_BADARGS message to invalid inputs', async () => {
     const common = createCommonFromGethGenesis(
       (await import('@ethereumjs/testdata')).eip4844GethGenesis,
       {

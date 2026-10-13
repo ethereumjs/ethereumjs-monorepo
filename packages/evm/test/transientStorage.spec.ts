@@ -12,7 +12,7 @@ import { createEVM } from '../src/index.ts'
 import { TransientStorage } from '../src/transientStorage.ts'
 
 describe('Transient Storage', () => {
-  it('should set and get storage', () => {
+  it('set and get storage', () => {
     const transientStorage = new TransientStorage()
 
     const address = createAddressFromString('0xff00000000000000000000000000000000000002')
@@ -24,7 +24,7 @@ describe('Transient Storage', () => {
     assert.strictEqual(value, got)
   })
 
-  it('should return bytes32(0) if there is no key set', () => {
+  it('returns bytes32(0) if there is no key set', () => {
     const transientStorage = new TransientStorage()
 
     const address = createAddressFromString('0xff00000000000000000000000000000000000002')
@@ -41,7 +41,7 @@ describe('Transient Storage', () => {
     assert.deepEqual(new Uint8Array(32).fill(0x00), got2)
   })
 
-  it('should revert', () => {
+  it('reverts', () => {
     const transientStorage = new TransientStorage()
 
     const address = createAddressFromString('0xff00000000000000000000000000000000000002')
@@ -63,7 +63,7 @@ describe('Transient Storage', () => {
     assert.deepEqual(got2, value)
   })
 
-  it('should commit', () => {
+  it('commits', () => {
     const transientStorage = new TransientStorage()
 
     const address = createAddressFromString('0xff00000000000000000000000000000000000002')
@@ -79,7 +79,7 @@ describe('Transient Storage', () => {
     assert.deepEqual(got, value)
   })
 
-  it('should fail with wrong size key/value', () => {
+  it('fails with wrong size key/value', () => {
     const transientStorage = new TransientStorage()
 
     const address = createAddressFromString('0xff00000000000000000000000000000000000002')
@@ -185,7 +185,7 @@ describe('Transient Storage', () => {
     assert.deepEqual(transientStorage.get(address, key), value1)
   })
 
-  it('should cleanup after a message create', async () => {
+  it('cleanups after a message create', async () => {
     const evm = await createEVM()
     // PUSH 1 PUSH 1 TSTORE
     const code = hexToBytes('0x600160015D')
@@ -202,7 +202,7 @@ describe('Transient Storage', () => {
     )
   })
 
-  it('should cleanup after a message call', async () => {
+  it('cleanups after a message call', async () => {
     const evm = await createEVM()
     const contractAddress = createZeroAddress()
     // PUSH 1 PUSH 1 TSTORE

@@ -26,7 +26,7 @@ const sender = bytesToHex(privateToAddress(pk))
 describe('EIP-7892 BPO tests', () => {
   const kzg = new microEthKZG(trustedSetup)
 
-  it('should accept block with BPO1 blob parameters', async () => {
+  it('accepts block with BPO1 blob parameters', async () => {
     // Sepolia BPO1 timestamp: 1761017184
     const common = new Common({
       chain: Sepolia,
@@ -114,7 +114,7 @@ describe('EIP-7892 BPO tests', () => {
     assert.isTrue(block.header.gasUsed > 0n, 'block should execute successfully')
   }, 120000)
 
-  it('should accept block with BPO2 blob parameters', async () => {
+  it('accepts block with BPO2 blob parameters', async () => {
     // Sepolia BPO2 timestamp: 1761607008
     const common = new Common({
       chain: Sepolia,

@@ -24,7 +24,7 @@ describe('VM: custom opcodes', () => {
     },
   }
 
-  it('should add custom opcodes to the EVM', async () => {
+  it('adds custom opcodes to the EVM', async () => {
     const evm = await createEVM({ customOpcodes: [testOpcode] })
     const gas = 123456
     let correctOpcodeName: boolean = false
@@ -42,7 +42,7 @@ describe('VM: custom opcodes', () => {
     assert.isTrue(correctOpcodeName, 'successfully set opcode name')
   })
 
-  it('should delete opcodes from the EVM', async () => {
+  it('deletes opcodes from the EVM', async () => {
     const evm = await createEVM({
       customOpcodes: [{ opcode: 0x20 }], // deletes KECCAK opcode
     })
@@ -54,7 +54,7 @@ describe('VM: custom opcodes', () => {
     assert.isTrue(res.executionGasUsed === gas, 'successfully deleted opcode')
   })
 
-  it('should not override default opcodes', async () => {
+  it('does not override default opcodes', async () => {
     // This test ensures that always the original opcode map is used
     // Thus, each time you recreate a EVM, it is in a clean state
     const evm = await createEVM({
@@ -84,7 +84,7 @@ describe('VM: custom opcodes', () => {
     assert.isTrue(equalsBytes(result.returnValue, hexToBytes('0x05')))
   })
 
-  it('should override opcodes in the EVM', async () => {
+  it('overrides opcodes in the EVM', async () => {
     testOpcode.opcode = 0x20 // Overrides KECCAK
     const evm = await createEVM({ customOpcodes: [testOpcode] })
     const gas = 123456
@@ -96,7 +96,7 @@ describe('VM: custom opcodes', () => {
     assert.strictEqual(res.runState!.stack.peek()[0], stackPush, 'successfully ran opcode logic')
   })
 
-  it('should pass the correct EVM options when copying the EVM', async () => {
+  it('pass the correct EVM options when copying the EVM', async () => {
     const fee = 333
     const stackPush = BigInt(1)
 

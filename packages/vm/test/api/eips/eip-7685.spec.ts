@@ -23,7 +23,7 @@ function getRandomDepositRequest(): CLRequest<CLRequestType> {
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Cancun, eips: [7685] })
 
 describe('EIP-7685 runBlock tests', () => {
-  it('should not error when a valid requestsHash is provided', async () => {
+  it('does not error when a valid requestsHash is provided', async () => {
     const vm = await setupVM({ common })
     const emptyBlock = createBlock({}, { common })
     const res = await runBlock(vm, {
@@ -35,7 +35,7 @@ describe('EIP-7685 runBlock tests', () => {
     // I.e. the flat array to-be-hashed is not `0x 00 01 02`, but is now the empty bytes array, `0x`
     assert.isTrue(equalsBytes(res.requestsHash!, sha256(new Uint8Array())))
   })
-  it('should error when an invalid requestsHash is provided', async () => {
+  it('errors when an invalid requestsHash is provided', async () => {
     const vm = await setupVM({ common })
 
     const emptyBlock = createBlock({ header: { requestsHash: invalidRequestsRoot } }, { common })
@@ -45,7 +45,7 @@ describe('EIP-7685 runBlock tests', () => {
       }),
     ).rejects.toThrow('invalid requestsHash')
   })
-  it('should not throw invalid requestsHash error when valid requests are provided', async () => {
+  it('does not throw invalid requestsHash error when valid requests are provided', async () => {
     const vm = await setupVM({ common })
     const request = getRandomDepositRequest()
     const requestsHash = genRequestsRoot([request], sha256)
@@ -60,7 +60,7 @@ describe('EIP-7685 runBlock tests', () => {
 
   // TODO: no way to test this without running block, why check why does this test pass
   // as it should not throw on some random request root
-  it('should error when requestsHash does not match requests provided', async () => {
+  it('errors when requestsHash does not match requests provided', async () => {
     const vm = await setupVM({ common })
     const block = createBlock(
       {
@@ -73,7 +73,7 @@ describe('EIP-7685 runBlock tests', () => {
 })
 
 describe('EIP 7685 buildBlock tests', () => {
-  it('should build a block without a request and a valid requestsHash', async () => {
+  it('builds a block without a request and a valid requestsHash', async () => {
     const common = new Common({
       chain: Mainnet,
       hardfork: Hardfork.Cancun,

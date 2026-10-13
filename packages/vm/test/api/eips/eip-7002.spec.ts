@@ -67,7 +67,7 @@ function generateTx(nonce: bigint) {
 }
 
 describe('EIP-7002 tests', () => {
-  it('should correctly create requests', async () => {
+  it('create requests', async () => {
     const vm = await setupVM({ common })
     const block = createBlock(
       {
@@ -178,7 +178,7 @@ describe('EIP-7002 tests', () => {
     )
   })
 
-  it('should throw when contract is not deployed', async () => {
+  it('throws when contract is not deployed', async () => {
     const vm = await setupVM({ common })
     const block = createBlock(
       {

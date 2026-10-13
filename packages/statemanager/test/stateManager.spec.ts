@@ -41,7 +41,7 @@ function verifyAccount(
 }
 
 describe('StateManager -> General', () => {
-  it(`should instantiate`, async () => {
+  it(`instantiates`, async () => {
     const sm = new MerkleStateManager()
 
     assert.deepEqual(sm['_trie'].root(), KECCAK256_RLP, 'it has default root')
@@ -49,7 +49,7 @@ describe('StateManager -> General', () => {
     assert.deepEqual(res, KECCAK256_RLP, 'it has default root')
   })
 
-  it('should not throw on getContractStorage() on non-existing accounts', async () => {
+  it('does not throw on getContractStorage() on non-existing accounts', async () => {
     const sm = new MerkleStateManager()
 
     try {
@@ -60,7 +60,7 @@ describe('StateManager -> General', () => {
     }
   })
 
-  it(`should clear contract storage`, async () => {
+  it(`clears contract storage`, async () => {
     const sm = new MerkleStateManager()
 
     const contractAddress = createAddressFromString('0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984')
@@ -144,7 +144,7 @@ describe('StateManager -> General', () => {
     )
   })
 
-  it(`should import proofs from getProof`, async () => {
+  it(`imports proofs from getProof`, async () => {
     interface StateEntry {
       keys: Uint8Array[]
       values: Uint8Array[]

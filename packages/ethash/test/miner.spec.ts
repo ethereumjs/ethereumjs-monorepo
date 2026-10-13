@@ -117,7 +117,7 @@ describe('Miner', () => {
     )
   })
 
-  it('Should keep common when mining blocks or headers', async () => {
+  it('preserves chain name and hardfork on mined block headers', async () => {
     const e = new Ethash(cacheDb as any)
 
     const block = createBlock(

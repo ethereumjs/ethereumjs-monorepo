@@ -35,7 +35,7 @@ common.hardforkBlock = function (hardfork: string | undefined) {
 }
 
 describe('EIP4895 tests', () => {
-  it('should correctly generate withdrawalsRoot', async () => {
+  it('generate withdrawalsRoot', async () => {
     // get withdrawalsArray
     const gethBlockBytesArray = RLP.decode(hexToBytes(gethWithdrawals8BlockRlp))
     const withdrawals = (gethBlockBytesArray[3] as WithdrawalBytes[]).map((wa) =>
@@ -215,7 +215,7 @@ describe('EIP4895 tests', () => {
       validBlockWithWithdrawal2.hash()
     }, 'hashed block with withdrawals')
   })
-  it('should throw if no withdrawal array is provided', () => {
+  it('throws if no withdrawal array is provided', () => {
     const blockWithWithdrawals = createBlock({}, { common })
     const rlp = blockWithWithdrawals.serialize()
     const rlpDecoded = RLP.decode(rlp) as Uint8Array[]
@@ -234,7 +234,7 @@ describe('EIP4895 tests', () => {
     )
   })
 
-  it('should return early when withdrawals root equals KECCAK256_RLP', async () => {
+  it('returns early when withdrawals root equals KECCAK256_RLP', async () => {
     const block = createBlock({}, { common })
     // Set invalid withdrawalsRoot in cache
     block['cache'].withdrawalsTrieRoot = randomBytes(32)

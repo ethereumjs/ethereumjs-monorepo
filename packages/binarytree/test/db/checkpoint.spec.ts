@@ -17,16 +17,16 @@ describe('[BinaryTree/CheckpointDB]: checkpointing', () => {
     db = new CheckpointDB({ db: new MapDB() })
   })
 
-  it('should initialize with empty checkpoints', () => {
+  it('initializes with empty checkpoints', () => {
     assert.isEmpty(db.checkpoints)
   })
 
-  it('should add a checkpoint', () => {
+  it('adds a checkpoint', () => {
     db.checkpoint(new Uint8Array())
     assert.strictEqual(db.checkpoints.length, 1)
   })
 
-  it('should commit the latest checkpoint', async () => {
+  it('commits the latest checkpoint', async () => {
     db.checkpoint(new Uint8Array())
 
     // Add some data to the latest checkpoint
@@ -39,7 +39,7 @@ describe('[BinaryTree/CheckpointDB]: checkpointing', () => {
     assert.strictEqual(db._stats.db.writes, 1)
   })
 
-  it('should revert the latest checkpoint', async () => {
+  it('reverts the latest checkpoint', async () => {
     const expectedRoot = new Uint8Array()
 
     // Add a checkpoint
@@ -53,7 +53,7 @@ describe('[BinaryTree/CheckpointDB]: checkpointing', () => {
     assert.strictEqual(actualRoot, expectedRoot, 'roots should match')
   })
 
-  it('should get a value', async () => {
+  it('get a value', async () => {
     const key1 = hexToBytes('0x123')
     const val1 = hexToBytes('0x456')
 
@@ -67,7 +67,7 @@ describe('[BinaryTree/CheckpointDB]: checkpointing', () => {
     assert.deepEqual(actualValue, val1)
   })
 
-  it('should put a value', async () => {
+  it('puts a value', async () => {
     const key1 = hexToBytes('0x123')
     const val1 = hexToBytes('0x456')
 
@@ -81,7 +81,7 @@ describe('[BinaryTree/CheckpointDB]: checkpointing', () => {
     assert.deepEqual(actualValue, val1)
   })
 
-  it('should delete a value', async () => {
+  it('deletes a value', async () => {
     const key1 = hexToBytes('0x123')
     const val1 = hexToBytes('0x456')
 

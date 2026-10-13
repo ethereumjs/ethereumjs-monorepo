@@ -8,7 +8,7 @@ import { bytesToUtf8 } from './utils.ts'
 const isBrowser = new Function('try {return this===window;}catch(e){ return false;}')
 
 describe('Distribution', () => {
-  it('should be able to execute functionality from distribution build', () => {
+  it('is able to execute functionality from distribution build', () => {
     const encodedSelf = RLP.encode('a')
     assert.deepEqual(bytesToUtf8(encodedSelf), 'a')
     assert.deepEqual(encodedSelf.length, 1)
@@ -21,13 +21,13 @@ describe.skipIf(isBrowser)('CLI command', () => {
     const child_process = await import('child_process')
     exec = child_process.exec
   })
-  it('should be able to run CLI command', async () => {
+  it('is able to run CLI command', async () => {
     const result = exec('./bin/rlp encode "[ 5 ]"')
     const resultFormatted = result.stdout!.read().trim()
     assert.deepEqual(resultFormatted, '0xc105')
   })
 
-  it('should return valid values for official tests', { timeout: 10000 }, async () => {
+  it('returns valid values for official tests', { timeout: 10000 }, async () => {
     for (const [testName, test] of Object.entries(rlpTestData.tests)) {
       const { in: incoming, out } = test
 
@@ -45,7 +45,7 @@ describe.skipIf(isBrowser)('CLI command', () => {
 })
 
 describe.skipIf(isBrowser)('Cross-frame', () => {
-  it('should be able to encode Arrays across stack frames', async () => {
+  it('is able to encode Arrays across stack frames', async () => {
     const vm = await import('vm')
     assert.deepEqual(
       vm.runInNewContext(

@@ -76,7 +76,7 @@ describe('[Common/Hardfork]: getHardforkBy and setHardforkBy', () => {
     assert.strictEqual(c.setHardforkBy({ blockNumber: 999999999999n }), Hardfork.Paris, msg)
   })
 
-  it('should throw if no hardfork qualifies', () => {
+  it('throws if no hardfork qualifies', () => {
     const hardforks = [
       {
         name: 'homestead',

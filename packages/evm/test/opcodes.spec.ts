@@ -7,7 +7,7 @@ describe('[EVM]: getActiveOpcodes()', () => {
   const DIFFICULTY_PREVRANDAO = 0x44
   const CHAINID = 0x46 //istanbul opcode
 
-  it('should not expose opcodes from a follow-up HF (istanbul -> petersburg)', async () => {
+  it('does not expose opcodes from a follow-up HF (istanbul -> petersburg)', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Petersburg })
     const evm = await createEVM({ common })
     assert.strictEqual(
@@ -17,7 +17,7 @@ describe('[EVM]: getActiveOpcodes()', () => {
     )
   })
 
-  it('should expose opcodes when HF is active (>= istanbul)', async () => {
+  it('exposes opcodes when HF is active (>= istanbul)', async () => {
     let common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     let evm = await createEVM({ common })
     assert.strictEqual(
@@ -35,7 +35,7 @@ describe('[EVM]: getActiveOpcodes()', () => {
     )
   })
 
-  it('should switch DIFFICULTY opcode name to PREVRANDAO when >= Merge HF', async () => {
+  it('switchs DIFFICULTY opcode name to PREVRANDAO when >= Merge HF', async () => {
     let common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     let evm = await createEVM({ common })
     assert.strictEqual(
@@ -53,7 +53,7 @@ describe('[EVM]: getActiveOpcodes()', () => {
     )
   })
 
-  it('should update opcodes on a hardfork change', async () => {
+  it('updates opcodes on a hardfork change', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     const evm = await createEVM({ common })
 

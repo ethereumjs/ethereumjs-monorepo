@@ -157,7 +157,7 @@ describe('EIP 2935: historical block hashes', () => {
       return blockHash
     }
 
-    it(`should validate the deployment tx`, async () => {
+    it(`validates the deployment tx`, async () => {
       const deployContractTxData: LegacyTxData = {
         type: '0x0',
         nonce: '0x0',
@@ -187,7 +187,7 @@ describe('EIP 2935: historical block hashes', () => {
       )
     })
 
-    it('should save genesis block hash to the history block hash contract', async () => {
+    it('saves genesis block hash to the history block hash contract', async () => {
       const commonGenesis = eip2935ActiveAtCommon(1, historyAddressBigInt)
       const blockchain = await createBlockchain({
         common: commonGenesis,
@@ -218,7 +218,7 @@ describe('EIP 2935: historical block hashes', () => {
       )
       assert.isTrue(equalsBytes(storage, genesis.hash()))
     })
-    it('should ensure blocks older than 256 blocks can be retrieved from the history contract', async () => {
+    it('ensures blocks older than 256 blocks can be retrieved from the history contract', async () => {
       // Test: build a chain with 256+ blocks and then retrieve BLOCKHASH of the genesis block and block 1
       const blocksActivation = 256 // This ensures that only block 255 gets stored into the hash contract
       // More than blocks activation to build, so we can ensure that we can also retrieve block 0 or block 1 hash at block 300

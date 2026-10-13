@@ -264,7 +264,7 @@ describe('[Common]: Custom chains', () => {
 })
 
 describe('custom chain setup with hardforks with undefined/null block numbers', () => {
-  it('Should work', () => {
+  it('selects hardfork when intermediate forks use null block numbers', () => {
     const nullHardforks = [
       {
         name: 'chainstart',

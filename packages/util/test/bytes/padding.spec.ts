@@ -36,23 +36,23 @@ import {
 } from '../../src/index.ts'
 
 describe('[Util/Bytes]: setLengthLeft', () => {
-  it('should left pad a Uint8Array', () => {
+  it('lefts pad a Uint8Array', () => {
     const bytes = new Uint8Array([9, 9])
     const padded = setLengthLeft(bytes, 3)
     assert.strictEqual(bytesToHex(padded), '0x000909')
   })
-  it('should throw by default when input exceeds target length', () => {
+  it('throws by default when input exceeds target length', () => {
     const bytes = new Uint8Array([9, 0, 9])
     assert.throws(function () {
       setLengthLeft(bytes, 2)
     }, /Input length 3 exceeds target length 2/)
   })
-  it('should left truncate a Uint8Array when allowTruncate is true', () => {
+  it('lefts truncate a Uint8Array when allowTruncate is true', () => {
     const bytes = new Uint8Array([9, 0, 9])
     const padded = setLengthLeft(bytes, 2, { allowTruncate: true })
     assert.strictEqual(bytesToHex(padded), '0x0009')
   })
-  it('should throw if input is not a Uint8Array', () => {
+  it('throws if input is not a Uint8Array', () => {
     assert.throws(function () {
       // @ts-expect-error -- This syntax is not allowed when 'erasableSyntaxOnly' is enabled.
       setLengthLeft((<unknown>[9, 9]) as Uint8Array, 3)
@@ -61,23 +61,23 @@ describe('[Util/Bytes]: setLengthLeft', () => {
 })
 
 describe('[Util/Bytes]: setLengthRight', () => {
-  it('should right pad a Uint8Array', () => {
+  it('rights pad a Uint8Array', () => {
     const bytes = new Uint8Array([9, 9])
     const padded = setLengthRight(bytes, 3)
     assert.strictEqual(bytesToHex(padded), '0x090900')
   })
-  it('should throw by default when input exceeds target length', () => {
+  it('throws by default when input exceeds target length', () => {
     const bytes = new Uint8Array([9, 0, 9])
     assert.throws(function () {
       setLengthRight(bytes, 2)
     }, /Input length 3 exceeds target length 2/)
   })
-  it('should right truncate a Uint8Array when allowTruncate is true', () => {
+  it('rights truncate a Uint8Array when allowTruncate is true', () => {
     const bytes = new Uint8Array([9, 0, 9])
     const padded = setLengthRight(bytes, 2, { allowTruncate: true })
     assert.strictEqual(bytesToHex(padded), '0x0900')
   })
-  it('should throw if input is not a Uint8Array', () => {
+  it('throws if input is not a Uint8Array', () => {
     assert.throws(function () {
       // @ts-expect-error -- This syntax is not allowed when 'erasableSyntaxOnly' is enabled.
       setLengthRight((<unknown>[9, 9]) as Uint8Array, 3)

@@ -20,11 +20,11 @@ describe.skip('[E2Store/Era]: beacon extraction (large download)', () => {
     const slotIndex = readSlotIndex(data)
     assert.strictEqual(slotIndex.startSlot, 10969088)
   })
-  it('should extract the beacon state', async () => {
+  it('extracts the beacon state', async () => {
     const state = await readBeaconState(data)
     assert.strictEqual(Number(state.slot), 10969088)
   }, 30000)
-  it('should read a block from the era file and decompress it', async () => {
+  it('reads a block from the era file and decompress it', async () => {
     const block = await readBeaconBlock(data, 0)
     assert.strictEqual(Number(block.message.slot), 10960896)
   })
@@ -52,19 +52,19 @@ describe.skip('[E2Store/Era]: historical fork states (large download)', () => {
     const state = await readBeaconState(data)
     assert.strictEqual(Number(state.slot), 2170880)
   }, 30000)
-  it('should extract the beacon state for Altair state', async () => {
+  it('extracts the beacon state for Altair state', async () => {
     // https://mainnet.era.nimbus.team/mainnet-00291-5cffd097.era
     const data = readBinaryFile(__dirname + '/mainnet-00291-5cffd097.era')
     const state = await readBeaconState(data)
     assert.strictEqual(Number(state.slot), 2383872)
   }, 30000)
-  it('should extract the beacon state for Bellatrix state', async () => {
+  it('extracts the beacon state for Bellatrix state', async () => {
     // https://mainnet.era.nimbus.team/mainnet-00600-e031a37d.era
     const data = readBinaryFile(__dirname + '/mainnet-00600-e031a37d.era')
     const state = await readBeaconState(data)
     assert.strictEqual(Number(state.slot), 4915200)
   }, 30000)
-  it('should extract the beacon state and blocks for Capella state', async () => {
+  it('extracts the beacon state and blocks for Capella state', async () => {
     // https://mainnet.era.nimbus.team/mainnet-00780-bb546fec.era
     const data = readBinaryFile(__dirname + '/mainnet-00780-bb546fec.era')
     const state = await readBeaconState(data)

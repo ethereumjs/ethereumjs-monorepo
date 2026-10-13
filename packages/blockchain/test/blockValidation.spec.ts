@@ -13,7 +13,7 @@ import { generateBlock } from './util.ts'
 import type { ConsensusDict } from '../src/index.ts'
 
 describe('[Blockchain]: Block validation tests', () => {
-  it('should throw if an uncle is included before', async () => {
+  it('throws if an uncle is included before', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     const blockchain = await createBlockchain({ common })
 
@@ -32,7 +32,7 @@ describe('[Blockchain]: Block validation tests', () => {
     await expect(blockchain.putBlock(block3)).rejects.toThrow('uncle is already included')
   })
 
-  it('should throw if the uncle parent block is not part of the canonical chain', async () => {
+  it('throws if the uncle parent block is not part of the canonical chain', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     const blockchain = await createBlockchain({ common })
 
@@ -50,7 +50,7 @@ describe('[Blockchain]: Block validation tests', () => {
     await expect(blockchain.putBlock(block3)).rejects.toThrow('not found in DB')
   })
 
-  it('should throw if the uncle is too old', async () => {
+  it('throws if the uncle is too old', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     const blockchain = await createBlockchain({ common })
 
@@ -77,7 +77,7 @@ describe('[Blockchain]: Block validation tests', () => {
     )
   })
 
-  it('should throw if uncle is too young', async () => {
+  it('throws if uncle is too young', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     const blockchain = await createBlockchain({ common })
 
@@ -93,7 +93,7 @@ describe('[Blockchain]: Block validation tests', () => {
     )
   })
 
-  it('should throw if the uncle header is invalid', async () => {
+  it('throws if the uncle header is invalid', async () => {
     const consensusDict: ConsensusDict = {}
     consensusDict[ConsensusAlgorithm.Ethash] = new EthashConsensus(new Ethash())
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
@@ -218,7 +218,7 @@ describe('[Blockchain]: Block validation tests', () => {
     }
   })
 
-  it('should select the right hardfork for uncles at a hardfork transition', async () => {
+  it('selects the right hardfork for uncles at a hardfork transition', async () => {
     /**
      * This test creates a chain around mainnet fork blocks:
      *      berlin         london

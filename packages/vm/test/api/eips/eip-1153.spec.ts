@@ -71,7 +71,7 @@ describe('EIP 1153: transient storage', () => {
     return results
   }
 
-  it('should tload and tstore', async () => {
+  it('tloads and tstore', async () => {
     const code = '0x600260015d60015c60005260206000F3'
     const returndata = new Uint8Array(32)
     returndata[31] = 0x02
@@ -105,7 +105,7 @@ describe('EIP 1153: transient storage', () => {
     assert.strictEqual(undefined, result[0].execResult.exceptionError)
   })
 
-  it('should clear between transactions', async () => {
+  it('clears between transactions', async () => {
     // If calldata size is 0, do a tload and return the value
     // at key 0. If calldata size is nonzero, do a tstore at
     // key 0. Send a transaction with nonzero calldata first

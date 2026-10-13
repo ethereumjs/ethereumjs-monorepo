@@ -14,7 +14,7 @@ const key = new Uint8Array([11])
 const value = new Uint8Array([255, 255])
 
 describe('encoding hex prefixes', () => {
-  it('should work', async () => {
+  it('produces identical roots for hex and prefixed-hex key encodings', async () => {
     const trie = new MerklePatriciaTrie()
     const trie2 = new MerklePatriciaTrie()
     const hex = 'FF44A3B3'
@@ -25,7 +25,7 @@ describe('encoding hex prefixes', () => {
 })
 
 describe('support for Uint8Array', () => {
-  it('should use Uint8Array in memory by default', async () => {
+  it('uses Uint8Array in memory by default', async () => {
     const trie = new MerklePatriciaTrie()
     const db = trie['_db'].db as MapDB<any, any>
     await trie.put(key, value)
@@ -36,13 +36,13 @@ describe('support for Uint8Array', () => {
     }
   })
 
-  it('should throw when setting valueEncoding and no database provided', () => {
+  it('throws when setting valueEncoding and no database provided', () => {
     assert.throws(() => {
       new MerklePatriciaTrie({ valueEncoding: ValueEncoding.String })
     })
   })
 
-  it('should default to use strings when a database is provided', async () => {
+  it('defaults to use strings when a database is provided', async () => {
     const trie = new MerklePatriciaTrie({ db: new MapDB() })
     const db = trie['_db'].db as MapDB<any, any>
     await trie.put(key, value)
@@ -53,7 +53,7 @@ describe('support for Uint8Array', () => {
     }
   })
 
-  it('should use Uint8Array in memory by default', async () => {
+  it('uses Uint8Array in memory by default', async () => {
     const trie = new MerklePatriciaTrie({ db: new MapDB(), valueEncoding: ValueEncoding.Bytes })
     const db = trie['_db'].db as MapDB<any, any>
     await trie.put(key, value)

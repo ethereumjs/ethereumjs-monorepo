@@ -21,7 +21,7 @@ import type { PrefixedHexString } from '@ethereumjs/util'
 const hashFunction = blake3
 
 describe('Binary Tree API tests', () => {
-  it('should put/get/delete an account (with no storage/code from the trie)', async () => {
+  it('put/get/delete an account (with no storage/code from the trie)', async () => {
     const common = new Common({
       chain: Mainnet,
       eips: [7864],
@@ -38,7 +38,7 @@ describe('Binary Tree API tests', () => {
     assert.strictEqual(deletedAccount, undefined)
   })
 
-  it('should put and get code', async () => {
+  it('puts and get code', async () => {
     const common = new Common({
       chain: Mainnet,
       eips: [7864],
@@ -69,7 +69,7 @@ describe('Binary Tree API tests', () => {
     )
   }, 120_000)
 
-  it('should put and get storage', async () => {
+  it('puts and get storage', async () => {
     const zeroSlot = setLengthLeft(bigIntToBytes(0n), 32)
     const zeroSlotValue = hexToBytes('0x1')
     const common = new Common({
@@ -86,7 +86,7 @@ describe('Binary Tree API tests', () => {
 })
 
 describe('caching functionality works', () => {
-  it('should cache accounts and then write to trie', async () => {
+  it('caches accounts and then write to trie', async () => {
     const common = new Common({
       chain: Mainnet,
       eips: [7864],

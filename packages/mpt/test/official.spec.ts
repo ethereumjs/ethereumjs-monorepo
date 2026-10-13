@@ -7,7 +7,7 @@ import { trieAnyOrderData } from './fixtures/trieAnyOrder.ts'
 import { trieTestData } from './fixtures/trieTest.ts'
 
 describe('official tests', () => {
-  it('should work', async () => {
+  it('matches official trie test roots in insertion order', async () => {
     const testNames = Object.keys(trieTestData.tests) as (keyof typeof trieTestData.tests)[]
     let trie = new MerklePatriciaTrie()
 
@@ -32,7 +32,7 @@ describe('official tests', () => {
 })
 
 describe('official tests any order', async () => {
-  it('should work', async () => {
+  it('matches official trie test roots in arbitrary key order', async () => {
     const testNames = Object.keys(trieAnyOrderData.tests) as (keyof typeof trieAnyOrderData.tests)[]
     let trie = new MerklePatriciaTrie()
     for (const testName of testNames) {

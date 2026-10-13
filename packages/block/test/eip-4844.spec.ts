@@ -27,7 +27,7 @@ describe('[Block/EIP-4844]: header', () => {
     customCrypto: { kzg },
   })
 
-  it('should work', () => {
+  it('defaults excessBlobGas and rejects pre-Cancun blob header fields', () => {
     const earlyCommon = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
 
     assert.throws(
@@ -108,7 +108,7 @@ describe('blob gas tests', () => {
   })
   const blobGasPerBlob = common.param('blobGasPerBlob')
 
-  it('should work', () => {
+  it('computes excess blob gas and data fee on Cancun headers', () => {
     const preShardingHeader = createBlockHeader(
       {},
       { common: new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai }) },
@@ -195,7 +195,7 @@ describe('blob gas tests', () => {
       assert.strictEqual(got, expected)
     })
 
-    it('should use original EIP-4844 logic when reserve price condition is not met', () => {
+    it('uses original EIP-4844 logic when reserve price condition is not met', () => {
       // Create a header with low base fee and high blob gas price
       const lowBaseFee = 1n // Very low base fee (1 wei)
 
@@ -234,7 +234,7 @@ describe('blob gas tests', () => {
       )
     })
 
-    it('should not apply EIP-7918 logic when EIP is not activated', () => {
+    it('does not apply EIP-7918 logic when EIP is not activated', () => {
       // Use Cancun hardfork where EIP-7918 is not activated
       const header = createBlockHeader(
         {
@@ -273,7 +273,7 @@ describe('transaction validation tests', () => {
   })
   const blobGasPerBlob = common.param('blobGasPerBlob')
 
-  it('should work', () => {
+  it('validates blob transactions against parent header and blob gas limits', () => {
     const blobs = getBlobs('hello world')
     const commitments = blobsToCommitments(kzg, blobs)
     const blobVersionedHashes = commitmentsToVersionedHashes(commitments)
@@ -374,7 +374,7 @@ describe('transaction validation tests', () => {
 })
 
 describe('fake exponential', () => {
-  it('should work', () => {
+  it('matches geth fake exponential test vectors', () => {
     // Test inputs borrowed from geth - https://github.com/mdehoog/go-ethereum/blob/a915d56f1d52906470ddce1bda7fa916044b6f95/consensus/misc/eip4844_test.go#L26
     const testInputs = [
       [1, 0, 1, 1],

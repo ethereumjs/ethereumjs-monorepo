@@ -45,7 +45,7 @@ describe('RPC State Manager initialization tests', async () => {
   })
   await import('@ethereumjs/util')
 
-  it('should work', () => {
+  it('constructs with valid provider URLs and rejects invalid ones', () => {
     let state = new RPCStateManager({ provider, blockTag: 1n })
     assert.instanceOf(state, RPCStateManager, 'was able to instantiate state manager')
     assert.strictEqual(
@@ -79,7 +79,7 @@ describe('RPC State Manager initialization tests', async () => {
 })
 
 describe('RPC State Manager API tests', () => {
-  it('should work', async () => {
+  it('fetches accounts, caches puts, and verifies Merkle proofs', async () => {
     const state = new RPCStateManager({ provider, blockTag: 1n })
     const vitalikDotEth = createAddressFromString('0xd8da6bf26964af9d7eed9e03e53415d37aa96045')
     const account = await state.getAccount(vitalikDotEth)
@@ -240,7 +240,7 @@ describe('RPC State Manager API tests', () => {
 })
 
 describe('runTx custom transaction test', () => {
-  it('should work', async () => {
+  it('runs a signed fee-market transfer against mocked RPC state', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
 
     const state = new RPCStateManager({ provider, blockTag: 1n })
@@ -266,7 +266,7 @@ describe('runTx custom transaction test', () => {
 })
 
 describe('runTx test: replay mainnet transactions', () => {
-  it('should work', async () => {
+  it('replays a mainnet London transfer with historical block tag', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
 
     const blockTag = 15496077n
@@ -288,7 +288,7 @@ describe('runTx test: replay mainnet transactions', () => {
 })
 
 describe('runBlock test', () => {
-  it('should work', async () => {
+  it('runs a historical block and matches header gasUsed', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
 
     const blockTag = 500000n
@@ -352,7 +352,7 @@ describe('[RPCStateManager]: blockchain blockhash', () => {
 })
 
 describe('[RPCStateManager]: Merkle parity', () => {
-  it('should work', async () => {
+  it('matches MerkleStateManager for missing accounts', async () => {
     const rpcState = new RPCStateManager({ provider, blockTag: 1n })
     const defaultState = new MerkleStateManager()
 

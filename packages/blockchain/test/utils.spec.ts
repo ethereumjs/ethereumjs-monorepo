@@ -23,7 +23,7 @@ async function getBlockchain(gethGenesis: GethGenesis): Promise<Blockchain> {
 }
 
 describe('[Utils/Parse]', () => {
-  it('should properly parse genesis state from gethGenesis', async () => {
+  it('properlys parse genesis state from gethGenesis', async () => {
     const genesisState = parseGethGenesisState(postMergeGethGenesis)
     const stateRoot = await genesisMPTStateRoot(genesisState)
     assert.strictEqual(
@@ -33,7 +33,7 @@ describe('[Utils/Parse]', () => {
     )
   })
 
-  it('should initialize blockchain from gethGenesis', async () => {
+  it('initializes blockchain from gethGenesis', async () => {
     const blockchain = await getBlockchain(postMergeGethGenesis)
     const genesisHash = blockchain.genesisBlock.hash()
 

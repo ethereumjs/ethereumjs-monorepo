@@ -150,7 +150,7 @@ const addNextBlock = async (
 }
 
 describe('Clique: Initialization', () => {
-  it('should initialize a clique blockchain', async () => {
+  it('initializes a clique blockchain', async () => {
     const common = new Common({ chain: goerliChainConfig, hardfork: Hardfork.Chainstart })
     const consensusDict: ConsensusDict = {}
     consensusDict[ConsensusAlgorithm.Clique] = new CliqueConsensus()
@@ -166,7 +166,7 @@ describe('Clique: Initialization', () => {
     )
   })
 
-  it('should throw if signer in epoch checkpoint is not active', async () => {
+  it('throws if signer in epoch checkpoint is not active', async () => {
     const { blockchain } = await initWithSigners([SIGNER_A])
     // @ts-expect-error -- Assign to read-only property
     blockchain['_validateBlocks'] = false
@@ -196,7 +196,7 @@ describe('Clique: Initialization', () => {
     }
   })
 
-  it('should throw on invalid difficulty', async () => {
+  it('throws on invalid difficulty', async () => {
     const { blocks, blockchain } = await initWithSigners([SIGNER_A])
     await addNextBlock(blockchain, blocks, SIGNER_A)
     const parentHeader = await blockchain.getCanonicalHeadHeader()
@@ -250,7 +250,7 @@ describe('Clique: Initialization', () => {
     }
   })
 
-  it("should set the inturn signer's block as canonical block", async () => {
+  it("set the inturn signer's block as canonical block", async () => {
     const { blocks, blockchain } = await initWithSigners([SIGNER_A, SIGNER_B])
     // when the block number is 1, the inturn signer should be SIGNER_B
     const inturnBlock = await addNextBlock(blockchain, blocks, SIGNER_B)

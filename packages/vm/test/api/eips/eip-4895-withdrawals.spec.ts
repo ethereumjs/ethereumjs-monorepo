@@ -197,7 +197,7 @@ describe('EIP4895 tests', () => {
     )
   })
 
-  it('should build a block correctly with withdrawals', async () => {
+  it('builds a block correctly with withdrawals', async () => {
     const common = createCommonFromGethGenesis(withdrawalsGethGenesis, { chain: 'custom' })
     common.setHardfork(Hardfork.Shanghai)
     const genesisState = parseGethGenesisState(withdrawalsGethGenesis)

@@ -36,18 +36,18 @@ import {
 } from '../../src/index.ts'
 
 describe('[Util/Bytes]: unpadBytes', () => {
-  it('should unpad a Uint8Array', () => {
+  it('unpads a Uint8Array', () => {
     const bytes = hexToBytes('0x0000000006600')
     const r = unpadBytes(bytes)
     assert.deepEqual(r, hexToBytes('0x6600'))
   })
-  it('should throw if input is not a Uint8Array', () => {
+  it('throws if input is not a Uint8Array', () => {
     assert.throws(function () {
       // @ts-expect-error -- This syntax is not allowed when 'erasableSyntaxOnly' is enabled.
       unpadBytes((<unknown>'0000000006600') as Uint8Array)
     })
   })
-  it('should correctly unpad 0x0', () => {
+  it('unpad 0x0', () => {
     const bytes = hexToBytes('0x0')
     assert.deepEqual(bytes, new Uint8Array([0]), 'hexToBytes("0x0") should return [0]')
 
@@ -66,12 +66,12 @@ describe('[Util/Bytes]: unpadBytes', () => {
 })
 
 describe('[Util/Bytes]: unpadArray', () => {
-  it('should unpad an Array', () => {
+  it('unpads an Array', () => {
     const arr = [0, 0, 0, 1]
     const r = unpadArray(arr)
     assert.deepEqual(r, [1])
   })
-  it('should throw if input is not an Array', () => {
+  it('throws if input is not an Array', () => {
     assert.throws(function () {
       unpadArray(toBytes([0, 0, 0, 1]) as unknown as number[])
     })
@@ -79,12 +79,12 @@ describe('[Util/Bytes]: unpadArray', () => {
 })
 
 describe('[Util/Bytes]: unpadHex', () => {
-  it('should unpad a hex prefixed string', () => {
+  it('unpads a hex prefixed string', () => {
     const str = '0x0000000006600'
     const r = unpadHex(str)
     assert.strictEqual(r, '0x6600')
   })
-  it('should throw if input is not hex-prefixed', () => {
+  it('throws if input is not hex-prefixed', () => {
     assert.throws(function () {
       unpadHex('0000000006600' as any)
     })

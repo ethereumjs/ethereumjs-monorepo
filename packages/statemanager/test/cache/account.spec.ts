@@ -6,7 +6,7 @@ import { createAccountWithDefaults } from '../util.ts'
 
 describe('Account Cache: initialization', () => {
   for (const type of [CacheType.LRU, CacheType.ORDERED_MAP]) {
-    it(`should initialize`, async () => {
+    it(`initializes`, async () => {
       const cache = new AccountCache({ size: 100, type })
 
       assert.strictEqual(cache._checkpoints, 0, 'initializes given trie')
@@ -22,23 +22,23 @@ describe('Account Cache: put and get account', () => {
     const acc: Account = createAccountWithDefaults(BigInt(1), BigInt(0xff11))
     const accRLP = acc.serialize()
 
-    it('should return undefined for CacheElement if account not present in the cache', async () => {
+    it('returns undefined for CacheElement if account not present in the cache', async () => {
       const elem = cache.get(addr)
       assert.isTrue(elem === undefined)
     })
 
-    it(`should put account`, async () => {
+    it(`puts account`, async () => {
       cache.put(addr, acc)
       const elem = cache.get(addr)
       assert.isTrue(elem !== undefined && elem.accountRLP && equalsBytes(elem.accountRLP, accRLP))
     })
 
-    it(`should flush`, async () => {
+    it(`flushs`, async () => {
       const items = cache.flush()
       assert.strictEqual(items.length, 1)
     })
 
-    it(`should delete account from cache`, async () => {
+    it(`deletes account from cache`, async () => {
       cache.del(addr)
 
       const elem = cache.get(addr)
@@ -58,7 +58,7 @@ describe('Account Cache: checkpointing', () => {
     const updatedAcc = createAccountWithDefaults(BigInt(0x00), BigInt(0xff00))
     const updatedAccRLP = updatedAcc.serialize()
 
-    it(`should revert to correct state`, async () => {
+    it(`reverts to correct state`, async () => {
       cache.put(addr, acc)
       cache.checkpoint()
       cache.put(addr, updatedAcc)
@@ -74,7 +74,7 @@ describe('Account Cache: checkpointing', () => {
       assert.isTrue(elem !== undefined && elem.accountRLP && equalsBytes(elem.accountRLP, accRLP))
     })
 
-    it(`should use outer revert`, async () => {
+    it(`uses outer revert`, async () => {
       const cache = new AccountCache({ size: 100, type: CacheType.LRU })
 
       const account1 = new Account(undefined, 1n)

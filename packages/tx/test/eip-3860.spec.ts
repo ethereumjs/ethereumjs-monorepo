@@ -20,7 +20,7 @@ const txTypes = [
 ]
 const addressZero = createZeroAddress()
 describe('[EIP3860 tests]', () => {
-  it(`Should instantiate create txs with MAX_INITCODE_SIZE`, () => {
+  it(`instantiates create txs with MAX_INITCODE_SIZE`, () => {
     const data = new Uint8Array(Number(maxInitCodeSize))
     for (const txType of txTypes) {
       assert.doesNotThrow(
@@ -32,7 +32,7 @@ describe('[EIP3860 tests]', () => {
     }
   })
 
-  it(`Should instantiate txs with MAX_INITCODE_SIZE data`, () => {
+  it(`instantiates txs with MAX_INITCODE_SIZE data`, () => {
     const data = new Uint8Array(Number(maxInitCodeSize))
     for (const txType of txTypes) {
       assert.doesNotThrow(
@@ -44,7 +44,7 @@ describe('[EIP3860 tests]', () => {
     }
   })
 
-  it(`Should not instantiate create txs with MAX_INITCODE_SIZE+1 data`, () => {
+  it(`does not instantiate create txs with MAX_INITCODE_SIZE+1 data`, () => {
     const data = new Uint8Array(Number(maxInitCodeSize) + 1)
     for (const txType of txTypes) {
       assert.throws(
@@ -56,7 +56,7 @@ describe('[EIP3860 tests]', () => {
     }
   })
 
-  it(`Should instantiate txs with MAX_INITCODE_SIZE+1 data`, () => {
+  it(`instantiates txs with MAX_INITCODE_SIZE+1 data`, () => {
     const data = new Uint8Array(Number(maxInitCodeSize) + 1)
     for (const txType of txTypes) {
       assert.doesNotThrow(
@@ -69,7 +69,7 @@ describe('[EIP3860 tests]', () => {
   })
 
   describe('Should allow txs with MAX_INITCODE_SIZE+1 data if allowUnlimitedInitCodeSize is active', () => {
-    it('should work', () => {
+    it('allows MAX_INITCODE_SIZE+1 data when allowUnlimitedInitCodeSize is set', () => {
       const data = new Uint8Array(Number(maxInitCodeSize) + 1)
       for (const txType of txTypes) {
         assert.doesNotThrow(
@@ -83,7 +83,7 @@ describe('[EIP3860 tests]', () => {
   })
 
   describe('Should charge initcode analysis gas is allowUnlimitedInitCodeSize is active', () => {
-    it('should work', () => {
+    it('still charges initcode analysis gas when allowUnlimitedInitCodeSize is set', () => {
       const data = new Uint8Array(Number(maxInitCodeSize))
       for (const txType of txTypes) {
         const eip3860ActiveTx = createTx(

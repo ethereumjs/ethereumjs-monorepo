@@ -162,7 +162,7 @@ const g = hexToBytes(
 const gk = hexToBytes('0x095e7baea6a6c7c4c2dfeb977efac326af552d87')
 
 describe('secure tests should not crash', () => {
-  it('should work', async () => {
+  it('survives nested checkpoints and commits on hashed keys', async () => {
     await trie.put(ak, a)
     await trie.put(bk, b)
     await trie.put(ck, c)

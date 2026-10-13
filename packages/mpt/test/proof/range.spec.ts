@@ -395,7 +395,7 @@ describe('simple merkle range proofs generation and verification', () => {
     assert.isFalse(result)
   })
 
-  it('should hasRightElement succeed', async () => {
+  it('hasRightElement succeed', async () => {
     const { trie, entries } = await randomTrie(new MapDB(), false)
 
     const cases: { start: number; end: number; expect: boolean }[] = [

@@ -34,7 +34,7 @@ function customPrecompileNoInput(): ExecResult {
 }
 
 describe('EVM -> custom precompiles', () => {
-  it('should work on precompiles without input arguments', async () => {
+  it('works on precompiles without input arguments', async () => {
     const EVMOverride = await createEVM({
       customPrecompiles: [
         {
@@ -53,7 +53,7 @@ describe('EVM -> custom precompiles', () => {
     assert.deepEqual(result.execResult.returnValue, expectedReturn, 'return value is correct')
     assert.strictEqual(result.execResult.executionGasUsed, expectedGas, 'gas used is correct')
   })
-  it('should override existing precompiles', async () => {
+  it('overrides existing precompiles', async () => {
     const EVMOverride = await createEVM({
       customPrecompiles: [
         {
@@ -73,7 +73,7 @@ describe('EVM -> custom precompiles', () => {
     assert.strictEqual(result.execResult.executionGasUsed, expectedGas, 'gas used is correct')
   })
 
-  it('should delete existing precompiles', async () => {
+  it('deletes existing precompiles', async () => {
     const EVMOverride = await createEVM({
       customPrecompiles: [
         {
@@ -91,7 +91,7 @@ describe('EVM -> custom precompiles', () => {
     assert.strictEqual(result.execResult.executionGasUsed, BigInt(0), 'gas used is correct')
   })
 
-  it('should add precompiles', async () => {
+  it('adds precompiles', async () => {
     const EVMOverride = await createEVM({
       customPrecompiles: [
         {
@@ -110,7 +110,7 @@ describe('EVM -> custom precompiles', () => {
     assert.strictEqual(result.execResult.executionGasUsed, expectedGas, 'gas used is correct')
   })
 
-  it('should not persist changes to precompiles', async () => {
+  it('does not persist changes to precompiles', async () => {
     let EVMSha = await createEVM()
     const shaResult = await EVMSha.runCall({
       to: shaAddress,
@@ -153,7 +153,7 @@ describe('EVM -> custom precompiles', () => {
       'restored sha precompile - gas correct',
     )
   })
-  it('should copy custom precompiles', async () => {
+  it('copys custom precompiles', async () => {
     const evm = await createEVM({
       customPrecompiles: [
         {
@@ -170,7 +170,7 @@ describe('EVM -> custom precompiles', () => {
     )
   })
 
-  it('should accept PrefixedHexString addresses for custom precompiles', async () => {
+  it('accepts PrefixedHexString addresses for custom precompiles', async () => {
     const addressHex = '0x000000000000000000000000000000000000ff01'
     const evm = await createEVM({
       customPrecompiles: [
@@ -190,7 +190,7 @@ describe('EVM -> custom precompiles', () => {
     assert.strictEqual(result.execResult.executionGasUsed, expectedGas, 'gas used is correct')
   })
 
-  it('should delete precompiles using PrefixedHexString addresses', async () => {
+  it('deletes precompiles using PrefixedHexString addresses', async () => {
     const evm = await createEVM({
       customPrecompiles: [
         {
@@ -241,7 +241,7 @@ describe('EVM -> custom precompiles', () => {
     assert.strictEqual(fn, customPrecompile, 'returns the registered function')
   })
 
-  it('should run a custom addition precompile end-to-end', async () => {
+  it('run a custom addition precompile end-to-end', async () => {
     const ADDITION_GAS = 15n
     function additionPrecompile(input: PrecompileInput): ExecResult {
       const a = bytesToBigInt(input.data.subarray(0, 32))

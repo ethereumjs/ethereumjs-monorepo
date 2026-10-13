@@ -36,13 +36,13 @@ import {
 } from '../../src/index.ts'
 
 describe('[Util/Bytes]: hexToBytes', () => {
-  it('should throw on non-prefixed strings', () => {
+  it('throws on non-prefixed strings', () => {
     assert.throws(() => {
       hexToBytes('aabbcc112233' as any)
     })
   })
 
-  it('should throw on invalid hex', () => {
+  it('throws on invalid hex', () => {
     assert.throws(() => {
       hexToBytes('0xInvalidHexString')
     })
@@ -51,23 +51,23 @@ describe('[Util/Bytes]: hexToBytes', () => {
     })
   })
 
-  it('should convert prefixed hex-strings', () => {
+  it('converts prefixed hex-strings', () => {
     const converted = hexToBytes('0x1')
     assert.deepEqual(converted, new Uint8Array([1]))
   })
 })
 
 describe('[Util/Bytes]: unprefixedHexToBytes', () => {
-  it('should throw on prefixed strings', () => {
+  it('throws on prefixed strings', () => {
     assert.throws(() => {
       unprefixedHexToBytes('0xaabbcc112233')
     })
   })
-  it('should convert unprefixed hex-strings', () => {
+  it('converts unprefixed hex-strings', () => {
     const converted = unprefixedHexToBytes('1')
     assert.deepEqual(converted, new Uint8Array([1]))
   })
-  it('should convert unprefixed hex-strings', () => {
+  it('converts unprefixed hex-strings', () => {
     const converted = unprefixedHexToBytes('11')
     assert.deepEqual(converted, new Uint8Array([17]))
   })

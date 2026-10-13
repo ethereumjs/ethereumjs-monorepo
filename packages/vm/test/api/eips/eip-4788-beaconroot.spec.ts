@@ -158,7 +158,7 @@ async function runBlockTest(input: {
 }
 
 describe('should run beaconroot precompile correctly', async () => {
-  it('should run precompile with known timestamp', async () => {
+  it('run precompile with known timestamp', async () => {
     await runBlockTest({
       timestamp: BigInt(12),
       timestampBlock: BigInt(12),
@@ -167,7 +167,7 @@ describe('should run beaconroot precompile correctly', async () => {
       expCallStatus: BigInt(1),
     })
   })
-  it('should run precompile with unknown timestamp', async () => {
+  it('run precompile with unknown timestamp', async () => {
     await runBlockTest({
       timestamp: BigInt(12),
       timestampBlock: BigInt(11),
@@ -176,7 +176,7 @@ describe('should run beaconroot precompile correctly', async () => {
       expCallStatus: BigInt(0),
     })
   })
-  it('should run precompile with known timestamp, input length > 32 bytes', async () => {
+  it('run precompile with known timestamp, input length > 32 bytes', async () => {
     await runBlockTest({
       timestamp: BigInt(12),
       timestampBlock: BigInt(12),
@@ -187,7 +187,7 @@ describe('should run beaconroot precompile correctly', async () => {
       expCallStatus: BigInt(0),
     })
   })
-  it('should run precompile with known timestamp, input length < 32 bytes', async () => {
+  it('run precompile with known timestamp, input length < 32 bytes', async () => {
     await runBlockTest({
       timestamp: BigInt(12),
       timestampBlock: BigInt(12),

@@ -5,7 +5,7 @@ import { assert, describe, it } from 'vitest'
 import { createEVM } from '../src/index.ts'
 
 describe('async events', () => {
-  it('should work', async () => {
+  it('pauses execution until async step handler calls next', async () => {
     const caller = new Address(hexToBytes('0x00000000000000000000000000000000000000ee'))
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Constantinople })
     const evm = await createEVM({

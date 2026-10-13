@@ -128,7 +128,7 @@ describe('Precompiles: BLAKE2F', () => {
     })
   }
 
-  it('should also work on non-zero aligned inputs', async () => {
+  it('alsos work on non-zero aligned inputs', async () => {
     const addr = createZeroAddress()
     // Blake2f calldata from https://etherscan.io/tx/0x4f2e13a0a3f14033630ab2b8cdad09d316826375f761ded5b31253bb42e0a476
     // (This tx calls into Blake2f multiple times, but one of them is taken)

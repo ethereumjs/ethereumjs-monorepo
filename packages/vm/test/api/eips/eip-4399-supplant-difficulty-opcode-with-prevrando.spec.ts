@@ -9,7 +9,7 @@ import { createVM } from '../../../src/index.ts'
 import type { InterpreterStep } from '@ethereumjs/evm'
 
 describe('EIP-4399 -> 0x44 (DIFFICULTY) should return PREVRANDAO', () => {
-  it('should return the right values', async () => {
+  it('returns the right values', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const blockchain = await createBlockchain()
     const vm = await createVM({ common, blockchain })

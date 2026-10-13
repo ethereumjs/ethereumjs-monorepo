@@ -50,14 +50,14 @@ describe('walk the tries from official tests', async () => {
           describe(`should get all keys`, async () => {
             for await (const [key, val] of testKeys.entries()) {
               const retrieved = await trie.get(hexToBytes(key))
-              it(`should get ${testStrings.get(key)}`, async () => {
+              it(`get ${testStrings.get(key)}`, async () => {
                 assert.deepEqual(retrieved, val)
               })
             }
           })
         })
       }
-      it(`should have root ${expect}`, async () => {
+      it(`has root ${expect}`, async () => {
         assert.strictEqual(bytesToHex(trie.root()), expect)
       })
     })
@@ -82,7 +82,7 @@ describe('walk a sparse trie', async () => {
     await trie.put(processedInput[0], processedInput[1])
   }
   // Check the root
-  it(`should have root ${expect}`, async () => {
+  it(`has root ${expect}`, async () => {
     assert.strictEqual(bytesToHex(trie.root()), expect)
   })
   // Generate a proof for inputs[0]

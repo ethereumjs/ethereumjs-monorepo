@@ -23,7 +23,7 @@ describe('Run MerklePatriciaTrie script with DEBUG enabled', async () => {
   const proof = await createMerkleProof(trie, utf8ToBytes('doge'))
   const valid = await verifyMPTWithMerkleProof(trie, trie.root(), utf8ToBytes('doge'), proof)
 
-  it('should be valid', async () => {
+  it('is valid', async () => {
     assert.deepEqual(valid, utf8ToBytes('coin'))
   })
 

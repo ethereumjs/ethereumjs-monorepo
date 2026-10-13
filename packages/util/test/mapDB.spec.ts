@@ -3,7 +3,7 @@ import { assert, describe, it } from 'vitest'
 import { MapDB } from '../src/index.ts'
 
 describe('MapDB: get', () => {
-  it('should return the value for an existing key', async () => {
+  it('returns the value for an existing key', async () => {
     const database = new Map()
     database.set('key1', 'value1')
     const mapDB = new MapDB(database)
@@ -13,7 +13,7 @@ describe('MapDB: get', () => {
     assert.strictEqual(result, 'value1', 'should return the value')
   })
 
-  it('should return undefined for a non-existing key', async () => {
+  it('returns undefined for a non-existing key', async () => {
     const mapDB = new MapDB()
 
     const result = await mapDB.get('nonExistingKey')
@@ -23,7 +23,7 @@ describe('MapDB: get', () => {
 })
 
 describe('MapDB: put', () => {
-  it('should add a key-value pair to the database', async () => {
+  it('adds a key-value pair to the database', async () => {
     const mapDB = new MapDB()
 
     await mapDB.put('key1', 'value1')
@@ -34,7 +34,7 @@ describe('MapDB: put', () => {
 })
 
 describe('MapDB: del', () => {
-  it('should remove a key-value pair from the database', async () => {
+  it('removes a key-value pair from the database', async () => {
     const database = new Map()
     database.set('key1', 'value1')
     const mapDB = new MapDB(database)
@@ -47,7 +47,7 @@ describe('MapDB: del', () => {
 })
 
 describe('MapDB: batch', () => {
-  it('should perform batch operations correctly', async () => {
+  it('performs batch operations correctly', async () => {
     const mapDB = new MapDB()
 
     const opStack = [
@@ -67,7 +67,7 @@ describe('MapDB: batch', () => {
 })
 
 describe('MapDB: shallowCopy', () => {
-  it('should reuse underlying database in case of a shallowCopy', async () => {
+  it('reuses underlying database in case of a shallowCopy', async () => {
     const database = new Map()
     database.set('key1', 'value1')
     const mapDB = new MapDB(database)
@@ -85,7 +85,7 @@ describe('MapDB: shallowCopy', () => {
 })
 
 describe('MapDB: open', () => {
-  it('should return a resolved promise', async () => {
+  it('returns a resolved promise', async () => {
     const mapDB = new MapDB()
 
     const promise = await mapDB.open()

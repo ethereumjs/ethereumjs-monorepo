@@ -9,7 +9,7 @@ const { bytesToHex, hexToBytes } = utils
 
 describe('[RLP]: official vectors', () => {
   for (const [testName, test] of Object.entries(rlpTestData.tests)) {
-    it(`should pass ${testName}`, () => {
+    it(`pass ${testName}`, () => {
       let incoming: any = test.in
       // if we are testing a big number
       if (incoming[0] === '#') {
@@ -163,7 +163,7 @@ function arrToStringArr(arr: any): any {
 describe('geth tests', () => {
   for (const gethCase of gethCases) {
     const input = hexToBytes(gethCase.input)
-    it('should pass Geth test', () => {
+    it('pass Geth test', () => {
       assert.doesNotThrow(() => {
         const output = RLP.decode(input)
         if (Array.isArray(output)) {

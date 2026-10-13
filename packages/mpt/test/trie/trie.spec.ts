@@ -172,7 +172,7 @@ for (const { constructor, defaults, title } of [
       await trie.put(key, value)
     }
     const roots = [...(trie.database().db as any)._database.keys()]
-    it('should return true for all nodes in the trie', async () => {
+    it('returns true for all nodes in the trie', async () => {
       assert.isTrue(await trie.checkRoot(trie.root()), 'Should return true for root node')
       for (const root of roots) {
         assert.isTrue(
@@ -181,13 +181,13 @@ for (const { constructor, defaults, title } of [
         )
       }
     })
-    it('should return false for nodes not in the trie', async () => {
+    it('returns false for nodes not in the trie', async () => {
       for (let i = 0; i < 10; i++) {
         const key = unprefixedHexToBytes(`${i}`.repeat(64))
         assert.isFalse(await trie.checkRoot(key), 'Should return false for nodes not in trie')
       }
     })
-    it('should return false for all keys if trie is empty', async () => {
+    it('returns false for all keys if trie is empty', async () => {
       const emptyTrie = await createMPT({
         ...defaults,
         db: new MapDB(),
@@ -208,7 +208,7 @@ for (const { constructor, defaults, title } of [
         )
       }
     })
-    it('Should throw on unrelated errors', async () => {
+    it('rethrows unrelated database errors from findPath', async () => {
       const emptyTrie = await createMPT({
         ...defaults,
         db: new MapDB(),
@@ -292,11 +292,11 @@ describe('getValueMap', async () => {
   }
   const dump = await trie.getValueMap()
 
-  it('should return a map with the correct number of entries', async () => {
+  it('returns a map with the correct number of entries', async () => {
     assert.strictEqual(Object.entries(dump.values).length, entries.length)
   })
 
-  it('should return a map of all hashed keys and values', async () => {
+  it('returns a map of all hashed keys and values', async () => {
     // Check if the reported values are the expected values
     for (const entry of entries) {
       const key = bytesToHex(entry[0])
@@ -307,7 +307,7 @@ describe('getValueMap', async () => {
     assert.strictEqual(dump.nextKey, null)
   })
 
-  it('should enforce the startKey / limit rules', async () => {
+  it('enforces the startKey / limit rules', async () => {
     const tests: {
       startKey?: bigint
       limit?: number

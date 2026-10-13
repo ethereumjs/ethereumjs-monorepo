@@ -13,7 +13,7 @@ import { createAccountWithDefaults } from './util.ts'
 
 describe('StateManager -> General/Account', () => {
   for (const accountCacheOpts of [{ size: 1000 }, { size: 0 }]) {
-    it(`should set the state root to empty`, async () => {
+    it(`set the state root to empty`, async () => {
       const stateManager = new MerkleStateManager({
         caches: new Caches({ account: accountCacheOpts }),
       })
@@ -35,7 +35,7 @@ describe('StateManager -> General/Account', () => {
       assert.isTrue(equalsBytes(res, KECCAK256_RLP), 'it has default root')
     })
 
-    it(`should clear the cache when the state root is set`, async () => {
+    it(`clears the cache when the state root is set`, async () => {
       const stateManager = new MerkleStateManager({
         caches: new Caches({ account: accountCacheOpts }),
       })
@@ -88,7 +88,7 @@ describe('StateManager -> General/Account', () => {
       }
     })
 
-    it('should put and get account, and add to the underlying cache if the account is not found', async () => {
+    it('puts and get account, and add to the underlying cache if the account is not found', async () => {
       const stateManager = new MerkleStateManager({
         caches: new Caches({ account: accountCacheOpts }),
       })
@@ -109,7 +109,7 @@ describe('StateManager -> General/Account', () => {
       assert.isTrue(equalsBytes(res1!.serialize(), res2!.serialize()))
     })
 
-    it(`should return undefined for a non-existent account`, async () => {
+    it(`returns undefined for a non-existent account`, async () => {
       const stateManager = new MerkleStateManager({
         caches: new Caches({ account: accountCacheOpts }),
       })
@@ -121,7 +121,7 @@ describe('StateManager -> General/Account', () => {
       )
     })
 
-    it(`should return undefined for an existent account`, async () => {
+    it(`returns undefined for an existent account`, async () => {
       const stateManager = new MerkleStateManager({
         caches: new Caches({ account: accountCacheOpts }),
       })
@@ -133,7 +133,7 @@ describe('StateManager -> General/Account', () => {
       assert.isDefined(await stateManager.getAccount(address))
     })
 
-    it(`should modify account fields correctly`, async () => {
+    it(`modifys account fields correctly`, async () => {
       const stateManager = new MerkleStateManager({
         caches: new Caches({ account: accountCacheOpts }),
       })

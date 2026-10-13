@@ -24,7 +24,7 @@ import { ropstenValidAccountData } from './testdata/ropsten_validAccount.ts'
 import type { PrefixedHexString } from '@ethereumjs/util'
 
 describe('ProofStateManager', () => {
-  it(`should return quantity-encoded RPC representation`, async () => {
+  it(`returns quantity-encoded RPC representation`, async () => {
     const address = createZeroAddress()
     const key = new Uint8Array(32)
     const stateManager = new MerkleStateManager()
@@ -34,7 +34,7 @@ describe('ProofStateManager', () => {
     assert.strictEqual(proof.nonce, '0x0', 'Nonce is in quantity-encoded RPC representation')
   })
 
-  it(`should correctly return the right storage root / account root`, async () => {
+  it(`return the right storage root / account root`, async () => {
     const address = createZeroAddress()
     const key = new Uint8Array(32)
     const stateManager = new MerkleStateManager()
@@ -48,7 +48,7 @@ describe('ProofStateManager', () => {
     assert.isFalse(equalsBytes(hexToBytes(proof.storageHash), storageRoot))
   })
 
-  it(`should return quantity-encoded RPC representation for existing accounts`, async () => {
+  it(`returns quantity-encoded RPC representation for existing accounts`, async () => {
     const address = createZeroAddress()
     const key = new Uint8Array(32)
     const stateManager = new MerkleStateManager()
@@ -76,7 +76,7 @@ describe('ProofStateManager', () => {
     assert.strictEqual(proof3.nonce, '0x1', 'Nonce is correctly encoded')
   })
 
-  it(`should get and verify EIP 1178 proofs`, async () => {
+  it(`get and verify EIP 1178 proofs`, async () => {
     const address = createZeroAddress()
     const key = new Uint8Array(32)
     const value = hexToBytes('0x0000aabb00')
@@ -110,7 +110,7 @@ describe('ProofStateManager', () => {
     )
   })
 
-  it(`should report data equal to geth output for EIP 1178 proofs`, async () => {
+  it(`reports data equal to geth output for EIP 1178 proofs`, async () => {
     // Data source: Ropsten, retrieved with Geth eth_getProof
     // Block: 11098094 (hash 0x1d9ea6981b8093a2b63f22f74426ceb6ba1acae3fddd7831442bbeba3fa4f146)
     // Account: 0xc626553e7c821d0f8308c28d56c60e3c15f8d55a
@@ -134,7 +134,7 @@ describe('ProofStateManager', () => {
     assert.isTrue(await verifyMerkleStateProof(stateManager, ropstenValidAccountData))
   })
 
-  it('should report data equal to geth output for EIP 1178 proofs - nonexistent account', async () => {
+  it('reports data equal to geth output for EIP 1178 proofs - nonexistent account', async () => {
     // Data source: Ropsten, retrieved with Geth eth_getProof
     // Block: 11098094 (hash 0x1d9ea6981b8093a2b63f22f74426ceb6ba1acae3fddd7831442bbeba3fa4f146)
     // Account: 0x68268f12253f69f66b188c95b8106b2f847859fc (this account does not exist)
@@ -158,7 +158,7 @@ describe('ProofStateManager', () => {
     assert.isTrue(await verifyMerkleStateProof(stateManager, ropstenNonexistentAccountData))
   })
 
-  it('should report data equal to geth output for EIP 1178 proofs - account with storage', async () => {
+  it('reports data equal to geth output for EIP 1178 proofs - account with storage', async () => {
     // Data source: Ropsten, retrieved with Geth eth_getProof
     // eth.getProof("0x2D80502854FC7304c3E3457084DE549f5016B73f", ["0x1e8bf26b05059b66f11b6e0c5b9fe941f81181d6cc9f2af65ccee86e95cea1ca", "0x1e8bf26b05059b66f11b6e0c5b9fe941f81181d6cc9f2af65ccee86e95cea1cb"], 11098094)
     // Note: the first slot has a value, but the second slot is empty
@@ -196,7 +196,7 @@ describe('ProofStateManager', () => {
     await verifyMerkleStateProof(stateManager, ropstenContractWithStorageData)
   })
 
-  it(`should throw on invalid proofs - existing accounts/slots`, async () => {
+  it(`throws on invalid proofs - existing accounts/slots`, async () => {
     // Data source: Ropsten, retrieved with Geth eth_getProof
     // eth.getProof("0x2D80502854FC7304c3E3457084DE549f5016B73f", ["0x1e8bf26b05059b66f11b6e0c5b9fe941f81181d6cc9f2af65ccee86e95cea1ca", "0x1e8bf26b05059b66f11b6e0c5b9fe941f81181d6cc9f2af65ccee86e95cea1cb"], 11098094)
     // Note: the first slot has a value, but the second slot is empty
@@ -262,7 +262,7 @@ describe('ProofStateManager', () => {
     }
   })
 
-  it(`should throw on invalid proofs - nonexistent account`, async () => {
+  it(`throws on invalid proofs - nonexistent account`, async () => {
     // Data source: Ropsten, retrieved with Geth eth_getProof
     // eth.getProof("0x2D80502854FC7304c3E3457084DE549f5016B73f", ["0x1e8bf26b05059b66f11b6e0c5b9fe941f81181d6cc9f2af65ccee86e95cea1ca", "0x1e8bf26b05059b66f11b6e0c5b9fe941f81181d6cc9f2af65ccee86e95cea1cb"], 11098094)
     // Note: the first slot has a value, but the second slot is empty

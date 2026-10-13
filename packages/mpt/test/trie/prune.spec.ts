@@ -6,7 +6,7 @@ import { MerklePatriciaTrie, createMPT, isRawMPTNode } from '../../src/index.ts'
 import type { BranchMPTNode } from '../../src/index.ts'
 
 describe('[MPT/Prune]: node pruning', () => {
-  it('should default to not prune the trie', async () => {
+  it('defaults to not prune the trie', async () => {
     const trie = new MerklePatriciaTrie()
     const key = utf8ToBytes('test')
     await trie.put(key, utf8ToBytes('1'))
@@ -19,7 +19,7 @@ describe('[MPT/Prune]: node pruning', () => {
     assert.strictEqual((trie['_db'].db as any)._database.size, 6, 'DB size correct')
   })
 
-  it('should prune simple trie (overwrites)', async () => {
+  it('prunes simple trie (overwrites)', async () => {
     const trie = new MerklePatriciaTrie({ useNodePruning: true })
     const key = utf8ToBytes('test')
     await trie.put(key, utf8ToBytes('1'))
@@ -32,7 +32,7 @@ describe('[MPT/Prune]: node pruning', () => {
     assert.strictEqual((trie['_db'].db as any)._database.size, 1, 'DB size correct')
   })
 
-  it('should prune simple trie (delete and re-put)', async () => {
+  it('prunes simple trie (delete and re-put)', async () => {
     const trie = new MerklePatriciaTrie({ useNodePruning: true })
     const key = utf8ToBytes('test')
     await trie.put(key, utf8ToBytes('1'))
@@ -45,7 +45,7 @@ describe('[MPT/Prune]: node pruning', () => {
     assert.strictEqual((trie['_db'].db as any)._database.size, 1, 'DB size correct')
   })
 
-  it('should prune trie with depth = 2', async () => {
+  it('prunes trie with depth = 2', async () => {
     const trie = new MerklePatriciaTrie({ useNodePruning: true })
     // Create a MerklePatriciaTrie with
     const keys = ['01', '02', '0103', '0104', '0105']
@@ -56,7 +56,7 @@ describe('[MPT/Prune]: node pruning', () => {
     }
   })
 
-  it('should retain a promoted node when pruning variable-length keys', async () => {
+  it('retains a promoted node when pruning variable-length keys', async () => {
     for (const useRootPersistence of [false, true]) {
       const trie = new MerklePatriciaTrie({ useNodePruning: true, useRootPersistence })
 
@@ -75,7 +75,7 @@ describe('[MPT/Prune]: node pruning', () => {
     }
   })
 
-  it('should collapse an empty branch after deleting a longer key first', async () => {
+  it('collapses an empty branch after deleting a longer key first', async () => {
     const trie = new MerklePatriciaTrie({ useNodePruning: true })
 
     await trie.put(hexToBytes('0x7170'), utf8ToBytes('long'))
@@ -88,7 +88,7 @@ describe('[MPT/Prune]: node pruning', () => {
     assert.isEmpty((trie['_db'].db as any)._database.keys(), 'db should be empty')
   })
 
-  it('should not mutate pruning state when deleting a missing prefix key twice', async () => {
+  it('does not mutate pruning state when deleting a missing prefix key twice', async () => {
     const trie = new MerklePatriciaTrie({ useNodePruning: true })
 
     await trie.put(hexToBytes('0xda767b99'), utf8ToBytes('d14'))
@@ -104,7 +104,7 @@ describe('[MPT/Prune]: node pruning', () => {
     assert.deepEqual(await trie.get(hexToBytes('0xdfc7c2')), utf8ToBytes('1f55'))
   })
 
-  it('should not prune if the same value is put twice', async () => {
+  it('does not prune if the same value is put twice', async () => {
     const trie = new MerklePatriciaTrie()
     const key = utf8ToBytes('01')
     const value = utf8ToBytes('02')
@@ -115,7 +115,7 @@ describe('[MPT/Prune]: node pruning', () => {
     assert.isTrue(equalsBytes(reported!, value), 'value matches expected value')
   })
 
-  it('should not throw if a key is either non-existent or deleted twice', async () => {
+  it('does not throw if a key is either non-existent or deleted twice', async () => {
     const trie = new MerklePatriciaTrie()
     const key = utf8ToBytes('01')
     const value = utf8ToBytes('02')
@@ -138,7 +138,7 @@ describe('[MPT/Prune]: node pruning', () => {
     assert.isTrue(equalsBytes(reported2!, value2), 'value matches expected value')
   })
 
-  it('should prune when keys are updated or deleted', async () => {
+  it('prunes when keys are updated or deleted', async () => {
     for (let testID = 0; testID < 1; testID++) {
       const trie = new MerklePatriciaTrie({ useNodePruning: true })
       const keys: Uint8Array[] = []
@@ -197,7 +197,7 @@ describe('[MPT/Prune]: node pruning', () => {
     }
   })
 
-  it('should successfully delete branch nodes that are <32 bytes length with node pruning', async () => {
+  it('successfullys delete branch nodes that are <32 bytes length with node pruning', async () => {
     // This test case was added after issue #3333 uncovered a problem with pruning trie paths that reference
     // nodes with their unhashed values (occurs when nodes are less than <32 bytes).
     const trie = new MerklePatriciaTrie({
@@ -252,7 +252,7 @@ describe('[MPT/Prune]: node pruning', () => {
     assert.isFalse(await trie.verifyPrunedIntegrity(), 'trie is not pruned')
   })
 
-  it('should prune when keys are updated or deleted (with `useRootPersistence` enabled)', async () => {
+  it('prunes when keys are updated or deleted (with `useRootPersistence` enabled)', async () => {
     for (let testID = 0; testID < 1; testID++) {
       const trie = await createMPT({ useNodePruning: true, useRootPersistence: true })
       const keys: Uint8Array[] = []

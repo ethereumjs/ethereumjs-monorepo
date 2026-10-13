@@ -13,7 +13,7 @@ import {
 } from '../src/index.ts'
 
 describe('constants', () => {
-  it('should match constants', () => {
+  it('matchs constants', () => {
     assert.strictEqual(
       MAX_INTEGER.toString(16),
       'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',

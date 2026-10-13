@@ -81,7 +81,7 @@ describe('[AccessList2930Tx]', () => {
     )
   })
 
-  it('should return right upfront cost', () => {
+  it('returns right upfront cost', () => {
     let tx = createAccessList2930Tx(
       {
         data: hexToBytes('0x010200'),
@@ -192,7 +192,7 @@ describe('[AccessList2930Tx]', () => {
     )
   })
 
-  it('should sign transaction correctly and return expected JSON', () => {
+  it('signs transaction correctly and return expected JSON', () => {
     const address = hexToBytes('0x0000000000000000000000000000000000001337')
     const slot1 = hexToBytes('0x0000000000000000000000000000000000000000000000000000000000000000')
     const txData: TxData = {

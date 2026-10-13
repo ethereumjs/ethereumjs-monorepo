@@ -66,12 +66,12 @@ describe('[Util/Bytes]: intToBytes and intToHex', () => {
     }
   })
 
-  it('should pass on correct input', () => {
+  it('pass on correct input', () => {
     assert.strictEqual(intToHex(0), '0x0', 'correctly converts 0 to a hex string')
     assert.strictEqual(intToHex(1), '0x1', 'correctly converts 1 to a hex string')
   })
 
-  it('should pass on correct input', () => {
+  it('pass on correct input', () => {
     assert.deepEqual(intToBytes(0), hexToBytes('0x00'), 'correctly converts 0 to a Uint8Array')
     assert.deepEqual(intToBytes(1), hexToBytes('0x01'), 'correctly converts 1 to a Uint8Array')
   })
@@ -98,7 +98,7 @@ describe('[Util/Bytes]: validateNoLeadingZeroes', () => {
     a: undefined,
   }
 
-  it('should pass on correct input', () => {
+  it('pass on correct input', () => {
     assert.doesNotThrow(
       () => validateNoLeadingZeroes(noLeadingZeroes),
       'does not throw when no leading zeroes',
@@ -117,7 +117,7 @@ describe('[Util/Bytes]: validateNoLeadingZeroes', () => {
     )
   })
 
-  it('should throw on wrong input', () => {
+  it('throws on wrong input', () => {
     assert.throws(
       () => validateNoLeadingZeroes(leadingZeroBytes),
       undefined,

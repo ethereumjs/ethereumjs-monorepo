@@ -130,7 +130,7 @@ describe('simple merkle proofs generation and verification', () => {
     assert.strictEqual(bytesToUtf8(val!), '1234567890123456789012345678901')
   })
 
-  it('should succeed with a simple embedded extension-branch', async () => {
+  it('succeeds with a simple embedded extension-branch', async () => {
     const trie = new MerklePatriciaTrie()
 
     await trie.put(utf8ToBytes('a'), utf8ToBytes('a'))

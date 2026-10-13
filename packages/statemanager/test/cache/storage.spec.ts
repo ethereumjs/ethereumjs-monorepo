@@ -5,7 +5,7 @@ import { CacheType, StorageCache } from '../../src/cache/index.ts'
 
 describe('Storage Cache: initialization', () => {
   for (const type of [CacheType.LRU, CacheType.ORDERED_MAP]) {
-    it(`should initialize`, async () => {
+    it(`initializes`, async () => {
       const cache = new StorageCache({ size: 100, type })
 
       assert.strictEqual(cache._checkpoints, 0, 'initializes given trie')
@@ -21,23 +21,23 @@ describe('Storage Cache: put and get account', () => {
     const key = hexToBytes('0x01')
     const value = hexToBytes('0x01')
 
-    it('should return undefined for CacheElement if account not present in the cache', async () => {
+    it('returns undefined for CacheElement if account not present in the cache', async () => {
       const elem = cache.get(addr, key)
       assert.isTrue(elem === undefined)
     })
 
-    it(`should put storage value`, async () => {
+    it(`puts storage value`, async () => {
       cache.put(addr, key, value)
       const elem = cache.get(addr, key)
       assert.isTrue(elem !== undefined && equalsBytes(elem, value))
     })
 
-    it(`should flush`, async () => {
+    it(`flushs`, async () => {
       const items = cache.flush()
       assert.strictEqual(items.length, 1)
     })
 
-    it(`should delete storage value from cache`, async () => {
+    it(`deletes storage value from cache`, async () => {
       cache.del(addr, key)
 
       const elem = cache.get(addr, key)
@@ -54,7 +54,7 @@ describe('Storage Cache: checkpointing', () => {
 
     const updatedValue = hexToBytes('0x02')
 
-    it(`should revert to correct state`, async () => {
+    it(`reverts to correct state`, async () => {
       const cache = new StorageCache({ size: 100, type })
       cache.put(addr, key, value)
       cache.checkpoint()
@@ -69,7 +69,7 @@ describe('Storage Cache: checkpointing', () => {
       assert.isTrue(elem !== undefined && equalsBytes(elem, value))
     })
 
-    it(`should use outer revert`, async () => {
+    it(`uses outer revert`, async () => {
       const cache = new StorageCache({ size: 100, type })
 
       cache.checkpoint()
@@ -83,7 +83,7 @@ describe('Storage Cache: checkpointing', () => {
       assert.isTrue(elem === undefined)
     })
 
-    it(`should revert to unknown if nonexistent in cache before`, async () => {
+    it(`reverts to unknown if nonexistent in cache before`, async () => {
       const cache = new StorageCache({ size: 100, type })
 
       cache.checkpoint()

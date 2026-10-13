@@ -54,7 +54,7 @@ const pubkey =
   '0xac842878bb70009552a4cfcad801d6e659c50bd50d7d03306790cb455ce7363c5b6972f0159d170f625a99b2064dbefc'
 
 describe('EIP-6110 runBlock tests', () => {
-  it('should generate a valid deposit request', async () => {
+  it('generates a valid deposit request', async () => {
     const vm = await setupVM({ common })
     const pk = randomBytes(32)
     const sender = createAddressFromPrivateKey(pk)
@@ -89,7 +89,7 @@ describe('EIP-6110 runBlock tests', () => {
 })
 
 describe('EIP-6110 buildBlock tests', () => {
-  it('should include deposit request when a deposit transaction is included in a block', async () => {
+  it('includes deposit request when a deposit transaction is included in a block', async () => {
     const vm = await setupVM({ common })
     const pk = randomBytes(32)
     const sender = createAddressFromPrivateKey(pk)

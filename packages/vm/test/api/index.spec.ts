@@ -26,7 +26,7 @@ import type { MerkleStateManager } from '@ethereumjs/statemanager'
  */
 
 describe('[VM/Constructors]: basic instantiation', () => {
-  it('should instantiate without params', async () => {
+  it('instantiates without params', async () => {
     const vm = await createVM()
     assert.isDefined(vm.stateManager)
     assert.deepEqual(
@@ -37,7 +37,7 @@ describe('[VM/Constructors]: basic instantiation', () => {
     assert.strictEqual(vm.common.hardfork(), Hardfork.Prague, 'it has correct default HF')
   })
 
-  it('should be able to activate precompiles', async () => {
+  it('is able to activate precompiles', async () => {
     const vm = await createVM({ activatePrecompiles: true })
     assert.notDeepEqual(
       (vm.stateManager as MerkleStateManager)['_trie'].root(),
@@ -53,7 +53,7 @@ describe('[VM/Constructors]: default and custom EVM', () => {
     assert.isFalse((vm.evm as EVM).allowUnlimitedContractSize, 'allowUnlimitedContractSize=false')
   })
 
-  it('should throw if evm and evmOpts are both used', async () => {
+  it('throws if evm and evmOpts are both used', async () => {
     try {
       await createVM({ evmOpts: {}, evm: await createEVM() })
       assert.fail('should throw')
@@ -108,7 +108,7 @@ describe('[VM/Constructors]: default and custom EVM', () => {
 })
 
 describe('[VM/Constructors]: supported hardforks', () => {
-  it('should throw when common is set to an unsupported hardfork', async () => {
+  it('throws when common is set to an unsupported hardfork', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai })
     const prevSupported = EVM['supportedHardforks']
     EVM['supportedHardforks'] = [
@@ -139,13 +139,13 @@ describe('[VM/Constructors]: supported hardforks', () => {
     EVM['supportedHardforks'] = prevSupported
   })
 
-  it('should succeed when common is set to a supported hardfork', async () => {
+  it('succeeds when common is set to a supported hardfork', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Byzantium })
     const vm = await createVM({ common })
     assert.strictEqual(vm.common.hardfork(), Hardfork.Byzantium)
   })
 
-  it('should overwrite parameters when param option is used', async () => {
+  it('overwrites parameters when param option is used', async () => {
     let vm = await createVM()
     assert.strictEqual(
       vm.common.param('elasticityMultiplier'),
@@ -172,7 +172,7 @@ describe('[VM/Constructors]: supported hardforks', () => {
 })
 
 describe('[VM/Constructors]: common chain and EIP options', () => {
-  it('should accept a common object as option', async () => {
+  it('accepts a common object as option', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
 
     let vm = await createVM({ common })
@@ -186,7 +186,7 @@ describe('[VM/Constructors]: common chain and EIP options', () => {
     )
   })
 
-  it('should only accept valid chain and fork', async () => {
+  it('onlys accept valid chain and fork', async () => {
     let common = createCustomCommon({ chainId: 3 }, Mainnet)
     common.setHardfork(Hardfork.Byzantium)
     let vm = await createVM({ common })
@@ -201,7 +201,7 @@ describe('[VM/Constructors]: common chain and EIP options', () => {
     }
   })
 
-  it('should accept a supported EIP', async () => {
+  it('accepts a supported EIP', async () => {
     const common = new Common({ chain: Mainnet, eips: [2537] })
     try {
       await createVM({ common })
@@ -211,7 +211,7 @@ describe('[VM/Constructors]: common chain and EIP options', () => {
     }
   })
 
-  it('should accept a custom chain config (createCustomCommon() static constructor)', async () => {
+  it('accepts a custom chain config (createCustomCommon() static constructor)', async () => {
     const customChainParams = { name: 'custom', chainId: 123 }
     const common = createCustomCommon(customChainParams, Mainnet, {
       hardfork: 'byzantium',
@@ -235,7 +235,7 @@ describe('[VM/Constructors]: setHardfork and shallow copy', () => {
     assert.strictEqual((vm as any)._setHardfork, 5001, 'should set setHardfork option')
   })
 
-  it('should instantiate', async () => {
+  it('instantiates', async () => {
     const vm = await setupVM()
     assert.deepEqual(
       (vm.stateManager as MerkleStateManager)['_trie'].root(),
@@ -244,7 +244,7 @@ describe('[VM/Constructors]: setHardfork and shallow copy', () => {
     )
   })
 
-  it('should pass the correct Common object when copying the VM', async () => {
+  it('pass the correct Common object when copying the VM', async () => {
     const vm = await setupVM({
       common: new Common({ chain: Mainnet, hardfork: Hardfork.Byzantium }),
     })
@@ -257,7 +257,7 @@ describe('[VM/Constructors]: setHardfork and shallow copy', () => {
     assert.strictEqual(copiedVM.common.hardfork(), 'byzantium')
   })
 
-  it('should pass the correct VM options when copying the VM', async () => {
+  it('pass the correct VM options when copying the VM', async () => {
     let opts: VMOpts = {
       setHardfork: true,
     }
@@ -294,7 +294,7 @@ describe('[VM/Constructors]: setHardfork and shallow copy', () => {
     )
   })
   describe('Ensure that precompile activation creates non-empty accounts', () => {
-    it('should work', async () => {
+    it('omits callNewAccount gas when activatePrecompiles seeds precompile accounts', async () => {
       // setup the accounts for this test
       const caller = createAddressFromString('0x00000000000000000000000000000000000000ee') // caller address
       const contractAddress = createAddressFromString('0x00000000000000000000000000000000000000ff') // contract address

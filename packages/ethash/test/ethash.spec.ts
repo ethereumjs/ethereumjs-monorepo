@@ -13,7 +13,7 @@ const tests = Object.keys(ethashTests) as (keyof typeof ethashTests)[]
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
 
 describe('POW tests', () => {
-  it('should work', async () => {
+  it('matches ethash fixture vectors for cache sizes and PoW output', async () => {
     for (const key of tests) {
       const test = ethashTests[key]
       const header = createBlockHeaderFromRLP(hexToBytes(`0x${test.header}`), { common })

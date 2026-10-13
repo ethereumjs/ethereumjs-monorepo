@@ -113,7 +113,7 @@ const testCases = [
 describe('EIP-3529 tests', () => {
   const common = new Common({ chain: Mainnet, hardfork: Hardfork.Berlin, eips: [3529] })
 
-  it('should verify EIP test cases', async () => {
+  it('verifys EIP test cases', async () => {
     const vm = await createVM({ common })
 
     let gasRefund: bigint
@@ -159,7 +159,7 @@ describe('EIP-3529 tests', () => {
     vm.evm.events!.removeListener('step', handler)
   })
 
-  it('should not refund selfdestructs', async () => {
+  it('does not refund selfdestructs', async () => {
     const vm = await createVM({ common })
 
     const tx = createLegacyTx({

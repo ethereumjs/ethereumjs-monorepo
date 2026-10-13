@@ -223,7 +223,7 @@ describe('runBlock() -> successful API parameter usage', async () => {
 describe('runBlock() -> API parameter usage/data errors', async () => {
   const vm = await createVM({ common })
 
-  it('should fail when runTx fails', async () => {
+  it('fails when runTx fails', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const blockRlp = hexToBytes(blockchainData.blocks[0].rlp as PrefixedHexString)
     const block = createBlockFromRLP(blockRlp, { common })
@@ -241,7 +241,7 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
       )
   })
 
-  it('should fail when block gas limit higher than 2^63-1', async () => {
+  it('fails when block gas limit higher than 2^63-1', async () => {
     const vm = await createVM({ common })
 
     const block = createBlock({
@@ -254,7 +254,7 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
       .catch((e) => assert.isTrue(e.message.includes('Invalid block')))
   })
 
-  it('should fail when block validation fails', async () => {
+  it('fails when block validation fails', async () => {
     const blockchain = await createBlockchain()
     const vm = await createVM({ common, blockchain })
 
@@ -271,7 +271,7 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
       })
   })
 
-  it('should fail when no `validateHeader` method exists on blockchain class', async () => {
+  it('fails when no `validateHeader` method exists on blockchain class', async () => {
     const vm = await createVM({ common })
     const blockRlp = hexToBytes(blockchainData.blocks[0].rlp as PrefixedHexString)
     const block = Object.create(createBlockFromRLP(blockRlp, { common }))
@@ -288,7 +288,7 @@ describe('runBlock() -> API parameter usage/data errors', async () => {
     }
   })
 
-  it('should fail when tx gas limit higher than block gas limit', async () => {
+  it('fails when tx gas limit higher than block gas limit', async () => {
     const vm = await createVM({ common })
 
     const blockRlp = hexToBytes(blockchainData.blocks[0].rlp as PrefixedHexString)
@@ -362,7 +362,7 @@ describe('runBlock() -> runtime behavior', async () => {
     assert.strictEqual(DAORefundAccount!.balance, BigInt(0x7777), msg)
   })
 
-  it('should allocate to correct clique beneficiary', async () => {
+  it('allocates to correct clique beneficiary', async () => {
     const common = new Common({ chain: goerliChainConfig, hardfork: Hardfork.Istanbul })
     const vm = await setupVM({ common })
 
@@ -416,7 +416,7 @@ async function runBlockAndGetAfterBlockEvent(
   return results!
 }
 
-it('should correctly reflect generated fields', async () => {
+it('reflect generated fields', async () => {
   const vm = await createVM()
 
   // We create a block with a receiptTrie and transactionsTrie
@@ -462,7 +462,7 @@ async function runWithHf(hardfork: string) {
 
 // TODO: complete on result values and add more usage scenario test cases
 describe('runBlock() -> API return values', () => {
-  it('should return correct HF receipts', async () => {
+  it('returns correct HF receipts', async () => {
     let res = await runWithHf('byzantium')
     assert.strictEqual(
       (res.receipts[0] as PostByzantiumTxReceipt).status,

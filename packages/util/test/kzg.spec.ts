@@ -15,7 +15,7 @@ describe('KZG API tests', () => {
     wasmKZG = await loadKZG()
   }, 50000)
 
-  it('should produce the same outputs', () => {
+  it('produces the same outputs', () => {
     const blob = getBlobs('hello')[0]
     const commit = wasmKZG.blobToKzgCommitment(blob)
     const proof = wasmKZG.computeBlobProof(blob, commit)

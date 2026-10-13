@@ -102,7 +102,7 @@ describe('EIP 2929: gas cost tests', () => {
   // Checks EXT(codehash,codesize,balance) of precompiles, which should be 100,
   // and later checks the same operations twice against some non-precompiles. Those are
   // cheaper second time they are accessed. Lastly, it checks the BALANCE of origin and this.
-  it('should charge for warm address loads correctly', async () => {
+  it('charges for warm address loads correctly', async () => {
     const test = {
       code: '0x60013f5060023b506003315060f13f5060f23b5060f3315060f23f5060f33b5060f1315032315030315000',
       totalGasUsed: 8653,
@@ -150,7 +150,7 @@ describe('EIP 2929: gas cost tests', () => {
 
   // Checks `extcodecopy( 0xff,0,0,0,0)` twice, (should be expensive first time),
   // and then does `extcodecopy( this,0,0,0,0)`.
-  it('should charge for extcodecopy correctly', async () => {
+  it('charges for extcodecopy correctly', async () => {
     const test = {
       code: '0x60006000600060ff3c60006000600060ff3c600060006000303c00',
       totalGasUsed: BigInt(2835),
@@ -180,7 +180,7 @@ describe('EIP 2929: gas cost tests', () => {
 
   // Checks `sload( 0x1)` followed by `sstore(loc: 0x01, val:0x11)`,
   // then 'naked' sstore:`sstore(loc: 0x02, val:0x11)` twice, and `sload(0x2)`, `sload(0x1)`.
-  it('should charge for sload and sstore correctly )', async () => {
+  it('charges for sload and sstore correctly )', async () => {
     const test = {
       code: '0x6001545060116001556011600255601160025560025460015400',
       totalGasUsed: 44529,
@@ -211,7 +211,7 @@ describe('EIP 2929: gas cost tests', () => {
 
   // Calls the `identity`-precompile (cheap), then calls an account (expensive)
   // and `staticcall`s the same account (cheap)
-  it('should charge for pre-compiles and staticcalls correctly', async () => {
+  it('charges for pre-compiles and staticcalls correctly', async () => {
     const test = {
       code: '0x60008080808060046000f15060008080808060ff6000f15060008080808060ff6000fa5000',
       totalGasUsed: 2869,
