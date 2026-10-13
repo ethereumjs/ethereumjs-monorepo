@@ -22,7 +22,7 @@ Major (breaking) rounds and nightlies need a dedicated procedure. Fork `--scope`
 
 ## Active vs deps-only
 
-**Active** (`ACTIVE_PACKAGES`): version bump + publish in `PUBLISH_ORDER`. **Deps-only** (`client`, `devp2p`, `ethash`, `wallet`, `testdata`): update `@ethereumjs/*` refs only; own version unchanged; not published.
+**Active** (`ACTIVE_PACKAGES`): version bump + publish in `PUBLISH_ORDER`. **Deps-only** (`ethash`, `wallet`, `testdata`): update `@ethereumjs/*` refs only; own version unchanged; not published. **`client`** and **`devp2p`** are archived under `archive/` (outside release tooling).
 
 All active packages share the **same new version number** on each round.
 

@@ -33,6 +33,26 @@ Constructors and `createX` functions take a single options object (`XOpts` / `XO
 
 Relative imports inside `src/` use explicit `.ts` extensions (e.g. `from './evm.ts'`). The root `tsconfig.json` rewrites them to `.js` in emitted output. Always include the extension on relative imports.
 
+## Browser-first production code (no Node built-ins)
+
+Shipped library code under `packages/*/src/` must stay **environment-neutral**: runnable in the browser bundle without Node-only modules. This is repo convention (v10+), not a TypeScript enforcement.
+
+**Do not** in `src/`:
+
+- Import Node built-ins (`node:fs`, `fs`, `path`, `crypto`, `stream`, `os`, `readline`, `child_process`, `http`, `https`, `util`, …).
+- Rely on Node-only globals as hard requirements (`process.exit`, `__dirname`, …).
+
+**Prefer instead:** `Uint8Array`, `@noble/*`, `eventemitter3`, and small pure-JS helpers already in the stack.
+
+**Allowed patterns:**
+
+- Optional **`globalThis.process?.env`** (or similar) for debug flags when the call site must not throw if `process` is missing — see `packages/util/src/env.ts`.
+- **`Buffer`** only where an external API still requires it at a boundary; do not spread new `Buffer` usage in core packages.
+
+**Out of scope for this rule (Node is fine):** `test/`, `scripts/`, `benchmarks/`, `recipes/`, `examples/`, repo-root `scripts/`, and archived **`packages/client/`** (superseded by `archive/client/`).
+
+**Documented exceptions in published `src/`:** `@ethereumjs/e2store` is archive/export tooling and intentionally uses `fs`, `stream`, and related Node APIs. Do not copy that pattern into core EL libraries (`evm`, `vm`, `tx`, …).
+
 ## File layout and EIP params
 
 Per-package layout (`types.ts`, `constructors.ts`, `params.ts`) and the common vs package params split are documented in [DEVELOPER.md](../../DEVELOPER.md) § Conventions — do not duplicate that essay here.

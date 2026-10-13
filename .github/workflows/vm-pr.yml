@@ -41,7 +41,7 @@ jobs:
   vm-api:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - uses: ./.github/actions/setup-ethereumjs
         with:
           dep-cache-key: ${{ inputs.dep-cache-key }}
@@ -56,7 +56,7 @@ jobs:
           fi
 
       - if: env.RUN_COVERAGE != 'false'
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4.6.0
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ${{ env.cwd }}/coverage/lcov.info
@@ -69,7 +69,7 @@ jobs:
         fork: ['Prague']
       fail-fast: false
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - uses: ./.github/actions/setup-ethereumjs
         with:
           dep-cache-key: ${{ inputs.dep-cache-key }}
@@ -87,7 +87,7 @@ jobs:
     strategy:
       fail-fast: false
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - uses: ./.github/actions/setup-ethereumjs
         with:
           dep-cache-key: ${{ inputs.dep-cache-key }}
@@ -104,7 +104,7 @@ jobs:
     strategy:
       fail-fast: false
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - uses: ./.github/actions/setup-ethereumjs
         with:
           dep-cache-key: ${{ inputs.dep-cache-key }}
@@ -140,7 +140,7 @@ jobs:
           ]
       fail-fast: false
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - uses: ./.github/actions/setup-ethereumjs
         with:
           dep-cache-key: ${{ inputs.dep-cache-key }}
@@ -163,7 +163,7 @@ jobs:
           ]
       fail-fast: false
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - uses: ./.github/actions/setup-ethereumjs
         with:
           dep-cache-key: ${{ inputs.dep-cache-key }}
@@ -207,7 +207,7 @@ jobs:
           ]
       fail-fast: false
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - uses: ./.github/actions/setup-ethereumjs
         with:
           dep-cache-key: ${{ inputs.dep-cache-key }}
@@ -215,39 +215,3 @@ jobs:
           ethereum-tests-key: ${{ inputs.submodule-cache-key }}
 
       - run: npm run test:blockchain -- ${{ matrix.args }}
-
-  vm-benchmarks:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - uses: ./.github/actions/setup-ethereumjs
-        with:
-          dep-cache-key: ${{ inputs.dep-cache-key }}
-
-      - run: npm run build:benchmarks
-        working-directory: ${{ env.cwd }}
-
-      - run: npm run benchmarks -- mainnetBlocks:10 | tee output.txt
-        working-directory: ${{ env.cwd }}
-
-      # Run git stash in case github-action-benchmark has trouble switching to gh-pages branch due to differing package-locks
-      - run: git stash
-
-      - name: Compare benchmarks
-        uses: rhysd/github-action-benchmark@v1
-        with:
-          tool: 'benchmarkjs'
-          # Where the output from the benchmark tool is stored
-          output-file-path: ${{ env.cwd }}/output.txt
-          # Location of data in gh-pages branch
-          benchmark-data-dir-path: dev/bench/vm
-          # Enable alert commit comment (default alert threshold: 200%)
-          comment-on-alert: true
-          # GitHub API token to make a commit comment
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          # Push and deploy to GitHub pages branch automatically (if on master)
-          auto-push: 'false'
-
-      # Re-apply git stash to prepare for saving back to cache.
-      # Avoids exit code 1 by checking if there are changes to be stashed first
-      - run: STASH_LIST=`git stash list` && [ ! -z $STASH_LIST ] && git stash apply || echo "No files to stash-apply. Skipping…"

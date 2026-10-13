@@ -1,0 +1,42 @@
+---
+description: Performance benchmarks (Vitest bench + CodSpeed CI)
+globs:
+  - packages/*/benchmarks/**
+  - config/vitest-bench.mts
+  - .github/workflows/build.yml
+---
+
+# Benchmarks
+
+One harness for the monorepo: **Vitest `bench()`** in `packages/<pkg>/benchmarks/*.bench.ts`, run locally with `npm run bench` from the repo root. CI runs in the **`Build`** workflow job **`performance-benchmarks`** (`.github/workflows/build.yml`): reuses the **`build` job workspace cache**, CodSpeed **simulation** on pull requests and on `master`. A pull request runs the suite only when it carries **`type: test performance`**; each push reads that label again. `master` pushes stay path-filtered. A manual run always measures. Both record the baseline. Not part of required **`Build / CI`** until branch protection enables **CodSpeed Performance Analysis**. Heavy cases live in `**/*.local.bench.ts` (excluded from CI).
+
+## Adding a case
+
+1. Put the file under `packages/<pkg>/benchmarks/` with suffix `.bench.ts`.
+2. **Setup outside the callback** — build VMs, tries, encoded fixtures, and prefunded state at **module scope** (or helpers called from the top of the bench body). Vitest bench mode does **not** run `beforeAll` / `beforeEach`. The `bench()` body should be the hot path only.
+3. **In-memory only** in CI — no LevelDB, no mainnet fixtures, no syscall-heavy I/O.
+4. Do **not** add benchmark.js, jsbt, mitata, or per-package bench runners.
+5. Name benches for the report: `rlp encode short list`, `mpt put 1k-9-32`, `evm warm sload`, etc.
+6. **CI vs local** — slow cases (large tries, MODEXP, …) go in `*.local.bench.ts`; CI excludes them via `config/vitest-bench.mts`.
+
+## Hot-path packages
+
+`rlp`, `util`, `mpt`, `evm`, `vm`, `tx`, `block`, `statemanager`, `binarytree`. Deprecated or cold packages stay out of the suite.
+
+## Local run
+
+```sh
+npm run bench
+```
+
+Without CodSpeed instrumentation this uses plain Vitest/tinybench (wall time). Compare regressions in CI or on the CodSpeed dashboard after push.
+
+## CI security
+
+- Pin **`CodSpeedHQ/action`** to a **full release commit SHA** (version comment in `build.yml`), not a mutable `@v*` tag — same supply-chain practice as [GitHub’s secure use guidance](https://docs.github.com/en/actions/reference/security/secure-use).
+- Authenticate with **OIDC** (`permissions.id-token: write` on the bench job); do not add a long-lived CodSpeed token to the workflow unless OIDC is unavailable.
+- Keep job permissions minimal (`contents: read` plus what CodSpeed needs for checks and PR comments).
+
+## Docs
+
+Human overview: [DEVELOPER.md](../../DEVELOPER.md) § Performance benchmarks. VM **0x** flamegraphs remain local-only in [packages/vm/DEVELOPER.md](../../packages/vm/DEVELOPER.md).

@@ -1,7 +1,9 @@
 name: Build
 on:
   pull_request:
-    types: [opened, reopened, synchronize]
+    # synchronize re-reads labels. Performance benchmarks run only when
+    # "type: test performance" is set on that push.
+    types: [opened, reopened, synchronize, ready_for_review]
   push:
     branches: [master]
     tags: ['*']
@@ -21,13 +23,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
       - id: create-cache-key
         run: echo "submodule-cache-key=$(git rev-parse HEAD:packages/ethereum-tests)" >> $GITHUB_OUTPUT
         shell: bash
 
-      - uses: actions/cache/restore@v4
+      - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         id: submodules-cache-restore
         with:
           key: submodule-${{ steps.create-cache-key.outputs.submodule-cache-key }}
@@ -38,7 +40,7 @@ jobs:
         run: git submodule update --init --depth=1 -- packages/ethereum-tests
 
       - if: steps.submodules-cache-restore.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         id: submodule-cache-save
         with:
           path: ${{github.workspace}}/packages/ethereum-tests
@@ -51,22 +53,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
       - id: keys
         run: echo "dep-cache-key=npm-${{ hashFiles('package-lock.json') }}-${{ github.run_id }}" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/cache/restore@v4
+      - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         id: npm-modules
         with:
           path: |
             **/node_modules
           key: npm-modules-${{ hashFiles('package-lock.json') }}
 
-      - name: Use Node.js 24
-        uses: actions/setup-node@v6
+      - name: Use Node.js 26
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
-          node-version: 24
+          node-version: 26
           cache: 'npm'
 
       - name: Install
@@ -82,14 +84,14 @@ jobs:
 
       - name: Save node_modules
         if: steps.npm-modules.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: |
             **/node_modules
           key: npm-modules-${{ hashFiles('package-lock.json') }}
 
       - name: Save build workspace
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: ${{ github.workspace }}
           key: ${{ steps.keys.outputs.dep-cache-key }}
@@ -107,9 +109,7 @@ jobs:
       block: ${{ steps.affected.outputs.block }}
       blockchain: ${{ steps.affected.outputs.blockchain }}
       browser: ${{ steps.affected.outputs.browser }}
-      client: ${{ steps.affected.outputs.client }}
       common: ${{ steps.affected.outputs.common }}
-      devp2p: ${{ steps.affected.outputs.devp2p }}
       evm: ${{ steps.affected.outputs.evm }}
       examples: ${{ steps.affected.outputs.examples }}
       mpt: ${{ steps.affected.outputs.mpt }}
@@ -118,7 +118,6 @@ jobs:
       tx: ${{ steps.affected.outputs.tx }}
       util: ${{ steps.affected.outputs.util }}
       vm-pr: ${{ steps.affected.outputs['vm-pr'] }}
-      noCompile: ${{ steps.affected.outputs.noCompile }}
       binarytree_coverage: ${{ steps.affected.outputs.binarytree_coverage }}
       block_coverage: ${{ steps.affected.outputs.block_coverage }}
       blockchain_coverage: ${{ steps.affected.outputs.blockchain_coverage }}
@@ -132,7 +131,7 @@ jobs:
       vm-pr_coverage: ${{ steps.affected.outputs['vm-pr_coverage'] }}
       workspaces: ${{ steps.affected.outputs.workspaces }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           fetch-depth: 1
 
@@ -188,14 +187,6 @@ jobs:
       submodule-cache-key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
       workspaces: ${{ needs.detect.outputs.workspaces }}
 
-  client:
-    needs: [build, detect]
-    if: needs.detect.outputs.client == 'true'
-    uses: ./.github/workflows/client-build.yml
-    secrets: inherit
-    with:
-      dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
-
   common:
     needs: [build, detect]
     if: needs.detect.outputs.common == 'true'
@@ -204,14 +195,6 @@ jobs:
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
       run-coverage: ${{ needs.detect.outputs.common_coverage == 'true' }}
-
-  devp2p:
-    needs: [build, detect]
-    if: needs.detect.outputs.devp2p == 'true'
-    uses: ./.github/workflows/devp2p-build.yml
-    secrets: inherit
-    with:
-      dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
   evm:
     needs: [build, checkout-submodules, detect]
@@ -293,13 +276,6 @@ jobs:
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
-  noCompile:
-    needs: [build, detect]
-    if: needs.detect.outputs.noCompile == 'true'
-    uses: ./.github/workflows/noCompile.yml
-    with:
-      dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
-
   typecheck:
     needs: [build, checkout-submodules]
     uses: ./.github/workflows/typecheck.yml
@@ -312,7 +288,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - uses: ./.github/actions/setup-ethereumjs
         with:
           dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
@@ -342,9 +318,7 @@ jobs:
       - block
       - blockchain
       - browser
-      - client
       - common
-      - devp2p
       - evm
       - examples
       - mpt
@@ -354,7 +328,6 @@ jobs:
       - util
       - vm-pr
       - lint
-      - noCompile
       - typecheck
       - audit
     if: always() && !cancelled()
@@ -374,6 +347,73 @@ jobs:
             console.log("All required jobs passed or skipped")
           '
 
+  performance-benchmarks:
+    name: Performance benchmarks
+    needs: [build]
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    if: >-
+      always() && needs.build.result == 'success' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' &&
+      github.event.pull_request.draft == false &&
+      contains(github.event.pull_request.labels.*.name, 'type: test performance')))
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write
+      checks: write
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+      # Master pushes stay path-filtered. Manual dispatch and a labeled PR always measure.
+      - name: Bench-relevant paths
+        id: bench-paths
+        if: github.event_name != 'pull_request'
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE: ${{ github.event.before }}
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "bench=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            echo "bench=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git fetch --no-tags --depth=1 origin "$BEFORE"
+          bench=false
+          while IFS= read -r f; do
+            [ -z "$f" ] && continue
+            case "$f" in
+              packages/binarytree/*|packages/block/*|packages/evm/*|packages/mpt/*|packages/rlp/*|packages/statemanager/*|packages/tx/*|packages/util/*|packages/vm/*|config/vitest-bench.mts|.github/workflows/build.yml|package.json|package-lock.json)
+                bench=true
+                break
+                ;;
+            esac
+          done <<< "$(git diff --name-only "$BEFORE" "$SHA")"
+          echo "bench=$bench" >> "$GITHUB_OUTPUT"
+
+      - name: No bench-relevant changes
+        if: github.event_name != 'pull_request' && steps.bench-paths.outputs.bench != 'true'
+        run: echo "Skipping — no performance benchmark paths in this event."
+
+      - uses: ./.github/actions/setup-ethereumjs
+        if: github.event_name == 'pull_request' || steps.bench-paths.outputs.bench == 'true'
+        with:
+          dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+
+      - name: Run benchmarks
+        if: github.event_name == 'pull_request' || steps.bench-paths.outputs.bench == 'true'
+        uses: CodSpeedHQ/action@f842b9a3ffe213dbb81768fd7f7eeb4dfcf1c369 # v5.4.2
+        with:
+          mode: simulation
+          run: npm run bench
+          cache-instruments: 'true'
+
   bundle-size:
     needs: [build]
     runs-on: ubuntu-latest
@@ -381,20 +421,20 @@ jobs:
     if: github.event_name == 'pull_request'
     steps:
       - name: Checkout current branch
-        uses: actions/checkout@v5
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           fetch-depth: 0
 
-      - uses: actions/cache/restore@v4
+      - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         id: dep-cache
         with:
           path: ${{github.workspace}}
           key: ${{ needs.build.outputs.dep-cache-key }}
 
-      - name: Use Node.js 24
-        uses: actions/setup-node@v6
+      - name: Use Node.js 26
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
-          node-version: 24
+          node-version: 26
           cache: 'npm'
 
       - name: Install Dependencies (if not restored from cache)
@@ -403,7 +443,7 @@ jobs:
         working-directory: ${{ github.workspace }}
 
       - name: Checkout master for baseline
-        uses: actions/checkout@v5
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           ref: master
           path: baseline-workspace
@@ -467,7 +507,7 @@ jobs:
             echo "✅ Baseline file is valid, running comparison..."
             node scripts/bundle-size.mjs --baseline=baseline.json > bundle-summary.md
           else
-            echo "## 📦 Bundle Size Analysis" > bundle-summary.md
+            echo "## 📦 Bundle size" > bundle-summary.md
             echo "" >> bundle-summary.md
             if [ ! -f baseline.json ]; then
               echo "Baseline comparison unavailable (baseline build failed or no packages were built)." >> bundle-summary.md
@@ -489,7 +529,7 @@ jobs:
         # step fail the job.
         continue-on-error: true
         if: steps.bundle-analysis.outcome == 'success' || steps.bundle-analysis.outcome == 'failure'
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -514,7 +554,7 @@ jobs:
                 });
 
                 const existingComment = comments.data.find(
-                  c => c.user.type === 'Bot' && c.body.includes('📦 Bundle Size Analysis')
+                  c => c.user.type === 'Bot' && c.body.includes('📦 Bundle size')
                 );
 
                 if (existingComment) {

@@ -41,7 +41,7 @@ jobs:
   test-evm:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - uses: ./.github/actions/setup-ethereumjs
         with:
           dep-cache-key: ${{ inputs.dep-cache-key }}
@@ -55,7 +55,7 @@ jobs:
             npm run coverage
           fi
       - if: env.RUN_COVERAGE != 'false'
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4.6.0
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ${{ env.cwd }}/coverage/lcov.info

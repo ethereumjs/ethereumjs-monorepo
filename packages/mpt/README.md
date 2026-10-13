@@ -290,10 +290,7 @@ Generated TypeDoc [documentation](./docs/README.md).
 
 ## Benchmarking
 
-```shell
-npm run benchmarks   # random PUT + checkpointing benchmarks
-npm run profiling    # flamegraph via 0x
-```
+In-memory trie cases live in `benchmarks/mpt.bench.ts`. Run them with the monorepo suite from the repo root (`npm run bench`; see root [DEVELOPER.md](../../DEVELOPER.md) § Performance benchmarks). The standalone Keccak comparison script remains at `benchmarks/keccak.ts` for local use only.
 
 ## Debugging
 

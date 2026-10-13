@@ -40,7 +40,6 @@ const STACK = workspaceFromGraph({
   util: ['rlp'],
   mpt: ['rlp', 'util'],
   vm: ['mpt', 'util'],
-  client: ['vm', 'mpt', 'util'],
   wallet: ['util'],
 })
 
@@ -77,20 +76,18 @@ describe('dependents expansion', () => {
   it('runs lowest-touched package tests and everything above', () => {
     const dependents = buildRuntimeDependentsMap(STACK)
     const fromVm = expandDependents(new Set(['vm']), dependents)
-    assert.deepEqual([...fromVm].sort(), ['client', 'vm'])
+    assert.deepEqual([...fromVm].sort(), ['vm'])
 
     const fromMpt = expandDependents(new Set(['mpt']), dependents)
-    assert.deepEqual([...fromMpt].sort(), ['client', 'mpt', 'vm'])
+    assert.deepEqual([...fromMpt].sort(), ['mpt', 'vm'])
 
     const fromUtil = expandDependents(new Set(['util']), dependents)
-    assert.deepEqual([...fromUtil].sort(), ['client', 'mpt', 'util', 'vm', 'wallet'])
+    assert.deepEqual([...fromUtil].sort(), ['mpt', 'util', 'vm', 'wallet'])
   })
 
   it('maps affected packages onto skippable CI jobs', () => {
-    const vmJobs = jobsFromAffected(new Set(['vm', 'client']))
+    const vmJobs = jobsFromAffected(new Set(['vm']))
     assert.equal(vmJobs['vm-pr'], true)
-    assert.equal(vmJobs.client, true)
-    assert.equal(vmJobs.noCompile, true)
     assert.equal(vmJobs.browser, true)
     assert.equal(vmJobs.mpt, false)
     assert.equal(vmJobs.util, false)
@@ -107,7 +104,6 @@ describe('computeAffected', () => {
       packages: STACK,
     })
     assert.equal(result.jobs['vm-pr'], true)
-    assert.equal(result.jobs.client, true)
     assert.equal(result.jobs.mpt, false)
     assert.equal(result.jobs.util, false)
     assert.equal(result.jobs.wallet, undefined)
@@ -122,7 +118,6 @@ describe('computeAffected', () => {
     })
     assert.equal(result.jobs.mpt, true)
     assert.equal(result.jobs['vm-pr'], true)
-    assert.equal(result.jobs.client, true)
     assert.equal(result.jobs.util, false)
     assert.equal(result.jobs.static, false)
   })
@@ -146,7 +141,6 @@ describe('computeAffected', () => {
       packages: STACK,
     })
     assert.equal(result.jobs['vm-pr'], true)
-    assert.equal(result.jobs.client, true)
     assert.equal(result.jobs.mpt, false)
   })
 
@@ -180,7 +174,6 @@ describe('real workspace graph', () => {
       packages,
     })
     assert.equal(vmOnly.affected.has('vm'), true)
-    assert.equal(vmOnly.affected.has('client'), true)
     assert.equal(vmOnly.affected.has('mpt'), false)
     assert.equal(vmOnly.jobs.mpt, false)
     assert.equal(vmOnly.jobs['vm-pr'], true)
@@ -209,7 +202,6 @@ describe('real workspace graph', () => {
     const vmCoverage = coverageFlags(vmOnly.changed, vmOnly.jobs)
     assert.equal(vmCoverage['vm-pr_coverage'], true)
     assert.equal(vmCoverage.mpt_coverage, false)
-    assert.equal(vmCoverage.client_coverage, undefined)
 
     const mptOnly = computeAffected({
       files: ['packages/mpt/src/index.ts'],
@@ -223,7 +215,6 @@ describe('real workspace graph', () => {
 
     const workspaces = npmWorkspacesFromAffected(vmOnly.affected, packages)
     assert.equal(workspaces.includes('@ethereumjs/vm'), true)
-    assert.equal(workspaces.includes('@ethereumjs/client'), true)
     assert.equal(workspaces.includes('@ethereumjs/mpt'), false)
   })
 
@@ -240,7 +231,7 @@ describe('real workspace graph', () => {
     }
   })
 
-  it('testdata changes run test consumers without a block→util cycle', () => {
+  it('testdata changes run every library test job without a block to util cycle', () => {
     const packages = loadWorkspace()
     const testdataOnly = computeAffected({
       files: ['packages/testdata/src/index.ts'],
@@ -249,7 +240,10 @@ describe('real workspace graph', () => {
     })
     assert.equal(testdataOnly.jobs.util, true)
     assert.equal(testdataOnly.jobs.block, true)
+    assert.equal(testdataOnly.jobs.mpt, true)
+    assert.equal(testdataOnly.jobs.static, true)
     assert.equal(testdataOnly.jobs['vm-pr'], true)
+    assert.equal(testdataOnly.changed.has('util'), false)
 
     const blockOnly = computeAffected({
       files: ['packages/block/src/index.ts'],

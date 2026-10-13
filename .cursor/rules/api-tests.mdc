@@ -16,7 +16,7 @@ Vitest API/unit/integration tests for active `@ethereumjs/*` libraries. Consensu
 
 - VM consensus runners: `packages/vm/test/tester/**` (legacy state/blockchain, EST)
 - Benchmarks: `test/bench/`, `test/benchmark/`
-- Deprecated packages (`client`, `devp2p`, `ethash`, `wallet`) — containment only per `security.mdc`
+- Deprecated packages (`ethash`, `wallet`) — containment only per `security.mdc`. **`client`** and **`devp2p`** are archived under `archive/` (not CI-tested).
 
 **Special-care runners** (do not delete or weaken without explicit intent):
 

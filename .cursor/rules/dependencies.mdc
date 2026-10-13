@@ -1,0 +1,59 @@
+---
+description: Dependency categories and how to add or update them
+alwaysApply: true
+---
+
+# Dependencies
+
+What we **ship** reaches users. What we **build with** stays in this repo. Do not undo the v10 runtime diet.
+
+Trust tiers for library code: [security.mdc](security.mdc). CI audit job: [ci.mdc](ci.mdc).
+
+## Categories
+
+| Kind | Where | What belongs |
+| --- | --- | --- |
+| Workspace | package `dependencies` | Other `@ethereumjs/*`. Versioned and published together. |
+| Crypto | package `dependencies` | Noble (`@noble/*`, `@scure/base`) only. Pure JS by default. |
+| Runtime helpers | package `dependencies` | Small, reviewed libs (events, debug). Keep the set short. |
+| Opt-in backends | package `devDependencies` or caller-supplied | WASM crypto, KZG, `customCrypto`. Never the default path. |
+| Language and types | root `devDependencies` | TypeScript for the build. A second TS only when a tool cannot use the primary (TypeDoc). |
+| Lint and format | root `devDependencies` | ESLint, typescript-eslint, Biome. |
+| Test | root `devDependencies` | Vitest, coverage, browser/Playwright, CodSpeed. |
+| Docs and examples | root `devDependencies` | TypeDoc, embedme, snippet highlighting. |
+| Repo scripts | root `devDependencies` | tsx, lockfile lint, package.json sort. |
+| CI actions | `.github/workflows/` | Third-party Actions, pinned to a commit SHA. Local actions stay under `.github/actions/`. |
+| Archived | `archive/*/package.json.stale` | Frozen. Not a live manifest. Not an audit or inventory source. |
+
+Deprecated `wallet`: no new runtime deps ([security.mdc](security.mdc) S4).
+
+## Dev dependencies
+
+The shared toolchain stays in the root manifest only: lint, format, the test runner, TypeScript, docs, repo scripts, unpublished workspace test data (`@ethereumjs/testdata`), shared opt-in crypto helpers (`micro-eth-signer`, `@paulmillr/trusted-setups`, `kzg-wasm`, `@polkadot/wasm-crypto` for the customCrypto example), and other test or example helpers used across packages. Packages do not redeclare those.
+
+A package `devDependencies` entry is local to that package: a test or example helper, types for one of its runtime dependencies, an opt-in backend, or an `@ethereumjs/*` package imported by that package's tests and not shipped.
+
+When the same devDependency is listed more than once, every copy uses the same version range and the same specifier style, caret or exact. A test-only `@ethereumjs/*` range matches that package's current version, the same way a runtime workspace range does.
+
+## Update practice
+
+Add a row when a new habit sticks. Do not paste package inventories here.
+
+| Change | Practice |
+| --- | --- |
+| New runtime dependency | Explicit human ask. Default answer is no. Prefer a bump of a library already in the category. |
+| Shipped range bump | Same commit as the lockfile. Note user-facing bumps in CHANGELOG ([releases.mdc](releases.mdc)). |
+| Dev toolchain bump | Dependabot or an explicit bump. A dev-only advisory is classified, not forced onto a library release. |
+| npm advisory | Classify **runtime vs dev** and **active vs deprecated/archive** before a root `overrides` entry. |
+| CI gate | `npm audit --omit=dev --audit-level=high` (runtime tree). |
+| Install cooldown | Root `.npmrc`: `min-release-age=3` for third parties in **this** repo. `@ethereumjs/*` is excluded so same-day publish smokes work. Downstream installs do not inherit it. |
+| GitHub Actions | Pin the commit SHA. Bump by changing that SHA. |
+| `legacy-peer-deps` | On while typescript-eslint cannot peer TypeScript 7 (see `.npmrc`). Drop the flag and the extra explicit peers when that peer range allows it. |
+
+## Do not
+
+- Add a runtime dependency without an explicit human ask.
+- Add a second crypto stack, or turn WASM / `customCrypto` on by default.
+- `npm audit fix --force`, or a blanket `overrides` entry, to go green.
+- Treat `archive/*/package.json.stale` as installed or current.
+- Give one devDependency a different range, or a different caret-versus-exact style, in another manifest.

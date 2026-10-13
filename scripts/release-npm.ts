@@ -77,8 +77,6 @@ const PUBLISH_ORDER = [
 // Deprecated packages + testdata (only dependencies updated, not published)
 // These packages keep their own version but need @ethereumjs/* deps updated
 const DEPS_ONLY_PACKAGES = [
-  'client',
-  'devp2p',
   'ethash',
   'wallet',
   'testdata',

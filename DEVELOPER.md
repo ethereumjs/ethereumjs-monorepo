@@ -57,7 +57,7 @@
 | Topic | Where |
 | ----- | ----- |
 | VM consensus fixtures, profiling | [packages/vm/DEVELOPER.md](./packages/vm/DEVELOPER.md) |
-| Hive tests (deprecated client) | [packages/client/DEVELOPER.md](./packages/client/DEVELOPER.md) |
+| Archived execution client (Hive notes) | [archive/client/DEVELOPER.md](./archive/client/DEVELOPER.md) |
 | EST fixture bumps | [update-est-fixtures skill](.cursor/skills/update-est-fixtures/SKILL.md) |
 
 ---
@@ -87,6 +87,8 @@ git submodule update --init
 npm install
 ```
 
+Published packages require **Node.js 22** or newer. Use **Node.js 26** locally (matches CI). With [nvm](https://github.com/nvm-sh/nvm) or [fnm](https://github.com/Schniz/fnm), run `nvm use` / `fnm use` in the repo root — `.nvmrc` pins that version.
+
 ### Commands at a glance
 
 **Repo root**
@@ -99,6 +101,7 @@ npm install
 | `npm run build --workspaces` | Production build |
 | `npm run docs:build --workspaces` | TypeDoc → `packages/*/docs/` |
 | `npm run clean` | Drop build artifacts + `node_modules` |
+| `npm run bench` | Vitest performance suite (CodSpeed in CI) |
 
 **Single package** (example: `@ethereumjs/vm`)
 
@@ -154,6 +157,7 @@ Exceptions: `packages/tx` → `transactionFactory.ts`; `packages/block` → `blo
 - **Options** — constructors and `createX` take one options object (`EVMOpts`, `VMOpts`, …), not long positional lists. Document non-obvious fields on the interface.
 - **Events** — `eventemitter3` on `EVM`, `VM`, `Blockchain`, `Common`; event maps in `types.ts`; `events?` optional on option types.
 - **ESM imports** — relative paths inside `src/` use explicit `.ts` extensions (rewritten to `.js` in output).
+- **Browser-first `src/`** — no Node built-in imports in shipped library code; tests, scripts, and examples may use Node. Details and exceptions (`e2store`, archived client): [code-conventions.mdc](.cursor/rules/code-conventions.mdc) § Browser-first production code.
 
 ### Errors
 
@@ -197,6 +201,15 @@ One command and one config pointer per tool. Agent finish steps are in the linke
 | Examples | `npm run examples` | `packages/*/examples/` | [examples.mdc](.cursor/rules/examples.mdc) |
 | Snippet PNGs | `npm run snippet:png` | `config/code-snippet/` | — |
 | CI | PR check **`Build / CI`** | `.github/workflows/` | [ci.mdc](.cursor/rules/ci.mdc) |
+| Performance benchmarks | `npm run bench` | [config/vitest-bench.mts](./config/vitest-bench.mts) | [benchmarks.mdc](.cursor/rules/benchmarks.mdc) |
+
+### Performance benchmarks
+
+Hot-path packages share one Vitest bench suite (`packages/*/benchmarks/*.bench.ts`; heavy local-only cases use `*.local.bench.ts`). Local: `npm run bench` (wall time). CI: **`performance-benchmarks`** job in [`.github/workflows/build.yml`](.github/workflows/build.yml) — restores the same workspace cache as test jobs (`needs: build`) and runs CodSpeed **simulation** for pull requests and for `master`. A pull request runs the suite only when it has the **`type: test performance`** label; each push reads that label again. `master` pushes stay path-filtered. A manual run always measures. Both record the baseline. Informational until **CodSpeed Performance Analysis** is required in branch protection.
+
+Install the [CodSpeed GitHub App](https://github.com/marketplace/codspeed-continuous-performance-analysis) on the org repo before expecting PR reports.
+
+**Maintainer (one-time / when ready):** after stable `master` simulation runs, optionally require **CodSpeed Performance Analysis** in branch protection (not `Build / CI`). Tune regression threshold in CodSpeed (toward 15–20% if flaky). Acknowledge intentional regressions in the CodSpeed UI.
 
 ### Notes
 
@@ -213,6 +226,8 @@ VM consensus runners: [packages/vm/DEVELOPER.md](./packages/vm/DEVELOPER.md).
 **Examples** — README snippets sync via embedme: `npm run examples:build` in a package after editing `examples/`.
 
 **Snippet PNGs** — release/social images from `packages/*/examples/` only (local files, Playwright screenshot). Once: `npm run install-browser-deps`. Example: `npm run snippet:png -- --file=packages/vm/examples/runTxGasDimensions.ts --out=tmp/announce/vm.png`. Output defaults to `tmp/announce/`.
+
+**npm / `.npmrc`** — `min-release-age=3` (npm 11.10+) blocks third-party versions published in the last three days under this repo. `@ethereumjs/*` is on `min-release-age-exclude` so post-publish registry smokes work the same day. To install a young **external** package from here, use `npm install … --min-release-age=0`.
 
 ---
 
@@ -250,7 +265,7 @@ cd path/to/your/project && npm link @ethereumjs/package-name
 # rebuild after changes; unlink when done
 ```
 
-**Shared toolchain** — `eslint`, `biome`, `typescript`, … live in the root `package.json`.
+**Shared toolchain** — `eslint`, `biome`, `typescript`, … live in the root `package.json`. Categories and update practice: [dependencies.mdc](.cursor/rules/dependencies.mdc).
 
 **Security** — wrong hashes or EVM results are consensus bugs. Trust tiers: [security.mdc](.cursor/rules/security.mdc). Extra care on `tx`, `util` signing, and `evm` / `vm` spec tests.
 
@@ -262,8 +277,8 @@ Rules: [`.cursor/rules/`](.cursor/rules/) (plain markdown + YAML front matter �
 
 | Rule | Scope | Remember |
 | ---- | ----- | -------- |
-| `ci`, `typecheck`, `spellcheck`, `git`, `security` | Always on | Do not weaken tests or skip hooks |
-| `code-conventions` | `src/`, `examples/` | No public API renames without human ask |
+| `ci`, `typecheck`, `spellcheck`, `git`, `security`, `dependencies` | Always on | Git rule: explicit ask for commit/push/PR/merge; commit-only ≠ push; PR labels when asked |
+| `code-conventions` | `src/`, `examples/` | No public API renames; no Node built-ins in `src/` (browser-first) |
 | `api-docs` | `src/` | Cross-package `{@link @ethereumjs/pkg!Symbol}` |
 | `examples` | `examples/`, READMEs | Run embedme after README edits |
 | `api-tests` | active `test/` | VM consensus runners out of scope |
@@ -282,6 +297,6 @@ Package-specific depth stays in package `DEVELOPER.md` files. [AGENTS.md](./AGEN
 | --- | ------ |
 | [ARCHITECTURE.md](./ARCHITECTURE.md) | Responsibilities, dependency graph, `runBlock` flow |
 | [packages/vm/DEVELOPER.md](./packages/vm/DEVELOPER.md) | EST / legacy tests, debugging, profiling |
-| [packages/client/DEVELOPER.md](./packages/client/DEVELOPER.md) | Hive (deprecated `@ethereumjs/client`) |
+| [archive/client/DEVELOPER.md](./archive/client/DEVELOPER.md) | Hive notes for archived `@ethereumjs/client` |
 | [CONTRIBUTING.md](./.github/CONTRIBUTING.md) | How to contribute |
 | [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) | Community standards |

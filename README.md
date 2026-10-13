@@ -2,9 +2,19 @@
   <img src="https://user-images.githubusercontent.com/47108/78779352-d0839500-796a-11ea-9468-fd2a0b3fe1ef.png" width="280" alt="EthereumJS">
 </p>
 
-<p align="center">
-  <img src="docs/assets/ethereumjs-layers.png" width="720" alt="EthereumJS package layers: execution, state, protocol, configuration, codec">
-</p>
+<div align="center">
+
+| Layer | Packages |
+| --- | --- |
+| **Execution** | `vm`, `evm` |
+| **State** | `statemanager`, `mpt`, `binarytree` |
+| **Protocol** | `tx`, `block`, `blockchain` |
+| **Configuration** | `common`, `genesis` |
+| **Codec & primitives** | `rlp`, `util` |
+
+[Package map ↓](#package-map)
+
+</div>
 
 # EthereumJS Monorepo
 
@@ -180,8 +190,8 @@ Tooling, CI, conventions, and release process: **[DEVELOPER.md](./DEVELOPER.md)*
 
 | Package | Role |
 | ------- | ---- |
-| [`@ethereumjs/client`](./packages/client) | Full execution client (deprecated) |
-| [`@ethereumjs/devp2p`](./packages/devp2p) | devp2p networking (deprecated) |
+| [`@ethereumjs/client`](./archive/client) | Full execution client (archived; not installed — see [archive/README.md](./archive/README.md)) |
+| [`@ethereumjs/devp2p`](./archive/devp2p) | devp2p networking (archived; not installed — see [archive/README.md](./archive/README.md)) |
 | [`@ethereumjs/wallet`](./packages/wallet) | Key management helpers (deprecated) |
 
 Still on npm for migration reference; do not start new projects on these packages.
