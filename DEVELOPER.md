@@ -87,7 +87,7 @@ git submodule update --init
 npm install
 ```
 
-Use **Node.js 24** locally (matches CI). With [nvm](https://github.com/nvm-sh/nvm) or [fnm](https://github.com/Schniz/fnm), run `nvm use` / `fnm use` in the repo root — `.nvmrc` pins that version.
+Published packages require **Node.js 22** or newer. Use **Node.js 26** locally (matches CI). With [nvm](https://github.com/nvm-sh/nvm) or [fnm](https://github.com/Schniz/fnm), run `nvm use` / `fnm use` in the repo root — `.nvmrc` pins that version.
 
 ### Commands at a glance
 

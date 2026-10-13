@@ -9,7 +9,7 @@ inputs:
   node-version:
     description: Node.js version
     required: false
-    default: '24'
+    default: '26'
   install-command:
     description: Install command used when the workspace cache misses
     required: false

@@ -66,5 +66,8 @@
     "@ethereumjs/testdata": "1.0.0",
     "@types/debug": "^4.1.12",
     "micro-eth-signer": "0.15.0"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

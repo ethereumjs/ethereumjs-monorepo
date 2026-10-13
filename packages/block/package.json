@@ -67,6 +67,6 @@
     "micro-eth-signer": "^0.15.0"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   }
 }

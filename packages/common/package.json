@@ -74,5 +74,8 @@
     "@noble/curves": "^2.4.0",
     "@polkadot/util": "^13.4.3",
     "@polkadot/wasm-crypto": "^7.4.1"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }
