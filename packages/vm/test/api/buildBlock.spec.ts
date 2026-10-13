@@ -16,7 +16,7 @@ import {
 import { Ethash } from '@ethereumjs/ethash'
 import { createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
 import { concatBytes, createAccount, createZeroAddress } from '@ethereumjs/util'
-import { assert, describe, expect, it } from 'vitest'
+import { assert, describe, it } from 'vitest'
 
 import { buildBlock, createVM, runBlock } from '../../src/index.ts'
 
@@ -335,10 +335,12 @@ describe('[VM/BlockBuilder]: buildBlock API', () => {
     ).sign(SIGNER_A.privateKey)
 
     for (const tx of [tx1, tx2]) {
-      await expect(async () => {
+      try {
         await blockBuilder.addTransaction(tx)
-        assert.fail('should throw error')
-      }).rejects.toThrow(/is less than the block's baseFeePerGas/)
+        assert.fail('addTransaction should reject underpriced tx')
+      } catch (e: unknown) {
+        assert.match((e as Error).message, /is less than the block's baseFeePerGas/)
+      }
     }
 
     // Set up correctly priced txs

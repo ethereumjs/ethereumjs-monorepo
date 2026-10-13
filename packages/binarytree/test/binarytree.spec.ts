@@ -1,6 +1,6 @@
 import { bytesToHex, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { blake3 } from '@noble/hashes/blake3.js'
-import { assert, describe, expect, it } from 'vitest'
+import { assert, describe, it } from 'vitest'
 
 import { createBinaryTree } from '../src/index.ts'
 import { dumpLeafValues, dumpNodeHashes } from '../src/util.ts'
@@ -508,7 +508,7 @@ describe('[BinaryTree/Dump]: leaf values and node hashes', () => {
 
     const nodeHashes = await dumpNodeHashes(tree, tree.root())
     assert.isDefined(nodeHashes)
-    expect(nodeHashes!.length).toBeGreaterThan(100)
+    assert.isTrue(nodeHashes!.length > 100, 'dump includes many node hashes')
     assert.strictEqual(nodeHashes![0][1], bytesToHex(tree.root()))
   })
 })
@@ -587,11 +587,14 @@ describe('[BinaryTree]: withLock', () => {
 
   it('releases the lock when the operation throws', async () => {
     const tree = await createBinaryTree()
-    await expect(
-      tree.withLock(async () => {
+    try {
+      await tree.withLock(async () => {
         throw new Error('boom')
-      }),
-    ).rejects.toThrow('boom')
+      })
+      assert.fail('withLock should propagate thrown errors')
+    } catch (e: unknown) {
+      assert.match((e as Error).message, /boom/)
+    }
 
     // would hang forever if the lock leaked
     const reacquired = await tree.withLock(async () => true)

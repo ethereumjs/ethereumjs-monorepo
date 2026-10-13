@@ -78,7 +78,7 @@ Area is package or subsystem: `[Util/Bytes]`, `[Tx/LegacyTx]`, `[VM/runTx]`, `[E
 ## How to write a case
 
 - `import { assert, describe, it } from 'vitest'`. New tests use **`assert`**, not `expect`.
-- Sync failure: `assert.throws(() => fn(), /message/)`. Async: `await assert.rejects(async () => fn(), /message/)`. Do not use try/catch + `assert.fail` for expected throws. Do not use `assert.isTrue(true)` to mark a loop that already asserted inside.
+- Sync failure: `assert.throws(() => fn(), /message/)` from `vitest`. Async: `try { await fn() ; assert.fail('…') } catch (e: unknown) { assert.match((e as Error).message, /…/) }` — Vitest-only, no `node:assert`. Do not use `assert.isTrue(true)` to mark a loop that already asserted inside.
 - Tables: `for` registering one `it` per row; title includes the label. Not `it.each` (union types do not narrow in `it.each`).
 - Each `it` builds its own state or uses `beforeEach`. No order coupling across `it`s.
 - Prefer public API (`createX`, factories, serializers). **S0** junk inputs: `security.mdc`.

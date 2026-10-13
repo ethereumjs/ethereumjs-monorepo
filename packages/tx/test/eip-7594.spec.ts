@@ -15,7 +15,7 @@ import {
 import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
 //import { loadKZG } from 'kzg-wasm'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
-import { assert, beforeAll, describe, expect, it } from 'vitest'
+import { assert, beforeAll, describe, it } from 'vitest'
 
 import {
   NetworkWrapperType,
@@ -186,18 +186,20 @@ describe('[Tx]: fromTxData using from a json', () => {
 describe('[Tx]: network wrapper tests', () => {
   it('does not work with wrong network wrapper version', async () => {
     for (const kzg of kzgs) {
-      expect(() =>
-        createBlob4844Tx(
-          {
-            networkWrapperVersion: 0,
-            blobs: getBlobs('hello world'),
-            maxFeePerBlobGas: 100000000n,
-            gasLimit: 0xffffffn,
-            to: randomBytes(20),
-          },
-          { common: kzg.common },
-        ),
-      ).toThrowError(/EIP-7594 is active on Common for EIP-4844 network wrapper version/)
+      assert.throws(
+        () =>
+          createBlob4844Tx(
+            {
+              networkWrapperVersion: 0,
+              blobs: getBlobs('hello world'),
+              maxFeePerBlobGas: 100000000n,
+              gasLimit: 0xffffffn,
+              to: randomBytes(20),
+            },
+            { common: kzg.common },
+          ),
+        /EIP-7594 is active on Common for EIP-4844 network wrapper version/,
+      )
     }
   }, 40_000)
 

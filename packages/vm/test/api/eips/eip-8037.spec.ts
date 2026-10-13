@@ -12,7 +12,7 @@ import {
   generateAddress,
   hexToBytes,
 } from '@ethereumjs/util'
-import { assert, describe, expect, it } from 'vitest'
+import { assert, describe, it } from 'vitest'
 
 import { buildBlock, createVM, runTx } from '../../../src/index.ts'
 
@@ -76,9 +76,12 @@ describe('[VM/EIP-8037]: create-tx state gas at access (Amsterdam)', () => {
       { common },
     ).sign(senderKey)
 
-    await expect(runTx(vm, { block: block(), tx, skipHardForkValidation: true })).rejects.toThrow(
-      /is lower than the minimum gas limit of/,
-    )
+    try {
+      await runTx(vm, { block: block(), tx, skipHardForkValidation: true })
+      assert.fail('runTx should reject gas below floor')
+    } catch (e: unknown) {
+      assert.match((e as Error).message, /is lower than the minimum gas limit of/)
+    }
   })
 
   it('charges new-account state gas when a create tx succeeds', async () => {
@@ -319,8 +322,11 @@ describe('[VM/EIP-8037]: buildBlock block gas (Amsterdam)', () => {
       { common },
     ).sign(senderKey)
 
-    await expect(blockBuilder.addTransaction(second)).rejects.toThrow(
-      /higher gas limit than the remaining gas/,
-    )
+    try {
+      await blockBuilder.addTransaction(second)
+      assert.fail('addTransaction should reject tx exceeding remaining gas')
+    } catch (e: unknown) {
+      assert.match((e as Error).message, /higher gas limit than the remaining gas/)
+    }
   })
 })

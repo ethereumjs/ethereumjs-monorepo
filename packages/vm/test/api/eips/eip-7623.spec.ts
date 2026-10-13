@@ -2,7 +2,7 @@ import { createBlock } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createLegacyTx } from '@ethereumjs/tx'
 import { Account, Address, createZeroAddress, hexToBytes, privateToAddress } from '@ethereumjs/util'
-import { assert, describe, expect, it } from 'vitest'
+import { assert, describe, it } from 'vitest'
 
 import { createVM, runTx } from '../../../src/index.ts'
 
@@ -78,13 +78,16 @@ describe('[VM/EIP-7623]: calldata cost increase', () => {
       },
       { common },
     ).sign(pkey)
-    await expect(async () =>
-      runTx(vm, {
+    try {
+      await runTx(vm, {
         block,
         tx,
         skipHardForkValidation: true,
-      }),
-    ).rejects.toThrow(/is lower than the minimum gas limit of/)
+      })
+      assert.fail('runTx should reject gas below floor')
+    } catch (e: unknown) {
+      assert.match((e as Error).message, /is lower than the minimum gas limit of/)
+    }
   })
   it('correctly charges execution gas instead of floor gas when execution gas exceeds the floor gas', async () => {
     const vm = await getVM(common)

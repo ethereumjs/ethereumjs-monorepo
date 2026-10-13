@@ -14,7 +14,7 @@ import {
   equalsBytes,
   hexToBytes,
 } from '@ethereumjs/util'
-import { assert, describe, expect, it } from 'vitest'
+import { assert, describe, it } from 'vitest'
 
 import { genTransactionsTrieRoot } from '../src/helpers.ts'
 import {
@@ -545,9 +545,12 @@ describe('[Block]: EIP-7934 RLP Execution Block Size Limit', () => {
     const block = createLargeBlock(common)
 
     // This should throw due to size limit
-    await expect(block.validateData(false, false, true)).rejects.toThrow(
-      /Block size exceeds maximum RLP block size limit/,
-    )
+    try {
+      await block.validateData(false, false, true)
+      assert.fail('expected validateData to throw for oversized block')
+    } catch (e: unknown) {
+      assert.match((e as Error).message, /Block size exceeds maximum RLP block size limit/)
+    }
   })
 
   it('does not throw when EIP-7934 is activated, validateBlockSize is true, but size does not exceed', async () => {

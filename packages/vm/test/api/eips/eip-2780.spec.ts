@@ -9,7 +9,7 @@ import {
   eoaCode7702SignAuthorization,
   hexToBytes,
 } from '@ethereumjs/util'
-import { assert, describe, expect, it } from 'vitest'
+import { assert, describe, it } from 'vitest'
 
 import { createVM, runTx } from '../../../src/index.ts'
 
@@ -60,9 +60,12 @@ describe('[VM/EIP-2780]: intrinsic gas (Amsterdam)', () => {
       { common },
     ).sign(senderKey)
 
-    await expect(runTx(vm, { block: block(), tx, skipHardForkValidation: true })).rejects.toThrow(
-      /INTRINSIC_GAS_TOO_LOW/,
-    )
+    try {
+      await runTx(vm, { block: block(), tx, skipHardForkValidation: true })
+      assert.fail('runTx should reject intrinsic gas too low')
+    } catch (e: unknown) {
+      assert.match(String(e), /INTRINSIC_GAS_TOO_LOW/)
+    }
   })
 
   it('accepts a value transfer at the decomposed 21k intrinsic (existing recipient)', async () => {
@@ -94,15 +97,21 @@ describe('[VM/EIP-2780]: intrinsic gas (Amsterdam)', () => {
       )
 
     const vmEmpty = await getVM()
-    await expect(
-      runTx(vmEmpty, { block: block(), tx: makeTx(), skipHardForkValidation: true }),
-    ).rejects.toThrow(/INTRINSIC_GAS_TOO_LOW/)
+    try {
+      await runTx(vmEmpty, { block: block(), tx: makeTx(), skipHardForkValidation: true })
+      assert.fail('runTx should reject intrinsic gas too low')
+    } catch (e: unknown) {
+      assert.match(String(e), /INTRINSIC_GAS_TOO_LOW/)
+    }
 
     const vmExisting = await getVM()
     await vmExisting.stateManager.putAccount(recipient, new Account(0n, 1n))
-    await expect(
-      runTx(vmExisting, { block: block(), tx: makeTx(), skipHardForkValidation: true }),
-    ).rejects.toThrow(/INTRINSIC_GAS_TOO_LOW/)
+    try {
+      await runTx(vmExisting, { block: block(), tx: makeTx(), skipHardForkValidation: true })
+      assert.fail('runTx should reject intrinsic gas too low')
+    } catch (e: unknown) {
+      assert.match(String(e), /INTRINSIC_GAS_TOO_LOW/)
+    }
   })
 
   it('self-transfer skips recipient and value extras', async () => {
@@ -134,9 +143,12 @@ describe('[VM/EIP-2780]: intrinsic gas (Amsterdam)', () => {
       senderKey,
     )
 
-    await expect(runTx(vm, { block: block(), tx, skipHardForkValidation: true })).rejects.toThrow(
-      /is lower than the minimum gas limit of/,
-    )
+    try {
+      await runTx(vm, { block: block(), tx, skipHardForkValidation: true })
+      assert.fail('runTx should reject gas below floor')
+    } catch (e: unknown) {
+      assert.match((e as Error).message, /is lower than the minimum gas limit of/)
+    }
   })
 
   it('includes 7702 ACCOUNT_WRITE in receipt gas (clearing, exact leftover)', async () => {

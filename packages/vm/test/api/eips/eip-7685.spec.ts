@@ -3,7 +3,7 @@ import { createBlockchain } from '@ethereumjs/blockchain'
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { createCLRequest, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { sha256 } from '@noble/hashes/sha2.js'
-import { assert, describe, expect, it } from 'vitest'
+import { assert, describe, it } from 'vitest'
 
 import { buildBlock, createVM, runBlock } from '../../../src/index.ts'
 import { setupVM } from '../utils.ts'
@@ -39,11 +39,14 @@ describe('[VM/EIP-7685]: runBlock', () => {
     const vm = await setupVM({ common })
 
     const emptyBlock = createBlock({ header: { requestsHash: invalidRequestsRoot } }, { common })
-    await expect(async () =>
-      runBlock(vm, {
+    try {
+      await runBlock(vm, {
         block: emptyBlock,
-      }),
-    ).rejects.toThrow('invalid requestsHash')
+      })
+      assert.fail('runBlock should reject invalid requestsHash')
+    } catch (e: unknown) {
+      assert.match((e as Error).message, /invalid requestsHash/)
+    }
   })
   it('does not throw invalid requestsHash error when valid requests are provided', async () => {
     const vm = await setupVM({ common })
@@ -55,7 +58,12 @@ describe('[VM/EIP-7685]: runBlock', () => {
       },
       { common },
     )
-    await expect(async () => runBlock(vm, { block })).rejects.toThrow(/invalid requestsHash/)
+    try {
+      await runBlock(vm, { block })
+      assert.fail('runBlock should reject requestsHash without requests')
+    } catch (e: unknown) {
+      assert.match((e as Error).message, /invalid requestsHash/)
+    }
   })
 
   // TODO: no way to test this without running block, why check why does this test pass
@@ -68,7 +76,12 @@ describe('[VM/EIP-7685]: runBlock', () => {
       },
       { common },
     )
-    await expect(() => runBlock(vm, { block })).rejects.toThrow('invalid requestsHash')
+    try {
+      await runBlock(vm, { block })
+      assert.fail('runBlock should reject mismatched requestsHash')
+    } catch (e: unknown) {
+      assert.match((e as Error).message, /invalid requestsHash/)
+    }
   })
 })
 

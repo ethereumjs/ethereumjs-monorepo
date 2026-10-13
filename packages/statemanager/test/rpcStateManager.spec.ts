@@ -17,7 +17,7 @@ import {
   utf8ToBytes,
 } from '@ethereumjs/util'
 import { createVM, runBlock, runTx } from '@ethereumjs/vm'
-import { assert, describe, expect, it, vi } from 'vitest'
+import { assert, describe, it, vi } from 'vitest'
 
 import { MerkleStateManager } from '../src/merkleStateManager.ts'
 import { getRPCStateProof } from '../src/proof/index.ts'
@@ -121,9 +121,12 @@ describe('[StateManager/RPC]: account API', () => {
     )
     assert.isNotEmpty(storageSlot, 'was able to retrieve storage slot 1 for the UNI contract')
 
-    await expect(async () => {
+    try {
       await state.getStorage(UniswapERC20ContractAddress, setLengthLeft(bigIntToBytes(1n), 31))
-    }).rejects.toThrowError('Storage key must be 32 bytes long')
+      assert.fail('getStorage should reject non-32-byte keys')
+    } catch (e: unknown) {
+      assert.match((e as Error).message, /Storage key must be 32 bytes long/)
+    }
 
     await state.putStorage(
       UniswapERC20ContractAddress,
