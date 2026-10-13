@@ -366,26 +366,36 @@ jobs:
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
-      # Master and manual runs stay path-filtered. A labeled PR always measures.
-      - uses: dorny/paths-filter@4512585405083f25c027a35db413c2b3b9006d50 # v2.11.1
+      # Master pushes stay path-filtered. Manual dispatch and a labeled PR always measure.
+      - name: Bench-relevant paths
         id: bench-paths
         if: github.event_name != 'pull_request'
-        with:
-          filters: |
-            bench:
-              - 'packages/binarytree/**'
-              - 'packages/block/**'
-              - 'packages/evm/**'
-              - 'packages/mpt/**'
-              - 'packages/rlp/**'
-              - 'packages/statemanager/**'
-              - 'packages/tx/**'
-              - 'packages/util/**'
-              - 'packages/vm/**'
-              - 'config/vitest-bench.mts'
-              - '.github/workflows/build.yml'
-              - 'package.json'
-              - 'package-lock.json'
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE: ${{ github.event.before }}
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "bench=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            echo "bench=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git fetch --no-tags --depth=1 origin "$BEFORE"
+          bench=false
+          while IFS= read -r f; do
+            [ -z "$f" ] && continue
+            case "$f" in
+              packages/binarytree/*|packages/block/*|packages/evm/*|packages/mpt/*|packages/rlp/*|packages/statemanager/*|packages/tx/*|packages/util/*|packages/vm/*|config/vitest-bench.mts|.github/workflows/build.yml|package.json|package-lock.json)
+                bench=true
+                break
+                ;;
+            esac
+          done <<< "$(git diff --name-only "$BEFORE" "$SHA")"
+          echo "bench=$bench" >> "$GITHUB_OUTPUT"
 
       - name: No bench-relevant changes
         if: github.event_name != 'pull_request' && steps.bench-paths.outputs.bench != 'true'

@@ -204,7 +204,7 @@ One command and one config pointer per tool. Agent finish steps are in the linke
 
 ### Performance benchmarks
 
-Hot-path packages share one Vitest bench suite (`packages/*/benchmarks/*.bench.ts`; heavy local-only cases use `*.local.bench.ts`). Local: `npm run bench` (wall time). CI: **`performance-benchmarks`** job in [`.github/workflows/build.yml`](.github/workflows/build.yml) — restores the same workspace cache as test jobs (`needs: build`) and runs CodSpeed **simulation** for pull requests and for `master`. A pull request runs the suite only when it has the **`type: test performance`** label; each push reads that label again. `master` and manual runs stay path-filtered and record the baseline. Informational until **CodSpeed Performance Analysis** is required in branch protection.
+Hot-path packages share one Vitest bench suite (`packages/*/benchmarks/*.bench.ts`; heavy local-only cases use `*.local.bench.ts`). Local: `npm run bench` (wall time). CI: **`performance-benchmarks`** job in [`.github/workflows/build.yml`](.github/workflows/build.yml) — restores the same workspace cache as test jobs (`needs: build`) and runs CodSpeed **simulation** for pull requests and for `master`. A pull request runs the suite only when it has the **`type: test performance`** label; each push reads that label again. `master` pushes stay path-filtered. A manual run always measures. Both record the baseline. Informational until **CodSpeed Performance Analysis** is required in branch protection.
 
 Install the [CodSpeed GitHub App](https://github.com/marketplace/codspeed-continuous-performance-analysis) on the org repo before expecting PR reports.
 

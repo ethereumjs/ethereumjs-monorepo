@@ -3,6 +3,9 @@ name: lockfile-lint
 on:
   pull_request:
     types: [opened, reopened, synchronize]
+    paths:
+      - 'package-lock.json'
+      - '.github/workflows/lockfile.yml'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -13,12 +16,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
-      - uses: dorny/paths-filter@4512585405083f25c027a35db413c2b3b9006d50 # v2.11.1
-        id: changes
-        with:
-          filters: |
-            src:
-              - 'package-lock.json'
 
       - name: Use Node.js 24
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
@@ -26,5 +23,4 @@ jobs:
           node-version: 24
           cache: 'npm'
 
-      - if: steps.changes.outputs.src == 'true'
-        run: npm install lockfile-lint-api && node scripts/lockfile-lint.js
+      - run: npm install lockfile-lint-api && node scripts/lockfile-lint.js
