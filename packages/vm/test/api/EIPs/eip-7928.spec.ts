@@ -29,11 +29,16 @@ const recipient = createZeroAddress()
 
 async function fundSender(vm: Awaited<ReturnType<typeof createVM>>) {
   await vm.stateManager.putAccount(sender, new Account(0n, BigInt(1e18)))
-  // EIP-8282: deploy stub builder request contracts (checked system calls
-  // fail the block when the contracts are missing). STOP with no return
-  // data yields empty builder requests.
+  // EIP-7002 / EIP-7251 / EIP-8282: deploy stub request contracts (checked
+  // system calls fail the block when the contracts are missing). STOP with
+  // no return data yields empty requests.
   const stop = hexToBytes('0x00')
-  for (const param of ['builderDepositContractAddress', 'builderExitContractAddress'] as const) {
+  for (const param of [
+    'withdrawalRequestPredeployAddress',
+    'consolidationRequestPredeployAddress',
+    'builderDepositContractAddress',
+    'builderExitContractAddress',
+  ] as const) {
     const address = createAddressFromString(
       bytesToHex(setLengthLeft(bigIntToBytes(common.param(param)), 20)),
     )

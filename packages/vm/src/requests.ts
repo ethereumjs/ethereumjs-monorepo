@@ -150,12 +150,12 @@ export const accumulateRequests = async (
   }
 
   if (common.isActivatedEIP(7002)) {
-    const withdrawalsRequest = await accumulateWithdrawalsRequest(vm, blockGasLimit)
+    const withdrawalsRequest = await accumulateWithdrawalsRequest(vm, blockGasLimit, generate)
     requests.push(withdrawalsRequest)
   }
 
   if (common.isActivatedEIP(7251)) {
-    const consolidationsRequest = await accumulateConsolidationsRequest(vm, blockGasLimit)
+    const consolidationsRequest = await accumulateConsolidationsRequest(vm, blockGasLimit, generate)
     requests.push(consolidationsRequest)
   }
 
@@ -252,6 +252,7 @@ const accumulateBuilderRequest = async (
 const accumulateWithdrawalsRequest = async (
   vm: VM,
   blockGasLimit?: bigint,
+  generate = false,
 ): Promise<CLRequest<typeof CLRequestType.Withdrawal>> => {
   // Partial withdrawals logic
   const addressBytes = setLengthLeft(
@@ -264,10 +265,14 @@ const accumulateWithdrawalsRequest = async (
   const systemAddress = createAddressFromString(bytesToHex(systemAddressBytes))
   const systemAccount = await vm.stateManager.getAccount(systemAddress)
 
-  const originalAccount = await vm.stateManager.getAccount(withdrawalsAddress)
-
-  if (originalAccount === undefined) {
-    return new CLRequest(CLRequestType.Withdrawal, new Uint8Array())
+  const contractCode = await vm.stateManager.getCode(withdrawalsAddress)
+  if (contractCode.length === 0) {
+    if (generate) {
+      return new CLRequest(CLRequestType.Withdrawal, new Uint8Array(0))
+    }
+    throw EthereumJSErrorWithoutCode(
+      `system contract empty: no code at withdrawal request contract ${withdrawalsAddress}`,
+    )
   }
 
   const systemAddressHex = systemAddress.toString()
@@ -288,6 +293,15 @@ const accumulateWithdrawalsRequest = async (
     await vm.stateManager.putAccount(systemAddress, systemAccount)
   }
 
+  if (results.execResult.exceptionError !== undefined) {
+    if (generate) {
+      return new CLRequest(CLRequestType.Withdrawal, new Uint8Array(0))
+    }
+    throw EthereumJSErrorWithoutCode(
+      `system contract call failed: withdrawal request contract ${withdrawalsAddress} (${results.execResult.exceptionError.error})`,
+    )
+  }
+
   const resultsBytes = results.execResult.returnValue
   return new CLRequest(CLRequestType.Withdrawal, resultsBytes)
 }
@@ -295,6 +309,7 @@ const accumulateWithdrawalsRequest = async (
 const accumulateConsolidationsRequest = async (
   vm: VM,
   blockGasLimit?: bigint,
+  generate = false,
 ): Promise<CLRequest<typeof CLRequestType.Consolidation>> => {
   // Partial withdrawals logic
   const addressBytes = setLengthLeft(
@@ -307,10 +322,14 @@ const accumulateConsolidationsRequest = async (
   const systemAddress = createAddressFromString(bytesToHex(systemAddressBytes))
   const systemAccount = await vm.stateManager.getAccount(systemAddress)
 
-  const originalAccount = await vm.stateManager.getAccount(consolidationsAddress)
-
-  if (originalAccount === undefined) {
-    return new CLRequest(CLRequestType.Consolidation, new Uint8Array(0))
+  const contractCode = await vm.stateManager.getCode(consolidationsAddress)
+  if (contractCode.length === 0) {
+    if (generate) {
+      return new CLRequest(CLRequestType.Consolidation, new Uint8Array(0))
+    }
+    throw EthereumJSErrorWithoutCode(
+      `system contract empty: no code at consolidation request contract ${consolidationsAddress}`,
+    )
   }
 
   const systemAddressHex = systemAddress.toString()
@@ -329,6 +348,15 @@ const accumulateConsolidationsRequest = async (
     await vm.stateManager.deleteAccount(systemAddress)
   } else {
     await vm.stateManager.putAccount(systemAddress, systemAccount)
+  }
+
+  if (results.execResult.exceptionError !== undefined) {
+    if (generate) {
+      return new CLRequest(CLRequestType.Consolidation, new Uint8Array(0))
+    }
+    throw EthereumJSErrorWithoutCode(
+      `system contract call failed: consolidation request contract ${consolidationsAddress} (${results.execResult.exceptionError.error})`,
+    )
   }
 
   const resultsBytes = results.execResult.returnValue
