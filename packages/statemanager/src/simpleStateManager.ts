@@ -2,10 +2,11 @@ import { Account, EthereumJSErrorWithoutCode, bytesToHex } from '@ethereumjs/uti
 import { keccak_256 } from '@noble/hashes/sha3.js'
 
 import { OriginalStorageCache } from './cache/originalStorageCache.ts'
+import { consumeBAL as consumeBALUtil } from './consumeBAL.ts'
 import { modifyAccountFields } from './util.ts'
 
 import type { AccountFields, Common, StateManagerInterface } from '@ethereumjs/common'
-import type { Address, PrefixedHexString } from '@ethereumjs/util'
+import type { Address, BALJSONBlockAccessList, PrefixedHexString } from '@ethereumjs/util'
 import type { SimpleStateManagerOpts } from './index.ts'
 
 /**
@@ -111,7 +112,20 @@ export class SimpleStateManager implements StateManagerInterface {
     this.topStorageStack().set(`${address.toString()}_${bytesToHex(key)}`, value)
   }
 
-  async clearStorage(): Promise<void> {}
+  async clearStorage(address: Address): Promise<void> {
+    // The storage map is flat and keyed by `${address.toString()}_${slot}` (see
+    // getStorage/putStorage), so clearing an account's storage means scanning all
+    // keys and deleting those matching the address prefix. This is O(total
+    // storage); a per-account storage layout would make it O(that account). The
+    // originalStorageCache is intentionally not touched: it caches pre-call
+    // "original" values for SSTORE gas-refund math, which are defined relative to
+    // the transaction boundary and must not be invalidated by an in-call mutation.
+    const stack = this.topStorageStack()
+    const prefix = `${address.toString()}_`
+    for (const key of stack.keys()) {
+      if (key.startsWith(prefix)) stack.delete(key)
+    }
+  }
 
   async checkpoint(): Promise<void> {
     this.checkpointSync()
@@ -139,6 +153,16 @@ export class SimpleStateManager implements StateManagerInterface {
       copy.storageStack.push(new Map(this.storageStack[i]))
     }
     return copy
+  }
+
+  /**
+   * Apply an EIP-7928 BAL onto this state. See {@link consumeBAL}.
+   * Do not pass `expectedStateRoot` — this manager does not implement state roots.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
+  async consumeBAL(bal: BALJSONBlockAccessList, expectedStateRoot?: Uint8Array): Promise<void> {
+    return consumeBALUtil(this, bal, expectedStateRoot)
   }
 
   // State root functionality not implemented

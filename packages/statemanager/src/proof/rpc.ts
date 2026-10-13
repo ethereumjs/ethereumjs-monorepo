@@ -4,10 +4,10 @@ import type { Address } from '@ethereumjs/util'
 import type { Proof, RPCStateManager } from '../index.ts'
 
 /**
- * Get an EIP-1186 proof from the provider
- * @param address address to get proof of
- * @param storageSlots storage slots to get proof of
- * @returns an EIP-1186 formatted proof
+ * Fetch an EIP-1186 proof from the RPC provider backing a {@link RPCStateManager}.
+ *
+ * @param address Account to prove
+ * @param storageSlots Storage keys to include (defaults to none)
  */
 export async function getRPCStateProof(
   sm: RPCStateManager,

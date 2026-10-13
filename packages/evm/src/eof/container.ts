@@ -37,12 +37,16 @@ import type { EVM } from '../evm.ts'
 
 // This enum marks the "mode" of a container
 // Depending on this mode, certain extra checks for validity have to be done, or some checks can be skipped
+/** EOF container validation mode (runtime, init, or transaction deployment). */
 export type EOFContainerMode = (typeof EOFContainerMode)[keyof typeof EOFContainerMode]
 
 export const EOFContainerMode = {
-  Default: 'default', // Default container validation
-  Initmode: 'initMode', // Initmode container validation (for subcontainers pointed to by EOFCreate)
-  TxInitmode: 'txInitMode', // Tx initmode container validation (for txs deploying EOF contracts)
+  /** Standard runtime container validation. */
+  Default: 'default',
+  /** Init-mode validation for subcontainers referenced by EOFCREATE. */
+  Initmode: 'initMode',
+  /** Transaction init-mode validation for EOF contract deployment txs. */
+  TxInitmode: 'txInitMode',
 } as const
 
 // The StreamReader is a helper class to help reading byte arrays
@@ -296,8 +300,11 @@ class EOFHeader {
 }
 
 export interface TypeSection {
+  /** Stack inputs required before entering this code section. */
   inputs: number
+  /** Stack outputs on RETF; `0x80` marks a non-returning (terminating) section. */
   outputs: number
+  /** Maximum stack height reached while executing this section (EIP-5450). */
   maxStackHeight: number
 }
 
@@ -432,7 +439,7 @@ class EOFBody {
 }
 
 /**
- * Main constructor for the EOFContainer
+ * Parsed EOF container (EIP-3540 header + body).
  */
 export class EOFContainer {
   header: EOFHeader
@@ -441,10 +448,9 @@ export class EOFContainer {
   eofMode: EOFContainerMode
 
   /**
+   * Parses and validates an EOF container from raw bytes.
    *
-   * @param buf Entire container buffer
-   * @param eofMode Container mode to validate the container on
-   * @param dataSectionAllowedSmaller `true` if the data section is allowed to be smaller than the data section size in the header
+   * @param dataSectionAllowedSmaller When `true`, the body data section may be shorter than the header size (deployment subcontainers).
    */
   constructor(
     buf: Uint8Array,
@@ -464,14 +470,13 @@ export class EOFContainer {
 }
 
 /**
- * This method validates the EOF. It also performs deeper validation of the body, such as stack/opcode validation
- * This is ONLY necessary when trying to deploy contracts from a transaction: these can submit containers which are invalid
- * Since all deployed EOF containers are valid by definition, `validateEOF` does not need to be called each time an EOF contract is called
- * @param input Full container buffer
- * @param evm EVM, to read opcodes from
- * @param containerMode Container mode to validate on
- * @param eofMode EOF mode to run in
- * @returns The decoded EOF container
+ * Validates an EOF container for deployment (header, body, opcode/stack rules, subcontainers).
+ *
+ * Call before accepting transaction-submitted containers; on-chain deployed EOF code is already valid.
+ *
+ * @param containerMode Whether the container is runtime, init, or deployment code.
+ * @returns Parsed {@link EOFContainer} when validation succeeds.
+ * @throws On header, body, opcode, stack, or subcontainer validation failures.
  */
 export function validateEOF(
   input: Uint8Array,

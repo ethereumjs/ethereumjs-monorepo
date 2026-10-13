@@ -8,9 +8,9 @@
 
 > **readSlotIndex**(`bytes`): [`SlotIndex`](../type-aliases/SlotIndex.md)
 
-Defined in: [packages/e2store/src/era/era.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/era/era.ts#L13)
+Defined in: [packages/e2store/src/era/era.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/era/era.ts#L14)
 
-Reads a Slot Index from the end of a bytestring representing an era file
+Parses the trailing [SlotIndex](../type-aliases/SlotIndex.md) record from an era file byte string.
 
 ## Parameters
 
@@ -18,10 +18,12 @@ Reads a Slot Index from the end of a bytestring representing an era file
 
 `Uint8Array`
 
-a Uint8Array bytestring representing a [SlotIndex](../type-aliases/SlotIndex.md) plus any arbitrary prefixed data
+Full era buffer; the index is read from the end.
 
 ## Returns
 
 [`SlotIndex`](../type-aliases/SlotIndex.md)
 
-a deserialized [SlotIndex](../type-aliases/SlotIndex.md)
+## Throws
+
+If the trailing entry is not a SlotIndex type.

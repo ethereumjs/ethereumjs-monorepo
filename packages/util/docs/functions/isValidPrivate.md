@@ -8,7 +8,7 @@
 
 > **isValidPrivate**(`privateKey`): `boolean`
 
-Defined in: [packages/util/src/account.ts:497](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L497)
+Defined in: [packages/util/src/account.ts:519](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L519)
 
 Checks if the private key satisfies the rules of the curve secp256k1.
 

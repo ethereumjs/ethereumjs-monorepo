@@ -6,7 +6,7 @@
 
 # Class: VM
 
-Defined in: [vm/src/vm.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L20)
+Defined in: [vm/src/vm.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L21)
 
 The VM is a state transition machine that executes EVM bytecode and updates the state.
 It can be used to execute transactions, blocks, individual transactions, or snippets of EVM bytecode.
@@ -19,15 +19,15 @@ A VM can be created with the constructor method:
 
 ### Constructor
 
-> **new VM**(`opts`): `VM`
+> **new VM**(`opts?`): `VM`
 
-Defined in: [vm/src/vm.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L69)
+Defined in: [vm/src/vm.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L68)
 
 Instantiates a new VM Object.
 
 #### Parameters
 
-##### opts
+##### opts?
 
 [`VMOpts`](../interfaces/VMOpts.md) = `{}`
 
@@ -37,9 +37,8 @@ Instantiates a new VM Object.
 
 #### Deprecated
 
-The direct usage of this constructor is discouraged since
-non-finalized async initialization might lead to side effects. Please
-use the async [createVM](../functions/createVM.md) constructor instead (same API).
+Use [createVM](../functions/createVM.md) instead — async initialization avoids side effects
+from partially constructed instances.
 
 ## Properties
 
@@ -47,7 +46,7 @@ use the async [createVM](../functions/createVM.md) constructor instead (same API
 
 > `readonly` **blockchain**: `EVMMockBlockchainInterface`
 
-Defined in: [vm/src/vm.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L29)
+Defined in: [vm/src/vm.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L30)
 
 The blockchain the VM operates on
 
@@ -55,9 +54,9 @@ The blockchain the VM operates on
 
 ### common
 
-> `readonly` **common**: `Common`
+> `readonly` **common**: [`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
-Defined in: [vm/src/vm.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L31)
+Defined in: [vm/src/vm.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L32)
 
 ***
 
@@ -65,7 +64,7 @@ Defined in: [vm/src/vm.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/
 
 > `readonly` **events**: `EventEmitter`\<[`VMEvent`](../type-aliases/VMEvent.md)\>
 
-Defined in: [vm/src/vm.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L33)
+Defined in: [vm/src/vm.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L34)
 
 ***
 
@@ -73,7 +72,7 @@ Defined in: [vm/src/vm.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/
 
 > `readonly` **evm**: `EVMInterface`
 
-Defined in: [vm/src/vm.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L37)
+Defined in: [vm/src/vm.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L38)
 
 The EVM used for bytecode execution
 
@@ -81,9 +80,9 @@ The EVM used for bytecode execution
 
 ### stateManager
 
-> `readonly` **stateManager**: `StateManagerInterface`
+> `readonly` **stateManager**: [`StateManagerInterface`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/StateManagerInterface.md)
 
-Defined in: [vm/src/vm.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L24)
+Defined in: [vm/src/vm.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L25)
 
 The StateManager used by the VM
 
@@ -93,7 +92,7 @@ The StateManager used by the VM
 
 > **errorStr**(): `string`
 
-Defined in: [vm/src/vm.ts:138](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L138)
+Defined in: [vm/src/vm.ts:135](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L135)
 
 Return a compact error string representation of the object
 
@@ -105,9 +104,9 @@ Return a compact error string representation of the object
 
 ### shallowCopy()
 
-> **shallowCopy**(`downlevelCaches`): `Promise`\<`VM`\>
+> **shallowCopy**(`downlevelCaches?`): `Promise`\<`VM`\>
 
-Defined in: [vm/src/vm.ts:113](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L113)
+Defined in: [vm/src/vm.ts:110](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/vm.ts#L110)
 
 Returns a copy of the VM instance.
 
@@ -121,7 +120,7 @@ the `downlevelCaches` option to `false`.
 
 #### Parameters
 
-##### downlevelCaches
+##### downlevelCaches?
 
 `boolean` = `true`
 

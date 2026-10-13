@@ -8,7 +8,7 @@
 
 > **EthereumJSErrorWithoutCode**(`message?`, `stack?`): [`EthereumJSError`](../classes/EthereumJSError.md)\<\{ `code`: `string`; \}\>
 
-Defined in: packages/rlp/dist/esm/errors.d.ts:36
+Defined in: [packages/rlp/src/errors.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/rlp/src/errors.ts#L55)
 
 ## Parameters
 
@@ -16,13 +16,9 @@ Defined in: packages/rlp/dist/esm/errors.d.ts:36
 
 `string`
 
-Optional error message
-
 ### stack?
 
 `string`
-
-Optional stack trace
 
 ## Returns
 
@@ -31,3 +27,7 @@ Optional stack trace
 ## Deprecated
 
 Use `EthereumJSError` with a set error code instead
+
+## Throws
+
+Always uses [DEFAULT\_ERROR\_CODE](../variables/DEFAULT_ERROR_CODE.md)

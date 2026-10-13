@@ -18,6 +18,7 @@ const P256_P = BigInt('0xffffffff00000001000000000000000000000000fffffffffffffff
 const P256_A = BigInt('0xffffffff00000001000000000000000000000000fffffffffffffffffffffffc') // Curve coefficient a
 const P256_B = BigInt('0x5ac635d8aa3a93e7b3ebbd55769886bc651d06b0cc53b0f63bce3c3e27d2604b') // Curve coefficient b
 
+/** secp256r1 (P-256) signature verification precompile (0x100, EIP-7951). */
 export function precompile100(opts: PrecompileInput): ExecResult {
   const pName = getPrecompileName('100')
   const gasUsed = P256VERIFY_GAS_COST

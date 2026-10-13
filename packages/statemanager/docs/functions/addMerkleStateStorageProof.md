@@ -6,9 +6,9 @@
 
 # Function: addMerkleStateStorageProof()
 
-> **addMerkleStateStorageProof**(`sm`, `storageProof`, `storageHash`, `address`, `safe`): `Promise`\<`void`\>
+> **addMerkleStateStorageProof**(`sm`, `storageProof`, `storageHash`, `address`, `safe?`): `Promise`\<`void`\>
 
-Defined in: [proof/merkle.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/proof/merkle.ts#L90)
+Defined in: [proof/merkle.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/proof/merkle.ts#L91)
 
 Adds a storage proof to the state manager
 
@@ -32,11 +32,11 @@ The root hash of the storage trie
 
 ### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 The address
 
-### safe
+### safe?
 
 `boolean` = `false`
 

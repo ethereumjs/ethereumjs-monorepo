@@ -8,7 +8,7 @@
 
 > **withdrawalToBytesArray**(`withdrawal`): [`WithdrawalBytes`](../type-aliases/WithdrawalBytes.md)
 
-Defined in: [packages/util/src/withdrawal.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L36)
+Defined in: [packages/util/src/withdrawal.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/withdrawal.ts#L37)
 
 Convert a withdrawal to a byte array
 
@@ -16,9 +16,9 @@ Convert a withdrawal to a byte array
 
 ### withdrawal
 
-the withdrawal to convert
+[`WithdrawalData`](../type-aliases/WithdrawalData.md) \| [`Withdrawal`](../classes/Withdrawal.md)
 
-[`WithdrawalData`](../type-aliases/WithdrawalData.md) | [`Withdrawal`](../classes/Withdrawal.md)
+the withdrawal to convert
 
 ## Returns
 

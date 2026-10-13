@@ -7,6 +7,7 @@ import {
   concatBytes,
   equalsBits,
   equalsBytes,
+  isDebugEnabled,
   matchingBitsLength,
   setLengthRight,
 } from '@ethereumjs/util'
@@ -72,8 +73,7 @@ export class BinaryTree {
       this.root(opts.root)
     }
 
-    this.DEBUG =
-      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+    this.DEBUG = isDebugEnabled('ethjs')
     this.debug = this.DEBUG
       ? (message: string, namespaces: string[] = []) => {
           let log = this._debug
@@ -109,6 +109,21 @@ export class BinaryTree {
     }
 
     return this._root
+  }
+
+  /**
+   * Runs `operation` while holding the tree's internal lock, releasing the
+   * lock when the returned promise settles. Use this to keep other lock-aware
+   * operations (e.g. `commit`/`revert`) from interleaving with a multi-step
+   * read sequence, such as reading values at several roots via `root()`/`get()`.
+   */
+  async withLock<T>(operation: () => Promise<T>): Promise<T> {
+    await this._lock.acquire()
+    try {
+      return await operation()
+    } finally {
+      this._lock.release()
+    }
   }
 
   /**
@@ -579,7 +594,7 @@ export class BinaryTree {
   }
 
   /**
-   * Creates a proof from a tree and key that can be verified using {@link BinaryTree.verifyBinaryProof}.
+   * Creates a proof from a tree and key that can be verified using {@link verifyBinaryProof}.
    * @param key a 32 byte binary tree key (31 byte stem + 1 byte suffix)
    */
   async createBinaryProof(key: Uint8Array): Promise<Uint8Array[]> {

@@ -8,7 +8,9 @@
 
 > **BinaryTreeLeafBasicData** = `object`
 
-Defined in: [packages/util/src/binaryTree.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L83)
+Defined in: [packages/util/src/binaryTree.ts:87](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L87)
+
+Decoded account header fields from a binary-tree basic-data leaf.
 
 ## Properties
 
@@ -16,7 +18,7 @@ Defined in: [packages/util/src/binaryTree.ts:83](https://github.com/ethereumjs/e
 
 > **balance**: `bigint`
 
-Defined in: [packages/util/src/binaryTree.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L86)
+Defined in: [packages/util/src/binaryTree.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L90)
 
 ***
 
@@ -24,7 +26,7 @@ Defined in: [packages/util/src/binaryTree.ts:86](https://github.com/ethereumjs/e
 
 > **codeSize**: `number`
 
-Defined in: [packages/util/src/binaryTree.ts:87](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L87)
+Defined in: [packages/util/src/binaryTree.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L91)
 
 ***
 
@@ -32,7 +34,7 @@ Defined in: [packages/util/src/binaryTree.ts:87](https://github.com/ethereumjs/e
 
 > **nonce**: `bigint`
 
-Defined in: [packages/util/src/binaryTree.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L85)
+Defined in: [packages/util/src/binaryTree.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L89)
 
 ***
 
@@ -40,4 +42,4 @@ Defined in: [packages/util/src/binaryTree.ts:85](https://github.com/ethereumjs/e
 
 > **version**: `number`
 
-Defined in: [packages/util/src/binaryTree.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L84)
+Defined in: [packages/util/src/binaryTree.ts:88](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L88)

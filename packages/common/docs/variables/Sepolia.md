@@ -8,4 +8,6 @@
 
 > `const` **Sepolia**: [`ChainConfig`](../interfaces/ChainConfig.md)
 
-Defined in: [chains.ts:162](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/chains.ts#L162)
+Defined in: [chains.ts:182](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/chains.ts#L182)
+
+Chain configuration for the Sepolia testnet (chain ID 11155111).

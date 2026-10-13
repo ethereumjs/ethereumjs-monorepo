@@ -8,7 +8,9 @@
 
 > **getBlock**(`DB`, `number`): `Promise`\<\{ `body`: `Uint8Array`\<`ArrayBufferLike`\>; `header`: `Uint8Array`\<`ArrayBufferLike`\>; \}\>
 
-Defined in: [packages/e2store/src/exportHistory.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/exportHistory.ts#L68)
+Defined in: [packages/e2store/src/exportHistory.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/exportHistory.ts#L76)
+
+Fetch RLP-encoded header and body for a block by number.
 
 ## Parameters
 

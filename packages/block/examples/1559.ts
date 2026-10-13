@@ -46,5 +46,5 @@ console.log(blockWithMatchingBaseFee.getTransactionsValidationErrors()) // inval
 try {
   await blockWithMatchingBaseFee.validateData()
 } catch (err) {
-  console.log(err) // block validation fails
+  console.log(`Expected validation failure: ${(err as Error).message.split('\n')[0]}`)
 }

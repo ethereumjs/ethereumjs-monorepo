@@ -64,7 +64,7 @@ Defined in: [precompiles/bls12\_381/mcl.ts:223](https://github.com/ethereumjs/et
 
 > **addG2**(`input`): `Uint8Array`
 
-Defined in: [precompiles/bls12\_381/mcl.ts:247](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/bls12_381/mcl.ts#L247)
+Defined in: [precompiles/bls12\_381/mcl.ts:237](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/bls12_381/mcl.ts#L237)
 
 #### Parameters
 
@@ -102,7 +102,7 @@ Defined in: [precompiles/bls12\_381/mcl.ts:217](https://github.com/ethereumjs/et
 
 > **mapFP2toG2**(`input`): `Uint8Array`
 
-Defined in: [precompiles/bls12\_381/mcl.ts:280](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/bls12_381/mcl.ts#L280)
+Defined in: [precompiles/bls12\_381/mcl.ts:260](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/bls12_381/mcl.ts#L260)
 
 #### Parameters
 
@@ -124,7 +124,7 @@ Defined in: [precompiles/bls12\_381/mcl.ts:280](https://github.com/ethereumjs/et
 
 > **mapFPtoG1**(`input`): `Uint8Array`
 
-Defined in: [precompiles/bls12\_381/mcl.ts:271](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/bls12_381/mcl.ts#L271)
+Defined in: [precompiles/bls12\_381/mcl.ts:251](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/bls12_381/mcl.ts#L251)
 
 #### Parameters
 
@@ -146,7 +146,7 @@ Defined in: [precompiles/bls12\_381/mcl.ts:271](https://github.com/ethereumjs/et
 
 > **msmG1**(`input`): `Uint8Array`
 
-Defined in: [precompiles/bls12\_381/mcl.ts:289](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/bls12_381/mcl.ts#L289)
+Defined in: [precompiles/bls12\_381/mcl.ts:269](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/bls12_381/mcl.ts#L269)
 
 #### Parameters
 
@@ -168,7 +168,7 @@ Defined in: [precompiles/bls12\_381/mcl.ts:289](https://github.com/ethereumjs/et
 
 > **msmG2**(`input`): `Uint8Array`
 
-Defined in: [precompiles/bls12\_381/mcl.ts:315](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/bls12_381/mcl.ts#L315)
+Defined in: [precompiles/bls12\_381/mcl.ts:295](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/bls12_381/mcl.ts#L295)
 
 #### Parameters
 
@@ -186,55 +186,11 @@ Defined in: [precompiles/bls12\_381/mcl.ts:315](https://github.com/ethereumjs/et
 
 ***
 
-### mulG1()
-
-> **mulG1**(`input`): `Uint8Array`
-
-Defined in: [precompiles/bls12\_381/mcl.ts:237](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/bls12_381/mcl.ts#L237)
-
-#### Parameters
-
-##### input
-
-`Uint8Array`
-
-#### Returns
-
-`Uint8Array`
-
-#### Implementation of
-
-`EVMBLSInterface.mulG1`
-
-***
-
-### mulG2()
-
-> **mulG2**(`input`): `Uint8Array`
-
-Defined in: [precompiles/bls12\_381/mcl.ts:261](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/bls12_381/mcl.ts#L261)
-
-#### Parameters
-
-##### input
-
-`Uint8Array`
-
-#### Returns
-
-`Uint8Array`
-
-#### Implementation of
-
-`EVMBLSInterface.mulG2`
-
-***
-
 ### pairingCheck()
 
 > **pairingCheck**(`input`): `Uint8Array`
 
-Defined in: [precompiles/bls12\_381/mcl.ts:340](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/bls12_381/mcl.ts#L340)
+Defined in: [precompiles/bls12\_381/mcl.ts:320](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/bls12_381/mcl.ts#L320)
 
 #### Parameters
 

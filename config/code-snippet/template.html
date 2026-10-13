@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background: #0d1117;
+        padding: 32px;
+      }
+
+      .card {
+        display: inline-block;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        border: 1px solid #30363d;
+        background: #0d1117;
+      }
+
+      .title {
+        padding: 12px 20px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #c9d1d9;
+        background: #161b22;
+        border-bottom: 1px solid #30363d;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      }
+
+      .code-wrap {
+        padding: 20px 24px;
+        overflow-x: auto;
+      }
+
+      .code-wrap pre {
+        margin: 0 !important;
+        padding: 0 !important;
+        background: transparent !important;
+      }
+
+      .code-wrap code {
+        font-size: {{FONT_SIZE}}px;
+        line-height: 1.5;
+        font-family:
+          ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono",
+          monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card" id="snippet-card">
+      {{TITLE_BLOCK}}
+      <div class="code-wrap">{{HIGHLIGHTED_CODE}}</div>
+    </div>
+  </body>
+</html>

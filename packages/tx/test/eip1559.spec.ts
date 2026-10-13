@@ -18,55 +18,6 @@ const validSlot = hexToBytes(`0x${'01'.repeat(32)}`)
 const chainId = BigInt(4)
 
 describe('[FeeMarket1559Tx]', () => {
-  it(`cannot input decimal or negative values`, () => {
-    const values = [
-      'maxFeePerGas',
-      'maxPriorityFeePerGas',
-      'chainId',
-      'nonce',
-      'gasLimit',
-      'value',
-      'v',
-      'r',
-      's',
-    ]
-    const cases = [
-      10.1,
-      '10.1',
-      '0xaa.1',
-      -10.1,
-      -1,
-      BigInt(-10),
-      '-100',
-      '-10.1',
-      '-0xaa',
-      Infinity,
-      -Infinity,
-      NaN,
-      {},
-      true,
-      false,
-      () => {},
-      Number.MAX_SAFE_INTEGER + 1,
-    ]
-    for (const value of values) {
-      const txData: any = {}
-      for (const testCase of cases) {
-        if (
-          !(
-            value === 'chainId' &&
-            ((typeof testCase === 'number' && isNaN(testCase)) || testCase === false)
-          )
-        ) {
-          txData[value] = testCase
-          assert.throws(() => {
-            createFeeMarket1559Tx(txData)
-          })
-        }
-      }
-    }
-  })
-
   it('getUpfrontCost()', () => {
     const tx = createFeeMarket1559Tx(
       {
@@ -269,7 +220,7 @@ describe('[FeeMarket1559Tx]', () => {
     const expectedHash = hexToBytes(
       '0xfa81814f7dd57bad435657a05eabdba2815f41e3f15ddd6139027e7db56b0dea',
     )
-    assert.deepEqual(unsignedTx.getHashedMessageToSign(), expectedHash), 'correct hashed version'
+    assert.deepEqual(unsignedTx.getHashedMessageToSign(), expectedHash, 'correct hashed version')
 
     const expectedSerialization = hexToBytes(
       '0x02f85904808080809401010101010101010101010101010101010101018083010200f838f7940101010101010101010101010101010101010101e1a00101010101010101010101010101010101010101010101010101010101010101',

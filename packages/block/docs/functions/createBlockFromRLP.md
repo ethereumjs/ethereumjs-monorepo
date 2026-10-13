@@ -8,9 +8,9 @@
 
 > **createBlockFromRLP**(`serialized`, `opts?`): [`Block`](../classes/Block.md)
 
-Defined in: [block/constructors.ts:186](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block/constructors.ts#L186)
+Defined in: [block/constructors.ts:183](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block/constructors.ts#L183)
 
-Static constructor to create a block from a RLP-serialized block
+Instantiate a block from RLP-serialized bytes.
 
 ## Parameters
 
@@ -25,3 +25,15 @@ Static constructor to create a block from a RLP-serialized block
 ## Returns
 
 [`Block`](../classes/Block.md)
+
+## Throws
+
+If the serialized length exceeds EIP-7934 `maxRlpBlockSize` when active
+
+## Throws
+
+If RLP decode result is not an array
+
+## Throws
+
+If decoded values fail [createBlockFromBytesArray](createBlockFromBytesArray.md) checks

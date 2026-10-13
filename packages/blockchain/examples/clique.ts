@@ -4,12 +4,16 @@ import { goerliChainConfig } from '@ethereumjs/testdata'
 
 import type { ConsensusDict } from '@ethereumjs/blockchain'
 
-const common = new Common({ chain: goerliChainConfig, hardfork: Hardfork.London })
+const main = async () => {
+  const common = new Common({ chain: goerliChainConfig, hardfork: Hardfork.London })
 
-const consensusDict: ConsensusDict = {}
-consensusDict[ConsensusAlgorithm.Clique] = new CliqueConsensus()
-const blockchain = await createBlockchain({
-  consensusDict,
-  common,
-})
-console.log(`Created blockchain with ${blockchain.consensus!.algorithm} consensus algorithm`)
+  const consensusDict: ConsensusDict = {}
+  consensusDict[ConsensusAlgorithm.Clique] = new CliqueConsensus()
+  const blockchain = await createBlockchain({
+    consensusDict,
+    common,
+  })
+  console.log(`Created blockchain with ${blockchain.consensus!.algorithm} consensus algorithm`)
+}
+
+void main()

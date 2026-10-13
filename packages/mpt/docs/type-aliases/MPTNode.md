@@ -8,4 +8,6 @@
 
 > **MPTNode** = [`BranchMPTNode`](../classes/BranchMPTNode.md) \| [`ExtensionMPTNode`](../classes/ExtensionMPTNode.md) \| [`LeafMPTNode`](../classes/LeafMPTNode.md)
 
-Defined in: [packages/mpt/src/types.ts:7](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/types.ts#L7)
+Defined in: [types.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/types.ts#L8)
+
+Decoded MPT node: branch, extension, or leaf.

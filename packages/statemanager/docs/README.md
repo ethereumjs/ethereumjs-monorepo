@@ -44,6 +44,7 @@
 
 - [addMerkleStateProofData](functions/addMerkleStateProofData.md)
 - [addMerkleStateStorageProof](functions/addMerkleStateStorageProof.md)
+- [consumeBAL](functions/consumeBAL.md)
 - [fromMerkleStateProof](functions/fromMerkleStateProof.md)
 - [getMerkleStateProof](functions/getMerkleStateProof.md)
 - [getRPCStateProof](functions/getRPCStateProof.md)

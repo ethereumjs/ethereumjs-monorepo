@@ -4,15 +4,13 @@ import type { Common } from '@ethereumjs/common'
 import type { RunState } from '../interpreter.ts'
 
 /**
- * Returns the gas cost for accessing an address WITHOUT any side effects.
- * Use this to check if you have enough gas before committing to the access.
+ * Returns the gas cost for accessing an address without warming it.
  *
- * @param {RunState} runState
- * @param {Uint8Array} address
- * @param {Common} common
- * @param {Boolean} chargeGas (default: true)
- * @param {Boolean} isSelfdestruct (default: false)
- * @returns {bigint} The gas cost for this address access
+ * Use this to verify sufficient gas remains before committing to the access.
+ *
+ * @param chargeGas - When false, returns zero (e.g. CREATE/CREATE2 warm the target for free)
+ * @param isSelfdestruct - When true, warm selfdestruct beneficiary reads skip the warm fee
+ * @returns Gas cost for this address access (zero when EIP-2929 is inactive)
  */
 export function getAddressAccessCost(
   runState: RunState,
@@ -45,10 +43,8 @@ export function getAddressAccessCost(
 
 /**
  * Warms an address (adds to EIP-2929 accessed addresses set).
- * Call this AFTER verifying you have enough gas for the access.
  *
- * @param {RunState} runState
- * @param {Uint8Array} address
+ * Call after verifying sufficient gas for the access.
  */
 export function warmAddress(runState: RunState, address: Uint8Array): void {
   if (!runState.interpreter.journal.isWarmedAddress(address)) {
@@ -57,12 +53,9 @@ export function warmAddress(runState: RunState, address: Uint8Array): void {
 }
 
 /**
- * Adds address to BAL (Block Access List) for EIP-7928.
- * Call this AFTER verifying you have enough gas for the access.
+ * Adds an address to the EIP-7928 block access list.
  *
- * @param {RunState} runState
- * @param {Uint8Array} address
- * @param {Common} common
+ * Call after verifying sufficient gas for the access.
  */
 export function addAddressToBAL(runState: RunState, address: Uint8Array, common: Common): void {
   if (common.isActivatedEIP(7928)) {
@@ -72,19 +65,13 @@ export function addAddressToBAL(runState: RunState, address: Uint8Array, common:
 }
 
 /**
- * Adds address to accessedAddresses set if not already included.
- * Adjusts cost incurred for executing opcode based on whether address read
- * is warm/cold. (EIP 2929)
+ * Warms an address and returns its EIP-2929 access cost.
  *
- * This is a convenience function that combines getAddressAccessCost + warmAddress.
- * For fine-grained control (e.g., EIP-7928 BAL with OOG checks), use the
- * individual functions instead.
+ * Convenience wrapper around {@link getAddressAccessCost} and {@link warmAddress}.
+ * For fine-grained control (e.g. EIP-7928 BAL with OOG checks), use those functions directly.
  *
- * @param {RunState} runState
- * @param {Uint8Array}  address
- * @param {Common}   common
- * @param {Boolean}  chargeGas (default: true)
- * @param {Boolean}  isSelfdestruct (default: false)
+ * @param chargeGas - When false, skips charging but still warms the address
+ * @param isSelfdestruct - When true, applies selfdestruct beneficiary read pricing
  */
 export function accessAddressEIP2929(
   runState: RunState,
@@ -101,12 +88,10 @@ export function accessAddressEIP2929(
 }
 
 /**
- * Adds (address, key) to accessedStorage tuple set if not already included.
- * Adjusts cost incurred for executing opcode based on whether storage read
- * is warm/cold. (EIP 2929)
- * @param {RunState} runState
- * @param {Uint8Array} key (to storage slot)
- * @param {Common} common
+ * Warms a storage slot and returns its EIP-2929 access cost.
+ *
+ * @param isSstore - When true, warm-only reads during SSTORE may be free under Verkle/binary tree EIPs
+ * @param chargeGas - When false, warms without charging
  */
 export function accessStorageEIP2929(
   runState: RunState,
@@ -136,14 +121,9 @@ export function accessStorageEIP2929(
 }
 
 /**
- * Adjusts cost of SSTORE_RESET_GAS or SLOAD (aka sstorenoop) (EIP-2200) downward when storage
- * location is already warm
- * @param  {RunState} runState
- * @param  {Uint8Array}   key          storage slot
- * @param  {BigInt}   defaultCost  SSTORE_RESET_GAS / SLOAD
- * @param  {string}   costName     parameter name ('noop')
- * @param  {Common}   common
- * @return {BigInt}                adjusted cost
+ * Lowers SSTORE_RESET_GAS or SLOAD (noop) cost when the storage slot is already warm.
+ *
+ * @param costName - `'noop'`, `'initRefund'`, or `'cleanRefund'` — selects the EIP-2200 parameter
  */
 export function adjustSstoreGasEIP2929(
   runState: RunState,

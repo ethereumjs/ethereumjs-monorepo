@@ -1,5 +1,6 @@
 import { bytesToHex, setLengthRight } from '@ethereumjs/util'
 
+import { EVMError } from '../errors.ts'
 import { EVMErrorResult, OOGResult } from '../evm.ts'
 
 import { getPrecompileName } from './index.ts'
@@ -9,6 +10,7 @@ import type { EVM } from '../evm.ts'
 import type { ExecResult } from '../types.ts'
 import type { PrecompileInput } from './types.ts'
 
+/** BN254 G1 scalar multiplication precompile (0x07). */
 export function precompile07(opts: PrecompileInput): ExecResult {
   const pName = getPrecompileName('07')
   const gasUsed = opts.common.param('bn254MulGas')
@@ -23,11 +25,12 @@ export function precompile07(opts: PrecompileInput): ExecResult {
   let returnData
   try {
     returnData = (opts._EVM as EVM)['_bn254'].mul(input)
-  } catch (e: any) {
+  } catch (e: unknown) {
+    const error = e instanceof EVMError ? e : new EVMError(EVMError.errorMessages.REVERT)
     if (opts._debug !== undefined) {
-      opts._debug(`${pName} failed: ${e.message}`)
+      opts._debug(`${pName} failed: ${e instanceof Error ? e.message : undefined}`)
     }
-    return EVMErrorResult(e, opts.gasLimit)
+    return EVMErrorResult(error, opts.gasLimit)
   }
 
   // check ecmul success or failure by comparing the output length

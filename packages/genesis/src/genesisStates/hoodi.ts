@@ -1,5 +1,6 @@
 import type { GenesisState } from '@ethereumjs/common'
 
+/** Hoodi testnet genesis allocation map. */
 export const hoodiGenesis: GenesisState = {
   '0x0000000000000000000000000000000000000000': '0x1',
   '0x0000000000000000000000000000000000000001': '0x1',

@@ -8,7 +8,7 @@
 
 > **privateToAddress**(`privateKey`): `Uint8Array`
 
-Defined in: [packages/util/src/account.ts:565](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L565)
+Defined in: [packages/util/src/account.ts:588](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/account.ts#L588)
 
 Returns the ethereum address of a given private key.
 

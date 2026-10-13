@@ -1,5 +1,6 @@
 // Generated using a script, which can be found in ./evm/scripts/stackDeltaGenerator.ts
 
+/** Per-opcode stack delta metadata used by EOF validation (EIP-5450). */
 export const stackDelta: {
   [key: number]: {
     inputs: number // Number of inputs to this operation

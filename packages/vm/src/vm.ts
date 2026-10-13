@@ -6,6 +6,7 @@ import { paramsVM } from './params.ts'
 
 import type { Common, StateManagerInterface } from '@ethereumjs/common'
 import type { EVMInterface, EVMMockBlockchainInterface } from '@ethereumjs/evm'
+import { isDebugEnabled } from '@ethereumjs/util'
 import type { BigIntLike } from '@ethereumjs/util'
 import type { VMEvent, VMOpts } from './types.ts'
 
@@ -61,10 +62,8 @@ export class VM {
   /**
    * Instantiates a new {@link VM} Object.
    *
-   * @deprecated The direct usage of this constructor is discouraged since
-   * non-finalized async initialization might lead to side effects. Please
-   * use the async {@link createVM} constructor instead (same API).
-   * @param opts
+   * @deprecated Use {@link createVM} instead — async initialization avoids side effects
+   * from partially constructed instances.
    */
   constructor(opts: VMOpts = {}) {
     this.common = opts.common!
@@ -92,9 +91,7 @@ export class VM {
     this._setHardfork = opts.setHardfork ?? false
 
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
-    // Additional window check is to prevent vite browser bundling (and potentially other) to break
-    this.DEBUG =
-      typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+    this.DEBUG = isDebugEnabled('ethjs')
   }
 
   /**

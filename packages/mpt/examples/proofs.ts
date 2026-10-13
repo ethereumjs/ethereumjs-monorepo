@@ -30,7 +30,7 @@ async function main() {
   try {
     const _value = await verifyMPTWithMerkleProof(trie, trie.root(), k2, proof) // results in error
   } catch (err) {
-    console.log(err)
+    console.log(`Invalid proof rejected: ${(err as Error).message.split('\n')[0]}`)
   }
 }
 

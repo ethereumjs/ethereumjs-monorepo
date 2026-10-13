@@ -8,20 +8,24 @@
 
 > **VMProfilerOpts** = `object`
 
-Defined in: [vm/src/types.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L90)
+Defined in: [vm/src/types.ts:94](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L94)
 
 ## Properties
 
 ### reportAfterBlock?
 
-> `optional` **reportAfterBlock**: `boolean`
+> `optional` **reportAfterBlock?**: `boolean`
 
-Defined in: [vm/src/types.ts:93](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L93)
+Defined in: [vm/src/types.ts:98](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L98)
+
+Log opcode/precompile profiles after each block
 
 ***
 
 ### reportAfterTx?
 
-> `optional` **reportAfterTx**: `boolean`
+> `optional` **reportAfterTx?**: `boolean`
 
-Defined in: [vm/src/types.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L92)
+Defined in: [vm/src/types.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L96)
+
+Log opcode/precompile profiles after each transaction

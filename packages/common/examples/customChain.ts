@@ -1,6 +1,11 @@
-import { Mainnet, createCustomCommon } from '@ethereumjs/common'
+import { Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 import { customChainConfig } from '@ethereumjs/testdata'
 
-// Add custom chain config
-const common1 = createCustomCommon(customChainConfig, Mainnet)
-console.log(`Common is instantiated with custom chain parameters - ${common1.chainName()}`)
+const common = createCustomCommon(customChainConfig, Mainnet)
+
+console.log(`Chain ${common.chainName()} (chainId=${common.chainId()})`)
+console.log(`Hardfork at block 4: ${common.getHardforkBy({ blockNumber: 4n })}`)
+console.log(`Bootstrap nodes: ${common.bootstrapNodes().length}`)
+
+common.setHardfork(Hardfork.Byzantium)
+console.log(`Active hardfork on custom chain: ${common.hardfork()}`)

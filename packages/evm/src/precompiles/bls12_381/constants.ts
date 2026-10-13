@@ -1,20 +1,26 @@
 import { concatBytes, hexToBytes } from '@ethereumjs/util'
 
-// base field modulus as described in the EIP
+/** BLS12-381 base field modulus (EIP-2537). */
 export const BLS_FIELD_MODULUS = BigInt(
   '0x1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaab',
 )
 
+/** Encoded G1 point length in precompile input (128 bytes). */
 export const BLS_G1_POINT_BYTE_LENGTH = 128
+/** Encoded G2 point length in precompile input (256 bytes). */
 export const BLS_G2_POINT_BYTE_LENGTH = 256
 
+/** Canonical infinity encoding for G1 (all zero bytes). */
 export const BLS_G1_INFINITY_POINT_BYTES = new Uint8Array(BLS_G1_POINT_BYTE_LENGTH)
+/** Canonical infinity encoding for G2 (all zero bytes). */
 export const BLS_G2_INFINITY_POINT_BYTES = new Uint8Array(BLS_G2_POINT_BYTE_LENGTH)
 
+/** 32-byte zero buffer used in BLS field-element checks. */
 export const BLS_ZERO_BUFFER = new Uint8Array(32)
+/** 32-byte one buffer used in BLS field-element checks. */
 export const BLS_ONE_BUFFER = concatBytes(new Uint8Array(31), hexToBytes('0x01'))
 
-// G1/G2 MSM discount constants taken from EIP-2537
+/** G1 MSM gas discount table from EIP-2537 (pair count → multiplier per mille). */
 export const BLS_GAS_DISCOUNT_PAIRS_G1: [number, number][] = [
   [1, 1000],
   [2, 949],
@@ -146,6 +152,7 @@ export const BLS_GAS_DISCOUNT_PAIRS_G1: [number, number][] = [
   [128, 519],
 ]
 
+/** G2 MSM gas discount table from EIP-2537 (pair count → multiplier per mille). */
 export const BLS_GAS_DISCOUNT_PAIRS_G2: [number, number][] = [
   [1, 1000],
   [2, 1000],

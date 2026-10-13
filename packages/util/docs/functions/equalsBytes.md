@@ -8,7 +8,9 @@
 
 > **equalsBytes**(`a`, `b`): `boolean`
 
-Defined in: node\_modules/ethereum-cryptography/esm/utils.d.ts:7
+Defined in: [packages/util/src/bytes.ts:503](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L503)
+
+Compare two Uint8Arrays for byte-wise equality.
 
 ## Parameters
 

@@ -9,11 +9,15 @@ const TEST_VECTORS: [string, number][] = [
   ['typescript is better', 0x7c5aa27e],
 ]
 
-describe('crc32', () => {
-  it('should compute correct checksum', () => {
+describe('[Common/CRC]: crc32', () => {
+  it('crc32() computes correct checksum', () => {
     for (const [input, expected] of TEST_VECTORS) {
       const checksum = crc32(utf8ToBytes(input))
       assert.strictEqual(checksum, expected)
     }
+  })
+
+  it('crc32() returns zero for empty input', () => {
+    assert.strictEqual(crc32(new Uint8Array()), 0)
   })
 })

@@ -6,7 +6,9 @@
 
 # Class: CodeCache
 
-Defined in: [cache/code.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/code.ts#L19)
+Defined in: [cache/code.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/code.ts#L20)
+
+In-memory contract code cache with checkpoint/revert support.
 
 ## Extends
 
@@ -18,7 +20,7 @@ Defined in: [cache/code.ts:19](https://github.com/ethereumjs/ethereumjs-monorepo
 
 > **new CodeCache**(`opts`): `CodeCache`
 
-Defined in: [cache/code.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/code.ts#L34)
+Defined in: [cache/code.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/code.ts#L35)
 
 #### Parameters
 
@@ -40,7 +42,7 @@ Defined in: [cache/code.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo
 
 > **\_checkpoints**: `number` = `0`
 
-Defined in: [cache/cache.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/cache.ts#L8)
+Defined in: [cache/cache.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/cache.ts#L10)
 
 #### Inherited from
 
@@ -52,7 +54,7 @@ Defined in: [cache/cache.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo
 
 > **\_debug**: `Debugger`
 
-Defined in: [cache/cache.ts:6](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/cache.ts#L6)
+Defined in: [cache/cache.ts:8](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/cache.ts#L8)
 
 #### Inherited from
 
@@ -64,7 +66,7 @@ Defined in: [cache/cache.ts:6](https://github.com/ethereumjs/ethereumjs-monorepo
 
 > **\_diffCache**: `Map`\<`string`, `CodeCacheElement` \| `undefined`\>[] = `[]`
 
-Defined in: [cache/code.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/code.ts#L32)
+Defined in: [cache/code.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/code.ts#L33)
 
 Diff cache collecting the state of the cache
 at the beginning of checkpoint height
@@ -80,7 +82,7 @@ before.
 
 > **\_lruCache**: `LRUCache`\<`string`, `CodeCacheElement`, `unknown`\> \| `undefined`
 
-Defined in: [cache/code.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/code.ts#L20)
+Defined in: [cache/code.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/code.ts#L21)
 
 ***
 
@@ -88,7 +90,7 @@ Defined in: [cache/code.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo
 
 > **\_orderedMapCache**: `OrderedMap`\<`string`, `CodeCacheElement`\> \| `undefined`
 
-Defined in: [cache/code.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/code.ts#L21)
+Defined in: [cache/code.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/code.ts#L22)
 
 ***
 
@@ -96,7 +98,7 @@ Defined in: [cache/code.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo
 
 > **\_stats**: `object`
 
-Defined in: [cache/cache.ts:10](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/cache.ts#L10)
+Defined in: [cache/cache.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/cache.ts#L12)
 
 #### deletions
 
@@ -128,7 +130,7 @@ Defined in: [cache/cache.ts:10](https://github.com/ethereumjs/ethereumjs-monorep
 
 > **\_saveCachePreState**(`cacheKeyHex`): `void`
 
-Defined in: [cache/code.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/code.ts#L54)
+Defined in: [cache/code.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/code.ts#L55)
 
 Saves the state of the code cache before making changes to it.
 
@@ -150,7 +152,7 @@ Account key for which code is being modified.
 
 > **checkpoint**(): `void`
 
-Defined in: [cache/code.ts:220](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/code.ts#L220)
+Defined in: [cache/code.ts:224](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/code.ts#L224)
 
 Marks the current state of the cache as a checkpoint, which can
 later be reverted or committed.
@@ -165,7 +167,7 @@ later be reverted or committed.
 
 > **clear**(): `void`
 
-Defined in: [cache/code.ts:264](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/code.ts#L264)
+Defined in: [cache/code.ts:265](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/code.ts#L265)
 
 Clears the cache.
 
@@ -179,7 +181,7 @@ Clears the cache.
 
 > **commit**(): `void`
 
-Defined in: [cache/code.ts:200](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/code.ts#L200)
+Defined in: [cache/code.ts:204](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/code.ts#L204)
 
 Commits the current state of the cache (no effect on trie).
 
@@ -193,7 +195,7 @@ Commits the current state of the cache (no effect on trie).
 
 > **del**(`address`): `void`
 
-Defined in: [cache/code.ts:120](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/code.ts#L120)
+Defined in: [cache/code.ts:123](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/code.ts#L123)
 
 Marks code as deleted in the cache.
 
@@ -201,7 +203,7 @@ Marks code as deleted in the cache.
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Account address for which code is being fetched.
 
@@ -215,7 +217,7 @@ Account address for which code is being fetched.
 
 > **flush**(): \[`string`, `CodeCacheElement`\][]
 
-Defined in: [cache/code.ts:143](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/code.ts#L143)
+Defined in: [cache/code.ts:147](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/code.ts#L147)
 
 Flushes the cache by returning codes that have been modified
 or deleted and resetting the diff cache (at checkpoint height).
@@ -230,7 +232,7 @@ or deleted and resetting the diff cache (at checkpoint height).
 
 > **get**(`address`): `CodeCacheElement` \| `undefined`
 
-Defined in: [cache/code.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/code.ts#L96)
+Defined in: [cache/code.ts:98](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/code.ts#L98)
 
 Returns the queried code or undefined if it doesn't exist.
 
@@ -238,7 +240,7 @@ Returns the queried code or undefined if it doesn't exist.
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Account address for which code is being fetched.
 
@@ -252,7 +254,7 @@ Account address for which code is being fetched.
 
 > **put**(`address`, `code`): `void`
 
-Defined in: [cache/code.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/code.ts#L73)
+Defined in: [cache/code.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/code.ts#L74)
 
 Puts code into the cache under its hash.
 
@@ -260,15 +262,15 @@ Puts code into the cache under its hash.
 
 ##### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 Address of account code is being modified for.
 
 ##### code
 
-Bytecode or undefined if code doesn't exist.
+`Uint8Array`\<`ArrayBufferLike`\> \| `undefined`
 
-`Uint8Array`\<`ArrayBufferLike`\> | `undefined`
+Bytecode or undefined if code doesn't exist.
 
 #### Returns
 
@@ -280,7 +282,7 @@ Bytecode or undefined if code doesn't exist.
 
 > **revert**(): `void`
 
-Defined in: [cache/code.ts:172](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/code.ts#L172)
+Defined in: [cache/code.ts:176](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/code.ts#L176)
 
 Revert changes to the cache to the last checkpoint (no effect on trie).
 
@@ -294,9 +296,9 @@ Revert changes to the cache to the last checkpoint (no effect on trie).
 
 > **size**(): `number`
 
-Defined in: [cache/code.ts:232](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/code.ts#L232)
+Defined in: [cache/code.ts:233](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/code.ts#L233)
 
-Returns the size of the cache
+Current number of cached code entries.
 
 #### Returns
 
@@ -306,15 +308,15 @@ Returns the size of the cache
 
 ### stats()
 
-> **stats**(`reset`): `any`
+> **stats**(`reset?`): `any`
 
-Defined in: [cache/code.ts:246](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/code.ts#L246)
+Defined in: [cache/code.ts:247](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/statemanager/src/cache/code.ts#L247)
 
 Returns a dictionary with cache statistics.
 
 #### Parameters
 
-##### reset
+##### reset?
 
 `boolean` = `true`
 

@@ -8,7 +8,9 @@
 
 > **SlotIndex** = `object`
 
-Defined in: [packages/e2store/src/types.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/types.ts#L51)
+Defined in: [packages/e2store/src/types.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/types.ts#L57)
+
+Slot index metadata embedded in an era file.
 
 ## Properties
 
@@ -16,7 +18,7 @@ Defined in: [packages/e2store/src/types.ts:51](https://github.com/ethereumjs/eth
 
 > **recordStart**: `number`
 
-Defined in: [packages/e2store/src/types.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/types.ts#L53)
+Defined in: [packages/e2store/src/types.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/types.ts#L59)
 
 ***
 
@@ -24,7 +26,7 @@ Defined in: [packages/e2store/src/types.ts:53](https://github.com/ethereumjs/eth
 
 > **slotOffsets**: `number`[]
 
-Defined in: [packages/e2store/src/types.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/types.ts#L54)
+Defined in: [packages/e2store/src/types.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/types.ts#L60)
 
 ***
 
@@ -32,4 +34,4 @@ Defined in: [packages/e2store/src/types.ts:54](https://github.com/ethereumjs/eth
 
 > **startSlot**: `number`
 
-Defined in: [packages/e2store/src/types.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/types.ts#L52)
+Defined in: [packages/e2store/src/types.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/types.ts#L58)

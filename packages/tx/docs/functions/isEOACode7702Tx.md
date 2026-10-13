@@ -8,7 +8,7 @@
 
 > **isEOACode7702Tx**(`tx`): `tx is EOACode7702Tx`
 
-Defined in: [types.ts:207](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L207)
+Defined in: [types.ts:223](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L223)
 
 Type guard to check if transaction is an EOA Code EIP-7702 transaction
 

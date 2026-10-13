@@ -1,9 +1,8 @@
 import type { EVMPerformanceLogOutput } from '@ethereumjs/evm'
 
 /**
- * Emit EVM profile logs
- * @param logs
- * @param profileTitle
+ * Prints a formatted EVM opcode or precompile performance table to the console.
+ *
  * @hidden
  */
 export function emitEVMProfile(logs: EVMPerformanceLogOutput[], profileTitle: string) {

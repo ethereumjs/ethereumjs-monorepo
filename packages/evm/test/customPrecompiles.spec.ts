@@ -1,4 +1,12 @@
-import { Address, createZeroAddress, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
+import {
+  Address,
+  bigIntToBytes,
+  bytesToBigInt,
+  createZeroAddress,
+  hexToBytes,
+  setLengthLeft,
+  utf8ToBytes,
+} from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { type PrecompileInput, createEVM } from '../src/index.ts'
@@ -160,5 +168,111 @@ describe('EVM -> custom precompiles', () => {
       (evmCopy as any)._customPrecompiles,
       'evm.shallowCopy() successfully copied customPrecompiles option',
     )
+  })
+
+  it('should accept PrefixedHexString addresses for custom precompiles', async () => {
+    const addressHex = '0x000000000000000000000000000000000000ff01'
+    const evm = await createEVM({
+      customPrecompiles: [
+        {
+          address: addressHex,
+          function: customPrecompile,
+        },
+      ],
+    })
+    const result = await evm.runCall({
+      to: new Address(hexToBytes(addressHex)),
+      gasLimit: BigInt(30000),
+      data: hexToBytes('0x'),
+      caller: sender,
+    })
+    assert.deepEqual(result.execResult.returnValue, expectedReturn, 'return value is correct')
+    assert.strictEqual(result.execResult.executionGasUsed, expectedGas, 'gas used is correct')
+  })
+
+  it('should delete precompiles using PrefixedHexString addresses', async () => {
+    const evm = await createEVM({
+      customPrecompiles: [
+        {
+          address: '0x0000000000000000000000000000000000000002',
+        },
+      ],
+    })
+    const result = await evm.runCall({
+      to: shaAddress,
+      gasLimit: BigInt(30000),
+      data: hexToBytes('0x'),
+      caller: sender,
+    })
+    assert.deepEqual(result.execResult.returnValue, utf8ToBytes(''), 'return value is correct')
+    assert.strictEqual(result.execResult.executionGasUsed, BigInt(0), 'gas used is correct')
+  })
+
+  it('getPrecompile() should retrieve precompile by Address', async () => {
+    const evm = await createEVM()
+    const shaPrecompile = evm.getPrecompile(shaAddress)
+    assert.notStrictEqual(shaPrecompile, undefined, 'SHA256 precompile found by Address')
+
+    const missing = evm.getPrecompile(new Address(hexToBytes(`0x${'ee'.repeat(20)}`)))
+    assert.strictEqual(missing, undefined, 'returns undefined for non-existent address')
+  })
+
+  it('getPrecompile() should retrieve precompile by PrefixedHexString', async () => {
+    const evm = await createEVM()
+    const shaPrecompile = evm.getPrecompile('0x0000000000000000000000000000000000000002')
+    assert.notStrictEqual(shaPrecompile, undefined, 'SHA256 precompile found by hex string')
+
+    const missing = evm.getPrecompile(`0x${'ee'.repeat(20)}`)
+    assert.strictEqual(missing, undefined, 'returns undefined for non-existent address')
+  })
+
+  it('getPrecompile() should retrieve custom precompiles', async () => {
+    const addressHex = '0x000000000000000000000000000000000000ff01'
+    const evm = await createEVM({
+      customPrecompiles: [
+        {
+          address: addressHex,
+          function: customPrecompile,
+        },
+      ],
+    })
+    const fn = evm.getPrecompile(addressHex)
+    assert.notStrictEqual(fn, undefined, 'custom precompile found')
+    assert.strictEqual(fn, customPrecompile, 'returns the registered function')
+  })
+
+  it('should run a custom addition precompile end-to-end', async () => {
+    const ADDITION_GAS = 15n
+    function additionPrecompile(input: PrecompileInput): ExecResult {
+      const a = bytesToBigInt(input.data.subarray(0, 32))
+      const b = bytesToBigInt(input.data.subarray(32, 64))
+      const sum = (a + b) % 2n ** 256n
+      return {
+        executionGasUsed: ADDITION_GAS,
+        returnValue: setLengthLeft(bigIntToBytes(sum), 32),
+      }
+    }
+
+    const address = '0x000000000000000000000000000000000000ff01'
+    const evm = await createEVM({
+      customPrecompiles: [{ address, function: additionPrecompile }],
+    })
+
+    const a = setLengthLeft(bigIntToBytes(7n), 32)
+    const b = setLengthLeft(bigIntToBytes(35n), 32)
+    const callData = new Uint8Array(64)
+    callData.set(a, 0)
+    callData.set(b, 32)
+
+    const result = await evm.runCall({
+      to: new Address(hexToBytes(address)),
+      gasLimit: BigInt(30000),
+      data: callData,
+      caller: sender,
+    })
+
+    assert.strictEqual(result.execResult.executionGasUsed, ADDITION_GAS, 'gas used is correct')
+    const sum = bytesToBigInt(result.execResult.returnValue)
+    assert.strictEqual(sum, 42n, 'addition result is correct')
   })
 })

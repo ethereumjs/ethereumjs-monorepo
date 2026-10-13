@@ -13,7 +13,7 @@ import {
   hexToBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, expect, it } from 'vitest'
 
 import { runBlock } from '../../../src/index.ts'
 import { setupVM } from '../utils.ts'
@@ -178,25 +178,41 @@ describe('EIP-7002 tests', () => {
     )
   })
 
-  it('should throw when contract is not deployed', async () => {
+  it('should reject a block when the contract is not deployed', async () => {
     const vm = await setupVM({ common })
-    const block = createBlock(
-      {
-        header: {
-          number: 1,
-        },
-      },
-      { common },
+    const block = createBlock({ header: { number: 1 } }, { common })
+    await expect(
+      runBlock(vm, { block, skipHeaderValidation: true, skipBlockValidation: true }),
+    ).rejects.toThrow('system contract empty')
+  })
+
+  it('should reject a block when the contract call fails', async () => {
+    const vm = await setupVM({ common })
+    const withdrawalsAddress = createAddressFromString(
+      bytesToHex(
+        setLengthLeft(bigIntToBytes(common.param('withdrawalRequestPredeployAddress')), 20),
+      ),
     )
-    try {
-      await runBlock(vm, {
-        block,
-        skipHeaderValidation: true,
-        skipBlockValidation: true,
-        generate: true,
-      })
-    } catch (e: any) {
-      assert.isTrue(e.message.includes('Attempt to accumulate EIP-7002 requests failed') === true)
-    }
+    await vm.stateManager.putAccount(withdrawalsAddress, new Account(1n, 0n))
+    // PUSH0 PUSH0 REVERT
+    await vm.stateManager.putCode(withdrawalsAddress, hexToBytes('0x5f5ffd'))
+    const block = createBlock({ header: { number: 1 } }, { common })
+    await expect(
+      runBlock(vm, { block, skipHeaderValidation: true, skipBlockValidation: true }),
+    ).rejects.toThrow('system contract call failed')
+  })
+
+  it('should generate an empty request when the contract is not deployed', async () => {
+    const vm = await setupVM({ common })
+    const block = createBlock({ header: { number: 1 } }, { common })
+    const { requests } = await runBlock(vm, {
+      block,
+      skipHeaderValidation: true,
+      skipBlockValidation: true,
+      generate: true,
+    })
+    assert.strictEqual(requests!.length, 1)
+    assert.strictEqual(requests![0].type, CLRequestType.Withdrawal)
+    assert.strictEqual(requests![0].data.length, 0)
   })
 })

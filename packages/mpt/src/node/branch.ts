@@ -2,6 +2,7 @@ import { RLP } from '@ethereumjs/rlp'
 
 import type { BranchMPTNodeBranchValue, NodeReferenceOrRawMPTNode } from '../types.ts'
 
+/** 16-way branch MPT node with optional terminal value. */
 export class BranchMPTNode {
   _branches: BranchMPTNodeBranchValue[]
   _value: Uint8Array | null
@@ -19,7 +20,7 @@ export class BranchMPTNode {
   }
 
   value(v?: Uint8Array | null): Uint8Array | null {
-    if (v !== null && v !== undefined) {
+    if (v !== undefined) {
       this._value = v
     }
 

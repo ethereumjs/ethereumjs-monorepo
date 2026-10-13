@@ -12,6 +12,7 @@
 
 - [BaseOpts](interfaces/BaseOpts.md)
 - [BinaryTreeAccessWitnessInterface](interfaces/BinaryTreeAccessWitnessInterface.md)
+- [BinaryTreeStateManagerInterface](interfaces/BinaryTreeStateManagerInterface.md)
 - [BootstrapNodeConfig](interfaces/BootstrapNodeConfig.md)
 - [ChainConfig](interfaces/ChainConfig.md)
 - [ChainName](interfaces/ChainName.md)
@@ -41,6 +42,7 @@
 - [BinaryTreeAccessedState](type-aliases/BinaryTreeAccessedState.md)
 - [BinaryTreeAccessedStateType](type-aliases/BinaryTreeAccessedStateType.md)
 - [BinaryTreeAccessedStateWithAddress](type-aliases/BinaryTreeAccessedStateWithAddress.md)
+- [BpoSchedule](type-aliases/BpoSchedule.md)
 - [CasperConfig](type-aliases/CasperConfig.md)
 - [Chain](type-aliases/Chain.md)
 - [CliqueConfig](type-aliases/CliqueConfig.md)

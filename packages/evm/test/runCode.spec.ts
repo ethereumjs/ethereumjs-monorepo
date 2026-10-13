@@ -20,7 +20,7 @@ const testCases = [
   { code: [STOP], resultPC: 1 },
 ]
 
-describe('VM.runCode: initial program counter', () => {
+describe('[EVM/runCode]: initial program counter', () => {
   it('should work', async () => {
     const evm = await createEVM()
 
@@ -56,7 +56,7 @@ describe('VM.runCode: initial program counter', () => {
   })
 })
 
-describe('VM.runCode: interpreter', () => {
+describe('[EVM/runCode]: interpreter', () => {
   it('should return a EVMError as an exceptionError on the result', async () => {
     const evm = await createEVM()
 
@@ -104,7 +104,7 @@ describe('VM.runCode: interpreter', () => {
   })
 })
 
-describe('VM.runCode: RunCodeOptions', () => {
+describe('[EVM/runCode]: RunCodeOptions', () => {
   it('should throw on negative value args', async () => {
     const evm = await createEVM()
 

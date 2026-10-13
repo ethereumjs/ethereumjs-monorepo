@@ -1,6 +1,7 @@
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { BinaryChunkAccessEvent } from './binaryTreeAccessWitness.ts'
 
+/** Checkpointed cache of binary-tree chunk access events. */
 export class ChunkCache {
   cache: Map<PrefixedHexString, BinaryChunkAccessEvent>
 

@@ -6,6 +6,95 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 10.1.3 - 2026-08-21
+
+### Release round overview
+
+Welcome to **`10.1.3`** — a coordinated release across all active `@ethereumjs/*` libraries on the **`10.1.x`** line. If you have been experimenting with the upcoming Amsterdam hardfork, this is our **close-to-ready preview**: the full **14-EIP `Hardfork.Amsterdam` bundle** is implemented and aligned with [tests-glamsterdam-devnet@v8.1.0](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v8.1.0) and **glamsterdam-devnet-8**. Public APIs and spec alignment are largely stable — a good time to try BAL builder/validator flows, two-dimensional block gas, builder requests, and the rest of the Amsterdam surface — but Amsterdam remains **experimental** and **must not be used in production**; spec or API shifts can still happen in later `10.1.x` patches.
+
+The sections below cover **this package only**; for the full EIP list, examples, and release ↔ spec tracking, see the [@ethereumjs/vm Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental). On Osaka or earlier hardforks? Nothing changes unless you explicitly select `Hardfork.Amsterdam`.
+
+### `@ethereumjs/util`
+
+`@ethereumjs/util` is the shared toolbox for bytes, accounts, addresses, and fork-specific helpers. Within the `10.1.3` round the **`bal` module** picks up a consensus fix for **storage key ordering** in BAL structures — important when validating or hashing BAL JSON from glamsterdam-devnet fixtures offline.
+
+### At a glance
+
+- Fix incorrect **BAL storage key ordering** in structure validation and hashing, see PR [#4341](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4341), [#4368](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4368).
+- Monorepo version sync for `@ethereumjs/*` `10.1.3`.
+
+### Amsterdam (experimental)
+
+> **Spec snapshot:** [tests-glamsterdam-devnet@v8.1.0](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v8.1.0) · **Testnet:** glamsterdam-devnet-8
+> Fork overview: [Amsterdam hardfork (experimental)](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental)
+
+Offline BAL workflows (`createBlockLevelAccessListFromJSON`, `validateBlockAccessListStructure`, `hash()`) are unchanged in API shape — use them when assembling blocks or checking fixture payloads before handing work to `@ethereumjs/vm`. See `packages/util/examples/blockAccessList.ts`.
+
+### Changes
+
+- Fix BAL storage key ordering, see PR [#4341](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4341), [#4368](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4368)
+
+## 10.1.2 - 2026-05-29
+
+### Release round overview
+
+Welcome to **`10.1.2`** — a coordinated release across all active `@ethereumjs/*` libraries on the **`10.1.x`** line. If you have been following the upcoming Amsterdam hardfork, this is our **first experimental preview** ready to try out: a largely complete **nine-EIP `Hardfork.Amsterdam` bundle**, currently aligned with [tests-bal@v7.1.0](https://github.com/ethereum/execution-specs/releases/tag/tests-bal@v7.1.0) and [BAL devnet-7](https://notes.ethereum.org/@ethpandaops/bal-devnet-7).
+
+Amsterdam is still in flux — **please do not use this in production yet** — and we expect further **`10.1.x`** releases as the spec and official tests evolve. The sections below cover **this package only**; for the full fork picture (EIP list, examples, release ↔ spec tracking), see the [@ethereumjs/vm Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental). On Osaka or earlier hardforks? Nothing changes unless you explicitly select `Hardfork.Amsterdam`.
+
+### `@ethereumjs/util`
+
+`@ethereumjs/util` is the shared toolbox the whole monorepo builds on — bytes, accounts, addresses, and fork-specific helpers that higher layers import rather than reimplement. Within the `10.1.2` round, the headline addition is a dedicated **`bal` module** for working with [EIP-7928](https://eips.ethereum.org/EIPS/eip-7928) Block Level Access Lists *outside* of live execution: parsing fixtures, validating structure, computing the header hash, and writing test tooling. The VM performs accumulation during `runBlock()`; Util gives you the portable data model and canonical encoding.
+
+This package also picks up two cross-environment fixes: `Account.isEmpty()` for partial accounts, and a new `isDebugEnabled()` helper used across the monorepo for safe `DEBUG` checks in browsers and Web Workers.
+
+### At a glance
+
+- New **`bal` module**: `BlockLevelAccessList`, JSON/RLP factories, validation helpers, and `hash()` for offline BAL work.
+- Fix `Account.isEmpty()` when called on partial accounts (e.g. state trie reads), see PR [#4268](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4268).
+- Add `isDebugEnabled(namespace)` — avoids `ReferenceError` in workers where `process` is undeclared, see PR [#4265](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4265).
+
+### Amsterdam (experimental)
+
+> Behaviour may change in subsequent `10.1.x` patch releases.
+> **Spec snapshot:** [tests-bal@v7.1.0](https://github.com/ethereum/execution-specs/releases/tag/tests-bal@v7.1.0) · **Testnet:** [BAL devnet-7](https://notes.ethereum.org/@ethpandaops/bal-devnet-7)
+> Fork overview: [Amsterdam hardfork (experimental)](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental)
+
+Typical Util workflow: ingest a BAL JSON fixture (from a test vector or RPC payload), validate structure and gas-limit footprint, and verify the hash against an expected `blockAccessListHash`. Example from `packages/util/examples/blockAccessList.ts`:
+
+```ts
+import {
+  bytesToHex,
+  createBlockLevelAccessListFromJSON,
+  validateBlockAccessListHashFromJSON,
+  validateBlockAccessListStructure,
+} from '@ethereumjs/util'
+
+const balJson = [
+  {
+    address: '0x0000000000000000000000000000000000000001',
+    storageChanges: [],
+    storageReads: [],
+    balanceChanges: [{ blockAccessIndex: '0x01', postBalance: '0x03e8' }],
+    nonceChanges: [],
+    codeChanges: [],
+  },
+]
+
+const bal = createBlockLevelAccessListFromJSON(balJson)
+validateBlockAccessListStructure(bal)
+validateBlockAccessListHashFromJSON(balJson, bal.hash())
+
+console.log(`BAL hash: ${bytesToHex(bal.hash())}`)
+```
+
+Key exports include `createBlockLevelAccessListFromJSON` / `FromRLP`, `validateBlockAccessListStructure`, `validateBlockAccessListGasLimit`, `hashBlockAccessListFromJSON`, and `equalsBlockAccessList`. See the [Module: bal](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/util#module-bal) section in the README for the full at-a-glance map.
+
+### Changes
+
+- EIP-7928 BAL types, `BlockLevelAccessList`, canonical RLP/JSON encoding, and validation utilities, see PR [#4233](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4233), [#4246](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4246), [#4303](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4303), [#4306](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4306)
+- README entry section with highlights, at-a-glance table, and grouped module guide, see PR [#4308](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4308)
+
 ## 10.1.1 - 2025-01-28
 
 - BigInt bytes conversion fixes, see PR [#4203](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4203)

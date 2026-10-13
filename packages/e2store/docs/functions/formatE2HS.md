@@ -10,7 +10,7 @@
 
 Defined in: [packages/e2store/src/e2hs/e2hs.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/e2hs/e2hs.ts#L18)
 
-Format E2HS
+Format an e2hs file from block tuples and an epoch index.
 
 ## Parameters
 
@@ -18,16 +18,14 @@ Format E2HS
 
 `object`[]
 
-array of block tuples
+Block tuples (header with proof, body, receipts)
 
 ### epoch
 
 `number`
 
-epoch index
+Epoch number written into the block index
 
 ## Returns
 
 `Promise`\<`Uint8Array`\<`ArrayBuffer`\>\>
-
-serialized E2HS

@@ -28,9 +28,10 @@ import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import type { MerkleStateManagerOpts } from '../index.ts'
 
 /**
- * Get an EIP-1186 proof
- * @param address address to get proof of
- * @param storageSlots storage slots to get proof of
+ * Build an EIP-1186 proof from a {@link MerkleStateManager}.
+ *
+ * @param address Account to prove
+ * @param storageSlots Storage keys to include in the proof (defaults to none)
  */
 export async function getMerkleStateProof(
   sm: MerkleStateManager,
@@ -106,12 +107,14 @@ export async function addMerkleStateStorageProof(
 }
 
 /**
- * Create a StateManager and initialize this with proof(s) gotten previously from getProof
- * This generates a (partial) StateManager where one can retrieve all items from the proof
- * @param proof Either a proof retrieved from `getProof`, or an array of those proofs
- * @param safe Whether or not to verify that the roots of the proof items match the reported roots
- * @param opts a dictionary of StateManager opts
- * @returns A new MerkleStateManager with elements from the given proof included in its backing state trie
+ * Create a {@link MerkleStateManager} preloaded with EIP-1186 proof data.
+ *
+ * Yields a partial manager from which all proven accounts and slots can be read.
+ *
+ * @param proof One proof or array of proofs from {@link getMerkleStateProof}
+ * @param safe When `true`, verify proof roots against reported account/storage roots
+ * @param opts Options passed to the new {@link MerkleStateManager}
+ * @returns Manager with proof nodes merged into its backing tries
  */
 export async function fromMerkleStateProof(
   proof: Proof | Proof[],
@@ -150,10 +153,11 @@ export async function fromMerkleStateProof(
 }
 
 /**
- * Add proof(s) into an already existing trie
+ * Add proof(s) into an already existing trie.
+ *
  * @param proof The proof(s) retrieved from `getProof`
- * @param verifyRoot verify that all proof root nodes match statemanager's stateroot - should be
- * set to `false` when constructing a state manager where the underlying trie has proof nodes from different state roots
+ * @param safe When `false`, skip verifying that proof roots match the trie root (useful when
+ * merging proofs from different state roots)
  */
 export async function addMerkleStateProofData(
   sm: MerkleStateManager,

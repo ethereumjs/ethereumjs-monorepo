@@ -1,5 +1,11 @@
 import { createBlock } from '@ethereumjs/block'
-import { BIGINT_0, EthereumJSErrorWithoutCode, bytesToHex, equalsBytes } from '@ethereumjs/util'
+import {
+  BIGINT_0,
+  EthereumJSErrorWithoutCode,
+  bytesToHex,
+  equalsBytes,
+  isDebugEnabled,
+} from '@ethereumjs/util'
 import debugDefault from 'debug'
 
 import {
@@ -15,10 +21,14 @@ import type { BlockData } from '@ethereumjs/block'
 import type { Chain } from '@ethereumjs/common'
 import type { BlockchainOptions, DBOp } from './index.ts'
 
-const DEBUG =
-  typeof window === 'undefined' ? (process?.env?.DEBUG?.includes('ethjs') ?? false) : false
+const DEBUG = isDebugEnabled('ethjs')
 const debug = debugDefault('blockchain:#')
 
+/**
+ * Initialize a blockchain, seeding genesis when the DB is empty.
+ *
+ * @throws If the DB genesis hash does not match the provided genesis block
+ */
 export async function createBlockchain(opts: BlockchainOptions = {}) {
   const blockchain = new Blockchain(opts)
 
@@ -92,11 +102,12 @@ export async function createBlockchain(opts: BlockchainOptions = {}) {
 }
 
 /**
- * Creates a blockchain from a list of block objects,
- * objects must be readable by {@link createBlock}
+ * Initialize a blockchain and append a sequence of blocks from plain data.
  *
- * @param blockData List of block objects
- * @param opts Constructor options, see {@link BlockchainOptions}
+ * @param blocksData - Blocks readable by {@link createBlock}
+ *
+ * @throws If genesis initialization fails
+ * @throws If any {@link Blockchain.putBlock} validation fails
  */
 export async function createBlockchainFromBlocksData(
   blocksData: BlockData[],

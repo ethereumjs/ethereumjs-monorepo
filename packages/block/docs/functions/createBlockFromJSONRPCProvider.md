@@ -8,32 +8,34 @@
 
 > **createBlockFromJSONRPCProvider**(`provider`, `blockTag`, `opts`): `Promise`\<[`Block`](../classes/Block.md)\>
 
-Defined in: [block/constructors.ts:241](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block/constructors.ts#L241)
+Defined in: [block/constructors.ts:238](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block/constructors.ts#L238)
 
-Method to retrieve a block from a JSON-RPC provider and format as a [Block](../classes/Block.md)
+Fetch a block from a JSON-RPC provider and instantiate it.
 
 ## Parameters
 
 ### provider
 
-either a url for a remote provider or an Ethers JSONRPCProvider object
-
-`string` | `EthersProvider`
+`string` \| `EthersProvider`
 
 ### blockTag
 
-block hash or block number to be run
+`string` \| `bigint`
 
-`string` | `bigint`
+Block hash, number, or tag (`latest`, `pending`, …)
 
 ### opts
 
 [`BlockOptions`](../interfaces/BlockOptions.md)
 
-[BlockOptions](../interfaces/BlockOptions.md)
-
 ## Returns
 
 `Promise`\<[`Block`](../classes/Block.md)\>
 
-the block specified by `blockTag`
+## Throws
+
+If `blockTag` is not a recognized hash, number, or tag
+
+## Throws
+
+If the provider returns no block data

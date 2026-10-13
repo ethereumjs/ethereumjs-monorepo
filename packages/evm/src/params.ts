@@ -1,6 +1,7 @@
 import type { ParamsDict } from '@ethereumjs/common'
 import { SYSTEM_ADDRESS } from '@ethereumjs/util'
 
+/** Default EVM gas parameters keyed by EIP, passed to {@link @ethereumjs/common!Common} via `opts.params`. */
 export const paramsEVM: ParamsDict = {
   /**
    * Frontier/Chainstart
@@ -409,5 +410,64 @@ export const paramsEVM: ParamsDict = {
   7939: {
     // gasPrices
     clzGas: 5, // Base fee of the CLZ opcode (matching MUL as per EIP-7939)
+  },
+  /**
+   * Reduce intrinsic transaction gas (Amsterdam, experimental).
+   * Recipient/value/log extras are intrinsic on `@ethereumjs/tx`
+   * (`getIntrinsicGas()` / the calldata floor). The EVM still charges
+   * new-account state gas at the top frame. Keep in sync with
+   * `@ethereumjs/tx` `paramsTx[2780]`.
+   */
+  2780: {
+    txValueCost: 6000, // TX_VALUE_COST: recipient balance write + EIP-7708 transfer log (folded since glamsterdam-devnet v8)
+    transferLogCost: 1756, // TRANSFER_LOG_COST: in-EVM EIP-7708 emission sites only (not tx-level intrinsic since v8)
+    txRecipientAccessGas: 3000, // Recipient cost for a non-self-transfer call (= COLD_ACCOUNT_ACCESS under EIP-8038)
+  },
+  /**
+   * Increase max contract code size and initcode size
+   */
+  7954: {
+    // evm
+    maxCodeSize: 65536, // EIP-7954: Maximum length of contract code (raised from 24 KiB)
+    maxInitCodeSize: 131072, // EIP-7954: Maximum length of initialization code (2 * maxCodeSize, raised from 48 KiB)
+  },
+  /**
+   * State Creation Gas Cost Increase
+   * Regular-gas portions of the state-creation cost overrides per the EIP-8037 parameter table,
+   * plus the new state-gas constants. State-gas charges are derived from these constants and
+   * applied via the reservoir model (see runTx / interpreter).
+   */
+  8037: {
+    // Regular-gas overrides (state portion is metered separately)
+    createGas: 11000, // CREATE base regular gas (CREATE_ACCESS = ACCOUNT_WRITE + COLD_STORAGE_ACCESS); state portion = (stateBytesPerNewAccount + L) * costPerStateByte
+    create2Gas: 11000, // CREATE2 base regular gas (CREATE_ACCESS = ACCOUNT_WRITE + COLD_STORAGE_ACCESS); state portion = (stateBytesPerNewAccount + L) * costPerStateByte
+    callNewAccountGas: 0, // CALL* to non-existent: regular gas (down from 25000); state portion = stateBytesPerNewAccount * costPerStateByte (charged only for value-bearing calls)
+    createDataGas: 0, // Per-byte regular cost of code deposit (down from 200); replaced by costPerStateByte state-gas plus a per-word hash cost (see codeDepositHashWordGas)
+    codeDepositHashWordGas: 6, // Per 32-byte word regular hash cost on contract creation (6 * ceil(L/32))
+    // New state-gas constants (used to compute state-gas charges)
+    costPerStateByte: 1530, // Cost per state byte
+    stateBytesPerStorageSet: 64, // Bytes accounted per new storage slot
+    stateBytesPerNewAccount: 120, // Bytes accounted per newly created account
+    stateBytesPerAuthBase: 23, // Bytes accounted per EIP-7702 authorization base
+    systemMaxSstoresPerCall: 16, // Reservoir headroom for system contract calls
+  },
+  /**
+   * State Access Gas Cost Increase (Amsterdam, experimental).
+   * Repriced access/write constants per the pinned execution-specs Amsterdam
+   * gas schedule. The SSTORE model becomes: access cost (cold/warm) always,
+   * plus a flat storageWriteGas on the first change to a slot in the
+   * transaction (with a matching refund when the slot is restored), plus the
+   * EIP-8037 state-gas portion for newly set slots.
+   */
+  8038: {
+    // gasPrices — glamsterdam-devnet v8.1.0 revised schedule (EIPs#12083)
+    coldsloadGas: 2100, // COLD_STORAGE_ACCESS unchanged from pre-8038
+    coldaccountaccessGas: 3000, // COLD_ACCOUNT_ACCESS (+15% from 2600)
+    storageWriteGas: 10000, // STORAGE_WRITE: charged on the first change to a storage slot per transaction
+    refundStorageClearGas: 11616, // STORAGE_CLEAR_REFUND = (STORAGE_WRITE + COLD_STORAGE_ACCESS) * 4800 / 5000
+    callValueTransferGas: 11300, // CALL_VALUE = ACCOUNT_WRITE (9000) + CALL_STIPEND (2300)
+    accountWriteGas: 9000, // ACCOUNT_WRITE: per-operation account leaf write surcharge
+    createGas: 12000, // CREATE_ACCESS = ACCOUNT_WRITE + COLD_ACCOUNT_ACCESS
+    create2Gas: 12000, // CREATE_ACCESS = ACCOUNT_WRITE + COLD_ACCOUNT_ACCESS
   },
 }

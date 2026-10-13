@@ -1,6 +1,6 @@
+import { parseArgs } from 'node:util'
 import { Common, Mainnet } from '@ethereumjs/common'
 import { EthereumJSErrorWithoutCode, bytesToHex, hexToBytes } from '@ethereumjs/util'
-import minimist from 'minimist'
 import { assert, describe, it } from 'vitest'
 
 import { createTxFromRLP } from '../src/transactionFactory.ts'
@@ -10,8 +10,13 @@ import { getTests } from './testLoader.ts'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { ForkName, ForkNamesMap, OfficialTransactionTestData } from './types.ts'
 
-const argv = minimist(process.argv.slice(2))
-const file: string | undefined = argv.file
+const { values: txRunnerArgv } = parseArgs({
+  args: process.argv.slice(2),
+  options: { file: { type: 'string' } },
+  strict: false,
+})
+const fileArg = txRunnerArgv.file
+const file: string | undefined = typeof fileArg === 'string' ? fileArg : undefined
 const forkNames: ForkName[] =
   process.env.FORKS !== undefined && process.env.FORKS !== ''
     ? (process.env.FORKS.split(' ') as ForkName[])

@@ -8,7 +8,9 @@
 
 > **EIPsDict** = `object`
 
-Defined in: [types.ts:181](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L181)
+Defined in: [types.ts:201](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L201)
+
+Dictionary of EIP metadata keyed by EIP number.
 
 ## Index Signature
 

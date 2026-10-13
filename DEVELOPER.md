@@ -1,303 +1,302 @@
-# EthereumJS - Developer Docs
+# EthereumJS — Developer Docs
 
-This guide provides an overview of the monorepo, development tools used, shared configuration and additionally covers some advanced topics.
+**How we work in this monorepo** — setup, conventions, tooling, releases, and where each procedure is written down.
 
-It is intended to be both an entrypoint for external contributors as well as a reference point for team members.
+| | |
+| --- | --- |
+| **Humans** | Start here. Use the tables below as an index; follow links for depth. |
+| **Coding agents** | Start at [AGENTS.md](./AGENTS.md), then the [Cursor rules](#agent-and-cursor-rules) it lists. |
+
+> **One source of truth.** If you change CI, releases, docs, or conventions, update the **canonical file** in the same PR. Do not invent a parallel procedure.
 
 ## Contents
 
-- [Monorepo](#monorepo)
-  - [Structure](#structure)
-  - [Workflow](#workflow)
-  - [Releases](#releases)
-- [Development Tools](#development-tools)
-  - [TypeScript](#typescript)
-  - [Linting](#linting)
-  - [Spellcheck](#spellcheck)
-  - [Testing](#testing)
-  - [Documentation](#documentation)
-- [Advanced Topics](#advanced-topics)
-  - [Linking to an External Library](#linking-to-an-external-library)
-  - [Shared Dependencies](#shared-dependencies)
-- [Additional Docs](#additional-docs)
-  - [VM](#vm)
-  - [Client](#client)
+- [Sources of truth](#sources-of-truth)
+- [Get running](#get-running)
+- [Conventions](#conventions)
+- [Tooling](#tooling)
+- [Releases](#releases)
+- [Occasional tasks](#occasional-tasks)
+- [Agent and Cursor rules](#agent-and-cursor-rules)
+- [Further reading](#further-reading)
 
-## Monorepo
+---
 
-### Structure
+## Sources of truth
 
-The EthereumJS project uses [npm workspaces](https://docs.npmjs.com/cli/v7/using-npm/workspaces) to manage all the packages in our monorepo and link packages together.
+### Documentation and architecture
 
-#### Key Directories
+| Topic | Where |
+| ----- | ----- |
+| Monorepo landing, package map | [README.md](./README.md) |
+| Package graph, execution flow | [ARCHITECTURE.md](./ARCHITECTURE.md) |
+| Public API JSDoc | [api-docs.mdc](.cursor/rules/api-docs.mdc) |
+| Examples and embedme | [examples.mdc](.cursor/rules/examples.mdc) |
+| npm releases and CHANGELOG | [release-round skill](.cursor/skills/release-round/SKILL.md), invariants in [releases.mdc](.cursor/rules/releases.mdc) |
 
-- `/packages` - Contains all EthereumJS packages
-- `/config` - Shared configuration files and scripts
-- `packages/ethereum-tests` - Git submodule with Ethereum test vectors (legacy)
-- `packages/execution-spec-tests-fixtures` - Git submodule with selected Ethereum test vectors
+### Code patterns
 
-### Scripts
+| Topic | Where |
+| ----- | ----- |
+| Naming, `createX`, options, `.ts` imports | [code-conventions.mdc](.cursor/rules/code-conventions.mdc) |
+| File layout, EIP params, errors (overview) | [§ Conventions](#conventions) below |
 
-The `./config/cli` directory contains helper scripts referenced in package.json files:
+### Quality, CI, and security
 
-- `coverage.sh` - Runs test coverage
-- `ts-build.sh` - Builds TypeScript for production
-- `ts-compile.sh` - Compiles TypeScript for development
+| Topic | Where |
+| ----- | ----- |
+| CI job budget, affected packages | [ci.mdc](.cursor/rules/ci.mdc), [ci-affected.mjs](./scripts/ci-affected.mjs) |
+| Typecheck finish steps | [typecheck.mdc](.cursor/rules/typecheck.mdc) |
+| Spellcheck finish steps | [spellcheck.mdc](.cursor/rules/spellcheck.mdc) |
+| Security trust tiers | [security.mdc](.cursor/rules/security.mdc) |
+| API tests (Vitest) | [api-tests.mdc](.cursor/rules/api-tests.mdc) |
+| Tx tests | [tx-tests.mdc](.cursor/rules/tx-tests.mdc) |
 
-### Workflow
+### Package-specific
 
-#### Common Commands
+| Topic | Where |
+| ----- | ----- |
+| VM consensus fixtures, profiling | [packages/vm/DEVELOPER.md](./packages/vm/DEVELOPER.md) |
+| Archived execution client (Hive notes) | [archive/client/DEVELOPER.md](./archive/client/DEVELOPER.md) |
+| EST fixture bumps | [update-est-fixtures skill](.cursor/skills/update-est-fixtures/SKILL.md) |
 
-- **Clean the workspace**: `npm run clean` - Removes build artifacts and node_modules
-- **Lint code**: `npm run lint` - Check code style with ESLint v9 and Biome
-- **Fix linting issues**: `npm run lint:fix` - Automatically fix style issues
-- **Build all packages**: `npm run build --workspaces` - Build all packages in the monorepo
-- **Build documentation**: `npm run docs:build` - Generate documentation for all packages
+---
 
-#### Working on a Specific Package
+## Get running
 
-To focus on a single package (e.g., VM):
+### Layout
 
-1. Navigate to the package directory: `cd packages/vm`
-2. Run tests: `npm run test`
-3. Run a specific test: `npx vitest test/path/to/test.spec.ts`
-4. Build just that package: `npm run build --workspace=@ethereumjs/vm`
+[npm workspaces](https://docs.npmjs.com/cli/v7/using-npm/workspaces) link all packages.
 
-### Releases
+```
+ethereumjs-monorepo/
+├── packages/          @ethereumjs/* libraries
+├── config/            shared TS, ESLint, cspell, TypeDoc, config/cli/
+├── packages/ethereum-tests/           submodule — legacy vectors
+└── packages/execution-spec-tests/   submodule — EST fixtures (see VM docs)
+```
 
-#### Overview
+Package scripts call helpers under [`config/cli/`](./config/cli/) (`ts-compile.sh`, `ts-build.sh`, `coverage.sh`, `typedoc.sh`, …). See that directory for the full set.
 
-Releases are done in sync for all [active packages](./README.md#active-packages) and all libraries are always bumped to a same new version number. Library combinations with matching versions are CI tested and ensured to be compatible with each other.
-
-Most release rounds are done as bugfix releases, including releases of non-finalized EIP versions. Minor releases are done for hardfork finalization and otherwise outstanding selected features. Major release rounds are rarely done and are reserved to bundle structural breaking changes which come along significant changes to the API.
-
-#### Process
-
-##### Version/Dependency Update & Publish Script
-
-We have a release script that handles version bumping and publishing for all packages. It supports both regular releases and lightweight in-between releases (nightly, alpha).
+### Clone and install
 
 ```sh
-tsx scripts/release-npm.ts [--bump-version=<version>] [--publish=<tag>]
+git clone https://github.com/ethereumjs/ethereumjs-monorepo.git
+cd ethereumjs-monorepo
+git submodule update --init
+npm install
 ```
 
-**Options:**
+Published packages require **Node.js 22** or newer. Use **Node.js 26** locally (matches CI). With [nvm](https://github.com/nvm-sh/nvm) or [fnm](https://github.com/Schniz/fnm), run `nvm use` / `fnm use` in the repo root — `.nvmrc` pins that version.
 
-- `--bump-version=<version>` - Bump package versions to the specified version
-- `--publish=<tag>` - Publish packages with the specified npm tag
+### Commands at a glance
 
-At least one of `--bump-version` or `--publish` must be specified.
+**Repo root**
 
-When publishing, ensure you are authenticated with npm via `npm login` beforehand.
+| Command | What it does |
+| ------- | ------------ |
+| `npm run lint` / `lint:fix` | ESLint v9 + Biome |
+| `npm run tsc --workspaces` | Typecheck all packages (CI gate) |
+| `npm run spellcheck` | cspell on TS + markdown |
+| `npm run build --workspaces` | Production build |
+| `npm run docs:build --workspaces` | TypeDoc → `packages/*/docs/` |
+| `npm run clean` | Drop build artifacts + `node_modules` |
+| `npm run bench` | Vitest performance suite (CodSpeed in CI) |
 
-**What the script does:**
-
-- **Active packages**: Updates version numbers and `@ethereumjs/*` dependency references
-- **Deprecated packages + testdata**: Only updates (active) `@ethereumjs/*` dependency references (keeps their own version unchanged, not published)
-
-**Examples:**
+**Single package** (example: `@ethereumjs/vm`)
 
 ```sh
-# Bump versions only (no publish) - for preparing a release
-tsx scripts/release-npm.ts --bump-version=10.1.0
-
-# Bump versions and publish - full release
-tsx scripts/release-npm.ts --bump-version=10.1.0 --publish=latest
-
-# Lightweight nightly release
-tsx scripts/release-npm.ts --bump-version=10.1.1-nightly.1 --publish=nightly
-
-# Publish current versions without bumping
-tsx scripts/release-npm.ts --publish=latest
+cd packages/vm
+npm run test
+npm run tsc
+npx vitest test/path/to/test.spec.ts
 ```
 
-##### CHANGELOG Preparation
+From root: `npm run build --workspace=@ethereumjs/vm`
 
-The following prompt has been tested with Cursor IDE to work well for CHANGELOG updates (please update placeholders in the first paragraph accordingly):
+<details>
+<summary>Windows: script-shell for Git Bash</summary>
 
-```markdown
-I want to do a new release round for all active packages listed in @README.md. Version bump has already been done, see an exemplary [ REFERENCE package.json FILE ] file, release is target for today. Last release round has been done on [ ENTER DATE IN FORMAT: April 29 2025 ] along commit [ ENTER COMMIT HASH, e.g.: 9e461f54312bf20c710b43ab73f7d3ad753f8765 ]. An exemplary CHANGELOG.md file is [ REFERENCE e.g. block CHANGELOG.md file ].
-
-Can you please add new sections in the CHANGELOG files and add one-line summaries for the user-facing changes? For this please go for the commits since last release, one commit represents one PR due to our (squash) merge policy. You can leave out PRs only updating documentation, code in the examples folder or tests. Also tooling infrastructure (linting,...) and CI updating PRs can be left out. New support for new and deprecation for older Node.js as well as TypeScript versions should be added. Version updates for external dependencies - so not from within the monorepo - should be added as well.
-
-Here is an example for the format of a change/PR entry:
-
-- New default hardfork: `Shanghai` -> `Cancun`, see PR [#3566](https://github.com/ethereumjs/ethereumjs-monorepo/pull/3566)
-
-For the CHANGELOG files you have not added lines in this step please nevertheless add a CHANGELOG entry (we do releases for all active packages no matter the changeset) and enter the following sentence: Maintenance release, no active changes.
-```
-
-#### Windows Users Note
-
-Windows users might encounter errors with script paths. To fix, configure Git bash as the script shell:
+If script paths fail:
 
 ```sh
 npm config set script-shell "C:\\Program Files (x86)\\git\\bin\\bash.exe"
 ```
 
-To reset this setting:
+Reset: `npm config delete script-shell`
+
+</details>
+
+---
+
+## Conventions
+
+Recurring patterns **as they exist today** — descriptive, not aspirational. Enforceable naming lives in [code-conventions.mdc](.cursor/rules/code-conventions.mdc).
+
+| Pattern | Meaning | Examples |
+| ------- | ------- | -------- |
+| `createX…` | Public factory entry points | `createVM`, `createLegacyTx`, `createBlock` |
+| `createXFromY…` | Alternate input formats | `FromRLP`, `FromRPC`, `FromBytesArray` |
+| `xToY` | Pure converters | `hexToBytes`, `bytesToBigInt` |
+| `isX` | Type guards | `isLegacyTx`, `isHexString` |
+
+### File layout
+
+Most active packages use:
+
+| File | Role |
+| ---- | ---- |
+| `types.ts` | Public interfaces, `*Opts`, event maps |
+| `constructors.ts` | `createX` factories |
+| `params.ts` | EIP-indexed params merged into `Common` |
+
+Exceptions: `packages/tx` → `transactionFactory.ts`; `packages/block` → `block/constructors.ts`, `header/constructors.ts`.
+
+### Options, events, imports
+
+- **Options** — constructors and `createX` take one options object (`EVMOpts`, `VMOpts`, …), not long positional lists. Document non-obvious fields on the interface.
+- **Events** — `eventemitter3` on `EVM`, `VM`, `Blockchain`, `Common`; event maps in `types.ts`; `events?` optional on option types.
+- **ESM imports** — relative paths inside `src/` use explicit `.ts` extensions (rewritten to `.js` in output).
+- **Browser-first `src/`** — no Node built-in imports in shipped library code; tests, scripts, and examples may use Node. Details and exceptions (`e2store`, archived client): [code-conventions.mdc](.cursor/rules/code-conventions.mdc) § Browser-first production code.
+
+### Errors
+
+Not fully uniform yet (known):
+
+| Piece | Location / note |
+| ----- | ---------------- |
+| Base class | `EthereumJSError` in `packages/rlp/src/errors.ts`, re-exported via `util` |
+| Deprecated helper | `EthereumJSErrorWithoutCode` — use `EthereumJSError` with a `code` |
+| EVM-specific | `EVMError` is **not** `Error` / `EthereumJSError` — intentional |
+
+### EIP and parameters
+
+```mermaid
+flowchart LR
+  common["@ethereumjs/common"]
+  params["package params.ts"]
+  code["package code"]
+
+  common -->|"isActivatedEIP, gteHardfork"| code
+  params -->|"common.updateParams"| common
+  common -->|"common.param('name')"| code
+```
+
+- **Activation** (which EIPs / hardforks) → `common`
+- **Numeric values** (gas costs, limits) → each package’s `params.ts`, injected at construction
+
+---
+
+## Tooling
+
+One command and one config pointer per tool. Agent finish steps are in the linked rules — not repeated here.
+
+| Tool | Command | Config | Agent rule |
+| ---- | ------- | ------ | ---------- |
+| TypeScript | `npm run tsc` / `build` | `config/tsconfig*.json` | [typecheck.mdc](.cursor/rules/typecheck.mdc) |
+| Lint | `npm run lint` / `lint:fix` | `eslint.config.mjs` per package | — |
+| Spellcheck | `npm run spellcheck` | `config/cspell-*.json` | [spellcheck.mdc](.cursor/rules/spellcheck.mdc) |
+| Tests | `npm run test` | Vitest per package | [api-tests.mdc](.cursor/rules/api-tests.mdc), [tx-tests.mdc](.cursor/rules/tx-tests.mdc) |
+| API docs | `npm run docs:build` | `config/cli/typedoc.sh`, `typedoc/` | [api-docs.mdc](.cursor/rules/api-docs.mdc) |
+| Examples | `npm run examples` | `packages/*/examples/` | [examples.mdc](.cursor/rules/examples.mdc) |
+| Snippet PNGs | `npm run snippet:png` | `config/code-snippet/` | — |
+| CI | PR check **`Build / CI`** | `.github/workflows/` | [ci.mdc](.cursor/rules/ci.mdc) |
+| Performance benchmarks | `npm run bench` | [config/vitest-bench.mts](./config/vitest-bench.mts) | [benchmarks.mdc](.cursor/rules/benchmarks.mdc) |
+
+### Performance benchmarks
+
+Hot-path packages share one Vitest bench suite (`packages/*/benchmarks/*.bench.ts`; heavy local-only cases use `*.local.bench.ts`). Local: `npm run bench` (wall time). CI: **`performance-benchmarks`** job in [`.github/workflows/build.yml`](.github/workflows/build.yml) — restores the same workspace cache as test jobs (`needs: build`) and runs CodSpeed **simulation** for pull requests and for `master`. A pull request runs the suite only when it has the **`type: test performance`** label; each push reads that label again. `master` pushes stay path-filtered. A manual run always measures. Both record the baseline. Informational until **CodSpeed Performance Analysis** is required in branch protection.
+
+Install the [CodSpeed GitHub App](https://github.com/marketplace/codspeed-continuous-performance-analysis) on the org repo before expecting PR reports.
+
+**Maintainer (one-time / when ready):** after stable `master` simulation runs, optionally require **CodSpeed Performance Analysis** in branch protection (not `Build / CI`). Tune regression threshold in CodSpeed (toward 15–20% if flaky). Acknowledge intentional regressions in the CodSpeed UI.
+
+### Notes
+
+**TypeScript** — `npm test` does **not** run `tsc`. After TS edits, typecheck the touched package(s).
+
+**Testing** — CI runs affected packages via [ci-affected.mjs](./scripts/ci-affected.mjs). Skipped per-package jobs still count as success. Lint, typecheck, and `npm audit` always run. Full matrix on `master`, workflow dispatch, or shared-config changes. `vm-est-dev` is informational, not gated.
+
+VM consensus runners: [packages/vm/DEVELOPER.md](./packages/vm/DEVELOPER.md).
+
+**Browser tests** — optional locally. Once: `npm run install-browser-deps`, then `npm run test:browser`. CI uses `mcr.microsoft.com/playwright:v1.60.0-noble` — keep in sync with `playwright` in `package-lock.json`.
+
+**Documentation** — TypeDoc 0.28 needs TS 6; monorepo `tsc` uses TS 7. Always use [`config/cli/typedoc.sh`](./config/cli/typedoc.sh), not bare `typedoc`. Cross-package `{@link}` → [`typedoc-external-links.mjs`](./config/typedoc-external-links.mjs).
+
+**Examples** — README snippets sync via embedme: `npm run examples:build` in a package after editing `examples/`.
+
+**Snippet PNGs** — release/social images from `packages/*/examples/` only (local files, Playwright screenshot). Once: `npm run install-browser-deps`. Example: `npm run snippet:png -- --file=packages/vm/examples/runTxGasDimensions.ts --out=tmp/announce/vm.png`. Output defaults to `tmp/announce/`.
+
+**npm / `.npmrc`** — `min-release-age=3` (npm 11.10+) blocks third-party versions published in the last three days under this repo. `@ethereumjs/*` is on `min-release-age-exclude` so post-publish registry smokes work the same day. To install a young **external** package from here, use `npm install … --min-release-age=0`.
+
+---
+
+## Releases
+
+Active packages ([README § Package map](./README.md#package-map)) ship **in sync** with the **same version number**.
+
+| Type | When |
+| ---- | ---- |
+| Bugfix | Most rounds; may include non-finalized EIP behavior |
+| Minor | Hardfork finalization or selected features |
+| Major | Rare; structural API breaks |
+
+### Branches
+
+| Branch | Series | Status |
+| ------ | ------ | ------ |
+| [`master`](https://github.com/ethereumjs/ethereumjs-monorepo) | v10 | Active |
+| [`maintenance-v8`](https://github.com/ethereumjs/ethereumjs-monorepo/tree/maintenance-v8) | v7 / v8 | Maintenance |
+| [`maintenance-v6`](https://github.com/ethereumjs/ethereumjs-monorepo/tree/maintenance-v6) | v6 | Maintenance |
+
+Open PRs against the working branch unless backporting. Past releases: [tags](https://github.com/ethereumjs/ethereumjs-monorepo/tags).
+
+**Procedure** — [release-round skill](.cursor/skills/release-round/SKILL.md) (six gated phases: intent, CHANGELOG, bump, publish, verify, announce). Invariants: [releases.mdc](.cursor/rules/releases.mdc). Commands live in the script headers ([release-npm.ts](./scripts/release-npm.ts), [release-github.ts](./scripts/release-github.ts)). Do not publish without an explicit maintainer request.
+
+---
+
+## Occasional tasks
+
+**Local npm link**
 
 ```sh
-npm config delete script-shell
+cd packages/package-name && npm run build && npm link
+cd path/to/your/project && npm link @ethereumjs/package-name
+# rebuild after changes; unlink when done
 ```
 
-## Development Tools
+**Shared toolchain** — `eslint`, `biome`, `typescript`, … live in the root `package.json`. Categories and update practice: [dependencies.mdc](.cursor/rules/dependencies.mdc).
 
-### TypeScript
+**Security** — wrong hashes or EVM results are consensus bugs. Trust tiers: [security.mdc](.cursor/rules/security.mdc). Extra care on `tx`, `util` signing, and `evm` / `vm` spec tests.
 
-All packages use [TypeScript](https://www.typescriptlang.org/) with a shared base configuration.
+---
 
-#### Configuration Files
+## Agent and Cursor rules
 
-Each package should have:
+Rules: [`.cursor/rules/`](.cursor/rules/) (plain markdown + YAML front matter — works outside Cursor too).
 
-- `tsconfig.json` - For development and testing
-- `tsconfig.prod.json` - For building production releases
+| Rule | Scope | Remember |
+| ---- | ----- | -------- |
+| `ci`, `typecheck`, `spellcheck`, `git`, `security`, `dependencies` | Always on | Git rule: explicit ask for commit/push/PR/merge; commit-only ≠ push; PR labels when asked |
+| `code-conventions` | `src/`, `examples/` | No public API renames; no Node built-ins in `src/` (browser-first) |
+| `api-docs` | `src/` | Cross-package `{@link @ethereumjs/pkg!Symbol}` |
+| `examples` | `examples/`, READMEs | Run embedme after README edits |
+| `api-tests` | active `test/` | VM consensus runners out of scope |
+| `tx-tests` | `packages/tx` | 4844 matrix uses stub KZG |
+| `releases` | CHANGELOG, release scripts | Procedure: `release-round` skill; never publish without approval |
 
-Example `tsconfig.json`:
-```json
-{
-  "extends": "../../config/tsconfig.json",
-  "include": ["src/**/*.ts", "test/**/*.ts"]
-}
-```
+**Skill:** [update-est-fixtures](.cursor/skills/update-est-fixtures/SKILL.md) — EST fixture bumps only.
 
-Example `tsconfig.prod.json`:
-```json
-{
-  "extends": "../../config/tsconfig.prod.json",
-  "include": ["src/**/*.ts"],
-  "compilerOptions": {
-    "outDir": "./dist"
-  }
-}
-```
+Package-specific depth stays in package `DEVELOPER.md` files. [AGENTS.md](./AGENTS.md) is the agent index — not a second copy of this document.
 
-#### Build Commands
+---
 
-Use these commands in your package scripts:
+## Further reading
 
-```json
-{
-  "scripts": {
-    "tsc": "../../config/cli/ts-compile.sh",
-    "build": "../../config/cli/ts-build.sh"
-  }
-}
-```
-
-### Linting
-
-We use [ESLint](https://eslint.org/) v9 and [Biome](https://biomejs.dev/) for code style enforcement and linting.
-
-#### Configuration Files
-
-Each package includes:
-
-- `eslint.config.mjs` - package specific ESLint configuration that extends the repository wide config
-
-
-#### Commands
-
-Commands area available on both root and package levels.
-
-Run `npm run lint` to find lint issues and `npm run lint:fix` to fix fixable lint issues.
-
-
-### Spellcheck
-
-We use [cspell](https://github.com/streetsidesoftware/cspell) to do spellchecking. 
-
-#### Configuration Files
-
-The following two configuration files include a list of allowed words (add yours if you have one necessary) as well as some additional configuration, separate for docs and code.
-
-- `config/cspell-md.json` | `Markdown`
-- `config/cspell-ts.json` | `TypeScript`
-
-#### Commands
-
-Commands area available on both root and package levels.
-
-```json
-{
-  "scripts": {
-    "sc": "npm run spellcheck",
-    "spellcheck": "npm run spellcheck:ts && npm run spellcheck:md",
-    "spellcheck:ts": "npx cspell --gitignore -c ../../config/cspell-ts.json ...",
-    "spellcheck:md": "npx cspell --gitignore -c ../../config/cspell-md.json ..."
-  }
-}
-```
-
-### Testing
-
-The project uses [Vitest](https://vitest.dev/) for testing with [c8](https://vitest.dev/guide/coverage.html) for code coverage.
-
-#### General
-
-Each package includes one or more test scripts.  To run all tests in any package, use `npm run test`.  Refer to the package.json for more specifics.
-
-To run a specific test and watch for changes:
-
-```sh
-npx vitest test/path/to/test.spec.ts
-```
-
-#### Browser
-
-We use `vitest` with [playwright](https://playwright.dev/) to run browser tests.  When running browser tests with `npm run test:browser`, ensure you have a version of the Chromium browser installed.  If not, you can run `npx playwright install --with-deps` to install a supported version.
-
-## Advanced Topics
-
-### Linking to an External Library
-
-#### Quick Summary
-
-To test packages with an external project locally, use npm link:
-
-1. Build the package you want to test:
-```sh
-cd packages/package-name
-npm run build
-```
-
-2. Link the package globally:
-```sh
-npm link
-```
-
-3. In your test project, link to the local package:
-```sh
-cd path/to/your/project
-npm link @ethereumjs/package-name
-```
-
-4. When you make changes to your package, rebuild it for the changes to be reflected.
-
-5. When done testing, unlink:
-```sh
-# In your test project
-npm unlink --no-save @ethereumjs/package-name
-
-# In the package directory
-npm unlink
-```
-
-When making changes to the linked package, rebuild it for the changes to be reflected in your test project.
-
-### Shared Dependencies
-
-Common development dependencies (e.g. `eslint`, `biome`) are defined in the root `package.json`. 
-
-## Additional Docs
-
-There are selected additional developer docs available to get more deep on certain topics. The following is an overview.
-
-### VM
-
-[VM Docs](./packages/vm/DEVELOPER.md) for testing, debugging and VM/EVM profiling.
-
-### Client
-
-[Client Docs](./packages/client/DEVELOPER.md) for running Hive tests.
+| Doc | Covers |
+| --- | ------ |
+| [ARCHITECTURE.md](./ARCHITECTURE.md) | Responsibilities, dependency graph, `runBlock` flow |
+| [packages/vm/DEVELOPER.md](./packages/vm/DEVELOPER.md) | EST / legacy tests, debugging, profiling |
+| [archive/client/DEVELOPER.md](./archive/client/DEVELOPER.md) | Hive notes for archived `@ethereumjs/client` |
+| [CONTRIBUTING.md](./.github/CONTRIBUTING.md) | How to contribute |
+| [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) | Community standards |

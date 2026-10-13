@@ -1,3 +1,5 @@
+import { externalSymbolLinkMappings } from './typedoc-external-links.mjs'
+
 export default {
   plugin: 'typedoc-plugin-markdown',
   readme: 'none',
@@ -5,4 +7,5 @@ export default {
   githubPages: false,
   excludePrivate: true,
   excludeProtected: true,
+  externalSymbolLinkMappings,
 }

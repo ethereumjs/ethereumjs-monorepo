@@ -7,6 +7,7 @@
 ## Classes
 
 - [BlockBuilder](classes/BlockBuilder.md)
+- [Bloom](classes/Bloom.md)
 - [VM](classes/VM.md)
 
 ## Interfaces
@@ -25,6 +26,7 @@
 - [RunTxOpts](interfaces/RunTxOpts.md)
 - [RunTxResult](interfaces/RunTxResult.md)
 - [SealBlockOpts](interfaces/SealBlockOpts.md)
+- [TxGasDimensionsEstimate](interfaces/TxGasDimensionsEstimate.md)
 - [VMOpts](interfaces/VMOpts.md)
 
 ## Type Aliases
@@ -45,4 +47,6 @@
 - [buildBlock](functions/buildBlock.md)
 - [createVM](functions/createVM.md)
 - [encodeReceipt](functions/encodeReceipt.md)
+- [estimateTxGasDimensions](functions/estimateTxGasDimensions.md)
 - [runBlock](functions/runBlock.md)
+- [runTx](functions/runTx.md)

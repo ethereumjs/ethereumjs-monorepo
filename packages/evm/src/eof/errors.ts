@@ -1,5 +1,6 @@
 import { EthereumJSErrorWithoutCode } from '@ethereumjs/util'
 
+/** Human-readable EOF validation error identifiers. */
 export type EOFErrorMessage = (typeof EOFErrorMessage)[keyof typeof EOFErrorMessage]
 
 export const EOFErrorMessage = {
@@ -67,6 +68,7 @@ export const EOFErrorMessage = {
   INVALID_RETURN_CONTRACT_DATA_SIZE: 'invalid RETURNCONTRACT: data size lower than expected',
 } as const
 
+/** Formats an {@link EOFErrorMessage} with positional context for logging. */
 export function validationErrorMsg(type: EOFErrorMessage, ...args: any) {
   switch (type) {
     case EOFErrorMessage.OUT_OF_BOUNDS: {
@@ -125,6 +127,7 @@ export function validationErrorMsg(type: EOFErrorMessage, ...args: any) {
     }
   }
 }
+/** Throws an {@link EthereumJSErrorWithoutCode} for the given EOF validation failure. */
 export function validationError(type: EOFErrorMessage, ...args: any): never {
   switch (type) {
     case EOFErrorMessage.OUT_OF_BOUNDS: {

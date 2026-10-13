@@ -8,7 +8,7 @@
 
 > **blobsToProofs**(`kzg`, `blobs`, `commitments`): `` `0x${string}` ``[]
 
-Defined in: [packages/util/src/blobs.ts:111](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/blobs.ts#L111)
+Defined in: [packages/util/src/blobs.ts:112](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/blobs.ts#L112)
 
 EIP-4844: Computes KZG proofs for each blob/commitment pair.
 

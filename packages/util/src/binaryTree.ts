@@ -14,11 +14,10 @@ import type { Address } from './address.ts'
 import type { PrefixedHexString } from './types.ts'
 
 /**
- * @dev Returns the 31-bytes binary tree stem for a given address and tree index.
- * @param hashFunction The hashFunction for the binary tree
- * @param {Address} address The address to generate the tree key for.
- * @param treeIndex The index of the tree to generate the key for. Defaults to 0.
- * @return The 31-bytes binary tree stem as a Uint8Array.
+ * Build the 31-byte binary-tree stem for an address and tree index (EIP-7864).
+ *
+ * @param hashFunction Hash used to derive the stem from the padded address and index
+ * @param treeIndex Tree index; defaults to `0`
  */
 export function getBinaryTreeStem(
   hashFunction: (value: Uint8Array) => Uint8Array,
@@ -39,6 +38,7 @@ export function getBinaryTreeStem(
   return treeStem
 }
 
+/** Stem and suffix diffs for one binary-tree state access. */
 export interface BinaryTreeStateDiff {
   stem: PrefixedHexString
   suffixDiffs: {
@@ -49,12 +49,13 @@ export interface BinaryTreeStateDiff {
 }
 
 // TODO: This is a placeholder type, the actual type is not yet defined
+/** Placeholder proof type for binary-tree witnesses (experimental). */
 export type BinaryTreeProof = any
 
 /**
  * Experimental, object format could eventual change.
  * An object that provides the state and proof necessary for binary tree stateless execution
- * */
+ */
 export interface BinaryTreeExecutionWitness {
   /**
    * The stateRoot of the parent block
@@ -73,13 +74,16 @@ export interface BinaryTreeExecutionWitness {
   proof: BinaryTreeProof
 }
 
+/** Leaf kind discriminator for binary-tree account data. */
 export type BinaryTreeLeafType = (typeof BinaryTreeLeafType)[keyof typeof BinaryTreeLeafType]
 
+/** Leaf kind discriminator for binary-tree account data. */
 export const BinaryTreeLeafType = {
   BasicData: 0,
   CodeHash: 1,
 } as const
 
+/** Decoded account header fields from a binary-tree basic-data leaf. */
 export type BinaryTreeLeafBasicData = {
   version: number
   nonce: bigint
@@ -87,31 +91,44 @@ export type BinaryTreeLeafBasicData = {
   codeSize: number
 }
 
+/** Binary-tree layout constant `VERSION_OFFSET` (EIP-7864). */
 export const BINARY_TREE_VERSION_OFFSET = 0
+/** Binary-tree layout constant `CODE_SIZE_OFFSET` (EIP-7864). */
 export const BINARY_TREE_CODE_SIZE_OFFSET = 5
+/** Binary-tree layout constant `NONCE_OFFSET` (EIP-7864). */
 export const BINARY_TREE_NONCE_OFFSET = 8
+/** Binary-tree layout constant `BALANCE_OFFSET` (EIP-7864). */
 export const BINARY_TREE_BALANCE_OFFSET = 16
 
+/** Binary-tree layout constant `VERSION_BYTES_LENGTH` (EIP-7864). */
 export const BINARY_TREE_VERSION_BYTES_LENGTH = 1
+/** Binary-tree layout constant `CODE_SIZE_BYTES_LENGTH` (EIP-7864). */
 export const BINARY_TREE_CODE_SIZE_BYTES_LENGTH = 3
+/** Binary-tree layout constant `NONCE_BYTES_LENGTH` (EIP-7864). */
 export const BINARY_TREE_NONCE_BYTES_LENGTH = 8
+/** Binary-tree layout constant `BALANCE_BYTES_LENGTH` (EIP-7864). */
 export const BINARY_TREE_BALANCE_BYTES_LENGTH = 16
 
+/** Binary-tree layout constant `BASIC_DATA_LEAF_KEY` (EIP-7864). */
 export const BINARY_TREE_BASIC_DATA_LEAF_KEY = intToBytes(BinaryTreeLeafType.BasicData)
+/** Binary-tree layout constant `CODE_HASH_LEAF_KEY` (EIP-7864). */
 export const BINARY_TREE_CODE_HASH_LEAF_KEY = intToBytes(BinaryTreeLeafType.CodeHash)
 
+/** Binary-tree layout constant `CODE_CHUNK_SIZE` (EIP-7864). */
 export const BINARY_TREE_CODE_CHUNK_SIZE = 31
+/** Binary-tree layout constant `HEADER_STORAGE_OFFSET` (EIP-7864). */
 export const BINARY_TREE_HEADER_STORAGE_OFFSET = 64
+/** Binary-tree layout constant `CODE_OFFSET` (EIP-7864). */
 export const BINARY_TREE_CODE_OFFSET = 128
+/** Binary-tree layout constant `NODE_WIDTH` (EIP-7864). */
 export const BINARY_TREE_NODE_WIDTH = 256
+/** Binary-tree layout constant `MAIN_STORAGE_OFFSET` (EIP-7864). */
 export const BINARY_TREE_MAIN_STORAGE_OFFSET = BigInt(256) ** BigInt(BINARY_TREE_CODE_CHUNK_SIZE)
 
 /**
- * @dev Returns the tree key for a given binary tree stem, and sub index.
- * @dev Assumes that the tree node width = 256
- * @param stem The 31-bytes binary tree stem as a Uint8Array.
- * @param subIndex The sub index of the tree to generate the key for as a Uint8Array.
- * @return The tree key as a Uint8Array.
+ * Combine a 31-byte stem with a leaf suffix to form a binary-tree key (node width 256).
+ *
+ * @param leaf {@link BinaryTreeLeafType} constant or raw suffix bytes
  */
 export const getBinaryTreeKey = (stem: Uint8Array, leaf: BinaryTreeLeafType | Uint8Array) => {
   switch (leaf) {
@@ -124,12 +141,7 @@ export const getBinaryTreeKey = (stem: Uint8Array, leaf: BinaryTreeLeafType | Ui
   }
 }
 
-/**
- * Calculates the position of the storage key in the BinaryTree tree, determining
- * both the tree index (the node in the tree) and the subindex (the position within the node).
- * @param {bigint} storageKey - The key representing a specific storage slot.
- * @returns {Object} - An object containing the tree index and subindex
- */
+/** Map a storage slot to its binary-tree node index and in-node subindex. */
 export function getBinaryTreeIndicesForStorageSlot(storageKey: bigint): {
   treeIndex: bigint
   subIndex: number
@@ -147,12 +159,7 @@ export function getBinaryTreeIndicesForStorageSlot(storageKey: bigint): {
   return { treeIndex, subIndex }
 }
 
-/**
- * Calculates the position of the code chunks in the BinaryTree tree, determining
- * both the tree index (the node in the tree) and the subindex (the position within the node).
- * @param {bigint} chunkId - The ID representing a specific chunk.
- * @returns {Object} - An object containing the tree index and subindex
- */
+/** Map a code chunk index to its binary-tree node index and in-node subindex. */
 export function getBinaryTreeIndicesForCodeChunk(chunkId: number) {
   const treeIndex = Math.floor((BINARY_TREE_CODE_OFFSET + chunkId) / BINARY_TREE_NODE_WIDTH)
   const subIndex = (BINARY_TREE_CODE_OFFSET + chunkId) % BINARY_TREE_NODE_WIDTH
@@ -160,11 +167,9 @@ export function getBinaryTreeIndicesForCodeChunk(chunkId: number) {
 }
 
 /**
- * Asynchronously calculates the BinaryTree tree key for the specified code chunk ID.
- * @param {Address} address - The account address to access code for.
- * @param {number} chunkId - The ID of the code chunk to retrieve.
- * @param hashFunction - The hash function used for BinaryTree-related operations.
- * @returns {Uint8Array} - The BinaryTree tree key as a byte array.
+ * Build the binary-tree key for a contract code chunk.
+ *
+ * @param hashFunction Hash used to derive the address stem
  */
 export const getBinaryTreeKeyForCodeChunk = (
   address: Address,
@@ -176,6 +181,7 @@ export const getBinaryTreeKeyForCodeChunk = (
 }
 
 // This code was written by robots based on the reference implementation in EIP-7864
+/** Split contract bytecode into binary-tree code chunks (EIP-7864). */
 export const chunkifyBinaryTreeCode = (code: Uint8Array) => {
   const PUSH1 = 0x60 // Assuming PUSH1 is defined as 0x60
   const PUSH32 = 0x7f // Assuming PUSH32 is defined as 0x7f
@@ -217,11 +223,9 @@ export const chunkifyBinaryTreeCode = (code: Uint8Array) => {
 }
 
 /**
- * Asynchronously calculates the BinaryTree tree key for the specified storage slot.
- * @param {Address} address - The account address to access code for.
- * @param {bigint} storageKey - The storage slot key to retrieve the key for.
- * @param hashFunction - The hash function used in the Binary Tree.
- * @returns {Uint8Array} - The BinaryTree tree key as a byte array.
+ * Build the binary-tree key for an account storage slot.
+ *
+ * @param hashFunction Hash used to derive the address stem
  */
 export const getBinaryTreeKeyForStorageSlot = (
   address: Address,
@@ -233,15 +237,7 @@ export const getBinaryTreeKeyForStorageSlot = (
   return concatBytes(getBinaryTreeStem(hashFunction, address, treeIndex), intToBytes(subIndex))
 }
 
-/**
- * This function extracts and decodes account header elements (version, nonce, code size, and balance)
- * from an encoded `Uint8Array` representation of raw BinaryTree leaf-node basic data. Each component is sliced
- * from the `encodedBasicData` array based on predefined offsets and lengths, and then converted
- * to its appropriate type (integer or BigInt).
- * @param {Uint8Array} encodedBasicData - The encoded BinaryTree leaf basic data containing the version, nonce,
- * code size, and balance in a compact Uint8Array format.
- * @returns {BinaryTreeLeafBasicData} - An object containing the decoded version, nonce, code size, and balance.
- */
+/** Decode account header fields from a binary-tree basic-data leaf payload. */
 export function decodeBinaryTreeLeafBasicData(
   encodedBasicData: Uint8Array,
 ): BinaryTreeLeafBasicData {
@@ -267,16 +263,7 @@ export function decodeBinaryTreeLeafBasicData(
   return { version, nonce, codeSize, balance }
 }
 
-/**
- * This function takes a `BinaryTreeLeafBasicData` object and encodes its properties
- * (version, nonce, code size, and balance) into a compact `Uint8Array` format. Each
- * property is serialized and padded to match the required byte lengths defined by
- * EIP-7864. Additionally, 4 bytes are reserved for future use as specified
- * in EIP-7864.
- * @param {Account} account - An object containing the version, nonce,
- *   code size, and balance to be encoded.
- * @returns {Uint8Array} - A compact bytes representation of the account header basic data.
- */
+/** Encode an {@link Account} basic-data leaf for binary-tree storage (EIP-7864). */
 export function encodeBinaryTreeLeafBasicData(account: Account): Uint8Array {
   const encodedVersion = setLengthLeft(
     intToBytes(account.version),
@@ -319,7 +306,7 @@ export const generateBinaryTreeChunkSuffixes = (numChunks: number) => {
  * Helper method for generating the code stems necessary for putting code
  * @param numChunks the number of code chunks to be put
  * @param address the address of the account getting the code
- * @param hashFunction an initialized {@link BinaryTreeCrypto} object
+ * @param hashFunction Keccak/Blake3 (or compatible) hash used for stem generation
  * @returns an array of stems for putting code
  */
 export function generateBinaryTreeCodeStems(

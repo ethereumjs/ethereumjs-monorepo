@@ -8,7 +8,9 @@
 
 > **decompressData**(`compressedData`): `Promise`\<`Uint8Array`\<`ArrayBufferLike`\>\>
 
-Defined in: [packages/e2store/src/snappy.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/snappy.ts#L41)
+Defined in: [packages/e2store/src/snappy.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/snappy.ts#L42)
+
+Decompress Snappy-framed e2store payload bytes.
 
 ## Parameters
 

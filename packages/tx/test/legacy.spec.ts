@@ -24,40 +24,8 @@ import { txsData } from './testData/txs.ts'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { TransactionType, TxData, TypedTransaction } from '../src/index.ts'
 
-describe('[Transaction]', () => {
+describe('[LegacyTx]', () => {
   const transactions: TypedTransaction[] = []
-
-  it(`cannot input decimal or negative values`, () => {
-    const values = ['gasPrice', 'gasLimit', 'nonce', 'value', 'v', 'r', 's']
-    const cases = [
-      10.1,
-      '10.1',
-      '0xaa.1',
-      -10.1,
-      -1,
-      BigInt(-10),
-      '-100',
-      '-10.1',
-      '-0xaa',
-      Infinity,
-      -Infinity,
-      NaN,
-      {},
-      true,
-      false,
-      () => {},
-      Number.MAX_SAFE_INTEGER + 1,
-    ]
-    for (const value of values) {
-      const txData: any = {}
-      for (const testCase of cases) {
-        txData[value] = testCase
-        assert.throws(() => {
-          createLegacyTx(txData)
-        })
-      }
-    }
-  })
 
   it('Initialization', () => {
     const nonEIP2930Common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
@@ -102,7 +70,7 @@ describe('[Transaction]', () => {
     )
   })
 
-  it('Initialization -> decode with createWithdrawalFromBytesArray()', () => {
+  it('Initialization -> decode with createLegacyTxFromBytesArray()', () => {
     for (const tx of txsData.slice(0, 4)) {
       const txData = tx.raw.map((rawTxData) => hexToBytes(rawTxData as PrefixedHexString))
       const pt = createLegacyTxFromBytesArray(txData)

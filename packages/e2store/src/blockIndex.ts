@@ -3,6 +3,7 @@ import { bigInt64ToBytes, bytesToBigInt64, concatBytes, equalsBytes } from '@eth
 import { formatEntry, readEntry } from './e2store.ts'
 import { CommonTypes, VERSION } from './types.ts'
 
+/** Locate and parse the trailing block-index entry in an e2hs byte stream. */
 export function getBlockIndex(bytes: Uint8Array) {
   const count = Number(bytesToBigInt64(bytes.slice(-8), true))
   const recordLength = 8 * count + 24
@@ -17,6 +18,7 @@ export function getBlockIndex(bytes: Uint8Array) {
   return { data, type, count, recordStart }
 }
 
+/** Decode block-index payload into starting block number and tuple byte offsets. */
 export function readBlockIndex(data: Uint8Array, count: number) {
   const startingNumber = Number(bytesToBigInt64(data.slice(0, 8), true))
   const offsets: number[] = []
@@ -31,6 +33,7 @@ export function readBlockIndex(data: Uint8Array, count: number) {
   }
 }
 
+/** Build a version entry plus block-index footer for an e2hs file. */
 export async function createBlockIndex(blockTuples: Uint8Array[], startingNumber: bigint) {
   const version = await formatEntry(VERSION)
   const tuplesLength = blockTuples.reduce((acc, b) => acc + b.length, 0)

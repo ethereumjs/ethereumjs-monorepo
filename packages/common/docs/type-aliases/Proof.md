@@ -8,7 +8,9 @@
 
 > **Proof** = `object`
 
-Defined in: [interfaces.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L49)
+Defined in: [interfaces.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L54)
+
+Merkle proof bundle for an account and its storage.
 
 ## Properties
 
@@ -16,7 +18,7 @@ Defined in: [interfaces.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo
 
 > **accountProof**: `PrefixedHexString`[]
 
-Defined in: [interfaces.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L55)
+Defined in: [interfaces.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L60)
 
 ***
 
@@ -24,7 +26,7 @@ Defined in: [interfaces.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo
 
 > **address**: `PrefixedHexString`
 
-Defined in: [interfaces.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L50)
+Defined in: [interfaces.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L55)
 
 ***
 
@@ -32,7 +34,7 @@ Defined in: [interfaces.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo
 
 > **balance**: `PrefixedHexString`
 
-Defined in: [interfaces.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L51)
+Defined in: [interfaces.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L56)
 
 ***
 
@@ -40,7 +42,7 @@ Defined in: [interfaces.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo
 
 > **codeHash**: `PrefixedHexString`
 
-Defined in: [interfaces.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L52)
+Defined in: [interfaces.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L57)
 
 ***
 
@@ -48,7 +50,7 @@ Defined in: [interfaces.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo
 
 > **nonce**: `PrefixedHexString`
 
-Defined in: [interfaces.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L53)
+Defined in: [interfaces.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L58)
 
 ***
 
@@ -56,7 +58,7 @@ Defined in: [interfaces.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo
 
 > **storageHash**: `PrefixedHexString`
 
-Defined in: [interfaces.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L54)
+Defined in: [interfaces.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L59)
 
 ***
 
@@ -64,4 +66,4 @@ Defined in: [interfaces.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo
 
 > **storageProof**: [`StorageProof`](StorageProof.md)[]
 
-Defined in: [interfaces.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L56)
+Defined in: [interfaces.ts:61](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L61)

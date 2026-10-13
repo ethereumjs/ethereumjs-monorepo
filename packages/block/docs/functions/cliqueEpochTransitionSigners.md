@@ -6,7 +6,7 @@
 
 # Function: cliqueEpochTransitionSigners()
 
-> **cliqueEpochTransitionSigners**(`header`): `Address`[]
+> **cliqueEpochTransitionSigners**(`header`): [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)[]
 
 Defined in: [consensus/clique.ts:86](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/consensus/clique.ts#L86)
 
@@ -15,7 +15,7 @@ Returns a list of signers
 
 This function throws if not called on an epoch
 transition block and should therefore be used
-in conjunction with BlockHeader.cliqueIsEpochTransition
+in conjunction with [cliqueIsEpochTransition](cliqueIsEpochTransition.md)
 
 ## Parameters
 
@@ -25,4 +25,4 @@ in conjunction with BlockHeader.cliqueIsEpochTransition
 
 ## Returns
 
-`Address`[]
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)[]

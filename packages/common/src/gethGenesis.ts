@@ -106,8 +106,10 @@ export interface CreateCommonFromGethGenesisOpts {
   mergeForkIdPostMerge?: boolean
 }
 
+/** Genesis storage slot as a hex key/value pair. */
 export type StoragePair = [key: PrefixedHexString, value: PrefixedHexString]
 
+/** Genesis account state tuple used by geth genesis parsing. */
 export type AccountState = [
   balance: PrefixedHexString,
   code?: PrefixedHexString,

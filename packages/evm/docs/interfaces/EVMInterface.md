@@ -6,31 +6,108 @@
 
 # Interface: EVMInterface
 
-Defined in: [types.ts:158](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L158)
+Defined in: [types.ts:181](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L181)
+
+Public EVM surface used by [@ethereumjs/vm!VM](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/docs/classes/VM.md) and stand-alone callers.
 
 ## Properties
 
 ### binaryTreeAccessWitness?
 
-> `optional` **binaryTreeAccessWitness**: [`BinaryTreeAccessWitness`](../classes/BinaryTreeAccessWitness.md)
+> `optional` **binaryTreeAccessWitness?**: [`BinaryTreeAccessWitness`](../classes/BinaryTreeAccessWitness.md)
 
-Defined in: [types.ts:180](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L180)
+Defined in: [types.ts:204](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L204)
+
+***
+
+### blockLevelAccessList?
+
+> `optional` **blockLevelAccessList?**: `BlockLevelAccessList`
+
+Defined in: [types.ts:211](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L211)
+
+Accumulated block access list when EIP-7928 is active.
+
+#### Remarks
+
+Experimental (Amsterdam): may change on patch releases.
 
 ***
 
 ### common
 
-> **common**: `Common`
+> **common**: [`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
-Defined in: [types.ts:159](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L159)
+Defined in: [types.ts:182](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L182)
+
+***
+
+### createTxTargetAlive?
+
+> `optional` **createTxTargetAlive?**: `boolean`
+
+Defined in: [types.ts:246](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L246)
+
+EIP-8037: whether the target account of a top-level creation transaction
+was already alive (EIP-161 non-empty) before creation; `runTx` refunds
+the intrinsic new-account state gas when true or the creation failed.
+Optional for custom EVMInterface implementations.
+
+#### Remarks
+
+Experimental (Amsterdam): may change on patch releases.
+
+***
+
+### eip2780PrepOog?
+
+> `optional` **eip2780PrepOog?**: `boolean`
+
+Defined in: [types.ts:237](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L237)
+
+EIP-2780 / EIP-8037: set when a top-frame access charge OOGs before opcodes.
+runTx reverts prepare-region 7702 delegations when this is true.
+
+#### Remarks
+
+Experimental (Amsterdam): may change on patch releases.
+
+***
+
+### eip7928CallPostTargetOog?
+
+> `optional` **eip7928CallPostTargetOog?**: `boolean`
+
+Defined in: [types.ts:230](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L230)
+
+EIP-7928: set during CALL post-target OOG so `runTx` can drain the state-gas reservoir
+on exceptional halt. Optional for custom EVMInterface implementations.
+
+#### Remarks
+
+Experimental (Amsterdam): may change on patch releases.
 
 ***
 
 ### events?
 
-> `optional` **events**: `EventEmitter`\<`EVMEvent`, `any`\>
+> `optional` **events?**: `EventEmitter`\<`EVMEvent`, `any`\>
 
-Defined in: [types.ts:179](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L179)
+Defined in: [types.ts:203](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L203)
+
+***
+
+### executionStateGasUsed
+
+> **executionStateGasUsed**: `bigint`
+
+Defined in: [types.ts:223](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L223)
+
+EIP-8037 per-tx cumulative state-gas used.
+
+#### Remarks
+
+Experimental (Amsterdam): may change on patch releases.
 
 ***
 
@@ -38,15 +115,15 @@ Defined in: [types.ts:179](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **journal**: `object`
 
-Defined in: [types.ts:160](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L160)
+Defined in: [types.ts:183](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L183)
 
 #### accessList?
 
-> `optional` **accessList**: `Map`\<`string`, `Set`\<`string`\>\>
+> `optional` **accessList?**: `Map`\<`string`, `Set`\<`string`\>\>
 
 #### preimages?
 
-> `optional` **preimages**: `Map`\<`` `0x${string}` ``, `Uint8Array`\<`ArrayBufferLike`\>\>
+> `optional` **preimages?**: `Map`\<`` `0x${string}` ``, `Uint8Array`\<`ArrayBufferLike`\>\>
 
 #### addAlwaysWarmAddress()
 
@@ -128,7 +205,7 @@ Defined in: [types.ts:160](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 ###### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ##### Returns
 
@@ -142,7 +219,7 @@ Defined in: [types.ts:160](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 ###### address
 
-`Address`
+[`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
 ###### account
 
@@ -180,33 +257,65 @@ Defined in: [types.ts:160](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 ### precompiles
 
-> **precompiles**: `Map`\<`string`, `PrecompileFunc`\>
+> **precompiles**: `Map`\<`string`, [`PrecompileFunc`](PrecompileFunc.md)\>
 
-Defined in: [types.ts:176](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L176)
+Defined in: [types.ts:199](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L199)
+
+***
+
+### stateGasReservoir
+
+> **stateGasReservoir**: `bigint`
+
+Defined in: [types.ts:217](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L217)
+
+EIP-8037 per-tx state-gas reservoir (set by `runTx`, read/written by opcodes).
+
+#### Remarks
+
+Experimental (Amsterdam): may change on patch releases.
 
 ***
 
 ### stateManager
 
-> **stateManager**: `StateManagerInterface`
+> **stateManager**: [`StateManagerInterface`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/StateManagerInterface.md)
 
-Defined in: [types.ts:175](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L175)
+Defined in: [types.ts:198](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L198)
 
 ***
 
 ### systemBinaryTreeAccessWitness?
 
-> `optional` **systemBinaryTreeAccessWitness**: [`BinaryTreeAccessWitness`](../classes/BinaryTreeAccessWitness.md)
+> `optional` **systemBinaryTreeAccessWitness?**: [`BinaryTreeAccessWitness`](../classes/BinaryTreeAccessWitness.md)
 
-Defined in: [types.ts:181](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L181)
+Defined in: [types.ts:205](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L205)
 
 ## Methods
+
+### getPrecompile()?
+
+> `optional` **getPrecompile**(`address`): [`PrecompileFunc`](PrecompileFunc.md) \| `undefined`
+
+Defined in: [types.ts:200](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L200)
+
+#### Parameters
+
+##### address
+
+`` `0x${string}` `` \| [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
+
+#### Returns
+
+[`PrecompileFunc`](PrecompileFunc.md) \| `undefined`
+
+***
 
 ### runCall()
 
 > **runCall**(`opts`): `Promise`\<[`EVMResult`](EVMResult.md)\>
 
-Defined in: [types.ts:177](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L177)
+Defined in: [types.ts:201](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L201)
 
 #### Parameters
 
@@ -224,7 +333,7 @@ Defined in: [types.ts:177](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **runCode**(`opts`): `Promise`\<[`ExecResult`](ExecResult.md)\>
 
-Defined in: [types.ts:178](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L178)
+Defined in: [types.ts:202](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L202)
 
 #### Parameters
 

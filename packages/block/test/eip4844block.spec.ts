@@ -18,7 +18,7 @@ import { eip4844GethGenesis } from '@ethereumjs/testdata'
 
 import type { TypedTransaction } from '@ethereumjs/tx'
 
-describe('EIP4844 header tests', () => {
+describe('[Block/EIP-4844]: header', () => {
   const kzg = new microEthKZG(trustedSetup)
 
   const common = createCommonFromGethGenesis(eip4844GethGenesis, {

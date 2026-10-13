@@ -14,11 +14,9 @@ import {
 import { blockFromTuple, parseBlockTuple, readBlockTupleAtOffset } from './blockTuple.ts'
 
 /**
- * Format era1 from epoch of history data
- * @param blockTuples header, body, receipts, totalDifficulty
- * @param headerRecords array of Header Records { blockHash: Uint8Array, totalDifficulty: bigint }
- * @param epoch epoch index
- * @returns serialized era1 file
+ * Serializes an era1 file from compressed block tuples and epoch metadata.
+ *
+ * @param epoch Epoch index (starting block number is `epoch * 8192`).
  */
 export const formatEra1 = async (
   blockTuples: {
@@ -78,6 +76,7 @@ export const formatEra1 = async (
   return era1
 }
 
+/** Yields raw block tuple entries at each non-empty slot offset in an era1 file. */
 export async function* readBlockTuplesFromERA1(
   bytes: Uint8Array,
   count: number,
@@ -95,6 +94,7 @@ export async function* readBlockTuplesFromERA1(
   }
 }
 
+/** Reads trailing entries between the last block tuple and the accumulator root. */
 export async function readOtherEntries(bytes: Uint8Array) {
   const { data, count, recordStart } = getBlockIndex(bytes)
   const { offsets } = readBlockIndex(data, count)
@@ -109,17 +109,21 @@ export async function readOtherEntries(bytes: Uint8Array) {
   }
   return { accumulatorRoot: nextEntry.data, otherEntries }
 }
+
+/** Returns the SSZ epoch accumulator root bytes from an era1 file. */
 export async function readAccumulatorRoot(bytes: Uint8Array) {
   const { accumulatorRoot } = await readOtherEntries(bytes)
   return accumulatorRoot
 }
 
+/** Async generator over decompressed block tuples in an era1 file. */
 export async function readERA1(bytes: Uint8Array) {
   const { data, count, recordStart } = getBlockIndex(bytes)
   const { offsets } = readBlockIndex(data, count)
   return readBlockTuplesFromERA1(bytes, count, offsets, recordStart)
 }
 
+/** Builds header records (block hash + total difficulty) from all block tuples in an era1 file. */
 export async function getHeaderRecords(bytes: Uint8Array) {
   const blockTuples = await readERA1(bytes)
   const headerRecords = []
@@ -135,6 +139,7 @@ export async function getHeaderRecords(bytes: Uint8Array) {
   return headerRecords
 }
 
+/** Verifies that the era1 accumulator root matches the merkle root of parsed header records. */
 export async function validateERA1(bytes: Uint8Array) {
   const accumulatorRoot = await readAccumulatorRoot(bytes)
   const headerRecords = await getHeaderRecords(bytes)

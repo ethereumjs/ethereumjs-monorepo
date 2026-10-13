@@ -8,9 +8,17 @@
 
 > **Hardfork**: `object`
 
-Defined in: [enums.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L59)
+Defined in: [enums.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L67)
+
+Named Ethereum hardfork identifiers used by [Common](../classes/Common.md).
+
+Hardfork order and activation conditions are defined per chain in [ChainConfig](../interfaces/ChainConfig.md).
 
 ## Type Declaration
+
+### Amsterdam
+
+> `readonly` **Amsterdam**: `"amsterdam"` = `'amsterdam'`
 
 ### ArrowGlacier
 

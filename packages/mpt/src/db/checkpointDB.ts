@@ -10,8 +10,10 @@ import type { BatchDBOp, DB, EncodingOpts } from '@ethereumjs/util'
 import type { Checkpoint, CheckpointDBOpts } from '../types.ts'
 
 /**
- * DB is a thin wrapper around the underlying levelup db,
- * which validates inputs and sets encoding type.
+ * Checkpoint-aware DB wrapper with optional LRU node cache.
+ *
+ * Writes during a checkpoint go to an in-memory diff map; commit flushes to the
+ * underlying {@link DB}.
  */
 export class CheckpointDB implements DB {
   public checkpoints: Checkpoint[]
@@ -63,8 +65,9 @@ export class CheckpointDB implements DB {
   }
 
   /**
-   * Flush the checkpoints and use the given checkpoints instead.
-   * @param {Checkpoint[]} checkpoints
+   * Replace the checkpoint stack with a copy of the given checkpoints.
+   *
+   * @param checkpoints Checkpoints to adopt (maps are cloned)
    */
   setCheckpoints(checkpoints: Checkpoint[]) {
     this.checkpoints = []
@@ -85,22 +88,23 @@ export class CheckpointDB implements DB {
   }
 
   /**
-   * Adds a new checkpoint to the stack
-   * @param root
+   * Push a new checkpoint onto the stack.
+   *
+   * @param root Trie root hash at this checkpoint boundary
    */
   checkpoint(root: Uint8Array) {
     this.checkpoints.push({ keyValueMap: new Map<string, Uint8Array>(), root })
   }
 
   /**
-   * Commits the latest checkpoint
+   * Commits the latest checkpoint.
    */
   async commit() {
-    const { keyValueMap } = this.checkpoints.pop()!
+    const checkpoint = this.checkpoints.pop()!
     if (!this.hasCheckpoints()) {
       // This was the final checkpoint, we should now commit and flush everything to disk
       const batchOp: BatchDBOp[] = []
-      for (const [key, value] of keyValueMap.entries()) {
+      for (const [key, value] of checkpoint.keyValueMap.entries()) {
         if (value === undefined) {
           batchOp.push({
             type: 'del',
@@ -114,11 +118,17 @@ export class CheckpointDB implements DB {
           })
         }
       }
-      await this.batch(batchOp)
+
+      try {
+        await this.batch(batchOp)
+      } catch (error) {
+        this.checkpoints.push(checkpoint)
+        throw error
+      }
     } else {
       // dump everything into the current (higher level) diff cache
       const currentKeyValueMap = this.checkpoints[this.checkpoints.length - 1].keyValueMap
-      for (const [key, value] of keyValueMap.entries()) {
+      for (const [key, value] of checkpoint.keyValueMap.entries()) {
         currentKeyValueMap.set(key, value)
       }
     }
@@ -138,6 +148,20 @@ export class CheckpointDB implements DB {
   async get(key: Uint8Array): Promise<Uint8Array | undefined> {
     // Using deprecated bytesToUnprefixedHex for performance: used as cache/database keys (string encoding).
     const keyHex = bytesToUnprefixedHex(key)
+
+    // While a checkpoint is open, put()/del() only write to that checkpoint's
+    // diff map, not to `_cache` (see put()/del() below). So the diff map must
+    // be checked before trusting a `_cache` hit - otherwise a value written
+    // or deleted after `_cache` was populated would be missed, and the stale
+    // cached value would be returned instead.
+    if (this.hasCheckpoints()) {
+      for (let index = this.checkpoints.length - 1; index >= 0; index--) {
+        if (this.checkpoints[index].keyValueMap.has(keyHex)) {
+          return this.checkpoints[index].keyValueMap.get(keyHex)
+        }
+      }
+    }
+
     if (this._cache !== undefined) {
       const value = this._cache.get(keyHex)
       this._stats.cache.reads += 1
@@ -147,13 +171,7 @@ export class CheckpointDB implements DB {
       }
     }
 
-    // Lookup the value in our diff cache. We return the latest checkpointed value (which should be the value on disk)
-    for (let index = this.checkpoints.length - 1; index >= 0; index--) {
-      if (this.checkpoints[index].keyValueMap.has(keyHex)) {
-        return this.checkpoints[index].keyValueMap.get(keyHex)
-      }
-    }
-    // Nothing has been found in diff cache, look up from disk
+    // Nothing has been found in the checkpoint diff or cache, look up from disk
     const value = await this.db.get(keyHex, {
       keyEncoding: KeyEncoding.String,
       valueEncoding: this.valueEncoding,

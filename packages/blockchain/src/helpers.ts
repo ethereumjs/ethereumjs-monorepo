@@ -4,17 +4,7 @@ import { genesisMPTStateRoot } from '@ethereumjs/mpt'
 import type { Chain, Common, GenesisState } from '@ethereumjs/common'
 
 /**
- * Safe creation of a new Blockchain object awaiting the initialization function,
- * encouraged method to use when creating a blockchain object.
- *
- * @param opts Constructor options, see {@link BlockchainOptions}
- */
-
-/**
- * Merkle genesis root
- * @param genesisState
- * @param common
- * @returns
+ * Compute the Merkle Patricia trie root of a custom genesis state.
  */
 export async function genGenesisStateRoot(
   genesisState: GenesisState,

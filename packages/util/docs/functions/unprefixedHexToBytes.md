@@ -8,7 +8,9 @@
 
 > **unprefixedHexToBytes**(`hex`): `Uint8Array`
 
-Defined in: [packages/util/src/bytes.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L32)
+Defined in: [packages/util/src/bytes.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L31)
+
+Convert a hex string without a `0x` prefix to bytes.
 
 ## Parameters
 
@@ -19,3 +21,7 @@ Defined in: [packages/util/src/bytes.ts:32](https://github.com/ethereumjs/ethere
 ## Returns
 
 `Uint8Array`
+
+## Throws
+
+If the input is prefixed

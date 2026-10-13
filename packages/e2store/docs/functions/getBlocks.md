@@ -8,7 +8,7 @@
 
 > **getBlocks**(`chainDB`, `metaDB`, `start`, `number`): `Promise`\<`object`[]\>
 
-Defined in: [packages/e2store/src/exportHistory.ts:93](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/exportHistory.ts#L93)
+Defined in: [packages/e2store/src/exportHistory.ts:102](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/exportHistory.ts#L102)
 
 ## Parameters
 

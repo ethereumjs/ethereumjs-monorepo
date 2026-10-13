@@ -8,7 +8,9 @@
 
 > **createBlockIndex**(`blockTuples`, `startingNumber`): `Promise`\<`Uint8Array`\<`ArrayBuffer`\>\>
 
-Defined in: [packages/e2store/src/blockIndex.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/blockIndex.ts#L34)
+Defined in: [packages/e2store/src/blockIndex.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/blockIndex.ts#L37)
+
+Build a version entry plus block-index footer for an e2hs file.
 
 ## Parameters
 

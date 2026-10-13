@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/tx",
-  "version": "10.1.1",
+  "version": "10.1.3",
   "description": "Implementation of the various Ethereum Transaction Types",
   "keywords": ["ethereum", "transactions"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/tx#readme",
@@ -30,7 +30,10 @@
         "typescript": "./src/index.ts",
         "default": "./dist/esm/index.js"
       },
-      "require": "./dist/cjs/index.js"
+      "require": {
+        "typescript": "./src/index.ts",
+        "default": "./dist/cjs/index.js"
+      }
     }
   },
   "files": ["dist", "src"],
@@ -40,7 +43,7 @@
     "build": "../../config/cli/ts-build.sh",
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "npx vitest run -c ../../config/vitest.config.coverage.mts --exclude='./test/transactionRunner.spec.ts' --exclude='./test/t9n.spec.ts'",
-    "docs:build": "typedoc --options typedoc.mjs",
+    "docs:build": "../../config/cli/typedoc.sh --options typedoc.mjs",
     "examples": "tsx ../../scripts/examples-runner.ts -- tx",
     "examples:build": "npx embedme README.md",
     "lint": "npm run biome && eslint  --config ./eslint.config.mjs .",
@@ -61,24 +64,17 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
-    "@ethereumjs/common": "^10.1.1",
-    "@ethereumjs/rlp": "^10.1.1",
-    "@ethereumjs/util": "^10.1.1",
-    "@noble/curves": "^2.0.1",
-    "@noble/hashes": "^2.0.1"
+    "@ethereumjs/common": "^10.1.3",
+    "@ethereumjs/rlp": "^10.1.3",
+    "@ethereumjs/util": "^10.1.3",
+    "@noble/curves": "^2.4.0",
+    "@noble/hashes": "^2.4.0"
   },
   "devDependencies": {
-    "@ethereumjs/testdata": "1.0.0",
-    "@paulmillr/trusted-setups": "^0.2.0",
-    "@types/minimist": "^1.2.5",
     "@types/node-dir": "^0.0.37",
-    "kzg-wasm": "1.0.0",
-    "micro-eth-signer": "^0.15.0",
-    "minimist": "^1.2.8",
-    "node-dir": "^0.1.17",
-    "yargs": "^17.7.2"
+    "node-dir": "^0.1.17"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   }
 }

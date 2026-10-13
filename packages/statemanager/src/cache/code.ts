@@ -16,6 +16,7 @@ type CodeCacheElement = {
   code: Uint8Array | undefined
 }
 
+/** In-memory contract code cache with checkpoint/revert support. */
 export class CodeCache extends Cache {
   _lruCache: LRUCache<string, CodeCacheElement> | undefined
   _orderedMapCache: OrderedMap<string, CodeCacheElement> | undefined
@@ -228,10 +229,7 @@ export class CodeCache extends Cache {
     this._diffCache.push(new Map<string, CodeCacheElement | undefined>())
   }
 
-  /**
-   * Returns the size of the cache
-   * @returns
-   */
+  /** Current number of cached code entries. */
   size() {
     if (this._lruCache) {
       return this._lruCache!.size

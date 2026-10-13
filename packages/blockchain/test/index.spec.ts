@@ -15,7 +15,7 @@ import { createTestDB, generateBlockchain, generateBlocks, isConsecutive } from 
 
 import type { Block, BlockOptions } from '@ethereumjs/block'
 
-describe('blockchain test', () => {
+describe('[Blockchain]: core', () => {
   it('should not crash on getting head of a blockchain without a genesis', async () => {
     const blockchain = await createBlockchain({
       validateBlocks: true,
@@ -796,7 +796,7 @@ describe('blockchain test', () => {
   })
 })
 
-describe('initialization tests', () => {
+describe('[Blockchain]: initialization', () => {
   it('should read genesis from database', async () => {
     const common = new Common({
       chain: Mainnet,

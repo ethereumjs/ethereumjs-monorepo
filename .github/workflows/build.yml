@@ -1,7 +1,9 @@
 name: Build
 on:
   pull_request:
-    types: [opened, reopened, synchronize]
+    # synchronize re-reads labels. Performance benchmarks run only when
+    # "type: test performance" is set on that push.
+    types: [opened, reopened, synchronize, ready_for_review]
   push:
     branches: [master]
     tags: ['*']
@@ -15,187 +17,262 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # ethereum-tests only — do not recursive-clone execution-spec-tests here.
+  # EST jobs init that submodule themselves and must not wait on this job.
   checkout-submodules:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v5
-        with:
-          submodules: recursive
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
       - id: create-cache-key
-        run: echo "submodule-cache-key=$(git submodule | head -n 1)" >> $GITHUB_OUTPUT
+        run: echo "submodule-cache-key=$(git rev-parse HEAD:packages/ethereum-tests)" >> $GITHUB_OUTPUT
         shell: bash
 
-      - uses: actions/cache/restore@v4
+      - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         id: submodules-cache-restore
         with:
           key: submodule-${{ steps.create-cache-key.outputs.submodule-cache-key }}
           path: ${{github.workspace}}/packages/ethereum-tests
 
       - if: steps.submodules-cache-restore.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
+        name: Init ethereum-tests
+        run: git submodule update --init --depth=1 -- packages/ethereum-tests
+
+      - if: steps.submodules-cache-restore.outputs.cache-hit != 'true'
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         id: submodule-cache-save
         with:
           path: ${{github.workspace}}/packages/ethereum-tests
-          key: submodule-${{ steps.create-cache-key.outputs.submodule-cache-key}}
+          key: submodule-${{ steps.create-cache-key.outputs.submodule-cache-key }}
 
     outputs:
-      submodule-cache-key: submodule-${{ steps.create-cache-key.outputs.submodule-cache-key}}
+      submodule-cache-key: submodule-${{ steps.create-cache-key.outputs.submodule-cache-key }}
 
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
-      - uses: actions/cache/restore@v4
-        id: dep-cache
-        with:
-          path: ${{github.workspace}}/node_modules
-          key: npm-${{ hashFiles('package-lock.json') }}
+      - id: keys
+        run: echo "dep-cache-key=npm-${{ hashFiles('package-lock.json') }}-${{ github.run_id }}" >> "$GITHUB_OUTPUT"
 
-      - name: Use Node.js 24
-        uses: actions/setup-node@v6
+      - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        id: npm-modules
         with:
-          node-version: 24
+          path: |
+            **/node_modules
+          key: npm-modules-${{ hashFiles('package-lock.json') }}
+
+      - name: Use Node.js 26
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 26
           cache: 'npm'
 
-      - run: npm ci
-        working-directory: ${{github.workspace}}
+      - name: Install
+        if: steps.npm-modules.outputs.cache-hit != 'true'
+        run: npm ci
+        working-directory: ${{ github.workspace }}
 
-      - name: Cache dependencies
-        uses: actions/cache/save@v4
-        with:
-          path: ${{github.workspace}}
-          key: npm-${{ hashFiles('package-lock.json') }}
+      # Cache hit skipped npm ci (and its postinstall build). Rebuild this commit.
+      - name: Build packages
+        if: steps.npm-modules.outputs.cache-hit == 'true'
+        run: npm run build --workspaces --if-present
+        working-directory: ${{ github.workspace }}
 
-      - name: Cache build
-        uses: actions/cache/save@v4
+      - name: Save node_modules
+        if: steps.npm-modules.outputs.cache-hit != 'true'
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
-          path: ${{github.workspace}}
-          key: npm-${{ hashFiles('package-lock.json') }}-${{ github.run_id }}
+          path: |
+            **/node_modules
+          key: npm-modules-${{ hashFiles('package-lock.json') }}
+
+      - name: Save build workspace
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ${{ github.workspace }}
+          key: ${{ steps.keys.outputs.dep-cache-key }}
 
     outputs:
-      dep-cache-key: ${{ steps.dep-cache.outputs.cache-primary-key }}-${{ github.run_id }}
+      dep-cache-key: ${{ steps.keys.outputs.dep-cache-key }}
+
+  # PR: tests for lowest-touched packages + dependents. Master / dispatch / shared
+  # config (see scripts/ci-affected.mjs) still run the full matrix.
+  # Keep skippable job ids in sync with SKIPPABLE_JOBS in that script.
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      binarytree: ${{ steps.affected.outputs.binarytree }}
+      block: ${{ steps.affected.outputs.block }}
+      blockchain: ${{ steps.affected.outputs.blockchain }}
+      browser: ${{ steps.affected.outputs.browser }}
+      common: ${{ steps.affected.outputs.common }}
+      evm: ${{ steps.affected.outputs.evm }}
+      examples: ${{ steps.affected.outputs.examples }}
+      mpt: ${{ steps.affected.outputs.mpt }}
+      static: ${{ steps.affected.outputs.static }}
+      statemanager: ${{ steps.affected.outputs.statemanager }}
+      tx: ${{ steps.affected.outputs.tx }}
+      util: ${{ steps.affected.outputs.util }}
+      vm-pr: ${{ steps.affected.outputs['vm-pr'] }}
+      binarytree_coverage: ${{ steps.affected.outputs.binarytree_coverage }}
+      block_coverage: ${{ steps.affected.outputs.block_coverage }}
+      blockchain_coverage: ${{ steps.affected.outputs.blockchain_coverage }}
+      common_coverage: ${{ steps.affected.outputs.common_coverage }}
+      evm_coverage: ${{ steps.affected.outputs.evm_coverage }}
+      mpt_coverage: ${{ steps.affected.outputs.mpt_coverage }}
+      static_coverage: ${{ steps.affected.outputs.static_coverage }}
+      statemanager_coverage: ${{ steps.affected.outputs.statemanager_coverage }}
+      tx_coverage: ${{ steps.affected.outputs.tx_coverage }}
+      util_coverage: ${{ steps.affected.outputs.util_coverage }}
+      vm-pr_coverage: ${{ steps.affected.outputs['vm-pr_coverage'] }}
+      workspaces: ${{ steps.affected.outputs.workspaces }}
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          fetch-depth: 1
+
+      - name: Fetch PR base
+        if: github.event_name == 'pull_request'
+        run: git fetch --no-tags --depth=1 origin ${{ github.event.pull_request.base.sha }}
+
+      - name: Verify affected-job selector
+        run: node --test scripts/ci-affected.spec.mjs
+
+      - name: Compute affected CI jobs
+        id: affected
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.sha }}
+        run: node scripts/ci-affected.mjs
 
   binarytree:
-    needs: [build, checkout-submodules]
+    needs: [build, detect]
+    if: needs.detect.outputs.binarytree == 'true'
     uses: ./.github/workflows/binarytree-build.yml
     secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+      run-coverage: ${{ needs.detect.outputs.binarytree_coverage == 'true' }}
 
   block:
-    needs: [build, checkout-submodules]
+    needs: [build, checkout-submodules, detect]
+    if: needs.detect.outputs.block == 'true'
     uses: ./.github/workflows/block-build.yml
     secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
       submodule-cache-key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
+      run-coverage: ${{ needs.detect.outputs.block_coverage == 'true' }}
 
   blockchain:
-    needs: build
+    needs: [build, detect]
+    if: needs.detect.outputs.blockchain == 'true'
     uses: ./.github/workflows/blockchain-build.yml
     secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+      run-coverage: ${{ needs.detect.outputs.blockchain_coverage == 'true' }}
 
   browser:
-    needs: [build, checkout-submodules]
+    needs: [build, checkout-submodules, detect]
+    if: needs.detect.outputs.browser == 'true'
     uses: ./.github/workflows/browser.yml
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
       submodule-cache-key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
-
-  client:
-    needs: build
-    uses: ./.github/workflows/client-build.yml
-    secrets: inherit
-    with:
-      dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+      workspaces: ${{ needs.detect.outputs.workspaces }}
 
   common:
-    needs: build
+    needs: [build, detect]
+    if: needs.detect.outputs.common == 'true'
     uses: ./.github/workflows/common-build.yml
     secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
-
-  devp2p:
-    needs: build
-    uses: ./.github/workflows/devp2p-build.yml
-    secrets: inherit
-    with:
-      dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+      run-coverage: ${{ needs.detect.outputs.common_coverage == 'true' }}
 
   evm:
-    needs: [build, checkout-submodules]
+    needs: [build, checkout-submodules, detect]
+    if: needs.detect.outputs.evm == 'true'
     uses: ./.github/workflows/evm-build.yml
     secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
       submodule-cache-key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
+      run-coverage: ${{ needs.detect.outputs.evm_coverage == 'true' }}
 
   examples:
-    needs: build
+    needs: [build, detect]
+    if: needs.detect.outputs.examples == 'true'
     uses: ./.github/workflows/examples.yml
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+      workspaces: ${{ needs.detect.outputs.workspaces }}
 
   mpt:
-    needs: build
+    needs: [build, detect]
+    if: needs.detect.outputs.mpt == 'true'
     uses: ./.github/workflows/mpt-build.yml
     secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+      run-coverage: ${{ needs.detect.outputs.mpt_coverage == 'true' }}
 
   static:
-    needs: build
+    needs: [build, detect]
+    if: needs.detect.outputs.static == 'true'
     uses: ./.github/workflows/rlp-ethash-genesis-wallet-build.yml
     secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+      run-coverage: ${{ needs.detect.outputs.static_coverage == 'true' }}
 
   statemanager:
-    needs: build
+    needs: [build, detect]
+    if: needs.detect.outputs.statemanager == 'true'
     uses: ./.github/workflows/statemanager-build.yml
     secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+      run-coverage: ${{ needs.detect.outputs.statemanager_coverage == 'true' }}
 
   tx:
-    needs: [build, checkout-submodules]
+    needs: [build, checkout-submodules, detect]
+    if: needs.detect.outputs.tx == 'true'
     uses: ./.github/workflows/tx-build.yml
     secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
       submodule-cache-key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
+      run-coverage: ${{ needs.detect.outputs.tx_coverage == 'true' }}
 
   util:
-    needs: build
+    needs: [build, detect]
+    if: needs.detect.outputs.util == 'true'
     uses: ./.github/workflows/util-build.yml
     secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+      run-coverage: ${{ needs.detect.outputs.util_coverage == 'true' }}
 
   vm-pr:
-    needs: [build, checkout-submodules]
+    needs: [build, checkout-submodules, detect]
+    if: needs.detect.outputs['vm-pr'] == 'true'
     uses: ./.github/workflows/vm-pr.yml
     secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
       submodule-cache-key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
+      run-coverage: ${{ needs.detect.outputs['vm-pr_coverage'] == 'true' }}
 
   lint:
     needs: build
     uses: ./.github/workflows/lint.yml
-    with:
-      dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
-
-  noCompile:
-    needs: build
-    uses: ./.github/workflows/noCompile.yml
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
@@ -206,6 +283,137 @@ jobs:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
       submodule-cache-key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
 
+  audit:
+    name: npm audit (runtime)
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: ./.github/actions/setup-ethereumjs
+        with:
+          dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+
+      - name: npm audit --omit=dev --audit-level=high
+        run: npm audit --omit=dev --audit-level=high
+        working-directory: ${{ github.workspace }}
+
+  # In-flux hardfork working-ground. Not in the CI gate — must not delay or fail it.
+  # `continue-on-error` is not valid on reusable workflow jobs (GitHub then requires runs-on).
+  vm-est-dev:
+    needs: [build, detect]
+    if: needs.detect.outputs['vm-pr'] == 'true'
+    uses: ./.github/workflows/vm-est-dev.yml
+    secrets: inherit
+    with:
+      dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+
+  # Sole required check: skipped package jobs count as success; failures fail the gate.
+  ci-success:
+    name: CI
+    needs:
+      - build
+      - checkout-submodules
+      - detect
+      - binarytree
+      - block
+      - blockchain
+      - browser
+      - common
+      - evm
+      - examples
+      - mpt
+      - static
+      - statemanager
+      - tx
+      - util
+      - vm-pr
+      - lint
+      - typecheck
+      - audit
+    if: always() && !cancelled()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check required jobs
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          node -e '
+            const needs = JSON.parse(process.env.RESULTS)
+            const failed = Object.entries(needs).filter(([, job]) => !["success", "skipped"].includes(job.result))
+            if (failed.length > 0) {
+              console.error(failed.map(([name, job]) => name + "=" + job.result).join("\n"))
+              process.exit(1)
+            }
+            console.log("All required jobs passed or skipped")
+          '
+
+  performance-benchmarks:
+    name: Performance benchmarks
+    needs: [build]
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    if: >-
+      always() && needs.build.result == 'success' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' &&
+      github.event.pull_request.draft == false &&
+      contains(github.event.pull_request.labels.*.name, 'type: test performance')))
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write
+      checks: write
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+      # Master pushes stay path-filtered. Manual dispatch and a labeled PR always measure.
+      - name: Bench-relevant paths
+        id: bench-paths
+        if: github.event_name != 'pull_request'
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE: ${{ github.event.before }}
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "bench=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            echo "bench=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git fetch --no-tags --depth=1 origin "$BEFORE"
+          bench=false
+          while IFS= read -r f; do
+            [ -z "$f" ] && continue
+            case "$f" in
+              packages/binarytree/*|packages/block/*|packages/evm/*|packages/mpt/*|packages/rlp/*|packages/statemanager/*|packages/tx/*|packages/util/*|packages/vm/*|config/vitest-bench.mts|.github/workflows/build.yml|package.json|package-lock.json)
+                bench=true
+                break
+                ;;
+            esac
+          done <<< "$(git diff --name-only "$BEFORE" "$SHA")"
+          echo "bench=$bench" >> "$GITHUB_OUTPUT"
+
+      - name: No bench-relevant changes
+        if: github.event_name != 'pull_request' && steps.bench-paths.outputs.bench != 'true'
+        run: echo "Skipping — no performance benchmark paths in this event."
+
+      - uses: ./.github/actions/setup-ethereumjs
+        if: github.event_name == 'pull_request' || steps.bench-paths.outputs.bench == 'true'
+        with:
+          dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+
+      - name: Run benchmarks
+        if: github.event_name == 'pull_request' || steps.bench-paths.outputs.bench == 'true'
+        uses: CodSpeedHQ/action@f842b9a3ffe213dbb81768fd7f7eeb4dfcf1c369 # v5.4.2
+        with:
+          mode: simulation
+          run: npm run bench
+          cache-instruments: 'true'
+
   bundle-size:
     needs: [build]
     runs-on: ubuntu-latest
@@ -213,20 +421,20 @@ jobs:
     if: github.event_name == 'pull_request'
     steps:
       - name: Checkout current branch
-        uses: actions/checkout@v5
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           fetch-depth: 0
 
-      - uses: actions/cache/restore@v4
+      - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         id: dep-cache
         with:
           path: ${{github.workspace}}
           key: ${{ needs.build.outputs.dep-cache-key }}
 
-      - name: Use Node.js 24
-        uses: actions/setup-node@v6
+      - name: Use Node.js 26
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
-          node-version: 24
+          node-version: 26
           cache: 'npm'
 
       - name: Install Dependencies (if not restored from cache)
@@ -235,7 +443,7 @@ jobs:
         working-directory: ${{ github.workspace }}
 
       - name: Checkout master for baseline
-        uses: actions/checkout@v5
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           ref: master
           path: baseline-workspace
@@ -299,7 +507,7 @@ jobs:
             echo "✅ Baseline file is valid, running comparison..."
             node scripts/bundle-size.mjs --baseline=baseline.json > bundle-summary.md
           else
-            echo "## 📦 Bundle Size Analysis" > bundle-summary.md
+            echo "## 📦 Bundle size" > bundle-summary.md
             echo "" >> bundle-summary.md
             if [ ! -f baseline.json ]; then
               echo "Baseline comparison unavailable (baseline build failed or no packages were built)." >> bundle-summary.md
@@ -315,8 +523,13 @@ jobs:
         working-directory: ${{ github.workspace }}
 
       - name: Post bundle size summary to PR
+        # Fork PRs run with a read-only GITHUB_TOKEN and cannot post comments
+        # (403 "Resource not accessible by integration"). The bundle analysis
+        # itself has already succeeded by this point, so never let the comment
+        # step fail the job.
+        continue-on-error: true
         if: steps.bundle-analysis.outcome == 'success' || steps.bundle-analysis.outcome == 'failure'
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -326,35 +539,52 @@ jobs:
 
             if (fs.existsSync(summaryPath)) {
               const summary = fs.readFileSync(summaryPath, 'utf-8');
-
-              // Find existing comment
-              const comments = await github.rest.issues.listComments({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-              });
-
-              const existingComment = comments.data.find(
-                c => c.user.type === 'Bot' && c.body.includes('📦 Bundle Size Analysis')
-              );
-
               const commentBody = summary + '\n\n<sub>Generated by [bundle-size](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) workflow</sub>';
 
-              if (existingComment) {
-                await github.rest.issues.updateComment({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  comment_id: existingComment.id,
-                  body: commentBody,
-                });
-                console.log('✅ Updated PR comment');
-              } else {
-                await github.rest.issues.createComment({
+              // Always surface the results in the job summary so they are
+              // visible even when posting a PR comment is not permitted.
+              await core.summary.addRaw(commentBody).write();
+
+              try {
+                // Find existing comment
+                const comments = await github.rest.issues.listComments({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   issue_number: context.issue.number,
-                  body: commentBody,
                 });
-                console.log('✅ Posted PR comment');
+
+                const existingComment = comments.data.find(
+                  c => c.user.type === 'Bot' && c.body.includes('📦 Bundle size')
+                );
+
+                if (existingComment) {
+                  await github.rest.issues.updateComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    comment_id: existingComment.id,
+                    body: commentBody,
+                  });
+                  console.log('✅ Updated PR comment');
+                } else {
+                  await github.rest.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: context.issue.number,
+                    body: commentBody,
+                  });
+                  console.log('✅ Posted PR comment');
+                }
+              } catch (error) {
+                // PRs from forks run with a read-only GITHUB_TOKEN and get a 403
+                // when writing comments. That is expected — the summary above
+                // still carries the results — so warn instead of failing.
+                if (error.status === 403) {
+                  core.warning(
+                    'Skipping PR comment: the workflow token is read-only (expected for PRs from forks). ' +
+                    'The bundle size summary is available in the job summary.'
+                  );
+                } else {
+                  throw error;
+                }
               }
             }

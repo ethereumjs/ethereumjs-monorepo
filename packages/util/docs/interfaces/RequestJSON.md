@@ -6,7 +6,9 @@
 
 # Interface: RequestJSON
 
-Defined in: [packages/util/src/request.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/request.ts#L15)
+Defined in: [packages/util/src/request.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/request.ts#L27)
+
+JSON-RPC shape of a consensus-layer request.
 
 ## Properties
 
@@ -14,7 +16,7 @@ Defined in: [packages/util/src/request.ts:15](https://github.com/ethereumjs/ethe
 
 > **data**: `` `0x${string}` ``
 
-Defined in: [packages/util/src/request.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/request.ts#L17)
+Defined in: [packages/util/src/request.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/request.ts#L29)
 
 ***
 
@@ -22,4 +24,4 @@ Defined in: [packages/util/src/request.ts:17](https://github.com/ethereumjs/ethe
 
 > **type**: `` `0x${string}` ``
 
-Defined in: [packages/util/src/request.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/request.ts#L16)
+Defined in: [packages/util/src/request.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/request.ts#L28)

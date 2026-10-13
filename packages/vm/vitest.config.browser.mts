@@ -17,10 +17,13 @@ export default mergeConfig(
         // Uses NodeJS builtins and we don't need to fill tests in browser anyway
         'test/api/t8ntool/t8ntool.spec.ts',
         // test runners are ran only in ci
-        'test/tester/state.spec.ts',
-        'test/tester/blockchain.spec.ts',
+        'test/tester/legacy/state.spec.ts',
+        'test/tester/legacy/blockchain.spec.ts',
         'test/tester/executionSpecBlockchain.test.ts',
         'test/tester/executionSpecState.test.ts',
+        'test/tester/consumeBAL.test.ts',
+        // node:util.parseArgs (CLI helpers are Node-only)
+        'test/tester/util/parseTestCli.spec.ts',
       ],
     },
     resolve: {

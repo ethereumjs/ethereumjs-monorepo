@@ -6,7 +6,7 @@
   ],
   "overrides": [
     {
-      "filename": "**/packages/devp2p/**",
+      "filename": "**/archive/devp2p/**",
       "ignoreWords": [
         "pirl",
         "ubiq",
@@ -24,6 +24,8 @@
     }
   ],
   "words": [
+    "CPSB",
+    "undelegated",
     "baljson",
     "slotnum",
     "unpadding",
@@ -34,10 +36,12 @@
     "bytelist",
     "bytestring",
     "binarytree",
+    "divmod",
     "merkelize",
     "kaust",
     "EEST",
     "paulmillr",
+    "jsbt",
     "t8ntool",
     "!Json",
     "!Rpc",
@@ -648,6 +652,12 @@
     "getpayload",
     "ckzg",
     "Damgård",
-    "viem"
+    "viem",
+    "snobal",
+    "glamsterdam",
+    "awasm",
+    "deopts",
+    "IMPLS",
+    "impls"
   ]
 }

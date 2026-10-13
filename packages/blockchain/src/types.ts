@@ -4,8 +4,10 @@ import type { DB, DBObject } from '@ethereumjs/util'
 import type { EventEmitter } from 'eventemitter3'
 import type { Blockchain } from './index.ts'
 
+/** Callback invoked for each block during {@link BlockchainInterface.iterator}. */
 export type OnBlock = (block: Block, reorg: boolean) => Promise<void> | void
 
+/** Event map emitted by {@link Blockchain.events}. */
 export type BlockchainEvent = {
   deletedCanonicalBlocks: (data: Block[], resolve?: (result?: any) => void) => void
 }
@@ -102,7 +104,7 @@ export interface GenesisOptions {
   genesisBlock?: Block
 
   /**
-   * If you are using a custom chain {@link Common}, pass the genesis state.
+   * If you are using a custom chain {@link @ethereumjs/common!Common}, pass the genesis state.
    *
    * Pattern 1 (with genesis state see {@link GenesisState} for format):
    *
@@ -113,7 +115,7 @@ export interface GenesisOptions {
    * ```
    *
    * Pattern 2 (with complex genesis state, containing contract accounts and storage).
-   * Note that in {@link AccountState} there are two
+   * Note that in {@link @ethereumjs/common!AccountState} there are two
    * accepted types. This allows to easily insert accounts in the genesis state:
    *
    * A complex genesis state with Contract and EoA states would have the following format:
@@ -133,6 +135,7 @@ export interface GenesisOptions {
   genesisStateRoot?: Uint8Array
 }
 
+/** Maps consensus algorithm names to {@link Consensus} implementations. */
 export type ConsensusDict = {
   [consensusAlgorithm: ConsensusAlgorithm | string]: Consensus
 }
@@ -142,7 +145,7 @@ export type ConsensusDict = {
  */
 export interface BlockchainOptions extends GenesisOptions {
   /**
-   * Specify the chain and hardfork by passing a {@link Common} instance.
+   * Specify the chain and hardfork by passing a {@link @ethereumjs/common!Common} instance.
    *
    * If not provided this defaults to chain `mainnet` and hardfork `chainstart`
    *
@@ -156,7 +159,7 @@ export interface BlockchainOptions extends GenesisOptions {
    * threshold (merge HF) the calculated TD is additionally taken into account
    * for HF determination.
    *
-   * Default: `false` (HF is set to whatever default HF is set by the {@link Common} instance)
+   * Default: `false` (HF is set to whatever default HF is set by the {@link @ethereumjs/common!Common} instance)
    */
   hardforkByHeadBlockNumber?: boolean
 
@@ -233,6 +236,7 @@ export interface Consensus {
    */
   validateConsensus(block: Block): Promise<void>
 
+  /** Validates header difficulty against parent and consensus rules. */
   validateDifficulty(header: BlockHeader): Promise<void>
 
   /**
@@ -249,8 +253,9 @@ export interface Consensus {
 }
 
 /**
- * Options when initializing a class that implements the Consensus interface.
+ * Options passed when initializing a {@link Consensus} implementation.
  */
 export interface ConsensusOptions {
+  /** Blockchain instance the consensus module operates on. */
   blockchain: Blockchain
 }

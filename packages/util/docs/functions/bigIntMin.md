@@ -8,7 +8,7 @@
 
 > **bigIntMin**(...`args`): `bigint`
 
-Defined in: [packages/util/src/bytes.ts:366](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L366)
+Defined in: [packages/util/src/bytes.ts:347](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L347)
 
 Calculates min BigInt from an array of BigInts
 

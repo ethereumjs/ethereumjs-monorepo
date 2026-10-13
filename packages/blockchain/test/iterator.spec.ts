@@ -7,7 +7,7 @@ import { createTestDB, generateBlockchain, generateConsecutiveBlock } from './ut
 
 import type { Block } from '@ethereumjs/block'
 
-describe('blockchain test', () => {
+describe('[Blockchain/Iterator]: iterator', () => {
   it('should iterate through 24 blocks without reorg', async () => {
     const { blockchain, blocks, error } = await generateBlockchain(25)
     assert.strictEqual(error, null, 'no error')

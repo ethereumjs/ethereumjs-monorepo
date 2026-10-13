@@ -6,7 +6,9 @@
 
 # Class: EVMError
 
-Defined in: [errors.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/errors.ts#L36)
+Defined in: [errors.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/errors.ts#L39)
+
+Typed error thrown by the EVM on exceptional halt conditions.
 
 ## Constructors
 
@@ -14,7 +16,7 @@ Defined in: [errors.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **new EVMError**(`error`): `EVMError`
 
-Defined in: [errors.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/errors.ts#L41)
+Defined in: [errors.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/errors.ts#L44)
 
 #### Parameters
 
@@ -32,7 +34,7 @@ Defined in: [errors.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **error**: `EVMErrorType`
 
-Defined in: [errors.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/errors.ts#L37)
+Defined in: [errors.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/errors.ts#L40)
 
 ***
 
@@ -40,7 +42,7 @@ Defined in: [errors.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **errorType**: `string`
 
-Defined in: [errors.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/errors.ts#L38)
+Defined in: [errors.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/errors.ts#L41)
 
 ***
 
@@ -48,4 +50,4 @@ Defined in: [errors.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `static` **errorMessages**: `Record`\<keyof *typeof* `EVMErrorMessage`, `EVMErrorType`\> = `EVMErrorMessage`
 
-Defined in: [errors.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/errors.ts#L39)
+Defined in: [errors.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/errors.ts#L42)

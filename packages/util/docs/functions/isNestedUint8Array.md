@@ -8,7 +8,9 @@
 
 > **isNestedUint8Array**(`value`): `value is NestedUint8Array`
 
-Defined in: [packages/util/src/types.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L45)
+Defined in: [packages/util/src/types.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/types.ts#L40)
+
+Type guard for [NestedUint8Array](../type-aliases/NestedUint8Array.md).
 
 ## Parameters
 

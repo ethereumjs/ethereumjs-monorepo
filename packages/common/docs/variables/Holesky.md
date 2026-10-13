@@ -8,4 +8,6 @@
 
 > `const` **Holesky**: [`ChainConfig`](../interfaces/ChainConfig.md)
 
-Defined in: [chains.ts:307](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/chains.ts#L307)
+Defined in: [chains.ts:346](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/chains.ts#L346)
+
+Chain configuration for the Holesky testnet (chain ID 17000).

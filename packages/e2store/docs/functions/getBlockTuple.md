@@ -8,7 +8,7 @@
 
 > **getBlockTuple**(`chainDB`, `metaDB`, `number`): `Promise`\<\{ `blockHash`: `Uint8Array`\<`ArrayBufferLike`\>; `body`: `Uint8Array`\<`ArrayBufferLike`\>; `header`: `Uint8Array`\<`ArrayBufferLike`\>; `receipts`: `Uint8Array`\<`ArrayBufferLike`\>; `totalDifficulty`: `bigint`; \}\>
 
-Defined in: [packages/e2store/src/exportHistory.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/exportHistory.ts#L85)
+Defined in: [packages/e2store/src/exportHistory.ts:94](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/exportHistory.ts#L94)
 
 ## Parameters
 

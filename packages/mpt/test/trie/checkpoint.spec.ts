@@ -8,7 +8,7 @@ import {
 } from '@ethereumjs/util'
 import { sha256 } from '@noble/hashes/sha2.js'
 import { keccak_256 } from '@noble/hashes/sha3.js'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, expect, it } from 'vitest'
 
 import { MerklePatriciaTrie, ROOT_DB_KEY, createMPT } from '../../src/index.ts'
 
@@ -151,5 +151,50 @@ describe('testing checkpoints', () => {
     )
     // Verify that the key is updated
     assert.strictEqual(bytesToUtf8((await CommittedState.get(KEY))!), '2')
+  })
+})
+
+describe('testing checkpoints with DB failures', () => {
+  const setup = async () => {
+    const db = new MapDB<string, string | Uint8Array>()
+    const trie = await createMPT({ db })
+    await trie.put(utf8ToBytes('do'), utf8ToBytes('verb'))
+    trie.checkpoint()
+    return { db, trie, root: trie.root() }
+  }
+
+  it('should revert after a put fails to read from the DB', async () => {
+    const { db, trie, root } = await setup()
+    db.get = async () => {
+      throw new Error('read failed')
+    }
+
+    await expect(trie.put(utf8ToBytes('doge'), utf8ToBytes('coin'))).rejects.toThrow('read failed')
+    await trie.revert()
+    assert.deepEqual(trie.root(), root)
+  })
+
+  it('should revert after a del fails to read from the DB', async () => {
+    const { db, trie, root } = await setup()
+    db.get = async () => {
+      throw new Error('read failed')
+    }
+
+    await expect(trie.del(utf8ToBytes('do'))).rejects.toThrow('read failed')
+    await trie.revert()
+    assert.deepEqual(trie.root(), root)
+  })
+
+  it('should revert after a commit fails to flush to the DB', async () => {
+    const { db, trie, root } = await setup()
+    db.batch = async () => {
+      throw new Error('flush failed')
+    }
+    await trie.put(utf8ToBytes('doge'), utf8ToBytes('coin'))
+
+    await expect(trie.commit()).rejects.toThrow('flush failed')
+    await trie.revert()
+    assert.deepEqual(trie.root(), root)
+    assert.isNull(await trie.get(utf8ToBytes('doge')))
   })
 })

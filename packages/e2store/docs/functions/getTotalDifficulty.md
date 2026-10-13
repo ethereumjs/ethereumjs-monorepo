@@ -8,7 +8,9 @@
 
 > **getTotalDifficulty**(`DB`, `hash`, `number`): `Promise`\<`bigint`\>
 
-Defined in: [packages/e2store/src/exportHistory.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/exportHistory.ts#L63)
+Defined in: [packages/e2store/src/exportHistory.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/exportHistory.ts#L70)
+
+Read total difficulty for a block from the chain database.
 
 ## Parameters
 

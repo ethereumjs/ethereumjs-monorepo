@@ -14,7 +14,7 @@ Defined in: [thirdparty.ts:126](https://github.com/ethereumjs/ethereumjs-monorep
 
 ### input
 
-`string` | [`EtherWalletOptions`](../interfaces/EtherWalletOptions.md)
+`string` \| [`EtherWalletOptions`](../interfaces/EtherWalletOptions.md)
 
 ### password
 

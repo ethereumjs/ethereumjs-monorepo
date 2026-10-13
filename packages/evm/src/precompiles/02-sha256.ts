@@ -9,6 +9,7 @@ import { gasLimitCheck } from './util.ts'
 import type { ExecResult } from '../types.ts'
 import type { PrecompileInput } from './types.ts'
 
+/** SHA256 precompile (0x02): SHA-256 hash of input bytes. */
 export function precompile02(opts: PrecompileInput): ExecResult {
   const pName = getPrecompileName('02')
   const data = opts.data

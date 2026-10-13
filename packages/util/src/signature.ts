@@ -24,6 +24,7 @@ import { assertIsBytes } from './helpers.ts'
 
 import type { PrefixedHexString } from './types.ts'
 
+/** Derive the recovery id from an EIP-155 `v` value. */
 export function calculateSigRecovery(v: bigint, chainId?: bigint): bigint {
   if (v === BIGINT_0 || v === BIGINT_1) return v
 
