@@ -29,7 +29,7 @@ Deprecated `wallet`: no new runtime deps ([security.mdc](security.mdc) S4).
 
 ## Dev dependencies
 
-The shared toolchain stays in the root manifest only: lint, format, the test runner, TypeScript, docs, repo scripts, unpublished workspace test data (`@ethereumjs/testdata`), shared opt-in crypto helpers (KZG stubs, `@polkadot/wasm-crypto` for the customCrypto example), and other test or example helpers used across packages. Packages do not redeclare those.
+The shared toolchain stays in the root manifest only: lint, format, the test runner, TypeScript, docs, repo scripts, unpublished workspace test data (`@ethereumjs/testdata`), shared opt-in crypto helpers (`micro-eth-signer`, `@paulmillr/trusted-setups`, `kzg-wasm`, `@polkadot/wasm-crypto` for the customCrypto example), and other test or example helpers used across packages. Packages do not redeclare those.
 
 A package `devDependencies` entry is local to that package: a test or example helper, types for one of its runtime dependencies, an opt-in backend, or an `@ethereumjs/*` package imported by that package's tests and not shipped.
 

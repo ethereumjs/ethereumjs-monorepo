@@ -56,6 +56,7 @@
     "embedme": "1.22.1",
     "eslint": "^9.22.0",
     "eslint-plugin-import": "^2.31.0",
+    "kzg-wasm": "1.0.0",
     "lint-staged": "15.5.0",
     "lockfile-lint-api": "^5.9.1",
     "micro-eth-signer": "^0.15.0",
