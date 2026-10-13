@@ -1,5 +1,5 @@
 ---
-description: Git conventions — when to commit/push/PR, renames, PR labels
+description: Git conventions — when to commit/push/PR, renames, PR title/body, labels
 alwaysApply: true
 ---
 
@@ -77,6 +77,34 @@ Set **`type: test performance`** when the diff can change the speed of a hot-pat
 
 Remove a skip label when the PR no longer justifies skipping that coverage.
 
+# Pull requests
+
+When opening or updating a PR (`gh pr create`, `gh pr edit`), use an **essence** title and body — not a commit changelog, not a generic “Summary / Test plan” template with checkbox lists.
+
+The title and body describe the **weighted substance** of the branch. Leave side tasks out (a lint fix, a one-line drive-by, scaffolding). Not the latest commit message alone. Not a bare package name.
+
+**Title.** One line. No conventional-commit prefix (`feat:`, `fix:`). One noun phrase per substantial theme, separated by ` / `, heaviest first. Package- or fork-scoped work may name the scope in parentheses when it helps reviewers.
+
+```
+Archive devp2p outside workspace / CI and release cleanup
+VM EST dev job / skip label wiring in ci-affected
+Tx matrix / guard negative fee fields on all types
+```
+
+When later commits change what the branch is really about, retitle. Do not keep the first commit’s wording.
+
+**Body.** Mirror the title parts as `##` sections in the same order. The heading text is the segment between ` / ` in the title. One theme per section.
+
+Choose the shape that fits:
+
+- **Overview** — a short opening when the section needs one sentence of context.
+- **Prose** — behavior or motivation (what changed and why it matters for review).
+- **Table** — parallel facts (packages touched, CI jobs, label intent, breaking notes).
+
+Do **not** add empty `## Test plan` sections or unchecked todo checklists unless the human asked for them. If verification is worth stating, one short prose line or a tight bullet list under the relevant `##` section is enough.
+
+When a push changes the branch essence, update the existing PR title and body (`gh pr edit`). Do not open a second PR.
+
 ## Agent checklist
 
 1. Infer packages from the diff; apply matching `package: …` (+ `package: monorepo` when appropriate).
@@ -84,3 +112,4 @@ Remove a skip label when the PR no longer justifies skipping that coverage.
 3. Set matching non-test `type: …` label(s).
 4. Add or drop test-trigger/skip `type: test …` labels only when justified. Set `type: test performance` when the diff may change hot-path speed, and re-check that before each push. Default to **not** skipping heavy suites.
 5. Leave all other label families unset.
+6. On PR create or material update: essence title and matching `##` body ([Pull requests](#pull-requests)); no Summary/Test plan boilerplate.
