@@ -881,7 +881,7 @@ const tx = BlobEIP4844Transaction.fromTxData(txData, { common })
 
 Note that `versionedHashes` and `kzgCommitments` have a real length of 32 bytes and `blobs` have a real length of `4096` bytes and values are trimmed here for brevity.
 
-See the [Blob Transaction Tests](./test/eip4844.spec.ts) for examples of usage in instantiating, serializing, and deserializing these transactions.
+See the [Blob Transaction Tests](./test/eip-4844.spec.ts) for examples of usage in instantiating, serializing, and deserializing these transactions.
 
 ## 4.0.2 - 2022-12-09
 

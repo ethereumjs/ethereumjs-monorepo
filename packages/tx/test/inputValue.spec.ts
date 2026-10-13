@@ -151,7 +151,7 @@ describe('[Transaction Input Values]', () => {
 })
 
 describe('[Invalid Array Input values]', () => {
-  it('should work', () => {
+  it('create*FromBytesArray() rejects array-valued RLP fields', () => {
     const cases = [
       { type: TransactionType.Legacy, txData: {}, common: undefined as any },
       { type: TransactionType.AccessListEIP2930, txData: {}, common: undefined },
@@ -218,7 +218,7 @@ describe('[Invalid Array Input values]', () => {
 })
 
 describe('[Invalid Access Lists]', () => {
-  it('should work', () => {
+  it('createTx() rejects malformed access lists', () => {
     const txTypes = [
       TransactionType.AccessListEIP2930,
       TransactionType.FeeMarketEIP1559,

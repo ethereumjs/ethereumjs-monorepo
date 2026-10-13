@@ -19,7 +19,10 @@ import type { HashKeysFunction } from '../src/index.ts'
 
 for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
   for (const cacheSize of [0, 100]) {
-    describe('simple save and retrieve', () => {
+    const keyPrefixLabel = keyPrefix === undefined ? 'none' : bytesToHex(keyPrefix)
+    const matrixTag = `keyPrefix=${keyPrefixLabel}, cacheSize=${cacheSize}`
+
+    describe(`[MPT]: simple save and retrieve (${matrixTag})`, () => {
       it('should not crash if given a non-existent root', async () => {
         const root = hexToBytes(
           '0x3f4399b08efe68945c1cf90ffe85bbe3ce978959da753f9e649f034015b8817d',
@@ -82,7 +85,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
         assert.strictEqual(value, null)
       })
 
-      describe('storing longer values', () => {
+      describe(`[MPT]: storing longer values (${matrixTag})`, () => {
         const trie = new MerklePatriciaTrie({ cacheSize })
         const longString = 'this will be a really really really long value'
         const longStringRoot = 'b173e2db29e79c78963cff5196f8a983fbe0171388972106b114ef7f5c24dfa3'
@@ -103,7 +106,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
         })
       })
 
-      describe('testing extensions and branches', () => {
+      describe(`[MPT]: extensions and branches (${matrixTag})`, () => {
         const trie = new MerklePatriciaTrie({ cacheSize })
 
         it('should store a value', async () => {
@@ -127,7 +130,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
         })
       })
 
-      describe('testing extensions and branches - reverse', () => {
+      describe(`[MPT]: extensions and branches reverse (${matrixTag})`, () => {
         const trie = new MerklePatriciaTrie({ cacheSize })
 
         it('should create extension to store this value', async () => {
@@ -148,7 +151,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
       })
     })
 
-    describe('testing deletion cases', () => {
+    describe(`[MPT]: deletion cases (${matrixTag})`, () => {
       const trieSetup = {
         trie: new MerklePatriciaTrie({ cacheSize }),
         msg: 'without DB delete',
@@ -232,7 +235,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
       })
     })
 
-    describe('shall handle the case of node not found correctly', () => {
+    describe(`[MPT]: node not found (${matrixTag})`, () => {
       it('should work', async () => {
         const trie = new MerklePatriciaTrie({ cacheSize })
         await trie.put(utf8ToBytes('a'), utf8ToBytes('value1'))
@@ -265,7 +268,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
       })
     })
 
-    describe('it should create the genesis state root from ethereum', () => {
+    describe(`[MPT]: genesis state root (${matrixTag})`, () => {
       it('should work', async () => {
         const trie4 = new MerklePatriciaTrie({ cacheSize })
 
@@ -296,7 +299,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
       })
     })
 
-    describe('setting back state root (deleteFromDB)', () => {
+    describe(`[MPT]: set back state root (${matrixTag})`, () => {
       it('should work', async () => {
         const k1 = utf8ToBytes('1')
         /* Testing with longer value due to `rlpNode.length >= 32` check in `_formatNode()`
@@ -332,7 +335,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
       })
     })
 
-    describe('dummy hash', () => {
+    describe(`[MPT]: dummy hash (${matrixTag})`, () => {
       it('should work', async () => {
         const useKeyHashingFunction: HashKeysFunction = (msg) => {
           const hashLen = 32
@@ -354,7 +357,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
       })
     })
 
-    describe('blake2b256 trie root', () => {
+    describe(`[MPT]: blake2b256 trie root (${matrixTag})`, () => {
       it('should work', async () => {
         const trie = new MerklePatriciaTrie({
           useKeyHashingFunction: (msg) => blake2b(msg, { dkLen: 32 }),
@@ -369,7 +372,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
       })
     })
 
-    describe('empty root', () => {
+    describe(`[MPT]: empty root (${matrixTag})`, () => {
       it('should work', async () => {
         const trie = new MerklePatriciaTrie({ cacheSize })
 

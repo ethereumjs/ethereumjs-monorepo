@@ -26,7 +26,7 @@ describe('[Common/genesis]', () => {
   })
 })
 
-describe('[Utils/Parse]', () => {
+describe('[Common/GethGenesis]: parse', () => {
   it('should parse geth params file', async () => {
     const params = parseGethGenesis(eip4844GethGenesis)
     assert.strictEqual(

@@ -145,7 +145,7 @@ describe('EIP4844 addSignature tests', () => {
 })
 
 describe('EIP4844 constructor tests - valid scenarios', () => {
-  it('should work', () => {
+  it('instantiates, serializes, and signs blob txs with unique hedged hashes', () => {
     for (const kzg of kzgs) {
       const txData = {
         type: 0x03,
@@ -197,7 +197,7 @@ describe('EIP4844 constructor tests - valid scenarios', () => {
 })
 
 describe('fromTxData using from a json', () => {
-  it('should work', () => {
+  it('parses JSON-style blob tx fields and matches fixture hash', () => {
     for (const kzg of kzgs) {
       const txData = {
         type: '0x3',
@@ -270,7 +270,7 @@ describe('fromTxData using from a json', () => {
 })
 
 describe('EIP4844 constructor tests - invalid scenarios', () => {
-  it('should work', () => {
+  it('rejects invalid versioned hashes and per-block blob gas limits', () => {
     for (const kzg of kzgs) {
       const baseTxData = {
         type: 0x03,
@@ -339,7 +339,7 @@ describe('EIP4844 constructor tests - invalid scenarios', () => {
 })
 
 describe('Network wrapper tests', () => {
-  it('should work', async () => {
+  it('round-trips signed blob tx through network wrapper JSON', async () => {
     for (const kzg of kzgs) {
       const common = createCommonFromGethGenesis(eip4844GethGenesis, {
         chain: 'customChain',
@@ -568,7 +568,7 @@ describe('Network wrapper tests', () => {
 })
 
 describe('hash() and signature verification', () => {
-  it('should work', async () => {
+  it('hashes unsigned blob tx and recovers sender from signature', async () => {
     for (const kzg of kzgs) {
       const common = createCommonFromGethGenesis(eip4844GethGenesis, {
         chain: 'customChain',
@@ -669,7 +669,7 @@ describe('[Blob4844Tx]: getEffectivePriorityFee', () => {
 })
 
 describe('Network wrapper deserialization test', () => {
-  it('should work', async () => {
+  it('deserializes network wrapper from JSON fixture', async () => {
     for (const kzg of kzgs) {
       const common = createCommonFromGethGenesis(eip4844GethGenesis, {
         chain: 'customChain',

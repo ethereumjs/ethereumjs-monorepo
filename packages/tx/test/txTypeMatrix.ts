@@ -3,7 +3,7 @@ import { type KZG, type PrefixedHexString, hexToBytes } from '@ethereumjs/util'
 
 /**
  * Stub KZG for canonical (no-blob) 4844 txs in the shared type matrix.
- * Do not load a trusted setup here — that belongs in eip4844.spec.ts / eip7594.spec.ts.
+ * Do not load a trusted setup here — that belongs in eip-4844.spec.ts / eip-7594.spec.ts.
  */
 export const stubKzg = {} as KZG
 

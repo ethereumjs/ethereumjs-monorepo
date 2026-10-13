@@ -11,12 +11,12 @@ import { readBinaryFile } from '../src/index.ts'
 
 // To test this, download mainnet-01339-75d1c621.era from https://mainnet.era.nimbus.team/mainnet-01339-75d1c621.era
 // This era file is around 500mb in size so don't commit it to the repo
-describe.skip('it should be able to extract beacon objects from an era file', () => {
+describe.skip('[E2Store/Era]: beacon extraction (large download)', () => {
   let data: Uint8Array
   beforeAll(() => {
     data = readBinaryFile(__dirname + '/mainnet-01339-75d1c621.era')
   })
-  it('should read a slot index from the era file', async () => {
+  it('readSlotIndex() returns start slot from era file', async () => {
     const slotIndex = readSlotIndex(data)
     assert.strictEqual(slotIndex.startSlot, 10969088)
   })
@@ -45,8 +45,8 @@ describe.skip('it should be able to extract beacon objects from an era file', ()
   })
 })
 
-describe.skip('it should be able to extract beacon objects from an era file', () => {
-  it('should extract the beacon state for Phase0 state', async () => {
+describe.skip('[E2Store/Era]: historical fork states (large download)', () => {
+  it('readBeaconState() returns Phase0 state slot', async () => {
     // https://mainnet.era.nimbus.team/mainnet-00265-1468e348.era
     const data = readBinaryFile(__dirname + '/mainnet-00265-1468e348.era')
     const state = await readBeaconState(data)

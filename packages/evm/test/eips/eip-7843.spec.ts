@@ -1,7 +1,7 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { assert, describe, it } from 'vitest'
 
-import { createEVM } from '../src/index.ts'
+import { createEVM } from '../../src/index.ts'
 
 const SLOTNUM = 0x4b
 const STOP = 0x00

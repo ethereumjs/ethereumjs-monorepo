@@ -336,7 +336,7 @@ describe('Clique: Initialization', () => {
     )
   })
 
-  it('Clique Voting: Two signers, actually needing mutual consent to drop either of them', async () => {
+  it('Clique Voting: Two signers, mutual consent to drop — vote not fulfilled', async () => {
     const { blocks, blockchain } = await initWithSigners([SIGNER_A, SIGNER_B])
     await addNextBlock(blockchain, blocks, SIGNER_A, [SIGNER_B, false])
 
@@ -349,7 +349,7 @@ describe('Clique: Initialization', () => {
     )
   })
 
-  it('Clique Voting: Two signers, actually needing mutual consent to drop either of them', async () => {
+  it('Clique Voting: Two signers, mutual consent to drop — vote fulfilled', async () => {
     const { blocks, blockchain } = await initWithSigners([SIGNER_A, SIGNER_B])
     await addNextBlock(blockchain, blocks, SIGNER_A, [SIGNER_B, false])
     await addNextBlock(blockchain, blocks, SIGNER_B, [SIGNER_B, false])

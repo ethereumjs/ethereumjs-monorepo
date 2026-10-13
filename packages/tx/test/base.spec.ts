@@ -304,8 +304,8 @@ const txTypes = [
   },
 ]
 
-describe('[LegacyTx / AccessList2930Tx / FeeMarket1559Tx / Blob4844Tx / EOACode7702Tx]', () => {
-  it('Initialization', () => {
+describe('[Tx/Matrix]: initialization', () => {
+  it('constructs with hardfork, freeze, custom params, and deserializers', () => {
     for (const txType of txTypes) {
       let tx = txType.create.txData(txType.txData, { common: txType.common })
       assert.strictEqual(
@@ -374,6 +374,32 @@ describe('[LegacyTx / AccessList2930Tx / FeeMarket1559Tx / Blob4844Tx / EOACode7
     }
   })
 
+  it('LegacyTx defaults undefined fields to zero', () => {
+    const bufferZero = hexToBytes('0x')
+    const tx = createLegacyTx({
+      nonce: undefined,
+      gasLimit: undefined,
+      gasPrice: undefined,
+      to: undefined,
+      value: undefined,
+      data: undefined,
+      v: undefined,
+      r: undefined,
+      s: undefined,
+    })
+    assert.strictEqual(tx.v, undefined)
+    assert.strictEqual(tx.r, undefined)
+    assert.strictEqual(tx.s, undefined)
+    assert.deepEqual(tx.to, undefined)
+    assert.strictEqual(tx.value, bytesToBigInt(bufferZero))
+    assert.deepEqual(tx.data, bufferZero)
+    assert.strictEqual(tx.gasPrice, bytesToBigInt(bufferZero))
+    assert.strictEqual(tx.gasLimit, bytesToBigInt(bufferZero))
+    assert.strictEqual(tx.nonce, bytesToBigInt(bufferZero))
+  })
+})
+
+describe('[Tx/Matrix]: numeric guards', () => {
   it('create*FromBytesArray() rejects leading zeroes', () => {
     let rlpData: any = legacyTxs[0].raw()
     rlpData[0] = hexToBytes('0x0')
@@ -499,8 +525,10 @@ describe('[LegacyTx / AccessList2930Tx / FeeMarket1559Tx / Blob4844Tx / EOACode7
       }
     }
   })
+})
 
-  it('Initialization / Getter -> typed tx fromTxData() guards', () => {
+describe('[Tx/Matrix]: typed transaction guards', () => {
+  it('typed create* rejects pre-Berlin common, wrong chainId, and invalid yParity', () => {
     for (const txType of txTypes) {
       if (!txType.eip2718) continue
 
@@ -538,7 +566,7 @@ describe('[LegacyTx / AccessList2930Tx / FeeMarket1559Tx / Blob4844Tx / EOACode7
     }
   })
 
-  it('Initialization / Getter -> fromSerializedTx() error cases', () => {
+  it('create*FromRLP() rejects wrong type byte, non-array payload, and bad value count', () => {
     for (const txType of txTypes) {
       if (!txType.eip2718) continue
 
@@ -572,8 +600,10 @@ describe('[LegacyTx / AccessList2930Tx / FeeMarket1559Tx / Blob4844Tx / EOACode7
       }
     }
   })
+})
 
-  it('Access Lists -> success cases', () => {
+describe('[Tx/Matrix]: access lists', () => {
+  it('accepts JSON- and bytes-typed access lists', () => {
     const access: AccessList = [
       {
         address: bytesToHex(validAddress),
@@ -616,7 +646,7 @@ describe('[LegacyTx / AccessList2930Tx / FeeMarket1559Tx / Blob4844Tx / EOACode7
     }
   })
 
-  it('Access Lists -> error cases', () => {
+  it('rejects malformed access list shapes', () => {
     for (const txType of txTypes) {
       if (!txType.hasAccessList) continue
 
@@ -643,8 +673,10 @@ describe('[LegacyTx / AccessList2930Tx / FeeMarket1559Tx / Blob4844Tx / EOACode7
       }
     }
   })
+})
 
-  it('serialize()', () => {
+describe('[Tx/Matrix]: serialization', () => {
+  it('serialize() round-trips through create*FromRLP()', () => {
     for (const txType of txTypes) {
       for (const tx of txType.txs) {
         assert.isDefined(
@@ -655,7 +687,32 @@ describe('[LegacyTx / AccessList2930Tx / FeeMarket1559Tx / Blob4844Tx / EOACode7
     }
   })
 
-  it('supports()', () => {
+  it('raw() round-trips through create*FromBytesArray()', () => {
+    for (const txType of txTypes) {
+      for (const tx of txType.txs) {
+        assert.isDefined(
+          txType.create.bytesArray(tx.raw() as any, { common: txType.common }),
+          `${txType.name}: should do roundtrip raw() -> create*FromBytesArray()`,
+        )
+      }
+    }
+  })
+
+  it('getDataGas() matches for frozen and unfrozen instances', () => {
+    for (const txType of txTypes) {
+      const frozen = txType.create.txData(txType.txData, { common: txType.common })
+      const unfrozen = txType.create.txData(txType.txData, { common: txType.common, freeze: false })
+      assert.strictEqual(
+        frozen.getDataGas(),
+        unfrozen.getDataGas(),
+        `${txType.name}: frozen and unfrozen txs should report the same data gas`,
+      )
+    }
+  })
+})
+
+describe('[Tx/Matrix]: capabilities', () => {
+  it('supports() reports active and inactive capabilities', () => {
     for (const txType of txTypes) {
       for (const tx of txType.txs) {
         for (const activeCapability of txType.activeCapabilities) {
@@ -673,19 +730,10 @@ describe('[LegacyTx / AccessList2930Tx / FeeMarket1559Tx / Blob4844Tx / EOACode7
       }
     }
   })
+})
 
-  it('raw()', () => {
-    for (const txType of txTypes) {
-      for (const tx of txType.txs) {
-        assert.isDefined(
-          txType.create.bytesArray(tx.raw() as any, { common: txType.common }),
-          `${txType.name}: should do roundtrip raw() -> create*FromBytesArray()`,
-        )
-      }
-    }
-  })
-
-  it('verifySignature()', () => {
+describe('[Tx/Matrix]: signing and signatures', () => {
+  it('verifySignature() accepts valid fixture signatures', () => {
     for (const txType of txTypes) {
       for (const tx of txType.txs) {
         assert.strictEqual(tx.verifySignature(), true, `${txType.name}: signature should be valid`)
@@ -693,7 +741,7 @@ describe('[LegacyTx / AccessList2930Tx / FeeMarket1559Tx / Blob4844Tx / EOACode7
     }
   })
 
-  it('verifySignature() -> invalid', () => {
+  it('verifySignature() rejects corrupted s and surfaces validation errors', () => {
     for (const txType of txTypes) {
       for (const txFixture of txType.fixtures.slice(0, 4)) {
         const data = { ...txFixture.data, s: '0x0' }
@@ -713,7 +761,7 @@ describe('[LegacyTx / AccessList2930Tx / FeeMarket1559Tx / Blob4844Tx / EOACode7
     }
   })
 
-  it('sign()', () => {
+  it('sign() accepts fixture keys and rejects invalid private key bytes', () => {
     for (const txType of txTypes) {
       for (const [i, tx] of txType.txs.entries()) {
         const { privateKey } = txType.fixtures[i]
@@ -748,7 +796,7 @@ describe('[LegacyTx / AccessList2930Tx / FeeMarket1559Tx / Blob4844Tx / EOACode7
     }
   })
 
-  it('isSigned() -> returns correct values', () => {
+  it('isSigned() reflects presence of v, r, and s', () => {
     for (const txType of txTypes) {
       const txs = [
         ...txType.txs,
@@ -775,7 +823,7 @@ describe('[LegacyTx / AccessList2930Tx / FeeMarket1559Tx / Blob4844Tx / EOACode7
     }
   })
 
-  it('getSenderAddress()', () => {
+  it('getSenderAddress() matches fixture after sign()', () => {
     for (const txType of txTypes) {
       for (const [i, tx] of txType.txs.entries()) {
         const { privateKey, sendersAddress } = txType.fixtures[i]
@@ -791,7 +839,7 @@ describe('[LegacyTx / AccessList2930Tx / FeeMarket1559Tx / Blob4844Tx / EOACode7
     }
   })
 
-  it('getSenderPublicKey()', () => {
+  it('getSenderPublicKey() matches privateToPublic after sign()', () => {
     for (const txType of txTypes) {
       for (const [i, tx] of txType.txs.entries()) {
         const { privateKey } = txType.fixtures[i]
@@ -808,7 +856,7 @@ describe('[LegacyTx / AccessList2930Tx / FeeMarket1559Tx / Blob4844Tx / EOACode7
     }
   })
 
-  it('getSenderPublicKey() -> should throw if s-value is greater than secp256k1n/2', () => {
+  it('getSenderPublicKey() throws when s exceeds secp256k1n/2', () => {
     for (const txType of txTypes) {
       for (const [i, tx] of txType.txs.entries()) {
         const { privateKey } = txType.fixtures[i]
@@ -830,7 +878,7 @@ describe('[LegacyTx / AccessList2930Tx / FeeMarket1559Tx / Blob4844Tx / EOACode7
     }
   })
 
-  it('verifySignature() after sign()', () => {
+  it('verifySignature() passes after sign() with fixture key', () => {
     for (const txType of txTypes) {
       for (const [i, tx] of txType.txs.entries()) {
         const { privateKey } = txType.fixtures[i]
@@ -840,41 +888,5 @@ describe('[LegacyTx / AccessList2930Tx / FeeMarket1559Tx / Blob4844Tx / EOACode7
         }
       }
     }
-  })
-
-  it('getDataGas()', () => {
-    for (const txType of txTypes) {
-      const frozen = txType.create.txData(txType.txData, { common: txType.common })
-      const unfrozen = txType.create.txData(txType.txData, { common: txType.common, freeze: false })
-      assert.strictEqual(
-        frozen.getDataGas(),
-        unfrozen.getDataGas(),
-        `${txType.name}: frozen and unfrozen txs should report the same data gas`,
-      )
-    }
-  })
-
-  it('initialization with defaults', () => {
-    const bufferZero = hexToBytes('0x')
-    const tx = createLegacyTx({
-      nonce: undefined,
-      gasLimit: undefined,
-      gasPrice: undefined,
-      to: undefined,
-      value: undefined,
-      data: undefined,
-      v: undefined,
-      r: undefined,
-      s: undefined,
-    })
-    assert.strictEqual(tx.v, undefined)
-    assert.strictEqual(tx.r, undefined)
-    assert.strictEqual(tx.s, undefined)
-    assert.deepEqual(tx.to, undefined)
-    assert.strictEqual(tx.value, bytesToBigInt(bufferZero))
-    assert.deepEqual(tx.data, bufferZero)
-    assert.strictEqual(tx.gasPrice, bytesToBigInt(bufferZero))
-    assert.strictEqual(tx.gasLimit, bytesToBigInt(bufferZero))
-    assert.strictEqual(tx.nonce, bytesToBigInt(bufferZero))
   })
 })

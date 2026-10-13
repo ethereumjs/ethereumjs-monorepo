@@ -5,7 +5,7 @@ import { assert, describe, expect, it } from 'vitest'
 import { createBinaryTree } from '../src/index.ts'
 import { dumpLeafValues, dumpNodeHashes } from '../src/util.ts'
 
-describe('[BinaryTree/Insert]: put and root', () => {
+describe('[BinaryTree/Root]: persistence and setRoot', () => {
   it('should not destroy a previous root', async () => {
     const tree = await createBinaryTree({ useRootPersistence: true })
     await tree.put(
@@ -61,7 +61,9 @@ describe('[BinaryTree/Insert]: put and root', () => {
     // const nullRootExists = await tree2.checkRoot(tree2.EMPTY_TREE_ROOT)
     // assert.isTrue(nullRootExists)
   })
+})
 
+describe('[BinaryTree/Insert]: basic put and state root', () => {
   it('should put, retrieve and compute the correct state root', async () => {
     const tree = await createBinaryTree()
 
@@ -122,7 +124,9 @@ describe('[BinaryTree/Insert]: put and root', () => {
       '0x85fc622076752a6fcda2c886c18058d639066a83473d9684704b5a29455ed2ed',
     )
   })
+})
 
+describe('[BinaryTree/Insert]: colocated stems', () => {
   it('should handle one stem with colocated values', async () => {
     const tree = await createBinaryTree()
 
@@ -178,6 +182,9 @@ describe('[BinaryTree/Insert]: put and root', () => {
       )
     }
   })
+})
+
+describe('[BinaryTree/Insert]: prefix match and ordering', () => {
   it('should handle two keys that match in the first 42 bits', async () => {
     const tree = await createBinaryTree()
 
@@ -303,7 +310,9 @@ describe('[BinaryTree/Insert]: put and root', () => {
       'Value for key3 should match inserted value',
     )
   })
+})
 
+describe('[BinaryTree/Checkpoint]: revert commit and flush', () => {
   it('should handle checkpointing and reverting', async () => {
     const tree1 = await createBinaryTree()
 
@@ -373,7 +382,9 @@ describe('[BinaryTree/Insert]: put and root', () => {
       assert.strictEqual(e.message, 'trying to commit when not checkpointed')
     }
   })
+})
 
+describe('[BinaryTree/Insert]: blake3 keys and insert ordering', () => {
   it('should handle 100 similar key/value pairs hashed with blake3', async () => {
     const tree1 = await createBinaryTree()
 
@@ -454,6 +465,9 @@ describe('[BinaryTree/Insert]: put and root', () => {
       'Retrieved value should match the updated value',
     )
   })
+})
+
+describe('[BinaryTree/Dump]: leaf values and node hashes', () => {
   it('should dump leaf values and node hashes', async () => {
     const tree = await createBinaryTree()
 
@@ -497,7 +511,9 @@ describe('[BinaryTree/Insert]: put and root', () => {
     expect(nodeHashes!.length).toBeGreaterThan(100)
     assert.strictEqual(nodeHashes![0][1], bytesToHex(tree.root()))
   })
+})
 
+describe('[BinaryTree/Insert]: duplicate key and delete', () => {
   it('should update value when inserting a duplicate key', async () => {
     const tree = await createBinaryTree()
 

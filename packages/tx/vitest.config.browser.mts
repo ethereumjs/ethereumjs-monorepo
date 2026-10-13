@@ -10,8 +10,8 @@ export default mergeConfig(
         // default export for minimist
         // wrong ethereum-tests path reference (../ is stripped)
         'test/transactionRunner.spec.ts',
-        'test/eip4844.spec.ts',
-        'test/eip7594.spec.ts',
+        'test/eip-4844.spec.ts',
+        'test/eip-7594.spec.ts',
         'test/t9n.spec.ts',
         'test/wasmCrypto.spec.ts',
       ],

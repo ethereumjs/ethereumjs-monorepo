@@ -88,7 +88,7 @@ describe('EIP-6110 runBlock tests', () => {
   })
 })
 
-describe('EIP-7685 buildBlock tests', () => {
+describe('EIP-6110 buildBlock tests', () => {
   it('should include deposit request when a deposit transaction is included in a block', async () => {
     const vm = await setupVM({ common })
     const pk = randomBytes(32)

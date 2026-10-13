@@ -33,7 +33,7 @@ import { testdataFromRPCGoerliData } from './testdata/testdata-from-rpc-goerli.t
 
 import type { NestedUint8Array } from '@ethereumjs/util'
 
-describe('[Block]: block functions', () => {
+describe('[Block]: initialization', () => {
   it('should test block initialization', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     const genesis = createBlock({}, { common })
@@ -140,7 +140,9 @@ describe('[Block]: block functions', () => {
       createBlock({ uncleHeaders: [uncleBlock.header] }, { common })
     })
   })
+})
 
+describe('[Block]: validation', () => {
   it('should test block validation on pow chain', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     const blockRlp = hexToBytes(preLondonTestDataBlocks1RLP.blockRLP)
@@ -168,7 +170,7 @@ describe('[Block]: block functions', () => {
     assert.isEmpty(block.getTransactionsValidationErrors())
   }
 
-  it('should test transaction validation - transaction not signed', async () => {
+  it('rejects createBlock when tx gas exceeds EIP-7825 on Osaka', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Osaka })
     const maxTransactionGasLimit = paramsTx['7825'].maxTransactionGasLimit as number
     // Create tx with gas limit over max (but not yet on Osaka)
@@ -197,7 +199,7 @@ describe('[Block]: block functions', () => {
     }
   })
 
-  it('should test transaction validation - transaction not signed', async () => {
+  it('validateData() rejects unsigned transaction in block', async () => {
     const tx = createLegacyTx({
       gasLimit: 53000,
       gasPrice: 7,
@@ -309,7 +311,9 @@ describe('[Block]: block functions', () => {
     )
     await checkThrowsAsync(block.validateData(false, false), 'invalid uncle hash')
   })
+})
 
+describe('[Block]: hashes and serialization', () => {
   it('should test isGenesis (mainnet default)', () => {
     const block = createBlock({ header: { number: 1 } })
     assert.notEqual(block.isGenesis(), true)

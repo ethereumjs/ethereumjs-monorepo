@@ -118,8 +118,8 @@ describe('StateManager -> Account Checkpointing', () => {
   ]
 
   for (const SM of stateManagers) {
-    for (const as of accountSets) {
-      it(`No CP -> A1 -> Flush() (-> A1)`, async () => {
+    accountSets.forEach((as, codeSetId) => {
+      it(`${SM.name} codeSet ${codeSetId}: No CP -> A1 -> Flush() (-> A1)`, async () => {
         const sm = new SM()
 
         await sm.putAccount(address, as.a1[0])
@@ -130,7 +130,7 @@ describe('StateManager -> Account Checkpointing', () => {
         assert.isTrue(await accountEval(sm, address, as.a1[1]))
       })
 
-      it(`CP -> A1.1 -> Commit -> Flush() (-> A1.1)`, async () => {
+      it(`${SM.name} codeSet ${codeSetId}: CP -> A1.1 -> Commit -> Flush() (-> A1.1)`, async () => {
         const sm = new SM()
 
         await sm.checkpoint()
@@ -143,7 +143,7 @@ describe('StateManager -> Account Checkpointing', () => {
         assert.isTrue(await accountEval(sm, address, as.a1[1]))
       })
 
-      it(`CP -> A1.1 -> Revert -> Flush() (-> Undefined)`, async () => {
+      it(`${SM.name} codeSet ${codeSetId}: CP -> A1.1 -> Revert -> Flush() (-> Undefined)`, async () => {
         const sm = new SM()
 
         await sm.checkpoint()
@@ -156,7 +156,7 @@ describe('StateManager -> Account Checkpointing', () => {
         assert.isTrue(await accountEval(sm, address, undefined))
       })
 
-      it(`A1.1 -> CP -> Commit -> Flush() (-> A1.1)`, async () => {
+      it(`${SM.name} codeSet ${codeSetId}: A1.1 -> CP -> Commit -> Flush() (-> A1.1)`, async () => {
         const sm = new SM()
 
         await sm.putAccount(address, as.a1[0])
@@ -169,7 +169,7 @@ describe('StateManager -> Account Checkpointing', () => {
         assert.isTrue(await accountEval(sm, address, as.a1[1]))
       })
 
-      it(`A1.1 -> CP -> Revert -> Flush() (-> A1.1)`, async () => {
+      it(`${SM.name} codeSet ${codeSetId}: A1.1 -> CP -> Revert -> Flush() (-> A1.1)`, async () => {
         const sm = new SM()
 
         await sm.putAccount(address, as.a1[0])
@@ -182,7 +182,7 @@ describe('StateManager -> Account Checkpointing', () => {
         assert.isTrue(await accountEval(sm, address, as.a1[1]))
       })
 
-      it(`A1.1 -> CP -> A1.2 -> Commit -> Flush() (-> A1.2)`, async () => {
+      it(`${SM.name} codeSet ${codeSetId}: A1.1 -> CP -> A1.2 -> Commit -> Flush() (-> A1.2)`, async () => {
         const sm = new SM()
 
         await sm.putAccount(address, as.a1[0])
@@ -196,7 +196,7 @@ describe('StateManager -> Account Checkpointing', () => {
         assert.isTrue(await accountEval(sm, address, as.a2[1]))
       })
 
-      it(`A1.1 -> CP -> A1.2 -> Commit -> A1.3 -> Flush() (-> A1.3)`, async () => {
+      it(`${SM.name} codeSet ${codeSetId}: A1.1 -> CP -> A1.2 -> Commit -> A1.3 -> Flush() (-> A1.3)`, async () => {
         const sm = new SM()
 
         await sm.putAccount(address, as.a1[0])
@@ -211,7 +211,7 @@ describe('StateManager -> Account Checkpointing', () => {
         assert.isTrue(await accountEval(sm, address, as.a3[1]))
       })
 
-      it(`A1.1 -> CP -> A1.2 -> A1.3 -> Commit -> Flush() (-> A1.3)`, async () => {
+      it(`${SM.name} codeSet ${codeSetId}: A1.1 -> CP -> A1.2 -> A1.3 -> Commit -> Flush() (-> A1.3)`, async () => {
         const sm = new SM()
 
         await sm.putAccount(address, as.a1[0])
@@ -226,7 +226,7 @@ describe('StateManager -> Account Checkpointing', () => {
         assert.isTrue(await accountEval(sm, address, as.a3[1]))
       })
 
-      it(`CP -> A1.1 -> A1.2 -> Commit -> Flush() (-> A1.2)`, async () => {
+      it(`${SM.name} codeSet ${codeSetId}: CP -> A1.1 -> A1.2 -> Commit -> Flush() (-> A1.2)`, async () => {
         const sm = new SM()
 
         await sm.checkpoint()
@@ -240,7 +240,7 @@ describe('StateManager -> Account Checkpointing', () => {
         assert.isTrue(await accountEval(sm, address, as.a2[1]))
       })
 
-      it(`CP -> A1.1 -> A1.2 -> Revert -> Flush() (-> Undefined)`, async () => {
+      it(`${SM.name} codeSet ${codeSetId}: CP -> A1.1 -> A1.2 -> Revert -> Flush() (-> Undefined)`, async () => {
         const sm = new SM()
 
         await sm.checkpoint()
@@ -255,7 +255,7 @@ describe('StateManager -> Account Checkpointing', () => {
         assert.isTrue(await accountEval(sm, address, undefined))
       })
 
-      it(`A1.1 -> CP -> A1.2 -> Revert -> Flush() (-> A1.1)`, async () => {
+      it(`${SM.name} codeSet ${codeSetId}: A1.1 -> CP -> A1.2 -> Revert -> Flush() (-> A1.1)`, async () => {
         const sm = new SM()
 
         await sm.putAccount(address, as.a1[0])
@@ -269,7 +269,7 @@ describe('StateManager -> Account Checkpointing', () => {
         assert.isTrue(await accountEval(sm, address, as.a1[1]))
       })
 
-      it('A1.1 -> CP -> A1.2 -> CP -> A1.3 -> Commit -> Commit -> Flush() (-> A1.3)', async () => {
+      it(`${SM.name} codeSet ${codeSetId}: A1.1 -> CP -> A1.2 -> CP -> A1.3 -> Commit -> Commit -> Flush() (-> A1.3)`, async () => {
         const sm = new SM()
 
         await sm.putAccount(address, as.a1[0])
@@ -286,7 +286,7 @@ describe('StateManager -> Account Checkpointing', () => {
         assert.isTrue(await accountEval(sm, address, as.a3[1]))
       })
 
-      it('A1.1 -> CP -> A1.2 -> CP -> A1.3 -> Commit -> Revert -> Flush() (-> A1.1)', async () => {
+      it(`${SM.name} codeSet ${codeSetId}: A1.1 -> CP -> A1.2 -> CP -> A1.3 -> Commit -> Revert -> Flush() (-> A1.1)`, async () => {
         const sm = new SM()
 
         await sm.putAccount(address, as.a1[0])
@@ -303,7 +303,7 @@ describe('StateManager -> Account Checkpointing', () => {
         assert.isTrue(await accountEval(sm, address, as.a1[1]))
       })
 
-      it('A1.1 -> CP -> A1.2 -> CP -> A1.3 -> Revert -> Commit -> Flush() (-> A1.2)', async () => {
+      it(`${SM.name} codeSet ${codeSetId}: A1.1 -> CP -> A1.2 -> CP -> A1.3 -> Revert -> Commit -> Flush() (-> A1.2)`, async () => {
         const sm = new SM()
 
         await sm.putAccount(address, as.a1[0])
@@ -320,7 +320,7 @@ describe('StateManager -> Account Checkpointing', () => {
         assert.isTrue(await accountEval(sm, address, as.a2[1]))
       })
 
-      it('A1.1 -> CP -> A1.2 -> CP -> A1.3 -> Revert -> A1.4 -> Commit -> Flush() (-> A1.4)', async () => {
+      it(`${SM.name} codeSet ${codeSetId}: A1.1 -> CP -> A1.2 -> CP -> A1.3 -> Revert -> A1.4 -> Commit -> Flush() (-> A1.4)`, async () => {
         const sm = new SM()
 
         await sm.putAccount(address, as.a1[0])
@@ -338,7 +338,7 @@ describe('StateManager -> Account Checkpointing', () => {
         assert.isTrue(await accountEval(sm, address, as.a4[1]))
       })
 
-      it('A1.1 -> CP -> A1.2 -> CP -> A1.3 -> Revert -> A1.4 -> CP -> A1.5 -> Commit -> Commit -> Flush() (-> A1.5)', async () => {
+      it(`${SM.name} codeSet ${codeSetId}: A1.1 -> CP -> A1.2 -> CP -> A1.3 -> Revert -> A1.4 -> CP -> A1.5 -> Commit -> Commit -> Flush() (-> A1.5)`, async () => {
         const sm = new SM()
 
         await sm.putAccount(address, as.a1[0])
@@ -358,6 +358,6 @@ describe('StateManager -> Account Checkpointing', () => {
         sm.clearCaches()
         assert.isTrue(await accountEval(sm, address, as.a5[1]))
       })
-    }
+    })
   }
 })

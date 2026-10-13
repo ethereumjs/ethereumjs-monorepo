@@ -4,7 +4,7 @@ import { assert, describe, it } from 'vitest'
 import {
   computeIntrinsicGasDimensions8037,
   txExceedsAvailableBlockGas8037,
-} from '../src/eip8037.ts'
+} from '../../src/eip8037.ts'
 
 describe('[EVM/EIP8037]: state gas helpers', () => {
   it('computeIntrinsicGasDimensions8037() returns zero state gas without EIP-8037', () => {

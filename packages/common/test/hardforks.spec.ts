@@ -17,8 +17,8 @@ import {
 
 import type { ChainConfig, GethGenesis, GethGenesisConfig } from '../src/index.ts'
 
-describe('[Common]: Hardfork logic', () => {
-  it('Hardfork access', () => {
+describe('[Common/Hardfork]: chain hardfork access', () => {
+  it('instantiates Common at each supported mainnet hardfork', () => {
     const supportedHardforks = [
       Hardfork.Chainstart,
       Hardfork.Homestead,
@@ -44,7 +44,9 @@ describe('[Common]: Hardfork logic', () => {
       assert.strictEqual(c.hardfork(), hardfork, hardfork)
     }
   })
+})
 
+describe('[Common/Hardfork]: getHardforkBy and setHardforkBy', () => {
   it('getHardforkBy() / setHardforkBy()', () => {
     const c = new Common({ chain: Mainnet })
     let msg = 'should get HF correctly'
@@ -99,7 +101,9 @@ describe('[Common]: Hardfork logic', () => {
     const msg = 'should return correct value'
     assert.strictEqual(c.setHardforkBy({ blockNumber: 3n }), Hardfork.SpuriousDragon, msg)
   })
+})
 
+describe('[Common/Hardfork]: hardforkBlock and events', () => {
   it('setHardfork(): hardforkChanged event', () => {
     const c = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     c.events.on('hardforkChanged', (hardfork: string) => {
@@ -124,7 +128,9 @@ describe('[Common]: Hardfork logic', () => {
     msg = 'should return the correct HF change block for istanbul (set)'
     assert.strictEqual(c.hardforkBlock()!, BigInt(9069000), msg)
   })
+})
 
+describe('[Common/Hardfork]: next hardfork and activeOnBlock', () => {
   it('nextHardforkBlockOrTimestamp()', () => {
     const c = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     let msg =
@@ -171,8 +177,10 @@ describe('[Common]: Hardfork logic', () => {
     msg = 'Mainnet, byzantium (set), 4369999 -> false'
     assert.strictEqual(c.hardforkIsActiveOnBlock(null, 4369999), false, msg)
   })
+})
 
-  it('hardforkBlock()', () => {
+describe('[Common/Hardfork]: hardforkBlock lookups', () => {
+  it('hardforkBlock() returns Berlin block and null for unscheduled forks', () => {
     const c = new Common({ chain: Mainnet })
 
     let msg = 'should return correct value'
@@ -186,7 +194,9 @@ describe('[Common]: Hardfork logic', () => {
     assert.strictEqual(c.hardforkBlock(Hardfork.Bpo3), null, msg)
     assert.strictEqual(c.nextHardforkBlockOrTimestamp(Hardfork.Bpo2), null, msg)
   })
+})
 
+describe('[Common/Hardfork]: hardforkGteHardfork', () => {
   it('hardforkGteHardfork()', () => {
     let c = new Common({ chain: Mainnet })
     let msg = 'Mainnet, constantinople >= byzantium (provided) -> true'
@@ -222,7 +232,9 @@ describe('[Common]: Hardfork logic', () => {
     msg = 'Mainnet, byzantium (set) >= constantinople -> false'
     assert.strictEqual(c.hardforkGteHardfork(null, Hardfork.Constantinople), false, msg)
   })
+})
 
+describe('[Common/Hardfork]: fork hash', () => {
   it('_calcForkHash()', () => {
     const chains: [ChainConfig, Uint8Array][] = [
       [Mainnet, hexToBytes('0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3')],
@@ -302,7 +314,7 @@ describe('[Common]: Hardfork logic', () => {
     assert.throws(f, /No fork hash calculation possible/, undefined, msg)
   })
 
-  it('forkHash(): should not change forkHash if timestamp is at genesis timestamp', () => {
+  it('forkHash() ignores cancunTime when equal to genesis timestamp', () => {
     // Setup default config
     const defaultConfig: GethGenesis = {
       timestamp: '10',
@@ -367,7 +379,9 @@ describe('[Common]: Hardfork logic', () => {
     msg = 'should return null for a forkHash not matching any HF'
     assert.strictEqual(c.hardforkForForkHash('0x12345'), null, msg)
   })
+})
 
+describe('[Common/Hardfork]: consensus and HARDFORK_CHANGES', () => {
   it('HF consensus updates', () => {
     let c = new Common({ chain: goerliChainConfig, hardfork: Hardfork.Byzantium })
     assert.strictEqual(
@@ -404,7 +418,7 @@ describe('[Common]: Hardfork logic', () => {
     )
   })
 
-  it('Should correctly apply hardfork changes', () => {
+  it('applyHardforkChanges() updates consensus through merge on Sepolia', () => {
     // For sepolia mergeNetsplitBlock happens AFTER merge
     const c = new Common({ chain: Sepolia, hardfork: Hardfork.London })
     assert.strictEqual(

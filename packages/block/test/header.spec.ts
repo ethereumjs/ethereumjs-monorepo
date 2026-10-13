@@ -27,7 +27,7 @@ import type { CliqueConfig } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
 import type { BlockHeader } from '../src/index.ts'
 
-describe('[Block]: Header functions', () => {
+describe('[Block/Header]: initialization', () => {
   it('should create with default constructor', () => {
     function compareDefaultHeader(header: BlockHeader) {
       assert.isTrue(equalsBytes(header.parentHash, new Uint8Array(32)))
@@ -182,7 +182,9 @@ describe('[Block]: Header functions', () => {
     const header = createBlockHeader({ extraData: new Uint8Array(97) }, { common })
     assert.isDefined(bytesToHex(header.hash()), 'default block should initialize')
   })
+})
 
+describe('[Block/Header]: validation', () => {
   it('should validate extraData', () => {
     // PoW
     let common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
@@ -427,6 +429,9 @@ describe('[Block]: Header functions', () => {
     }
       })
 */
+})
+
+describe('[Block/Header]: gas limit hash and defaults', () => {
   it('should test validateGasLimit()', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const testData = bcBlockGasLimitTestData.tests.BlockGasLimit2p63m1

@@ -6,9 +6,9 @@ import {
   createEIP7708TransferLog,
   decodeEIP7708BurnLog,
   decodeEIP7708TransferLog,
-} from '../src/index.ts'
+} from '../../src/index.ts'
 
-import type { Log } from '../src/types.ts'
+import type { Log } from '../../src/types.ts'
 
 describe('[EVM/eip7708]: decode transfer and burn logs', () => {
   const from = createAddressFromString('0x00000000000000000000000000000000000000aa')

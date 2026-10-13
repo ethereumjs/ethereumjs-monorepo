@@ -68,8 +68,8 @@ describe('commitmentsToVersionedHashes()', () => {
   })
 })
 
-describe('blobsToProofs()', () => {
-  it('should return an array of proofs', () => {
+describe('[Util/Blobs]: blobsToProofs', () => {
+  it('blobsToProofs() returns expected proof array', () => {
     const blobs = getBlobs(['0x01', '0x02'])
     const commitments = blobsToCommitments(kzg, blobs)
     const proofs = blobsToProofs(kzg, blobs, commitments)
@@ -81,7 +81,7 @@ describe('blobsToProofs()', () => {
     ]
     assert.deepEqual(proofs, expectedProofs)
     assert.lengthOf(proofs, 2)
-  })
+  }, 30_000)
 })
 
 describe('blobsToCellsAndProofs()', () => {

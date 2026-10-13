@@ -114,13 +114,11 @@ describe('hashPersonalMessage', () => {
       hexToBytes('0x8144a6fa26be252b86456491fbcd43c1de7e022241845ffea1c3df066f7cfede'),
     )
   })
-  it('should throw if input is not a Uint8Array', () => {
-    try {
+  it('hashPersonalMessage() rejects non-Uint8Array input', () => {
+    assert.throws(() => {
       // @ts-expect-error -- This syntax is not allowed when 'erasableSyntaxOnly' is enabled.
       hashPersonalMessage((<unknown>[0, 1, 2, 3, 4]) as Uint8Array)
-    } catch (err: any) {
-      assert.isTrue(err.message.includes('This method only supports Uint8Array'))
-    }
+    }, /This method only supports Uint8Array/)
   })
 })
 

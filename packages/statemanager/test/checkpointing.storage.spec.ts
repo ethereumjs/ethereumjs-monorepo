@@ -107,8 +107,8 @@ describe('StateManager -> Storage Checkpointing', () => {
   ]
 
   for (const SMDict of stateManagers) {
-    for (const s of storageSets) {
-      it(`No CP -> S1 -> Flush() (-> S1)`, async () => {
+    storageSets.forEach((s, codeSetId) => {
+      it(`${SMDict.SM.name} codeSet ${codeSetId}: No CP -> S1 -> Flush() (-> S1)`, async () => {
         const sm = new SMDict.SM()
         await sm.putAccount(address, new Account())
 
@@ -121,7 +121,7 @@ describe('StateManager -> Storage Checkpointing', () => {
         await storageEval(sm, address, key, s.s1.value, s.s1.root, SMDict.rootCheck)
       })
 
-      it(`CP -> S1.1 -> Commit -> Flush() (-> S1.1)`, async () => {
+      it(`${SMDict.SM.name} codeSet ${codeSetId}: CP -> S1.1 -> Commit -> Flush() (-> S1.1)`, async () => {
         const sm = new SMDict.SM()
         await sm.putAccount(address, new Account())
 
@@ -135,7 +135,7 @@ describe('StateManager -> Storage Checkpointing', () => {
         await storageEval(sm, address, key, s.s1.value, s.s1.root, SMDict.rootCheck)
       })
 
-      it(`CP -> S1.1 -> Revert -> Flush() (-> Undefined)`, async () => {
+      it(`${SMDict.SM.name} codeSet ${codeSetId}: CP -> S1.1 -> Revert -> Flush() (-> Undefined)`, async () => {
         const sm = new SMDict.SM()
         await sm.putAccount(address, new Account())
 
@@ -151,7 +151,7 @@ describe('StateManager -> Storage Checkpointing', () => {
         await storageEval(sm, address, key, valueEmpty, rootEmpty)
       })
 
-      it(`S1.1 -> CP -> Commit -> Flush() (-> S1.1)`, async () => {
+      it(`${SMDict.SM.name} codeSet ${codeSetId}: S1.1 -> CP -> Commit -> Flush() (-> S1.1)`, async () => {
         const sm = new SMDict.SM()
         await sm.putAccount(address, new Account())
 
@@ -165,7 +165,7 @@ describe('StateManager -> Storage Checkpointing', () => {
         await storageEval(sm, address, key, s.s1.value, s.s1.root, SMDict.rootCheck)
       })
 
-      it(`S1.1 -> CP -> Revert -> Flush() (-> S1.1)`, async () => {
+      it(`${SMDict.SM.name} codeSet ${codeSetId}: S1.1 -> CP -> Revert -> Flush() (-> S1.1)`, async () => {
         const sm = new SMDict.SM()
         await sm.putAccount(address, new Account())
 
@@ -179,7 +179,7 @@ describe('StateManager -> Storage Checkpointing', () => {
         await storageEval(sm, address, key, s.s1.value, s.s1.root, SMDict.rootCheck)
       })
 
-      it(`S1.1 -> CP -> S1.2 -> Commit -> Flush() (-> S1.2)`, async () => {
+      it(`${SMDict.SM.name} codeSet ${codeSetId}: S1.1 -> CP -> S1.2 -> Commit -> Flush() (-> S1.2)`, async () => {
         const sm = new SMDict.SM()
         await sm.putAccount(address, new Account())
 
@@ -194,7 +194,7 @@ describe('StateManager -> Storage Checkpointing', () => {
         await storageEval(sm, address, key, s.s2.value, s.s2.root, SMDict.rootCheck)
       })
 
-      it(`S1.1 -> CP -> S1.2 -> Commit -> S1.3 -> Flush() (-> S1.3)`, async () => {
+      it(`${SMDict.SM.name} codeSet ${codeSetId}: S1.1 -> CP -> S1.2 -> Commit -> S1.3 -> Flush() (-> S1.3)`, async () => {
         const sm = new SMDict.SM()
         await sm.putAccount(address, new Account())
 
@@ -210,7 +210,7 @@ describe('StateManager -> Storage Checkpointing', () => {
         await storageEval(sm, address, key, s.s3.value, s.s3.root, SMDict.rootCheck)
       })
 
-      it(`S1.1 -> CP -> S1.2 -> S1.3 -> Commit -> Flush() (-> S1.3)`, async () => {
+      it(`${SMDict.SM.name} codeSet ${codeSetId}: S1.1 -> CP -> S1.2 -> S1.3 -> Commit -> Flush() (-> S1.3)`, async () => {
         const sm = new SMDict.SM()
         await sm.putAccount(address, new Account())
 
@@ -226,7 +226,7 @@ describe('StateManager -> Storage Checkpointing', () => {
         await storageEval(sm, address, key, s.s3.value, s.s3.root, SMDict.rootCheck)
       })
 
-      it(`CP -> S1.1 -> S1.2 -> Commit -> Flush() (-> S1.2)`, async () => {
+      it(`${SMDict.SM.name} codeSet ${codeSetId}: CP -> S1.1 -> S1.2 -> Commit -> Flush() (-> S1.2)`, async () => {
         const sm = new SMDict.SM()
         await sm.putAccount(address, new Account())
 
@@ -241,7 +241,7 @@ describe('StateManager -> Storage Checkpointing', () => {
         await storageEval(sm, address, key, s.s2.value, s.s2.root, SMDict.rootCheck)
       })
 
-      it(`CP -> S1.1 -> S1.2 -> Revert -> Flush() (-> Undefined)`, async () => {
+      it(`${SMDict.SM.name} codeSet ${codeSetId}: CP -> S1.1 -> S1.2 -> Revert -> Flush() (-> Undefined)`, async () => {
         const sm = new SMDict.SM()
         await sm.putAccount(address, new Account())
 
@@ -257,7 +257,7 @@ describe('StateManager -> Storage Checkpointing', () => {
         await storageEval(sm, address, key, valueEmpty, rootEmpty)
       })
 
-      it(`S1.1 -> CP -> S1.2 -> Revert -> Flush() (-> S1.1)`, async () => {
+      it(`${SMDict.SM.name} codeSet ${codeSetId}: S1.1 -> CP -> S1.2 -> Revert -> Flush() (-> S1.1)`, async () => {
         const sm = new SMDict.SM()
         await sm.putAccount(address, new Account())
 
@@ -272,7 +272,7 @@ describe('StateManager -> Storage Checkpointing', () => {
         await storageEval(sm, address, key, s.s1.value, s.s1.root, SMDict.rootCheck)
       })
 
-      it('S1.1 -> CP -> S1.2 -> CP -> S1.3 -> Commit -> Commit -> Flush() (-> S1.3)', async () => {
+      it(`${SMDict.SM.name} codeSet ${codeSetId}: S1.1 -> CP -> S1.2 -> CP -> S1.3 -> Commit -> Commit -> Flush() (-> S1.3)`, async () => {
         const sm = new SMDict.SM()
         await sm.putAccount(address, new Account())
 
@@ -290,7 +290,7 @@ describe('StateManager -> Storage Checkpointing', () => {
         await storageEval(sm, address, key, s.s3.value, s.s3.root, SMDict.rootCheck)
       })
 
-      it('S1.1 -> CP -> S1.2 -> CP -> S1.3 -> Commit -> Revert -> Flush() (-> S1.1)', async () => {
+      it(`${SMDict.SM.name} codeSet ${codeSetId}: S1.1 -> CP -> S1.2 -> CP -> S1.3 -> Commit -> Revert -> Flush() (-> S1.1)`, async () => {
         const sm = new SMDict.SM()
         await sm.putAccount(address, new Account())
 
@@ -308,7 +308,7 @@ describe('StateManager -> Storage Checkpointing', () => {
         await storageEval(sm, address, key, s.s1.value, s.s1.root, SMDict.rootCheck)
       })
 
-      it('S1.1 -> CP -> S1.2 -> CP -> S1.3 -> Revert -> Commit -> Flush() (-> S1.2)', async () => {
+      it(`${SMDict.SM.name} codeSet ${codeSetId}: S1.1 -> CP -> S1.2 -> CP -> S1.3 -> Revert -> Commit -> Flush() (-> S1.2)`, async () => {
         const sm = new SMDict.SM()
         await sm.putAccount(address, new Account())
 
@@ -326,7 +326,7 @@ describe('StateManager -> Storage Checkpointing', () => {
         await storageEval(sm, address, key, s.s2.value, s.s2.root, SMDict.rootCheck)
       })
 
-      it('S1.1 -> CP -> S1.2 -> CP -> S1.3 -> Revert -> S1.4 -> Commit -> Flush() (-> S1.4)', async () => {
+      it(`${SMDict.SM.name} codeSet ${codeSetId}: S1.1 -> CP -> S1.2 -> CP -> S1.3 -> Revert -> S1.4 -> Commit -> Flush() (-> S1.4)`, async () => {
         const sm = new SMDict.SM()
         await sm.putAccount(address, new Account())
 
@@ -345,7 +345,7 @@ describe('StateManager -> Storage Checkpointing', () => {
         await storageEval(sm, address, key, s.s4.value, s.s4.root, SMDict.rootCheck)
       })
 
-      it('S1.1 -> CP -> S1.2 -> CP -> S1.3 -> Revert -> S1.4 -> CP -> S1.5 -> Commit -> Commit -> Flush() (-> S1.5)', async () => {
+      it(`${SMDict.SM.name} codeSet ${codeSetId}: S1.1 -> CP -> S1.2 -> CP -> S1.3 -> Revert -> S1.4 -> CP -> S1.5 -> Commit -> Commit -> Flush() (-> S1.5)`, async () => {
         const sm = new SMDict.SM()
         await sm.putAccount(address, new Account())
 
@@ -366,6 +366,6 @@ describe('StateManager -> Storage Checkpointing', () => {
         sm.clearCaches()
         await storageEval(sm, address, key, s.s5.value, s.s5.root, SMDict.rootCheck)
       })
-    }
+    })
   }
 })
