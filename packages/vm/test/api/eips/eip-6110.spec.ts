@@ -47,6 +47,7 @@ common['_activatedEIPsCache'] = [
   2565, 2929, 2718, 2930, 1559, 3198, 3529, 3541, 4345, 5133, 3675, 4399, 3651, 3855, 3860, 4895,
   1153, 4844, 4788, 5656, 6780, 7516, 2537, 6110, 7685,
 ]
+common['_activatedEIPsSet'] = new Set(common['_activatedEIPsCache'])
 const DEPOSIT_CONTRACT_ADDRESS = getPresetChainConfig('mainnet')
   .depositContractAddress! as PrefixedHexString
 

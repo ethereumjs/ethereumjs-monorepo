@@ -200,6 +200,7 @@ One command and one config pointer per tool. Agent finish steps are in the linke
 | Examples | `npm run examples` | `packages/*/examples/` | [examples.mdc](.cursor/rules/examples.mdc) |
 | Snippet PNGs | `npm run snippet:png` | `config/code-snippet/` | — |
 | CI | PR check **`Build / CI`** | `.github/workflows/` | [ci.mdc](.cursor/rules/ci.mdc) |
+| Public API snapshots | `node --import tsx/esm --test scripts/public-api-snapshot.spec.mjs` (CI: **Build** job after install) | `config/public-api-snapshots/` | Regenerate: `node --import tsx/esm scripts/regenerate-public-api-snapshots.mjs` |
 | Performance benchmarks | `npm run bench` | [config/vitest-bench.mts](./config/vitest-bench.mts) | [benchmarks.mdc](.cursor/rules/benchmarks.mdc) |
 
 ### Performance benchmarks
@@ -209,6 +210,23 @@ Hot-path packages share one Vitest bench suite (`packages/*/benchmarks/*.bench.t
 Install the [CodSpeed GitHub App](https://github.com/marketplace/codspeed-continuous-performance-analysis) on the org repo before expecting PR reports.
 
 **Maintainer (one-time / when ready):** after stable `master` simulation runs, optionally require **CodSpeed Performance Analysis** in branch protection (not `Build / CI`). Tune regression threshold in CodSpeed (toward 15–20% if flaky). Acknowledge intentional regressions in the CodSpeed UI.
+
+Refactor PRs that touch hot paths should carry **`type: test performance`** so CodSpeed records a baseline before and after structural EIP work.
+
+### EIP modules and `new-eips`
+
+Structural refactors (registries, strategies, pipelines) land on **`master`**. Large experimental fork EIP batches live on branch **`new-eips`**: mostly new per-EIP module files plus one registry line per touched package.
+
+| Pattern | Where | Branch adds |
+| --- | --- | --- |
+| Common activation | `packages/common/src/eips.ts`, `hardforks.ts`, optional `resolveEIPs()` | one `eips` row; params in `params*.ts` |
+| Opcode-only EIPs | `packages/evm/src/opcodes/eips/eipNNNN.ts` + `OPCODE_EIP_MODULES` | one module file + one array entry |
+| Precompiles | `packages/evm/src/precompiles/` | one file + `precompileEntries` row |
+| Header fields | `packages/block/src/header/headerEipFields.ts` | one descriptor row |
+| Tx types | `packages/tx/src/txTypeRegistry.ts` | one map entry + type union line |
+| VM tx / block | `packages/vm/src/runTx/`, `applyPreTransactionSystemOperations` | executor or pipeline step file |
+
+**Workflow:** rebase `new-eips` onto `master` weekly (recorded-resolution enabled, `--force-with-lease`); one EIP per commit series (`EIP-NNNN: …`); graduate via cherry-pick PR to `master`. Agent checklist: [integrate-eip skill](.cursor/skills/integrate-eip/SKILL.md).
 
 ### Notes
 

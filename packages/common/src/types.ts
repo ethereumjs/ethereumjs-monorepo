@@ -183,6 +183,16 @@ export type EIPConfig = {
    */
   minimumHardfork: Hardfork
   requiredEIPs?: number[]
+  /**
+   * EIPs whose behaviour this EIP replaces when both would be active. Used by
+   * {@link resolveEIPs} for documentation and optional validation only.
+   */
+  supersedes?: number[]
+  /**
+   * EIPs that cannot be activated together with this one. Checked in
+   * {@link Common.setEIPs} and {@link resolveEIPs}.
+   */
+  conflictsWith?: number[]
 }
 
 /** Hardfork parameter key/value map. */

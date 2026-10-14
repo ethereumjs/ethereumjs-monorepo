@@ -30,7 +30,6 @@ import { keccak_256 } from '@noble/hashes/sha3.js'
 import { activeCostPerStateByte } from '../eip8037.ts'
 import { EVMError } from '../errors.ts'
 
-import { decodeEIP8024PairImmediate, decodeEIP8024SingleImmediate } from './EIP8024.ts'
 import {
   createAddressFromStackBigInt,
   describeLocation,
@@ -39,7 +38,6 @@ import {
   getDataSlice,
   jumpIsValid,
   mod,
-  readImmediateByteOrZero,
   toTwos,
   trap,
   writeCallOutput,
@@ -393,26 +391,6 @@ export const handlers: Map<number, OpHandler> = new Map<number, OpHandler>([
       runState.stack.push(r)
     },
   ],
-  // 0x1e: CLZ
-  [
-    0x1e,
-    function (runState) {
-      const x = runState.stack.pop()
-
-      // If x is zero, return 256
-      if (x === BIGINT_0) {
-        runState.stack.push(BIGINT_256)
-        return
-      }
-
-      // toString(2) yields a binary string with no leading zeros.
-      // So 256 - binaryStr.length equals the leading-zero count.
-      const binaryStr = x.toString(2)
-
-      const leadingZeros = 256 - binaryStr.length
-      runState.stack.push(BigInt(leadingZeros))
-    },
-  ],
   // 0x20 range - crypto
   // 0x20: KECCAK256
   [
@@ -710,13 +688,6 @@ export const handlers: Map<number, OpHandler> = new Map<number, OpHandler>([
       runState.stack.push(runState.interpreter.getBlockGasLimit())
     },
   ],
-  // 0x4b: SLOTNUM (EIP-7843)
-  [
-    0x4b,
-    function (runState) {
-      runState.stack.push(runState.interpreter.getBlockSlotNumber())
-    },
-  ],
   // 0x46: CHAINID
   [
     0x46,
@@ -729,32 +700,6 @@ export const handlers: Map<number, OpHandler> = new Map<number, OpHandler>([
     0x47,
     function (runState) {
       runState.stack.push(runState.interpreter.getSelfBalance())
-    },
-  ],
-  // 0x48: BASEFEE
-  [
-    0x48,
-    function (runState) {
-      runState.stack.push(runState.interpreter.getBlockBaseFee())
-    },
-  ],
-  // 0x49: BLOBHASH
-  [
-    0x49,
-    function (runState) {
-      const index = runState.stack.pop()
-      if (runState.env.blobVersionedHashes.length > Number(index)) {
-        runState.stack.push(BigInt(runState.env.blobVersionedHashes[Number(index)]))
-      } else {
-        runState.stack.push(BIGINT_0)
-      }
-    },
-  ],
-  // 0x4a: BLOBBASEFEE
-  [
-    0x4a,
-    function (runState) {
-      runState.stack.push(runState.interpreter.getBlobBaseFee())
     },
   ],
   // 0x50 range - 'storage' and execution
@@ -933,55 +878,6 @@ export const handlers: Map<number, OpHandler> = new Map<number, OpHandler>([
   ],
   // 0x5b: JUMPDEST
   [0x5b, function () {}],
-  // 0x5c: TLOAD (EIP 1153)
-  [
-    0x5c,
-    function (runState) {
-      const key = runState.stack.pop()
-      const keyBuf = setLengthLeft(bigIntToBytes(key), 32)
-      const value = runState.interpreter.transientStorageLoad(keyBuf)
-      const valueBN = value.length ? bytesToBigInt(value) : BIGINT_0
-      runState.stack.push(valueBN)
-    },
-  ],
-  // 0x5d: TSTORE (EIP 1153)
-  [
-    0x5d,
-    function (runState) {
-      // TSTORE
-      if (runState.interpreter.isStatic()) {
-        trap(EVMError.errorMessages.STATIC_STATE_CHANGE)
-      }
-      const [key, val] = runState.stack.popN(2)
-
-      const keyBuf = setLengthLeft(bigIntToBytes(key), 32)
-      // NOTE: this should be the shortest representation
-      let value
-      if (val === BIGINT_0) {
-        value = Uint8Array.from([])
-      } else {
-        value = bigIntToBytes(val)
-      }
-
-      runState.interpreter.transientStorageStore(keyBuf, value)
-    },
-  ],
-  // 0x5e: MCOPY (5656)
-  [
-    0x5e,
-    function (runState) {
-      const [dst, src, length] = runState.stack.popN(3)
-      const data = runState.memory.read(Number(src), Number(length), true)
-      runState.memory.write(Number(dst), Number(length), data)
-    },
-  ],
-  // 0x5f: PUSH0
-  [
-    0x5f,
-    function (runState) {
-      runState.stack.push(BIGINT_0)
-    },
-  ],
   // 0x60: PUSH
   [
     0x60,
@@ -1055,42 +951,6 @@ export const handlers: Map<number, OpHandler> = new Map<number, OpHandler>([
       }
 
       runState.interpreter.log(mem, topicsCount, topicsBuf)
-    },
-  ],
-  // 0xe6: DUPN
-  [
-    0xe6,
-    function (runState, common) {
-      if (!common.isActivatedEIP(8024)) {
-        trap(EVMError.errorMessages.INVALID_OPCODE)
-      }
-      const immediate = readImmediateByteOrZero(runState)
-      const toDup = decodeEIP8024SingleImmediate(immediate)
-      runState.stack.dup(toDup)
-    },
-  ],
-  // 0xe7: SWAPN
-  [
-    0xe7,
-    function (runState, common) {
-      if (!common.isActivatedEIP(8024)) {
-        trap(EVMError.errorMessages.INVALID_OPCODE)
-      }
-      const immediate = readImmediateByteOrZero(runState)
-      const toSwap = decodeEIP8024SingleImmediate(immediate)
-      runState.stack.swap(toSwap)
-    },
-  ],
-  // 0xe8: EXCHANGE
-  [
-    0xe8,
-    function (runState, common) {
-      if (!common.isActivatedEIP(8024)) {
-        trap(EVMError.errorMessages.INVALID_OPCODE)
-      }
-      const immediate = readImmediateByteOrZero(runState)
-      const [x, y] = decodeEIP8024PairImmediate(immediate)
-      runState.stack.exchange(x, y)
     },
   ],
   // '0xf0' range - closures

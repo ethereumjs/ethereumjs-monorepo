@@ -142,6 +142,10 @@ export const Mainnet: ChainConfig = {
       name: 'amsterdam',
       block: null,
     },
+    {
+      name: 'hegota',
+      block: null,
+    },
   ],
   bootstrapNodes: [
     {
@@ -304,6 +308,10 @@ export const Sepolia: ChainConfig = {
     },
     {
       name: 'amsterdam',
+      block: null,
+    },
+    {
+      name: 'hegota',
       block: null,
     },
   ],
@@ -610,6 +618,10 @@ export const Hoodi: ChainConfig = {
     },
     {
       name: 'amsterdam',
+      block: null,
+    },
+    {
+      name: 'hegota',
       block: null,
     },
   ],

@@ -98,6 +98,8 @@ export const Hardfork = {
   Bpo4: 'bpo4',
   Bpo5: 'bpo5',
   Amsterdam: 'amsterdam',
+  /** Draft execution-layer fork after Amsterdam (Hegota); EIP list filled on experimental branch. */
+  Hegota: 'hegota',
 } as const
 
 /** Consensus engine family enum. */

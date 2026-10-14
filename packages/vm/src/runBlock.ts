@@ -475,23 +475,16 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
       await block.validateData(false, true, opts.validateBlockSize ?? false)
     }
   }
-  if (vm.common.isActivatedEIP(4788)) {
-    if (vm.DEBUG) {
-      debug(`accumulate parentBeaconBlockRoot`)
-    }
-    await accumulateParentBeaconBlockRoot(
-      vm,
-      block.header.parentBeaconBlockRoot!,
-      block.header.timestamp,
-    )
-  }
-  if (vm.common.isActivatedEIP(2935)) {
-    if (vm.DEBUG) {
-      debug(`accumulate parentBlockHash `)
-    }
-
-    await accumulateParentBlockHash(vm, block.header.number, block.header.parentHash)
-  }
+  await applyPreTransactionSystemOperations(
+    vm,
+    {
+      parentBeaconBlockRoot: block.header.parentBeaconBlockRoot,
+      timestamp: block.header.timestamp,
+      blockNumber: block.header.number,
+      parentHash: block.header.parentHash,
+    },
+    vm.DEBUG ? (msg) => debug(msg) : undefined,
+  )
 
   if (enableProfiler) {
     // eslint-disable-next-line no-console
@@ -687,6 +680,27 @@ export async function accumulateParentBeaconBlockRoot(vm: VM, root: Uint8Array, 
 
   // do cleanup if the code was not deployed
   await vm.evm.journal.cleanup()
+}
+
+/** Shared pre-transaction system calls (EIP-4788, EIP-2935) for runBlock and buildBlock. */
+export async function applyPreTransactionSystemOperations(
+  vm: VM,
+  input: {
+    parentBeaconBlockRoot?: Uint8Array
+    timestamp: bigint
+    blockNumber: bigint
+    parentHash: Uint8Array
+  },
+  debugLog?: (msg: string) => void,
+): Promise<void> {
+  if (vm.common.isActivatedEIP(4788)) {
+    debugLog?.('accumulate parentBeaconBlockRoot')
+    await accumulateParentBeaconBlockRoot(vm, input.parentBeaconBlockRoot!, input.timestamp)
+  }
+  if (vm.common.isActivatedEIP(2935)) {
+    debugLog?.('accumulate parentBlockHash')
+    await accumulateParentBlockHash(vm, input.blockNumber, input.parentHash)
+  }
 }
 
 /**

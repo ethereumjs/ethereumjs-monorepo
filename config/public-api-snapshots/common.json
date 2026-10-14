@@ -1,0 +1,24 @@
+{
+  "package": "common",
+  "exports": [
+    "BinaryTreeAccessedStateType",
+    "Chain",
+    "ChainGenesis",
+    "ChainNameFromNumber",
+    "Common",
+    "ConsensusAlgorithm",
+    "ConsensusType",
+    "EIP_NUMBERS",
+    "Hardfork",
+    "Holesky",
+    "Hoodi",
+    "Mainnet",
+    "Sepolia",
+    "createCommonFromGethGenesis",
+    "createCustomCommon",
+    "getPresetChainConfig",
+    "parseGethGenesis",
+    "parseGethGenesisState",
+    "resolveEIPs"
+  ]
+}

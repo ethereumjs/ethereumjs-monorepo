@@ -180,6 +180,15 @@ export const eipsDict: EIPsDict = {
     minimumHardfork: Hardfork.London,
   },
   /**
+   * Description : Removal of gas refunds (Hegota candidate)
+   * URL         : https://eips.ethereum.org/EIPS/eip-3298
+   * Status      : Draft
+   */
+  3298: {
+    minimumHardfork: Hardfork.London,
+    conflictsWith: [3529],
+  },
+  /**
    * Description : Reduction in refunds
    * URL         : https://eips.ethereum.org/EIPS/eip-3529
    * Status      : Final
