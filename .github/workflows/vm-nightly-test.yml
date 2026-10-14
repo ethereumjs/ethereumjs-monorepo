@@ -6,6 +6,7 @@ on:
 
 env:
   cwd: ${{github.workspace}}/packages/vm
+  EST_FIXTURES_CACHE: ${{ github.workspace }}/.est-fixtures-cache
 
 defaults:
   run:
@@ -22,37 +23,95 @@ jobs:
         with:
           node-version: 26
           cache: 'npm'
-      
+
       - name: Install Dependencies
         run: npm ci
         working-directory: ${{github.workspace}}
 
       - run: npm run test:API
-  #     - run: npm run test:API:browser
 
-  test-vm-state:
+  test-vm-consensus-est:
     if: github.repository == 'ethereumjs/ethereumjs-monorepo'
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        fork:
+        include:
+          - format: state
+            shard: '0/8'
+          - format: state
+            shard: '1/8'
+          - format: state
+            shard: '2/8'
+          - format: state
+            shard: '3/8'
+          - format: state
+            shard: '4/8'
+          - format: state
+            shard: '5/8'
+          - format: state
+            shard: '6/8'
+          - format: state
+            shard: '7/8'
+          - format: blockchain
+            shard: '0/8'
+          - format: blockchain
+            shard: '1/8'
+          - format: blockchain
+            shard: '2/8'
+          - format: blockchain
+            shard: '3/8'
+          - format: blockchain
+            shard: '4/8'
+          - format: blockchain
+            shard: '5/8'
+          - format: blockchain
+            shard: '6/8'
+          - format: blockchain
+            shard: '7/8'
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 26
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+        working-directory: ${{github.workspace}}
+
+      - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: .est-fixtures-cache
+          key: est-${{ hashFiles('packages/vm/test/consensus/fixtures.json') }}
+          restore-keys: |
+            est-${{ hashFiles('packages/vm/test/consensus/fixtures.json') }}
+
+      - run: npm run fixtures:fetch -- tests
+      - run: npm run test:consensus:all -- --format ${{ matrix.format }} --shard ${{ matrix.shard }} --run-skipped slow
+
+  test-vm-consensus-legacy:
+    if: github.repository == 'ethereumjs/ethereumjs-monorepo'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        legacy_fork:
           [
             'Prague',
-            'Chainstart',
-            'Homestead',
-            'dao',
-            'TangerineWhistle',
-            'SpuriousDragon',
-            'Byzantium',
-            'Constantinople',
-            'Petersburg',
-            'Istanbul',
-            'MuirGlacier',
-            'Berlin',
-            'London',
-            'Paris',
-            'Shanghai',
             'Cancun',
+            'Shanghai',
+            'Paris',
+            'London',
+            'Berlin',
+            'Istanbul',
+            'ConstantinopleFix',
+            'Byzantium',
+            'EIP158',
+            'EIP150',
+            'Homestead',
+            'Frontier',
             'ByzantiumToConstantinopleFixAt5',
             'EIP158ToByzantiumAt5',
             'FrontierToHomesteadAt5',
@@ -60,7 +119,6 @@ jobs:
             'HomesteadToEIP150At5',
             'BerlinToLondonAt5',
           ]
-      fail-fast: false
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
@@ -81,64 +139,9 @@ jobs:
 
       - name: Initialize submodules (if not cached)
         if: steps.submodules-cache.outputs.cache-hit != 'true'
-        run: git submodule update --init --recursive
+        run: git submodule update --init --depth=1 -- packages/ethereum-tests
 
-      - run: npm run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
-
-  test-vm-blockchain:
-    if: github.repository == 'ethereumjs/ethereumjs-monorepo'
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        fork:
-          [
-            'Prague',
-            'Chainstart',
-            'Homestead',
-            'dao',
-            'TangerineWhistle',
-            'SpuriousDragon',
-            'Byzantium',
-            'Constantinople',
-            'Petersburg',
-            'Istanbul',
-            'MuirGlacier',
-            'Berlin',
-            'London',
-            'Paris',
-            'Shanghai',
-            'Cancun',
-            'ByzantiumToConstantinopleFixAt5',
-            'EIP158ToByzantiumAt5',
-            'FrontierToHomesteadAt5',
-            'HomesteadToDaoAt5',
-            'HomesteadToEIP150At5',
-            'BerlinToLondonAt5',
-          ]
-      fail-fast: false
-    steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
-
-      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
-        with:
-          node-version: 26
-          cache: 'npm'
-
-      - name: Install Dependencies
-        run: npm ci
-        working-directory: ${{github.workspace}}
-
-      - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
-        id: submodules-cache
-        with:
-          path: ${{github.workspace}}/packages/ethereum-tests
-          key: ethereum-tests-${{ hashFiles('.gitmodules') }}-${{ github.sha }}
-
-      - name: Initialize submodules (if not cached)
-        if: steps.submodules-cache.outputs.cache-hit != 'true'
-        run: git submodule update --init --recursive
-
-      - run: npm run test:blockchain -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
+      - run: npm run test:consensus -- --source legacy --format blockchain --legacy-fork ${{ matrix.legacy_fork }} --run-skipped slow
 
   test-vm-slow:
     if: github.repository == 'ethereumjs/ethereumjs-monorepo'
@@ -147,13 +150,13 @@ jobs:
       matrix:
         testFile:
           [
-            '^Call50000_sha256',
-            '^CALLBlake2f_MaxRounds',
-            '^Return50000',
-            '^Return50000_2',
-            '^static_Call50000_sha256',
-            '^loopMul',
-            '^loopExp',
+            'Call50000_sha256',
+            'CALLBlake2f_MaxRounds',
+            'Return50000',
+            'Return50000_2',
+            'static_Call50000_sha256',
+            'loopMul',
+            'loopExp',
           ]
       fail-fast: false
     steps:
@@ -176,6 +179,6 @@ jobs:
 
       - name: Initialize submodules (if not cached)
         if: steps.submodules-cache.outputs.cache-hit != 'true'
-        run: git submodule update --init --recursive
+        run: git submodule update --init --depth=1 -- packages/ethereum-tests
 
-      - run: npm run test:state -- --file=${{ matrix.testFile }} --runSkipped=slow
+      - run: npm run test:consensus -- --source legacy --format blockchain --legacy-fork Prague --file=${{ matrix.testFile }} --run-skipped slow

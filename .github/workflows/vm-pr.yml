@@ -28,6 +28,7 @@ on:
 env:
   cwd: ${{github.workspace}}/packages/vm
   RUN_COVERAGE: ${{ inputs.run-coverage }}
+  EST_FIXTURES_CACHE: ${{ github.workspace }}/.est-fixtures-cache
 
 defaults:
   run:
@@ -62,83 +63,103 @@ jobs:
           files: ${{ env.cwd }}/coverage/lcov.info
           flags: vm
 
-  vm-state:
+  vm-consensus-est:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        fork: ['Prague']
-      fail-fast: false
+        include:
+          - format: state
+            shard: '0/4'
+          - format: state
+            shard: '1/4'
+          - format: state
+            shard: '2/4'
+          - format: state
+            shard: '3/4'
+          - format: blockchain
+            shard: '0/4'
+          - format: blockchain
+            shard: '1/4'
+          - format: blockchain
+            shard: '2/4'
+          - format: blockchain
+            shard: '3/4'
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - uses: ./.github/actions/setup-ethereumjs
         with:
           dep-cache-key: ${{ inputs.dep-cache-key }}
-          ethereum-tests: 'true'
-          ethereum-tests-key: ${{ inputs.submodule-cache-key }}
 
-      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM') == false
-        run: npm run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
+      - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: .est-fixtures-cache
+          key: est-${{ hashFiles('packages/vm/test/consensus/fixtures.json') }}
+          restore-keys: |
+            est-${{ hashFiles('packages/vm/test/consensus/fixtures.json') }}
+
+      - name: Ensure tests fixtures
+        if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM') == false
+        run: npm run fixtures:fetch -- tests
 
       - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM')
-        run: npm run test:buildIntegrity
+        run: npm run test:consensus:smoke
 
-  vm-est-stable-state:
+      - if: >-
+          contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM') == false &&
+          contains(join(github.event.pull_request.labels.*.name, ' '), 'test all hardforks')
+        run: npm run test:consensus:all -- --format ${{ matrix.format }} --shard ${{ matrix.shard }}
+
+      - if: >-
+          contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM') == false &&
+          contains(join(github.event.pull_request.labels.*.name, ' '), 'test all hardforks') == false
+        run: npm run test:consensus:pr -- --format ${{ matrix.format }} --shard ${{ matrix.shard }}
+
+  vm-consensus-amsterdam:
     runs-on: ubuntu-latest
+    continue-on-error: true
     strategy:
       fail-fast: false
+      matrix:
+        format: [state, blockchain]
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - uses: ./.github/actions/setup-ethereumjs
         with:
           dep-cache-key: ${{ inputs.dep-cache-key }}
-          execution-spec-tests: 'true'
 
-      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM') == false
-        run: npm run test:est:stable:state
-
-      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM')
-        run: npm run test:buildIntegrity
-
-  vm-est-stable-blockchain:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-    steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
-      - uses: ./.github/actions/setup-ethereumjs
+      - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
-          dep-cache-key: ${{ inputs.dep-cache-key }}
-          execution-spec-tests: 'true'
+          path: .est-fixtures-cache
+          key: est-${{ hashFiles('packages/vm/test/consensus/fixtures.json') }}
+          restore-keys: |
+            est-${{ hashFiles('packages/vm/test/consensus/fixtures.json') }}
 
-      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM') == false
-        run: npm run test:est:stable:blockchain
+      - run: npm run fixtures:fetch -- tests
+      - run: npm run test:consensus -- --source tests --fork Amsterdam --format ${{ matrix.format }}
 
-      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM')
-        run: npm run test:buildIntegrity
-
-  vm-state-extended:
+  vm-consensus-legacy:
     if: contains(join(github.event.pull_request.labels.*.name, ' '), 'test all hardforks')
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        fork:
+        legacy_fork:
           [
+            'Prague',
             'Cancun',
             'Shanghai',
             'Paris',
             'London',
             'Berlin',
-            'MuirGlacier',
             'Istanbul',
-            'Petersburg',
-            'Constantinople',
+            'ConstantinopleFix',
             'Byzantium',
-            'SpuriousDragon',
-            'TangerineWhistle',
+            'EIP158',
+            'EIP150',
             'Homestead',
-            'Chainstart',
+            'Frontier',
           ]
-      fail-fast: false
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - uses: ./.github/actions/setup-ethereumjs
@@ -147,71 +168,4 @@ jobs:
           ethereum-tests: 'true'
           ethereum-tests-key: ${{ inputs.submodule-cache-key }}
 
-      - run: npm run test:state -- --fork=${{ matrix.fork }} --verify-test-amount-alltests
-
-  vm-blockchain:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        # Args to pass to the blockchain Vitest wrapper. Note that some have split the slow tests and only
-        # run on forks where applicable (see PR #489 for numbers on these)
-
-        # Tests were split with --dir and --excludeDir to balance execution times below the 9min mark.
-        args:
-          [
-            '--fork=Prague --verify-test-amount-alltests',
-          ]
-      fail-fast: false
-    steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
-      - uses: ./.github/actions/setup-ethereumjs
-        with:
-          dep-cache-key: ${{ inputs.dep-cache-key }}
-          ethereum-tests: 'true'
-          ethereum-tests-key: ${{ inputs.submodule-cache-key }}
-
-      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM') == false
-        run: npm run test:blockchain -- ${{ matrix.args }}
-
-      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM')
-        run: npm run test:blockchain:buildIntegrity
-
-  vm-blockchain-extended:
-    if: contains(join(github.event.pull_request.labels.*.name, ' '), 'test all hardforks')
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        # Args to pass to the blockchain Vitest wrapper.
-        args:
-          [
-            '--fork=Chainstart --verify-test-amount-alltests',
-            '--fork=Homestead --verify-test-amount-alltests',
-            '--fork=TangerineWhistle --verify-test-amount-alltests',
-            '--fork=SpuriousDragon --verify-test-amount-alltests',
-            '--fork=Byzantium --verify-test-amount-alltests',
-            '--fork=Constantinople --verify-test-amount-alltests',
-            '--fork=Petersburg --verify-test-amount-alltests',
-            '--fork=Istanbul --verify-test-amount-alltests',
-            '--fork=MuirGlacier --verify-test-amount-alltests',
-            '--fork=Berlin --verify-test-amount-alltests',
-            '--fork=London --verify-test-amount-alltests',
-            '--fork=Paris --verify-test-amount-alltests',
-            '--fork=Shanghai --verify-test-amount-alltests',
-            '--fork=Cancun --verify-test-amount-alltests',
-            '--fork=ByzantiumToConstantinopleFixAt5 --verify-test-amount-alltests',
-            '--fork=EIP158ToByzantiumAt5 --verify-test-amount-alltests',
-            '--fork=FrontierToHomesteadAt5 --verify-test-amount-alltests',
-            '--fork=HomesteadToDaoAt5 --verify-test-amount-alltests',
-            '--fork=HomesteadToEIP150At5 --verify-test-amount-alltests',
-            '--fork=BerlinToLondonAt5 --verify-test-amount-alltests',
-          ]
-      fail-fast: false
-    steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
-      - uses: ./.github/actions/setup-ethereumjs
-        with:
-          dep-cache-key: ${{ inputs.dep-cache-key }}
-          ethereum-tests: 'true'
-          ethereum-tests-key: ${{ inputs.submodule-cache-key }}
-
-      - run: npm run test:blockchain -- ${{ matrix.args }}
+      - run: npm run test:consensus -- --source legacy --format blockchain --legacy-fork ${{ matrix.legacy_fork }}
