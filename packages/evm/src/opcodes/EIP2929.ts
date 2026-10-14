@@ -57,8 +57,10 @@ export function warmAddress(runState: RunState, address: Uint8Array): void {
  *
  * Call after verifying sufficient gas for the access.
  */
-export function addAddressToBAL(runState: RunState, address: Uint8Array, _common: Common): void {
-  runState.interpreter._evm.balRecorder.addAddress(bytesToHex(address))
+export function addAddressToBAL(runState: RunState, address: Uint8Array, common: Common): void {
+  if (common.isActivatedEIP(7928)) {
+    runState.interpreter._evm.blockLevelAccessList?.addAddress(bytesToHex(address))
+  }
 }
 
 /**
