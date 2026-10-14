@@ -23,13 +23,23 @@ function runWorker(cases: ConsensusTestCase[], rootLabel: string): Promise<CaseR
       execArgv: ['--import', 'tsx/esm'],
     })
     let settled = false
-    worker.on('message', (msg: { results: CaseResult[] }) => {
+
+    const settle = (fn: () => void) => {
+      if (settled) return
       settled = true
-      resolve(msg.results)
+      void worker.terminate().finally(fn)
+    }
+
+    worker.on('message', (msg: { results: CaseResult[] }) => {
+      settle(() => resolve(msg.results))
     })
-    worker.on('error', reject)
+    worker.on('error', (err) => {
+      settle(() => reject(err))
+    })
     worker.on('exit', (code) => {
-      if (!settled && code !== 0) reject(new Error(`Worker exited ${code}`))
+      if (!settled && code !== 0) {
+        settle(() => reject(new Error(`Worker exited ${code}`)))
+      }
     })
   })
 }

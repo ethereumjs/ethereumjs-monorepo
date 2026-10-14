@@ -52,9 +52,9 @@ async function main(): Promise<number> {
 
 main()
   .then((code) => {
-    process.exitCode = code
+    process.exit(code)
   })
   .catch((e) => {
     console.error(e)
-    process.exitCode = 1
+    process.exit(1)
   })
