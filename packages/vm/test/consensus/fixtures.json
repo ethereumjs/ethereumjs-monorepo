@@ -1,0 +1,37 @@
+{
+  "cacheVersion": 2,
+  "sources": {
+    "tests": {
+      "kind": "release",
+      "repo": "ethereum/execution-specs",
+      "tag": "tests@v21.0.1",
+      "asset": "fixtures.tar.gz",
+      "url": "https://github.com/ethereum/execution-specs/releases/download/tests%40v21.0.1/fixtures.tar.gz",
+      "sha256": "b9b14391ed1a625e4ca9a058c055d0eacd98a42b76c7a6127c640cdc2d3c9439",
+      "size": 999553432,
+      "extractPaths": ["fixtures/state_tests", "fixtures/blockchain_tests", "fixtures/.meta"]
+    },
+    "bogota-devnet": {
+      "kind": "release",
+      "repo": "ethereum/execution-specs",
+      "tag": "tests-bogota-devnet@v1.1.0",
+      "asset": "fixtures_bogota-devnet.tar.gz",
+      "url": "https://github.com/ethereum/execution-specs/releases/download/tests-bogota-devnet%40v1.1.0/fixtures_bogota-devnet.tar.gz",
+      "sha256": "8c343a01c0438b8d6175873531c80f4292ca9e339421a320b987c9fb1c9efb38",
+      "size": 1571141755,
+      "extractPaths": ["fixtures/state_tests", "fixtures/blockchain_tests", "fixtures/.meta"],
+      "extractForks": ["Bogota", "AmsterdamToBogotaAtTime15k"],
+      "defaultForks": ["Bogota", "AmsterdamToBogotaAtTime15k"],
+      "retainTarball": false,
+      "note": "Selective extract via index (Hegota only). Run fixtures:fetch --update bogota-devnet to refresh sha256."
+    },
+    "legacy": {
+      "kind": "path",
+      "paths": [
+        "../ethereum-tests/BlockchainTests",
+        "../ethereum-tests/LegacyTests/Constantinople/BlockchainTests",
+        "../ethereum-tests/LegacyTests/Cancun/BlockchainTests"
+      ]
+    }
+  }
+}
