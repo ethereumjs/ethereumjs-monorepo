@@ -1,10 +1,9 @@
 name: Build
 on:
   pull_request:
-    # synchronize re-reads labels on push; labeled re-runs when the label is
-    # added after open (e.g. gh pr edit). Performance benchmarks run only when
-    # "type: test performance" is on the PR for that event.
-    types: [opened, reopened, synchronize, ready_for_review, labeled]
+    # synchronize re-reads PR labels (same model as type: test no browser). Performance
+    # benchmarks run only when "type: test performance" is on the PR for that event.
+    types: [opened, reopened, synchronize, ready_for_review]
   push:
     branches: [master]
     tags: ['*']
@@ -21,7 +20,6 @@ jobs:
   # ethereum-tests only — do not recursive-clone execution-spec-tests here.
   # EST jobs init that submodule themselves and must not wait on this job.
   checkout-submodules:
-    if: github.event_name != 'pull_request' || github.event.action != 'labeled'
     runs-on: ubuntu-latest
 
     steps:
@@ -52,10 +50,6 @@ jobs:
       submodule-cache-key: submodule-${{ steps.create-cache-key.outputs.submodule-cache-key }}
 
   build:
-    if: >-
-      github.event_name != 'pull_request' ||
-      github.event.action != 'labeled' ||
-      github.event.label.name == 'type: test performance'
     runs-on: ubuntu-latest
 
     steps:
@@ -109,7 +103,6 @@ jobs:
   # config (see scripts/ci-affected.mjs) still run the full matrix.
   # Keep skippable job ids in sync with SKIPPABLE_JOBS in that script.
   detect:
-    if: github.event_name != 'pull_request' || github.event.action != 'labeled'
     runs-on: ubuntu-latest
     outputs:
       binarytree: ${{ steps.affected.outputs.binarytree }}
@@ -279,14 +272,12 @@ jobs:
 
   lint:
     needs: build
-    if: github.event_name != 'pull_request' || github.event.action != 'labeled'
     uses: ./.github/workflows/lint.yml
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
   typecheck:
     needs: [build, checkout-submodules]
-    if: github.event_name != 'pull_request' || github.event.action != 'labeled'
     uses: ./.github/workflows/typecheck.yml
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
@@ -295,7 +286,6 @@ jobs:
   audit:
     name: npm audit (runtime)
     needs: build
-    if: github.event_name != 'pull_request' || github.event.action != 'labeled'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
@@ -376,7 +366,7 @@ jobs:
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
-      # Master pushes stay path-filtered. Manual dispatch and a labeled PR always measure.
+      # Master pushes stay path-filtered. Manual dispatch and PRs with the performance label measure.
       - name: Bench-relevant paths
         id: bench-paths
         if: github.event_name != 'pull_request'
@@ -411,10 +401,17 @@ jobs:
         if: github.event_name != 'pull_request' && steps.bench-paths.outputs.bench != 'true'
         run: echo "Skipping — no performance benchmark paths in this event."
 
+      # @codspeed/core 5.x prebuilds target Node 22 (Node 26 Linux hits V8 ABI errors). Rebuild after setup-node.
       - uses: ./.github/actions/setup-ethereumjs
         if: github.event_name == 'pull_request' || steps.bench-paths.outputs.bench == 'true'
         with:
           dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+          node-version: '22'
+
+      - name: Rebuild CodSpeed native module for bench Node
+        if: github.event_name == 'pull_request' || steps.bench-paths.outputs.bench == 'true'
+        run: npm rebuild @codspeed/core
+        working-directory: ${{ github.workspace }}
 
       - name: Run benchmarks
         if: github.event_name == 'pull_request' || steps.bench-paths.outputs.bench == 'true'
@@ -428,9 +425,7 @@ jobs:
     needs: [build]
     runs-on: ubuntu-latest
     continue-on-error: true
-    if: >-
-      github.event_name == 'pull_request' &&
-      github.event.action != 'labeled'
+    if: github.event_name == 'pull_request'
     steps:
       - name: Checkout current branch
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
