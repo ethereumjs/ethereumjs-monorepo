@@ -20,13 +20,20 @@ import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 
 import { createVM, runBlock } from '../../../src/index.ts'
 import { setupPreConditions } from '../../util.ts'
+import type { BlockchainTestFixtureData } from '../../consensus/types.ts'
 import {
   type ExecutionSpecFixture,
   createCommonForFork,
   loadExecutionSpecFixtures,
 } from '../executionSpecTestLoader.ts'
+import { defaultCacheRoot, extractedFixturesRoot, loadManifest } from '../../consensus/manifest.ts'
 
-const defaultFixturesPath = '../execution-spec-tests'
+const manifest = loadManifest()
+const testsSource = manifest.sources.tests
+const defaultFixturesPath =
+  testsSource?.kind === 'release'
+    ? extractedFixturesRoot(defaultCacheRoot(), 'tests', testsSource.tag)
+    : '../execution-spec-tests'
 const SKIP_NETWORKS = new Set(['BPO1ToBPO2AtTime15k', 'BPO2ToBPO3AtTime15k', 'BPO3ToBPO4AtTime15k'])
 
 type BenchmarkStats = {
@@ -163,7 +170,8 @@ async function benchmarkRunBlock(
   const afterSetup = hrtime.bigint()
 
   let parentBlock = genesisBlock
-  for (const { rlp, expectException } of fixture.data.blocks) {
+  const data = fixture.data as BlockchainTestFixtureData
+  for (const { rlp, expectException } of data.blocks) {
     assert.equal(
       expectException,
       undefined,
@@ -184,8 +192,8 @@ async function benchmarkRunBlock(
   const afterProcess = hrtime.bigint()
 
   const head = await blockchain.getCanonicalHeadBlock()
-  assert.equal(bytesToHex(head.hash()), fixture.data.lastblockhash, 'lastblockhash mismatch')
-  await validatePostState(vm, fixture.data)
+  assert.equal(bytesToHex(head.hash()), data.lastblockhash, 'lastblockhash mismatch')
+  await validatePostState(vm, data)
   const afterValidate = hrtime.bigint()
 
   return {
@@ -204,18 +212,22 @@ async function benchmarkConsumeBAL(
   const { vm } = await createBenchmarkContext(fixture.fork, fixture.data, kzg)
   const afterSetup = hrtime.bigint()
 
-  for (const { blockAccessList, blockHeader, expectException } of fixture.data.blocks) {
+  const data = fixture.data as BlockchainTestFixtureData
+  for (const { blockAccessList, blockHeader, expectException } of data.blocks) {
     assert.equal(
       expectException,
       undefined,
       `benchmark runner only supports successful blocks, got expectException=${expectException ?? 'undefined'}`,
     )
     assert.ok(blockAccessList !== undefined, 'missing blockAccessList for consumeBAL benchmark')
-    await consumeBAL(vm.stateManager, blockAccessList, hexToBytes(blockHeader.stateRoot))
+    assert.ok(blockHeader !== undefined, 'missing blockHeader for consumeBAL benchmark')
+    const stateRoot = blockHeader.stateRoot
+    assert.ok(stateRoot !== undefined, 'missing stateRoot on blockHeader')
+    await consumeBAL(vm.stateManager, blockAccessList, hexToBytes(stateRoot))
   }
   const afterProcess = hrtime.bigint()
 
-  await validatePostState(vm, fixture.data)
+  await validatePostState(vm, data)
   const afterValidate = hrtime.bigint()
 
   return {
