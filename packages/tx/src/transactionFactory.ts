@@ -1,22 +1,12 @@
 import { EthereumJSErrorWithoutCode, fetchFromProvider, getProvider } from '@ethereumjs/util'
 
-import { createFeeMarket1559Tx, createFeeMarket1559TxFromRLP } from './1559/constructors.ts'
-import { createAccessList2930Tx, createAccessList2930TxFromRLP } from './2930/constructors.ts'
-import { createBlob4844Tx, createBlob4844TxFromRLP } from './4844/constructors.ts'
-import { createEOACode7702Tx, createEOACode7702TxFromRLP } from './7702/constructors.ts'
+import { createLegacyTxFromBytesArray } from './legacy/constructors.ts'
 import {
-  createLegacyTx,
-  createLegacyTxFromBytesArray,
-  createLegacyTxFromRLP,
-} from './legacy/constructors.ts'
-import {
-  TransactionType,
-  isAccessList2930TxData,
-  isBlob4844TxData,
-  isEOACode7702TxData,
-  isFeeMarket1559TxData,
-  isLegacyTxData,
-} from './types.ts'
+  TX_TYPE_REGISTRY,
+  registryEntryForTxData,
+  registryEntryForTypeByte,
+} from './txTypeRegistry.ts'
+import { TransactionType } from './types.ts'
 import { normalizeTxParams } from './util/general.ts'
 
 import type { EthersProvider } from '@ethereumjs/util'
@@ -33,26 +23,16 @@ export function createTx<T extends TransactionType>(
   txData: TypedTxData,
   txOptions: TxOptions = {},
 ): Transaction[T] {
-  if (!('type' in txData) || txData.type === undefined) {
-    // Assume legacy transaction
-    return createLegacyTx(txData, txOptions) as Transaction[T]
-  } else {
-    if (isLegacyTxData(txData)) {
-      return createLegacyTx(txData, txOptions) as Transaction[T]
-    } else if (isAccessList2930TxData(txData)) {
-      return createAccessList2930Tx(txData, txOptions) as Transaction[T]
-    } else if (isFeeMarket1559TxData(txData)) {
-      return createFeeMarket1559Tx(txData, txOptions) as Transaction[T]
-    } else if (isBlob4844TxData(txData)) {
-      return createBlob4844Tx(txData, txOptions) as Transaction[T]
-    } else if (isEOACode7702TxData(txData)) {
-      return createEOACode7702Tx(txData, txOptions) as Transaction[T]
-    } else {
-      throw EthereumJSErrorWithoutCode(
-        `Tx instantiation with type ${(txData as TypedTxData)?.type} not supported`,
-      )
-    }
+  const entry =
+    !('type' in txData) || txData.type === undefined
+      ? TX_TYPE_REGISTRY.get(TransactionType.Legacy)
+      : registryEntryForTxData(txData)
+  if (entry === undefined) {
+    throw EthereumJSErrorWithoutCode(
+      `Tx instantiation with type ${(txData as TypedTxData)?.type} not supported`,
+    )
   }
+  return entry.create(txData, txOptions) as Transaction[T]
 }
 
 /**
@@ -66,22 +46,14 @@ export function createTxFromRLP<T extends TransactionType>(
   txOptions: TxOptions = {},
 ): Transaction[T] {
   if (data[0] <= 0x7f) {
-    // Determine the type.
-    switch (data[0]) {
-      case TransactionType.AccessListEIP2930:
-        return createAccessList2930TxFromRLP(data, txOptions) as Transaction[T]
-      case TransactionType.FeeMarketEIP1559:
-        return createFeeMarket1559TxFromRLP(data, txOptions) as Transaction[T]
-      case TransactionType.BlobEIP4844:
-        return createBlob4844TxFromRLP(data, txOptions) as Transaction[T]
-      case TransactionType.EOACodeEIP7702:
-        return createEOACode7702TxFromRLP(data, txOptions) as Transaction[T]
-      default:
-        throw EthereumJSErrorWithoutCode(`TypedTransaction with ID ${data[0]} unknown`)
+    const entry = registryEntryForTypeByte(data[0])
+    if (entry === undefined) {
+      throw EthereumJSErrorWithoutCode(`TypedTransaction with ID ${data[0]} unknown`)
     }
-  } else {
-    return createLegacyTxFromRLP(data, txOptions) as Transaction[T]
+    return entry.createFromRLP(data, txOptions) as Transaction[T]
   }
+  const legacy = TX_TYPE_REGISTRY.get(TransactionType.Legacy)!
+  return legacy.createFromRLP(data, txOptions) as Transaction[T]
 }
 
 /**
