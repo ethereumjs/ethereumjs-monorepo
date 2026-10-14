@@ -77,12 +77,10 @@ jobs:
           path: .est-fixtures-cache
           key: est-${{ hashFiles('packages/vm/test/consensus/fixtures.json') }}
 
-      - name: Fetch tests fixtures
-        if: steps.est-cache.outputs.cache-hit != 'true'
+      - name: Ensure tests fixtures
         run: npm run fixtures:fetch -- tests
 
       - uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
-        if: steps.est-cache.outputs.cache-hit != 'true'
         with:
           path: .est-fixtures-cache
           key: est-${{ hashFiles('packages/vm/test/consensus/fixtures.json') }}
@@ -101,11 +99,16 @@ jobs:
           dep-cache-key: ${{ inputs.dep-cache-key }}
 
       - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        id: est-cache
         with:
           path: .est-fixtures-cache
           key: est-${{ hashFiles('packages/vm/test/consensus/fixtures.json') }}
           restore-keys: |
             est-${{ hashFiles('packages/vm/test/consensus/fixtures.json') }}
+
+      - name: Ensure tests fixtures
+        if: steps.est-cache.outputs.cache-hit != 'true'
+        run: npm run fixtures:fetch -- tests
 
       - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM')
         run: npm run test:consensus:smoke
@@ -113,14 +116,18 @@ jobs:
       - if: >-
           contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM') == false &&
           contains(join(github.event.pull_request.labels.*.name, ' '), 'test all hardforks')
-        run: >-
-          npm run test:consensus:all -- --format all --shard ${{ matrix.shard }} --jobs 2 --skip-fetch
+        run: |
+          EXTRA=""
+          if [ "${{ steps.est-cache.outputs.cache-hit }}" = "true" ]; then EXTRA="--skip-fetch"; fi
+          npm run test:consensus:all -- --format all --shard ${{ matrix.shard }} --jobs 2 $EXTRA
 
       - if: >-
           contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM') == false &&
           contains(join(github.event.pull_request.labels.*.name, ' '), 'test all hardforks') == false
-        run: >-
-          npm run test:consensus:pr -- --format all --shard ${{ matrix.shard }} --jobs 2 --skip-fetch
+        run: |
+          EXTRA=""
+          if [ "${{ steps.est-cache.outputs.cache-hit }}" = "true" ]; then EXTRA="--skip-fetch"; fi
+          npm run test:consensus:pr -- --format all --shard ${{ matrix.shard }} --jobs 2 $EXTRA
 
   est-bogota-fixtures-cache:
     if: >-
