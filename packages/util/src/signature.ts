@@ -98,12 +98,12 @@ export const toCompactSig = function (
     throw EthereumJSErrorWithoutCode('Invalid signature v value')
   }
 
-  const ss = Uint8Array.from([...s])
-  if ((v > BigInt(28) && v % BIGINT_2 === BIGINT_1) || v === BIGINT_1 || v === BigInt(28)) {
+  const ss = setLengthLeft(s, 32).slice()
+  if (recovery === BIGINT_1) {
     ss[0] |= 0x80
   }
 
-  return bytesToHex(concatBytes(setLengthLeft(r, 32), setLengthLeft(ss, 32)))
+  return bytesToHex(concatBytes(setLengthLeft(r, 32), ss))
 }
 
 /**
