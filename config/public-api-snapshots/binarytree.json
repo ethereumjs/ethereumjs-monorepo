@@ -1,0 +1,19 @@
+{
+  "package": "binarytree",
+  "exports": [
+    "BinaryNodeType",
+    "BinaryTree",
+    "CheckpointDB",
+    "InternalBinaryNode",
+    "NODE_WIDTH",
+    "ROOT_DB_KEY",
+    "binaryTreeFromProof",
+    "createBinaryTree",
+    "decodeBinaryNode",
+    "decodeRawBinaryNode",
+    "isInternalBinaryNode",
+    "isRawBinaryNode",
+    "isStemBinaryNode",
+    "verifyBinaryProof"
+  ]
+}

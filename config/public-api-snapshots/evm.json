@@ -1,0 +1,32 @@
+{
+  "package": "evm",
+  "exports": [
+    "BinaryTreeAccessWitness",
+    "EIP7708_BURN_TOPIC",
+    "EIP7708_SYSTEM_ADDRESS",
+    "EIP7708_TRANSFER_TOPIC",
+    "EVM",
+    "EVMError",
+    "EVMMockBlockchain",
+    "EVMPerformanceLogger",
+    "MCLBLS",
+    "Message",
+    "NobleBLS",
+    "NobleBN254",
+    "RustBN254",
+    "Timer",
+    "activeCostPerStateByte",
+    "computeIntrinsicGasDimensions8037",
+    "createEIP7708BurnLog",
+    "createEIP7708TransferLog",
+    "createEVM",
+    "decodeBinaryAccessState",
+    "decodeEIP7708BurnLog",
+    "decodeEIP7708TransferLog",
+    "generateBinaryExecutionWitness",
+    "getActivePrecompiles",
+    "getOpcodesForHF",
+    "paramsEVM",
+    "txExceedsAvailableBlockGas8037"
+  ]
+}

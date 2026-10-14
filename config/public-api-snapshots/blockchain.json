@@ -1,0 +1,18 @@
+{
+  "package": "blockchain",
+  "exports": [
+    "Blockchain",
+    "CasperConsensus",
+    "CliqueConsensus",
+    "DBOp",
+    "DBSaveLookups",
+    "DBSetBlockOrHeader",
+    "DBSetHashToNumber",
+    "DBSetTD",
+    "EthashConsensus",
+    "createBlockchain",
+    "createBlockchainFromBlocksData",
+    "genGenesisStateRoot",
+    "getGenesisStateRoot"
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "package": "mpt",
+  "exports": [
+    "BranchMPTNode",
+    "CheckpointDB",
+    "ExtensionMPTNode",
+    "LeafMPTNode",
+    "MerklePatriciaTrie",
+    "ROOT_DB_KEY",
+    "WalkController",
+    "byteTypeToNibbleType",
+    "bytesToNibbles",
+    "compactBytesToNibbles",
+    "createMPT",
+    "createMPTFromProof",
+    "createMerkleProof",
+    "decodeMPTNode",
+    "decodeRawMPTNode",
+    "genesisMPTStateRoot",
+    "hexToKeybytes",
+    "isRawMPTNode",
+    "mergeAndFormatKeyPaths",
+    "nibbleTypeToByteType",
+    "nibblesToBytes",
+    "nibblesToCompactBytes",
+    "pathToHexKey",
+    "updateMPTFromMerkleProof",
+    "verifyMPTWithMerkleProof",
+    "verifyMerkleProof",
+    "verifyMerkleRangeProof"
+  ]
+}

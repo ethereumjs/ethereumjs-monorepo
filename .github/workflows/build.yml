@@ -142,6 +142,11 @@ jobs:
       - name: Verify affected-job selector
         run: node --test scripts/ci-affected.spec.mjs
 
+      - name: Verify public API export snapshots
+        run: |
+          npm run build -w @ethereumjs/common
+          node --import tsx/esm --test scripts/public-api-snapshot.spec.mjs
+
       - name: Compute affected CI jobs
         id: affected
         env:
