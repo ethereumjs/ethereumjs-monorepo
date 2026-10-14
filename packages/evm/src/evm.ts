@@ -22,9 +22,12 @@ import {
 import debugDefault from 'debug'
 import { EventEmitter } from 'eventemitter3'
 
+import { type AccessGasSchedule, createAccessGasSchedule } from './accessGasSchedule.ts'
+import { type BlockAccessListRecorder, createBlockAccessListRecorder } from './balRecorder.ts'
 import { createEIP7708TransferLog } from './eip7708.ts'
 import { activeCostPerStateByte } from './eip8037.ts'
 import { EVMError } from './errors.ts'
+import { type EVMFeatureFlags, createEVMFeatureFlags } from './evmFeatureFlags.ts'
 import { Interpreter } from './interpreter.ts'
 import { Journal } from './journal.ts'
 import { EVMPerformanceLogger } from './logger.ts'
@@ -32,6 +35,8 @@ import { Message } from './message.ts'
 import { getOpcodesForHF } from './opcodes/index.ts'
 import { paramsEVM } from './params.ts'
 import { NobleBLS, getActivePrecompiles, getPrecompileName } from './precompiles/index.ts'
+import { type StateGasAccountant, createStateGasAccountant } from './stateGasAccountant.ts'
+import { SUPPORTED_EVM_EIPS } from './supportedEips.ts'
 import { TransientStorage } from './transientStorage.ts'
 import {
   type Block,
@@ -182,6 +187,7 @@ export class EVM implements EVMInterface {
     Hardfork.Bpo4,
     Hardfork.Bpo5,
     Hardfork.Amsterdam,
+    Hardfork.Hegota,
   ]
   protected _tx?: {
     gasPrice: bigint
@@ -211,6 +217,18 @@ export class EVM implements EVMInterface {
    * @remarks Experimental (Amsterdam): may change on patch releases.
    */
   public readonly blockLevelAccessList?: BlockLevelAccessList
+
+  /** Resolved access-gas pricing (EIP-2929 / 8038 / witness). */
+  public accessGasSchedule!: AccessGasSchedule
+
+  /** EIP-8037 state-gas parameters when active. */
+  public stateGasAccountant!: StateGasAccountant
+
+  /** Hot-path feature gates derived from the active EIP set. */
+  public featureFlags!: EVMFeatureFlags
+
+  /** EIP-7928 block access list recorder (no-op when inactive). */
+  public balRecorder!: BlockAccessListRecorder
 
   /**
    * EIP-8037 transaction-level state-gas reservoir.
@@ -361,16 +379,8 @@ export class EVM implements EVMInterface {
     this.events = new EventEmitter<EVMEvent>()
     this._optsCached = opts
 
-    // Supported EIPs (sorted by EIP number; keep in sync with README / types.ts)
-    const supportedEIPs = [
-      1153, 1559, 2537, 2565, 2718, 2780, 2929, 2930, 2935, 3198, 3529, 3541, 3554, 3607, 3651,
-      3675, 3855, 3860, 4345, 4399, 4788, 4844, 4895, 5133, 5656, 6110, 6780, 7002, 7251, 7516,
-      7594, 7623, 7685, 7691, 7702, 7708, 7709, 7778, 7823, 7825, 7843, 7864, 7883, 7918, 7928,
-      7934, 7939, 7951, 7954, 7976, 7981, 8024, 8037,
-    ]
-
     for (const eip of this.common.eips()) {
-      if (!supportedEIPs.includes(eip)) {
+      if (!SUPPORTED_EVM_EIPS.includes(eip)) {
         throw EthereumJSErrorWithoutCode(`EIP-${eip} is not supported by the EVM`)
       }
     }
@@ -383,6 +393,8 @@ export class EVM implements EVMInterface {
 
     this.common.updateParams(opts.params ?? paramsEVM)
 
+    this.refreshEipStrategies()
+
     this.allowUnlimitedContractSize = opts.allowUnlimitedContractSize ?? false
     this.allowUnlimitedInitCodeSize = opts.allowUnlimitedInitCodeSize ?? false
     this._customOpcodes = opts.customOpcodes
@@ -392,6 +404,7 @@ export class EVM implements EVMInterface {
     this.transientStorage = new TransientStorage()
 
     this.common.events.on('hardforkChanged', () => {
+      this.refreshEipStrategies()
       this.getActiveOpcodes()
       this._precompiles = getActivePrecompiles(this.common, this._customPrecompiles)
     })
@@ -425,6 +438,16 @@ export class EVM implements EVMInterface {
 
     // Skip DEBUG calls unless 'ethjs' included in environmental DEBUG variables
     this.DEBUG = isDebugEnabled('ethjs')
+  }
+
+  private refreshEipStrategies(): void {
+    this.accessGasSchedule = createAccessGasSchedule(this.common)
+    this.stateGasAccountant = createStateGasAccountant(this.common)
+    this.featureFlags = createEVMFeatureFlags(this.common)
+    this.balRecorder = createBlockAccessListRecorder(
+      this.common.isActivatedEIP(7928),
+      this.blockLevelAccessList,
+    )
   }
 
   /**

@@ -204,30 +204,11 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       0x3b,
       async function (runState, gas, common): Promise<bigint> {
         const address = createAddressFromStackBigInt(runState.stack.peek()[0])
-
-        let charge2929Gas = true
-        if (
-          (common.isActivatedEIP(6800) || common.isActivatedEIP(7864)) &&
-          runState.interpreter._evm.getPrecompile(address) === undefined &&
-          !address.equals(createAddressFromStackBigInt(common.param('systemAddress')))
-        ) {
-          let coldAccessGas = BIGINT_0
-          coldAccessGas += runState.env.accessWitness!.readAccountBasicData(address)
-
-          gas += coldAccessGas
-          // if cold access gas has been charged 2929 gas shouldn't be charged
-          charge2929Gas = coldAccessGas === BIGINT_0
-        }
-
-        if (common.isActivatedEIP(2929)) {
-          gas += accessAddressEIP2929(runState, address.bytes, common, charge2929Gas)
-        }
-
-        // EIP-8038: additional code-reading cost on top of the account access
-        if (common.isActivatedEIP(8038)) {
-          gas += common.param('warmstoragereadGas')
-        }
-
+        const schedule = runState.interpreter._evm.accessGasSchedule
+        const witness = await schedule.witnessAccountBasicData(runState, address, common)
+        gas += witness.gas
+        gas += schedule.chargeAccountAccess(runState, address.bytes, common, witness.charge2929Gas)
+        gas += schedule.extcodeReadingSurcharge()
         return gas
       },
     ],
@@ -240,33 +221,16 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         gas += subMemUsage(runState, memOffset, dataLength, common)
 
-        let charge2929Gas = true
-        if (
-          (common.isActivatedEIP(6800) || common.isActivatedEIP(7864)) &&
-          runState.interpreter._evm.getPrecompile(address) === undefined &&
-          !address.equals(createAddressFromStackBigInt(common.param('systemAddress')))
-        ) {
-          let coldAccessGas = BIGINT_0
-          coldAccessGas += runState.env.accessWitness!.readAccountBasicData(address)
-
-          gas += coldAccessGas
-          // if cold access gas has been charged 2929 gas shouldn't be charged
-          charge2929Gas = coldAccessGas === BIGINT_0
-        }
-
-        if (common.isActivatedEIP(2929)) {
-          gas += accessAddressEIP2929(runState, address.bytes, common, charge2929Gas)
-        }
-
-        // EIP-8038: additional code-reading cost on top of the account access
-        if (common.isActivatedEIP(8038)) {
-          gas += common.param('warmstoragereadGas')
-        }
+        const schedule = runState.interpreter._evm.accessGasSchedule
+        const witness = await schedule.witnessAccountBasicData(runState, address, common)
+        gas += witness.gas
+        gas += schedule.chargeAccountAccess(runState, address.bytes, common, witness.charge2929Gas)
+        gas += schedule.extcodeReadingSurcharge()
 
         if (dataLength !== BIGINT_0) {
           gas += common.param('copyGas') * divCeil(dataLength, BIGINT_32)
 
-          if (common.isActivatedEIP(6800) || common.isActivatedEIP(7864)) {
+          if (schedule.useStatelessWitness) {
             let codeEnd = _codeOffset + dataLength
             const codeSize = BigInt((await runState.stateManager.getCode(address)).length)
             if (codeEnd > codeSize) {
@@ -360,20 +324,11 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       async function (runState, gas, common): Promise<bigint> {
         const key = runState.stack.peek()[0]
         const keyBuf = setLengthLeft(bigIntToBytes(key), 32)
-
-        let charge2929Gas = true
-        if (common.isActivatedEIP(6800) || common.isActivatedEIP(7864)) {
-          const address = runState.interpreter.getAddress()
-          const coldAccessGas = runState.env.accessWitness!.readAccountStorage(address, key)
-
-          gas += coldAccessGas
-          charge2929Gas = coldAccessGas === BIGINT_0
-        }
-
-        if (common.isActivatedEIP(2929)) {
-          gas += accessStorageEIP2929(runState, keyBuf, false, common, charge2929Gas)
-        }
-
+        const schedule = runState.interpreter._evm.accessGasSchedule
+        const address = runState.interpreter.getAddress()
+        const witness = await schedule.witnessStorageRead(runState, address, key)
+        gas += witness.gas
+        gas += schedule.chargeStorageAccess(runState, keyBuf, false, common, witness.charge2929Gas)
         return gas
       },
     ],
@@ -474,18 +429,6 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           gas += accessStorageEIP2929(runState, keyBytes, true, common, charge2929Gas)
         }
 
-        return gas
-      },
-    ],
-    [
-      /* MCOPY */
-      0x5e,
-      async function (runState, gas, common): Promise<bigint> {
-        const [dst, src, length] = runState.stack.peek(3)
-        const wordsCopied = (length + BIGINT_31) / BIGINT_32
-        gas += BIGINT_3 * wordsCopied
-        gas += subMemUsage(runState, src, length, common)
-        gas += subMemUsage(runState, dst, length, common)
         return gas
       },
     ],
