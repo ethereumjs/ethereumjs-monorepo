@@ -77,9 +77,7 @@ export const stepTraceJSON = (step: InterpreterStep, memory: boolean = false) =>
     depth: step.depth + 1, // Depth starts at 1 - EIP-7756
     refund: Number(step.gasRefund),
     opName: step.opcode.name,
-    section: step.eofSection,
     immediate: step.immediate !== undefined ? bytesToHex(step.immediate) : undefined,
-    functionDepth: step.eofFunctionDepth,
     error: step.error !== undefined ? step.error.toString() : undefined,
   }
   return opTrace

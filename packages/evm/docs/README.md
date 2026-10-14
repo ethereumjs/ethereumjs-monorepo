@@ -7,7 +7,6 @@
 ## Classes
 
 - [BinaryTreeAccessWitness](classes/BinaryTreeAccessWitness.md)
-- [EOFContainer](classes/EOFContainer.md)
 - [EVM](classes/EVM.md)
 - [EVMError](classes/EVMError.md)
 - [EVMMockBlockchain](classes/EVMMockBlockchain.md)
@@ -67,4 +66,3 @@
 - [getActivePrecompiles](functions/getActivePrecompiles.md)
 - [getOpcodesForHF](functions/getOpcodesForHF.md)
 - [txExceedsAvailableBlockGas8037](functions/txExceedsAvailableBlockGas8037.md)
-- [validateEOF](functions/validateEOF.md)

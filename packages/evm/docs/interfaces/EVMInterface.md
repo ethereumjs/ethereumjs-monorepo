@@ -6,7 +6,7 @@
 
 # Interface: EVMInterface
 
-Defined in: [types.ts:181](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L181)
+Defined in: [types.ts:180](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L180)
 
 Public EVM surface used by [@ethereumjs/vm!VM](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/docs/classes/VM.md) and stand-alone callers.
 
@@ -16,7 +16,7 @@ Public EVM surface used by [@ethereumjs/vm!VM](https://github.com/ethereumjs/eth
 
 > `optional` **binaryTreeAccessWitness?**: [`BinaryTreeAccessWitness`](../classes/BinaryTreeAccessWitness.md)
 
-Defined in: [types.ts:204](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L204)
+Defined in: [types.ts:203](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L203)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: [types.ts:204](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **blockLevelAccessList?**: `BlockLevelAccessList`
 
-Defined in: [types.ts:211](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L211)
+Defined in: [types.ts:210](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L210)
 
 Accumulated block access list when EIP-7928 is active.
 
@@ -38,7 +38,7 @@ Experimental (Amsterdam): may change on patch releases.
 
 > **common**: [`Common`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/classes/Common.md)
 
-Defined in: [types.ts:182](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L182)
+Defined in: [types.ts:181](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L181)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: [types.ts:182](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **createTxTargetAlive?**: `boolean`
 
-Defined in: [types.ts:246](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L246)
+Defined in: [types.ts:245](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L245)
 
 EIP-8037: whether the target account of a top-level creation transaction
 was already alive (EIP-161 non-empty) before creation; `runTx` refunds
@@ -63,7 +63,7 @@ Experimental (Amsterdam): may change on patch releases.
 
 > `optional` **eip2780PrepOog?**: `boolean`
 
-Defined in: [types.ts:237](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L237)
+Defined in: [types.ts:236](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L236)
 
 EIP-2780 / EIP-8037: set when a top-frame access charge OOGs before opcodes.
 runTx reverts prepare-region 7702 delegations when this is true.
@@ -78,7 +78,7 @@ Experimental (Amsterdam): may change on patch releases.
 
 > `optional` **eip7928CallPostTargetOog?**: `boolean`
 
-Defined in: [types.ts:230](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L230)
+Defined in: [types.ts:229](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L229)
 
 EIP-7928: set during CALL post-target OOG so `runTx` can drain the state-gas reservoir
 on exceptional halt. Optional for custom EVMInterface implementations.
@@ -93,7 +93,7 @@ Experimental (Amsterdam): may change on patch releases.
 
 > `optional` **events?**: `EventEmitter`\<`EVMEvent`, `any`\>
 
-Defined in: [types.ts:203](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L203)
+Defined in: [types.ts:202](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L202)
 
 ***
 
@@ -101,7 +101,7 @@ Defined in: [types.ts:203](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **executionStateGasUsed**: `bigint`
 
-Defined in: [types.ts:223](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L223)
+Defined in: [types.ts:222](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L222)
 
 EIP-8037 per-tx cumulative state-gas used.
 
@@ -115,7 +115,7 @@ Experimental (Amsterdam): may change on patch releases.
 
 > **journal**: `object`
 
-Defined in: [types.ts:183](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L183)
+Defined in: [types.ts:182](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L182)
 
 #### accessList?
 
@@ -259,7 +259,7 @@ Defined in: [types.ts:183](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **precompiles**: `Map`\<`string`, [`PrecompileFunc`](PrecompileFunc.md)\>
 
-Defined in: [types.ts:199](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L199)
+Defined in: [types.ts:198](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L198)
 
 ***
 
@@ -267,7 +267,7 @@ Defined in: [types.ts:199](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **stateGasReservoir**: `bigint`
 
-Defined in: [types.ts:217](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L217)
+Defined in: [types.ts:216](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L216)
 
 EIP-8037 per-tx state-gas reservoir (set by `runTx`, read/written by opcodes).
 
@@ -281,7 +281,7 @@ Experimental (Amsterdam): may change on patch releases.
 
 > **stateManager**: [`StateManagerInterface`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/StateManagerInterface.md)
 
-Defined in: [types.ts:198](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L198)
+Defined in: [types.ts:197](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L197)
 
 ***
 
@@ -289,7 +289,7 @@ Defined in: [types.ts:198](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **systemBinaryTreeAccessWitness?**: [`BinaryTreeAccessWitness`](../classes/BinaryTreeAccessWitness.md)
 
-Defined in: [types.ts:205](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L205)
+Defined in: [types.ts:204](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L204)
 
 ## Methods
 
@@ -297,7 +297,7 @@ Defined in: [types.ts:205](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > `optional` **getPrecompile**(`address`): [`PrecompileFunc`](PrecompileFunc.md) \| `undefined`
 
-Defined in: [types.ts:200](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L200)
+Defined in: [types.ts:199](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L199)
 
 #### Parameters
 
@@ -315,7 +315,7 @@ Defined in: [types.ts:200](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **runCall**(`opts`): `Promise`\<[`EVMResult`](EVMResult.md)\>
 
-Defined in: [types.ts:201](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L201)
+Defined in: [types.ts:200](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L200)
 
 #### Parameters
 
@@ -333,7 +333,7 @@ Defined in: [types.ts:201](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 > **runCode**(`opts`): `Promise`\<[`ExecResult`](ExecResult.md)\>
 
-Defined in: [types.ts:202](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L202)
+Defined in: [types.ts:201](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L201)
 
 #### Parameters
 

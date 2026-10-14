@@ -191,17 +191,6 @@ export const eipsDict: EIPsDict = {
     requiredEIPs: [2929],
   },
   /**
-   * Description : EVM Object Format (EOF) v1
-   * URL         : https://eips.ethereum.org/EIPS/eip-3540
-   * Status      : Stagnant
-   * Commit      : b57b7e83
-   * Date        : 2026-02-08
-   */
-  3540: {
-    minimumHardfork: Hardfork.London,
-    requiredEIPs: [3541, 3860],
-  },
-  /**
    * Description : Reject new contracts starting with the 0xEF byte
    * URL         : https://eips.ethereum.org/EIPS/eip-3541
    * Status      : Final
@@ -243,17 +232,6 @@ export const eipsDict: EIPsDict = {
     requiredEIPs: [2929],
   },
   /**
-   * Description : EOF - Code Validation
-   * URL         : https://eips.ethereum.org/EIPS/eip-3670
-   * Status      : Stagnant
-   * Commit      : 51882145
-   * Date        : 2025-09-21
-   */
-  3670: {
-    minimumHardfork: Hardfork.London,
-    requiredEIPs: [3540],
-  },
-  /**
    * Description : Upgrade consensus to Proof-of-Stake
    * URL         : https://eips.ethereum.org/EIPS/eip-3675
    * Status      : Final
@@ -284,17 +262,6 @@ export const eipsDict: EIPsDict = {
     minimumHardfork: Hardfork.SpuriousDragon,
   },
   /**
-   * Description : EOF - Static relative jumps
-   * URL         : https://eips.ethereum.org/EIPS/eip-4200
-   * Status      : Stagnant
-   * Commit      : 46c3ac7c
-   * Date        : 2025-11-23
-   */
-  4200: {
-    minimumHardfork: Hardfork.London,
-    requiredEIPs: [3540, 3670],
-  },
-  /**
    * Description : Difficulty Bomb Delay to June 2022
    * URL         : https://eips.ethereum.org/EIPS/eip-4345
    * Status      : Final
@@ -313,17 +280,6 @@ export const eipsDict: EIPsDict = {
    */
   4399: {
     minimumHardfork: Hardfork.London,
-  },
-  /**
-   * Description : EOF - Functions
-   * URL         : https://eips.ethereum.org/EIPS/eip-4750
-   * Status      : Stagnant
-   * Commit      : b6e04f06
-   * Date        : 2025-11-23
-   */
-  4750: {
-    minimumHardfork: Hardfork.London,
-    requiredEIPs: [3540, 3670, 5450],
   },
   /**
    * Description : Beacon block root in the EVM
@@ -367,17 +323,6 @@ export const eipsDict: EIPsDict = {
     minimumHardfork: Hardfork.GrayGlacier,
   },
   /**
-   * Description : EOF - Stack Validation
-   * URL         : https://eips.ethereum.org/EIPS/eip-5450
-   * Status      : Stagnant
-   * Commit      : 199fb31b
-   * Date        : 2025-11-23
-   */
-  5450: {
-    minimumHardfork: Hardfork.London,
-    requiredEIPs: [3540, 3670, 4200, 4750],
-  },
-  /**
    * Description : MCOPY - Memory copying instruction
    * URL         : https://eips.ethereum.org/EIPS/eip-5656
    * Status      : Final
@@ -397,17 +342,6 @@ export const eipsDict: EIPsDict = {
   6110: {
     minimumHardfork: Hardfork.Cancun,
     requiredEIPs: [7685],
-  },
-  /**
-   * Description : EOF - JUMPF and non-returning functions
-   * URL         : https://eips.ethereum.org/EIPS/eip-6206
-   * Status      : Stagnant
-   * Commit      : d9e2c447
-   * Date        : 2025-11-23
-   */
-  6206: {
-    minimumHardfork: Hardfork.London,
-    requiredEIPs: [4750, 5450],
   },
   /**
    * Description : SELFDESTRUCT only in same transaction
@@ -431,22 +365,6 @@ export const eipsDict: EIPsDict = {
     requiredEIPs: [7685],
   },
   /**
-   * Description : Revamped CALL instructions
-   * URL         : https://eips.ethereum.org/EIPS/eip-7069
-   * Status      : Stagnant
-   * Commit      : 9ea86a73
-   * Date        : 2025-11-23
-   */
-  7069: {
-    minimumHardfork: Hardfork.Berlin,
-    /* Note: per EIP these are the additionally required EIPs:
-      EIP 150 - This is the entire Tangerine Whistle hardfork
-      EIP 211 - (RETURNDATASIZE / RETURNDATACOPY) - Included in Byzantium
-      EIP 214 - (STATICCALL) - Included in Byzantium
-    */
-    requiredEIPs: [2929],
-  },
-  /**
    * Description : Increase the MAX_EFFECTIVE_BALANCE -> Execution layer triggered consolidations (experimental)
    * URL         : https://eips.ethereum.org/EIPS/eip-7251
    * Status      : Final
@@ -456,17 +374,6 @@ export const eipsDict: EIPsDict = {
   7251: {
     minimumHardfork: Hardfork.Paris,
     requiredEIPs: [7685],
-  },
-  /**
-   * Description : EOF - Data section access instructions
-   * URL         : https://eips.ethereum.org/EIPS/eip-7480
-   * Status      : Stagnant
-   * Commit      : 83274180
-   * Date        : 2025-11-23
-   */
-  7480: {
-    minimumHardfork: Hardfork.London,
-    requiredEIPs: [3540, 3670],
   },
   /**
    * Description : BLOBBASEFEE opcode
@@ -489,20 +396,6 @@ export const eipsDict: EIPsDict = {
   7594: {
     minimumHardfork: Hardfork.Paris,
     requiredEIPs: [4844],
-  },
-  /**
-   * Description : EOF Contract Creation
-   * URL         : https://eips.ethereum.org/EIPS/eip-7620
-   * Status      : Stagnant
-   * Commit      : 88301956
-   * Date        : 2025-11-23
-   */
-  7620: {
-    minimumHardfork: Hardfork.London,
-    /* Note: per EIP these are the additionally required EIPs:
-      EIP 170 - (Max contract size) - Included in Spurious Dragon
-    */
-    requiredEIPs: [3540, 3541, 3670],
   },
   /**
    * Description : Increase calldata cost to reduce maximum block size
@@ -548,28 +441,6 @@ export const eipsDict: EIPsDict = {
   7918: {
     minimumHardfork: Hardfork.Paris,
     requiredEIPs: [4844],
-  },
-  /**
-   * Description : EVM Object Format (EOFv1) Meta
-   * URL         : https://eips.ethereum.org/EIPS/eip-7692
-   * Status      : Stagnant
-   * Commit      : ac0de245
-   * Date        : 2025-11-09
-   */
-  7692: {
-    minimumHardfork: Hardfork.Cancun,
-    requiredEIPs: [3540, 3670, 4200, 4750, 5450, 6206, 7069, 7480, 7620, 7698],
-  },
-  /**
-   * Description : EOF - Creation transaction
-   * URL         : https://eips.ethereum.org/EIPS/eip-7698
-   * Status      : Stagnant
-   * Commit      : c6fb81f6
-   * Date        : 2025-09-28
-   */
-  7698: {
-    minimumHardfork: Hardfork.London,
-    requiredEIPs: [3540, 7620],
   },
   /**
    * Description : Set EOA account code for one transaction

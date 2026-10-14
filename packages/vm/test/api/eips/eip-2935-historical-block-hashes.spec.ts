@@ -283,7 +283,7 @@ describe('[VM/EIP-2935]: historical block hashes', () => {
         const ret = await vm.evm.runCall({
           // Code: RETURN the BLOCKHASH of block i
           // PUSH(i) BLOCKHASH PUSH(32) MSTORE PUSH(64) PUSH(0) RETURN
-          // Note: need to return a contract with starting zero bytes to avoid non-deployable contracts by EIP 3540
+          // Note: need to return a contract with starting zero bytes to avoid non-deployable contracts by EIP-3541
           data: hexToBytes(`0x61${i.toString(16).padStart(4, '0')}4060205260406000F3`),
           block: lastBlock,
         })

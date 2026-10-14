@@ -3,7 +3,7 @@ import { BIGINT_0, EthereumJSErrorWithoutCode, createZeroAddress } from '@ethere
 import type { BinaryTreeAccessWitnessInterface } from '@ethereumjs/common'
 import type { Address, PrefixedHexString } from '@ethereumjs/util'
 import type { PrecompileFunc } from './precompiles/index.ts'
-import type { EOFEnv, SelfdestructMap } from './types.ts'
+import type { SelfdestructMap } from './types.ts'
 
 const defaults = {
   value: BIGINT_0,
@@ -22,7 +22,6 @@ interface MessageOpts {
   caller?: Address
   gasLimit: bigint
   data?: Uint8Array
-  eofCallData?: Uint8Array
   depth?: number
   code?: Uint8Array | PrecompileFunc
   codeAddress?: Address
@@ -50,7 +49,6 @@ export class Message {
   caller: Address
   gasLimit: bigint
   data: Uint8Array
-  eofCallData?: Uint8Array // Only used in EOFCreate to signal an EOF contract to be created with this calldata (via EOFCreate)
   isCreate?: boolean
   depth: number
   code?: Uint8Array | PrecompileFunc
@@ -58,7 +56,6 @@ export class Message {
   isStatic: boolean
   isCompiled: boolean
   salt?: Uint8Array
-  eof?: EOFEnv
   chargeCodeAccesses?: boolean
   /**
    * Selfdestructed addresses mapped to their beneficiary.
@@ -90,7 +87,6 @@ export class Message {
     this.caller = opts.caller ?? defaults.caller
     this.gasLimit = opts.gasLimit
     this.data = opts.data ?? defaults.data
-    this.eofCallData = opts.eofCallData
     this.depth = opts.depth ?? defaults.depth
     this.code = opts.code
     this._codeAddress = opts.codeAddress
