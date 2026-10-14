@@ -1,9 +1,10 @@
 name: Build
 on:
   pull_request:
-    # synchronize re-reads labels. Performance benchmarks run only when
-    # "type: test performance" is set on that push.
-    types: [opened, reopened, synchronize, ready_for_review]
+    # synchronize re-reads labels on push; labeled re-runs when the label is
+    # added after open (e.g. gh pr edit). Performance benchmarks run only when
+    # "type: test performance" is on the PR for that event.
+    types: [opened, reopened, synchronize, ready_for_review, labeled]
   push:
     branches: [master]
     tags: ['*']
@@ -20,6 +21,7 @@ jobs:
   # ethereum-tests only — do not recursive-clone execution-spec-tests here.
   # EST jobs init that submodule themselves and must not wait on this job.
   checkout-submodules:
+    if: github.event_name != 'pull_request' || github.event.action != 'labeled'
     runs-on: ubuntu-latest
 
     steps:
@@ -50,6 +52,10 @@ jobs:
       submodule-cache-key: submodule-${{ steps.create-cache-key.outputs.submodule-cache-key }}
 
   build:
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.action != 'labeled' ||
+      github.event.label.name == 'type: test performance'
     runs-on: ubuntu-latest
 
     steps:
@@ -103,6 +109,7 @@ jobs:
   # config (see scripts/ci-affected.mjs) still run the full matrix.
   # Keep skippable job ids in sync with SKIPPABLE_JOBS in that script.
   detect:
+    if: github.event_name != 'pull_request' || github.event.action != 'labeled'
     runs-on: ubuntu-latest
     outputs:
       binarytree: ${{ steps.affected.outputs.binarytree }}
@@ -272,12 +279,14 @@ jobs:
 
   lint:
     needs: build
+    if: github.event_name != 'pull_request' || github.event.action != 'labeled'
     uses: ./.github/workflows/lint.yml
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
   typecheck:
     needs: [build, checkout-submodules]
+    if: github.event_name != 'pull_request' || github.event.action != 'labeled'
     uses: ./.github/workflows/typecheck.yml
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
@@ -286,6 +295,7 @@ jobs:
   audit:
     name: npm audit (runtime)
     needs: build
+    if: github.event_name != 'pull_request' || github.event.action != 'labeled'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
@@ -418,7 +428,9 @@ jobs:
     needs: [build]
     runs-on: ubuntu-latest
     continue-on-error: true
-    if: github.event_name == 'pull_request'
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.action != 'labeled'
     steps:
       - name: Checkout current branch
         uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0

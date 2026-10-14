@@ -71,9 +71,9 @@ These **change CI behavior** — add or remove deliberately; **when in doubt, pr
 | `type: test no browser` | Skips browser workflow |
 | `type: test skip most stable VM` | Skips most stable VM jobs in `vm-pr.yml` |
 | `type: test skip dev VM` | Skips dev VM EST jobs |
-| `type: test performance` | Runs the CodSpeed simulation job (`performance-benchmarks`) on this PR. Each push reads the label again |
+| `type: test performance` | Runs the CodSpeed simulation job (`performance-benchmarks`) on this PR. Each push and **`labeled`** event re-reads labels |
 
-Set **`type: test performance`** when the diff can change the speed of a hot-path library (`rlp`, `util`, `mpt`, `evm`, `vm`, `tx`, `block`, `statemanager`, `binarytree`), a benchmark, or a dependency those paths execute. Decide at PR open, then again before every later push: the workflow reads labels on that push. Remove the label when the remaining diff can no longer change that speed. The ordinary type label `type: performance` does not start the job.
+Set **`type: test performance`** when the diff can change the speed of a hot-path library (`rlp`, `util`, `mpt`, `evm`, `vm`, `tx`, `block`, `statemanager`, `binarytree`), a benchmark, or a dependency those paths execute. Prefer setting the label before or with the opening push; if you add it later (`gh pr edit`), the **`labeled`** workflow run triggers benchmarks without a full matrix re-run. Re-check before every later push. Remove the label when the remaining diff can no longer change that speed. The ordinary type label `type: performance` does not start the job.
 
 Remove a skip label when the PR no longer justifies skipping that coverage.
 
