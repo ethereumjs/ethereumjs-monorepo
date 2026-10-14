@@ -3,7 +3,7 @@ import fs from 'node:fs'
 
 import { parseRunnerArgv } from './cli.ts'
 import { runCasePool } from './pool.ts'
-import { buildReport, printListCounts, printReport, writeReportJson } from './report.ts'
+import { buildReport, printListCounts, printReport, writeReportJSON } from './report.ts'
 import { selectTestCases } from './select.ts'
 import type { ConsensusTestCase } from './types.ts'
 
@@ -40,7 +40,7 @@ async function main(): Promise<number> {
   printReport(report, options.jobs)
 
   if (options.reportPath !== undefined) {
-    writeReportJson(options.reportPath, report)
+    writeReportJSON(options.reportPath, report)
   }
 
   if (report.failed > 0) {

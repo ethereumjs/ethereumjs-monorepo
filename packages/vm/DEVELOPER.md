@@ -49,7 +49,7 @@ Fixtures are **not** in git. You download each pinned release **once per machine
 | **3 — Targeted EST** | One fork or file after cache exists | `npm run test:consensus -- --fork Osaka --format state --file foo.json --jobs 1` |
 | **4 — Full EST** | Pre-push, fixture bumps, CI parity | `npm run fixtures:fetch -- tests` then `npm run test:consensus:pr` (or `:all`) |
 
-**Cache layout:** `EST_FIXTURES_CACHE` defaults to `~/.cache/ethereumjs/est-fixtures/<source>/<tag>/`. Point several worktrees at the same directory to avoid duplicate downloads. CI uses a workspace-local cache restored from Actions.
+**Cache layout:** `EST_FIXTURES_CACHE` defaults to `~/.cache/ethereumjs/est-fixtures/<source>/<tag>/`. Point several local checkouts at the same directory to avoid duplicate downloads. CI uses a workspace-local cache restored from Actions.
 
 **Local fills:** after EELS `fill`, pass `--fixture-root /path/to/fixtures` (no release tarball).
 

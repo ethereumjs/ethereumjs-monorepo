@@ -70,7 +70,7 @@ export function printReport(report: ConsensusReport, jobs: number): void {
   }
 }
 
-export function writeReportJson(reportPath: string, report: ConsensusReport): void {
+export function writeReportJSON(reportPath: string, report: ConsensusReport): void {
   fs.mkdirSync(path.dirname(reportPath), { recursive: true })
   fs.writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`)
 }

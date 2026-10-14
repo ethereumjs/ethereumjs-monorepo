@@ -23,7 +23,7 @@ export function estFixturesCacheHint(sourceName: string): string {
   return (
     `EST fixtures for "${sourceName}" are not cached.\n` +
     `From packages/vm: npm run fixtures:fetch -- ${sourceName}\n` +
-    `Cache: ${cache} (set EST_FIXTURES_CACHE to share across worktrees).\n` +
+    `Cache: ${cache} (set EST_FIXTURES_CACHE to share across local checkouts).\n` +
     `Alternatives: --fixture-root <dir> (local tree), --auto-fetch (download now), --skip-fetch with an existing cache only.`
   )
 }

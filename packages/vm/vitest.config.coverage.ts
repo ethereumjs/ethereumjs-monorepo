@@ -13,11 +13,7 @@ export default mergeConfig(
         enabled: true,
         reporter: ['lcov'],
       },
-      exclude: [
-        'test/tester/legacy/state.spec.ts',
-        'test/tester/legacy/blockchain.spec.ts',
-        'test/tester/consumeBAL.test.ts',
-      ],
+      exclude: ['test/consensus/**'],
     },
   }),
 )
