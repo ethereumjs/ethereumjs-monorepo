@@ -12,7 +12,7 @@ EthereumJS PR CI is the **`Build`** workflow (`.github/workflows/build.yml`). Th
 1. **Job budget** — GitHub concurrent job limits are tight. Prefer **one runner, many steps** over many small jobs. The `static` reusable workflow (rlp + ethash + genesis + wallet) is the pattern: bundle cheap related work, do not split without reason.
 2. **Fail fast** — Prefer cheap repo-wide gates before expensive test matrices when restructuring CI. Today lint, typecheck, and spellcheck run in parallel with tests; **`audit`** is its own always-on job (`Build / npm audit (runtime)`).
 3. **Wall time** — Keep the critical path short: restore the `build` workspace cache (`setup-ethereumjs`), avoid duplicate `npm ci` in separate workflows.
-4. **Resources** — PR CI uses affected selection (`scripts/ci-affected.mjs`); do not expand to full matrix without cause. Workflows use concurrency cancel-in-progress. Informational jobs (`bundle-size`, **`performance-benchmarks`** (CodSpeed simulation on Node 22; a PR runs it only with `type: test performance` on that push), in-flux `vm-est-dev`) stay out of the **`Build / CI`** gate until branch protection requires **CodSpeed Performance Analysis**.
+4. **Resources** — PR CI uses affected selection (`scripts/ci-affected.mjs`); do not expand to full matrix without cause. Workflows use concurrency cancel-in-progress. Informational jobs (`bundle-size`, **`performance-benchmarks`** (CodSpeed simulation on Node 22; a PR runs it only with `type: test performance` on that push)) stay out of the **`Build / CI`** gate until branch protection requires **CodSpeed Performance Analysis**. **`type: test bogota`** adds optional Hegota fixture jobs inside `vm-pr.yml` (same workflow, label-gated).
 
 ## When changing CI
 

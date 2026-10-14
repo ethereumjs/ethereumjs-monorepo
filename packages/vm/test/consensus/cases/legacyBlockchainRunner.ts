@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict'
 /**
  * This file is deprecated.
  *
@@ -26,10 +27,9 @@ import {
   isHexString,
   stripHexPrefix,
 } from '@ethereumjs/util'
-import { assert } from 'vitest'
 
-import { buildBlock, createVM, runBlock } from '../../../../src/index.ts'
-import { setupPreConditions, verifyPostConditions } from '../../../util.ts'
+import { buildBlock, createVM, runBlock } from '../../../src/index.ts'
+import { setupPreConditions, verifyPostConditions } from '../../util.ts'
 
 import type { Block } from '@ethereumjs/block'
 import type { Blockchain, ConsensusDict } from '@ethereumjs/blockchain'
@@ -52,10 +52,10 @@ function formatBlockHeader(data: any) {
   return formatted
 }
 
-export async function runBlockchainTest(options: any, testData: any, t: typeof assert) {
+export async function runBlockchainTest(options: any, testData: any) {
   // ensure that the test data is the right fork data
   if (testData.network !== options.forkConfigTestSuite) {
-    logComment(t, `skipping test: no data available for ${options.forkConfigTestSuite}`)
+    logComment(assert, `skipping test: no data available for ${options.forkConfigTestSuite}`)
     return
   }
 
@@ -95,7 +95,7 @@ export async function runBlockchainTest(options: any, testData: any, t: typeof a
 
   if (typeof testData.genesisRLP === 'string') {
     const rlp = hexToBytes(testData.genesisRLP)
-    t.deepEqual(genesisBlock.serialize(), rlp, 'correct genesis RLP')
+    assert.deepEqual(genesisBlock.serialize(), rlp, 'correct genesis RLP')
     incrementCount(options)
   }
 
@@ -131,7 +131,7 @@ export async function runBlockchainTest(options: any, testData: any, t: typeof a
   // set up pre-state
   await setupPreConditions(vm.stateManager, testData)
 
-  t.deepEqual(
+  assert.deepEqual(
     await vm.stateManager.getStateRoot(),
     genesisBlock.header.stateRoot,
     'correct pre stateRoot',
@@ -140,7 +140,7 @@ export async function runBlockchainTest(options: any, testData: any, t: typeof a
 
   async function handleError(error: string | undefined, expectException: string | boolean) {
     if (expectException !== false) {
-      t.ok(true, `Expected exception ${expectException}`)
+      assert.ok(true, `Expected exception ${expectException}`)
       incrementCount(options)
     } else {
       assert.fail(error)
@@ -207,7 +207,7 @@ export async function runBlockchainTest(options: any, testData: any, t: typeof a
             if (!shouldFail) {
               assert.fail(`tx should not fail, but failed: ${e.message}`)
             } else {
-              t.ok(true, 'tx successfully failed')
+              assert.ok(true, 'tx successfully failed')
               incrementCount(options)
             }
           }
@@ -251,7 +251,7 @@ export async function runBlockchainTest(options: any, testData: any, t: typeof a
           const headBlock = await (vm.blockchain as Blockchain).getIteratorHead()
           await vm.stateManager.setStateRoot(headBlock.header.stateRoot)
         } else {
-          await verifyPostConditions(stateTree, testData.postState, t)
+          await verifyPostConditions(stateTree, testData.postState, assert as never)
         }
 
         throw e
@@ -268,7 +268,7 @@ export async function runBlockchainTest(options: any, testData: any, t: typeof a
     }
   }
 
-  t.equal(
+  assert.strictEqual(
     bytesToHex(blockchain['_headHeaderHash']!),
     '0x' + testData.lastblockhash,
     'correct last header block',

@@ -22,11 +22,6 @@ inputs:
     description: ethereum-tests cache key (`none` inits from git when ethereum-tests is true)
     required: false
     default: 'none'
-  execution-spec-tests:
-    description: Init packages/execution-spec-tests (depth 1)
-    required: false
-    default: 'false'
-
 runs:
   using: composite
   steps:
@@ -60,9 +55,3 @@ runs:
       shell: bash
       working-directory: ${{ github.workspace }}
       run: git submodule update --init --depth=1 -- packages/ethereum-tests
-
-    - if: ${{ inputs.execution-spec-tests == 'true' }}
-      name: Init execution-spec-tests
-      shell: bash
-      working-directory: ${{ github.workspace }}
-      run: git submodule update --init --depth=1 -- packages/execution-spec-tests

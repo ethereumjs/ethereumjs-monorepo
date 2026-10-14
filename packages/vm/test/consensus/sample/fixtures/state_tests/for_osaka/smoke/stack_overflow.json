@@ -1,0 +1,36 @@
+{
+  "stackOverflow": {
+    "env": {
+      "currentCoinbase": "0x2adc25683035aa028b764671dc4e24fc4885e100",
+      "currentGasLimit": "0x0f4240",
+      "currentNumber": "0x01",
+      "currentTimestamp": "0x03e8"
+    },
+    "pre": {
+      "0xcccccccccccccccccccccccccccccccccccccccc": {
+        "balance": "0x0de0b6b3a7640000",
+        "code": "0x600056",
+        "nonce": "0x00",
+        "storage": {}
+      }
+    },
+    "transaction": {
+      "data": ["0x"],
+      "gasLimit": ["0x0186a0"],
+      "gasPrice": "0x01",
+      "nonce": "0x00",
+      "secretKey": "0x45a915e4d060149eb4365960eeeeea8f288a6efe1fb182e1a5c1701776a5a898",
+      "to": "0xcccccccccccccccccccccccccccccccccccccccc",
+      "value": ["0x00"]
+    },
+    "post": {
+      "Osaka": [
+        {
+          "hash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "indexes": { "data": 0, "gas": 0, "value": 0 },
+          "logs": "0x"
+        }
+      ]
+    }
+  }
+}

@@ -62,7 +62,7 @@ describe('path classification', () => {
   it('maps package and fixture paths', () => {
     assert.equal(packageDirFromPath('packages/vm/src/runBlock.ts'), 'vm')
     assert.equal(packageDirFromPath('README.md'), null)
-    assert.deepEqual(extraPackagesFromPath('packages/execution-spec-tests/dev/foo.json'), ['vm'])
+    assert.deepEqual(extraPackagesFromPath('packages/vm/test/consensus/fixtures.json'), ['vm'])
     assert.deepEqual(extraPackagesFromPath('packages/ethereum-tests'), [
       'vm',
       'block',
@@ -136,7 +136,7 @@ describe('computeAffected', () => {
 
   it('treats EST fixture changes as a VM change', () => {
     const result = computeAffected({
-      files: ['packages/execution-spec-tests/dev/blockchain_tests/foo.json'],
+      files: ['packages/vm/test/consensus/fixtures.json'],
       forceAll: false,
       packages: STACK,
     })
