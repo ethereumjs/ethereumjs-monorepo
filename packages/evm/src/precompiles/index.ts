@@ -1,3 +1,6 @@
+// Lazy-loading BLS / P256 backends on first call is a future bundle-size win (see CI
+// `bundle-size` job). Static imports stay until a measured gain justifies the split.
+
 import { Hardfork } from '@ethereumjs/common'
 import { type Address, type PrefixedHexString, bytesToUnprefixedHex } from '@ethereumjs/util'
 
