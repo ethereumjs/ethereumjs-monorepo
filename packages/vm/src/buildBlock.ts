@@ -37,8 +37,7 @@ import { Bloom } from './bloom/index.ts'
 import { runTx } from './index.ts'
 import { accumulateRequests } from './requests.ts'
 import {
-  accumulateParentBeaconBlockRoot,
-  accumulateParentBlockHash,
+  applyPreTransactionSystemOperations,
   calculateMinerReward,
   encodeReceipt,
   rewardAccount,
@@ -494,32 +493,25 @@ export class BlockBuilder {
   }
 
   async initState() {
-    if (this.vm.common.isActivatedEIP(4788)) {
+    if (this.vm.common.isActivatedEIP(4788) || this.vm.common.isActivatedEIP(2935)) {
       if (!this.checkpointed) {
         await this.vm.evm.journal.checkpoint()
         this.checkpointed = true
       }
 
-      const { parentBeaconBlockRoot, timestamp } = this.headerData
-      // timestamp should already be set in constructor
+      const { parentBeaconBlockRoot, timestamp, parentHash, number } = this.headerData
       const timestampBigInt = toType(timestamp ?? 0, TypeOutput.BigInt)
       const parentBeaconBlockRootBuf =
         toType(parentBeaconBlockRoot!, TypeOutput.Uint8Array) ?? new Uint8Array(32)
-
-      await accumulateParentBeaconBlockRoot(this.vm, parentBeaconBlockRootBuf, timestampBigInt)
-    }
-    if (this.vm.common.isActivatedEIP(2935)) {
-      if (!this.checkpointed) {
-        await this.vm.evm.journal.checkpoint()
-        this.checkpointed = true
-      }
-
-      const { parentHash, number } = this.headerData
-      // timestamp should already be set in constructor
       const numberBigInt = toType(number ?? 0, TypeOutput.BigInt)
       const parentHashSanitized = toType(parentHash, TypeOutput.Uint8Array) ?? new Uint8Array(32)
 
-      await accumulateParentBlockHash(this.vm, numberBigInt, parentHashSanitized)
+      await applyPreTransactionSystemOperations(this.vm, {
+        parentBeaconBlockRoot: parentBeaconBlockRootBuf,
+        timestamp: timestampBigInt,
+        blockNumber: numberBigInt,
+        parentHash: parentHashSanitized,
+      })
     }
   }
 }
