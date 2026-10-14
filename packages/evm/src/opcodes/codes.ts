@@ -312,21 +312,6 @@ const eipOpcodes: { eip: number; opcodes: OpcodeEntry }[] = [
     },
   },
   {
-    eip: 4200,
-    opcodes: {
-      0xe0: defaultOp('RJUMP'),
-      0xe1: defaultOp('RJUMPI'),
-      0xe2: defaultOp('RJUMPV'),
-    },
-  },
-  {
-    eip: 4750,
-    opcodes: {
-      0xe3: defaultOp('CALLF'),
-      0xe4: defaultOp('RETF'),
-    },
-  },
-  {
     eip: 4844,
     opcodes: {
       0x49: defaultOp('BLOBHASH'),
@@ -339,30 +324,6 @@ const eipOpcodes: { eip: number; opcodes: OpcodeEntry }[] = [
     },
   },
   {
-    eip: 6206,
-    opcodes: {
-      0xe5: defaultOp('JUMPF'),
-    },
-  },
-  {
-    eip: 7069,
-    opcodes: {
-      0xf7: defaultOp('RETURNDATALOAD'),
-      0xf8: asyncAndDynamicGasOp('EXTCALL'),
-      0xf9: asyncAndDynamicGasOp('EXTDELEGATECALL'),
-      0xfb: asyncAndDynamicGasOp('EXTSTATICCALL'),
-    },
-  },
-  {
-    eip: 7480,
-    opcodes: {
-      0xd0: defaultOp('DATALOAD'),
-      0xd1: defaultOp('DATALOADN'),
-      0xd2: defaultOp('DATASIZE'),
-      0xd3: dynamicGasOp('DATACOPY'),
-    },
-  },
-  {
     eip: 7516,
     opcodes: {
       0x4a: defaultOp('BLOBBASEFEE'),
@@ -372,13 +333,6 @@ const eipOpcodes: { eip: number; opcodes: OpcodeEntry }[] = [
     eip: 7843,
     opcodes: {
       0x4b: asyncOp('SLOTNUM'),
-    },
-  },
-  {
-    eip: 7620,
-    opcodes: {
-      0xec: asyncAndDynamicGasOp('EOFCREATE'),
-      0xee: asyncAndDynamicGasOp('RETURNCONTRACT'),
     },
   },
   {

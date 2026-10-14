@@ -23,10 +23,6 @@ import debugDefault from 'debug'
 
 import { EIP7708_BURN_TOPIC, EIP7708_SYSTEM_ADDRESS, EIP7708_TRANSFER_TOPIC } from './eip7708.ts'
 import { activeCostPerStateByte } from './eip8037.ts'
-import { FORMAT, MAGIC, VERSION } from './eof/constants.ts'
-import { EOFContainerMode, validateEOF } from './eof/container.ts'
-import { setupEOF } from './eof/setup.ts'
-import { ContainerSectionType } from './eof/verify.ts'
 import { EVMError, EVMErrorTypeString } from './errors.ts'
 import type { EVMPerformanceLogger, Timer } from './logger.ts'
 import { Memory } from './memory.ts'
@@ -36,6 +32,7 @@ import {
   consumeEip7928PostTargetCallOog,
 } from './opcodes/EIP7928.ts'
 import { isEIP8024PairImmediateValid, isEIP8024SingleImmediateValid } from './opcodes/EIP8024.ts'
+import { opcodeImmediateByteCount } from './opcodes/immediateWidth.ts'
 import { trap } from './opcodes/index.ts'
 import { Stack } from './stack.ts'
 
@@ -45,18 +42,10 @@ import type {
   StateManagerInterface,
 } from '@ethereumjs/common'
 import type { PrefixedHexString } from '@ethereumjs/util'
-import { stackDelta } from './eof/stackDelta.ts'
 import type { EVM } from './evm.ts'
 import type { Journal } from './journal.ts'
 import type { AsyncOpHandler, Opcode, OpcodeMapEntry, SyncOpHandler } from './opcodes/index.ts'
-import type {
-  Block,
-  EOFEnv,
-  EVMMockBlockchainInterface,
-  EVMProfilerOpts,
-  EVMResult,
-  Log,
-} from './types.ts'
+import type { Block, EVMMockBlockchainInterface, EVMProfilerOpts, EVMResult, Log } from './types.ts'
 
 const debugGas = debugDefault('evm:gas')
 
@@ -109,7 +98,6 @@ export interface Env {
   contract: Account
   codeAddress: Address /* Different than address for DELEGATECALL and CALLCODE */
   gasRefund: bigint /* Current value (at begin of the frame) of the gas refund */
-  eof?: EOFEnv /* Optional EOF environment in case of EOF execution */
   blobVersionedHashes: PrefixedHexString[] /** Versioned hashes for blob transactions */
   createdAddresses?: Set<string>
   accessWitness?: BinaryTreeAccessWitnessInterface
@@ -197,9 +185,7 @@ export interface InterpreterStep {
   memory: Uint8Array
   memoryWordCount: bigint
   codeAddress: Address
-  eofSection?: number // Current EOF section being executed
   immediate?: Uint8Array // Immediate argument of the opcode
-  eofFunctionDepth?: number // Depth of CALLF return stack
   error?: Uint8Array // Error bytes returned if revert occurs
   storage?: [PrefixedHexString, PrefixedHexString][]
 }
@@ -281,56 +267,7 @@ export class Interpreter {
   }
 
   async run(code: Uint8Array, opts: InterpreterOpts = {}): Promise<InterpreterResult> {
-    if (!this.common.isActivatedEIP(3540) || code[0] !== FORMAT) {
-      // EIP-3540 isn't active and first byte is not 0xEF - treat as legacy bytecode
-      this._runState.code = code
-    } else if (this.common.isActivatedEIP(3540)) {
-      if (code[1] !== MAGIC) {
-        // Bytecode contains invalid EOF magic byte
-        return {
-          runState: this._runState,
-          exceptionError: new EVMError(EVMError.errorMessages.INVALID_BYTECODE_RESULT),
-        }
-      }
-      if (code[2] !== VERSION) {
-        // Bytecode contains invalid EOF version number
-        return {
-          runState: this._runState,
-          exceptionError: new EVMError(EVMError.errorMessages.INVALID_EOF_FORMAT),
-        }
-      }
-      this._runState.code = code
-
-      const isTxCreate = this._env.isCreate && this._env.depth === 0
-      const eofMode = isTxCreate ? EOFContainerMode.TxInitmode : EOFContainerMode.Default
-
-      try {
-        setupEOF(this._runState, eofMode)
-      } catch {
-        return {
-          runState: this._runState,
-          exceptionError: new EVMError(EVMError.errorMessages.INVALID_EOF_FORMAT), // TODO: verify if all gas should be consumed
-        }
-      }
-
-      if (isTxCreate) {
-        // Tx tries to deploy container
-        try {
-          validateEOF(
-            this._runState.code,
-            this._evm,
-            ContainerSectionType.InitCode,
-            EOFContainerMode.TxInitmode,
-          )
-        } catch {
-          // Trying to deploy an invalid EOF container
-          return {
-            runState: this._runState,
-            exceptionError: new EVMError(EVMError.errorMessages.INVALID_EOF_FORMAT), // TODO: verify if all gas should be consumed
-          }
-        }
-      }
-    }
+    this._runState.code = code
     this._runState.programCounter = opts.pc ?? this._runState.programCounter
     // Check that the programCounter is in range
     const pc = this._runState.programCounter
@@ -546,9 +483,6 @@ export class Interpreter {
 
   async _runStepHook(dynamicFee: bigint, gasLeft: bigint, memorySize: bigint): Promise<void> {
     const opcodeInfo = this.lookupOpInfo(this._runState.opCode).opcodeInfo
-    const section = this._env.eof?.container.header.getSectionFromProgramCounter(
-      this._runState.programCounter,
-    )
     let error = undefined
     let immediate = undefined
     if (opcodeInfo.code === 0xfd) {
@@ -560,14 +494,11 @@ export class Interpreter {
       }
     }
 
-    // Add immediate if present (i.e. bytecode parameter for a preceding opcode like (RJUMP 01 - jumps to PC 1))
-    if (
-      stackDelta[opcodeInfo.code] !== undefined &&
-      stackDelta[opcodeInfo.code].intermediates > 0
-    ) {
+    const immediateByteCount = opcodeImmediateByteCount(opcodeInfo.code)
+    if (immediateByteCount > 0) {
       immediate = this._runState.code.slice(
-        this._runState.programCounter + 1, // immediates start "immediately" following current opcode
-        this._runState.programCounter + 1 + stackDelta[opcodeInfo.code].intermediates,
+        this._runState.programCounter + 1,
+        this._runState.programCounter + 1 + immediateByteCount,
       )
     }
 
@@ -591,11 +522,8 @@ export class Interpreter {
       memoryWordCount: memorySize,
       codeAddress: this._env.codeAddress,
       stateManager: this._runState.stateManager,
-      eofSection: section,
       immediate,
       error,
-      eofFunctionDepth:
-        this._env.eof !== undefined ? this._env.eof?.eofRunState.returnStack.length + 1 : undefined,
     }
 
     if (this._evm.DEBUG) {
@@ -638,10 +566,8 @@ export class Interpreter {
      * @property memory - EVM memory snapshot
      * @property memoryWordCount - Memory size in 32-byte words
      * @property codeAddress - Address whose code is running (differs under DELEGATECALL)
-     * @property eofSection - Active EOF code section index
      * @property immediate - Opcode immediate bytes, when present
      * @property error - Revert data bytes, when the opcode is REVERT
-     * @property eofFunctionDepth - CALLF return-stack depth for EOF
      * @property storage - Storage key/value tuples touched by the step
      */
     await this._evm['_emit']('step', eventObj)
@@ -1335,7 +1261,6 @@ export class Interpreter {
     value: bigint,
     codeToRun: Uint8Array,
     salt?: Uint8Array,
-    eofCallData?: Uint8Array,
   ): Promise<bigint> {
     const selfdestruct = new Map(this._result.selfdestruct)
     const caller = this._env.address
@@ -1430,7 +1355,6 @@ export class Interpreter {
       gasLimit,
       value,
       data: codeToRun,
-      eofCallData,
       salt,
       depth,
       selfdestruct,
@@ -1533,7 +1457,7 @@ export class Interpreter {
       }
     }
 
-    return this._getReturnCode(results, true)
+    return this._getReturnCode(results)
   }
 
   /**
@@ -1547,20 +1471,6 @@ export class Interpreter {
     salt: Uint8Array,
   ): Promise<bigint> {
     return this.create(gasLimit, value, data, salt)
-  }
-
-  /**
-   * Creates a new contract with a given value. Generates
-   * a deterministic address via EOFCREATE rules.
-   */
-  async eofcreate(
-    gasLimit: bigint,
-    value: bigint,
-    containerData: Uint8Array,
-    salt: Uint8Array,
-    callData: Uint8Array,
-  ): Promise<bigint> {
-    return this.create(gasLimit, value, containerData, salt, callData)
   }
 
   /**
@@ -1709,25 +1619,10 @@ export class Interpreter {
     this._result.logs.push(log)
   }
 
-  private _getReturnCode(results: EVMResult, isEOFCreate = false) {
-    if (this._runState.env.eof === undefined || isEOFCreate) {
-      if (results.execResult.exceptionError) {
-        return BIGINT_0
-      } else {
-        return BIGINT_1
-      }
-    } else {
-      // EOF mode, call was either EXTCALL / EXTDELEGATECALL / EXTSTATICCALL
-      if (results.execResult.exceptionError !== undefined) {
-        if (results.execResult.exceptionError.error === EVMError.errorMessages.REVERT) {
-          // Revert
-          return BIGINT_1
-        } else {
-          // Failure
-          return BIGINT_2
-        }
-      }
+  private _getReturnCode(results: EVMResult) {
+    if (results.execResult.exceptionError) {
       return BIGINT_0
     }
+    return BIGINT_1
   }
 }

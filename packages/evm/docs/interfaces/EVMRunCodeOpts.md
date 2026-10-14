@@ -6,7 +6,7 @@
 
 # Interface: EVMRunCodeOpts
 
-Defined in: [types.ts:111](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L111)
+Defined in: [types.ts:110](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L110)
 
 Options for [EVM.runCode](../classes/EVM.md#runcode).
 
@@ -20,7 +20,7 @@ Options for [EVM.runCode](../classes/EVM.md#runcode).
 
 > `optional` **blobVersionedHashes?**: `` `0x${string}` ``[]
 
-Defined in: [types.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L105)
+Defined in: [types.ts:104](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L104)
 
 Versioned hashes for each blob in a blob transaction
 
@@ -34,7 +34,7 @@ Versioned hashes for each blob in a blob transaction
 
 > `optional` **block?**: `Block`
 
-Defined in: [types.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L57)
+Defined in: [types.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L56)
 
 The `block` the `tx` belongs to. If omitted a default blank block will be used.
 
@@ -48,7 +48,7 @@ The `block` the `tx` belongs to. If omitted a default blank block will be used.
 
 > `optional` **caller?**: [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
-Defined in: [types.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L69)
+Defined in: [types.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L68)
 
 The address that ran this code (`msg.sender`). Defaults to the zero address.
 
@@ -62,7 +62,7 @@ The address that ran this code (`msg.sender`). Defaults to the zero address.
 
 > `optional` **code?**: `Uint8Array`\<`ArrayBufferLike`\>
 
-Defined in: [types.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L73)
+Defined in: [types.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L72)
 
 The EVM code to run.
 
@@ -76,7 +76,7 @@ The EVM code to run.
 
 > `optional` **data?**: `Uint8Array`\<`ArrayBufferLike`\>
 
-Defined in: [types.ts:77](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L77)
+Defined in: [types.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L76)
 
 The input data.
 
@@ -90,7 +90,7 @@ The input data.
 
 > `optional` **depth?**: `number`
 
-Defined in: [types.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L89)
+Defined in: [types.ts:88](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L88)
 
 The call depth. Defaults to `0`
 
@@ -104,7 +104,7 @@ The call depth. Defaults to `0`
 
 > `optional` **gasLimit?**: `bigint`
 
-Defined in: [types.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L81)
+Defined in: [types.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L80)
 
 The gas limit for the call. Defaults to `16777215` (`0xffffff`)
 
@@ -118,7 +118,7 @@ The gas limit for the call. Defaults to `16777215` (`0xffffff`)
 
 > `optional` **gasPrice?**: `bigint`
 
-Defined in: [types.ts:61](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L61)
+Defined in: [types.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L60)
 
 The gas price for the call. Defaults to `0`
 
@@ -132,7 +132,7 @@ The gas price for the call. Defaults to `0`
 
 > `optional` **isStatic?**: `boolean`
 
-Defined in: [types.ts:93](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L93)
+Defined in: [types.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L92)
 
 If the call should be executed statically. Defaults to false.
 
@@ -146,7 +146,7 @@ If the call should be executed statically. Defaults to false.
 
 > `optional` **origin?**: [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
-Defined in: [types.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L65)
+Defined in: [types.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L64)
 
 The address where the call originated from. Defaults to the zero address.
 
@@ -160,7 +160,7 @@ The address where the call originated from. Defaults to the zero address.
 
 > `optional` **pc?**: `number`
 
-Defined in: [types.ts:115](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L115)
+Defined in: [types.ts:114](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L114)
 
 Initial program counter. Defaults to `0`.
 
@@ -170,7 +170,7 @@ Initial program counter. Defaults to `0`.
 
 > `optional` **selfdestruct?**: [`SelfdestructMap`](../type-aliases/SelfdestructMap.md)
 
-Defined in: [types.ts:97](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L97)
+Defined in: [types.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L96)
 
 Selfdestructed addresses mapped to their beneficiary. Defaults to the empty map.
 
@@ -184,7 +184,7 @@ Selfdestructed addresses mapped to their beneficiary. Defaults to the empty map.
 
 > `optional` **to?**: [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
-Defined in: [types.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L101)
+Defined in: [types.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L100)
 
 The address of the account that is executing this code (`address(this)`). Defaults to the zero address.
 
@@ -198,7 +198,7 @@ The address of the account that is executing this code (`address(this)`). Defaul
 
 > `optional` **value?**: `bigint`
 
-Defined in: [types.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L85)
+Defined in: [types.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L84)
 
 The value in ether that is being sent to `opts.address`. Defaults to `0`
 

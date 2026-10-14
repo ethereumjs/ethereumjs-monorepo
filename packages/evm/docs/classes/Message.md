@@ -6,7 +6,7 @@
 
 # Class: Message
 
-Defined in: [message.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L47)
+Defined in: [message.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L46)
 
 Call or create message passed into [EVM.runCall](EVM.md#runcall).
 
@@ -16,7 +16,7 @@ Call or create message passed into [EVM.runCall](EVM.md#runcall).
 
 > **new Message**(`opts`): `Message`
 
-Defined in: [message.ts:87](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L87)
+Defined in: [message.ts:84](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L84)
 
 #### Parameters
 
@@ -34,7 +34,7 @@ Defined in: [message.ts:87](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 > `optional` **\_codeAddress?**: [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
-Defined in: [message.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L57)
+Defined in: [message.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L55)
 
 ***
 
@@ -42,7 +42,7 @@ Defined in: [message.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 > `optional` **accessWitness?**: `BinaryTreeAccessWitnessInterface`
 
-Defined in: [message.ts:77](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L77)
+Defined in: [message.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L74)
 
 ***
 
@@ -50,7 +50,7 @@ Defined in: [message.ts:77](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 > `optional` **blobVersionedHashes?**: `` `0x${string}` ``[]
 
-Defined in: [message.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L76)
+Defined in: [message.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L73)
 
 List of versioned hashes if message is a blob transaction in the outer VM
 
@@ -60,7 +60,7 @@ List of versioned hashes if message is a blob transaction in the outer VM
 
 > **caller**: [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
-Defined in: [message.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L50)
+Defined in: [message.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L49)
 
 ***
 
@@ -68,7 +68,7 @@ Defined in: [message.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 > `optional` **chargeCodeAccesses?**: `boolean`
 
-Defined in: [message.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L62)
+Defined in: [message.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L59)
 
 ***
 
@@ -76,7 +76,7 @@ Defined in: [message.ts:62](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 > `optional` **code?**: `Uint8Array`\<`ArrayBufferLike`\> \| [`PrecompileFunc`](../interfaces/PrecompileFunc.md)
 
-Defined in: [message.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L56)
+Defined in: [message.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L54)
 
 ***
 
@@ -84,7 +84,7 @@ Defined in: [message.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 > `optional` **createdAddresses?**: `Set`\<`` `0x${string}` ``\>
 
-Defined in: [message.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L70)
+Defined in: [message.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L67)
 
 Map of addresses which were created (used in EIP 6780)
 
@@ -94,7 +94,7 @@ Map of addresses which were created (used in EIP 6780)
 
 > `optional` **createdTargetAlive?**: `boolean`
 
-Defined in: [message.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L85)
+Defined in: [message.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L82)
 
 EIP-8037: set by the EVM during creation-message execution when the
 create target account was already alive (EIP-161 non-empty). The caller
@@ -110,7 +110,7 @@ Experimental (Amsterdam): may change on patch releases.
 
 > **data**: `Uint8Array`
 
-Defined in: [message.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L52)
+Defined in: [message.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L51)
 
 ***
 
@@ -118,29 +118,13 @@ Defined in: [message.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 > **delegatecall**: `boolean`
 
-Defined in: [message.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L71)
+Defined in: [message.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L68)
 
 ***
 
 ### depth
 
 > **depth**: `number`
-
-Defined in: [message.ts:55](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L55)
-
-***
-
-### eof?
-
-> `optional` **eof?**: `EOFEnv`
-
-Defined in: [message.ts:61](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L61)
-
-***
-
-### eofCallData?
-
-> `optional` **eofCallData?**: `Uint8Array`\<`ArrayBufferLike`\>
 
 Defined in: [message.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L53)
 
@@ -150,7 +134,7 @@ Defined in: [message.ts:53](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 > **gasLimit**: `bigint`
 
-Defined in: [message.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L51)
+Defined in: [message.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L50)
 
 ***
 
@@ -158,7 +142,7 @@ Defined in: [message.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 > **gasRefund**: `bigint`
 
-Defined in: [message.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L72)
+Defined in: [message.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L69)
 
 ***
 
@@ -166,7 +150,7 @@ Defined in: [message.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 > **isCompiled**: `boolean`
 
-Defined in: [message.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L59)
+Defined in: [message.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L57)
 
 ***
 
@@ -174,7 +158,7 @@ Defined in: [message.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 > `optional` **isCreate?**: `boolean`
 
-Defined in: [message.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L54)
+Defined in: [message.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L52)
 
 ***
 
@@ -182,7 +166,7 @@ Defined in: [message.ts:54](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 > **isStatic**: `boolean`
 
-Defined in: [message.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L58)
+Defined in: [message.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L56)
 
 ***
 
@@ -190,7 +174,7 @@ Defined in: [message.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 > `optional` **salt?**: `Uint8Array`\<`ArrayBufferLike`\>
 
-Defined in: [message.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L60)
+Defined in: [message.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L58)
 
 ***
 
@@ -198,7 +182,7 @@ Defined in: [message.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 > `optional` **selfdestruct?**: [`SelfdestructMap`](../type-aliases/SelfdestructMap.md)
 
-Defined in: [message.ts:66](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L66)
+Defined in: [message.ts:63](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L63)
 
 Selfdestructed addresses mapped to their beneficiary.
 
@@ -208,7 +192,7 @@ Selfdestructed addresses mapped to their beneficiary.
 
 > `optional` **to?**: [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
-Defined in: [message.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L48)
+Defined in: [message.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L47)
 
 ***
 
@@ -216,7 +200,7 @@ Defined in: [message.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 > **value**: `bigint`
 
-Defined in: [message.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L49)
+Defined in: [message.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L48)
 
 ## Accessors
 
@@ -226,7 +210,7 @@ Defined in: [message.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/bl
 
 > **get** **codeAddress**(): [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
-Defined in: [message.ts:114](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L114)
+Defined in: [message.ts:110](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/message.ts#L110)
 
 Note: should only be called in instances where `_codeAddress` or `to` is defined.
 

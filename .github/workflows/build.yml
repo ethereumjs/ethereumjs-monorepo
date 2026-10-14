@@ -1,8 +1,8 @@
 name: Build
 on:
   pull_request:
-    # synchronize re-reads labels. Performance benchmarks run only when
-    # "type: test performance" is set on that push.
+    # synchronize re-reads PR labels (same model as type: test no browser). Performance
+    # benchmarks run only when "type: test performance" is on the PR for that event.
     types: [opened, reopened, synchronize, ready_for_review]
   push:
     branches: [master]
@@ -366,7 +366,7 @@ jobs:
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
-      # Master pushes stay path-filtered. Manual dispatch and a labeled PR always measure.
+      # Master pushes stay path-filtered. Manual dispatch and PRs with the performance label measure.
       - name: Bench-relevant paths
         id: bench-paths
         if: github.event_name != 'pull_request'
@@ -401,10 +401,17 @@ jobs:
         if: github.event_name != 'pull_request' && steps.bench-paths.outputs.bench != 'true'
         run: echo "Skipping — no performance benchmark paths in this event."
 
+      # @codspeed/core 5.x prebuilds target Node 22 (Node 26 Linux hits V8 ABI errors). Rebuild after setup-node.
       - uses: ./.github/actions/setup-ethereumjs
         if: github.event_name == 'pull_request' || steps.bench-paths.outputs.bench == 'true'
         with:
           dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+          node-version: '22'
+
+      - name: Rebuild CodSpeed native module for bench Node
+        if: github.event_name == 'pull_request' || steps.bench-paths.outputs.bench == 'true'
+        run: npm rebuild @codspeed/core
+        working-directory: ${{ github.workspace }}
 
       - name: Run benchmarks
         if: github.event_name == 'pull_request' || steps.bench-paths.outputs.bench == 'true'

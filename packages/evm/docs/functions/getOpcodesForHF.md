@@ -8,7 +8,7 @@
 
 > **getOpcodesForHF**(`common`, `customOpcodes?`): `OpcodeContext`
 
-Defined in: [opcodes/codes.ts:431](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/opcodes/codes.ts#L431)
+Defined in: [opcodes/codes.ts:385](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/opcodes/codes.ts#L385)
 
 Returns opcode handlers and gas tables for the active hardfork and EIPs.
 

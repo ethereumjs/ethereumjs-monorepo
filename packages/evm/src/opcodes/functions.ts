@@ -22,16 +22,12 @@ import {
   bytesToBigInt,
   bytesToHex,
   bytesToInt,
-  concatBytes,
   setLengthLeft,
   setLengthRight,
 } from '@ethereumjs/util'
 import { keccak_256 } from '@noble/hashes/sha3.js'
 
 import { activeCostPerStateByte } from '../eip8037.ts'
-import { EOFContainer, EOFContainerMode } from '../eof/container.ts'
-import { EOFErrorMessage } from '../eof/errors.ts'
-import { EOFBYTES, EOFHASH, isEOF } from '../eof/util.ts'
 import { EVMError } from '../errors.ts'
 
 import { decodeEIP8024PairImmediate, decodeEIP8024SingleImmediate } from './EIP8024.ts'
@@ -544,14 +540,7 @@ export const handlers: Map<number, OpHandler> = new Map<number, OpHandler>([
       if (runState.interpreter._evm.common.isActivatedEIP(7928)) {
         runState.interpreter._evm.blockLevelAccessList?.addAddress(address.toString())
       }
-      // EOF check
       const code = await runState.stateManager.getCode(address)
-      if (isEOF(code)) {
-        // In legacy code, the target code is treated as to be "EOFBYTES" code
-        runState.stack.push(BigInt(EOFBYTES.length))
-        return
-      }
-
       const size = BigInt(code.length)
 
       runState.stack.push(size)
@@ -569,13 +558,7 @@ export const handlers: Map<number, OpHandler> = new Map<number, OpHandler>([
       }
 
       if (dataLength !== BIGINT_0) {
-        let code = await runState.stateManager.getCode(address)
-
-        if (isEOF(code)) {
-          // In legacy code, the target code is treated as to be "EOFBYTES" code
-          code = EOFBYTES
-        }
-
+        const code = await runState.stateManager.getCode(address)
         const data = getDataSlice(code, codeOffset, dataLength)
         const memOffsetNum = Number(memOffset)
         const lengthNum = Number(dataLength)
@@ -594,15 +577,7 @@ export const handlers: Map<number, OpHandler> = new Map<number, OpHandler>([
         runState.interpreter._evm.blockLevelAccessList?.addAddress(address.toString())
       }
 
-      // EOF check
       const code = await runState.stateManager.getCode(address)
-      if (isEOF(code)) {
-        // In legacy code, the target code is treated as to be "EOFBYTES" code
-        // Therefore, push the hash of EOFBYTES to the stack
-        runState.stack.push(bytesToBigInt(EOFHASH))
-        return
-      }
-
       const account = await runState.stateManager.getAccount(address)
       if (!account || account.isEmpty()) {
         runState.stack.push(BIGINT_0)
@@ -1082,207 +1057,6 @@ export const handlers: Map<number, OpHandler> = new Map<number, OpHandler>([
       runState.interpreter.log(mem, topicsCount, topicsBuf)
     },
   ],
-  // 0xd0: DATALOAD
-  [
-    0xd0,
-    function (runState) {
-      if (runState.env.eof === undefined) {
-        // Opcode not available in legacy contracts
-        trap(EVMError.errorMessages.INVALID_OPCODE)
-      }
-      const pos = runState.stack.pop()
-      if (pos > runState.env.eof!.container.body.dataSection.length) {
-        runState.stack.push(BIGINT_0)
-        return
-      }
-
-      const i = Number(pos)
-      let loaded = runState.env.eof!.container.body.dataSection.subarray(i, i + 32)
-      loaded = loaded.length ? loaded : Uint8Array.from([0])
-      let r = bytesToBigInt(loaded)
-      // Pad the loaded length with 0 bytes in case it is smaller than 32
-      if (loaded.length < 32) {
-        r = r << (BIGINT_8 * BigInt(32 - loaded.length))
-      }
-      runState.stack.push(r)
-    },
-  ],
-  // 0xd1: DATALOADN
-  [
-    0xd1,
-    function (runState) {
-      if (runState.env.eof === undefined) {
-        // Opcode not available in legacy contracts
-        trap(EVMError.errorMessages.INVALID_OPCODE)
-      }
-      const toLoad = Number(
-        bytesToBigInt(runState.code.subarray(runState.programCounter, runState.programCounter + 2)),
-      )
-      const data = bytesToBigInt(
-        runState.env.eof!.container.body.dataSection.subarray(toLoad, toLoad + 32),
-      )
-      runState.stack.push(data)
-      runState.programCounter += 2
-    },
-  ],
-  // 0xd2: DATASIZE
-  [
-    0xd2,
-    function (runState) {
-      if (runState.env.eof === undefined) {
-        // Opcode not available in legacy contracts
-        trap(EVMError.errorMessages.INVALID_OPCODE)
-      }
-      runState.stack.push(BigInt(runState.env.eof!.container.body.dataSection.length))
-    },
-  ],
-  // 0xd3: DATACOPY
-  [
-    0xd3,
-    function (runState) {
-      if (runState.env.eof === undefined) {
-        // Opcode not available in legacy contracts
-        trap(EVMError.errorMessages.INVALID_OPCODE)
-      }
-      const [memOffset, offset, size] = runState.stack.popN(3)
-      if (size !== BIGINT_0) {
-        const data = getDataSlice(runState.env.eof!.container.body.dataSection, offset, size)
-        const memOffsetNum = Number(memOffset)
-        const dataLengthNum = Number(size)
-        runState.memory.write(memOffsetNum, dataLengthNum, data)
-      }
-    },
-  ],
-  // 0xe0: RJUMP
-  [
-    0xe0,
-    function (runState) {
-      if (runState.env.eof === undefined) {
-        // Opcode not available in legacy contracts
-        trap(EVMError.errorMessages.INVALID_OPCODE)
-      } else {
-        const code = runState.env.code
-        const rjumpDest = new DataView(code.buffer).getInt16(runState.programCounter)
-        runState.programCounter += 2 + rjumpDest
-      }
-    },
-  ],
-  // 0xe1: RJUMPI
-  [
-    0xe1,
-    function (runState) {
-      if (runState.env.eof === undefined) {
-        // Opcode not available in legacy contracts
-        trap(EVMError.errorMessages.INVALID_OPCODE)
-      } else {
-        const cond = runState.stack.pop()
-        // Move PC to the PC post instruction
-        if (cond > 0) {
-          const code = runState.env.code
-          const rjumpDest = new DataView(code.buffer).getInt16(runState.programCounter)
-          runState.programCounter += rjumpDest
-        }
-        // In all cases, increment PC with 2 (also in the case if `cond` is `0`)
-        runState.programCounter += 2
-      }
-    },
-  ],
-  // 0xe2: RJUMPV
-  [
-    0xe2,
-    function (runState) {
-      if (runState.env.eof === undefined) {
-        // Opcode not available in legacy contracts
-        trap(EVMError.errorMessages.INVALID_OPCODE)
-      } else {
-        const code = runState.env.code
-        const jumptableEntries = code[runState.programCounter]
-        // Note: if the size of the immediate is `0`, this thus means that the actual size is `2`
-        // This allows for 256 entries in the table instead of 255
-        const jumptableSize = (jumptableEntries + 1) * 2
-        // Move PC to start of the jump table
-        runState.programCounter += 1
-        const jumptableCase = runState.stack.pop()
-        if (jumptableCase <= jumptableEntries) {
-          const rjumpDest = new DataView(code.buffer).getInt16(
-            runState.programCounter + Number(jumptableCase) * 2,
-          )
-          runState.programCounter += jumptableSize + rjumpDest
-        } else {
-          runState.programCounter += jumptableSize
-        }
-      }
-    },
-  ],
-  // 0xe3: CALLF
-  [
-    0xe3,
-    function (runState) {
-      if (runState.env.eof === undefined) {
-        // Opcode not available in legacy contracts
-        trap(EVMError.errorMessages.INVALID_OPCODE)
-      }
-      const sectionTarget = bytesToInt(
-        runState.code.slice(runState.programCounter, runState.programCounter + 2),
-      )
-      const stackItems = runState.stack.length
-      const typeSection = runState.env.eof!.container.body.typeSections[sectionTarget]
-      if (stackItems > 1024 - typeSection.maxStackHeight + typeSection.inputs) {
-        trap(EOFErrorMessage.STACK_OVERFLOW)
-      }
-      if (runState.env.eof!.eofRunState.returnStack.length >= 1024) {
-        trap(EOFErrorMessage.RETURN_STACK_OVERFLOW)
-      }
-      runState.env.eof?.eofRunState.returnStack.push(runState.programCounter + 2)
-
-      // Find out the opcode we should jump into
-      runState.programCounter = runState.env.eof!.container.header.getCodePosition(sectionTarget)
-    },
-  ],
-  // 0xe4: RETF
-  [
-    0xe4,
-    function (runState) {
-      if (runState.env.eof === undefined) {
-        // Opcode not available in legacy contracts
-        trap(EVMError.errorMessages.INVALID_OPCODE)
-      }
-      const newPc = runState.env.eof!.eofRunState.returnStack.pop()
-      if (newPc === undefined) {
-        // This should NEVER happen since it is validated that functions either terminate (the call frame) or return
-        trap(EOFErrorMessage.RETF_NO_RETURN)
-      }
-      runState.programCounter = newPc!
-    },
-  ],
-  // 0xe5: JUMPF
-  [
-    0xe5,
-    function (runState) {
-      if (runState.env.eof === undefined) {
-        // Opcode not available in legacy contracts
-        trap(EVMError.errorMessages.INVALID_OPCODE)
-      }
-      // NOTE: (and also TODO) this code is exactly the same as CALLF, except pushing to the return stack is now skipped
-      // (and also the return stack overflow check)
-      // It is commented out here
-      const sectionTarget = bytesToInt(
-        runState.code.slice(runState.programCounter, runState.programCounter + 2),
-      )
-      const stackItems = runState.stack.length
-      const typeSection = runState.env.eof!.container.body.typeSections[sectionTarget]
-      if (stackItems > 1024 - typeSection.maxStackHeight + typeSection.inputs) {
-        trap(EOFErrorMessage.STACK_OVERFLOW)
-      }
-      /*if (runState.env.eof!.eofRunState.returnStack.length >= 1024) {
-        trap(EOFErrorMessage.ReturnStackOverflow)
-      }
-      runState.env.eof?.eofRunState.returnStack.push(runState.programCounter + 2)*/
-
-      // Find out the opcode we should jump into
-      runState.programCounter = runState.env.eof!.container.header.getCodePosition(sectionTarget)
-    },
-  ],
   // 0xe6: DUPN
   [
     0xe6,
@@ -1319,95 +1093,6 @@ export const handlers: Map<number, OpHandler> = new Map<number, OpHandler>([
       runState.stack.exchange(x, y)
     },
   ],
-  // 0xec: EOFCREATE
-  [
-    0xec,
-    async function (runState) {
-      if (runState.env.eof === undefined) {
-        // Opcode not available in legacy contracts
-        trap(EVMError.errorMessages.INVALID_OPCODE)
-      } else {
-        if (runState.interpreter.isStatic()) {
-          trap(EVMError.errorMessages.STATIC_STATE_CHANGE)
-        }
-        // Read container index
-        const containerIndex = runState.env.code[runState.programCounter]
-        const containerCode = runState.env.eof!.container.body.containerSections[containerIndex]
-
-        // Pop stack values
-        const [value, salt, inputOffset, inputSize] = runState.stack.popN(4)
-
-        const gasLimit = runState.messageGasLimit!
-        runState.messageGasLimit = undefined
-
-        let data = new Uint8Array(0)
-        if (inputSize !== BIGINT_0) {
-          data = runState.memory.read(Number(inputOffset), Number(inputSize), true)
-        }
-
-        runState.programCounter++ // Jump over the immediate byte
-
-        const ret = await runState.interpreter.eofcreate(
-          gasLimit,
-          value,
-          containerCode,
-          setLengthLeft(bigIntToBytes(salt), 32),
-          data,
-        )
-        runState.stack.push(ret)
-      }
-    },
-  ],
-  // 0xee: RETURNCONTRACT
-  [
-    0xee,
-    async function (runState) {
-      if (runState.env.eof === undefined) {
-        // Opcode not available in legacy contracts
-        trap(EVMError.errorMessages.INVALID_OPCODE)
-      } else {
-        // Read container index
-        const containerIndex = runState.env.code[runState.programCounter]
-        const containerCode = runState.env.eof!.container.body.containerSections[containerIndex]
-
-        // Read deployContainer as EOFCreate (initcode) container
-        const deployContainer = new EOFContainer(containerCode, EOFContainerMode.Initmode)
-
-        // Pop stack values
-        const [auxDataOffset, auxDataSize] = runState.stack.popN(2)
-
-        let auxData = new Uint8Array(0)
-        if (auxDataSize !== BIGINT_0) {
-          auxData = runState.memory.read(Number(auxDataOffset), Number(auxDataSize))
-        }
-
-        const originalDataSize = deployContainer.header.dataSize
-        const preDeployDataSectionSize = deployContainer.body.dataSection.length
-        const actualSectionSize = preDeployDataSectionSize + Number(auxDataSize)
-
-        if (actualSectionSize < originalDataSize) {
-          trap(EOFErrorMessage.INVALID_RETURN_CONTRACT_DATA_SIZE)
-        }
-
-        if (actualSectionSize > 0xffff) {
-          // Data section size is now larger than the max data section size
-          // Temp: trap OOG?
-          trap(EVMError.errorMessages.OUT_OF_GAS)
-        }
-
-        const newSize = setLengthLeft(bigIntToBytes(BigInt(actualSectionSize)), 2)
-
-        // Write the bytes to the containerCode
-        const dataSizePtr = deployContainer.header.dataSizePtr
-        containerCode[dataSizePtr] = newSize[0]
-        containerCode[dataSizePtr + 1] = newSize[1]
-
-        const returnContainer = concatBytes(containerCode, auxData)
-
-        runState.interpreter.finish(returnContainer)
-      }
-    },
-  ],
   // '0xf0' range - closures
   // 0xf0: CREATE
   [
@@ -1435,12 +1120,6 @@ export const handlers: Map<number, OpHandler> = new Map<number, OpHandler>([
       let data = new Uint8Array(0)
       if (length !== BIGINT_0) {
         data = runState.memory.read(Number(offset), Number(length), true)
-      }
-
-      if (isEOF(data)) {
-        // Legacy cannot deploy EOF code
-        runState.stack.push(BIGINT_0)
-        return
       }
 
       const ret = await runState.interpreter.create(gasLimit, value, data)
@@ -1477,12 +1156,6 @@ export const handlers: Map<number, OpHandler> = new Map<number, OpHandler>([
       let data = new Uint8Array(0)
       if (length !== BIGINT_0) {
         data = runState.memory.read(Number(offset), Number(length), true)
-      }
-
-      if (isEOF(data)) {
-        // Legacy cannot deploy EOF code
-        runState.stack.push(BIGINT_0)
-        return
       }
 
       const ret = await runState.interpreter.create2(
@@ -1573,106 +1246,6 @@ export const handlers: Map<number, OpHandler> = new Map<number, OpHandler>([
       runState.stack.push(ret)
     },
   ],
-  // 0xf7: RETURNDATALOAD
-  [
-    0xf7,
-    function (runState) {
-      if (runState.env.eof === undefined) {
-        // Opcode not available in legacy contracts
-        trap(EVMError.errorMessages.INVALID_OPCODE)
-      }
-      const pos = runState.stack.pop()
-      if (pos > runState.interpreter.getReturnDataSize()) {
-        runState.stack.push(BIGINT_0)
-        return
-      }
-
-      const i = Number(pos)
-      let loaded = runState.interpreter.getReturnData().subarray(i, i + 32)
-      loaded = loaded.length ? loaded : Uint8Array.from([0])
-      let r = bytesToBigInt(loaded)
-      if (loaded.length < 32) {
-        r = r << (BIGINT_8 * BigInt(32 - loaded.length))
-      }
-      runState.stack.push(r)
-    },
-  ],
-  // 0xf8: EXTCALL
-  [
-    0xf8,
-    async function (runState) {
-      if (runState.env.eof === undefined) {
-        // Opcode not available in legacy contracts
-        trap(EVMError.errorMessages.INVALID_OPCODE)
-      } else {
-        const [toAddr, inOffset, inLength, value] = runState.stack.popN(4)
-
-        const gasLimit = runState.messageGasLimit!
-        runState.messageGasLimit = undefined
-
-        if (gasLimit === -BIGINT_1) {
-          // Special case, abort doing any logic (this logic is defined in `gas.ts`), and put `1` on stack per spec
-          runState.stack.push(BIGINT_1)
-          runState.returnBytes = new Uint8Array(0)
-          return
-        }
-
-        const toAddress = createAddressFromStackBigInt(toAddr)
-
-        let data = new Uint8Array(0)
-        if (inLength !== BIGINT_0) {
-          data = runState.memory.read(Number(inOffset), Number(inLength), true)
-        }
-
-        const ret = await runState.interpreter.call(gasLimit, toAddress, value, data)
-        // Write return data to memory
-
-        runState.stack.push(ret)
-      }
-    },
-  ],
-  // 0xf9: EXTDELEGATECALL
-  [
-    0xf9,
-    async function (runState) {
-      if (runState.env.eof === undefined) {
-        // Opcode not available in legacy contracts
-        trap(EVMError.errorMessages.INVALID_OPCODE)
-      } else {
-        const value = runState.interpreter.getCallValue()
-        const [toAddr, inOffset, inLength] = runState.stack.popN(3)
-
-        const gasLimit = runState.messageGasLimit!
-        runState.messageGasLimit = undefined
-
-        if (gasLimit === -BIGINT_1) {
-          // Special case, abort doing any logic (this logic is defined in `gas.ts`), and put `1` on stack per spec
-          runState.stack.push(BIGINT_1)
-          runState.returnBytes = new Uint8Array(0)
-          return
-        }
-
-        const toAddress = createAddressFromStackBigInt(toAddr)
-
-        const code = await runState.stateManager.getCode(toAddress)
-
-        if (!isEOF(code)) {
-          // EXTDELEGATECALL cannot call legacy contracts
-          runState.stack.push(BIGINT_1)
-          runState.returnBytes = new Uint8Array(0)
-          return
-        }
-
-        let data = new Uint8Array(0)
-        if (inLength !== BIGINT_0) {
-          data = runState.memory.read(Number(inOffset), Number(inLength), true)
-        }
-
-        const ret = await runState.interpreter.callDelegate(gasLimit, toAddress, value, data)
-        runState.stack.push(ret)
-      }
-    },
-  ],
   // 0xfa: STATICCALL
   [
     0xfa,
@@ -1694,39 +1267,6 @@ export const handlers: Map<number, OpHandler> = new Map<number, OpHandler>([
       // Write return data to memory
       writeCallOutput(runState, outOffset, outLength)
       runState.stack.push(ret)
-    },
-  ],
-  // 0xfb: EXTSTATICCALL
-  [
-    0xfb,
-    async function (runState) {
-      if (runState.env.eof === undefined) {
-        // Opcode not available in legacy contracts
-        trap(EVMError.errorMessages.INVALID_OPCODE)
-      } else {
-        const value = BIGINT_0
-        const [toAddr, inOffset, inLength] = runState.stack.popN(3)
-
-        const gasLimit = runState.messageGasLimit!
-        runState.messageGasLimit = undefined
-
-        if (gasLimit === -BIGINT_1) {
-          // Special case, abort doing any logic (this logic is defined in `gas.ts`), and put `1` on stack per spec
-          runState.stack.push(BIGINT_1)
-          runState.returnBytes = new Uint8Array(0)
-          return
-        }
-
-        const toAddress = createAddressFromStackBigInt(toAddr)
-
-        let data = new Uint8Array(0)
-        if (inLength !== BIGINT_0) {
-          data = runState.memory.read(Number(inOffset), Number(inLength), true)
-        }
-
-        const ret = await runState.interpreter.callStatic(gasLimit, toAddress, value, data)
-        runState.stack.push(ret)
-      }
     },
   ],
   // 0xf3: RETURN

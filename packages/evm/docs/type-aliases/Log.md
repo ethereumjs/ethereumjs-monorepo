@@ -8,7 +8,7 @@
 
 > **Log** = \[`Uint8Array`, `Uint8Array`[], `Uint8Array`\]
 
-Defined in: [types.ts:578](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L578)
+Defined in: [types.ts:576](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/types.ts#L576)
 
 Log emitted during EVM execution.
 

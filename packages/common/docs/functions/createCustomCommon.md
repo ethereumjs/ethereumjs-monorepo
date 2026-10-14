@@ -12,7 +12,7 @@ Defined in: [constructors.ts:22](https://github.com/ethereumjs/ethereumjs-monore
 
 Creates a [Common](../classes/Common.md) object for a custom chain, based on a standard one.
 
-It uses all the [Chain](../type-aliases/Chain.md) parameters from the [baseChain](#createcustomcommon) option except the ones overridden
+It uses all the [Chain](../type-aliases/Chain.md) parameters from the baseChain option except the ones overridden
 in a provided `partialConfig` object. Some usage example:
 
 ```javascript

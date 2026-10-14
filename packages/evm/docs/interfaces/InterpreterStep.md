@@ -6,7 +6,7 @@
 
 # Interface: InterpreterStep
 
-Defined in: [interpreter.ts:181](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L181)
+Defined in: [interpreter.ts:175](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L175)
 
 Payload emitted on each EVM `step` event during bytecode execution.
 
@@ -16,7 +16,7 @@ Payload emitted on each EVM `step` event during bytecode execution.
 
 > **account**: `Account`
 
-Defined in: [interpreter.ts:195](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L195)
+Defined in: [interpreter.ts:189](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L189)
 
 ***
 
@@ -24,7 +24,7 @@ Defined in: [interpreter.ts:195](https://github.com/ethereumjs/ethereumjs-monore
 
 > **address**: [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
-Defined in: [interpreter.ts:196](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L196)
+Defined in: [interpreter.ts:190](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L190)
 
 ***
 
@@ -32,7 +32,7 @@ Defined in: [interpreter.ts:196](https://github.com/ethereumjs/ethereumjs-monore
 
 > **codeAddress**: [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md)
 
-Defined in: [interpreter.ts:199](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L199)
+Defined in: [interpreter.ts:193](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L193)
 
 ***
 
@@ -40,23 +40,7 @@ Defined in: [interpreter.ts:199](https://github.com/ethereumjs/ethereumjs-monore
 
 > **depth**: `number`
 
-Defined in: [interpreter.ts:187](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L187)
-
-***
-
-### eofFunctionDepth?
-
-> `optional` **eofFunctionDepth?**: `number`
-
-Defined in: [interpreter.ts:202](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L202)
-
-***
-
-### eofSection?
-
-> `optional` **eofSection?**: `number`
-
-Defined in: [interpreter.ts:200](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L200)
+Defined in: [interpreter.ts:181](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L181)
 
 ***
 
@@ -64,7 +48,7 @@ Defined in: [interpreter.ts:200](https://github.com/ethereumjs/ethereumjs-monore
 
 > `optional` **error?**: `Uint8Array`\<`ArrayBufferLike`\>
 
-Defined in: [interpreter.ts:203](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L203)
+Defined in: [interpreter.ts:195](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L195)
 
 ***
 
@@ -72,7 +56,7 @@ Defined in: [interpreter.ts:203](https://github.com/ethereumjs/ethereumjs-monore
 
 > **gasLeft**: `bigint`
 
-Defined in: [interpreter.ts:182](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L182)
+Defined in: [interpreter.ts:176](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L176)
 
 ***
 
@@ -80,7 +64,7 @@ Defined in: [interpreter.ts:182](https://github.com/ethereumjs/ethereumjs-monore
 
 > **gasRefund**: `bigint`
 
-Defined in: [interpreter.ts:183](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L183)
+Defined in: [interpreter.ts:177](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L177)
 
 ***
 
@@ -88,7 +72,7 @@ Defined in: [interpreter.ts:183](https://github.com/ethereumjs/ethereumjs-monore
 
 > `optional` **immediate?**: `Uint8Array`\<`ArrayBufferLike`\>
 
-Defined in: [interpreter.ts:201](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L201)
+Defined in: [interpreter.ts:194](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L194)
 
 ***
 
@@ -96,7 +80,7 @@ Defined in: [interpreter.ts:201](https://github.com/ethereumjs/ethereumjs-monore
 
 > **memory**: `Uint8Array`
 
-Defined in: [interpreter.ts:197](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L197)
+Defined in: [interpreter.ts:191](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L191)
 
 ***
 
@@ -104,7 +88,7 @@ Defined in: [interpreter.ts:197](https://github.com/ethereumjs/ethereumjs-monore
 
 > **memoryWordCount**: `bigint`
 
-Defined in: [interpreter.ts:198](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L198)
+Defined in: [interpreter.ts:192](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L192)
 
 ***
 
@@ -112,7 +96,7 @@ Defined in: [interpreter.ts:198](https://github.com/ethereumjs/ethereumjs-monore
 
 > **opcode**: `object`
 
-Defined in: [interpreter.ts:188](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L188)
+Defined in: [interpreter.ts:182](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L182)
 
 #### code
 
@@ -140,7 +124,7 @@ Defined in: [interpreter.ts:188](https://github.com/ethereumjs/ethereumjs-monore
 
 > **pc**: `number`
 
-Defined in: [interpreter.ts:186](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L186)
+Defined in: [interpreter.ts:180](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L180)
 
 ***
 
@@ -148,7 +132,7 @@ Defined in: [interpreter.ts:186](https://github.com/ethereumjs/ethereumjs-monore
 
 > **stack**: `bigint`[]
 
-Defined in: [interpreter.ts:185](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L185)
+Defined in: [interpreter.ts:179](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L179)
 
 ***
 
@@ -156,7 +140,7 @@ Defined in: [interpreter.ts:185](https://github.com/ethereumjs/ethereumjs-monore
 
 > **stateManager**: [`StateManagerInterface`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/docs/interfaces/StateManagerInterface.md)
 
-Defined in: [interpreter.ts:184](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L184)
+Defined in: [interpreter.ts:178](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L178)
 
 ***
 
@@ -164,4 +148,4 @@ Defined in: [interpreter.ts:184](https://github.com/ethereumjs/ethereumjs-monore
 
 > `optional` **storage?**: \[`` `0x${string}` ``, `` `0x${string}` ``\][]
 
-Defined in: [interpreter.ts:204](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L204)
+Defined in: [interpreter.ts:196](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/interpreter.ts#L196)

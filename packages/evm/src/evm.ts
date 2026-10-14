@@ -24,8 +24,6 @@ import { EventEmitter } from 'eventemitter3'
 
 import { createEIP7708TransferLog } from './eip7708.ts'
 import { activeCostPerStateByte } from './eip8037.ts'
-import { FORMAT } from './eof/constants.ts'
-import { isEOF } from './eof/util.ts'
 import { EVMError } from './errors.ts'
 import { Interpreter } from './interpreter.ts'
 import { Journal } from './journal.ts'
@@ -98,18 +96,6 @@ export function INVALID_BYTECODE_RESULT(gasLimit: bigint): ExecResult {
     returnValue: new Uint8Array(0),
     executionGasUsed: gasLimit,
     exceptionError: new EVMError(EVMError.errorMessages.INVALID_BYTECODE_RESULT),
-  }
-}
-
-/**
- * Returns an ExecResult signalling invalid EOF formatting.
- * @param gasLimit - Gas consumed up to the point of failure
- */
-export function INVALID_EOF_RESULT(gasLimit: bigint): ExecResult {
-  return {
-    returnValue: new Uint8Array(0),
-    executionGasUsed: gasLimit,
-    exceptionError: new EVMError(EVMError.errorMessages.INVALID_EOF_FORMAT),
   }
 }
 
@@ -377,11 +363,10 @@ export class EVM implements EVMInterface {
 
     // Supported EIPs (sorted by EIP number; keep in sync with README / types.ts)
     const supportedEIPs = [
-      1153, 1559, 2537, 2565, 2718, 2780, 2929, 2930, 2935, 3198, 3529, 3540, 3541, 3554, 3607,
-      3651, 3670, 3675, 3855, 3860, 4200, 4345, 4399, 4750, 4788, 4844, 4895, 5133, 5450, 5656,
-      6110, 6206, 6780, 7002, 7069, 7251, 7480, 7516, 7594, 7620, 7623, 7685, 7691, 7692, 7698,
-      7702, 7708, 7709, 7778, 7823, 7825, 7843, 7864, 7883, 7918, 7928, 7934, 7939, 7951, 7954,
-      7976, 7981, 8024, 8037,
+      1153, 1559, 2537, 2565, 2718, 2780, 2929, 2930, 2935, 3198, 3529, 3541, 3554, 3607, 3651,
+      3675, 3855, 3860, 4345, 4399, 4788, 4844, 4895, 5133, 5656, 6110, 6780, 7002, 7251, 7516,
+      7594, 7623, 7685, 7691, 7702, 7708, 7709, 7778, 7823, 7825, 7843, 7864, 7883, 7918, 7928,
+      7934, 7939, 7951, 7954, 7976, 7981, 8024, 8037,
     ]
 
     for (const eip of this.common.eips()) {
@@ -788,7 +773,7 @@ export class EVM implements EVMInterface {
 
     // TODO at some point, figure out why we swapped out data to code in the first place
     message.code = message.data
-    message.data = message.eofCallData ?? new Uint8Array()
+    message.data = new Uint8Array()
     message.to = await this._generateAddress(message)
 
     if (this.common.isActivatedEIP(6780)) {
@@ -1047,24 +1032,12 @@ export class EVM implements EVMInterface {
     let CodestoreOOG = false
     let createSucceeded = false
     if (totalGas <= message.gasLimit && (this.allowUnlimitedContractSize || allowedCodeSize)) {
-      if (this.common.isActivatedEIP(3541) && result.returnValue[0] === FORMAT) {
-        if (!this.common.isActivatedEIP(3540)) {
-          result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
-        } else if (
-          // TODO check if this is correct
-          // Also likely cleanup this eofCallData stuff
-          /*(message.depth > 0 && message.eofCallData === undefined) ||
-          (message.depth === 0 && !isEOF(message.code))*/
-          !isEOF(message.code)
-        ) {
-          // TODO the message.eof was flagged for this to work for this first
-          // Running into Legacy mode: unable to deploy EOF contract
-          result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
-        } else {
-          // 3541 is active and current runtime mode is EOF
-          result.executionGasUsed = totalGas
-          createSucceeded = true
-        }
+      if (
+        this.common.isActivatedEIP(3541) &&
+        result.returnValue.length > 0 &&
+        result.returnValue[0] === 0xef
+      ) {
+        result = { ...result, ...INVALID_BYTECODE_RESULT(message.gasLimit) }
       } else {
         result.executionGasUsed = totalGas
         createSucceeded = true
@@ -1286,10 +1259,7 @@ export class EVM implements EVMInterface {
     let result = interpreter._result
     let gasUsed = message.gasLimit - interpreterRes.runState!.gasLeft
     if (interpreterRes.exceptionError) {
-      if (
-        interpreterRes.exceptionError.error !== EVMError.errorMessages.REVERT &&
-        interpreterRes.exceptionError.error !== EVMError.errorMessages.INVALID_EOF_FORMAT
-      ) {
+      if (interpreterRes.exceptionError.error !== EVMError.errorMessages.REVERT) {
         gasUsed = message.gasLimit
       }
 

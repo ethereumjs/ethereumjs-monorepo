@@ -155,7 +155,7 @@ Tx-level Amsterdam rules (intrinsic gas, calldata floor, access-list pricing): [
 | `SWAPN` | `0xe7` | Swap the top item with the item at depth `n` |
 | `EXCHANGE` | `0xe8` | Exchange items at depths `x` and `y` (pair immediate) |
 
-The opcodes are active on `Hardfork.Amsterdam` and validated at decode time (invalid immediates trap). Gas costs: `dupnGas`, `swapnGas`, `exchangeGas` (default 3 each). They are supported in legacy bytecode and in EOF containers.
+The opcodes are active on `Hardfork.Amsterdam` and validated at decode time (invalid immediates trap). Gas costs: `dupnGas`, `swapnGas`, `exchangeGas` (default 3 each).
 
 Runnable walkthrough: [`examples/opcodes/eip8024StackOpcodes.ts`](./examples/opcodes/eip8024StackOpcodes.ts). See also [CLZ (EIP-7939)](./examples/opcodes/eip7939ClzOpcode.ts) (Osaka) and [SLOTNUM (EIP-7843)](#eip-7843-slotnum-opcode-amsterdam).
 
@@ -676,7 +676,6 @@ Monorepo context: [ARCHITECTURE.md](../../ARCHITECTURE.md).
 | `interpreter.ts` | Fetch-decode-execute loop, gas, `step` events |
 | `opcodes/`, `precompiles/` | Opcode and precompile handlers |
 | `journal.ts` | Checkpoint / commit / revert onto `StateManagerInterface` |
-| `eof/` | EOF container parse and verify |
 | `params.ts` | `paramsEVM`, merged into `Common` |
 
 Per-frame stack/memory, the `Message` object, and EIP-7864 witnesses live next to those files. `createEVM` and public option types are in `constructors.ts` / `types.ts`.
@@ -768,7 +767,6 @@ Hardfork labels indicate default activation on that fork. `(Amsterdam, experimen
 
 ### Experimental / cross-layer
 
-- [EIP-7692](https://eips.ethereum.org/EIPS/eip-7692) - EVM Object Format (EOF) v1
 - [EIP-7709](https://eips.ethereum.org/EIPS/eip-7709) - Read BLOCKHASH from storage (Verkle)
 - [EIP-7864](https://eips.ethereum.org/EIPS/eip-7864) - Ethereum state using a unified binary tree
 

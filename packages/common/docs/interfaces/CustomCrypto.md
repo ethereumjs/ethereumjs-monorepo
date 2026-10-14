@@ -74,7 +74,7 @@ Defined in: [types.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob
 
 ### ecsign?
 
-> `optional` **ecsign?**: (`message`, `secretKey`, `opts?`) => `Uint8Array`
+> `optional` **ecsign?**: (`message`, `secretKey`, `opts?`) => `Uint8Array`\<`ArrayBufferLike`\> & `Uint8Array`\<`ArrayBuffer`\>
 
 Defined in: [types.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L100)
 
@@ -82,19 +82,19 @@ Defined in: [types.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blo
 
 ##### message
 
-`Uint8Array`
+`TArg`\<`Uint8Array`\<`ArrayBufferLike`\>\>
 
 ##### secretKey
 
-`Uint8Array`
+`TArg`\<`Uint8Array`\<`ArrayBufferLike`\>\>
 
 ##### opts?
 
-`ECDSASignOpts`
+`TArg`\<`ECDSASignOpts`\>
 
 #### Returns
 
-`Uint8Array`
+`Uint8Array`\<`ArrayBufferLike`\> & `Uint8Array`\<`ArrayBuffer`\>
 
 ***
 

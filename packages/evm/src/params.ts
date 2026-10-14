@@ -312,28 +312,11 @@ export const paramsEVM: ParamsDict = {
     maxInitCodeSize: 49152, // Maximum length of initialization code when creating a contract
   },
   /**
-   * EOF - Static relative jumps
-   */
-  4200: {
-    // gasPrices
-    rjumpGas: 2, // Base fee of the RJUMP opcode
-    rjumpiGas: 4, // Base fee of the RJUMPI opcode
-    rjumpvGas: 4, // Base fee of the RJUMPV opcode
-  },
-  /**
 .  * Supplant DIFFICULTY opcode with PREVRANDAO
 .  */
   4399: {
     // gasPrices
     prevrandaoGas: 2, // Base fee of the PREVRANDAO opcode (previously DIFFICULTY)
-  },
-  /**
-   * EOF - Functions
-   */
-  4750: {
-    // gasPrices
-    callfGas: 5, // Base fee of the CALLF opcode
-    retfGas: 3, // Base fee of the RETF opcode
   },
   /**
 .  * Shard Blob Transactions
@@ -353,56 +336,11 @@ export const paramsEVM: ParamsDict = {
     mcopyGas: 3, // Base fee of the MCOPY opcode
   },
   /**
-   * EOF - JUMPF and non-returning functions
-   */
-  6206: {
-    // gasPrices
-    jumpfGas: 5, // Base fee of the JUMPF opcode
-  },
-  /**
-.  * Revamped CALL instructions
-.  */
-  7069: {
-    /* Note: per EIP these are the additionally required EIPs:
-    EIP 150 - This is the entire Tangerine Whistle hardfork
-    EIP 211 - (RETURNDATASIZE / RETURNDATACOPY) - Included in Byzantium
-    EIP 214 - (STATICCALL) - Included in Byzantium
-  */
-    // gasPrices
-    extcallGas: 0, // Base fee of the EXTCALL opcode
-    extdelegatecallGas: 0, // Base fee of the EXTDELEGATECALL opcode
-    extstaticcallGas: 0, // Base fee of the EXTSTATICCALL opcode
-    returndataloadGas: 3, // Base fee of the RETURNDATALOAD opcode
-    minRetainedGas: 5000, // Minimum gas retained prior to executing an EXT*CALL opcode (this is the minimum gas available after performing the EXT*CALL)
-    minCalleeGas: 2300, //Minimum gas available to the the address called by an EXT*CALL opcode
-  },
-  /**
-   * EOF - Data section access instructions
-   */
-  7480: {
-    // gasPrices
-    dataloadGas: 4, // Base fee of the DATALOAD opcode
-    dataloadnGas: 3, // Base fee of the DATALOADN opcode
-    datasizeGas: 2, // Base fee of the DATASIZE opcode
-    datacopyGas: 3, // Base fee of the DATACOPY opcode
-  },
-  /**
 .  * BLOBBASEFEE opcode
 .  */
   7516: {
     // gasPrices
     blobbasefeeGas: 2, // Gas cost of the BLOBBASEFEE opcode
-  },
-  /**
-.  * EOF Contract Creation
-.  */
-  7620: {
-    /* Note: per EIP these are the additionally required EIPs:
-    EIP 170 - (Max contract size) - Included in Spurious Dragon
-  */
-    // gasPrices
-    eofcreateGas: 32000, // Base fee of the EOFCREATE opcode (Same as CREATE/CREATE2)
-    returncontractGas: 0, // Base fee of the RETURNCONTRACT opcode
   },
   /**
 .  * Count leading zeros (CLZ) opcode
