@@ -132,7 +132,7 @@ export function parseStateTest(fork: string, testData: import('./types.ts').Stat
   if (testData.transaction.accessLists !== undefined) {
     tx.accessList = testData.transaction.accessLists[indexes.data]
     if (tx.chainId === undefined) {
-      tx.chainId = 1
+      tx.chainId = testData.config?.chainId ?? 1
     }
   }
 

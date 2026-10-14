@@ -6,7 +6,7 @@ Run after `npm run fixtures:fetch` and a full `--list` pass. Update this file wh
 
 | Source | Tag | Role |
 | --- | --- | --- |
-| `tests` | `tests@v21.0.1` | PR gate (`--forks recent`: Prague + Osaka) + nightly (`--forks all`); full index ~354k cases / 24 forks |
+| `tests` | `tests@v21.0.1` | PR gate (`--forks recent`: Prague + Osaka + Amsterdam) + nightly (`--forks all`); full index ~354k cases / 24 forks |
 | `bogota-devnet` | `tests-bogota-devnet@v1.1.0` | Hegota dev job; **cache holds only** `Bogota` + `AmsterdamToBogotaAtTime15k` (index extract) |
 | `legacy` | `packages/ethereum-tests` | Frozen `BlockchainTests` only |
 
@@ -20,14 +20,6 @@ npm run test:consensus -- --list --source tests --forks all > /tmp/est-all-list.
 npm run test:consensus -- --list --source tests --forks recent > /tmp/est-pr-list.txt
 npm run test:consensus -- --list --source legacy --legacy-fork Prague --format blockchain
 ```
-
-## Amsterdam
-
-Track separately until green on `tests@v21.x`; do not add skip entries to force green (S1).
-
-| Fork | State pass/fail | Blockchain pass/fail | Notes |
-| --- | --- | --- | --- |
-| Amsterdam | _run locally_ | _run locally_ | |
 
 ## Ported static sanity (state)
 

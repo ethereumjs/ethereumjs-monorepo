@@ -31,12 +31,12 @@ GeneralStateTests from `ethereum/tests` are retired upstream; ported cases live 
 On an ordinary PR, the VM is green when:
 
 - `npm run test:API` (and the coverage job in CI)
-- Sharded `npm run test:consensus:pr` (EST `tests@v21.x`, `--forks recent` = Prague + Osaka, state + blockchain in four shards; one shared fixture fetch job in CI)
+- Sharded `npm run test:consensus:pr` (EST `tests@v21.x`, `--forks recent` = Prague + Osaka + Amsterdam, state + blockchain in four shards; one shared fixture fetch job in CI)
 - `npm run test:consensus:smoke` when the `type: test skip most stable VM` label is present
 
-Amsterdam runs in a separate **non-gating** CI job until the fork is green on the pinned release. Do not add skip entries just to go green (S1).
+With the `test all hardforks` label, CI runs `--forks all` on EST plus legacy blockchain on older networks. With **`type: test bogota`**, CI runs sharded `bogota-devnet` (`test:consensus:dev`). Nightly runs the full EST tree, legacy blockchain, and `--run-skipped slow`.
 
-With the `test all hardforks` label, CI runs `--forks all` on EST plus legacy blockchain on older networks. Nightly runs the full EST tree, legacy blockchain, and `--run-skipped slow`.
+Do not add skip entries just to go green on consensus (S1).
 
 ### Local development tiers (no tarball every time)
 
@@ -109,7 +109,7 @@ We no longer submodule [execution-spec-tests-fixtures](https://github.com/ethere
    ```
 
 3. Run `npm run fixtures:fetch`, then `npm run test:consensus -- --list --source tests --forks all`.
-4. First-round run on affected forks; record pass/fail in `FIRST_ROUND.md` (Amsterdam separately until green).
+4. First-round run on affected forks; record pass/fail in `FIRST_ROUND.md`.
 5. Commit `fixtures.json` only for a wiring PR; implementation PRs follow the usual spec-delta workflow.
 
 Skill playbook: [`.cursor/skills/update-est-fixtures/SKILL.md`](../../.cursor/skills/update-est-fixtures/SKILL.md).

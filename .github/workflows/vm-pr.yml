@@ -122,10 +122,52 @@ jobs:
         run: >-
           npm run test:consensus:pr -- --format all --shard ${{ matrix.shard }} --jobs 2 --skip-fetch
 
-  vm-consensus-amsterdam:
-    needs: est-fixtures-cache
+  est-bogota-fixtures-cache:
+    if: >-
+      github.event_name == 'pull_request' &&
+      contains(join(github.event.pull_request.labels.*.name, ' '), 'test bogota') &&
+      contains(join(github.event.pull_request.labels.*.name, ' '), 'skip dev VM') == false
     runs-on: ubuntu-latest
-    continue-on-error: true
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: ./.github/actions/setup-ethereumjs
+        with:
+          dep-cache-key: ${{ inputs.dep-cache-key }}
+
+      - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        id: est-bogota-cache
+        with:
+          path: .est-fixtures-cache
+          key: est-${{ hashFiles('packages/vm/test/consensus/fixtures.json') }}
+
+      - name: Fetch bogota-devnet fixtures
+        run: npm run fixtures:fetch -- bogota-devnet
+
+      - uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        if: always() && steps.est-bogota-cache.outputs.cache-hit != 'true'
+        with:
+          path: .est-fixtures-cache
+          key: est-${{ hashFiles('packages/vm/test/consensus/fixtures.json') }}
+
+  vm-consensus-bogota:
+    if: >-
+      github.event_name == 'pull_request' &&
+      contains(join(github.event.pull_request.labels.*.name, ' '), 'test bogota') &&
+      contains(join(github.event.pull_request.labels.*.name, ' '), 'skip dev VM') == false
+    needs: est-bogota-fixtures-cache
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - format: state
+            shard: '0/2'
+          - format: state
+            shard: '1/2'
+          - format: blockchain
+            shard: '0/2'
+          - format: blockchain
+            shard: '1/2'
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - uses: ./.github/actions/setup-ethereumjs
@@ -139,7 +181,8 @@ jobs:
           restore-keys: |
             est-${{ hashFiles('packages/vm/test/consensus/fixtures.json') }}
 
-      - run: npm run test:consensus -- --source tests --fork Amsterdam --format state --jobs 2 --skip-fetch
+      - run: >-
+          npm run test:consensus:dev -- --format ${{ matrix.format }} --shard ${{ matrix.shard }} --jobs 2 --skip-fetch
 
   vm-consensus-legacy:
     if: contains(join(github.event.pull_request.labels.*.name, ' '), 'test all hardforks')

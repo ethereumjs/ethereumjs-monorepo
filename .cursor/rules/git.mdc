@@ -67,15 +67,18 @@ These **change CI behavior** — add or remove deliberately; **when in doubt, pr
 | Label | Effect (summary) |
 | --- | --- |
 | `type: test all hardforks` | Extra VM state/blockchain runs across hardforks (`vm-pr.yml`) |
+| `type: test bogota` | Sharded `bogota-devnet` consensus in `vm-pr.yml` (Hegota preview fixtures) |
 | `type: test verkle` | Verkle-related test path |
 | `type: test no browser` | Skips browser workflow |
 | `type: test skip most stable VM` | Skips most stable VM jobs in `vm-pr.yml` |
-| `type: test skip dev VM` | Skips dev VM EST jobs |
+| `type: test skip dev VM` | Skips `type: test bogota` consensus jobs in `vm-pr.yml` |
 | `type: test performance` | Runs the CodSpeed simulation job (`performance-benchmarks`) on this PR when the label is present on the **`opened` / `synchronize`** event (same timing as skip labels) |
 
 Set **`type: test performance`** when the diff can change the speed of a hot-path library (`rlp`, `util`, `mpt`, `evm`, `vm`, `tx`, `block`, `statemanager`, `binarytree`), a benchmark, or a dependency those paths execute. Pass it on **`gh pr create --label "type: test performance"`** together with package/state labels — not in a separate post-create `gh pr edit` if that push should run benches. Re-check before every later push. Remove the label when the remaining diff can no longer change that speed. The ordinary type label `type: performance` does not start the job.
 
 Remove a skip label when the PR no longer justifies skipping that coverage.
+
+**Bogota / Hegota preview EIPs:** when the PR is mainly implementing or fixing execution behavior for a **bogota-devnet** (Hegota) EIP, add **`type: test bogota`** on `gh pr create` or before the push that should run those jobs (same **`opened` / `synchronize`** timing as other test-trigger labels). Remove it when the branch no longer touches that fixture surface.
 
 # Pull requests
 
@@ -118,7 +121,7 @@ When opening a PR immediately after a push (human asked to open PRs), set title 
 1. Infer packages from the diff; apply matching `package: …` (+ `package: monorepo` when appropriate).
 2. Set one `PR state: …` label.
 3. Set matching non-test `type: …` label(s).
-4. Add or drop test-trigger/skip `type: test …` labels only when justified. Set `type: test performance` when the diff may change hot-path speed; include it in **`gh pr create --label`** (not a post-create edit alone). Re-check before each later push. Default to **not** skipping heavy suites.
+4. Add or drop test-trigger/skip `type: test …` labels only when justified. Set `type: test performance` when the diff may change hot-path speed; include it in **`gh pr create --label`** (not a post-create edit alone). Set **`type: test bogota`** when the PR is dedicated to Hegota preview / bogota-devnet EIP work (see Bogota note above). Re-check before each later push. Default to **not** skipping heavy suites.
 5. Leave all other label families unset.
 6. On PR create or material update: essence title and matching `##` body ([Pull requests](#pull-requests)); no Summary/Test plan boilerplate.
 7. After each push to a branch with an open PR: `gh pr edit` **title and body** when essence changed ([After each push](#after-each-push-existing-pr)).

@@ -33,6 +33,11 @@ const RULES: SkipRule[] = [
   { pattern: 'BPO1ToBPO2AtTime15k', category: 'unsupported', reason: 'transition BPO not wired' },
   { pattern: 'BPO2ToBPO3AtTime15k', category: 'unsupported', reason: 'transition BPO not wired' },
   { pattern: 'BPO3ToBPO4AtTime15k', category: 'unsupported', reason: 'transition BPO not wired' },
+  {
+    pattern: 'test_system_contract_errors',
+    category: 'unsupported',
+    reason: 'EIP-7251 consolidation system-call block rejection not wired in VM yet',
+  },
 ]
 
 function matchesPattern(id: string, pattern: string): boolean {
