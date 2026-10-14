@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict'
 
-import { Common, Mainnet } from '@ethereumjs/common'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 import { toBytes } from 'viem'
@@ -8,8 +7,7 @@ import { toBytes } from 'viem'
 import { createVM } from '../../../src/constructors.ts'
 import { runTx } from '../../../src/runTx.ts'
 import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util.ts'
-import { parseStateTest } from '../forkCommon.ts'
-import { estForkToCommonHardfork } from '../forks.ts'
+import { createCommonForFork, parseStateTest } from '../forkCommon.ts'
 import type { StateTestFixtureData } from '../types.ts'
 
 export type StateRunOptions = {
@@ -23,11 +21,7 @@ export async function runStateTestCase(
 ) {
   const kzg = options?.kzg ?? new microEthKZG(trustedSetup)
   const parsed = parseStateTest(fork, testData)
-  const common = new Common({
-    chain: Mainnet,
-    hardfork: estForkToCommonHardfork(fork),
-    customCrypto: { kzg },
-  })
+  const common = createCommonForFork(fork, testData, kzg)
   const vm = await createVM({ common })
 
   await setupPreConditions(vm.stateManager, { pre: parsed.pre })
@@ -52,6 +46,12 @@ export async function runStateTestCase(
     } else {
       execInfo = 'tx validation failed'
     }
+  }
+
+  if (parsed.expectException !== undefined && execInfo === 'successful tx run') {
+    assert.fail(
+      `Expected exception ${parsed.expectException} but transaction executed successfully`,
+    )
   }
 
   const stateRoot = await vm.stateManager.getStateRoot()

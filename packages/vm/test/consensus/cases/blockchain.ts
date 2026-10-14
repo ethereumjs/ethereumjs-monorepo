@@ -279,6 +279,9 @@ const exceptionMessages: Record<string, RegExp> = {
   'TransactionException.PRIORITY_GREATER_THAN_MAX_FEE_PER_GAS':
     /maxFeePerGas cannot be less than maxPriorityFeePerGas/,
   'TransactionException.SENDER_NOT_EOA': /invalid sender address, address is not EOA/,
+  'TransactionException.INVALID_SIGNATURE_VRS': /Invalid Signature/i,
+  'TransactionException.INVALID_CHAINID':
+    /Common chain ID|not matching the derived chain ID|Incompatible EIP155-based V/i,
   'TransactionException.NONCE_MISMATCH_TOO_HIGH': /the tx doesn't have the correct nonce/,
   'TransactionException.NONCE_IS_MAX': /nonce cannot equal or exceed MAX_UINT64/,
   'TransactionException.GASLIMIT_PRICE_PRODUCT_OVERFLOW':
@@ -313,8 +316,8 @@ const exceptionMessages: Record<string, RegExp> = {
   'BlockException.INVALID_BLOCK_ACCESS_LIST': /invalid block access list/,
   'BlockException.BLOCK_ACCESS_LIST_GAS_LIMIT_EXCEEDED': /block access list gas limit exceeded/,
   'BlockException.INVALID_WITHDRAWALS_ROOT': /invalid withdrawals trie/,
-  'BlockException.SYSTEM_CONTRACT_CALL_FAILED': /system contract call failed/,
-  'BlockException.SYSTEM_CONTRACT_EMPTY': /system contract empty/,
+  'BlockException.SYSTEM_CONTRACT_CALL_FAILED': /system contract call failed/i,
+  'BlockException.SYSTEM_CONTRACT_EMPTY': /system contract empty/i,
   'BlockException.INVALID_GASLIMIT': /gas limit/,
 }
 

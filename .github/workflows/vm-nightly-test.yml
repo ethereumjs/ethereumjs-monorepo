@@ -182,3 +182,10 @@ jobs:
         run: git submodule update --init --depth=1 -- packages/ethereum-tests
 
       - run: npm run test:consensus -- --source legacy --format blockchain --legacy-fork Prague --file=${{ matrix.testFile }} --run-skipped slow
+
+  test-vm-consensus-bogota:
+    if: github.repository == 'ethereumjs/ethereumjs-monorepo'
+    uses: ./.github/workflows/vm-consensus-dev.yml
+    secrets: inherit
+    with:
+      dep-cache-key: none

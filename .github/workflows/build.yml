@@ -301,16 +301,6 @@ jobs:
         run: npm audit --omit=dev --audit-level=high
         working-directory: ${{ github.workspace }}
 
-  # In-flux hardfork working-ground. Not in the CI gate — must not delay or fail it.
-  # `continue-on-error` is not valid on reusable workflow jobs (GitHub then requires runs-on).
-  vm-consensus-dev:
-    needs: [build, detect]
-    if: needs.detect.outputs['vm-pr'] == 'true'
-    uses: ./.github/workflows/vm-consensus-dev.yml
-    secrets: inherit
-    with:
-      dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
-
   # Sole required check: skipped package jobs count as success; failures fail the gate.
   ci-success:
     name: CI

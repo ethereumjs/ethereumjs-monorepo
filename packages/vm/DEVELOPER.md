@@ -31,7 +31,7 @@ GeneralStateTests from `ethereum/tests` are retired upstream; ported cases live 
 On an ordinary PR, the VM is green when:
 
 - `npm run test:API` (and the coverage job in CI)
-- Sharded `npm run test:consensus:pr` (EST `tests@v21.x`, `--forks recent`, state + blockchain)
+- Sharded `npm run test:consensus:pr` (EST `tests@v21.x`, `--forks recent` = Prague + Osaka, state + blockchain in four shards; one shared fixture fetch job in CI)
 - `npm run test:consensus:smoke` when the `type: test skip most stable VM` label is present
 
 Amsterdam runs in a separate **non-gating** CI job until the fork is green on the pinned release. Do not add skip entries just to go green (S1).

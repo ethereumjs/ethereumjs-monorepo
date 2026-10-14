@@ -1,17 +1,7 @@
 /** Fork presets and name normalization for EST, legacy ethereum/tests, and Common. */
 
-export const RECENT_FORKS = [
-  'Prague',
-  'Osaka',
-  'BPO1',
-  'BPO2',
-  'BPO3',
-  'BPO4',
-  'BPO5',
-  'OsakaToBPO1AtTime15k',
-  'BPO4ToBPO5AtTime15k',
-  'BPO5ToAmsterdamAtTime15k',
-] as const
+/** Forks wired for the PR gate (`--forks recent`). BPO / transition / preview forks stay on nightly (`--forks all`). */
+export const RECENT_FORKS = ['Prague', 'Osaka'] as const
 
 export const ALL_EST_FORKS = [
   'Frontier',

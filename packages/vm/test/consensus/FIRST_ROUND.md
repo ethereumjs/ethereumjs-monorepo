@@ -6,7 +6,7 @@ Run after `npm run fixtures:fetch` and a full `--list` pass. Update this file wh
 
 | Source | Tag | Role |
 | --- | --- | --- |
-| `tests` | `tests@v21.0.1` | PR gate (`--forks recent`) + nightly (`--forks all`); ~354k cases / 24 forks in index |
+| `tests` | `tests@v21.0.1` | PR gate (`--forks recent`: Prague + Osaka) + nightly (`--forks all`); full index ~354k cases / 24 forks |
 | `bogota-devnet` | `tests-bogota-devnet@v1.1.0` | Hegota dev job; **cache holds only** `Bogota` + `AmsterdamToBogotaAtTime15k` (index extract) |
 | `legacy` | `packages/ethereum-tests` | Frozen `BlockchainTests` only |
 

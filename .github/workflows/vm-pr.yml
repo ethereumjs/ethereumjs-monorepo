@@ -63,28 +63,37 @@ jobs:
           files: ${{ env.cwd }}/coverage/lcov.info
           flags: vm
 
+  est-fixtures-cache:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: ./.github/actions/setup-ethereumjs
+        with:
+          dep-cache-key: ${{ inputs.dep-cache-key }}
+
+      - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        id: est-cache
+        with:
+          path: .est-fixtures-cache
+          key: est-${{ hashFiles('packages/vm/test/consensus/fixtures.json') }}
+
+      - name: Fetch tests fixtures
+        if: steps.est-cache.outputs.cache-hit != 'true'
+        run: npm run fixtures:fetch -- tests
+
+      - uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        if: steps.est-cache.outputs.cache-hit != 'true'
+        with:
+          path: .est-fixtures-cache
+          key: est-${{ hashFiles('packages/vm/test/consensus/fixtures.json') }}
+
   vm-consensus-est:
+    needs: est-fixtures-cache
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - format: state
-            shard: '0/4'
-          - format: state
-            shard: '1/4'
-          - format: state
-            shard: '2/4'
-          - format: state
-            shard: '3/4'
-          - format: blockchain
-            shard: '0/4'
-          - format: blockchain
-            shard: '1/4'
-          - format: blockchain
-            shard: '2/4'
-          - format: blockchain
-            shard: '3/4'
+        shard: ['0/4', '1/4', '2/4', '3/4']
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - uses: ./.github/actions/setup-ethereumjs
@@ -97,10 +106,6 @@ jobs:
           key: est-${{ hashFiles('packages/vm/test/consensus/fixtures.json') }}
           restore-keys: |
             est-${{ hashFiles('packages/vm/test/consensus/fixtures.json') }}
-
-      - name: Ensure tests fixtures
-        if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM') == false
-        run: npm run fixtures:fetch -- tests
 
       - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM')
         run: npm run test:consensus:smoke
@@ -108,20 +113,19 @@ jobs:
       - if: >-
           contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM') == false &&
           contains(join(github.event.pull_request.labels.*.name, ' '), 'test all hardforks')
-        run: npm run test:consensus:all -- --format ${{ matrix.format }} --shard ${{ matrix.shard }}
+        run: >-
+          npm run test:consensus:all -- --format all --shard ${{ matrix.shard }} --jobs 2 --skip-fetch
 
       - if: >-
           contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM') == false &&
           contains(join(github.event.pull_request.labels.*.name, ' '), 'test all hardforks') == false
-        run: npm run test:consensus:pr -- --format ${{ matrix.format }} --shard ${{ matrix.shard }}
+        run: >-
+          npm run test:consensus:pr -- --format all --shard ${{ matrix.shard }} --jobs 2 --skip-fetch
 
   vm-consensus-amsterdam:
+    needs: est-fixtures-cache
     runs-on: ubuntu-latest
     continue-on-error: true
-    strategy:
-      fail-fast: false
-      matrix:
-        format: [state, blockchain]
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - uses: ./.github/actions/setup-ethereumjs
@@ -135,8 +139,7 @@ jobs:
           restore-keys: |
             est-${{ hashFiles('packages/vm/test/consensus/fixtures.json') }}
 
-      - run: npm run fixtures:fetch -- tests
-      - run: npm run test:consensus -- --source tests --fork Amsterdam --format ${{ matrix.format }}
+      - run: npm run test:consensus -- --source tests --fork Amsterdam --format state --jobs 2 --skip-fetch
 
   vm-consensus-legacy:
     if: contains(join(github.event.pull_request.labels.*.name, ' '), 'test all hardforks')
