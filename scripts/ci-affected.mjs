@@ -35,7 +35,7 @@ export const FORCE_ALL_FILES = new Set([
 
 /** Fixture / submodule dirs that are not workspace packages but feed tests. */
 export const EXTRA_PATH_PACKAGES = {
-  'packages/execution-spec-tests': ['vm'],
+  'packages/vm/test/consensus': ['vm'],
   'packages/ethereum-tests': ['vm', 'block', 'tx', 'evm'],
 }
 

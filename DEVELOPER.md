@@ -72,7 +72,7 @@ ethereumjs-monorepo/
 ├── packages/          @ethereumjs/* libraries
 ├── config/            shared TS, ESLint, cspell, TypeDoc, config/cli/
 ├── packages/ethereum-tests/           submodule — legacy vectors
-└── packages/execution-spec-tests/   submodule — EST fixtures (see VM docs)
+└── packages/vm/test/consensus/      EST manifest + consensus runner (see VM DEVELOPER.md)
 ```
 
 Package scripts call helpers under [`config/cli/`](./config/cli/) (`ts-compile.sh`, `ts-build.sh`, `coverage.sh`, `typedoc.sh`, …). See that directory for the full set.
