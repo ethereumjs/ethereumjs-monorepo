@@ -200,7 +200,7 @@ One command and one config pointer per tool. Agent finish steps are in the linke
 | Examples | `npm run examples` | `packages/*/examples/` | [examples.mdc](.cursor/rules/examples.mdc) |
 | Snippet PNGs | `npm run snippet:png` | `config/code-snippet/` | — |
 | CI | PR check **`Build / CI`** | `.github/workflows/` | [ci.mdc](.cursor/rules/ci.mdc) |
-| Public API snapshots | `node --import tsx/esm --test scripts/public-api-snapshot.spec.mjs` | `config/public-api-snapshots/` | Regenerate: `node --import tsx/esm scripts/regenerate-public-api-snapshots.mjs` |
+| Public API snapshots | `node --import tsx/esm --test scripts/public-api-snapshot.spec.mjs` (CI: **Build** job after install) | `config/public-api-snapshots/` | Regenerate: `node --import tsx/esm scripts/regenerate-public-api-snapshots.mjs` |
 | Performance benchmarks | `npm run bench` | [config/vitest-bench.mts](./config/vitest-bench.mts) | [benchmarks.mdc](.cursor/rules/benchmarks.mdc) |
 
 ### Performance benchmarks

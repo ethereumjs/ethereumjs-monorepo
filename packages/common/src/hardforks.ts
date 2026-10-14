@@ -204,7 +204,7 @@ export const hardforksDict: HardforksDict = {
     eips: [2780, 7708, 7843, 7778, 7928, 7954, 7976, 7981, 7997, 8024, 8037, 8038, 8246, 8282],
   },
   /**
-   * Description: Draft Hegotá execution-layer upgrade (see EIP-8081)
+   * Description: Draft Hegota execution-layer upgrade (see EIP-8081)
    * URL        : https://forkcast.org/upgrade/hegota/
    * Status     : Draft — schedule and EIP bundle maintained on the `new-eips` branch
    */
