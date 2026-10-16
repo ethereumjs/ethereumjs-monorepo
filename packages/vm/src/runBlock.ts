@@ -231,6 +231,9 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
   if (block.common.isActivatedEIP(7685)) {
     const sha256Function = vm.common.customCrypto.sha256 ?? sha256
     try {
+      if (vm.common.isActivatedEIP(7928) && vm.evm.blockLevelAccessList !== undefined) {
+        vm.evm.blockLevelAccessList.blockAccessIndex = block.transactions.length + 1
+      }
       requests = await accumulateRequests(
         vm,
         result.results,
@@ -238,6 +241,9 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
         generateFields,
         block as EvmBlockContext,
       )
+      if (vm.common.isActivatedEIP(7928) && vm.evm.blockLevelAccessList !== undefined) {
+        vm.evm.blockLevelAccessList.cleanupNetZeroBalanceChanges()
+      }
     } catch (err) {
       // A checked system call failed (e.g. EIP-8282 builder request
       // contract missing or reverting): the block is invalid, revert it.
@@ -505,6 +511,11 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
     vm.DEBUG ? (msg) => debug(msg) : undefined,
     block as EvmBlockContext,
   )
+
+  if (vm.common.isActivatedEIP(7928) && vm.evm.blockLevelAccessList !== undefined) {
+    vm.evm.blockLevelAccessList.blockAccessIndex = 0
+    vm.evm.blockLevelAccessList.cleanupNetZeroBalanceChanges()
+  }
 
   if (enableProfiler) {
     // eslint-disable-next-line no-console
@@ -869,6 +880,9 @@ async function assignWithdrawals(vm: VM, block: Block): Promise<void> {
     // Note: event if amount is 0, still reward the account
     // such that the account is touched and marked for cleanup if it is empty
     await rewardAccount(vm.evm, address, amount * GWEI_TO_WEI, vm.common)
+  }
+  if (vm.common.isActivatedEIP(7928)) {
+    vm.evm.blockLevelAccessList!.cleanupNetZeroBalanceChanges()
   }
 }
 
