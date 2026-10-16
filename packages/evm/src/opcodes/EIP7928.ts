@@ -158,13 +158,8 @@ function finalizeCallMessageGas(
   outOffset: bigint,
   outLength: bigint,
 ): bigint {
-  const gasLimit = maxCallGas(
-    currentGasLimit,
-    runState.interpreter.getGasLeft() - gas,
-    runState,
-    common,
-  )
-
+  const gasLeftAfterCallCosts = runState.interpreter.getGasLeft() - gas
+  const gasLimit = maxCallGas(currentGasLimit, gasLeftAfterCallCosts, runState, common)
   if (common.isActivatedEIP(7928)) {
     if (!canAfford(runState, gas, newAccountStateGas)) {
       return eip7928SchedulePostTargetCallOog(runState, outOffset, outLength)
@@ -391,7 +386,12 @@ export async function create7928Gas(
     gas += accessAddressEIP2929(runState, runState.interpreter.getAddress().bytes, common, false)
   }
 
-  if (common.isActivatedEIP(8037)) {
+  if (common.isActivatedEIP(8038)) {
+    // EIP-8038 matches EELS `generic_create`: preflight (balance / nonce /
+    // depth) runs before destination access, so new-account state gas and
+    // the 63/64 grant are handled in interpreter `create()` after those
+    // checks — not in this gas step (see aborted_create_gas_boundary).
+  } else if (common.isActivatedEIP(8037)) {
     // EIP-8037 new-account OOG is post-target: record the created address
     // first (BAL empty() entry), then halt the CREATE. Pre-target OOG on
     // regular CREATE costs is `eip7928TrapPreTarget` above and must not
@@ -408,10 +408,6 @@ export async function create7928Gas(
       runState.lastCreateNewAccountStateGas = BIGINT_0
       return eip7928PostTargetCreateOog(runState, common, gas)
     }
-    if (gas > BIGINT_0) {
-      runState.interpreter.useGas(gas, preChargeLabel)
-      gas = BIGINT_0
-    }
     if (newAccountStateGas > BIGINT_0) {
       runState.interpreter.chargeStateGas(newAccountStateGas, `${preChargeLabel} new_account`)
     }
@@ -419,6 +415,13 @@ export async function create7928Gas(
   } else if (gas > runState.interpreter.getGasLeft()) {
     addAddressToBAL(runState, targetAddress, common)
     return eip7928PostTargetCreateOog(runState, common, gas)
+  }
+
+  if (common.isActivatedEIP(8038)) {
+    if (runState.interpreter.isStatic()) {
+      trap(EVMError.errorMessages.STATIC_STATE_CHANGE)
+    }
+    return gas
   }
 
   // EIP-8037 / EIP-7928: the static-context check is performed AFTER the

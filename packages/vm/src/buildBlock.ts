@@ -506,12 +506,17 @@ export class BlockBuilder {
       const numberBigInt = toType(number ?? 0, TypeOutput.BigInt)
       const parentHashSanitized = toType(parentHash, TypeOutput.Uint8Array) ?? new Uint8Array(32)
 
-      await applyPreTransactionSystemOperations(this.vm, {
-        parentBeaconBlockRoot: parentBeaconBlockRootBuf,
-        timestamp: timestampBigInt,
-        blockNumber: numberBigInt,
-        parentHash: parentHashSanitized,
-      })
+      const blockGasLimit = toType(this.headerData.gasLimit, TypeOutput.BigInt)
+      await applyPreTransactionSystemOperations(
+        this.vm,
+        {
+          parentBeaconBlockRoot: parentBeaconBlockRootBuf,
+          timestamp: timestampBigInt,
+          blockNumber: numberBigInt,
+          parentHash: parentHashSanitized,
+        },
+        blockGasLimit,
+      )
     }
   }
 }

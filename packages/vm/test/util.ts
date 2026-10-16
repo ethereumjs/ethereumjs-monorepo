@@ -332,6 +332,7 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
     currentNumber,
     currentBaseFee,
     currentRandom,
+    slotNumber,
   } = data
   const headerData: any = {
     number: currentNumber,
@@ -360,6 +361,9 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
     if (currentExcessBlobGas === undefined) {
       headerData['excessBlobGas'] = parentBlockHeader.calcNextExcessBlobGas(opts.common)
     }
+  }
+  if (opts?.common?.isActivatedEIP(7843) && slotNumber !== undefined) {
+    headerData.slotNumber = slotNumber
   }
   return createBlockHeader(headerData, opts)
 }

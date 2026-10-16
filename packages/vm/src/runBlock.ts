@@ -1,6 +1,11 @@
 import { createBlock, genRequestsRoot } from '@ethereumjs/block'
 import { ConsensusType, Hardfork } from '@ethereumjs/common'
-import { type EVM, type EVMInterface, txExceedsAvailableBlockGas8037 } from '@ethereumjs/evm'
+import {
+  type EVM,
+  type EVMInterface,
+  type EVMRunCallOpts,
+  txExceedsAvailableBlockGas8037,
+} from '@ethereumjs/evm'
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
 import { TransactionType } from '@ethereumjs/tx'
@@ -26,6 +31,7 @@ import {
   createBlockLevelAccessList,
   createBlockLevelAccessListFromJSON,
   createBlockLevelAccessListFromRLP,
+  createZeroAddress,
   equalsBlockAccessList,
   equalsBytes,
   hexToBytes,
@@ -46,7 +52,11 @@ import debugDefault from 'debug'
 import { Bloom } from './bloom/index.ts'
 import { emitEVMProfile } from './emitEVMProfile.ts'
 import { runTx } from './index.ts'
-import { accumulateRequests } from './requests.ts'
+import {
+  type PreTxSystemGas8037Accumulator,
+  accumulateRequests,
+  runPreTxSystemContractCall,
+} from './requests.ts'
 
 import type { Block } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
@@ -67,6 +77,8 @@ const debug = debugDefault('vm:block')
 const parentBeaconBlockRootAddress = createAddressFromString(
   '0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02',
 )
+
+type EvmBlockContext = NonNullable<EVMRunCallOpts['block']>
 
 let enableProfiler = false
 const stateRootCPLabel = 'New state root, DAO HF, checkpoints, block validation'
@@ -219,7 +231,19 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
   if (block.common.isActivatedEIP(7685)) {
     const sha256Function = vm.common.customCrypto.sha256 ?? sha256
     try {
-      requests = await accumulateRequests(vm, result.results, block.header.gasLimit, generateFields)
+      if (vm.common.isActivatedEIP(7928) && vm.evm.blockLevelAccessList !== undefined) {
+        vm.evm.blockLevelAccessList.blockAccessIndex = block.transactions.length + 1
+      }
+      requests = await accumulateRequests(
+        vm,
+        result.results,
+        block.header.gasLimit,
+        generateFields,
+        block as EvmBlockContext,
+      )
+      if (vm.common.isActivatedEIP(7928) && vm.evm.blockLevelAccessList !== undefined) {
+        vm.evm.blockLevelAccessList.cleanupNetZeroBalanceChanges()
+      }
     } catch (err) {
       // A checked system call failed (e.g. EIP-8282 builder request
       // contract missing or reverting): the block is invalid, revert it.
@@ -483,8 +507,15 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
       blockNumber: block.header.number,
       parentHash: block.header.parentHash,
     },
+    block.header.gasLimit,
     vm.DEBUG ? (msg) => debug(msg) : undefined,
+    block as EvmBlockContext,
   )
+
+  if (vm.common.isActivatedEIP(7928) && vm.evm.blockLevelAccessList !== undefined) {
+    vm.evm.blockLevelAccessList.blockAccessIndex = 0
+    vm.evm.blockLevelAccessList.cleanupNetZeroBalanceChanges()
+  }
 
   if (enableProfiler) {
     // eslint-disable-next-line no-console
@@ -554,6 +585,30 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
   return blockResults
 }
 
+export type PreTxSystemGas8037 = {
+  blockRegularGasUsed: bigint
+  blockStateGasUsed: bigint
+}
+
+function evmBlockFromHeader(input: {
+  blockNumber: bigint
+  timestamp: bigint
+  gasLimit?: bigint
+}): EvmBlockContext {
+  return {
+    header: {
+      number: input.blockNumber,
+      coinbase: createZeroAddress(),
+      timestamp: input.timestamp,
+      difficulty: BIGINT_0,
+      prevRandao: new Uint8Array(32),
+      gasLimit: input.gasLimit ?? BIGINT_0,
+      slotNumber: BIGINT_0,
+      getBlobGasPrice: () => undefined,
+    },
+  }
+}
+
 /**
  * vm method runs the logic of EIP 2935 (save blockhashes to state)
  * It will put the `parentHash` of the block to the storage slot of `block.number - 1` of the history storage contract.
@@ -565,8 +620,11 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
  */
 export async function accumulateParentBlockHash(
   vm: VM,
-  currentBlockNumber: bigint,
+  _currentBlockNumber: bigint,
   parentHash: Uint8Array,
+  blockGasLimit: bigint,
+  evmBlock: EvmBlockContext,
+  gas8037?: PreTxSystemGas8037Accumulator,
 ) {
   if (!vm.common.isActivatedEIP(2935)) {
     throw EthereumJSErrorWithoutCode(
@@ -574,48 +632,14 @@ export async function accumulateParentBlockHash(
     )
   }
   const historyAddress = new Address(bigIntToAddressBytes(vm.common.param('historyStorageAddress')))
-  const historyServeWindow = vm.common.param('historyServeWindow')
-
-  // getAccount with historyAddress will throw error as witnesses are not bundled
-  // but we need to put account so as to query later for slot
-  const code = await vm.stateManager.getCode(historyAddress)
-
-  if (code.length === 0) {
-    // Exit early, system contract has no code so no storage is written.
-    // EIP-7928: the attempted system-call access is still recorded in the
-    // block access list as an address-only entry.
-    if (vm.common.isActivatedEIP(7928)) {
-      vm.evm.blockLevelAccessList!.addAddress(historyAddress.toString())
-    }
-    return
-  }
-
-  async function putBlockHash(vm: VM, hash: Uint8Array, number: bigint) {
-    // ringKey is the key the hash is actually put in (it is a ring buffer)
-    const ringKey = number % historyServeWindow
-
-    if (vm.common.isActivatedEIP(7864)) {
-      if (vm.evm.systemBinaryTreeAccessWitness === undefined) {
-        throw Error(`systemBinaryTreeAccessWitness required if binary tree (EIP-7864) is activated`)
-      }
-      // Add to system binary tree access witness so that it doesn't warm up tx accesses
-      vm.evm.systemBinaryTreeAccessWitness.writeAccountStorage(historyAddress, ringKey)
-    }
-    const key = setLengthLeft(bigIntToBytes(ringKey), 32)
-    if (vm.common.isActivatedEIP(7928)) {
-      vm.evm.blockLevelAccessList!.addStorageWrite(
-        historyAddress.toString(),
-        key,
-        hash,
-        vm.evm.blockLevelAccessList!.blockAccessIndex,
-      )
-    }
-    await vm.stateManager.putStorage(historyAddress, key, hash)
-  }
-  await putBlockHash(vm, parentHash, currentBlockNumber - BIGINT_1)
-
-  // do cleanup if the code was not deployed
-  await vm.evm.journal.cleanup()
+  await runPreTxSystemContractCall(vm, {
+    to: historyAddress,
+    data: parentHash,
+    block: evmBlock,
+    blockGasLimit,
+    gas8037,
+    errorLabel: 'history storage contract',
+  })
 }
 
 /**
@@ -623,63 +647,26 @@ export async function accumulateParentBlockHash(
  *
  * Called during block processing when EIP-4788 is active.
  */
-export async function accumulateParentBeaconBlockRoot(vm: VM, root: Uint8Array, timestamp: bigint) {
+export async function accumulateParentBeaconBlockRoot(
+  vm: VM,
+  root: Uint8Array,
+  blockGasLimit: bigint,
+  evmBlock: EvmBlockContext,
+  gas8037?: PreTxSystemGas8037Accumulator,
+) {
   if (!vm.common.isActivatedEIP(4788)) {
     throw EthereumJSErrorWithoutCode(
       'Cannot call `accumulateParentBeaconBlockRoot`: EIP 4788 is not active',
     )
   }
-  // Save the parentBeaconBlockRoot to the beaconroot stateful precompile ring buffers
-  const historicalRootsLength = BigInt(vm.common.param('historicalRootsLength'))
-  const timestampIndex = timestamp % historicalRootsLength
-  const timestampExtended = timestampIndex + historicalRootsLength
-
-  /**
-   * Note: (by Gabriel)
-   * Get account will throw an error in stateless execution b/c witnesses are not bundled
-   * But we do need an account so we are able to put the storage
-   */
-  const code = await vm.stateManager.getCode(parentBeaconBlockRootAddress)
-
-  if (code.length === 0) {
-    // Exit early, system contract has no code so no storage is written
-    // TODO: verify with Gabriel that this is fine regarding binary trees (should we put an empty account?)
-    // EIP-7928: the attempted system-call access is still recorded in the
-    // block access list as an address-only entry.
-    if (vm.common.isActivatedEIP(7928)) {
-      vm.evm.blockLevelAccessList!.addAddress(parentBeaconBlockRootAddress.toString())
-    }
-    return
-  }
-  if (vm.common.isActivatedEIP(7928)) {
-    vm.evm.blockLevelAccessList!.addStorageWrite(
-      parentBeaconBlockRootAddress.toString(),
-      setLengthLeft(bigIntToBytes(timestampIndex), 32),
-      bigIntToBytes(timestamp),
-      vm.evm.blockLevelAccessList!.blockAccessIndex,
-    )
-  }
-  await vm.stateManager.putStorage(
-    parentBeaconBlockRootAddress,
-    setLengthLeft(bigIntToBytes(timestampIndex), 32),
-    bigIntToBytes(timestamp),
-  )
-  if (vm.common.isActivatedEIP(7928)) {
-    vm.evm.blockLevelAccessList!.addStorageWrite(
-      parentBeaconBlockRootAddress.toString(),
-      setLengthLeft(bigIntToBytes(timestampExtended), 32),
-      root,
-      vm.evm.blockLevelAccessList!.blockAccessIndex,
-    )
-  }
-  await vm.stateManager.putStorage(
-    parentBeaconBlockRootAddress,
-    setLengthLeft(bigIntToBytes(timestampExtended), 32),
-    root,
-  )
-
-  // do cleanup if the code was not deployed
-  await vm.evm.journal.cleanup()
+  await runPreTxSystemContractCall(vm, {
+    to: parentBeaconBlockRootAddress,
+    data: root,
+    block: evmBlock,
+    blockGasLimit,
+    gas8037,
+    errorLabel: 'beacon roots contract',
+  })
 }
 
 /** Shared pre-transaction system calls (EIP-4788, EIP-2935) for runBlock and buildBlock. */
@@ -691,15 +678,49 @@ export async function applyPreTransactionSystemOperations(
     blockNumber: bigint
     parentHash: Uint8Array
   },
+  blockGasLimit?: bigint,
   debugLog?: (msg: string) => void,
-): Promise<void> {
+  blockForEvm?: EvmBlockContext,
+): Promise<PreTxSystemGas8037 | undefined> {
+  const gasLimit = blockGasLimit ?? BIGINT_0
+  const evmBlock: EvmBlockContext =
+    blockForEvm ??
+    evmBlockFromHeader({
+      blockNumber: input.blockNumber,
+      timestamp: input.timestamp,
+      gasLimit: blockGasLimit,
+    })
+  const gas8037: PreTxSystemGas8037Accumulator | undefined =
+    blockGasLimit !== undefined && vm.common.isActivatedEIP(8037)
+      ? { blockRegularGasUsed: BIGINT_0, blockStateGasUsed: BIGINT_0 }
+      : undefined
   if (vm.common.isActivatedEIP(4788)) {
     debugLog?.('accumulate parentBeaconBlockRoot')
-    await accumulateParentBeaconBlockRoot(vm, input.parentBeaconBlockRoot!, input.timestamp)
+    await accumulateParentBeaconBlockRoot(
+      vm,
+      input.parentBeaconBlockRoot!,
+      gasLimit,
+      evmBlock,
+      gas8037,
+    )
   }
   if (vm.common.isActivatedEIP(2935)) {
     debugLog?.('accumulate parentBlockHash')
-    await accumulateParentBlockHash(vm, input.blockNumber, input.parentHash)
+    await accumulateParentBlockHash(
+      vm,
+      input.blockNumber,
+      input.parentHash,
+      gasLimit,
+      evmBlock,
+      gas8037,
+    )
+  }
+  if (gas8037 === undefined) {
+    return undefined
+  }
+  return {
+    blockRegularGasUsed: gas8037.blockRegularGasUsed,
+    blockStateGasUsed: gas8037.blockStateGasUsed,
   }
 }
 
@@ -720,7 +741,8 @@ async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
   //   gas_used = max(block_regular_gas_used, block_state_gas_used)
   // tracked via blockRegularGasUsed / blockStateGasUsed below.
   let gasUsed = BIGINT_0
-  // EIP-8037 per-dimension accumulators
+  // EIP-8037 § System contracts: pre-tx system calls do not count against the
+  // block gas limit or block_{regular,state}_gas_used (header stays 0 with no txs).
   let blockRegularGasUsed = BIGINT_0
   let blockStateGasUsed = BIGINT_0
   // Receipt cumulative gas accounting (keeps tx refund subtraction semantics)
@@ -830,6 +852,10 @@ async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
     console.timeEnd(processTxsLabel)
   }
 
+  if (block.transactions.length === 0) {
+    gasUsed = BIGINT_0
+  }
+
   const receiptsRoot = receiptTrie !== undefined ? receiptTrie.root() : KECCAK256_RLP
 
   return {
@@ -854,6 +880,9 @@ async function assignWithdrawals(vm: VM, block: Block): Promise<void> {
     // Note: event if amount is 0, still reward the account
     // such that the account is touched and marked for cleanup if it is empty
     await rewardAccount(vm.evm, address, amount * GWEI_TO_WEI, vm.common)
+  }
+  if (vm.common.isActivatedEIP(7928)) {
+    vm.evm.blockLevelAccessList!.cleanupNetZeroBalanceChanges()
   }
 }
 

@@ -473,6 +473,17 @@ export class EVM implements EVMInterface {
    * restore zeros reservoir / executionStateGasUsed but does not undo the
    * `executionGasUsed += message.gasLimit - gasLimit` fold of this spill.
    */
+  /**
+   * EIP-8037 state-gas charge for block-level system operations (4788 / 2935).
+   * Draws from {@link stateGasReservoir} first, then spills into `regularGasLimit`.
+   */
+  chargeSystemStateGas(
+    amount: bigint,
+    regularGasLimit: bigint,
+  ): { remaining: bigint; spilled: bigint } | undefined {
+    return this.chargeFrameStateGas(amount, regularGasLimit)
+  }
+
   private chargeFrameStateGas(
     amount: bigint,
     gasLimit: bigint,
@@ -549,6 +560,9 @@ export class EVM implements EVMInterface {
         if (recipient === undefined || recipient.isEmpty()) {
           const amount =
             this.common.param('stateBytesPerNewAccount') * activeCostPerStateByte(this.common)
+          if (this.common.isActivatedEIP(7928)) {
+            this.blockLevelAccessList!.addAddress(message.to.toString())
+          }
           const charged = this.chargeFrameStateGas(amount, gasLimit)
           if (charged === undefined) {
             this.eip2780PrepOog = true
@@ -833,6 +847,9 @@ export class EVM implements EVMInterface {
       if (this.common.isActivatedEIP(8037) && message.createdTargetAlive !== true) {
         const amount =
           this.common.param('stateBytesPerNewAccount') * activeCostPerStateByte(this.common)
+        if (this.common.isActivatedEIP(7928)) {
+          this.blockLevelAccessList!.addAddress(message.to.toString())
+        }
         const charged = this.chargeFrameStateGas(amount, gasLimit)
         if (charged === undefined) {
           this.eip2780PrepOog = true
@@ -1423,6 +1440,8 @@ export class EVM implements EVMInterface {
       debug(`message checkpoint`)
     }
 
+    // Captured before CREATE assigns `message.to` to the new address.
+    const isCall = message.to !== undefined
     let result
     if (this.DEBUG) {
       const { caller, gasLimit, to, value, delegatecall } = message
@@ -1494,7 +1513,19 @@ export class EVM implements EVMInterface {
         if (err.error === EVMError.errorMessages.REVERT) {
           const spilled = result.execResult.stateGasSpilled ?? BIGINT_0
           if (spilled > BIGINT_0) {
-            result.execResult.executionGasUsed -= spilled
+            // EELS `refill_frame_state_gas` returns spilled state gas as unused
+            // gas. A top-frame CALL that exits before the interpreter (precompile)
+            // folds that spill into `executionGasUsed` and leaves `gas` unset.
+            // If the frame also consumed its whole limit, the spill was spent as
+            // regular gas and must not be credited again. Interpreter reverts
+            // still report `gas` and refund the full spill.
+            const spentEntireCall =
+              message.depth === 0 &&
+              isCall &&
+              result.execResult.gas === undefined &&
+              result.execResult.executionGasUsed === message.gasLimit
+            const creditBack = spentEntireCall ? BIGINT_0 : spilled
+            result.execResult.executionGasUsed -= creditBack
           }
         }
         // The frame failed: its spilled state gas must not propagate to the

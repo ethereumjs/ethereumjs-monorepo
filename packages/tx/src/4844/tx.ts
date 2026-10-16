@@ -237,18 +237,7 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
       }
     }
 
-    // "Old" limit (superseded by EIP-7594 starting with Osaka)
-    const limitBlobsPerTx =
-      this.common.param('maxBlobGasPerBlock') / this.common.param('blobGasPerBlob')
-    if (this.blobVersionedHashes.length > limitBlobsPerTx) {
-      const msg = Legacy.errorMsg(
-        this,
-        `tx causes total blob gas of ${Number(this.common.param('blobGasPerBlob')) * this.blobVersionedHashes.length} to exceed maximum blob gas per block of ${this.common.param('maxBlobGasPerBlock')}`,
-      )
-      throw EthereumJSErrorWithoutCode(msg)
-    }
-
-    // EIP-7594 PeerDAS: Limit of 6 blobs per transaction
+    // EIP-7594 PeerDAS: per-tx blob cap (checked before the legacy block blob-gas limit)
     if (this.common.isActivatedEIP(7594)) {
       const maxBlobsPerTx = this.common.param('maxBlobsPerTx')
       if (this.blobVersionedHashes.length > maxBlobsPerTx) {
@@ -258,6 +247,17 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
         )
         throw EthereumJSErrorWithoutCode(msg)
       }
+    }
+
+    // Block-level blob gas limit (superseded for count errors when EIP-7594 is active)
+    const limitBlobsPerTx =
+      this.common.param('maxBlobGasPerBlock') / this.common.param('blobGasPerBlob')
+    if (this.blobVersionedHashes.length > limitBlobsPerTx) {
+      const msg = Legacy.errorMsg(
+        this,
+        `tx causes total blob gas of ${Number(this.common.param('blobGasPerBlob')) * this.blobVersionedHashes.length} to exceed maximum blob gas per block of ${this.common.param('maxBlobGasPerBlock')}`,
+      )
+      throw EthereumJSErrorWithoutCode(msg)
     }
     if (this.blobVersionedHashes.length === 0) {
       const msg = Legacy.errorMsg(this, `tx should contain at least one blob`)

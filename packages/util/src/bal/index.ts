@@ -400,9 +400,12 @@ export class BlockLevelAccessList {
     if (this.accesses[address] === undefined) {
       this.addAddress(address)
     }
-    // EIP-7928: Track the original (pre-transaction) balance for net-zero detection
-    // Only set if not already tracked (first call wins)
-    if (originalBalance !== undefined && !this.originalBalances.has(address)) {
+    // EIP-7928: pre-phase balance for net-zero cleanup at this blockAccessIndex
+    // (first mutation at this index wins; later updates at the same index do not)
+    if (
+      originalBalance !== undefined &&
+      !this.accesses[address].balanceChanges.has(blockAccessIndex)
+    ) {
       this.originalBalances.set(address, originalBalance)
     }
     this.accesses[address].balanceChanges.set(
@@ -416,19 +419,30 @@ export class BlockLevelAccessList {
    * Call this at the end of each transaction to clean up net-zero balance changes.
    */
   public cleanupNetZeroBalanceChanges(): void {
+    for (const address of Object.keys(this.accesses) as BALAddressHex[]) {
+      const access = this.accesses[address]
+      if (access === undefined) continue
+      const atIndex = access.balanceChanges.get(this.blockAccessIndex)
+      // Post-execution system calls may touch accounts without a net balance
+      // delta; drop orphan zero entries that never had a tracked pre-index balance.
+      if (atIndex === '0x' && !this.originalBalances.has(address)) {
+        access.balanceChanges.delete(this.blockAccessIndex)
+      }
+    }
+
     for (const [address, originalBalance] of this.originalBalances.entries()) {
       const access = this.accesses[address]
-      if (access === undefined || access.balanceChanges.size === 0) {
+      if (access === undefined) {
         continue
       }
-      // Get the final balance (last entry in the balanceChanges map)
-      const entries = Array.from(access.balanceChanges.values())
-      const finalBalanceHex = entries[entries.length - 1]
+      const atIndexHex = access.balanceChanges.get(this.blockAccessIndex)
+      if (atIndexHex === undefined) {
+        continue
+      }
       const finalBalance =
-        finalBalanceHex === '0x' ? BigInt(0) : BigInt(`0x${finalBalanceHex.replace(/^0x/, '')}`)
+        atIndexHex === '0x' ? BigInt(0) : BigInt(`0x${atIndexHex.replace(/^0x/, '')}`)
 
-      // EIP-7928: If final balance == original balance, remove all balanceChanges
-      // for the current blockAccessIndex only, but keep prior tx entries.
+      // EIP-7928: drop net-zero balance changes at this index only (including 0 -> 0).
       if (finalBalance === originalBalance) {
         access.balanceChanges.delete(this.blockAccessIndex)
       }
@@ -584,23 +598,19 @@ export class BlockLevelAccessList {
       access.codeChanges = []
 
       const originalBalance = this.originalBalances.get(address)
+      const index = this.blockAccessIndex
       if (finalBalances !== undefined) {
-        // EIP-8246: SELFDESTRUCT preserves the account balance. Keep the
-        // recorded balance changes only when the balance changed net over
-        // the transaction (final != pre-transaction).
+        // EIP-8246: SELFDESTRUCT preserves the account balance. Drop only this
+        // transaction's balance entry when net-zero; prior tx indices stay.
         const finalBalance = finalBalances.get(address) ?? BigInt(0)
         if (finalBalance === (originalBalance ?? BigInt(0))) {
-          access.balanceChanges.clear()
+          access.balanceChanges.delete(index)
         }
       } else if (originalBalance === undefined || originalBalance === BigInt(0)) {
-        // EIP-7928 (pre-8246 destruction semantics): if the account had a
-        // positive pre-transaction balance, the balance change to zero MUST
-        // be recorded (already added during SELFDESTRUCT execution). Clear
-        // balance changes only when the pre-transaction balance was 0
-        // (0 -> 0 is no change, so nothing to record).
-        access.balanceChanges.clear()
+        // EIP-7928 (pre-8246): 0 -> 0 at this index is not recorded.
+        access.balanceChanges.delete(index)
       }
-      // If originalBalance > 0, keep the balance changes (which should show balance = 0)
+      // If originalBalance > 0, keep balance changes at all indices (incl. balance = 0)
     }
   }
 }

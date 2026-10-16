@@ -191,7 +191,14 @@ export function sharedConstructor(
   // here. The runTx-level validation enforces
   // `max(intrinsic_regular_gas, calldata_floor_gas_cost) <= TX_MAX_GAS_LIMIT`
   // instead.
-  if (tx.common.isActivatedEIP(7825) && !tx.common.isActivatedEIP(8037)) {
+  if (tx.common.isActivatedEIP(8037)) {
+    const maxTotalGasLimit = tx.common.param('maxTotalTransactionGasLimit')
+    if (maxTotalGasLimit !== undefined && tx.gasLimit > maxTotalGasLimit) {
+      throw EthereumJSErrorWithoutCode(
+        `Transaction gas limit ${tx.gasLimit} exceeds the maximum total gas limit (${maxTotalGasLimit})`,
+      )
+    }
+  } else if (tx.common.isActivatedEIP(7825)) {
     const maxGasLimit = tx.common.param('maxTransactionGasLimit')
     if (tx.gasLimit > maxGasLimit) {
       throw EthereumJSErrorWithoutCode(

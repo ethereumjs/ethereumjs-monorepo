@@ -1,3 +1,6 @@
+import assert from 'node:assert/strict'
+import { inspect } from 'node:util'
+
 import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 
@@ -7,6 +10,29 @@ import { runLegacyBlockchainTest } from './legacyBlockchain.ts'
 import { runStateTestCase } from './state.ts'
 
 let sharedKzg: microEthKZG | undefined
+
+export function formatCaseError(e: unknown): string {
+  if (e instanceof assert.AssertionError) {
+    const parts: string[] = []
+    if (e.stack !== undefined) parts.push(e.stack)
+    else parts.push(e.message)
+    if (e.actual !== undefined) {
+      parts.push(
+        `AssertionError actual: ${typeof e.actual === 'string' ? e.actual : inspect(e.actual, { depth: 4, maxArrayLength: 20 })}`,
+      )
+    }
+    if (e.expected !== undefined) {
+      parts.push(
+        `AssertionError expected: ${typeof e.expected === 'string' ? e.expected : inspect(e.expected, { depth: 4, maxArrayLength: 20 })}`,
+      )
+    }
+    return parts.join('\n')
+  }
+  if (e instanceof Error) {
+    return e.stack ?? e.message
+  }
+  return String(e)
+}
 
 function getKzg(): microEthKZG {
   if (sharedKzg === undefined) {
@@ -63,7 +89,6 @@ export async function runCases(
       results.push(ok)
       hooks?.onCaseComplete?.(ok, index, total)
     } catch (e: unknown) {
-      const err = e as Error
       const fail: CaseResult = {
         id: testCase.id,
         fork: testCase.fork,
@@ -71,7 +96,7 @@ export async function runCases(
         filePath: testCase.filePath,
         relPath,
         pass: false,
-        error: err?.stack ?? err?.message ?? String(e),
+        error: formatCaseError(e),
         durationMs: performance.now() - start,
       }
       results.push(fail)
