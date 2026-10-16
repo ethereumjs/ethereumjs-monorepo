@@ -1,8 +1,7 @@
 name: Build
 on:
   pull_request:
-    # synchronize re-reads PR labels (same model as type: test no browser). Performance
-    # benchmarks run only when "type: test performance" is on the PR for that event.
+    # synchronize re-reads PR labels (same model as type: test no browser).
     types: [opened, reopened, synchronize, ready_for_review]
   push:
     branches: [master]
@@ -340,80 +339,6 @@ jobs:
             }
             console.log("All required jobs passed or skipped")
           '
-
-  performance-benchmarks:
-    name: Performance benchmarks
-    needs: [build]
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    if: >-
-      always() && needs.build.result == 'success' &&
-      (github.event_name == 'push' || github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'pull_request' &&
-      github.event.pull_request.draft == false &&
-      contains(github.event.pull_request.labels.*.name, 'type: test performance')))
-    permissions:
-      contents: read
-      id-token: write
-      pull-requests: write
-      checks: write
-    steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
-
-      # Master pushes stay path-filtered. Manual dispatch and PRs with the performance label measure.
-      - name: Bench-relevant paths
-        id: bench-paths
-        if: github.event_name != 'pull_request'
-        env:
-          EVENT_NAME: ${{ github.event_name }}
-          BEFORE: ${{ github.event.before }}
-          SHA: ${{ github.sha }}
-        run: |
-          set -euo pipefail
-          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
-            echo "bench=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
-            echo "bench=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          git fetch --no-tags --depth=1 origin "$BEFORE"
-          bench=false
-          while IFS= read -r f; do
-            [ -z "$f" ] && continue
-            case "$f" in
-              packages/binarytree/*|packages/block/*|packages/evm/*|packages/mpt/*|packages/rlp/*|packages/statemanager/*|packages/tx/*|packages/util/*|packages/vm/*|config/vitest-bench.mts|.github/workflows/build.yml|package.json|package-lock.json)
-                bench=true
-                break
-                ;;
-            esac
-          done <<< "$(git diff --name-only "$BEFORE" "$SHA")"
-          echo "bench=$bench" >> "$GITHUB_OUTPUT"
-
-      - name: No bench-relevant changes
-        if: github.event_name != 'pull_request' && steps.bench-paths.outputs.bench != 'true'
-        run: echo "Skipping — no performance benchmark paths in this event."
-
-      # @codspeed/core 5.x prebuilds target Node 22 (Node 26 Linux hits V8 ABI errors). Rebuild after setup-node.
-      - uses: ./.github/actions/setup-ethereumjs
-        if: github.event_name == 'pull_request' || steps.bench-paths.outputs.bench == 'true'
-        with:
-          dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
-          node-version: '22'
-
-      - name: Rebuild CodSpeed native module for bench Node
-        if: github.event_name == 'pull_request' || steps.bench-paths.outputs.bench == 'true'
-        run: npm rebuild @codspeed/core
-        working-directory: ${{ github.workspace }}
-
-      - name: Run benchmarks
-        if: github.event_name == 'pull_request' || steps.bench-paths.outputs.bench == 'true'
-        uses: CodSpeedHQ/action@f842b9a3ffe213dbb81768fd7f7eeb4dfcf1c369 # v5.4.2
-        with:
-          mode: simulation
-          run: npm run bench
-          cache-instruments: 'true'
 
   bundle-size:
     needs: [build]
