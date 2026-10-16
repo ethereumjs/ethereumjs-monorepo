@@ -30,10 +30,12 @@ import { Message } from './message.ts'
 import {
   type Eip7928PostTargetCallOog,
   consumeEip7928PostTargetCallOog,
+  createNewAccountStateGasIfCharged,
 } from './opcodes/EIP7928.ts'
 import { isEIP8024PairImmediateValid, isEIP8024SingleImmediateValid } from './opcodes/EIP8024.ts'
 import { opcodeImmediateByteCount } from './opcodes/immediateWidth.ts'
 import { trap } from './opcodes/index.ts'
+import { maxCallGas } from './opcodes/util.ts'
 import { Stack } from './stack.ts'
 
 import type {
@@ -1348,6 +1350,19 @@ export class Interpreter {
       : generateAddress(this._env.address.bytes, bigIntToBytes(this._env.contract.nonce))
     if (this.common.isActivatedEIP(8038) && this.common.isActivatedEIP(2929)) {
       this.journal.addWarmedAddress(targetAddressBytes)
+    }
+
+    if (this.common.isActivatedEIP(8038) && this.common.isActivatedEIP(8037)) {
+      const newAccountStateGas = await createNewAccountStateGasIfCharged(
+        this._runState,
+        this.common,
+        targetAddressBytes,
+      )
+      if (newAccountStateGas > BIGINT_0) {
+        this.chargeStateGas(newAccountStateGas, 'CREATE pre-charge new_account')
+        this._runState.lastCreateNewAccountStateGas = newAccountStateGas
+      }
+      gasLimit = maxCallGas(this.getGasLeft(), this.getGasLeft(), this._runState, this.common)
     }
 
     this._env.contract.nonce += BIGINT_1
