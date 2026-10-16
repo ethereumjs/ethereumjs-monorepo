@@ -1361,11 +1361,13 @@ export class Interpreter {
         targetAddressBytes,
       )
       if (newAccountStateGas > BIGINT_0) {
+        if (this.common.isActivatedEIP(7928)) {
+          this._evm.blockLevelAccessList!.addAddress(bytesToHex(targetAddressBytes))
+        }
         if (
           this.common.isActivatedEIP(7928) &&
           !canAfford(this._runState, BIGINT_0, newAccountStateGas)
         ) {
-          this._evm.blockLevelAccessList!.addAddress(bytesToHex(targetAddressBytes))
           eip7928PostTargetCreateOog(this._runState, this.common, BIGINT_0)
         }
         this.chargeStateGas(newAccountStateGas, 'CREATE pre-charge new_account')

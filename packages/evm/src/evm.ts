@@ -560,6 +560,9 @@ export class EVM implements EVMInterface {
         if (recipient === undefined || recipient.isEmpty()) {
           const amount =
             this.common.param('stateBytesPerNewAccount') * activeCostPerStateByte(this.common)
+          if (this.common.isActivatedEIP(7928)) {
+            this.blockLevelAccessList!.addAddress(message.to.toString())
+          }
           const charged = this.chargeFrameStateGas(amount, gasLimit)
           if (charged === undefined) {
             this.eip2780PrepOog = true
@@ -844,6 +847,9 @@ export class EVM implements EVMInterface {
       if (this.common.isActivatedEIP(8037) && message.createdTargetAlive !== true) {
         const amount =
           this.common.param('stateBytesPerNewAccount') * activeCostPerStateByte(this.common)
+        if (this.common.isActivatedEIP(7928)) {
+          this.blockLevelAccessList!.addAddress(message.to.toString())
+        }
         const charged = this.chargeFrameStateGas(amount, gasLimit)
         if (charged === undefined) {
           this.eip2780PrepOog = true
