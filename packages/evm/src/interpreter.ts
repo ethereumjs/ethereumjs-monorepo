@@ -716,6 +716,26 @@ export class Interpreter {
   }
 
   /**
+   * EIP-8037: after a successful child frame, merged reservoir may repay this
+   * frame's outstanding state-gas spill (cross-frame refund path).
+   */
+  repayStateGasSpillFromReservoir(context?: string): void {
+    const spill = this._runState.stateGasSpilled
+    if (spill === BIGINT_0) return
+    const evm = this._evm
+    const repay = spill < evm.stateGasReservoir ? spill : evm.stateGasReservoir
+    if (repay === BIGINT_0) return
+    evm.stateGasReservoir -= repay
+    this._runState.stateGasSpilled -= repay
+    this._runState.gasLeft += repay
+    if (evm.DEBUG) {
+      debugGas(
+        `${context !== undefined ? context + ': ' : ''}repaid ${repay} state-gas spill from reservoir (spill=${this._runState.stateGasSpilled}, reservoir=${evm.stateGasReservoir})`,
+      )
+    }
+  }
+
+  /**
    * EIP-8037: Refill the state-gas reservoir, e.g. on revert / exceptional
    * halt or on SSTORE clear-back-to-zero where the slot was zero at tx start.
    * Increments `stateGasReservoir` and decrements `execution_state_gas_used`
@@ -1214,7 +1234,10 @@ export class Interpreter {
     // failure the new-account state gas pre-charged at the CALL opcode is
     // refunded (no account leaf persists).
     if (this.common.isActivatedEIP(8037)) {
-      this._runState.stateGasSpilled += results.execResult.stateGasSpilled ?? BIGINT_0
+      if (results.execResult.exceptionError === undefined) {
+        this._runState.stateGasSpilled += results.execResult.stateGasSpilled ?? BIGINT_0
+        this.repayStateGasSpillFromReservoir('CALL child merge')
+      }
       const preCharged = this._runState.lastCallNewAccountStateGas ?? BIGINT_0
       if (results.execResult.exceptionError !== undefined && preCharged > BIGINT_0) {
         this.creditStateGasRefund(preCharged, 'CALL child-failure new_account')
@@ -1415,6 +1438,7 @@ export class Interpreter {
         // Merge the successful child frame's spilled state gas into this
         // frame's spill tracker (LIFO refunds may credit it to gasLeft).
         this._runState.stateGasSpilled += results.execResult.stateGasSpilled ?? BIGINT_0
+        this.repayStateGasSpillFromReservoir('CREATE child merge')
         if (message.createdTargetAlive === true) {
           // The create target was already alive (EIP-161 non-empty): no new
           // account leaf was added, refund the new-account state gas.
