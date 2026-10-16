@@ -73,6 +73,18 @@ function padLabel(label: string, width = 12): string {
   return `${label}`.padEnd(width)
 }
 
+/** Inner width of every banner row, including rules. Field rows used to be one shorter and fork rows one longer. */
+const BOX_INNER = 70
+
+function boxRule(left: string, fill: string, right: string): string {
+  return `${left}${fill.repeat(BOX_INNER)}${right}`
+}
+
+function boxRow(content: string): string {
+  const text = content.length > BOX_INNER ? content.slice(0, BOX_INNER) : content
+  return `║${text.padEnd(BOX_INNER)}║`
+}
+
 /** Compact fork breakdown for the banner (top forks by count). */
 function forkBreakdown(byFork: Record<string, number>, maxLines = 6): string[] {
   return Object.entries(byFork)
@@ -81,41 +93,51 @@ function forkBreakdown(byFork: Record<string, number>, maxLines = 6): string[] {
     .map(([fork, n]) => `${fork}: ${n.toLocaleString('en-US')}`)
 }
 
+export function formatRunBanner(
+  options: RunnerCliOptions,
+  summary: CaseCountSummary,
+  rootLabel: string,
+): string {
+  const field = (label: string, value: string) => boxRow(`  ${padLabel(label)}${value}`)
+  const lines: string[] = []
+  lines.push(boxRule('╔', '═', '╗'))
+  lines.push(boxRow('  EthereumJS consensus run'))
+  lines.push(boxRule('╠', '═', '╣'))
+  lines.push(field('source', formatSourceLine(options)))
+  lines.push(field('scope', formatForkScope(options)))
+  lines.push(field('format', formatFormatLine(options.format)))
+  if (options.shard !== undefined) {
+    lines.push(field('shard', options.shard))
+  }
+  lines.push(field('workers', String(options.jobs)))
+  if (options.rerunFailedPath !== undefined) {
+    lines.push(field('rerun', options.rerunFailedPath))
+  }
+  lines.push(
+    field(
+      'selected',
+      `${summary.total.toLocaleString('en-US')} cases · ${summary.fileCount.toLocaleString('en-US')} files`,
+    ),
+  )
+  const breakdown = forkBreakdown(summary.byFork)
+  if (breakdown.length > 0) {
+    lines.push(boxRule('╟', '─', '╢'))
+    for (const row of breakdown) {
+      lines.push(boxRow(`    ${row}`))
+    }
+  }
+  lines.push(boxRule('╚', '═', '╝'))
+  const fixtureHint = rootLabel.length > 72 ? `…${rootLabel.slice(-71)}` : rootLabel
+  lines.push(`fixtures: ${fixtureHint}`)
+  return `${lines.join('\n')}\n\n`
+}
+
 export function printRunBanner(
   options: RunnerCliOptions,
   summary: CaseCountSummary,
   rootLabel: string,
 ): void {
-  const lines: string[] = []
-  lines.push('╔══════════════════════════════════════════════════════════════════════╗')
-  lines.push('║  EthereumJS consensus run                                            ║')
-  lines.push('╠══════════════════════════════════════════════════════════════════════╣')
-  lines.push(`║  ${padLabel('source')}${formatSourceLine(options).slice(0, 54).padEnd(54)} ║`)
-  lines.push(`║  ${padLabel('scope')}${formatForkScope(options).slice(0, 54).padEnd(54)} ║`)
-  lines.push(
-    `║  ${padLabel('format')}${formatFormatLine(options.format).slice(0, 54).padEnd(54)} ║`,
-  )
-  if (options.shard !== undefined) {
-    lines.push(`║  ${padLabel('shard')}${options.shard.slice(0, 54).padEnd(54)} ║`)
-  }
-  lines.push(`║  ${padLabel('workers')}${String(options.jobs).padEnd(54)} ║`)
-  if (options.rerunFailedPath !== undefined) {
-    lines.push(`║  ${padLabel('rerun')}${options.rerunFailedPath.slice(0, 54).padEnd(54)} ║`)
-  }
-  lines.push(
-    `║  ${padLabel('selected')}${`${summary.total.toLocaleString('en-US')} cases · ${summary.fileCount.toLocaleString('en-US')} files`.padEnd(54)} ║`,
-  )
-  const breakdown = forkBreakdown(summary.byFork)
-  if (breakdown.length > 0) {
-    lines.push('╟──────────────────────────────────────────────────────────────────────╢')
-    for (const row of breakdown) {
-      lines.push(`║    ${row.padEnd(66)} ║`)
-    }
-  }
-  lines.push('╚══════════════════════════════════════════════════════════════════════╝')
-  const fixtureHint = rootLabel.length > 72 ? `…${rootLabel.slice(-71)}` : rootLabel
-  lines.push(`fixtures: ${fixtureHint}`)
-  process.stdout.write(`${lines.join('\n')}\n\n`)
+  process.stdout.write(formatRunBanner(options, summary, rootLabel))
 }
 
 export function printRunStart(summary: CaseCountSummary, jobs: number): void {
