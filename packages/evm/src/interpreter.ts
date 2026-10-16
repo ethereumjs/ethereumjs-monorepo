@@ -1485,6 +1485,12 @@ export class Interpreter {
           // The create target was already alive (EIP-161 non-empty): no new
           // account leaf was added, refund the new-account state gas.
           refundCreatePreCharge('CREATE onto alive account new_account')
+        } else {
+          // New account persisted: the pre-charge stays in
+          // executionStateGasUsed. Clear the marker so a later CREATE on this
+          // frame (e.g. CREATE2 collision) does not refund it (EELS only
+          // credits NEW_ACCOUNT when `new_account_charged` on that op).
+          this._runState.lastCreateNewAccountStateGas = BIGINT_0
         }
       }
     }
