@@ -493,7 +493,7 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
       await block.validateData(false, true, opts.validateBlockSize ?? false)
     }
   }
-  const systemGas8037 = await applyPreTransactionSystemOperations(
+  await applyPreTransactionSystemOperations(
     vm,
     {
       parentBeaconBlockRoot: block.header.parentBeaconBlockRoot,
@@ -516,7 +516,7 @@ async function applyBlock(vm: VM, block: Block, opts: RunBlockOpts): Promise<App
     debug(`Apply transactions`)
   }
 
-  const blockResults = await applyTransactions(vm, block, opts, systemGas8037)
+  const blockResults = await applyTransactions(vm, block, opts)
 
   if (enableProfiler) {
     // eslint-disable-next-line no-console
@@ -718,12 +718,7 @@ export async function applyPreTransactionSystemOperations(
  *
  * Does not modify the block object; state changes stay within the active journal checkpoint.
  */
-async function applyTransactions(
-  vm: VM,
-  block: Block,
-  opts: RunBlockOpts,
-  preTxSystemGas8037?: PreTxSystemGas8037,
-) {
+async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
   if (enableProfiler) {
     // eslint-disable-next-line no-console
     console.time(processTxsLabel)
@@ -735,10 +730,10 @@ async function applyTransactions(
   //   gas_used = max(block_regular_gas_used, block_state_gas_used)
   // tracked via blockRegularGasUsed / blockStateGasUsed below.
   let gasUsed = BIGINT_0
-  // EIP-8037 per-dimension accumulators (pre-tx system ops count toward tx
-  // inclusion only; header gasUsed stays 0 on empty blocks).
-  let blockRegularGasUsed = preTxSystemGas8037?.blockRegularGasUsed ?? BIGINT_0
-  let blockStateGasUsed = preTxSystemGas8037?.blockStateGasUsed ?? BIGINT_0
+  // EIP-8037 § System contracts: pre-tx system calls do not count against the
+  // block gas limit or block_{regular,state}_gas_used (header stays 0 with no txs).
+  let blockRegularGasUsed = BIGINT_0
+  let blockStateGasUsed = BIGINT_0
   // Receipt cumulative gas accounting (keeps tx refund subtraction semantics)
   let receiptGasUsed = BIGINT_0
 
