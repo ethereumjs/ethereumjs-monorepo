@@ -6,9 +6,10 @@ import { toBytes } from 'viem'
 
 import { createVM } from '../../../src/constructors.ts'
 import { runTx } from '../../../src/runTx.ts'
-import { makeBlockFromEnv, makeTx, setupPreConditions } from '../../util.ts'
+import { makeBlockFromEnv, setupPreConditions } from '../../util.ts'
 import { createCommonForFork, parseStateTest } from '../forkCommon.ts'
 import type { StateTestFixtureData } from '../types.ts'
+import { makeStateTestTx } from './stateTx.ts'
 
 export type StateRunOptions = {
   kzg?: microEthKZG
@@ -29,7 +30,7 @@ export async function runStateTestCase(
   let execInfo = ''
   let tx
   try {
-    tx = makeTx(parsed.transaction, { common })
+    tx = makeStateTestTx(parsed.transaction, { common }, parsed.expectException)
   } catch {
     execInfo = 'tx instantiation exception'
   }
