@@ -1309,19 +1309,35 @@ export class Interpreter {
       this._runState.lastCreateNewAccountStateGas = BIGINT_0
     }
 
+    // EELS `generic_create`: when post-target gas (incl. new-account state gas)
+    // was charged in the opcode gas step but the create aborts before target
+    // access (balance / nonce), the 63/64 grant is consumed as regular gas and
+    // state gas is not refunded. Preflight-only aborts never charged state gas.
+    const abortCreateBeforeTargetAccess = (): bigint => {
+      const preCharged = this._runState.lastCreateNewAccountStateGas ?? BIGINT_0
+      // EELS `generic_create`: when post-target gas leaves only the 63/64 grant
+      // on the frame, balance/nonce abort absorbs it as regular gas and keeps
+      // the new-account state-gas charge (EIP-8038 aborted_create_gas_boundary).
+      if (preCharged > BIGINT_0 && this.getGasLeft() === gasLimit) {
+        this.useGas(gasLimit, 'CREATE fail-fast new_account')
+        this._runState.lastCreateNewAccountStateGas = BIGINT_0
+      } else {
+        refundCreatePreCharge('CREATE fail-fast new_account')
+      }
+      return BIGINT_0
+    }
+
     // Check if account has enough ether and max depth not exceeded
     if (
       this._env.depth >= Number(this.common.param('stackLimit')) ||
       this._env.contract.balance < value
     ) {
-      refundCreatePreCharge('CREATE fail-fast new_account')
-      return BIGINT_0
+      return abortCreateBeforeTargetAccess()
     }
 
     // EIP-2681 check
     if (this._env.contract.nonce >= MAX_UINT64) {
-      refundCreatePreCharge('CREATE fail-fast new_account')
-      return BIGINT_0
+      return abortCreateBeforeTargetAccess()
     }
 
     // EIP-8038: warm the create target only now, after the fail-fast checks
