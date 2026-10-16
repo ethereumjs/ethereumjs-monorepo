@@ -90,6 +90,18 @@ npm run test:consensus -- --rerun-failed /tmp/consensus-report.json --jobs 1 --d
 npm run test:consensus:phase0           # local size/count/timing helpers (see PHASE0.md)
 ```
 
+**CI failure → local rerun (agents and humans):**
+
+1. After a red `vm-consensus-est` job, each failed shard uploads artifact `consensus-est-failures-0` … `consensus-est-failures-3` (JSON with full `failures[]`).
+2. From `packages/vm` (needs `gh` auth + `fixtures:fetch` once):
+
+   ```bash
+   npm run consensus:fetch-ci-failures
+   npm run test:consensus -- --source tests --forks recent --rerun-failed .ci/consensus-failures.json --jobs 4 --skip-fetch
+   ```
+
+   Optional: `--run-id <Build workflow run id>` or `--branch <name>`. The fetch script prints every failure line for log reading; `--rerun-failed` ignores `--shard`.
+
 **Flags (summary):** `--source`, `--format`, `--fork` / `--forks recent|all`, `--dir`, `--file`, `--test`, `--jobs`, `--shard i/n`, `--list`, `--bail`, `--skip` / `--run-skipped`, `--report`, `--rerun-failed`, `--fixture-root`, `--skip-fetch`, `--auto-fetch`, `--jsontrace`, `--debug`, `--profile`.
 
 CI restores an Actions cache keyed on `fixtures.json`, then runs `fixtures:fetch`. See [`.github/workflows/vm-pr.yml`](../../.github/workflows/vm-pr.yml) and [`vm-consensus-cache-warm.yml`](../../.github/workflows/vm-consensus-cache-warm.yml).

@@ -58,8 +58,14 @@ export function printReport(report: ConsensusReport, jobs: number): void {
   if (failed > 0) {
     process.stdout.write('\nFailures (first 20):\n')
     for (const f of report.failures.slice(0, 20)) {
+      const loc = f.relPath ?? f.filePath
       process.stdout.write(
-        `  ${f.fork} ${f.format} ${f.id}\n    ${f.error?.split('\n')[0] ?? ''}\n`,
+        `  ${f.fork} ${f.format} ${f.id} ${loc}\n    ${f.error?.split('\n')[0] ?? ''}\n`,
+      )
+    }
+    if (report.failures.length > 20) {
+      process.stdout.write(
+        `  … and ${report.failures.length - 20} more (CI uploads full list as consensus-est-failures-* artifacts)\n`,
       )
     }
   }

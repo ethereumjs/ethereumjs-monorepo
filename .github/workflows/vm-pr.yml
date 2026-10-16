@@ -113,21 +113,33 @@ jobs:
       - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM')
         run: npm run test:consensus:smoke
 
-      - if: >-
-          contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM') == false &&
-          contains(join(github.event.pull_request.labels.*.name, ' '), 'test all hardforks')
+      - name: Consensus EST
+        if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM') == false
+        continue-on-error: true
+        id: consensus_est
+        env:
+          RUN_ALL: ${{ contains(join(github.event.pull_request.labels.*.name, ' '), 'test all hardforks') }}
         run: |
           EXTRA=""
           if [ "${{ steps.est-cache.outputs.cache-hit }}" = "true" ]; then EXTRA="--skip-fetch"; fi
-          npm run test:consensus:all -- --format all --shard ${{ matrix.shard }} --jobs 2 $EXTRA
+          REPORT="$RUNNER_TEMP/consensus-est-failures.json"
+          if [ "$RUN_ALL" = "true" ]; then
+            npm run test:consensus:all -- --format all --shard ${{ matrix.shard }} --jobs 2 $EXTRA --report "$REPORT"
+          else
+            npm run test:consensus:pr -- --format all --shard ${{ matrix.shard }} --jobs 2 $EXTRA --report "$REPORT"
+          fi
 
-      - if: >-
-          contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM') == false &&
-          contains(join(github.event.pull_request.labels.*.name, ' '), 'test all hardforks') == false
-        run: |
-          EXTRA=""
-          if [ "${{ steps.est-cache.outputs.cache-hit }}" = "true" ]; then EXTRA="--skip-fetch"; fi
-          npm run test:consensus:pr -- --format all --shard ${{ matrix.shard }} --jobs 2 $EXTRA
+      - name: Upload consensus EST failure report
+        if: steps.consensus_est.outcome == 'failure'
+        uses: actions/upload-artifact@26f696dee3e875cbaa1b17cc7b8620b88206c84d # v4.3.1
+        with:
+          name: consensus-est-failures-${{ strategy.job-index }}
+          path: ${{ runner.temp }}/consensus-est-failures.json
+          retention-days: 14
+
+      - name: Fail if consensus EST failed
+        if: steps.consensus_est.outcome == 'failure'
+        run: exit 1
 
   est-bogota-fixtures-cache:
     if: >-

@@ -96,7 +96,7 @@ export async function selectTestCases(options: RunnerCliOptions): Promise<{
   cases: ConsensusTestCase[]
   rootLabel: string
 }> {
-  const shard = parseShard(options.shard)
+  const shard = options.rerunFailedPath !== undefined ? undefined : parseShard(options.shard)
   const forkFilter = options.forkFilter
 
   if (options.source === 'legacy') {
