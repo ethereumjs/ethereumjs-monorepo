@@ -1,6 +1,6 @@
 import { Mainnet } from '@ethereumjs/common'
-import { activeCostPerStateByte } from '@ethereumjs/evm'
-import type { BlockLevelAccessList, PrefixedHexString } from '@ethereumjs/util'
+import { type EVMRunCallOpts, activeCostPerStateByte } from '@ethereumjs/evm'
+import type { Address, BlockLevelAccessList, PrefixedHexString } from '@ethereumjs/util'
 import {
   BIGINT_0,
   CLRequest,
@@ -17,6 +17,14 @@ import {
 
 import type { RunTxResult } from './types.ts'
 import type { VM } from './vm.ts'
+
+type EvmBlockContext = NonNullable<EVMRunCallOpts['block']>
+
+/** Accumulates EIP-8037 spill/state gas across multiple pre-tx system calls in one block. */
+export type PreTxSystemGas8037Accumulator = {
+  blockRegularGasUsed: bigint
+  blockStateGasUsed: bigint
+}
 
 /**
  * EIP-8037 system-call gas split.
@@ -70,6 +78,72 @@ export function teardownSystemCallReservoir(
   evm.stateGasReservoir = prior.reservoir
   evm.executionStateGasUsed = prior.used
   ;(evm as unknown as { _stateGasSnapshots: unknown[] })._stateGasSnapshots = prior.snapshots
+}
+
+/**
+ * EIP-4788 / EIP-2935 pre-transaction system call (SYSTEM_ADDRESS → contract, 32-byte calldata).
+ * Under EIP-8037 the caller must already have configured the shared system-call reservoir.
+ */
+export async function runPreTxSystemContractCall(
+  vm: VM,
+  params: {
+    to: Address
+    data: Uint8Array
+    block: EvmBlockContext
+    blockGasLimit: bigint
+    gas8037?: PreTxSystemGas8037Accumulator
+    errorLabel: string
+  },
+): Promise<void> {
+  const { to, data, block, blockGasLimit, gas8037, errorLabel } = params
+  const code = await vm.stateManager.getCode(to)
+  if (code.length === 0) {
+    if (vm.common.isActivatedEIP(7928)) {
+      vm.evm.blockLevelAccessList!.addAddress(to.toString())
+    }
+    return
+  }
+
+  const systemAddressBytes = bigIntToAddressBytes(vm.common.param('systemAddress'))
+  const systemAddress = createAddressFromString(bytesToHex(systemAddressBytes))
+  const systemAccount = await vm.stateManager.getAccount(systemAddress)
+  const systemAddressHex = systemAddress.toString()
+  const balSnapshot = cloneSystemAccessEntry(vm, systemAddressHex)
+
+  const { regular, reservoir } = computeSystemCallGas(vm, blockGasLimit)
+  const reservoirPrior = setupSystemCallReservoir(vm, reservoir)
+
+  const results = await vm.evm.runCall({
+    caller: systemAddress,
+    gasLimit: regular,
+    to,
+    data,
+    block,
+    skipBalance: true,
+    skipNonceIncrement: true,
+  })
+
+  if (gas8037 !== undefined) {
+    gas8037.blockRegularGasUsed += results.execResult.stateGasSpilled ?? BIGINT_0
+    gas8037.blockStateGasUsed += vm.evm.executionStateGasUsed
+  }
+
+  teardownSystemCallReservoir(vm, reservoirPrior)
+
+  restoreSystemAccessEntry(vm, systemAddressHex, balSnapshot)
+  if (systemAccount === undefined) {
+    await vm.stateManager.deleteAccount(systemAddress)
+  } else {
+    await vm.stateManager.putAccount(systemAddress, systemAccount)
+  }
+
+  if (results.execResult.exceptionError !== undefined) {
+    throw EthereumJSErrorWithoutCode(
+      `system contract call failed: ${errorLabel} (${results.execResult.exceptionError.error})`,
+    )
+  }
+
+  await vm.evm.journal.cleanup()
 }
 
 const DEPOSIT_TOPIC = '0x649bbc62d0e31342afea4e5cd82d4049e7e1ee912fc0889aa790803be39038c5'
@@ -136,6 +210,7 @@ export const accumulateRequests = async (
   txResults: RunTxResult[],
   blockGasLimit?: bigint,
   generate = false,
+  block?: EvmBlockContext,
 ): Promise<CLRequest<CLRequestType>[]> => {
   const requests: CLRequest<CLRequestType>[] = []
   const common = vm.common
@@ -150,12 +225,22 @@ export const accumulateRequests = async (
   }
 
   if (common.isActivatedEIP(7002)) {
-    const withdrawalsRequest = await accumulateWithdrawalsRequest(vm, blockGasLimit)
+    const withdrawalsRequest = await accumulateWithdrawalsRequest(
+      vm,
+      blockGasLimit,
+      generate,
+      block,
+    )
     requests.push(withdrawalsRequest)
   }
 
   if (common.isActivatedEIP(7251)) {
-    const consolidationsRequest = await accumulateConsolidationsRequest(vm, blockGasLimit)
+    const consolidationsRequest = await accumulateConsolidationsRequest(
+      vm,
+      blockGasLimit,
+      generate,
+      block,
+    )
     requests.push(consolidationsRequest)
   }
 
@@ -252,6 +337,8 @@ const accumulateBuilderRequest = async (
 const accumulateWithdrawalsRequest = async (
   vm: VM,
   blockGasLimit?: bigint,
+  generate = false,
+  block?: EvmBlockContext,
 ): Promise<CLRequest<typeof CLRequestType.Withdrawal>> => {
   // Partial withdrawals logic
   const addressBytes = setLengthLeft(
@@ -278,6 +365,9 @@ const accumulateWithdrawalsRequest = async (
     caller: systemAddress,
     gasLimit: regular,
     to: withdrawalsAddress,
+    block,
+    skipBalance: true,
+    skipNonceIncrement: true,
   })
   teardownSystemCallReservoir(vm, reservoirPrior)
   restoreSystemAccessEntry(vm, systemAddressHex, balSnapshot)
@@ -288,6 +378,15 @@ const accumulateWithdrawalsRequest = async (
     await vm.stateManager.putAccount(systemAddress, systemAccount)
   }
 
+  if (results.execResult.exceptionError !== undefined) {
+    if (generate) {
+      return new CLRequest(CLRequestType.Withdrawal, new Uint8Array())
+    }
+    throw EthereumJSErrorWithoutCode(
+      `system contract call failed: withdrawal request contract ${withdrawalsAddress} (${results.execResult.exceptionError.error})`,
+    )
+  }
+
   const resultsBytes = results.execResult.returnValue
   return new CLRequest(CLRequestType.Withdrawal, resultsBytes)
 }
@@ -295,6 +394,8 @@ const accumulateWithdrawalsRequest = async (
 const accumulateConsolidationsRequest = async (
   vm: VM,
   blockGasLimit?: bigint,
+  generate = false,
+  block?: EvmBlockContext,
 ): Promise<CLRequest<typeof CLRequestType.Consolidation>> => {
   // Partial withdrawals logic
   const addressBytes = setLengthLeft(
@@ -321,6 +422,9 @@ const accumulateConsolidationsRequest = async (
     caller: systemAddress,
     gasLimit: regular,
     to: consolidationsAddress,
+    block,
+    skipBalance: true,
+    skipNonceIncrement: true,
   })
   teardownSystemCallReservoir(vm, reservoirPrior)
   restoreSystemAccessEntry(vm, systemAddressHex, balSnapshot)
@@ -329,6 +433,15 @@ const accumulateConsolidationsRequest = async (
     await vm.stateManager.deleteAccount(systemAddress)
   } else {
     await vm.stateManager.putAccount(systemAddress, systemAccount)
+  }
+
+  if (results.execResult.exceptionError !== undefined) {
+    if (generate) {
+      return new CLRequest(CLRequestType.Consolidation, new Uint8Array(0))
+    }
+    throw EthereumJSErrorWithoutCode(
+      `system contract call failed: consolidation request contract ${consolidationsAddress} (${results.execResult.exceptionError.error})`,
+    )
   }
 
   const resultsBytes = results.execResult.returnValue
