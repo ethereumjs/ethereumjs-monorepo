@@ -12,7 +12,7 @@ describe('mergeFailureReports', () => {
     for (const d of tmpDirs) fs.rmSync(d, { recursive: true, force: true })
   })
 
-  function writeJson(name: string, body: unknown): string {
+  function writeFixtureFile(name: string, body: unknown): string {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'est-merge-'))
     tmpDirs.push(dir)
     const file = path.join(dir, name)
@@ -21,7 +21,7 @@ describe('mergeFailureReports', () => {
   }
 
   it('merges failures and dedupes by fork/id/filePath', () => {
-    const a = writeJson('a.json', {
+    const a = writeFixtureFile('a.json', {
       failures: [
         {
           fork: 'Osaka',
@@ -34,7 +34,7 @@ describe('mergeFailureReports', () => {
         },
       ],
     })
-    const b = writeJson('b.json', {
+    const b = writeFixtureFile('b.json', {
       rootLabel: 'x',
       failed: 1,
       failures: [

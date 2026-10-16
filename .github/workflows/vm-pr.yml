@@ -131,7 +131,7 @@ jobs:
 
       - name: Upload consensus EST failure report
         if: steps.consensus_est.outcome == 'failure'
-        uses: actions/upload-artifact@26f696dee3e875cbaa1b17cc7b8620b88206c84d # v4.3.1
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
         with:
           name: consensus-est-failures-${{ strategy.job-index }}
           path: ${{ runner.temp }}/consensus-est-failures.json
