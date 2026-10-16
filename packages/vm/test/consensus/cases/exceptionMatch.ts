@@ -6,7 +6,7 @@ export const EXCEPTION_MESSAGES: Record<string, RegExp> = {
   'TransactionException.GAS_ALLOWANCE_EXCEEDED':
     /(?:tx has a higher gas limit than the block|tx unable to pay base fee)/,
   'TransactionException.GAS_LIMIT_EXCEEDS_MAXIMUM':
-    /Transaction gas limit \d+ exceeds the maximum allowed by EIP-7825 \(\d+\)/,
+    /Transaction gas limit \d+ exceeds the maximum (?:allowed by EIP-7825|total gas limit) \(\d+\)/,
   'TransactionException.INITCODE_SIZE_EXCEEDED':
     /the initcode size of this transaction is too large/,
   'TransactionException.INSUFFICIENT_ACCOUNT_FUNDS': /sender doesn't have enough funds to send tx/,
@@ -22,7 +22,7 @@ export const EXCEPTION_MESSAGES: Record<string, RegExp> = {
     /maxFeePerGas cannot be less than maxPriorityFeePerGas/,
   'TransactionException.SENDER_NOT_EOA': /invalid sender address, address is not EOA/,
   'TransactionException.INVALID_SIGNATURE_VRS':
-    /Invalid Signature|Legacy txs need either v|s-values greater than secp256k1n|The y-parity of the transaction should either be 0 or 1/i,
+    /Invalid Signature|Legacy txs need either v|s-values greater than secp256k1n|The y-parity of the transaction should either be 0 or 1|Invalid EIP-7702 transaction: authorization list is empty/i,
   'TransactionException.INVALID_CHAINID':
     /Common chain ID|not matching the derived chain ID|Incompatible EIP155-based V|Legacy txs need either v/i,
   'TransactionException.NONCE_MISMATCH_TOO_HIGH': /the tx doesn't have the correct nonce/,

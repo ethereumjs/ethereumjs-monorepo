@@ -22,6 +22,20 @@ describe('[VM/consensus]: exception match', () => {
     assert.ok(expectExceptionMatches('TransactionException.INVALID_SIGNATURE_VRS', err))
   })
 
+  it('matches EIP-8037 total gas cap under GAS_LIMIT_EXCEEDS_MAXIMUM', () => {
+    const err = new Error(
+      'Transaction gas limit 4294967296 exceeds the maximum total gas limit (4294967295)',
+    )
+    assert.ok(expectExceptionMatches('TransactionException.GAS_LIMIT_EXCEEDS_MAXIMUM', err))
+  })
+
+  it('matches high-s under INVALID_SIGNATURE_VRS', () => {
+    const err = new Error(
+      'Invalid Signature: s-values greater than secp256k1n/2 are considered invalid',
+    )
+    assert.ok(expectExceptionMatches('TransactionException.INVALID_SIGNATURE_VRS', err))
+  })
+
   it('formatCaseError() includes AssertionError actual and expected', () => {
     try {
       assert.strictEqual('a', 'b')
