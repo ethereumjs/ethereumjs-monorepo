@@ -49,7 +49,7 @@ export async function runBlockchainTestCaseWithAssert(
   fixtureFilePath = '',
 ) {
   const common = createCommonForFork(fork, testData, kzg)
-  const isEip7928BalFixture = common.isActivatedEIP(7928)
+  const isEip7928BalFixture = fixtureFilePath.includes('eip7928_block_level_access_lists')
 
   const genesisBlock = createBlock(
     { header: testData.genesisBlockHeader as HeaderData },
