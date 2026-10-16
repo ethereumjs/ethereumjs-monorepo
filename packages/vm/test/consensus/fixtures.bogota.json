@@ -1,0 +1,18 @@
+{
+  "cacheVersion": 2,
+  "sources": {
+    "bogota-devnet": {
+      "kind": "release",
+      "repo": "ethereum/execution-specs",
+      "tag": "tests-bogota-devnet@v1.1.0",
+      "asset": "fixtures_bogota-devnet.tar.gz",
+      "url": "https://github.com/ethereum/execution-specs/releases/download/tests-bogota-devnet%40v1.1.0/fixtures_bogota-devnet.tar.gz",
+      "sha256": "8c343a01c0438b8d6175873531c80f4292ca9e339421a320b987c9fb1c9efb38",
+      "size": 1571141755,
+      "extractPaths": ["fixtures/state_tests", "fixtures/blockchain_tests", "fixtures/.meta"],
+      "defaultForks": ["Bogota", "AmsterdamToBogotaAtTime15k"],
+      "retainTarball": true,
+      "note": "Per-fork extract via fixtures:fetch -- bogota-devnet --fork <name>. Bump tag in this file only."
+    }
+  }
+}

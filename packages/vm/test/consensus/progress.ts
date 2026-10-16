@@ -1,6 +1,6 @@
 import type { RunnerCliOptions } from './cli.ts'
 import { RECENT_FORKS } from './forks.ts'
-import { loadManifest } from './manifest.ts'
+import { loadManifestForSource } from './manifest.ts'
 import { groupCasesByFile } from './select.ts'
 import type { CaseResult, ConsensusTestCase } from './types.ts'
 
@@ -42,7 +42,7 @@ function formatForkScope(options: RunnerCliOptions): string {
     if (names.length <= 6) return names.join(', ')
     return `${names.slice(0, 5).join(', ')}, +${names.length - 5} more`
   }
-  const manifest = loadManifest()
+  const manifest = loadManifestForSource(options.source)
   const source = manifest.sources[options.source]
   if (source?.kind === 'release' && source.defaultForks !== undefined) {
     return source.defaultForks.join(', ')
@@ -54,7 +54,8 @@ function formatSourceLine(options: RunnerCliOptions): string {
   if (options.fixtureRoot !== undefined) {
     return `${options.source} · local fixture-root`
   }
-  const manifest = loadManifest()
+  if (options.source === 'legacy') return 'legacy'
+  const manifest = loadManifestForSource(options.source)
   const source = manifest.sources[options.source]
   if (source?.kind === 'release') {
     return `${options.source} · ${source.tag}`

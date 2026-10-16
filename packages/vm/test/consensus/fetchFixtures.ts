@@ -4,6 +4,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { pipeline } from 'node:stream/promises'
 
+import { RECENT_FORKS } from './forks.ts'
 import {
   buildFilteredIndex,
   filterIndexCases,
@@ -15,15 +16,21 @@ import {
   type ReleaseSource,
   defaultCacheRoot,
   extractedFixturesRoot,
-  loadManifest,
-  manifestPath,
+  extractedForkRoot,
+  forkCompleteMarker,
+  forkTreeReady,
+  getReleaseSource,
+  loadManifestForSource,
+  manifestPathForSource,
   releaseCacheDir,
+  tarballCompleteMarker,
 } from './manifest.ts'
 
 export type CompleteRecord = {
   releaseSha256: string
   extractForks?: string[]
   caseCount?: number
+  fork?: string
 }
 
 export function readCompleteRecord(markerPath: string): CompleteRecord | undefined {
@@ -38,15 +45,6 @@ export function readCompleteRecord(markerPath: string): CompleteRecord | undefin
 
 export function writeCompleteRecord(markerPath: string, record: CompleteRecord): void {
   fs.writeFileSync(markerPath, `${JSON.stringify(record)}\n`)
-}
-
-function extractForksMatch(source: ReleaseSource, record: CompleteRecord): boolean {
-  if (source.extractForks === undefined || source.extractForks.length === 0) {
-    return record.extractForks === undefined
-  }
-  const want = [...source.extractForks].sort().join(',')
-  const got = record.extractForks === undefined ? '' : [...record.extractForks].sort().join(',')
-  return want === got
 }
 
 function sha256File(filePath: string): Promise<string> {
@@ -106,13 +104,14 @@ function runTarExtractFromList(archive: string, destDir: string, listPath: strin
 async function extractForkSubset(
   archivePath: string,
   source: ReleaseSource,
-  baseDir: string,
-): Promise<{ fixturesRoot: string; caseCount: number }> {
-  const forkSet = new Set(source.extractForks)
+  forkSet: Set<string>,
+  destRoot: string,
+): Promise<{ caseCount: number }> {
   if (forkSet.size === 0) {
-    throw new Error('extractForks is empty')
+    throw new Error('extractForkSubset: fork set is empty')
   }
 
+  const baseDir = path.dirname(path.dirname(destRoot))
   const indexStage = path.join(baseDir, 'index-stage')
   if (fs.existsSync(indexStage)) fs.rmSync(indexStage, { recursive: true, force: true })
   fs.mkdirSync(indexStage, { recursive: true })
@@ -135,7 +134,7 @@ async function extractForkSubset(
   fs.mkdirSync(tmpExtract, { recursive: true })
 
   process.stderr.write(
-    `Extracting ${cases.length} Hegota cases (${members.length - 1} JSON files) from ${source.tag}…\n`,
+    `Extracting ${cases.length} cases (${members.length - 1} JSON files) for ${[...forkSet].join(', ')}…\n`,
   )
   await runTarExtractFromList(archivePath, tmpExtract, listPath)
   fs.unlinkSync(listPath)
@@ -146,55 +145,32 @@ async function extractForkSubset(
   fs.mkdirSync(metaDir, { recursive: true })
   fs.writeFileSync(path.join(metaDir, 'index.json'), `${JSON.stringify(filteredIndex, null, 2)}\n`)
 
-  const finalExtracted = path.join(baseDir, 'extracted')
-  if (fs.existsSync(finalExtracted)) fs.rmSync(finalExtracted, { recursive: true, force: true })
-  fs.renameSync(path.join(tmpExtract, 'fixtures'), finalExtracted)
+  if (fs.existsSync(destRoot)) fs.rmSync(destRoot, { recursive: true, force: true })
+  fs.mkdirSync(path.dirname(destRoot), { recursive: true })
+  fs.renameSync(path.join(tmpExtract, 'fixtures'), destRoot)
   fs.rmSync(tmpExtract, { recursive: true, force: true })
 
-  return { fixturesRoot: finalExtracted, caseCount: cases.length }
+  return { caseCount: cases.length }
 }
 
-export async function fetchReleaseSource(
-  sourceName: string,
-  options?: { cacheRoot?: string; force?: boolean },
-): Promise<string> {
-  const manifest = loadManifest()
-  const source = manifest.sources[sourceName]
-  if (source === undefined || source.kind !== 'release') {
-    throw new Error(`Source "${sourceName}" is not a release download`)
-  }
-  return fetchRelease(sourceName, source, options)
-}
-
-async function fetchRelease(
+async function ensureTarball(
   sourceName: string,
   source: ReleaseSource,
-  options?: { cacheRoot?: string; force?: boolean },
+  baseDir: string,
+  force?: boolean,
 ): Promise<string> {
-  const cacheRoot = options?.cacheRoot ?? defaultCacheRoot()
-  const baseDir = releaseCacheDir(sourceName, source.tag, cacheRoot)
-  const completeMarker = path.join(baseDir, '.complete')
-  const fixturesRoot = extractedFixturesRoot(sourceName, source.tag, cacheRoot)
+  fs.mkdirSync(baseDir, { recursive: true })
+  const archivePath = path.join(baseDir, source.asset)
+  const marker = tarballCompleteMarker(baseDir)
 
-  if (options?.force !== true && fs.existsSync(completeMarker)) {
-    const recorded = readCompleteRecord(completeMarker)
-    if (
-      recorded !== undefined &&
-      recorded.releaseSha256 === source.sha256 &&
-      extractForksMatch(source, recorded) &&
-      fs.existsSync(path.join(fixturesRoot, '.meta', 'index.json'))
-    ) {
-      const hasRunnableTree =
-        fs.existsSync(path.join(fixturesRoot, 'state_tests')) ||
-        fs.existsSync(path.join(fixturesRoot, 'blockchain_tests'))
-      if (hasRunnableTree) return fixturesRoot
+  if (force !== true && fs.existsSync(marker)) {
+    const recorded = readCompleteRecord(marker)
+    if (recorded?.releaseSha256 === source.sha256 && fs.existsSync(archivePath)) {
+      return archivePath
     }
   }
 
-  fs.mkdirSync(baseDir, { recursive: true })
-  const archivePath = path.join(baseDir, source.asset)
-
-  if (!fs.existsSync(archivePath) || options?.force === true) {
+  if (!fs.existsSync(archivePath) || force === true) {
     process.stderr.write(`Downloading ${source.tag} (${source.asset})…\n`)
     await download(source.url, archivePath, source.size)
   }
@@ -206,63 +182,156 @@ async function fetchRelease(
     )
   }
 
-  let caseCount: number | undefined
-  if (source.extractForks !== undefined && source.extractForks.length > 0) {
-    const result = await extractForkSubset(archivePath, source, baseDir)
-    caseCount = result.caseCount
-  } else {
-    const tmpExtract = path.join(baseDir, 'extract-tmp')
-    if (fs.existsSync(tmpExtract)) {
-      fs.rmSync(tmpExtract, { recursive: true, force: true })
-    }
-    fs.mkdirSync(tmpExtract, { recursive: true })
+  writeCompleteRecord(marker, { releaseSha256: source.sha256 })
+  return archivePath
+}
 
-    process.stderr.write(`Extracting ${source.extractPaths.join(', ')}…\n`)
-    await runTarExtract(archivePath, tmpExtract, source.extractPaths)
+export async function fetchForkExtract(
+  sourceName: string,
+  fork: string,
+  options?: { cacheRoot?: string; force?: boolean },
+): Promise<string> {
+  const source = getReleaseSource(sourceName)
+  const cacheRoot = options?.cacheRoot ?? defaultCacheRoot()
+  const baseDir = releaseCacheDir(sourceName, source.tag, cacheRoot)
+  const forkRoot = extractedForkRoot(sourceName, source.tag, fork, cacheRoot)
+  const completeMarker = forkCompleteMarker(forkRoot)
 
-    const finalExtracted = path.join(baseDir, 'extracted')
-    if (fs.existsSync(finalExtracted)) {
-      fs.rmSync(finalExtracted, { recursive: true, force: true })
+  if (options?.force !== true && fs.existsSync(completeMarker)) {
+    const recorded = readCompleteRecord(completeMarker)
+    if (recorded?.releaseSha256 === source.sha256 && forkTreeReady(forkRoot)) {
+      return forkRoot
     }
-    fs.renameSync(path.join(tmpExtract, 'fixtures'), finalExtracted)
-    fs.rmSync(tmpExtract, { recursive: true, force: true })
   }
 
-  const retainTarball =
-    source.retainTarball === true ||
-    source.extractForks === undefined ||
-    source.extractForks.length === 0
-  if (!retainTarball && fs.existsSync(archivePath)) {
-    fs.unlinkSync(archivePath)
-    process.stderr.write(`Removed tarball from cache (selective extract).\n`)
-  }
+  const archivePath = await ensureTarball(sourceName, source, baseDir, options?.force)
+  const { caseCount } = await extractForkSubset(archivePath, source, new Set([fork]), forkRoot)
 
   writeCompleteRecord(completeMarker, {
     releaseSha256: source.sha256,
-    extractForks: source.extractForks,
+    fork,
     caseCount,
   })
 
-  return fixturesRoot
+  return forkRoot
+}
+
+export async function fetchTarballOnly(
+  sourceName: string,
+  options?: { cacheRoot?: string; force?: boolean },
+): Promise<string> {
+  const source = getReleaseSource(sourceName)
+  const cacheRoot = options?.cacheRoot ?? defaultCacheRoot()
+  const baseDir = releaseCacheDir(sourceName, source.tag, cacheRoot)
+  await ensureTarball(sourceName, source, baseDir, options?.force)
+  return baseDir
+}
+
+async function fetchFullExtract(
+  source: ReleaseSource,
+  baseDir: string,
+  archivePath: string,
+): Promise<string> {
+  const fixturesRoot = path.join(baseDir, 'extracted')
+  const completeMarker = path.join(baseDir, '.complete')
+
+  const tmpExtract = path.join(baseDir, 'extract-tmp')
+  if (fs.existsSync(tmpExtract)) fs.rmSync(tmpExtract, { recursive: true, force: true })
+  fs.mkdirSync(tmpExtract, { recursive: true })
+
+  process.stderr.write(`Extracting ${source.extractPaths.join(', ')}…\n`)
+  await runTarExtract(archivePath, tmpExtract, source.extractPaths)
+
+  const finalExtracted = path.join(baseDir, 'extracted')
+  if (fs.existsSync(finalExtracted)) fs.rmSync(finalExtracted, { recursive: true, force: true })
+  fs.renameSync(path.join(tmpExtract, 'fixtures'), finalExtracted)
+  fs.rmSync(tmpExtract, { recursive: true, force: true })
+
+  writeCompleteRecord(completeMarker, { releaseSha256: source.sha256 })
+
+  return finalExtracted
+}
+
+export async function fetchReleaseSource(
+  sourceName: string,
+  options?: {
+    cacheRoot?: string
+    force?: boolean
+    fork?: string
+    tarballOnly?: boolean
+    warmRecent?: boolean
+    fullExtract?: boolean
+  },
+): Promise<string> {
+  const source = getReleaseSource(sourceName)
+  const cacheRoot = options?.cacheRoot ?? defaultCacheRoot()
+  const baseDir = releaseCacheDir(sourceName, source.tag, cacheRoot)
+
+  if (options?.fork !== undefined) {
+    return fetchForkExtract(sourceName, options.fork, options)
+  }
+
+  if (options?.tarballOnly === true) {
+    await fetchTarballOnly(sourceName, options)
+    return baseDir
+  }
+
+  if (options?.warmRecent === true && sourceName === 'tests') {
+    await fetchTarballOnly(sourceName, options)
+    for (const fork of RECENT_FORKS) {
+      await fetchForkExtract(sourceName, fork, options)
+    }
+    return extractedFixturesRoot(sourceName, source.tag, cacheRoot)
+  }
+
+  const fixturesRoot = extractedFixturesRoot(sourceName, source.tag, cacheRoot)
+  const completeMarker = path.join(baseDir, '.complete')
+  if (options?.force !== true && fs.existsSync(completeMarker)) {
+    const recorded = readCompleteRecord(completeMarker)
+    if (recorded?.releaseSha256 === source.sha256 && forkTreeReady(fixturesRoot)) {
+      return fixturesRoot
+    }
+  }
+
+  if (
+    source.defaultForks !== undefined &&
+    source.defaultForks.length > 0 &&
+    options?.fullExtract !== true
+  ) {
+    await fetchTarballOnly(sourceName, options)
+    for (const fork of source.defaultForks) {
+      await fetchForkExtract(sourceName, fork, options)
+    }
+    return fixturesRoot
+  }
+
+  const archivePath = await ensureTarball(sourceName, source, baseDir, options?.force)
+  return fetchFullExtract(source, baseDir, archivePath)
 }
 
 export async function fetchAllReleaseSources(options?: {
   cacheRoot?: string
   force?: boolean
   names?: string[]
+  fork?: string
+  tarballOnly?: boolean
+  warmRecent?: boolean
+  fullExtract?: boolean
 }): Promise<void> {
-  const manifest = loadManifest()
-  for (const [name, source] of Object.entries(manifest.sources)) {
-    if (source.kind !== 'release') continue
-    if (options?.names !== undefined && !options.names.includes(name)) continue
-    await fetchRelease(name, source, options)
+  const names = options?.names ?? ['tests']
+  for (const name of names) {
+    const manifest = loadManifestForSource(name)
+    const source = manifest.sources[name]
+    if (source?.kind !== 'release') continue
+    await fetchReleaseSource(name, options)
   }
 }
 
 type GitHubAsset = { name: string; size: number; digest?: string; browser_download_url: string }
 
 export async function updateManifestEntry(sourceName: string, tag: string): Promise<void> {
-  const manifest = loadManifest()
+  const manifestPath = manifestPathForSource(sourceName)
+  const manifest = loadManifestForSource(sourceName)
   const source = manifest.sources[sourceName]
   if (source === undefined || source.kind !== 'release') {
     throw new Error(`Cannot update non-release source ${sourceName}`)
@@ -287,10 +356,10 @@ export async function updateManifestEntry(sourceName: string, tag: string): Prom
     size: asset.size,
   }
   manifest.sources[sourceName] = updated
-  fs.writeFileSync(manifestPath(), `${JSON.stringify(manifest, null, 2)}\n`)
-  process.stderr.write(`Updated ${sourceName} → ${tag} in ${manifestPath()}\n`)
+  fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`)
+  process.stderr.write(`Updated ${sourceName} → ${tag} in ${manifestPath}\n`)
 }
 
-export function writeManifest(manifest: FixturesManifest): void {
-  fs.writeFileSync(manifestPath(), `${JSON.stringify(manifest, null, 2)}\n`)
+export function writeManifest(manifest: FixturesManifest, manifestPath: string): void {
+  fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`)
 }

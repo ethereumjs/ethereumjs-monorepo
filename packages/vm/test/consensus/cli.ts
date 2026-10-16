@@ -2,7 +2,7 @@ import os from 'node:os'
 import { parseArgs } from 'node:util'
 
 import { parseForkPreset } from './forks.ts'
-import { loadManifest } from './manifest.ts'
+import { loadManifest, loadManifestForSource } from './manifest.ts'
 import { type SkipCategory, parseSkipCategories } from './skips.ts'
 
 export type ConsensusFormat = 'state' | 'blockchain' | 'all'
@@ -77,8 +77,8 @@ export function parseRunnerArgv(argv: string[]): RunnerCliOptions {
   let forkPreset: 'recent' | 'all' | undefined
   if (forksPreset === 'recent' || forksPreset === 'all') forkPreset = forksPreset
 
-  const manifest = loadManifest()
   const sourceName = String(values.source ?? 'tests')
+  const manifest = sourceName === 'legacy' ? loadManifest() : loadManifestForSource(sourceName)
   const source = manifest.sources[sourceName]
   let forkFilter = parseForkPreset(forkPreset, forkArgs)
   if (source?.kind === 'release' && source.defaultForks !== undefined && forkArgs.length === 0) {

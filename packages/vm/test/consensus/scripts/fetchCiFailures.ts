@@ -13,7 +13,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import {
-  CI_CONSENSUS_ARTIFACT_PREFIX,
+  CI_FAILURE_ARTIFACT_PREFIXES,
   mergeFailureReports,
   writeFailuresDocument,
 } from '../mergeReports.ts'
@@ -71,14 +71,22 @@ function resolveRunId(branch: string, explicit?: string): string {
   throw new Error(`No completed Build workflow run found for branch ${branch}`)
 }
 
-function listConsensusArtifactNames(runId: string): string[] {
+function listFailureArtifactNames(runId: string): string[] {
   const repo = gh(['repo', 'view', '--json', 'nameWithOwner', '-q', '.nameWithOwner'])
   const json = gh(['api', `repos/${repo}/actions/runs/${runId}/artifacts`])
   const artifacts = JSON.parse(json) as { artifacts?: { name: string }[] }
   const list = artifacts.artifacts ?? []
   return list
     .map((a) => a.name)
-    .filter((name) => name.startsWith(`${CI_CONSENSUS_ARTIFACT_PREFIX}-`))
+    .filter((name) => CI_FAILURE_ARTIFACT_PREFIXES.some((prefix) => name.startsWith(`${prefix}-`)))
+}
+
+function reportFileInArtifact(dir: string): string | undefined {
+  for (const file of ['consensus-est-failures.json', 'consensus-bogota-failures.json']) {
+    const p = path.join(dir, file)
+    if (fs.existsSync(p)) return p
+  }
+  return undefined
 }
 
 function main(): void {
@@ -86,11 +94,11 @@ function main(): void {
   const branch = resolveBranch(branchArg)
   const runId = resolveRunId(branch, runIdArg)
 
-  const artifactNames = listConsensusArtifactNames(runId)
+  const artifactNames = listFailureArtifactNames(runId)
   if (artifactNames.length === 0) {
     process.stderr.write(
-      `No ${CI_CONSENSUS_ARTIFACT_PREFIX}-* artifacts on run ${runId} (branch ${branch}).\n` +
-        `If the run is still in progress, wait for vm-consensus-est to finish.\n`,
+      `No consensus failure artifacts on run ${runId} (branch ${branch}).\n` +
+        `Expected names like consensus-est-failures-<fork> or consensus-bogota-failures-<fork>.\n`,
     )
     process.exit(1)
   }
@@ -102,12 +110,12 @@ function main(): void {
     const dir = path.join(tmp, name)
     fs.mkdirSync(dir, { recursive: true })
     gh(['run', 'download', runId, '--name', name, '--dir', dir])
-    const report = path.join(dir, 'consensus-est-failures.json')
-    if (fs.existsSync(report)) reportPaths.push(report)
+    const report = reportFileInArtifact(dir)
+    if (report !== undefined) reportPaths.push(report)
   }
 
   if (reportPaths.length === 0) {
-    process.stderr.write(`Downloaded artifacts but no consensus-est-failures.json inside.\n`)
+    process.stderr.write(`Downloaded artifacts but no failure JSON inside.\n`)
     process.exit(1)
   }
 
@@ -124,7 +132,8 @@ function main(): void {
   }
 
   process.stdout.write(
-    `\nRerun locally:\n  npm run test:consensus -- --source tests --forks recent --rerun-failed ${outPath} --jobs 4 --skip-fetch\n`,
+    `\nRerun one fork locally (match the CI job name):\n` +
+      `  npm run test:consensus -- --source tests --fork <Fork> --rerun-failed ${outPath} --jobs 4 --skip-fetch\n`,
   )
 }
 

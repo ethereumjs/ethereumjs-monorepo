@@ -1,0 +1,103 @@
+name: Consensus fork
+description: Restore one EST fork extract, fetch it on a cache miss, and optionally run that fork.
+
+inputs:
+  source:
+    description: Fixture source name (`tests` or `bogota-devnet`)
+    required: true
+  manifest:
+    description: Manifest filename under packages/vm/test/consensus
+    required: true
+  cache-key:
+    description: Actions cache key for this fork extract
+    required: true
+  fork:
+    description: Fork directory name
+    required: true
+  save-cache:
+    description: Save the extract when the cache missed
+    required: false
+    default: 'true'
+  run-tests:
+    description: Run test:consensus for this fork after the extract is ready
+    required: false
+    default: 'true'
+  extra-test-args:
+    description: Extra arguments appended to the consensus command
+    required: false
+    default: ''
+  artifact-prefix:
+    description: Failure artifact name prefix. Required when run-tests is true.
+    required: false
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    - id: est-meta
+      shell: bash
+      working-directory: ${{ github.workspace }}/packages/vm
+      env:
+        MANIFEST: ${{ inputs.manifest }}
+        SOURCE: ${{ inputs.source }}
+        FORK: ${{ inputs.fork }}
+      run: |
+        TAG=$(node -e 'const fs=require("fs"); const m=JSON.parse(fs.readFileSync("test/consensus/"+process.env.MANIFEST,"utf8")); const s=m.sources[process.env.SOURCE]; if(!s||!s.tag){process.stderr.write("missing source tag\n"); process.exit(1)} process.stdout.write(s.tag)')
+        echo "fork_dir=$GITHUB_WORKSPACE/.est-fixtures-cache/${SOURCE}/$TAG/forks/${FORK}" >> "$GITHUB_OUTPUT"
+
+    - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      id: est-fork-cache
+      with:
+        path: ${{ steps.est-meta.outputs.fork_dir }}
+        key: ${{ inputs.cache-key }}
+
+    - name: Ensure fork fixtures
+      if: steps.est-fork-cache.outputs.cache-hit != 'true'
+      shell: bash
+      working-directory: ${{ github.workspace }}/packages/vm
+      env:
+        SOURCE: ${{ inputs.source }}
+        FORK: ${{ inputs.fork }}
+      run: npm run fixtures:fetch -- "$SOURCE" --fork "$FORK"
+
+    - uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      if: inputs.save-cache == 'true' && steps.est-fork-cache.outputs.cache-hit != 'true'
+      with:
+        path: ${{ steps.est-meta.outputs.fork_dir }}
+        key: ${{ inputs.cache-key }}
+
+    - name: Consensus (${{ inputs.fork }})
+      id: consensus
+      if: inputs.run-tests == 'true'
+      continue-on-error: true
+      shell: bash
+      working-directory: ${{ github.workspace }}/packages/vm
+      env:
+        SOURCE: ${{ inputs.source }}
+        FORK: ${{ inputs.fork }}
+        EXTRA: ${{ inputs.extra-test-args }}
+        ARTIFACT_PREFIX: ${{ inputs.artifact-prefix }}
+      run: |
+        if [ -z "$ARTIFACT_PREFIX" ]; then
+          echo "artifact-prefix is required when run-tests is true" >&2
+          exit 1
+        fi
+        JOBS=$(nproc)
+        REPORT="$RUNNER_TEMP/${ARTIFACT_PREFIX}.json"
+        echo "report_path=$REPORT" >> "$GITHUB_OUTPUT"
+        # EXTRA is a workflow-authored flag list (for example --run-skipped slow).
+        # shellcheck disable=SC2086
+        npm run test:consensus -- --source "$SOURCE" --fork "$FORK" --format all --jobs "$JOBS" --skip-fetch --report "$REPORT" $EXTRA
+
+    - name: Upload consensus failure report
+      if: inputs.run-tests == 'true' && steps.consensus.outcome == 'failure'
+      uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+      with:
+        name: ${{ inputs.artifact-prefix }}-${{ inputs.fork }}
+        path: ${{ steps.consensus.outputs.report_path }}
+        retention-days: 14
+
+    - name: Fail if consensus failed
+      if: inputs.run-tests == 'true' && steps.consensus.outcome == 'failure'
+      shell: bash
+      run: exit 1

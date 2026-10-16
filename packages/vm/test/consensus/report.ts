@@ -65,7 +65,7 @@ export function printReport(report: ConsensusReport, jobs: number): void {
     }
     if (report.failures.length > 20) {
       process.stdout.write(
-        `  … and ${report.failures.length - 20} more (CI uploads full list as consensus-est-failures-* artifacts)\n`,
+        `  … and ${report.failures.length - 20} more (CI uploads full list as consensus-est-failures-<fork> artifacts)\n`,
       )
     }
   }

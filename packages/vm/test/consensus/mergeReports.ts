@@ -4,6 +4,12 @@ import path from 'node:path'
 import type { CaseResult } from './types.ts'
 
 export const CI_CONSENSUS_ARTIFACT_PREFIX = 'consensus-est-failures'
+export const CI_BOGOTA_ARTIFACT_PREFIX = 'consensus-bogota-failures'
+
+export const CI_FAILURE_ARTIFACT_PREFIXES = [
+  CI_CONSENSUS_ARTIFACT_PREFIX,
+  CI_BOGOTA_ARTIFACT_PREFIX,
+] as const
 
 export type FailuresDocument = {
   failures: CaseResult[]
@@ -23,7 +29,7 @@ export function readFailuresFromReportFile(filePath: string): CaseResult[] {
   return []
 }
 
-/** Merge shard reports; dedupe by fork + id + filePath. */
+/** Merge fork (or legacy shard) reports; dedupe by fork + id + filePath. */
 export function mergeFailureReports(filePaths: string[]): FailuresDocument {
   const byKey = new Map<string, CaseResult>()
   for (const p of filePaths) {
