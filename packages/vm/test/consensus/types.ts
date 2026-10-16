@@ -84,6 +84,8 @@ export interface ParsedStateTest {
   env: FixtureEnv
   pre: Record<string, FixtureAccountState>
   expectException?: string
+  /** Canonical signed tx from the fixture post entry (exception / invalid-signature cases). */
+  txbytes?: PrefixedHexString
 }
 
 export interface FixtureBlockHeader {

@@ -30,7 +30,7 @@ export async function runStateTestCase(
   let execInfo = ''
   let tx
   try {
-    tx = makeStateTestTx(parsed.transaction, { common }, parsed.expectException)
+    tx = makeStateTestTx(parsed.transaction, { common }, parsed.expectException, parsed.txbytes)
   } catch {
     execInfo = 'tx instantiation exception'
   }

@@ -1,8 +1,10 @@
-import { toBytes } from '@ethereumjs/util'
+import { createTxFromRLP } from '@ethereumjs/tx'
+import { hexToBytes, toBytes } from '@ethereumjs/util'
 
 import { makeTx } from '../../util.ts'
 
 import type { TxOptions } from '@ethereumjs/tx'
+import type { PrefixedHexString } from '@ethereumjs/util'
 
 function fieldHasBytes(value: unknown): boolean {
   if (value === undefined || value === null) return false
@@ -26,7 +28,11 @@ export function makeStateTestTx(
   txData: Record<string, unknown>,
   opts: TxOptions,
   expectException?: string,
+  txbytes?: PrefixedHexString,
 ) {
+  if (expectException !== undefined && txbytes !== undefined) {
+    return createTxFromRLP(hexToBytes(txbytes), opts)
+  }
   const data = { ...txData }
   if (expectException !== undefined && fixtureHasSignature(data)) {
     delete data.secretKey

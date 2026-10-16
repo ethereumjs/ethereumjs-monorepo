@@ -163,5 +163,6 @@ export function parseStateTest(fork: string, testData: import('./types.ts').Stat
     env: testData.env,
     pre: testData.pre,
     expectException: testCase.expectException,
+    txbytes: testCase.txbytes,
   }
 }
