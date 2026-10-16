@@ -1440,6 +1440,8 @@ export class EVM implements EVMInterface {
       debug(`message checkpoint`)
     }
 
+    // Captured before CREATE assigns `message.to` to the new address.
+    const isCall = message.to !== undefined
     let result
     if (this.DEBUG) {
       const { caller, gasLimit, to, value, delegatecall } = message
@@ -1511,12 +1513,18 @@ export class EVM implements EVMInterface {
         if (err.error === EVMError.errorMessages.REVERT) {
           const spilled = result.execResult.stateGasSpilled ?? BIGINT_0
           if (spilled > BIGINT_0) {
-            // EELS `refill_frame_state_gas`: only the slice of spilled state gas
-            // that remains in `gas_left` after the frame ends is credited back
-            // to the caller as unused regular gas. The rest stays in
-            // `executionGasUsed` (top-frame tx gas on depth 0).
-            const gasLeft = result.execResult.gas ?? BIGINT_0
-            const creditBack = gasLeft < spilled ? gasLeft : spilled
+            // EELS `refill_frame_state_gas` returns spilled state gas as unused
+            // gas. A top-frame CALL that exits before the interpreter (precompile)
+            // folds that spill into `executionGasUsed` and leaves `gas` unset.
+            // If the frame also consumed its whole limit, the spill was spent as
+            // regular gas and must not be credited again. Interpreter reverts
+            // still report `gas` and refund the full spill.
+            const spentEntireCall =
+              message.depth === 0 &&
+              isCall &&
+              result.execResult.gas === undefined &&
+              result.execResult.executionGasUsed === message.gasLimit
+            const creditBack = spentEntireCall ? BIGINT_0 : spilled
             result.execResult.executionGasUsed -= creditBack
           }
         }
