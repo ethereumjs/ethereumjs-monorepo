@@ -1511,7 +1511,13 @@ export class EVM implements EVMInterface {
         if (err.error === EVMError.errorMessages.REVERT) {
           const spilled = result.execResult.stateGasSpilled ?? BIGINT_0
           if (spilled > BIGINT_0) {
-            result.execResult.executionGasUsed -= spilled
+            // EELS `refill_frame_state_gas`: only the slice of spilled state gas
+            // that remains in `gas_left` after the frame ends is credited back
+            // to the caller as unused regular gas. The rest stays in
+            // `executionGasUsed` (top-frame tx gas on depth 0).
+            const gasLeft = result.execResult.gas ?? BIGINT_0
+            const creditBack = gasLeft < spilled ? gasLeft : spilled
+            result.execResult.executionGasUsed -= creditBack
           }
         }
         // The frame failed: its spilled state gas must not propagate to the
