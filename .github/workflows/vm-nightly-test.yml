@@ -7,7 +7,6 @@ on:
 env:
   cwd: ${{github.workspace}}/packages/vm
   EST_FIXTURES_CACHE: ${{ github.workspace }}/.est-fixtures-cache
-  FIXTURES_HASH: ${{ hashFiles('packages/vm/test/consensus/fixtures.json') }}
 
 defaults:
   run:
@@ -73,7 +72,7 @@ jobs:
         with:
           source: tests
           manifest: fixtures.json
-          cache-key: est-extract-tests-${{ env.FIXTURES_HASH }}-${{ matrix.fork }}
+          cache-key: est-extract-tests-${{ hashFiles('packages/vm/test/consensus/fixtures.json') }}-${{ matrix.fork }}
           fork: ${{ matrix.fork }}
           artifact-prefix: consensus-est-failures
           save-cache: 'false'

@@ -29,8 +29,6 @@ env:
   cwd: ${{github.workspace}}/packages/vm
   RUN_COVERAGE: ${{ inputs.run-coverage }}
   EST_FIXTURES_CACHE: ${{ github.workspace }}/.est-fixtures-cache
-  FIXTURES_HASH: ${{ hashFiles('packages/vm/test/consensus/fixtures.json') }}
-  BOGOTA_FIXTURES_HASH: ${{ hashFiles('packages/vm/test/consensus/fixtures.bogota.json') }}
 
 defaults:
   run:
@@ -108,7 +106,7 @@ jobs:
         with:
           source: tests
           manifest: fixtures.json
-          cache-key: est-extract-tests-${{ env.FIXTURES_HASH }}-${{ matrix.fork }}
+          cache-key: est-extract-tests-${{ hashFiles('packages/vm/test/consensus/fixtures.json') }}-${{ matrix.fork }}
           fork: ${{ matrix.fork }}
           artifact-prefix: consensus-est-failures
 
@@ -131,7 +129,7 @@ jobs:
         with:
           source: tests
           manifest: fixtures.json
-          cache-key: est-extract-tests-${{ env.FIXTURES_HASH }}-${{ matrix.fork }}
+          cache-key: est-extract-tests-${{ hashFiles('packages/vm/test/consensus/fixtures.json') }}-${{ matrix.fork }}
           fork: ${{ matrix.fork }}
           artifact-prefix: consensus-est-failures
 
@@ -154,7 +152,7 @@ jobs:
         with:
           source: bogota-devnet
           manifest: fixtures.bogota.json
-          cache-key: est-extract-bogota-${{ env.BOGOTA_FIXTURES_HASH }}-${{ matrix.fork }}
+          cache-key: est-extract-bogota-${{ hashFiles('packages/vm/test/consensus/fixtures.bogota.json') }}-${{ matrix.fork }}
           fork: ${{ matrix.fork }}
           artifact-prefix: consensus-bogota-failures
 
