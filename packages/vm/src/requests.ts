@@ -27,7 +27,7 @@ import type { VM } from './vm.ts'
  * portion (set on vm.evm before the call). The block argument is required
  * under 8037 so costPerStateByte scales with the current block's gas limit.
  */
-function computeSystemCallGas(
+export function computeSystemCallGas(
   vm: VM,
   blockGasLimit?: bigint,
 ): { regular: bigint; reservoir: bigint } {
@@ -47,7 +47,7 @@ function computeSystemCallGas(
  * so the system call's state-gas accounting is isolated from any
  * concurrent tx-level reservoir.
  */
-function setupSystemCallReservoir(vm: VM, reservoir: bigint) {
+export function setupSystemCallReservoir(vm: VM, reservoir: bigint) {
   if (!vm.common.isActivatedEIP(8037)) return null
   const evm = vm.evm
   const prior = {
@@ -61,7 +61,7 @@ function setupSystemCallReservoir(vm: VM, reservoir: bigint) {
   return prior
 }
 
-function teardownSystemCallReservoir(
+export function teardownSystemCallReservoir(
   vm: VM,
   prior: { reservoir: bigint; used: bigint; snapshots: unknown[] } | null,
 ) {

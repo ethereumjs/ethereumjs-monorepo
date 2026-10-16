@@ -473,6 +473,17 @@ export class EVM implements EVMInterface {
    * restore zeros reservoir / executionStateGasUsed but does not undo the
    * `executionGasUsed += message.gasLimit - gasLimit` fold of this spill.
    */
+  /**
+   * EIP-8037 state-gas charge for block-level system operations (4788 / 2935).
+   * Draws from {@link stateGasReservoir} first, then spills into `regularGasLimit`.
+   */
+  chargeSystemStateGas(
+    amount: bigint,
+    regularGasLimit: bigint,
+  ): { remaining: bigint; spilled: bigint } | undefined {
+    return this.chargeFrameStateGas(amount, regularGasLimit)
+  }
+
   private chargeFrameStateGas(
     amount: bigint,
     gasLimit: bigint,
