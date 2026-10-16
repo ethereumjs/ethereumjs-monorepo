@@ -267,6 +267,28 @@ describe('[Util]: message sig', () => {
     })
   })
 
+  it('toCompactSig() sets the parity bit from the EIP-155 recovery id', () => {
+    const chainId = BigInt(3)
+    const sig0 =
+      '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'
+    const sig1 =
+      '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9929ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'
+    assert.strictEqual(toCompactSig(chainId * BigInt(2) + BigInt(35), r, s, chainId), sig0)
+    assert.strictEqual(toCompactSig(chainId * BigInt(2) + BigInt(36), r, s, chainId), sig1)
+  })
+
+  it('toCompactSig() sets the parity bit on the 32-byte padded s', () => {
+    const shortS = s.slice(1)
+    const sig =
+      '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9809ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66'
+    assert.strictEqual(toCompactSig(BigInt(28), r, shortS), sig)
+    assert.deepEqual(fromRPCSig(sig), {
+      v: BigInt(28),
+      r,
+      s: setLengthLeft(shortS, 32),
+    })
+  })
+
   it('returns hex strings that the RPC can use (chainId=150)', () => {
     const sig =
       '0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9129ff05af364204442bdb53ab6f18a99ab48acc9326fa689f228040429e3ca66014f'
