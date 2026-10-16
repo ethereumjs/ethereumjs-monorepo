@@ -52,14 +52,20 @@ export function buildReport(
 export function printReport(report: ConsensusReport, jobs: number): void {
   const { passed, failed, total, durationMs } = report
   process.stdout.write(
-    `\nConsensus: ${jobs} worker(s) · ${passed} passed · ${failed} failed · ${total} total · ${(durationMs / 1000).toFixed(1)}s\n`,
+    `\n── Summary ── ${jobs} worker(s) · ${passed.toLocaleString('en-US')} passed · ${failed.toLocaleString('en-US')} failed · ${total.toLocaleString('en-US')} total · ${(durationMs / 1000).toFixed(1)}s\n`,
   )
 
   if (failed > 0) {
     process.stdout.write('\nFailures (first 20):\n')
     for (const f of report.failures.slice(0, 20)) {
+      const loc = f.relPath ?? f.filePath
       process.stdout.write(
-        `  ${f.fork} ${f.format} ${f.id}\n    ${f.error?.split('\n')[0] ?? ''}\n`,
+        `  ${f.fork} ${f.format} ${f.id} ${loc}\n    ${f.error?.split('\n')[0] ?? ''}\n`,
+      )
+    }
+    if (report.failures.length > 20) {
+      process.stdout.write(
+        `  … and ${report.failures.length - 20} more (CI uploads full list as consensus-est-failures-<fork> artifacts)\n`,
       )
     }
   }

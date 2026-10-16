@@ -31,10 +31,10 @@ GeneralStateTests from `ethereum/tests` are retired upstream; ported cases live 
 On an ordinary PR, the VM is green when:
 
 - `npm run test:API` (and the coverage job in CI)
-- Sharded `npm run test:consensus:pr` (EST `tests@v21.x`, `--forks recent` = Prague + Osaka + Amsterdam, state + blockchain in four shards; one shared fixture fetch job in CI)
+- One CI job per recent fork: `vm-consensus-est-recent (Prague|Osaka|Amsterdam)` — each runs `test:consensus -- --source tests --fork <name>`, four workers (`nproc`), per-fork fixture cache
 - `npm run test:consensus:smoke` when the `type: test skip most stable VM` label is present
 
-With the `test all hardforks` label, CI runs `--forks all` on EST plus legacy blockchain on older networks. With **`type: test bogota`**, CI runs sharded `bogota-devnet` (`test:consensus:dev`). Nightly runs the full EST tree, legacy blockchain, and `--run-skipped slow`.
+With the `test all hardforks` label, CI runs one job per EST fork (`ALL_EST_FORKS`) plus legacy blockchain. With **`type: test bogota`**, CI runs `vm-consensus-bogota` (one job per `Bogota` and `AmsterdamToBogotaAtTime15k`, manifest in `fixtures.bogota.json`). Nightly runs one job per EST fork and `--run-skipped slow`.
 
 Do not add skip entries just to go green on consensus (S1).
 
@@ -47,21 +47,21 @@ Fixtures are **not** in git. You download each pinned release **once per machine
 | **1 — Fast** | VM / library edits, agents, prepublish | `npm run test:API`, `npm run test:consensus:smoke` |
 | **2 — Runner slice** | Consensus runner / selection, no network | `npm run test:consensus:sample` (checked-in tree, `--list`) |
 | **3 — Targeted EST** | One fork or file after cache exists | `npm run test:consensus -- --fork Osaka --format state --file foo.json --jobs 1` |
-| **4 — Full EST** | Pre-push, fixture bumps, CI parity | `npm run fixtures:fetch -- tests` then `npm run test:consensus:pr` (or `:all`) |
+| **4 — Full EST** | Pre-push, fixture bumps | `npm run fixtures:fetch -- tests` (tarball + Prague/Osaka/Amsterdam extracts) then `npm run test:consensus:pr` |
 
-**Cache layout:** `EST_FIXTURES_CACHE` defaults to `~/.cache/ethereumjs/est-fixtures/<source>/<tag>/`. Point several local checkouts at the same directory to avoid duplicate downloads. CI uses a workspace-local cache restored from Actions.
+**Cache layout:** `EST_FIXTURES_CACHE` defaults to `~/.cache/ethereumjs/est-fixtures/<source>/<tag>/`. Per-fork trees live under `forks/<ForkName>/` (state + blockchain + filtered index). CI restores `est-extract-tests-<fixtures-hash>-<Fork>` per job. Master warm fills recent forks via [`vm-consensus-cache-warm.yml`](../../.github/workflows/vm-consensus-cache-warm.yml).
 
 **Local fills:** after EELS `fill`, pass `--fixture-root /path/to/fixtures` (no release tarball).
 
 **Legacy Prague `bc*` only:** `npm run test:consensus:legacy` uses `packages/ethereum-tests` — no EST download.
 
-**Hegota dev (`bogota-devnet`):** still downloads the upstream release tarball once to verify sha256, but **extracts and caches only** `Bogota` and `AmsterdamToBogotaAtTime15k` cases (index-driven). The tarball is removed from cache after extract; integrity is the release digest plus a filtered `.meta/index.json` (per-case `fixture_hash` entries preserved).
+**Hegota dev (`bogota-devnet`):** pinned in [`fixtures.bogota.json`](./test/consensus/fixtures.bogota.json) (separate from `fixtures.json` so tag bumps do not invalidate stable CI caches). Fetch per fork: `npm run fixtures:fetch -- bogota-devnet --fork Bogota`.
 
 ## Consensus runner (EST + legacy blockchain)
 
 Standalone harness under [`test/consensus/`](./test/consensus/) — not Vitest. Worker threads, index-driven selection, shared skip list, per-directory report + JSON output.
 
-**Manifest:** [`test/consensus/fixtures.json`](./test/consensus/fixtures.json) pins release URL, sha256, and extract paths. **Cache:** `EST_FIXTURES_CACHE` (default `~/.cache/ethereumjs/est-fixtures/`).
+**Manifests:** [`fixtures.json`](./test/consensus/fixtures.json) (`tests` + `legacy`), [`fixtures.bogota.json`](./test/consensus/fixtures.bogota.json) (`bogota-devnet` only). **Cache:** `EST_FIXTURES_CACHE` (default `~/.cache/ethereumjs/est-fixtures/`).
 
 ```bash
 cd packages/vm
@@ -78,7 +78,9 @@ npm run test:consensus:sample           # runner + checked-in fixtures (--list, 
 **One-time fetch (main EST suite, ~1 GB tarball, selective extract):**
 
 ```bash
-npm run fixtures:fetch -- tests          # not bogota-devnet unless you need Hegota dev
+npm run fixtures:fetch -- tests                    # warm recent fork extracts
+npm run fixtures:fetch -- tests --fork Amsterdam   # one fork (matches a CI job)
+npm run fixtures:fetch -- bogota-devnet --fork Bogota
 ```
 
 **Examples:**
@@ -90,15 +92,27 @@ npm run test:consensus -- --rerun-failed /tmp/consensus-report.json --jobs 1 --d
 npm run test:consensus:phase0           # local size/count/timing helpers (see PHASE0.md)
 ```
 
-**Flags (summary):** `--source`, `--format`, `--fork` / `--forks recent|all`, `--dir`, `--file`, `--test`, `--jobs`, `--shard i/n`, `--list`, `--bail`, `--skip` / `--run-skipped`, `--report`, `--rerun-failed`, `--fixture-root`, `--skip-fetch`, `--auto-fetch`, `--jsontrace`, `--debug`, `--profile`.
+**CI failure → local rerun (agents and humans):**
 
-CI restores an Actions cache keyed on `fixtures.json`, then runs `fixtures:fetch`. See [`.github/workflows/vm-pr.yml`](../../.github/workflows/vm-pr.yml) and [`vm-consensus-cache-warm.yml`](../../.github/workflows/vm-consensus-cache-warm.yml).
+1. A red check names the fork (e.g. `vm-consensus-est-recent (Amsterdam)`). Artifacts: `consensus-est-failures-<Fork>` or `consensus-bogota-failures-<Fork>`.
+2. From `packages/vm` (needs `gh` auth + `fixtures:fetch -- tests --fork <Fork>` for that job):
+
+   ```bash
+   npm run consensus:fetch-ci-failures
+   npm run test:consensus -- --source tests --fork Amsterdam --rerun-failed .ci/consensus-failures.json --jobs 4 --skip-fetch
+   ```
+
+   Optional: `--run-id <Build workflow run id>` or `--branch <name>`. `--rerun-failed` ignores `--shard`.
+
+**Flags (summary):** `--source`, `--format`, `--fork` / `--forks recent|all`, `--dir`, `--file`, `--test`, `--jobs`, `--shard i/n` (local only; not used in CI), `--list`, `--bail`, `--skip` / `--run-skipped`, `--report`, `--rerun-failed`, `--fixture-root`, `--skip-fetch`, `--auto-fetch`, `--jsontrace`, `--debug`, `--profile`. Fetch CLI: `--fork`, `--full-extract`, `--tarball-only`.
+
+Shared steps live in [`.github/actions/consensus-fork`](../../.github/actions/consensus-fork/action.yml). Job matrices stay in [`.github/workflows/vm-pr.yml`](../../.github/workflows/vm-pr.yml), [`vm-nightly-test.yml`](../../.github/workflows/vm-nightly-test.yml), and [`vm-consensus-cache-warm.yml`](../../.github/workflows/vm-consensus-cache-warm.yml).
 
 First-round reporting template: [`test/consensus/FIRST_ROUND.md`](./test/consensus/FIRST_ROUND.md).
 
 ## Updating fixtures (manifest bump)
 
-We no longer submodule [execution-spec-tests-fixtures](https://github.com/ethereumjs/execution-spec-tests-fixtures). Bumps are a **one-file manifest diff** plus a first-round consensus report.
+We no longer submodule [execution-spec-tests-fixtures](https://github.com/ethereumjs/execution-spec-tests-fixtures). Bumps are a **manifest diff** (`fixtures.json` for `tests` + `legacy`, `fixtures.bogota.json` for `bogota-devnet`) plus a first-round consensus report.
 
 1. Choose the upstream tag on [execution-specs releases](https://github.com/ethereum/execution-specs/releases) (e.g. `tests@v21.0.1`, `tests-bogota-devnet@v1.1.0`).
 2. Refresh the manifest entry:
@@ -106,11 +120,12 @@ We no longer submodule [execution-spec-tests-fixtures](https://github.com/ethere
    ```bash
    cd packages/vm
    npm run fixtures:fetch -- --update tests tests@vX.Y.Z
+   npm run fixtures:fetch -- --update bogota-devnet tests-bogota-devnet@vX.Y.Z   # when Hegota pin moves
    ```
 
-3. Run `npm run fixtures:fetch`, then `npm run test:consensus -- --list --source tests --forks all`.
+3. Run `npm run fixtures:fetch -- tests` (warms recent fork extracts), then `npm run test:consensus -- --list --source tests --forks all`.
 4. First-round run on affected forks; record pass/fail in `FIRST_ROUND.md`.
-5. Commit `fixtures.json` only for a wiring PR; implementation PRs follow the usual spec-delta workflow.
+5. Commit the manifest file(s) only for a wiring PR; implementation PRs follow the usual spec-delta workflow.
 
 Skill playbook: [`.cursor/skills/update-est-fixtures/SKILL.md`](../../.cursor/skills/update-est-fixtures/SKILL.md).
 

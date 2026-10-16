@@ -1,13 +1,13 @@
 ---
 name: update-est-fixtures
-description: Updates EthereumJS VM consensus fixtures by bumping the pinned execution-specs release in packages/vm/test/consensus/fixtures.json, fetching into the local/CI cache, running a first-round consensus report, then implementing ordered “what we need” items in gated steps. Use when the user asks to update EST, EELS, execution-spec tests/fixtures, bump tests@v… or bogota-devnet, or implement spec-delta items from a first-round report.
+description: Updates EthereumJS VM consensus fixtures by bumping the pinned execution-specs release in packages/vm/test/consensus/fixtures.json (stable tests) and fixtures.bogota.json (bogota-devnet), fetching into the local/CI cache, running a first-round consensus report, then implementing ordered “what we need” items in gated steps. Use when the user asks to update EST, EELS, execution-spec tests/fixtures, bump tests@v… or bogota-devnet, or implement spec-delta items from a first-round report.
 ---
 
 # Update EST fixtures (manifest + consensus runner)
 
 Source of truth: `packages/vm/DEVELOPER.md` — **Updating fixtures (manifest bump)** and **What “green” means**. Read that before changing files.
 
-Fixtures are **not** a git submodule anymore. The manifest [`packages/vm/test/consensus/fixtures.json`](../../packages/vm/test/consensus/fixtures.json) pins URL + sha256; [`npm run fixtures:fetch`](../../packages/vm/package.json) downloads and extracts into `EST_FIXTURES_CACHE` (default `~/.cache/ethereumjs/est-fixtures/`). The consensus runner does **not** download on its own — run `fixtures:fetch` first (or `--auto-fetch` once). **`bogota-devnet`** uses `extractForks` (Hegota only): full tarball is verified then discarded; cache stores a filtered tree + index. Agents: see [packages/vm/DEVELOPER.md](../../packages/vm/DEVELOPER.md) § Local development tiers.
+Fixtures are **not** a git submodule anymore. [`fixtures.json`](../../packages/vm/test/consensus/fixtures.json) pins `tests` + `legacy`; [`fixtures.bogota.json`](../../packages/vm/test/consensus/fixtures.bogota.json) pins `bogota-devnet` so Hegota tag bumps do not invalidate stable CI cache keys. [`npm run fixtures:fetch`](../../packages/vm/package.json) downloads into `EST_FIXTURES_CACHE` and builds per-fork trees under `forks/<Fork>/`. CI is one job per fork; local parity: `fixtures:fetch -- tests --fork Amsterdam`. Agents: [packages/vm/DEVELOPER.md](../../packages/vm/DEVELOPER.md) § Local development tiers.
 
 ## Workflow gates (mandatory)
 
@@ -44,9 +44,9 @@ Template: [`packages/vm/test/consensus/FIRST_ROUND.md`](../../packages/vm/test/c
 ## Phase B — wiring PR (after explicit go)
 
 ```
-- [ ] Commit fixtures.json (one-file diff is the goal)
+- [ ] Commit manifest diff (`fixtures.json` and/or `fixtures.bogota.json`)
 - [ ] Grep monorepo for old paths (execution-spec-tests, test:est:*, glamsterdam folder names)
-- [ ] CI: cache key follows fixtures.json; vm-consensus jobs fetch on cache miss
+- [ ] CI: per-fork extract caches keyed on the relevant manifest hash; master warm in vm-consensus-cache-warm.yml
 - [ ] Open monorepo PR if asked — title names upstream tag; labels package: vm, type: spec updates, type: tests
 - [ ] **STOP**
 ```

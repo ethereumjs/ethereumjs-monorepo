@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url'
 import { Worker } from 'node:worker_threads'
 
 import { runCases } from './cases/runFile.ts'
+import type { ConsensusRunProgress } from './progress.ts'
 import { groupCasesByFile } from './select.ts'
 import type { CaseResult, ConsensusTestCase } from './types.ts'
 
@@ -48,16 +49,25 @@ export async function runCasePool(
   cases: ConsensusTestCase[],
   rootLabel: string,
   jobs: number,
+  progress?: ConsensusRunProgress,
 ): Promise<CaseResult[]> {
   if (cases.length === 0) return []
   if (jobs <= 1) {
-    return runCases(cases, rootLabel)
+    return runCases(cases, rootLabel, {
+      onCaseComplete: (result) => progress?.recordCase(result),
+    })
   }
 
   const byFile = groupCasesByFile(cases)
   const fileGroups = chunkFiles([...byFile.entries()], jobs)
   const batches = fileGroups.map((group) => group.flatMap(([, fileCases]) => fileCases))
 
-  const parts = await Promise.all(batches.map((batch) => runWorker(batch, rootLabel)))
+  const parts = await Promise.all(
+    batches.map(async (batch, workerIndex) => {
+      const results = await runWorker(batch, rootLabel)
+      progress?.completeWorkerBatch(workerIndex, results)
+      return results
+    }),
+  )
   return parts.flat()
 }

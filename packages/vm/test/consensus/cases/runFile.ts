@@ -15,14 +15,21 @@ function getKzg(): microEthKZG {
   return sharedKzg
 }
 
+export type RunCasesHooks = {
+  onCaseComplete?: (result: CaseResult, index: number, total: number) => void
+}
+
 export async function runCases(
   cases: ConsensusTestCase[],
   rootLabel: string,
+  hooks?: RunCasesHooks,
 ): Promise<CaseResult[]> {
   const kzg = getKzg()
   const results: CaseResult[] = []
 
-  for (const testCase of cases) {
+  const total = cases.length
+  for (let index = 0; index < cases.length; index++) {
+    const testCase = cases[index]!
     const start = performance.now()
     const relPath = testCase.filePath
     try {
@@ -44,7 +51,7 @@ export async function runCases(
           testCase.filePath,
         )
       }
-      results.push({
+      const ok: CaseResult = {
         id: testCase.id,
         fork: testCase.fork,
         format: testCase.format,
@@ -52,10 +59,12 @@ export async function runCases(
         relPath,
         pass: true,
         durationMs: performance.now() - start,
-      })
+      }
+      results.push(ok)
+      hooks?.onCaseComplete?.(ok, index, total)
     } catch (e: unknown) {
       const err = e as Error
-      results.push({
+      const fail: CaseResult = {
         id: testCase.id,
         fork: testCase.fork,
         format: testCase.format,
@@ -64,7 +73,9 @@ export async function runCases(
         pass: false,
         error: err?.stack ?? err?.message ?? String(e),
         durationMs: performance.now() - start,
-      })
+      }
+      results.push(fail)
+      hooks?.onCaseComplete?.(fail, index, total)
     }
   }
 

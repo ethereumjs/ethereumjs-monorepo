@@ -56,6 +56,7 @@
     "test:consensus:smoke": "npx vitest run -c ./vitest.config.ts ./test/consensus/__tests__/",
     "test:consensus:sample": "tsx ./test/consensus/run.ts --fixture-root test/consensus/sample/fixtures --fork Osaka --format state --list --skip-fetch",
     "test:consensus:phase0": "tsx ./test/consensus/scripts/measurePhase0.ts",
+    "consensus:fetch-ci-failures": "tsx ./test/consensus/scripts/fetchCiFailures.ts",
     "test:buildIntegrity": "npm run test:consensus:smoke",
     "test:analysis:report": "npx tsx ./test/tester/util/testAnalysisReportAI.ts",
     "tsc": "../../config/cli/ts-compile.sh"

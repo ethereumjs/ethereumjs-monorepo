@@ -3,6 +3,12 @@ import fs from 'node:fs'
 
 import { parseRunnerArgv } from './cli.ts'
 import { runCasePool } from './pool.ts'
+import {
+  ConsensusRunProgress,
+  printRunBanner,
+  printRunStart,
+  summarizeCaseCounts,
+} from './progress.ts'
 import { buildReport, printListCounts, printReport, writeReportJSON } from './report.ts'
 import { selectTestCases } from './select.ts'
 import type { ConsensusTestCase } from './types.ts'
@@ -32,8 +38,14 @@ async function main(): Promise<number> {
     return 0
   }
 
+  const summary = summarizeCaseCounts(cases)
+  printRunBanner(options, summary, rootLabel)
+  printRunStart(summary, options.jobs)
+
+  const progress = new ConsensusRunProgress(summary.total, options.jobs)
   const start = performance.now()
-  const results = await runCasePool(cases, rootLabel, options.jobs)
+  const results = await runCasePool(cases, rootLabel, options.jobs, progress)
+  progress.finish()
   const durationMs = performance.now() - start
 
   const report = buildReport(rootLabel, results, durationMs)

@@ -30,45 +30,32 @@ jobs:
 
       - run: npm run test:API
 
+  nightly-est-fork-matrix:
+    if: github.repository == 'ethereumjs/ethereumjs-monorepo'
+    runs-on: ubuntu-latest
+    outputs:
+      forks: ${{ steps.matrix.outputs.forks }}
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 26
+          cache: npm
+      - name: Install Dependencies
+        run: npm ci
+        working-directory: ${{ github.workspace }}
+      - id: matrix
+        working-directory: packages/vm
+        run: echo "forks=$(npx tsx ./test/consensus/scripts/printEstForkMatrix.ts)" >> $GITHUB_OUTPUT
+
   test-vm-consensus-est:
+    needs: nightly-est-fork-matrix
     if: github.repository == 'ethereumjs/ethereumjs-monorepo'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - format: state
-            shard: '0/8'
-          - format: state
-            shard: '1/8'
-          - format: state
-            shard: '2/8'
-          - format: state
-            shard: '3/8'
-          - format: state
-            shard: '4/8'
-          - format: state
-            shard: '5/8'
-          - format: state
-            shard: '6/8'
-          - format: state
-            shard: '7/8'
-          - format: blockchain
-            shard: '0/8'
-          - format: blockchain
-            shard: '1/8'
-          - format: blockchain
-            shard: '2/8'
-          - format: blockchain
-            shard: '3/8'
-          - format: blockchain
-            shard: '4/8'
-          - format: blockchain
-            shard: '5/8'
-          - format: blockchain
-            shard: '6/8'
-          - format: blockchain
-            shard: '7/8'
+        fork: ${{ fromJson(needs.nightly-est-fork-matrix.outputs.forks) }}
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
@@ -81,15 +68,15 @@ jobs:
         run: npm ci
         working-directory: ${{github.workspace}}
 
-      - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      - uses: ./.github/actions/consensus-fork
         with:
-          path: .est-fixtures-cache
-          key: est-${{ hashFiles('packages/vm/test/consensus/fixtures.json') }}
-          restore-keys: |
-            est-${{ hashFiles('packages/vm/test/consensus/fixtures.json') }}
-
-      - run: npm run fixtures:fetch -- tests
-      - run: npm run test:consensus:all -- --format ${{ matrix.format }} --shard ${{ matrix.shard }} --run-skipped slow
+          source: tests
+          manifest: fixtures.json
+          cache-key: est-extract-tests-${{ hashFiles('packages/vm/test/consensus/fixtures.json') }}-${{ matrix.fork }}
+          fork: ${{ matrix.fork }}
+          artifact-prefix: consensus-est-failures
+          save-cache: 'false'
+          extra-test-args: '--run-skipped slow'
 
   test-vm-consensus-legacy:
     if: github.repository == 'ethereumjs/ethereumjs-monorepo'
