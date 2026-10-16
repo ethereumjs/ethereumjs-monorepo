@@ -11,8 +11,11 @@ on:
 env:
   cwd: ${{github.workspace}}
 
+# Suffix `-build-v2`: stuck CodSpeed jobs on old Build runs can stay `in_progress`
+# after cancel and block the whole group; bump the suffix to unblock without waiting
+# for GitHub’s job timeout.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-build-v2
   cancel-in-progress: true
 
 jobs:
