@@ -1,3 +1,4 @@
+import { paramsBlock } from '@ethereumjs/block'
 import {
   type ChainConfig,
   Common,
@@ -5,13 +6,22 @@ import {
   type HardforkTransitionConfig,
   type HardforksDict,
   Mainnet,
+  type ParamsDict,
 } from '@ethereumjs/common'
+import { paramsTx } from '@ethereumjs/tx'
 import { TypeOutput, toType } from '@ethereumjs/util'
 import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 
 import { estForkToCommonHardfork } from './forks.ts'
 import type { FixtureConfig } from './types.ts'
+
+function consensusFixtureParams(): ParamsDict {
+  return {
+    ...JSON.parse(JSON.stringify(paramsBlock)),
+    ...JSON.parse(JSON.stringify(paramsTx)),
+  }
+}
 
 const preMergeForks = [
   'chainstart',
@@ -66,7 +76,12 @@ function createSingleForkCommon(
   if (testData?.config?.chainId !== undefined) {
     chainConfig.chainId = testData.config.chainId
   }
-  return new Common({ chain: chainConfig, hardfork: forkName, customCrypto: { kzg } })
+  return new Common({
+    chain: chainConfig,
+    hardfork: forkName,
+    customCrypto: { kzg },
+    params: consensusFixtureParams(),
+  })
 }
 
 function createTransitionCommon(
@@ -105,7 +120,12 @@ function createTransitionCommon(
     hardforks,
     consensus: consensusForFork(from),
   }
-  return new Common({ chain: chainConfig, hardfork: from, customCrypto: { kzg } })
+  return new Common({
+    chain: chainConfig,
+    hardfork: from,
+    customCrypto: { kzg },
+    params: consensusFixtureParams(),
+  })
 }
 
 export function createCommonForFork(
