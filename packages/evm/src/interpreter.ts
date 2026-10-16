@@ -29,8 +29,10 @@ import { Memory } from './memory.ts'
 import { Message } from './message.ts'
 import {
   type Eip7928PostTargetCallOog,
+  canAfford,
   consumeEip7928PostTargetCallOog,
   createNewAccountStateGasIfCharged,
+  eip7928PostTargetCreateOog,
 } from './opcodes/EIP7928.ts'
 import { isEIP8024PairImmediateValid, isEIP8024SingleImmediateValid } from './opcodes/EIP8024.ts'
 import { opcodeImmediateByteCount } from './opcodes/immediateWidth.ts'
@@ -1359,6 +1361,13 @@ export class Interpreter {
         targetAddressBytes,
       )
       if (newAccountStateGas > BIGINT_0) {
+        if (
+          this.common.isActivatedEIP(7928) &&
+          !canAfford(this._runState, BIGINT_0, newAccountStateGas)
+        ) {
+          this._evm.blockLevelAccessList!.addAddress(bytesToHex(targetAddressBytes))
+          eip7928PostTargetCreateOog(this._runState, this.common, BIGINT_0)
+        }
         this.chargeStateGas(newAccountStateGas, 'CREATE pre-charge new_account')
         this._runState.lastCreateNewAccountStateGas = newAccountStateGas
       }
