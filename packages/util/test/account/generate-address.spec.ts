@@ -34,6 +34,7 @@ import {
   privateToAddress,
   privateToPublic,
   publicToAddress,
+  setLengthLeft,
   toChecksumAddress,
   utf8ToBytes,
 } from '../../src/index.ts'
@@ -79,6 +80,16 @@ describe('[Util/Account]: generateAddress', () => {
       '0xbfa69ba91385206bfdd2d8b9c1a5d6c10097a85b',
       'should produce an address given a public key',
     )
+  })
+
+  it('generateAddress() ignores leading zero bytes in the nonce', () => {
+    const from = hexToBytes('0x990ccf8a0de58091c028d6ff76bb235ee67c1c39')
+    for (const nonce of [hexToBytes('0x000e'), setLengthLeft(intToBytes(14), 8)]) {
+      assert.strictEqual(
+        bytesToHex(generateAddress(from, nonce)),
+        '0xd658a4b8247c14868f3c512fa5cbb6e458e4a989',
+      )
+    }
   })
 
   // cspell:disable
