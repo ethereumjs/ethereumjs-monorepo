@@ -31,9 +31,9 @@ Judge the diff, not the author's story. Prefer production code over the pull req
 
 ### Signals
 
-Each core check is **Green**, **Yellow**, or **Red**. Use those words in both reports. Green means sound. Yellow means continue only with the named follow-up. Red means stop, or a manual step before any GO.
+Each core check is 🟢, 🟡, or 🔴. Both reports use that emoji and never the words Green, Yellow, or Red. 🟢 means sound. 🟡 means continue only with the named follow-up. 🔴 means stop, or a manual step before any GO.
 
-| Check | Green | Yellow | Red |
+| Check | 🟢 | 🟡 | 🔴 |
 | --- | --- | --- | --- |
 | Problem is real | Reproduced or clearly true | Plausible, not reproduced | Claim is wrong |
 | Worth fixing | Real user or consensus impact | Narrow, still worth a small patch | Noise, or behavior we must keep |
@@ -44,7 +44,7 @@ Each core check is **Green**, **Yellow**, or **Red**. Use those words in both re
 
 **Right place** means two things: as general as the problem allows, and as early as possible in the call chain so later callers inherit it. Do not widen past the problem (do not "fix" a shared encoder for one caller's rule).
 
-**Manual step first** when a check is Red or when the trust tier needs a human pass the agent should not skip (signature, hash, or consensus behavior that was not reproduced). Name the step. Do not start phase 2.
+**Manual step first** when a check is 🔴 or when the trust tier needs a human pass the agent should not skip (signature, hash, or consensus behavior that was not reproduced). Name the step. Do not start phase 2.
 
 ### Work on top
 
@@ -60,8 +60,8 @@ Header, first line, model name you are actually running and today's date:
 
 Then, in order:
 
-1. **Recommendation** — signal, then one of **Continue**, **Manual step first**, or **Stop**, then one sentence.
-2. **Verdict** — table with columns Check, Signal, Finding, one row per check above.
+1. **Recommendation** — the emoji, then one of **Continue**, **Manual step first**, or **Stop**, then one sentence. Example: `**🟢 — Continue.**`
+2. **Verdict** — table with columns Check, Signal, Finding, one row per check above. The Signal cell is only 🟢, 🟡, or 🔴.
 3. **Problem** — what is wrong, with the reproduction when there is one.
 4. **Worth fixing** — who is affected. Say if our own callers already avoid it.
 5. **Right place** — why this function, and why not the layer above or below.
@@ -76,18 +76,18 @@ Post that comment with `gh pr comment`. Then give the same markdown locally.
 
 After the local report, a separate section titled **Contributor (local only)**. Start with one line: this section is not on the pull request. Never put it in the comment, a label, or a later status report.
 
-Cover: human, agent-assisted human, or unattended agent; whether assistance was disclosed; a short note on likely intention; a clear **Green / Yellow / Red** on scam or danger. Green means the diff is not hostile. Yellow means the account pattern is noisy and the next pull request is judged on its own diff. Red means do not continue and do not approve workflows. One pull request does not create trust for the next.
+Cover: human, agent-assisted human, or unattended agent; whether assistance was disclosed; a short note on likely intention; a clear 🟢, 🟡, or 🔴 on scam or danger. 🟢 means the diff is not hostile. 🟡 means the account pattern is noisy and the next pull request is judged on its own diff. 🔴 means do not continue and do not approve workflows. One pull request does not create trust for the next. Write the emoji, not the color word.
 
 ## Phase 2 — Integrate
 
-Only after GO, and only when Continue is Green or Yellow with the follow-up included in the GO. If the recommendation was Manual step first or Stop, remind the human and stop.
+Only after GO, and only when Continue is 🟢 or 🟡 with the follow-up included in the GO. If the recommendation was Manual step first or Stop, remind the human and stop.
 
 Do these in one pass. If the checkout has unrelated uncommitted work, stop before switching branches.
 
 1. **Update the branch** when it is behind the base and the follow-up or CI needs the new base. Fetch, then merge the base into the pull request head. Push only when `maintainerCanModify` is true. Do not force-push a contributor branch unless the human explicitly asks.
 2. **Labels**, as when opening our own pull request ([git.mdc](../../rules/git.mdc)): one or more `package:` labels, exactly one `PR state:`, the matching `type:` labels, and the `test:` labels the same bars would set on `gh pr create`. `PR state: merge ready` when nothing remains. `PR state: WIP` when phase 2 still leaves known follow-up. Replace a previous `PR state:` label when switching.
 3. **Well-scoped follow-up** named in phase 1. Implement it, commit, and push to the pull request branch. If it grows past that outline, stop and report instead of expanding it. Commit only; the push in this step is part of the GO.
-4. **Workflow runs** still `action_required` on the head that should be tested. Approve those runs only. Skip this step when the workflow-approval signal is Red. A fork `pull_request` run does not receive repository secrets.
+4. **Workflow runs** still `action_required` on the head that should be tested. Approve those runs only. Skip this step when the workflow-approval signal is 🔴. A fork `pull_request` run does not receive repository secrets.
 
 Leave the checkout on the branch the work landed on.
 
