@@ -60,37 +60,39 @@ Add **one or more** that describe the work (ordinary taxonomy, not CI triggers):
 
 `type: bug`, `type: feature`, `type: enhancement`, `type: docs`, `type: refactor`, `type: tests`, `type: performance`, `type: security`, `type: CI`, `type: meta`, `type: maintenance`, `type: release`, `type: spec updates`, `type: external`, `type: discussion / question`
 
-## Test-triggering and test-skipping types
+## Test-triggering and test-skipping labels
 
-These **change CI behavior** — add or remove deliberately. For skip labels, **when in doubt, prefer more testing** (do not add a skip label to save CI unless the human asked or the change clearly cannot affect that runner). **`type: test performance` runs the other way:** the job is expensive, so doubt means leave it off.
+The opt-in suite labels use a `test:` prefix. `type: test verkle` and `type: test skip dev VM` keep the old prefix.
+
+These **change CI behavior** — add or remove deliberately. For skip labels, **when in doubt, prefer more testing** (do not add a skip label to save CI unless the human asked or the change clearly cannot affect that runner). **`test: performance` runs the other way:** the job is expensive, so doubt means leave it off.
 
 | Label | Effect (summary) |
 | --- | --- |
-| `type: test consensus` | Recent EST jobs `vm-consensus-est-recent` (Prague, Osaka, Amsterdam) in `vm-pr.yml`. Opt-in. Without it those jobs are skipped and the PR stays mergeable |
-| `type: test all hardforks` | Full EST fork matrix plus legacy blockchain in `vm-pr.yml`. Supersedes the recent jobs |
-| `type: test bogota` | Sharded `bogota-devnet` consensus in `vm-pr.yml` (Hegota preview fixtures) |
+| `test: consensus` | Recent EST jobs `vm-consensus-est-recent` (Prague, Osaka, Amsterdam) in `vm-pr.yml`. Opt-in. Without it those jobs are skipped and the PR stays mergeable |
+| `test: all hardforks` | Full EST fork matrix plus legacy blockchain in `vm-pr.yml`. Supersedes the recent jobs |
+| `test: bogota` | Sharded `bogota-devnet` consensus in `vm-pr.yml` (Hegota preview fixtures) |
 | `type: test verkle` | Verkle-related test path |
-| `type: test browser` | Playwright browser suite in `browser.yml`. Opt-in. Without it the job is skipped and the PR stays mergeable |
-| `type: test skip dev VM` | Skips `type: test bogota` consensus jobs in `vm-pr.yml` |
-| `type: test performance` | Runs the CodSpeed simulation job (`performance-benchmarks`) on this PR when the label is present on the **`opened` / `synchronize`** event (same timing as skip labels) |
+| `test: browser` | Playwright browser suite in `browser.yml`. Opt-in. Without it the job is skipped and the PR stays mergeable |
+| `type: test skip dev VM` | Skips `test: bogota` consensus jobs in `vm-pr.yml` |
+| `test: performance` | Runs the CodSpeed simulation job (`performance-benchmarks`) on this PR when the label is present on the **`opened` / `synchronize`** event (same timing as skip labels) |
 
-Set **`type: test consensus`** when the diff can change an execution-spec result. That includes EVM opcodes and precompiles, VM block or transaction execution, state, fork parameters, transaction or block validation the VM enforces, the consensus runner, and a dependency those paths execute when the change can show up in a fixture. Pass it on **`gh pr create --label "type: test consensus"`**. Re-check before every later push. Remove it when the remaining diff can no longer change a fixture result.
+Set **`test: consensus`** when the diff can change an execution-spec result. That includes EVM opcodes and precompiles, VM block or transaction execution, state, fork parameters, transaction or block validation the VM enforces, the consensus runner, and a dependency those paths execute when the change can show up in a fixture. Pass it on **`gh pr create --label "test: consensus"`**. Re-check before every later push. Remove it when the remaining diff can no longer change a fixture result.
 
-Leave it off when the suite cannot see the change: docs, CI policy, spelling, tests that do not change the runner, or a helper the consensus path already canonicalizes. Stripping leading zeros in `generateAddress` does not get the label, because the EVM passes minimal nonce bytes. If it is logically possible the suite would see a difference, add the label. Without it, a pull request still runs `vm-consensus-smoke` and stays mergeable. `master` pushes keep the recent jobs. **`type: test all hardforks`** is the separate full-matrix opt-in.
+Leave it off when the suite cannot see the change: docs, CI policy, spelling, tests that do not change the runner, or a helper the consensus path already canonicalizes. Stripping leading zeros in `generateAddress` does not get the label, because the EVM passes minimal nonce bytes. If it is logically possible the suite would see a difference, add the label. Without it, a pull request still runs `vm-consensus-smoke` and stays mergeable. `master` pushes keep the recent jobs. **`test: all hardforks`** is the separate full-matrix opt-in.
 
-Set **`type: test browser`** when it is logically possible the Playwright run would fail or differ while the Node suite stays green. That is a platform boundary: Node built-ins, `Buffer`, `process`, streams, WASM, workers, a crypto backend, package exports or bundling, or the browser test config. Pass it on **`gh pr create --label "type: test browser"`**. Re-check before every later push.
+Set **`test: browser`** when it is logically possible the Playwright run would fail or differ while the Node suite stays green. That is a platform boundary: Node built-ins, `Buffer`, `process`, streams, WASM, workers, a crypto backend, package exports or bundling, or the browser test config. Pass it on **`gh pr create --label "test: browser"`**. Re-check before every later push.
 
 Leave it off for environment-neutral logic the Node suite already executes (a fee guard, an RLP integer normalize, an opcode gas change with no new platform API), and for docs, spelling, and CI policy. If you cannot tell whether the browser runner would see a different failure, add the label. Without it the job is skipped and the PR stays mergeable. `master` pushes still run the suite when the affected-package selector includes it.
 
-Set **`type: test performance`** only when the diff can plausibly move a CodSpeed result. The default is off. A change inside a hot-path package (`rlp`, `util`, `mpt`, `evm`, `vm`, `tx`, `block`, `statemanager`, `binarytree`) is not by itself a reason.
+Set **`test: performance`** only when the diff can plausibly move a CodSpeed result. The default is off. A change inside a hot-path package (`rlp`, `util`, `mpt`, `evm`, `vm`, `tx`, `block`, `statemanager`, `binarytree`) is not by itself a reason.
 
 Use the label for a measured inner loop (RLP encode/decode, trie put/get, interpreter dispatch, precompiles, tx hash or sign, state get/put), an edited benchmark, or a dependency that loop executes. Leave it off for once-per-call work whose cost is noise: a short byte normalize, a guard, an error string, tests, or docs. Stripping leading zeros in `generateAddress` does not get the label.
 
-Pass it on **`gh pr create --label "type: test performance"`** together with package/state labels — not in a separate post-create `gh pr edit` if that push should run benches. Re-check before every later push. Remove the label when the remaining diff no longer qualifies. The ordinary type label `type: performance` does not start the job.
+Pass it on **`gh pr create --label "test: performance"`** together with package/state labels — not in a separate post-create `gh pr edit` if that push should run benches. Re-check before every later push. Remove the label when the remaining diff no longer qualifies. The ordinary type label `type: performance` does not start the job.
 
 Remove a skip label when the PR no longer justifies skipping that coverage.
 
-**Bogota / Hegota preview EIPs:** when the PR is mainly implementing or fixing execution behavior for a **bogota-devnet** (Hegota) EIP, add **`type: test bogota`** on `gh pr create` or before the push that should run those jobs (same **`opened` / `synchronize`** timing as other test-trigger labels). Remove it when the branch no longer touches that fixture surface.
+**Bogota / Hegota preview EIPs:** when the PR is mainly implementing or fixing execution behavior for a **bogota-devnet** (Hegota) EIP, add **`test: bogota`** on `gh pr create` or before the push that should run those jobs (same **`opened` / `synchronize`** timing as other test-trigger labels). Remove it when the branch no longer touches that fixture surface.
 
 # Pull requests
 
@@ -133,7 +135,7 @@ When opening a PR immediately after a push (human asked to open PRs), set title 
 1. Infer packages from the diff; apply matching `package: …` (+ `package: monorepo` when appropriate).
 2. Set one `PR state: …` label.
 3. Set matching non-test `type: …` label(s).
-4. Add or drop test-trigger/skip `type: test …` labels only when justified. Set `type: test consensus` when an execution-spec result might change (default off only when the suite cannot see the diff; see above). Set `type: test browser` when the Playwright run might fail while Node stays green (see above). Set `type: test performance` only when the diff can plausibly move a measured hot loop (default off). Include each label in **`gh pr create --label`** when that push should run the job. Set **`type: test bogota`** when the PR is dedicated to Hegota preview / bogota-devnet EIP work (see Bogota note above). Re-check before each later push. Default to **not** skipping heavy suites.
+4. Add or drop `test:` labels, and the remaining `type: test verkle` / `type: test skip dev VM` labels, only when justified. Set `test: consensus` when an execution-spec result might change (default off only when the suite cannot see the diff; see above). Set `test: browser` when the Playwright run might fail while Node stays green (see above). Set `test: performance` only when the diff can plausibly move a measured hot loop (default off). Include each label in **`gh pr create --label`** when that push should run the job. Set **`test: bogota`** when the PR is dedicated to Hegota preview / bogota-devnet EIP work (see Bogota note above). Re-check before each later push. Default to **not** skipping heavy suites.
 5. Leave all other label families unset.
 6. On PR create or material update: essence title and matching `##` body ([Pull requests](#pull-requests)); no Summary/Test plan boilerplate.
 7. After each push to a branch with an open PR: `gh pr edit` **title and body** when essence changed ([After each push](#after-each-push-existing-pr)).

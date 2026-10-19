@@ -100,7 +100,7 @@ Published packages require **Node.js 22** or newer. Use **Node.js 26** locally (
 | `npm run build --workspaces` | Production build |
 | `npm run docs:build --workspaces` | TypeDoc → `packages/*/docs/` |
 | `npm run clean` | Drop build artifacts + `node_modules` |
-| `npm run bench` | Vitest performance suite (CodSpeed in CI) |
+| `npm run bench` | Vitest: performance suite (CodSpeed in CI) |
 
 **Single package** (example: `@ethereumjs/vm`)
 
@@ -205,7 +205,7 @@ One command and one config pointer per tool. Agent finish steps are in the linke
 
 ### Performance benchmarks
 
-Hot-path packages share one Vitest bench suite (`packages/*/benchmarks/*.bench.ts`; heavy local-only cases use `*.local.bench.ts`). Local: `npm run bench` (wall time). CI: [**`performance-benchmarks`**](.github/workflows/performance-benchmarks.yml) workflow — runs on **Node 22** (CodSpeed native addon vs Node 26 on Linux) and CodSpeed **simulation**, with a **30-minute job timeout** so a hung suite cannot hold a runner for hours. On pull requests it starts **after `Build` completes** (`workflow_run`) so long bench runs do not compete with Build for workflow queue slots on the same push; it runs only when the PR has the **`type: test performance`** label at that time (set on `gh pr create` or before the push that should run benches). `master` pushes stay path-filtered. A manual run always measures. Informational until **CodSpeed Performance Analysis** is required in branch protection.
+Hot-path packages share one Vitest bench suite (`packages/*/benchmarks/*.bench.ts`; heavy local-only cases use `*.local.bench.ts`). Local: `npm run bench` (wall time). CI: [**`performance-benchmarks`**](.github/workflows/performance-benchmarks.yml) workflow — runs on **Node 22** (CodSpeed native addon vs Node 26 on Linux) and CodSpeed **simulation**, with a **30-minute job timeout** so a hung suite cannot hold a runner for hours. On pull requests it starts **after `Build` completes** (`workflow_run`) so long bench runs do not compete with Build for workflow queue slots on the same push; it runs only when the PR has the **`test: performance`** label at that time (set on `gh pr create` or before the push that should run benches). `master` pushes stay path-filtered. A manual run always measures. Informational until **CodSpeed Performance Analysis** is required in branch protection.
 
 If a CodSpeed step on an **old** workflow layout refuses to die after cancel, **`Build`** may stop starting new runs for a branch until GitHub’s default job timeout. Bump the **`Build` concurrency group suffix** in [build.yml](.github/workflows/build.yml) (e.g. `-build-v2` → `-build-v3`) and push to unblock without waiting on the zombie run.
 
@@ -213,7 +213,7 @@ Install the [CodSpeed GitHub App](https://github.com/marketplace/codspeed-contin
 
 **Maintainer (one-time / when ready):** after stable `master` simulation runs, optionally require **CodSpeed Performance Analysis** in branch protection (not `Build / CI`). Tune regression threshold in CodSpeed (toward 15–20% if flaky). Acknowledge intentional regressions in the CodSpeed UI.
 
-Carry **`type: test performance`** when the change can plausibly move a measured hot loop (interpreter, trie, RLP, hashing, state access), including a structural rewrite of that loop. A hot-path package in the diff, with no real speed impact, stays unlabeled. When unsure, leave it off. Policy: [git.mdc](.cursor/rules/git.mdc).
+Carry **`test: performance`** when the change can plausibly move a measured hot loop (interpreter, trie, RLP, hashing, state access), including a structural rewrite of that loop. A hot-path package in the diff, with no real speed impact, stays unlabeled. When unsure, leave it off. Policy: [git.mdc](.cursor/rules/git.mdc).
 
 ### EIP modules and `new-eips`
 
@@ -238,7 +238,7 @@ Structural refactors (registries, strategies, pipelines) land on **`master`**. L
 
 VM consensus runners: [packages/vm/DEVELOPER.md](./packages/vm/DEVELOPER.md).
 
-**Browser tests** — optional locally. Once: `npm run install-browser-deps`, then `npm run test:browser`. CI uses `mcr.microsoft.com/playwright:v1.60.0-noble` — keep in sync with `playwright` in `package-lock.json`. A pull request runs that job only with **`type: test browser`**; without the label the job is skipped and the PR stays mergeable. `master` still runs it.
+**Browser tests** — optional locally. Once: `npm run install-browser-deps`, then `npm run test:browser`. CI uses `mcr.microsoft.com/playwright:v1.60.0-noble` — keep in sync with `playwright` in `package-lock.json`. A pull request runs that job only with **`test: browser`**; without the label the job is skipped and the PR stays mergeable. `master` still runs it.
 
 **Documentation** — TypeDoc 0.28 needs TS 6; monorepo `tsc` uses TS 7. Always use [`config/cli/typedoc.sh`](./config/cli/typedoc.sh), not bare `typedoc`. Cross-package `{@link}` → [`typedoc-external-links.mjs`](./config/typedoc-external-links.mjs).
 

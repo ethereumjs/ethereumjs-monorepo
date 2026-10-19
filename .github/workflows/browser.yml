@@ -34,12 +34,12 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Pull requests opt in with `type: test browser`. A skipped job still
+  # Pull requests opt in with `test: browser`. A skipped job still
   # merges. Master pushes and manual runs keep the suite.
   test-all-browser:
     if: >-
       github.event_name != 'pull_request' ||
-      contains(join(github.event.pull_request.labels.*.name, ' '), 'test browser')
+      contains(join(github.event.pull_request.labels.*.name, ' '), 'test: browser')
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false

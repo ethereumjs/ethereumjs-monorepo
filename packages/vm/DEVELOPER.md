@@ -30,10 +30,10 @@ GeneralStateTests from `ethereum/tests` are retired upstream; ported cases live 
 
 On an ordinary PR, the VM is green when `npm run test:API` (and the coverage job in CI) passes. Recent execution-spec forks are opt-in.
 
-- **`type: test consensus`:** one CI job per recent fork, `vm-consensus-est-recent (Prague|Osaka|Amsterdam)`. Each runs `test:consensus -- --source tests --fork <name>`, four workers (`nproc`), per-fork fixture cache. Without the label those jobs are skipped and the PR stays mergeable. The pull request then runs `npm run test:consensus:smoke` instead.
+- **`test: consensus`:** one CI job per recent fork, `vm-consensus-est-recent (Prague|Osaka|Amsterdam)`. Each runs `test:consensus -- --source tests --fork <name>`, four workers (`nproc`), per-fork fixture cache. Without the label those jobs are skipped and the PR stays mergeable. The pull request then runs `npm run test:consensus:smoke` instead.
 - **`master` pushes** still run the recent forks.
 
-With the `test all hardforks` label, CI runs one job per EST fork (`ALL_EST_FORKS`) plus legacy blockchain, and does not also run the recent jobs. With **`type: test bogota`**, CI runs `vm-consensus-bogota` (one job per `Bogota` and `AmsterdamToBogotaAtTime15k`, manifest in `fixtures.bogota.json`). Nightly runs one job per EST fork and `--run-skipped slow`.
+With the `test: all hardforks` label, CI runs one job per EST fork (`ALL_EST_FORKS`) plus legacy blockchain, and does not also run the recent jobs. With **`test: bogota`**, CI runs `vm-consensus-bogota` (one job per `Bogota` and `AmsterdamToBogotaAtTime15k`, manifest in `fixtures.bogota.json`). Nightly runs one job per EST fork and `--run-skipped slow`.
 
 Do not add skip entries just to go green on consensus (S1).
 
@@ -66,7 +66,7 @@ Standalone harness under [`test/consensus/`](./test/consensus/) — not Vitest. 
 cd packages/vm
 npm run fixtures:fetch                  # idempotent download + extract
 npm run test:consensus -- --list        # counts per fork/format
-npm run test:consensus:pr               # EST, recent forks (CI with type: test consensus)
+npm run test:consensus:pr               # EST, recent forks (CI with test: consensus)
 npm run test:consensus:all              # EST, all forks (nightly / label)
 npm run test:consensus:legacy           # Prague blockchain from ethereum/tests
 npm run test:consensus:dev              # bogota-devnet (Hegota dev set)
