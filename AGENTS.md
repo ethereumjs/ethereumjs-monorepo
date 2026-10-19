@@ -16,7 +16,7 @@ Always-on rules: [`.cursor/rules/`](.cursor/rules/) — `ci`, `typecheck`, `spel
 
 Topic rules (load when relevant): [`code-conventions.mdc`](.cursor/rules/code-conventions.mdc), [`api-docs.mdc`](.cursor/rules/api-docs.mdc), [`examples.mdc`](.cursor/rules/examples.mdc), [`api-tests.mdc`](.cursor/rules/api-tests.mdc), [`releases.mdc`](.cursor/rules/releases.mdc), [`benchmarks.mdc`](.cursor/rules/benchmarks.mdc).
 
-Skills: [`.cursor/skills/`](.cursor/skills/) — use `release-round` for coordinated npm/GitHub releases; `update-est-fixtures` when bumping execution-spec test fixtures; `integrate-eip` when adding or graduating EIPs on `master` / `new-eips`.
+Skills: [`.cursor/skills/`](.cursor/skills/) — use `release-round` for coordinated npm/GitHub releases; `update-est-fixtures` when bumping execution-spec test fixtures; `integrate-eip` when adding or graduating EIPs on `master` / `new-eips`; `external-pr` when reviewing or continuing an incoming pull request.
 
 ## Habits
 
