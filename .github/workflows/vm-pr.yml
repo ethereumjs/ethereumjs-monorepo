@@ -63,8 +63,15 @@ jobs:
           files: ${{ env.cwd }}/coverage/lcov.info
           flags: vm
 
+  # Recent EST forks are opt-in (`type: test consensus`). A PR without that
+  # label still merges: skipped jobs count as success on Build / CI.
+  # Smoke is the cheap stand-in on those PRs. Master and manual runs keep
+  # the recent forks. `type: test all hardforks` replaces them with the full matrix.
   vm-consensus-smoke:
-    if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM')
+    if: >-
+      github.event_name == 'pull_request' &&
+      contains(join(github.event.pull_request.labels.*.name, ' '), 'test consensus') == false &&
+      contains(join(github.event.pull_request.labels.*.name, ' '), 'test all hardforks') == false
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
@@ -74,9 +81,7 @@ jobs:
       - run: npm run test:consensus:smoke
 
   consensus-est-fork-matrix:
-    if: >-
-      contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM') == false &&
-      contains(join(github.event.pull_request.labels.*.name, ' '), 'test all hardforks')
+    if: contains(join(github.event.pull_request.labels.*.name, ' '), 'test all hardforks')
     runs-on: ubuntu-latest
     outputs:
       forks: ${{ steps.matrix.outputs.forks }}
@@ -90,7 +95,10 @@ jobs:
 
   vm-consensus-est-recent:
     if: >-
-      contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM') == false &&
+      (
+        github.event_name != 'pull_request' ||
+        contains(join(github.event.pull_request.labels.*.name, ' '), 'test consensus')
+      ) &&
       contains(join(github.event.pull_request.labels.*.name, ' '), 'test all hardforks') == false
     runs-on: ubuntu-latest
     strategy:
@@ -112,9 +120,7 @@ jobs:
 
   vm-consensus-est-all-forks:
     needs: consensus-est-fork-matrix
-    if: >-
-      contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM') == false &&
-      contains(join(github.event.pull_request.labels.*.name, ' '), 'test all hardforks')
+    if: contains(join(github.event.pull_request.labels.*.name, ' '), 'test all hardforks')
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false

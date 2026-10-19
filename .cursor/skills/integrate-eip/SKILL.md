@@ -41,6 +41,7 @@ One append per registry (`OPCODE_EIP_MODULES`, `TX_TYPE_REGISTRY`, `HEADER_EIP_F
 3. Package unit tests.
 4. If exports changed: `node --import tsx/esm scripts/regenerate-public-api-snapshots.mjs`.
 5. **`type: test performance`** only when this work can plausibly move a measured hot loop. A refactor, or a hot-path package touch, is not enough.
+6. **`type: test consensus`** when the EIP can change an execution-spec result. Pass it on `gh pr create`.
 
 ## 6. Graduate from `new-eips`
 
