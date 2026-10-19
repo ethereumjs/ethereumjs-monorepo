@@ -23,6 +23,8 @@ One harness for the monorepo: **Vitest `bench()`** in `packages/<pkg>/benchmarks
 
 `rlp`, `util`, `mpt`, `evm`, `vm`, `tx`, `block`, `statemanager`, `binarytree`. Deprecated or cold packages stay out of the suite.
 
+The CI job is opt-in and expensive. Set **`type: test performance`** only when the diff can plausibly move a measured result. A file in one of these packages is not enough. When to set the label: [git.mdc](git.mdc).
+
 ## Local run
 
 ```sh

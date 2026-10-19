@@ -213,7 +213,7 @@ Install the [CodSpeed GitHub App](https://github.com/marketplace/codspeed-contin
 
 **Maintainer (one-time / when ready):** after stable `master` simulation runs, optionally require **CodSpeed Performance Analysis** in branch protection (not `Build / CI`). Tune regression threshold in CodSpeed (toward 15–20% if flaky). Acknowledge intentional regressions in the CodSpeed UI.
 
-Refactor PRs that touch hot paths should carry **`type: test performance`** so CodSpeed records a baseline before and after structural EIP work.
+Carry **`type: test performance`** when the change can plausibly move a measured hot loop (interpreter, trie, RLP, hashing, state access), including a structural rewrite of that loop. A hot-path package in the diff, with no real speed impact, stays unlabeled. When unsure, leave it off. Policy: [git.mdc](.cursor/rules/git.mdc).
 
 ### EIP modules and `new-eips`
 

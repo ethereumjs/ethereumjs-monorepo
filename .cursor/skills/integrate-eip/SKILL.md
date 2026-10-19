@@ -40,7 +40,7 @@ One append per registry (`OPCODE_EIP_MODULES`, `TX_TYPE_REGISTRY`, `HEADER_EIP_F
 2. `npm run spellcheck`.
 3. Package unit tests.
 4. If exports changed: `node --import tsx/esm scripts/regenerate-public-api-snapshots.mjs`.
-5. Hot-path or refactor PR: **`type: test performance`** for CodSpeed.
+5. **`type: test performance`** only when this work can plausibly move a measured hot loop. A refactor, or a hot-path package touch, is not enough.
 
 ## 6. Graduate from `new-eips`
 
