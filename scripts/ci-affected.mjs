@@ -42,7 +42,9 @@ export const EXTRA_PATH_PACKAGES = {
 /**
  * Skippable jobs in `.github/workflows/build.yml`.
  * A job runs if any listed package is in the affected set (changed ∪ dependents).
- * `browser` and `examples` run when any workspace package is affected.
+ * `browser` is selected when any workspace package is affected. A pull
+ * request still needs `type: test browser` before that job runs.
+ * `examples` runs when any workspace package is affected.
  *
  * Always-on (not listed here): lint, typecheck, audit.
  */

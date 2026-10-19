@@ -1,7 +1,7 @@
 name: Build
 on:
   pull_request:
-    # synchronize re-reads PR labels (same model as type: test no browser).
+    # synchronize re-reads PR labels (same model as type: test browser).
     types: [opened, reopened, synchronize, ready_for_review]
   push:
     branches: [master]
@@ -186,7 +186,12 @@ jobs:
 
   browser:
     needs: [build, checkout-submodules, detect]
-    if: needs.detect.outputs.browser == 'true'
+    if: >-
+      needs.detect.outputs.browser == 'true' &&
+      (
+        github.event_name != 'pull_request' ||
+        contains(join(github.event.pull_request.labels.*.name, ' '), 'test browser')
+      )
     uses: ./.github/workflows/browser.yml
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}

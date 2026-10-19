@@ -238,7 +238,7 @@ Structural refactors (registries, strategies, pipelines) land on **`master`**. L
 
 VM consensus runners: [packages/vm/DEVELOPER.md](./packages/vm/DEVELOPER.md).
 
-**Browser tests** — optional locally. Once: `npm run install-browser-deps`, then `npm run test:browser`. CI uses `mcr.microsoft.com/playwright:v1.60.0-noble` — keep in sync with `playwright` in `package-lock.json`.
+**Browser tests** — optional locally. Once: `npm run install-browser-deps`, then `npm run test:browser`. CI uses `mcr.microsoft.com/playwright:v1.60.0-noble` — keep in sync with `playwright` in `package-lock.json`. A pull request runs that job only with **`type: test browser`**; without the label the job is skipped and the PR stays mergeable. `master` still runs it.
 
 **Documentation** — TypeDoc 0.28 needs TS 6; monorepo `tsc` uses TS 7. Always use [`config/cli/typedoc.sh`](./config/cli/typedoc.sh), not bare `typedoc`. Cross-package `{@link}` → [`typedoc-external-links.mjs`](./config/typedoc-external-links.mjs).
 
