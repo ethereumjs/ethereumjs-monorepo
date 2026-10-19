@@ -81,7 +81,7 @@ jobs:
       - run: npm run test:consensus:smoke
 
   consensus-est-fork-matrix:
-    if: contains(join(github.event.pull_request.labels.*.name, ' '), 'test: all hardforks')
+    if: "contains(join(github.event.pull_request.labels.*.name, ' '), 'test: all hardforks')"
     runs-on: ubuntu-latest
     outputs:
       forks: ${{ steps.matrix.outputs.forks }}
@@ -120,7 +120,7 @@ jobs:
 
   vm-consensus-est-all-forks:
     needs: consensus-est-fork-matrix
-    if: contains(join(github.event.pull_request.labels.*.name, ' '), 'test: all hardforks')
+    if: "contains(join(github.event.pull_request.labels.*.name, ' '), 'test: all hardforks')"
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -163,7 +163,7 @@ jobs:
           artifact-prefix: consensus-bogota-failures
 
   vm-consensus-legacy:
-    if: contains(join(github.event.pull_request.labels.*.name, ' '), 'test: all hardforks')
+    if: "contains(join(github.event.pull_request.labels.*.name, ' '), 'test: all hardforks')"
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
