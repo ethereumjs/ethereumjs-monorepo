@@ -9,6 +9,10 @@ async function main(): Promise<void> {
     options: {
       update: { type: 'boolean', default: false },
       force: { type: 'boolean', default: false },
+      fork: { type: 'string' },
+      'tarball-only': { type: 'boolean', default: false },
+      'full-extract': { type: 'boolean', default: false },
+      'warm-recent': { type: 'boolean', default: false },
     },
     allowPositionals: true,
     strict: false,
@@ -25,7 +29,21 @@ async function main(): Promise<void> {
   }
 
   const names = positionals.length > 0 ? positionals : undefined
-  await fetchAllReleaseSources({ force: values.force === true, names })
+  const warmRecent =
+    values['warm-recent'] === true ||
+    (names?.length === 1 &&
+      names[0] === 'tests' &&
+      values.fork === undefined &&
+      values['full-extract'] !== true)
+
+  await fetchAllReleaseSources({
+    force: values.force === true,
+    names,
+    fork: values.fork as string | undefined,
+    tarballOnly: values['tarball-only'] === true,
+    fullExtract: values['full-extract'] === true,
+    warmRecent,
+  })
 }
 
 main().catch((e) => {

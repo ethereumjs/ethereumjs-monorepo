@@ -968,7 +968,7 @@ export const handlers: Map<number, OpHandler> = new Map<number, OpHandler>([
         trap(EVMError.errorMessages.INITCODE_SIZE_VIOLATION)
       }
 
-      const gasLimit = runState.messageGasLimit!
+      let gasLimit = runState.messageGasLimit
       runState.messageGasLimit = undefined
 
       if (runState.eip7928PostTargetCreateOog === true) {
@@ -982,7 +982,7 @@ export const handlers: Map<number, OpHandler> = new Map<number, OpHandler>([
         data = runState.memory.read(Number(offset), Number(length), true)
       }
 
-      const ret = await runState.interpreter.create(gasLimit, value, data)
+      const ret = await runState.interpreter.create(gasLimit ?? BIGINT_0, value, data)
       runState.stack.push(ret)
     },
   ],
@@ -1004,7 +1004,7 @@ export const handlers: Map<number, OpHandler> = new Map<number, OpHandler>([
         trap(EVMError.errorMessages.INITCODE_SIZE_VIOLATION)
       }
 
-      const gasLimit = runState.messageGasLimit!
+      let gasLimit = runState.messageGasLimit
       runState.messageGasLimit = undefined
 
       if (runState.eip7928PostTargetCreateOog === true) {
@@ -1019,7 +1019,7 @@ export const handlers: Map<number, OpHandler> = new Map<number, OpHandler>([
       }
 
       const ret = await runState.interpreter.create2(
-        gasLimit,
+        gasLimit ?? BIGINT_0,
         value,
         data,
         setLengthLeft(bigIntToBytes(salt), 32),

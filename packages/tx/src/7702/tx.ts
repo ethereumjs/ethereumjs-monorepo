@@ -126,6 +126,11 @@ export class EOACode7702Tx implements TransactionInterface<typeof TransactionTyp
     this.authorizationList = isEOACode7702AuthorizationList(authorizationList)
       ? authorizationList.map((item) => eoaCode7702AuthorizationListJSONItemToBytes(item))
       : authorizationList
+
+    // Signature shape is checked before list semantics (matches execution-spec-tests).
+    EIP2718.validateYParity(this)
+    Legacy.validateHighS(this)
+
     // Verify the authority list format.
     EIP7702.verifyAuthorizationList(this)
 
@@ -154,9 +159,6 @@ export class EOACode7702Tx implements TransactionInterface<typeof TransactionTyp
       )
       throw EthereumJSErrorWithoutCode(msg)
     }
-
-    EIP2718.validateYParity(this)
-    Legacy.validateHighS(this)
 
     if (this.to === undefined) {
       const msg = Legacy.errorMsg(

@@ -1,3 +1,6 @@
+import assert from 'node:assert/strict'
+import { inspect } from 'node:util'
+
 import { trustedSetup } from '@paulmillr/trusted-setups/fast-peerdas.js'
 import { KZG as microEthKZG } from 'micro-eth-signer/kzg.js'
 
@@ -8,6 +11,29 @@ import { runStateTestCase } from './state.ts'
 
 let sharedKzg: microEthKZG | undefined
 
+export function formatCaseError(e: unknown): string {
+  if (e instanceof assert.AssertionError) {
+    const parts: string[] = []
+    if (e.stack !== undefined) parts.push(e.stack)
+    else parts.push(e.message)
+    if (e.actual !== undefined) {
+      parts.push(
+        `AssertionError actual: ${typeof e.actual === 'string' ? e.actual : inspect(e.actual, { depth: 4, maxArrayLength: 20 })}`,
+      )
+    }
+    if (e.expected !== undefined) {
+      parts.push(
+        `AssertionError expected: ${typeof e.expected === 'string' ? e.expected : inspect(e.expected, { depth: 4, maxArrayLength: 20 })}`,
+      )
+    }
+    return parts.join('\n')
+  }
+  if (e instanceof Error) {
+    return e.stack ?? e.message
+  }
+  return String(e)
+}
+
 function getKzg(): microEthKZG {
   if (sharedKzg === undefined) {
     sharedKzg = new microEthKZG(trustedSetup)
@@ -15,14 +41,21 @@ function getKzg(): microEthKZG {
   return sharedKzg
 }
 
+export type RunCasesHooks = {
+  onCaseComplete?: (result: CaseResult, index: number, total: number) => void
+}
+
 export async function runCases(
   cases: ConsensusTestCase[],
   rootLabel: string,
+  hooks?: RunCasesHooks,
 ): Promise<CaseResult[]> {
   const kzg = getKzg()
   const results: CaseResult[] = []
 
-  for (const testCase of cases) {
+  const total = cases.length
+  for (let index = 0; index < cases.length; index++) {
+    const testCase = cases[index]!
     const start = performance.now()
     const relPath = testCase.filePath
     try {
@@ -44,7 +77,7 @@ export async function runCases(
           testCase.filePath,
         )
       }
-      results.push({
+      const ok: CaseResult = {
         id: testCase.id,
         fork: testCase.fork,
         format: testCase.format,
@@ -52,19 +85,22 @@ export async function runCases(
         relPath,
         pass: true,
         durationMs: performance.now() - start,
-      })
+      }
+      results.push(ok)
+      hooks?.onCaseComplete?.(ok, index, total)
     } catch (e: unknown) {
-      const err = e as Error
-      results.push({
+      const fail: CaseResult = {
         id: testCase.id,
         fork: testCase.fork,
         format: testCase.format,
         filePath: testCase.filePath,
         relPath,
         pass: false,
-        error: err?.stack ?? err?.message ?? String(e),
+        error: formatCaseError(e),
         durationMs: performance.now() - start,
-      })
+      }
+      results.push(fail)
+      hooks?.onCaseComplete?.(fail, index, total)
     }
   }
 

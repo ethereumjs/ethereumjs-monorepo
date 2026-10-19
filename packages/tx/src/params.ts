@@ -128,6 +128,7 @@ export const paramsTx: ParamsDict = {
    * constants (see evm params block).
    */
   8037: {
+    maxTotalTransactionGasLimit: 4294967295, // TX_MAX_TOTAL_GAS_LIMIT (2^32 - 1) per EIP-8037
     perAuthBaseGas: 7816, // REGULAR_PER_AUTH_BASE_COST: AUTH_TUPLE_BYTES (101) * totalCostFloorPerToken (16) + ecrecover (3000) + cold account access (3000) + 2 * warm access (200)
     perEmptyAccountCost: 0, // Regular gas for empty authority (down from 25000); replaced by accountWriteGas + perAuthBaseGas plus the state-gas portion ((stateBytesPerNewAccount + stateBytesPerAuthBase) * costPerStateByte)
     accountWriteGas: 8000, // ACCOUNT_WRITE: regular gas per authorization for the account write (refunded when the authority account already exists)

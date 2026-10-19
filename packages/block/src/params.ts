@@ -97,4 +97,10 @@ export const paramsBlock: ParamsDict = {
     maxBlobGasPerBlock: 1179648, // The max blob gas allowable per block
     blobGasPriceUpdateFraction: 5007716, // The denominator used in the exponential when calculating a blob gas price
   },
+  /**
+   * RLP Execution Block Size Limit
+   */
+  7934: {
+    maxRlpBlockSize: 8_388_608, // 8 MiB (MAX_BLOCK_SIZE - SAFETY_MARGIN)
+  },
 }

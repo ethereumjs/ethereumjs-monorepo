@@ -29,11 +29,15 @@ import { Memory } from './memory.ts'
 import { Message } from './message.ts'
 import {
   type Eip7928PostTargetCallOog,
+  canAfford,
   consumeEip7928PostTargetCallOog,
+  createNewAccountStateGasIfCharged,
+  eip7928PostTargetCreateOog,
 } from './opcodes/EIP7928.ts'
 import { isEIP8024PairImmediateValid, isEIP8024SingleImmediateValid } from './opcodes/EIP8024.ts'
 import { opcodeImmediateByteCount } from './opcodes/immediateWidth.ts'
 import { trap } from './opcodes/index.ts'
+import { maxCallGas } from './opcodes/util.ts'
 import { Stack } from './stack.ts'
 
 import type {
@@ -716,6 +720,26 @@ export class Interpreter {
   }
 
   /**
+   * EIP-8037: after a successful child frame, merged reservoir may repay this
+   * frame's outstanding state-gas spill (cross-frame refund path).
+   */
+  repayStateGasSpillFromReservoir(context?: string): void {
+    const spill = this._runState.stateGasSpilled
+    if (spill === BIGINT_0) return
+    const evm = this._evm
+    const repay = spill < evm.stateGasReservoir ? spill : evm.stateGasReservoir
+    if (repay === BIGINT_0) return
+    evm.stateGasReservoir -= repay
+    this._runState.stateGasSpilled -= repay
+    this._runState.gasLeft += repay
+    if (evm.DEBUG) {
+      debugGas(
+        `${context !== undefined ? context + ': ' : ''}repaid ${repay} state-gas spill from reservoir (spill=${this._runState.stateGasSpilled}, reservoir=${evm.stateGasReservoir})`,
+      )
+    }
+  }
+
+  /**
    * EIP-8037: Refill the state-gas reservoir, e.g. on revert / exceptional
    * halt or on SSTORE clear-back-to-zero where the slot was zero at tx start.
    * Increments `stateGasReservoir` and decrements `execution_state_gas_used`
@@ -1214,7 +1238,10 @@ export class Interpreter {
     // failure the new-account state gas pre-charged at the CALL opcode is
     // refunded (no account leaf persists).
     if (this.common.isActivatedEIP(8037)) {
-      this._runState.stateGasSpilled += results.execResult.stateGasSpilled ?? BIGINT_0
+      if (results.execResult.exceptionError === undefined) {
+        this._runState.stateGasSpilled += results.execResult.stateGasSpilled ?? BIGINT_0
+        this.repayStateGasSpillFromReservoir('CALL child merge')
+      }
       const preCharged = this._runState.lastCallNewAccountStateGas ?? BIGINT_0
       if (results.execResult.exceptionError !== undefined && preCharged > BIGINT_0) {
         this.creditStateGasRefund(preCharged, 'CALL child-failure new_account')
@@ -1286,19 +1313,35 @@ export class Interpreter {
       this._runState.lastCreateNewAccountStateGas = BIGINT_0
     }
 
+    // EELS `generic_create`: when post-target gas (incl. new-account state gas)
+    // was charged in the opcode gas step but the create aborts before target
+    // access (balance / nonce), the 63/64 grant is consumed as regular gas and
+    // state gas is not refunded. Preflight-only aborts never charged state gas.
+    const abortCreateBeforeTargetAccess = (): bigint => {
+      const preCharged = this._runState.lastCreateNewAccountStateGas ?? BIGINT_0
+      // EELS `generic_create`: when post-target gas leaves only the 63/64 grant
+      // on the frame, balance/nonce abort absorbs it as regular gas and keeps
+      // the new-account state-gas charge (EIP-8038 aborted_create_gas_boundary).
+      if (preCharged > BIGINT_0 && this.getGasLeft() === gasLimit) {
+        this.useGas(gasLimit, 'CREATE fail-fast new_account')
+        this._runState.lastCreateNewAccountStateGas = BIGINT_0
+      } else {
+        refundCreatePreCharge('CREATE fail-fast new_account')
+      }
+      return BIGINT_0
+    }
+
     // Check if account has enough ether and max depth not exceeded
     if (
       this._env.depth >= Number(this.common.param('stackLimit')) ||
       this._env.contract.balance < value
     ) {
-      refundCreatePreCharge('CREATE fail-fast new_account')
-      return BIGINT_0
+      return abortCreateBeforeTargetAccess()
     }
 
     // EIP-2681 check
     if (this._env.contract.nonce >= MAX_UINT64) {
-      refundCreatePreCharge('CREATE fail-fast new_account')
-      return BIGINT_0
+      return abortCreateBeforeTargetAccess()
     }
 
     // EIP-8038: warm the create target only now, after the fail-fast checks
@@ -1309,6 +1352,28 @@ export class Interpreter {
       : generateAddress(this._env.address.bytes, bigIntToBytes(this._env.contract.nonce))
     if (this.common.isActivatedEIP(8038) && this.common.isActivatedEIP(2929)) {
       this.journal.addWarmedAddress(targetAddressBytes)
+    }
+
+    if (this.common.isActivatedEIP(8038) && this.common.isActivatedEIP(8037)) {
+      const newAccountStateGas = await createNewAccountStateGasIfCharged(
+        this._runState,
+        this.common,
+        targetAddressBytes,
+      )
+      if (newAccountStateGas > BIGINT_0) {
+        if (this.common.isActivatedEIP(7928)) {
+          this._evm.blockLevelAccessList!.addAddress(bytesToHex(targetAddressBytes))
+        }
+        if (
+          this.common.isActivatedEIP(7928) &&
+          !canAfford(this._runState, BIGINT_0, newAccountStateGas)
+        ) {
+          eip7928PostTargetCreateOog(this._runState, this.common, BIGINT_0)
+        }
+        this.chargeStateGas(newAccountStateGas, 'CREATE pre-charge new_account')
+        this._runState.lastCreateNewAccountStateGas = newAccountStateGas
+      }
+      gasLimit = maxCallGas(this.getGasLeft(), this.getGasLeft(), this._runState, this.common)
     }
 
     this._env.contract.nonce += BIGINT_1
@@ -1415,10 +1480,17 @@ export class Interpreter {
         // Merge the successful child frame's spilled state gas into this
         // frame's spill tracker (LIFO refunds may credit it to gasLeft).
         this._runState.stateGasSpilled += results.execResult.stateGasSpilled ?? BIGINT_0
+        this.repayStateGasSpillFromReservoir('CREATE child merge')
         if (message.createdTargetAlive === true) {
           // The create target was already alive (EIP-161 non-empty): no new
           // account leaf was added, refund the new-account state gas.
           refundCreatePreCharge('CREATE onto alive account new_account')
+        } else {
+          // New account persisted: the pre-charge stays in
+          // executionStateGasUsed. Clear the marker so a later CREATE on this
+          // frame (e.g. CREATE2 collision) does not refund it (EELS only
+          // credits NEW_ACCOUNT when `new_account_charged` on that op).
+          this._runState.lastCreateNewAccountStateGas = BIGINT_0
         }
       }
     }

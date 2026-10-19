@@ -63,136 +63,107 @@ jobs:
           files: ${{ env.cwd }}/coverage/lcov.info
           flags: vm
 
-  est-fixtures-cache:
+  # Recent EST forks are opt-in (`test: consensus`). A PR without that
+  # label still merges: skipped jobs count as success on Build / CI.
+  # Smoke is the cheap stand-in on those PRs. Master and manual runs keep
+  # the recent forks. `test: all hardforks` replaces them with the full matrix.
+  vm-consensus-smoke:
+    if: >-
+      github.event_name == 'pull_request' &&
+      contains(join(github.event.pull_request.labels.*.name, ' '), 'test: consensus') == false &&
+      contains(join(github.event.pull_request.labels.*.name, ' '), 'test: all hardforks') == false
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - uses: ./.github/actions/setup-ethereumjs
         with:
           dep-cache-key: ${{ inputs.dep-cache-key }}
+      - run: npm run test:consensus:smoke
 
-      - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
-        id: est-cache
+  consensus-est-fork-matrix:
+    if: "contains(join(github.event.pull_request.labels.*.name, ' '), 'test: all hardforks')"
+    runs-on: ubuntu-latest
+    outputs:
+      forks: ${{ steps.matrix.outputs.forks }}
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: ./.github/actions/setup-ethereumjs
         with:
-          path: .est-fixtures-cache
-          key: est-${{ hashFiles('packages/vm/test/consensus/fixtures.json') }}
+          dep-cache-key: ${{ inputs.dep-cache-key }}
+      - id: matrix
+        run: echo "forks=$(npx tsx ./test/consensus/scripts/printEstForkMatrix.ts)" >> $GITHUB_OUTPUT
 
-      - name: Ensure tests fixtures
-        run: npm run fixtures:fetch -- tests
-
-      - uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
-        with:
-          path: .est-fixtures-cache
-          key: est-${{ hashFiles('packages/vm/test/consensus/fixtures.json') }}
-
-  vm-consensus-est:
-    needs: est-fixtures-cache
+  vm-consensus-est-recent:
+    if: >-
+      (
+        github.event_name != 'pull_request' ||
+        contains(join(github.event.pull_request.labels.*.name, ' '), 'test: consensus')
+      ) &&
+      contains(join(github.event.pull_request.labels.*.name, ' '), 'test: all hardforks') == false
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        shard: ['0/4', '1/4', '2/4', '3/4']
+        fork: [Prague, Osaka, Amsterdam]
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - uses: ./.github/actions/setup-ethereumjs
         with:
           dep-cache-key: ${{ inputs.dep-cache-key }}
-
-      - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
-        id: est-cache
+      - uses: ./.github/actions/consensus-fork
         with:
-          path: .est-fixtures-cache
-          key: est-${{ hashFiles('packages/vm/test/consensus/fixtures.json') }}
-          restore-keys: |
-            est-${{ hashFiles('packages/vm/test/consensus/fixtures.json') }}
+          source: tests
+          manifest: fixtures.json
+          cache-key: est-extract-tests-${{ hashFiles('packages/vm/test/consensus/fixtures.json') }}-${{ matrix.fork }}
+          fork: ${{ matrix.fork }}
+          artifact-prefix: consensus-est-failures
 
-      - name: Ensure tests fixtures
-        if: steps.est-cache.outputs.cache-hit != 'true'
-        run: npm run fixtures:fetch -- tests
-
-      - if: contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM')
-        run: npm run test:consensus:smoke
-
-      - if: >-
-          contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM') == false &&
-          contains(join(github.event.pull_request.labels.*.name, ' '), 'test all hardforks')
-        run: |
-          EXTRA=""
-          if [ "${{ steps.est-cache.outputs.cache-hit }}" = "true" ]; then EXTRA="--skip-fetch"; fi
-          npm run test:consensus:all -- --format all --shard ${{ matrix.shard }} --jobs 2 $EXTRA
-
-      - if: >-
-          contains(join(github.event.pull_request.labels.*.name, ' '), 'skip most stable VM') == false &&
-          contains(join(github.event.pull_request.labels.*.name, ' '), 'test all hardforks') == false
-        run: |
-          EXTRA=""
-          if [ "${{ steps.est-cache.outputs.cache-hit }}" = "true" ]; then EXTRA="--skip-fetch"; fi
-          npm run test:consensus:pr -- --format all --shard ${{ matrix.shard }} --jobs 2 $EXTRA
-
-  est-bogota-fixtures-cache:
-    if: >-
-      github.event_name == 'pull_request' &&
-      contains(join(github.event.pull_request.labels.*.name, ' '), 'test bogota') &&
-      contains(join(github.event.pull_request.labels.*.name, ' '), 'skip dev VM') == false
+  vm-consensus-est-all-forks:
+    needs: consensus-est-fork-matrix
+    if: "contains(join(github.event.pull_request.labels.*.name, ' '), 'test: all hardforks')"
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        fork: ${{ fromJson(needs.consensus-est-fork-matrix.outputs.forks) }}
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - uses: ./.github/actions/setup-ethereumjs
         with:
           dep-cache-key: ${{ inputs.dep-cache-key }}
-
-      - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
-        id: est-bogota-cache
+      - uses: ./.github/actions/consensus-fork
         with:
-          path: .est-fixtures-cache
-          key: est-${{ hashFiles('packages/vm/test/consensus/fixtures.json') }}
-
-      - name: Fetch bogota-devnet fixtures
-        run: npm run fixtures:fetch -- bogota-devnet
-
-      - uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
-        if: always() && steps.est-bogota-cache.outputs.cache-hit != 'true'
-        with:
-          path: .est-fixtures-cache
-          key: est-${{ hashFiles('packages/vm/test/consensus/fixtures.json') }}
+          source: tests
+          manifest: fixtures.json
+          cache-key: est-extract-tests-${{ hashFiles('packages/vm/test/consensus/fixtures.json') }}-${{ matrix.fork }}
+          fork: ${{ matrix.fork }}
+          artifact-prefix: consensus-est-failures
 
   vm-consensus-bogota:
     if: >-
       github.event_name == 'pull_request' &&
-      contains(join(github.event.pull_request.labels.*.name, ' '), 'test bogota') &&
+      contains(join(github.event.pull_request.labels.*.name, ' '), 'test: bogota') &&
       contains(join(github.event.pull_request.labels.*.name, ' '), 'skip dev VM') == false
-    needs: est-bogota-fixtures-cache
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - format: state
-            shard: '0/2'
-          - format: state
-            shard: '1/2'
-          - format: blockchain
-            shard: '0/2'
-          - format: blockchain
-            shard: '1/2'
+        fork: [Bogota, AmsterdamToBogotaAtTime15k]
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
       - uses: ./.github/actions/setup-ethereumjs
         with:
           dep-cache-key: ${{ inputs.dep-cache-key }}
-
-      - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      - uses: ./.github/actions/consensus-fork
         with:
-          path: .est-fixtures-cache
-          key: est-${{ hashFiles('packages/vm/test/consensus/fixtures.json') }}
-          restore-keys: |
-            est-${{ hashFiles('packages/vm/test/consensus/fixtures.json') }}
-
-      - run: >-
-          npm run test:consensus:dev -- --format ${{ matrix.format }} --shard ${{ matrix.shard }} --jobs 2 --skip-fetch
+          source: bogota-devnet
+          manifest: fixtures.bogota.json
+          cache-key: est-extract-bogota-${{ hashFiles('packages/vm/test/consensus/fixtures.bogota.json') }}-${{ matrix.fork }}
+          fork: ${{ matrix.fork }}
+          artifact-prefix: consensus-bogota-failures
 
   vm-consensus-legacy:
-    if: contains(join(github.event.pull_request.labels.*.name, ' '), 'test all hardforks')
+    if: "contains(join(github.event.pull_request.labels.*.name, ' '), 'test: all hardforks')"
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false

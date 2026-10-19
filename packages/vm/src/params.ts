@@ -45,6 +45,7 @@ export const paramsVM: ParamsDict = {
     historyStorageAddress: '0x0000F90827F1C53A10CB7A02335B175320002935', // The address where the historical blockhashes are stored
     historyServeWindow: 8191, // The amount of blocks to be served by the historical blockhash contract
     systemAddress: SYSTEM_ADDRESS, // The system address
+    systemCallGasLimit: 30_000_000, // Pre-tx system calls (shared with EIP-4788 path in runBlock)
   },
   /**
 .  * Reduction in refunds
@@ -71,6 +72,8 @@ export const paramsVM: ParamsDict = {
   4788: {
     // config
     historicalRootsLength: 8191, // The modulo parameter of the beaconroot ring buffer in the beaconroot stateful precompile
+    systemAddress: SYSTEM_ADDRESS, // Pre-tx beacon-root update (SYSTEM_ADDRESS → predeploy)
+    systemCallGasLimit: 30_000_000,
   },
   /**
    * Execution layer triggerable withdrawals (experimental)
