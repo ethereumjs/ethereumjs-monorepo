@@ -12,6 +12,7 @@ import {
   hexToBytes,
   intToUnpaddedBytes,
   toBytes,
+  unpadBytes,
   utf8ToBytes,
 } from './bytes.ts'
 import { BIGINT_0, KECCAK256_NULL, KECCAK256_RLP } from './constants.ts'
@@ -476,14 +477,9 @@ export const generateAddress = function (from: Uint8Array, nonce: Uint8Array): U
   assertIsBytes(from)
   assertIsBytes(nonce)
 
-  if (bytesToBigInt(nonce) === BIGINT_0) {
-    // in RLP we want to encode null in the case of zero nonce
-    // read the RLP documentation for an answer if you dare
-    return keccak_256(RLP.encode([from, Uint8Array.from([])])).subarray(-20)
-  }
-
+  // The nonce is an RLP integer: drop leading zeros, so a zero nonce encodes as empty bytes
   // Only take the lower 160bits of the hash
-  return keccak_256(RLP.encode([from, nonce])).subarray(-20)
+  return keccak_256(RLP.encode([from, unpadBytes(nonce)])).subarray(-20)
 }
 
 /**
