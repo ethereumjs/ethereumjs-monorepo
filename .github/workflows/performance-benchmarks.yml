@@ -1,6 +1,6 @@
 name: Performance benchmarks
 
-# CodSpeed simulation — optional on PRs (`type: test performance`). Triggered after
+# CodSpeed simulation — optional on PRs (`test: performance`). Triggered after
 # Build finishes (workflow_run) so bench runs do not compete with Build for the
 # same workflow queue slot on push. Kept out of the Build / CI gate.
 on:
@@ -49,12 +49,12 @@ jobs:
               repo: context.repo.repo,
               pull_number: prs[0].number,
             })
-            const run = pr.labels.some((label) => label.name === 'type: test performance')
+            const run = pr.labels.some((label) => label.name === 'test: performance')
             core.setOutput('run', run ? 'true' : 'false')
 
       - name: Skip — no performance label on PR
         if: github.event_name == 'workflow_run' && steps.pr-gate.outputs.run != 'true'
-        run: echo "Skipping — PR lacks type: test performance label."
+        run: 'echo "Skipping — PR lacks test: performance label."'
 
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         if: github.event_name != 'workflow_run' || steps.pr-gate.outputs.run == 'true'
