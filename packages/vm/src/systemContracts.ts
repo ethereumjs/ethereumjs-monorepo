@@ -1,4 +1,5 @@
 import type { Common, StateManagerInterface } from '@ethereumjs/common'
+
 import {
   Account,
   bigIntToBytes,
@@ -8,6 +9,7 @@ import {
   hexToBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
+import type { VM } from './vm.ts'
 
 /** Prague fork EIP-7002 withdrawal request runtime bytecode (mainnet / EST). */
 export const WITHDRAWAL_REQUEST_SYSTEM_CONTRACT_CODE = hexToBytes(
@@ -39,8 +41,7 @@ async function putSystemContractCode(
   await stateManager.putCode(address, code)
 }
 
-/** Install Prague EIP-7002 / EIP-7251 request contract bytecode for lab block runs. */
-export async function installPragueRequestSystemContracts(
+async function installPragueRequestSystemContracts(
   stateManager: StateManagerInterface,
   common: Common,
 ): Promise<void> {
@@ -60,11 +61,7 @@ export async function installPragueRequestSystemContracts(
   }
 }
 
-/**
- * EIP-8282 builder request stubs (STOP) — enough for checked system calls to
- * return empty builder requests when validating Amsterdam lab blocks.
- */
-export async function installAmsterdamBuilderRequestStubs(
+async function installAmsterdamBuilderRequestStubs(
   stateManager: StateManagerInterface,
   common: Common,
 ): Promise<void> {
@@ -76,4 +73,21 @@ export async function installAmsterdamBuilderRequestStubs(
     await stateManager.putAccount(address, new Account(1n, 0n))
     await stateManager.putCode(address, stop)
   }
+}
+
+async function installSystemContracts(
+  stateManager: StateManagerInterface,
+  common: Common,
+): Promise<void> {
+  await installPragueRequestSystemContracts(stateManager, common)
+  await installAmsterdamBuilderRequestStubs(stateManager, common)
+}
+
+/** @internal First {@link runBlock} when {@link VMOpts.preinstallSystemContracts} is set. */
+export async function ensureSystemContractsPreinstalled(vm: VM): Promise<void> {
+  if (vm['_opts'].preinstallSystemContracts !== true || vm._systemContractsPreinstalled) {
+    return
+  }
+  await installSystemContracts(vm.stateManager, vm.common)
+  vm._systemContractsPreinstalled = true
 }

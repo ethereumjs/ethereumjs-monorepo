@@ -9,8 +9,6 @@
     "createVM",
     "encodeReceipt",
     "estimateTxGasDimensions",
-    "installAmsterdamBuilderRequestStubs",
-    "installPragueRequestSystemContracts",
     "paramsVM",
     "runBlock",
     "runTx"

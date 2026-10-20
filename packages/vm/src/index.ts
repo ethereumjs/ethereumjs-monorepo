@@ -8,9 +8,5 @@ export * from './params.ts'
 export { encodeReceipt } from './runBlock.ts'
 export { runBlock } from './runBlock.ts'
 export { runTx } from './runTx.ts'
-export {
-  installAmsterdamBuilderRequestStubs,
-  installPragueRequestSystemContracts,
-} from './systemContracts.ts'
 export * from './types.ts'
 export { VM } from './vm.ts'

@@ -16,27 +16,18 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import {
-  buildBlock,
-  createVM,
-  installAmsterdamBuilderRequestStubs,
-  installPragueRequestSystemContracts,
-  runBlock,
-} from '../../../src/index.ts'
+import { buildBlock, createVM, runBlock } from '../../../src/index.ts'
 
 import type { Block } from '@ethereumjs/block'
 import type { AfterBlockEvent } from '../../../src/types.ts'
 
 const common = new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })
-
 const senderKey = hexToBytes(`0x${'20'.repeat(32)}`)
 const sender = createAddressFromPrivateKey(senderKey)
 const recipient = createZeroAddress()
 
 async function fundSender(vm: Awaited<ReturnType<typeof createVM>>) {
   await vm.stateManager.putAccount(sender, new Account(0n, BigInt(1e18)))
-  await installPragueRequestSystemContracts(vm.stateManager, common)
-  await installAmsterdamBuilderRequestStubs(vm.stateManager, common)
 }
 
 function createTransferBlock() {
@@ -66,7 +57,7 @@ function createTransferBlock() {
 
 describe('[VM/EIP-7928]: block Level Access Lists', () => {
   it('runBlock(generate: true) sets blockAccessListHash on the returned block', async () => {
-    const vm = await createVM({ common })
+    const vm = await createVM({ common, preinstallSystemContracts: true })
     await fundSender(vm)
 
     let afterBlock: AfterBlockEvent | undefined
@@ -93,7 +84,7 @@ describe('[VM/EIP-7928]: block Level Access Lists', () => {
   })
 
   it('runBlock validates a provided blockAccessList against execution', async () => {
-    const vm = await createVM({ common })
+    const vm = await createVM({ common, preinstallSystemContracts: true })
     await fundSender(vm)
 
     let sealedBlock: Block | undefined
@@ -110,7 +101,7 @@ describe('[VM/EIP-7928]: block Level Access Lists', () => {
     assert.isDefined(sealedBlock)
     assert.isDefined(generated.blockLevelAccessList)
 
-    const vm2 = await createVM({ common })
+    const vm2 = await createVM({ common, preinstallSystemContracts: true })
     await fundSender(vm2)
 
     await runBlock(vm2, {
@@ -129,7 +120,7 @@ describe('[VM/EIP-7928]: block Level Access Lists', () => {
   })
 
   it('CREATE OOG on new-account state gas still records the created address in BAL', async () => {
-    const vm = await createVM({ common })
+    const vm = await createVM({ common, preinstallSystemContracts: true })
     await fundSender(vm)
 
     const factory = createAddressFromString(`0x${'11'.repeat(20)}`)
@@ -169,7 +160,7 @@ describe('[VM/EIP-7928]: block Level Access Lists', () => {
   })
 
   it('value CALL OOG before target access does not record the call target in BAL', async () => {
-    const vm = await createVM({ common })
+    const vm = await createVM({ common, preinstallSystemContracts: true })
     await fundSender(vm)
 
     const caller = createAddressFromString(`0x${'44'.repeat(20)}`)
@@ -214,7 +205,7 @@ describe('[VM/EIP-7928]: block Level Access Lists', () => {
   })
 
   it('7702 top-frame delegation OOG records the recipient and not the delegation target', async () => {
-    const vm = await createVM({ common })
+    const vm = await createVM({ common, preinstallSystemContracts: true })
     await fundSender(vm)
 
     const target = createAddressFromString(`0x${'aa'.repeat(20)}`)
@@ -254,7 +245,7 @@ describe('[VM/EIP-7928]: block Level Access Lists', () => {
   })
 
   it('buildBlock() writes blockAccessListHash and slotNumber', async () => {
-    const vm = await createVM({ common })
+    const vm = await createVM({ common, preinstallSystemContracts: true })
     await fundSender(vm)
 
     const parentBlock = createBlock(

@@ -41,6 +41,8 @@ export class VM {
   protected _isInitialized: boolean = false
 
   protected readonly _setHardfork: boolean | BigIntLike
+  /** @internal One-shot lab predeploy install ({@link VMOpts.preinstallSystemContracts}). */
+  _systemContractsPreinstalled = false
 
   /**
    * Cached emit() function, not for public usage

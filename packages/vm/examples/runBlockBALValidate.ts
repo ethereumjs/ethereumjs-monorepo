@@ -8,12 +8,7 @@ import {
   createZeroAddress,
   hexToBytes,
 } from '@ethereumjs/util'
-import {
-  createVM,
-  installAmsterdamBuilderRequestStubs,
-  installPragueRequestSystemContracts,
-  runBlock,
-} from '@ethereumjs/vm'
+import { createVM, runBlock } from '@ethereumjs/vm'
 
 import type { Block } from '@ethereumjs/block'
 
@@ -24,8 +19,6 @@ const sender = createAddressFromPrivateKey(senderKey)
 
 async function fundSender(vm: Awaited<ReturnType<typeof createVM>>) {
   await vm.stateManager.putAccount(sender, new Account(0n, BigInt(1e18)))
-  await installPragueRequestSystemContracts(vm.stateManager, vm.common)
-  await installAmsterdamBuilderRequestStubs(vm.stateManager, vm.common)
 }
 
 function createTransferBlock() {
@@ -54,7 +47,7 @@ function createTransferBlock() {
 }
 
 const main = async () => {
-  const vm = await createVM({ common })
+  const vm = await createVM({ common, preinstallSystemContracts: true })
   await fundSender(vm)
 
   let sealedBlock: Block | undefined
@@ -72,7 +65,7 @@ const main = async () => {
   console.log(`Generated BAL with ${balJson.length} account(s)`)
   console.log(`blockAccessListHash: ${bytesToHex(sealedBlock!.header.blockAccessListHash!)}`)
 
-  const vm2 = await createVM({ common })
+  const vm2 = await createVM({ common, preinstallSystemContracts: true })
   await fundSender(vm2)
 
   await runBlock(vm2, {

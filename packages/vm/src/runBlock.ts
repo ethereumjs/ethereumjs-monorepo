@@ -57,6 +57,7 @@ import {
   accumulateRequests,
   runPreTxSystemContractCall,
 } from './requests.ts'
+import { ensureSystemContractsPreinstalled } from './systemContracts.ts'
 
 import type { Block } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
@@ -101,6 +102,7 @@ const entireBlockLabel = 'Entire block'
  * ```
  */
 export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResult> {
+  await ensureSystemContractsPreinstalled(vm)
   if (vm['_opts'].profilerOpts?.reportAfterBlock === true) {
     enableProfiler = true
     // eslint-disable-next-line no-console
