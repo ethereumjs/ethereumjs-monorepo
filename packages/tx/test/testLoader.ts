@@ -2,15 +2,27 @@ import * as path from 'path'
 import { bytesToHex } from '@ethereumjs/util'
 import * as dir from 'node-dir'
 
+import {
+  legacyTestsFetchHint,
+  legacyTestsSliceReady,
+  legacyTestsTreeRoot,
+} from './legacyTestsPaths.ts'
+
 const falsePredicate = () => false
 
 /**
- * Default tests path (git submodule: ethereum-tests)
+ * Root of the pinned ethereum/tests sparse checkout (TransactionTests + optional BlockchainTests).
  */
-export const DEFAULT_TESTS_PATH = path.resolve('../ethereum-tests')
+export const DEFAULT_TESTS_PATH = legacyTestsTreeRoot()
+
+function assertTransactionTestsReady(): void {
+  if (!legacyTestsSliceReady('transaction')) {
+    throw new Error(legacyTestsFetchHint('transaction'))
+  }
+}
 
 /**
- * Returns the list of test files matching the given parameters from the ethereum-tests git submodule
+ * Returns the list of test files matching the given parameters from cached ethereum/tests TransactionTests
  * @param onFile a callback for each file
  * @param fileFilter a {@code RegExp} or array to specify filenames to operate on
  * @param skipPredicate a filtering function for test names
@@ -25,6 +37,7 @@ export async function getTests(
   directory: string,
   excludeDir: RegExp | string[] = [],
 ): Promise<string[]> {
+  assertTransactionTestsReady()
   const options = {
     match: fileFilter,
     excludeDir,

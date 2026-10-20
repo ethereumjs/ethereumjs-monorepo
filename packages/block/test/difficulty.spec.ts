@@ -1,37 +1,37 @@
 import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { assert, describe, it } from 'vitest'
 
-import * as difficultyMainNetwork from '../../ethereum-tests/BasicTests/difficultyMainNetwork.json' with {
-  type: 'json',
-}
-import * as difficultyArrowGlacier from '../../ethereum-tests/DifficultyTests/dfArrowGlacier/difficultyArrowGlacier.json' with {
-  type: 'json',
-}
-import * as difficultyByzantium from '../../ethereum-tests/DifficultyTests/dfByzantium/difficultyByzantium.json' with {
-  type: 'json',
-}
-import * as difficultyConstantinople from '../../ethereum-tests/DifficultyTests/dfConstantinople/difficultyConstantinople.json' with {
-  type: 'json',
-}
-import * as difficultyEIP2384 from '../../ethereum-tests/DifficultyTests/dfEIP2384/difficultyEIP2384.json' with {
-  type: 'json',
-}
-import * as difficultyEIP2384_random from '../../ethereum-tests/DifficultyTests/dfEIP2384/difficultyEIP2384_random.json' with {
-  type: 'json',
-}
-import * as difficultyEIP2384_random_to20M from '../../ethereum-tests/DifficultyTests/dfEIP2384/difficultyEIP2384_random_to20M.json' with {
-  type: 'json',
-}
-import * as difficultyFrontier from '../../ethereum-tests/DifficultyTests/dfFrontier/difficultyFrontier.json' with {
-  type: 'json',
-}
-import * as difficultyGrayGlacier from '../../ethereum-tests/DifficultyTests/dfGrayGlacier/difficultyGrayGlacier.json' with {
-  type: 'json',
-}
-import * as difficultyHomestead from '../../ethereum-tests/DifficultyTests/dfHomestead/difficultyHomestead.json' with {
-  type: 'json',
-}
 import { type Block, createBlock, ethashCanonicalDifficulty } from '../src/index.ts'
+import * as difficultyArrowGlacier from './testdata/difficulty/difficultyArrowGlacier.json' with {
+  type: 'json',
+}
+import * as difficultyByzantium from './testdata/difficulty/difficultyByzantium.json' with {
+  type: 'json',
+}
+import * as difficultyConstantinople from './testdata/difficulty/difficultyConstantinople.json' with {
+  type: 'json',
+}
+import * as difficultyEIP2384 from './testdata/difficulty/difficultyEIP2384.json' with {
+  type: 'json',
+}
+import * as difficultyEIP2384_random from './testdata/difficulty/difficultyEIP2384_random.json' with {
+  type: 'json',
+}
+import * as difficultyEIP2384_random_to20M from './testdata/difficulty/difficultyEIP2384_random_to20M.json' with {
+  type: 'json',
+}
+import * as difficultyFrontier from './testdata/difficulty/difficultyFrontier.json' with {
+  type: 'json',
+}
+import * as difficultyGrayGlacier from './testdata/difficulty/difficultyGrayGlacier.json' with {
+  type: 'json',
+}
+import * as difficultyHomestead from './testdata/difficulty/difficultyHomestead.json' with {
+  type: 'json',
+}
+import * as difficultyMainNetwork from './testdata/difficulty/difficultyMainNetwork.json' with {
+  type: 'json',
+}
 
 function runDifficultyTests(test: any, parentBlock: Block, block: Block, msg: string) {
   const dif = ethashCanonicalDifficulty(block, parentBlock)

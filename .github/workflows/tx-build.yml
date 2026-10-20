@@ -5,9 +5,6 @@ on:
       dep-cache-key:
         required: true
         type: string
-      submodule-cache-key:
-        required: true
-        type: string
       run-coverage:
         required: false
         type: boolean
@@ -15,9 +12,6 @@ on:
   workflow_dispatch:
     inputs:
       dep-cache-key:
-        required: false
-        default: 'none'
-      submodule-cache-key:
         required: false
         default: 'none'
       run-coverage:
@@ -28,6 +22,7 @@ on:
 env:
   cwd: ${{github.workspace}}/packages/tx
   RUN_COVERAGE: ${{ inputs.run-coverage }}
+  LEGACY_ETHEREUM_TESTS_CACHE: ${{ github.workspace }}/.legacy-ethereum-tests-cache
 
 defaults:
   run:
@@ -46,8 +41,11 @@ jobs:
       - uses: ./.github/actions/setup-ethereumjs
         with:
           dep-cache-key: ${{ inputs.dep-cache-key }}
-          ethereum-tests: 'true'
-          ethereum-tests-key: ${{ inputs.submodule-cache-key }}
+
+      - uses: ./.github/actions/legacy-ethereum-tests
+        with:
+          slice: transaction
+          cache-key: legacy-tests-${{ hashFiles('config/legacy-ethereum-tests.json') }}-transaction
 
       # coverage excludes transactionRunner / t9n; always run those via test:node
       - run: npm run test:node

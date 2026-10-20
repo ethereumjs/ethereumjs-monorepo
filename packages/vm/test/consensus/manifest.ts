@@ -3,6 +3,8 @@ import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import { legacyTestsTreeRoot } from './legacyTestsPaths.ts'
+
 export type ReleaseSource = {
   kind: 'release'
   repo: string
@@ -14,6 +16,11 @@ export type ReleaseSource = {
   extractPaths: string[]
   /** When set, only these forks are extracted from the tarball (index-driven). Smaller cache; tarball may be deleted after extract. */
   extractForks?: string[]
+  /**
+   * Fork ids with runnable `state_test` / `blockchain_test` rows in this release index.
+   * CI full-matrix jobs and `printEstForkMatrix.ts` use this list (not legacy ethereum/tests names).
+   */
+  runnableForks?: string[]
   defaultForks?: string[]
   /** Keep downloaded tarball on disk after extract (default false when `extractForks` is set). */
   retainTarball?: boolean
@@ -122,9 +129,7 @@ export function resolveSourceRoot(sourceName: string, manifest = loadManifest())
     throw new Error(`Unknown fixture source "${sourceName}"`)
   }
   if (source.kind === 'path') {
-    const vmPkg = path.dirname(path.dirname(path.dirname(fileURLToPath(import.meta.url))))
-    const first = source.paths[0]
-    return path.resolve(vmPkg, first, '..')
+    return legacyTestsTreeRoot()
   }
   return extractedFixturesRoot(sourceName, source.tag)
 }

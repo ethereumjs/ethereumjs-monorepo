@@ -1,0 +1,45 @@
+name: Legacy ethereum/tests slice
+description: Restore or sparse-fetch a pinned ethereum/tests directory slice (TransactionTests or BlockchainTests).
+
+inputs:
+  slice:
+    description: Manifest slice name (`transaction` or `blockchain`)
+    required: true
+  cache-key:
+    description: actions/cache key for this slice (include manifest hash, not github.sha)
+    required: true
+  save-cache:
+    description: Save cache after fetch on miss
+    required: false
+    default: 'true'
+
+runs:
+  using: composite
+  steps:
+    - name: Resolve legacy tests tree root
+      id: meta
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      run: |
+        COMMIT=$(node -e "const m=require('./config/legacy-ethereum-tests.json'); process.stdout.write(m.commit)")
+        echo "tree_root=${{ github.workspace }}/.legacy-ethereum-tests-cache/${COMMIT}" >> "$GITHUB_OUTPUT"
+
+    - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      id: legacy-tests-cache
+      with:
+        path: ${{ steps.meta.outputs.tree_root }}
+        key: ${{ inputs.cache-key }}
+
+    - name: Fetch legacy ethereum/tests slice
+      if: steps.legacy-tests-cache.outputs.cache-hit != 'true'
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      env:
+        LEGACY_ETHEREUM_TESTS_CACHE: ${{ github.workspace }}/.legacy-ethereum-tests-cache
+      run: node scripts/legacyEthereumTests.mjs "${{ inputs.slice }}"
+
+    - uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      if: inputs.save-cache == 'true' && steps.legacy-tests-cache.outputs.cache-hit != 'true'
+      with:
+        path: ${{ steps.meta.outputs.tree_root }}
+        key: ${{ inputs.cache-key }}

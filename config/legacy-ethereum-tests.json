@@ -1,0 +1,15 @@
+{
+  "cacheVersion": 1,
+  "repo": "https://github.com/ethereum/tests.git",
+  "commit": "afed83bf2a097cba688a60246429f3a051fe03f6",
+  "slices": {
+    "transaction": {
+      "sparsePaths": ["TransactionTests"],
+      "description": "Official TransactionTests for packages/tx"
+    },
+    "blockchain": {
+      "sparsePaths": ["BlockchainTests"],
+      "description": "Legacy BlockchainTests for VM --source legacy"
+    }
+  }
+}

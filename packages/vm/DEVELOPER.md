@@ -24,7 +24,7 @@ This document covers how we run those tests, how we update the fixture snapshot,
 | Legacy blockchain | [ethereum/tests](https://github.com/ethereum/tests) `BlockchainTests` | Same CLI (`--source legacy`) | Frozen `bc*` suites not ported to EST |
 | Package tests | `test/api/` | `npm run test:API` | Unit / API tests for VM itself |
 
-GeneralStateTests from `ethereum/tests` are retired upstream; ported cases live under EST `tests/ported_static/`. The `packages/ethereum-tests` submodule stays for legacy blockchain tests and for `tx` / `block` / `evm` packages.
+GeneralStateTests from `ethereum/tests` are retired upstream; ported cases live under EST `tests/ported_static/`. Legacy **BlockchainTests** and **TransactionTests** are pinned in [`config/legacy-ethereum-tests.json`](../../config/legacy-ethereum-tests.json) and fetched with `npm run legacy-tests:fetch` (see root [DEVELOPER.md](../../DEVELOPER.md)). Block difficulty JSON is vendored in `packages/block`.
 
 ### What “green” means
 
@@ -33,7 +33,7 @@ On an ordinary PR, the VM is green when `npm run test:API` (and the coverage job
 - **`test: consensus`:** one CI job per recent fork, `vm-consensus-est-recent (Prague|Osaka|Amsterdam)`. Each runs `test:consensus -- --source tests --fork <name>`, four workers (`nproc`), per-fork fixture cache. Without the label those jobs are skipped and the PR stays mergeable. The pull request then runs `npm run test:consensus:smoke` instead.
 - **`master` pushes** still run the recent forks.
 
-With the `test: all hardforks` label, CI runs one job per EST fork (`ALL_EST_FORKS`) plus legacy blockchain, and does not also run the recent jobs. With **`test: bogota`**, CI runs `vm-consensus-bogota` (one job per `Bogota` and `AmsterdamToBogotaAtTime15k`, manifest in `fixtures.bogota.json`). Nightly runs one job per EST fork and `--run-skipped slow`.
+With the `test: all hardforks` label, CI runs one job per EST fork listed in `fixtures.json` (`runnableForks` for the pinned release) plus legacy blockchain, and does not also run the recent jobs. Legacy-only transition networks (`BerlinToLondonAt5`, …) stay on `--source legacy`, not the EST matrix. With **`test: bogota`**, CI runs `vm-consensus-bogota` (one job per `Bogota` and `AmsterdamToBogotaAtTime15k`, manifest in `fixtures.bogota.json`). Nightly runs one job per EST fork and `--run-skipped slow`.
 
 Do not add skip entries just to go green on consensus (S1).
 
@@ -52,7 +52,7 @@ Fixtures are **not** in git. You download each pinned release **once per machine
 
 **Local fills:** after EELS `fill`, pass `--fixture-root /path/to/fixtures` (no release tarball).
 
-**Legacy Prague `bc*` only:** `npm run test:consensus:legacy` uses `packages/ethereum-tests` — no EST download.
+**Legacy Prague `bc*` only:** `npm run test:consensus:legacy` uses cached `BlockchainTests` (`legacy-tests:fetch -- blockchain`) — no EST download.
 
 **Hegota dev (`bogota-devnet`):** pinned in [`fixtures.bogota.json`](./test/consensus/fixtures.bogota.json) (separate from `fixtures.json` so tag bumps do not invalidate stable CI caches). Fetch per fork: `npm run fixtures:fetch -- bogota-devnet --fork Bogota`.
 
@@ -153,7 +153,7 @@ npm run test:consensus -- --source legacy --format blockchain --test ZeroValue_S
 evm --json --nomemory statetest path/to/state_test.json
 ```
 
-Fixtures live under the EST cache tree or `packages/ethereum-tests`.
+Fixtures live under the EST cache tree or `LEGACY_ETHEREUM_TESTS_CACHE` (legacy blockchain).
 
 ## Performance
 

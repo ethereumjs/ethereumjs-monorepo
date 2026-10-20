@@ -20,11 +20,11 @@ Vitest API/unit/integration tests for active `@ethereumjs/*` libraries. Consensu
 
 **Special-care runners** (do not delete or weaken without explicit intent):
 
-- `packages/tx/test/transactionRunner.spec.ts`, `t9n.spec.ts` (ethereum-tests submodule; fork-split scripts)
+- `packages/tx/test/transactionRunner.spec.ts`, `t9n.spec.ts` (cached ethereum/tests TransactionTests; fork-split scripts)
 - `packages/mpt/test/official.spec.ts`, `packages/rlp/test/official.spec.ts`
 - EVM EOF/submodule readers under `packages/evm/test/eips/`
 - VM `test/api/tester/**` (diagnostic helpers, not consensus)
-- Block `difficulty.spec.ts` (ethereum-tests JSON vectors)
+- Block `difficulty.spec.ts` (vendored difficulty JSON under `test/testdata/difficulty/`)
 
 After test edits: `npm run tsc` in touched packages, spellcheck on touched files (`typecheck.mdc`, `spellcheck.mdc`).
 
@@ -91,7 +91,7 @@ Reuse order:
 1. Local `test/helpers.ts`, `test/utils.ts`, or `<feature>Matrix.ts`
 2. `@ethereumjs/testdata` for cross-package chain configs, genesis, blocks, signers, BAL vectors
 3. Package-local `test/testdata/` for large domain fixtures not yet generic enough
-4. Submodules (`ethereum-tests`) only in dedicated runner specs — never in shared matrices
+4. Cached legacy ethereum/tests (`legacy-tests:fetch`) only in dedicated runner specs — never in shared matrices
 
 **Tx matrix** (`packages/tx/test/txTypeMatrix.ts`): `@ethereumjs/tx` is not 1:1 `src/` ↔ `test/`. Types share `capabilities/`. `base.spec.ts` and `transactionFactory.spec.ts` must cover **every active tx type** (Legacy, 2930, 1559, 4844, 7702). EIP files (`eip-1559.spec.ts`, …) hold only what the matrix cannot express. When you add a tx type or behavior that applies to more than one type, extend the matrix first. Multi-type describes list the classes in the tag.
 

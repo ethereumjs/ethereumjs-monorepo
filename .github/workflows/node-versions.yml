@@ -4,6 +4,9 @@ on:
     - cron: 0 0 * * *
   workflow_dispatch:
 
+env:
+  LEGACY_ETHEREUM_TESTS_CACHE: ${{ github.workspace }}/.legacy-ethereum-tests-cache
+
 jobs:
   tests:
     if: github.repository == 'ethereumjs/ethereumjs-monorepo'
@@ -14,8 +17,6 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
-        with:
-          submodules: recursive
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
@@ -24,6 +25,11 @@ jobs:
           cache: 'npm'
 
       - run: npm ci
+
+      - uses: ./.github/actions/legacy-ethereum-tests
+        with:
+          slice: transaction
+          cache-key: legacy-tests-${{ hashFiles('config/legacy-ethereum-tests.json') }}-transaction
 
       - name: Test Block
         run: npm run test:node

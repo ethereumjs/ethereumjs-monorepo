@@ -70,8 +70,7 @@
 ```
 ethereumjs-monorepo/
 ├── packages/          @ethereumjs/* libraries
-├── config/            shared TS, ESLint, cspell, TypeDoc, config/cli/
-├── packages/ethereum-tests/           submodule — legacy vectors
+├── config/            shared TS, ESLint, cspell, TypeDoc, legacy-ethereum-tests pin
 └── packages/vm/test/consensus/      EST manifest + consensus runner (see VM DEVELOPER.md)
 ```
 
@@ -82,9 +81,17 @@ Package scripts call helpers under [`config/cli/`](./config/cli/) (`ts-compile.s
 ```sh
 git clone https://github.com/ethereumjs/ethereumjs-monorepo.git
 cd ethereumjs-monorepo
-git submodule update --init
 npm install
 ```
+
+Official **TransactionTests** and legacy **BlockchainTests** from [ethereum/tests](https://github.com/ethereum/tests) are not in git. They are sparse-fetched on demand into `~/.cache/ethereumjs/legacy-ethereum-tests/` (override with `LEGACY_ETHEREUM_TESTS_CACHE`):
+
+```sh
+npm run legacy-tests:fetch -- transaction   # packages/tx official runner (~41 MB)
+npm run legacy-tests:fetch -- blockchain    # VM --source legacy (~985 MB)
+```
+
+Block difficulty vectors are vendored under `packages/block/test/testdata/difficulty/`.
 
 Published packages require **Node.js 22** or newer. Use **Node.js 26** locally (matches CI). With [nvm](https://github.com/nvm-sh/nvm) or [fnm](https://github.com/Schniz/fnm), run `nvm use` / `fnm use` in the repo root — `.nvmrc` pins that version.
 

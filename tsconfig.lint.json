@@ -4,13 +4,12 @@
     "./packages/**/*.ts",
     "./packages/**/*.spec.ts",
     "./packages/**/*.js",
-    "./packages/ethereum-tests/**/*.js",
     "./packages/**/*.cjs",
     "./packages/**/*.cts",
     "./packages/**/*.mjs",
     "./packages/**/*.mts"
   ],
-  "exclude": ["**/ethereum-tests/**/*", "package.json"],
+  "exclude": ["package.json"],
   "compilerOptions": {
     "noEmit": true
   }

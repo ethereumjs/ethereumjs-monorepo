@@ -5,9 +5,6 @@ on:
       dep-cache-key:
         required: true
         type: string
-      submodule-cache-key:
-        required: true
-        type: string
       run-coverage:
         required: false
         type: boolean
@@ -15,9 +12,6 @@ on:
   workflow_dispatch:
     inputs:
       dep-cache-key:
-        required: false
-        default: 'none'
-      submodule-cache-key:
         required: false
         default: 'none'
       run-coverage:
@@ -45,8 +39,6 @@ jobs:
       - uses: ./.github/actions/setup-ethereumjs
         with:
           dep-cache-key: ${{ inputs.dep-cache-key }}
-          ethereum-tests: 'true'
-          ethereum-tests-key: ${{ inputs.submodule-cache-key }}
 
       - run: |
           if [ "$RUN_COVERAGE" = "false" ]; then

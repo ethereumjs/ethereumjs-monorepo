@@ -2,7 +2,7 @@ This folder contains a script to run with `tsx` together with `retesteth`.
 
 # Instructions
 
-Clone `ethereum/tests` (either in the `ethereumjs-monorepo` or elsewhere).
+Point `$ETHEREUM_TESTPATH` at a checkout of [ethereum/tests](https://github.com/ethereum/tests) (for example after `npm run legacy-tests:fetch -- blockchain` under `LEGACY_ETHEREUM_TESTS_CACHE`, or a separate clone).
 
 Configure and run `transition-tool`:
 

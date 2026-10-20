@@ -10,15 +10,37 @@
       "sha256": "b9b14391ed1a625e4ca9a058c055d0eacd98a42b76c7a6127c640cdc2d3c9439",
       "size": 999553432,
       "extractPaths": ["fixtures/state_tests", "fixtures/blockchain_tests", "fixtures/.meta"],
-      "retainTarball": true
+      "retainTarball": true,
+      "runnableForks": [
+        "Frontier",
+        "Homestead",
+        "TangerineWhistle",
+        "SpuriousDragon",
+        "Byzantium",
+        "ConstantinopleFix",
+        "Istanbul",
+        "Berlin",
+        "London",
+        "Paris",
+        "ParisToShanghaiAtTime15k",
+        "Shanghai",
+        "ShanghaiToCancunAtTime15k",
+        "Cancun",
+        "CancunToPragueAtTime15k",
+        "Prague",
+        "PragueToOsakaAtTime15k",
+        "Osaka",
+        "OsakaToBPO1AtTime15k",
+        "BPO1ToBPO2AtTime15k",
+        "BPO2ToBPO3AtTime15k",
+        "BPO3ToBPO4AtTime15k",
+        "BPO2ToAmsterdamAtTime15k",
+        "Amsterdam"
+      ]
     },
     "legacy": {
       "kind": "path",
-      "paths": [
-        "../ethereum-tests/BlockchainTests",
-        "../ethereum-tests/LegacyTests/Constantinople/BlockchainTests",
-        "../ethereum-tests/LegacyTests/Cancun/BlockchainTests"
-      ]
+      "paths": ["BlockchainTests"]
     }
   }
 }

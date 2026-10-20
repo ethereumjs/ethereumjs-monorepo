@@ -13,13 +13,15 @@
 import * as path from 'path'
 import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
 
+import { legacyTestsTreeRoot } from './legacyTestsPaths.ts'
+
 import type { HardforkTransitionConfig } from '@ethereumjs/common'
 import type { KZG } from '@ethereumjs/util'
 
 /**
- * Default tests path (git submodule: ethereum-tests)
+ * Root of the pinned ethereum/tests sparse checkout (set LEGACY_ETHEREUM_TESTS_CACHE or run legacy-tests:fetch).
  */
-export const DEFAULT_TESTS_PATH = path.resolve('../ethereum-tests')
+export const DEFAULT_TESTS_PATH = legacyTestsTreeRoot()
 
 /**
  * Default hardfork rules to run tests against

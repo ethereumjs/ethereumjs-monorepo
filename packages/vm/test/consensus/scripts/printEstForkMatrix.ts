@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/** Prints ALL_EST_FORKS as JSON for a GitHub Actions matrix. */
-import { ALL_EST_FORKS } from '../forks.ts'
+/** Prints fixtures.json `runnableForks` as JSON for a GitHub Actions matrix. */
+import { loadAllEstForks } from '../forks.ts'
 
-process.stdout.write(`${JSON.stringify([...ALL_EST_FORKS])}\n`)
+process.stdout.write(`${JSON.stringify([...loadAllEstForks()])}\n`)
