@@ -19,38 +19,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # ethereum-tests only — do not recursive-clone execution-spec-tests here.
-  # EST jobs init that submodule themselves and must not wait on this job.
-  checkout-submodules:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
-
-      - id: create-cache-key
-        run: echo "submodule-cache-key=$(git rev-parse HEAD:packages/ethereum-tests)" >> $GITHUB_OUTPUT
-        shell: bash
-
-      - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
-        id: submodules-cache-restore
-        with:
-          key: submodule-${{ steps.create-cache-key.outputs.submodule-cache-key }}
-          path: ${{github.workspace}}/packages/ethereum-tests
-
-      - if: steps.submodules-cache-restore.outputs.cache-hit != 'true'
-        name: Init ethereum-tests
-        run: git submodule update --init --depth=1 -- packages/ethereum-tests
-
-      - if: steps.submodules-cache-restore.outputs.cache-hit != 'true'
-        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
-        id: submodule-cache-save
-        with:
-          path: ${{github.workspace}}/packages/ethereum-tests
-          key: submodule-${{ steps.create-cache-key.outputs.submodule-cache-key }}
-
-    outputs:
-      submodule-cache-key: submodule-${{ steps.create-cache-key.outputs.submodule-cache-key }}
-
   build:
     runs-on: ubuntu-latest
 
@@ -86,6 +54,10 @@ jobs:
 
       - name: Verify public API export snapshots
         run: node --import tsx/esm --test scripts/public-api-snapshot.spec.mjs
+        working-directory: ${{ github.workspace }}
+
+      - name: Verify legacy ethereum/tests manifest
+        run: node --test scripts/legacyEthereumTests.spec.mjs
         working-directory: ${{ github.workspace }}
 
       - name: Save node_modules
@@ -166,13 +138,12 @@ jobs:
       run-coverage: ${{ needs.detect.outputs.binarytree_coverage == 'true' }}
 
   block:
-    needs: [build, checkout-submodules, detect]
+    needs: [build, detect]
     if: needs.detect.outputs.block == 'true'
     uses: ./.github/workflows/block-build.yml
     secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
-      submodule-cache-key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
       run-coverage: ${{ needs.detect.outputs.block_coverage == 'true' }}
 
   blockchain:
@@ -185,7 +156,7 @@ jobs:
       run-coverage: ${{ needs.detect.outputs.blockchain_coverage == 'true' }}
 
   browser:
-    needs: [build, checkout-submodules, detect]
+    needs: [build, detect]
     if: >-
       needs.detect.outputs.browser == 'true' &&
       (
@@ -195,7 +166,6 @@ jobs:
     uses: ./.github/workflows/browser.yml
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
-      submodule-cache-key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
       workspaces: ${{ needs.detect.outputs.workspaces }}
 
   common:
@@ -208,13 +178,12 @@ jobs:
       run-coverage: ${{ needs.detect.outputs.common_coverage == 'true' }}
 
   evm:
-    needs: [build, checkout-submodules, detect]
+    needs: [build, detect]
     if: needs.detect.outputs.evm == 'true'
     uses: ./.github/workflows/evm-build.yml
     secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
-      submodule-cache-key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
       run-coverage: ${{ needs.detect.outputs.evm_coverage == 'true' }}
 
   examples:
@@ -253,13 +222,12 @@ jobs:
       run-coverage: ${{ needs.detect.outputs.statemanager_coverage == 'true' }}
 
   tx:
-    needs: [build, checkout-submodules, detect]
+    needs: [build, detect]
     if: needs.detect.outputs.tx == 'true'
     uses: ./.github/workflows/tx-build.yml
     secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
-      submodule-cache-key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
       run-coverage: ${{ needs.detect.outputs.tx_coverage == 'true' }}
 
   util:
@@ -272,13 +240,12 @@ jobs:
       run-coverage: ${{ needs.detect.outputs.util_coverage == 'true' }}
 
   vm-pr:
-    needs: [build, checkout-submodules, detect]
+    needs: [build, detect]
     if: needs.detect.outputs['vm-pr'] == 'true'
     uses: ./.github/workflows/vm-pr.yml
     secrets: inherit
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
-      submodule-cache-key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
       run-coverage: ${{ needs.detect.outputs['vm-pr_coverage'] == 'true' }}
 
   lint:
@@ -288,11 +255,10 @@ jobs:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
 
   typecheck:
-    needs: [build, checkout-submodules]
+    needs: [build]
     uses: ./.github/workflows/typecheck.yml
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
-      submodule-cache-key: ${{ needs.checkout-submodules.outputs.submodule-cache-key }}
 
   audit:
     name: npm audit (runtime)
@@ -313,7 +279,6 @@ jobs:
     name: CI
     needs:
       - build
-      - checkout-submodules
       - detect
       - binarytree
       - block

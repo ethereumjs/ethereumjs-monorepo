@@ -179,7 +179,6 @@ Full responsibility matrix, execution flow (`runBlock` → `runTx` → `evm`), a
 ```sh
 git clone https://github.com/ethereumjs/ethereumjs-monorepo.git
 cd ethereumjs-monorepo
-git submodule update --init
 npm install
 ```
 

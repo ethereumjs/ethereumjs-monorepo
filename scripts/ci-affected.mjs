@@ -33,10 +33,10 @@ export const FORCE_ALL_FILES = new Set([
   'codecov.yml',
 ])
 
-/** Fixture / submodule dirs that are not workspace packages but feed tests. */
+/** Fixture dirs that are not workspace packages but feed tests. */
 export const EXTRA_PATH_PACKAGES = {
   'packages/vm/test/consensus': ['vm'],
-  'packages/ethereum-tests': ['vm', 'block', 'tx', 'evm'],
+  'config/legacy-ethereum-tests.json': ['vm', 'tx'],
 }
 
 /**

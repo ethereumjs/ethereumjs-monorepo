@@ -63,12 +63,7 @@ describe('path classification', () => {
     assert.equal(packageDirFromPath('packages/vm/src/runBlock.ts'), 'vm')
     assert.equal(packageDirFromPath('README.md'), null)
     assert.deepEqual(extraPackagesFromPath('packages/vm/test/consensus/fixtures.json'), ['vm'])
-    assert.deepEqual(extraPackagesFromPath('packages/ethereum-tests'), [
-      'vm',
-      'block',
-      'tx',
-      'evm',
-    ])
+    assert.deepEqual(extraPackagesFromPath('config/legacy-ethereum-tests.json'), ['vm', 'tx'])
   })
 })
 
@@ -254,15 +249,14 @@ describe('real workspace graph', () => {
     assert.equal(blockOnly.jobs.util, false)
   })
 
-  it('changedPackagesFromFiles ignores unknown package dirs without package.json', () => {
+  it('changedPackagesFromFiles maps legacy fixture manifest to vm and tx', () => {
     const packages = loadWorkspace()
     const changed = changedPackagesFromFiles(
-      ['packages/ethereum-tests/src/foo.json', 'packages/vm/src/runBlock.ts'],
+      ['config/legacy-ethereum-tests.json', 'packages/vm/src/runBlock.ts'],
       packages,
     )
-    assert.equal(changed.has('ethereum-tests'), false)
     assert.equal(changed.has('vm'), true)
-    assert.equal(changed.has('block'), true)
+    assert.equal(changed.has('tx'), true)
   })
 })
 
@@ -270,7 +264,7 @@ describe('loadWorkspace', () => {
   it('skips directories without package.json', () => {
     const root = mkdtempSync(join(tmpdir(), 'ci-affected-'))
     mkdirSync(join(root, 'packages', 'vm'), { recursive: true })
-    mkdirSync(join(root, 'packages', 'ethereum-tests'), { recursive: true })
+    mkdirSync(join(root, 'packages', 'orphan-fixtures'), { recursive: true })
     writeFileSync(
       join(root, 'packages', 'vm', 'package.json'),
       JSON.stringify({

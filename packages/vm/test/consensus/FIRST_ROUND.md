@@ -8,7 +8,7 @@ Run after `npm run fixtures:fetch -- tests` and a full `--list` pass. Update thi
 | --- | --- | --- |
 | `tests` | `tests@v21.0.1` | PR gate: one CI job per recent fork; nightly one job per EST fork; full index ~354k cases / 24 forks |
 | `bogota-devnet` | `tests-bogota-devnet@v1.1.0` | `fixtures.bogota.json`; label `test: bogota`; one job per `Bogota` + `AmsterdamToBogotaAtTime15k` |
-| `legacy` | `packages/ethereum-tests` | Frozen `BlockchainTests` only |
+| `legacy` | `legacy-tests:fetch -- blockchain` | Frozen `BlockchainTests` only |
 
 Pinned `tests@v21.0.1` tarball: ~1.0 GB compressed; sha256 in `fixtures.json`. Extract includes `state_tests`, `blockchain_tests`, and `.meta/index.json` only.
 

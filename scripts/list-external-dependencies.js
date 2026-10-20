@@ -76,7 +76,6 @@ const WHITELIST = [
   '@scure',
   '@types',
   'ethereum-cryptography',
-  'ethereum-tests',
   'micro-bmark',
 ]
 

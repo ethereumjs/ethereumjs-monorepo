@@ -14,11 +14,7 @@
     },
     "legacy": {
       "kind": "path",
-      "paths": [
-        "../ethereum-tests/BlockchainTests",
-        "../ethereum-tests/LegacyTests/Constantinople/BlockchainTests",
-        "../ethereum-tests/LegacyTests/Cancun/BlockchainTests"
-      ]
+      "paths": ["BlockchainTests"]
     }
   }
 }

@@ -6,6 +6,11 @@ import type { RunnerCliOptions } from './cli.ts'
 import { loadEstFixtures, loadLegacyBlockchainFixtures, parseShard } from './fixtureLoader.ts'
 import { cliForkToLegacyNetwork, forkMatchesFilter } from './forks.ts'
 import {
+  legacyBlockchainFixtureRoots,
+  legacyTestsFetchHint,
+  legacyTestsSliceReady,
+} from './legacyTestsPaths.ts'
+import {
   type FixtureSource,
   defaultCacheRoot,
   extractedFixturesRoot,
@@ -24,8 +29,12 @@ function vmPackageRoot(): string {
 }
 
 export function resolveLegacyRoots(source: FixtureSource & { kind: 'path' }): string[] {
-  const pkg = vmPackageRoot()
-  return source.paths.map((p) => path.resolve(pkg, p))
+  if (!legacyTestsSliceReady('blockchain')) {
+    throw new Error(legacyTestsFetchHint('blockchain'))
+  }
+  const roots = legacyBlockchainFixtureRoots()
+  const allowed = new Set(source.paths)
+  return roots.filter((root) => allowed.has(path.basename(root)))
 }
 
 export function estFixturesCacheHint(sourceName: string, fork?: string): string {

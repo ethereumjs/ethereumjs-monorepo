@@ -24,7 +24,7 @@ This document covers how we run those tests, how we update the fixture snapshot,
 | Legacy blockchain | [ethereum/tests](https://github.com/ethereum/tests) `BlockchainTests` | Same CLI (`--source legacy`) | Frozen `bc*` suites not ported to EST |
 | Package tests | `test/api/` | `npm run test:API` | Unit / API tests for VM itself |
 
-GeneralStateTests from `ethereum/tests` are retired upstream; ported cases live under EST `tests/ported_static/`. The `packages/ethereum-tests` submodule stays for legacy blockchain tests and for `tx` / `block` / `evm` packages.
+GeneralStateTests from `ethereum/tests` are retired upstream; ported cases live under EST `tests/ported_static/`. Legacy **BlockchainTests** and **TransactionTests** are pinned in [`config/legacy-ethereum-tests.json`](../../config/legacy-ethereum-tests.json) and fetched with `npm run legacy-tests:fetch` (see root [DEVELOPER.md](../../DEVELOPER.md)). Block difficulty JSON is vendored in `packages/block`.
 
 ### What “green” means
 
@@ -52,7 +52,7 @@ Fixtures are **not** in git. You download each pinned release **once per machine
 
 **Local fills:** after EELS `fill`, pass `--fixture-root /path/to/fixtures` (no release tarball).
 
-**Legacy Prague `bc*` only:** `npm run test:consensus:legacy` uses `packages/ethereum-tests` — no EST download.
+**Legacy Prague `bc*` only:** `npm run test:consensus:legacy` uses cached `BlockchainTests` (`legacy-tests:fetch -- blockchain`) — no EST download.
 
 **Hegota dev (`bogota-devnet`):** pinned in [`fixtures.bogota.json`](./test/consensus/fixtures.bogota.json) (separate from `fixtures.json` so tag bumps do not invalidate stable CI caches). Fetch per fork: `npm run fixtures:fetch -- bogota-devnet --fork Bogota`.
 
@@ -153,7 +153,7 @@ npm run test:consensus -- --source legacy --format blockchain --test ZeroValue_S
 evm --json --nomemory statetest path/to/state_test.json
 ```
 
-Fixtures live under the EST cache tree or `packages/ethereum-tests`.
+Fixtures live under the EST cache tree or `LEGACY_ETHEREUM_TESTS_CACHE` (legacy blockchain).
 
 ## Performance
 

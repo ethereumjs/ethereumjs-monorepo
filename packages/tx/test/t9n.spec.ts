@@ -5,6 +5,12 @@ import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
 import { bytesToHex, hexToBigInt, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
+import {
+  legacyTestsFetchHint,
+  legacyTestsSliceReady,
+  legacyTestsTreeRoot,
+} from './legacyTestsPaths.ts'
+
 import { createTxFromRLP } from '../src/transactionFactory.ts'
 
 import type { PrefixedHexString } from '@ethereumjs/util'
@@ -41,7 +47,7 @@ const forkMap: { [key: string]: string } = {
   ConstantinopleFix: Hardfork.Petersburg,
 }
 
-const defaultT9nDir = '../ethereum-tests/TransactionTests'
+const defaultT9nDir = path.join(legacyTestsTreeRoot(), 'TransactionTests')
 const { values: t9nArgv } = parseArgs({
   args: process.argv.slice(2),
   options: {
@@ -123,6 +129,9 @@ function runTests(filePath: string) {
 }
 
 function recursiveLoad(dir: string) {
+  if (!legacyTestsSliceReady('transaction')) {
+    throw new Error(legacyTestsFetchHint('transaction'))
+  }
   fs.readdirSync(dir).forEach((file) => {
     const fullName = dir + '/' + file
     const stat = fs.statSync(fullName)

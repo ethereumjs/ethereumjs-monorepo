@@ -1,5 +1,5 @@
 name: Setup EthereumJS
-description: Restore this run's built workspace, install on cache miss, optional fixture submodules. Callers must checkout first so this local action can be resolved.
+description: Restore this run's built workspace, install on cache miss. Callers must checkout first so this local action can be resolved.
 
 inputs:
   dep-cache-key:
@@ -14,14 +14,6 @@ inputs:
     description: Install command used when the workspace cache misses
     required: false
     default: 'npm ci'
-  ethereum-tests:
-    description: Restore or init packages/ethereum-tests
-    required: false
-    default: 'false'
-  ethereum-tests-key:
-    description: ethereum-tests cache key (`none` inits from git when ethereum-tests is true)
-    required: false
-    default: 'none'
 runs:
   using: composite
   steps:
@@ -42,16 +34,3 @@ runs:
       shell: bash
       working-directory: ${{ github.workspace }}
       run: ${{ inputs.install-command }}
-
-    - if: ${{ inputs.ethereum-tests == 'true' && inputs.ethereum-tests-key != 'none' }}
-      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
-      with:
-        path: ${{ github.workspace }}/packages/ethereum-tests
-        key: ${{ inputs.ethereum-tests-key }}
-        fail-on-cache-miss: true
-
-    - if: ${{ inputs.ethereum-tests == 'true' && inputs.ethereum-tests-key == 'none' }}
-      name: Init ethereum-tests
-      shell: bash
-      working-directory: ${{ github.workspace }}
-      run: git submodule update --init --depth=1 -- packages/ethereum-tests

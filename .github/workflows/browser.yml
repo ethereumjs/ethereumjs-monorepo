@@ -5,9 +5,6 @@ on:
       dep-cache-key:
         required: true
         type: string
-      submodule-cache-key:
-        required: true
-        type: string
       workspaces:
         required: false
         type: string
@@ -15,9 +12,6 @@ on:
   workflow_dispatch:
     inputs:
       dep-cache-key:
-        required: false
-        default: 'none'
-      submodule-cache-key:
         required: false
         default: 'none'
       workspaces:
@@ -50,8 +44,6 @@ jobs:
       - uses: ./.github/actions/setup-ethereumjs
         with:
           dep-cache-key: ${{ inputs.dep-cache-key }}
-          ethereum-tests: 'true'
-          ethereum-tests-key: ${{ inputs.submodule-cache-key }}
 
       # Preinstalled Chromium (playwright@1.60.0) — no ~150MB download per run.
       - name: Run browser tests (Playwright container)

@@ -7,6 +7,7 @@ on:
 env:
   cwd: ${{github.workspace}}/packages/vm
   EST_FIXTURES_CACHE: ${{ github.workspace }}/.est-fixtures-cache
+  LEGACY_ETHEREUM_TESTS_CACHE: ${{ github.workspace }}/.legacy-ethereum-tests-cache
 
 defaults:
   run:
@@ -118,15 +119,10 @@ jobs:
         run: npm ci
         working-directory: ${{github.workspace}}
 
-      - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
-        id: submodules-cache
+      - uses: ./.github/actions/legacy-ethereum-tests
         with:
-          path: ${{github.workspace}}/packages/ethereum-tests
-          key: ethereum-tests-${{ hashFiles('.gitmodules') }}-${{ github.sha }}
-
-      - name: Initialize submodules (if not cached)
-        if: steps.submodules-cache.outputs.cache-hit != 'true'
-        run: git submodule update --init --depth=1 -- packages/ethereum-tests
+          slice: blockchain
+          cache-key: legacy-tests-${{ hashFiles('config/legacy-ethereum-tests.json') }}-blockchain
 
       - run: npm run test:consensus -- --source legacy --format blockchain --legacy-fork ${{ matrix.legacy_fork }} --run-skipped slow
 
@@ -158,14 +154,9 @@ jobs:
         run: npm ci
         working-directory: ${{github.workspace}}
 
-      - uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
-        id: submodules-cache
+      - uses: ./.github/actions/legacy-ethereum-tests
         with:
-          path: ${{github.workspace}}/packages/ethereum-tests
-          key: ethereum-tests-${{ hashFiles('.gitmodules') }}-${{ github.sha }}
-
-      - name: Initialize submodules (if not cached)
-        if: steps.submodules-cache.outputs.cache-hit != 'true'
-        run: git submodule update --init --depth=1 -- packages/ethereum-tests
+          slice: blockchain
+          cache-key: legacy-tests-${{ hashFiles('config/legacy-ethereum-tests.json') }}-blockchain
 
       - run: npm run test:consensus -- --source legacy --format blockchain --legacy-fork Prague --file=${{ matrix.testFile }} --run-skipped slow
