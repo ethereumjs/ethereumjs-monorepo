@@ -390,6 +390,24 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
         throw EthereumJSErrorWithoutCode(msg)
       }
 
+      if (vm.common.isActivatedEIP(7928) && vm.evm.blockLevelAccessList !== undefined) {
+        const headerBalHash = block.header.blockAccessListHash
+        if (headerBalHash === undefined) {
+          const msg = _errorMsg(
+            'invalid block access list hash: missing blockAccessListHash in header',
+            vm,
+            block,
+          )
+          throw EthereumJSErrorWithoutCode(msg)
+        }
+        // Header defaults fill an omitted RLP field with 32 zero bytes; real blocks commit a non-zero hash.
+        const isZeroBalHash =
+          headerBalHash.length === 32 && headerBalHash.every((byte) => byte === 0)
+        if (isZeroBalHash) {
+          validateBlockAccessListHash(vm.evm.blockLevelAccessList, headerBalHash)
+        }
+      }
+
       if (vm.common.isActivatedEIP(7864)) {
         if (vm.evm.binaryTreeAccessWitness === undefined) {
           throw Error(`binaryTreeAccessWitness required if binary tree (EIP-7864) is activated`)
