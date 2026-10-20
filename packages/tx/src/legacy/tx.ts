@@ -13,7 +13,6 @@ import {
 import { keccak_256 } from '@noble/hashes/sha3.js'
 
 import * as Legacy from '../capabilities/legacy.ts'
-import { paramsTx } from '../index.ts'
 import { Capability, TransactionType } from '../types.ts'
 import { getBaseJSON, sharedConstructor, valueOverflowCheck } from '../util/internal.ts'
 
@@ -127,9 +126,6 @@ export class LegacyTx implements TransactionInterface<typeof TransactionType.Leg
 
     this.gasPrice = bytesToBigInt(toBytes(txData.gasPrice))
     valueOverflowCheck({ gasPrice: this.gasPrice })
-
-    // Everything from BaseTransaction done here
-    this.common.updateParams(opts.params ?? paramsTx) // TODO should this move higher?
 
     const chainId = validateVAndExtractChainID(this.common, this.v)
     if (chainId !== undefined && chainId !== this.common.chainId()) {
