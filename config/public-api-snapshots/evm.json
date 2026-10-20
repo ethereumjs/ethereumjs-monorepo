@@ -23,9 +23,15 @@
     "decodeBinaryAccessState",
     "decodeEIP7708BurnLog",
     "decodeEIP7708TransferLog",
+    "decodeEIP8024PairImmediate",
+    "decodeEIP8024SingleImmediate",
+    "encodeEIP8024PairImmediate",
+    "encodeEIP8024SingleImmediate",
     "generateBinaryExecutionWitness",
     "getActivePrecompiles",
     "getOpcodesForHF",
+    "isEIP8024PairImmediateValid",
+    "isEIP8024SingleImmediateValid",
     "paramsEVM",
     "txExceedsAvailableBlockGas8037"
   ]

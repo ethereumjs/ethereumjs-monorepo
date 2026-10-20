@@ -155,7 +155,9 @@ Tx-level Amsterdam rules (intrinsic gas, calldata floor, access-list pricing): [
 | `SWAPN` | `0xe7` | Swap the top item with the item at depth `n` |
 | `EXCHANGE` | `0xe8` | Exchange items at depths `x` and `y` (pair immediate) |
 
-The opcodes are active on `Hardfork.Amsterdam` and validated at decode time (invalid immediates trap). Gas costs: `dupnGas`, `swapnGas`, `exchangeGas` (default 3 each).
+The opcodes are active on `Hardfork.Amsterdam` and validated at decode time (an invalid immediate halts as an invalid opcode). Gas costs: `dupnGas`, `swapnGas`, `exchangeGas` (default 3 each).
+
+Callers that assemble or disassemble bytecode should use the exported helpers instead of reimplementing the formulas: `encodeEIP8024SingleImmediate` / `decodeEIP8024SingleImmediate` for `DUPN` and `SWAPN` (`n` in `17..235`), and `encodeEIP8024PairImmediate` / `decodeEIP8024PairImmediate` for `EXCHANGE` (`1 <= n < m` and `n + m <= 30`). They throw on a depth or immediate the opcode would reject. `isEIP8024SingleImmediateValid` and `isEIP8024PairImmediateValid` are the same byte-range checks the interpreter uses when it decides whether to skip the immediate during jump-target analysis.
 
 Runnable walkthrough: [`examples/opcodes/eip8024StackOpcodes.ts`](./examples/opcodes/eip8024StackOpcodes.ts). See also [CLZ (EIP-7939)](./examples/opcodes/eip7939ClzOpcode.ts) (Osaka) and [SLOTNUM (EIP-7843)](#eip-7843-slotnum-opcode-amsterdam).
 

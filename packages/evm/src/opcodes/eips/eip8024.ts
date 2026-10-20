@@ -1,5 +1,10 @@
+import {
+  decodeEIP8024PairImmediate,
+  decodeEIP8024SingleImmediate,
+  isEIP8024PairImmediateValid,
+  isEIP8024SingleImmediateValid,
+} from '../../eip8024.ts'
 import { EVMError } from '../../errors.ts'
-import { decodeEIP8024PairImmediate, decodeEIP8024SingleImmediate } from '../EIP8024.ts'
 import { readImmediateByteOrZero, trap } from '../util.ts'
 
 import type { OpcodeEipModule } from './types.ts'
@@ -18,6 +23,9 @@ export const eip8024: OpcodeEipModule = {
         immediates: 1,
         logic(runState) {
           const immediate = readImmediateByteOrZero(runState)
+          if (!isEIP8024SingleImmediateValid(immediate)) {
+            trap(EVMError.errorMessages.INVALID_OPCODE)
+          }
           const toDup = decodeEIP8024SingleImmediate(immediate)
           runState.stack.dup(toDup)
         },
@@ -29,6 +37,9 @@ export const eip8024: OpcodeEipModule = {
         immediates: 1,
         logic(runState) {
           const immediate = readImmediateByteOrZero(runState)
+          if (!isEIP8024SingleImmediateValid(immediate)) {
+            trap(EVMError.errorMessages.INVALID_OPCODE)
+          }
           const toSwap = decodeEIP8024SingleImmediate(immediate)
           runState.stack.swap(toSwap)
         },
@@ -40,6 +51,9 @@ export const eip8024: OpcodeEipModule = {
         immediates: 1,
         logic(runState) {
           const immediate = readImmediateByteOrZero(runState)
+          if (!isEIP8024PairImmediateValid(immediate)) {
+            trap(EVMError.errorMessages.INVALID_OPCODE)
+          }
           const [x, y] = decodeEIP8024PairImmediate(immediate)
           runState.stack.exchange(x, y)
         },
