@@ -15,11 +15,6 @@ import {
   setLengthLeft,
 } from '@ethereumjs/util'
 
-import {
-  CONSOLIDATION_REQUEST_SYSTEM_CONTRACT_CODE,
-  WITHDRAWAL_REQUEST_SYSTEM_CONTRACT_CODE,
-  isCanonicalSystemContractCode,
-} from './systemContracts.ts'
 import type { RunTxResult } from './types.ts'
 import type { VM } from './vm.ts'
 
@@ -364,7 +359,7 @@ const accumulateWithdrawalsRequest = async (
   const systemAccount = await vm.stateManager.getAccount(systemAddress)
 
   const contractCode = await vm.stateManager.getCode(withdrawalsAddress)
-  if (!isCanonicalSystemContractCode(contractCode, WITHDRAWAL_REQUEST_SYSTEM_CONTRACT_CODE)) {
+  if (contractCode.length === 0) {
     if (generate) {
       return new CLRequest(CLRequestType.Withdrawal, new Uint8Array(0))
     }
@@ -427,7 +422,7 @@ const accumulateConsolidationsRequest = async (
   const systemAccount = await vm.stateManager.getAccount(systemAddress)
 
   const contractCode = await vm.stateManager.getCode(consolidationsAddress)
-  if (!isCanonicalSystemContractCode(contractCode, CONSOLIDATION_REQUEST_SYSTEM_CONTRACT_CODE)) {
+  if (contractCode.length === 0) {
     if (generate) {
       return new CLRequest(CLRequestType.Consolidation, new Uint8Array(0))
     }

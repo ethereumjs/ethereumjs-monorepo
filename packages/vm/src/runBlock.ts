@@ -390,15 +390,6 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
         throw EthereumJSErrorWithoutCode(msg)
       }
 
-      if (vm.common.isActivatedEIP(7928) && vm.evm.blockLevelAccessList !== undefined) {
-        const headerBalHash = block.header.blockAccessListHash
-        if (headerBalHash === undefined) {
-          const msg = _errorMsg('invalid header. blockAccessListHash should be provided', vm, block)
-          throw EthereumJSErrorWithoutCode(msg)
-        }
-        validateBlockAccessListHash(vm.evm.blockLevelAccessList, headerBalHash)
-      }
-
       if (vm.common.isActivatedEIP(7864)) {
         if (vm.evm.binaryTreeAccessWitness === undefined) {
           throw Error(`binaryTreeAccessWitness required if binary tree (EIP-7864) is activated`)
