@@ -53,6 +53,7 @@ import {
   type EVMRunCodeOpts,
   type ExecResult,
   type Log,
+  type LogEvent,
 } from './types.ts'
 
 import type { Common, StateManagerInterface } from '@ethereumjs/common'
@@ -451,6 +452,18 @@ export class EVM implements EVMInterface {
   }
 
   /**
+   * Emits a `log` tracing event when listeners are registered.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
+  async emitLog(event: LogEvent): Promise<void> {
+    if (this.events.listenerCount('log') === 0) {
+      return
+    }
+    await this._emit('log', event)
+  }
+
+  /**
    * Returns a list with the currently activated opcodes
    * available for EVM execution
    */
@@ -689,6 +702,12 @@ export class EVM implements EVMInterface {
           `EIP-7708: Created ETH transfer log from ${message.caller} to ${message.to} value=${message.value}`,
         )
       }
+      await this.emitLog({
+        log: eip7708Log,
+        origin: 'callTransfer',
+        depth: message.depth ?? 0,
+        address: message.to,
+      })
     }
 
     if (exit) {
@@ -969,6 +988,12 @@ export class EVM implements EVMInterface {
           `EIP-7708: Created ETH transfer log for CREATE from ${message.caller} to ${message.to} value=${message.value}`,
         )
       }
+      await this.emitLog({
+        log: eip7708CreateLog,
+        origin: 'createTransfer',
+        depth: message.depth ?? 0,
+        address: message.to,
+      })
     }
 
     if (exit) {

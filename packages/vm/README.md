@@ -429,7 +429,7 @@ type Log = [address: Uint8Array, topics: Uint8Array[], data: Uint8Array]
 | `runBlock()` | `result.results[i].receipt.logs` and `result.receipts[i].logs` |
 | Block header bloom | `result.logsBloom` on `RunBlockResult` |
 
-On Amsterdam, [EIP-7708](#eip-7708-eth-transfer-and-burn-logs-amsterdam) adds synthetic `Transfer` / `Burn` logs for native ETH movement. Reverted transactions produce receipts with empty `logs` (Byzantium+ `status: 0`).
+On Amsterdam, [EIP-7708](#eip-7708-eth-transfer-and-burn-logs-amsterdam) adds synthetic `Transfer` / `Burn` logs for native ETH movement. Reverted transactions produce receipts with empty `logs` (Byzantium+ `status: 0`). For live tracing during execution, including logs that a later revert drops from the receipt, subscribe to `vm.evm.events.on('log')` — see [`@ethereumjs/evm` live tracing](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#live-tracing-with-the-log-event).
 
 Full receipt walkthrough: [`examples/runTxTransferLogs.ts`](./examples/runTxTransferLogs.ts). For bytecode-level `LOG*` emission see [`@ethereumjs/evm` emitLogs example](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm/examples/emitLogs.ts).
 
@@ -528,7 +528,7 @@ Additional examples: [`runSolidityContract.ts`](./examples/runSolidityContract.t
 
 ### Events
 
-Subscribe to `beforeBlock`, `afterBlock`, `beforeTx`, and `afterTx`. Async listeners receive a `resolve` callback:
+Subscribe to `beforeBlock`, `afterBlock`, `beforeTx`, and `afterTx`. Async listeners receive a `resolve` callback. Opcode `LOG*` and EIP-7708 synthetic logs are on `vm.evm.events` (`log`), not on these VM lifecycle events.
 
 ```ts
 // ./examples/eventListener.ts

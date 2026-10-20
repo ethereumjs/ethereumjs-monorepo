@@ -216,7 +216,7 @@ Runnable walkthrough: [`examples/eip7954MaxCodeSize.ts`](./examples/eip7954MaxCo
 
 [EIP-7708](https://eips.ethereum.org/EIPS/eip-7708) emits a system-address `Transfer(address,address,uint256)` log on value-bearing `CALL`/`CREATE`. `runCall()` returns it on `execResult.logs` even when the recipient has no code. Use `decodeEIP7708TransferLog()` to pick Transfer logs out of mixed opcode logs.
 
-`Burn` logs are created in `@ethereumjs/vm` `runTx()` finalization, not by a stand-alone `runCall()`. For receipts see the [`runTxTransferLogs`](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm/examples/runTxTransferLogs.ts) example.
+On Amsterdam, [EIP-8246](https://eips.ethereum.org/EIPS/eip-8246) keeps the balance on a self-selfdestruct, so no `Burn` log is produced. A `Burn` from selfdestruct-to-self still happens inside `runCall()` when EIP-7708 is on and EIP-8246 is not. A balance that remains until end-of-transaction deletion is burned in `@ethereumjs/vm` `runTx()` finalization. For receipts see the [`runTxTransferLogs`](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm/examples/runTxTransferLogs.ts) example. Live observation is the [`log` event](#live-tracing-with-the-log-event).
 
 ```ts
 // ./examples/eip7708TransferLog.ts
@@ -452,7 +452,7 @@ Inspect the opcode table for a hardfork with `getOpcodesForHF()` — see [`examp
 
 ### Events
 
-The EVM emits events via [EventEmitter3](https://github.com/primus/eventemitter3). Subscribe to `beforeMessage`, `afterMessage`, `step`, and `newContract`. Async listeners receive a `resolve` callback that must be called when finished:
+The EVM emits events via [EventEmitter3](https://github.com/primus/eventemitter3). Subscribe to `beforeMessage`, `afterMessage`, `step`, `newContract`, and `log`. Async listeners receive a `resolve` callback that must be called when finished:
 
 ```ts
 // ./examples/eventListener.ts
@@ -498,6 +498,29 @@ type Log = [address: Uint8Array, topics: Uint8Array[], data: Uint8Array]
 Both `runCode()` and `runCall()` return an [`ExecResult`](./docs/interfaces/ExecResult.md) with an optional `logs` array. Nested calls append logs in execution order; a reverted top-level execution clears them. For transaction receipts and block blooms, use `@ethereumjs/vm`.
 
 Bytecode `LOG*` emission: [`examples/emitLogs.ts`](./examples/emitLogs.ts). Native ETH `Transfer` logs on Amsterdam: [EIP-7708](#eip-7708-eth-transfer-logs-amsterdam).
+
+#### Live tracing with the `log` event
+
+For live observation (including [EIP-7708](https://eips.ethereum.org/EIPS/eip-7708) synthetic logs that are not tied to a `LOG` opcode step), subscribe to `evm.events.on('log')`:
+
+```ts
+import type { LogEvent } from '@ethereumjs/evm'
+
+evm.events.on('log', (event: LogEvent) => {
+  const { log, origin, depth, address } = event
+  // origin: 'opcode' | 'callTransfer' | 'createTransfer' | 'selfdestructTransfer'
+  //         | 'selfdestructBurn' | 'finalizationBurn'
+  // address: executing frame; log[0] is the on-chain emitter (system address for EIP-7708)
+})
+```
+
+**Notes:**
+
+- Events are emitted when a log is created. If the enclosing frame later reverts, the log is removed from `ExecResult.logs` and from the receipt, but the event is not retracted. Correlate with `afterMessage` and `exceptionError` when the receipt must stay empty.
+- Async listeners are awaited for synthetic logs (EIP-7708) and for VM finalization burns. For `LOG` opcode logs, emission does not pause the synchronous opcode handler (listeners run, and execution continues).
+- Post-transaction finalization burns (`finalizationBurn`) are emitted through the same EVM emitter from `@ethereumjs/vm` (`depth: -1`).
+- `selfdestructBurn` and `finalizationBurn` fire only when EIP-7708 is active and [EIP-8246](https://eips.ethereum.org/EIPS/eip-8246) is not. Amsterdam activates both, so a self-selfdestruct there emits neither.
+- When no listeners are registered, emission is skipped.
 
 ### Debug logging
 
