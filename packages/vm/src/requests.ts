@@ -15,6 +15,11 @@ import {
   setLengthLeft,
 } from '@ethereumjs/util'
 
+import {
+  CONSOLIDATION_REQUEST_SYSTEM_CONTRACT_CODE,
+  WITHDRAWAL_REQUEST_SYSTEM_CONTRACT_CODE,
+  isCanonicalSystemContractCode,
+} from './systemContracts.ts'
 import type { RunTxResult } from './types.ts'
 import type { VM } from './vm.ts'
 
@@ -358,11 +363,17 @@ const accumulateWithdrawalsRequest = async (
   const systemAddress = createAddressFromString(bytesToHex(systemAddressBytes))
   const systemAccount = await vm.stateManager.getAccount(systemAddress)
 
-  const originalAccount = await vm.stateManager.getAccount(withdrawalsAddress)
-
-  if (originalAccount === undefined) {
-    return new CLRequest(CLRequestType.Withdrawal, new Uint8Array())
+  const contractCode = await vm.stateManager.getCode(withdrawalsAddress)
+  if (!isCanonicalSystemContractCode(contractCode, WITHDRAWAL_REQUEST_SYSTEM_CONTRACT_CODE)) {
+    if (generate) {
+      return new CLRequest(CLRequestType.Withdrawal, new Uint8Array(0))
+    }
+    throw EthereumJSErrorWithoutCode(
+      `system contract empty: no code at withdrawal request contract ${withdrawalsAddress}`,
+    )
   }
+
+  const originalAccount = await vm.stateManager.getAccount(withdrawalsAddress)
 
   const systemAddressHex = systemAddress.toString()
   const balSnapshot = cloneSystemAccessEntry(vm, systemAddressHex)
@@ -415,11 +426,17 @@ const accumulateConsolidationsRequest = async (
   const systemAddress = createAddressFromString(bytesToHex(systemAddressBytes))
   const systemAccount = await vm.stateManager.getAccount(systemAddress)
 
-  const originalAccount = await vm.stateManager.getAccount(consolidationsAddress)
-
-  if (originalAccount === undefined) {
-    return new CLRequest(CLRequestType.Consolidation, new Uint8Array(0))
+  const contractCode = await vm.stateManager.getCode(consolidationsAddress)
+  if (!isCanonicalSystemContractCode(contractCode, CONSOLIDATION_REQUEST_SYSTEM_CONTRACT_CODE)) {
+    if (generate) {
+      return new CLRequest(CLRequestType.Consolidation, new Uint8Array(0))
+    }
+    throw EthereumJSErrorWithoutCode(
+      `system contract empty: no code at consolidation request contract ${consolidationsAddress}`,
+    )
   }
+
+  const originalAccount = await vm.stateManager.getAccount(consolidationsAddress)
 
   const systemAddressHex = systemAddress.toString()
   const balSnapshot = cloneSystemAccessEntry(vm, systemAddressHex)

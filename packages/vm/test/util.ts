@@ -1,5 +1,6 @@
 import { Block, createBlockHeader } from '@ethereumjs/block'
 import { Common, Hardfork, Mainnet, createCustomCommon } from '@ethereumjs/common'
+import type { EVMMockBlockchainInterface } from '@ethereumjs/evm'
 import { RLP } from '@ethereumjs/rlp'
 import {
   createAccessList2930Tx,
@@ -37,6 +38,7 @@ import type {
   LegacyTx,
   TxOptions,
 } from '@ethereumjs/tx'
+import type { PrefixedHexString } from '@ethereumjs/util'
 import type { assert } from 'vitest'
 
 // Use Vitest assert type directly
@@ -377,6 +379,48 @@ export function makeBlockHeader(data: any, opts?: BlockOptions) {
 export function makeBlockFromEnv(env: any, opts?: BlockOptions): Block {
   const header = makeBlockHeader(env, opts)
   return new Block(header)
+}
+
+/**
+ * Stub {@link EVMMockBlockchainInterface.getBlock} for state tests so `BLOCKHASH` matches fixtures.
+ * Uses `env.blockHashes` when present (t8n-style); otherwise the state-test convention
+ * `keccak256(decimal block number string)` (block 0 → keccak256("0")).
+ */
+export function installBlockHashesFromEnv(
+  blockchain: EVMMockBlockchainInterface,
+  env: { blockHashes?: Record<string, PrefixedHexString> },
+): void {
+  const blockHashes = env.blockHashes
+
+  blockchain.getBlock = async function (number?: number) {
+    if (number === undefined) {
+      return {
+        hash() {
+          return new Uint8Array(32)
+        },
+      }
+    }
+
+    if (blockHashes !== undefined) {
+      for (const key in blockHashes) {
+        if (Number(key) === number) {
+          const hashHex = blockHashes[key]
+          return {
+            hash() {
+              return hexToBytes(hashHex)
+            },
+          }
+        }
+      }
+    }
+
+    const synthetic = keccak_256(new TextEncoder().encode(String(number)))
+    return {
+      hash() {
+        return synthetic
+      },
+    }
+  }
 }
 
 /**
