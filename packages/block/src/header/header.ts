@@ -183,16 +183,7 @@ export class BlockHeader {
     const slotNumber =
       toType(headerData.slotNumber, TypeOutput.BigInt) ?? hardforkDefaults.slotNumber
 
-    validateHeaderEipFieldsInactive(this.common, {
-      baseFeePerGas,
-      withdrawalsRoot,
-      blobGasUsed,
-      excessBlobGas,
-      parentBeaconBlockRoot,
-      requestsHash,
-      blockAccessListHash,
-      slotNumber,
-    })
+    validateHeaderEipFieldsInactive(this.common, headerData)
 
     this.parentHash = parentHash
     this.uncleHash = uncleHash

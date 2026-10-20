@@ -101,9 +101,11 @@ npm run test:consensus:phase0           # local size/count/timing helpers (see P
    npm run test:consensus -- --source tests --fork Amsterdam --rerun-failed .ci/consensus-failures.json --jobs 4 --skip-fetch
    ```
 
+   `--rerun-failed` matches **`fork` + case `id`** (CI and local paths differ). Optional filters such as `--test` still apply after that subset.
+
    Optional: `--run-id <Build workflow run id>` or `--branch <name>`. `--rerun-failed` ignores `--shard`.
 
-**Flags (summary):** `--source`, `--format`, `--fork` / `--forks recent|all`, `--dir`, `--file`, `--test`, `--jobs`, `--shard i/n` (local only; not used in CI), `--list`, `--bail`, `--skip` / `--run-skipped`, `--report`, `--rerun-failed`, `--fixture-root`, `--skip-fetch`, `--auto-fetch`, `--jsontrace`, `--debug`, `--profile`. Fetch CLI: `--fork`, `--full-extract`, `--tarball-only`.
+**Flags (summary):** `--source`, `--format`, `--fork` / `--forks recent|all`, `--dir`, `--file`, `--test` (alias `--grep`, Vitest-style), `--jobs`, `--shard i/n` (local only; not used in CI), `--list`, `--bail`, `--skip` / `--run-skipped`, `--report`, `--rerun-failed`, `--fixture-root`, `--skip-fetch`, `--auto-fetch`, `--jsontrace`, `--debug`, `--profile`. Unknown long flags warn and fail parse. Fetch CLI: `--fork`, `--full-extract`, `--tarball-only`.
 
 Shared steps live in [`.github/actions/consensus-fork`](../../.github/actions/consensus-fork/action.yml). Job matrices stay in [`.github/workflows/vm-pr.yml`](../../.github/workflows/vm-pr.yml), [`vm-nightly-test.yml`](../../.github/workflows/vm-nightly-test.yml), and [`vm-consensus-cache-warm.yml`](../../.github/workflows/vm-consensus-cache-warm.yml).
 

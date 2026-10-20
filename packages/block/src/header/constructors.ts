@@ -1,11 +1,73 @@
+import type { Common } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { EthereumJSErrorWithoutCode, bigIntToBytes, equalsBytes } from '@ethereumjs/util'
+import {
+  BIGINT_0,
+  EthereumJSErrorWithoutCode,
+  TypeOutput,
+  bigIntToBytes,
+  equalsBytes,
+  toType,
+} from '@ethereumjs/util'
 
 import { generateCliqueBlockExtraData } from '../consensus/clique.ts'
 import { numberToHex, valuesArrayToHeaderData } from '../helpers.ts'
 import { BlockHeader } from '../index.ts'
 
 import type { BlockHeaderBytes, BlockOptions, HeaderData, JSONRPCBlock } from '../types.ts'
+
+/** Resolve fork on a copy of `common` from raw header fields (for RLP length rules). */
+function commonAtHeader(values: BlockHeaderBytes, opts: BlockOptions): Common | undefined {
+  if (opts.common === undefined || opts.setHardfork !== true) {
+    return opts.common
+  }
+  const headerData = valuesArrayToHeaderData(values)
+  const common = opts.common.copy()
+  common.setHardforkBy({
+    blockNumber: toType(headerData.number, TypeOutput.BigInt) ?? BIGINT_0,
+    timestamp: toType(headerData.timestamp, TypeOutput.BigInt) ?? BIGINT_0,
+  })
+  return common
+}
+
+/**
+ * When trailing EIP header fields are omitted, `valuesArrayToHeaderData` mis-assigns
+ * the last present field (e.g. slotNumber bytes read as blockAccessListHash).
+ */
+function reconcileHeaderDataFromRlpLength(
+  values: BlockHeaderBytes,
+  headerData: HeaderData,
+  common: Common | undefined,
+): HeaderData {
+  if (common === undefined) {
+    return headerData
+  }
+  const has7928 = common.isActivatedEIP(7928)
+  const has7843 = common.isActivatedEIP(7843)
+  if (has7928 && has7843 && values.length === 22) {
+    const trailing = values[21] as Uint8Array | undefined
+    if (trailing !== undefined && trailing.length < 32) {
+      return {
+        ...headerData,
+        blockAccessListHash: undefined,
+        slotNumber: trailing,
+      }
+    }
+    if (trailing !== undefined && trailing.length === 32) {
+      return {
+        ...headerData,
+        blockAccessListHash: trailing,
+        slotNumber: undefined,
+      }
+    }
+  }
+  if (has7928 && !has7843 && values.length === 21) {
+    return { ...headerData, blockAccessListHash: undefined }
+  }
+  if (has7843 && !has7928 && values.length === 21) {
+    return { ...headerData, slotNumber: values[20] }
+  }
+  return headerData
+}
 
 /**
  * Instantiate a block header from {@link HeaderData}.
@@ -24,7 +86,9 @@ export function createBlockHeader(headerData: HeaderData = {}, opts: BlockOption
  * @throws If header field validation fails in the {@link BlockHeader} constructor
  */
 export function createBlockHeaderFromBytesArray(values: BlockHeaderBytes, opts: BlockOptions = {}) {
-  const headerData = valuesArrayToHeaderData(values)
+  const commonAtHeaderFields = commonAtHeader(values, opts)
+  let headerData = valuesArrayToHeaderData(values)
+  headerData = reconcileHeaderDataFromRlpLength(values, headerData, commonAtHeaderFields)
   const { number, baseFeePerGas, excessBlobGas, blobGasUsed, parentBeaconBlockRoot, requestsHash } =
     headerData
   const header = createBlockHeader(headerData, opts)
@@ -51,10 +115,7 @@ export function createBlockHeaderFromBytesArray(values: BlockHeaderBytes, opts: 
   if (header.common.isActivatedEIP(7685) && requestsHash === undefined) {
     throw EthereumJSErrorWithoutCode('invalid header. requestsHash should be provided')
   }
-  if (header.common.isActivatedEIP(7928) && header.blockAccessListHash === undefined) {
-    throw EthereumJSErrorWithoutCode('invalid header. blockAccessListHash should be provided')
-  }
-  if (header.common.isActivatedEIP(7843) && header.slotNumber === undefined) {
+  if (header.common.isActivatedEIP(7843) && headerData.slotNumber === undefined) {
     throw EthereumJSErrorWithoutCode('invalid header. slotNumber should be provided')
   }
   return header

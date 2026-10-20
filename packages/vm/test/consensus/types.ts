@@ -23,6 +23,7 @@ export interface FixtureEnv {
   currentDifficulty?: PrefixedHexString
   currentBaseFee?: PrefixedHexString
   currentExcessBlobGas?: PrefixedHexString
+  blockHashes?: Record<string, PrefixedHexString>
   [key: string]: unknown
 }
 
