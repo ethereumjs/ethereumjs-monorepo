@@ -149,10 +149,9 @@ export interface VMOpts {
 
   /**
    * If true, install bytecode for checked system contracts required by the active hardfork
-   * (CL request predeploys and similar) on the first {@link runBlock} or {@link BlockBuilder.build}.
-   * Runs on the first {@link runBlock} or {@link BlockBuilder.build} after you fund lab
-   * accounts. Pass a fresh options object to each {@link createVM} call. Does not replace
-   * mainnet genesis.
+   * (CL request contracts and similar) on the first {@link runBlock} or {@link BlockBuilder.build},
+   * after you fund lab accounts on the state manager. Pass a fresh options object to each
+   * {@link createVM} call. Does not replace mainnet genesis.
    *
    * Default: `false`
    */
