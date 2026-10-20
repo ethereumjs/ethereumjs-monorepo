@@ -22,6 +22,7 @@ import {
 import debugDefault from 'debug'
 
 import { EIP7708_BURN_TOPIC, EIP7708_SYSTEM_ADDRESS, EIP7708_TRANSFER_TOPIC } from './eip7708.ts'
+import { isEIP8024PairImmediateValid, isEIP8024SingleImmediateValid } from './eip8024.ts'
 import { activeCostPerStateByte } from './eip8037.ts'
 import { EVMError, EVMErrorTypeString } from './errors.ts'
 import type { EVMPerformanceLogger, Timer } from './logger.ts'
@@ -34,7 +35,6 @@ import {
   createNewAccountStateGasIfCharged,
   eip7928PostTargetCreateOog,
 } from './opcodes/EIP7928.ts'
-import { isEIP8024PairImmediateValid, isEIP8024SingleImmediateValid } from './opcodes/EIP8024.ts'
 import { opcodeImmediateByteCount } from './opcodes/immediateWidth.ts'
 import { trap } from './opcodes/index.ts'
 import { maxCallGas } from './opcodes/util.ts'
