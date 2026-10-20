@@ -33,7 +33,7 @@ On an ordinary PR, the VM is green when `npm run test:API` (and the coverage job
 - **`test: consensus`:** one CI job per recent fork, `vm-consensus-est-recent (Prague|Osaka|Amsterdam)`. Each runs `test:consensus -- --source tests --fork <name>`, four workers (`nproc`), per-fork fixture cache. Without the label those jobs are skipped and the PR stays mergeable. The pull request then runs `npm run test:consensus:smoke` instead.
 - **`master` pushes** still run the recent forks.
 
-With the `test: all hardforks` label, CI runs one job per EST fork (`ALL_EST_FORKS`) plus legacy blockchain, and does not also run the recent jobs. With **`test: bogota`**, CI runs `vm-consensus-bogota` (one job per `Bogota` and `AmsterdamToBogotaAtTime15k`, manifest in `fixtures.bogota.json`). Nightly runs one job per EST fork and `--run-skipped slow`.
+With the `test: all hardforks` label, CI runs one job per EST fork listed in `fixtures.json` (`runnableForks` for the pinned release) plus legacy blockchain, and does not also run the recent jobs. Legacy-only transition networks (`BerlinToLondonAt5`, …) stay on `--source legacy`, not the EST matrix. With **`test: bogota`**, CI runs `vm-consensus-bogota` (one job per `Bogota` and `AmsterdamToBogotaAtTime15k`, manifest in `fixtures.bogota.json`). Nightly runs one job per EST fork and `--run-skipped slow`.
 
 Do not add skip entries just to go green on consensus (S1).
 

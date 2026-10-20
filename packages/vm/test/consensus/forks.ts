@@ -1,46 +1,25 @@
 /** Fork presets and name normalization for EST, legacy ethereum/tests, and Common. */
 
-/** Forks in the default PR gate (`--forks recent`). BPO / transition forks stay on nightly (`--forks all`). */
+import { getReleaseSource, loadManifest } from './manifest.ts'
+
+/** Forks in the default PR gate (`--forks recent`). Full EST matrix uses `runnableForks` in fixtures.json. */
 export const RECENT_FORKS = ['Prague', 'Osaka', 'Amsterdam'] as const
 
-export const ALL_EST_FORKS = [
-  'Frontier',
-  'Homestead',
-  'EIP150',
-  'EIP158',
-  'Byzantium',
-  'Constantinople',
-  'ConstantinopleFix',
-  'Istanbul',
-  'Berlin',
-  'London',
-  'Paris',
-  'Shanghai',
-  'Cancun',
-  'Prague',
-  'Osaka',
-  'BPO1',
-  'BPO2',
-  'BPO3',
-  'BPO4',
-  'BPO5',
-  'Amsterdam',
-  'FrontierToHomesteadAt5',
-  'HomesteadToDaoAt5',
-  'HomesteadToEIP150At5',
-  'EIP158ToByzantiumAt5',
-  'ByzantiumToConstantinopleFixAt5',
-  'BerlinToLondonAt5',
-  'ShanghaiToCancunAtTime15k',
-  'CancunToPragueAtTime15k',
-  'PragueToOsakaAtTime15k',
-  'OsakaToBPO1AtTime15k',
-  'BPO1ToBPO2AtTime15k',
-  'BPO2ToBPO3AtTime15k',
-  'BPO3ToBPO4AtTime15k',
-  'BPO4ToBPO5AtTime15k',
-  'BPO5ToAmsterdamAtTime15k',
-] as const
+/** Runnable EST fork ids for the pinned `tests` release (see fixtures.json `runnableForks`). */
+export function loadAllEstForks(): readonly string[] {
+  const source = loadManifest().sources.tests
+  if (source?.kind !== 'release') {
+    throw new Error('fixtures.json: missing tests release source')
+  }
+  const forks = source.runnableForks
+  if (forks === undefined || forks.length === 0) {
+    throw new Error('fixtures.json: tests release missing runnableForks')
+  }
+  return forks
+}
+
+/** @deprecated Prefer `loadAllEstForks()` — kept for imports that expect a module-level list. */
+export const ALL_EST_FORKS: readonly string[] = loadAllEstForks()
 
 /** Map fixture / CLI fork names to `@ethereumjs/common` hardfork ids. */
 export function estForkToCommonHardfork(fork: string): string {
@@ -48,8 +27,8 @@ export function estForkToCommonHardfork(fork: string): string {
   if (lower === 'frontier') return 'chainstart'
   if (lower === 'constantinoplefix') return 'petersburg'
   if (lower === 'bogota') return 'hegota'
-  if (lower === 'eip150') return 'tangerineWhistle'
-  if (lower === 'eip158') return 'spuriousDragon'
+  if (lower === 'eip150' || lower === 'tangerinewhistle') return 'tangerineWhistle'
+  if (lower === 'eip158' || lower === 'spuriousdragon') return 'spuriousDragon'
   if (lower === 'merge' || lower === 'paris') return 'paris'
   return lower
 }
@@ -100,4 +79,9 @@ export function parseForkPreset(
 /** Directory segment for EST releases: `for_<fork>` (lowercase). */
 export function estForkDirSegment(fork: string): string {
   return `for_${fork.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase()}`
+}
+
+/** Pin check: manifest tag matches a release source (for tests). */
+export function pinnedTestsReleaseTag(): string {
+  return getReleaseSource('tests').tag
 }

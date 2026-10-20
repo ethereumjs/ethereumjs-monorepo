@@ -16,6 +16,11 @@ export type ReleaseSource = {
   extractPaths: string[]
   /** When set, only these forks are extracted from the tarball (index-driven). Smaller cache; tarball may be deleted after extract. */
   extractForks?: string[]
+  /**
+   * Fork ids with runnable `state_test` / `blockchain_test` rows in this release index.
+   * CI full-matrix jobs and `printEstForkMatrix.ts` use this list (not legacy ethereum/tests names).
+   */
+  runnableForks?: string[]
   defaultForks?: string[]
   /** Keep downloaded tarball on disk after extract (default false when `extractForks` is set). */
   retainTarball?: boolean
