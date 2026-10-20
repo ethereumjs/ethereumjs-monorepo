@@ -1,4 +1,5 @@
 // Based on https://github.com/jsoendermann/semaphore-async-await/blob/master/src/Semaphore.ts
+/** Simple async mutex for serializing concurrent operations. */
 export class Lock {
   private permits: number = 1
   private promiseResolverQueue: Array<(v: boolean) => void> = []

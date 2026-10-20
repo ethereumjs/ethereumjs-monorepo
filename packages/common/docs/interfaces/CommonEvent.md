@@ -6,7 +6,9 @@
 
 # Interface: CommonEvent
 
-Defined in: [common/src/types.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L12)
+Defined in: [types.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L15)
+
+Event map for [Common](../classes/Common.md) hardfork change notifications.
 
 ## Properties
 
@@ -14,4 +16,4 @@ Defined in: [common/src/types.ts:12](https://github.com/ethereumjs/ethereumjs-mo
 
 > **hardforkChanged**: \[`string`\]
 
-Defined in: [common/src/types.ts:13](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L13)
+Defined in: [types.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L16)

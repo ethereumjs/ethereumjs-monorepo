@@ -1,10 +1,11 @@
 import type { Nibbles } from '../types.ts'
 
 /**
- * Prepends hex prefix to an array of nibbles.
- * @param key - Array of nibbles
- * @returns returns buffer of encoded data
- **/
+ * Prepends the Ethereum hex-prefix encoding to a nibble path.
+ *
+ * @param key Nibble path (modified in place)
+ * @param terminator When `true`, marks a leaf (terminating) path
+ */
 export function addHexPrefix(key: Nibbles, terminator: boolean): Nibbles {
   // odd
   if (key.length % 2) {
@@ -23,9 +24,9 @@ export function addHexPrefix(key: Nibbles, terminator: boolean): Nibbles {
 }
 
 /**
- * Removes hex prefix of an array of nibbles.
- * @param val - Array of nibbles
- * @private
+ * Strip hex-prefix metadata from an encoded nibble path.
+ *
+ * @param val Hex-prefixed nibbles (modified in place)
  */
 export function removeHexPrefix(val: Nibbles): Nibbles {
   if (val[0] % 2) {
@@ -38,9 +39,9 @@ export function removeHexPrefix(val: Nibbles): Nibbles {
 }
 
 /**
- * Returns true if hex-prefixed path is for a terminating (leaf) node.
- * @param key - a hex-prefixed array of nibbles
- * @private
+ * Return whether a hex-prefixed path marks a leaf (terminator) node.
+ *
+ * @param key Hex-prefixed nibble array
  */
 export function isTerminator(key: Nibbles): boolean {
   return key[0] > 1

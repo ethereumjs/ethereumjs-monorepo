@@ -4,35 +4,35 @@ import { Memory } from '../src/memory.ts'
 
 const CONTAINER_SIZE = 8192
 
-describe('Memory', () => {
+describe('[EVM/Memory]: unit', () => {
   const m = new Memory()
-  it('should have CONTAINER_SIZE capacity initially', () => {
+  it('has CONTAINER_SIZE capacity initially', () => {
     assert.strictEqual(m._store.length, CONTAINER_SIZE)
   })
 
-  it('should return zeros from empty memory', () => {
+  it('returns zeros from empty memory', () => {
     assert.deepEqual(m.read(0, 3), Uint8Array.from([0, 0, 0]))
   })
 
-  it('should extend capacity to CONTAINER_SIZE + CONTAINER_SIZE bytes', () => {
+  it('extends capacity to CONTAINER_SIZE + CONTAINER_SIZE bytes', () => {
     m.extend(CONTAINER_SIZE, 3)
     assert.strictEqual(m._store.length, CONTAINER_SIZE * 2)
   })
 
-  it('should return zeros before writing', () => {
+  it('returns zeros before writing', () => {
     assert.deepEqual(m.read(0, 2), Uint8Array.from([0, 0]))
   })
 
-  it('should write value', () => {
+  it('writes value', () => {
     m.write(29, 3, Uint8Array.from([1, 2, 3]))
     assert.deepEqual(m.read(29, 5), Uint8Array.from([1, 2, 3, 0, 0]))
   })
 
-  it('should fail when value len and size are inconsistent', () => {
+  it('fails when value len and size are inconsistent', () => {
     assert.throws(() => m.write(0, 5, Uint8Array.from([8, 8, 8])), /size/)
   })
 
-  it('should expand by container (8192 bytes) properly when writing to previously untouched location', () => {
+  it('expands by container (8192 bytes) properly when writing to previously untouched location', () => {
     const memory = new Memory()
     memory.write(0, CONTAINER_SIZE, new Uint8Array(CONTAINER_SIZE))
     assert.strictEqual(
@@ -48,7 +48,7 @@ describe('Memory', () => {
     )
   })
 
-  it('should expand by container (8192 bytes) when reading a previously untouched location', () => {
+  it('expands by container (8192 bytes) when reading a previously untouched location', () => {
     const memory = new Memory()
     memory.write(0, CONTAINER_SIZE, new Uint8Array(CONTAINER_SIZE))
     memory.read(CONTAINER_SIZE, 8)

@@ -8,12 +8,12 @@
 
 > **runBlock**(`vm`, `opts`): `Promise`\<[`RunBlockResult`](../interfaces/RunBlockResult.md)\>
 
-Defined in: [vm/src/runBlock.ts:87](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L87)
+Defined in: [vm/src/runBlock.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/runBlock.ts#L91)
 
-Processes the `block` running all of the transactions it contains and updating the miner's account
+Executes a block's transactions, updates miner rewards, and optionally validates header fields.
 
-vm method modifies the state if successfully executed and header fields are valid.
-state modifications will be reverted if an exception is raised during execution or validation.
+Commits state on success; reverts the block checkpoint if execution or validation fails.
+Options are documented on [RunBlockOpts](../interfaces/RunBlockOpts.md); defaults include `generate: false`.
 
 ## Parameters
 
@@ -25,9 +25,17 @@ state modifications will be reverted if an exception is raised during execution 
 
 [`RunBlockOpts`](../interfaces/RunBlockOpts.md)
 
-Default values for options:
- - `generate`: false
-
 ## Returns
 
 `Promise`\<[`RunBlockResult`](../interfaces/RunBlockResult.md)\>
+
+## Throws
+
+If header or block validation fails, receipts or roots mismatch expected values,
+or a transaction reverts when validation is enabled
+
+## Example
+
+```ts
+const result = await runBlock(vm, { block, generate: true })
+```

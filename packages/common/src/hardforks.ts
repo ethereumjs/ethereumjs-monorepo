@@ -1,5 +1,6 @@
 import type { HardforksDict } from './types.ts'
 
+/** Built-in hardfork metadata keyed by hardfork name. */
 export const hardforksDict: HardforksDict = {
   /**
    * Description: Start of the Ethereum main chain
@@ -166,7 +167,7 @@ export const hardforksDict: HardforksDict = {
    * Status     : Final
    */
   osaka: {
-    eips: [7594, 7823, 7825, 7883, 7892, 7939, 7951, 7918],
+    eips: [7594, 7823, 7825, 7883, 7892, 7934, 7939, 7951, 7918],
   },
   /**
    * Description: HF to update the blob target, max and updateFraction (see also EIP-7892)
@@ -200,6 +201,14 @@ export const hardforksDict: HardforksDict = {
    * Status     : Draft (implementation incomplete + spec still moving!)
    */
   amsterdam: {
-    eips: [7708, 7843, 7778, 7928, 7954, 7976, 7981, 8024, 8037],
+    eips: [2780, 7708, 7843, 7778, 7928, 7954, 7976, 7981, 7997, 8024, 8037, 8038, 8246, 8282],
+  },
+  /**
+   * Description: Draft Hegota execution-layer upgrade (see EIP-8081)
+   * URL        : https://forkcast.org/upgrade/hegota/
+   * Status     : Draft — schedule and EIP bundle maintained on the `new-eips` branch
+   */
+  hegota: {
+    eips: [],
   },
 }

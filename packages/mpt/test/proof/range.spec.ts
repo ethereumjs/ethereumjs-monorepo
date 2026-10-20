@@ -99,7 +99,7 @@ async function verify(
   )
 }
 
-describe('simple merkle range proofs generation and verification', () => {
+describe('[MPT/Proof]: merkle range proofs', () => {
   it('create a range proof and verify it', async () => {
     const { trie, entries } = await randomTrie(new MapDB())
 
@@ -395,7 +395,7 @@ describe('simple merkle range proofs generation and verification', () => {
     assert.isFalse(result)
   })
 
-  it('should hasRightElement succeed', async () => {
+  it('hasRightElement succeed', async () => {
     const { trie, entries } = await randomTrie(new MapDB(), false)
 
     const cases: { start: number; end: number; expect: boolean }[] = [

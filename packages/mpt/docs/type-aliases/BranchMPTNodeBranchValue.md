@@ -8,4 +8,6 @@
 
 > **BranchMPTNodeBranchValue** = [`NodeReferenceOrRawMPTNode`](NodeReferenceOrRawMPTNode.md) \| `null`
 
-Defined in: [packages/mpt/src/types.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/types.ts#L22)
+Defined in: [types.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/types.ts#L23)
+
+Branch slot value or `null` when the slot is empty.

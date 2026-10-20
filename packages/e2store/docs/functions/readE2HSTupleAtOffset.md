@@ -8,7 +8,7 @@
 
 > **readE2HSTupleAtOffset**(`bytes`, `offset`): `object`
 
-Defined in: [packages/e2store/src/e2hs/blockTuple.ts:24](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/e2hs/blockTuple.ts#L24)
+Defined in: [packages/e2store/src/e2hs/blockTuple.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/e2hs/blockTuple.ts#L25)
 
 ## Parameters
 

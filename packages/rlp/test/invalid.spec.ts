@@ -6,9 +6,9 @@ import { invalidData } from './fixture/invalid.ts'
 
 const { hexToBytes } = utils
 
-describe('invalid tests', () => {
+describe('[RLP]: invalid vectors', () => {
   for (const [testName, test] of Object.entries(invalidData.tests)) {
-    it(`should pass ${testName}`, () => {
+    it(`pass ${testName}`, () => {
       let { out } = test
       if (out[0] === '0' && out[1] === 'x') {
         out = out.slice(2)
@@ -24,7 +24,7 @@ describe('invalid tests', () => {
     })
   }
 
-  it('should pass long string sanity check test', function () {
+  it('pass long string sanity check test', function () {
     // long string invalid test; string length > 55
     const longBufferTest = RLP.encode(
       'zoo255zoo255zzzzzzzzzzzzssssssssssssssssssssssssssssssssssssssssssssss', // cspell:disable-line
@@ -77,10 +77,10 @@ const invalidGethCases: string[] = [
   'F8020004',
 ]
 
-describe('invalid geth tests', () => {
+describe('[RLP]: invalid geth vectors', () => {
   for (const gethCase of invalidGethCases) {
     const input = hexToBytes(gethCase)
-    it('should pass Geth test', () => {
+    it('pass Geth test', () => {
       assert.throws(
         () => {
           RLP.decode(input)

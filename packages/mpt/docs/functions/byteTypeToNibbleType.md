@@ -8,9 +8,9 @@
 
 > **byteTypeToNibbleType**(`key`): [`Nibbles`](../type-aliases/Nibbles.md)
 
-Defined in: [packages/mpt/src/util/encoding.ts:131](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/util/encoding.ts#L131)
+Defined in: [util/encoding.ts:133](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/util/encoding.ts#L133)
 
-Turns each byte into a single nibble, only extracting the lower nibble of each byte
+Extract the lower nibble of each byte as a nibble path.
 
 ## Parameters
 
@@ -18,10 +18,8 @@ Turns each byte into a single nibble, only extracting the lower nibble of each b
 
 `Uint8Array`
 
-Uint8Array typed byte array
+Byte array
 
 ## Returns
 
 [`Nibbles`](../type-aliases/Nibbles.md)
-
-Nibble typed nibble array

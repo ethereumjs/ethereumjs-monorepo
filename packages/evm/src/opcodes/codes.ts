@@ -1,6 +1,7 @@
 import { Hardfork } from '@ethereumjs/common'
 import { EthereumJSErrorWithoutCode } from '@ethereumjs/util'
 
+import { mergeOpcodeEipBuilder, mergeOpcodeEipHandlers } from './eips/apply.ts'
 import { handlers } from './functions.ts'
 import { dynamicGasHandlers } from './gas.ts'
 import { getFullname } from './util.ts'
@@ -50,7 +51,7 @@ export class Opcode {
 }
 
 export type OpcodeList = Map<number, Opcode>
-type OpcodeEntry = {
+export type OpcodeEntry = {
   [key: number]: { name: string; isAsync: boolean; dynamicGas: boolean }
 }
 type OpcodeEntryFee = OpcodeEntry & { [key: number]: { fee: number } }
@@ -283,117 +284,8 @@ const hardforkOpcodes: { hardfork: Hardfork; opcodes: OpcodeEntry }[] = [
   },
 ]
 
-const eipOpcodes: { eip: number; opcodes: OpcodeEntry }[] = [
-  {
-    eip: 8024,
-    opcodes: {
-      0xe6: defaultOp('DUPN'),
-      0xe7: defaultOp('SWAPN'),
-      0xe8: defaultOp('EXCHANGE'),
-    },
-  },
-  {
-    eip: 1153,
-    opcodes: {
-      0x5c: defaultOp('TLOAD'),
-      0x5d: defaultOp('TSTORE'),
-    },
-  },
-  {
-    eip: 3198,
-    opcodes: {
-      0x48: defaultOp('BASEFEE'),
-    },
-  },
-  {
-    eip: 3855,
-    opcodes: {
-      0x5f: defaultOp('PUSH0'),
-    },
-  },
-  {
-    eip: 4200,
-    opcodes: {
-      0xe0: defaultOp('RJUMP'),
-      0xe1: defaultOp('RJUMPI'),
-      0xe2: defaultOp('RJUMPV'),
-    },
-  },
-  {
-    eip: 4750,
-    opcodes: {
-      0xe3: defaultOp('CALLF'),
-      0xe4: defaultOp('RETF'),
-    },
-  },
-  {
-    eip: 4844,
-    opcodes: {
-      0x49: defaultOp('BLOBHASH'),
-    },
-  },
-  {
-    eip: 5656,
-    opcodes: {
-      0x5e: dynamicGasOp('MCOPY'),
-    },
-  },
-  {
-    eip: 6206,
-    opcodes: {
-      0xe5: defaultOp('JUMPF'),
-    },
-  },
-  {
-    eip: 7069,
-    opcodes: {
-      0xf7: defaultOp('RETURNDATALOAD'),
-      0xf8: asyncAndDynamicGasOp('EXTCALL'),
-      0xf9: asyncAndDynamicGasOp('EXTDELEGATECALL'),
-      0xfb: asyncAndDynamicGasOp('EXTSTATICCALL'),
-    },
-  },
-  {
-    eip: 7480,
-    opcodes: {
-      0xd0: defaultOp('DATALOAD'),
-      0xd1: defaultOp('DATALOADN'),
-      0xd2: defaultOp('DATASIZE'),
-      0xd3: dynamicGasOp('DATACOPY'),
-    },
-  },
-  {
-    eip: 7516,
-    opcodes: {
-      0x4a: defaultOp('BLOBBASEFEE'),
-    },
-  },
-  {
-    eip: 7843,
-    opcodes: {
-      0x4b: asyncOp('SLOTNUM'),
-    },
-  },
-  {
-    eip: 7620,
-    opcodes: {
-      0xec: asyncAndDynamicGasOp('EOFCREATE'),
-      0xee: asyncAndDynamicGasOp('RETURNCONTRACT'),
-    },
-  },
-  {
-    eip: 7939,
-    opcodes: {
-      0x1e: defaultOp('CLZ'),
-    },
-  },
-]
-
 /**
- * Convert basic opcode info dictionary into complete OpcodeList instance.
- *
- * @param opcodes {Object} Receive basic opcodes info dictionary.
- * @returns {OpcodeList} Complete Opcode list
+ * Convert basic opcode metadata into a complete {@link OpcodeList}.
  */
 function createOpcodes(opcodes: OpcodeEntryFee): OpcodeList {
   const result: OpcodeList = new Map()
@@ -427,11 +319,9 @@ export type OpcodeMapEntry = {
 export type OpcodeMap = OpcodeMapEntry[]
 
 /**
- * Get suitable opcodes for the required hardfork.
+ * Returns opcode handlers and gas tables for the active hardfork and EIPs.
  *
- * @param common {Common} Ethereumjs Common metadata object.
- * @param customOpcodes List with custom opcodes (see EVM `customOpcodes` option description).
- * @returns {OpcodeList} Opcodes dictionary object.
+ * Merges fork-specific and EIP-specific opcode overrides with optional {@link CustomOpcode} entries.
  */
 export function getOpcodesForHF(common: Common, customOpcodes?: CustomOpcode[]): OpcodeContext {
   let opcodeBuilder: any = { ...opcodes }
@@ -444,11 +334,8 @@ export function getOpcodesForHF(common: Common, customOpcodes?: CustomOpcode[]):
       opcodeBuilder = { ...opcodeBuilder, ...hardforkOpcodes[fork].opcodes }
     }
   }
-  for (const eipOps of eipOpcodes) {
-    if (common.isActivatedEIP(eipOps.eip)) {
-      opcodeBuilder = { ...opcodeBuilder, ...eipOps.opcodes }
-    }
-  }
+  mergeOpcodeEipBuilder(opcodeBuilder, common)
+  mergeOpcodeEipHandlers(handlersCopy, dynamicGasHandlersCopy, common)
 
   for (const key in opcodeBuilder) {
     const baseFee = Number(common.param(`${opcodeBuilder[key].name.toLowerCase()}Gas`))

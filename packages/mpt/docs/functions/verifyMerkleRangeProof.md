@@ -6,9 +6,9 @@
 
 # Function: verifyMerkleRangeProof()
 
-> **verifyMerkleRangeProof**(`rootHash`, `firstKeyRaw`, `lastKeyRaw`, `keysRaw`, `values`, `proof`, `useKeyHashingFunction`): `Promise`\<`boolean`\>
+> **verifyMerkleRangeProof**(`rootHash`, `firstKeyRaw`, `lastKeyRaw`, `keysRaw`, `values`, `proof`, `useKeyHashingFunction?`): `Promise`\<`boolean`\>
 
-Defined in: [packages/mpt/src/proof/range.ts:420](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/proof/range.ts#L420)
+Defined in: [proof/range.ts:420](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/src/proof/range.ts#L420)
 
 Checks whether the given leaf nodes and edge proof can prove the given trie leaves range is matched with the specific root.
 
@@ -42,15 +42,21 @@ root hash of state trie this proof is being verified against.
 
 ### firstKeyRaw
 
-`Uint8Array`\<`ArrayBufferLike`\> | `null`
+`Uint8Array`\<`ArrayBufferLike`\> \| `null`
+
+first key of range being proven (bytes, or `null`).
 
 ### lastKeyRaw
 
-`Uint8Array`\<`ArrayBufferLike`\> | `null`
+`Uint8Array`\<`ArrayBufferLike`\> \| `null`
+
+last key of range being proven (bytes, or `null`).
 
 ### keysRaw
 
 `Uint8Array`\<`ArrayBufferLike`\>[]
+
+key list of leaf data being proven.
 
 ### values
 
@@ -60,13 +66,15 @@ value list of leaf data being proven, one-to-one correspondence with keys.
 
 ### proof
 
-proof node list, if all-elements-proof where no proof is needed, proof should be null, and both `firstKey` and `lastKey` must be null as well
+`Uint8Array`\<`ArrayBufferLike`\>[] \| `null`
 
-`Uint8Array`\<`ArrayBufferLike`\>[] | `null`
+proof node list, or `null` for an all-elements proof (both keys must be `null` too)
 
-### useKeyHashingFunction
+### useKeyHashingFunction?
 
 [`HashKeysFunction`](../type-aliases/HashKeysFunction.md) = `keccak_256`
+
+hash function for secure trie key hashing (default: keccak256)
 
 ## Returns
 

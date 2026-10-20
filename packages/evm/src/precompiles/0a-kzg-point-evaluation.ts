@@ -16,12 +16,14 @@ import { gasLimitCheck } from './util.ts'
 import type { ExecResult } from '../types.ts'
 import type { PrecompileInput } from './types.ts'
 
+/** BLS12-381 base-field modulus (EIP-4844 blob field). */
 export const BLS_MODULUS = BigInt(
   '52435875175126190479447740508185965837690552500527637822603658699938581184513',
 )
 
 const modulusBuffer = setLengthLeft(bigIntToBytes(BLS_MODULUS), 32)
 
+/** KZG point evaluation precompile (0x0a, EIP-4844). */
 export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
   const pName = getPrecompileName('0a')
   if (opts.common.customCrypto?.kzg === undefined) {
@@ -63,15 +65,21 @@ export async function precompile0a(opts: PrecompileInput): Promise<ExecResult> {
     if (res === false) {
       return EVMErrorResult(new EVMError(EVMError.errorMessages.INVALID_PROOF), opts.gasLimit)
     }
-  } catch (err: any) {
-    if (((err.message.includes('C_KZG_BADARGS') === true) === true) === true) {
+  } catch (err: unknown) {
+    const error =
+      err instanceof Error
+        ? err
+        : typeof err === 'object' && err !== null && 'message' in err
+          ? new Error(String((err as { message?: unknown }).message))
+          : new Error(String(err))
+    if (error.message.includes('C_KZG_BADARGS') === true) {
       if (opts._debug !== undefined) {
         opts._debug(`${pName} failed: INVALID_INPUTS`)
       }
       return EVMErrorResult(new EVMError(EVMError.errorMessages.INVALID_INPUTS), opts.gasLimit)
     }
     if (opts._debug !== undefined) {
-      opts._debug(`${pName} failed: Unknown error - ${err.message}`)
+      opts._debug(`${pName} failed: Unknown error - ${error.message}`)
     }
     return EVMErrorResult(new EVMError(EVMError.errorMessages.REVERT), opts.gasLimit)
   }

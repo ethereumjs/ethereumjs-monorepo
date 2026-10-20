@@ -6,7 +6,7 @@
 
 # Interface: BALJSONCodeChange
 
-Defined in: [packages/util/src/bal/index.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L71)
+Defined in: [packages/util/src/bal/index.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L74)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [packages/util/src/bal/index.ts:71](https://github.com/ethereumjs/et
 
 > **blockAccessIndex**: `` `0x${string}` ``
 
-Defined in: [packages/util/src/bal/index.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L72)
+Defined in: [packages/util/src/bal/index.ts:75](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L75)
 
 ***
 
@@ -22,4 +22,4 @@ Defined in: [packages/util/src/bal/index.ts:72](https://github.com/ethereumjs/et
 
 > **newCode**: `` `0x${string}` ``
 
-Defined in: [packages/util/src/bal/index.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L73)
+Defined in: [packages/util/src/bal/index.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L76)

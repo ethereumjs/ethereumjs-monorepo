@@ -8,7 +8,7 @@
 
 > **BALJSONBlockAccessList** = [`BALJSONAccountChanges`](../interfaces/BALJSONAccountChanges.md)[]
 
-Defined in: [packages/util/src/bal/index.ts:98](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L98)
+Defined in: [packages/util/src/bal/index.ts:101](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L101)
 
 ## Remarks
 

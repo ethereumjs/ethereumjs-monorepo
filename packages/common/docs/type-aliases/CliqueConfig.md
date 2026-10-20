@@ -8,7 +8,9 @@
 
 > **CliqueConfig** = `object`
 
-Defined in: [common/src/types.ts:16](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L16)
+Defined in: [types.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L20)
+
+Clique proof-of-authority consensus parameters.
 
 ## Properties
 
@@ -16,7 +18,7 @@ Defined in: [common/src/types.ts:16](https://github.com/ethereumjs/ethereumjs-mo
 
 > **epoch**: `number`
 
-Defined in: [common/src/types.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L18)
+Defined in: [types.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L22)
 
 ***
 
@@ -24,4 +26,4 @@ Defined in: [common/src/types.ts:18](https://github.com/ethereumjs/ethereumjs-mo
 
 > **period**: `number`
 
-Defined in: [common/src/types.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L17)
+Defined in: [types.ts:21](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L21)

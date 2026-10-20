@@ -8,7 +8,7 @@
 
 > **validateBlockAccessList**(`bal`, `blockAccessListHash?`): `void`
 
-Defined in: [packages/util/src/bal/validation.ts:58](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/validation.ts#L58)
+Defined in: [packages/util/src/bal/validation.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/validation.ts#L59)
 
 Validates canonical BAL structure and, when provided, the header hash commitment.
 

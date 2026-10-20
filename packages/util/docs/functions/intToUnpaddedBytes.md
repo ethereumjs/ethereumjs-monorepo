@@ -8,7 +8,7 @@
 
 > **intToUnpaddedBytes**(`value`): `Uint8Array`
 
-Defined in: [packages/util/src/bytes.ts:420](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L420)
+Defined in: [packages/util/src/bytes.ts:380](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L380)
 
 Convert value from number to an unpadded Uint8Array
 (useful for RLP transport)

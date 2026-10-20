@@ -1,5 +1,6 @@
 import { RLP } from '@ethereumjs/rlp'
 import { keccak_256 } from '@noble/hashes/sha3.js'
+import type { Address } from '../address.ts'
 import {
   bigIntToBytes,
   bigIntToHex,
@@ -10,6 +11,7 @@ import {
 } from '../bytes.ts'
 import { padToEven } from '../internal.ts'
 import type { PrefixedHexString } from '../types.ts'
+import { compareStorageSlotKeys } from './compareStorageSlotKeys.ts'
 
 // Base types which can be used for JSON, internal representation and raw format.
 type BALAddressHex = PrefixedHexString // bytes20
@@ -45,16 +47,17 @@ type BALRawAccountChanges = [
 type BALRawBlockAccessList = BALRawAccountChanges[]
 
 // Internal representation of the access list.
-export type Accesses = Record<
-  BALAddressHex,
-  {
-    nonceChanges: Map<BALAccessIndexNumber, BALNonceHex>
-    balanceChanges: Map<BALAccessIndexNumber, BALBalanceHex>
-    codeChanges: BALRawCodeChange[]
-    storageChanges: Record<BALStorageKeyHex, BALRawStorageChange[]>
-    storageReads: Set<BALStorageKeyHex>
-  }
->
+/** Per-account access summary inside a block-level access list. */
+export type BALAccountAccess = {
+  nonceChanges: Map<BALAccessIndexNumber, BALNonceHex>
+  balanceChanges: Map<BALAccessIndexNumber, BALBalanceHex>
+  codeChanges: BALRawCodeChange[]
+  storageChanges: Record<BALStorageKeyHex, BALRawStorageChange[]>
+  storageReads: Set<BALStorageKeyHex>
+}
+
+/** Map of account addresses to {@link BALAccountAccess} records. */
+export type Accesses = Record<BALAddressHex, BALAccountAccess>
 
 // JSON representation types (all numeric values as hex strings for JSON serialization)
 // JSON change types
@@ -246,7 +249,7 @@ export class BlockLevelAccessList {
       const storageChanges = (
         Object.entries(data.storageChanges) as [BALStorageKeyHex, BALRawStorageChange[]][]
       )
-        .sort((a, b) => compareLexicographicHexOrBytes(a[0], b[0]))
+        .sort((a, b) => compareStorageSlotKeys(a[0], b[0]))
         .map(([slot, changes]) => [
           normalizeHexForRLP(slot),
           changes
@@ -260,7 +263,7 @@ export class BlockLevelAccessList {
       // Normalize storage reads for canonical RLP encoding (0 -> empty bytes)
       const storageReads = Array.from(data.storageReads)
         .map(normalizeHexForRLP)
-        .sort((a, b) => compareLexicographicHexOrBytes(a, b))
+        .sort((a, b) => compareStorageSlotKeys(a, b))
 
       const balanceChanges = Array.from(data.balanceChanges.entries())
         .sort(([a], [b]) => a - b)
@@ -282,6 +285,19 @@ export class BlockLevelAccessList {
     }
 
     return bal
+  }
+
+  /**
+   * Lookup the per-account access entry without walking {@link toJSON}.
+   * Address keys are lower-case `0x`-prefixed hex (same as `Address.toString()`).
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
+  public get(address: Address | string): BALAccountAccess | undefined {
+    const key = (
+      typeof address === 'string' ? address : address.toString()
+    ).toLowerCase() as BALAddressHex
+    return this.accesses[key]
   }
 
   public addAddress(address: BALAddressHex): void {
@@ -384,9 +400,12 @@ export class BlockLevelAccessList {
     if (this.accesses[address] === undefined) {
       this.addAddress(address)
     }
-    // EIP-7928: Track the original (pre-transaction) balance for net-zero detection
-    // Only set if not already tracked (first call wins)
-    if (originalBalance !== undefined && !this.originalBalances.has(address)) {
+    // EIP-7928: pre-phase balance for net-zero cleanup at this blockAccessIndex
+    // (first mutation at this index wins; later updates at the same index do not)
+    if (
+      originalBalance !== undefined &&
+      !this.accesses[address].balanceChanges.has(blockAccessIndex)
+    ) {
       this.originalBalances.set(address, originalBalance)
     }
     this.accesses[address].balanceChanges.set(
@@ -400,19 +419,30 @@ export class BlockLevelAccessList {
    * Call this at the end of each transaction to clean up net-zero balance changes.
    */
   public cleanupNetZeroBalanceChanges(): void {
+    for (const address of Object.keys(this.accesses) as BALAddressHex[]) {
+      const access = this.accesses[address]
+      if (access === undefined) continue
+      const atIndex = access.balanceChanges.get(this.blockAccessIndex)
+      // Post-execution system calls may touch accounts without a net balance
+      // delta; drop orphan zero entries that never had a tracked pre-index balance.
+      if (atIndex === '0x' && !this.originalBalances.has(address)) {
+        access.balanceChanges.delete(this.blockAccessIndex)
+      }
+    }
+
     for (const [address, originalBalance] of this.originalBalances.entries()) {
       const access = this.accesses[address]
-      if (access === undefined || access.balanceChanges.size === 0) {
+      if (access === undefined) {
         continue
       }
-      // Get the final balance (last entry in the balanceChanges map)
-      const entries = Array.from(access.balanceChanges.values())
-      const finalBalanceHex = entries[entries.length - 1]
+      const atIndexHex = access.balanceChanges.get(this.blockAccessIndex)
+      if (atIndexHex === undefined) {
+        continue
+      }
       const finalBalance =
-        finalBalanceHex === '0x' ? BigInt(0) : BigInt(`0x${finalBalanceHex.replace(/^0x/, '')}`)
+        atIndexHex === '0x' ? BigInt(0) : BigInt(`0x${atIndexHex.replace(/^0x/, '')}`)
 
-      // EIP-7928: If final balance == original balance, remove all balanceChanges
-      // for the current blockAccessIndex only, but keep prior tx entries.
+      // EIP-7928: drop net-zero balance changes at this index only (including 0 -> 0).
       if (finalBalance === originalBalance) {
         access.balanceChanges.delete(this.blockAccessIndex)
       }
@@ -548,7 +578,10 @@ export class BlockLevelAccessList {
    *
    * @remarks Experimental (Amsterdam): may change on patch releases.
    */
-  public cleanupSelfdestructed(addresses: Array<BALAddressHex>): void {
+  public cleanupSelfdestructed(
+    addresses: Array<BALAddressHex>,
+    finalBalances?: Map<BALAddressHex, bigint>,
+  ): void {
     for (const address of addresses) {
       const access = this.accesses[address]
       if (access === undefined) {
@@ -564,35 +597,22 @@ export class BlockLevelAccessList {
       access.nonceChanges.clear()
       access.codeChanges = []
 
-      // EIP-7928: If the account had a positive pre-transaction balance,
-      // the balance change to zero MUST be recorded.
-      // The balance change to 0 is already added during SELFDESTRUCT execution.
-      // We only clear balance changes if pre-transaction balance was 0 (no actual change).
       const originalBalance = this.originalBalances.get(address)
-      if (originalBalance === undefined || originalBalance === BigInt(0)) {
-        // Pre-transaction balance was 0 or unknown - clear balance changes
-        // (0 -> 0 is no change, so nothing to record)
-        access.balanceChanges.clear()
+      const index = this.blockAccessIndex
+      if (finalBalances !== undefined) {
+        // EIP-8246: SELFDESTRUCT preserves the account balance. Drop only this
+        // transaction's balance entry when net-zero; prior tx indices stay.
+        const finalBalance = finalBalances.get(address) ?? BigInt(0)
+        if (finalBalance === (originalBalance ?? BigInt(0))) {
+          access.balanceChanges.delete(index)
+        }
+      } else if (originalBalance === undefined || originalBalance === BigInt(0)) {
+        // EIP-7928 (pre-8246): 0 -> 0 at this index is not recorded.
+        access.balanceChanges.delete(index)
       }
-      // If originalBalance > 0, keep the balance changes (which should show balance = 0)
+      // If originalBalance > 0, keep balance changes at all indices (incl. balance = 0)
     }
   }
-}
-
-function compareLexicographicHexOrBytes(
-  a: PrefixedHexString | Uint8Array,
-  b: PrefixedHexString | Uint8Array,
-): number {
-  const aBytes = a instanceof Uint8Array ? a : hexToBytes(a)
-  const bBytes = b instanceof Uint8Array ? b : hexToBytes(b)
-  const minLength = Math.min(aBytes.length, bBytes.length)
-  for (let i = 0; i < minLength; i++) {
-    if (aBytes[i] < bBytes[i]) return -1
-    if (aBytes[i] > bBytes[i]) return 1
-  }
-  if (aBytes.length < bBytes.length) return -1
-  if (aBytes.length > bBytes.length) return 1
-  return 0
 }
 
 /**

@@ -6,7 +6,9 @@
 
 # Interface: PutBatch\<TKey, TValue\>
 
-Defined in: [packages/util/src/db.ts:29](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L29)
+Defined in: [packages/util/src/db.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L37)
+
+Batch entry that inserts or updates a key.
 
 ## Type Parameters
 
@@ -24,15 +26,15 @@ Defined in: [packages/util/src/db.ts:29](https://github.com/ethereumjs/ethereumj
 
 > **key**: `TKey`
 
-Defined in: [packages/util/src/db.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L34)
+Defined in: [packages/util/src/db.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L42)
 
 ***
 
 ### opts?
 
-> `optional` **opts**: [`EncodingOpts`](../type-aliases/EncodingOpts.md)
+> `optional` **opts?**: [`EncodingOpts`](../type-aliases/EncodingOpts.md)
 
-Defined in: [packages/util/src/db.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L36)
+Defined in: [packages/util/src/db.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L44)
 
 ***
 
@@ -40,7 +42,7 @@ Defined in: [packages/util/src/db.ts:36](https://github.com/ethereumjs/ethereumj
 
 > **type**: `"put"`
 
-Defined in: [packages/util/src/db.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L33)
+Defined in: [packages/util/src/db.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L41)
 
 ***
 
@@ -48,4 +50,4 @@ Defined in: [packages/util/src/db.ts:33](https://github.com/ethereumjs/ethereumj
 
 > **value**: `TValue`
 
-Defined in: [packages/util/src/db.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L35)
+Defined in: [packages/util/src/db.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L43)

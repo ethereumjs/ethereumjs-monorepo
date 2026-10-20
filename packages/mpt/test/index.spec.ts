@@ -19,8 +19,11 @@ import type { HashKeysFunction } from '../src/index.ts'
 
 for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
   for (const cacheSize of [0, 100]) {
-    describe('simple save and retrieve', () => {
-      it('should not crash if given a non-existent root', async () => {
+    const keyPrefixLabel = keyPrefix === undefined ? 'none' : bytesToHex(keyPrefix)
+    const matrixTag = `keyPrefix=${keyPrefixLabel}, cacheSize=${cacheSize}`
+
+    describe(`[MPT]: simple save and retrieve (${matrixTag})`, () => {
+      it('does not crash if given a non-existent root', async () => {
         const root = hexToBytes(
           '0x3f4399b08efe68945c1cf90ffe85bbe3ce978959da753f9e649f034015b8817d',
         )
@@ -36,34 +39,34 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
         await trie.put(utf8ToBytes('test'), utf8ToBytes('one'))
       })
 
-      it('should get a value', async () => {
+      it('get a value', async () => {
         const value = await trie.get(utf8ToBytes('test'))
         assert.strictEqual(bytesToUtf8(value!), 'one')
       })
 
-      it('should update a value', async () => {
+      it('updates a value', async () => {
         await trie.put(utf8ToBytes('test'), utf8ToBytes('two'))
         const value = await trie.get(utf8ToBytes('test'))
 
         assert.strictEqual(bytesToUtf8(value!), 'two')
       })
 
-      it('should delete a value', async () => {
+      it('deletes a value', async () => {
         await trie.del(utf8ToBytes('test'))
         const value = await trie.get(utf8ToBytes('test'))
         assert.isNull(value)
       })
 
-      it('should recreate a value', async () => {
+      it('recreates a value', async () => {
         await trie.put(utf8ToBytes('test'), utf8ToBytes('one'))
       })
 
-      it('should get updated a value', async () => {
+      it('get updated a value', async () => {
         const value = await trie.get(utf8ToBytes('test'))
         assert.strictEqual(bytesToUtf8(value!), 'one')
       })
 
-      it('should create a branch here', async () => {
+      it('creates a branch here', async () => {
         await trie.put(utf8ToBytes('doge'), utf8ToBytes('coin'))
         assert.strictEqual(
           '0xde8a34a8c1d558682eae1528b47523a483dd8685d6db14b291451a66066bf0fc',
@@ -71,46 +74,46 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
         )
       })
 
-      it('should get a value that is in a branch', async () => {
+      it('get a value that is in a branch', async () => {
         const value = await trie.get(utf8ToBytes('doge'))
         assert.strictEqual(bytesToUtf8(value!), 'coin')
       })
 
-      it('should delete from a branch', async () => {
+      it('deletes from a branch', async () => {
         await trie.del(utf8ToBytes('doge'))
         const value = await trie.get(utf8ToBytes('doge'))
         assert.strictEqual(value, null)
       })
 
-      describe('storing longer values', () => {
+      describe(`[MPT]: storing longer values (${matrixTag})`, () => {
         const trie = new MerklePatriciaTrie({ cacheSize })
         const longString = 'this will be a really really really long value'
         const longStringRoot = 'b173e2db29e79c78963cff5196f8a983fbe0171388972106b114ef7f5c24dfa3'
 
-        it('should store a longer string', async () => {
+        it('stores a longer string', async () => {
           await trie.put(utf8ToBytes('done'), utf8ToBytes(longString))
           await trie.put(utf8ToBytes('doge'), utf8ToBytes('coin'))
           assert.strictEqual('0x' + longStringRoot, bytesToHex(trie.root()))
         })
 
-        it('should retrieve a longer value', async () => {
+        it('retrieves a longer value', async () => {
           const value = await trie.get(utf8ToBytes('done'))
           assert.strictEqual(bytesToUtf8(value!), longString)
         })
 
-        it('should when being modified delete the old value', async () => {
+        it('whens being modified delete the old value', async () => {
           await trie.put(utf8ToBytes('done'), utf8ToBytes('test'))
         })
       })
 
-      describe('testing extensions and branches', () => {
+      describe(`[MPT]: extensions and branches (${matrixTag})`, () => {
         const trie = new MerklePatriciaTrie({ cacheSize })
 
-        it('should store a value', async () => {
+        it('stores a value', async () => {
           await trie.put(utf8ToBytes('doge'), utf8ToBytes('coin'))
         })
 
-        it('should create extension to store this value', async () => {
+        it('creates extension to store this value', async () => {
           await trie.put(utf8ToBytes('do'), utf8ToBytes('verb'))
           assert.strictEqual(
             '0xf803dfcb7e8f1afd45e88eedb4699a7138d6c07b71243d9ae9bff720c99925f9',
@@ -118,7 +121,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
           )
         })
 
-        it('should store this value under the extension', async () => {
+        it('stores this value under the extension', async () => {
           await trie.put(utf8ToBytes('done'), utf8ToBytes('finished'))
           assert.strictEqual(
             '0x409cff4d820b394ed3fb1cd4497bdd19ffa68d30ae34157337a7043c94a3e8cb',
@@ -127,18 +130,18 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
         })
       })
 
-      describe('testing extensions and branches - reverse', () => {
+      describe(`[MPT]: extensions and branches reverse (${matrixTag})`, () => {
         const trie = new MerklePatriciaTrie({ cacheSize })
 
-        it('should create extension to store this value', async () => {
+        it('creates extension to store this value', async () => {
           await trie.put(utf8ToBytes('do'), utf8ToBytes('verb'))
         })
 
-        it('should store a value', async () => {
+        it('stores a value', async () => {
           await trie.put(utf8ToBytes('doge'), utf8ToBytes('coin'))
         })
 
-        it('should store this value under the extension', async () => {
+        it('stores this value under the extension', async () => {
           await trie.put(utf8ToBytes('done'), utf8ToBytes('finished'))
           assert.strictEqual(
             '0x409cff4d820b394ed3fb1cd4497bdd19ffa68d30ae34157337a7043c94a3e8cb',
@@ -148,13 +151,13 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
       })
     })
 
-    describe('testing deletion cases', () => {
+    describe(`[MPT]: deletion cases (${matrixTag})`, () => {
       const trieSetup = {
         trie: new MerklePatriciaTrie({ cacheSize }),
         msg: 'without DB delete',
       }
 
-      it('should delete from a branch->branch-branch', async () => {
+      it('deletes from a branch->branch-branch', async () => {
         await trieSetup.trie.put(new Uint8Array([11, 11, 11]), utf8ToBytes('first'))
         await trieSetup.trie.put(
           new Uint8Array([12, 22, 22]),
@@ -170,7 +173,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
         assert.strictEqual(null, val, trieSetup.msg)
       })
 
-      it('should delete from a branch->branch-extension', async () => {
+      it('deletes from a branch->branch-extension', async () => {
         await trieSetup.trie.put(new Uint8Array([11, 11, 11]), utf8ToBytes('first'))
         await trieSetup.trie.put(
           new Uint8Array([12, 22, 22]),
@@ -190,7 +193,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
         assert.strictEqual(null, val, trieSetup.msg)
       })
 
-      it('should delete from a extension->branch-extension', async () => {
+      it('deletes from a extension->branch-extension', async () => {
         await trieSetup.trie.put(new Uint8Array([11, 11, 11]), utf8ToBytes('first'))
         await trieSetup.trie.put(
           new Uint8Array([12, 22, 22]),
@@ -211,7 +214,7 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
         assert.strictEqual(null, val, trieSetup.msg)
       })
 
-      it('should delete from a extension->branch-branch', async () => {
+      it('deletes from a extension->branch-branch', async () => {
         await trieSetup.trie.put(new Uint8Array([11, 11, 11]), utf8ToBytes('first'))
         await trieSetup.trie.put(
           new Uint8Array([12, 22, 22]),
@@ -232,8 +235,8 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
       })
     })
 
-    describe('shall handle the case of node not found correctly', () => {
-      it('should work', async () => {
+    describe(`[MPT]: node not found (${matrixTag})`, () => {
+      it('returns partial stack when an intermediate branch node is missing', async () => {
         const trie = new MerklePatriciaTrie({ cacheSize })
         await trie.put(utf8ToBytes('a'), utf8ToBytes('value1'))
         await trie.put(utf8ToBytes('aa'), utf8ToBytes('value2'))
@@ -265,8 +268,8 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
       })
     })
 
-    describe('it should create the genesis state root from ethereum', () => {
-      it('should work', async () => {
+    describe(`[MPT]: genesis state root (${matrixTag})`, () => {
+      it('matches cpp genesis accounts state root', async () => {
         const trie4 = new MerklePatriciaTrie({ cacheSize })
 
         const g = hexToBytes('0x8a40bfaa73256b60764c1bf40675a99083efb075')
@@ -296,8 +299,8 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
       })
     })
 
-    describe('setting back state root (deleteFromDB)', () => {
-      it('should work', async () => {
+    describe(`[MPT]: set back state root (${matrixTag})`, () => {
+      it('reads deleted keys after resetting root to an earlier snapshot', async () => {
         const k1 = utf8ToBytes('1')
         /* Testing with longer value due to `rlpNode.length >= 32` check in `_formatNode()`
          * Reasoning from https://ethereum.org/en/developers/docs/data-structures-and-encoding/patricia-merkle-trie/:
@@ -332,8 +335,8 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
       })
     })
 
-    describe('dummy hash', () => {
-      it('should work', async () => {
+    describe(`[MPT]: dummy hash (${matrixTag})`, () => {
+      it('uses custom key hashing function for trie root', async () => {
         const useKeyHashingFunction: HashKeysFunction = (msg) => {
           const hashLen = 32
           if (msg.length <= hashLen - 5) {
@@ -354,8 +357,8 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
       })
     })
 
-    describe('blake2b256 trie root', () => {
-      it('should work', async () => {
+    describe(`[MPT]: blake2b256 trie root (${matrixTag})`, () => {
+      it('hashes nodes with blake2b256 when configured', async () => {
         const trie = new MerklePatriciaTrie({
           useKeyHashingFunction: (msg) => blake2b(msg, { dkLen: 32 }),
           cacheSize,
@@ -369,8 +372,8 @@ for (const keyPrefix of [undefined, hexToBytes('0x1234')]) {
       })
     })
 
-    describe('empty root', () => {
-      it('should work', async () => {
+    describe(`[MPT]: empty root (${matrixTag})`, () => {
+      it('starts from the empty trie root hash', async () => {
         const trie = new MerklePatriciaTrie({ cacheSize })
 
         assert.strictEqual(bytesToHex(trie.root()), KECCAK256_RLP_S)

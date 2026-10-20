@@ -8,4 +8,6 @@
 
 > `const` **SECP256K1\_ORDER**: `bigint`
 
-Defined in: [packages/util/src/constants.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L27)
+Defined in: [packages/util/src/constants.ts:28](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L28)
+
+Order of the secp256k1 curve.

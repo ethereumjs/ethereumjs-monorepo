@@ -8,9 +8,9 @@
 
 > **fromAscii**(`stringValue`): `string`
 
-Defined in: [packages/util/src/internal.ts:163](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L163)
+Defined in: [packages/util/src/internal.ts:130](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L130)
 
-Should be called to get hex representation (prefixed by 0x) of ascii string
+Encode an ASCII string as a `0x`-prefixed hex value.
 
 ## Parameters
 
@@ -21,5 +21,3 @@ Should be called to get hex representation (prefixed by 0x) of ascii string
 ## Returns
 
 `string`
-
-hex representation of input string

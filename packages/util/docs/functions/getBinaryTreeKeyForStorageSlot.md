@@ -8,9 +8,9 @@
 
 > **getBinaryTreeKeyForStorageSlot**(`address`, `storageKey`, `hashFunction`): `Uint8Array`\<`ArrayBuffer`\>
 
-Defined in: [packages/util/src/binaryTree.ts:226](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L226)
+Defined in: [packages/util/src/binaryTree.ts:230](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/binaryTree.ts#L230)
 
-Asynchronously calculates the BinaryTree tree key for the specified storage slot.
+Build the binary-tree key for an account storage slot.
 
 ## Parameters
 
@@ -18,22 +18,16 @@ Asynchronously calculates the BinaryTree tree key for the specified storage slot
 
 [`Address`](../classes/Address.md)
 
-The account address to access code for.
-
 ### storageKey
 
 `bigint`
-
-The storage slot key to retrieve the key for.
 
 ### hashFunction
 
 (`input`) => `Uint8Array`
 
-The hash function used in the Binary Tree.
+Hash used to derive the address stem
 
 ## Returns
 
 `Uint8Array`\<`ArrayBuffer`\>
-
-- The BinaryTree tree key as a byte array.

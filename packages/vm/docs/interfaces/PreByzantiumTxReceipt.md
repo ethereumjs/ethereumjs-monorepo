@@ -6,7 +6,7 @@
 
 # Interface: PreByzantiumTxReceipt
 
-Defined in: [vm/src/types.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L45)
+Defined in: [vm/src/types.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L46)
 
 Pre-Byzantium receipt type with a field
 for the intermediary state root
@@ -21,7 +21,7 @@ for the intermediary state root
 
 > **bitvector**: `Uint8Array`
 
-Defined in: [vm/src/types.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L34)
+Defined in: [vm/src/types.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L35)
 
 Bloom bitvector
 
@@ -35,7 +35,7 @@ Bloom bitvector
 
 > **cumulativeBlockGasUsed**: `bigint`
 
-Defined in: [vm/src/types.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L30)
+Defined in: [vm/src/types.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L31)
 
 Cumulative gas used in the block including this tx
 
@@ -49,7 +49,7 @@ Cumulative gas used in the block including this tx
 
 > **logs**: `Log`[]
 
-Defined in: [vm/src/types.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L38)
+Defined in: [vm/src/types.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L39)
 
 Logs emitted
 
@@ -63,6 +63,6 @@ Logs emitted
 
 > **stateRoot**: `Uint8Array`
 
-Defined in: [vm/src/types.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L49)
+Defined in: [vm/src/types.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L50)
 
 Intermediary state root

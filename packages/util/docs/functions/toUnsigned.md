@@ -8,9 +8,9 @@
 
 > **toUnsigned**(`num`): `Uint8Array`
 
-Defined in: [packages/util/src/bytes.ts:313](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L313)
+Defined in: [packages/util/src/bytes.ts:279](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L279)
 
-Converts a `BigInt` to an unsigned integer and returns it as a `Uint8Array`. Assumes 256-bit numbers.
+Encode a 256-bit unsigned integer from a bigint.
 
 ## Parameters
 

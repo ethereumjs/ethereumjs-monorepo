@@ -8,10 +8,11 @@
 
 > **arrayContainsArray**(`superset`, `subset`, `some?`): `boolean`
 
-Defined in: [packages/util/src/internal.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L100)
+Defined in: [packages/util/src/internal.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L85)
 
-Returns TRUE if the first specified array contains all elements
-from the second one. FALSE otherwise.
+Return whether `superset` contains every element of `subset`.
+
+When `some` is true, succeed if any subset element is present instead of all.
 
 ## Parameters
 
@@ -30,3 +31,7 @@ from the second one. FALSE otherwise.
 ## Returns
 
 `boolean`
+
+## Throws
+
+If either argument is not an array

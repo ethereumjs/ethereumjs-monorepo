@@ -8,7 +8,7 @@
 
 > **isFeeMarket1559Tx**(`tx`): `tx is FeeMarket1559Tx`
 
-Defined in: [types.ts:189](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L189)
+Defined in: [types.ts:205](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L205)
 
 Type guard to check if transaction is a Fee Market EIP-1559 transaction
 

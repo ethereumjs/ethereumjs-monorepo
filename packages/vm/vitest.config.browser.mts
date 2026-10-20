@@ -13,15 +13,13 @@ export default mergeConfig(
         // path.resolve is not a function
         'test/api/tester/tester.config.spec.ts',
         // Cannot read properties of undefined (reading 'pedersen_hash')
-        'test/api/EIPs/eip-6800-verkle.spec.ts',
+        'test/api/eips/eip-6800-verkle.spec.ts',
         // Uses NodeJS builtins and we don't need to fill tests in browser anyway
         'test/api/t8ntool/t8ntool.spec.ts',
-        // test runners are ran only in ci
-        'test/tester/state.spec.ts',
-        'test/tester/blockchain.spec.ts',
-        'test/tester/executionSpecBlockchain.test.ts',
-        'test/tester/executionSpecState.test.ts',
-        'test/tester/consumeBal.test.ts',
+        // Node-only consensus CLI runner (fixtures fetch, worker threads, node:url)
+        'test/consensus/**',
+        // node:util.parseArgs (CLI helpers are Node-only)
+        'test/tester/util/parseTestCli.spec.ts',
       ],
     },
     resolve: {

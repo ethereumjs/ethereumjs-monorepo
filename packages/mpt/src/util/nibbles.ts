@@ -1,9 +1,9 @@
 import type { Nibbles } from '../types.ts'
 
 /**
- * Converts a bytes to a nibble array.
- * @private
- * @param key
+ * Expand a byte array into one nibble per half-byte.
+ *
+ * @param key Raw key bytes
  */
 export function bytesToNibbles(key: Uint8Array): Nibbles {
   const nibbles = [] as Nibbles
@@ -19,9 +19,9 @@ export function bytesToNibbles(key: Uint8Array): Nibbles {
 }
 
 /**
- * Converts a nibble array into bytes.
- * @private
- * @param arr - Nibble array
+ * Pack an even-length nibble array into bytes (two nibbles per byte).
+ *
+ * @param arr Nibble array with even length
  */
 export function nibblesTypeToPackedBytes(arr: Nibbles): Uint8Array {
   const buf = new Uint8Array(arr.length / 2)
@@ -33,12 +33,9 @@ export function nibblesTypeToPackedBytes(arr: Nibbles): Uint8Array {
 }
 
 /**
- * Compare two nibble array.
- * * `0` is returned if `n2` === `n1`.
- * * `1` is returned if `n2` > `n1`.
- * * `-1` is returned if `n2` < `n1`.
- * @param n1 - Nibble array
- * @param n2 - Nibble array
+ * Lexicographic compare of two nibble arrays.
+ *
+ * @returns `-1`, `0`, or `1` when `n1` is less than, equal to, or greater than `n2`
  */
 export function nibblesCompare(n1: Nibbles, n2: Nibbles) {
   const cmpLength = Math.min(n1.length, n2.length)
@@ -66,10 +63,7 @@ export function nibblesCompare(n1: Nibbles, n2: Nibbles) {
 }
 
 /**
- * Returns the number of in order matching nibbles of two give nibble arrays.
- * @private
- * @param nib1
- * @param nib2
+ * Count matching prefix nibbles shared by two paths.
  */
 export function matchingNibbleLength(nib1: Nibbles, nib2: Nibbles): number {
   let i = 0

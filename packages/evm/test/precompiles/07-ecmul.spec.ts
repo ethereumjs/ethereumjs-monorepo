@@ -3,7 +3,7 @@ import { assert, describe, it } from 'vitest'
 
 import { createEVM, getActivePrecompiles } from '../../src/index.ts'
 
-describe('Precompiles: BN254MUL', () => {
+describe('[EVM/Precompile]: precompiles: BN254MUL', () => {
   it('BN254MUL', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Petersburg })
     const evm = await createEVM({

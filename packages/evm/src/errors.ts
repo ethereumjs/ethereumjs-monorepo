@@ -1,5 +1,7 @@
+/** EVM execution error message literals keyed by error name. */
 export type EVMErrorType = (typeof EVMErrorMessage)[keyof typeof EVMErrorMessage]
 
+/** Discriminator string stored on {@link EVMError} instances. */
 export const EVMErrorTypeString = 'EVMError'
 
 const EVMErrorMessage = {
@@ -22,7 +24,6 @@ const EVMErrorMessage = {
   INVALID_BYTECODE_RESULT: 'invalid bytecode deployed',
   INITCODE_SIZE_VIOLATION: 'initcode exceeds max initcode size',
   INVALID_INPUT_LENGTH: 'invalid input length',
-  INVALID_EOF_FORMAT: 'invalid EOF format',
   BLS_12_381_INVALID_INPUT_LENGTH: 'invalid input length',
   BLS_12_381_POINT_NOT_ON_CURVE: 'point not on curve',
   BLS_12_381_INPUT_EMPTY: 'input is empty',
@@ -33,6 +34,7 @@ const EVMErrorMessage = {
   INVALID_PROOF: 'kzg proof invalid',
 } as const
 
+/** Typed error thrown by the EVM on exceptional halt conditions. */
 export class EVMError {
   error: EVMErrorType
   errorType: string

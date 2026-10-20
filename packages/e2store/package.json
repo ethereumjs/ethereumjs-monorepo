@@ -29,7 +29,10 @@
         "typescript": "./src/index.ts",
         "default": "./dist/esm/index.js"
       },
-      "require": "./dist/cjs/index.js"
+      "require": {
+        "typescript": "./src/index.ts",
+        "default": "./dist/cjs/index.js"
+      }
     }
   },
   "files": ["dist", "src"],
@@ -40,7 +43,7 @@
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.mts",
     "coverage:istanbul": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.istanbul.mts",
-    "docs:build": "npx typedoc --options typedoc.mjs",
+    "docs:build": "../../config/cli/typedoc.sh --options typedoc.mjs",
     "examples": "tsx ../../scripts/examples-runner.ts -- e2store",
     "examples:build": "npx embedme README.md",
     "lint": "npm run biome && eslint  --config ./eslint.config.mjs .",
@@ -67,6 +70,6 @@
     "@types/snappyjs": "^0.7.1"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   }
 }

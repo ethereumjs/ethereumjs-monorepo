@@ -25,13 +25,13 @@ import { bytesToHex, hexToBytes } from '../../src/bytes.ts'
 import { KECCAK256_RLP_ARRAY_S, SYSTEM_ADDRESS } from '../../src/constants.ts'
 import type { PrefixedHexString } from '../../src/types.ts'
 
-describe('Basic initialization', () => {
-  it('should create an empty access list', () => {
+describe('[Util]: basic initialization', () => {
+  it('creates an empty access list', () => {
     const bal = createBlockLevelAccessList()
     assert.isNotNull(bal)
   })
 
-  it('should replace prior storage writes at the same blockAccessIndex', () => {
+  it('replaces prior storage writes at the same blockAccessIndex', () => {
     const bal = createBlockLevelAccessList()
     const address = '0x0000000000000000000000000000000000000001' as const
     bal.blockAccessIndex = 1
@@ -44,7 +44,7 @@ describe('Basic initialization', () => {
     assert.deepEqual(slotChanges[0][1], hexToBytes('0x02'))
   })
 
-  it('should create an access list from Accesses data', () => {
+  it('creates an access list from Accesses data', () => {
     const bal = new BlockLevelAccessList(balSimple)
     assert.isNotNull(bal)
     assert.deepEqual(bal.accesses, balSimple)
@@ -59,6 +59,17 @@ describe('Basic initialization', () => {
     assert.deepEqual(bal.accesses[addressWithBalanceChanges].balanceChanges.get(1), '0xf618')
 
     assert.deepEqual(bytesToHex(bal.hash()), balSimpleHash)
+  })
+
+  it('get() returns the per-account access entry', () => {
+    const bal = new BlockLevelAccessList(balSimple)
+    const address = '0x2adc25665018aa1fe0e6bc666dac8fc2697ff9ba'
+    const entry = bal.get(address)
+    assert.isDefined(entry)
+    assert.equal(entry!.balanceChanges.size, 2)
+    assert.deepEqual(entry!.balanceChanges.get(1), '0xf618')
+    assert.strictEqual(bal.get(address.toUpperCase() as PrefixedHexString), entry)
+    assert.isUndefined(bal.get('0x0000000000000000000000000000000000000000'))
   })
 
   it('hashes and RLP should match', () => {
@@ -79,15 +90,15 @@ describe('Basic initialization', () => {
   })
 })
 
-describe('JSON', () => {
-  it('should convert to JSON', () => {
+describe('[Util/BAL]: JSON', () => {
+  it('converts to JSON', () => {
     const bal = createBlockLevelAccessListFromJSON(
       balAllTransactionTypesJSON as BALJSONBlockAccessList,
     )
     assert.isNotNull(bal)
   })
 
-  it('should map JSON fields to internal types', () => {
+  it('maps JSON fields to internal types', () => {
     const bal = createBlockLevelAccessListFromJSON(
       balAllTransactionTypesJSON as BALJSONBlockAccessList,
     )
@@ -135,7 +146,7 @@ describe('JSON', () => {
     assert.deepEqual(bytesToHex(bal.hash()), balAllTransactionTypesHash)
   })
 
-  it('should canonically serialize quantity-like storage slots and values from JSON', () => {
+  it('serializes quantity-like storage slots and values from JSON canonically', () => {
     const bal = createBlockLevelAccessListFromJSON([
       {
         address: '0x0000000000000000000000000000000000000001',
@@ -183,7 +194,35 @@ describe('JSON', () => {
     assert.deepEqual(bytesToHex(bal.serialize()), bytesToHex(expected))
   })
 
-  it('should include an accessed system address with empty change lists when serializing', () => {
+  it('sorts mixed-length storage keys by numeric value in raw()', () => {
+    const address = '0x00000000000000000000000000000000000000aa' as const
+    const bal = createBlockLevelAccessList()
+    bal.blockAccessIndex = 0
+    bal.addAddress(address)
+    // Insert in reverse numeric order; raw() must emit 0x02 before 0x0100.
+    bal.addStorageWrite(address, hexToBytes('0x0100'), hexToBytes('0x99'), 0)
+    bal.addStorageWrite(address, hexToBytes('0x02'), hexToBytes('0x42'), 0)
+
+    const changeSlots = bal
+      .raw()[0][1]
+      .map(([slot]) => (typeof slot === 'string' ? slot : bytesToHex(slot)))
+    assert.deepEqual(changeSlots, ['0x02', '0x0100'])
+  })
+
+  it('sorts mixed-length storage read keys by numeric value in raw()', () => {
+    const address = '0x00000000000000000000000000000000000000bb' as const
+    const bal = createBlockLevelAccessList()
+    bal.addAddress(address)
+    bal.addStorageRead(address, hexToBytes('0x0100'))
+    bal.addStorageRead(address, hexToBytes('0x02'))
+
+    const readSlots = bal
+      .raw()[0][2]
+      .map((slot) => (typeof slot === 'string' ? slot : bytesToHex(slot)))
+    assert.deepEqual(readSlots, ['0x02', '0x0100'])
+  })
+
+  it('includes an accessed system address with empty change lists when serializing', () => {
     const bal = createBlockLevelAccessListFromJSON([
       {
         address: SYSTEM_ADDRESS,
@@ -208,7 +247,7 @@ describe('JSON', () => {
     ])
   })
 
-  it('should preserve a touched system address entry when serializing', () => {
+  it('preserves a touched system address entry when serializing', () => {
     const bal = createBlockLevelAccessListFromJSON([
       {
         address: SYSTEM_ADDRESS,
@@ -273,7 +312,7 @@ describe('JSON', () => {
   })
 })
 
-describe('RLP', () => {
+describe('[Util/BAL]: RLP', () => {
   it('serialize() should produce correct RLP output', () => {
     let bal = new BlockLevelAccessList(balSimple)
     assert.deepEqual(bytesToHex(bal.serialize()), balSimpleRLP)

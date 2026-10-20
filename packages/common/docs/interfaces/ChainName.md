@@ -6,8 +6,10 @@
 
 # Interface: ChainName
 
-Defined in: [common/src/types.ts:5](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L5)
+Defined in: [types.ts:6](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L6)
+
+Map of chain IDs to human-readable chain names.
 
 ## Indexable
 
-\[`chainId`: `string`\]: `string`
+> \[`chainId`: `string`\]: `string`

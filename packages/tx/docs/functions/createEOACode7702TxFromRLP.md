@@ -6,14 +6,14 @@
 
 # Function: createEOACode7702TxFromRLP()
 
-> **createEOACode7702TxFromRLP**(`serialized`, `opts`): [`EOACode7702Tx`](../classes/EOACode7702Tx.md)
+> **createEOACode7702TxFromRLP**(`serialized`, `opts?`): [`EOACode7702Tx`](../classes/EOACode7702Tx.md)
 
-Defined in: [7702/constructors.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/7702/constructors.ts#L90)
+Defined in: [7702/constructors.ts:98](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/7702/constructors.ts#L98)
 
-Instantiate a transaction from a RLP serialized tx.
+Instantiate an EIP-7702 transaction from RLP-serialized bytes.
 
 Format: `0x04 || rlp([chainId, nonce, maxPriorityFeePerGas, maxFeePerGas, gasLimit, to, value, data,
-accessList, signatureYParity, signatureR, signatureS])`
+accessList, authorityList, signatureYParity, signatureR, signatureS])`
 
 ## Parameters
 
@@ -21,10 +21,22 @@ accessList, signatureYParity, signatureR, signatureS])`
 
 `Uint8Array`
 
-### opts
+### opts?
 
 [`TxOptions`](../interfaces/TxOptions.md) = `{}`
 
 ## Returns
 
 [`EOACode7702Tx`](../classes/EOACode7702Tx.md)
+
+## Throws
+
+If the leading type byte is not `0x04`
+
+## Throws
+
+If RLP decode result is not an array
+
+## Throws
+
+If decoded values fail [createEOACode7702TxFromBytesArray](createEOACode7702TxFromBytesArray.md) checks

@@ -6,7 +6,9 @@
 
 # Interface: ChainConfig
 
-Defined in: [common/src/types.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L33)
+Defined in: [types.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L40)
+
+Full chain specification consumed by [Common](../classes/Common.md).
 
 ## Properties
 
@@ -14,7 +16,7 @@ Defined in: [common/src/types.ts:33](https://github.com/ethereumjs/ethereumjs-mo
 
 > **bootstrapNodes**: [`BootstrapNodeConfig`](BootstrapNodeConfig.md)[]
 
-Defined in: [common/src/types.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L42)
+Defined in: [types.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L49)
 
 ***
 
@@ -22,15 +24,15 @@ Defined in: [common/src/types.ts:42](https://github.com/ethereumjs/ethereumjs-mo
 
 > **chainId**: `string` \| `number`
 
-Defined in: [common/src/types.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L35)
+Defined in: [types.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L42)
 
 ***
 
 ### comment?
 
-> `optional` **comment**: `string`
+> `optional` **comment?**: `string`
 
-Defined in: [common/src/types.ts:37](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L37)
+Defined in: [types.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L44)
 
 ***
 
@@ -38,39 +40,39 @@ Defined in: [common/src/types.ts:37](https://github.com/ethereumjs/ethereumjs-mo
 
 > **consensus**: `ConsensusConfig`
 
-Defined in: [common/src/types.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L44)
+Defined in: [types.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L51)
 
 ***
 
 ### customHardforks?
 
-> `optional` **customHardforks**: [`HardforksDict`](../type-aliases/HardforksDict.md)
+> `optional` **customHardforks?**: [`HardforksDict`](../type-aliases/HardforksDict.md)
 
-Defined in: [common/src/types.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L41)
+Defined in: [types.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L48)
 
 ***
 
 ### defaultHardfork?
 
-> `optional` **defaultHardfork**: `string`
+> `optional` **defaultHardfork?**: `string`
 
-Defined in: [common/src/types.ts:36](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L36)
+Defined in: [types.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L43)
 
 ***
 
 ### depositContractAddress?
 
-> `optional` **depositContractAddress**: `` `0x${string}` ``
+> `optional` **depositContractAddress?**: `` `0x${string}` ``
 
-Defined in: [common/src/types.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L45)
+Defined in: [types.ts:52](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L52)
 
 ***
 
 ### dnsNetworks?
 
-> `optional` **dnsNetworks**: `string`[]
+> `optional` **dnsNetworks?**: `string`[]
 
-Defined in: [common/src/types.ts:43](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L43)
+Defined in: [types.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L50)
 
 ***
 
@@ -78,7 +80,7 @@ Defined in: [common/src/types.ts:43](https://github.com/ethereumjs/ethereumjs-mo
 
 > **genesis**: [`GenesisBlockConfig`](GenesisBlockConfig.md)
 
-Defined in: [common/src/types.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L39)
+Defined in: [types.ts:46](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L46)
 
 ***
 
@@ -86,7 +88,7 @@ Defined in: [common/src/types.ts:39](https://github.com/ethereumjs/ethereumjs-mo
 
 > **hardforks**: [`HardforkTransitionConfig`](HardforkTransitionConfig.md)[]
 
-Defined in: [common/src/types.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L40)
+Defined in: [types.ts:47](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L47)
 
 ***
 
@@ -94,12 +96,12 @@ Defined in: [common/src/types.ts:40](https://github.com/ethereumjs/ethereumjs-mo
 
 > **name**: `string`
 
-Defined in: [common/src/types.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L34)
+Defined in: [types.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L41)
 
 ***
 
 ### url?
 
-> `optional` **url**: `string`
+> `optional` **url?**: `string`
 
-Defined in: [common/src/types.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L38)
+Defined in: [types.ts:45](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L45)

@@ -34,6 +34,7 @@ const hasTerminator = (nibbles: Uint8Array) => {
   return nibbles.length > 0 && nibbles[nibbles.length - 1] === 16
 }
 
+/** Pack an even-length nibble byte sequence into bytes. */
 export const nibblesToBytes = (nibbles: Uint8Array) => {
   const bytes = new Uint8Array(nibbles.length / 2)
   for (let bi = 0, ni = 0; ni < nibbles.length; bi += 1, ni += 2) {
@@ -43,6 +44,7 @@ export const nibblesToBytes = (nibbles: Uint8Array) => {
   return bytes
 }
 
+/** Convert a hex (nibble) key to keybytes, stripping an optional terminator nibble. */
 export const hexToKeybytes = (hex: Uint8Array) => {
   if (hasTerminator(hex)) {
     hex = hex.subarray(0, hex.length - 1)
@@ -54,7 +56,7 @@ export const hexToKeybytes = (hex: Uint8Array) => {
   return nibblesToBytes(hex)
 }
 
-// hex to compact
+/** Encode hex nibbles into compact (hex-prefix) bytes for trie storage. */
 export const nibblesToCompactBytes = (nibbles: Uint8Array) => {
   let terminator = 0
   if (hasTerminator(nibbles)) {
@@ -77,6 +79,7 @@ export const nibblesToCompactBytes = (nibbles: Uint8Array) => {
   return concatBytes(buf.subarray(0, 1), nibblesToBytes(nibbles))
 }
 
+/** Expand bytes to hex nibbles, appending a terminator marker nibble. */
 export const bytesToNibbles = (str: Uint8Array) => {
   const l = str.length * 2 + 1
   const nibbles = new Uint8Array(l)
@@ -91,6 +94,7 @@ export const bytesToNibbles = (str: Uint8Array) => {
   return nibbles
 }
 
+/** Decode compact bytes back to a nibble path. */
 export const compactBytesToNibbles = (compact: Uint8Array) => {
   if (compact.length === 0) {
     return compact
@@ -107,10 +111,9 @@ export const compactBytesToNibbles = (compact: Uint8Array) => {
 }
 
 /**
- * Converts each nibble into a single byte
+ * Convert each nibble to a single byte (lower four bits only).
  *
- * @param arr Nibble typed nibble array
- * @returns Uint8Array typed byte array
+ * @param arr Nibble array
  */
 export const nibbleTypeToByteType = (arr: Nibbles): Uint8Array => {
   const l = arr.length
@@ -123,10 +126,9 @@ export const nibbleTypeToByteType = (arr: Nibbles): Uint8Array => {
 }
 
 /**
- * Turns each byte into a single nibble, only extracting the lower nibble of each byte
+ * Extract the lower nibble of each byte as a nibble path.
  *
- * @param key Uint8Array typed byte array
- * @returns Nibble typed nibble array
+ * @param key Byte array
  */
 export const byteTypeToNibbleType = (key: Uint8Array): Nibbles => {
   const nibbles = [] as Nibbles
@@ -140,12 +142,11 @@ export const byteTypeToNibbleType = (key: Uint8Array): Nibbles => {
 }
 
 /**
- * Takes a string path and extends it by the given extension nibbles
+ * Extend a hex path string with extension nibbles and encode as keybytes or hex bytes.
  *
- * @param path String node path
- * @param extension nibbles to extend by
- * @param retType string indicating whether to return the key in "keybyte" or "hex" encoding
- * @returns hex-encoded key
+ * @param path Hex path without `0x` prefix
+ * @param extension Nibbles appended to the path
+ * @param retType `"hex"` or `"keybyte"` output encoding
  */
 export const pathToHexKey = (path: string, extension: Nibbles, retType: string): Uint8Array => {
   const b = hexToBytes(`0x${path}`)
@@ -158,6 +159,7 @@ export const pathToHexKey = (path: string, extension: Nibbles, retType: string):
   throw Error('retType must be either "keybyte" or "hex"')
 }
 
+/** Group and compact-encode account/storage path strings for verkle-style lookups. */
 export const mergeAndFormatKeyPaths = (pathStrings: string[]) => {
   const ret: string[][] = []
   let paths: string[] = []

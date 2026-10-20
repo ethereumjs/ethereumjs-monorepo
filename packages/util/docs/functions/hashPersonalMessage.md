@@ -8,7 +8,7 @@
 
 > **hashPersonalMessage**(`message`): `Uint8Array`
 
-Defined in: [packages/util/src/signature.ts:198](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L198)
+Defined in: [packages/util/src/signature.ts:199](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/signature.ts#L199)
 
 Returns the keccak-256 hash of `message`, prefixed with the header used by the `eth_sign` RPC call.
 The output of this function can be fed into `ecsign` to produce the same signature as the `eth_sign`

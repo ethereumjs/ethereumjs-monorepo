@@ -8,7 +8,7 @@
 
 > **createBlockLevelAccessList**(): [`BlockLevelAccessList`](../classes/BlockLevelAccessList.md)
 
-Defined in: [packages/util/src/bal/index.ts:603](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L603)
+Defined in: [packages/util/src/bal/index.ts:613](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L613)
 
 Creates an empty [BlockLevelAccessList](../classes/BlockLevelAccessList.md).
 

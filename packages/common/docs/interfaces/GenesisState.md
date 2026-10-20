@@ -6,7 +6,7 @@
 
 # Interface: GenesisState
 
-Defined in: [common/src/gethGenesis.ts:142](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L142)
+Defined in: [gethGenesis.ts:144](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L144)
 
 If you are using a custom chain [Common](../classes/Common.md), pass the genesis state.
 
@@ -33,4 +33,4 @@ A complex genesis state with Contract and EoA states would have the following fo
 
 ## Indexable
 
-\[`key`: `` `0x${string}` ``\]: `` `0x${string}` `` \| [`AccountState`](../type-aliases/AccountState.md)
+> \[`key`: `` `0x${string}` ``\]: `` `0x${string}` `` \| [`AccountState`](../type-aliases/AccountState.md)

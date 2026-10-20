@@ -8,4 +8,6 @@
 
 > **Hardfork** = *typeof* [`Hardfork`](../variables/Hardfork.md)\[keyof *typeof* [`Hardfork`](../variables/Hardfork.md)\]
 
-Defined in: [common/src/enums.ts:59](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L59)
+Defined in: [enums.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/enums.ts#L67)
+
+Named Ethereum hardfork enum.

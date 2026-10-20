@@ -6,7 +6,7 @@
 
 # Interface: PostByzantiumTxReceipt
 
-Defined in: [vm/src/types.ts:56](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L56)
+Defined in: [vm/src/types.ts:57](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L57)
 
 Receipt type for Byzantium and beyond replacing the intermediary
 state root field with a status code field (EIP-658)
@@ -25,7 +25,7 @@ state root field with a status code field (EIP-658)
 
 > **bitvector**: `Uint8Array`
 
-Defined in: [vm/src/types.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L34)
+Defined in: [vm/src/types.ts:35](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L35)
 
 Bloom bitvector
 
@@ -39,7 +39,7 @@ Bloom bitvector
 
 > **cumulativeBlockGasUsed**: `bigint`
 
-Defined in: [vm/src/types.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L30)
+Defined in: [vm/src/types.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L31)
 
 Cumulative gas used in the block including this tx
 
@@ -53,7 +53,7 @@ Cumulative gas used in the block including this tx
 
 > **logs**: `Log`[]
 
-Defined in: [vm/src/types.ts:38](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L38)
+Defined in: [vm/src/types.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L39)
 
 Logs emitted
 
@@ -67,6 +67,6 @@ Logs emitted
 
 > **status**: `0` \| `1`
 
-Defined in: [vm/src/types.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L60)
+Defined in: [vm/src/types.ts:61](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/src/types.ts#L61)
 
 Status of transaction, `1` if successful, `0` if an exception occurred

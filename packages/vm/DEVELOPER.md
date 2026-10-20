@@ -1,383 +1,185 @@
 # Developer Documentation
 
+The VM package is the gravitational center of the monorepo: running blocks and transactions here exercises `@ethereumjs/evm`, `@ethereumjs/block`, `@ethereumjs/tx`, `@ethereumjs/common`, `@ethereumjs/statemanager`, and related packages together. Consensus tests against official Ethereum fixtures are therefore both VM tests and a practical end-to-end check of those libraries.
+
+This document covers how we run those tests, how we update the fixture snapshot, and how to debug and profile the VM. Library usage belongs in the [package README](./README.md). Monorepo tooling belongs in the [root developer docs](../../DEVELOPER.md).
+
 ## Table of Contents
 
-- [TESTING](#testing)
-  - [Introduction](#introduction)
-  - [General Test Execution](#general-test-execution)
-  - [Running Specific Tests on PRs](#running-specific-tests-on-prs)
-- [COVERAGE](#coverage)
-  - [Spec Tests Coverage](#spec-tests-coverage)
-  - [Coverage Reporting](#coverage-reporting)
-- [TEST GENERATION](#test-generation)
-  - [`execution-spec-tests` Integration (T8NTool)](#execution-spec-tests-integration-t8ntool)
-- [DEBUGGING](#debugging)
-  - [Local Debugging](#local-debugging)
-  - [Comparing Stack Traces](#comparing-stack-traces)
-  - [Debugging Tools](#debugging-tools)
-- [PERFORMANCE](#performance)
-  - [Build-in Profiling](#build-in-profiling)
-  - [Using External Tools](#using-external-tools)
-  - [Git Branch Performance Testing](#git-branch-performance-testing)
-  - [Benchmarks](#benchmarks)
+- [Overview](#overview)
+- [Consensus runner (EST + legacy blockchain)](#consensus-runner-est--legacy-blockchain)
+- [Updating fixtures (manifest bump)](#updating-fixtures-manifest-bump)
+- [Package Tests](#package-tests)
+- [Debugging](#debugging)
+- [Performance](#performance)
+- [Specialist Tools](#specialist-tools)
 
-## TESTING
+## Overview
 
-### Introduction
+### Test suites
 
-Tests can be found in the `tests` directory.
+| Suite | Source | Runner | Typical use |
+| --- | --- | --- | --- |
+| Execution-spec tests (EST) | Pinned [execution-specs](https://github.com/ethereum/execution-specs) release tarballs | [`test/consensus/`](./test/consensus/) CLI | Default PR / nightly consensus (state + blockchain) |
+| Legacy blockchain | [ethereum/tests](https://github.com/ethereum/tests) `BlockchainTests` | Same CLI (`--source legacy`) | Frozen `bc*` suites not ported to EST |
+| Package tests | `test/api/` | `npm run test:API` | Unit / API tests for VM itself |
 
-We have new test runners for [State tests](./test/tester/executionSpecState.test.ts) and [Blockchain tests](./test/tester/executionSpecBlockchain.test.ts).
-The old test runners for [State tests](./test/tester/runners/GeneralStateTestsRunner.ts) and [Blockchain tests](./test/tester/runners/BlockchainTestsRunner.ts) are deprecated and will be removed in the future, but can still be used for now and also still supports some functionality that is not yet available in the new runners.
+GeneralStateTests from `ethereum/tests` are retired upstream; ported cases live under EST `tests/ported_static/`. The `packages/ethereum-tests` submodule stays for legacy blockchain tests and for `tx` / `block` / `evm` packages.
 
-IF YOU DISCOVER FUNCTIONALITY HERE WHICH IS STILL MISSING IN THE NEW RUNNER, PLEASE OPEN A PR AGAINST THE NEW RUNNER FILE(S).
+### What “green” means
 
-Currently there is a hybrid situation where tests from old forks are still run against the now-deprecated [Ethereum tests](https://github.com/ethereum/tests) repository, while we started to run news tests (Osaka+) against the new [execution-spec-tests](https://github.com/ethereum/execution-spec-tests) repository (which now again transitioned to [execution-specs](https://github.com/ethereum/execution-specs)).
+On an ordinary PR, the VM is green when `npm run test:API` (and the coverage job in CI) passes. Recent execution-spec forks are opt-in.
 
-There are currently two submodules integrated along:
+- **`test: consensus`:** one CI job per recent fork, `vm-consensus-est-recent (Prague|Osaka|Amsterdam)`. Each runs `test:consensus -- --source tests --fork <name>`, four workers (`nproc`), per-fork fixture cache. Without the label those jobs are skipped and the PR stays mergeable. The pull request then runs `npm run test:consensus:smoke` instead.
+- **`master` pushes** still run the recent forks.
 
-- [packages/ethereum-tests](./../ethereum-tests/) pointing towards a specific commit or tag from the `ethereum/tests` `develop` branch.
-- [packages/execution-spec-tests](./../execution-spec-tests/) pointing to an own custom fixture "fork" for `execution-spec-tests` fixtures
-located called [execution-spec-tests-fixtures](https://github.com/ethereumjs/execution-spec-tests-fixtures) (maintained by the EthereumJS team)
+With the `test: all hardforks` label, CI runs one job per EST fork (`ALL_EST_FORKS`) plus legacy blockchain, and does not also run the recent jobs. With **`test: bogota`**, CI runs `vm-consensus-bogota` (one job per `Bogota` and `AmsterdamToBogotaAtTime15k`, manifest in `fixtures.bogota.json`). Nightly runs one job per EST fork and `--run-skipped slow`.
 
-All this will evolve during the next few months, but for now we need to support both.
+Do not add skip entries just to go green on consensus (S1).
 
-### General Test Execution
+### Local development tiers (no tarball every time)
 
-#### State Tests
+Fixtures are **not** in git. You download each pinned release **once per machine** (or per `EST_FIXTURES_CACHE`), then reuse the cache. The runner does **not** download by default — run `fixtures:fetch` explicitly, or pass `--auto-fetch` on a one-off command.
 
-State tests run on Vitest via an npm script. Recommended commands:
+| Tier | When | Command |
+| --- | --- | --- |
+| **1 — Fast** | VM / library edits, agents, prepublish | `npm run test:API`, `npm run test:consensus:smoke` |
+| **2 — Runner slice** | Consensus runner / selection, no network | `npm run test:consensus:sample` (checked-in tree, `--list`) |
+| **3 — Targeted EST** | One fork or file after cache exists | `npm run test:consensus -- --fork Osaka --format state --file foo.json --jobs 1` |
+| **4 — Full EST** | Pre-push, fixture bumps | `npm run fixtures:fetch -- tests` (tarball + Prague/Osaka/Amsterdam extracts) then `npm run test:consensus:pr` |
 
-```bash
-# Run with default fork (Prague)
-npm run test:state
+**Cache layout:** `EST_FIXTURES_CACHE` defaults to `~/.cache/ethereumjs/est-fixtures/<source>/<tag>/`. Per-fork trees live under `forks/<ForkName>/` (state + blockchain + filtered index). CI restores `est-extract-tests-<fixtures-hash>-<Fork>` per job. Master warm fills recent forks via [`vm-consensus-cache-warm.yml`](../../.github/workflows/vm-consensus-cache-warm.yml).
 
-# Run with specific fork
-npm run test:state -- --fork=Constantinople
+**Local fills:** after EELS `fill`, pass `--fixture-root /path/to/fixtures` (no release tarball).
 
-# Run a specific test
-npm run test:state -- --test=stackOverflow
-```
+**Legacy Prague `bc*` only:** `npm run test:consensus:legacy` uses `packages/ethereum-tests` — no EST download.
 
-You can also invoke Vitest directly:
-```bash
-// Old runner
-VITE_FORK=Prague npx vitest test/tester/state.spec.ts
+**Hegota dev (`bogota-devnet`):** pinned in [`fixtures.bogota.json`](./test/consensus/fixtures.bogota.json) (separate from `fixtures.json` so tag bumps do not invalidate stable CI caches). Fetch per fork: `npm run fixtures:fetch -- bogota-devnet --fork Bogota`.
 
-// New runner
-npx vitest test/tester/executionSpecState.test.ts
-```
+## Consensus runner (EST + legacy blockchain)
 
-This version (old runner) uses environment variables like `VITE_FORK`, `VITE_TEST`, `VITE_DIR`, etc.
+Standalone harness under [`test/consensus/`](./test/consensus/) — not Vitest. Worker threads, index-driven selection, shared skip list, per-directory report + JSON output.
 
-Additional test scripts:
+**Manifests:** [`fixtures.json`](./test/consensus/fixtures.json) (`tests` + `legacy`), [`fixtures.bogota.json`](./test/consensus/fixtures.bogota.json) (`bogota-devnet` only). **Cache:** `EST_FIXTURES_CACHE` (default `~/.cache/ethereumjs/est-fixtures/`).
 
 ```bash
-npm run test:state:newForks
-npm run test:state:oldForks
-npm run test:state:transitionForks
-npm run test:state:allForks
-npm run test:state:slow
+cd packages/vm
+npm run fixtures:fetch                  # idempotent download + extract
+npm run test:consensus -- --list        # counts per fork/format
+npm run test:consensus:pr               # EST, recent forks (CI with test: consensus)
+npm run test:consensus:all              # EST, all forks (nightly / label)
+npm run test:consensus:legacy           # Prague blockchain from ethereum/tests
+npm run test:consensus:dev              # bogota-devnet (Hegota dev set)
+npm run test:consensus:smoke            # Vitest: cli/forks/skips + sample loader
+npm run test:consensus:sample           # runner + checked-in fixtures (--list, no download)
 ```
 
-#### Blockchain Tests
-
-Blockchain tests run on Vitest (using a wrapper if you want to use CLI arguments):
+**One-time fetch (main EST suite, ~1 GB tarball, selective extract):**
 
 ```bash
-# Direct command
-// Old runner
-VITE_FORK=Prague npx vitest test/tester/blockchain.spec.ts
-
-// New runner
-npx vitest test/tester/executionSpecBlockchain.test.ts
-
-# Via npm script
-npm run test:blockchain
+npm run fixtures:fetch -- tests                    # warm recent fork extracts
+npm run fixtures:fetch -- tests --fork Amsterdam   # one fork (matches a CI job)
+npm run fixtures:fetch -- bogota-devnet --fork Bogota
 ```
 
-#### Running with compiled code
-
-Tests run against source by default. To run with compiled output:
+**Examples:**
 
 ```bash
-# State tests
-npm run build:dist && npm run test:state -- --dist
-
-# Blockchain tests
-npm run build:dist && npm run test:blockchain -- --dist
+npm run test:consensus -- --fork Osaka --format state --test sstore_combinations
+npm run test:consensus -- --source legacy --format blockchain --legacy-fork Cancun
+npm run test:consensus -- --rerun-failed /tmp/consensus-report.json --jobs 1 --debug
+npm run test:consensus:phase0           # local size/count/timing helpers (see PHASE0.md)
 ```
 
-By default state tests use the latest hardfork (for the old runner: `DEFAULT_FORK_CONFIG` in `test/tester/config.ts`, currently `Prague`).
+**CI failure → local rerun (agents and humans):**
 
-#### Running with specific forks and EIPs
+1. A red check names the fork (e.g. `vm-consensus-est-recent (Amsterdam)`). Artifacts: `consensus-est-failures-<Fork>` or `consensus-bogota-failures-<Fork>`.
+2. From `packages/vm` (needs `gh` auth + `fixtures:fetch -- tests --fork <Fork>` for that job):
 
-NOT FULLY IMPLEMENTED IN NEW RUNNER YET.
+   ```bash
+   npm run consensus:fetch-ci-failures
+   npm run test:consensus -- --source tests --fork Amsterdam --rerun-failed .ci/consensus-failures.json --jobs 4 --skip-fetch
+   ```
 
-The `--fork` parameter can also be used to activate EIPs. This is done by first entering the hardfork, and then add the EIPs separated with the `+` sign. For instance:
+   Optional: `--run-id <Build workflow run id>` or `--branch <name>`. `--rerun-failed` ignores `--shard`.
 
-`npm run test:state -- --fork='London+3855'`
+**Flags (summary):** `--source`, `--format`, `--fork` / `--forks recent|all`, `--dir`, `--file`, `--test`, `--jobs`, `--shard i/n` (local only; not used in CI), `--list`, `--bail`, `--skip` / `--run-skipped`, `--report`, `--rerun-failed`, `--fixture-root`, `--skip-fetch`, `--auto-fetch`, `--jsontrace`, `--debug`, `--profile`. Fetch CLI: `--fork`, `--full-extract`, `--tarball-only`.
 
-To activate multiple EIPs:
+Shared steps live in [`.github/actions/consensus-fork`](../../.github/actions/consensus-fork/action.yml). Job matrices stay in [`.github/workflows/vm-pr.yml`](../../.github/workflows/vm-pr.yml), [`vm-nightly-test.yml`](../../.github/workflows/vm-nightly-test.yml), and [`vm-consensus-cache-warm.yml`](../../.github/workflows/vm-consensus-cache-warm.yml).
 
-`npm run test:blockchain -- --fork='London+3855+3860'`
+First-round reporting template: [`test/consensus/FIRST_ROUND.md`](./test/consensus/FIRST_ROUND.md).
 
-Note: most combinations will run 0 tests due to missing testdata.
+## Updating fixtures (manifest bump)
 
-#### Test Scope on PRs
+We no longer submodule [execution-spec-tests-fixtures](https://github.com/ethereumjs/execution-spec-tests-fixtures). Bumps are a **manifest diff** (`fixtures.json` for `tests` + `legacy`, `fixtures.bogota.json` for `bogota-devnet`) plus a first-round consensus report.
 
-On an ordinary PR, `vm-state-extended` and `vm-blockchain-extended` will be skipped
-unless the special label `type: test all hardforks` is applied.
-If the label is removed, the extended tests will not run anymore.
+1. Choose the upstream tag on [execution-specs releases](https://github.com/ethereum/execution-specs/releases) (e.g. `tests@v21.0.1`, `tests-bogota-devnet@v1.1.0`).
+2. Refresh the manifest entry:
 
-### Running Specific Tests on PRs
+   ```bash
+   cd packages/vm
+   npm run fixtures:fetch -- --update tests tests@vX.Y.Z
+   npm run fixtures:fetch -- --update bogota-devnet tests-bogota-devnet@vX.Y.Z   # when Hegota pin moves
+   ```
 
-#### State Tests
+3. Run `npm run fixtures:fetch -- tests` (warms recent fork extracts), then `npm run test:consensus -- --list --source tests --forks all`.
+4. First-round run on affected forks; record pass/fail in `FIRST_ROUND.md`.
+5. Commit the manifest file(s) only for a wiring PR; implementation PRs follow the usual spec-delta workflow.
 
-Running a specific state test case:
+Skill playbook: [`.cursor/skills/update-est-fixtures/SKILL.md`](../../.cursor/skills/update-est-fixtures/SKILL.md).
+
+## Package Tests
 
 ```bash
-# Using npm script
-npm run test:state -- --test='stackOverflow'
-
-# Direct command
-// Old runner
-VITE_TEST='stackOverflow' npx vitest test/tester/state.spec.ts
-
-// New runner
-NOT IMPLEMENTED YET.
+npm run test:API
+npm run test:browser
+npm run coverage          # Vitest coverage used by the CI vm-api job
 ```
 
-Running all tests in a file:
+## Debugging
+
+### Isolate one fixture
 
 ```bash
-npm run test:state -- --file='create2collisionCode2'
+npm run test:consensus -- --fork Osaka --format state --file test_p256verify.json --jobs 1
+npm run test:consensus -- --source legacy --format blockchain --test ZeroValue_SELFDESTRUCT --debug
 ```
 
-Running tests from a specific directory:
+`--debug` on legacy blockchain verifies post-state. `--jsontrace` prints opcode traces where supported.
+
+### Compare with geth
 
 ```bash
-npm run test:state -- --dir='stCreate2'
+evm --json --nomemory statetest path/to/state_test.json
 ```
 
-Only run test cases with selected `data`, `gas` and/or `value` values (see
-[attribute description](http://ethereum-tests.readthedocs.io/en/latest/test_types/state_tests.html) in
-test docs), provided by the index of the array element in the test `transaction` section:
+Fixtures live under the EST cache tree or `packages/ethereum-tests`.
+
+## Performance
+
+VM stack cases live in `packages/vm/benchmarks/*.bench.ts`:
 
 ```bash
-npm run test:state -- --test='CreateCollisionToEmpty' --data=0 --gas=1 --value=0
+npm run bench
 ```
 
-Recursively run all tests from a custom directory:
+The consensus runner defaults to `os.cpus().length` workers; cap with `--jobs`. Phase 0 timing notes: [`test/consensus/PHASE0.md`](./test/consensus/PHASE0.md).
+
+## Specialist Tools
+
+### T8N (transition tool)
+
+See [`test/t8n/README.md`](./test/t8n/README.md). Fill targets [execution-specs](https://github.com/ethereum/execution-specs).
+
+### Filling fixtures with EELS
 
 ```bash
-npm run test:state -- --fork='London' --customTestsPath=../../my_custom_test_folder
+uv run fill -v tests/prague/eip2537_bls_12_381_precompiles/test_bls12_g1msm.py \
+  --fork Osaka --clean -m state_test
 ```
 
-Run a test from a specified source file not under the `tests` directory:
+Point the consensus runner at the generated tree with `--fixture-root /path/to/fixtures`.
 
-```bash
-npm run test:state -- --customStateTest='{path_to_file}'
-```
+### retesteth
 
-#### Blockchain Tests
-
-Running all the blockchain tests in a file:
-
-```bash
-npm run test:blockchain -- --file='randomStatetest303'
-# Or
-// Old runner
-VITE_FILE='randomStatetest303' npx vitest test/tester/blockchain.spec.ts
-```
-
-Running tests from a specific directory:
-
-```bash
-npm run test:blockchain -- --dir='bcBlockGasLimitTest'
-# Or
-// Old runner
-VITE_DIR='bcBlockGasLimitTest' npx vitest test/tester/blockchain.spec.ts
-```
-
-#### Skipping Tests
-
-There are three types of skip lists (`BROKEN`, `PERMANENT` and `SLOW`) which
-can be found in `test/tester/config.ts`. By default tests from all skip lists are omitted.
-
-You can change this behaviour with:
-
-`npm run test:state -- --skip=BROKEN,PERMANENT`
-
-to skip only the `BROKEN` and `PERMANENT` tests and include the `SLOW` tests.
-There are also the keywords `NONE` or `ALL` for convenience.
-
-It is also possible to only run the tests from the skip lists:
-
-`npm run test:state -- --runSkipped=SLOW`
-
-## COVERAGE
-
-### Spec Tests Coverage
-
-The following command shows an example of how to get coverage for a set of the official spec test files:
-
-```bash
-DEBUG=ethjs,dummy:* VITE_CUSTOM_TESTS_PATH=../execution-spec-tests/fusaka-devnet-5/state_tests/osaka/eip7951_p256verify_precompiles  VITE_FORK=Osaka npx vitest watch --coverage --coverage.reporter=html --ui --coverage.allowExternal --coverage.include=evm/src/precompiles/0c-bls12-g1msm.ts [--coverage.include=evm/src/precompiles/index.ts] test/tester/state.spec.ts
-```
-
-This can be useful to identify gaps in the coverage of the official spec tests and see where additional tests are needed.
-
-The specific command stays in "watch" mode and opens a specific UI to see coverage also for EVM files (this needs the `coverage.allowExternal` flag to be set). The `DEBUG` part can be helpful to not have coverage being distorted by non-debug calls artificially lowering the coverage.
-
-### Coverage Reporting
-
-Vitest has built-in reporters. Use Vitest's `--reporter` option for both suites:
-
-```bash
-# JSON reporter
-npx vitest test/tester/state.spec.ts --reporter=json
-npx vitest test/tester/blockchain.spec.ts --reporter=json
-
-# Verbose reporter
-npx vitest test/tester/state.spec.ts --reporter=verbose
-npx vitest test/tester/blockchain.spec.ts --reporter=verbose
-
-# See all options
-npx vitest --help
-```
-
-If no reporter or formatter is provided, results are reported by Vitest's default reporter.
-
-## TEST GENERATION
-
-Ethereum's official test suite can be found in the [execution-specs](https://github.com/ethereum/execution-specs) repository.
-
-### Test Generation with EELS
-
-To use the built-in (so: on the test repo side) EELS EVM implementation, follow the installation instructions in the [execution-specs](https://github.com/ethereum/execution-specs) repository and e.g. fill tests with:
-
-```bash
-uv run fill -v tests/prague/eip2537_bls_12_381_precompiles/test_bls12_g1msm.py --fork Osaka --clean -m state_test
-```
-
-This will generate fixtures in the following directory:
-
-```text
-fixtures/state_tests/prague/eip2537_bls_12_381_precompiles/bls12_g1msm/
-```
-
-These tests can then be integrated e.g. to analyze test coverage by using the following (or similar) test path (from within the VM package):
-
-```bash
-VITE_CUSTOM_TESTS_PATH=../../../execution-specs/fixtures/state_tests/prague/eip2537_bls_12_381_precompiles/bls12_g1msm/
-```
-
-### Test Generation with EthereumJS/T8NTool
-
-The VM has t8ntool (transition-tool) support, see: <https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/vm/test/t8n/README.md>. This tool can be used to create fixtures from the `execution-spec-tests` repo. These fixtures can be consumed by other clients in their test runner (similar to running `npm run test:blockchain` or `npm run test:state` in the VM package). The t8ntool readme also links to a guide on how to write tests to contribute to `execution-spec-tests`.
-
-## DEBUGGING
-
-### Local Debugging
-
-For state tests you can use the `--jsontrace` flag to output opcode trace information.
-
-Blockchain tests support `--debug` to verify the postState:
-
-`npm run test:blockchain -- --debug --test='ZeroValue_SELFDESTRUCT_ToOneStorageKey_OOGRevert_d0g0v0_EIP158'`
-
-All/most State tests are replicated as Blockchain tests in a `GeneralStateTests` [sub directory](https://github.com/ethereum/tests/tree/develop/docs/test_types/TestStructures/GeneralStateTests) in the Ethereum tests repo, so for debugging single test cases the Blockchain test version of the State test can be used.
-
-### Comparing Stack Traces
-
-Other client implementations often also provide functionality for output trace information.
-
-A convenient way is to use a local `geth` installation (can be the binary installation and doesn't has to be build from source or something) and then use the included `evm` tool like:
-
-```shell
-evm --json --nomemory statetest node_modules/ethereumjs-testing/tests/GeneralStateTests/stCreate2/create2collisionCode2.json
-```
-
-If you want to have only the output for a specific fork you can go into the referenced json test file and temporarily delete the `post` section for the non-desired fork outputs (or, more safe and also more convenient on triggering later: copy the test files you are interested in to your working directory and then modify without further worrying).
-
-### Debugging Tools
-
-For comparing `EVM` traces [here](https://gist.github.com/cdetrio/41172f374ae32047a6c9e97fa9d09ad0) are some instructions for setting up `pyethereum` to generate corresponding traces for state tests.
-
-Compare TAP output from blockchain/state tests and produces concise diff of the differences between them (example):
-
-```
-curl https://gist.githubusercontent.com/jwasinger/6cef66711b5e0787667ceb3db6bea0dc/raw/0740f03b4ce90d0955d5aba1e0c30ce698c7145a/gistfile1.txt > output-wip-byzantium.txt
-curl https://gist.githubusercontent.com/jwasinger/e7004e82426ff0a7137a88d273f11819/raw/66fbd58722747ebe4f7006cee59bbe22461df8eb/gistfile1.txt > output-master.txt
-python utils/diffTestOutput.py output-wip-byzantium.txt output-master.txt
-```
-
-An extremely rich and powerful toolbox is the [evmlab](https://github.com/holiman/evmlab) from `holiman`, both for debugging and creating new test cases or example data.
-
-## PERFORMANCE
-
-### Build-in Profiling
-
-Test runs can be profiled using the new EVM/VM profiling functionality by using the `--profile` option for test runs:
-
-`npm run test:state -- --test='CreateCollisionToEmpty' --data=0 --gas=1 --value=0 --profile`
-
-### Using External Tools
-
-[Clinic](https://github.com/nearform/node-clinic) allows profiling the VM in the node environment. It supports various profiling methods, among them is [flame](https://github.com/nearform/node-clinic-flame) which can be used for generating flamegraphs to highlight bottlenecks and hot paths. As an example, to generate a flamegraph for the VM blockchain tests, you can run:
-
-```sh
-NODE_OPTIONS="--max-old-space-size=4096" clinic flame -- VITE_EXCLUDE_DIR='GeneralStateTests' npx vitest test/tester/blockchain.spec.ts
-```
-
-### Git Branch Performance Testing
-
-The [`diffTester`](./scripts/diffTester.sh) script can be used to do simple comparative performance testing of changes made targeting the VM. This script allows you to run a single State test a specified number of times on two different branches and reports the average time of the test run for each branch. While not statistically rigorous, it gives you a quick sense of how a specific change (or set of changes) may impact VM performance on a given area that is covered by one specific test. Run this script from `[monorepo-root]/packages/vm` as below:
-
-```sh
-./scripts/diffTester.sh -b git-branch-you-want-to-test -t "path/to/my/favorite/state/test.json" -r [the number of times to run the test]
-```
-
-and it will produce output like for the `git-branch-you-want-to-test` and then whatever git branch you are currently on:
-
-```sh
-TAP version 13
-# GeneralStateTests
-# file: path/to/my/favorite/state/test.json test: test
-ok 1 [ 3.785 secs ] the state roots should match (successful tx run)
-ok 2 [ 1.228 secs ] the state roots should match (successful tx run)
-ok 3 [ 1.212 secs ] the state roots should match (successful tx run)
-ok 4 [ 1.306 secs ] the state roots should match (successful tx run)
-ok 5 [ 1.472 secs ] the state roots should match (successful tx run)
-# Average test run: 1.801 s
-```
-
-Note: this script runs by actually checking out the targeted branch, running the test, and then switching back to your current branch, running the test again, and then restoring any changes you had in the current branch. For best results, you should run this test while you currently have `master` checked out.
-
-### Benchmarks
-
-This helps us see how the VM performs when running mainnet blocks.
-
-View the historical benchmark data for the master branch on the [github page](http://ethereumjs.github.io/ethereumjs-monorepo/dev/bench/vm).
-
-We want to use the compiled JS so `tsx` does not show up in the profile. So run:
-
-`npm run build:benchmarks`
-
-Then:
-
-`npm run benchmarks -- mainnetBlocks`
-
-To define the number of samples to be run pass in a number like so: `npm run benchmarks -- mainnetBlocks:10`
-
-If you want to get a more detailed look to find bottlenecks we can use [0x](https://github.com/davidmarkclements/0x):
-
-```
-npm run profiling -- mainnetBlocks:10
-```
-
-and open the link it generates.
-
-For a high-level introduction on flame graphs see e.g. [this](https://blog.codecentric.de/en/2017/09/jvm-fire-using-flame-graphs-analyse-performance/) blog article (the non-Java part).
-
+Legacy [retesteth](./test/retesteth/README.md) integration is not part of current CI.

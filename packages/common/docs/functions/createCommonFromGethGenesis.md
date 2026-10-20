@@ -8,7 +8,7 @@
 
 > **createCommonFromGethGenesis**(`genesisJSON`, `__namedParameters`): [`Common`](../classes/Common.md)
 
-Defined in: [common/src/constructors.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/constructors.ts#L41)
+Defined in: [constructors.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/constructors.ts#L41)
 
 Static method to load and set common from a geth genesis object
 

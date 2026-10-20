@@ -6,6 +6,8 @@
 
 # Type Alias: Accesses
 
-> **Accesses** = `Record`\<`BALAddressHex`, \{ `balanceChanges`: `Map`\<`BALAccessIndexNumber`, `BALBalanceHex`\>; `codeChanges`: `BALRawCodeChange`[]; `nonceChanges`: `Map`\<`BALAccessIndexNumber`, `BALNonceHex`\>; `storageChanges`: `Record`\<`BALStorageKeyHex`, `BALRawStorageChange`[]\>; `storageReads`: `Set`\<`BALStorageKeyHex`\>; \}\>
+> **Accesses** = `Record`\<`BALAddressHex`, [`BALAccountAccess`](BALAccountAccess.md)\>
 
-Defined in: [packages/util/src/bal/index.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L48)
+Defined in: [packages/util/src/bal/index.ts:60](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L60)
+
+Map of account addresses to [BALAccountAccess](BALAccountAccess.md) records.

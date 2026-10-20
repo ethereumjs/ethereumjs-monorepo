@@ -4,7 +4,7 @@ import { Ethash } from '@ethereumjs/ethash'
 import { RLP } from '@ethereumjs/rlp'
 import { bytesToHex } from '@ethereumjs/util'
 import { keccak_256 } from '@noble/hashes/sha3.js'
-import { assert, describe, expect, it } from 'vitest'
+import { assert, describe, it } from 'vitest'
 
 import { EthashConsensus, createBlockchain } from '../src/index.ts'
 
@@ -13,7 +13,7 @@ import { generateBlock } from './util.ts'
 import type { ConsensusDict } from '../src/index.ts'
 
 describe('[Blockchain]: Block validation tests', () => {
-  it('should throw if an uncle is included before', async () => {
+  it('throws if an uncle is included before', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     const blockchain = await createBlockchain({ common })
 
@@ -29,10 +29,15 @@ describe('[Blockchain]: Block validation tests', () => {
     await blockchain.putBlock(block1)
     await blockchain.putBlock(block2)
 
-    await expect(blockchain.putBlock(block3)).rejects.toThrow('uncle is already included')
+    try {
+      await blockchain.putBlock(block3)
+      assert.fail('putBlock should reject duplicate uncle')
+    } catch (e: unknown) {
+      assert.match((e as Error).message, /uncle is already included/)
+    }
   })
 
-  it('should throw if the uncle parent block is not part of the canonical chain', async () => {
+  it('throws if the uncle parent block is not part of the canonical chain', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     const blockchain = await createBlockchain({ common })
 
@@ -47,10 +52,15 @@ describe('[Blockchain]: Block validation tests', () => {
     await blockchain.putBlock(block1)
     await blockchain.putBlock(block2)
 
-    await expect(blockchain.putBlock(block3)).rejects.toThrow('not found in DB')
+    try {
+      await blockchain.putBlock(block3)
+      assert.fail('putBlock should reject uncle with missing parent')
+    } catch (e: unknown) {
+      assert.match((e as Error).message, /not found in DB/)
+    }
   })
 
-  it('should throw if the uncle is too old', async () => {
+  it('throws if the uncle is too old', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     const blockchain = await createBlockchain({ common })
 
@@ -72,12 +82,15 @@ describe('[Blockchain]: Block validation tests', () => {
       common,
     )
 
-    await expect(blockchain.putBlock(blockWithUnclesTooOld)).rejects.toThrow(
-      'uncle block has a parent that is too old',
-    )
+    try {
+      await blockchain.putBlock(blockWithUnclesTooOld)
+      assert.fail('putBlock should reject uncle that is too old')
+    } catch (e: unknown) {
+      assert.match((e as Error).message, /uncle block has a parent that is too old/)
+    }
   })
 
-  it('should throw if uncle is too young', async () => {
+  it('throws if uncle is too young', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     const blockchain = await createBlockchain({ common })
 
@@ -88,12 +101,15 @@ describe('[Blockchain]: Block validation tests', () => {
 
     await blockchain.putBlock(uncleBlock)
 
-    await expect(blockchain.putBlock(block1)).rejects.toThrow(
-      'uncle block has a parent that is too old or too young',
-    )
+    try {
+      await blockchain.putBlock(block1)
+      assert.fail('putBlock should reject uncle that is too young')
+    } catch (e: unknown) {
+      assert.match((e as Error).message, /uncle block has a parent that is too old or too young/)
+    }
   })
 
-  it('should throw if the uncle header is invalid', async () => {
+  it('throws if the uncle header is invalid', async () => {
     const consensusDict: ConsensusDict = {}
     consensusDict[ConsensusAlgorithm.Ethash] = new EthashConsensus(new Ethash())
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
@@ -118,9 +134,12 @@ describe('[Blockchain]: Block validation tests', () => {
 
     await blockchain.putBlock(block1)
 
-    await expect(blockchain.putBlock(block2)).rejects.toThrow(
-      'invalid difficulty block header number=1',
-    )
+    try {
+      await blockchain.putBlock(block2)
+      assert.fail('putBlock should reject invalid uncle difficulty')
+    } catch (e: unknown) {
+      assert.match((e as Error).message, /invalid difficulty block header number=1/)
+    }
   })
 
   it('throws if uncle is a canonical block', async () => {
@@ -134,7 +153,12 @@ describe('[Blockchain]: Block validation tests', () => {
 
     await blockchain.putBlock(block1)
 
-    await expect(blockchain.putBlock(block2)).rejects.toThrow('The uncle is a canonical block')
+    try {
+      await blockchain.putBlock(block2)
+      assert.fail('putBlock should reject canonical uncle')
+    } catch (e: unknown) {
+      assert.match((e as Error).message, /The uncle is a canonical block/)
+    }
   })
 
   it('successfully validates uncles', async () => {
@@ -218,7 +242,7 @@ describe('[Blockchain]: Block validation tests', () => {
     }
   })
 
-  it('should select the right hardfork for uncles at a hardfork transition', async () => {
+  it('selects the right hardfork for uncles at a hardfork transition', async () => {
     /**
      * This test creates a chain around mainnet fork blocks:
      *      berlin         london

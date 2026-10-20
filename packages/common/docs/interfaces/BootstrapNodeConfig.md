@@ -6,15 +6,17 @@
 
 # Interface: BootstrapNodeConfig
 
-Defined in: [common/src/types.ts:66](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L66)
+Defined in: [types.ts:76](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L76)
+
+ENR/bootstrap node entry for a chain config.
 
 ## Properties
 
 ### chainId?
 
-> `optional` **chainId**: `number`
+> `optional` **chainId?**: `number`
 
-Defined in: [common/src/types.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L70)
+Defined in: [types.ts:80](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L80)
 
 ***
 
@@ -22,7 +24,7 @@ Defined in: [common/src/types.ts:70](https://github.com/ethereumjs/ethereumjs-mo
 
 > **comment**: `string`
 
-Defined in: [common/src/types.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L73)
+Defined in: [types.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L83)
 
 ***
 
@@ -30,7 +32,7 @@ Defined in: [common/src/types.ts:73](https://github.com/ethereumjs/ethereumjs-mo
 
 > **id**: `string`
 
-Defined in: [common/src/types.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L71)
+Defined in: [types.ts:81](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L81)
 
 ***
 
@@ -38,7 +40,7 @@ Defined in: [common/src/types.ts:71](https://github.com/ethereumjs/ethereumjs-mo
 
 > **ip**: `string`
 
-Defined in: [common/src/types.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L67)
+Defined in: [types.ts:77](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L77)
 
 ***
 
@@ -46,15 +48,15 @@ Defined in: [common/src/types.ts:67](https://github.com/ethereumjs/ethereumjs-mo
 
 > **location**: `string`
 
-Defined in: [common/src/types.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L72)
+Defined in: [types.ts:82](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L82)
 
 ***
 
 ### network?
 
-> `optional` **network**: `string`
+> `optional` **network?**: `string`
 
-Defined in: [common/src/types.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L69)
+Defined in: [types.ts:79](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L79)
 
 ***
 
@@ -62,4 +64,4 @@ Defined in: [common/src/types.ts:69](https://github.com/ethereumjs/ethereumjs-mo
 
 > **port**: `string` \| `number`
 
-Defined in: [common/src/types.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L68)
+Defined in: [types.ts:78](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L78)

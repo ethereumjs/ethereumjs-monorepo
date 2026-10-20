@@ -8,9 +8,9 @@
 
 > **bytesToInt**(`bytes`): `number`
 
-Defined in: [packages/util/src/bytes.ts:85](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L85)
+Defined in: [packages/util/src/bytes.ts:83](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L83)
 
-Converts a Uint8Array to a number.
+Interpret bytes as an unsigned big-endian integer and coerce to a safe JS number.
 
 ## Parameters
 
@@ -18,12 +18,10 @@ Converts a Uint8Array to a number.
 
 `Uint8Array`
 
-the bytes to convert
-
 ## Returns
 
 `number`
 
 ## Throws
 
-If the input number exceeds 53 bits.
+If the value exceeds 53 bits

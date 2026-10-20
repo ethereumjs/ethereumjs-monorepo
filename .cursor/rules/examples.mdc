@@ -1,0 +1,87 @@
+---
+description: Package examples layout, embedme README sync, CI runner, and browser.html conventions
+globs: packages/*/examples/**,packages/*/README.md,scripts/examples-runner.ts,.github/workflows/examples.yml
+alwaysApply: false
+---
+
+# Package examples
+
+Runnable examples live in `packages/<pkg>/examples/`. They are the **source of truth** for short README snippets; longer or niche demos stay in `examples/` only.
+
+Examples are **not** public API — rename, merge, or remove freely during cleanup (use `git mv`; see `git.mdc`). Public library symbols follow `code-conventions.mdc`.
+
+## What makes a good example
+
+- **One topic per file** — the name should tell you what it demonstrates without opening it.
+- **Short but expressive** — lowerCamelCase file names (`emitLogs.ts`, `eip1559Tx.ts`, `initKZG.ts`). Avoid vague names (`common.ts`, `simple.ts`) when something specific fits.
+- **Acronym casing** — same as production code (`initKZG.ts`, not `initKzg.ts`); see `code-conventions.mdc`.
+- **Current chain context** — use Mainnet (or a clearly labeled custom chain) with a recent default hardfork. Avoid deprecated testnet names (Ropsten, Goerli) and hardfork-era labels readers no longer recognize (`londonTx` → prefer `eip1559Tx.ts` or similar).
+- **Non-trivial** — show a real library workflow; skip one-liner demos that add CI time without teaching anything. Merge tiny snippets into a sibling example or drop them if the README section can use a richer neighbor.
+- **Runnable in CI** — no interaction, no required secrets, no flaky network (see below).
+
+## Naming and cleanup
+
+| Prefer | Avoid |
+|--------|-------|
+| `decodeOpcodes.ts` | `decode-opcodes.ts` (kebab-case) |
+| `emitLogs.ts` | Mixed styles across a package |
+| `eip1559Tx.ts`, `customChainIdTx.ts` | `londonTx.ts`, `custom-chain-id-tx.ts` |
+| `fromGethGenesis.ts` | `fromGeth.ts` (too vague) |
+
+When removing an example, check README embeds (`grep examples/` in the package README). Either drop the section, point elsewhere, or embed a better example so docs do not gap.
+
+## Which packages
+
+Most active library packages have an `examples/` folder and `examples` / `examples:build` scripts in `package.json`. Not every workspace package does (e.g. `binarytree`, `testdata`, fixture submodules). When adding a new library package, follow the existing pattern.
+
+## Layout
+
+| Path | Purpose |
+|------|---------|
+| `examples/*.ts` | Runnable Node examples (CI) |
+| `examples/browser.html` | Semi-automated browser run (see file for dev-server steps) |
+| `examples/helpers/`, `examples/data/` | Shared helpers/fixtures — **not** executed by the runner |
+| `examples/<subdir>/` | Optional grouping (EVM `precompiles/`, `opcodes/`; MPT `merkle_patricia_trees/`) |
+
+**Nested example folders:** `scripts/examples-runner.ts` only reads **one directory level** (`.ts` / `.cts` files). Nested example dirs need an extra runner invocation in the package `examples` script — see `@ethereumjs/evm`:
+
+```json
+"examples": "tsx ../../scripts/examples-runner.ts -- evm && tsx ../../scripts/examples-runner.ts -- evm precompiles && tsx ../../scripts/examples-runner.ts -- evm opcodes"
+```
+
+Prefer flat `examples/` when possible; use nested folders only when the set is large or clearly grouped.
+
+## README embedding (embedme)
+
+Short examples that fit a docs section are embedded in the package `README.md` via [embedme](https://github.com/zackarychapple/embedme).
+
+1. Edit the file under `examples/` (never hand-edit embedded code blocks in the README).
+2. In the README, keep a fence whose first line is the embedme marker, e.g. `// ./examples/encodeDecode.ts`.
+3. Sync: `npm run examples:build` in the package (`npx embedme README.md`).
+
+Embedme adds the header comment automatically. Pick README candidates that are short and map cleanly to a topic; link to `examples/` for the rest.
+
+## Writing runnable examples
+
+CI runs `npm run examples --if-present --workspaces` (`.github/workflows/examples.yml`, gated from `build.yml`). The runner **dynamic-imports** each `.ts`/`.cts` file in the target folder — there is no `main()` discovery.
+
+- Execute on import: top-level code, or `void main()` / `main().catch(...)` at the bottom.
+- Do not rely on manual `tsx examples/foo.ts` only; it must pass the automated runner.
+- Avoid interactive prompts, open-ended network calls, or env secrets required in CI.
+- Helpers (`helpers/`, `data/`, `.js`/`.cjs`/`.mts` demos) are imported by examples; only `.ts`/`.cts` at the runner target path are executed directly.
+
+Local check: `npm run examples` in the touched package.
+
+## Browser examples
+
+`examples/browser.html` loads a representative `.ts` module in the browser. Convention for active browser-facing packages; some older packages may lack it. Typical flow: build the package, start the local dev server from the package root (see `browser.html`), open `/examples/browser.html`, inspect the dev console.
+
+## Agent checklist
+
+When changing examples:
+
+1. Edit `examples/` source files.
+2. If the example is README-embedded, run `npm run examples:build` in that package and commit the README diff.
+3. Run `npm run examples` locally.
+4. If adding a new nested folder of runnable `.ts` files, extend the package `examples` script (and document the folder in the README if user-facing).
+5. Run `npm run tsc` and spellcheck on touched files (`typecheck.mdc`, `spellcheck.mdc`).

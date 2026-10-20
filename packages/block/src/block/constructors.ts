@@ -43,11 +43,9 @@ import type {
 } from '../types.ts'
 
 /**
- * Static constructor to create a block from a block data dictionary
+ * Instantiate a block from {@link BlockData}.
  *
- * @param blockData
- * @param opts
- * @returns a new {@link Block} object
+ * @throws If header, transaction, or uncle validation fails
  */
 export function createBlock(blockData: BlockData = {}, opts?: BlockOptions): Block {
   const {
@@ -94,12 +92,7 @@ export function createBlock(blockData: BlockData = {}, opts?: BlockOptions): Blo
 }
 
 /**
- * Simple static constructor if only an empty block is needed
- * (tree shaking advantages since it does not draw all the tx constructors in)
- *
- * @param headerData
- * @param opts
- * @returns a new {@link Block} object
+ * Instantiate an empty block (header only) via {@link createBlockHeader}.
  */
 export function createEmptyBlock(headerData: HeaderData, opts?: BlockOptions): Block {
   const header = createBlockHeader(headerData, opts)
@@ -107,11 +100,11 @@ export function createEmptyBlock(headerData: HeaderData, opts?: BlockOptions): B
 }
 
 /**
- * Static constructor to create a block from an array of Bytes values
+ * Instantiate a block from RLP-encoded field values.
  *
- * @param values
- * @param opts
- * @returns a new {@link Block} object
+ * @throws If more than five top-level RLP elements are present
+ * @throws If EIP-4895 is active but withdrawals are missing
+ * @throws If delegated header or transaction factory validation fails
  */
 export function createBlockFromBytesArray(values: BlockBytes, opts?: BlockOptions): Block {
   if (values.length > 5) {
@@ -181,11 +174,11 @@ export function createBlockFromBytesArray(values: BlockBytes, opts?: BlockOption
 }
 
 /**
- * Static constructor to create a block from a RLP-serialized block
+ * Instantiate a block from RLP-serialized bytes.
  *
- * @param serialized
- * @param opts
- * @returns a new {@link Block} object
+ * @throws If the serialized length exceeds EIP-7934 `maxRlpBlockSize` when active
+ * @throws If RLP decode result is not an array
+ * @throws If decoded values fail {@link createBlockFromBytesArray} checks
  */
 export function createBlockFromRLP(serialized: Uint8Array, opts?: BlockOptions): Block {
   if (opts?.common?.isActivatedEIP(7934) === true) {
@@ -206,12 +199,10 @@ export function createBlockFromRLP(serialized: Uint8Array, opts?: BlockOptions):
 }
 
 /**
- * Creates a new block object from Ethereum JSON RPC.
+ * Instantiate a block from JSON-RPC block and uncle responses.
  *
- * @param blockParams - Ethereum JSON RPC of block (eth_getBlockByNumber)
- * @param uncles - Optional list of Ethereum JSON RPC of uncles (eth_getUncleByBlockHashAndIndex)
- * @param opts - An object describing the blockchain
- * @returns a new {@link Block} object
+ * @param blockParams - `eth_getBlockByNumber` / `eth_getBlockByHash` response
+ * @param uncles - Optional uncle headers from `eth_getUncleByBlockHashAndIndex`
  */
 export function createBlockFromRPC(
   blockParams: JSONRPCBlock,
@@ -237,11 +228,12 @@ export function createBlockFromRPC(
 }
 
 /**
- *  Method to retrieve a block from a JSON-RPC provider and format as a {@link Block}
- * @param provider either a url for a remote provider or an Ethers JSONRPCProvider object
- * @param blockTag block hash or block number to be run
- * @param opts {@link BlockOptions}
- * @returns a new {@link Block} object specified by `blockTag`
+ * Fetch a block from a JSON-RPC provider and instantiate it.
+ *
+ * @param blockTag - Block hash, number, or tag (`latest`, `pending`, …)
+ *
+ * @throws If `blockTag` is not a recognized hash, number, or tag
+ * @throws If the provider returns no block data
  */
 export const createBlockFromJSONRPCProvider = async (
   provider: string | EthersProvider,
@@ -298,10 +290,10 @@ export const createBlockFromJSONRPCProvider = async (
 }
 
 /**
- *  Method to retrieve a block from an execution payload
- * @param payload Execution payload constructed from beacon payload data
- * @param opts {@link BlockOptions}
- * @returns The constructed {@link Block} object
+ * Instantiate a block from an Engine API execution payload.
+ *
+ * @throws If any payload transaction fails RLP decode
+ * @throws If the recomputed block hash does not match `payload.blockHash`
  */
 export async function createBlockFromExecutionPayload(
   payload: ExecutionPayload,
@@ -362,10 +354,9 @@ export async function createBlockFromExecutionPayload(
 }
 
 /**
- *  Method to retrieve a block from a beacon payload JSON
- * @param payload JSON of a beacon block fetched from beacon APIs
- * @param opts {@link BlockOptions}
- * @returns The constructed {@link Block} object
+ * Instantiate a block from a beacon REST `execution_payload` JSON object.
+ *
+ * @throws If delegated {@link createBlockFromExecutionPayload} validation fails
  */
 export async function createBlockFromBeaconPayloadJSON(
   payload: BeaconPayloadJSON,

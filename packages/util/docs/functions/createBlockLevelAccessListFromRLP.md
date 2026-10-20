@@ -8,7 +8,7 @@
 
 > **createBlockLevelAccessListFromRLP**(`rlp`): [`BlockLevelAccessList`](../classes/BlockLevelAccessList.md)
 
-Defined in: [packages/util/src/bal/index.ts:687](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L687)
+Defined in: [packages/util/src/bal/index.ts:697](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L697)
 
 Parses an RLP-encoded block access list.
 

@@ -6,7 +6,7 @@
 
 # Interface: BALJSONAccountChanges
 
-Defined in: [packages/util/src/bal/index.ts:87](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L87)
+Defined in: [packages/util/src/bal/index.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L90)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [packages/util/src/bal/index.ts:87](https://github.com/ethereumjs/et
 
 > **address**: `` `0x${string}` ``
 
-Defined in: [packages/util/src/bal/index.ts:88](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L88)
+Defined in: [packages/util/src/bal/index.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L91)
 
 ***
 
@@ -22,7 +22,7 @@ Defined in: [packages/util/src/bal/index.ts:88](https://github.com/ethereumjs/et
 
 > **balanceChanges**: [`BALJSONBalanceChange`](BALJSONBalanceChange.md)[]
 
-Defined in: [packages/util/src/bal/index.ts:89](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L89)
+Defined in: [packages/util/src/bal/index.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L92)
 
 ***
 
@@ -30,7 +30,7 @@ Defined in: [packages/util/src/bal/index.ts:89](https://github.com/ethereumjs/et
 
 > **codeChanges**: [`BALJSONCodeChange`](BALJSONCodeChange.md)[]
 
-Defined in: [packages/util/src/bal/index.ts:91](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L91)
+Defined in: [packages/util/src/bal/index.ts:94](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L94)
 
 ***
 
@@ -38,7 +38,7 @@ Defined in: [packages/util/src/bal/index.ts:91](https://github.com/ethereumjs/et
 
 > **nonceChanges**: [`BALJSONNonceChange`](BALJSONNonceChange.md)[]
 
-Defined in: [packages/util/src/bal/index.ts:90](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L90)
+Defined in: [packages/util/src/bal/index.ts:93](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L93)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: [packages/util/src/bal/index.ts:90](https://github.com/ethereumjs/et
 
 > **storageChanges**: [`BALJSONSlotChanges`](BALJSONSlotChanges.md)[]
 
-Defined in: [packages/util/src/bal/index.ts:92](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L92)
+Defined in: [packages/util/src/bal/index.ts:95](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L95)
 
 ***
 
@@ -54,4 +54,4 @@ Defined in: [packages/util/src/bal/index.ts:92](https://github.com/ethereumjs/et
 
 > **storageReads**: `` `0x${string}` ``[]
 
-Defined in: [packages/util/src/bal/index.ts:93](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L93)
+Defined in: [packages/util/src/bal/index.ts:96](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L96)

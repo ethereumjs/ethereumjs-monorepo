@@ -7,7 +7,7 @@ import type { BlockData } from '@ethereumjs/block'
 import type { AccessList2930TxData, TransactionType, TxData } from '@ethereumjs/tx'
 
 describe('[Types]', () => {
-  it('should ensure that the actual objects can be safely used as their data types', () => {
+  it('ensures that the actual objects can be safely used as their data types', () => {
     // Dev note:
     // This test was written by @alcuadrado after discovering
     // issues in creating an object from its own data. It will

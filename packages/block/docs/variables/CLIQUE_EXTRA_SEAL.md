@@ -8,4 +8,6 @@
 
 > `const` **CLIQUE\_EXTRA\_SEAL**: `65` = `65`
 
-Defined in: [consensus/clique.ts:23](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/consensus/clique.ts#L23)
+Defined in: [consensus/clique.ts:25](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/consensus/clique.ts#L25)
+
+Bytes reserved at the end of Clique `extraData` for the secp256k1 seal (EIP-225).

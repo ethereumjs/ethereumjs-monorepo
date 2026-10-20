@@ -4,13 +4,9 @@ import type { Common } from '@ethereumjs/common'
 import type { RunState } from '../interpreter.ts'
 
 /**
- * Adjusts gas usage and refunds of SStore ops per EIP-1283 (Constantinople)
+ * Adjusts SSTORE gas usage and refunds per EIP-1283 (Constantinople).
  *
- * @param {RunState} runState
- * @param {Uint8Array}   currentStorage
- * @param {Uint8Array}   originalStorage
- * @param {Uint8Array}   value
- * @param {Common}   common
+ * Compares current, original, and new storage values to select net gas and refund rules.
  */
 export function updateSstoreGasEIP1283(
   runState: RunState,

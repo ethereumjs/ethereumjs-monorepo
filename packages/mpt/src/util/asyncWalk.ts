@@ -7,19 +7,20 @@ import { ExtensionMPTNode } from '../node/extension.ts'
 import type { MerklePatriciaTrie } from '../mpt.ts'
 import type { MPTNode } from '../types.ts'
 
+/** Async filter applied during {@link _walkTrie} iteration. */
 export type NodeFilter = (node: MPTNode, key: number[]) => Promise<boolean>
-export type OnFound = (node: MPTNode, key: number[]) => Promise<any>
+
+/** Callback invoked for each node during {@link _walkTrie} before filtering. */
+export type OnFound = (node: MPTNode, key: number[]) => Promise<unknown>
 
 /**
- * Walk MerklePatriciaTrie via async generator
- * @param nodeHash - The root key to walk on.
- * @param currentKey - The current (partial) key.
- * @param onFound - Called on every node found (before filter)
- * @param filter - Filter nodes yielded by the generator.
- * @param visited - Set of visited nodes
- * @returns AsyncIterable<{ node: MPTNode; currentKey: number[] }>
- * Iterate through nodes with
- * `for await (const { node, currentKey } of trie._walkTrie(root)) { ... }`
+ * Depth-first async generator over trie nodes.
+ *
+ * @param nodeHash Root hash to start from
+ * @param currentKey Nibble path accumulated so far
+ * @param onFound Called on every visited node (before the filter)
+ * @param filter When it returns `false`, the node is not yielded
+ * @param visited Set of visited node hashes (cycle guard)
  */
 export async function* _walkTrie(
   this: MerklePatriciaTrie,
@@ -33,28 +34,31 @@ export async function* _walkTrie(
     return
   }
   try {
-    const node = await this.lookupNode(nodeHash)
-    if (node === undefined || visited.has(bytesToHex(this.hash(node!.serialize())))) {
+    const nodeHashHex = bytesToHex(nodeHash)
+    if (visited.has(nodeHashHex)) {
       return
     }
-    visited.add(bytesToHex(this.hash(node!.serialize())))
-    await onFound(node!, currentKey)
-    if (await filter(node!, currentKey)) {
-      yield { node: node!, currentKey }
+    const node = await this.lookupNode(nodeHash)
+    visited.add(nodeHashHex)
+    await onFound(node, currentKey)
+    if (await filter(node, currentKey)) {
+      yield { node, currentKey }
     }
     if (node instanceof BranchMPTNode) {
-      for (const [nibble, childNode] of node._branches.entries()) {
+      for (const [nibble, childNode] of node.getChildren()) {
         const nextKey = [...currentKey, nibble]
         const _childNode: Uint8Array =
           childNode instanceof Uint8Array ? childNode : this.hash(RLP.encode(childNode))
-        yield* _walkTrie.bind(this)(_childNode, nextKey, onFound, filter, visited)
+        yield* _walkTrie.call(this, _childNode, nextKey, onFound, filter, visited)
       }
     } else if (node instanceof ExtensionMPTNode) {
       const childNode = node.value()
       const nextKey = [...currentKey, ...node._nibbles]
-      yield* _walkTrie.bind(this)(childNode, nextKey, onFound, filter, visited)
+      yield* _walkTrie.call(this, childNode, nextKey, onFound, filter, visited)
     }
-  } catch {
-    return
+  } catch (error: any) {
+    if (error.message !== 'Missing node in DB') {
+      throw error
+    }
   }
 }

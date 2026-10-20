@@ -7,7 +7,6 @@ import type {
 import type { Account, Address, BlockLevelAccessList, PrefixedHexString } from '@ethereumjs/util'
 import type { EventEmitter } from 'eventemitter3'
 import type { BinaryTreeAccessWitness } from './binaryTreeAccessWitness.ts'
-import type { EOFContainer } from './eof/container.ts'
 import type { EVMError } from './errors.ts'
 import type { InterpreterStep, RunState } from './interpreter.ts'
 import type { Message } from './message.ts'
@@ -17,22 +16,27 @@ import type { CustomPrecompile } from './precompiles/index.ts'
 import type { PrecompileFunc } from './precompiles/types.ts'
 
 export type DeleteOpcode = {
+  /** Opcode number to remove from the instruction set */
   opcode: number
 }
 
 export type AddOpcode = {
+  /** Opcode number that invokes the custom handler */
   opcode: number
+  /** Opcode name (shown in `step` events) */
   opcodeName: string
+  /** Base gas fee charged before dynamic gas */
   baseFee: number
   gasFunction?: AsyncDynamicGasHandler | SyncDynamicGasHandler
   logicFunction: OpHandler
 }
 
+/** Map of selfdestructed addresses to their beneficiary (hex strings). */
 export type SelfdestructMap = Map<PrefixedHexString, PrefixedHexString>
 
 export type CustomOpcode = AddOpcode | DeleteOpcode
 
-// Typeguard
+/** Type guard for {@link AddOpcode} entries in a custom opcode list. */
 export function isAddOpcode(customOpcode: CustomOpcode): customOpcode is AddOpcode {
   return (
     'opcode' in customOpcode &&
@@ -100,9 +104,12 @@ interface EVMRunOpts {
   blobVersionedHashes?: PrefixedHexString[]
 }
 
+/**
+ * Options for {@link EVM.runCode}.
+ */
 export interface EVMRunCodeOpts extends EVMRunOpts {
-  /*
-   * The initial program counter. Defaults to `0`
+  /**
+   * Initial program counter. Defaults to `0`.
    */
   pc?: number
 }
@@ -129,6 +136,17 @@ export interface EVMRunCallOpts extends EVMRunOpts {
    */
   skipBalance?: boolean
   /**
+   * If true, do not increment the caller nonce at depth 0. `runTx` increments
+   * the sender nonce before the nested prep checkpoint so a top-frame access
+   * OOG (EIP-2780 / EIP-8037) does not roll it back. Standalone `runCall`
+   * callers should leave this unset.
+   *
+   * Distinct from `RunTxOpts.skipNonce`, which skips the nonce *check*.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
+  skipNonceIncrement?: boolean
+  /**
    * If the call is a DELEGATECALL. Defaults to false.
    */
   delegatecall?: boolean
@@ -152,6 +170,10 @@ interface NewContractEvent {
 
 /**
  * Origin of a log emission for the `log` tracing event.
+ *
+ * `selfdestructBurn` and `finalizationBurn` occur only when EIP-7708 is active and EIP-8246
+ * is not. Amsterdam activates both, so a self-selfdestruct there keeps the balance and emits
+ * neither burn.
  *
  * @remarks Experimental (Amsterdam): may change on patch releases.
  */
@@ -180,6 +202,7 @@ export interface LogEvent {
   address: Address
 }
 
+/** Lifecycle events emitted during EVM message and opcode execution. */
 export type EVMEvent = {
   newContract: (data: NewContractEvent, resolve?: (result?: any) => void) => void
   beforeMessage: (data: Message, resolve?: (result?: any) => void) => void
@@ -188,6 +211,7 @@ export type EVMEvent = {
   log: (data: LogEvent, resolve?: (result?: any) => void) => void
 }
 
+/** Public EVM surface used by {@link @ethereumjs/vm!VM} and stand-alone callers. */
 export interface EVMInterface {
   common: Common
   journal: {
@@ -239,11 +263,27 @@ export interface EVMInterface {
    * @remarks Experimental (Amsterdam): may change on patch releases.
    */
   eip7928CallPostTargetOog?: boolean
+  /**
+   * EIP-2780 / EIP-8037: set when a top-frame access charge OOGs before opcodes.
+   * runTx reverts prepare-region 7702 delegations when this is true.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
+  eip2780PrepOog?: boolean
+  /**
+   * EIP-8037: whether the target account of a top-level creation transaction
+   * was already alive (EIP-161 non-empty) before creation; `runTx` refunds
+   * the intrinsic new-account state gas when true or the creation failed.
+   * Optional for custom {@link EVMInterface} implementations.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
+  createTxTargetAlive?: boolean
 }
 
 export type EVMProfilerOpts = {
+  /** When true, collect opcode and precompile timing data */
   enabled: boolean
-  // extra options here (such as use X hardfork for gas)
 }
 
 /**
@@ -251,7 +291,7 @@ export type EVMProfilerOpts = {
  */
 export interface EVMOpts {
   /**
-   * Use a {@link Common} instance for EVM instantiation.
+   * Use a {@link @ethereumjs/common!Common} instance for EVM instantiation.
    *
    * ### Supported EIPs
    *
@@ -262,6 +302,7 @@ export interface EVMOpts {
    * - [EIP-2537](https://eips.ethereum.org/EIPS/eip-2537) - Precompile for BLS12-381 curve operations (Prague)
    * - [EIP-2565](https://eips.ethereum.org/EIPS/eip-2565) - ModExp gas cost
    * - [EIP-2718](https://eips.ethereum.org/EIPS/eip-2718) - Transaction Types
+   * - [EIP-2780](https://eips.ethereum.org/EIPS/eip-2780) - Reduce intrinsic transaction gas (Amsterdam, experimental)
    * - [EIP-2929](https://eips.ethereum.org/EIPS/eip-2929) - Gas cost increases for state access opcodes
    * - [EIP-2930](https://eips.ethereum.org/EIPS/eip-2930) - Optional access list tx type
    * - [EIP-2935](https://eips.ethereum.org/EIPS/eip-2935) - Serve historical block hashes in state (Prague)
@@ -290,7 +331,6 @@ export interface EVMOpts {
    * - [EIP-7623](https://eips.ethereum.org/EIPS/eip-7623) - Increase calldata cost (Prague)
    * - [EIP-7685](https://eips.ethereum.org/EIPS/eip-7685) - General purpose execution layer requests (Prague)
    * - [EIP-7691](https://eips.ethereum.org/EIPS/eip-7691) - Blob throughput increase (Prague)
-   * - [EIP-7692](https://eips.ethereum.org/EIPS/eip-7692) - EVM Object Format (EOF) v1 (experimental)
    * - [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702) - Set EOA account code (Prague)
    * - [EIP-7708](https://eips.ethereum.org/EIPS/eip-7708) - ETH transfers emit a log (Amsterdam, experimental)
    * - [EIP-7709](https://eips.ethereum.org/EIPS/eip-7709) - Read BLOCKHASH from storage and update cost (Verkle, experimental)
@@ -448,7 +488,7 @@ export interface EVMOpts {
   blockchain?: EVMMockBlockchainInterface
 
   /**
-   *
+   * Optional performance profiler settings for opcode and precompile timing.
    */
   profiler?: EVMProfilerOpts
 
@@ -477,7 +517,7 @@ export interface EVMResult {
    */
   createdAddress?: Address
   /**
-   * Contains the results from running the code, if any, as described in {@link runCode}
+   * Contains the results from running the code, if any, as described in {@link @ethereumjs/evm!EVM.runCode}.
    */
   execResult: ExecResult
 }
@@ -506,7 +546,7 @@ export interface ExecResult {
   /**
    * Logs emitted during execution (`LOG0`–`LOG4`, and fork-specific synthetic logs such as
    * [EIP-7708](https://eips.ethereum.org/EIPS/eip-7708) on `runCall`). Cleared when execution
-   * reverts. See [Event logs](./README.md#event-logs) in this package.
+   * reverts. See the package README section on event logs.
    */
   logs?: Log[]
   /**
@@ -525,6 +565,14 @@ export interface ExecResult {
    * Amount of blob gas consumed by the transaction
    */
   blobGasUsed?: bigint
+  /**
+   * EIP-8037: state gas paid from the frame's regular gas (spilled),
+   * including spill merged from successful child frames. Propagated to the
+   * parent frame's spill tracker on success; zeroed on frame failure.
+   *
+   * @remarks Experimental (Amsterdam): may change on patch releases.
+   */
+  stateGasSpilled?: bigint
 }
 
 /**
@@ -556,13 +604,14 @@ export type EVMBN254Interface = {
  * Log emitted during EVM execution.
  *
  * Tuple of `[emitterAddress, topics, data]` — the same shape used in transaction receipts
- * (`receipt.logs`) and JSON-RPC log objects (before field renaming). See the
- * [Event logs](./README.md#event-logs) section in this package and
+ * (`receipt.logs`) and JSON-RPC log objects (before field renaming). See the package README
+ * section on event logs and
  * [Receipts and event logs](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#receipts-and-event-logs)
  * in `@ethereumjs/vm`.
  */
 export type Log = [address: Uint8Array, topics: Uint8Array[], data: Uint8Array]
 
+/** Minimal block header fields available to the EVM during execution. */
 export type Block = {
   header: {
     number: bigint
@@ -577,6 +626,7 @@ export type Block = {
   }
 }
 
+/** EIP-1153 transient storage keyed by address and 32-byte slot. */
 export interface TransientStorageInterface {
   get(addr: Address, key: Uint8Array): Uint8Array
   put(addr: Address, key: Uint8Array, value: Uint8Array): void
@@ -587,16 +637,19 @@ export interface TransientStorageInterface {
   clear(): void
 }
 
+/** Minimal block reference returned by {@link EVMMockBlockchainInterface.getBlock}. */
 export type EVMMockBlock = {
   hash(): Uint8Array
 }
 
+/** Lightweight blockchain interface used by stand-alone EVM execution. */
 export interface EVMMockBlockchainInterface {
   getBlock(blockId: number): Promise<EVMMockBlock>
   putBlock(block: EVMMockBlock): Promise<void>
   shallowCopy(): EVMMockBlockchainInterface
 }
 
+/** In-memory mock blockchain for tests and stand-alone {@link createEVM} defaults. */
 export class EVMMockBlockchain implements EVMMockBlockchainInterface {
   async getBlock() {
     return {
@@ -611,13 +664,5 @@ export class EVMMockBlockchain implements EVMMockBlockchainInterface {
   }
 }
 
-// EOF type which holds the execution-related data for EOF
-export type EOFEnv = {
-  container: EOFContainer
-  eofRunState: {
-    returnStack: number[]
-  }
-}
-
-// EIP-7702 flag: if contract code starts with these 3 bytes, it is a 7702-delegated EOA
+/** EIP-7702 delegation prefix (`0xef0100`) at the start of delegated EOA code. */
 export const DELEGATION_7702_FLAG = new Uint8Array([0xef, 0x01, 0x00])

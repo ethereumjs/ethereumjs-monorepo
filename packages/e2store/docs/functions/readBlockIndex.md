@@ -8,7 +8,9 @@
 
 > **readBlockIndex**(`data`, `count`): `object`
 
-Defined in: [packages/e2store/src/blockIndex.ts:20](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/blockIndex.ts#L20)
+Defined in: [packages/e2store/src/blockIndex.ts:22](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/blockIndex.ts#L22)
+
+Decode block-index payload into starting block number and tuple byte offsets.
 
 ## Parameters
 

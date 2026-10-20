@@ -35,7 +35,7 @@ type EstInvalidFixtureBlock = {
 
 type EstInvalidFixture = Record<string, { blocks: EstInvalidFixtureBlock[] }>
 
-describe('validateBlockAccessListJSONStructure', () => {
+describe('[Util]: validateBlockAccessListJSONStructure', () => {
   it('accepts valid fixture JSON', () => {
     validateBlockAccessListJSONStructure(balSimpleJSON as BALJSONBlockAccessList)
     validateBlockAccessListJSONStructure(balAllTransactionTypesJSON as BALJSONBlockAccessList)
@@ -84,9 +84,67 @@ describe('validateBlockAccessListJSONStructure', () => {
       /invalid block access list: storage slot appears in both storageChanges and storageReads/,
     )
   })
+
+  it('accepts mixed-length storage slots in numeric order', () => {
+    validateBlockAccessListJSONStructure([
+      {
+        address: '0x0000000000000000000000000000000000000001',
+        nonceChanges: [],
+        balanceChanges: [],
+        codeChanges: [],
+        storageChanges: [
+          {
+            slot: '0x02',
+            slotChanges: [{ blockAccessIndex: '0x00', postValue: '0x42' }],
+          },
+          {
+            slot: '0x0100',
+            slotChanges: [{ blockAccessIndex: '0x00', postValue: '0x99' }],
+          },
+        ],
+        storageReads: [],
+      },
+    ])
+    validateBlockAccessListJSONStructure([
+      {
+        address: '0x0000000000000000000000000000000000000002',
+        nonceChanges: [],
+        balanceChanges: [],
+        codeChanges: [],
+        storageChanges: [],
+        storageReads: ['0x02', '0x0100'],
+      },
+    ])
+  })
+
+  it('rejects mixed-length storage slots out of numeric order', () => {
+    const json: BALJSONBlockAccessList = [
+      {
+        address: '0x0000000000000000000000000000000000000001',
+        nonceChanges: [],
+        balanceChanges: [],
+        codeChanges: [],
+        storageChanges: [
+          {
+            slot: '0x0100',
+            slotChanges: [{ blockAccessIndex: '0x00', postValue: '0x99' }],
+          },
+          {
+            slot: '0x02',
+            slotChanges: [{ blockAccessIndex: '0x00', postValue: '0x42' }],
+          },
+        ],
+        storageReads: [],
+      },
+    ]
+    assert.throws(
+      () => validateBlockAccessListJSONStructure(json),
+      /invalid block access list: storage slots are not sorted/,
+    )
+  })
 })
 
-describe('validateBlockAccessListStructure', () => {
+describe('[Util]: validateBlockAccessListStructure', () => {
   it('accepts valid internal access lists', () => {
     const bal = new BlockLevelAccessList(balSimple)
     validateBlockAccessListStructure(bal)
@@ -96,9 +154,33 @@ describe('validateBlockAccessListStructure', () => {
     const bal = createBlockLevelAccessListFromJSON(balSimpleJSON as BALJSONBlockAccessList)
     validateBlockAccessListStructure(bal)
   })
+
+  it('accepts mixed-length storage keys after canonical raw() sorting', () => {
+    validateBlockAccessListStructure(
+      createBlockLevelAccessListFromJSON([
+        {
+          address: '0x00000000000000000000000000000000000000aa',
+          nonceChanges: [],
+          balanceChanges: [],
+          codeChanges: [],
+          storageChanges: [
+            {
+              slot: '0x02',
+              slotChanges: [{ blockAccessIndex: '0x00', postValue: '0x42' }],
+            },
+            {
+              slot: '0x0100',
+              slotChanges: [{ blockAccessIndex: '0x00', postValue: '0x99' }],
+            },
+          ],
+          storageReads: [],
+        },
+      ]),
+    )
+  })
 })
 
-describe('validateBlockAccessListHash', () => {
+describe('[Util]: validateBlockAccessListHash', () => {
   it('accepts matching header hash', () => {
     const bal = createBlockLevelAccessListFromJSON(balSimpleJSON as BALJSONBlockAccessList)
     validateBlockAccessListHash(bal, bal.hash())
@@ -114,7 +196,7 @@ describe('validateBlockAccessListHash', () => {
   })
 })
 
-describe('equalsBlockAccessList', () => {
+describe('[Util]: equalsBlockAccessList', () => {
   it('compares canonical RLP equality', () => {
     const a = createBlockLevelAccessListFromJSON(balSimpleJSON as BALJSONBlockAccessList)
     const b = new BlockLevelAccessList(balSimple)
@@ -122,7 +204,7 @@ describe('equalsBlockAccessList', () => {
   })
 })
 
-describe('execution-spec invalid BAL fixtures', () => {
+describe('[Util]: execution-spec invalid BAL fixtures', () => {
   it('rejects duplicate accounts and detects account reordering', () => {
     const dupJSON = Object.values(balInvalidDuplicateAccountJSON as EstInvalidFixture)[0].blocks[0]
       .rlp_decoded.blockAccessList
@@ -146,7 +228,7 @@ describe('execution-spec invalid BAL fixtures', () => {
   })
 })
 
-describe('validateBlockAccessListGasLimit', () => {
+describe('[Util]: validateBlockAccessListGasLimit', () => {
   // Minimal fixture mirroring bal_gas_limit_boundary (4 addresses + 11 storage keys = 15 items)
   const boundaryBalJson: BALJSONBlockAccessList = [
     {

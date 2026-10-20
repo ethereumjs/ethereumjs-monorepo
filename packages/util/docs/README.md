@@ -44,6 +44,7 @@
 - [Accesses](type-aliases/Accesses.md)
 - [AccountBodyBytes](type-aliases/AccountBodyBytes.md)
 - [AddressLike](type-aliases/AddressLike.md)
+- [BALAccountAccess](type-aliases/BALAccountAccess.md)
 - [BALJSONBlockAccessList](type-aliases/BALJSONBlockAccessList.md)
 - [BatchDBOp](type-aliases/BatchDBOp.md)
 - [BigIntLike](type-aliases/BigIntLike.md)

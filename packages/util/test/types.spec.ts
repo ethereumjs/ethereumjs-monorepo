@@ -12,7 +12,7 @@ import {
   toType,
 } from '../src/index.ts'
 
-describe('toType', () => {
+describe('[Util]: toType', () => {
   it('from null and undefined', () => {
     assert.strictEqual(toType(null, TypeOutput.Number), null)
     assert.strictEqual(toType(null, TypeOutput.BigInt), null)

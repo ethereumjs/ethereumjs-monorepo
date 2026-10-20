@@ -1,5 +1,6 @@
 import type { ChainConfig } from './types.ts'
 
+/** Chain configuration for Ethereum mainnet (chain ID 1). */
 export const Mainnet: ChainConfig = {
   name: 'mainnet',
   chainId: 1,
@@ -141,6 +142,10 @@ export const Mainnet: ChainConfig = {
       name: 'amsterdam',
       block: null,
     },
+    {
+      name: 'hegota',
+      block: null,
+    },
   ],
   bootstrapNodes: [
     {
@@ -177,6 +182,7 @@ export const Mainnet: ChainConfig = {
   ],
 }
 
+/** Chain configuration for the Sepolia testnet (chain ID 11155111). */
 export const Sepolia: ChainConfig = {
   name: 'sepolia',
   chainId: 11155111,
@@ -304,6 +310,10 @@ export const Sepolia: ChainConfig = {
       name: 'amsterdam',
       block: null,
     },
+    {
+      name: 'hegota',
+      block: null,
+    },
   ],
   bootstrapNodes: [
     {
@@ -340,6 +350,7 @@ export const Sepolia: ChainConfig = {
   ],
 }
 
+/** Chain configuration for the Holesky testnet (chain ID 17000). */
 export const Holesky: ChainConfig = {
   name: 'holesky',
   chainId: 17000,
@@ -483,6 +494,7 @@ export const Holesky: ChainConfig = {
   ],
 }
 
+/** Chain configuration for the Hoodi testnet (chain ID 560048). */
 export const Hoodi: ChainConfig = {
   name: 'hoodi',
   chainId: 560048,
@@ -606,6 +618,10 @@ export const Hoodi: ChainConfig = {
     },
     {
       name: 'amsterdam',
+      block: null,
+    },
+    {
+      name: 'hegota',
       block: null,
     },
   ],

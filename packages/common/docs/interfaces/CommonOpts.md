@@ -6,7 +6,7 @@
 
 # Interface: CommonOpts
 
-Defined in: [common/src/types.ts:144](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L144)
+Defined in: [types.ts:156](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L156)
 
 Options for instantiating a [Common](../classes/Common.md) instance.
 
@@ -20,7 +20,7 @@ Options for instantiating a [Common](../classes/Common.md) instance.
 
 > **chain**: [`ChainConfig`](ChainConfig.md)
 
-Defined in: [common/src/types.ts:149](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L149)
+Defined in: [types.ts:161](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L161)
 
 The chain configuration to be used. There are available configuration object for mainnet
 (`Mainnet`) and the currently active testnets which can be directly used.
@@ -29,9 +29,9 @@ The chain configuration to be used. There are available configuration object for
 
 ### customCrypto?
 
-> `optional` **customCrypto**: [`CustomCrypto`](CustomCrypto.md)
+> `optional` **customCrypto?**: [`CustomCrypto`](CustomCrypto.md)
 
-Defined in: [common/src/types.ts:138](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L138)
+Defined in: [types.ts:150](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L150)
 
 This option can be used to replace the most common crypto primitives
 (keccak256 hashing e.g.) within the EthereumJS ecosystem libraries
@@ -50,9 +50,9 @@ and be made with eventual security implications considered.
 
 ### eips?
 
-> `optional` **eips**: `number`[]
+> `optional` **eips?**: `number`[]
 
-Defined in: [common/src/types.ts:109](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L109)
+Defined in: [types.ts:121](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L121)
 
 Selected EIPs which can be activated, please use an array for instantiation
 (e.g. `eips: [ 2537, ]`)
@@ -69,9 +69,9 @@ Currently supported:
 
 ### hardfork?
 
-> `optional` **hardfork**: `string`
+> `optional` **hardfork?**: `string`
 
-Defined in: [common/src/types.ts:100](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L100)
+Defined in: [types.ts:112](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L112)
 
 String identifier ('byzantium') for hardfork or [Hardfork](../variables/Hardfork.md) enum.
 
@@ -85,9 +85,9 @@ Default: Hardfork.London
 
 ### params?
 
-> `optional` **params**: [`ParamsDict`](../type-aliases/ParamsDict.md)
+> `optional` **params?**: [`ParamsDict`](../type-aliases/ParamsDict.md)
 
-Defined in: [common/src/types.ts:127](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L127)
+Defined in: [types.ts:139](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/types.ts#L139)
 
 Optionally pass in an EIP params dictionary, see one of the
 EthereumJS library `params.ts` files for an example (e.g. tx, evm).

@@ -66,8 +66,8 @@ const block = createBlock(
   },
 )
 
-describe('VM initialized with custom state', () => {
-  it('should transfer eth from already existent account', async () => {
+describe('[VM]: custom state at construction', () => {
+  it('transfers eth from already existent account', async () => {
     const blockchain = await createBlockchain({ common, genesisState })
     const vm = await createVM({ blockchain, common })
     await vm.stateManager.generateCanonicalGenesis!(genesisState)
@@ -95,7 +95,7 @@ describe('VM initialized with custom state', () => {
     assert.strictEqual(receiverAddress!.balance.toString(), '1')
   })
 
-  it('should retrieve value from storage', async () => {
+  it('retrieves value from storage', async () => {
     const blockchain = await createBlockchain({ common, genesisState })
     common.setHardfork(Hardfork.London)
     const vm = await createVM({ blockchain, common })

@@ -10,7 +10,7 @@ import {
 import { createVM, runTx } from '@ethereumjs/vm'
 
 const main = async () => {
-  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai })
+  const common = new Common({ chain: Mainnet, hardfork: Hardfork.Prague })
   const vm = await createVM({ common })
 
   const senderKey = hexToBytes(`0x${'20'.repeat(32)}`)

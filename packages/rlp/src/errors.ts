@@ -6,6 +6,7 @@
  * See: https://github.com/ChainSafe/lodestar/blob/unstable/packages/utils/src/errors.ts
  */
 export type EthereumJSErrorMetaData = Record<string, string | number | null>
+/** Serialized shape of an {@link EthereumJSError}. */
 export type EthereumJSErrorObject = {
   message: string
   stack: string
@@ -16,6 +17,7 @@ export type EthereumJSErrorObject = {
 // In order to update all our errors to use `EthereumJSError`, temporarily include the
 // unset error code. All errors throwing this code should be updated to use the relevant
 // error code.
+/** Fallback error code when none is provided. */
 export const DEFAULT_ERROR_CODE = 'ETHEREUMJS_DEFAULT_ERROR_CODE'
 
 /**
@@ -48,9 +50,7 @@ export class EthereumJSError<T extends { code: string }> extends Error {
 
 /**
  * @deprecated Use `EthereumJSError` with a set error code instead
- * @param message Optional error message
- * @param stack Optional stack trace
- * @returns
+ * @throws Always uses {@link DEFAULT_ERROR_CODE}
  */
 export function EthereumJSErrorWithoutCode(message?: string, stack?: string) {
   return new EthereumJSError({ code: DEFAULT_ERROR_CODE }, message, stack)

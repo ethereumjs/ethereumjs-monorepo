@@ -4,7 +4,7 @@
 
 [@ethereumjs/util](../README.md) / bytesToUnprefixedHex
 
-# ~~Variable: bytesToUnprefixedHex()~~
+# ~~Variable: bytesToUnprefixedHex~~
 
 > `const` **bytesToUnprefixedHex**: (`bytes`) => `string` = `bytesToUnprefixedHexNoble`
 
@@ -29,3 +29,5 @@ bytesToHex(Uint8Array.from([0xca, 0xfe, 0x01, 0x23])) // 'cafe0123'
 ```
 
 ## Deprecated
+
+Use [bytesToHex](../functions/bytesToHex.md) from `@ethereumjs/util` or the unprefixed variant from `@noble/hashes/utils`.

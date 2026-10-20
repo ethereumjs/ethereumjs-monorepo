@@ -12,8 +12,8 @@ const fakeEthersProvider = {
   },
 }
 
-describe('getProvider', () => {
-  it('should work', () => {
+describe('[Util]: getProvider', () => {
+  it('normalizes string and ethers-style provider URLs', () => {
     assert.strictEqual(
       getProvider(providerUrl),
       providerUrl,
@@ -34,8 +34,8 @@ describe('getProvider', () => {
   })
 })
 
-describe('fetchFromProvider', () => {
-  it('should return the response of the jsonrpc request', async () => {
+describe('[Util]: fetchFromProvider', () => {
+  it('returns the response of the jsonrpc request', async () => {
     vi.stubGlobal('fetch', async (_url: string, _req: any) => {
       return {
         json: async () => {
@@ -57,7 +57,7 @@ describe('fetchFromProvider', () => {
     vi.unstubAllGlobals()
   })
 
-  it('should work', async () => {
+  it('surfaces fetch errors when global fetch is unavailable', async () => {
     try {
       await fetchFromProvider(providerUrl, {
         method: 'eth_getBalance',
@@ -69,7 +69,7 @@ describe('fetchFromProvider', () => {
     }
   })
 
-  it('should throw a formatted error when an error is returned from the RPC', async () => {
+  it('throws a formatted error when an error is returned from the RPC', async () => {
     vi.stubGlobal('fetch', async (_url: string, _req: any) => {
       return {
         text: async () => {
@@ -91,7 +91,7 @@ describe('fetchFromProvider', () => {
     vi.unstubAllGlobals()
   })
 
-  it('should abort the request when the timeout is exceeded', async () => {
+  it('aborts the request when the timeout is exceeded', async () => {
     vi.stubGlobal('fetch', async (_url: string, req: any) => {
       // Simulate a slow provider by waiting until the signal aborts
       return new Promise((_resolve, reject) => {

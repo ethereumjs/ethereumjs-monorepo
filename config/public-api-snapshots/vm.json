@@ -1,0 +1,16 @@
+{
+  "package": "vm",
+  "exports": [
+    "BlockBuilder",
+    "Bloom",
+    "BuildStatus",
+    "VM",
+    "buildBlock",
+    "createVM",
+    "encodeReceipt",
+    "estimateTxGasDimensions",
+    "paramsVM",
+    "runBlock",
+    "runTx"
+  ]
+}

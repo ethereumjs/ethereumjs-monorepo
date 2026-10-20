@@ -56,10 +56,8 @@ const main = async () => {
   }
 
   if (blockNumber === undefined) {
-    console.log('Example skipped (no block number provided)')
-    console.log('Usage: npx tsx examples/runMainnetBlock.ts <blockNumber>')
-    console.log(`Bundled valid block numbers: ${BUNDLED_VALID_BLOCK_LIST}`)
-    return
+    blockNumber = 24476000n
+    console.log(`No block number provided — using bundled default ${blockNumber}`)
   }
 
   if (!BUNDLED_VALID_BLOCK_NUMBERS.has(blockNumber)) {

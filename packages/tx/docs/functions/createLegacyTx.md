@@ -6,16 +6,13 @@
 
 # Function: createLegacyTx()
 
-> **createLegacyTx**(`txData`, `opts`): [`LegacyTx`](../classes/LegacyTx.md)
+> **createLegacyTx**(`txData`, `opts?`): [`LegacyTx`](../classes/LegacyTx.md)
 
-Defined in: [legacy/constructors.ts:17](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/constructors.ts#L17)
+Defined in: [legacy/constructors.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/legacy/constructors.ts#L18)
 
-Instantiate a transaction from a data dictionary.
+Instantiate a legacy transaction from a plain data object.
 
-Format: { nonce, gasPrice, gasLimit, to, value, data, v, r, s }
-
-Notes:
-- All parameters are optional and have some basic default values
+All [LegacyTxData](../type-aliases/LegacyTxData.md) fields are optional; unsigned txs omit `v`/`r`/`s`.
 
 ## Parameters
 
@@ -23,10 +20,22 @@ Notes:
 
 [`LegacyTxData`](../type-aliases/LegacyTxData.md)
 
-### opts
+### opts?
 
 [`TxOptions`](../interfaces/TxOptions.md) = `{}`
 
 ## Returns
 
 [`LegacyTx`](../classes/LegacyTx.md)
+
+## Throws
+
+If fee or value fields overflow or are non-numeric
+
+## Throws
+
+If gas limit or nonce exceed EIP bounds
+
+## Throws
+
+If init code size exceeds EIP-3860 on contract-creation txs

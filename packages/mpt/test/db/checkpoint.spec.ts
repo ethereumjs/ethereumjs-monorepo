@@ -1,11 +1,11 @@
 import { MapDB, hexToBytes, utf8ToBytes } from '@ethereumjs/util'
-import { assert, beforeEach, describe, it } from 'vitest'
+import { assert, beforeEach, describe, expect, it } from 'vitest'
 
 import { CheckpointDB } from '../../src/index.ts'
 
 import type { BatchDBOp } from '@ethereumjs/util'
 
-describe('DB tests', () => {
+describe('[MPT/CheckpointDB]: checkpointing', () => {
   let db: CheckpointDB
   const k = utf8ToBytes('k1')
   const v = utf8ToBytes('v1')
@@ -17,16 +17,16 @@ describe('DB tests', () => {
     db = new CheckpointDB({ db: new MapDB() })
   })
 
-  it('should initialize with empty checkpoints', () => {
+  it('initializes with empty checkpoints', () => {
     assert.isEmpty(db.checkpoints)
   })
 
-  it('should add a checkpoint', () => {
+  it('adds a checkpoint', () => {
     db.checkpoint(new Uint8Array())
     assert.strictEqual(db.checkpoints.length, 1)
   })
 
-  it('should commit the latest checkpoint', async () => {
+  it('commits the latest checkpoint', async () => {
     db.checkpoint(new Uint8Array())
 
     // Add some data to the latest checkpoint
@@ -39,7 +39,7 @@ describe('DB tests', () => {
     assert.strictEqual(db._stats.db.writes, 1)
   })
 
-  it('should revert the latest checkpoint', async () => {
+  it('reverts the latest checkpoint', async () => {
     const expectedRoot = new Uint8Array()
 
     // Add a checkpoint
@@ -53,7 +53,7 @@ describe('DB tests', () => {
     assert.strictEqual(actualRoot, expectedRoot, 'roots should match')
   })
 
-  it('should get a value', async () => {
+  it('get a value', async () => {
     const key1 = hexToBytes('0x123')
     const val1 = hexToBytes('0x456')
 
@@ -67,7 +67,7 @@ describe('DB tests', () => {
     assert.deepEqual(actualValue, val1)
   })
 
-  it('should put a value', async () => {
+  it('puts a value', async () => {
     const key1 = hexToBytes('0x123')
     const val1 = hexToBytes('0x456')
 
@@ -81,7 +81,7 @@ describe('DB tests', () => {
     assert.deepEqual(actualValue, val1)
   })
 
-  it('should delete a value', async () => {
+  it('deletes a value', async () => {
     const key1 = hexToBytes('0x123')
     const val1 = hexToBytes('0x456')
 
@@ -149,5 +149,44 @@ describe('DB tests', () => {
     assert.deepEqual(await db.get(k), v3, 'after commit (second CP): v3')
     await db.revert()
     assert.deepEqual(await db.get(k), v, 'after revert (first CP): v1')
+  })
+
+  it('Checkpointing: cacheSize > 0 does not mask a checkpointed put/del from a later get()', async () => {
+    const cachedDb = new CheckpointDB({ db: new MapDB(), cacheSize: 100 })
+    await cachedDb.put(k, v)
+    assert.deepEqual(await cachedDb.get(k), v, 'before CP: v1 (also populates _cache)')
+
+    cachedDb.checkpoint(hexToBytes('0x01'))
+    await cachedDb.put(k, v2)
+    assert.deepEqual(
+      await cachedDb.get(k),
+      v2,
+      'after put (update) in open checkpoint: v2, not stale v1',
+    )
+
+    await cachedDb.del(k)
+    assert.deepEqual(
+      await cachedDb.get(k),
+      undefined,
+      'after del in open checkpoint: undefined, not stale v1',
+    )
+  })
+
+  it('Checkpointing: failed flush keeps the checkpoint so it can be reverted', async () => {
+    const mapDb = new MapDB<string, string | Uint8Array>()
+    mapDb.batch = async () => {
+      throw new Error('flush failed')
+    }
+    const failingDb = new CheckpointDB({ db: mapDb })
+    const root = hexToBytes('0x01')
+
+    failingDb.checkpoint(root)
+    await failingDb.put(k, v)
+
+    await expect(failingDb.commit()).rejects.toThrow('flush failed')
+    assert.strictEqual(failingDb.checkpoints.length, 1, 'checkpoint restored')
+    assert.deepEqual(await failingDb.get(k), v, 'uncommitted value still visible')
+    assert.strictEqual(await failingDb.revert(), root, 'checkpoint root returned')
+    assert.deepEqual(await failingDb.get(k), undefined, 'after revert: undefined')
   })
 })

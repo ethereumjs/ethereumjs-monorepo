@@ -44,10 +44,10 @@ function BLS12_381_ToFp2Point(fpXCoordinate: Uint8Array, fpYCoordinate: Uint8Arr
 }
 
 /**
- * Converts an Uint8Array to a Noble G1 point. Raises errors if the point is not on the curve
- * and (if activated) if the point is in the subgroup / order check.
- * @param input Input Uint8Array. Should be 128 bytes
- * @returns Noble G1 point
+ * Decodes a 128-byte G1 point from precompile input.
+ *
+ * @param verifyOrder - When true, reject points outside the prime-order subgroup
+ * @throws If the point is not on the BLS12-381 curve
  */
 function BLS12_381_ToG1Point(input: Uint8Array, verifyOrder = true) {
   if (equalsBytes(input, BLS_G1_INFINITY_POINT_BYTES) === true) {
@@ -82,10 +82,10 @@ function BLS12_381_FromG1Point(input: AffinePoint<bigint>): Uint8Array {
 }
 
 /**
- * Converts an Uint8Array to a Noble G2 point. Raises errors if the point is not on the curve
- * and (if activated) if the point is in the subgroup / order check.
- * @param input Input Uint8Array. Should be 256 bytes
- * @returns Noble G2 point
+ * Decodes a 256-byte G2 point from precompile input.
+ *
+ * @param verifyOrder - When true, reject points outside the prime-order subgroup
+ * @throws If the point is not on the BLS12-381 curve
  */
 function BLS12_381_ToG2Point(input: Uint8Array, verifyOrder = true) {
   if (equalsBytes(input, BLS_G2_INFINITY_POINT_BYTES) === true) {

@@ -4,9 +4,7 @@ import { bytesToHex, hexToBytes, setLengthLeft } from '@ethereumjs/util'
 import type { AccessList, AccessListBytes } from '../types.ts'
 
 /**
- * Converts an access list in bytes to a JSON format
- * @param accessList
- * @returns JSON format of the access list
+ * Converts an access list from bytes to JSON (0x-prefixed hex addresses and storage keys).
  */
 export function accessListBytesToJSON(accessList: AccessListBytes): AccessList {
   return accessList.map(([address, storageSlots]) => ({
@@ -16,9 +14,7 @@ export function accessListBytesToJSON(accessList: AccessListBytes): AccessList {
 }
 
 /**
- * Converts an access list in JSON to a bytes format
- * @param accessList
- * @returns bytes format of the access list
+ * Converts an access list from JSON to bytes (unpadded address and 32-byte storage keys).
  */
 export function accessListJSONToBytes(accessList: AccessList): AccessListBytes {
   return accessList.map((item) => [

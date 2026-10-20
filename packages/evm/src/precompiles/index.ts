@@ -1,3 +1,6 @@
+// Lazy-loading BLS / P256 backends on first call is a future bundle-size win (see CI
+// `bundle-size` job). Static imports stay until a measured gain justifies the split.
+
 import { Hardfork } from '@ethereumjs/common'
 import { type Address, type PrefixedHexString, bytesToUnprefixedHex } from '@ethereumjs/util'
 
@@ -40,11 +43,14 @@ type PrecompileAvailabilityCheckType =
   | PrecompileAvailabilityCheckTypeHardfork
   | PrecompileAvailabilityCheckTypeEIP
 
+/** Whether a built-in precompile is gated by hardfork or EIP activation. */
 export type PrecompileAvailabilityCheck =
   (typeof PrecompileAvailabilityCheck)[keyof typeof PrecompileAvailabilityCheck]
 
 export const PrecompileAvailabilityCheck = {
+  /** Activated when {@link Common.isActivatedEIP} is true for `param`. */
   EIP: 'eip',
+  /** Activated when {@link Common.gteHardfork} is true for `param`. */
   Hardfork: 'hardfork',
 } as const
 
@@ -287,6 +293,11 @@ function resolvePrecompileAddress(address: Address | PrefixedHexString): string 
   return bytesToUnprefixedHex(address.bytes)
 }
 
+/**
+ * Returns the precompile map active for `common`, merged with optional custom entries.
+ *
+ * Custom additions override built-ins at the same address; deletions set the address to `undefined`.
+ */
 function getActivePrecompiles(
   common: Common,
   customPrecompiles?: CustomPrecompile[],

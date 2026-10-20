@@ -108,7 +108,7 @@ for (let address = precompileAddressStart; address <= precompileAddressEnd; addr
   precompiles.push(`0x${address.toString(16).padStart(40, '0')}`)
 }
 
-describe('EIP-2537 BLS precompile availability tests', () => {
+describe('[EVM/EIP-2537]: bLS precompile availability', () => {
   it('BLS precompiles should not be available if EIP not activated', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.MuirGlacier })
     const evm = await createEVM({

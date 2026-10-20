@@ -5,6 +5,7 @@ import { BinaryNodeType, NODE_WIDTH } from './types.ts'
 
 import type { BinaryNodeOptions } from './types.ts'
 
+/** Binary tree stem node holding up to 256 suffix values (EIP-7864). */
 export class StemBinaryNode {
   public stem: Uint8Array
   public values: (Uint8Array | null)[] // Array of 256 possible values represented as 32 byte Uint8Arrays
@@ -68,7 +69,7 @@ export class StemBinaryNode {
    *   - For each value, if it is `null`, it is converted to an empty Uint8Array.
    *   - Otherwise, the value is included as-is.
    *
-   * @returns {Uint8Array[]} An array of Uint8Arrays representing the node's raw data.
+   * @returns Raw RLP array: node type byte, stem, then 256 slot values
    */
   raw(): Uint8Array[] {
     return [

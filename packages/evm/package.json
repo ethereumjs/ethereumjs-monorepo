@@ -1,6 +1,6 @@
 {
   "name": "@ethereumjs/evm",
-  "version": "10.1.2",
+  "version": "10.1.3",
   "description": "JavaScript Ethereum Virtual Machine (EVM) implementation",
   "keywords": ["ethereum", "EVM", "JavaScript", "TypeScript"],
   "homepage": "https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/evm#readme",
@@ -24,7 +24,10 @@
         "typescript": "./src/index.ts",
         "default": "./dist/esm/index.js"
       },
-      "require": "./dist/cjs/index.js"
+      "require": {
+        "typescript": "./src/index.ts",
+        "default": "./dist/cjs/index.js"
+      }
     }
   },
   "files": ["dist", "src"],
@@ -35,7 +38,7 @@
     "clean": "../../config/cli/clean-package.sh",
     "coverage": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.mts",
     "coverage:istanbul": "DEBUG=ethjs npx vitest run -c ../../config/vitest.config.coverage.istanbul.mts",
-    "docs:build": "typedoc --options typedoc.mjs",
+    "docs:build": "../../config/cli/typedoc.sh --options typedoc.mjs",
     "examples": "tsx ../../scripts/examples-runner.ts -- evm && tsx ../../scripts/examples-runner.ts -- evm precompiles && tsx ../../scripts/examples-runner.ts -- evm opcodes",
     "examples:build": "npx embedme README.md",
     "formatTest": "node ./scripts/formatTest",
@@ -46,7 +49,6 @@
     "spellcheck": "npm run spellcheck:ts && npm run spellcheck:md",
     "spellcheck:ts": "npx cspell --gitignore -c ../../config/cspell-ts.json \"./**/*.ts\" --cache --show-suggestions --show-context",
     "spellcheck:md": "npx cspell --gitignore -c ../../config/cspell-md.json \"**.md\" --cache --show-suggestions --show-context",
-    "profiling": "0x ./benchmarks/run.js profiling",
     "test": "npm run test:node && npm run test:browser",
     "test:browser": "npx vitest run --config=./vitest.config.browser.mts",
     "test:node": "npx vitest run -c ../../config/vitest.config.mts",
@@ -54,34 +56,23 @@
     "visualize:bundle": "npx vite build --config=./vite.config.bundler.ts --emptyOutDir=false --outDir ."
   },
   "dependencies": {
-    "@ethereumjs/binarytree": "^10.1.2",
-    "@ethereumjs/common": "^10.1.2",
-    "@ethereumjs/statemanager": "^10.1.2",
-    "@ethereumjs/util": "^10.1.2",
-    "@noble/curves": "^2.0.1",
-    "@noble/hashes": "^2.0.1",
-    "debug": "^4.4.0",
-    "eventemitter3": "^5.0.1"
+    "@ethereumjs/common": "^10.1.3",
+    "@ethereumjs/statemanager": "^10.1.3",
+    "@ethereumjs/util": "^10.1.3",
+    "@noble/curves": "^2.4.0",
+    "@noble/hashes": "^2.4.0",
+    "debug": "4.4.3",
+    "eventemitter3": "5.0.4"
   },
   "devDependencies": {
-    "@paulmillr/trusted-setups": "^0.2.0",
-    "@types/benchmark": "^2.1.5",
     "@types/debug": "^4.1.12",
-    "@types/minimist": "^1.2.5",
     "@types/node-dir": "^0.0.37",
-    "benchmark": "^2.1.4",
-    "level": "^9.0.0",
     "mcl-wasm": "^1.8.0",
-    "memory-level": "^3.0.0",
-    "micro-eth-signer": "^0.15.0",
-    "minimist": "^1.2.8",
     "node-dir": "^0.1.17",
     "rollup-plugin-visualizer": "^5.14.0",
-    "rustbn-wasm": "^0.4.0",
-    "solc": "^0.8.28",
-    "split": "^1.0.1"
+    "rustbn-wasm": "^0.4.0"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   }
 }

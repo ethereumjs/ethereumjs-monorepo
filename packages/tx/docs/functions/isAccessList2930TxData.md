@@ -8,7 +8,7 @@
 
 > **isAccessList2930TxData**(`txData`): `txData is AccessList2930TxData`
 
-Defined in: [types.ts:315](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L315)
+Defined in: [types.ts:345](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/tx/src/types.ts#L345)
 
 Type guard to check if transaction data is AccessList EIP-2930 transaction data
 

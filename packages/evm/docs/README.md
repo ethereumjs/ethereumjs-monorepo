@@ -7,7 +7,6 @@
 ## Classes
 
 - [BinaryTreeAccessWitness](classes/BinaryTreeAccessWitness.md)
-- [EOFContainer](classes/EOFContainer.md)
 - [EVM](classes/EVM.md)
 - [EVMError](classes/EVMError.md)
 - [EVMMockBlockchain](classes/EVMMockBlockchain.md)
@@ -61,7 +60,9 @@
 - [createEIP7708TransferLog](functions/createEIP7708TransferLog.md)
 - [createEVM](functions/createEVM.md)
 - [decodeBinaryAccessState](functions/decodeBinaryAccessState.md)
+- [decodeEIP7708BurnLog](functions/decodeEIP7708BurnLog.md)
+- [decodeEIP7708TransferLog](functions/decodeEIP7708TransferLog.md)
 - [generateBinaryExecutionWitness](functions/generateBinaryExecutionWitness.md)
 - [getActivePrecompiles](functions/getActivePrecompiles.md)
 - [getOpcodesForHF](functions/getOpcodesForHF.md)
-- [validateEOF](functions/validateEOF.md)
+- [txExceedsAvailableBlockGas8037](functions/txExceedsAvailableBlockGas8037.md)

@@ -8,9 +8,9 @@
 
 > **stripHexPrefix**(`str`): `string`
 
-Defined in: [packages/util/src/internal.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L49)
+Defined in: [packages/util/src/internal.ts:44](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/internal.ts#L44)
 
-Removes '0x' from a given `String` if present
+Remove a leading `0x` prefix when present.
 
 ## Parameters
 
@@ -18,10 +18,10 @@ Removes '0x' from a given `String` if present
 
 `string`
 
-the string value
-
 ## Returns
 
 `string`
 
-the string without 0x prefix
+## Throws
+
+If the input is not a string

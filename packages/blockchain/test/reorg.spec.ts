@@ -12,8 +12,8 @@ import { generateConsecutiveBlock } from './util.ts'
 import type { Block } from '@ethereumjs/block'
 import type { ConsensusDict } from '../src/index.ts'
 
-describe('reorg tests', () => {
-  it('should correctly reorg the chain if the total difficulty is higher on a lower block number than the current head block', async () => {
+describe('[Blockchain]: reorgs', () => {
+  it('reorg the chain if the total difficulty is higher on a lower block number than the current head block', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.MuirGlacier })
     const genesis = createBlock(
       {
@@ -66,7 +66,7 @@ describe('reorg tests', () => {
     )
   })
 
-  it('should correctly reorg a poa chain and remove blocks from clique snapshots', async () => {
+  it('reorg a poa chain and remove blocks from clique snapshots', async () => {
     const common = new Common({ chain: goerliChainConfig, hardfork: Hardfork.Chainstart })
     const genesisBlock = createBlock({ header: { extraData: new Uint8Array(97) } }, { common })
 

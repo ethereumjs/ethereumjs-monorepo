@@ -29,6 +29,11 @@ import {
 } from '../consensus/clique.ts'
 import { computeBlobGasPrice } from '../helpers.ts'
 import { paramsBlock } from '../params.ts'
+import {
+  appendHeaderEipRawFields,
+  headerEipHardforkDefaults,
+  validateHeaderEipFieldsInactive,
+} from './headerEipFields.ts'
 
 import type { BlockHeaderBytes, BlockOptions, HeaderData, JSONHeader } from '../types.ts'
 
@@ -92,8 +97,9 @@ export class BlockHeader {
   /**
    * This constructor takes the values, validates them, assigns them and freezes the object.
    *
-   * @deprecated Use the public static factory methods to assist in creating a Header object from
-   * varying data types. For a default empty header, use {@link createBlockHeader}.
+   * @deprecated Use the module-level factory functions such as {@link createBlockHeader},
+   * {@link createBlockHeaderFromRLP}, and {@link createBlockHeaderFromBytesArray} to create
+   * a BlockHeader from varying data types.
    *
    */
   constructor(headerData: HeaderData, opts: BlockOptions = {}) {
@@ -156,23 +162,7 @@ export class BlockHeader {
       })
     }
 
-    // Hardfork defaults which couldn't be paired with earlier defaults
-    const hardforkDefaults = {
-      baseFeePerGas: this.common.isActivatedEIP(1559)
-        ? number === this.common.hardforkBlock(Hardfork.London)
-          ? this.common.param('initialBaseFee')
-          : BIGINT_7
-        : undefined,
-      withdrawalsRoot: this.common.isActivatedEIP(4895) ? KECCAK256_RLP : undefined,
-      blobGasUsed: this.common.isActivatedEIP(4844) ? BIGINT_0 : undefined,
-      excessBlobGas: this.common.isActivatedEIP(4844) ? BIGINT_0 : undefined,
-      parentBeaconBlockRoot: this.common.isActivatedEIP(4788) ? new Uint8Array(32) : undefined,
-      // Note: as of devnet-4 we stub the null SHA256 hash, but for devnet5 this will actually
-      // be the correct hash for empty requests.
-      requestsHash: this.common.isActivatedEIP(7685) ? SHA256_NULL : undefined,
-      blockAccessListHash: this.common.isActivatedEIP(7928) ? new Uint8Array(32) : undefined,
-      slotNumber: this.common.isActivatedEIP(7843) ? BIGINT_0 : undefined,
-    }
+    const hardforkDefaults = headerEipHardforkDefaults(this.common, number)
 
     const baseFeePerGas =
       toType(headerData.baseFeePerGas, TypeOutput.BigInt) ?? hardforkDefaults.baseFeePerGas
@@ -193,51 +183,16 @@ export class BlockHeader {
     const slotNumber =
       toType(headerData.slotNumber, TypeOutput.BigInt) ?? hardforkDefaults.slotNumber
 
-    if (!this.common.isActivatedEIP(1559) && baseFeePerGas !== undefined) {
-      throw EthereumJSErrorWithoutCode(
-        'A base fee for a block can only be set with EIP1559 being activated',
-      )
-    }
-
-    if (!this.common.isActivatedEIP(4895) && withdrawalsRoot !== undefined) {
-      throw EthereumJSErrorWithoutCode(
-        'A withdrawalsRoot for a header can only be provided with EIP4895 being activated',
-      )
-    }
-
-    if (!this.common.isActivatedEIP(4844)) {
-      if (blobGasUsed !== undefined) {
-        throw EthereumJSErrorWithoutCode(
-          'blob gas used can only be provided with EIP4844 activated',
-        )
-      }
-
-      if (excessBlobGas !== undefined) {
-        throw EthereumJSErrorWithoutCode(
-          'excess blob gas can only be provided with EIP4844 activated',
-        )
-      }
-    }
-
-    if (!this.common.isActivatedEIP(4788) && parentBeaconBlockRoot !== undefined) {
-      throw EthereumJSErrorWithoutCode(
-        'A parentBeaconBlockRoot for a header can only be provided with EIP4788 being activated',
-      )
-    }
-
-    if (!this.common.isActivatedEIP(7685) && requestsHash !== undefined) {
-      throw EthereumJSErrorWithoutCode('requestsHash can only be provided with EIP 7685 activated')
-    }
-
-    if (!this.common.isActivatedEIP(7928) && blockAccessListHash !== undefined) {
-      throw EthereumJSErrorWithoutCode(
-        'blockAccessListHash can only be provided with EIP 7928 activated',
-      )
-    }
-
-    if (!this.common.isActivatedEIP(7843) && slotNumber !== undefined) {
-      throw EthereumJSErrorWithoutCode('slotNumber can only be provided with EIP 7843 activated')
-    }
+    validateHeaderEipFieldsInactive(this.common, {
+      baseFeePerGas,
+      withdrawalsRoot,
+      blobGasUsed,
+      excessBlobGas,
+      parentBeaconBlockRoot,
+      requestsHash,
+      blockAccessListHash,
+      slotNumber,
+    })
 
     this.parentHash = parentHash
     this.uncleHash = uncleHash
@@ -661,31 +616,7 @@ export class BlockHeader {
       this.nonce,
     ]
 
-    if (this.common.isActivatedEIP(1559)) {
-      rawItems.push(bigIntToUnpaddedBytes(this.baseFeePerGas!))
-    }
-
-    if (this.common.isActivatedEIP(4895)) {
-      rawItems.push(this.withdrawalsRoot!)
-    }
-
-    if (this.common.isActivatedEIP(4844)) {
-      rawItems.push(bigIntToUnpaddedBytes(this.blobGasUsed!))
-      rawItems.push(bigIntToUnpaddedBytes(this.excessBlobGas!))
-    }
-    if (this.common.isActivatedEIP(4788)) {
-      rawItems.push(this.parentBeaconBlockRoot!)
-    }
-    if (this.common.isActivatedEIP(7685)) {
-      rawItems.push(this.requestsHash!)
-    }
-
-    if (this.common.isActivatedEIP(7928)) {
-      rawItems.push(this.blockAccessListHash!)
-    }
-    if (this.common.isActivatedEIP(7843)) {
-      rawItems.push(bigIntToUnpaddedBytes(this.slotNumber!))
-    }
+    appendHeaderEipRawFields(this, rawItems)
     return rawItems
   }
 

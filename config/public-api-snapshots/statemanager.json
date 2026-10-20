@@ -1,0 +1,24 @@
+{
+  "package": "statemanager",
+  "exports": [
+    "AccountCache",
+    "CODEHASH_PREFIX",
+    "CacheType",
+    "Caches",
+    "CodeCache",
+    "MerkleStateManager",
+    "OriginalStorageCache",
+    "RPCBlockChain",
+    "RPCStateManager",
+    "SimpleStateManager",
+    "StatefulBinaryTreeStateManager",
+    "StorageCache",
+    "addMerkleStateProofData",
+    "addMerkleStateStorageProof",
+    "consumeBAL",
+    "fromMerkleStateProof",
+    "getMerkleStateProof",
+    "getRPCStateProof",
+    "verifyMerkleStateProof"
+  ]
+}

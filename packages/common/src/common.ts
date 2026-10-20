@@ -39,14 +39,12 @@ import type {
  * Common class to access chain and hardfork parameters and to provide
  * a unified and shared view on the network and hardfork state.
  *
- * Use the {@link createCustomCommon} constructor for creating simple
- * custom chain {@link Common} objects (more complete custom chain setups
- * can be created via the main constructor).
- *
- * Use the {@link createCommonFromGethGenesis} constructor for creating
- * a Common object from a Geth genesis file.
+ * Use {@link createCustomCommon} for simple custom-chain setups and
+ * {@link createCommonFromGethGenesis} to build a `Common` instance from a Geth genesis file.
+ * For full control over chain parameters, pass a {@link ChainConfig} to the constructor below.
  */
 export class Common {
+  /** Default hardfork from chain config (falls back to {@link Hardfork.Prague}). */
   readonly DEFAULT_HARDFORK: string | Hardfork
 
   protected _chainParams: ChainConfig
@@ -54,15 +52,20 @@ export class Common {
   protected _eips: number[] = []
   protected _params: ParamsDict
 
+  /** Optional crypto overrides from {@link BaseOpts.customCrypto}. */
   public readonly customCrypto: CustomCrypto
 
   protected _paramsCache: ParamsConfig = {}
   protected _activatedEIPsCache: number[] = []
+  protected _activatedEIPsSet: Set<number> = new Set()
+  protected _hardforkIndexByName: Map<string, number> = new Map()
 
   protected HARDFORK_CHANGES: [string, HardforkConfig][]
 
+  /** Emits `hardforkChanged` when the active hardfork updates. */
   public events: EventEmitter<CommonEvent>
 
+  /** Create a `Common` instance for a chain configuration and optional hardfork/EIP overrides. */
   constructor(opts: CommonOpts) {
     this.events = new EventEmitter<CommonEvent>()
 
@@ -75,6 +78,7 @@ export class Common {
       (this._chainParams.customHardforks && this._chainParams.customHardforks[hf.name]) ??
         hardforksDict[hf.name],
     ])
+    this._buildHardforkIndex()
     this._hardfork = this.DEFAULT_HARDFORK
     this._params = opts.params ? JSON.parse(JSON.stringify(opts.params)) : {} // copy
 
@@ -106,8 +110,7 @@ export class Common {
    *   }
    * }
    * ```
-   *
-   * @param params
+
    */
   updateParams(params: ParamsDict) {
     for (const [eip, paramsConfig] of Object.entries(params)) {
@@ -133,8 +136,7 @@ export class Common {
    *   }
    * }
    * ```
-   *
-   * @param params
+
    */
   resetParams(params: ParamsDict) {
     this._params = JSON.parse(JSON.stringify(params)) // copy
@@ -274,7 +276,7 @@ export class Common {
 
   /**
    * Sets the active EIPs
-   * @param eips
+
    */
   setEIPs(eips: number[] = []) {
     for (const eip of eips) {
@@ -302,6 +304,21 @@ export class Common {
           }
         }
       }
+      const conflicts = eipsDict[eip].conflictsWith ?? []
+      for (const other of conflicts) {
+        if (eips.includes(other) || this.isActivatedEIP(other)) {
+          throw EthereumJSErrorWithoutCode(`EIP ${eip} conflicts with EIP ${other}`)
+        }
+      }
+    }
+  }
+
+  protected _buildHardforkIndex() {
+    this._hardforkIndexByName = new Map()
+    let index = 0
+    for (const hf of this.hardforks()) {
+      this._hardforkIndexByName.set(hf.name, index)
+      index += 1
     }
   }
 
@@ -358,6 +375,7 @@ export class Common {
    */
   protected _buildActivatedEIPsCache() {
     this._activatedEIPsCache = []
+    this._activatedEIPsSet = new Set()
 
     for (const [name, hf] of this.HARDFORK_CHANGES) {
       if (this.gteHardfork(name) && 'eips' in hf) {
@@ -365,6 +383,9 @@ export class Common {
       }
     }
     this._activatedEIPsCache = this._activatedEIPsCache.concat(this._eips)
+    for (const eip of this._activatedEIPsCache) {
+      this._activatedEIPsSet.add(eip)
+    }
   }
 
   /**
@@ -478,19 +499,16 @@ export class Common {
    *
    * Note: this method only works for EIPs being supported
    * by the {@link CommonOpts.eips} constructor option
-   * @param eip
+
    */
   isActivatedEIP(eip: number): boolean {
-    if (this._activatedEIPsCache.includes(eip)) {
-      return true
-    }
-    return false
+    return this._activatedEIPsSet.has(eip)
   }
 
   /**
    * Checks if set or provided hardfork is active on block number
    * @param hardfork Hardfork name or null (for HF set)
-   * @param blockNumber
+
    * @returns True if HF is active on block number
    */
   hardforkIsActiveOnBlock(hardfork: string | Hardfork | null, blockNumber: BigIntLike): boolean {
@@ -505,7 +523,7 @@ export class Common {
 
   /**
    * Alias to hardforkIsActiveOnBlock when hardfork is set
-   * @param blockNumber
+
    * @returns True if HF is active on block number
    */
   activeOnBlock(blockNumber: BigIntLike): boolean {
@@ -520,16 +538,8 @@ export class Common {
    */
   hardforkGteHardfork(hardfork1: string | Hardfork | null, hardfork2: string | Hardfork): boolean {
     hardfork1 = hardfork1 ?? this._hardfork
-    const hardforks = this.hardforks()
-
-    let posHf1 = -1,
-      posHf2 = -1
-    let index = 0
-    for (const hf of hardforks) {
-      if (hf['name'] === hardfork1) posHf1 = index
-      if (hf['name'] === hardfork2) posHf2 = index
-      index += 1
-    }
+    const posHf1 = this._hardforkIndexByName.get(hardfork1) ?? -1
+    const posHf2 = this._hardforkIndexByName.get(hardfork2) ?? -1
     return posHf1 >= posHf2 && posHf2 !== -1
   }
 
@@ -725,9 +735,10 @@ export class Common {
   }
 
   /**
+   * Look up the hardfork transition entry for a fork hash.
    *
-   * @param forkHash Fork hash as a hex string
-   * @returns Array with hardfork data (name, block, forkHash)
+   * @param forkHash EIP-2124 fork hash as a hex string
+   * @returns The matching transition config, or `null` when unknown
    */
   hardforkForForkHash(forkHash: string): HardforkTransitionConfig | null {
     const resArray = this.hardforks().filter((hf: HardforkTransitionConfig) => {
@@ -790,8 +801,7 @@ export class Common {
   }
 
   /**
-   * Returns DNS networks for the current chain
-   * @returns {String[]} Array of DNS ENR urls
+   * Returns DNS ENR URLs for the current chain.
    */
   dnsNetworks(): string[] {
     return this._chainParams.dnsNetworks!

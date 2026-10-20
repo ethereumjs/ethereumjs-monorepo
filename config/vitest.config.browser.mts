@@ -1,8 +1,9 @@
-import { defineConfig } from 'vitest/config'
+import { configDefaults, defineConfig } from 'vitest/config'
 import { playwright } from '@vitest/browser-playwright'
 
 const config = defineConfig({
   test: {
+    exclude: [...configDefaults.exclude, '**/wasmCrypto.spec.ts', '**/bn254Wasm.spec.ts'],
     browser: {
       enabled: true,
       headless: true,

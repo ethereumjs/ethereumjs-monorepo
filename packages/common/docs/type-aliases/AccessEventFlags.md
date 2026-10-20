@@ -8,7 +8,7 @@
 
 > **AccessEventFlags** = `object`
 
-Defined in: [common/src/interfaces.ts:64](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L64)
+Defined in: [interfaces.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L69)
 
 Binary tree related
 
@@ -20,7 +20,7 @@ Experimental (do not implement)
 
 > **chunkFill**: `boolean`
 
-Defined in: [common/src/interfaces.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L69)
+Defined in: [interfaces.ts:74](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L74)
 
 ***
 
@@ -28,7 +28,7 @@ Defined in: [common/src/interfaces.ts:69](https://github.com/ethereumjs/ethereum
 
 > **chunkRead**: `boolean`
 
-Defined in: [common/src/interfaces.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L67)
+Defined in: [interfaces.ts:72](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L72)
 
 ***
 
@@ -36,7 +36,7 @@ Defined in: [common/src/interfaces.ts:67](https://github.com/ethereumjs/ethereum
 
 > **chunkWrite**: `boolean`
 
-Defined in: [common/src/interfaces.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L68)
+Defined in: [interfaces.ts:73](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L73)
 
 ***
 
@@ -44,7 +44,7 @@ Defined in: [common/src/interfaces.ts:68](https://github.com/ethereumjs/ethereum
 
 > **stemRead**: `boolean`
 
-Defined in: [common/src/interfaces.ts:65](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L65)
+Defined in: [interfaces.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L70)
 
 ***
 
@@ -52,4 +52,4 @@ Defined in: [common/src/interfaces.ts:65](https://github.com/ethereumjs/ethereum
 
 > **stemWrite**: `boolean`
 
-Defined in: [common/src/interfaces.ts:66](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L66)
+Defined in: [interfaces.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L71)

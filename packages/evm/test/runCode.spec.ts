@@ -20,8 +20,8 @@ const testCases = [
   { code: [STOP], resultPC: 1 },
 ]
 
-describe('VM.runCode: initial program counter', () => {
-  it('should work', async () => {
+describe('[EVM/runCode]: initial program counter', () => {
+  it('honors initial program counter and range errors', async () => {
     const evm = await createEVM()
 
     for (const [i, testData] of testCases.entries()) {
@@ -56,8 +56,8 @@ describe('VM.runCode: initial program counter', () => {
   })
 })
 
-describe('VM.runCode: interpreter', () => {
-  it('should return a EVMError as an exceptionError on the result', async () => {
+describe('[EVM/runCode]: interpreter', () => {
+  it('returns a EVMError as an exceptionError on the result', async () => {
     const evm = await createEVM()
 
     const INVALID_opcode = 'fe'
@@ -76,7 +76,7 @@ describe('VM.runCode: interpreter', () => {
     assert.isTrue(result?.exceptionError?.error.includes('invalid opcode'))
   })
 
-  it('should throw on non-EVMError', async () => {
+  it('throws on non-EVMError', async () => {
     const evm = await createEVM()
     // NOTE: due to now throwing on `getStorage` if account does not exist
     // this now means that if `runCode` is called and the address it runs on (default: zero address)
@@ -104,8 +104,8 @@ describe('VM.runCode: interpreter', () => {
   })
 })
 
-describe('VM.runCode: RunCodeOptions', () => {
-  it('should throw on negative value args', async () => {
+describe('[EVM/runCode]: RunCodeOptions', () => {
+  it('throws on negative value args', async () => {
     const evm = await createEVM()
 
     const runCodeArgs = {

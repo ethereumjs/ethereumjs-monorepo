@@ -6,15 +6,15 @@
 
 # Function: createSealedCliqueBlock()
 
-> **createSealedCliqueBlock**(`blockData`, `cliqueSigner`, `opts`): [`Block`](../classes/Block.md)
+> **createSealedCliqueBlock**(`blockData?`, `cliqueSigner`, `opts?`): [`Block`](../classes/Block.md)
 
-Defined in: [block/constructors.ts:385](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block/constructors.ts#L385)
+Defined in: [block/constructors.ts:376](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block/constructors.ts#L376)
 
 Creates a block for Clique networks with the seal applied during instantiation.
 
 ## Parameters
 
-### blockData
+### blockData?
 
 [`BlockData`](../interfaces/BlockData.md) = `{}`
 
@@ -26,7 +26,7 @@ Block fields used to build the block
 
 Private key bytes used to sign the header
 
-### opts
+### opts?
 
 [`BlockOptions`](../interfaces/BlockOptions.md) = `{}`
 

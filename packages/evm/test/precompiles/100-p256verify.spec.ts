@@ -115,7 +115,7 @@ const testCases = [
   },
 ]
 
-describe('P256VERIFY precompile', () => {
+describe('[EVM/Precompile]: p256VERIFY precompile', () => {
   let common: Common
   let evm: any
 
@@ -124,9 +124,9 @@ describe('P256VERIFY precompile', () => {
     evm = await createEVM({ common })
   })
 
-  describe('precompile100', () => {
+  describe('[EVM/Precompile]: precompile100', () => {
     for (const testCase of testCases) {
-      it(`should handle ${testCase.name}`, () => {
+      it(`handles ${testCase.name}`, () => {
         const opts: PrecompileInput = {
           data: testCase.input,
           gasLimit: BigInt(10000),
@@ -142,8 +142,8 @@ describe('P256VERIFY precompile', () => {
     }
   })
 
-  describe('integration with EVM', () => {
-    it('should be callable from EVM', async () => {
+  describe('[EVM/Precompile]: integration with EVM', () => {
+    it('is callable from EVM', async () => {
       // Create a simple contract that calls the P256VERIFY precompile
       const code = hexToBytes(
         '0x6101006000526001601f600060003660006000610100611af4f13d6001556000553d600060003e3d600020600255',

@@ -10,6 +10,8 @@
 
 Defined in: [from-beacon-payload.ts:15](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/from-beacon-payload.ts#L15)
 
+Beacon REST `execution_payload` object (snake_case field names).
+
 ## Properties
 
 ### base\_fee\_per\_gas
@@ -22,7 +24,7 @@ Defined in: [from-beacon-payload.ts:27](https://github.com/ethereumjs/ethereumjs
 
 ### blob\_gas\_used?
 
-> `optional` **blob\_gas\_used**: `NumericString`
+> `optional` **blob\_gas\_used?**: `NumericString`
 
 Defined in: [from-beacon-payload.ts:31](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/from-beacon-payload.ts#L31)
 
@@ -46,7 +48,7 @@ Defined in: [from-beacon-payload.ts:22](https://github.com/ethereumjs/ethereumjs
 
 ### excess\_blob\_gas?
 
-> `optional` **excess\_blob\_gas**: `NumericString`
+> `optional` **excess\_blob\_gas?**: `NumericString`
 
 Defined in: [from-beacon-payload.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/from-beacon-payload.ts#L32)
 
@@ -94,7 +96,7 @@ Defined in: [from-beacon-payload.ts:20](https://github.com/ethereumjs/ethereumjs
 
 ### parent\_beacon\_block\_root?
 
-> `optional` **parent\_beacon\_block\_root**: `PrefixedHexString`
+> `optional` **parent\_beacon\_block\_root?**: `PrefixedHexString`
 
 Defined in: [from-beacon-payload.ts:33](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/from-beacon-payload.ts#L33)
 
@@ -126,7 +128,7 @@ Defined in: [from-beacon-payload.ts:19](https://github.com/ethereumjs/ethereumjs
 
 ### requests\_hash?
 
-> `optional` **requests\_hash**: `PrefixedHexString`
+> `optional` **requests\_hash?**: `PrefixedHexString`
 
 Defined in: [from-beacon-payload.ts:34](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/from-beacon-payload.ts#L34)
 
@@ -158,6 +160,6 @@ Defined in: [from-beacon-payload.ts:29](https://github.com/ethereumjs/ethereumjs
 
 ### withdrawals?
 
-> `optional` **withdrawals**: `BeaconWithdrawal`[]
+> `optional` **withdrawals?**: `BeaconWithdrawal`[]
 
 Defined in: [from-beacon-payload.ts:30](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/from-beacon-payload.ts#L30)

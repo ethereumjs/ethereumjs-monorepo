@@ -13,13 +13,15 @@ import {
   setLengthLeft,
 } from '@ethereumjs/util'
 
-import { activeCostPerStateByte } from '../eip8037.ts'
-import { EOFErrorMessage } from '../eof/errors.ts'
 import { EVMError } from '../errors.ts'
 import { DELEGATION_7702_FLAG } from '../types.ts'
 
 import { updateSstoreGasEIP1283 } from './EIP1283.ts'
-import { updateSstoreGasEIP2200 } from './EIP2200.ts'
+import {
+  chargeSstoreAccessEIP8038,
+  updateSstoreGasEIP2200,
+  updateSstoreGasEIP8038,
+} from './EIP2200.ts'
 import {
   accessAddressEIP2929,
   accessStorageEIP2929,
@@ -27,7 +29,7 @@ import {
   getAddressAccessCost,
   warmAddress,
 } from './EIP2929.ts'
-import { callFamilyGas, create7928Gas } from './EIP7928.ts'
+import { callFamilyGas, create7928Gas, createNewAccountStateGasIfCharged } from './EIP7928.ts'
 import {
   createAddressFromStackBigInt,
   divCeil,
@@ -41,8 +43,6 @@ import {
 import type { Common } from '@ethereumjs/common'
 import type { Address } from '@ethereumjs/util'
 import type { RunState } from '../interpreter.ts'
-
-const EXTCALL_TARGET_MAX = BigInt(2) ** BigInt(8 * 20) - BigInt(1)
 
 async function getCreateTargetAddressBytes(
   runState: RunState,
@@ -92,17 +92,17 @@ function eip7702WarmAddress(runState: RunState, delegationAddress: Uint8Array): 
  * These functions are therefore not read-only
  */
 
-// The dynamic gas handler methods take a runState and a gas BN
-// The gas BN is necessary, since the base fee needs to be included,
-// to calculate the max call gas for the call opcodes correctly.
+/** Async dynamic gas handler; may read state before returning total gas cost. */
 export interface AsyncDynamicGasHandler {
   (runState: RunState, gas: bigint, common: Common): Promise<bigint>
 }
 
+/** Sync dynamic gas handler returning total gas cost including base fee. */
 export interface SyncDynamicGasHandler {
   (runState: RunState, gas: bigint, common: Common): bigint
 }
 
+/** Dynamic gas handlers indexed by opcode byte (includes base fee in `gas`). */
 export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynamicGasHandler> =
   new Map<number, AsyncDynamicGasHandler>([
     [
@@ -204,25 +204,11 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       0x3b,
       async function (runState, gas, common): Promise<bigint> {
         const address = createAddressFromStackBigInt(runState.stack.peek()[0])
-
-        let charge2929Gas = true
-        if (
-          (common.isActivatedEIP(6800) || common.isActivatedEIP(7864)) &&
-          runState.interpreter._evm.getPrecompile(address) === undefined &&
-          !address.equals(createAddressFromStackBigInt(common.param('systemAddress')))
-        ) {
-          let coldAccessGas = BIGINT_0
-          coldAccessGas += runState.env.accessWitness!.readAccountBasicData(address)
-
-          gas += coldAccessGas
-          // if cold access gas has been charged 2929 gas shouldn't be charged
-          charge2929Gas = coldAccessGas === BIGINT_0
-        }
-
-        if (common.isActivatedEIP(2929)) {
-          gas += accessAddressEIP2929(runState, address.bytes, common, charge2929Gas)
-        }
-
+        const schedule = runState.interpreter._evm.accessGasSchedule
+        const witness = await schedule.witnessAccountBasicData(runState, address, common)
+        gas += witness.gas
+        gas += schedule.chargeAccountAccess(runState, address.bytes, common, witness.charge2929Gas)
+        gas += schedule.extcodeReadingSurcharge()
         return gas
       },
     ],
@@ -235,28 +221,16 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         gas += subMemUsage(runState, memOffset, dataLength, common)
 
-        let charge2929Gas = true
-        if (
-          (common.isActivatedEIP(6800) || common.isActivatedEIP(7864)) &&
-          runState.interpreter._evm.getPrecompile(address) === undefined &&
-          !address.equals(createAddressFromStackBigInt(common.param('systemAddress')))
-        ) {
-          let coldAccessGas = BIGINT_0
-          coldAccessGas += runState.env.accessWitness!.readAccountBasicData(address)
-
-          gas += coldAccessGas
-          // if cold access gas has been charged 2929 gas shouldn't be charged
-          charge2929Gas = coldAccessGas === BIGINT_0
-        }
-
-        if (common.isActivatedEIP(2929)) {
-          gas += accessAddressEIP2929(runState, address.bytes, common, charge2929Gas)
-        }
+        const schedule = runState.interpreter._evm.accessGasSchedule
+        const witness = await schedule.witnessAccountBasicData(runState, address, common)
+        gas += witness.gas
+        gas += schedule.chargeAccountAccess(runState, address.bytes, common, witness.charge2929Gas)
+        gas += schedule.extcodeReadingSurcharge()
 
         if (dataLength !== BIGINT_0) {
           gas += common.param('copyGas') * divCeil(dataLength, BIGINT_32)
 
-          if (common.isActivatedEIP(6800) || common.isActivatedEIP(7864)) {
+          if (schedule.useStatelessWitness) {
             let codeEnd = _codeOffset + dataLength
             const codeSize = BigInt((await runState.stateManager.getCode(address)).length)
             if (codeEnd > codeSize) {
@@ -280,11 +254,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         const [memOffset, returnDataOffset, dataLength] = runState.stack.peek(3)
 
         if (returnDataOffset + dataLength > runState.interpreter.getReturnDataSize()) {
-          // For an EOF contract, the behavior is changed (see EIP 7069)
-          // RETURNDATACOPY in that case does not throw OOG when reading out-of-bounds
-          if (runState.env.eof === undefined) {
-            trap(EVMError.errorMessages.OUT_OF_GAS)
-          }
+          trap(EVMError.errorMessages.OUT_OF_GAS)
         }
 
         gas += subMemUsage(runState, memOffset, dataLength, common)
@@ -354,20 +324,11 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       async function (runState, gas, common): Promise<bigint> {
         const key = runState.stack.peek()[0]
         const keyBuf = setLengthLeft(bigIntToBytes(key), 32)
-
-        let charge2929Gas = true
-        if (common.isActivatedEIP(6800) || common.isActivatedEIP(7864)) {
-          const address = runState.interpreter.getAddress()
-          const coldAccessGas = runState.env.accessWitness!.readAccountStorage(address, key)
-
-          gas += coldAccessGas
-          charge2929Gas = coldAccessGas === BIGINT_0
-        }
-
-        if (common.isActivatedEIP(2929)) {
-          gas += accessStorageEIP2929(runState, keyBuf, false, common, charge2929Gas)
-        }
-
+        const schedule = runState.interpreter._evm.accessGasSchedule
+        const address = runState.interpreter.getAddress()
+        const witness = await schedule.witnessStorageRead(runState, address, key)
+        gas += witness.gas
+        gas += schedule.chargeStorageAccess(runState, keyBuf, false, common, witness.charge2929Gas)
         return gas
       },
     ],
@@ -391,40 +352,60 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
 
         // Read current and original storage for gas calculation.
         // Pass trackBAL=false because we'll track the read manually below,
-        // but ONLY if the EIP-2200 sentry check passes (per EIP-7928).
-        const currentStorage = setLengthLeftStorage(
-          await runState.interpreter.storageLoad(keyBytes, false, false),
-        )
-        const originalStorage = setLengthLeftStorage(
-          await runState.interpreter.storageLoad(keyBytes, true, false),
-        )
-        if (common.hardfork() === Hardfork.Constantinople) {
-          gas += updateSstoreGasEIP1283(
+        // but ONLY after the access/stipend gate (EIP-7928 / EIP-8038).
+        const loadSlot = async () => ({
+          currentStorage: setLengthLeftStorage(
+            await runState.interpreter.storageLoad(keyBytes, false, false),
+          ),
+          originalStorage: setLengthLeftStorage(
+            await runState.interpreter.storageLoad(keyBytes, true, false),
+          ),
+        })
+        let sstoreCharge2929Gas = true
+        if (common.isActivatedEIP(8038)) {
+          // Access cost must be covered before the implicit read; gate is
+          // max(cold access, EIP-2200 stipend + 1).
+          gas += chargeSstoreAccessEIP8038(runState, keyBytes, common)
+          const { currentStorage, originalStorage } = await loadSlot()
+          gas += updateSstoreGasEIP8038(
             runState,
             currentStorage,
             originalStorage,
             setLengthLeftStorage(value),
+            keyBytes,
             common,
           )
-        } else if (common.gteHardfork(Hardfork.Istanbul)) {
-          if (!common.isActivatedEIP(6800) && !common.isActivatedEIP(7864)) {
-            gas += updateSstoreGasEIP2200(
+          sstoreCharge2929Gas = false
+        } else {
+          const { currentStorage, originalStorage } = await loadSlot()
+          if (common.hardfork() === Hardfork.Constantinople) {
+            gas += updateSstoreGasEIP1283(
               runState,
               currentStorage,
               originalStorage,
               setLengthLeftStorage(value),
-              keyBytes,
               common,
             )
+          } else if (common.gteHardfork(Hardfork.Istanbul)) {
+            if (!common.isActivatedEIP(6800) && !common.isActivatedEIP(7864)) {
+              gas += updateSstoreGasEIP2200(
+                runState,
+                currentStorage,
+                originalStorage,
+                setLengthLeftStorage(value),
+                keyBytes,
+                common,
+              )
+            }
+          } else {
+            gas += updateSstoreGas(runState, currentStorage, setLengthLeftStorage(value), common)
           }
-        } else {
-          gas += updateSstoreGas(runState, currentStorage, setLengthLeftStorage(value), common)
         }
 
-        // If we reach here, the EIP-2200 sentry check passed (didn't trap).
+        // If we reach here, the access / EIP-2200 sentry check passed (didn't trap).
         // Per EIP-7928, now track the storage read for BAL. If the SSTORE
         // succeeds later, the write will remove this read (see addStorageWrite).
-        // If SSTORE fails with OOG after the sentry, the read remains in BAL.
+        // If SSTORE fails with OOG after the gate, the read remains in BAL.
         if (common.isActivatedEIP(7928)) {
           runState.interpreter._evm.blockLevelAccessList?.addStorageRead(
             runState.interpreter.getAddress().toString(),
@@ -432,7 +413,7 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           )
         }
 
-        let charge2929Gas = true
+        let charge2929Gas = sstoreCharge2929Gas
         if (common.isActivatedEIP(6800) || common.isActivatedEIP(7864)) {
           const contract = runState.interpreter.getAddress()
           const coldAccessGas = runState.env.accessWitness!.writeAccountStorage(contract, key)
@@ -448,18 +429,6 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           gas += accessStorageEIP2929(runState, keyBytes, true, common, charge2929Gas)
         }
 
-        return gas
-      },
-    ],
-    [
-      /* MCOPY */
-      0x5e,
-      async function (runState, gas, common): Promise<bigint> {
-        const [dst, src, length] = runState.stack.peek(3)
-        const wordsCopied = (length + BIGINT_31) / BIGINT_32
-        gas += BIGINT_3 * wordsCopied
-        gas += subMemUsage(runState, src, length, common)
-        gas += subMemUsage(runState, dst, length, common)
         return gas
       },
     ],
@@ -485,93 +454,16 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         return gas
       },
     ],
-    /* DATACOPY */
-    [
-      0xd3,
-      async function (runState, gas, common) {
-        if (runState.env.eof === undefined) {
-          // Opcode not available in legacy contracts
-          trap(EVMError.errorMessages.INVALID_OPCODE)
-        }
-        const [memOffset, _dataOffset, dataLength] = runState.stack.peek(3)
-
-        gas += subMemUsage(runState, memOffset, dataLength, common)
-        if (dataLength !== BIGINT_0) {
-          gas += common.param('copyGas') * divCeil(dataLength, BIGINT_32)
-        }
-        return gas
-      },
-    ],
-    /* EOFCREATE */
-    [
-      0xec,
-      async function (runState, gas, common): Promise<bigint> {
-        if (runState.env.eof === undefined) {
-          // Opcode not available in legacy contracts
-          trap(EVMError.errorMessages.INVALID_OPCODE)
-        }
-        // Note: TX_CREATE_COST is in the base fee (this is 32000 and same as CREATE / CREATE2)
-
-        // Note: in `gas.ts` programCounter is not yet incremented (which it is in `functions.ts`)
-        // So have to manually add to programCounter here to get the right container index
-
-        // Read container index
-        const containerIndex = runState.env.code[runState.programCounter + 1]
-
-        // Pop stack values
-        const [_value, _salt, inputOffset, inputSize] = runState.stack.peek(4)
-
-        //if (common.isActivatedEIP(2929)) {
-        // TODO: adding or not adding this makes test
-        // --test=tests/prague/eip7692_eof_v1/eip7620_eof_create/test_eofcreate.py::test_eofcreate_then_call[fork_CancunEIP7692-blockchain_test]
-        // still succeed. This only warms the current address?? This is also in CREATE/CREATE2
-        // Can this be removed in both?
-        /*gas += accessAddressEIP2929(
-            runState,
-            runState.interpreter.getAddress().bytes,
-            common,
-            false
-          )
-        }*/
-
-        // Expand memory
-        gas += subMemUsage(runState, inputOffset, inputSize, common)
-
-        // Read container
-        const container = runState.env.eof!.container.body.containerSections[containerIndex]
-
-        // Charge for hashing cost
-        gas += common.param('keccak256WordGas') * divCeil(BigInt(container.length), BIGINT_32)
-
-        const gasLeft = runState.interpreter.getGasLeft() - gas
-        runState.messageGasLimit = maxCallGas(gasLeft, gasLeft, runState, common)
-
-        return gas
-      },
-    ],
-    /* RETURNCONTRACT */
-    [
-      0xee,
-      async function (runState, gas, common): Promise<bigint> {
-        // Pop stack values
-        const [auxDataOffset, auxDataSize] = runState.stack.peek(2)
-
-        // Expand memory
-        gas += subMemUsage(runState, auxDataOffset, auxDataSize, common)
-
-        return gas
-      },
-    ],
     [
       /* CREATE */
       0xf0,
       async function (runState, gas, common): Promise<bigint> {
-        if (runState.interpreter.isStatic()) {
-          trap(EVMError.errorMessages.STATIC_STATE_CHANGE)
-        }
         const [_value, offset, length] = runState.stack.peek(3)
 
         if (common.isActivatedEIP(7928)) {
+          // EIP-7928/EIP-8037: the static-context check is deferred into
+          // create7928Gas so it fires AFTER the new-account state-gas
+          // pre-charge (see EIP7928.ts).
           return create7928Gas(
             runState,
             gas,
@@ -579,6 +471,10 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
             { offset, length, preChargeLabel: 'CREATE pre-charges' },
             getCreateTargetAddressBytes,
           )
+        }
+
+        if (runState.interpreter.isStatic()) {
+          trap(EVMError.errorMessages.STATIC_STATE_CHANGE)
         }
 
         if (common.isActivatedEIP(2929)) {
@@ -597,15 +493,20 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         gas += subMemUsage(runState, offset, length, common)
 
         if (common.isActivatedEIP(8037)) {
-          const stateBytesPerNewAccount = common.param('stateBytesPerNewAccount')
-          const blockGasLimit = runState.env.block.header.gasLimit
-          const costPerStateByte = activeCostPerStateByte(common, blockGasLimit)
-          const newAccountStateGas = stateBytesPerNewAccount * costPerStateByte
+          const targetAddress = await getCreateTargetAddressBytes(runState, new Uint8Array())
+          const newAccountStateGas = await createNewAccountStateGasIfCharged(
+            runState,
+            common,
+            targetAddress,
+          )
           if (gas > BIGINT_0) {
             runState.interpreter.useGas(gas, 'CREATE pre-charges')
             gas = BIGINT_0
           }
-          runState.interpreter.chargeStateGas(newAccountStateGas, 'CREATE pre-charge new_account')
+          if (newAccountStateGas > BIGINT_0) {
+            runState.interpreter.chargeStateGas(newAccountStateGas, 'CREATE pre-charge new_account')
+          }
+          runState.lastCreateNewAccountStateGas = newAccountStateGas
         }
 
         let gasLimit = BigInt(runState.interpreter.getGasLeft()) - gas
@@ -694,14 +595,12 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
       /* CREATE2 */
       0xf5,
       async function (runState, gas, common): Promise<bigint> {
-        if (runState.interpreter.isStatic()) {
-          trap(EVMError.errorMessages.STATIC_STATE_CHANGE)
-        }
-
         const [_value, offset, length, saltBigInt] = runState.stack.peek(4)
         const salt = setLengthLeft(bigIntToBytes(saltBigInt), 32)
 
         if (common.isActivatedEIP(7928)) {
+          // EIP-7928/EIP-8037: static-context check deferred into
+          // create7928Gas (fires after the new-account state-gas pre-charge).
           return create7928Gas(
             runState,
             gas,
@@ -715,6 +614,10 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
             },
             getCreateTargetAddressBytes,
           )
+        }
+
+        if (runState.interpreter.isStatic()) {
+          trap(EVMError.errorMessages.STATIC_STATE_CHANGE)
         }
 
         gas += subMemUsage(runState, offset, length, common)
@@ -735,150 +638,32 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
         gas += common.param('keccak256WordGas') * divCeil(length, BIGINT_32)
 
         if (common.isActivatedEIP(8037)) {
-          const stateBytesPerNewAccount = common.param('stateBytesPerNewAccount')
-          const blockGasLimit = runState.env.block.header.gasLimit
-          const costPerStateByte = activeCostPerStateByte(common, blockGasLimit)
-          const newAccountStateGas = stateBytesPerNewAccount * costPerStateByte
+          let initCode = new Uint8Array(0)
+          if (length !== BIGINT_0) {
+            initCode = runState.memory.read(Number(offset), Number(length), true)
+          }
+          const targetAddress = await getCreateTargetAddressBytes(runState, initCode, salt)
+          const newAccountStateGas = await createNewAccountStateGasIfCharged(
+            runState,
+            common,
+            targetAddress,
+          )
           if (gas > BIGINT_0) {
             runState.interpreter.useGas(gas, 'CREATE2 pre-charges')
             gas = BIGINT_0
           }
-          runState.interpreter.chargeStateGas(newAccountStateGas, 'CREATE2 pre-charge new_account')
+          if (newAccountStateGas > BIGINT_0) {
+            runState.interpreter.chargeStateGas(
+              newAccountStateGas,
+              'CREATE2 pre-charge new_account',
+            )
+          }
+          runState.lastCreateNewAccountStateGas = newAccountStateGas
         }
 
         let gasLimit = runState.interpreter.getGasLeft() - gas
         gasLimit = maxCallGas(gasLimit, gasLimit, runState, common)
         runState.messageGasLimit = gasLimit
-        return gas
-      },
-    ],
-    /* EXTCALL */
-    [
-      0xf8,
-      async function (runState, gas, common): Promise<bigint> {
-        if (runState.env.eof === undefined) {
-          // Opcode not available in legacy contracts
-          trap(EVMError.errorMessages.INVALID_OPCODE)
-        }
-        // Charge WARM_STORAGE_READ_COST (100) -> done in accessAddressEIP2929
-
-        // Peek stack values
-        const [toAddr, inOffset, inLength, value] = runState.stack.peek(4)
-
-        // If value is nonzero and in static mode, throw:
-        if (runState.interpreter.isStatic() && value !== BIGINT_0) {
-          trap(EVMError.errorMessages.STATIC_STATE_CHANGE)
-        }
-
-        // If value > 0, charge CALL_VALUE_COST
-        if (value > BIGINT_0) {
-          gas += common.param('callValueTransferGas')
-        }
-
-        // Check if the target address > 20 bytes
-        if (toAddr > EXTCALL_TARGET_MAX) {
-          trap(EOFErrorMessage.INVALID_EXTCALL_TARGET)
-        }
-
-        // Charge for memory expansion
-        gas += subMemUsage(runState, inOffset, inLength, common)
-
-        const toAddress = createAddressFromStackBigInt(toAddr)
-        // Charge to make address warm (2600 gas)
-        // (in case if address is already warm, this charges the 100 gas)
-        gas += accessAddressEIP2929(runState, toAddress.bytes, common)
-
-        // Charge account creation cost if value is nonzero
-        if (value > BIGINT_0) {
-          const account = await runState.stateManager.getAccount(toAddress)
-          const deadAccount = account === undefined || account.isEmpty()
-
-          if (deadAccount) {
-            gas += common.param('callNewAccountGas')
-          }
-        }
-
-        const minRetainedGas = common.param('minRetainedGas')
-        const minCalleeGas = common.param('minCalleeGas')
-
-        const currentGasAvailable = runState.interpreter.getGasLeft() - gas
-        const reducedGas = currentGasAvailable / BIGINT_64
-        // Calculate the gas limit for the callee
-        // (this is the gas available for the next call frame)
-        let gasLimit: bigint
-        if (reducedGas < minRetainedGas) {
-          gasLimit = currentGasAvailable - minRetainedGas
-        } else {
-          gasLimit = currentGasAvailable - reducedGas
-        }
-
-        if (
-          runState.env.depth >= Number(common.param('stackLimit')) ||
-          runState.env.contract.balance < value ||
-          gasLimit < minCalleeGas
-        ) {
-          // Note: this is a hack, TODO: get around this hack and clean this up
-          // This special case will ensure that the actual EXT*CALL is being ran,
-          // But, the code in `function.ts` will note that `runState.messageGasLimit` is set to a negative number
-          // This special number signals that `1` should be put on the stack (per spec)
-          gasLimit = -BIGINT_1
-        }
-
-        runState.messageGasLimit = gasLimit
-
-        return gas
-      },
-    ],
-    /* EXTDELEGATECALL */
-    [
-      0xf9,
-      async function (runState, gas, common): Promise<bigint> {
-        if (runState.env.eof === undefined) {
-          // Opcode not available in legacy contracts
-          trap(EVMError.errorMessages.INVALID_OPCODE)
-        }
-        // Charge WARM_STORAGE_READ_COST (100) -> done in accessAddressEIP2929
-
-        // Peek stack values
-        const [toAddr, inOffset, inLength] = runState.stack.peek(3)
-
-        // Check if the target address > 20 bytes
-        if (toAddr > EXTCALL_TARGET_MAX) {
-          trap(EOFErrorMessage.INVALID_EXTCALL_TARGET)
-        }
-
-        // Charge for memory expansion
-        gas += subMemUsage(runState, inOffset, inLength, common)
-
-        const toAddress = createAddressFromStackBigInt(toAddr)
-        // Charge to make address warm (2600 gas)
-        // (in case if address is already warm, this charges the 100 gas)
-        gas += accessAddressEIP2929(runState, toAddress.bytes, common)
-
-        const minRetainedGas = common.param('minRetainedGas')
-        const minCalleeGas = common.param('minCalleeGas')
-
-        const currentGasAvailable = runState.interpreter.getGasLeft() - gas
-        const reducedGas = currentGasAvailable / BIGINT_64
-        // Calculate the gas limit for the callee
-        // (this is the gas available for the next call frame)
-        let gasLimit: bigint
-        if (reducedGas < minRetainedGas) {
-          gasLimit = currentGasAvailable - minRetainedGas
-        } else {
-          gasLimit = currentGasAvailable - reducedGas
-        }
-
-        if (runState.env.depth >= Number(common.param('stackLimit')) || gasLimit < minCalleeGas) {
-          // Note: this is a hack, TODO: get around this hack and clean this up
-          // This special case will ensure that the actual EXT*CALL is being ran,
-          // But, the code in `function.ts` will note that `runState.messageGasLimit` is set to a negative number
-          // This special number signals that `1` should be put on the stack (per spec)
-          gasLimit = -BIGINT_1
-        }
-
-        runState.messageGasLimit = gasLimit
-
         return gas
       },
     ],
@@ -901,59 +686,6 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
           eip7702GetAccessCost,
           eip7702WarmAddress,
         })
-      },
-    ],
-    /* EXTSTATICCALL */
-    [
-      0xfb,
-      async function (runState, gas, common): Promise<bigint> {
-        if (runState.env.eof === undefined) {
-          // Opcode not available in legacy contracts
-          trap(EVMError.errorMessages.INVALID_OPCODE)
-        }
-        // Charge WARM_STORAGE_READ_COST (100) -> done in accessAddressEIP2929
-
-        // Peek stack values
-        const [toAddr, inOffset, inLength] = runState.stack.peek(3)
-
-        // Check if the target address > 20 bytes
-        if (toAddr > EXTCALL_TARGET_MAX) {
-          trap(EOFErrorMessage.INVALID_EXTCALL_TARGET)
-        }
-
-        // Charge for memory expansion
-        gas += subMemUsage(runState, inOffset, inLength, common)
-
-        const toAddress = createAddressFromStackBigInt(toAddr)
-        // Charge to make address warm (2600 gas)
-        // (in case if address is already warm, this charges the 100 gas)
-        gas += accessAddressEIP2929(runState, toAddress.bytes, common)
-
-        const minRetainedGas = common.param('minRetainedGas')
-        const minCalleeGas = common.param('minCalleeGas')
-
-        const currentGasAvailable = runState.interpreter.getGasLeft() - gas
-        const reducedGas = currentGasAvailable / BIGINT_64
-        // Calculate the gas limit for the callee
-        // (this is the gas available for the next call frame)
-        let gasLimit: bigint
-        if (reducedGas < minRetainedGas) {
-          gasLimit = currentGasAvailable - minRetainedGas
-        } else {
-          gasLimit = currentGasAvailable - reducedGas
-        }
-
-        if (runState.env.depth >= Number(common.param('stackLimit')) || gasLimit < minCalleeGas) {
-          // Note: this is a hack, TODO: get around this hack and clean this up
-          // This special case will ensure that the actual EXT*CALL is being ran,
-          // But, the code in `function.ts` will note that `runState.messageGasLimit` is set to a negative number
-          // This special number signals that `1` should be put on the stack (per spec)
-          gasLimit = -BIGINT_1
-        }
-
-        runState.messageGasLimit = gasLimit
-
-        return gas
       },
     ],
     [
@@ -987,7 +719,14 @@ export const dynamicGasHandlers: Map<number, AsyncDynamicGasHandler | SyncDynami
             // This technically checks if account is empty or non-existent
             const account = await runState.stateManager.getAccount(selfdestructToAddress)
             if (account === undefined || account.isEmpty()) {
-              newAccountGas = common.param('callNewAccountGas')
+              if (common.isActivatedEIP(8038)) {
+                // Amsterdam: positive balance sent to an empty account costs
+                // accountWriteGas (regular). The new-account state-gas portion
+                // is charged in the SELFDESTRUCT opcode handler (interpreter).
+                newAccountGas = common.param('accountWriteGas')
+              } else {
+                newAccountGas = common.param('callNewAccountGas')
+              }
             }
           }
         } else if (common.gteHardfork(Hardfork.TangerineWhistle)) {

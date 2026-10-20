@@ -1,12 +1,12 @@
 import { bytesToHex, equalsBytes, hexToBytes } from '@ethereumjs/util'
 import { blake3 } from '@noble/hashes/blake3.js'
-import { assert, describe, expect, it } from 'vitest'
+import { assert, describe, it } from 'vitest'
 
 import { createBinaryTree } from '../src/index.ts'
 import { dumpLeafValues, dumpNodeHashes } from '../src/util.ts'
 
-describe('insert', () => {
-  it('should not destroy a previous root', async () => {
+describe('[BinaryTree/Root]: persistence and setRoot', () => {
+  it('does not destroy a previous root', async () => {
     const tree = await createBinaryTree({ useRootPersistence: true })
     await tree.put(
       hexToBytes('0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d'),
@@ -25,7 +25,7 @@ describe('insert', () => {
     const tree3 = tree.shallowCopy()
     assert.deepEqual(tree3.root(), root)
   })
-  it('should set and check root', async () => {
+  it('set and check root', async () => {
     const tree = await createBinaryTree()
     await tree.put(
       hexToBytes('0x318dea512b6f3237a2d4763cf49bf26de3b617fb0cabe38a97807a5549df4d'),
@@ -61,8 +61,10 @@ describe('insert', () => {
     // const nullRootExists = await tree2.checkRoot(tree2.EMPTY_TREE_ROOT)
     // assert.isTrue(nullRootExists)
   })
+})
 
-  it('should put, retrieve and compute the correct state root', async () => {
+describe('[BinaryTree/Insert]: basic put and state root', () => {
+  it('put, retrieve and compute the correct state root', async () => {
     const tree = await createBinaryTree()
 
     const key = hexToBytes(`0x${'00'.repeat(32)}`)
@@ -89,7 +91,7 @@ describe('insert', () => {
     )
   })
 
-  it('should correctly compute state root and retrieve values for two entries differing in the first bit', async () => {
+  it('compute state root and retrieve values for two entries differing in the first bit', async () => {
     const tree = await createBinaryTree()
 
     // First entry: key is 32 bytes of 0, value is 32 bytes of 1.
@@ -122,8 +124,10 @@ describe('insert', () => {
       '0x85fc622076752a6fcda2c886c18058d639066a83473d9684704b5a29455ed2ed',
     )
   })
+})
 
-  it('should handle one stem with colocated values', async () => {
+describe('[BinaryTree/Insert]: colocated stems', () => {
+  it('handles one stem with colocated values', async () => {
     const tree = await createBinaryTree()
 
     const stem = hexToBytes(`0x${'00'.repeat(31)}`)
@@ -147,7 +151,7 @@ describe('insert', () => {
     }
   })
 
-  it('should handle two stems with colocated values', async () => {
+  it('handles two stems with colocated values', async () => {
     const tree = await createBinaryTree()
 
     // Stem 1: 0...0
@@ -178,7 +182,10 @@ describe('insert', () => {
       )
     }
   })
-  it('should handle two keys that match in the first 42 bits', async () => {
+})
+
+describe('[BinaryTree/Insert]: prefix match and ordering', () => {
+  it('handles two keys that match in the first 42 bits', async () => {
     const tree = await createBinaryTree()
 
     // Two keys with the same prefix of 42 bits
@@ -211,7 +218,7 @@ describe('insert', () => {
     )
   })
 
-  it('should handle three keys, and compute a consistent root regardless of insert ordering', async () => {
+  it('handles three keys, and compute a consistent root regardless of insert ordering', async () => {
     const tree1 = await createBinaryTree()
 
     const key1 = hexToBytes(`0x${'C0'.repeat(32)}`)
@@ -262,7 +269,7 @@ describe('insert', () => {
     assert.isTrue(equalsBytes(tree1.root(), tree2.root()))
   })
 
-  it('should handle three keys, when all three have partial match', async () => {
+  it('handles three keys, when all three have partial match', async () => {
     const tree1 = await createBinaryTree()
 
     const key1 = hexToBytes(`0x${'C0'.repeat(32)}`)
@@ -303,8 +310,10 @@ describe('insert', () => {
       'Value for key3 should match inserted value',
     )
   })
+})
 
-  it('should handle checkpointing and reverting', async () => {
+describe('[BinaryTree/Checkpoint]: revert commit and flush', () => {
+  it('handles checkpointing and reverting', async () => {
     const tree1 = await createBinaryTree()
 
     const key1 = hexToBytes(`0x${'C0'.repeat(32)}`)
@@ -373,8 +382,10 @@ describe('insert', () => {
       assert.strictEqual(e.message, 'trying to commit when not checkpointed')
     }
   })
+})
 
-  it('should handle 100 similar key/value pairs hashed with blake3', async () => {
+describe('[BinaryTree/Insert]: blake3 keys and insert ordering', () => {
+  it('handles 100 similar key/value pairs hashed with blake3', async () => {
     const tree1 = await createBinaryTree()
 
     // Create an array of 100 random key/value pairs by hashing keys.
@@ -454,7 +465,10 @@ describe('insert', () => {
       'Retrieved value should match the updated value',
     )
   })
-  it('should dump leaf values and node hashes', async () => {
+})
+
+describe('[BinaryTree/Dump]: leaf values and node hashes', () => {
+  it('dumps leaf values and node hashes', async () => {
     const tree = await createBinaryTree()
 
     // Create an array of 100 random key/value pairs by hashing keys.
@@ -494,11 +508,13 @@ describe('insert', () => {
 
     const nodeHashes = await dumpNodeHashes(tree, tree.root())
     assert.isDefined(nodeHashes)
-    expect(nodeHashes!.length).toBeGreaterThan(100)
+    assert.isTrue(nodeHashes!.length > 100, 'dump includes many node hashes')
     assert.strictEqual(nodeHashes![0][1], bytesToHex(tree.root()))
   })
+})
 
-  it('should update value when inserting a duplicate key', async () => {
+describe('[BinaryTree/Insert]: duplicate key and delete', () => {
+  it('updates value when inserting a duplicate key', async () => {
     const tree = await createBinaryTree()
 
     const key = hexToBytes(`0x${'01'.repeat(32)}`)
@@ -559,5 +575,29 @@ describe('insert', () => {
       equalsBytes(initialRoot, recoveredRoot),
       'Recovered root should match initial root',
     )
+  })
+})
+
+describe('[BinaryTree]: withLock', () => {
+  it('run the operation under the lock and return its result', async () => {
+    const tree = await createBinaryTree()
+    const result = await tree.withLock(async () => 42)
+    assert.strictEqual(result, 42)
+  })
+
+  it('releases the lock when the operation throws', async () => {
+    const tree = await createBinaryTree()
+    try {
+      await tree.withLock(async () => {
+        throw new Error('boom')
+      })
+      assert.fail('withLock should propagate thrown errors')
+    } catch (e: unknown) {
+      assert.match((e as Error).message, /boom/)
+    }
+
+    // would hang forever if the lock leaked
+    const reacquired = await tree.withLock(async () => true)
+    assert.isTrue(reacquired)
   })
 })

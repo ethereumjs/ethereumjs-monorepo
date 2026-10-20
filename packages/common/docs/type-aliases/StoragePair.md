@@ -8,4 +8,6 @@
 
 > **StoragePair** = \[`PrefixedHexString`, `PrefixedHexString`\]
 
-Defined in: [common/src/gethGenesis.ts:109](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L109)
+Defined in: [gethGenesis.ts:110](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/gethGenesis.ts#L110)
+
+Genesis storage slot as a hex key/value pair.

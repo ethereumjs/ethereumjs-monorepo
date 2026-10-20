@@ -8,7 +8,7 @@
 
 > **compareBytes**(`value1`, `value2`): `number`
 
-Defined in: [packages/util/src/bytes.ts:433](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L433)
+Defined in: [packages/util/src/bytes.ts:393](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L393)
 
 Compares two Uint8Arrays and returns a number indicating their order in a sorted array.
 

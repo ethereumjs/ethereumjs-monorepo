@@ -6,12 +6,11 @@
 
 # Function: setLengthRight()
 
-> **setLengthRight**(`msg`, `length`, `opts`): `Uint8Array`
+> **setLengthRight**(`msg`, `length`, `opts?`): `Uint8Array`
 
-Defined in: [packages/util/src/bytes.ts:187](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L187)
+Defined in: [packages/util/src/bytes.ts:171](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L171)
 
-Right Pads a `Uint8Array` with trailing zeros till it has `length` bytes.
-Throws if input length exceeds target length, unless allowTruncate option is true.
+Right-pad bytes with trailing zeros to the target length.
 
 ## Parameters
 
@@ -19,20 +18,18 @@ Throws if input length exceeds target length, unless allowTruncate option is tru
 
 `Uint8Array`
 
-the value to pad
-
 ### length
 
 `number`
 
-the number of bytes the output should be
-
-### opts
+### opts?
 
 [`SetLengthOpts`](../interfaces/SetLengthOpts.md) = `{}`
-
-options object with allowTruncate flag
 
 ## Returns
 
 `Uint8Array`
+
+## Throws
+
+If the input exceeds the target length unless [SetLengthOpts.allowTruncate](../interfaces/SetLengthOpts.md#allowtruncate) is set

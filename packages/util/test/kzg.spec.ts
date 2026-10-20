@@ -9,13 +9,13 @@ import type { KZG } from '../src/kzg.ts'
 
 const jsKZG = new microEthKZG(trustedSetup)
 
-describe('KZG API tests', () => {
+describe('[Util/KZG]: API', () => {
   let wasmKZG: KZG
   beforeAll(async () => {
     wasmKZG = await loadKZG()
   }, 50000)
 
-  it('should produce the same outputs', () => {
+  it('produces the same outputs', () => {
     const blob = getBlobs('hello')[0]
     const commit = wasmKZG.blobToKzgCommitment(blob)
     const proof = wasmKZG.computeBlobProof(blob, commit)

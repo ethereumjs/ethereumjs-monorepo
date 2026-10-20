@@ -1,3 +1,4 @@
+.ci/
 .cachedb
 benchmarks/*.js
 test/t8n/testdata/output/allocTEST.json

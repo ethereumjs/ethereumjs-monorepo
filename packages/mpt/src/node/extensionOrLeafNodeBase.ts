@@ -5,6 +5,7 @@ import { nibblesTypeToPackedBytes } from '../util/nibbles.ts'
 
 import type { Nibbles, RawExtensionMPTNode, RawLeafMPTNode } from '../types.ts'
 
+/** Shared base for extension and leaf MPT nodes. */
 export abstract class ExtensionOrLeafMPTNodeBase {
   _nibbles: Nibbles
   _value: Uint8Array

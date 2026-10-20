@@ -9,38 +9,52 @@ import { keccak256 } from 'ethereum-cryptography/keccak'
 
 import { BlockBuilder } from '../../dist/cjs/buildBlock.js'
 import { VM } from '../../dist/cjs/index.js'
-import { getCommon } from '../tester/config.ts'
+import { getCommon } from '../consensus/legacyCommon.ts'
 import { makeBlockFromEnv, setupPreConditions } from '../util.ts'
 
 import type { TypedTransaction } from '@ethereumjs/tx'
 import type { NestedUint8Array } from '@ethereumjs/util'
 import type { PostByzantiumTxReceipt } from '../../dist/cjs'
 
-const yargs = require('yargs/yargs')
+import { parseArgs } from 'node:util'
 
-async function runTransition(argsIn: any) {
-  const args = yargs(argsIn)
-    .option('state.fork', {
-      describe: 'Fork to use',
-    })
-    .option('input.alloc', {
-      describe: 'Initial state allocation',
-    })
-    .option('inputs.txs', {
-      describe: 'RLP input of txs to run on top of the initial state allocation',
-    })
-    .option('inputs.env', {
-      describe: 'Input environment (coinbase, difficulty, etc.)',
-    })
-    .option('output.basedir', {
-      describe: 'Base directory to write output to',
-    })
-    .option('output.result', {
-      describe: 'File to write output results to (relative to `output.basedir`)',
-    })
-    .option('output.alloc', {
-      describe: 'File to write output allocation to (after running the transactions)',
-    }).argv
+type RetestethCli = {
+  state: { fork: string }
+  input: { alloc: string; txs: string; env: string }
+  output: { basedir: string; result: string; alloc: string }
+}
+
+function parseRetestethArgv(argsIn: string[]): RetestethCli {
+  const { values } = parseArgs({
+    args: argsIn,
+    options: {
+      'state.fork': { type: 'string' },
+      'input.alloc': { type: 'string' },
+      'input.txs': { type: 'string' },
+      'input.env': { type: 'string' },
+      'output.basedir': { type: 'string' },
+      'output.result': { type: 'string' },
+      'output.alloc': { type: 'string' },
+    },
+    strict: false,
+  })
+  return {
+    state: { fork: values['state.fork'] as string },
+    input: {
+      alloc: values['input.alloc'] as string,
+      txs: values['input.txs'] as string,
+      env: values['input.env'] as string,
+    },
+    output: {
+      basedir: values['output.basedir'] as string,
+      result: values['output.result'] as string,
+      alloc: values['output.alloc'] as string,
+    },
+  }
+}
+
+async function runTransition(argsIn: string[]) {
+  const args = parseRetestethArgv(argsIn)
   const alloc = JSON.parse(readFileSync(args.input.alloc).toString())
   const rlpTxs = JSON.parse(readFileSync(args.input.txs).toString())
   const inputEnv = JSON.parse(readFileSync(args.input.env).toString())

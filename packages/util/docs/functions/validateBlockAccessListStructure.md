@@ -8,7 +8,7 @@
 
 > **validateBlockAccessListStructure**(`bal`): `void`
 
-Defined in: [packages/util/src/bal/validation.ts:133](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/validation.ts#L133)
+Defined in: [packages/util/src/bal/validation.ts:134](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/validation.ts#L134)
 
 Validates the canonical RLP-oriented structure of a [BlockLevelAccessList](../classes/BlockLevelAccessList.md).
 

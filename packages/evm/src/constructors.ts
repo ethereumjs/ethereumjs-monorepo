@@ -8,11 +8,13 @@ import { EVMMockBlockchain } from './types.ts'
 import type { EVMOpts } from './index.ts'
 
 /**
- * Use this async static constructor for the initialization
- * of an EVM object
+ * Async factory for initializing an {@link EVM} with sensible defaults.
  *
- * @param createOpts The EVM options
- * @returns A new EVM
+ * Supplies a {@link NobleBN254} precompile backend, mainnet {@link @ethereumjs/common!Common},
+ * {@link EVMMockBlockchain}, and {@link @ethereumjs/statemanager!SimpleStateManager} when not provided.
+ *
+ * @param createOpts EVM configuration
+ * @returns Initialized EVM instance
  */
 export async function createEVM(createOpts?: EVMOpts) {
   const opts = createOpts ?? ({} as EVMOpts)
@@ -28,6 +30,9 @@ export async function createEVM(createOpts?: EVMOpts) {
   }
 
   if (opts.stateManager === undefined) {
+    // Intentionally the only runtime import from @ethereumjs/statemanager in
+    // this package (sane zero-config default); all other state manager usage
+    // must go through the interfaces in @ethereumjs/common.
     opts.stateManager = new SimpleStateManager()
   }
 

@@ -14,7 +14,7 @@ import {
   equalsBytes,
   hexToBytes,
 } from '@ethereumjs/util'
-import { assert, describe, expect, it } from 'vitest'
+import { assert, describe, it } from 'vitest'
 
 import { genTransactionsTrieRoot } from '../src/helpers.ts'
 import {
@@ -33,8 +33,8 @@ import { testdataFromRPCGoerliData } from './testdata/testdata-from-rpc-goerli.t
 
 import type { NestedUint8Array } from '@ethereumjs/util'
 
-describe('[Block]: block functions', () => {
-  it('should test block initialization', () => {
+describe('[Block]: initialization', () => {
+  it('block initialization', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     const genesis = createBlock({}, { common })
     assert.isDefined(bytesToHex(genesis.hash()), 'block should initialize')
@@ -119,13 +119,13 @@ describe('[Block]: block functions', () => {
     )
   })
 
-  it('should initialize with undefined parameters without throwing', () => {
+  it('initializes with undefined parameters without throwing', () => {
     assert.doesNotThrow(function () {
       createBlock()
     })
   })
 
-  it('should initialize with null parameters without throwing', () => {
+  it('initializes with null parameters without throwing', () => {
     const common = new Common({ chain: Mainnet })
     const opts = { common }
     assert.doesNotThrow(function () {
@@ -133,15 +133,17 @@ describe('[Block]: block functions', () => {
     })
   })
 
-  it('should throw when trying to initialize with uncle headers on a PoA network', () => {
+  it('throws when trying to initialize with uncle headers on a PoA network', () => {
     const common = new Common({ chain: Mainnet })
     const uncleBlock = createBlock({ header: { extraData: new Uint8Array(117) } }, { common })
     assert.throws(function () {
       createBlock({ uncleHeaders: [uncleBlock.header] }, { common })
     })
   })
+})
 
-  it('should test block validation on pow chain', async () => {
+describe('[Block]: validation', () => {
+  it('block validation on pow chain', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     const blockRlp = hexToBytes(preLondonTestDataBlocks1RLP.blockRLP)
     try {
@@ -152,7 +154,7 @@ describe('[Block]: block functions', () => {
     }
   })
 
-  it('should test block validation on poa chain', async () => {
+  it('block validation on poa chain', async () => {
     const common = new Common({ chain: goerliChainConfig, hardfork: Hardfork.Chainstart })
 
     try {
@@ -168,7 +170,7 @@ describe('[Block]: block functions', () => {
     assert.isEmpty(block.getTransactionsValidationErrors())
   }
 
-  it('should test transaction validation - transaction not signed', async () => {
+  it('rejects createBlock when tx gas exceeds EIP-7825 on Osaka', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Osaka })
     const maxTransactionGasLimit = paramsTx['7825'].maxTransactionGasLimit as number
     // Create tx with gas limit over max (but not yet on Osaka)
@@ -182,7 +184,7 @@ describe('[Block]: block functions', () => {
     }, 'exceeds the maximum allowed by EIP-7825')
   })
 
-  it('should test transaction validation - invalid tx trie', async () => {
+  it('transaction validation - invalid tx trie', async () => {
     const blockRlp = hexToBytes(preLondonTestDataBlocks1RLP.blockRLP)
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const block = createBlockFromRLP(blockRlp, { common, freeze: false })
@@ -197,7 +199,7 @@ describe('[Block]: block functions', () => {
     }
   })
 
-  it('should test transaction validation - transaction not signed', async () => {
+  it('validateData() rejects unsigned transaction in block', async () => {
     const tx = createLegacyTx({
       gasLimit: 53000,
       gasPrice: 7,
@@ -218,12 +220,12 @@ describe('[Block]: block functions', () => {
     }
   })
 
-  it('should test transaction validation with empty transaction list', async () => {
+  it('transaction validation with empty transaction list', async () => {
     const block = createBlock({})
     await testTransactionValidation(block)
   })
 
-  it('should test transaction validation with legacy tx in london', async () => {
+  it('transaction validation with legacy tx in london', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.London })
     const blockRlp = hexToBytes(preLondonTestDataBlocks1RLP.blockRLP)
     const block = createBlockFromRLP(blockRlp, { common, freeze: false })
@@ -237,7 +239,7 @@ describe('[Block]: block functions', () => {
     )
   })
 
-  it('should test uncles hash validation', async () => {
+  it('uncles hash validation', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     const blockRlp = hexToBytes(preLondonTestDataBlocks2RLP.block2RLP)
     const block = createBlockFromRLP(blockRlp, { common, freeze: false })
@@ -252,7 +254,7 @@ describe('[Block]: block functions', () => {
     }
   })
 
-  it('should test data integrity', async () => {
+  it('data integrity', async () => {
     const unsignedTx = createLegacyTx({})
     const txRoot = await genTransactionsTrieRoot([unsignedTx])
 
@@ -309,15 +311,17 @@ describe('[Block]: block functions', () => {
     )
     await checkThrowsAsync(block.validateData(false, false), 'invalid uncle hash')
   })
+})
 
-  it('should test isGenesis (mainnet default)', () => {
+describe('[Block]: hashes and serialization', () => {
+  it('isGenesis (mainnet default)', () => {
     const block = createBlock({ header: { number: 1 } })
     assert.notEqual(block.isGenesis(), true)
     const genesisBlock = createBlock({ header: { number: 0 } })
     assert.strictEqual(genesisBlock.isGenesis(), true)
   })
 
-  it('should test genesis hashes (mainnet default)', () => {
+  it('genesis hashes (mainnet default)', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     const rlp = hexToBytes(`0x${genesisHashesTestData.test.genesis_rlp_hex}`)
     const hash = hexToBytes(`0x${genesisHashesTestData.test.genesis_hash}`)
@@ -325,7 +329,7 @@ describe('[Block]: block functions', () => {
     assert.isTrue(equalsBytes(block.hash(), hash), 'genesis hash match')
   })
 
-  it('should test hash() method (mainnet default)', () => {
+  it('hash() method (mainnet default)', () => {
     let common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     const rlp = hexToBytes(`0x${genesisHashesTestData.test.genesis_rlp_hex}`)
     const hash = hexToBytes(`0x${genesisHashesTestData.test.genesis_hash}`)
@@ -345,7 +349,7 @@ describe('[Block]: block functions', () => {
     assert.deepEqual(block.hash(), new Uint8Array([1]), 'custom crypto applied on hash() method')
   })
 
-  it('should error on invalid params', () => {
+  it('errors on invalid params', () => {
     assert.throws(
       () => {
         createBlockFromRLP('1' as any)
@@ -364,7 +368,7 @@ describe('[Block]: block functions', () => {
     )
   })
 
-  it('should return the same block data from raw()', () => {
+  it('returns the same block data from raw()', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     const block = createBlockFromRLP(hexToBytes(preLondonTestDataBlocks2RLP.block2RLP), {
       common,
@@ -373,7 +377,7 @@ describe('[Block]: block functions', () => {
     assert.isTrue(equalsBytes(block.hash(), createBlockFromRaw.hash()))
   })
 
-  it('should test toJSON', () => {
+  it('toJSON', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Istanbul })
     const block = createBlockFromRLP(hexToBytes(preLondonTestDataBlocks2RLP.block2RLP), {
       common,
@@ -404,7 +408,7 @@ describe('[Block]: block functions', () => {
     }, 'should not throw on DAO HF block with correct extra data')
   })
 
-  it('should set canonical difficulty if I provide a calcDifficultyFromHeader header', () => {
+  it('set canonical difficulty if I provide a calcDifficultyFromHeader header', () => {
     let common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     const genesis = createBlock({}, { common })
 
@@ -472,7 +476,7 @@ describe('[Block]: block functions', () => {
     )
   })
 
-  it('should be able to initialize shanghai blocks with correct hardfork defaults', () => {
+  it('is able to initialize shanghai blocks with correct hardfork defaults', () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai })
     const block = createBlock({}, { common })
     assert.strictEqual(
@@ -500,7 +504,7 @@ describe('[Block]: EIP-7934 RLP Execution Block Size Limit', () => {
     )
   }
 
-  it('should not throw when size exceeds but EIP-7934 is not activated', async () => {
+  it('does not throw when size exceeds but EIP-7934 is not activated', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Chainstart })
     const block = createLargeBlock(common)
 
@@ -508,7 +512,7 @@ describe('[Block]: EIP-7934 RLP Execution Block Size Limit', () => {
     await block.validateData(false, false, true)
   })
 
-  it('should not throw when size exceeds, EIP-7934 is activated, but validateBlockSize is default (false)', async () => {
+  it('does not throw when size exceeds, EIP-7934 is activated, but validateBlockSize is default (false)', async () => {
     const params = {
       7934: {
         maxRlpBlockSize: 8_388_608, // 8 MiB (MAX_BLOCK_SIZE - SAFETY_MARGIN)
@@ -526,7 +530,7 @@ describe('[Block]: EIP-7934 RLP Execution Block Size Limit', () => {
     await block.validateData(false, false)
   })
 
-  it('should throw when EIP-7934 is activated and validateBlockSize is explicitly set to true', async () => {
+  it('throws when EIP-7934 is activated and validateBlockSize is explicitly set to true', async () => {
     const params = {
       7934: {
         maxRlpBlockSize: 8_388_608, // 8 MiB (MAX_BLOCK_SIZE - SAFETY_MARGIN)
@@ -541,12 +545,15 @@ describe('[Block]: EIP-7934 RLP Execution Block Size Limit', () => {
     const block = createLargeBlock(common)
 
     // This should throw due to size limit
-    await expect(block.validateData(false, false, true)).rejects.toThrow(
-      /Block size exceeds maximum RLP block size limit/,
-    )
+    try {
+      await block.validateData(false, false, true)
+      assert.fail('expected validateData to throw for oversized block')
+    } catch (e: unknown) {
+      assert.match((e as Error).message, /Block size exceeds maximum RLP block size limit/)
+    }
   })
 
-  it('should not throw when EIP-7934 is activated, validateBlockSize is true, but size does not exceed', async () => {
+  it('does not throw when EIP-7934 is activated, validateBlockSize is true, but size does not exceed', async () => {
     const params = {
       7934: {
         maxRlpBlockSize: 8_388_608, // 8 MiB (MAX_BLOCK_SIZE - SAFETY_MARGIN)
@@ -566,7 +573,7 @@ describe('[Block]: EIP-7934 RLP Execution Block Size Limit', () => {
     await block.validateData(false, false, true)
   })
 
-  it('should use correct size limit from common parameters', async () => {
+  it('uses correct size limit from common parameters', async () => {
     const params = {
       7934: {
         maxRlpBlockSize: 8_388_608, // 8 MiB (MAX_BLOCK_SIZE - SAFETY_MARGIN)
@@ -588,7 +595,7 @@ describe('[Block]: EIP-7934 RLP Execution Block Size Limit', () => {
     )
   })
 
-  it('should validate block size with createBlockFromRLP', async () => {
+  it('validates block size with createBlockFromRLP', async () => {
     const params = {
       7934: {
         maxRlpBlockSize: 8_388_608, // 8 MiB (MAX_BLOCK_SIZE - SAFETY_MARGIN)
@@ -616,7 +623,7 @@ describe('[Block]: EIP-7934 RLP Execution Block Size Limit', () => {
     )
   })
 
-  it('should throw when creating block from RLP when size exceeds limit', async () => {
+  it('throws when creating block from RLP when size exceeds limit', async () => {
     const params = {
       7934: {
         maxRlpBlockSize: 8_388_608, // 8 MiB (MAX_BLOCK_SIZE - SAFETY_MARGIN)

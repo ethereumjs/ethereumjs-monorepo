@@ -8,9 +8,9 @@
 
 > **createBlockFromBytesArray**(`values`, `opts?`): [`Block`](../classes/Block.md)
 
-Defined in: [block/constructors.ts:116](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block/constructors.ts#L116)
+Defined in: [block/constructors.ts:109](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/block/src/block/constructors.ts#L109)
 
-Static constructor to create a block from an array of Bytes values
+Instantiate a block from RLP-encoded field values.
 
 ## Parameters
 
@@ -26,4 +26,14 @@ Static constructor to create a block from an array of Bytes values
 
 [`Block`](../classes/Block.md)
 
-a new [Block](../classes/Block.md) object
+## Throws
+
+If more than five top-level RLP elements are present
+
+## Throws
+
+If EIP-4895 is active but withdrawals are missing
+
+## Throws
+
+If delegated header or transaction factory validation fails

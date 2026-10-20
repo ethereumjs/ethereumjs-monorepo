@@ -1,6 +1,7 @@
 import type { ParamsDict } from '@ethereumjs/common'
 import { SYSTEM_ADDRESS } from '@ethereumjs/util'
 
+/** Default EVM gas parameters keyed by EIP, passed to {@link @ethereumjs/common!Common} via `opts.params`. */
 export const paramsEVM: ParamsDict = {
   /**
    * Frontier/Chainstart
@@ -311,28 +312,11 @@ export const paramsEVM: ParamsDict = {
     maxInitCodeSize: 49152, // Maximum length of initialization code when creating a contract
   },
   /**
-   * EOF - Static relative jumps
-   */
-  4200: {
-    // gasPrices
-    rjumpGas: 2, // Base fee of the RJUMP opcode
-    rjumpiGas: 4, // Base fee of the RJUMPI opcode
-    rjumpvGas: 4, // Base fee of the RJUMPV opcode
-  },
-  /**
 .  * Supplant DIFFICULTY opcode with PREVRANDAO
 .  */
   4399: {
     // gasPrices
     prevrandaoGas: 2, // Base fee of the PREVRANDAO opcode (previously DIFFICULTY)
-  },
-  /**
-   * EOF - Functions
-   */
-  4750: {
-    // gasPrices
-    callfGas: 5, // Base fee of the CALLF opcode
-    retfGas: 3, // Base fee of the RETF opcode
   },
   /**
 .  * Shard Blob Transactions
@@ -352,56 +336,11 @@ export const paramsEVM: ParamsDict = {
     mcopyGas: 3, // Base fee of the MCOPY opcode
   },
   /**
-   * EOF - JUMPF and non-returning functions
-   */
-  6206: {
-    // gasPrices
-    jumpfGas: 5, // Base fee of the JUMPF opcode
-  },
-  /**
-.  * Revamped CALL instructions
-.  */
-  7069: {
-    /* Note: per EIP these are the additionally required EIPs:
-    EIP 150 - This is the entire Tangerine Whistle hardfork
-    EIP 211 - (RETURNDATASIZE / RETURNDATACOPY) - Included in Byzantium
-    EIP 214 - (STATICCALL) - Included in Byzantium
-  */
-    // gasPrices
-    extcallGas: 0, // Base fee of the EXTCALL opcode
-    extdelegatecallGas: 0, // Base fee of the EXTDELEGATECALL opcode
-    extstaticcallGas: 0, // Base fee of the EXTSTATICCALL opcode
-    returndataloadGas: 3, // Base fee of the RETURNDATALOAD opcode
-    minRetainedGas: 5000, // Minimum gas retained prior to executing an EXT*CALL opcode (this is the minimum gas available after performing the EXT*CALL)
-    minCalleeGas: 2300, //Minimum gas available to the the address called by an EXT*CALL opcode
-  },
-  /**
-   * EOF - Data section access instructions
-   */
-  7480: {
-    // gasPrices
-    dataloadGas: 4, // Base fee of the DATALOAD opcode
-    dataloadnGas: 3, // Base fee of the DATALOADN opcode
-    datasizeGas: 2, // Base fee of the DATASIZE opcode
-    datacopyGas: 3, // Base fee of the DATACOPY opcode
-  },
-  /**
 .  * BLOBBASEFEE opcode
 .  */
   7516: {
     // gasPrices
     blobbasefeeGas: 2, // Gas cost of the BLOBBASEFEE opcode
-  },
-  /**
-.  * EOF Contract Creation
-.  */
-  7620: {
-    /* Note: per EIP these are the additionally required EIPs:
-    EIP 170 - (Max contract size) - Included in Spurious Dragon
-  */
-    // gasPrices
-    eofcreateGas: 32000, // Base fee of the EOFCREATE opcode (Same as CREATE/CREATE2)
-    returncontractGas: 0, // Base fee of the RETURNCONTRACT opcode
   },
   /**
 .  * Count leading zeros (CLZ) opcode
@@ -411,12 +350,24 @@ export const paramsEVM: ParamsDict = {
     clzGas: 5, // Base fee of the CLZ opcode (matching MUL as per EIP-7939)
   },
   /**
+   * Reduce intrinsic transaction gas (Amsterdam, experimental).
+   * Recipient/value/log extras are intrinsic on `@ethereumjs/tx`
+   * (`getIntrinsicGas()` / the calldata floor). The EVM still charges
+   * new-account state gas at the top frame. Keep in sync with
+   * `@ethereumjs/tx` `paramsTx[2780]`.
+   */
+  2780: {
+    txValueCost: 6000, // TX_VALUE_COST: recipient balance write + EIP-7708 transfer log (folded since glamsterdam-devnet v8)
+    transferLogCost: 1756, // TRANSFER_LOG_COST: in-EVM EIP-7708 emission sites only (not tx-level intrinsic since v8)
+    txRecipientAccessGas: 3000, // Recipient cost for a non-self-transfer call (= COLD_ACCOUNT_ACCESS under EIP-8038)
+  },
+  /**
    * Increase max contract code size and initcode size
    */
   7954: {
     // evm
-    maxCodeSize: 32768, // EIP-7954: Maximum length of contract code (raised from 24 KiB)
-    maxInitCodeSize: 65536, // EIP-7954: Maximum length of initialization code (raised from 48 KiB)
+    maxCodeSize: 65536, // EIP-7954: Maximum length of contract code (raised from 24 KiB)
+    maxInitCodeSize: 131072, // EIP-7954: Maximum length of initialization code (2 * maxCodeSize, raised from 48 KiB)
   },
   /**
    * State Creation Gas Cost Increase
@@ -426,19 +377,35 @@ export const paramsEVM: ParamsDict = {
    */
   8037: {
     // Regular-gas overrides (state portion is metered separately)
-    sstoreSetGas: 2900, // SSTORE 0->nonzero: regular gas (down from 20000); state portion = stateBytesPerStorageSet * costPerStateByte
-    sstoreInitEIP2200Gas: 2900, // EIP-2200 path uses this name for the create-slot regular cost; align with sstoreSetGas under 8037
-    sstoreInitRefundEIP2200Gas: 0, // Legacy refund for "create-then-clear-in-same-tx" is replaced by the state-gas reservoir refill
-    createGas: 9000, // CREATE base regular gas (down from 32000); state portion = (stateBytesPerNewAccount + L) * costPerStateByte
-    create2Gas: 9000, // CREATE2 base regular gas (down from 32000); state portion = (stateBytesPerNewAccount + L) * costPerStateByte
-    callNewAccountGas: 0, // CALL* to non-existent: regular gas (down from 25000); state portion = stateBytesPerNewAccount * costPerStateByte
+    createGas: 11000, // CREATE base regular gas (CREATE_ACCESS = ACCOUNT_WRITE + COLD_STORAGE_ACCESS); state portion = (stateBytesPerNewAccount + L) * costPerStateByte
+    create2Gas: 11000, // CREATE2 base regular gas (CREATE_ACCESS = ACCOUNT_WRITE + COLD_STORAGE_ACCESS); state portion = (stateBytesPerNewAccount + L) * costPerStateByte
+    callNewAccountGas: 0, // CALL* to non-existent: regular gas (down from 25000); state portion = stateBytesPerNewAccount * costPerStateByte (charged only for value-bearing calls)
     createDataGas: 0, // Per-byte regular cost of code deposit (down from 200); replaced by costPerStateByte state-gas plus a per-word hash cost (see codeDepositHashWordGas)
     codeDepositHashWordGas: 6, // Per 32-byte word regular hash cost on contract creation (6 * ceil(L/32))
     // New state-gas constants (used to compute state-gas charges)
-    costPerStateByte: 1530, // Cost per state byte (v7 fixtures)
-    stateBytesPerStorageSet: 64, // Bytes accounted per new storage slot (v7 fixtures)
-    stateBytesPerNewAccount: 120, // Bytes accounted per newly created account (v7 fixtures)
+    costPerStateByte: 1530, // Cost per state byte
+    stateBytesPerStorageSet: 64, // Bytes accounted per new storage slot
+    stateBytesPerNewAccount: 120, // Bytes accounted per newly created account
     stateBytesPerAuthBase: 23, // Bytes accounted per EIP-7702 authorization base
     systemMaxSstoresPerCall: 16, // Reservoir headroom for system contract calls
+  },
+  /**
+   * State Access Gas Cost Increase (Amsterdam, experimental).
+   * Repriced access/write constants per the pinned execution-specs Amsterdam
+   * gas schedule. The SSTORE model becomes: access cost (cold/warm) always,
+   * plus a flat storageWriteGas on the first change to a slot in the
+   * transaction (with a matching refund when the slot is restored), plus the
+   * EIP-8037 state-gas portion for newly set slots.
+   */
+  8038: {
+    // gasPrices — glamsterdam-devnet v8.1.0 revised schedule (EIPs#12083)
+    coldsloadGas: 2100, // COLD_STORAGE_ACCESS unchanged from pre-8038
+    coldaccountaccessGas: 3000, // COLD_ACCOUNT_ACCESS (+15% from 2600)
+    storageWriteGas: 10000, // STORAGE_WRITE: charged on the first change to a storage slot per transaction
+    refundStorageClearGas: 11616, // STORAGE_CLEAR_REFUND = (STORAGE_WRITE + COLD_STORAGE_ACCESS) * 4800 / 5000
+    callValueTransferGas: 11300, // CALL_VALUE = ACCOUNT_WRITE (9000) + CALL_STIPEND (2300)
+    accountWriteGas: 9000, // ACCOUNT_WRITE: per-operation account leaf write surcharge
+    createGas: 12000, // CREATE_ACCESS = ACCOUNT_WRITE + COLD_ACCOUNT_ACCESS
+    create2Gas: 12000, // CREATE_ACCESS = ACCOUNT_WRITE + COLD_ACCOUNT_ACCESS
   },
 }

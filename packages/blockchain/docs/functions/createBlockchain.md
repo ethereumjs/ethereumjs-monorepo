@@ -6,16 +6,22 @@
 
 # Function: createBlockchain()
 
-> **createBlockchain**(`opts`): `Promise`\<[`Blockchain`](../classes/Blockchain.md)\>
+> **createBlockchain**(`opts?`): `Promise`\<[`Blockchain`](../classes/Blockchain.md)\>
 
-Defined in: [constructors.ts:27](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/constructors.ts#L27)
+Defined in: [constructors.ts:32](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/constructors.ts#L32)
+
+Initialize a blockchain, seeding genesis when the DB is empty.
 
 ## Parameters
 
-### opts
+### opts?
 
 [`BlockchainOptions`](../interfaces/BlockchainOptions.md) = `{}`
 
 ## Returns
 
 `Promise`\<[`Blockchain`](../classes/Blockchain.md)\>
+
+## Throws
+
+If the DB genesis hash does not match the provided genesis block

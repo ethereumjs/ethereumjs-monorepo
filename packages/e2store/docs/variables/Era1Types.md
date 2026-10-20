@@ -8,7 +8,7 @@
 
 > `const` **Era1Types**: `object`
 
-Defined in: [packages/e2store/src/types.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/types.ts#L14)
+Defined in: [packages/e2store/src/types.ts:18](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/e2store/src/types.ts#L18)
 
 Era 1 Type Identifiers
 

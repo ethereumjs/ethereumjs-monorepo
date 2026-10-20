@@ -17,6 +17,7 @@ import type { CacheOpts } from './types.ts'
 type DiffStorageCacheMap = Map<string, Uint8Array | undefined>
 type StorageCacheMap = Map<string, Uint8Array>
 
+/** In-memory storage slot cache with checkpoint/revert support. */
 export class StorageCache extends Cache {
   _lruCache: LRUCache<string, StorageCacheMap> | undefined
   _orderedMapCache: OrderedMap<string, StorageCacheMap> | undefined
@@ -77,7 +78,7 @@ export class StorageCache extends Cache {
    * Puts storage value to cache under address_key cache key.
    * @param address - Account address
    * @param key - Storage key
-   * @param val - RLP-encoded storage value
+   * @param value - RLP-encoded storage value
    */
   put(address: Address, key: Uint8Array, value: Uint8Array): void {
     // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for cache lookups.
@@ -170,8 +171,9 @@ export class StorageCache extends Cache {
   }
 
   /**
-   * Deletes all storage slots for address from the cache
-   * @param address
+   * Remove all cached storage slots for an account.
+   *
+   * @param address Account whose storage map should be cleared
    */
   clearStorage(address: Address): void {
     const addressHex = bytesToUnprefixedHex(address.bytes)
@@ -307,10 +309,7 @@ export class StorageCache extends Cache {
     this._diffCache.push(new Map())
   }
 
-  /**
-   * Returns the size of the cache
-   * @returns
-   */
+  /** Current number of accounts with cached storage maps. */
   size() {
     if (this._lruCache) {
       return this._lruCache!.size
@@ -320,8 +319,9 @@ export class StorageCache extends Cache {
   }
 
   /**
-   * Returns a dict with cache stats
-   * @param reset
+   * Read/write statistics for this cache.
+   *
+   * @param reset When `true` (default), zero counters after reading
    */
   stats(reset = true) {
     const stats = { ...this._stats }
@@ -354,8 +354,8 @@ export class StorageCache extends Cache {
 
   /**
    * Dumps the RLP-encoded storage values for an `account` specified by `address`.
-   * @param address - The address of the `account` to return storage for
-   * @returns {StorageCacheMap | undefined} - The storage values for the `account` or undefined if the `account` is not in the cache
+   * @param address Account to dump from the cache
+   * @returns Map of slot hex keys to values, or `undefined` when the account is not cached
    */
   dump(address: Address): StorageCacheMap | undefined {
     let storageMap

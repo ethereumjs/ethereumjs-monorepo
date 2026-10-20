@@ -1,4 +1,3 @@
-import { EOFContainer, validateEOF } from './eof/container.ts'
 import { EVMError } from './errors.ts'
 import { EVM } from './evm.ts'
 import { Message } from './message.ts'
@@ -58,7 +57,6 @@ export type {
 }
 
 export {
-  EOFContainer,
   EVM,
   EVMError,
   EVMMockBlockchain,
@@ -69,7 +67,6 @@ export {
   NobleBLS,
   NobleBN254,
   RustBN254,
-  validateEOF,
 }
 
 export * from './binaryTreeAccessWitness.ts'

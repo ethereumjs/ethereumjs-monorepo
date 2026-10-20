@@ -6,6 +6,45 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 10.1.3 - 2026-08-21
+
+### Release round overview
+
+Welcome to **`10.1.3`** — a coordinated release across all active `@ethereumjs/*` libraries on the **`10.1.x`** line. If you have been experimenting with the upcoming Amsterdam hardfork, this is our **close-to-ready preview**: the full **14-EIP `Hardfork.Amsterdam` bundle** is implemented and aligned with [tests-glamsterdam-devnet@v8.1.0](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v8.1.0) and **glamsterdam-devnet-8**. Public APIs and spec alignment are largely stable — a good time to try BAL builder/validator flows, two-dimensional block gas, builder requests, and the rest of the Amsterdam surface — but Amsterdam remains **experimental** and **must not be used in production**; spec or API shifts can still happen in later `10.1.x` patches.
+
+The sections below cover **this package only**; for the full EIP list, examples, and release ↔ spec tracking, see the [@ethereumjs/vm Amsterdam overview](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental). On Osaka or earlier hardforks? Nothing changes unless you explicitly select `Hardfork.Amsterdam`.
+
+### `@ethereumjs/common`
+
+`@ethereumjs/common` is the fork and parameter engine. Within the `10.1.3` round, **`Hardfork.Amsterdam` expands from nine to fourteen EIPs** and picks up the revised glamsterdam-devnet gas schedule — the single switch every downstream package inherits when you set `hardfork: Hardfork.Amsterdam`.
+
+### At a glance
+
+- **`Hardfork.Amsterdam`** now activates EIPs 2780, 7708, 7843, 7778, 7928, 7954, 7976, 7981, 7997, 8024, 8037, 8038, 8246, and 8282.
+- Revised **`gasPrices` / `gasConfig` / `vm` params** for glamsterdam-devnet v8.1.0 (EIP-8038 state-access costs, EIP-2780 intrinsic constants, …).
+- **Spec snapshot:** [tests-glamsterdam-devnet@v8.1.0](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v8.1.0).
+
+### Amsterdam (experimental)
+
+> Behaviour may still change in subsequent `10.1.x` patch releases.
+> **Spec snapshot:** [tests-glamsterdam-devnet@v8.1.0](https://github.com/ethereum/execution-specs/releases/tag/tests-glamsterdam-devnet%40v8.1.0) · **Testnet:** glamsterdam-devnet-8
+> Execution details: [Amsterdam hardfork (experimental)](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/vm#amsterdam-hardfork-experimental)
+
+```ts
+import { Common, Hardfork, Mainnet } from '@ethereumjs/common'
+
+const common = new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })
+
+common.isActivatedEIP(8282) // true — builder deposit/exit requests
+common.isActivatedEIP(8038) // true — state-access gas schedule
+common.isActivatedEIP(2780) // true — revised intrinsic gas base
+```
+
+### Changes
+
+- Expand Amsterdam to the full 14-EIP bundle (2780, 7997, 8038, 8246, 8282, …), see PR [#4361](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4361), [#4362](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4362), [#4364](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4364)
+- Align Amsterdam gas schedule with glamsterdam-devnet v8.1.0, see PR [#4337](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4337), [#4364](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4364)
+
 ## 10.1.2 - 2026-05-29
 
 ### Release round overview

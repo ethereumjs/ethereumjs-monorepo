@@ -13,7 +13,7 @@ import {
 import type { ChainConfig } from '../src/index.ts'
 
 describe('[Common/Chains]: Initialization / Chain params', () => {
-  it('Should initialize with chain provided', () => {
+  it('initializes with preset chain and default hardfork', () => {
     const c = new Common({ chain: Mainnet })
     assert.strictEqual(c.chainName(), 'mainnet', 'should initialize with chain name')
     assert.strictEqual(c.chainId(), BigInt(1), 'should return correct chain Id')
@@ -52,7 +52,7 @@ describe('[Common/Chains]: Initialization / Chain params', () => {
     await resetCommon()
   })
 
-  it('Should initialize with chain provided by chain name or network Id', () => {
+  it('initializes from chain name or numeric chain id lookup', () => {
     let chain = getPresetChainConfig('mainnet')
     let c = new Common({ chain })
     assert.strictEqual(c.chainName(), 'mainnet')
@@ -61,17 +61,17 @@ describe('[Common/Chains]: Initialization / Chain params', () => {
     assert.strictEqual(c.chainName(), 'mainnet')
   })
 
-  it('Should initialize with chain and hardfork provided', () => {
+  it('initializes with explicit hardfork string', () => {
     const c = new Common({ chain: Mainnet, hardfork: 'byzantium' })
     assert.strictEqual(c.hardfork(), 'byzantium', 'should return correct hardfork name')
   })
 
-  it('Should initialize with chain and hardfork provided by Chain and Hardfork enums', () => {
+  it('initializes with Hardfork enum', () => {
     const c = new Common({ chain: Mainnet, hardfork: Hardfork.Byzantium })
     assert.strictEqual(c.hardfork(), 'byzantium', 'should return correct hardfork name')
   })
 
-  it('Should handle initialization errors', () => {
+  it('throws when hardfork name is unknown', () => {
     const f = function () {
       new Common({ chain: Mainnet, hardfork: 'hardforkNotExisting' })
     }
@@ -79,7 +79,7 @@ describe('[Common/Chains]: Initialization / Chain params', () => {
     assert.throws(f, /not supported$/, undefined, msg)
   })
 
-  it('Should provide correct access to chain parameters', () => {
+  it('exposes hardforks, bootstrap nodes, and consensus metadata', () => {
     let c = new Common({ chain: Mainnet, hardfork: 'tangerineWhistle' })
     assert.strictEqual(c.hardforks()[3]['block'], 2463000, 'should return correct hardfork data')
     assert.strictEqual(
@@ -123,7 +123,7 @@ describe('[Common/Chains]: Initialization / Chain params', () => {
     )
   })
 
-  it('Should provide the bootnode information in a uniform way', () => {
+  it('normalizes bootnode records across preset chains', () => {
     const configs = [Mainnet, goerliChainConfig]
     for (const network of configs) {
       const c = new Common({ chain: network })
@@ -144,7 +144,7 @@ describe('[Common/Chains]: Initialization / Chain params', () => {
     }
   })
 
-  it('Should provide DNS network information in a uniform way', () => {
+  it('returns DNS network URLs as strings for preset chains', () => {
     const configs = [Mainnet, goerliChainConfig]
     for (const network of configs) {
       const c = new Common({ chain: network })
@@ -156,7 +156,7 @@ describe('[Common/Chains]: Initialization / Chain params', () => {
 })
 
 describe('[Common]: copy() listener tests', () => {
-  it('Should work', () => {
+  it('copy omits hardforkChanged listeners from the original', () => {
     const common = new Common({ chain: Mainnet })
     // Add two listeners
     common.events.on('hardforkChanged', () => {})

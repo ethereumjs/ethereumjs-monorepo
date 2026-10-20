@@ -14,7 +14,12 @@ import { createEVM } from '../src/index.ts'
 
 import type { LogEvent, LogOrigin } from '@ethereumjs/evm'
 
-describe('log tracing events', () => {
+/** Osaka plus EIP-7708, without Amsterdam's EIP-8246 (selfdestruct still burns). */
+function common7708Without8246() {
+  return new Common({ chain: Mainnet, hardfork: Hardfork.Osaka, eips: [7708] })
+}
+
+describe('[EVM]: log tracing events', () => {
   it('emits opcode logs from LOG1 bytecode', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Shanghai })
     const evm = await createEVM({ common })
@@ -60,7 +65,7 @@ describe('log tracing events', () => {
       caller: sender,
       to: recipient,
       value: 1_000n,
-      gasLimit: 100_000n,
+      gasLimit: 1_000_000n,
     })
 
     assert.strictEqual(events.length, 1)
@@ -70,7 +75,7 @@ describe('log tracing events', () => {
     assert.isTrue(equalsBytes(events[0].log[1][0], EIP7708_TRANSFER_TOPIC))
   })
 
-  it('emits createTransfer and selfdestructBurn for CREATE + SELFDESTRUCT to self', async () => {
+  it('emits createTransfer and skips burns when Amsterdam self-selfdestructs', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })
     const evm = await createEVM({ common })
 
@@ -93,8 +98,58 @@ describe('log tracing events', () => {
       gasLimit: 1_000_000n,
     })
 
-    assert.include(origins, 'createTransfer')
-    assert.include(origins, 'selfdestructBurn')
+    assert.deepEqual(origins, ['createTransfer'])
+  })
+
+  it('emits selfdestructTransfer when SELFDESTRUCT pays a different account', async () => {
+    const common = new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })
+    const evm = await createEVM({ common })
+
+    const senderKey = hexToBytes(`0x${'24'.repeat(32)}`)
+    const sender = createAddressFromPrivateKey(senderKey)
+    await evm.stateManager.putAccount(sender, createAccount({ nonce: 0n, balance: BigInt(1e18) }))
+
+    // PUSH20 beneficiary; SELFDESTRUCT
+    const beneficiary = 'aa'.repeat(20)
+    const initCode = hexToBytes(`0x73${beneficiary}ff`)
+
+    const origins: LogOrigin[] = []
+    evm.events.on('log', (event) => {
+      origins.push(event.origin)
+    })
+
+    await evm.runCall({
+      caller: sender,
+      data: initCode,
+      value: 1_000n,
+      gasLimit: 1_000_000n,
+    })
+
+    assert.deepEqual(origins, ['createTransfer', 'selfdestructTransfer'])
+  })
+
+  it('emits selfdestructBurn when EIP-7708 is on and EIP-8246 is not', async () => {
+    const evm = await createEVM({ common: common7708Without8246() })
+
+    const senderKey = hexToBytes(`0x${'25'.repeat(32)}`)
+    const sender = createAddressFromPrivateKey(senderKey)
+    await evm.stateManager.putAccount(sender, createAccount({ nonce: 0n, balance: BigInt(1e18) }))
+
+    const initCode = hexToBytes('0x30ff')
+
+    const origins: LogOrigin[] = []
+    evm.events.on('log', (event) => {
+      origins.push(event.origin)
+    })
+
+    await evm.runCall({
+      caller: sender,
+      data: initCode,
+      value: 1_000n,
+      gasLimit: 1_000_000n,
+    })
+
+    assert.deepEqual(origins, ['createTransfer', 'selfdestructBurn'])
   })
 
   it('supports async log listeners on synthetic transfer logs', async () => {
@@ -117,12 +172,12 @@ describe('log tracing events', () => {
       caller: sender,
       to: recipient,
       value: 1_000n,
-      gasLimit: 100_000n,
+      gasLimit: 1_000_000n,
     })
     assert.isTrue(didPause)
   })
 
-  it('documents optimistic emission when a reverting frame clears logs', async () => {
+  it('emits a callTransfer that a reverting frame drops from the result', async () => {
     const common = new Common({ chain: Mainnet, hardfork: Hardfork.Amsterdam })
     const evm = await createEVM({ common })
 

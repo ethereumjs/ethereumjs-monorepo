@@ -1,100 +1,12 @@
-import yargs from 'yargs'
-import { hideBin } from 'yargs/helpers'
-
 import type { InterpreterStep } from '@ethereumjs/evm'
 import { bytesToHex } from '@ethereumjs/util'
 import type { AfterTxEvent } from '../../src/types.ts'
 import type { VM } from '../../src/vm.ts'
+import { parseT8nArgv } from '../tester/util/parseTestCli.ts'
 import type { T8NOptions } from './types.ts'
 
-export function getArguments() {
-  const argsParsed = yargs(hideBin(process.argv))
-    .parserConfiguration({
-      'dot-notation': false,
-    })
-    .option('state.fork', {
-      describe: 'Fork to use',
-      type: 'string',
-      demandOption: true,
-    })
-    .option('state.chainid', {
-      describe: 'ChainID to use',
-      type: 'string',
-      default: '1',
-    })
-    .option('state.reward', {
-      describe:
-        'Coinbase reward after running txs. If 0: coinbase account is touched and rewarded 0 wei. If -1, the coinbase account is not touched (default)',
-      type: 'string',
-      default: '-1',
-    })
-    .option('input.alloc', {
-      describe: 'Initial state allocation',
-      type: 'string',
-      demandOption: true,
-    })
-    .option('input.txs', {
-      describe: 'JSON input of txs to run on top of the initial state allocation',
-      type: 'string',
-      demandOption: true,
-    })
-    .option('input.env', {
-      describe: 'Input environment (coinbase, difficulty, etc.)',
-      type: 'string',
-      demandOption: true,
-    })
-    .option('output.basedir', {
-      describe: 'Base directory to write output to',
-      type: 'string',
-      demandOption: true,
-    })
-    .option('output.result', {
-      describe: 'File to write output results to (relative to `output.basedir`)',
-      type: 'string',
-      demandOption: true,
-    })
-    .option('output.alloc', {
-      describe: 'File to write output allocation to (after running the transactions)',
-      type: 'string',
-      demandOption: true,
-    })
-    .option('output.body', {
-      deprecate: true,
-      description: 'File to write transaction RLPs to (currently unused)',
-      type: 'string',
-    })
-    .option('log', {
-      describe: 'Optionally write light-trace logs to stdout',
-      type: 'boolean',
-      default: false,
-    })
-    .option('trace', {
-      describe: 'Write EVM traces as JSON to trace-<tx-number>-<tx-hash>.json',
-      type: 'boolean',
-      default: false,
-    })
-    .strict()
-    .help().argv
-
-  const args = argsParsed as any as T8NOptions
-
-  args.input = {
-    alloc: (args as any)['input.alloc'],
-    txs: (args as any)['input.txs'],
-    env: (args as any)['input.env'],
-  }
-  args.output = {
-    basedir: (args as any)['output.basedir'],
-    result: (args as any)['output.result'],
-    alloc: (args as any)['output.alloc'],
-  }
-  args.state = {
-    fork: (args as any)['state.fork'],
-    reward: BigInt((args as any)['state.reward']),
-    chainid: BigInt((args as any)['state.chainid']),
-  }
-  args.trace = (args as any)['trace']
-  return args
+export function getArguments(): T8NOptions {
+  return parseT8nArgv(process.argv.slice(2))
 }
 
 /**
@@ -165,9 +77,7 @@ export const stepTraceJSON = (step: InterpreterStep, memory: boolean = false) =>
     depth: step.depth + 1, // Depth starts at 1 - EIP-7756
     refund: Number(step.gasRefund),
     opName: step.opcode.name,
-    section: step.eofSection,
     immediate: step.immediate !== undefined ? bytesToHex(step.immediate) : undefined,
-    functionDepth: step.eofFunctionDepth,
     error: step.error !== undefined ? step.error.toString() : undefined,
   }
   return opTrace

@@ -6,7 +6,7 @@
 
 # Interface: BALJSONNonceChange
 
-Defined in: [packages/util/src/bal/index.ts:66](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L66)
+Defined in: [packages/util/src/bal/index.ts:69](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L69)
 
 ## Properties
 
@@ -14,7 +14,7 @@ Defined in: [packages/util/src/bal/index.ts:66](https://github.com/ethereumjs/et
 
 > **blockAccessIndex**: `` `0x${string}` ``
 
-Defined in: [packages/util/src/bal/index.ts:67](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L67)
+Defined in: [packages/util/src/bal/index.ts:70](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L70)
 
 ***
 
@@ -22,4 +22,4 @@ Defined in: [packages/util/src/bal/index.ts:67](https://github.com/ethereumjs/et
 
 > **postNonce**: `` `0x${string}` ``
 
-Defined in: [packages/util/src/bal/index.ts:68](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L68)
+Defined in: [packages/util/src/bal/index.ts:71](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/index.ts#L71)

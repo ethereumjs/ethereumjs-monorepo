@@ -8,9 +8,10 @@ import { sepoliaGenesis } from './genesisStates/sepolia.ts'
 import type { GenesisState } from '@ethereumjs/common'
 
 /**
- * Utility to get the genesisState of a well known network
- * @param: chainId of the network
- * @returns genesisState of the chain
+ * Returns the genesis state for a well-known Ethereum network.
+ *
+ * @param chainId Numeric chain identifier (see {@link Chain} in `@ethereumjs/common`)
+ * @returns Genesis state map keyed by address, or `undefined` if the chain is not supported
  */
 export function getGenesis(chainId: number): GenesisState | undefined {
   switch (chainId) {

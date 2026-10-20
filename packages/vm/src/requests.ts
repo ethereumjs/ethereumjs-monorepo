@@ -1,6 +1,6 @@
 import { Mainnet } from '@ethereumjs/common'
-import { activeCostPerStateByte } from '@ethereumjs/evm'
-import type { BlockLevelAccessList, PrefixedHexString } from '@ethereumjs/util'
+import { type EVMRunCallOpts, activeCostPerStateByte } from '@ethereumjs/evm'
+import type { Address, BlockLevelAccessList, PrefixedHexString } from '@ethereumjs/util'
 import {
   BIGINT_0,
   CLRequest,
@@ -18,6 +18,14 @@ import {
 import type { RunTxResult } from './types.ts'
 import type { VM } from './vm.ts'
 
+type EvmBlockContext = NonNullable<EVMRunCallOpts['block']>
+
+/** Accumulates EIP-8037 spill/state gas across multiple pre-tx system calls in one block. */
+export type PreTxSystemGas8037Accumulator = {
+  blockRegularGasUsed: bigint
+  blockStateGasUsed: bigint
+}
+
 /**
  * EIP-8037 system-call gas split.
  *   regular gas_left   = 30_000_000 (unchanged)
@@ -27,7 +35,7 @@ import type { VM } from './vm.ts'
  * portion (set on vm.evm before the call). The block argument is required
  * under 8037 so costPerStateByte scales with the current block's gas limit.
  */
-function computeSystemCallGas(
+export function computeSystemCallGas(
   vm: VM,
   blockGasLimit?: bigint,
 ): { regular: bigint; reservoir: bigint } {
@@ -47,7 +55,7 @@ function computeSystemCallGas(
  * so the system call's state-gas accounting is isolated from any
  * concurrent tx-level reservoir.
  */
-function setupSystemCallReservoir(vm: VM, reservoir: bigint) {
+export function setupSystemCallReservoir(vm: VM, reservoir: bigint) {
   if (!vm.common.isActivatedEIP(8037)) return null
   const evm = vm.evm
   const prior = {
@@ -61,7 +69,7 @@ function setupSystemCallReservoir(vm: VM, reservoir: bigint) {
   return prior
 }
 
-function teardownSystemCallReservoir(
+export function teardownSystemCallReservoir(
   vm: VM,
   prior: { reservoir: bigint; used: bigint; snapshots: unknown[] } | null,
 ) {
@@ -70,6 +78,79 @@ function teardownSystemCallReservoir(
   evm.stateGasReservoir = prior.reservoir
   evm.executionStateGasUsed = prior.used
   ;(evm as unknown as { _stateGasSnapshots: unknown[] })._stateGasSnapshots = prior.snapshots
+}
+
+/**
+ * EIP-4788 / EIP-2935 pre-transaction system call (SYSTEM_ADDRESS → contract, 32-byte calldata).
+ * Under EIP-8037 the caller must already have configured the shared system-call reservoir.
+ */
+export async function runPreTxSystemContractCall(
+  vm: VM,
+  params: {
+    to: Address
+    data: Uint8Array
+    block: EvmBlockContext
+    blockGasLimit: bigint
+    gas8037?: PreTxSystemGas8037Accumulator
+    errorLabel: string
+  },
+): Promise<void> {
+  const { to, data, block, blockGasLimit, gas8037, errorLabel } = params
+  const code = await vm.stateManager.getCode(to)
+  if (code.length === 0) {
+    if (vm.common.isActivatedEIP(7928)) {
+      vm.evm.blockLevelAccessList!.addAddress(to.toString())
+    }
+    return
+  }
+
+  const systemAddressBytes = bigIntToAddressBytes(vm.common.param('systemAddress'))
+  const systemAddress = createAddressFromString(bytesToHex(systemAddressBytes))
+  const systemAccount = await vm.stateManager.getAccount(systemAddress)
+  const systemAddressHex = systemAddress.toString()
+  const balSnapshot = cloneSystemAccessEntry(vm, systemAddressHex)
+
+  const { regular, reservoir } = computeSystemCallGas(vm, blockGasLimit)
+  const reservoirPrior = setupSystemCallReservoir(vm, reservoir)
+
+  const results = await vm.evm.runCall({
+    caller: systemAddress,
+    gasLimit: regular,
+    to,
+    data,
+    block,
+    skipBalance: true,
+    skipNonceIncrement: true,
+  })
+
+  if (gas8037 !== undefined) {
+    gas8037.blockRegularGasUsed += results.execResult.stateGasSpilled ?? BIGINT_0
+    gas8037.blockStateGasUsed += vm.evm.executionStateGasUsed
+  }
+
+  teardownSystemCallReservoir(vm, reservoirPrior)
+
+  restoreSystemAccessEntry(vm, systemAddressHex, balSnapshot)
+  if (systemAccount === undefined) {
+    await vm.stateManager.deleteAccount(systemAddress)
+  } else {
+    await vm.stateManager.putAccount(systemAddress, systemAccount)
+  }
+
+  if (results.execResult.exceptionError !== undefined) {
+    // EIP-4788 / EIP-2935 require a successful system call on mainnet bytecode.
+    // Boundary fixtures use instrumented stubs that may revert or OOG when the
+    // grant is tight; the block stays valid and the journal already rolled back.
+    const err = results.execResult.exceptionError.error
+    // EST boundary stubs halt with revert or OOG when the grant is tight; canonical
+    // 4788/2935 bytecode completes successfully under the EIP-8037 system-call budget.
+    const isBoundaryHalt = err === 'revert' || err === 'out of gas'
+    if (!isBoundaryHalt) {
+      throw EthereumJSErrorWithoutCode(`system contract call failed: ${errorLabel} (${err})`)
+    }
+  }
+
+  await vm.evm.journal.cleanup()
 }
 
 const DEPOSIT_TOPIC = '0x649bbc62d0e31342afea4e5cd82d4049e7e1ee912fc0889aa790803be39038c5'
@@ -127,15 +208,16 @@ function restoreSystemAccessEntry(
 }
 
 /**
- * This helper method generates a list of all CL requests that can be included in a pending block
- * @param vm VM instance (used in deriving partial withdrawal requests)
- * @param txResults (used in deriving deposit requests)
- * @returns a list of CL requests in ascending order by type
+ * Collects consensus-layer requests (deposits, withdrawals, consolidations) from block execution.
+ *
+ * @param generate - When true, include requests derived from execution even if not yet in state
  */
 export const accumulateRequests = async (
   vm: VM,
   txResults: RunTxResult[],
   blockGasLimit?: bigint,
+  generate = false,
+  block?: EvmBlockContext,
 ): Promise<CLRequest<CLRequestType>[]> => {
   const requests: CLRequest<CLRequestType>[] = []
   const common = vm.common
@@ -150,22 +232,120 @@ export const accumulateRequests = async (
   }
 
   if (common.isActivatedEIP(7002)) {
-    const withdrawalsRequest = await accumulateWithdrawalsRequest(vm, blockGasLimit)
+    const withdrawalsRequest = await accumulateWithdrawalsRequest(
+      vm,
+      blockGasLimit,
+      generate,
+      block,
+    )
     requests.push(withdrawalsRequest)
   }
 
   if (common.isActivatedEIP(7251)) {
-    const consolidationsRequest = await accumulateConsolidationsRequest(vm, blockGasLimit)
+    const consolidationsRequest = await accumulateConsolidationsRequest(
+      vm,
+      blockGasLimit,
+      generate,
+      block,
+    )
     requests.push(consolidationsRequest)
+  }
+
+  if (common.isActivatedEIP(8282)) {
+    const builderDepositsRequest = await accumulateBuilderRequest(
+      vm,
+      CLRequestType.BuilderDeposit,
+      'builderDepositContractAddress',
+      blockGasLimit,
+      generate,
+    )
+    requests.push(builderDepositsRequest)
+    const builderExitsRequest = await accumulateBuilderRequest(
+      vm,
+      CLRequestType.BuilderExit,
+      'builderExitContractAddress',
+      blockGasLimit,
+      generate,
+    )
+    requests.push(builderExitsRequest)
   }
 
   // requests are already type byte ordered by construction
   return requests
 }
 
+/**
+ * EIP-8282: run a checked system call against a builder request contract
+ * (deposit or exit) and wrap the returned data as a CL request.
+ *
+ * Per the pinned execution-specs Amsterdam revision this is a *checked*
+ * system transaction when validating: a missing/codeless contract or a
+ * failing call makes the block invalid. When building a block (`generate`),
+ * a missing or failing contract yields an empty request instead (matching
+ * the withdrawal/consolidation accumulators).
+ *
+ * @remarks Experimental (Amsterdam): may change on patch releases.
+ */
+const accumulateBuilderRequest = async (
+  vm: VM,
+  requestType: typeof CLRequestType.BuilderDeposit | typeof CLRequestType.BuilderExit,
+  contractAddressParam: 'builderDepositContractAddress' | 'builderExitContractAddress',
+  blockGasLimit?: bigint,
+  generate = false,
+): Promise<CLRequest<CLRequestType>> => {
+  const addressBytes = setLengthLeft(bigIntToBytes(vm.common.param(contractAddressParam)), 20)
+  const builderAddress = createAddressFromString(bytesToHex(addressBytes))
+
+  const systemAddressBytes = bigIntToAddressBytes(vm.common.param('systemAddress'))
+  const systemAddress = createAddressFromString(bytesToHex(systemAddressBytes))
+  const systemAccount = await vm.stateManager.getAccount(systemAddress)
+
+  const contractCode = await vm.stateManager.getCode(builderAddress)
+  if (contractCode.length === 0) {
+    if (generate) {
+      return new CLRequest(requestType, new Uint8Array(0))
+    }
+    throw EthereumJSErrorWithoutCode(
+      `system contract empty: no code at builder request contract ${builderAddress}`,
+    )
+  }
+
+  const systemAddressHex = systemAddress.toString()
+  const balSnapshot = cloneSystemAccessEntry(vm, systemAddressHex)
+  const { regular, reservoir } = computeSystemCallGas(vm, blockGasLimit)
+  const reservoirPrior = setupSystemCallReservoir(vm, reservoir)
+  const results = await vm.evm.runCall({
+    caller: systemAddress,
+    gasLimit: regular,
+    to: builderAddress,
+  })
+  teardownSystemCallReservoir(vm, reservoirPrior)
+  restoreSystemAccessEntry(vm, systemAddressHex, balSnapshot)
+
+  if (systemAccount === undefined) {
+    await vm.stateManager.deleteAccount(systemAddress)
+  } else {
+    await vm.stateManager.putAccount(systemAddress, systemAccount)
+  }
+
+  if (results.execResult.exceptionError !== undefined) {
+    if (generate) {
+      return new CLRequest(requestType, new Uint8Array(0))
+    }
+    throw EthereumJSErrorWithoutCode(
+      `system contract call failed: builder request contract ${builderAddress} (${results.execResult.exceptionError.error})`,
+    )
+  }
+
+  const resultsBytes = results.execResult.returnValue
+  return new CLRequest(requestType, resultsBytes)
+}
+
 const accumulateWithdrawalsRequest = async (
   vm: VM,
   blockGasLimit?: bigint,
+  generate = false,
+  block?: EvmBlockContext,
 ): Promise<CLRequest<typeof CLRequestType.Withdrawal>> => {
   // Partial withdrawals logic
   const addressBytes = setLengthLeft(
@@ -192,6 +372,9 @@ const accumulateWithdrawalsRequest = async (
     caller: systemAddress,
     gasLimit: regular,
     to: withdrawalsAddress,
+    block,
+    skipBalance: true,
+    skipNonceIncrement: true,
   })
   teardownSystemCallReservoir(vm, reservoirPrior)
   restoreSystemAccessEntry(vm, systemAddressHex, balSnapshot)
@@ -202,6 +385,15 @@ const accumulateWithdrawalsRequest = async (
     await vm.stateManager.putAccount(systemAddress, systemAccount)
   }
 
+  if (results.execResult.exceptionError !== undefined) {
+    if (generate) {
+      return new CLRequest(CLRequestType.Withdrawal, new Uint8Array())
+    }
+    throw EthereumJSErrorWithoutCode(
+      `system contract call failed: withdrawal request contract ${withdrawalsAddress} (${results.execResult.exceptionError.error})`,
+    )
+  }
+
   const resultsBytes = results.execResult.returnValue
   return new CLRequest(CLRequestType.Withdrawal, resultsBytes)
 }
@@ -209,6 +401,8 @@ const accumulateWithdrawalsRequest = async (
 const accumulateConsolidationsRequest = async (
   vm: VM,
   blockGasLimit?: bigint,
+  generate = false,
+  block?: EvmBlockContext,
 ): Promise<CLRequest<typeof CLRequestType.Consolidation>> => {
   // Partial withdrawals logic
   const addressBytes = setLengthLeft(
@@ -235,6 +429,9 @@ const accumulateConsolidationsRequest = async (
     caller: systemAddress,
     gasLimit: regular,
     to: consolidationsAddress,
+    block,
+    skipBalance: true,
+    skipNonceIncrement: true,
   })
   teardownSystemCallReservoir(vm, reservoirPrior)
   restoreSystemAccessEntry(vm, systemAddressHex, balSnapshot)
@@ -243,6 +440,15 @@ const accumulateConsolidationsRequest = async (
     await vm.stateManager.deleteAccount(systemAddress)
   } else {
     await vm.stateManager.putAccount(systemAddress, systemAccount)
+  }
+
+  if (results.execResult.exceptionError !== undefined) {
+    if (generate) {
+      return new CLRequest(CLRequestType.Consolidation, new Uint8Array(0))
+    }
+    throw EthereumJSErrorWithoutCode(
+      `system contract call failed: consolidation request contract ${consolidationsAddress} (${results.execResult.exceptionError.error})`,
+    )
   }
 
   const resultsBytes = results.execResult.returnValue

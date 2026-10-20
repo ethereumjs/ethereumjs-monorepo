@@ -4,8 +4,8 @@ import { assert, describe, it } from 'vitest'
 
 import { getGenesis } from '../src/index.ts'
 
-describe('genesis test', () => {
-  it('tests getGenesis', async () => {
+describe('[Genesis]: ChainGenesis parity', () => {
+  it('getGenesis() returns state for every ChainGenesis chainId', async () => {
     const chainIds = Object.keys(ChainGenesis)
     for (const chainId of chainIds) {
       const { name } = ChainGenesis[chainId as unknown as Chain]

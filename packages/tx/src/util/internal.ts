@@ -52,6 +52,8 @@ export function validateNotArray(values: { [key: string]: any }) {
     'type',
     'baseFee',
     'maxFeePerGas',
+    'maxPriorityFeePerGas',
+    'maxFeePerBlobGas',
     'chainId',
   ]
   for (const [key, value] of Object.entries(values)) {
@@ -130,11 +132,13 @@ type Mutable<T> = {
 }
 
 /**
- * Shared constructor logic for all transaction types
+ * Shared constructor logic for all transaction types.
+ *
  * Note: Uses Mutable type to write to readonly properties. Only call this in transaction constructors.
- * @param tx - Mutable transaction interface to initialize
- * @param txData - Transaction data
- * @param opts - Transaction options
+ *
+ * @throws If fee or value fields overflow or are non-numeric
+ * @throws If gas limit or nonce exceed EIP bounds
+ * @throws If init code size exceeds EIP-3860 on contract-creation txs
  */
 export function sharedConstructor(
   tx: Mutable<TransactionInterface>,
@@ -187,7 +191,14 @@ export function sharedConstructor(
   // here. The runTx-level validation enforces
   // `max(intrinsic_regular_gas, calldata_floor_gas_cost) <= TX_MAX_GAS_LIMIT`
   // instead.
-  if (tx.common.isActivatedEIP(7825) && !tx.common.isActivatedEIP(8037)) {
+  if (tx.common.isActivatedEIP(8037)) {
+    const maxTotalGasLimit = tx.common.param('maxTotalTransactionGasLimit')
+    if (maxTotalGasLimit !== undefined && tx.gasLimit > maxTotalGasLimit) {
+      throw EthereumJSErrorWithoutCode(
+        `Transaction gas limit ${tx.gasLimit} exceeds the maximum total gas limit (${maxTotalGasLimit})`,
+      )
+    }
+  } else if (tx.common.isActivatedEIP(7825)) {
     const maxGasLimit = tx.common.param('maxTransactionGasLimit')
     if (tx.gasLimit > maxGasLimit) {
       throw EthereumJSErrorWithoutCode(

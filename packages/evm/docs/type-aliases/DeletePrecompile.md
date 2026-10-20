@@ -8,7 +8,7 @@
 
 > **DeletePrecompile** = `object`
 
-Defined in: [precompiles/index.ts:253](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/index.ts#L253)
+Defined in: [precompiles/index.ts:256](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/index.ts#L256)
 
 Specifies a precompile to remove from the EVM.
 The address can be an `Address` instance or a `0x`-prefixed hex string.
@@ -17,6 +17,6 @@ The address can be an `Address` instance or a `0x`-prefixed hex string.
 
 ### address
 
-> **address**: `Address` \| `PrefixedHexString`
+> **address**: [`Address`](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/docs/classes/Address.md) \| `PrefixedHexString`
 
-Defined in: [precompiles/index.ts:254](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/index.ts#L254)
+Defined in: [precompiles/index.ts:257](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/evm/src/precompiles/index.ts#L257)

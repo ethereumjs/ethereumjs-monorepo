@@ -1,5 +1,10 @@
 import type { ParamsDict } from '@ethereumjs/common'
 
+/**
+ * Block-related EIP parameters keyed by EIP number.
+ *
+ * Passed to {@link @ethereumjs/common!Common} via {@link BlockOptions.params} to override gas limits and header rules.
+ */
 export const paramsBlock: ParamsDict = {
   /**
    * Frontier/Chainstart
@@ -91,5 +96,11 @@ export const paramsBlock: ParamsDict = {
     targetBlobGasPerBlock: 786432, // The target blob gas consumed per block
     maxBlobGasPerBlock: 1179648, // The max blob gas allowable per block
     blobGasPriceUpdateFraction: 5007716, // The denominator used in the exponential when calculating a blob gas price
+  },
+  /**
+   * RLP Execution Block Size Limit
+   */
+  7934: {
+    maxRlpBlockSize: 8_388_608, // 8 MiB (MAX_BLOCK_SIZE - SAFETY_MARGIN)
   },
 }

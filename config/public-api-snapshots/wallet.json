@@ -1,0 +1,9 @@
+{
+  "package": "wallet",
+  "exports": [
+    "KDFFunctions",
+    "Wallet",
+    "hdkey",
+    "thirdparty"
+  ]
+}

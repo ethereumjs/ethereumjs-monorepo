@@ -8,4 +8,6 @@
 
 > **ToBytesInputTypes** = [`PrefixedHexString`](PrefixedHexString.md) \| `number` \| `bigint` \| `Uint8Array` \| `number`[] \| [`TransformableToBytes`](../interfaces/TransformableToBytes.md) \| `null` \| `undefined`
 
-Defined in: [packages/util/src/bytes.ts:242](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L242)
+Defined in: [packages/util/src/bytes.ts:217](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bytes.ts#L217)
+
+Union of values accepted by [toBytes](../functions/toBytes.md).

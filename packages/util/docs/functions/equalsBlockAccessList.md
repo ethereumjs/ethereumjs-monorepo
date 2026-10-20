@@ -8,7 +8,7 @@
 
 > **equalsBlockAccessList**(`a`, `b`): `boolean`
 
-Defined in: [packages/util/src/bal/validation.ts:154](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/validation.ts#L154)
+Defined in: [packages/util/src/bal/validation.ts:155](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/validation.ts#L155)
 
 Returns true when two access lists produce identical canonical RLP.
 

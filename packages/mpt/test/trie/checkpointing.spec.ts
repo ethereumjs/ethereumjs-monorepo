@@ -5,7 +5,7 @@ import { MerklePatriciaTrie } from '../../src/index.ts'
 
 // exhaustive testing of checkpoint, revert, flush, and commit functionality of trie, inspired by
 // the statemanager checkpointing.*.spec.ts tests
-describe('trie: checkpointing', () => {
+describe('[MPT/Trie]: checkpointing', () => {
   // Sample key-value pairs using Uint8Array
   const key = hexToBytes('0x11')
   const value1 = hexToBytes('0xaa')

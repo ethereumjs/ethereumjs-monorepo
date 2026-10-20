@@ -3,8 +3,8 @@ import { assert, describe, it } from 'vitest'
 
 import { BinaryNodeType, InternalBinaryNode, decodeBinaryNode } from '../../src/index.ts'
 
-describe('InternalBinaryNode', () => {
-  it('should round-trip encode and decode an internal node', () => {
+describe('[BinaryTree/InternalNode]: layout', () => {
+  it('round-trip encode and decode an internal node', () => {
     // Create dummy child pointers:
     const leftCanonicalChild = {
       hash: hexToBytes(`0x${'11'.repeat(32)}`),

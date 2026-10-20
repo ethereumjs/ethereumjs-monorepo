@@ -8,7 +8,9 @@
 
 > **ConsensusDict** = `object`
 
-Defined in: [types.ts:136](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L136)
+Defined in: [types.ts:139](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/blockchain/src/types.ts#L139)
+
+Maps consensus algorithm names to [Consensus](../interfaces/Consensus.md) implementations.
 
 ## Index Signature
 

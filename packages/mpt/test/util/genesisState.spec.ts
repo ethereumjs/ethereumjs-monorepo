@@ -9,7 +9,7 @@ import { genesisMPTStateRoot } from '../../src/util/genesisState.ts'
 import { bytesToHex } from '@ethereumjs/util'
 
 describe('[Util/genesisStateRoot]', () => {
-  it('should properly generate stateRoot from gethGenesis', async () => {
+  it('generates stateRoot from gethGenesis correctly', async () => {
     const genesisState = parseGethGenesisState(kilnGethGenesis)
     const stateRoot = await genesisMPTStateRoot(genesisState)
     assert.strictEqual(
@@ -20,7 +20,7 @@ describe('[Util/genesisStateRoot]', () => {
   })
 })
 
-it('should correctly derive mainnet stateRoot from ethereumjs genesis', async () => {
+it('derive mainnet stateRoot from ethereumjs genesis', async () => {
   const stateRoot = await genesisMPTStateRoot(getGenesis(1) as GenesisState)
   assert.strictEqual(
     bytesToHex(stateRoot),

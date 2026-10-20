@@ -6,8 +6,10 @@
 
 # Interface: StorageDump
 
-Defined in: [common/src/interfaces.ts:12](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L12)
+Defined in: [interfaces.ts:14](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/common/src/interfaces.ts#L14)
+
+Flat map of hashed storage keys to hex values.
 
 ## Indexable
 
-\[`key`: `string`\]: `string`
+> \[`key`: `string`\]: `string`

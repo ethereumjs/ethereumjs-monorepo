@@ -36,7 +36,7 @@ function validateMergeHeader(header: BlockHeader) {
 }
 
 describe('[Header]: Casper PoS / The Merge Functionality', () => {
-  it('should construct default blocks with post-merge PoS constants fields', () => {
+  it('constructs default blocks with post-merge PoS constants fields', () => {
     const header = createBlockHeader({}, { common })
     validateMergeHeader(header)
 
@@ -44,7 +44,7 @@ describe('[Header]: Casper PoS / The Merge Functionality', () => {
     validateMergeHeader(block.header)
   })
 
-  it('should throw if non merge-conforming PoS constants are provided', () => {
+  it('throws if non merge-conforming PoS constants are provided', () => {
     assert.throws(() => {
       const headerData = { uncleHash: hexToBytes('0x123abc') }
       createBlockHeader(headerData, { common })

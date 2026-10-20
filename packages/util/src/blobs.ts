@@ -15,6 +15,7 @@ const BLOB_SIZE = BYTES_PER_FIELD_ELEMENT * FIELD_ELEMENTS_PER_BLOB
 const MAX_BLOBS_PER_TX = 6 // EIP-7691: Blob throughput increase, Pectra HF
 const MAX_BLOB_BYTES_PER_TX = BLOB_SIZE * MAX_BLOBS_PER_TX - 1
 
+/** Number of cells per extended blob (EIP-7594). */
 export const CELLS_PER_EXT_BLOB = 128 // EIP-4844, Consensus Spec, 2 * FIELD_ELEMENTS_PER_BLOB // 64 (FIELD_ELEMENTS_PER_CELL)
 
 /**

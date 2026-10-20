@@ -7,8 +7,8 @@ import { createTestDB, generateBlockchain, generateConsecutiveBlock } from './ut
 
 import type { Block } from '@ethereumjs/block'
 
-describe('blockchain test', () => {
-  it('should iterate through 24 blocks without reorg', async () => {
+describe('[Blockchain/Iterator]: iterator', () => {
+  it('iterates through 24 blocks without reorg', async () => {
     const { blockchain, blocks, error } = await generateBlockchain(25)
     assert.strictEqual(error, null, 'no error')
     let i = 0
@@ -24,7 +24,7 @@ describe('blockchain test', () => {
     assert.strictEqual(reorged, 0)
   })
 
-  it('should iterate through 24 blocks with reorg', async () => {
+  it('iterates through 24 blocks with reorg', async () => {
     const { blockchain, error } = await generateBlockchain(25)
     assert.strictEqual(error, null, 'no error')
     let reorged = 0
@@ -68,7 +68,7 @@ describe('blockchain test', () => {
     assert.strictEqual(iterated, 31, 'should have iterated 10 + 21 blocks in total')
   })
 
-  it('should iterate through maxBlocks blocks if maxBlocks parameter is provided', async () => {
+  it('iterates through maxBlocks blocks if maxBlocks parameter is provided', async () => {
     const { blockchain, blocks, error } = await generateBlockchain(25)
     assert.strictEqual(error, null, 'no error')
     let i = 0
@@ -85,7 +85,7 @@ describe('blockchain test', () => {
     assert.strictEqual(i, 5)
   })
 
-  it('should iterate through 0 blocks in case 0 maxBlocks parameter is provided', async () => {
+  it('iterates through 0 blocks in case 0 maxBlocks parameter is provided', async () => {
     const { blockchain, blocks, error } = await generateBlockchain(25)
     assert.strictEqual(error, null, 'no error')
     let i = 0
@@ -106,7 +106,7 @@ describe('blockchain test', () => {
     assert.strictEqual(i, 0)
   })
 
-  it('should throw on a negative maxBlocks parameter in iterator', async () => {
+  it('throws on a negative maxBlocks parameter in iterator', async () => {
     const { blockchain, blocks, error } = await generateBlockchain(25)
     assert.strictEqual(error, null, 'no error')
     let i = 0
@@ -124,7 +124,7 @@ describe('blockchain test', () => {
     // Note: if st.end() is not called (Promise did not throw), then this test fails, as it does not end.
   })
 
-  it('should test setIteratorHead method', async () => {
+  it('setIteratorHead method', async () => {
     const { blockchain, blocks, error } = await generateBlockchain(25)
     assert.strictEqual(error, null, 'no error')
 
@@ -151,7 +151,7 @@ describe('blockchain test', () => {
     assert.strictEqual(i, 1)
   })
 
-  it('should catch iterator func error', async () => {
+  it('catches iterator func error', async () => {
     const { blockchain, error } = await generateBlockchain(25)
     assert.strictEqual(error, null, 'no error')
     try {
@@ -163,7 +163,7 @@ describe('blockchain test', () => {
     }
   })
 
-  it('should not call iterator function in an empty blockchain', async () => {
+  it('does not call iterator function in an empty blockchain', async () => {
     const blockchain = await createBlockchain({
       validateBlocks: true,
       validateConsensus: false,
@@ -175,7 +175,7 @@ describe('blockchain test', () => {
     assert.strictEqual(numIterated, 0, 'should finish iterating')
   })
 
-  it('should get heads', async () => {
+  it('get heads', async () => {
     const [db, genesis] = await createTestDB()
     const blockchain = await createBlockchain({ db, genesisBlock: genesis })
     const head = await blockchain.getIteratorHead()

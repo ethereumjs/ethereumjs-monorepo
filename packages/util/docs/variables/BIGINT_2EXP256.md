@@ -8,4 +8,6 @@
 
 > `const` **BIGINT\_2EXP256**: `bigint`
 
-Defined in: [packages/util/src/constants.ts:125](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L125)
+Defined in: [packages/util/src/constants.ts:155](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/constants.ts#L155)
+
+BigInt literal for 2^256.

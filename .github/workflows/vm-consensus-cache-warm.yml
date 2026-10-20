@@ -1,0 +1,46 @@
+name: VM consensus fixtures cache
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'packages/vm/test/consensus/fixtures.json'
+      - 'packages/vm/test/consensus/fixtures.bogota.json'
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+env:
+  EST_FIXTURES_CACHE: ${{ github.workspace }}/.est-fixtures-cache
+
+defaults:
+  run:
+    working-directory: packages/vm
+
+jobs:
+  warm-est-recent-forks:
+    if: github.repository == 'ethereumjs/ethereumjs-monorepo'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        fork: [Prague, Osaka, Amsterdam]
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
+        with:
+          node-version: 26
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: ${{ github.workspace }}
+
+      - uses: ./.github/actions/consensus-fork
+        with:
+          source: tests
+          manifest: fixtures.json
+          cache-key: est-extract-tests-${{ hashFiles('packages/vm/test/consensus/fixtures.json') }}-${{ matrix.fork }}
+          fork: ${{ matrix.fork }}
+          run-tests: 'false'

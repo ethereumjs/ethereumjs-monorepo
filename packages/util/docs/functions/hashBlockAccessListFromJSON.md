@@ -8,7 +8,7 @@
 
 > **hashBlockAccessListFromJSON**(`json`): `Uint8Array`
 
-Defined in: [packages/util/src/bal/validation.ts:105](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/validation.ts#L105)
+Defined in: [packages/util/src/bal/validation.ts:106](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/bal/validation.ts#L106)
 
 `keccak256(rlp(bal))` using the JSON account order (not re-sorted), matching Engine API bytes.
 

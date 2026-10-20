@@ -6,7 +6,9 @@
 
 # Interface: DelBatch\<TKey\>
 
-Defined in: [packages/util/src/db.ts:39](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L39)
+Defined in: [packages/util/src/db.ts:48](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L48)
+
+Batch entry that deletes a key.
 
 ## Type Parameters
 
@@ -20,15 +22,15 @@ Defined in: [packages/util/src/db.ts:39](https://github.com/ethereumjs/ethereumj
 
 > **key**: `TKey`
 
-Defined in: [packages/util/src/db.ts:41](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L41)
+Defined in: [packages/util/src/db.ts:50](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L50)
 
 ***
 
 ### opts?
 
-> `optional` **opts**: [`EncodingOpts`](../type-aliases/EncodingOpts.md)
+> `optional` **opts?**: [`EncodingOpts`](../type-aliases/EncodingOpts.md)
 
-Defined in: [packages/util/src/db.ts:42](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L42)
+Defined in: [packages/util/src/db.ts:51](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L51)
 
 ***
 
@@ -36,4 +38,4 @@ Defined in: [packages/util/src/db.ts:42](https://github.com/ethereumjs/ethereumj
 
 > **type**: `"del"`
 
-Defined in: [packages/util/src/db.ts:40](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L40)
+Defined in: [packages/util/src/db.ts:49](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/util/src/db.ts#L49)

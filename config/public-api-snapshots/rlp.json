@@ -1,0 +1,13 @@
+{
+  "package": "rlp",
+  "exports": [
+    "DEFAULT_ERROR_CODE",
+    "EthereumJSError",
+    "EthereumJSErrorWithoutCode",
+    "RLP",
+    "decode",
+    "encode",
+    "hexToBytes",
+    "utils"
+  ]
+}
