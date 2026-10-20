@@ -749,6 +749,7 @@ async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
   let receiptGasUsed = BIGINT_0
 
   let receiptTrie: MerklePatriciaTrie | undefined = undefined
+  const receiptTrieOps: { type: 'put'; key: Uint8Array; value: Uint8Array }[] = []
   if (block.transactions.length !== 0) {
     receiptTrie = new MerklePatriciaTrie({ common: vm.common })
   }
@@ -843,8 +844,15 @@ async function applyTransactions(vm: VM, block: Block, opts: RunBlockOpts) {
 
     // Add receipt to trie to later calculate receipt root
     receipts.push(txRes.receipt)
-    const encodedReceipt = encodeReceipt(txRes.receipt, tx.type)
-    await receiptTrie!.put(RLP.encode(txIdx), encodedReceipt)
+    receiptTrieOps.push({
+      type: 'put',
+      key: RLP.encode(txIdx),
+      value: encodeReceipt(txRes.receipt, tx.type),
+    })
+  }
+
+  if (receiptTrie !== undefined && receiptTrieOps.length > 0) {
+    await receiptTrie.batch(receiptTrieOps)
   }
 
   if (enableProfiler) {
@@ -1069,9 +1077,13 @@ async function _genTxTrie(block: Block) {
     return KECCAK256_RLP
   }
   const trie = new MerklePatriciaTrie({ common: block.common })
-  for (const [i, tx] of block.transactions.entries()) {
-    await trie.put(RLP.encode(i), tx.serialize())
-  }
+  await trie.batch(
+    block.transactions.map((tx, i) => ({
+      type: 'put' as const,
+      key: RLP.encode(i),
+      value: tx.serialize(),
+    })),
+  )
   return trie.root()
 }
 

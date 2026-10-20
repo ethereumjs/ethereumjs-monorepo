@@ -209,11 +209,16 @@ export class BlockBuilder {
       return KECCAK256_RLP
     }
     const receiptTrie = new MerklePatriciaTrie({ common: this.vm.common })
-    for (const [i, txResult] of this.transactionResults.entries()) {
-      const tx = this.transactions[i]
-      const encodedReceipt = encodeReceipt(txResult.receipt, tx.type)
-      await receiptTrie.put(RLP.encode(i), encodedReceipt)
-    }
+    await receiptTrie.batch(
+      this.transactionResults.map((txResult, i) => {
+        const tx = this.transactions[i]!
+        return {
+          type: 'put' as const,
+          key: RLP.encode(i),
+          value: encodeReceipt(txResult.receipt, tx.type),
+        }
+      }),
+    )
     return receiptTrie.root()
   }
 

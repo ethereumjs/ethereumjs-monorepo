@@ -50,6 +50,12 @@ import type {
 } from './types.ts'
 import type { OnFound } from './util/asyncWalk.ts'
 
+/** In-batch path reuse hint (post-saveStack live nodes for the last put key). */
+type BatchPathHint = {
+  keyNibbles: Nibbles
+  stack: MPTNode[]
+}
+
 /**
  * The basic trie interface, use with `import { MerklePatriciaTrie } from '@ethereumjs/mpt'`.
  *
@@ -220,27 +226,7 @@ export class MerklePatriciaTrie {
     }
 
     await this._withLock(async () => {
-      const appliedKey = skipKeyTransform ? key : this.appliedKey(key)
-      if (equalsBytes(this.root(), this.EMPTY_TRIE_ROOT)) {
-        await this._createInitialNode(appliedKey, value)
-      } else {
-        const { remaining, stack } = await this.findPath(appliedKey)
-        let ops: BatchDBOp[] = []
-        if (this._opts.useNodePruning) {
-          const val = await this.get(key)
-          // Only delete keys if it either does not exist, or if it gets updated
-          // (The update will update the hash of the node, thus we can delete the original leaf node)
-          if (val === null || !equalsBytes(val, value)) {
-            ops = this._createPruneDeleteOps(stack)
-          }
-        }
-        // then update
-        await this._updateNode(appliedKey, value, remaining, stack)
-        if (this._opts.useNodePruning) {
-          // Only after updating the node we can delete the keyHashes
-          await this._db.batch(ops)
-        }
-      }
+      await this._putUnlocked(key, value, skipKeyTransform)
       await this.persistRoot()
     })
   }
@@ -253,25 +239,120 @@ export class MerklePatriciaTrie {
   async del(key: Uint8Array, skipKeyTransform: boolean = false): Promise<void> {
     this.DEBUG && this.debug(`Key: ${bytesToHex(key)}`, ['del'])
     await this._withLock(async () => {
-      const appliedKey = skipKeyTransform ? key : this.appliedKey(key)
-      const { node, stack } = await this.findPath(appliedKey)
-      const nodeHasValue =
-        node !== null && (!(node instanceof BranchMPTNode) || node.value() !== null)
-
-      let ops: BatchDBOp[] = []
-      // Only delete if the `key` currently has any value
-      if (this._opts.useNodePruning && nodeHasValue) {
-        ops = this._createPruneDeleteOps(stack)
-      }
-      if (nodeHasValue) {
-        await this._deleteNode(appliedKey, stack)
-      }
-      if (this._opts.useNodePruning) {
-        // Only after deleting the node it is possible to delete the keyHashes
-        await this._db.batch(ops)
-      }
+      await this._delUnlocked(key, skipKeyTransform)
       await this.persistRoot()
     })
+  }
+
+  /**
+   * Put implementation without acquiring the trie lock or persisting the root.
+   * @private
+   */
+  protected async _putUnlocked(
+    key: Uint8Array,
+    value: Uint8Array,
+    skipKeyTransform: boolean = false,
+    pathHint: BatchPathHint | null = null,
+  ): Promise<BatchPathHint | null> {
+    const appliedKey = skipKeyTransform ? key : this.appliedKey(key)
+    if (equalsBytes(this.root(), this.EMPTY_TRIE_ROOT)) {
+      return this._createInitialNode(appliedKey, value, true)
+    }
+
+    const targetNibbles = bytesToNibbles(appliedKey)
+    const prefixStack =
+      pathHint !== null ? this._prefixStackForBatchHint(targetNibbles, pathHint) : null
+    const { remaining, stack } =
+      prefixStack !== null && prefixStack.length > 0
+        ? await this.findPath(appliedKey, false, { stack: prefixStack })
+        : await this.findPath(appliedKey)
+
+    let ops: BatchDBOp[] = []
+    if (this._opts.useNodePruning) {
+      const val = await this.get(key)
+      if (val === null || !equalsBytes(val, value)) {
+        ops = this._createPruneDeleteOps(stack)
+      }
+    }
+    const pathStack = await this._updateNode(appliedKey, value, remaining, stack, true)
+    if (this._opts.useNodePruning) {
+      await this._db.batch(ops)
+    }
+    return { keyNibbles: targetNibbles, stack: pathStack }
+  }
+
+  /**
+   * Delete implementation without acquiring the trie lock or persisting the root.
+   * @private
+   */
+  protected async _delUnlocked(key: Uint8Array, skipKeyTransform: boolean = false): Promise<void> {
+    const appliedKey = skipKeyTransform ? key : this.appliedKey(key)
+    const { node, stack } = await this.findPath(appliedKey)
+    const nodeHasValue =
+      node !== null && (!(node instanceof BranchMPTNode) || node.value() !== null)
+
+    let ops: BatchDBOp[] = []
+    if (this._opts.useNodePruning && nodeHasValue) {
+      ops = this._createPruneDeleteOps(stack)
+    }
+    if (nodeHasValue) {
+      await this._deleteNode(appliedKey, stack, true)
+    }
+    if (this._opts.useNodePruning) {
+      await this._db.batch(ops)
+    }
+  }
+
+  /**
+   * Prefix of the last batch put path that is shared with `targetKey` (live nodes only).
+   * @private
+   */
+  protected _prefixStackForBatchHint(targetKey: Nibbles, hint: BatchPathHint): MPTNode[] | null {
+    const prefixLen = matchingNibbleLength(hint.keyNibbles, targetKey)
+    if (prefixLen === 0) {
+      return null
+    }
+
+    let pathProgress = 0
+    const sharedStack: MPTNode[] = []
+    for (const node of hint.stack) {
+      if (pathProgress >= prefixLen) {
+        break
+      }
+      sharedStack.push(node)
+      if (node instanceof BranchMPTNode) {
+        const branchIndex = targetKey[pathProgress]!
+        if (branchIndex !== hint.keyNibbles[pathProgress]) {
+          return null
+        }
+        pathProgress++
+      } else if (node instanceof ExtensionMPTNode) {
+        for (const nibble of node.key()) {
+          if (pathProgress >= prefixLen) {
+            break
+          }
+          if (nibble !== targetKey[pathProgress] || nibble !== hint.keyNibbles[pathProgress]) {
+            return null
+          }
+          pathProgress++
+        }
+      } else if (node instanceof LeafMPTNode) {
+        for (const nibble of node.key()) {
+          if (pathProgress >= prefixLen) {
+            break
+          }
+          if (nibble !== targetKey[pathProgress] || nibble !== hint.keyNibbles[pathProgress]) {
+            return null
+          }
+          pathProgress++
+        }
+      }
+    }
+
+    if (pathProgress < prefixLen) {
+      return null
+    }
+    return sharedStack
   }
 
   /**
@@ -470,13 +551,21 @@ export class MerklePatriciaTrie {
    * Creates the initial leaf node when inserting into an empty trie.
    * @private
    */
-  protected async _createInitialNode(key: Uint8Array, value: Uint8Array): Promise<void> {
-    const newNode = new LeafMPTNode(bytesToNibbles(key), value)
+  protected async _createInitialNode(
+    key: Uint8Array,
+    value: Uint8Array,
+    skipPersistRoot: boolean = false,
+  ): Promise<BatchPathHint> {
+    const keyNibbles = bytesToNibbles(key)
+    const newNode = new LeafMPTNode(keyNibbles, value)
 
     const encoded = newNode.serialize()
     this.root(this.hash(encoded))
     await this._db.put(this._getDbKey(this.root()), encoded)
-    await this.persistRoot()
+    if (!skipPersistRoot) {
+      await this.persistRoot()
+    }
+    return { keyNibbles, stack: [newNode] }
   }
 
   /**
@@ -540,7 +629,8 @@ export class MerklePatriciaTrie {
     value: Uint8Array,
     keyRemainder: Nibbles,
     stack: MPTNode[],
-  ): Promise<void> {
+    skipPersistRoot: boolean = false,
+  ): Promise<MPTNode[]> {
     const opStack: BatchDBOp[] = []
     const lastNode = stack.pop()
     if (!lastNode) {
@@ -604,7 +694,9 @@ export class MerklePatriciaTrie {
       }
     }
 
-    await this.saveStack(fullKeyNibbles, stack, opStack)
+    const pathStackSnapshot = stack.slice()
+    await this.saveStack(fullKeyNibbles, stack, opStack, skipPersistRoot)
+    return pathStackSnapshot
   }
 
   /**
@@ -617,7 +709,11 @@ export class MerklePatriciaTrie {
    *
    * @private
    */
-  protected async _deleteNode(keyBytes: Uint8Array, stack: MPTNode[]): Promise<void> {
+  protected async _deleteNode(
+    keyBytes: Uint8Array,
+    stack: MPTNode[],
+    skipPersistRoot: boolean = false,
+  ): Promise<void> {
     /**
      * Collapses a branch with one child into a simpler structure.
      * Parent can be: Branch (branch→branch), Extension (ext→branch), or null (branch is root).
@@ -712,7 +808,7 @@ export class MerklePatriciaTrie {
           if (parentNode instanceof BranchMPTNode) stack.push(parentNode)
           stack.push(leafNode)
         }
-        await this.saveStack(pathNibbles, stack, opStack)
+        await this.saveStack(pathNibbles, stack, opStack, skipPersistRoot)
         return
       }
 
@@ -728,7 +824,7 @@ export class MerklePatriciaTrie {
       }
       parentNode.setBranch(pathNibbles.pop()!, null)
       stack.push(parentNode)
-      await this.saveStack(pathNibbles, stack, opStack)
+      await this.saveStack(pathNibbles, stack, opStack, skipPersistRoot)
       return
     }
 
@@ -761,7 +857,7 @@ export class MerklePatriciaTrie {
         parentNode as MPTNode,
         stack,
       )
-      await this.saveStack(pathNibbles, stack, opStack)
+      await this.saveStack(pathNibbles, stack, opStack, skipPersistRoot)
     } else {
       // Branch has multiple children: just persist the updated branch
       if (parentNode) {
@@ -769,7 +865,7 @@ export class MerklePatriciaTrie {
       }
 
       stack.push(lastNode)
-      await this.saveStack(pathNibbles, stack, opStack)
+      await this.saveStack(pathNibbles, stack, opStack, skipPersistRoot)
     }
   }
 
@@ -781,7 +877,12 @@ export class MerklePatriciaTrie {
    * @param stack - nodes from findPath/update, bottom (leaf) to top (root)
    * @param opStack - put/del operations accumulated by _formatNode
    */
-  async saveStack(pathNibbles: Nibbles, stack: MPTNode[], opStack: BatchDBOp[]): Promise<void> {
+  async saveStack(
+    pathNibbles: Nibbles,
+    stack: MPTNode[],
+    opStack: BatchDBOp[],
+    skipPersistRoot: boolean = false,
+  ): Promise<void> {
     let childHash: Uint8Array | undefined
 
     while (stack.length > 0) {
@@ -806,7 +907,9 @@ export class MerklePatriciaTrie {
       this.root(childHash)
     }
     await this._db.batch(opStack)
-    await this.persistRoot()
+    if (!skipPersistRoot) {
+      await this.persistRoot()
+    }
   }
 
   /**
@@ -859,17 +962,22 @@ export class MerklePatriciaTrie {
    * @param ops Put/delete operations applied in order
    */
   async batch(ops: BatchDBOp[], skipKeyTransform?: boolean): Promise<void> {
-    for (const op of ops) {
-      if (op.type === 'put') {
-        if (op.value === null || op.value === undefined) {
-          throw EthereumJSErrorWithoutCode('Invalid batch db operation')
+    await this._withLock(async () => {
+      let pathHint: BatchPathHint | null = null
+      const skipTransform = skipKeyTransform ?? false
+      for (const op of ops) {
+        if (op.type === 'put') {
+          if (op.value === null || op.value === undefined) {
+            throw EthereumJSErrorWithoutCode('Invalid batch db operation')
+          }
+          pathHint = await this._putUnlocked(op.key, op.value, skipTransform, pathHint)
+        } else if (op.type === 'del') {
+          await this._delUnlocked(op.key, skipTransform)
+          pathHint = null
         }
-        await this.put(op.key, op.value, skipKeyTransform)
-      } else if (op.type === 'del') {
-        await this.del(op.key, skipKeyTransform)
       }
-    }
-    await this.persistRoot()
+      await this.persistRoot()
+    })
   }
 
   /**

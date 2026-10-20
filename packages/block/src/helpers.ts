@@ -167,9 +167,16 @@ export const computeBlobGasPrice = (excessBlobGas: bigint, common: Common) => {
  */
 export async function genWithdrawalsTrieRoot(wts: Withdrawal[], emptyTrie?: MerklePatriciaTrie) {
   const trie = emptyTrie ?? new MerklePatriciaTrie()
-  for (const [i, wt] of wts.entries()) {
-    await trie.put(RLP.encode(i), RLP.encode(wt.raw()))
+  if (wts.length === 0) {
+    return trie.root()
   }
+  await trie.batch(
+    wts.map((wt, i) => ({
+      type: 'put' as const,
+      key: RLP.encode(i),
+      value: RLP.encode(wt.raw()),
+    })),
+  )
   return trie.root()
 }
 
@@ -183,9 +190,16 @@ export async function genTransactionsTrieRoot(
   emptyTrie?: MerklePatriciaTrie,
 ) {
   const trie = emptyTrie ?? new MerklePatriciaTrie()
-  for (const [i, tx] of txs.entries()) {
-    await trie.put(RLP.encode(i), tx.serialize())
+  if (txs.length === 0) {
+    return trie.root()
   }
+  await trie.batch(
+    txs.map((tx, i) => ({
+      type: 'put' as const,
+      key: RLP.encode(i),
+      value: tx.serialize(),
+    })),
+  )
   return trie.root()
 }
 

@@ -1,5 +1,6 @@
 import { MerklePatriciaTrie } from '@ethereumjs/mpt'
-import { MapDB } from '@ethereumjs/util'
+import { RLP } from '@ethereumjs/rlp'
+import { MapDB, randomBytes } from '@ethereumjs/util'
 import { keccak_256 } from '@noble/hashes/sha3.js'
 import { bench, describe } from 'vitest'
 
@@ -19,7 +20,29 @@ function precomputeKeys(): Uint8Array[] {
 
 const keys = precomputeKeys()
 
+const RLP_INDEX_COUNT = 1000
+const rlpIndexKeys = Array.from({ length: RLP_INDEX_COUNT }, (_, i) => RLP.encode(i))
+const rlpIndexValues = Array.from({ length: RLP_INDEX_COUNT }, () => randomBytes(32))
+
 describe('mpt', () => {
+  bench('mpt put sequential rlp indices', async () => {
+    const trie = new MerklePatriciaTrie({ db: new MapDB() })
+    for (let i = 0; i < RLP_INDEX_COUNT; i++) {
+      await trie.put(rlpIndexKeys[i]!, rlpIndexValues[i]!)
+    }
+  })
+
+  bench('mpt batch sequential rlp indices', async () => {
+    const trie = new MerklePatriciaTrie({ db: new MapDB() })
+    await trie.batch(
+      rlpIndexKeys.map((key, i) => ({
+        type: 'put',
+        key,
+        value: rlpIndexValues[i]!,
+      })),
+    )
+  })
+
   bench('mpt put 1k-9-32', async () => {
     const trie = new MerklePatriciaTrie({ db: new MapDB() })
     let key = new Uint8Array(KEY_SIZE)
