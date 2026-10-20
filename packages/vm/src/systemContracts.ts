@@ -1,4 +1,13 @@
-import { equalsBytes, hexToBytes } from '@ethereumjs/util'
+import type { Common, StateManagerInterface } from '@ethereumjs/common'
+import {
+  Account,
+  bigIntToBytes,
+  bytesToHex,
+  createAddressFromString,
+  equalsBytes,
+  hexToBytes,
+  setLengthLeft,
+} from '@ethereumjs/util'
 
 /** Prague fork EIP-7002 withdrawal request runtime bytecode (mainnet / EST). */
 export const WITHDRAWAL_REQUEST_SYSTEM_CONTRACT_CODE = hexToBytes(
@@ -12,4 +21,59 @@ export const CONSOLIDATION_REQUEST_SYSTEM_CONTRACT_CODE = hexToBytes(
 
 export function isCanonicalSystemContractCode(code: Uint8Array, expected: Uint8Array): boolean {
   return code.length > 0 && equalsBytes(code, expected)
+}
+
+function addressFromCommonParam(
+  common: Common,
+  param: 'withdrawalRequestPredeployAddress' | 'consolidationRequestPredeployAddress',
+) {
+  return createAddressFromString(bytesToHex(setLengthLeft(bigIntToBytes(common.param(param)), 20)))
+}
+
+async function putSystemContractCode(
+  stateManager: StateManagerInterface,
+  address: ReturnType<typeof createAddressFromString>,
+  code: Uint8Array,
+) {
+  await stateManager.putAccount(address, new Account(1n, 0n))
+  await stateManager.putCode(address, code)
+}
+
+/** Install Prague EIP-7002 / EIP-7251 request contract bytecode for lab block runs. */
+export async function installPragueRequestSystemContracts(
+  stateManager: StateManagerInterface,
+  common: Common,
+): Promise<void> {
+  if (common.isActivatedEIP(7002)) {
+    await putSystemContractCode(
+      stateManager,
+      addressFromCommonParam(common, 'withdrawalRequestPredeployAddress'),
+      WITHDRAWAL_REQUEST_SYSTEM_CONTRACT_CODE,
+    )
+  }
+  if (common.isActivatedEIP(7251)) {
+    await putSystemContractCode(
+      stateManager,
+      addressFromCommonParam(common, 'consolidationRequestPredeployAddress'),
+      CONSOLIDATION_REQUEST_SYSTEM_CONTRACT_CODE,
+    )
+  }
+}
+
+/**
+ * EIP-8282 builder request stubs (STOP) — enough for checked system calls to
+ * return empty builder requests when validating Amsterdam lab blocks.
+ */
+export async function installAmsterdamBuilderRequestStubs(
+  stateManager: StateManagerInterface,
+  common: Common,
+): Promise<void> {
+  const stop = hexToBytes('0x00')
+  for (const param of ['builderDepositContractAddress', 'builderExitContractAddress'] as const) {
+    const address = createAddressFromString(
+      bytesToHex(setLengthLeft(bigIntToBytes(common.param(param)), 20)),
+    )
+    await stateManager.putAccount(address, new Account(1n, 0n))
+    await stateManager.putCode(address, stop)
+  }
 }
