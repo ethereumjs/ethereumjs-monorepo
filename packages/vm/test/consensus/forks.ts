@@ -27,8 +27,8 @@ export function estForkToCommonHardfork(fork: string): string {
   if (lower === 'frontier') return 'chainstart'
   if (lower === 'constantinoplefix') return 'petersburg'
   if (lower === 'bogota') return 'hegota'
-  if (lower === 'eip150' || lower === 'tangerinewhistle') return 'tangerineWhistle'
-  if (lower === 'eip158' || lower === 'spuriousdragon') return 'spuriousDragon'
+  if (lower === 'eip150' || fork === 'TangerineWhistle') return 'tangerineWhistle'
+  if (lower === 'eip158' || fork === 'SpuriousDragon') return 'spuriousDragon'
   if (lower === 'merge' || lower === 'paris') return 'paris'
   return lower
 }
