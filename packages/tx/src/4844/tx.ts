@@ -56,6 +56,39 @@ export const NetworkWrapperType = {
 export type NetworkWrapperType = (typeof NetworkWrapperType)[keyof typeof NetworkWrapperType]
 
 /**
+ * Reject a gossip wrapper version this `Common` does not allow.
+ * Shared by the constructor and network-wrapper decode. Decode assigns the
+ * version after the execution payload is built, so the constructor never sees it.
+ */
+export function assertBlobNetworkWrapperVersion(
+  common: Common,
+  networkWrapperVersion: NetworkWrapperType,
+): void {
+  switch (networkWrapperVersion) {
+    case NetworkWrapperType.EIP7594:
+      if (!common.isActivatedEIP(7594)) {
+        throw EthereumJSErrorWithoutCode(
+          'EIP-7594 not enabled on Common for EIP-7594 network wrapper version',
+        )
+      }
+      break
+
+    case NetworkWrapperType.EIP4844:
+      if (common.isActivatedEIP(7594)) {
+        throw EthereumJSErrorWithoutCode(
+          'EIP-7594 is active on Common for EIP-4844 network wrapper version',
+        )
+      }
+      break
+
+    default: {
+      const unexpected: never = networkWrapperVersion
+      throw EthereumJSErrorWithoutCode(`Invalid networkWrapperVersion=${unexpected}`)
+    }
+  }
+}
+
+/**
  * Typed transaction with a new gas fee market mechanism for transactions that include "blobs" of data
  *
  * - TransactionType: 3
@@ -131,26 +164,7 @@ export class Blob4844Tx implements TransactionInterface<typeof TransactionType.B
         : undefined
 
     if (networkWrapperVersion !== undefined) {
-      switch (networkWrapperVersion) {
-        case NetworkWrapperType.EIP7594:
-          if (!common.isActivatedEIP(7594)) {
-            throw EthereumJSErrorWithoutCode(
-              'EIP-7594 not enabled on Common for EIP-7594 network wrapper version',
-            )
-          }
-          break
-
-        case NetworkWrapperType.EIP4844:
-          if (common.isActivatedEIP(7594)) {
-            throw EthereumJSErrorWithoutCode(
-              'EIP-7594 is active on Common for EIP-4844 network wrapper version',
-            )
-          }
-          break
-
-        default:
-          throw EthereumJSErrorWithoutCode(`Invalid networkWrapperVersion=${networkWrapperVersion}`)
-      }
+      assertBlobNetworkWrapperVersion(common, networkWrapperVersion)
     }
 
     sharedConstructor(this, { ...txData, type: TransactionType.BlobEIP4844 }, opts)

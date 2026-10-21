@@ -22,7 +22,7 @@ import { paramsTx } from '../params.ts'
 import { TransactionType } from '../types.ts'
 import { accessListBytesToJSON } from '../util/access.ts'
 
-import { Blob4844Tx, NetworkWrapperType } from './tx.ts'
+import { Blob4844Tx, NetworkWrapperType, assertBlobNetworkWrapperVersion } from './tx.ts'
 
 import type { KZG, PrefixedHexString } from '@ethereumjs/util'
 import type {
@@ -318,6 +318,10 @@ export function createBlob4844TxFromSerializedNetworkWrapper(
   ) {
     throw Error(`Invalid networkWrapperVersion=${networkWrapperVersionInt}`)
   }
+
+  // The execution payload does not carry the wrapper version, so the constructor
+  // above did not check it. Reject a mismatch before proofs run or the field is set.
+  assertBlobNetworkWrapperVersion(decodedTx.common, networkWrapperVersionInt)
 
   validateBlobTransactionNetworkWrapper(
     networkWrapperVersionInt,
