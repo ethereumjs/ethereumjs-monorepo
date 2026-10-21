@@ -24,8 +24,8 @@ async function main(): Promise<number> {
 
   if (options.rerunFailedPath !== undefined) {
     const failed = await loadRerunCases(options.rerunFailedPath)
-    const keys = new Set(failed.map((f) => `${f.fork}:${f.id}:${f.filePath}`))
-    cases = cases.filter((c) => keys.has(`${c.fork}:${c.id}:${c.filePath}`))
+    const keys = new Set(failed.map((f) => `${f.fork}:${f.id}`))
+    cases = cases.filter((c) => keys.has(`${c.fork}:${c.id}`))
   }
 
   if (options.list) {

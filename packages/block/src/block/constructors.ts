@@ -8,7 +8,9 @@ import {
   normalizeTxParams,
 } from '@ethereumjs/tx'
 import {
+  BIGINT_0,
   EthereumJSErrorWithoutCode,
+  TypeOutput,
   bigIntToHex,
   bytesToHex,
   createWithdrawal,
@@ -18,10 +20,15 @@ import {
   hexToBytes,
   intToHex,
   isHexString,
+  toType,
 } from '@ethereumjs/util'
 
 import { generateCliqueBlockExtraData } from '../consensus/clique.ts'
-import { genTransactionsTrieRoot, genWithdrawalsTrieRoot } from '../helpers.ts'
+import {
+  genTransactionsTrieRoot,
+  genWithdrawalsTrieRoot,
+  valuesArrayToHeaderData,
+} from '../helpers.ts'
 import {
   Block,
   createBlockHeader,
@@ -35,6 +42,7 @@ import type { BeaconPayloadJSON } from '../from-beacon-payload.ts'
 import type {
   BlockBytes,
   BlockData,
+  BlockHeaderBytes,
   BlockOptions,
   ExecutionPayload,
   HeaderData,
@@ -181,8 +189,20 @@ export function createBlockFromBytesArray(values: BlockBytes, opts?: BlockOption
  * @throws If decoded values fail {@link createBlockFromBytesArray} checks
  */
 export function createBlockFromRLP(serialized: Uint8Array, opts?: BlockOptions): Block {
-  if (opts?.common?.isActivatedEIP(7934) === true) {
-    const maxRlpBlockSize = opts.common.param('maxRlpBlockSize')
+  let commonFor7934 = opts?.common
+  if (opts?.setHardfork === true && opts?.common !== undefined) {
+    const peekValues = RLP.decode(Uint8Array.from(serialized)) as BlockBytes
+    if (Array.isArray(peekValues) && peekValues.length > 0) {
+      const headerData = valuesArrayToHeaderData(peekValues[0] as BlockHeaderBytes)
+      commonFor7934 = opts.common.copy()
+      commonFor7934.setHardforkBy({
+        blockNumber: toType(headerData.number, TypeOutput.BigInt) ?? BIGINT_0,
+        timestamp: toType(headerData.timestamp, TypeOutput.BigInt) ?? BIGINT_0,
+      })
+    }
+  }
+  if (commonFor7934?.isActivatedEIP(7934) === true) {
+    const maxRlpBlockSize = commonFor7934.param('maxRlpBlockSize')
     if (serialized.length > maxRlpBlockSize) {
       throw EthereumJSErrorWithoutCode(
         `Block size exceeds limit: ${serialized.length} > ${maxRlpBlockSize}`,

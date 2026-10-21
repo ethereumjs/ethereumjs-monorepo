@@ -6,7 +6,7 @@ import { toBytes } from 'viem'
 
 import { createVM } from '../../../src/constructors.ts'
 import { runTx } from '../../../src/runTx.ts'
-import { makeBlockFromEnv, setupPreConditions } from '../../util.ts'
+import { installBlockHashesFromEnv, makeBlockFromEnv, setupPreConditions } from '../../util.ts'
 import { createCommonForFork, parseStateTest } from '../forkCommon.ts'
 import type { StateTestFixtureData } from '../types.ts'
 import { makeStateTestTx } from './stateTx.ts'
@@ -37,6 +37,7 @@ export async function runStateTestCase(
 
   if (tx !== undefined) {
     if (tx.isValid()) {
+      installBlockHashesFromEnv(vm.blockchain, parsed.env)
       const block = makeBlockFromEnv(parsed.env, { common })
       try {
         await runTx(vm, { tx, block })

@@ -57,6 +57,7 @@ import {
   accumulateRequests,
   runPreTxSystemContractCall,
 } from './requests.ts'
+import { ensureSystemContractsPreinstalled } from './systemContracts.ts'
 
 import type { Block } from '@ethereumjs/block'
 import type { Common } from '@ethereumjs/common'
@@ -101,6 +102,7 @@ const entireBlockLabel = 'Entire block'
  * ```
  */
 export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResult> {
+  await ensureSystemContractsPreinstalled(vm)
   if (vm['_opts'].profilerOpts?.reportAfterBlock === true) {
     enableProfiler = true
     // eslint-disable-next-line no-console
@@ -386,6 +388,24 @@ export async function runBlock(vm: VM, opts: RunBlockOpts): Promise<RunBlockResu
           block,
         )
         throw EthereumJSErrorWithoutCode(msg)
+      }
+
+      if (vm.common.isActivatedEIP(7928) && vm.evm.blockLevelAccessList !== undefined) {
+        const headerBalHash = block.header.blockAccessListHash
+        if (headerBalHash === undefined) {
+          const msg = _errorMsg(
+            'invalid block access list hash: missing blockAccessListHash in header',
+            vm,
+            block,
+          )
+          throw EthereumJSErrorWithoutCode(msg)
+        }
+        // Header defaults fill an omitted RLP field with 32 zero bytes; real blocks commit a non-zero hash.
+        const isZeroBalHash =
+          headerBalHash.length === 32 && headerBalHash.every((byte) => byte === 0)
+        if (isZeroBalHash) {
+          validateBlockAccessListHash(vm.evm.blockLevelAccessList, headerBalHash)
+        }
       }
 
       if (vm.common.isActivatedEIP(7864)) {

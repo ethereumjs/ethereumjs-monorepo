@@ -42,6 +42,7 @@ import {
   encodeReceipt,
   rewardAccount,
 } from './runBlock.ts'
+import { ensureSystemContractsPreinstalled } from './systemContracts.ts'
 
 import type { Block, HeaderData } from '@ethereumjs/block'
 import type { TypedTransaction } from '@ethereumjs/tx'
@@ -395,6 +396,7 @@ export class BlockBuilder {
    * lifecycle of a pending block so need to be provided only when the block is finalized.
    */
   async build(sealOpts?: SealBlockOpts) {
+    await ensureSystemContractsPreinstalled(this.vm)
     this.checkStatus()
     const blockOpts = this.blockOpts
     const consensusType = this.vm.common.consensusType()

@@ -38,7 +38,7 @@ export const EXCEPTION_MESSAGES: Record<string, RegExp> = {
   'TransactionException.TYPE_3_TX_INVALID_BLOB_VERSIONED_HASH':
     /versioned hash does not start with KZG commitment version/,
   'TransactionException.TYPE_3_TX_MAX_BLOB_GAS_ALLOWANCE_EXCEEDED':
-    /(?:invalid transactions: errors at tx \d+: )?tx causes total blob gas of \d+ to exceed maximum blob gas per block of \d+/,
+    /(?:invalid transactions: errors at tx \d+: )?(?:tx causes total blob gas of \d+ to exceed maximum blob gas per block of \d+|\d+ blobs exceeds max \d+ blobs per tx \(EIP-7594\))/,
   'TransactionException.TYPE_3_TX_PRE_FORK': /EIP-4844 not enabled on Common/,
   'TransactionException.TYPE_3_TX_WITH_FULL_BLOBS': /Invalid EIP-4844 transaction/,
   'TransactionException.TYPE_3_TX_ZERO_BLOBS': /tx should contain at least one blob/,
@@ -49,13 +49,14 @@ export const EXCEPTION_MESSAGES: Record<string, RegExp> = {
   'BlockException.GAS_USED_OVERFLOW': /tx has a higher gas limit than the block/,
   'BlockException.INCORRECT_BLOB_GAS_USED': /invalid blobGasUsed/,
   'BlockException.INCORRECT_BLOCK_FORMAT':
-    /(?:blob gas used can only be provided with EIP4844 activated|invalid header)/,
+    /(?:blob gas used can only be provided with EIP4844 activated|invalid header|slotNumber can only be provided with EIP7843 being activated|blockAccessListHash can only be provided with EIP7928 being activated)/,
   'BlockException.INCORRECT_EXCESS_BLOB_GAS': /expected blob gas: \d+, got: \d+/,
   'BlockException.INVALID_BASEFEE_PER_GAS': /Invalid block: base fee not correct/,
   'BlockException.INVALID_DEPOSIT_EVENT_LAYOUT': /invalid deposit log: unsupported data layout/,
   'BlockException.INVALID_REQUESTS': /invalid requestsHash/,
   'BlockException.INVALID_BAL_HASH': /invalid block access list hash/,
-  'BlockException.INVALID_BLOCK_HASH': /invalid block access list hash/,
+  'BlockException.INVALID_BLOCK_HASH':
+    /(?:invalid block access list hash|slotNumber can only be provided with EIP7843 being activated|blockAccessListHash can only be provided with EIP7928 being activated)/,
   'BlockException.INVALID_BLOCK_ACCESS_LIST': /invalid block access list/,
   'BlockException.BLOCK_ACCESS_LIST_GAS_LIMIT_EXCEEDED': /block access list gas limit exceeded/,
   'BlockException.INVALID_WITHDRAWALS_ROOT': /invalid withdrawals trie/,
