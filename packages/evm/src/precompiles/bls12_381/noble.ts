@@ -6,6 +6,8 @@ import {
   equalsBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
+// cspell:ignore pippenger
+import { pippenger as largeMSM, mulAddUnsafe } from '@noble/curves/abstract/curve.js'
 import { bls12_381 } from '@noble/curves/bls12-381.js'
 
 import { EVMError } from '../../errors.ts'
@@ -137,9 +139,32 @@ function BLS12_381_ToFrPoint(input: Uint8Array): bigint {
   return bls12_381.fields.Fr.create(Fr)
 }
 
+/**
+ * Pair count where Pippenger's method beats interleaved multi-scalar multiplication.
+ * Timed on G1 and G2: interleaved multiplication is faster through a few hundred
+ * pairs, and Pippenger's method is faster from 512. A single pair stays a scalar
+ * multiplication, which is faster than either multi-scalar method.
+ */
+const MSM_LARGE_MIN_PAIRS = 512
+
+function multiScalarMultiply<P extends { multiplyUnsafe(scalar: bigint): P }>(
+  zero: P,
+  points: P[],
+  scalars: bigint[],
+  mulAdd: (points: P[], scalars: bigint[]) => P,
+  largeMul: (points: P[], scalars: bigint[]) => P,
+): P {
+  const count = points.length
+  if (count === 0) return zero
+  if (count === 1) {
+    return scalars[0] === BIGINT_0 ? zero : points[0].multiplyUnsafe(scalars[0])
+  }
+  if (count < MSM_LARGE_MIN_PAIRS) return mulAdd(points, scalars)
+  return largeMul(points, scalars)
+}
+
 // input: a 64-byte buffer
 // output: a Noble Fp point
-
 function BLS12_381_ToFpPoint(fpCoordinate: Uint8Array) {
   // check if point is in field
   if (bytesToBigInt(fpCoordinate) >= BLS_FIELD_MODULUS) {
@@ -202,67 +227,59 @@ export class NobleBLS implements EVMBLSInterface {
   }
 
   msmG1(input: Uint8Array): Uint8Array {
-    // Note: This implementation is using the naive "algorithm" of just doing
-    // p1G1*v1F1 + p2G1*v1F1 + ... while the EIP is suggesting to use an optimized
-    // algorithm (Pippenger's algorithm, see https://eips.ethereum.org/EIPS/eip-2537#g1g2-msm).
-    //
-    // While this functionally works the approach is not "gas-cost-competitive" and an
-    // optimization should be considered in the future.
     const pairLength = 160
     const numPairs = input.length / pairLength
+    const points = []
+    const scalars = []
 
-    let pRes = G1_ZERO
     for (let k = 0; k < numPairs; k++) {
       const pairStart = pairLength * k
-      const G1 = BLS12_381_ToG1Point(
-        input.subarray(pairStart, pairStart + BLS_G1_POINT_BYTE_LENGTH),
+      points.push(
+        BLS12_381_ToG1Point(input.subarray(pairStart, pairStart + BLS_G1_POINT_BYTE_LENGTH)),
       )
-      const Fr = BLS12_381_ToFrPoint(
-        input.subarray(pairStart + BLS_G1_POINT_BYTE_LENGTH, pairStart + pairLength),
+      scalars.push(
+        BLS12_381_ToFrPoint(
+          input.subarray(pairStart + BLS_G1_POINT_BYTE_LENGTH, pairStart + pairLength),
+        ),
       )
-      let pMul
-      if (Fr === BIGINT_0) {
-        pMul = G1_ZERO
-      } else {
-        pMul = G1.multiplyUnsafe(Fr)
-      }
-
-      pRes = pRes.add(pMul)
     }
 
-    return BLS12_381_FromG1Point(pRes.toAffine())
+    const result = multiScalarMultiply(
+      G1_ZERO,
+      points,
+      scalars,
+      (curvePoints, curveScalars) => mulAddUnsafe(bls12_381.G1.Point, curvePoints, curveScalars),
+      (curvePoints, curveScalars) => largeMSM(bls12_381.G1.Point, curvePoints, curveScalars),
+    )
+    return BLS12_381_FromG1Point(result.toAffine())
   }
 
   msmG2(input: Uint8Array): Uint8Array {
-    // Note: This implementation is using the naive "algorithm" of just doing
-    // p1G1*v1F1 + p2G1*v1F1 + ... while the EIP is suggesting to use an optimized
-    // algorithm (Pippenger's algorithm, see https://eips.ethereum.org/EIPS/eip-2537#g1g2-msm).
-    //
-    // While this functionally works the approach is not "gas-cost-competitive" and an
-    // optimization should be considered in the future.
     const pairLength = 288
     const numPairs = input.length / pairLength
+    const points = []
+    const scalars = []
 
-    let pRes = G2_ZERO
     for (let k = 0; k < numPairs; k++) {
       const pairStart = pairLength * k
-      const G2 = BLS12_381_ToG2Point(
-        input.subarray(pairStart, pairStart + BLS_G2_POINT_BYTE_LENGTH),
+      points.push(
+        BLS12_381_ToG2Point(input.subarray(pairStart, pairStart + BLS_G2_POINT_BYTE_LENGTH)),
       )
-      const Fr = BLS12_381_ToFrPoint(
-        input.subarray(pairStart + BLS_G2_POINT_BYTE_LENGTH, pairStart + pairLength),
+      scalars.push(
+        BLS12_381_ToFrPoint(
+          input.subarray(pairStart + BLS_G2_POINT_BYTE_LENGTH, pairStart + pairLength),
+        ),
       )
-      let pMul
-      if (Fr === BIGINT_0) {
-        pMul = G2_ZERO
-      } else {
-        pMul = G2.multiplyUnsafe(Fr)
-      }
-
-      pRes = pRes.add(pMul)
     }
 
-    return BLS12_381_FromG2Point(pRes.toAffine())
+    const result = multiScalarMultiply(
+      G2_ZERO,
+      points,
+      scalars,
+      (curvePoints, curveScalars) => mulAddUnsafe(bls12_381.G2.Point, curvePoints, curveScalars),
+      (curvePoints, curveScalars) => largeMSM(bls12_381.G2.Point, curvePoints, curveScalars),
+    )
+    return BLS12_381_FromG2Point(result.toAffine())
   }
 
   pairingCheck(input: Uint8Array): Uint8Array {
