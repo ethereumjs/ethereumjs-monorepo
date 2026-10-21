@@ -293,6 +293,7 @@ export class BlockBuilder {
       )
     }
     let blobGasUsed = undefined
+    let txForBlock = tx
     if (tx instanceof Blob4844Tx) {
       const { maxBlobGasPerBlock: blobGasLimit } = this.vm.common.getBlobGasSchedule()
       if (
@@ -326,6 +327,12 @@ export class BlockBuilder {
       }
 
       blobGasUsed = this.blobGasUsed
+      // Rebuild under the block Common before execution. This re-runs constructor
+      // checks, including the EIP-7594 per-tx blob cap, which is tighter than the
+      // block cap from Osaka onward. A throw must not follow a committed runTx.
+      txForBlock = createMinimal4844TxFromNetworkWrapper(blobTx, {
+        common: this.blockOpts.common,
+      })
     }
     const header = {
       ...this.headerData,
@@ -343,15 +350,10 @@ export class BlockBuilder {
 
     const result = await runTx(this.vm, { tx, block, skipHardForkValidation })
 
-    // If tx is a blob transaction, remove blobs/kzg commitments before adding to block per EIP-4844
     if (tx instanceof Blob4844Tx) {
-      const txData = tx as Blob4844Tx
-      this.blobGasUsed += BigInt(txData.blobVersionedHashes.length) * blobGasPerBlob
-      tx = createMinimal4844TxFromNetworkWrapper(txData, {
-        common: this.blockOpts.common,
-      })
+      this.blobGasUsed += BigInt(tx.blobVersionedHashes.length) * blobGasPerBlob
     }
-    this.transactions.push(tx)
+    this.transactions.push(txForBlock)
     this.transactionResults.push(result)
     if (this.vm.common.isActivatedEIP(8037) && result.txRegularGas !== undefined) {
       this.blockRegularGasUsed += result.txRegularGas
