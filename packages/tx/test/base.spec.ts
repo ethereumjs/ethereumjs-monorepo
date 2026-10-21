@@ -551,7 +551,7 @@ describe('[Tx/Matrix]: typed transaction guards', () => {
           txType.create.txData({ ...txType.txData, chainId: 2 }, { common: txType.common })
         },
         undefined,
-        undefined,
+        `Common chain ID ${txType.common.chainId()} not matching the derived chain ID 2`,
         `should reject transactions with wrong chain ID (${txType.name})`,
       )
 

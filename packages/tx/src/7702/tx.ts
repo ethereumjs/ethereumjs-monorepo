@@ -107,7 +107,7 @@ export class EOACode7702Tx implements TransactionInterface<typeof TransactionTyp
 
     if (chainId !== undefined && bytesToBigInt(toBytes(chainId)) !== this.common.chainId()) {
       throw EthereumJSErrorWithoutCode(
-        `Common chain ID ${this.common.chainId} not matching the derived chain ID ${chainId}`,
+        `Common chain ID ${this.common.chainId()} not matching the derived chain ID ${chainId}`,
       )
     }
     this.chainId = this.common.chainId()

@@ -418,7 +418,7 @@ export class Blockchain implements BlockchainInterface {
 
         if (block.common.chainId() !== this.common.chainId()) {
           throw EthereumJSErrorWithoutCode(
-            `Chain mismatch while trying to put block or header. Chain ID of block: ${block.common.chainId}, chain ID of blockchain : ${this.common.chainId}`,
+            `Chain mismatch while trying to put block or header. Chain ID of block: ${block.common.chainId()}, chain ID of blockchain : ${this.common.chainId()}`,
           )
         }
 

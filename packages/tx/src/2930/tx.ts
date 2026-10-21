@@ -89,7 +89,7 @@ export class AccessList2930Tx
 
     if (chainId !== undefined && bytesToBigInt(toBytes(chainId)) !== this.common.chainId()) {
       throw EthereumJSErrorWithoutCode(
-        `Common chain ID ${this.common.chainId} not matching the derived chain ID ${chainId}`,
+        `Common chain ID ${this.common.chainId()} not matching the derived chain ID ${chainId}`,
       )
     }
     this.chainId = this.common.chainId()
