@@ -1,8 +1,8 @@
 name: Build
 on:
   pull_request:
-    # synchronize re-reads PR labels (same model as test: browser).
-    types: [opened, reopened, synchronize, ready_for_review]
+    # synchronize / labeled re-read PR labels (test: browser, test: performance).
+    types: [opened, reopened, synchronize, ready_for_review, labeled]
   push:
     branches: [master]
     tags: ['*']
@@ -487,3 +487,39 @@ jobs:
                 }
               }
             }
+
+  # PR CodSpeed simulation — opt-in via test: performance (pull_request event for CodSpeed).
+  # Master / manual runs stay in performance-benchmarks.yml. Not part of Build / CI.
+  performance-benchmarks:
+    name: Performance benchmarks
+    needs: [build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    continue-on-error: true
+    if: >-
+      github.event_name == 'pull_request' &&
+      contains(join(github.event.pull_request.labels.*.name, ' '), 'test: performance')
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: read
+      checks: write
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+      # @codspeed/core 5.x prebuilds target Node 22 (Node 26 Linux hits V8 ABI errors).
+      - uses: ./.github/actions/setup-ethereumjs
+        with:
+          dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+          node-version: '22'
+
+      - name: Rebuild CodSpeed native module for bench Node
+        run: npm rebuild @codspeed/core
+        working-directory: ${{ github.workspace }}
+
+      - name: Run benchmarks
+        uses: CodSpeedHQ/action@f842b9a3ffe213dbb81768fd7f7eeb4dfcf1c369 # v5.4.2
+        with:
+          mode: simulation
+          run: npm run bench
+          cache-instruments: 'true'

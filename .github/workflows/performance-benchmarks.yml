@@ -1,18 +1,14 @@
 name: Performance benchmarks
 
-# CodSpeed simulation — optional on PRs (`test: performance`). Triggered after
-# Build finishes (workflow_run) so bench runs do not compete with Build for the
-# same workflow queue slot on push. Kept out of the Build / CI gate.
+# CodSpeed simulation on master (path-filtered) and manual dispatch.
+# Pull requests use the performance-benchmarks job in build.yml (test: performance).
 on:
-  workflow_run:
-    workflows: ['Build']
-    types: [completed]
   push:
     branches: [master]
   workflow_dispatch:
 
 concurrency:
-  group: performance-benchmarks-${{ github.event.workflow_run.head_branch || github.ref_name }}-${{ github.event.workflow_run.head_sha || github.sha }}
+  group: performance-benchmarks-${{ github.ref_name }}-${{ github.sha }}
   cancel-in-progress: true
 
 jobs:
@@ -21,62 +17,22 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     continue-on-error: true
-    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion != 'cancelled'
     permissions:
       contents: read
       id-token: write
       pull-requests: read
       checks: write
     steps:
-      - name: Gate pull_request follow-up
-        id: pr-gate
-        if: github.event_name == 'workflow_run'
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
-        with:
-          script: |
-            const wr = context.payload.workflow_run
-            if (wr.event !== 'pull_request') {
-              core.setOutput('run', 'false')
-              return
-            }
-            const prs = wr.pull_requests ?? []
-            if (prs.length === 0) {
-              core.setOutput('run', 'false')
-              return
-            }
-            const { data: pr } = await github.rest.pulls.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: prs[0].number,
-            })
-            const run = pr.labels.some((label) => label.name === 'test: performance')
-            core.setOutput('run', run ? 'true' : 'false')
-
-      - name: Skip — no performance label on PR
-        if: github.event_name == 'workflow_run' && steps.pr-gate.outputs.run != 'true'
-        run: 'echo "Skipping — PR lacks test: performance label."'
-
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
-        if: github.event_name != 'workflow_run' || steps.pr-gate.outputs.run == 'true'
-        with:
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
-      # Master pushes stay path-filtered. Manual dispatch always measures.
       - name: Bench-relevant paths
         id: bench-paths
-        if: >-
-          (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
-          (github.event_name != 'workflow_run' || steps.pr-gate.outputs.run == 'true')
+        if: github.event_name == 'push'
         env:
-          EVENT_NAME: ${{ github.event_name }}
           BEFORE: ${{ github.event.before }}
           SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
-          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
-            echo "bench=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
           if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
             echo "bench=true" >> "$GITHUB_OUTPUT"
             exit 0
@@ -95,34 +51,23 @@ jobs:
           echo "bench=$bench" >> "$GITHUB_OUTPUT"
 
       - name: No bench-relevant changes
-        if: >-
-          github.event_name == 'push' &&
-          steps.bench-paths.outputs.bench != 'true'
-        run: echo "Skipping — no performance benchmark paths in this event."
+        if: github.event_name == 'push' && steps.bench-paths.outputs.bench != 'true'
+        run: echo "Skipping — no performance benchmark paths in this push."
 
-      # @codspeed/core 5.x prebuilds target Node 22 (Node 26 Linux hits V8 ABI errors). Rebuild after setup-node.
+      # @codspeed/core 5.x prebuilds target Node 22 (Node 26 Linux hits V8 ABI errors).
       - uses: ./.github/actions/setup-ethereumjs
-        if: >-
-          github.event_name == 'workflow_run' ||
-          github.event_name == 'workflow_dispatch' ||
-          steps.bench-paths.outputs.bench == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.bench-paths.outputs.bench == 'true'
         with:
           dep-cache-key: none
           node-version: '22'
 
       - name: Rebuild CodSpeed native module for bench Node
-        if: >-
-          github.event_name == 'workflow_run' ||
-          github.event_name == 'workflow_dispatch' ||
-          steps.bench-paths.outputs.bench == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.bench-paths.outputs.bench == 'true'
         run: npm rebuild @codspeed/core
         working-directory: ${{ github.workspace }}
 
       - name: Run benchmarks
-        if: >-
-          github.event_name == 'workflow_run' ||
-          github.event_name == 'workflow_dispatch' ||
-          steps.bench-paths.outputs.bench == 'true'
+        if: github.event_name == 'workflow_dispatch' || steps.bench-paths.outputs.bench == 'true'
         uses: CodSpeedHQ/action@f842b9a3ffe213dbb81768fd7f7eeb4dfcf1c369 # v5.4.2
         with:
           mode: simulation
