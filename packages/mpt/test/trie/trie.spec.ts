@@ -381,3 +381,43 @@ describe('[MPT/Trie]: getValueMap', async () => {
     assert.strictEqual(Object.entries(dump.values).length, entries.length)
   })
 })
+
+describe('[MPT/Trie]: missing node on put and del', () => {
+  async function trieWithDanglingRoot() {
+    const trie = new MerklePatriciaTrie()
+    await trie.put(utf8ToBytes('a'), utf8ToBytes('value'))
+    await trie['_db'].del(trie.root())
+    return trie
+  }
+
+  it('put() throws Missing node in DB when the root node is missing', async () => {
+    const trie = await trieWithDanglingRoot()
+    try {
+      await trie.put(utf8ToBytes('b'), utf8ToBytes('other'))
+      assert.fail('put should throw when the root node is missing')
+    } catch (e: unknown) {
+      assert.match((e as Error).message, /Missing node in DB/)
+    }
+  })
+
+  it('del() throws Missing node in DB when the root node is missing', async () => {
+    const trie = await trieWithDanglingRoot()
+    try {
+      await trie.del(utf8ToBytes('a'))
+      assert.fail('del should throw when the root node is missing')
+    } catch (e: unknown) {
+      assert.match((e as Error).message, /Missing node in DB/)
+    }
+  })
+
+  it('del() on an empty trie leaves the empty root', async () => {
+    const trie = new MerklePatriciaTrie()
+    await trie.del(utf8ToBytes('missing'))
+    assert.deepEqual(trie.root(), trie.EMPTY_TRIE_ROOT)
+  })
+
+  it('get() returns null when the root node is missing', async () => {
+    const trie = await trieWithDanglingRoot()
+    assert.strictEqual(await trie.get(utf8ToBytes('a')), null)
+  })
+})
