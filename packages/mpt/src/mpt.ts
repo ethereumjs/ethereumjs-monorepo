@@ -336,20 +336,28 @@ export class MerklePatriciaTrie {
     this.DEBUG && this.debug(`Target (${targetKey.length}): [${targetKey}]`, ['find_path'])
     let result: Path | null = null
 
-    const onFound: FoundNodeFunction = async (
-      _nodeRef,
-      node,
-      currentKeyNibbles,
-      walkController,
-    ) => {
-      stack[pathProgress] = node as MPTNode
+    const startingNode = partialPath.stack[partialPath.stack.length - 1]
+    const start = startingNode !== undefined ? this.hash(startingNode.serialize()) : this.root()
 
-      if (node instanceof BranchMPTNode) {
-        if (pathProgress === keyLen) {
-          result = { node, remaining: [], stack }
-        } else {
-          const branchIndex = targetKey[pathProgress]
-          const branchNode = node.getBranch(branchIndex)
+    try {
+      this.DEBUG &&
+        this.debug(
+          `Walking trie from ${startingNode === undefined ? 'ROOT' : 'NODE'}: ${bytesToHex(start)}`,
+          ['find_path'],
+        )
+
+      let currentNode = await this.lookupNode(start)
+
+      while (result === null) {
+        stack[pathProgress] = currentNode
+
+        if (currentNode instanceof BranchMPTNode) {
+          if (pathProgress === keyLen) {
+            result = { node: currentNode, remaining: [], stack }
+            break
+          }
+          const branchIndex = targetKey[pathProgress]!
+          const branchNode = currentNode.getBranch(branchIndex)
           this.DEBUG &&
             this.debug(
               branchNode === null
@@ -359,51 +367,61 @@ export class MerklePatriciaTrie {
             )
           if (!branchNode) {
             result = { node: null, remaining: targetKey.slice(pathProgress), stack }
-          } else {
+            break
+          }
+          pathProgress++
+          currentNode = await this.lookupNode(branchNode)
+        } else if (currentNode instanceof LeafMPTNode) {
+          const leafStartProgress = pathProgress
+          if (keyLen - pathProgress > currentNode.key().length) {
+            result = {
+              node: null,
+              remaining: targetKey.slice(leafStartProgress),
+              stack,
+            }
+            break
+          }
+          for (const nibble of currentNode.key()) {
+            if (nibble !== targetKey[pathProgress]) {
+              result = {
+                node: null,
+                remaining: targetKey.slice(leafStartProgress),
+                stack,
+              }
+              break
+            }
             pathProgress++
-            walkController.onlyBranchIndex(node, currentKeyNibbles, branchIndex)
           }
-        }
-      } else if (node instanceof LeafMPTNode) {
-        const leafStartProgress = pathProgress
-        if (keyLen - pathProgress > node.key().length) {
-          result = { node: null, remaining: targetKey.slice(leafStartProgress), stack }
-          return
-        }
-        for (const nibble of node.key()) {
-          if (nibble !== targetKey[pathProgress]) {
-            result = { node: null, remaining: targetKey.slice(leafStartProgress), stack }
-            return
+          if (result === null) {
+            result = { node: currentNode, remaining: [], stack }
           }
-          pathProgress++
-        }
-        result = { node, remaining: [], stack }
-      } else if (node instanceof ExtensionMPTNode) {
-        const extensionStartProgress = pathProgress
-        this.DEBUG &&
-          this.debug(
-            `Extension key: [${node.key()}] vs expected [${targetKey.slice(pathProgress, pathProgress + node.key().length)}]`,
-            ['find_path', 'extension_node'],
-          )
-        for (const nibble of node.key()) {
-          if (nibble !== targetKey[pathProgress]) {
-            result = { node: null, remaining: targetKey.slice(extensionStartProgress), stack }
-            return
+        } else if (currentNode instanceof ExtensionMPTNode) {
+          const extensionStartProgress = pathProgress
+          this.DEBUG &&
+            this.debug(
+              `Extension key: [${currentNode.key()}] vs expected [${targetKey.slice(pathProgress, pathProgress + currentNode.key().length)}]`,
+              ['find_path', 'extension_node'],
+            )
+          for (const nibble of currentNode.key()) {
+            if (nibble !== targetKey[pathProgress]) {
+              result = {
+                node: null,
+                remaining: targetKey.slice(extensionStartProgress),
+                stack,
+              }
+              break
+            }
+            pathProgress++
           }
-          pathProgress++
+          if (result !== null) {
+            break
+          }
+          currentNode = await this.lookupNode(currentNode.value())
+        } else {
+          result = { node: null, remaining: targetKey.slice(pathProgress), stack }
+          break
         }
-        walkController.allChildren(node, currentKeyNibbles)
       }
-    }
-    const startingNode = partialPath.stack[partialPath.stack.length - 1]
-    const start = startingNode !== undefined ? this.hash(startingNode.serialize()) : this.root()
-    try {
-      this.DEBUG &&
-        this.debug(
-          `Walking trie from ${startingNode === undefined ? 'ROOT' : 'NODE'}: ${bytesToHex(start)}`,
-          ['find_path'],
-        )
-      await this.walkTrie(start, onFound)
     } catch (error: any) {
       if (error.message !== 'Missing node in DB' || throwIfMissing) {
         throw error
