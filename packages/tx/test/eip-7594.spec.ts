@@ -1,4 +1,5 @@
-import { Hardfork, createCommonFromGethGenesis } from '@ethereumjs/common'
+import { Common, Hardfork, Mainnet, createCommonFromGethGenesis } from '@ethereumjs/common'
+import { RLP } from '@ethereumjs/rlp'
 import {
   CELLS_PER_EXT_BLOB,
   blobsToCellProofs,
@@ -398,4 +399,43 @@ describe('[Tx]: network wrapper tests', () => {
       )
     }
   }, 40_000)
+})
+
+describe('[Tx/EIP-7594]: network wrapper version on decode', () => {
+  it('createBlob4844TxFromSerializedNetworkWrapper() rejects an EIP-7594 wrapper on a pre-7594 Common', () => {
+    const stubKzg = {} as KZG
+    const prague = new Common({
+      chain: Mainnet,
+      hardfork: Hardfork.Prague,
+      customCrypto: { kzg: stubKzg },
+    })
+    const tx = createBlob4844Tx(
+      {
+        blobVersionedHashes: [concatBytes(new Uint8Array([1]), new Uint8Array(31))],
+        maxFeePerBlobGas: 1n,
+        to: createZeroAddress(),
+      },
+      { common: prague },
+    )
+    const serialized = concatBytes(
+      hexToBytes('0x03'),
+      RLP.encode([
+        tx.raw(),
+        new Uint8Array([1]),
+        [new Uint8Array([0])],
+        [new Uint8Array([0])],
+        [new Uint8Array([0])],
+      ]),
+    )
+
+    try {
+      createBlob4844TxFromSerializedNetworkWrapper(serialized, { common: prague })
+      assert.fail('should throw')
+    } catch (error: unknown) {
+      assert.match(
+        (error as Error).message,
+        /EIP-7594 not enabled on Common for EIP-7594 network wrapper version/,
+      )
+    }
+  })
 })

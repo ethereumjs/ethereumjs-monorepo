@@ -14,8 +14,8 @@ import {
   createCommonFromGethGenesis,
 } from '@ethereumjs/common'
 import { Ethash } from '@ethereumjs/ethash'
-import { createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
-import { concatBytes, createAccount, createZeroAddress } from '@ethereumjs/util'
+import { createBlob4844Tx, createFeeMarket1559Tx, createLegacyTx } from '@ethereumjs/tx'
+import { type KZG, concatBytes, createAccount, createZeroAddress } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { buildBlock, createVM, runBlock } from '../../src/index.ts'
@@ -89,6 +89,78 @@ describe('[VM/BlockBuilder]: buildBlock API', () => {
       0,
       'should have the correct number of tx receipts',
     )
+  })
+
+  it('leaves the builder unchanged when a blob tx exceeds the Osaka per-tx cap', async () => {
+    const stubKzg = {} as KZG
+    const prague = new Common({
+      chain: Mainnet,
+      hardfork: Hardfork.Prague,
+      customCrypto: { kzg: stubKzg },
+    })
+    const osaka = new Common({
+      chain: Mainnet,
+      hardfork: Hardfork.Osaka,
+      customCrypto: { kzg: stubKzg },
+    })
+    // Keep the pinned fork when the blockchain re-reads block 0.
+    osaka.getHardforkBy = () => Hardfork.Osaka
+    const genesisBlock = createBlock(
+      {
+        header: {
+          gasLimit: 30_000_000n,
+          parentBeaconBlockRoot: new Uint8Array(32),
+        },
+      },
+      { common: osaka },
+    )
+    const blockchain = await createBlockchain({
+      genesisBlock,
+      common: osaka,
+      validateBlocks: false,
+      validateConsensus: false,
+    })
+    const vm = await createVM({ common: osaka, blockchain })
+    const blockBuilder = await buildBlock(vm, {
+      parentBlock: genesisBlock,
+      withdrawals: [],
+      headerData: { gasLimit: 30_000_000n },
+      blockOpts: { freeze: false },
+    })
+    const stateRootAfterInit = await vm.stateManager.getStateRoot()
+
+    const hash = concatBytes(new Uint8Array([1]), new Uint8Array(31))
+    const tx = createBlob4844Tx(
+      {
+        blobVersionedHashes: Array.from({ length: 7 }, () => hash),
+        maxFeePerBlobGas: 1n,
+        maxFeePerGas: 1n,
+        maxPriorityFeePerGas: 1n,
+        gasLimit: 100_000n,
+        to: createZeroAddress(),
+      },
+      { common: prague },
+    )
+
+    try {
+      await blockBuilder.addTransaction(tx, { allowNoBlobs: true })
+      assert.fail('should throw')
+    } catch (error: unknown) {
+      assert.match((error as Error).message, /7 blobs exceeds max 6 blobs per tx \(EIP-7594\)/)
+    }
+
+    assert.strictEqual(blockBuilder.blobGasUsed, 0n, 'blob gas stays at zero')
+    assert.strictEqual(blockBuilder.gasUsed, 0n, 'gas used stays at zero')
+    assert.strictEqual(blockBuilder.transactionReceipts.length, 0, 'tx is not kept')
+    assert.deepEqual(
+      await vm.stateManager.getStateRoot(),
+      stateRootAfterInit,
+      'state root is unchanged',
+    )
+
+    const { block } = await blockBuilder.build()
+    assert.strictEqual(block.transactions.length, 0, 'built block has no transactions')
+    assert.strictEqual(block.header.blobGasUsed, 0n, 'built header blob gas stays at zero')
   })
 
   it('seal a PoW block', async () => {

@@ -200,6 +200,8 @@ export class MerklePatriciaTrie {
    * Stores `value` at `key`, or deletes the key when `value` is empty.
    *
    * Deletes only reach the backing DB when node pruning is enabled.
+   *
+   * @throws If a node on the path is missing from the database
    */
   async put(
     key: Uint8Array,
@@ -224,7 +226,9 @@ export class MerklePatriciaTrie {
       if (equalsBytes(this.root(), this.EMPTY_TRIE_ROOT)) {
         await this._createInitialNode(appliedKey, value)
       } else {
-        const { remaining, stack } = await this.findPath(appliedKey)
+        // Throw on a missing node. Swallowing it leaves an empty walk stack,
+        // and `_updateNode` then reports "Stack underflow".
+        const { remaining, stack } = await this.findPath(appliedKey, true)
         let ops: BatchDBOp[] = []
         if (this._opts.useNodePruning) {
           const val = await this.get(key)
@@ -249,12 +253,21 @@ export class MerklePatriciaTrie {
    * Deletes the value at `key`.
    *
    * Physical DB deletes occur only when node pruning is enabled.
+   * Deleting a key from an empty trie does nothing.
+   *
+   * @throws If the trie is non-empty and a node on the path is missing from the database
    */
   async del(key: Uint8Array, skipKeyTransform: boolean = false): Promise<void> {
     this.DEBUG && this.debug(`Key: ${bytesToHex(key)}`, ['del'])
     await this._withLock(async () => {
       const appliedKey = skipKeyTransform ? key : this.appliedKey(key)
-      const { node, stack } = await this.findPath(appliedKey)
+      // The empty-trie root is not stored, so walking it reports a missing node.
+      // A delete in that state has nothing to remove.
+      if (equalsBytes(this.root(), this.EMPTY_TRIE_ROOT)) {
+        await this.persistRoot()
+        return
+      }
+      const { node, stack } = await this.findPath(appliedKey, true)
       const nodeHasValue =
         node !== null && (!(node instanceof BranchMPTNode) || node.value() !== null)
 
