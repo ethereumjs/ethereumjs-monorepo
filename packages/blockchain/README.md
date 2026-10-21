@@ -247,7 +247,7 @@ Custom consensus: implement the `Consensus` interface and pass via `consensusDic
 
 ### Storage
 
-Default DB is in-memory `MapDB`. For persistence, pass a `DB`-conforming backend (see [@ethereumjs/client level wrapper](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/client/src/execution/level.ts)).
+Default DB is in-memory `MapDB`. For persistence, pass a `DB`-conforming backend (see [@ethereumjs/client level wrapper](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/archive/client/src/execution/level.ts)).
 
 ## Supported Block Features
 

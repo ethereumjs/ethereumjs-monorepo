@@ -193,7 +193,7 @@ Legacy CommonJS examples: [`wallet.cjs`](./examples/wallet.cjs), [`hdKey.cjs`](.
 
 ## API
 
-Generated docs: [Wallet](./docs/classes/Wallet.md), [EthereumHDKey](./docs/classes/EthereumHDKey.md).
+Generated docs: [Wallet](./docs/classes/Wallet.md), [EthereumHDKey](./docs/@ethereumjs/namespaces/hdkey/classes/EthereumHDKey.md).
 
 ## EthereumJS
 

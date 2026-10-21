@@ -342,7 +342,7 @@ const main = async () => {
 void main()
 ```
 
-For persistent storage, see [@ethereumjs/trie recipes](https://github.com/ethereumjs/ethereumjs-monorepo/tree/master/packages/trie/recipes/level.ts). KZG typing lives in [`kzg.ts`](./src/kzg.ts); genesis helpers in [`genesis.ts`](./src/genesis.ts).
+For persistent storage, see [@ethereumjs/mpt recipes](https://github.com/ethereumjs/ethereumjs-monorepo/blob/master/packages/mpt/recipes/level.ts). KZG typing lives in [`kzg.ts`](./src/kzg.ts); genesis helpers moved to `@ethereumjs/common` ([`gethGenesis.ts`](../common/src/gethGenesis.ts)).
 
 ## Browser
 
