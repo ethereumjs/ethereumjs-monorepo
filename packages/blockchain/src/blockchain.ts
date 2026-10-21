@@ -1,5 +1,5 @@
 import { Block, BlockHeader, createBlock } from '@ethereumjs/block'
-import { Common, ConsensusAlgorithm, Hardfork, Mainnet } from '@ethereumjs/common'
+import { Common, ConsensusAlgorithm, ConsensusType, Hardfork, Mainnet } from '@ethereumjs/common'
 import {
   BIGINT_0,
   BIGINT_1,
@@ -20,7 +20,13 @@ import debugDefault from 'debug'
 import { EventEmitter } from 'eventemitter3'
 
 import { CasperConsensus } from './consensus/casper.ts'
-import { DBOp } from './db/helpers.ts'
+import {
+  DBOp,
+  DBSaveLookups,
+  DBSetBlockOrHeader,
+  DBSetHashToNumber,
+  DBSetTD,
+} from './db/helpers.ts'
 import { DBManager } from './db/manager.ts'
 import { DBTarget } from './db/operation.ts'
 
@@ -29,13 +35,12 @@ import type { CliqueConfig, GenesisState } from '@ethereumjs/common'
 import type { BigIntLike, DB, DBObject } from '@ethereumjs/util'
 import type { Debugger } from 'debug'
 import {
-  type CanonicalChainHost,
-  deleteCanonicalChainReferences,
-  rebuildCanonical,
-} from './chain/canonical.ts'
-import { rewindHeadIfEquals } from './chain/heads.ts'
+  noteCanonicalPut,
+  noteSideChainBody,
+  rewindHeadIfEquals,
+  rewindIteratorHeadsIfEquals,
+} from './chain/heads.ts'
 import type { BlockchainHeadState } from './chain/heads.ts'
-import { type PutBlockHost, putBlockOrHeader } from './chain/put.ts'
 import type {
   BlockchainEvent,
   BlockchainInterface,
@@ -384,7 +389,113 @@ export class Blockchain implements BlockchainInterface {
    * @hidden
    */
   private async _putBlockOrHeader(item: Block | BlockHeader) {
-    return putBlockOrHeader(this._putHost(), item)
+    await this.runWithLock<void>(async () => {
+      const oldHeads = Object.assign({}, this._heads)
+      const oldHeadHeaderHash = this._headHeaderHash
+      const oldHeadBlockHash = this._headBlockHash
+      try {
+        const block =
+          item instanceof BlockHeader
+            ? new Block(item, undefined, undefined, undefined, { common: item.common })
+            : item
+        const isGenesis = block.isGenesis()
+
+        if (isGenesis) {
+          if (equalsBytes(this.genesisBlock.hash(), block.hash())) {
+            return
+          }
+          throw EthereumJSErrorWithoutCode(
+            'Cannot put a different genesis block than current blockchain genesis: create a new Blockchain',
+          )
+        }
+
+        const { header } = block
+        const blockHash = header.hash()
+        const blockNumber = header.number
+        let td = header.difficulty
+        const currentTd = { header: BIGINT_0, block: BIGINT_0 }
+        let dbOps: DBOp[] = []
+
+        if (block.common.chainId() !== this.common.chainId()) {
+          throw EthereumJSErrorWithoutCode(
+            `Chain mismatch while trying to put block or header. Chain ID of block: ${block.common.chainId}, chain ID of blockchain : ${this.common.chainId}`,
+          )
+        }
+
+        if (this._validateBlocks && !isGenesis && item instanceof Block) {
+          await this.validateBlock(block)
+        }
+
+        if (this._validateConsensus) {
+          await this.consensus!.validateConsensus(block)
+        }
+
+        if (this._headHeaderHash) {
+          currentTd.header = await this.getTotalDifficulty(this._headHeaderHash)
+        }
+        if (this._headBlockHash) {
+          currentTd.block = await this.getTotalDifficulty(this._headBlockHash)
+        }
+
+        const parentTd = await this.getParentTD(header)
+        if (!block.isGenesis()) {
+          td += parentTd
+        }
+
+        dbOps = dbOps.concat(DBSetTD(td, blockNumber, blockHash))
+        dbOps = dbOps.concat(DBSetBlockOrHeader(item))
+
+        let commonAncestor: undefined | BlockHeader
+        let ancestorHeaders: undefined | BlockHeader[]
+        if (
+          block.isGenesis() ||
+          td > currentTd.header ||
+          block.common.consensusType() === ConsensusType.ProofOfStake
+        ) {
+          const foundCommon = await this.findCommonAncestor(header)
+          commonAncestor = foundCommon.commonAncestor
+          ancestorHeaders = foundCommon.ancestorHeaders
+
+          const headState = this._headState()
+          noteCanonicalPut(headState, blockHash, item instanceof Block)
+          this._syncFromHeadState(headState)
+          if (this._hardforkByHeadBlockNumber) {
+            await this.checkAndTransitionHardForkByNumber(blockNumber, header.timestamp)
+          }
+
+          await this._deleteCanonicalChainReferences(blockNumber + BIGINT_1, blockHash, dbOps)
+          await this._rebuildCanonical(header, dbOps)
+        } else {
+          if (td > currentTd.block && item instanceof Block) {
+            const headState = this._headState()
+            noteSideChainBody(headState, blockHash)
+            this._syncFromHeadState(headState)
+          }
+          dbOps.push(DBSetHashToNumber(blockHash, blockNumber))
+        }
+
+        const ops = dbOps.concat(this._saveHeadOps())
+        await this.dbManager.batch(ops)
+
+        await this.consensus?.newBlock(block, commonAncestor, ancestorHeaders)
+        this.DEBUG &&
+          this._debug(`put block number=${block.header.number} hash=${bytesToHex(blockHash)}`)
+      } catch (e) {
+        this._heads = oldHeads
+        this._headHeaderHash = oldHeadHeaderHash
+        this._headBlockHash = oldHeadBlockHash
+        throw e
+      }
+    })
+    if (this._deletedBlocks.length > 0) {
+      this.events.emit('deletedCanonicalBlocks', this._deletedBlocks)
+      for (const block of this._deletedBlocks)
+        this.DEBUG &&
+          this._debug(
+            `delete stale canonical block number=${block.header.number} hash=${bytesToHex(block.hash())}`,
+          )
+      this._deletedBlocks = []
+    }
   }
 
   /**
@@ -966,11 +1077,93 @@ export class Blockchain implements BlockchainInterface {
     headHash: Uint8Array,
     ops: DBOp[],
   ) {
-    return deleteCanonicalChainReferences(this._canonicalHost(), blockNumber, headHash, ops)
+    try {
+      let hash: Uint8Array | false
+
+      hash = await this.safeNumberToHash(blockNumber)
+      while (hash !== false) {
+        ops.push(DBOp.del(DBTarget.NumberToHash, { blockNumber }))
+
+        if (this.events.listenerCount('deletedCanonicalBlocks') > 0) {
+          const block = await this.getBlock(blockNumber)
+          this._deletedBlocks.push(block)
+        }
+
+        const headState = this._headState()
+        rewindIteratorHeadsIfEquals(headState, hash, headHash)
+        rewindHeadIfEquals(headState, hash, headHash)
+        this._syncFromHeadState(headState)
+
+        blockNumber++
+
+        hash = await this.safeNumberToHash(blockNumber)
+      }
+
+      this.DEBUG &&
+        this._deletedBlocks.length > 0 &&
+        this._debug(`deleted ${this._deletedBlocks.length} stale canonical blocks in total`)
+    } catch (e) {
+      this._deletedBlocks = []
+      throw e
+    }
   }
 
   private async _rebuildCanonical(header: BlockHeader, ops: DBOp[]) {
-    return rebuildCanonical(this._canonicalHost(), header, ops)
+    let currentNumber = header.number
+    let currentCanonicalHash: Uint8Array = header.hash()
+
+    let staleHash: Uint8Array | false = false
+    let staleHeads: string[] = []
+    let staleHeadBlock = false
+
+    const headState = this._headState()
+
+    const loopCondition = async () => {
+      staleHash = await this.safeNumberToHash(currentNumber)
+      currentCanonicalHash = header.hash()
+      return staleHash === false || !equalsBytes(currentCanonicalHash, staleHash)
+    }
+
+    while (await loopCondition()) {
+      const blockHash = header.hash()
+      const blockNumber = header.number
+
+      if (blockNumber === BIGINT_0) {
+        break
+      }
+
+      DBSaveLookups(blockHash, blockNumber).map((op) => {
+        ops.push(op)
+      })
+
+      for (const name of Object.keys(headState.heads)) {
+        if (staleHash && equalsBytes(headState.heads[name], staleHash)) {
+          staleHeads.push(name)
+        }
+      }
+      if (
+        staleHash &&
+        headState.headBlockHash !== undefined &&
+        equalsBytes(headState.headBlockHash, staleHash) === true
+      ) {
+        staleHeadBlock = true
+      }
+
+      header = await this._getHeader(header.parentHash, --currentNumber)
+      if (header === undefined) {
+        staleHeads = []
+        break
+      }
+    }
+    for (const name of staleHeads) {
+      headState.heads[name] = currentCanonicalHash
+    }
+    if (staleHeadBlock) {
+      headState.headBlockHash = currentCanonicalHash
+    }
+    this._syncFromHeadState(headState)
+
+    this.DEBUG && this._debug(`stale heads found num=${staleHeads.length}`)
   }
 
   /* Helper functions */
@@ -991,61 +1184,6 @@ export class Blockchain implements BlockchainInterface {
   private _syncFromHeadState(state: BlockchainHeadState): void {
     this._headHeaderHash = state.headHeaderHash
     this._headBlockHash = state.headBlockHash
-  }
-
-  private _canonicalHost(): CanonicalChainHost {
-    return {
-      safeNumberToHash: (blockNumber) => this.safeNumberToHash(blockNumber),
-      getBlock: (blockNumber) => this.getBlock(blockNumber),
-      _getHeader: (hash, number) => this._getHeader(hash, number),
-      headState: () => this._headState(),
-      syncFromHeadState: (state) => this._syncFromHeadState(state),
-      events: this.events,
-      deletedBlocks: this._deletedBlocks,
-      DEBUG: this.DEBUG,
-      debug: (msg) => {
-        this._debug(msg)
-      },
-    }
-  }
-
-  private _putHost(): PutBlockHost {
-    return {
-      runWithLock: (action) => this.runWithLock(action),
-      genesisBlock: this.genesisBlock,
-      common: this.common,
-      validateBlocks: this._validateBlocks,
-      validateConsensus: this._validateConsensus,
-      consensus: this.consensus,
-      hardforkByHeadBlockNumber: this._hardforkByHeadBlockNumber,
-      deletedBlocks: this._deletedBlocks,
-      events: this.events,
-      DEBUG: this.DEBUG,
-      debug: (msg) => {
-        this._debug(msg)
-      },
-      validateBlock: (block) => this.validateBlock(block),
-      getTotalDifficulty: (hash) => this.getTotalDifficulty(hash),
-      getParentTD: (header) => this.getParentTD(header),
-      findCommonAncestor: (header) => this.findCommonAncestor(header),
-      checkAndTransitionHardForkByNumber: (blockNumber, timestamp) =>
-        this.checkAndTransitionHardForkByNumber(blockNumber, timestamp),
-      saveHeadOps: () => this._saveHeadOps(),
-      dbBatch: (ops) => this.dbManager.batch(ops),
-      headState: () => this._headState(),
-      syncFromHeadState: (state) => this._syncFromHeadState(state),
-      canonicalHost: () => this._canonicalHost(),
-      snapshotHeads: () => ({
-        heads: Object.assign({}, this._heads),
-        headHeaderHash: this._headHeaderHash,
-        headBlockHash: this._headBlockHash,
-      }),
-      restoreHeads: (heads, headHeaderHash, headBlockHash) => {
-        this._heads = heads
-        this._headHeaderHash = headHeaderHash
-        this._headBlockHash = headBlockHash
-      },
-    }
   }
 
   private _saveHeadOps(): DBOp[] {
