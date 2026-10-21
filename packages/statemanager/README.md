@@ -24,11 +24,12 @@ Runnable examples live in [`examples/`](./examples/).
 
 - [Installation](#installation)
 - [Overview](#overview)
+- [Core concepts](#core-concepts)
 - [MerkleStateManager](#merklestatemanager)
 - [SimpleStateManager](#simplestatemanager)
 - [RPCStateManager](#rpcstatemanager)
 - [Binary Tree State Manager (experimental)](#binary-tree-state-manager-experimental)
-- [Architecture](#architecture)
+- [Customization](#customization)
 - [Browser](#browser)
 - [API](#api)
 - [Development](#development)
@@ -53,6 +54,29 @@ The `StateManager` interface (defined in `@ethereumjs/common`) exposes account, 
 | `StatefulBinaryTreeStateManager` | `@ethereumjs/binarytree` | EIP-7864 research (experimental) |
 
 All implementations support nested `checkpoint()` / `commit()` / `revert()` for revertible execution.
+
+## Core concepts
+
+### Checkpointing
+
+`checkpoint()` / `commit()` / `revert()` form a stack of provisional diffs. The EVM and VM use this around calls and transactions so failed execution can roll back without touching committed state.
+
+- **`checkpoint()`** — push a new diff layer (nesting is allowed).
+- **`commit()`** — fold the top layer into its parent (or into the live caches when nesting depth is one).
+- **`revert()`** — drop the top layer and restore the previous view.
+- **`flush()`** (Merkle / binary-tree) — write committed cache entries into the underlying trie. Prefer an explicit flush before hashing roots when you need a stable trie view.
+
+Checkpointing is in-process and ephemeral. It is not the same as saving a `stateRoot` for later rewind (see below).
+
+### State roots
+
+`getStateRoot()` / `setStateRoot()` identify a full account-trie snapshot. Store the root bytes after a successful block or contract run, keep using the same state manager (so the trie still has the old nodes), then `setStateRoot(savedRoot)` to rewind — the pattern from [discussion #2338](https://github.com/ethereumjs/ethereumjs-monorepo/discussions/2338). `SimpleStateManager` does not implement roots; use `MerkleStateManager` (or the binary-tree SM) when you need them.
+
+Durable on-disk persistence means a DB-backed `@ethereumjs/mpt` trie passed into `MerkleStateManager` (see the MPT package examples). That LevelDB wiring is intentionally omitted here to keep example runs dependency-light.
+
+### Customization
+
+Implement [`StateManagerInterface`](../common/src/interfaces.ts) from `@ethereumjs/common` for a fully custom backend, or configure a built-in SM (custom trie, caches, `Common` / EIPs). Details under [Customization](#customization).
 
 ## MerkleStateManager
 
@@ -84,6 +108,8 @@ void main()
 
 ### Checkpoints
 
+See [Checkpointing](#checkpointing) for the stack model. Short revert / commit demo:
+
 ```ts
 // ./examples/checkpointRevert.ts
 
@@ -104,6 +130,35 @@ const main = async () => {
   await sm.commit()
   await sm.flush()
   console.log(`After commit: ${(await sm.getAccount(address))?.balance}`)
+}
+
+void main()
+```
+
+### State roots
+
+Save a root, mutate state, then rewind with `setStateRoot` (same trie instance):
+
+```ts
+// ./examples/stateRootSaveRestore.ts
+
+import { MerkleStateManager } from '@ethereumjs/statemanager'
+import { Account, Address, bytesToHex, hexToBytes } from '@ethereumjs/util'
+
+const main = async () => {
+  const sm = new MerkleStateManager()
+  const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
+
+  await sm.putAccount(address, new Account(0n, 1000n))
+  const savedRoot = await sm.getStateRoot()
+  console.log(`Saved state root: ${bytesToHex(savedRoot)}`)
+
+  await sm.putAccount(address, new Account(0n, 9999n))
+  console.log(`Mutated balance: ${(await sm.getAccount(address))?.balance}`)
+
+  // Rewind while the same trie still holds the old nodes
+  await sm.setStateRoot(savedRoot)
+  console.log(`Restored balance: ${(await sm.getAccount(address))?.balance}`)
 }
 
 void main()
@@ -262,9 +317,35 @@ void main()
 
 Not production-ready.
 
-## Architecture
+## Customization
 
-All implementations satisfy `StateManagerInterface` from `@ethereumjs/common`. Custom implementations can implement that interface directly.
+All implementations satisfy `StateManagerInterface` from `@ethereumjs/common`. Paths to customize:
+
+1. **Implement the interface** — for a foreign backend (remote DB, mocked test double, research trie). The EVM/VM only depend on the interface methods they call.
+2. **Inject a trie** — pass `{ trie }` into `MerkleStateManager` to share storage or swap the backing DB without subclassing:
+
+```ts
+// ./examples/customTrie.ts
+
+import { Common, Mainnet } from '@ethereumjs/common'
+import { MerklePatriciaTrie } from '@ethereumjs/mpt'
+import { MerkleStateManager } from '@ethereumjs/statemanager'
+import { Account, Address, hexToBytes } from '@ethereumjs/util'
+
+const main = async () => {
+  const common = new Common({ chain: Mainnet })
+  const trie = new MerklePatriciaTrie({ useKeyHashing: true, common })
+  const sm = new MerkleStateManager({ trie, common })
+  const address = new Address(hexToBytes('0xa94f5374fce5edbc8e2a8697c15331677e6ebf0b'))
+
+  await sm.putAccount(address, new Account(0n, 42n))
+  console.log(`Balance via custom trie: ${(await sm.getAccount(address))?.balance}`)
+}
+
+void main()
+```
+
+3. **Caches / Common** — optional `caches` and `common` on the Merkle / binary-tree constructors tune read performance and fork rules.
 
 Optional `consumeBAL(bal, expectedStateRoot?)` applies an [EIP-7928](https://eips.ethereum.org/EIPS/eip-7928) block-level access list onto state without EVM execution (last post-balance / nonce / code / storage; EIP-161 empty-account deletes). Every implementation in this package forwards to a shared `consumeBAL()` helper.
 
