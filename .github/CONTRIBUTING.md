@@ -1,6 +1,6 @@
 # Contributing
 
-Great that you want to contribute to the EthereumJS ecosystem. EthereumJS is community-maintained; everyone is welcome (see our [Code of Conduct](./CODE_OF_CONDUCT.md)).
+Great that you want to contribute to the EthereumJS ecosystem. EthereumJS is community-maintained; everyone is welcome (see our [Code of Conduct](../CODE_OF_CONDUCT.md)).
 
 **Start here:**
 

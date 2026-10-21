@@ -10,7 +10,7 @@
 --withdrawals-per-block: mean number of withdrawals per block
 ```
 Running:
-`npx tsx packages/client/scripts/generateLargeFixture.ts --blocks 150 --txs-per-block 200 --withdrawals-per-block 15 --output /tmp/large-fixture.json`
+`npx tsx packages/vm/test/tester/scripts/generateLargeFixture.ts --blocks 150 --txs-per-block 200 --withdrawals-per-block 15 --output /tmp/large-fixture.json`
 will generate a test fixture with 150 blocks, each with an average of 200 tx's and 15 withdrawals...quite a large fixture.
 **Generating one this large will take a while**
 
