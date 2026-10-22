@@ -1,0 +1,6 @@
+{
+  "schema": 1,
+  "name": "rlpx-peer-queue",
+  "nodes": [],
+  "steps": [{ "action": { "type": "legacyRlpxPeerQueue", "basePort": 60661 } }]
+}

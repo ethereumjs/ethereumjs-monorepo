@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "name": "eth-snappy-v4",
+  "nodes": [],
+  "steps": [
+    { "action": { "type": "legacyEthPair", "basePort": 19601, "capabilities": ["eth68"] } },
+    {
+      "action": {
+        "type": "ethSnappyV4",
+        "basePort": 19601,
+        "errorMessage": "Invalid Snappy bitstream"
+      }
+    },
+    { "wait": { "node": "b", "event": "peer.error", "timeoutMs": 15000 } }
+  ]
+}

@@ -52,7 +52,13 @@ function areaFromPath(file) {
     ethash: 'Ethash',
     e2store: 'E2Store',
     genesis: 'Genesis',
+    devp2p: 'Devp2p',
   }[pkg] ?? pkg
+
+  if (file.includes('packages/devp2p/test/dpt/')) return 'Devp2p/DPT'
+  if (file.includes('packages/devp2p/test/rlpx/')) return 'Devp2p/RLPx'
+  if (file.includes('packages/devp2p/test/protocol/')) return 'Devp2p/Protocol'
+  if (file.includes('packages/devp2p/test/dns/')) return 'Devp2p/DNS'
 
   if (file.includes('packages/evm/test/precompiles/')) return 'EVM/Precompile'
   if (file.includes('packages/evm/test/eips/')) return 'EVM/EIP'

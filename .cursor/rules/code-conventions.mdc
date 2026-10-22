@@ -51,7 +51,7 @@ Shipped library code under `packages/*/src/` must stay **environment-neutral**: 
 
 **Out of scope for this rule (Node is fine):** `test/`, `scripts/`, `benchmarks/`, `recipes/`, `examples/`, repo-root `scripts/`, and archived **`packages/client/`** (superseded by `archive/client/`).
 
-**Documented exceptions in published `src/`:** `@ethereumjs/e2store` is archive/export tooling and intentionally uses `fs`, `stream`, and related Node APIs. Do not copy that pattern into core EL libraries (`evm`, `vm`, `tx`, …).
+**Documented exceptions in published `src/`:** `@ethereumjs/e2store` is archive/export tooling and intentionally uses `fs`, `stream`, and related Node APIs. `@ethereumjs/devp2p` is Node networking (`net`, `dgram`, `dns`, `crypto`). Do not copy those patterns into core EL libraries (`evm`, `vm`, `tx`, …).
 
 ## File layout and EIP params
 

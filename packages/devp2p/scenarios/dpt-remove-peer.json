@@ -1,0 +1,6 @@
+{
+  "schema": 1,
+  "name": "dpt-remove-peer",
+  "nodes": [],
+  "steps": [{ "action": { "type": "legacyDptRemovePeer", "basePort": 42632 } }]
+}

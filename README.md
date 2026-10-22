@@ -149,6 +149,12 @@ Active packages (published in sync on v10; see [`scripts/release-npm.ts`](./scri
 | ------- | ---- | ---- |
 | [`@ethereumjs/blockchain`](./packages/blockchain) [![npm](https://img.shields.io/npm/v/@ethereumjs/blockchain.svg)](https://www.npmjs.com/package/@ethereumjs/blockchain) | Canonical chain storage and validation | [README](./packages/blockchain/README.md) |
 
+### Networking
+
+| Package | Role | Docs |
+| ------- | ---- | ---- |
+| [`@ethereumjs/devp2p`](./packages/devp2p) [![npm](https://img.shields.io/npm/v/@ethereumjs/devp2p.svg)](https://www.npmjs.com/package/@ethereumjs/devp2p) | devp2p DPT discovery, RLPx, ETH/SNAP wire protocols | [README](./packages/devp2p/README.md) |
+
 ### Other packages
 
 | Package | Role | Notes |
@@ -166,6 +172,9 @@ flowchart BT
   tx --> block --> vm
   statemanager --> evm --> vm
   block --> blockchain
+  common --> devp2p
+  rlp --> devp2p
+  util --> devp2p
 ```
 
 Full responsibility matrix, execution flow (`runBlock` → `runTx` → `evm`), and release notes: **[ARCHITECTURE.md](./ARCHITECTURE.md)**.
@@ -190,7 +199,6 @@ Tooling, CI, conventions, and release process: **[DEVELOPER.md](./DEVELOPER.md)*
 | Package | Role |
 | ------- | ---- |
 | [`@ethereumjs/client`](./archive/client) | Full execution client (archived; not installed — see [archive/README.md](./archive/README.md)) |
-| [`@ethereumjs/devp2p`](./archive/devp2p) | devp2p networking (archived; not installed — see [archive/README.md](./archive/README.md)) |
 | [`@ethereumjs/wallet`](./packages/wallet) | Key management helpers (deprecated) |
 
 Still on npm for migration reference; do not start new projects on these packages.

@@ -1,0 +1,6 @@
+{
+  "schema": 1,
+  "name": "dpt-ban-peer",
+  "nodes": [],
+  "steps": [{ "action": { "type": "legacyDptBanPeer", "basePort": 42642 } }]
+}

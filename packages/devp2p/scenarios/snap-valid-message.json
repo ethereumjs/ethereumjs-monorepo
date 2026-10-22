@@ -1,0 +1,9 @@
+{
+  "schema": 1,
+  "name": "snap-valid-message",
+  "nodes": [],
+  "steps": [
+    { "action": { "type": "legacyEthPair", "basePort": 50901, "capabilities": ["snap1"] } },
+    { "action": { "type": "snapExchange", "sender": "a", "receiver": "b" } }
+  ]
+}

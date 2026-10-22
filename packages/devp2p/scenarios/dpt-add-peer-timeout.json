@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "name": "dpt-add-peer-timeout",
+  "nodes": [],
+  "steps": [
+    { "action": { "type": "dptSingleNode", "basePort": 48712 } },
+    {
+      "action": {
+        "type": "dptAddPeerExpectTimeout",
+        "node": "a",
+        "udpPort": 19218,
+        "errorMessage": "Timeout error: ping 127.0.0.1:19218"
+      }
+    }
+  ]
+}

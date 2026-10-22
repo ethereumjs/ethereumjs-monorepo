@@ -10,10 +10,9 @@ transactions, state, EVM) but is new to this codebase. All file references are
 relative to the repository root and were verified against the source at the time
 of writing.
 
-> **Deprecated packages**: `@ethereumjs/wallet` is deprecated and no longer
-> updated. `@ethereumjs/client` and `@ethereumjs/devp2p` are **archived** under
-> [`archive/client`](./archive/client) and [`archive/devp2p`](./archive/devp2p)
-> (not workspaces). See [README.md](./README.md). They are not covered here.
+> **Deprecated / archived**: `@ethereumjs/wallet` is deprecated and no longer
+> updated. `@ethereumjs/client` is **archived** under [`archive/client`](./archive/client)
+> (not a workspace). See [README.md](./README.md). Those packages are not covered here.
 
 ## Package Responsibility Matrix
 
@@ -36,6 +35,7 @@ packages additionally depend on external libraries such as `@noble/hashes`,
 | `evm` | Bytecode execution: the `EVM` class (`packages/evm/src/evm.ts`), interpreter loop (`interpreter.ts`), opcode implementations (`opcodes/`), precompiles (`precompiles/`), EOF support (`eof/`), state journaling (`journal.ts`), transient storage (`transientStorage.ts`), access witnesses (`binaryTreeAccessWitness.ts`). | Transaction-level rules (intrinsic gas, nonce/balance checks) and block-level processing — that is `vm`. State storage — it talks to a state manager through `StateManagerInterface`. | `binarytree`, `common`, `statemanager`, `util` |
 | `vm` | Transaction and block processing on top of the EVM: `runTx` (`packages/vm/src/runTx.ts`), `runBlock` (`packages/vm/src/runBlock.ts`), block building (`buildBlock.ts`), receipts, withdrawal/request handling (`requests.ts`). | Bytecode interpretation (delegated to `evm`), chain storage (optional `blockchain` is injected via options). | `block`, `common`, `evm`, `mpt`, `rlp`, `statemanager`, `tx`, `util` |
 | `genesis` | Genesis state data for known chains: `packages/genesis/src/genesisStates/` (the bulk is the mainnet genesis-state constant), accessor in `index.ts`. | Genesis *block* creation logic (lives in `block`/`blockchain`). | `common`, `util` |
+| `devp2p` | Ethereum devp2p networking: DPT node discovery (`packages/devp2p/src/dpt/`), DNS ENR trees (`dns/`), RLPx transport (`rlpx/`), ETH and SNAP wire protocols (`protocol/`). | Block/tx execution, chain storage. | `common`, `rlp`, `util` |
 | `e2store` | Era/Era1/E2HS history-archive file formats (`packages/e2store/src/{era,era1,e2hs}/`), history export (`exportHistory.ts`). | Chain logic — it serializes/deserializes archive formats. | `block`, `blockchain`, `rlp`, `util` |
 | `ethash` | Ethash proof-of-work hashing and verification (`packages/ethash/src/index.ts`). | Consensus orchestration. | `block`, `rlp`, `util` |
 
@@ -63,6 +63,7 @@ flowchart BT
   statemanager --> binarytree & common & rlp & mpt & util
   evm --> binarytree & common & statemanager & util
   vm --> block & common & evm & mpt & rlp & statemanager & tx & util
+  devp2p --> common & rlp & util
   e2store --> block & blockchain & rlp & util
   ethash --> block & rlp & util
 
@@ -270,7 +271,7 @@ Two mechanisms, both per-package:
 Releases are script-driven, not changeset/lerna-based:
 
 - [`scripts/release-npm.ts`](./scripts/release-npm.ts): bumps versions for the
-  packages in its `ACTIVE_PACKAGES` list (12 packages; excludes `e2store` and
+  packages in its `ACTIVE_PACKAGES` list (13 packages; excludes `e2store` and
   `ethash`), rewrites inter-package dependency ranges, and publishes in
   dependency order (`PUBLISH_ORDER`, deps first). Supports nightly/alpha tags
   and scoped fork releases.

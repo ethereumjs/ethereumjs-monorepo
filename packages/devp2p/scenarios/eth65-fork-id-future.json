@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "name": "eth65-fork-id-future",
+  "nodes": [],
+  "steps": [
+    {
+      "action": {
+        "type": "legacyEthPair",
+        "basePort": 37812,
+        "capabilities": ["eth65"],
+        "common": { "chain": "mainnet", "hardfork": "byzantium" },
+        "dialFrom": "b"
+      }
+    },
+    { "action": { "type": "ethSendStatusOnPeerAdded", "node": "b" } },
+    {
+      "action": {
+        "type": "ethPeerErrorExpected",
+        "node": "a",
+        "errorMessage": "Remote is advertising a future fork that passed locally",
+        "status": {
+          "td": "0x040000000000",
+          "bestHash": "0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3",
+          "genesisHash": "0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3",
+          "latestBlock": "0x719b63a8"
+        }
+      }
+    },
+    { "wait": { "node": "a", "event": "peer.error", "timeoutMs": 10000 } }
+  ]
+}

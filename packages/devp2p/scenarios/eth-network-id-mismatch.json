@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "name": "eth-network-id-mismatch",
+  "nodes": [],
+  "steps": [
+    {
+      "action": {
+        "type": "legacyEthPair",
+        "basePort": 27126,
+        "capabilities": ["eth68"],
+        "commons": [
+          { "chain": "mainnet", "hardfork": "london" },
+          { "chain": "sepolia", "hardfork": "london" }
+        ]
+      }
+    },
+    { "action": { "type": "ethSendStatusOnPeerAdded", "node": "a" } },
+    {
+      "action": {
+        "type": "ethOnStatusReceive",
+        "node": "b",
+        "op": "sendStatusThrow",
+        "errorMessage": "NetworkId mismatch: 0xaa36a7 / 0x01"
+      }
+    },
+    { "delay": { "ms": 500 } }
+  ]
+}

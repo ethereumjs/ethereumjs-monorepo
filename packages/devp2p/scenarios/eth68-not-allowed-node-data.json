@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "name": "eth68-not-allowed-node-data",
+  "nodes": [],
+  "steps": [
+    { "action": { "type": "legacyEthPair", "basePort": 51764, "capabilities": ["eth68"] } },
+    { "action": { "type": "ethSendStatusOnPeerAdded", "node": "a" } },
+    {
+      "action": {
+        "type": "ethOnStatusReceive",
+        "node": "b",
+        "op": "sendStatusAndAssertThrowsGetNodeData"
+      }
+    },
+    { "delay": { "ms": 500 } }
+  ]
+}

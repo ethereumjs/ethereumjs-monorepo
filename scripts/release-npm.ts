@@ -48,6 +48,7 @@ const ACTIVE_PACKAGES = [
   'block',
   'blockchain',
   'common',
+  'devp2p',
   'evm',
   'genesis',
   'mpt',
@@ -72,6 +73,7 @@ const PUBLISH_ORDER = [
   'evm',
   'blockchain',
   'vm',
+  'devp2p',
 ]
 
 // Deprecated packages + testdata (only dependencies updated, not published)

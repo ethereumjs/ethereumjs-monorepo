@@ -1,0 +1,6 @@
+{
+  "schema": 1,
+  "name": "rlpx-remove-node",
+  "nodes": [],
+  "steps": [{ "action": { "type": "legacyRlpxRemoveNode", "basePort": 40504 } }]
+}

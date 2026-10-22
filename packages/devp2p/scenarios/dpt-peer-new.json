@@ -1,0 +1,6 @@
+{
+  "schema": 1,
+  "name": "dpt-peer-new",
+  "nodes": [],
+  "steps": [{ "action": { "type": "legacyDptPeerNew", "basePort": 41622 } }]
+}

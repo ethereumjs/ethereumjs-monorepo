@@ -43,6 +43,10 @@ jobs:
         run: npm run test:node
         working-directory: packages/common
 
+      - name: Test devp2p
+        run: npm run test:node
+        working-directory: packages/devp2p
+
       - name: Test Ethash
         run: npm run test
         working-directory: packages/ethash

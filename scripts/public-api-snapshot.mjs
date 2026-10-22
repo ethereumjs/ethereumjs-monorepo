@@ -8,6 +8,7 @@ export const PUBLIC_API_PACKAGES = [
   'block',
   'blockchain',
   'common',
+  'devp2p',
   'e2store',
   'ethash',
   'evm',

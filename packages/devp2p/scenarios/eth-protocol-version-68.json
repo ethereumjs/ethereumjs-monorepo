@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "name": "eth-protocol-version-68",
+  "nodes": [],
+  "steps": [
+    { "action": { "type": "legacyEthPair", "basePort": 51763, "capabilities": ["eth68"] } },
+    {
+      "action": {
+        "type": "ethSendStatusOnPeerAddedThen",
+        "node": "a",
+        "then": "assertVersion",
+        "version": 68
+      }
+    },
+    { "action": { "type": "ethOnStatusReceive", "node": "b", "op": "sendStatus" } },
+    { "delay": { "ms": 500 } }
+  ]
+}
