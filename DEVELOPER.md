@@ -164,6 +164,7 @@ Exceptions: `packages/tx` → `transactionFactory.ts`; `packages/block` → `blo
 - **Events** — `eventemitter3` on `EVM`, `VM`, `Blockchain`, `Common`; event maps in `types.ts`; `events?` optional on option types.
 - **ESM imports** — relative paths inside `src/` use explicit `.ts` extensions (rewritten to `.js` in output).
 - **Browser-first `src/`** — no Node built-in imports in shipped library code; tests, scripts, and examples may use Node. Details and exceptions (`e2store`, `devp2p`, archived client): [code-conventions.mdc](.cursor/rules/code-conventions.mdc) § Browser-first production code.
+- **`@ethereumjs/devp2p` CLI** — after `npm run build`, `bin/devp2p.cjs` drives lab init, NDJSON node traces, attach, and JSON scenarios under `packages/devp2p/scenarios/`; see [packages/devp2p/README.md](packages/devp2p/README.md#cli--lab).
 
 ### Errors
 

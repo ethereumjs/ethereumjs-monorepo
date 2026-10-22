@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "name": "eth65-latest-block-throw",
+  "nodes": [],
+  "steps": [
+    {
+      "action": {
+        "type": "legacyEthPair",
+        "basePort": 50505,
+        "capabilities": ["eth65"],
+        "common": { "chain": "mainnet", "hardfork": "byzantium" }
+      }
+    },
+    {
+      "action": {
+        "type": "ethAssertThrowOnSendStatus",
+        "node": "a",
+        "status": {
+          "td": "0x040000000000",
+          "bestHash": "0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3",
+          "genesisHash": "0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3",
+          "latestBlock": "0x0186a0"
+        },
+        "messagePattern": "/latest block provided is not matching the HF setting/"
+      }
+    },
+    { "delay": { "ms": 500 } }
+  ]
+}

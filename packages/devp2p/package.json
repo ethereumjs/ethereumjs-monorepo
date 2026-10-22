@@ -45,7 +45,10 @@
       }
     }
   },
-  "files": ["dist", "src"],
+  "bin": {
+    "devp2p": "bin/devp2p.cjs"
+  },
+  "files": ["dist", "bin", "src", "scenarios"],
   "scripts": {
     "biome": "npx @biomejs/biome check",
     "biome:fix": "npx @biomejs/biome check --write",
@@ -64,6 +67,7 @@
     "spellcheck:ts": "npx cspell --gitignore -c ../../config/cspell-ts.json \"./**/*.ts\" --cache --show-suggestions --show-context",
     "spellcheck:md": "npx cspell --gitignore -c ../../config/cspell-md.json \"**.md\" --cache --show-suggestions --show-context",
     "test": "vitest run -c ../../config/vitest.config.mts",
+    "test:scenarios": "vitest run -c ../../config/vitest.config.mts test/scenario",
     "test:node": "npm run test",
     "tsc": "../../config/cli/ts-compile.sh"
   },

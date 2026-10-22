@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "name": "rlpx-ban-missing-tcp",
+  "nodes": [],
+  "steps": [
+    { "action": { "type": "legacyTwoPeerRlpx", "basePort": 40444 } },
+    { "wait": { "node": "a", "event": "peer.added", "timeoutMs": 10000 } },
+    {
+      "action": {
+        "type": "rlpxInjectPeerNew",
+        "node": "a",
+        "id": "0xabcd",
+        "address": "127.0.0.1",
+        "udpPort": 30308,
+        "tcpPort": null,
+        "assertBanBefore": false,
+        "assertBanAfter": true
+      }
+    }
+  ]
+}

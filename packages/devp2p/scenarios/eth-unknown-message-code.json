@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "name": "eth-unknown-message-code",
+  "nodes": [],
+  "steps": [
+    { "action": { "type": "legacyEthPair", "basePort": 12439, "capabilities": ["eth68"] } },
+    { "action": { "type": "ethSendStatusOnPeerAdded", "node": "a" } },
+    {
+      "action": {
+        "type": "ethOnStatusReceive",
+        "node": "b",
+        "op": "sendStatusAndAssertThrowsUnknownCode",
+        "messagePattern": "/Unknown code 85/"
+      }
+    },
+    { "delay": { "ms": 500 } }
+  ]
+}

@@ -19,7 +19,7 @@ Some highlights:
 - 📲 **EIP-7702** readiness
 - 🛵 Substantial bundle size reductions for all libraries
 - 🏄🏾‍♂️ All libraries now pure JS being WASM-free by default
-- 🦋 No more propriatary `Node.js` primitives
+- 🦋 No more proprietary `Node.js` primitives
 
 So: **All libraries now work in the browser "out of the box"**.
 

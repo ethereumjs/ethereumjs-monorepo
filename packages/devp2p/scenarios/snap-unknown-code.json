@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "name": "snap-unknown-code",
+  "nodes": [],
+  "steps": [
+    { "action": { "type": "legacyEthPair", "basePort": 50991, "capabilities": ["snap1"] } },
+    {
+      "action": {
+        "type": "snapExchange",
+        "sender": "a",
+        "receiver": "b",
+        "throwUnknown": true,
+        "errorString": "Error: Unknown code 85"
+      }
+    }
+  ]
+}

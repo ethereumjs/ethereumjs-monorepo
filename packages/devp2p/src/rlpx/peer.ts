@@ -285,6 +285,11 @@ export class Peer {
     setTimeout(() => this._socket.end(), 2000) // 2 sec * 1000
   }
 
+  /** Send a base-protocol PING (devp2p keepalive). */
+  ping() {
+    this._sendPing()
+  }
+
   /**
    * Send PING message
    */
@@ -486,6 +491,7 @@ export class Peer {
    */
   _handlePing() {
     this._sendPong()
+    this.events.emit('ping')
   }
 
   /**
@@ -493,6 +499,7 @@ export class Peer {
    */
   _handlePong() {
     clearTimeout(this._pingTimeoutId!)
+    this.events.emit('pong')
   }
 
   /**

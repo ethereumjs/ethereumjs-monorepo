@@ -1,0 +1,10 @@
+{
+  "schema": 1,
+  "name": "rlpx-add-peer",
+  "nodes": [],
+  "steps": [
+    { "action": { "type": "legacyTwoPeerRlpx", "basePort": 50405 } },
+    { "wait": { "node": "a", "event": "peer.added", "timeoutMs": 10000 } },
+    { "expect": { "node": "a", "peerCount": 1, "openSlots": 9 } }
+  ]
+}

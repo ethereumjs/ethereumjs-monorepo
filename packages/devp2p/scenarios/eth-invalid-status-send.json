@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "name": "eth-invalid-status-send",
+  "nodes": [],
+  "steps": [
+    { "action": { "type": "legacyEthPair", "basePort": 12437, "capabilities": ["eth68"] } },
+    {
+      "action": {
+        "type": "ethInvalidStatusSendOnPeerAdded",
+        "node": "a",
+        "messagePattern": "/Please send status message through .sendStatus/"
+      }
+    },
+    { "delay": { "ms": 500 } }
+  ]
+}

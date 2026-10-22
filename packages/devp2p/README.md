@@ -16,6 +16,7 @@ This library bundles different components for lower-level peer-to-peer connectio
 
 - [Getting Started](#getting-started)
 - [Examples](#examples)
+- [CLI / lab](#cli--lab)
 - [API](#api)
 - [Distributed Peer Table (DPT) / Node Discovery](#distributed-peer-table-dpt--node-discovery)
 - [RLPx Transport Protocol](#rlpx-transport-protocol)
@@ -28,27 +29,124 @@ This library bundles different components for lower-level peer-to-peer connectio
 
 ## Getting Started
 
-All components of this library have a public `events` property containing an `EventEmitter` object (using [EventEmitter3](https://github.com/primus/eventemitter3))
-and make heavy use of the Node.js network stack.
+```shell
+npm install @ethereumjs/devp2p
+```
 
-You can react on events from the network like this:
+`DPT`, `RLPx`, and negotiated subprotocol instances (`ETH`, `SNAP`, …) each expose an `events` emitter ([EventEmitter3](https://github.com/primus/eventemitter3)). Discovery, transport, and wire traffic are handled asynchronously — register listeners before you dial or bootstrap.
 
 ```ts
-// ./examples/dpt.ts
+import type { ETH } from '@ethereumjs/devp2p'
+import { EthMessageCodes } from '@ethereumjs/devp2p'
+import { intToBytes, hexToBytes } from '@ethereumjs/util'
+
+// Discovery peer table
+dpt.events.on('peer:added', (peer) => {
+  /* candidate enode */
+})
+dpt.events.on('error', (err) => {
+  console.error(err)
+})
+
+// Encrypted sessions (typically share one DPT instance)
+rlpx.events.on('peer:added', (peer) => {
+  const eth = peer.getProtocols()[0] as ETH
+
+  eth.sendStatus({
+    td: intToBytes(17179869184),
+    bestHash: hexToBytes('0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'),
+    genesisHash: hexToBytes('0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'),
+  })
+
+  eth.events.once('status', () => {
+    eth.sendMessage(EthMessageCodes.GET_BLOCK_HEADERS, [
+      Uint8Array.from([1]),
+      [intToBytes(1), Uint8Array.from([1]), Uint8Array.from([]), Uint8Array.from([])],
+    ])
+  })
+
+  eth.events.on('message', (code, payload) => {
+    /* BLOCK_HEADERS, NEW_BLOCK_HASHES, … */
+  })
+})
 ```
+
+The snippet assumes you already constructed `dpt` and `rlpx` (private key, `@ethereumjs/common`, capabilities). Copy-paste programs live under [`examples/`](./examples/) — start with [Examples](#examples). For scripted multi-step sessions on one running node, see [CLI / lab](#cli--lab). API tables for each layer follow in [DPT](#distributed-peer-table-dpt--node-discovery), [RLPx](#rlpx-transport-protocol), and [ETH](#ethereum-wire-protocol-eth).
 
 ## Examples
 
-CI runs the local examples under `examples/` (`dpt.ts`, `rlpx.ts`). Manual examples that dial the public network live in `examples/manual/`:
+Runnable TypeScript under [`examples/`](./examples/):
 
-- [dptDiscovery](examples/manual/dptDiscovery.ts) — bootstrap against mainnet bootnodes
-- [peerCommunication](examples/manual/peerCommunication.ts) — ETH wire messages against live peers
+| Example | Role |
+| --- | --- |
+| [`dpt.ts`](./examples/dpt.ts) | Minimal DPT setup and discovery events (CI) |
+| [`rlpx.ts`](./examples/rlpx.ts) | RLPx with `Common` and ETH capabilities (CI) |
+| [`manual/dptDiscovery.ts`](./examples/manual/dptDiscovery.ts) | Bootstrap against mainnet bootnodes |
+| [`manual/peerCommunication.ts`](./examples/manual/peerCommunication.ts) | Full DPT + RLPx + ETH exchange against live peers |
 
-Run a manual example with:
+From the package directory:
 
+```shell
+npm run examples
 ```
+
+Manual examples need network access and verbose logging:
+
+```shell
 DEBUG=ethjs,devp2p:* npx tsx ./examples/manual/peerCommunication.ts
 ```
+
+## CLI / lab
+
+After `npm run build`, the package ships a **`devp2p`** binary (same pattern as `@ethereumjs/rlp`). **`node run`** keeps one DPT/RLPx session alive; every other command talks to that process over a control socket so you can send messages one after another on the same peer.
+
+`init`, `node run`, session verbs, and `attach` all use the same lab tree. By default that is **`./lab`** under your current working directory (override with `--dir path` or `-l path`).
+
+**Default node** (when `--node` / `-n` is omitted): `DEVP2P_NODE` → `lab/.node` (from **`devp2p use <name>`** or updated when **`node run`** starts) → only node in the lab → only running daemon. Override anytime with `--node bob`.
+
+```bash
+npx @ethereumjs/devp2p --help
+node ./bin/devp2p.cjs init --nodes alice,bob
+node ./bin/devp2p.cjs use alice    # once per multi-node lab (or export DEVP2P_NODE=alice)
+```
+
+### Two local nodes (STATUS + headers)
+
+Terminal A — start Alice and watch NDJSON:
+
+```bash
+node ./bin/devp2p.cjs node run --events ndjson
+```
+
+Terminal B — dial Bob, exchange STATUS, request a header:
+
+```bash
+# Ports: lab/bob/node.json (udpPort / tcpPort)
+
+node ./bin/devp2p.cjs peer add 127.0.0.1 <bob-udp> --tcp <bob-tcp>
+node ./bin/devp2p.cjs wait --event peer.added
+node ./bin/devp2p.cjs eth send --name STATUS --json '{"td":"0x040000000000","bestHash":"0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3","genesisHash":"0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3"}'
+node ./bin/devp2p.cjs eth send --name GET_BLOCK_HEADERS --json '{"requestId":"0x01","blockHash":"0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3","max":1,"skip":0,"reverse":false}'
+node ./bin/devp2p.cjs eth wait --name BLOCK_HEADERS --timeout-ms 30000
+```
+
+Run the same steps on Bob’s side for STATUS if the peer does not answer until both sides have sent it. `attach` accepts the same verbs (`peer add …`, `eth send GET_BLOCK_HEADERS blockHash=0x… max=1`, `wait eth.BLOCK_HEADERS`).
+
+### Toward a public peer
+
+With Alice still running, point at a bootnode or enode (mainnet `network.json` from `init`):
+
+```bash
+node ./bin/devp2p.cjs dpt ping <host> <udpPort>
+node ./bin/devp2p.cjs peer add <host> <udpPort> --tcp <tcpPort>
+node ./bin/devp2p.cjs wait --event peer.added
+```
+
+Then use the same `eth send` / `eth wait` sequence as above. Remotes may disconnect, ignore requests, or time out — check NDJSON on terminal A. Prefer `dpt ping` on the running node over the standalone `discovery-v4 ping` helper when debugging a session.
+
+Other session verbs: `peer list`, `peer disconnect`, `rlpx ping`, `snap send`, `snap wait`, `rlpx ping` + `wait --event rlpx.PONG`.
+
+Scenario JSON under [`scenarios/`](scenarios/) drives in-process tests (`npm run test:scenarios`).
 
 ## API
 
@@ -67,7 +165,7 @@ includes node discovery ([./src/dpt/server.ts](./src/dpt/server.ts))
 Create your peer table:
 
 ```ts
-// examples/dpt.ts
+// ./examples/dpt.ts
 
 import { DPT } from '@ethereumjs/devp2p'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
@@ -81,6 +179,17 @@ const main = async () => {
       tcpPort: null,
     },
   })
+
+  dpt.events.on('error', (err) => {
+    console.error(err)
+  })
+  dpt.events.on('peer:added', (peer) => {
+    console.log(`Peer added ${bytesToHex(peer.id!)} at ${peer.address}:${peer.udpPort}`)
+  })
+  dpt.events.on('peer:removed', (peer) => {
+    console.log(`Peer removed ${bytesToHex(peer.id!)}`)
+  })
+
   console.log(`DPT is active and has id - ${bytesToHex(dpt.id!)}`)
   // Should log the DPT's hex ID - 0xcd80bb7a768432302d267729c15da61d172373ea036...
   dpt.destroy()
@@ -89,17 +198,20 @@ const main = async () => {
 void main()
 ```
 
-Add some bootstrap nodes (or some custom nodes with `dpt.addPeer()`):
+Add bootstrap nodes from your chain config, or call `dpt.addPeer()` for a known enode:
 
 ```ts
-// ./examples/peerCommunication.ts#L321-L325
+import { Common, Mainnet } from '@ethereumjs/common'
 
-    console.error(chalk.bold.red(`DPT bootstrap error: ${err.stack ?? err}`))
-  })
+const bootnodes = new Common({ chain: Mainnet }).bootstrapNodes()
+for (const node of bootnodes) {
+  dpt
+    .bootstrap({ address: node.ip, udpPort: node.port, tcpPort: node.port })
+    .catch((err) => console.error(`DPT bootstrap error: ${err}`))
 }
-
-// connect to local ethereum node (debug)
 ```
+
+See [`examples/manual/dptDiscovery.ts`](./examples/manual/dptDiscovery.ts) for a complete discovery loop.
 
 ### API
 
@@ -244,37 +356,9 @@ Upper layer protocol for exchanging Ethereum network data like block headers or 
 
 ### Usage
 
-Send the initial status message with `sendStatus()`, then wait for the corresponding `status` message
-to arrive to start the communication.
+After RLPx negotiates ETH, send `sendStatus()` and wait for the peer’s `status` event before other messages. Handle replies on `eth.events.on('message', …)`.
 
-```ts
-// ./examples/peerCommunication.ts#L96-L106
-
-  genesisHash: hexToBytes('0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'),
-})
-
-// check CHECK_BLOCK
-let forkDrop: NodeJS.Timeout
-let forkVerified = false
-eth.events.once('status', () => {
-  eth.sendMessage(devp2p.EthMessageCodes.GET_BLOCK_HEADERS, [
-    Uint8Array.from([1]),
-    [intToBytes(CHECK_BLOCK_NR), Uint8Array.from([1]), Uint8Array.from([]), Uint8Array.from([])],
-  ])
-```
-
-Wait for follow-up messages to arrive, send your responses.
-
-```ts
-// ./examples/peerCommunication.ts#L116-L119
-
-  requests.msgTypes[code]++
-} else {
-  requests.msgTypes[code] = 1
-}
-```
-
-See the `peerCommunication.ts` example for a more detailed use case.
+The [`peerCommunication.ts`](./examples/manual/peerCommunication.ts) manual example wires this inside `rlpx.events.on('peer:added', …)` — the same flow sketched in [Getting Started](#getting-started), with block sync, fork checks, and disconnect handling.
 
 ### API
 
@@ -316,33 +400,6 @@ Events emitted:
 ### Reference
 
 - [Ethereum wire protocol](https://github.com/ethereum/wiki/wiki/Ethereum-Wire-Protocol)
-
-#### Hybrid CJS/ESM Builds
-
-With the breaking releases from Summer 2023 we have started to ship our libraries with both CommonJS (`cjs` folder) and ESM builds (`esm` folder), see `package.json` for the detailed setup.
-
-If you use an ES6-style `import` in your code files from the ESM build will be used:
-
-```ts
-import { EthereumJSClass } from '@ethereumjs/[PACKAGE_NAME]'
-```
-
-If you use Node.js specific `require`, the CJS build will be used:
-
-```ts
-const { EthereumJSClass } = require('@ethereumjs/[PACKAGE_NAME]')
-```
-
-Using ESM will give you additional advantages over CJS beyond browser usage like static code analysis / Tree Shaking which CJS can not provide.
-
-### Events
-
-Events emitted:
-
-| Event   |     Description      |
-| ------- | :------------------: |
-| message |   Message received   |
-| status  | Status info received |
 
 ## Debugging
 
@@ -443,6 +500,18 @@ DEBUG=ethjs,devp2p:FIRST_PEER -r tsx/register [YOUR_SCRIPT_TO_RUN.ts]
 This logger can be used in various practical scenarios if you want to concentrate on the message exchange with just one peer.
 
 ## Developer
+
+### CJS and ESM builds
+
+This package ships CommonJS (`dist/cjs`) and ESM (`dist/esm`) outputs; see `package.json` `exports`. ESM `import` selects the ESM build; Node `require()` selects CJS.
+
+```ts
+import { DPT, RLPx, ETH } from '@ethereumjs/devp2p'
+```
+
+```ts
+const { DPT, RLPx, ETH } = require('@ethereumjs/devp2p')
+```
 
 ### Diagram Updates
 

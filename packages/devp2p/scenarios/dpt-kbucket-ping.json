@@ -1,0 +1,6 @@
+{
+  "schema": 1,
+  "name": "dpt-kbucket-ping",
+  "nodes": [],
+  "steps": [{ "action": { "type": "legacyDptKBucketPing", "basePort": 42732 } }]
+}

@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "name": "eth-status-success",
+  "nodes": [],
+  "steps": [
+    { "action": { "type": "legacyEthPair", "basePort": 51762, "capabilities": ["eth68"] } },
+    { "action": { "type": "ethSendStatusOnPeerAdded", "node": "a" } },
+    { "action": { "type": "ethOnStatusReceive", "node": "b", "op": "sendStatus" } },
+    { "wait": { "node": "b", "event": "eth.STATUS", "eth": "STATUS", "timeoutMs": 10000 } }
+  ]
+}
