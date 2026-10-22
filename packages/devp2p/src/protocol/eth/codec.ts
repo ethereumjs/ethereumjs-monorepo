@@ -11,7 +11,7 @@ export type GetBlockHeadersQuery = {
   reverse: Input
 }
 
-export type GetBlockHeadersJson = {
+export type GetBlockHeadersFields = {
   requestId?: string | number
   blockHash?: string
   block?: string | number
@@ -51,39 +51,39 @@ export function encodeGetHashes(version: number, requestId: Input, hashes: Input
   return hashes
 }
 
-export function getBlockHeadersQueryFromJson(
-  json: GetBlockHeadersJson,
+export function getBlockHeadersQueryFromFields(
+  fields: GetBlockHeadersFields,
   hexToBytes: (s: string) => Uint8Array,
 ): { requestId: Input; query: GetBlockHeadersQuery } {
   const requestId =
-    json.requestId !== undefined
-      ? typeof json.requestId === 'number'
-        ? intToBytes(json.requestId)
-        : hexToBytes(json.requestId.startsWith('0x') ? json.requestId : `0x${json.requestId}`)
+    fields.requestId !== undefined
+      ? typeof fields.requestId === 'number'
+        ? intToBytes(fields.requestId)
+        : hexToBytes(fields.requestId.startsWith('0x') ? fields.requestId : `0x${fields.requestId}`)
       : intToBytes(1)
-  const limit = intToBytes(json.limit ?? json.max ?? 1)
-  const skip = intToBytes(json.skip ?? 0)
-  const reverse = json.reverse ? intToBytes(1) : intToBytes(0)
+  const limit = intToBytes(fields.limit ?? fields.max ?? 1)
+  const skip = intToBytes(fields.skip ?? 0)
+  const reverse = fields.reverse ? intToBytes(1) : intToBytes(0)
   let startBlock: Input
-  if (json.blockHash !== undefined) {
+  if (fields.blockHash !== undefined) {
     startBlock = hexToBytes(
-      json.blockHash.startsWith('0x') ? json.blockHash : `0x${json.blockHash}`,
+      fields.blockHash.startsWith('0x') ? fields.blockHash : `0x${fields.blockHash}`,
     )
-  } else if (json.block !== undefined) {
+  } else if (fields.block !== undefined) {
     startBlock =
-      typeof json.block === 'number' ? intToBytes(json.block) : hexToBytes(String(json.block))
+      typeof fields.block === 'number' ? intToBytes(fields.block) : hexToBytes(String(fields.block))
   } else {
     startBlock = hexToBytes(`0x${'00'.repeat(32)}`)
   }
   return { requestId, query: { startBlock, limit, skip, reverse } }
 }
 
-export function buildGetBlockHeadersFromJson(
+export function buildGetBlockHeadersFromFields(
   version: number,
-  json: GetBlockHeadersJson,
+  fields: GetBlockHeadersFields,
   hexToBytes: (s: string) => Uint8Array,
 ): Input {
-  const { requestId, query } = getBlockHeadersQueryFromJson(json, hexToBytes)
+  const { requestId, query } = getBlockHeadersQueryFromFields(fields, hexToBytes)
   return encodeGetBlockHeaders(version, query, requestId)
 }
 

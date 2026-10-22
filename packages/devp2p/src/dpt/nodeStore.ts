@@ -37,7 +37,7 @@ export class MemoryNodeStore implements NodeStore {
 }
 
 /** Optional persistence for lab daemons (JSON object keyed by node id). */
-export class JsonNodeStore implements NodeStore {
+export class FileNodeStore implements NodeStore {
   private readonly _path: string
   private readonly _memory = new MemoryNodeStore()
 

@@ -3,7 +3,7 @@ import { hexToBytes, intToBytes } from '@ethereumjs/util'
 import { describe, expect, it } from 'vitest'
 
 import {
-  buildGetBlockHeadersFromJson,
+  buildGetBlockHeadersFromFields,
   encodeGetBlockHeaders,
   ethUsesRequestId,
   isDeprecatedPostMergeMessage,
@@ -37,7 +37,7 @@ describe('eth codec', () => {
 
   it('builds spec-shaped GetBlockHeaders from JSON', () => {
     const genesis = `0x${'d4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3'.slice(2)}`
-    const rlp = buildGetBlockHeadersFromJson(
+    const rlp = buildGetBlockHeadersFromFields(
       68,
       { requestId: '0x01', blockHash: genesis, max: 1, skip: 0, reverse: false },
       (s) => hexToBytes(s as `0x${string}`),

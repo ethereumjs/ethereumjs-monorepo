@@ -1,7 +1,10 @@
 import { type PrefixedHexString, hexToBytes, intToBytes } from '@ethereumjs/util'
 
 import { EthMessageCodes } from '../../protocol/eth.ts'
-import { buildGetBlockHeadersFromJson, ethUsesBlockRangeStatus } from '../../protocol/eth/codec.ts'
+import {
+  buildGetBlockHeadersFromFields,
+  ethUsesBlockRangeStatus,
+} from '../../protocol/eth/codec.ts'
 import { jsonToRlpInput } from '../payloadCodec.ts'
 
 import type { Input } from '@ethereumjs/rlp'
@@ -54,7 +57,7 @@ export function buildEthRlpPayload(
 ): Input {
   switch (name) {
     case 'GET_BLOCK_HEADERS':
-      return buildGetBlockHeadersFromJson(ethVersion, json as never, (s) => hexToBytes(hx(s)))
+      return buildGetBlockHeadersFromFields(ethVersion, json as never, (s) => hexToBytes(hx(s)))
     case 'GET_BLOCK_BODIES': {
       const requestId =
         json.requestId !== undefined ? hexToBytes(hx(String(json.requestId))) : intToBytes(1)

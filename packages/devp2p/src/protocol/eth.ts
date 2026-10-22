@@ -32,10 +32,10 @@ import type { SendMethod } from '../types.ts'
 
 export { EthMessageCodeNames, EthMessageCodes } from './eth/codes.ts'
 export {
-  buildGetBlockHeadersFromJson,
+  buildGetBlockHeadersFromFields,
   encodeGetBlockHeaders,
   ethUsesRequestId,
-  getBlockHeadersQueryFromJson,
+  getBlockHeadersQueryFromFields,
   isMessageCodeAllowed,
   requestIdFromPayload,
 } from './eth/codec.ts'

@@ -13,7 +13,7 @@ import { devp2pDebug, pk2id } from '../util.ts'
 
 import { BanList } from './ban-list.ts'
 import { KBucket } from './kbucket.ts'
-import { JsonNodeStore, MemoryNodeStore } from './nodeStore.ts'
+import { FileNodeStore, MemoryNodeStore } from './nodeStore.ts'
 import { Server as DPTServer } from './server.ts'
 
 import type { Debugger } from 'debug'
@@ -67,7 +67,7 @@ export class DPT {
     this._nodeStore =
       options.nodeStore ??
       (options.nodeStorePath !== undefined
-        ? new JsonNodeStore(options.nodeStorePath)
+        ? new FileNodeStore(options.nodeStorePath)
         : new MemoryNodeStore())
 
     this._revalidatePeers = options.revalidatePeers ?? true
