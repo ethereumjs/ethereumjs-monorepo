@@ -6,7 +6,7 @@
   ],
   "overrides": [
     {
-      "filename": "**/archive/devp2p/**",
+      "filename": "**/packages/devp2p/**",
       "ignoreWords": [
         "pirl",
         "ubiq",

@@ -88,6 +88,7 @@ jobs:
       blockchain: ${{ steps.affected.outputs.blockchain }}
       browser: ${{ steps.affected.outputs.browser }}
       common: ${{ steps.affected.outputs.common }}
+      devp2p: ${{ steps.affected.outputs.devp2p }}
       evm: ${{ steps.affected.outputs.evm }}
       examples: ${{ steps.affected.outputs.examples }}
       mpt: ${{ steps.affected.outputs.mpt }}
@@ -100,6 +101,7 @@ jobs:
       block_coverage: ${{ steps.affected.outputs.block_coverage }}
       blockchain_coverage: ${{ steps.affected.outputs.blockchain_coverage }}
       common_coverage: ${{ steps.affected.outputs.common_coverage }}
+      devp2p_coverage: ${{ steps.affected.outputs.devp2p_coverage }}
       evm_coverage: ${{ steps.affected.outputs.evm_coverage }}
       mpt_coverage: ${{ steps.affected.outputs.mpt_coverage }}
       static_coverage: ${{ steps.affected.outputs.static_coverage }}
@@ -176,6 +178,15 @@ jobs:
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
       run-coverage: ${{ needs.detect.outputs.common_coverage == 'true' }}
+
+  devp2p:
+    needs: [build, detect]
+    if: needs.detect.outputs.devp2p == 'true'
+    uses: ./.github/workflows/devp2p-build.yml
+    secrets: inherit
+    with:
+      dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+      run-coverage: ${{ needs.detect.outputs.devp2p_coverage == 'true' }}
 
   evm:
     needs: [build, detect]
@@ -285,6 +296,7 @@ jobs:
       - blockchain
       - browser
       - common
+      - devp2p
       - evm
       - examples
       - mpt

@@ -1,6 +1,6 @@
 ---
 description: API test naming, structure, helpers, coverage, and performance conventions
-globs: packages/{rlp,util,common,tx,block,mpt,evm,statemanager,blockchain,binarytree,genesis,e2store,vm}/test/**/*.ts
+globs: packages/{rlp,util,common,tx,block,mpt,evm,statemanager,blockchain,binarytree,genesis,e2store,devp2p,vm}/test/**/*.ts
 alwaysApply: false
 ---
 
@@ -16,7 +16,7 @@ Vitest API/unit/integration tests for active `@ethereumjs/*` libraries. Consensu
 
 - VM consensus runners: `packages/vm/test/tester/**` (legacy state/blockchain, EST), `t8n/`, `retesteth/`
 - Benchmarks: `test/bench/`, `test/benchmark/`
-- Deprecated packages (`ethash`, `wallet`) — containment only per `security.mdc`. **`client`** and **`devp2p`** are archived under `archive/` (not CI-tested).
+- Deprecated packages (`ethash`, `wallet`) — containment only per `security.mdc`. **`client`** is archived under `archive/` (not CI-tested).
 
 **Special-care runners** (do not delete or weaken without explicit intent):
 

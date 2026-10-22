@@ -1,0 +1,56 @@
+name: devp2p
+on:
+  workflow_call:
+    inputs:
+      dep-cache-key:
+        required: false
+        type: string
+        default: 'none'
+      run-coverage:
+        required: false
+        type: boolean
+        default: true
+  workflow_dispatch:
+    inputs:
+      dep-cache-key:
+        required: false
+        default: 'none'
+      run-coverage:
+        required: false
+        type: boolean
+        default: true
+
+env:
+  cwd: ${{github.workspace}}/packages/devp2p
+  RUN_COVERAGE: ${{ inputs.run-coverage }}
+
+defaults:
+  run:
+    working-directory: packages/devp2p
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}-devp2p
+  cancel-in-progress: true
+
+jobs:
+  test-devp2p:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: ./.github/actions/setup-ethereumjs
+        with:
+          dep-cache-key: ${{ inputs.dep-cache-key }}
+
+      - run: |
+          if [ "$RUN_COVERAGE" = "false" ]; then
+            npm run test:node
+          else
+            npm run coverage
+          fi
+      - if: env.RUN_COVERAGE != 'false'
+        uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4.6.0
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ${{ env.cwd }}/coverage/lcov.info
+          flags: devp2p
