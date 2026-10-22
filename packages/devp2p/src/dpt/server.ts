@@ -5,6 +5,7 @@ import { EventEmitter } from 'eventemitter3'
 import { LRUCache } from 'lru-cache'
 
 import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util.ts'
+import { discv4ENRList } from './discv4Enr.ts'
 
 import { decode, encode } from './message.ts'
 
@@ -220,8 +221,33 @@ export class Server {
       case 'neighbours': {
         this.events.emit(
           'peers',
-          info.data.peers.map((peer: any) => peer.endpoint),
+          info.data.peers.map((peer: any) => ({ ...peer.endpoint, id: peer.id })),
         )
+        break
+      }
+
+      case 'enrRequest': {
+        const remote: PeerInfo = {
+          id: peerId,
+          udpPort: rinfo.port,
+          address: rinfo.address,
+        }
+        const bound = this._socket?.address()
+        const udpPort = typeof bound === 'object' ? bound.port : (this._endpoint.udpPort ?? 0)
+        const address =
+          this._endpoint.address !== undefined &&
+          this._endpoint.address !== '0.0.0.0' &&
+          this._endpoint.address !== ''
+            ? this._endpoint.address
+            : '127.0.0.1'
+        this._send(remote, 'enrResponse', {
+          requestHash: msg.subarray(0, 32),
+          record: discv4ENRList(this._privateKey, {
+            address,
+            udpPort,
+            tcpPort: this._endpoint.tcpPort ?? udpPort,
+          }),
+        })
         break
       }
     }

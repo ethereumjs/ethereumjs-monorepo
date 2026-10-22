@@ -71,6 +71,12 @@ export class CommandDispatcher {
         this.session.rlpx.disconnect(peer.id!)
         return { disconnected: index }
       }
+      case 'dpt.neighbours': {
+        const host = String(req.host ?? req.address ?? '127.0.0.1')
+        const udp = Number(req.udpPort ?? req.port)
+        const neighbours = await this.session.lookupNeighbours(host, udp)
+        return { neighbours }
+      }
       case 'dpt.ping': {
         const host = String(req.host ?? req.address ?? '127.0.0.1')
         const udp = Number(req.udpPort ?? req.port)

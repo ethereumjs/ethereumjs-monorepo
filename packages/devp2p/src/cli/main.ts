@@ -50,6 +50,7 @@ Session commands (require \`node run\` on the chosen node):
   devp2p peer list [--node name]
   devp2p peer disconnect [--node name] [--peer N]
   devp2p dpt ping [--node name] <host> <udpPort>
+  devp2p dpt neighbours [--node name] <host> <udpPort>
   devp2p rlpx ping [--node name] [--peer N]
   devp2p wait [--node name] --event peer.added|eth.NAME|snap.NAME|rlpx.PONG [--timeout-ms N]
   devp2p eth send [--node name] [--peer N] --name MSG [--json '{}'] [--rlp '[]']
@@ -290,7 +291,8 @@ async function main(argv: string[]) {
     return
   }
 
-  if (cmd === 'dpt' && rest[0] === 'ping') {
+  if (cmd === 'dpt' && (rest[0] === 'ping' || rest[0] === 'neighbours')) {
+    const sub = rest[0]
     const { values, positionals } = parseArgs({
       args: rest.slice(1),
       options: sessionDirOpts,
@@ -298,9 +300,9 @@ async function main(argv: string[]) {
     })
     const host = positionals[0]
     const udp = Number(positionals[1])
-    if (!host || !udp) throw new Error('dpt ping <host> <udpPort>')
+    if (!host || !udp) throw new Error(`dpt ${sub} <host> <udpPort>`)
     const res = await runSessionRequest(values.dir, values.node, {
-      cmd: 'dpt.ping',
+      cmd: sub === 'neighbours' ? 'dpt.neighbours' : 'dpt.ping',
       host,
       udpPort: udp,
     })

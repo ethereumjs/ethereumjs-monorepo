@@ -1,5 +1,7 @@
 import { join } from 'node:path'
 
+import { bytesToUnprefixedHex } from '@ethereumjs/util'
+
 import { DPT, RLPx } from '../index.ts'
 import { type DISCONNECT_REASON, DisconnectReasonNames } from '../types.ts'
 
@@ -244,6 +246,16 @@ export class NodeSession {
       if (msg.includes('Already connected')) return
       throw err
     }
+  }
+
+  async lookupNeighbours(host: string, udpPort: number) {
+    const peers = await this.dpt.lookupNeighbours({ address: host, udpPort, tcpPort: udpPort })
+    return peers.map((peer) => ({
+      address: peer.address,
+      udpPort: peer.udpPort,
+      tcpPort: peer.tcpPort,
+      id: peer.id !== undefined ? bytesToUnprefixedHex(peer.id) : undefined,
+    }))
   }
 
   async dptPing(host: string, udpPort: number) {

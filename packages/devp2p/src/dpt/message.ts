@@ -150,11 +150,33 @@ const neighbours = {
   },
 }
 
+type InEnrRequest = { [0]: Uint8Array }
+const enrRequest = {
+  encode(obj: { timestamp?: number }): InEnrRequest {
+    return [timestamp.encode(obj.timestamp)]
+  },
+  decode(payload: InEnrRequest) {
+    return { timestamp: timestamp.decode(payload[0]) }
+  },
+}
+
+type InEnrResponse = { [0]: Uint8Array; [1]: Uint8Array[] }
+const enrResponse = {
+  encode(obj: { requestHash: Uint8Array; record: Uint8Array[] }): InEnrResponse {
+    return [obj.requestHash, obj.record]
+  },
+  decode(payload: InEnrResponse) {
+    return { requestHash: payload[0], record: payload[1] }
+  },
+}
+
 const messages: any = {
   ping,
   pong,
   findneighbours,
   neighbours,
+  enrRequest,
+  enrResponse,
 }
 
 type Types = { [index: string]: { [index: string]: number | string } }
@@ -164,12 +186,16 @@ const types: Types = {
     pong: 0x02,
     findneighbours: 0x03,
     neighbours: 0x04,
+    enrRequest: 0x05,
+    enrResponse: 0x06,
   },
   byType: {
     0x01: 'ping',
     0x02: 'pong',
     0x03: 'findneighbours',
     0x04: 'neighbours',
+    0x05: 'enrRequest',
+    0x06: 'enrResponse',
   },
 }
 

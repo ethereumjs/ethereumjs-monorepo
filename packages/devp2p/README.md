@@ -75,7 +75,7 @@ The CLI is built for **one long-lived node process** and many short control comm
 | Area | Commands |
 | --- | --- |
 | Peers | `peer add` (`--wait` for RLPx handshake), `peer list`, `peer disconnect` |
-| Discovery | `dpt ping` (session DPT; prefer over ephemeral `discovery-v4 ping`) |
+| Discovery | `dpt ping`, `dpt neighbours` (session DPT; prefer over ephemeral `discovery-v4 ping`) |
 | Transport | `rlpx ping`, `wait --event rlpx.PONG` |
 | ETH | `eth send`, `eth wait` (builders + `--json` / `--rlp`) |
 | SNAP | `snap send`, `snap wait` |
@@ -83,6 +83,14 @@ The CLI is built for **one long-lived node process** and many short control comm
 | REPL | `attach` (same verbs as one-shot CLI) |
 
 NDJSON events: `npx devp2p node run --events ndjson`. Run **`npx devp2p --help`** for flags.
+
+Session commands print one JSON object per line. To read a long result, pipe it through [jq](https://jqlang.org/) (`brew install jq` on macOS). The same program pretty-prints NDJSON from a daemon terminal.
+
+```bash
+npx devp2p peer list | jq .
+```
+
+Without jq, `python3 -m json.tool` formats one JSON object the same way.
 
 ### Two local nodes (STATUS + headers)
 
@@ -141,18 +149,21 @@ Watch **`t: "event"`** lines on Terminals 1–2 (NDJSON). **`attach`** accepts t
 
 ### Toward a public peer
 
-With **Alice** still running in a daemon terminal (`use alice` + `node run --node alice`):
+With **Alice** still running (`node run --node alice`). These are the **mainnet** bootnodes from `@ethereumjs/common` (`Common({ chain: Mainnet }).bootstrapNodes()`). Discovery pings to all four answered on 2026-10-22. The copy-paste target is the EU west node. If `neighbours` is empty, try the next row.
+
+| Where | Address | UDP / TCP |
+| --- | --- | --- |
+| EU central | `157.90.35.166` | 30303 |
+| EU west | `65.108.70.101` | 30303 |
+| US east | `3.209.45.79` | 30303 |
+| Asia southeast | `18.138.108.67` | 30303 |
 
 ```bash
 npx devp2p use alice
-npx devp2p dpt ping 18.138.108.140 30303
-npx devp2p peer add 18.138.108.140 30303 --tcp 30303
-npx devp2p wait --event peer.added
-npx devp2p eth send --name STATUS --json '{"td":"0x040000000000","bestHash":"0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3","genesisHash":"0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3"}'
-npx devp2p eth wait --name BLOCK_HEADERS --timeout-ms 30000
+npx devp2p dpt neighbours 65.108.70.101 30303 | jq .
 ```
 
-Replace host/ports with a bootnode from your chain config. Remotes may disconnect or time out — read NDJSON on the daemon terminal.
+The JSON `neighbours` list is what the bootnode returns: other nodes’ addresses, UDP/TCP ports, and ids. That is the useful public-network response. A bootnode answers only after a discovery ping and an ENR reply (the daemon sends both). If this node is quiet, try the next row in the table.
 
 ## Library stack
 

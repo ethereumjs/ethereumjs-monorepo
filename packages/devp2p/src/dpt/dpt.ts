@@ -155,6 +155,31 @@ export class DPT {
     }
   }
 
+  /**
+   * Ping `peer`, answer its ENR request, and return the neighbours it sends back.
+   * Mainnet bootnodes reply with a peer list only after the ENR exchange.
+   */
+  async lookupNeighbours(peer: PeerInfo, waitMs = 2000): Promise<PeerInfo[]> {
+    const bonded = await this.addPeer(peer)
+    const found: PeerInfo[] = []
+    const onPeers = (peers: PeerInfo[]) => {
+      found.push(...peers)
+    }
+    this._server.events.on('peers', onPeers)
+    try {
+      if (this.id !== undefined) {
+        // First query prompts the bootnode to ping us and request our ENR.
+        this._server.findneighbours(bonded, this.id)
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+        this._server.findneighbours(bonded, this.id)
+      }
+      await new Promise((resolve) => setTimeout(resolve, waitMs))
+    } finally {
+      this._server.events.off('peers', onPeers)
+    }
+    return found
+  }
+
   async addPeer(obj: PeerInfo): Promise<PeerInfo> {
     if (this._banlist.has(obj)) throw EthereumJSErrorWithoutCode('Peer is banned')
     if (this.DEBUG) {
