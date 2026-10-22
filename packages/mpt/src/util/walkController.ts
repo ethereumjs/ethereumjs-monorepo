@@ -9,7 +9,7 @@ import type { FoundNodeFunction, MPTNode, Nibbles, NodeReferenceOrRawMPTNode } f
  * Interface to control how the trie is being traversed. Schedules node visits via a
  * prioritized task queue and invokes the provided callback for each node.
  *
- * Used by {@link MerklePatriciaTrie.findPath}, {@link MerklePatriciaTrie.walkTrie}, etc.
+ * Used by {@link MerklePatriciaTrie.walkTrie} and other full trie walks (not single-key {@link MerklePatriciaTrie.findPath}).
  */
 export class WalkController {
   /** The {@link FoundNodeFunction} to call when a node is found. */

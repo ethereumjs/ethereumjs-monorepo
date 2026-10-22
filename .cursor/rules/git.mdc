@@ -74,7 +74,7 @@ These **change CI behavior** — add or remove deliberately. For skip labels, **
 | `type: test verkle` | Verkle-related test path |
 | `test: browser` | Playwright browser suite in `browser.yml`. Opt-in. Without it the job is skipped and the PR stays mergeable |
 | `type: test skip dev VM` | Skips `test: bogota` consensus jobs in `vm-pr.yml` |
-| `test: performance` | Runs the CodSpeed simulation job (`performance-benchmarks`) on this PR when the label is present on the **`opened` / `synchronize`** event (same timing as skip labels) |
+| `test: performance` | Runs the CodSpeed simulation job (`performance-benchmarks` in **`Build`**) when the label is present on **`opened` / `synchronize` / `labeled`** (same timing as `test: browser`) |
 
 Set **`test: consensus`** when the diff can change an execution-spec result. That includes EVM opcodes and precompiles, VM block or transaction execution, state, fork parameters, transaction or block validation the VM enforces, the consensus runner, and a dependency those paths execute when the change can show up in a fixture. Pass it on **`gh pr create --label "test: consensus"`**. Re-check before every later push. Remove it when the remaining diff can no longer change a fixture result.
 

@@ -19,7 +19,32 @@ function precomputeKeys(): Uint8Array[] {
 
 const keys = precomputeKeys()
 
+const warmTrieDb = new MapDB()
+const warmTrie = new MerklePatriciaTrie({ db: warmTrieDb })
+for (const key of keys) {
+  await warmTrie.put(key, key)
+}
+
 describe('mpt', () => {
+  bench('mpt get 1k', async () => {
+    for (const key of keys) {
+      await warmTrie.get(key)
+    }
+  })
+
+  bench('mpt findPath 1k', async () => {
+    for (const key of keys) {
+      await warmTrie.findPath(key)
+    }
+  })
+
+  bench('mpt put 1k', async () => {
+    const trie = new MerklePatriciaTrie({ db: new MapDB() })
+    for (const key of keys) {
+      await trie.put(key, key)
+    }
+  })
+
   bench('mpt put 1k-9-32', async () => {
     const trie = new MerklePatriciaTrie({ db: new MapDB() })
     let key = new Uint8Array(KEY_SIZE)
