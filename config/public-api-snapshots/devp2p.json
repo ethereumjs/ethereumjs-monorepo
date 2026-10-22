@@ -11,8 +11,10 @@
     "ETH",
     "EthMessageCodeNames",
     "EthMessageCodes",
+    "JsonNodeStore",
     "KBucket",
     "MAC",
+    "MemoryNodeStore",
     "PREFIXES",
     "Peer",
     "PrefixesNames",
@@ -22,11 +24,20 @@
     "Server",
     "SnapMessageCodeNames",
     "SnapMessageCodes",
+    "buildGetBlockHeadersFromJson",
     "decode",
     "devp2pDebug",
+    "discv4ENRList",
+    "discv4ExpirationValid",
     "encode",
+    "encodeGetBlockHeaders",
+    "ethUsesRequestId",
     "genPrivateKey",
+    "getBlockHeadersQueryFromJson",
     "id2pk",
-    "pk2id"
+    "isMessageCodeAllowed",
+    "pk2id",
+    "requestIdFromPayload",
+    "tcpPortFromDiscv4Enr"
   ]
 }

@@ -19,14 +19,14 @@ describe('[Devp2p/Lab]: resolveLabRoot', () => {
   })
 
   it('finds lab when cwd is inside the lab directory', async () => {
-    const root = resolve(await mkdtemp(join(tmpdir(), 'devp2p-labroot-')))
+    const root = resolve(await mkdtemp(join(tmpdir(), 'devp2p-lab-root-')))
     await initLabDir(root, ['alice'], 30300, defaultNetwork())
     process.chdir(join(root, 'alice'))
     expect(realpathSync(resolveLabRoot())).toBe(realpathSync(root))
   })
 
   it('uses DEVP2P_LAB when set', async () => {
-    const root = await mkdtemp(join(tmpdir(), 'devp2p-labroot-'))
+    const root = await mkdtemp(join(tmpdir(), 'devp2p-lab-root-'))
     await initLabDir(root, ['alice'], 30300, defaultNetwork())
     process.env[LAB_DIR_ENV] = root
     process.chdir(tmpdir())

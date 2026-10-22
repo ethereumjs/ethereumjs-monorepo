@@ -146,6 +146,7 @@
     "qheap",
     "leveldown",
     "devp2p",
+    "discv",
     "Rlpx",
     "backstep",
     "subchains",
