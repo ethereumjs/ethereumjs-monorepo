@@ -7,6 +7,7 @@ import { type DISCONNECT_REASON, DisconnectReasonNames } from '../types.ts'
 
 import { resolveCapabilities } from './capabilities.ts'
 import { LOCALHOST } from './constants.ts'
+import { emptyWireReply } from './emptyReply.ts'
 import { EventBus } from './eventBus.ts'
 import { MAINNET_STATUS_JSON } from './inProcessMesh.ts'
 import { buildEthRlpPayload, ethMessageNameToCode, ethStatusFromFields } from './messages/eth.ts'
@@ -102,22 +103,33 @@ export class NodeSession {
     })
 
     this.rlpx.events.on('peer:added', (peer: Peer) => {
+      const hello = peer.getHelloMessage()
       this.eventBus.emit({
         node: this.name,
         dir: 'in',
         layer: 'rlpx',
         name: 'peer:added',
         peer: this.peerLabel(peer),
+        clientId: hello?.clientId,
       })
       // ETH drops the session after 5s unless both sides have exchanged STATUS.
       this.announceEthStatus(peer)
       peer.events.on('ping', () => {
+        const label = this.peerLabel(peer)
         this.eventBus.emit({
           node: this.name,
           dir: 'in',
           layer: 'rlpx',
           name: 'PING',
-          peer: this.peerLabel(peer),
+          peer: label,
+        })
+        // RLPx already sent PONG before this event. Log it so the TUI can show the answer.
+        this.eventBus.emit({
+          node: this.name,
+          dir: 'out',
+          layer: 'rlpx',
+          name: 'PONG',
+          peer: label,
         })
       })
       peer.events.on('pong', () => {
@@ -144,6 +156,7 @@ export class NodeSession {
             peer: this.peerLabel(peer),
             payload: EventBus.payloadFromRlp(payload as never),
           })
+          this.replyEmpty(protocol as ETH | SNAP, layer, name, payload, this.peerLabel(peer))
           this.flushWaiters()
         })
       }
@@ -168,6 +181,38 @@ export class NodeSession {
         peer: this.peerLabel(peer),
         message: DisconnectReasonNames[reason as DISCONNECT_REASON] ?? String(reason),
       })
+    })
+  }
+
+  /**
+   * Lab nodes store no blocks or state. Answer a get with an empty list so the
+   * request id round-trip is visible (eth/66+ and snap).
+   */
+  private replyEmpty(
+    protocol: ETH | SNAP,
+    layer: 'eth' | 'snap',
+    name: string,
+    payload: unknown,
+    peerLabel: string,
+  ) {
+    const reply = emptyWireReply(layer, protocol.getVersion(), name, payload)
+    if (!reply) return
+    try {
+      if (layer === 'eth') {
+        ;(protocol as ETH).sendMessage(ethMessageNameToCode(reply.name), reply.rlp)
+      } else {
+        ;(protocol as SNAP).sendMessage(snapMessageNameToCode(reply.name), reply.rlp)
+      }
+    } catch {
+      return
+    }
+    this.eventBus.emit({
+      node: this.name,
+      dir: 'out',
+      layer,
+      name: reply.name,
+      peer: peerLabel,
+      payload: EventBus.payloadFromRlp(reply.rlp),
     })
   }
 

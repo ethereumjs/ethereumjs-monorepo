@@ -11,6 +11,7 @@ export type LabEventRecord = {
   layer?: 'dpt' | 'rlpx' | 'eth' | 'snap'
   name?: string
   peer?: string
+  clientId?: string
   payload?: unknown
   message?: string
 }

@@ -138,14 +138,37 @@ npx devp2p eth send GET_BLOCK_HEADERS --json '{"requestId":"0x01","blockHash":"0
 npx devp2p eth wait BLOCK_HEADERS --timeout-ms 30000
 ```
 
-If headers never arrive, send STATUS from **Bob’s** session as well (**Terminal 4**):
+Bob answers that get with **BLOCK_HEADERS** and the same request id. The list is empty: a lab node has no chain. The same empty answer is sent for the other ETH gets (bodies, receipts, pooled transactions) and for SNAP gets. Watch **`t: "event"`** lines on Terminals 1–2 (NDJSON). **`attach`** accepts the same verbs (`eth send GET_BLOCK_HEADERS blockHash=0x… max=1`, `wait eth.BLOCK_HEADERS`, …).
+
+### Two-pane TUI
+
+One terminal for two lab nodes. Each message is its own box, and the shorter box is padded so the two sides of a row stay aligned. A get lines up with the same get, then the answer lines up with the answer: **GET_BLOCK_HEADERS** beside **GET_BLOCK_HEADERS**, then **BLOCK_HEADERS** beside **BLOCK_HEADERS**. RLPx **PING** / **PONG** stay hidden unless you pass **`--pings`**. Protocol names (**ETH**, **SNAP**, **RLPx**, **DPT**) are inverted labels.
+
+![Alice and Bob in the two-pane TUI after STATUS, peer list, and an empty header answer](./diagram/tui-two-pane.jpg)
 
 ```bash
-npx devp2p use bob
-npx devp2p eth send STATUS --json '{"td":"0x040000000000","bestHash":"0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3","genesisHash":"0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3"}'
+npx devp2p init --nodes alice,bob   # once
+npx devp2p tui                      # alice | bob; starts both daemons
 ```
 
-Watch **`t: "event"`** lines on Terminals 1–2 (NDJSON). **`attach`** accepts the same verbs (`eth send GET_BLOCK_HEADERS blockHash=0x… max=1`, `wait eth.BLOCK_HEADERS`, …).
+On startup the TUI dials the other lab node. Both sides send a mainnet genesis **STATUS** (Alice **30300**, Bob **30302**). The screenshot is that session continued: Alice's **`peer list`**, then Bob's **GET_BLOCK_HEADERS** and the empty **BLOCK_HEADERS** answer.
+
+Each pane has its own prompt and its own command history (`lab/.tui-history.json`, 50 lines per node). **Tab** moves between them; a half-typed line stays put. **Up** / **Down** walk that pane's history. **Enter** sends that line to that node's control socket (same verbs as **`attach`**). A reply such as **`peer list`** is drawn as a box on that pane (each RLPx peer, or `(none)`). **`q`** on an empty prompt, or Ctrl+C, quits and stops only daemons this TUI started.
+
+```text
+alice> peer list
+bob> eth send GET_BLOCK_HEADERS blockHash=0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3 max=1
+```
+
+Name the panes explicitly, or watch one local node beside a remote peer. The right side is that peer as seen from the left node, so only the left pane has a prompt:
+
+```bash
+npx devp2p tui --left alice --right bob
+npx devp2p tui --left alice --remote 65.108.70.101:30303
+npx devp2p tui --pings
+```
+
+The status line shows the listen address, RLPx peer count, client id when the hello carried one, and whether ETH **STATUS** has gone out and come in. If a daemon is already running, the TUI attaches and leaves it running on quit. A live message stream needs the daemon the TUI spawned (`node run --events ndjson`); stop a conflicting `node run` first.
 
 ### Toward a public peer
 

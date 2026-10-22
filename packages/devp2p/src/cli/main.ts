@@ -18,6 +18,7 @@ import { privateKeyToEnode } from '../lab/enode.ts'
 import {
   defaultNetwork,
   initLabDir,
+  listLabNodeNames,
   loadLabNode,
   resolveLabNode,
   resolveLabRoot,
@@ -25,6 +26,7 @@ import {
 } from '../lab/labDir.ts'
 import { runNodeDaemon, stopNode } from '../lab/nodeDaemon.ts'
 import { runScenarioPath } from '../lab/scenarioRunner.ts'
+import { runTui } from '../tui/run.ts'
 import { genPrivateKey } from '../util.ts'
 import { runSessionRequest, sessionControlPath, socketCommand } from './sessionClient.ts'
 
@@ -63,6 +65,7 @@ Session commands (require \`node run\` on the chosen node):
   devp2p lab run --spec <file.json>
   devp2p enr decode <base64-or-hex>
   devp2p discovery-v4 ping <host> <udpPort>   (ephemeral; prefer dpt ping on a running node)
+  devp2p tui [--left alice] [--right bob | --remote host:port] [--pings]
 `)
 }
 
@@ -427,6 +430,37 @@ async function main(argv: string[]) {
     if (!input) throw new Error('enr decode requires ENR text')
     const peer = ENR.parseAndVerifyRecord(input.startsWith('enr:') ? input : `enr:${input}`)
     console.log(JSON.stringify(peer, null, 2))
+    return
+  }
+
+  if (cmd === 'tui') {
+    const { values } = parseArgs({
+      args: rest,
+      options: {
+        dir: labDirOpt,
+        left: { type: 'string' },
+        right: { type: 'string' },
+        remote: { type: 'string' },
+        pings: { type: 'boolean', default: false },
+      },
+      allowPositionals: false,
+    })
+    if (values.remote && values.right) {
+      throw new Error('Use either --right or --remote, not both')
+    }
+    const root = resolveLabRoot(values.dir)
+    const names = await listLabNodeNames(root)
+    const left =
+      (values.left as string | undefined) ?? (names.includes('alice') ? 'alice' : names[0])
+    if (!left) throw new Error('No lab nodes — run devp2p init first')
+    await runTui({
+      labRoot: root,
+      leftNode: left,
+      rightNode: values.right as string | undefined,
+      remote: values.remote as string | undefined,
+      dir: values.dir as string | undefined,
+      showPings: values.pings === true,
+    })
     return
   }
 
