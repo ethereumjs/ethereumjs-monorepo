@@ -1,5 +1,7 @@
 import type { LabEventRecord } from './eventBus.ts'
 
+const RECENT_EVENT_CAP = 128
+
 export class WaitRegistry {
   private waiters: Array<{
     match: (ev: LabEventRecord) => boolean
@@ -7,12 +9,28 @@ export class WaitRegistry {
     reject: (err: Error) => void
     timer: NodeJS.Timeout
   }> = []
+  private eventSeq = 0
+  private recent: { seq: number; ev: LabEventRecord }[] = []
 
   attach(bus: { onEvent: (fn: (ev: LabEventRecord) => void) => void }) {
-    bus.onEvent((ev) => this.dispatch(ev))
+    bus.onEvent((ev) => {
+      const seq = ++this.eventSeq
+      this.recent.push({ seq, ev })
+      if (this.recent.length > RECENT_EVENT_CAP) {
+        this.recent.splice(0, this.recent.length - RECENT_EVENT_CAP)
+      }
+      this.dispatch(ev)
+    })
   }
 
   wait(match: (ev: LabEventRecord) => boolean, timeoutMs: number): Promise<LabEventRecord> {
+    // Only events after this call count (avoids matching a dead session's peer:added).
+    const registeredAfterSeq = this.eventSeq
+    for (let i = this.recent.length - 1; i >= 0; i--) {
+      const entry = this.recent[i]!
+      if (entry.seq <= registeredAfterSeq) continue
+      if (match(entry.ev)) return Promise.resolve(entry.ev)
+    }
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {
         this.remove(waiter)

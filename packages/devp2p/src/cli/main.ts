@@ -46,7 +46,7 @@ Usage:
   devp2p attach [--node name]
 
 Session commands (require \`node run\` on the chosen node):
-  devp2p peer add [--node name] <host> <udpPort> [--tcp N]
+  devp2p peer add [--node name] <host> <udpPort> [--tcp N] [--wait] [--timeout-ms N]
   devp2p peer list [--node name]
   devp2p peer disconnect [--node name] [--peer N]
   devp2p dpt ping [--node name] <host> <udpPort>
@@ -100,7 +100,7 @@ async function main(argv: string[]) {
     const network = defaultNetwork()
     network.chain = values.chain === 'sepolia' ? 'sepolia' : 'mainnet'
     await initLabDir(root, names, Number(values['base-port']), network)
-    console.log(`Initialized lab at ${root} (${names.join(', ')})`)
+    console.log(`Initialized lab (${names.join(', ')})`)
     if (names.length > 1) {
       console.log(
         `Tip: devp2p use ${names[0]} (or export ${LAB_NODE_ENV}=${names[0]}) before session commands`,
@@ -119,7 +119,7 @@ async function main(argv: string[]) {
     if (!name) throw new Error('use requires a node name')
     const root = resolveLabRoot(values.dir)
     await setLabDefaultNode(root, name)
-    console.log(`Default node for ${root}: ${name}`)
+    console.log(`Default node: ${name}`)
     return
   }
 
@@ -224,25 +224,43 @@ async function main(argv: string[]) {
 
   if (cmd === 'peer') {
     const sub = rest[0]
-    const { values, positionals } = parseArgs({
-      args: rest.slice(1),
-      options: sessionDirOpts,
-      allowPositionals: true,
-    })
     if (sub === 'add') {
+      const { values, positionals } = parseArgs({
+        args: rest.slice(1),
+        options: {
+          ...sessionDirOpts,
+          tcp: { type: 'string' },
+          wait: { type: 'boolean', default: false },
+          'timeout-ms': { type: 'string' },
+        },
+        allowPositionals: true,
+      })
       const host = positionals[0]
       const udp = Number(positionals[1])
-      const tcp = positionals[2] !== undefined ? Number(positionals[2]) : undefined
+      const tcpFromFlag = values.tcp !== undefined ? Number(values.tcp) : undefined
+      const tcpFromPos = positionals[2] !== undefined ? Number(positionals[2]) : undefined
+      const tcp = tcpFromFlag ?? tcpFromPos
       if (!host || !udp) throw new Error('peer add <host> <udpPort> [--tcp N]')
       const res = await runSessionRequest(values.dir, values.node, {
         cmd: 'peer.add',
         host,
         udpPort: udp,
         tcpPort: tcp,
+        ...(values.wait
+          ? {
+              waitEvent: 'peer.added',
+              waitTimeoutMs: Number(values['timeout-ms'] ?? 30000),
+            }
+          : {}),
       })
       console.log(JSON.stringify(res))
       return
     }
+    const { values, positionals } = parseArgs({
+      args: rest.slice(1),
+      options: sessionDirOpts,
+      allowPositionals: true,
+    })
     if (sub === 'list') {
       const res = await runSessionRequest(values.dir, values.node, { cmd: 'peer.list' })
       console.log(JSON.stringify(res))

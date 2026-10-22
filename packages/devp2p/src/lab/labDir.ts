@@ -1,12 +1,13 @@
+import { constants, accessSync, readFileSync } from 'node:fs'
 import { access, mkdir, readFile, readdir, writeFile } from 'node:fs/promises'
-import { join } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 
 import { Common, Hardfork, Mainnet, Sepolia } from '@ethereumjs/common'
 import { bytesToHex, hexToBytes } from '@ethereumjs/util'
 
 import { genPrivateKey } from '../util.ts'
 
-import { LAB_DEFAULT_DIR, LAB_DEFAULT_NODE_FILE, LAB_NODE_ENV } from './constants.ts'
+import { LAB_DEFAULT_DIR, LAB_DEFAULT_NODE_FILE, LAB_DIR_ENV, LAB_NODE_ENV } from './constants.ts'
 import { privateKeyToEnode } from './enode.ts'
 
 export type LabNetworkConfig = {
@@ -44,7 +45,9 @@ export async function initLabDir(
   network: LabNetworkConfig,
 ): Promise<void> {
   await mkdir(rootDir, { recursive: true })
+  const labRootAbs = resolve(rootDir)
   await writeFile(join(rootDir, 'network.json'), `${JSON.stringify(network, null, 2)}\n`)
+  await writeFile(join(rootDir, '.root'), `${labRootAbs}\n`)
 
   for (let i = 0; i < nodeNames.length; i++) {
     const name = nodeNames[i]
@@ -87,8 +90,45 @@ export async function loadLabNode(rootDir: string, nodeName: string) {
   return { rootDir, nodeDir, network, nodeConfig, privateKey, common }
 }
 
-export function resolveLabRoot(dir?: string) {
-  return dir ?? join(process.cwd(), LAB_DEFAULT_DIR)
+function isLabRoot(path: string): boolean {
+  try {
+    accessSync(join(path, 'network.json'), constants.F_OK)
+    return true
+  } catch {
+    return false
+  }
+}
+
+/** Resolve lab root: `--dir` / `DEVP2P_LAB` → cwd if already lab → `./lab` under cwd or ancestors → pinned `lab/.root`. */
+export function resolveLabRoot(dir?: string): string {
+  const explicit = dir?.trim()
+  if (explicit) return resolve(explicit)
+
+  const fromEnv = process.env[LAB_DIR_ENV]?.trim()
+  if (fromEnv) return resolve(fromEnv)
+
+  const cwd = resolve(process.cwd())
+  if (isLabRoot(cwd)) return cwd
+
+  let current = cwd
+  for (let i = 0; i < 12; i++) {
+    if (isLabRoot(current)) return current
+    const nested = join(current, LAB_DEFAULT_DIR)
+    if (isLabRoot(nested)) return nested
+    const parent = dirname(current)
+    if (parent === current) break
+    current = parent
+  }
+
+  const fallback = join(cwd, LAB_DEFAULT_DIR)
+  try {
+    const pinned = readFileSync(join(fallback, '.root'), 'utf8').trim()
+    if (pinned && isLabRoot(pinned)) return resolve(pinned)
+  } catch {
+    /* no pin */
+  }
+
+  return fallback
 }
 
 export async function listLabNodeNames(rootDir: string): Promise<string[]> {

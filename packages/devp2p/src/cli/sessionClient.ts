@@ -5,6 +5,8 @@ import { loadLabNode, resolveLabNode, resolveLabRoot } from '../lab/labDir.ts'
 
 import type { CommandRequest, CommandResponse } from '../lab/commandDispatcher.ts'
 
+export type SessionCommandResult = CommandResponse & { node: string }
+
 export async function sessionControlPath(
   dir: string | undefined,
   node: string | undefined,
@@ -36,12 +38,14 @@ export async function runSessionRequest(
   dir: string | undefined,
   node: string | undefined,
   req: CommandRequest,
-): Promise<CommandResponse> {
+): Promise<SessionCommandResult> {
+  const root = resolveLabRoot(dir)
+  const nodeName = await resolveLabNode(root, node)
   const sockPath = await sessionControlPath(dir, node)
   const raw = await socketCommand(sockPath, JSON.stringify(req))
   const res = JSON.parse(raw) as CommandResponse
   if (!res.ok) {
-    throw new Error(res.error ?? 'session command failed')
+    throw new Error(`${res.error ?? 'session command failed'} (node: ${nodeName})`)
   }
-  return res
+  return { ...res, node: nodeName }
 }

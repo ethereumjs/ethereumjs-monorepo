@@ -41,8 +41,27 @@ export class CommandDispatcher {
         const host = String(req.host ?? req.address ?? '127.0.0.1')
         const udp = Number(req.udpPort ?? req.port)
         const tcp = req.tcpPort !== undefined ? Number(req.tcpPort) : udp
+        const waitEvent = req.waitEvent !== undefined ? String(req.waitEvent) : undefined
+        const waitTimeoutMs = Number(req.waitTimeoutMs ?? 30000)
+        const waitPromise = waitEvent
+          ? this.waitRegistry.wait(
+              (record) => matchWaitEvent(waitEvent, record, this.session.name),
+              waitTimeoutMs,
+            )
+          : undefined
         await this.session.addPeer(host, udp, tcp)
-        return { added: `${host}:${udp}` }
+        const rlpxPeers = this.session.listPeers()
+        if (waitPromise) {
+          const ev = await waitPromise
+          const afterWait = this.session.listPeers()
+          if (afterWait.length === 0) {
+            throw new Error(
+              `RLPx handshake event received but no peer is connected — check both daemons and ports (udp/tcp ${udp}/${tcp})`,
+            )
+          }
+          return { added: `${host}:${udp}`, connected: eventSummary(ev), rlpxPeers: afterWait }
+        }
+        return { added: `${host}:${udp}`, rlpxPeers }
       }
       case 'peer.list':
         return this.session.listPeers()

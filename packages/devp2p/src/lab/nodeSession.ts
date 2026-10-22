@@ -1,15 +1,17 @@
 import { join } from 'node:path'
 
 import { DPT, RLPx } from '../index.ts'
+import { type DISCONNECT_REASON, DisconnectReasonNames } from '../types.ts'
 
 import { resolveCapabilities } from './capabilities.ts'
 import { LOCALHOST } from './constants.ts'
 import { EventBus } from './eventBus.ts'
+import { MAINNET_STATUS_JSON } from './inProcessMesh.ts'
 import { buildEthRlpPayload, ethMessageNameToCode, ethStatusFromFields } from './messages/eth.ts'
 import { buildSnapRlpPayload, snapMessageNameToCode } from './messages/snap.ts'
 import { jsonToRlpInput } from './payloadCodec.ts'
 
-import type { ETH, Peer } from '../index.ts'
+import type { ETH, Peer, PeerInfo } from '../index.ts'
 
 import type { Common } from '@ethereumjs/common'
 import type { SNAP } from '../protocol/snap.ts'
@@ -105,6 +107,8 @@ export class NodeSession {
         name: 'peer:added',
         peer: this.peerLabel(peer),
       })
+      // ETH drops the session after 5s unless both sides have exchanged STATUS.
+      this.announceEthStatus(peer)
       peer.events.on('ping', () => {
         this.eventBus.emit({
           node: this.name,
@@ -160,9 +164,25 @@ export class NodeSession {
         layer: 'rlpx',
         name: 'peer:removed',
         peer: this.peerLabel(peer),
-        message: String(reason),
+        message: DisconnectReasonNames[reason as DISCONNECT_REASON] ?? String(reason),
       })
     })
+  }
+
+  /** Keep the RLPx session alive: genesis STATUS on both ends of a lab dial. */
+  private announceEthStatus(peer: Peer) {
+    for (const protocol of peer.getProtocols()) {
+      if (protocol.constructor.name !== 'ETH') continue
+      ;(protocol as ETH).sendStatus(ethStatusFromFields(MAINNET_STATUS_JSON))
+      this.eventBus.emit({
+        node: this.name,
+        dir: 'out',
+        layer: 'eth',
+        name: 'STATUS',
+        peer: this.peerLabel(peer),
+        payload: MAINNET_STATUS_JSON,
+      })
+    }
   }
 
   private peerLabel(peer: Peer): string {
@@ -174,7 +194,11 @@ export class NodeSession {
     const peers = this.rlpx.getPeers()
     const peer = peers[index]
     if (!peer) {
-      throw new Error(`No RLPx peer at index ${index} (have ${peers.length})`)
+      const hint =
+        peers.length === 0 ? ' — dial first: peer add <host> <udpPort> [--tcp N] [--wait]' : ''
+      throw new Error(
+        `No RLPx peer at index ${index} on node ${this.name} (have ${peers.length})${hint}`,
+      )
     }
     return peer
   }
@@ -198,7 +222,28 @@ export class NodeSession {
   }
 
   async addPeer(host: string, udpPort: number, tcpPort?: number) {
-    await this.dpt.addPeer({ address: host, udpPort, tcpPort: tcpPort ?? udpPort })
+    const tcp = tcpPort ?? udpPort
+    const info = { address: host, udpPort, tcpPort: tcp }
+    const existing = this.dpt.getPeer(info)
+    if (existing !== null) {
+      const withTcp = { ...existing, tcpPort: existing.tcpPort ?? tcp }
+      await this.rlpxConnectIfNeeded(withTcp)
+      return
+    }
+    // Fresh DPT add emits peer:new; RLPx auto-dials once — do not also call connect here (race).
+    await this.dpt.addPeer(info)
+  }
+
+  /** Dial when the peer is already in the DPT table (addPeer short-circuit) or a retry is needed. */
+  private async rlpxConnectIfNeeded(peer: PeerInfo) {
+    if (peer.id === undefined || peer.tcpPort === undefined || peer.tcpPort === null) return
+    try {
+      await this.rlpx.connect(peer)
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      if (msg.includes('Already connected')) return
+      throw err
+    }
   }
 
   async dptPing(host: string, udpPort: number) {

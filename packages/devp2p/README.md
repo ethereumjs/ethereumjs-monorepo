@@ -70,17 +70,11 @@ The CLI is built for **one long-lived node process** and many short control comm
 
 **Default node** when **`--node`** / **`-n`** is omitted: **`DEVP2P_NODE`** → **`lab/.node`** (from **`devp2p use <name>`** or updated when **`node run`** starts) → only node in the lab → only running daemon. Override anytime with **`--node bob`**.
 
-```bash
-npx devp2p --help
-npx devp2p init --nodes alice,bob
-npx devp2p use alice    # once per multi-node lab (or export DEVP2P_NODE=alice)
-```
-
 ### Session verbs
 
 | Area | Commands |
 | --- | --- |
-| Peers | `peer add`, `peer list`, `peer disconnect` |
+| Peers | `peer add` (`--wait` for RLPx handshake), `peer list`, `peer disconnect` |
 | Discovery | `dpt ping` (session DPT; prefer over ephemeral `discovery-v4 ping`) |
 | Transport | `rlpx ping`, `wait --event rlpx.PONG` |
 | ETH | `eth send`, `eth wait` (builders + `--json` / `--rlp`) |
@@ -92,37 +86,73 @@ NDJSON events: `npx devp2p node run --events ndjson`. Run **`npx devp2p --help`*
 
 ### Two local nodes (STATUS + headers)
 
-Terminal A — start Alice and watch NDJSON:
+Use the **same working directory in all terminals** (typically **`packages/devp2p`**) — lab data is always **`./lab`** there. Run **`npm run build`**, then **restart every `node run`** after a rebuild (Ctrl+C, start again). **`devp2p use <name>`** in Terminal 3 picks the node for session commands (writes `lab/.node`); starting a daemon does **not** change that. JSON includes **`"node"`**. A current build answers `peer add --wait` with `data.rlpxPeers` and `data.connected`.
+
+Default ports after `init --nodes alice,bob --base-port 30300`: **Alice 30300**, **Bob 30302** (see `lab/alice/node.json` and `lab/bob/node.json`).
+
+**`use`** picks which lab node your one-shot commands talk to. **`node run`** must be running for that same node in another terminal. **`peer add`** is always “on the session node, dial this host/port (the other node).”
+
+**Once — create the lab**
 
 ```bash
-npx devp2p node run --events ndjson
+npx devp2p init --nodes alice,bob
 ```
 
-Terminal B — dial Bob, exchange STATUS, request a header:
+**Terminal 1 — Bob’s daemon** (listen first so Alice can dial in)
 
 ```bash
-# Ports: lab/bob/node.json (udpPort / tcpPort)
+npx devp2p use bob
+npx devp2p node run --node bob --events ndjson
+```
 
-npx devp2p peer add 127.0.0.1 <bob-udp> --tcp <bob-tcp>
-npx devp2p wait --event peer.added
+**Terminal 2 — Alice’s daemon**
+
+```bash
+npx devp2p use alice
+npx devp2p node run --node alice --events ndjson
+```
+
+**Terminal 3 — on Alice’s session: dial Bob, STATUS, headers**
+
+Commands below go to **Alice** (`use alice`). **30302** is **Bob’s** udp/tcp from `lab/bob/node.json`, not Alice’s 30300.
+
+```bash
+npx devp2p use alice
+npx devp2p peer add 127.0.0.1 30302 --tcp 30302 --wait
+npx devp2p peer list
+```
+
+(`--wait` until RLPx is up. Both daemons send a default mainnet genesis **STATUS** on connect so the link is not dropped after 5 seconds (`TIMEOUT`). A later `eth send --name STATUS` is a no-op if that already happened. **`peer list`** should still show index `0`. Redial after every daemon restart.)
+
+```bash
 npx devp2p eth send --name STATUS --json '{"td":"0x040000000000","bestHash":"0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3","genesisHash":"0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3"}'
 npx devp2p eth send --name GET_BLOCK_HEADERS --json '{"requestId":"0x01","blockHash":"0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3","max":1,"skip":0,"reverse":false}'
 npx devp2p eth wait --name BLOCK_HEADERS --timeout-ms 30000
 ```
 
-Both sides may need to send STATUS before headers flow. **`attach`** accepts the same verbs (`eth send GET_BLOCK_HEADERS blockHash=0x… max=1`, `wait eth.BLOCK_HEADERS`, …).
+If headers never arrive, send STATUS from **Bob’s** session as well (**Terminal 4**):
+
+```bash
+npx devp2p use bob
+npx devp2p eth send --name STATUS --json '{"td":"0x040000000000","bestHash":"0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3","genesisHash":"0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3"}'
+```
+
+Watch **`t: "event"`** lines on Terminals 1–2 (NDJSON). **`attach`** accepts the same verbs (`eth send GET_BLOCK_HEADERS blockHash=0x… max=1`, `wait eth.BLOCK_HEADERS`, …).
 
 ### Toward a public peer
 
-With a node still running:
+With **Alice** still running in a daemon terminal (`use alice` + `node run --node alice`):
 
 ```bash
-npx devp2p dpt ping <host> <udpPort>
-npx devp2p peer add <host> <udpPort> --tcp <tcpPort>
+npx devp2p use alice
+npx devp2p dpt ping 18.138.108.140 30303
+npx devp2p peer add 18.138.108.140 30303 --tcp 30303
 npx devp2p wait --event peer.added
+npx devp2p eth send --name STATUS --json '{"td":"0x040000000000","bestHash":"0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3","genesisHash":"0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3"}'
+npx devp2p eth wait --name BLOCK_HEADERS --timeout-ms 30000
 ```
 
-Then repeat the `eth send` / `eth wait` sequence. Remotes may disconnect, ignore requests, or time out — read NDJSON on the daemon terminal.
+Replace host/ports with a bootnode from your chain config. Remotes may disconnect or time out — read NDJSON on the daemon terminal.
 
 ## Library stack
 

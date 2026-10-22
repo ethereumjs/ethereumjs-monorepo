@@ -3,7 +3,7 @@ import { createServer } from 'node:net'
 import { join } from 'node:path'
 
 import { CommandDispatcher } from './commandDispatcher.ts'
-import { loadLabNode, writeLabDefaultNode } from './labDir.ts'
+import { loadLabNode } from './labDir.ts'
 import { NodeSession } from './nodeSession.ts'
 
 export async function runNodeDaemon(opts: {
@@ -13,7 +13,6 @@ export async function runNodeDaemon(opts: {
   control: 'socket' | 'stdin' | 'none'
 }) {
   const loaded = await loadLabNode(opts.labRoot, opts.nodeName)
-  await writeLabDefaultNode(opts.labRoot, opts.nodeName)
   const session = new NodeSession({
     name: opts.nodeName,
     nodeDir: loaded.nodeDir,
@@ -81,7 +80,6 @@ export async function runNodeDaemon(opts: {
       })
     })
     server.listen(sockPath)
-    session.eventBus.log(`control socket ${sockPath}`, opts.nodeName)
   }
 
   session.eventBus.log(
