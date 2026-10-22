@@ -289,6 +289,12 @@ for (const node of bootnodes) {
 npm run examples
 ```
 
+Manual live acceptance (not CI; needs outbound UDP/TCP):
+
+```shell
+npm run accept:live -- eth68
+```
+
 Manual examples need network access:
 
 ```shell

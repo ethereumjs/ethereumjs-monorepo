@@ -68,6 +68,7 @@
     "spellcheck:md": "npx cspell --gitignore -c ../../config/cspell-md.json \"**.md\" --cache --show-suggestions --show-context",
     "test": "vitest run -c ../../config/vitest.config.mts",
     "test:scenarios": "vitest run -c ../../config/vitest.config.mts test/scenario",
+    "accept:live": "tsx accept/live.ts",
     "test:node": "npm run test",
     "tsc": "../../config/cli/ts-compile.sh"
   },

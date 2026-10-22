@@ -99,10 +99,19 @@ rlpx.events.on('peer:added', (peer) => {
   let forkDrop: NodeJS.Timeout
   let forkVerified = false
   eth.events.once('status', () => {
-    eth.sendMessage(devp2p.EthMessageCodes.GET_BLOCK_HEADERS, [
-      Uint8Array.from([1]),
-      [intToBytes(CHECK_BLOCK_NR), Uint8Array.from([1]), Uint8Array.from([]), Uint8Array.from([])],
-    ])
+    eth.sendMessage(
+      devp2p.EthMessageCodes.GET_BLOCK_HEADERS,
+      devp2p.encodeGetBlockHeaders(
+        eth.getVersion(),
+        {
+          startBlock: intToBytes(CHECK_BLOCK_NR),
+          limit: intToBytes(1),
+          skip: intToBytes(0),
+          reverse: intToBytes(0),
+        },
+        Uint8Array.from([1]),
+      ),
+    )
     forkDrop = setTimeout(() => {
       peer.disconnect(devp2p.DISCONNECT_REASON.USELESS_PEER)
     }, 15_000)
