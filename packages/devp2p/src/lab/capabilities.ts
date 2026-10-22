@@ -10,6 +10,10 @@ const CAP_MAP: Record<string, Capabilities> = {
   eth66: ETH.eth66,
   eth67: ETH.eth67,
   eth68: ETH.eth68,
+  eth69: ETH.eth69,
+  eth70: ETH.eth70,
+  eth71: ETH.eth71,
+  eth72: ETH.eth72,
   snap1: SNAP.snap,
   snap: SNAP.snap,
 }

@@ -117,7 +117,7 @@ function payloadToLines(payload: unknown, layer?: string, name?: string): string
     return statusArrayLines(payload)
   }
   if (layer === 'eth' && name === 'GET_BLOCK_HEADERS' && Array.isArray(payload)) {
-    return namedArrayLines(payload, ['requestId', 'block', 'max', 'skip', 'reverse'])
+    return getBlockHeadersLines(payload)
   }
   if (layer === 'eth' && name === 'BLOCK_HEADERS' && Array.isArray(payload)) {
     return blockHeadersLines(payload)
@@ -153,6 +153,24 @@ function namedArrayLines(payload: unknown[], keys: string[]): string[] {
     }
     return `${key}  ${formatPayloadValue(value)}`
   })
+}
+
+function getBlockHeadersLines(payload: unknown[]): string[] {
+  if (payload.length >= 2 && Array.isArray(payload[1])) {
+    const inner = payload[1] as unknown[]
+    const lines = [`requestId  ${formatPayloadValue(payload[0])}`]
+    if (inner[0] !== undefined) lines.push(`startBlock  ${formatPayloadValue(inner[0])}`)
+    if (inner[1] !== undefined) lines.push(`limit  ${formatPayloadValue(inner[1])}`)
+    if (inner[2] !== undefined) lines.push(`skip  ${formatPayloadValue(inner[2])}`)
+    if (inner[3] !== undefined) {
+      const raw = formatPayloadValue(inner[3])
+      if (raw === '0x00' || raw === '0x') lines.push('reverse  false')
+      else if (raw === '0x01') lines.push('reverse  true')
+      else lines.push(`reverse  ${raw}`)
+    }
+    return lines
+  }
+  return namedArrayLines(payload, ['startBlock', 'limit', 'skip', 'reverse'])
 }
 
 function blockHeadersLines(payload: unknown[]): string[] {

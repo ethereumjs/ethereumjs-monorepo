@@ -2,6 +2,7 @@ import type { Socket } from 'net'
 import type { Common } from '@ethereumjs/common'
 import type { NestedUint8Array } from '@ethereumjs/rlp'
 import type { DPT } from './dpt/index.ts'
+import type { NodeStore } from './dpt/nodeStore.ts'
 import type { EthMessageCodes } from './protocol/eth.ts'
 import type { Protocol } from './protocol/protocol.ts'
 import type { SnapMessageCodes } from './protocol/snap.ts'
@@ -30,6 +31,14 @@ export interface ProtocolEvent {
     bestHash: Uint8Array
     genesisHash: Uint8Array
     forkId?: Uint8Array | Uint8Array[]
+    earliestBlock?: Uint8Array
+    latestBlock?: Uint8Array
+    latestBlockHash?: Uint8Array
+  }
+  blockRangeUpdate: {
+    earliestBlock: Uint8Array
+    latestBlock: Uint8Array
+    latestBlockHash: Uint8Array
   }
 }
 
@@ -138,6 +147,13 @@ export interface DPTOptions {
    * Default: 60s
    */
   refreshInterval?: number
+
+  /** Optional discv4 node metadata (last pong, fail counts). */
+  nodeStore?: NodeStore
+  /** Persist node store to a JSON file (lab). */
+  nodeStorePath?: string
+  /** Ping stale table entries on refresh (default true). */
+  revalidatePeers?: boolean
 
   /**
    * Toggles whether or not peers should be queried with 'findNeighbours'

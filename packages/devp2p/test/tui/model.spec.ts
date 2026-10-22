@@ -68,11 +68,11 @@ describe('tui model', () => {
       dir: 'in',
       layer: 'eth',
       name: 'GET_BLOCK_HEADERS',
-      payload: ['0x01', ['0xabcd'], '0x01', '0x00', '0x00'],
+      payload: ['0x01', ['0xabcd', '0x01', '0x00', '0x00']],
     })
     const headers = pane.transcript[pane.transcript.length - 1]!
     expect(headers.payloadLines[0]).toBe('requestId  0x01')
-    expect(headers.payloadLines[1]).toBe('blockHash  0xabcd')
+    expect(headers.payloadLines[1]).toBe('startBlock  0xabcd')
     expect(headers.payloadLines[4]).toBe('reverse  false')
 
     pane = reduceLabEvent(pane, {

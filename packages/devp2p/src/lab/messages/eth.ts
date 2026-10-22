@@ -1,6 +1,7 @@
 import { type PrefixedHexString, hexToBytes, intToBytes } from '@ethereumjs/util'
 
 import { EthMessageCodes } from '../../protocol/eth.ts'
+import { buildGetBlockHeadersFromJson } from '../../protocol/eth/codec.ts'
 import { jsonToRlpInput } from '../payloadCodec.ts'
 
 import type { Input } from '@ethereumjs/rlp'
@@ -34,20 +35,14 @@ export function ethMessageNameToCode(name: string): EthMessageCodes {
   return code as EthMessageCodes
 }
 
-export function buildEthRlpPayload(name: string, json: Record<string, unknown>): Input {
+export function buildEthRlpPayload(
+  name: string,
+  json: Record<string, unknown>,
+  ethVersion = 68,
+): Input {
   switch (name) {
-    case 'GET_BLOCK_HEADERS': {
-      const requestId =
-        json.requestId !== undefined ? hexToBytes(hx(String(json.requestId))) : intToBytes(1)
-      const block =
-        json.blockHash !== undefined
-          ? hexToBytes(hx(String(json.blockHash)))
-          : hexToBytes(hx(String(json.block ?? '0x' + '00'.repeat(32))))
-      const max = json.max !== undefined ? intToBytes(Number(json.max)) : intToBytes(1)
-      const skip = json.skip !== undefined ? intToBytes(Number(json.skip)) : intToBytes(0)
-      const reverse = json.reverse ? intToBytes(1) : intToBytes(0)
-      return [requestId, [block], max, skip, reverse]
-    }
+    case 'GET_BLOCK_HEADERS':
+      return buildGetBlockHeadersFromJson(ethVersion, json as never, (s) => hexToBytes(hx(s)))
     case 'GET_BLOCK_BODIES': {
       const requestId =
         json.requestId !== undefined ? hexToBytes(hx(String(json.requestId))) : intToBytes(1)
