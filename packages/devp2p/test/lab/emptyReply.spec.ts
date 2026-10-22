@@ -3,14 +3,12 @@ import { hexToBytes } from '@ethereumjs/util'
 import { describe, expect, it } from 'vitest'
 
 import { emptyWireReply } from '../../src/lab/emptyReply.ts'
-import { buildGetBlockHeadersFromFields } from '../../src/protocol/eth/codec.ts'
+import { buildGetBlockHeadersFromJSON } from '../../src/protocol/eth/codec.ts'
 
 describe('emptyWireReply', () => {
   it('answers eth66 GET_BLOCK_HEADERS with an empty header list and the same request id', () => {
-    const request = buildGetBlockHeadersFromFields(
-      68,
-      { requestId: '0x01', block: 0, max: 1 },
-      (s) => hexToBytes(s as `0x${string}`),
+    const request = buildGetBlockHeadersFromJSON(68, { requestId: '0x01', block: 0, max: 1 }, (s) =>
+      hexToBytes(s as `0x${string}`),
     )
     const reply = emptyWireReply('eth', 68, 'GET_BLOCK_HEADERS', request)
     expect(reply?.name).toBe('BLOCK_HEADERS')

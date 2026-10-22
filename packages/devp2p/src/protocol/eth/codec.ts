@@ -11,7 +11,7 @@ export type GetBlockHeadersQuery = {
   reverse: Input
 }
 
-export type GetBlockHeadersFields = {
+export type GetBlockHeadersJSON = {
   requestId?: string | number
   blockHash?: string
   block?: string | number
@@ -51,8 +51,8 @@ export function encodeGetHashes(version: number, requestId: Input, hashes: Input
   return hashes
 }
 
-export function getBlockHeadersQueryFromFields(
-  fields: GetBlockHeadersFields,
+export function getBlockHeadersQueryFromJSON(
+  fields: GetBlockHeadersJSON,
   hexToBytes: (s: string) => Uint8Array,
 ): { requestId: Input; query: GetBlockHeadersQuery } {
   const requestId =
@@ -78,12 +78,12 @@ export function getBlockHeadersQueryFromFields(
   return { requestId, query: { startBlock, limit, skip, reverse } }
 }
 
-export function buildGetBlockHeadersFromFields(
+export function buildGetBlockHeadersFromJSON(
   version: number,
-  fields: GetBlockHeadersFields,
+  fields: GetBlockHeadersJSON,
   hexToBytes: (s: string) => Uint8Array,
 ): Input {
-  const { requestId, query } = getBlockHeadersQueryFromFields(fields, hexToBytes)
+  const { requestId, query } = getBlockHeadersQueryFromJSON(fields, hexToBytes)
   return encodeGetBlockHeaders(version, query, requestId)
 }
 
