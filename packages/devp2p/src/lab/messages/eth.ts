@@ -1,7 +1,7 @@
 import { type PrefixedHexString, hexToBytes, intToBytes } from '@ethereumjs/util'
 
 import { EthMessageCodes } from '../../protocol/eth.ts'
-import { buildGetBlockHeadersFromJson } from '../../protocol/eth/codec.ts'
+import { buildGetBlockHeadersFromJson, ethUsesBlockRangeStatus } from '../../protocol/eth/codec.ts'
 import { jsonToRlpInput } from '../payloadCodec.ts'
 
 import type { Input } from '@ethereumjs/rlp'
@@ -18,11 +18,23 @@ function hx(s: string): PrefixedHexString {
   return s as PrefixedHexString
 }
 
-export function ethStatusFromFields(fields: EthStatusFields): EthStatusOpts {
+export function ethStatusFromFields(fields: EthStatusFields, ethVersion = 68): EthStatusOpts {
+  const genesisHash = hexToBytes(hx(fields.genesisHash))
+  const bestHash = hexToBytes(hx(fields.bestHash))
+  if (ethUsesBlockRangeStatus(ethVersion)) {
+    return {
+      genesisHash,
+      earliestBlock: intToBytes(0),
+      latestBlockHash: bestHash,
+      ...(fields.latestBlock !== undefined
+        ? { latestBlock: hexToBytes(hx(fields.latestBlock)) }
+        : {}),
+    }
+  }
   return {
     td: hexToBytes(hx(fields.td)),
-    bestHash: hexToBytes(hx(fields.bestHash)),
-    genesisHash: hexToBytes(hx(fields.genesisHash)),
+    bestHash,
+    genesisHash,
     latestBlock: fields.latestBlock !== undefined ? hexToBytes(hx(fields.latestBlock)) : undefined,
   }
 }

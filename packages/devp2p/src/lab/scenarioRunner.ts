@@ -174,7 +174,7 @@ async function runStep(
       const send = (peer: Peer) => {
         const protocol = peer.getProtocols()[0] as ETH
         if (step.eth.send === 'STATUS' && step.eth.status) {
-          protocol.sendStatus(ethStatusFromFields(step.eth.status))
+          protocol.sendStatus(ethStatusFromFields(step.eth.status, protocol.getVersion()))
         } else if (step.eth.rlp !== undefined) {
           const code = ethMessageNameToCode(step.eth.send)
           protocol.sendMessage(code, jsonToRlpInput(step.eth.rlp))
@@ -615,7 +615,8 @@ async function runAction(
     const rlpx = mesh.getRlpx(action.node as string)
     const status = (action.status as EthStatusFields | undefined) ?? MAINNET_STATUS_JSON
     rlpx.events.once('peer:added', (peer) => {
-      ;(peer.getProtocols()[0] as ETH).sendStatus(ethStatusFromFields(status))
+      const eth = peer.getProtocols()[0] as ETH
+      eth.sendStatus(ethStatusFromFields(status, eth.getVersion()))
     })
     transcript.push(`step ${index}: ethSendStatusOnPeerAdded`)
     return
@@ -628,10 +629,14 @@ async function runAction(
       protocol.events.on('message', (code) => {
         if (code === EthMessageCodes.STATUS) {
           if (action.op === 'sendStatus') {
-            protocol.sendStatus(ethStatusFromFields(status ?? MAINNET_STATUS_JSON))
+            protocol.sendStatus(
+              ethStatusFromFields(status ?? MAINNET_STATUS_JSON, protocol.getVersion()),
+            )
           }
           if (action.op === 'sendStatusAndAssertThrowsGetNodeData') {
-            protocol.sendStatus(ethStatusFromFields(status ?? MAINNET_STATUS_JSON))
+            protocol.sendStatus(
+              ethStatusFromFields(status ?? MAINNET_STATUS_JSON, protocol.getVersion()),
+            )
             assertThrows(
               () => protocol.sendMessage(EthMessageCodes.GET_NODE_DATA, []),
               '/Code 13 not allowed with version 68/',
@@ -643,7 +648,9 @@ async function runAction(
           }
           if (action.op === 'sendStatusThrow') {
             try {
-              protocol.sendStatus(ethStatusFromFields(status ?? MAINNET_STATUS_JSON))
+              protocol.sendStatus(
+                ethStatusFromFields(status ?? MAINNET_STATUS_JSON, protocol.getVersion()),
+              )
               throw new Error('should have thrown')
             } catch (e: unknown) {
               const err = e as Error
@@ -653,7 +660,9 @@ async function runAction(
             }
           }
           if (action.op === 'sendStatusAndAssertThrowsUnknownCode') {
-            protocol.sendStatus(ethStatusFromFields(status ?? MAINNET_STATUS_JSON))
+            protocol.sendStatus(
+              ethStatusFromFields(status ?? MAINNET_STATUS_JSON, protocol.getVersion()),
+            )
             assertThrows(
               () => (protocol as ETH).sendMessage(0x55 as never, []),
               String(action.messagePattern),
@@ -688,7 +697,7 @@ async function runAction(
     const status = (action.status as EthStatusFields | undefined) ?? MAINNET_STATUS_JSON
     rlpx.events.once('peer:added', (peer) => {
       const protocol = peer.getProtocols()[0] as ETH
-      protocol.sendStatus(ethStatusFromFields(status))
+      protocol.sendStatus(ethStatusFromFields(status, protocol.getVersion()))
       if (action.then === 'assertVersion') {
         protocol.events.once('message', (code) => {
           if (code === EthMessageCodes.STATUS) {
@@ -713,7 +722,7 @@ async function runAction(
         }
       })
       const protocol = peer.getProtocols()[0] as ETH
-      protocol.sendStatus(ethStatusFromFields(status))
+      protocol.sendStatus(ethStatusFromFields(status, protocol.getVersion()))
     })
     transcript.push(`step ${index}: ethPeerErrorExpected`)
     return
@@ -736,7 +745,7 @@ async function runAction(
       const protocol = peer.getProtocols()[0] as ETH
       const status = action.status as EthStatusFields
       assertThrows(
-        () => protocol.sendStatus(ethStatusFromFields(status)),
+        () => protocol.sendStatus(ethStatusFromFields(status, protocol.getVersion())),
         String(action.messagePattern),
       )
     })
@@ -771,7 +780,7 @@ async function runAction(
         port: action.basePort as number,
         id: new Uint8Array(12),
       }
-      protocol.sendStatus(ethStatusFromFields(MAINNET_STATUS_JSON))
+      protocol.sendStatus(ethStatusFromFields(MAINNET_STATUS_JSON, protocol.getVersion()))
     })
     rlpx1.events.on('peer:added', (peer) => {
       peer.events.once('error', (err) => {

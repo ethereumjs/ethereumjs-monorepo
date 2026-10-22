@@ -233,7 +233,8 @@ export class NodeSession {
   private announceEthStatus(peer: Peer) {
     for (const protocol of peer.getProtocols()) {
       if (protocol.constructor.name !== 'ETH') continue
-      ;(protocol as ETH).sendStatus(ethStatusFromFields(MAINNET_STATUS_JSON))
+      const eth = protocol as ETH
+      eth.sendStatus(ethStatusFromFields(MAINNET_STATUS_JSON, eth.getVersion()))
       this.eventBus.emit({
         node: this.name,
         dir: 'out',
@@ -345,7 +346,7 @@ export class NodeSession {
 
   sendEthStatus(peerIndex: number, status: EthStatusFields) {
     const eth = this.getEth(peerIndex)
-    eth.sendStatus(ethStatusFromFields(status))
+    eth.sendStatus(ethStatusFromFields(status, eth.getVersion()))
     this.eventBus.emit({
       node: this.name,
       dir: 'out',

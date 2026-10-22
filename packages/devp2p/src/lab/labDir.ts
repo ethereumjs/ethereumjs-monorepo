@@ -63,7 +63,7 @@ export async function initLabDir(
       listenAddress,
       udpPort,
       tcpPort,
-      capabilities: ['eth68', 'eth69', 'snap'],
+      capabilities: ['eth68', 'snap'],
       clientId: 'ethereumjs-devp2p-lab',
       controlPort: 9200 + i,
     }
