@@ -13,10 +13,12 @@ import { devp2pDebug, pk2id } from '../util.ts'
 
 import { BanList } from './ban-list.ts'
 import { KBucket } from './kbucket.ts'
+import { JsonNodeStore, MemoryNodeStore } from './nodeStore.ts'
 import { Server as DPTServer } from './server.ts'
 
 import type { Debugger } from 'debug'
 import type { DPTEvent, DPTOptions, PeerInfo } from '../types.ts'
+import type { NodeStore } from './nodeStore.ts'
 
 const DEBUG_BASE_NAME = 'dpt'
 
@@ -43,6 +45,9 @@ export class DPT {
   protected _confirmedPeers: Set<string>
 
   protected _keccakFunction: (msg: Uint8Array) => Uint8Array
+  protected _nodeStore: NodeStore
+  protected _revalidateCounter = 0
+  protected _revalidatePeers: boolean
 
   private DEBUG: boolean
 
@@ -59,7 +64,13 @@ export class DPT {
 
     this._dns = new DNS({ dnsServerAddress: this._dnsAddr, common: options.common })
     this._banlist = new BanList()
+    this._nodeStore =
+      options.nodeStore ??
+      (options.nodeStorePath !== undefined
+        ? new JsonNodeStore(options.nodeStorePath)
+        : new MemoryNodeStore())
 
+    this._revalidatePeers = options.revalidatePeers ?? true
     this._onlyConfirmed = options.onlyConfirmed ?? false
     this._confirmedPeers = new Set()
 
@@ -195,10 +206,76 @@ export class DPT {
       const peer = await this._server.ping(obj)
       this.events.emit('peer:new', peer)
       this._kbucket.add(peer)
+      if (peer.id !== undefined) {
+        this._nodeStore.put({
+          id: bytesToUnprefixedHex(peer.id),
+          address: peer.address!,
+          udpPort: peer.udpPort!,
+          tcpPort: peer.tcpPort,
+          lastPong: Date.now(),
+          failCount: 0,
+        })
+      }
       return peer
     } catch (err: any) {
+      this._recordFail(obj)
       this._banlist.add(obj, 300000) // 5 min * 60 * 1000
       throw err
+    }
+  }
+
+  updatePeerEndpoint(id: Uint8Array, endpoint: PeerInfo): void {
+    const peer = this._kbucket.get(id)
+    if (peer === null) return
+    const updated = { ...peer, ...endpoint, id }
+    this._kbucket.remove(id)
+    this._kbucket.add(updated)
+    this._nodeStore.put({
+      id: bytesToUnprefixedHex(id),
+      address: updated.address!,
+      udpPort: updated.udpPort!,
+      tcpPort: updated.tcpPort,
+      lastPong: Date.now(),
+      failCount: 0,
+    })
+  }
+
+  _recordFail(obj: PeerInfo): void {
+    if (obj.id === undefined) return
+    const id = bytesToUnprefixedHex(obj.id)
+    const prev = this._nodeStore.get(id)
+    const failCount = (prev?.failCount ?? 0) + 1
+    if (failCount >= 3) {
+      this.banPeer(obj, 300000)
+      return
+    }
+    this._nodeStore.put({
+      id,
+      address: obj.address ?? prev?.address ?? '',
+      udpPort: obj.udpPort ?? prev?.udpPort ?? 0,
+      tcpPort: obj.tcpPort ?? prev?.tcpPort,
+      lastPong: prev?.lastPong,
+      failCount,
+    })
+  }
+
+  async _revalidateOnePeer(): Promise<void> {
+    const peers = this.getPeers()
+    if (peers.length === 0) return
+    const stored = this._nodeStore
+      .list()
+      .filter((n) => peers.some((p) => p.id && bytesToUnprefixedHex(p.id) === n.id))
+      .sort((a, b) => (a.lastPong ?? 0) - (b.lastPong ?? 0))
+    const target = stored[0]
+    if (!target) return
+    const peer = peers.find((p) => p.id && bytesToUnprefixedHex(p.id) === target.id)
+    if (!peer) return
+    try {
+      await this._server.ping(peer)
+      this._nodeStore.put({ ...target, lastPong: Date.now(), failCount: 0 })
+    } catch {
+      this._recordFail(peer)
+      this.removePeer(peer)
     }
   }
 
@@ -258,6 +335,13 @@ export class DPT {
   }
 
   async refresh(): Promise<void> {
+    if (this._revalidatePeers) {
+      this._revalidateCounter = (this._revalidateCounter + 1) % 10
+      if (this._revalidateCounter === 0) {
+        await this._revalidateOnePeer().catch(() => {})
+      }
+    }
+
     if (this._shouldFindNeighbours) {
       // Rotating selection counter going in loop from 0..9
       this._refreshIntervalSelectionCounter = (this._refreshIntervalSelectionCounter + 1) % 10

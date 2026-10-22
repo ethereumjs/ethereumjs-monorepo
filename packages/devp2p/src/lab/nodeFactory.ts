@@ -39,8 +39,8 @@ export function getTestDPTs(numDPTs: number, basePort: number, privateKeys?: Uin
         udpPort: basePort + i,
         tcpPort: basePort + i,
       },
-      timeout: 100,
       shouldFindNeighbours: false,
+      revalidatePeers: false,
     })
     dpt.bind(basePort + i)
     dpts.push(dpt)

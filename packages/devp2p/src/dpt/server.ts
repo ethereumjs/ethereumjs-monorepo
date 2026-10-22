@@ -5,7 +5,8 @@ import { EventEmitter } from 'eventemitter3'
 import { LRUCache } from 'lru-cache'
 
 import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util.ts'
-import { discv4ENRList } from './discv4Enr.ts'
+import { discv4ENRList, tcpPortFromDiscv4Enr } from './discv4Enr.ts'
+import { discv4ExpirationValid } from './packetExpiry.ts'
 
 import { decode, encode } from './message.ts'
 
@@ -173,6 +174,16 @@ export class Server {
       setTimeout(() => this.events.emit('peers', [info.data.from]), 100) // 100 ms
     }
 
+    if (
+      (info.typename === 'findneighbours' ||
+        info.typename === 'neighbours' ||
+        info.typename === 'enrRequest') &&
+      info.data.timestamp !== undefined &&
+      !discv4ExpirationValid(info.data.timestamp)
+    ) {
+      return
+    }
+
     switch (info.typename) {
       case 'ping': {
         const remote: PeerInfo = {
@@ -248,6 +259,18 @@ export class Server {
             tcpPort: this._endpoint.tcpPort ?? udpPort,
           }),
         })
+        break
+      }
+
+      case 'enrResponse': {
+        const tcp = tcpPortFromDiscv4Enr(info.data.record)
+        if (tcp !== undefined) {
+          this._dpt.updatePeerEndpoint(peerId, {
+            address: rinfo.address,
+            udpPort: rinfo.port,
+            tcpPort: tcp,
+          })
+        }
         break
       }
     }

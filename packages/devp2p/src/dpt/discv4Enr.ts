@@ -33,3 +33,15 @@ export function discv4ENRList(
   const signature = concatBytes(sigBytes.subarray(1), Uint8Array.from([sigBytes[0]!]))
   return [signature, seq, ...pairs]
 }
+
+/** Read the advertised TCP port from a discv4 ENRResponse record list. */
+export function tcpPortFromDiscv4Enr(record: Uint8Array[]): number | undefined {
+  for (let i = 2; i + 1 < record.length; i += 2) {
+    const key = new TextDecoder().decode(record[i]!)
+    if (key === 'tcp' && record[i + 1]!.length >= 2) {
+      const b = record[i + 1]!
+      return (b[0]! << 8) | b[1]!
+    }
+  }
+  return undefined
+}

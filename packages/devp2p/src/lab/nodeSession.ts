@@ -1,6 +1,6 @@
 import { join } from 'node:path'
 
-import { bytesToUnprefixedHex } from '@ethereumjs/util'
+import { bytesToUnprefixedHex, equalsBytes, hexToBytes } from '@ethereumjs/util'
 
 import { DPT, RLPx } from '../index.ts'
 import { type DISCONNECT_REASON, DisconnectReasonNames } from '../types.ts'
@@ -27,6 +27,7 @@ export class NodeSession {
   readonly dpt: DPT
   readonly rlpx: RLPx
   readonly nodeDir: string
+  readonly common: Common
   private waiters: Array<{
     match: (
       ev: ReturnType<EventBus['emit']> extends never
@@ -49,6 +50,7 @@ export class NodeSession {
   }) {
     this.name = opts.name
     this.nodeDir = opts.nodeDir
+    this.common = opts.common
     this.eventBus = opts.eventBus ?? new EventBus()
     const caps = resolveCapabilities(opts.nodeConfig.capabilities)
     this.dpt = new DPT(opts.privateKey, {
@@ -142,6 +144,17 @@ export class NodeSession {
         })
       })
       for (const protocol of peer.getProtocols()) {
+        if (protocol.constructor.name === 'ETH') {
+          protocol.events.on('status', (status: { genesisHash: Uint8Array }) => {
+            const genesis = hexToBytes(MAINNET_STATUS_JSON.genesisHash as `0x${string}`)
+            if (equalsBytes(status.genesisHash, genesis)) {
+              const remoteId = peer.getId()
+              if (remoteId) {
+                this.dpt.confirmPeer(bytesToUnprefixedHex(remoteId))
+              }
+            }
+          })
+        }
         protocol.events.on('message', (code: number, payload: unknown) => {
           const layer = protocol.constructor.name === 'SNAP' ? 'snap' : 'eth'
           const name =
@@ -346,7 +359,10 @@ export class NodeSession {
   sendEthMessage(peerIndex: number, name: string, json?: Record<string, unknown>, rlp?: unknown) {
     const eth = this.getEth(peerIndex)
     const code = ethMessageNameToCode(name)
-    const payload = rlp !== undefined ? jsonToRlpInput(rlp) : buildEthRlpPayload(name, json ?? {})
+    const payload =
+      rlp !== undefined
+        ? jsonToRlpInput(rlp)
+        : buildEthRlpPayload(name, json ?? {}, eth.getVersion())
     eth.sendMessage(code, payload)
     this.eventBus.emit({
       node: this.name,

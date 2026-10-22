@@ -30,7 +30,7 @@ const timestamp = {
   },
   decode(bytes: Uint8Array) {
     if (bytes.length !== 4) throw new RangeError(`Invalid timestamp bytes :${bytesToHex(bytes)}`)
-    return new DataView(bytes.buffer).getUint32(0)
+    return new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).getUint32(0)
   },
 }
 
