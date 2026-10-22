@@ -53,10 +53,10 @@ Session commands (require \`node run\` on the chosen node):
   devp2p dpt neighbours [--node name] <host> <udpPort>
   devp2p rlpx ping [--node name] [--peer N]
   devp2p wait [--node name] --event peer.added|eth.NAME|snap.NAME|rlpx.PONG [--timeout-ms N]
-  devp2p eth send [--node name] [--peer N] --name MSG [--json '{}'] [--rlp '[]']
-  devp2p eth wait [--node name] --name MSG [--timeout-ms N]
-  devp2p snap send [--node name] [--peer N] --name MSG [--json '{}'] [--rlp '[]']
-  devp2p snap wait [--node name] --name MSG [--timeout-ms N]
+  devp2p eth send [--node name] [--peer N] <MSG> [--json '{}'] [--rlp '[]']
+  devp2p eth wait [--node name] <MSG> [--timeout-ms N]
+  devp2p snap send [--node name] [--peer N] <MSG> [--json '{}'] [--rlp '[]']
+  devp2p snap wait [--node name] <MSG> [--timeout-ms N]
 
   devp2p scenario run <file.json>
   devp2p scenario list
@@ -322,7 +322,7 @@ async function main(argv: string[]) {
 
   if (cmd === 'eth') {
     const sub = rest[0]
-    const { values } = parseArgs({
+    const { values, positionals } = parseArgs({
       args: rest.slice(1),
       options: {
         ...sessionDirOpts,
@@ -330,10 +330,12 @@ async function main(argv: string[]) {
         json: { type: 'string' },
         rlp: { type: 'string' },
       },
+      allowPositionals: true,
     })
+    const message = (values.name as string | undefined) ?? positionals[0]
     if (sub === 'send') {
       const req = buildEthSendRequest({
-        name: values.name as string,
+        name: message,
         peer: values.peer as string,
         json: values.json as string,
         rlp: values.rlp as string,
@@ -344,7 +346,7 @@ async function main(argv: string[]) {
     }
     if (sub === 'wait') {
       const req = buildEthWaitRequest({
-        name: values.name as string,
+        name: message,
         timeoutMs: Number(values['timeout-ms'] ?? 30000),
       })
       const res = await runSessionRequest(values.dir, values.node, req)
@@ -355,7 +357,7 @@ async function main(argv: string[]) {
 
   if (cmd === 'snap') {
     const sub = rest[0]
-    const { values } = parseArgs({
+    const { values, positionals } = parseArgs({
       args: rest.slice(1),
       options: {
         ...sessionDirOpts,
@@ -363,10 +365,12 @@ async function main(argv: string[]) {
         json: { type: 'string' },
         rlp: { type: 'string' },
       },
+      allowPositionals: true,
     })
+    const message = (values.name as string | undefined) ?? positionals[0]
     if (sub === 'send') {
       const req = buildSnapSendRequest({
-        name: values.name as string,
+        name: message,
         peer: values.peer as string,
         json: values.json as string,
         rlp: values.rlp as string,
@@ -377,7 +381,7 @@ async function main(argv: string[]) {
     }
     if (sub === 'wait') {
       const req = buildSnapWaitRequest({
-        name: values.name as string,
+        name: message,
         timeoutMs: Number(values['timeout-ms'] ?? 30000),
       })
       const res = await runSessionRequest(values.dir, values.node, req)

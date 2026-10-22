@@ -119,7 +119,7 @@ export function buildEthSendRequest(opts: {
   rlp?: string
 }): CommandRequest {
   const name = opts.name
-  if (!name) throw new Error('--name is required')
+  if (!name) throw new Error('message name is required')
   const peerIndex = Number(opts.peer ?? 0)
   if (name === 'STATUS') {
     return {
@@ -138,7 +138,7 @@ export function buildEthSendRequest(opts: {
 }
 
 export function buildEthWaitRequest(opts: { name?: string; timeoutMs?: number }): CommandRequest {
-  if (!opts.name) throw new Error('--name is required')
+  if (!opts.name) throw new Error('message name is required')
   return {
     cmd: 'wait',
     event: `eth.${opts.name}`,
@@ -153,7 +153,7 @@ export function buildSnapSendRequest(opts: {
   rlp?: string
 }): CommandRequest {
   const name = opts.name
-  if (!name) throw new Error('--name is required')
+  if (!name) throw new Error('message name is required')
   return {
     cmd: 'snap.send',
     peerIndex: Number(opts.peer ?? 0),
@@ -164,7 +164,7 @@ export function buildSnapSendRequest(opts: {
 }
 
 export function buildSnapWaitRequest(opts: { name?: string; timeoutMs?: number }): CommandRequest {
-  if (!opts.name) throw new Error('--name is required')
+  if (!opts.name) throw new Error('message name is required')
   return {
     cmd: 'wait',
     event: `snap.${opts.name}`,

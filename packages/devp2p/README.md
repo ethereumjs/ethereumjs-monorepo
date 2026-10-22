@@ -130,19 +130,19 @@ npx devp2p peer add 127.0.0.1 30302 --tcp 30302 --wait
 npx devp2p peer list
 ```
 
-(`--wait` until RLPx is up. Both daemons send a default mainnet genesis **STATUS** on connect so the link is not dropped after 5 seconds (`TIMEOUT`). A later `eth send --name STATUS` is a no-op if that already happened. **`peer list`** should still show index `0`. Redial after every daemon restart.)
+(`--wait` until RLPx is up. Both daemons send a default mainnet genesis **STATUS** on connect so the link is not dropped after 5 seconds (`TIMEOUT`). A later `eth send STATUS` is a no-op if that already happened. **`peer list`** should still show index `0`. Redial after every daemon restart.)
 
 ```bash
-npx devp2p eth send --name STATUS --json '{"td":"0x040000000000","bestHash":"0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3","genesisHash":"0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3"}'
-npx devp2p eth send --name GET_BLOCK_HEADERS --json '{"requestId":"0x01","blockHash":"0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3","max":1,"skip":0,"reverse":false}'
-npx devp2p eth wait --name BLOCK_HEADERS --timeout-ms 30000
+npx devp2p eth send STATUS --json '{"td":"0x040000000000","bestHash":"0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3","genesisHash":"0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3"}'
+npx devp2p eth send GET_BLOCK_HEADERS --json '{"requestId":"0x01","blockHash":"0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3","max":1,"skip":0,"reverse":false}'
+npx devp2p eth wait BLOCK_HEADERS --timeout-ms 30000
 ```
 
 If headers never arrive, send STATUS from **Bob’s** session as well (**Terminal 4**):
 
 ```bash
 npx devp2p use bob
-npx devp2p eth send --name STATUS --json '{"td":"0x040000000000","bestHash":"0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3","genesisHash":"0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3"}'
+npx devp2p eth send STATUS --json '{"td":"0x040000000000","bestHash":"0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3","genesisHash":"0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3"}'
 ```
 
 Watch **`t: "event"`** lines on Terminals 1–2 (NDJSON). **`attach`** accepts the same verbs (`eth send GET_BLOCK_HEADERS blockHash=0x… max=1`, `wait eth.BLOCK_HEADERS`, …).
