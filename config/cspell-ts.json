@@ -663,6 +663,8 @@
     "awasm",
     "deopts",
     "IMPLS",
-    "impls"
+    "impls",
+    "ethy",
+    "Ethy"
   ]
 }
