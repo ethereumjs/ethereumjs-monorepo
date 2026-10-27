@@ -3,7 +3,11 @@ import { MessageChannel, Worker } from 'node:worker_threads'
 
 import { Devp2pWorkerClient } from './client.ts'
 import { Devp2pWorkerHost } from './host.ts'
-import { resolveWorkerEntryPath, workerExecArgv } from './resolveEntry.ts'
+import {
+  resolveThreadedNetworkModuleUrl,
+  resolveWorkerEntryPath,
+  workerExecArgv,
+} from './resolveEntry.ts'
 
 import type { ThreadedNetworkInitOptions } from './protocol.ts'
 
@@ -15,6 +19,7 @@ function defaultWorkerModuleUrl(): string | undefined {
 
 export { Devp2pWorkerClient } from './client.ts'
 export { Devp2pWorkerHost } from './host.ts'
+export { resolveThreadedNetworkModuleUrl } from './resolveEntry.ts'
 export type {
   ThreadedEthStatusFields,
   ThreadedNetworkInitOptions,

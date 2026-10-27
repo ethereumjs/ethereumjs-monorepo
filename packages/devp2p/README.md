@@ -248,15 +248,28 @@ For clients that want devp2p off the main thread (UI, RPC, or EVM workers), use 
 Discovery throttling and empty-wire **Good Citizen** replies for `GET_*` messages are enabled by default in the worker host. Pass **`goodCitizen: false`** when you want every inbound subprotocol frame on the main thread.
 
 ```ts
-import { createThreadedNetwork, genPrivateKey } from '@ethereumjs/devp2p'
+import {
+  createThreadedNetwork,
+  genPrivateKey,
+  resolveThreadedNetworkModuleUrl,
+} from '@ethereumjs/devp2p'
 
-const client = await createThreadedNetwork({
-  privateKey: genPrivateKey(),
-  chain: 'mainnet',
-  capabilities: ['eth68', 'snap1'],
-  listenPort: 30303,
-  // Real Worker spawn (ESM): pass import.meta.url as the second argument.
-})
+const workerModuleUrl = resolveThreadedNetworkModuleUrl(import.meta.url)
+
+const client = await createThreadedNetwork(
+  {
+    privateKey: genPrivateKey(),
+    chain: 'mainnet',
+    capabilities: ['eth68', 'snap1'],
+    listenPort: 30303,
+    status: {
+      td: '0x040000000000',
+      bestHash: '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
+      genesisHash: '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
+    },
+  },
+  workerModuleUrl,
+)
 
 client.events.on('telemetry', (snap) => {
   /* peer ids, caps, RTT, worker diagnostics */
@@ -269,7 +282,9 @@ client.connectPeer({ id: remoteId, address: '127.0.0.1', udpPort: 30304, tcpPort
 client.stop()
 ```
 
-Use **`inProcess: true`** (MessageChannel host, no Worker file) in unit tests. Production callers spawn a Worker with **`createThreadedNetwork(options, import.meta.url)`**.
+**Try it locally (monorepo).** From `packages/devp2p`, run **`npm run threaded:smoke`**. That script starts a real `worker_threads` Worker plus an in-process peer, connects them on localhost, prints a telemetry snapshot, sends a SNAP `GET_ACCOUNT_RANGE`, and checks the Good Citizen empty `ACCOUNT_RANGE` reply. No mainnet sockets required.
+
+Use **`inProcess: true`** (MessageChannel host, no Worker file) in unit tests. For a real Worker, pass **`resolveThreadedNetworkModuleUrl(import.meta.url)`** as the second argument (works against TypeScript sources in this repo and against `dist/esm` after **`npm run build`**).
 
 ### Layer guide
 
