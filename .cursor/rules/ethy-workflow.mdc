@@ -1,0 +1,44 @@
+---
+description: Multi-agent workflow, role handoffs, change tracking, git isolation, and dependency rules for Ethy (@ethereumjs/ethy)
+globs: packages/ethy/**
+alwaysApply: false
+---
+
+# Ethy Workflow & Multi-Agent Coordination
+
+`packages/ethy` (`@ethereumjs/ethy`) is developed using a structured **three-agent workflow**. Every agent touching `packages/ethy/**` must follow this protocol so architectural context, design refinements, and implementation status never drift.
+
+## 1. The Three Roles
+
+| Role | Typical Model | Responsibilities | Required Outputs |
+| --- | --- | --- | --- |
+| **1. Coordinator** | Gemini 4 Argon (persistent main thread) | Owns high-level architecture, cross-package coherence, work-package sequencing, and review when the human says *"get up to latest changes"*. | Updates `ARCHITECTURE.md`, `PROGRESS.md` (Decision Log), and `work-packages/WP-*.md` scopes. |
+| **2. Planner** | Grok 4.7 | Picks up one assigned Work Package (`work-packages/WP-XX-*.md`), inspects the current codebase, resolves edge cases, and writes a concrete, file-by-file implementation plan. | Fills/updates the `## Concrete Implementation Plan (Planner)` section inside the target `WP-XX-*.md` file and sets status to `PLANNED`. |
+| **3. Implementer** | Composer 2.5 | Executes the Planner's implementation plan in code + tests, runs quality gates (`tsc`, `test`, `spellcheck`), and documents any implementation-time refinements. | Working code + tests; updates `## Implementation Notes & Deviations` in `WP-XX-*.md` and appends an entry to `PROGRESS.md`. |
+
+## 2. Mandatory Change & Decision Tracking
+
+Whenever you complete a planning pass or an implementation pass in `packages/ethy/`:
+
+1. **Read first:**
+   - `packages/ethy/AGENTS.md`
+   - `packages/ethy/PROGRESS.md` (check current phase, recent decisions, and upstream touch queue)
+   - Your target `packages/ethy/work-packages/WP-XX-*.md`
+2. **Record what changed and *why*:**
+   - **If you are the Planner (Grok):** Write the concrete file tree, interfaces, data flow, and test cases into `WP-XX-*.md`. If you refine or deviate from `ARCHITECTURE.md`, record the reasoning under `### Design Refinements` in the WP file and add a row to the **Decision Log** in `PROGRESS.md`.
+   - **If you are the Implementer (Composer):** After tests, typecheck, and spellcheck are green, update the WP status checkboxes, document any adjustments made during coding in `WP-XX-*.md`, and append a dated summary entry to the **Chronological Progress Log** in `PROGRESS.md`.
+
+## 3. Repository & Dependency Guardrails
+
+1. **Zero new dependencies without explicit human approval:**
+   - Do **not** add any runtime or dev dependency to `packages/ethy/package.json` (or root `package.json`) without asking the human first.
+   - Prefer Node.js built-ins (`node:*`), existing `@ethereumjs/*` workspace packages, and `@noble/*` primitives.
+   - When an external library is eventually approved, it must be well-established, minimal in transitive dependencies, and abstracted behind an interface so CI never depends on native binaries, external DBs, or model downloads.
+2. **Upstream `@ethereumjs/*` Hardening & Commit Discipline (Core Project Goal):**
+   - **Why this matters:** Just like the original EthereumJS client, a primary mission of Ethy is to **battle-test, harden, and modernize the entire `@ethereumjs/*` library stack** under real network, state, and concurrency load. Agents are explicitly encouraged to spot and fix bottlenecks, missing helpers, or ergonomics issues across the monorepo rather than working around them in `packages/ethy`.
+   - **`@ethereumjs/devp2p`:** Can be evolved **radically** (including breaking changes, worker-thread parallelization, discovery flow control, and zero-copy buffer handling in `WP-00`), while keeping its public API clean and appealing for general research and production use cases.
+   - **All other active packages (`common`, `mpt`, `statemanager`, `util`, `block`, `tx`, `evm`, `vm`, `rlp`):** Improvements, performance optimizations, and new helpers are highly welcome, provided they remain **100% backwards-compatible** (`code-conventions.mdc`).
+   - **Tracking & Commit Isolation:** Log every upstream library change in `packages/ethy/PROGRESS.md` (*Upstream Library Touch Queue*) and commit upstream library improvements in **separate, atomic commits** from `packages/ethy` changes so they can be cherry-picked or opened as standalone PRs against `master`.
+3. **Git & Finish Steps:**
+   - Follow root `.cursor/rules/git.mdc`: never commit, push, or switch branches unless explicitly asked by the human. When asked to commit, commit upstream library changes separately from `packages/ethy` changes.
+   - Always run `npm run tsc` (in `packages/ethy` and any touched workspace package) and `npm run spellcheck` before finishing your turn.

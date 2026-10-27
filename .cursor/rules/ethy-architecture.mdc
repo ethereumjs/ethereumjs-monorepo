@@ -1,0 +1,53 @@
+---
+description: Core architectural invariants for Ethy (@ethereumjs/ethy) — Spine, Headless Core, 4-Zone TUI, CI abstractions, and Amsterdam Snap/BAL sync
+globs: packages/ethy/**
+alwaysApply: false
+---
+
+# Ethy Architecture Invariants
+
+Ethy (`@ethereumjs/ethy`) is an **Execution-Free State & Intelligence Node** for Ethereum, starting with Amsterdam (`snap/1` flat-state sync without trie healing → `eth/71` EIP-7928 Block-Level Access List diffs) and a zero-log interactive TUI + AI microscope.
+
+## 1. Strict Separation: Headless Core, Worker-Threaded P2P & Zero-Log TUI
+
+- **Dedicated Worker-Thread P2P (`@ethereumjs/devp2p` via `WP-00`):**
+  - `DPT` (UDP discovery), `DNS`, and `RLPx` (TCP ECIES/Snappy/framing) run **100% inside a dedicated Node.js `worker_threads` Worker** (`createThreadedNetwork` in `@ethereumjs/devp2p`).
+  - The main thread never handles raw UDP discovery storms (`secp256k1` sign/recover), failed TCP handshakes, or O(N²) socket buffer concatenations. Subprotocol payloads (`eth`, `snap`) cross the worker boundary via zero-copy transferable `ArrayBuffer`s alongside coalesced peer/diagnostic telemetry snapshots.
+- **`EthyCore` & `EthySpine` (`src/core/`, `src/spine/`):**
+  - Must remain **100% terminal-agnostic** (no `process.stdout`, no ANSI codes, no `readline`).
+  - All subsystem telemetry (peers, 16 hex snap buckets `0x0..0xf`, current slot, capability states, and the bounded `diagnosticRingBuffer`) lives in the typed `EthySpine` store.
+  - No `console.log` or `console.error` spam during node operation. Protocol anomalies, peer drops, and range-proof failures are pushed into `spine.diagnosticRingBuffer` so the UI stays clean while the LLM/developer inspector has full X-ray visibility.
+  - This separation guarantees that `EthyCore` can also run in headless mode (`createEthyNode({ headless: true })`) as a live-state simulation backend for MCP servers (such as *Feel Your Protocol*).
+
+## 2. Pure 4-Zone TUI & Declarative Micro-Widgets
+
+- **Pure layout rendering (`src/tui/`):**
+  - `renderFrame(spine, activeWidget, width, height): string[]` is a pure, synchronous function of state and terminal dimensions.
+  - The screen is divided into 4 fixed horizontal zones:
+    1. **Zone 1 — Hero Metrics:** High-contrast slot, snap progress bar (`0x0..0xf`), and throughput.
+    2. **Zone 2 — Dynamic Workspace:** Renders structured `WidgetSpec` payloads (`table`, `key_value`, `bar_chart`, `hex_inspector`) produced by tools.
+    3. **Zone 3 — Capability Bar:** 1-line traffic-light pills (`● P2P`, `◐ SNAP`, `○ HEAD`, `● AI`).
+    4. **Zone 4 — Sticky Prompt:** Non-blocking input with dynamic ghost-text suggestions (`[Tab]` to accept) matching currently unlocked capabilities.
+- **LLMs never draw raw ASCII boxes:**
+  - Tools return typed data + a `WidgetSpec`. The TypeScript TUI renderer computes column widths, truncation, and box borders deterministically.
+
+## 3. Bidirectional State Awareness (`<ethy_state>` & Tool Gating)
+
+- Every prompt routed to an LLM is prefixed with a compact `<ethy_state>` telemetry header containing `slot`, `slot_delta` since the previous query, current `phase`, and per-capability readiness.
+- **Dynamic Tool Gating:** Only expose tools whose capability pill is currently ready (`●`) or partially ready (`◐`). Never expose locked (`○`) tools to small local models.
+- **Zero-Boredom from Second 0:** Deterministic slash/keyword commands (`/peers`, `/buckets`, `/diag`, `/account`, `/help`) and the rotating onboarding prompt carousel work immediately at startup, even before any local LLM finishes loading or downloading.
+
+## 4. CI-First Abstractions (Zero Network, Zero LLM Download, Zero External DB in CI)
+
+Every external I/O boundary must sit behind a lightweight TypeScript interface with an in-memory/synthetic implementation for unit test CI:
+
+1. **`IntentEngine` (`src/ai/`):** Swaps between `DeterministicIntentEngine` (slash commands + keyword/fixture router for CI and fallback) and local LLM adapters.
+2. **`StateStore` (`src/store/`):** Swaps between `InMemoryFlatStore` (zero-dep `Map`/`Uint8Array` store for CI and rolling-window mode) and persistent disk backends.
+3. **`SnapTransport` / `PeerSource` (`src/sync/`):** Swaps between live `@ethereumjs/devp2p` peers and `SyntheticSnapPeer` (which generates a deterministic mini-trie via `@ethereumjs/mpt` and serves real RLP `AccountRange` + Merkle edge proofs in <50ms).
+
+## 5. Amsterdam Sync & P2P "Good Citizen" Rules
+
+- **Zero-Config CLI:** `npx @ethereumjs/ethy` (or `ethy sepolia`) starts immediately with sensible defaults. Network configs resolve dynamically from `@ethereumjs/common` (`Sepolia` default during Amsterdam testing; all `common` chains supported).
+- **No Beacon Node required for Snap Bootstrap:** Acquire the fresh pivot `stateRoot` and `blockNumber` directly from the best connected `eth` peer's latest block header (staying within the 128-block `snapAvailabilityDepth`).
+- **No Trie-Healing:** Sync flat accounts/storage/code at the pivot via `snap/1` (`verifyMerkleRangeProof` with identity key hashing `(k) => k` on 32-byte account hashes) and transition to `eth/71` EIP-7928 `BlockLevelAccessList` diffs (`consumeBAL`).
+- **Good Citizen on `devp2p`:** Announce honest block ranges (`BLOCK_RANGE_UPDATE` in `eth/69+`) and reply to unsupported or out-of-range peer requests **immediately (<1ms)** with a valid empty RLP response (`emptyReplyPayload`) — never let peers time out.
