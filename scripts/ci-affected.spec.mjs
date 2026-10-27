@@ -187,6 +187,28 @@ describe('real workspace graph', () => {
     assert.equal(mptOnly.affected.has('util'), false)
   })
 
+  it('runs ethy on its own job, and when common changes, without static', () => {
+    const packages = loadWorkspace()
+    const ethyOnly = computeAffected({
+      files: ['packages/ethy/src/tui/renderFrame.ts'],
+      forceAll: false,
+      packages,
+    })
+    assert.equal(ethyOnly.jobs.ethy, true)
+    assert.equal(ethyOnly.jobs.static, false)
+    assert.equal(ethyOnly.jobs.common, false)
+    assert.equal(coverageFlags(ethyOnly.changed, ethyOnly.jobs).ethy_coverage, true)
+
+    const commonOnly = computeAffected({
+      files: ['packages/common/src/chains.ts'],
+      forceAll: false,
+      packages,
+    })
+    assert.equal(commonOnly.jobs.ethy, true)
+    assert.equal(commonOnly.jobs.common, true)
+    assert.equal(coverageFlags(commonOnly.changed, commonOnly.jobs).ethy_coverage, false)
+  })
+
   it('collects coverage only for directly changed packages', () => {
     const packages = loadWorkspace()
     const vmOnly = computeAffected({

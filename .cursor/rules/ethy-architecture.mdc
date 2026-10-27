@@ -23,13 +23,15 @@ Ethy (`@ethereumjs/ethy`) is an **Execution-Free State & Intelligence Node** for
 
 - **Pure layout rendering (`src/tui/`):**
   - `renderFrame(spine, activeWidget, width, height): string[]` is a pure, synchronous function of state and terminal dimensions.
+  - **Top chrome:** `Ethy v… | NETWORK` on the left, `Slot N` just left of the right-aligned capability pills (`● P2P`, `◐ SNAP`, …), horizontal rule, one spacer row, then the workspace.
   - The screen is divided into 4 fixed horizontal zones:
-    1. **Zone 1 — Hero Metrics:** High-contrast slot, snap progress bar (`0x0..0xf`), and throughput.
+    1. **Zone 1 — Title row:** Client, network, and slot number. No separate slot panel.
     2. **Zone 2 — Dynamic Workspace:** Renders structured `WidgetSpec` payloads (`table`, `key_value`, `bar_chart`, `hex_inspector`) produced by tools.
-    3. **Zone 3 — Capability Bar:** 1-line traffic-light pills (`● P2P`, `◐ SNAP`, `○ HEAD`, `● AI`).
-    4. **Zone 4 — Sticky Prompt:** Non-blocking input with dynamic ghost-text suggestions (`[Tab]` to accept) matching currently unlocked capabilities.
+    3. **Zone 3 — Sticky Prompt:** Non-blocking input with dynamic ghost-text suggestions (`[Tab]` to accept) matching currently unlocked capabilities.
 - **LLMs never draw raw ASCII boxes:**
   - Tools return typed data + a `WidgetSpec`. The TypeScript TUI renderer computes column widths, truncation, and box borders deterministically.
+- **Stable fixed layout (no horizontal jump):**
+  - Each frame line is exactly `cols` visible columns. `Slot N` keeps a fixed gap before the capability pills, those pills stay anchored, and tables use stable column weights so values can change without reflowing the chrome. Details: [`packages/ethy/.cursor/rules/ethy-tui.mdc`](../../packages/ethy/.cursor/rules/ethy-tui.mdc).
 
 ## 3. Bidirectional State Awareness (`<ethy_state>` & Tool Gating)
 

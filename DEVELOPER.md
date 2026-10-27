@@ -242,7 +242,7 @@ Structural refactors (registries, strategies, pipelines) land on **`master`**. L
 
 **TypeScript** — `npm test` does **not** run `tsc`. After TS edits, typecheck the touched package(s).
 
-**Testing** — CI runs affected packages via [ci-affected.mjs](./scripts/ci-affected.mjs). Skipped per-package jobs still count as success. Lint, typecheck, and `npm audit` always run. Full matrix on `master`, workflow dispatch, or shared-config changes. `vm-est-dev` is informational, not gated.
+**Testing** — CI runs affected packages via [ci-affected.mjs](./scripts/ci-affected.mjs). Skipped per-package jobs still count as success. Lint, typecheck, and `npm audit` always run. Full matrix on `master`, workflow dispatch, or shared-config changes. `vm-est-dev` is informational, not gated. Ethy tests run in their own `ethy` job ([ethy-build.yml](.github/workflows/ethy-build.yml)), not in the static bundle.
 
 VM consensus runners: [packages/vm/DEVELOPER.md](./packages/vm/DEVELOPER.md).
 

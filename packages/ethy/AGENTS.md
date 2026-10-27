@@ -27,6 +27,7 @@ We build Ethy using three specialized agent roles:
 | [`work-packages/README.md`](./work-packages/README.md) | Overview of holistic vertical slices (`WP-00` to `WP-06`), dependency graph, and how Planners and Implementers hand off work. |
 | [`../../.cursor/rules/ethy-workflow.mdc`](../../.cursor/rules/ethy-workflow.mdc) | Always-on workflow rule for `packages/ethy/**` (role handoffs, upstream library hardening, dependency lock, git isolation). |
 | [`../../.cursor/rules/ethy-architecture.mdc`](../../.cursor/rules/ethy-architecture.mdc) | Always-on technical invariants for `packages/ethy/**` (Worker-threaded P2P, Headless Core vs. TUI, CI abstractions, Amsterdam sync). |
+| [`.cursor/rules/ethy-tui.mdc`](./.cursor/rules/ethy-tui.mdc) | TUI layout: fixed-width zones, no horizontal jump, `layout.ts` helpers. |
 
 ## 3. Non-Negotiable Guardrails
 

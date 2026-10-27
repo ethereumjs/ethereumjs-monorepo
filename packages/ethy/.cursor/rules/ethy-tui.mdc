@@ -1,0 +1,32 @@
+---
+description: Ethy zero-log TUI — fixed layout, no horizontal jump, pure renderFrame invariants
+globs: packages/ethy/src/tui/**,packages/ethy/test/tui.spec.ts
+alwaysApply: false
+---
+
+# Ethy TUI layout
+
+Ethy’s terminal UI is a **pure function** of `EthySpine`, view state, and `(cols, rows)`. Follow these rules whenever you change `src/tui/` or framebuffer tests.
+
+## No horizontal jumping
+
+- Every frame line must have **exactly `cols` visible width** (`fixedLine` in `layout.ts`).
+- **Page layout** (`pageLayout.ts`) places every band. Default inset is **1 column left and right** (`PAGE_PADDING`). A band may add `padding` on top of that. **Delimiter bands stay full bleed** — the rule still touches both screen edges.
+- **Capability bar (top row):** `Ethy v<package.json> | <NETWORK>` at the content inset. Pills packed **from the right** of the content width as **`● P2P`** only (space after the dot, **gap 2**). **`Slot <n>`** sits immediately left of that cluster with an **8-column** gap and no extra delimiter. Pill columns stay fixed when the slot gains digits. Each pill's color is `CAPABILITY_FG` for that id (`capabilityMark.ts`); readiness changes the glyph only (`●` ready, `◐` partial, `○` locked). Do not show bracket labels.
+- **Header rule:** full-width `─` delimiter (ignores page padding), then one blank spacer row, then the workspace. Do not draw a slot number box, phase label, or account total on this chrome. The dotted suggestion carousel does not live in the workspace.
+- **Suggestion band:** above the prompt, a full-width `─`, one blank spacer, the carousel, one blank spacer, then another full-width `─`. Each row is split in half: commands on the left, prose on the right, both left-aligned, both using `capabilityMark` / `CAPABILITY_FG` for that id. Tick 0 starts with `/peers`. The carousel advances on `CAROUSEL_INTERVAL_MS` (12s).
+- **Prompt (Zone 4):** prefix `ethy > ` stays at a fixed width; only the draft field grows/shrinks inside its column. The line under it is two elements: `Enter submit · Esc exit` on the left, and while the draft is empty `ghost [Tab]` **right-aligned** in its own field. After each frame, show the terminal cursor on the input line, in the cell where the next character will be typed.
+- **Zone 2 widgets:** pad every line to full width; tables use **stable column weight** layouts (`tableColWeights`), not per-frame max cell length, so borders do not reflow when data updates.
+- Use **`visibleWidth` / `padVisible` / `truncateVisible`** for ANSI strings — never pad on raw string length.
+
+## Separation
+
+- `renderFrame` and widget renderers stay free of `node:*`, stdin, and spine mutation.
+- Session code (`session.ts`) owns raw mode and redraw timing only.
+
+## Tests
+
+- Virtual framebuffer tests must assert `lines.length === rows` and each line `visibleWidth(line) <= cols`.
+- When adding metrics that update every tick (demo, live sync), add or extend a test that two frames with different values keep **fixed column alignment** (same prefix width at column 0 for hero fields).
+
+See also [`ethy-architecture.mdc`](../../../../.cursor/rules/ethy-architecture.mdc) § Pure 4-Zone TUI.
