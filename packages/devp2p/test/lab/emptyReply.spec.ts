@@ -29,4 +29,13 @@ describe('emptyWireReply', () => {
     expect(decoded[1]).toEqual([])
     expect(decoded[2]).toEqual([])
   })
+
+  it('answers eth71 GET_BLOCK_ACCESS_LISTS with an empty list and the same request id', () => {
+    const requestId = hexToBytes('0x03')
+    const reply = emptyWireReply('eth', 71, 'GET_BLOCK_ACCESS_LISTS', [requestId, []])
+    expect(reply?.name).toBe('BLOCK_ACCESS_LISTS')
+    const decoded = RLP.decode(RLP.encode(reply!.rlp)) as unknown[]
+    expect(decoded[0]).toEqual(requestId)
+    expect(decoded[1]).toEqual([])
+  })
 })

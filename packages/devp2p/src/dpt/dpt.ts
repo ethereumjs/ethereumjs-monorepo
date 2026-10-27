@@ -48,6 +48,10 @@ export class DPT {
   protected _nodeStore: NodeStore
   protected _revalidateCounter = 0
   protected _revalidatePeers: boolean
+  protected _maxInFlightPings: number | undefined
+  protected _discoveryPaused = false
+  protected _peerBatchQueue: PeerInfo[] = []
+  protected _inFlightPings = 0
 
   private DEBUG: boolean
 
@@ -73,6 +77,7 @@ export class DPT {
     this._revalidatePeers = options.revalidatePeers ?? true
     this._onlyConfirmed = options.onlyConfirmed ?? false
     this._confirmedPeers = new Set()
+    this._maxInFlightPings = options.maxInFlightPings
 
     this._keccakFunction = options.common?.customCrypto.keccak256 ?? keccak_256
 
@@ -114,6 +119,22 @@ export class DPT {
     this._server.destroy(...args)
   }
 
+  /** Pause or resume neighbour lookup and DNS-driven peer batches (refresh timer stays armed). */
+  setDiscoveryPaused(paused: boolean): void {
+    if (this._discoveryPaused === paused) return
+    this._discoveryPaused = paused
+    if (paused) {
+      this._peerBatchQueue = []
+    } else {
+      void this.refresh()
+      this._drainPeerBatchQueue()
+    }
+  }
+
+  isDiscoveryPaused(): boolean {
+    return this._discoveryPaused
+  }
+
   _onKBucketPing(oldPeers: PeerInfo[], newPeer: PeerInfo): void {
     if (this._banlist.has(newPeer)) return
 
@@ -137,15 +158,37 @@ export class DPT {
   }
 
   _addPeerBatch(peers: PeerInfo[]): void {
-    const DIFF_TIME_MS = 200
-    let ms = 0
-    for (const peer of peers) {
-      setTimeout(() => {
-        this.addPeer(peer).catch((error) => {
+    if (this._discoveryPaused) return
+    if (this._maxInFlightPings === undefined) {
+      const DIFF_TIME_MS = 200
+      let ms = 0
+      for (const peer of peers) {
+        setTimeout(() => {
+          this.addPeer(peer).catch((error) => {
+            this.events.emit('error', error)
+          })
+        }, ms)
+        ms += DIFF_TIME_MS
+      }
+      return
+    }
+    this._peerBatchQueue.push(...peers)
+    this._drainPeerBatchQueue()
+  }
+
+  _drainPeerBatchQueue(): void {
+    if (this._discoveryPaused || this._maxInFlightPings === undefined) return
+    while (this._inFlightPings < this._maxInFlightPings && this._peerBatchQueue.length > 0) {
+      const peer = this._peerBatchQueue.shift()!
+      this._inFlightPings++
+      this.addPeer(peer)
+        .catch((error) => {
           this.events.emit('error', error)
         })
-      }, ms)
-      ms += DIFF_TIME_MS
+        .finally(() => {
+          this._inFlightPings--
+          this._drainPeerBatchQueue()
+        })
     }
   }
 
@@ -335,6 +378,16 @@ export class DPT {
   }
 
   async refresh(): Promise<void> {
+    if (this._discoveryPaused) {
+      if (this._revalidatePeers) {
+        this._revalidateCounter = (this._revalidateCounter + 1) % 10
+        if (this._revalidateCounter === 0) {
+          await this._revalidateOnePeer().catch(() => {})
+        }
+      }
+      return
+    }
+
     if (this._revalidatePeers) {
       this._revalidateCounter = (this._revalidateCounter + 1) % 10
       if (this._revalidateCounter === 0) {
