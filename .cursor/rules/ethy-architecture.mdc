@@ -8,8 +8,11 @@ alwaysApply: false
 
 Ethy (`@ethereumjs/ethy`) is an **Execution-Free State & Intelligence Node** for Ethereum, starting with Amsterdam (`snap/1` flat-state sync without trie healing → `eth/71` EIP-7928 Block-Level Access List diffs) and a zero-log interactive TUI + AI microscope.
 
-## 1. Strict Separation: Headless Core vs. Zero-Log TUI
+## 1. Strict Separation: Headless Core, Worker-Threaded P2P & Zero-Log TUI
 
+- **Dedicated Worker-Thread P2P (`@ethereumjs/devp2p` via `WP-00`):**
+  - `DPT` (UDP discovery), `DNS`, and `RLPx` (TCP ECIES/Snappy/framing) run **100% inside a dedicated Node.js `worker_threads` Worker** (`createThreadedNetwork` in `@ethereumjs/devp2p`).
+  - The main thread never handles raw UDP discovery storms (`secp256k1` sign/recover), failed TCP handshakes, or O(N²) socket buffer concatenations. Subprotocol payloads (`eth`, `snap`) cross the worker boundary via zero-copy transferable `ArrayBuffer`s alongside coalesced peer/diagnostic telemetry snapshots.
 - **`EthyCore` & `EthySpine` (`src/core/`, `src/spine/`):**
   - Must remain **100% terminal-agnostic** (no `process.stdout`, no ANSI codes, no `readline`).
   - All subsystem telemetry (peers, 16 hex snap buckets `0x0..0xf`, current slot, capability states, and the bounded `diagnosticRingBuffer`) lives in the typed `EthySpine` store.

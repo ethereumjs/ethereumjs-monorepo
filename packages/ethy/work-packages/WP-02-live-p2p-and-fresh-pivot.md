@@ -1,7 +1,7 @@
-# WP-02: Live `devp2p` Harness, Sepolia Amsterdam Config & Fresh Pivot Header Acquisition
+# WP-02: Live Threaded `devp2p` Harness, Sepolia Amsterdam Config & Fresh Pivot Header Acquisition
 
-- **Status:** `BLOCKED_BY_WP-01`
-- **Dependencies:** `WP-01`
+- **Status:** `BLOCKED_BY_WP-00_WP-01`
+- **Dependencies:** `WP-00`, `WP-01`
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
 
@@ -10,20 +10,18 @@
 ## 1. Holistic Scope & Architectural Requirements
 
 ### Goal
-Connect `@ethereumjs/ethy` to the live Ethereum P2P network (`sepolia` by default, any `@ethereumjs/common` chain supported) via `@ethereumjs/devp2p`, verify/update Sepolia's Amsterdam hardfork and bootstrap configuration in `@ethereumjs/common`, enforce the "Good Citizen" P2P contract (sub-millisecond empty replies + honest `BLOCK_RANGE_UPDATE`), and automatically acquire a **fresh pivot block header (`stateRoot` + `blockNumber`)** from the best connected `eth` peer so `snap/1` in `WP-03` always operates inside the 128-block `snapAvailabilityDepth` window — with **zero Beacon Node required**.
+Connect `@ethereumjs/ethy` to the live Ethereum P2P network (`sepolia` by default, any `@ethereumjs/common` chain supported) using the **Worker-Threaded `@ethereumjs/devp2p` runtime (`createThreadedNetwork`) built in `WP-00`**, verify/update Sepolia's Amsterdam hardfork and bootstrap configuration in `@ethereumjs/common`, enforce the "Good Citizen" P2P contract (sub-millisecond empty replies + honest `BLOCK_RANGE_UPDATE`), and automatically acquire a **fresh pivot block header (`stateRoot` + `blockNumber`)** from the best connected `eth` peer so `snap/1` in `WP-03` always operates inside the 128-block `snapAvailabilityDepth` window — with **zero Beacon Node required**.
 
 ### Key Deliverables
 
-1. **Upstream Audit & Maintenance (Tracked in `PROGRESS.md` Touch Queue):**
+1. **Upstream `@ethereumjs/common` Audit & Maintenance (Tracked in `PROGRESS.md` Touch Queue):**
    - **`@ethereumjs/common` (`packages/common/src/chains.ts`):**
      - Check `Sepolia` (and `Hoodi` if relevant) hardfork schedule for `amsterdam` activation timestamp / `forkHash` and working bootstrap/DNS nodes so EIP-2124 `forkId` validation succeeds with live peers.
      - Keep this change minimal, backwards-compatible, and recorded in `PROGRESS.md` for a separate upstream library commit.
-   - **`@ethereumjs/devp2p` (`packages/devp2p/src/protocol/snap.ts`):**
-     - Inspect `SNAP._handleMessage` vs `SNAP.sendMessage`: `sendMessage` compresses with `snappy.compress(payload)` when `protocolVersion >= 5`, whereas `_handleMessage` currently calls `RLP.decode(data)` directly without `snappy.uncompress(data)`! Verify how `RLPx`/`Peer` vs `ETH._handleMessage` handles Snappy framing and make `SNAP._handleMessage` symmetric so real `snap/1` packets from Geth/Reth decode cleanly.
 
-2. **Live P2P Coordinator (`src/net/`):**
-   - `PeerCoordinator` wrapping `@ethereumjs/devp2p` (`DPT`, `DNS`, `RLPx`) negotiating `ETH.eth68`, `ETH.eth69`, `ETH.eth70`, `ETH.eth71`, and `SNAP.snap`.
-   - Feeds live peer handshakes, client IDs (`peer['_hello']?.clientId`), negotiated capabilities, RTT latencies, and disconnects directly into `EthySpine.peers` and `EthySpine.diagnosticRingBuffer`.
+2. **Live Threaded P2P Coordinator (`src/net/`):**
+   - `PeerCoordinator` consuming `createThreadedNetwork` from `@ethereumjs/devp2p` (`WP-00`), running `DPT`, `DNS`, and `RLPx` (`ETH.eth68`–`ETH.eth71` + `SNAP.snap`) in the dedicated Network Worker thread.
+   - Applies coalesced worker telemetry snapshots (connected peers, client IDs, negotiated capabilities, RTT latencies, and ring-buffer anomalies) directly into `EthySpine.peers` and `EthySpine.diagnosticRingBuffer`.
    - Automatically flips `spine.capabilities.p2p` from `locked` → `partial` (connecting) → `ready` (when `>= 1` `eth`+`snap` capable peer is active).
 
 3. **"Good Citizen" Wire Responder (`src/net/goodCitizen.ts`):**

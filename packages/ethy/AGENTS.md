@@ -24,16 +24,17 @@ We build Ethy using three specialized agent roles:
 | --- | --- |
 | [`ARCHITECTURE.md`](./ARCHITECTURE.md) | Vision, 4-Layer `EthySpine` design, 4-Zone Zero-Log TUI, `<ethy_state>` LLM protocol, Amsterdam `snap/1` + `eth/71` BAL sync, EthereumJS codebase integration map, and CI harness. |
 | [`PROGRESS.md`](./PROGRESS.md) | **Single source of truth for project state:** Work Package status table, Architectural Decision Log (`D-001`…), Upstream Library Touch Queue, and Chronological Implementation Log. |
-| [`work-packages/README.md`](./work-packages/README.md) | Overview of holistic vertical slices (`WP-01` to `WP-06`), dependency graph, and how Planners and Implementers hand off work. |
-| [`../../.cursor/rules/ethy-workflow.mdc`](../../.cursor/rules/ethy-workflow.mdc) | Always-on workflow rule for `packages/ethy/**` (role handoffs, dependency lock, git isolation). |
-| [`../../.cursor/rules/ethy-architecture.mdc`](../../.cursor/rules/ethy-architecture.mdc) | Always-on technical invariants for `packages/ethy/**` (Headless Core vs. TUI, CI abstractions, Amsterdam sync). |
+| [`work-packages/README.md`](./work-packages/README.md) | Overview of holistic vertical slices (`WP-00` to `WP-06`), dependency graph, and how Planners and Implementers hand off work. |
+| [`../../.cursor/rules/ethy-workflow.mdc`](../../.cursor/rules/ethy-workflow.mdc) | Always-on workflow rule for `packages/ethy/**` (role handoffs, upstream library hardening, dependency lock, git isolation). |
+| [`../../.cursor/rules/ethy-architecture.mdc`](../../.cursor/rules/ethy-architecture.mdc) | Always-on technical invariants for `packages/ethy/**` (Worker-threaded P2P, Headless Core vs. TUI, CI abstractions, Amsterdam sync). |
 
 ## 3. Non-Negotiable Guardrails
 
 1. **No new dependencies without human approval:** Do not add packages to `package.json` without asking the human first. Build with `node:*`, `@ethereumjs/*`, and `@noble/*`.
-2. **Upstream `@ethereumjs/*` isolation:**
-   - `@ethereumjs/devp2p` can be adapted directly (even with breaking changes if helpful).
-   - Other active packages (`common`, `mpt`, `statemanager`, `util`, `block`, `evm`, `vm`) must only receive clean, backwards-compatible additions, logged in [`PROGRESS.md`](./PROGRESS.md) (*Upstream Library Touch Queue*) and committed separately when commits are requested.
+2. **Harden the `@ethereumjs/*` stack (with clean commit isolation):**
+   - A core mission of Ethy is to harden and improve our monorepo libraries under real client workloads.
+   - `@ethereumjs/devp2p` can be refactored radically (starting with `WP-00`: Worker-Thread runtime, `DPT` discovery throttling, and O(N²) socket buffer elimination) while keeping general library ergonomics appealing for research and production users.
+   - Other active packages (`common`, `mpt`, `statemanager`, `util`, `block`, `evm`, `vm`, `rlp`) should be actively improved when beneficial, keeping all changes **100% backwards-compatible**, logged in [`PROGRESS.md`](./PROGRESS.md) (*Upstream Library Touch Queue*), and committed separately from `packages/ethy` commits.
 3. **CI is 100% offline & deterministic:** Never download LLM weights, open live P2P sockets, or require native DBs in default unit test runs. Always test through `IntentEngine`, `StateStore`, `SnapTransport`, and `renderFrame` virtual screen buffers.
 4. **Headless Core:** `EthyCore` and `EthySpine` must never import TUI/ANSI/stdout modules so Ethy can double as a programmatic/MCP engine (e.g. for *Feel Your Protocol*).
 5. **Finish checks:** Run `npm run tsc` and `npm run spellcheck` before completing any turn. Never `git commit` or `git push` unless explicitly asked by the human.

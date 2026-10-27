@@ -34,9 +34,11 @@ Whenever you complete a planning pass or an implementation pass in `packages/eth
    - Do **not** add any runtime or dev dependency to `packages/ethy/package.json` (or root `package.json`) without asking the human first.
    - Prefer Node.js built-ins (`node:*`), existing `@ethereumjs/*` workspace packages, and `@noble/*` primitives.
    - When an external library is eventually approved, it must be well-established, minimal in transitive dependencies, and abstracted behind an interface so CI never depends on native binaries, external DBs, or model downloads.
-2. **Upstream `@ethereumjs/*` package discipline:**
-   - **`@ethereumjs/devp2p`:** May be modified directly (including breaking adjustments where needed for Ethy's P2P/SNAP/ETH71 flow). Record any `devp2p` changes in `PROGRESS.md` under *Upstream Library Touch Queue*.
-   - **All other active packages (`common`, `mpt`, `statemanager`, `util`, `block`, `evm`, `vm`):** Keep additions backwards-compatible and minimal. Log every touched file in `PROGRESS.md` (*Upstream Library Touch Queue*) so they can be committed separately and opened as standalone upstream PRs.
+2. **Upstream `@ethereumjs/*` Hardening & Commit Discipline (Core Project Goal):**
+   - **Why this matters:** Just like the original EthereumJS client, a primary mission of Ethy is to **battle-test, harden, and modernize the entire `@ethereumjs/*` library stack** under real network, state, and concurrency load. Agents are explicitly encouraged to spot and fix bottlenecks, missing helpers, or ergonomics issues across the monorepo rather than working around them in `packages/ethy`.
+   - **`@ethereumjs/devp2p`:** Can be evolved **radically** (including breaking changes, worker-thread parallelization, discovery flow control, and zero-copy buffer handling in `WP-00`), while keeping its public API clean and appealing for general research and production use cases.
+   - **All other active packages (`common`, `mpt`, `statemanager`, `util`, `block`, `tx`, `evm`, `vm`, `rlp`):** Improvements, performance optimizations, and new helpers are highly welcome, provided they remain **100% backwards-compatible** (`code-conventions.mdc`).
+   - **Tracking & Commit Isolation:** Log every upstream library change in `packages/ethy/PROGRESS.md` (*Upstream Library Touch Queue*) and commit upstream library improvements in **separate, atomic commits** from `packages/ethy` changes so they can be cherry-picked or opened as standalone PRs against `master`.
 3. **Git & Finish Steps:**
    - Follow root `.cursor/rules/git.mdc`: never commit, push, or switch branches unless explicitly asked by the human. When asked to commit, commit upstream library changes separately from `packages/ethy` changes.
    - Always run `npm run tsc` (in `packages/ethy` and any touched workspace package) and `npm run spellcheck` before finishing your turn.
