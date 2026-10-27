@@ -37,6 +37,8 @@ export class RLPx {
   private _debug: Debugger
   protected _timeout: number
   protected _maxPeers: number
+  protected _throttleDiscovery: boolean
+  protected _discoveryLowWaterMark: number
   public readonly clientId: Uint8Array
   protected _remoteClientIdFilter?: string[]
   protected _capabilities: Capabilities[]
@@ -64,6 +66,12 @@ export class RLPx {
     // options
     this._timeout = options.timeout ?? 10000 // 10 sec * 1000
     this._maxPeers = options.maxPeers ?? 10
+    this._throttleDiscovery = options.throttleDiscovery ?? false
+    const lowWater = options.discoveryLowWaterMark ?? Math.floor(this._maxPeers * 0.8)
+    if (lowWater >= this._maxPeers) {
+      throw EthereumJSErrorWithoutCode('discoveryLowWaterMark must be less than maxPeers')
+    }
+    this._discoveryLowWaterMark = lowWater
 
     this.clientId =
       options.clientId ?? utf8ToBytes(`ethereumjs-devp2p/${os.platform()}-${os.arch()}/nodejs`)
@@ -272,6 +280,7 @@ export class RLPx {
 
       this._peers.set(peerKey, peer)
       this.events.emit('peer:added', peer)
+      this._syncDiscoveryThrottle()
     })
 
     peer.events.once('close', (reason, disconnectWe) => {
@@ -304,8 +313,27 @@ export class RLPx {
         const peerKey = bytesToUnprefixedHex(id)
         this._peers.delete(peerKey)
         this.events.emit('peer:removed', peer, reason, disconnectWe)
+        this._syncDiscoveryThrottle()
       }
     })
+  }
+
+  _connectedPeerCount(): number {
+    let count = 0
+    for (const item of this._peers.values()) {
+      if (item instanceof Peer) count++
+    }
+    return count
+  }
+
+  _syncDiscoveryThrottle(): void {
+    if (!this._throttleDiscovery || this._dpt === null) return
+    const connected = this._connectedPeerCount()
+    if (connected >= this._maxPeers) {
+      this._dpt.setDiscoveryPaused(true)
+    } else if (connected <= this._discoveryLowWaterMark) {
+      this._dpt.setDiscoveryPaused(false)
+    }
   }
 
   _refillConnections() {

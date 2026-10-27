@@ -1,6 +1,6 @@
 # WP-00: `@ethereumjs/devp2p` Worker-Thread Architecture, Discovery Flow Control & Buffer Hardening
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `DONE`
 - **Dependencies:** None (First foundational work package — hardens `@ethereumjs/devp2p` before Ethy scaffolding)
 - **Target Package:** `packages/devp2p` (`@ethereumjs/devp2p`)
 - **Planner:** Grok 4.7
@@ -52,19 +52,96 @@ In the old client days, running `devp2p` on the main thread starved the event lo
    - `test/worker-network.spec.ts`: Tests `createThreadedNetwork` (both via `MessageChannel` in-process and a real `node:worker_threads` `Worker`) performing peer connection, `ETH` `STATUS` + `SNAP` `GET_ACCOUNT_RANGE` exchange with zero-copy `ArrayBuffer` transfer, Good Citizen empty replies inside the worker, and telemetry snapshot emission.
 
 ### Acceptance Criteria
-- [ ] `cd packages/devp2p && npm run tsc` and `npm test` pass with 0 errors.
-- [ ] `npm run spellcheck` passes across all modified/added files.
-- [ ] `createThreadedNetwork` is exported from `@ethereumjs/devp2p` with clean TypeDoc JSDoc comments (`api-docs.mdc`) so `WP-02` in `packages/ethy` can consume it directly.
-- [ ] Record all changes in `packages/ethy/PROGRESS.md` under *Upstream Library Touch Queue* and *Chronological Progress Log*.
+- [x] `cd packages/devp2p && npm run tsc` and `npm test` pass with 0 errors.
+- [x] `npm run spellcheck` passes across all modified/added files.
+- [x] `createThreadedNetwork` is exported from `@ethereumjs/devp2p` with clean TypeDoc JSDoc comments (`api-docs.mdc`) so `WP-02` in `packages/ethy` can consume it directly.
+- [x] Record all changes in `packages/ethy/PROGRESS.md` under *Upstream Library Touch Queue* and *Chronological Progress Log*.
 
 ---
 
 ## 2. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled out by Grok 4.7 during the Planning pass. Include exact file paths in `packages/devp2p/src/`, worker message types, buffer reader design, DPT flow-control options, and test breakdown.)*
+WP-00 hardens `@ethereumjs/devp2p` only (no `packages/ethy` scaffold). Existing `DPT` / `RLPx` / `Peer` defaults stay backwards-compatible; `createThreadedNetwork` opts into discovery throttling and Good Citizen behavior.
+
+### Design Refinements (ADR: `PROGRESS.md` D-010–D-014)
+
+| ID | Choice |
+| --- | --- |
+| **D-010** | **`SocketByteQueue`** — Replace `_socketData` + `concatBytes` in `Peer._onSocketData` with a private chunk queue: `push`, `byteLength`, `peek(n)`, `consume(n)`. Single-chunk frames use zero-copy views; straddling frames copy once into a new head chunk. Auth/Ack EIP-8 length peek must not consume early. |
+| **D-011** | **Discovery throttle opt-in** — `RLPxOptions.throttleDiscovery` defaults `false`. `createThreadedNetwork` sets `true`, low water `floor(0.8 * maxPeers)`, `maxInFlightPings: 8`. `DPT.setDiscoveryPaused(true)` skips `findneighbours`, DNS refresh, and new `_addPeerBatch` work; unpause triggers one `refresh()`. Unset `maxInFlightPings` preserves current 200ms-stagger batch behavior (incl. test overrides). |
+| **D-012** | **One wire protocol, two transports** — Worker config uses `{ chain: 'mainnet' \| 'sepolia' \| 'hoodi' \| 'holesky', hardfork?: string }` (not structured-cloneable `Common`). Host builds `Common` in-thread. Payloads copied to dedicated `ArrayBuffer`s for transfer; client copies before send. `inProcess: true` uses `MessageChannel`. Real `Worker` entry resolved via stack-derived path (no `import.meta` in CJS emit). |
+| **D-013** | **Worker-owned handshake & Good Citizen** — On `peer:added`, host calls `ETH.sendStatus` from options. `goodCitizen` default `true` uses `emptyWireReply`; extend for eth/71 `GET_BLOCK_ACCESS_LISTS` → `[requestId, []]`. Answered requests not forwarded to main thread. `setBlockRange` → `BLOCK_RANGE_UPDATE` on eth/69+ peers. |
+| **D-014** | **Base protocol v5** — `BASE_PROTOCOL_VERSION = 5`. Snappy `< 5` covered by stubbed-hello unit test; live snap pair tests use v5. Single snappy decompress in `Peer._handleBody` only. |
+
+**RTT:** `Peer._sendPing` records time; `PeerEvent.pong` gains optional `rttMs` (existing listeners unchanged).
+
+### New files (`packages/devp2p/src/`)
+
+| Path | Role |
+| --- | --- |
+| `rlpx/socketByteQueue.ts` | Chunk queue (internal; not exported from package root). |
+| `worker/protocol.ts` | Command and event TypeScript unions. |
+| `worker/host.ts` | `Devp2pWorkerHost` — owns `DPT`, DNS (via DPT), `RLPx`. |
+| `worker/client.ts` | `Devp2pWorkerClient` — main-thread API. |
+| `worker/resolveEntry.ts` | Resolve `workerEntry.ts` / `workerEntry.js` without `import.meta`. |
+| `worker/workerEntry.ts` | `parentPort` → host bootstrap. |
+| `worker/index.ts` | Export `createThreadedNetwork`. |
+
+### Edited files
+
+| Path | Change |
+| --- | --- |
+| `rlpx/peer.ts` | Queue in `_onSocketData`; handlers use `peek`/`consume`; pong RTT. |
+| `dpt/dpt.ts` | `setDiscoveryPaused`, optional `maxInFlightPings` cap on `_addPeerBatch`. |
+| `rlpx/rlpx.ts` | Hysteresis: pause/resume DPT when `_peers.size` vs `maxPeers` / low water (on add/remove/close). |
+| `types.ts` | `DPTOptions.maxInFlightPings`; `RLPxOptions.throttleDiscovery`, `discoveryLowWaterMark` (throw if `>= maxPeers`); `PeerEvent.pong` optional `rttMs`. |
+| `lab/emptyReply.ts` | eth/71 `GET_BLOCK_ACCESS_LISTS` empty list reply. |
+| `index.ts` | Export threaded API + public types. |
+| `README.md` | Short “Threaded network” section under library stack (no new `examples/` — runner opens sockets). |
+
+No new npm dependencies. No CHANGELOG version section until release.
+
+### Worker API
+
+**Factory:** `createThreadedNetwork(options): Promise<Devp2pWorkerClient>` (calls `start` internally).
+
+**Options (structured-cloneable):** `privateKey`, `chain`, optional `hardfork`, `maxPeers`, `capabilities` as strings (`eth68`…`eth71`, `snap1` → host maps to `ETH.ethXX` / `SNAP.snap`), `endpoint` / `listenPort` (`0` ok; `ready` reports bound ports), `bootnodes`, `clientId`, `status` (required if any eth cap), `throttleDiscovery` (default `true` here), `discoveryLowWaterMark`, `maxInFlightPings` (default `8`), `telemetryIntervalMs` (default `150`), `goodCitizen` (default `true`), `inProcess`.
+
+**Client methods:** `start`, `stop`, `connectPeer`, `disconnectPeer`, `sendEthMessage(peerId, code, rlpBytes)`, `sendSnapMessage(peerId, code, rlpBytes)`, `setBlockRange(earliest, latest, latestHash)`. Do not send `STATUS` via `sendEthMessage` (`ETH.sendMessage` already throws).
+
+**Host → client events:** `ready`, `protocol` (`eth` \| `snap`, peer id hex, code, transferred RLP bytes — after snappy decompress in `_handleBody`, before subprotocol RLP decode), `telemetry` (peers, caps, RTT, bounded diagnostics), `error`, `stopped`. Telemetry on interval + peer add/remove.
+
+```text
+Devp2pWorkerClient ──commands──► MessagePort ◄──frames/telemetry── Devp2pWorkerHost ──► DPT + DNS + RLPx
+```
+
+### Tests (`packages/devp2p/test/`)
+
+Use existing folder layout; vitest `assert` (not bare `expect` for new cases). Localhost only; `destroy()` in cleanup; no live network.
+
+| Spec | Coverage |
+| --- | --- |
+| `rlpx/socketByteQueue.spec.ts` | 512 KB / 32 chunks; single-chunk zero-copy peek; 2-byte peek no consume; boundary straddle. |
+| `rlpx/peer-buffer.spec.ts` | Post-handshake, detach `data` listener, re-feed outbound frame via `_onSocketData` in 32 slices. |
+| `protocol/snap-snappy.spec.ts` | Live pair v5 `GET_ACCOUNT_RANGE` round-trip; stub `protocolVersion = 4` → no outbound snappy. |
+| `dpt/dpt-throttling.spec.ts` | Pause/unpause vs `findneighbours`/DNS; `maxInFlightPings: 2` with 20 peers; RLPx stub DPT pause/resume at water marks; default ctor unchanged. |
+| `lab/emptyReply.spec.ts` | eth/71 `GET_BLOCK_ACCESS_LISTS` empty + same request id. |
+| `worker/worker-network.spec.ts` | Two `inProcess` nodes, `listenPort: 0`, Good Citizen on/off, transferable buffer length; one real `Worker` case (longer timeout). |
+
+### Implementer finish gates
+
+1. `cd packages/devp2p && npm run tsc && npm test`
+2. `npm run spellcheck` (reword flags; avoid dictionary adds)
+3. `tsc --build tsconfig.prod.cjs.json` and `tsconfig.prod.esm.json` (worker entry must emit in both)
+4. On human commit ask: **separate commit** for `packages/devp2p` vs Ethy ledger updates in `PROGRESS.md`
 
 ---
 
 ## 3. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled out by Composer 2.5 after implementation and verification. Also append summary to `packages/ethy/PROGRESS.md`.)*
+- **`SocketByteQueue`** (`src/rlpx/socketByteQueue.ts`) wired in `Peer._onSocketData`; `subprotocolDispatch` hook + optional `pong` RTT on `peer.events`.
+- **DPT:** `setDiscoveryPaused`, optional `maxInFlightPings`; **RLPx:** `throttleDiscovery` + low-water resume (default off on direct `RLPx` ctor; on in worker host).
+- **Worker:** `src/worker/*` + `createThreadedNetwork` (`inProcess` MessageChannel for CI). CJS prod build: no `import.meta` default — pass `import.meta.url` when spawning a real Worker under ESM.
+- **Tests:** `socketByteQueue`, `peer-buffer` (large `GET_BLOCK_BODIES` frame replayed in 32 slices), `dpt-throttling`, `snap-snappy`, extended `emptyReply` eth/71, `worker-network` (in-process; real Worker case deferred).
+- **README:** “Threaded network” section under library stack.
+- **Follow-up (non-blocking):** optional real `Worker` integration test; TypeDoc pass on new exports if API docs job requires it.

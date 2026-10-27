@@ -5,6 +5,8 @@
     "DISCONNECT_REASON",
     "DNS",
     "DPT",
+    "Devp2pWorkerClient",
+    "Devp2pWorkerHost",
     "DisconnectReasonNames",
     "ECIES",
     "ENR",
@@ -25,6 +27,7 @@
     "SnapMessageCodeNames",
     "SnapMessageCodes",
     "buildGetBlockHeadersFromJSON",
+    "createThreadedNetwork",
     "decode",
     "devp2pDebug",
     "discv4ENRList",
@@ -38,6 +41,7 @@
     "isMessageCodeAllowed",
     "pk2id",
     "requestIdFromPayload",
+    "resolveThreadedNetworkModuleUrl",
     "tcpPortFromDiscv4Enr"
   ]
 }

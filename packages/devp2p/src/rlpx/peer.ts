@@ -18,6 +18,7 @@ import { DISCONNECT_REASON, DisconnectReasonNames } from '../types.ts'
 import { devp2pDebug, formatLogData } from '../util.ts'
 
 import { ECIES } from './ecies.ts'
+import { SocketByteQueue } from './socketByteQueue.ts'
 
 import type { Socket } from 'net'
 import type { Common } from '@ethereumjs/common'
@@ -90,7 +91,8 @@ export class Peer {
   protected _hello: Hello | null
   protected _nextPacketSize: number
   protected _socket: Socket
-  protected _socketData: Uint8Array
+  protected _socketQueue: SocketByteQueue
+  protected _lastPingSentAt: number | null
   protected _pingIntervalId: NodeJS.Timeout | null
   protected _pingTimeoutId: NodeJS.Timeout | null
   protected _closed: boolean
@@ -107,6 +109,16 @@ export class Peer {
    * capabilities
    */
   _protocols: ProtocolDescriptor[]
+
+  /**
+   * When set, subprotocol frames (not base `Peer` messages) are routed here first.
+   * Return `handled` to skip {@link Protocol._handleMessage}; `default` keeps legacy dispatch.
+   */
+  subprotocolDispatch?: (
+    protocolName: string,
+    msgCode: number,
+    payload: Uint8Array,
+  ) => 'handled' | 'default'
 
   constructor(options: PeerOptions) {
     this.events = new EventEmitter()
@@ -132,7 +144,8 @@ export class Peer {
 
     // socket
     this._socket = options.socket
-    this._socketData = new Uint8Array()
+    this._socketQueue = new SocketByteQueue()
+    this._lastPingSentAt = null
     this._socket.on('data', this._onSocketData.bind(this))
     this._socket.on('error', (err: Error) => this.events.emit('error', err))
     this._socket.once('close', this._onSocketClose.bind(this))
@@ -304,6 +317,7 @@ export class Peer {
 
     if (this._sendMessage(PREFIXES.PING, data) !== true) return
 
+    this._lastPingSentAt = Date.now()
     clearTimeout(this._pingTimeoutId!)
     this._pingTimeoutId = setTimeout(() => {
       this.disconnect(DISCONNECT_REASON.TIMEOUT)
@@ -330,13 +344,13 @@ export class Peer {
    */
   _handleAuth() {
     const bytesCount = this._nextPacketSize
-    const parseData = this._socketData.subarray(0, bytesCount)
+    const parseData = this._socketQueue.peek(bytesCount)
     if (!this._eciesSession['_gotEIP8Auth']) {
       if (parseData.subarray(0, 1) === hexToBytes('0x04')) {
         this._eciesSession.parseAuthPlain(parseData)
       } else {
         this._eciesSession['_gotEIP8Auth'] = true
-        this._nextPacketSize = bytesToInt(this._socketData.subarray(0, 2)) + 2
+        this._nextPacketSize = bytesToInt(this._socketQueue.peek(2)) + 2
         return
       }
     } else {
@@ -345,7 +359,7 @@ export class Peer {
     this._state = 'Header'
     this._nextPacketSize = 32
     process.nextTick(() => this._sendAck())
-    this._socketData = this._socketData.subarray(bytesCount)
+    this._socketQueue.consume(bytesCount)
   }
 
   /**
@@ -353,7 +367,7 @@ export class Peer {
    */
   _handleAck() {
     const bytesCount = this._nextPacketSize
-    const parseData = this._socketData.subarray(0, bytesCount)
+    const parseData = this._socketQueue.peek(bytesCount)
     if (!this._eciesSession['_gotEIP8Ack']) {
       if (parseData.subarray(0, 1) === hexToBytes('0x04')) {
         this._eciesSession.parseAckPlain(parseData)
@@ -363,7 +377,7 @@ export class Peer {
           )
       } else {
         this._eciesSession['_gotEIP8Ack'] = true
-        this._nextPacketSize = bytesToInt(this._socketData.subarray(0, 2)) + 2
+        this._nextPacketSize = bytesToInt(this._socketQueue.peek(2)) + 2
         return
       }
     } else {
@@ -376,7 +390,7 @@ export class Peer {
     this._state = 'Header'
     this._nextPacketSize = 32
     process.nextTick(() => this._sendHello())
-    this._socketData = this._socketData.subarray(bytesCount)
+    this._socketQueue.consume(bytesCount)
   }
 
   /**
@@ -499,7 +513,10 @@ export class Peer {
    */
   _handlePong() {
     clearTimeout(this._pingTimeoutId!)
-    this.events.emit('pong')
+    const rttMs =
+      this._lastPingSentAt !== null ? Math.max(0, Date.now() - this._lastPingSentAt) : undefined
+    this._lastPingSentAt = null
+    this.events.emit('pong', rttMs)
   }
 
   /**
@@ -529,7 +546,7 @@ export class Peer {
    */
   _handleHeader() {
     const bytesCount = this._nextPacketSize
-    const parseData = this._socketData.subarray(0, bytesCount)
+    const parseData = this._socketQueue.peek(bytesCount)
     this.DEBUG &&
       this._logger(`Received header ${this._socket.remoteAddress}:${this._socket.remotePort}`)
     const size = this._eciesSession.parseHeader(parseData)
@@ -541,7 +558,7 @@ export class Peer {
     this._state = 'Body'
     this._nextPacketSize = size + 16
     if (size % 16 > 0) this._nextPacketSize += 16 - (size % 16)
-    this._socketData = this._socketData.subarray(bytesCount)
+    this._socketQueue.consume(bytesCount)
   }
 
   /**
@@ -549,7 +566,7 @@ export class Peer {
    */
   _handleBody() {
     const bytesCount = this._nextPacketSize
-    const parseData = this._socketData.subarray(0, bytesCount)
+    const parseData = this._socketQueue.peek(bytesCount)
     const body = this._eciesSession.parseBody(parseData)
     if (!body) {
       this.DEBUG && this._logger('empty body!')
@@ -629,13 +646,20 @@ export class Peer {
           }
         }
       }
+      if (protocolName !== 'Peer' && this.subprotocolDispatch !== undefined) {
+        const route = this.subprotocolDispatch(protocolName, msgCode, payload)
+        if (route === 'handled') {
+          this._socketQueue.consume(bytesCount)
+          return
+        }
+      }
       protocolObj.protocol._handleMessage?.(msgCode, payload)
     } catch (err: any) {
       this.disconnect(DISCONNECT_REASON.SUBPROTOCOL_ERROR)
       this.DEBUG && this._logger(`Error on peer subprotocol message handling: ${err}`)
       this.events.emit('error', err)
     }
-    this._socketData = this._socketData.subarray(bytesCount)
+    this._socketQueue.consume(bytesCount)
   }
 
   /**
@@ -644,9 +668,9 @@ export class Peer {
    */
   _onSocketData(data: Uint8Array) {
     if (this._closed) return
-    this._socketData = concatBytes(this._socketData, data)
+    this._socketQueue.push(data)
     try {
-      while (this._socketData.length >= this._nextPacketSize) {
+      while (this._socketQueue.byteLength >= this._nextPacketSize) {
         switch (this._state) {
           case 'Auth':
             this._handleAuth()

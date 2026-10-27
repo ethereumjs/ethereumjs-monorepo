@@ -21,6 +21,9 @@ export interface PeerEvent {
   error: [error: Error]
   connect: undefined
   close: [reason: any, disconnectWe: boolean | null] // disconnectWe indicates whether the disconnection was initiated by us or not
+  ping: undefined
+  /** Round-trip time in milliseconds when this pong answers our ping. */
+  pong: [rttMs?: number]
 }
 
 export interface ProtocolEvent {
@@ -206,6 +209,12 @@ export interface DPTOptions {
    * Common instance to allow for crypto primitive (e.g. keccak) replacement
    */
   common?: Common
+
+  /**
+   * When set, caps concurrent `addPeer` calls started from neighbour/DNS batches.
+   * Unset keeps the legacy staggered schedule for every peer in a batch.
+   */
+  maxInFlightPings?: number
 }
 
 export interface DPTServerOptions {
@@ -317,6 +326,18 @@ export interface RLPxOptions {
   capabilities: Capabilities[]
   common: Common
   listenPort?: number | null
+  /**
+   * When true with an attached DPT, pause discovery refreshes while connected peers
+   * are at {@link maxPeers} and resume below the low-water mark.
+   *
+   * Default: false
+   */
+  throttleDiscovery?: boolean
+  /**
+   * Resume discovery when connected peer count drops to this value or below.
+   * Must be strictly less than {@link maxPeers}. Default: floor(0.8 * maxPeers).
+   */
+  discoveryLowWaterMark?: number
 }
 
 export type SendMethod = (code: number, data: Uint8Array) => any

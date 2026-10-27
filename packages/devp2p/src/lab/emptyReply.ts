@@ -20,6 +20,7 @@ const ETH_LIST_REPLY: Record<string, { name: string; min: number; max?: number }
   GET_RECEIPTS: { name: 'RECEIPTS', min: 63 },
   GET_NODE_DATA: { name: 'NODE_DATA', min: 63, max: 66 },
   GET_POOLED_TRANSACTIONS: { name: 'POOLED_TRANSACTIONS', min: 65 },
+  GET_BLOCK_ACCESS_LISTS: { name: 'BLOCK_ACCESS_LISTS', min: 71 },
 }
 
 function emptyEthReply(
