@@ -1,6 +1,6 @@
 # WP-01: Foundation — Package Scaffolding, `EthySpine`, 4-Zone TUI & Deterministic Prompt Loop
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `DONE`
 - **Dependencies:** None (First vertical slice)
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
@@ -61,19 +61,40 @@ Before opening real P2P sockets (`WP-02`) or debugging `snap/1` range proofs (`W
    - `test/intent.spec.ts`: `DeterministicIntentEngine` routing, capability gating on locked tools, and `triggerDevAction` mutating `EthySpine`.
 
 ### Acceptance Criteria
-- [ ] `cd packages/ethy && npm run tsc` passes with 0 errors.
-- [ ] `cd packages/ethy && npm test` passes in `<3s` with 0 network/LLM dependencies.
-- [ ] `npm run spellcheck` passes across all new files.
-- [ ] Running `npx tsx packages/ethy/src/cli/main.ts sepolia --demo` opens the flicker-free 4-zone TUI, animates synthetic P2P/Snap telemetry, supports `[Tab]` ghost-text completion, and renders tables in Zone 2 when queried.
+- [x] `cd packages/ethy && npm run tsc` passes with 0 errors.
+- [x] `cd packages/ethy && npm test` passes in `<3s` with 0 network/LLM dependencies.
+- [x] `npm run spellcheck` passes across all new files.
+- [x] Running `npx tsx packages/ethy/src/cli/main.ts sepolia --demo` opens the flicker-free 4-zone TUI, animates synthetic P2P/Snap telemetry, supports `[Tab]` ghost-text completion, and renders tables in Zone 2 when queried.
 
 ---
 
 ## 2. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled out by Grok 4.7 during the Planning pass. Include exact file tree, module responsibilities, interface signatures, and test breakdown.)*
+### Design refinements (D-015–D-021)
+
+See [`PROGRESS.md`](../PROGRESS.md) Decision Log. Summary: WP-01 depends only on `@ethereumjs/common`; copy ANSI helpers from devp2p (no devp2p dep until WP-02); AI pill `partial` (Slash/Rule Mode); pure `renderFrame` + key reducer; CI via `static` job + workflow step; head tools gated stubs; `advanceDemo(spine, elapsedMs)` deterministic.
+
+### File tree
+
+`package.json`, tsconfigs, `eslint.config.mjs`, `typedoc.mjs`, `bin/ethy.cjs`, `README.md`, `CHANGELOG.md`; `src/index.ts`, `cli/{args,main}.ts`, `spine/{types,createSpine,buckets,diagnostics}.ts`, `core/createEthyNode.ts`, `demo/advanceDemo.ts`, `ai/{stateHeader,intentEngine,deterministicEngine}.ts`, `tools/{registry,diagnose,devActions,gated,help}.ts`, `tui/{ansi,widgets,renderFrame,prompt,session}.ts`; `test/{spine,tui,intent,demo,args}.spec.ts`.
+
+### Interfaces
+
+`IntentEngine.handle({ text, spine, lastQuerySlot? })` → `{ widget, stateHeader, querySlot }`. `renderFrame(spine, view, cols, rows): string[]` (exactly `rows` lines). `createEthyNode({ network, demo?, headless? })`.
+
+### CI
+
+`scripts/ci-affected.mjs`: add `ethy` to `SKIPPABLE_JOBS.static`. `.github/workflows/rlp-ethash-genesis-wallet-build.yml`: Test ethy step.
+
+### Tests
+
+Vitest `assert`; spine (buckets, ring, state header); tui (100×30, 80×24 width); intent (routing, gating, dev actions); demo timestamps; args parse.
 
 ---
 
 ## 3. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled out by Composer 2.5 after implementation and verification. Also append summary to `packages/ethy/PROGRESS.md`.)*
+- Shipped `@ethereumjs/ethy` package with runtime dependency **only** on `@ethereumjs/common` (D-015); ANSI helpers copied into `src/tui/ansi.ts` (D-016).
+- `advanceDemo()` seeds peers when jumping directly into `SNAP_SYNCING` elapsed time (e.g. unit tests at 5000 ms) so `/drop` and peer tables work without stepping through P2P warmup first.
+- CI: `ethy` added to `SKIPPABLE_JOBS.static` and `rlp-ethash-genesis-wallet-build.yml` test step (D-019).
+- 28 unit tests; `npm test` ~200 ms locally. Production build emits `dist/cjs/cli/main.js` for `bin/ethy.cjs`.

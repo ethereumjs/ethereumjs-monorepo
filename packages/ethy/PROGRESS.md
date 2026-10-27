@@ -8,7 +8,7 @@ This file is the **single source of truth** for project progress, architectural 
 
 ## 1. Current Project Snapshot
 
-- **Current Stage:** **WP-00** (`@ethereumjs/devp2p` Worker-Thread & Hardening) is **`DONE`** (landed on branch `new-client-devp2p-wp0`). **WP-01** (`@ethereumjs/ethy` Foundation) is **`READY_FOR_PLANNING`** — next implementer target.
+- **Current Stage:** **WP-01** (`@ethereumjs/ethy` Foundation) is **`DONE`**. **WP-02** (Live P2P harness) is **`READY_FOR_PLANNING`** / unblocked on the Ethy side.
 - **Active Target Network:** `sepolia` (Amsterdam hardfork focus; generic `@ethereumjs/common` chain support).
 - **Package Identity:** `@ethereumjs/ethy` (CLI binary: `ethy`, zero-config invocation `ethy` or `ethy sepolia`; unscoped `ethy` npm name transfer inquired).
 
@@ -19,8 +19,8 @@ This file is the **single source of truth** for project progress, architectural 
 | ID | Work Package | Status | Dependencies | Spec File | Notes |
 | --- | --- | --- | --- | --- | --- |
 | **WP-00** | **`@ethereumjs/devp2p` Worker-Thread Architecture, Discovery Flow Control & Buffer Hardening** | `DONE` | None | [`work-packages/WP-00-devp2p-worker-and-hardening.md`](./work-packages/WP-00-devp2p-worker-and-hardening.md) | Shipped (#4417): `createThreadedNetwork`, `SocketByteQueue`, DPT/RLPx throttle, Good Citizen in worker, `inProcess` + real `Worker` ITs + README. |
-| **WP-01** | **Foundation: Scaffolding, `EthySpine`, 4-Zone TUI & Deterministic Prompt Loop** | `READY_FOR_PLANNING` | None | [`work-packages/WP-01-foundation-spine-and-tui-loop.md`](./work-packages/WP-01-foundation-spine-and-tui-loop.md) | Zero external deps; runnable `ethy sepolia` TUI + synthetic simulation mode + Day-1 slash/keyword tools + unit test suite. |
-| **WP-02** | **Live P2P Harness, Sepolia Config & Fresh Pivot Header Acquisition** | `BLOCKED_BY_WP-01` | WP-01 | [`work-packages/WP-02-live-p2p-and-fresh-pivot.md`](./work-packages/WP-02-live-p2p-and-fresh-pivot.md) | Connects `createThreadedNetwork` from `@ethereumjs/devp2p` to `EthySpine`, updates Sepolia Amsterdam config, exposes peer `STATUS` head hash from worker, acquires live pivot `stateRoot` from best `eth` peer. |
+| **WP-01** | **Foundation: Scaffolding, `EthySpine`, 4-Zone TUI & Deterministic Prompt Loop** | `DONE` | None | [`work-packages/WP-01-foundation-spine-and-tui-loop.md`](./work-packages/WP-01-foundation-spine-and-tui-loop.md) | `@ethereumjs/ethy` package: spine, deterministic prompt, `--demo`. TUI is a padded page with fixed capability colors, a split suggestion band, and a cursor prompt. Static CI job. |
+| **WP-02** | **Live P2P Harness, Sepolia Config & Fresh Pivot Header Acquisition** | `READY_FOR_PLANNING` | WP-01 (`DONE`), WP-00 (`DONE`) | [`work-packages/WP-02-live-p2p-and-fresh-pivot.md`](./work-packages/WP-02-live-p2p-and-fresh-pivot.md) | Connects `createThreadedNetwork` from `@ethereumjs/devp2p` to `EthySpine`, updates Sepolia Amsterdam config, exposes peer `STATUS` head hash from worker, acquires live pivot `stateRoot` from best `eth` peer. |
 | **WP-03** | **16-Bucket `snap/1` Account Sync, Range Proofs & Developer Microscope** | `BLOCKED_BY_WP-02` | WP-01, WP-02 | [`work-packages/WP-03-snap-account-sync-and-microscope.md`](./work-packages/WP-03-snap-account-sync-and-microscope.md) | `InMemoryFlatStore`, `SyntheticSnapPeer` for CI, 16-bucket `GET_ACCOUNT_RANGE` + slim-to-full RLP conversion + `verifyMerkleRangeProof`, live `/buckets` & `/drop` dev actions. |
 | **WP-04** | **Bidirectional Local LLM `IntentEngine` (`<ethy_state>` & Tool Gating)** | `BLOCKED_BY_WP-01` | WP-01 (can run in parallel with WP-02/03) | [`work-packages/WP-04-local-llm-intent-engine.md`](./work-packages/WP-04-local-llm-intent-engine.md) | Zero-dep local HTTP JSON-schema LLM engine (`llama-server` 1.7B instruct), `<ethy_state>` header injection, dynamic phase tool gating, `--record-fixture` CI replay. |
 | **WP-05** | **Contract Storage/Bytecode Sync & Zero-Execution `eth/71` BAL Head Follower** | `BLOCKED_BY_WP-03` | WP-03 | [`work-packages/WP-05-storage-code-and-bal-head-follower.md`](./work-packages/WP-05-storage-code-and-bal-head-follower.md) | `GET_BYTE_CODES` + `GET_STORAGE_RANGES`, healing-free pivot-to-head bridge via `eth/71` `GET_BLOCK_ACCESS_LISTS` (`BlockLevelAccessList` + `consumeBAL`), `inspectLatestBAL` widget. |
@@ -50,6 +50,14 @@ Every structural choice or mid-flight adjustment must be recorded here with its 
 | **D-012** | 2026-10-27 | **Cloneable chain id + in-process / Worker dual transport** | `Common` stays in-worker; main thread sends chain name + hardfork. Same message protocol over `MessageChannel` or `worker_threads`; worker entry resolved without `import.meta` in CJS builds. |
 | **D-013** | 2026-10-27 | **Worker-owned STATUS, Good Citizen, block range** | Avoid 5s status timeout waiting on main thread; `emptyWireReply` extended for eth/71; inbound gets answered in-worker when `goodCitizen` is on. |
 | **D-014** | 2026-10-27 | **Snappy tied to base protocol v5; single decompress site** | Live snap tests assume HELLO v5; v4 outbound behavior is unit-tested via stubbed hello only. |
+| **D-015** | 2026-10-27 | **WP-01 runtime dep: `@ethereumjs/common` only** | Avoid pulling `ethy` into the static CI job on every sibling-package PR; add workspace deps when each WP first imports them. |
+| **D-016** | 2026-10-27 | **Copy devp2p ANSI width helpers; no devp2p dep until WP-02** | `ansi.ts` is internal to devp2p; Ethy duplicates `stripAnsi` / `visibleWidth` / sync output sequences locally. |
+| **D-017** | 2026-10-27 | **AI capability pill `partial` (Slash/Rule Mode) on Day 1** | `ready` reserved for reachable local LLM in WP-04; slash tools work immediately. |
+| **D-018** | 2026-10-27 | **Pure `renderFrame` + key reducer; Node TTY only in cli/session** | Headless core stays terminal-agnostic; tests use virtual framebuffer without raw stdin. |
+| **D-019** | 2026-10-27 | **Ethy tests in existing `static` CI job** | `SKIPPABLE_JOBS.static` + workflow step; not added to npm `ACTIVE_PACKAGES` until publish. |
+| **D-020** | 2026-10-27 | **Head tools registered as gated stubs in WP-01** | `/account`, `/bal`, `/simulate` return `key_value` when `head` locked; real BAL/EVM in WP-05/06. |
+| **D-021** | 2026-10-27 | **`advanceDemo(spine, elapsedMs)` deterministic** | Stalled bucket always `0x3`; no randomness or network I/O. |
+| **D-022** | 2026-10-27 | **Page layout owns insets; capability color is per id** | `pageLayout` insets content by one column; rules stay full width. `CAPABILITY_FG` is the only color source. Readiness changes the glyph, not the color. |
 
 ---
 
@@ -68,6 +76,20 @@ Track every modification or planned modification to sibling monorepo packages he
 ## 5. Chronological Progress Log
 
 *Agents: Append a new dated subsection at the top of this list after each Planning (Grok 4.7) or Implementation (Composer 2.5) pass.*
+
+### 2026-10-27 — WP-01 TUI chrome (Implementer — Grok 4.7)
+- Title row shows client, network, and slot beside fixed-color capability marks.
+- Suggestions sit above the prompt: commands on the left, prose on the right, rotating on a slow interval.
+- The prompt has a terminal cursor. Tab fill shares the hint row with "Enter submit", right-aligned.
+- WP-01 stays `DONE`. Next package work is WP-02.
+
+### 2026-10-27 — WP-01 foundation implementation (`DONE`) (Implementer — Composer 2.5)
+- Added `@ethereumjs/ethy` package: `EthySpine`, `createEthyNode`, four-zone `renderFrame`, `DeterministicIntentEngine`, `--demo` / `--headless`, CLI `ethy`.
+- Tests: 28 vitest cases (`spine`, `tui`, `intent`, `demo`, `args`); CI wired via `static` job. Decisions **D-015**–**D-021** recorded.
+- WP-02 unblocked on Ethy side (still needs devp2p worker polish from touch queue).
+
+### 2026-10-27 — WP-01 concrete implementation plan (`PLANNED`) (Planner — Grok 4.7)
+- Filled [`work-packages/WP-01-foundation-spine-and-tui-loop.md`](./work-packages/WP-01-foundation-spine-and-tui-loop.md) §2 (file tree, interfaces, CI, tests) and refinements D-015–D-021.
 
 ### 2026-10-27 — WP-00 implementation complete (`DONE`) (Implementer — Composer 2.5)
 - Landed `@ethereumjs/devp2p` WP-00 on `new-client-devp2p-wp0`: `SocketByteQueue`, DPT pause / in-flight ping cap, RLPx discovery throttle, `createThreadedNetwork` + worker host/client, Good Citizen in worker, exports + README.
