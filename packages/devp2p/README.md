@@ -241,6 +241,36 @@ rlpx.events.on('peer:added', (peer) => {
 
 Construct `dpt` and `rlpx` with a secp256k1 private key, pass **`common`** and **`capabilities`** (e.g. `[ETH.eth68, SNAP.snap]` from `@ethereumjs/devp2p`) into `RLPx`, and optionally attach the same **`dpt`** instance so discovered peers feed RLPx dials.
 
+### Threaded network
+
+For clients that want devp2p off the main thread (UI, RPC, or EVM workers), use **`createThreadedNetwork`** and **`Devp2pWorkerClient`**. A dedicated `worker_threads` Worker runs `DPT` + `RLPx`; the main thread sends commands and receives telemetry plus raw ETH/SNAP payloads over `postMessage` (large frames use transferable `ArrayBuffer`s).
+
+Discovery throttling and empty-wire **Good Citizen** replies for `GET_*` messages are enabled by default in the worker host. Pass **`goodCitizen: false`** when you want every inbound subprotocol frame on the main thread.
+
+```ts
+import { createThreadedNetwork, genPrivateKey } from '@ethereumjs/devp2p'
+
+const client = await createThreadedNetwork({
+  privateKey: genPrivateKey(),
+  chain: 'mainnet',
+  capabilities: ['eth68', 'snap1'],
+  listenPort: 30303,
+  // Real Worker spawn (ESM): pass import.meta.url as the second argument.
+})
+
+client.events.on('telemetry', (snap) => {
+  /* peer ids, caps, RTT, worker diagnostics */
+})
+client.events.on('protocol', ({ protocol, peerId, code, payload }) => {
+  /* handle ETH/SNAP not answered in the worker */
+})
+
+client.connectPeer({ id: remoteId, address: '127.0.0.1', udpPort: 30304, tcpPort: 30304 })
+client.stop()
+```
+
+Use **`inProcess: true`** (MessageChannel host, no Worker file) in unit tests. Production callers spawn a Worker with **`createThreadedNetwork(options, import.meta.url)`**.
+
 ### Layer guide
 
 | Layer | Module | Typical use |
