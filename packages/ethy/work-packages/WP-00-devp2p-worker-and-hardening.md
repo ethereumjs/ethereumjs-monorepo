@@ -141,7 +141,6 @@ Use existing folder layout; vitest `assert` (not bare `expect` for new cases). L
 
 - **`SocketByteQueue`** (`src/rlpx/socketByteQueue.ts`) wired in `Peer._onSocketData`; `subprotocolDispatch` hook + optional `pong` RTT on `peer.events`.
 - **DPT:** `setDiscoveryPaused`, optional `maxInFlightPings`; **RLPx:** `throttleDiscovery` + low-water resume (default off on direct `RLPx` ctor; on in worker host).
-- **Worker:** `src/worker/*` + `createThreadedNetwork` (`inProcess` MessageChannel for CI). CJS prod build: no `import.meta` default — pass `import.meta.url` when spawning a real Worker under ESM.
-- **Tests:** `socketByteQueue`, `peer-buffer` (large `GET_BLOCK_BODIES` frame replayed in 32 slices), `dpt-throttling`, `snap-snappy`, extended `emptyReply` eth/71, `worker-network` (in-process; real Worker case deferred).
+- **Worker:** `src/worker/*` + `createThreadedNetwork` (`inProcess` MessageChannel + real `node:worker_threads` `Worker` via `resolveThreadedNetworkModuleUrl(import.meta.url)`).
+- **Tests:** `socketByteQueue`, `peer-buffer` (large `GET_BLOCK_BODIES` frame replayed in 32 slices), `dpt-throttling`, `snap-snappy`, extended `emptyReply` eth/71, `worker-network` (both `inProcess` and real `Worker` thread integration test).
 - **README:** “Threaded network” section under library stack.
-- **Follow-up (non-blocking):** optional real `Worker` integration test; TypeDoc pass on new exports if API docs job requires it.

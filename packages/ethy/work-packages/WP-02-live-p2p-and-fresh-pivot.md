@@ -1,7 +1,7 @@
 # WP-02: Live Threaded `devp2p` Harness, Sepolia Amsterdam Config & Fresh Pivot Header Acquisition
 
-- **Status:** `BLOCKED_BY_WP-00_WP-01`
-- **Dependencies:** `WP-00`, `WP-01`
+- **Status:** `BLOCKED_BY_WP-01`
+- **Dependencies:** `WP-00` (`DONE`), `WP-01`
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
 
@@ -10,42 +10,44 @@
 ## 1. Holistic Scope & Architectural Requirements
 
 ### Goal
-Connect `@ethereumjs/ethy` to the live Ethereum P2P network (`sepolia` by default, any `@ethereumjs/common` chain supported) using the **Worker-Threaded `@ethereumjs/devp2p` runtime (`createThreadedNetwork`) built in `WP-00`**, verify/update Sepolia's Amsterdam hardfork and bootstrap configuration in `@ethereumjs/common`, enforce the "Good Citizen" P2P contract (sub-millisecond empty replies + honest `BLOCK_RANGE_UPDATE`), and automatically acquire a **fresh pivot block header (`stateRoot` + `blockNumber`)** from the best connected `eth` peer so `snap/1` in `WP-03` always operates inside the 128-block `snapAvailabilityDepth` window — with **zero Beacon Node required**.
+Connect `@ethereumjs/ethy` to the live Ethereum P2P network (`sepolia` by default, any `@ethereumjs/common` chain supported) using the **Worker-Threaded `@ethereumjs/devp2p` runtime (`createThreadedNetwork`) shipped in `WP-00` (#4417)**, verify/update Sepolia's Amsterdam hardfork and bootstrap configuration in `@ethereumjs/common`, wire `setBlockRange` onto the worker's built-in Good Citizen responder, and automatically acquire a **fresh pivot block header (`stateRoot` + `blockNumber`)** from the best connected `eth` peer so `snap/1` in `WP-03` always operates inside the 128-block `snapAvailabilityDepth` window — with **zero Beacon Node required**.
 
 ### Key Deliverables
 
-1. **Upstream `@ethereumjs/common` Audit & Maintenance (Tracked in `PROGRESS.md` Touch Queue):**
+1. **Upstream `@ethereumjs/common` & `@ethereumjs/devp2p` Worker Polish (Tracked in `PROGRESS.md` Touch Queue):**
    - **`@ethereumjs/common` (`packages/common/src/chains.ts`):**
      - Check `Sepolia` (and `Hoodi` if relevant) hardfork schedule for `amsterdam` activation timestamp / `forkHash` and working bootstrap/DNS nodes so EIP-2124 `forkId` validation succeeds with live peers.
-     - Keep this change minimal, backwards-compatible, and recorded in `PROGRESS.md` for a separate upstream library commit.
+   - **`@ethereumjs/devp2p` (`packages/devp2p/src/worker/host.ts` & `protocol.ts`):**
+     - `WP-00` already implemented worker-owned `STATUS`, `goodCitizen: true` (`emptyWireReply` inside the worker), and `setBlockRange` (`D-013`).
+     - Two small additions in `Devp2pWorkerHost` so `WP-02` can bootstrap live Sepolia peers seamlessly:
+       1. **Expose peer `STATUS` head info to the client:** Currently `peer.subprotocolDispatch` in `host.ts:215` returns `'default'` for `ETH` `STATUS` (so `ETH._handleMessage` parses `_peerStatus`), which means the main thread doesn't yet receive the peer's `bestHash` / `latestBlockHash` or `latestBlock`. Expose `bestHash` / `latestBlockHash` and `latestBlock` on `WorkerPeerSnapshot` (or emit a `peer:status` event from `Devp2pWorkerHost`) once `eth` status completes.
+       2. **Enable `DPT` bootnodes & DNS discovery defaults from `Common`:** When `bootnodes` / `dnsNetworks` are not manually passed in `ThreadedNetworkInitOptions`, allow `Devp2pWorkerHost._start()` to default to `common.bootstrapNodes()` and `common.dnsNetworks()` (`shouldGetDnsPeers: true`) so `createThreadedNetwork({ chain: 'sepolia', ... })` automatically discovers live peers out of the box.
 
 2. **Live Threaded P2P Coordinator (`src/net/`):**
-   - `PeerCoordinator` consuming `createThreadedNetwork` from `@ethereumjs/devp2p` (`WP-00`), running `DPT`, `DNS`, and `RLPx` (`ETH.eth68`–`ETH.eth71` + `SNAP.snap`) in the dedicated Network Worker thread.
-   - Applies coalesced worker telemetry snapshots (connected peers, client IDs, negotiated capabilities, RTT latencies, and ring-buffer anomalies) directly into `EthySpine.peers` and `EthySpine.diagnosticRingBuffer`.
+   - `PeerCoordinator` consuming `createThreadedNetwork(options, resolveThreadedNetworkModuleUrl(import.meta.url))` from `@ethereumjs/devp2p` (`WP-00`).
+   - Maps `WorkerTelemetrySnapshot` (`peers: WorkerPeerSnapshot[]`, `diagnostics: WorkerDiagnosticEntry[]`) directly into `EthySpine.peers` (`PeerTelemetry`, mapping `clientId` → `clientName` and `rttMs` → `avgLatencyMs`) and `EthySpine.diagnosticRingBuffer`.
    - Automatically flips `spine.capabilities.p2p` from `locked` → `partial` (connecting) → `ready` (when `>= 1` `eth`+`snap` capable peer is active).
 
-3. **"Good Citizen" Wire Responder (`src/net/goodCitizen.ts`):**
-   - On inbound `ETH` requests (`GET_BLOCK_HEADERS`, `GET_BLOCK_BODIES`, `GET_RECEIPTS`, `GET_BLOCK_ACCESS_LISTS`, `GET_NODE_DATA`) or `SNAP` requests that Ethy cannot serve: immediately (<1ms) send a valid empty RLP response (`[reqId, []]`) preserving the peer's `reqId`.
-   - On `eth/69+` peers: send an honest `BLOCK_RANGE_UPDATE` advertising our actual available rolling window (or `[0, 0, ZERO_HASH]` before head sync).
+3. **Worker Good Citizen & Block Range Wiring:**
+   - Leverage `Devp2pWorkerHost`'s built-in `goodCitizen: true` mode (`D-013`, which already answers unsupported inbound `GET_*` requests in `<1ms` inside the worker without waking the main thread).
+   - Call `workerClient.setBlockRange(earliest, latest, latestHash)` whenever Ethy's available block window updates.
 
 4. **Fresh Pivot Header Acquisition (Stage-1 Zero-CL Bootstrap):**
-   - Upon completing `ETH` `STATUS` with a peer, read `bestHash` / `latestBlockHash` (or highest announced block) and send `GET_BLOCK_HEADERS` (1 header, reverse=0, skip=0).
-   - Decode the returned `@ethereumjs/block` `BlockHeader`, validate basic header sanity, and set `spine.pivotBlockNumber = header.number` and `spine.pivotStateRoot = header.stateRoot`.
+   - When a peer completes `ETH` `STATUS` and reports its `bestHash` / `latestBlockHash` (via the updated `WorkerPeerSnapshot` or status event), send `GET_BLOCK_HEADERS` via `workerClient.sendEthMessage(peerId, EthMessageCodes.GET_BLOCK_HEADERS, rlpPayload)` (1 header, reverse=0, skip=0).
+   - Receive the `BLOCK_HEADERS` response on `workerClient.events.on('protocol', ...)`, decode the `@ethereumjs/block` `BlockHeader`, validate basic header sanity, and set `spine.pivotBlockNumber = header.number` and `spine.pivotStateRoot = header.stateRoot`.
    - If the pivot becomes older than ~96 blocks while syncing, provide a clean method `refreshPivotHeader()` to re-anchor to a fresh `stateRoot` within the 128-block `snap/1` availability window.
 
 5. **TUI & Tool Integration:**
    - Enhance `diagnoseSnapAndPeers` and add `inspectNetworkTraffic` so `/peers` and natural-language queries in Zone 2 show live client diversity (Geth, Reth, Nethermind, Besu), negotiated protocol versions (`eth/70`, `eth/71`, `snap/1`), and the acquired Pivot Block `#` + `stateRoot`.
 
 6. **Deterministic CI Tests (`test/net.spec.ts`):**
-   - Use an in-process mock `Peer` / `Protocol` harness (or `packages/devp2p/src/lab/inProcessMesh.ts` patterns) to test:
-     - `STATUS` handshake → `GET_BLOCK_HEADERS` → `spine.pivotStateRoot` acquisition.
-     - Sub-millisecond empty RLP replies on unsupported inbound requests with `reqId` preserved.
-     - `SNAP` Snappy compress/decompress round-trip.
+   - Use `createThreadedNetwork({ inProcess: true, ... })` from `@ethereumjs/devp2p` to test:
+     - `STATUS` handshake → `bestHash` discovery → `GET_BLOCK_HEADERS` → `spine.pivotStateRoot` acquisition.
+     - `WorkerTelemetrySnapshot` mapping into `EthySpine.peers` and `EthySpine.diagnosticRingBuffer`.
 
 ### Acceptance Criteria
-- [ ] `SNAP._handleMessage` in `@ethereumjs/devp2p` properly handles Snappy-compressed `snap/1` frames from `protocolVersion >= 5` peers.
 - [ ] All unit tests in `packages/ethy` and `packages/devp2p` pass offline in CI (`npm test`, `npm run tsc`, `npm run spellcheck`).
-- [ ] Running `ethy sepolia` connects to live Sepolia peers, populates `EthySpine.peers`, acquires a live `pivotBlockNumber` + `pivotStateRoot`, and displays them in Zone 1 & Zone 2 without a single line of stdout log spam.
+- [ ] Running `ethy sepolia` spawns the `@ethereumjs/devp2p` worker thread, connects to live Sepolia peers, populates `EthySpine.peers`, acquires a live `pivotBlockNumber` + `pivotStateRoot`, and displays them in Zone 1 & Zone 2 without a single line of stdout log spam.
 
 ---
 
