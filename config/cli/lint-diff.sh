@@ -27,7 +27,7 @@ else
 fi
 
 if [ -n "$BASE" ]; then
-    FILESCHANGED=$(git diff --diff-filter=d --name-only --relative "$BASE" | grep -E '\.(js|ts)')
+    FILESCHANGED=$(git diff --diff-filter=d --name-only --relative "$BASE" | grep -E '\.(js|ts)$')
 else
     FILESCHANGED=""
 fi
