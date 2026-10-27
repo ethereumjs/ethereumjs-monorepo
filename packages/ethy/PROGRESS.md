@@ -8,7 +8,7 @@ This file is the **single source of truth** for project progress, architectural 
 
 ## 1. Current Project Snapshot
 
-- **Current Stage:** **WP-00** (`@ethereumjs/devp2p` Worker-Thread & Hardening) is **`PLANNED`** — ready for Composer 2.5 implementation. **WP-01** (`@ethereumjs/ethy` Foundation) remains **`READY_FOR_PLANNING`** (can run alongside WP-00 implementation).
+- **Current Stage:** **WP-00** (`@ethereumjs/devp2p` Worker-Thread & Hardening) is **`DONE`** (landed on branch `new-client-devp2p-wp0`). **WP-01** (`@ethereumjs/ethy` Foundation) is **`READY_FOR_PLANNING`** — next implementer target.
 - **Active Target Network:** `sepolia` (Amsterdam hardfork focus; generic `@ethereumjs/common` chain support).
 - **Package Identity:** `@ethereumjs/ethy` (CLI binary: `ethy`, zero-config invocation `ethy` or `ethy sepolia`; unscoped `ethy` npm name transfer inquired).
 
@@ -18,9 +18,9 @@ This file is the **single source of truth** for project progress, architectural 
 
 | ID | Work Package | Status | Dependencies | Spec File | Notes |
 | --- | --- | --- | --- | --- | --- |
-| **WP-00** | **`@ethereumjs/devp2p` Worker-Thread Architecture, Discovery Flow Control & Buffer Hardening** | `PLANNED` | None | [`work-packages/WP-00-devp2p-worker-and-hardening.md`](./work-packages/WP-00-devp2p-worker-and-hardening.md) | Concrete plan in WP §2 (SocketByteQueue, DPT throttle, `src/worker/*`, tests). Implementer: Composer 2.5. |
+| **WP-00** | **`@ethereumjs/devp2p` Worker-Thread Architecture, Discovery Flow Control & Buffer Hardening** | `DONE` | None | [`work-packages/WP-00-devp2p-worker-and-hardening.md`](./work-packages/WP-00-devp2p-worker-and-hardening.md) | Shipped: `createThreadedNetwork`, `SocketByteQueue`, DPT/RLPx throttle, tests + README. Real Worker IT optional follow-up. |
 | **WP-01** | **Foundation: Scaffolding, `EthySpine`, 4-Zone TUI & Deterministic Prompt Loop** | `READY_FOR_PLANNING` | None (can follow or run alongside WP-00) | [`work-packages/WP-01-foundation-spine-and-tui-loop.md`](./work-packages/WP-01-foundation-spine-and-tui-loop.md) | Zero external deps; runnable `ethy sepolia` TUI + synthetic simulation mode + Day-1 slash/keyword tools + unit test suite. |
-| **WP-02** | **Live P2P Harness, Sepolia Config & Fresh Pivot Header Acquisition** | `BLOCKED_BY_WP-00_WP-01` | WP-00, WP-01 | [`work-packages/WP-02-live-p2p-and-fresh-pivot.md`](./work-packages/WP-02-live-p2p-and-fresh-pivot.md) | Connects `createThreadedNetwork` from `@ethereumjs/devp2p` to `EthySpine`, updates Sepolia Amsterdam config, acquires live pivot `stateRoot` from best `eth` peer, implements Good Citizen empty replies. |
+| **WP-02** | **Live P2P Harness, Sepolia Config & Fresh Pivot Header Acquisition** | `BLOCKED_BY_WP-01` | WP-01 | [`work-packages/WP-02-live-p2p-and-fresh-pivot.md`](./work-packages/WP-02-live-p2p-and-fresh-pivot.md) | Connects `createThreadedNetwork` from `@ethereumjs/devp2p` to `EthySpine`, updates Sepolia Amsterdam config, acquires live pivot `stateRoot` from best `eth` peer, implements Good Citizen empty replies. |
 | **WP-03** | **16-Bucket `snap/1` Account Sync, Range Proofs & Developer Microscope** | `BLOCKED_BY_WP-02` | WP-01, WP-02 | [`work-packages/WP-03-snap-account-sync-and-microscope.md`](./work-packages/WP-03-snap-account-sync-and-microscope.md) | `InMemoryFlatStore`, `SyntheticSnapPeer` for CI, 16-bucket `GET_ACCOUNT_RANGE` + slim-to-full RLP conversion + `verifyMerkleRangeProof`, live `/buckets` & `/drop` dev actions. |
 | **WP-04** | **Bidirectional Local LLM `IntentEngine` (`<ethy_state>` & Tool Gating)** | `BLOCKED_BY_WP-01` | WP-01 (can run in parallel with WP-02/03) | [`work-packages/WP-04-local-llm-intent-engine.md`](./work-packages/WP-04-local-llm-intent-engine.md) | Zero-dep local HTTP JSON-schema LLM engine (`llama-server` 1.7B instruct), `<ethy_state>` header injection, dynamic phase tool gating, `--record-fixture` CI replay. |
 | **WP-05** | **Contract Storage/Bytecode Sync & Zero-Execution `eth/71` BAL Head Follower** | `BLOCKED_BY_WP-03` | WP-03 | [`work-packages/WP-05-storage-code-and-bal-head-follower.md`](./work-packages/WP-05-storage-code-and-bal-head-follower.md) | `GET_BYTE_CODES` + `GET_STORAGE_RANGES`, healing-free pivot-to-head bridge via `eth/71` `GET_BLOCK_ACCESS_LISTS` (`BlockLevelAccessList` + `consumeBAL`), `inspectLatestBAL` widget. |
@@ -59,7 +59,7 @@ Track every modification or planned modification to sibling monorepo packages he
 
 | Package | File(s) | Kind | Status | Description & Reasoning |
 | --- | --- | --- | --- | --- |
-| `@ethereumjs/devp2p` | `packages/devp2p/src/rlpx/peer.ts`, `socketByteQueue.ts`, `src/dpt/dpt.ts`, `src/rlpx/rlpx.ts`, `src/lab/emptyReply.ts`, `src/worker/*`, tests under `test/rlpx/`, `test/dpt/`, `test/worker/`, `test/protocol/` | Performance & Worker Architecture (WP-00) | `PLANNED` | See [`WP-00`](./work-packages/WP-00-devp2p-worker-and-hardening.md) §2: buffer queue, DPT pause/in-flight cap, `createThreadedNetwork`, six new/extended test specs. |
+| `@ethereumjs/devp2p` | `packages/devp2p/src/rlpx/peer.ts`, `socketByteQueue.ts`, `src/dpt/dpt.ts`, `src/rlpx/rlpx.ts`, `src/lab/emptyReply.ts`, `src/worker/*`, tests under `test/rlpx/`, `test/dpt/`, `test/worker/`, `test/protocol/` | Performance & Worker Architecture (WP-00) | `DONE` | Commits on `new-client-devp2p-wp0`: threaded network API, buffer queue, discovery throttle, test matrix + README § Threaded network. |
 | `@ethereumjs/common` | `packages/common/src/chains.ts` | Maintenance (Target: WP-02) | `IDENTIFIED` | Verify and update `Sepolia` (and `Hoodi` if applicable) Amsterdam hardfork timestamp / `forkHash` and current working bootstrap/DNS nodes so `devp2p` `forkId` handshakes match live Amsterdam peers. |
 
 ---
@@ -67,6 +67,11 @@ Track every modification or planned modification to sibling monorepo packages he
 ## 5. Chronological Progress Log
 
 *Agents: Append a new dated subsection at the top of this list after each Planning (Grok 4.7) or Implementation (Composer 2.5) pass.*
+
+### 2026-10-27 — WP-00 implementation complete (`DONE`) (Implementer — Composer 2.5)
+- Landed `@ethereumjs/devp2p` WP-00 on `new-client-devp2p-wp0`: `SocketByteQueue`, DPT pause / in-flight ping cap, RLPx discovery throttle, `createThreadedNetwork` + worker host/client, Good Citizen in worker, exports + README.
+- Tests: `socketByteQueue`, `peer-buffer`, `dpt-throttling`, `snap-snappy`, `worker-network` (in-process), extended `emptyReply` eth/71. `npm run tsc` + full `npm test` green in `packages/devp2p`.
+- WP-00 §3 notes + matrix/touch queue updated; WP-02 unblocked on devp2p side (still waits on WP-01).
 
 ### 2026-10-27 — WP-00 concrete implementation plan (`PLANNED`) (Planner — Grok 4.7)
 - Filled [`work-packages/WP-00-devp2p-worker-and-hardening.md`](./work-packages/WP-00-devp2p-worker-and-hardening.md) §2: file tree, worker API, test matrix, implementer gates.

@@ -1,6 +1,6 @@
 # WP-00: `@ethereumjs/devp2p` Worker-Thread Architecture, Discovery Flow Control & Buffer Hardening
 
-- **Status:** `PLANNED`
+- **Status:** `DONE`
 - **Dependencies:** None (First foundational work package — hardens `@ethereumjs/devp2p` before Ethy scaffolding)
 - **Target Package:** `packages/devp2p` (`@ethereumjs/devp2p`)
 - **Planner:** Grok 4.7
@@ -52,10 +52,10 @@ In the old client days, running `devp2p` on the main thread starved the event lo
    - `test/worker-network.spec.ts`: Tests `createThreadedNetwork` (both via `MessageChannel` in-process and a real `node:worker_threads` `Worker`) performing peer connection, `ETH` `STATUS` + `SNAP` `GET_ACCOUNT_RANGE` exchange with zero-copy `ArrayBuffer` transfer, Good Citizen empty replies inside the worker, and telemetry snapshot emission.
 
 ### Acceptance Criteria
-- [ ] `cd packages/devp2p && npm run tsc` and `npm test` pass with 0 errors.
-- [ ] `npm run spellcheck` passes across all modified/added files.
-- [ ] `createThreadedNetwork` is exported from `@ethereumjs/devp2p` with clean TypeDoc JSDoc comments (`api-docs.mdc`) so `WP-02` in `packages/ethy` can consume it directly.
-- [ ] Record all changes in `packages/ethy/PROGRESS.md` under *Upstream Library Touch Queue* and *Chronological Progress Log*.
+- [x] `cd packages/devp2p && npm run tsc` and `npm test` pass with 0 errors.
+- [x] `npm run spellcheck` passes across all modified/added files.
+- [x] `createThreadedNetwork` is exported from `@ethereumjs/devp2p` with clean TypeDoc JSDoc comments (`api-docs.mdc`) so `WP-02` in `packages/ethy` can consume it directly.
+- [x] Record all changes in `packages/ethy/PROGRESS.md` under *Upstream Library Touch Queue* and *Chronological Progress Log*.
 
 ---
 
@@ -139,4 +139,9 @@ Use existing folder layout; vitest `assert` (not bare `expect` for new cases). L
 
 ## 3. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled out by Composer 2.5 after implementation and verification. Also append summary to `packages/ethy/PROGRESS.md`.)*
+- **`SocketByteQueue`** (`src/rlpx/socketByteQueue.ts`) wired in `Peer._onSocketData`; `subprotocolDispatch` hook + optional `pong` RTT on `peer.events`.
+- **DPT:** `setDiscoveryPaused`, optional `maxInFlightPings`; **RLPx:** `throttleDiscovery` + low-water resume (default off on direct `RLPx` ctor; on in worker host).
+- **Worker:** `src/worker/*` + `createThreadedNetwork` (`inProcess` MessageChannel for CI). CJS prod build: no `import.meta` default — pass `import.meta.url` when spawning a real Worker under ESM.
+- **Tests:** `socketByteQueue`, `peer-buffer` (large `GET_BLOCK_BODIES` frame replayed in 32 slices), `dpt-throttling`, `snap-snappy`, extended `emptyReply` eth/71, `worker-network` (in-process; real Worker case deferred).
+- **README:** “Threaded network” section under library stack.
+- **Follow-up (non-blocking):** optional real `Worker` integration test; TypeDoc pass on new exports if API docs job requires it.
