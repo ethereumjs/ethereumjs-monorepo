@@ -17,6 +17,7 @@ EthereumJS PR CI is the **`Build`** workflow (`.github/workflows/build.yml`). Th
 ## When changing CI
 
 - Update **`SKIPPABLE_JOBS`** / **`COVERAGE_JOBS`** in `scripts/ci-affected.mjs` when adding or renaming a skippable test job; keep `scripts/ci-affected.spec.mjs` green.
+- **`ethy`** is its own skippable job (`.github/workflows/ethy-build.yml`). Do not fold it back into the static bundle.
 - Shared config paths (`.github/`, `config/`, lockfile, root tsconfig/eslint) force **full matrix** — expect that when touching them.
 - **`npm audit`**: runtime-tree gate only. Policy and how to handle an advisory: [dependencies.mdc](dependencies.mdc). The job runs `npm audit --omit=dev --audit-level=high`.
 - Document human-facing behavior in [DEVELOPER.md](DEVELOPER.md) § Tooling, not only in workflow YAML.

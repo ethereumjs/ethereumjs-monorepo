@@ -90,6 +90,7 @@ jobs:
       common: ${{ steps.affected.outputs.common }}
       devp2p: ${{ steps.affected.outputs.devp2p }}
       evm: ${{ steps.affected.outputs.evm }}
+      ethy: ${{ steps.affected.outputs.ethy }}
       examples: ${{ steps.affected.outputs.examples }}
       mpt: ${{ steps.affected.outputs.mpt }}
       static: ${{ steps.affected.outputs.static }}
@@ -103,6 +104,7 @@ jobs:
       common_coverage: ${{ steps.affected.outputs.common_coverage }}
       devp2p_coverage: ${{ steps.affected.outputs.devp2p_coverage }}
       evm_coverage: ${{ steps.affected.outputs.evm_coverage }}
+      ethy_coverage: ${{ steps.affected.outputs.ethy_coverage }}
       mpt_coverage: ${{ steps.affected.outputs.mpt_coverage }}
       static_coverage: ${{ steps.affected.outputs.static_coverage }}
       statemanager_coverage: ${{ steps.affected.outputs.statemanager_coverage }}
@@ -196,6 +198,15 @@ jobs:
     with:
       dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
       run-coverage: ${{ needs.detect.outputs.evm_coverage == 'true' }}
+
+  ethy:
+    needs: [build, detect]
+    if: needs.detect.outputs.ethy == 'true'
+    uses: ./.github/workflows/ethy-build.yml
+    secrets: inherit
+    with:
+      dep-cache-key: ${{ needs.build.outputs.dep-cache-key }}
+      run-coverage: ${{ needs.detect.outputs.ethy_coverage == 'true' }}
 
   examples:
     needs: [build, detect]
@@ -298,6 +309,7 @@ jobs:
       - common
       - devp2p
       - evm
+      - ethy
       - examples
       - mpt
       - static

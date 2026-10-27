@@ -72,7 +72,7 @@ Before opening real P2P sockets (`WP-02`) or debugging `snap/1` range proofs (`W
 
 ### Design refinements (D-015–D-021)
 
-See [`PROGRESS.md`](../PROGRESS.md) Decision Log. Summary: WP-01 depends only on `@ethereumjs/common`; copy ANSI helpers from devp2p (no devp2p dep until WP-02); AI pill `partial` (Slash/Rule Mode); pure `renderFrame` + key reducer; CI via `static` job + workflow step; head tools gated stubs; `advanceDemo(spine, elapsedMs)` deterministic.
+See [`PROGRESS.md`](../PROGRESS.md) Decision Log. Summary: WP-01 depends only on `@ethereumjs/common`; copy ANSI helpers from devp2p (no devp2p dep until WP-02); AI pill `partial` (Slash/Rule Mode); pure `renderFrame` + key reducer; dedicated `ethy` CI job (D-023; first landing was the static job, D-019); head tools gated stubs; `advanceDemo(spine, elapsedMs)` deterministic.
 
 ### File tree
 
@@ -84,7 +84,7 @@ See [`PROGRESS.md`](../PROGRESS.md) Decision Log. Summary: WP-01 depends only on
 
 ### CI
 
-`scripts/ci-affected.mjs`: add `ethy` to `SKIPPABLE_JOBS.static`. `.github/workflows/rlp-ethash-genesis-wallet-build.yml`: Test ethy step.
+`scripts/ci-affected.mjs`: `SKIPPABLE_JOBS.ethy`. `.github/workflows/ethy-build.yml`, called from `build.yml`. Not a step in the static bundle.
 
 ### Tests
 
@@ -96,5 +96,5 @@ Vitest `assert`; spine (buckets, ring, state header); tui (100×30, 80×24 width
 
 - Shipped `@ethereumjs/ethy` package with runtime dependency **only** on `@ethereumjs/common` (D-015); ANSI helpers copied into `src/tui/ansi.ts` (D-016).
 - `advanceDemo()` seeds peers when jumping directly into `SNAP_SYNCING` elapsed time (e.g. unit tests at 5000 ms) so `/drop` and peer tables work without stepping through P2P warmup first.
-- CI: `ethy` added to `SKIPPABLE_JOBS.static` and `rlp-ethash-genesis-wallet-build.yml` test step (D-019).
+- CI: first landed on the static job (D-019), then moved to a dedicated `ethy` job (D-023).
 - 28 unit tests; `npm test` ~200 ms locally. Production build emits `dist/cjs/cli/main.js` for `bin/ethy.cjs`.
