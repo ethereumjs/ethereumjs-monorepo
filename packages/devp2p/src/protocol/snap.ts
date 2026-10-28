@@ -83,7 +83,7 @@ export class SNAP extends Protocol {
   /**
    *
    * @param code Message code
-   * @param payload Payload (including reqId, e.g. `[1, [437000, 1, 0, 0]]`)
+   * @param payload Payload (flat 5-tuple: reqId, rootHash, startingHash, limitHash, responseBytes)
    */
   sendMessage(code: SnapMessageCodes, payload: any) {
     if (this.DEBUG) {

@@ -3,6 +3,7 @@ import {
   BIGINT_0,
   EthereumJSErrorWithoutCode,
   bigIntToBytes,
+  bigIntToUnpaddedBytes,
   bytesToBigInt,
   bytesToHex,
   bytesToInt,
@@ -22,6 +23,7 @@ import {
   isMessageCodeAllowed,
 } from './eth/codec.ts'
 import { EthMessageCodeNames, EthMessageCodes as EthMsgCodes } from './eth/codes.ts'
+import { forkValidationHead } from './eth/forkHead.ts'
 
 import type { EthMessageCodes as EthMessageCodeType } from './eth/codes.ts'
 import { Protocol } from './protocol.ts'
@@ -177,7 +179,8 @@ export class ETH extends Protocol {
     if (this._forkHash === peerForkHash) {
       // There is a known next fork
       if (peerNextFork > BIGINT_0) {
-        if (this._latestBlock >= peerNextFork) {
+        const validationHead = forkValidationHead(c, this._latestBlock)
+        if (validationHead >= peerNextFork) {
           const msg = 'Remote is advertising a future fork that passed locally'
           if (this.DEBUG) {
             this.debug('STATUS', msg)
@@ -395,7 +398,7 @@ export class ETH extends Protocol {
         status.genesisHash,
         [forkHashB, nextForkB],
         status.earliestBlock,
-        bigIntToBytes(latestNum),
+        bigIntToUnpaddedBytes(latestNum),
         status.latestBlockHash,
       ]
     } else {

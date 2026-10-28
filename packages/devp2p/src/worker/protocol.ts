@@ -85,6 +85,7 @@ export interface WorkerDiscoveryRlpxSnapshot {
   connected: number
   statusOk: number
   disconnects: Record<string, number>
+  lastSubprotocolError?: string
 }
 
 export interface WorkerDiscoverySnapshot {

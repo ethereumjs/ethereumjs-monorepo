@@ -224,6 +224,10 @@ export class Devp2pWorkerHost {
     peer.events.on('pong', (rttMs) => {
       if (rttMs !== undefined) this._peerRtt.set(peerKey, rttMs)
     })
+    peer.events.on('error', (err: Error) => {
+      this._discoveryMetrics.recordRlpxSubprotocolError(err.message)
+      this._pushDiagnostic('warn', err.message, peerKey)
+    })
 
     for (const protocol of peer.getProtocols()) {
       if (protocol.constructor.name !== 'ETH') continue

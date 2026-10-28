@@ -1,4 +1,10 @@
-import { type PrefixedHexString, hexToBytes, intToBytes } from '@ethereumjs/util'
+import {
+  type PrefixedHexString,
+  bigIntToUnpaddedBytes,
+  hexToBytes,
+  intToBytes,
+  intToUnpaddedBytes,
+} from '@ethereumjs/util'
 
 import { EthMessageCodes } from '../../protocol/eth.ts'
 import { buildGetBlockHeadersFromJSON, ethUsesBlockRangeStatus } from '../../protocol/eth/codec.ts'
@@ -24,18 +30,21 @@ export function ethStatusFromFields(fields: EthStatusFields, ethVersion = 68): E
   if (ethUsesBlockRangeStatus(ethVersion)) {
     return {
       genesisHash,
-      earliestBlock: intToBytes(0),
+      earliestBlock: intToUnpaddedBytes(0),
       latestBlockHash: bestHash,
       ...(fields.latestBlock !== undefined
-        ? { latestBlock: hexToBytes(hx(fields.latestBlock)) }
+        ? { latestBlock: bigIntToUnpaddedBytes(BigInt(hx(fields.latestBlock))) }
         : {}),
     }
   }
   return {
-    td: hexToBytes(hx(fields.td)),
+    td: bigIntToUnpaddedBytes(BigInt(hx(fields.td))),
     bestHash,
     genesisHash,
-    latestBlock: fields.latestBlock !== undefined ? hexToBytes(hx(fields.latestBlock)) : undefined,
+    latestBlock:
+      fields.latestBlock !== undefined
+        ? bigIntToUnpaddedBytes(BigInt(hx(fields.latestBlock)))
+        : undefined,
   }
 }
 

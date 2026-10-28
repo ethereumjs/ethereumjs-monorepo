@@ -51,4 +51,18 @@ describe('eth codec', () => {
     expect(isDeprecatedPostMergeMessage(0x01, 66)).toBe(false)
     expect(isDeprecatedPostMergeMessage(0x01, 67)).toBe(true)
   })
+
+  it('encodes zero skip, reverse, and block as canonical empty bytes', () => {
+    const rlp = buildGetBlockHeadersFromJSON(
+      68,
+      { requestId: 0, block: 0, max: 1, skip: 0, reverse: false },
+      (s) => hexToBytes(s as `0x${string}`),
+    )
+    const decoded = RLP.decode(RLP.encode(rlp)) as unknown[]
+    const query = decoded[1] as Uint8Array[]
+    expect(query[0].length).toBe(0)
+    expect(query[2].length).toBe(0)
+    expect(query[3].length).toBe(0)
+    expect((decoded[0] as Uint8Array).length).toBe(0)
+  })
 })

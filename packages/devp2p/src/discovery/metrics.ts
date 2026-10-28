@@ -24,6 +24,7 @@ export interface WorkerDiscoverySnapshot {
     connected: number
     statusOk: number
     disconnects: Record<string, number>
+    lastSubprotocolError?: string
   }
 }
 
@@ -47,6 +48,7 @@ export class DiscoveryMetrics {
   rlpxDials = 0
   rlpxConnected = 0
   rlpxStatusOk = 0
+  rlpxLastSubprotocolError?: string
   private readonly rlpxDisconnects = new Map<string, number>()
 
   setBoundEndpoint(address: string, udpPort: number, tcpPort: number): void {
@@ -105,6 +107,10 @@ export class DiscoveryMetrics {
     this.rlpxDisconnects.set(name, (this.rlpxDisconnects.get(name) ?? 0) + 1)
   }
 
+  recordRlpxSubprotocolError(message: string): void {
+    this.rlpxLastSubprotocolError = message.slice(0, 200)
+  }
+
   snapshot(): WorkerDiscoverySnapshot {
     const disconnects: Record<string, number> = {}
     for (const [k, v] of this.rlpxDisconnects) disconnects[k] = v
@@ -130,6 +136,9 @@ export class DiscoveryMetrics {
         connected: this.rlpxConnected,
         statusOk: this.rlpxStatusOk,
         disconnects,
+        ...(this.rlpxLastSubprotocolError !== undefined
+          ? { lastSubprotocolError: this.rlpxLastSubprotocolError }
+          : {}),
       },
     }
   }

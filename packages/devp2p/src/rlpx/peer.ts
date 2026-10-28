@@ -8,6 +8,7 @@ import {
   equalsBytes,
   hexToBytes,
   intToBytes,
+  intToUnpaddedBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
@@ -260,7 +261,7 @@ export class Peer {
       intToBytes(BASE_PROTOCOL_VERSION),
       this.clientId,
       this._capabilities!.map((c) => [utf8ToBytes(c.name), intToBytes(c.version)]),
-      this._port === null ? new Uint8Array(0) : intToBytes(this._port),
+      !this._port ? new Uint8Array(0) : intToUnpaddedBytes(this._port),
       this.id,
     ]
 
