@@ -28,6 +28,7 @@ import {
   parsePivotHeaderFromBlockHeadersPayload,
   peerIdToBytes,
 } from './pivotHeader.ts'
+import { ethyCallerModuleUrl } from './workerModuleUrl.ts'
 
 const PIVOT_STALE_BLOCKS = 96n
 
@@ -141,7 +142,7 @@ export async function startPeerCoordinator(
   const workerModuleUrl =
     opts.inProcess === true
       ? undefined
-      : (opts.workerModuleUrl ?? resolveThreadedNetworkModuleUrl(import.meta.url))
+      : (opts.workerModuleUrl ?? resolveThreadedNetworkModuleUrl(ethyCallerModuleUrl()))
 
   client = await createThreadedNetwork(
     {

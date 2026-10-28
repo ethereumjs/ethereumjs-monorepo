@@ -184,8 +184,8 @@ describe('[Devp2p/DNS]: client', () => {
   it('getPeers() returns empty when DNS TXT lookup times out', async () => {
     initializeDns()
     mockDns.resolve.mockRejectedValue(
-      Object.assign(new Error('queryTxt ETIMEOUT all.sepolia.ethdisco.net'), {
-        code: 'ETIMEOUT',
+      Object.assign(new Error('queryTxt timed out (all.sepolia.ethdisco.net)'), {
+        code: 'ETIMEDOUT',
         syscall: 'queryTxt',
       }),
     )
