@@ -83,7 +83,7 @@ describe('[Ethy/Net]: PeerCoordinator pivot', () => {
           () =>
             reject(
               new Error(
-                `timeout waiting for pivot (peers=${spine.peers.size} pivot=${String(spine.pivotBlockNumber)} diags=${spine.diagnostics.length})`,
+                `timeout waiting for pivot (peers=${spine.peers.size} pivot=${String(spine.pivotBlockNumber)} diags=${spine.diagnosticRingBuffer.length})`,
               ),
             ),
           20_000,
