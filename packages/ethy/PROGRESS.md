@@ -79,7 +79,7 @@ Track every modification or planned modification to sibling monorepo packages he
 | --- | --- | --- | --- | --- |
 | `@ethereumjs/devp2p` | `packages/devp2p/src/rlpx/peer.ts`, `socketByteQueue.ts`, `src/dpt/dpt.ts`, `src/rlpx/rlpx.ts`, `src/lab/emptyReply.ts`, `src/worker/*`, tests under `test/rlpx/`, `test/dpt/`, `test/worker/`, `test/protocol/` | Performance & Worker Architecture (WP-00) | `DONE` (#4417) | Merged in #4417: threaded network API, `SocketByteQueue`, discovery throttle, `inProcess` + real `Worker` tests + README § Threaded network. |
 | `@ethereumjs/devp2p` | `packages/devp2p/src/protocol/eth.ts`, `src/worker/host.ts`, `protocol.ts`, `bootNodes.ts`, `test/worker/*` | Enhancement (WP-02) | `DONE` (branch) | `ETH.peerStatusHead()`, `WorkerPeerSnapshot` head fields, `bootNodesFromCommon`, export `WorkerPeerSnapshot`; worker-network + bootNodes tests green. |
-| `@ethereumjs/common` | `packages/common/src/chains.ts` | Maintenance (WP-02) | `DONE` (audit only) | Sepolia/Hoodi fork timestamps + Hoodi bootnodes match geth `chainspecs`; DNS enrtrees match. Sepolia static bootnodes stale vs geth ENR list — DNS discovery sufficient; ENR refresh deferred. |
+| `@ethereumjs/common` | `packages/common/src/chains.ts` | Maintenance (WP-02) | `DONE` (audit only) | Sepolia/Hoodi fork timestamps + Hoodi bootnodes match geth chain specs; DNS discovery URLs match. Sepolia static bootnodes stale vs geth ENR list — DNS discovery sufficient; ENR refresh deferred. |
 
 ---
 
@@ -89,7 +89,7 @@ Track every modification or planned modification to sibling monorepo packages he
 
 ### 2026-10-28 — WP-02 `DONE` + common audit (Implementer — Composer 2.5)
 - WP-02 §3 filled; acceptance criteria checked; status **`DONE`**. PR [#4419](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4419).
-- Common Slice 2: verified Sepolia/Hoodi against geth `chainspecs` + bootnodes (no edit); noted Sepolia static bootstrap drift.
+- Common Slice 2: verified Sepolia/Hoodi against geth chain specs + bootnodes (no edit); noted Sepolia static bootstrap drift.
 - WP-03 matrix row **`BLOCKED_BY_WP-02` → `READY_FOR_PLANNING`**.
 
 ### 2026-10-28 — WP-02 implementation start (Implementer — Composer 2.5)
