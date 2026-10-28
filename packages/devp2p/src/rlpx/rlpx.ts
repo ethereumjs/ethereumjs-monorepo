@@ -288,8 +288,11 @@ export class RLPx {
     })
 
     peer.events.once('close', (reason, disconnectWe) => {
-      if (typeof reason === 'number') {
-        this._discoveryMetrics?.recordRlpxDisconnect(reason as DISCONNECT_REASON)
+      if (typeof reason === 'number' && (disconnectWe === true || disconnectWe === false)) {
+        this._discoveryMetrics?.recordRlpxDisconnect(
+          reason as DISCONNECT_REASON,
+          disconnectWe === true ? 'local' : 'remote',
+        )
       }
       if (disconnectWe === true) {
         if (this.DEBUG) {

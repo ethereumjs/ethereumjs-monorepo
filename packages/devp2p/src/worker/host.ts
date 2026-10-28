@@ -163,7 +163,10 @@ export class Devp2pWorkerHost {
       discoveryMetrics: this._discoveryMetrics,
     })
     this._dpt.events.on('error', (err) => {
-      this._pushDiagnostic('warn', `DPT: ${err.message}`)
+      const message = err instanceof Error ? err.message : String(err)
+      // Already-banned remotes are counted on `discovery.dpt.banSkips`.
+      if (message.startsWith('Skipped remote ')) return
+      this._pushDiagnostic('warn', `DPT: ${message}`)
     })
 
     this._rlpx = new RLPx(opts.privateKey, {
@@ -225,8 +228,9 @@ export class Devp2pWorkerHost {
       if (rttMs !== undefined) this._peerRtt.set(peerKey, rttMs)
     })
     peer.events.on('error', (err: Error) => {
-      this._discoveryMetrics.recordRlpxSubprotocolError(err.message)
-      this._pushDiagnostic('warn', err.message, peerKey)
+      const text = `Remote RLPx ${peer.remoteTcpLabel()}: ${err.message}`
+      this._discoveryMetrics.recordRlpxSubprotocolError(text)
+      this._pushDiagnostic('warn', text, peerKey)
     })
 
     for (const protocol of peer.getProtocols()) {

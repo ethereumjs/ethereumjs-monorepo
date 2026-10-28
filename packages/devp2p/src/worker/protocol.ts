@@ -84,8 +84,18 @@ export interface WorkerDiscoveryRlpxSnapshot {
   dials: number
   connected: number
   statusOk: number
+  /** Keys are `REASON (we dropped remote)` or `REASON (remote dropped us)`. */
   disconnects: Record<string, number>
   lastSubprotocolError?: string
+}
+
+export interface WorkerDiscoveryDptSnapshot {
+  /** `addPeer` skipped because the remote node is already on our ban list. */
+  banSkips: number
+  /** New bans we applied to a remote discovery endpoint. */
+  bansIssued: number
+  lastRemote?: string
+  lastCause?: string
 }
 
 export interface WorkerDiscoverySnapshot {
@@ -96,6 +106,7 @@ export interface WorkerDiscoverySnapshot {
   bootstrap: WorkerDiscoveryBootstrapSnapshot
   dns: WorkerDiscoveryDnsSnapshot
   rlpx: WorkerDiscoveryRlpxSnapshot
+  dpt: WorkerDiscoveryDptSnapshot
 }
 
 export interface WorkerTelemetrySnapshot {

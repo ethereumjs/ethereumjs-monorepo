@@ -722,6 +722,13 @@ export class Peer {
     return this._remoteId
   }
 
+  /** TCP address of the remote node. This process is the other end of the socket. */
+  remoteTcpLabel(): string {
+    const host = this._socket.remoteAddress ?? '?'
+    const port = this._socket.remotePort ?? '?'
+    return `${host}:${port}`
+  }
+
   getHelloMessage() {
     return this._hello
   }

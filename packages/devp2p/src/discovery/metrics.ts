@@ -23,8 +23,17 @@ export interface WorkerDiscoverySnapshot {
     dials: number
     connected: number
     statusOk: number
+    /** Keys are `REASON (we dropped remote)` or `REASON (remote dropped us)`. */
     disconnects: Record<string, number>
     lastSubprotocolError?: string
+  }
+  dpt: {
+    /** `addPeer` skipped because the remote node is already on our ban list. */
+    banSkips: number
+    /** New bans we applied to a remote discovery endpoint. */
+    bansIssued: number
+    lastRemote?: string
+    lastCause?: string
   }
 }
 
@@ -50,6 +59,11 @@ export class DiscoveryMetrics {
   rlpxStatusOk = 0
   rlpxLastSubprotocolError?: string
   private readonly rlpxDisconnects = new Map<string, number>()
+
+  dptBanSkips = 0
+  dptBansIssued = 0
+  dptLastRemote?: string
+  dptLastCause?: string
 
   setBoundEndpoint(address: string, udpPort: number, tcpPort: number): void {
     this.boundAddress = address
@@ -102,9 +116,27 @@ export class DiscoveryMetrics {
     this.rlpxStatusOk++
   }
 
-  recordRlpxDisconnect(reason: DISCONNECT_REASON): void {
+  /**
+   * `local` — this node sent DISCONNECT to the remote.
+   * `remote` — the remote node sent DISCONNECT to us.
+   */
+  recordRlpxDisconnect(reason: DISCONNECT_REASON, initiatedBy: 'local' | 'remote'): void {
     const name = DisconnectReasonNames[reason] ?? `UNKNOWN_${String(reason)}`
-    this.rlpxDisconnects.set(name, (this.rlpxDisconnects.get(name) ?? 0) + 1)
+    const who = initiatedBy === 'local' ? 'we dropped remote' : 'remote dropped us'
+    const key = `${name} (${who})`
+    this.rlpxDisconnects.set(key, (this.rlpxDisconnects.get(key) ?? 0) + 1)
+  }
+
+  recordDptBanSkip(remoteLabel: string): void {
+    this.dptBanSkips++
+    this.dptLastRemote = remoteLabel
+    this.dptLastCause = 'already on our ban list'
+  }
+
+  recordDptBan(remoteLabel: string, cause: string): void {
+    this.dptBansIssued++
+    this.dptLastRemote = remoteLabel
+    this.dptLastCause = cause.slice(0, 160)
   }
 
   recordRlpxSubprotocolError(message: string): void {
@@ -139,6 +171,12 @@ export class DiscoveryMetrics {
         ...(this.rlpxLastSubprotocolError !== undefined
           ? { lastSubprotocolError: this.rlpxLastSubprotocolError }
           : {}),
+      },
+      dpt: {
+        banSkips: this.dptBanSkips,
+        bansIssued: this.dptBansIssued,
+        ...(this.dptLastRemote !== undefined ? { lastRemote: this.dptLastRemote } : {}),
+        ...(this.dptLastCause !== undefined ? { lastCause: this.dptLastCause } : {}),
       },
     }
   }
