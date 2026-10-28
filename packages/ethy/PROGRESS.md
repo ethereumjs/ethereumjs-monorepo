@@ -8,7 +8,7 @@ This file is the **single source of truth** for project progress, architectural 
 
 ## 1. Current Project Snapshot
 
-- **Current Stage:** **WP-01** is **`DONE`**. **WP-02** is **`IN_PROGRESS`** (slices 1 + 3 landed on `ethy-wp02`; common audit slice 2 pending; live Sepolia soak not yet verified).
+- **Current Stage:** **WP-02** is **`DONE`** on branch `ethy-wp02` (PR #4419). **WP-03** is next (`READY` once PR merges). Live `ethy sepolia` soak remains a manual post-merge check (see WP-02 §3).
 - **Active Target Network:** `sepolia` (Amsterdam hardfork focus; generic `@ethereumjs/common` chain support).
 - **Package Identity:** `@ethereumjs/ethy` (CLI binary: `ethy`, zero-config invocation `ethy` or `ethy sepolia`; unscoped `ethy` npm name transfer inquired).
 
@@ -20,8 +20,8 @@ This file is the **single source of truth** for project progress, architectural 
 | --- | --- | --- | --- | --- | --- |
 | **WP-00** | **`@ethereumjs/devp2p` Worker-Thread Architecture, Discovery Flow Control & Buffer Hardening** | `DONE` | None | [`work-packages/WP-00-devp2p-worker-and-hardening.md`](./work-packages/WP-00-devp2p-worker-and-hardening.md) | Shipped (#4417): `createThreadedNetwork`, `SocketByteQueue`, DPT/RLPx throttle, Good Citizen in worker, `inProcess` + real `Worker` ITs + README. |
 | **WP-01** | **Foundation: Scaffolding, `EthySpine`, 4-Zone TUI & Deterministic Prompt Loop** | `DONE` | None | [`work-packages/WP-01-foundation-spine-and-tui-loop.md`](./work-packages/WP-01-foundation-spine-and-tui-loop.md) | `@ethereumjs/ethy` package: spine, deterministic prompt, `--demo`. TUI is a padded page with fixed capability colors, a split suggestion band, and a cursor prompt. Dedicated `ethy` CI job. |
-| **WP-02** | **3-Box Domain-Lens Cockpit, Live P2P Harness & Fresh Pivot Header Acquisition** | `IN_PROGRESS` | WP-01 (`DONE`), WP-00 (`DONE`) | [`work-packages/WP-02-live-p2p-and-fresh-pivot.md`](./work-packages/WP-02-live-p2p-and-fresh-pivot.md) | Shipped on branch: devp2p head telemetry + bootnodes; ethy cockpit, `PeerCoordinator`, pivot parse, loopback `net.spec.ts`. Remaining: common audit sign-off, live Sepolia acceptance. |
-| **WP-03** | **16-Bucket `snap/1` Account Sync, Range Proofs & Developer Microscope** | `BLOCKED_BY_WP-02` | WP-01, WP-02 | [`work-packages/WP-03-snap-account-sync-and-microscope.md`](./work-packages/WP-03-snap-account-sync-and-microscope.md) | `InMemoryFlatStore`, `SyntheticSnapPeer` for CI, 16-bucket `GET_ACCOUNT_RANGE` + slim-to-full RLP conversion + `verifyMerkleRangeProof`, live `/buckets` & `/drop` dev actions. |
+| **WP-02** | **3-Box Domain-Lens Cockpit, Live P2P Harness & Fresh Pivot Header Acquisition** | `DONE` | WP-01 (`DONE`), WP-00 (`DONE`) | [`work-packages/WP-02-live-p2p-and-fresh-pivot.md`](./work-packages/WP-02-live-p2p-and-fresh-pivot.md) | PR #4419: devp2p head + bootnodes; ethy cockpit, `PeerCoordinator`, pivot; common audit documented in WP-02 §3 (no `chains.ts` edit). |
+| **WP-03** | **16-Bucket `snap/1` Account Sync, Range Proofs & Developer Microscope** | `READY_FOR_PLANNING` | WP-01, WP-02 | [`work-packages/WP-03-snap-account-sync-and-microscope.md`](./work-packages/WP-03-snap-account-sync-and-microscope.md) | `InMemoryFlatStore`, `SyntheticSnapPeer` for CI, 16-bucket `GET_ACCOUNT_RANGE` + slim-to-full RLP conversion + `verifyMerkleRangeProof`, live `/buckets` & `/drop` dev actions. |
 | **WP-04** | **Bidirectional Local LLM `IntentEngine` (`<ethy_state>` & Tool Gating)** | `BLOCKED_BY_WP-01` | WP-01 (can run in parallel with WP-02/03) | [`work-packages/WP-04-local-llm-intent-engine.md`](./work-packages/WP-04-local-llm-intent-engine.md) | Zero-dep local HTTP JSON-schema LLM engine (`llama-server` 1.7B instruct), `<ethy_state>` header injection, dynamic phase tool gating, `--record-fixture` CI replay. |
 | **WP-05** | **Contract Storage/Bytecode Sync & Zero-Execution `eth/71` BAL Head Follower** | `BLOCKED_BY_WP-03` | WP-03 | [`work-packages/WP-05-storage-code-and-bal-head-follower.md`](./work-packages/WP-05-storage-code-and-bal-head-follower.md) | `GET_BYTE_CODES` + `GET_STORAGE_RANGES`, healing-free pivot-to-head bridge via `eth/71` `GET_BLOCK_ACCESS_LISTS` (`BlockLevelAccessList` + `consumeBAL`), `inspectLatestBAL` widget. |
 | **WP-06** | **On-Demand `@ethereumjs/evm` Sandbox, Light Beacon Pulse & Headless SDK** | `BLOCKED_BY_WP-05` | WP-04, WP-05 | [`work-packages/WP-06-on-demand-evm-and-headless-sdk.md`](./work-packages/WP-06-on-demand-evm-and-headless-sdk.md) | On-demand EVM call/trace against `StateStore` (with cold-account `snap/1` fallback), HTTP Beacon header pulse, `createEthyNode({ headless: true })` SDK for FYP/MCP. |
@@ -79,13 +79,18 @@ Track every modification or planned modification to sibling monorepo packages he
 | --- | --- | --- | --- | --- |
 | `@ethereumjs/devp2p` | `packages/devp2p/src/rlpx/peer.ts`, `socketByteQueue.ts`, `src/dpt/dpt.ts`, `src/rlpx/rlpx.ts`, `src/lab/emptyReply.ts`, `src/worker/*`, tests under `test/rlpx/`, `test/dpt/`, `test/worker/`, `test/protocol/` | Performance & Worker Architecture (WP-00) | `DONE` (#4417) | Merged in #4417: threaded network API, `SocketByteQueue`, discovery throttle, `inProcess` + real `Worker` tests + README § Threaded network. |
 | `@ethereumjs/devp2p` | `packages/devp2p/src/protocol/eth.ts`, `src/worker/host.ts`, `protocol.ts`, `bootNodes.ts`, `test/worker/*` | Enhancement (WP-02) | `DONE` (branch) | `ETH.peerStatusHead()`, `WorkerPeerSnapshot` head fields, `bootNodesFromCommon`, export `WorkerPeerSnapshot`; worker-network + bootNodes tests green. |
-| `@ethereumjs/common` | `packages/common/src/chains.ts` | Maintenance (WP-02) | `IN_PROGRESS` | Spot-check only so far: Sepolia/Hoodi `dnsNetworks` present; no `chains.ts` edit. Full geth cross-check before WP-02 `DONE`. |
+| `@ethereumjs/common` | `packages/common/src/chains.ts` | Maintenance (WP-02) | `DONE` (audit only) | Sepolia/Hoodi fork timestamps + Hoodi bootnodes match geth `chainspecs`; DNS enrtrees match. Sepolia static bootnodes stale vs geth ENR list — DNS discovery sufficient; ENR refresh deferred. |
 
 ---
 
 ## 5. Chronological Progress Log
 
 *Agents: Append a new dated subsection at the top of this list after each Planning (Grok 4.7) or Implementation (Composer 2.5) pass.*
+
+### 2026-10-28 — WP-02 `DONE` + common audit (Implementer — Composer 2.5)
+- WP-02 §3 filled; acceptance criteria checked; status **`DONE`**. PR [#4419](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4419).
+- Common Slice 2: verified Sepolia/Hoodi against geth `chainspecs` + bootnodes (no edit); noted Sepolia static bootstrap drift.
+- WP-03 matrix row **`BLOCKED_BY_WP-02` → `READY_FOR_PLANNING`**.
 
 ### 2026-10-28 — WP-02 implementation start (Implementer — Composer 2.5)
 - Commits on `ethy-wp02`: devp2p worker head + bootnodes; `WorkerPeerSnapshot` export; ethy 3-box cockpit, domain-lens prompt, `PeerCoordinator` + pivot header parse, loopback `net.spec.ts`.

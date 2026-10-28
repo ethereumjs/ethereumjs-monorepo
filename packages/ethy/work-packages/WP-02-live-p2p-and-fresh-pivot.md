@@ -1,6 +1,6 @@
 # WP-02: 3-Box Domain-Lens Cockpit, Live Threaded `devp2p` Harness & Fresh Pivot Header Acquisition
 
-- **Status:** `IN_PROGRESS`
+- **Status:** `DONE`
 - **Dependencies:** `WP-00` (`DONE`), `WP-01` (`DONE`)
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
@@ -78,11 +78,11 @@ Follow all layout and interaction invariants in [`packages/ethy/.cursor/rules/et
 ---
 
 ### Acceptance Criteria
-- [ ] `renderFrame` renders the 4 bands (`Minimal Top Header`, `3-Box Cockpit Row` with rounded `╭─╮` borders, `Broad Main Interaction Area`, and `● ethy > ` prompt) with zero horizontal jump across ticks and domain switches (`visibleWidth(line) === cols` for all `rows`).
-- [ ] Pressing `Tab` on an empty prompt cycles `activeDomain` (`p2p` → `snap` → `head` → `ai`), updates the `●` prompt dot color and Middle/Right boxes, and preserves any existing `activeWidget` in the Main Area.
-- [ ] Pressing `Enter` on an empty prompt mounts the active domain's deep view in the Main Area (`p2p` → peer table, `snap` → bucket table, `head` → BAL/head card, `ai` → help card).
-- [ ] `test/net.spec.ts` verifies `PeerCoordinator` + `createThreadedNetwork({ inProcess: true })` performing `STATUS` → `bestHash` discovery → `GET_BLOCK_HEADERS` → setting `spine.pivotBlockNumber` and `spine.pivotStateRoot`.
-- [ ] `npm run tsc`, `npm test`, and `npm run spellcheck` pass across both `packages/devp2p` and `packages/ethy`.
+- [x] `renderFrame` renders the 4 bands (`Minimal Top Header`, `3-Box Cockpit Row` with rounded `╭─╮` borders, `Broad Main Interaction Area`, and `● ethy > ` prompt) with zero horizontal jump across ticks and domain switches (`visibleWidth(line) === cols` for all `rows`).
+- [x] Pressing `Tab` on an empty prompt cycles `activeDomain` (`p2p` → `snap` → `head` → `ai`), updates the `●` prompt dot color and Middle/Right boxes, and preserves any existing `activeWidget` in the Main Area.
+- [x] Pressing `Enter` on an empty prompt mounts the active domain's deep view in the Main Area (`p2p` → peer table, `snap` → bucket table, `head` → BAL/head card, `ai` → help card).
+- [x] `test/net.spec.ts` verifies `PeerCoordinator` + `createThreadedNetwork({ inProcess: true })` performing `STATUS` → `bestHash` discovery → `GET_BLOCK_HEADERS` → setting `spine.pivotBlockNumber` and `spine.pivotStateRoot`.
+- [x] `npm run tsc`, `npm test`, and `npm run spellcheck` pass across both `packages/devp2p` and `packages/ethy`.
 
 ---
 
@@ -156,4 +156,22 @@ test/pivotHeader.spec.ts, test/net.spec.ts
 
 ## 3. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled out by Composer 2.5 after implementation and verification.)*
+### Common audit (Slice 2, no `chains.ts` edit)
+
+Compared [`packages/common/src/chains.ts`](../../../common/src/chains.ts) Sepolia and Hoodi against geth `master` [`params/chainspecs/sepolia.json`](https://github.com/ethereum/go-ethereum/blob/master/params/chainspecs/sepolia.json) and [`hoodi.json`](https://github.com/ethereum/go-ethereum/blob/master/params/chainspecs/hoodi.json) (Oct 2026):
+
+| Check | Sepolia | Hoodi |
+| --- | --- | --- |
+| Shanghai → BPO2 timestamps | Match geth | Match geth |
+| `dnsNetworks` | `all.sepolia.ethdisco.net` (same ENR root as geth DNS) | `all.hoodi.ethdisco.net` |
+| Static `bootstrapNodes` | Differs from geth’s current ENR/NodeOps list; legacy enodes still valid fallbacks | Matches geth “legacy EF” enode triple |
+
+**ForkId:** Ethy passes `getHardforkBy({ timestamp: now })` into the worker; Amsterdam remains unscheduled in `@ethereumjs/common` per **D-030** (geth chainspec lists `amsterdamTime` for Sepolia — intentional drift until common publishes Amsterdam).
+
+**Discovery:** Live Sepolia relies on DNS + whatever `bootstrapNodes()` returns; stale static Sepolia enodes are acceptable for WP-02; refreshing Sepolia `bootstrapNodes` to geth’s ENR set is a follow-up common maintenance PR (needs ENR → `PeerInfo` tooling).
+
+### Deviations
+
+- **`packages/ethy/tsconfig.json`:** `"customConditions": []` so typecheck resolves workspace `@ethereumjs/devp2p` via built `dist` (avoids pulling devp2p sources under ethy `rootDir`).
+- **Pivot header decode:** `parsePivotHeaderFromBlockHeadersPayload` reads block number from RLP, then `Common.setHardforkBy({ blockNumber })` before `@ethereumjs/block` decode (wall-clock default HF breaks pre-merge test headers).
+- **Manual soak:** `ethy sepolia` (non-`--demo`) on the public network is not CI-gated; verify peer count + pivot line in Node Pulse locally after merge.
