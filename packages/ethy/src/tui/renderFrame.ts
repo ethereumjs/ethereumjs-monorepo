@@ -11,7 +11,7 @@ import {
   fixedLineRight,
 } from './layout.ts'
 import { layoutPage, measurePage } from './pageLayout.ts'
-import { deepViewCommand, ghostForPhase } from './prompt.ts'
+import { deepViewCommand } from './prompt.ts'
 import { renderWidgetLines } from './widgets.ts'
 
 const DELIMITER_PAD_ROWS = 1
@@ -48,13 +48,13 @@ function capabilityPillWidth(name: string): number {
 const CAPABILITY_PILL_WIDTHS = CAPABILITY_NAMES.map((name) => capabilityPillWidth(name))
 
 function formatCapabilityPill(dot: string, name: string): string {
-  return `${dot} ${name}`
+  return `${dot} ${BOLD}${name}${RESET}`
 }
 
 /** Top row: client and network on the left; slot just left of the capability pills. */
 function renderCapabilityBar(spine: EthySpine, cols: number): string[] {
   const network = spine.network.toUpperCase()
-  const brand = `${spine.clientName} v${spine.clientVersion} | ${network}`
+  const brand = `${BOLD}${spine.clientName} v${spine.clientVersion}${RESET} | ${network}`
   const { p2p, snap, head, ai } = spine.capabilities
   const statuses = [p2p.status, snap.status, head.status, ai.status]
   const pillTexts = CAPABILITY_IDS.map((id, i) =>
@@ -92,7 +92,7 @@ function renderPrompt(spine: EthySpine, view: TuiViewState, cols: number): strin
   const prompt = `${prefix}${fixedField(view.promptDraft, draftWidth)}`
   const line1 = fixedLine(prompt, cols)
 
-  const leftHint = `${DIM}${renderFooterHint(view.activeDomain)}${RESET}`
+  const leftHint = `${renderFooterHint(view.activeDomain)}${RESET}`
   const hintWidth = visibleWidth(leftHint)
   const gap = 2
   const tabWidth = Math.max(0, cols - hintWidth - gap)
@@ -100,20 +100,20 @@ function renderPrompt(spine: EthySpine, view: TuiViewState, cols: number): strin
     view.promptDraft.startsWith('/') && completeSlashDraft(view.promptDraft) !== null
       ? `${view.promptDraft} → ${completeSlashDraft(view.promptDraft)}`
       : ''
-  const tabPlain =
+  const line2 =
     slashComplete.length > 0
-      ? slashComplete
-      : view.promptDraft.length === 0 && view.ghostSuggestion.length > 0
-        ? view.ghostSuggestion
-        : ''
-  const line2 = composeFixedRow(
-    cols,
-    [
-      { text: leftHint, width: hintWidth },
-      { text: fixedLineRight(`${DIM}${tabPlain}${RESET}`, tabWidth), width: tabWidth },
-    ],
-    gap,
-  )
+      ? composeFixedRow(
+          cols,
+          [
+            { text: leftHint, width: hintWidth },
+            {
+              text: fixedLineRight(`${DIM}${slashComplete}${RESET}`, tabWidth),
+              width: tabWidth,
+            },
+          ],
+          gap,
+        )
+      : fixedLine(leftHint, cols)
   const spacer = fixedLine('', cols)
   return [line1, spacer, line2]
 }
@@ -169,4 +169,4 @@ export function renderFrame(
   ])
 }
 
-export { deepViewCommand, ghostForPhase }
+export { deepViewCommand }

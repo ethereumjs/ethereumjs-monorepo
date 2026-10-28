@@ -16,7 +16,6 @@ import {
   createInitialViewState,
   cycleDomain,
   deepViewCommand,
-  ghostForPhase,
   pushKeyChar,
   reducePromptKey,
 } from './prompt.ts'
@@ -38,7 +37,6 @@ export async function runEthySession(node: EthyNode): Promise<void> {
     if (node.demo) {
       advanceDemo(node.spine, Date.now() - demoStart)
     }
-    view.ghostSuggestion = ghostForPhase(node.spine.phase)
     const cols = output.columns ?? 100
     const rows = output.rows ?? 30
     const lines = renderFrame(node.spine, view, cols, rows)
@@ -82,13 +80,12 @@ export async function runEthySession(node: EthyNode): Promise<void> {
           continue
         }
         dirty = true
-        const ghost = view.ghostSuggestion
         const {
           view: nextView,
           submittedLine,
           domainCycle,
           openDeepView,
-        } = reducePromptKey(view, action, ghost)
+        } = reducePromptKey(view, action)
         view = nextView
         if (domainCycle !== undefined) {
           view = {

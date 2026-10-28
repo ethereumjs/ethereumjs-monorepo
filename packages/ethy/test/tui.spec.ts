@@ -90,16 +90,15 @@ describe('[Ethy/TUI]: renderFrame', () => {
 
   it('renderFrame() shows 3-box cockpit and domain-lens hint row', () => {
     const spine = createSpine('sepolia', 11155111n)
-    const ghost = 'Why is bucket 0x3 stalled?'
-    const view = { ...createInitialViewState(), ghostSuggestion: ghost }
+    const view = createInitialViewState()
     const plain = renderFrame(spine, view, 100, 30).map((line) => stripAnsi(line))
     const joined = plain.join('\n')
     assert.include(joined, 'Node Pulse')
     assert.include(joined, '╭')
-    assert.notInclude(joined, 'Which clients are connected')
+    assert.notInclude(joined, 'Which peers are connected')
     const hint = plain[plain.length - 1] ?? ''
     assert.match(hint, /Tab switch domain/)
-    assert.include(joined, ghost)
+    assert.notInclude(hint, 'Why is bucket')
     assert.match(plain[plain.length - 3] ?? '', /ethy >/)
     assert.equal(stripAnsi(plain[plain.length - 2] ?? '').trim(), '')
   })
@@ -137,19 +136,19 @@ describe('[Ethy/TUI]: renderFrame', () => {
 
 describe('[Ethy/TUI]: prompt reducer', () => {
   it('Tab on empty draft requests domain cycle', () => {
-    const r = reducePromptKey(createInitialViewState(), { type: 'tab' }, 'ghost')
+    const r = reducePromptKey(createInitialViewState(), { type: 'tab' })
     assert.equal(r.domainCycle, 1)
     assert.equal(r.view.promptDraft, '')
   })
 
   it('Tab completes slash prefix', () => {
     const view = { ...createInitialViewState(), promptDraft: '/p' }
-    const r = reducePromptKey(view, { type: 'tab' }, '')
+    const r = reducePromptKey(view, { type: 'tab' })
     assert.equal(r.view.promptDraft, '/peers')
   })
 
   it('Enter on empty draft opens deep view', () => {
-    const r = reducePromptKey(createInitialViewState(), { type: 'enter' }, '')
+    const r = reducePromptKey(createInitialViewState(), { type: 'enter' })
     assert.isTrue(r.openDeepView)
   })
 
@@ -163,21 +162,21 @@ describe('[Ethy/TUI]: prompt reducer', () => {
     let view = createInitialViewState()
     view.history = ['a', 'b']
     view.historyIndex = 2
-    let r = reducePromptKey(view, { type: 'up' }, '')
+    let r = reducePromptKey(view, { type: 'up' })
     view = r.view
     assert.equal(view.promptDraft, 'b')
-    r = reducePromptKey(view, { type: 'down' }, '')
+    r = reducePromptKey(view, { type: 'down' })
     assert.equal(r.view.promptDraft, '')
   })
 
   it('Enter submits non-empty draft', () => {
     const view = { ...createInitialViewState(), promptDraft: '/peers' }
-    const r = reducePromptKey(view, { type: 'enter' }, '')
+    const r = reducePromptKey(view, { type: 'enter' })
     assert.equal(r.submittedLine, '/peers')
   })
 
   it('exit action sets shouldExit', () => {
-    const r = reducePromptKey(createInitialViewState(), { type: 'exit' }, '')
+    const r = reducePromptKey(createInitialViewState(), { type: 'exit' })
     assert.isTrue(r.view.shouldExit)
   })
 
@@ -188,7 +187,7 @@ describe('[Ethy/TUI]: prompt reducer', () => {
 
   it('backspace removes last draft character', () => {
     const view = { ...createInitialViewState(), promptDraft: 'abc' }
-    const r = reducePromptKey(view, { type: 'backspace' }, '')
+    const r = reducePromptKey(view, { type: 'backspace' })
     assert.equal(r.view.promptDraft, 'ab')
   })
 

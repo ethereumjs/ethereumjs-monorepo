@@ -42,7 +42,6 @@ export {
   decodeKey,
   pushKeyChar,
   reducePromptKey,
-  ghostForPhase,
   createInitialViewState,
 } from './tui/prompt.ts'
 export { visibleWidth, stripAnsi } from './tui/ansi.ts'

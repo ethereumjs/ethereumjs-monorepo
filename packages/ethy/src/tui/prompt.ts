@@ -1,5 +1,5 @@
 import { completeSlashDraft } from '../ai/slashComplete.ts'
-import type { CapabilityId, EthyPhase, TuiViewState } from '../spine/types.ts'
+import type { CapabilityId, TuiViewState } from '../spine/types.ts'
 
 export type KeyAction =
   | { type: 'char'; ch: string }
@@ -31,18 +31,6 @@ export function deepViewCommand(domain: CapabilityId): string {
       return '/bal'
     case 'ai':
       return '/help'
-  }
-}
-
-export function ghostForPhase(phase: EthyPhase): string {
-  switch (phase) {
-    case 'BOOTING':
-    case 'P2P_WARMUP':
-      return 'Which peers are connected and how is latency?'
-    case 'SNAP_SYNCING':
-      return 'Why is bucket 0x3 stalled?'
-    case 'HEAD_FOLLOWING':
-      return 'What changed in the latest block access list?'
   }
 }
 
@@ -125,11 +113,7 @@ export interface PromptReduceResult {
   openDeepView?: true
 }
 
-export function reducePromptKey(
-  view: TuiViewState,
-  action: KeyAction,
-  _ghost: string,
-): PromptReduceResult {
+export function reducePromptKey(view: TuiViewState, action: KeyAction): PromptReduceResult {
   const next: TuiViewState = { ...view, history: [...view.history] }
   let submittedLine: string | undefined
   let domainCycle: 1 | -1 | undefined
@@ -201,7 +185,6 @@ export function createInitialViewState(): TuiViewState {
     activeDomain: 'p2p',
     activeWidget: null,
     promptDraft: '',
-    ghostSuggestion: '',
     carouselTick: 0,
     history: [],
     historyIndex: 0,

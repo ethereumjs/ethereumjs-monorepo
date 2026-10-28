@@ -95,7 +95,6 @@ export interface TuiViewState {
   activeDomain: CapabilityId
   activeWidget: WidgetSpec | null
   promptDraft: string
-  ghostSuggestion: string
   carouselTick: number
   history: string[]
   historyIndex: number

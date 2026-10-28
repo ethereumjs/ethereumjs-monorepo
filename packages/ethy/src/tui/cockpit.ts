@@ -261,10 +261,8 @@ function domainTitle(spine: EthySpine, view: TuiViewState, kind: 'Commands' | 'M
   const id = view.activeDomain
   const mark = capabilityMark(id, domainStatus(spine, id))
   const label = DOMAIN_LABEL[id]
-  if (kind === 'Metrics') {
-    return `${mark} ${label} Metrics [Enter]`
-  }
-  return `${mark} ${label} Commands`
+  const suffix = kind === 'Metrics' ? 'Metrics' : 'Commands'
+  return `${mark} ${BOLD}${label} ${suffix}${RESET}`
 }
 
 function innerRowWidth(boxW: number): number {

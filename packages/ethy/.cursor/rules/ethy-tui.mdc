@@ -33,7 +33,7 @@ Ethy’s terminal UI is a **pure function** of `EthySpine`, `TuiViewState`, and 
 ```text
  Ethy v10.1.3 | SEPOLIA                        Slot 11,482,910        ● P2P  ◐ SNAP  ○ HEAD  ◐ AI
 ──────────────────────────────────────────────────────────────────────────────────────────────────
- ╭─ Node Pulse ───────────────╮  ╭─ ● P2P Commands ───────────╮  ╭─ ● P2P Metrics ─────── [Enter] ╮
+ ╭─ Node Pulse ───────────────╮  ╭─ ● P2P Commands ───────────╮  ╭─ ● P2P Metrics ──────────────╮
  │ Phase     Snap Syncing     │  │ /peers    client & rtt tbl │  │ Peers      18 active           │
  │ Pivot     #7,812,400       │  │ /diag     recent anomalies │  │ Ready      14 snap · 18 eth/71 │
  │ Buckets   ████▓▓!░░░░░░░░░ │  │ /drop     disconnect peer  │  │ Latency    84 ms avg           │
@@ -48,8 +48,8 @@ Ethy’s terminal UI is a **pure function** of `EthySpine`, `TuiViewState`, and 
 ```
 
 ### Band 1 — Minimal Top Header Bar (1 row + full-bleed `─` rule)
-- Left: `Ethy v<version> | <NETWORK>`.
-- Right cluster: `Slot <n>` followed by an 8-column gap (`SLOT_GAP = 8`) and the 4 right-packed pills `● P2P  ◐ SNAP  ○ HEAD  ◐ AI` (`CAPABILITY_PILL_GAP = 2`).
+- Left: **bold** `Ethy v<version>`, then plain ` | <NETWORK>`.
+- Right cluster: plain `Slot <n>`, then an 8-column gap (`SLOT_GAP = 8`) and the 4 right-packed pills — colored mark + **bold** name (`● P2P  ◐ SNAP  …`; `CAPABILITY_PILL_GAP = 2`).
 
 ### Band 2 — The 3-Box Cockpit Row (fixed **8** visible rows per box, 3 equal/weighted rounded boxes)
 Sits below the top header rule and displays three side-by-side rounded boxes (`╭─ ... ─╮`): top border, **one padding row**, four two-column data rows (`formatTwoColumnRows` with shared label width + `TWO_COLUMN_MIN_GAP = 2`), **one padding row**, bottom border.
@@ -58,9 +58,9 @@ Sits below the top header rule and displays three side-by-side rounded boxes (`�
 2. **Middle Box (`<Mark> <Domain> Commands` — Domain Usage Discovery):**
    - Dynamically reflects the currently selected `activeDomain` (`p2p` | `snap` | `head` | `ai`).
    - Lists the 3–4 slash commands (or example prompts when in `ai` domain) available for that domain with short, clean 1-line descriptions.
-3. **Right Box (`<Mark> <Domain> Metrics` — Deeper Domain Stats + Deep-View Hint):**
+3. **Right Box (`<Mark> <Domain> Metrics` — Deeper Domain Stats):**
    - Dynamically reflects `activeDomain`, showing the 4 key metrics for that domain (e.g. `p2p`: active peers, protocol caps, avg RTT, client split; `snap`: completed/syncing/stalled buckets, throughput, pivot root; `head`: head block, state root status, BAL count; `ai`: engine mode, unlocked tool count, slot delta).
-   - Header right-aligns a subtle `[Enter]` (or hotkey) hint indicating that pressing `Enter` on an empty prompt opens this domain's full deep view in the Main Interaction Area below.
+   - Box titles use **bold** for `Node Pulse` / `<DOMAIN> Commands` / `<DOMAIN> Metrics`. Empty-prompt **Enter** is documented on the footer hint only, not in the box header.
 
 ### Band 3 — Broad Main Interaction Area (`fill` band)
 - Occupies all remaining vertical rows between the 3-Box Cockpit Row and the bottom prompt rule.
@@ -72,7 +72,7 @@ Sits below the top header rule and displays three side-by-side rounded boxes (`�
   - Example: `● ethy > ` where `●` stays in column 0 of the content inset and changes color (`green` → `yellow` → `cyan` → `magenta`) as the user presses `Tab`.
   - Terminal cursor is placed on the prompt line (`promptCaretPosition`, one row above the blank spacer).
 - **Blank spacer row** between prompt and footer (breathing room).
-- **Footer Hint Line:** Concise key hints on the left; optional ghost prompt/autocomplete hint right-aligned.
+- **Footer Hint Line:** Key hints on the left only; slash-prefix autocomplete (`/p → /peers`) right-aligned while typing a command.
 
 ---
 
