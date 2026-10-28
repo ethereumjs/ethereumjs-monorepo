@@ -1,6 +1,6 @@
 # WP-02: 3-Box Domain-Lens Cockpit, Live Threaded `devp2p` Harness & Fresh Pivot Header Acquisition
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `PLANNED`
 - **Dependencies:** `WP-00` (`DONE`), `WP-01` (`DONE`)
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
@@ -88,7 +88,69 @@ Follow all layout and interaction invariants in [`packages/ethy/.cursor/rules/et
 
 ## 2. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled out by Grok 4.7 during the Planning pass.)*
+Composer implements in **three isolated commits**: `@ethereumjs/devp2p`, `@ethereumjs/common` (audit-only when possible), then `@ethereumjs/ethy`. Runtime deps for ethy: `@ethereumjs/devp2p`, `@ethereumjs/block`, `@ethereumjs/rlp`, `@ethereumjs/util` at `^10.1.3` (extends **D-015**). No third-party packages.
+
+### Design refinements (D-025–D-032)
+
+See [`PROGRESS.md`](../PROGRESS.md) Decision Log. Summary:
+
+- **D-025:** Empty `Tab` / `Shift+Tab` cycle `activeDomain`; `Tab` / Right Arrow complete slash drafts; empty `Enter` opens domain deep view; ghost prose stays on footer; slash shortcuts and prefix expansion in `slashComplete.ts`.
+- **D-026:** `CapabilityId` lives in `spine/types.ts` (spine must not import TUI).
+- **D-027:** Default frame drops carousel band; `onboarding_carousel` widget kind retained.
+- **D-028:** `PeerCoordinator` started from CLI, not `createEthyNode`; `--demo` never opens sockets; live includes `--headless`.
+- **D-029:** Optional `bestHash` / `latestBlock` on `WorkerPeerSnapshot` via `ETH.peerStatusHead()`; bootnodes + DNS from `Common` only when discovery on and `bootnodes` omitted.
+- **D-030:** Ethy passes `Common.getHardforkBy({ timestamp: now })`; Amsterdam stays unscheduled until published.
+- **D-031:** Single in-flight `GET_BLOCK_HEADERS` to highest `latestBlock` peer; hash verify; `refreshPivotHeader` at 96-block drift; `P2P_WARMUP` + `deriveCapabilities` for pills.
+- **D-032:** Pivot IT = two in-process loopback nodes; default `npm test` = no public sockets / no DNS.
+
+### Baseline (WP-01 shipped)
+
+- [`renderFrame.ts`](../src/tui/renderFrame.ts): carousel between rules, plain `ethy > `, `Tab` copies ghost into draft.
+- [`WorkerPeerSnapshot`](../../../devp2p/src/worker/protocol.ts): `id`, `clientId`, `caps`, `rttMs` only; worker bootstraps only explicit `bootnodes`; `shouldFindNeighbours` defaults **false** in worker init.
+
+### Slice 1 — `@ethereumjs/devp2p`
+
+| File | Change |
+| --- | --- |
+| [`packages/devp2p/src/protocol/eth.ts`](../../../devp2p/src/protocol/eth.ts) | `peerStatusHead(): { bestHash: Uint8Array; latestBlock?: bigint } \| null` after STATUS OK (eth/69+: indices 6/5; older: bestHash index 3). |
+| [`packages/devp2p/src/worker/protocol.ts`](../../../devp2p/src/worker/protocol.ts) | Optional `bestHash?: string`, `latestBlock?: string` on `WorkerPeerSnapshot`. |
+| [`packages/devp2p/src/worker/host.ts`](../../../devp2p/src/worker/host.ts) | On ETH `status`, refresh telemetry; fill snapshot head fields; wire `bootNodesFromCommon` when discovery on and `bootnodes === undefined`. |
+| [`packages/devp2p/src/worker/bootNodes.ts`](../../../devp2p/src/worker/bootNodes.ts) | Map `common.bootstrapNodes()` → `PeerInfo` (same shape as [`accept/live.ts`](../../../devp2p/accept/live.ts)); DNS opts when `dnsNetworks` non-empty. Explicit `bootnodes` (including `[]`) wins. |
+
+**Tests:** extend [`test/worker/worker-network.spec.ts`](../../../devp2p/test/worker/worker-network.spec.ts) (connected peers expose `bestHash`); new `test/worker/bootNodes.spec.ts` (mapping, omit vs empty array).
+
+### Slice 2 — `@ethereumjs/common` audit
+
+Audit Sepolia + Hoodi in [`chains.ts`](../../../common/src/chains.ts) against eth-clients / geth bootnodes + DNS (web only). Edit only on mismatch; Amsterdam timestamp/forkHash only when published. Sepolia `defaultHardfork` stays `prague`; live fork id from timestamp lookup in ethy.
+
+### Slice 3 — `@ethereumjs/ethy`
+
+**File tree (new / touched):**
+
+```
+package.json                    # + devp2p, block, rlp, util
+src/spine/types.ts              # CapabilityId, activeDomain
+src/ai/slashComplete.ts         # completeSlashDraft, expandSlashCommand
+src/ai/deterministicEngine.ts   # expandSlashCommand before routeSlash
+src/tui/cockpit.ts              # renderCockpit (6 lines)
+src/tui/renderFrame.ts          # 4 bands, prompt prefix width 9
+src/tui/prompt.ts               # domainCycle, openDeepView, shiftTab, right
+src/tui/session.ts              # cycle domain, deep view intents
+src/tui/capabilityMark.ts       # import CapabilityId from spine
+src/net/chainHardfork.ts
+src/net/genesisStatus.ts
+src/net/pivotHeader.ts
+src/net/peerCoordinator.ts
+src/cli/main.ts                 # start/stop coordinator when !demo
+test/tui.spec.ts, test/intent.spec.ts
+test/pivotHeader.spec.ts, test/net.spec.ts
+```
+
+**Cockpit:** [`cockpit.ts`](../src/tui/cockpit.ts) — `widthsFromWeights(contentWidth, [1,1,1], 2)`, 6 rows, rounded `╭─╮`, Node Pulse + domain Commands + domain Metrics per Part A and [`ethy-tui.mdc`](../.cursor/rules/ethy-tui.mdc).
+
+**PeerCoordinator:** `createThreadedNetwork` with `capabilities: ['eth68','eth69','eth70','eth71','snap1']`, `goodCitizen: true`, `shouldFindNeighbours: true`, bootnodes omitted, `hardfork` from `activeHardfork`, `status` from `genesisStatus`. Telemetry → `spine.peers` + diagnostics; STATUS head → `GET_BLOCK_HEADERS` → `pivotBlockNumber`, `pivotStateRoot`, `currentSlot`, `setBlockRange`; `refreshPivotHeader` when best peer > pivot + 96.
+
+**Implementer gates:** `npm run tsc` + `npm test` + spellcheck in each touched package; upstream commits separate from ethy when committing.
 
 ---
 

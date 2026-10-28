@@ -8,7 +8,7 @@ This file is the **single source of truth** for project progress, architectural 
 
 ## 1. Current Project Snapshot
 
-- **Current Stage:** **WP-01** (`@ethereumjs/ethy` Foundation) is **`DONE`**. **WP-02** (Live P2P harness) is **`READY_FOR_PLANNING`** / unblocked on the Ethy side.
+- **Current Stage:** **WP-01** is **`DONE`**. **WP-02** is **`PLANNED`** (concrete file-by-file plan in [`work-packages/WP-02-live-p2p-and-fresh-pivot.md`](./work-packages/WP-02-live-p2p-and-fresh-pivot.md) §2); ready for Composer implementation.
 - **Active Target Network:** `sepolia` (Amsterdam hardfork focus; generic `@ethereumjs/common` chain support).
 - **Package Identity:** `@ethereumjs/ethy` (CLI binary: `ethy`, zero-config invocation `ethy` or `ethy sepolia`; unscoped `ethy` npm name transfer inquired).
 
@@ -20,7 +20,7 @@ This file is the **single source of truth** for project progress, architectural 
 | --- | --- | --- | --- | --- | --- |
 | **WP-00** | **`@ethereumjs/devp2p` Worker-Thread Architecture, Discovery Flow Control & Buffer Hardening** | `DONE` | None | [`work-packages/WP-00-devp2p-worker-and-hardening.md`](./work-packages/WP-00-devp2p-worker-and-hardening.md) | Shipped (#4417): `createThreadedNetwork`, `SocketByteQueue`, DPT/RLPx throttle, Good Citizen in worker, `inProcess` + real `Worker` ITs + README. |
 | **WP-01** | **Foundation: Scaffolding, `EthySpine`, 4-Zone TUI & Deterministic Prompt Loop** | `DONE` | None | [`work-packages/WP-01-foundation-spine-and-tui-loop.md`](./work-packages/WP-01-foundation-spine-and-tui-loop.md) | `@ethereumjs/ethy` package: spine, deterministic prompt, `--demo`. TUI is a padded page with fixed capability colors, a split suggestion band, and a cursor prompt. Dedicated `ethy` CI job. |
-| **WP-02** | **3-Box Domain-Lens Cockpit, Live P2P Harness & Fresh Pivot Header Acquisition** | `READY_FOR_PLANNING` | WP-01 (`DONE`), WP-00 (`DONE`) | [`work-packages/WP-02-live-p2p-and-fresh-pivot.md`](./work-packages/WP-02-live-p2p-and-fresh-pivot.md) | Upgrades TUI to the 3-Box Domain-Lens Cockpit (`● ethy >` `Tab` domain cycling + `Enter` deep view), connects `createThreadedNetwork` to `EthySpine`, and acquires live pivot `stateRoot` from best `eth` peer. |
+| **WP-02** | **3-Box Domain-Lens Cockpit, Live P2P Harness & Fresh Pivot Header Acquisition** | `PLANNED` | WP-01 (`DONE`), WP-00 (`DONE`) | [`work-packages/WP-02-live-p2p-and-fresh-pivot.md`](./work-packages/WP-02-live-p2p-and-fresh-pivot.md) | §2: three-slice plan (devp2p STATUS head + DNS boot, common audit, ethy cockpit + `PeerCoordinator` + loopback `net.spec.ts`). Decisions **D-025**–**D-032**. |
 | **WP-03** | **16-Bucket `snap/1` Account Sync, Range Proofs & Developer Microscope** | `BLOCKED_BY_WP-02` | WP-01, WP-02 | [`work-packages/WP-03-snap-account-sync-and-microscope.md`](./work-packages/WP-03-snap-account-sync-and-microscope.md) | `InMemoryFlatStore`, `SyntheticSnapPeer` for CI, 16-bucket `GET_ACCOUNT_RANGE` + slim-to-full RLP conversion + `verifyMerkleRangeProof`, live `/buckets` & `/drop` dev actions. |
 | **WP-04** | **Bidirectional Local LLM `IntentEngine` (`<ethy_state>` & Tool Gating)** | `BLOCKED_BY_WP-01` | WP-01 (can run in parallel with WP-02/03) | [`work-packages/WP-04-local-llm-intent-engine.md`](./work-packages/WP-04-local-llm-intent-engine.md) | Zero-dep local HTTP JSON-schema LLM engine (`llama-server` 1.7B instruct), `<ethy_state>` header injection, dynamic phase tool gating, `--record-fixture` CI replay. |
 | **WP-05** | **Contract Storage/Bytecode Sync & Zero-Execution `eth/71` BAL Head Follower** | `BLOCKED_BY_WP-03` | WP-03 | [`work-packages/WP-05-storage-code-and-bal-head-follower.md`](./work-packages/WP-05-storage-code-and-bal-head-follower.md) | `GET_BYTE_CODES` + `GET_STORAGE_RANGES`, healing-free pivot-to-head bridge via `eth/71` `GET_BLOCK_ACCESS_LISTS` (`BlockLevelAccessList` + `consumeBAL`), `inspectLatestBAL` widget. |
@@ -60,6 +60,14 @@ Every structural choice or mid-flight adjustment must be recorded here with its 
 | **D-022** | 2026-10-27 | **Page layout owns insets; capability color is per id** | `pageLayout` insets content by one column; rules stay full width. `CAPABILITY_FG` is the only color source. Readiness changes the glyph, not the color. |
 | **D-023** | 2026-10-27 | **Dedicated `ethy` CI job** | Ethy tests run in `.github/workflows/ethy-build.yml`. An Ethy change runs that job. Static-bundle packages stay on the static job. A `common` change still runs Ethy, because Ethy depends on it. |
 | **D-024** | 2026-10-28 | **3-Box Domain-Lens Cockpit & 1-Key/2-Key Ergonomics (`ethy-tui.mdc` & `WP-02`)** | Replaces the bottom suggestion carousel with three fine-line rounded boxes (`╭─╮`) below the top rule: Left (`Node Pulse` overview), Middle (`<Mark> <Domain> Commands`), Right (`<Mark> <Domain> Metrics [Enter]`). The prompt prefix `● ethy >` holds the active domain mark; pressing `Tab` (on empty draft) cycles `activeDomain` (`p2p` → `snap` → `head` → `ai`) in 1 key without wiping the Main Interaction Area, and pressing `Enter` (on empty draft) opens that domain's deep view in the Main Area in 2 keys (`Tab` → `Enter`). |
+| **D-025** | 2026-10-28 | **WP-02 keyboard: domain cycle vs slash complete vs deep view** | Empty `Tab`/`Shift+Tab` cycle `activeDomain`; `Tab`/Right complete slash drafts; empty `Enter` opens domain default widget; ghost stays on footer; `slashComplete.ts` for prefixes and `/p`-style Enter expansion. |
+| **D-026** | 2026-10-28 | **`CapabilityId` on spine types** | `CapabilityId` exported from `spine/types.ts` so core/spine never imports `src/tui/`. |
+| **D-027** | 2026-10-28 | **Drop carousel band; keep widget kind** | Default `renderFrame` removes onboarding carousel; `onboarding_carousel` remains in `WidgetSpec` for tests/widgets. |
+| **D-028** | 2026-10-28 | **`PeerCoordinator` wired from CLI only** | `createEthyNode` stays sync/socket-free; live P2P starts in `main.ts` when not `--demo` (includes `--headless`). |
+| **D-029** | 2026-10-28 | **Worker peer head + opt-in discovery defaults** | `WorkerPeerSnapshot` gains optional head fields via `ETH.peerStatusHead()`; bootnodes/DNS from `Common` only when `shouldFindNeighbours !== false` and `bootnodes` omitted; worker default discovery off. |
+| **D-030** | 2026-10-28 | **Live hardfork = timestamp lookup** | Ethy passes `getHardforkBy({ timestamp: now })` to threaded network; Amsterdam left unscheduled in `chains.ts` until published. |
+| **D-031** | 2026-10-28 | **Pivot header pick + refresh policy** | One in-flight `GET_BLOCK_HEADERS` to highest `latestBlock` peer with `bestHash`; verify header hash; refresh when best peer > pivot + 96 blocks; phase `P2P_WARMUP` at coordinator start. |
+| **D-032** | 2026-10-28 | **CI pivot test on loopback only** | `net.spec.ts` uses two `inProcess` nodes; header server `goodCitizen: false`; default ethy tests no public P2P/DNS. |
 
 ---
 
@@ -70,14 +78,19 @@ Track every modification or planned modification to sibling monorepo packages he
 | Package | File(s) | Kind | Status | Description & Reasoning |
 | --- | --- | --- | --- | --- |
 | `@ethereumjs/devp2p` | `packages/devp2p/src/rlpx/peer.ts`, `socketByteQueue.ts`, `src/dpt/dpt.ts`, `src/rlpx/rlpx.ts`, `src/lab/emptyReply.ts`, `src/worker/*`, tests under `test/rlpx/`, `test/dpt/`, `test/worker/`, `test/protocol/` | Performance & Worker Architecture (WP-00) | `DONE` (#4417) | Merged in #4417: threaded network API, `SocketByteQueue`, discovery throttle, `inProcess` + real `Worker` tests + README § Threaded network. |
-| `@ethereumjs/devp2p` | `packages/devp2p/src/worker/host.ts`, `protocol.ts` | Enhancement (Target: WP-02) | `IDENTIFIED` | Expose peer `STATUS` head info (`bestHash` / `latestBlockHash`, `latestBlock`) in `WorkerPeerSnapshot` (or forward `ETH` `STATUS` event to client) and enable `DPT` DNS discovery (`dnsNetworks` / `shouldGetDnsPeers`) in `Devp2pWorkerHost._start()` so `WP-02` can discover Sepolia peers via ENR tree and immediately request the pivot block header via `GET_BLOCK_HEADERS`. |
-| `@ethereumjs/common` | `packages/common/src/chains.ts` | Maintenance (Target: WP-02) | `IDENTIFIED` | Verify and update `Sepolia` (and `Hoodi` if applicable) Amsterdam hardfork timestamp / `forkHash` and current working bootstrap/DNS nodes so `devp2p` `forkId` handshakes match live Amsterdam peers. |
+| `@ethereumjs/devp2p` | `packages/devp2p/src/protocol/eth.ts`, `src/worker/host.ts`, `protocol.ts`, `bootNodes.ts`, `test/worker/*` | Enhancement (WP-02) | `PLANNED` | `ETH.peerStatusHead()`, optional head fields on `WorkerPeerSnapshot`, `bootNodesFromCommon` + DNS when discovery on and bootnodes omitted; worker-network + bootNodes tests. See WP-02 §2 Slice 1. |
+| `@ethereumjs/common` | `packages/common/src/chains.ts` | Maintenance (WP-02) | `PLANNED` | Audit Sepolia/Hoodi bootnodes, DNS, fork schedule vs eth-clients/geth; edit only on verified mismatch; Amsterdam only when published. See WP-02 §2 Slice 2. |
 
 ---
 
 ## 5. Chronological Progress Log
 
 *Agents: Append a new dated subsection at the top of this list after each Planning (Grok 4.7) or Implementation (Composer 2.5) pass.*
+
+### 2026-10-28 — WP-02 concrete implementation plan (`PLANNED`) (Planner — Grok 4.7)
+- Filled [`work-packages/WP-02-live-p2p-and-fresh-pivot.md`](./work-packages/WP-02-live-p2p-and-fresh-pivot.md) §2: three-slice implementer plan (devp2p, common audit, ethy cockpit + `PeerCoordinator` + tests), file tree, and gates.
+- Recorded planning refinements **D-025** through **D-032** (keyboard ergonomics, spine `CapabilityId`, CLI coordinator wiring, worker head telemetry, pivot policy, loopback CI).
+- Upstream touch queue: `@ethereumjs/devp2p` and `@ethereumjs/common` WP-02 rows **`IDENTIFIED` → `PLANNED`**. WP-02 matrix status **`PLANNED`**.
 
 ### 2026-10-28 — 3-Box Domain-Lens Cockpit Rules (`ethy-tui.mdc`) & `WP-02` Scope Update (Coordinator — Gemini 4 Argon)
 - Codified the **3-Box Domain-Lens Cockpit** and **1-Key/2-Key Keyboard Ergonomics** in [`packages/ethy/.cursor/rules/ethy-tui.mdc`](./.cursor/rules/ethy-tui.mdc), [`.cursor/rules/ethy-architecture.mdc`](../../.cursor/rules/ethy-architecture.mdc), and [`ARCHITECTURE.md`](./ARCHITECTURE.md) (Decision **D-024**).
