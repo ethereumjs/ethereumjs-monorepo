@@ -18,11 +18,20 @@ Ethy’s terminal UI is a **pure function** of `EthySpine`, `TuiViewState`, and 
    - Every frame line must have **exactly `cols` visible width** (`fixedLine` in `layout.ts`).
    - Box widths, table columns, and pill positions are anchored to fixed grid proportions (`pageLayout.ts` + `widthsFromWeights`). Changing numeric values or cycling domains must **never** shift box borders or column edges by even 1 character.
    - Always use **`visibleWidth` / `padVisible` / `truncateVisible`** for ANSI strings — never pad or slice on raw string length.
-3. **Fine-Line Rounded Box Aesthetic (`╭─╮ │ ╰─╯`):**
-   - Upper cockpit boxes use calm Unicode rounded corners (`╭`, `╮`, `╰`, `╯`, `─`, `│`) with dimmed border chrome (`DIM`) so the eye goes straight to the colored capability mark (`●`) and the crisp data values inside.
-4. **Canonical Capability Colors (`CAPABILITY_FG`):**
+3. **Fine-Line Rounded Box Aesthetic & Internal Breathing Room (`╭─╮ │ ╰─╯`):**
+   - Upper cockpit boxes use calm Unicode rounded corners (`╭`, `╮`, `╰`, `╯`, `─`, `│`) with dimmed border chrome (`DIM`).
+   - **Vertical breathing room:** Every cockpit box includes **1 blank padded inner row** (`│ ... │`) below the top border and **1 blank padded inner row** above the bottom border (8 visible rows total for 4 content rows). Similarly, keep a **1-row blank spacer** between the prompt input line and the footer hint line.
+   - **Shared cross-box two-column rhythm:** Use `formatTwoColumnRows` with a shared `maxLabelWidth` and `TWO_COLUMN_MIN_GAP = 2` so label/value columns align consistently across all three cockpit boxes.
+4. **Typography Hierarchy (Bold Anchors vs. Dim Chrome/Prose):**
+   - **Bold (`BOLD`)** is reserved strictly for structural anchors and actionable keys: `Ethy v<ver>`, top-bar capability names (`P2P`, `SNAP`, `HEAD`, `AI`), box titles (`Node Pulse`, `<DOMAIN> Commands`, `<DOMAIN> Metrics`), the prompt `ethy >`, and key chord names in the footer (`Enter`, `Tab`, `/`, `Esc`).
+   - **Dim (`DIM`)** is used for box borders, horizontal rules (`─`), and explanatory prose next to key chords (`open P2P view`, `switch domain`, `command`, `exit`) so key chords and prose never visually run together as a single sentence.
+   - Never put hotkey hints like `[Enter]` inside box header titles; keep key hints in the footer line.
+5. **Canonical Capability Colors (`CAPABILITY_FG`):**
    - Color belongs to the **domain identity** (`p2p` = green, `snap` = yellow, `head` = cyan, `ai` = magenta in `capabilityMark.ts`), never to readiness.
    - Readiness changes only the glyph (`●` ready, `◐` partial, `○` locked).
+6. **Column-Aligned Footer Grid & Anti-Flicker `NoticeBoard`:**
+   - The bottom Band 4 reuses the exact horizontal column geometry of the 3-box cockpit (`cockpitColumnWidths`): the left two columns (`w0 + gap + w1`) host the `● ethy >` prompt, footer key hints, and inline slash autocomplete (`/p → /peers`), while the right column (`w2`, directly beneath the Metrics box) hosts the right-aligned single-line `NoticeBoard` output.
+   - All ambient/transient status notices must go through `NoticeBoard` (`NOTICE_MIN_DWELL_MS = 4_000`, deduplicated by `key`) so rapid network events never cause sub-second visual flicker.
 
 ---
 

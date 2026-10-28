@@ -158,17 +158,17 @@ test/pivotHeader.spec.ts, test/net.spec.ts
 
 ### Common audit (Slice 2, no `chains.ts` edit)
 
-Compared [`packages/common/src/chains.ts`](../../../common/src/chains.ts) Sepolia and Hoodi against geth `master` [`params/chainspecs/sepolia.json`](https://github.com/ethereum/go-ethereum/blob/master/params/chainspecs/sepolia.json) and [`hoodi.json`](https://github.com/ethereum/go-ethereum/blob/master/params/chainspecs/hoodi.json) (Oct 2026):
+Compared [`packages/common/src/chains.ts`](../../../common/src/chains.ts) Sepolia and Hoodi against geth `master` chain specification JSON files (`sepolia.json` and `hoodi.json`, Oct 2026):
 
 | Check | Sepolia | Hoodi |
 | --- | --- | --- |
 | Shanghai → BPO2 timestamps | Match geth | Match geth |
-| `dnsNetworks` | `all.sepolia.ethdisco.net` (same ENR root as geth DNS) | `all.hoodi.ethdisco.net` |
-| Static `bootstrapNodes` | Differs from geth’s current ENR/NodeOps list; legacy enodes still valid fallbacks | Matches geth “legacy EF” enode triple |
+| `dnsNetworks` | Matches geth DNS ENR root | Matches geth DNS ENR root |
+| Static `bootstrapNodes` | Differs from geth’s current ENR/NodeOps list; legacy enode entries still valid fallbacks | Matches geth “legacy EF” enode triple |
 
-**ForkId:** Ethy passes `getHardforkBy({ timestamp: now })` into the worker; Amsterdam remains unscheduled in `@ethereumjs/common` per **D-030** (geth chainspec lists `amsterdamTime` for Sepolia — intentional drift until common publishes Amsterdam).
+**ForkId:** Ethy passes `getHardforkBy({ timestamp: now })` into the worker; Amsterdam remains unscheduled in `@ethereumjs/common` per **D-030** (geth chain config lists `amsterdamTime` for Sepolia — intentional drift until common publishes Amsterdam).
 
-**Discovery:** Live Sepolia relies on DNS + whatever `bootstrapNodes()` returns; stale static Sepolia enodes are acceptable for WP-02; refreshing Sepolia `bootstrapNodes` to geth’s ENR set is a follow-up common maintenance PR (needs ENR → `PeerInfo` tooling).
+**Discovery:** Live Sepolia relies on DNS + whatever `bootstrapNodes()` returns; stale static Sepolia enode entries are acceptable for WP-02; refreshing Sepolia `bootstrapNodes` to geth’s ENR set is a follow-up common maintenance PR (needs ENR → `PeerInfo` tooling).
 
 ### Deviations
 
