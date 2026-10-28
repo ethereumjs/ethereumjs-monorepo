@@ -20,7 +20,7 @@ import { deriveCapabilities, setPhase } from '../spine/createSpine.ts'
 import { recordDiagnostic } from '../spine/diagnostics.ts'
 import type { EthySpine, PeerTelemetry } from '../spine/types.ts'
 import { activeHardfork, chainConfigForNetwork } from './chainHardfork.ts'
-import { genesisStatusFields } from './genesisStatus.ts'
+import { p2pHandshakeStatusFields } from './genesisStatus.ts'
 import {
   EthMessageCodes,
   encodeGetBlockHeadersPayload,
@@ -154,7 +154,7 @@ export async function startPeerCoordinator(
       goodCitizen: opts.goodCitizen ?? true,
       shouldFindNeighbours: opts.shouldFindNeighbours ?? true,
       clientId: utf8ToBytes(`ethy/v${getEthyClientVersion()}`),
-      status: genesisStatusFields(network),
+      status: p2pHandshakeStatusFields(network),
       listenPort: opts.listenPort ?? 0,
       endpoint: { address: '0.0.0.0', udpPort: 0, tcpPort: opts.listenPort ?? 0 },
       throttleDiscovery: true,
@@ -168,6 +168,7 @@ export async function startPeerCoordinator(
     for (const p of snap.peers) {
       spine.peers.set(p.id, mapPeer(p, prev.get(p.id)))
     }
+    spine.discovery = snap.discovery
     for (const d of snap.diagnostics) {
       if (d.timestamp <= lastDiagTs) continue
       lastDiagTs = d.timestamp

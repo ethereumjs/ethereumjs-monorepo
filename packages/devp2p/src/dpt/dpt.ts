@@ -52,6 +52,7 @@ export class DPT {
   protected _discoveryPaused = false
   protected _peerBatchQueue: PeerInfo[] = []
   protected _inFlightPings = 0
+  protected _discoveryMetrics: import('../discovery/metrics.ts').DiscoveryMetrics | undefined
 
   private DEBUG: boolean
 
@@ -64,9 +65,18 @@ export class DPT {
     // By default, tries to connect to 12 new peers every 3s
     this._dnsRefreshQuantity = Math.floor((options.dnsRefreshQuantity ?? 25) / 2)
     this._dnsNetworks = options.dnsNetworks ?? []
-    this._dnsAddr = options.dnsAddr ?? '8.8.8.8'
+    this._dnsAddr = options.dnsAddr ?? ''
+    this._discoveryMetrics = options.discoveryMetrics
+    this._discoveryMetrics?.setDnsResolver(
+      options.dnsAddr !== undefined && options.dnsAddr.length > 0 ? options.dnsAddr : 'system',
+    )
 
-    this._dns = new DNS({ dnsServerAddress: this._dnsAddr, common: options.common })
+    this._dns = new DNS({
+      common: options.common,
+      ...(options.dnsAddr !== undefined && options.dnsAddr.length > 0
+        ? { dnsServerAddress: options.dnsAddr }
+        : {}),
+    })
     this._banlist = new BanList()
     this._nodeStore =
       options.nodeStore ??
@@ -91,6 +101,7 @@ export class DPT {
       endpoint: options.endpoint,
       createSocket: options.createSocket,
       common: options.common,
+      discoveryMetrics: options.discoveryMetrics,
     })
     this._server.events.once('listening', () => this.events.emit('listening'))
     this._server.events.once('close', () => this.events.emit('close'))
@@ -200,13 +211,17 @@ export class DPT {
   }
 
   async bootstrap(peer: PeerInfo): Promise<void> {
+    this._discoveryMetrics?.recordBootstrapAttempt()
     try {
       peer = await this.addPeer(peer)
       if (peer.id !== undefined) {
         // Using deprecated bytesToUnprefixedHex for performance: used as Set keys for peer tracking.
         this._confirmedPeers.add(bytesToUnprefixedHex(peer.id))
       }
+      this._discoveryMetrics?.recordBootstrapOk()
     } catch (error: any) {
+      const msg = error instanceof Error ? error.message : String(error)
+      this._discoveryMetrics?.recordBootstrapFail(msg)
       this.events.emit('error', error)
       return
     }
@@ -380,6 +395,11 @@ export class DPT {
     this._kbucket.remove(obj)
   }
 
+  /** Refresh discv4 `from` endpoint from the bound UDP socket and TCP listen port. */
+  syncEndpointFromSocket(tcpListenPort: number): PeerInfo {
+    return this._server.syncEndpointFromSocket(tcpListenPort)
+  }
+
   async getDnsPeers(): Promise<PeerInfo[]> {
     return this._dns.getPeers(this._dnsRefreshQuantity, this._dnsNetworks)
   }
@@ -433,10 +453,13 @@ export class DPT {
 
     if (this._shouldGetDnsPeers) {
       let dnsPeers: PeerInfo[] = []
+      this._discoveryMetrics?.recordDnsAttempt()
       try {
         dnsPeers = await this.getDnsPeers()
+        this._discoveryMetrics?.recordDnsPeersAdded(dnsPeers.length)
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err)
+        this._discoveryMetrics?.recordDnsError(msg)
         if (this.DEBUG) {
           this._debug(`DNS peer lookup failed: ${msg}`)
         }

@@ -119,6 +119,10 @@ describe('[Devp2p/Worker]: createThreadedNetwork', () => {
       const withHead = snap.peers.find((p) => p.bestHash !== undefined)
       assert.ok(withHead !== undefined)
       assert.equal(withHead.bestHash?.toLowerCase(), MAINNET_STATUS_JSON.bestHash.toLowerCase())
+      assert.ok(snap.discovery !== undefined)
+      assert.isAtLeast(snap.discovery.rlpx.dials, 1)
+      assert.isAtLeast(snap.discovery.rlpx.statusOk, 1)
+      assert.isAtLeast(snap.discovery.boundUdpPort, 1)
     } finally {
       nodeA.stop()
       nodeB.stop()

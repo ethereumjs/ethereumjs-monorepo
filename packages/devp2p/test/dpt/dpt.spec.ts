@@ -37,7 +37,7 @@ describe('[Devp2p/DPT]: table', () => {
   it('should initialize and add peers', async () => {
     const dpt = new DPT(privateKey1, {})
     dpt['_server'] = new Server() as any
-    assert.strictEqual(dpt['_dnsAddr'], '8.8.8.8', 'should initialize with default values')
+    assert.strictEqual(dpt['_dnsAddr'], '', 'should default to OS DNS resolver')
 
     dpt['_server'].ping = vi.fn().mockResolvedValue(peers[0])
     await dpt.bootstrap(peers[0])

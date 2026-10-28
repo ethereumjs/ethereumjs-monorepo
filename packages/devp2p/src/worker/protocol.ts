@@ -66,9 +66,41 @@ export interface WorkerDiagnosticEntry {
   peerId?: string
 }
 
+export interface WorkerDiscoveryBootstrapSnapshot {
+  attempts: number
+  ok: number
+  fail: number
+  lastError?: string
+}
+
+export interface WorkerDiscoveryDnsSnapshot {
+  attempts: number
+  peersAdded: number
+  lastError?: string
+  resolver?: string
+}
+
+export interface WorkerDiscoveryRlpxSnapshot {
+  dials: number
+  connected: number
+  statusOk: number
+  disconnects: Record<string, number>
+}
+
+export interface WorkerDiscoverySnapshot {
+  boundAddress: string
+  boundUdpPort: number
+  boundTcpPort: number
+  tablePeers: number
+  bootstrap: WorkerDiscoveryBootstrapSnapshot
+  dns: WorkerDiscoveryDnsSnapshot
+  rlpx: WorkerDiscoveryRlpxSnapshot
+}
+
 export interface WorkerTelemetrySnapshot {
   peers: WorkerPeerSnapshot[]
   diagnostics: WorkerDiagnosticEntry[]
+  discovery?: WorkerDiscoverySnapshot
 }
 
 export type WorkerEvent =

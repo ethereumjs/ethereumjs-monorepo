@@ -70,6 +70,18 @@ async function main(): Promise<void> {
   if (cli.headless) {
     if (cli.demo) {
       advanceDemo(node.spine, 5000)
+    } else if (coordinatorStop !== undefined) {
+      const soakMs = 45_000
+      const soakTimer = setTimeout(() => {
+        const line = {
+          type: 'ethy_discovery_soak',
+          network,
+          peers: node.spine.peers.size,
+          discovery: node.spine.discovery ?? null,
+        }
+        process.stdout.write(`${JSON.stringify(line)}\n`)
+      }, soakMs)
+      soakTimer.unref()
     }
     await new Promise<void>((resolve) => {
       const onSignal = () => {
