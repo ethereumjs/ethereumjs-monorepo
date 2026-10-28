@@ -6,8 +6,17 @@ export { formatEthyStateHeader } from './ai/stateHeader.ts'
 export { advanceDemo } from './demo/advanceDemo.ts'
 export { createSpine, deriveCapabilities, setPhase } from './spine/createSpine.ts'
 export { recordDiagnostic, DIAGNOSTIC_RING_CAPACITY } from './spine/diagnostics.ts'
+export {
+  NoticeBoard,
+  NOTICE_MIN_DWELL_MS,
+  NOTICE_STORE_LIMIT,
+  describeNotice,
+} from './notify/board.ts'
+export type { LiveNotice, NoticeDraft, NoticeLevel } from './notify/board.ts'
+export { syncP2pLinkNotices, discoveryLooksBlocked, P2P_QUIET_GRACE_MS } from './notify/p2pLink.ts'
 export { createSnapBuckets, findBucketByPrefix } from './spine/buckets.ts'
 export type {
+  CapabilityId,
   CapabilityReadiness,
   CapabilityState,
   DiagnosticEvent,
@@ -41,7 +50,6 @@ export {
   decodeKey,
   pushKeyChar,
   reducePromptKey,
-  ghostForPhase,
   createInitialViewState,
 } from './tui/prompt.ts'
 export { visibleWidth, stripAnsi } from './tui/ansi.ts'

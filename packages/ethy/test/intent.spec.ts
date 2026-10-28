@@ -7,6 +7,13 @@ import { createSpine, setPhase } from '../src/spine/createSpine.ts'
 describe('[Ethy/Intent]: routing', () => {
   const engine = new DeterministicIntentEngine()
 
+  it('short slash /p routes like /peers', () => {
+    const spine = createSpine('sepolia', 11155111n)
+    advanceDemo(spine, 5000)
+    const r = engine.handle({ text: '/p', spine })
+    assert.equal(r.widget.kind, 'table')
+  })
+
   it('/peers routes to peer table', () => {
     const spine = createSpine('sepolia', 11155111n)
     advanceDemo(spine, 5000)

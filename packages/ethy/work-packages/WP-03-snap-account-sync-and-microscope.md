@@ -40,10 +40,11 @@ Implement the 16-bucket (`0x0..0xf`) `snap/1` Account Range Synchronizer backed 
    - Assigns idle `snap/1` peers to pending/stalled buckets, tracks per-peer request RTT and timeouts in `EthySpine.peers`, verifies range proofs via `verifyMerkleRangeProof`, writes verified accounts to `StateStore`, and updates `EthySpine.snapBuckets`, `totalAccountsSynced`, and `accountsPerSec`.
    - If a peer times out or fails `verifyMerkleRangeProof`, records a detailed `DiagnosticEvent` (with `bucketIndex`, `peerId`, and failure reason) in `spine.diagnosticRingBuffer`, marks the bucket `stalled` briefly, and reassigns to a healthy peer.
 
-4. **Stage-2 Microscope Tools (`src/tools/`):**
+4. **Stage-2 Microscope Tools & `SNAP` Domain Lens (`src/tools/`, `src/tui/`):**
    - `inspectRawAccountRange`: Queries `StateStore.sampleAccounts({ prefixHex })` (or triggers an on-demand `GET_ACCOUNT_RANGE` for that prefix) and returns a `table` `WidgetSpec` showing Account Hash, Balance (ETH), Nonce, Contract (`yes`/`no`), and Storage Root.
    - `sampleSyncedAccounts`: Shows top accounts by ETH balance or highest nonce among the accounts synced so far.
    - `triggerDevAction`: Allows `/drop <peerId>`, `/reassign <bucketHex>`, `/pause`, `/resume` directly from the TUI prompt.
+   - Wire `/range` and `/sample` into the Middle Box (`◐ SNAP Commands`) and live account/bucket stats into the Right Box (`◐ SNAP Metrics`) of the 3-Box Cockpit when `activeDomain === 'snap'`.
 
 5. **Tier-1 Unit Test Suite (`test/snapSync.spec.ts`):**
    - End-to-end 16-bucket sync against `SyntheticSnapPeer` (160 accounts) completing in `<100ms` and verifying that all 16 buckets reach `done` and `StateStore.accountCount() === 160`.
@@ -51,7 +52,7 @@ Implement the 16-bucket (`0x0..0xf`) `snap/1` Account Range Synchronizer backed 
 
 ### Acceptance Criteria
 - [ ] Full 16-bucket `snap/1` account sync + `verifyMerkleRangeProof` passes against `SyntheticSnapPeer` in `<100ms` in unit tests.
-- [ ] Running `ethy sepolia` live pulls real Sepolia account ranges into `InMemoryFlatStore`, advances the 16-segment progress bar in Zone 1, and lets the user inspect synced accounts via `/sample` or `/range 0x0` in Zone 2.
+- [ ] Running `ethy sepolia` live pulls real Sepolia account ranges into `InMemoryFlatStore`, advances the 16-segment progress bar in the `Node Pulse` box and `SNAP Metrics` box, and lets the user inspect synced accounts via `Tab` (to `SNAP`) + `Enter` or `/sample` / `/range 0x0` in the Main Interaction Area.
 - [ ] `npm run tsc`, `npm test`, and `npm run spellcheck` pass with 0 errors.
 
 ---

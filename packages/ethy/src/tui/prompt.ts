@@ -1,24 +1,36 @@
-import type { EthyPhase, TuiViewState } from '../spine/types.ts'
+import { completeSlashDraft } from '../ai/slashComplete.ts'
+import type { CapabilityId, TuiViewState } from '../spine/types.ts'
 
 export type KeyAction =
   | { type: 'char'; ch: string }
   | { type: 'backspace' }
   | { type: 'tab' }
+  | { type: 'shiftTab' }
+  | { type: 'right' }
   | { type: 'enter' }
   | { type: 'up' }
   | { type: 'down' }
   | { type: 'exit' }
   | { type: 'ignore' }
 
-export function ghostForPhase(phase: EthyPhase): string {
-  switch (phase) {
-    case 'BOOTING':
-    case 'P2P_WARMUP':
-      return 'Which peers are connected and how is latency?'
-    case 'SNAP_SYNCING':
-      return 'Why is bucket 0x3 stalled?'
-    case 'HEAD_FOLLOWING':
-      return 'What changed in the latest block access list?'
+const DOMAIN_ORDER: readonly CapabilityId[] = ['p2p', 'snap', 'head', 'ai']
+
+export function cycleDomain(id: CapabilityId, direction: 1 | -1): CapabilityId {
+  const idx = DOMAIN_ORDER.indexOf(id)
+  const next = (idx + direction + DOMAIN_ORDER.length) % DOMAIN_ORDER.length
+  return DOMAIN_ORDER[next] ?? 'p2p'
+}
+
+export function deepViewCommand(domain: CapabilityId): string {
+  switch (domain) {
+    case 'p2p':
+      return '/peers'
+    case 'snap':
+      return '/buckets'
+    case 'head':
+      return '/bal'
+    case 'ai':
+      return '/help'
   }
 }
 
@@ -56,11 +68,17 @@ export function pushKeyChar(
   if (next === '\u001b[' || next === '\u001bO') {
     return { buffer: next }
   }
+  if (next === '\u001b[Z') {
+    return { buffer: '', action: { type: 'shiftTab' } }
+  }
   if (next === '\u001b[A' || next === '\u001bOA') {
     return { buffer: '', action: { type: 'up' } }
   }
   if (next === '\u001b[B' || next === '\u001bOB') {
     return { buffer: '', action: { type: 'down' } }
+  }
+  if (next === '\u001b[C' || next === '\u001bOC') {
+    return { buffer: '', action: { type: 'right' } }
   }
   if (next === '\u001b[3~') {
     return { buffer: '', action: { type: 'backspace' } }
@@ -91,16 +109,15 @@ export function decodeKey(buffer: string, chunk: string): { buffer: string; acti
 export interface PromptReduceResult {
   view: TuiViewState
   submittedLine?: string
+  domainCycle?: 1 | -1
+  openDeepView?: true
 }
 
-export function reducePromptKey(
-  view: TuiViewState,
-  action: KeyAction,
-  ghost: string,
-): PromptReduceResult {
+export function reducePromptKey(view: TuiViewState, action: KeyAction): PromptReduceResult {
   const next: TuiViewState = { ...view, history: [...view.history] }
   let submittedLine: string | undefined
-
+  let domainCycle: 1 | -1 | undefined
+  let openDeepView: true | undefined
   switch (action.type) {
     case 'char':
       next.promptDraft += action.ch
@@ -109,18 +126,34 @@ export function reducePromptKey(
       next.promptDraft = next.promptDraft.slice(0, -1)
       break
     case 'tab':
-      if (next.promptDraft.length === 0 && ghost.length > 0) {
-        next.promptDraft = ghost
+      if (next.promptDraft.length === 0) {
+        domainCycle = 1
+      } else if (next.promptDraft.startsWith('/')) {
+        const completed = completeSlashDraft(next.promptDraft)
+        if (completed !== null) next.promptDraft = completed
+      }
+      break
+    case 'shiftTab':
+      if (next.promptDraft.length === 0) {
+        domainCycle = -1
+      }
+      break
+    case 'right':
+      if (next.promptDraft.startsWith('/')) {
+        const completed = completeSlashDraft(next.promptDraft)
+        if (completed !== null) next.promptDraft = completed
       }
       break
     case 'enter': {
-      const line = next.promptDraft.trim()
-      if (line.length > 0) {
-        submittedLine = line
-        next.history.push(line)
-        next.historyIndex = next.history.length
-        next.promptDraft = ''
+      if (next.promptDraft.trim().length === 0) {
+        openDeepView = true
+        break
       }
+      const line = next.promptDraft.trim()
+      submittedLine = line
+      next.history.push(line)
+      next.historyIndex = next.history.length
+      next.promptDraft = ''
       break
     }
     case 'up':
@@ -143,14 +176,14 @@ export function reducePromptKey(
       break
   }
 
-  return { view: next, submittedLine }
+  return { view: next, submittedLine, domainCycle, openDeepView }
 }
 
 export function createInitialViewState(): TuiViewState {
   return {
+    activeDomain: 'p2p',
     activeWidget: null,
     promptDraft: '',
-    ghostSuggestion: '',
     carouselTick: 0,
     history: [],
     historyIndex: 0,

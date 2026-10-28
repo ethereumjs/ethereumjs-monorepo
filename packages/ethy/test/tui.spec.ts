@@ -5,10 +5,12 @@ import { createSpine, setPhase } from '../src/spine/createSpine.ts'
 import type { WidgetSpec } from '../src/spine/types.ts'
 import { stripAnsi, visibleWidth } from '../src/tui/ansi.ts'
 import { CAPABILITY_FG, capabilityMark } from '../src/tui/capabilityMark.ts'
+import { cockpitColumnWidths } from '../src/tui/cockpit.ts'
+import { measurePage } from '../src/tui/pageLayout.ts'
 import {
   createInitialViewState,
+  cycleDomain,
   decodeKey,
-  ghostForPhase,
   reducePromptKey,
 } from '../src/tui/prompt.ts'
 import { promptCaretPosition, renderFrame } from '../src/tui/renderFrame.ts'
@@ -88,81 +90,45 @@ describe('[Ethy/TUI]: renderFrame', () => {
     assert.equal(topA.indexOf('AI'), topB.indexOf('AI'))
   })
 
-  it('renderFrame() right-aligns the Tab suggestion on the hint row', () => {
-    const spine = createSpine('sepolia', 11155111n)
-    const ghost = 'What changed in the latest block access list?'
-    const view = { ...createInitialViewState(), ghostSuggestion: ghost }
-    const lines = renderFrame(spine, view, 100, 30).map((line) => stripAnsi(line))
-    const hint = lines[lines.length - 1] ?? ''
-    assert.match(hint, /^ Enter submit · Esc exit/)
-    assert.match(hint, new RegExp(`${ghost.replace('?', '\\?')} \\[Tab\\] $`))
-    assert.match(lines[lines.length - 2] ?? '', /ethy >/)
-
-    const typing = renderFrame(spine, { ...view, promptDraft: 'hi' }, 100, 30).map((line) =>
-      stripAnsi(line),
-    )
-    const typingHint = typing[typing.length - 1] ?? ''
-    assert.match(typingHint, /^ Enter submit · Esc exit/)
-    assert.notInclude(typingHint, '[Tab]')
-  })
-
-  it('promptCaretPosition() sits just after the prompt and the draft', () => {
-    const empty = promptCaretPosition(100, 30, '')
-    assert.deepEqual(empty, { row: 29, col: 9 })
-    const typed = promptCaretPosition(100, 30, 'ab')
-    assert.deepEqual(typed, { row: 29, col: 11 })
-  })
-
-  it('renderFrame() paints suggestion dots with the same marks as the top pills', () => {
-    const spine = createSpine('sepolia', 11155111n)
-    setPhase(spine, 'SNAP_SYNCING')
-    const lines = renderFrame(spine, createInitialViewState(), 100, 30)
-    const peers = lines.find((line) => line.includes('Which clients are connected')) ?? ''
-    const snap = lines.find((line) => line.includes('bucket 0x3')) ?? ''
-    const head = lines.find((line) => line.includes('block access list')) ?? ''
-    assert.include(peers, `${CAPABILITY_FG.p2p}●`)
-    assert.include(snap, `${CAPABILITY_FG.snap}◐`)
-    assert.include(head, `${CAPABILITY_FG.head}○`)
-    const top = lines[0] ?? ''
-    assert.include(top, `${CAPABILITY_FG.p2p}●`)
-    assert.include(top, `${CAPABILITY_FG.snap}◐`)
-    assert.include(top, `${CAPABILITY_FG.head}○`)
-    assert.equal(capabilityMark('p2p', 'locked').startsWith(CAPABILITY_FG.p2p), true)
-    assert.equal(capabilityMark('p2p', 'ready').startsWith(CAPABILITY_FG.p2p), true)
-  })
-
-  it('renderFrame() splits suggestions into commands and prose', () => {
+  it('renderFrame() shows 3-box cockpit and domain-lens hint row', () => {
     const spine = createSpine('sepolia', 11155111n)
     const view = createInitialViewState()
-    const first = renderFrame(spine, view, 100, 30).map((line) => stripAnsi(line))
-    const peers = first.find((line) => line.includes('/peers')) ?? ''
-    assert.match(peers.slice(1, 50), /\/peers — latency table by client/)
-    assert.match(peers.slice(50), /Which clients are connected/)
-    assert.notMatch(peers.slice(1, 50), /Which clients/)
-
-    const next = renderFrame(spine, { ...view, carouselTick: 1 }, 100, 30).map((line) =>
-      stripAnsi(line),
-    )
-    const rotated = next.find((line) => line.includes('/drop')) ?? ''
-    assert.match(rotated.slice(1, 50), /\/drop — remove one peer/)
-    assert.match(rotated.slice(50), /Who is the slowest peer/)
-    assert.notInclude(rotated, '/peers')
+    const plain = renderFrame(spine, view, 100, 30).map((line) => stripAnsi(line))
+    const joined = plain.join('\n')
+    assert.include(joined, 'Node Pulse')
+    assert.include(joined, '╭')
+    assert.notInclude(joined, 'Which peers are connected')
+    const hint = plain[plain.length - 1] ?? ''
+    assert.match(hint, /Tab switch domain/)
+    assert.notInclude(hint, 'Why is bucket')
+    assert.match(plain[plain.length - 3] ?? '', /ethy >/)
+    assert.notInclude(joined, 'All quiet')
+    const raw = renderFrame(spine, view, 100, 30, {
+      text: 'No peers yet. Firewall? VPN?',
+      level: 'warn',
+    })
+    const footer = stripAnsi(raw[raw.length - 1] ?? '')
+    assert.include(footer, 'No peers yet. Firewall? VPN?')
+    const right = cockpitColumnWidths(measurePage(100, 30).contentWidth)[2]
+    assert.isAtMost(footer.length, 100)
+    assert.isAtLeast(footer.indexOf('No peers'), 100 - right)
   })
 
-  it('renderFrame() places dotted suggestions between rules above the prompt', () => {
+  it('promptCaretPosition() sits just after the domain mark and draft', () => {
+    const empty = promptCaretPosition(100, 30, '')
+    assert.deepEqual(empty, { row: 28, col: 11 })
+    const typed = promptCaretPosition(100, 30, 'ab')
+    assert.deepEqual(typed, { row: 28, col: 13 })
+  })
+
+  it('renderFrame() cockpit command box follows activeDomain', () => {
     const spine = createSpine('sepolia', 11155111n)
-    const lines = renderFrame(spine, createInitialViewState(), 100, 30).map((line) =>
-      stripAnsi(line),
-    )
-    const suggestion = lines.findIndex((line) => line.includes('Which clients are connected'))
-    assert.isAbove(suggestion, 4)
-    assert.equal(lines[3]?.trim(), '')
-    assert.equal(lines[suggestion - 2]?.[0], '─')
-    assert.equal(lines[suggestion - 1]?.trim(), '')
-    assert.equal(lines[suggestion + 3]?.trim(), '')
-    assert.equal(lines[suggestion + 4]?.[0], '─')
-    assert.match(lines[suggestion + 5] ?? '', /ethy >/)
-    assert.match(lines[lines.length - 1] ?? '', /Enter submit/)
+    const p2p = stripAnsi(renderFrame(spine, createInitialViewState(), 100, 30).join('\n'))
+    const snapView = { ...createInitialViewState(), activeDomain: 'snap' as const }
+    const snap = stripAnsi(renderFrame(spine, snapView, 100, 30).join('\n'))
+    assert.include(p2p, '/peers')
+    assert.include(snap, '/buckets')
+    assert.equal(capabilityMark('p2p', 'locked').startsWith(CAPABILITY_FG.p2p), true)
   })
 
   it('renderFrame() renders table widget in workspace', () => {
@@ -180,32 +146,48 @@ describe('[Ethy/TUI]: renderFrame', () => {
 })
 
 describe('[Ethy/TUI]: prompt reducer', () => {
-  it('Tab fills ghost into draft when empty', () => {
-    let view = createInitialViewState()
-    const ghost = ghostForPhase('SNAP_SYNCING')
-    const r = reducePromptKey(view, { type: 'tab' }, ghost)
-    assert.equal(r.view.promptDraft, ghost)
+  it('Tab on empty draft requests domain cycle', () => {
+    const r = reducePromptKey(createInitialViewState(), { type: 'tab' })
+    assert.equal(r.domainCycle, 1)
+    assert.equal(r.view.promptDraft, '')
+  })
+
+  it('Tab completes slash prefix', () => {
+    const view = { ...createInitialViewState(), promptDraft: '/p' }
+    const r = reducePromptKey(view, { type: 'tab' })
+    assert.equal(r.view.promptDraft, '/peers')
+  })
+
+  it('Enter on empty draft opens deep view', () => {
+    const r = reducePromptKey(createInitialViewState(), { type: 'enter' })
+    assert.isTrue(r.openDeepView)
+  })
+
+  it('cycleDomain() walks p2p → snap → head → ai', () => {
+    assert.equal(cycleDomain('p2p', 1), 'snap')
+    assert.equal(cycleDomain('ai', 1), 'p2p')
+    assert.equal(cycleDomain('p2p', -1), 'ai')
   })
 
   it('Up/Down walks command history', () => {
     let view = createInitialViewState()
     view.history = ['a', 'b']
     view.historyIndex = 2
-    let r = reducePromptKey(view, { type: 'up' }, '')
+    let r = reducePromptKey(view, { type: 'up' })
     view = r.view
     assert.equal(view.promptDraft, 'b')
-    r = reducePromptKey(view, { type: 'down' }, '')
+    r = reducePromptKey(view, { type: 'down' })
     assert.equal(r.view.promptDraft, '')
   })
 
   it('Enter submits non-empty draft', () => {
     const view = { ...createInitialViewState(), promptDraft: '/peers' }
-    const r = reducePromptKey(view, { type: 'enter' }, '')
+    const r = reducePromptKey(view, { type: 'enter' })
     assert.equal(r.submittedLine, '/peers')
   })
 
   it('exit action sets shouldExit', () => {
-    const r = reducePromptKey(createInitialViewState(), { type: 'exit' }, '')
+    const r = reducePromptKey(createInitialViewState(), { type: 'exit' })
     assert.isTrue(r.view.shouldExit)
   })
 
@@ -216,7 +198,7 @@ describe('[Ethy/TUI]: prompt reducer', () => {
 
   it('backspace removes last draft character', () => {
     const view = { ...createInitialViewState(), promptDraft: 'abc' }
-    const r = reducePromptKey(view, { type: 'backspace' }, '')
+    const r = reducePromptKey(view, { type: 'backspace' })
     assert.equal(r.view.promptDraft, 'ab')
   })
 

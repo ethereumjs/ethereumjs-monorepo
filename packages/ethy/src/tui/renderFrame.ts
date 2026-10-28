@@ -1,6 +1,9 @@
-import type { EthySpine, TuiViewState } from '../spine/types.ts'
+import { completeSlashDraft } from '../ai/slashComplete.ts'
+import type { LiveNotice } from '../notify/board.ts'
+import type { CapabilityId, EthySpine, TuiViewState } from '../spine/types.ts'
 import { BOLD, DIM, RESET, visibleWidth } from './ansi.ts'
-import { type CapabilityId, capabilityMark } from './capabilityMark.ts'
+import { capabilityMark } from './capabilityMark.ts'
+import { COCKPIT_COLUMN_GAP, cockpitColumnWidths, renderCockpit } from './cockpit.ts'
 import {
   composeBrandAndRightPills,
   composeFixedRow,
@@ -8,17 +11,31 @@ import {
   fixedLine,
   fixedLineRight,
 } from './layout.ts'
+import { renderNoticeLine } from './noticeLine.ts'
 import { layoutPage, measurePage } from './pageLayout.ts'
-import { defaultCarousel, renderWidgetLines } from './widgets.ts'
+import { deepViewCommand } from './prompt.ts'
+import { renderWidgetLines } from './widgets.ts'
 
 const DELIMITER_PAD_ROWS = 1
 
 /** Columns between `Slot N` and the first capability pill. */
 const SLOT_GAP = 8
 
-const PROMPT_PREFIX = 'ethy > '
-const PROMPT_PREFIX_WIDTH = 7
-const PROMPT_HINT = 'Enter submit · Esc exit'
+export const PROMPT_PREFIX_WIDTH = 9
+
+/** Footer hint: bold key chord, dim prose (avoids "Enter open…" reading as one sentence). */
+function hintSegment(key: string, prose: string): string {
+  return `${BOLD}${key}${RESET}${DIM} ${prose}`
+}
+
+function renderFooterHint(domain: CapabilityId): string {
+  return [
+    hintSegment('Enter', `open ${domainHintLabel(domain)} view`),
+    hintSegment('Tab', 'switch domain'),
+    hintSegment('/', 'command'),
+    hintSegment('Esc', 'exit'),
+  ].join(`${DIM} · ${RESET}`)
+}
 
 /** Rhythm inside the pill cluster; spacer before cluster stays flexible. */
 const CAPABILITY_PILL_GAP = 2
@@ -33,13 +50,13 @@ function capabilityPillWidth(name: string): number {
 const CAPABILITY_PILL_WIDTHS = CAPABILITY_NAMES.map((name) => capabilityPillWidth(name))
 
 function formatCapabilityPill(dot: string, name: string): string {
-  return `${dot} ${name}`
+  return `${dot} ${BOLD}${name}${RESET}`
 }
 
 /** Top row: client and network on the left; slot just left of the capability pills. */
 function renderCapabilityBar(spine: EthySpine, cols: number): string[] {
   const network = spine.network.toUpperCase()
-  const brand = `${spine.clientName} v${spine.clientVersion} | ${network}`
+  const brand = `${BOLD}${spine.clientName} v${spine.clientVersion}${RESET} | ${network}`
   const { p2p, snap, head, ai } = spine.capabilities
   const statuses = [p2p.status, snap.status, head.status, ai.status]
   const pillTexts = CAPABILITY_IDS.map((id, i) =>
@@ -57,34 +74,68 @@ function renderCapabilityBar(spine: EthySpine, cols: number): string[] {
   return [line]
 }
 
-function renderPrompt(view: TuiViewState, cols: number): string[] {
-  const draftWidth = Math.max(0, cols - PROMPT_PREFIX_WIDTH)
-  const prompt = `${BOLD}${PROMPT_PREFIX}${RESET}${fixedField(view.promptDraft, draftWidth)}`
-  const line1 = fixedLine(prompt, cols)
+function domainHintLabel(domain: CapabilityId): string {
+  switch (domain) {
+    case 'p2p':
+      return 'P2P'
+    case 'snap':
+      return 'SNAP'
+    case 'head':
+      return 'HEAD'
+    case 'ai':
+      return 'AI'
+  }
+}
 
-  const hint = `${DIM}${PROMPT_HINT}${RESET}`
-  const hintWidth = visibleWidth(hint)
-  const gap = 2
-  const tabWidth = Math.max(0, cols - hintWidth - gap)
-  const tabPlain =
-    view.promptDraft.length === 0 && view.ghostSuggestion.length > 0
-      ? `${view.ghostSuggestion} [Tab]`
+function promptColumnWidths(contentWidth: number): { left: number; right: number } {
+  const right = cockpitColumnWidths(contentWidth)[2]
+  const left = Math.max(0, contentWidth - COCKPIT_COLUMN_GAP - right)
+  return { left, right }
+}
+
+function renderLeftHint(domain: CapabilityId, draft: string, leftW: number): string {
+  const leftHint = `${renderFooterHint(domain)}${RESET}`
+  const slash =
+    draft.startsWith('/') && completeSlashDraft(draft) !== null
+      ? `${draft} → ${completeSlashDraft(draft)}`
       : ''
-  const line2 = composeFixedRow(
-    cols,
+  const hintWidth = visibleWidth(leftHint)
+  if (slash.length === 0 || hintWidth + 2 >= leftW) return fixedField(leftHint, leftW)
+  const tabWidth = Math.max(0, leftW - hintWidth - 2)
+  return composeFixedRow(
+    leftW,
     [
-      { text: hint, width: hintWidth },
-      { text: fixedLineRight(`${DIM}${tabPlain}${RESET}`, tabWidth), width: tabWidth },
+      { text: leftHint, width: hintWidth },
+      { text: fixedLineRight(`${DIM}${slash}${RESET}`, tabWidth), width: tabWidth },
     ],
-    gap,
+    2,
   )
-  return [line1, line2]
+}
+
+function renderPrompt(
+  spine: EthySpine,
+  view: TuiViewState,
+  cols: number,
+  notice: LiveNotice | null,
+): string[] {
+  const { left, right } = promptColumnWidths(cols)
+  const gap = ' '.repeat(Math.min(COCKPIT_COLUMN_GAP, Math.max(0, cols - left - right)))
+  const mark = capabilityMark(view.activeDomain, spine.capabilities[view.activeDomain].status)
+  const prefix = `${mark} ${BOLD}ethy > ${RESET}`
+  const draftWidth = Math.max(0, left - PROMPT_PREFIX_WIDTH)
+  const prompt = `${prefix}${fixedField(view.promptDraft, draftWidth)}`
+  const hint = renderLeftHint(view.activeDomain, view.promptDraft, left)
+  const noticeCell = renderNoticeLine(notice, right)
+  return [
+    fixedLine(`${fixedField(prompt, left)}${gap}${fixedField('', right)}`, cols),
+    fixedLine(`${fixedField('', left)}${gap}${fixedField('', right)}`, cols),
+    fixedLine(`${hint}${gap}${noticeCell}`, cols),
+  ]
 }
 
 /**
  * 1-based terminal cell where the next typed character lands.
- * Sits just after `ethy > ` and the visible draft, inside the page inset.
- * The prompt line is the second-to-last frame row. The hint row is below it.
+ * Sits just after the domain mark and `ethy > `, inside the page inset.
  */
 export function promptCaretPosition(
   cols: number,
@@ -94,10 +145,11 @@ export function promptCaretPosition(
   const safeCols = Math.max(40, cols)
   const safeRows = Math.max(12, rows)
   const page = measurePage(safeCols, safeRows)
-  const draftWidth = Math.max(0, page.contentWidth - PROMPT_PREFIX_WIDTH)
+  const { left } = promptColumnWidths(page.contentWidth)
+  const draftWidth = Math.max(0, left - PROMPT_PREFIX_WIDTH)
   const shown = Math.min(visibleWidth(draft), draftWidth)
   return {
-    row: safeRows - 1,
+    row: safeRows - 2,
     col: 1 + page.padding.left + PROMPT_PREFIX_WIDTH + shown,
   }
 }
@@ -107,34 +159,31 @@ export function renderFrame(
   view: TuiViewState,
   cols: number,
   rows: number,
+  notice: LiveNotice | null = null,
 ): string[] {
   const safeCols = Math.max(40, cols)
   const safeRows = Math.max(12, rows)
   const page = measurePage(safeCols, safeRows)
 
   const capBar = renderCapabilityBar(spine, page.contentWidth)
-  const prompt = renderPrompt(view, page.contentWidth)
+  const cockpit = renderCockpit(spine, view, page.contentWidth)
+  const prompt = renderPrompt(spine, view, page.contentWidth, notice)
   const widgetLines = view.activeWidget
     ? renderWidgetLines(view.activeWidget, page.contentWidth)
     : []
-  const suggestions = renderWidgetLines(defaultCarousel(view.carouselTick), page.contentWidth, {
-    p2p: spine.capabilities.p2p.status,
-    snap: spine.capabilities.snap.status,
-    head: spine.capabilities.head.status,
-  })
   const rule = { kind: 'delimiter' as const, open: DIM, close: RESET }
   const pad = { kind: 'spacer' as const, rows: DELIMITER_PAD_ROWS }
 
   return layoutPage(page, [
     { kind: 'content', lines: capBar },
     rule,
+    { kind: 'content', lines: cockpit },
     pad,
     { kind: 'fill', lines: widgetLines },
     rule,
     pad,
-    { kind: 'content', lines: suggestions },
-    pad,
-    rule,
     { kind: 'content', lines: prompt },
   ])
 }
+
+export { deepViewCommand }

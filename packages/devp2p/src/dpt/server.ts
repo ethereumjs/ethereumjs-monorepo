@@ -4,7 +4,7 @@ import debugDefault from 'debug'
 import { EventEmitter } from 'eventemitter3'
 import { LRUCache } from 'lru-cache'
 
-import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util.ts'
+import { createDeferred, devp2pDebug, formatLogId, pickAdvertisedIPv4, pk2id } from '../util.ts'
 import { discv4ENRList, tcpPortFromDiscv4Enr } from './discv4Enr.ts'
 import { discv4ExpirationValid } from './packetExpiry.ts'
 
@@ -33,6 +33,7 @@ export class Server {
   private _debug: Debugger
 
   protected _common?: Common
+  protected _discoveryMetrics: import('../discovery/metrics.ts').DiscoveryMetrics | undefined
 
   private DEBUG: boolean
 
@@ -63,8 +64,27 @@ export class Server {
     }
 
     this._common = options.common
+    this._discoveryMetrics = options.discoveryMetrics
 
     this.DEBUG = globalThis.process?.env?.DEBUG?.includes('ethjs') ?? false
+  }
+
+  syncEndpointFromSocket(tcpListenPort: number): PeerInfo {
+    const bound = this._socket?.address()
+    let udpPort = this._endpoint.udpPort ?? 0
+    let address = this._endpoint.address ?? '0.0.0.0'
+    if (bound !== undefined && typeof bound === 'object') {
+      udpPort = bound.port
+      if (address === '0.0.0.0' || address === '') {
+        address =
+          bound.address !== '0.0.0.0' && bound.address.length > 0
+            ? bound.address
+            : pickAdvertisedIPv4()
+      }
+    }
+    const tcpPort = tcpListenPort > 0 ? tcpListenPort : udpPort
+    this._endpoint = { address, udpPort, tcpPort }
+    return this._endpoint
   }
 
   bind(...args: any[]) {
@@ -250,7 +270,7 @@ export class Server {
           this._endpoint.address !== '0.0.0.0' &&
           this._endpoint.address !== ''
             ? this._endpoint.address
-            : '127.0.0.1'
+            : pickAdvertisedIPv4()
         this._send(remote, 'enrResponse', {
           requestHash: msg.subarray(0, 32),
           record: discv4ENRList(this._privateKey, {

@@ -215,6 +215,9 @@ export interface DPTOptions {
    * Unset keeps the legacy staggered schedule for every peer in a batch.
    */
   maxInFlightPings?: number
+
+  /** Worker discovery counters (optional). */
+  discoveryMetrics?: import('./discovery/metrics.ts').DiscoveryMetrics
 }
 
 export interface DPTServerOptions {
@@ -243,6 +246,8 @@ export interface DPTServerOptions {
    * Common instance to allow for crypto primitive (e.g. keccak) replacement
    */
   common?: Common
+
+  discoveryMetrics?: import('./discovery/metrics.ts').DiscoveryMetrics
 }
 
 export type ProtocolType = (typeof ProtocolType)[keyof typeof ProtocolType]
@@ -338,6 +343,8 @@ export interface RLPxOptions {
    * Must be strictly less than {@link maxPeers}. Default: floor(0.8 * maxPeers).
    */
   discoveryLowWaterMark?: number
+
+  discoveryMetrics?: import('./discovery/metrics.ts').DiscoveryMetrics
 }
 
 export type SendMethod = (code: number, data: Uint8Array) => any

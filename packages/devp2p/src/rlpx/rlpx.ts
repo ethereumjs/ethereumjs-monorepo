@@ -55,6 +55,7 @@ export class RLPx {
   protected _refillIntervalSelectionCounter: number = 0
 
   protected _keccakFunction: (msg: Uint8Array) => Uint8Array
+  protected _discoveryMetrics: import('../discovery/metrics.ts').DiscoveryMetrics | undefined
 
   private DEBUG: boolean
 
@@ -83,6 +84,7 @@ export class RLPx {
 
     // DPT
     this._dpt = options.dpt ?? null
+    this._discoveryMetrics = options.discoveryMetrics
     if (this._dpt !== null) {
       this._dpt.events.on('peer:new', (peer: PeerInfo) => {
         if (peer.tcpPort === null || peer.tcpPort === undefined) {
@@ -157,6 +159,7 @@ export class RLPx {
   async connect(peer: PeerInfo) {
     if (peer.tcpPort === undefined || peer.tcpPort === null || peer.address === undefined) return
     this._isAliveCheck()
+    this._discoveryMetrics?.recordRlpxDial()
 
     if (!(peer.id instanceof Uint8Array)) throw new TypeError('Expected peer.id as Uint8Array')
     // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for peer lookups.
@@ -279,11 +282,15 @@ export class RLPx {
       }
 
       this._peers.set(peerKey, peer)
+      this._discoveryMetrics?.recordRlpxConnected()
       this.events.emit('peer:added', peer)
       this._syncDiscoveryThrottle()
     })
 
     peer.events.once('close', (reason, disconnectWe) => {
+      if (typeof reason === 'number') {
+        this._discoveryMetrics?.recordRlpxDisconnect(reason as DISCONNECT_REASON)
+      }
       if (disconnectWe === true) {
         if (this.DEBUG) {
           this._debug(

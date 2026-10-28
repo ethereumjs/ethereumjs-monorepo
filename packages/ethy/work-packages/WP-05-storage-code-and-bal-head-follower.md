@@ -33,9 +33,10 @@ Complete the Amsterdam sync pipeline by adding `snap/1` contract bytecode (`GET_
    - Applies the BAL post-values directly to `StateStore` (`applyBAL`) and caches the last 64–128 BALs + headers in a rolling in-memory ring buffer so Ethy can also serve `GET_BLOCK_ACCESS_LISTS` to peers at the head ("Good Citizen" head relay) and update `BLOCK_RANGE_UPDATE`.
    - Flips `spine.phase = 'HEAD_FOLLOWING'` and `spine.capabilities.head = { status: 'ready', label: 'Slot #' + slot }`.
 
-3. **Stage-3 BAL Microscope Tools (`src/tools/balTools.ts`):**
-   - `inspectLatestBAL`: Summarizes the latest block's `BlockLevelAccessList` in Zone 2 — how many accounts changed balance/nonce/code/storage, top "hot contracts" touched across multiple `blockAccessIndex` transactions, and storage read vs. write counts.
+3. **Stage-3 BAL Microscope Tools & `HEAD` Domain Lens (`src/tools/balTools.ts`, `src/tui/`):**
+   - `inspectLatestBAL`: Summarizes the latest block's `BlockLevelAccessList` in the Main Interaction Area (Band 3) — how many accounts changed balance/nonce/code/storage, top "hot contracts" touched across multiple `blockAccessIndex` transactions, and storage read vs. write counts.
    - `inspectAccountHistoryInBALs`: Given an address (`0x...`), scans the rolling window of recent BALs and renders a table showing every slot/tx (`blockAccessIndex`) where that account's balance, nonce, or storage slots changed.
+   - Populate the `● HEAD Metrics` right box in the 3-Box Cockpit with live head block number, verified state root, and latest BAL mutation count, and make `Enter` (when `activeDomain === 'head'` and prompt is empty) open `inspectLatestBAL`.
 
 4. **Tier-1 Unit Test Suite (`test/balSync.spec.ts`):**
    - Oracle equivalence test: Apply a sequence of 5 synthetic EIP-7928 BALs (covering ETH transfers, contract deployment, storage writes, zeroing a slot, and EIP-161 empty-account deletion) to both `InMemoryFlatStore` and `@ethereumjs/statemanager` (`MerkleStateManager` + `consumeBAL`) and assert identical post-state for every account and storage slot.
@@ -43,7 +44,7 @@ Complete the Amsterdam sync pipeline by adding `snap/1` contract bytecode (`GET_
 
 ### Acceptance Criteria
 - [ ] `InMemoryFlatStore.applyBAL` matches `@ethereumjs/statemanager`'s `consumeBAL` 100% across multi-block BAL sequences.
-- [ ] `inspectLatestBAL` and `inspectAccountHistoryInBALs` render clean Zone-2 tables in virtual framebuffer tests.
+- [ ] `inspectLatestBAL` and `inspectAccountHistoryInBALs` render clean Main Interaction Area tables in virtual framebuffer tests.
 - [ ] `npm run tsc`, `npm test`, and `npm run spellcheck` pass with 0 errors.
 
 ---

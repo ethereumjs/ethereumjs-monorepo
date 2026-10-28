@@ -8,9 +8,10 @@ import {
   Sepolia,
 } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { bytesToUnprefixedHex, utf8ToBytes } from '@ethereumjs/util'
+import { bytesToHex, bytesToUnprefixedHex, utf8ToBytes } from '@ethereumjs/util'
 
 import type { MessagePort } from 'node:worker_threads'
+import { DiscoveryMetrics } from '../discovery/metrics.ts'
 import { DPT } from '../dpt/dpt.ts'
 import { resolveCapabilities } from '../lab/capabilities.ts'
 import { emptyWireReply } from '../lab/emptyReply.ts'
@@ -23,6 +24,7 @@ import { SnapMessageCodeNames, SnapMessageCodes } from '../protocol/snap.ts'
 import { Peer } from '../rlpx/peer.ts'
 import { RLPx } from '../rlpx/rlpx.ts'
 import type { PeerInfo } from '../types.ts'
+import { dptDnsOptionsFromCommon, resolveWorkerBootnodes } from './bootNodes.ts'
 import type {
   ThreadedNetworkInitOptions,
   WorkerCommand,
@@ -65,6 +67,7 @@ export class Devp2pWorkerHost {
   private _telemetryTimer: NodeJS.Timeout | null = null
   private _diagnostics: WorkerDiagnosticEntry[] = []
   private _peerRtt = new Map<string, number>()
+  private _discoveryMetrics = new DiscoveryMetrics()
   private _blockRange: { earliest: Uint8Array; latest: Uint8Array; latestHash: Uint8Array } | null =
     null
 
@@ -147,11 +150,20 @@ export class Devp2pWorkerHost {
     const endpoint = opts.endpoint ?? { address: '0.0.0.0', udpPort: 0, tcpPort: 0 }
     const listenPort = opts.listenPort ?? endpoint.tcpPort ?? 0
 
+    const shouldFindNeighbours = opts.shouldFindNeighbours ?? false
+    const dnsOpts = shouldFindNeighbours ? dptDnsOptionsFromCommon(common) : undefined
+
     this._dpt = new DPT(opts.privateKey, {
       common,
       endpoint,
-      shouldFindNeighbours: opts.shouldFindNeighbours ?? false,
+      shouldFindNeighbours,
+      shouldGetDnsPeers: dnsOpts?.shouldGetDnsPeers ?? false,
+      dnsNetworks: dnsOpts?.dnsNetworks ?? [],
       maxInFlightPings: opts.maxInFlightPings,
+      discoveryMetrics: this._discoveryMetrics,
+    })
+    this._dpt.events.on('error', (err) => {
+      this._pushDiagnostic('warn', `DPT: ${err.message}`)
     })
 
     this._rlpx = new RLPx(opts.privateKey, {
@@ -163,6 +175,7 @@ export class Devp2pWorkerHost {
       clientId: opts.clientId ?? utf8ToBytes('ethereumjs-devp2p/threaded'),
       throttleDiscovery: opts.throttleDiscovery ?? true,
       discoveryLowWaterMark: opts.discoveryLowWaterMark,
+      discoveryMetrics: this._discoveryMetrics,
     })
 
     await new Promise<void>((resolve) => {
@@ -175,10 +188,18 @@ export class Devp2pWorkerHost {
       this._rlpx!.listen(listenPort, endpoint.address ?? '0.0.0.0')
     })
 
-    if (opts.bootnodes) {
-      for (const boot of opts.bootnodes) {
-        void this._dpt.bootstrap(boot).catch(() => {})
-      }
+    const advertised = this._dpt.syncEndpointFromSocket(listenPort)
+    this._discoveryMetrics.setBoundEndpoint(
+      advertised.address ?? '',
+      advertised.udpPort ?? 0,
+      advertised.tcpPort ?? listenPort,
+    )
+
+    for (const boot of resolveWorkerBootnodes(opts, common)) {
+      void this._dpt.bootstrap(boot).catch((err: unknown) => {
+        const msg = err instanceof Error ? err.message : String(err)
+        this._pushDiagnostic('warn', `Bootstrap ${boot.address}:${boot.udpPort} — ${msg}`)
+      })
     }
 
     this._rlpx.events.on('peer:added', (peer) => this._wirePeer(peer))
@@ -186,8 +207,12 @@ export class Devp2pWorkerHost {
       this._pushDiagnostic('warn', err.message)
     })
 
-    const udpPort = endpoint.udpPort ?? listenPort
-    this._post({ type: 'ready', udpPort, tcpPort: listenPort })
+    const snap = this._discoveryMetrics.snapshot()
+    this._post({
+      type: 'ready',
+      udpPort: snap.boundUdpPort || listenPort,
+      tcpPort: snap.boundTcpPort || listenPort,
+    })
 
     const interval = opts.telemetryIntervalMs ?? 150
     this._telemetryTimer = setInterval(() => this._emitTelemetry(), interval)
@@ -200,14 +225,17 @@ export class Devp2pWorkerHost {
       if (rttMs !== undefined) this._peerRtt.set(peerKey, rttMs)
     })
 
-    if (this._options?.status !== undefined) {
-      for (const protocol of peer.getProtocols()) {
-        if (protocol.constructor.name === 'ETH') {
-          const eth = protocol as ETH
-          eth.sendStatus(
-            ethStatusFromFields(this._options.status as EthStatusFields, eth.getVersion()),
-          )
-        }
+    for (const protocol of peer.getProtocols()) {
+      if (protocol.constructor.name !== 'ETH') continue
+      const eth = protocol as ETH
+      eth.events.on('status', () => {
+        this._discoveryMetrics.recordRlpxStatusOk()
+        this._emitTelemetry()
+      })
+      if (this._options?.status !== undefined) {
+        eth.sendStatus(
+          ethStatusFromFields(this._options.status as EthStatusFields, eth.getVersion()),
+        )
       }
     }
 
@@ -323,6 +351,19 @@ export class Devp2pWorkerHost {
     for (const peer of this._rlpx?.getPeers() ?? []) {
       const id = bytesToUnprefixedHex(peer.getId()!)
       const hello = peer.getHelloMessage()
+      let bestHash: string | undefined
+      let latestBlock: string | undefined
+      for (const protocol of peer.getProtocols()) {
+        if (protocol.constructor.name !== 'ETH') continue
+        const head = (protocol as ETH).peerStatusHead()
+        if (head === null) continue
+        bestHash = bytesToHex(head.bestHash)
+        if (head.latestBlock !== undefined) {
+          latestBlock = head.latestBlock.toString()
+        }
+        break
+      }
+
       peers.push({
         id,
         clientId: hello?.clientId ?? '',
@@ -335,11 +376,17 @@ export class Devp2pWorkerHost {
                 `${p.constructor.name === 'ETH' ? 'eth' : 'snap'}/${(p as ETH | SNAP).getVersion()}`,
             ),
         rttMs: this._peerRtt.get(id),
+        bestHash,
+        latestBlock,
       })
+    }
+    if (this._dpt !== null) {
+      this._discoveryMetrics.setTablePeers(this._dpt.getPeers().length)
     }
     const snapshot: WorkerTelemetrySnapshot = {
       peers,
       diagnostics: [...this._diagnostics],
+      discovery: this._discoveryMetrics.snapshot(),
     }
     this._post({ type: 'telemetry', snapshot })
   }
@@ -349,6 +396,7 @@ export class Devp2pWorkerHost {
       clearInterval(this._telemetryTimer)
       this._telemetryTimer = null
     }
+    this._dpt?.setDiscoveryPaused(true)
     this._rlpx?.destroy()
     this._dpt?.destroy()
     this._rlpx = null

@@ -9,6 +9,7 @@ import {
 } from '../tools/gated.ts'
 import { buildHelpWidget } from '../tools/help.ts'
 import type { IntentEngine, IntentRequest, IntentResult } from './intentEngine.ts'
+import { expandSlashCommand } from './slashComplete.ts'
 import { formatEthyStateHeader } from './stateHeader.ts'
 
 function normalize(text: string): string {
@@ -23,7 +24,7 @@ function matchKeywords(text: string, words: string[]): boolean {
 export class DeterministicIntentEngine implements IntentEngine {
   handle(req: IntentRequest): IntentResult {
     const { text, spine, lastQuerySlot } = req
-    const trimmed = text.trim()
+    const trimmed = expandSlashCommand(text)
     const querySlot = spine.currentSlot
     const stateHeader = formatEthyStateHeader(spine, lastQuerySlot)
 

@@ -1,32 +1,101 @@
 ---
-description: Ethy zero-log TUI — fixed layout, no horizontal jump, pure renderFrame invariants
+description: Ethy zero-log TUI — minimalism, 3-box domain-lens cockpit, 1-key ergonomics, and pure renderFrame invariants
 globs: packages/ethy/src/tui/**,packages/ethy/test/tui.spec.ts
 alwaysApply: false
 ---
 
-# Ethy TUI layout
+# Ethy TUI Design & Layout Rules
 
-Ethy’s terminal UI is a **pure function** of `EthySpine`, view state, and `(cols, rows)`. Follow these rules whenever you change `src/tui/` or framebuffer tests.
+Ethy’s terminal UI is a **pure function** of `EthySpine`, `TuiViewState`, and `(cols, rows)`. Every agent touching `src/tui/` or TUI tests must follow these design principles and geometry invariants.
 
-## No horizontal jumping
+---
 
-- Every frame line must have **exactly `cols` visible width** (`fixedLine` in `layout.ts`).
-- **Page layout** (`pageLayout.ts`) places every band. Default inset is **1 column left and right** (`PAGE_PADDING`). A band may add `padding` on top of that. **Delimiter bands stay full bleed** — the rule still touches both screen edges.
-- **Capability bar (top row):** `Ethy v<package.json> | <NETWORK>` at the content inset. Pills packed **from the right** of the content width as **`● P2P`** only (space after the dot, **gap 2**). **`Slot <n>`** sits immediately left of that cluster with an **8-column** gap and no extra delimiter. Pill columns stay fixed when the slot gains digits. Each pill's color is `CAPABILITY_FG` for that id (`capabilityMark.ts`); readiness changes the glyph only (`●` ready, `◐` partial, `○` locked). Do not show bracket labels.
-- **Header rule:** full-width `─` delimiter (ignores page padding), then one blank spacer row, then the workspace. Do not draw a slot number box, phase label, or account total on this chrome. The dotted suggestion carousel does not live in the workspace.
-- **Suggestion band:** above the prompt, a full-width `─`, one blank spacer, the carousel, one blank spacer, then another full-width `─`. Each row is split in half: commands on the left, prose on the right, both left-aligned, both using `capabilityMark` / `CAPABILITY_FG` for that id. Tick 0 starts with `/peers`. The carousel advances on `CAROUSEL_INTERVAL_MS` (12s).
-- **Prompt (Zone 4):** prefix `ethy > ` stays at a fixed width; only the draft field grows/shrinks inside its column. The line under it is two elements: `Enter submit · Esc exit` on the left, and while the draft is empty `ghost [Tab]` **right-aligned** in its own field. After each frame, show the terminal cursor on the input line, in the cell where the next character will be typed.
-- **Zone 2 widgets:** pad every line to full width; tables use **stable column weight** layouts (`tableColWeights`), not per-frame max cell length, so borders do not reflow when data updates.
-- Use **`visibleWidth` / `padVisible` / `truncateVisible`** for ANSI strings — never pad on raw string length.
+## 1. Core Visual Philosophy: Calm Minimalism + Progressive Disclosure
 
-## Separation
+1. **Zero Redundant Chrome:**
+   - Every character on screen must earn its place. Never repeat labels, never show bracketed status text next to top-bar pills (always `● P2P`, never `● P2P [18 Peers]`), and never clutter the header with secondary counters.
+2. **Fixed Geometry, Zero Reflow:**
+   - Every frame line must have **exactly `cols` visible width** (`fixedLine` in `layout.ts`).
+   - Box widths, table columns, and pill positions are anchored to fixed grid proportions (`pageLayout.ts` + `widthsFromWeights`). Changing numeric values or cycling domains must **never** shift box borders or column edges by even 1 character.
+   - Always use **`visibleWidth` / `padVisible` / `truncateVisible`** for ANSI strings — never pad or slice on raw string length.
+3. **Fine-Line Rounded Box Aesthetic (`╭─╮ │ ╰─╯`):**
+   - Upper cockpit boxes use calm Unicode rounded corners (`╭`, `╮`, `╰`, `╯`, `─`, `│`) with dimmed border chrome (`DIM`) so the eye goes straight to the colored capability mark (`●`) and the crisp data values inside.
+4. **Canonical Capability Colors (`CAPABILITY_FG`):**
+   - Color belongs to the **domain identity** (`p2p` = green, `snap` = yellow, `head` = cyan, `ai` = magenta in `capabilityMark.ts`), never to readiness.
+   - Readiness changes only the glyph (`●` ready, `◐` partial, `○` locked).
 
-- `renderFrame` and widget renderers stay free of `node:*`, stdin, and spine mutation.
-- Session code (`session.ts`) owns raw mode and redraw timing only.
+---
 
-## Tests
+## 2. Screen Architecture (Top-to-Bottom Bands)
 
-- Virtual framebuffer tests must assert `lines.length === rows` and each line `visibleWidth(line) <= cols`.
-- When adding metrics that update every tick (demo, live sync), add or extend a test that two frames with different values keep **fixed column alignment** (same prefix width at column 0 for hero fields).
+`pageLayout.ts` stacks the screen with a 1-column horizontal inset (`PAGE_PADDING = { left: 1, right: 1 }`) for content bands, while horizontal rules (`─`) stay full-bleed across `cols`:
 
-See also [`ethy-architecture.mdc`](../../../../.cursor/rules/ethy-architecture.mdc) § Pure 4-Zone TUI.
+```text
+ Ethy v10.1.3 | SEPOLIA                        Slot 11,482,910        ● P2P  ◐ SNAP  ○ HEAD  ◐ AI
+──────────────────────────────────────────────────────────────────────────────────────────────────
+ ╭─ Node Pulse ───────────────╮  ╭─ ● P2P Commands ───────────╮  ╭─ ● P2P Metrics ──────────────╮
+ │ Phase     Snap Syncing     │  │ /peers    client & rtt tbl │  │ Peers      18 active           │
+ │ Pivot     #7,812,400       │  │ /diag     recent anomalies │  │ Ready      14 snap · 18 eth/71 │
+ │ Buckets   ████▓▓!░░░░░░░░░ │  │ /drop     disconnect peer  │  │ Latency    84 ms avg           │
+ │ Accounts  84,200 (~4.2k/s) │  │                            │  │ Clients    9 Geth · 6 Reth     │
+ ╰────────────────────────────╯  ╰────────────────────────────╯  ╰────────────────────────────────╯
+
+   (Broad Main Interaction Area — fill band: deep domain view, tables, or AI prose/visuals)
+
+──────────────────────────────────────────────────────────────────────────────────────────────────
+ ● ethy > █
+ Enter open P2P view · Tab switch domain · / command · Esc exit   (keys in bold, prose dim)
+```
+
+### Band 1 — Minimal Top Header Bar (1 row + full-bleed `─` rule)
+- Left: **bold** `Ethy v<version>`, then plain ` | <NETWORK>`.
+- Right cluster: plain `Slot <n>`, then an 8-column gap (`SLOT_GAP = 8`) and the 4 right-packed pills — colored mark + **bold** name (`● P2P  ◐ SNAP  …`; `CAPABILITY_PILL_GAP = 2`).
+
+### Band 2 — The 3-Box Cockpit Row (fixed **8** visible rows per box, 3 equal/weighted rounded boxes)
+Sits below the top header rule and displays three side-by-side rounded boxes (`╭─ ... ─╮`): top border, **one padding row**, four two-column data rows (`formatTwoColumnRows` with shared label width + `TWO_COLUMN_MIN_GAP = 2`), **one padding row**, bottom border.
+1. **Left Box (`Node Pulse` — Always-Anchored Overview):**
+   - Stays anchored regardless of which domain is selected, giving constant context: current `Phase`, `Pivot` block (or head), the 16-segment mini bucket bar (`████▓▓!░░░░░░░░░`), and synced `Accounts` (`total` + `acc/s`).
+2. **Middle Box (`<Mark> <Domain> Commands` — Domain Usage Discovery):**
+   - Dynamically reflects the currently selected `activeDomain` (`p2p` | `snap` | `head` | `ai`).
+   - Lists the 3–4 slash commands (or example prompts when in `ai` domain) available for that domain with short, clean 1-line descriptions.
+3. **Right Box (`<Mark> <Domain> Metrics` — Deeper Domain Stats):**
+   - Dynamically reflects `activeDomain`, showing the 4 key metrics for that domain (e.g. `p2p`: active peers, protocol caps, avg RTT, client split; `snap`: completed/syncing/stalled buckets, throughput, pivot root; `head`: head block, state root status, BAL count; `ai`: engine mode, unlocked tool count, slot delta).
+   - Box titles use **bold** for `Node Pulse` / `<DOMAIN> Commands` / `<DOMAIN> Metrics`. Empty-prompt **Enter** is documented on the footer hint only, not in the box header.
+
+### Band 3 — Broad Main Interaction Area (`fill` band)
+- Occupies all remaining vertical rows between the 3-Box Cockpit Row and the bottom prompt rule.
+- Renders the active `WidgetSpec` (`table`, `key_value`, `bar_chart`, `hex_inspector`, or AI prose/layout response).
+- **No Unsolicited Flipping:** Background telemetry ticks or pressing `Tab` to peek at another domain's upper boxes must **never** wipe or overwrite a widget/response that the user is currently viewing in the Main Interaction Area. The Main Area only changes when the user explicitly triggers a domain deep view (`Enter` on empty draft) or submits a command/prompt.
+
+### Band 4 — Domain-Lens Prompt & Hint (full-bleed `─` rule + **3** content rows)
+- **Prompt Line:** Starts with the **active domain circle** (`capabilityMark(view.activeDomain, status)`) directly to the left of `ethy > `:
+  - Example: `● ethy > ` where `●` stays in column 0 of the content inset and changes color (`green` → `yellow` → `cyan` → `magenta`) as the user presses `Tab`.
+  - Terminal cursor is placed on the prompt line (`promptCaretPosition`, one row above the blank spacer).
+- **Blank spacer row** between prompt and footer (breathing room).
+- **Footer Hint Line:** Key hints on the left; slash-prefix autocomplete (`/p → /peers`) on that same left side while typing a command.
+- **Notice line (lower right):** One plain text row, same width as the right cockpit box, right-aligned. Other parts of the client post through `NoticeBoard` (`node.notices.post`). At most one live message; empty when nothing applies. Minimum 4 seconds on screen before the next notice replaces it; optional expiry after that.
+
+---
+
+## 3. Keyboard Ergonomics & Keystroke Budget
+
+The keyboard interface is optimized so common actions take **1 or 2 keys**:
+
+| User Intent | Keystroke | Behavior |
+| --- | --- | --- |
+| **Switch Domain Lens** (`P2P` → `SNAP` → `HEAD` → `AI`) | **`Tab`** (when draft is empty, or `Shift+Tab` / `Tab` cycle) | Cycles `view.activeDomain`. Updates the prompt dot color (`● ethy >`) and immediately updates the **Middle Box** (Commands) and **Right Box** (Metrics) in 1 keystroke. Does *not* wipe `view.activeWidget` in the Main Area. |
+| **Autocomplete Slash Command** | **`Tab`** or **`Right Arrow`** (when draft starts with `/`) | If the user typed a prefix like `/p` or `/b`, completes it to the matching command (`/peers`, `/buckets`). Even better: submitting an unambiguous prefix like `/p` + `Enter` resolves directly! |
+| **Open Deep Domain View in Main Area** | **`Enter`** (when `promptDraft` is empty) | Executes the default deep-inspection tool for `view.activeDomain` (e.g. `p2p` → peer table; `snap` → 16-bucket table; `head` → head/BAL summary; `ai` → capability & prompt guide) and mounts it in the Main Interaction Area. (**2 keys total**: `Tab` → `Enter`!) |
+| **Run Command or AI Query** | Type text + **`Enter`** | Routes `promptDraft` through `IntentEngine` and mounts the resulting `WidgetSpec` in the Main Interaction Area. |
+| **History Navigation** | **`Up` / `Down`** | Cycles through submitted prompt history. |
+| **Exit Cleanly** | **`Esc`** or **`Ctrl+C`** | Restores terminal screen and exits. |
+
+---
+
+## 4. Separation & Testing Invariants
+
+- `renderFrame` and widget/box renderers must stay 100% free of `node:*`, `process.stdout`, `stdin`, and spine mutation.
+- Virtual framebuffer tests (`test/tui.spec.ts`) must verify:
+  - `lines.length === rows` and every line `visibleWidth(line) === cols`.
+  - Cycling `activeDomain` via `Tab` changes the prompt circle color and updates the Middle and Right rounded boxes while keeping box borders at identical column coordinates.
+  - Pressing `Enter` on an empty draft triggers the active domain's deep view in the Main Interaction Area, whereas pressing `Tab` alone preserves any existing `activeWidget` in the Main Area.

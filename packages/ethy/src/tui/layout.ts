@@ -19,6 +19,46 @@ export function fixedField(text: string, width: number): string {
   return padVisible(truncateVisible(text, width), width)
 }
 
+/** Minimum visible spaces between two-column label and value (cockpit + widgets). */
+export const TWO_COLUMN_MIN_GAP = 2
+
+export type TwoColumnPair = { label: string; value: string }
+
+export function maxLabelWidth(pairs: readonly TwoColumnPair[]): number {
+  let max = 0
+  for (const p of pairs) {
+    max = Math.max(max, visibleWidth(p.label))
+  }
+  return max
+}
+
+/**
+ * One two-column row: fixed label width, then gap (≥ {@link TWO_COLUMN_MIN_GAP}), then value.
+ * `rowWidth` is the full visible width of the row (inside box borders).
+ */
+export function formatTwoColumnRow(
+  label: string,
+  value: string,
+  labelWidth: number,
+  rowWidth: number,
+): string {
+  const lw = Math.max(labelWidth, visibleWidth(label))
+  const gap = TWO_COLUMN_MIN_GAP
+  const valueWidth = Math.max(0, rowWidth - lw - gap)
+  const left = fixedField(label, lw)
+  const right = fixedField(value, valueWidth)
+  return left + ' '.repeat(gap) + right
+}
+
+export function formatTwoColumnRows(
+  pairs: readonly TwoColumnPair[],
+  labelWidth: number,
+  rowWidth: number,
+): string[] {
+  const lw = Math.max(labelWidth, maxLabelWidth(pairs))
+  return pairs.map((p) => formatTwoColumnRow(p.label, p.value, lw, rowWidth))
+}
+
 /**
  * Place labeled fields on one row. Each entry uses a fixed visible width so
  * later fields do not shift when earlier values change length.

@@ -126,47 +126,49 @@ export interface EthySpine {
 
 ---
 
-## 3. The 4-Zone Zero-Log TUI & Progressive Capability Unlocking
+## 3. The 4-Band Zero-Log TUI & 3-Box Domain-Lens Cockpit
 
-The TUI layout is a pure function:
+The TUI layout is a pure function (full rules in [`packages/ethy/.cursor/rules/ethy-tui.mdc`](./.cursor/rules/ethy-tui.mdc)):
 
 ```ts
 renderFrame(spine: EthySpine, viewState: TuiViewState, cols: number, rows: number): string[]
 ```
 
 ```text
-┌──────────────────────────────────────────────────────────────────────────────┐
-│ ZONE 1: HERO METRICS (4 rows)                                                │
-│   SEPOLIA · SLOT 11,482,910   SNAP SYNC 31.4%              ACCOUNTS 84.2k    │
-│   Pivot #7,812,400            0x0 [████▓▓!░░░░░░░░░] 0xf   ~4,210 acc/sec    │
-├──────────────────────────────────────────────────────────────────────────────┤
-│ ZONE 2: DYNAMIC WORKSPACE (Variable height — renders active WidgetSpec)      │
-│   ┌─ [Inspector: Stalled Snap Buckets & Peer Health] ────────────────────┐   │
-│   │ Bucket │ Status  │ Peer             │ Avg ms │ Last Issue            │   │
-│   │────────┼─────────┼──────────────────┼────────┼───────────────────────│   │
-│   │ 0x3..  │ STALLED │ Reth/v1.2 (a8f1) │ 1,420  │ Timeout on GetAccRng  │   │
-│   │ 0x4..  │ SYNCING │ Geth/v1.15 (c31) │    84  │ OK (14,200 accounts)  │   │
-│   └──────────────────────────────────────────────────────────────────────┘   │
-│   > Bucket 0x3 stalled due to timeout on peer a8f1. Geth peers avg 84ms.     │
-├──────────────────────────────────────────────────────────────────────────────┤
-│ ZONE 3: CAPABILITY BAR (1 row — Traffic-Light Pills)                         │
-│   ● P2P [19 Peers]   ◐ SNAP [Bucket 0x0-0x5]   ○ HEAD [Locked]   ● AI [Ready]│
-├──────────────────────────────────────────────────────────────────────────────┤
-│ ZONE 4: STICKY PROMPT (2 rows — Non-blocking Input + Ghost-Text Hint)        │
-│   ethy > Ask e.g.: "Why is bucket 0x3 stalled?" [Tab to fill]                │
-└──────────────────────────────────────────────────────────────────────────────┘
+ Ethy v10.1.3 | SEPOLIA                        Slot 11,482,910        ● P2P  ◐ SNAP  ○ HEAD  ◐ AI
+──────────────────────────────────────────────────────────────────────────────────────────────────
+ ╭─ Node Pulse ───────────────╮  ╭─ ● P2P Commands ───────────╮  ╭─ ● P2P Metrics ─────── [Enter] ╮
+ │ Phase     Snap Syncing     │  │ /peers    client & rtt tbl │  │ Peers      18 active           │
+ │ Pivot     #7,812,400       │  │ /diag     recent anomalies │  │ Ready      14 snap · 18 eth/71 │
+ │ Buckets   ████▓▓!░░░░░░░░░ │  │ /drop     disconnect peer  │  │ Latency    84 ms avg           │
+ │ Accounts  84,200 (~4.2k/s) │  │                            │  │ Clients    9 Geth · 6 Reth     │
+ ╰────────────────────────────╯  ╰────────────────────────────╯  ╰────────────────────────────────╯
+
+   ┌─ [P2P Detail View — press Enter on empty prompt or /peers] ──────────────────────────────┐
+   │ Peer     │ Client           │ Caps              │ Latency │ Snap Sent / Timeouts         │
+   │──────────┼──────────────────┼───────────────────┼─────────┼──────────────────────────────│
+   │ a8f1..   │ Reth/v1.2        │ eth/71, snap/1    │ 1420 ms │ 4 sent / 1 timeout           │
+   │ c31b..   │ Geth/v1.15       │ eth/71, snap/1    │   84 ms │ 18 sent / 0 timeouts         │
+   └──────────────────────────────────────────────────────────────────────────────────────────┘
+   > Bucket 0x3 stalled due to timeout on peer a8f1. Geth peers average 84ms.
+
+──────────────────────────────────────────────────────────────────────────────────────────────────
+ ● ethy > █
+ Enter open P2P view · Tab switch domain · / command · Esc exit
 ```
 
-### Key UX Mechanics
+### Key UX & Keyboard Mechanics
 
-1. **Capability Pills (`●` Ready / `◐` Partial / `○` Locked):**
-   - Immediately communicate what the node can answer right now without cluttering the screen.
-2. **Phase-Aware Ghost-Text (`[Tab]` completion):**
-   - When the prompt input is empty, dimmed ghost text suggests a query matching the currently active pills (`P2P_WARMUP` → peer latency questions; `SNAP_SYNCING` → bucket diagnostics & account sampling; `HEAD_FOLLOWING` → BAL diffs & EVM simulation). Pressing `Tab` populates the prompt.
-3. **Onboarding Inspiration Carousel:**
-   - Before the user runs their first command (or while an optional local LLM is initializing), Zone 2 rotates curated example prompts grouped by capability stage (`● P2P`, `◐ SNAP`, `● HEAD`).
-4. **Declarative Micro-Widgets (No LLM ASCII Art):**
-   - Small models miscount character widths when drawing raw ASCII tables. Instead, tools return a structured `WidgetSpec` (`table`, `key_value`, `bar_chart`, `hex_inspector`, or `onboarding_carousel`) plus an `assistantComment` string, and Zone 2 renders it deterministically.
+1. **Ultra-Minimal Top Bar (`● P2P  ◐ SNAP  ○ HEAD  ◐ AI`):**
+   - Capabilities have fixed identity colors (`p2p` green, `snap` yellow, `head` cyan, `ai` magenta); readiness changes only the glyph (`●` / `◐` / `○`). No bracketed sub-labels in the top bar.
+2. **1-Key Domain Lens Cycling (`Tab` at `● ethy >`):**
+   - The capability circle `●` sits directly to the left of `ethy >`. Pressing `Tab` when the input is empty cycles `activeDomain` (`p2p` → `snap` → `head` → `ai`), changing the prompt dot color and immediately updating the **Middle Box** (domain commands) and **Right Box** (domain metrics) while the **Left Box** (`Node Pulse`) stays anchored.
+3. **2-Key Deep Domain View (`Tab` → `Enter`):**
+   - Pressing `Enter` when the prompt draft is empty opens the full detail widget for `activeDomain` in the Broad Main Interaction Area below. Pressing `Tab` alone never wipes an existing widget in the Main Area.
+4. **Prefix Slash Completion (`/p` + `Tab` or `Enter`):**
+   - Unambiguous slash prefixes (`/p` → `/peers`, `/b` → `/buckets`, `/d` → `/diag`) autocomplete on `Tab` and execute directly on `Enter`.
+5. **Declarative Micro-Widgets (No LLM ASCII Art):**
+   - Small models miscount character widths when drawing raw ASCII tables. Instead, tools return a structured `WidgetSpec` (`table`, `key_value`, `bar_chart`, `hex_inspector`) plus an `assistantComment` string, and the Main Area renders it deterministically.
 
 ---
 

@@ -19,19 +19,22 @@ Ethy (`@ethereumjs/ethy`) is an **Execution-Free State & Intelligence Node** for
   - No `console.log` or `console.error` spam during node operation. Protocol anomalies, peer drops, and range-proof failures are pushed into `spine.diagnosticRingBuffer` so the UI stays clean while the LLM/developer inspector has full X-ray visibility.
   - This separation guarantees that `EthyCore` can also run in headless mode (`createEthyNode({ headless: true })`) as a live-state simulation backend for MCP servers (such as *Feel Your Protocol*).
 
-## 2. Pure 4-Zone TUI & Declarative Micro-Widgets
+## 2. Pure 4-Band TUI & 3-Box Domain-Lens Cockpit
 
 - **Pure layout rendering (`src/tui/`):**
-  - `renderFrame(spine, activeWidget, width, height): string[]` is a pure, synchronous function of state and terminal dimensions.
-  - **Top chrome:** `Ethy v… | NETWORK` on the left, `Slot N` just left of the right-aligned capability pills (`● P2P`, `◐ SNAP`, …), horizontal rule, one spacer row, then the workspace.
-  - The screen is divided into 4 fixed horizontal zones:
-    1. **Zone 1 — Title row:** Client, network, and slot number. No separate slot panel.
-    2. **Zone 2 — Dynamic Workspace:** Renders structured `WidgetSpec` payloads (`table`, `key_value`, `bar_chart`, `hex_inspector`) produced by tools.
-    3. **Zone 3 — Sticky Prompt:** Non-blocking input with dynamic ghost-text suggestions (`[Tab]` to accept) matching currently unlocked capabilities.
+  - `renderFrame(spine, view, width, height): string[]` is a pure, synchronous function of state and terminal dimensions. Details: [`packages/ethy/.cursor/rules/ethy-tui.mdc`](../../packages/ethy/.cursor/rules/ethy-tui.mdc).
+  - The screen is organized into 4 vertical bands:
+    1. **Band 1 — Minimal Top Header:** `Ethy v… | NETWORK` on the left, `Slot N` just left of the right-packed capability marks (`● P2P  ◐ SNAP  ○ HEAD  ◐ AI`), followed by a full-bleed `─` rule. Never show bracketed sub-labels in the top bar.
+    2. **Band 2 — 3-Box Cockpit Row (~6–8 lines high, rounded `╭─╮` boxes):**
+       - **Left Box (`Node Pulse`):** Always-anchored overview (Phase, Pivot/Head block, 16-bucket mini bar, synced accounts).
+       - **Middle Box (`<Mark> <Domain> Commands`):** Slash commands / example prompts for the currently selected `activeDomain`.
+       - **Right Box (`<Mark> <Domain> Metrics [Enter]`):** Key stats for `activeDomain`.
+    3. **Band 3 — Broad Main Interaction Area (`fill` band):** Renders structured `WidgetSpec` payloads (`table`, `key_value`, `bar_chart`, `hex_inspector`) produced by tools or AI responses. Never flips unprompted on background ticks or `Tab` domain switches.
+    4. **Band 4 — Domain-Lens Sticky Prompt:** `● ethy > ` where the leading `●` reflects `activeDomain`. Pressing `Tab` (on empty draft) cycles `activeDomain` (`p2p` → `snap` → `head` → `ai`); pressing `Enter` (on empty draft) opens that domain's deep view in Band 3; typing `/p` + `Enter` or a natural-language question runs via `IntentEngine`.
 - **LLMs never draw raw ASCII boxes:**
   - Tools return typed data + a `WidgetSpec`. The TypeScript TUI renderer computes column widths, truncation, and box borders deterministically.
 - **Stable fixed layout (no horizontal jump):**
-  - Each frame line is exactly `cols` visible columns. `Slot N` keeps a fixed gap before the capability pills, those pills stay anchored, and tables use stable column weights so values can change without reflowing the chrome. Details: [`packages/ethy/.cursor/rules/ethy-tui.mdc`](../../packages/ethy/.cursor/rules/ethy-tui.mdc).
+  - Each frame line is exactly `cols` visible columns. `Slot N` keeps a fixed gap before the capability pills, those pills stay anchored, and box/table columns use stable weights so values can change without reflowing the chrome.
 
 ## 3. Bidirectional State Awareness (`<ethy_state>` & Tool Gating)
 

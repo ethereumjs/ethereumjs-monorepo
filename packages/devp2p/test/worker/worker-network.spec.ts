@@ -61,6 +61,74 @@ describe('[Devp2p/Worker]: createThreadedNetwork', () => {
     client.stop()
   })
 
+  it('inProcess peers expose remote bestHash on telemetry after STATUS', async () => {
+    const keyA = genPrivateKey()
+    const keyB = genPrivateKey()
+    const idB = nodeIdFromPrivateKey(keyB)
+    const BASE_PORT = 30705
+
+    const nodeA = await createThreadedNetwork({
+      inProcess: true,
+      privateKey: keyA,
+      chain: 'mainnet',
+      maxPeers: 2,
+      capabilities: ['eth68'],
+      endpoint: { address: '127.0.0.1', udpPort: BASE_PORT, tcpPort: BASE_PORT },
+      listenPort: BASE_PORT,
+      status: MAINNET_STATUS_JSON,
+      shouldFindNeighbours: false,
+      throttleDiscovery: false,
+    })
+
+    const nodeB = await createThreadedNetwork({
+      inProcess: true,
+      privateKey: keyB,
+      chain: 'mainnet',
+      maxPeers: 2,
+      capabilities: ['eth68'],
+      endpoint: { address: '127.0.0.1', udpPort: BASE_PORT + 1, tcpPort: BASE_PORT + 1 },
+      listenPort: BASE_PORT + 1,
+      status: MAINNET_STATUS_JSON,
+      shouldFindNeighbours: false,
+      throttleDiscovery: false,
+    })
+
+    try {
+      nodeA.connectPeer({
+        id: idB,
+        address: '127.0.0.1',
+        udpPort: BASE_PORT + 1,
+        tcpPort: BASE_PORT + 1,
+      })
+
+      await waitForConnectedPeers(nodeA, 1)
+
+      const snap = await new Promise<WorkerTelemetrySnapshot>((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error('timeout waiting for peer bestHash')), 8000)
+        const onTelemetry = (telemetry: WorkerTelemetrySnapshot) => {
+          const peer = telemetry.peers.find((p) => p.bestHash !== undefined)
+          if (peer !== undefined) {
+            clearTimeout(timer)
+            nodeA.events.off('telemetry', onTelemetry)
+            resolve(telemetry)
+          }
+        }
+        nodeA.events.on('telemetry', onTelemetry)
+      })
+
+      const withHead = snap.peers.find((p) => p.bestHash !== undefined)
+      assert.ok(withHead !== undefined)
+      assert.equal(withHead.bestHash?.toLowerCase(), MAINNET_STATUS_JSON.bestHash.toLowerCase())
+      assert.ok(snap.discovery !== undefined)
+      assert.isAtLeast(snap.discovery.rlpx.dials, 1)
+      assert.isAtLeast(snap.discovery.rlpx.statusOk, 1)
+      assert.isAtLeast(snap.discovery.boundUdpPort, 1)
+    } finally {
+      nodeA.stop()
+      nodeB.stop()
+    }
+  }, 30000)
+
   it('inProcess nodes exchange SNAP GET_ACCOUNT_RANGE with goodCitizen disabled', async () => {
     const keyA = genPrivateKey()
     const keyB = genPrivateKey()

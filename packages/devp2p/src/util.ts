@@ -1,3 +1,4 @@
+import * as os from 'os'
 import { RLP } from '@ethereumjs/rlp'
 import {
   EthereumJSErrorWithoutCode,
@@ -14,6 +15,19 @@ import type { EthStatusMsg } from './protocol/eth.ts'
 // Do not use :# here, no logging without sub namespace occurring and current code structure
 // otherwise creates loggers like `devp2p:#:eth`
 export const devp2pDebug = debug('devp2p')
+
+/** First non-internal IPv4 for discv4 ENR when bound to `0.0.0.0`. */
+export function pickAdvertisedIPv4(): string {
+  const nets = os.networkInterfaces()
+  for (const name of Object.keys(nets)) {
+    for (const entry of nets[name] ?? []) {
+      if (entry.family === 'IPv4' && entry.internal !== true) {
+        return entry.address
+      }
+    }
+  }
+  return '127.0.0.1'
+}
 
 export function genPrivateKey(): Uint8Array {
   const privateKey = secp256k1.utils.randomSecretKey()

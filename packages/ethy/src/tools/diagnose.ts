@@ -1,3 +1,4 @@
+import { formatDiscoverySummary } from '../net/discoverySummary.ts'
 import type { EthySpine, WidgetSpec } from '../spine/types.ts'
 
 export function peersTableWidget(spine: EthySpine): WidgetSpec {
@@ -41,6 +42,7 @@ export function bucketsTableWidget(spine: EthySpine): WidgetSpec {
 }
 
 export function diagnosticsTableWidget(spine: EthySpine): WidgetSpec {
+  const discoveryLine = formatDiscoverySummary(spine.discovery)
   const recent = spine.diagnosticRingBuffer.slice(-20).reverse()
   const rows = recent.map((e) => [
     new Date(e.timestamp).toISOString().slice(11, 19),
@@ -57,6 +59,6 @@ export function diagnosticsTableWidget(spine: EthySpine): WidgetSpec {
     title: 'Diagnostic ring (latest)',
     headers: ['Time', 'Subsystem', 'Sev', 'Peer', 'Message'],
     rows,
-    assistantComment: `${spine.diagnosticRingBuffer.length} events in ring (max 100).`,
+    assistantComment: `${discoveryLine} · ${spine.diagnosticRingBuffer.length} events in ring (max 100).`,
   }
 }

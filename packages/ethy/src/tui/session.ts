@@ -3,6 +3,7 @@ import readline from 'node:readline'
 
 import type { EthyNode } from '../core/createEthyNode.ts'
 import { advanceDemo } from '../demo/advanceDemo.ts'
+import { describeNotice } from '../notify/board.ts'
 import {
   ALT_SCREEN_OFF,
   ALT_SCREEN_ON,
@@ -12,9 +13,14 @@ import {
   syncOutputBegin,
   syncOutputEnd,
 } from './ansi.ts'
-import { createInitialViewState, ghostForPhase, pushKeyChar, reducePromptKey } from './prompt.ts'
+import {
+  createInitialViewState,
+  cycleDomain,
+  deepViewCommand,
+  pushKeyChar,
+  reducePromptKey,
+} from './prompt.ts'
 import { promptCaretPosition, renderFrame } from './renderFrame.ts'
-import { CAROUSEL_INTERVAL_MS } from './widgets.ts'
 
 export async function runEthySession(node: EthyNode): Promise<void> {
   const demoStart = Date.now()
@@ -31,12 +37,11 @@ export async function runEthySession(node: EthyNode): Promise<void> {
   const draw = () => {
     if (node.demo) {
       advanceDemo(node.spine, Date.now() - demoStart)
-      view.carouselTick = Math.floor((Date.now() - demoStart) / CAROUSEL_INTERVAL_MS)
     }
-    view.ghostSuggestion = ghostForPhase(node.spine.phase)
     const cols = output.columns ?? 100
     const rows = output.rows ?? 30
-    const lines = renderFrame(node.spine, view, cols, rows)
+    const now = Date.now()
+    const lines = renderFrame(node.spine, view, cols, rows, describeNotice(node.notices, now))
     const caret = promptCaretPosition(cols, rows, view.promptDraft)
     output.write(CURSOR_HIDE)
     output.write(syncOutputBegin())
@@ -48,12 +53,24 @@ export async function runEthySession(node: EthyNode): Promise<void> {
   }
 
   draw()
-  const demoTimer = node.demo ? setInterval(draw, 150) : undefined
+  const refreshTimer = setInterval(draw, node.demo ? 150 : 400)
 
   const onResize = () => draw()
   output.on('resize', onResize)
 
   await new Promise<void>((resolve) => {
+    let finished = false
+    const finish = () => {
+      if (finished) return
+      finished = true
+      cleanup()
+      resolve()
+    }
+
+    const onSignal = () => finish()
+    process.once('SIGINT', onSignal)
+    process.once('SIGTERM', onSignal)
+
     const onData = (buf: Buffer) => {
       const chunk = buf.toString('utf8')
       let dirty = false
@@ -65,9 +82,28 @@ export async function runEthySession(node: EthyNode): Promise<void> {
           continue
         }
         dirty = true
-        const ghost = view.ghostSuggestion
-        const { view: nextView, submittedLine } = reducePromptKey(view, action, ghost)
+        const {
+          view: nextView,
+          submittedLine,
+          domainCycle,
+          openDeepView,
+        } = reducePromptKey(view, action)
         view = nextView
+        if (domainCycle !== undefined) {
+          view = {
+            ...view,
+            activeDomain: cycleDomain(view.activeDomain, domainCycle),
+          }
+        }
+        if (openDeepView === true) {
+          const result = node.intentEngine.handle({
+            text: deepViewCommand(view.activeDomain),
+            spine: node.spine,
+            lastQuerySlot,
+          })
+          lastQuerySlot = result.querySlot
+          view.activeWidget = result.widget
+        }
         if (submittedLine !== undefined) {
           const result = node.intentEngine.handle({
             text: submittedLine,
@@ -78,8 +114,7 @@ export async function runEthySession(node: EthyNode): Promise<void> {
           view.activeWidget = result.widget
         }
         if (view.shouldExit) {
-          cleanup()
-          resolve()
+          finish()
           return
         }
       }
@@ -89,7 +124,9 @@ export async function runEthySession(node: EthyNode): Promise<void> {
     }
 
     const cleanup = () => {
-      if (demoTimer !== undefined) clearInterval(demoTimer)
+      process.off('SIGINT', onSignal)
+      process.off('SIGTERM', onSignal)
+      clearInterval(refreshTimer)
       output.off('resize', onResize)
       input.off('data', onData)
       if (input.isTTY) input.setRawMode(false)

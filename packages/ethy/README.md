@@ -4,10 +4,18 @@ Execution-free state and intelligence node for Ethereum (Amsterdam `snap/1` + `e
 
 ## Quick start
 
-From the monorepo (after `npm install` and `npm run build --workspace=@ethereumjs/ethy`):
+From the monorepo (after `npm install`):
 
 ```bash
+npm run build --workspace=@ethereumjs/devp2p   # required for live P2P (worker thread)
 npx tsx packages/ethy/src/cli/main.ts sepolia --demo
+```
+
+Live Sepolia (opens real devp2p sockets; omit `--demo`):
+
+```bash
+npm run build --workspace=@ethereumjs/devp2p
+npx tsx packages/ethy/src/cli/main.ts sepolia
 ```
 
 Or use the built CLI:

@@ -1,3 +1,7 @@
+import type { WorkerDiscoverySnapshot } from '@ethereumjs/devp2p'
+
+export type CapabilityId = 'p2p' | 'snap' | 'head' | 'ai'
+
 export type EthyPhase = 'BOOTING' | 'P2P_WARMUP' | 'SNAP_SYNCING' | 'HEAD_FOLLOWING'
 
 export type CapabilityReadiness = 'locked' | 'partial' | 'ready'
@@ -63,6 +67,8 @@ export interface EthySpine {
     ai: CapabilityState
   }
   peers: Map<string, PeerTelemetry>
+  /** Latest worker discovery counters (live P2P only). */
+  discovery?: WorkerDiscoverySnapshot
   snapBuckets: SnapBucket[]
   totalAccountsSynced: number
   accountsPerSec: number
@@ -90,9 +96,9 @@ export type WidgetSpec =
     }
 
 export interface TuiViewState {
+  activeDomain: CapabilityId
   activeWidget: WidgetSpec | null
   promptDraft: string
-  ghostSuggestion: string
   carouselTick: number
   history: string[]
   historyIndex: number
