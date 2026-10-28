@@ -25,7 +25,7 @@ export class SnapAccountSynchronizer {
   private readonly getSnapPeers: () => Array<{ id: string; caps: string[] }>
   private reqId = 1n
   private inFlight = new Map<string, number>()
-  private unsub?: () => void
+  private detachAccountRange?: () => void
   private tickTimer?: ReturnType<typeof setInterval>
   private syncStart = 0
   private lastAccountCount = 0
@@ -39,11 +39,11 @@ export class SnapAccountSynchronizer {
   }
 
   start(): void {
-    if (this.unsub !== undefined) return
+    if (this.detachAccountRange !== undefined) return
     setPhase(this.spine, 'SNAP_SYNCING')
     this.syncStart = Date.now()
     this.lastRateAt = this.syncStart
-    this.unsub = this.transport.onAccountRange((peerId, payload) => {
+    this.detachAccountRange = this.transport.onAccountRange((peerId, payload) => {
       void this.handleAccountRange(peerId, payload)
     })
     this.tickTimer = setInterval(() => this.schedule(), 50)
@@ -52,8 +52,8 @@ export class SnapAccountSynchronizer {
   }
 
   stop(): void {
-    this.unsub?.()
-    this.unsub = undefined
+    this.detachAccountRange?.()
+    this.detachAccountRange = undefined
     if (this.tickTimer !== undefined) clearInterval(this.tickTimer)
   }
 
