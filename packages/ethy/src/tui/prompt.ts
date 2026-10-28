@@ -118,7 +118,6 @@ export function reducePromptKey(view: TuiViewState, action: KeyAction): PromptRe
   let submittedLine: string | undefined
   let domainCycle: 1 | -1 | undefined
   let openDeepView: true | undefined
-
   switch (action.type) {
     case 'char':
       next.promptDraft += action.ch

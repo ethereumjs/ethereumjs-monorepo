@@ -269,13 +269,22 @@ function innerRowWidth(boxW: number): number {
   return Math.max(0, boxW - 4)
 }
 
+/** Gap between the three cockpit columns, also used under the metrics box. */
+export const COCKPIT_COLUMN_GAP = 2
+
+/** Visible widths of the three cockpit boxes for one content row. */
+export function cockpitColumnWidths(contentWidth: number): [number, number, number] {
+  const [w0, w1, w2] = widthsFromWeights(contentWidth, [1, 1, 1], COCKPIT_COLUMN_GAP)
+  return [w0 ?? 0, w1 ?? 0, w2 ?? 0]
+}
+
 /** Eight-line 3-box cockpit (padding row above/below four data rows). */
 export function renderCockpit(
   spine: EthySpine,
   view: TuiViewState,
   contentWidth: number,
 ): string[] {
-  const [w0, w1, w2] = widthsFromWeights(contentWidth, [1, 1, 1], 2)
+  const [w0, w1, w2] = cockpitColumnWidths(contentWidth)
   const pulseP = nodePulsePairs(spine)
   const cmdP = commandPairs(view.activeDomain, spine.phase)
   const metP = metricsPairs(spine, view.activeDomain)

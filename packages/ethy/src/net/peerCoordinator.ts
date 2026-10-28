@@ -10,6 +10,12 @@ import { RLP } from '@ethereumjs/rlp'
 import { bigIntToBytes, intToBytes, utf8ToBytes } from '@ethereumjs/util'
 
 import { getEthyClientVersion } from '../clientMeta.ts'
+import type { NoticeBoard } from '../notify/board.ts'
+import {
+  discoveryLooksBlocked,
+  initialP2pLinkState,
+  syncP2pLinkNotices,
+} from '../notify/p2pLink.ts'
 import { deriveCapabilities, setPhase } from '../spine/createSpine.ts'
 import { recordDiagnostic } from '../spine/diagnostics.ts'
 import type { EthySpine, PeerTelemetry } from '../spine/types.ts'
@@ -35,6 +41,8 @@ export type StartPeerCoordinatorOptions = {
   shouldFindNeighbours?: boolean
   goodCitizen?: boolean
   listenPort?: number
+  /** When set, peer reachability is posted for the TUI notice box. */
+  notices?: NoticeBoard
 }
 
 export type PeerCoordinatorHandle = {
@@ -92,6 +100,23 @@ export async function startPeerCoordinator(
   let inFlightHash: string | undefined
   let inFlightEthVersion = 68
   let lastDiagTs = 0
+  let dnsTimedOut = false
+  let link = initialP2pLinkState()
+  const linkStartedAt = Date.now()
+
+  const noteDiscovery = (message: string) => {
+    if (discoveryLooksBlocked(message)) dnsTimedOut = true
+  }
+
+  const syncLink = () => {
+    if (opts.notices === undefined) return
+    link = syncP2pLinkNotices(opts.notices, link, {
+      peerCount: spine.peers.size,
+      startedAt: linkStartedAt,
+      now: Date.now(),
+      dnsTimedOut,
+    })
+  }
 
   const requestPivotFromPeer = (peer: WorkerPeerSnapshot) => {
     if (peer.bestHash === undefined || inFlightPeerId !== undefined) return
@@ -152,7 +177,9 @@ export async function startPeerCoordinator(
         message: d.message,
         peerId: d.peerId,
       })
+      noteDiscovery(d.message)
     }
+    syncLink()
     deriveCapabilities(spine)
     if (inFlightPeerId === undefined) {
       const best = pickBestPeer(snap.peers)
@@ -205,7 +232,12 @@ export async function startPeerCoordinator(
       severity: 'warn',
       message: err.message,
     })
+    noteDiscovery(err.message)
+    syncLink()
   })
+
+  const linkTimer = opts.notices !== undefined ? setInterval(syncLink, 1_000) : undefined
+  linkTimer?.unref()
 
   if (opts.dial !== undefined) {
     client.connectPeer({
@@ -217,7 +249,10 @@ export async function startPeerCoordinator(
   }
 
   return {
-    stop: () => client.stop(),
+    stop: () => {
+      if (linkTimer !== undefined) clearInterval(linkTimer)
+      client.stop()
+    },
     refreshPivotHeader: () => {
       inFlightPeerId = undefined
       inFlightHash = undefined

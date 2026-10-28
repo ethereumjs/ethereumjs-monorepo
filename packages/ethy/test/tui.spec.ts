@@ -5,6 +5,8 @@ import { createSpine, setPhase } from '../src/spine/createSpine.ts'
 import type { WidgetSpec } from '../src/spine/types.ts'
 import { stripAnsi, visibleWidth } from '../src/tui/ansi.ts'
 import { CAPABILITY_FG, capabilityMark } from '../src/tui/capabilityMark.ts'
+import { cockpitColumnWidths } from '../src/tui/cockpit.ts'
+import { measurePage } from '../src/tui/pageLayout.ts'
 import {
   createInitialViewState,
   cycleDomain,
@@ -100,7 +102,16 @@ describe('[Ethy/TUI]: renderFrame', () => {
     assert.match(hint, /Tab switch domain/)
     assert.notInclude(hint, 'Why is bucket')
     assert.match(plain[plain.length - 3] ?? '', /ethy >/)
-    assert.equal(stripAnsi(plain[plain.length - 2] ?? '').trim(), '')
+    assert.notInclude(joined, 'All quiet')
+    const raw = renderFrame(spine, view, 100, 30, {
+      text: 'No peers yet. Firewall? VPN?',
+      level: 'warn',
+    })
+    const footer = stripAnsi(raw[raw.length - 1] ?? '')
+    assert.include(footer, 'No peers yet. Firewall? VPN?')
+    const right = cockpitColumnWidths(measurePage(100, 30).contentWidth)[2]
+    assert.isAtMost(footer.length, 100)
+    assert.isAtLeast(footer.indexOf('No peers'), 100 - right)
   })
 
   it('promptCaretPosition() sits just after the domain mark and draft', () => {

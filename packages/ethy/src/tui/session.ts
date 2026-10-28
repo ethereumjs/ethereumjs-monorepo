@@ -3,6 +3,7 @@ import readline from 'node:readline'
 
 import type { EthyNode } from '../core/createEthyNode.ts'
 import { advanceDemo } from '../demo/advanceDemo.ts'
+import { describeNotice } from '../notify/board.ts'
 import {
   ALT_SCREEN_OFF,
   ALT_SCREEN_ON,
@@ -39,7 +40,8 @@ export async function runEthySession(node: EthyNode): Promise<void> {
     }
     const cols = output.columns ?? 100
     const rows = output.rows ?? 30
-    const lines = renderFrame(node.spine, view, cols, rows)
+    const now = Date.now()
+    const lines = renderFrame(node.spine, view, cols, rows, describeNotice(node.notices, now))
     const caret = promptCaretPosition(cols, rows, view.promptDraft)
     output.write(CURSOR_HIDE)
     output.write(syncOutputBegin())
@@ -51,7 +53,7 @@ export async function runEthySession(node: EthyNode): Promise<void> {
   }
 
   draw()
-  const demoTimer = node.demo ? setInterval(draw, 150) : undefined
+  const refreshTimer = setInterval(draw, node.demo ? 150 : 400)
 
   const onResize = () => draw()
   output.on('resize', onResize)
@@ -124,7 +126,7 @@ export async function runEthySession(node: EthyNode): Promise<void> {
     const cleanup = () => {
       process.off('SIGINT', onSignal)
       process.off('SIGTERM', onSignal)
-      if (demoTimer !== undefined) clearInterval(demoTimer)
+      clearInterval(refreshTimer)
       output.off('resize', onResize)
       input.off('data', onData)
       if (input.isTTY) input.setRawMode(false)

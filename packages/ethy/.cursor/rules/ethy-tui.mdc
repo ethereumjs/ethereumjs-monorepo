@@ -72,7 +72,8 @@ Sits below the top header rule and displays three side-by-side rounded boxes (`�
   - Example: `● ethy > ` where `●` stays in column 0 of the content inset and changes color (`green` → `yellow` → `cyan` → `magenta`) as the user presses `Tab`.
   - Terminal cursor is placed on the prompt line (`promptCaretPosition`, one row above the blank spacer).
 - **Blank spacer row** between prompt and footer (breathing room).
-- **Footer Hint Line:** Key hints on the left only; slash-prefix autocomplete (`/p → /peers`) right-aligned while typing a command.
+- **Footer Hint Line:** Key hints on the left; slash-prefix autocomplete (`/p → /peers`) on that same left side while typing a command.
+- **Notice line (lower right):** One plain text row, same width as the right cockpit box, right-aligned. Other parts of the client post through `NoticeBoard` (`node.notices.post`). At most one live message; empty when nothing applies. Minimum 4 seconds on screen before the next notice replaces it; optional expiry after that.
 
 ---
 

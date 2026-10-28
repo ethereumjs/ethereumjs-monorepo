@@ -42,14 +42,24 @@ async function main(): Promise<void> {
       const handle = await startPeerCoordinator({
         spine: node.spine,
         network,
+        notices: node.notices,
       })
       coordinatorStop = handle.stop
     } catch (e: unknown) {
+      const message = (e as Error).message
       recordDiagnostic(node.spine, {
         subsystem: 'devp2p',
         severity: 'error',
-        message: (e as Error).message,
+        message,
       })
+      node.notices.post(
+        {
+          key: 'p2p-start',
+          level: 'alert',
+          text: `Network did not start. ${message}`,
+        },
+        Date.now(),
+      )
     }
   }
 
