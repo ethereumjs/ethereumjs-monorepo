@@ -1,7 +1,7 @@
 import { Address, createAccount, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { MerkleStateManager, SimpleStateManager } from '../src/index.ts'
+import { FlatStateManager, MerkleStateManager, SimpleStateManager } from '../src/index.ts'
 
 import type { StateManagerInterface } from '@ethereumjs/common'
 import type { Account } from '@ethereumjs/util'
@@ -31,7 +31,7 @@ type CompareList = [Account | undefined, bigint | undefined]
 describe('[StateManager]: account checkpointing', () => {
   const address = new Address(hexToBytes(`0x${'11'.repeat(20)}`))
 
-  const stateManagers = [MerkleStateManager, SimpleStateManager]
+  const stateManagers = [MerkleStateManager, SimpleStateManager, FlatStateManager]
 
   const accountN1: CompareList = [
     createAccount({

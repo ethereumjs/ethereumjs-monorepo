@@ -1,7 +1,7 @@
 import { Account, Address, hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { MerkleStateManager, SimpleStateManager } from '../src/index.ts'
+import { FlatStateManager, MerkleStateManager, SimpleStateManager } from '../src/index.ts'
 
 import type { StateManagerInterface } from '@ethereumjs/common'
 
@@ -30,6 +30,10 @@ describe('[StateManager]: storage checkpointing', () => {
     },
     {
       SM: SimpleStateManager,
+      rootCheck: false,
+    },
+    {
+      SM: FlatStateManager,
       rootCheck: false,
     },
   ]
