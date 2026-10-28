@@ -53,6 +53,10 @@ export interface WorkerPeerSnapshot {
   clientId: string
   caps: string[]
   rttMs?: number
+  /** Remote head block hash from ETH STATUS (`0x` + hex). */
+  bestHash?: string
+  /** Remote latest block number from ETH STATUS (decimal string). */
+  latestBlock?: string
 }
 
 export interface WorkerDiagnosticEntry {

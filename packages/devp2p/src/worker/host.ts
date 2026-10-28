@@ -8,7 +8,7 @@ import {
   Sepolia,
 } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { bytesToUnprefixedHex, utf8ToBytes } from '@ethereumjs/util'
+import { bytesToHex, bytesToUnprefixedHex, utf8ToBytes } from '@ethereumjs/util'
 
 import type { MessagePort } from 'node:worker_threads'
 import { DPT } from '../dpt/dpt.ts'
@@ -23,6 +23,7 @@ import { SnapMessageCodeNames, SnapMessageCodes } from '../protocol/snap.ts'
 import { Peer } from '../rlpx/peer.ts'
 import { RLPx } from '../rlpx/rlpx.ts'
 import type { PeerInfo } from '../types.ts'
+import { dptDnsOptionsFromCommon, resolveWorkerBootnodes } from './bootNodes.ts'
 import type {
   ThreadedNetworkInitOptions,
   WorkerCommand,
@@ -147,10 +148,15 @@ export class Devp2pWorkerHost {
     const endpoint = opts.endpoint ?? { address: '0.0.0.0', udpPort: 0, tcpPort: 0 }
     const listenPort = opts.listenPort ?? endpoint.tcpPort ?? 0
 
+    const shouldFindNeighbours = opts.shouldFindNeighbours ?? false
+    const dnsOpts = shouldFindNeighbours ? dptDnsOptionsFromCommon(common) : undefined
+
     this._dpt = new DPT(opts.privateKey, {
       common,
       endpoint,
-      shouldFindNeighbours: opts.shouldFindNeighbours ?? false,
+      shouldFindNeighbours,
+      shouldGetDnsPeers: dnsOpts?.shouldGetDnsPeers ?? false,
+      dnsNetworks: dnsOpts?.dnsNetworks ?? [],
       maxInFlightPings: opts.maxInFlightPings,
     })
 
@@ -175,10 +181,8 @@ export class Devp2pWorkerHost {
       this._rlpx!.listen(listenPort, endpoint.address ?? '0.0.0.0')
     })
 
-    if (opts.bootnodes) {
-      for (const boot of opts.bootnodes) {
-        void this._dpt.bootstrap(boot).catch(() => {})
-      }
+    for (const boot of resolveWorkerBootnodes(opts, common)) {
+      void this._dpt.bootstrap(boot).catch(() => {})
     }
 
     this._rlpx.events.on('peer:added', (peer) => this._wirePeer(peer))
@@ -200,14 +204,16 @@ export class Devp2pWorkerHost {
       if (rttMs !== undefined) this._peerRtt.set(peerKey, rttMs)
     })
 
-    if (this._options?.status !== undefined) {
-      for (const protocol of peer.getProtocols()) {
-        if (protocol.constructor.name === 'ETH') {
-          const eth = protocol as ETH
-          eth.sendStatus(
-            ethStatusFromFields(this._options.status as EthStatusFields, eth.getVersion()),
-          )
-        }
+    for (const protocol of peer.getProtocols()) {
+      if (protocol.constructor.name !== 'ETH') continue
+      const eth = protocol as ETH
+      eth.events.on('status', () => {
+        this._emitTelemetry()
+      })
+      if (this._options?.status !== undefined) {
+        eth.sendStatus(
+          ethStatusFromFields(this._options.status as EthStatusFields, eth.getVersion()),
+        )
       }
     }
 
@@ -323,6 +329,19 @@ export class Devp2pWorkerHost {
     for (const peer of this._rlpx?.getPeers() ?? []) {
       const id = bytesToUnprefixedHex(peer.getId()!)
       const hello = peer.getHelloMessage()
+      let bestHash: string | undefined
+      let latestBlock: string | undefined
+      for (const protocol of peer.getProtocols()) {
+        if (protocol.constructor.name !== 'ETH') continue
+        const head = (protocol as ETH).peerStatusHead()
+        if (head === null) continue
+        bestHash = bytesToHex(head.bestHash)
+        if (head.latestBlock !== undefined) {
+          latestBlock = head.latestBlock.toString()
+        }
+        break
+      }
+
       peers.push({
         id,
         clientId: hello?.clientId ?? '',
@@ -335,6 +354,8 @@ export class Devp2pWorkerHost {
                 `${p.constructor.name === 'ETH' ? 'eth' : 'snap'}/${(p as ETH | SNAP).getVersion()}`,
             ),
         rttMs: this._peerRtt.get(id),
+        bestHash,
+        latestBlock,
       })
     }
     const snapshot: WorkerTelemetrySnapshot = {

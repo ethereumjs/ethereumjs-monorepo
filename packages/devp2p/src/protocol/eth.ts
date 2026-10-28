@@ -57,6 +57,7 @@ export type EthStatusOpts = {
 export class ETH extends Protocol {
   protected _status: EthStatusMsg | null = null
   protected _peerStatus: EthStatusMsg | null = null
+  protected _peerStatusValidated = false
   private DEBUG: boolean = false
 
   // Eth64
@@ -293,9 +294,29 @@ export class ETH extends Protocol {
       this.events.emit('status', status)
     }
 
+    this._peerStatusValidated = true
+
     if (this._firstPeer === '') {
       this._addFirstPeerDebugger()
     }
+  }
+
+  /**
+   * Remote chain head from the last successful STATUS handshake, if any.
+   *
+   * eth/69+ uses `latestBlockHash` and `latestBlock`; earlier versions expose `bestHash` only.
+   */
+  peerStatusHead(): { bestHash: Uint8Array; latestBlock?: bigint } | null {
+    if (!this._peerStatusValidated || this._peerStatus === null) {
+      return null
+    }
+    if (ethUsesBlockRangeStatus(this._version)) {
+      const bestHash = this._peerStatus[6] as Uint8Array
+      const latestBlockBytes = this._peerStatus[5] as Uint8Array
+      const latestBlock = latestBlockBytes.length > 0 ? bytesToBigInt(latestBlockBytes) : undefined
+      return { bestHash, latestBlock }
+    }
+    return { bestHash: this._peerStatus[3] as Uint8Array }
   }
 
   getVersion() {
