@@ -100,14 +100,15 @@ describe('[Ethy/TUI]: renderFrame', () => {
     const hint = plain[plain.length - 1] ?? ''
     assert.match(hint, /Tab switch domain/)
     assert.include(joined, ghost)
-    assert.match(plain[plain.length - 2] ?? '', /ethy >/)
+    assert.match(plain[plain.length - 3] ?? '', /ethy >/)
+    assert.equal(stripAnsi(plain[plain.length - 2] ?? '').trim(), '')
   })
 
   it('promptCaretPosition() sits just after the domain mark and draft', () => {
     const empty = promptCaretPosition(100, 30, '')
-    assert.deepEqual(empty, { row: 29, col: 11 })
+    assert.deepEqual(empty, { row: 28, col: 11 })
     const typed = promptCaretPosition(100, 30, 'ab')
-    assert.deepEqual(typed, { row: 29, col: 13 })
+    assert.deepEqual(typed, { row: 28, col: 13 })
   })
 
   it('renderFrame() cockpit command box follows activeDomain', () => {

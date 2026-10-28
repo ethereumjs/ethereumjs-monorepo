@@ -44,15 +44,15 @@ Ethy’s terminal UI is a **pure function** of `EthySpine`, `TuiViewState`, and 
 
 ──────────────────────────────────────────────────────────────────────────────────────────────────
  ● ethy > █
- Enter open P2P view · Tab switch domain · / command · Esc exit          Why is 0x3 stalled? [→]
+ Enter open P2P view · Tab switch domain · / command · Esc exit   (keys in bold, prose dim)
 ```
 
 ### Band 1 — Minimal Top Header Bar (1 row + full-bleed `─` rule)
 - Left: `Ethy v<version> | <NETWORK>`.
 - Right cluster: `Slot <n>` followed by an 8-column gap (`SLOT_GAP = 8`) and the 4 right-packed pills `● P2P  ◐ SNAP  ○ HEAD  ◐ AI` (`CAPABILITY_PILL_GAP = 2`).
 
-### Band 2 — The 3-Box Cockpit Row (Fixed height ~6–8 rows, 3 equal/weighted rounded boxes)
-Sits below the top header rule and displays three side-by-side rounded boxes (`╭─ ... ─╮`):
+### Band 2 — The 3-Box Cockpit Row (fixed **8** visible rows per box, 3 equal/weighted rounded boxes)
+Sits below the top header rule and displays three side-by-side rounded boxes (`╭─ ... ─╮`): top border, **one padding row**, four two-column data rows (`formatTwoColumnRows` with shared label width + `TWO_COLUMN_MIN_GAP = 2`), **one padding row**, bottom border.
 1. **Left Box (`Node Pulse` — Always-Anchored Overview):**
    - Stays anchored regardless of which domain is selected, giving constant context: current `Phase`, `Pivot` block (or head), the 16-segment mini bucket bar (`████▓▓!░░░░░░░░░`), and synced `Accounts` (`total` + `acc/s`).
 2. **Middle Box (`<Mark> <Domain> Commands` — Domain Usage Discovery):**
@@ -67,10 +67,11 @@ Sits below the top header rule and displays three side-by-side rounded boxes (`�
 - Renders the active `WidgetSpec` (`table`, `key_value`, `bar_chart`, `hex_inspector`, or AI prose/layout response).
 - **No Unsolicited Flipping:** Background telemetry ticks or pressing `Tab` to peek at another domain's upper boxes must **never** wipe or overwrite a widget/response that the user is currently viewing in the Main Interaction Area. The Main Area only changes when the user explicitly triggers a domain deep view (`Enter` on empty draft) or submits a command/prompt.
 
-### Band 4 — Domain-Lens Prompt & Hint Row (full-bleed `─` rule + 2 rows)
+### Band 4 — Domain-Lens Prompt & Hint (full-bleed `─` rule + **3** content rows)
 - **Prompt Line:** Starts with the **active domain circle** (`capabilityMark(view.activeDomain, status)`) directly to the left of `ethy > `:
   - Example: `● ethy > ` where `●` stays in column 0 of the content inset and changes color (`green` → `yellow` → `cyan` → `magenta`) as the user presses `Tab`.
-  - Terminal cursor is placed at the exact cell where the next typed character lands (`promptCaretPosition`).
+  - Terminal cursor is placed on the prompt line (`promptCaretPosition`, one row above the blank spacer).
+- **Blank spacer row** between prompt and footer (breathing room).
 - **Footer Hint Line:** Concise key hints on the left; optional ghost prompt/autocomplete hint right-aligned.
 
 ---

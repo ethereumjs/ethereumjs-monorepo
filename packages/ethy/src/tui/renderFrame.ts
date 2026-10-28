@@ -20,7 +20,20 @@ const DELIMITER_PAD_ROWS = 1
 const SLOT_GAP = 8
 
 export const PROMPT_PREFIX_WIDTH = 9
-const PROMPT_HINT = 'Esc exit'
+
+/** Footer hint: bold key chord, dim prose (avoids "Enter open…" reading as one sentence). */
+function hintSegment(key: string, prose: string): string {
+  return `${BOLD}${key}${RESET}${DIM} ${prose}`
+}
+
+function renderFooterHint(domain: CapabilityId): string {
+  return [
+    hintSegment('Enter', `open ${domainHintLabel(domain)} view`),
+    hintSegment('Tab', 'switch domain'),
+    hintSegment('/', 'command'),
+    hintSegment('Esc', 'exit'),
+  ].join(`${DIM} · ${RESET}`)
+}
 
 /** Rhythm inside the pill cluster; spacer before cluster stays flexible. */
 const CAPABILITY_PILL_GAP = 2
@@ -79,7 +92,7 @@ function renderPrompt(spine: EthySpine, view: TuiViewState, cols: number): strin
   const prompt = `${prefix}${fixedField(view.promptDraft, draftWidth)}`
   const line1 = fixedLine(prompt, cols)
 
-  const leftHint = `${DIM}Enter open ${domainHintLabel(view.activeDomain)} view · Tab switch domain · / command · ${PROMPT_HINT}${RESET}`
+  const leftHint = `${DIM}${renderFooterHint(view.activeDomain)}${RESET}`
   const hintWidth = visibleWidth(leftHint)
   const gap = 2
   const tabWidth = Math.max(0, cols - hintWidth - gap)
@@ -101,7 +114,8 @@ function renderPrompt(spine: EthySpine, view: TuiViewState, cols: number): strin
     ],
     gap,
   )
-  return [line1, line2]
+  const spacer = fixedLine('', cols)
+  return [line1, spacer, line2]
 }
 
 /**
@@ -119,7 +133,7 @@ export function promptCaretPosition(
   const draftWidth = Math.max(0, page.contentWidth - PROMPT_PREFIX_WIDTH)
   const shown = Math.min(visibleWidth(draft), draftWidth)
   return {
-    row: safeRows - 1,
+    row: safeRows - 2,
     col: 1 + page.padding.left + PROMPT_PREFIX_WIDTH + shown,
   }
 }

@@ -2,7 +2,13 @@ import type { CapabilityReadiness, WidgetSpec } from '../spine/types.ts'
 import type { CapabilityId } from '../spine/types.ts'
 import { BOLD, DIM, RESET, padVisible, truncateVisible } from './ansi.ts'
 import { capabilityMark } from './capabilityMark.ts'
-import { composeFixedRow, fixedLine } from './layout.ts'
+import {
+  type TwoColumnPair,
+  composeFixedRow,
+  fixedLine,
+  formatTwoColumnRows,
+  maxLabelWidth,
+} from './layout.ts'
 
 /** How often the suggestion carousel advances to the next set. */
 export const CAROUSEL_INTERVAL_MS = 12_000
@@ -41,7 +47,7 @@ export function renderWidgetLines(
               { text: `${prefix} ${line.command}`, width: half },
               { text: `${prefix} ${line.prose}`, width: w - half },
             ],
-            0,
+            2,
           ),
         )
       }
@@ -58,8 +64,15 @@ export function renderWidgetLines(
       if (widget.title) {
         lines.push(fixedLine(`${BOLD}${widget.title}${RESET}`, w))
       }
-      for (const e of widget.entries) {
-        lines.push(fixedLine(`${DIM}${e.key}:${RESET} ${e.value}`, w))
+      {
+        const pairs: TwoColumnPair[] = widget.entries.map((e) => ({
+          label: `${DIM}${e.key}${RESET}`,
+          value: e.value,
+        }))
+        const lw = maxLabelWidth(pairs)
+        for (const row of formatTwoColumnRows(pairs, lw, w)) {
+          lines.push(fixedLine(row, w))
+        }
       }
       break
   }

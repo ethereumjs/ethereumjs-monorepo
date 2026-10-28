@@ -1,7 +1,14 @@
 import type { CapabilityId, EthyPhase, EthySpine, TuiViewState } from '../spine/types.ts'
 import { BOLD, DIM, RESET, visibleWidth } from './ansi.ts'
 import { capabilityMark } from './capabilityMark.ts'
-import { fixedField, fixedLine, widthsFromWeights } from './layout.ts'
+import {
+  type TwoColumnPair,
+  fixedField,
+  fixedLine,
+  formatTwoColumnRows,
+  maxLabelWidth,
+  widthsFromWeights,
+} from './layout.ts'
 
 const DOMAIN_LABEL: Record<CapabilityId, string> = {
   p2p: 'P2P',
@@ -9,6 +16,9 @@ const DOMAIN_LABEL: Record<CapabilityId, string> = {
   head: 'HEAD',
   ai: 'AI',
 }
+
+/** Inner content rows per box (excluding top/bottom border and vertical padding). */
+const COCKPIT_CONTENT_ROWS = 4
 
 function phaseLabel(phase: EthyPhase): string {
   switch (phase) {
@@ -112,8 +122,15 @@ function boxBottom(boxW: number): string {
   return fixedLine(`${DIM}╰${'─'.repeat(Math.max(0, boxW - 2))}╯${RESET}`, boxW)
 }
 
-function renderBox(boxW: number, titlePlain: string, rows: string[]): string[] {
-  return [boxTop(boxW, titlePlain), ...rows.map((r) => boxRow(boxW, r)), boxBottom(boxW)]
+function renderBox(boxW: number, titlePlain: string, contentLines: string[]): string[] {
+  const pad = boxRow(boxW, '')
+  return [
+    boxTop(boxW, titlePlain),
+    pad,
+    ...contentLines.map((r) => boxRow(boxW, r)),
+    pad,
+    boxBottom(boxW),
+  ]
 }
 
 function joinBoxLines(columns: string[][], contentWidth: number): string[] {
@@ -128,93 +145,102 @@ function joinBoxLines(columns: string[][], contentWidth: number): string[] {
   return out
 }
 
-function nodePulseRows(spine: EthySpine): string[] {
+function nodePulsePairs(spine: EthySpine): TwoColumnPair[] {
   const pivot =
     spine.pivotBlockNumber !== undefined
       ? `#${spine.pivotBlockNumber.toLocaleString('en-US')}`
       : 'Waiting for peer...'
   const accounts = `${spine.totalAccountsSynced.toLocaleString('en-US')} ~${Math.round(spine.accountsPerSec)}/s`
   return [
-    `Phase   ${phaseLabel(spine.phase)}`,
-    `Pivot   ${pivot}`,
-    `Buckets ${bucketMiniBar(spine)}`,
-    `Accounts ${accounts}`,
+    { label: 'Phase', value: phaseLabel(spine.phase) },
+    { label: 'Pivot', value: pivot },
+    { label: 'Buckets', value: bucketMiniBar(spine) },
+    { label: 'Accounts', value: accounts },
   ]
 }
 
-function commandRows(domain: CapabilityId, phase: EthyPhase): string[] {
+function commandPairs(domain: CapabilityId, phase: EthyPhase): TwoColumnPair[] {
   switch (domain) {
     case 'p2p':
       return [
-        '/peers   client table',
-        '/diag    anomalies',
-        '/drop    disconnect',
-        '/help    commands',
+        { label: '/peers', value: 'client table' },
+        { label: '/diag', value: 'anomalies' },
+        { label: '/drop', value: 'disconnect' },
+        { label: '/help', value: 'commands' },
       ]
     case 'snap':
       return [
-        '/buckets 16-bucket view',
-        '/snap    progress',
-        '/reassign bucket',
-        '/diag    anomalies',
+        { label: '/buckets', value: '16-bucket view' },
+        { label: '/snap', value: 'progress' },
+        { label: '/reassign', value: 'bucket' },
+        { label: '/diag', value: 'anomalies' },
       ]
     case 'head':
       return [
-        '/account inspect',
-        '/bal     head summary',
-        '/simulate tx sandbox',
-        '/help    commands',
+        { label: '/account', value: 'inspect' },
+        { label: '/bal', value: 'head summary' },
+        { label: '/simulate', value: 'tx sandbox' },
+        { label: '/help', value: 'commands' },
       ]
     case 'ai':
       return phase === 'P2P_WARMUP'
         ? [
-            'Which peers are connected?',
-            'Show client latency',
-            'Any handshake errors?',
-            '/help for slash mode',
+            { label: '', value: 'Which peers are connected?' },
+            { label: '', value: 'Show client latency' },
+            { label: '', value: 'Any handshake errors?' },
+            { label: '/help', value: 'slash mode' },
           ]
         : phase === 'SNAP_SYNCING'
           ? [
-              'Why is a bucket stalled?',
-              'Show snap throughput',
-              'Which peer serves 0x3?',
-              '/help for slash mode',
+              { label: '', value: 'Why is a bucket stalled?' },
+              { label: '', value: 'Show snap throughput' },
+              { label: '', value: 'Which peer serves 0x3?' },
+              { label: '/help', value: 'slash mode' },
             ]
           : [
-              'Summarize latest BAL',
-              'What changed at head?',
-              'Explain pivot vs head',
-              '/help for slash mode',
+              { label: '', value: 'Summarize latest BAL' },
+              { label: '', value: 'What changed at head?' },
+              { label: '', value: 'Explain pivot vs head' },
+              { label: '/help', value: 'slash mode' },
             ]
   }
 }
 
-function metricsRows(spine: EthySpine, domain: CapabilityId): string[] {
+function metricsPairs(spine: EthySpine, domain: CapabilityId): TwoColumnPair[] {
   switch (domain) {
     case 'p2p':
       return [
-        `Peers    ${spine.peers.size} connected`,
-        `Caps     ${countCaps(spine)}`,
-        `Latency  ${avgLatency(spine)}`,
-        `Clients  ${clientFamilies(spine)}`,
+        { label: 'Peers', value: `${spine.peers.size} connected` },
+        { label: 'Caps', value: countCaps(spine) },
+        { label: 'Latency', value: avgLatency(spine) },
+        { label: 'Clients', value: clientFamilies(spine) },
       ]
     case 'snap': {
       const done = spine.snapBuckets.filter((b) => b.status === 'done').length
       const syncing = spine.snapBuckets.filter((b) => b.status === 'syncing').length
       const stalled = spine.snapBuckets.filter((b) => b.status === 'stalled').length
       return [
-        `Progress ${Math.round((done / 16) * 100)}% (${done}/16)`,
-        `Active   ${syncing} syncing · ${stalled} stalled`,
-        `Pivot Root ${shortHash(spine.pivotStateRoot)}`,
-        `Speed    ${Math.round(spine.accountsPerSec)} acc/s`,
+        { label: 'Progress', value: `${Math.round((done / 16) * 100)}% (${done}/16)` },
+        { label: 'Active', value: `${syncing} syncing · ${stalled} stalled` },
+        { label: 'Pivot Root', value: shortHash(spine.pivotStateRoot) },
+        { label: 'Speed', value: `${Math.round(spine.accountsPerSec)} acc/s` },
       ]
     }
     case 'head':
       return [
-        `Status   ${spine.capabilities.head.status === 'locked' ? 'Locked' : 'Following'}`,
-        `Head Block ${spine.headBlockNumber !== undefined ? `#${spine.headBlockNumber}` : '—'}`,
-        `State Root ${shortHash(spine.headStateRoot)}`,
-        `Pivot    ${spine.pivotBlockNumber !== undefined ? `#${spine.pivotBlockNumber}` : '—'}`,
+        {
+          label: 'Status',
+          value: spine.capabilities.head.status === 'locked' ? 'Locked' : 'Following',
+        },
+        {
+          label: 'Head Block',
+          value: spine.headBlockNumber !== undefined ? `#${spine.headBlockNumber}` : '—',
+        },
+        { label: 'State Root', value: shortHash(spine.headStateRoot) },
+        {
+          label: 'Pivot',
+          value: spine.pivotBlockNumber !== undefined ? `#${spine.pivotBlockNumber}` : '—',
+        },
       ]
     case 'ai': {
       const unlocked = (['p2p', 'snap', 'head', 'ai'] as const)
@@ -222,10 +248,10 @@ function metricsRows(spine: EthySpine, domain: CapabilityId): string[] {
         .map((id) => DOMAIN_LABEL[id])
         .join(', ')
       return [
-        'Engine   Slash / Rule Mode',
-        `Unlocked ${unlocked || '—'}`,
-        `Slot     ${spine.currentSlot}`,
-        `Anomalies ${spine.diagnosticRingBuffer.length}`,
+        { label: 'Engine', value: 'Slash / Rule Mode' },
+        { label: 'Unlocked', value: unlocked || '—' },
+        { label: 'Slot', value: String(spine.currentSlot) },
+        { label: 'Anomalies', value: String(spine.diagnosticRingBuffer.length) },
       ]
     }
   }
@@ -241,23 +267,44 @@ function domainTitle(spine: EthySpine, view: TuiViewState, kind: 'Commands' | 'M
   return `${mark} ${label} Commands`
 }
 
-/** Six-line 3-box cockpit row (Node Pulse + domain Commands + domain Metrics). */
+function innerRowWidth(boxW: number): number {
+  return Math.max(0, boxW - 4)
+}
+
+/** Eight-line 3-box cockpit (padding row above/below four data rows). */
 export function renderCockpit(
   spine: EthySpine,
   view: TuiViewState,
   contentWidth: number,
 ): string[] {
   const [w0, w1, w2] = widthsFromWeights(contentWidth, [1, 1, 1], 2)
-  const pulse = renderBox(w0, `${BOLD}Node Pulse${RESET}`, nodePulseRows(spine))
+  const pulseP = nodePulsePairs(spine)
+  const cmdP = commandPairs(view.activeDomain, spine.phase)
+  const metP = metricsPairs(spine, view.activeDomain)
+  const labelW = maxLabelWidth([...pulseP, ...cmdP, ...metP])
+
+  const pulseLines = formatTwoColumnRows(pulseP, labelW, innerRowWidth(w0))
+  const cmdLines = formatTwoColumnRows(cmdP, labelW, innerRowWidth(w1))
+  const metLines = formatTwoColumnRows(metP, labelW, innerRowWidth(w2))
+
+  while (pulseLines.length < COCKPIT_CONTENT_ROWS) pulseLines.push('')
+  while (cmdLines.length < COCKPIT_CONTENT_ROWS) cmdLines.push('')
+  while (metLines.length < COCKPIT_CONTENT_ROWS) metLines.push('')
+
+  const pulse = renderBox(
+    w0,
+    `${BOLD}Node Pulse${RESET}`,
+    pulseLines.slice(0, COCKPIT_CONTENT_ROWS),
+  )
   const commands = renderBox(
     w1,
     domainTitle(spine, view, 'Commands'),
-    commandRows(view.activeDomain, spine.phase),
+    cmdLines.slice(0, COCKPIT_CONTENT_ROWS),
   )
   const metrics = renderBox(
     w2,
     domainTitle(spine, view, 'Metrics'),
-    metricsRows(spine, view.activeDomain),
+    metLines.slice(0, COCKPIT_CONTENT_ROWS),
   )
   return joinBoxLines([pulse, commands, metrics], contentWidth)
 }
