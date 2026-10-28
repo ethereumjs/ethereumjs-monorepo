@@ -379,6 +379,20 @@ describe('[Common/Hardfork]: fork hash', () => {
     msg = 'should return null for a forkHash not matching any HF'
     assert.strictEqual(c.hardforkForForkHash('0x12345'), null, msg)
   })
+
+  it('Sepolia fork id matches Geth across the Amsterdam timestamp', () => {
+    const before = new Common({ chain: Sepolia, hardfork: Hardfork.Bpo2 })
+    assert.strictEqual(before.forkHash(), '0x268956b6')
+    assert.strictEqual(before.nextHardforkBlockOrTimestamp(), 1791294816n)
+
+    const atFork = new Common({ chain: Sepolia, hardfork: Hardfork.Amsterdam })
+    assert.strictEqual(atFork.forkHash(), '0x6c1d9423')
+    assert.strictEqual(atFork.nextHardforkBlockOrTimestamp(), null)
+
+    const byTime = new Common({ chain: Sepolia })
+    assert.strictEqual(byTime.getHardforkBy({ timestamp: 1791294815n }), Hardfork.Bpo2)
+    assert.strictEqual(byTime.getHardforkBy({ timestamp: 1791294816n }), Hardfork.Amsterdam)
+  })
 })
 
 describe('[Common/Hardfork]: consensus and HARDFORK_CHANGES', () => {

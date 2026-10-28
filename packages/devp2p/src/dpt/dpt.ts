@@ -22,6 +22,10 @@ import type { NodeStore } from './nodeStore.ts'
 
 const DEBUG_BASE_NAME = 'dpt'
 
+function routableDiscoveryAddress(address: string | undefined): boolean {
+  return address !== undefined && address !== '' && address !== '0.0.0.0' && address !== '::'
+}
+
 /** UDP endpoint of a remote discovery node (never this process). */
 function remoteDiscoveryLabel(peer: PeerInfo): string {
   const host = peer.address ?? 'unknown-host'
@@ -264,6 +268,11 @@ export class DPT {
   }
 
   async addPeer(obj: PeerInfo): Promise<PeerInfo> {
+    if (!routableDiscoveryAddress(obj.address)) {
+      throw EthereumJSErrorWithoutCode(
+        `Skipped remote ${obj.address ?? 'unspecified'}:${String(obj.udpPort ?? '?')}: not a routable discovery address`,
+      )
+    }
     if (this._banlist.has(obj)) {
       const label = remoteDiscoveryLabel(obj)
       this._discoveryMetrics?.recordDptBanSkip(label)

@@ -8,6 +8,7 @@ import {
   bytesToHex,
   bytesToInt,
   bytesToUnprefixedHex,
+  equalsBytes,
   hexToBytes,
   intToBytes,
   isHexString,
@@ -31,6 +32,39 @@ import { Protocol } from './protocol.ts'
 import type { Input } from '@ethereumjs/rlp'
 import type { Peer } from '../rlpx/peer.ts'
 import type { SendMethod } from '../types.ts'
+
+/** Short prefix so a 32-byte mismatch stays readable on the diagnostic ring. */
+export function assertSameGenesis(ours: Uint8Array, theirs: Uint8Array): void {
+  if (equalsBytes(ours, theirs)) return
+  const we = `${bytesToHex(ours).slice(0, 10)}...`
+  const remote = `${bytesToHex(theirs).slice(0, 10)}...`
+  throw EthereumJSErrorWithoutCode(`Genesis mismatch: we=${we} remote=${remote}`)
+}
+
+/**
+ * STATUS network id is an RLP integer. Compare the numeric value so a leading
+ * zero byte does not fail an otherwise identical chain (Sepolia is 11155111).
+ */
+export function assertSameNetworkId(ours: Uint8Array, theirs: Uint8Array): void {
+  const we = formatNetworkId(ours)
+  const remote = formatNetworkId(theirs)
+  if (
+    ours instanceof Uint8Array &&
+    theirs instanceof Uint8Array &&
+    ours.length <= 8 &&
+    theirs.length <= 8 &&
+    bytesToBigInt(ours) === bytesToBigInt(theirs)
+  ) {
+    return
+  }
+  throw EthereumJSErrorWithoutCode(`Network id mismatch: we=${we} remote=${remote}`)
+}
+
+function formatNetworkId(bytes: Uint8Array): string {
+  if (!(bytes instanceof Uint8Array)) return typeof bytes
+  if (bytes.length > 8) return `${bytes.length}-byte ${bytesToHex(bytes).slice(0, 14)}`
+  return bytesToBigInt(bytes).toString()
+}
 
 export { EthMessageCodeNames, EthMessageCodes } from './eth/codes.ts'
 export {
@@ -226,22 +260,10 @@ export class ETH extends Protocol {
       this.debug.bind(this),
       'STATUS',
     )
-    assertEq(
-      this._status[1],
-      this._peerStatus[1],
-      'NetworkId mismatch',
-      this.debug.bind(this),
-      'STATUS',
-    )
+    assertSameNetworkId(this._status[1] as Uint8Array, this._peerStatus[1] as Uint8Array)
 
     if (ethUsesBlockRangeStatus(this._version)) {
-      assertEq(
-        this._status[2],
-        this._peerStatus[2],
-        'Genesis block mismatch',
-        this.debug.bind(this),
-        'STATUS',
-      )
+      assertSameGenesis(this._status[2] as Uint8Array, this._peerStatus[2] as Uint8Array)
       assertEq(
         this._peerStatus[3].length,
         2,
@@ -261,13 +283,7 @@ export class ETH extends Protocol {
         latestBlockHash: this._peerStatus[6] as Uint8Array,
       })
     } else {
-      assertEq(
-        this._status[4],
-        this._peerStatus[4],
-        'Genesis block mismatch',
-        this.debug.bind(this),
-        'STATUS',
-      )
+      assertSameGenesis(this._status[4] as Uint8Array, this._peerStatus[4] as Uint8Array)
       const status: {
         chainId: Uint8Array | Uint8Array[]
         td: Uint8Array
