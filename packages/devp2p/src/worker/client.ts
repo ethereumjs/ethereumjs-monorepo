@@ -30,10 +30,13 @@ function copyForSend(bytes: Uint8Array): Uint8Array {
 /**
  * Main-thread handle for a {@link Devp2pWorkerHost} running in a worker or in-process port.
  */
+const WORKER_TERMINATE_MS = 400
+
 export class Devp2pWorkerClient {
   public readonly events = new EventEmitter<Devp2pWorkerClientEvents>()
   private readonly _transport: Transport
   private _started = false
+  private _stopped = false
 
   constructor(transport: Transport) {
     this._transport = transport
@@ -99,7 +102,27 @@ export class Devp2pWorkerClient {
   }
 
   stop(): void {
-    this._send({ type: 'stop' })
+    if (this._stopped) return
+    this._stopped = true
+    try {
+      this._send({ type: 'stop' })
+    } catch {
+      // Port may already be closed.
+    }
+
+    if ('terminate' in this._transport && typeof this._transport.terminate === 'function') {
+      const worker = this._transport
+      const term = worker.terminate()
+      void Promise.race([
+        term,
+        new Promise<void>((resolve) => {
+          const timer = setTimeout(resolve, WORKER_TERMINATE_MS)
+          timer.unref()
+        }),
+      ]).catch(() => {})
+      return
+    }
+
     this._shutdownTransport()
   }
 

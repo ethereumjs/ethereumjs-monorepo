@@ -59,6 +59,18 @@ export async function runEthySession(node: EthyNode): Promise<void> {
   output.on('resize', onResize)
 
   await new Promise<void>((resolve) => {
+    let finished = false
+    const finish = () => {
+      if (finished) return
+      finished = true
+      cleanup()
+      resolve()
+    }
+
+    const onSignal = () => finish()
+    process.once('SIGINT', onSignal)
+    process.once('SIGTERM', onSignal)
+
     const onData = (buf: Buffer) => {
       const chunk = buf.toString('utf8')
       let dirty = false
@@ -103,8 +115,7 @@ export async function runEthySession(node: EthyNode): Promise<void> {
           view.activeWidget = result.widget
         }
         if (view.shouldExit) {
-          cleanup()
-          resolve()
+          finish()
           return
         }
       }
@@ -114,6 +125,8 @@ export async function runEthySession(node: EthyNode): Promise<void> {
     }
 
     const cleanup = () => {
+      process.off('SIGINT', onSignal)
+      process.off('SIGTERM', onSignal)
       if (demoTimer !== undefined) clearInterval(demoTimer)
       output.off('resize', onResize)
       input.off('data', onData)

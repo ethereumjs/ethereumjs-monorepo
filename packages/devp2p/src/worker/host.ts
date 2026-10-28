@@ -373,6 +373,7 @@ export class Devp2pWorkerHost {
       clearInterval(this._telemetryTimer)
       this._telemetryTimer = null
     }
+    this._dpt?.setDiscoveryPaused(true)
     this._rlpx?.destroy()
     this._dpt?.destroy()
     this._rlpx = null

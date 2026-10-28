@@ -56,16 +56,19 @@ async function main(): Promise<void> {
   const shutdown = () => {
     coordinatorStop?.()
   }
-  process.on('SIGINT', shutdown)
 
   if (cli.headless) {
     if (cli.demo) {
       advanceDemo(node.spine, 5000)
     }
     await new Promise<void>((resolve) => {
-      process.on('SIGINT', () => resolve())
+      const onSignal = () => {
+        shutdown()
+        resolve()
+      }
+      process.once('SIGINT', onSignal)
+      process.once('SIGTERM', onSignal)
     })
-    shutdown()
     return
   }
 
