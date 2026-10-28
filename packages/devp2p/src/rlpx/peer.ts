@@ -28,6 +28,17 @@ import type { Protocol } from '../protocol/protocol.ts'
 import type { Capabilities, PeerOptions } from '../types.ts'
 
 const DEBUG_BASE_NAME = 'rlpx:peer'
+
+/**
+ * A bad STATUS or a base-protocol frame ends the session.
+ * A later eth or snap message that we cannot decode does not: the peer may
+ * still be serving headers and state.
+ */
+export function subprotocolErrorDropsPeer(protocolName: string, msgCode: number): boolean {
+  if (protocolName === 'Peer') return true
+  if (protocolName === 'ETH' && msgCode === 0x00) return true
+  return false
+}
 const verbose = debugDefault('verbose').enabled
 
 const BASE_PROTOCOL_VERSION = 5
@@ -656,9 +667,11 @@ export class Peer {
       }
       protocolObj.protocol._handleMessage?.(msgCode, payload)
     } catch (err: any) {
-      this.disconnect(DISCONNECT_REASON.SUBPROTOCOL_ERROR)
-      this.DEBUG && this._logger(`Error on peer subprotocol message handling: ${err}`)
       this.events.emit('error', err)
+      if (subprotocolErrorDropsPeer(protocolName, msgCode)) {
+        this.disconnect(DISCONNECT_REASON.SUBPROTOCOL_ERROR)
+      }
+      this.DEBUG && this._logger(`Error on peer subprotocol message handling: ${err}`)
     }
     this._socketQueue.consume(bytesCount)
   }
