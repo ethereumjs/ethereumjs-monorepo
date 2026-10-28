@@ -149,7 +149,7 @@ function nodePulsePairs(spine: EthySpine): TwoColumnPair[] {
   const pivot =
     spine.pivotBlockNumber !== undefined
       ? `#${spine.pivotBlockNumber.toLocaleString('en-US')}`
-      : 'Waiting for peer...'
+      : (spine.pivotStatusHint ?? 'Waiting for peer...')
   const accounts = `${spine.totalAccountsSynced.toLocaleString('en-US')} ~${Math.round(spine.accountsPerSec)}/s`
   return [
     { label: 'Phase', value: phaseLabel(spine.phase) },

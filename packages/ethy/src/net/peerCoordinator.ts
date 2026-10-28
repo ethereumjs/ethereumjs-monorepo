@@ -26,6 +26,7 @@ import { activeHardfork, chainConfigForNetwork } from './chainHardfork.ts'
 import { p2pHandshakeStatusFields } from './genesisStatus.ts'
 import {
   EthMessageCodes,
+  encodeGetBlockHeadersByNumberPayload,
   encodeGetBlockHeadersPayload,
   highestEthVersion,
   parsePivotHeaderFromBlockHeadersPayload,
@@ -34,6 +35,7 @@ import {
 import { ethyCallerModuleUrl } from './workerModuleUrl.ts'
 
 const PIVOT_STALE_BLOCKS = 96n
+const PIVOT_IN_FLIGHT_TIMEOUT_MS = 15_000
 
 export type StartPeerCoordinatorOptions = {
   spine: EthySpine
@@ -77,11 +79,14 @@ function mapPeer(snapshot: WorkerPeerSnapshot, prev?: PeerTelemetry): PeerTeleme
   }
 }
 
-function pickBestPeer(peers: WorkerPeerSnapshot[]): WorkerPeerSnapshot | undefined {
+function pickBestPeer(
+  peers: WorkerPeerSnapshot[],
+  skipIds: ReadonlySet<string>,
+): WorkerPeerSnapshot | undefined {
   let best: WorkerPeerSnapshot | undefined
   let bestBlock = 0n
   for (const p of peers) {
-    if (p.bestHash === undefined) continue
+    if (p.bestHash === undefined || skipIds.has(p.id)) continue
     const block = p.latestBlock !== undefined ? BigInt(p.latestBlock) : 0n
     if (best === undefined || block > bestBlock) {
       best = p
@@ -89,6 +94,25 @@ function pickBestPeer(peers: WorkerPeerSnapshot[]): WorkerPeerSnapshot | undefin
     }
   }
   return best
+}
+
+function updatePivotStatusHint(spine: EthySpine, peers: WorkerPeerSnapshot[]): void {
+  if (spine.pivotBlockNumber !== undefined) {
+    spine.pivotStatusHint = undefined
+    return
+  }
+  const withHead = peers.filter((p) => p.bestHash !== undefined).length
+  const statusOk = spine.discovery?.rlpx.statusOk ?? 0
+  if (peers.length === 0) {
+    spine.pivotStatusHint = 'Discovering peers…'
+  } else if (withHead === 0) {
+    spine.pivotStatusHint =
+      statusOk === 0
+        ? `Await ETH STATUS (${peers.length} RLPx)`
+        : `No peer head yet (${peers.length} RLPx)`
+  } else {
+    spine.pivotStatusHint = `Fetching header (${withHead} with head)`
+  }
 }
 
 export async function startPeerCoordinator(
@@ -105,7 +129,11 @@ export async function startPeerCoordinator(
   let client: Devp2pWorkerClient
   let inFlightPeerId: string | undefined
   let inFlightHash: string | undefined
+  let inFlightBlockNumber: bigint | undefined
   let inFlightEthVersion = 68
+  let inFlightStartedAt = 0
+  const pivotBlockedPeers = new Set<string>()
+  let lastTelemetryPeers: WorkerPeerSnapshot[] = []
   let lastDiagTs = 0
   let dnsTimedOut = false
   let link = initialP2pLinkState()
@@ -125,24 +153,58 @@ export async function startPeerCoordinator(
     })
   }
 
-  const requestPivotFromPeer = (peer: WorkerPeerSnapshot) => {
-    if (peer.bestHash === undefined || inFlightPeerId !== undefined) return
+  const clearPivotInFlight = () => {
+    inFlightPeerId = undefined
+    inFlightHash = undefined
+    inFlightBlockNumber = undefined
+    inFlightStartedAt = 0
+  }
+
+  const requestPivotFromPeer = (peer: WorkerPeerSnapshot, mode: 'hash' | 'number' = 'hash') => {
+    if (inFlightPeerId !== undefined) return
+    if (mode === 'number' && peer.latestBlock === undefined) return
+    if (mode === 'hash' && peer.bestHash === undefined) return
     const ethVersion = highestEthVersion(peer.caps)
     inFlightPeerId = peer.id
-    inFlightHash = peer.bestHash
     inFlightEthVersion = ethVersion
-    const payload = encodeGetBlockHeadersPayload(ethVersion, peer.bestHash)
+    inFlightStartedAt = Date.now()
+    if (mode === 'number') {
+      inFlightBlockNumber = BigInt(peer.latestBlock!)
+      inFlightHash = undefined
+      const payload = encodeGetBlockHeadersByNumberPayload(ethVersion, inFlightBlockNumber)
+      client.sendEthMessage(peerIdToBytes(peer.id), EthMessageCodes.GET_BLOCK_HEADERS, payload)
+      return
+    }
+    inFlightHash = peer.bestHash
+    inFlightBlockNumber = undefined
+    const payload = encodeGetBlockHeadersPayload(ethVersion, peer.bestHash!)
     client.sendEthMessage(peerIdToBytes(peer.id), EthMessageCodes.GET_BLOCK_HEADERS, payload)
   }
 
   const maybeRefreshPivot = (peers: WorkerPeerSnapshot[]) => {
-    const best = pickBestPeer(peers)
+    const best = pickBestPeer(peers, pivotBlockedPeers)
     if (best?.latestBlock === undefined || spine.pivotBlockNumber === undefined) return
     const bestNum = BigInt(best.latestBlock)
     if (bestNum > spine.pivotBlockNumber + PIVOT_STALE_BLOCKS) {
-      inFlightPeerId = undefined
+      clearPivotInFlight()
       requestPivotFromPeer(best)
     }
+  }
+
+  const maybePivotInFlightTimeout = (peers: WorkerPeerSnapshot[]) => {
+    if (inFlightPeerId === undefined || inFlightStartedAt === 0) return
+    if (Date.now() - inFlightStartedAt < PIVOT_IN_FLIGHT_TIMEOUT_MS) return
+    const peerId = inFlightPeerId
+    pivotBlockedPeers.add(peerId)
+    clearPivotInFlight()
+    recordDiagnostic(spine, {
+      subsystem: 'devp2p',
+      severity: 'warn',
+      message: 'Pivot header request timed out',
+      peerId,
+    })
+    const best = pickBestPeer(peers, pivotBlockedPeers)
+    if (best !== undefined) requestPivotFromPeer(best)
   }
 
   const workerModuleUrl =
@@ -170,6 +232,7 @@ export async function startPeerCoordinator(
   )
 
   client.events.on('telemetry', (snap) => {
+    lastTelemetryPeers = snap.peers
     const prev = spine.peers
     spine.peers.clear()
     for (const p of snap.peers) {
@@ -189,8 +252,10 @@ export async function startPeerCoordinator(
     }
     syncLink()
     deriveCapabilities(spine)
-    if (inFlightPeerId === undefined) {
-      const best = pickBestPeer(snap.peers)
+    maybePivotInFlightTimeout(snap.peers)
+    updatePivotStatusHint(spine, snap.peers)
+    if (inFlightPeerId === undefined && spine.pivotBlockNumber === undefined) {
+      const best = pickBestPeer(snap.peers, pivotBlockedPeers)
       if (best !== undefined) requestPivotFromPeer(best)
     }
     maybeRefreshPivot(snap.peers)
@@ -198,11 +263,7 @@ export async function startPeerCoordinator(
 
   client.events.on('protocol', (msg) => {
     if (msg.protocol !== 'eth' || msg.code !== EthMessageCodes.BLOCK_HEADERS) return
-    if (
-      inFlightPeerId === undefined ||
-      msg.peerId !== inFlightPeerId ||
-      inFlightHash === undefined
-    ) {
+    if (inFlightPeerId === undefined || msg.peerId !== inFlightPeerId) {
       return
     }
     const parsed = parsePivotHeaderFromBlockHeadersPayload(
@@ -211,17 +272,29 @@ export async function startPeerCoordinator(
       inFlightHash,
       chain,
     )
-    inFlightPeerId = undefined
-    inFlightHash = undefined
+    const failedPeerId = inFlightPeerId
+    const triedByHash = inFlightHash !== undefined
+    clearPivotInFlight()
     if (parsed === null) {
       recordDiagnostic(spine, {
         subsystem: 'devp2p',
         severity: 'warn',
         message: 'Pivot header response empty or hash mismatch',
-        peerId: msg.peerId,
+        peerId: failedPeerId,
       })
+      if (triedByHash) {
+        const peerRow = lastTelemetryPeers.find((p) => p.id === failedPeerId)
+        if (peerRow?.latestBlock !== undefined) {
+          requestPivotFromPeer(peerRow, 'number')
+          return
+        }
+      }
+      pivotBlockedPeers.add(failedPeerId)
+      const best = pickBestPeer(lastTelemetryPeers, pivotBlockedPeers)
+      if (best !== undefined) requestPivotFromPeer(best)
       return
     }
+    spine.pivotStatusHint = undefined
     spine.pivotBlockNumber = parsed.number
     spine.pivotStateRoot = parsed.stateRoot
     spine.currentSlot = Number(parsed.number)
@@ -237,7 +310,10 @@ export async function startPeerCoordinator(
         spine,
         stateManager,
         transport,
-        getSnapPeers: () => [...spine.peers.values()].map((p) => ({ id: p.id, caps: p.caps })),
+        getSnapPeers: () =>
+          [...spine.peers.values()]
+            .filter((p) => p.caps.some((c) => c === 'snap/1' || c.startsWith('snap/')))
+            .map((p) => ({ id: p.id, caps: p.caps })),
       })
       snapSync.start()
     }
@@ -276,8 +352,8 @@ export async function startPeerCoordinator(
       client.disconnectPeer(peerIdToBytes(peerId))
     },
     refreshPivotHeader: () => {
-      inFlightPeerId = undefined
-      inFlightHash = undefined
+      clearPivotInFlight()
+      pivotBlockedPeers.clear()
     },
   }
 }

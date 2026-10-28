@@ -5,6 +5,7 @@ import { assert, describe, it } from 'vitest'
 
 import { encodeBlockHeadersReply } from '../src/net/peerCoordinator.ts'
 import {
+  encodeGetBlockHeadersByNumberPayload,
   encodeGetBlockHeadersPayload,
   parsePivotHeaderFromBlockHeadersPayload,
 } from '../src/net/pivotHeader.ts'
@@ -101,6 +102,30 @@ describe('[Ethy/Net]: pivotHeader', () => {
       68,
       '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
     )
+    assert.ok(payload.byteLength > 0)
+  })
+
+  it('parsePivotHeaderFromBlockHeadersPayload() accepts block-number fetch without hash check', () => {
+    const common = new Common({ chain: Mainnet, hardfork: 'paris' })
+    const header = createBlockHeader(
+      {
+        number: 17_000_002n,
+        parentHash: new Uint8Array(32),
+        stateRoot: Uint8Array.from({ length: 32 }, () => 0x99),
+        gasLimit: 30_000_000n,
+        timestamp: 1_650_000_000n,
+        difficulty: 0n,
+      },
+      { common, skipConsensusFormatValidation: true },
+    )
+    const reply = encodeBlockHeadersReply(68, header.serialize())
+    const parsed = parsePivotHeaderFromBlockHeadersPayload(68, reply, undefined, Mainnet)
+    assert.ok(parsed !== null)
+    assert.equal(parsed.number, 17_000_002n)
+  })
+
+  it('encodeGetBlockHeadersByNumberPayload() builds non-empty RLP', () => {
+    const payload = encodeGetBlockHeadersByNumberPayload(68, 17_000_000n)
     assert.ok(payload.byteLength > 0)
   })
 })

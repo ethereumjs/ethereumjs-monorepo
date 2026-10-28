@@ -58,6 +58,8 @@ export interface EthySpine {
   currentSlot: number
   pivotBlockNumber?: bigint
   pivotStateRoot?: Uint8Array
+  /** Short Node Pulse hint while pivot is not anchored (live P2P). */
+  pivotStatusHint?: string
   headBlockNumber?: bigint
   headStateRoot?: Uint8Array
   capabilities: {
