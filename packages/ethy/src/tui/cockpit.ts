@@ -91,14 +91,21 @@ function avgLatency(spine: EthySpine): string {
 
 function countCaps(spine: EthySpine): string {
   let snap = 0
-  let eth71 = 0
+  const eth = new Map<string, number>()
   for (const p of spine.peers.values()) {
     for (const c of p.caps) {
       if (c.startsWith('snap/')) snap++
-      if (c === 'eth/71') eth71++
+      else if (c.startsWith('eth/')) eth.set(c, (eth.get(c) ?? 0) + 1)
     }
   }
-  return `${snap} snap/1 · ${eth71} eth/71`
+  const ethLabel =
+    eth.size === 0
+      ? '0 eth'
+      : [...eth.entries()]
+          .sort((a, b) => Number(b[0].slice(4)) - Number(a[0].slice(4)))
+          .map(([name, count]) => `${count} ${name}`)
+          .join(' ')
+  return `${snap} snap/1 · ${ethLabel}`
 }
 
 function domainStatus(spine: EthySpine, id: CapabilityId) {

@@ -14,6 +14,7 @@ import {
   reducePromptKey,
 } from '../src/tui/prompt.ts'
 import { promptCaretPosition, renderFrame } from '../src/tui/renderFrame.ts'
+import { layoutTableColumns, renderWidgetLines } from '../src/tui/widgets.ts'
 
 function assertFrameFits(lines: string[], cols: number, rows: number) {
   assert.equal(lines.length, rows)
@@ -133,6 +134,30 @@ describe('[Ethy/TUI]: renderFrame', () => {
     assert.equal(capabilityMark('p2p', 'locked').startsWith(CAPABILITY_FG.p2p), true)
   })
 
+  it('layoutTableColumns() keeps short diagnostic columns tight and gives Message the rest', () => {
+    const headers = ['Time', 'Subsystem', 'Sev', 'Peer', 'Message']
+    const widths = layoutTableColumns(headers, 140)
+    assert.deepEqual(widths.slice(0, 4), [10, 12, 8, 8])
+    assert.isAbove(widths[4] ?? 0, 60)
+    const message =
+      'Remote 148.251.145.225:30316: peer unreachable (ICMP or TCP reset, surfaced as ECONNRESET)'
+    const lines = renderWidgetLines(
+      {
+        kind: 'table',
+        title: 'Diagnostic ring (latest)',
+        headers,
+        rows: [['13:30:14', 'devp2p', 'warn', '—', message]],
+      },
+      140,
+    )
+    const row = stripAnsi(lines.find((line) => line.includes('13:30:14')) ?? '')
+    assert.include(row, 'peer unreachable')
+    assert.isAtMost(visibleWidth(row), 140)
+    for (const line of lines) {
+      assert.equal(visibleWidth(line), 140)
+    }
+  })
+
   it('renderFrame() renders table widget in workspace', () => {
     const spine = createSpine('sepolia', 11155111n)
     const widget: WidgetSpec = {
@@ -144,6 +169,50 @@ describe('[Ethy/TUI]: renderFrame', () => {
     const view = { ...createInitialViewState(), activeWidget: widget }
     const lines = renderFrame(spine, view, 100, 30)
     assert.include(lines.join('\n'), 'Test')
+  })
+
+  it('renderFrame() reserves labeled discovery rows under the diagnostic table', () => {
+    const spine = createSpine('sepolia', 11155111n)
+    spine.discovery = {
+      boundAddress: '134.93.187.137',
+      boundUdpPort: 52520,
+      boundTcpPort: 52520,
+      tablePeers: 136,
+      advertisedFork: { hardfork: 'amsterdam', hash: '0x6c1d9423', next: '0' },
+      bootstrap: { attempts: 4, ok: 1, fail: 3 },
+      dns: { attempts: 79, peersAdded: 948, resolver: 'system' },
+      rlpx: {
+        dials: 626,
+        connected: 134,
+        statusOk: 1,
+        statusSent: 88,
+        disconnects: { 'SUBPROTOCOL_ERROR (remote dropped us)': 40 },
+        handshakeRejects: { network: 6, reset: 36 },
+      },
+      dpt: { banSkips: 40, bansIssued: 3, lastRemote: '10.0.0.9:30303' },
+    }
+    const widget: WidgetSpec = {
+      kind: 'table',
+      title: 'Diagnostic ring (latest)',
+      headers: ['Time', 'Subsystem', 'Sev', 'Peer', 'Message'],
+      rows: Array.from({ length: 20 }, (_, i) => [String(i), 'devp2p', 'warn', '—', 'reset']),
+      footer: 'discovery',
+    }
+    const view = { ...createInitialViewState(), activeWidget: widget }
+    const raw = renderFrame(spine, view, 120, 36)
+    assertFrameFits(raw, 120, 36)
+    const lines = raw.map((line) => stripAnsi(line))
+    const bindAt = lines.findIndex((line) => line.includes('udp 134.93.187.137:52520'))
+    const promptAt = lines.findIndex((line) => line.includes('ethy >'))
+    assert.isAbove(bindAt, 0)
+    assert.isAbove(promptAt, bindAt)
+    const block = lines.slice(bindAt, promptAt).join('\n')
+    assert.include(block, 'dial 626')
+    assert.include(block, 'status 1')
+    assert.include(block, 'sent 88')
+    assert.include(block, 'amsterdam')
+    assert.include(block, 'network 6')
+    assert.include(block, 'SUBPROTOCOL_ERROR/remote 40')
   })
 })
 

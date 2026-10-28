@@ -1,5 +1,7 @@
 import { completeSlashDraft } from '../ai/slashComplete.ts'
+import { formatDiscoveryLines } from '../net/discoverySummary.ts'
 import type { LiveNotice } from '../notify/board.ts'
+import { DIAGNOSTIC_RING_CAPACITY } from '../spine/diagnostics.ts'
 import type { CapabilityId, EthySpine, TuiViewState } from '../spine/types.ts'
 import { BOLD, DIM, RESET, visibleWidth } from './ansi.ts'
 import { capabilityMark } from './capabilityMark.ts'
@@ -171,6 +173,13 @@ export function renderFrame(
   const widgetLines = view.activeWidget
     ? renderWidgetLines(view.activeWidget, page.contentWidth)
     : []
+  const discoveryFooter =
+    view.activeWidget?.kind === 'table' && view.activeWidget.footer === 'discovery'
+      ? formatDiscoveryLines(spine.discovery, page.contentWidth, {
+          size: spine.diagnosticRingBuffer.length,
+          capacity: DIAGNOSTIC_RING_CAPACITY,
+        }).map((line) => `${DIM}${line}${RESET}`)
+      : []
   const rule = { kind: 'delimiter' as const, open: DIM, close: RESET }
   const pad = { kind: 'spacer' as const, rows: DELIMITER_PAD_ROWS }
 
@@ -180,6 +189,7 @@ export function renderFrame(
     { kind: 'content', lines: cockpit },
     pad,
     { kind: 'fill', lines: widgetLines },
+    { kind: 'content', lines: discoveryFooter },
     rule,
     pad,
     { kind: 'content', lines: prompt },

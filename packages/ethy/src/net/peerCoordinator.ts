@@ -22,7 +22,7 @@ import { recordDiagnostic } from '../spine/diagnostics.ts'
 import type { EthySpine, PeerTelemetry } from '../spine/types.ts'
 import { SnapAccountSynchronizer } from '../sync/accountSync.ts'
 import { createLiveSnapTransport } from '../sync/snapTransport.ts'
-import { activeHardfork, chainConfigForNetwork } from './chainHardfork.ts'
+import { activeHardfork, advertisedForkHash, chainConfigForNetwork } from './chainHardfork.ts'
 import { p2pHandshakeStatusFields } from './genesisStatus.ts'
 import {
   EthMessageCodes,
@@ -212,6 +212,13 @@ export async function startPeerCoordinator(
       ? undefined
       : (opts.workerModuleUrl ?? resolveThreadedNetworkModuleUrl(ethyCallerModuleUrl()))
 
+  const status = p2pHandshakeStatusFields(network)
+  recordDiagnostic(spine, {
+    subsystem: 'devp2p',
+    severity: 'info',
+    message: `ETH STATUS out: hardfork ${hardfork} genesis ${status.genesisHash} fork ${advertisedForkHash(chain, hardfork)}`,
+  })
+
   client = await createThreadedNetwork(
     {
       inProcess: opts.inProcess,
@@ -219,11 +226,12 @@ export async function startPeerCoordinator(
       chain: workerChainId(network),
       hardfork,
       maxPeers: 25,
-      capabilities: ['eth68', 'eth69', 'eth70', 'eth71', 'snap1'],
+      capabilities: ['eth68', 'eth69', 'eth70', 'eth71', 'eth72', 'snap1'],
       goodCitizen: opts.goodCitizen ?? true,
+      answerEmptySnap: false,
       shouldFindNeighbours: opts.shouldFindNeighbours ?? true,
       clientId: utf8ToBytes(`ethy/v${getEthyClientVersion()}`),
-      status: p2pHandshakeStatusFields(network),
+      status,
       listenPort: opts.listenPort ?? 0,
       endpoint: { address: '0.0.0.0', udpPort: 0, tcpPort: opts.listenPort ?? 0 },
       throttleDiscovery: true,

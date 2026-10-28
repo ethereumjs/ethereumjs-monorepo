@@ -90,6 +90,8 @@ export type WidgetSpec =
       headers: string[]
       rows: string[][]
       assistantComment?: string
+      /** Live P2P counters, drawn in reserved rows under the table. */
+      footer?: 'discovery'
     }
   | {
       kind: 'key_value'
