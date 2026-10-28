@@ -1,6 +1,6 @@
 # WP-03: Live `ETH` Status / RLP Canonical Zero Fix, `@ethereumjs/statemanager` `FlatStateManager` & 16-Bucket `snap/1` Sync
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `DONE`
 - **Dependencies:** `WP-01` (`DONE`), `WP-02` (`DONE`), `WP-02b` (`DONE`)
 - **Branch:** `ethy-wp03`
 - **Planner:** Grok 4.7
@@ -128,10 +128,58 @@ In `WP-02b`, discovery and TCP RLPx handshakes succeeded (`tablePeers: 65`, `dns
 
 ## 2. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled out by Grok 4.7 during the Planning pass.)*
+Composer implements in **four isolated commits**: `@ethereumjs/devp2p`, `@ethereumjs/statemanager`, `@ethereumjs/evm` + `@ethereumjs/vm`, then `@ethereumjs/ethy`. Workspace deps `@ethereumjs/statemanager` and `@ethereumjs/mpt` at `^10.1.3` (**D-015**). No third-party packages.
+
+### Design refinements (D-036–D-042)
+
+See [`PROGRESS.md`](../PROGRESS.md) Decision Log. Summary:
+
+- **D-036:** `forkValidationHead(common, latestBlock, nowSec)` for EIP-2124 post-Merge timestamp vs block; `rlpx.lastSubprotocolError` on discovery metrics + worker diagnostic.
+- **D-037:** Flat storage keys = `keccak256(rawSlot)`; live `shallowCopy()` overlay; delta-only checkpoints; no state root APIs; `consumeBAL` without expected root.
+- **D-038:** Synthetic trie `useKeyHashing: false`; identity `(k) => k` in range proofs; slim → full RLP before verify.
+- **D-039:** One in-flight range per snap peer; 512 KiB `responseBytes`; bucket `0x3` fault injection on synthetic peer.
+- **D-040:** `EthyNode.stateManager`; intent engine gets `{ stateManager, disconnectPeer }`.
+- **D-041:** `snapPaused`; `/pause`, `/resume`; `/ra` → `/range `, `/sa` → `/sample`.
+- **D-042:** Build statemanager before ethy `tsc` (`customConditions: []`).
+
+### Slice 1 — `@ethereumjs/devp2p`
+
+| File | Change |
+| --- | --- |
+| `src/lab/messages/eth.ts` | `intToUnpaddedBytes(0)` for earliestBlock; `bigIntToUnpaddedBytes(BigInt(hex))` for td/latestBlock |
+| `src/protocol/eth.ts` | `bigIntToUnpaddedBytes(latestNum)`; fork check via `forkValidationHead` |
+| `src/protocol/eth/codec.ts` | Unpadded scalars for requestId, limit, skip, reverse, block |
+| `src/rlpx/peer.ts` | HELLO port: `!this._port ? empty : intToUnpaddedBytes(this._port)` |
+| `src/lab/messages/snap.ts` | 5-tuple `GET_ACCOUNT_RANGE` wire shape |
+| `src/discovery/metrics.ts`, `src/worker/host.ts` | `lastSubprotocolError` telemetry |
+
+**Tests:** `eth-codec.spec.ts` zero scalars; snap 5-tuple builder; fork-head unit; metrics snapshot.
+
+### Slice 2 — `@ethereumjs/statemanager`
+
+New `src/flatStateManager.ts` + `createFlatStateManager`; matrix in checkpointing + `consumeBAL`; dedicated `flatStateManager.spec.ts`.
+
+### Slice 3 — `@ethereumjs/evm` & `@ethereumjs/vm`
+
+`evm/test/flatStateManager.spec.ts` (`runCall` SLOAD/SSTORE/revert); `vm/test/api/flatStateManager.spec.ts` (`runTx` + `consumeBAL`).
+
+### Slice 4 — `@ethereumjs/ethy`
+
+`src/sync/{syntheticPeer,snapTransport,accountSync}.ts`; pivot timestamp HF; coordinator snap sync + canonical `setBlockRange`; `/range`, `/sample`, pause/resume; tests `accountSync.spec.ts`, extended `pivotHeader.spec.ts`.
+
+**Gates:** `tsc`, `test`, `spellcheck` per touched package.
 
 ---
 
 ## 3. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled out by Composer 2.5 after implementation and verification.)*
+Four-slice delivery on `ethy-wp03`: `@ethereumjs/devp2p` (canonical zeros, `forkValidationHead`, snap 5-tuple, `lastSubprotocolError`), `@ethereumjs/statemanager` (`FlatStateManager` + tests), `@ethereumjs/evm` / `@ethereumjs/vm` (flat manager matrix specs), `@ethereumjs/ethy` (synthetic snap peer, synchronizer, pivot timestamp HF, `/range` / `/sample` / pause/resume, cockpit wiring).
+
+**Deviations**
+
+- **`verifyMerkleRangeProof` hasher:** Synthetic trie uses `useKeyHashing: false`. Verification uses the default MPT key hasher (omit the 7th argument). An identity `(k) => k` callback breaks `createMPTFromProof` root handling.
+- **Pivot header tests:** Paris fixture uses a pre-Shanghai timestamp so `setHardforkBy({ blockNumber, timestamp })` matches the header used to compute the hash. Low-block pre-merge case uses `homestead`, not `london`, to avoid EIP-1559 field mismatch at block 100.
+- **Tab completion:** `completeSlashDraft` applies `SHORT_EXPAND` before prefix scan so `/p` completes to `/peers` despite `/pause` sharing the prefix.
+- **EVM storage assertions:** `FlatStateManager` stores EVM `SSTORE` values with unpadded byte length (same as `SimpleStateManager`); cross-stack specs assert the trailing value byte, not always a 32-byte word.
+
+**Gates (local):** `npm run tsc` + targeted/`test:node` vitest on touched packages; devp2p `test:node` 129 passed; statemanager `test:node` green; ethy WP-03 specs green. Live Sepolia soak remains manual per plan.

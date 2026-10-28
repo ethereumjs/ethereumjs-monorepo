@@ -72,6 +72,7 @@ export interface EthySpine {
   snapBuckets: SnapBucket[]
   totalAccountsSynced: number
   accountsPerSec: number
+  snapPaused: boolean
   diagnosticRingBuffer: DiagnosticEvent[]
 }
 

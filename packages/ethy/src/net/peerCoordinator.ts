@@ -7,7 +7,8 @@ import {
   resolveThreadedNetworkModuleUrl,
 } from '@ethereumjs/devp2p'
 import { RLP } from '@ethereumjs/rlp'
-import { bigIntToBytes, intToBytes, utf8ToBytes } from '@ethereumjs/util'
+import type { FlatStateManager } from '@ethereumjs/statemanager'
+import { bigIntToUnpaddedBytes, intToUnpaddedBytes, utf8ToBytes } from '@ethereumjs/util'
 
 import { getEthyClientVersion } from '../clientMeta.ts'
 import type { NoticeBoard } from '../notify/board.ts'
@@ -19,6 +20,8 @@ import {
 import { deriveCapabilities, setPhase } from '../spine/createSpine.ts'
 import { recordDiagnostic } from '../spine/diagnostics.ts'
 import type { EthySpine, PeerTelemetry } from '../spine/types.ts'
+import { SnapAccountSynchronizer } from '../sync/accountSync.ts'
+import { createLiveSnapTransport } from '../sync/snapTransport.ts'
 import { activeHardfork, chainConfigForNetwork } from './chainHardfork.ts'
 import { p2pHandshakeStatusFields } from './genesisStatus.ts'
 import {
@@ -34,6 +37,7 @@ const PIVOT_STALE_BLOCKS = 96n
 
 export type StartPeerCoordinatorOptions = {
   spine: EthySpine
+  stateManager: FlatStateManager
   network: string
   workerModuleUrl?: string
   inProcess?: boolean
@@ -49,6 +53,7 @@ export type StartPeerCoordinatorOptions = {
 export type PeerCoordinatorHandle = {
   stop: () => void
   refreshPivotHeader: () => void
+  disconnectPeer: (peerId: string) => void
 }
 
 function workerChainId(network: string): WorkerChainId {
@@ -89,7 +94,8 @@ function pickBestPeer(peers: WorkerPeerSnapshot[]): WorkerPeerSnapshot | undefin
 export async function startPeerCoordinator(
   opts: StartPeerCoordinatorOptions,
 ): Promise<PeerCoordinatorHandle> {
-  const { spine, network } = opts
+  const { spine, network, stateManager } = opts
+  let snapSync: SnapAccountSynchronizer | undefined
   setPhase(spine, 'P2P_WARMUP')
 
   const chain = chainConfigForNetwork(network)
@@ -224,7 +230,17 @@ export async function startPeerCoordinator(
       severity: 'info',
       message: `Pivot anchored at #${parsed.number.toString()}`,
     })
-    client.setBlockRange(intToBytes(0), bigIntToBytes(parsed.number), parsed.hash)
+    client.setBlockRange(intToUnpaddedBytes(0), bigIntToUnpaddedBytes(parsed.number), parsed.hash)
+    if (snapSync === undefined) {
+      const transport = createLiveSnapTransport(client)
+      snapSync = new SnapAccountSynchronizer({
+        spine,
+        stateManager,
+        transport,
+        getSnapPeers: () => [...spine.peers.values()].map((p) => ({ id: p.id, caps: p.caps })),
+      })
+      snapSync.start()
+    }
     deriveCapabilities(spine)
   })
 
@@ -252,8 +268,12 @@ export async function startPeerCoordinator(
 
   return {
     stop: () => {
+      snapSync?.stop()
       if (linkTimer !== undefined) clearInterval(linkTimer)
       client.stop()
+    },
+    disconnectPeer: (peerId: string) => {
+      client.disconnectPeer(peerIdToBytes(peerId))
     },
     refreshPivotHeader: () => {
       inFlightPeerId = undefined
@@ -269,6 +289,6 @@ export function encodeBlockHeadersReply(
   requestId = 1,
 ): Uint8Array {
   const inner = [headerRlp]
-  const body = ethVersion >= 66 ? [intToBytes(requestId), inner] : inner
+  const body = ethVersion >= 66 ? [intToUnpaddedBytes(requestId), inner] : inner
   return RLP.encode(body as never)
 }

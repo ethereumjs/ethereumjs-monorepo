@@ -41,9 +41,14 @@ async function main(): Promise<void> {
     try {
       const handle = await startPeerCoordinator({
         spine: node.spine,
+        stateManager: node.stateManager,
         network,
         notices: node.notices,
       })
+      node.disconnectPeer = handle.disconnectPeer
+      ;(
+        node.intentEngine as import('../ai/deterministicEngine.ts').DeterministicIntentEngine
+      ).setDisconnectPeer(handle.disconnectPeer)
       coordinatorStop = handle.stop
     } catch (e: unknown) {
       const message = (e as Error).message

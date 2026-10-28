@@ -10,8 +10,10 @@ const MAINNET_STATUS_JSON = {
   bestHash: '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
   genesisHash: '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
 } as const
+import { createFlatStateManager } from '@ethereumjs/statemanager'
 import { encodeBlockHeadersReply, startPeerCoordinator } from '../src/net/peerCoordinator.ts'
 import { peerIdToBytes } from '../src/net/pivotHeader.ts'
+
 import { createSpine } from '../src/spine/createSpine.ts'
 
 function nodeIdFromPrivateKey(privateKey: Uint8Array): Uint8Array {
@@ -27,7 +29,7 @@ describe('[Ethy/Net]: PeerCoordinator pivot', () => {
         parentHash: new Uint8Array(32),
         stateRoot: Uint8Array.from({ length: 32 }, (_, i) => i),
         gasLimit: 30_000_000n,
-        timestamp: 1_700_000_000n,
+        timestamp: 1_650_000_000n,
         difficulty: 0n,
       },
       { common, skipConsensusFormatValidation: true },
@@ -65,6 +67,7 @@ describe('[Ethy/Net]: PeerCoordinator pivot', () => {
     try {
       handle = await startPeerCoordinator({
         spine,
+        stateManager: createFlatStateManager(),
         network: 'mainnet',
         inProcess: true,
         shouldFindNeighbours: false,

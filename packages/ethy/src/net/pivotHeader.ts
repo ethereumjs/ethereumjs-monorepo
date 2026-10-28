@@ -45,11 +45,23 @@ function blockNumberFromHeaderRaw(first: unknown): bigint | undefined {
   return bytesToBigInt(num)
 }
 
+function timestampFromHeaderRaw(first: unknown): bigint | undefined {
+  const fields = first instanceof Uint8Array ? (RLP.decode(first) as unknown[]) : first
+  if (!Array.isArray(fields) || fields.length < 12) return undefined
+  const ts = fields[11]
+  if (!(ts instanceof Uint8Array)) return undefined
+  return bytesToBigInt(ts)
+}
+
 function headerFromRaw(first: unknown, chain: ChainConfig) {
   const blockNumber = blockNumberFromHeaderRaw(first)
+  const timestamp = timestampFromHeaderRaw(first)
   const common = new Common({ chain })
   if (blockNumber !== undefined) {
-    common.setHardforkBy({ blockNumber })
+    common.setHardforkBy({
+      blockNumber,
+      ...(timestamp !== undefined ? { timestamp } : {}),
+    })
   }
   return first instanceof Uint8Array
     ? createBlockHeaderFromRLP(first, { common, skipConsensusFormatValidation: true })

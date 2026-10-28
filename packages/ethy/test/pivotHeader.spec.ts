@@ -18,7 +18,7 @@ describe('[Ethy/Net]: pivotHeader', () => {
         parentHash: new Uint8Array(32),
         stateRoot: Uint8Array.from({ length: 32 }, () => 0xab),
         gasLimit: 30_000_000n,
-        timestamp: 1_700_000_000n,
+        timestamp: 1_650_000_000n,
         difficulty: 0n,
       },
       { common, skipConsensusFormatValidation: true },
@@ -52,6 +52,48 @@ describe('[Ethy/Net]: pivotHeader', () => {
       Mainnet,
     )
     assert.equal(parsed, null)
+  })
+
+  it('parsePivotHeaderFromBlockHeadersPayload() decodes Shanghai timestamp fork', () => {
+    const common = new Common({ chain: Mainnet, hardfork: 'shanghai' })
+    const header = createBlockHeader(
+      {
+        number: 17_000_000n,
+        parentHash: new Uint8Array(32),
+        stateRoot: Uint8Array.from({ length: 32 }, () => 0xcd),
+        gasLimit: 30_000_000n,
+        timestamp: 1_681_338_477n,
+        difficulty: 0n,
+        withdrawalsRoot: Uint8Array.from({ length: 32 }, () => 0xee),
+      },
+      { common, skipConsensusFormatValidation: true },
+    )
+    const hashHex = bytesToHex(header.hash())
+    const reply = encodeBlockHeadersReply(68, header.serialize())
+    const parsed = parsePivotHeaderFromBlockHeadersPayload(68, reply, hashHex, Mainnet)
+    assert.ok(parsed !== null)
+    assert.equal(parsed.number, 17_000_000n)
+    assert.equal(bytesToHex(parsed.stateRoot), bytesToHex(header.stateRoot))
+  })
+
+  it('parsePivotHeaderFromBlockHeadersPayload() decodes pre-merge header at low block', () => {
+    const common = new Common({ chain: Mainnet, hardfork: 'homestead' })
+    const header = createBlockHeader(
+      {
+        number: 100n,
+        parentHash: new Uint8Array(32),
+        stateRoot: Uint8Array.from({ length: 32 }, () => 0x12),
+        gasLimit: 15_000_000n,
+        timestamp: 1_000_000n,
+        difficulty: 1n,
+      },
+      { common, skipConsensusFormatValidation: true },
+    )
+    const hashHex = bytesToHex(header.hash())
+    const reply = encodeBlockHeadersReply(68, header.serialize())
+    const parsed = parsePivotHeaderFromBlockHeadersPayload(68, reply, hashHex, Mainnet)
+    assert.ok(parsed !== null)
+    assert.equal(parsed.number, 100n)
   })
 
   it('encodeGetBlockHeadersPayload() builds non-empty RLP', () => {

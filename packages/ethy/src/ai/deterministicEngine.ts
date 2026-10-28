@@ -1,5 +1,7 @@
+import type { FlatStateManager } from '@ethereumjs/statemanager'
+
 import type { WidgetSpec } from '../spine/types.ts'
-import { dropPeer, reassignBucket } from '../tools/devActions.ts'
+import { dropPeer, pauseSnapSync, reassignBucket, resumeSnapSync } from '../tools/devActions.ts'
 import { bucketsTableWidget, diagnosticsTableWidget, peersTableWidget } from '../tools/diagnose.ts'
 import {
   headLockedWidget,
@@ -8,6 +10,7 @@ import {
   simulateTxOnHeadStub,
 } from '../tools/gated.ts'
 import { buildHelpWidget } from '../tools/help.ts'
+import { inspectRawAccountRange, sampleSyncedAccounts } from '../tools/range.ts'
 import type { IntentEngine, IntentRequest, IntentResult } from './intentEngine.ts'
 import { expandSlashCommand } from './slashComplete.ts'
 import { formatEthyStateHeader } from './stateHeader.ts'
@@ -21,7 +24,24 @@ function matchKeywords(text: string, words: string[]): boolean {
   return words.some((w) => n.includes(w))
 }
 
+export type DeterministicIntentEngineOpts = {
+  stateManager: FlatStateManager
+  disconnectPeer?: (peerId: string) => void
+}
+
 export class DeterministicIntentEngine implements IntentEngine {
+  private readonly stateManager: FlatStateManager
+  private disconnectPeer?: (peerId: string) => void
+
+  constructor(opts: DeterministicIntentEngineOpts) {
+    this.stateManager = opts.stateManager
+    this.disconnectPeer = opts.disconnectPeer
+  }
+
+  setDisconnectPeer(fn: (peerId: string) => void): void {
+    this.disconnectPeer = fn
+  }
+
   handle(req: IntentRequest): IntentResult {
     const { text, spine, lastQuerySlot } = req
     const trimmed = expandSlashCommand(text)
@@ -31,7 +51,7 @@ export class DeterministicIntentEngine implements IntentEngine {
     let widget: WidgetSpec
 
     if (trimmed.startsWith('/')) {
-      widget = this.routeSlash(trimmed, spine)
+      widget = this.routeSlash(trimmed, spine, req)
     } else if (matchKeywords(trimmed, ['peer', 'client', 'latency'])) {
       widget = peersTableWidget(spine)
     } else if (matchKeywords(trimmed, ['bucket', 'stalled', 'why', 'snap'])) {
@@ -47,7 +67,11 @@ export class DeterministicIntentEngine implements IntentEngine {
     return { widget, stateHeader, querySlot }
   }
 
-  private routeSlash(line: string, spine: import('../spine/types.ts').EthySpine): WidgetSpec {
+  private routeSlash(
+    line: string,
+    spine: import('../spine/types.ts').EthySpine,
+    _req: IntentRequest,
+  ): WidgetSpec {
     const parts = line.split(/\s+/)
     const cmd = parts[0]?.toLowerCase() ?? ''
 
@@ -62,9 +86,17 @@ export class DeterministicIntentEngine implements IntentEngine {
       case '/help':
         return buildHelpWidget(spine)
       case '/drop':
-        return dropPeer(spine, parts[1] ?? '')
+        return dropPeer(spine, parts[1] ?? '', this.disconnectPeer)
       case '/reassign':
         return reassignBucket(spine, parts[1] ?? '')
+      case '/range':
+        return inspectRawAccountRange(this.stateManager, parts[1])
+      case '/sample':
+        return sampleSyncedAccounts(this.stateManager)
+      case '/pause':
+        return pauseSnapSync(spine)
+      case '/resume':
+        return resumeSnapSync(spine)
       case '/account': {
         const addr = parts.slice(1).join(' ')
         if (spine.capabilities.head.status === 'locked') {

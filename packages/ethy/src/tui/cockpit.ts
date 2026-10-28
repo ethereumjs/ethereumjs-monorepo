@@ -171,9 +171,9 @@ function commandPairs(domain: CapabilityId, phase: EthyPhase): TwoColumnPair[] {
     case 'snap':
       return [
         { label: '/buckets', value: '16-bucket view' },
-        { label: '/snap', value: 'progress' },
+        { label: '/range', value: 'account table' },
+        { label: '/sample', value: 'top balances' },
         { label: '/reassign', value: 'bucket' },
-        { label: '/diag', value: 'anomalies' },
       ]
     case 'head':
       return [

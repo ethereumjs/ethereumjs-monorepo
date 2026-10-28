@@ -128,6 +128,8 @@ describe('[Ethy/TUI]: renderFrame', () => {
     const snap = stripAnsi(renderFrame(spine, snapView, 100, 30).join('\n'))
     assert.include(p2p, '/peers')
     assert.include(snap, '/buckets')
+    assert.include(snap, '/range')
+    assert.include(snap, '/sample')
     assert.equal(capabilityMark('p2p', 'locked').startsWith(CAPABILITY_FG.p2p), true)
   })
 
