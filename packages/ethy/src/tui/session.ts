@@ -12,9 +12,15 @@ import {
   syncOutputBegin,
   syncOutputEnd,
 } from './ansi.ts'
-import { createInitialViewState, ghostForPhase, pushKeyChar, reducePromptKey } from './prompt.ts'
+import {
+  createInitialViewState,
+  cycleDomain,
+  deepViewCommand,
+  ghostForPhase,
+  pushKeyChar,
+  reducePromptKey,
+} from './prompt.ts'
 import { promptCaretPosition, renderFrame } from './renderFrame.ts'
-import { CAROUSEL_INTERVAL_MS } from './widgets.ts'
 
 export async function runEthySession(node: EthyNode): Promise<void> {
   const demoStart = Date.now()
@@ -31,7 +37,6 @@ export async function runEthySession(node: EthyNode): Promise<void> {
   const draw = () => {
     if (node.demo) {
       advanceDemo(node.spine, Date.now() - demoStart)
-      view.carouselTick = Math.floor((Date.now() - demoStart) / CAROUSEL_INTERVAL_MS)
     }
     view.ghostSuggestion = ghostForPhase(node.spine.phase)
     const cols = output.columns ?? 100
@@ -66,8 +71,28 @@ export async function runEthySession(node: EthyNode): Promise<void> {
         }
         dirty = true
         const ghost = view.ghostSuggestion
-        const { view: nextView, submittedLine } = reducePromptKey(view, action, ghost)
+        const {
+          view: nextView,
+          submittedLine,
+          domainCycle,
+          openDeepView,
+        } = reducePromptKey(view, action, ghost)
         view = nextView
+        if (domainCycle !== undefined) {
+          view = {
+            ...view,
+            activeDomain: cycleDomain(view.activeDomain, domainCycle),
+          }
+        }
+        if (openDeepView === true) {
+          const result = node.intentEngine.handle({
+            text: deepViewCommand(view.activeDomain),
+            spine: node.spine,
+            lastQuerySlot,
+          })
+          lastQuerySlot = result.querySlot
+          view.activeWidget = result.widget
+        }
         if (submittedLine !== undefined) {
           const result = node.intentEngine.handle({
             text: submittedLine,

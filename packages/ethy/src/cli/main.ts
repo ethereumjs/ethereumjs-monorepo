@@ -1,5 +1,7 @@
 import { createEthyNode } from '../core/createEthyNode.ts'
 import { advanceDemo } from '../demo/advanceDemo.ts'
+import { startPeerCoordinator } from '../net/peerCoordinator.ts'
+import { recordDiagnostic } from '../spine/diagnostics.ts'
 import { runEthySession } from '../tui/session.ts'
 import { parseEthyArgs, printEthyUsage } from './args.ts'
 import { resolveNetwork } from './chain.ts'
@@ -34,6 +36,29 @@ async function main(): Promise<void> {
     headless: cli.headless,
   })
 
+  let coordinatorStop: (() => void) | undefined
+  if (!cli.demo) {
+    try {
+      const handle = await startPeerCoordinator({
+        spine: node.spine,
+        network,
+        workerModuleUrl: import.meta.url,
+      })
+      coordinatorStop = handle.stop
+    } catch (e: unknown) {
+      recordDiagnostic(node.spine, {
+        subsystem: 'devp2p',
+        severity: 'error',
+        message: (e as Error).message,
+      })
+    }
+  }
+
+  const shutdown = () => {
+    coordinatorStop?.()
+  }
+  process.on('SIGINT', shutdown)
+
   if (cli.headless) {
     if (cli.demo) {
       advanceDemo(node.spine, 5000)
@@ -41,10 +66,15 @@ async function main(): Promise<void> {
     await new Promise<void>((resolve) => {
       process.on('SIGINT', () => resolve())
     })
+    shutdown()
     return
   }
 
-  await runEthySession(node)
+  try {
+    await runEthySession(node)
+  } finally {
+    shutdown()
+  }
 }
 
 main().catch((err: unknown) => {

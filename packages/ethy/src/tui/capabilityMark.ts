@@ -1,8 +1,5 @@
-import type { CapabilityReadiness } from '../spine/types.ts'
+import type { CapabilityId, CapabilityReadiness } from '../spine/types.ts'
 import { FG, RESET } from './ansi.ts'
-
-/** Spine capability ids. Color is keyed here, not on readiness. */
-export type CapabilityId = 'p2p' | 'snap' | 'head' | 'ai'
 
 /**
  * Canonical foreground for each capability.

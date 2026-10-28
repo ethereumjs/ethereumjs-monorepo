@@ -1,6 +1,7 @@
 import type { CapabilityReadiness, WidgetSpec } from '../spine/types.ts'
+import type { CapabilityId } from '../spine/types.ts'
 import { BOLD, DIM, RESET, padVisible, truncateVisible } from './ansi.ts'
-import { type CapabilityId, capabilityMark } from './capabilityMark.ts'
+import { capabilityMark } from './capabilityMark.ts'
 import { composeFixedRow, fixedLine } from './layout.ts'
 
 /** How often the suggestion carousel advances to the next set. */

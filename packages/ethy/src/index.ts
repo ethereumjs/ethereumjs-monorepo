@@ -8,6 +8,7 @@ export { createSpine, deriveCapabilities, setPhase } from './spine/createSpine.t
 export { recordDiagnostic, DIAGNOSTIC_RING_CAPACITY } from './spine/diagnostics.ts'
 export { createSnapBuckets, findBucketByPrefix } from './spine/buckets.ts'
 export type {
+  CapabilityId,
   CapabilityReadiness,
   CapabilityState,
   DiagnosticEvent,

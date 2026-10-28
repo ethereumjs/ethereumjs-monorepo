@@ -1,3 +1,5 @@
+export type CapabilityId = 'p2p' | 'snap' | 'head' | 'ai'
+
 export type EthyPhase = 'BOOTING' | 'P2P_WARMUP' | 'SNAP_SYNCING' | 'HEAD_FOLLOWING'
 
 export type CapabilityReadiness = 'locked' | 'partial' | 'ready'
@@ -90,6 +92,7 @@ export type WidgetSpec =
     }
 
 export interface TuiViewState {
+  activeDomain: CapabilityId
   activeWidget: WidgetSpec | null
   promptDraft: string
   ghostSuggestion: string

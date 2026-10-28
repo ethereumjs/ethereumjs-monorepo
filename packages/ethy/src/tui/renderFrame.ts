@@ -1,6 +1,8 @@
-import type { EthySpine, TuiViewState } from '../spine/types.ts'
+import { completeSlashDraft } from '../ai/slashComplete.ts'
+import type { CapabilityId, EthySpine, TuiViewState } from '../spine/types.ts'
 import { BOLD, DIM, RESET, visibleWidth } from './ansi.ts'
-import { type CapabilityId, capabilityMark } from './capabilityMark.ts'
+import { capabilityMark } from './capabilityMark.ts'
+import { renderCockpit } from './cockpit.ts'
 import {
   composeBrandAndRightPills,
   composeFixedRow,
@@ -9,16 +11,16 @@ import {
   fixedLineRight,
 } from './layout.ts'
 import { layoutPage, measurePage } from './pageLayout.ts'
-import { defaultCarousel, renderWidgetLines } from './widgets.ts'
+import { deepViewCommand, ghostForPhase } from './prompt.ts'
+import { renderWidgetLines } from './widgets.ts'
 
 const DELIMITER_PAD_ROWS = 1
 
 /** Columns between `Slot N` and the first capability pill. */
 const SLOT_GAP = 8
 
-const PROMPT_PREFIX = 'ethy > '
-const PROMPT_PREFIX_WIDTH = 7
-const PROMPT_HINT = 'Enter submit · Esc exit'
+export const PROMPT_PREFIX_WIDTH = 9
+const PROMPT_HINT = 'Esc exit'
 
 /** Rhythm inside the pill cluster; spacer before cluster stays flexible. */
 const CAPABILITY_PILL_GAP = 2
@@ -57,23 +59,44 @@ function renderCapabilityBar(spine: EthySpine, cols: number): string[] {
   return [line]
 }
 
-function renderPrompt(view: TuiViewState, cols: number): string[] {
+function domainHintLabel(domain: CapabilityId): string {
+  switch (domain) {
+    case 'p2p':
+      return 'P2P'
+    case 'snap':
+      return 'SNAP'
+    case 'head':
+      return 'HEAD'
+    case 'ai':
+      return 'AI'
+  }
+}
+
+function renderPrompt(spine: EthySpine, view: TuiViewState, cols: number): string[] {
+  const mark = capabilityMark(view.activeDomain, spine.capabilities[view.activeDomain].status)
+  const prefix = `${mark} ${BOLD}ethy > ${RESET}`
   const draftWidth = Math.max(0, cols - PROMPT_PREFIX_WIDTH)
-  const prompt = `${BOLD}${PROMPT_PREFIX}${RESET}${fixedField(view.promptDraft, draftWidth)}`
+  const prompt = `${prefix}${fixedField(view.promptDraft, draftWidth)}`
   const line1 = fixedLine(prompt, cols)
 
-  const hint = `${DIM}${PROMPT_HINT}${RESET}`
-  const hintWidth = visibleWidth(hint)
+  const leftHint = `${DIM}Enter open ${domainHintLabel(view.activeDomain)} view · Tab switch domain · / command · ${PROMPT_HINT}${RESET}`
+  const hintWidth = visibleWidth(leftHint)
   const gap = 2
   const tabWidth = Math.max(0, cols - hintWidth - gap)
-  const tabPlain =
-    view.promptDraft.length === 0 && view.ghostSuggestion.length > 0
-      ? `${view.ghostSuggestion} [Tab]`
+  const slashComplete =
+    view.promptDraft.startsWith('/') && completeSlashDraft(view.promptDraft) !== null
+      ? `${view.promptDraft} → ${completeSlashDraft(view.promptDraft)}`
       : ''
+  const tabPlain =
+    slashComplete.length > 0
+      ? slashComplete
+      : view.promptDraft.length === 0 && view.ghostSuggestion.length > 0
+        ? view.ghostSuggestion
+        : ''
   const line2 = composeFixedRow(
     cols,
     [
-      { text: hint, width: hintWidth },
+      { text: leftHint, width: hintWidth },
       { text: fixedLineRight(`${DIM}${tabPlain}${RESET}`, tabWidth), width: tabWidth },
     ],
     gap,
@@ -83,8 +106,7 @@ function renderPrompt(view: TuiViewState, cols: number): string[] {
 
 /**
  * 1-based terminal cell where the next typed character lands.
- * Sits just after `ethy > ` and the visible draft, inside the page inset.
- * The prompt line is the second-to-last frame row. The hint row is below it.
+ * Sits just after the domain mark and `ethy > `, inside the page inset.
  */
 export function promptCaretPosition(
   cols: number,
@@ -113,28 +135,24 @@ export function renderFrame(
   const page = measurePage(safeCols, safeRows)
 
   const capBar = renderCapabilityBar(spine, page.contentWidth)
-  const prompt = renderPrompt(view, page.contentWidth)
+  const cockpit = renderCockpit(spine, view, page.contentWidth)
+  const prompt = renderPrompt(spine, view, page.contentWidth)
   const widgetLines = view.activeWidget
     ? renderWidgetLines(view.activeWidget, page.contentWidth)
     : []
-  const suggestions = renderWidgetLines(defaultCarousel(view.carouselTick), page.contentWidth, {
-    p2p: spine.capabilities.p2p.status,
-    snap: spine.capabilities.snap.status,
-    head: spine.capabilities.head.status,
-  })
   const rule = { kind: 'delimiter' as const, open: DIM, close: RESET }
   const pad = { kind: 'spacer' as const, rows: DELIMITER_PAD_ROWS }
 
   return layoutPage(page, [
     { kind: 'content', lines: capBar },
     rule,
+    { kind: 'content', lines: cockpit },
     pad,
     { kind: 'fill', lines: widgetLines },
     rule,
     pad,
-    { kind: 'content', lines: suggestions },
-    pad,
-    rule,
     { kind: 'content', lines: prompt },
   ])
 }
+
+export { deepViewCommand, ghostForPhase }
