@@ -25,6 +25,7 @@ export type {
   ThreadedNetworkInitOptions,
   WorkerChainId,
   WorkerDiagnosticEntry,
+  WorkerPeerSnapshot,
   WorkerTelemetrySnapshot,
 } from './protocol.ts'
 
