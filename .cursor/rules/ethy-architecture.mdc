@@ -47,7 +47,7 @@ Ethy (`@ethereumjs/ethy`) is an **Execution-Free State & Intelligence Node** for
 Every external I/O boundary must sit behind a lightweight TypeScript interface with an in-memory/synthetic implementation for unit test CI:
 
 1. **`IntentEngine` (`src/ai/`):** Swaps between `DeterministicIntentEngine` (slash commands + keyword/fixture router for CI and fallback) and local LLM adapters.
-2. **`StateStore` (`src/store/`):** Swaps between `InMemoryFlatStore` (zero-dep `Map`/`Uint8Array` store for CI and rolling-window mode) and persistent disk backends.
+2. **`StateStore` / `FlatStateManager` (`@ethereumjs/statemanager`):** `FlatStateManager` (`packages/statemanager/src/flatStateManager.ts`) provides a zero-dep, hash-keyed (`keccak256(address)`), Copy-on-Write `StateManagerInterface` for `snap/1` batch ingestion, `consumeBAL`, EVM sandbox overlays, and unit test CI (can be backed by persistent disk storage later).
 3. **`SnapTransport` / `PeerSource` (`src/sync/`):** Swaps between live `@ethereumjs/devp2p` peers and `SyntheticSnapPeer` (which generates a deterministic mini-trie via `@ethereumjs/mpt` and serves real RLP `AccountRange` + Merkle edge proofs in <50ms).
 
 ## 5. Amsterdam Sync, P2P "Good Citizen" & Wire Encoding Invariants

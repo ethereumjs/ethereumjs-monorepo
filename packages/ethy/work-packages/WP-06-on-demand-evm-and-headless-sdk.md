@@ -14,10 +14,9 @@ Complete the first full milestone cycle of Ethy by coupling `@ethereumjs/evm` an
 
 ### Key Deliverables
 
-1. **Copy-on-Write `EthyStateManager` (`src/evm/ethyStateManager.ts`):**
-   - Implements `StateManagerInterface` from `@ethereumjs/common` backed by `StateStore`.
-   - **Copy-on-Write Overlay:** Every on-demand simulation or "what-if" session writes mutations into an isolated in-memory overlay map on top of the live `StateStore`, so 10 concurrent simulations never mutate canonical synced state.
-   - **On-Demand Cold-State Fallback (Rolling-Window Model A):** If `getAccount`, `getContractCode`, or `getContractStorage` encounters an account/slot not yet present in `StateStore`, optionally fetches it on-demand from a connected `snap/1` peer (with polite rate-limiting and local caching) and records the fetch in `EthySpine`.
+1. **Copy-on-Write Sandbox Overlays & On-Demand Cold-State Fallback on `FlatStateManager` (`src/evm/`):**
+   - Uses `FlatStateManager.shallowCopy()` (from `@ethereumjs/statemanager`, built in `WP-03`) so every on-demand simulation or "what-if" session runs on an O(1) Copy-on-Write overlay on top of the live synced `FlatStateManager` — 10 concurrent simulations never mutate canonical synced state.
+   - **On-Demand Cold-State Fallback (Rolling-Window Model A):** If `getAccount`, `getCode`, or `getStorage` encounters an account/slot not yet present in `FlatStateManager`, optionally fetches it on-demand from a connected `snap/1` peer (with polite rate-limiting and local caching) and records the fetch in `EthySpine`.
 
 2. **On-Demand EVM Simulation & Semantic Trace Tool (`src/tools/simulateTools.ts`):**
    - `simulateTxOnHead`: Runs a call or transaction via `@ethereumjs/evm` (`runCall`) or `@ethereumjs/vm` (`runTx`) on an overlay of the current head state (with optional state/code overrides and experimental Amsterdam EIP flags).
