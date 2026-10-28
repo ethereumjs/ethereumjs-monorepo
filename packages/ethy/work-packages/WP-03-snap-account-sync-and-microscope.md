@@ -83,7 +83,7 @@ In `WP-02b`, discovery and TCP RLPx handshakes succeeded (`tablePeers: 65`, `dns
    - Surface the caught error message in `Peer._handleBody` (`peer.ts:660`) into `DiscoveryMetrics` / worker diagnostics.
    - Add unit tests verifying that `eth/69` `STATUS` with `earliestBlock = 0`, `GET_BLOCK_HEADERS` with `skip = 0, reverse = 0`, and `HELLO` with `port = 0` encode `0` as `new Uint8Array(0)` (`0x80`).
 
-2. **Slice 2 — `@ethereumjs/statemanager`: `FlatStateManager` (`packages/statemanager/src/flatStateManager.ts`):**
+2. **Slice 2 — `@ethereumjs/statemanager` (+ Cross-Stack Matrix in `@ethereumjs/evm` & `@ethereumjs/vm`): `FlatStateManager` (`packages/statemanager/src/flatStateManager.ts`):**
    - Implement and export `FlatStateManager` (and `createFlatStateManager` factory) implementing `StateManagerInterface`:
      - Standard `StateManagerInterface`: `getAccount`, `putAccount`, `deleteAccount`, `modifyAccountFields`, `getCode`, `putCode`, `getCodeSize`, `getStorage`, `putStorage`, `clearStorage`, `checkpoint`, `commit`, `revert`, `flush`, `shallowCopy` (O(1) Copy-on-Write view), `consumeBAL`.
      - Direct hash-keyed `snap/1` & inspection API:
@@ -93,7 +93,14 @@ In `WP-02b`, discovery and TCP RLPx handshakes succeeded (`tablePeers: 65`, `dns
        - `putCodeByHash(codeHash: Uint8Array, code: Uint8Array): void`
        - `sampleAccounts(opts?: { prefixHex?: string; limit?: number; sortByBalanceDesc?: boolean }): FlatAccountSample[]`
        - `accountCount(): number`
-   - Unit tests in `packages/statemanager/test/flatStateManager.spec.ts`: test `StateManagerInterface` methods, O(1) delta checkpoint/revert without cloning the base map, `putSnapAccountsBatch` + `getAccount(address)` lookup via `keccak_256(address)`, `consumeBAL` equivalence with `MerkleStateManager`, and `shallowCopy()` Copy-on-Write isolation.
+   - **Comprehensive Stack-Wide Testing (Consistency across `statemanager`, `evm`, and `vm`):**
+     1. **Shared `@ethereumjs/statemanager` Matrix Specs:** Add `FlatStateManager` alongside `[MerkleStateManager, SimpleStateManager]` in the existing matrix suites:
+        - `packages/statemanager/test/checkpointing.account.spec.ts`
+        - `packages/statemanager/test/checkpointing.code.spec.ts`
+        - `packages/statemanager/test/checkpointing.storage.spec.ts`
+        - `packages/statemanager/test/consumeBAL.spec.ts`
+     2. **Dedicated `packages/statemanager/test/flatStateManager.spec.ts`:** Test O(1) delta checkpoint/revert without cloning the base map, `putSnapAccountsBatch` + `getAccount(address)` lookup via `keccak_256(address)`, `putSnapStorageBatch` + `getStorage(address, key)` lookup via `keccak_256(key)`, `putCodeByHash`, `sampleAccounts`, and `shallowCopy()` Copy-on-Write isolation.
+     3. **`@ethereumjs/evm` & `@ethereumjs/vm` Integration Tests:** Add focused test cases in `packages/evm/test/` and `packages/vm/test/api/` running `createEVM({ stateManager: new FlatStateManager() })` (`runCall` with `SLOAD`/`SSTORE`/nested `CALL` revert on snap-seeded accounts) and `createVM({ stateManager: new FlatStateManager() })` (`runTx` value transfer + contract execution + EIP-7928 BAL generation/consumption) to guarantee end-to-end consistency across the EthereumJS execution stack.
 
 3. **Slice 3 — `@ethereumjs/ethy`: Post-Merge Pivot Fix, `SyntheticSnapPeer` & 16-Bucket `SnapAccountSynchronizer` (`src/net/`, `src/sync/`):**
    - Add `@ethereumjs/statemanager` and `@ethereumjs/mpt` to `packages/ethy/package.json` `dependencies`.
@@ -111,7 +118,7 @@ In `WP-02b`, discovery and TCP RLPx handshakes succeeded (`tablePeers: 65`, `dns
 
 ### Acceptance Criteria
 - [ ] All RLP scalar zeros in `HELLO`, `eth/69` `STATUS`, `GET_BLOCK_HEADERS`, `BLOCK_RANGE_UPDATE`, and `GET_ACCOUNT_RANGE` encode as `new Uint8Array(0)` (`0x80`).
-- [ ] `FlatStateManager` is exported from `@ethereumjs/statemanager` with full TypeDoc JSDoc comments (`api-docs.mdc`) and passes `packages/statemanager/test/flatStateManager.spec.ts`.
+- [ ] `FlatStateManager` is exported from `@ethereumjs/statemanager` with full TypeDoc JSDoc comments (`api-docs.mdc`), passes `flatStateManager.spec.ts` and the shared `checkpointing.{account,code,storage}.spec.ts` + `consumeBAL.spec.ts` matrices, and passes integration tests in `@ethereumjs/evm` (`runCall`) and `@ethereumjs/vm` (`runTx`).
 - [ ] `pivotHeader.spec.ts` decodes both pre-Merge and post-Merge (timestamp-forked) headers accurately.
 - [ ] Full 16-bucket `snap/1` account sync + `verifyMerkleRangeProof` into `FlatStateManager` passes against `SyntheticSnapPeer` (including fault-injection recovery on bucket `0x3`) in `<150ms` in unit tests.
 - [ ] Live soak (`node --import tsx src/cli/main.ts sepolia --headless` or TUI `ethy sepolia`) achieves `statusOk > 0`, anchors a live Sepolia `pivotBlockNumber` + `pivotStateRoot`, and begins pulling live `snap/1` account ranges into `FlatStateManager`.
