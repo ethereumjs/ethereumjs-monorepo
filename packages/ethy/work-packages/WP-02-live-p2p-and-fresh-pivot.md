@@ -1,6 +1,6 @@
 # WP-02: 3-Box Domain-Lens Cockpit, Live Threaded `devp2p` Harness & Fresh Pivot Header Acquisition
 
-- **Status:** `PLANNED`
+- **Status:** `IN_PROGRESS`
 - **Dependencies:** `WP-00` (`DONE`), `WP-01` (`DONE`)
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5

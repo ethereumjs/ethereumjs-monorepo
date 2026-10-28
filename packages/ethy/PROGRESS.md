@@ -8,7 +8,7 @@ This file is the **single source of truth** for project progress, architectural 
 
 ## 1. Current Project Snapshot
 
-- **Current Stage:** **WP-01** is **`DONE`**. **WP-02** is **`PLANNED`** (concrete file-by-file plan in [`work-packages/WP-02-live-p2p-and-fresh-pivot.md`](./work-packages/WP-02-live-p2p-and-fresh-pivot.md) §2); ready for Composer implementation.
+- **Current Stage:** **WP-01** is **`DONE`**. **WP-02** is **`IN_PROGRESS`** (slices 1 + 3 landed on `ethy-wp02`; common audit slice 2 pending; live Sepolia soak not yet verified).
 - **Active Target Network:** `sepolia` (Amsterdam hardfork focus; generic `@ethereumjs/common` chain support).
 - **Package Identity:** `@ethereumjs/ethy` (CLI binary: `ethy`, zero-config invocation `ethy` or `ethy sepolia`; unscoped `ethy` npm name transfer inquired).
 
@@ -20,7 +20,7 @@ This file is the **single source of truth** for project progress, architectural 
 | --- | --- | --- | --- | --- | --- |
 | **WP-00** | **`@ethereumjs/devp2p` Worker-Thread Architecture, Discovery Flow Control & Buffer Hardening** | `DONE` | None | [`work-packages/WP-00-devp2p-worker-and-hardening.md`](./work-packages/WP-00-devp2p-worker-and-hardening.md) | Shipped (#4417): `createThreadedNetwork`, `SocketByteQueue`, DPT/RLPx throttle, Good Citizen in worker, `inProcess` + real `Worker` ITs + README. |
 | **WP-01** | **Foundation: Scaffolding, `EthySpine`, 4-Zone TUI & Deterministic Prompt Loop** | `DONE` | None | [`work-packages/WP-01-foundation-spine-and-tui-loop.md`](./work-packages/WP-01-foundation-spine-and-tui-loop.md) | `@ethereumjs/ethy` package: spine, deterministic prompt, `--demo`. TUI is a padded page with fixed capability colors, a split suggestion band, and a cursor prompt. Dedicated `ethy` CI job. |
-| **WP-02** | **3-Box Domain-Lens Cockpit, Live P2P Harness & Fresh Pivot Header Acquisition** | `PLANNED` | WP-01 (`DONE`), WP-00 (`DONE`) | [`work-packages/WP-02-live-p2p-and-fresh-pivot.md`](./work-packages/WP-02-live-p2p-and-fresh-pivot.md) | §2: three-slice plan (devp2p STATUS head + DNS boot, common audit, ethy cockpit + `PeerCoordinator` + loopback `net.spec.ts`). Decisions **D-025**–**D-032**. |
+| **WP-02** | **3-Box Domain-Lens Cockpit, Live P2P Harness & Fresh Pivot Header Acquisition** | `IN_PROGRESS` | WP-01 (`DONE`), WP-00 (`DONE`) | [`work-packages/WP-02-live-p2p-and-fresh-pivot.md`](./work-packages/WP-02-live-p2p-and-fresh-pivot.md) | Shipped on branch: devp2p head telemetry + bootnodes; ethy cockpit, `PeerCoordinator`, pivot parse, loopback `net.spec.ts`. Remaining: common audit sign-off, live Sepolia acceptance. |
 | **WP-03** | **16-Bucket `snap/1` Account Sync, Range Proofs & Developer Microscope** | `BLOCKED_BY_WP-02` | WP-01, WP-02 | [`work-packages/WP-03-snap-account-sync-and-microscope.md`](./work-packages/WP-03-snap-account-sync-and-microscope.md) | `InMemoryFlatStore`, `SyntheticSnapPeer` for CI, 16-bucket `GET_ACCOUNT_RANGE` + slim-to-full RLP conversion + `verifyMerkleRangeProof`, live `/buckets` & `/drop` dev actions. |
 | **WP-04** | **Bidirectional Local LLM `IntentEngine` (`<ethy_state>` & Tool Gating)** | `BLOCKED_BY_WP-01` | WP-01 (can run in parallel with WP-02/03) | [`work-packages/WP-04-local-llm-intent-engine.md`](./work-packages/WP-04-local-llm-intent-engine.md) | Zero-dep local HTTP JSON-schema LLM engine (`llama-server` 1.7B instruct), `<ethy_state>` header injection, dynamic phase tool gating, `--record-fixture` CI replay. |
 | **WP-05** | **Contract Storage/Bytecode Sync & Zero-Execution `eth/71` BAL Head Follower** | `BLOCKED_BY_WP-03` | WP-03 | [`work-packages/WP-05-storage-code-and-bal-head-follower.md`](./work-packages/WP-05-storage-code-and-bal-head-follower.md) | `GET_BYTE_CODES` + `GET_STORAGE_RANGES`, healing-free pivot-to-head bridge via `eth/71` `GET_BLOCK_ACCESS_LISTS` (`BlockLevelAccessList` + `consumeBAL`), `inspectLatestBAL` widget. |
@@ -78,14 +78,19 @@ Track every modification or planned modification to sibling monorepo packages he
 | Package | File(s) | Kind | Status | Description & Reasoning |
 | --- | --- | --- | --- | --- |
 | `@ethereumjs/devp2p` | `packages/devp2p/src/rlpx/peer.ts`, `socketByteQueue.ts`, `src/dpt/dpt.ts`, `src/rlpx/rlpx.ts`, `src/lab/emptyReply.ts`, `src/worker/*`, tests under `test/rlpx/`, `test/dpt/`, `test/worker/`, `test/protocol/` | Performance & Worker Architecture (WP-00) | `DONE` (#4417) | Merged in #4417: threaded network API, `SocketByteQueue`, discovery throttle, `inProcess` + real `Worker` tests + README § Threaded network. |
-| `@ethereumjs/devp2p` | `packages/devp2p/src/protocol/eth.ts`, `src/worker/host.ts`, `protocol.ts`, `bootNodes.ts`, `test/worker/*` | Enhancement (WP-02) | `PLANNED` | `ETH.peerStatusHead()`, optional head fields on `WorkerPeerSnapshot`, `bootNodesFromCommon` + DNS when discovery on and bootnodes omitted; worker-network + bootNodes tests. See WP-02 §2 Slice 1. |
-| `@ethereumjs/common` | `packages/common/src/chains.ts` | Maintenance (WP-02) | `PLANNED` | Audit Sepolia/Hoodi bootnodes, DNS, fork schedule vs eth-clients/geth; edit only on verified mismatch; Amsterdam only when published. See WP-02 §2 Slice 2. |
+| `@ethereumjs/devp2p` | `packages/devp2p/src/protocol/eth.ts`, `src/worker/host.ts`, `protocol.ts`, `bootNodes.ts`, `test/worker/*` | Enhancement (WP-02) | `DONE` (branch) | `ETH.peerStatusHead()`, `WorkerPeerSnapshot` head fields, `bootNodesFromCommon`, export `WorkerPeerSnapshot`; worker-network + bootNodes tests green. |
+| `@ethereumjs/common` | `packages/common/src/chains.ts` | Maintenance (WP-02) | `IN_PROGRESS` | Spot-check only so far: Sepolia/Hoodi `dnsNetworks` present; no `chains.ts` edit. Full geth cross-check before WP-02 `DONE`. |
 
 ---
 
 ## 5. Chronological Progress Log
 
 *Agents: Append a new dated subsection at the top of this list after each Planning (Grok 4.7) or Implementation (Composer 2.5) pass.*
+
+### 2026-10-28 — WP-02 implementation start (Implementer — Composer 2.5)
+- Commits on `ethy-wp02`: devp2p worker head + bootnodes; `WorkerPeerSnapshot` export; ethy 3-box cockpit, domain-lens prompt, `PeerCoordinator` + pivot header parse, loopback `net.spec.ts`.
+- Ethy `tsconfig` uses `customConditions: []` so `@ethereumjs/devp2p` resolves to built `dist` (avoids cross-package `rootDir` tsc errors).
+- Gates: `packages/devp2p` + `packages/ethy` tsc, tests, spellcheck green locally.
 
 ### 2026-10-28 — WP-02 concrete implementation plan (`PLANNED`) (Planner — Grok 4.7)
 - Filled [`work-packages/WP-02-live-p2p-and-fresh-pivot.md`](./work-packages/WP-02-live-p2p-and-fresh-pivot.md) §2: three-slice implementer plan (devp2p, common audit, ethy cockpit + `PeerCoordinator` + tests), file tree, and gates.
