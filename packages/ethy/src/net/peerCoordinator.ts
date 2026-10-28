@@ -4,6 +4,7 @@ import {
   type WorkerPeerSnapshot,
   createThreadedNetwork,
   genPrivateKey,
+  resolveThreadedNetworkModuleUrl,
 } from '@ethereumjs/devp2p'
 import { RLP } from '@ethereumjs/rlp'
 import { bigIntToBytes, intToBytes, utf8ToBytes } from '@ethereumjs/util'
@@ -112,6 +113,11 @@ export async function startPeerCoordinator(
     }
   }
 
+  const workerModuleUrl =
+    opts.inProcess === true
+      ? undefined
+      : (opts.workerModuleUrl ?? resolveThreadedNetworkModuleUrl(import.meta.url))
+
   client = await createThreadedNetwork(
     {
       inProcess: opts.inProcess,
@@ -128,7 +134,7 @@ export async function startPeerCoordinator(
       endpoint: { address: '0.0.0.0', udpPort: 0, tcpPort: opts.listenPort ?? 0 },
       throttleDiscovery: true,
     },
-    opts.workerModuleUrl,
+    workerModuleUrl,
   )
 
   client.events.on('telemetry', (snap) => {
@@ -196,7 +202,7 @@ export async function startPeerCoordinator(
   client.events.on('error', (err) => {
     recordDiagnostic(spine, {
       subsystem: 'devp2p',
-      severity: 'error',
+      severity: 'warn',
       message: err.message,
     })
   })

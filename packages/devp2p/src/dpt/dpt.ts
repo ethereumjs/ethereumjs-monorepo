@@ -105,7 +105,14 @@ export class DPT {
 
     // By default calls refresh every 3s
     const refreshIntervalSubdivided = Math.floor((options.refreshInterval ?? 60000) / 10) // 60 sec * 1000
-    this._refreshIntervalId = setInterval(() => this.refresh(), refreshIntervalSubdivided)
+    this._refreshIntervalId = setInterval(() => {
+      void this.refresh().catch((err: unknown) => {
+        const msg = err instanceof Error ? err.message : String(err)
+        if (this.DEBUG) {
+          this._debug(`refresh failed: ${msg}`)
+        }
+      })
+    }, refreshIntervalSubdivided)
 
     this.DEBUG = globalThis.process?.env?.DEBUG?.includes('ethjs') ?? false
   }
@@ -425,7 +432,15 @@ export class DPT {
     }
 
     if (this._shouldGetDnsPeers) {
-      const dnsPeers = await this.getDnsPeers()
+      let dnsPeers: PeerInfo[] = []
+      try {
+        dnsPeers = await this.getDnsPeers()
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err)
+        if (this.DEBUG) {
+          this._debug(`DNS peer lookup failed: ${msg}`)
+        }
+      }
 
       if (this.DEBUG) {
         this._debug(

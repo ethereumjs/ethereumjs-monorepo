@@ -86,7 +86,16 @@ export class DNS {
    * @return {PeerInfo | null}
    */
   private async _search(subdomain: string, context: SearchContext): Promise<PeerInfo | null> {
-    const entry = await this._getTXTRecord(subdomain, context)
+    let entry: string
+    try {
+      entry = await this._getTXTRecord(subdomain, context)
+    } catch (error: unknown) {
+      if (this.DEBUG) {
+        const msg = error instanceof Error ? error.message : String(error)
+        debug(`DNS TXT lookup failed at ${subdomain}: ${msg}`)
+      }
+      return null
+    }
     context.visits[subdomain] = true
 
     let next: string

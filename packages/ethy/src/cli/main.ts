@@ -42,7 +42,6 @@ async function main(): Promise<void> {
       const handle = await startPeerCoordinator({
         spine: node.spine,
         network,
-        workerModuleUrl: import.meta.url,
       })
       coordinatorStop = handle.stop
     } catch (e: unknown) {

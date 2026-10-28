@@ -159,6 +159,9 @@ export class Devp2pWorkerHost {
       dnsNetworks: dnsOpts?.dnsNetworks ?? [],
       maxInFlightPings: opts.maxInFlightPings,
     })
+    this._dpt.events.on('error', (err) => {
+      this._pushDiagnostic('warn', `DPT: ${err.message}`)
+    })
 
     this._rlpx = new RLPx(opts.privateKey, {
       dpt: this._dpt,
