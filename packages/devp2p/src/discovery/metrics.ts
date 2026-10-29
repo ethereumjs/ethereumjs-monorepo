@@ -30,6 +30,7 @@ export interface WorkerDiscoverySnapshot {
   dns: {
     attempts: number
     peersAdded: number
+    forkRejected?: number
     lastError?: string
     resolver?: string
   }
@@ -80,6 +81,7 @@ export class DiscoveryMetrics {
 
   dnsAttempts = 0
   dnsPeersAdded = 0
+  dnsForkRejected = 0
   dnsLastError?: string
   dnsResolver?: string
 
@@ -137,6 +139,10 @@ export class DiscoveryMetrics {
 
   recordDnsPeersAdded(count: number): void {
     this.dnsPeersAdded += count
+  }
+
+  recordDnsForkRejected(): void {
+    this.dnsForkRejected++
   }
 
   recordDnsError(message: string): void {
@@ -239,6 +245,7 @@ export class DiscoveryMetrics {
       dns: {
         attempts: this.dnsAttempts,
         peersAdded: this.dnsPeersAdded,
+        ...(this.dnsForkRejected > 0 ? { forkRejected: this.dnsForkRejected } : {}),
         lastError: this.dnsLastError,
         resolver: this.dnsResolver,
       },

@@ -301,6 +301,8 @@ export interface PeerInfo {
   vectorClock?: number
   /** Bootnode or DNS peer for this chain. discv4 neighbors leave this unset. */
   chainDirectory?: boolean
+  /** EIP-868 fork id from ENR `eth` entry when present. */
+  ethForkId?: { forkHash: string; nextFork: bigint }
 }
 
 export interface Contact extends PeerInfo {

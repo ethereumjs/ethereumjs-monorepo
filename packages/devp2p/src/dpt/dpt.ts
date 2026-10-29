@@ -17,6 +17,7 @@ import { KBucket } from './kbucket.ts'
 import { JSONNodeStore, MemoryNodeStore } from './nodeStore.ts'
 import { Server as DPTServer } from './server.ts'
 
+import type { Common } from '@ethereumjs/common'
 import type { Debugger } from 'debug'
 import type { DPTEvent, DPTOptions, PeerInfo } from '../types.ts'
 import type { NodeStore } from './nodeStore.ts'
@@ -25,6 +26,20 @@ const DEBUG_BASE_NAME = 'dpt'
 
 function routableDiscoveryAddress(address: string | undefined): boolean {
   return address !== undefined && address !== '' && address !== '0.0.0.0' && address !== '::'
+}
+
+function isTcpReadyDirectoryPeer(peer: PeerInfo): boolean {
+  return (
+    peer.id !== undefined &&
+    routableDiscoveryAddress(peer.address) &&
+    peer.tcpPort !== undefined &&
+    peer.tcpPort !== null
+  )
+}
+
+function peerMatchesChainFork(peer: PeerInfo, common: Common | undefined): boolean {
+  if (peer.ethForkId === undefined || common === undefined) return true
+  return common.hardforkForForkHash(peer.ethForkId.forkHash) !== null
 }
 
 /** UDP endpoint of a remote discovery node (never this process). */
@@ -65,6 +80,7 @@ export class DPT {
   protected _peerBatchQueue: PeerInfo[] = []
   protected _inFlightPings = 0
   protected _discoveryMetrics: import('../discovery/metrics.ts').DiscoveryMetrics | undefined
+  protected _common: Common | undefined
 
   private DEBUG: boolean
 
@@ -79,6 +95,7 @@ export class DPT {
     this._dnsNetworks = options.dnsNetworks ?? []
     this._dnsAddr = options.dnsAddr ?? ''
     this._discoveryMetrics = options.discoveryMetrics
+    this._common = options.common
     this._discoveryMetrics?.setDnsResolver(
       options.dnsAddr !== undefined && options.dnsAddr.length > 0 ? options.dnsAddr : 'system',
     )
@@ -506,7 +523,20 @@ export class DPT {
         )
       }
 
-      this._addPeerBatch(dnsPeers.map((peer) => markChainDirectoryPeer(peer)))
+      this._feedDnsDirectoryPeers(dnsPeers)
+    }
+  }
+
+  /** Verified EIP-1459 peers dial on TCP directly; skip UDP bonding and the k-bucket. */
+  _feedDnsDirectoryPeers(dnsPeers: PeerInfo[]): void {
+    for (const raw of dnsPeers) {
+      const peer = markChainDirectoryPeer({ ...raw })
+      if (!isTcpReadyDirectoryPeer(peer)) continue
+      if (!peerMatchesChainFork(peer, this._common)) {
+        this._discoveryMetrics?.recordDnsForkRejected()
+        continue
+      }
+      this.events.emit('peer:new', peer)
     }
   }
 }
