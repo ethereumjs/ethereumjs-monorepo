@@ -45,12 +45,19 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                                           │                                       │
                                           ▼                                       │
                       ┌─────────────────────────────────────────┐                 │
-                      │ WP-05: Contract Storage/Bytecode Sync   │                 │
-                      │        & Zero-Execution eth/71 BAL      │                 │
-                      │        Head Follower                    │                 │
+                      │ WP-04: Complete snap/1 (Code & Storage),│                 │
+                      │        Rolling Pivot BAL Healing &      │                 │
+                      │        eth/71 Head Follower + Serving   │                 │
                       └───────────────────┬─────────────────────┘                 │
                                           │                                       │
                                           └───────────────────┬───────────────────┘
+                                                              ▼
+                                          ┌─────────────────────────────────────────┐
+                                          │ WP-05: Bidirectional Local LLM          │
+                                          │        IntentEngine (<ethy_state>       │
+                                          │        & Dynamic Tool Gating)           │
+                                          └───────────────────┬─────────────────────┘
+                                                              │
                                                               ▼
                                           ┌─────────────────────────────────────────┐
                                           │ WP-06: On-Demand @ethereumjs/evm        │
