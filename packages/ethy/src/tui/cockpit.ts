@@ -4,7 +4,13 @@ import {
   snapAccountPaceNote,
   snapBucketsDoneCount,
 } from '../spine/buckets.ts'
-import type { CapabilityId, EthyPhase, EthySpine, TuiViewState } from '../spine/types.ts'
+import type {
+  CapabilityId,
+  EthyPhase,
+  EthySpine,
+  PivotHealProgress,
+  TuiViewState,
+} from '../spine/types.ts'
 import { BOLD, DIM, RESET, visibleWidth } from './ansi.ts'
 import { capabilityMark } from './capabilityMark.ts'
 import {
@@ -26,8 +32,11 @@ const DOMAIN_LABEL: Record<CapabilityId, string> = {
 /** Inner content rows per box (excluding top/bottom border and vertical padding). */
 const COCKPIT_CONTENT_ROWS = 5
 
-function phaseLabel(phase: EthyPhase): string {
-  switch (phase) {
+function phaseLabel(spine: EthySpine): string {
+  if (spine.phase === 'SNAP_SYNCING' && spine.pivotHeal !== undefined) {
+    return `Healing ${healFraction(spine.pivotHeal)}`
+  }
+  switch (spine.phase) {
     case 'BOOTING':
       return 'Booting'
     case 'P2P_WARMUP':
@@ -37,6 +46,59 @@ function phaseLabel(phase: EthyPhase): string {
     case 'HEAD_FOLLOWING':
       return 'Head Following'
   }
+}
+
+function healFraction(heal: PivotHealProgress): string {
+  const total = heal.toBlock - heal.fromBlock + 1n
+  let done = heal.nextBlock - heal.fromBlock
+  if (done < 0n) done = 0n
+  if (done > total) done = total
+  return `${Number(done).toLocaleString('en-US')}/${Number(total).toLocaleString('en-US')}`
+}
+
+function formatBlockNum(n: bigint): string {
+  return `#${n.toLocaleString('en-US')}`
+}
+
+/** Compact count for the pivot clause. Millions and ten-thousands use one decimal. */
+function formatCarryAccounts(count: number): string {
+  if (count >= 1_000_000) {
+    const scaled = Math.round(count / 100_000) / 10
+    const text = Number.isInteger(scaled) ? String(scaled) : scaled.toFixed(1)
+    return `${text}M`
+  }
+  if (count >= 10_000) {
+    const scaled = Math.round(count / 100) / 10
+    const text = Number.isInteger(scaled) ? String(scaled) : scaled.toFixed(1)
+    return `${text}k`
+  }
+  return count.toLocaleString('en-US')
+}
+
+function pivotPulseValue(spine: EthySpine): string {
+  const heal = spine.pivotHeal
+  if (
+    spine.phase === 'SNAP_SYNCING' &&
+    heal !== undefined &&
+    spine.pivotBlockNumber !== undefined
+  ) {
+    return `${formatBlockNum(spine.pivotBlockNumber)} → ${formatBlockNum(heal.toBlock)}`
+  }
+  const base =
+    spine.pivotBlockNumber !== undefined
+      ? formatBlockNum(spine.pivotBlockNumber)
+      : (spine.pivotStatusHint ?? 'Waiting for peer...')
+  const carry = spine.pivotCarry
+  if (
+    carry === undefined ||
+    carry.accounts <= 0 ||
+    spine.phase === 'HEAD_FOLLOWING' ||
+    spine.pivotBlockNumber === undefined
+  ) {
+    return base
+  }
+  const word = carry.kind === 'kept' ? 'kept' : 'previous'
+  return `${base} · ${formatCarryAccounts(carry.accounts)} ${word}`
 }
 
 function accountPulseValue(spine: EthySpine): string {
@@ -167,13 +229,9 @@ function joinBoxLines(columns: string[][], contentWidth: number): string[] {
 }
 
 function nodePulsePairs(spine: EthySpine): TwoColumnPair[] {
-  const pivot =
-    spine.pivotBlockNumber !== undefined
-      ? `#${spine.pivotBlockNumber.toLocaleString('en-US')}`
-      : (spine.pivotStatusHint ?? 'Waiting for peer...')
   return [
-    { label: 'Phase', value: phaseLabel(spine.phase) },
-    { label: 'Pivot', value: pivot },
+    { label: 'Phase', value: phaseLabel(spine) },
+    { label: 'Pivot', value: pivotPulseValue(spine) },
     { label: 'Accounts', value: accountPulseValue(spine) },
     { label: 'Bytecode', value: codePulseValue(spine) },
     { label: 'Storage', value: storagePulseValue(spine) },

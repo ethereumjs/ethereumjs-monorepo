@@ -33,6 +33,21 @@ function nibbleLimitHash(nibble: number): Uint8Array {
   return h
 }
 
+/** True when the snap cursor has reached the bucket limit. */
+export function snapBucketCursorExhausted(bucket: SnapBucket): boolean {
+  return compareBytes32(bucket.currentLastHash, bucket.limitHash) >= 0
+}
+
+function compareBytes32(a: Uint8Array, b: Uint8Array): number {
+  const n = Math.max(a.length, b.length)
+  for (let i = 0; i < n; i++) {
+    const av = a[i] ?? 0
+    const bv = b[i] ?? 0
+    if (av !== bv) return av - bv
+  }
+  return 0
+}
+
 /** Snap ranges fully synced through the pivot (status `done` only). */
 export function snapBucketsDoneCount(buckets: readonly SnapBucket[]): number {
   return buckets.filter((b) => b.status === 'done').length

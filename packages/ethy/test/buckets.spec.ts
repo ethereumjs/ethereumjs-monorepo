@@ -5,11 +5,19 @@ import {
   formatSnapCapabilityLabel,
   formatSnapRangePulse,
   snapAccountPaceNote,
+  snapBucketCursorExhausted,
   snapBucketsDoneCount,
 } from '../src/spine/buckets.ts'
 import type { EthyPhase } from '../src/spine/types.ts'
 
 describe('snap range display', () => {
+  it('snapBucketCursorExhausted() is false until the cursor reaches the limit', () => {
+    const buckets = createSnapBuckets()
+    assert.equal(snapBucketCursorExhausted(buckets[0]!), false)
+    buckets[0]!.currentLastHash = new Uint8Array(buckets[0]!.limitHash)
+    assert.equal(snapBucketCursorExhausted(buckets[0]!), true)
+  })
+
   it('snapBucketsDoneCount() counts only finished ranges', () => {
     const buckets = createSnapBuckets()
     buckets[0]!.accountsLoaded = 1_000_000

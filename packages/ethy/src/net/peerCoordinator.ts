@@ -358,18 +358,39 @@ export async function startPeerCoordinator(
     deriveCapabilities(spine)
   }
 
+  const publishHeal = () => {
+    const seq = healSeq
+    if (seq === undefined) {
+      spine.pivotHeal = undefined
+      return
+    }
+    spine.pivotHeal = {
+      fromBlock: seq.fromBlock,
+      nextBlock: seq.nextBlock,
+      toBlock: seq.toBlock,
+    }
+  }
+
+  const finishHeal = (seq: PivotHealSequence) => {
+    healSeq = undefined
+    publishHeal()
+    if (spine.pivotCarry?.kind !== 'previous' && spine.totalAccountsSynced > 0) {
+      spine.pivotCarry = { kind: 'kept', accounts: spine.totalAccountsSynced }
+    }
+    commitPivotAnchor(seq.targetPivot, seq.finalHeaderRlp ?? null, seq.peerId, seq.ethVersion, {
+      skipServableBundle: true,
+    })
+  }
+
   const advanceHealSequence = () => {
     if (healSeq === undefined) return
     const seq = healSeq
     if (seq.nextBlock <= seq.toBlock) {
+      publishHeal()
       seq.inFlight = startBlockBundleByNumber(client, seq.peerId, seq.ethVersion, seq.nextBlock)
       return
     }
-    const target = seq.targetPivot
-    healSeq = undefined
-    commitPivotAnchor(target, seq.finalHeaderRlp ?? null, seq.peerId, seq.ethVersion, {
-      skipServableBundle: true,
-    })
+    finishHeal(seq)
   }
 
   const completeHealBlock = () => {
@@ -386,6 +407,7 @@ export async function startPeerCoordinator(
     }).then(() => {
       if (healSeq === undefined) return
       healSeq.nextBlock += 1n
+      publishHeal()
       recordDiagnostic(spine, {
         subsystem: 'bal',
         severity: 'info',
@@ -446,6 +468,7 @@ export async function startPeerCoordinator(
         peerId: msg.peerId,
       })
       healSeq = undefined
+      publishHeal()
       return true
     }
     if (result === 'progress') return true
@@ -734,6 +757,7 @@ export async function startPeerCoordinator(
         message: `Rolling pivot heal #${pivotNum.toString()} → #${parsed.number.toString()} (${fromBlock.toString()}..${parsed.number.toString()})`,
       })
       if (successPeerId !== undefined && fromBlock <= parsed.number) {
+        if (spine.pivotCarry?.kind === 'kept') spine.pivotCarry = undefined
         healSeq = {
           peerId: successPeerId,
           ethVersion: successEthVersion,

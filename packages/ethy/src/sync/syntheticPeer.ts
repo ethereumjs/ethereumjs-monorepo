@@ -265,7 +265,12 @@ export async function ingestAccountRangeReply(
         return { ok: false, hasRight: false, count: 0, reason: errorText(err) }
       }
     }
-    return { ok: true, hasRight: false, count: 0 }
+    return {
+      ok: false,
+      hasRight: false,
+      count: 0,
+      reason: 'empty account range without proof',
+    }
   }
   try {
     const keys = accountsRaw.map(([h]) => {

@@ -20,6 +20,21 @@ export function encodeAccountJournalRecord(record: AccountJournalRecord): Uint8A
   return out
 }
 
+/** Count intact records. A torn tail is ignored, same as a full read. */
+export function countAccountJournalRecords(bytes: Uint8Array): number {
+  let offset = 0
+  let count = 0
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
+  while (offset + RECORD_HEADER <= bytes.length) {
+    const bodyLen = view.getUint32(offset, false)
+    const recordEnd = offset + RECORD_HEADER + bodyLen
+    if (recordEnd > bytes.length) break
+    count++
+    offset = recordEnd
+  }
+  return count
+}
+
 export function readAccountJournalFile(bytes: Uint8Array): {
   records: AccountJournalRecord[]
   lastHash?: Uint8Array

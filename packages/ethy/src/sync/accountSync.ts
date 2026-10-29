@@ -7,6 +7,7 @@ import type { Account } from '@ethereumjs/util'
 import { accountFromJournalRlp } from '../persist/journal.ts'
 import type { PeerBookStore } from '../persist/peerBook.ts'
 import type { SnapPivotStore } from '../persist/snapStore.ts'
+import { snapBucketCursorExhausted } from '../spine/buckets.ts'
 import { setPhase } from '../spine/createSpine.ts'
 import { recordDiagnostic } from '../spine/diagnostics.ts'
 import type { EthySpine, SnapBucket } from '../spine/types.ts'
@@ -295,10 +296,13 @@ export class SnapAccountSynchronizer {
         bucket.currentLastHash = incrementKey32(lastKey)
         bucket.status = 'pending'
       } else {
-        bucket.status = 'done'
+        this.noteRangeFailure(bucket, peerId, 'account range missing last key')
+        return
       }
     } else {
+      bucket.currentLastHash = new Uint8Array(bucket.limitHash)
       bucket.status = 'done'
+      bucket.lastStallReason = undefined
     }
     if (result.count > 0) {
       this.peerBook?.noteSnapSuccess(peerId, Date.now())
@@ -330,7 +334,7 @@ export class SnapAccountSynchronizer {
 }
 
 function bucketRangeExhausted(bucket: SnapBucket): boolean {
-  return compareBytes32(bucket.currentLastHash, bucket.limitHash) >= 0
+  return snapBucketCursorExhausted(bucket)
 }
 
 export function encodeGetAccountRange(

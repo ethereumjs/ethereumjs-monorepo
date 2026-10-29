@@ -5,10 +5,11 @@ import type { FlatStateManager } from '@ethereumjs/statemanager'
 import { createBlockLevelAccessListFromRLP } from '@ethereumjs/util'
 import { bytesToHex, unprefixedHexToBytes } from '@ethereumjs/util'
 
-import { createSnapBuckets } from '../spine/buckets.ts'
+import { createSnapBuckets, snapBucketCursorExhausted } from '../spine/buckets.ts'
 import type { EthySpine, SnapBucket, SnapBucketStatus } from '../spine/types.ts'
 import {
   accountFromJournalRlp,
+  countAccountJournalRecords,
   encodeAccountJournalRecord,
   journalCursorAfterRecords,
   readAccountJournalFile,
@@ -172,10 +173,49 @@ export class SnapPivotStore {
           bucket.currentLastHash = unprefixedHexToBytes(saved.currentLastHash.slice(2))
         }
       }
+      if (bucket.status === 'done' && !snapBucketCursorExhausted(bucket)) {
+        bucket.status = 'pending'
+      }
     }
     spine.snapBuckets = buckets
     spine.totalAccountsSynced = stateManager.accountCount()
+    if (active.previousStateRoot !== undefined && active.previousStateRoot !== null) {
+      const held = this.heldAccountCount(active.previousStateRoot)
+      if (held > 0) {
+        spine.pivotCarry = { kind: 'previous', accounts: held }
+      }
+    }
     return restored
+  }
+
+  /**
+   * Account journals still on a pivot directory.
+   * Trust `buckets.json` only for a bucket that has a non-empty journal file.
+   * A saved count with no file is ignored. A file with no saved count is scanned.
+   */
+  private heldAccountCount(stateRootHex: string): number {
+    const dir = this.pivotDir(stateRootHex)
+    const accountsDir = path.join(dir, 'accounts')
+    if (!fs.existsSync(accountsDir)) return 0
+    let saved: SerializedBucket[] | undefined
+    const bucketsPath = path.join(dir, 'buckets.json')
+    if (fs.existsSync(bucketsPath)) {
+      saved = readStoredDoc<{ buckets: SerializedBucket[] }>(bucketsPath).buckets
+    }
+    let total = 0
+    for (const name of fs.readdirSync(accountsDir)) {
+      if (!name.endsWith('.bin')) continue
+      const filePath = path.join(accountsDir, name)
+      if (fs.statSync(filePath).size === 0) continue
+      const index = Number.parseInt(name.slice(0, -'.bin'.length), 16)
+      const row = saved?.find((b) => b.index === index)
+      if (row !== undefined && row.accountsLoaded > 0) {
+        total += row.accountsLoaded
+        continue
+      }
+      total += countAccountJournalRecords(new Uint8Array(fs.readFileSync(filePath)))
+    }
+    return total
   }
 
   /** Create or switch active pivot; prune to active + previous only. */

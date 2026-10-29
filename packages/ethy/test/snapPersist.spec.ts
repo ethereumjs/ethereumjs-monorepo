@@ -15,7 +15,11 @@ import {
 import { assert, describe, it } from 'vitest'
 
 import { networkGenesisHash } from '../src/net/genesisStatus.ts'
-import { encodeAccountJournalRecord, readAccountJournalFile } from '../src/persist/journal.ts'
+import {
+  countAccountJournalRecords,
+  encodeAccountJournalRecord,
+  readAccountJournalFile,
+} from '../src/persist/journal.ts'
 import { SnapPivotStore, snapBucketsUnfinished } from '../src/persist/snapStore.ts'
 import { createSnapBuckets } from '../src/spine/buckets.ts'
 import { createSpine } from '../src/spine/createSpine.ts'
@@ -35,6 +39,28 @@ function openStore(dir: string, network = 'sepolia'): SnapPivotStore {
 }
 
 describe('[Ethy/Persist]: snap pivot store', () => {
+  it('resume reopens a done bucket whose cursor is still below the limit', () => {
+    const dir = tempDir()
+    const root = new Uint8Array(32)
+    root[31] = 0xcd
+    const store = openStore(dir)
+    store.activatePivot({
+      blockNumber: 100n,
+      blockHash: new Uint8Array(32),
+      stateRoot: root,
+    })
+    const buckets = createSnapBuckets()
+    buckets[3]!.status = 'done'
+    buckets[4]!.status = 'done'
+    buckets[4]!.currentLastHash = new Uint8Array(buckets[4]!.limitHash)
+    store.flushBuckets(buckets)
+
+    const spine = createSpine('sepolia', 11155111n)
+    openStore(dir).loadInto(spine, createFlatStateManager())
+    assert.equal(spine.snapBuckets[3]!.status, 'pending')
+    assert.equal(spine.snapBuckets[4]!.status, 'done')
+  })
+
   it('resume restores accounts and bucket cursor', () => {
     const dir = tempDir()
     const root = new Uint8Array(32)
@@ -72,6 +98,68 @@ describe('[Ethy/Persist]: snap pivot store', () => {
     torn.set(good)
     const { records } = readAccountJournalFile(torn)
     assert.equal(records.length, 1)
+    assert.equal(countAccountJournalRecords(torn), 1)
+  })
+
+  it('resume notes account journals left on the previous pivot', () => {
+    const dir = tempDir()
+    const store = openStore(dir)
+    const rootA = new Uint8Array(32)
+    rootA[31] = 1
+    const rootB = new Uint8Array(32)
+    rootB[31] = 2
+    store.activatePivot({ blockNumber: 10n, blockHash: new Uint8Array(32), stateRoot: rootA })
+    const hash = new Uint8Array(32)
+    hash[0] = 0x01
+    const rlp = createAccount({ nonce: 1n, balance: 2n }).serialize()
+    const buckets = createSnapBuckets()
+    buckets[0]!.accountsLoaded = 1
+    store.appendVerifiedRange(0, [{ accountHash: hash, accountRlp: rlp }], buckets)
+    store.activatePivot({ blockNumber: 80n, blockHash: new Uint8Array(32), stateRoot: rootB })
+
+    const spine = createSpine('sepolia', 11155111n)
+    const restored = openStore(dir).loadInto(spine, createFlatStateManager())
+    assert.equal(restored, 0)
+    assert.equal(spine.pivotBlockNumber, 80n)
+    assert.deepEqual(spine.pivotCarry, { kind: 'previous', accounts: 1 })
+  })
+
+  it('resume ignores a saved count when the previous journal file is missing', () => {
+    const dir = tempDir()
+    const store = openStore(dir)
+    const rootA = new Uint8Array(32)
+    rootA[31] = 3
+    const rootB = new Uint8Array(32)
+    rootB[31] = 4
+    store.activatePivot({ blockNumber: 10n, blockHash: new Uint8Array(32), stateRoot: rootA })
+    const buckets = createSnapBuckets()
+    buckets[0]!.accountsLoaded = 3_000_000
+    store.flushBuckets(buckets)
+    store.activatePivot({ blockNumber: 80n, blockHash: new Uint8Array(32), stateRoot: rootB })
+
+    const spine = createSpine('sepolia', 11155111n)
+    openStore(dir).loadInto(spine, createFlatStateManager())
+    assert.isUndefined(spine.pivotCarry)
+  })
+
+  it('resume counts a previous journal when the saved count is zero', () => {
+    const dir = tempDir()
+    const store = openStore(dir)
+    const rootA = new Uint8Array(32)
+    rootA[31] = 5
+    const rootB = new Uint8Array(32)
+    rootB[31] = 6
+    store.activatePivot({ blockNumber: 10n, blockHash: new Uint8Array(32), stateRoot: rootA })
+    const hash = new Uint8Array(32)
+    hash[0] = 0x04
+    const rlp = createAccount({ nonce: 1n, balance: 2n }).serialize()
+    const buckets = createSnapBuckets()
+    store.appendVerifiedRange(0, [{ accountHash: hash, accountRlp: rlp }], buckets)
+    store.activatePivot({ blockNumber: 80n, blockHash: new Uint8Array(32), stateRoot: rootB })
+
+    const spine = createSpine('sepolia', 11155111n)
+    openStore(dir).loadInto(spine, createFlatStateManager())
+    assert.deepEqual(spine.pivotCarry, { kind: 'previous', accounts: 1 })
   })
 
   it('refuses a genesis mismatch without deleting files', () => {
