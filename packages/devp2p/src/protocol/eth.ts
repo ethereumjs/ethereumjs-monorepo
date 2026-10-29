@@ -3,6 +3,7 @@ import {
   BIGINT_0,
   EthereumJSErrorWithoutCode,
   bigIntToBytes,
+  bigIntToUnpaddedBytes,
   bytesToBigInt,
   bytesToHex,
   bytesToInt,
@@ -22,6 +23,8 @@ import {
   isMessageCodeAllowed,
 } from './eth/codec.ts'
 import { EthMessageCodeNames, EthMessageCodes as EthMsgCodes } from './eth/codes.ts'
+import { forkValidationHead } from './eth/forkHead.ts'
+import { assertSameGenesis, assertSameNetworkId } from './statusAssert.ts'
 
 import type { EthMessageCodes as EthMessageCodeType } from './eth/codes.ts'
 import { Protocol } from './protocol.ts'
@@ -177,7 +180,8 @@ export class ETH extends Protocol {
     if (this._forkHash === peerForkHash) {
       // There is a known next fork
       if (peerNextFork > BIGINT_0) {
-        if (this._latestBlock >= peerNextFork) {
+        const validationHead = forkValidationHead(c, this._latestBlock)
+        if (validationHead >= peerNextFork) {
           const msg = 'Remote is advertising a future fork that passed locally'
           if (this.DEBUG) {
             this.debug('STATUS', msg)
@@ -223,22 +227,10 @@ export class ETH extends Protocol {
       this.debug.bind(this),
       'STATUS',
     )
-    assertEq(
-      this._status[1],
-      this._peerStatus[1],
-      'NetworkId mismatch',
-      this.debug.bind(this),
-      'STATUS',
-    )
+    assertSameNetworkId(this._status[1] as Uint8Array, this._peerStatus[1] as Uint8Array)
 
     if (ethUsesBlockRangeStatus(this._version)) {
-      assertEq(
-        this._status[2],
-        this._peerStatus[2],
-        'Genesis block mismatch',
-        this.debug.bind(this),
-        'STATUS',
-      )
+      assertSameGenesis(this._status[2] as Uint8Array, this._peerStatus[2] as Uint8Array)
       assertEq(
         this._peerStatus[3].length,
         2,
@@ -258,13 +250,7 @@ export class ETH extends Protocol {
         latestBlockHash: this._peerStatus[6] as Uint8Array,
       })
     } else {
-      assertEq(
-        this._status[4],
-        this._peerStatus[4],
-        'Genesis block mismatch',
-        this.debug.bind(this),
-        'STATUS',
-      )
+      assertSameGenesis(this._status[4] as Uint8Array, this._peerStatus[4] as Uint8Array)
       const status: {
         chainId: Uint8Array | Uint8Array[]
         td: Uint8Array
@@ -395,7 +381,7 @@ export class ETH extends Protocol {
         status.genesisHash,
         [forkHashB, nextForkB],
         status.earliestBlock,
-        bigIntToBytes(latestNum),
+        bigIntToUnpaddedBytes(latestNum),
         status.latestBlockHash,
       ]
     } else {

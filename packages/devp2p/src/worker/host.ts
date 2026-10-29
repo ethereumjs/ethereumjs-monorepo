@@ -11,7 +11,9 @@ import { RLP } from '@ethereumjs/rlp'
 import { bytesToHex, bytesToUnprefixedHex, utf8ToBytes } from '@ethereumjs/util'
 
 import type { MessagePort } from 'node:worker_threads'
-import { DiscoveryMetrics } from '../discovery/metrics.ts'
+import { markChainDirectoryPeer } from '../discovery/directoryPeer.ts'
+import { classifyHandshakeReject } from '../discovery/handshakeReject.ts'
+import { DiscoveryMetrics, peerFateLabel } from '../discovery/metrics.ts'
 import { DPT } from '../dpt/dpt.ts'
 import { resolveCapabilities } from '../lab/capabilities.ts'
 import { emptyWireReply } from '../lab/emptyReply.ts'
@@ -23,6 +25,7 @@ import { ETH, SNAP } from '../protocol/index.ts'
 import { SnapMessageCodeNames, SnapMessageCodes } from '../protocol/snap.ts'
 import { Peer } from '../rlpx/peer.ts'
 import { RLPx } from '../rlpx/rlpx.ts'
+import { DISCONNECT_REASON, DisconnectReasonNames } from '../types.ts'
 import type { PeerInfo } from '../types.ts'
 import { dptDnsOptionsFromCommon, resolveWorkerBootnodes } from './bootNodes.ts'
 import type {
@@ -32,6 +35,39 @@ import type {
   WorkerEvent,
   WorkerTelemetrySnapshot,
 } from './protocol.ts'
+
+function negotiatedEthVersion(peer: Peer): number | undefined {
+  for (const protocol of peer.getProtocols()) {
+    if (protocol.constructor.name === 'ETH') return (protocol as ETH).getVersion()
+  }
+  return undefined
+}
+
+function notePeerFate(
+  metrics: DiscoveryMetrics,
+  peer: Peer,
+  fate: 'remote' | 'we' | 'reset',
+): void {
+  metrics.recordPeerFate(
+    peerFateLabel(peer.getHelloMessage()?.clientId, negotiatedEthVersion(peer)),
+    fate,
+  )
+}
+
+function isSocketReset(message: string): boolean {
+  return message.includes('ECONNRESET') || message.includes('EPIPE')
+}
+
+/** Node reports ICMP port-unreachable on a UDP socket as `read ECONNRESET`. */
+function clarifySocketError(message: string): string {
+  if (isSocketReset(message)) {
+    return 'peer unreachable (ICMP or TCP reset, surfaced as ECONNRESET)'
+  }
+  if (message.startsWith('expected Uint8Array')) {
+    return `handshake field was not bytes (${message})`
+  }
+  return message
+}
 
 const ETH_CODE_NAMES: Record<number, string> = Object.fromEntries(
   Object.entries(EthMessageCodes).map(([name, code]) => [code as number, name]),
@@ -146,6 +182,12 @@ export class Devp2pWorkerHost {
     if (this._options === null) throw new Error('Worker init required before start')
     const opts = this._options
     const common = commonFromInit(opts)
+    const nextFork = common.nextHardforkBlockOrTimestamp()
+    this._discoveryMetrics.setAdvertisedFork(
+      common.hardfork(),
+      common.forkHash(),
+      nextFork === null ? '0' : nextFork.toString(),
+    )
     const caps = resolveCapabilities(opts.capabilities ?? ['eth68'])
     const endpoint = opts.endpoint ?? { address: '0.0.0.0', udpPort: 0, tcpPort: 0 }
     const listenPort = opts.listenPort ?? endpoint.tcpPort ?? 0
@@ -163,7 +205,12 @@ export class Devp2pWorkerHost {
       discoveryMetrics: this._discoveryMetrics,
     })
     this._dpt.events.on('error', (err) => {
-      this._pushDiagnostic('warn', `DPT: ${err.message}`)
+      const message = err instanceof Error ? err.message : String(err)
+      // Already-banned remotes are counted on `discovery.dpt.banSkips`.
+      if (message.startsWith('Skipped remote ')) return
+      // Dead ENRs time out constantly. The ban counter on the diag footer covers them.
+      if (message.includes('Timeout error: ping')) return
+      this._pushDiagnostic('warn', `DPT: ${clarifySocketError(message)}`)
     })
 
     this._rlpx = new RLPx(opts.privateKey, {
@@ -196,6 +243,7 @@ export class Devp2pWorkerHost {
     )
 
     for (const boot of resolveWorkerBootnodes(opts, common)) {
+      markChainDirectoryPeer(boot)
       void this._dpt.bootstrap(boot).catch((err: unknown) => {
         const msg = err instanceof Error ? err.message : String(err)
         this._pushDiagnostic('warn', `Bootstrap ${boot.address}:${boot.udpPort} — ${msg}`)
@@ -203,8 +251,41 @@ export class Devp2pWorkerHost {
     }
 
     this._rlpx.events.on('peer:added', (peer) => this._wirePeer(peer))
-    this._rlpx.events.on('peer:error', (_peer, err) => {
-      this._pushDiagnostic('warn', err.message)
+    this._rlpx.events.on('peer:removed', (peer, reason, disconnectWe) => {
+      if (typeof reason !== 'number') return
+      if (
+        reason !== DISCONNECT_REASON.SUBPROTOCOL_ERROR &&
+        reason !== DISCONNECT_REASON.PROTOCOL_ERROR &&
+        reason !== DISCONNECT_REASON.USELESS_PEER &&
+        reason !== DISCONNECT_REASON.NETWORK_ERROR &&
+        reason !== DISCONNECT_REASON.INCOMPATIBLE_VERSION &&
+        reason !== DISCONNECT_REASON.TIMEOUT
+      ) {
+        return
+      }
+      const who = disconnectWe === true ? 'we dropped remote' : 'remote dropped us'
+      const name = DisconnectReasonNames[reason as DISCONNECT_REASON] ?? String(reason)
+      if (
+        reason === DISCONNECT_REASON.SUBPROTOCOL_ERROR ||
+        reason === DISCONNECT_REASON.PROTOCOL_ERROR
+      ) {
+        notePeerFate(this._discoveryMetrics, peer, disconnectWe === true ? 'we' : 'remote')
+      }
+      const client = peerFateLabel(peer.getHelloMessage()?.clientId, negotiatedEthVersion(peer))
+      this._pushDiagnostic('warn', `Remote ${peer.remoteTcpLabel()} ${client}: ${name} (${who})`)
+    })
+    this._rlpx.events.on('peer:error', (peer, err) => {
+      const remote = peer.remoteTcpLabel()
+      const message = err instanceof Error ? err.message : String(err)
+      const reject = classifyHandshakeReject(message)
+      if (reject !== undefined) this._discoveryMetrics.recordHandshakeReject(reject)
+      if (reject === 'reset' && peer.getHelloMessage() !== null) {
+        this._discoveryMetrics.recordResetAfterHello()
+        notePeerFate(this._discoveryMetrics, peer, 'reset')
+      }
+      // Resets are counted above. Printing each one hides the disconnect reason.
+      if (reject === 'reset') return
+      this._pushDiagnostic('warn', `Remote ${remote}: ${clarifySocketError(message)}`)
     })
 
     const snap = this._discoveryMetrics.snapshot()
@@ -224,6 +305,12 @@ export class Devp2pWorkerHost {
     peer.events.on('pong', (rttMs) => {
       if (rttMs !== undefined) this._peerRtt.set(peerKey, rttMs)
     })
+    peer.events.on('error', (err: Error) => {
+      if (isSocketReset(err.message)) return
+      this._discoveryMetrics.recordRlpxSubprotocolError(
+        `Remote ${peer.remoteTcpLabel()}: ${err.message}`,
+      )
+    })
 
     for (const protocol of peer.getProtocols()) {
       if (protocol.constructor.name !== 'ETH') continue
@@ -233,15 +320,29 @@ export class Devp2pWorkerHost {
         this._emitTelemetry()
       })
       if (this._options?.status !== undefined) {
-        eth.sendStatus(
-          ethStatusFromFields(this._options.status as EthStatusFields, eth.getVersion()),
-        )
+        try {
+          eth.sendStatus(
+            ethStatusFromFields(this._options.status as EthStatusFields, eth.getVersion()),
+          )
+          this._discoveryMetrics.recordStatusSent()
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : String(err)
+          this._pushDiagnostic('warn', `ETH STATUS send failed: ${message}`)
+          this._discoveryMetrics.recordRlpxSubprotocolError(`ETH STATUS send failed: ${message}`)
+        }
       }
     }
 
     peer.subprotocolDispatch = (protocolName, msgCode, payload) => {
       if (protocolName === 'ETH' && msgCode === EthMessageCodes.STATUS) {
         return 'default'
+      }
+      if (
+        protocolName === 'SNAP' &&
+        this._options?.answerEmptySnap === false &&
+        (SnapMessageCodeNames[msgCode as SnapMessageCodes] ?? '').startsWith('GET_')
+      ) {
+        return 'handled'
       }
       const goodCitizen = this._options?.goodCitizen ?? true
       if (goodCitizen) {

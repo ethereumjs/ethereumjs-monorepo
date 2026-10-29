@@ -23,14 +23,14 @@ Complete the Amsterdam sync pipeline by adding `snap/1` contract bytecode (`GET_
 ### Key Deliverables
 
 1. **Contract Bytecode & Storage Sync (`src/sync/codeAndStorageSync.ts`):**
-   - Extends `StateStore` to store contract code blobs (`codeHash -> Uint8Array`) and contract storage slots (`addressHash + slotHash -> Uint8Array` or `address + slotKey -> Uint8Array`).
+   - Uses `FlatStateManager` (`putCodeByHash` and `putSnapStorageBatch`) from `@ethereumjs/statemanager` (built in `WP-03`).
    - Queues accounts from `WP-03` that have `codeHash !== KECCAK256_NULL` for batched `GET_BYTE_CODES` requests (verifying `keccak_256(code) === codeHash`).
    - Queues accounts with `storageRoot !== KECCAK256_RLP` for `GET_STORAGE_RANGES` requests (verifying storage proofs via `verifyMerkleRangeProof`).
 
 2. **`eth/71` BAL Exchange & Zero-Execution Applier (`src/sync/balSync.ts`):**
    - Requests block headers and `GET_BLOCK_ACCESS_LISTS` (`EthMessageCodes.GET_BLOCK_ACCESS_LISTS` = `0x12`, response `BLOCK_ACCESS_LISTS` = `0x13`) from `eth/71` peers for blocks after `pivotBlockNumber`.
    - Verifies `bal.hash()` against the header's `blockAccessListHash`.
-   - Applies the BAL post-values directly to `StateStore` (`applyBAL`) and caches the last 64–128 BALs + headers in a rolling in-memory ring buffer so Ethy can also serve `GET_BLOCK_ACCESS_LISTS` to peers at the head ("Good Citizen" head relay) and update `BLOCK_RANGE_UPDATE`.
+   - Applies the BAL post-values directly to `FlatStateManager` via `consumeBAL` (recording the `accountHash -> Address` preimage and `slotHash -> slotKey` preimage for every touched account/slot!) and caches the last 64–128 BALs + headers in a rolling in-memory ring buffer so Ethy can also serve `GET_BLOCK_ACCESS_LISTS` to peers at the head ("Good Citizen" head relay) and update `BLOCK_RANGE_UPDATE`.
    - Flips `spine.phase = 'HEAD_FOLLOWING'` and `spine.capabilities.head = { status: 'ready', label: 'Slot #' + slot }`.
 
 3. **Stage-3 BAL Microscope Tools & `HEAD` Domain Lens (`src/tools/balTools.ts`, `src/tui/`):**
@@ -39,7 +39,7 @@ Complete the Amsterdam sync pipeline by adding `snap/1` contract bytecode (`GET_
    - Populate the `● HEAD Metrics` right box in the 3-Box Cockpit with live head block number, verified state root, and latest BAL mutation count, and make `Enter` (when `activeDomain === 'head'` and prompt is empty) open `inspectLatestBAL`.
 
 4. **Tier-1 Unit Test Suite (`test/balSync.spec.ts`):**
-   - Oracle equivalence test: Apply a sequence of 5 synthetic EIP-7928 BALs (covering ETH transfers, contract deployment, storage writes, zeroing a slot, and EIP-161 empty-account deletion) to both `InMemoryFlatStore` and `@ethereumjs/statemanager` (`MerkleStateManager` + `consumeBAL`) and assert identical post-state for every account and storage slot.
+   - Oracle equivalence test: Apply a sequence of 5 synthetic EIP-7928 BALs (covering ETH transfers, contract deployment, storage writes, zeroing a slot, and EIP-161 empty-account deletion) to both `FlatStateManager` and `MerkleStateManager` via `consumeBAL` and assert identical post-state for every account and storage slot.
    - Wire test: `GET_BLOCK_ACCESS_LISTS` → `BLOCK_ACCESS_LISTS` RLP decoding, `bal.hash()` verification against `blockAccessListHash`, and transition of `EthySpine` to `HEAD_FOLLOWING`.
 
 ### Acceptance Criteria

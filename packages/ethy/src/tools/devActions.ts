@@ -2,7 +2,31 @@ import { findBucketByPrefix } from '../spine/buckets.ts'
 import { deriveCapabilities } from '../spine/createSpine.ts'
 import type { EthySpine, WidgetSpec } from '../spine/types.ts'
 
-export function dropPeer(spine: EthySpine, peerId: string): WidgetSpec {
+export function pauseSnapSync(spine: EthySpine): WidgetSpec {
+  spine.snapPaused = true
+  deriveCapabilities(spine)
+  return {
+    kind: 'key_value',
+    title: 'Snap sync paused',
+    entries: [{ key: 'Status', value: 'paused' }],
+  }
+}
+
+export function resumeSnapSync(spine: EthySpine): WidgetSpec {
+  spine.snapPaused = false
+  deriveCapabilities(spine)
+  return {
+    kind: 'key_value',
+    title: 'Snap sync resumed',
+    entries: [{ key: 'Status', value: 'running' }],
+  }
+}
+
+export function dropPeer(
+  spine: EthySpine,
+  peerId: string,
+  disconnectPeer?: (id: string) => void,
+): WidgetSpec {
   const id = peerId.trim().toLowerCase()
   if (!spine.peers.has(id)) {
     return {
@@ -11,6 +35,7 @@ export function dropPeer(spine: EthySpine, peerId: string): WidgetSpec {
       entries: [{ key: 'Error', value: `Unknown peer "${peerId}"` }],
     }
   }
+  disconnectPeer?.(id)
   spine.peers.delete(id)
   deriveCapabilities(spine)
   return {

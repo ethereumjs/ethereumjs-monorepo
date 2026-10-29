@@ -1,18 +1,7 @@
-import { pathToFileURL } from 'node:url'
-
-/** Module URL for {@link resolveThreadedNetworkModuleUrl} without static `import.meta` (CJS-safe emit). */
+/** Module URL for {@link resolveThreadedNetworkModuleUrl}. */
 export function ethyCallerModuleUrl(): string {
-  const readEsm = Function(
-    'return typeof import.meta !== "undefined" && import.meta.url ? import.meta.url : undefined',
-  ) as () => string | undefined
-  const esm = readEsm()
-  if (typeof esm === 'string') return esm
-
-  const readCjs = Function(
-    'return typeof __filename !== "undefined" ? __filename : undefined',
-  ) as () => string | undefined
-  const cjs = readCjs()
-  if (typeof cjs === 'string') return pathToFileURL(cjs).href
-
-  throw new Error('Could not resolve caller module URL for devp2p worker')
+  // Prod CJS compile uses `"module": "CommonJS"`, which rejects this syntax.
+  // ESM, tsx, and vitest accept it. `@ts-ignore` is a no-op for those builds.
+  // @ts-ignore TS1343
+  return import.meta.url
 }

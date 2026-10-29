@@ -14,6 +14,7 @@ import debugDefault from 'debug'
 import { EventEmitter } from 'eventemitter3'
 import { LRUCache } from 'lru-cache'
 
+import { isChainDirectoryPeer } from '../discovery/directoryPeer.ts'
 import { DISCONNECT_REASON, DisconnectReasonNames } from '../types.ts'
 import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util.ts'
 
@@ -28,6 +29,16 @@ import type { Capabilities, PeerInfo, RLPxEvent, RLPxOptions } from '../types.ts
 
 const DEBUG_BASE_NAME = 'rlpx'
 const verbose = debugDefault('verbose').enabled
+
+/** A peer that finished HELLO and then reported a full slot table. */
+const BUSY_PEER_REDIAL_MS = 60_000
+/** Bonded nodes waiting for a free outbound slot. */
+const MAX_DIAL_QUEUE = 512
+/**
+ * Bonded nodes held when the dial queue is already full.
+ * A Sepolia DNS refresh can return more live nodes than the in-flight dial cap.
+ */
+const MAX_DIAL_LATER = 2048
 
 /** RLPx transport: encrypted TCP sessions, HELLO/capability negotiation, and sub-protocol multiplexing. */
 export class RLPx {
@@ -48,6 +59,8 @@ export class RLPx {
 
   protected _peersLRU: LRUCache<string, boolean>
   protected _peersQueue: { peer: PeerInfo; ts: number }[]
+  /** Bonded peers we have not dialed yet. Kept off the LRU so a full queue does not drop them. */
+  protected _peersDeferred: PeerInfo[]
   protected _server: net.Server | null
   protected _peers: Map<string, net.Socket | Peer>
 
@@ -87,21 +100,7 @@ export class RLPx {
     this._discoveryMetrics = options.discoveryMetrics
     if (this._dpt !== null) {
       this._dpt.events.on('peer:new', (peer: PeerInfo) => {
-        if (peer.tcpPort === null || peer.tcpPort === undefined) {
-          this._dpt!.banPeer(peer, 300000) // 5 min * 60 * 1000
-          this._debug(`banning peer with missing tcp port: ${peer.address}`)
-          return
-        }
-        // Using deprecated bytesToUnprefixedHex for performance: used as LRU cache keys for peer tracking.
-        const key = bytesToUnprefixedHex(peer.id!)
-        if (this._peersLRU.has(key)) return
-        this._peersLRU.set(key, true)
-
-        if (this._getOpenSlots() > 0) {
-          return this._connectToPeer(peer)
-        } else if (this._getOpenQueueSlots() > 0) {
-          this._peersQueue.push({ peer, ts: 0 }) // save to queue
-        }
+        this._onDiscoveredPeer(peer)
       })
       this._dpt.events.on('peer:removed', (peer: PeerInfo) => {
         // remove from queue
@@ -123,6 +122,7 @@ export class RLPx {
         : devp2pDebug.extend(DEBUG_BASE_NAME)
     this._peers = new Map()
     this._peersQueue = []
+    this._peersDeferred = []
     this._peersLRU = new LRUCache({ max: 25000 })
     const REFILL_INTERVAL = 10000 // 10 sec * 1000
     const refillIntervalSubdivided = Math.floor(REFILL_INTERVAL / 10)
@@ -218,15 +218,124 @@ export class RLPx {
   }
 
   _getOpenQueueSlots() {
-    return this._maxPeers * 2 - this._peersQueue.length
+    return MAX_DIAL_QUEUE - this._peersQueue.length
+  }
+
+  _onDiscoveredPeer(peer: PeerInfo): void {
+    if (peer.tcpPort === null || peer.tcpPort === undefined) {
+      this._dpt?.banPeer(peer, 300000) // 5 min * 60 * 1000
+      this._debug(`banning peer with missing tcp port: ${peer.address}`)
+      return
+    }
+    if (peer.id === undefined) return
+    // Using deprecated bytesToUnprefixedHex for performance: used as LRU cache keys for peer tracking.
+    const key = bytesToUnprefixedHex(peer.id)
+    if (this._peersLRU.has(key)) return
+
+    const directory = isChainDirectoryPeer(peer)
+    const holdForDirectory = !directory && this._hasReadyDirectoryPeer()
+    if (this._getOpenSlots() > 0 && !holdForDirectory) {
+      this._peersLRU.set(key, true)
+      this._connectToPeer(peer)
+      return
+    }
+    if (directory && this._getOpenQueueSlots() <= 0) this._evictOneNeighbor()
+    if (this._getOpenQueueSlots() > 0) {
+      this._peersLRU.set(key, true)
+      const entry = { peer, ts: 0 }
+      if (directory) this._peersQueue.unshift(entry)
+      else this._peersQueue.push(entry)
+      if (directory || holdForDirectory) this._dialQueuedDirectoryPeers()
+      return
+    }
+    if (holdForDirectory) this._dialQueuedDirectoryPeers()
+    // Queue is full. Remember the node without marking it tried.
+    this._deferDiscoveredPeer(peer, key)
+  }
+
+  _hasReadyDirectoryPeer(): boolean {
+    const now = Date.now()
+    return this._peersQueue.some((item) => isChainDirectoryPeer(item.peer) && item.ts <= now)
+  }
+
+  /** Free a queue slot occupied by a discv4 neighbor so a directory peer can wait. */
+  _evictOneNeighbor(): boolean {
+    const idx = this._peersQueue.findIndex((item) => !isChainDirectoryPeer(item.peer))
+    if (idx < 0) return false
+    const [item] = this._peersQueue.splice(idx, 1)
+    if (item?.peer.id === undefined) return true
+    const key = bytesToUnprefixedHex(item.peer.id)
+    this._peersLRU.delete(key)
+    this._deferDiscoveredPeer(item.peer, key)
+    return true
+  }
+
+  _dialQueuedDirectoryPeers(): void {
+    this._peersQueue = this._peersQueue.filter((item) => {
+      if (!isChainDirectoryPeer(item.peer)) return true
+      if (this._getOpenSlots() === 0) return true
+      if (item.ts > Date.now()) return true
+      this._connectToPeer(item.peer)
+      return false
+    })
+  }
+
+  _deferDiscoveredPeer(peer: PeerInfo, key: string): void {
+    const alreadyHeld = this._peersDeferred.some(
+      (item) => item.id !== undefined && bytesToUnprefixedHex(item.id) === key,
+    )
+    if (alreadyHeld) return
+    if (this._peersDeferred.length >= MAX_DIAL_LATER) this._peersDeferred.shift()
+    this._peersDeferred.push(peer)
+  }
+
+  _promoteDeferredDials(): void {
+    const directory = this._peersDeferred.filter((peer) => isChainDirectoryPeer(peer))
+    const neighbors = this._peersDeferred.filter((peer) => !isChainDirectoryPeer(peer))
+    this._peersDeferred = [...directory, ...neighbors]
+    const pending = this._peersDeferred.length
+    for (let n = 0; n < pending; n++) {
+      const peer = this._peersDeferred.shift()
+      if (peer?.id === undefined) continue
+      const key = bytesToUnprefixedHex(peer.id)
+      if (this._peersLRU.has(key)) continue
+      if (this._getOpenSlots() > 0) {
+        this._peersLRU.set(key, true)
+        this._connectToPeer(peer)
+        continue
+      }
+      if (this._getOpenQueueSlots() > 0) {
+        this._peersLRU.set(key, true)
+        this._peersQueue.push({ peer, ts: 0 })
+        continue
+      }
+      this._peersDeferred.unshift(peer)
+      return
+    }
   }
 
   _connectToPeer(peer: PeerInfo) {
-    this.connect(peer).catch((err) => {
-      if (this._dpt === null) return
-      if (err.code === 'ECONNRESET' || (err.toString() as string).includes('Connection timeout')) {
-        this._dpt.banPeer(peer, 300000) // 5 min * 60 * 1000
+    this.connect(peer).catch((err: unknown) => {
+      const code = typeof err === 'object' && err !== null && 'code' in err ? String(err.code) : ''
+      const message = err instanceof Error ? err.message : String(err)
+      const dialFailed =
+        code === 'ECONNRESET' ||
+        code === 'ECONNREFUSED' ||
+        code === 'EHOSTUNREACH' ||
+        code === 'ENETUNREACH' ||
+        code === 'ETIMEDOUT' ||
+        message.includes('Connection timeout')
+      // A later bond must be allowed to dial again. Reset and timeout stay banned
+      // until that ban expires; other dial failures leave the table so refresh can retry.
+      if (dialFailed && peer.id !== undefined) {
+        this._peersLRU.delete(bytesToUnprefixedHex(peer.id))
       }
+      if (this._dpt === null || !dialFailed) return
+      if (code === 'ECONNRESET' || message.includes('Connection timeout')) {
+        this._dpt.banPeer(peer, 300000) // 5 min * 60 * 1000
+        return
+      }
+      this._dpt.removePeer(peer)
     })
   }
 
@@ -288,8 +397,11 @@ export class RLPx {
     })
 
     peer.events.once('close', (reason, disconnectWe) => {
-      if (typeof reason === 'number') {
-        this._discoveryMetrics?.recordRlpxDisconnect(reason as DISCONNECT_REASON)
+      if (typeof reason === 'number' && (disconnectWe === true || disconnectWe === false)) {
+        this._discoveryMetrics?.recordRlpxDisconnect(
+          reason as DISCONNECT_REASON,
+          disconnectWe === true ? 'local' : 'remote',
+        )
       }
       if (disconnectWe === true) {
         if (this.DEBUG) {
@@ -309,7 +421,7 @@ export class RLPx {
               address: peer['_socket'].remoteAddress,
               tcpPort: peer['_socket'].remotePort,
             },
-            ts: (Date.now() + 300000) as number, // 5 min * 60 * 1000
+            ts: (Date.now() + BUSY_PEER_REDIAL_MS) as number,
           })
         }
       }
@@ -358,6 +470,9 @@ export class RLPx {
     }
     // Rotating selection counter going in loop from 0..9
     this._refillIntervalSelectionCounter = (this._refillIntervalSelectionCounter + 1) % 10
+    this._dialQueuedDirectoryPeers()
+    this._promoteDeferredDials()
+    if (this._hasReadyDirectoryPeer()) return
 
     this._peersQueue = this._peersQueue.filter((item) => {
       if (this._getOpenSlots() === 0) return true

@@ -32,7 +32,13 @@ function emptyEthReply(
   if (!spec) return undefined
   if (version < spec.min) return undefined
   if (spec.max !== undefined && version > spec.max) return undefined
-  if (version >= 66) return { name: spec.name, rlp: [requestIdOf(payload), []] }
+  if (version >= 66) {
+    // eth/70 receipt replies carry a complete-range flag before the list.
+    if (name === 'GET_RECEIPTS' && version >= 70) {
+      return { name: spec.name, rlp: [requestIdOf(payload), new Uint8Array(), []] }
+    }
+    return { name: spec.name, rlp: [requestIdOf(payload), []] }
+  }
   return { name: spec.name, rlp: [] }
 }
 

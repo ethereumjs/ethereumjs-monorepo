@@ -101,10 +101,6 @@ describe('[Devp2p/RLPx]: transport', () => {
       10,
       'returns default number of open slots (i.e. `max_peers`) on startup',
     )
-    assert.strictEqual(
-      rlpx['_getOpenQueueSlots'](),
-      20,
-      'returns default number of open queue slots on startup',
-    )
+    assert.strictEqual(rlpx['_getOpenQueueSlots'](), 512, 'dial queue capacity on startup')
   })
 })

@@ -10,7 +10,12 @@ import {
 } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { MerkleStateManager, SimpleStateManager, consumeBAL } from '../src/index.ts'
+import {
+  FlatStateManager,
+  MerkleStateManager,
+  SimpleStateManager,
+  consumeBAL,
+} from '../src/index.ts'
 
 describe('[StateManager/consumeBAL]: apply block access list', () => {
   it('consumeBAL() applies balance and storage changes from balSimpleJSON', async () => {
@@ -39,6 +44,41 @@ describe('[StateManager/consumeBAL]: apply block access list', () => {
 
   it('consumeBAL() deletes empty EIP-161 accounts on SimpleStateManager', async () => {
     const sm = new SimpleStateManager()
+    const address = createAddressFromString('0x000000000000000000000000000000000000dead')
+    await sm.putAccount(address, createAccount({ balance: 1n }))
+
+    await consumeBAL(sm, [
+      {
+        address: address.toString() as PrefixedHexString,
+        nonceChanges: [],
+        balanceChanges: [{ blockAccessIndex: '0x00', postBalance: '0x00' }],
+        codeChanges: [],
+        storageChanges: [],
+        storageReads: [],
+      },
+    ])
+
+    assert.isUndefined(await sm.getAccount(address))
+  })
+
+  it('FlatStateManager.consumeBAL() applies balance and storage changes from balSimpleJSON', async () => {
+    const sm = new FlatStateManager()
+    const bal = balSimpleJSON.filter(
+      (entry) =>
+        entry.balanceChanges.length > 0 ||
+        entry.storageChanges.length > 0 ||
+        entry.nonceChanges.length > 0,
+    ) as BALJSONBlockAccessList
+
+    await sm.consumeBAL(bal)
+
+    const balanceAddr = createAddressFromString('0x2adc25665018aa1fe0e6bc666dac8fc2697ff9ba')
+    const balanceAccount = await sm.getAccount(balanceAddr)
+    assert.strictEqual(balanceAccount?.balance, hexToBigInt('0x01ec30'))
+  })
+
+  it('FlatStateManager.consumeBAL() deletes empty EIP-161 accounts', async () => {
+    const sm = new FlatStateManager()
     const address = createAddressFromString('0x000000000000000000000000000000000000dead')
     await sm.putAccount(address, createAccount({ balance: 1n }))
 

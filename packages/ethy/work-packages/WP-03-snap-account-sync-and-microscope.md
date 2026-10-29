@@ -1,7 +1,8 @@
-# WP-03: 16-Bucket `snap/1` Account Sync, Range Proofs & Developer Microscope
+# WP-03: Live `ETH` Status / RLP Canonical Zero Fix, `@ethereumjs/statemanager` `FlatStateManager` & 16-Bucket `snap/1` Sync
 
-- **Status:** `BLOCKED_BY_WP-02`
-- **Dependencies:** `WP-01`, `WP-02`
+- **Status:** `DONE`
+- **Dependencies:** `WP-01` (`DONE`), `WP-02` (`DONE`), `WP-02b` (`DONE`)
+- **Branch:** `ethy-wp03`
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
 
@@ -10,59 +11,189 @@
 ## 1. Holistic Scope & Architectural Requirements
 
 ### Goal
-Implement the 16-bucket (`0x0..0xf`) `snap/1` Account Range Synchronizer backed by the `StateStore` abstraction (`InMemoryFlatStore`), verifying every downloaded chunk with `@ethereumjs/mpt`'s `verifyMerkleRangeProof`, and wire the interactive **Developer Microscope** tools (`inspectRawAccountRange`, `sampleSyncedAccounts`, `triggerDevAction`) so stalled buckets, slow peers, and freshly synced accounts can be inspected and controlled live from the TUI prompt.
+1. **Unblock sustained live `ETH` `STATUS` (`statusOk > 0`) and live Pivot Header acquisition on Sepolia** by fixing the RLP non-canonical zero (`intToBytes(0)` → `intToUnpaddedBytes(0)`) and post-merge header hardfork bugs identified from the `WP-02b` soak telemetry.
+2. **Build and export a first-class `FlatStateManager` directly in `@ethereumjs/statemanager`** (`packages/statemanager/src/flatStateManager.ts`): a hash-keyed (`keccak256(address)`), Copy-on-Write flat state manager that natively ingests `snap/1` account/storage/bytecode batches, supports O(1) checkpoint/sandbox forks (replacing `SimpleStateManager`'s O(N) full-map clone on every checkpoint), and implements `StateManagerInterface` (including `consumeBAL`) from Day 1.
+3. **Implement the 16-bucket (`0x0..0xf`) `snap/1` Account Range Synchronizer** in `@ethereumjs/ethy` backed by `FlatStateManager`, verifying every downloaded chunk with `@ethereumjs/mpt`'s `verifyMerkleRangeProof` and `@ethereumjs/util`'s `accountBodyFromSlim` / `accountBodyToRLP`.
+4. **Wire the Stage-2 Developer Microscope tools** (`inspectRawAccountRange`, `sampleSyncedAccounts`, `triggerDevAction`) into the 3-Box Cockpit (`SNAP` domain lens) and Main Interaction Area.
 
-### Key Technical Nuances (From EthereumJS Codebase Audit)
-1. **Slim RLP vs. Full RLP in `snap/1` `AccountRange`:**
-   - In the `snap/1` wire specification, each account in `ACCOUNT_RANGE` (`[reqId, [[accountHash, slimBody], ...], proof]`) uses **slim RLP** where an empty `storageRoot` is encoded as `Uint8Array(0)` (instead of `KECCAK256_RLP`) and an empty `codeHash` is encoded as `Uint8Array(0)` (instead of `KECCAK256_NULL`).
-   - Before passing `values` into `verifyMerkleRangeProof` from `@ethereumjs/mpt`, each account body must be converted back to standard full RLP (`createAccount({ nonce, balance, storageRoot: storageRoot.length === 0 ? KECCAK256_RLP : storageRoot, codeHash: codeHash.length === 0 ? KECCAK256_NULL : codeHash }).serialize()`).
-2. **Identity Key Hashing in `verifyMerkleRangeProof`:**
-   - Because `snap/1` `accountHash` keys are *already* 32-byte keccak256 hashes, `verifyMerkleRangeProof` **must** be called with `useKeyHashingFunction = (key: Uint8Array) => key` (identity function), **not** the default `keccak_256`!
-3. **Continuation Flag (`hasRightElement`):**
-   - `verifyMerkleRangeProof` returns `Promise<boolean>` indicating whether more trie leaves exist to the right of the last key in the response. Use this return value + bucket `limitHash` (`0x0fff...`, `0x1fff...`, ..., `0xffff...`) to advance `bucket.currentLastHash` (incremented by 1) or mark the bucket `done`.
+---
 
-### Key Deliverables
+### Root-Cause Analysis from `WP-02b` Soak (Why `statusOk` was 0 and `SUBPROTOCOL_ERROR` clustered)
 
-1. **`StateStore` Interface & `InMemoryFlatStore` (`src/store/`):**
-   - Clean, synchronous/fast-async interface `StateStore`:
-     - `putAccountsBatch(entries: Array<{ accountHash: Uint8Array; address?: Uint8Array; nonce: bigint; balance: bigint; storageRoot: Uint8Array; codeHash: Uint8Array }>): void`
-     - `getAccountByHash(accountHash: Uint8Array): FlatAccount | undefined`
-     - `sampleAccounts(opts: { prefixHex?: string; limit?: number; sortByBalanceDesc?: boolean }): FlatAccount[]`
-     - `accountCount(): number`
-   - `InMemoryFlatStore` implementation with zero external dependencies.
+In `WP-02b`, discovery and TCP RLPx handshakes succeeded (`tablePeers: 65`, `dns.peersAdded: 84`, `rlpx.connected: 34`), but `statusOk` stayed `0` and peers disconnected with `SUBPROTOCOL_ERROR`. Codebase audit of `packages/devp2p` and `packages/ethy` against Go-Ethereum's `rlp/decode.go` revealed **three concrete wire bugs**:
 
-2. **`SnapTransport` Abstraction & `SyntheticSnapPeer` for CI (`src/sync/syntheticPeer.ts`):**
-   - `SnapTransport` interface decoupling the bucket scheduler from raw sockets.
-   - `SyntheticSnapPeer`: At test startup, builds a real `@ethereumjs/mpt` `MerklePatriciaTrie` with N deterministic accounts (e.g., 160 accounts across all 16 hex buckets `0x0..0xf`), computes the real `stateRoot`, and serves `requestAccountRange(req)` with valid slim-RLP bodies and real Merkle edge proofs (`createMerkleProof` on `originHash` and last key). Also supports injecting simulated timeouts or corrupted proofs on specific buckets (e.g., bucket `0x3`).
+1. **Non-Canonical RLP Zero (`intToBytes(0)` / `bigIntToBytes(0n)` sends `0x00` instead of `0x80`):**
+   - In `@ethereumjs/util`, `intToBytes(0)` and `bigIntToBytes(0n)` return a 1-byte `Uint8Array([0])` (`0x00`). Go-Ethereum and Reth reject `0x00` when decoding `uint64` / `big.Int` RLP scalars with `rlp: non-canonical integer (leading zero bytes)` and immediately drop the peer with `DISCONNECT_REASON.SUBPROTOCOL_ERROR`!
+   - `@ethereumjs/util` provides **`intToUnpaddedBytes(n)`** and **`bigIntToUnpaddedBytes(n)`** (which return `new Uint8Array(0)` → `0x80` for `0` / `0n`).
+   - **Exact sites to fix in `@ethereumjs/devp2p` and `@ethereumjs/ethy`:**
+     - `packages/devp2p/src/lab/messages/eth.ts:27`: `earliestBlock: intToBytes(0)` → use `intToUnpaddedBytes(0)` (and parse `fields.latestBlock` / `fields.td` via `bigIntToUnpaddedBytes(BigInt(...))`, which also fixes odd-length hex strings like `'0x1912a62'` in `genesisStatus.ts`!).
+     - `packages/devp2p/src/protocol/eth.ts:393-398`: `bigIntToBytes(latestNum)` → `bigIntToUnpaddedBytes(latestNum)` (when `latestNum === 0n`, `bigIntToBytes(0n)` sent `0x00`!).
+     - `packages/devp2p/src/protocol/eth/codec.ts:60-75`: `intToBytes` on `requestId`, `limit`, `skip` (`0`!), `reverse` (`0`!), and `block` (`0`!) → replace with `intToUnpaddedBytes`.
+     - `packages/devp2p/src/rlpx/peer.ts:263`: `this._port === null ? new Uint8Array(0) : intToBytes(this._port)` → when `this._port === 0` (ephemeral listen port `0`), `intToBytes(0)` sent `0x00` in `HELLO`! Use `!this._port ? new Uint8Array(0) : intToUnpaddedBytes(this._port)`.
+     - `packages/ethy/src/net/peerCoordinator.ts:227`: `client.setBlockRange(intToBytes(0), ...)` → use `intToUnpaddedBytes(0)` and `bigIntToUnpaddedBytes(parsed.number)`.
+2. **Fork-ID Validation Tolerance on Live Testnets (`packages/devp2p/src/protocol/eth.ts:171-214`):**
+   - Surface the exact caught subprotocol error message in `DiscoveryMetrics` / `WorkerDiagnosticEntry` when `Peer._handleBody` catches an error (`peer.ts:660`), and ensure `ETH._validateForkId` does not mistakenly compare a block number (`this._latestBlock`) against a post-Merge timestamp (`peerNextFork`).
+3. **Post-Merge `BlockHeader` Hardfork Selection in `pivotHeader.ts` (`packages/ethy/src/net/pivotHeader.ts:48-54`):**
+   - `headerFromRaw` currently calls `common.setHardforkBy({ blockNumber })` without `timestamp`. Because post-Merge forks in `@ethereumjs/common` (`shanghai` → `bpo2`) are scheduled by `timestamp` (`block: null`), `setHardforkBy({ blockNumber })` alone resets `common` to `paris`, causing `createBlockHeaderFromRLP` to fail on 20-field post-Merge headers!
+   - Fix: extract both `blockNumber` (`fields[8]`) and `timestamp` (`fields[11]`) from the RLP header tuple and call `common.setHardforkBy({ blockNumber, timestamp })`.
 
-3. **16-Bucket `SnapAccountSynchronizer` (`src/sync/accountSync.ts`):**
-   - Divides `0x0000...` – `0xffff...` into 16 `SnapBucket` ranges (`0x0`..`0xf`).
-   - Assigns idle `snap/1` peers to pending/stalled buckets, tracks per-peer request RTT and timeouts in `EthySpine.peers`, verifies range proofs via `verifyMerkleRangeProof`, writes verified accounts to `StateStore`, and updates `EthySpine.snapBuckets`, `totalAccountsSynced`, and `accountsPerSec`.
-   - If a peer times out or fails `verifyMerkleRangeProof`, records a detailed `DiagnosticEvent` (with `bucketIndex`, `peerId`, and failure reason) in `spine.diagnosticRingBuffer`, marks the bucket `stalled` briefly, and reassigns to a healthy peer.
+---
 
-4. **Stage-2 Microscope Tools & `SNAP` Domain Lens (`src/tools/`, `src/tui/`):**
-   - `inspectRawAccountRange`: Queries `StateStore.sampleAccounts({ prefixHex })` (or triggers an on-demand `GET_ACCOUNT_RANGE` for that prefix) and returns a `table` `WidgetSpec` showing Account Hash, Balance (ETH), Nonce, Contract (`yes`/`no`), and Storage Root.
-   - `sampleSyncedAccounts`: Shows top accounts by ETH balance or highest nonce among the accounts synced so far.
-   - `triggerDevAction`: Allows `/drop <peerId>`, `/reassign <bucketHex>`, `/pause`, `/resume` directly from the TUI prompt.
-   - Wire `/range` and `/sample` into the Middle Box (`◐ SNAP Commands`) and live account/bucket stats into the Right Box (`◐ SNAP Metrics`) of the 3-Box Cockpit when `activeDomain === 'snap'`.
+### Why `FlatStateManager` Belongs Directly in `@ethereumjs/statemanager`
 
-5. **Tier-1 Unit Test Suite (`test/snapSync.spec.ts`):**
-   - End-to-end 16-bucket sync against `SyntheticSnapPeer` (160 accounts) completing in `<100ms` and verifying that all 16 buckets reach `done` and `StateStore.accountCount() === 160`.
-   - Fault-injection test: `SyntheticSnapPeer` returns a corrupted edge proof on bucket `0x3` → synchronizer logs anomaly to `diagnosticRingBuffer`, marks peer error, reassigns bucket `0x3` to a healthy peer, and finishes 100% sync.
+1. **`snap/1` Delivers 32-Byte Account & Slot Hashes (`keccak256(address)`), Not 20-Byte Addresses:**
+   - `SimpleStateManager` in `@ethereumjs/statemanager` keys its `Map` by `address.toString()` (20-byte hex), so it cannot store `snap/1` `AccountRange` data (`[accountHash32, slimAccountBody]`) where the 20-byte address preimage is unknown.
+   - `FlatStateManager` keys accounts by their **32-byte `accountHash`** (`keccak256(address.bytes)` when accessed via `StateManagerInterface.getAccount(address)` or `consumeBAL`, and directly by `accountHash` when ingested from `snap/1`), while maintaining an optional `accountHash -> Address` preimage map whenever an address is known!
+2. **O(1) Copy-on-Write Checkpointing & Sandbox Overlays (Fixing `SimpleStateManager`'s O(N) Clone):**
+   - `SimpleStateManager.checkpoint()` clones the entire `accountStack` `Map` on every call (`new Map(this.topAccountStack())`), which freezes when holding 100k–10M snap-synced accounts.
+   - `FlatStateManager` uses a **delta-only checkpoint stack** (storing only the prior value of keys mutated during the current frame) and supports `forkOverlay()` / `shallowCopy()` as an O(1) Copy-on-Write view over the base flat state — making `WP-06`'s EVM sandbox and FYP/MCP integration effortless!
+3. **Code Deduplication by `codeHash`:**
+   - Stores contract bytecode blobs by `codeHashHex -> Uint8Array` (matching `snap/1` `GET_BYTE_CODES`), avoiding duplicate bytecode copies across proxy/clone contracts.
+
+---
+
+### Key Technical Nuances for `snap/1` (`GET_ACCOUNT_RANGE` & `verifyMerkleRangeProof`)
+
+1. **Exact `snap/1` Wire Encoding (`[reqId, rootHash, startingHash, limitHash, responseBytes]`):**
+   - Per the `snap/1` spec (and the archived client's snap protocol under `archive/client/src/net/protocol/`), `GET_ACCOUNT_RANGE` (`0x00`) is a **5-element flat RLP list**:
+     ```ts
+     [
+       bigIntToUnpaddedBytes(reqId),
+       setLengthLeft(rootHash, 32),
+       setLengthLeft(startingHash, 32),
+       setLengthLeft(limitHash, 32),
+       bigIntToUnpaddedBytes(responseBytes),
+     ]
+     ```
+   - `ACCOUNT_RANGE` (`0x01`) decodes as `[reqIdBytes, accountsList, proofNodes]` where each entry in `accountsList` is `[accountHash32, slimAccountBody]`.
+2. **Slim RLP vs. Full RLP via `@ethereumjs/util`:**
+   - `@ethereumjs/util` already ships **`accountBodyFromSlim(slimBody)`**, **`accountBodyToSlim(body)`**, and **`accountBodyToRLP(body)`**!
+   - Before calling `verifyMerkleRangeProof(rootHash, originHash, lastKeyHash, keys, values, proof, (k) => k)`, convert each `slimAccountBody` in `ACCOUNT_RANGE` to full RLP via `accountBodyToRLP(accountBodyFromSlim(slimBody), false)`.
+3. **Identity Key Hashing & Continuation (`hasRightElement`):**
+   - Call `verifyMerkleRangeProof` with `useKeyHashingFunction = (key: Uint8Array) => key` (identity function, since `accountHash` keys in `snap/1` are already 32-byte keccak256 hashes).
+   - Use the boolean return value (`hasRightElement`) and comparison against `bucket.limitHash` (`0x0fff...`, `0x1fff...`, ..., `0xffff...`) to advance `bucket.currentLastHash` (incremented by 1) or mark the bucket `done`.
+
+---
+
+### Key Deliverables (4 Atomic Slices)
+
+1. **Slice 1 — `@ethereumjs/devp2p`: RLP Canonical Zero & Subprotocol Error Diagnostics:**
+   - Fix `intToBytes(0)` / `bigIntToBytes(0n)` → `intToUnpaddedBytes` / `bigIntToUnpaddedBytes` in `messages/eth.ts`, `protocol/eth.ts`, `protocol/eth/codec.ts`, and `rlpx/peer.ts`.
+   - Fix `messages/snap.ts` `GET_ACCOUNT_RANGE` builder to match the 5-element `snap/1` wire tuple.
+   - Surface the caught error message in `Peer._handleBody` (`peer.ts:660`) into `DiscoveryMetrics` / worker diagnostics.
+   - Add unit tests verifying that `eth/69` `STATUS` with `earliestBlock = 0`, `GET_BLOCK_HEADERS` with `skip = 0, reverse = 0`, and `HELLO` with `port = 0` encode `0` as `new Uint8Array(0)` (`0x80`).
+
+2. **Slice 2 — `@ethereumjs/statemanager` (+ Cross-Stack Matrix in `@ethereumjs/evm` & `@ethereumjs/vm`): `FlatStateManager` (`packages/statemanager/src/flatStateManager.ts`):**
+   - Implement and export `FlatStateManager` (and `createFlatStateManager` factory) implementing `StateManagerInterface`:
+     - Standard `StateManagerInterface`: `getAccount`, `putAccount`, `deleteAccount`, `modifyAccountFields`, `getCode`, `putCode`, `getCodeSize`, `getStorage`, `putStorage`, `clearStorage`, `checkpoint`, `commit`, `revert`, `flush`, `shallowCopy` (O(1) Copy-on-Write view), `consumeBAL`.
+     - Direct hash-keyed `snap/1` & inspection API:
+       - `putSnapAccountsBatch(entries: Array<{ accountHash: Uint8Array; account: Account; address?: Address }>): void`
+       - `getAccountByHash(accountHash: Uint8Array): Account | undefined`
+       - `putSnapStorageBatch(accountHash: Uint8Array, slots: Array<{ slotHash: Uint8Array; value: Uint8Array }>): void`
+       - `putCodeByHash(codeHash: Uint8Array, code: Uint8Array): void`
+       - `sampleAccounts(opts?: { prefixHex?: string; limit?: number; sortByBalanceDesc?: boolean }): FlatAccountSample[]`
+       - `accountCount(): number`
+   - **Comprehensive Stack-Wide Testing (Consistency across `statemanager`, `evm`, and `vm`):**
+     1. **Shared `@ethereumjs/statemanager` Matrix Specs:** Add `FlatStateManager` alongside `[MerkleStateManager, SimpleStateManager]` in the existing matrix suites:
+        - `packages/statemanager/test/checkpointing.account.spec.ts`
+        - `packages/statemanager/test/checkpointing.code.spec.ts`
+        - `packages/statemanager/test/checkpointing.storage.spec.ts`
+        - `packages/statemanager/test/consumeBAL.spec.ts`
+     2. **Dedicated `packages/statemanager/test/flatStateManager.spec.ts`:** Test O(1) delta checkpoint/revert without cloning the base map, `putSnapAccountsBatch` + `getAccount(address)` lookup via `keccak_256(address)`, `putSnapStorageBatch` + `getStorage(address, key)` lookup via `keccak_256(key)`, `putCodeByHash`, `sampleAccounts`, and `shallowCopy()` Copy-on-Write isolation.
+     3. **`@ethereumjs/evm` & `@ethereumjs/vm` Integration Tests:** Add focused test cases in `packages/evm/test/` and `packages/vm/test/api/` running `createEVM({ stateManager: new FlatStateManager() })` (`runCall` with `SLOAD`/`SSTORE`/nested `CALL` revert on snap-seeded accounts) and `createVM({ stateManager: new FlatStateManager() })` (`runTx` value transfer + contract execution + EIP-7928 BAL generation/consumption) to guarantee end-to-end consistency across the EthereumJS execution stack.
+
+3. **Slice 3 — `@ethereumjs/ethy`: Post-Merge Pivot Fix, `SyntheticSnapPeer` & 16-Bucket `SnapAccountSynchronizer` (`src/net/`, `src/sync/`):**
+   - Add `@ethereumjs/statemanager` and `@ethereumjs/mpt` to `packages/ethy/package.json` `dependencies`.
+   - Update `headerFromRaw` in `src/net/pivotHeader.ts` to pass `{ blockNumber, timestamp }` to `common.setHardforkBy(...)`, and normalize `genesisStatus.ts` hex quantities.
+   - `SyntheticSnapPeer` (`src/sync/syntheticPeer.ts`): Builds a deterministic 160-account `@ethereumjs/mpt` `MerklePatriciaTrie` across all 16 hex buckets (`0x0..0xf`) in `<50ms` for offline CI tests, serving `ACCOUNT_RANGE` packets with `accountBodyToSlim` bodies and real Merkle edge proofs (`createMerkleProof`), plus fault injection on bucket `0x3`.
+   - `SnapAccountSynchronizer` (`src/sync/accountSync.ts`):
+     - Triggered automatically once `spine.pivotStateRoot` is anchored.
+     - Schedules `GET_ACCOUNT_RANGE` across connected `snap/1` peers for the 16 `spine.snapBuckets` (`0x0..0xf`), verifies range proofs via `verifyMerkleRangeProof`, writes verified accounts to `node.stateManager` (`FlatStateManager.putSnapAccountsBatch`), and updates `spine.snapBuckets`, `totalAccountsSynced`, `accountsPerSec`, and `NoticeBoard`.
+
+4. **Slice 4 — `@ethereumjs/ethy`: Stage-2 Microscope Tools & `SNAP` Domain Lens (`src/tools/`, `src/tui/`):**
+   - `inspectRawAccountRange` (`/range [prefix]`): Queries `FlatStateManager.sampleAccounts({ prefixHex })` and returns a `table` `WidgetSpec` showing Account Hash (or Address if preimage known), Balance (ETH), Nonce, Contract (`yes`/`no`), and Storage Root.
+   - `sampleSyncedAccounts` (`/sample`): Shows top synced accounts by ETH balance or nonce.
+   - `triggerDevAction`: Supports `/drop <peerId>`, `/reassign <bucketHex>`, `/pause`, `/resume`.
+   - Wire `/range` and `/sample` into the Middle Box (`◐ SNAP Commands`) and `slashComplete.ts`.
 
 ### Acceptance Criteria
-- [ ] Full 16-bucket `snap/1` account sync + `verifyMerkleRangeProof` passes against `SyntheticSnapPeer` in `<100ms` in unit tests.
-- [ ] Running `ethy sepolia` live pulls real Sepolia account ranges into `InMemoryFlatStore`, advances the 16-segment progress bar in the `Node Pulse` box and `SNAP Metrics` box, and lets the user inspect synced accounts via `Tab` (to `SNAP`) + `Enter` or `/sample` / `/range 0x0` in the Main Interaction Area.
-- [ ] `npm run tsc`, `npm test`, and `npm run spellcheck` pass with 0 errors.
+- [ ] All RLP scalar zeros in `HELLO`, `eth/69` `STATUS`, `GET_BLOCK_HEADERS`, `BLOCK_RANGE_UPDATE`, and `GET_ACCOUNT_RANGE` encode as `new Uint8Array(0)` (`0x80`).
+- [ ] `FlatStateManager` is exported from `@ethereumjs/statemanager` with full TypeDoc JSDoc comments (`api-docs.mdc`), passes `flatStateManager.spec.ts` and the shared `checkpointing.{account,code,storage}.spec.ts` + `consumeBAL.spec.ts` matrices, and passes integration tests in `@ethereumjs/evm` (`runCall`) and `@ethereumjs/vm` (`runTx`).
+- [ ] `pivotHeader.spec.ts` decodes both pre-Merge and post-Merge (timestamp-forked) headers accurately.
+- [ ] Full 16-bucket `snap/1` account sync + `verifyMerkleRangeProof` into `FlatStateManager` passes against `SyntheticSnapPeer` (including fault-injection recovery on bucket `0x3`) in `<150ms` in unit tests.
+- [ ] Live soak (`node --import tsx src/cli/main.ts sepolia --headless` or TUI `ethy sepolia`) achieves `statusOk > 0`, anchors a live Sepolia `pivotBlockNumber` + `pivotStateRoot`, and begins pulling live `snap/1` account ranges into `FlatStateManager`.
+- [ ] `npm run tsc`, `npm test`, and `npm run spellcheck` pass with 0 errors across `packages/devp2p`, `packages/statemanager`, and `packages/ethy`.
 
 ---
 
 ## 2. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled out by Grok 4.7 during the Planning pass.)*
+Composer implements in **four isolated commits**: `@ethereumjs/devp2p`, `@ethereumjs/statemanager`, `@ethereumjs/evm` + `@ethereumjs/vm`, then `@ethereumjs/ethy`. Workspace deps `@ethereumjs/statemanager` and `@ethereumjs/mpt` at `^10.1.3` (**D-015**). No third-party packages.
+
+### Design refinements (D-036–D-042)
+
+See [`PROGRESS.md`](../PROGRESS.md) Decision Log. Summary:
+
+- **D-036:** `forkValidationHead(common, latestBlock, nowSec)` for EIP-2124 post-Merge timestamp vs block; `rlpx.lastSubprotocolError` on discovery metrics + worker diagnostic.
+- **D-037:** Flat storage keys = `keccak256(rawSlot)`; live `shallowCopy()` overlay; delta-only checkpoints; no state root APIs; `consumeBAL` without expected root.
+- **D-038:** Synthetic trie `useKeyHashing: false`; identity `(k) => k` in range proofs; slim → full RLP before verify.
+- **D-039:** One in-flight range per snap peer; 512 KiB `responseBytes`; bucket `0x3` fault injection on synthetic peer.
+- **D-040:** `EthyNode.stateManager`; intent engine gets `{ stateManager, disconnectPeer }`.
+- **D-041:** `snapPaused`; `/pause`, `/resume`; `/ra` → `/range `, `/sa` → `/sample`.
+- **D-042:** Build statemanager before ethy `tsc` (`customConditions: []`).
+
+### Slice 1 — `@ethereumjs/devp2p`
+
+| File | Change |
+| --- | --- |
+| `src/lab/messages/eth.ts` | `intToUnpaddedBytes(0)` for earliestBlock; `bigIntToUnpaddedBytes(BigInt(hex))` for td/latestBlock |
+| `src/protocol/eth.ts` | `bigIntToUnpaddedBytes(latestNum)`; fork check via `forkValidationHead` |
+| `src/protocol/eth/codec.ts` | Unpadded scalars for requestId, limit, skip, reverse, block |
+| `src/rlpx/peer.ts` | HELLO port: `!this._port ? empty : intToUnpaddedBytes(this._port)` |
+| `src/lab/messages/snap.ts` | 5-tuple `GET_ACCOUNT_RANGE` wire shape |
+| `src/discovery/metrics.ts`, `src/worker/host.ts` | `lastSubprotocolError` telemetry |
+
+**Tests:** `eth-codec.spec.ts` zero scalars; snap 5-tuple builder; fork-head unit; metrics snapshot.
+
+### Slice 2 — `@ethereumjs/statemanager`
+
+New `src/flatStateManager.ts` + `createFlatStateManager`; matrix in checkpointing + `consumeBAL`; dedicated `flatStateManager.spec.ts`.
+
+### Slice 3 — `@ethereumjs/evm` & `@ethereumjs/vm`
+
+`evm/test/flatStateManager.spec.ts` (`runCall` SLOAD/SSTORE/revert); `vm/test/api/flatStateManager.spec.ts` (`runTx` + `consumeBAL`).
+
+### Slice 4 — `@ethereumjs/ethy`
+
+`src/sync/{syntheticPeer,snapTransport,accountSync}.ts`; pivot timestamp HF; coordinator snap sync + canonical `setBlockRange`; `/range`, `/sample`, pause/resume; tests `accountSync.spec.ts`, extended `pivotHeader.spec.ts`.
+
+**Gates:** `tsc`, `test`, `spellcheck` per touched package.
 
 ---
 
 ## 3. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled out by Composer 2.5 after implementation and verification.)*
+Four-slice delivery on `ethy-wp03`: `@ethereumjs/devp2p` (canonical zeros, `forkValidationHead`, snap 5-tuple, `lastSubprotocolError`), `@ethereumjs/statemanager` (`FlatStateManager` + tests), `@ethereumjs/evm` / `@ethereumjs/vm` (flat manager matrix specs), `@ethereumjs/ethy` (synthetic snap peer, synchronizer, pivot timestamp HF, `/range` / `/sample` / pause/resume, cockpit wiring).
+
+**Deviations**
+
+- **`verifyMerkleRangeProof` hasher:** Synthetic trie uses `useKeyHashing: false`. Verification uses the default MPT key hasher (omit the 7th argument). An identity `(k) => k` callback breaks `createMPTFromProof` root handling.
+- **Pivot header tests:** Paris fixture uses a pre-Shanghai timestamp so `setHardforkBy({ blockNumber, timestamp })` matches the header used to compute the hash. Low-block pre-merge case uses `homestead`, not `london`, to avoid EIP-1559 field mismatch at block 100.
+- **Tab completion:** `completeSlashDraft` applies `SHORT_EXPAND` before prefix scan so `/p` completes to `/peers` despite `/pause` sharing the prefix.
+- **EVM storage assertions:** `FlatStateManager` stores EVM `SSTORE` values with unpadded byte length (same as `SimpleStateManager`); cross-stack specs assert the trailing value byte, not always a 32-byte word.
+
+**Gates (local):** `npm run tsc` + targeted/`test:node` vitest on touched packages; devp2p `test:node` 129 passed; statemanager `test:node` green; ethy WP-03 specs green. Live Sepolia soak remains manual per plan.
+
+### Close-out (2026-10-29)
+
+WP-03 stops here. The offline synchronizer, `FlatStateManager`, microscope tools, and the Sepolia wire follow-up are on `ethy-wp03`.
+
+The live goal in §1 (sustained `statusOk > 0`, then a pivot, then snap) did not land in the soaks we ran. What those soaks showed:
+
+- A peer row means RLPx HELLO finished. Validated ETH STATUS is the footer `status` count. Closing samples still had `status` at 0.
+- The ETH subprotocol allows 5 seconds for STATUS, then disconnects with `TIMEOUT`. That is the stretch where a few peers look connected and then leave, and the next dial takes the slot.
+- Snap sends nothing until `SnapAccountSynchronizer.start()`, which runs only after `GET_BLOCK_HEADERS` returns a pivot. No validated head means no account ranges and no bucket progress.
+- Many `SUBPROTOCOL_ERROR` lines are other chains refusing our Sepolia STATUS. The reason code does not carry their text. A network-id line is the same refusal when we parse their STATUS first.
+- One earlier soak did anchor a pivot on a single reth peer (block 12,012,855) and entered snap sync with 0 accounts ingested before the session ended. That did not repeat on the closing runs.
+
+ethy now speaks eth/69 through eth/72. Bootnodes and the Sepolia DNS tree dial before discovery v4 neighbors. Further live STATUS work is outside this package.

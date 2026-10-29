@@ -23,3 +23,8 @@ export function activeHardfork(chain: ChainConfig): string {
   const now = BigInt(Math.floor(Date.now() / 1000))
   return common.getHardforkBy({ timestamp: now })
 }
+
+/** EIP-2124 fork hash advertised in ETH STATUS for `hardfork`. */
+export function advertisedForkHash(chain: ChainConfig, hardfork: string): string {
+  return new Common({ chain, hardfork }).forkHash()
+}

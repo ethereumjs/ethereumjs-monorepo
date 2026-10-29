@@ -5,6 +5,7 @@ import { recordDiagnostic } from '../spine/diagnostics.ts'
 import { runEthySession } from '../tui/session.ts'
 import { parseEthyArgs, printEthyUsage } from './args.ts'
 import { resolveNetwork } from './chain.ts'
+import { runHeadlessUntilSignal } from './headlessSoak.ts'
 
 async function main(): Promise<void> {
   let cli
@@ -37,16 +38,23 @@ async function main(): Promise<void> {
   })
 
   let coordinatorStop: (() => void) | undefined
+  let p2pError: string | undefined
   if (!cli.demo) {
     try {
       const handle = await startPeerCoordinator({
         spine: node.spine,
+        stateManager: node.stateManager,
         network,
         notices: node.notices,
       })
+      node.disconnectPeer = handle.disconnectPeer
+      ;(
+        node.intentEngine as import('../ai/deterministicEngine.ts').DeterministicIntentEngine
+      ).setDisconnectPeer(handle.disconnectPeer)
       coordinatorStop = handle.stop
     } catch (e: unknown) {
       const message = (e as Error).message
+      p2pError = message
       recordDiagnostic(node.spine, {
         subsystem: 'devp2p',
         severity: 'error',
@@ -70,26 +78,13 @@ async function main(): Promise<void> {
   if (cli.headless) {
     if (cli.demo) {
       advanceDemo(node.spine, 5000)
-    } else if (coordinatorStop !== undefined) {
-      const soakMs = 45_000
-      const soakTimer = setTimeout(() => {
-        const line = {
-          type: 'ethy_discovery_soak',
-          network,
-          peers: node.spine.peers.size,
-          discovery: node.spine.discovery ?? null,
-        }
-        process.stdout.write(`${JSON.stringify(line)}\n`)
-      }, soakMs)
-      soakTimer.unref()
     }
-    await new Promise<void>((resolve) => {
-      const onSignal = () => {
-        shutdown()
-        resolve()
-      }
-      process.once('SIGINT', onSignal)
-      process.once('SIGTERM', onSignal)
+    await runHeadlessUntilSignal({
+      network,
+      node,
+      p2pStarted: cli.demo || coordinatorStop !== undefined,
+      p2pError,
+      onShutdown: shutdown,
     })
     return
   }

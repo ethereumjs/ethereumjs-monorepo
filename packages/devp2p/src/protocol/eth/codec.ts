@@ -1,4 +1,4 @@
-import { intToBytes } from '@ethereumjs/util'
+import { intToBytes, intToUnpaddedBytes } from '@ethereumjs/util'
 
 import { EthMessageCodes } from './codes.ts'
 
@@ -58,12 +58,12 @@ export function getBlockHeadersQueryFromJSON(
   const requestId =
     fields.requestId !== undefined
       ? typeof fields.requestId === 'number'
-        ? intToBytes(fields.requestId)
+        ? intToUnpaddedBytes(fields.requestId)
         : hexToBytes(fields.requestId.startsWith('0x') ? fields.requestId : `0x${fields.requestId}`)
-      : intToBytes(1)
-  const limit = intToBytes(fields.limit ?? fields.max ?? 1)
-  const skip = intToBytes(fields.skip ?? 0)
-  const reverse = fields.reverse ? intToBytes(1) : intToBytes(0)
+      : intToUnpaddedBytes(1)
+  const limit = intToUnpaddedBytes(fields.limit ?? fields.max ?? 1)
+  const skip = intToUnpaddedBytes(fields.skip ?? 0)
+  const reverse = fields.reverse ? intToUnpaddedBytes(1) : intToUnpaddedBytes(0)
   let startBlock: Input
   if (fields.blockHash !== undefined) {
     startBlock = hexToBytes(
@@ -71,7 +71,9 @@ export function getBlockHeadersQueryFromJSON(
     )
   } else if (fields.block !== undefined) {
     startBlock =
-      typeof fields.block === 'number' ? intToBytes(fields.block) : hexToBytes(String(fields.block))
+      typeof fields.block === 'number'
+        ? intToUnpaddedBytes(fields.block)
+        : hexToBytes(String(fields.block))
   } else {
     startBlock = hexToBytes(`0x${'00'.repeat(32)}`)
   }

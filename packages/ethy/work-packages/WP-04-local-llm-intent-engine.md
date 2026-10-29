@@ -1,7 +1,7 @@
 # WP-04: Bidirectional Local LLM `IntentEngine` (`<ethy_state>`, Dynamic Tool Gating & Fixture Replay)
 
-- **Status:** `BLOCKED_BY_WP-01` (Can be planned & implemented in parallel with `WP-02` / `WP-03`)
-- **Dependencies:** `WP-01`
+- **Status:** `READY_FOR_PLANNING` (Can be planned & implemented after or alongside `WP-03`)
+- **Dependencies:** `WP-01` (`DONE`), `WP-02` (`DONE`)
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
 
@@ -16,8 +16,8 @@ Upgrade Ethy's `IntentEngine` from deterministic slash/keyword routing to full *
 1. **Zero-Dep Local HTTP Adapter (`LocalHttpIntentEngine`):**
    - Uses Node 22's built-in `fetch()` to talk to any local OpenAI-compatible or `llama-server` endpoint (defaulting to `http://127.0.0.1:11434/api/chat` or `http://127.0.0.1:8080/v1/chat/completions`) with structured JSON schema / tool definitions.
    - Auto-detects at startup whether a local model server is reachable:
-     - If reachable: flips `spine.capabilities.ai` to `ready` (`● AI [Local 1.7B Ready]`).
-     - If not reachable: keeps `DeterministicIntentEngine` active (`◐ AI [Slash/Rule Mode]`) so the prompt works seamlessly with zero setup friction.
+     - If reachable: flips `spine.capabilities.ai` to `ready` (`● AI`), updates the **`● AI Metrics`** box in the 3-Box Cockpit (`Engine: Local LLM (<model>)`), and posts a subtle `info` notice via `NoticeBoard`.
+     - If not reachable: keeps `DeterministicIntentEngine` active (`◐ AI` / `Engine: Slash / Rule Mode`) so the prompt works seamlessly with zero setup friction.
 2. **Optional Embedded `node-llama-cpp` Adapter (Hook Prepared):**
    - Design a clean dynamic adapter boundary (`EmbeddedLlamaIntentEngine`) that dynamically imports `node-llama-cpp` *only if installed by the user* (or approved later), streaming model download progress (`0..100%`) directly into `spine.capabilities.ai.progressPct` while the Onboarding Carousel rotates in Zone 2.
    - **Important:** Do **not** add `node-llama-cpp` to `package.json` unless the human explicitly approves adding the dependency.

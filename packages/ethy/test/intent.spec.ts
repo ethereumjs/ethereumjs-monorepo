@@ -1,11 +1,13 @@
 import { assert, describe, it } from 'vitest'
 
+import { createFlatStateManager } from '@ethereumjs/statemanager'
+
 import { DeterministicIntentEngine } from '../src/ai/deterministicEngine.ts'
 import { advanceDemo } from '../src/demo/advanceDemo.ts'
 import { createSpine, setPhase } from '../src/spine/createSpine.ts'
 
 describe('[Ethy/Intent]: routing', () => {
-  const engine = new DeterministicIntentEngine()
+  const engine = new DeterministicIntentEngine({ stateManager: createFlatStateManager() })
 
   it('short slash /p routes like /peers', () => {
     const spine = createSpine('sepolia', 11155111n)
@@ -37,6 +39,24 @@ describe('[Ethy/Intent]: routing', () => {
     assert.isFalse(spine.peers.has('a8f1'))
   })
 
+  it('/range and /sample return account tables', () => {
+    const spine = createSpine('sepolia', 11155111n)
+    advanceDemo(spine, 5000)
+    const range = engine.handle({ text: '/range', spine })
+    assert.equal(range.widget.kind, 'table')
+    const sample = engine.handle({ text: '/sample', spine })
+    assert.equal(sample.widget.kind, 'table')
+  })
+
+  it('/pause and /resume toggle snapPaused', () => {
+    const spine = createSpine('sepolia', 11155111n)
+    assert.isFalse(spine.snapPaused)
+    engine.handle({ text: '/pause', spine })
+    assert.isTrue(spine.snapPaused)
+    engine.handle({ text: '/resume', spine })
+    assert.isFalse(spine.snapPaused)
+  })
+
   it('/reassign 0x3 resets bucket status', () => {
     const spine = createSpine('sepolia', 11155111n)
     advanceDemo(spine, 5000)
@@ -47,7 +67,7 @@ describe('[Ethy/Intent]: routing', () => {
 })
 
 describe('[Ethy/Intent]: gating', () => {
-  const engine = new DeterministicIntentEngine()
+  const engine = new DeterministicIntentEngine({ stateManager: createFlatStateManager() })
 
   it('/account while head locked returns key_value without throwing', () => {
     const spine = createSpine('sepolia', 11155111n)

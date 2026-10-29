@@ -1,3 +1,6 @@
+import { createFlatStateManager } from '@ethereumjs/statemanager'
+import type { FlatStateManager } from '@ethereumjs/statemanager'
+
 import { DeterministicIntentEngine } from '../ai/deterministicEngine.ts'
 import type { IntentEngine } from '../ai/intentEngine.ts'
 import { NoticeBoard } from '../notify/board.ts'
@@ -13,21 +16,25 @@ export interface CreateEthyNodeOptions {
 
 export interface EthyNode {
   spine: EthySpine
+  stateManager: FlatStateManager
   /** Network, fork, and runtime events for the lower-right notice box. */
   notices: NoticeBoard
   intentEngine: IntentEngine
   demo: boolean
   headless: boolean
+  disconnectPeer?: (peerId: string) => void
 }
 
 export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
   const spine = createSpine(opts.network, opts.chainId)
-  const intentEngine = new DeterministicIntentEngine()
-  return {
+  const stateManager = createFlatStateManager()
+  const node: EthyNode = {
     spine,
+    stateManager,
     notices: new NoticeBoard(),
-    intentEngine,
+    intentEngine: new DeterministicIntentEngine({ stateManager }),
     demo: opts.demo === true,
     headless: opts.headless === true,
   }
+  return node
 }

@@ -91,14 +91,21 @@ function avgLatency(spine: EthySpine): string {
 
 function countCaps(spine: EthySpine): string {
   let snap = 0
-  let eth71 = 0
+  const eth = new Map<string, number>()
   for (const p of spine.peers.values()) {
     for (const c of p.caps) {
       if (c.startsWith('snap/')) snap++
-      if (c === 'eth/71') eth71++
+      else if (c.startsWith('eth/')) eth.set(c, (eth.get(c) ?? 0) + 1)
     }
   }
-  return `${snap} snap/1 · ${eth71} eth/71`
+  const ethLabel =
+    eth.size === 0
+      ? '0 eth'
+      : [...eth.entries()]
+          .sort((a, b) => Number(b[0].slice(4)) - Number(a[0].slice(4)))
+          .map(([name, count]) => `${count} ${name}`)
+          .join(' ')
+  return `${snap} snap/1 · ${ethLabel}`
 }
 
 function domainStatus(spine: EthySpine, id: CapabilityId) {
@@ -149,7 +156,7 @@ function nodePulsePairs(spine: EthySpine): TwoColumnPair[] {
   const pivot =
     spine.pivotBlockNumber !== undefined
       ? `#${spine.pivotBlockNumber.toLocaleString('en-US')}`
-      : 'Waiting for peer...'
+      : (spine.pivotStatusHint ?? 'Waiting for peer...')
   const accounts = `${spine.totalAccountsSynced.toLocaleString('en-US')} ~${Math.round(spine.accountsPerSec)}/s`
   return [
     { label: 'Phase', value: phaseLabel(spine.phase) },
@@ -171,9 +178,9 @@ function commandPairs(domain: CapabilityId, phase: EthyPhase): TwoColumnPair[] {
     case 'snap':
       return [
         { label: '/buckets', value: '16-bucket view' },
-        { label: '/snap', value: 'progress' },
+        { label: '/range', value: 'account table' },
+        { label: '/sample', value: 'top balances' },
         { label: '/reassign', value: 'bucket' },
-        { label: '/diag', value: 'anomalies' },
       ]
     case 'head':
       return [

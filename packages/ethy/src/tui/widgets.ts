@@ -56,9 +56,7 @@ export function renderWidgetLines(
       if (widget.title) {
         lines.push(fixedLine(`${BOLD}${widget.title}${RESET}`, w))
       }
-      lines.push(
-        ...renderTable(widget.headers, widget.rows, w, tableColWeights(widget.headers.length)),
-      )
+      lines.push(...renderTable(widget.headers, widget.rows, w))
       break
     case 'key_value':
       if (widget.title) {
@@ -84,32 +82,122 @@ export function renderWidgetLines(
   return lines
 }
 
-/** Stable column proportions — widths do not change when cell text length changes. */
-function tableColWeights(colCount: number): number[] {
-  if (colCount === 5) return [1, 3, 2, 1, 2]
-  if (colCount === 2) return [1, 2]
-  return Array.from({ length: colCount }, () => 1)
+type ColPlan = { min: number; flex: number }
+
+/**
+ * Expected width for a known table. `min` fits the header or a typical value,
+ * with a little slack. `flex` takes leftover width (the long column).
+ * Widths stay fixed as cell text changes.
+ */
+const TABLE_PLANS: Record<string, ColPlan[]> = {
+  'Time|Subsystem|Sev|Peer|Message': [
+    { min: 10, flex: 0 },
+    { min: 12, flex: 0 },
+    { min: 8, flex: 0 },
+    { min: 8, flex: 0 },
+    { min: 28, flex: 1 },
+  ],
+  'Peer|Client|Caps|Avg ms|Last issue': [
+    { min: 18, flex: 1 },
+    { min: 16, flex: 1 },
+    { min: 18, flex: 2 },
+    { min: 8, flex: 0 },
+    { min: 20, flex: 3 },
+  ],
+  'Bucket|Status|Peer|Accounts|Issue': [
+    { min: 8, flex: 0 },
+    { min: 16, flex: 0 },
+    { min: 14, flex: 1 },
+    { min: 10, flex: 0 },
+    { min: 18, flex: 3 },
+  ],
+  'Account|Balance (ETH)|Nonce|Contract|Storage root': [
+    { min: 22, flex: 2 },
+    { min: 14, flex: 0 },
+    { min: 8, flex: 0 },
+    { min: 10, flex: 0 },
+    { min: 16, flex: 1 },
+  ],
+  'Account|Balance (ETH)|Nonce': [
+    { min: 22, flex: 2 },
+    { min: 14, flex: 0 },
+    { min: 8, flex: 0 },
+  ],
+  'Command|Description': [
+    { min: 22, flex: 0 },
+    { min: 24, flex: 1 },
+  ],
 }
 
-function renderTable(
-  headers: string[],
-  rows: string[][],
-  maxWidth: number,
-  weights: number[],
-): string[] {
-  const colCount = headers.length
-  const inner = Math.max(8, maxWidth - 4)
-  const gap = 3
-  const gapTotal = Math.max(0, colCount - 1) * gap
-  const budget = Math.max(colCount * 4, inner - gapTotal)
-  const sum = weights.reduce((a, b) => a + b, 0)
-  const colWidths = weights.map((wt) => Math.max(4, Math.floor((budget * wt) / sum)))
-  let used = colWidths.reduce((a, b) => a + b, 0) + gapTotal
-  while (used > inner && colWidths.some((cw) => cw > 4)) {
-    const i = colWidths.indexOf(Math.max(...colWidths))
-    colWidths[i] = Math.max(4, (colWidths[i] ?? 4) - 1)
-    used = colWidths.reduce((a, b) => a + b, 0) + gapTotal
+function planFor(headers: string[]): ColPlan[] {
+  const known = TABLE_PLANS[headers.join('|')]
+  if (known !== undefined && known.length === headers.length) return known
+  return headers.map((header, index) => ({
+    min: Math.max(4, header.length + 2),
+    flex: index === headers.length - 1 ? 1 : 0,
+  }))
+}
+
+function shrinkColumns(
+  widths: number[],
+  plans: ColPlan[],
+  overflow: number,
+  flexOnly: boolean,
+  floor: number,
+): number {
+  const order = plans
+    .map((plan, index) => index)
+    .filter((index) => (flexOnly ? plans[index].flex > 0 : true))
+    .sort((a, b) => plans[b].flex - plans[a].flex || b - a)
+  for (const index of order) {
+    if (overflow <= 0) break
+    const can = widths[index] - floor
+    if (can <= 0) continue
+    const cut = Math.min(can, overflow)
+    widths[index] -= cut
+    overflow -= cut
   }
+  return overflow
+}
+
+/** Column widths for a table of `maxWidth`, including the box border. */
+export function layoutTableColumns(headers: string[], maxWidth: number): number[] {
+  const inner = Math.max(headers.length, maxWidth - 4)
+  const gapTotal = Math.max(0, headers.length - 1) * 3
+  const budget = Math.max(headers.length, inner - gapTotal)
+  const plans = planFor(headers)
+  const widths = plans.map((plan) => plan.min)
+  let used = widths.reduce((sum, width) => sum + width, 0)
+
+  if (used > budget) {
+    let overflow = shrinkColumns(widths, plans, used - budget, true, 4)
+    if (overflow > 0) shrinkColumns(widths, plans, overflow, false, 1)
+    return widths
+  }
+
+  const extra = budget - used
+  const flexSum = plans.reduce((sum, plan) => sum + plan.flex, 0)
+  if (extra === 0) return widths
+  if (flexSum <= 0) {
+    widths[widths.length - 1] += extra
+    return widths
+  }
+  let given = 0
+  for (let i = 0; i < widths.length; i++) {
+    const share = Math.floor((extra * plans[i].flex) / flexSum)
+    widths[i] += share
+    given += share
+  }
+  let best = 0
+  for (let i = 1; i < plans.length; i++) {
+    if (plans[i].flex >= plans[best].flex) best = i
+  }
+  widths[best] += extra - given
+  return widths
+}
+
+function renderTable(headers: string[], rows: string[][], maxWidth: number): string[] {
+  const colWidths = layoutTableColumns(headers, maxWidth)
 
   const sep = colWidths.map((cw) => '─'.repeat(cw)).join('─┼─')
   const fmtRow = (cells: string[]) =>

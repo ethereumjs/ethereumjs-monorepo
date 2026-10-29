@@ -29,6 +29,11 @@ export interface ThreadedNetworkInitOptions {
   maxInFlightPings?: number
   telemetryIntervalMs?: number
   goodCitizen?: boolean
+  /**
+   * When false, inbound SNAP requests are left unanswered.
+   * An empty account proof is not a valid snap reply and gets the session dropped.
+   */
+  answerEmptySnap?: boolean
   shouldFindNeighbours?: boolean
 }
 
@@ -84,7 +89,32 @@ export interface WorkerDiscoveryRlpxSnapshot {
   dials: number
   connected: number
   statusOk: number
+  /** ETH STATUS messages this node wrote after HELLO. */
+  statusSent?: number
+  /** TCP resets that happened after HELLO, included in `handshakeRejects.reset`. */
+  resetAfterHello?: number
+  /** Keys are `REASON (we dropped remote)` or `REASON (remote dropped us)`. */
   disconnects: Record<string, number>
+  /** Counts of why sessions died before a validated ETH STATUS. */
+  handshakeRejects?: Partial<
+    Record<'genesis' | 'network' | 'fork' | 'reset' | 'slots' | 'timeout', number>
+  >
+  /**
+   * Drops after HELLO, keyed by `Client/version eth/N`.
+   * `remote` — they sent SUBPROTOCOL or PROTOCOL error.
+   * `we` — we sent that error. `reset` — TCP reset after HELLO.
+   */
+  peerFates?: Record<string, { remote?: number; we?: number; reset?: number }>
+  lastSubprotocolError?: string
+}
+
+export interface WorkerDiscoveryDptSnapshot {
+  /** `addPeer` skipped because the remote node is already on our ban list. */
+  banSkips: number
+  /** New bans we applied to a remote discovery endpoint. */
+  bansIssued: number
+  lastRemote?: string
+  lastCause?: string
 }
 
 export interface WorkerDiscoverySnapshot {
@@ -92,9 +122,12 @@ export interface WorkerDiscoverySnapshot {
   boundUdpPort: number
   boundTcpPort: number
   tablePeers: number
+  /** Hardfork, EIP-2124 hash, and next fork this node puts in ETH STATUS. */
+  advertisedFork?: { hardfork: string; hash: string; next?: string }
   bootstrap: WorkerDiscoveryBootstrapSnapshot
   dns: WorkerDiscoveryDnsSnapshot
   rlpx: WorkerDiscoveryRlpxSnapshot
+  dpt: WorkerDiscoveryDptSnapshot
 }
 
 export interface WorkerTelemetrySnapshot {

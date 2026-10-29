@@ -8,6 +8,7 @@ import {
   equalsBytes,
   hexToBytes,
   intToBytes,
+  intToUnpaddedBytes,
   utf8ToBytes,
 } from '@ethereumjs/util'
 import debugDefault from 'debug'
@@ -19,6 +20,7 @@ import { devp2pDebug, formatLogData } from '../util.ts'
 
 import { ECIES } from './ecies.ts'
 import { SocketByteQueue } from './socketByteQueue.ts'
+import { subprotocolErrorDropsPeer } from './subprotocolError.ts'
 
 import type { Socket } from 'net'
 import type { Common } from '@ethereumjs/common'
@@ -27,6 +29,7 @@ import type { Protocol } from '../protocol/protocol.ts'
 import type { Capabilities, PeerOptions } from '../types.ts'
 
 const DEBUG_BASE_NAME = 'rlpx:peer'
+
 const verbose = debugDefault('verbose').enabled
 
 const BASE_PROTOCOL_VERSION = 5
@@ -260,7 +263,7 @@ export class Peer {
       intToBytes(BASE_PROTOCOL_VERSION),
       this.clientId,
       this._capabilities!.map((c) => [utf8ToBytes(c.name), intToBytes(c.version)]),
-      this._port === null ? new Uint8Array(0) : intToBytes(this._port),
+      !this._port ? new Uint8Array(0) : intToUnpaddedBytes(this._port),
       this.id,
     ]
 
@@ -467,6 +470,13 @@ export class Peer {
     if (this._protocols.length === 0) {
       return this.disconnect(DISCONNECT_REASON.USELESS_PEER)
     }
+    // snap/1 without eth cannot exchange STATUS. eth/68-only peers land here
+    // once this node speaks eth/69 and later.
+    const offeredEth = this._capabilities?.some((cap) => cap.name === 'eth') === true
+    const negotiatedEth = this._protocols.some((item) => item.protocol.constructor.name === 'ETH')
+    if (offeredEth && !negotiatedEth) {
+      return this.disconnect(DISCONNECT_REASON.USELESS_PEER)
+    }
 
     this._connected = true
     this._pingIntervalId = setInterval(() => this._sendPing(), PING_INTERVAL)
@@ -655,9 +665,11 @@ export class Peer {
       }
       protocolObj.protocol._handleMessage?.(msgCode, payload)
     } catch (err: any) {
-      this.disconnect(DISCONNECT_REASON.SUBPROTOCOL_ERROR)
-      this.DEBUG && this._logger(`Error on peer subprotocol message handling: ${err}`)
       this.events.emit('error', err)
+      if (subprotocolErrorDropsPeer(protocolName, msgCode)) {
+        this.disconnect(DISCONNECT_REASON.SUBPROTOCOL_ERROR)
+      }
+      this.DEBUG && this._logger(`Error on peer subprotocol message handling: ${err}`)
     }
     this._socketQueue.consume(bytesCount)
   }
@@ -719,6 +731,13 @@ export class Peer {
   getId() {
     if (this._remoteId === null) return null
     return this._remoteId
+  }
+
+  /** TCP address of the remote node. This process is the other end of the socket. */
+  remoteTcpLabel(): string {
+    const host = this._socket.remoteAddress ?? '?'
+    const port = this._socket.remotePort ?? '?'
+    return `${host}:${port}`
   }
 
   getHelloMessage() {

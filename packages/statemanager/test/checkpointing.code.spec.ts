@@ -100,12 +100,6 @@ describe('[StateManager]: code checkpointing', () => {
           sm = new SM()
         }
 
-        if (SM === MerkleStateManager) {
-          sm = new SM({ caches: new Caches() })
-        } else {
-          sm = new SM()
-        }
-
         await sm.putAccount(address, new Account())
 
         await sm.putCode(address, c.c1.value)

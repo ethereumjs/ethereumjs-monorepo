@@ -1,3 +1,10 @@
+import {
+  type PrefixedHexString,
+  bigIntToUnpaddedBytes,
+  hexToBytes,
+  setLengthLeft,
+} from '@ethereumjs/util'
+
 import { SnapMessageCodes } from '../../protocol/snap.ts'
 import { jsonToRlpInput } from '../payloadCodec.ts'
 
@@ -15,11 +22,29 @@ export function buildSnapRlpPayload(name: string, json: Record<string, unknown>)
   switch (name) {
     case 'GET_ACCOUNT_RANGE': {
       const requestId = json.requestId !== undefined ? Number(json.requestId) : 1
-      const root = json.root !== undefined ? Number(json.root) : 437000
-      const limit = json.limit !== undefined ? Number(json.limit) : 1
-      const offset = json.offset !== undefined ? Number(json.offset) : 0
-      const bytes = json.bytes !== undefined ? Number(json.bytes) : 0
-      return [requestId, [root, limit, offset, bytes]] as Input
+      const rootHex =
+        typeof json.rootHash === 'string'
+          ? json.rootHash
+          : typeof json.root === 'string'
+            ? json.root
+            : `0x${'00'.repeat(32)}`
+      const startHex =
+        typeof json.startingHash === 'string'
+          ? json.startingHash
+          : typeof json.offset === 'string'
+            ? json.offset
+            : `0x${'00'.repeat(32)}`
+      const limitHex = typeof json.limitHash === 'string' ? json.limitHash : `0x${'ff'.repeat(32)}`
+      const responseBytes = json.responseBytes !== undefined ? Number(json.responseBytes) : 0
+      const hx = (s: string): PrefixedHexString =>
+        (s.startsWith('0x') ? s : `0x${s}`) as PrefixedHexString
+      return [
+        bigIntToUnpaddedBytes(BigInt(requestId)),
+        setLengthLeft(hexToBytes(hx(rootHex)), 32),
+        setLengthLeft(hexToBytes(hx(startHex)), 32),
+        setLengthLeft(hexToBytes(hx(limitHex)), 32),
+        bigIntToUnpaddedBytes(BigInt(responseBytes)),
+      ] as Input
     }
     default:
       if (json.rlp !== undefined) {

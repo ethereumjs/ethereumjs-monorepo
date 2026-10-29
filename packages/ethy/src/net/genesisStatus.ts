@@ -1,11 +1,15 @@
 import type { ThreadedEthStatusFields } from '@ethereumjs/devp2p'
 
-/** Genesis block hashes from go-ethereum `params/config.go` (chain configs). */
+/**
+ * Genesis block hashes checked in ETH STATUS.
+ * Sepolia and Hoodi match go-ethereum `params/config.go`. Holesky matches the
+ * hash pinned in `@ethereumjs/common` hardfork tests.
+ */
 const GENESIS_HASH: Record<string, string> = {
   mainnet: '0xd4e56740f876aef8c010b86a40d5f56745a118d0906a34e69aec8c0db1cb8fa3',
-  sepolia: '0x25a5cc106302644e9e7c4a325fe1e388bcaad7e5975ba90001235fff8e803825',
-  holesky: '0xbbe3132142dae6d4f2b228ad0271809e534a7252fd63b9e133a8540a0a668c4',
-  hoodi: '0x8913aac5222b60bb27710b4a36a14e607ee2bc1310d5d14117245f6b5a330a2',
+  sepolia: '0x25a5cc106eea7138acab33231d7160d69cb777ee0c2c553fcddf5138993e6dd9',
+  holesky: '0xb5f7f912443c940f21fd611f12828d75b534364ed9e95ca4e307729a4661bde4',
+  hoodi: '0xbbe312868b376a3001692a646dd2d7d1e4406380dfd86b98aa8a34d1557c971b',
 }
 
 /**

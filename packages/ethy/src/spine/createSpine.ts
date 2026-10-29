@@ -56,6 +56,7 @@ export function createSpine(network: string, chainId: bigint): EthySpine {
     snapBuckets: createSnapBuckets(),
     totalAccountsSynced: 0,
     accountsPerSec: 0,
+    snapPaused: false,
     diagnosticRingBuffer: [],
   }
   deriveCapabilities(spine)

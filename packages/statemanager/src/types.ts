@@ -21,6 +21,9 @@ export interface SimpleStateManagerOpts extends BaseStateManagerOpts {
   // Keep this as an alias so that it might be able to extend in the future
 }
 
+/** Options for constructing a {@link FlatStateManager}. */
+export interface FlatStateManagerOpts extends BaseStateManagerOpts {}
+
 /** Options for constructing a {@link RPCStateManager}. */
 export interface RPCStateManagerOpts extends BaseStateManagerOpts {
   /** HTTP(S) JSON-RPC endpoint URL */

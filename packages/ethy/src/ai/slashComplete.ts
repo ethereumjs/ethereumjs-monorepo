@@ -5,6 +5,10 @@ const SLASH_COMMANDS = [
   '/diag',
   '/drop ',
   '/reassign ',
+  '/range ',
+  '/sample',
+  '/pause',
+  '/resume',
   '/account ',
   '/bal',
   '/simulate',
@@ -16,6 +20,8 @@ const SHORT_EXPAND: Record<string, string> = {
   '/b': '/buckets',
   '/d': '/diag',
   '/r': '/reassign ',
+  '/ra': '/range ',
+  '/sa': '/sample',
   '/a': '/account ',
   '/s': '/simulate',
   '/h': '/help',
@@ -25,6 +31,8 @@ const SHORT_EXPAND: Record<string, string> = {
 export function completeSlashDraft(draft: string): string | null {
   if (!draft.startsWith('/')) return null
   const lower = draft.toLowerCase()
+  const short = SHORT_EXPAND[lower]
+  if (short !== undefined) return short
   const matches = SLASH_COMMANDS.filter((c) => c.startsWith(lower))
   if (matches.length !== 1) return null
   return matches[0]!

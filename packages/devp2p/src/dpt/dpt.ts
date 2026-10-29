@@ -8,6 +8,7 @@ import { secp256k1 } from '@noble/curves/secp256k1.js'
 import { keccak_256 } from '@noble/hashes/sha3.js'
 import { EventEmitter } from 'eventemitter3'
 
+import { markChainDirectoryPeer } from '../discovery/directoryPeer.ts'
 import { DNS } from '../dns/index.ts'
 import { devp2pDebug, pk2id } from '../util.ts'
 
@@ -21,6 +22,17 @@ import type { DPTEvent, DPTOptions, PeerInfo } from '../types.ts'
 import type { NodeStore } from './nodeStore.ts'
 
 const DEBUG_BASE_NAME = 'dpt'
+
+function routableDiscoveryAddress(address: string | undefined): boolean {
+  return address !== undefined && address !== '' && address !== '0.0.0.0' && address !== '::'
+}
+
+/** UDP endpoint of a remote discovery node (never this process). */
+function remoteDiscoveryLabel(peer: PeerInfo): string {
+  const host = peer.address ?? 'unknown-host'
+  const port = peer.udpPort ?? peer.tcpPort
+  return port !== undefined ? `${host}:${port}` : host
+}
 
 /** Distributed peer table (DPT) for Ethereum UDP node discovery and DNS ENR refresh. */
 export class DPT {
@@ -163,12 +175,12 @@ export class DPT {
         .ping(peer)
         .then(() => {
           if (++count < oldPeers.length) return
-          if (err === null)
-            this._banlist.add(newPeer, 300000) // 5 min * 60 * 1000
-          else this._kbucket.add(newPeer)
+          if (err === null) {
+            this._banRemote(newPeer, 300000, 'k-bucket full; existing remotes answered')
+          } else this._kbucket.add(newPeer)
         })
         .catch((_err: Error) => {
-          this._banlist.add(peer, 300000) // 5 min * 60 * 1000
+          this._banRemote(peer, 300000, `k-bucket ping failed: ${_err.message}`)
           this._kbucket.remove(peer)
           err = err ?? _err
         })
@@ -257,7 +269,18 @@ export class DPT {
   }
 
   async addPeer(obj: PeerInfo): Promise<PeerInfo> {
-    if (this._banlist.has(obj)) throw EthereumJSErrorWithoutCode('Peer is banned')
+    if (!routableDiscoveryAddress(obj.address)) {
+      throw EthereumJSErrorWithoutCode(
+        `Skipped remote ${obj.address ?? 'unspecified'}:${String(obj.udpPort ?? '?')}: not a routable discovery address`,
+      )
+    }
+    if (this._banlist.has(obj)) {
+      const label = remoteDiscoveryLabel(obj)
+      this._discoveryMetrics?.recordDptBanSkip(label)
+      throw EthereumJSErrorWithoutCode(
+        `Skipped remote ${label}: on our discovery ban list (not this node)`,
+      )
+    }
     if (this.DEBUG) {
       this._debug(`attempt adding peer ${obj.address}:${obj.udpPort}`)
     }
@@ -268,7 +291,8 @@ export class DPT {
 
     // check that peer is alive
     try {
-      const peer = await this._server.ping(obj)
+      const peer = (await this._server.ping(obj)) as PeerInfo
+      if (obj.chainDirectory === true) peer.chainDirectory = true
       this.events.emit('peer:new', peer)
       this._kbucket.add(peer)
       if (peer.id !== undefined) {
@@ -284,8 +308,11 @@ export class DPT {
       return peer
     } catch (err: any) {
       this._recordFail(obj)
-      this._banlist.add(obj, 300000) // 5 min * 60 * 1000
-      throw err
+      const cause = err instanceof Error ? err.message : String(err)
+      this._banRemote(obj, 300000, `ping failed: ${cause}`)
+      throw EthereumJSErrorWithoutCode(
+        `Banned remote ${remoteDiscoveryLabel(obj)} for 5 min after discovery ping failed (${cause})`,
+      )
     }
   }
 
@@ -311,7 +338,6 @@ export class DPT {
     const prev = this._nodeStore.get(id)
     const failCount = (prev?.failCount ?? 0) + 1
     if (failCount >= 3) {
-      this.banPeer(obj, 300000)
       return
     }
     this._nodeStore.put({
@@ -391,8 +417,15 @@ export class DPT {
   }
 
   banPeer(obj: string | PeerInfo | Uint8Array, maxAge?: number) {
-    this._banlist.add(obj, maxAge)
+    this._banRemote(obj, maxAge, 'explicit ban')
     this._kbucket.remove(obj)
+  }
+
+  _banRemote(obj: string | PeerInfo | Uint8Array, maxAge: number | undefined, cause: string): void {
+    this._banlist.add(obj, maxAge)
+    if (typeof obj !== 'string' && !(obj instanceof Uint8Array)) {
+      this._discoveryMetrics?.recordDptBan(remoteDiscoveryLabel(obj), cause)
+    }
   }
 
   /** Refresh discv4 `from` endpoint from the bound UDP socket and TCP listen port. */
@@ -473,7 +506,7 @@ export class DPT {
         )
       }
 
-      this._addPeerBatch(dnsPeers)
+      this._addPeerBatch(dnsPeers.map((peer) => markChainDirectoryPeer(peer)))
     }
   }
 }

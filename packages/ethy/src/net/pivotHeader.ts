@@ -37,6 +37,27 @@ export function encodeGetBlockHeadersPayload(
   return RLP.encode(input)
 }
 
+/** RLP payload for `GET_BLOCK_HEADERS` (one header at `blockNumber`). */
+export function encodeGetBlockHeadersByNumberPayload(
+  ethVersion: number,
+  blockNumber: bigint,
+  requestId = 1,
+): Uint8Array {
+  const reqHex = `0x${requestId.toString(16).padStart(2, '0')}`
+  const input = buildGetBlockHeadersFromJSON(
+    ethVersion,
+    {
+      requestId: reqHex,
+      block: `0x${blockNumber.toString(16)}`,
+      max: 1,
+      skip: 0,
+      reverse: false,
+    },
+    (s) => hexToBytes(hx(s)),
+  )
+  return RLP.encode(input)
+}
+
 function blockNumberFromHeaderRaw(first: unknown): bigint | undefined {
   const fields = first instanceof Uint8Array ? (RLP.decode(first) as unknown[]) : first
   if (!Array.isArray(fields) || fields.length < 9) return undefined
@@ -45,11 +66,23 @@ function blockNumberFromHeaderRaw(first: unknown): bigint | undefined {
   return bytesToBigInt(num)
 }
 
+function timestampFromHeaderRaw(first: unknown): bigint | undefined {
+  const fields = first instanceof Uint8Array ? (RLP.decode(first) as unknown[]) : first
+  if (!Array.isArray(fields) || fields.length < 12) return undefined
+  const ts = fields[11]
+  if (!(ts instanceof Uint8Array)) return undefined
+  return bytesToBigInt(ts)
+}
+
 function headerFromRaw(first: unknown, chain: ChainConfig) {
   const blockNumber = blockNumberFromHeaderRaw(first)
+  const timestamp = timestampFromHeaderRaw(first)
   const common = new Common({ chain })
   if (blockNumber !== undefined) {
-    common.setHardforkBy({ blockNumber })
+    common.setHardforkBy({
+      blockNumber,
+      ...(timestamp !== undefined ? { timestamp } : {}),
+    })
   }
   return first instanceof Uint8Array
     ? createBlockHeaderFromRLP(first, { common, skipConsensusFormatValidation: true })
@@ -59,11 +92,11 @@ function headerFromRaw(first: unknown, chain: ChainConfig) {
       })
 }
 
-/** Parse `BLOCK_HEADERS` and verify the header hash matches `expectedHashHex`. */
+/** Parse `BLOCK_HEADERS`; when `expectedHashHex` is set, verify the header hash. */
 export function parsePivotHeaderFromBlockHeadersPayload(
   ethVersion: number,
   payload: Uint8Array,
-  expectedHashHex: string,
+  expectedHashHex: string | undefined,
   chain: ChainConfig,
 ): ParsedPivotHeader | null {
   const decoded = RLP.decode(payload) as unknown
@@ -82,11 +115,13 @@ export function parsePivotHeaderFromBlockHeadersPayload(
   const first = headersRaw[0]
   const header = headerFromRaw(first, chain)
   const hash = header.hash()
-  const expected = hexToBytes(
-    hx(expectedHashHex.startsWith('0x') ? expectedHashHex : `0x${expectedHashHex}`),
-  )
-  if (hash.length !== expected.length || !hash.every((b, i) => b === expected[i])) {
-    return null
+  if (expectedHashHex !== undefined) {
+    const expected = hexToBytes(
+      hx(expectedHashHex.startsWith('0x') ? expectedHashHex : `0x${expectedHashHex}`),
+    )
+    if (hash.length !== expected.length || !hash.every((b, i) => b === expected[i])) {
+      return null
+    }
   }
   return {
     number: header.number,
@@ -96,7 +131,7 @@ export function parsePivotHeaderFromBlockHeadersPayload(
 }
 
 export function highestEthVersion(caps: string[]): number {
-  let max = 68
+  let max = 69
   for (const c of caps) {
     const m = /^eth\/(\d+)$/.exec(c)
     if (m !== null) {

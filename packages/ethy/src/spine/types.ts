@@ -58,6 +58,8 @@ export interface EthySpine {
   currentSlot: number
   pivotBlockNumber?: bigint
   pivotStateRoot?: Uint8Array
+  /** Short Node Pulse hint while pivot is not anchored (live P2P). */
+  pivotStatusHint?: string
   headBlockNumber?: bigint
   headStateRoot?: Uint8Array
   capabilities: {
@@ -72,6 +74,7 @@ export interface EthySpine {
   snapBuckets: SnapBucket[]
   totalAccountsSynced: number
   accountsPerSec: number
+  snapPaused: boolean
   diagnosticRingBuffer: DiagnosticEvent[]
 }
 
@@ -87,6 +90,8 @@ export type WidgetSpec =
       headers: string[]
       rows: string[][]
       assistantComment?: string
+      /** Live P2P counters, drawn in reserved rows under the table. */
+      footer?: 'discovery'
     }
   | {
       kind: 'key_value'
