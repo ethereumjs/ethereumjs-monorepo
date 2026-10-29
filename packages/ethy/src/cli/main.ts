@@ -48,6 +48,7 @@ async function main(): Promise<void> {
         network,
         notices: node.notices,
         snapStore: node.snapStore,
+        peerBook: node.peerBook,
       })
       node.disconnectPeer = handle.disconnectPeer
       ;(

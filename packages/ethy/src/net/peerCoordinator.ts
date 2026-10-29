@@ -22,6 +22,9 @@ import {
   initialP2pLinkState,
   syncP2pLinkNotices,
 } from '../notify/p2pLink.ts'
+import { resolveEthyDataDir } from '../persist/datadir.ts'
+import { discoveryNodeStorePath } from '../persist/peerBook.ts'
+import type { PeerBookStore } from '../persist/peerBook.ts'
 import { SnapPivotStore, snapBucketsUnfinished } from '../persist/snapStore.ts'
 import { deriveCapabilities, setPhase } from '../spine/createSpine.ts'
 import { recordDiagnostic } from '../spine/diagnostics.ts'
@@ -57,6 +60,8 @@ export type StartPeerCoordinatorOptions = {
   /** When set, peer reachability is posted for the TUI notice box. */
   notices?: NoticeBoard
   snapStore?: SnapPivotStore
+  peerBook?: PeerBookStore
+  dataDir?: string
 }
 
 export type PeerCoordinatorHandle = {
@@ -126,7 +131,8 @@ function updatePivotStatusHint(spine: EthySpine, peers: WorkerPeerSnapshot[]): v
 export async function startPeerCoordinator(
   opts: StartPeerCoordinatorOptions,
 ): Promise<PeerCoordinatorHandle> {
-  const { spine, network, stateManager, snapStore } = opts
+  const { spine, network, stateManager, snapStore, peerBook } = opts
+  const dataDir = opts.dataDir ?? resolveEthyDataDir()
   let snapSync: SnapAccountSynchronizer | undefined
   if (spine.pivotStateRoot === undefined) {
     setPhase(spine, 'P2P_WARMUP')
@@ -140,6 +146,7 @@ export async function startPeerCoordinator(
       stateManager,
       transport,
       snapStore,
+      peerBook,
       getSnapPeers: () =>
         [...spine.peers.values()]
           .filter((p) => p.snapSession === true)
@@ -269,9 +276,18 @@ export async function startPeerCoordinator(
       listenPort: opts.listenPort ?? 0,
       endpoint: { address: '0.0.0.0', udpPort: 0, tcpPort: opts.listenPort ?? 0 },
       throttleDiscovery: true,
+      nodeStorePath: discoveryNodeStorePath(dataDir, network),
     },
     workerModuleUrl,
   )
+
+  if (peerBook !== undefined) {
+    const now = Date.now()
+    peerBook.pruneOnStart(now)
+    for (const peer of peerBook.dialCandidates(now)) {
+      client.connectPeer(peer)
+    }
+  }
 
   client.events.on('telemetry', (snap) => {
     lastTelemetryPeers = snap.peers
@@ -279,6 +295,7 @@ export async function startPeerCoordinator(
     spine.peers.clear()
     for (const p of snap.peers) {
       spine.peers.set(p.id, mapPeer(p, prev.get(p.id)))
+      peerBook?.noteTelemetryPeer(p, Date.now())
     }
     spine.discovery = snap.discovery
     for (const d of snap.diagnostics) {
@@ -290,6 +307,7 @@ export async function startPeerCoordinator(
         message: d.message,
         peerId: d.peerId,
       })
+      peerBook?.noteDisconnect(d.peerId, d.message, Date.now())
       noteDiscovery(d.message)
     }
     syncLink()
@@ -401,6 +419,7 @@ export async function startPeerCoordinator(
     stop: () => {
       snapSync?.stop()
       snapStore?.flushBuckets(spine.snapBuckets)
+      peerBook?.flush()
       if (linkTimer !== undefined) clearInterval(linkTimer)
       client.stop()
     },

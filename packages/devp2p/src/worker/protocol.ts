@@ -40,6 +40,8 @@ export interface ThreadedNetworkInitOptions {
    * Neighbour lookup stays off so other networks cannot fill RLPx slots.
    */
   chainDirectoryDiscovery?: boolean
+  /** Persist DPT bond store to this path (JSON). */
+  nodeStorePath?: string
 }
 
 export type WorkerCommand =
@@ -69,6 +71,10 @@ export interface WorkerPeerSnapshot {
   bestHash?: string
   /** Remote latest block number from ETH STATUS (decimal string). */
   latestBlock?: string
+  /** Remote TCP host after connect (for client peer books). */
+  address?: string
+  udpPort?: number
+  tcpPort?: number
 }
 
 export interface WorkerDiagnosticEntry {

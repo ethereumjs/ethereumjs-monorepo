@@ -740,6 +740,14 @@ export class Peer {
     return `${host}:${port}`
   }
 
+  /** Remote TCP endpoint after connect (for client peer books). */
+  endpointTcp(): { address: string; tcpPort: number } | undefined {
+    const address = this._socket.remoteAddress
+    const tcpPort = this._socket.remotePort
+    if (address === undefined || address === '' || tcpPort === undefined) return undefined
+    return { address, tcpPort }
+  }
+
   getHelloMessage() {
     return this._hello
   }

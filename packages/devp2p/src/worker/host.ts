@@ -210,6 +210,7 @@ export class Devp2pWorkerHost {
       dnsNetworks: dnsOpts?.dnsNetworks ?? [],
       maxInFlightPings: opts.maxInFlightPings,
       discoveryMetrics: this._discoveryMetrics,
+      nodeStorePath: opts.nodeStorePath,
     })
     this._dpt.events.on('error', (err) => {
       const message = err instanceof Error ? err.message : String(err)
@@ -483,6 +484,11 @@ export class Devp2pWorkerHost {
       }
 
       const protocols = peer.getProtocols()
+      const tcpEnd = peer.endpointTcp()
+      const dptPeer = this._dpt?.getPeer(id)
+      const address = tcpEnd?.address ?? dptPeer?.address
+      const tcpPort = tcpEnd?.tcpPort ?? dptPeer?.tcpPort ?? undefined
+      const udpPort = dptPeer?.udpPort ?? tcpPort
       peers.push({
         id,
         clientId: hello?.clientId ?? '',
@@ -496,6 +502,9 @@ export class Devp2pWorkerHost {
         rttMs: this._peerRtt.get(id),
         bestHash,
         latestBlock,
+        address,
+        udpPort,
+        tcpPort,
       })
     }
     if (this._dpt !== null) {

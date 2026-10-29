@@ -3,6 +3,7 @@ import { RLP } from '@ethereumjs/rlp'
 import type { FlatStateManager } from '@ethereumjs/statemanager'
 import { bigIntToUnpaddedBytes, bytesToBigInt, setLengthLeft } from '@ethereumjs/util'
 
+import type { PeerBookStore } from '../persist/peerBook.ts'
 import type { SnapPivotStore } from '../persist/snapStore.ts'
 import { setPhase } from '../spine/createSpine.ts'
 import { recordDiagnostic } from '../spine/diagnostics.ts'
@@ -33,6 +34,7 @@ export type SnapAccountSynchronizerOpts = {
   transport: SnapTransport
   getSnapPeers: () => Array<{ id: string; caps: string[] }>
   snapStore?: SnapPivotStore
+  peerBook?: PeerBookStore
 }
 
 export class SnapAccountSynchronizer {
@@ -41,10 +43,12 @@ export class SnapAccountSynchronizer {
   private readonly transport: SnapTransport
   private readonly getSnapPeers: () => Array<{ id: string; caps: string[] }>
   private readonly snapStore?: SnapPivotStore
+  private readonly peerBook?: PeerBookStore
   private reqId = 1n
   private inFlight = new Map<string, InFlightRange>()
   private stallUntil = new Map<number, number>()
   private stallRepeats = new Map<number, number>()
+  private peerLeftRepeats = new Map<number, number>()
   private peerRestUntil = new Map<string, number>()
   private detachAccountRange?: () => void
   private tickTimer?: ReturnType<typeof setInterval>
@@ -58,6 +62,7 @@ export class SnapAccountSynchronizer {
     this.transport = opts.transport
     this.getSnapPeers = opts.getSnapPeers
     this.snapStore = opts.snapStore
+    this.peerBook = opts.peerBook
   }
 
   start(): void {
@@ -127,18 +132,24 @@ export class SnapAccountSynchronizer {
         bucket.status = 'pending'
         bucket.assignedPeerId = undefined
         bucket.lastStallReason = 'snap peer left'
-        recordDiagnostic(this.spine, {
-          subsystem: 'snap',
-          severity: 'warn',
-          peerId,
-          bucketIndex: bucket.index,
-          message: `Bucket ${bucket.prefix}: snap peer left`,
-        })
+        const repeats = (this.peerLeftRepeats.get(bucket.index) ?? 0) + 1
+        this.peerLeftRepeats.set(bucket.index, repeats)
+        if (repeats === 1 || repeats % 5 === 0) {
+          const times = repeats > 1 ? ` (×${repeats})` : ''
+          recordDiagnostic(this.spine, {
+            subsystem: 'snap',
+            severity: 'warn',
+            peerId,
+            bucketIndex: bucket.index,
+            message: `Bucket ${bucket.prefix}: snap peer left${times}`,
+          })
+        }
         continue
       }
       this.peerRestUntil.set(peerId, now + PEER_REST_MS)
       const row = this.spine.peers.get(peerId)
       if (row !== undefined) row.snapTimeouts++
+      this.peerBook?.noteSnapTimeout(peerId)
       this.noteRangeFailure(bucket, peerId, 'account range timed out')
     }
   }
@@ -194,6 +205,7 @@ export class SnapAccountSynchronizer {
     }
     this.stallRepeats.delete(bucket.index)
     this.stallUntil.delete(bucket.index)
+    this.peerLeftRepeats.delete(bucket.index)
     const row = this.spine.peers.get(peerId)
     if (row !== undefined && result.count > 0) row.snapResponsesOk++
     if (result.count > 0 && bucket.accountsLoaded === 0) {
@@ -222,6 +234,7 @@ export class SnapAccountSynchronizer {
       bucket.status = 'done'
     }
     if (result.count > 0) {
+      this.peerBook?.noteSnapSuccess(peerId, Date.now())
       const records = accountRecordsFromRangeReply(payload)
       this.snapStore?.appendVerifiedRange(flight.bucket, records, this.spine.snapBuckets)
     } else {
