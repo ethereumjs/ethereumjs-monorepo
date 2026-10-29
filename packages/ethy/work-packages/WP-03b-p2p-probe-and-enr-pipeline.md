@@ -1,6 +1,6 @@
 # WP-03b: P2P Master Plan — Surgical 4-Stage P2P Probe, Direct DNS/EIP-868 ENR Pipeline & Live `snap/1` Verification
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `DONE` (offline gates green; live Sepolia stages 1–3 + ethy soak are manual)
 - **Dependencies:** `WP-00` (`DONE`), `WP-01` (`DONE`), `WP-02` (`DONE`), `WP-02b` (`DONE`), `WP-03` (offline sync & `FlatStateManager` `DONE`)
 - **Branch:** `ethy-wp03` (or dedicated continuation branch)
 - **Planner:** Grok 4.7
@@ -114,20 +114,57 @@ npx tsx packages/devp2p/src/cli/probe.ts --chain sepolia [--stage 1|2|3|4] [--pe
 ---
 
 ## 3. Acceptance Criteria
-- [ ] `ENR.parseAndVerifyRecord` sets `id: pk2id(obj.secp256k1)`, safely handles 1–2 byte ports / missing fields, and parses `ethForkId` (`forkHash` + `nextFork`).
-- [ ] Verified DNS ENR peers with `id` and `tcpPort` feed directly into `RLPx` without being dropped by UDP `DPT.ping` timeouts or a full discovery v4 k-bucket.
+- [x] `ENR.parseAndVerifyRecord` sets `id: pk2id(obj.secp256k1)`, safely handles 1–2 byte ports / missing fields, and parses `ethForkId` (`forkHash` + `nextFork`).
+- [x] Verified DNS ENR peers with `id` and `tcpPort` feed directly into `RLPx` without being dropped by UDP `DPT.ping` timeouts or a full discovery v4 k-bucket.
 - [ ] Stage 1, Stage 2, and Stage 3 of `packages/devp2p/src/cli/probe.ts` succeed against live Sepolia (`dns-enr` → `single-status` held >5s → `single-snap` fetches and verifies a real Sepolia account range).
 - [ ] Running `ethy sepolia` anchors a live Sepolia pivot header and ingests real verified accounts (`totalAccountsSynced > 0`) via `snap/1`.
-- [ ] All offline unit tests (`npm test`), `npm run tsc`, and `npm run spellcheck` pass in `packages/common`, `packages/devp2p`, and `packages/ethy`.
+- [x] All offline unit tests (`npm test`), `npm run tsc`, and `npm run spellcheck` pass in `packages/common`, `packages/devp2p`, and `packages/ethy`.
 
 ---
 
 ## 4. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled out by Grok 4.7 during the Planning pass. Run Stage 1 of the probe concept or inspect `enr.ts` / `dpt.ts` / `rlpx.ts` first, and lay out the exact file changes and unit tests.)*
+### Design refinements (D-045–D-047)
+
+- **D-045.** `Common.forkHash()` returns explicit `forkHash` before the unscheduled-fork throw (Mainnet/Holesky Amsterdam rows). Sepolia `amsterdam` stays scheduled at `1791294816` per [EIP-7773](https://eips.ethereum.org/EIPS/eip-7773); wall-clock STATUS uses Amsterdam after activation. Stage 1 probe histogram is the live check.
+- **D-046.** DNS peers with `{ id, address, tcpPort }` → `peer:new` + `chainDirectory`; skip `addPeer`/k-bucket. Bootnodes stay on `bootstrap()`. Unknown inbound pings get `pong` only. `enrResponse` parses `eth`; unknown fork hash → ban/remove.
+- **D-047.** `npm run p2p:probe` in `@ethereumjs/devp2p`; not in CI/`npm test`. Vitest covers parsers, dial split, fork lookup only.
+
+### Slice 1 — `@ethereumjs/devp2p` (ENR + DNS fast path)
+
+**Parse (`enr.ts`, `peerFieldsFromEnrPairs` helper):** `id` via `pk2id(secp256k1)`; guarded `ip` (4/16 bytes); ports via `bytesToInt` (1–2 bytes, 1..65535); optional EIP-868 `eth` (RLP `[[forkHash, next]]` or `[forkHash, next]`) → `PeerInfo.ethForkId`.
+
+**Discv4:** shared `eth` decoder in `discv4Enr.ts`; `enrResponse` in `server.ts` bans unknown fork hashes.
+
+**Dial split (`dpt.ts` `refresh`):** complete DNS peers → fork filter → `peer:new`; incomplete → drop; never `_addPeerBatch` for DNS. Metric `dns.forkRejected` on snapshot.
+
+**Inbound ping:** remove auto-`peers` emit on unknown ping in `server.ts`.
+
+**Tests:** `enr.spec.ts`, DPT DNS fast-path stub, server ping test.
+
+### Slice 2 — `@ethereumjs/common`
+
+Remove Sepolia `amsterdam` `timestamp: '1791294816'`. Reorder `forkHash()` to honor pinned hash before future throw. Update `hardforks.spec.ts`. One line in `ethy/ARCHITECTURE.md`.
+
+### Slice 3 — `packages/devp2p/src/cli/probe.ts`
+
+Stages 1–4: `dns-enr`, `single-status`, `single-snap`, `funnel-soak`. Script `p2p:probe`.
+
+### Slice 4 — Ethy
+
+No `PeerCoordinator` fork override. Manual Sepolia soak gate after live probe stages 1–3.
+
+### Gates
+
+`tsc`, `test`, `spellcheck` per touched package. Separate commits: `common` → `devp2p` → `ethy` docs.
 
 ---
 
 ## 5. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled out by Composer 2.5 after implementation and verification.)*
+- **`enrPeerFields.ts`:** Shared EIP-868 decode + `peerFieldsFromEnrPairs`; DNS and discv4 ENR paths reuse it.
+- **DNS fast path:** `DPT._feedDnsDirectoryPeers` emits `peer:new` for dialable ENRs; fork rejects increment `dns.forkRejected`.
+- **Inbound ping:** Auto-`peers` on unknown ping remains when `DPTServer` has **no** `common` (legacy local tests); Ethy passes `common` so crawlers are not bonded.
+- **Sepolia fork:** EIP-7773 comment on Sepolia `amsterdam` row; `forkHash()` pin order for unscheduled forks with explicit hash.
+- **Probe:** `npm run p2p:probe -- --chain sepolia --stage N` (live only). Stage 4 scorecard stops at sustained STATUS; pivot/snap ingestion stays on the ethy soak checklist.
+- **Live gates:** Run stages 1–3 and `ethy sepolia --headless` manually on the network; not CI.
