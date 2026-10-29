@@ -38,6 +38,18 @@ describe('[Ethy/TUI]: renderFrame', () => {
     assert.isAbove(topA.indexOf('Slot'), topA.indexOf('SEPOLIA'))
   })
 
+  it('bucket bar stays filled after the serving peer leaves', () => {
+    const spine = createSpine('sepolia', 11155111n)
+    setPhase(spine, 'SNAP_SYNCING')
+    spine.snapBuckets[0]!.accountsLoaded = 50_000
+    spine.snapBuckets[0]!.status = 'pending'
+    spine.snapBuckets[1]!.status = 'done'
+    spine.snapBuckets[1]!.accountsLoaded = 10
+    const plain = stripAnsi(renderFrame(spine, createInitialViewState(), 140, 30).join('\n'))
+    assert.include(plain, '▓█')
+    assert.include(plain, '1/16')
+  })
+
   it('renderFrame() at 100x30 respects column width', () => {
     const spine = createSpine('sepolia', 11155111n)
     setPhase(spine, 'SNAP_SYNCING')

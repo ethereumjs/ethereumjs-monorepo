@@ -34,24 +34,14 @@ function phaseLabel(phase: EthyPhase): string {
 }
 
 function bucketMiniBar(spine: EthySpine): string {
+  // Filled cells follow stored accounts, not whether a peer is connected right now.
   let bar = ''
   for (const b of spine.snapBuckets) {
-    switch (b.status) {
-      case 'done':
-        bar += '█'
-        break
-      case 'syncing':
-        bar += '▓'
-        break
-      case 'verifying_proof':
-        bar += '▒'
-        break
-      case 'stalled':
-        bar += '!'
-        break
-      default:
-        bar += '░'
-    }
+    if (b.status === 'done') bar += '█'
+    else if (b.accountsLoaded > 0) bar += '▓'
+    else if (b.status === 'syncing' || b.status === 'verifying_proof') bar += '▒'
+    else if (b.status === 'stalled') bar += '!'
+    else bar += '░'
   }
   const done = spine.snapBuckets.filter((b) => b.status === 'done').length
   return `${bar} ${done}/16`
