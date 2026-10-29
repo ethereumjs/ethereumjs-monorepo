@@ -62,7 +62,7 @@ Every external I/O boundary must sit behind a lightweight TypeScript interface w
 - **Even-Length Hex Normalization at Wire Boundaries:**
   - Before calling `hexToBytes` on user/config/wire quantity hex strings (such as `latestBlock: '0x1912a62'`), parse via `BigInt(hex)` + `bigIntToUnpaddedBytes` (or `padToEven`) so `hexToBytes` never throws inside a protocol handler.
 - **Structured Live P2P Observability & Surgical Probe (`DiscoveryMetrics`, `p2p:probe`, `NoticeBoard`):**
-  - Never debug live P2P via blind 60-second full-node guesswork. Use the 4-stage surgical probe (`packages/devp2p/src/cli/probe.ts`: Stage 1 DNS ENR + EIP-868 `eth` fork check → Stage 2 single-peer RLPx + `STATUS` hold → Stage 3 single-peer `GET_BLOCK_HEADERS` + `GET_ACCOUNT_RANGE` proof check → Stage 4 funnel soak) alongside `WorkerDiscoverySnapshot` counters.
+  - Never debug live P2P via blind 60-second full-node guesswork. Use the 4-stage surgical probe (`packages/devp2p/scripts/p2p-probe.ts`: Stage 1 DNS ENR + EIP-868 `eth` fork check → Stage 2 single-peer RLPx + `STATUS` hold → Stage 3 single-peer `GET_BLOCK_HEADERS` + `GET_ACCOUNT_RANGE` proof check → Stage 4 funnel soak) alongside `WorkerDiscoverySnapshot` counters.
 - **Direct DNS-to-RLPx Pipeline & EIP-868 (`eth` ENR) Chain Filtering:**
   - `ENR.parseAndVerifyRecord` must extract `id: pk2id(obj.secp256k1)` and EIP-868 `ethForkId` (`[[forkHash, nextFork]]`).
   - Verified DNS ENR peers already carry `{ id, address, tcpPort }` and must be dialed on TCP by `RLPx` **directly** (never gated on a redundant UDP `DPT.ping` or dropped when the discovery v4 k-bucket is full).

@@ -48,12 +48,12 @@ During `WP-03`, live Sepolia runs showed 3,684 DNS records fetched and 2,404 RLP
 
 ## 2. Key Deliverables (4 Structured Slices)
 
-### Slice 1 — Deterministic 4-Stage Surgical P2P Probe CLI (`packages/devp2p/src/cli/probe.ts` & `npm run p2p:probe`)
+### Slice 1 — Deterministic 4-Stage Surgical P2P Probe CLI (`packages/devp2p/scripts/p2p-probe.ts` & `npm run p2p:probe`)
 
 Before running full multi-peer node soaks, AI agents and developers need a **fast (2–5 second), deterministic, single-peer diagnostic probe** that isolates each layer of the P2P funnel with zero background noise:
 
 ```bash
-npx tsx packages/devp2p/src/cli/probe.ts --chain sepolia [--stage 1|2|3|4] [--peer ip:port:id]
+npx tsx packages/devp2p/scripts/p2p-probe.ts --chain sepolia [--stage 1|2|3|4] [--peer ip:port:id]
 ```
 
 - **Stage 1 — `dns-enr` (~0.5s):**
@@ -116,7 +116,7 @@ npx tsx packages/devp2p/src/cli/probe.ts --chain sepolia [--stage 1|2|3|4] [--pe
 ## 3. Acceptance Criteria
 - [x] `ENR.parseAndVerifyRecord` sets `id: pk2id(obj.secp256k1)`, safely handles 1–2 byte ports / missing fields, and parses `ethForkId` (`forkHash` + `nextFork`).
 - [x] Verified DNS ENR peers with `id` and `tcpPort` feed directly into `RLPx` without being dropped by UDP `DPT.ping` timeouts or a full discovery v4 k-bucket.
-- [ ] Stage 1, Stage 2, and Stage 3 of `packages/devp2p/src/cli/probe.ts` succeed against live Sepolia (`dns-enr` → `single-status` held >5s → `single-snap` fetches and verifies a real Sepolia account range).
+- [ ] Stage 1, Stage 2, and Stage 3 of `packages/devp2p/scripts/p2p-probe.ts` succeed against live Sepolia (`dns-enr` → `single-status` held >5s → `single-snap` fetches and verifies a real Sepolia account range).
 - [ ] Running `ethy sepolia` anchors a live Sepolia pivot header and ingests real verified accounts (`totalAccountsSynced > 0`) via `snap/1`.
 - [x] All offline unit tests (`npm test`), `npm run tsc`, and `npm run spellcheck` pass in `packages/common`, `packages/devp2p`, and `packages/ethy`.
 
@@ -146,7 +146,7 @@ npx tsx packages/devp2p/src/cli/probe.ts --chain sepolia [--stage 1|2|3|4] [--pe
 
 Remove Sepolia `amsterdam` `timestamp: '1791294816'`. Reorder `forkHash()` to honor pinned hash before future throw. Update `hardforks.spec.ts`. One line in `ethy/ARCHITECTURE.md`.
 
-### Slice 3 — `packages/devp2p/src/cli/probe.ts`
+### Slice 3 — `packages/devp2p/scripts/p2p-probe.ts`
 
 Stages 1–4: `dns-enr`, `single-status`, `single-snap`, `funnel-soak`. Script `p2p:probe`.
 

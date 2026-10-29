@@ -18,16 +18,16 @@ import {
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 
-import { DNS } from '../dns/dns.ts'
-import type { EthStatusFields } from '../lab/messages/eth.ts'
-import { buildSnapRlpPayload } from '../lab/messages/snap.ts'
-import { EthMessageCodes } from '../protocol/eth.ts'
-import { buildGetBlockHeadersFromJSON } from '../protocol/eth/codec.ts'
-import { SnapMessageCodes } from '../protocol/snap.ts'
-import { genPrivateKey } from '../util.ts'
-import { createThreadedNetwork, resolveThreadedNetworkModuleUrl } from '../worker/index.ts'
+import { DNS } from '../src/dns/dns.ts'
+import type { EthStatusFields } from '../src/lab/messages/eth.ts'
+import { buildSnapRlpPayload } from '../src/lab/messages/snap.ts'
+import { EthMessageCodes } from '../src/protocol/eth.ts'
+import { buildGetBlockHeadersFromJSON } from '../src/protocol/eth/codec.ts'
+import { SnapMessageCodes } from '../src/protocol/snap.ts'
+import { genPrivateKey } from '../src/util.ts'
+import { createThreadedNetwork, resolveThreadedNetworkModuleUrl } from '../src/worker/index.ts'
 
-import type { PeerInfo } from '../types.ts'
+import type { PeerInfo } from '../src/types.ts'
 
 const CHAINS: Record<string, ChainConfig> = {
   mainnet: Mainnet,
