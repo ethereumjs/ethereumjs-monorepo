@@ -9,7 +9,7 @@
         "type": "dptAddPeerExpectTimeout",
         "node": "a",
         "udpPort": 19218,
-        "errorMessage": "Timeout error: ping 127.0.0.1:19218"
+        "errorMessage": "Banned remote 127.0.0.1:19218 for 5 min after discovery ping failed (Timeout error: ping 127.0.0.1:19218)"
       }
     }
   ]
