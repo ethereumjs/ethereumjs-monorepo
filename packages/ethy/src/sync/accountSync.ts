@@ -1,15 +1,20 @@
 import { SnapMessageCodes } from '@ethereumjs/devp2p'
 import { RLP } from '@ethereumjs/rlp'
 import type { FlatStateManager } from '@ethereumjs/statemanager'
-import { bigIntToUnpaddedBytes, setLengthLeft } from '@ethereumjs/util'
+import { bigIntToUnpaddedBytes, bytesToBigInt, setLengthLeft } from '@ethereumjs/util'
 
 import { setPhase } from '../spine/createSpine.ts'
 import { recordDiagnostic } from '../spine/diagnostics.ts'
-import type { EthySpine } from '../spine/types.ts'
+import type { EthySpine, SnapBucket } from '../spine/types.ts'
 import type { SnapTransport } from './snapTransport.ts'
 import { incrementKey32, ingestAccountRangeReply } from './syntheticPeer.ts'
 
 const RESPONSE_BYTES = 512 * 1024
+const RANGE_TIMEOUT_MS = 8_000
+const STALL_BASE_MS = 2_000
+const STALL_MAX_MS = 15_000
+
+type InFlightRange = { bucket: number; reqId: bigint; sentAt: number }
 
 export type SnapAccountSynchronizerOpts = {
   spine: EthySpine
@@ -24,7 +29,9 @@ export class SnapAccountSynchronizer {
   private readonly transport: SnapTransport
   private readonly getSnapPeers: () => Array<{ id: string; caps: string[] }>
   private reqId = 1n
-  private inFlight = new Map<string, number>()
+  private inFlight = new Map<string, InFlightRange>()
+  private stallUntil = new Map<number, number>()
+  private stallRepeats = new Map<number, number>()
   private detachAccountRange?: () => void
   private tickTimer?: ReturnType<typeof setInterval>
   private syncStart = 0
@@ -59,22 +66,28 @@ export class SnapAccountSynchronizer {
 
   private schedule(): void {
     if (this.spine.snapPaused || this.spine.pivotStateRoot === undefined) return
+    this.expireStaleRanges()
     const peers = this.getSnapPeers().filter((p) => p.caps.some((c) => c.startsWith('snap')))
     if (peers.length === 0) return
+    const now = Date.now()
     let peerIdx = 0
     for (const bucket of this.spine.snapBuckets) {
       if (bucket.status === 'done') continue
+      if (bucket.status === 'stalled' && now < (this.stallUntil.get(bucket.index) ?? 0)) continue
       while (peerIdx < peers.length && this.inFlight.has(peers[peerIdx]!.id)) {
         peerIdx++
       }
       if (peerIdx >= peers.length) break
       const peer = peers[peerIdx]!
       peerIdx++
+      const reqId = this.reqId++
       bucket.status = 'syncing'
       bucket.assignedPeerId = peer.id
-      this.inFlight.set(peer.id, bucket.index)
+      this.inFlight.set(peer.id, { bucket: bucket.index, reqId, sentAt: now })
+      const row = this.spine.peers.get(peer.id)
+      if (row !== undefined) row.snapRequestsSent++
       const payload = encodeGetAccountRange(
-        this.reqId++,
+        reqId,
         this.spine.pivotStateRoot,
         bucket.currentLastHash,
         bucket.limitHash,
@@ -84,32 +97,78 @@ export class SnapAccountSynchronizer {
     }
   }
 
-  private async handleAccountRange(peerId: string, payload: Uint8Array): Promise<void> {
-    const bucketIndex = this.inFlight.get(peerId)
-    this.inFlight.delete(peerId)
-    if (bucketIndex === undefined || this.spine.pivotStateRoot === undefined) return
-    const bucket = this.spine.snapBuckets[bucketIndex]
-    if (bucket === undefined) return
-    bucket.status = 'verifying_proof'
-    let result: { ok: boolean; hasRight: boolean; count: number }
-    try {
-      result = await ingestAccountRangeReply(this.spine.pivotStateRoot, payload, (entries) =>
-        this.stateManager.putSnapAccountsBatch(entries),
-      )
-    } catch {
-      result = { ok: false, hasRight: false, count: 0 }
+  private expireStaleRanges(): void {
+    const now = Date.now()
+    for (const [peerId, flight] of this.inFlight) {
+      if (now - flight.sentAt < RANGE_TIMEOUT_MS) continue
+      this.inFlight.delete(peerId)
+      const bucket = this.spine.snapBuckets[flight.bucket]
+      if (bucket === undefined || bucket.status === 'done') continue
+      this.noteRangeFailure(bucket, peerId, 'account range timed out')
     }
-    if (!result.ok) {
-      bucket.status = 'stalled'
-      bucket.lastStallReason = 'range proof failed'
+  }
+
+  private noteRangeFailure(bucket: SnapBucket, peerId: string, reason: string): void {
+    const repeats = (this.stallRepeats.get(bucket.index) ?? 0) + 1
+    this.stallRepeats.set(bucket.index, repeats)
+    const delay = Math.min(STALL_MAX_MS, STALL_BASE_MS * 2 ** Math.min(repeats - 1, 3))
+    this.stallUntil.set(bucket.index, Date.now() + delay)
+    bucket.status = 'stalled'
+    bucket.lastStallReason = reason
+    if (repeats === 1 || repeats % 5 === 0) {
+      const times = repeats > 1 ? ` (×${repeats})` : ''
       recordDiagnostic(this.spine, {
         subsystem: 'snap',
         severity: 'warn',
         peerId,
-        bucketIndex,
-        message: `Range proof failed for bucket ${bucket.prefix}`,
+        bucketIndex: bucket.index,
+        message: `Range proof failed for bucket ${bucket.prefix}: ${reason}${times}`,
       })
+    }
+  }
+
+  private async handleAccountRange(peerId: string, payload: Uint8Array): Promise<void> {
+    const flight = this.inFlight.get(peerId)
+    if (flight === undefined || this.spine.pivotStateRoot === undefined) return
+    const replyId = accountRangeRequestId(payload)
+    if (replyId === undefined || replyId !== flight.reqId) return
+    this.inFlight.delete(peerId)
+    const bucket = this.spine.snapBuckets[flight.bucket]
+    if (bucket === undefined) return
+    bucket.status = 'verifying_proof'
+    const origin = bucket.currentLastHash
+    let result: { ok: boolean; hasRight: boolean; count: number; reason?: string }
+    try {
+      result = await ingestAccountRangeReply(
+        this.spine.pivotStateRoot,
+        payload,
+        (entries) => this.stateManager.putSnapAccountsBatch(entries),
+        origin,
+      )
+    } catch (err: unknown) {
+      result = {
+        ok: false,
+        hasRight: false,
+        count: 0,
+        reason: err instanceof Error ? err.message : String(err),
+      }
+    }
+    if (!result.ok) {
+      this.noteRangeFailure(bucket, peerId, result.reason ?? 'range proof failed')
       return
+    }
+    this.stallRepeats.delete(bucket.index)
+    this.stallUntil.delete(bucket.index)
+    const row = this.spine.peers.get(peerId)
+    if (row !== undefined && result.count > 0) row.snapResponsesOk++
+    if (result.count > 0 && bucket.accountsLoaded === 0) {
+      recordDiagnostic(this.spine, {
+        subsystem: 'snap',
+        severity: 'info',
+        peerId,
+        bucketIndex: bucket.index,
+        message: `Bucket ${bucket.prefix} accepted ${result.count} accounts`,
+      })
     }
     bucket.accountsLoaded += result.count
     this.spine.totalAccountsSynced += result.count
@@ -118,7 +177,7 @@ export class SnapAccountSynchronizer {
       const decoded = RLP.decode(payload) as unknown[]
       const accountsRaw = decoded[1] as Array<[Uint8Array, Uint8Array]>
       const lastKey = accountsRaw[accountsRaw.length - 1]?.[0]
-      if (lastKey !== undefined) {
+      if (lastKey instanceof Uint8Array) {
         bucket.currentLastHash = incrementKey32(lastKey)
         bucket.status = 'pending'
       } else {
@@ -156,6 +215,18 @@ export function encodeGetAccountRange(
     bigIntToUnpaddedBytes(BigInt(responseBytes)),
   ]
   return RLP.encode(input as never)
+}
+
+function accountRangeRequestId(payload: Uint8Array): bigint | undefined {
+  try {
+    const decoded = RLP.decode(payload) as unknown[]
+    const id = decoded[0]
+    if (!(id instanceof Uint8Array)) return undefined
+    if (id.length === 0) return 0n
+    return bytesToBigInt(id)
+  } catch {
+    return undefined
+  }
 }
 
 function compareBytes32(a: Uint8Array, b: Uint8Array): number {

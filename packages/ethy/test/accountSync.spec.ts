@@ -22,6 +22,31 @@ describe('[Ethy/Sync]: synthetic snap account range', () => {
     assert.equal(result.count, 0)
   })
 
+  it('live-style origin proof fails when checked from the first account', async () => {
+    const peer = await SyntheticSnapPeer.create(2)
+    const spine = createSpine('sepolia', 11155111n)
+    spine.snapBuckets = createSnapBuckets()
+    const bucket = spine.snapBuckets[0]!
+    const req = encodeGetAccountRange(
+      1n,
+      peer.rootHash,
+      bucket.currentLastHash,
+      bucket.limitHash,
+      512 * 1024,
+    )
+    const reply = await peer.buildAccountRangeReply(req)
+    const wrongEdge = await ingestAccountRangeReply(peer.rootHash, reply, () => {})
+    const fromOrigin = await ingestAccountRangeReply(
+      peer.rootHash,
+      reply,
+      () => {},
+      bucket.currentLastHash,
+    )
+    assert.equal(wrongEdge.ok, false)
+    assert.equal(fromOrigin.ok, true)
+    assert.isAbove(fromOrigin.count, 0)
+  })
+
   it('syncs all 16 buckets with one proof retry on 0x3', async () => {
     const t0 = performance.now()
     const peer = await SyntheticSnapPeer.create(10)
@@ -41,8 +66,11 @@ describe('[Ethy/Sync]: synthetic snap account range', () => {
           512 * 1024,
         )
         const reply = await peer.buildAccountRangeReply(req)
-        const result = await ingestAccountRangeReply(peer.rootHash, reply, (entries) =>
-          sm.putSnapAccountsBatch(entries),
+        const result = await ingestAccountRangeReply(
+          peer.rootHash,
+          reply,
+          (entries) => sm.putSnapAccountsBatch(entries),
+          bucket.currentLastHash,
         )
         if (!result.ok) {
           proofFailures++

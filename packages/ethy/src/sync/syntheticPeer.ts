@@ -110,10 +110,10 @@ export class SyntheticSnapPeer {
     if (slice.length === 0) {
       return RLP.encode([decoded[0], [], []] as never)
     }
-    const first = slice[0]!.accountHash
     const last = slice[slice.length - 1]!.accountHash
+    // Snap proves the requested origin (often not an account) through the last account returned.
     let proof = [
-      ...(await createMerkleProof(this.trie, first)),
+      ...(await createMerkleProof(this.trie, origin)),
       ...(await createMerkleProof(this.trie, last)),
     ]
     if (originNibble === 0x3 && !this.faultedBucket3) {
@@ -154,7 +154,9 @@ export async function ingestAccountRangeReply(
   putBatch: (
     entries: Array<{ accountHash: Uint8Array; account: Account; address?: never }>,
   ) => void,
-): Promise<{ ok: boolean; hasRight: boolean; count: number }> {
+  /** Request origin. Live snap proofs start here, not at the first returned account. */
+  origin?: Uint8Array,
+): Promise<{ ok: boolean; hasRight: boolean; count: number; reason?: string }> {
   const payload = asBytes(replyPayload)
   if (payload === undefined) return { ok: false, hasRight: false, count: 0 }
   let decoded: unknown[]
@@ -164,8 +166,21 @@ export async function ingestAccountRangeReply(
     return { ok: false, hasRight: false, count: 0 }
   }
   const accountsRaw = decoded[1] as Array<[unknown, unknown]>
-  const proof = decoded[2] as Uint8Array[]
+  let proof: Uint8Array[]
+  try {
+    proof = proofNodeList(decoded[2])
+  } catch (err: unknown) {
+    return { ok: false, hasRight: false, count: 0, reason: errorText(err) }
+  }
   if (!Array.isArray(accountsRaw) || accountsRaw.length === 0) {
+    if (origin !== undefined && proof.length > 0) {
+      try {
+        await verifyMerkleRangeProof(stateRoot, origin, null, [], [], proof)
+        return { ok: true, hasRight: false, count: 0 }
+      } catch (err: unknown) {
+        return { ok: false, hasRight: false, count: 0, reason: errorText(err) }
+      }
+    }
     return { ok: true, hasRight: false, count: 0 }
   }
   try {
@@ -177,14 +192,9 @@ export async function ingestAccountRangeReply(
     const values = accountsRaw.map(([, slim]) =>
       accountBodyToRLP(accountBodyFromSlim(decodeAccountBody(slim)) as AccountBodyBytes, false),
     )
-    const hasRight = await verifyMerkleRangeProof(
-      stateRoot,
-      keys[0]!,
-      keys[keys.length - 1]!,
-      keys,
-      values,
-      proof,
-    )
+    const firstKey = origin ?? keys[0]!
+    const lastKey = keys[keys.length - 1]!
+    const hasRight = await verifyMerkleRangeProof(stateRoot, firstKey, lastKey, keys, values, proof)
     putBatch(
       accountsRaw.map(([, slim], index) => ({
         accountHash: keys[index]!,
@@ -194,7 +204,20 @@ export async function ingestAccountRangeReply(
       })),
     )
     return { ok: true, hasRight, count: accountsRaw.length }
-  } catch {
-    return { ok: false, hasRight: false, count: 0 }
+  } catch (err: unknown) {
+    return { ok: false, hasRight: false, count: 0, reason: errorText(err) }
   }
+}
+
+function proofNodeList(raw: unknown): Uint8Array[] {
+  if (!Array.isArray(raw)) return []
+  return raw.map((node) => {
+    const bytes = asBytes(node)
+    if (bytes === undefined) throw new Error('account range proof node is not bytes')
+    return bytes
+  })
+}
+
+function errorText(err: unknown): string {
+  return err instanceof Error ? err.message : String(err)
 }
