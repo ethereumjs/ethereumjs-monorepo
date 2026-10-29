@@ -38,9 +38,13 @@ function isTcpReadyDirectoryPeer(peer: PeerInfo): boolean {
 }
 
 function peerMatchesChainFork(peer: PeerInfo, common: Common | undefined): boolean {
-  if (peer.ethForkId === undefined || common === undefined) return true
+  if (common === undefined) return true
+  if (peer.ethForkId === undefined) return false
   return common.hardforkForForkHash(peer.ethForkId.forkHash) !== null
 }
+
+/** Cap TCP dial fan-out per DNS refresh (EIP-1459 may return many ENRs). */
+const MAX_DNS_PEER_NEW_PER_REFRESH = 8
 
 /** UDP endpoint of a remote discovery node (never this process). */
 function remoteDiscoveryLabel(peer: PeerInfo): string {
@@ -529,13 +533,16 @@ export class DPT {
 
   /** Verified EIP-1459 peers dial on TCP directly; skip UDP bonding and the k-bucket. */
   _feedDnsDirectoryPeers(dnsPeers: PeerInfo[]): void {
+    let emitted = 0
     for (const raw of dnsPeers) {
+      if (emitted >= MAX_DNS_PEER_NEW_PER_REFRESH) break
       const peer = markChainDirectoryPeer({ ...raw })
       if (!isTcpReadyDirectoryPeer(peer)) continue
       if (!peerMatchesChainFork(peer, this._common)) {
         this._discoveryMetrics?.recordDnsForkRejected()
         continue
       }
+      emitted++
       this.events.emit('peer:new', peer)
     }
   }

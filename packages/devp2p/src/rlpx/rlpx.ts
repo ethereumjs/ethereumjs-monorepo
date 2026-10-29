@@ -431,6 +431,15 @@ export class RLPx {
         // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for peer lookups.
         const peerKey = bytesToUnprefixedHex(id)
         this._peers.delete(peerKey)
+        // Allow directory / discovery to retry after the remote closes (not a failed TCP dial).
+        if (
+          disconnectWe !== true ||
+          reason === DISCONNECT_REASON.TIMEOUT ||
+          reason === DISCONNECT_REASON.SUBPROTOCOL_ERROR ||
+          reason === DISCONNECT_REASON.PROTOCOL_ERROR
+        ) {
+          this._peersLRU.delete(peerKey)
+        }
         this.events.emit('peer:removed', peer, reason, disconnectWe)
         this._syncDiscoveryThrottle()
       }

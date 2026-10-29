@@ -343,7 +343,7 @@ async function stage4FunnelSoak(chainName: string, soakSec: number): Promise<num
     workerUrl,
   )
 
-  let lastDiscovery: import('../discovery/metrics.ts').WorkerDiscoverySnapshot | undefined
+  let lastDiscovery: import('../src/discovery/metrics.ts').WorkerDiscoverySnapshot | undefined
   let lastPeers = 0
   client.events.on('telemetry', (snap) => {
     lastDiscovery = snap.discovery
