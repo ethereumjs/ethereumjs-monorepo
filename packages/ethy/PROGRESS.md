@@ -8,7 +8,7 @@ This file is the **single source of truth** for project progress, architectural 
 
 ## 1. Current Project Snapshot
 
-- **Current Stage:** **WP-03** is **`DONE`** on branch `ethy-wp03` (RLP canonical zero, `FlatStateManager`, 16-bucket snap sync, microscope tools). **WP-02** & **WP-02b** **`DONE`** (#4419). **WP-04** is next (`READY_FOR_PLANNING`).
+- **Current Stage:** **WP-03** is **`DONE`** on branch `ethy-wp03` ([#4420](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4420)). Offline snap sync, `FlatStateManager`, and the Sepolia handshake follow-up are in. A live soak still has not held a validated ETH STATUS long enough to start snap. **WP-04** is next (`READY_FOR_PLANNING`).
 - **Active Target Network:** `sepolia` (Amsterdam hardfork focus; generic `@ethereumjs/common` chain support).
 - **Package Identity:** `@ethereumjs/ethy` (CLI binary: `ethy`, zero-config invocation `ethy` or `ethy sepolia`; unscoped `ethy` npm name transfer inquired).
 
@@ -22,7 +22,7 @@ This file is the **single source of truth** for project progress, architectural 
 | **WP-01** | **Foundation: Scaffolding, `EthySpine`, 4-Zone TUI & Deterministic Prompt Loop** | `DONE` | None | [`work-packages/WP-01-foundation-spine-and-tui-loop.md`](./work-packages/WP-01-foundation-spine-and-tui-loop.md) | `@ethereumjs/ethy` package: spine, deterministic prompt, `--demo`. Dedicated `ethy` CI job (#4418). |
 | **WP-02** | **3-Box Domain-Lens Cockpit, Live P2P Harness & Fresh Pivot Header Acquisition** | `DONE` | WP-01 (`DONE`), WP-00 (`DONE`) | [`work-packages/WP-02-live-p2p-and-fresh-pivot.md`](./work-packages/WP-02-live-p2p-and-fresh-pivot.md) | PR #4419: devp2p head + bootnodes; ethy 3-box cockpit, `NoticeBoard`, `PeerCoordinator`, pivot header parser. |
 | **WP-02b** | **Discovery health: metrics, Sepolia soak, ranked fixes** | `DONE` | WP-02 | [`work-packages/WP-02b-discovery-health.md`](./work-packages/WP-02b-discovery-health.md) | PR #4419: Worker discovery snapshot; endpoint/DNS/resolver fixes; headless JSON soak (`tablePeers: 65`, `connected: 34`). |
-| **WP-03** | **Live `ETH` Status / RLP Canonical Zero Fix, `@ethereumjs/statemanager` `FlatStateManager` & 16-Bucket `snap/1` Sync** | `DONE` | WP-01, WP-02, WP-02b (`DONE`) | [`work-packages/WP-03-snap-account-sync-and-microscope.md`](./work-packages/WP-03-snap-account-sync-and-microscope.md) | Shipped on `ethy-wp03`: canonical RLP zeros + fork head telemetry; `FlatStateManager`; offline snap sync + `/range` / `/sample` / pause/resume. |
+| **WP-03** | **Live `ETH` Status / RLP Canonical Zero Fix, `@ethereumjs/statemanager` `FlatStateManager` & 16-Bucket `snap/1` Sync** | `DONE` | WP-01, WP-02, WP-02b (`DONE`) | [`work-packages/WP-03-snap-account-sync-and-microscope.md`](./work-packages/WP-03-snap-account-sync-and-microscope.md) | Shipped on `ethy-wp03` (#4420): canonical RLP zeros, `FlatStateManager`, offline snap sync, microscope tools, Sepolia fork id and directory dial. Live STATUS soak did not reach snap. |
 | **WP-04** | **Bidirectional Local LLM `IntentEngine` (`<ethy_state>` & Tool Gating)** | `READY_FOR_PLANNING` | WP-01, WP-02 (`DONE`) | [`work-packages/WP-04-local-llm-intent-engine.md`](./work-packages/WP-04-local-llm-intent-engine.md) | Zero-dep local HTTP JSON-schema LLM engine (`llama-server` 1.7B instruct), `<ethy_state>` header injection, dynamic phase tool gating, `--record-fixture` CI replay. |
 | **WP-05** | **Contract Storage/Bytecode Sync & Zero-Execution `eth/71` BAL Head Follower** | `READY_FOR_PLANNING` | WP-03 (`DONE`) | [`work-packages/WP-05-storage-code-and-bal-head-follower.md`](./work-packages/WP-05-storage-code-and-bal-head-follower.md) | `GET_BYTE_CODES` + `GET_STORAGE_RANGES`, healing-free pivot-to-head bridge via `eth/71` `GET_BLOCK_ACCESS_LISTS` (`BlockLevelAccessList` + `consumeBAL`), `inspectLatestBAL` widget. |
 | **WP-06** | **On-Demand `@ethereumjs/evm` Sandbox, Light Beacon Pulse & Headless SDK** | `BLOCKED_BY_WP-05` | WP-04, WP-05 | [`work-packages/WP-06-on-demand-evm-and-headless-sdk.md`](./work-packages/WP-06-on-demand-evm-and-headless-sdk.md) | On-demand EVM call/trace against `StateStore` (with cold-account `snap/1` fallback), HTTP Beacon header pulse, `createEthyNode({ headless: true })` SDK for FYP/MCP. |
@@ -80,6 +80,7 @@ Every structural choice or mid-flight adjustment must be recorded here with its 
 | **D-040** | 2026-10-28 | **`EthyNode.stateManager` ownership (`WP-03`)** | Flat manager on node; spine counters only; intent engine wired with `disconnectPeer` from coordinator. |
 | **D-041** | 2026-10-28 | **`snapPaused` + slash prefixes (`WP-03`)** | `/pause` and `/resume`; `/ra` → `/range `, `/sa` → `/sample`; `/r` stays reassign. |
 | **D-042** | 2026-10-28 | **Ethy tsc vs built workspace dist (`WP-03`)** | `customConditions: []` on ethy tsconfig; build `@ethereumjs/statemanager` before ethy typecheck when flat types are new. |
+| **D-043** | 2026-10-29 | **Close WP-03 without a sustained live STATUS (`WP-03`)** | Peer rows in the cockpit are RLPx sessions after HELLO. Validated ETH STATUS is the footer `status` count. The ETH subprotocol disconnects with `TIMEOUT` after 5 seconds if that handshake does not finish, which matches soaks where a peer stays up for about 5–8 seconds and then leaves. Snap account sync sends `GET_ACCOUNT_RANGE` only after a pivot header, and that header is requested only from a validated head. `status` stayed 0 on the closing soaks, so snap correctly stayed idle. ethy offers eth/69–72. Bootnodes and DNS peers dial before discovery-v4 neighbors. Further live STATUS work is out of this package. |
 
 ---
 
@@ -94,12 +95,19 @@ Track every modification or planned modification to sibling monorepo packages he
 | `@ethereumjs/devp2p` | `packages/devp2p/src/lab/messages/eth.ts`, `src/lab/messages/snap.ts`, `src/protocol/eth.ts`, `src/protocol/eth/codec.ts`, `src/rlpx/peer.ts`, `src/discovery/metrics.ts`, `src/worker/host.ts` | Bugfix: RLP Canonical Zero & `snap/1` Builder (WP-03) | `DONE` | Canonical unpadded scalars; 5-tuple `GET_ACCOUNT_RANGE`; `forkValidationHead` + `lastSubprotocolError` telemetry. |
 | `@ethereumjs/statemanager`, `@ethereumjs/evm`, `@ethereumjs/vm` | `packages/statemanager/src/flatStateManager.ts`, matrices + `evm`/`vm` specs | New Feature: `FlatStateManager` (WP-03) | `DONE` | Hash-keyed snap ingestion, delta checkpoints, `shallowCopy`, cross-stack tests. |
 | `@ethereumjs/common` | `packages/common/src/chains.ts` | Maintenance (WP-02) | `DONE` (audit only) | Sepolia/Hoodi fork timestamps + Hoodi bootnodes match geth chain specs; DNS discovery URLs match. Sepolia static bootnodes stale vs geth ENR list — DNS discovery sufficient; ENR refresh deferred. |
+| `@ethereumjs/common`, `@ethereumjs/devp2p`, `@ethereumjs/ethy` | `packages/common/src/chains.ts`, `packages/devp2p/src/rlpx/rlpx.ts`, `src/discovery/directoryPeer.ts`, `src/protocol/eth.ts`, `packages/ethy/src/net/peerCoordinator.ts`, `genesisStatus.ts`, `discoverySummary.ts` | Sepolia handshake follow-up (WP-03 close) | `DONE` | Amsterdam fork id and Sepolia/Hoodi/Holesky genesis hashes. Directory peers dial first. eth/69–72 only. Empty eth/70 receipt replies include the complete-range flag. STATUS timeout is logged with the client name. |
 
 ---
 
 ## 5. Chronological Progress Log
 
 *Agents: Append a new dated subsection at the top of this list after each Planning (Grok 4.7) or Implementation (Composer 2.5) pass.*
+
+### 2026-10-29 — WP-03 close (Implementer — Grok 4.7)
+- Closed WP-03 on `ethy-wp03` ([#4420](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4420)). Library and offline snap work from 2026-10-28 stays `DONE`.
+- Sepolia follow-up on the same branch: Amsterdam fork id `0x6c1d9423` (next 0), corrected genesis hashes, numeric network-id compare, discovery footer, directory-first dial (bootnodes and DNS ahead of discovery v4), eth/69–72 only, eth/70 receipt reply shape, no empty snap proofs, a later decode error keeps the session, STATUS timeout logged with the client name.
+- Live soak did not reach snap. Cockpit peer count is post-HELLO. Footer `status` stayed 0. Peers that sit for about 5–8 seconds are inside the 5 second STATUS timer, then we disconnect `TIMEOUT`. `GET_ACCOUNT_RANGE` runs only after a pivot header from a validated head, so snap stayed at 0 accounts. Decision **D-043**.
+- WP-04 remains `READY_FOR_PLANNING`. Sustained live STATUS is not a WP-03 exit criterion anymore.
 
 ### 2026-10-28 — WP-03 implementation (`DONE`) (Implementer — Composer 2.5)
 - Landed four-slice WP-03 on `ethy-wp03`: devp2p canonical zeros + fork head + snap wire shape; `FlatStateManager` in `@ethereumjs/statemanager`; evm/vm flat-manager specs; ethy snap sync, synthetic peer, pivot `{ blockNumber, timestamp }`, microscope tools (`/range`, `/sample`, pause/resume).

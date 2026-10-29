@@ -183,3 +183,17 @@ Four-slice delivery on `ethy-wp03`: `@ethereumjs/devp2p` (canonical zeros, `fork
 - **EVM storage assertions:** `FlatStateManager` stores EVM `SSTORE` values with unpadded byte length (same as `SimpleStateManager`); cross-stack specs assert the trailing value byte, not always a 32-byte word.
 
 **Gates (local):** `npm run tsc` + targeted/`test:node` vitest on touched packages; devp2p `test:node` 129 passed; statemanager `test:node` green; ethy WP-03 specs green. Live Sepolia soak remains manual per plan.
+
+### Close-out (2026-10-29)
+
+WP-03 stops here. The offline synchronizer, `FlatStateManager`, microscope tools, and the Sepolia wire follow-up are on `ethy-wp03`.
+
+The live goal in §1 (sustained `statusOk > 0`, then a pivot, then snap) did not land in the soaks we ran. What those soaks showed:
+
+- A peer row means RLPx HELLO finished. Validated ETH STATUS is the footer `status` count. Closing samples still had `status` at 0.
+- The ETH subprotocol allows 5 seconds for STATUS, then disconnects with `TIMEOUT`. That is the stretch where a few peers look connected and then leave, and the next dial takes the slot.
+- Snap sends nothing until `SnapAccountSynchronizer.start()`, which runs only after `GET_BLOCK_HEADERS` returns a pivot. No validated head means no account ranges and no bucket progress.
+- Many `SUBPROTOCOL_ERROR` lines are other chains refusing our Sepolia STATUS. The reason code does not carry their text. A network-id line is the same refusal when we parse their STATUS first.
+- One earlier soak did anchor a pivot on a single reth peer (block 12,012,855) and entered snap sync with 0 accounts ingested before the session ended. That did not repeat on the closing runs.
+
+ethy now speaks eth/69 through eth/72. Bootnodes and the Sepolia DNS tree dial before discovery v4 neighbors. Further live STATUS work is outside this package.
