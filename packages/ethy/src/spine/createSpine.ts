@@ -1,11 +1,11 @@
 import { ETHY_CLIENT_NAME, getEthyClientVersion } from '../clientMeta.ts'
-import { createSnapBuckets } from './buckets.ts'
+import { bucketsWithProgress, createSnapBuckets } from './buckets.ts'
 import type { EthyPhase, EthySpine } from './types.ts'
 
 export function deriveCapabilities(spine: EthySpine): void {
   const peerCount = spine.peers.size
   const stalled = spine.snapBuckets.find((b) => b.status === 'stalled')
-  const doneCount = spine.snapBuckets.filter((b) => b.status === 'done').length
+  const doneCount = bucketsWithProgress(spine.snapBuckets)
 
   switch (spine.phase) {
     case 'BOOTING':

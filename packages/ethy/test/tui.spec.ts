@@ -1,7 +1,7 @@
 import { assert, describe, it } from 'vitest'
 
 import { getEthyClientVersion } from '../src/clientMeta.ts'
-import { createSpine, setPhase } from '../src/spine/createSpine.ts'
+import { createSpine, deriveCapabilities, setPhase } from '../src/spine/createSpine.ts'
 import type { WidgetSpec } from '../src/spine/types.ts'
 import { stripAnsi, visibleWidth } from '../src/tui/ansi.ts'
 import { CAPABILITY_FG, capabilityMark } from '../src/tui/capabilityMark.ts'
@@ -43,11 +43,10 @@ describe('[Ethy/TUI]: renderFrame', () => {
     setPhase(spine, 'SNAP_SYNCING')
     spine.snapBuckets[0]!.accountsLoaded = 50_000
     spine.snapBuckets[0]!.status = 'pending'
-    spine.snapBuckets[1]!.status = 'done'
-    spine.snapBuckets[1]!.accountsLoaded = 10
+    deriveCapabilities(spine)
     const plain = stripAnsi(renderFrame(spine, createInitialViewState(), 140, 30).join('\n'))
-    assert.include(plain, '▓█')
-    assert.include(plain, '1/16')
+    assert.include(plain, '▓░░░░░░░░░░░░░░░ 1/16')
+    assert.notInclude(plain, '0/16')
   })
 
   it('renderFrame() at 100x30 respects column width', () => {

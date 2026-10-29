@@ -1,3 +1,4 @@
+import { bucketsWithProgress } from '../spine/buckets.ts'
 import type { CapabilityId, EthyPhase, EthySpine, TuiViewState } from '../spine/types.ts'
 import { BOLD, DIM, RESET, visibleWidth } from './ansi.ts'
 import { capabilityMark } from './capabilityMark.ts'
@@ -43,8 +44,8 @@ function bucketMiniBar(spine: EthySpine): string {
     else if (b.status === 'stalled') bar += '!'
     else bar += '░'
   }
-  const done = spine.snapBuckets.filter((b) => b.status === 'done').length
-  return `${bar} ${done}/16`
+  const progressed = bucketsWithProgress(spine.snapBuckets)
+  return `${bar} ${progressed}/16`
 }
 
 function shortHash(root: Uint8Array | undefined): string {
@@ -213,11 +214,11 @@ function metricsPairs(spine: EthySpine, domain: CapabilityId): TwoColumnPair[] {
         { label: 'Clients', value: clientFamilies(spine) },
       ]
     case 'snap': {
-      const done = spine.snapBuckets.filter((b) => b.status === 'done').length
+      const progressed = bucketsWithProgress(spine.snapBuckets)
       const syncing = spine.snapBuckets.filter((b) => b.status === 'syncing').length
       const stalled = spine.snapBuckets.filter((b) => b.status === 'stalled').length
       return [
-        { label: 'Progress', value: `${Math.round((done / 16) * 100)}% (${done}/16)` },
+        { label: 'Progress', value: `${Math.round((progressed / 16) * 100)}% (${progressed}/16)` },
         { label: 'Active', value: `${syncing} syncing · ${stalled} stalled` },
         { label: 'Pivot Root', value: shortHash(spine.pivotStateRoot) },
         { label: 'Speed', value: `${Math.round(spine.accountsPerSec)} acc/s` },
