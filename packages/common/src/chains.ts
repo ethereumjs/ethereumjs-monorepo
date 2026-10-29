@@ -307,10 +307,9 @@ export const Sepolia: ChainConfig = {
       forkHash: '0x268956b6',
     },
     {
-      // Sepolia Amsterdam time from Geth, 2026-10-06. Hash is the Geth
-      // fork id for the first Amsterdam block, with no following fork.
       name: 'amsterdam',
       block: null,
+      // EIP-7773 activation table (Sepolia): https://eips.ethereum.org/EIPS/eip-7773
       timestamp: '1791294816',
       forkHash: '0x6c1d9423',
     },
