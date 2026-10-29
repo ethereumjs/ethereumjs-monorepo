@@ -13,7 +13,14 @@ export {
   describeNotice,
 } from './notify/board.ts'
 export type { LiveNotice, NoticeDraft, NoticeLevel } from './notify/board.ts'
-export { syncP2pLinkNotices, discoveryLooksBlocked, P2P_QUIET_GRACE_MS } from './notify/p2pLink.ts'
+export {
+  syncP2pLinkNotices,
+  discoveryLooksBlocked,
+  p2pDiscoveryTrafficSeen,
+  shouldWarnP2pReachability,
+  P2P_QUIET_GRACE_MS,
+  P2P_REACHABILITY_HINT,
+} from './notify/p2pLink.ts'
 export { createSnapBuckets, findBucketByPrefix } from './spine/buckets.ts'
 export type {
   CapabilityId,

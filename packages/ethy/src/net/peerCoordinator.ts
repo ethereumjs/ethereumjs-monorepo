@@ -183,6 +183,7 @@ export async function startPeerCoordinator(
       startedAt: linkStartedAt,
       now: Date.now(),
       dnsTimedOut,
+      discovery: spine.discovery,
     })
   }
 

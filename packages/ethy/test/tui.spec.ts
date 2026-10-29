@@ -1,6 +1,7 @@
 import { assert, describe, it } from 'vitest'
 
 import { getEthyClientVersion } from '../src/clientMeta.ts'
+import { P2P_REACHABILITY_HINT } from '../src/notify/p2pLink.ts'
 import { createSpine, deriveCapabilities, setPhase } from '../src/spine/createSpine.ts'
 import type { WidgetSpec } from '../src/spine/types.ts'
 import { stripAnsi, visibleWidth } from '../src/tui/ansi.ts'
@@ -116,14 +117,14 @@ describe('[Ethy/TUI]: renderFrame', () => {
     assert.match(plain[plain.length - 3] ?? '', /ethy >/)
     assert.notInclude(joined, 'All quiet')
     const raw = renderFrame(spine, view, 100, 30, {
-      text: 'No peers yet. Firewall? VPN?',
+      text: P2P_REACHABILITY_HINT,
       level: 'warn',
     })
     const footer = stripAnsi(raw[raw.length - 1] ?? '')
-    assert.include(footer, 'No peers yet. Firewall? VPN?')
+    assert.include(footer, P2P_REACHABILITY_HINT)
     const right = cockpitColumnWidths(measurePage(100, 30).contentWidth)[2]
     assert.isAtMost(footer.length, 100)
-    assert.isAtLeast(footer.indexOf('No peers'), 100 - right)
+    assert.isAtLeast(footer.indexOf('Discovery'), 100 - right)
   })
 
   it('promptCaretPosition() sits just after the domain mark and draft', () => {
