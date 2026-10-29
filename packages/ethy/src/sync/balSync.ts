@@ -12,6 +12,13 @@ import {
 import { setPhase } from '../spine/createSpine.ts'
 import type { EthySpine } from '../spine/types.ts'
 import type { SnapAccountSynchronizer } from './accountSync.ts'
+import {
+  type InFlightBlockBundle,
+  advanceBlockBundleEthMessage,
+  finalizeBlockBundle,
+  headFieldsFromHeaderRlp,
+  startBlockBundleByNumber,
+} from './blockBundle.ts'
 import type { SnapCodeAndStorageSynchronizer } from './codeAndStorageSync.ts'
 
 export const PIVOT_HEAL_BLOCK_GAP = 64n
@@ -83,7 +90,9 @@ export type HeadFollowerOpts = {
   spine: EthySpine
   stateManager: FlatStateManager
   chain: ChainConfig
+  hardfork: string
   getClient: () => Devp2pWorkerClient
+  sendEthMessage: (peerId: string, code: number, payload: Uint8Array) => void
   pickEthPeer: () => { id: string; ethVersion: number; latestBlock?: number } | undefined
   putServableBlock: (bundle: {
     number: bigint
@@ -93,12 +102,22 @@ export type HeadFollowerOpts = {
     receiptsEth69Rlp: Uint8Array
     balRlp?: Uint8Array
   }) => void
+  onBalApplied?: (balJson: BALJSONBlockAccessList) => void
+  appendHealBal?: (blockNumber: bigint, balRlp: Uint8Array) => void
 }
 
-/** Polls peer head and advances one block when caught up in `HEAD_FOLLOWING`. */
+type HeadCatchUp = {
+  peerId: string
+  ethVersion: number
+  targetHead: bigint
+  inFlight?: InFlightBlockBundle
+}
+
+/** Polls peer head and advances block-by-block in `HEAD_FOLLOWING`. */
 export class HeadBlockFollower {
   private readonly opts: HeadFollowerOpts
   private timer?: ReturnType<typeof setInterval>
+  private catchUp?: HeadCatchUp
 
   constructor(opts: HeadFollowerOpts) {
     this.opts = opts
@@ -115,15 +134,85 @@ export class HeadBlockFollower {
   stop(): void {
     if (this.timer !== undefined) clearInterval(this.timer)
     this.timer = undefined
+    this.catchUp = undefined
   }
 
-  private async tick(): Promise<void> {
+  handleEthMessage(msg: { peerId: string; code: number; payload: Uint8Array }): boolean {
+    const inFlight = this.catchUp?.inFlight
+    if (inFlight === undefined) return false
+    const result = advanceBlockBundleEthMessage(
+      this.opts.chain,
+      inFlight,
+      msg,
+      (peerId, code, payload) => {
+        this.opts.sendEthMessage(peerId, code, payload)
+      },
+    )
+    if (result === 'failed') {
+      this.catchUp = undefined
+      return true
+    }
+    if (result === 'progress') return true
+    void this.finishCatchUpBlock()
+    return true
+  }
+
+  private async finishCatchUpBlock(): Promise<void> {
+    const seq = this.catchUp
+    const bundle = seq?.inFlight
+    if (seq === undefined || bundle === undefined) return
+    await finalizeBlockBundle({
+      spine: this.opts.spine,
+      stateManager: this.opts.stateManager,
+      chain: this.opts.chain,
+      hardfork: this.opts.hardfork,
+      bundle,
+      putServableBlock: (b) => this.opts.putServableBlock(b),
+      onBalApplied: this.opts.onBalApplied,
+      appendHealBal: this.opts.appendHealBal,
+    })
+    const fields =
+      bundle.headerRlp !== undefined
+        ? headFieldsFromHeaderRlp(bundle.headerRlp, this.opts.chain, this.opts.hardfork)
+        : null
+    if (fields !== null) {
+      this.opts.spine.headBlockNumber = fields.number
+      this.opts.spine.headStateRoot = fields.stateRoot
+      this.opts.spine.currentSlot = Number(fields.number)
+    }
+    seq.inFlight = undefined
+    if (
+      this.opts.spine.headBlockNumber !== undefined &&
+      this.opts.spine.headBlockNumber < seq.targetHead
+    ) {
+      void this.tick()
+    } else {
+      this.catchUp = undefined
+    }
+  }
+
+  private tick(): void {
     const { spine } = this.opts
     if (spine.phase !== 'HEAD_FOLLOWING' || spine.headBlockNumber === undefined) return
+    if (this.catchUp?.inFlight !== undefined) return
     const peer = this.opts.pickEthPeer()
     if (peer?.latestBlock === undefined) return
     const peerHead = BigInt(peer.latestBlock)
     if (peerHead <= spine.headBlockNumber) return
-    // Full multi-block catch-up is driven by the coordinator bundle fetch; follower is a hook for extension.
+    if (this.catchUp === undefined || this.catchUp.targetHead < peerHead) {
+      this.catchUp = {
+        peerId: peer.id,
+        ethVersion: peer.ethVersion,
+        targetHead: peerHead,
+      }
+    }
+    const next = spine.headBlockNumber + 1n
+    if (next > this.catchUp.targetHead) return
+    this.catchUp.inFlight = startBlockBundleByNumber(
+      this.opts.getClient(),
+      this.catchUp.peerId,
+      this.catchUp.ethVersion,
+      next,
+    )
   }
 }

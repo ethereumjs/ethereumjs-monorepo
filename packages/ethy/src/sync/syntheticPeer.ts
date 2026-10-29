@@ -6,6 +6,7 @@ import {
   accountBodyToSlim,
   createAccount,
   createAccountFromRLP,
+  equalsBytes,
 } from '@ethereumjs/util'
 import { keccak_256 } from '@noble/hashes/sha3.js'
 
@@ -49,18 +50,26 @@ export type SyntheticAccount = {
   accountHash: Uint8Array
   account: Account
   slimRlp: Uint8Array
+  code?: Uint8Array
+  storageTrie?: MerklePatriciaTrie
 }
 
 export class SyntheticSnapPeer {
   readonly rootHash: Uint8Array
   readonly accounts: SyntheticAccount[]
   private readonly trie: MerklePatriciaTrie
+  private readonly codeByHash = new Map<string, Uint8Array>()
   faultedBucket3 = false
 
   private constructor(trie: MerklePatriciaTrie, accounts: SyntheticAccount[]) {
     this.trie = trie
     this.accounts = accounts
     this.rootHash = trie.root()
+    for (const row of accounts) {
+      if (row.code !== undefined) {
+        this.codeByHash.set(bytesKey(row.account.codeHash), row.code)
+      }
+    }
   }
 
   static async create(accountsPerBucket = 10): Promise<SyntheticSnapPeer> {
@@ -93,7 +102,45 @@ export class SyntheticSnapPeer {
       }
     }
     accounts.sort((a, b) => compareBytes32(a.accountHash, b.accountHash))
+    await attachContractToFirstAccount(trie, accounts)
     return new SyntheticSnapPeer(trie, accounts)
+  }
+
+  buildByteCodesReply(getPayload: Uint8Array): Uint8Array {
+    const decoded = RLP.decode(getPayload) as unknown[]
+    const reqId = decoded[0]
+    const hashesRaw = decoded[1] as Uint8Array[]
+    const codes: Uint8Array[] = []
+    for (const hash of hashesRaw) {
+      const code = this.codeByHash.get(bytesKey(hash))
+      if (code !== undefined) codes.push(code)
+    }
+    return RLP.encode([reqId, codes] as never)
+  }
+
+  async buildStorageRangesReply(getPayload: Uint8Array): Promise<Uint8Array> {
+    const decoded = RLP.decode(getPayload) as unknown[]
+    const reqId = decoded[0]
+    const accountHashes = decoded[2] as Uint8Array[]
+    const origin = decoded[3] as Uint8Array
+    const limit = decoded[4] as Uint8Array
+    const accountHash = accountHashes[0]
+    if (accountHash === undefined) {
+      return RLP.encode([reqId, [[]], []] as never)
+    }
+    const row = this.accounts.find((a) => equalsAccountHash(a.accountHash, accountHash))
+    if (row?.storageTrie === undefined) {
+      return RLP.encode([reqId, [[]], []] as never)
+    }
+    const trie = row.storageTrie
+    const slotHash = keccak_256(new Uint8Array([0x01]))
+    if (compareBytes32(slotHash, origin) < 0 || compareBytes32(slotHash, limit) > 0) {
+      return RLP.encode([reqId, [[]], []] as never)
+    }
+    const slotRlp = RLP.encode(new Uint8Array([0x02]))
+    const proof = await createMerkleProof(trie, slotHash)
+    const slots: Array<[Uint8Array, Uint8Array]> = [[slotHash, slotRlp]]
+    return RLP.encode([reqId, [slots], proof] as never)
   }
 
   /** Build ACCOUNT_RANGE RLP for a GET_ACCOUNT_RANGE payload. */
@@ -127,6 +174,43 @@ export class SyntheticSnapPeer {
     const accountsList = slice.map((a) => [a.accountHash, a.slimRlp])
     return RLP.encode([decoded[0], accountsList, proof] as never)
   }
+}
+
+async function attachContractToFirstAccount(
+  trie: MerklePatriciaTrie,
+  accounts: SyntheticAccount[],
+): Promise<void> {
+  const row = accounts[0]
+  if (row === undefined) return
+  const code = new Uint8Array([0x60, 0x00, 0x60, 0x00, 0xfd])
+  const codeHash = keccak_256(code)
+  const storageTrie = new MerklePatriciaTrie({ useKeyHashing: false })
+  const slotHash = keccak_256(new Uint8Array([0x01]))
+  const slotRlp = RLP.encode(new Uint8Array([0x02]))
+  await storageTrie.put(slotHash, slotRlp)
+  const account = createAccount({
+    nonce: row.account.nonce,
+    balance: row.account.balance,
+    codeHash,
+    storageRoot: storageTrie.root(),
+  })
+  const full = account.serialize()
+  await trie.put(row.accountHash, full)
+  const slimBody = accountBodyToSlim(decodeAccountBody(full)) as AccountBodyBytes
+  row.account = account
+  row.slimRlp = accountBodyToRLP(slimBody, false)
+  row.code = code
+  row.storageTrie = storageTrie
+}
+
+function bytesKey(hash: Uint8Array): string {
+  return Array.from(hash)
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('')
+}
+
+function equalsAccountHash(a: Uint8Array, b: Uint8Array): boolean {
+  return equalsBytes(a, b)
 }
 
 function compareBytes32(a: Uint8Array, b: Uint8Array): number {

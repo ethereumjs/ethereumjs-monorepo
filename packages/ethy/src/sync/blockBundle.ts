@@ -1,8 +1,12 @@
+import { createBlockHeaderFromBytesArray } from '@ethereumjs/block'
 import type { FlatStateManager } from '@ethereumjs/statemanager'
 
 import type { ChainConfig } from '@ethereumjs/common'
+import { Common } from '@ethereumjs/common'
 import type { Devp2pWorkerClient } from '@ethereumjs/devp2p'
+import { RLP } from '@ethereumjs/rlp'
 
+import type { BALJSONBlockAccessList } from '@ethereumjs/util'
 import {
   EthMessageCodes,
   type ParsedPivotHeader,
@@ -18,6 +22,7 @@ import {
   peerIdToBytes,
 } from '../net/pivotHeader.ts'
 import type { EthySpine } from '../spine/types.ts'
+
 import { applyBlockBal, pushBalWindow } from './balSync.ts'
 
 export type BlockBundleStage = 'headers' | 'bodies' | 'receipts' | 'bal'
@@ -54,6 +59,8 @@ export type FinalizeBlockBundleOpts = {
   hardfork: string
   bundle: InFlightBlockBundle
   putServableBlock: Devp2pWorkerClient['putServableBlock']
+  onBalApplied?: (balJson: BALJSONBlockAccessList) => void
+  appendHealBal?: (blockNumber: bigint, balRlp: Uint8Array) => void
 }
 
 /** Register servable bundle and apply BAL when present. */
@@ -75,6 +82,9 @@ export async function finalizeBlockBundle(opts: FinalizeBlockBundleOpts): Promis
     receiptsEth69Rlp: bundle.receiptsEth69Rlp,
     balRlp: bundle.balRlp,
   })
+  if (bundle.balRlp !== undefined && bundle.balRlp.length > 0) {
+    opts.appendHealBal?.(bundle.blockNumber, bundle.balRlp)
+  }
   const applied = await applyBlockBal(
     opts.stateManager,
     bundle.headerRlp,
@@ -84,6 +94,25 @@ export async function finalizeBlockBundle(opts: FinalizeBlockBundleOpts): Promis
   )
   if (applied.balJson !== undefined) {
     pushBalWindow(opts.spine, bundle.blockNumber, applied.balJson)
+    opts.onBalApplied?.(applied.balJson)
+  }
+}
+
+export function headFieldsFromHeaderRlp(
+  headerRlp: Uint8Array,
+  chain: ChainConfig,
+  hardfork: string,
+): { number: bigint; stateRoot: Uint8Array } | null {
+  const common = new Common({ chain, hardfork })
+  try {
+    const raw = RLP.decode(headerRlp) as never
+    const header = createBlockHeaderFromBytesArray(raw, {
+      common,
+      skipConsensusFormatValidation: true,
+    })
+    return { number: header.number, stateRoot: header.stateRoot }
+  } catch {
+    return null
   }
 }
 

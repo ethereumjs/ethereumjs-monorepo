@@ -2,11 +2,13 @@ import { verifyMerkleRangeProof } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
 import type { FlatStateManager } from '@ethereumjs/statemanager'
 import {
+  type BALJSONBlockAccessList,
   KECCAK256_NULL,
   KECCAK256_RLP,
   bigIntToUnpaddedBytes,
   bytesToBigInt,
   equalsBytes,
+  hexToBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
 import { keccak_256 } from '@noble/hashes/sha3'
@@ -128,6 +130,37 @@ export class SnapCodeAndStorageSynchronizer {
     this.storageTasks = []
     this.storageInFlight.clear()
     this.codesInFlight.clear()
+  }
+
+  /** Drop in-flight work and refresh storage roots after a pivot heal (D-058). */
+  refreshAfterPivotHeal(): void {
+    this.storageInFlight.clear()
+    this.codesInFlight.clear()
+    for (const task of this.storageTasks) {
+      if (task.done) continue
+      const acc = this.stateManager.getAccountByHash(task.accountHash)
+      if (acc === undefined) {
+        task.done = true
+        continue
+      }
+      if (equalsBytes(acc.storageRoot, KECCAK256_RLP)) {
+        task.done = true
+        continue
+      }
+      if (!equalsBytes(task.storageRoot, acc.storageRoot)) {
+        task.storageRoot = acc.storageRoot
+        task.origin = new Uint8Array(32)
+        task.missRetries = 0
+      }
+    }
+  }
+
+  noteBalApplied(bal: BALJSONBlockAccessList): void {
+    for (const row of bal) {
+      const address = hexToBytes(row.address)
+      if (address.length !== 20) continue
+      this.invalidateAccount(keccak_256(address))
+    }
   }
 
   pendingDone(): boolean {

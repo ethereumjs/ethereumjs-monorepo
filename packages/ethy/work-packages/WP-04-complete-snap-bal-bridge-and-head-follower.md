@@ -1,6 +1,6 @@
 # WP-04: Complete `snap/1` (Code & Storage), Rolling Pivot BAL Healing, `eth/71` Head Follower & Active `eth/69–71` Serving
 
-- **Status:** `PLANNED`
+- **Status:** `IN_PROGRESS`
 - **Dependencies:** `WP-00` (`DONE`), `WP-01` (`DONE`), `WP-02` (`DONE`), `WP-03` (`DONE`), `WP-03b` (`DONE`), `WP-03c` (`DONE`)
 - **Branch:** `ethy-wp04`
 - **Planner:** Grok 4.7
@@ -170,4 +170,9 @@ WP-05 local LLM; WP-06 `/simulate` + EVM; beacon HTTP; inbound `snap/1` serving;
 
 ## 4. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled out by Composer 2.5 after implementation and verification.)*
+- **Slice 1 (code/storage):** `SnapCodeAndStorageSynchronizer`, snap transport 0x02–0x05, schema-2 `appendCode` / `appendStorageSlots`, shared `SnapPeerFlightTracker`. **D-061 deviation:** complete storage with empty proof uses default MPT key hasher (not identity `(k) => k`) so offline trie tests and `verifyMerkleRangeProof` agree; partial ranges still use origin-bound proofs.
+- **Slice 2 (heal + head):** `blockBundle.ts` sequential fetch; rolling heal walks `#pivot+1..#new` before re-anchor; telemetry **`maybeProactivePivotHeal`** at +64; `HeadBlockFollower` block-by-block catch-up with eth handler wiring; `refreshAfterPivotHeal` + `noteBalApplied` (D-058); `appendHealBal` on disk (full `loadInto` heal replay on restart still TODO — needs async node bootstrap).
+- **Slice 3:** `headTools.ts` + cockpit BAL window row; deterministic engine routes `/bal` and `/account` when head ready.
+- **Slice 4:** `codeStorageSync.spec.ts` (synthetic code/storage), `balSync.spec.ts` (window, head phase, flat≡merkle oracle, `/bal`); intent/tui specs unchanged (head gating already covered).
+- **Upstream:** `FlatStateManager.getCodeByHash` shipped in separate commit on `ethy-wp04`.
+- **Remaining before `DONE`:** in-process `putServableBlock` serve snapshot test; optional `getCodeByHash` unit test in statemanager; async heal-BAL replay on `createEthyNode` restart; fuller half-sync + multi-BAL integration test vs live coordinator.

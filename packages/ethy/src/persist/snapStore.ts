@@ -278,6 +278,14 @@ export class SnapPivotStore {
     fs.writeFileSync(file, Buffer.concat([Buffer.from(header), Buffer.from(code)]))
   }
 
+  appendHealBal(blockNumber: bigint, balRlp: Uint8Array): void {
+    if (!this.enabled || this.activeStateRoot === undefined || balRlp.length === 0) return
+    const healDir = path.join(this.pivotDir(this.activeStateRoot), 'heal')
+    fs.mkdirSync(healDir, { recursive: true })
+    const file = path.join(healDir, `${blockNumber.toString()}.bal`)
+    fs.writeFileSync(file, balRlp)
+  }
+
   appendStorageSlots(
     accountHash: Uint8Array,
     slots: Array<{ slotHash: Uint8Array; value: Uint8Array }>,

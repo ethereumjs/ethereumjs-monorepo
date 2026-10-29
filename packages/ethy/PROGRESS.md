@@ -8,7 +8,7 @@ This file is the **single source of truth** for project progress, architectural 
 
 ## 1. Current Project Snapshot
 
-- **Current Stage:** **WP-03c** is **`DONE`** (#4422). **WP-04** is **`PLANNED`** (concrete four-slice plan in [`work-packages/WP-04-complete-snap-bal-bridge-and-head-follower.md`](./work-packages/WP-04-complete-snap-bal-bridge-and-head-follower.md) §3; decisions **D-055**–**D-061**) — next step is Composer implementation on branch `ethy-wp04`. **WP-05** (Local LLM `IntentEngine`) stays blocked until WP-04 ships.
+- **Current Stage:** **WP-03c** is **`DONE`** (#4422). **WP-04** is **`IN_PROGRESS`** on branch `ethy-wp04` (code/storage sync, rolling pivot heal, head follower, head tools; 111 offline tests green). **WP-05** stays blocked until WP-04 ships.
 - **Active Target Network:** `sepolia` (Amsterdam hardfork focus; generic `@ethereumjs/common` chain support).
 - **Package Identity:** `@ethereumjs/ethy` (CLI binary: `ethy`, zero-config invocation `ethy` or `ethy sepolia`; unscoped `ethy` npm name transfer inquired).
 
@@ -25,7 +25,7 @@ This file is the **single source of truth** for project progress, architectural 
 | **WP-03** | **Live `ETH` Status / RLP Canonical Zero Fix, `@ethereumjs/statemanager` `FlatStateManager` & 16-Bucket `snap/1` Sync** | `DONE` | WP-01, WP-02, WP-02b (`DONE`) | [`work-packages/WP-03-snap-account-sync-and-microscope.md`](./work-packages/WP-03-snap-account-sync-and-microscope.md) | Shipped (#4420): canonical RLP zeros, `FlatStateManager`, snap sync, microscope tools. |
 | **WP-03b** | **P2P Master Plan: Surgical 4-Stage Probe, Direct DNS/EIP-868 ENR Pipeline & Live `snap/1` Verification** | `DONE` | WP-03 (`DONE`) | [`work-packages/WP-03b-p2p-probe-and-enr-pipeline.md`](./work-packages/WP-03b-p2p-probe-and-enr-pipeline.md) | Shipped (#4421): ENR `id` + `ethForkId`, DNS→`peer:new`, `SnapPivotStore` + `PeerBookStore`, verified >3.48M Sepolia accounts synced live at ~6k acc/s! |
 | **WP-03c** | **Honest Block-Range Advertising (`earliestBlock` Fix) & Full Rolling-Window `eth/69–71` Server** | `DONE` | WP-03b (`DONE`) | [`work-packages/WP-03c-honest-range-and-eth-rolling-server.md`](./work-packages/WP-03c-honest-range-and-eth-rolling-server.md) | Shipped (#4422): Honest point-range STATUS; `RollingBlockStore` + `ethServer` in worker; pivot bundle `putServableBlock`; **Served** cockpit row. |
-| **WP-04** | **Complete `snap/1` (Code & Storage), Rolling Pivot BAL Healing, `eth/71` Head Follower & Active `eth/69–71` Serving** | `PLANNED` | WP-03, WP-03b, WP-03c (`DONE`) | [`work-packages/WP-04-complete-snap-bal-bridge-and-head-follower.md`](./work-packages/WP-04-complete-snap-bal-bridge-and-head-follower.md) | Planner pass done: code/storage sync, pivot heal at +64, head follower, `/bal` & `/account`; ethy-local snap encoders; optional `getCodeByHash` upstream. |
+| **WP-04** | **Complete `snap/1` (Code & Storage), Rolling Pivot BAL Healing, `eth/71` Head Follower & Active `eth/69–71` Serving** | `IN_PROGRESS` | WP-03, WP-03b, WP-03c (`DONE`) | [`work-packages/WP-04-complete-snap-bal-bridge-and-head-follower.md`](./work-packages/WP-04-complete-snap-bal-bridge-and-head-follower.md) | Branch `ethy-wp04`: slices 1–3 largely wired; heal block bundles + proactive +64; head catch-up; see WP-04 §4 for gaps before `DONE`. |
 | **WP-05** | **Bidirectional Local LLM `IntentEngine` (`<ethy_state>` & Tool Gating)** | `BLOCKED_BY_WP-04` | WP-01, WP-02, WP-04 | [`work-packages/WP-05-local-llm-intent-engine.md`](./work-packages/WP-05-local-llm-intent-engine.md) | Zero-dep local HTTP JSON-schema LLM engine (`llama-server` 1.7B instruct), `<ethy_state>` header injection, dynamic phase tool gating, `--record-fixture` CI replay. |
 | **WP-06** | **On-Demand `@ethereumjs/evm` Sandbox, Light Beacon Pulse & Headless SDK** | `BLOCKED_BY_WP-05` | WP-04, WP-05 | [`work-packages/WP-06-on-demand-evm-and-headless-sdk.md`](./work-packages/WP-06-on-demand-evm-and-headless-sdk.md) | On-demand EVM call/trace against `FlatStateManager` (with cold-account `snap/1` fallback), HTTP Beacon header pulse, `createEthyNode({ headless: true })` SDK for FYP/MCP. |
 
@@ -118,13 +118,17 @@ Track every modification or planned modification to sibling monorepo packages he
 | `@ethereumjs/common`, `@ethereumjs/devp2p`, `@ethereumjs/ethy` | `packages/common/src/chains.ts`, `packages/devp2p/src/rlpx/rlpx.ts`, `src/discovery/directoryPeer.ts`, `src/protocol/eth.ts`, `packages/ethy/src/net/peerCoordinator.ts`, `genesisStatus.ts`, `discoverySummary.ts` | Sepolia handshake follow-up (WP-03 close) | `DONE` (#4420) | Amsterdam fork id and Sepolia/Hoodi/Holesky genesis hashes. Directory peers dial first. eth/69–72 only. Empty eth/70 receipt replies include the complete-range flag. STATUS timeout is logged with the client name. |
 | `@ethereumjs/devp2p`, `@ethereumjs/common` | `packages/devp2p/src/dns/enr.ts`, `enrPeerFields.ts`, `src/dpt/dpt.ts`, `src/dpt/server.ts`, `src/cli/probe.ts`, `src/discovery/metrics.ts`, `packages/common/src/chains.ts`, `common.ts` | P2P Master Plan: ENR `id` + EIP-868 `eth` Filter, Direct DNS-to-RLPx & Surgical Probe (WP-03b) | `DONE` (#4421) | ENR fields + DNS `peer:new`; fork filter on discovery v4 ENR; Sepolia Amsterdam EIP-7773 timestamp; `p2p:probe` script. |
 | `@ethereumjs/devp2p` | `packages/devp2p/src/serve/*`, `src/lab/messages/eth.ts`, `src/rlpx/rlpx.ts`, `src/worker/host.ts`, `src/worker/client.ts`, `src/worker/protocol.ts`, tests | Rolling-Window `eth/69–71` Server, Honest `earliestBlock` & Serving Metrics (WP-03c) | `DONE` (local) | `RollingBlockStore`, `ethServer`, `putServableBlock`, `WorkerServingSnapshot`, opt-in `maxInboundPeers`; honest `ethStatusFromFields` default. |
-| `@ethereumjs/statemanager` | `packages/statemanager/src/flatStateManager.ts`, flat-manager unit tests | Enhancement: `getCodeByHash` (WP-04) | `PLANNED` | Read bytecode by `codeHash` for `/account` and head tools without requiring address preimage; backwards-compatible; commit separately from ethy. |
+| `@ethereumjs/statemanager` | `packages/statemanager/src/flatStateManager.ts`, flat-manager unit tests | Enhancement: `getCodeByHash` (WP-04) | `DONE` (local) | Shipped on `ethy-wp04`; optional dedicated unit test still open. |
 
 ---
 
 ## 5. Chronological Progress Log
 
 *Agents: Append a new dated subsection at the top of this list after each Planning (Grok 4.7) or Implementation (Composer 2.5) pass.*
+
+### 2026-10-29 — `WP-04` implementation pass (`IN_PROGRESS`) (Implementer — Composer 2.5)
+- Landed code/storage synchronizer, rolling pivot heal via `blockBundle.ts`, proactive +64 pivot refresh, `HeadBlockFollower` catch-up, D-058 refresh hooks, `appendHealBal`, synthetic snap code/storage, head tools + tests (111 passing).
+- Upstream **`getCodeByHash`** committed separately; WP-04 §4 lists remaining gaps before matrix **`DONE`**.
 
 ### 2026-10-29 — `WP-04` concrete implementation plan (`PLANNED`) (Planner — Grok 4.7)
 - Filled [`work-packages/WP-04-complete-snap-bal-bridge-and-head-follower.md`](./work-packages/WP-04-complete-snap-bal-bridge-and-head-follower.md) §3: four slices (code/storage sync, BAL heal + head follower, HEAD TUI/tools, offline tests), file tree, finish gates, out-of-scope list.

@@ -8,7 +8,12 @@ import {
 } from '@ethereumjs/devp2p'
 import { RLP } from '@ethereumjs/rlp'
 import type { FlatStateManager } from '@ethereumjs/statemanager'
-import { equalsBytes, intToUnpaddedBytes, utf8ToBytes } from '@ethereumjs/util'
+import {
+  type BALJSONBlockAccessList,
+  equalsBytes,
+  intToUnpaddedBytes,
+  utf8ToBytes,
+} from '@ethereumjs/util'
 
 import { getEthyClientVersion } from '../clientMeta.ts'
 import type { NoticeBoard } from '../notify/board.ts'
@@ -209,7 +214,9 @@ export async function startPeerCoordinator(
         spine,
         stateManager,
         chain,
+        hardfork,
         getClient: () => clientRef,
+        sendEthMessage: sendEthToPeer,
         pickEthPeer: () => {
           const best = pickBestPeer(lastTelemetryPeers, pivotBlockedPeers)
           if (best === undefined) return undefined
@@ -220,6 +227,8 @@ export async function startPeerCoordinator(
           }
         },
         putServableBlock: (bundle) => clientRef.putServableBlock(bundle),
+        onBalApplied: bundleBalHooks.onBalApplied,
+        appendHealBal: bundleBalHooks.appendHealBal,
       })
       headFollower.start()
     }
@@ -264,6 +273,19 @@ export async function startPeerCoordinator(
     inFlightStartedAt = 0
   }
 
+  const sendEthToPeer = (peerId: string, code: number, payload: Uint8Array) => {
+    client.sendEthMessage(peerIdToBytes(peerId), code, payload)
+  }
+
+  const bundleBalHooks = {
+    onBalApplied: (bal: BALJSONBlockAccessList) => {
+      codeSync?.noteBalApplied(bal)
+    },
+    appendHealBal: (blockNumber: bigint, balRlp: Uint8Array) => {
+      snapStore?.appendHealBal(blockNumber, balRlp)
+    },
+  }
+
   const completePivotBundle = () => {
     if (bundleFetch === undefined) return
     if (bundleFetch.bodyRlp === undefined || bundleFetch.receiptsEth69Rlp === undefined) {
@@ -289,6 +311,7 @@ export async function startPeerCoordinator(
       hardfork,
       bundle,
       putServableBlock: (b) => client.putServableBlock(b),
+      ...bundleBalHooks,
     })
     recordDiagnostic(spine, {
       subsystem: 'devp2p',
@@ -359,6 +382,7 @@ export async function startPeerCoordinator(
       hardfork,
       bundle,
       putServableBlock: (b) => client.putServableBlock(b),
+      ...bundleBalHooks,
     }).then(() => {
       if (healSeq === undefined) return
       healSeq.nextBlock += 1n
@@ -528,6 +552,17 @@ export async function startPeerCoordinator(
     }
   }
 
+  const maybeProactivePivotHeal = (peers: WorkerPeerSnapshot[]) => {
+    if (healSeq !== undefined || inFlightPeerId !== undefined || bundleFetch !== undefined) return
+    if (spine.phase !== 'SNAP_SYNCING' || spine.pivotBlockNumber === undefined) return
+    if (!snapBucketsUnfinished(spine.snapBuckets)) return
+    const best = pickBestPeer(peers, pivotBlockedPeers)
+    if (best?.latestBlock === undefined) return
+    const gap = BigInt(best.latestBlock) - spine.pivotBlockNumber
+    if (gap < PIVOT_HEAL_BLOCK_GAP) return
+    requestPivotFromPeer(best, 'number')
+  }
+
   const maybePivotInFlightTimeout = (peers: WorkerPeerSnapshot[]) => {
     if (inFlightPeerId === undefined || inFlightStartedAt === 0) return
     if (Date.now() - inFlightStartedAt < PIVOT_IN_FLIGHT_TIMEOUT_MS) return
@@ -625,12 +660,14 @@ export async function startPeerCoordinator(
       if (best !== undefined) requestPivotFromPeer(best)
     }
     maybeRefreshPivot(snap.peers)
+    maybeProactivePivotHeal(snap.peers)
     ensureSnapSync(client)
     tryEnterHeadFollowing(spine, snapSync, codeSync)
   })
 
   client.events.on('protocol', (msg) => {
     if (msg.protocol !== 'eth') return
+    if (headFollower?.handleEthMessage(msg)) return
     if (handleBundleEthMessage(msg)) return
     if (msg.code !== EthMessageCodes.BLOCK_HEADERS) return
     if (inFlightPeerId === undefined || msg.peerId !== inFlightPeerId) {
@@ -689,7 +726,7 @@ export async function startPeerCoordinator(
       }
       snapSync?.abortInFlight()
       snapSync?.bumpRootGeneration()
-      codeSync?.clearPending()
+      codeSync?.refreshAfterPivotHeal()
       const fromBlock = pivotNum + 1n
       recordDiagnostic(spine, {
         subsystem: 'bal',

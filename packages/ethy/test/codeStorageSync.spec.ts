@@ -5,7 +5,12 @@ import { bigIntToUnpaddedBytes } from '@ethereumjs/util'
 import { keccak_256 } from '@noble/hashes/sha3'
 import { assert, describe, it } from 'vitest'
 
-import { encodeGetByteCodes, ingestStorageRangesReply } from '../src/sync/codeAndStorageSync.ts'
+import {
+  encodeGetByteCodes,
+  encodeGetStorageRanges,
+  ingestStorageRangesReply,
+} from '../src/sync/codeAndStorageSync.ts'
+import { SyntheticSnapPeer } from '../src/sync/syntheticPeer.ts'
 
 describe('[Ethy/Sync]: code and storage snap helpers', () => {
   it('encodeGetByteCodes uses canonical zero reqId', () => {
@@ -36,5 +41,35 @@ describe('[Ethy/Sync]: code and storage snap helpers', () => {
     const wrongHash = new Uint8Array(32)
     const hash = keccak_256(code)
     assert.notDeepEqual(hash, wrongHash)
+  })
+
+  it('synthetic peer serves bytecode and complete storage range', async () => {
+    const peer = await SyntheticSnapPeer.create(2)
+    const contract = peer.accounts[0]!
+    assert.isDefined(contract.code)
+    const codeReq = encodeGetByteCodes(1n, [contract.account.codeHash], 128 * 1024)
+    const codeReply = peer.buildByteCodesReply(codeReq)
+    const codeDecoded = RLP.decode(codeReply) as unknown[]
+    const codes = codeDecoded[1] as Uint8Array[]
+    assert.equal(codes.length, 1)
+    assert.deepEqual(keccak_256(codes[0]!), contract.account.codeHash)
+
+    const storageReq = encodeGetStorageRanges(
+      2n,
+      peer.rootHash,
+      [contract.accountHash],
+      new Uint8Array(32),
+      new Uint8Array(32).fill(0xff),
+      128 * 1024,
+    )
+    const storageReply = await peer.buildStorageRangesReply(storageReq)
+    const sm = createFlatStateManager()
+    const result = await ingestStorageRangesReply(
+      contract.account.storageRoot,
+      storageReply,
+      new Uint8Array(32),
+      (slots) => sm.putSnapStorageBatch(contract.accountHash, slots),
+    )
+    assert.equal(result.ok, true)
   })
 })
