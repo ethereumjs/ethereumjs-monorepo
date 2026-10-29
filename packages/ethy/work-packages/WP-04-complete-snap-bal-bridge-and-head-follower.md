@@ -168,12 +168,29 @@ WP-05 local LLM; WP-06 `/simulate` + EVM; beacon HTTP; inbound `snap/1` serving;
 
 ---
 
-## 4. Implementation Notes & Deviations (Implementer — Composer 2.5)
+## 4. Status (2026-10-29)
 
-- **Slice 1 (code/storage):** `SnapCodeAndStorageSynchronizer`, snap transport 0x02–0x05, schema-2 `appendCode` / `appendStorageSlots`, shared `SnapPeerFlightTracker`. **D-061 deviation:** complete storage with empty proof uses default MPT key hasher (not identity `(k) => k`) so offline trie tests and `verifyMerkleRangeProof` agree; partial ranges still use origin-bound proofs.
-- **Slice 2 (heal + head):** `blockBundle.ts` sequential fetch; rolling heal walks `#pivot+1..#new` before re-anchor; telemetry **`maybeProactivePivotHeal`** at +64; `HeadBlockFollower` block-by-block catch-up with eth handler wiring; `refreshAfterPivotHeal` + `noteBalApplied` (D-058); `appendHealBal` on disk (full `loadInto` heal replay on restart still TODO — needs async node bootstrap).
-- **Slice 3:** `headTools.ts` + cockpit BAL window row; deterministic engine routes `/bal` and `/account` when head ready.
-- **Slice 4:** `codeStorageSync.spec.ts` (synthetic code/storage), `balSync.spec.ts` (window, head phase, flat≡merkle oracle, `/bal`); intent/tui specs unchanged (head gating already covered).
-- **Upstream:** `FlatStateManager.getCodeByHash` shipped in separate commit on `ethy-wp04`.
-- **Remaining before `DONE`:** fuller half-sync + multi-BAL coordinator integration test; optional GET_HEADERS served-bytes assertion (net IT checks `blocksStored` after pivot bundle).
-- **2026-10-29 close-out:** `replayPersistedHealBalJournal` + CLI replay on startup; `appendHealBal` persist test; net IT servable pivot + `blocksStored`; `getCodeByHash` unit test in statemanager; `applyBlockBal` tolerates header parse failures when BAL is absent.
+**`IN_PROGRESS`.** The offline slices are on `ethy-wp04`. A live Sepolia run showed that a root switch does not carry a partial account set forward, and the pulse still misdraws that state. This package is not done.
+
+### Landed
+
+| Area | What is in the tree |
+| --- | --- |
+| Code and storage | `SnapCodeAndStorageSynchronizer`, snap messages 0x02–0x05, shared one-request-per-peer tracker, schema 2 journals for code, storage, and heal access lists. `FlatStateManager.getCodeByHash` plus a unit test. |
+| Pivot heal | When the chain is 64 blocks ahead and buckets are unfinished, the fresh header is anchored immediately, then blocks from the old pivot through the new one are fetched for access lists. If that walk fails, snap keeps the new root. Below +64 the old root stays. |
+| Head | `HeadBlockFollower` catches up block by block. `/bal` and `/account` read the rolling access-list window. The head metrics row shows that window. |
+| Resume and pulse | An empty account range with no proof is a miss, not the end of a bucket. A `done` bucket whose cursor is still below its limit reopens. Node Pulse is five rows (phase, pivot, accounts, bytecode, storage). The pivot line can show a heal in progress, or `N kept` / `N previous`. |
+| Tests | Synthetic bytecode and storage, one access-list flat/merkle check, servable pivot bundle, resume specs. |
+
+### Still open
+
+1. **Old account files are not healed onto the new root.** Resume loads account journals for the active root only. Heal files are applied when they exist. A switch that never stored access lists leaves the previous directory unused. Healing only updates accounts already downloaded. It does not fill ranges that were never fetched. On Sepolia that was about 3.48 million accounts at block 12,019,912, then a jump of 959 blocks with no access-list journal. Those files cannot become a full state. They were deleted locally.
+2. **Code and storage queues are not restored.** They are built when accounts are ingested in the current process. After a restart the meters stay empty until new accounts arrive.
+3. **The pulse still lies about stalls and wraps.** A stalled range is drawn as `!`. The block characters are double-width in the terminal, so the account line wraps and the count jumps to another row. Saved stall flags from an expired root are loaded again on startup. An ASCII-cell trial was reverted and is not on this branch.
+4. **Peers do not stay connected.** Live Sepolia drops are mostly `TOO_MANY_PEERS` from the remote. A snap send after the peer is already gone logs `No SNAP session`. Inbound snap requests are not answered (`answerEmptySnap: false`) because an empty account proof is not a valid reply.
+5. **The coordinator heal oracle is still a unit sketch.** Flat and merkle state match for one access list in `balSync.spec.ts`. They are not checked through a half-sync and a multi-block heal in the coordinator.
+
+### Deviations
+
+- **D-061.** Complete storage with an empty proof uses the default trie hasher, not identity `(k) => k`. Partial ranges still use an origin-bound proof.
+- **D-055 fallback.** The new state root is anchored before the block walk, not after it. The walk still runs. A failed walk does not restore the old root.
