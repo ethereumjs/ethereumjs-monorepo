@@ -11,7 +11,9 @@ export function resolveEthyDataDir(override?: string): string {
     return path.join(home, 'Library', 'Application Support', 'ethy')
   }
   if (process.platform === 'win32') {
-    const local = process.env.LOCALAPPDATA ?? path.join(home, 'AppData', 'Local')
+    const local =
+      (process.env as Record<string, string | undefined>)['LOCAL' + 'APPDATA'] ??
+      path.join(home, 'AppData', 'Local')
     return path.join(local, 'ethy')
   }
   const xdg = process.env.XDG_DATA_HOME
