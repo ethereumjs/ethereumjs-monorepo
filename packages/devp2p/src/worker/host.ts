@@ -151,9 +151,15 @@ export class Devp2pWorkerHost {
         case 'stop':
           this._stop()
           break
-        case 'connectPeer':
-          await this._rlpx?.connect(cmd.peer)
+        case 'connectPeer': {
+          const id = cmd.peer.id
+          const idBytes = id instanceof Uint8Array ? id : undefined
+          if (idBytes === undefined) {
+            throw new TypeError('connectPeer id is not Uint8Array')
+          }
+          await this._rlpx?.connect({ ...cmd.peer, id: idBytes })
           break
+        }
         case 'disconnectPeer':
           this._rlpx?.disconnect(cmd.peerId)
           break
@@ -193,7 +199,8 @@ export class Devp2pWorkerHost {
     const listenPort = opts.listenPort ?? endpoint.tcpPort ?? 0
 
     const shouldFindNeighbours = opts.shouldFindNeighbours ?? false
-    const dnsOpts = shouldFindNeighbours ? dptDnsOptionsFromCommon(common) : undefined
+    const directoryDiscovery = opts.chainDirectoryDiscovery === true || shouldFindNeighbours
+    const dnsOpts = directoryDiscovery ? dptDnsOptionsFromCommon(common) : undefined
 
     this._dpt = new DPT(opts.privateKey, {
       common,
@@ -234,6 +241,8 @@ export class Devp2pWorkerHost {
       this._rlpx!.events.once('listening', () => resolve())
       this._rlpx!.listen(listenPort, endpoint.address ?? '0.0.0.0')
     })
+
+    void this._dpt.refresh()
 
     const advertised = this._dpt.syncEndpointFromSocket(listenPort)
     this._discoveryMetrics.setBoundEndpoint(
@@ -457,7 +466,7 @@ export class Devp2pWorkerHost {
       for (const protocol of peer.getProtocols()) {
         if (protocol.constructor.name !== 'ETH') continue
         const head = (protocol as ETH).peerStatusHead()
-        if (head === null) continue
+        if (head?.bestHash === undefined || head.bestHash.length !== 32) continue
         bestHash = bytesToHex(head.bestHash)
         if (head.latestBlock !== undefined) {
           latestBlock = head.latestBlock.toString()

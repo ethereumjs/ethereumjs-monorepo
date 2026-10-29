@@ -28,17 +28,29 @@ function forkPairFromRlp(decoded: unknown): unknown {
   return undefined
 }
 
-export function decodeEthForkIdFromEnrValue(ethValue: Uint8Array): EthForkIdFromEnr | undefined {
+function ethForkIdFromPair(pair: unknown): EthForkIdFromEnr | undefined {
+  if (!Array.isArray(pair) || pair.length < 2) return undefined
+  const forkHashBytes = pair[0]
+  const nextBytes = pair[1]
+  if (!(forkHashBytes instanceof Uint8Array) || forkHashBytes.length !== 4) return undefined
+  const nextFork =
+    nextBytes instanceof Uint8Array && nextBytes.length > 0 ? bytesToBigInt(nextBytes) : 0n
+  return { forkHash: bytesToHex(forkHashBytes), nextFork }
+}
+
+/**
+ * EIP-868 `eth` value. DNS ENR RLP already expands list values, so this accepts
+ * either the raw bytes or the decoded list.
+ */
+export function decodeEthForkIdFromEnrValue(ethValue: unknown): EthForkIdFromEnr | undefined {
   try {
-    const pair = forkPairFromRlp(RLP.decode(ethValue))
-    if (pair === undefined) return undefined
-    if (!Array.isArray(pair) || pair.length < 2) return undefined
-    const forkHashBytes = pair[0]
-    const nextBytes = pair[1]
-    if (!(forkHashBytes instanceof Uint8Array) || forkHashBytes.length !== 4) return undefined
-    const nextFork =
-      nextBytes instanceof Uint8Array && nextBytes.length > 0 ? bytesToBigInt(nextBytes) : 0n
-    return { forkHash: bytesToHex(forkHashBytes), nextFork }
+    if (ethValue instanceof Uint8Array) {
+      return ethForkIdFromPair(forkPairFromRlp(RLP.decode(ethValue)))
+    }
+    if (Array.isArray(ethValue)) {
+      return ethForkIdFromPair(forkPairFromRlp(ethValue))
+    }
+    return undefined
   } catch {
     return undefined
   }
@@ -54,7 +66,7 @@ function portFromEnrBytes(bytes: Uint8Array | undefined): number | undefined {
 /**
  * Map verified ENR key/value pairs to {@link PeerInfo} fields (no signature check).
  */
-export function peerFieldsFromEnrPairs(obj: Record<string, Uint8Array>): PeerInfo {
+export function peerFieldsFromEnrPairs(obj: Record<string, unknown>): PeerInfo {
   const peerInfo: PeerInfo = {}
 
   const secp = obj.secp256k1
@@ -67,26 +79,27 @@ export function peerFieldsFromEnrPairs(obj: Record<string, Uint8Array>): PeerInf
     peerInfo.address = ipToString(ip)
   }
 
-  const tcpPort = portFromEnrBytes(obj.tcp)
+  const tcp = obj.tcp
+  const tcpPort = portFromEnrBytes(tcp instanceof Uint8Array ? tcp : undefined)
   if (tcpPort !== undefined) peerInfo.tcpPort = tcpPort
 
-  const udpPort = portFromEnrBytes(obj.udp)
+  const udp = obj.udp
+  const udpPort = portFromEnrBytes(udp instanceof Uint8Array ? udp : undefined)
   if (udpPort !== undefined) peerInfo.udpPort = udpPort
 
-  const ethRaw = obj.eth
-  if (ethRaw instanceof Uint8Array) {
-    const ethForkId = decodeEthForkIdFromEnrValue(ethRaw)
-    if (ethForkId !== undefined) peerInfo.ethForkId = ethForkId
-  }
+  const ethForkId = decodeEthForkIdFromEnrValue(obj.eth)
+  if (ethForkId !== undefined) peerInfo.ethForkId = ethForkId
 
   return peerInfo
 }
 
 /** Build ENR pair map from RLP `[seq, ...kvs]` tail (alternating utf8 keys). */
-export function enrPairsFromKvs(kvs: Uint8Array[]): Record<string, Uint8Array> {
-  const obj: Record<string, Uint8Array> = {}
+export function enrPairsFromKvs(kvs: unknown[]): Record<string, unknown> {
+  const obj: Record<string, unknown> = {}
   for (let i = 0; i < kvs.length; i += 2) {
-    obj[bytesToUtf8(kvs[i] as Uint8Array)] = kvs[i + 1] as Uint8Array
+    const key = kvs[i]
+    if (!(key instanceof Uint8Array)) continue
+    obj[bytesToUtf8(key)] = kvs[i + 1]
   }
   return obj
 }

@@ -35,6 +35,11 @@ export interface ThreadedNetworkInitOptions {
    */
   answerEmptySnap?: boolean
   shouldFindNeighbours?: boolean
+  /**
+   * Dial the chain DNS ENR tree and bootstrap nodes without discv4 neighbour crawl.
+   * Neighbour lookup stays off so other networks cannot fill RLPx slots.
+   */
+  chainDirectoryDiscovery?: boolean
 }
 
 export type WorkerCommand =

@@ -45,9 +45,9 @@ const STATUS_PIN: Record<string, EthStatusFields> = {
   },
   sepolia: {
     td: '0x01',
-    bestHash: '0x3a820db395c5c5b7b02a9c4933dfcbe9c4f7e8e50d31da3f6a61e28f995ffdaa',
+    bestHash: '0x07bc64d80dba60077b5d563e91676c159dcfbe504b2ea99a7fd4895651972601',
     genesisHash: '0x25a5cc106eea7138acab33231d7160d69cb777ee0c2c553fcddf5138993e6dd9',
-    latestBlock: '0xb74961',
+    latestBlock: '0xb7663f',
   },
 }
 
@@ -161,12 +161,51 @@ async function runIsolatedSession(
   )
 
   const peerIdHex = bytesToUnprefixedHex(peer.id!)
+  console.error(`dial ${peer.address}:${peer.tcpPort} id ${peerIdHex.slice(0, 16)}`)
+  client.events.on('error', (err: Error) => {
+    console.error(`worker error: ${err.message}`)
+  })
   let statusOk = false
   let validatedPeerId: string | undefined
 
+  let lastDiag = ''
+  let lastSeen = ''
   const statusPromise = new Promise<void>((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error('STATUS timeout')), 20_000)
-    const onTelemetry = (snap: { peers: { id: string; bestHash?: string }[] }) => {
+    const timer = setTimeout(() => {
+      reject(new Error(`STATUS timeout ${lastDiag}`))
+    }, 12_000)
+    const onTelemetry = (snap: {
+      peers: { id: string; bestHash?: string; clientId?: string }[]
+      diagnostics: { message: string }[]
+      discovery?: {
+        rlpx?: {
+          lastSubprotocolError?: string
+          statusOk?: number
+          connected?: number
+          dials?: number
+        }
+      }
+    }) => {
+      const err = snap.discovery?.rlpx?.lastSubprotocolError
+      const msgs = snap.diagnostics.map((d) => d.message).slice(-4)
+      const seen = JSON.stringify({
+        peers: snap.peers.map((p) => p.id.slice(0, 12)),
+        want: peerIdHex.slice(0, 12),
+        statusOk: snap.discovery?.rlpx?.statusOk,
+        connected: snap.discovery?.rlpx?.connected,
+      })
+      if (seen !== lastSeen && (snap.peers.length > 0 || (snap.discovery?.rlpx?.statusOk ?? 0) > 0)) {
+        lastSeen = seen
+        console.error('tick', seen)
+      }
+      lastDiag = JSON.stringify({
+        peers: snap.peers.map((p) => ({ id: p.id.slice(0, 8), client: p.clientId, head: p.bestHash !== undefined })),
+        statusOk: snap.discovery?.rlpx?.statusOk,
+        connected: snap.discovery?.rlpx?.connected,
+        dials: snap.discovery?.rlpx?.dials,
+        lastError: err,
+        diag: msgs,
+      })
       const row = snap.peers.find((p) => p.id === peerIdHex)
       if (row?.bestHash !== undefined) {
         statusOk = true
@@ -180,7 +219,14 @@ async function runIsolatedSession(
   })
 
   await client.connectPeer(peer)
-  await statusPromise
+  try {
+    await statusPromise
+  } catch (err: unknown) {
+    client.stop()
+    const message = err instanceof Error ? err.message : String(err)
+    console.error(message)
+    return 1
+  }
   console.log(
     JSON.stringify({ stage: 'single-status', peer: peerIdHex, statusValidated: statusOk }),
   )
@@ -196,8 +242,18 @@ async function runIsolatedSession(
 }
 
 async function stage2SingleStatus(chainName: string, peerArg?: string): Promise<number> {
-  const peer = await pickProbePeer(chainName, peerArg)
-  return runIsolatedSession(chainName, peer, async () => {})
+  if (peerArg !== undefined) {
+    return runIsolatedSession(chainName, parsePeerArg(peerArg), async () => {})
+  }
+  const { peers } = await stage1DnsEnr(chainName)
+  const matching = peers.filter((p) => p.ethForkId !== undefined).slice(0, 6)
+  const attempts = matching.length > 0 ? matching : peers.slice(0, 6)
+  let last = 1
+  for (const peer of attempts) {
+    last = await runIsolatedSession(chainName, peer, async () => {})
+    if (last === 0) return 0
+  }
+  return last
 }
 
 async function stage3SingleSnap(chainName: string, peerArg?: string): Promise<number> {
@@ -334,7 +390,8 @@ async function stage4FunnelSoak(chainName: string, soakSec: number): Promise<num
       hardfork: hf,
       maxPeers: 25,
       capabilities: ['eth69', 'eth70', 'eth71', 'eth72', 'snap1'],
-      shouldFindNeighbours: true,
+      shouldFindNeighbours: false,
+      chainDirectoryDiscovery: true,
       status,
       listenPort: 0,
       endpoint: { address: '0.0.0.0', udpPort: 0, tcpPort: 0 },
@@ -345,9 +402,22 @@ async function stage4FunnelSoak(chainName: string, soakSec: number): Promise<num
 
   let lastDiscovery: import('../src/discovery/metrics.ts').WorkerDiscoverySnapshot | undefined
   let lastPeers = 0
+  let maxHeaded = 0
+  client.events.on('error', (err: Error) => {
+    console.error(`worker error: ${err.message}`)
+  })
   client.events.on('telemetry', (snap) => {
     lastDiscovery = snap.discovery
     lastPeers = snap.peers.length
+    const headed = snap.peers.filter((p) => p.bestHash !== undefined).length
+    if (headed > maxHeaded) {
+      maxHeaded = headed
+      const names = snap.peers
+        .filter((p) => p.bestHash !== undefined)
+        .map((p) => p.clientId || 'unknown')
+        .join(' | ')
+      console.error(`headed peers ${headed} statusOk ${snap.discovery?.rlpx.statusOk ?? 0} ${names}`)
+    }
   })
   await new Promise((r) => setTimeout(r, soakSec * 1000))
 
@@ -376,6 +446,22 @@ async function stage4FunnelSoak(chainName: string, soakSec: number): Promise<num
     snapAccountsIngested: 0,
   }
 
+  console.error(
+    JSON.stringify(
+      {
+        connected: lastDiscovery?.rlpx.connected,
+        statusOk: lastDiscovery?.rlpx.statusOk,
+        statusSent: lastDiscovery?.rlpx.statusSent,
+        disconnects: lastDiscovery?.rlpx.disconnects,
+        rejects: lastDiscovery?.rlpx.handshakeRejects,
+        fates: lastDiscovery?.rlpx.peerFates,
+        lastError: lastDiscovery?.rlpx.lastSubprotocolError,
+        maxHeaded,
+      },
+      null,
+      2,
+    ),
+  )
   console.log(JSON.stringify({ stage: 'funnel-soak', soakSec, ...score }, null, 2))
   client.stop()
   return 0

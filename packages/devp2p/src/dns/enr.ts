@@ -66,7 +66,11 @@ export class ENR {
     const sigBytes = signature as Uint8Array
     const sigCompact = sigBytes.length === 65 ? sigBytes.subarray(0, 64) : sigBytes
 
-    const isVerified = secp256k1.verify(sigCompact, hash, obj.secp256k1, {
+    const pub = obj.secp256k1
+    if (!(pub instanceof Uint8Array)) {
+      throw EthereumJSErrorWithoutCode('ENR secp256k1 key missing')
+    }
+    const isVerified = secp256k1.verify(sigCompact, hash, pub, {
       lowS: false,
       prehash: false,
     })

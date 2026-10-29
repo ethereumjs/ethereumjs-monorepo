@@ -46,6 +46,14 @@ describe('[Devp2p/DNS]: ENR peer fields', () => {
     assert.strictEqual(a?.nextFork, 0n)
   })
 
+  it('decodeEthForkIdFromEnrValue() accepts an already-decoded ENR list', () => {
+    const fork = Uint8Array.from([0x6c, 0x1d, 0x94, 0x23])
+    const decoded = [[fork, new Uint8Array()]]
+    const id = decodeEthForkIdFromEnrValue(decoded)
+    assert.strictEqual(id?.forkHash, '0x6c1d9423')
+    assert.strictEqual(id?.nextFork, 0n)
+  })
+
   it('decodeEthForkIdFromEnrValue() returns undefined for garbage', () => {
     assert.strictEqual(decodeEthForkIdFromEnrValue(utf8ToBytes('nope')), undefined)
   })

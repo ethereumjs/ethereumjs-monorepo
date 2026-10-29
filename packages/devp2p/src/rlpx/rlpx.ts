@@ -16,7 +16,7 @@ import { LRUCache } from 'lru-cache'
 
 import { isChainDirectoryPeer } from '../discovery/directoryPeer.ts'
 import { DISCONNECT_REASON, DisconnectReasonNames } from '../types.ts'
-import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util.ts'
+import { devp2pDebug, formatLogId, pk2id } from '../util.ts'
 
 import { Peer } from './peer.ts'
 
@@ -174,8 +174,6 @@ export class RLPx {
         `connect to ${peer.address}:${peer.tcpPort} (id: ${formatLogId(peerKey, verbose)})`,
       )
     }
-    const deferred = createDeferred()
-
     const socket = new net.Socket()
     this._peers.set(peerKey, socket)
     socket.once('close', () => {
@@ -183,13 +181,25 @@ export class RLPx {
       this._refillConnections()
     })
 
-    socket.once('error', deferred.reject)
-    socket.setTimeout(this._timeout, () =>
-      deferred.reject(EthereumJSErrorWithoutCode('Connection timeout')),
-    )
-    socket.connect(peer.tcpPort, peer.address, deferred.resolve)
-
-    await deferred.promise
+    // setTimeout does not cover the TCP handshake. A dead ENR otherwise
+    // occupies a maxPeers slot until the OS gives up.
+    await new Promise<void>((resolve, reject) => {
+      let settled = false
+      const finish = (err?: Error) => {
+        if (settled) return
+        settled = true
+        clearTimeout(timer)
+        if (err !== undefined) reject(err)
+        else resolve()
+      }
+      const timer = setTimeout(() => {
+        socket.destroy()
+        finish(EthereumJSErrorWithoutCode('Connection timeout'))
+      }, this._timeout)
+      socket.once('error', (err: Error) => finish(err))
+      socket.connect(peer.tcpPort!, peer.address!, () => finish())
+    })
+    socket.setTimeout(this._timeout)
     this._onConnect(socket, peer.id)
   }
 
@@ -431,12 +441,12 @@ export class RLPx {
         // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for peer lookups.
         const peerKey = bytesToUnprefixedHex(id)
         this._peers.delete(peerKey)
-        // Allow directory / discovery to retry after the remote closes (not a failed TCP dial).
+        // Retry after a transport timeout. A remote "too many peers" stays in the
+        // LRU so the next DNS wave dials someone else instead of the same full node.
         if (
-          disconnectWe !== true ||
           reason === DISCONNECT_REASON.TIMEOUT ||
-          reason === DISCONNECT_REASON.SUBPROTOCOL_ERROR ||
-          reason === DISCONNECT_REASON.PROTOCOL_ERROR
+          reason === DISCONNECT_REASON.NETWORK_ERROR ||
+          reason === DISCONNECT_REASON.CLIENT_QUITTING
         ) {
           this._peersLRU.delete(peerKey)
         }
