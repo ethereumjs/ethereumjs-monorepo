@@ -16,7 +16,7 @@ import { LRUCache } from 'lru-cache'
 
 import { isChainDirectoryPeer } from '../discovery/directoryPeer.ts'
 import { DISCONNECT_REASON, DisconnectReasonNames } from '../types.ts'
-import { createDeferred, devp2pDebug, formatLogId, pk2id } from '../util.ts'
+import { devp2pDebug, formatLogId, pk2id } from '../util.ts'
 
 import { Peer } from './peer.ts'
 
@@ -47,6 +47,7 @@ export class RLPx {
   public readonly id: Uint8Array
   private _debug: Debugger
   protected _timeout: number
+  protected _pingTimeout: number
   protected _maxPeers: number
   protected _throttleDiscovery: boolean
   protected _discoveryLowWaterMark: number
@@ -79,6 +80,8 @@ export class RLPx {
 
     // options
     this._timeout = options.timeout ?? 10000 // 10 sec * 1000
+    // Dial stays short. An established peer may spend longer than that building a snap proof.
+    this._pingTimeout = options.pingTimeout ?? this._timeout
     this._maxPeers = options.maxPeers ?? 10
     this._throttleDiscovery = options.throttleDiscovery ?? false
     const lowWater = options.discoveryLowWaterMark ?? Math.floor(this._maxPeers * 0.8)
@@ -174,8 +177,6 @@ export class RLPx {
         `connect to ${peer.address}:${peer.tcpPort} (id: ${formatLogId(peerKey, verbose)})`,
       )
     }
-    const deferred = createDeferred()
-
     const socket = new net.Socket()
     this._peers.set(peerKey, socket)
     socket.once('close', () => {
@@ -183,13 +184,25 @@ export class RLPx {
       this._refillConnections()
     })
 
-    socket.once('error', deferred.reject)
-    socket.setTimeout(this._timeout, () =>
-      deferred.reject(EthereumJSErrorWithoutCode('Connection timeout')),
-    )
-    socket.connect(peer.tcpPort, peer.address, deferred.resolve)
-
-    await deferred.promise
+    // setTimeout does not cover the TCP handshake. A dead ENR otherwise
+    // occupies a maxPeers slot until the OS gives up.
+    await new Promise<void>((resolve, reject) => {
+      let settled = false
+      const finish = (err?: Error) => {
+        if (settled) return
+        settled = true
+        clearTimeout(timer)
+        if (err !== undefined) reject(err)
+        else resolve()
+      }
+      const timer = setTimeout(() => {
+        socket.destroy()
+        finish(EthereumJSErrorWithoutCode('Connection timeout'))
+      }, this._timeout)
+      socket.once('error', (err: Error) => finish(err))
+      socket.connect(peer.tcpPort!, peer.address!, () => finish())
+    })
+    socket.setTimeout(this._timeout)
     this._onConnect(socket, peer.id)
   }
 
@@ -350,6 +363,7 @@ export class RLPx {
       privateKey: this._privateKey,
       id: this.id,
       timeout: this._timeout,
+      pingTimeout: this._pingTimeout,
       clientId: this.clientId,
       remoteClientIdFilter: this._remoteClientIdFilter,
       capabilities: this._capabilities,
@@ -431,6 +445,15 @@ export class RLPx {
         // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for peer lookups.
         const peerKey = bytesToUnprefixedHex(id)
         this._peers.delete(peerKey)
+        // Retry after a transport timeout. A remote "too many peers" stays in the
+        // LRU so the next DNS wave dials someone else instead of the same full node.
+        if (
+          reason === DISCONNECT_REASON.TIMEOUT ||
+          reason === DISCONNECT_REASON.NETWORK_ERROR ||
+          reason === DISCONNECT_REASON.CLIENT_QUITTING
+        ) {
+          this._peersLRU.delete(peerKey)
+        }
         this.events.emit('peer:removed', peer, reason, disconnectWe)
         this._syncDiscoveryThrottle()
       }

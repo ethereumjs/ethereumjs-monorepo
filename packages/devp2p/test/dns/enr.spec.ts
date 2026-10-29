@@ -103,10 +103,11 @@ describe('[Devp2p/DNS]: ENR', () => {
 
   // ENR DNS entries
   it('ENR (enr): should convert an Ethereum Name Record string', () => {
-    const { address, tcpPort, udpPort } = ENR.parseAndVerifyRecord(dns.enr)
+    const { address, tcpPort, udpPort, id } = ENR.parseAndVerifyRecord(dns.enr)
     assert.strictEqual(address, '40.113.111.135', 'returns correct address')
     assert.strictEqual(tcpPort, 30303, 'returns correct tcpPort')
     assert.strictEqual(udpPort, 30303, 'returns correct udpPort')
+    assert.strictEqual(id?.length, 64, 'returns node id from secp256k1')
   })
 
   it('ENR (enr): should convert non-padded Ethereum Name Record string', () => {

@@ -42,7 +42,7 @@ export function resolveWorkerBootnodes(
   if (opts.bootnodes !== undefined) {
     return opts.bootnodes
   }
-  if (opts.shouldFindNeighbours === false) {
+  if (opts.shouldFindNeighbours === false && opts.chainDirectoryDiscovery !== true) {
     return []
   }
   return bootstrapBootnodesFromCommon(common)

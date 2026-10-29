@@ -29,6 +29,7 @@ describe('[Devp2p/RLPx]: transport', () => {
     expect(rlpx['_privateKey']).toEqual(privateKey)
     expect(rlpx.id).toEqual(pk2id(secp256k1.getPublicKey(privateKey, false)))
     expect(rlpx['_timeout']).toEqual(options.timeout)
+    expect(rlpx['_pingTimeout']).toEqual(options.timeout)
     expect(rlpx['_maxPeers']).toEqual(options.maxPeers)
     expect(rlpx.clientId).toEqual(options.clientId)
     expect(rlpx['_remoteClientIdFilter']).toBeUndefined()

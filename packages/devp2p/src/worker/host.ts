@@ -151,9 +151,15 @@ export class Devp2pWorkerHost {
         case 'stop':
           this._stop()
           break
-        case 'connectPeer':
-          await this._rlpx?.connect(cmd.peer)
+        case 'connectPeer': {
+          const id = cmd.peer.id
+          const idBytes = id instanceof Uint8Array ? id : undefined
+          if (idBytes === undefined) {
+            throw new TypeError('connectPeer id is not Uint8Array')
+          }
+          await this._rlpx?.connect({ ...cmd.peer, id: idBytes })
           break
+        }
         case 'disconnectPeer':
           this._rlpx?.disconnect(cmd.peerId)
           break
@@ -193,7 +199,8 @@ export class Devp2pWorkerHost {
     const listenPort = opts.listenPort ?? endpoint.tcpPort ?? 0
 
     const shouldFindNeighbours = opts.shouldFindNeighbours ?? false
-    const dnsOpts = shouldFindNeighbours ? dptDnsOptionsFromCommon(common) : undefined
+    const directoryDiscovery = opts.chainDirectoryDiscovery === true || shouldFindNeighbours
+    const dnsOpts = directoryDiscovery ? dptDnsOptionsFromCommon(common) : undefined
 
     this._dpt = new DPT(opts.privateKey, {
       common,
@@ -203,6 +210,7 @@ export class Devp2pWorkerHost {
       dnsNetworks: dnsOpts?.dnsNetworks ?? [],
       maxInFlightPings: opts.maxInFlightPings,
       discoveryMetrics: this._discoveryMetrics,
+      nodeStorePath: opts.nodeStorePath,
     })
     this._dpt.events.on('error', (err) => {
       const message = err instanceof Error ? err.message : String(err)
@@ -223,6 +231,8 @@ export class Devp2pWorkerHost {
       throttleDiscovery: opts.throttleDiscovery ?? true,
       discoveryLowWaterMark: opts.discoveryLowWaterMark,
       discoveryMetrics: this._discoveryMetrics,
+      // Geth's RLPx read deadline is 30s. A 10s pong timer drops a peer that is busy serving snap.
+      pingTimeout: 30_000,
     })
 
     await new Promise<void>((resolve) => {
@@ -234,6 +244,8 @@ export class Devp2pWorkerHost {
       this._rlpx!.events.once('listening', () => resolve())
       this._rlpx!.listen(listenPort, endpoint.address ?? '0.0.0.0')
     })
+
+    void this._dpt.refresh()
 
     const advertised = this._dpt.syncEndpointFromSocket(listenPort)
     this._discoveryMetrics.setBoundEndpoint(
@@ -430,7 +442,13 @@ export class Devp2pWorkerHost {
 
   private _sendSnap(peerId: Uint8Array, code: number, payload: Uint8Array): void {
     const snap = this._findSnap(peerId)
-    if (!snap) throw new Error('No SNAP session for peer')
+    if (!snap) {
+      this._pushDiagnostic(
+        'warn',
+        `No SNAP session for peer ${bytesToUnprefixedHex(peerId).slice(0, 8)}`,
+      )
+      return
+    }
     snap.sendMessage(code as never, RLP.decode(payload))
   }
 
@@ -457,7 +475,7 @@ export class Devp2pWorkerHost {
       for (const protocol of peer.getProtocols()) {
         if (protocol.constructor.name !== 'ETH') continue
         const head = (protocol as ETH).peerStatusHead()
-        if (head === null) continue
+        if (head?.bestHash === undefined || head.bestHash.length !== 32) continue
         bestHash = bytesToHex(head.bestHash)
         if (head.latestBlock !== undefined) {
           latestBlock = head.latestBlock.toString()
@@ -465,20 +483,28 @@ export class Devp2pWorkerHost {
         break
       }
 
+      const protocols = peer.getProtocols()
+      const tcpEnd = peer.endpointTcp()
+      const dptPeer = this._dpt?.getPeer(id)
+      const address = tcpEnd?.address ?? dptPeer?.address
+      const tcpPort = tcpEnd?.tcpPort ?? dptPeer?.tcpPort ?? undefined
+      const udpPort = dptPeer?.udpPort ?? tcpPort
       peers.push({
         id,
         clientId: hello?.clientId ?? '',
+        snapSession: protocols.some((p) => p.constructor.name === 'SNAP'),
         caps:
           hello?.capabilities.map((c) => `${c.name}/${c.version}`) ??
-          peer
-            .getProtocols()
-            .map(
-              (p) =>
-                `${p.constructor.name === 'ETH' ? 'eth' : 'snap'}/${(p as ETH | SNAP).getVersion()}`,
-            ),
+          protocols.map(
+            (p) =>
+              `${p.constructor.name === 'ETH' ? 'eth' : 'snap'}/${(p as ETH | SNAP).getVersion()}`,
+          ),
         rttMs: this._peerRtt.get(id),
         bestHash,
         latestBlock,
+        address,
+        udpPort,
+        tcpPort,
       })
     }
     if (this._dpt !== null) {

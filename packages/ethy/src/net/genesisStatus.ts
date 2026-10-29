@@ -25,10 +25,20 @@ const HANDSHAKE_HEAD_PIN: Record<string, ThreadedEthStatusFields> = {
   },
   sepolia: {
     td: '0x01',
-    bestHash: '0x3a820db395c5c5b7b02a9c4933dfcbe9c4f7e8e50d31da3f6a61e28f995ffdaa',
+    bestHash: '0x07bc64d80dba60077b5d563e91676c159dcfbe504b2ea99a7fd4895651972601',
     genesisHash: GENESIS_HASH.sepolia,
-    latestBlock: '0xb74961',
+    latestBlock: '0xb7663f',
   },
+}
+
+/** Genesis hash for on-disk chain guard (`networks/<name>/chain.json`). */
+export function networkGenesisHash(network: string): string {
+  const key = network.toLowerCase()
+  const genesisHash = GENESIS_HASH[key]
+  if (genesisHash === undefined) {
+    throw new Error(`No genesis hash for network ${network}`)
+  }
+  return genesisHash
 }
 
 /** Minimal STATUS fields for threaded devp2p worker init at genesis. */

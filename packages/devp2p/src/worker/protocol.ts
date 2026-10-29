@@ -35,6 +35,13 @@ export interface ThreadedNetworkInitOptions {
    */
   answerEmptySnap?: boolean
   shouldFindNeighbours?: boolean
+  /**
+   * Dial the chain DNS ENR tree and bootstrap nodes without discv4 neighbour crawl.
+   * Neighbour lookup stays off so other networks cannot fill RLPx slots.
+   */
+  chainDirectoryDiscovery?: boolean
+  /** Persist DPT bond store to this path (JSON). */
+  nodeStorePath?: string
 }
 
 export type WorkerCommand =
@@ -57,11 +64,17 @@ export interface WorkerPeerSnapshot {
   id: string
   clientId: string
   caps: string[]
+  /** True when snap/1 was negotiated, not merely listed in HELLO. */
+  snapSession?: boolean
   rttMs?: number
   /** Remote head block hash from ETH STATUS (`0x` + hex). */
   bestHash?: string
   /** Remote latest block number from ETH STATUS (decimal string). */
   latestBlock?: string
+  /** Remote TCP host after connect (for client peer books). */
+  address?: string
+  udpPort?: number
+  tcpPort?: number
 }
 
 export interface WorkerDiagnosticEntry {

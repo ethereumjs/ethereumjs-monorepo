@@ -160,7 +160,7 @@ export class Peer {
     this._closed = false
     this._disconnectWe = null
     this._pingIntervalId = null
-    this._pingTimeout = options.timeout
+    this._pingTimeout = options.pingTimeout ?? options.timeout
     this._pingTimeoutId = null
 
     // sub-protocols
@@ -738,6 +738,14 @@ export class Peer {
     const host = this._socket.remoteAddress ?? '?'
     const port = this._socket.remotePort ?? '?'
     return `${host}:${port}`
+  }
+
+  /** Remote TCP endpoint after connect (for client peer books). */
+  endpointTcp(): { address: string; tcpPort: number } | undefined {
+    const address = this._socket.remoteAddress
+    const tcpPort = this._socket.remotePort
+    if (address === undefined || address === '' || tcpPort === undefined) return undefined
+    return { address, tcpPort }
   }
 
   getHelloMessage() {

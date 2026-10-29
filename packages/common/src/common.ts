@@ -722,12 +722,16 @@ export class Common {
   forkHash(hardfork?: string | Hardfork, genesisHash?: Uint8Array): PrefixedHexString {
     hardfork = hardfork ?? this._hardfork
     const data = this._getHardfork(hardfork)
-    if (data === null || (data?.block === null && data?.timestamp === undefined)) {
+    if (data === null) {
       const msg = 'No fork hash calculation possible for future hardfork'
       throw EthereumJSErrorWithoutCode(msg)
     }
-    if (data?.forkHash !== null && data?.forkHash !== undefined) {
+    if (data.forkHash !== null && data.forkHash !== undefined && data.forkHash.length > 0) {
       return data.forkHash
+    }
+    if (data.block === null && data.timestamp === undefined) {
+      const msg = 'No fork hash calculation possible for future hardfork'
+      throw EthereumJSErrorWithoutCode(msg)
     }
     if (!genesisHash)
       throw EthereumJSErrorWithoutCode('genesisHash required for forkHash calculation')

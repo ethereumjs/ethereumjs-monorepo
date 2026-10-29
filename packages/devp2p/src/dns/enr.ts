@@ -4,7 +4,7 @@ import { secp256k1 } from '@noble/curves/secp256k1.js'
 import { keccak_256 } from '@noble/hashes/sha3.js'
 import { base32, base64url } from '@scure/base'
 
-import { ipToString } from '../util.ts'
+import { enrPairsFromKvs, peerFieldsFromEnrPairs } from './enrPeerFields.ts'
 
 import type { Common } from '@ethereumjs/common'
 import type { PeerInfo } from '../types.ts'
@@ -19,12 +19,6 @@ type ENRRootValues = {
 type ENRTreeValues = {
   publicKey?: string
   domain?: string
-}
-
-// Copied over from the multiaddr repo: https://github.com/multiformats/js-multiaddr/blob/main/src/convert.ts
-function bytesToPort(bytes: Uint8Array): number {
-  const view = new DataView(bytes.buffer)
-  return view.getUint16(bytes.byteOffset)
 }
 
 /** Parser and verifier for EIP-778 ENR records and EIP-1459 DNS tree TXT entries. */
@@ -63,12 +57,7 @@ export class ENR {
     const decoded = RLP.decode(base64BytesEnr)
     const [signature, seq, ...kvs] = decoded
 
-    // Convert ENR key/value pairs to object
-    const obj: Record<string, Uint8Array> = {}
-
-    for (let i = 0; i < kvs.length; i += 2) {
-      obj[bytesToUtf8(kvs[i] as Uint8Array)] = kvs[i + 1] as Uint8Array
-    }
+    const obj = enrPairsFromKvs(kvs as Uint8Array[])
 
     // Validate sig
     const hash = (common?.customCrypto.keccak256 ?? keccak_256)(RLP.encode([seq, ...kvs]))
@@ -77,20 +66,18 @@ export class ENR {
     const sigBytes = signature as Uint8Array
     const sigCompact = sigBytes.length === 65 ? sigBytes.subarray(0, 64) : sigBytes
 
-    const isVerified = secp256k1.verify(sigCompact, hash, obj.secp256k1, {
+    const pub = obj.secp256k1
+    if (!(pub instanceof Uint8Array)) {
+      throw EthereumJSErrorWithoutCode('ENR secp256k1 key missing')
+    }
+    const isVerified = secp256k1.verify(sigCompact, hash, pub, {
       lowS: false,
       prehash: false,
     })
 
     if (!isVerified) throw EthereumJSErrorWithoutCode('Unable to verify ENR signature')
 
-    const peerInfo: PeerInfo = {
-      address: ipToString(obj.ip),
-      tcpPort: bytesToPort(obj.tcp),
-      udpPort: bytesToPort(obj.udp),
-    }
-
-    return peerInfo
+    return peerFieldsFromEnrPairs(obj)
   }
 
   /**

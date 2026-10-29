@@ -69,6 +69,7 @@
     "test": "vitest run -c ../../config/vitest.config.mts",
     "test:scenarios": "vitest run -c ../../config/vitest.config.mts test/scenario",
     "accept:live": "tsx accept/live.ts",
+    "p2p:probe": "tsx scripts/p2p-probe.ts",
     "threaded:smoke": "tsx scripts/threaded-network-smoke.ts",
     "test:node": "npm run test",
     "tsc": "../../config/cli/ts-compile.sh"
@@ -87,6 +88,7 @@
   },
   "devDependencies": {
     "@ethereumjs/block": "^10.1.3",
+    "@ethereumjs/mpt": "^10.1.3",
     "@ethereumjs/testdata": "1.0.0",
     "@ethereumjs/tx": "^10.1.3",
     "@types/debug": "^4.1.12",

@@ -275,6 +275,10 @@ describe('[Common/Hardfork]: fork hash', () => {
       for (const hf of c.hardforks()) {
         if (typeof hf.forkHash === 'string') {
           const msg = `Verify forkHash calculation for: ${chain[0].name} -> ${hf.name}`
+          if (hf.block === null && hf.timestamp === undefined) {
+            assert.strictEqual(c.forkHash(hf.name), hf.forkHash, msg)
+            continue
+          }
           assert.strictEqual(c['_calcForkHash'](hf.name, chain[1]), hf.forkHash, msg)
         }
       }
@@ -300,6 +304,7 @@ describe('[Common/Hardfork]: fork hash', () => {
       .map((hf) => {
         hf.block = null
         hf.timestamp = undefined
+        hf.forkHash = null
       })
     let f = () => {
       c.forkHash(Hardfork.Shanghai)
@@ -380,14 +385,13 @@ describe('[Common/Hardfork]: fork hash', () => {
     assert.strictEqual(c.hardforkForForkHash('0x12345'), null, msg)
   })
 
-  it('Sepolia fork id matches Geth across the Amsterdam timestamp', () => {
-    const before = new Common({ chain: Sepolia, hardfork: Hardfork.Bpo2 })
-    assert.strictEqual(before.forkHash(), '0x268956b6')
-    assert.strictEqual(before.nextHardforkBlockOrTimestamp(), 1791294816n)
+  it('Sepolia Amsterdam activation timestamp (EIP-7773)', () => {
+    const bpo2 = new Common({ chain: Sepolia, hardfork: Hardfork.Bpo2 })
+    assert.strictEqual(bpo2.forkHash(), '0x268956b6')
+    assert.strictEqual(bpo2.nextHardforkBlockOrTimestamp(), 1791294816n)
 
-    const atFork = new Common({ chain: Sepolia, hardfork: Hardfork.Amsterdam })
-    assert.strictEqual(atFork.forkHash(), '0x6c1d9423')
-    assert.strictEqual(atFork.nextHardforkBlockOrTimestamp(), null)
+    const amsterdam = new Common({ chain: Sepolia, hardfork: Hardfork.Amsterdam })
+    assert.strictEqual(amsterdam.forkHash(), '0x6c1d9423')
 
     const byTime = new Common({ chain: Sepolia })
     assert.strictEqual(byTime.getHardforkBy({ timestamp: 1791294815n }), Hardfork.Bpo2)

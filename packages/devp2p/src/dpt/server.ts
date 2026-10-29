@@ -4,6 +4,7 @@ import debugDefault from 'debug'
 import { EventEmitter } from 'eventemitter3'
 import { LRUCache } from 'lru-cache'
 
+import { ethForkIdFromDiscv4Record } from '../dns/enrPeerFields.ts'
 import { createDeferred, devp2pDebug, formatLogId, pickAdvertisedIPv4, pk2id } from '../util.ts'
 import { discv4ENRList, tcpPortFromDiscv4Enr } from './discv4Enr.ts'
 import { discv4ExpirationValid } from './packetExpiry.ts'
@@ -188,10 +189,14 @@ export class Server {
       )
     }
 
-    // add peer if not in our table
     const peer = this._dpt.getPeer(peerId)
-    if (peer === null && info.typename === 'ping' && info.data.from.udpPort !== null) {
-      setTimeout(() => this.events.emit('peers', [info.data.from]), 100) // 100 ms
+    if (
+      peer === null &&
+      info.typename === 'ping' &&
+      info.data.from.udpPort !== null &&
+      this._common === undefined
+    ) {
+      setTimeout(() => this.events.emit('peers', [info.data.from]), 100)
     }
 
     if (
@@ -283,7 +288,17 @@ export class Server {
       }
 
       case 'enrResponse': {
-        const tcp = tcpPortFromDiscv4Enr(info.data.record)
+        const record = info.data.record as Uint8Array[]
+        const ethForkId = ethForkIdFromDiscv4Record(record)
+        if (
+          ethForkId !== undefined &&
+          this._common !== undefined &&
+          this._common.hardforkForForkHash(ethForkId.forkHash) === null
+        ) {
+          this._dpt.banPeer(peerId, 300000)
+          break
+        }
+        const tcp = tcpPortFromDiscv4Enr(record)
         if (tcp !== undefined) {
           this._dpt.updatePeerEndpoint(peerId, {
             address: rinfo.address,

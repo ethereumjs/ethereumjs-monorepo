@@ -1,7 +1,8 @@
 import { assert, describe, it } from 'vitest'
 
 import { getEthyClientVersion } from '../src/clientMeta.ts'
-import { createSpine, setPhase } from '../src/spine/createSpine.ts'
+import { P2P_REACHABILITY_HINT } from '../src/notify/p2pLink.ts'
+import { createSpine, deriveCapabilities, setPhase } from '../src/spine/createSpine.ts'
 import type { WidgetSpec } from '../src/spine/types.ts'
 import { stripAnsi, visibleWidth } from '../src/tui/ansi.ts'
 import { CAPABILITY_FG, capabilityMark } from '../src/tui/capabilityMark.ts'
@@ -36,6 +37,17 @@ describe('[Ethy/TUI]: renderFrame', () => {
     assert.match(topA, /Slot 1 {8}\S P2P/)
     assert.match(topB, /Slot 123456 {8}\S P2P/)
     assert.isAbove(topA.indexOf('Slot'), topA.indexOf('SEPOLIA'))
+  })
+
+  it('bucket bar stays filled after the serving peer leaves', () => {
+    const spine = createSpine('sepolia', 11155111n)
+    setPhase(spine, 'SNAP_SYNCING')
+    spine.snapBuckets[0]!.accountsLoaded = 50_000
+    spine.snapBuckets[0]!.status = 'pending'
+    deriveCapabilities(spine)
+    const plain = stripAnsi(renderFrame(spine, createInitialViewState(), 140, 30).join('\n'))
+    assert.include(plain, '▓░░░░░░░░░░░░░░░ 1/16')
+    assert.notInclude(plain, '0/16')
   })
 
   it('renderFrame() at 100x30 respects column width', () => {
@@ -105,14 +117,14 @@ describe('[Ethy/TUI]: renderFrame', () => {
     assert.match(plain[plain.length - 3] ?? '', /ethy >/)
     assert.notInclude(joined, 'All quiet')
     const raw = renderFrame(spine, view, 100, 30, {
-      text: 'No peers yet. Firewall? VPN?',
+      text: P2P_REACHABILITY_HINT,
       level: 'warn',
     })
     const footer = stripAnsi(raw[raw.length - 1] ?? '')
-    assert.include(footer, 'No peers yet. Firewall? VPN?')
+    assert.include(footer, P2P_REACHABILITY_HINT)
     const right = cockpitColumnWidths(measurePage(100, 30).contentWidth)[2]
     assert.isAtMost(footer.length, 100)
-    assert.isAtLeast(footer.indexOf('No peers'), 100 - right)
+    assert.isAtLeast(footer.indexOf('Discovery'), 100 - right)
   })
 
   it('promptCaretPosition() sits just after the domain mark and draft', () => {

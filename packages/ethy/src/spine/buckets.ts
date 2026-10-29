@@ -33,6 +33,11 @@ function nibbleLimitHash(nibble: number): Uint8Array {
   return h
 }
 
+/** Buckets that already hold accounts or are finished. This count does not go backwards. */
+export function bucketsWithProgress(buckets: readonly SnapBucket[]): number {
+  return buckets.filter((b) => b.status === 'done' || b.accountsLoaded > 0).length
+}
+
 export function findBucketByPrefix(
   spineBuckets: SnapBucket[],
   prefix: string,

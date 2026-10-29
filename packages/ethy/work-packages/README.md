@@ -25,8 +25,15 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                                           │                                       │
                                           ▼                                       │
                       ┌─────────────────────────────────────────┐                 │
-                      │ WP-03: 16-Bucket snap/1 Account Sync,   │                 │
-                      │        Range Proofs & Dev Microscope    │                 │
+                      │ WP-03: FlatStateManager, Offline snap/1 │                 │
+                      │        Account Sync & Dev Microscope    │                 │
+                      └───────────────────┬─────────────────────┘                 │
+                                          │                                       │
+                                          ▼                                       │
+                      ┌─────────────────────────────────────────┐                 │
+                      │ WP-03b: P2P Master Plan — 4-Stage Probe,│                 │
+                      │         Direct DNS/EIP-868 ENR Pipeline │                 │
+                      │         & Live snap/1 Verification      │                 │
                       └───────────────────┬─────────────────────┘                 │
                                           │                                       │
                                           ▼                                       │

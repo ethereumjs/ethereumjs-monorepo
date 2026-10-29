@@ -301,6 +301,8 @@ export interface PeerInfo {
   vectorClock?: number
   /** Bootnode or DNS peer for this chain. discv4 neighbors leave this unset. */
   chainDirectory?: boolean
+  /** EIP-868 fork id from ENR `eth` entry when present. */
+  ethForkId?: { forkHash: string; nextFork: bigint }
 }
 
 export interface Contact extends PeerInfo {
@@ -320,12 +322,22 @@ export interface PeerOptions {
   privateKey: Uint8Array
   socket: Socket
   timeout: number
+  /**
+   * How long to wait for a PONG after PING.
+   * Defaults to {@link timeout}. A snap server building a large proof can miss a short deadline.
+   */
+  pingTimeout?: number
 }
 
 export interface RLPxOptions {
   clientId?: Uint8Array
-  /* Timeout (default: 10s) */
+  /* TCP connect timeout (default: 10s) */
   timeout?: number
+  /**
+   * PONG deadline for an established session.
+   * Defaults to {@link timeout}. Live snap serving uses a longer wait than the dial timer.
+   */
+  pingTimeout?: number
   dpt?: DPT | null
   /* Max peers (default: 10) */
   maxPeers?: number

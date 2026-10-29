@@ -8,7 +8,12 @@ import {
 } from '@ethereumjs/devp2p'
 import { RLP } from '@ethereumjs/rlp'
 import type { FlatStateManager } from '@ethereumjs/statemanager'
-import { bigIntToUnpaddedBytes, intToUnpaddedBytes, utf8ToBytes } from '@ethereumjs/util'
+import {
+  bigIntToUnpaddedBytes,
+  equalsBytes,
+  intToUnpaddedBytes,
+  utf8ToBytes,
+} from '@ethereumjs/util'
 
 import { getEthyClientVersion } from '../clientMeta.ts'
 import type { NoticeBoard } from '../notify/board.ts'
@@ -17,6 +22,10 @@ import {
   initialP2pLinkState,
   syncP2pLinkNotices,
 } from '../notify/p2pLink.ts'
+import { resolveEthyDataDir } from '../persist/ethyDataRoot.ts'
+import { discoveryNodeStorePath } from '../persist/peerBook.ts'
+import type { PeerBookStore } from '../persist/peerBook.ts'
+import { SnapPivotStore, snapBucketsUnfinished } from '../persist/snapStore.ts'
 import { deriveCapabilities, setPhase } from '../spine/createSpine.ts'
 import { recordDiagnostic } from '../spine/diagnostics.ts'
 import type { EthySpine, PeerTelemetry } from '../spine/types.ts'
@@ -50,6 +59,9 @@ export type StartPeerCoordinatorOptions = {
   listenPort?: number
   /** When set, peer reachability is posted for the TUI notice box. */
   notices?: NoticeBoard
+  snapStore?: SnapPivotStore
+  peerBook?: PeerBookStore
+  dataDir?: string
 }
 
 export type PeerCoordinatorHandle = {
@@ -71,6 +83,7 @@ function mapPeer(snapshot: WorkerPeerSnapshot, prev?: PeerTelemetry): PeerTeleme
     id: snapshot.id,
     clientName: snapshot.clientId || 'unknown',
     caps: [...snapshot.caps],
+    snapSession: snapshot.snapSession === true,
     snapRequestsSent: prev?.snapRequestsSent ?? 0,
     snapResponsesOk: prev?.snapResponsesOk ?? 0,
     snapTimeouts: prev?.snapTimeouts ?? 0,
@@ -118,9 +131,29 @@ function updatePivotStatusHint(spine: EthySpine, peers: WorkerPeerSnapshot[]): v
 export async function startPeerCoordinator(
   opts: StartPeerCoordinatorOptions,
 ): Promise<PeerCoordinatorHandle> {
-  const { spine, network, stateManager } = opts
+  const { spine, network, stateManager, snapStore, peerBook } = opts
+  const dataDir = opts.dataDir ?? resolveEthyDataDir()
   let snapSync: SnapAccountSynchronizer | undefined
-  setPhase(spine, 'P2P_WARMUP')
+  if (spine.pivotStateRoot === undefined) {
+    setPhase(spine, 'P2P_WARMUP')
+  }
+
+  const ensureSnapSync = (clientRef: Devp2pWorkerClient) => {
+    if (snapSync !== undefined || spine.pivotStateRoot === undefined) return
+    const transport = createLiveSnapTransport(clientRef)
+    snapSync = new SnapAccountSynchronizer({
+      spine,
+      stateManager,
+      transport,
+      snapStore,
+      peerBook,
+      getSnapPeers: () =>
+        [...spine.peers.values()]
+          .filter((p) => p.snapSession === true)
+          .map((p) => ({ id: p.id, caps: p.caps })),
+    })
+    snapSync.start()
+  }
 
   const chain = chainConfigForNetwork(network)
   const hardfork = activeHardfork(chain)
@@ -150,6 +183,7 @@ export async function startPeerCoordinator(
       startedAt: linkStartedAt,
       now: Date.now(),
       dnsTimedOut,
+      discovery: spine.discovery,
     })
   }
 
@@ -182,6 +216,7 @@ export async function startPeerCoordinator(
   }
 
   const maybeRefreshPivot = (peers: WorkerPeerSnapshot[]) => {
+    if (snapBucketsUnfinished(spine.snapBuckets)) return
     const best = pickBestPeer(peers, pivotBlockedPeers)
     if (best?.latestBlock === undefined || spine.pivotBlockNumber === undefined) return
     const bestNum = BigInt(best.latestBlock)
@@ -230,16 +265,30 @@ export async function startPeerCoordinator(
       // with peers that cannot serve this chain.
       capabilities: ['eth69', 'eth70', 'eth71', 'eth72', 'snap1'],
       goodCitizen: opts.goodCitizen ?? true,
+      // An empty account proof is not valid snap, so inbound GETs stay unanswered.
+      // Outbound ranges are small, and the pong deadline is 30s, so a busy server can stay up.
       answerEmptySnap: false,
-      shouldFindNeighbours: opts.shouldFindNeighbours ?? true,
+      // DNS ENR tree + bootnodes are chain-scoped. Unfiltered discv4 neighbors
+      // are other networks and crowd out Sepolia sessions.
+      shouldFindNeighbours: opts.shouldFindNeighbours ?? false,
+      chainDirectoryDiscovery: opts.shouldFindNeighbours === true ? false : true,
       clientId: utf8ToBytes(`ethy/v${getEthyClientVersion()}`),
       status,
       listenPort: opts.listenPort ?? 0,
       endpoint: { address: '0.0.0.0', udpPort: 0, tcpPort: opts.listenPort ?? 0 },
       throttleDiscovery: true,
+      nodeStorePath: discoveryNodeStorePath(dataDir, network),
     },
     workerModuleUrl,
   )
+
+  if (peerBook !== undefined) {
+    const now = Date.now()
+    peerBook.pruneOnStart(now)
+    for (const peer of peerBook.dialCandidates(now)) {
+      client.connectPeer(peer)
+    }
+  }
 
   client.events.on('telemetry', (snap) => {
     lastTelemetryPeers = snap.peers
@@ -247,6 +296,7 @@ export async function startPeerCoordinator(
     spine.peers.clear()
     for (const p of snap.peers) {
       spine.peers.set(p.id, mapPeer(p, prev.get(p.id)))
+      peerBook?.noteTelemetryPeer(p, Date.now())
     }
     spine.discovery = snap.discovery
     for (const d of snap.diagnostics) {
@@ -258,6 +308,7 @@ export async function startPeerCoordinator(
         message: d.message,
         peerId: d.peerId,
       })
+      peerBook?.noteDisconnect(d.peerId, d.message, Date.now())
       noteDiscovery(d.message)
     }
     syncLink()
@@ -269,6 +320,7 @@ export async function startPeerCoordinator(
       if (best !== undefined) requestPivotFromPeer(best)
     }
     maybeRefreshPivot(snap.peers)
+    ensureSnapSync(client)
   })
 
   client.events.on('protocol', (msg) => {
@@ -304,29 +356,41 @@ export async function startPeerCoordinator(
       if (best !== undefined) requestPivotFromPeer(best)
       return
     }
+    const unfinished = snapBucketsUnfinished(spine.snapBuckets)
+    if (
+      spine.pivotStateRoot !== undefined &&
+      unfinished &&
+      !equalsBytes(spine.pivotStateRoot, parsed.stateRoot)
+    ) {
+      recordDiagnostic(spine, {
+        subsystem: 'snap',
+        severity: 'info',
+        message: `Keeping anchored pivot root while buckets unfinished (#${spine.pivotBlockNumber?.toString() ?? '?'})`,
+      })
+      spine.currentSlot = Number(parsed.number)
+      ensureSnapSync(client)
+      deriveCapabilities(spine)
+      return
+    }
+    const firstAnchor = spine.pivotStateRoot === undefined
     spine.pivotStatusHint = undefined
     spine.pivotBlockNumber = parsed.number
     spine.pivotStateRoot = parsed.stateRoot
     spine.currentSlot = Number(parsed.number)
+    if (firstAnchor) {
+      snapStore?.activatePivot({
+        blockNumber: parsed.number,
+        blockHash: parsed.hash,
+        stateRoot: parsed.stateRoot,
+      })
+    }
     recordDiagnostic(spine, {
       subsystem: 'devp2p',
       severity: 'info',
       message: `Pivot anchored at #${parsed.number.toString()}`,
     })
     client.setBlockRange(intToUnpaddedBytes(0), bigIntToUnpaddedBytes(parsed.number), parsed.hash)
-    if (snapSync === undefined) {
-      const transport = createLiveSnapTransport(client)
-      snapSync = new SnapAccountSynchronizer({
-        spine,
-        stateManager,
-        transport,
-        getSnapPeers: () =>
-          [...spine.peers.values()]
-            .filter((p) => p.caps.some((c) => c === 'snap/1' || c.startsWith('snap/')))
-            .map((p) => ({ id: p.id, caps: p.caps })),
-      })
-      snapSync.start()
-    }
+    ensureSnapSync(client)
     deriveCapabilities(spine)
   })
 
@@ -355,6 +419,8 @@ export async function startPeerCoordinator(
   return {
     stop: () => {
       snapSync?.stop()
+      snapStore?.flushBuckets(spine.snapBuckets)
+      peerBook?.flush()
       if (linkTimer !== undefined) clearInterval(linkTimer)
       client.stop()
     },
