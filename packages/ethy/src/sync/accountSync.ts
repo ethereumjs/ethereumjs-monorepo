@@ -3,11 +3,16 @@ import { RLP } from '@ethereumjs/rlp'
 import type { FlatStateManager } from '@ethereumjs/statemanager'
 import { bigIntToUnpaddedBytes, bytesToBigInt, setLengthLeft } from '@ethereumjs/util'
 
+import type { SnapPivotStore } from '../persist/snapStore.ts'
 import { setPhase } from '../spine/createSpine.ts'
 import { recordDiagnostic } from '../spine/diagnostics.ts'
 import type { EthySpine, SnapBucket } from '../spine/types.ts'
 import type { SnapTransport } from './snapTransport.ts'
-import { incrementKey32, ingestAccountRangeReply } from './syntheticPeer.ts'
+import {
+  accountRecordsFromRangeReply,
+  incrementKey32,
+  ingestAccountRangeReply,
+} from './syntheticPeer.ts'
 
 /**
  * Bytes we ask a peer to return. 512 KiB is about 8,000 accounts: public nodes
@@ -27,6 +32,7 @@ export type SnapAccountSynchronizerOpts = {
   stateManager: FlatStateManager
   transport: SnapTransport
   getSnapPeers: () => Array<{ id: string; caps: string[] }>
+  snapStore?: SnapPivotStore
 }
 
 export class SnapAccountSynchronizer {
@@ -34,6 +40,7 @@ export class SnapAccountSynchronizer {
   private readonly stateManager: FlatStateManager
   private readonly transport: SnapTransport
   private readonly getSnapPeers: () => Array<{ id: string; caps: string[] }>
+  private readonly snapStore?: SnapPivotStore
   private reqId = 1n
   private inFlight = new Map<string, InFlightRange>()
   private stallUntil = new Map<number, number>()
@@ -50,6 +57,7 @@ export class SnapAccountSynchronizer {
     this.stateManager = opts.stateManager
     this.transport = opts.transport
     this.getSnapPeers = opts.getSnapPeers
+    this.snapStore = opts.snapStore
   }
 
   start(): void {
@@ -69,6 +77,7 @@ export class SnapAccountSynchronizer {
     this.detachAccountRange?.()
     this.detachAccountRange = undefined
     if (this.tickTimer !== undefined) clearInterval(this.tickTimer)
+    this.snapStore?.flushBuckets(this.spine.snapBuckets)
   }
 
   private schedule(): void {
@@ -211,6 +220,12 @@ export class SnapAccountSynchronizer {
       }
     } else {
       bucket.status = 'done'
+    }
+    if (result.count > 0) {
+      const records = accountRecordsFromRangeReply(payload)
+      this.snapStore?.appendVerifiedRange(flight.bucket, records, this.spine.snapBuckets)
+    } else {
+      this.snapStore?.flushBuckets(this.spine.snapBuckets)
     }
   }
 

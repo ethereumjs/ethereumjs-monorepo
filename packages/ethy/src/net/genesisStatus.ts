@@ -31,6 +31,16 @@ const HANDSHAKE_HEAD_PIN: Record<string, ThreadedEthStatusFields> = {
   },
 }
 
+/** Genesis hash for on-disk chain guard (`networks/<name>/chain.json`). */
+export function networkGenesisHash(network: string): string {
+  const key = network.toLowerCase()
+  const genesisHash = GENESIS_HASH[key]
+  if (genesisHash === undefined) {
+    throw new Error(`No genesis hash for network ${network}`)
+  }
+  return genesisHash
+}
+
 /** Minimal STATUS fields for threaded devp2p worker init at genesis. */
 export function genesisStatusFields(network: string): ThreadedEthStatusFields {
   const key = network.toLowerCase()

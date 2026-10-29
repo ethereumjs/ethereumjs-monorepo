@@ -8,7 +8,12 @@ import {
 } from '@ethereumjs/devp2p'
 import { RLP } from '@ethereumjs/rlp'
 import type { FlatStateManager } from '@ethereumjs/statemanager'
-import { bigIntToUnpaddedBytes, intToUnpaddedBytes, utf8ToBytes } from '@ethereumjs/util'
+import {
+  bigIntToUnpaddedBytes,
+  equalsBytes,
+  intToUnpaddedBytes,
+  utf8ToBytes,
+} from '@ethereumjs/util'
 
 import { getEthyClientVersion } from '../clientMeta.ts'
 import type { NoticeBoard } from '../notify/board.ts'
@@ -17,6 +22,7 @@ import {
   initialP2pLinkState,
   syncP2pLinkNotices,
 } from '../notify/p2pLink.ts'
+import { SnapPivotStore, snapBucketsUnfinished } from '../persist/snapStore.ts'
 import { deriveCapabilities, setPhase } from '../spine/createSpine.ts'
 import { recordDiagnostic } from '../spine/diagnostics.ts'
 import type { EthySpine, PeerTelemetry } from '../spine/types.ts'
@@ -50,6 +56,7 @@ export type StartPeerCoordinatorOptions = {
   listenPort?: number
   /** When set, peer reachability is posted for the TUI notice box. */
   notices?: NoticeBoard
+  snapStore?: SnapPivotStore
 }
 
 export type PeerCoordinatorHandle = {
@@ -119,9 +126,27 @@ function updatePivotStatusHint(spine: EthySpine, peers: WorkerPeerSnapshot[]): v
 export async function startPeerCoordinator(
   opts: StartPeerCoordinatorOptions,
 ): Promise<PeerCoordinatorHandle> {
-  const { spine, network, stateManager } = opts
+  const { spine, network, stateManager, snapStore } = opts
   let snapSync: SnapAccountSynchronizer | undefined
-  setPhase(spine, 'P2P_WARMUP')
+  if (spine.pivotStateRoot === undefined) {
+    setPhase(spine, 'P2P_WARMUP')
+  }
+
+  const ensureSnapSync = (clientRef: Devp2pWorkerClient) => {
+    if (snapSync !== undefined || spine.pivotStateRoot === undefined) return
+    const transport = createLiveSnapTransport(clientRef)
+    snapSync = new SnapAccountSynchronizer({
+      spine,
+      stateManager,
+      transport,
+      snapStore,
+      getSnapPeers: () =>
+        [...spine.peers.values()]
+          .filter((p) => p.snapSession === true)
+          .map((p) => ({ id: p.id, caps: p.caps })),
+    })
+    snapSync.start()
+  }
 
   const chain = chainConfigForNetwork(network)
   const hardfork = activeHardfork(chain)
@@ -183,6 +208,7 @@ export async function startPeerCoordinator(
   }
 
   const maybeRefreshPivot = (peers: WorkerPeerSnapshot[]) => {
+    if (snapBucketsUnfinished(spine.snapBuckets)) return
     const best = pickBestPeer(peers, pivotBlockedPeers)
     if (best?.latestBlock === undefined || spine.pivotBlockNumber === undefined) return
     const bestNum = BigInt(best.latestBlock)
@@ -275,6 +301,7 @@ export async function startPeerCoordinator(
       if (best !== undefined) requestPivotFromPeer(best)
     }
     maybeRefreshPivot(snap.peers)
+    ensureSnapSync(client)
   })
 
   client.events.on('protocol', (msg) => {
@@ -310,29 +337,41 @@ export async function startPeerCoordinator(
       if (best !== undefined) requestPivotFromPeer(best)
       return
     }
+    const unfinished = snapBucketsUnfinished(spine.snapBuckets)
+    if (
+      spine.pivotStateRoot !== undefined &&
+      unfinished &&
+      !equalsBytes(spine.pivotStateRoot, parsed.stateRoot)
+    ) {
+      recordDiagnostic(spine, {
+        subsystem: 'snap',
+        severity: 'info',
+        message: `Keeping anchored pivot root while buckets unfinished (#${spine.pivotBlockNumber?.toString() ?? '?'})`,
+      })
+      spine.currentSlot = Number(parsed.number)
+      ensureSnapSync(client)
+      deriveCapabilities(spine)
+      return
+    }
+    const firstAnchor = spine.pivotStateRoot === undefined
     spine.pivotStatusHint = undefined
     spine.pivotBlockNumber = parsed.number
     spine.pivotStateRoot = parsed.stateRoot
     spine.currentSlot = Number(parsed.number)
+    if (firstAnchor) {
+      snapStore?.activatePivot({
+        blockNumber: parsed.number,
+        blockHash: parsed.hash,
+        stateRoot: parsed.stateRoot,
+      })
+    }
     recordDiagnostic(spine, {
       subsystem: 'devp2p',
       severity: 'info',
       message: `Pivot anchored at #${parsed.number.toString()}`,
     })
     client.setBlockRange(intToUnpaddedBytes(0), bigIntToUnpaddedBytes(parsed.number), parsed.hash)
-    if (snapSync === undefined) {
-      const transport = createLiveSnapTransport(client)
-      snapSync = new SnapAccountSynchronizer({
-        spine,
-        stateManager,
-        transport,
-        getSnapPeers: () =>
-          [...spine.peers.values()]
-            .filter((p) => p.snapSession === true)
-            .map((p) => ({ id: p.id, caps: p.caps })),
-      })
-      snapSync.start()
-    }
+    ensureSnapSync(client)
     deriveCapabilities(spine)
   })
 
@@ -361,6 +400,7 @@ export async function startPeerCoordinator(
   return {
     stop: () => {
       snapSync?.stop()
+      snapStore?.flushBuckets(spine.snapBuckets)
       if (linkTimer !== undefined) clearInterval(linkTimer)
       client.stop()
     },

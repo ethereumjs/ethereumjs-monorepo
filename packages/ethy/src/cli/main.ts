@@ -35,6 +35,7 @@ async function main(): Promise<void> {
     chainId,
     demo: cli.demo,
     headless: cli.headless,
+    dataDir: cli.dataDir,
   })
 
   let coordinatorStop: (() => void) | undefined
@@ -46,6 +47,7 @@ async function main(): Promise<void> {
         stateManager: node.stateManager,
         network,
         notices: node.notices,
+        snapStore: node.snapStore,
       })
       node.disconnectPeer = handle.disconnectPeer
       ;(

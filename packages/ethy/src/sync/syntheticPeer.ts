@@ -221,3 +221,23 @@ function proofNodeList(raw: unknown): Uint8Array[] {
 function errorText(err: unknown): string {
   return err instanceof Error ? err.message : String(err)
 }
+
+/** Account rows from a verified ACCOUNT_RANGE reply (for on-disk journal append). */
+export function accountRecordsFromRangeReply(
+  payload: Uint8Array,
+): Array<{ accountHash: Uint8Array; accountRlp: Uint8Array }> {
+  const decoded = RLP.decode(payload) as unknown[]
+  const accountsRaw = decoded[1] as Array<[unknown, unknown]>
+  if (!Array.isArray(accountsRaw)) return []
+  const out: Array<{ accountHash: Uint8Array; accountRlp: Uint8Array }> = []
+  for (const [h, slim] of accountsRaw) {
+    const accountHash = asBytes(h)
+    if (accountHash === undefined) continue
+    const accountRlp = accountBodyToRLP(
+      accountBodyFromSlim(decodeAccountBody(slim)) as AccountBodyBytes,
+      false,
+    )
+    out.push({ accountHash, accountRlp })
+  }
+  return out
+}

@@ -17,6 +17,11 @@ describe('[Ethy/CLI]: args', () => {
     assert.isTrue(a.headless)
   })
 
+  it('parseEthyArgs() reads --datadir', () => {
+    const a = parseEthyArgs(['node', 'ethy', '--datadir', '/tmp/ethy-data'])
+    assert.equal(a.dataDir, '/tmp/ethy-data')
+  })
+
   it('parseEthyArgs() rejects unknown flags', () => {
     assert.throws(() => parseEthyArgs(['node', 'ethy', '--nope']), /Unknown flag/)
   })
