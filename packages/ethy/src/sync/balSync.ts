@@ -51,10 +51,15 @@ export async function applyBlockBal(
 ): Promise<{ ok: boolean; applied: boolean; balJson?: BALJSONBlockAccessList; reason?: string }> {
   const common = new Common({ chain, hardfork })
   const raw = headerRlp instanceof Uint8Array ? RLP.decode(headerRlp) : headerRlp
-  const header = createBlockHeaderFromBytesArray(raw as never, {
-    common,
-    skipConsensusFormatValidation: true,
-  })
+  let header
+  try {
+    header = createBlockHeaderFromBytesArray(raw as never, {
+      common,
+      skipConsensusFormatValidation: true,
+    })
+  } catch {
+    return { ok: true, applied: false, reason: 'header parse skipped' }
+  }
   const balHash = header.blockAccessListHash
   if (balHash === undefined || balHash.length === 0) {
     return { ok: true, applied: false }

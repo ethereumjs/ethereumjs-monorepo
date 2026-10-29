@@ -2,6 +2,7 @@ import * as fs from 'node:fs'
 import * as path from 'node:path'
 
 import type { FlatStateManager } from '@ethereumjs/statemanager'
+import { createBlockLevelAccessListFromRLP } from '@ethereumjs/util'
 import { bytesToHex, unprefixedHexToBytes } from '@ethereumjs/util'
 
 import { createSnapBuckets } from '../spine/buckets.ts'
@@ -284,6 +285,44 @@ export class SnapPivotStore {
     fs.mkdirSync(healDir, { recursive: true })
     const file = path.join(healDir, `${blockNumber.toString()}.bal`)
     fs.writeFileSync(file, balRlp)
+  }
+
+  /** Replay heal BAL files from previous (if any) and active pivot dirs (D-059). */
+  async replayPersistedHealBalJournal(stateManager: FlatStateManager): Promise<number> {
+    if (!this.enabled) return 0
+    const active = this.readActive()
+    if (active === undefined) return 0
+    let applied = 0
+    if (active.previousStateRoot !== undefined && active.previousStateRoot !== null) {
+      applied += await this.replayHealDir(active.previousStateRoot, stateManager)
+    }
+    applied += await this.replayHealDir(active.stateRoot, stateManager)
+    return applied
+  }
+
+  private async replayHealDir(
+    stateRootHex: string,
+    stateManager: FlatStateManager,
+  ): Promise<number> {
+    const healDir = path.join(this.pivotDir(stateRootHex), 'heal')
+    if (!fs.existsSync(healDir)) return 0
+    const names = fs
+      .readdirSync(healDir)
+      .filter((n) => n.endsWith('.bal'))
+      .sort((a, b) => {
+        const na = BigInt(a.replace(/\.bal$/, ''))
+        const nb = BigInt(b.replace(/\.bal$/, ''))
+        return na < nb ? -1 : na > nb ? 1 : 0
+      })
+    let count = 0
+    for (const name of names) {
+      const rlp = new Uint8Array(fs.readFileSync(path.join(healDir, name)))
+      if (rlp.length === 0) continue
+      const bal = createBlockLevelAccessListFromRLP(rlp)
+      await stateManager.consumeBAL(bal.toJSON())
+      count++
+    }
+    return count
   }
 
   appendStorageSlots(

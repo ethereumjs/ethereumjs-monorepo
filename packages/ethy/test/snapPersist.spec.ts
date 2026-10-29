@@ -3,7 +3,15 @@ import * as os from 'node:os'
 import * as path from 'node:path'
 
 import { createFlatStateManager } from '@ethereumjs/statemanager'
-import { bytesToHex, createAccount } from '@ethereumjs/util'
+import { balSimpleJSON } from '@ethereumjs/testdata'
+import {
+  type BALJSONBlockAccessList,
+  bytesToHex,
+  createAccount,
+  createAddressFromString,
+  createBlockLevelAccessListFromJSON,
+  hexToBigInt,
+} from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { networkGenesisHash } from '../src/net/genesisStatus.ts'
@@ -126,6 +134,33 @@ describe('[Ethy/Persist]: snap pivot store', () => {
     }).loadInto(mainnetSpine, createFlatStateManager())
     assert.equal(restored, 0)
     assert.isUndefined(mainnetSpine.pivotStateRoot)
+  })
+
+  it('replayPersistedHealBalJournal applies heal journal on disk', async () => {
+    const bal = createBlockLevelAccessListFromJSON(
+      balSimpleJSON.filter(
+        (entry) =>
+          entry.balanceChanges.length > 0 ||
+          entry.storageChanges.length > 0 ||
+          entry.nonceChanges.length > 0,
+      ) as BALJSONBlockAccessList,
+    )
+    const dir = tempDir()
+    const root = new Uint8Array(32)
+    root[31] = 0xcd
+    const store = openStore(dir)
+    store.activatePivot({
+      blockNumber: 100n,
+      blockHash: new Uint8Array(32),
+      stateRoot: root,
+    })
+    store.appendHealBal(101n, bal.serialize())
+    const sm = createFlatStateManager()
+    const replayed = await openStore(dir).replayPersistedHealBalJournal(sm)
+    assert.equal(replayed, 1)
+    const balanceAddr = createAddressFromString('0x2adc25665018aa1fe0e6bc666dac8fc2697ff9ba')
+    const account = await sm.getAccount(balanceAddr)
+    assert.equal(account?.balance, hexToBigInt('0x01ec30'))
   })
 
   it('demo store does not touch disk', () => {

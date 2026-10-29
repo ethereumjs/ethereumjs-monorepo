@@ -175,4 +175,5 @@ WP-05 local LLM; WP-06 `/simulate` + EVM; beacon HTTP; inbound `snap/1` serving;
 - **Slice 3:** `headTools.ts` + cockpit BAL window row; deterministic engine routes `/bal` and `/account` when head ready.
 - **Slice 4:** `codeStorageSync.spec.ts` (synthetic code/storage), `balSync.spec.ts` (window, head phase, flat≡merkle oracle, `/bal`); intent/tui specs unchanged (head gating already covered).
 - **Upstream:** `FlatStateManager.getCodeByHash` shipped in separate commit on `ethy-wp04`.
-- **Remaining before `DONE`:** in-process `putServableBlock` serve snapshot test; optional `getCodeByHash` unit test in statemanager; async heal-BAL replay on `createEthyNode` restart; fuller half-sync + multi-BAL integration test vs live coordinator.
+- **Remaining before `DONE`:** fuller half-sync + multi-BAL coordinator integration test; optional GET_HEADERS served-bytes assertion (net IT checks `blocksStored` after pivot bundle).
+- **2026-10-29 close-out:** `replayPersistedHealBalJournal` + CLI replay on startup; `appendHealBal` persist test; net IT servable pivot + `blocksStored`; `getCodeByHash` unit test in statemanager; `applyBlockBal` tolerates header parse failures when BAL is absent.

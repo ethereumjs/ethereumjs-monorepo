@@ -126,6 +126,10 @@ Track every modification or planned modification to sibling monorepo packages he
 
 *Agents: Append a new dated subsection at the top of this list after each Planning (Grok 4.7) or Implementation (Composer 2.5) pass.*
 
+### 2026-10-29 — `WP-04` close-out slice (`IN_PROGRESS`) (Implementer — Composer 2.5)
+- Heal BAL replay: `SnapPivotStore.replayPersistedHealBalJournal`, CLI startup replay, persist spec; net IT asserts pivot `putServableBlock` → `blocksStored ≥ 1`; statemanager `getCodeByHash` unit test.
+- WP-04 §4 updated; matrix stays **`IN_PROGRESS`** until optional full coordinator heal oracle lands.
+
 ### 2026-10-29 — `WP-04` implementation pass (`IN_PROGRESS`) (Implementer — Composer 2.5)
 - Landed code/storage synchronizer, rolling pivot heal via `blockBundle.ts`, proactive +64 pivot refresh, `HeadBlockFollower` catch-up, D-058 refresh hooks, `appendHealBal`, synthetic snap code/storage, head tools + tests (111 passing).
 - Upstream **`getCodeByHash`** committed separately; WP-04 §4 lists remaining gaps before matrix **`DONE`**.
