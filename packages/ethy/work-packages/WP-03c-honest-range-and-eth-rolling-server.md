@@ -1,6 +1,6 @@
 # WP-03c: Honest Block-Range Advertising (`earliestBlock` Fix) & Full Rolling-Window `eth/69–71` Server
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `DONE`
 - **Dependencies:** `WP-00` (`DONE`), `WP-01` (`DONE`), `WP-02` (`DONE`), `WP-03` (`DONE`), `WP-03b` (`DONE`)
 - **Branch:** `ethy-new-wp` (or dedicated continuation branch)
 - **Planner:** Grok 4.7
@@ -121,19 +121,32 @@ Audit of our current `STATUS` and `setBlockRange` calls revealed a major protoco
    - Update `cockpit.ts` (`metricsPairs` for `p2p`) to display the `Served` metric line (`<N> replies · <size>`) and update `test/tui.spec.ts` & `test/net.spec.ts`.
 
 ### Acceptance Criteria
-- [ ] Outbound `eth/69+` `STATUS` and `BLOCK_RANGE_UPDATE` never advertise `earliestBlock = 0` unless block `0` is actually held; advertised `[earliestBlock .. latestBlock]` matches `RollingBlockStore` 100%.
-- [ ] `Devp2pWorkerHost` serves valid `BLOCK_HEADERS`, `BLOCK_BODIES`, `RECEIPTS` (`eth/69` & `eth/70`), and `BLOCK_ACCESS_LISTS` (`eth/71`) for all blocks in `RollingBlockStore`, and increments `WorkerServingSnapshot` counters.
-- [ ] The `● P2P Metrics` box in the Ethy TUI displays the live `Served` metric (`replies` + bytes) without breaking fixed column widths.
-- [ ] `npm run tsc`, `npm test`, and `npm run spellcheck` pass with 0 errors across `packages/devp2p` and `packages/ethy`.
+- [x] Outbound `eth/69+` `STATUS` and `BLOCK_RANGE_UPDATE` never advertise `earliestBlock = 0` unless block `0` is actually held; advertised `[earliestBlock .. latestBlock]` matches `RollingBlockStore` 100%.
+- [x] `Devp2pWorkerHost` serves valid `BLOCK_HEADERS`, `BLOCK_BODIES`, `RECEIPTS` (`eth/69` & `eth/70`), and `BLOCK_ACCESS_LISTS` (`eth/71`) for all blocks in `RollingBlockStore`, and increments `WorkerServingSnapshot` counters.
+- [x] The `● P2P Metrics` box in the Ethy TUI displays the live `Served` metric (`replies` + bytes) without breaking fixed column widths.
+- [x] `npm run tsc`, `npm test`, and `npm run spellcheck` pass with 0 errors across `packages/devp2p` and `packages/ethy`.
 
 ---
 
 ## 4. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled out by Grok 4.7 during the Planning pass.)*
+See attached Grok 4.7 plan (2026-10-29). Summary:
+
+**Design refinements:** D-049 point-range STATUS + worker-owned `BLOCK_RANGE_UPDATE` (32-block throttle on latest-only growth); D-050 bloom-free receipt storage; D-051 full header/body/receipt bundle before `put`; D-052 opt-in `maxInboundPeers`; D-053 never `[]` when store has a hit (2 MiB soft cap, 8 MB/s global / 2 MB/s per peer).
+
+**Slice 1 — `@ethereumjs/devp2p`:** `serve/rollingBlockStore.ts`, `serve/ethServer.ts`, `serve/serveGovernor.ts`; fix `ethStatusFromFields`; worker `putServableBlock` + `WorkerServingSnapshot`; `_tryGoodCitizen` tries `ethServer` first; optional `maxInboundPeers` on RLPx; tests under `test/serve/`, `test/lab/ethStatusFromFields.spec.ts`, `test/worker/eth-serving.spec.ts`.
+
+**Slice 2 — `@ethereumjs/ethy`:** `genesisStatus` sets `earliestBlock === latestBlock`; pivot bundle fetch (body/receipts/BAL) + `putServableBlock`; remove `setBlockRange(0,…)`; cockpit `Served` row; `/peers` window line; spine `serving` telemetry.
+
+**Gates:** `tsc`, `test`, `spellcheck` in `devp2p` + `ethy`. Commits: devp2p first, ethy second.
 
 ---
 
 ## 5. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled out by Composer 2.5 after implementation and verification.)*
+- **`serve/` module:** `RollingBlockStore`, `ethServer` (pure handlers), `ServeGovernor`; worker tries serve before `emptyWireReply` on eth `GET_*`.
+- **`ethStatusFromFields`:** Omitted `earliestBlock` copies `latestBlock`; explicit `0` preserved for archive callers.
+- **Block range:** `putServableBlock` drives `BLOCK_RANGE_UPDATE` from store tail (32-block throttle on latest-only growth).
+- **Ethy:** Point-range STATUS in `genesisStatus.ts`; pivot still anchors on header alone; async body/receipt/BAL fetch → `putServableBlock`; removed `setBlockRange(0,…)`; `maxInboundPeers: 7`; cockpit **Served** row replaces **Caps**; `/peers` comment includes serve breakdown + window.
+- **Test hook:** `pivotBundleTimeoutMs` on `startPeerCoordinator` for fast CI bundle-timeout coverage in `net.spec.ts`.
+- **Node Pulse ranges (post-ship UX):** **Ranges** reports `N/16` / `done` from bucket `status === 'done'` only (not “touched” account journals); `paused` / `no peers` when snap is idle with 0 peers.
