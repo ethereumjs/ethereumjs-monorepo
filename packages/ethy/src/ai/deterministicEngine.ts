@@ -3,12 +3,8 @@ import type { FlatStateManager } from '@ethereumjs/statemanager'
 import type { WidgetSpec } from '../spine/types.ts'
 import { dropPeer, pauseSnapSync, reassignBucket, resumeSnapSync } from '../tools/devActions.ts'
 import { bucketsTableWidget, diagnosticsTableWidget, peersTableWidget } from '../tools/diagnose.ts'
-import {
-  headLockedWidget,
-  headReadyAccountStub,
-  inspectLatestBALStub,
-  simulateTxOnHeadStub,
-} from '../tools/gated.ts'
+import { headLockedWidget, inspectLatestBALStub, simulateTxOnHeadStub } from '../tools/gated.ts'
+import { inspectAccount, inspectLatestBAL } from '../tools/headTools.ts'
 import { buildHelpWidget } from '../tools/help.ts'
 import { inspectRawAccountRange, sampleSyncedAccounts } from '../tools/range.ts'
 import type { IntentEngine, IntentRequest, IntentResult } from './intentEngine.ts'
@@ -102,17 +98,13 @@ export class DeterministicIntentEngine implements IntentEngine {
         if (spine.capabilities.head.status === 'locked') {
           return headLockedWidget('inspectAccount', spine)
         }
-        return headReadyAccountStub(spine, addr)
+        return inspectAccount(spine, this.stateManager, addr)
       }
       case '/bal':
         if (spine.capabilities.head.status === 'locked') {
           return inspectLatestBALStub(spine)
         }
-        return {
-          kind: 'key_value',
-          title: 'Latest BAL (stub)',
-          entries: [{ key: 'Note', value: 'BAL follower ships in WP-05' }],
-        }
+        return inspectLatestBAL(spine)
       case '/simulate':
         if (spine.capabilities.head.status === 'locked') {
           return simulateTxOnHeadStub(spine)

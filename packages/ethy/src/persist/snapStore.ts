@@ -13,7 +13,7 @@ import {
   readAccountJournalFile,
 } from './journal.ts'
 
-export const SNAP_STORE_SCHEMA = 1
+export const SNAP_STORE_SCHEMA = 2
 
 type ChainMeta = { chainId: string; genesisHash: string }
 
@@ -90,7 +90,7 @@ export class SnapPivotStore {
       writeAtomicDoc(metaPath, { schema: SNAP_STORE_SCHEMA })
     } else {
       const meta = readStoredDoc<{ schema: number }>(metaPath)
-      if (meta.schema !== SNAP_STORE_SCHEMA) {
+      if (meta.schema !== SNAP_STORE_SCHEMA && meta.schema !== 1) {
         throw new Error(`Unsupported snap store schema ${meta.schema}`)
       }
     }
@@ -266,6 +266,40 @@ export class SnapPivotStore {
     writeAtomicDoc(path.join(this.pivotDir(this.activeStateRoot), 'buckets.json'), {
       buckets: serializeBuckets(buckets),
     })
+  }
+
+  appendCode(codeHash: Uint8Array, code: Uint8Array): void {
+    if (!this.enabled || this.activeStateRoot === undefined) return
+    const hex = bytesToHex(codeHash).slice(2).toLowerCase()
+    const file = path.join(this.pivotDir(this.activeStateRoot), 'code', `${hex}.bin`)
+    fs.mkdirSync(path.dirname(file), { recursive: true })
+    const header = new Uint8Array(4)
+    new DataView(header.buffer).setUint32(0, code.length, false)
+    fs.writeFileSync(file, Buffer.concat([Buffer.from(header), Buffer.from(code)]))
+  }
+
+  appendStorageSlots(
+    accountHash: Uint8Array,
+    slots: Array<{ slotHash: Uint8Array; value: Uint8Array }>,
+  ): void {
+    if (!this.enabled || this.activeStateRoot === undefined || slots.length === 0) return
+    const ah = bytesToHex(accountHash).slice(2).toLowerCase()
+    const file = path.join(this.pivotDir(this.activeStateRoot), 'storage', `${ah}.bin`)
+    fs.mkdirSync(path.dirname(file), { recursive: true })
+    const fd = fs.openSync(file, 'a')
+    try {
+      for (const { slotHash, value } of slots) {
+        const record = new Uint8Array(32 + 4 + value.length)
+        const view = new DataView(record.buffer, record.byteOffset, record.byteLength)
+        record.set(slotHash, 0)
+        view.setUint32(32, value.length, false)
+        record.set(value, 36)
+        fs.writeSync(fd, record)
+      }
+      fs.fsyncSync(fd)
+    } finally {
+      fs.closeSync(fd)
+    }
   }
 }
 

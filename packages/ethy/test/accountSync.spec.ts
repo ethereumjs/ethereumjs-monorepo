@@ -5,7 +5,21 @@ import { assert, describe, it, vi } from 'vitest'
 import { createSnapBuckets } from '../src/spine/buckets.ts'
 import { createSpine } from '../src/spine/createSpine.ts'
 import { SnapAccountSynchronizer, encodeGetAccountRange } from '../src/sync/accountSync.ts'
+import { SnapPeerFlightTracker } from '../src/sync/snapFlight.ts'
 import type { SnapTransport } from '../src/sync/snapTransport.ts'
+
+function mockSnapTransport(overrides: Partial<SnapTransport> = {}): SnapTransport {
+  return {
+    snapPeers: () => [],
+    sendAccountRange: () => {},
+    onAccountRange: () => () => {},
+    sendStorageRanges: () => {},
+    onStorageRanges: () => () => {},
+    sendByteCodes: () => {},
+    onByteCodes: () => () => {},
+    ...overrides,
+  }
+}
 import {
   SyntheticSnapPeer,
   incrementKey32,
@@ -105,11 +119,8 @@ describe('[Ethy/Sync]: synthetic snap account range', () => {
       const sync = new SnapAccountSynchronizer({
         spine,
         stateManager: createFlatStateManager(),
-        transport: {
-          snapPeers: () => [],
-          sendAccountRange: () => {},
-          onAccountRange: () => () => {},
-        },
+        transport: mockSnapTransport(),
+        flightTracker: new SnapPeerFlightTracker(),
         getSnapPeers: () => [],
       })
       sync.start()
@@ -126,19 +137,17 @@ describe('[Ethy/Sync]: synthetic snap account range', () => {
     spine.pivotStateRoot = new Uint8Array(32)
     const peers = [{ id: 'aa11', caps: ['eth/72', 'snap/1'] }]
     let sent = 0
-    const transport: SnapTransport = {
+    const transport = mockSnapTransport({
       snapPeers: () => peers,
       sendAccountRange() {
         sent++
       },
-      onAccountRange() {
-        return () => {}
-      },
-    }
+    })
     const sync = new SnapAccountSynchronizer({
       spine,
       stateManager: {} as never,
       transport,
+      flightTracker: new SnapPeerFlightTracker(),
       getSnapPeers: () => peers,
     })
     sync.start()

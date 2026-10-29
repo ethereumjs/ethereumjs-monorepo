@@ -1,4 +1,5 @@
 import type { WorkerDiscoverySnapshot, WorkerServingSnapshot } from '@ethereumjs/devp2p'
+import type { BALJSONBlockAccessList } from '@ethereumjs/util'
 
 export type CapabilityId = 'p2p' | 'snap' | 'head' | 'ai'
 
@@ -51,6 +52,13 @@ export interface CapabilityState {
   progressPct?: number
 }
 
+export type BalWindowEntry = {
+  blockNumber: bigint
+  accountCount: number
+  /** Full JSON for the latest head block only. */
+  balJson?: BALJSONBlockAccessList
+}
+
 export interface EthySpine {
   clientName: string
   clientVersion: string
@@ -78,6 +86,10 @@ export interface EthySpine {
   snapBuckets: SnapBucket[]
   totalAccountsSynced: number
   accountsPerSec: number
+  codesSynced: number
+  storageSlotsSynced: number
+  /** Rolling BAL summaries for `/bal` and `/account` (newest first, max 64). */
+  balWindow: BalWindowEntry[]
   snapPaused: boolean
   diagnosticRingBuffer: DiagnosticEvent[]
 }

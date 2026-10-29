@@ -237,8 +237,11 @@ function metricsPairs(spine: EthySpine, domain: CapabilityId): TwoColumnPair[] {
         },
         { label: 'State Root', value: shortHash(spine.headStateRoot) },
         {
-          label: 'Pivot',
-          value: spine.pivotBlockNumber !== undefined ? `#${spine.pivotBlockNumber}` : '—',
+          label: 'BAL Window',
+          value:
+            spine.balWindow.length > 0
+              ? `${spine.balWindow.length} blocks · ${spine.balWindow[0]?.accountCount ?? 0} accounts`
+              : '—',
         },
       ]
     case 'ai': {
