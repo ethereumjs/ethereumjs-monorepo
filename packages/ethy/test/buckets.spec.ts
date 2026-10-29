@@ -1,8 +1,10 @@
 import { assert, describe, it } from 'vitest'
 import {
   createSnapBuckets,
+  formatQueueMeter,
   formatSnapCapabilityLabel,
   formatSnapRangePulse,
+  snapAccountPaceNote,
   snapBucketsDoneCount,
 } from '../src/spine/buckets.ts'
 import type { EthyPhase } from '../src/spine/types.ts'
@@ -33,6 +35,19 @@ describe('snap range display', () => {
     const line = formatSnapRangePulse(buckets, { peerCount: 0, phase: 'SNAP_SYNCING' })
     assert.include(line, '0/16 paused')
     assert.notInclude(line, '16/16')
+  })
+
+  it('formatQueueMeter() stays empty until work exists', () => {
+    assert.equal(formatQueueMeter(0, 0), '░░░░░░░░')
+    assert.equal(formatQueueMeter(4, 4), '████░░░░')
+    assert.equal(formatQueueMeter(8, 0), '████████')
+  })
+
+  it('snapAccountPaceNote() marks cached ranges paused when no peers remain', () => {
+    const buckets = createSnapBuckets()
+    buckets[0]!.accountsLoaded = 100
+    buckets[0]!.status = 'pending'
+    assert.equal(snapAccountPaceNote(buckets, { peerCount: 0, phase: 'SNAP_SYNCING' }), 'paused')
   })
 
   it('formatSnapCapabilityLabel() matches paused state with no peers', () => {

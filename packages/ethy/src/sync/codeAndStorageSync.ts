@@ -123,6 +123,7 @@ export class SnapCodeAndStorageSynchronizer {
         }
       }
     }
+    this.publishPending()
   }
 
   clearPending(): void {
@@ -130,6 +131,7 @@ export class SnapCodeAndStorageSynchronizer {
     this.storageTasks = []
     this.storageInFlight.clear()
     this.codesInFlight.clear()
+    this.publishPending()
   }
 
   /** Drop in-flight work and refresh storage roots after a pivot heal (D-058). */
@@ -153,6 +155,7 @@ export class SnapCodeAndStorageSynchronizer {
         task.missRetries = 0
       }
     }
+    this.publishPending()
   }
 
   noteBalApplied(bal: BALJSONBlockAccessList): void {
@@ -161,6 +164,7 @@ export class SnapCodeAndStorageSynchronizer {
       if (address.length !== 20) continue
       this.invalidateAccount(keccak_256(address))
     }
+    this.publishPending()
   }
 
   pendingDone(): boolean {
@@ -295,6 +299,7 @@ export class SnapCodeAndStorageSynchronizer {
     } else {
       task.done = true
     }
+    this.publishPending()
   }
 
   private handleByteCodes(peerId: string, payload: Uint8Array): void {
@@ -345,6 +350,12 @@ export class SnapCodeAndStorageSynchronizer {
         }
       }
     }
+    this.publishPending()
+  }
+
+  private publishPending(): void {
+    this.spine.codesQueued = this.codeQueue.length
+    this.spine.storageQueued = this.storageTasks.filter((task) => !task.done).length
   }
 }
 

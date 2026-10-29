@@ -47,7 +47,9 @@ describe('[Ethy/TUI]: renderFrame', () => {
     deriveCapabilities(spine)
     const plain = stripAnsi(renderFrame(spine, createInitialViewState(), 140, 30).join('\n'))
     assert.include(plain, '░')
-    assert.include(plain, '0/16 paused')
+    assert.include(plain, 'paused')
+    assert.include(plain, 'Bytecode')
+    assert.include(plain, 'Storage')
     assert.notInclude(plain, '16/16')
   })
 

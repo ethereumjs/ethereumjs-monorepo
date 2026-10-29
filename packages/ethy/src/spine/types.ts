@@ -87,7 +87,11 @@ export interface EthySpine {
   totalAccountsSynced: number
   accountsPerSec: number
   codesSynced: number
+  /** Code hashes still queued or in flight. */
+  codesQueued: number
   storageSlotsSynced: number
+  /** Storage accounts still queued or in flight. */
+  storageQueued: number
   /** Rolling BAL summaries for `/bal` and `/account` (newest first, max 64). */
   balWindow: BalWindowEntry[]
   snapPaused: boolean

@@ -1,4 +1,9 @@
-import { formatSnapRangePulse, snapBucketsDoneCount } from '../spine/buckets.ts'
+import {
+  formatQueueMeter,
+  formatSnapBucketBar,
+  snapAccountPaceNote,
+  snapBucketsDoneCount,
+} from '../spine/buckets.ts'
 import type { CapabilityId, EthyPhase, EthySpine, TuiViewState } from '../spine/types.ts'
 import { BOLD, DIM, RESET, visibleWidth } from './ansi.ts'
 import { capabilityMark } from './capabilityMark.ts'
@@ -19,7 +24,7 @@ const DOMAIN_LABEL: Record<CapabilityId, string> = {
 }
 
 /** Inner content rows per box (excluding top/bottom border and vertical padding). */
-const COCKPIT_CONTENT_ROWS = 4
+const COCKPIT_CONTENT_ROWS = 5
 
 function phaseLabel(phase: EthyPhase): string {
   switch (phase) {
@@ -34,11 +39,31 @@ function phaseLabel(phase: EthyPhase): string {
   }
 }
 
-function bucketMiniBar(spine: EthySpine): string {
-  return formatSnapRangePulse(spine.snapBuckets, {
+function accountPulseValue(spine: EthySpine): string {
+  const bar = formatSnapBucketBar(spine.snapBuckets)
+  const count = spine.totalAccountsSynced.toLocaleString('en-US')
+  const rate = `~${Math.round(spine.accountsPerSec)}/s`
+  const note = snapAccountPaceNote(spine.snapBuckets, {
     peerCount: spine.peers.size,
     phase: spine.phase,
   })
+  return note.length > 0 ? `${bar} ${count} ${rate} ${note}` : `${bar} ${count} ${rate}`
+}
+
+function codePulseValue(spine: EthySpine): string {
+  return queuePulseValue(spine.codesSynced, spine.codesQueued)
+}
+
+function storagePulseValue(spine: EthySpine): string {
+  return queuePulseValue(spine.storageSlotsSynced, spine.storageQueued)
+}
+
+function queuePulseValue(synced: number, queued: number): string {
+  const meter = formatQueueMeter(synced, queued)
+  if (synced <= 0 && queued <= 0) return `${meter} —`
+  const count = synced.toLocaleString('en-US')
+  if (queued <= 0) return `${meter} ${count} done`
+  return `${meter} ${count} ${queued.toLocaleString('en-US')} left`
 }
 
 function shortHash(root: Uint8Array | undefined): string {
@@ -146,12 +171,12 @@ function nodePulsePairs(spine: EthySpine): TwoColumnPair[] {
     spine.pivotBlockNumber !== undefined
       ? `#${spine.pivotBlockNumber.toLocaleString('en-US')}`
       : (spine.pivotStatusHint ?? 'Waiting for peer...')
-  const accounts = `${spine.totalAccountsSynced.toLocaleString('en-US')} ~${Math.round(spine.accountsPerSec)}/s`
   return [
     { label: 'Phase', value: phaseLabel(spine.phase) },
     { label: 'Pivot', value: pivot },
-    { label: 'Ranges', value: bucketMiniBar(spine) },
-    { label: 'Accounts', value: accounts },
+    { label: 'Accounts', value: accountPulseValue(spine) },
+    { label: 'Bytecode', value: codePulseValue(spine) },
+    { label: 'Storage', value: storagePulseValue(spine) },
   ]
 }
 
