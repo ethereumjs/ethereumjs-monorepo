@@ -1,4 +1,4 @@
-import type { WorkerDiscoverySnapshot } from '@ethereumjs/devp2p'
+import type { WorkerDiscoverySnapshot, WorkerServingSnapshot } from '@ethereumjs/devp2p'
 
 export type CapabilityId = 'p2p' | 'snap' | 'head' | 'ai'
 
@@ -73,6 +73,8 @@ export interface EthySpine {
   peers: Map<string, PeerTelemetry>
   /** Latest worker discovery counters (live P2P only). */
   discovery?: WorkerDiscoverySnapshot
+  /** Rolling-window eth serve telemetry from the worker (live P2P only). */
+  serving?: WorkerServingSnapshot
   snapBuckets: SnapBucket[]
   totalAccountsSynced: number
   accountsPerSec: number

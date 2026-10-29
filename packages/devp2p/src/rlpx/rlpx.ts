@@ -49,6 +49,7 @@ export class RLPx {
   protected _timeout: number
   protected _pingTimeout: number
   protected _maxPeers: number
+  protected _maxInboundPeers: number | undefined
   protected _throttleDiscovery: boolean
   protected _discoveryLowWaterMark: number
   public readonly clientId: Uint8Array
@@ -83,6 +84,7 @@ export class RLPx {
     // Dial stays short. An established peer may spend longer than that building a snap proof.
     this._pingTimeout = options.pingTimeout ?? this._timeout
     this._maxPeers = options.maxPeers ?? 10
+    this._maxInboundPeers = options.maxInboundPeers
     this._throttleDiscovery = options.throttleDiscovery ?? false
     const lowWater = options.discoveryLowWaterMark ?? Math.floor(this._maxPeers * 0.8)
     if (lowWater >= this._maxPeers) {
@@ -352,9 +354,25 @@ export class RLPx {
     })
   }
 
+  _countInboundPeers(): number {
+    let n = 0
+    for (const item of this._peers.values()) {
+      if (item instanceof Peer && item.inbound) n++
+    }
+    return n
+  }
+
   _onConnect(socket: net.Socket, peerId: Uint8Array | null) {
     if (this.DEBUG) {
       this._debug(`connected to ${socket.remoteAddress}:${socket.remotePort}, handshake waiting..`)
+    }
+
+    const inbound = peerId === null
+    if (inbound && this._maxInboundPeers !== undefined) {
+      if (this._countInboundPeers() >= this._maxInboundPeers) {
+        socket.destroy()
+        return
+      }
     }
 
     const peer: Peer = new Peer({
@@ -369,11 +387,12 @@ export class RLPx {
       capabilities: this._capabilities,
       common: this._common,
       port: this._listenPort!,
+      inbound,
     })
     peer.events.on('error', (err) => this.events.emit('peer:error', peer, err))
 
     // handle incoming connection
-    if (peerId === null && this._getOpenSlots() === 0) {
+    if (inbound && this._getOpenSlots() === 0) {
       peer.events.once('connect', () => peer.disconnect(DISCONNECT_REASON.TOO_MANY_PEERS))
       socket.once('error', () => {})
       return

@@ -38,6 +38,13 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                                           │                                       │
                                           ▼                                       │
                       ┌─────────────────────────────────────────┐                 │
+                      │ WP-03c: Honest Block-Range Advertising  │                 │
+                      │         & Rolling-Window eth/69–71      │                 │
+                      │         Server (Headers/Bodies/Receipts)│                 │
+                      └───────────────────┬─────────────────────┘                 │
+                                          │                                       │
+                                          ▼                                       │
+                      ┌─────────────────────────────────────────┐                 │
                       │ WP-05: Contract Storage/Bytecode Sync   │                 │
                       │        & Zero-Execution eth/71 BAL      │                 │
                       │        Head Follower                    │                 │

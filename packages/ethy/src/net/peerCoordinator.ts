@@ -8,12 +8,7 @@ import {
 } from '@ethereumjs/devp2p'
 import { RLP } from '@ethereumjs/rlp'
 import type { FlatStateManager } from '@ethereumjs/statemanager'
-import {
-  bigIntToUnpaddedBytes,
-  equalsBytes,
-  intToUnpaddedBytes,
-  utf8ToBytes,
-} from '@ethereumjs/util'
+import { equalsBytes, intToUnpaddedBytes, utf8ToBytes } from '@ethereumjs/util'
 
 import { getEthyClientVersion } from '../clientMeta.ts'
 import type { NoticeBoard } from '../notify/board.ts'
@@ -35,16 +30,37 @@ import { activeHardfork, advertisedForkHash, chainConfigForNetwork } from './cha
 import { p2pHandshakeStatusFields } from './genesisStatus.ts'
 import {
   EthMessageCodes,
+  encodeGetBlockAccessListsPayload,
+  encodeGetBlockBodiesPayload,
   encodeGetBlockHeadersByNumberPayload,
   encodeGetBlockHeadersPayload,
+  encodeGetReceiptsPayload,
+  firstHeaderRlpFromBlockHeadersPayload,
   highestEthVersion,
+  parseFirstBalFromBlockAccessListsPayload,
+  parseFirstBodyFromBlockBodiesPayload,
   parsePivotHeaderFromBlockHeadersPayload,
+  parseReceiptsReplyPayload,
   peerIdToBytes,
 } from './pivotHeader.ts'
 import { ethyCallerModuleUrl } from './workerModuleUrl.ts'
 
 const PIVOT_STALE_BLOCKS = 96n
 const PIVOT_IN_FLIGHT_TIMEOUT_MS = 15_000
+const PIVOT_BUNDLE_TIMEOUT_MS = 15_000
+
+type PivotBundleFetch = {
+  peerId: string
+  ethVersion: number
+  number: bigint
+  hash: Uint8Array
+  headerRlp: Uint8Array
+  stage: 'bodies' | 'receipts' | 'bal'
+  bodyRlp?: Uint8Array
+  receiptsEth69Rlp?: Uint8Array
+  balRlp?: Uint8Array
+  startedAt: number
+}
 
 export type StartPeerCoordinatorOptions = {
   spine: EthySpine
@@ -62,6 +78,8 @@ export type StartPeerCoordinatorOptions = {
   snapStore?: SnapPivotStore
   peerBook?: PeerBookStore
   dataDir?: string
+  /** Test override for pivot bundle fetch timeout (default 15s). */
+  pivotBundleTimeoutMs?: number
 }
 
 export type PeerCoordinatorHandle = {
@@ -166,8 +184,10 @@ export async function startPeerCoordinator(
   let inFlightEthVersion = 68
   let inFlightStartedAt = 0
   const pivotBlockedPeers = new Set<string>()
+  const pivotBundleTimeoutMs = opts.pivotBundleTimeoutMs ?? PIVOT_BUNDLE_TIMEOUT_MS
   let lastTelemetryPeers: WorkerPeerSnapshot[] = []
   let lastDiagTs = 0
+  let bundleFetch: PivotBundleFetch | undefined
   let dnsTimedOut = false
   let link = initialP2pLinkState()
   const linkStartedAt = Date.now()
@@ -192,6 +212,127 @@ export async function startPeerCoordinator(
     inFlightHash = undefined
     inFlightBlockNumber = undefined
     inFlightStartedAt = 0
+  }
+
+  const completePivotBundle = () => {
+    if (bundleFetch === undefined) return
+    if (bundleFetch.bodyRlp === undefined || bundleFetch.receiptsEth69Rlp === undefined) {
+      bundleFetch = undefined
+      return
+    }
+    client.putServableBlock({
+      number: bundleFetch.number,
+      hash: bundleFetch.hash,
+      headerRlp: bundleFetch.headerRlp,
+      bodyRlp: bundleFetch.bodyRlp,
+      receiptsEth69Rlp: bundleFetch.receiptsEth69Rlp,
+      balRlp: bundleFetch.balRlp,
+    })
+    recordDiagnostic(spine, {
+      subsystem: 'devp2p',
+      severity: 'info',
+      message: `Servable pivot bundle registered at #${bundleFetch.number.toString()}`,
+    })
+    bundleFetch = undefined
+  }
+
+  const startPivotBundleFetch = (
+    peerId: string,
+    ethVersion: number,
+    parsed: { number: bigint; hash: Uint8Array },
+    headerRlp: Uint8Array,
+  ) => {
+    if (bundleFetch !== undefined) return
+    bundleFetch = {
+      peerId,
+      ethVersion,
+      number: parsed.number,
+      hash: parsed.hash,
+      headerRlp,
+      stage: 'bodies',
+      startedAt: Date.now(),
+    }
+    const payload = encodeGetBlockBodiesPayload(ethVersion, parsed.hash)
+    client.sendEthMessage(peerIdToBytes(peerId), EthMessageCodes.GET_BLOCK_BODIES, payload)
+  }
+
+  const maybePivotBundleTimeout = () => {
+    if (bundleFetch === undefined || bundleFetch.startedAt === 0) return
+    if (Date.now() - bundleFetch.startedAt < pivotBundleTimeoutMs) return
+    const peerId = bundleFetch.peerId
+    bundleFetch = undefined
+    recordDiagnostic(spine, {
+      subsystem: 'devp2p',
+      severity: 'warn',
+      message: 'Pivot block bundle fetch timed out',
+      peerId,
+    })
+  }
+
+  const handleBundleEthMessage = (msg: {
+    peerId: string
+    code: number
+    payload: Uint8Array
+  }): boolean => {
+    if (bundleFetch === undefined || msg.peerId !== bundleFetch.peerId) return false
+    if (msg.code === EthMessageCodes.BLOCK_BODIES && bundleFetch.stage === 'bodies') {
+      const bodyRlp = parseFirstBodyFromBlockBodiesPayload(msg.payload)
+      if (bodyRlp === null) {
+        bundleFetch = undefined
+        recordDiagnostic(spine, {
+          subsystem: 'devp2p',
+          severity: 'warn',
+          message: 'Pivot block body response empty',
+          peerId: msg.peerId,
+        })
+        return true
+      }
+      bundleFetch.bodyRlp = bodyRlp
+      bundleFetch.stage = 'receipts'
+      bundleFetch.startedAt = Date.now()
+      const payload = encodeGetReceiptsPayload(bundleFetch.ethVersion, bundleFetch.hash)
+      client.sendEthMessage(
+        peerIdToBytes(bundleFetch.peerId),
+        EthMessageCodes.GET_RECEIPTS,
+        payload,
+      )
+      return true
+    }
+    if (msg.code === EthMessageCodes.RECEIPTS && bundleFetch.stage === 'receipts') {
+      const parsed = parseReceiptsReplyPayload(bundleFetch.ethVersion, msg.payload)
+      if (parsed === null || parsed.lastBlockIncomplete) {
+        bundleFetch = undefined
+        recordDiagnostic(spine, {
+          subsystem: 'devp2p',
+          severity: 'warn',
+          message: parsed?.lastBlockIncomplete
+            ? 'Pivot receipts incomplete (paginated)'
+            : 'Pivot receipts response empty',
+          peerId: msg.peerId,
+        })
+        return true
+      }
+      bundleFetch.receiptsEth69Rlp = parsed.receiptsListRlp
+      if (bundleFetch.ethVersion >= 71) {
+        bundleFetch.stage = 'bal'
+        bundleFetch.startedAt = Date.now()
+        const payload = encodeGetBlockAccessListsPayload(bundleFetch.ethVersion, bundleFetch.hash)
+        client.sendEthMessage(
+          peerIdToBytes(bundleFetch.peerId),
+          EthMessageCodes.GET_BLOCK_ACCESS_LISTS,
+          payload,
+        )
+        return true
+      }
+      completePivotBundle()
+      return true
+    }
+    if (msg.code === EthMessageCodes.BLOCK_ACCESS_LISTS && bundleFetch.stage === 'bal') {
+      bundleFetch.balRlp = parseFirstBalFromBlockAccessListsPayload(msg.payload)
+      completePivotBundle()
+      return true
+    }
+    return false
   }
 
   const requestPivotFromPeer = (peer: WorkerPeerSnapshot, mode: 'hash' | 'number' = 'hash') => {
@@ -261,6 +402,7 @@ export async function startPeerCoordinator(
       chain: workerChainId(network),
       hardfork,
       maxPeers: 25,
+      maxInboundPeers: 7,
       // Current Sepolia clients speak eth/69 and later. eth/68 fills dial slots
       // with peers that cannot serve this chain.
       capabilities: ['eth69', 'eth70', 'eth71', 'eth72', 'snap1'],
@@ -299,6 +441,7 @@ export async function startPeerCoordinator(
       peerBook?.noteTelemetryPeer(p, Date.now())
     }
     spine.discovery = snap.discovery
+    spine.serving = snap.serving
     for (const d of snap.diagnostics) {
       if (d.timestamp <= lastDiagTs) continue
       lastDiagTs = d.timestamp
@@ -314,6 +457,7 @@ export async function startPeerCoordinator(
     syncLink()
     deriveCapabilities(spine)
     maybePivotInFlightTimeout(snap.peers)
+    maybePivotBundleTimeout()
     updatePivotStatusHint(spine, snap.peers)
     if (inFlightPeerId === undefined && spine.pivotBlockNumber === undefined) {
       const best = pickBestPeer(snap.peers, pivotBlockedPeers)
@@ -324,17 +468,21 @@ export async function startPeerCoordinator(
   })
 
   client.events.on('protocol', (msg) => {
-    if (msg.protocol !== 'eth' || msg.code !== EthMessageCodes.BLOCK_HEADERS) return
+    if (msg.protocol !== 'eth') return
+    if (handleBundleEthMessage(msg)) return
+    if (msg.code !== EthMessageCodes.BLOCK_HEADERS) return
     if (inFlightPeerId === undefined || msg.peerId !== inFlightPeerId) {
       return
     }
+    const headerRlp = firstHeaderRlpFromBlockHeadersPayload(inFlightEthVersion, msg.payload)
     const parsed = parsePivotHeaderFromBlockHeadersPayload(
       inFlightEthVersion,
       msg.payload,
       inFlightHash,
       chain,
     )
-    const failedPeerId = inFlightPeerId
+    const successPeerId = inFlightPeerId
+    const successEthVersion = inFlightEthVersion
     const triedByHash = inFlightHash !== undefined
     clearPivotInFlight()
     if (parsed === null) {
@@ -342,16 +490,16 @@ export async function startPeerCoordinator(
         subsystem: 'devp2p',
         severity: 'warn',
         message: 'Pivot header response empty or hash mismatch',
-        peerId: failedPeerId,
+        peerId: successPeerId,
       })
       if (triedByHash) {
-        const peerRow = lastTelemetryPeers.find((p) => p.id === failedPeerId)
+        const peerRow = lastTelemetryPeers.find((p) => p.id === successPeerId)
         if (peerRow?.latestBlock !== undefined) {
           requestPivotFromPeer(peerRow, 'number')
           return
         }
       }
-      pivotBlockedPeers.add(failedPeerId)
+      pivotBlockedPeers.add(successPeerId!)
       const best = pickBestPeer(lastTelemetryPeers, pivotBlockedPeers)
       if (best !== undefined) requestPivotFromPeer(best)
       return
@@ -389,7 +537,9 @@ export async function startPeerCoordinator(
       severity: 'info',
       message: `Pivot anchored at #${parsed.number.toString()}`,
     })
-    client.setBlockRange(intToUnpaddedBytes(0), bigIntToUnpaddedBytes(parsed.number), parsed.hash)
+    if (headerRlp !== null && successPeerId !== undefined) {
+      startPivotBundleFetch(successPeerId, successEthVersion, parsed, headerRlp)
+    }
     ensureSnapSync(client)
     deriveCapabilities(spine)
   })

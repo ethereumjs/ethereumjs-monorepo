@@ -73,6 +73,7 @@ describe('[Ethy/Net]: PeerCoordinator pivot', () => {
         shouldFindNeighbours: false,
         goodCitizen: true,
         listenPort: BASE,
+        pivotBundleTimeoutMs: 300,
         dial: {
           id: idB,
           address: '127.0.0.1',
@@ -102,6 +103,28 @@ describe('[Ethy/Net]: PeerCoordinator pivot', () => {
 
       assert.equal(spine.pivotBlockNumber, 17_000_000n)
       assert.equal(bytesToHex(spine.pivotStateRoot!), bytesToHex(header.stateRoot))
+      await new Promise<void>((resolve, reject) => {
+        const timer = setTimeout(
+          () => reject(new Error('timeout waiting for pivot bundle timeout diagnostic')),
+          5000,
+        )
+        const tick = setInterval(() => {
+          if (
+            spine.diagnosticRingBuffer.some((e) =>
+              e.message.includes('Pivot block bundle fetch timed out'),
+            )
+          ) {
+            clearTimeout(timer)
+            clearInterval(tick)
+            resolve()
+          }
+        }, 50)
+      })
+      assert.isTrue(
+        spine.diagnosticRingBuffer.some((e) =>
+          e.message.includes('Pivot block bundle fetch timed out'),
+        ),
+      )
     } finally {
       handle?.stop()
       nodeB.stop()

@@ -148,6 +148,43 @@ export class Devp2pWorkerClient {
     this._send({ type: 'setBlockRange', earliest, latest, latestHash })
   }
 
+  /** Register a complete block bundle for rolling-window eth serving in the worker. */
+  putServableBlock(block: {
+    number: bigint
+    hash: Uint8Array
+    headerRlp: Uint8Array
+    bodyRlp: Uint8Array
+    receiptsEth69Rlp: Uint8Array
+    balRlp?: Uint8Array
+  }): void {
+    const hash = copyForSend(block.hash)
+    const headerRlp = copyForSend(block.headerRlp)
+    const bodyRlp = copyForSend(block.bodyRlp)
+    const receiptsEth69Rlp = copyForSend(block.receiptsEth69Rlp)
+    const balRlp = block.balRlp !== undefined ? copyForSend(block.balRlp) : undefined
+    const transfer = [
+      hash.buffer,
+      headerRlp.buffer,
+      bodyRlp.buffer,
+      receiptsEth69Rlp.buffer,
+      ...(balRlp !== undefined ? [balRlp.buffer] : []),
+    ] as ArrayBuffer[]
+    this._send(
+      {
+        type: 'putServableBlock',
+        block: {
+          number: block.number.toString(),
+          hash,
+          headerRlp,
+          bodyRlp,
+          receiptsEth69Rlp,
+          balRlp,
+        },
+      },
+      transfer,
+    )
+  }
+
   /** @internal Test helper */
   peerIdHex(peerId: Uint8Array): string {
     return bytesToUnprefixedHex(peerId)

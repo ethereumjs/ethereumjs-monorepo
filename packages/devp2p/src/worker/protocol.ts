@@ -18,6 +18,8 @@ export interface ThreadedNetworkInitOptions {
   chain: WorkerChainId
   hardfork?: string
   maxPeers?: number
+  /** Cap inbound TCP handshakes; unset shares the full {@link maxPeers} pool. */
+  maxInboundPeers?: number
   capabilities?: string[]
   endpoint?: PeerInfo
   listenPort?: number | null
@@ -59,6 +61,29 @@ export type WorkerCommand =
       latest: Uint8Array
       latestHash: Uint8Array
     }
+  | {
+      type: 'putServableBlock'
+      block: {
+        number: string
+        hash: Uint8Array
+        headerRlp: Uint8Array
+        bodyRlp: Uint8Array
+        receiptsEth69Rlp: Uint8Array
+        balRlp?: Uint8Array
+      }
+    }
+
+export interface WorkerServingSnapshot {
+  earliestBlock?: string
+  latestBlock?: string
+  blocksStored: number
+  headersServed: number
+  bodiesServed: number
+  receiptsServed: number
+  accessListsServed: number
+  totalRequestsServed: number
+  totalBytesServed: number
+}
 
 export interface WorkerPeerSnapshot {
   id: string
@@ -147,6 +172,7 @@ export interface WorkerTelemetrySnapshot {
   peers: WorkerPeerSnapshot[]
   diagnostics: WorkerDiagnosticEntry[]
   discovery?: WorkerDiscoverySnapshot
+  serving: WorkerServingSnapshot
 }
 
 export type WorkerEvent =

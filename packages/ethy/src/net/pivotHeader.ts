@@ -2,7 +2,13 @@ import { createBlockHeaderFromBytesArray, createBlockHeaderFromRLP } from '@ethe
 import { Common } from '@ethereumjs/common'
 import { EthMessageCodes, buildGetBlockHeadersFromJSON, ethUsesRequestId } from '@ethereumjs/devp2p'
 import { RLP } from '@ethereumjs/rlp'
-import { type PrefixedHexString, bytesToBigInt, bytesToHex, hexToBytes } from '@ethereumjs/util'
+import {
+  type PrefixedHexString,
+  bytesToBigInt,
+  bytesToHex,
+  hexToBytes,
+  intToUnpaddedBytes,
+} from '@ethereumjs/util'
 
 import type { ChainConfig } from '@ethereumjs/common'
 
@@ -144,6 +150,118 @@ export function highestEthVersion(caps: string[]): number {
 export function peerIdToBytes(idHex: string): Uint8Array {
   const hex = idHex.startsWith('0x') ? idHex.slice(2) : idHex
   return hexToBytes(hx(`0x${hex}`))
+}
+
+/** Raw RLP of the first header in a `BLOCK_HEADERS` reply. */
+export function firstHeaderRlpFromBlockHeadersPayload(
+  ethVersion: number,
+  payload: Uint8Array,
+): Uint8Array | null {
+  const decoded = RLP.decode(payload) as unknown
+  if (!Array.isArray(decoded)) return null
+  let headersRaw: unknown
+  if (ethUsesRequestId(ethVersion)) {
+    if (decoded.length < 2) return null
+    headersRaw = decoded[1]
+  } else {
+    headersRaw = decoded[0]
+  }
+  if (!Array.isArray(headersRaw) || headersRaw.length === 0) return null
+  const first = headersRaw[0]
+  if (first instanceof Uint8Array) return first
+  return RLP.encode(first as never)
+}
+
+export function encodeGetBlockBodiesPayload(
+  ethVersion: number,
+  blockHash: Uint8Array,
+  requestId = 2,
+): Uint8Array {
+  const id = intToUnpaddedBytes(requestId)
+  const inner: unknown[] = [blockHash]
+  const body = ethUsesRequestId(ethVersion) ? [id, inner] : inner
+  return RLP.encode(body as never)
+}
+
+export function encodeGetReceiptsPayload(
+  ethVersion: number,
+  blockHash: Uint8Array,
+  requestId = 3,
+): Uint8Array {
+  const id = intToUnpaddedBytes(requestId)
+  const hashes = [blockHash]
+  const body =
+    ethVersion >= 70
+      ? [id, intToUnpaddedBytes(0), hashes]
+      : ethUsesRequestId(ethVersion)
+        ? [id, hashes]
+        : hashes
+  return RLP.encode(body as never)
+}
+
+export function encodeGetBlockAccessListsPayload(
+  ethVersion: number,
+  blockHash: Uint8Array,
+  requestId = 4,
+): Uint8Array {
+  const id = intToUnpaddedBytes(requestId)
+  return RLP.encode([id, [blockHash]] as never)
+}
+
+export function parseFirstBodyFromBlockBodiesPayload(payload: Uint8Array): Uint8Array | null {
+  const decoded = RLP.decode(payload) as unknown
+  if (!Array.isArray(decoded) || decoded.length < 2) return null
+  const bodies = decoded[1]
+  if (!Array.isArray(bodies) || bodies.length === 0) return null
+  const first = bodies[0]
+  if (first instanceof Uint8Array) return first
+  return RLP.encode(first as never)
+}
+
+export type ParsedReceiptsReply = {
+  receiptsListRlp: Uint8Array
+  lastBlockIncomplete: boolean
+}
+
+export function parseReceiptsReplyPayload(
+  ethVersion: number,
+  payload: Uint8Array,
+): ParsedReceiptsReply | null {
+  const decoded = RLP.decode(payload) as unknown
+  if (!Array.isArray(decoded)) return null
+  if (ethVersion >= 70) {
+    if (decoded.length < 3) return null
+    const flag = decoded[1]
+    const lists = decoded[2]
+    if (!(flag instanceof Uint8Array) || !Array.isArray(lists) || lists.length === 0) return null
+    const incomplete = bytesToBigInt(flag) === 1n
+    return {
+      receiptsListRlp: RLP.encode(lists[0] as never),
+      lastBlockIncomplete: incomplete,
+    }
+  }
+  if (ethUsesRequestId(ethVersion)) {
+    if (decoded.length < 2) return null
+    const lists = decoded[1]
+    if (!Array.isArray(lists) || lists.length === 0) return null
+    return {
+      receiptsListRlp: RLP.encode(lists[0] as never),
+      lastBlockIncomplete: false,
+    }
+  }
+  return null
+}
+
+export function parseFirstBalFromBlockAccessListsPayload(
+  payload: Uint8Array,
+): Uint8Array | undefined {
+  const decoded = RLP.decode(payload) as unknown
+  if (!Array.isArray(decoded) || decoded.length < 2) return undefined
+  const lists = decoded[1]
+  if (!Array.isArray(lists) || lists.length === 0) return undefined
+  const first = lists[0]
+  if (first instanceof Uint8Array) return first.length === 0 ? undefined : first
+  return undefined
 }
 
 export { bytesToHex, EthMessageCodes }

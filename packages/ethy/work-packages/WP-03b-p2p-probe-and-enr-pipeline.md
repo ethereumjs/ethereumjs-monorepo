@@ -134,7 +134,7 @@ npx tsx packages/devp2p/scripts/p2p-probe.ts --chain sepolia [--stage 1|2|3|4] [
 
 **Parse (`enr.ts`, `peerFieldsFromEnrPairs` helper):** `id` via `pk2id(secp256k1)`; guarded `ip` (4/16 bytes); ports via `bytesToInt` (1–2 bytes, 1..65535); optional EIP-868 `eth` (RLP `[[forkHash, next]]` or `[forkHash, next]`) → `PeerInfo.ethForkId`.
 
-**Discv4:** shared `eth` decoder in `discv4Enr.ts`; `enrResponse` in `server.ts` bans unknown fork hashes.
+**Discovery v4:** shared `eth` decoder in the DPT ENR module; `enrResponse` in `server.ts` bans unknown fork hashes.
 
 **Dial split (`dpt.ts` `refresh`):** complete DNS peers → fork filter → `peer:new`; incomplete → drop; never `_addPeerBatch` for DNS. Metric `dns.forkRejected` on snapshot.
 
@@ -162,8 +162,8 @@ No `PeerCoordinator` fork override. Manual Sepolia soak gate after live probe st
 
 ## 5. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-- **`enrPeerFields.ts`:** Shared EIP-868 decode + `peerFieldsFromEnrPairs`; DNS and discv4 ENR paths reuse it.
-- **DNS fast path:** `DPT._feedDnsDirectoryPeers` emits `peer:new` for dialable ENRs; fork rejects increment `dns.forkRejected`.
+- **`enrPeerFields.ts`:** Shared EIP-868 decode + `peerFieldsFromEnrPairs`; DNS and discovery v4 ENR paths reuse it.
+- **DNS fast path:** `DPT._feedDnsDirectoryPeers` emits `peer:new` for valid TCP ENRs; fork rejects increment `dns.forkRejected`.
 - **Inbound ping:** Auto-`peers` on unknown ping remains when `DPTServer` has **no** `common` (legacy local tests); Ethy passes `common` so crawlers are not bonded.
 - **Sepolia fork:** EIP-7773 comment on Sepolia `amsterdam` row; `forkHash()` pin order for unscheduled forks with explicit hash.
 - **Probe:** `npm run p2p:probe -- --chain sepolia --stage N` (live only). Stage 4 scorecard stops at sustained STATUS; pivot/snap ingestion stays on the ethy soak checklist.

@@ -192,6 +192,14 @@ export async function ingestAccountRangeReply(
     const values = accountsRaw.map(([, slim]) =>
       accountBodyToRLP(accountBodyFromSlim(decodeAccountBody(slim)) as AccountBodyBytes, false),
     )
+    if (origin !== undefined && compareBytes32(origin, keys[keys.length - 1]!) > 0) {
+      return {
+        ok: false,
+        hasRight: false,
+        count: 0,
+        reason: 'peer returned accounts below request origin',
+      }
+    }
     const firstKey = origin ?? keys[0]!
     const lastKey = keys[keys.length - 1]!
     const hasRight = await verifyMerkleRangeProof(stateRoot, firstKey, lastKey, keys, values, proof)

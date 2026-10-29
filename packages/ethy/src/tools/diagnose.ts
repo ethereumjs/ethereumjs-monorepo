@@ -13,7 +13,18 @@ export function peersTableWidget(spine: EthySpine): WidgetSpec {
     title: 'Peer health',
     headers: ['Peer', 'Client', 'Caps', 'Avg ms', 'Last issue'],
     rows,
-    assistantComment: `${spine.peers.size} connected peers on ${spine.network}.`,
+    assistantComment: (() => {
+      const s = spine.serving
+      const window =
+        s?.earliestBlock !== undefined && s.latestBlock !== undefined
+          ? `Window #${s.earliestBlock}..#${s.latestBlock}`
+          : 'Window —'
+      const breakdown =
+        s === undefined
+          ? 'Serve —'
+          : `Serve h:${s.headersServed} b:${s.bodiesServed} r:${s.receiptsServed} bal:${s.accessListsServed}`
+      return `${spine.peers.size} connected peers on ${spine.network}. ${breakdown}. ${window}.`
+    })(),
   }
 }
 
