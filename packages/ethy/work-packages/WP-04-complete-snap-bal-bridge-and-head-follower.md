@@ -1,6 +1,6 @@
 # WP-04: Complete `snap/1` (Code & Storage), Rolling Pivot BAL Healing, `eth/71` Head Follower & Active `eth/69–71` Serving
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `PLANNED`
 - **Dependencies:** `WP-00` (`DONE`), `WP-01` (`DONE`), `WP-02` (`DONE`), `WP-03` (`DONE`), `WP-03b` (`DONE`), `WP-03c` (`DONE`)
 - **Branch:** `ethy-wp04`
 - **Planner:** Grok 4.7
@@ -87,7 +87,84 @@ Complete the end-to-end Amsterdam sync-to-head and P2P serving pipeline in `@eth
 
 ## 3. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled out by Grok 4.7 during the Planning pass.)*
+Composer implements on branch `ethy-wp04`. **No new npm dependencies.** **No `@ethereumjs/devp2p` change** for snap builders: ethy encodes `GET_BYTE_CODES` and `GET_STORAGE_RANGES` locally (same pattern as `encodeGetAccountRange` in `accountSync.ts`), with `bigIntToUnpaddedBytes` for `reqId` and `responseBytes`.
+
+### Baseline (already shipped)
+
+- **Account snap:** 16 buckets, one in-flight `GET_ACCOUNT_RANGE` per peer, `verifyMerkleRangeProof`, `FlatStateManager.putSnapAccountsBatch`, account journals in `SnapPivotStore`.
+- **Pivot + serve seed:** pivot header acquisition + single `putServableBlock` bundle (`peerCoordinator.ts`).
+- **State APIs:** `consumeBAL`, `putCodeByHash`, `putSnapStorageBatch` on `FlatStateManager`.
+- **Gaps:** `code/` and `storage/` dirs created but never written; `HEAD_FOLLOWING` only in demo; while buckets unfinished, coordinator **refuses** pivot root swap (`Keeping anchored pivot root`); `maybeRefreshPivot` only after all buckets done at `pivot + 96`.
+
+### Design refinements (record in `PROGRESS.md`)
+
+| ID | Decision |
+| --- | --- |
+| **D-055** | During `SNAP_SYNCING`, heal when `bestPeer.latestBlock >= pivot + 64` (or range proof fails and gap already `>= 64`). Below +64, keep refusing root swap. Drop `PIVOT_STALE_BLOCKS = 96` as snap trigger. Head follow polls every **5 s**. |
+| **D-056** | Never pass `expectedStateRoot` into `FlatStateManager.consumeBAL` (`getStateRoot` throws). Oracle test compares accounts, code, slots vs `MerkleStateManager`. |
+| **D-057** | One in-flight snap request **per peer** across account, storage, and code. **Generation counter** drops stale replies after pivot heal. Account and code/storage **share** peers so long account sync does not defer code/storage past the 128-block window. |
+| **D-058** | Account bucket cursors survive heal. Storage/code tasks remember `storageRoot` / `codeHash` from queuing account body. BAL touching that account cancels task; one-account `GET_ACCOUNT_RANGE` at new root learns new roots, storage restarts at origin zero. Untouched tasks keep cursor. `consumeBAL` does not update `storageRoot` on `Account`. |
+| **D-059** | Persist code, storage, heal BAL RLP. `loadInto`: replay origin pivot journals → heal BALs → journals under new root. Keep origin pivot dir until `HEAD_FOLLOWING`; after that, restart loads active pivot only. |
+| **D-060** | `/bal` and `/account` unlock at head ready; `/simulate` stays WP-06 stub. Add backwards-compatible `FlatStateManager.getCodeByHash` (separate upstream commit). Spine: latest BAL full JSON + 63 compact summaries in `balWindow`. |
+| **D-061** | Complete storage (`proofNodes.length === 0`): `verifyMerkleRangeProof(storageRoot, null, null, keys, values, null, (k) => k)`. Partial: default hasher (D-038). Empty proof list ≠ `null` proof. Verifier values = RLP slot bodies (non-empty); decode once for `putSnapStorageBatch`. |
+
+### Slice 1 — Code & storage sync
+
+**New:** [`src/sync/codeAndStorageSync.ts`](../src/sync/codeAndStorageSync.ts) — `SnapCodeAndStorageSynchronizer`
+
+- `noteAccounts(entries)` after account ingest: queue `codeHash !== KECCAK256_NULL` (batch ≤64 hashes, 128 KiB budget) and `storageRoot !== KECCAK256_RLP` (hashes after `accountBodyFromSlim` expansion).
+- One account per `GET_STORAGE_RANGES` (origin = cursor, limit = `0xff…32`).
+- **BYTE_CODES:** verify `keccak256(code)` per blob; greedy match to requested hashes; `putCodeByHash`. Short reply = peer miss → requeue once, then diagnostic + drop hash for this pivot.
+- **STORAGE_RANGES:** verify per D-061; `hasRight` → `incrementKey32(lastKey)`; complete range marks account done.
+- Spine: `codesSynced`, `storageSlotsSynced`.
+
+**Extend:** [`src/sync/snapTransport.ts`](../src/sync/snapTransport.ts) — `sendStorageRanges` (0x02), `onStorageRanges` (0x03), `sendByteCodes` (0x04), `onByteCodes` (0x05). `snapPeers()` stays unused; coordinator `getSnapPeers` authoritative.
+
+**Extend:** [`src/sync/syntheticPeer.ts`](../src/sync/syntheticPeer.ts) — per-account storage trie (`useKeyHashing: false`), code map; full storage (`proof = []`) + fragmented continuation.
+
+**Extend:** [`src/sync/accountSync.ts`](../src/sync/accountSync.ts) — `onAccountsIngested`, `abortInFlight()`, `rootGeneration` for heal; no code/storage wire logic here.
+
+**Extend:** [`src/persist/journal.ts`](../src/persist/journal.ts), [`src/persist/snapStore.ts`](../src/persist/snapStore.ts) — schema **1 → 2**; code/storage/heal-BAL records; `appendCode`, `appendStorageSlots`, `appendHealBal`; `loadInto` per D-059.
+
+**Upstream (separate commit):** [`packages/statemanager/src/flatStateManager.ts`](../../../statemanager/src/flatStateManager.ts) — `getCodeByHash(codeHash): Uint8Array | undefined` + unit test.
+
+### Slice 2 — BAL heal & head follower
+
+**New:** [`src/sync/blockBundle.ts`](../src/sync/blockBundle.ts) — ordered fetch (headers, bodies, eth/69 receipts, `GET_BLOCK_ACCESS_LISTS`) reusing [`pivotHeader.ts`](../src/net/pivotHeader.ts) encoders; chunks ≤64 blocks. Missing BAL: diagnostic + still advance pivot header (fallback). Present BAL must match `blockAccessListHash` or skip apply/serve.
+
+**New:** [`src/sync/balSync.ts`](../src/sync/balSync.ts) — `BalSyncAndHeadFollower`
+
+- **Heal:** abort snap in-flight → apply BALs in order (`consumeBAL(bal.toJSON())`) → `activatePivot` → resume buckets at `currentLastHash` / new `pivotStateRoot` → refresh storage/code tasks (D-058) → `putServableBlock` each healed block in order (contiguous 64-window with pivot bundle).
+- **Done:** 16 buckets done + code/storage queues empty → `setPhase('HEAD_FOLLOWING')`, set `headBlockNumber` / `headStateRoot` from pivot.
+- **Follow:** every 5 s, fetch `#head+1..` in chunks; verify, `consumeBAL`, update head + `currentSlot`, `putServableBlock`, push `balWindow` entry (cap 64).
+
+**Extend:** [`src/net/peerCoordinator.ts`](../src/net/peerCoordinator.ts) — replace unfinished-root early return with heal trigger (+64); keep existing pivot bundle as block `#P` seed.
+
+**Extend:** [`src/spine/types.ts`](../src/spine/types.ts) — `codesSynced`, `storageSlotsSynced`, `balWindow`; [`createSpine.ts`](../src/spine/createSpine.ts) — head label **Following** in `HEAD_FOLLOWING`.
+
+### Slice 3 — TUI & tools
+
+**Extend:** [`src/tui/cockpit.ts`](../src/tui/cockpit.ts) — head metrics 4 rows: Status, Head Block, State Root, **BAL Window** (`N blocks · M accounts`); pivot stays on Node Pulse.
+
+**New:** [`src/tools/headTools.ts`](../src/tools/headTools.ts) — `inspectLatestBAL`, `inspectAccount` (20- or 32-byte hex; junk → `key_value` error).
+
+**Extend:** [`src/ai/deterministicEngine.ts`](../src/ai/deterministicEngine.ts) — wire head tools when ready; [`gated.ts`](../src/tools/gated.ts) when locked; `/simulate` unchanged (WP-06).
+
+### Slice 4 — Tests (offline CI)
+
+- [`test/codeStorageSync.spec.ts`](../test/codeStorageSync.spec.ts) — synthetic code/storage, bad code rejected, journal round-trip.
+- [`test/balSync.spec.ts`](../test/balSync.spec.ts) — merkle oracle at `#100`, half sync, 3 BAL heal to `#103`, finish buckets, flat ≡ merkle; empty-BAL fallback; `HEAD_FOLLOWING` + tools; one in-process worker case for `putServableBlock` serve snapshot.
+- Update [`test/intent.spec.ts`](../test/intent.spec.ts), [`test/tui.spec.ts`](../test/tui.spec.ts).
+
+### Finish gates
+
+- `npm run tsc` + `npm test` in `packages/statemanager` (if touched) and `packages/ethy`.
+- `npm run spellcheck` on changed files.
+- No live P2P, no LLM in default CI.
+
+### Out of scope (this WP)
+
+WP-05 local LLM; WP-06 `/simulate` + EVM; beacon HTTP; inbound `snap/1` serving; devp2p lab snap builders; live Sepolia soak (human after green offline suite).
 
 ---
 
