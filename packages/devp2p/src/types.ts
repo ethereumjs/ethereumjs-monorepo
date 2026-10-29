@@ -299,6 +299,8 @@ export interface PeerInfo {
   udpPort?: number | null
   tcpPort?: number | null
   vectorClock?: number
+  /** Bootnode or DNS peer for this chain. discv4 neighbors leave this unset. */
+  chainDirectory?: boolean
 }
 
 export interface Contact extends PeerInfo {

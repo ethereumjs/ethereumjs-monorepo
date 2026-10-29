@@ -11,6 +11,7 @@ import { RLP } from '@ethereumjs/rlp'
 import { bytesToHex, bytesToUnprefixedHex, utf8ToBytes } from '@ethereumjs/util'
 
 import type { MessagePort } from 'node:worker_threads'
+import { markChainDirectoryPeer } from '../discovery/directoryPeer.ts'
 import { classifyHandshakeReject } from '../discovery/handshakeReject.ts'
 import { DiscoveryMetrics, peerFateLabel } from '../discovery/metrics.ts'
 import { DPT } from '../dpt/dpt.ts'
@@ -242,6 +243,7 @@ export class Devp2pWorkerHost {
     )
 
     for (const boot of resolveWorkerBootnodes(opts, common)) {
+      markChainDirectoryPeer(boot)
       void this._dpt.bootstrap(boot).catch((err: unknown) => {
         const msg = err instanceof Error ? err.message : String(err)
         this._pushDiagnostic('warn', `Bootstrap ${boot.address}:${boot.udpPort} — ${msg}`)
@@ -256,7 +258,8 @@ export class Devp2pWorkerHost {
         reason !== DISCONNECT_REASON.PROTOCOL_ERROR &&
         reason !== DISCONNECT_REASON.USELESS_PEER &&
         reason !== DISCONNECT_REASON.NETWORK_ERROR &&
-        reason !== DISCONNECT_REASON.INCOMPATIBLE_VERSION
+        reason !== DISCONNECT_REASON.INCOMPATIBLE_VERSION &&
+        reason !== DISCONNECT_REASON.TIMEOUT
       ) {
         return
       }
@@ -268,7 +271,8 @@ export class Devp2pWorkerHost {
       ) {
         notePeerFate(this._discoveryMetrics, peer, disconnectWe === true ? 'we' : 'remote')
       }
-      this._pushDiagnostic('warn', `Remote ${peer.remoteTcpLabel()}: ${name} (${who})`)
+      const client = peerFateLabel(peer.getHelloMessage()?.clientId, negotiatedEthVersion(peer))
+      this._pushDiagnostic('warn', `Remote ${peer.remoteTcpLabel()} ${client}: ${name} (${who})`)
     })
     this._rlpx.events.on('peer:error', (peer, err) => {
       const remote = peer.remoteTcpLabel()

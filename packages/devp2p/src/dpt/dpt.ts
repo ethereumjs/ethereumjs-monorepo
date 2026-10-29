@@ -8,6 +8,7 @@ import { secp256k1 } from '@noble/curves/secp256k1.js'
 import { keccak_256 } from '@noble/hashes/sha3.js'
 import { EventEmitter } from 'eventemitter3'
 
+import { markChainDirectoryPeer } from '../discovery/directoryPeer.ts'
 import { DNS } from '../dns/index.ts'
 import { devp2pDebug, pk2id } from '../util.ts'
 
@@ -290,7 +291,8 @@ export class DPT {
 
     // check that peer is alive
     try {
-      const peer = await this._server.ping(obj)
+      const peer = (await this._server.ping(obj)) as PeerInfo
+      if (obj.chainDirectory === true) peer.chainDirectory = true
       this.events.emit('peer:new', peer)
       this._kbucket.add(peer)
       if (peer.id !== undefined) {
@@ -504,7 +506,7 @@ export class DPT {
         )
       }
 
-      this._addPeerBatch(dnsPeers)
+      this._addPeerBatch(dnsPeers.map((peer) => markChainDirectoryPeer(peer)))
     }
   }
 }
