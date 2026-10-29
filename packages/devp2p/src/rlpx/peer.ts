@@ -20,6 +20,7 @@ import { devp2pDebug, formatLogData } from '../util.ts'
 
 import { ECIES } from './ecies.ts'
 import { SocketByteQueue } from './socketByteQueue.ts'
+import { subprotocolErrorDropsPeer } from './subprotocolError.ts'
 
 import type { Socket } from 'net'
 import type { Common } from '@ethereumjs/common'
@@ -29,16 +30,6 @@ import type { Capabilities, PeerOptions } from '../types.ts'
 
 const DEBUG_BASE_NAME = 'rlpx:peer'
 
-/**
- * A bad STATUS or a base-protocol frame ends the session.
- * A later eth or snap message that we cannot decode does not: the peer may
- * still be serving headers and state.
- */
-export function subprotocolErrorDropsPeer(protocolName: string, msgCode: number): boolean {
-  if (protocolName === 'Peer') return true
-  if (protocolName === 'ETH' && msgCode === 0x00) return true
-  return false
-}
 const verbose = debugDefault('verbose').enabled
 
 const BASE_PROTOCOL_VERSION = 5

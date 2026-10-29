@@ -1,6 +1,6 @@
 import { assert, describe, it } from 'vitest'
 
-import { subprotocolErrorDropsPeer } from '../../src/rlpx/peer.ts'
+import { subprotocolErrorDropsPeer } from '../../src/rlpx/subprotocolError.ts'
 
 describe('[Devp2p/RLPx]: subprotocol errors', () => {
   it('drops the peer for a bad STATUS or a base-protocol frame', () => {

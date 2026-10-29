@@ -1,7 +1,7 @@
 import { hexToBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
-import { assertSameGenesis, assertSameNetworkId } from '../../src/protocol/eth.ts'
+import { assertSameGenesis, assertSameNetworkId } from '../../src/protocol/statusAssert.ts'
 
 describe('[Devp2p/ETH]: network id', () => {
   it('accepts the same chain id with or without a leading zero byte', () => {
