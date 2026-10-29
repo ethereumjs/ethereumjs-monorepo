@@ -1,6 +1,6 @@
 import { RLP } from '@ethereumjs/rlp'
 import { createFlatStateManager } from '@ethereumjs/statemanager'
-import { assert, describe, it } from 'vitest'
+import { assert, describe, it, vi } from 'vitest'
 
 import { createSnapBuckets } from '../src/spine/buckets.ts'
 import { createSpine } from '../src/spine/createSpine.ts'
@@ -93,6 +93,32 @@ describe('[Ethy/Sync]: synthetic snap account range', () => {
     assert.strictEqual(sm.accountCount(), 160)
     // Local runs finish well under a second. Shared CI runners are slower.
     assert.isBelow(performance.now() - t0, 5_000)
+  })
+
+  it('shows 0/s after idle without new accounts', () => {
+    vi.useFakeTimers()
+    try {
+      const spine = createSpine('sepolia', 11155111n)
+      spine.pivotStateRoot = new Uint8Array(32)
+      spine.totalAccountsSynced = 5_000
+      spine.accountsPerSec = 5_952
+      const sync = new SnapAccountSynchronizer({
+        spine,
+        stateManager: createFlatStateManager(),
+        transport: {
+          snapPeers: () => [],
+          sendAccountRange: () => {},
+          onAccountRange: () => () => {},
+        },
+        getSnapPeers: () => [],
+      })
+      sync.start()
+      vi.advanceTimersByTime(2_500)
+      assert.equal(spine.accountsPerSec, 0)
+      sync.stop()
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it('returns a bucket to the queue when its snap peer leaves', async () => {

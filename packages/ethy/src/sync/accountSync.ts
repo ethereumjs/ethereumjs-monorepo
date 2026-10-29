@@ -25,6 +25,8 @@ const STALL_BASE_MS = 2_000
 const STALL_MAX_MS = 15_000
 /** After a timeout, skip that peer briefly so its in-flight proof can finish. */
 const PEER_REST_MS = 10_000
+/** After this many seconds without new accounts, show 0/s in the TUI. */
+const RATE_IDLE_SEC = 2
 
 type InFlightRange = { bucket: number; reqId: bigint; sentAt: number }
 
@@ -70,6 +72,7 @@ export class SnapAccountSynchronizer {
     setPhase(this.spine, 'SNAP_SYNCING')
     this.syncStart = Date.now()
     this.lastRateAt = this.syncStart
+    this.lastAccountCount = this.spine.totalAccountsSynced
     this.detachAccountRange = this.transport.onAccountRange((peerId, payload) => {
       void this.handleAccountRange(peerId, payload)
     })
@@ -88,11 +91,24 @@ export class SnapAccountSynchronizer {
   private schedule(): void {
     if (this.spine.snapPaused || this.spine.pivotStateRoot === undefined) return
     const now = Date.now()
+    this.refreshAccountRate(now)
+    if (
+      this.spine.snapBuckets.length > 0 &&
+      this.spine.snapBuckets.every((b) => b.status === 'done')
+    ) {
+      this.spine.accountsPerSec = 0
+      return
+    }
     const peers = this.getSnapPeers().filter((p) => p.caps.some((c) => c.startsWith('snap')))
     this.expireStaleRanges(new Set(peers.map((p) => p.id)), now)
     if (peers.length === 0) return
     let peerIdx = 0
     for (const bucket of this.spine.snapBuckets) {
+      if (bucketRangeExhausted(bucket)) {
+        bucket.status = 'done'
+        bucket.assignedPeerId = undefined
+        continue
+      }
       if (bucket.status === 'done') continue
       if (bucket.status === 'stalled' && now < (this.stallUntil.get(bucket.index) ?? 0)) continue
       while (peerIdx < peers.length) {
@@ -157,7 +173,15 @@ export class SnapAccountSynchronizer {
   private noteRangeFailure(bucket: SnapBucket, peerId: string, reason: string): void {
     const repeats = (this.stallRepeats.get(bucket.index) ?? 0) + 1
     this.stallRepeats.set(bucket.index, repeats)
-    const delay = Math.min(STALL_MAX_MS, STALL_BASE_MS * 2 ** Math.min(repeats - 1, 3))
+    const peerRangeMismatch =
+      reason.includes('firstKey should be less than lastKey') ||
+      reason.includes('peer returned accounts below request origin')
+    if (peerRangeMismatch) {
+      this.peerRestUntil.set(peerId, Date.now() + PEER_REST_MS)
+    }
+    const delay = peerRangeMismatch
+      ? 500
+      : Math.min(STALL_MAX_MS, STALL_BASE_MS * 2 ** Math.min(repeats - 1, 3))
     this.stallUntil.set(bucket.index, Date.now() + delay)
     bucket.status = 'stalled'
     bucket.lastStallReason = reason
@@ -243,15 +267,22 @@ export class SnapAccountSynchronizer {
   }
 
   private updateRate(): void {
-    const now = Date.now()
-    const dt = (now - this.lastRateAt) / 1000
-    if (dt >= 1) {
-      const delta = this.spine.totalAccountsSynced - this.lastAccountCount
-      this.spine.accountsPerSec = delta / dt
-      this.lastAccountCount = this.spine.totalAccountsSynced
-      this.lastRateAt = now
-    }
+    this.refreshAccountRate(Date.now())
   }
+
+  /** Keep TUI speed honest when sync pauses; storage count stays on `totalAccountsSynced`. */
+  private refreshAccountRate(now: number): void {
+    const dt = (now - this.lastRateAt) / 1000
+    if (dt < RATE_IDLE_SEC) return
+    const delta = this.spine.totalAccountsSynced - this.lastAccountCount
+    this.spine.accountsPerSec = delta > 0 ? delta / dt : 0
+    this.lastAccountCount = this.spine.totalAccountsSynced
+    this.lastRateAt = now
+  }
+}
+
+function bucketRangeExhausted(bucket: SnapBucket): boolean {
+  return compareBytes32(bucket.currentLastHash, bucket.limitHash) >= 0
 }
 
 export function encodeGetAccountRange(
