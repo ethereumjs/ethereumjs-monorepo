@@ -22,7 +22,7 @@ import {
   initialP2pLinkState,
   syncP2pLinkNotices,
 } from '../notify/p2pLink.ts'
-import { resolveEthyDataDir } from '../persist/datadir.ts'
+import { resolveEthyDataDir } from '../persist/ethyDataRoot.ts'
 import { discoveryNodeStorePath } from '../persist/peerBook.ts'
 import type { PeerBookStore } from '../persist/peerBook.ts'
 import { SnapPivotStore, snapBucketsUnfinished } from '../persist/snapStore.ts'
