@@ -47,6 +47,15 @@ describe('[StateManager/FlatStateManager]', () => {
     assert.strictEqual((await overlay.getAccount(addr))?.balance, 2n)
   })
 
+  it('getCodeByHash() returns bytecode stored via putCodeByHash()', () => {
+    const sm = new FlatStateManager()
+    const code = new Uint8Array([0x60, 0x00, 0x60, 0x00, 0xfd])
+    const codeHash = keccak_256(code)
+    sm.putCodeByHash(codeHash, code)
+    assert.deepEqual(sm.getCodeByHash(codeHash), code)
+    assert.isUndefined(sm.getCodeByHash(new Uint8Array(32)))
+  })
+
   it('putSnapStorageBatch() round-trips via getStorage()', async () => {
     const sm = new FlatStateManager()
     const address = new Address(hexToBytes(`0x${'44'.repeat(20)}`))

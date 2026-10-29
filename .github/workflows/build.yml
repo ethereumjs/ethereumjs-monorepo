@@ -1,8 +1,9 @@
 name: Build
 on:
   pull_request:
-    # synchronize / labeled re-read PR labels (test: browser, test: performance).
-    types: [opened, reopened, synchronize, ready_for_review, labeled]
+    # Do not use `labeled`: metadata-only edits (e.g. PR state WIP → merge ready) must not
+    # rerun Build. Opt-in jobs read labels on opened / synchronize / ready_for_review instead.
+    types: [opened, reopened, synchronize, ready_for_review]
   push:
     branches: [master]
     tags: ['*']

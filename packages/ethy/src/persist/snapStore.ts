@@ -2,18 +2,20 @@ import * as fs from 'node:fs'
 import * as path from 'node:path'
 
 import type { FlatStateManager } from '@ethereumjs/statemanager'
+import { createBlockLevelAccessListFromRLP } from '@ethereumjs/util'
 import { bytesToHex, unprefixedHexToBytes } from '@ethereumjs/util'
 
-import { createSnapBuckets } from '../spine/buckets.ts'
+import { createSnapBuckets, snapBucketCursorExhausted } from '../spine/buckets.ts'
 import type { EthySpine, SnapBucket, SnapBucketStatus } from '../spine/types.ts'
 import {
   accountFromJournalRlp,
+  countAccountJournalRecords,
   encodeAccountJournalRecord,
   journalCursorAfterRecords,
   readAccountJournalFile,
 } from './journal.ts'
 
-export const SNAP_STORE_SCHEMA = 1
+export const SNAP_STORE_SCHEMA = 2
 
 type ChainMeta = { chainId: string; genesisHash: string }
 
@@ -90,7 +92,7 @@ export class SnapPivotStore {
       writeAtomicDoc(metaPath, { schema: SNAP_STORE_SCHEMA })
     } else {
       const meta = readStoredDoc<{ schema: number }>(metaPath)
-      if (meta.schema !== SNAP_STORE_SCHEMA) {
+      if (meta.schema !== SNAP_STORE_SCHEMA && meta.schema !== 1) {
         throw new Error(`Unsupported snap store schema ${meta.schema}`)
       }
     }
@@ -171,10 +173,49 @@ export class SnapPivotStore {
           bucket.currentLastHash = unprefixedHexToBytes(saved.currentLastHash.slice(2))
         }
       }
+      if (bucket.status === 'done' && !snapBucketCursorExhausted(bucket)) {
+        bucket.status = 'pending'
+      }
     }
     spine.snapBuckets = buckets
     spine.totalAccountsSynced = stateManager.accountCount()
+    if (active.previousStateRoot !== undefined && active.previousStateRoot !== null) {
+      const held = this.heldAccountCount(active.previousStateRoot)
+      if (held > 0) {
+        spine.pivotCarry = { kind: 'previous', accounts: held }
+      }
+    }
     return restored
+  }
+
+  /**
+   * Account journals still on a pivot directory.
+   * Trust `buckets.json` only for a bucket that has a non-empty journal file.
+   * A saved count with no file is ignored. A file with no saved count is scanned.
+   */
+  private heldAccountCount(stateRootHex: string): number {
+    const dir = this.pivotDir(stateRootHex)
+    const accountsDir = path.join(dir, 'accounts')
+    if (!fs.existsSync(accountsDir)) return 0
+    let saved: SerializedBucket[] | undefined
+    const bucketsPath = path.join(dir, 'buckets.json')
+    if (fs.existsSync(bucketsPath)) {
+      saved = readStoredDoc<{ buckets: SerializedBucket[] }>(bucketsPath).buckets
+    }
+    let total = 0
+    for (const name of fs.readdirSync(accountsDir)) {
+      if (!name.endsWith('.bin')) continue
+      const filePath = path.join(accountsDir, name)
+      if (fs.statSync(filePath).size === 0) continue
+      const index = Number.parseInt(name.slice(0, -'.bin'.length), 16)
+      const row = saved?.find((b) => b.index === index)
+      if (row !== undefined && row.accountsLoaded > 0) {
+        total += row.accountsLoaded
+        continue
+      }
+      total += countAccountJournalRecords(new Uint8Array(fs.readFileSync(filePath)))
+    }
+    return total
   }
 
   /** Create or switch active pivot; prune to active + previous only. */
@@ -266,6 +307,86 @@ export class SnapPivotStore {
     writeAtomicDoc(path.join(this.pivotDir(this.activeStateRoot), 'buckets.json'), {
       buckets: serializeBuckets(buckets),
     })
+  }
+
+  appendCode(codeHash: Uint8Array, code: Uint8Array): void {
+    if (!this.enabled || this.activeStateRoot === undefined) return
+    const hex = bytesToHex(codeHash).slice(2).toLowerCase()
+    const file = path.join(this.pivotDir(this.activeStateRoot), 'code', `${hex}.bin`)
+    fs.mkdirSync(path.dirname(file), { recursive: true })
+    const header = new Uint8Array(4)
+    new DataView(header.buffer).setUint32(0, code.length, false)
+    fs.writeFileSync(file, Buffer.concat([Buffer.from(header), Buffer.from(code)]))
+  }
+
+  appendHealBal(blockNumber: bigint, balRlp: Uint8Array): void {
+    if (!this.enabled || this.activeStateRoot === undefined || balRlp.length === 0) return
+    const healDir = path.join(this.pivotDir(this.activeStateRoot), 'heal')
+    fs.mkdirSync(healDir, { recursive: true })
+    const file = path.join(healDir, `${blockNumber.toString()}.bal`)
+    fs.writeFileSync(file, balRlp)
+  }
+
+  /** Replay heal BAL files from previous (if any) and active pivot dirs (D-059). */
+  async replayPersistedHealBalJournal(stateManager: FlatStateManager): Promise<number> {
+    if (!this.enabled) return 0
+    const active = this.readActive()
+    if (active === undefined) return 0
+    let applied = 0
+    if (active.previousStateRoot !== undefined && active.previousStateRoot !== null) {
+      applied += await this.replayHealDir(active.previousStateRoot, stateManager)
+    }
+    applied += await this.replayHealDir(active.stateRoot, stateManager)
+    return applied
+  }
+
+  private async replayHealDir(
+    stateRootHex: string,
+    stateManager: FlatStateManager,
+  ): Promise<number> {
+    const healDir = path.join(this.pivotDir(stateRootHex), 'heal')
+    if (!fs.existsSync(healDir)) return 0
+    const names = fs
+      .readdirSync(healDir)
+      .filter((n) => n.endsWith('.bal'))
+      .sort((a, b) => {
+        const na = BigInt(a.replace(/\.bal$/, ''))
+        const nb = BigInt(b.replace(/\.bal$/, ''))
+        return na < nb ? -1 : na > nb ? 1 : 0
+      })
+    let count = 0
+    for (const name of names) {
+      const rlp = new Uint8Array(fs.readFileSync(path.join(healDir, name)))
+      if (rlp.length === 0) continue
+      const bal = createBlockLevelAccessListFromRLP(rlp)
+      await stateManager.consumeBAL(bal.toJSON())
+      count++
+    }
+    return count
+  }
+
+  appendStorageSlots(
+    accountHash: Uint8Array,
+    slots: Array<{ slotHash: Uint8Array; value: Uint8Array }>,
+  ): void {
+    if (!this.enabled || this.activeStateRoot === undefined || slots.length === 0) return
+    const ah = bytesToHex(accountHash).slice(2).toLowerCase()
+    const file = path.join(this.pivotDir(this.activeStateRoot), 'storage', `${ah}.bin`)
+    fs.mkdirSync(path.dirname(file), { recursive: true })
+    const fd = fs.openSync(file, 'a')
+    try {
+      for (const { slotHash, value } of slots) {
+        const record = new Uint8Array(32 + 4 + value.length)
+        const view = new DataView(record.buffer, record.byteOffset, record.byteLength)
+        record.set(slotHash, 0)
+        view.setUint32(32, value.length, false)
+        record.set(value, 36)
+        fs.writeSync(fd, record)
+      }
+      fs.fsyncSync(fd)
+    } finally {
+      fs.closeSync(fd)
+    }
   }
 }
 

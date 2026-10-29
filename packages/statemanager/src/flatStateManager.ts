@@ -353,6 +353,11 @@ export class FlatStateManager implements StateManagerInterface {
     this.writeCodeKey(bytesToUnprefixedHex(codeHash), code)
   }
 
+  /** Bytecode blob keyed by snap `codeHash` (32 bytes). */
+  getCodeByHash(codeHash: Uint8Array): Uint8Array | undefined {
+    return this.readCodeKey(bytesToUnprefixedHex(codeHash))
+  }
+
   accountCount(): number {
     let n = 0
     const seen = new Set<string>()

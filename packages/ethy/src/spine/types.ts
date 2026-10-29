@@ -1,4 +1,5 @@
 import type { WorkerDiscoverySnapshot, WorkerServingSnapshot } from '@ethereumjs/devp2p'
+import type { BALJSONBlockAccessList } from '@ethereumjs/util'
 
 export type CapabilityId = 'p2p' | 'snap' | 'head' | 'ai'
 
@@ -51,6 +52,29 @@ export interface CapabilityState {
   progressPct?: number
 }
 
+export type BalWindowEntry = {
+  blockNumber: bigint
+  accountCount: number
+  /** Full JSON for the latest head block only. */
+  balJson?: BALJSONBlockAccessList
+}
+
+/** In-flight rolling pivot heal. `nextBlock` is the next block to fetch. */
+export type PivotHealProgress = {
+  fromBlock: bigint
+  nextBlock: bigint
+  toBlock: bigint
+}
+
+/**
+ * Accounts that survived a finished heal (`kept`), or journals on the previous
+ * pivot that resume did not load (`previous`).
+ */
+export type PivotCarry = {
+  kind: 'kept' | 'previous'
+  accounts: number
+}
+
 export interface EthySpine {
   clientName: string
   clientVersion: string
@@ -62,6 +86,10 @@ export interface EthySpine {
   pivotStateRoot?: Uint8Array
   /** Short Node Pulse hint while pivot is not anchored (live P2P). */
   pivotStatusHint?: string
+  /** Set while a rolling pivot heal is walking blocks. Cleared when it finishes or fails. */
+  pivotHeal?: PivotHealProgress
+  /** Set after a heal that held accounts, or when the previous pivot still has unloaded journals. */
+  pivotCarry?: PivotCarry
   headBlockNumber?: bigint
   headStateRoot?: Uint8Array
   capabilities: {
@@ -78,6 +106,14 @@ export interface EthySpine {
   snapBuckets: SnapBucket[]
   totalAccountsSynced: number
   accountsPerSec: number
+  codesSynced: number
+  /** Code hashes still queued or in flight. */
+  codesQueued: number
+  storageSlotsSynced: number
+  /** Storage accounts still queued or in flight. */
+  storageQueued: number
+  /** Rolling BAL summaries for `/bal` and `/account` (newest first, max 64). */
+  balWindow: BalWindowEntry[]
   snapPaused: boolean
   diagnosticRingBuffer: DiagnosticEvent[]
 }

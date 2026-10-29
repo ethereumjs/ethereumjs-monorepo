@@ -3,11 +3,15 @@ import { RLP } from '@ethereumjs/rlp'
 import type { FlatStateManager } from '@ethereumjs/statemanager'
 import { bigIntToUnpaddedBytes, bytesToBigInt, setLengthLeft } from '@ethereumjs/util'
 
+import type { Account } from '@ethereumjs/util'
+import { accountFromJournalRlp } from '../persist/journal.ts'
 import type { PeerBookStore } from '../persist/peerBook.ts'
 import type { SnapPivotStore } from '../persist/snapStore.ts'
+import { snapBucketCursorExhausted } from '../spine/buckets.ts'
 import { setPhase } from '../spine/createSpine.ts'
 import { recordDiagnostic } from '../spine/diagnostics.ts'
 import type { EthySpine, SnapBucket } from '../spine/types.ts'
+import type { SnapPeerFlightTracker } from './snapFlight.ts'
 import type { SnapTransport } from './snapTransport.ts'
 import {
   accountRecordsFromRangeReply,
@@ -28,15 +32,22 @@ const PEER_REST_MS = 10_000
 /** After this many seconds without new accounts, show 0/s in the TUI. */
 const RATE_IDLE_SEC = 2
 
-type InFlightRange = { bucket: number; reqId: bigint; sentAt: number }
+type InFlightRange = { bucket: number; reqId: bigint; sentAt: number; rootGeneration: number }
+
+export type IngestedAccountMeta = {
+  accountHash: Uint8Array
+  account: Account
+}
 
 export type SnapAccountSynchronizerOpts = {
   spine: EthySpine
   stateManager: FlatStateManager
   transport: SnapTransport
+  flightTracker: SnapPeerFlightTracker
   getSnapPeers: () => Array<{ id: string; caps: string[] }>
   snapStore?: SnapPivotStore
   peerBook?: PeerBookStore
+  onAccountsIngested?: (entries: IngestedAccountMeta[]) => void
 }
 
 export class SnapAccountSynchronizer {
@@ -44,8 +55,10 @@ export class SnapAccountSynchronizer {
   private readonly stateManager: FlatStateManager
   private readonly transport: SnapTransport
   private readonly getSnapPeers: () => Array<{ id: string; caps: string[] }>
+  private readonly flightTracker: SnapPeerFlightTracker
   private readonly snapStore?: SnapPivotStore
   private readonly peerBook?: PeerBookStore
+  private readonly onAccountsIngested?: (entries: IngestedAccountMeta[]) => void
   private reqId = 1n
   private inFlight = new Map<string, InFlightRange>()
   private stallUntil = new Map<number, number>()
@@ -63,8 +76,24 @@ export class SnapAccountSynchronizer {
     this.stateManager = opts.stateManager
     this.transport = opts.transport
     this.getSnapPeers = opts.getSnapPeers
+    this.flightTracker = opts.flightTracker
     this.snapStore = opts.snapStore
     this.peerBook = opts.peerBook
+    this.onAccountsIngested = opts.onAccountsIngested
+  }
+
+  abortInFlight(): void {
+    this.inFlight.clear()
+    this.flightTracker.clearAll()
+  }
+
+  bumpRootGeneration(): number {
+    this.inFlight.clear()
+    return this.flightTracker.bumpGeneration()
+  }
+
+  peerBusy(peerId: string): boolean {
+    return this.flightTracker.has(peerId)
   }
 
   start(): void {
@@ -114,7 +143,7 @@ export class SnapAccountSynchronizer {
       while (peerIdx < peers.length) {
         const candidate = peers[peerIdx]!
         const resting = now < (this.peerRestUntil.get(candidate.id) ?? 0)
-        if (!this.inFlight.has(candidate.id) && !resting) break
+        if (!this.flightTracker.has(candidate.id) && !resting) break
         peerIdx++
       }
       if (peerIdx >= peers.length) break
@@ -123,7 +152,15 @@ export class SnapAccountSynchronizer {
       const reqId = this.reqId++
       bucket.status = 'syncing'
       bucket.assignedPeerId = peer.id
-      this.inFlight.set(peer.id, { bucket: bucket.index, reqId, sentAt: now })
+      if (!this.flightTracker.tryClaim(peer.id, { kind: 'account', reqId, sentAt: now })) {
+        continue
+      }
+      this.inFlight.set(peer.id, {
+        bucket: bucket.index,
+        reqId,
+        sentAt: now,
+        rootGeneration: this.flightTracker.rootGeneration,
+      })
       const row = this.spine.peers.get(peer.id)
       if (row !== undefined) row.snapRequestsSent++
       const payload = encodeGetAccountRange(
@@ -142,6 +179,7 @@ export class SnapAccountSynchronizer {
       const left = !livePeerIds.has(peerId)
       if (!left && now - flight.sentAt < RANGE_TIMEOUT_MS) continue
       this.inFlight.delete(peerId)
+      this.flightTracker.release(peerId)
       const bucket = this.spine.snapBuckets[flight.bucket]
       if (bucket === undefined || bucket.status === 'done') continue
       if (left) {
@@ -200,9 +238,15 @@ export class SnapAccountSynchronizer {
   private async handleAccountRange(peerId: string, payload: Uint8Array): Promise<void> {
     const flight = this.inFlight.get(peerId)
     if (flight === undefined || this.spine.pivotStateRoot === undefined) return
+    if (flight.rootGeneration !== this.flightTracker.rootGeneration) {
+      this.inFlight.delete(peerId)
+      this.flightTracker.release(peerId)
+      return
+    }
     const replyId = accountRangeRequestId(payload)
     if (replyId === undefined || replyId !== flight.reqId) return
     this.inFlight.delete(peerId)
+    this.flightTracker.release(peerId)
     const bucket = this.spine.snapBuckets[flight.bucket]
     if (bucket === undefined) return
     bucket.status = 'verifying_proof'
@@ -252,15 +296,23 @@ export class SnapAccountSynchronizer {
         bucket.currentLastHash = incrementKey32(lastKey)
         bucket.status = 'pending'
       } else {
-        bucket.status = 'done'
+        this.noteRangeFailure(bucket, peerId, 'account range missing last key')
+        return
       }
     } else {
+      bucket.currentLastHash = new Uint8Array(bucket.limitHash)
       bucket.status = 'done'
+      bucket.lastStallReason = undefined
     }
     if (result.count > 0) {
       this.peerBook?.noteSnapSuccess(peerId, Date.now())
       const records = accountRecordsFromRangeReply(payload)
       this.snapStore?.appendVerifiedRange(flight.bucket, records, this.spine.snapBuckets)
+      const ingested: IngestedAccountMeta[] = records.map((row) => ({
+        accountHash: row.accountHash,
+        account: accountFromJournalRlp(row.accountRlp),
+      }))
+      this.onAccountsIngested?.(ingested)
     } else {
       this.snapStore?.flushBuckets(this.spine.snapBuckets)
     }
@@ -282,7 +334,7 @@ export class SnapAccountSynchronizer {
 }
 
 function bucketRangeExhausted(bucket: SnapBucket): boolean {
-  return compareBytes32(bucket.currentLastHash, bucket.limitHash) >= 0
+  return snapBucketCursorExhausted(bucket)
 }
 
 export function encodeGetAccountRange(

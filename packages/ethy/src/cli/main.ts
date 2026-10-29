@@ -38,6 +38,17 @@ async function main(): Promise<void> {
     dataDir: cli.dataDir,
   })
 
+  if (node.snapStore !== undefined) {
+    const replayed = await node.snapStore.replayPersistedHealBalJournal(node.stateManager)
+    if (replayed > 0) {
+      recordDiagnostic(node.spine, {
+        subsystem: 'snap',
+        severity: 'info',
+        message: `Replayed ${replayed.toLocaleString('en-US')} heal BAL block(s) from disk`,
+      })
+    }
+  }
+
   let coordinatorStop: (() => void) | undefined
   let p2pError: string | undefined
   if (!cli.demo) {

@@ -5,7 +5,21 @@ import { assert, describe, it, vi } from 'vitest'
 import { createSnapBuckets } from '../src/spine/buckets.ts'
 import { createSpine } from '../src/spine/createSpine.ts'
 import { SnapAccountSynchronizer, encodeGetAccountRange } from '../src/sync/accountSync.ts'
+import { SnapPeerFlightTracker } from '../src/sync/snapFlight.ts'
 import type { SnapTransport } from '../src/sync/snapTransport.ts'
+
+function mockSnapTransport(overrides: Partial<SnapTransport> = {}): SnapTransport {
+  return {
+    snapPeers: () => [],
+    sendAccountRange: () => {},
+    onAccountRange: () => () => {},
+    sendStorageRanges: () => {},
+    onStorageRanges: () => () => {},
+    sendByteCodes: () => {},
+    onByteCodes: () => () => {},
+    ...overrides,
+  }
+}
 import {
   SyntheticSnapPeer,
   incrementKey32,
@@ -13,6 +27,19 @@ import {
 } from '../src/sync/syntheticPeer.ts'
 
 describe('[Ethy/Sync]: synthetic snap account range', () => {
+  it('ingestAccountRangeReply() rejects an empty range that has no proof', async () => {
+    const reply = RLP.encode([new Uint8Array(0), [], []] as never)
+    const result = await ingestAccountRangeReply(
+      new Uint8Array(32),
+      reply,
+      () => {},
+      new Uint8Array(32),
+    )
+    assert.equal(result.ok, false)
+    assert.equal(result.count, 0)
+    assert.match(result.reason ?? '', /without proof/)
+  })
+
   it('ingestAccountRangeReply() rejects a non-byte payload without throwing', async () => {
     const result = await ingestAccountRangeReply(
       new Uint8Array(32),
@@ -58,7 +85,11 @@ describe('[Ethy/Sync]: synthetic snap account range', () => {
     let proofFailures = 0
     for (const bucket of spine.snapBuckets) {
       let done = false
+      let steps = 0
       while (!done) {
+        if (++steps > 40) {
+          throw new Error(`bucket ${bucket.prefix} did not finish`)
+        }
         const req = encodeGetAccountRange(
           1n,
           peer.rootHash,
@@ -67,6 +98,11 @@ describe('[Ethy/Sync]: synthetic snap account range', () => {
           512 * 1024,
         )
         const reply = await peer.buildAccountRangeReply(req)
+        const accountsRaw = (RLP.decode(reply) as unknown[])[1] as Array<[Uint8Array, Uint8Array]>
+        if (!Array.isArray(accountsRaw) || accountsRaw.length === 0) {
+          done = true
+          continue
+        }
         const result = await ingestAccountRangeReply(
           peer.rootHash,
           reply,
@@ -78,7 +114,6 @@ describe('[Ethy/Sync]: synthetic snap account range', () => {
           continue
         }
         spine.totalAccountsSynced += result.count
-        const accountsRaw = (RLP.decode(reply) as unknown[])[1] as Array<[Uint8Array, Uint8Array]>
         if (result.count === 0) {
           done = true
         } else if (!result.hasRight) {
@@ -105,11 +140,8 @@ describe('[Ethy/Sync]: synthetic snap account range', () => {
       const sync = new SnapAccountSynchronizer({
         spine,
         stateManager: createFlatStateManager(),
-        transport: {
-          snapPeers: () => [],
-          sendAccountRange: () => {},
-          onAccountRange: () => () => {},
-        },
+        transport: mockSnapTransport(),
+        flightTracker: new SnapPeerFlightTracker(),
         getSnapPeers: () => [],
       })
       sync.start()
@@ -126,19 +158,17 @@ describe('[Ethy/Sync]: synthetic snap account range', () => {
     spine.pivotStateRoot = new Uint8Array(32)
     const peers = [{ id: 'aa11', caps: ['eth/72', 'snap/1'] }]
     let sent = 0
-    const transport: SnapTransport = {
+    const transport = mockSnapTransport({
       snapPeers: () => peers,
       sendAccountRange() {
         sent++
       },
-      onAccountRange() {
-        return () => {}
-      },
-    }
+    })
     const sync = new SnapAccountSynchronizer({
       spine,
       stateManager: {} as never,
       transport,
+      flightTracker: new SnapPeerFlightTracker(),
       getSnapPeers: () => peers,
     })
     sync.start()

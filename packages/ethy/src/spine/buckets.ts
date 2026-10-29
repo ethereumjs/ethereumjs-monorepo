@@ -33,6 +33,21 @@ function nibbleLimitHash(nibble: number): Uint8Array {
   return h
 }
 
+/** True when the snap cursor has reached the bucket limit. */
+export function snapBucketCursorExhausted(bucket: SnapBucket): boolean {
+  return compareBytes32(bucket.currentLastHash, bucket.limitHash) >= 0
+}
+
+function compareBytes32(a: Uint8Array, b: Uint8Array): number {
+  const n = Math.max(a.length, b.length)
+  for (let i = 0; i < n; i++) {
+    const av = a[i] ?? 0
+    const bv = b[i] ?? 0
+    if (av !== bv) return av - bv
+  }
+  return 0
+}
+
 /** Snap ranges fully synced through the pivot (status `done` only). */
 export function snapBucketsDoneCount(buckets: readonly SnapBucket[]): number {
   return buckets.filter((b) => b.status === 'done').length
@@ -52,6 +67,34 @@ export function formatSnapBucketBar(buckets: readonly SnapBucket[]): string {
     else bar += '░'
   }
   return bar
+}
+
+/** Eight-cell meter: filled share of `synced / (synced + queued)`. Empty when both are zero. */
+export function formatQueueMeter(synced: number, queued: number, cells = 8): string {
+  if (synced <= 0 && queued <= 0) return '░'.repeat(cells)
+  if (queued <= 0) return '█'.repeat(cells)
+  const total = synced + queued
+  const filled = Math.min(cells, Math.max(0, Math.round((synced / total) * cells)))
+  return `${'█'.repeat(filled)}${'░'.repeat(cells - filled)}`
+}
+
+/** Short tail for the account line when the 16-cell bar cannot show idle. */
+export function snapAccountPaceNote(
+  buckets: readonly SnapBucket[],
+  opts: { peerCount: number; phase: EthyPhase },
+): string {
+  const done = snapBucketsDoneCount(buckets)
+  if (done === 16) return ''
+  const syncing = buckets.some((b) => b.status === 'syncing' || b.status === 'verifying_proof')
+  if (syncing) return ''
+  const stalled = buckets.some((b) => b.status === 'stalled')
+  if (stalled) return 'stalled'
+  if (opts.phase === 'SNAP_SYNCING' && opts.peerCount === 0) {
+    const hasCached = buckets.some((b) => b.accountsLoaded > 0)
+    if (done > 0 || hasCached) return 'paused'
+    return 'no peers'
+  }
+  return ''
 }
 
 /** Node Pulse / cockpit line (compact — must fit a narrow column beside the 16-char bar). */

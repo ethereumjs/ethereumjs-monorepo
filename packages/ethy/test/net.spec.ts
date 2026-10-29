@@ -1,7 +1,8 @@
 import { createBlockHeader } from '@ethereumjs/block'
 import { Common, Mainnet } from '@ethereumjs/common'
 import { EthMessageCodes, createThreadedNetwork, genPrivateKey, pk2id } from '@ethereumjs/devp2p'
-import { bytesToHex } from '@ethereumjs/util'
+import { RLP } from '@ethereumjs/rlp'
+import { bytesToHex, intToUnpaddedBytes } from '@ethereumjs/util'
 import { secp256k1 } from '@noble/curves/secp256k1.js'
 import { assert, describe, it } from 'vitest'
 
@@ -46,7 +47,7 @@ describe('[Ethy/Net]: PeerCoordinator pivot', () => {
       privateKey: keyB,
       chain: 'mainnet',
       maxPeers: 2,
-      capabilities: ['eth69'],
+      capabilities: ['eth71'],
       endpoint: { address: '127.0.0.1', udpPort: BASE + 1, tcpPort: BASE + 1 },
       listenPort: BASE + 1,
       status,
@@ -56,9 +57,36 @@ describe('[Ethy/Net]: PeerCoordinator pivot', () => {
     })
 
     nodeB.events.on('protocol', (msg) => {
-      if (msg.protocol === 'eth' && msg.code === EthMessageCodes.GET_BLOCK_HEADERS) {
-        const reply = encodeBlockHeadersReply(69, header.serialize())
-        nodeB.sendEthMessage(peerIdToBytes(msg.peerId), EthMessageCodes.BLOCK_HEADERS, reply)
+      if (msg.protocol !== 'eth') return
+      const peer = peerIdToBytes(msg.peerId)
+      if (msg.code === EthMessageCodes.GET_BLOCK_HEADERS) {
+        const reply = encodeBlockHeadersReply(71, header.serialize())
+        nodeB.sendEthMessage(peer, EthMessageCodes.BLOCK_HEADERS, reply)
+        return
+      }
+      if (msg.code === EthMessageCodes.GET_BLOCK_BODIES) {
+        const body = RLP.encode([[], []])
+        nodeB.sendEthMessage(
+          peer,
+          EthMessageCodes.BLOCK_BODIES,
+          RLP.encode([intToUnpaddedBytes(2), [body]] as never),
+        )
+        return
+      }
+      if (msg.code === EthMessageCodes.GET_RECEIPTS) {
+        nodeB.sendEthMessage(
+          peer,
+          EthMessageCodes.RECEIPTS,
+          RLP.encode([intToUnpaddedBytes(3), intToUnpaddedBytes(0), [[]]] as never),
+        )
+        return
+      }
+      if (msg.code === EthMessageCodes.GET_BLOCK_ACCESS_LISTS) {
+        nodeB.sendEthMessage(
+          peer,
+          EthMessageCodes.BLOCK_ACCESS_LISTS,
+          RLP.encode([intToUnpaddedBytes(4), [new Uint8Array(0)]] as never),
+        )
       }
     })
 
@@ -73,7 +101,7 @@ describe('[Ethy/Net]: PeerCoordinator pivot', () => {
         shouldFindNeighbours: false,
         goodCitizen: true,
         listenPort: BASE,
-        pivotBundleTimeoutMs: 300,
+        pivotBundleTimeoutMs: 8000,
         dial: {
           id: idB,
           address: '127.0.0.1',
@@ -105,26 +133,22 @@ describe('[Ethy/Net]: PeerCoordinator pivot', () => {
       assert.equal(bytesToHex(spine.pivotStateRoot!), bytesToHex(header.stateRoot))
       await new Promise<void>((resolve, reject) => {
         const timer = setTimeout(
-          () => reject(new Error('timeout waiting for pivot bundle timeout diagnostic')),
-          5000,
+          () => reject(new Error('timeout waiting for servable pivot bundle')),
+          12_000,
         )
         const tick = setInterval(() => {
-          if (
-            spine.diagnosticRingBuffer.some((e) =>
-              e.message.includes('Pivot block bundle fetch timed out'),
-            )
-          ) {
+          const registered = spine.diagnosticRingBuffer.some((e) =>
+            e.message.includes('Servable pivot bundle registered'),
+          )
+          const stored = (spine.serving?.blocksStored ?? 0) >= 1
+          if (registered && stored) {
             clearTimeout(timer)
             clearInterval(tick)
             resolve()
           }
         }, 50)
       })
-      assert.isTrue(
-        spine.diagnosticRingBuffer.some((e) =>
-          e.message.includes('Pivot block bundle fetch timed out'),
-        ),
-      )
+      assert.isAtLeast(spine.serving?.blocksStored ?? 0, 1)
     } finally {
       handle?.stop()
       nodeB.stop()

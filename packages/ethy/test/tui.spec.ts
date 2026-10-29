@@ -47,8 +47,42 @@ describe('[Ethy/TUI]: renderFrame', () => {
     deriveCapabilities(spine)
     const plain = stripAnsi(renderFrame(spine, createInitialViewState(), 140, 30).join('\n'))
     assert.include(plain, '░')
-    assert.include(plain, '0/16 paused')
+    assert.include(plain, 'paused')
+    assert.include(plain, 'Bytecode')
+    assert.include(plain, 'Storage')
     assert.notInclude(plain, '16/16')
+  })
+
+  it('node pulse shows heal progress and whether accounts were kept', () => {
+    const view = createInitialViewState()
+    const spine = createSpine('sepolia', 11155111n)
+    setPhase(spine, 'SNAP_SYNCING')
+    spine.pivotBlockNumber = 12_019_912n
+    spine.pivotHeal = {
+      fromBlock: 12_019_913n,
+      nextBlock: 12_020_033n,
+      toBlock: 12_020_871n,
+    }
+    const healing = stripAnsi(renderFrame(spine, view, 160, 30).join('\n'))
+    assert.include(healing, 'Healing 120/959')
+    assert.include(healing, '#12,019,912 → #12,020,871')
+
+    spine.pivotHeal = undefined
+    spine.pivotBlockNumber = 12_020_871n
+    spine.pivotCarry = { kind: 'kept', accounts: 3_482_563 }
+    const kept = stripAnsi(renderFrame(spine, view, 160, 30).join('\n'))
+    assert.include(kept, 'Snap Syncing')
+    assert.include(kept, '#12,020,871 · 3.5M kept')
+
+    spine.pivotCarry = { kind: 'previous', accounts: 3_482_563 }
+    const held = stripAnsi(renderFrame(spine, view, 160, 30).join('\n'))
+    assert.include(held, '#12,020,871 · 3.5M previous')
+
+    setPhase(spine, 'HEAD_FOLLOWING')
+    const head = stripAnsi(renderFrame(spine, view, 160, 30).join('\n'))
+    assert.include(head, 'Head Following')
+    assert.include(head, '#12,020,871')
+    assert.notInclude(head, 'previous')
   })
 
   it('renderFrame() at 100x30 respects column width', () => {

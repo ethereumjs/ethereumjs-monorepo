@@ -32,7 +32,7 @@ export function deriveCapabilities(spine: EthySpine): void {
     case 'HEAD_FOLLOWING':
       spine.capabilities.p2p = { status: 'ready', label: `${peerCount} Peers` }
       spine.capabilities.snap = { status: 'ready', label: 'Synced' }
-      spine.capabilities.head = { status: 'ready', label: 'Verified' }
+      spine.capabilities.head = { status: 'ready', label: 'Following' }
       break
   }
 
@@ -57,6 +57,11 @@ export function createSpine(network: string, chainId: bigint): EthySpine {
     snapBuckets: createSnapBuckets(),
     totalAccountsSynced: 0,
     accountsPerSec: 0,
+    codesSynced: 0,
+    codesQueued: 0,
+    storageSlotsSynced: 0,
+    storageQueued: 0,
+    balWindow: [],
     snapPaused: false,
     diagnosticRingBuffer: [],
   }
