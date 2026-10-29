@@ -4,7 +4,8 @@ import { assert, describe, it } from 'vitest'
 
 import { createSnapBuckets } from '../src/spine/buckets.ts'
 import { createSpine } from '../src/spine/createSpine.ts'
-import { encodeGetAccountRange } from '../src/sync/accountSync.ts'
+import { SnapAccountSynchronizer, encodeGetAccountRange } from '../src/sync/accountSync.ts'
+import type { SnapTransport } from '../src/sync/snapTransport.ts'
 import {
   SyntheticSnapPeer,
   incrementKey32,
@@ -92,5 +93,37 @@ describe('[Ethy/Sync]: synthetic snap account range', () => {
     assert.strictEqual(sm.accountCount(), 160)
     // Local runs finish well under a second. Shared CI runners are slower.
     assert.isBelow(performance.now() - t0, 5_000)
+  })
+
+  it('returns a bucket to the queue when its snap peer leaves', async () => {
+    const spine = createSpine('sepolia', 11155111n)
+    spine.pivotStateRoot = new Uint8Array(32)
+    const peers = [{ id: 'aa11', caps: ['eth/72', 'snap/1'] }]
+    let sent = 0
+    const transport: SnapTransport = {
+      snapPeers: () => peers,
+      sendAccountRange() {
+        sent++
+      },
+      onAccountRange() {
+        return () => {}
+      },
+    }
+    const sync = new SnapAccountSynchronizer({
+      spine,
+      stateManager: {} as never,
+      transport,
+      getSnapPeers: () => peers,
+    })
+    sync.start()
+    assert.equal(sent, 1)
+    assert.equal(spine.snapBuckets[0]!.status, 'syncing')
+    peers.pop()
+    await new Promise((resolve) => setTimeout(resolve, 120))
+    sync.stop()
+    assert.equal(spine.snapBuckets[0]!.status, 'pending')
+    assert.equal(spine.snapBuckets[0]!.lastStallReason, 'snap peer left')
+    const message = spine.diagnosticRingBuffer.at(-1)?.message ?? ''
+    assert.match(message, /Bucket 0x0: snap peer left/)
   })
 })

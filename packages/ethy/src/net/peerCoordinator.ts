@@ -71,6 +71,7 @@ function mapPeer(snapshot: WorkerPeerSnapshot, prev?: PeerTelemetry): PeerTeleme
     id: snapshot.id,
     clientName: snapshot.clientId || 'unknown',
     caps: [...snapshot.caps],
+    snapSession: snapshot.snapSession === true,
     snapRequestsSent: prev?.snapRequestsSent ?? 0,
     snapResponsesOk: prev?.snapResponsesOk ?? 0,
     snapTimeouts: prev?.snapTimeouts ?? 0,
@@ -230,6 +231,8 @@ export async function startPeerCoordinator(
       // with peers that cannot serve this chain.
       capabilities: ['eth69', 'eth70', 'eth71', 'eth72', 'snap1'],
       goodCitizen: opts.goodCitizen ?? true,
+      // An empty account proof is not valid snap, so inbound GETs stay unanswered.
+      // Outbound ranges are small, and the pong deadline is 30s, so a busy server can stay up.
       answerEmptySnap: false,
       // DNS ENR tree + bootnodes are chain-scoped. Unfiltered discv4 neighbors
       // are other networks and crowd out Sepolia sessions.
@@ -325,7 +328,7 @@ export async function startPeerCoordinator(
         transport,
         getSnapPeers: () =>
           [...spine.peers.values()]
-            .filter((p) => p.caps.some((c) => c === 'snap/1' || c.startsWith('snap/')))
+            .filter((p) => p.snapSession === true)
             .map((p) => ({ id: p.id, caps: p.caps })),
       })
       snapSync.start()

@@ -160,7 +160,7 @@ export class Peer {
     this._closed = false
     this._disconnectWe = null
     this._pingIntervalId = null
-    this._pingTimeout = options.timeout
+    this._pingTimeout = options.pingTimeout ?? options.timeout
     this._pingTimeoutId = null
 
     // sub-protocols

@@ -62,6 +62,8 @@ export interface WorkerPeerSnapshot {
   id: string
   clientId: string
   caps: string[]
+  /** True when snap/1 was negotiated, not merely listed in HELLO. */
+  snapSession?: boolean
   rttMs?: number
   /** Remote head block hash from ETH STATUS (`0x` + hex). */
   bestHash?: string

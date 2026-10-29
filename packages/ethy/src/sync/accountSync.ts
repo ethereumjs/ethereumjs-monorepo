@@ -9,10 +9,16 @@ import type { EthySpine, SnapBucket } from '../spine/types.ts'
 import type { SnapTransport } from './snapTransport.ts'
 import { incrementKey32, ingestAccountRangeReply } from './syntheticPeer.ts'
 
-const RESPONSE_BYTES = 512 * 1024
-const RANGE_TIMEOUT_MS = 8_000
+/**
+ * Bytes we ask a peer to return. 512 KiB is about 8,000 accounts: public nodes
+ * stall long enough to miss a ping, and the next request then piles on.
+ */
+const RESPONSE_BYTES = 128 * 1024
+const RANGE_TIMEOUT_MS = 20_000
 const STALL_BASE_MS = 2_000
 const STALL_MAX_MS = 15_000
+/** After a timeout, skip that peer briefly so its in-flight proof can finish. */
+const PEER_REST_MS = 10_000
 
 type InFlightRange = { bucket: number; reqId: bigint; sentAt: number }
 
@@ -32,6 +38,7 @@ export class SnapAccountSynchronizer {
   private inFlight = new Map<string, InFlightRange>()
   private stallUntil = new Map<number, number>()
   private stallRepeats = new Map<number, number>()
+  private peerRestUntil = new Map<string, number>()
   private detachAccountRange?: () => void
   private tickTimer?: ReturnType<typeof setInterval>
   private syncStart = 0
@@ -66,15 +73,18 @@ export class SnapAccountSynchronizer {
 
   private schedule(): void {
     if (this.spine.snapPaused || this.spine.pivotStateRoot === undefined) return
-    this.expireStaleRanges()
-    const peers = this.getSnapPeers().filter((p) => p.caps.some((c) => c.startsWith('snap')))
-    if (peers.length === 0) return
     const now = Date.now()
+    const peers = this.getSnapPeers().filter((p) => p.caps.some((c) => c.startsWith('snap')))
+    this.expireStaleRanges(new Set(peers.map((p) => p.id)), now)
+    if (peers.length === 0) return
     let peerIdx = 0
     for (const bucket of this.spine.snapBuckets) {
       if (bucket.status === 'done') continue
       if (bucket.status === 'stalled' && now < (this.stallUntil.get(bucket.index) ?? 0)) continue
-      while (peerIdx < peers.length && this.inFlight.has(peers[peerIdx]!.id)) {
+      while (peerIdx < peers.length) {
+        const candidate = peers[peerIdx]!
+        const resting = now < (this.peerRestUntil.get(candidate.id) ?? 0)
+        if (!this.inFlight.has(candidate.id) && !resting) break
         peerIdx++
       }
       if (peerIdx >= peers.length) break
@@ -97,13 +107,29 @@ export class SnapAccountSynchronizer {
     }
   }
 
-  private expireStaleRanges(): void {
-    const now = Date.now()
+  private expireStaleRanges(livePeerIds: ReadonlySet<string>, now: number): void {
     for (const [peerId, flight] of this.inFlight) {
-      if (now - flight.sentAt < RANGE_TIMEOUT_MS) continue
+      const left = !livePeerIds.has(peerId)
+      if (!left && now - flight.sentAt < RANGE_TIMEOUT_MS) continue
       this.inFlight.delete(peerId)
       const bucket = this.spine.snapBuckets[flight.bucket]
       if (bucket === undefined || bucket.status === 'done') continue
+      if (left) {
+        bucket.status = 'pending'
+        bucket.assignedPeerId = undefined
+        bucket.lastStallReason = 'snap peer left'
+        recordDiagnostic(this.spine, {
+          subsystem: 'snap',
+          severity: 'warn',
+          peerId,
+          bucketIndex: bucket.index,
+          message: `Bucket ${bucket.prefix}: snap peer left`,
+        })
+        continue
+      }
+      this.peerRestUntil.set(peerId, now + PEER_REST_MS)
+      const row = this.spine.peers.get(peerId)
+      if (row !== undefined) row.snapTimeouts++
       this.noteRangeFailure(bucket, peerId, 'account range timed out')
     }
   }
@@ -122,7 +148,7 @@ export class SnapAccountSynchronizer {
         severity: 'warn',
         peerId,
         bucketIndex: bucket.index,
-        message: `Range proof failed for bucket ${bucket.prefix}: ${reason}${times}`,
+        message: `Bucket ${bucket.prefix}: ${reason}${times}`,
       })
     }
   }

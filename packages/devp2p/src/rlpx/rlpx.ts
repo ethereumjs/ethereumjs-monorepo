@@ -47,6 +47,7 @@ export class RLPx {
   public readonly id: Uint8Array
   private _debug: Debugger
   protected _timeout: number
+  protected _pingTimeout: number
   protected _maxPeers: number
   protected _throttleDiscovery: boolean
   protected _discoveryLowWaterMark: number
@@ -79,6 +80,8 @@ export class RLPx {
 
     // options
     this._timeout = options.timeout ?? 10000 // 10 sec * 1000
+    // Dial stays short. An established peer may spend longer than that building a snap proof.
+    this._pingTimeout = options.pingTimeout ?? this._timeout
     this._maxPeers = options.maxPeers ?? 10
     this._throttleDiscovery = options.throttleDiscovery ?? false
     const lowWater = options.discoveryLowWaterMark ?? Math.floor(this._maxPeers * 0.8)
@@ -360,6 +363,7 @@ export class RLPx {
       privateKey: this._privateKey,
       id: this.id,
       timeout: this._timeout,
+      pingTimeout: this._pingTimeout,
       clientId: this.clientId,
       remoteClientIdFilter: this._remoteClientIdFilter,
       capabilities: this._capabilities,

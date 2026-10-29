@@ -230,6 +230,8 @@ export class Devp2pWorkerHost {
       throttleDiscovery: opts.throttleDiscovery ?? true,
       discoveryLowWaterMark: opts.discoveryLowWaterMark,
       discoveryMetrics: this._discoveryMetrics,
+      // Geth's RLPx read deadline is 30s. A 10s pong timer drops a peer that is busy serving snap.
+      pingTimeout: 30_000,
     })
 
     await new Promise<void>((resolve) => {
@@ -439,7 +441,13 @@ export class Devp2pWorkerHost {
 
   private _sendSnap(peerId: Uint8Array, code: number, payload: Uint8Array): void {
     const snap = this._findSnap(peerId)
-    if (!snap) throw new Error('No SNAP session for peer')
+    if (!snap) {
+      this._pushDiagnostic(
+        'warn',
+        `No SNAP session for peer ${bytesToUnprefixedHex(peerId).slice(0, 8)}`,
+      )
+      return
+    }
     snap.sendMessage(code as never, RLP.decode(payload))
   }
 
@@ -474,17 +482,17 @@ export class Devp2pWorkerHost {
         break
       }
 
+      const protocols = peer.getProtocols()
       peers.push({
         id,
         clientId: hello?.clientId ?? '',
+        snapSession: protocols.some((p) => p.constructor.name === 'SNAP'),
         caps:
           hello?.capabilities.map((c) => `${c.name}/${c.version}`) ??
-          peer
-            .getProtocols()
-            .map(
-              (p) =>
-                `${p.constructor.name === 'ETH' ? 'eth' : 'snap'}/${(p as ETH | SNAP).getVersion()}`,
-            ),
+          protocols.map(
+            (p) =>
+              `${p.constructor.name === 'ETH' ? 'eth' : 'snap'}/${(p as ETH | SNAP).getVersion()}`,
+          ),
         rttMs: this._peerRtt.get(id),
         bestHash,
         latestBlock,
