@@ -25,13 +25,13 @@ import { deriveCapabilities, setPhase } from '../spine/createSpine.ts'
 import { recordDiagnostic } from '../spine/diagnostics.ts'
 import type { EthySpine, PeerTelemetry } from '../spine/types.ts'
 import { SnapAccountSynchronizer } from '../sync/accountSync.ts'
+import { HeadBlockFollower, PIVOT_HEAL_BLOCK_GAP, tryEnterHeadFollowing } from '../sync/balSync.ts'
 import {
-  HeadBlockFollower,
-  PIVOT_HEAL_BLOCK_GAP,
-  applyBlockBal,
-  pushBalWindow,
-  tryEnterHeadFollowing,
-} from '../sync/balSync.ts'
+  type PivotHealSequence,
+  advanceBlockBundleEthMessage,
+  finalizeBlockBundle,
+  startBlockBundleByNumber,
+} from '../sync/blockBundle.ts'
 import { SnapCodeAndStorageSynchronizer } from '../sync/codeAndStorageSync.ts'
 import { SnapPeerFlightTracker } from '../sync/snapFlight.ts'
 import { createLiveSnapTransport } from '../sync/snapTransport.ts'
@@ -237,6 +237,7 @@ export async function startPeerCoordinator(
   let lastTelemetryPeers: WorkerPeerSnapshot[] = []
   let lastDiagTs = 0
   let bundleFetch: PivotBundleFetch | undefined
+  let healSeq: PivotHealSequence | undefined
   let dnsTimedOut = false
   let link = initialP2pLinkState()
   const linkStartedAt = Date.now()
@@ -269,24 +270,25 @@ export async function startPeerCoordinator(
       bundleFetch = undefined
       return
     }
-    client.putServableBlock({
-      number: bundleFetch.number,
+    const bundle = {
+      peerId: bundleFetch.peerId,
+      ethVersion: bundleFetch.ethVersion,
+      blockNumber: bundleFetch.number,
       hash: bundleFetch.hash,
       headerRlp: bundleFetch.headerRlp,
       bodyRlp: bundleFetch.bodyRlp,
       receiptsEth69Rlp: bundleFetch.receiptsEth69Rlp,
       balRlp: bundleFetch.balRlp,
-    })
-    void applyBlockBal(
+      stage: 'bal' as const,
+      startedAt: bundleFetch.startedAt,
+    }
+    void finalizeBlockBundle({
+      spine,
       stateManager,
-      bundleFetch.headerRlp,
-      bundleFetch.balRlp,
       chain,
       hardfork,
-    ).then((applied) => {
-      if (applied.balJson !== undefined) {
-        pushBalWindow(spine, bundleFetch!.number, applied.balJson)
-      }
+      bundle,
+      putServableBlock: (b) => client.putServableBlock(b),
     })
     recordDiagnostic(spine, {
       subsystem: 'devp2p',
@@ -294,6 +296,79 @@ export async function startPeerCoordinator(
       message: `Servable pivot bundle registered at #${bundleFetch.number.toString()}`,
     })
     bundleFetch = undefined
+  }
+
+  const commitPivotAnchor = (
+    parsed: { number: bigint; hash: Uint8Array; stateRoot: Uint8Array },
+    headerRlp: Uint8Array | null,
+    peerId: string | undefined,
+    ethVersion: number,
+    opts: { skipServableBundle?: boolean; firstAnchor?: boolean; prevRoot?: Uint8Array } = {},
+  ) => {
+    const firstAnchor = opts.firstAnchor ?? spine.pivotStateRoot === undefined
+    const prevRoot = opts.prevRoot ?? spine.pivotStateRoot
+    spine.pivotStatusHint = undefined
+    spine.pivotBlockNumber = parsed.number
+    spine.pivotStateRoot = parsed.stateRoot
+    spine.currentSlot = Number(parsed.number)
+    if (firstAnchor || (prevRoot !== undefined && !equalsBytes(prevRoot, parsed.stateRoot))) {
+      snapStore?.activatePivot({
+        blockNumber: parsed.number,
+        blockHash: parsed.hash,
+        stateRoot: parsed.stateRoot,
+      })
+    }
+    recordDiagnostic(spine, {
+      subsystem: 'devp2p',
+      severity: 'info',
+      message: `Pivot anchored at #${parsed.number.toString()}`,
+    })
+    if (
+      !opts.skipServableBundle &&
+      headerRlp !== null &&
+      peerId !== undefined &&
+      bundleFetch === undefined
+    ) {
+      startPivotBundleFetch(peerId, ethVersion, parsed, headerRlp)
+    }
+    ensureSnapSync(client)
+    deriveCapabilities(spine)
+  }
+
+  const advanceHealSequence = () => {
+    if (healSeq === undefined) return
+    const seq = healSeq
+    if (seq.nextBlock <= seq.toBlock) {
+      seq.inFlight = startBlockBundleByNumber(client, seq.peerId, seq.ethVersion, seq.nextBlock)
+      return
+    }
+    const target = seq.targetPivot
+    healSeq = undefined
+    commitPivotAnchor(target, seq.finalHeaderRlp ?? null, seq.peerId, seq.ethVersion, {
+      skipServableBundle: true,
+    })
+  }
+
+  const completeHealBlock = () => {
+    if (healSeq?.inFlight === undefined) return
+    const bundle = healSeq.inFlight
+    void finalizeBlockBundle({
+      spine,
+      stateManager,
+      chain,
+      hardfork,
+      bundle,
+      putServableBlock: (b) => client.putServableBlock(b),
+    }).then(() => {
+      if (healSeq === undefined) return
+      healSeq.nextBlock += 1n
+      recordDiagnostic(spine, {
+        subsystem: 'bal',
+        severity: 'info',
+        message: `Heal block #${(healSeq.nextBlock - 1n).toString()} applied`,
+      })
+      advanceHealSequence()
+    })
   }
 
   const startPivotBundleFetch = (
@@ -329,11 +404,37 @@ export async function startPeerCoordinator(
     })
   }
 
+  const handleHealEthMessage = (msg: {
+    peerId: string
+    code: number
+    payload: Uint8Array
+  }): boolean => {
+    const inFlight = healSeq?.inFlight
+    if (inFlight === undefined) return false
+    const result = advanceBlockBundleEthMessage(chain, inFlight, msg, (peerId, code, payload) => {
+      client.sendEthMessage(peerIdToBytes(peerId), code, payload)
+    })
+    if (result === 'failed') {
+      recordDiagnostic(spine, {
+        subsystem: 'bal',
+        severity: 'warn',
+        message: `Pivot heal block #${inFlight.blockNumber.toString()} fetch failed`,
+        peerId: msg.peerId,
+      })
+      healSeq = undefined
+      return true
+    }
+    if (result === 'progress') return true
+    completeHealBlock()
+    return true
+  }
+
   const handleBundleEthMessage = (msg: {
     peerId: string
     code: number
     payload: Uint8Array
   }): boolean => {
+    if (handleHealEthMessage(msg)) return true
     if (bundleFetch === undefined || msg.peerId !== bundleFetch.peerId) return false
     if (msg.code === EthMessageCodes.BLOCK_BODIES && bundleFetch.stage === 'bodies') {
       const bodyRlp = parseFirstBodyFromBlockBodiesPayload(msg.payload)
@@ -566,6 +667,8 @@ export async function startPeerCoordinator(
       return
     }
     const unfinished = snapBucketsUnfinished(spine.snapBuckets)
+    const firstAnchor = spine.pivotStateRoot === undefined
+    const prevRoot = spine.pivotStateRoot
     if (
       spine.pivotStateRoot !== undefined &&
       unfinished &&
@@ -587,35 +690,30 @@ export async function startPeerCoordinator(
       snapSync?.abortInFlight()
       snapSync?.bumpRootGeneration()
       codeSync?.clearPending()
+      const fromBlock = pivotNum + 1n
       recordDiagnostic(spine, {
         subsystem: 'bal',
         severity: 'info',
-        message: `Rolling pivot heal #${pivotNum.toString()} → #${parsed.number.toString()}`,
+        message: `Rolling pivot heal #${pivotNum.toString()} → #${parsed.number.toString()} (${fromBlock.toString()}..${parsed.number.toString()})`,
       })
+      if (successPeerId !== undefined && fromBlock <= parsed.number) {
+        healSeq = {
+          peerId: successPeerId,
+          ethVersion: successEthVersion,
+          fromBlock,
+          toBlock: parsed.number,
+          nextBlock: fromBlock,
+          targetPivot: parsed,
+          finalHeaderRlp: headerRlp ?? undefined,
+        }
+        advanceHealSequence()
+        return
+      }
     }
-    const firstAnchor = spine.pivotStateRoot === undefined
-    const prevRoot = spine.pivotStateRoot
-    spine.pivotStatusHint = undefined
-    spine.pivotBlockNumber = parsed.number
-    spine.pivotStateRoot = parsed.stateRoot
-    spine.currentSlot = Number(parsed.number)
-    if (firstAnchor || (prevRoot !== undefined && !equalsBytes(prevRoot, parsed.stateRoot))) {
-      snapStore?.activatePivot({
-        blockNumber: parsed.number,
-        blockHash: parsed.hash,
-        stateRoot: parsed.stateRoot,
-      })
-    }
-    recordDiagnostic(spine, {
-      subsystem: 'devp2p',
-      severity: 'info',
-      message: `Pivot anchored at #${parsed.number.toString()}`,
+    commitPivotAnchor(parsed, headerRlp, successPeerId, successEthVersion, {
+      firstAnchor,
+      prevRoot,
     })
-    if (headerRlp !== null && successPeerId !== undefined) {
-      startPivotBundleFetch(successPeerId, successEthVersion, parsed, headerRlp)
-    }
-    ensureSnapSync(client)
-    deriveCapabilities(spine)
   })
 
   client.events.on('error', (err) => {
