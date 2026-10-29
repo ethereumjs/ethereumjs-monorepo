@@ -30,6 +30,26 @@ describe('emptyWireReply', () => {
     expect(decoded[2]).toEqual([])
   })
 
+  it('answers eth69 GET_RECEIPTS with the request id and an empty list', () => {
+    const requestId = hexToBytes('0x07')
+    const reply = emptyWireReply('eth', 69, 'GET_RECEIPTS', [requestId, []])
+    expect(reply?.name).toBe('RECEIPTS')
+    const decoded = RLP.decode(RLP.encode(reply!.rlp)) as unknown[]
+    expect(decoded[0]).toEqual(requestId)
+    expect(decoded[1]).toEqual([])
+    expect(decoded).toHaveLength(2)
+  })
+
+  it('answers eth70 GET_RECEIPTS with a complete-range flag before the list', () => {
+    const requestId = hexToBytes('0x07')
+    const reply = emptyWireReply('eth', 72, 'GET_RECEIPTS', [requestId, [], []])
+    expect(reply?.name).toBe('RECEIPTS')
+    const decoded = RLP.decode(RLP.encode(reply!.rlp)) as unknown[]
+    expect(decoded[0]).toEqual(requestId)
+    expect(decoded[1]).toEqual(new Uint8Array())
+    expect(decoded[2]).toEqual([])
+  })
+
   it('answers eth71 GET_BLOCK_ACCESS_LISTS with an empty list and the same request id', () => {
     const requestId = hexToBytes('0x03')
     const reply = emptyWireReply('eth', 71, 'GET_BLOCK_ACCESS_LISTS', [requestId, []])

@@ -479,6 +479,13 @@ export class Peer {
     if (this._protocols.length === 0) {
       return this.disconnect(DISCONNECT_REASON.USELESS_PEER)
     }
+    // snap/1 without eth cannot exchange STATUS. eth/68-only peers land here
+    // once this node speaks eth/69 and later.
+    const offeredEth = this._capabilities?.some((cap) => cap.name === 'eth') === true
+    const negotiatedEth = this._protocols.some((item) => item.protocol.constructor.name === 'ETH')
+    if (offeredEth && !negotiatedEth) {
+      return this.disconnect(DISCONNECT_REASON.USELESS_PEER)
+    }
 
     this._connected = true
     this._pingIntervalId = setInterval(() => this._sendPing(), PING_INTERVAL)

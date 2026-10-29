@@ -226,7 +226,9 @@ export async function startPeerCoordinator(
       chain: workerChainId(network),
       hardfork,
       maxPeers: 25,
-      capabilities: ['eth68', 'eth69', 'eth70', 'eth71', 'eth72', 'snap1'],
+      // Current Sepolia clients speak eth/69 and later. eth/68 fills dial slots
+      // with peers that cannot serve this chain.
+      capabilities: ['eth69', 'eth70', 'eth71', 'eth72', 'snap1'],
       goodCitizen: opts.goodCitizen ?? true,
       answerEmptySnap: false,
       shouldFindNeighbours: opts.shouldFindNeighbours ?? true,

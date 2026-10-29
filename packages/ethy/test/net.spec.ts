@@ -46,7 +46,7 @@ describe('[Ethy/Net]: PeerCoordinator pivot', () => {
       privateKey: keyB,
       chain: 'mainnet',
       maxPeers: 2,
-      capabilities: ['eth68'],
+      capabilities: ['eth69'],
       endpoint: { address: '127.0.0.1', udpPort: BASE + 1, tcpPort: BASE + 1 },
       listenPort: BASE + 1,
       status,
@@ -57,7 +57,7 @@ describe('[Ethy/Net]: PeerCoordinator pivot', () => {
 
     nodeB.events.on('protocol', (msg) => {
       if (msg.protocol === 'eth' && msg.code === EthMessageCodes.GET_BLOCK_HEADERS) {
-        const reply = encodeBlockHeadersReply(68, header.serialize())
+        const reply = encodeBlockHeadersReply(69, header.serialize())
         nodeB.sendEthMessage(peerIdToBytes(msg.peerId), EthMessageCodes.BLOCK_HEADERS, reply)
       }
     })

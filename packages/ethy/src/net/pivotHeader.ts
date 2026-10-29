@@ -131,7 +131,7 @@ export function parsePivotHeaderFromBlockHeadersPayload(
 }
 
 export function highestEthVersion(caps: string[]): number {
-  let max = 68
+  let max = 69
   for (const c of caps) {
     const m = /^eth\/(\d+)$/.exec(c)
     if (m !== null) {
