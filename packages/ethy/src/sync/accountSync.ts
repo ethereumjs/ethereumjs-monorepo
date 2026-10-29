@@ -91,9 +91,14 @@ export class SnapAccountSynchronizer {
     const bucket = this.spine.snapBuckets[bucketIndex]
     if (bucket === undefined) return
     bucket.status = 'verifying_proof'
-    const result = await ingestAccountRangeReply(this.spine.pivotStateRoot, payload, (entries) =>
-      this.stateManager.putSnapAccountsBatch(entries),
-    )
+    let result: { ok: boolean; hasRight: boolean; count: number }
+    try {
+      result = await ingestAccountRangeReply(this.spine.pivotStateRoot, payload, (entries) =>
+        this.stateManager.putSnapAccountsBatch(entries),
+      )
+    } catch {
+      result = { ok: false, hasRight: false, count: 0 }
+    }
     if (!result.ok) {
       bucket.status = 'stalled'
       bucket.lastStallReason = 'range proof failed'

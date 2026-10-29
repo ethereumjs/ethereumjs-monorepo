@@ -12,6 +12,16 @@ import {
 } from '../src/sync/syntheticPeer.ts'
 
 describe('[Ethy/Sync]: synthetic snap account range', () => {
+  it('ingestAccountRangeReply() rejects a non-byte payload without throwing', async () => {
+    const result = await ingestAccountRangeReply(
+      new Uint8Array(32),
+      { 0: 1, 1: 2 } as unknown as Uint8Array,
+      () => {},
+    )
+    assert.equal(result.ok, false)
+    assert.equal(result.count, 0)
+  })
+
   it('syncs all 16 buckets with one proof retry on 0x3', async () => {
     const t0 = performance.now()
     const peer = await SyntheticSnapPeer.create(10)

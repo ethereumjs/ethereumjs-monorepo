@@ -11,17 +11,37 @@ import { keccak_256 } from '@noble/hashes/sha3.js'
 
 import type { Account, AccountBodyBytes } from '@ethereumjs/util'
 
-function decodeAccountBody(rlp: Uint8Array): AccountBodyBytes {
-  const body = RLP.decode(rlp)
+function asBytes(value: unknown): Uint8Array | undefined {
+  if (value instanceof Uint8Array) return value
+  if (value instanceof ArrayBuffer) return new Uint8Array(value)
+  if (ArrayBuffer.isView(value)) {
+    const view = value as ArrayBufferView
+    return new Uint8Array(view.buffer, view.byteOffset, view.byteLength)
+  }
+  return undefined
+}
+
+/** Slim account body is RLP bytes, or an already-decoded 4-field list from the wire. */
+function decodeAccountBody(rlp: unknown): AccountBodyBytes {
+  if (Array.isArray(rlp) && rlp.length === 4) {
+    const parts = rlp.map(asBytes)
+    if (parts.every((part): part is Uint8Array => part !== undefined)) {
+      return [parts[0], parts[1], parts[2], parts[3]]
+    }
+  }
+  const bytes = asBytes(rlp)
+  if (bytes === undefined) {
+    throw new Error('Invalid account body')
+  }
+  const body = RLP.decode(bytes)
   if (!Array.isArray(body) || body.length !== 4) {
     throw new Error('Invalid account body RLP')
   }
-  return [
-    body[0] as Uint8Array,
-    body[1] as Uint8Array,
-    body[2] as Uint8Array,
-    body[3] as Uint8Array,
-  ]
+  const parts = body.map(asBytes)
+  if (!parts.every((part): part is Uint8Array => part !== undefined)) {
+    throw new Error('Invalid account body RLP')
+  }
+  return [parts[0], parts[1], parts[2], parts[3]]
 }
 
 export type SyntheticAccount = {
@@ -135,17 +155,28 @@ export async function ingestAccountRangeReply(
     entries: Array<{ accountHash: Uint8Array; account: Account; address?: never }>,
   ) => void,
 ): Promise<{ ok: boolean; hasRight: boolean; count: number }> {
-  const decoded = RLP.decode(replyPayload) as unknown[]
-  const accountsRaw = decoded[1] as Array<[Uint8Array, Uint8Array]>
+  const payload = asBytes(replyPayload)
+  if (payload === undefined) return { ok: false, hasRight: false, count: 0 }
+  let decoded: unknown[]
+  try {
+    decoded = RLP.decode(payload) as unknown[]
+  } catch {
+    return { ok: false, hasRight: false, count: 0 }
+  }
+  const accountsRaw = decoded[1] as Array<[unknown, unknown]>
   const proof = decoded[2] as Uint8Array[]
-  if (accountsRaw.length === 0) {
+  if (!Array.isArray(accountsRaw) || accountsRaw.length === 0) {
     return { ok: true, hasRight: false, count: 0 }
   }
-  const keys = accountsRaw.map(([h]) => h)
-  const values = accountsRaw.map(([, slim]) =>
-    accountBodyToRLP(accountBodyFromSlim(decodeAccountBody(slim)) as AccountBodyBytes, false),
-  )
   try {
+    const keys = accountsRaw.map(([h]) => {
+      const hash = asBytes(h)
+      if (hash === undefined) throw new Error('Invalid account hash')
+      return hash
+    })
+    const values = accountsRaw.map(([, slim]) =>
+      accountBodyToRLP(accountBodyFromSlim(decodeAccountBody(slim)) as AccountBodyBytes, false),
+    )
     const hasRight = await verifyMerkleRangeProof(
       stateRoot,
       keys[0]!,
@@ -155,8 +186,8 @@ export async function ingestAccountRangeReply(
       proof,
     )
     putBatch(
-      accountsRaw.map(([accountHash, slim]) => ({
-        accountHash,
+      accountsRaw.map(([, slim], index) => ({
+        accountHash: keys[index]!,
         account: createAccountFromRLP(
           accountBodyToRLP(accountBodyFromSlim(decodeAccountBody(slim)) as AccountBodyBytes, false),
         ),

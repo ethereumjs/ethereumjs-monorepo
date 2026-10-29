@@ -231,7 +231,10 @@ export async function startPeerCoordinator(
       capabilities: ['eth69', 'eth70', 'eth71', 'eth72', 'snap1'],
       goodCitizen: opts.goodCitizen ?? true,
       answerEmptySnap: false,
-      shouldFindNeighbours: opts.shouldFindNeighbours ?? true,
+      // DNS ENR tree + bootnodes are chain-scoped. Unfiltered discv4 neighbors
+      // are other networks and crowd out Sepolia sessions.
+      shouldFindNeighbours: opts.shouldFindNeighbours ?? false,
+      chainDirectoryDiscovery: opts.shouldFindNeighbours === true ? false : true,
       clientId: utf8ToBytes(`ethy/v${getEthyClientVersion()}`),
       status,
       listenPort: opts.listenPort ?? 0,
