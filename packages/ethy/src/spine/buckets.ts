@@ -1,4 +1,4 @@
-import type { SnapBucket } from './types.ts'
+import type { EthyPhase, SnapBucket } from './types.ts'
 
 /** Build 16 snap sync buckets by first account-hash nibble (0x0..0xf). */
 export function createSnapBuckets(): SnapBucket[] {
@@ -33,9 +33,73 @@ function nibbleLimitHash(nibble: number): Uint8Array {
   return h
 }
 
-/** Buckets that already hold accounts or are finished. This count does not go backwards. */
+/** Snap ranges fully synced through the pivot (status `done` only). */
+export function snapBucketsDoneCount(buckets: readonly SnapBucket[]): number {
+  return buckets.filter((b) => b.status === 'done').length
+}
+
+/** Buckets that already hold accounts or are finished. Internal metric; not user-facing progress. */
 export function bucketsWithProgress(buckets: readonly SnapBucket[]): number {
   return buckets.filter((b) => b.status === 'done' || b.accountsLoaded > 0).length
+}
+
+export function formatSnapBucketBar(buckets: readonly SnapBucket[]): string {
+  let bar = ''
+  for (const b of buckets) {
+    if (b.status === 'done') bar += '█'
+    else if (b.status === 'syncing' || b.status === 'verifying_proof') bar += '▒'
+    else if (b.status === 'stalled') bar += '!'
+    else bar += '░'
+  }
+  return bar
+}
+
+/** Node Pulse / cockpit line (compact — must fit a narrow column beside the 16-char bar). */
+export function formatSnapRangePulse(
+  buckets: readonly SnapBucket[],
+  opts: { peerCount: number; phase: EthyPhase },
+): string {
+  const done = snapBucketsDoneCount(buckets)
+  const bar = formatSnapBucketBar(buckets)
+  if (done === 16) return `${bar} done`
+
+  const syncing = buckets.some((b) => b.status === 'syncing' || b.status === 'verifying_proof')
+  const stalled = buckets.some((b) => b.status === 'stalled')
+
+  if (syncing) return `${bar} ${done}/16 syncing`
+  if (stalled) return `${bar} ${done}/16 stalled`
+  if (opts.phase === 'SNAP_SYNCING' && opts.peerCount === 0) {
+    const hasCached = buckets.some((b) => b.accountsLoaded > 0)
+    if (done > 0 || hasCached) return `${bar} ${done}/16 paused`
+    return `${bar} no peers`
+  }
+  if (done > 0) return `${bar} ${done}/16`
+  return `${bar} not started`
+}
+
+/** Short label for the SNAP capability pill. */
+export function formatSnapCapabilityLabel(
+  buckets: readonly SnapBucket[],
+  opts: { peerCount: number; phase: EthyPhase },
+): string {
+  const stalled = buckets.find((b) => b.status === 'stalled')
+  if (stalled) return `Stalled ${stalled.prefix}`
+
+  const done = snapBucketsDoneCount(buckets)
+  if (done === 16) return 'Complete'
+
+  const syncing = buckets.some((b) => b.status === 'syncing' || b.status === 'verifying_proof')
+  if (syncing) return `${done}/16 complete`
+
+  if (opts.phase === 'SNAP_SYNCING' && opts.peerCount === 0) {
+    if (done > 0) return `Paused · ${done}/16`
+    const hasCached = buckets.some((b) => b.accountsLoaded > 0)
+    if (hasCached) return 'Paused · 0/16'
+    return 'Waiting for peers'
+  }
+
+  if (done > 0) return `${done}/16 complete`
+  return 'Not started'
 }
 
 export function findBucketByPrefix(

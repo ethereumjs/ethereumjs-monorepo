@@ -18,6 +18,7 @@ export type EthStatusFields = {
   bestHash: string
   genesisHash: string
   latestBlock?: string
+  earliestBlock?: string
 }
 
 function hx(s: string): PrefixedHexString {
@@ -28,13 +29,19 @@ export function ethStatusFromFields(fields: EthStatusFields, ethVersion = 68): E
   const genesisHash = hexToBytes(hx(fields.genesisHash))
   const bestHash = hexToBytes(hx(fields.bestHash))
   if (ethUsesBlockRangeStatus(ethVersion)) {
+    const latestBytes =
+      fields.latestBlock !== undefined
+        ? bigIntToUnpaddedBytes(BigInt(hx(fields.latestBlock)))
+        : intToUnpaddedBytes(0)
+    const earliestBytes =
+      fields.earliestBlock !== undefined
+        ? bigIntToUnpaddedBytes(BigInt(hx(fields.earliestBlock)))
+        : latestBytes
     return {
       genesisHash,
-      earliestBlock: intToUnpaddedBytes(0),
+      earliestBlock: earliestBytes,
       latestBlockHash: bestHash,
-      ...(fields.latestBlock !== undefined
-        ? { latestBlock: bigIntToUnpaddedBytes(BigInt(hx(fields.latestBlock))) }
-        : {}),
+      latestBlock: latestBytes,
     }
   }
   return {

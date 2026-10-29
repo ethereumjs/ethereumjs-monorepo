@@ -327,6 +327,8 @@ export interface PeerOptions {
    * Defaults to {@link timeout}. A snap server building a large proof can miss a short deadline.
    */
   pingTimeout?: number
+  /** True for server-side TCP accepts (outbound dials set false). */
+  inbound?: boolean
 }
 
 export interface RLPxOptions {
@@ -341,6 +343,8 @@ export interface RLPxOptions {
   dpt?: DPT | null
   /* Max peers (default: 10) */
   maxPeers?: number
+  /** When set, caps simultaneous inbound TCP sessions separately from {@link maxPeers}. */
+  maxInboundPeers?: number
   remoteClientIdFilter?: string[]
   capabilities: Capabilities[]
   common: Common

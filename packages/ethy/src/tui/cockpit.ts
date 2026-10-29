@@ -1,4 +1,4 @@
-import { bucketsWithProgress } from '../spine/buckets.ts'
+import { formatSnapRangePulse, snapBucketsDoneCount } from '../spine/buckets.ts'
 import type { CapabilityId, EthyPhase, EthySpine, TuiViewState } from '../spine/types.ts'
 import { BOLD, DIM, RESET, visibleWidth } from './ansi.ts'
 import { capabilityMark } from './capabilityMark.ts'
@@ -35,17 +35,10 @@ function phaseLabel(phase: EthyPhase): string {
 }
 
 function bucketMiniBar(spine: EthySpine): string {
-  // Filled cells follow stored accounts, not whether a peer is connected right now.
-  let bar = ''
-  for (const b of spine.snapBuckets) {
-    if (b.status === 'done') bar += '█'
-    else if (b.accountsLoaded > 0) bar += '▓'
-    else if (b.status === 'syncing' || b.status === 'verifying_proof') bar += '▒'
-    else if (b.status === 'stalled') bar += '!'
-    else bar += '░'
-  }
-  const progressed = bucketsWithProgress(spine.snapBuckets)
-  return `${bar} ${progressed}/16`
+  return formatSnapRangePulse(spine.snapBuckets, {
+    peerCount: spine.peers.size,
+    phase: spine.phase,
+  })
 }
 
 function shortHash(root: Uint8Array | undefined): string {
@@ -80,23 +73,28 @@ function avgLatency(spine: EthySpine): string {
   return `${Math.round(sum / peers.length)} ms avg`
 }
 
-function countCaps(spine: EthySpine): string {
-  let snap = 0
-  const eth = new Map<string, number>()
+function snapSessionCount(spine: EthySpine): number {
+  let n = 0
   for (const p of spine.peers.values()) {
-    for (const c of p.caps) {
-      if (c.startsWith('snap/')) snap++
-      else if (c.startsWith('eth/')) eth.set(c, (eth.get(c) ?? 0) + 1)
-    }
+    if (p.snapSession === true) n++
   }
-  const ethLabel =
-    eth.size === 0
-      ? '0 eth'
-      : [...eth.entries()]
-          .sort((a, b) => Number(b[0].slice(4)) - Number(a[0].slice(4)))
-          .map(([name, count]) => `${count} ${name}`)
-          .join(' ')
-  return `${snap} snap/1 · ${ethLabel}`
+  return n
+}
+
+function formatServeBytes(bytes: number): string {
+  if (bytes >= 1_048_576) return `${(bytes / 1_048_576).toFixed(1)} MB`
+  if (bytes >= 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${bytes} B`
+}
+
+function servedMetric(spine: EthySpine): string {
+  const s = spine.serving
+  if (s === undefined) return '0 replies'
+  if (s.totalRequestsServed > 0) {
+    return `${s.totalRequestsServed} replies · ${formatServeBytes(s.totalBytesServed)}`
+  }
+  if (s.blocksStored > 0) return '0 replies (ready)'
+  return '0 replies'
 }
 
 function domainStatus(spine: EthySpine, id: CapabilityId) {
@@ -152,7 +150,7 @@ function nodePulsePairs(spine: EthySpine): TwoColumnPair[] {
   return [
     { label: 'Phase', value: phaseLabel(spine.phase) },
     { label: 'Pivot', value: pivot },
-    { label: 'Buckets', value: bucketMiniBar(spine) },
+    { label: 'Ranges', value: bucketMiniBar(spine) },
     { label: 'Accounts', value: accounts },
   ]
 }
@@ -208,17 +206,20 @@ function metricsPairs(spine: EthySpine, domain: CapabilityId): TwoColumnPair[] {
   switch (domain) {
     case 'p2p':
       return [
-        { label: 'Peers', value: `${spine.peers.size} connected` },
-        { label: 'Caps', value: countCaps(spine) },
+        {
+          label: 'Peers',
+          value: `${spine.peers.size} connected (${snapSessionCount(spine)} snap)`,
+        },
+        { label: 'Served', value: servedMetric(spine) },
         { label: 'Latency', value: avgLatency(spine) },
         { label: 'Clients', value: clientFamilies(spine) },
       ]
     case 'snap': {
-      const progressed = bucketsWithProgress(spine.snapBuckets)
+      const done = snapBucketsDoneCount(spine.snapBuckets)
       const syncing = spine.snapBuckets.filter((b) => b.status === 'syncing').length
       const stalled = spine.snapBuckets.filter((b) => b.status === 'stalled').length
       return [
-        { label: 'Progress', value: `${Math.round((progressed / 16) * 100)}% (${progressed}/16)` },
+        { label: 'Progress', value: `${Math.round((done / 16) * 100)}% (${done}/16 complete)` },
         { label: 'Active', value: `${syncing} syncing · ${stalled} stalled` },
         { label: 'Pivot Root', value: shortHash(spine.pivotStateRoot) },
         { label: 'Speed', value: `${Math.round(spine.accountsPerSec)} acc/s` },

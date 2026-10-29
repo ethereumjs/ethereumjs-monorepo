@@ -85,6 +85,7 @@ export class Peer {
   public common: Common
   protected _port: number
   public readonly id: Uint8Array
+  public readonly inbound: boolean
   protected _remoteClientIdFilter?: string[]
   protected _remoteId: Uint8Array
   protected _EIP8: Uint8Array | boolean
@@ -132,6 +133,7 @@ export class Peer {
     this.common = options.common
     this._port = options.port
     this.id = options.id
+    this.inbound = options.inbound ?? false
     this._remoteClientIdFilter = options.remoteClientIdFilter
 
     // ECIES session

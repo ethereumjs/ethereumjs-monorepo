@@ -8,7 +8,12 @@ import {
   Sepolia,
 } from '@ethereumjs/common'
 import { RLP } from '@ethereumjs/rlp'
-import { bytesToHex, bytesToUnprefixedHex, utf8ToBytes } from '@ethereumjs/util'
+import {
+  bigIntToUnpaddedBytes,
+  bytesToHex,
+  bytesToUnprefixedHex,
+  utf8ToBytes,
+} from '@ethereumjs/util'
 
 import type { MessagePort } from 'node:worker_threads'
 import { markChainDirectoryPeer } from '../discovery/directoryPeer.ts'
@@ -25,6 +30,9 @@ import { ETH, SNAP } from '../protocol/index.ts'
 import { SnapMessageCodeNames, SnapMessageCodes } from '../protocol/snap.ts'
 import { Peer } from '../rlpx/peer.ts'
 import { RLPx } from '../rlpx/rlpx.ts'
+import { tryServeEthGet } from '../serve/ethServer.ts'
+import { RollingBlockStore } from '../serve/rollingBlockStore.ts'
+import { ServeGovernor } from '../serve/serveGovernor.ts'
 import { DISCONNECT_REASON, DisconnectReasonNames } from '../types.ts'
 import type { PeerInfo } from '../types.ts'
 import { dptDnsOptionsFromCommon, resolveWorkerBootnodes } from './bootNodes.ts'
@@ -33,8 +41,21 @@ import type {
   WorkerCommand,
   WorkerDiagnosticEntry,
   WorkerEvent,
+  WorkerServingSnapshot,
   WorkerTelemetrySnapshot,
 } from './protocol.ts'
+
+function emptyServingSnapshot(): WorkerServingSnapshot {
+  return {
+    blocksStored: 0,
+    headersServed: 0,
+    bodiesServed: 0,
+    receiptsServed: 0,
+    accessListsServed: 0,
+    totalRequestsServed: 0,
+    totalBytesServed: 0,
+  }
+}
 
 function negotiatedEthVersion(peer: Peer): number | undefined {
   for (const protocol of peer.getProtocols()) {
@@ -106,6 +127,11 @@ export class Devp2pWorkerHost {
   private _discoveryMetrics = new DiscoveryMetrics()
   private _blockRange: { earliest: Uint8Array; latest: Uint8Array; latestHash: Uint8Array } | null =
     null
+  private _rollingStore = new RollingBlockStore()
+  private _serveGovernor = new ServeGovernor()
+  private _serving = emptyServingSnapshot()
+  private _lastBroadcastEarliest: bigint | null = null
+  private _lastBroadcastLatest: bigint | null = null
 
   constructor(port: MessagePort) {
     this._port = port
@@ -177,6 +203,20 @@ export class Devp2pWorkerHost {
           }
           this._broadcastBlockRange()
           break
+        case 'putServableBlock': {
+          const n = BigInt(cmd.block.number)
+          this._rollingStore.put({
+            number: n,
+            hash: cmd.block.hash,
+            headerRlp: cmd.block.headerRlp,
+            bodyRlp: cmd.block.bodyRlp,
+            receiptsEth69Rlp: cmd.block.receiptsEth69Rlp,
+            balRlp: cmd.block.balRlp,
+          })
+          this._serving.blocksStored = this._rollingStore.size
+          this._syncBlockRangeFromStore(true)
+          break
+        }
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err)
@@ -226,6 +266,7 @@ export class Devp2pWorkerHost {
       common,
       capabilities: caps,
       maxPeers: opts.maxPeers ?? 10,
+      maxInboundPeers: opts.maxInboundPeers,
       listenPort,
       clientId: opts.clientId ?? utf8ToBytes('ethereumjs-devp2p/threaded'),
       throttleDiscovery: opts.throttleDiscovery ?? true,
@@ -396,6 +437,26 @@ export class Devp2pWorkerHost {
       if (protocol.constructor.name !== protocolName) continue
       const version = (protocol as ETH | SNAP).getVersion()
       const decoded = RLP.decode(payload)
+      if (layer === 'eth') {
+        const peerKey = bytesToUnprefixedHex(peer.getId()!)
+        const budget = this._serveGovernor.bytesAllowed(peerKey, true)
+        const served = tryServeEthGet(this._rollingStore, version, name, decoded, budget)
+        if (served !== undefined) {
+          try {
+            ;(protocol as ETH).sendMessage(served.code as never, served.rlp)
+            this._serveGovernor.record(peerKey, served.bytesEstimate)
+            this._serving.totalRequestsServed++
+            this._serving.totalBytesServed += served.bytesEstimate
+            if (served.metric === 'headers') this._serving.headersServed++
+            else if (served.metric === 'bodies') this._serving.bodiesServed++
+            else if (served.metric === 'receipts') this._serving.receiptsServed++
+            else this._serving.accessListsServed++
+            return true
+          } catch {
+            return false
+          }
+        }
+      }
       const reply = emptyWireReply(layer, version, name, decoded)
       if (!reply) return false
       try {
@@ -410,6 +471,42 @@ export class Devp2pWorkerHost {
       }
     }
     return false
+  }
+
+  private _syncBlockRangeFromStore(force: boolean): void {
+    const range = this._rollingStore.contiguousRange()
+    if (range === null) return
+    this._blockRange = {
+      earliest: bigIntToUnpaddedBytes(range.earliestBlock),
+      latest: bigIntToUnpaddedBytes(range.latestBlock),
+      latestHash: range.latestBlockHash,
+    }
+    if (!force) {
+      if (
+        this._lastBroadcastEarliest !== null &&
+        range.earliestBlock > this._lastBroadcastEarliest
+      ) {
+        // pruned lower bound — broadcast immediately
+      } else if (
+        this._lastBroadcastLatest !== null &&
+        range.latestBlock - this._lastBroadcastLatest < 32n
+      ) {
+        return
+      }
+    }
+    this._lastBroadcastEarliest = range.earliestBlock
+    this._lastBroadcastLatest = range.latestBlock
+    this._broadcastBlockRange()
+  }
+
+  private _buildServingTelemetry(): WorkerServingSnapshot {
+    const range = this._rollingStore.contiguousRange()
+    return {
+      ...this._serving,
+      blocksStored: this._rollingStore.size,
+      earliestBlock: range?.earliestBlock.toString(),
+      latestBlock: range?.latestBlock.toString(),
+    }
   }
 
   private _findEth(peerId: Uint8Array): ETH | undefined {
@@ -514,6 +611,7 @@ export class Devp2pWorkerHost {
       peers,
       diagnostics: [...this._diagnostics],
       discovery: this._discoveryMetrics.snapshot(),
+      serving: this._buildServingTelemetry(),
     }
     this._post({ type: 'telemetry', snapshot })
   }

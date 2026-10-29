@@ -39,15 +39,16 @@ describe('[Ethy/TUI]: renderFrame', () => {
     assert.isAbove(topA.indexOf('Slot'), topA.indexOf('SEPOLIA'))
   })
 
-  it('bucket bar stays filled after the serving peer leaves', () => {
+  it('range bar stays honest after the serving peer leaves with cached accounts', () => {
     const spine = createSpine('sepolia', 11155111n)
     setPhase(spine, 'SNAP_SYNCING')
     spine.snapBuckets[0]!.accountsLoaded = 50_000
     spine.snapBuckets[0]!.status = 'pending'
     deriveCapabilities(spine)
     const plain = stripAnsi(renderFrame(spine, createInitialViewState(), 140, 30).join('\n'))
-    assert.include(plain, '▓░░░░░░░░░░░░░░░ 1/16')
-    assert.notInclude(plain, '0/16')
+    assert.include(plain, '░')
+    assert.include(plain, '0/16 paused')
+    assert.notInclude(plain, '16/16')
   })
 
   it('renderFrame() at 100x30 respects column width', () => {
@@ -132,6 +133,29 @@ describe('[Ethy/TUI]: renderFrame', () => {
     assert.deepEqual(empty, { row: 28, col: 11 })
     const typed = promptCaretPosition(100, 30, 'ab')
     assert.deepEqual(typed, { row: 28, col: 13 })
+  })
+
+  it('renderFrame() P2P metrics show Served instead of Caps', () => {
+    const spine = createSpine('sepolia', 11155111n)
+    spine.serving = {
+      blocksStored: 1,
+      headersServed: 2,
+      bodiesServed: 0,
+      receiptsServed: 0,
+      accessListsServed: 0,
+      totalRequestsServed: 2,
+      totalBytesServed: 48_000,
+      earliestBlock: '100',
+      latestBlock: '100',
+    }
+    const view = { ...createInitialViewState(), activeDomain: 'p2p' as const }
+    const frame = stripAnsi(renderFrame(spine, view, 100, 30).join('\n'))
+    assert.include(frame, 'Served')
+    assert.include(frame, 'replies')
+    assert.notInclude(frame, 'Caps')
+    for (const line of renderFrame(spine, view, 100, 30)) {
+      assert.equal(visibleWidth(line), 100)
+    }
   })
 
   it('renderFrame() cockpit command box follows activeDomain', () => {

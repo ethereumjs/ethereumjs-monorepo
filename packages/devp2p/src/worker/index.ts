@@ -27,8 +27,10 @@ export type {
   WorkerDiagnosticEntry,
   WorkerDiscoverySnapshot,
   WorkerPeerSnapshot,
+  WorkerServingSnapshot,
   WorkerTelemetrySnapshot,
 } from './protocol.ts'
+export type { ServableBlockBundle } from '../serve/rollingBlockStore.ts'
 
 export type CreateThreadedNetworkOptions = ThreadedNetworkInitOptions & {
   /** Run host on a MessageChannel instead of a Worker (CI-friendly). */

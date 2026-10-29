@@ -1,11 +1,9 @@
 import { ETHY_CLIENT_NAME, getEthyClientVersion } from '../clientMeta.ts'
-import { bucketsWithProgress, createSnapBuckets } from './buckets.ts'
+import { createSnapBuckets, formatSnapCapabilityLabel } from './buckets.ts'
 import type { EthyPhase, EthySpine } from './types.ts'
 
 export function deriveCapabilities(spine: EthySpine): void {
   const peerCount = spine.peers.size
-  const stalled = spine.snapBuckets.find((b) => b.status === 'stalled')
-  const doneCount = bucketsWithProgress(spine.snapBuckets)
 
   switch (spine.phase) {
     case 'BOOTING':
@@ -23,7 +21,10 @@ export function deriveCapabilities(spine: EthySpine): void {
       break
     case 'SNAP_SYNCING': {
       spine.capabilities.p2p = { status: 'ready', label: `${peerCount} Peers` }
-      const snapLabel = stalled ? `Stalled ${stalled.prefix}` : `Buckets ${doneCount}/16`
+      const snapLabel = formatSnapCapabilityLabel(spine.snapBuckets, {
+        peerCount,
+        phase: spine.phase,
+      })
       spine.capabilities.snap = { status: 'partial', label: snapLabel }
       spine.capabilities.head = { status: 'locked', label: 'Locked' }
       break

@@ -41,6 +41,15 @@ export function networkGenesisHash(network: string): string {
   return genesisHash
 }
 
+function withHonestEarliest(fields: ThreadedEthStatusFields): ThreadedEthStatusFields {
+  const latest = fields.latestBlock ?? '0x00'
+  return {
+    ...fields,
+    latestBlock: latest,
+    earliestBlock: fields.earliestBlock ?? latest,
+  }
+}
+
 /** Minimal STATUS fields for threaded devp2p worker init at genesis. */
 export function genesisStatusFields(network: string): ThreadedEthStatusFields {
   const key = network.toLowerCase()
@@ -48,18 +57,18 @@ export function genesisStatusFields(network: string): ThreadedEthStatusFields {
   if (genesisHash === undefined) {
     throw new Error(`No genesis STATUS for network ${network}`)
   }
-  return {
+  return withHonestEarliest({
     td: '0x00',
     bestHash: genesisHash,
     genesisHash,
     latestBlock: '0x00',
-  }
+  })
 }
 
 /** STATUS fields for live P2P handshake (pinned head when available). */
 export function p2pHandshakeStatusFields(network: string): ThreadedEthStatusFields {
   const key = network.toLowerCase()
   const pin = HANDSHAKE_HEAD_PIN[key]
-  if (pin !== undefined) return { ...pin }
+  if (pin !== undefined) return withHonestEarliest({ ...pin })
   return genesisStatusFields(network)
 }
