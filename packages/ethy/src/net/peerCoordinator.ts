@@ -340,6 +340,8 @@ export async function startPeerCoordinator(
         blockHash: parsed.hash,
         stateRoot: parsed.stateRoot,
       })
+      // Cursors live in memory. The new directory must not reboot them at nibble zero.
+      snapStore?.flushBuckets(spine.snapBuckets)
     }
     recordDiagnostic(spine, {
       subsystem: 'devp2p',
@@ -464,7 +466,7 @@ export async function startPeerCoordinator(
       recordDiagnostic(spine, {
         subsystem: 'bal',
         severity: 'warn',
-        message: `Pivot heal block #${inFlight.blockNumber.toString()} fetch failed`,
+        message: `Pivot heal block #${inFlight.blockNumber.toString()} fetch failed; snap keeps the new root`,
         peerId: msg.peerId,
       })
       healSeq = undefined
@@ -751,6 +753,13 @@ export async function startPeerCoordinator(
       snapSync?.bumpRootGeneration()
       codeSync?.refreshAfterPivotHeal()
       const fromBlock = pivotNum + 1n
+      // Peers only keep about the last 128 state roots. Anchor the fresh header
+      // before the block walk so snap is not stuck on a root they have already dropped.
+      commitPivotAnchor(parsed, headerRlp, successPeerId, successEthVersion, {
+        firstAnchor,
+        prevRoot,
+        skipServableBundle: true,
+      })
       recordDiagnostic(spine, {
         subsystem: 'bal',
         severity: 'info',
@@ -768,8 +777,8 @@ export async function startPeerCoordinator(
           finalHeaderRlp: headerRlp ?? undefined,
         }
         advanceHealSequence()
-        return
       }
+      return
     }
     commitPivotAnchor(parsed, headerRlp, successPeerId, successEthVersion, {
       firstAnchor,
