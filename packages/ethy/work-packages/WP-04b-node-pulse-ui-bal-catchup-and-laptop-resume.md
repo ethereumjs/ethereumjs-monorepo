@@ -1,6 +1,6 @@
 # WP-04b: Phase-Adaptive 4-Row `Node Pulse` UI, Post-SNAP `eth/71` BAL Catch-Up & "Close-the-Laptop" Resume
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `PLANNED`
 - **Dependencies:** `WP-04a`
 - **Branch:** `ethy-wp04-continuation` (or `ethy-wp04b`)
 - **Planner:** Grok 4.7
@@ -64,7 +64,78 @@ Building on the rock-solid single-pivot `snap/1` and VIP peer foundation from `W
 
 ## 5. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled out by Grok 4.7 during the Planning pass.)*
+### Design refinements (Decision D-065)
+
+Extends **D-063**. Builds on **WP-04a** (`handoffCatchup`, `markBaseSyncComplete`, unused `HeadBlockFollower`).
+
+- Add spine phase **`BAL_CATCHUP`** between `SNAP_SYNCING` and `HEAD_FOLLOWING`. **`deriveCapabilities`:** snap `ready`, head `partial` (`Catch-up`); head pill `ready` only in `HEAD_FOLLOWING`.
+- **Node Pulse:** exactly four rows — `Stage`, `Target`, `Progress`, `State`. One **16-cell** bar (`█` / `░` only) + percent. No `pivotCarry` (`kept` / `previous`), no heal fraction in pulse. Snap domain deep view may keep bucket glyphs; pulse bar does not use `!` or `▒`.
+- **`computeSnapProgressPct`:** per-bucket fraction from bytes 1–4 of `currentLastHash` vs `[startHash, limitHash]` (byte 0 = nibble); `done` → 1.0; average 16 buckets. While any bucket unfinished: `0.85 * accountFraction`. After all buckets `done`: `0.85 + 0.15 * codeStorageFraction` (mean of code + storage queue completion; 1 when queue empty).
+- **Reuse `HeadBlockFollower`** for catch-up and live follow: walk `#lastVerified + 1 .. bestPeerHead` via existing bundle pipeline (`advanceBlockBundleEthMessage`, `finalizeBlockBundle`, `consumeBAL`, `putServableBlock`). No snap schedulers; no pivot root switch.
+- **Laptop wake:** telemetry only — in `HEAD_FOLLOWING`, if `bestPeerHead > headBlockNumber + 2n`, set `BAL_CATCHUP` and walk BALs.
+- **`active.json`:** `lastVerifiedBlockNumber` (string). Set at `markBaseSyncComplete(pivot)`; update on each applied block. Schema stays **2**.
+
+### File tree (implementation order)
+
+| Slice | Files |
+| --- | --- |
+| A — Pulse geometry | `src/spine/types.ts`, `src/spine/buckets.ts`, `src/tui/cockpit.ts`, `src/spine/createSpine.ts`, `test/tui.spec.ts`, `src/demo/advanceDemo.ts` |
+| B — Persist last verified | `src/persist/snapStore.ts`, `src/sync/resumePolicy.ts` |
+| C — BAL catch-up + wake | `src/sync/balSync.ts`, `src/net/peerCoordinator.ts` |
+| D — Offline oracle | `test/balCatchUp.spec.ts` (new) |
+
+### Slice A — Pulse geometry
+
+1. **`types.ts`:** `EthyPhase` += `BAL_CATCHUP`. Add `balCatchUp?: { fromBlock: bigint; applied: number; total: number }`, `lastVerifiedBlockNumber?: bigint`, `bestPeerHead?: bigint`.
+2. **`buckets.ts`:** `bucketCursorFraction(bucket)`, `computeSnapProgressPct(spine)`, `formatProgressBar(pct)` → `"████████░░░░░░░░  52%"` (16 cells + space + 3-char percent).
+3. **`cockpit.ts`:** `COCKPIT_CONTENT_ROWS = 4`. Replace `nodePulsePairs` (drop 5-row Phase/Pivot/Accounts/Bytecode/Storage layout):
+   - **BOOTING / P2P_WARMUP:** stage `Connecting P2P`; target `Awaiting peer head…` or `Peers: N RLPx`; progress `0%`; state `Warming peer book`.
+   - **SNAP_SYNCING (accounts):** `Snap Sync · Accounts`; `#P (+N blk)` using `bestPeerHead - pivot`; `formatProgressBar(computeSnapProgressPct)`; `{totalAccounts} acc · {rate}/s`.
+   - **SNAP_SYNCING (storage):** when all buckets `done`, stage `Snap Sync · Storage`; same target row; state `{codesSynced} code · {storageSlotsSynced} slots`.
+   - **BAL_CATCHUP:** `BAL Catch-Up`; `#from → +remaining blk`; bar from `applied/total`; `{applied} / {total} BALs applied`.
+   - **HEAD_FOLLOWING:** `Head Following`; `#head (live)`; bar `100%`; `{accounts} acc · {balWindow.length} BALs`.
+4. **`createSpine.ts`:** `case 'BAL_CATCHUP'` — p2p ready, snap ready, head partial.
+5. **Tests/demo:** remove `Healing 120/959` expectation in `tui.spec.ts`; `advanceDemo` inserts `BAL_CATCHUP` before `HEAD_FOLLOWING`.
+
+### Slice B — Persist last verified
+
+1. **`snapStore.ts`:** extend `ActiveMeta` with `lastVerifiedBlockNumber?: string`.
+2. **`markBaseSyncComplete(pivotBlock: bigint)`** — set `baseSyncComplete: true` and `lastVerifiedBlockNumber = pivotBlock.toString()`.
+3. **`noteVerifiedBlock(n: bigint)`** — update `active.json` (atomic write).
+4. **`peekActive()`** — return `lastVerifiedBlockNumber` as bigint (default pivot when `baseSyncComplete` and field missing).
+5. **`resumePolicy.ts`:** extend `SnapResumeSaved` with `lastVerifiedBlockNumber`; handoff path unchanged (`handoff-catchup`).
+
+### Slice C — BAL catch-up and wake
+
+1. **`balSync.ts`:**
+   - Rename/replace **`tryEnterHeadFollowing`** → **`tryEnterBalCatchUp(spine, accountSync, codeSync, bestPeerHead)`**: when buckets + code/storage done and phase `SNAP_SYNCING`, set `lastVerifiedBlockNumber = pivot`, initialize `balCatchUp` (`fromBlock = pivot+1`, `total = max(0, bestHead - pivot)`, `applied = 0`). If `total === 0`, jump to `HEAD_FOLLOWING`; else `BAL_CATCHUP`.
+   - **`HeadBlockFollower`:** tick when phase is `BAL_CATCHUP` or `HEAD_FOLLOWING`. Cursor = `lastVerifiedBlockNumber + 1` (not only `headBlockNumber + 1` during catch-up). On `finalizeBlockBundle`: update `lastVerifiedBlockNumber`, `headBlockNumber`/`headStateRoot`, call `noteVerifiedBlock`, increment `balCatchUp.applied`; when `lastVerified >= targetHead`, `setPhase(HEAD_FOLLOWING)`, clear `balCatchUp`, optional notice callback.
+   - Bundle **`failed`:** clear in-flight only; retry same block number next tick.
+   - Export **`LAPTOP_WAKE_BLOCK_GAP = 2n`** for coordinator.
+2. **`peerCoordinator.ts`:**
+   - **`handoffCatchup`:** after `loadInto`, read `lastVerified` + `bestHead`; if gap > 0 → `BAL_CATCHUP` + start follower; else `HEAD_FOLLOWING`. Do not `ensureSnapSync`.
+   - **`maybeMarkBaseSyncComplete`:** call `markBaseSyncComplete(pivotBlock)` then `tryEnterBalCatchUp` with current best head; start follower when entering catch-up/follow.
+   - **Always construct and `headFollower.start()`** once snap pivot exists (or on handoff); wire `noteVerifiedBlock` + notice on sync complete.
+   - **Telemetry:** set `spine.bestPeerHead` from `pickBestPeer`; if `HEAD_FOLLOWING` and `bestPeerHead > headBlockNumber + 2n`, transition to `BAL_CATCHUP` and re-seed `balCatchUp`.
+
+### Slice D — Offline oracle (`test/balCatchUp.spec.ts`)
+
+- **`computeSnapProgressPct`:** cursor advance within one bucket increases pct; stays ≤ 85 until all buckets `done`.
+- **`renderCockpit`:** 8 lines per pulse box; progress row has `%` and `█`/`░`; no `!`, `kept`, `previous`.
+- **25-block catch-up (#100 → #125):** synthetic headers + BALs with matching `blockAccessListHash`; `FlatStateManager` vs `MerkleStateManager` field parity after `consumeBAL`.
+- **Restart:** `noteVerifiedBlock(110)`, peer head 125 → catch-up from 111 (no new snap pivot).
+
+### Out of scope
+
+- WP-05 / WP-06 (LLM, EVM sandbox, beacon).
+- Re-snap or pivot heal after `baseSyncComplete`.
+- New dependencies.
+
+### Finish gates
+
+- `npm run tsc`, `npm test`, `npm run spellcheck` in `packages/ethy`.
+- Update §4 checkboxes, §6 notes, `PROGRESS.md` on implement pass.
+- Extend PR **#4425** title/body when shipping on `ethy-wp04-continuation`.
 
 ---
 
