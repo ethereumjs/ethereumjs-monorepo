@@ -2,11 +2,18 @@ import * as fs from 'node:fs'
 import * as path from 'node:path'
 
 import type { FlatStateManager } from '@ethereumjs/statemanager'
-import { createBlockLevelAccessListFromRLP } from '@ethereumjs/util'
+import {
+  KECCAK256_NULL,
+  KECCAK256_RLP,
+  createBlockLevelAccessListFromRLP,
+  equalsBytes,
+} from '@ethereumjs/util'
 import { bytesToHex, unprefixedHexToBytes } from '@ethereumjs/util'
 
 import { createSnapBuckets, snapBucketCursorExhausted } from '../spine/buckets.ts'
 import type { EthySpine, SnapBucket, SnapBucketStatus } from '../spine/types.ts'
+import type { IngestedAccountMeta } from '../sync/accountSync.ts'
+import type { SnapResumeSaved } from '../sync/resumePolicy.ts'
 import {
   accountFromJournalRlp,
   countAccountJournalRecords,
@@ -19,7 +26,12 @@ export const SNAP_STORE_SCHEMA = 2
 
 type ChainMeta = { chainId: string; genesisHash: string }
 
-type ActiveMeta = { stateRoot: string; previousStateRoot?: string | null }
+type ActiveMeta = {
+  stateRoot: string
+  previousStateRoot?: string | null
+  baseSyncComplete?: boolean
+  lastVerifiedBlockNumber?: string
+}
 
 type PivotMeta = {
   blockNumber: string
@@ -66,6 +78,7 @@ export class SnapPivotStore {
   private readonly chainId: bigint
   private readonly genesisHash: string
   private activeStateRoot?: string
+  private restoredContracts: IngestedAccountMeta[] = []
 
   private constructor(opts: SnapStoreOpenOpts & { root: string; networkDir: string }) {
     this.enabled = opts.enabled
@@ -122,9 +135,81 @@ export class SnapPivotStore {
     return path.join(this.pivotDir(stateRootHex), 'accounts', `${bucketIndex.toString(16)}.bin`)
   }
 
+  /** Read on-disk pivot metadata without replaying journals (WP-04a resume). */
+  peekActive(): SnapResumeSaved | undefined {
+    if (!this.enabled) return undefined
+    const active = this.readActive()
+    if (active === undefined) return undefined
+    const pivotPath = path.join(this.pivotDir(active.stateRoot), 'pivot.json')
+    if (!fs.existsSync(pivotPath)) return undefined
+    const pivot = readStoredDoc<PivotMeta>(pivotPath)
+    let bucketsDoneCount = 0
+    const bucketsPath = path.join(this.pivotDir(active.stateRoot), 'buckets.json')
+    if (fs.existsSync(bucketsPath)) {
+      const saved = readStoredDoc<{ buckets: SerializedBucket[] }>(bucketsPath).buckets
+      bucketsDoneCount = saved.filter((b) => b.status === 'done').length
+    }
+    const pivotBlock = BigInt(pivot.blockNumber)
+    let lastVerifiedBlockNumber: bigint | undefined
+    if (active.lastVerifiedBlockNumber !== undefined) {
+      lastVerifiedBlockNumber = BigInt(active.lastVerifiedBlockNumber)
+    } else if (active.baseSyncComplete === true) {
+      lastVerifiedBlockNumber = pivotBlock
+    }
+    return {
+      pivotBlockNumber: pivotBlock,
+      baseSyncComplete: active.baseSyncComplete === true,
+      bucketsDoneCount,
+      lastVerifiedBlockNumber,
+    }
+  }
+
+  /** Wipe pivot journals while keeping peer book and discovery (WP-04a `--fresh`). */
+  discardPivots(): void {
+    if (!this.enabled) return
+    const pivotsRoot = path.join(this.networkDir, 'pivots')
+    if (fs.existsSync(pivotsRoot)) {
+      fs.rmSync(pivotsRoot, { recursive: true, force: true })
+    }
+    const activePath = path.join(this.networkDir, 'active.json')
+    if (fs.existsSync(activePath)) {
+      fs.unlinkSync(activePath)
+    }
+    this.activeStateRoot = undefined
+    this.restoredContracts = []
+  }
+
+  markBaseSyncComplete(pivotBlock: bigint): void {
+    if (!this.enabled) return
+    const active = this.readActive()
+    if (active === undefined) return
+    writeAtomicDoc(path.join(this.networkDir, 'active.json'), {
+      ...active,
+      baseSyncComplete: true,
+      lastVerifiedBlockNumber: pivotBlock.toString(),
+    } satisfies ActiveMeta)
+  }
+
+  noteVerifiedBlock(blockNumber: bigint): void {
+    if (!this.enabled) return
+    const active = this.readActive()
+    if (active === undefined) return
+    writeAtomicDoc(path.join(this.networkDir, 'active.json'), {
+      ...active,
+      lastVerifiedBlockNumber: blockNumber.toString(),
+    } satisfies ActiveMeta)
+  }
+
+  drainRestoredContracts(): IngestedAccountMeta[] {
+    const out = this.restoredContracts
+    this.restoredContracts = []
+    return out
+  }
+
   /** Hydrate spine + state from the active pivot. Returns account count restored. */
   loadInto(spine: EthySpine, stateManager: FlatStateManager): number {
     if (!this.enabled) return 0
+    this.restoredContracts = []
     const activePath = path.join(this.networkDir, 'active.json')
     if (!fs.existsSync(activePath)) return 0
     const active = readStoredDoc<ActiveMeta>(activePath)
@@ -137,6 +222,13 @@ export class SnapPivotStore {
       pivot.stateRoot.startsWith('0x') ? pivot.stateRoot.slice(2) : pivot.stateRoot,
     )
     spine.currentSlot = Number(pivot.blockNumber)
+    if (active.lastVerifiedBlockNumber !== undefined) {
+      spine.lastVerifiedBlockNumber = BigInt(active.lastVerifiedBlockNumber)
+    } else if (active.baseSyncComplete === true) {
+      spine.lastVerifiedBlockNumber = spine.pivotBlockNumber
+    }
+    spine.headBlockNumber = spine.lastVerifiedBlockNumber ?? spine.pivotBlockNumber
+    spine.headStateRoot = spine.pivotStateRoot
 
     const buckets = createSnapBuckets()
     const bucketsPath = path.join(this.pivotDir(active.stateRoot), 'buckets.json')
@@ -155,9 +247,14 @@ export class SnapPivotStore {
         const { records, lastHash } = readAccountJournalFile(raw)
         journalRecords = records.length
         for (const row of records) {
-          stateManager.putSnapAccountsBatch([
-            { accountHash: row.accountHash, account: accountFromJournalRlp(row.accountRlp) },
-          ])
+          const account = accountFromJournalRlp(row.accountRlp)
+          stateManager.putSnapAccountsBatch([{ accountHash: row.accountHash, account }])
+          if (
+            !equalsBytes(account.codeHash, KECCAK256_NULL) ||
+            !equalsBytes(account.storageRoot, KECCAK256_RLP)
+          ) {
+            this.restoredContracts.push({ accountHash: row.accountHash, account })
+          }
           restored++
         }
         const cursor = journalCursorAfterRecords(i, records.length, lastHash, bucket.startHash)

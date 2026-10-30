@@ -7,11 +7,11 @@ import { assert, describe, it } from 'vitest'
 import { createEthyNode } from '../src/core/createEthyNode.ts'
 import {
   PEER_STALE_SUCCESS_MS,
-  PEER_TOO_MANY_PEERS_HOLD_MS,
   type PeerBookRow,
   PeerBookStore,
   peerBookFilePath,
   rankPeerRows,
+  tooManyPeersHoldMs,
 } from '../src/persist/peerBook.ts'
 
 function tempDir(): string {
@@ -62,7 +62,7 @@ describe('[Ethy/Persist]: peer book', () => {
     const cooled = sampleRow({
       id: 'cc',
       lastStatusAt: now - 100,
-      dialAfter: now + PEER_TOO_MANY_PEERS_HOLD_MS,
+      dialAfter: now + tooManyPeersHoldMs(false, 0),
     })
     const ready = sampleRow({
       id: 'dd',

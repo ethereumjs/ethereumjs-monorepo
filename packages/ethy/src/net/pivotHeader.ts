@@ -152,6 +152,16 @@ export function peerIdToBytes(idHex: string): Uint8Array {
   return hexToBytes(hx(`0x${hex}`))
 }
 
+/** Request id from an eth/66+ reply payload (first RLP element). */
+export function ethReplyRequestId(ethVersion: number, payload: Uint8Array): number | null {
+  if (!ethUsesRequestId(ethVersion)) return 1
+  const decoded = RLP.decode(payload) as unknown
+  if (!Array.isArray(decoded) || decoded.length === 0) return null
+  const idBytes = decoded[0]
+  if (!(idBytes instanceof Uint8Array)) return null
+  return Number(bytesToBigInt(idBytes))
+}
+
 /** Raw RLP of the first header in a `BLOCK_HEADERS` reply. */
 export function firstHeaderRlpFromBlockHeadersPayload(
   ethVersion: number,

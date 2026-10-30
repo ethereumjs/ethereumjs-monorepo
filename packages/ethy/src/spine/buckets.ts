@@ -1,4 +1,4 @@
-import type { EthyPhase, SnapBucket } from './types.ts'
+import type { EthyPhase, EthySpine, SnapBucket } from './types.ts'
 
 /** Build 16 snap sync buckets by first account-hash nibble (0x0..0xf). */
 export function createSnapBuckets(): SnapBucket[] {
@@ -143,6 +143,58 @@ export function formatSnapCapabilityLabel(
 
   if (done > 0) return `${done}/16 complete`
   return 'Not started'
+}
+
+function readUInt32BE(bytes: Uint8Array, offset: number): number {
+  return (
+    (((bytes[offset] ?? 0) << 24) |
+      ((bytes[offset + 1] ?? 0) << 16) |
+      ((bytes[offset + 2] ?? 0) << 8) |
+      (bytes[offset + 3] ?? 0)) >>>
+    0
+  )
+}
+
+/** Cursor position within a bucket range using bytes 1–4 of the account hash. */
+export function bucketCursorFraction(bucket: SnapBucket): number {
+  if (bucket.status === 'done') return 1
+  const cur = readUInt32BE(bucket.currentLastHash, 1)
+  const lo = readUInt32BE(bucket.startHash, 1)
+  const hi = readUInt32BE(bucket.limitHash, 1)
+  if (hi <= lo) {
+    return snapBucketCursorExhausted(bucket) ? 1 : 0
+  }
+  if (cur <= lo) return 0
+  if (cur >= hi) return 1
+  return (cur - lo) / (hi - lo)
+}
+
+/** Continuous snap progress: 85% accounts, then 15% code+storage when all buckets are done. */
+export function computeSnapProgressPct(spine: EthySpine): number {
+  const buckets = spine.snapBuckets
+  const accountFraction =
+    buckets.reduce((sum, b) => sum + bucketCursorFraction(b), 0) / Math.max(1, buckets.length)
+  const allDone = buckets.every((b) => b.status === 'done')
+  if (!allDone) {
+    return Math.min(100, Math.max(0, Math.round(0.85 * accountFraction * 100)))
+  }
+  const codeTotal = spine.codesSynced + spine.codesQueued
+  const codeFrac = codeTotal <= 0 ? 1 : spine.codesSynced / codeTotal
+  const storTotal = spine.storageSlotsSynced + spine.storageQueued
+  const storFrac = storTotal <= 0 ? 1 : spine.storageSlotsSynced / storTotal
+  const cs = (codeFrac + storFrac) / 2
+  return Math.min(100, Math.max(0, Math.round((0.85 + 0.15 * cs) * 100)))
+}
+
+const PROGRESS_BAR_CELLS = 16
+
+/** Node Pulse progress row: 16 cells of █/░ plus a padded percent. */
+export function formatProgressBar(pct: number): string {
+  const clamped = Math.min(100, Math.max(0, pct))
+  const filled = Math.round((clamped / 100) * PROGRESS_BAR_CELLS)
+  const bar = `${'█'.repeat(filled)}${'░'.repeat(PROGRESS_BAR_CELLS - filled)}`
+  const pctText = `${Math.round(clamped)}`.padStart(3, ' ')
+  return `${bar} ${pctText}%`
 }
 
 export function findBucketByPrefix(

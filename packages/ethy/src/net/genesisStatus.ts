@@ -12,25 +12,6 @@ const GENESIS_HASH: Record<string, string> = {
   hoodi: '0xbbe312868b376a3001692a646dd2d7d1e4406380dfd86b98aa8a34d1557c971b',
 }
 
-/**
- * Recent chain heads for outbound ETH STATUS (eth/69+ block range and Geth head checks).
- * Refresh when bumping EthereumJS / EST or before long-lived testnet soaks.
- */
-const HANDSHAKE_HEAD_PIN: Record<string, ThreadedEthStatusFields> = {
-  mainnet: {
-    td: '0x01',
-    bestHash: '0x7c0bee0740f85374dfabf3317f80a398b8e2cb0eccc2b4b257a30ccb5ce03165',
-    genesisHash: GENESIS_HASH.mainnet,
-    latestBlock: '0x1912a62',
-  },
-  sepolia: {
-    td: '0x01',
-    bestHash: '0x07bc64d80dba60077b5d563e91676c159dcfbe504b2ea99a7fd4895651972601',
-    genesisHash: GENESIS_HASH.sepolia,
-    latestBlock: '0xb7663f',
-  },
-}
-
 /** Genesis hash for on-disk chain guard (`networks/<name>/chain.json`). */
 export function networkGenesisHash(network: string): string {
   const key = network.toLowerCase()
@@ -65,10 +46,7 @@ export function genesisStatusFields(network: string): ThreadedEthStatusFields {
   })
 }
 
-/** STATUS fields for live P2P handshake (pinned head when available). */
+/** Outbound ETH STATUS until `RollingBlockStore` holds a servable window (WP-04a). */
 export function p2pHandshakeStatusFields(network: string): ThreadedEthStatusFields {
-  const key = network.toLowerCase()
-  const pin = HANDSHAKE_HEAD_PIN[key]
-  if (pin !== undefined) return withHonestEarliest({ ...pin })
   return genesisStatusFields(network)
 }

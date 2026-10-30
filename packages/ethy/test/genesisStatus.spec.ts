@@ -8,9 +8,11 @@ function assertGenesisHash(hex: string, network: string): void {
 }
 
 describe('[Ethy/Net]: genesis STATUS', () => {
-  it('pins earliestBlock to latestBlock on Sepolia handshake head', () => {
+  it('advertises genesis-only block range on Sepolia until a servable window exists', () => {
     const status = p2pHandshakeStatusFields('sepolia')
-    assert.equal(status.earliestBlock, status.latestBlock)
+    assert.equal(status.earliestBlock, '0x00')
+    assert.equal(status.latestBlock, '0x00')
+    assert.equal(status.bestHash, status.genesisHash)
   })
 
   it('advertises the 32-byte Sepolia genesis hash Geth checks', () => {
@@ -21,9 +23,11 @@ describe('[Ethy/Net]: genesis STATUS', () => {
     assert.equal(advertisedForkHash(chainConfigForNetwork('sepolia'), 'amsterdam'), '0x6c1d9423')
   })
 
-  it('pins earliestBlock to latestBlock on mainnet handshake head', () => {
+  it('advertises genesis-only block range on mainnet', () => {
     const status = p2pHandshakeStatusFields('mainnet')
-    assert.equal(status.earliestBlock, status.latestBlock)
+    assert.equal(status.earliestBlock, '0x00')
+    assert.equal(status.latestBlock, '0x00')
+    assert.equal(status.bestHash, status.genesisHash)
   })
 
   it('advertises 32-byte Hoodi and Holesky genesis hashes', () => {

@@ -347,7 +347,7 @@ export class RLPx {
       }
       if (this._dpt === null || !dialFailed) return
       if (code === 'ECONNRESET' || message.includes('Connection timeout')) {
-        this._dpt.banPeer(peer, 300000) // 5 min * 60 * 1000
+        this._dpt.banPeer(peer, 60_000)
         return
       }
       this._dpt.removePeer(peer)

@@ -61,9 +61,13 @@ Ethy’s terminal UI is a **pure function** of `EthySpine`, `TuiViewState`, and 
 - Right cluster: plain `Slot <n>`, then an 8-column gap (`SLOT_GAP = 8`) and the 4 right-packed pills — colored mark + **bold** name (`● P2P  ◐ SNAP  …`; `CAPABILITY_PILL_GAP = 2`).
 
 ### Band 2 — The 3-Box Cockpit Row (fixed **8** visible rows per box, 3 equal/weighted rounded boxes)
-Sits below the top header rule and displays three side-by-side rounded boxes (`╭─ ... ─╮`): top border, **one padding row**, four two-column data rows (`formatTwoColumnRows` with shared label width + `TWO_COLUMN_MIN_GAP = 2`), **one padding row**, bottom border.
-1. **Left Box (`Node Pulse` — Always-Anchored Overview):**
-   - Stays anchored regardless of which domain is selected, giving constant context: current `Phase`, `Pivot` block (or head), the 16-segment mini bucket bar (`████▓▓!░░░░░░░░░`), and synced `Accounts` (`total` + `acc/s`).
+Sits below the top header rule and displays three side-by-side rounded boxes (`╭─ ... ─╮`): top border, **one padding row**, **strictly four** two-column data rows (`COCKPIT_CONTENT_ROWS = 4`, `formatTwoColumnRows` with shared label width + `TWO_COLUMN_MIN_GAP = 2`), **one padding row**, bottom border. Never add a 5th content row to any cockpit box!
+1. **Left Box (`Node Pulse` — 4-Row Phase-Adaptive Overview):**
+   - Stays anchored regardless of which domain is selected, using **4 consistent rows** that adapt cleanly to the node's lifecycle stage:
+     - **Row 1 (`Stage`):** `Connecting P2P` | `Snap Sync · Accounts` | `Snap Sync · Storage` | `BAL Catch-Up` | `Head Following`.
+     - **Row 2 (`Target` / `Pivot` / `Head`):** During `Snap Sync`: `#<pivot> (+<drift> blk)`; during `BAL Catch-Up`: `#<from> → +<remaining> blk`; during `Head Following`: `#<head> (live)`.
+     - **Row 3 (`Progress`):** A 16-cell single-width progress bar using **only `█` and `░`** followed by continuous percentage (`████████░░░░░░░░ 52%`). During `Snap Sync`, percentage is computed continuously from the 16 bucket `currentLastHash` cursors (never coarse `done/16` jumps, and never `!` or double-width characters that cause terminal line wrapping).
+     - **Row 4 (`State`):** Concise stage throughput/summary (`3.48M acc · 5,950/s`, `4.1k code · 82k slots`, `46 / 62 BALs applied`, or `34.2M acc · 64 BALs`). Never display cryptic internal persistence flags like `kept` or `previous`.
 2. **Middle Box (`<Mark> <Domain> Commands` — Domain Usage Discovery):**
    - Dynamically reflects the currently selected `activeDomain` (`p2p` | `snap` | `head` | `ai`).
    - Lists the 3–4 slash commands (or example prompts when in `ai` domain) available for that domain with short, clean 1-line descriptions.

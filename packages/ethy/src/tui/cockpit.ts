@@ -1,16 +1,9 @@
 import {
-  formatQueueMeter,
-  formatSnapBucketBar,
-  snapAccountPaceNote,
+  computeSnapProgressPct,
+  formatProgressBar,
   snapBucketsDoneCount,
 } from '../spine/buckets.ts'
-import type {
-  CapabilityId,
-  EthyPhase,
-  EthySpine,
-  PivotHealProgress,
-  TuiViewState,
-} from '../spine/types.ts'
+import type { CapabilityId, EthyPhase, EthySpine, TuiViewState } from '../spine/types.ts'
 import { BOLD, DIM, RESET, visibleWidth } from './ansi.ts'
 import { capabilityMark } from './capabilityMark.ts'
 import {
@@ -30,102 +23,113 @@ const DOMAIN_LABEL: Record<CapabilityId, string> = {
 }
 
 /** Inner content rows per box (excluding top/bottom border and vertical padding). */
-const COCKPIT_CONTENT_ROWS = 5
-
-function phaseLabel(spine: EthySpine): string {
-  if (spine.phase === 'SNAP_SYNCING' && spine.pivotHeal !== undefined) {
-    return `Healing ${healFraction(spine.pivotHeal)}`
-  }
-  switch (spine.phase) {
-    case 'BOOTING':
-      return 'Booting'
-    case 'P2P_WARMUP':
-      return 'P2P Warmup'
-    case 'SNAP_SYNCING':
-      return 'Snap Syncing'
-    case 'HEAD_FOLLOWING':
-      return 'Head Following'
-  }
-}
-
-function healFraction(heal: PivotHealProgress): string {
-  const total = heal.toBlock - heal.fromBlock + 1n
-  let done = heal.nextBlock - heal.fromBlock
-  if (done < 0n) done = 0n
-  if (done > total) done = total
-  return `${Number(done).toLocaleString('en-US')}/${Number(total).toLocaleString('en-US')}`
-}
+const COCKPIT_CONTENT_ROWS = 4
 
 function formatBlockNum(n: bigint): string {
   return `#${n.toLocaleString('en-US')}`
 }
 
-/** Compact count for the pivot clause. Millions and ten-thousands use one decimal. */
-function formatCarryAccounts(count: number): string {
-  if (count >= 1_000_000) {
-    const scaled = Math.round(count / 100_000) / 10
-    const text = Number.isInteger(scaled) ? String(scaled) : scaled.toFixed(1)
-    return `${text}M`
+function formatCompactCount(n: number): string {
+  if (n >= 1_000_000) {
+    const scaled = Math.round(n / 100_000) / 10
+    return `${Number.isInteger(scaled) ? scaled : scaled.toFixed(1)}M`
   }
-  if (count >= 10_000) {
-    const scaled = Math.round(count / 100) / 10
-    const text = Number.isInteger(scaled) ? String(scaled) : scaled.toFixed(1)
-    return `${text}k`
+  if (n >= 10_000) {
+    const scaled = Math.round(n / 100) / 10
+    return `${Number.isInteger(scaled) ? scaled : scaled.toFixed(1)}k`
   }
-  return count.toLocaleString('en-US')
+  return n.toLocaleString('en-US')
 }
 
-function pivotPulseValue(spine: EthySpine): string {
-  const heal = spine.pivotHeal
-  if (
-    spine.phase === 'SNAP_SYNCING' &&
-    heal !== undefined &&
-    spine.pivotBlockNumber !== undefined
-  ) {
-    return `${formatBlockNum(spine.pivotBlockNumber)} → ${formatBlockNum(heal.toBlock)}`
+function snapTargetRow(spine: EthySpine): string {
+  const pivot = spine.pivotBlockNumber
+  if (pivot === undefined) {
+    return spine.pivotStatusHint ?? 'Awaiting peer head…'
   }
-  const base =
-    spine.pivotBlockNumber !== undefined
-      ? formatBlockNum(spine.pivotBlockNumber)
-      : (spine.pivotStatusHint ?? 'Waiting for peer...')
-  const carry = spine.pivotCarry
-  if (
-    carry === undefined ||
-    carry.accounts <= 0 ||
-    spine.phase === 'HEAD_FOLLOWING' ||
-    spine.pivotBlockNumber === undefined
-  ) {
-    return base
+  const head = spine.bestPeerHead ?? spine.headBlockNumber ?? pivot
+  const drift = head > pivot ? head - pivot : 0n
+  if (drift > 0n) return `${formatBlockNum(pivot)} (+${drift.toLocaleString('en-US')} blk)`
+  return formatBlockNum(pivot)
+}
+
+function nodePulsePairs(spine: EthySpine): TwoColumnPair[] {
+  const phase = spine.phase
+  const peerCount = spine.peers.size
+
+  if (phase === 'BOOTING' || phase === 'P2P_WARMUP') {
+    const target = peerCount === 0 ? 'Awaiting peer head…' : `Peers: ${peerCount} RLPx`
+    return [
+      { label: 'Stage', value: 'Connecting P2P' },
+      { label: 'Target', value: target },
+      { label: 'Progress', value: formatProgressBar(0) },
+      { label: 'State', value: 'Warming peer book' },
+    ]
   }
-  const word = carry.kind === 'kept' ? 'kept' : 'previous'
-  return `${base} · ${formatCarryAccounts(carry.accounts)} ${word}`
-}
 
-function accountPulseValue(spine: EthySpine): string {
-  const bar = formatSnapBucketBar(spine.snapBuckets)
-  const count = spine.totalAccountsSynced.toLocaleString('en-US')
-  const rate = `~${Math.round(spine.accountsPerSec)}/s`
-  const note = snapAccountPaceNote(spine.snapBuckets, {
-    peerCount: spine.peers.size,
-    phase: spine.phase,
-  })
-  return note.length > 0 ? `${bar} ${count} ${rate} ${note}` : `${bar} ${count} ${rate}`
-}
+  if (phase === 'SNAP_SYNCING') {
+    const allBucketsDone = snapBucketsDoneCount(spine.snapBuckets) === 16
+    if (!allBucketsDone) {
+      const rate = Math.round(spine.accountsPerSec).toLocaleString('en-US')
+      return [
+        { label: 'Stage', value: 'Snap Sync · Accounts' },
+        { label: 'Target', value: snapTargetRow(spine) },
+        { label: 'Progress', value: formatProgressBar(computeSnapProgressPct(spine)) },
+        {
+          label: 'State',
+          value: `${formatCompactCount(spine.totalAccountsSynced)} acc · ${rate}/s`,
+        },
+      ]
+    }
+    return [
+      { label: 'Stage', value: 'Snap Sync · Storage' },
+      { label: 'Target', value: snapTargetRow(spine) },
+      { label: 'Progress', value: formatProgressBar(computeSnapProgressPct(spine)) },
+      {
+        label: 'State',
+        value: `${formatCompactCount(spine.codesSynced)} code · ${formatCompactCount(spine.storageSlotsSynced)} slots`,
+      },
+    ]
+  }
 
-function codePulseValue(spine: EthySpine): string {
-  return queuePulseValue(spine.codesSynced, spine.codesQueued)
-}
+  if (phase === 'BAL_CATCHUP') {
+    const catchUp = spine.balCatchUp
+    const from = catchUp?.fromBlock ?? (spine.lastVerifiedBlockNumber ?? 0n) + 1n
+    const total = catchUp?.total ?? 0
+    const applied = catchUp?.applied ?? 0
+    const remaining = Math.max(0, total - applied)
+    const pct = total > 0 ? (applied / total) * 100 : 0
+    return [
+      { label: 'Stage', value: 'BAL Catch-Up' },
+      {
+        label: 'Target',
+        value: `${formatBlockNum(from)} → +${remaining.toLocaleString('en-US')} blk`,
+      },
+      { label: 'Progress', value: formatProgressBar(pct) },
+      {
+        label: 'State',
+        value: `${applied.toLocaleString('en-US')} / ${total.toLocaleString('en-US')} BALs applied`,
+      },
+    ]
+  }
 
-function storagePulseValue(spine: EthySpine): string {
-  return queuePulseValue(spine.storageSlotsSynced, spine.storageQueued)
-}
+  if (phase === 'HEAD_FOLLOWING') {
+    const head = spine.headBlockNumber ?? spine.lastVerifiedBlockNumber
+    const balCount = spine.balWindow.length
+    const acc = formatCompactCount(spine.totalAccountsSynced)
+    return [
+      { label: 'Stage', value: 'Head Following' },
+      { label: 'Target', value: head !== undefined ? `${formatBlockNum(head)} (live)` : '—' },
+      { label: 'Progress', value: formatProgressBar(100) },
+      { label: 'State', value: `${acc} acc · ${balCount} BALs` },
+    ]
+  }
 
-function queuePulseValue(synced: number, queued: number): string {
-  const meter = formatQueueMeter(synced, queued)
-  if (synced <= 0 && queued <= 0) return `${meter} —`
-  const count = synced.toLocaleString('en-US')
-  if (queued <= 0) return `${meter} ${count} done`
-  return `${meter} ${count} ${queued.toLocaleString('en-US')} left`
+  return [
+    { label: 'Stage', value: '—' },
+    { label: 'Target', value: '—' },
+    { label: 'Progress', value: formatProgressBar(0) },
+    { label: 'State', value: '—' },
+  ]
 }
 
 function shortHash(root: Uint8Array | undefined): string {
@@ -228,16 +232,6 @@ function joinBoxLines(columns: string[][], contentWidth: number): string[] {
   return out
 }
 
-function nodePulsePairs(spine: EthySpine): TwoColumnPair[] {
-  return [
-    { label: 'Phase', value: phaseLabel(spine) },
-    { label: 'Pivot', value: pivotPulseValue(spine) },
-    { label: 'Accounts', value: accountPulseValue(spine) },
-    { label: 'Bytecode', value: codePulseValue(spine) },
-    { label: 'Storage', value: storagePulseValue(spine) },
-  ]
-}
-
 function commandPairs(domain: CapabilityId, phase: EthyPhase): TwoColumnPair[] {
   switch (domain) {
     case 'p2p':
@@ -312,7 +306,12 @@ function metricsPairs(spine: EthySpine, domain: CapabilityId): TwoColumnPair[] {
       return [
         {
           label: 'Status',
-          value: spine.capabilities.head.status === 'locked' ? 'Locked' : 'Following',
+          value:
+            spine.capabilities.head.status === 'locked'
+              ? 'Locked'
+              : spine.capabilities.head.status === 'partial'
+                ? 'Catch-up'
+                : 'Following',
         },
         {
           label: 'Head Block',

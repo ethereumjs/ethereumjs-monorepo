@@ -130,16 +130,38 @@ export function advanceDemo(spine: EthySpine, elapsedMs: number): void {
     return
   }
 
-  setPhase(spine, 'HEAD_FOLLOWING')
   for (const b of spine.snapBuckets) {
     b.status = 'done'
     b.accountsLoaded = 14_200
   }
   spine.pivotBlockNumber = SYNTH_PIVOT
   spine.pivotStateRoot = synthRoot(0x01)
-  spine.headBlockNumber = SYNTH_HEAD
-  spine.headStateRoot = synthRoot(0x02)
+  spine.bestPeerHead = SYNTH_HEAD
   spine.totalAccountsSynced = 227_200
   spine.accountsPerSec = 0
+  spine.codesSynced = 4100
+  spine.storageSlotsSynced = 82_000
+
+  if (elapsedMs < 10_000) {
+    setPhase(spine, 'BAL_CATCHUP')
+    const total = Number(SYNTH_HEAD - SYNTH_PIVOT)
+    const progress = Math.min(total, Math.floor(((elapsedMs - 8000) / 2000) * total))
+    spine.lastVerifiedBlockNumber = SYNTH_PIVOT + BigInt(progress)
+    spine.headBlockNumber = spine.lastVerifiedBlockNumber
+    spine.headStateRoot = synthRoot(0x02)
+    spine.balCatchUp = {
+      fromBlock: SYNTH_PIVOT + 1n,
+      applied: progress,
+      total,
+    }
+    deriveCapabilities(spine)
+    return
+  }
+
+  setPhase(spine, 'HEAD_FOLLOWING')
+  spine.lastVerifiedBlockNumber = SYNTH_HEAD
+  spine.headBlockNumber = SYNTH_HEAD
+  spine.headStateRoot = synthRoot(0x02)
+  spine.balCatchUp = undefined
   deriveCapabilities(spine)
 }

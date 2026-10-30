@@ -14,6 +14,7 @@ import {
   encodeGetBlockBodiesPayload,
   encodeGetBlockHeadersByNumberPayload,
   encodeGetReceiptsPayload,
+  ethReplyRequestId,
   firstHeaderRlpFromBlockHeadersPayload,
   parseFirstBalFromBlockAccessListsPayload,
   parseFirstBodyFromBlockBodiesPayload,
@@ -38,6 +39,10 @@ export type InFlightBlockBundle = {
   balRlp?: Uint8Array
   stage: BlockBundleStage
   startedAt: number
+  headerRequestId?: number
+  bodiesRequestId?: number
+  receiptsRequestId?: number
+  balRequestId?: number
 }
 
 export type PivotHealSequence = {
@@ -121,8 +126,9 @@ export function startBlockBundleByNumber(
   peerId: string,
   ethVersion: number,
   blockNumber: bigint,
+  headerRequestId = 1,
 ): InFlightBlockBundle {
-  const payload = encodeGetBlockHeadersByNumberPayload(ethVersion, blockNumber)
+  const payload = encodeGetBlockHeadersByNumberPayload(ethVersion, blockNumber, headerRequestId)
   client.sendEthMessage(peerIdToBytes(peerId), EthMessageCodes.GET_BLOCK_HEADERS, payload)
   return {
     peerId,
@@ -130,7 +136,18 @@ export function startBlockBundleByNumber(
     blockNumber,
     stage: 'headers',
     startedAt: Date.now(),
+    headerRequestId,
   }
+}
+
+function requestIdMatches(
+  ethVersion: number,
+  payload: Uint8Array,
+  expected: number | undefined,
+): boolean {
+  if (expected === undefined) return true
+  const got = ethReplyRequestId(ethVersion, payload)
+  return got === expected
 }
 
 export function advanceBlockBundleEthMessage(
@@ -138,9 +155,12 @@ export function advanceBlockBundleEthMessage(
   bundle: InFlightBlockBundle,
   msg: { peerId: string; code: number; payload: Uint8Array },
   sendEth: (peerId: string, code: number, payload: Uint8Array) => void,
-): 'progress' | 'complete' | 'failed' {
-  if (msg.peerId !== bundle.peerId) return 'failed'
+): 'progress' | 'complete' | 'failed' | 'ignore' {
+  if (msg.peerId !== bundle.peerId) return 'ignore'
   if (msg.code === EthMessageCodes.BLOCK_HEADERS && bundle.stage === 'headers') {
+    if (!requestIdMatches(bundle.ethVersion, msg.payload, bundle.headerRequestId)) {
+      return 'ignore'
+    }
     const headerRlp = firstHeaderRlpFromBlockHeadersPayload(bundle.ethVersion, msg.payload)
     const parsed = parsePivotHeaderFromBlockHeadersPayload(
       bundle.ethVersion,
@@ -155,45 +175,60 @@ export function advanceBlockBundleEthMessage(
     bundle.hash = parsed.hash
     bundle.stage = 'bodies'
     bundle.startedAt = Date.now()
+    const bodiesRequestId = 2
+    bundle.bodiesRequestId = bodiesRequestId
     sendEth(
       bundle.peerId,
       EthMessageCodes.GET_BLOCK_BODIES,
-      encodeGetBlockBodiesPayload(bundle.ethVersion, parsed.hash),
+      encodeGetBlockBodiesPayload(bundle.ethVersion, parsed.hash, bodiesRequestId),
     )
     return 'progress'
   }
   if (msg.code === EthMessageCodes.BLOCK_BODIES && bundle.stage === 'bodies') {
+    if (!requestIdMatches(bundle.ethVersion, msg.payload, bundle.bodiesRequestId)) {
+      return 'ignore'
+    }
     const bodyRlp = parseFirstBodyFromBlockBodiesPayload(msg.payload)
     if (bodyRlp === null) return 'failed'
     bundle.bodyRlp = bodyRlp
     bundle.stage = 'receipts'
     bundle.startedAt = Date.now()
+    const receiptsRequestId = 3
+    bundle.receiptsRequestId = receiptsRequestId
     sendEth(
       bundle.peerId,
       EthMessageCodes.GET_RECEIPTS,
-      encodeGetReceiptsPayload(bundle.ethVersion, bundle.hash!),
+      encodeGetReceiptsPayload(bundle.ethVersion, bundle.hash!, receiptsRequestId),
     )
     return 'progress'
   }
   if (msg.code === EthMessageCodes.RECEIPTS && bundle.stage === 'receipts') {
+    if (!requestIdMatches(bundle.ethVersion, msg.payload, bundle.receiptsRequestId)) {
+      return 'ignore'
+    }
     const parsed = parseReceiptsReplyPayload(bundle.ethVersion, msg.payload)
     if (parsed === null || parsed.lastBlockIncomplete) return 'failed'
     bundle.receiptsEth69Rlp = parsed.receiptsListRlp
     if (bundle.ethVersion >= 71) {
       bundle.stage = 'bal'
       bundle.startedAt = Date.now()
+      const balRequestId = 4
+      bundle.balRequestId = balRequestId
       sendEth(
         bundle.peerId,
         EthMessageCodes.GET_BLOCK_ACCESS_LISTS,
-        encodeGetBlockAccessListsPayload(bundle.ethVersion, bundle.hash!),
+        encodeGetBlockAccessListsPayload(bundle.ethVersion, bundle.hash!, balRequestId),
       )
       return 'progress'
     }
     return 'complete'
   }
   if (msg.code === EthMessageCodes.BLOCK_ACCESS_LISTS && bundle.stage === 'bal') {
+    if (!requestIdMatches(bundle.ethVersion, msg.payload, bundle.balRequestId)) {
+      return 'ignore'
+    }
     bundle.balRlp = parseFirstBalFromBlockAccessListsPayload(msg.payload)
     return 'complete'
   }
-  return 'failed'
+  return 'ignore'
 }

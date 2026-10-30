@@ -13,7 +13,7 @@ import {
 } from '@ethereumjs/util'
 import { keccak_256 } from '@noble/hashes/sha3'
 
-import type { SnapPivotStore } from '../persist/snapStore.ts'
+import { type SnapPivotStore, snapBucketsUnfinished } from '../persist/snapStore.ts'
 import { recordDiagnostic } from '../spine/diagnostics.ts'
 import type { EthySpine } from '../spine/types.ts'
 import type { IngestedAccountMeta } from './accountSync.ts'
@@ -192,6 +192,7 @@ export class SnapCodeAndStorageSynchronizer {
 
   private schedule(): void {
     if (this.spine.snapPaused || this.spine.pivotStateRoot === undefined) return
+    if (snapBucketsUnfinished(this.spine.snapBuckets)) return
     const now = Date.now()
     this.expireStale(now)
     const peers = this.getSnapPeers().filter((p) => p.caps.some((c) => c.startsWith('snap')))

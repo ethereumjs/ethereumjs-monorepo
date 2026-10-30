@@ -29,6 +29,11 @@ export function deriveCapabilities(spine: EthySpine): void {
       spine.capabilities.head = { status: 'locked', label: 'Locked' }
       break
     }
+    case 'BAL_CATCHUP':
+      spine.capabilities.p2p = { status: 'ready', label: `${peerCount} Peers` }
+      spine.capabilities.snap = { status: 'ready', label: 'Synced' }
+      spine.capabilities.head = { status: 'partial', label: 'Catch-up' }
+      break
     case 'HEAD_FOLLOWING':
       spine.capabilities.p2p = { status: 'ready', label: `${peerCount} Peers` }
       spine.capabilities.snap = { status: 'ready', label: 'Synced' }

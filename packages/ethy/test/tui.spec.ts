@@ -47,42 +47,34 @@ describe('[Ethy/TUI]: renderFrame', () => {
     deriveCapabilities(spine)
     const plain = stripAnsi(renderFrame(spine, createInitialViewState(), 140, 30).join('\n'))
     assert.include(plain, '░')
-    assert.include(plain, 'paused')
-    assert.include(plain, 'Bytecode')
-    assert.include(plain, 'Storage')
+    assert.include(plain, 'Snap Sync · Accounts')
+    assert.include(plain, 'acc ·')
+    assert.notInclude(plain, 'kept')
     assert.notInclude(plain, '16/16')
   })
 
-  it('node pulse shows heal progress and whether accounts were kept', () => {
+  it('node pulse uses four rows and BAL catch-up copy', () => {
     const view = createInitialViewState()
     const spine = createSpine('sepolia', 11155111n)
-    setPhase(spine, 'SNAP_SYNCING')
-    spine.pivotBlockNumber = 12_019_912n
-    spine.pivotHeal = {
-      fromBlock: 12_019_913n,
-      nextBlock: 12_020_033n,
-      toBlock: 12_020_871n,
-    }
-    const healing = stripAnsi(renderFrame(spine, view, 160, 30).join('\n'))
-    assert.include(healing, 'Healing 120/959')
-    assert.include(healing, '#12,019,912 → #12,020,871')
-
-    spine.pivotHeal = undefined
-    spine.pivotBlockNumber = 12_020_871n
-    spine.pivotCarry = { kind: 'kept', accounts: 3_482_563 }
-    const kept = stripAnsi(renderFrame(spine, view, 160, 30).join('\n'))
-    assert.include(kept, 'Snap Syncing')
-    assert.include(kept, '#12,020,871 · 3.5M kept')
-
-    spine.pivotCarry = { kind: 'previous', accounts: 3_482_563 }
-    const held = stripAnsi(renderFrame(spine, view, 160, 30).join('\n'))
-    assert.include(held, '#12,020,871 · 3.5M previous')
+    setPhase(spine, 'BAL_CATCHUP')
+    spine.pivotBlockNumber = 100n
+    spine.lastVerifiedBlockNumber = 110n
+    spine.balCatchUp = { fromBlock: 101n, applied: 10, total: 25 }
+    const catchUp = stripAnsi(renderFrame(spine, view, 160, 30).join('\n'))
+    assert.include(catchUp, 'BAL Catch-Up')
+    assert.include(catchUp, '10 / 25 BALs applied')
+    assert.match(catchUp, /%/)
+    assert.include(catchUp, '█')
+    assert.notInclude(catchUp, 'kept')
+    assert.notInclude(catchUp, 'previous')
+    assert.notInclude(catchUp, '!')
 
     setPhase(spine, 'HEAD_FOLLOWING')
+    spine.headBlockNumber = 125n
     const head = stripAnsi(renderFrame(spine, view, 160, 30).join('\n'))
     assert.include(head, 'Head Following')
-    assert.include(head, '#12,020,871')
-    assert.notInclude(head, 'previous')
+    assert.include(head, '#125 (live)')
+    assert.include(head, '100%')
   })
 
   it('renderFrame() at 100x30 respects column width', () => {

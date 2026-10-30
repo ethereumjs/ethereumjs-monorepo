@@ -9,8 +9,7 @@ import { NoticeBoard } from '../notify/board.ts'
 import { resolveEthyDataDir } from '../persist/ethyDataRoot.ts'
 import { PeerBookStore } from '../persist/peerBook.ts'
 import { SnapPivotStore } from '../persist/snapStore.ts'
-import { createSpine, setPhase } from '../spine/createSpine.ts'
-import { recordDiagnostic } from '../spine/diagnostics.ts'
+import { createSpine } from '../spine/createSpine.ts'
 import type { EthySpine } from '../spine/types.ts'
 
 export interface CreateEthyNodeOptions {
@@ -18,6 +17,8 @@ export interface CreateEthyNodeOptions {
   chainId: bigint
   demo?: boolean
   headless?: boolean
+  /** Wipe pivot journals; peer book is kept (WP-04a). */
+  fresh?: boolean
   dataDir?: string
 }
 
@@ -54,15 +55,10 @@ export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
     expectedForkHash: advertisedForkHash(chain, hardfork),
     enabled: !demo,
   })
-  const restored = snapStore.loadInto(spine, stateManager)
-  if (restored > 0) {
-    setPhase(spine, 'SNAP_SYNCING')
-    recordDiagnostic(spine, {
-      subsystem: 'snap',
-      severity: 'info',
-      message: `Restored ${restored.toLocaleString('en-US')} accounts from disk`,
-    })
+  if (opts.fresh === true && !demo) {
+    snapStore.discardPivots()
   }
+  // Disk restore and resume policy run in `startPeerCoordinator` once a peer head is known.
   const node: EthyNode = {
     spine,
     stateManager,

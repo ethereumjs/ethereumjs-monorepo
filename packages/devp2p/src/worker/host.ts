@@ -10,6 +10,7 @@ import {
 import { RLP } from '@ethereumjs/rlp'
 import {
   bigIntToUnpaddedBytes,
+  bytesToBigInt,
   bytesToHex,
   bytesToUnprefixedHex,
   utf8ToBytes,
@@ -374,9 +375,8 @@ export class Devp2pWorkerHost {
       })
       if (this._options?.status !== undefined) {
         try {
-          eth.sendStatus(
-            ethStatusFromFields(this._options.status as EthStatusFields, eth.getVersion()),
-          )
+          const statusFields = this._ethStatusFieldsForSend()
+          eth.sendStatus(ethStatusFromFields(statusFields, eth.getVersion()))
           this._discoveryMetrics.recordStatusSent()
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : String(err)
@@ -471,6 +471,23 @@ export class Devp2pWorkerHost {
       }
     }
     return false
+  }
+
+  /** Honest rolling-window STATUS on new handshakes after `putServableBlock` (WP-04a). */
+  private _ethStatusFieldsForSend(): EthStatusFields {
+    const base = this._options?.status as EthStatusFields | undefined
+    if (this._blockRange === null || base === undefined) {
+      return base as EthStatusFields
+    }
+    const earliestQty = bytesToBigInt(this._blockRange.earliest)
+    const latestQty = bytesToBigInt(this._blockRange.latest)
+    return {
+      td: base.td ?? '0x01',
+      bestHash: bytesToHex(this._blockRange.latestHash),
+      genesisHash: base.genesisHash,
+      earliestBlock: `0x${earliestQty.toString(16)}`,
+      latestBlock: `0x${latestQty.toString(16)}`,
+    }
   }
 
   private _syncBlockRangeFromStore(force: boolean): void {

@@ -1,7 +1,7 @@
 # WP-06: On-Demand `@ethereumjs/evm` Sandbox, Light Beacon Pulse & Headless SDK
 
 - **Status:** `BLOCKED_BY_WP-05`
-- **Dependencies:** `WP-04`, `WP-05`
+- **Dependencies:** `WP-04b`, `WP-05`
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
 
