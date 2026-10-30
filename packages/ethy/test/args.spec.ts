@@ -8,6 +8,7 @@ describe('[Ethy/CLI]: args', () => {
     assert.equal(a.network, 'sepolia')
     assert.isFalse(a.demo)
     assert.isFalse(a.headless)
+    assert.isFalse(a.fresh)
   })
 
   it('parseEthyArgs() reads --demo and --headless', () => {
@@ -15,6 +16,11 @@ describe('[Ethy/CLI]: args', () => {
     assert.equal(a.network, 'mainnet')
     assert.isTrue(a.demo)
     assert.isTrue(a.headless)
+  })
+
+  it('parseEthyArgs() reads --fresh', () => {
+    const a = parseEthyArgs(['node', 'ethy', '--fresh'])
+    assert.isTrue(a.fresh)
   })
 
   it('parseEthyArgs() reads --datadir', () => {

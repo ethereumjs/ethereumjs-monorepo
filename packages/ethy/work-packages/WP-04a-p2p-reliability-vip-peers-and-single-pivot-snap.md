@@ -1,6 +1,6 @@
 # WP-04a: P2P Connection Reliability, VIP Peer Retention, Single-Pivot `snap/1` Discipline & `--fresh` Canary
 
-- **Status:** `PLANNED`
+- **Status:** `DONE`
 - **Dependencies:** `WP-00`–`WP-03c` (`DONE`)
 - **Branch:** `ethy-wp04-continuation`
 - **Planner:** Grok 4.7
@@ -84,12 +84,12 @@ To keep sync state 100% predictable and never end up with a half-healed "Franken
 ---
 
 ## 4. Acceptance Criteria
-- [ ] Outbound `eth/69+` `STATUS` advertises `earliestBlock = 0, latestBlock = 0, latestBlockHash = genesisHash` until a real servable block bundle is in `RollingBlockStore`.
-- [ ] `PeerBookStore` uses short backoff (`15s → 30s → 60s`, max `120s` for VIP `snap/1` peers) on `TOO_MANY_PEERS`, and `PeerCoordinator` runs a periodic VIP Reconnect Loop when active `snap/1` peers `< 4`.
-- [ ] `advanceBlockBundleEthMessage` ignores (`'ignore'`) messages from other peers instead of returning `'failed'`.
-- [ ] `SnapAccountSynchronizer` runs without mid-SNAP pivot switching and without `SnapCodeAndStorageSynchronizer` stealing peer slots until account buckets finish (and `loadInto` queues restored contract accounts for code/storage).
-- [ ] `ethy sepolia --fresh` wipes `pivots/` while preserving `peers.json`, and stale partial pivots (`gap > 90` blocks) auto-reset cleanly with a `NoticeBoard` message.
-- [ ] `test/p2pReliability.spec.ts`, `npm run tsc`, `npm test`, and `npm run spellcheck` pass with 0 errors.
+- [x] Outbound `eth/69+` `STATUS` advertises `earliestBlock = 0, latestBlock = 0, latestBlockHash = genesisHash` until a real servable block bundle is in `RollingBlockStore`.
+- [x] `PeerBookStore` uses short backoff (`15s → 30s → 60s`, max `120s` for VIP `snap/1` peers) on `TOO_MANY_PEERS`, and `PeerCoordinator` runs a periodic VIP Reconnect Loop when active `snap/1` peers `< 4`.
+- [x] `advanceBlockBundleEthMessage` ignores (`'ignore'`) messages from other peers instead of returning `'failed'`.
+- [x] `SnapAccountSynchronizer` runs without mid-SNAP pivot switching and without `SnapCodeAndStorageSynchronizer` stealing peer slots until account buckets finish (and `loadInto` queues restored contract accounts for code/storage).
+- [x] `ethy sepolia --fresh` wipes `pivots/` while preserving `peers.json`, and stale partial pivots (`gap > 90` blocks) auto-reset cleanly with a `NoticeBoard` message.
+- [x] `test/p2pReliability.spec.ts`, `npm run tsc`, `npm test`, and `npm run spellcheck` pass with 0 errors.
 
 ---
 
@@ -196,4 +196,8 @@ Upstream touch (separate commit): `@ethereumjs/devp2p` worker STATUS from `_bloc
 
 ## 6. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled out by Composer 2.5 after implementation and verification.)*
+- Disk restore and the 90-block resume rule run in `startPeerCoordinator` on first peer head (not in `createEthyNode`), so stale pivots can be discarded before journals replay.
+- `HeadBlockFollower` is constructed but not started in WP-04a; BAL catch-up and head follow remain WP-04b.
+- Rolling pivot heal paths (`maybeProactivePivotHeal`, mid-SNAP root swap) are removed from the coordinator; heal helpers remain for WP-04b reuse.
+- `@ethereumjs/devp2p` worker sends ETH STATUS from `_blockRange` when set (separate commit from ethy).
+- `npm run p2p:canary` is manual live Sepolia only; CI uses `test/p2pReliability.spec.ts` (129 ethy tests green).

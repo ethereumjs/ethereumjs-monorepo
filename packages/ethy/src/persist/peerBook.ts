@@ -20,10 +20,20 @@ export type PeerBookRow = {
   lastDisconnectReason?: string
   dialAfter: number
   resetStreak: number
+  tooManyPeersStreak?: number
+}
+
+export function tooManyPeersHoldMs(vip: boolean, streak: number): number {
+  if (streak <= 0) return 15_000
+  if (streak === 1) return 30_000
+  if (streak === 2) return 60_000
+  return vip ? PEER_TOO_MANY_PEERS_VIP_CAP_MS : PEER_TOO_MANY_PEERS_HOLD_MAX_MS
 }
 
 export const PEER_BOOK_STARTUP_DIALS = 8
-export const PEER_TOO_MANY_PEERS_HOLD_MS = 60 * 60 * 1000
+/** Backoff cap for peers with no successful snap responses (WP-04a). */
+export const PEER_TOO_MANY_PEERS_HOLD_MAX_MS = 5 * 60 * 1000
+export const PEER_TOO_MANY_PEERS_VIP_CAP_MS = 120 * 1000
 export const PEER_STALE_SUCCESS_MS = 7 * 24 * 60 * 60 * 1000
 export const PEER_RESET_REMOVE_STREAK = 3
 
@@ -148,12 +158,24 @@ export class PeerBookStore {
 
   dialCandidates(now: number, limit = PEER_BOOK_STARTUP_DIALS): PeerInfo[] {
     const ranked = rankPeerRows(this._rows.values(), now).slice(0, limit)
-    return ranked.map((row) => ({
+    return ranked.map((row) => this._rowToPeerInfo(row))
+  }
+
+  /** VIP snap peers eligible for gentle redial (WP-04a). */
+  vipDialCandidates(now: number, limit = PEER_BOOK_STARTUP_DIALS): PeerInfo[] {
+    const ranked = rankPeerRows(this._rows.values(), now)
+      .filter((row) => row.snapResponsesOk > 0)
+      .slice(0, limit)
+    return ranked.map((row) => this._rowToPeerInfo(row))
+  }
+
+  private _rowToPeerInfo(row: PeerBookRow): PeerInfo {
+    return {
       id: peerIdToBytes(row.id),
       address: row.address,
       udpPort: row.udpPort,
       tcpPort: row.tcpPort,
-    }))
+    }
   }
 
   noteTelemetryPeer(peer: WorkerPeerSnapshot, now: number): void {
@@ -163,6 +185,8 @@ export class PeerBookStore {
     const row = this._ensureRow(id, peer, now)
     if (row === undefined) return
     row.lastStatusAt = now
+    row.tooManyPeersStreak = 0
+    row.dialAfter = now
     row.clientFamily = clientFamilyFromClientId(peer.clientId) ?? row.clientFamily
     if (row.forkHash === undefined) {
       row.forkHash = this.expectedForkHash
@@ -206,7 +230,10 @@ export class PeerBookStore {
     row.lastDisconnectReason = message
 
     if (upper.includes('TOO_MANY_PEERS')) {
-      row.dialAfter = now + PEER_TOO_MANY_PEERS_HOLD_MS
+      const streak = (row.tooManyPeersStreak ?? 0) + 1
+      row.tooManyPeersStreak = streak
+      const vip = row.snapResponsesOk > 0
+      row.dialAfter = now + tooManyPeersHoldMs(vip, streak - 1)
       this._dirty = true
       this.flush()
       return
@@ -267,6 +294,7 @@ export class PeerBookStore {
         snapTimeouts: 0,
         dialAfter: 0,
         resetStreak: 0,
+        tooManyPeersStreak: 0,
       }
       this._rows.set(id, row)
     } else {
@@ -286,5 +314,6 @@ function normalizeRow(id: string, row: PeerBookRow): PeerBookRow {
     snapTimeouts: row.snapTimeouts ?? 0,
     dialAfter: row.dialAfter ?? 0,
     resetStreak: row.resetStreak ?? 0,
+    tooManyPeersStreak: row.tooManyPeersStreak ?? 0,
   }
 }

@@ -1,6 +1,6 @@
 # WP-04b: Phase-Adaptive 4-Row `Node Pulse` UI, Post-SNAP `eth/71` BAL Catch-Up & "Close-the-Laptop" Resume
 
-- **Status:** `BLOCKED_BY_WP-04a`
+- **Status:** `READY_FOR_PLANNING`
 - **Dependencies:** `WP-04a`
 - **Branch:** `ethy-wp04-continuation` (or `ethy-wp04b`)
 - **Planner:** Grok 4.7

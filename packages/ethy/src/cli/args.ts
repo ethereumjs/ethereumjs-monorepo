@@ -2,6 +2,7 @@ export interface EthyCliArgs {
   network: string
   demo: boolean
   headless: boolean
+  fresh: boolean
   dataDir?: string
 }
 
@@ -10,6 +11,7 @@ export function parseEthyArgs(argv: string[]): EthyCliArgs {
   let network = 'sepolia'
   let demo = false
   let headless = false
+  let fresh = false
   let dataDir: string | undefined
 
   for (let i = 0; i < args.length; i++) {
@@ -28,6 +30,10 @@ export function parseEthyArgs(argv: string[]): EthyCliArgs {
       headless = true
       continue
     }
+    if (a === '--fresh') {
+      fresh = true
+      continue
+    }
     if (a === '--help' || a === '-h') {
       throw new Error('HELP')
     }
@@ -37,14 +43,14 @@ export function parseEthyArgs(argv: string[]): EthyCliArgs {
     network = a
   }
 
-  return { network, demo, headless, dataDir }
+  return { network, demo, headless, fresh, dataDir }
 }
 
 export function printEthyUsage(): string {
   return `ethy — EthereumJS execution-free state node (Amsterdam focus)
 
 Usage:
-  ethy [network] [--demo] [--headless] [--datadir PATH]
+  ethy [network] [--demo] [--headless] [--fresh] [--datadir PATH]
 
 Networks: sepolia (default), mainnet, hoodi, holesky
 `

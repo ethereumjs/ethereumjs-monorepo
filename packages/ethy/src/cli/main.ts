@@ -35,19 +35,9 @@ async function main(): Promise<void> {
     chainId,
     demo: cli.demo,
     headless: cli.headless,
+    fresh: cli.fresh,
     dataDir: cli.dataDir,
   })
-
-  if (node.snapStore !== undefined) {
-    const replayed = await node.snapStore.replayPersistedHealBalJournal(node.stateManager)
-    if (replayed > 0) {
-      recordDiagnostic(node.spine, {
-        subsystem: 'snap',
-        severity: 'info',
-        message: `Replayed ${replayed.toLocaleString('en-US')} heal BAL block(s) from disk`,
-      })
-    }
-  }
 
   let coordinatorStop: (() => void) | undefined
   let p2pError: string | undefined
@@ -60,6 +50,7 @@ async function main(): Promise<void> {
         notices: node.notices,
         snapStore: node.snapStore,
         peerBook: node.peerBook,
+        fresh: cli.fresh,
       })
       node.disconnectPeer = handle.disconnectPeer
       ;(

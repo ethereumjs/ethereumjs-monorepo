@@ -49,6 +49,7 @@
     "spellcheck:ts": "npx cspell --gitignore -c ../../config/cspell-ts.json \"./**/*.ts\" --cache --show-suggestions --show-context",
     "spellcheck:md": "npx cspell --gitignore -c ../../config/cspell-md.json \"**.md\" --cache --show-suggestions --show-context",
     "test": "npm run test:node",
+    "p2p:canary": "tsx scripts/p2p-canary.ts",
     "test:node": "vitest run test/* -c ../../config/vitest.config.mts",
     "tsc": "../../config/cli/ts-compile.sh"
   },

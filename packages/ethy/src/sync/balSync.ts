@@ -153,6 +153,7 @@ export class HeadBlockFollower {
         this.opts.sendEthMessage(peerId, code, payload)
       },
     )
+    if (result === 'ignore') return false
     if (result === 'failed') {
       this.catchUp = undefined
       return true
