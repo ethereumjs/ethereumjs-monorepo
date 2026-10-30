@@ -272,6 +272,8 @@ export async function startPeerCoordinator(
   const pivotBundleTimeoutMs = opts.pivotBundleTimeoutMs ?? PIVOT_BUNDLE_TIMEOUT_MS
   let lastTelemetryPeers: WorkerPeerSnapshot[] = []
   let lastDiagTs = 0
+  /** Peer ids we dialed via VIP redial; skip until handshake or expiry. */
+  const pendingVipDials = new Map<string, number>()
   let bundleFetch: PivotBundleFetch | undefined
   let healSeq: PivotHealSequence | undefined
   let dnsTimedOut = false
@@ -416,6 +418,9 @@ export async function startPeerCoordinator(
 
   const maybeVipReconnect = (now: number) => {
     if (peerBook === undefined) return
+    for (const [id, until] of pendingVipDials) {
+      if (until <= now) pendingVipDials.delete(id)
+    }
     const snapLive = [...spine.peers.values()].filter((p) => p.snapSession === true).length
     if (snapLive >= VIP_SNAP_PEER_TARGET) return
     const connected = new Set(spine.peers.keys())
@@ -424,7 +429,10 @@ export async function startPeerCoordinator(
     for (const peer of peerBook.vipDialCandidates(now, PEER_BOOK_STARTUP_DIALS)) {
       const id = bytesToUnprefixedHex(peer.id as Uint8Array).toLowerCase()
       if (connected.has(id)) continue
+      const pendingUntil = pendingVipDials.get(id)
+      if (pendingUntil !== undefined && pendingUntil > now) continue
       client.connectPeer(peer)
+      pendingVipDials.set(id, now + VIP_RECONNECT_INTERVAL_MS)
       dialed++
       if (dialed >= need) break
     }
@@ -791,6 +799,7 @@ export async function startPeerCoordinator(
     spine.peers.clear()
     for (const p of snap.peers) {
       spine.peers.set(p.id, mapPeer(p, prev.get(p.id)))
+      pendingVipDials.delete(p.id.toLowerCase())
       peerBook?.noteTelemetryPeer(p, Date.now())
     }
     spine.discovery = snap.discovery
@@ -830,7 +839,6 @@ export async function startPeerCoordinator(
     }
     ensureSnapSync(client)
     maybeMarkBaseSyncComplete()
-    maybeVipReconnect(Date.now())
   })
 
   client.events.on('protocol', (msg) => {
@@ -897,6 +905,7 @@ export async function startPeerCoordinator(
   })
 
   client.events.on('error', (err) => {
+    if (err.message === 'Already connected') return
     recordDiagnostic(spine, {
       subsystem: 'devp2p',
       severity: 'warn',

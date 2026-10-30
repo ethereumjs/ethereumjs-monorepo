@@ -164,9 +164,26 @@ export class PeerBookStore {
   /** VIP snap peers eligible for gentle redial (WP-04a). */
   vipDialCandidates(now: number, limit = PEER_BOOK_STARTUP_DIALS): PeerInfo[] {
     const ranked = rankPeerRows(this._rows.values(), now)
-      .filter((row) => row.snapResponsesOk > 0)
-      .slice(0, limit)
-    return ranked.map((row) => this._rowToPeerInfo(row))
+    const snapProven = ranked.filter((row) => row.snapResponsesOk > 0)
+    const statusOnly = ranked.filter(
+      (row) => row.snapResponsesOk <= 0 && (row.lastStatusAt ?? 0) > 0,
+    )
+    const ordered = [...snapProven, ...statusOnly]
+    const families = new Set(
+      ordered.map((row) => row.clientFamily ?? row.id).filter((f) => f.length > 0),
+    )
+    const capPerFamily = families.size > 1 ? 2 : limit
+    const familyCount = new Map<string, number>()
+    const picked: PeerBookRow[] = []
+    for (const row of ordered) {
+      if (picked.length >= limit) break
+      const family = row.clientFamily ?? row.id
+      const n = familyCount.get(family) ?? 0
+      if (n >= capPerFamily) continue
+      familyCount.set(family, n + 1)
+      picked.push(row)
+    }
+    return picked.map((row) => this._rowToPeerInfo(row))
   }
 
   private _rowToPeerInfo(row: PeerBookRow): PeerInfo {

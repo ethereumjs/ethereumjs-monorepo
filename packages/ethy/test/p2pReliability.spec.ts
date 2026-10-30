@@ -5,7 +5,7 @@ import * as path from 'node:path'
 import { EthMessageCodes } from '@ethereumjs/devp2p'
 import { RLP } from '@ethereumjs/rlp'
 import { createFlatStateManager } from '@ethereumjs/statemanager'
-import { intToUnpaddedBytes } from '@ethereumjs/util'
+import { bytesToUnprefixedHex, intToUnpaddedBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { chainConfigForNetwork } from '../src/net/chainHardfork.ts'
@@ -163,7 +163,7 @@ describe('[Ethy/Persist]: VIP peer backoff', () => {
     assert.isBelow(row.dialAfter - now, 60 * 60 * 1000)
   })
 
-  it('vipDialCandidates lists snap-proven peers', () => {
+  it('vipDialCandidates prefers snap-proven then STATUS-only peers', () => {
     const dir = tempDir()
     const book = PeerBookStore.open({
       dataDir: dir,
@@ -187,7 +187,49 @@ describe('[Ethy/Persist]: VIP peer backoff', () => {
       }),
     )
     const vips = book.vipDialCandidates(now)
-    assert.equal(vips.length, 1)
+    assert.equal(vips.length, 2)
+    const firstId = bytesToUnprefixedHex(vips[0]!.id as Uint8Array).toLowerCase()
+    assert.equal(firstId, 'bb')
+  })
+
+  it('vipDialCandidates caps at two per family when several families qualify', () => {
+    const dir = tempDir()
+    const book = PeerBookStore.open({
+      dataDir: dir,
+      network: 'sepolia',
+      expectedForkHash: '0xabc',
+      enabled: true,
+    })
+    const now = Date.now()
+    const nmIds = ['01', '02', '03'].map((n) => `${n.repeat(32)}`)
+    const gtIds = ['04', '05'].map((n) => `${n.repeat(32)}`)
+    for (let i = 0; i < 3; i++) {
+      book.putRow(
+        sampleRow({
+          id: nmIds[i]!,
+          clientFamily: 'Nethermind',
+          lastSnapSuccessAt: now - i,
+          snapResponsesOk: 3 - i,
+        }),
+      )
+    }
+    for (let i = 0; i < 2; i++) {
+      book.putRow(
+        sampleRow({
+          id: gtIds[i]!,
+          clientFamily: 'Geth',
+          lastSnapSuccessAt: now - i,
+          snapResponsesOk: 2 - i,
+        }),
+      )
+    }
+    const vips = book.vipDialCandidates(now, 8)
+    assert.equal(vips.length, 4)
+    const picked = new Set(vips.map((p) => bytesToUnprefixedHex(p.id as Uint8Array).toLowerCase()))
+    assert.equal(picked.size, 4)
+    assert.isFalse(picked.has(nmIds[2]!.toLowerCase()))
+    assert.equal([...picked].filter((id) => nmIds.includes(id)).length, 2)
+    assert.equal([...picked].filter((id) => gtIds.includes(id)).length, 2)
   })
 })
 
