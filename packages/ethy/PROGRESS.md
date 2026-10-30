@@ -8,7 +8,7 @@ This file is the **single source of truth** for project progress, architectural 
 
 ## 1. Current Project Snapshot
 
-- **Current Stage:** **WP-04a** is **`DONE`** ([#4425](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4425)). **WP-04b** is **`PLANNED`** (4-row Node Pulse, `BAL_CATCHUP` phase, post-SNAP BAL catch-up, laptop resume — see [`work-packages/WP-04b-node-pulse-ui-bal-catchup-and-laptop-resume.md`](./work-packages/WP-04b-node-pulse-ui-bal-catchup-and-laptop-resume.md) §5, Decision **D-065**).
+- **Current Stage:** **WP-04b** is **`DONE`** (4-row Node Pulse, `BAL_CATCHUP`, `lastVerifiedBlockNumber`, live head follower — [#4425](https://github.com/ethereumjs/ethereumjs-monorepo/pull/4425)). **WP-05** is unblocked for planning.
 - **Active Target Network:** `sepolia` (Amsterdam hardfork live; generic `@ethereumjs/common` chain support).
 - **Package Identity:** `@ethereumjs/ethy` (CLI binary: `ethy`, zero-config invocation `ethy` or `ethy sepolia`; unscoped `ethy` npm name transfer inquired).
 
@@ -26,8 +26,8 @@ This file is the **single source of truth** for project progress, architectural 
 | **WP-03b** | **P2P Master Plan: Surgical 4-Stage Probe, Direct DNS/EIP-868 ENR Pipeline & Live `snap/1` Verification** | `DONE` | WP-03 (`DONE`) | [`work-packages/WP-03b-p2p-probe-and-enr-pipeline.md`](./work-packages/WP-03b-p2p-probe-and-enr-pipeline.md) | Shipped (#4421): ENR `id` + `ethForkId`, DNS→`peer:new`, `SnapPivotStore` + `PeerBookStore`, verified >3.48M Sepolia accounts synced live at ~6k acc/s! |
 | **WP-03c** | **Honest Block-Range Advertising (`earliestBlock` Fix) & Full Rolling-Window `eth/69–71` Server** | `DONE` | WP-03b (`DONE`) | [`work-packages/WP-03c-honest-range-and-eth-rolling-server.md`](./work-packages/WP-03c-honest-range-and-eth-rolling-server.md) | Shipped (#4422): `RollingBlockStore` + `ethServer` in worker; pivot bundle `putServableBlock`; **Served** cockpit row. |
 | **WP-04a** | **P2P Connection Reliability, VIP Peer Retention, Single-Pivot `snap/1` Discipline & `--fresh` Canary** | `DONE` | WP-03c (`DONE`) | [`work-packages/WP-04a-p2p-reliability-vip-peers-and-single-pivot-snap.md`](./work-packages/WP-04a-p2p-reliability-vip-peers-and-single-pivot-snap.md) | Shipped: genesis STATUS, VIP backoff/reconnect, bundle `'ignore'`, `resumePolicy` + `--fresh`, sequential code/storage after accounts, `p2pReliability.spec.ts`, `p2p:canary`. |
-| **WP-04b** | **Phase-Adaptive 4-Row `Node Pulse` UI, Post-SNAP `eth/71` BAL Catch-Up & "Close-the-Laptop" Resume** | `PLANNED` | WP-04a (`DONE`) | [`work-packages/WP-04b-node-pulse-ui-bal-catchup-and-laptop-resume.md`](./work-packages/WP-04b-node-pulse-ui-bal-catchup-and-laptop-resume.md) | Four slices: pulse geometry + `computeSnapProgressPct`; `lastVerifiedBlockNumber`; `HeadBlockFollower` catch-up/wake; `balCatchUp.spec.ts` oracle. |
-| **WP-05** | **Bidirectional Local LLM `IntentEngine` (`<ethy_state>` & Tool Gating)** | `BLOCKED_BY_WP-04b` | WP-01, WP-02, WP-04b | [`work-packages/WP-05-local-llm-intent-engine.md`](./work-packages/WP-05-local-llm-intent-engine.md) | Zero-dep local HTTP JSON-schema LLM engine (`llama-server` 1.7B instruct), `<ethy_state>` header injection, dynamic phase tool gating, `--record-fixture` CI replay. |
+| **WP-04b** | **Phase-Adaptive 4-Row `Node Pulse` UI, Post-SNAP `eth/71` BAL Catch-Up & "Close-the-Laptop" Resume** | `DONE` | WP-04a (`DONE`) | [`work-packages/WP-04b-node-pulse-ui-bal-catchup-and-laptop-resume.md`](./work-packages/WP-04b-node-pulse-ui-bal-catchup-and-laptop-resume.md) | Shipped on `ethy-wp04-continuation`: slices A–D, 134 tests green. |
+| **WP-05** | **Bidirectional Local LLM `IntentEngine` (`<ethy_state>` & Tool Gating)** | `READY_FOR_PLANNING` | WP-01, WP-02, WP-04b (`DONE`) | [`work-packages/WP-05-local-llm-intent-engine.md`](./work-packages/WP-05-local-llm-intent-engine.md) | Zero-dep local HTTP JSON-schema LLM engine (`llama-server` 1.7B instruct), `<ethy_state>` header injection, dynamic phase tool gating, `--record-fixture` CI replay. |
 | **WP-06** | **On-Demand `@ethereumjs/evm` Sandbox, Light Beacon Pulse & Headless SDK** | `BLOCKED_BY_WP-05` | WP-04b, WP-05 | [`work-packages/WP-06-on-demand-evm-and-headless-sdk.md`](./work-packages/WP-06-on-demand-evm-and-headless-sdk.md) | On-demand EVM call/trace against `FlatStateManager` (with cold-account `snap/1` fallback), HTTP Beacon header pulse, `createEthyNode({ headless: true })` SDK for FYP/MCP. |
 
 *Status values: `READY_FOR_PLANNING` → `PLANNED` (Grok 4.7 finished concrete plan) → `IN_PROGRESS` (Composer 2.5 implementing) → `DONE` (tests + tsc + spellcheck green).*
@@ -131,6 +131,9 @@ Track every modification or planned modification to sibling monorepo packages he
 ## 5. Chronological Progress Log
 
 *Agents: Append a new dated subsection at the top of this list after each Planning (Grok 4.7) or Implementation (Composer 2.5) pass.*
+
+### 2026-10-30 — `WP-04b` implementation (`DONE`) (Implementer — Composer 2.5)
+- Four-row Node Pulse, `computeSnapProgressPct`, `BAL_CATCHUP` phase, `HeadBlockFollower` catch-up/wake, `lastVerifiedBlockNumber` in `active.json`, `test/balCatchUp.spec.ts`. Matrix **WP-04b** **`DONE`**; **WP-05** unblocked.
 
 ### 2026-10-30 — `WP-04b` concrete implementation plan (`PLANNED`) (Planner — Grok 4.7)
 - Filled [`work-packages/WP-04b-node-pulse-ui-bal-catchup-and-laptop-resume.md`](./work-packages/WP-04b-node-pulse-ui-bal-catchup-and-laptop-resume.md) §5: slices A–D (4-row pulse + continuous `%`, `lastVerifiedBlockNumber`, `tryEnterBalCatchUp` + `HeadBlockFollower`, laptop wake gap, `balCatchUp.spec.ts`).

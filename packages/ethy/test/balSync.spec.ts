@@ -7,7 +7,7 @@ import { assert, describe, it } from 'vitest'
 import { DeterministicIntentEngine } from '../src/ai/deterministicEngine.ts'
 import { createSpine } from '../src/spine/createSpine.ts'
 import { setPhase } from '../src/spine/createSpine.ts'
-import { pushBalWindow, tryEnterHeadFollowing } from '../src/sync/balSync.ts'
+import { pushBalWindow, tryEnterBalCatchUp, tryEnterHeadFollowing } from '../src/sync/balSync.ts'
 
 describe('[Ethy/Sync]: BAL window and head phase', () => {
   it('pushBalWindow keeps full JSON on newest entry only', () => {
@@ -21,9 +21,10 @@ describe('[Ethy/Sync]: BAL window and head phase', () => {
     assert.isUndefined(spine.balWindow[1]?.balJson)
   })
 
-  it('tryEnterHeadFollowing when buckets and code queues are done', () => {
+  it('tryEnterBalCatchUp when buckets and code queues are done', () => {
     const spine = createSpine('sepolia', 11155111n)
     setPhase(spine, 'SNAP_SYNCING')
+    spine.pivotBlockNumber = 100n
     for (const b of spine.snapBuckets) b.status = 'done'
     const entered = tryEnterHeadFollowing(spine, undefined, {
       pendingDone: () => true,
@@ -31,6 +32,15 @@ describe('[Ethy/Sync]: BAL window and head phase', () => {
     assert.equal(entered, true)
     assert.equal(spine.phase, 'HEAD_FOLLOWING')
     assert.equal(spine.capabilities.head.status, 'ready')
+
+    spine.pivotBlockNumber = 100n
+    setPhase(spine, 'SNAP_SYNCING')
+    for (const b of spine.snapBuckets) b.status = 'done'
+    const catchUp = tryEnterBalCatchUp(spine, undefined, { pendingDone: () => true } as never, 125n)
+    assert.equal(catchUp, true)
+    assert.equal(spine.phase, 'BAL_CATCHUP')
+    assert.equal(spine.balCatchUp?.total, 25)
+    assert.equal(spine.capabilities.head.status, 'partial')
   })
 
   it('flat and merkle stay aligned after shared consumeBAL oracle', async () => {

@@ -5,6 +5,7 @@ export type SnapResumeSaved = {
   pivotBlockNumber: bigint
   baseSyncComplete: boolean
   bucketsDoneCount: number
+  lastVerifiedBlockNumber?: bigint
 }
 
 export type SnapResumeDecision =

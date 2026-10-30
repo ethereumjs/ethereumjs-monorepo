@@ -3,7 +3,7 @@ import type { BALJSONBlockAccessList } from '@ethereumjs/util'
 
 export type CapabilityId = 'p2p' | 'snap' | 'head' | 'ai'
 
-export type EthyPhase = 'BOOTING' | 'P2P_WARMUP' | 'SNAP_SYNCING' | 'HEAD_FOLLOWING'
+export type EthyPhase = 'BOOTING' | 'P2P_WARMUP' | 'SNAP_SYNCING' | 'BAL_CATCHUP' | 'HEAD_FOLLOWING'
 
 export type CapabilityReadiness = 'locked' | 'partial' | 'ready'
 
@@ -92,6 +92,16 @@ export interface EthySpine {
   pivotCarry?: PivotCarry
   headBlockNumber?: bigint
   headStateRoot?: Uint8Array
+  /** Last block whose header+BAL were verified and applied (persisted on disk). */
+  lastVerifiedBlockNumber?: bigint
+  /** Best peer head from telemetry (Node Pulse drift). */
+  bestPeerHead?: bigint
+  /** Post-snap BAL walk toward network head. */
+  balCatchUp?: {
+    fromBlock: bigint
+    applied: number
+    total: number
+  }
   capabilities: {
     p2p: CapabilityState
     snap: CapabilityState

@@ -20,11 +20,18 @@ describe('[Ethy/Demo]: advanceDemo', () => {
     assert.isTrue(spine.peers.size >= 3)
   })
 
-  it('elapsed 9000 reaches HEAD_FOLLOWING', () => {
+  it('elapsed 9000 reaches BAL_CATCHUP', () => {
     const spine = createSpine('sepolia', 11155111n)
     advanceDemo(spine, 9000)
-    assert.equal(spine.phase, 'HEAD_FOLLOWING')
+    assert.equal(spine.phase, 'BAL_CATCHUP')
     assert.isDefined(spine.pivotBlockNumber)
+    assert.isDefined(spine.balCatchUp)
+  })
+
+  it('elapsed 11000 reaches HEAD_FOLLOWING', () => {
+    const spine = createSpine('sepolia', 11155111n)
+    advanceDemo(spine, 11_000)
+    assert.equal(spine.phase, 'HEAD_FOLLOWING')
     assert.isDefined(spine.headBlockNumber)
   })
 })

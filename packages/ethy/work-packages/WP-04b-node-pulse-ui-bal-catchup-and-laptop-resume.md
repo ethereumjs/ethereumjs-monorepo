@@ -1,6 +1,6 @@
 # WP-04b: Phase-Adaptive 4-Row `Node Pulse` UI, Post-SNAP `eth/71` BAL Catch-Up & "Close-the-Laptop" Resume
 
-- **Status:** `PLANNED`
+- **Status:** `DONE`
 - **Dependencies:** `WP-04a`
 - **Branch:** `ethy-wp04-continuation` (or `ethy-wp04b`)
 - **Planner:** Grok 4.7
@@ -55,10 +55,10 @@ Building on the rock-solid single-pivot `snap/1` and VIP peer foundation from `W
 ---
 
 ## 4. Acceptance Criteria
-- [ ] `Node Pulse` is strictly 4 content rows (8 total lines) across all phases, uses only `█` and `░` in its 16-cell progress bar, and displays continuous cursor-based `0%–100%` progress during `Snap Sync`.
-- [ ] Completing `Snap Sync` automatically transitions to `BAL Catch-Up` (`#P → #Head`), applies intermediate `eth/71` BALs via `consumeBAL`, and transitions to `Head Following`.
-- [ ] Simulating a laptop sleep / restart after base sync completion (`lastVerifiedBlockNumber = #100`, peer head = `#125`) triggers `BAL Catch-Up` for the 25 missed blocks without re-running `snap/1`, and lands in `Head Following` at `#125` with `FlatStateManager` matching `MerkleStateManager`.
-- [ ] `npm run tsc`, `npm test`, and `npm run spellcheck` pass with 0 errors.
+- [x] `Node Pulse` is strictly 4 content rows (8 total lines) across all phases, uses only `█` and `░` in its 16-cell progress bar, and displays continuous cursor-based `0%–100%` progress during `Snap Sync`.
+- [x] Completing `Snap Sync` automatically transitions to `BAL Catch-Up` (`#P → #Head`), applies intermediate `eth/71` BALs via `consumeBAL`, and transitions to `Head Following`.
+- [x] Simulating a laptop sleep / restart after base sync completion (`lastVerifiedBlockNumber = #100`, peer head = `#125`) triggers `BAL Catch-Up` for the 25 missed blocks without re-running `snap/1`, and lands in `Head Following` at `#125` with `FlatStateManager` matching `MerkleStateManager`.
+- [x] `npm run tsc`, `npm test`, and `npm run spellcheck` pass with 0 errors.
 
 ---
 
@@ -141,4 +141,7 @@ Extends **D-063**. Builds on **WP-04a** (`handoffCatchup`, `markBaseSyncComplete
 
 ## 6. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled out by Composer 2.5 after implementation and verification.)*
+- **`BAL_CATCHUP`** phase + head pill `Catch-up`; `HeadBlockFollower` ticks in catch-up and follow; laptop wake via `LAPTOP_WAKE_BLOCK_GAP` (2 blocks).
+- **`active.json`** `lastVerifiedBlockNumber`; handoff and post-base-sync enter catch-up without restarting snap schedulers.
+- **`test/balCatchUp.spec.ts`** covers progress bar, 25× `applyBlockBal` flat/merkle parity, and resume from `#110`.
+- **`tryEnterHeadFollowing`** kept as thin alias for existing tests calling zero-gap transition.

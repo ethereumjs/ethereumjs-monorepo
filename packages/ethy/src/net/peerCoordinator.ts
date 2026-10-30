@@ -31,7 +31,12 @@ import { deriveCapabilities, setPhase } from '../spine/createSpine.ts'
 import { recordDiagnostic } from '../spine/diagnostics.ts'
 import type { EthySpine, PeerTelemetry } from '../spine/types.ts'
 import { SnapAccountSynchronizer } from '../sync/accountSync.ts'
-import { HeadBlockFollower } from '../sync/balSync.ts'
+import {
+  HeadBlockFollower,
+  LAPTOP_WAKE_BLOCK_GAP,
+  seedBalCatchUp,
+  tryEnterBalCatchUp,
+} from '../sync/balSync.ts'
 import {
   type PivotHealSequence,
   advanceBlockBundleEthMessage,
@@ -185,6 +190,44 @@ export async function startPeerCoordinator(
   const hardfork = activeHardfork(chain)
   const privateKey = genPrivateKey()
 
+  const ensureHeadFollower = (clientRef: Devp2pWorkerClient) => {
+    if (spine.pivotStateRoot === undefined) return
+    if (headFollower === undefined) {
+      headFollower = new HeadBlockFollower({
+        spine,
+        stateManager,
+        chain,
+        hardfork,
+        getClient: () => clientRef,
+        sendEthMessage: sendEthToPeer,
+        pickEthPeer: () => {
+          const best = pickBestPeer(lastTelemetryPeers, pivotBlockedPeers)
+          if (best === undefined) return undefined
+          return {
+            id: best.id,
+            ethVersion: highestEthVersion(best.caps),
+            latestBlock: best.latestBlock !== undefined ? Number(best.latestBlock) : undefined,
+          }
+        },
+        putServableBlock: (bundle) => clientRef.putServableBlock(bundle),
+        onBalApplied: bundleBalHooks.onBalApplied,
+        appendHealBal: bundleBalHooks.appendHealBal,
+        noteVerifiedBlock: (n) => snapStore?.noteVerifiedBlock(n),
+        onSyncedToHead: (head) => {
+          opts.notices?.post(
+            {
+              key: 'bal-synced-head',
+              level: 'info',
+              text: `Synced to head #${head.toString()}`,
+            },
+            Date.now(),
+          )
+        },
+      })
+    }
+    headFollower.start()
+  }
+
   const ensureSnapSync = (clientRef: Devp2pWorkerClient) => {
     if (spine.pivotStateRoot === undefined || handoffCatchup) return
     const transport = createLiveSnapTransport(clientRef)
@@ -216,28 +259,6 @@ export async function startPeerCoordinator(
         peerBusy: (peerId) => snapSync?.peerBusy(peerId) ?? false,
       })
       codeSync.start()
-    }
-    if (headFollower === undefined) {
-      headFollower = new HeadBlockFollower({
-        spine,
-        stateManager,
-        chain,
-        hardfork,
-        getClient: () => clientRef,
-        sendEthMessage: sendEthToPeer,
-        pickEthPeer: () => {
-          const best = pickBestPeer(lastTelemetryPeers, pivotBlockedPeers)
-          if (best === undefined) return undefined
-          return {
-            id: best.id,
-            ethVersion: highestEthVersion(best.caps),
-            latestBlock: best.latestBlock !== undefined ? Number(best.latestBlock) : undefined,
-          }
-        },
-        putServableBlock: (bundle) => clientRef.putServableBlock(bundle),
-        onBalApplied: bundleBalHooks.onBalApplied,
-        appendHealBal: bundleBalHooks.appendHealBal,
-      })
     }
   }
 
@@ -316,7 +337,6 @@ export async function startPeerCoordinator(
     if (decision === 'handoff-catchup') {
       handoffCatchup = true
       const restored = snapStore.loadInto(spine, stateManager)
-      setPhase(spine, 'SNAP_SYNCING')
       if (restored > 0) {
         recordDiagnostic(spine, {
           subsystem: 'snap',
@@ -324,11 +344,14 @@ export async function startPeerCoordinator(
           message: `Restored ${restored.toLocaleString('en-US')} accounts from disk (base sync complete)`,
         })
       }
+      spine.bestPeerHead = headBlock
+      seedBalCatchUp(spine, headBlock)
+      ensureHeadFollower(client)
       opts.notices?.post(
         {
           key: 'snap-handoff',
           level: 'info',
-          text: `Base snap complete at #${spine.pivotBlockNumber?.toString() ?? '?'} — BAL catch-up in WP-04b`,
+          text: `Resuming from #${spine.lastVerifiedBlockNumber?.toString() ?? '?'} toward head #${headBlock.toString()}`,
         },
         Date.now(),
       )
@@ -372,16 +395,23 @@ export async function startPeerCoordinator(
     if (handoffCatchup || baseSyncCompletePosted || snapStore === undefined) return
     if (snapBucketsUnfinished(spine.snapBuckets)) return
     if (codeSync !== undefined && !codeSync.pendingDone()) return
-    snapStore.markBaseSyncComplete()
+    const pivot = spine.pivotBlockNumber
+    if (pivot === undefined) return
+    snapStore.markBaseSyncComplete(pivot)
     baseSyncCompletePosted = true
     opts.notices?.post(
       {
         key: 'snap-base-done',
         level: 'info',
-        text: `Snap base sync complete at #${spine.pivotBlockNumber?.toString() ?? '?'}`,
+        text: `Snap base sync complete at #${pivot.toString()}`,
       },
       Date.now(),
     )
+    const best = pickBestPeer(lastTelemetryPeers, pivotBlockedPeers)
+    const bestHead = best?.latestBlock !== undefined ? BigInt(best.latestBlock) : pivot
+    spine.bestPeerHead = bestHead
+    tryEnterBalCatchUp(spine, snapSync, codeSync, bestHead)
+    ensureHeadFollower(client)
   }
 
   const maybeVipReconnect = (now: number) => {
@@ -783,9 +813,20 @@ export async function startPeerCoordinator(
     maybePivotBundleTimeout()
     updatePivotStatusHint(spine, snap.peers)
     maybeApplyResumeFromPeers(snap.peers)
+    const bestPeer = pickBestPeer(snap.peers, pivotBlockedPeers)
+    if (bestPeer?.latestBlock !== undefined) {
+      spine.bestPeerHead = BigInt(bestPeer.latestBlock)
+      if (
+        spine.phase === 'HEAD_FOLLOWING' &&
+        spine.headBlockNumber !== undefined &&
+        spine.bestPeerHead > spine.headBlockNumber + LAPTOP_WAKE_BLOCK_GAP
+      ) {
+        seedBalCatchUp(spine, spine.bestPeerHead)
+        ensureHeadFollower(client)
+      }
+    }
     if (inFlightPeerId === undefined && spine.pivotBlockNumber === undefined) {
-      const best = pickBestPeer(snap.peers, pivotBlockedPeers)
-      if (best !== undefined) requestPivotFromPeer(best)
+      if (bestPeer !== undefined) requestPivotFromPeer(bestPeer)
     }
     ensureSnapSync(client)
     maybeMarkBaseSyncComplete()

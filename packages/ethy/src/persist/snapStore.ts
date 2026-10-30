@@ -30,6 +30,7 @@ type ActiveMeta = {
   stateRoot: string
   previousStateRoot?: string | null
   baseSyncComplete?: boolean
+  lastVerifiedBlockNumber?: string
 }
 
 type PivotMeta = {
@@ -148,10 +149,18 @@ export class SnapPivotStore {
       const saved = readStoredDoc<{ buckets: SerializedBucket[] }>(bucketsPath).buckets
       bucketsDoneCount = saved.filter((b) => b.status === 'done').length
     }
+    const pivotBlock = BigInt(pivot.blockNumber)
+    let lastVerifiedBlockNumber: bigint | undefined
+    if (active.lastVerifiedBlockNumber !== undefined) {
+      lastVerifiedBlockNumber = BigInt(active.lastVerifiedBlockNumber)
+    } else if (active.baseSyncComplete === true) {
+      lastVerifiedBlockNumber = pivotBlock
+    }
     return {
-      pivotBlockNumber: BigInt(pivot.blockNumber),
+      pivotBlockNumber: pivotBlock,
       baseSyncComplete: active.baseSyncComplete === true,
       bucketsDoneCount,
+      lastVerifiedBlockNumber,
     }
   }
 
@@ -170,13 +179,24 @@ export class SnapPivotStore {
     this.restoredContracts = []
   }
 
-  markBaseSyncComplete(): void {
+  markBaseSyncComplete(pivotBlock: bigint): void {
     if (!this.enabled) return
     const active = this.readActive()
     if (active === undefined) return
     writeAtomicDoc(path.join(this.networkDir, 'active.json'), {
       ...active,
       baseSyncComplete: true,
+      lastVerifiedBlockNumber: pivotBlock.toString(),
+    } satisfies ActiveMeta)
+  }
+
+  noteVerifiedBlock(blockNumber: bigint): void {
+    if (!this.enabled) return
+    const active = this.readActive()
+    if (active === undefined) return
+    writeAtomicDoc(path.join(this.networkDir, 'active.json'), {
+      ...active,
+      lastVerifiedBlockNumber: blockNumber.toString(),
     } satisfies ActiveMeta)
   }
 
@@ -202,6 +222,13 @@ export class SnapPivotStore {
       pivot.stateRoot.startsWith('0x') ? pivot.stateRoot.slice(2) : pivot.stateRoot,
     )
     spine.currentSlot = Number(pivot.blockNumber)
+    if (active.lastVerifiedBlockNumber !== undefined) {
+      spine.lastVerifiedBlockNumber = BigInt(active.lastVerifiedBlockNumber)
+    } else if (active.baseSyncComplete === true) {
+      spine.lastVerifiedBlockNumber = spine.pivotBlockNumber
+    }
+    spine.headBlockNumber = spine.lastVerifiedBlockNumber ?? spine.pivotBlockNumber
+    spine.headStateRoot = spine.pivotStateRoot
 
     const buckets = createSnapBuckets()
     const bucketsPath = path.join(this.pivotDir(active.stateRoot), 'buckets.json')
