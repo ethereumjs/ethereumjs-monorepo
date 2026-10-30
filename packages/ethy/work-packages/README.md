@@ -45,9 +45,16 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                                           │                                       │
                                           ▼                                       │
                       ┌─────────────────────────────────────────┐                 │
-                      │ WP-04: Complete snap/1 (Code & Storage),│                 │
-                      │        Rolling Pivot BAL Healing &      │                 │
-                      │        eth/71 Head Follower + Serving   │                 │
+                      │ WP-04a: P2P Reliability, VIP Peer       │                 │
+                      │         Retention, Single-Pivot snap/1  │                 │
+                      │         Discipline & --fresh Canary     │                 │
+                      └───────────────────┬─────────────────────┘                 │
+                                          │                                       │
+                                          ▼                                       │
+                      ┌─────────────────────────────────────────┐                 │
+                      │ WP-04b: 4-Row Phase-Adaptive Node Pulse │                 │
+                      │         UI, Post-SNAP eth/71 BAL        │                 │
+                      │         Catch-Up & Laptop-Sleep Resume  │                 │
                       └───────────────────┬─────────────────────┘                 │
                                           │                                       │
                                           └───────────────────┬───────────────────┘
