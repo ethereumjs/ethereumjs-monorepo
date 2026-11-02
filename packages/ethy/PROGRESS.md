@@ -142,6 +142,7 @@ Track every modification or planned modification to sibling monorepo packages he
 ### 2026-11-02 — Snap resume defer + discovery pause at 4 peers (Implementer — Composer 2.5)
 - **`shouldDeferLivePivotRequest`:** block live pivot anchor while saved snap waits for peer head; fixes laptop resume peer churn (**D-068**).
 - Discovery hold hysteresis: pause at **`>= 4`** proven snap peers (was 3).
+- **Follow-up:** defer-only without early disk hydrate deadlocked fresh start (no pivot, no sync) and blocked the TUI loop when `loadInto` ran on telemetry; **`scheduleHydrateSnapFromDisk`** (async `setImmediate`) restores pivot/buckets before snap sync, head only for stale/BAL handoff.
 
 ### 2026-11-02 — `WP-04c` implementation (`DONE`) (Implementer — Composer 2.5)
 - Four commits: `@ethereumjs/util` `BinaryAccount` → statemanager binary map → devp2p discovery hold → ethy ingest/journal/scheduler/coordinator.
