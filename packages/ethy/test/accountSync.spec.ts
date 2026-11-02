@@ -7,6 +7,7 @@ import { createSpine } from '../src/spine/createSpine.ts'
 import { SnapAccountSynchronizer, encodeGetAccountRange } from '../src/sync/accountSync.ts'
 import { SnapPeerFlightTracker } from '../src/sync/snapFlight.ts'
 import type { SnapTransport } from '../src/sync/snapTransport.ts'
+import { SnapVerifyPool } from '../src/sync/snapVerifyWorker.ts'
 
 function mockSnapTransport(overrides: Partial<SnapTransport> = {}): SnapTransport {
   return {
@@ -106,7 +107,7 @@ describe('[Ethy/Sync]: synthetic snap account range', () => {
         const result = await ingestAccountRangeReply(
           peer.rootHash,
           reply,
-          (entries) => sm.putSnapAccountsBatch(entries),
+          (entries) => sm.putSnapBinaryAccountsBatch(entries),
           bucket.currentLastHash,
         )
         if (!result.ok) {
@@ -156,7 +157,15 @@ describe('[Ethy/Sync]: synthetic snap account range', () => {
   it('returns a bucket to the queue when its snap peer leaves', async () => {
     const spine = createSpine('sepolia', 11155111n)
     spine.pivotStateRoot = new Uint8Array(32)
-    const peers = [{ id: 'aa11', caps: ['eth/72', 'snap/1'] }]
+    const peers = [
+      {
+        id: 'aa11',
+        caps: ['eth/72', 'snap/1'],
+        snapResponsesOk: 0,
+        snapTimeouts: 0,
+        avgLatencyMs: 40,
+      },
+    ]
     let sent = 0
     const transport = mockSnapTransport({
       snapPeers: () => peers,
@@ -181,5 +190,73 @@ describe('[Ethy/Sync]: synthetic snap account range', () => {
     assert.equal(spine.snapBuckets[0]!.lastStallReason, 'snap peer left')
     const message = spine.diagnosticRingBuffer.at(-1)?.message ?? ''
     assert.match(message, /Bucket 0x0: snap peer left/)
+  })
+
+  it('does not re-request a bucket while its range proof is still verifying', async () => {
+    const trie = await SyntheticSnapPeer.create(2)
+    const spine = createSpine('sepolia', 11155111n)
+    spine.pivotStateRoot = trie.rootHash
+    const peers = [
+      {
+        id: 'aa11',
+        caps: ['snap/1'],
+        snapResponsesOk: 0,
+        snapTimeouts: 0,
+        avgLatencyMs: 10,
+      },
+    ]
+    const sent: Uint8Array[] = []
+    let onRange: (peerId: string, payload: Uint8Array) => void = () => {}
+    let release: () => void = () => {}
+    const gate = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    let entered = false
+    const inner = new SnapVerifyPool({ inProcess: true })
+    const sync = new SnapAccountSynchronizer({
+      spine,
+      stateManager: createFlatStateManager(),
+      transport: mockSnapTransport({
+        snapPeers: () => peers,
+        onAccountRange(cb) {
+          onRange = cb
+          return () => {}
+        },
+        sendAccountRange(_peerId, payload) {
+          sent.push(payload)
+        },
+      }),
+      flightTracker: new SnapPeerFlightTracker(),
+      getSnapPeers: () => peers,
+      verifyPool: {
+        verifyAccountRange: async (opts: Parameters<SnapVerifyPool['verifyAccountRange']>[0]) => {
+          entered = true
+          await gate
+          return inner.verifyAccountRange(opts)
+        },
+        close: async () => {},
+      } as unknown as SnapVerifyPool,
+    })
+    const originOf = (payload: Uint8Array) => {
+      const decoded = RLP.decode(payload) as Uint8Array[]
+      return Buffer.from(decoded[2]!).toString('hex')
+    }
+    sync.start()
+    assert.equal(sent.length, 1)
+    const firstOrigin = originOf(sent[0]!)
+    const reply = await trie.buildAccountRangeReply(sent[0]!)
+    onRange('aa11', reply)
+    await vi.waitFor(() => {
+      assert.equal(entered, true)
+    })
+    await new Promise((resolve) => setTimeout(resolve, 120))
+    const sameOrigin = sent.filter((payload) => originOf(payload) === firstOrigin)
+    assert.equal(sameOrigin.length, 1)
+    release()
+    await vi.waitFor(() => {
+      assert.isAbove(spine.totalAccountsSynced, 0)
+    })
+    sync.stop()
+    await inner.close()
   })
 })

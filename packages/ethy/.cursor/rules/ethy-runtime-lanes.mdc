@@ -1,0 +1,45 @@
+---
+description: Ethy main-thread presentation responsiveness (<=8ms budget), worker offloading for heavy crypto/proofs, and resume-before-hydrate ordering
+globs: packages/ethy/**
+alwaysApply: false
+---
+
+# Ethy Concurrency, Main-Thread Budget & Disk Resume Rules
+
+In `@ethereumjs/ethy`, `process.stdin` (raw-mode key input) and `process.stdout` (synchronized TUI rendering) live on the Node.js **Main Thread**. If any protocol, crypto, or disk task blocks the Main Thread for more than a few milliseconds, typing and domain switching (`Tab` / `Enter`) feel sluggish or frozen.
+
+See also repo-wide [`binary-and-scale.mdc`](../../../../.cursor/rules/binary-and-scale.mdc) for `BinaryAccount` and 256-shard state rules.
+
+---
+
+## 1. Main-Thread Frame Budget (`<= 8ms` Max Synchronous Turn)
+
+1. **Offload Heavy Crypto & Merkle Range Proofs to a Worker Thread:**
+   - Verifying a single 128 KiB `snap/1` `ACCOUNT_RANGE` or `STORAGE_RANGES` packet (`RLP.decode` + `binaryAccountToRLP` + `@ethereumjs/mpt`'s `verifyMerkleRangeProof` with thousands of `keccak_256` hashes) takes **50–150ms of pure synchronous CPU**.
+   - When 2–4 peers pipeline responses concurrently, running `verifyMerkleRangeProof` on the Main Thread blocks `stdin` for **0.5–2+ seconds**.
+   - Therefore, live `snap/1` range-proof verification and packet parsing **must** run off the Main Thread in a Worker (`SnapVerifyWorker`, using transferable `ArrayBuffer`s, with an `inProcess` option for fast unit tests).
+2. **Beware the "Async Queue Illusion" (`lanes.ts`):**
+   - A synchronous `while (Date.now() - start < 4ms)` loop that invokes `() => { void someAsyncFn() }` does **not** time-slice the async continuations! Every `void someAsyncFn()` returns a `Promise` at its first `await` in `< 0.1ms`, launching all queued tasks simultaneously so their post-`await` continuations pile up on the promise job queue and freeze the Main Thread.
+   - Any cooperative task runner on the Main Thread must **`await` one task at a time** before checking elapsed wall-clock time and yielding via `setImmediate`.
+3. **No Synchronous Disk I/O on Live Session Turns:**
+   - Never call `fs.readFileSync`, `fs.writeFileSync`, `fs.writeSync` loops, or `fs.fsyncSync` on the Main Thread while the TUI session is running (shutdown cleanup in `stop()` is the only exception).
+
+---
+
+## 2. Resume Ordering: Check the 90-Block Gap *Before* Hydrating Journals
+
+1. **Instant Metadata Peek First (`peekActive`):**
+   - On startup, `SnapPivotStore.peekActive()` reads only `active.json`, `pivot.json`, and `buckets.json` (`< 1ms`).
+   - Do **not** start reading or replaying multi-megabyte `.bin` account journal files at process boot before hearing the network head!
+2. **Decide Resume vs. Reset on First Peer `STATUS` (`latestBlock = #H`):**
+   - As soon as the first peer reports `latestBlock = #H`, run `decideSnapResume({ fresh, saved: peek, head: #H })`:
+     - **`reset-stale` (`#H - #P > 90`):** The saved partial pivot `#P` is already expired on `snap/1` peers! Call `snapStore.discardPivots()` (`< 5ms`), post the `NoticeBoard` warning, and anchor `#H` immediately — **never wasting 20 seconds loading expired journal files from disk only to delete them!**
+     - **`resume-snap` (`#H - #P <= 90`) or `handoff-catchup` (`baseSyncComplete: true`):** Now hydrate the saved `.bin` journals (reading contiguous 136-byte `BinaryAccount` slabs without calling `binaryAccountToAccount`!) and start `ensureSnapSync` / `ensureHeadFollower` **only after** hydration completes (`diskHydrated === true`).
+3. **Incremental Progress & Non-Blocking Contract Queueing During Disk Hydration:**
+   - While `loadIntoAsync` replays `.bin` bucket journals, update `spine.totalAccountsSynced` and `spine.snapBuckets[i]` **incrementally after each batch** (not only at the very end of all 16 files) so the TUI `Node Pulse` immediately shows live progress instead of sitting at `0 acc · 0%`.
+   - Do **not** set `spine.pivotStateRoot` in a way that triggers `applyTelemetry` → `ensureSnapSync` while `loadIntoAsync` is still reading disk journals (`ensureSnapSync` must check `if (!diskHydrated) return`).
+   - Draining restored contracts into `SnapCodeAndStorageSynchronizer.noteAccounts` must run in `O(1)` per contract via `Map<string, ...>` deduplication (never `O(N²)` `.some(equalsBytes)` array scans).
+4. **Multi-Peer Scaling & Notice Expiry Invariants:**
+   - Do **not** pause discovery or skip `maybeVipReconnect` after only `1` peer serves a page! Keep discovery and VIP reconnect active until `servingSnapPeers >= 3` (or `snapSessions >= 4`), and use a multi-worker `SnapVerifyPool` (`>= 2` workers) so multiple peers verify range proofs in parallel.
+   - Every one-shot lifecycle notice posted to `NoticeBoard` (`snap-stale-reset`, `snap-resume`, `snap-handoff`, `snap-base-done`, `bal-synced-head`) **must** set a finite `relevantForMs` (e.g. `8_000`) so expired notices never re-appear when a later transient notice clears.
+

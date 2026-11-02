@@ -15,7 +15,25 @@ Unless the human **explicitly** asks, do **not**:
 
 **Commit alone is not permission to push.** Phrases like “commit”, “commit your changes”, or “commit if ready” mean **local commit only** — stop after `git commit` succeeds unless the same message also asks to push (e.g. “commit and push”, “push the branch”).
 
-**Separate permissions:** push requires an explicit push (or ship) ask; opening a PR requires an explicit PR ask; merging requires an explicit merge ask (including round-trip / release skills that say GO). A **push** to a branch that already has a PR includes refreshing that PR’s **title and body** when essence changed ([After each push](#after-each-push-existing-pr)); label-only updates are not enough. Opening a new PR still requires an explicit PR ask.
+**Separate permissions:** push requires an explicit push (or ship) ask **in the current message**; opening a PR requires an explicit PR ask; merging requires an explicit merge ask (including round-trip / release skills that say GO). Opening a new PR still requires an explicit PR ask.
+
+## Push permission (agents)
+
+**Default: do not push.** Each `git push` needs fresh, explicit human approval in **that turn’s** request. Permission does **not** carry over from an earlier message, an earlier task, or an open PR on the branch.
+
+**Counts as push permission (same message):** “push”, “push the branch”, “push to origin/remote”, “ship”, “commit and push”, “commit, push, …”, “push and open/update the PR”, “get this on the PR” when they clearly mean upload commits, or a skill step that literally says push (e.g. round-trip close / release round only where the skill names push at that phase).
+
+**Does not count as push permission — never infer push from:**
+
+- An **open PR** or `origin` tracking the branch (updating the PR needs a push only **after** a new push ask).
+- A **push or PR you already ran** earlier in the chat (“we pushed once” ≠ push again).
+- **Follow-up work:** fix bugs, “complete the package”, “before we push” (future intent — wait), “continue”, “go on”, tests green, or handoff text at the end of a turn.
+- **Opening a PR** alone (create/update PR metadata without push unless the same message also authorized push).
+- **Pre-push CI** or local gates (run them when a push was asked; they are not a reason to push if the human did not ask).
+
+**After local commits without a push ask:** say the branch is **ahead of remote** (commit hashes / count), what changed, and that you stopped before push. Do **not** push to refresh CI or PR checks unless they ask.
+
+**When push was explicitly asked:** a **push** to a branch that already has a PR includes refreshing that PR’s **title and body** when essence changed ([After each push](#after-each-push-existing-pr)); label-only updates are not enough.
 
 Working-tree **inspection** (`git status`, `git diff`, `git log`) is always fine. Do not stash, rebase, or rewrite history unless asked. Branch changes belong in the list above — including “helpful” restores of the branch the human had open at the start of the chat.
 

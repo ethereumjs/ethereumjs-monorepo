@@ -57,6 +57,27 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                       │         Catch-Up & Laptop-Sleep Resume  │                 │
                       └───────────────────┬─────────────────────┘                 │
                                           │                                       │
+                                          ▼                                       │
+                      ┌─────────────────────────────────────────┐                 │
+                      │ WP-04c: @ethereumjs/util BinaryAccount, │                 │
+                      │         Constant-Time Sync Throughput,  │                 │
+                      │         2x Peer Pipelining & Pause      │                 │
+                      └───────────────────┬─────────────────────┘                 │
+                                          │                                       │
+                                          ▼                                       │
+                      ┌─────────────────────────────────────────┐                 │
+                      │ WP-04d: Worker Proof Verifier, 256-Shard│                 │
+                      │         FlatStateManager & Resume-After-│                 │
+                      │         Head Ordering                   │                 │
+                      └───────────────────┬─────────────────────┘                 │
+                                          │                                       │
+                                          ▼                                       │
+                      ┌─────────────────────────────────────────┐                 │
+                      │ WP-04e: O(1) Contract Queue, Multi-     │                 │
+                      │         Worker Verify Pool, Multi-Peer  │                 │
+                      │         Hold & 100k Scale/Resume Gate   │                 │
+                      └───────────────────┬─────────────────────┘                 │
+                                          │                                       │
                                           └───────────────────┬───────────────────┘
                                                               ▼
                                           ┌─────────────────────────────────────────┐

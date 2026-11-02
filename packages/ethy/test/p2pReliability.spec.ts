@@ -9,8 +9,15 @@ import { bytesToUnprefixedHex, intToUnpaddedBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { chainConfigForNetwork } from '../src/net/chainHardfork.ts'
+import {
+  VIP_SNAP_PEER_TARGET,
+  countSnapPeersTowardVipTarget,
+  shouldVipReconnect,
+  wantSnapDiscoveryHold,
+} from '../src/net/discoveryHold.ts'
 import { networkGenesisHash } from '../src/net/genesisStatus.ts'
 import {
+  PEER_BOOK_STARTUP_DIALS,
   PEER_TOO_MANY_PEERS_HOLD_MAX_MS,
   PEER_TOO_MANY_PEERS_VIP_CAP_MS,
   type PeerBookRow,
@@ -21,7 +28,13 @@ import {
 import { SnapPivotStore } from '../src/persist/snapStore.ts'
 import { createSpine } from '../src/spine/createSpine.ts'
 import { type InFlightBlockBundle, advanceBlockBundleEthMessage } from '../src/sync/blockBundle.ts'
-import { SNAP_RESUME_MAX_GAP, decideSnapResume } from '../src/sync/resumePolicy.ts'
+import {
+  SNAP_RESUME_MAX_GAP,
+  decideSnapResume,
+  shouldDeferLivePivotRequest,
+  shouldEnsureSnapSync,
+} from '../src/sync/resumePolicy.ts'
+import { PROVEN_PEER_REST_MS, peerRestMsForRangeFailure } from '../src/sync/snapSchedulePolicy.ts'
 
 function tempDir(): string {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'ethy-p2p-rel-'))
@@ -52,6 +65,68 @@ function openStore(dir: string): SnapPivotStore {
 }
 
 describe('[Ethy/P2P]: resume policy', () => {
+  it('wantSnapDiscoveryHold hysteresis for multi-peer snap', () => {
+    assert.equal(wantSnapDiscoveryHold({ snapSessions: 0, servingSnapPeers: 0, held: true }), false)
+    assert.equal(
+      wantSnapDiscoveryHold({ snapSessions: 1, servingSnapPeers: 0, held: false }),
+      false,
+    )
+    assert.equal(
+      wantSnapDiscoveryHold({ snapSessions: 1, servingSnapPeers: 1, held: false }),
+      false,
+    )
+    assert.equal(
+      wantSnapDiscoveryHold({ snapSessions: 2, servingSnapPeers: 0, held: false }),
+      false,
+    )
+    assert.equal(wantSnapDiscoveryHold({ snapSessions: 1, servingSnapPeers: 3, held: false }), true)
+    assert.equal(wantSnapDiscoveryHold({ snapSessions: 4, servingSnapPeers: 2, held: false }), true)
+    assert.equal(wantSnapDiscoveryHold({ snapSessions: 3, servingSnapPeers: 2, held: true }), true)
+    assert.equal(
+      wantSnapDiscoveryHold({ snapSessions: 3, servingSnapPeers: 2, held: false }),
+      false,
+    )
+  })
+
+  it('shouldVipReconnect dials below VIP_SNAP_PEER_TARGET even when discovery is held', () => {
+    assert.equal(VIP_SNAP_PEER_TARGET, 4)
+    assert.isTrue(shouldVipReconnect({ snapPeersTowardTarget: 1 }))
+    assert.isFalse(shouldVipReconnect({ snapPeersTowardTarget: 4 }))
+    assert.equal(
+      countSnapPeersTowardVipTarget([
+        { snapSession: true, snapResponsesOk: 0 },
+        { snapSession: false, snapResponsesOk: 2 },
+      ]),
+      2,
+    )
+  })
+
+  it('shouldEnsureSnapSync blocks sync until disk hydrate', () => {
+    const root = new Uint8Array(32)
+    assert.isFalse(
+      shouldEnsureSnapSync({ pivotStateRoot: root, diskHydrated: false, handoffCatchup: false }),
+    )
+    assert.isTrue(
+      shouldEnsureSnapSync({ pivotStateRoot: root, diskHydrated: true, handoffCatchup: false }),
+    )
+  })
+
+  it('PEER_BOOK_STARTUP_DIALS is 6 for warm restarts', () => {
+    assert.equal(PEER_BOOK_STARTUP_DIALS, 6)
+  })
+
+  it('peerRestMsForRangeFailure drops a below-origin page without resting the peer', () => {
+    assert.equal(
+      peerRestMsForRangeFailure('peer returned accounts below request origin'),
+      undefined,
+    )
+    assert.equal(
+      peerRestMsForRangeFailure('firstKey should be less than lastKey'),
+      PROVEN_PEER_REST_MS,
+    )
+    assert.equal(peerRestMsForRangeFailure('account range timed out'), undefined)
+  })
+
   it('decideSnapResume covers fresh, gap, and handoff', () => {
     assert.equal(decideSnapResume({ fresh: true, saved: undefined, head: 100n }), 'anchor-fresh')
     assert.equal(
@@ -85,6 +160,50 @@ describe('[Ethy/P2P]: resume policy', () => {
         head: 100n,
       }),
       'handoff-catchup',
+    )
+  })
+
+  it('shouldDeferLivePivotRequest waits for disk hydrate before live pivot', () => {
+    const saved = { pivotBlockNumber: 50n, baseSyncComplete: false, bucketsDoneCount: 2 }
+    assert.isTrue(
+      shouldDeferLivePivotRequest({
+        fresh: false,
+        diskHydrated: false,
+        spinePivotBlockNumber: undefined,
+        saved,
+      }),
+    )
+    assert.isFalse(
+      shouldDeferLivePivotRequest({
+        fresh: false,
+        diskHydrated: true,
+        spinePivotBlockNumber: undefined,
+        saved: undefined,
+      }),
+    )
+    assert.isFalse(
+      shouldDeferLivePivotRequest({
+        fresh: false,
+        diskHydrated: true,
+        spinePivotBlockNumber: 50n,
+        saved,
+      }),
+    )
+    assert.isFalse(
+      shouldDeferLivePivotRequest({
+        fresh: true,
+        diskHydrated: false,
+        spinePivotBlockNumber: undefined,
+        saved,
+      }),
+    )
+    assert.isFalse(
+      shouldDeferLivePivotRequest({
+        fresh: false,
+        diskHydrated: true,
+        spinePivotBlockNumber: undefined,
+        saved,
+      }),
     )
   })
 })

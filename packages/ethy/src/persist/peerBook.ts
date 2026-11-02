@@ -30,7 +30,8 @@ export function tooManyPeersHoldMs(vip: boolean, streak: number): number {
   return vip ? PEER_TOO_MANY_PEERS_VIP_CAP_MS : PEER_TOO_MANY_PEERS_HOLD_MAX_MS
 }
 
-export const PEER_BOOK_STARTUP_DIALS = 8
+/** Remembered peers dialed at boot and on each VIP pass. Kept small so the table is not filled before snap starts. */
+export const PEER_BOOK_STARTUP_DIALS = 6
 /** Backoff cap for peers with no successful snap responses (WP-04a). */
 export const PEER_TOO_MANY_PEERS_HOLD_MAX_MS = 5 * 60 * 1000
 export const PEER_TOO_MANY_PEERS_VIP_CAP_MS = 120 * 1000
@@ -110,6 +111,7 @@ export class PeerBookStore {
   private readonly _enabled: boolean
   private readonly _rows = new Map<string, PeerBookRow>()
   private _dirty = false
+  private _persistTimer: ReturnType<typeof setTimeout> | undefined
 
   private constructor(opts: PeerBookOpenOptions, rows: Map<string, PeerBookRow>) {
     this.expectedForkHash = opts.expectedForkHash
@@ -154,6 +156,38 @@ export class PeerBookStore {
       }
     }
     this.flush()
+  }
+
+  /**
+   * Queue one peers.json write. Telemetry used to rewrite the whole book
+   * synchronously on every peer, which stalled keypress and redraw.
+   */
+  private schedulePersist(): void {
+    if (!this._enabled) return
+    this._dirty = true
+    if (this._persistTimer !== undefined) return
+    this._persistTimer = setTimeout(() => {
+      this._persistTimer = undefined
+      void this.persistAsync()
+    }, 250)
+    this._persistTimer.unref?.()
+  }
+
+  private async persistAsync(): Promise<void> {
+    if (!this._enabled || !this._dirty) return
+    this._dirty = false
+    const obj: Record<string, PeerBookRow> = {}
+    for (const [id, row] of this._rows) {
+      obj[id] = row
+    }
+    const payload = JSON.stringify(obj)
+    try {
+      await fs.promises.mkdir(path.dirname(this._path), { recursive: true })
+      await fs.promises.writeFile(this._path, payload)
+    } catch {
+      this._dirty = true
+    }
+    if (this._dirty) this.schedulePersist()
   }
 
   dialCandidates(now: number, limit = PEER_BOOK_STARTUP_DIALS): PeerInfo[] {
@@ -210,11 +244,10 @@ export class PeerBookStore {
     } else if (row.forkHash !== this.expectedForkHash) {
       this._rows.delete(id)
       this._dirty = true
-      this.flush()
+      this.schedulePersist()
       return
     }
-    this._dirty = true
-    this.flush()
+    this.schedulePersist()
   }
 
   noteSnapSuccess(peerId: string, now: number): void {
@@ -224,8 +257,7 @@ export class PeerBookStore {
     if (row === undefined) return
     row.lastSnapSuccessAt = now
     row.snapResponsesOk++
-    this._dirty = true
-    this.flush()
+    this.schedulePersist()
   }
 
   noteSnapTimeout(peerId: string): void {
@@ -234,8 +266,7 @@ export class PeerBookStore {
     const row = this._rows.get(id)
     if (row === undefined) return
     row.snapTimeouts++
-    this._dirty = true
-    this.flush()
+    this.schedulePersist()
   }
 
   noteDisconnect(peerId: string | undefined, message: string, now: number): void {
@@ -251,8 +282,7 @@ export class PeerBookStore {
       row.tooManyPeersStreak = streak
       const vip = row.snapResponsesOk > 0
       row.dialAfter = now + tooManyPeersHoldMs(vip, streak - 1)
-      this._dirty = true
-      this.flush()
+      this.schedulePersist()
       return
     }
 
@@ -268,12 +298,16 @@ export class PeerBookStore {
       if (row.resetStreak >= PEER_RESET_REMOVE_STREAK) {
         this._rows.delete(id)
       }
-      this._dirty = true
-      this.flush()
+      this.schedulePersist()
     }
   }
 
+  /** Shutdown and tests: write peers.json before returning. */
   flush(): void {
+    if (this._persistTimer !== undefined) {
+      clearTimeout(this._persistTimer)
+      this._persistTimer = undefined
+    }
     if (!this._enabled || !this._dirty) return
     this._dirty = false
     fs.mkdirSync(path.dirname(this._path), { recursive: true })

@@ -49,6 +49,24 @@ describe('[Ethy/Notices]: board', () => {
     assert.equal(describeNotice(board, 5_000), null)
   })
 
+  it('expired snap-stale-reset does not resurrect after p2p-online', () => {
+    const board = new NoticeBoard()
+    board.post(
+      {
+        key: 'snap-stale-reset',
+        level: 'warn',
+        text: 'Saved partial snap expired',
+        relevantForMs: 8_000,
+      },
+      0,
+    )
+    board.post(
+      { key: 'p2p-online', level: 'info', text: 'Peer connected.', relevantForMs: 5_000 },
+      1_000,
+    )
+    assert.equal(describeNotice(board, 10_000), null)
+  })
+
   it('updates the same key in place', () => {
     const board = new NoticeBoard()
     board.post({ key: 'p2p-reachability', level: 'warn', text: P2P_REACHABILITY_HINT }, 0)

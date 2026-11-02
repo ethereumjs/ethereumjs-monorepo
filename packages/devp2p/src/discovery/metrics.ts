@@ -19,6 +19,7 @@ export interface WorkerDiscoverySnapshot {
   boundUdpPort: number
   boundTcpPort: number
   tablePeers: number
+  discoveryPaused?: boolean
   /** Hardfork, EIP-2124 hash, and next fork this node puts in ETH STATUS. */
   advertisedFork?: { hardfork: string; hash: string; next?: string }
   bootstrap: {
@@ -70,6 +71,7 @@ export class DiscoveryMetrics {
   boundUdpPort = 0
   boundTcpPort = 0
   tablePeers = 0
+  discoveryPaused = false
   advertisedHardfork?: string
   advertisedForkHash?: string
   advertisedForkNext?: string
@@ -209,6 +211,10 @@ export class DiscoveryMetrics {
     this.rlpxLastSubprotocolError = message.slice(0, 200)
   }
 
+  setDiscoveryPaused(paused: boolean): void {
+    this.discoveryPaused = paused
+  }
+
   snapshot(): WorkerDiscoverySnapshot {
     const disconnects: Record<string, number> = {}
     for (const [k, v] of this.rlpxDisconnects) disconnects[k] = v
@@ -227,6 +233,7 @@ export class DiscoveryMetrics {
       boundUdpPort: this.boundUdpPort,
       boundTcpPort: this.boundTcpPort,
       tablePeers: this.tablePeers,
+      ...(this.discoveryPaused ? { discoveryPaused: true } : {}),
       ...(this.advertisedHardfork !== undefined && this.advertisedForkHash !== undefined
         ? {
             advertisedFork: {

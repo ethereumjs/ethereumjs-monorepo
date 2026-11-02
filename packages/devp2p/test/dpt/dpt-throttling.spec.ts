@@ -83,4 +83,21 @@ describe('[Devp2p/DPT]: discovery throttling', () => {
     assert.strictEqual(dpt.isDiscoveryPaused(), false)
     destroyRLPXs(rlpxs)
   })
+
+  it('RLPx sync discovery hold stays paused when connected is below maxPeers', () => {
+    const { rlpxs } = initTwoPeerRLPXSetup(2, [ETH.eth68], new Common({ chain: Mainnet }))
+    const rlpx = rlpxs[0]!
+    const dpt = rlpx['_dpt']!
+    rlpx['_throttleDiscovery'] = true
+    rlpx['_maxPeers'] = 25
+    rlpx['_discoveryLowWaterMark'] = 20
+    rlpx.setSyncDiscoveryHold(true)
+    rlpx['_peers'].clear()
+    rlpx['_syncDiscoveryThrottle']()
+    assert.strictEqual(dpt.isDiscoveryPaused(), true)
+    rlpx.setSyncDiscoveryHold(false)
+    rlpx['_syncDiscoveryThrottle']()
+    assert.strictEqual(dpt.isDiscoveryPaused(), false)
+    destroyRLPXs(rlpxs)
+  })
 })

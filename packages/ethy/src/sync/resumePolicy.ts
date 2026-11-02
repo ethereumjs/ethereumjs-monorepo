@@ -32,3 +32,31 @@ export function snapResumeProgressPct(saved: SnapResumeSaved | undefined): numbe
   if (saved === undefined) return 0
   return Math.round((saved.bucketsDoneCount / 16) * 100)
 }
+
+/**
+ * Do not anchor a live pivot from a peer while saved snap on disk has not been
+ * replayed into spine/state (WP-04a / WP-04c). Live pivot first would call
+ * `activatePivot` and can prune journals before `loadInto` finishes.
+ */
+export function shouldDeferLivePivotRequest(opts: {
+  fresh: boolean
+  diskHydrated: boolean
+  spinePivotBlockNumber: bigint | undefined
+  saved: SnapResumeSaved | undefined
+}): boolean {
+  if (opts.fresh) return false
+  if (opts.spinePivotBlockNumber !== undefined) return false
+  if (opts.saved === undefined) return false
+  return !opts.diskHydrated
+}
+
+/** Start account/code snap sync only after disk journals are replayed (WP-04e). */
+export function shouldEnsureSnapSync(opts: {
+  pivotStateRoot: Uint8Array | undefined
+  diskHydrated: boolean
+  handoffCatchup: boolean
+}): boolean {
+  if (opts.pivotStateRoot === undefined) return false
+  if (opts.handoffCatchup) return false
+  return opts.diskHydrated
+}

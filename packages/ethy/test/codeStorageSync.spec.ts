@@ -5,11 +5,15 @@ import { bigIntToUnpaddedBytes } from '@ethereumjs/util'
 import { keccak_256 } from '@noble/hashes/sha3'
 import { assert, describe, it } from 'vitest'
 
+import { createSpine } from '../src/spine/createSpine.ts'
 import {
+  SnapCodeAndStorageSynchronizer,
   encodeGetByteCodes,
   encodeGetStorageRanges,
   ingestStorageRangesReply,
 } from '../src/sync/codeAndStorageSync.ts'
+import { SnapPeerFlightTracker } from '../src/sync/snapFlight.ts'
+import type { SnapTransport } from '../src/sync/snapTransport.ts'
 import { SyntheticSnapPeer } from '../src/sync/syntheticPeer.ts'
 
 describe('[Ethy/Sync]: code and storage snap helpers', () => {
@@ -71,5 +75,43 @@ describe('[Ethy/Sync]: code and storage snap helpers', () => {
       (slots) => sm.putSnapStorageBatch(contract.accountHash, slots),
     )
     assert.equal(result.ok, true)
+  })
+
+  it('Map-backed contract queues dedupe and clear in O(1)', () => {
+    const spine = createSpine('sepolia', 11155111n)
+    const sm = createFlatStateManager()
+    const transport: SnapTransport = {
+      snapPeers: () => [],
+      sendAccountRange: () => {},
+      onAccountRange: () => () => {},
+      sendStorageRanges: () => {},
+      onStorageRanges: () => () => {},
+      sendByteCodes: () => {},
+      onByteCodes: () => () => {},
+    }
+    const sync = new SnapCodeAndStorageSynchronizer({
+      spine,
+      stateManager: sm,
+      transport,
+      flightTracker: new SnapPeerFlightTracker(),
+      getSnapPeers: () => [],
+      peerBusy: () => false,
+    })
+    const mkHash = (n: number) => {
+      const h = new Uint8Array(32)
+      h[0] = n
+      return h
+    }
+    const row = {
+      accountHash: mkHash(1),
+      codeHash: mkHash(10),
+      storageRoot: new Uint8Array(32).fill(0x01),
+    }
+    sync.noteAccounts([row, row])
+    assert.equal(spine.codesQueued, 1)
+    assert.equal(spine.storageQueued, 1)
+    assert.isFalse(sync.pendingDone())
+    sync.clearPending()
+    assert.isTrue(sync.pendingDone())
   })
 })

@@ -1,14 +1,21 @@
-import { MerklePatriciaTrie, createMerkleProof, verifyMerkleRangeProof } from '@ethereumjs/mpt'
+import { MerklePatriciaTrie, createMerkleProof } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
 import {
   accountBodyFromSlim,
+  accountBodyToBinary,
   accountBodyToRLP,
   accountBodyToSlim,
+  bytesToBigInt,
   createAccount,
-  createAccountFromRLP,
   equalsBytes,
+  getBinaryAccountCodeHash,
+  getBinaryAccountStorageRoot,
+  isBinaryAccountContract,
+  isBinaryAccountEmptyStorage,
 } from '@ethereumjs/util'
 import { keccak_256 } from '@noble/hashes/sha3.js'
+
+import { verifyAccountRangeJob } from './snapVerifyJob.ts'
 
 import type { Account, AccountBodyBytes } from '@ethereumjs/util'
 
@@ -155,7 +162,8 @@ export class SyntheticSnapPeer {
     )
     const slice = inRange.slice(0, 10)
     if (slice.length === 0) {
-      return RLP.encode([decoded[0], [], []] as never)
+      const proof = await createMerkleProof(this.trie, origin)
+      return RLP.encode([decoded[0], [], proof] as never)
     }
     const last = slice[slice.length - 1]!.accountHash
     // Snap proves the requested origin (often not an account) through the last account returned.
@@ -213,7 +221,7 @@ function equalsAccountHash(a: Uint8Array, b: Uint8Array): boolean {
   return equalsBytes(a, b)
 }
 
-function compareBytes32(a: Uint8Array, b: Uint8Array): number {
+export function compareBytes32(a: Uint8Array, b: Uint8Array): number {
   for (let i = 0; i < 32; i++) {
     if (a[i]! !== b[i]!) return a[i]! - b[i]!
   }
@@ -232,78 +240,72 @@ export function incrementKey32(key: Uint8Array): Uint8Array {
   return out
 }
 
-export async function ingestAccountRangeReply(
-  stateRoot: Uint8Array,
-  replyPayload: Uint8Array,
-  putBatch: (
-    entries: Array<{ accountHash: Uint8Array; account: Account; address?: never }>,
-  ) => void,
-  /** Request origin. Live snap proofs start here, not at the first returned account. */
-  origin?: Uint8Array,
-): Promise<{ ok: boolean; hasRight: boolean; count: number; reason?: string }> {
-  const payload = asBytes(replyPayload)
-  if (payload === undefined) return { ok: false, hasRight: false, count: 0 }
+export type ParsedAccountRangeReply = {
+  reqId: bigint
+  entries: Array<{ accountHash: Uint8Array; binaryAccount: Uint8Array }>
+  proof: Uint8Array[]
+  lastKey?: Uint8Array
+}
+
+/** Decode an ACCOUNT_RANGE RLP payload once (reqId, accounts, proof). */
+export function parseAccountRangeReply(payload: Uint8Array): ParsedAccountRangeReply | undefined {
+  const bytes = asBytes(payload)
+  if (bytes === undefined) return undefined
   let decoded: unknown[]
   try {
-    decoded = RLP.decode(payload) as unknown[]
+    decoded = RLP.decode(bytes) as unknown[]
   } catch {
-    return { ok: false, hasRight: false, count: 0 }
+    return undefined
   }
+  const reqRaw = decoded[0]
+  if (!(reqRaw instanceof Uint8Array)) return undefined
+  const reqId = reqRaw.length === 0 ? 0n : bytesToBigInt(reqRaw)
   const accountsRaw = decoded[1] as Array<[unknown, unknown]>
+  if (!Array.isArray(accountsRaw)) return undefined
   let proof: Uint8Array[]
   try {
     proof = proofNodeList(decoded[2])
-  } catch (err: unknown) {
-    return { ok: false, hasRight: false, count: 0, reason: errorText(err) }
+  } catch {
+    return undefined
   }
-  if (!Array.isArray(accountsRaw) || accountsRaw.length === 0) {
-    if (origin !== undefined && proof.length > 0) {
-      try {
-        await verifyMerkleRangeProof(stateRoot, origin, null, [], [], proof)
-        return { ok: true, hasRight: false, count: 0 }
-      } catch (err: unknown) {
-        return { ok: false, hasRight: false, count: 0, reason: errorText(err) }
-      }
-    }
-    return {
-      ok: false,
-      hasRight: false,
-      count: 0,
-      reason: 'empty account range without proof',
-    }
+  const entries: ParsedAccountRangeReply['entries'] = []
+  for (const [h, slim] of accountsRaw) {
+    const accountHash = asBytes(h)
+    if (accountHash === undefined) return undefined
+    const body = accountBodyFromSlim(decodeAccountBody(slim)) as AccountBodyBytes
+    const binaryAccount = accountBodyToBinary(body, false)
+    entries.push({ accountHash, binaryAccount })
   }
-  try {
-    const keys = accountsRaw.map(([h]) => {
-      const hash = asBytes(h)
-      if (hash === undefined) throw new Error('Invalid account hash')
-      return hash
-    })
-    const values = accountsRaw.map(([, slim]) =>
-      accountBodyToRLP(accountBodyFromSlim(decodeAccountBody(slim)) as AccountBodyBytes, false),
-    )
-    if (origin !== undefined && compareBytes32(origin, keys[keys.length - 1]!) > 0) {
-      return {
-        ok: false,
-        hasRight: false,
-        count: 0,
-        reason: 'peer returned accounts below request origin',
-      }
+  const lastKey = entries[entries.length - 1]?.accountHash
+  return { reqId, entries, proof, lastKey }
+}
+
+export async function ingestAccountRangeReply(
+  stateRoot: Uint8Array,
+  replyPayload: Uint8Array,
+  putBatch: (entries: Array<{ accountHash: Uint8Array; binaryAccount: Uint8Array }>) => void,
+  /** Request origin. Live snap proofs start here, not at the first returned account. */
+  origin?: Uint8Array,
+): Promise<{
+  ok: boolean
+  hasRight: boolean
+  count: number
+  reason?: string
+  lastKey?: Uint8Array
+}> {
+  const result = await verifyAccountRangeJob({ stateRoot, origin, payload: replyPayload })
+  if (result.ok && result.slab !== undefined && result.count > 0) {
+    const stride = 136
+    const batch: Array<{ accountHash: Uint8Array; binaryAccount: Uint8Array }> = []
+    for (let offset = 0; offset < result.slab.length; offset += stride) {
+      batch.push({
+        accountHash: result.slab.subarray(offset, offset + 32),
+        binaryAccount: result.slab.subarray(offset + 32, offset + stride),
+      })
     }
-    const firstKey = origin ?? keys[0]!
-    const lastKey = keys[keys.length - 1]!
-    const hasRight = await verifyMerkleRangeProof(stateRoot, firstKey, lastKey, keys, values, proof)
-    putBatch(
-      accountsRaw.map(([, slim], index) => ({
-        accountHash: keys[index]!,
-        account: createAccountFromRLP(
-          accountBodyToRLP(accountBodyFromSlim(decodeAccountBody(slim)) as AccountBodyBytes, false),
-        ),
-      })),
-    )
-    return { ok: true, hasRight, count: accountsRaw.length }
-  } catch (err: unknown) {
-    return { ok: false, hasRight: false, count: 0, reason: errorText(err) }
+    putBatch(batch)
   }
+  return result
 }
 
 function proofNodeList(raw: unknown): Uint8Array[] {
@@ -315,26 +317,47 @@ function proofNodeList(raw: unknown): Uint8Array[] {
   })
 }
 
-function errorText(err: unknown): string {
-  return err instanceof Error ? err.message : String(err)
-}
-
-/** Account rows from a verified ACCOUNT_RANGE reply (for on-disk journal append). */
+/** Binary journal rows from a verified ACCOUNT_RANGE reply (single RLP decode). */
 export function accountRecordsFromRangeReply(
   payload: Uint8Array,
-): Array<{ accountHash: Uint8Array; accountRlp: Uint8Array }> {
-  const decoded = RLP.decode(payload) as unknown[]
-  const accountsRaw = decoded[1] as Array<[unknown, unknown]>
-  if (!Array.isArray(accountsRaw)) return []
-  const out: Array<{ accountHash: Uint8Array; accountRlp: Uint8Array }> = []
-  for (const [h, slim] of accountsRaw) {
-    const accountHash = asBytes(h)
-    if (accountHash === undefined) continue
-    const accountRlp = accountBodyToRLP(
-      accountBodyFromSlim(decodeAccountBody(slim)) as AccountBodyBytes,
-      false,
-    )
-    out.push({ accountHash, accountRlp })
+): Array<{ accountHash: Uint8Array; binaryAccount: Uint8Array }> {
+  const parsed = parseAccountRangeReply(payload)
+  if (parsed === undefined) return []
+  return parsed.entries.map(({ accountHash, binaryAccount }) => ({ accountHash, binaryAccount }))
+}
+
+/** Contract or non-empty-storage rows for code/storage scheduling (no extra RLP decode). */
+export function ingestedMetaFromBinarySlab(slab: Uint8Array): Array<{
+  accountHash: Uint8Array
+  codeHash: Uint8Array
+  storageRoot: Uint8Array
+}> {
+  const out: Array<{ accountHash: Uint8Array; codeHash: Uint8Array; storageRoot: Uint8Array }> = []
+  const stride = 136
+  for (let offset = 0; offset + stride <= slab.length; offset += stride) {
+    const binaryAccount = slab.subarray(offset + 32, offset + stride)
+    if (!isBinaryAccountContract(binaryAccount) && isBinaryAccountEmptyStorage(binaryAccount)) {
+      continue
+    }
+    out.push({
+      accountHash: slab.subarray(offset, offset + 32),
+      codeHash: getBinaryAccountCodeHash(binaryAccount),
+      storageRoot: getBinaryAccountStorageRoot(binaryAccount),
+    })
   }
   return out
+}
+
+/** @deprecated Use {@link ingestedMetaFromBinarySlab} or pass hash triplets directly. */
+export function ingestedMetaFromBinaryEntries(
+  entries: Array<{ accountHash: Uint8Array; binaryAccount: Uint8Array }>,
+): Array<{ accountHash: Uint8Array; codeHash: Uint8Array; storageRoot: Uint8Array }> {
+  const body = new Uint8Array(entries.length * 136)
+  let offset = 0
+  for (const row of entries) {
+    body.set(row.accountHash.subarray(0, 32), offset)
+    body.set(row.binaryAccount.subarray(0, 104), offset + 32)
+    offset += 136
+  }
+  return ingestedMetaFromBinarySlab(body)
 }
