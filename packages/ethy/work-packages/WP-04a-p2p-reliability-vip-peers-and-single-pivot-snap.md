@@ -133,7 +133,7 @@ Upstream touch (separate commit): `@ethereumjs/devp2p` worker STATUS from `_bloc
    - `noteTelemetryPeer`: reset streak to `0`, `dialAfter = now` (or `0`).
    - `vipDialCandidates(now, limit)` — filter `snapResponsesOk > 0`, same sort as `rankPeerRows`.
    - Deprecate/remove export of 1h `PEER_TOO_MANY_PEERS_HOLD_MS` or repurpose as max for non-VIP only in tests.
-2. **`peerCoordinator.ts`:** `setInterval` 15s (unref, cleared in `stop`): count spine peers with `snapSession === true`; if `< 4`, `connectPeer` from `vipDialCandidates` skipping connected ids. Keep startup `dialCandidates` loop.
+2. **`peerCoordinator.ts`:** `setInterval` 15s (non-blocking timer, cleared in `stop`): count spine peers with `snapSession === true`; if `< 4`, `connectPeer` from `vipDialCandidates` skipping connected ids. Keep startup `dialCandidates` loop.
 
 ### Slice C — Multi-peer bundle messages
 

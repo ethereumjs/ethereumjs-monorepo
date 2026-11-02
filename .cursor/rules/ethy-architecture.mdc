@@ -75,9 +75,12 @@ Every external I/O boundary must sit behind a lightweight TypeScript interface w
   1. **Fresh (`--fresh` CLI flag or no saved state):** Wipes `pivots/` while preserving `peers.json` (VIP peer book), anchors fresh `#H`, and starts `snap/1` from `0%`.
   2. **Unfinished `snap/1` on disk (`pivot = #P`):** If `bestPeerHead - #P <= 90` blocks (~18 min), resume `snap/1` against the same `#P`. If `bestPeerHead - #P > 90` blocks (expired on `snap/1` peers), discard the stale partial `pivots/` directory, notify via `NoticeBoard`, and start fresh at `#H`.
   3. **Completed base state on disk (`baseSyncComplete: true` at `#L`) or Laptop Wake:** Never re-run `snap/1`! Transition to `BAL_CATCHUP`, fetch and apply `eth/71` EIP-7928 `BlockLevelAccessList` diffs (`consumeBAL`) for `#L + 1 .. #H`, and enter `HEAD_FOLLOWING`.
-- **VIP Peer Retention & Request Routing (`WP-04a`):**
+- **VIP Peer Retention, Multi-Peer Pipelining & Discovery Pause (`WP-04a` & `WP-04c`):**
   - Peers with `snapResponsesOk > 0` are Tier-S (VIP) peers. Never lock out a VIP peer for 1 hour on `TOO_MANY_PEERS`; use short backoff (`15s → 30s → 60s`, max `120s`) and a periodic VIP Reconnect Loop when active `snap/1` peers `< 4`.
+  - Schedule proven `snap/1` peers first (ordered by lowest RTT), pipeline up to 2 concurrent requests per proven peer, apply a fast 4s timeout to unproven (`snapResponsesOk === 0`) peers, and pause `DPT`/DNS discovery (`setDiscoveryPaused(true)`) while `>= 3` proven `snap/1` peers are actively syncing.
   - Multi-stage `ETH` bundle fetches (`blockBundle.ts`) must ignore (`'ignore'`) messages from other peers rather than aborting (`'failed'`).
+- **Constant-Time `BinaryAccount` Ingestion & Batched Disk Writes (`WP-04c`):**
+  - Use the 104-byte `BinaryAccount` representation from `@ethereumjs/util` inside `FlatStateManager` and `SnapAccountSynchronizer` (single-pass RLP decode, no million-object `new Account()` heap allocations during sync, single `fs.writeSync` per range batch, and throttled metadata flushes).
 - **Good Citizen & Honest Block-Range Serving on `devp2p` (`WP-03c` & `WP-04a`):**
   - **`snap/1` (Client Only):** Ethy acts strictly as a client on `snap/1`.
   - **`eth/69–71` (100% Honest Rolling-Window Server):** Before `RollingBlockStore` holds a complete servable block bundle, outbound `eth/69+` `STATUS` must advertise `earliestBlock = 0, latestBlock = 0, latestBlockHash = genesisHash` (never an unbacked head pin that causes peers to query us, receive `[]`, and drop us). Once blocks are in `RollingBlockStore`, advertise and serve the exact contiguous `[earliestBlock .. latestBlock]` window.

@@ -57,6 +57,13 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                       │         Catch-Up & Laptop-Sleep Resume  │                 │
                       └───────────────────┬─────────────────────┘                 │
                                           │                                       │
+                                          ▼                                       │
+                      ┌─────────────────────────────────────────┐                 │
+                      │ WP-04c: @ethereumjs/util BinaryAccount, │                 │
+                      │         Constant-Time Sync Throughput,  │                 │
+                      │         2x Peer Pipelining & Pause      │                 │
+                      └───────────────────┬─────────────────────┘                 │
+                                          │                                       │
                                           └───────────────────┬───────────────────┘
                                                               ▼
                                           ┌─────────────────────────────────────────┐
