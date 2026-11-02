@@ -51,8 +51,13 @@ export type SnapVerifyPoolOpts = {
   moduleUrl?: string
 }
 
-/** Module URL for resolving {@link SnapVerifyPool} worker entry (tests + coordinator). */
-export const SNAP_VERIFY_POOL_MODULE_URL = import.meta.url
+/**
+ * Module URL for resolving {@link SnapVerifyPool} worker entry (tests + coordinator).
+ * Prod CJS compile uses `"module": "CommonJS"`, which rejects this syntax.
+ * ESM, tsx, and vitest accept it. `@ts-ignore` is a no-op for those builds.
+ */
+// @ts-ignore TS1343
+export const SNAP_VERIFY_POOL_MODULE_URL: string = import.meta.url
 
 export class SnapVerifyPool {
   private readonly inProcess: boolean
