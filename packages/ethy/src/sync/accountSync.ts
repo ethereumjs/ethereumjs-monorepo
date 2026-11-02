@@ -6,6 +6,7 @@ import { bigIntToUnpaddedBytes, bytesToBigInt, setLengthLeft } from '@ethereumjs
 import type { Account } from '@ethereumjs/util'
 import type { PeerBookStore } from '../persist/peerBook.ts'
 import type { SnapPivotStore } from '../persist/snapStore.ts'
+import { enqueueProtocol } from '../runtime/lanes.ts'
 import { snapBucketCursorExhausted } from '../spine/buckets.ts'
 import { setPhase } from '../spine/createSpine.ts'
 import { recordDiagnostic } from '../spine/diagnostics.ts'
@@ -119,7 +120,9 @@ export class SnapAccountSynchronizer {
     this.lastRateAt = this.syncStart
     this.lastAccountCount = this.spine.totalAccountsSynced
     this.detachAccountRange = this.transport.onAccountRange((peerId, payload) => {
-      void this.handleAccountRange(peerId, payload)
+      enqueueProtocol(() => {
+        void this.handleAccountRange(peerId, payload)
+      })
     })
     this.tickTimer = setInterval(() => this.schedule(), 50)
     this.tickTimer.unref?.()

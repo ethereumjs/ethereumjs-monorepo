@@ -92,12 +92,12 @@ describe('[Ethy/P2P]: resume policy', () => {
     )
   })
 
-  it('shouldDeferLivePivotRequest waits for resume before live pivot', () => {
+  it('shouldDeferLivePivotRequest waits for disk hydrate before live pivot', () => {
     const saved = { pivotBlockNumber: 50n, baseSyncComplete: false, bucketsDoneCount: 2 }
     assert.isTrue(
       shouldDeferLivePivotRequest({
         fresh: false,
-        resumeDecided: false,
+        diskHydrated: false,
         spinePivotBlockNumber: undefined,
         saved,
       }),
@@ -105,7 +105,7 @@ describe('[Ethy/P2P]: resume policy', () => {
     assert.isFalse(
       shouldDeferLivePivotRequest({
         fresh: false,
-        resumeDecided: true,
+        diskHydrated: true,
         spinePivotBlockNumber: undefined,
         saved: undefined,
       }),
@@ -113,7 +113,7 @@ describe('[Ethy/P2P]: resume policy', () => {
     assert.isFalse(
       shouldDeferLivePivotRequest({
         fresh: false,
-        resumeDecided: true,
+        diskHydrated: true,
         spinePivotBlockNumber: 50n,
         saved,
       }),
@@ -121,7 +121,15 @@ describe('[Ethy/P2P]: resume policy', () => {
     assert.isFalse(
       shouldDeferLivePivotRequest({
         fresh: true,
-        resumeDecided: false,
+        diskHydrated: false,
+        spinePivotBlockNumber: undefined,
+        saved,
+      }),
+    )
+    assert.isFalse(
+      shouldDeferLivePivotRequest({
+        fresh: false,
+        diskHydrated: true,
         spinePivotBlockNumber: undefined,
         saved,
       }),

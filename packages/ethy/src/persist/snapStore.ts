@@ -318,6 +318,115 @@ export class SnapPivotStore {
     return restored
   }
 
+  /** Same as {@link loadInto} but yields on the event loop so the TUI stays responsive. */
+  async loadIntoAsync(spine: EthySpine, stateManager: FlatStateManager): Promise<number> {
+    if (!this.enabled) return 0
+    this.restoredContracts = []
+    const activePath = path.join(this.networkDir, 'active.json')
+    if (!fs.existsSync(activePath)) return 0
+    const active = readStoredDoc<ActiveMeta>(activePath)
+    this.activeStateRoot = active.stateRoot
+    const pivotPath = path.join(this.pivotDir(active.stateRoot), 'pivot.json')
+    if (!fs.existsSync(pivotPath)) return 0
+    const pivot = readStoredDoc<PivotMeta>(pivotPath)
+    spine.pivotBlockNumber = BigInt(pivot.blockNumber)
+    spine.pivotStateRoot = unprefixedHexToBytes(
+      pivot.stateRoot.startsWith('0x') ? pivot.stateRoot.slice(2) : pivot.stateRoot,
+    )
+    spine.currentSlot = Number(pivot.blockNumber)
+    if (active.lastVerifiedBlockNumber !== undefined) {
+      spine.lastVerifiedBlockNumber = BigInt(active.lastVerifiedBlockNumber)
+    } else if (active.baseSyncComplete === true) {
+      spine.lastVerifiedBlockNumber = spine.pivotBlockNumber
+    }
+    spine.headBlockNumber = spine.lastVerifiedBlockNumber ?? spine.pivotBlockNumber
+    spine.headStateRoot = spine.pivotStateRoot
+
+    const buckets = createSnapBuckets()
+    const bucketsPath = path.join(this.pivotDir(active.stateRoot), 'buckets.json')
+    let savedBuckets: SerializedBucket[] | undefined
+    if (fs.existsSync(bucketsPath)) {
+      savedBuckets = readStoredDoc<{ buckets: SerializedBucket[] }>(bucketsPath).buckets
+    }
+
+    let restored = 0
+    let sliceStart = Date.now()
+    const maybeYield = async (): Promise<void> => {
+      if (Date.now() - sliceStart < 4) return
+      await new Promise<void>((resolve) => setImmediate(resolve))
+      sliceStart = Date.now()
+    }
+
+    for (let i = 0; i < buckets.length; i++) {
+      const bucket = buckets[i]!
+      const file = this.accountFile(i, active.stateRoot)
+      let journalRecords = 0
+      if (fs.existsSync(file)) {
+        const raw = new Uint8Array(await fs.promises.readFile(file))
+        if (isBinaryAccountJournalFile(raw)) {
+          const { records, lastHash } = readBinaryAccountJournalFile(raw)
+          journalRecords = records.length
+          for (const row of records) {
+            stateManager.putSnapBinaryAccountsBatch([
+              { accountHash: row.accountHash, binaryAccount: row.binaryAccount },
+            ])
+            const account = binaryAccountToAccount(row.binaryAccount)
+            if (
+              isBinaryAccountContract(row.binaryAccount) ||
+              !isBinaryAccountEmptyStorage(row.binaryAccount)
+            ) {
+              this.restoredContracts.push({ accountHash: row.accountHash, account })
+            }
+            restored++
+            await maybeYield()
+          }
+          const cursor = journalCursorAfterRecords(i, records.length, lastHash, bucket.startHash)
+          bucket.accountsLoaded = cursor.accountsLoaded
+          bucket.currentLastHash = cursor.currentLastHash
+        } else {
+          const { records, lastHash } = readAccountJournalFile(raw)
+          journalRecords = records.length
+          for (const row of records) {
+            const account = accountFromJournalRlp(row.accountRlp)
+            stateManager.putSnapAccountsBatch([{ accountHash: row.accountHash, account }])
+            if (
+              !equalsBytes(account.codeHash, KECCAK256_NULL) ||
+              !equalsBytes(account.storageRoot, KECCAK256_RLP)
+            ) {
+              this.restoredContracts.push({ accountHash: row.accountHash, account })
+            }
+            restored++
+            await maybeYield()
+          }
+          const cursor = journalCursorAfterRecords(i, records.length, lastHash, bucket.startHash)
+          bucket.accountsLoaded = cursor.accountsLoaded
+          bucket.currentLastHash = cursor.currentLastHash
+        }
+      }
+      const saved = savedBuckets?.find((b) => b.index === i)
+      if (saved !== undefined) {
+        bucket.status = saved.status
+        bucket.lastStallReason = saved.lastStallReason
+        if (journalRecords === 0) {
+          bucket.accountsLoaded = saved.accountsLoaded
+          bucket.currentLastHash = unprefixedHexToBytes(saved.currentLastHash.slice(2))
+        }
+      }
+      if (bucket.status === 'done' && !snapBucketCursorExhausted(bucket)) {
+        bucket.status = 'pending'
+      }
+    }
+    spine.snapBuckets = buckets
+    spine.totalAccountsSynced = stateManager.accountCount()
+    if (active.previousStateRoot !== undefined && active.previousStateRoot !== null) {
+      const held = this.heldAccountCount(active.previousStateRoot)
+      if (held > 0) {
+        spine.pivotCarry = { kind: 'previous', accounts: held }
+      }
+    }
+    return restored
+  }
+
   /**
    * Account journals still on a pivot directory.
    * Trust `buckets.json` only for a bucket that has a non-empty journal file.
@@ -465,19 +574,48 @@ export class SnapPivotStore {
     if (this.lastBuckets !== undefined) {
       this.flushBuckets(this.lastBuckets)
     }
-    for (const bucketIndex of this.dirtyAccountBuckets) {
-      const file = this.accountFile(bucketIndex, this.activeStateRoot)
-      if (!fs.existsSync(file)) continue
-      const fd = fs.openSync(file, 'r')
-      try {
-        fs.fsyncSync(fd)
-      } finally {
-        fs.closeSync(fd)
-      }
-    }
+    const dirty = [...this.dirtyAccountBuckets]
     this.dirtyAccountBuckets.clear()
     this.pendingMetadataFlush = false
     this.lastMetadataFlushAt = now
+    if (force) {
+      for (const bucketIndex of dirty) this.fsyncBucketSync(bucketIndex)
+      return
+    }
+    // Live sync: durability without fsyncSync, which stalls the presentation clock
+    // for as long as the journal is large.
+    void this.fsyncBucketsAsync(dirty)
+  }
+
+  private fsyncBucketSync(bucketIndex: number): void {
+    if (this.activeStateRoot === undefined) return
+    const file = this.accountFile(bucketIndex, this.activeStateRoot)
+    if (!fs.existsSync(file)) return
+    const fd = fs.openSync(file, 'r')
+    try {
+      fs.fsyncSync(fd)
+    } finally {
+      fs.closeSync(fd)
+    }
+  }
+
+  private async fsyncBucketsAsync(bucketIndexes: number[]): Promise<void> {
+    if (this.activeStateRoot === undefined) return
+    const root = this.activeStateRoot
+    for (const bucketIndex of bucketIndexes) {
+      const file = this.accountFile(bucketIndex, root)
+      try {
+        const handle = await fs.promises.open(file, 'r')
+        try {
+          await handle.sync()
+        } finally {
+          await handle.close()
+        }
+      } catch {
+        // journal not on disk yet
+      }
+      await new Promise<void>((resolve) => setImmediate(resolve))
+    }
   }
 
   flushBuckets(buckets: SnapBucket[]): void {

@@ -41,39 +41,47 @@ async function main(): Promise<void> {
 
   let coordinatorStop: (() => void) | undefined
   let p2pError: string | undefined
+  const bindPeerCoordinator = (handle: Awaited<ReturnType<typeof startPeerCoordinator>>) => {
+    node.disconnectPeer = handle.disconnectPeer
+    ;(
+      node.intentEngine as import('../ai/deterministicEngine.ts').DeterministicIntentEngine
+    ).setDisconnectPeer(handle.disconnectPeer)
+    coordinatorStop = handle.stop
+  }
+  const reportP2pStartError = (e: unknown) => {
+    const message = (e as Error).message
+    p2pError = message
+    recordDiagnostic(node.spine, {
+      subsystem: 'devp2p',
+      severity: 'error',
+      message,
+    })
+    node.notices.post(
+      {
+        key: 'p2p-start',
+        level: 'alert',
+        text: `Network did not start. ${message}`,
+      },
+      Date.now(),
+    )
+  }
+  let coordinatorReady: Promise<void> = Promise.resolve()
   if (!cli.demo) {
-    try {
-      const handle = await startPeerCoordinator({
-        spine: node.spine,
-        stateManager: node.stateManager,
-        network,
-        notices: node.notices,
-        snapStore: node.snapStore,
-        peerBook: node.peerBook,
-        fresh: cli.fresh,
+    coordinatorReady = startPeerCoordinator({
+      spine: node.spine,
+      stateManager: node.stateManager,
+      network,
+      notices: node.notices,
+      snapStore: node.snapStore,
+      peerBook: node.peerBook,
+      fresh: cli.fresh,
+    })
+      .then((handle) => {
+        bindPeerCoordinator(handle)
       })
-      node.disconnectPeer = handle.disconnectPeer
-      ;(
-        node.intentEngine as import('../ai/deterministicEngine.ts').DeterministicIntentEngine
-      ).setDisconnectPeer(handle.disconnectPeer)
-      coordinatorStop = handle.stop
-    } catch (e: unknown) {
-      const message = (e as Error).message
-      p2pError = message
-      recordDiagnostic(node.spine, {
-        subsystem: 'devp2p',
-        severity: 'error',
-        message,
+      .catch((e: unknown) => {
+        reportP2pStartError(e)
       })
-      node.notices.post(
-        {
-          key: 'p2p-start',
-          level: 'alert',
-          text: `Network did not start. ${message}`,
-        },
-        Date.now(),
-      )
-    }
   }
 
   const shutdown = () => {
@@ -83,6 +91,8 @@ async function main(): Promise<void> {
   if (cli.headless) {
     if (cli.demo) {
       advanceDemo(node.spine, 5000)
+    } else {
+      await coordinatorReady
     }
     await runHeadlessUntilSignal({
       network,

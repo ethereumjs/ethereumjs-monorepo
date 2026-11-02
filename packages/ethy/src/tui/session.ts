@@ -22,6 +22,11 @@ import {
 } from './prompt.ts'
 import { promptCaretPosition, renderFrame } from './renderFrame.ts'
 
+/**
+ * Presentation clock. This function only reads spine state, paints, and
+ * handles keys. Sync and discovery must not run synchronous disk or ingest
+ * work on this turn — see `runtime/lanes.ts`.
+ */
 export async function runEthySession(node: EthyNode): Promise<void> {
   const demoStart = Date.now()
   let view = createInitialViewState()

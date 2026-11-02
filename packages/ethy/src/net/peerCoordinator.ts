@@ -2,6 +2,7 @@ import {
   type Devp2pWorkerClient,
   type WorkerChainId,
   type WorkerPeerSnapshot,
+  type WorkerTelemetrySnapshot,
   createThreadedNetwork,
   genPrivateKey,
   resolveThreadedNetworkModuleUrl,
@@ -27,6 +28,7 @@ import { resolveEthyDataDir } from '../persist/ethyDataRoot.ts'
 import { PEER_BOOK_STARTUP_DIALS, discoveryNodeStorePath } from '../persist/peerBook.ts'
 import type { PeerBookStore } from '../persist/peerBook.ts'
 import { SnapPivotStore, snapBucketsUnfinished } from '../persist/snapStore.ts'
+import { enqueueProtocol } from '../runtime/lanes.ts'
 import { createSnapBuckets } from '../spine/buckets.ts'
 import { deriveCapabilities, setPhase } from '../spine/createSpine.ts'
 import { recordDiagnostic } from '../spine/diagnostics.ts'
@@ -409,7 +411,7 @@ export async function startPeerCoordinator(
     const best = pickBestPeer(peers, pivotBlockedPeers)
     if (best?.latestBlock === undefined) return
     const headBlock = BigInt(best.latestBlock)
-    if (resumeDecided && !diskHydrated) return
+    if (!diskHydrated && snapStore?.peekActive() !== undefined) return
     if (diskHydrated && !resumeHeadHandled) {
       resumeHeadHandled = true
       finishDiskResumeWithHead(headBlock)
@@ -419,52 +421,58 @@ export async function startPeerCoordinator(
     applyResumeDecision(headBlock)
   }
 
+  const finishDiskHydrate = (
+    restored: number,
+    peek: NonNullable<ReturnType<SnapPivotStore['peekActive']>>,
+  ) => {
+    diskHydrated = true
+    resumeDecided = true
+    if (peek.baseSyncComplete) {
+      handoffCatchup = true
+      if (restored > 0) {
+        recordDiagnostic(spine, {
+          subsystem: 'snap',
+          severity: 'info',
+          message: `Restored ${restored.toLocaleString('en-US')} accounts from disk (base sync complete)`,
+        })
+      }
+    } else {
+      setPhase(spine, 'SNAP_SYNCING')
+      if (restored > 0) {
+        recordDiagnostic(spine, {
+          subsystem: 'snap',
+          severity: 'info',
+          message: `Restored ${restored.toLocaleString('en-US')} accounts from disk`,
+        })
+      }
+      const pct = snapResumeProgressPct(peek)
+      opts.notices?.post(
+        {
+          key: 'snap-resume',
+          level: 'info',
+          text: `Resuming snap sync at #${spine.pivotBlockNumber?.toString() ?? '?'} (${pct}% complete)`,
+        },
+        Date.now(),
+      )
+      ensureSnapSync(client)
+      codeSync?.noteAccounts(snapStore!.drainRestoredContracts())
+    }
+    deriveCapabilities(spine)
+    if (!resumeHeadHandled) {
+      const best = pickBestPeer(lastTelemetryPeers, pivotBlockedPeers)
+      if (best?.latestBlock !== undefined) {
+        resumeHeadHandled = true
+        finishDiskResumeWithHead(BigInt(best.latestBlock))
+      }
+    }
+  }
+
   const scheduleHydrateSnapFromDisk = (): void => {
     if (opts.fresh === true || snapStore === undefined) return
     const peek = snapStore.peekActive()
     if (peek === undefined) return
-    resumeDecided = true
-    setImmediate(() => {
-      const restored = snapStore.loadInto(spine, stateManager)
-      diskHydrated = true
-      if (peek.baseSyncComplete) {
-        handoffCatchup = true
-        if (restored > 0) {
-          recordDiagnostic(spine, {
-            subsystem: 'snap',
-            severity: 'info',
-            message: `Restored ${restored.toLocaleString('en-US')} accounts from disk (base sync complete)`,
-          })
-        }
-      } else {
-        setPhase(spine, 'SNAP_SYNCING')
-        if (restored > 0) {
-          recordDiagnostic(spine, {
-            subsystem: 'snap',
-            severity: 'info',
-            message: `Restored ${restored.toLocaleString('en-US')} accounts from disk`,
-          })
-        }
-        const pct = snapResumeProgressPct(peek)
-        opts.notices?.post(
-          {
-            key: 'snap-resume',
-            level: 'info',
-            text: `Resuming snap sync at #${spine.pivotBlockNumber?.toString() ?? '?'} (${pct}% complete)`,
-          },
-          Date.now(),
-        )
-        ensureSnapSync(client)
-        codeSync?.noteAccounts(snapStore.drainRestoredContracts())
-      }
-      deriveCapabilities(spine)
-      if (!resumeHeadHandled) {
-        const best = pickBestPeer(lastTelemetryPeers, pivotBlockedPeers)
-        if (best?.latestBlock !== undefined) {
-          resumeHeadHandled = true
-          finishDiskResumeWithHead(BigInt(best.latestBlock))
-        }
-      }
+    void snapStore.loadIntoAsync(spine, stateManager).then((restored) => {
+      finishDiskHydrate(restored, peek)
     })
   }
 
@@ -785,7 +793,7 @@ export async function startPeerCoordinator(
   const livePivotAllowed = (): boolean =>
     !shouldDeferLivePivotRequest({
       fresh: opts.fresh === true,
-      resumeDecided,
+      diskHydrated,
       spinePivotBlockNumber: spine.pivotBlockNumber,
       saved: snapStore?.peekActive(),
     })
@@ -879,7 +887,23 @@ export async function startPeerCoordinator(
 
   scheduleHydrateSnapFromDisk()
 
+  let pendingTelemetry: WorkerTelemetrySnapshot | undefined
+  let telemetryQueued = false
   client.events.on('telemetry', (snap) => {
+    // Keep only the newest snapshot. Applying every 150ms tick inline rewrote
+    // the peer book and ran pivot logic on the same turn as keypress.
+    pendingTelemetry = snap
+    if (telemetryQueued) return
+    telemetryQueued = true
+    enqueueProtocol(() => {
+      telemetryQueued = false
+      const next = pendingTelemetry
+      pendingTelemetry = undefined
+      if (next !== undefined) applyTelemetry(next)
+    })
+  })
+
+  const applyTelemetry = (snap: WorkerTelemetrySnapshot) => {
     lastTelemetryPeers = snap.peers
     const prev = spine.peers
     spine.peers.clear()
@@ -926,7 +950,7 @@ export async function startPeerCoordinator(
     syncDiscoveryHold(client)
     ensureSnapSync(client)
     maybeMarkBaseSyncComplete()
-  })
+  }
 
   function syncDiscoveryHold(clientRef: Devp2pWorkerClient): void {
     if (spine.phase === 'P2P_WARMUP' || spine.phase === 'BOOTING') {

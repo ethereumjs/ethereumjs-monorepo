@@ -256,6 +256,34 @@ Hex-key map slab, code/storage depth 2, mid-sync pivot, Node Pulse redesign, liv
 - **Unproven timeout UX:** Expired range sets bucket **`stalled`** (existing stall/backoff path), not `pending`.
 - **Discovery pause threshold:** Live Sepolia tuning — pause at **`>= 4`** proven snap peers (not 3).
 - **Implementer environment:** WP-04c code was landed with **unit/fake-peer tests only**; the implementer network blocked devp2p egress, so Sepolia soak, resume, and `sync:bench` were **not** verified live until post-merge. Treat `p2p:canary`, laptop resume, and `sync:bench` as required human gates.
-- **Snap resume fix (post-merge):** `shouldDeferLivePivotRequest` — while `peekActive()` exists and head/resume is pending, **do not** `GET_BLOCK_HEADERS` anchor from a peer; that `activatePivot` could prune journals before `loadInto`.
+- **Snap resume fix (post-merge):** `shouldDeferLivePivotRequest` waits on **`diskHydrated`**, not on `resumeDecided`. Setting “resume decided” before `loadInto` finished still allowed a live `GET_BLOCK_HEADERS` anchor, and that `activatePivot` pruned journals.
 
 **Verification (local):** `npm run tsc` + `npm test` on util, statemanager, devp2p, ethy; statemanager cross-check via evm/vm matrices as in WP §4 commit 2; `npm run spellcheck` on touched packages.
+
+---
+
+## 6. Close-out (2026-11-02)
+
+Live Sepolia after the four implementation commits showed two follow-ups that belong in this package, not in WP-05.
+
+### Resume
+
+A saved pivot must be replayed from disk before any live header request. `scheduleHydrateSnapFromDisk` runs `loadIntoAsync` (async file read, yield about every 4 ms while applying rows). Live pivot stays blocked until that replay sets `diskHydrated`. Head is used only afterward, for the stale-gap reset and BAL handoff.
+
+### Presentation clock vs protocol clock
+
+The TUI was not deadlocked. It shares Node’s one thread with sync, and several protocol steps held that thread for seconds:
+
+| Stall | What it did |
+| --- | --- |
+| Peer book | `writeFileSync` of the whole `peers.json` on every telemetry peer (~every 150 ms) |
+| Journal durability | `fsyncSync` of each dirty account journal every 2 s |
+| Resume | `readFileSync` of the full journal before any yield |
+
+**Contract (`src/runtime/lanes.ts`, decision D-069).** The presentation clock only reads the spine, paints, and handles keys. Protocol work (telemetry apply, account-range ingest, deferred disk) is queued and drained in ~4 ms slices so stdin and the frame timer get a turn. The peer book writes asynchronously (at most one `peers.json` rewrite per 250 ms). Live journal `fsync` is asynchronous; shutdown still uses a synchronous `fsync`.
+
+Node still cannot pause one long CPU call (a large range proof). If a key waits multiple seconds after this close, that call is the next move, into the existing network worker.
+
+### Still manual
+
+`npm run sync:bench` (1.7× two-peer gate) and a full Sepolia soak are human checks. They are not CI. This close did not re-run the wall-clock bench.
