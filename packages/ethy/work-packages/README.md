@@ -64,6 +64,13 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                       │         2x Peer Pipelining & Pause      │                 │
                       └───────────────────┬─────────────────────┘                 │
                                           │                                       │
+                                          ▼                                       │
+                      ┌─────────────────────────────────────────┐                 │
+                      │ WP-04d: Worker Proof Verifier, 256-Shard│                 │
+                      │         FlatStateManager & Resume-After-│                 │
+                      │         Head Ordering                   │                 │
+                      └───────────────────┬─────────────────────┘                 │
+                                          │                                       │
                                           └───────────────────┬───────────────────┘
                                                               ▼
                                           ┌─────────────────────────────────────────┐

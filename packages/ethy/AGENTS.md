@@ -25,6 +25,8 @@ We build Ethy using three specialized agent roles:
 | [`ARCHITECTURE.md`](./ARCHITECTURE.md) | Vision, 4-Layer `EthySpine` design, 4-Zone Zero-Log TUI, `<ethy_state>` LLM protocol, Amsterdam `snap/1` + `eth/71` BAL sync, EthereumJS codebase integration map, and CI harness. |
 | [`PROGRESS.md`](./PROGRESS.md) | **Single source of truth for project state:** Work Package status table, Architectural Decision Log (`D-001`…), Upstream Library Touch Queue, and Chronological Implementation Log. |
 | [`work-packages/README.md`](./work-packages/README.md) | Overview of holistic vertical slices (`WP-00` to `WP-06`), dependency graph, and how Planners and Implementers hand off work. |
+| [`../../.cursor/rules/binary-and-scale.mdc`](../../.cursor/rules/binary-and-scale.mdc) | Repo-wide rule for `packages/*/src/**` (offset-aware binary layouts, boundary-only class inflation, 256-way Map sharding, no idle undo frames, `O(1)` counters). |
+| [`./.cursor/rules/ethy-runtime-lanes.mdc`](./.cursor/rules/ethy-runtime-lanes.mdc) | Ethy concurrency rule (Main-Thread `<= 8ms` frame budget, Worker-offloaded Merkle range proofs, awaited async queues, resume-check before disk hydration). |
 | [`../../.cursor/rules/ethy-workflow.mdc`](../../.cursor/rules/ethy-workflow.mdc) | Always-on workflow rule for `packages/ethy/**` (role handoffs, upstream library hardening, dependency lock, git isolation). |
 | [`../../.cursor/rules/ethy-architecture.mdc`](../../.cursor/rules/ethy-architecture.mdc) | Always-on technical invariants for `packages/ethy/**` (Worker-threaded P2P, Headless Core vs. TUI, CI abstractions, Amsterdam sync). |
 | [`.cursor/rules/ethy-tui.mdc`](./.cursor/rules/ethy-tui.mdc) | TUI layout: fixed-width zones, no horizontal jump, `layout.ts` helpers. |
