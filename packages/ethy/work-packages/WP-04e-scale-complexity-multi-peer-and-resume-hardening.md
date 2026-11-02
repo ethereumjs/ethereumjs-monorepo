@@ -116,5 +116,6 @@ Add deterministic, fast (`< 1.5s` total runtime) high-scale and lifecycle simula
 - **`SnapCodeAndStorageSynchronizer`:** `codeQueue` / `pendingStorage` are hex-keyed `Map`s; completed storage tasks are deleted (not kept with `done: true`). `schedule()` skips code hashes and storage account keys already in flight.
 - **`SnapVerifyPool`:** Removed `jobChain`; lazy worker slots up to `poolSize` (2–4 from `availableParallelism()`). Per-slot error drops the slot only.
 - **`discoveryHold.ts`:** Exported `VIP_SNAP_PEER_TARGET`, `countSnapPeersTowardVipTarget`, `shouldVipReconnect`. `maybeVipReconnect` no longer bails when discovery is held.
-- **`loadIntoAsync`:** Pre-assigns `spine.snapBuckets` from saved metadata; each 4k journal batch updates bucket cursor + `totalAccountsSynced` before yield.
+- **`loadIntoAsync`:** Pre-assigns `spine.snapBuckets` from saved metadata. Async journal replay uses 1,000-row slabs (a 4,000-row slab was ~40ms on the coverage job). Each slab updates the bucket cursor and `totalAccountsSynced` before yield.
+- **Scale gates:** `noteAccounts(20_000)` is bounded at 200ms so v8 coverage on CI still fails a quadratic scan (seconds). The event-loop stall bound stays 25ms.
 - **Tests:** `npm run tsc` and `npm run test:node` green (157 tests). No upstream package changes.

@@ -575,7 +575,9 @@ export class SnapPivotStore {
   ): Promise<{ recordCount: number; lastHash?: Uint8Array }> {
     let recordCount = 0
     let lastHash: Uint8Array | undefined
-    await forEachBinaryJournalBatch(raw, 4000, async (slab, lastHashInBatch) => {
+    // 1,000 rows stays inside the main-thread turn budget under v8 coverage.
+    // A 4,000-row slab was ~40ms on the CI coverage job.
+    await forEachBinaryJournalBatch(raw, 1000, async (slab, lastHashInBatch) => {
       stateManager.putSnapBinaryAccountsFromSlab(slab)
       this.pushContractRowsFromSlab(slab)
       const batchRows = slab.length / 136

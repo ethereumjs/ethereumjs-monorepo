@@ -67,7 +67,7 @@ function makeContractMeta(n: number): IngestedAccountMeta[] {
 }
 
 describe('[Ethy/Perf]: scale invariants', () => {
-  it('noteAccounts ingests 20_000 contracts in under 50ms', () => {
+  it('noteAccounts ingests 20_000 contracts without a quadratic scan', () => {
     const spine = createSpine('sepolia', 11155111n)
     const sm = createFlatStateManager()
     const sync = new SnapCodeAndStorageSynchronizer({
@@ -82,7 +82,9 @@ describe('[Ethy/Perf]: scale invariants', () => {
     const t0 = performance.now()
     sync.noteAccounts(entries)
     const elapsed = performance.now() - t0
-    assert.isBelow(elapsed, 50)
+    // Quadratic scans of 20k entries take seconds. 200ms still fails that case.
+    // The ethy coverage job measured ~87ms here (v8 instrumentation).
+    assert.isBelow(elapsed, 200)
     assert.equal(spine.codesQueued, 20_000)
     sync.noteAccounts(entries)
     assert.equal(spine.codesQueued, 20_000)
@@ -131,15 +133,19 @@ describe('[Ethy/Perf]: scale invariants', () => {
     let sawMidProgress = false
     let maxTurnMs = 0
     let lastTurn = performance.now()
-    const poll = setInterval(() => {
+    let stopWatch = false
+    const watch = (): void => {
+      if (stopWatch) return
       const now = performance.now()
       maxTurnMs = Math.max(maxTurnMs, now - lastTurn)
       lastTurn = now
       if (spine.totalAccountsSynced > 0) sawMidProgress = true
-    }, 0)
+      setImmediate(watch)
+    }
+    setImmediate(watch)
 
     await store.loadIntoAsync(spine, sm)
-    clearInterval(poll)
+    stopWatch = true
     assert.isBelow(maxTurnMs, 25)
     assert.isTrue(sawMidProgress)
     assert.equal(spine.totalAccountsSynced, rowCount)
