@@ -1,6 +1,24 @@
+import * as fs from 'node:fs'
+import * as os from 'node:os'
+import * as path from 'node:path'
+
 import { createFlatStateManager } from '@ethereumjs/statemanager'
+import { accountToBinaryAccount, createAccount } from '@ethereumjs/util'
 import { assert, describe, it, vi } from 'vitest'
 
+import { networkGenesisHash } from '../src/net/genesisStatus.ts'
+import { isBinaryAccountJournalFile } from '../src/persist/journal.ts'
+import { SnapPivotStore } from '../src/persist/snapStore.ts'
+
+function openStore(dir: string): SnapPivotStore {
+  return SnapPivotStore.open({
+    dataDir: dir,
+    network: 'sepolia',
+    chainId: 11155111n,
+    genesisHash: networkGenesisHash('sepolia'),
+    enabled: true,
+  })
+}
 import { createSnapBuckets } from '../src/spine/buckets.ts'
 import { createSpine } from '../src/spine/createSpine.ts'
 import { SnapAccountSynchronizer } from '../src/sync/accountSync.ts'
@@ -62,8 +80,42 @@ describe('[Ethy/Sync]: snap schedule policy (WP-04c)', () => {
   })
 })
 
+describe('[Ethy/Sync]: binary journal (WP-04c)', () => {
+  it('loadInto restores binary journal rows into getBinaryAccountByHash', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ethy-wp04c-'))
+    const root = new Uint8Array(32)
+    root[31] = 0x42
+    const store = openStore(dir)
+    store.activatePivot({ blockNumber: 10n, blockHash: new Uint8Array(32), stateRoot: root })
+    const hash = new Uint8Array(32)
+    hash[0] = 0x02
+    const binary = accountToBinaryAccount(createAccount({ nonce: 3n, balance: 4n }))
+    store.appendVerifiedRange(
+      0,
+      [{ accountHash: hash, binaryAccount: binary }],
+      createSnapBuckets(),
+    )
+    const rootHex = Array.from(root, (b) => b.toString(16).padStart(2, '0')).join('')
+    const journalPath = path.join(
+      dir,
+      'networks',
+      'sepolia',
+      'pivots',
+      rootHex,
+      'accounts',
+      '0.bin',
+    )
+    assert.isTrue(isBinaryAccountJournalFile(new Uint8Array(fs.readFileSync(journalPath))))
+    const sm = createFlatStateManager()
+    openStore(dir).loadInto(createSpine('sepolia', 11155111n), sm)
+    const stored = sm.getBinaryAccountByHash(hash)
+    assert.isDefined(stored)
+    assert.equal(stored!.length, 104)
+  })
+})
+
 describe('[Ethy/Sync]: multi-peer scaling (fast smoke)', () => {
-  it('times out a silent unproven peer at 4s and returns the bucket to pending', async () => {
+  it('times out a silent unproven peer at 4s and marks the bucket stalled', async () => {
     vi.useFakeTimers()
     try {
       const spine = createSpine('sepolia', 11155111n)
