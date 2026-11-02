@@ -5,7 +5,9 @@ import {
   KECCAK256_NULL,
   KECCAK256_RLP,
   bigIntToUnpaddedBytes,
+  bytesToUnprefixedHex,
   equalsBytes,
+  getBinaryAccountCodeHash,
   getBinaryAccountStorageRoot,
   hexToBytes,
   setLengthLeft,
@@ -32,7 +34,6 @@ type StorageTask = {
   accountHash: Uint8Array
   storageRoot: Uint8Array
   origin: Uint8Array
-  done: boolean
   /** Proof is in the worker. The task is not in flight, and must not be requested again yet. */
   verifying: boolean
   missRetries: number
@@ -43,8 +44,21 @@ type CodeTask = {
   missRetries: number
 }
 
-type InFlightStorage = { reqId: bigint; sentAt: number; taskIndex: number; rootGeneration: number }
+type InFlightStorage = {
+  reqId: bigint
+  sentAt: number
+  accountKey: string
+  rootGeneration: number
+}
 type InFlightCodes = { reqId: bigint; sentAt: number; hashes: Uint8Array[]; rootGeneration: number }
+
+function accountHashKey(accountHash: Uint8Array): string {
+  return bytesToUnprefixedHex(accountHash)
+}
+
+function codeHashKey(codeHash: Uint8Array): string {
+  return bytesToUnprefixedHex(codeHash)
+}
 
 export type SnapCodeAndStorageSynchronizerOpts = {
   spine: EthySpine
@@ -67,8 +81,8 @@ export class SnapCodeAndStorageSynchronizer {
   private readonly peerBusy: (peerId: string) => boolean
   private readonly verifyPool: SnapVerifyPool
   private reqId = 1n
-  private codeQueue: CodeTask[] = []
-  private storageTasks: StorageTask[] = []
+  private readonly codeQueue = new Map<string, CodeTask>()
+  private readonly pendingStorage = new Map<string, StorageTask>()
   private storageInFlight = new Map<string, InFlightStorage>()
   private codesInFlight = new Map<string, InFlightCodes>()
   private detachStorage?: () => void
@@ -111,24 +125,19 @@ export class SnapCodeAndStorageSynchronizer {
 
   noteAccounts(entries: IngestedAccountMeta[]): void {
     for (const { accountHash, codeHash, storageRoot } of entries) {
-      const codeCopy = new Uint8Array(codeHash)
-      const storageCopy = new Uint8Array(storageRoot)
-      if (!equalsBytes(codeCopy, KECCAK256_NULL)) {
-        if (!this.codeQueue.some((t) => equalsBytes(t.codeHash, codeCopy))) {
-          this.codeQueue.push({ codeHash: codeCopy, missRetries: 0 })
+      if (!equalsBytes(codeHash, KECCAK256_NULL)) {
+        const key = codeHashKey(codeHash)
+        if (!this.codeQueue.has(key)) {
+          this.codeQueue.set(key, { codeHash: new Uint8Array(codeHash), missRetries: 0 })
         }
       }
-      if (!equalsBytes(storageCopy, KECCAK256_RLP)) {
-        if (
-          !this.storageTasks.some(
-            (t) => t.done === false && equalsBytes(t.accountHash, accountHash),
-          )
-        ) {
-          this.storageTasks.push({
+      if (!equalsBytes(storageRoot, KECCAK256_RLP)) {
+        const key = accountHashKey(accountHash)
+        if (!this.pendingStorage.has(key)) {
+          this.pendingStorage.set(key, {
             accountHash,
-            storageRoot: storageCopy,
+            storageRoot: new Uint8Array(storageRoot),
             origin: new Uint8Array(32),
-            done: false,
             verifying: false,
             missRetries: 0,
           })
@@ -139,8 +148,8 @@ export class SnapCodeAndStorageSynchronizer {
   }
 
   clearPending(): void {
-    this.codeQueue = []
-    this.storageTasks = []
+    this.codeQueue.clear()
+    this.pendingStorage.clear()
     this.storageInFlight.clear()
     this.codesInFlight.clear()
     this.publishPending()
@@ -150,16 +159,15 @@ export class SnapCodeAndStorageSynchronizer {
   refreshAfterPivotHeal(): void {
     this.storageInFlight.clear()
     this.codesInFlight.clear()
-    for (const task of this.storageTasks) {
-      if (task.done) continue
+    for (const [key, task] of this.pendingStorage) {
       const binary = this.stateManager.getBinaryAccountByHash(task.accountHash)
       if (binary === undefined) {
-        task.done = true
+        this.pendingStorage.delete(key)
         continue
       }
       const storageRoot = getBinaryAccountStorageRoot(binary)
       if (equalsBytes(storageRoot, KECCAK256_RLP)) {
-        task.done = true
+        this.pendingStorage.delete(key)
         continue
       }
       if (!equalsBytes(task.storageRoot, storageRoot)) {
@@ -182,25 +190,83 @@ export class SnapCodeAndStorageSynchronizer {
 
   pendingDone(): boolean {
     return (
-      this.codeQueue.length === 0 &&
-      this.storageTasks.every((t) => t.done) &&
+      this.codeQueue.size === 0 &&
+      this.pendingStorage.size === 0 &&
       this.storageInFlight.size === 0 &&
       this.codesInFlight.size === 0
     )
   }
 
   invalidateAccount(accountHash: Uint8Array): void {
-    for (const task of this.storageTasks) {
-      if (equalsBytes(task.accountHash, accountHash)) {
-        task.done = false
-        task.origin = new Uint8Array(32)
-        task.missRetries = 0
+    const accKey = accountHashKey(accountHash)
+    const binary = this.stateManager.getBinaryAccountByHash(accountHash)
+    if (binary !== undefined) {
+      const storageRoot = getBinaryAccountStorageRoot(binary)
+      if (!equalsBytes(storageRoot, KECCAK256_RLP)) {
+        const existing = this.pendingStorage.get(accKey)
+        if (existing !== undefined) {
+          existing.storageRoot = new Uint8Array(storageRoot)
+          existing.origin = new Uint8Array(32)
+          existing.missRetries = 0
+          existing.verifying = false
+        } else {
+          this.pendingStorage.set(accKey, {
+            accountHash,
+            storageRoot: new Uint8Array(storageRoot),
+            origin: new Uint8Array(32),
+            verifying: false,
+            missRetries: 0,
+          })
+        }
+      } else {
+        this.pendingStorage.delete(accKey)
+      }
+      const codeHash = getBinaryAccountCodeHash(binary)
+      if (!equalsBytes(codeHash, KECCAK256_NULL)) {
+        this.codeQueue.delete(codeHashKey(codeHash))
+      }
+    } else {
+      this.pendingStorage.delete(accKey)
+    }
+  }
+
+  private codeHashesClaimedByFlights(): Set<string> {
+    const claimed = new Set<string>()
+    for (const flight of this.codesInFlight.values()) {
+      for (const h of flight.hashes) {
+        claimed.add(codeHashKey(h))
       }
     }
-    this.codeQueue = this.codeQueue.filter((t) => {
-      const acc = this.stateManager.getAccountByHash(accountHash)
-      return acc === undefined || !equalsBytes(acc.codeHash, t.codeHash)
-    })
+    return claimed
+  }
+
+  private storageKeysInFlight(): Set<string> {
+    const keys = new Set<string>()
+    for (const flight of this.storageInFlight.values()) {
+      keys.add(flight.accountKey)
+    }
+    return keys
+  }
+
+  private nextCodeBatch(max: number): CodeTask[] {
+    const claimed = this.codeHashesClaimedByFlights()
+    const batch: CodeTask[] = []
+    for (const task of this.codeQueue.values()) {
+      if (claimed.has(codeHashKey(task.codeHash))) continue
+      batch.push(task)
+      if (batch.length >= max) break
+    }
+    return batch
+  }
+
+  private nextStorageTask(): StorageTask | undefined {
+    const inFlight = this.storageKeysInFlight()
+    for (const task of this.pendingStorage.values()) {
+      const key = accountHashKey(task.accountHash)
+      if (task.verifying || inFlight.has(key)) continue
+      return task
+    }
+    return undefined
   }
 
   private schedule(): void {
@@ -216,7 +282,7 @@ export class SnapCodeAndStorageSynchronizer {
       if (this.codesInFlight.has(peer.id)) continue
       if (this.storageInFlight.has(peer.id)) continue
 
-      const codeBatch = this.codeQueue.slice(0, MAX_CODE_HASHES)
+      const codeBatch = this.nextCodeBatch(MAX_CODE_HASHES)
       if (codeBatch.length > 0) {
         const hashes = codeBatch.map((t) => t.codeHash)
         const reqId = this.reqId++
@@ -233,9 +299,9 @@ export class SnapCodeAndStorageSynchronizer {
         continue
       }
 
-      const taskIndex = this.storageTasks.findIndex((t) => !t.done && !t.verifying)
-      if (taskIndex >= 0) {
-        const task = this.storageTasks[taskIndex]!
+      const task = this.nextStorageTask()
+      if (task !== undefined) {
+        const accountKey = accountHashKey(task.accountHash)
         const reqId = this.reqId++
         if (!this.flightTracker.tryClaim(peer.id, { kind: 'storage', reqId, sentAt: now })) {
           continue
@@ -243,7 +309,7 @@ export class SnapCodeAndStorageSynchronizer {
         this.storageInFlight.set(peer.id, {
           reqId,
           sentAt: now,
-          taskIndex,
+          accountKey,
           rootGeneration: this.flightTracker.rootGeneration,
         })
         this.transport.sendStorageRanges(
@@ -286,8 +352,8 @@ export class SnapCodeAndStorageSynchronizer {
     if (replyId === undefined || replyId !== flight.reqId) return
     this.storageInFlight.delete(peerId)
     this.flightTracker.release(peerId, flight.reqId)
-    const task = this.storageTasks[flight.taskIndex]
-    if (task === undefined || task.done) return
+    const task = this.pendingStorage.get(flight.accountKey)
+    if (task === undefined) return
     task.verifying = true
 
     let result: Awaited<ReturnType<SnapVerifyPool['verifyStorageRange']>>
@@ -317,7 +383,7 @@ export class SnapCodeAndStorageSynchronizer {
     if (result.hasRight && result.lastKey !== undefined) {
       task.origin = incrementKey32(result.lastKey)
     } else {
-      task.done = true
+      this.pendingStorage.delete(flight.accountKey)
     }
     this.publishPending()
   }
@@ -353,14 +419,15 @@ export class SnapCodeAndStorageSynchronizer {
       this.spine.codesSynced++
       this.snapStore?.appendCode(hash, raw)
       requested.splice(idx, 1)
-      this.codeQueue = this.codeQueue.filter((t) => !equalsBytes(t.codeHash, hash))
+      this.codeQueue.delete(codeHashKey(hash))
     }
     for (const missed of requested) {
-      const task = this.codeQueue.find((t) => equalsBytes(t.codeHash, missed))
+      const key = codeHashKey(missed)
+      const task = this.codeQueue.get(key)
       if (task !== undefined) {
         task.missRetries++
         if (task.missRetries > 1) {
-          this.codeQueue = this.codeQueue.filter((t) => !equalsBytes(t.codeHash, missed))
+          this.codeQueue.delete(key)
           recordDiagnostic(this.spine, {
             subsystem: 'snap',
             severity: 'warn',
@@ -374,8 +441,8 @@ export class SnapCodeAndStorageSynchronizer {
   }
 
   private publishPending(): void {
-    this.spine.codesQueued = this.codeQueue.length
-    this.spine.storageQueued = this.storageTasks.filter((task) => !task.done).length
+    this.spine.codesQueued = this.codeQueue.size
+    this.spine.storageQueued = this.pendingStorage.size
   }
 }
 

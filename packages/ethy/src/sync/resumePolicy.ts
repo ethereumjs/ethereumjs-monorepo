@@ -49,3 +49,14 @@ export function shouldDeferLivePivotRequest(opts: {
   if (opts.saved === undefined) return false
   return !opts.diskHydrated
 }
+
+/** Start account/code snap sync only after disk journals are replayed (WP-04e). */
+export function shouldEnsureSnapSync(opts: {
+  pivotStateRoot: Uint8Array | undefined
+  diskHydrated: boolean
+  handoffCatchup: boolean
+}): boolean {
+  if (opts.pivotStateRoot === undefined) return false
+  if (opts.handoffCatchup) return false
+  return opts.diskHydrated
+}

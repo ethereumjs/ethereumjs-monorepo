@@ -9,9 +9,15 @@ import { bytesToUnprefixedHex, intToUnpaddedBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { chainConfigForNetwork } from '../src/net/chainHardfork.ts'
-import { wantSnapDiscoveryHold } from '../src/net/discoveryHold.ts'
+import {
+  VIP_SNAP_PEER_TARGET,
+  countSnapPeersTowardVipTarget,
+  shouldVipReconnect,
+  wantSnapDiscoveryHold,
+} from '../src/net/discoveryHold.ts'
 import { networkGenesisHash } from '../src/net/genesisStatus.ts'
 import {
+  PEER_BOOK_STARTUP_DIALS,
   PEER_TOO_MANY_PEERS_HOLD_MAX_MS,
   PEER_TOO_MANY_PEERS_VIP_CAP_MS,
   type PeerBookRow,
@@ -26,6 +32,7 @@ import {
   SNAP_RESUME_MAX_GAP,
   decideSnapResume,
   shouldDeferLivePivotRequest,
+  shouldEnsureSnapSync,
 } from '../src/sync/resumePolicy.ts'
 import { PROVEN_PEER_REST_MS, peerRestMsForRangeFailure } from '../src/sync/snapSchedulePolicy.ts'
 
@@ -58,15 +65,54 @@ function openStore(dir: string): SnapPivotStore {
 }
 
 describe('[Ethy/P2P]: resume policy', () => {
-  it('wantSnapDiscoveryHold stays quiet once a snap peer is serving', () => {
+  it('wantSnapDiscoveryHold hysteresis for multi-peer snap', () => {
     assert.equal(wantSnapDiscoveryHold({ snapSessions: 0, servingSnapPeers: 0, held: true }), false)
     assert.equal(
       wantSnapDiscoveryHold({ snapSessions: 1, servingSnapPeers: 0, held: false }),
       false,
     )
-    assert.equal(wantSnapDiscoveryHold({ snapSessions: 1, servingSnapPeers: 0, held: true }), true)
-    assert.equal(wantSnapDiscoveryHold({ snapSessions: 1, servingSnapPeers: 1, held: false }), true)
-    assert.equal(wantSnapDiscoveryHold({ snapSessions: 2, servingSnapPeers: 0, held: false }), true)
+    assert.equal(
+      wantSnapDiscoveryHold({ snapSessions: 1, servingSnapPeers: 1, held: false }),
+      false,
+    )
+    assert.equal(
+      wantSnapDiscoveryHold({ snapSessions: 2, servingSnapPeers: 0, held: false }),
+      false,
+    )
+    assert.equal(wantSnapDiscoveryHold({ snapSessions: 1, servingSnapPeers: 3, held: false }), true)
+    assert.equal(wantSnapDiscoveryHold({ snapSessions: 4, servingSnapPeers: 2, held: false }), true)
+    assert.equal(wantSnapDiscoveryHold({ snapSessions: 3, servingSnapPeers: 2, held: true }), true)
+    assert.equal(
+      wantSnapDiscoveryHold({ snapSessions: 3, servingSnapPeers: 2, held: false }),
+      false,
+    )
+  })
+
+  it('shouldVipReconnect dials below VIP_SNAP_PEER_TARGET even when discovery is held', () => {
+    assert.equal(VIP_SNAP_PEER_TARGET, 4)
+    assert.isTrue(shouldVipReconnect({ snapPeersTowardTarget: 1 }))
+    assert.isFalse(shouldVipReconnect({ snapPeersTowardTarget: 4 }))
+    assert.equal(
+      countSnapPeersTowardVipTarget([
+        { snapSession: true, snapResponsesOk: 0 },
+        { snapSession: false, snapResponsesOk: 2 },
+      ]),
+      2,
+    )
+  })
+
+  it('shouldEnsureSnapSync blocks sync until disk hydrate', () => {
+    const root = new Uint8Array(32)
+    assert.isFalse(
+      shouldEnsureSnapSync({ pivotStateRoot: root, diskHydrated: false, handoffCatchup: false }),
+    )
+    assert.isTrue(
+      shouldEnsureSnapSync({ pivotStateRoot: root, diskHydrated: true, handoffCatchup: false }),
+    )
+  })
+
+  it('PEER_BOOK_STARTUP_DIALS is 6 for warm restarts', () => {
+    assert.equal(PEER_BOOK_STARTUP_DIALS, 6)
   })
 
   it('peerRestMsForRangeFailure drops a below-origin page without resting the peer', () => {

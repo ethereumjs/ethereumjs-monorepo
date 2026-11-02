@@ -1,6 +1,6 @@
 # WP-04e: `O(1)` Contract Queue Scaling, Multi-Peer Parallel Proof Pool, Live Resume Progress & High-Scale Simulation Gate
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `DONE`
 - **Dependencies:** `WP-04d` (`DONE`)
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
@@ -90,21 +90,31 @@ Add deterministic, fast (`< 1.5s` total runtime) high-scale and lifecycle simula
 
 ## 3. Acceptance Criteria & Verification Gates
 
-- [ ] `SnapCodeAndStorageSynchronizer` uses `Map`/`Set` (`O(1)` lookup/delete/count) with zero `.some(equalsBytes)` or `.filter()` scans over `codeQueue` / `storageTasks`.
-- [ ] `SnapVerifyPool` uses a multi-worker pool (`>= 2` workers) without serializing all proofs onto a single `jobChain`.
-- [ ] `wantSnapDiscoveryHold` and `maybeVipReconnect` keep discovery and VIP dialing active when only `1`–`2` snap peers are serving (`VIP_SNAP_PEER_TARGET = 4`, discovery hold at `>= 3` serving peers).
-- [ ] `ensureSnapSync` is strictly gated on `diskHydrated === true`, and `loadIntoAsync` updates `spine.totalAccountsSynced` and bucket progress incrementally on every batch without blocking the Main Thread for `> 25ms`.
-- [ ] All one-shot notices (`snap-stale-reset`, `snap-resume`, `snap-handoff`, `snap-base-done`, `bal-synced-head`) specify `relevantForMs: 8_000` and never re-appear after expiring.
-- [ ] `npm run tsc`, `npm test`, and `npm run spellcheck` pass with 0 errors.
+- [x] `SnapCodeAndStorageSynchronizer` uses `Map`/`Set` (`O(1)` lookup/delete/count) with zero `.some(equalsBytes)` or `.filter()` scans over `codeQueue` / `storageTasks`.
+- [x] `SnapVerifyPool` uses a multi-worker pool (`>= 2` workers) without serializing all proofs onto a single `jobChain`.
+- [x] `wantSnapDiscoveryHold` and `maybeVipReconnect` keep discovery and VIP dialing active when only `1`–`2` snap peers are serving (`VIP_SNAP_PEER_TARGET = 4`, discovery hold at `>= 3` serving peers).
+- [x] `ensureSnapSync` is strictly gated on `diskHydrated === true`, and `loadIntoAsync` updates `spine.totalAccountsSynced` and bucket progress incrementally on every batch without blocking the Main Thread for `> 25ms`.
+- [x] All one-shot notices (`snap-stale-reset`, `snap-resume`, `snap-handoff`, `snap-base-done`, `bal-synced-head`) specify `relevantForMs: 8_000` and never re-appear after expiring.
+- [x] `npm run tsc`, `npm test`, and `npm run spellcheck` pass with 0 errors.
 
 ---
 
 ## 4. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled out by Grok 4.7 during the Planning pass.)*
+**D-073 refinements:** discovery hold hysteresis (hold at `>= 3` serving, sticky at 2); distinct code/storage work per peer via in-flight key sets; `shouldEnsureSnapSync` predicate; single hex-keyed `Map` queues (~200k keys); chunked `noteAccounts` after hydrate (2k + `setImmediate`); `test/perfInvariants.spec.ts` created (file was never added in WP-04d).
+
+| Slice | Files | Work |
+| --- | --- | --- |
+| 1 | `codeAndStorageSync.ts`, `snapVerifyWorker.ts` | Map queues; least-loaded multi-worker pool (`defaultSnapVerifyPoolSize`, `createWorker` test hook) |
+| 2 | `discoveryHold.ts`, `peerCoordinator.ts`, `resumePolicy.ts`, `snapStore.ts`, `peerBook.ts` | VIP target 4, no VIP/discovery coupling, incremental hydrate, `relevantForMs: 8_000` |
+| 3 | `perfInvariants.spec.ts`, `p2pReliability.spec.ts`, `notices.spec.ts`, `codeStorageSync.spec.ts` | 20k/100k scale gates, hysteresis matrix, notice expiry |
 
 ---
 
 ## 5. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled out by Composer 2.5 after implementation and verification.)*
+- **`SnapCodeAndStorageSynchronizer`:** `codeQueue` / `pendingStorage` are hex-keyed `Map`s; completed storage tasks are deleted (not kept with `done: true`). `schedule()` skips code hashes and storage account keys already in flight.
+- **`SnapVerifyPool`:** Removed `jobChain`; lazy worker slots up to `poolSize` (2–4 from `availableParallelism()`). Per-slot error drops the slot only.
+- **`discoveryHold.ts`:** Exported `VIP_SNAP_PEER_TARGET`, `countSnapPeersTowardVipTarget`, `shouldVipReconnect`. `maybeVipReconnect` no longer bails when discovery is held.
+- **`loadIntoAsync`:** Pre-assigns `spine.snapBuckets` from saved metadata; each 4k journal batch updates bucket cursor + `totalAccountsSynced` before yield.
+- **Tests:** `npm run tsc` and `npm run test:node` green (157 tests). No upstream package changes.

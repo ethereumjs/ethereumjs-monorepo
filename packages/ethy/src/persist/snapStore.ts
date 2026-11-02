@@ -343,6 +343,16 @@ export class SnapPivotStore {
     if (fs.existsSync(bucketsPath)) {
       savedBuckets = readStoredDoc<{ buckets: SerializedBucket[] }>(bucketsPath).buckets
     }
+    for (let i = 0; i < buckets.length; i++) {
+      const saved = savedBuckets?.find((b) => b.index === i)
+      if (saved === undefined) continue
+      const bucket = buckets[i]!
+      bucket.status = saved.status
+      bucket.lastStallReason = saved.lastStallReason
+      bucket.accountsLoaded = saved.accountsLoaded
+      bucket.currentLastHash = unprefixedHexToBytes(saved.currentLastHash.slice(2))
+    }
+    spine.snapBuckets = buckets
 
     let restored = 0
     let sliceStart = Date.now()
@@ -360,15 +370,20 @@ export class SnapPivotStore {
         const raw = new Uint8Array(await fs.promises.readFile(file))
         if (isBinaryAccountJournalFile(raw)) {
           const { recordCount, lastHash } = await this.restoreBinaryJournalAsync(
+            i,
             raw,
             stateManager,
+            bucket,
+            spine,
             maybeYield,
           )
           journalRecords = recordCount
           restored += recordCount
-          const cursor = journalCursorAfterRecords(i, recordCount, lastHash, bucket.startHash)
-          bucket.accountsLoaded = cursor.accountsLoaded
-          bucket.currentLastHash = cursor.currentLastHash
+          if (recordCount > 0 && lastHash !== undefined) {
+            const cursor = journalCursorAfterRecords(i, recordCount, lastHash, bucket.startHash)
+            bucket.accountsLoaded = cursor.accountsLoaded
+            bucket.currentLastHash = cursor.currentLastHash
+          }
         } else {
           const { records, lastHash } = readAccountJournalFile(raw)
           journalRecords = records.length
@@ -551,8 +566,11 @@ export class SnapPivotStore {
   }
 
   private async restoreBinaryJournalAsync(
+    bucketIndex: number,
     raw: Uint8Array,
     stateManager: FlatStateManager,
+    bucket: SnapBucket,
+    spine: EthySpine,
     maybeYield: () => Promise<void>,
   ): Promise<{ recordCount: number; lastHash?: Uint8Array }> {
     let recordCount = 0
@@ -560,8 +578,18 @@ export class SnapPivotStore {
     await forEachBinaryJournalBatch(raw, 4000, async (slab, lastHashInBatch) => {
       stateManager.putSnapBinaryAccountsFromSlab(slab)
       this.pushContractRowsFromSlab(slab)
-      recordCount += slab.length / 136
+      const batchRows = slab.length / 136
+      recordCount += batchRows
       lastHash = lastHashInBatch
+      const cursor = journalCursorAfterRecords(
+        bucketIndex,
+        recordCount,
+        lastHashInBatch,
+        bucket.startHash,
+      )
+      bucket.accountsLoaded = cursor.accountsLoaded
+      bucket.currentLastHash = cursor.currentLastHash
+      spine.totalAccountsSynced = stateManager.accountCount()
       await maybeYield()
     })
     return { recordCount, lastHash }
