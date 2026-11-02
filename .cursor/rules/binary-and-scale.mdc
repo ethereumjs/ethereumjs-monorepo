@@ -47,3 +47,8 @@ Code that takes `0.05ms` at `N = 100` in a unit test can freeze V8 for seconds a
    - Partition large account/storage maps into **256 shards indexed by the first byte** (`Array.from({ length: 256 }, () => new Map<string, Uint8Array>())`, using `accountHash[0]` or `parseInt(key.slice(0, 2), 16)`). Each shard stays small (`< 150k` entries even at 35M accounts), keeping inserts and rehashes under `< 1ms`.
 3. **Maintain `O(1)` Counters — Never Walk Keys or Allocate `Set`s to Count:**
    - Methods like `accountCount()` must return a maintained `O(1)` integer counter (or sum the 256 shard `.size` properties in `O(256)`), **never** iterating keys or allocating a `new Set()` across millions of entries.
+4. **Never Scan Unbounded Arrays with `.some()` / `.find()` / `.filter()` (`O(N²)` Ban):**
+   - Any queue, deduplication list, or task registry that grows with ingested accounts, contracts, or storage roots (e.g. `codeQueue`, `storageTasks`) can reach `200,000+` items during a chain sync.
+   - Calling `array.some(equalsBytes)` or `array.filter(...)` inside a batch ingestion or restore loop creates a `200,000 × 200,000` (`O(N²)`) freeze that locks up the Main Thread for tens of seconds!
+   - Always key deduplication and task lookup structures by hex string in a `Map<string, Task>` or `Set<string>` (`O(1)` lookup and deletion) and maintain `O(1)` pending counters instead of `.filter()` scans.
+

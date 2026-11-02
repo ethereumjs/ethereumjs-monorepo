@@ -34,4 +34,12 @@ See also repo-wide [`binary-and-scale.mdc`](../../../../.cursor/rules/binary-and
 2. **Decide Resume vs. Reset on First Peer `STATUS` (`latestBlock = #H`):**
    - As soon as the first peer reports `latestBlock = #H`, run `decideSnapResume({ fresh, saved: peek, head: #H })`:
      - **`reset-stale` (`#H - #P > 90`):** The saved partial pivot `#P` is already expired on `snap/1` peers! Call `snapStore.discardPivots()` (`< 5ms`), post the `NoticeBoard` warning, and anchor `#H` immediately — **never wasting 20 seconds loading expired journal files from disk only to delete them!**
-     - **`resume-snap` (`#H - #P <= 90`) or `handoff-catchup` (`baseSyncComplete: true`):** Now hydrate the saved `.bin` journals (reading contiguous 136-byte `BinaryAccount` slabs without calling `binaryAccountToAccount`!) and start `ensureSnapSync` / `ensureHeadFollower` **only after** hydration completes.
+     - **`resume-snap` (`#H - #P <= 90`) or `handoff-catchup` (`baseSyncComplete: true`):** Now hydrate the saved `.bin` journals (reading contiguous 136-byte `BinaryAccount` slabs without calling `binaryAccountToAccount`!) and start `ensureSnapSync` / `ensureHeadFollower` **only after** hydration completes (`diskHydrated === true`).
+3. **Incremental Progress & Non-Blocking Contract Queueing During Disk Hydration:**
+   - While `loadIntoAsync` replays `.bin` bucket journals, update `spine.totalAccountsSynced` and `spine.snapBuckets[i]` **incrementally after each batch** (not only at the very end of all 16 files) so the TUI `Node Pulse` immediately shows live progress instead of sitting at `0 acc · 0%`.
+   - Do **not** set `spine.pivotStateRoot` in a way that triggers `applyTelemetry` → `ensureSnapSync` while `loadIntoAsync` is still reading disk journals (`ensureSnapSync` must check `if (!diskHydrated) return`).
+   - Draining restored contracts into `SnapCodeAndStorageSynchronizer.noteAccounts` must run in `O(1)` per contract via `Map<string, ...>` deduplication (never `O(N²)` `.some(equalsBytes)` array scans).
+4. **Multi-Peer Scaling & Notice Expiry Invariants:**
+   - Do **not** pause discovery or skip `maybeVipReconnect` after only `1` peer serves a page! Keep discovery and VIP reconnect active until `servingSnapPeers >= 3` (or `snapSessions >= 4`), and use a multi-worker `SnapVerifyPool` (`>= 2` workers) so multiple peers verify range proofs in parallel.
+   - Every one-shot lifecycle notice posted to `NoticeBoard` (`snap-stale-reset`, `snap-resume`, `snap-handoff`, `snap-base-done`, `bal-synced-head`) **must** set a finite `relevantForMs` (e.g. `8_000`) so expired notices never re-appear when a later transient notice clears.
+

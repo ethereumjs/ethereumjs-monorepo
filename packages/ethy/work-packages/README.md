@@ -71,6 +71,13 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                       │         Head Ordering                   │                 │
                       └───────────────────┬─────────────────────┘                 │
                                           │                                       │
+                                          ▼                                       │
+                      ┌─────────────────────────────────────────┐                 │
+                      │ WP-04e: O(1) Contract Queue, Multi-     │                 │
+                      │         Worker Verify Pool, Multi-Peer  │                 │
+                      │         Hold & 100k Scale/Resume Gate   │                 │
+                      └───────────────────┬─────────────────────┘                 │
+                                          │                                       │
                                           └───────────────────┬───────────────────┘
                                                               ▼
                                           ┌─────────────────────────────────────────┐
