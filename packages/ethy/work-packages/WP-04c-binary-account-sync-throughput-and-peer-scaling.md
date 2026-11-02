@@ -1,6 +1,6 @@
 # WP-04c: `@ethereumjs/util` `BinaryAccount`, Constant-Time Sync Throughput, Multi-Peer Pipelining & Discovery Pause
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `PLANNED`
 - **Dependencies:** `WP-00`–`WP-04b` (`DONE`)
 - **Branch:** `ethy-continuation`
 - **Planner:** Grok 4.7
@@ -142,7 +142,105 @@ Stop continuous DNS and UDP discovery from burning CPU and bandwidth once Ethy h
 
 ## 4. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled out by Grok 4.7 during the Planning pass. Plan 4 isolated commits: `@ethereumjs/util` → `@ethereumjs/statemanager` → `@ethereumjs/devp2p` → `@ethereumjs/ethy`.)*
+Four isolated commits, in order: `@ethereumjs/util` → `@ethereumjs/statemanager` → `@ethereumjs/devp2p` → `@ethereumjs/ethy`. No new dependencies. Public `Account` / `StateManagerInterface` behavior stays compatible.
+
+```mermaid
+flowchart LR
+  reply[ACCOUNT_RANGE bytes]
+  decode[decode once]
+  bin[BinaryAccount 104 bytes]
+  proof[verifyMerkleRangeProof]
+  mem[FlatStateManager map]
+  disk[one writeSync 136-byte rows]
+  reply --> decode --> bin
+  bin --> proof
+  bin --> mem
+  bin --> disk
+```
+
+### Design refinements (Decision D-067)
+
+Extends **D-066**. Planner corrections to the WP narrative vs current code.
+
+- **Sticky discovery hold.** `packages/devp2p/src/rlpx/rlpx.ts` `_syncDiscoveryThrottle` calls `setDiscoveryPaused(false)` whenever `connected <= lowWater` (Sepolia sits at 2–6). A bare `DPT.setDiscoveryPaused(true)` is cleared on the next peer event. Add `RLPx.setSyncDiscoveryHold(held)` that the throttle must not clear. Slot-full pause (`connected >= maxPeers`) still applies when the hold is off. VIP `connectPeer` redials keep running; only DNS and UDP discovery v4 neighbour refresh pause (`DPT.refresh` already returns early when paused).
+- **Hysteresis lives in Ethy.** Pause when proven count `>= 3`, resume when `< 2`, keep the previous bit in between. Send the worker command only when the bit flips. `SNAP_SYNCING`: count spine peers with `snapSession && snapResponsesOk > 0`. `HEAD_FOLLOWING`: count the latest telemetry peers whose `latestBlock` is set. Do not hold during `P2P_WARMUP`.
+- **Timeouts match the code, not the “15s” sentence in slice 4 above.** Proven range timeout stays `20_000`. Unproven (`snapResponsesOk === 0`) first-request timeout is `4_000`, then rest `30_000` (proven rest stays `10_000`). Store `timeoutMs` on the flight at send time.
+- **Pipeline gate is stricter than “proven”.** Rank and discovery use `snapResponsesOk > 0`. Depth 2 only when `snapResponsesOk >= 2 && snapTimeouts === 0`. Everyone else stays depth 1. Code and storage stay depth 1; they already no-op until every account bucket is `done`.
+- **Journal compatibility.** Schema stays **2**. New bucket files start with a 4-byte magic `0xE34A0003` and then fixed `32 + 104` rows. Existing variable-length files (4-byte length + hash + RLP) keep that reader and a batched legacy append so an in-progress pivot can resume. Do not mix layouts in one file. `loadInto` already prefers the journal cursor over `buckets.json` when the file has records, so a 2s-stale `buckets.json` does not rewind a flushed journal.
+- **Owned 104-byte buffers, hex map keys unchanged.** Rebuilding the account map into one slab is out of scope. Each map value is an owned `Uint8Array(104)` or `undefined` (delete). Writes replace the buffer; checkpoints keep the previous reference. Never mutate a stored buffer in place. `getAccount` / `getAccountByHash` still return a fresh `Account`.
+
+### File tree (implementation order)
+
+| Commit | Package | Primary files |
+| --- | --- | --- |
+| 1 | `@ethereumjs/util` | `packages/util/src/binaryAccount.ts`, `src/index.ts`, `test/binaryAccount.spec.ts` |
+| 2 | `@ethereumjs/statemanager` | `packages/statemanager/src/flatStateManager.ts`, `test/flatStateManager.spec.ts` |
+| 3 | `@ethereumjs/devp2p` | `src/worker/protocol.ts`, `client.ts`, `host.ts`, `src/rlpx/rlpx.ts`, `src/discovery/metrics.ts`, `test/worker/worker-network.spec.ts` |
+| 4 | `@ethereumjs/ethy` | `src/sync/syntheticPeer.ts`, `accountSync.ts`, `snapFlight.ts`, `src/persist/journal.ts`, `snapStore.ts`, `src/net/peerCoordinator.ts`, `test/syncScaling.spec.ts` |
+
+### Commit 1 — `@ethereumjs/util`
+
+New `packages/util/src/binaryAccount.ts`, re-exported from `packages/util/src/index.ts`. `Account` unchanged.
+
+Layout: `[0,8)` nonce uint64 big-endian, `[8,40)` balance uint256, `[40,72)` storage root, `[72,104)` code hash. `BINARY_ACCOUNT_SIZE = 104`. Type `BinaryAccount = Uint8Array`.
+
+Factories and converters with optional `target` / `offset` for slab writes:
+
+- `createBinaryAccount`, `accountToBinaryAccount`, `accountBodyToBinary(body, couldBeSlim = true)`, `binaryAccountToBody(buf, offset, slim = false)`, `binaryAccountToRLP`, `binaryAccountToAccount`
+- Accessors/setters for nonce, balance, storage root, code hash
+- `isBinaryAccountContract`, `isBinaryAccountEmptyStorage`, `isBinaryAccountEmpty` (EIP-161, aligned with `Account.isEmpty`)
+
+Slim bodies expand empty storage/code to `KECCAK256_RLP` / `KECCAK256_NULL`. Left-pad nonce and balance. Throw on overflow or wrong hash length. Hash getters return byte slice views that alias the buffer (document in JSDoc).
+
+Tests: round-trip with `createAccount` / serialize / slim / RLP / predicates; slab offsets `0`, `104`, `208`; overflow throws. JSDoc per `api-docs.mdc`. Unreleased changelog line.
+
+### Commit 2 — `@ethereumjs/statemanager`
+
+`FlatStateManager._accounts` and delta frames store `Uint8Array | undefined` (104 bytes).
+
+- `putAccount` / `putSnapAccountsBatch` → `accountToBinaryAccount` (new buffer)
+- `putSnapBinaryAccountsBatch` copies 104 bytes per entry; optional address preimage
+- `getBinaryAccountByHash` returns stored buffer (read-only for callers)
+- `getAccount`, `getAccountByHash`, `sampleAccounts` → `binaryAccountToAccount` at boundary
+- Checkpoint revert restores prior buffer reference
+
+Extend `flatStateManager.spec.ts`. Run statemanager + evm + vm tests. Changelog line.
+
+### Commit 3 — `@ethereumjs/devp2p`
+
+- `WorkerCommand`: `{ type: 'setDiscoveryPaused'; paused: boolean }`
+- `Devp2pWorkerClient.setDiscoveryPaused(paused)`
+- Host: `this._rlpx?.setSyncDiscoveryHold(paused)` + `this._dpt?.setDiscoveryPaused(paused)`
+- `WorkerDiscoverySnapshot.discoveryPaused` in metrics snapshot
+- Unit test: sync hold stays paused under `maxPeers`; clearing hold allows low-water resume (no live sockets)
+
+Changelog line.
+
+### Commit 4 — `@ethereumjs/ethy`
+
+**Single-pass ingest** (`syntheticPeer.ts`, `accountSync.ts`): decode once to `{ reqId, pairs, proof }`; match `(peerId, reqId)` before put; `accountBodyToBinary` once per row; proof values via `binaryAccountToRLP`; `putSnapBinaryAccountsBatch`; advance cursor from decoded last key; `onAccountsIngested` only for contract / non-empty-storage via `binaryAccountToAccount`. Remove redundant decodes on hot path.
+
+**Disk** (`journal.ts`, `snapStore.ts`): one `fs.writeSync` per batch; no per-packet `fsyncSync` or `buckets.json`; throttle fsync + `buckets.json` every 2s and on `stop()` / `flushBuckets()`; magic `0xE34A0003` + 136-byte rows for new files; legacy reader + batched legacy append.
+
+**Scheduler** (`snapFlight.ts`, `accountSync.ts`): flights keyed by `(peerId, reqId)`; `tryClaim(peerId, flight, maxInFlight)`; `release(peerId, reqId)`; rank peers (proven by `avgLatencyMs`, then unproven); bucket-first assignment with cap 2 when `snapResponsesOk >= 2 && snapTimeouts === 0`; unproven timeout 4s / rest 30s. `getSnapPeers` must pass `snapResponsesOk`, `snapTimeouts`, `avgLatencyMs`.
+
+**Discovery** (`peerCoordinator.ts`): `syncDiscoveryHold(client)` with hysteresis; diagnostic on flip; optional discovery summary row for `discoveryPaused`. No Node Pulse geometry changes.
+
+**Tests** (`test/syncScaling.spec.ts`, synthetic peer + fake timers):
+
+1. Two peers @ 40ms latency: 16-bucket sync ≥ 1.7× faster than one peer
+2. One working + two silent zombies: 4s timeout, proven peer finishes all buckets
+3. Binary journal round-trip via `loadInto` + `getBinaryAccountByHash`
+
+Optional `scripts/sync-bench.ts` (manual, not CI). Update `accountSync` / `snapPersist` tests for flight keys and batched journal. Build util + statemanager before ethy `tsc` (**D-042**).
+
+### Finish gates (implementer)
+
+Per touched package: `npm run tsc`, `npm test`, `npm run spellcheck`. Statemanager: also evm + vm. WP acceptance checkboxes stay open until green. Upstream touch queue → `DONE` only after commits land.
+
+### Out of scope
+
+Hex-key map slab, code/storage depth 2, mid-sync pivot, Node Pulse redesign, live Sepolia CI gate, WP-05.
 
 ---
 
