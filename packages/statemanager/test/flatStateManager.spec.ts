@@ -1,6 +1,8 @@
 import {
   Account,
   Address,
+  BINARY_ACCOUNT_SIZE,
+  accountToBinaryAccount,
   createAccount,
   hexToBytes,
   setLengthLeft,
@@ -54,6 +56,20 @@ describe('[StateManager/FlatStateManager]', () => {
     sm.putCodeByHash(codeHash, code)
     assert.deepEqual(sm.getCodeByHash(codeHash), code)
     assert.isUndefined(sm.getCodeByHash(new Uint8Array(32)))
+  })
+
+  it('putSnapBinaryAccountsBatch() and getBinaryAccountByHash()', async () => {
+    const sm = new FlatStateManager()
+    const address = new Address(hexToBytes(`0x${'55'.repeat(20)}`))
+    const accountHash = keccak_256(address.bytes)
+    const account = createAccount({ nonce: 3n, balance: 42n })
+    const binary = accountToBinaryAccount(account)
+    assert.strictEqual(binary.length, BINARY_ACCOUNT_SIZE)
+    sm.putSnapBinaryAccountsBatch([{ accountHash, binaryAccount: binary, address }])
+    const stored = sm.getBinaryAccountByHash(accountHash)
+    assert.isDefined(stored)
+    assert.deepEqual(stored, binary)
+    assert.strictEqual((await sm.getAccount(address))?.nonce, 3n)
   })
 
   it('putSnapStorageBatch() round-trips via getStorage()', async () => {

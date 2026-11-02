@@ -1,13 +1,17 @@
 import {
   Account,
   Address,
+  BINARY_ACCOUNT_SIZE,
   EthereumJSErrorWithoutCode,
   KECCAK256_NULL,
+  accountToBinaryAccount,
+  binaryAccountToAccount,
   bytesToHex,
   bytesToUnprefixedHex,
   equalsBytes,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
+import type { BinaryAccount } from '@ethereumjs/util'
 import { keccak_256 } from '@noble/hashes/sha3.js'
 
 import { OriginalStorageCache } from './cache/originalStorageCache.ts'
@@ -25,7 +29,7 @@ export type FlatAccountSample = {
 }
 
 type DeltaFrame = {
-  accounts: Map<string, Account | undefined>
+  accounts: Map<string, Uint8Array | undefined>
   storage: Map<string, Uint8Array | undefined>
   code: Map<string, Uint8Array | undefined>
 }
@@ -39,7 +43,7 @@ export class FlatStateManager implements StateManagerInterface {
   public originalStorageCache: OriginalStorageCache
 
   private readonly _parent?: FlatStateManager
-  private readonly _accounts = new Map<string, Account | undefined>()
+  private readonly _accounts = new Map<string, Uint8Array | undefined>()
   private readonly _storage = new Map<string, Uint8Array>()
   private readonly _code = new Map<string, Uint8Array>()
   private readonly _hashToAddress = new Map<string, Address>()
@@ -80,22 +84,36 @@ export class FlatStateManager implements StateManagerInterface {
     return this._deltaStack[this._deltaStack.length - 1]
   }
 
-  private readAccountKey(key: string): Account | undefined {
+  private readBinaryAccountKey(key: string): Uint8Array | undefined {
     if (this._accounts.has(key)) {
       return this._accounts.get(key)
     }
     if (this._parent !== undefined) {
-      return this._parent.readAccountKey(key)
+      return this._parent.readBinaryAccountKey(key)
     }
     return undefined
   }
 
-  private writeAccountKey(key: string, account: Account | undefined): void {
+  private readAccountKey(key: string): Account | undefined {
+    const binary = this.readBinaryAccountKey(key)
+    if (binary === undefined) return undefined
+    return binaryAccountToAccount(binary)
+  }
+
+  private writeBinaryAccountKey(key: string, binary: Uint8Array | undefined): void {
     const frame = this.topFrame()
     if (frame !== undefined && !frame.accounts.has(key)) {
-      frame.accounts.set(key, this.readAccountKey(key))
+      frame.accounts.set(key, this.readBinaryAccountKey(key))
     }
-    this._accounts.set(key, account)
+    this._accounts.set(key, binary)
+  }
+
+  private writeAccountKey(key: string, account: Account | undefined): void {
+    if (account === undefined) {
+      this.writeBinaryAccountKey(key, undefined)
+      return
+    }
+    this.writeBinaryAccountKey(key, accountToBinaryAccount(account))
   }
 
   private readStorageKey(key: string): Uint8Array | undefined {
@@ -338,6 +356,31 @@ export class FlatStateManager implements StateManagerInterface {
     }
   }
 
+  /** Batch-ingest snap accounts already encoded as 104-byte binary records. */
+  putSnapBinaryAccountsBatch(
+    entries: Array<{ accountHash: Uint8Array; binaryAccount: BinaryAccount; address?: Address }>,
+  ): void {
+    for (const { accountHash, binaryAccount, address } of entries) {
+      if (binaryAccount.length !== BINARY_ACCOUNT_SIZE) {
+        throw EthereumJSErrorWithoutCode(
+          `binaryAccount must be ${BINARY_ACCOUNT_SIZE} bytes, got ${binaryAccount.length}`,
+        )
+      }
+      const key = this.accountHashKey(accountHash)
+      if (address !== undefined) {
+        this._hashToAddress.set(key, address)
+      }
+      const owned = new Uint8Array(BINARY_ACCOUNT_SIZE)
+      owned.set(binaryAccount.subarray(0, BINARY_ACCOUNT_SIZE))
+      this.writeBinaryAccountKey(key, owned)
+    }
+  }
+
+  /** Lookup by account hash without materializing an {@link Account}. */
+  getBinaryAccountByHash(accountHash: Uint8Array): BinaryAccount | undefined {
+    return this.readBinaryAccountKey(this.accountHashKey(accountHash))
+  }
+
   putSnapStorageBatch(
     accountHash: Uint8Array,
     slots: Array<{ slotHash: Uint8Array; value: Uint8Array }>,
@@ -385,12 +428,13 @@ export class FlatStateManager implements StateManagerInterface {
     const seen = new Set<string>()
 
     const collect = (sm: FlatStateManager) => {
-      for (const [k, account] of sm._accounts) {
-        if (account === undefined || seen.has(k)) continue
+      for (const [k, binary] of sm._accounts) {
+        if (binary === undefined || seen.has(k)) continue
         seen.add(k)
         const hashBytes = unprefixedHexToBytes(k)
         const hashHex = bytesToHex(hashBytes)
         if (prefix.length > 0 && !hashHex.toLowerCase().includes(prefix)) continue
+        const account = binaryAccountToAccount(binary)
         samples.push({
           accountHash: hashBytes,
           address: sm._hashToAddress.get(k) ?? this._hashToAddress.get(k),
