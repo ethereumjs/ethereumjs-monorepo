@@ -11,6 +11,7 @@
     "OriginalStorageCache",
     "RPCBlockChain",
     "RPCStateManager",
+    "SNAP_BINARY_ACCOUNT_SLAB_RECORD_SIZE",
     "SimpleStateManager",
     "StatefulBinaryTreeStateManager",
     "StorageCache",
