@@ -8,6 +8,10 @@ export type SnapPeerFlight = {
   rootGeneration: number
 }
 
+function flightKey(peerId: string, reqId: bigint): string {
+  return `${peerId}:${reqId.toString()}`
+}
+
 export class SnapPeerFlightTracker {
   private flights = new Map<string, SnapPeerFlight>()
   private generation = 0
@@ -22,22 +26,38 @@ export class SnapPeerFlightTracker {
     return this.generation
   }
 
-  has(peerId: string): boolean {
-    return this.flights.has(peerId)
+  inFlightCount(peerId: string): number {
+    let count = 0
+    const prefix = `${peerId}:`
+    for (const key of this.flights.keys()) {
+      if (key.startsWith(prefix)) count++
+    }
+    return count
   }
 
-  tryClaim(peerId: string, flight: Omit<SnapPeerFlight, 'rootGeneration'>): boolean {
-    if (this.flights.has(peerId)) return false
-    this.flights.set(peerId, { ...flight, rootGeneration: this.generation })
+  has(peerId: string): boolean {
+    return this.inFlightCount(peerId) > 0
+  }
+
+  tryClaim(
+    peerId: string,
+    flight: Omit<SnapPeerFlight, 'rootGeneration'>,
+    maxInFlight = 1,
+  ): boolean {
+    if (this.inFlightCount(peerId) >= maxInFlight) return false
+    this.flights.set(flightKey(peerId, flight.reqId), {
+      ...flight,
+      rootGeneration: this.generation,
+    })
     return true
   }
 
-  release(peerId: string): void {
-    this.flights.delete(peerId)
+  release(peerId: string, reqId: bigint): void {
+    this.flights.delete(flightKey(peerId, reqId))
   }
 
-  get(peerId: string): SnapPeerFlight | undefined {
-    return this.flights.get(peerId)
+  get(peerId: string, reqId: bigint): SnapPeerFlight | undefined {
+    return this.flights.get(flightKey(peerId, reqId))
   }
 
   clearAll(): void {

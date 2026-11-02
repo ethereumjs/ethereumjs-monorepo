@@ -6,6 +6,7 @@ import { createFlatStateManager } from '@ethereumjs/statemanager'
 import { balSimpleJSON } from '@ethereumjs/testdata'
 import {
   type BALJSONBlockAccessList,
+  accountToBinaryAccount,
   bytesToHex,
   createAccount,
   createAddressFromString,
@@ -73,8 +74,8 @@ describe('[Ethy/Persist]: snap pivot store', () => {
     })
     const hash = new Uint8Array(32)
     hash[0] = 0x01
-    const rlp = createAccount({ nonce: 1n, balance: 2n }).serialize()
-    const record = { accountHash: hash, accountRlp: rlp }
+    const binary = accountToBinaryAccount(createAccount({ nonce: 1n, balance: 2n }))
+    const record = { accountHash: hash, binaryAccount: binary }
     const buckets = createSnapBuckets()
     buckets[0]!.accountsLoaded = 1
     buckets[0]!.status = 'pending'
@@ -87,6 +88,9 @@ describe('[Ethy/Persist]: snap pivot store', () => {
     assert.equal(sm.accountCount(), 1)
     assert.equal(spine.snapBuckets[0]!.accountsLoaded, 1)
     assert.notEqual(spine.snapBuckets[0]!.currentLastHash[0], 0)
+    const stored = sm.getBinaryAccountByHash(hash)
+    assert.isDefined(stored)
+    assert.equal(stored!.length, 104)
   })
 
   it('drops a torn tail record on read', () => {
@@ -111,10 +115,10 @@ describe('[Ethy/Persist]: snap pivot store', () => {
     store.activatePivot({ blockNumber: 10n, blockHash: new Uint8Array(32), stateRoot: rootA })
     const hash = new Uint8Array(32)
     hash[0] = 0x01
-    const rlp = createAccount({ nonce: 1n, balance: 2n }).serialize()
+    const binary = accountToBinaryAccount(createAccount({ nonce: 1n, balance: 2n }))
     const buckets = createSnapBuckets()
     buckets[0]!.accountsLoaded = 1
-    store.appendVerifiedRange(0, [{ accountHash: hash, accountRlp: rlp }], buckets)
+    store.appendVerifiedRange(0, [{ accountHash: hash, binaryAccount: binary }], buckets)
     store.activatePivot({ blockNumber: 80n, blockHash: new Uint8Array(32), stateRoot: rootB })
 
     const spine = createSpine('sepolia', 11155111n)
@@ -152,9 +156,9 @@ describe('[Ethy/Persist]: snap pivot store', () => {
     store.activatePivot({ blockNumber: 10n, blockHash: new Uint8Array(32), stateRoot: rootA })
     const hash = new Uint8Array(32)
     hash[0] = 0x04
-    const rlp = createAccount({ nonce: 1n, balance: 2n }).serialize()
+    const binary = accountToBinaryAccount(createAccount({ nonce: 1n, balance: 2n }))
     const buckets = createSnapBuckets()
-    store.appendVerifiedRange(0, [{ accountHash: hash, accountRlp: rlp }], buckets)
+    store.appendVerifiedRange(0, [{ accountHash: hash, binaryAccount: binary }], buckets)
     store.activatePivot({ blockNumber: 80n, blockHash: new Uint8Array(32), stateRoot: rootB })
 
     const spine = createSpine('sepolia', 11155111n)

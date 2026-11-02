@@ -234,7 +234,13 @@ export async function startPeerCoordinator(
     const getSnapPeers = () =>
       [...spine.peers.values()]
         .filter((p) => p.snapSession === true)
-        .map((p) => ({ id: p.id, caps: p.caps }))
+        .map((p) => ({
+          id: p.id,
+          caps: p.caps,
+          snapResponsesOk: p.snapResponsesOk,
+          snapTimeouts: p.snapTimeouts,
+          avgLatencyMs: p.avgLatencyMs,
+        }))
     if (snapSync === undefined) {
       snapSync = new SnapAccountSynchronizer({
         spine,
@@ -279,6 +285,7 @@ export async function startPeerCoordinator(
   let dnsTimedOut = false
   let link = initialP2pLinkState()
   const linkStartedAt = Date.now()
+  let discoveryHoldActive: boolean | undefined
 
   const noteDiscovery = (message: string) => {
     if (discoveryLooksBlocked(message)) dnsTimedOut = true
@@ -837,9 +844,43 @@ export async function startPeerCoordinator(
     if (inFlightPeerId === undefined && spine.pivotBlockNumber === undefined) {
       if (bestPeer !== undefined) requestPivotFromPeer(bestPeer)
     }
+    syncDiscoveryHold(client)
     ensureSnapSync(client)
     maybeMarkBaseSyncComplete()
   })
+
+  function syncDiscoveryHold(clientRef: Devp2pWorkerClient): void {
+    if (spine.phase === 'P2P_WARMUP' || spine.phase === 'BOOTING') {
+      if (discoveryHoldActive === true) {
+        clientRef.setDiscoveryPaused(false)
+        discoveryHoldActive = false
+      }
+      return
+    }
+    let proven = 0
+    if (spine.phase === 'SNAP_SYNCING') {
+      proven = [...spine.peers.values()].filter(
+        (p) => p.snapSession === true && p.snapResponsesOk > 0,
+      ).length
+    } else if (spine.phase === 'HEAD_FOLLOWING' || spine.phase === 'BAL_CATCHUP') {
+      proven = lastTelemetryPeers.filter((p) => p.latestBlock !== undefined).length
+    } else {
+      if (discoveryHoldActive === true) {
+        clientRef.setDiscoveryPaused(false)
+        discoveryHoldActive = false
+      }
+      return
+    }
+    const wantHold = proven >= 3 ? true : proven < 2 ? false : (discoveryHoldActive ?? false)
+    if (wantHold === discoveryHoldActive) return
+    clientRef.setDiscoveryPaused(wantHold)
+    discoveryHoldActive = wantHold
+    recordDiagnostic(spine, {
+      subsystem: 'devp2p',
+      severity: 'info',
+      message: wantHold ? 'Discovery paused (enough sync peers)' : 'Discovery resumed',
+    })
+  }
 
   client.events.on('protocol', (msg) => {
     if (msg.protocol !== 'eth') return

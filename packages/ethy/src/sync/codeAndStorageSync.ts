@@ -252,12 +252,12 @@ export class SnapCodeAndStorageSynchronizer {
     for (const [peerId, flight] of this.storageInFlight) {
       if (now - flight.sentAt < RANGE_TIMEOUT_MS) continue
       this.storageInFlight.delete(peerId)
-      this.flightTracker.release(peerId)
+      this.flightTracker.release(peerId, flight.reqId)
     }
     for (const [peerId, flight] of this.codesInFlight) {
       if (now - flight.sentAt < RANGE_TIMEOUT_MS) continue
       this.codesInFlight.delete(peerId)
-      this.flightTracker.release(peerId)
+      this.flightTracker.release(peerId, flight.reqId)
     }
   }
 
@@ -266,13 +266,13 @@ export class SnapCodeAndStorageSynchronizer {
     if (flight === undefined || this.spine.pivotStateRoot === undefined) return
     if (flight.rootGeneration !== this.flightTracker.rootGeneration) {
       this.storageInFlight.delete(peerId)
-      this.flightTracker.release(peerId)
+      this.flightTracker.release(peerId, flight.reqId)
       return
     }
     const replyId = snapReplyRequestId(payload)
     if (replyId === undefined || replyId !== flight.reqId) return
     this.storageInFlight.delete(peerId)
-    this.flightTracker.release(peerId)
+    this.flightTracker.release(peerId, flight.reqId)
     const task = this.storageTasks[flight.taskIndex]
     if (task === undefined || task.done) return
 
@@ -308,13 +308,13 @@ export class SnapCodeAndStorageSynchronizer {
     if (flight === undefined) return
     if (flight.rootGeneration !== this.flightTracker.rootGeneration) {
       this.codesInFlight.delete(peerId)
-      this.flightTracker.release(peerId)
+      this.flightTracker.release(peerId, flight.reqId)
       return
     }
     const replyId = snapReplyRequestId(payload)
     if (replyId === undefined || replyId !== flight.reqId) return
     this.codesInFlight.delete(peerId)
-    this.flightTracker.release(peerId)
+    this.flightTracker.release(peerId, flight.reqId)
 
     let decoded: unknown[]
     try {

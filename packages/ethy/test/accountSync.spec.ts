@@ -106,7 +106,7 @@ describe('[Ethy/Sync]: synthetic snap account range', () => {
         const result = await ingestAccountRangeReply(
           peer.rootHash,
           reply,
-          (entries) => sm.putSnapAccountsBatch(entries),
+          (entries) => sm.putSnapBinaryAccountsBatch(entries),
           bucket.currentLastHash,
         )
         if (!result.ok) {
@@ -156,7 +156,15 @@ describe('[Ethy/Sync]: synthetic snap account range', () => {
   it('returns a bucket to the queue when its snap peer leaves', async () => {
     const spine = createSpine('sepolia', 11155111n)
     spine.pivotStateRoot = new Uint8Array(32)
-    const peers = [{ id: 'aa11', caps: ['eth/72', 'snap/1'] }]
+    const peers = [
+      {
+        id: 'aa11',
+        caps: ['eth/72', 'snap/1'],
+        snapResponsesOk: 0,
+        snapTimeouts: 0,
+        avgLatencyMs: 40,
+      },
+    ]
     let sent = 0
     const transport = mockSnapTransport({
       snapPeers: () => peers,
