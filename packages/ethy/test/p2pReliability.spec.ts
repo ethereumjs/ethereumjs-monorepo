@@ -21,7 +21,11 @@ import {
 import { SnapPivotStore } from '../src/persist/snapStore.ts'
 import { createSpine } from '../src/spine/createSpine.ts'
 import { type InFlightBlockBundle, advanceBlockBundleEthMessage } from '../src/sync/blockBundle.ts'
-import { SNAP_RESUME_MAX_GAP, decideSnapResume } from '../src/sync/resumePolicy.ts'
+import {
+  SNAP_RESUME_MAX_GAP,
+  decideSnapResume,
+  shouldDeferLivePivotRequest,
+} from '../src/sync/resumePolicy.ts'
 
 function tempDir(): string {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'ethy-p2p-rel-'))
@@ -85,6 +89,42 @@ describe('[Ethy/P2P]: resume policy', () => {
         head: 100n,
       }),
       'handoff-catchup',
+    )
+  })
+
+  it('shouldDeferLivePivotRequest waits for resume before live pivot', () => {
+    const saved = { pivotBlockNumber: 50n, baseSyncComplete: false, bucketsDoneCount: 2 }
+    assert.isTrue(
+      shouldDeferLivePivotRequest({
+        fresh: false,
+        resumeDecided: false,
+        spinePivotBlockNumber: undefined,
+        saved,
+      }),
+    )
+    assert.isFalse(
+      shouldDeferLivePivotRequest({
+        fresh: false,
+        resumeDecided: true,
+        spinePivotBlockNumber: undefined,
+        saved: undefined,
+      }),
+    )
+    assert.isFalse(
+      shouldDeferLivePivotRequest({
+        fresh: false,
+        resumeDecided: true,
+        spinePivotBlockNumber: 50n,
+        saved,
+      }),
+    )
+    assert.isFalse(
+      shouldDeferLivePivotRequest({
+        fresh: true,
+        resumeDecided: false,
+        spinePivotBlockNumber: undefined,
+        saved,
+      }),
     )
   })
 })

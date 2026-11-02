@@ -133,7 +133,7 @@ Stop continuous DNS and UDP discovery from burning CPU and bandwidth once Ethy h
 ## 3. Acceptance Criteria
 - [x] `BinaryAccount` (`BINARY_ACCOUNT_SIZE = 104`) and its offset-aware helpers are exported from `@ethereumjs/util` with full TypeDoc JSDoc comments (`api-docs.mdc`) and pass `packages/util/test/binaryAccount.spec.ts`.
 - [x] `FlatStateManager` stores accounts internally as `BinaryAccount` (`putSnapBinaryAccountsBatch` / `getBinaryAccountByHash`) and passes all `@ethereumjs/statemanager`, `@ethereumjs/evm`, and `@ethereumjs/vm` tests.
-- [x] `Devp2pWorkerClient.setDiscoveryPaused(boolean)` pauses/resumes discovery in the worker when proven sync peers are active (`>= 3` pause, `< 2` resume).
+- [x] `Devp2pWorkerClient.setDiscoveryPaused(boolean)` pauses/resumes discovery in the worker when proven sync peers are active (`>= 4` pause, `< 2` resume).
 - [x] `SnapAccountSynchronizer` decodes each `ACCOUNT_RANGE` packet in a single pass, writes each batch to disk in a single `fs.writeSync` (with 2s throttled `buckets.json` flush), pipelines up to 2 requests per proven peer, and times out unproven zombie peers in 4s.
 - [x] `test/syncScaling.spec.ts` covers schedule policy, 4s unproven timeout (fake timers), and binary journal round-trip; **`>= 1.7×` two-peer wall-clock check is manual via `npm run sync:bench`** (not CI — keeps unit suite ~1s).
 - [x] `npm run tsc`, `npm test`, and `npm run spellcheck` pass with 0 errors across `packages/util`, `packages/statemanager`, `packages/devp2p`, and `@ethereumjs/ethy`.
@@ -163,7 +163,7 @@ flowchart LR
 Extends **D-066**. Planner corrections to the WP narrative vs current code.
 
 - **Sticky discovery hold.** `packages/devp2p/src/rlpx/rlpx.ts` `_syncDiscoveryThrottle` calls `setDiscoveryPaused(false)` whenever `connected <= lowWater` (Sepolia sits at 2–6). A bare `DPT.setDiscoveryPaused(true)` is cleared on the next peer event. Add `RLPx.setSyncDiscoveryHold(held)` that the throttle must not clear. Slot-full pause (`connected >= maxPeers`) still applies when the hold is off. VIP `connectPeer` redials keep running; only DNS and UDP discovery v4 neighbour refresh pause (`DPT.refresh` already returns early when paused).
-- **Hysteresis lives in Ethy.** Pause when proven count `>= 3`, resume when `< 2`, keep the previous bit in between. Send the worker command only when the bit flips. `SNAP_SYNCING`: count spine peers with `snapSession && snapResponsesOk > 0`. `HEAD_FOLLOWING`: count the latest telemetry peers whose `latestBlock` is set. Do not hold during `P2P_WARMUP`.
+- **Hysteresis lives in Ethy.** Pause when proven count `>= 4`, resume when `< 2`, keep the previous bit in between. Send the worker command only when the bit flips. `SNAP_SYNCING`: count spine peers with `snapSession && snapResponsesOk > 0`. `HEAD_FOLLOWING`: count the latest telemetry peers whose `latestBlock` is set. Do not hold during `P2P_WARMUP`.
 - **Timeouts match the code, not the “15s” sentence in slice 4 above.** Proven range timeout stays `20_000`. Unproven (`snapResponsesOk === 0`) first-request timeout is `4_000`, then rest `30_000` (proven rest stays `10_000`). Store `timeoutMs` on the flight at send time.
 - **Pipeline gate is stricter than “proven”.** Rank and discovery use `snapResponsesOk > 0`. Depth 2 only when `snapResponsesOk >= 2 && snapTimeouts === 0`. Everyone else stays depth 1. Code and storage stay depth 1; they already no-op until every account bucket is `done`.
 - **Journal compatibility.** Schema stays **2**. New bucket files start with a 4-byte magic `0xE34A0003` and then fixed `32 + 104` rows. Existing variable-length files (4-byte length + hash + RLP) keep that reader and a batched legacy append so an in-progress pivot can resume. Do not mix layouts in one file. `loadInto` already prefers the journal cursor over `buckets.json` when the file has records, so a 2s-stale `buckets.json` does not rewind a flushed journal.
@@ -254,5 +254,8 @@ Hex-key map slab, code/storage depth 2, mid-sync pivot, Node Pulse redesign, liv
 - **Scheduler module split:** Pure ranking / timeout / in-flight caps live in `src/sync/snapSchedulePolicy.ts` for fast tests; `accountSync.ts` imports them.
 - **Synthetic peer:** Empty `ACCOUNT_RANGE` replies include a Merkle proof at the request origin so multi-chunk buckets can finish under `SnapAccountSynchronizer`.
 - **Unproven timeout UX:** Expired range sets bucket **`stalled`** (existing stall/backoff path), not `pending`.
+- **Discovery pause threshold:** Live Sepolia tuning — pause at **`>= 4`** proven snap peers (not 3).
+- **Implementer environment:** WP-04c code was landed with **unit/fake-peer tests only**; the implementer network blocked devp2p egress, so Sepolia soak, resume, and `sync:bench` were **not** verified live until post-merge. Treat `p2p:canary`, laptop resume, and `sync:bench` as required human gates.
+- **Snap resume fix (post-merge):** `shouldDeferLivePivotRequest` — while `peekActive()` exists and head/resume is pending, **do not** `GET_BLOCK_HEADERS` anchor from a peer; that `activatePivot` could prune journals before `loadInto`.
 
 **Verification (local):** `npm run tsc` + `npm test` on util, statemanager, devp2p, ethy; statemanager cross-check via evm/vm matrices as in WP §4 commit 2; `npm run spellcheck` on touched packages.

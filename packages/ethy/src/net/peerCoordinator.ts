@@ -44,7 +44,11 @@ import {
   startBlockBundleByNumber,
 } from '../sync/blockBundle.ts'
 import { SnapCodeAndStorageSynchronizer } from '../sync/codeAndStorageSync.ts'
-import { decideSnapResume, snapResumeProgressPct } from '../sync/resumePolicy.ts'
+import {
+  decideSnapResume,
+  shouldDeferLivePivotRequest,
+  snapResumeProgressPct,
+} from '../sync/resumePolicy.ts'
 import { SnapPeerFlightTracker } from '../sync/snapFlight.ts'
 import { createLiveSnapTransport } from '../sync/snapTransport.ts'
 import { activeHardfork, advertisedForkHash, chainConfigForNetwork } from './chainHardfork.ts'
@@ -69,6 +73,9 @@ import { ethyCallerModuleUrl } from './workerModuleUrl.ts'
 const PIVOT_IN_FLIGHT_TIMEOUT_MS = 15_000
 const VIP_RECONNECT_INTERVAL_MS = 15_000
 const VIP_SNAP_PEER_TARGET = 4
+/** Proven snap peers before pausing discovery (hysteresis with DISCOVERY_HOLD_RESUME_BELOW). */
+const DISCOVERY_HOLD_PAUSE_AT = 4
+const DISCOVERY_HOLD_RESUME_BELOW = 2
 const PIVOT_BUNDLE_TIMEOUT_MS = 15_000
 
 type PivotBundleFetch = {
@@ -714,7 +721,16 @@ export async function startPeerCoordinator(
     return false
   }
 
+  const livePivotAllowed = (): boolean =>
+    !shouldDeferLivePivotRequest({
+      fresh: opts.fresh === true,
+      resumeDecided,
+      spinePivotBlockNumber: spine.pivotBlockNumber,
+      saved: snapStore?.peekActive(),
+    })
+
   const requestPivotFromPeer = (peer: WorkerPeerSnapshot, mode: 'hash' | 'number' = 'hash') => {
+    if (!livePivotAllowed()) return
     if (inFlightPeerId !== undefined) return
     if (mode === 'number' && peer.latestBlock === undefined) return
     if (mode === 'hash' && peer.bestHash === undefined) return
@@ -871,7 +887,12 @@ export async function startPeerCoordinator(
       }
       return
     }
-    const wantHold = proven >= 3 ? true : proven < 2 ? false : (discoveryHoldActive ?? false)
+    const wantHold =
+      proven >= DISCOVERY_HOLD_PAUSE_AT
+        ? true
+        : proven < DISCOVERY_HOLD_RESUME_BELOW
+          ? false
+          : (discoveryHoldActive ?? false)
     if (wantHold === discoveryHoldActive) return
     clientRef.setDiscoveryPaused(wantHold)
     discoveryHoldActive = wantHold

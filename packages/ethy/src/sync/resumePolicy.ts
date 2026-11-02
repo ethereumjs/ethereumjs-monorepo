@@ -32,3 +32,20 @@ export function snapResumeProgressPct(saved: SnapResumeSaved | undefined): numbe
   if (saved === undefined) return 0
   return Math.round((saved.bucketsDoneCount / 16) * 100)
 }
+
+/**
+ * Do not anchor a live pivot from a peer while saved snap state waits for a head
+ * to choose resume vs stale reset (WP-04a / WP-04c). Live pivot first would
+ * call `activatePivot` and can prune the on-disk journals we are about to reload.
+ */
+export function shouldDeferLivePivotRequest(opts: {
+  fresh: boolean
+  resumeDecided: boolean
+  spinePivotBlockNumber: bigint | undefined
+  saved: SnapResumeSaved | undefined
+}): boolean {
+  if (opts.fresh) return false
+  if (opts.spinePivotBlockNumber !== undefined) return false
+  if (opts.resumeDecided) return false
+  return opts.saved !== undefined
+}
