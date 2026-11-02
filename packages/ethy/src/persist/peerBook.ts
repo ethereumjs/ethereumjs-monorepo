@@ -30,7 +30,8 @@ export function tooManyPeersHoldMs(vip: boolean, streak: number): number {
   return vip ? PEER_TOO_MANY_PEERS_VIP_CAP_MS : PEER_TOO_MANY_PEERS_HOLD_MAX_MS
 }
 
-export const PEER_BOOK_STARTUP_DIALS = 8
+/** Remembered peers dialed at boot and on each VIP pass. Kept small so the table is not filled before snap starts. */
+export const PEER_BOOK_STARTUP_DIALS = 4
 /** Backoff cap for peers with no successful snap responses (WP-04a). */
 export const PEER_TOO_MANY_PEERS_HOLD_MAX_MS = 5 * 60 * 1000
 export const PEER_TOO_MANY_PEERS_VIP_CAP_MS = 120 * 1000

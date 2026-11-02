@@ -9,6 +9,7 @@ import { bytesToUnprefixedHex, intToUnpaddedBytes } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { chainConfigForNetwork } from '../src/net/chainHardfork.ts'
+import { wantSnapDiscoveryHold } from '../src/net/discoveryHold.ts'
 import { networkGenesisHash } from '../src/net/genesisStatus.ts'
 import {
   PEER_TOO_MANY_PEERS_HOLD_MAX_MS,
@@ -26,6 +27,7 @@ import {
   decideSnapResume,
   shouldDeferLivePivotRequest,
 } from '../src/sync/resumePolicy.ts'
+import { PROVEN_PEER_REST_MS, peerRestMsForRangeFailure } from '../src/sync/snapSchedulePolicy.ts'
 
 function tempDir(): string {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'ethy-p2p-rel-'))
@@ -56,6 +58,29 @@ function openStore(dir: string): SnapPivotStore {
 }
 
 describe('[Ethy/P2P]: resume policy', () => {
+  it('wantSnapDiscoveryHold stays quiet once a snap peer is serving', () => {
+    assert.equal(wantSnapDiscoveryHold({ snapSessions: 0, servingSnapPeers: 0, held: true }), false)
+    assert.equal(
+      wantSnapDiscoveryHold({ snapSessions: 1, servingSnapPeers: 0, held: false }),
+      false,
+    )
+    assert.equal(wantSnapDiscoveryHold({ snapSessions: 1, servingSnapPeers: 0, held: true }), true)
+    assert.equal(wantSnapDiscoveryHold({ snapSessions: 1, servingSnapPeers: 1, held: false }), true)
+    assert.equal(wantSnapDiscoveryHold({ snapSessions: 2, servingSnapPeers: 0, held: false }), true)
+  })
+
+  it('peerRestMsForRangeFailure drops a below-origin page without resting the peer', () => {
+    assert.equal(
+      peerRestMsForRangeFailure('peer returned accounts below request origin'),
+      undefined,
+    )
+    assert.equal(
+      peerRestMsForRangeFailure('firstKey should be less than lastKey'),
+      PROVEN_PEER_REST_MS,
+    )
+    assert.equal(peerRestMsForRangeFailure('account range timed out'), undefined)
+  })
+
   it('decideSnapResume covers fresh, gap, and handoff', () => {
     assert.equal(decideSnapResume({ fresh: true, saved: undefined, head: 100n }), 'anchor-fresh')
     assert.equal(

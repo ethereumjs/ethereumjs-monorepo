@@ -56,6 +56,7 @@ import { SnapPeerFlightTracker } from '../sync/snapFlight.ts'
 import { createLiveSnapTransport } from '../sync/snapTransport.ts'
 import { SNAP_VERIFY_POOL_MODULE_URL, SnapVerifyPool } from '../sync/snapVerifyWorker.ts'
 import { activeHardfork, advertisedForkHash, chainConfigForNetwork } from './chainHardfork.ts'
+import { wantSnapDiscoveryHold } from './discoveryHold.ts'
 import { p2pHandshakeStatusFields } from './genesisStatus.ts'
 import {
   EthMessageCodes,
@@ -76,10 +77,15 @@ import { ethyCallerModuleUrl } from './workerModuleUrl.ts'
 
 const PIVOT_IN_FLIGHT_TIMEOUT_MS = 15_000
 const VIP_RECONNECT_INTERVAL_MS = 15_000
-const VIP_SNAP_PEER_TARGET = 4
-/** Proven snap peers before pausing discovery (hysteresis with DISCOVERY_HOLD_RESUME_BELOW). */
+const VIP_SNAP_PEER_TARGET = 2
+/** Head-following peers before pausing discovery (hysteresis with DISCOVERY_HOLD_RESUME_BELOW). */
 const DISCOVERY_HOLD_PAUSE_AT = 4
 const DISCOVERY_HOLD_RESUME_BELOW = 2
+/** RLPx table during snap. Wide tables get the client dropped for too many peers. */
+const SYNC_MAX_PEERS = 12
+const SYNC_MAX_INBOUND_PEERS = 4
+/** Leave discovery off until the table has fallen well below the cap. */
+const SYNC_DISCOVERY_LOW_WATER = 4
 const PIVOT_BUNDLE_TIMEOUT_MS = 15_000
 
 type PivotBundleFetch = {
@@ -504,6 +510,7 @@ export async function startPeerCoordinator(
     for (const [id, until] of pendingVipDials) {
       if (until <= now) pendingVipDials.delete(id)
     }
+    if (discoveryHoldActive === true) return
     const snapLive = [...spine.peers.values()].filter((p) => p.snapSession === true).length
     if (snapLive >= VIP_SNAP_PEER_TARGET) return
     const connected = new Set(spine.peers.keys())
@@ -854,8 +861,9 @@ export async function startPeerCoordinator(
       privateKey,
       chain: workerChainId(network),
       hardfork,
-      maxPeers: 25,
-      maxInboundPeers: 7,
+      maxPeers: SYNC_MAX_PEERS,
+      maxInboundPeers: SYNC_MAX_INBOUND_PEERS,
+      discoveryLowWaterMark: SYNC_DISCOVERY_LOW_WATER,
       // Current Sepolia clients speak eth/69 and later. eth/68 fills dial slots
       // with peers that cannot serve this chain.
       capabilities: ['eth69', 'eth70', 'eth71', 'eth72', 'snap1'],
@@ -960,9 +968,25 @@ export async function startPeerCoordinator(
     }
     let proven = 0
     if (spine.phase === 'SNAP_SYNCING') {
-      proven = [...spine.peers.values()].filter(
+      const peers = [...spine.peers.values()]
+      const snapSessions = peers.filter((p) => p.snapSession === true).length
+      const servingSnapPeers = peers.filter(
         (p) => p.snapSession === true && p.snapResponsesOk > 0,
       ).length
+      const wantHold = wantSnapDiscoveryHold({
+        snapSessions,
+        servingSnapPeers,
+        held: discoveryHoldActive === true,
+      })
+      if (wantHold === discoveryHoldActive) return
+      clientRef.setDiscoveryPaused(wantHold)
+      discoveryHoldActive = wantHold
+      recordDiagnostic(spine, {
+        subsystem: 'devp2p',
+        severity: 'info',
+        message: wantHold ? 'Discovery paused (snap peer serving)' : 'Discovery resumed',
+      })
+      return
     } else if (spine.phase === 'HEAD_FOLLOWING' || spine.phase === 'BAL_CATCHUP') {
       proven = lastTelemetryPeers.filter((p) => p.latestBlock !== undefined).length
     } else {

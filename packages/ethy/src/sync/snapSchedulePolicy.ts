@@ -26,6 +26,17 @@ export function peerRestAfterTimeout(peer: SnapSchedulePeer): number {
   return peer.snapResponsesOk === 0 ? UNPROVEN_PEER_REST_MS : PROVEN_PEER_REST_MS
 }
 
+/**
+ * How long to stop asking this peer after a rejected range.
+ * A page that sits below our cursor is dropped. The peer stays usable.
+ * A proof shape the trie cannot accept still rests the peer.
+ */
+export function peerRestMsForRangeFailure(reason: string): number | undefined {
+  if (reason.includes('peer returned accounts below request origin')) return undefined
+  if (reason.includes('firstKey should be less than lastKey')) return PROVEN_PEER_REST_MS
+  return undefined
+}
+
 export function rankSnapPeers(peers: SnapSchedulePeer[]): SnapSchedulePeer[] {
   return [...peers].sort((a, b) => {
     const aProven = a.snapResponsesOk > 0 ? 0 : 1

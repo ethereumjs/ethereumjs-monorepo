@@ -13,9 +13,9 @@ import type { EthySpine, SnapBucket } from '../spine/types.ts'
 import type { SnapPeerFlightTracker } from './snapFlight.ts'
 import type { SnapSchedulePeer } from './snapSchedulePolicy.ts'
 import {
-  PROVEN_PEER_REST_MS,
   maxInFlightForPeer,
   peerRestAfterTimeout,
+  peerRestMsForRangeFailure,
   rangeTimeoutForPeer,
   rankSnapPeers,
 } from './snapSchedulePolicy.ts'
@@ -255,8 +255,9 @@ export class SnapAccountSynchronizer {
     const peerRangeMismatch =
       reason.includes('firstKey should be less than lastKey') ||
       reason.includes('peer returned accounts below request origin')
-    if (peerRangeMismatch) {
-      this.peerRestUntil.set(peerId, Date.now() + PROVEN_PEER_REST_MS)
+    const restMs = peerRestMsForRangeFailure(reason)
+    if (restMs !== undefined) {
+      this.peerRestUntil.set(peerId, Date.now() + restMs)
     }
     const delay = peerRangeMismatch
       ? 500
