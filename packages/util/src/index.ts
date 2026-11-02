@@ -19,6 +19,11 @@ export * from './units.ts'
 export * from './account.ts'
 
 /**
+ * Fixed-size binary account layout for high-volume state ingestion
+ */
+export * from './binaryAccount.ts'
+
+/**
  * Block level access list
  *
  * Helpers for [EIP-7928](https://eips.ethereum.org/EIPS/eip-7928) on `Hardfork.Amsterdam`.
