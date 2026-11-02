@@ -3,7 +3,6 @@ import { RLP } from '@ethereumjs/rlp'
 import type { FlatStateManager } from '@ethereumjs/statemanager'
 import { bigIntToUnpaddedBytes, bytesToBigInt, setLengthLeft } from '@ethereumjs/util'
 
-import type { Account } from '@ethereumjs/util'
 import type { PeerBookStore } from '../persist/peerBook.ts'
 import type { SnapPivotStore } from '../persist/snapStore.ts'
 import { enqueueProtocol } from '../runtime/lanes.ts'
@@ -21,12 +20,8 @@ import {
   rankSnapPeers,
 } from './snapSchedulePolicy.ts'
 import type { SnapTransport } from './snapTransport.ts'
-import {
-  accountRecordsFromRangeReply,
-  incrementKey32,
-  ingestAccountRangeReply,
-  ingestedMetaFromBinaryEntries,
-} from './syntheticPeer.ts'
+import { SnapVerifyPool } from './snapVerifyWorker.ts'
+import { incrementKey32, ingestedMetaFromBinarySlab } from './syntheticPeer.ts'
 
 /**
  * Bytes we ask a peer to return. 512 KiB is about 8,000 accounts: public nodes
@@ -53,7 +48,8 @@ function inFlightKey(peerId: string, reqId: bigint): string {
 
 export type IngestedAccountMeta = {
   accountHash: Uint8Array
-  account: Account
+  codeHash: Uint8Array
+  storageRoot: Uint8Array
 }
 
 export type SnapAccountSynchronizerOpts = {
@@ -64,6 +60,7 @@ export type SnapAccountSynchronizerOpts = {
   getSnapPeers: () => SnapSchedulePeer[]
   snapStore?: SnapPivotStore
   peerBook?: PeerBookStore
+  verifyPool?: SnapVerifyPool
   onAccountsIngested?: (entries: IngestedAccountMeta[]) => void
 }
 
@@ -75,6 +72,7 @@ export class SnapAccountSynchronizer {
   private readonly flightTracker: SnapPeerFlightTracker
   private readonly snapStore?: SnapPivotStore
   private readonly peerBook?: PeerBookStore
+  private readonly verifyPool: SnapVerifyPool
   private readonly onAccountsIngested?: (entries: IngestedAccountMeta[]) => void
   private reqId = 1n
   private inFlight = new Map<string, InFlightRange>()
@@ -82,6 +80,8 @@ export class SnapAccountSynchronizer {
   private stallRepeats = new Map<number, number>()
   private peerLeftRepeats = new Map<number, number>()
   private peerRestUntil = new Map<string, number>()
+  /** Buckets whose reply is still in the proof worker. Not in `inFlight`, but not free to re-request. */
+  private readonly verifyingBuckets = new Set<number>()
   private detachAccountRange?: () => void
   private tickTimer?: ReturnType<typeof setInterval>
   private syncStart = 0
@@ -96,16 +96,19 @@ export class SnapAccountSynchronizer {
     this.flightTracker = opts.flightTracker
     this.snapStore = opts.snapStore
     this.peerBook = opts.peerBook
+    this.verifyPool = opts.verifyPool ?? new SnapVerifyPool({ inProcess: true })
     this.onAccountsIngested = opts.onAccountsIngested
   }
 
   abortInFlight(): void {
     this.inFlight.clear()
+    this.verifyingBuckets.clear()
     this.flightTracker.clearAll()
   }
 
   bumpRootGeneration(): number {
     this.inFlight.clear()
+    this.verifyingBuckets.clear()
     return this.flightTracker.bumpGeneration()
   }
 
@@ -120,8 +123,8 @@ export class SnapAccountSynchronizer {
     this.lastRateAt = this.syncStart
     this.lastAccountCount = this.spine.totalAccountsSynced
     this.detachAccountRange = this.transport.onAccountRange((peerId, payload) => {
-      enqueueProtocol(() => {
-        void this.handleAccountRange(peerId, payload)
+      enqueueProtocol(async () => {
+        await this.handleAccountRange(peerId, payload)
       })
     })
     this.tickTimer = setInterval(() => this.schedule(), 50)
@@ -167,6 +170,7 @@ export class SnapAccountSynchronizer {
       }
       if (bucket.status === 'done') continue
       if (bucket.status === 'stalled' && now < (this.stallUntil.get(bucket.index) ?? 0)) continue
+      if (bucket.status === 'verifying_proof' || this.verifyingBuckets.has(bucket.index)) continue
       if (this.bucketHasInFlight(bucket.index)) continue
       const peer = peers.find((candidate) => {
         if (now < (this.peerRestUntil.get(candidate.id) ?? 0)) return false
@@ -283,30 +287,23 @@ export class SnapAccountSynchronizer {
       this.flightTracker.release(peerId, replyId)
       return
     }
+    this.verifyingBuckets.add(flight.bucket)
     this.inFlight.delete(key)
     this.flightTracker.release(peerId, replyId)
     const bucket = this.spine.snapBuckets[flight.bucket]
-    if (bucket === undefined) return
+    if (bucket === undefined) {
+      this.verifyingBuckets.delete(flight.bucket)
+      return
+    }
     bucket.status = 'verifying_proof'
     const origin = bucket.currentLastHash
-    let result: {
-      ok: boolean
-      hasRight: boolean
-      count: number
-      reason?: string
-      lastKey?: Uint8Array
-    }
-    let binaryEntries: Array<{ accountHash: Uint8Array; binaryAccount: Uint8Array }> = []
+    let result: Awaited<ReturnType<SnapVerifyPool['verifyAccountRange']>>
     try {
-      result = await ingestAccountRangeReply(
-        this.spine.pivotStateRoot,
-        payload,
-        (entries) => {
-          binaryEntries = entries
-          this.stateManager.putSnapBinaryAccountsBatch(entries)
-        },
+      result = await this.verifyPool.verifyAccountRange({
+        stateRoot: this.spine.pivotStateRoot,
         origin,
-      )
+        payload,
+      })
     } catch (err: unknown) {
       result = {
         ok: false,
@@ -314,6 +311,15 @@ export class SnapAccountSynchronizer {
         count: 0,
         reason: err instanceof Error ? err.message : String(err),
       }
+    } finally {
+      this.verifyingBuckets.delete(flight.bucket)
+    }
+    if (flight.rootGeneration !== this.flightTracker.rootGeneration) {
+      if (bucket.status === 'verifying_proof') bucket.status = 'pending'
+      return
+    }
+    if (result.ok && result.slab !== undefined && result.count > 0) {
+      this.stateManager.putSnapBinaryAccountsFromSlab(result.slab)
     }
     if (!result.ok) {
       this.noteRangeFailure(bucket, peerId, result.reason ?? 'range proof failed')
@@ -352,10 +358,14 @@ export class SnapAccountSynchronizer {
     }
     if (result.count > 0) {
       this.peerBook?.noteSnapSuccess(peerId, Date.now())
-      const records =
-        binaryEntries.length > 0 ? binaryEntries : accountRecordsFromRangeReply(payload)
-      this.snapStore?.appendVerifiedRange(flight.bucket, records, this.spine.snapBuckets)
-      this.onAccountsIngested?.(ingestedMetaFromBinaryEntries(records))
+      if (result.slab !== undefined) {
+        void this.snapStore?.appendVerifiedSlabAsync(
+          flight.bucket,
+          result.slab,
+          this.spine.snapBuckets,
+        )
+        this.onAccountsIngested?.(ingestedMetaFromBinarySlab(result.slab))
+      }
     } else {
       this.snapStore?.maybeFlushMetadata(true)
     }

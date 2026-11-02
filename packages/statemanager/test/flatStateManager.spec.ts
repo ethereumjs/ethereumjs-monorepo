@@ -72,6 +72,58 @@ describe('[StateManager/FlatStateManager]', () => {
     assert.strictEqual((await sm.getAccount(address))?.nonce, 3n)
   })
 
+  it('putSnapBinaryAccountsFromSlab() ingests 136-byte stride rows', () => {
+    const sm = new FlatStateManager()
+    const hash0 = new Uint8Array(32)
+    hash0[0] = 0x00
+    const hashFf = new Uint8Array(32)
+    hashFf[0] = 0xff
+    const binary0 = accountToBinaryAccount(createAccount({ nonce: 1n }))
+    const binaryFf = accountToBinaryAccount(createAccount({ nonce: 2n }))
+    const slab = new Uint8Array(2 * (32 + BINARY_ACCOUNT_SIZE))
+    slab.set(hash0, 0)
+    slab.set(binary0, 32)
+    slab.set(hashFf, 32 + BINARY_ACCOUNT_SIZE)
+    slab.set(binaryFf, 32 + BINARY_ACCOUNT_SIZE + 32)
+    sm.putSnapBinaryAccountsFromSlab(slab)
+    assert.equal(sm.accountCount(), 2)
+    assert.isDefined(sm.getBinaryAccountByHash(hash0))
+    assert.isDefined(sm.getBinaryAccountByHash(hashFf))
+  })
+
+  it('accountCount stays O(1) after bulk snap ingest without checkpoint', () => {
+    const sm = new FlatStateManager()
+    for (let i = 0; i < 10_000; i++) {
+      const hash = new Uint8Array(32)
+      hash[0] = i % 256
+      hash[1] = (i >> 8) & 0xff
+      sm.putSnapBinaryAccountsBatch([
+        {
+          accountHash: hash,
+          binaryAccount: accountToBinaryAccount(createAccount({ nonce: BigInt(i) })),
+        },
+      ])
+    }
+    assert.equal(sm.accountCount(), 10_000)
+    const t0 = performance.now()
+    for (let i = 0; i < 1000; i++) {
+      sm.accountCount()
+    }
+    assert.isBelow(performance.now() - t0, 5)
+  })
+
+  it('child overlay delete hides parent account in accountCount()', async () => {
+    const base = new FlatStateManager()
+    const addr = new Address(hexToBytes(`0x${'66'.repeat(20)}`))
+    await base.putAccount(addr, createAccount({ nonce: 1n }))
+    assert.equal(base.accountCount(), 1)
+    const overlay = base.shallowCopy() as FlatStateManager
+    await overlay.deleteAccount(addr)
+    assert.equal(await overlay.getAccount(addr), undefined)
+    assert.equal(overlay.accountCount(), 0)
+    assert.equal(base.accountCount(), 1)
+  })
+
   it('putSnapStorageBatch() round-trips via getStorage()', async () => {
     const sm = new FlatStateManager()
     const address = new Address(hexToBytes(`0x${'44'.repeat(20)}`))

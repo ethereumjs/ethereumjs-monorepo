@@ -34,6 +34,19 @@ type DeltaFrame = {
   code: Map<string, Uint8Array | undefined>
 }
 
+/** Bytes per row in a verified snap account slab (`32` hash + `104` binary). */
+export const SNAP_BINARY_ACCOUNT_SLAB_RECORD_SIZE = 32 + BINARY_ACCOUNT_SIZE
+
+const ACCOUNT_SHARD_COUNT = 256
+
+function accountShardIndex(key: string): number {
+  return Number.parseInt(key.slice(0, 2), 16)
+}
+
+function createAccountShards(): Array<Map<string, Uint8Array | undefined>> {
+  return Array.from({ length: ACCOUNT_SHARD_COUNT }, () => new Map())
+}
+
 /**
  * Hash-keyed in-memory state for snap sync and flat BAL application.
  * Implements {@link @ethereumjs/common!StateManagerInterface} without Merkle roots.
@@ -43,7 +56,10 @@ export class FlatStateManager implements StateManagerInterface {
   public originalStorageCache: OriginalStorageCache
 
   private readonly _parent?: FlatStateManager
-  private readonly _accounts = new Map<string, Uint8Array | undefined>()
+  private readonly _accountShards = createAccountShards()
+  /** Overlay keys written on a shallow copy (including tombstones). */
+  private readonly _localAccountKeys = new Set<string>()
+  private _liveAccountCount = 0
   private readonly _storage = new Map<string, Uint8Array>()
   private readonly _code = new Map<string, Uint8Array>()
   private readonly _hashToAddress = new Map<string, Address>()
@@ -56,9 +72,10 @@ export class FlatStateManager implements StateManagerInterface {
     this._parent = parent
     this._keccak = this.common?.customCrypto.keccak256 ?? keccak_256
     this.originalStorageCache = new OriginalStorageCache(this.getStorage.bind(this))
-    if (parent === undefined) {
-      this._deltaStack.push({ accounts: new Map(), storage: new Map(), code: new Map() })
-    }
+  }
+
+  private accountShard(key: string): Map<string, Uint8Array | undefined> {
+    return this._accountShards[accountShardIndex(key)]!
   }
 
   private accountHashHex(address: Address): string {
@@ -85,13 +102,40 @@ export class FlatStateManager implements StateManagerInterface {
   }
 
   private readBinaryAccountKey(key: string): Uint8Array | undefined {
-    if (this._accounts.has(key)) {
-      return this._accounts.get(key)
+    const shard = this.accountShard(key)
+    if (shard.has(key)) {
+      return shard.get(key)
     }
     if (this._parent !== undefined) {
       return this._parent.readBinaryAccountKey(key)
     }
     return undefined
+  }
+
+  private assignAccountShard(key: string, binary: Uint8Array | undefined): void {
+    if (this._parent !== undefined) {
+      this._localAccountKeys.add(key)
+      const shard = this.accountShard(key)
+      if (binary === undefined) {
+        shard.set(key, undefined)
+      } else {
+        shard.set(key, binary)
+      }
+      return
+    }
+    const shard = this.accountShard(key)
+    const hadLive = shard.has(key) && shard.get(key) !== undefined
+    if (binary === undefined) {
+      if (shard.has(key) && shard.get(key) !== undefined) {
+        this._liveAccountCount--
+      }
+      shard.delete(key)
+      return
+    }
+    if (!hadLive) {
+      this._liveAccountCount++
+    }
+    shard.set(key, binary)
   }
 
   private readAccountKey(key: string): Account | undefined {
@@ -105,7 +149,7 @@ export class FlatStateManager implements StateManagerInterface {
     if (frame !== undefined && !frame.accounts.has(key)) {
       frame.accounts.set(key, this.readBinaryAccountKey(key))
     }
-    this._accounts.set(key, binary)
+    this.assignAccountShard(key, binary)
   }
 
   private writeAccountKey(key: string, account: Account | undefined): void {
@@ -257,7 +301,7 @@ export class FlatStateManager implements StateManagerInterface {
       this._overlayFrames.pop()
       return
     }
-    if (this._deltaStack.length <= 1) return
+    if (this._deltaStack.length === 0) return
     this._deltaStack.pop()
   }
 
@@ -266,11 +310,7 @@ export class FlatStateManager implements StateManagerInterface {
       if (this._overlayFrames.length === 0) return
       const frame = this._overlayFrames.pop()!
       for (const [k, v] of frame.accounts) {
-        if (v === undefined) {
-          this._accounts.delete(k)
-        } else {
-          this._accounts.set(k, v)
-        }
+        this.assignAccountShard(k, v)
       }
       for (const [k, v] of frame.storage) {
         if (v === undefined) {
@@ -288,14 +328,10 @@ export class FlatStateManager implements StateManagerInterface {
       }
       return
     }
-    if (this._deltaStack.length <= 1) return
+    if (this._deltaStack.length === 0) return
     const frame = this._deltaStack.pop()!
     for (const [k, v] of frame.accounts) {
-      if (v === undefined) {
-        this._accounts.delete(k)
-      } else {
-        this._accounts.set(k, v)
-      }
+      this.assignAccountShard(k, v)
     }
     for (const [k, v] of frame.storage) {
       if (v === undefined) {
@@ -376,6 +412,24 @@ export class FlatStateManager implements StateManagerInterface {
     }
   }
 
+  /**
+   * Ingest a contiguous slab of verified snap rows (`32`-byte hash + `104`-byte binary each).
+   */
+  putSnapBinaryAccountsFromSlab(slab: Uint8Array): void {
+    if (slab.length % SNAP_BINARY_ACCOUNT_SLAB_RECORD_SIZE !== 0) {
+      throw EthereumJSErrorWithoutCode(
+        `snap account slab length must be a multiple of ${SNAP_BINARY_ACCOUNT_SLAB_RECORD_SIZE}, got ${slab.length}`,
+      )
+    }
+    for (let offset = 0; offset < slab.length; offset += SNAP_BINARY_ACCOUNT_SLAB_RECORD_SIZE) {
+      const accountHash = slab.subarray(offset, offset + 32)
+      const key = this.accountHashKey(accountHash)
+      const owned = new Uint8Array(BINARY_ACCOUNT_SIZE)
+      owned.set(slab.subarray(offset + 32, offset + SNAP_BINARY_ACCOUNT_SLAB_RECORD_SIZE))
+      this.writeBinaryAccountKey(key, owned)
+    }
+  }
+
   /** Lookup by account hash without materializing an {@link Account}. */
   getBinaryAccountByHash(accountHash: Uint8Array): BinaryAccount | undefined {
     return this.readBinaryAccountKey(this.accountHashKey(accountHash))
@@ -402,18 +456,16 @@ export class FlatStateManager implements StateManagerInterface {
   }
 
   accountCount(): number {
-    let n = 0
-    const seen = new Set<string>()
-    const walk = (sm: FlatStateManager) => {
-      for (const [k, v] of sm._accounts) {
-        if (v !== undefined && !seen.has(k)) {
-          seen.add(k)
-          n++
-        }
-      }
-      if (sm._parent !== undefined) walk(sm._parent)
+    if (this._parent === undefined) {
+      return this._liveAccountCount
     }
-    walk(this)
+    let n = this._parent.accountCount()
+    for (const key of this._localAccountKeys) {
+      const parentVisible = this._parent.readBinaryAccountKey(key) !== undefined
+      const selfVisible = this.readBinaryAccountKey(key) !== undefined
+      if (parentVisible && !selfVisible) n--
+      else if (!parentVisible && selfVisible) n++
+    }
     return n
   }
 
@@ -428,18 +480,23 @@ export class FlatStateManager implements StateManagerInterface {
     const seen = new Set<string>()
 
     const collect = (sm: FlatStateManager) => {
-      for (const [k, binary] of sm._accounts) {
-        if (binary === undefined || seen.has(k)) continue
-        seen.add(k)
-        const hashBytes = unprefixedHexToBytes(k)
-        const hashHex = bytesToHex(hashBytes)
-        if (prefix.length > 0 && !hashHex.toLowerCase().includes(prefix)) continue
-        const account = binaryAccountToAccount(binary)
-        samples.push({
-          accountHash: hashBytes,
-          address: sm._hashToAddress.get(k) ?? this._hashToAddress.get(k),
-          account,
-        })
+      for (const shard of sm._accountShards) {
+        for (const [k, binary] of shard) {
+          if (binary === undefined || seen.has(k)) continue
+          seen.add(k)
+          const hashBytes = unprefixedHexToBytes(k)
+          const hashHex = bytesToHex(hashBytes)
+          if (prefix.length > 0 && !hashHex.toLowerCase().includes(prefix)) continue
+          const account = binaryAccountToAccount(binary)
+          samples.push({
+            accountHash: hashBytes,
+            address: sm._hashToAddress.get(k) ?? this._hashToAddress.get(k),
+            account,
+          })
+          if (opts?.sortByBalanceDesc !== true && samples.length >= limit) {
+            return
+          }
+        }
       }
       if (sm._parent !== undefined) collect(sm._parent)
     }

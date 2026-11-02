@@ -13,7 +13,7 @@
 /** Wall time one protocol drain may use before yielding to the presentation clock. */
 export const PROTOCOL_SLICE_MS = 4
 
-type ProtocolTask = () => void
+type ProtocolTask = () => void | Promise<void>
 
 const queue: ProtocolTask[] = []
 let pumping = false
@@ -25,11 +25,16 @@ export function enqueueProtocol(task: ProtocolTask): void {
   setImmediate(pump)
 }
 
-function pump(): void {
+async function pump(): Promise<void> {
   const start = Date.now()
   while (queue.length > 0 && Date.now() - start < PROTOCOL_SLICE_MS) {
     const task = queue.shift()
-    task?.()
+    if (task === undefined) continue
+    try {
+      await task()
+    } catch {
+      // Keep draining; a failed protocol task must not wedge the TUI queue.
+    }
   }
   if (queue.length > 0) {
     setImmediate(pump)

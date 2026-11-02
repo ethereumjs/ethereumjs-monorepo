@@ -1,6 +1,6 @@
 # WP-04d: Worker-Offloaded `snap/1` Proof Verifier, 256-Shard Zero-Stall `FlatStateManager` & Resume-After-Head Ordering
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `DONE`
 - **Dependencies:** `WP-00`–`WP-04c` (`DONE`)
 - **Branch:** `ethy-continuation`
 - **Planner:** Grok 4.7
@@ -122,20 +122,36 @@ Add `packages/ethy/test/perfInvariants.spec.ts` to lock these laws in CI forever
 ---
 
 ## 4. Acceptance Criteria
-- [ ] `FlatStateManager` uses 256 prefix shards, keeps `_deltaStack` empty when not in a `checkpoint()`, and runs `accountCount()` in `O(1)`.
-- [ ] `IngestedAccountMeta` uses `{ accountHash, codeHash, storageRoot }` (`Uint8Array`s) and `binaryAccountToAccount` is called **0 times** during `snap/1` ingestion and disk journal hydration.
-- [ ] Live `snap/1` range-proof verification runs in a Worker thread (`SnapVerifyWorker`) so the Main Thread TUI never blocks on `verifyMerkleRangeProof`.
-- [ ] Startup resume checks `decideSnapResume` on the first peer head *before* hydrating journals; stale pivots (`gap > 90`) reset in `< 10ms` and immediately anchor the new pivot and start syncing; valid pivots (`gap <= 90`) hydrate and continue seamlessly.
-- [ ] `test/perfInvariants.spec.ts`, `npm run tsc`, `npm test`, and `npm run spellcheck` pass with 0 errors in `packages/statemanager` and `packages/ethy`.
+- [x] `FlatStateManager` uses 256 prefix shards, keeps `_deltaStack` empty when not in a `checkpoint()`, and runs `accountCount()` in `O(1)`.
+- [x] `IngestedAccountMeta` uses `{ accountHash, codeHash, storageRoot }` (`Uint8Array`s) and `binaryAccountToAccount` is called **0 times** during `snap/1` ingestion and disk journal hydration.
+- [x] Live `snap/1` range-proof verification runs in a Worker thread (`SnapVerifyWorker`) so the Main Thread TUI never blocks on `verifyMerkleRangeProof`.
+- [x] Startup resume checks `decideSnapResume` on the first peer head *before* hydrating journals; stale pivots (`gap > 90`) reset in `< 10ms` and immediately anchor the new pivot and start syncing; valid pivots (`gap <= 90`) hydrate and continue seamlessly.
+- [x] `test/perfInvariants.spec.ts`, `npm run tsc`, `npm test`, and `npm run spellcheck` pass with 0 errors in `packages/statemanager` and `packages/ethy`.
 
 ---
 
 ## 5. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled out by Grok 4.7 during the Planning pass.)*
+**Commits (implementer order):** `@ethereumjs/statemanager` → `@ethereumjs/ethy` (worker + lanes + meta + resume + journal). No `@ethereumjs/util` change.
+
+**D-071:** One lazy FIFO `SnapVerifyPool` (`inProcess` for CI; real `Worker` for live CLI; copy payload to fresh `ArrayBuffer` before transfer). `putSnapBinaryAccountsFromSlab(slab)` (136-byte stride). Empty `_deltaStack` at root; `commit`/`revert` pop when `length > 0` only. Root `_liveAccountCount`; child adjusts from overlay keys. Storage proofs share worker; code GETs stay main thread. Resume: `peekActive` at boot → first head → `decideSnapResume` before `loadIntoAsync`; remove post-hydrate stale reset in `finishDiskResumeWithHead`. Binary journal batch reader (4k rows, views); async `appendVerifiedSlabAsync` on live path. `IngestedAccountMeta` = hash triplets; `noteAccounts` copies 32-byte fields.
+
+| Slice | Files | Work |
+| --- | --- | --- |
+| 1 | `flatStateManager.ts`, `flatStateManager.spec.ts` | 256 shards, no idle delta frame, slab ingest, O(1) count |
+| 2 | `snapVerifyJob.ts`, `snapVerifyWorkerEntry.ts`, `snapVerifyWorker.ts`, `lanes.ts`, `accountSync.ts`, `codeAndStorageSync.ts`, `syntheticPeer.ts`, `peerCoordinator.ts`, `snapStore.ts` | Worker proofs, awaited lanes, meta + async append |
+| 3 | `peerCoordinator.ts`, `journal.ts`, `snapStore.ts` | Head-first resume, slab hydrate |
+| Tests | `perfInvariants.spec.ts`, `lanes.spec.ts` | Spy, scale, stale/valid resume, async lane order |
+
+See attached planner artifact in session for full file-level detail.
 
 ---
 
 ## 6. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled out by Composer 2.5 after implementation and verification.)*
+- **Statemanager:** 256-way `_accountShards`, empty root `_deltaStack`, `_liveAccountCount` + overlay `_localAccountKeys`, `putSnapBinaryAccountsFromSlab`, `SNAP_BINARY_ACCOUNT_SLAB_RECORD_SIZE` export.
+- **Ethy verify path:** `snapVerifyJob.ts` + `SnapVerifyPool` (in-process default; live coordinator uses real Worker via `SNAP_VERIFY_POOL_MODULE_URL`). Storage proofs share the pool; code GETs unchanged on main thread.
+- **Lanes:** `enqueueProtocol` awaits async tasks within the 4 ms slice budget.
+- **Resume:** Boot no longer calls `loadIntoAsync`; `handleSnapResumeAtHead` runs on first peer head; post-hydrate stale reset removed from `finishDiskResumeWithHead`.
+- **Disk:** Binary journal hydrate uses 4k-row slabs; live ingest uses `appendVerifiedSlabAsync` (chained per bucket file). Sync unit tests still use synchronous `appendVerifiedRange`.
+- **Tests:** `test/perfInvariants.spec.ts` + extended `lanes.spec.ts`; `npm run test:node` green in `statemanager` and `ethy`.

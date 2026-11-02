@@ -136,9 +136,42 @@ export function readBinaryAccountJournalFile(bytes: Uint8Array): {
   while (offset + BINARY_ACCOUNT_JOURNAL_RECORD_SIZE <= bytes.length) {
     const accountHash = bytes.subarray(offset, offset + 32)
     const binaryAccount = bytes.subarray(offset + 32, offset + BINARY_ACCOUNT_JOURNAL_RECORD_SIZE)
-    records.push({ accountHash: accountHash.slice(), binaryAccount: binaryAccount.slice() })
+    records.push({ accountHash, binaryAccount })
     lastHash = accountHash
     offset += BINARY_ACCOUNT_JOURNAL_RECORD_SIZE
   }
   return { records, lastHash }
+}
+
+const DEFAULT_BINARY_JOURNAL_BATCH_ROWS = 4000
+
+/**
+ * Walk a binary account journal in fixed-size slabs without per-row `.slice()` copies.
+ */
+export async function forEachBinaryJournalBatch(
+  bytes: Uint8Array,
+  batchRows: number,
+  visit: (slab: Uint8Array, lastHashInBatch: Uint8Array) => void | Promise<void>,
+): Promise<{ recordCount: number; lastHash?: Uint8Array }> {
+  if (!isBinaryAccountJournalFile(bytes)) {
+    return { recordCount: 0 }
+  }
+  const rowSize = BINARY_ACCOUNT_JOURNAL_RECORD_SIZE
+  const payloadStart = BINARY_ACCOUNT_JOURNAL_MAGIC.length
+  const payloadLen = bytes.length - payloadStart
+  const totalRows = Math.floor(payloadLen / rowSize)
+  let recordCount = 0
+  let lastHash: Uint8Array | undefined
+  const rows = batchRows > 0 ? batchRows : DEFAULT_BINARY_JOURNAL_BATCH_ROWS
+  for (let rowStart = 0; rowStart < totalRows; rowStart += rows) {
+    const batchCount = Math.min(rows, totalRows - rowStart)
+    const byteStart = payloadStart + rowStart * rowSize
+    const slab = bytes.subarray(byteStart, byteStart + batchCount * rowSize)
+    const lastRowOffset = byteStart + (batchCount - 1) * rowSize
+    const lastHashInBatch = bytes.subarray(lastRowOffset, lastRowOffset + 32)
+    await visit(slab, lastHashInBatch)
+    recordCount += batchCount
+    lastHash = lastHashInBatch
+  }
+  return { recordCount, lastHash }
 }

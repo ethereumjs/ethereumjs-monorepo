@@ -1,4 +1,3 @@
-import { verifyMerkleRangeProof } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
 import type { FlatStateManager } from '@ethereumjs/statemanager'
 import {
@@ -6,19 +5,22 @@ import {
   KECCAK256_NULL,
   KECCAK256_RLP,
   bigIntToUnpaddedBytes,
-  bytesToBigInt,
   equalsBytes,
+  getBinaryAccountStorageRoot,
   hexToBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
 import { keccak_256 } from '@noble/hashes/sha3'
 
 import { type SnapPivotStore, snapBucketsUnfinished } from '../persist/snapStore.ts'
+import { enqueueProtocol } from '../runtime/lanes.ts'
 import { recordDiagnostic } from '../spine/diagnostics.ts'
 import type { EthySpine } from '../spine/types.ts'
 import type { IngestedAccountMeta } from './accountSync.ts'
 import type { SnapPeerFlightTracker } from './snapFlight.ts'
 import type { SnapTransport } from './snapTransport.ts'
+import { snapReplyRequestId, verifyStorageRangeJob } from './snapVerifyJob.ts'
+import { SnapVerifyPool } from './snapVerifyWorker.ts'
 import { incrementKey32 } from './syntheticPeer.ts'
 
 const RESPONSE_BYTES = 128 * 1024
@@ -31,6 +33,8 @@ type StorageTask = {
   storageRoot: Uint8Array
   origin: Uint8Array
   done: boolean
+  /** Proof is in the worker. The task is not in flight, and must not be requested again yet. */
+  verifying: boolean
   missRetries: number
 }
 
@@ -50,6 +54,7 @@ export type SnapCodeAndStorageSynchronizerOpts = {
   getSnapPeers: () => Array<{ id: string; caps: string[] }>
   snapStore?: SnapPivotStore
   peerBusy: (peerId: string) => boolean
+  verifyPool?: SnapVerifyPool
 }
 
 export class SnapCodeAndStorageSynchronizer {
@@ -60,6 +65,7 @@ export class SnapCodeAndStorageSynchronizer {
   private readonly getSnapPeers: () => Array<{ id: string; caps: string[] }>
   private readonly snapStore?: SnapPivotStore
   private readonly peerBusy: (peerId: string) => boolean
+  private readonly verifyPool: SnapVerifyPool
   private reqId = 1n
   private codeQueue: CodeTask[] = []
   private storageTasks: StorageTask[] = []
@@ -77,12 +83,15 @@ export class SnapCodeAndStorageSynchronizer {
     this.getSnapPeers = opts.getSnapPeers
     this.snapStore = opts.snapStore
     this.peerBusy = opts.peerBusy
+    this.verifyPool = opts.verifyPool ?? new SnapVerifyPool({ inProcess: true })
   }
 
   start(): void {
     if (this.detachStorage !== undefined) return
     this.detachStorage = this.transport.onStorageRanges((peerId, payload) => {
-      void this.handleStorageRanges(peerId, payload)
+      enqueueProtocol(async () => {
+        await this.handleStorageRanges(peerId, payload)
+      })
     })
     this.detachCodes = this.transport.onByteCodes((peerId, payload) => {
       void this.handleByteCodes(peerId, payload)
@@ -101,13 +110,15 @@ export class SnapCodeAndStorageSynchronizer {
   }
 
   noteAccounts(entries: IngestedAccountMeta[]): void {
-    for (const { accountHash, account } of entries) {
-      if (!equalsBytes(account.codeHash, KECCAK256_NULL)) {
-        if (!this.codeQueue.some((t) => equalsBytes(t.codeHash, account.codeHash))) {
-          this.codeQueue.push({ codeHash: account.codeHash, missRetries: 0 })
+    for (const { accountHash, codeHash, storageRoot } of entries) {
+      const codeCopy = new Uint8Array(codeHash)
+      const storageCopy = new Uint8Array(storageRoot)
+      if (!equalsBytes(codeCopy, KECCAK256_NULL)) {
+        if (!this.codeQueue.some((t) => equalsBytes(t.codeHash, codeCopy))) {
+          this.codeQueue.push({ codeHash: codeCopy, missRetries: 0 })
         }
       }
-      if (!equalsBytes(account.storageRoot, KECCAK256_RLP)) {
+      if (!equalsBytes(storageCopy, KECCAK256_RLP)) {
         if (
           !this.storageTasks.some(
             (t) => t.done === false && equalsBytes(t.accountHash, accountHash),
@@ -115,9 +126,10 @@ export class SnapCodeAndStorageSynchronizer {
         ) {
           this.storageTasks.push({
             accountHash,
-            storageRoot: account.storageRoot,
+            storageRoot: storageCopy,
             origin: new Uint8Array(32),
             done: false,
+            verifying: false,
             missRetries: 0,
           })
         }
@@ -140,17 +152,18 @@ export class SnapCodeAndStorageSynchronizer {
     this.codesInFlight.clear()
     for (const task of this.storageTasks) {
       if (task.done) continue
-      const acc = this.stateManager.getAccountByHash(task.accountHash)
-      if (acc === undefined) {
+      const binary = this.stateManager.getBinaryAccountByHash(task.accountHash)
+      if (binary === undefined) {
         task.done = true
         continue
       }
-      if (equalsBytes(acc.storageRoot, KECCAK256_RLP)) {
+      const storageRoot = getBinaryAccountStorageRoot(binary)
+      if (equalsBytes(storageRoot, KECCAK256_RLP)) {
         task.done = true
         continue
       }
-      if (!equalsBytes(task.storageRoot, acc.storageRoot)) {
-        task.storageRoot = acc.storageRoot
+      if (!equalsBytes(task.storageRoot, storageRoot)) {
+        task.storageRoot = new Uint8Array(storageRoot)
         task.origin = new Uint8Array(32)
         task.missRetries = 0
       }
@@ -220,7 +233,7 @@ export class SnapCodeAndStorageSynchronizer {
         continue
       }
 
-      const taskIndex = this.storageTasks.findIndex((t) => !t.done)
+      const taskIndex = this.storageTasks.findIndex((t) => !t.done && !t.verifying)
       if (taskIndex >= 0) {
         const task = this.storageTasks[taskIndex]!
         const reqId = this.reqId++
@@ -275,17 +288,23 @@ export class SnapCodeAndStorageSynchronizer {
     this.flightTracker.release(peerId, flight.reqId)
     const task = this.storageTasks[flight.taskIndex]
     if (task === undefined || task.done) return
+    task.verifying = true
 
-    const result = await ingestStorageRangesReply(
-      task.storageRoot,
-      payload,
-      task.origin,
-      (slots) => {
-        this.stateManager.putSnapStorageBatch(task.accountHash, slots)
-        this.spine.storageSlotsSynced += slots.length
-        this.snapStore?.appendStorageSlots(task.accountHash, slots)
-      },
-    )
+    let result: Awaited<ReturnType<SnapVerifyPool['verifyStorageRange']>>
+    try {
+      result = await this.verifyPool.verifyStorageRange({
+        storageRoot: task.storageRoot,
+        origin: task.origin,
+        payload,
+      })
+    } finally {
+      task.verifying = false
+    }
+    if (result.ok && result.slots !== undefined && result.slots.length > 0) {
+      this.stateManager.putSnapStorageBatch(task.accountHash, result.slots)
+      this.spine.storageSlotsSynced += result.slots.length
+      this.snapStore?.appendStorageSlots(task.accountHash, result.slots)
+    }
     if (!result.ok) {
       recordDiagnostic(this.spine, {
         subsystem: 'snap',
@@ -396,80 +415,15 @@ export async function ingestStorageRangesReply(
   origin: Uint8Array,
   putBatch: (slots: Array<{ slotHash: Uint8Array; value: Uint8Array }>) => void,
 ): Promise<{ ok: boolean; hasRight: boolean; lastKey?: Uint8Array; reason?: string }> {
-  let decoded: unknown[]
-  try {
-    decoded = RLP.decode(replyPayload) as unknown[]
-  } catch {
-    return { ok: false, hasRight: false, reason: 'storage RLP decode failed' }
+  const result = await verifyStorageRangeJob({
+    storageRoot,
+    replyPayload,
+    origin,
+  })
+  if (result.ok && result.slots !== undefined && result.slots.length > 0) {
+    putBatch(result.slots)
   }
-  const ranges = decoded[1] as unknown
-  const proofRaw = decoded[2]
-  if (!Array.isArray(ranges) || ranges.length === 0) {
-    return { ok: true, hasRight: false }
-  }
-  const slotsNested = ranges[0] as Array<[unknown, unknown]>
-  if (!Array.isArray(slotsNested)) {
-    return { ok: false, hasRight: false, reason: 'storage slots shape invalid' }
-  }
-  const keys: Uint8Array[] = []
-  const values: Uint8Array[] = []
-  const decodedSlots: Array<{ slotHash: Uint8Array; value: Uint8Array }> = []
-  for (const [slotHashRaw, slotValueRlp] of slotsNested) {
-    if (!(slotHashRaw instanceof Uint8Array) || !(slotValueRlp instanceof Uint8Array)) {
-      return { ok: false, hasRight: false, reason: 'storage slot not bytes' }
-    }
-    if (slotValueRlp.length === 0) {
-      return { ok: false, hasRight: false, reason: 'empty storage slot RLP' }
-    }
-    keys.push(slotHashRaw)
-    values.push(slotValueRlp)
-    let inner: Uint8Array
-    try {
-      const dec = RLP.decode(slotValueRlp)
-      inner = dec instanceof Uint8Array ? dec : new Uint8Array(0)
-    } catch {
-      return { ok: false, hasRight: false, reason: 'storage slot inner decode failed' }
-    }
-    decodedSlots.push({ slotHash: slotHashRaw, value: inner })
-  }
-  let proof: Uint8Array[] | null = null
-  if (Array.isArray(proofRaw)) {
-    proof = proofRaw.map((n) => {
-      if (!(n instanceof Uint8Array)) throw new Error('proof node not bytes')
-      return n
-    })
-  }
-  try {
-    let hasRight: boolean
-    if (proof !== null && proof.length === 0 && keys.length > 0) {
-      hasRight = await verifyMerkleRangeProof(storageRoot, null, null, keys, values, null)
-    } else if (proof !== null && proof.length > 0 && keys.length > 0) {
-      const lastKey = keys[keys.length - 1]!
-      hasRight = await verifyMerkleRangeProof(storageRoot, origin, lastKey, keys, values, proof)
-    } else {
-      return { ok: true, hasRight: false }
-    }
-    putBatch(decodedSlots)
-    return { ok: true, hasRight, lastKey: keys[keys.length - 1] }
-  } catch (err: unknown) {
-    return {
-      ok: false,
-      hasRight: false,
-      reason: err instanceof Error ? err.message : String(err),
-    }
-  }
-}
-
-function snapReplyRequestId(payload: Uint8Array): bigint | undefined {
-  try {
-    const decoded = RLP.decode(payload) as unknown[]
-    const id = decoded[0]
-    if (!(id instanceof Uint8Array)) return undefined
-    if (id.length === 0) return 0n
-    return bytesToBigInt(id)
-  } catch {
-    return undefined
-  }
+  return result
 }
 
 function bytesToHexShort(hash: Uint8Array): string {
