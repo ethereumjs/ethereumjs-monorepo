@@ -148,6 +148,11 @@ export class Devp2pWorkerClient {
     this._send({ type: 'setBlockRange', earliest, latest, latestHash })
   }
 
+  /** Pause or resume DPT neighbour lookup and DNS peer batches in the worker. */
+  setDiscoveryPaused(paused: boolean): void {
+    this._send({ type: 'setDiscoveryPaused', paused })
+  }
+
   /** Register a complete block bundle for rolling-window eth serving in the worker. */
   putServableBlock(block: {
     number: bigint

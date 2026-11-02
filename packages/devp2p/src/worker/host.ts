@@ -218,6 +218,10 @@ export class Devp2pWorkerHost {
           this._syncBlockRangeFromStore(true)
           break
         }
+        case 'setDiscoveryPaused':
+          this._rlpx?.setSyncDiscoveryHold(cmd.paused)
+          this._discoveryMetrics.setDiscoveryPaused(cmd.paused)
+          break
       }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err)

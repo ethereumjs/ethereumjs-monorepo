@@ -72,6 +72,7 @@ export type WorkerCommand =
         balRlp?: Uint8Array
       }
     }
+  | { type: 'setDiscoveryPaused'; paused: boolean }
 
 export interface WorkerServingSnapshot {
   earliestBlock?: string
@@ -160,6 +161,8 @@ export interface WorkerDiscoverySnapshot {
   boundUdpPort: number
   boundTcpPort: number
   tablePeers: number
+  /** True when DPT neighbour lookup and DNS batches are paused. */
+  discoveryPaused?: boolean
   /** Hardfork, EIP-2124 hash, and next fork this node puts in ETH STATUS. */
   advertisedFork?: { hardfork: string; hash: string; next?: string }
   bootstrap: WorkerDiscoveryBootstrapSnapshot

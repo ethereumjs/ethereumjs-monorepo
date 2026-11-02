@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 (modification: no type change headlines) and this project adheres to
 [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### `@ethereumjs/devp2p`
+
+- Worker `setDiscoveryPaused`, `RLPx.setSyncDiscoveryHold`, and `discoveryPaused` on discovery telemetry.
+
 ## 10.0.0 - 2025-04-29
 
 ### Overview

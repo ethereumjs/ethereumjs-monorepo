@@ -68,6 +68,8 @@ export class RLPx {
 
   protected _refillIntervalId: NodeJS.Timeout
   protected _refillIntervalSelectionCounter: number = 0
+  /** Ethy sync hold: do not auto-resume discovery when connected drops below low water. */
+  protected _syncDiscoveryHold = false
 
   protected _keccakFunction: (msg: Uint8Array) => Uint8Array
   protected _discoveryMetrics: import('../discovery/metrics.ts').DiscoveryMetrics | undefined
@@ -487,8 +489,24 @@ export class RLPx {
     return count
   }
 
+  /** Pause discovery for active snap sync; cleared by the worker client when peers drop. */
+  setSyncDiscoveryHold(held: boolean): void {
+    this._syncDiscoveryHold = held
+    if (this._dpt !== null) {
+      this._dpt.setDiscoveryPaused(held)
+    }
+  }
+
+  isSyncDiscoveryHold(): boolean {
+    return this._syncDiscoveryHold
+  }
+
   _syncDiscoveryThrottle(): void {
     if (!this._throttleDiscovery || this._dpt === null) return
+    if (this._syncDiscoveryHold) {
+      this._dpt.setDiscoveryPaused(true)
+      return
+    }
     const connected = this._connectedPeerCount()
     if (connected >= this._maxPeers) {
       this._dpt.setDiscoveryPaused(true)
