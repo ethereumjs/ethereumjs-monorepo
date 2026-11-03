@@ -1292,7 +1292,8 @@ export class MerklePatriciaTrie {
   }
 
   protected hash(inputBytes: Uint8Array): Uint8Array {
-    return Uint8Array.from(this._opts.useKeyHashingFunction.call(undefined, inputBytes))
+    const out = this._opts.useKeyHashingFunction.call(undefined, inputBytes)
+    return out instanceof Uint8Array ? out : Uint8Array.from(out)
   }
 
   /**
