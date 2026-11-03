@@ -92,6 +92,26 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                       │         O(1) Tail Resume & Watchdog)    │                 │
                       └───────────────────┬─────────────────────┘                 │
                                           │                                       │
+                                          ▼                                       │
+                      ┌─────────────────────────────────────────┐                 │
+                      │ WP-04h: N-Way Sub-Range Cursor Pool &   │                 │
+                      │         10-Peer Dynamic Work-Stealing   │                 │
+                      └───────────────────┬─────────────────────┘                 │
+                                          │                                       │
+                                          ▼                                       │
+                      ┌─────────────────────────────────────────┐                 │
+                      │ WP-04i: @ethereumjs/mpt Batch Range-    │                 │
+                      │         Proof Hashing (8x Fewer Keccak) │                 │
+                      │         & Direct-to-Slab Account Parser │                 │
+                      └───────────────────┬─────────────────────┘                 │
+                                          │                                       │
+                                          ▼                                       │
+                      ┌─────────────────────────────────────────┐                 │
+                      │ WP-04j: Stack-Wide WASM Crypto          │                 │
+                      │         Acceleration (keccak256) &      │                 │
+                      │         devp2p RLPx MAC Cipher Reuse    │                 │
+                      └───────────────────┬─────────────────────┘                 │
+                                          │                                       │
                                           └───────────────────┬───────────────────┘
                                                               ▼
                                           ┌─────────────────────────────────────────┐

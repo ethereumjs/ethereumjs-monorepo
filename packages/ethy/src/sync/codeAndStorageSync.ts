@@ -92,6 +92,8 @@ export class SnapCodeAndStorageSynchronizer {
   private readonly maxInMemoryContractTasks: number
   private readonly contractSpillPath?: string
   private contractsSpilledOnDisk = 0
+  private contractSpillReadOffset = 0
+  private readonly contractSpillBuffer: Uint8Array[] = []
   private reqId = 1n
   private readonly codeQueue = new Map<string, CodeTask>()
   private readonly pendingStorage = new Map<string, StorageTask>()
@@ -128,6 +130,7 @@ export class SnapCodeAndStorageSynchronizer {
   }
 
   stop(): void {
+    this.flushContractSpillBuffer()
     this.detachStorage?.()
     this.detachCodes?.()
     this.detachStorage = undefined
@@ -501,14 +504,29 @@ export class SnapCodeAndStorageSynchronizer {
     row.set(accountHash.subarray(0, 32), 0)
     row.set(codeHash.subarray(0, 32), 32)
     row.set(storageRoot.subarray(0, 32), 64)
-    if (this.contractsSpilledOnDisk === 0) {
-      fs.mkdirSync(path.dirname(this.contractSpillPath), { recursive: true })
-    }
-    fs.appendFileSync(this.contractSpillPath, row)
+    this.contractSpillBuffer.push(row)
     this.contractsSpilledOnDisk++
+    if (this.contractSpillBuffer.length >= 256) {
+      this.flushContractSpillBuffer()
+    }
+  }
+
+  private flushContractSpillBuffer(): void {
+    if (this.contractSpillPath === undefined || this.contractSpillBuffer.length === 0) return
+    const totalBytes = this.contractSpillBuffer.length * CONTRACT_SPILL_ROW_BYTES
+    const batch = new Uint8Array(totalBytes)
+    let off = 0
+    for (const row of this.contractSpillBuffer) {
+      batch.set(row, off)
+      off += CONTRACT_SPILL_ROW_BYTES
+    }
+    this.contractSpillBuffer.length = 0
+    fs.mkdirSync(path.dirname(this.contractSpillPath), { recursive: true })
+    fs.appendFileSync(this.contractSpillPath, batch)
   }
 
   private refillContractTasksFromDisk(): void {
+    this.flushContractSpillBuffer()
     while (
       this.codeQueue.size + this.pendingStorage.size < this.maxInMemoryContractTasks &&
       (this.snapStore?.contractScanRemaining() === true || this.contractsSpilledOnDisk > 0)
@@ -521,34 +539,35 @@ export class SnapCodeAndStorageSynchronizer {
       }
       if (this.contractSpillPath === undefined || !fs.existsSync(this.contractSpillPath)) break
       const stat = fs.statSync(this.contractSpillPath)
-      if (stat.size < CONTRACT_SPILL_ROW_BYTES) break
-      const row = Buffer.alloc(CONTRACT_SPILL_ROW_BYTES)
-      const fd = fs.openSync(this.contractSpillPath, 'r+')
+      const availBytes = stat.size - this.contractSpillReadOffset
+      if (availBytes < CONTRACT_SPILL_ROW_BYTES) {
+        this.contractsSpilledOnDisk = 0
+        this.contractSpillReadOffset = 0
+        break
+      }
+      const batchRows = Math.min(256, Math.floor(availBytes / CONTRACT_SPILL_ROW_BYTES))
+      const buf = Buffer.alloc(batchRows * CONTRACT_SPILL_ROW_BYTES)
+      const fd = fs.openSync(this.contractSpillPath, 'r')
       try {
-        fs.readSync(fd, row, 0, CONTRACT_SPILL_ROW_BYTES, 0)
-        const rest = stat.size - CONTRACT_SPILL_ROW_BYTES
-        if (rest > 0) {
-          const tail = Buffer.alloc(rest)
-          fs.readSync(fd, tail, 0, rest, CONTRACT_SPILL_ROW_BYTES)
-          fs.ftruncateSync(fd, 0)
-          fs.writeSync(fd, tail, 0, rest, 0)
-        } else {
-          fs.ftruncateSync(fd, 0)
-        }
+        fs.readSync(fd, buf, 0, buf.length, this.contractSpillReadOffset)
       } finally {
         fs.closeSync(fd)
       }
+      this.contractSpillReadOffset += buf.length
       this.contractsSpilledOnDisk = Math.max(
         0,
-        Math.floor(stat.size / CONTRACT_SPILL_ROW_BYTES) - 1,
+        Math.floor((stat.size - this.contractSpillReadOffset) / CONTRACT_SPILL_ROW_BYTES),
       )
-      this.noteAccounts([
-        {
-          accountHash: new Uint8Array(row.subarray(0, 32)),
-          codeHash: new Uint8Array(row.subarray(32, 64)),
-          storageRoot: new Uint8Array(row.subarray(64, 96)),
-        },
-      ])
+      const entries: IngestedAccountMeta[] = []
+      for (let i = 0; i < batchRows; i++) {
+        const base = i * CONTRACT_SPILL_ROW_BYTES
+        entries.push({
+          accountHash: new Uint8Array(buf.subarray(base, base + 32)),
+          codeHash: new Uint8Array(buf.subarray(base + 32, base + 64)),
+          storageRoot: new Uint8Array(buf.subarray(base + 64, base + 96)),
+        })
+      }
+      this.noteAccounts(entries)
     }
   }
 }

@@ -99,23 +99,26 @@ describe('[Ethy/Scale]: WP-04g budget gates', () => {
     let heapAt50k = process.memoryUsage().heapUsed
     const totalAccounts = 80_000
     const contractAccounts = 12_000
+    const codeHashes = Array.from({ length: 256 }, (_, b) => keccak_256(new Uint8Array([b])))
     const t0 = performance.now()
     for (let i = 0; i < totalAccounts; i++) {
       const accountHash = new Uint8Array(32)
       writeIndex32(accountHash, i)
       const isContract = i < contractAccounts
       const binary = createBinaryAccount({ nonce: 1n, balance: 1n })
+      const ch = codeHashes[i & 0xff]!
+      const sr = codeHashes[(i + 1) & 0xff]!
       if (isContract) {
-        setBinaryAccountCodeHash(binary, keccak_256(new Uint8Array([i & 0xff])))
-        setBinaryAccountStorageRoot(binary, keccak_256(new Uint8Array([(i + 1) & 0xff])))
+        setBinaryAccountCodeHash(binary, ch)
+        setBinaryAccountStorageRoot(binary, sr)
       }
       sm.putSnapBinaryAccountsBatch([{ accountHash, binaryAccount: binary }])
       if (isContract) {
         sync.noteAccounts([
           {
             accountHash,
-            codeHash: keccak_256(new Uint8Array([i & 0xff])),
-            storageRoot: keccak_256(new Uint8Array([(i + 1) & 0xff])),
+            codeHash: ch,
+            storageRoot: sr,
           },
         ])
       }
