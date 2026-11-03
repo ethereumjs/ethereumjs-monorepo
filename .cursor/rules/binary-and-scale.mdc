@@ -51,4 +51,15 @@ Code that takes `0.05ms` at `N = 100` in a unit test can freeze V8 for seconds a
    - Any queue, deduplication list, or task registry that grows with ingested accounts, contracts, or storage roots (e.g. `codeQueue`, `storageTasks`) can reach `200,000+` items during a chain sync.
    - Calling `array.some(equalsBytes)` or `array.filter(...)` inside a batch ingestion or restore loop creates a `200,000 × 200,000` (`O(N²)`) freeze that locks up the Main Thread for tens of seconds!
    - Always key deduplication and task lookup structures by hex string in a `Map<string, Task>` or `Set<string>` (`O(1)` lookup and deletion) and maintain `O(1)` pending counters instead of `.filter()` scans.
+5. **Never Retain Zero-Copy Byte Views into Large Packet/Slab Buffers in Long-Lived Maps (Buffer-Pinning Leak Ban):**
+   - Creating a zero-copy `Uint8Array` view (`new Uint8Array(slab.buffer, offset, 32)`) does **not** copy bytes — it holds a strong reference to `slab.buffer` (e.g. a `272 KB` worker slab or a `60 MB` journal buffer).
+   - Storing even **one** byte view inside a long-lived `Map`, queue, or state store pins the entire multi-megabyte parent `ArrayBuffer` in RAM until that entry is deleted!
+   - Either store data inside dedicated fixed-size `Uint8Array` Arenas (`BinaryAccountArena` indexed by a 32-bit `slotIndex` SMI) or copy fixed 32-byte hashes into owned `new Uint8Array(32)` / hex strings when retaining them in a bounded queue.
+6. **100M-Account Scale Law: Slab Arenas, Bounded Resident Working Sets & Disk-Spilled Queues:**
+   - Allocating one `new Uint8Array(104)` per account creates 2 V8 heap objects (`~232 bytes`) plus `Map`/`String` overhead (`~370 bytes/account`), crashing V8's `4 GB` heap limit around `8M–10M` accounts.
+   - To scale effortlessly to `10M–100M+` accounts:
+     1. Pack fixed-size binary records into contiguous multi-megabyte `Uint8Array` Arena pages (which live in Node's external `ArrayBuffer` memory outside V8's GC object graph) indexed by 32-bit integer slot indices.
+     2. Bound in-memory resident state (`maxResidentAccounts`) and in-memory contract/storage task queues (`MAX_IN_MEMORY_TASKS`), spilling cold records and queued contract tasks to fixed-stride binary files on disk.
+     3. Use `O(1)` file-tail reads (`(stat.size - header) / stride` and reading the final 136-byte record) to resume sorted append-only bucket journals in `< 2ms` instead of re-reading gigabytes of disk data into RAM on startup.
+
 

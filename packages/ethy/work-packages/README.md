@@ -85,6 +85,13 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                       │         PeerBook Rotator & 8-Peer Sim)  │                 │
                       └───────────────────┬─────────────────────┘                 │
                                           │                                       │
+                                          ▼                                       │
+                      ┌─────────────────────────────────────────┐                 │
+                      │ WP-04g: 100M-Account Scale (Slab-Arena  │                 │
+                      │         FlatStateManager, Bounded Cache,│                 │
+                      │         O(1) Tail Resume & Watchdog)    │                 │
+                      └───────────────────┬─────────────────────┘                 │
+                                          │                                       │
                                           └───────────────────┬───────────────────┘
                                                               ▼
                                           ┌─────────────────────────────────────────┐
