@@ -159,6 +159,16 @@ describe('[Util]: isValidSignature', () => {
     const v = BigInt(27)
     assert.isFalse(isValidSignature(v, r, s, true))
   })
+  it('accepts s = secp256k1n/2 on homestead', () => {
+    const SECP256K1_N_DIV_2 = BigInt(
+      '0x7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0',
+    )
+
+    const r = hexToBytes('0x99e71a99cb2270b8cac5254f9e99b6210c6c10224a1579cf389ef88b20a1abe9')
+    const s = bigIntToBytes(SECP256K1_N_DIV_2)
+    const v = BigInt(27)
+    assert.isTrue(isValidSignature(v, r, s, true))
+  })
   it('does not fail when not on homestead but s > secp256k1n/2', () => {
     const SECP256K1_N_DIV_2 = BigInt(
       '0x7fffffffffffffffffffffffffffffff5d576e7357a4501ddfe92f46681b20a0',
