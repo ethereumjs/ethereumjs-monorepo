@@ -1,5 +1,9 @@
 import { RLP } from '@ethereumjs/rlp'
-import { createFlatStateManager } from '@ethereumjs/statemanager'
+import {
+  SNAP_BINARY_ACCOUNT_SLAB_RECORD_SIZE,
+  createFlatStateManager,
+} from '@ethereumjs/statemanager'
+import { equalsBytes } from '@ethereumjs/util'
 import { assert, describe, it, vi } from 'vitest'
 
 import { createSnapBuckets } from '../src/spine/buckets.ts'
@@ -21,10 +25,12 @@ function mockSnapTransport(overrides: Partial<SnapTransport> = {}): SnapTranspor
     ...overrides,
   }
 }
+import { verifyAccountRangeJob } from '../src/sync/snapVerifyJob.ts'
 import {
   SyntheticSnapPeer,
   incrementKey32,
   ingestAccountRangeReply,
+  parseAccountRangeReply,
 } from '../src/sync/syntheticPeer.ts'
 
 describe('[Ethy/Sync]: synthetic snap account range', () => {
@@ -39,6 +45,52 @@ describe('[Ethy/Sync]: synthetic snap account range', () => {
     assert.equal(result.ok, false)
     assert.equal(result.count, 0)
     assert.match(result.reason ?? '', /without proof/)
+  })
+
+  it('verifyAccountRangeJob() slab matches parseAccountRangeReply rows', async () => {
+    const peer = await SyntheticSnapPeer.create(4)
+    const spine = createSpine('sepolia', 11155111n)
+    spine.snapBuckets = createSnapBuckets()
+    const bucket = spine.snapBuckets[0]!
+    const req = encodeGetAccountRange(
+      1n,
+      peer.rootHash,
+      bucket.currentLastHash,
+      bucket.limitHash,
+      512 * 1024,
+    )
+    const reply = await peer.buildAccountRangeReply(req)
+    const parsed = parseAccountRangeReply(reply)
+    assert.isDefined(parsed)
+    assert.isAbove(parsed!.entries.length, 0)
+    const verified = await verifyAccountRangeJob({
+      stateRoot: peer.rootHash,
+      payload: reply,
+      origin: bucket.currentLastHash,
+    })
+    assert.equal(verified.ok, true)
+    assert.isDefined(verified.slab)
+    assert.equal(verified.count, parsed!.entries.length)
+    assert.isDefined(verified.lastKey)
+    assert.notEqual(
+      verified.lastKey!.buffer,
+      parsed!.entries[parsed!.entries.length - 1]!.accountHash.buffer,
+    )
+    for (let i = 0; i < parsed!.entries.length; i++) {
+      const offset = i * SNAP_BINARY_ACCOUNT_SLAB_RECORD_SIZE
+      const row = parsed!.entries[i]!
+      assert.ok(
+        equalsBytes(verified.slab!.subarray(offset, offset + 32), row.accountHash),
+        `account hash row ${i}`,
+      )
+      assert.ok(
+        equalsBytes(
+          verified.slab!.subarray(offset + 32, offset + SNAP_BINARY_ACCOUNT_SLAB_RECORD_SIZE),
+          row.binaryAccount,
+        ),
+        `binary account row ${i}`,
+      )
+    }
   })
 
   it('ingestAccountRangeReply() rejects a non-byte payload without throwing', async () => {

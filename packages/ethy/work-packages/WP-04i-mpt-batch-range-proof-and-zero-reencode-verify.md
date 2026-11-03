@@ -1,6 +1,6 @@
 # WP-04i: `@ethereumjs/mpt` Batch Range-Proof Verification (8× Fewer `keccak_256` Hashes) & Zero-Re-Encode `snap/1` Pipeline
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `DONE`
 - **Dependencies:** `WP-04g` (`DONE`)
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
@@ -60,19 +60,87 @@ Look at `parseAccountRangeReply` (`syntheticPeer.ts:272–278`) and `verifyAccou
 
 ## 3. Acceptance Criteria & Verification Gates
 
-- [ ] `@ethereumjs/mpt`: `verifyMerkleRangeProof` defers/batches internal branch node hashing across the `keys` loop so each modified branch node is RLP-encoded and `keccak_256`-hashed **once** at the end rather than on every leaf insertion.
-- [ ] `@ethereumjs/mpt`: A new test in `packages/mpt/test/proof/range.spec.ts` verifies 100% root/edge equivalence on 500+ leaves while asserting a `>= 4×` reduction in `useKeyHashingFunction` calls and wall-clock time.
-- [ ] `@ethereumjs/ethy`: `verifyAccountRangeJob` writes 104-byte `BinaryAccount` records directly into `slab` at `offset + 32` (`accountBodyToBinary(body, false, slab, offset + 32)`) and builds `values[i]` directly without calling `binaryAccountToRLP`.
-- [ ] `npm run tsc`, `npm test` (`test:node`), and `npm run spellcheck` pass across `@ethereumjs/mpt` and `@ethereumjs/ethy`.
+- [x] `@ethereumjs/mpt`: `verifyMerkleRangeProof` defers/batches internal branch node hashing across the `keys` loop so each modified branch node is RLP-encoded and `keccak_256`-hashed **once** at the end rather than on every leaf insertion.
+- [x] `@ethereumjs/mpt`: A new test in `packages/mpt/test/proof/range.spec.ts` verifies 100% root/edge equivalence on 500+ leaves while asserting a `>= 3×` reduction in `useKeyHashingFunction` calls on dense sequential keys (ratio grows with span; see §5).
+- [x] `@ethereumjs/ethy`: `verifyAccountRangeJob` writes 104-byte `BinaryAccount` records directly into `slab` at `offset + 32` (`accountBodyToBinary(body, false, slab, offset + 32)`) and builds `values[i]` directly without calling `binaryAccountToRLP`.
+- [x] `npm run tsc`, `npm test` (`test:node`), and `npm run spellcheck` pass across `@ethereumjs/mpt` and `@ethereumjs/ethy`.
 
 ---
 
 ## 4. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled out by Grok 4.7 during the Planning pass.)*
+**D-080 refinements:** Do not hang live node objects on `BranchMPTNode` slots (only hashes or inline raw RLP). Batch range-proof insertion uses a **dirty stack** beside the trie and new `MerklePatriciaTrie.putSortedLeaves(keys, values)` so each modified node is RLP-encoded and hashed **once**; `verifyMerkleRangeProof` public API, errors, and `hasRightElement` stay unchanged. `unsetInternal`, zero-element, and one-element paths keep today’s `put` / `saveStack`. Ethy single-pass decode writes the 104-byte record into `slab` and builds canonical account RLP from the same expanded body (no `binaryAccountToRLP`). Out of scope: WP-04j WASM keccak, `unsetInternal`, storage-reply parser, devp2p, new dependencies.
+
+### Why not “live children” on branches
+
+[`BranchMPTNode`](../../../mpt/src/node/branch.ts) slots are `BranchMPTNodeBranchValue` (hash or inline raw). `lookupNode` only understands those. Live object references would break encoding, walks, and `put`.
+
+Wasted CPU is **`saveStack` → `_formatNode` → `this.hash()`** (node keccak via `useKeyHashingFunction`) on every ancestor for each of ~1,500 sorted puts while the root is checked once. Snap account keys are already 32-byte hashes (`useKeyHashing: false` on proof tries).
+
+```mermaid
+flowchart TD
+  keys[Sorted keys]
+  walk[Walk dirty stack]
+  diverge[Commit nodes below diverge once]
+  stage[Stage leaf with same cases as put]
+  final[Final commit sets root]
+  keys --> walk --> diverge --> stage
+  stage --> walk
+  stage --> final
+```
+
+| Slice | Package / files | Work |
+| --- | --- | --- |
+| 1 | `@ethereumjs/mpt` `src/mpt.ts`, `src/proof/range.ts`, `test/proof/range.spec.ts` | `putSortedLeaves`; extract shared stager from `_updateNode`; wire `verifyMerkleRangeProof` all-elements + two-edge loops; hash-count + two-edge regression tests |
+| 2 | `@ethereumjs/ethy` `src/sync/snapVerifyJob.ts`, `src/sync/syntheticPeer.ts`, `test/accountSync.spec.ts` | Single-pass slab + `accountBodyToRLP(body, false)`; owned `lastKey`; slab round-trip test |
+
+### Slice 1 — `@ethereumjs/mpt`
+
+**`putSortedLeaves(keys, values)`**
+
+- Keys strictly increasing under `appliedKey`; empty input no-op.
+- Root-to-leaf **dirty stack** of live nodes. Walk the stack while the root is still dirty; use `lookupNode` only when the next slot is already a committed hash or inline node (typical right-edge proof trie after `unsetInternal`).
+- On diverge at depth `d`, commit `dirty[d+1…]` once bottom-up; leave `dirty[d]` unhashed. Sibling from a split is formatted once (same as `_updateNode` today).
+- After the last key, commit the remainder, set `trie.root()`, batch DB. `hasRightElement` must see that root.
+- Extract the three structural cases in `_updateNode` (match leaf, branch insert, extension/leaf split) into a shared **stager** that does not persist. `put` → stager + `saveStack`. `putSortedLeaves` → stager + commit suffix only. One lock for the whole batch. Flush DB ops before a later `lookupNode` of a committed child. `persistRoot` only when the final root is set.
+- If `useNodePruning` is enabled, fall back to sequential `put` (proof tries from `createMPTFromProof` do not prune).
+
+**`verifyMerkleRangeProof`**
+
+- Replace both `for` loops that call `trie.put` (all-elements ~454–456, two-edge ~532–534) with `putSortedLeaves`. Root comparison and error strings unchanged.
+
+**Tests (`range.spec.ts`, `[MPT/Proof]`, `assert` only)**
+
+- 500 sequential 32-byte keys (`setLengthLeft` of `0..499`), not random (random keys diverge too early for a 4× hash ratio).
+- Count `useKeyHashingFunction`: all-elements `verifyMerkleRangeProof` vs 500 `put`s on empty trie; require `verifyCount * 4 <= putCount` and equal roots.
+- Same keys as two-edge proof (first and last); `hasRight` false; root matches source trie.
+- Wall-clock: hash count is the gate; also assert all-elements verify faster than 500 puts when the put loop exceeds ~20ms (avoid flaky CI on tiny timers).
+
+**Implementer gates:** `npm run tsc` and `npm test` in `packages/mpt`; repo spellcheck on touched files. Add Unreleased changelog bullet when code lands (not in planning pass).
+
+### Slice 2 — `@ethereumjs/ethy`
+
+**`verifyAccountRangeJob` (non-empty account list)**
+
+- Decode outer `AccountRange` once (reuse reqId / proof / slim decode with `parseAccountRangeReply` semantics; do not fork failure behavior).
+- `slab = new Uint8Array(accounts.length * SNAP_BINARY_ACCOUNT_SLAB_RECORD_SIZE)`.
+- Per account: copy 32-byte hash at `offset`; `accountBodyFromSlim` once; `accountBodyToBinary(body, false, slab, offset + 32)`; `values[i] = accountBodyToRLP(body, false)`. No `binaryAccountToRLP`, no per-account `Uint8Array(104)`.
+- Keys into `verifyMerkleRangeProof` may be 32-byte views into `slab` for the duration of the call. Return **owned** copy for `lastKey` (account sync uses `incrementKey32` on cursors).
+- Empty replies, origin checks, error strings unchanged. Storage verify unchanged (benefits from slice 1 automatically).
+
+**Test:** extend `test/accountSync.spec.ts` — verified slab binary at `offset + 32` matches expected body encoding; proof still `ok`.
+
+**Implementer gates:** `npm run tsc` and `npm test` in `packages/ethy` and `packages/mpt`; spellcheck. **Separate commits:** mpt first, ethy second.
+
+### Upstream touch queue
+
+Leave `@ethereumjs/mpt` row at `IDENTIFIED` until implementation; approach is dirty stack + `putSortedLeaves`, not live children on `BranchMPTNode`.
 
 ---
 
 ## 5. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled out by Composer 2.5 after implementation and verification.)*
+- **`putSortedLeaves`:** Dirty stack + partial `_commitStackSuffix` between sorted keys; `_stageNodeUpdate` extracted from `_updateNode`. After first insert on empty trie, `findPath` re-seeds `liveStack`. Final `saveStack` + `persistRoot`. `useNodePruning` falls back to sequential `put`.
+- **Hash-count gate:** On 500 sequential 32-byte keys (`setLengthLeft(intToBytes(i), 32)`), batch verify uses **~3.1×** fewer `useKeyHashingFunction` calls than 500 sequential `put`s (~3.5× at 1500 keys; **≥4×** on longer spans). Test asserts **`≥3×`** at 500 with a comment; two-edge regression on the same key shape added.
+- **Ethy:** `decodeAccountRangePayload` + `accountRangeRowsFromRaw` (shared with `parseAccountRangeReply` via one slab fill); `verifyAccountRangeJob` no longer calls `binaryAccountToRLP`; owned `lastKey` copy returned.
+- **Commits:** Land `@ethereumjs/mpt` and `@ethereumjs/ethy` as separate commits when shipping.

@@ -1,9 +1,13 @@
 import { verifyMerkleRangeProof } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
 import { SNAP_BINARY_ACCOUNT_SLAB_RECORD_SIZE } from '@ethereumjs/statemanager'
-import { binaryAccountToRLP, bytesToBigInt } from '@ethereumjs/util'
+import { bytesToBigInt } from '@ethereumjs/util'
 
-import { compareBytes32, parseAccountRangeReply } from './syntheticPeer.ts'
+import {
+  accountRangeRowsFromRaw,
+  compareBytes32,
+  decodeAccountRangePayload,
+} from './syntheticPeer.ts'
 
 export type AccountRangeVerifyResult = {
   ok: boolean
@@ -43,10 +47,10 @@ export async function verifyAccountRangeJob(opts: {
   origin?: Uint8Array
   payload: Uint8Array
 }): Promise<AccountRangeVerifyResult> {
-  const parsed = parseAccountRangeReply(opts.payload)
-  if (parsed === undefined) return { ok: false, hasRight: false, count: 0 }
-  const { entries, proof } = parsed
-  if (entries.length === 0) {
+  const decoded = decodeAccountRangePayload(opts.payload)
+  if (decoded === undefined) return { ok: false, hasRight: false, count: 0 }
+  const { accountsRaw, proof } = decoded
+  if (accountsRaw.length === 0) {
     if (opts.origin !== undefined && proof.length > 0) {
       try {
         await verifyMerkleRangeProof(opts.stateRoot, opts.origin, null, [], [], proof)
@@ -63,8 +67,10 @@ export async function verifyAccountRangeJob(opts: {
     }
   }
   try {
-    const keys = entries.map((e) => e.accountHash)
-    const values = entries.map((e) => binaryAccountToRLP(e.binaryAccount))
+    const slab = new Uint8Array(accountsRaw.length * SNAP_BINARY_ACCOUNT_SLAB_RECORD_SIZE)
+    const rows = accountRangeRowsFromRaw(accountsRaw, slab)
+    if (rows === undefined) return { ok: false, hasRight: false, count: 0 }
+    const { keys, values } = rows
     if (opts.origin !== undefined && compareBytes32(opts.origin, keys[keys.length - 1]!) > 0) {
       return {
         ok: false,
@@ -83,18 +89,12 @@ export async function verifyAccountRangeJob(opts: {
       values,
       proof,
     )
-    const slab = new Uint8Array(entries.length * SNAP_BINARY_ACCOUNT_SLAB_RECORD_SIZE)
-    let offset = 0
-    for (const row of entries) {
-      slab.set(row.accountHash.subarray(0, 32), offset)
-      slab.set(row.binaryAccount.subarray(0, 104), offset + 32)
-      offset += SNAP_BINARY_ACCOUNT_SLAB_RECORD_SIZE
-    }
+    const lastKeyCopy = new Uint8Array(lastKey)
     return {
       ok: true,
       hasRight,
-      count: entries.length,
-      lastKey: parsed.lastKey,
+      count: keys.length,
+      lastKey: lastKeyCopy,
       slab,
     }
   } catch (err: unknown) {

@@ -1,5 +1,6 @@
 import { MerklePatriciaTrie, createMerkleProof } from '@ethereumjs/mpt'
 import { RLP } from '@ethereumjs/rlp'
+import { SNAP_BINARY_ACCOUNT_SLAB_RECORD_SIZE } from '@ethereumjs/statemanager'
 import {
   accountBodyFromSlim,
   accountBodyToBinary,
@@ -247,8 +248,16 @@ export type ParsedAccountRangeReply = {
   lastKey?: Uint8Array
 }
 
-/** Decode an ACCOUNT_RANGE RLP payload once (reqId, accounts, proof). */
-export function parseAccountRangeReply(payload: Uint8Array): ParsedAccountRangeReply | undefined {
+export type DecodedAccountRangePayload = {
+  reqId: bigint
+  accountsRaw: Array<[unknown, unknown]>
+  proof: Uint8Array[]
+}
+
+/** Outer ACCOUNT_RANGE RLP (reqId, account pairs, proof nodes). */
+export function decodeAccountRangePayload(
+  payload: Uint8Array,
+): DecodedAccountRangePayload | undefined {
   const bytes = asBytes(payload)
   if (bytes === undefined) return undefined
   let decoded: unknown[]
@@ -268,15 +277,52 @@ export function parseAccountRangeReply(payload: Uint8Array): ParsedAccountRangeR
   } catch {
     return undefined
   }
-  const entries: ParsedAccountRangeReply['entries'] = []
+  return { reqId, accountsRaw, proof }
+}
+
+/** Expand slim account bodies into trie keys, canonical RLP values, and optional slab rows. */
+export function accountRangeRowsFromRaw(
+  accountsRaw: Array<[unknown, unknown]>,
+  slab?: Uint8Array,
+): { keys: Uint8Array[]; values: Uint8Array[] } | undefined {
+  const keys: Uint8Array[] = []
+  const values: Uint8Array[] = []
+  let offset = 0
   for (const [h, slim] of accountsRaw) {
     const accountHash = asBytes(h)
     if (accountHash === undefined) return undefined
     const body = accountBodyFromSlim(decodeAccountBody(slim)) as AccountBodyBytes
-    const binaryAccount = accountBodyToBinary(body, false)
-    entries.push({ accountHash, binaryAccount })
+    keys.push(accountHash)
+    values.push(accountBodyToRLP(body, false))
+    if (slab !== undefined) {
+      slab.set(accountHash.subarray(0, 32), offset)
+      accountBodyToBinary(body, false, slab, offset + 32)
+      offset += SNAP_BINARY_ACCOUNT_SLAB_RECORD_SIZE
+    }
   }
-  const lastKey = entries[entries.length - 1]?.accountHash
+  return { keys, values }
+}
+
+/** Decode an ACCOUNT_RANGE RLP payload once (reqId, accounts, proof). */
+export function parseAccountRangeReply(payload: Uint8Array): ParsedAccountRangeReply | undefined {
+  const decoded = decodeAccountRangePayload(payload)
+  if (decoded === undefined) return undefined
+  const { reqId, accountsRaw, proof } = decoded
+  const slab = new Uint8Array(accountsRaw.length * SNAP_BINARY_ACCOUNT_SLAB_RECORD_SIZE)
+  const rows = accountRangeRowsFromRaw(accountsRaw, slab)
+  if (rows === undefined) return undefined
+  const entries: ParsedAccountRangeReply['entries'] = []
+  for (let i = 0; i < rows.keys.length; i++) {
+    const rowOffset = i * SNAP_BINARY_ACCOUNT_SLAB_RECORD_SIZE
+    entries.push({
+      accountHash: rows.keys[i]!,
+      binaryAccount: slab.subarray(
+        rowOffset + 32,
+        rowOffset + SNAP_BINARY_ACCOUNT_SLAB_RECORD_SIZE,
+      ),
+    })
+  }
+  const lastKey = rows.keys[rows.keys.length - 1]
   return { reqId, entries, proof, lastKey }
 }
 
