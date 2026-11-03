@@ -1,6 +1,7 @@
 import * as fs from 'node:fs'
 import * as os from 'node:os'
 import * as path from 'node:path'
+import v8 from 'node:v8'
 
 import { createFlatStateManager } from '@ethereumjs/statemanager'
 import {
@@ -10,7 +11,9 @@ import {
   setBinaryAccountStorageRoot,
 } from '@ethereumjs/util'
 import { keccak_256 } from '@noble/hashes/sha3'
-import { assert, describe, it } from 'vitest'
+import { assert, afterEach, describe, it, vi } from 'vitest'
+
+import { ResourceBudgetWatchdog } from '../src/runtime/resourceBudget.ts'
 
 import { networkGenesisHash } from '../src/net/genesisStatus.ts'
 import {
@@ -48,6 +51,11 @@ function writeIndex32(buf: Uint8Array, i: number): void {
 }
 
 describe('[Ethy/Scale]: WP-04g budget gates', () => {
+  afterEach(() => {
+    vi.useRealTimers()
+    vi.restoreAllMocks()
+  })
+
   it('ingested meta does not pin the worker slab buffer', () => {
     const slab = new Uint8Array(BINARY_ACCOUNT_JOURNAL_RECORD_SIZE)
     const accountHash = new Uint8Array(32)
@@ -172,5 +180,40 @@ describe('[Ethy/Scale]: WP-04g budget gates', () => {
     assert.isDefined(sm.getAccountByHash(hash0))
     assert.isDefined(sm.getAccountByHash(hashMid))
     assert.isDefined(sm.getAccountByHash(hashLast))
+  })
+
+  it('resource watchdog trims unpinned residents under heap pressure', () => {
+    vi.useFakeTimers()
+    const spine = createSpine('sepolia', 11155111n)
+    const sm = createFlatStateManager({ maxResidentAccounts: 1000 })
+    for (let i = 0; i < 800; i++) {
+      const accountHash = new Uint8Array(32)
+      writeIndex32(accountHash, i)
+      sm.putSnapBinaryAccountsBatch([
+        { accountHash, binaryAccount: createBinaryAccount({ nonce: 1n, balance: 1n }) },
+      ])
+    }
+    assert.isAbove(sm.residentAccountCount(), 250)
+    vi.spyOn(process, 'memoryUsage').mockReturnValue({
+      rss: 0,
+      heapTotal: 0,
+      heapUsed: 700,
+      external: 0,
+      arrayBuffers: 0,
+    })
+    vi.spyOn(v8, 'getHeapStatistics').mockReturnValue({
+      ...v8.getHeapStatistics(),
+      heap_size_limit: 1000,
+    })
+    const wd = new ResourceBudgetWatchdog({
+      spine,
+      stateManager: sm,
+      maxResidentAccounts: 1000,
+    })
+    wd.start()
+    wd.start()
+    vi.advanceTimersByTime(2000)
+    wd.stop()
+    assert.isAtMost(sm.residentAccountCount(), 250)
   })
 })
