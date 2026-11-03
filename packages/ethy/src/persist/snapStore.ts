@@ -94,6 +94,9 @@ export class SnapPivotStore {
   private dirtyAccountBuckets = new Set<number>()
   private readonly metadataFlushIntervalMs = 2_000
   private readonly accountWriteChains = new Map<string, Promise<void>>()
+  /** Journal files that already have the binary magic prefix (live hot path, WP-04f). */
+  private readonly initializedAccountFiles = new Set<string>()
+  private bucketsFlushInFlight?: Promise<void>
 
   private constructor(opts: SnapStoreOpenOpts & { root: string; networkDir: string }) {
     this.enabled = opts.enabled
@@ -500,7 +503,23 @@ export class SnapPivotStore {
       previousStateRoot,
     } satisfies ActiveMeta)
     this.activeStateRoot = stateRootHex
+    this.seedInitializedAccountFiles(stateRootHex)
     this.prunePivots(stateRootHex, previousStateRoot)
+  }
+
+  private seedInitializedAccountFiles(stateRootHex: string): void {
+    this.initializedAccountFiles.clear()
+    const dir = path.join(this.pivotDir(stateRootHex), 'accounts')
+    if (!fs.existsSync(dir)) return
+    for (const name of fs.readdirSync(dir)) {
+      if (!name.endsWith('.bin')) continue
+      const file = path.join(dir, name)
+      try {
+        if (fs.statSync(file).size > 0) this.initializedAccountFiles.add(file)
+      } catch {
+        // race with concurrent append
+      }
+    }
   }
 
   private readActive(): ActiveMeta | undefined {
@@ -608,14 +627,19 @@ export class SnapPivotStore {
     }
     this.lastBuckets = buckets
     const file = this.accountFile(bucketIndex, this.activeStateRoot)
-    fs.mkdirSync(path.dirname(file), { recursive: true })
+    const needMagic = !this.initializedAccountFiles.has(file)
+    if (needMagic) this.initializedAccountFiles.add(file)
     const prior = this.accountWriteChains.get(file) ?? Promise.resolve()
     const next = prior.then(async () => {
-      const fileEmpty = !fs.existsSync(file) || fs.statSync(file).size === 0
-      const body = fileEmpty
-        ? Buffer.concat([Buffer.from(BINARY_ACCOUNT_JOURNAL_MAGIC), Buffer.from(slab)])
-        : slab
-      await fs.promises.appendFile(file, body)
+      try {
+        const body = needMagic
+          ? Buffer.concat([Buffer.from(BINARY_ACCOUNT_JOURNAL_MAGIC), Buffer.from(slab)])
+          : slab
+        await fs.promises.appendFile(file, body)
+      } catch (err) {
+        if (needMagic) this.initializedAccountFiles.delete(file)
+        throw err
+      }
     })
     this.accountWriteChains.set(file, next)
     this.dirtyAccountBuckets.add(bucketIndex)
@@ -678,7 +702,11 @@ export class SnapPivotStore {
     if (!force && now - this.lastMetadataFlushAt < this.metadataFlushIntervalMs) return
     if (!this.pendingMetadataFlush && !force) return
     if (this.lastBuckets !== undefined) {
-      this.flushBuckets(this.lastBuckets)
+      if (force) {
+        this.flushBuckets(this.lastBuckets)
+      } else {
+        void this.flushBucketsAsync(this.lastBuckets)
+      }
     }
     const dirty = [...this.dirtyAccountBuckets]
     this.dirtyAccountBuckets.clear()
@@ -686,11 +714,23 @@ export class SnapPivotStore {
     this.lastMetadataFlushAt = now
     if (force) {
       for (const bucketIndex of dirty) this.fsyncBucketSync(bucketIndex)
-      return
     }
-    // Live sync: durability without fsyncSync, which stalls the presentation clock
-    // for as long as the journal is large.
-    void this.fsyncBucketsAsync(dirty)
+  }
+
+  private flushBucketsAsync(buckets: SnapBucket[]): Promise<void> {
+    if (!this.enabled || this.activeStateRoot === undefined) return Promise.resolve()
+    this.lastBuckets = buckets
+    const dir = this.pivotDir(this.activeStateRoot)
+    const filePath = path.join(dir, 'buckets.json')
+    const payload = `${JSON.stringify({ buckets: serializeBuckets(buckets) }, null, 2)}\n`
+    const run = async () => {
+      await fs.promises.mkdir(dir, { recursive: true })
+      const tmp = `${filePath}.${process.pid}.tmp`
+      await fs.promises.writeFile(tmp, payload, 'utf8')
+      await fs.promises.rename(tmp, filePath)
+    }
+    this.bucketsFlushInFlight = (this.bucketsFlushInFlight ?? Promise.resolve()).then(run)
+    return this.bucketsFlushInFlight
   }
 
   private fsyncBucketSync(bucketIndex: number): void {

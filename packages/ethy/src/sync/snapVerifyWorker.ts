@@ -158,6 +158,9 @@ export class SnapVerifyPool {
   }
 
   private pickSlot(): WorkerSlot {
+    for (const slot of this.slots) {
+      if (slot.inFlight === 0) return slot
+    }
     let best: WorkerSlot | undefined
     for (const slot of this.slots) {
       if (best === undefined || slot.inFlight < best.inFlight) {

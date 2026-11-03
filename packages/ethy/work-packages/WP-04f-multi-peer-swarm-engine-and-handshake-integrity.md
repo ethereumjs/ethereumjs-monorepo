@@ -1,6 +1,6 @@
 # WP-04f: Multi-Peer Swarm Engine, Empty-Reply Peer Quarantine, Monotonic Progress Math & Zero-Sync-FS Hot Path
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `DONE`
 - **Dependencies:** `WP-04e` (`DONE`)
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
@@ -155,20 +155,36 @@ Build a fast (`< 1.5s`), deterministic multi-peer simulation suite in `packages/
 
 ## 3. Acceptance Criteria & Verification Gates
 
-- [ ] A peer returning an empty `AccountRange` (`[reqId, [], []]`) is quarantined (`peerRestUntil`) without stalling the bucket for healthy peers (`test/multiPeerSwarm.spec.ts`).
-- [ ] `bucketCursorFraction` and `computeSnapProgressPct` include `byte[0] & 0x0f` and are strictly monotonic (`0% → 100%`) with zero backward jumps.
-- [ ] `SnapPivotStore.appendVerifiedSlabAsync` and `maybeFlushMetadata(false)` perform zero synchronous `fs.*Sync` calls and zero periodic `fsync` calls during live sync.
-- [ ] `getSnapPeers` requires `ETH STATUS` completion (`hasHead === true`), outbound `STATUS` stays `0..0` during `SNAP_SYNCING`, and `PeerBookStore` rotates across all stored peers via `noteDialAttempt` holds + `TOO_MANY_PEERS` worker diagnostics.
-- [ ] `npm run tsc`, `npm test`, and `npm run spellcheck` pass across `@ethereumjs/devp2p` and `@ethereumjs/ethy`.
+- [x] A peer returning an empty `AccountRange` (`[reqId, [], []]`) is quarantined (`peerRestUntil`) without stalling the bucket for healthy peers (`test/multiPeerSwarm.spec.ts`).
+- [x] `bucketCursorFraction` and `computeSnapProgressPct` include `byte[0] & 0x0f` and are strictly monotonic (`0% → 100%`) with zero backward jumps.
+- [x] `SnapPivotStore.appendVerifiedSlabAsync` and `maybeFlushMetadata(false)` perform zero synchronous `fs.*Sync` calls and zero periodic `fsync` calls during live sync.
+- [x] `getSnapPeers` requires `ETH STATUS` completion (`hasHead === true`), outbound `STATUS` stays `0..0` during `SNAP_SYNCING`, and `PeerBookStore` rotates across all stored peers via `noteDialAttempt` holds + `TOO_MANY_PEERS` worker diagnostics.
+- [x] `npm run tsc`, `npm test`, and `npm run spellcheck` pass across `@ethereumjs/devp2p` and `@ethereumjs/ethy`.
 
 ---
 
 ## 4. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled out by Grok 4.7 during the Planning pass.)*
+**D-076 refinements:** peer-failure quarantine vs bucket stall when another snap peer is available; below-origin stays non-punitive; empty-reply rest 30s/10s with streak; 36-bit progress; live journal no periodic fsync; STATUS advertising gated until `BAL_CATCHUP`/`HEAD_FOLLOWING`; `SYNC_MAX_PEERS` 20, VIP target 6, discovery hold at ≥5 serving; pipelining depth 2 with ratio gate; tail steal without a 17th bucket.
+
+| Slice | Package / files | Work |
+| --- | --- | --- |
+| 1 | `devp2p` `rlpx.ts` | `_pendingDials`, 5s TCP timeout, open slots = established peers only, queue when full |
+| 1 | `devp2p` `host.ts`, `protocol.ts`, `client.ts` | `TOO_MANY_PEERS`/dial-fail diagnostics with `peerId`; `setAdvertiseBlockRange` |
+| 1 | `devp2p` `dns.ts`, `dpt.ts` | `_seenAddresses` (500 cap); `MAX_DNS_PEER_NEW_PER_REFRESH` 16 |
+| 2 | `ethy` `snapSchedulePolicy.ts`, `accountSync.ts` | Quarantine empty replies; immediate `schedule()`; tail steal; pipelining gate |
+| 2 | `ethy` `buckets.ts` | `bucketPosition36` monotonic fraction |
+| 2 | `ethy` `snapStore.ts` | `initializedAccountFiles`; async `flushBuckets`; no live fsync |
+| 2 | `ethy` `peerCoordinator.ts`, `discoveryHold.ts`, `peerBook.ts`, `types.ts` | `hasHead` gate; VIP/discovery constants; `noteDialAttempt` |
+| 2 | `ethy` `snapVerifyWorker.ts` | Reuse idle worker slot before spawn |
+| 3 | `ethy/test/multiPeerSwarm.spec.ts` | Five offline multi-peer invariants |
 
 ---
 
 ## 5. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled out by Composer 2.5 after implementation and verification.)*
+- **`isPeerQuarantineRangeFailure`:** treats every verify failure except below-origin, timeout, and peer-left as peer quarantine (not only the legacy string list), so MPT proof errors rest the peer and can hand the bucket to an alternate snap peer.
+- **`noteRangeFailure`:** timeouts with a healthy alternate snap peer return the bucket to `pending` (same as empty/proof quarantine); lone silent peers still stall the bucket.
+- **`devp2p` discovery dial:** `_onDiscoveredPeer` / `_promoteDeferredDials` use `_canStartOutboundDial()` so half-open TCP dials do not bypass the dial queue; `dialQueue.spec.ts` updated for pending-dial semantics.
+- **`DNS` `_seenAddresses`:** cross-`getPeers()` endpoint dedupe; `dns.spec.ts` clears the seen set before the ENR-tree cache case so the cache test stays isolated from refresh rotation.
+- **Tests:** `multiPeerSwarm.spec.ts` poison case introduces peer B only after peer A has synced the first chunk so synthetic trie + dual-peer scheduling stay deterministic; devp2p unit tests for pending dial / STATUS gate remain covered indirectly via existing RLPx and worker suites (no new live-socket specs in this pass).

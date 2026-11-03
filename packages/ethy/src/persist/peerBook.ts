@@ -206,7 +206,7 @@ export class PeerBookStore {
     const families = new Set(
       ordered.map((row) => row.clientFamily ?? row.id).filter((f) => f.length > 0),
     )
-    const capPerFamily = families.size > 1 ? 2 : limit
+    const capPerFamily = families.size > 1 ? 4 : limit
     const familyCount = new Map<string, number>()
     const picked: PeerBookRow[] = []
     for (const row of ordered) {
@@ -266,6 +266,16 @@ export class PeerBookStore {
     const row = this._rows.get(id)
     if (row === undefined) return
     row.snapTimeouts++
+    this.schedulePersist()
+  }
+
+  /** Per-attempt dial hold so VIP rotation walks the full book (WP-04f). */
+  noteDialAttempt(peerId: string, now: number): void {
+    if (!this._enabled) return
+    const id = peerId.toLowerCase()
+    const row = this._rows.get(id)
+    if (row === undefined) return
+    row.dialAfter = Math.max(row.dialAfter, now + 20_000)
     this.schedulePersist()
   }
 

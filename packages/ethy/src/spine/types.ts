@@ -15,6 +15,8 @@ export interface PeerTelemetry {
   caps: string[]
   /** Snap subprotocol is on the live session, not only in the HELLO cap list. */
   snapSession?: boolean
+  /** ETH STATUS completed with a usable head hash. */
+  hasHead?: boolean
   snapRequestsSent: number
   snapResponsesOk: number
   snapTimeouts: number

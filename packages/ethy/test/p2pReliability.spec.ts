@@ -79,19 +79,19 @@ describe('[Ethy/P2P]: resume policy', () => {
       wantSnapDiscoveryHold({ snapSessions: 2, servingSnapPeers: 0, held: false }),
       false,
     )
-    assert.equal(wantSnapDiscoveryHold({ snapSessions: 1, servingSnapPeers: 3, held: false }), true)
-    assert.equal(wantSnapDiscoveryHold({ snapSessions: 4, servingSnapPeers: 2, held: false }), true)
-    assert.equal(wantSnapDiscoveryHold({ snapSessions: 3, servingSnapPeers: 2, held: true }), true)
+    assert.equal(wantSnapDiscoveryHold({ snapSessions: 1, servingSnapPeers: 4, held: true }), true)
+    assert.equal(wantSnapDiscoveryHold({ snapSessions: 4, servingSnapPeers: 5, held: false }), true)
+    assert.equal(wantSnapDiscoveryHold({ snapSessions: 3, servingSnapPeers: 4, held: true }), true)
     assert.equal(
-      wantSnapDiscoveryHold({ snapSessions: 3, servingSnapPeers: 2, held: false }),
+      wantSnapDiscoveryHold({ snapSessions: 3, servingSnapPeers: 4, held: false }),
       false,
     )
   })
 
   it('shouldVipReconnect dials below VIP_SNAP_PEER_TARGET even when discovery is held', () => {
-    assert.equal(VIP_SNAP_PEER_TARGET, 4)
+    assert.equal(VIP_SNAP_PEER_TARGET, 6)
     assert.isTrue(shouldVipReconnect({ snapPeersTowardTarget: 1 }))
-    assert.isFalse(shouldVipReconnect({ snapPeersTowardTarget: 4 }))
+    assert.isFalse(shouldVipReconnect({ snapPeersTowardTarget: 6 }))
     assert.equal(
       countSnapPeersTowardVipTarget([
         { snapSession: true, snapResponsesOk: 0 },
@@ -116,15 +116,26 @@ describe('[Ethy/P2P]: resume policy', () => {
   })
 
   it('peerRestMsForRangeFailure drops a below-origin page without resting the peer', () => {
+    const unproven = {
+      id: 'aa',
+      caps: ['snap/1'],
+      snapResponsesOk: 0,
+      snapTimeouts: 0,
+      avgLatencyMs: 0,
+    }
     assert.equal(
-      peerRestMsForRangeFailure('peer returned accounts below request origin'),
+      peerRestMsForRangeFailure('peer returned accounts below request origin', unproven, 0),
       undefined,
     )
     assert.equal(
-      peerRestMsForRangeFailure('firstKey should be less than lastKey'),
+      peerRestMsForRangeFailure('firstKey should be less than lastKey', unproven, 0),
       PROVEN_PEER_REST_MS,
     )
-    assert.equal(peerRestMsForRangeFailure('account range timed out'), undefined)
+    assert.equal(peerRestMsForRangeFailure('account range timed out', unproven, 0), undefined)
+    assert.equal(
+      peerRestMsForRangeFailure('empty account range without proof', unproven, 1),
+      30_000,
+    )
   })
 
   it('decideSnapResume covers fresh, gap, and handoff', () => {
@@ -311,7 +322,7 @@ describe('[Ethy/Persist]: VIP peer backoff', () => {
     assert.equal(firstId, 'bb')
   })
 
-  it('vipDialCandidates caps at two per family when several families qualify', () => {
+  it('vipDialCandidates caps at four per family when several families qualify', () => {
     const dir = tempDir()
     const book = PeerBookStore.open({
       dataDir: dir,
@@ -343,12 +354,29 @@ describe('[Ethy/Persist]: VIP peer backoff', () => {
       )
     }
     const vips = book.vipDialCandidates(now, 8)
-    assert.equal(vips.length, 4)
+    assert.equal(vips.length, 5)
     const picked = new Set(vips.map((p) => bytesToUnprefixedHex(p.id as Uint8Array).toLowerCase()))
-    assert.equal(picked.size, 4)
-    assert.isFalse(picked.has(nmIds[2]!.toLowerCase()))
-    assert.equal([...picked].filter((id) => nmIds.includes(id)).length, 2)
+    assert.equal(picked.size, 5)
+    assert.isTrue(picked.has(nmIds[2]!.toLowerCase()))
+    assert.equal([...picked].filter((id) => nmIds.includes(id)).length, 3)
     assert.equal([...picked].filter((id) => gtIds.includes(id)).length, 2)
+  })
+
+  it('noteDialAttempt enforces a 20s hold before redial', () => {
+    const dir = tempDir()
+    const book = PeerBookStore.open({
+      dataDir: dir,
+      network: 'sepolia',
+      expectedForkHash: '0xabc',
+      enabled: true,
+    })
+    const now = 1_000_000
+    book.putRow(sampleRow({ id: 'cc'.repeat(32), lastSnapSuccessAt: now, snapResponsesOk: 1 }))
+    book.noteDialAttempt('cc'.repeat(32), now)
+    const vips = book.vipDialCandidates(now + 1)
+    assert.equal(vips.length, 0)
+    const later = book.vipDialCandidates(now + 20_001)
+    assert.equal(later.length, 1)
   })
 })
 

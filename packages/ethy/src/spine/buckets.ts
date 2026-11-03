@@ -38,7 +38,7 @@ export function snapBucketCursorExhausted(bucket: SnapBucket): boolean {
   return compareBytes32(bucket.currentLastHash, bucket.limitHash) >= 0
 }
 
-function compareBytes32(a: Uint8Array, b: Uint8Array): number {
+export function compareBytes32(a: Uint8Array, b: Uint8Array): number {
   const n = Math.max(a.length, b.length)
   for (let i = 0; i < n; i++) {
     const av = a[i] ?? 0
@@ -155,12 +155,17 @@ function readUInt32BE(bytes: Uint8Array, offset: number): number {
   )
 }
 
-/** Cursor position within a bucket range using bytes 1–4 of the account hash. */
+/** 36-bit position inside a snap bucket (low nibble of byte 0 plus bytes 1–4). */
+export function bucketPosition36(bytes: Uint8Array): number {
+  return (bytes[0]! & 0x0f) * 0x1_0000_0000 + readUInt32BE(bytes, 1)
+}
+
+/** Cursor position within a bucket range including byte[0] low nibble (WP-04f). */
 export function bucketCursorFraction(bucket: SnapBucket): number {
   if (bucket.status === 'done') return 1
-  const cur = readUInt32BE(bucket.currentLastHash, 1)
-  const lo = readUInt32BE(bucket.startHash, 1)
-  const hi = readUInt32BE(bucket.limitHash, 1)
+  const cur = bucketPosition36(bucket.currentLastHash)
+  const lo = bucketPosition36(bucket.startHash)
+  const hi = bucketPosition36(bucket.limitHash)
   if (hi <= lo) {
     return snapBucketCursorExhausted(bucket) ? 1 : 0
   }
