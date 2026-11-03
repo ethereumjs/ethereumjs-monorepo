@@ -78,6 +78,13 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                       │         Hold & 100k Scale/Resume Gate   │                 │
                       └───────────────────┬─────────────────────┘                 │
                                           │                                       │
+                                          ▼                                       │
+                      ┌─────────────────────────────────────────┐                 │
+                      │ WP-04f: Multi-Peer Swarm Engine (devp2p │                 │
+                      │         Dial Pool, Pre-STATUS Gate,     │                 │
+                      │         PeerBook Rotator & 8-Peer Sim)  │                 │
+                      └───────────────────┬─────────────────────┘                 │
+                                          │                                       │
                                           └───────────────────┬───────────────────┘
                                                               ▼
                                           ┌─────────────────────────────────────────┐
