@@ -451,8 +451,7 @@ export async function verifyMerkleRangeProof(
   // All elements proof
   if (proof === null && firstKey === null && lastKey === null) {
     const trie = new MerklePatriciaTrie({ useKeyHashingFunction })
-    const packedKeys = keys.map((k) => nibblesTypeToPackedBytes(k))
-    await trie.putSortedLeaves(packedKeys, values)
+    await trie.putSortedLeaves(keysRaw, values, keys)
     if (!equalsBytes(rootHash, trie.root())) {
       throw EthereumJSErrorWithoutCode('invalid all elements proof: root mismatch')
     }
@@ -527,8 +526,7 @@ export async function verifyMerkleRangeProof(
     trie.root(trie.EMPTY_TRIE_ROOT)
   }
 
-  const packedKeys = keys.map((k) => nibblesTypeToPackedBytes(k))
-  await trie.putSortedLeaves(packedKeys, values)
+  await trie.putSortedLeaves(keysRaw, values, keys)
 
   // Compare rootHash
   if (!equalsBytes(trie.root(), rootHash)) {

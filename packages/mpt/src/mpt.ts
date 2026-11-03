@@ -343,7 +343,12 @@ export class MerklePatriciaTrie {
     let result: Path | null = null
 
     const startingNode = partialPath.liveStart ?? partialPath.stack[partialPath.stack.length - 1]
-    const start = startingNode !== undefined ? this.hash(startingNode.serialize()) : this.root()
+    const start =
+      partialPath.useLiveStart === true && startingNode !== undefined
+        ? this._root
+        : startingNode !== undefined
+          ? this.hash(startingNode.serialize())
+          : this.root()
 
     try {
       this.DEBUG &&
@@ -662,7 +667,7 @@ export class MerklePatriciaTrie {
 
   /**
    * Persist the suffix of `stack` from the leaf while `pathNibbles` covers more than `keepNibbleLength` nibbles.
-   * Wires the resulting child hash into the remaining stack top when stopping early.
+   * Wires the resulting child hash (or inline raw node) into the remaining stack top when stopping early.
    * @private
    */
   protected async _commitStackSuffix(
@@ -671,7 +676,7 @@ export class MerklePatriciaTrie {
     keepNibbleLength: number,
     opStack: BatchDBOp[],
   ): Promise<void> {
-    let childHash: Uint8Array | undefined
+    let childRef: NodeReferenceOrRawMPTNode | undefined
 
     while (stack.length > 0) {
       const node = stack[stack.length - 1]!
@@ -689,27 +694,27 @@ export class MerklePatriciaTrie {
       if (popped instanceof LeafMPTNode || popped instanceof ExtensionMPTNode) {
         pathNibbles.splice(pathNibbles.length - popped.key().length)
       }
-      if (popped instanceof ExtensionMPTNode && childHash !== undefined) {
-        popped.value(childHash)
+      if (popped instanceof ExtensionMPTNode && childRef !== undefined) {
+        popped.value(childRef as Uint8Array)
       }
-      if (popped instanceof BranchMPTNode && childHash !== undefined) {
+      if (popped instanceof BranchMPTNode && childRef !== undefined) {
         const branchIndex = pathNibbles.pop()
-        popped.setBranch(branchIndex!, childHash)
+        popped.setBranch(branchIndex!, childRef)
       }
-      childHash = this._formatNode(popped, stack.length === 0, opStack) as Uint8Array
+      childRef = this._formatNode(popped, stack.length === 0, opStack) as NodeReferenceOrRawMPTNode
     }
 
-    if (childHash !== undefined) {
+    if (childRef !== undefined) {
       if (stack.length > 0) {
         const parent = stack[stack.length - 1]!
         if (parent instanceof ExtensionMPTNode) {
-          parent.value(childHash)
+          parent.value(childRef as Uint8Array)
         } else if (parent instanceof BranchMPTNode) {
           const branchIndex = pathNibbles.pop()
-          parent.setBranch(branchIndex!, childHash)
+          parent.setBranch(branchIndex!, childRef)
         }
       } else {
-        this.root(childHash)
+        this.root(childRef as Uint8Array)
       }
     }
   }
@@ -718,24 +723,53 @@ export class MerklePatriciaTrie {
    * Insert strictly sorted keys with one hash pass per modified node (range-proof hot path).
    * Falls back to sequential {@link MerklePatriciaTrie.put} when node pruning is enabled.
    */
-  async putSortedLeaves(keys: Uint8Array[], values: Uint8Array[]): Promise<void> {
+  async putSortedLeaves(
+    keys: Uint8Array[],
+    values: Uint8Array[],
+    preallocatedNibbles?: Nibbles[],
+  ): Promise<void> {
     if (keys.length !== values.length) {
       throw EthereumJSErrorWithoutCode('invalid keys length or values length')
     }
-    for (let i = 1; i < keys.length; i++) {
-      if (compareBytes(keys[i - 1]!, keys[i]!) >= 0) {
-        throw EthereumJSErrorWithoutCode('invalid keys order')
+    for (let i = 0; i < values.length; i++) {
+      const v = values[i]
+      if (v === null || v === undefined || v.length === 0) {
+        throw EthereumJSErrorWithoutCode('invalid values')
+      }
+    }
+    if (!this._opts.useKeyHashing) {
+      for (let i = 1; i < keys.length; i++) {
+        if (compareBytes(keys[i - 1]!, keys[i]!) >= 0) {
+          throw EthereumJSErrorWithoutCode('invalid keys order')
+        }
       }
     }
     if (keys.length === 0) {
       return
     }
 
-    if (this._opts.useNodePruning) {
+    if (this._opts.useNodePruning || this._opts.useKeyHashing) {
       await this._withLock(async () => {
         for (let i = 0; i < keys.length; i++) {
-          await this.put(keys[i]!, values[i]!)
+          const appliedKey = this.appliedKey(keys[i]!)
+          if (equalsBytes(this.root(), this.EMPTY_TRIE_ROOT)) {
+            await this._createInitialNode(appliedKey, values[i]!)
+          } else {
+            const { remaining, stack } = await this.findPath(appliedKey, true)
+            let ops: BatchDBOp[] = []
+            if (this._opts.useNodePruning) {
+              const val = await this.get(keys[i]!)
+              if (val === null || !equalsBytes(val, values[i]!)) {
+                ops = this._createPruneDeleteOps(stack)
+              }
+            }
+            await this._updateNode(appliedKey, values[i]!, remaining, stack)
+            if (this._opts.useNodePruning) {
+              await this._db.batch(ops)
+            }
+          }
         }
+        await this.persistRoot()
       })
       return
     }
@@ -748,8 +782,7 @@ export class MerklePatriciaTrie {
       for (let i = 0; i < keys.length; i++) {
         const key = keys[i]!
         const value = values[i]!
-        const appliedKey = this.appliedKey(key)
-        const keyNibbles = bytesToNibbles(appliedKey)
+        const keyNibbles = preallocatedNibbles?.[i] ?? bytesToNibbles(key)
 
         if (i > 0 && livePathNibbles !== null) {
           const keep = matchingNibbleLength(livePathNibbles, keyNibbles)
@@ -769,19 +802,18 @@ export class MerklePatriciaTrie {
         let stack: MPTNode[]
         if (liveStack.length === 0) {
           if (equalsBytes(this.root(), this.EMPTY_TRIE_ROOT)) {
-            await this._createInitialNode(appliedKey, value)
-            const path = await this.findPath(appliedKey, true)
-            liveStack = path.stack
+            const newNode = new LeafMPTNode(keyNibbles.slice(), value)
+            liveStack = [newNode]
             livePathNibbles = keyNibbles
             continue
           }
-          const path = await this.findPath(appliedKey, true)
+          const path = await this.findPath(key, true)
           remaining = path.remaining
           stack = path.stack
         } else {
           const liveStart = liveStack[liveStack.length - 1]!
           const prefix = liveStack.slice(0, -1)
-          const path = await this.findPath(appliedKey, true, {
+          const path = await this.findPath(key, true, {
             stack: prefix,
             useLiveStart: true,
             liveStart,
@@ -790,7 +822,7 @@ export class MerklePatriciaTrie {
           stack = path.stack
         }
 
-        this._stageNodeUpdate(appliedKey, value, remaining, stack, opStack)
+        this._stageNodeUpdate(key, value, remaining, stack, opStack)
         if (opStack.length > 0) {
           await this._db.batch(opStack)
           opStack.length = 0

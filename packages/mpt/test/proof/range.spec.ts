@@ -519,8 +519,8 @@ describe('[MPT/Proof]: merkle range proofs', () => {
     await verifyMerkleRangeProof(triePut.root(), null, null, keys, values, null, countingVerify)
 
     assert.ok(
-      verifyHashCount * 3 <= putHashCount,
-      `expected at least 3x hash reduction, got ${(putHashCount / verifyHashCount).toFixed(2)}x`,
+      verifyHashCount * 4 <= putHashCount,
+      `expected at least 4x hash reduction, got ${(putHashCount / verifyHashCount).toFixed(2)}x`,
     )
     if (putMs > 20) {
       let batchHashCount = 0
@@ -536,7 +536,7 @@ describe('[MPT/Proof]: merkle range proofs', () => {
       await trieBatch.putSortedLeaves(keys, values)
       const batchMs = performance.now() - batchStart
       assert.strictEqual(batchMs < putMs, true)
-      assert.ok(batchHashCount * 3 <= putHashCount)
+      assert.ok(batchHashCount * 4 <= putHashCount)
     }
   })
 
