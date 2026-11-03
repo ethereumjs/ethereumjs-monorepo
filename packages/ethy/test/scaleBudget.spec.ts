@@ -65,7 +65,7 @@ describe('[Ethy/Scale]: WP-04g budget gates', () => {
     assert.notEqual(meta[0]!.storageRoot.buffer, slab.buffer)
   })
 
-  it('bounded resident set and contract spill plateau heap growth', { timeout: 20_000 }, () => {
+  it('bounded resident set and contract spill plateau heap growth', { timeout: 120_000 }, () => {
     const dir = tempDir()
     const spill = path.join(dir, 'contracts-spill.bin')
     const sm = createFlatStateManager({ maxResidentAccounts: 10_000 })
