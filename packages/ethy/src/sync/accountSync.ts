@@ -331,7 +331,9 @@ export class SnapAccountSynchronizer {
       const maxInFlight = maxInFlightForPeer(peer)
       while (this.flightTracker.inFlightCount(peer.id) < maxInFlight) {
         let cursor: SnapRangeCursor | undefined = free()[0]
-        if (cursor === undefined && peer.snapResponsesOk >= 2 && this.allCursorsBusy()) {
+        const canSplit =
+          peer.snapResponsesOk >= 2 || this.flightTracker.inFlightCount(peer.id) === 0
+        if (cursor === undefined && canSplit && this.allCursorsBusy()) {
           cursor = this.splitWidestSubRange()
         }
         if (cursor === undefined) break
@@ -454,6 +456,13 @@ export class SnapAccountSynchronizer {
     if ((quarantine || reason.includes('account range timed out')) && alternate) {
       bucket.status = 'pending'
       bucket.assignedPeerId = undefined
+      bucket.lastStallReason = reason
+      return
+    }
+    const otherCursorActive = ensureBucketSubRanges(bucket).some(
+      (c) => c.inFlightReqKey !== undefined || c.verifying === true,
+    )
+    if (otherCursorActive) {
       bucket.lastStallReason = reason
       return
     }

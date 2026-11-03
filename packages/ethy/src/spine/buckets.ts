@@ -43,6 +43,17 @@ export function newPrefixCursor(
 /** Legacy buckets without `subRanges` get a single prefix cursor from the saved hash span. */
 export function ensureBucketSubRanges(bucket: SnapBucket): SnapRangeCursor[] {
   if (bucket.subRanges !== undefined && bucket.subRanges.length > 0) {
+    if (
+      bucket.subRanges.length === 1 &&
+      bucket.subRanges[0]!.journal === 'prefix' &&
+      compareBytes32(bucket.currentLastHash, bucket.subRanges[0]!.origin) > 0
+    ) {
+      bucket.subRanges[0]!.origin = new Uint8Array(bucket.currentLastHash)
+    }
+    return bucket.subRanges
+  }
+  if (compareBytes32(bucket.currentLastHash, bucket.limitHash) >= 0) {
+    bucket.subRanges = []
     return bucket.subRanges
   }
   const origin = new Uint8Array(bucket.currentLastHash)
@@ -107,8 +118,17 @@ function nibbleLimitHash(nibble: number): Uint8Array {
 
 /** True when the snap cursor has reached the bucket limit. */
 export function snapBucketCursorExhausted(bucket: SnapBucket): boolean {
+  if (compareBytes32(bucket.currentLastHash, bucket.limitHash) >= 0) {
+    if (
+      bucket.subRanges === undefined ||
+      bucket.subRanges.length === 0 ||
+      (bucket.subRanges.length === 1 && bucket.subRanges[0]!.journal === 'prefix')
+    ) {
+      return true
+    }
+  }
   if (bucket.subRanges !== undefined) {
-    return bucket.subRanges.length === 0
+    return bucket.subRanges.every((c) => !cursorActive(c))
   }
   return compareBytes32(bucket.currentLastHash, bucket.limitHash) >= 0
 }

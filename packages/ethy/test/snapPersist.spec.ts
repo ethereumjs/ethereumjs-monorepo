@@ -317,7 +317,21 @@ describe('[Ethy/Persist]: snap pivot store', () => {
     const sm = createFlatStateManager()
     lookupStore.loadInto(spine, sm)
     assert.equal(spine.snapBuckets[0]!.subRanges?.length, 2)
-    assert.isAbove(spine.snapBuckets[0]!.accountsLoaded, 0)
+    assert.equal(spine.snapBuckets[0]!.accountsLoaded, 2)
+
+    // Appending after resume must NOT write a duplicate 4-byte magic prefix into `.seg`
+    const hashC = new Uint8Array(32)
+    hashC[0] = 0x0f
+    hashC[1] = 0xff
+    hashC[2] = 0x01
+    await lookupStore.appendVerifiedSlabAsync(
+      0,
+      encodeSlabRow(hashC, binary),
+      spine.snapBuckets,
+      segJournal,
+    )
+    await lookupStore.drainPendingFlushes()
+    assert.isDefined(lookupStore.lookupBinaryAccountByHash(hashC))
   })
 
   it('demo store does not touch disk', () => {
