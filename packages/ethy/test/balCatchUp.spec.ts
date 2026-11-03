@@ -46,7 +46,8 @@ describe('[Ethy/Sync]: BAL catch-up oracle', () => {
     setPhase(spine, 'SNAP_SYNCING')
     const b = spine.snapBuckets[0]!
     const startFrac = computeSnapProgressPct(spine)
-    b.currentLastHash[1] = 0x40
+    b.currentLastHash[0] = 0x08
+    b.currentLastHash[1] = 0x00
     b.currentLastHash[2] = 0x00
     const midFrac = computeSnapProgressPct(spine)
     assert.isAbove(midFrac, startFrac)

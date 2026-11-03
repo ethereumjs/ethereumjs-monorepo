@@ -38,7 +38,7 @@ describe('[Devp2p/RLPx]: dial queue', () => {
   it('holds a bonded peer when the dial queue is full', () => {
     const rlpx = createRlpx()
     open.push(rlpx)
-    rlpx['_peers'].set('aa', {} as never)
+    rlpx['_pendingDials'].set('pending', {} as never)
     while (rlpx['_getOpenQueueSlots']() > 0) {
       rlpx['_peersQueue'].push({ peer: { tcpPort: 30303, address: '127.0.0.1' }, ts: 0 })
     }
@@ -51,17 +51,23 @@ describe('[Devp2p/RLPx]: dial queue', () => {
     expect(rlpx['_peersLRU'].has(bytesToUnprefixedHex(discovered.id!))).toBe(false)
   })
 
-  it('moves a held peer onto the dial queue when a slot opens', () => {
+  it('dials a deferred peer when an outbound slot opens', () => {
     const rlpx = createRlpx()
     open.push(rlpx)
-    rlpx['_peers'].set('aa', {} as never)
+    rlpx['_pendingDials'].set('pending', {} as never)
     const discovered = peer(9)
     rlpx['_peersDeferred'].push(discovered)
+    const dialed: PeerInfo[] = []
+    rlpx['_connectToPeer'] = (peer: PeerInfo) => {
+      dialed.push(peer)
+    }
 
+    rlpx['_pendingDials'].clear()
     rlpx['_promoteDeferredDials']()
 
     expect(rlpx['_peersDeferred']).toHaveLength(0)
-    expect(rlpx['_peersQueue']).toHaveLength(1)
+    expect(dialed).toHaveLength(1)
+    expect(dialed[0]?.id).toEqual(discovered.id)
     expect(rlpx['_peersLRU'].has(bytesToUnprefixedHex(discovered.id!))).toBe(true)
   })
 

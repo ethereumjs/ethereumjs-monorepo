@@ -29,6 +29,7 @@ import { PEER_BOOK_STARTUP_DIALS, discoveryNodeStorePath } from '../persist/peer
 import type { PeerBookStore } from '../persist/peerBook.ts'
 import { SnapPivotStore, snapBucketsUnfinished } from '../persist/snapStore.ts'
 import { enqueueProtocol } from '../runtime/lanes.ts'
+import { ResourceBudgetWatchdog } from '../runtime/resourceBudget.ts'
 import { createSnapBuckets } from '../spine/buckets.ts'
 import { deriveCapabilities, setPhase } from '../spine/createSpine.ts'
 import { recordDiagnostic } from '../spine/diagnostics.ts'
@@ -82,13 +83,13 @@ import {
 import { ethyCallerModuleUrl } from './workerModuleUrl.ts'
 
 const PIVOT_IN_FLIGHT_TIMEOUT_MS = 15_000
-const VIP_RECONNECT_INTERVAL_MS = 15_000
+const VIP_RECONNECT_INTERVAL_MS = 5_000
 const RESTORED_CONTRACTS_CHUNK = 2_000
 /** Head-following peers before pausing discovery (hysteresis with DISCOVERY_HOLD_RESUME_BELOW). */
 const DISCOVERY_HOLD_PAUSE_AT = 4
 const DISCOVERY_HOLD_RESUME_BELOW = 2
 /** RLPx table during snap. Wide tables get the client dropped for too many peers. */
-const SYNC_MAX_PEERS = 12
+const SYNC_MAX_PEERS = 20
 const SYNC_MAX_INBOUND_PEERS = 4
 /** Leave discovery off until the table has fallen well below the cap. */
 const SYNC_DISCOVERY_LOW_WATER = 4
@@ -149,6 +150,7 @@ function mapPeer(snapshot: WorkerPeerSnapshot, prev?: PeerTelemetry): PeerTeleme
     clientName: snapshot.clientId || 'unknown',
     caps: [...snapshot.caps],
     snapSession: snapshot.snapSession === true,
+    hasHead: snapshot.bestHash !== undefined,
     snapRequestsSent: prev?.snapRequestsSent ?? 0,
     snapResponsesOk: prev?.snapResponsesOk ?? 0,
     snapTimeouts: prev?.snapTimeouts ?? 0,
@@ -198,6 +200,12 @@ export async function startPeerCoordinator(
 ): Promise<PeerCoordinatorHandle> {
   const { spine, network, stateManager, snapStore, peerBook } = opts
   const dataDir = opts.dataDir ?? resolveEthyDataDir()
+  const resourceWatchdog = new ResourceBudgetWatchdog({
+    spine,
+    stateManager,
+    maxResidentAccounts: 500_000,
+  })
+  resourceWatchdog.start()
   const snapFlightTracker = new SnapPeerFlightTracker()
   let snapSync: SnapAccountSynchronizer | undefined
   let codeSync: SnapCodeAndStorageSynchronizer | undefined
@@ -209,6 +217,7 @@ export async function startPeerCoordinator(
   let diskHydrated = false
   let resumeHeadHandled = false
   let resumeHydrateStarted = false
+  let rollingStatusAdvertised = false
   const savedSnapPeek = opts.fresh === true ? undefined : snapStore?.peekActive()
   const verifyPool = new SnapVerifyPool({
     inProcess: opts.inProcess === true,
@@ -274,7 +283,7 @@ export async function startPeerCoordinator(
     const transport = createLiveSnapTransport(clientRef)
     const getSnapPeers = () =>
       [...spine.peers.values()]
-        .filter((p) => p.snapSession === true)
+        .filter((p) => p.snapSession === true && p.hasHead === true)
         .map((p) => ({
           id: p.id,
           caps: p.caps,
@@ -555,6 +564,7 @@ export async function startPeerCoordinator(
       if (connected.has(id)) continue
       const pendingUntil = pendingVipDials.get(id)
       if (pendingUntil !== undefined && pendingUntil > now) continue
+      peerBook.noteDialAttempt(id, now)
       client.connectPeer(peer)
       pendingVipDials.set(id, now + VIP_RECONNECT_INTERVAL_MS)
       dialed++
@@ -920,6 +930,14 @@ export async function startPeerCoordinator(
     workerModuleUrl,
   )
 
+  const maybeEnableRollingStatus = () => {
+    if (rollingStatusAdvertised) return
+    if (spine.phase === 'BAL_CATCHUP' || spine.phase === 'HEAD_FOLLOWING') {
+      client.setAdvertiseBlockRange(true)
+      rollingStatusAdvertised = true
+    }
+  }
+
   if (peerBook !== undefined) {
     const now = Date.now()
     peerBook.pruneOnStart(now)
@@ -991,6 +1009,7 @@ export async function startPeerCoordinator(
     syncDiscoveryHold(client)
     ensureSnapSync(client)
     maybeMarkBaseSyncComplete()
+    maybeEnableRollingStatus()
   }
 
   function syncDiscoveryHold(clientRef: Devp2pWorkerClient): void {
@@ -1137,6 +1156,7 @@ export async function startPeerCoordinator(
 
   return {
     stop: () => {
+      resourceWatchdog.stop()
       snapSync?.stop()
       codeSync?.stop()
       headFollower?.stop()

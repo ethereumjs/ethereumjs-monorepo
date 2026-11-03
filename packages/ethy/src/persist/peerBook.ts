@@ -21,6 +21,8 @@ export type PeerBookRow = {
   dialAfter: number
   resetStreak: number
   tooManyPeersStreak?: number
+  /** Negotiated `snap/1` on the live session (WP-04g). */
+  snapCapable?: boolean
 }
 
 export function tooManyPeersHoldMs(vip: boolean, streak: number): number {
@@ -78,7 +80,8 @@ export function rankPeerRows(rows: Iterable<PeerBookRow>, now: number): PeerBook
         r.address.length > 0 &&
         r.tcpPort > 0 &&
         tier(r) > 0 &&
-        routableAddress(r.address),
+        routableAddress(r.address) &&
+        peerBookDialEligible(r),
     )
     .sort((a, b) => {
       const ta = tier(a)
@@ -96,6 +99,13 @@ export function rankPeerRows(rows: Iterable<PeerBookRow>, now: number): PeerBook
 
 function routableAddress(address: string): boolean {
   return address !== '' && address !== '0.0.0.0' && address !== '::'
+}
+
+function peerBookDialEligible(row: PeerBookRow): boolean {
+  if (row.snapCapable === false) return false
+  const family = row.clientFamily?.toLowerCase() ?? ''
+  if (family.includes('scout')) return false
+  return true
 }
 
 export type PeerBookOpenOptions = {
@@ -206,7 +216,7 @@ export class PeerBookStore {
     const families = new Set(
       ordered.map((row) => row.clientFamily ?? row.id).filter((f) => f.length > 0),
     )
-    const capPerFamily = families.size > 1 ? 2 : limit
+    const capPerFamily = families.size > 1 ? 4 : limit
     const familyCount = new Map<string, number>()
     const picked: PeerBookRow[] = []
     for (const row of ordered) {
@@ -237,8 +247,12 @@ export class PeerBookStore {
     if (row === undefined) return
     row.lastStatusAt = now
     row.tooManyPeersStreak = 0
-    row.dialAfter = now
     row.clientFamily = clientFamilyFromClientId(peer.clientId) ?? row.clientFamily
+    if (peer.snapSession === true) {
+      row.snapCapable = true
+    } else if (peer.snapSession === false) {
+      row.snapCapable = false
+    }
     if (row.forkHash === undefined) {
       row.forkHash = this.expectedForkHash
     } else if (row.forkHash !== this.expectedForkHash) {
@@ -257,6 +271,7 @@ export class PeerBookStore {
     if (row === undefined) return
     row.lastSnapSuccessAt = now
     row.snapResponsesOk++
+    row.dialAfter = 0
     this.schedulePersist()
   }
 
@@ -266,6 +281,16 @@ export class PeerBookStore {
     const row = this._rows.get(id)
     if (row === undefined) return
     row.snapTimeouts++
+    this.schedulePersist()
+  }
+
+  /** Per-attempt dial hold so VIP rotation walks the full book (WP-04f). */
+  noteDialAttempt(peerId: string, now: number): void {
+    if (!this._enabled) return
+    const id = peerId.toLowerCase()
+    const row = this._rows.get(id)
+    if (row === undefined) return
+    row.dialAfter = Math.max(row.dialAfter, now + 20_000)
     this.schedulePersist()
   }
 
@@ -366,5 +391,6 @@ function normalizeRow(id: string, row: PeerBookRow): PeerBookRow {
     dialAfter: row.dialAfter ?? 0,
     resetStreak: row.resetStreak ?? 0,
     tooManyPeersStreak: row.tooManyPeersStreak ?? 0,
+    snapCapable: row.snapCapable,
   }
 }

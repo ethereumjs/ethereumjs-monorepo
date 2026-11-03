@@ -16,9 +16,13 @@ type SearchContext = {
 }
 
 /** EIP-1459 DNS discovery client that walks ENR trees and returns verified peer records. */
+const SEEN_DNS_ADDRESS_CAP = 500
+
 export class DNS {
   protected _DNSTreeCache: { [key: string]: string }
   protected readonly _errorTolerance: number = 10
+  /** Dedupe ENR TCP endpoints across successive {@link getPeers} calls (WP-04f). */
+  protected _seenAddresses = new Set<string>()
 
   protected _common?: Common
 
@@ -65,7 +69,7 @@ export class DNS {
 
       const peer = await this._search(domain, context)
 
-      if (this._isNewPeer(peer, peers)) {
+      if (this._isNewPeer(peer, peers) && this._rememberDnsPeerAddress(peer)) {
         peers.push(peer)
         if (this.DEBUG) {
           debug(`got new peer candidate from DNS address=${peer.address}`)
@@ -217,6 +221,17 @@ export class DNS {
       }
     }
 
+    return true
+  }
+
+  private _rememberDnsPeerAddress(peer: PeerInfo): boolean {
+    if (peer.address === undefined || peer.tcpPort === undefined) return true
+    const key = `${peer.address}:${peer.tcpPort}`
+    if (this._seenAddresses.has(key)) return false
+    this._seenAddresses.add(key)
+    if (this._seenAddresses.size >= SEEN_DNS_ADDRESS_CAP) {
+      this._seenAddresses.clear()
+    }
     return true
   }
 

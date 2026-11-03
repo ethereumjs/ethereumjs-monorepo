@@ -340,9 +340,9 @@ export function ingestedMetaFromBinarySlab(slab: Uint8Array): Array<{
       continue
     }
     out.push({
-      accountHash: slab.subarray(offset, offset + 32),
-      codeHash: getBinaryAccountCodeHash(binaryAccount),
-      storageRoot: getBinaryAccountStorageRoot(binaryAccount),
+      accountHash: new Uint8Array(slab.subarray(offset, offset + 32)),
+      codeHash: new Uint8Array(getBinaryAccountCodeHash(binaryAccount)),
+      storageRoot: new Uint8Array(getBinaryAccountStorageRoot(binaryAccount)),
     })
   }
   return out

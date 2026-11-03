@@ -128,6 +128,8 @@ export class Devp2pWorkerHost {
   private _discoveryMetrics = new DiscoveryMetrics()
   private _blockRange: { earliest: Uint8Array; latest: Uint8Array; latestHash: Uint8Array } | null =
     null
+  /** When false, outbound ETH STATUS stays on boot fields until head following (WP-04f). */
+  private _advertiseBlockRangeInStatus = false
   private _rollingStore = new RollingBlockStore()
   private _serveGovernor = new ServeGovernor()
   private _serving = emptyServingSnapshot()
@@ -184,9 +186,18 @@ export class Devp2pWorkerHost {
           if (idBytes === undefined) {
             throw new TypeError('connectPeer id is not Uint8Array')
           }
-          await this._rlpx?.connect({ ...cmd.peer, id: idBytes })
+          const peerId = bytesToUnprefixedHex(idBytes)
+          try {
+            await this._rlpx?.connect({ ...cmd.peer, id: idBytes })
+          } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : String(err)
+            this._pushDiagnostic('warn', message, peerId)
+          }
           break
         }
+        case 'setAdvertiseBlockRange':
+          this._advertiseBlockRangeInStatus = cmd.enabled
+          break
         case 'disconnectPeer':
           this._rlpx?.disconnect(cmd.peerId)
           break
@@ -311,6 +322,12 @@ export class Devp2pWorkerHost {
     this._rlpx.events.on('peer:added', (peer) => this._wirePeer(peer))
     this._rlpx.events.on('peer:removed', (peer, reason, disconnectWe) => {
       if (typeof reason !== 'number') return
+      const peerId = peer.getId() ? bytesToUnprefixedHex(peer.getId()!) : undefined
+      if (reason === DISCONNECT_REASON.TOO_MANY_PEERS) {
+        const who = disconnectWe === true ? 'we dropped remote' : 'remote dropped us'
+        this._pushDiagnostic('warn', `TOO_MANY_PEERS (${who})`, peerId)
+        return
+      }
       if (
         reason !== DISCONNECT_REASON.SUBPROTOCOL_ERROR &&
         reason !== DISCONNECT_REASON.PROTOCOL_ERROR &&
@@ -330,20 +347,27 @@ export class Devp2pWorkerHost {
         notePeerFate(this._discoveryMetrics, peer, disconnectWe === true ? 'we' : 'remote')
       }
       const client = peerFateLabel(peer.getHelloMessage()?.clientId, negotiatedEthVersion(peer))
-      this._pushDiagnostic('warn', `Remote ${peer.remoteTcpLabel()} ${client}: ${name} (${who})`)
+      this._pushDiagnostic(
+        'warn',
+        `Remote ${peer.remoteTcpLabel()} ${client}: ${name} (${who})`,
+        peerId,
+      )
     })
     this._rlpx.events.on('peer:error', (peer, err) => {
       const remote = peer.remoteTcpLabel()
       const message = err instanceof Error ? err.message : String(err)
       const reject = classifyHandshakeReject(message)
       if (reject !== undefined) this._discoveryMetrics.recordHandshakeReject(reject)
+      const peerId = bytesToUnprefixedHex(peer.getId()!)
       if (reject === 'reset' && peer.getHelloMessage() !== null) {
         this._discoveryMetrics.recordResetAfterHello()
         notePeerFate(this._discoveryMetrics, peer, 'reset')
       }
-      // Resets are counted above. Printing each one hides the disconnect reason.
-      if (reject === 'reset') return
-      this._pushDiagnostic('warn', `Remote ${remote}: ${clarifySocketError(message)}`)
+      if (reject === 'reset') {
+        this._pushDiagnostic('warn', `Remote ${remote}: ${clarifySocketError(message)}`, peerId)
+        return
+      }
+      this._pushDiagnostic('warn', `Remote ${remote}: ${clarifySocketError(message)}`, peerId)
     })
 
     const snap = this._discoveryMetrics.snapshot()
@@ -480,7 +504,7 @@ export class Devp2pWorkerHost {
   /** Honest rolling-window STATUS on new handshakes after `putServableBlock` (WP-04a). */
   private _ethStatusFieldsForSend(): EthStatusFields {
     const base = this._options?.status as EthStatusFields | undefined
-    if (this._blockRange === null || base === undefined) {
+    if (!this._advertiseBlockRangeInStatus || this._blockRange === null || base === undefined) {
       return base as EthStatusFields
     }
     const earliestQty = bytesToBigInt(this._blockRange.earliest)
@@ -571,7 +595,9 @@ export class Devp2pWorkerHost {
   }
 
   private _broadcastBlockRange(): void {
-    if (this._blockRange === null || this._rlpx === null) return
+    if (!this._advertiseBlockRangeInStatus || this._blockRange === null || this._rlpx === null) {
+      return
+    }
     const { earliest, latest, latestHash } = this._blockRange
     for (const peer of this._rlpx.getPeers()) {
       for (const protocol of peer.getProtocols()) {

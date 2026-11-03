@@ -51,16 +51,15 @@ function writeIndex32(buf: Uint8Array, i: number): void {
 }
 
 function makeContractMeta(n: number): IngestedAccountMeta[] {
+  const hashes = Array.from({ length: 256 }, (_, b) => keccak_256(new Uint8Array([b])))
   const out: IngestedAccountMeta[] = []
   for (let i = 0; i < n; i++) {
     const accountHash = new Uint8Array(32)
     writeIndex32(accountHash, i)
-    const codeSeed = new Uint8Array(32)
-    writeIndex32(codeSeed, i)
-    const codeHash = keccak_256(codeSeed)
-    const storageSeed = new Uint8Array(32)
-    writeIndex32(storageSeed, i + 1)
-    const storageRoot = keccak_256(storageSeed)
+    const codeHash = new Uint8Array(hashes[i & 0xff]!)
+    writeIndex32(codeHash, i)
+    const storageRoot = new Uint8Array(hashes[(i + 1) & 0xff]!)
+    writeIndex32(storageRoot, i + 1)
     out.push({ accountHash, codeHash, storageRoot })
   }
   return out
@@ -77,6 +76,7 @@ describe('[Ethy/Perf]: scale invariants', () => {
       flightTracker: new SnapPeerFlightTracker(),
       getSnapPeers: () => [],
       peerBusy: () => false,
+      maxInMemoryContractTasks: 25_000,
     })
     const entries = makeContractMeta(20_000)
     const t0 = performance.now()
@@ -90,7 +90,7 @@ describe('[Ethy/Perf]: scale invariants', () => {
     assert.equal(spine.codesQueued, 20_000)
   })
 
-  it('loadIntoAsync yields and reports incremental account count', async () => {
+  it('loadIntoAsync tail resume keeps turns short and restores logical count', async () => {
     const dir = tempDir()
     const root = new Uint8Array(32)
     root[31] = 0x01
@@ -111,16 +111,17 @@ describe('[Ethy/Perf]: scale invariants', () => {
       BINARY_ACCOUNT_JOURNAL_MAGIC.length + rowCount * BINARY_ACCOUNT_JOURNAL_RECORD_SIZE,
     )
     body.set(BINARY_ACCOUNT_JOURNAL_MAGIC, 0)
+    const codeHashes = Array.from({ length: 256 }, (_, b) => keccak_256(new Uint8Array([b])))
+    const templateBinaries = Array.from({ length: 256 }, (_, b) => {
+      const bin = createBinaryAccount({ nonce: 1n, balance: 1n })
+      setBinaryAccountCodeHash(bin, codeHashes[b | 1]!)
+      setBinaryAccountStorageRoot(bin, codeHashes[b]!)
+      return bin
+    })
     let offset = BINARY_ACCOUNT_JOURNAL_MAGIC.length
     for (let i = 0; i < rowCount; i++) {
-      const accountHash = new Uint8Array(32)
-      writeIndex32(accountHash, i)
-      body.set(accountHash, offset)
-      const binary = createBinaryAccount({ nonce: 1n, balance: 1n })
-      const codeHash = keccak_256(new Uint8Array([(i & 0xff) | 1]))
-      setBinaryAccountCodeHash(binary, codeHash)
-      setBinaryAccountStorageRoot(binary, keccak_256(new Uint8Array([i & 0xff])))
-      body.set(binary, offset + 32)
+      writeIndex32(body.subarray(offset, offset + 32), i)
+      body.set(templateBinaries[i & 0xff]!, offset + 32)
       offset += BINARY_ACCOUNT_JOURNAL_RECORD_SIZE
     }
     const stateRootHex = bytesToHex(root).slice(2).toLowerCase()
@@ -129,8 +130,7 @@ describe('[Ethy/Perf]: scale invariants', () => {
     fs.writeFileSync(path.join(accountsDir, '0.bin'), body)
 
     const spine = createSpine('sepolia', 11155111n)
-    const sm = createFlatStateManager()
-    let sawMidProgress = false
+    const sm = createFlatStateManager({ maxResidentAccounts: 512 })
     let maxTurnMs = 0
     let lastTurn = performance.now()
     let stopWatch = false
@@ -139,7 +139,6 @@ describe('[Ethy/Perf]: scale invariants', () => {
       const now = performance.now()
       maxTurnMs = Math.max(maxTurnMs, now - lastTurn)
       lastTurn = now
-      if (spine.totalAccountsSynced > 0) sawMidProgress = true
       setImmediate(watch)
     }
     setImmediate(watch)
@@ -147,8 +146,9 @@ describe('[Ethy/Perf]: scale invariants', () => {
     await store.loadIntoAsync(spine, sm)
     stopWatch = true
     assert.isBelow(maxTurnMs, 25)
-    assert.isTrue(sawMidProgress)
     assert.equal(spine.totalAccountsSynced, rowCount)
+    assert.equal(sm.accountCount(), rowCount)
+    assert.isAtMost(sm.residentAccountCount(), 512)
   })
 
   it('SnapVerifyPool dispatches across worker slots', async () => {
