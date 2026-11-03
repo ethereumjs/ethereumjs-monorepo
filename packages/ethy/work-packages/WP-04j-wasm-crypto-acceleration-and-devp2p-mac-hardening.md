@@ -1,7 +1,7 @@
 <!-- cspell:ignore awasm -->
 # WP-04j: `@awasm/noble` WASM Crypto Integration in `@ethereumjs/ethy` + Pure-JS `customCrypto` & `MAC` Hardening in `@ethereumjs/mpt` & `@ethereumjs/devp2p`
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `DONE`
 - **Dependencies:** `WP-04i` (`DONE`)
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
@@ -54,19 +54,30 @@
 
 ## 3. Acceptance Criteria & Verification Gates
 
-- [ ] **Zero WASM in library packages:** `@ethereumjs/mpt`, `@ethereumjs/devp2p`, `@ethereumjs/statemanager`, and `@ethereumjs/common` contain zero WASM code and zero `@awasm/noble` imports.
-- [ ] **`@awasm/noble` in `@ethereumjs/ethy`:** `packages/ethy` uses `@awasm/noble`'s `keccak_256` (no self-vendored WASM byte arrays!) and wires it into `verifyMerkleRangeProof` (`snapVerifyJob.ts`) and `FlatStateManager` (`createEthyNode.ts`).
-- [ ] **`@ethereumjs/devp2p` `MAC` & `dpt/message.ts`:** `MAC` reuses a single `aes-256-ecb` cipher instance per connection, and `dpt/message.ts` respects `common?.customCrypto.keccak256`.
-- [ ] `npm run tsc`, `npm test` (`test:node`), and `npm run spellcheck` pass across `@ethereumjs/mpt`, `@ethereumjs/devp2p`, and `@ethereumjs/ethy`.
+- [x] **Zero WASM in library packages:** `@ethereumjs/mpt`, `@ethereumjs/devp2p`, `@ethereumjs/statemanager`, and `@ethereumjs/common` contain zero WASM code and zero `@awasm/noble` imports.
+- [x] **`@awasm/noble` in `@ethereumjs/ethy`:** `packages/ethy` uses `@awasm/noble`'s `keccak_256` (no self-vendored WASM byte arrays!) and wires it into `verifyMerkleRangeProof` (`snapVerifyJob.ts`) and `FlatStateManager` (`createEthyNode.ts`).
+- [x] **`@ethereumjs/devp2p` `MAC` & `dpt/message.ts`:** `MAC` reuses a single `aes-256-ecb` cipher instance per connection, and `dpt/message.ts` respects `common?.customCrypto.keccak256`.
+- [x] `npm run tsc`, `npm test` (`test:node`), and `npm run spellcheck` pass across `@ethereumjs/mpt`, `@ethereumjs/devp2p`, and `@ethereumjs/ethy`.
 
 ---
 
 ## 4. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled out by Grok 4.7 during the Planning pass.)*
+Human-approved **`@awasm/noble`** in **`packages/ethy` only**; library packages stay pure JS via existing `useKeyHashingFunction` / `Common.customCrypto` seams.
+
+| Slice | Package | Work |
+| --- | --- | --- |
+| 1 | `@ethereumjs/mpt` | Counter test on all four `verifyMerkleRangeProof` shapes; JSDoc that node RLP hashing uses `useKeyHashingFunction`. |
+| 2 | `@ethereumjs/devp2p` | Reuse one `aes-256-ecb` in `MAC`; regression + multi-frame MAC test; optional `encode()` custom keccak test (`dpt/message.ts` already wired). |
+| 3 | `@ethereumjs/ethy` | `src/crypto/keccak.ts` (`initEthyKeccak`, `ethyKeccak256`, dynamic `import('@awasm/noble')`); wire snap verify jobs + `Common` on `FlatStateManager`; CLI + verify worker init; `test/wasmCrypto.spec.ts`. |
+
+Out of scope: vendored WASM, `@awasm/noble` in `mpt`/`devp2p`, `cryptoModuleUrl`, devp2p worker WASM, streaming MAC keccak.
 
 ---
 
 ## 5. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled out by Composer 2.5 after implementation and verification.)*
+- **`snapVerifyWorkerEntry`:** `initEthyKeccak()` runs in a `.then()` before `parentPort.on('message')` so CJS prod build avoids top-level `await`.
+- **`verifyAccountRangeJob` / `verifyStorageRangeJob`:** optional `useKeyHashingFunction` parameter (default `ethyKeccak256`) for counting tests; each job still `await initEthyKeccak()`.
+- **Corruption tests:** wrong `stateRoot` / `storageRoot` (not RLP tail flip) to assert `ok: false`.
+- **Gates:** `npm run tsc` + tests green in `mpt`, `devp2p`, `ethy`; no `@awasm/noble` imports under library packages.

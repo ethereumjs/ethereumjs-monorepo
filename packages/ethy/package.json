@@ -55,6 +55,7 @@
     "tsc": "../../config/cli/ts-compile.sh"
   },
   "dependencies": {
+    "@awasm/noble": "^0.1.4",
     "@ethereumjs/block": "^10.1.3",
     "@ethereumjs/common": "^10.1.3",
     "@ethereumjs/devp2p": "^10.1.3",
