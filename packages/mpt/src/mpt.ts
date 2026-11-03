@@ -14,11 +14,18 @@ import {
   bytesToHex,
   bytesToUnprefixedHex,
   bytesToUtf8,
-  compareBytes,
   concatBytes,
   equalsBytes,
   isDebugEnabled,
 } from '@ethereumjs/util'
+
+function compareKeysLex(a: Uint8Array, b: Uint8Array): number {
+  const min = Math.min(a.length, b.length)
+  for (let i = 0; i < min; i++) {
+    if (a[i]! !== b[i]!) return a[i]! - b[i]!
+  }
+  return a.length - b.length
+}
 import { keccak_256 } from '@noble/hashes/sha3.js'
 import debug from 'debug'
 
@@ -316,9 +323,6 @@ export class MerklePatriciaTrie {
     throwIfMissing = false,
     partialPath: {
       stack: MPTNode[]
-      /** When set, resume walking from this decoded node instead of loading `hash(startingNode)`. */
-      useLiveStart?: boolean
-      liveStart?: MPTNode
     } = {
       stack: [],
     },
@@ -329,10 +333,8 @@ export class MerklePatriciaTrie {
 
     // Pre-fill stack from partialPath when resuming a previous walk
     let pathProgress = 0
-    const prefillThrough =
-      partialPath.useLiveStart === true ? partialPath.stack.length : partialPath.stack.length - 1
-    for (let stackIndex = 0; stackIndex < prefillThrough; stackIndex++) {
-      stack[stackIndex] = partialPath.stack[stackIndex]!
+    for (let stackIndex = 0; stackIndex < partialPath.stack.length - 1; stackIndex++) {
+      stack[stackIndex] = partialPath.stack[stackIndex]
       pathProgress +=
         stack[stackIndex] instanceof BranchMPTNode
           ? 1
@@ -342,13 +344,8 @@ export class MerklePatriciaTrie {
     this.DEBUG && this.debug(`Target (${targetKey.length}): [${targetKey}]`, ['find_path'])
     let result: Path | null = null
 
-    const startingNode = partialPath.liveStart ?? partialPath.stack[partialPath.stack.length - 1]
-    const start =
-      partialPath.useLiveStart === true && startingNode !== undefined
-        ? this._root
-        : startingNode !== undefined
-          ? this.hash(startingNode.serialize())
-          : this.root()
+    const startingNode = partialPath.stack[partialPath.stack.length - 1]
+    const start = startingNode !== undefined ? this.hash(startingNode.serialize()) : this.root()
 
     try {
       this.DEBUG &&
@@ -357,12 +354,7 @@ export class MerklePatriciaTrie {
           ['find_path'],
         )
 
-      let currentNode: MPTNode
-      if (partialPath.useLiveStart === true && startingNode !== undefined) {
-        currentNode = startingNode
-      } else {
-        currentNode = await this.lookupNode(start)
-      }
+      let currentNode = await this.lookupNode(start)
 
       while (result === null) {
         stack[pathProgress] = currentNode
@@ -739,7 +731,7 @@ export class MerklePatriciaTrie {
     }
     if (!this._opts.useKeyHashing) {
       for (let i = 1; i < keys.length; i++) {
-        if (compareBytes(keys[i - 1]!, keys[i]!) >= 0) {
+        if (compareKeysLex(keys[i - 1]!, keys[i]!) >= 0) {
           throw EthereumJSErrorWithoutCode('invalid keys order')
         }
       }
@@ -782,6 +774,11 @@ export class MerklePatriciaTrie {
       for (let i = 0; i < keys.length; i++) {
         const key = keys[i]!
         const value = values[i]!
+        if (this._opts.useRootPersistence && equalsBytes(key, ROOT_DB_KEY)) {
+          throw EthereumJSErrorWithoutCode(
+            `Attempted to set '${bytesToUtf8(ROOT_DB_KEY)}' key but it is not allowed.`,
+          )
+        }
         const keyNibbles = preallocatedNibbles?.[i] ?? bytesToNibbles(key)
 
         if (i > 0 && livePathNibbles !== null) {
@@ -811,15 +808,45 @@ export class MerklePatriciaTrie {
           remaining = path.remaining
           stack = path.stack
         } else {
-          const liveStart = liveStack[liveStack.length - 1]!
-          const prefix = liveStack.slice(0, -1)
-          const path = await this.findPath(key, true, {
-            stack: prefix,
-            useLiveStart: true,
-            liveStart,
-          })
-          remaining = path.remaining
-          stack = path.stack
+          let consumed = 0
+          for (let s = 0; s < liveStack.length - 1; s++) {
+            const n = liveStack[s]!
+            consumed += n instanceof BranchMPTNode ? 1 : n.key().length
+          }
+          remaining = keyNibbles.slice(consumed)
+          stack = liveStack
+
+          while (true) {
+            if (stack[stack.length - 1] instanceof BranchMPTNode) {
+              const branch = stack[stack.length - 1] as BranchMPTNode
+              if (remaining.length === 0) break
+              const branchIdx = remaining[0]!
+              const branchChild = branch.getBranch(branchIdx)
+              if (!branchChild) break
+              remaining = remaining.slice(1)
+              const childNode = await this.lookupNode(branchChild)
+              stack.push(childNode)
+            } else if (stack[stack.length - 1] instanceof ExtensionMPTNode) {
+              const ext = stack[stack.length - 1] as ExtensionMPTNode
+              const extKey = ext.key()
+              if (matchingNibbleLength(extKey, remaining) !== extKey.length) break
+              remaining = remaining.slice(extKey.length)
+              const childNode = await this.lookupNode(ext.value())
+              stack.push(childNode)
+            } else if (stack[stack.length - 1] instanceof LeafMPTNode) {
+              const leaf = stack[stack.length - 1] as LeafMPTNode
+              const leafKey = leaf.key()
+              if (
+                remaining.length === leafKey.length &&
+                matchingNibbleLength(leafKey, remaining) === leafKey.length
+              ) {
+                remaining = []
+              }
+              break
+            } else {
+              break
+            }
+          }
         }
 
         this._stageNodeUpdate(key, value, remaining, stack, opStack)
@@ -832,10 +859,21 @@ export class MerklePatriciaTrie {
       }
 
       if (liveStack.length > 0 && livePathNibbles !== null) {
-        await this.saveStack(livePathNibbles.slice(), liveStack, opStack)
-      }
-      if (opStack.length > 0) {
-        await this._db.batch(opStack)
+        const topNode = liveStack[liveStack.length - 1]
+        const canShortcutSingleLeaf =
+          liveStack.length === 1 &&
+          topNode instanceof LeafMPTNode &&
+          !(topNode instanceof BranchMPTNode)
+        if (canShortcutSingleLeaf) {
+          const encoded = topNode.serialize()
+          this.root(this.hash(encoded))
+          await this._db.put(this._getDbKey(this.root()), encoded)
+        } else {
+          await this.saveStack(livePathNibbles.slice(), liveStack, opStack)
+          if (opStack.length > 0) {
+            await this._db.batch(opStack)
+          }
+        }
       }
       await this.persistRoot()
     })

@@ -557,4 +557,28 @@ describe('[MPT/Proof]: merkle range proofs', () => {
     const hasRight = await verify(trie, entries, 0, LEAF_COUNT - 1, firstKey, lastKey, keys, values)
     assert.strictEqual(hasRight, false)
   })
+
+  it('putSortedLeaves() matches sequential put() on empty-byte and variable-length keys', async () => {
+    const pairs: [Uint8Array, Uint8Array][] = [
+      [new Uint8Array(0), new Uint8Array([0x01])],
+      [new Uint8Array([0x00]), new Uint8Array([0x02])],
+      [new Uint8Array([0x00, 0x01]), new Uint8Array([0x03])],
+      [new Uint8Array([0x00, 0x01, 0x02]), new Uint8Array([0x04])],
+      [new Uint8Array([0x00, 0x0f]), new Uint8Array([0x05])],
+      [new Uint8Array([0x10]), new Uint8Array([0x06])],
+    ]
+    const trieSeq = new MerklePatriciaTrie({ db: new MapDB() })
+    for (const [k, v] of pairs) {
+      await trieSeq.put(k, v)
+    }
+    const trieBatch = new MerklePatriciaTrie({ db: new MapDB() })
+    await trieBatch.putSortedLeaves(
+      pairs.map(([k]) => k),
+      pairs.map(([, v]) => v),
+    )
+    assert.deepEqual(trieBatch.root(), trieSeq.root())
+    for (const [k, v] of pairs) {
+      assert.deepEqual(await trieBatch.get(k), v)
+    }
+  })
 })
