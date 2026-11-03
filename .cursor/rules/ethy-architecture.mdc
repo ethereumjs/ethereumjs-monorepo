@@ -83,4 +83,25 @@ Every external I/O boundary must sit behind a lightweight TypeScript interface w
   - Use the 104-byte `BinaryAccount` representation from `@ethereumjs/util` inside `FlatStateManager` and `SnapAccountSynchronizer` (single-pass RLP decode, no million-object `new Account()` heap allocations during sync, single `fs.writeSync` per range batch, and throttled metadata flushes).
 - **Good Citizen & Honest Block-Range Serving on `devp2p` (`WP-03c` & `WP-04a`):**
   - **`snap/1` (Client Only):** Ethy acts strictly as a client on `snap/1`.
-  - **`eth/69–71` (100% Honest Rolling-Window Server):** Before `RollingBlockStore` holds a complete servable block bundle, outbound `eth/69+` `STATUS` must advertise `earliestBlock = 0, latestBlock = 0, latestBlockHash = genesisHash` (never an unbacked head pin that causes peers to query us, receive `[]`, and drop us). Once blocks are in `RollingBlockStore`, advertise and serve the exact contiguous `[earliestBlock .. latestBlock]` window.
+  - **`eth/69–71` (100% Honest Rolling-Window Server):** Before `RollingBlockStore` holds a complete servable block bundle, outbound `eth/69+` `STATUS` must advertise `earliestBlock = 0, latestBlock = 0, latestBlockHash = genesisHash` (never an unbacked head pin that causes peers to query us, receive `[]`, and drop us). Once `BAL_CATCHUP` / `HEAD_FOLLOWING` builds a contiguous verified tail in `RollingBlockStore`, advertise and serve the exact contiguous `[earliestBlock .. latestBlock]` window.
+
+## 6. Five Systemic P2P & Distributed Scheduler Laws (Preventing Recurring Wrong Turns)
+
+Whenever designing or modifying P2P discovery, peer books, or work schedulers in `@ethereumjs/devp2p` and `@ethereumjs/ethy`, enforce these five laws:
+
+1. **Law 1 — Never Blame the Work Item (Bucket) for a Peer Fault:**
+   - An empty `AccountRange` reply (`[reqId, [], []]`), a bad Merkle proof, or a request timeout is a **peer fault**, not a **bucket fault**.
+   - **Never** set a multi-second `stallUntil` timer on a bucket when a peer fails or times out (which blocks healthy peers from syncing that bucket!). Quarantine/rest the **failing peer** (`peerRestUntil`) and return the bucket to `status = 'pending'` immediately (`0ms` delay).
+   - **Sole-Peer Exception:** Never put the **only** connected proven `snap/1` peer into a long `peerRestUntil` penalty box on a transient timeout (`hasHealthyAlternatePeer === false`); retry immediately with a fresh `reqId` so a 1-peer session never sits at `0/s` for 20–30 seconds.
+2. **Law 2 — Presence != Capability != Proven Service:**
+   - Distinguish strictly between: (a) RLPx `HELLO` connected, (b) `ETH STATUS` validated (`hasHead === true`), (c) `snap/1` negotiated (`snapSession === true`), and (d) **proven `snap/1` server** (`snapResponsesOk > 0`).
+   - Never send `snap/1` requests before `hasHead === true`. Never count non-`snap` peers (`reth` without `snap`, network crawlers) toward `VIP_SNAP_PEER_TARGET` or discovery holds, and filter `snapCapable === false` / crawler nodes out of `PeerBookStore` redial candidates.
+3. **Law 3 — Periodic Telemetry Must Never Clobber Edge-Triggered Backoff Holds:**
+   - `applyTelemetry` / `noteTelemetryPeer` runs every `150ms`. It must update **observation fields only** (`lastStatusAt`, `rttMs`, `clientFamily`, `snapCapable`) and must **never** reset `row.dialAfter = now` or clear backoff counters!
+   - Resetting `dialAfter` on every telemetry tick erases the `noteDialAttempt` dial hold the instant a crawler or non-serving peer handshakes, trapping the dialer in an infinite 5-second redial loop with the same peer. Only clear `dialAfter = 0` inside `noteSnapSuccess` when a peer actually delivers verified work.
+4. **Law 4 — Work-Stealing / Range Bisection Must Mutate Both Bounds (Zero Duplicate Downloads):**
+   - When splitting an in-flight range `[lo .. hi]` at `mid` so an idle fast peer can help a slow peer, you **must** clamp the original range's upper bound to `mid` (`limitHash = mid`) and advance a persistent cursor `[stealCursor .. hi]` for the upper half until it reaches `hi`.
+   - Never issue a "one-shot" steal at `mid` that leaves `limitHash = hi` unchanged and forgets `stealCursor`, as both peers will re-download `[mid .. hi]` redundantly.
+5. **Law 5 — Test With Mixed Adversarial Peers & Asymptotic Slope Gates (Not Just 2 Happy Peers at `N = 32`):**
+   - Every scheduler or peer-book change must be verified against a **mixed adversarial peer set** (1 proven fast peer + 1 crawler that disconnects after `STATUS` + 1 `eth`-only peer without `snap` + 1 silent-timeout `snap` peer + 1 empty-reply `snap` peer) and assert **zero `0/s` stalls** on the healthy peer, **zero duplicate range downloads** on work-stealing, and **flat memory slope** above `maxResidentAccounts`.
+
