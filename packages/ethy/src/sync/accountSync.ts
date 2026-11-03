@@ -13,6 +13,7 @@ import { enqueueProtocol } from '../runtime/lanes.ts'
 import {
   bucketPosition36,
   compareBytes32,
+  computeAccountRangeFraction,
   cursorActive,
   cursorSpan36,
   ensureBucketSubRanges,
@@ -121,7 +122,7 @@ export class SnapAccountSynchronizer {
   private lastAccountCount = 0
   private lastRateAt = 0
   private lastMinRateAt = 0
-  private minRateSamples: Array<{ at: number; count: number }> = []
+  private minRateSamples: Array<{ at: number; count: number; frac: number }> = []
   private peerRangeFailureStreak = new Map<string, number>()
 
   constructor(opts: SnapAccountSynchronizerOpts) {
@@ -161,7 +162,13 @@ export class SnapAccountSynchronizer {
     this.lastRateAt = this.syncStart
     this.lastMinRateAt = this.syncStart
     this.lastAccountCount = this.spine.totalAccountsSynced
-    this.minRateSamples = [{ at: this.syncStart, count: this.spine.totalAccountsSynced }]
+    this.minRateSamples = [
+      {
+        at: this.syncStart,
+        count: this.spine.totalAccountsSynced,
+        frac: computeAccountRangeFraction(this.spine.snapBuckets),
+      },
+    ]
     for (const bucket of this.spine.snapBuckets) {
       ensureBucketSubRanges(bucket)
     }
@@ -362,6 +369,7 @@ export class SnapAccountSynchronizer {
     ) {
       this.spine.accountsPerSec = 0
       this.spine.accountsPerMin = 0
+      this.spine.snapEtaMinutes = undefined
       return
     }
     const peers = rankSnapPeers(
@@ -663,7 +671,8 @@ export class SnapAccountSynchronizer {
     }
     const lastSample = this.minRateSamples[this.minRateSamples.length - 1]
     if (lastSample === undefined || now - lastSample.at >= MIN_RATE_SAMPLE_STEP_MS) {
-      this.minRateSamples.push({ at: now, count: this.spine.totalAccountsSynced })
+      const frac = computeAccountRangeFraction(this.spine.snapBuckets)
+      this.minRateSamples.push({ at: now, count: this.spine.totalAccountsSynced, frac })
       const cutoff = now - MIN_RATE_WINDOW_MS
       while (this.minRateSamples.length > 2 && this.minRateSamples[1]!.at <= cutoff) {
         this.minRateSamples.shift()
@@ -676,8 +685,26 @@ export class SnapAccountSynchronizer {
         const windowDelta = this.spine.totalAccountsSynced - anchor.count
         const rawPerMin = windowDelta > 0 && windowSec > 0 ? (windowDelta / windowSec) * 60 : 0
         const prev = this.spine.accountsPerMin ?? 0
-        this.spine.accountsPerMin =
+        const smoothedPerMin =
           rawPerMin <= 0 ? 0 : prev > 0 ? 0.65 * prev + 0.35 * rawPerMin : rawPerMin
+        this.spine.accountsPerMin = smoothedPerMin
+
+        const curFrac = computeAccountRangeFraction(this.spine.snapBuckets)
+        const fracDelta = curFrac - anchor.frac
+        if (curFrac >= 0.005 && curFrac < 1 && smoothedPerMin > 0) {
+          // Because keccak256(address) is uniform across 0x00..0xff, range fraction f
+          // directly predicts remaining accounts = totalAccountsSynced * (1 - f) / f!
+          const remainingFromDensity = this.spine.totalAccountsSynced * ((1 - curFrac) / curFrac)
+          const rawEtaMin =
+            fracDelta > 0.0005 && windowSec >= 5
+              ? (1 - curFrac) / (fracDelta / windowSec) / 60
+              : remainingFromDensity / smoothedPerMin
+          const prevEta = this.spine.snapEtaMinutes
+          this.spine.snapEtaMinutes =
+            prevEta !== undefined && prevEta > 0 ? 0.7 * prevEta + 0.3 * rawEtaMin : rawEtaMin
+        } else if (curFrac >= 1 || smoothedPerMin <= 0) {
+          this.spine.snapEtaMinutes = undefined
+        }
       }
       this.lastMinRateAt = now
     }

@@ -287,11 +287,16 @@ export function bucketCursorFraction(bucket: SnapBucket): number {
   return (cur - lo) / (hi - lo)
 }
 
+/** Continuous fraction of the 256-bit account range covered (`0.0 .. 1.0`). */
+export function computeAccountRangeFraction(buckets: readonly SnapBucket[]): number {
+  if (buckets.length === 0) return 0
+  return buckets.reduce((sum, b) => sum + bucketCursorFraction(b), 0) / buckets.length
+}
+
 /** Continuous snap progress: 85% accounts, then 15% code+storage when all buckets are done. */
 export function computeSnapProgressPct(spine: EthySpine): number {
   const buckets = spine.snapBuckets
-  const accountFraction =
-    buckets.reduce((sum, b) => sum + bucketCursorFraction(b), 0) / Math.max(1, buckets.length)
+  const accountFraction = computeAccountRangeFraction(buckets)
   const allDone = buckets.every((b) => b.status === 'done')
   if (!allDone) {
     return Math.min(100, Math.max(0, Math.round(0.85 * accountFraction * 100)))
@@ -306,13 +311,17 @@ export function computeSnapProgressPct(spine: EthySpine): number {
 
 const PROGRESS_BAR_CELLS = 16
 
-/** Node Pulse progress row: 16 cells of █/░ plus a padded percent. */
-export function formatProgressBar(pct: number): string {
+/** Node Pulse progress row: 16 cells of █/░ plus a padded percent and optional ETA. */
+export function formatProgressBar(pct: number, etaMinutes?: number): string {
   const clamped = Math.min(100, Math.max(0, pct))
   const filled = Math.round((clamped / 100) * PROGRESS_BAR_CELLS)
   const bar = `${'█'.repeat(filled)}${'░'.repeat(PROGRESS_BAR_CELLS - filled)}`
   const pctText = `${Math.round(clamped)}`.padStart(3, ' ')
-  return `${bar} ${pctText}%`
+  if (etaMinutes === undefined || !Number.isFinite(etaMinutes) || etaMinutes <= 0) {
+    return `${bar} ${pctText}%`
+  }
+  const label = etaMinutes < 1 ? '<1m' : `~${Math.round(etaMinutes)}m`
+  return `${bar} ${pctText}% (${label})`
 }
 
 export function findBucketByPrefix(

@@ -85,10 +85,12 @@ export type SnapStoreOpenOpts = {
   enabled: boolean
 }
 
+let atomicDocSeq = 0
+
 function writeAtomicDoc(filePath: string, value: unknown): void {
   const dir = path.dirname(filePath)
   fs.mkdirSync(dir, { recursive: true })
-  const tmp = `${filePath}.${process.pid}.tmp`
+  const tmp = `${filePath}.${process.pid}.${++atomicDocSeq}.tmp`
   fs.writeFileSync(tmp, `${JSON.stringify(value, null, 2)}\n`, 'utf8')
   fs.renameSync(tmp, filePath)
 }
@@ -999,15 +1001,15 @@ export class SnapPivotStore {
           ? Buffer.concat([Buffer.from(BINARY_ACCOUNT_JOURNAL_MAGIC), Buffer.from(slab)])
           : slab
         await fs.promises.appendFile(file, body)
+        this.dirtyAccountBuckets.add(bucketIndex)
+        this.pendingMetadataFlush = true
+        this.maybeFlushMetadata(false)
       } catch (err) {
         if (needMagic) this.initializedAccountFiles.delete(file)
         throw err
       }
     })
     this.accountWriteChains.set(file, next)
-    this.dirtyAccountBuckets.add(bucketIndex)
-    this.pendingMetadataFlush = true
-    this.maybeFlushMetadata(false)
     return next
   }
 
@@ -1088,7 +1090,7 @@ export class SnapPivotStore {
     const payload = `${JSON.stringify({ buckets: serializeBuckets(buckets) }, null, 2)}\n`
     const run = async () => {
       await fs.promises.mkdir(dir, { recursive: true })
-      const tmp = `${filePath}.${process.pid}.tmp`
+      const tmp = `${filePath}.${process.pid}.${++atomicDocSeq}.tmp`
       await fs.promises.writeFile(tmp, payload, 'utf8')
       try {
         await fs.promises.rename(tmp, filePath)
@@ -1140,7 +1142,17 @@ export class SnapPivotStore {
   flushBuckets(buckets: SnapBucket[]): void {
     if (!this.enabled || this.activeStateRoot === undefined) return
     this.lastBuckets = buckets
-    writeAtomicDoc(path.join(this.pivotDir(this.activeStateRoot), 'buckets.json'), {
+    const dir = this.pivotDir(this.activeStateRoot)
+    const filePath = path.join(dir, 'buckets.json')
+    if (this.bucketsFlushInFlight !== undefined) {
+      this.bucketsFlushInFlight = this.bucketsFlushInFlight.then(() => {
+        writeAtomicDoc(filePath, {
+          buckets: serializeBuckets(buckets),
+        })
+      })
+      return
+    }
+    writeAtomicDoc(filePath, {
       buckets: serializeBuckets(buckets),
     })
   }

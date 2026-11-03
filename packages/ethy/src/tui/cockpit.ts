@@ -1,4 +1,5 @@
 import {
+  computeAccountRangeFraction,
   computeSnapProgressPct,
   formatProgressBar,
   snapBucketsDoneCount,
@@ -41,13 +42,20 @@ function formatCompactCount(n: number): string {
   return n.toLocaleString('en-US')
 }
 
-function formatAccountsPerMin(spine: EthySpine): string {
+function estimateAccountSyncEtaMin(spine: EthySpine): number | undefined {
+  if (spine.snapEtaMinutes !== undefined && spine.snapEtaMinutes > 0) {
+    return spine.snapEtaMinutes
+  }
+  const frac = computeAccountRangeFraction(spine.snapBuckets)
   const perMin =
     spine.accountsPerMin !== undefined && spine.accountsPerMin > 0
       ? spine.accountsPerMin
       : spine.accountsPerSec * 60
-  const millions = perMin / 1_000_000
-  return `${millions.toFixed(1)}M/min`
+  if (frac < 0.005 || frac >= 1 || perMin <= 0 || spine.totalAccountsSynced <= 0) {
+    return undefined
+  }
+  const remainingAccounts = spine.totalAccountsSynced * ((1 - frac) / frac)
+  return remainingAccounts / perMin
 }
 
 function snapTargetRow(spine: EthySpine): string {
@@ -79,14 +87,15 @@ function nodePulsePairs(spine: EthySpine): TwoColumnPair[] {
     const allBucketsDone = snapBucketsDoneCount(spine.snapBuckets) === 16
     if (!allBucketsDone) {
       const rate = Math.round(spine.accountsPerSec).toLocaleString('en-US')
-      const minRate = formatAccountsPerMin(spine)
+      const pct = computeSnapProgressPct(spine)
+      const etaMin = estimateAccountSyncEtaMin(spine)
       return [
         { label: 'Stage', value: 'Snap Sync · Accounts' },
         { label: 'Target', value: snapTargetRow(spine) },
-        { label: 'Progress', value: formatProgressBar(computeSnapProgressPct(spine)) },
+        { label: 'Progress', value: formatProgressBar(pct, etaMin) },
         {
           label: 'State',
-          value: `${formatCompactCount(spine.totalAccountsSynced)} acc · ${rate}/s · ${minRate}`,
+          value: `${formatCompactCount(spine.totalAccountsSynced)} acc · ${rate}/s`,
         },
       ]
     }
@@ -309,10 +318,7 @@ function metricsPairs(spine: EthySpine, domain: CapabilityId): TwoColumnPair[] {
         { label: 'Progress', value: `${Math.round((done / 16) * 100)}% (${done}/16 complete)` },
         { label: 'Active', value: `${syncing} syncing · ${stalled} stalled` },
         { label: 'Pivot Root', value: shortHash(spine.pivotStateRoot) },
-        {
-          label: 'Speed',
-          value: `${Math.round(spine.accountsPerSec).toLocaleString('en-US')}/s · ${formatAccountsPerMin(spine)}`,
-        },
+        { label: 'Speed', value: `${Math.round(spine.accountsPerSec)} acc/s` },
       ]
     }
     case 'head':

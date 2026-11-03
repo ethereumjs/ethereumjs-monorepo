@@ -134,6 +134,8 @@ export interface EthySpine {
   accountsPerSec: number
   /** Smoothed per-minute account rate (refreshed every ~5s to stay steady in the TUI). */
   accountsPerMin?: number
+  /** Smoothed ETA in minutes for the active snap sync stage (refreshed every ~5s). */
+  snapEtaMinutes?: number
   codesSynced: number
   /** Code hashes still queued or in flight. */
   codesQueued: number
