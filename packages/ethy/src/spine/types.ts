@@ -132,6 +132,8 @@ export interface EthySpine {
   snapBuckets: SnapBucket[]
   totalAccountsSynced: number
   accountsPerSec: number
+  /** Smoothed per-minute account rate (refreshed every ~5s to stay steady in the TUI). */
+  accountsPerMin?: number
   codesSynced: number
   /** Code hashes still queued or in flight. */
   codesQueued: number

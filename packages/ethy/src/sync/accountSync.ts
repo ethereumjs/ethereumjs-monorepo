@@ -46,6 +46,12 @@ const STALL_BASE_MS = 2_000
 const STALL_MAX_MS = 15_000
 /** After this many seconds without new accounts, show 0/s in the TUI. */
 const RATE_IDLE_SEC = 2
+/** Refresh interval for the smoothed `/min` TUI rate so it stays steady. */
+const MIN_RATE_REFRESH_MS = 5_000
+/** Rolling window for the `/min` rate calculation. */
+const MIN_RATE_WINDOW_MS = 60_000
+/** Minimum spacing between rolling history samples. */
+const MIN_RATE_SAMPLE_STEP_MS = 1_000
 /** Minimum remaining span before bisecting a cursor (one sub-nibble, WP-04h). */
 const MIN_SPLIT_SPAN = 0x1_0000_0000
 
@@ -114,6 +120,8 @@ export class SnapAccountSynchronizer {
   private syncStart = 0
   private lastAccountCount = 0
   private lastRateAt = 0
+  private lastMinRateAt = 0
+  private minRateSamples: Array<{ at: number; count: number }> = []
   private peerRangeFailureStreak = new Map<string, number>()
 
   constructor(opts: SnapAccountSynchronizerOpts) {
@@ -151,7 +159,9 @@ export class SnapAccountSynchronizer {
     setPhase(this.spine, 'SNAP_SYNCING')
     this.syncStart = Date.now()
     this.lastRateAt = this.syncStart
+    this.lastMinRateAt = this.syncStart
     this.lastAccountCount = this.spine.totalAccountsSynced
+    this.minRateSamples = [{ at: this.syncStart, count: this.spine.totalAccountsSynced }]
     for (const bucket of this.spine.snapBuckets) {
       ensureBucketSubRanges(bucket)
     }
@@ -351,6 +361,7 @@ export class SnapAccountSynchronizer {
       this.spine.snapBuckets.every((b) => b.status === 'done')
     ) {
       this.spine.accountsPerSec = 0
+      this.spine.accountsPerMin = 0
       return
     }
     const peers = rankSnapPeers(
@@ -644,11 +655,32 @@ export class SnapAccountSynchronizer {
   /** Keep TUI speed honest when sync pauses; storage count stays on `totalAccountsSynced`. */
   private refreshAccountRate(now: number): void {
     const dt = (now - this.lastRateAt) / 1000
-    if (dt < RATE_IDLE_SEC) return
-    const delta = this.spine.totalAccountsSynced - this.lastAccountCount
-    this.spine.accountsPerSec = delta > 0 ? delta / dt : 0
-    this.lastAccountCount = this.spine.totalAccountsSynced
-    this.lastRateAt = now
+    if (dt >= RATE_IDLE_SEC) {
+      const delta = this.spine.totalAccountsSynced - this.lastAccountCount
+      this.spine.accountsPerSec = delta > 0 ? delta / dt : 0
+      this.lastAccountCount = this.spine.totalAccountsSynced
+      this.lastRateAt = now
+    }
+    const lastSample = this.minRateSamples[this.minRateSamples.length - 1]
+    if (lastSample === undefined || now - lastSample.at >= MIN_RATE_SAMPLE_STEP_MS) {
+      this.minRateSamples.push({ at: now, count: this.spine.totalAccountsSynced })
+      const cutoff = now - MIN_RATE_WINDOW_MS
+      while (this.minRateSamples.length > 2 && this.minRateSamples[1]!.at <= cutoff) {
+        this.minRateSamples.shift()
+      }
+    }
+    if (now - this.lastMinRateAt >= MIN_RATE_REFRESH_MS) {
+      const anchor = this.minRateSamples[0]
+      if (anchor !== undefined && now > anchor.at) {
+        const windowSec = (now - anchor.at) / 1000
+        const windowDelta = this.spine.totalAccountsSynced - anchor.count
+        const rawPerMin = windowDelta > 0 && windowSec > 0 ? (windowDelta / windowSec) * 60 : 0
+        const prev = this.spine.accountsPerMin ?? 0
+        this.spine.accountsPerMin =
+          rawPerMin <= 0 ? 0 : prev > 0 ? 0.65 * prev + 0.35 * rawPerMin : rawPerMin
+      }
+      this.lastMinRateAt = now
+    }
   }
 }
 

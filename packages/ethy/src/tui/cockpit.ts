@@ -41,6 +41,15 @@ function formatCompactCount(n: number): string {
   return n.toLocaleString('en-US')
 }
 
+function formatAccountsPerMin(spine: EthySpine): string {
+  const perMin =
+    spine.accountsPerMin !== undefined && spine.accountsPerMin > 0
+      ? spine.accountsPerMin
+      : spine.accountsPerSec * 60
+  const millions = perMin / 1_000_000
+  return `${millions.toFixed(1)}M/min`
+}
+
 function snapTargetRow(spine: EthySpine): string {
   const pivot = spine.pivotBlockNumber
   if (pivot === undefined) {
@@ -70,13 +79,14 @@ function nodePulsePairs(spine: EthySpine): TwoColumnPair[] {
     const allBucketsDone = snapBucketsDoneCount(spine.snapBuckets) === 16
     if (!allBucketsDone) {
       const rate = Math.round(spine.accountsPerSec).toLocaleString('en-US')
+      const minRate = formatAccountsPerMin(spine)
       return [
         { label: 'Stage', value: 'Snap Sync · Accounts' },
         { label: 'Target', value: snapTargetRow(spine) },
         { label: 'Progress', value: formatProgressBar(computeSnapProgressPct(spine)) },
         {
           label: 'State',
-          value: `${formatCompactCount(spine.totalAccountsSynced)} acc · ${rate}/s`,
+          value: `${formatCompactCount(spine.totalAccountsSynced)} acc · ${rate}/s · ${minRate}`,
         },
       ]
     }
@@ -299,7 +309,10 @@ function metricsPairs(spine: EthySpine, domain: CapabilityId): TwoColumnPair[] {
         { label: 'Progress', value: `${Math.round((done / 16) * 100)}% (${done}/16 complete)` },
         { label: 'Active', value: `${syncing} syncing · ${stalled} stalled` },
         { label: 'Pivot Root', value: shortHash(spine.pivotStateRoot) },
-        { label: 'Speed', value: `${Math.round(spine.accountsPerSec)} acc/s` },
+        {
+          label: 'Speed',
+          value: `${Math.round(spine.accountsPerSec).toLocaleString('en-US')}/s · ${formatAccountsPerMin(spine)}`,
+        },
       ]
     }
     case 'head':

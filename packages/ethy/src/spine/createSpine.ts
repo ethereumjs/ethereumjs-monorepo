@@ -62,6 +62,7 @@ export function createSpine(network: string, chainId: bigint): EthySpine {
     snapBuckets: createSnapBuckets(),
     totalAccountsSynced: 0,
     accountsPerSec: 0,
+    accountsPerMin: 0,
     codesSynced: 0,
     codesQueued: 0,
     storageSlotsSynced: 0,

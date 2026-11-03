@@ -49,6 +49,7 @@ describe('[Ethy/TUI]: renderFrame', () => {
     assert.include(plain, '░')
     assert.include(plain, 'Snap Sync · Accounts')
     assert.include(plain, 'acc ·')
+    assert.include(plain, 'M/min')
     assert.notInclude(plain, 'kept')
     assert.notInclude(plain, '16/16')
   })
