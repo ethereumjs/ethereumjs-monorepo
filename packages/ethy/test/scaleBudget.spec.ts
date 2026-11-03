@@ -100,29 +100,45 @@ describe('[Ethy/Scale]: WP-04g budget gates', () => {
     const totalAccounts = 80_000
     const contractAccounts = 12_000
     const codeHashes = Array.from({ length: 256 }, (_, b) => keccak_256(new Uint8Array([b])))
+    const eoaBinary = createBinaryAccount({ nonce: 1n, balance: 1n })
+    const contractBinaries = Array.from({ length: 256 }, (_, b) => {
+      const bin = createBinaryAccount({ nonce: 1n, balance: 1n })
+      setBinaryAccountCodeHash(bin, codeHashes[b]!)
+      setBinaryAccountStorageRoot(bin, codeHashes[(b + 1) & 0xff]!)
+      return bin
+    })
+    const batchSize = 1_000
+    const slab = new Uint8Array(batchSize * BINARY_ACCOUNT_JOURNAL_RECORD_SIZE)
     const t0 = performance.now()
-    for (let i = 0; i < totalAccounts; i++) {
-      const accountHash = new Uint8Array(32)
-      writeIndex32(accountHash, i)
-      const isContract = i < contractAccounts
-      const binary = createBinaryAccount({ nonce: 1n, balance: 1n })
-      const ch = codeHashes[i & 0xff]!
-      const sr = codeHashes[(i + 1) & 0xff]!
-      if (isContract) {
-        setBinaryAccountCodeHash(binary, ch)
-        setBinaryAccountStorageRoot(binary, sr)
-      }
-      sm.putSnapBinaryAccountsBatch([{ accountHash, binaryAccount: binary }])
-      if (isContract) {
-        sync.noteAccounts([
-          {
+    for (let batchStart = 0; batchStart < totalAccounts; batchStart += batchSize) {
+      const contractEntries: Array<{
+        accountHash: Uint8Array
+        codeHash: Uint8Array
+        storageRoot: Uint8Array
+      }> = []
+      for (let j = 0; j < batchSize; j++) {
+        const i = batchStart + j
+        const rowOff = j * BINARY_ACCOUNT_JOURNAL_RECORD_SIZE
+        slab.fill(0, rowOff, rowOff + 32)
+        writeIndex32(slab.subarray(rowOff, rowOff + 32), i)
+        const isContract = i < contractAccounts
+        const bin = isContract ? contractBinaries[i & 0xff]! : eoaBinary
+        slab.set(bin, rowOff + 32)
+        if (isContract) {
+          const accountHash = new Uint8Array(32)
+          writeIndex32(accountHash, i)
+          contractEntries.push({
             accountHash,
-            codeHash: ch,
-            storageRoot: sr,
-          },
-        ])
+            codeHash: codeHashes[i & 0xff]!,
+            storageRoot: codeHashes[(i + 1) & 0xff]!,
+          })
+        }
       }
-      if (i === 39_999) {
+      sm.putSnapBinaryAccountsFromSlab(slab)
+      if (contractEntries.length > 0) {
+        sync.noteAccounts(contractEntries)
+      }
+      if (batchStart + batchSize === 40_000) {
         gc?.()
         heapAt50k = process.memoryUsage().heapUsed
       }
