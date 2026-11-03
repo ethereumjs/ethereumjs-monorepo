@@ -15,8 +15,7 @@ import {
   hexToBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
-import { keccak_256 } from '@noble/hashes/sha3'
-
+import { ethyKeccak256 } from '../crypto/keccak.ts'
 import { type SnapPivotStore, snapBucketsUnfinished } from '../persist/snapStore.ts'
 import { enqueueProtocol } from '../runtime/lanes.ts'
 import { recordDiagnostic } from '../spine/diagnostics.ts'
@@ -221,7 +220,7 @@ export class SnapCodeAndStorageSynchronizer {
     for (const row of bal) {
       const address = hexToBytes(row.address)
       if (address.length !== 20) continue
-      this.invalidateAccount(keccak_256(address))
+      this.invalidateAccount(ethyKeccak256(address))
     }
     this.publishPending()
   }
@@ -461,7 +460,7 @@ export class SnapCodeAndStorageSynchronizer {
     const requested = [...flight.hashes]
     for (const raw of codesRaw) {
       if (!(raw instanceof Uint8Array)) continue
-      const hash = keccak_256(raw)
+      const hash = ethyKeccak256(raw)
       const idx = requested.findIndex((h) => equalsBytes(h, hash))
       if (idx < 0) continue
       this.stateManager.putCodeByHash(hash, raw)

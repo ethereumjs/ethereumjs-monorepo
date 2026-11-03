@@ -16,14 +16,17 @@ export function ethyKeccakBackend(): 'awasm' | 'noble' {
 }
 
 /** Load `@awasm/noble` keccak; keeps `@noble/hashes` when the ESM module is unavailable. */
-export async function initEthyKeccak(): Promise<void> {
+export function initEthyKeccak(): Promise<void> {
   if (initPromise !== undefined) {
     return initPromise
   }
   initPromise = (async () => {
     try {
       const mod = await import('@awasm/noble')
-      keccakImpl = mod.keccak_256 as Keccak256Fn
+      const fn = mod.keccak_256 as Keccak256Fn
+      // Warm up and verify the lazy WebAssembly instance on an empty buffer at init time.
+      fn(new Uint8Array(0))
+      keccakImpl = fn
       backend = 'awasm'
     } catch {
       keccakImpl = nobleKeccak256
@@ -32,3 +35,6 @@ export async function initEthyKeccak(): Promise<void> {
   })()
   return initPromise
 }
+
+// Kick off eager warmup on module load so non-CLI callers also upgrade automatically.
+void initEthyKeccak()
