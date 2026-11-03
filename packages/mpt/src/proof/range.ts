@@ -414,7 +414,7 @@ async function hasRightElement(trie: MerklePatriciaTrie, key: Nibbles): Promise<
  * @param keysRaw - key list of leaf data being proven.
  * @param values - value list of leaf data being proven, one-to-one correspondence with keys.
  * @param proof - proof node list, or `null` for an all-elements proof (both keys must be `null` too)
- * @param useKeyHashingFunction - hash function for secure trie key hashing (default: keccak256)
+ * @param useKeyHashingFunction - trie node RLP hashing and secure key hashing when enabled (default: keccak256)
  * @returns a flag to indicate whether there exists more trie node in the trie
  */
 export async function verifyMerkleRangeProof(

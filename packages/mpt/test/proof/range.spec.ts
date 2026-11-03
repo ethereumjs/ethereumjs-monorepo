@@ -540,6 +540,71 @@ describe('[MPT/Proof]: merkle range proofs', () => {
     }
   })
 
+  it('verifyMerkleRangeProof() threads useKeyHashingFunction on all proof shapes', async () => {
+    const { trie, entries } = await randomTrie(new MapDB())
+    let hashCount = 0
+    const countingHash = ((input: Uint8Array) => {
+      hashCount++
+      return keccak_256(input)
+    }) as typeof keccak_256
+
+    const allKeys = entries.map(([key]) => key)
+    const allValues = entries.map(([, val]) => val)
+    hashCount = 0
+    await verifyMerkleRangeProof(trie.root(), null, null, allKeys, allValues, null, countingHash)
+    assert.ok(hashCount > 0, 'all-elements proof must hash trie nodes')
+
+    const start = 255
+    const oneKey = entries[start]![0]
+    const oneVal = entries[start]![1]
+    const oneProof = [
+      ...(await createMerkleProof(trie, oneKey)),
+      ...(await createMerkleProof(trie, oneKey)),
+    ]
+    hashCount = 0
+    await verifyMerkleRangeProof(
+      trie.root(),
+      oneKey,
+      oneKey,
+      [oneKey],
+      [oneVal],
+      oneProof,
+      countingHash,
+    )
+    assert.ok(hashCount > 0, 'one-element proof must hash trie nodes')
+
+    const zeroTrie = new MerklePatriciaTrie({ db: new MapDB() })
+    const loneKey = hexToBytes(`0x${'ff'.repeat(32)}`)
+    await zeroTrie.put(loneKey, randomBytes(20))
+    const zeroOrigin = hexToBytes(`0x${'00'.repeat(32)}`)
+    const zeroProof = await createMerkleProof(zeroTrie, zeroOrigin)
+    hashCount = 0
+    await verifyMerkleRangeProof(zeroTrie.root(), zeroOrigin, null, [], [], zeroProof, countingHash)
+    assert.ok(hashCount > 0, 'zero-element proof must hash trie nodes')
+
+    hashCount = 0
+    await verify(trie, entries, 0, entries.length - 1, undefined, undefined, allKeys, allValues)
+    assert.strictEqual(hashCount, 0, 'default verify() must not use a custom hasher')
+
+    hashCount = 0
+    const firstKey = entries[0]![0]
+    const lastKey = entries[entries.length - 1]![0]
+    const edgeProof = [
+      ...(await createMerkleProof(trie, firstKey)),
+      ...(await createMerkleProof(trie, lastKey)),
+    ]
+    await verifyMerkleRangeProof(
+      trie.root(),
+      firstKey,
+      lastKey,
+      allKeys,
+      allValues,
+      edgeProof,
+      countingHash,
+    )
+    assert.ok(hashCount > 0, 'two-edge proof must hash trie nodes')
+  })
+
   it('putSortedLeaves() two-edge proof on sequential keys matches root and hasRight', async () => {
     const LEAF_COUNT = 500
     const entries: [Uint8Array, Uint8Array][] = []
