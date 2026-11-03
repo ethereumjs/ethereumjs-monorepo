@@ -69,7 +69,14 @@ export async function verifyAccountRangeJob(opts: {
   try {
     const slab = new Uint8Array(accountsRaw.length * SNAP_BINARY_ACCOUNT_SLAB_RECORD_SIZE)
     const rows = accountRangeRowsFromRaw(accountsRaw, slab)
-    if (rows === undefined) return { ok: false, hasRight: false, count: 0 }
+    if (rows === undefined) {
+      return {
+        ok: false,
+        hasRight: false,
+        count: 0,
+        reason: 'malformed account range entry',
+      }
+    }
     const { keys, values } = rows
     if (opts.origin !== undefined && compareBytes32(opts.origin, keys[keys.length - 1]!) > 0) {
       return {

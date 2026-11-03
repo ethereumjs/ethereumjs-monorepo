@@ -288,17 +288,23 @@ export function accountRangeRowsFromRaw(
   const keys: Uint8Array[] = []
   const values: Uint8Array[] = []
   let offset = 0
-  for (const [h, slim] of accountsRaw) {
-    const accountHash = asBytes(h)
-    if (accountHash === undefined) return undefined
-    const body = accountBodyFromSlim(decodeAccountBody(slim)) as AccountBodyBytes
-    keys.push(accountHash)
-    values.push(accountBodyToRLP(body, false))
-    if (slab !== undefined) {
-      slab.set(accountHash.subarray(0, 32), offset)
-      accountBodyToBinary(body, false, slab, offset + 32)
-      offset += SNAP_BINARY_ACCOUNT_SLAB_RECORD_SIZE
+  try {
+    for (const pair of accountsRaw) {
+      if (!Array.isArray(pair) || pair.length < 2) return undefined
+      const [h, slim] = pair
+      const accountHash = asBytes(h)
+      if (accountHash === undefined || accountHash.length !== 32) return undefined
+      const body = accountBodyFromSlim(decodeAccountBody(slim)) as AccountBodyBytes
+      keys.push(accountHash)
+      values.push(accountBodyToRLP(body, false))
+      if (slab !== undefined) {
+        slab.set(accountHash, offset)
+        accountBodyToBinary(body, false, slab, offset + 32)
+        offset += SNAP_BINARY_ACCOUNT_SLAB_RECORD_SIZE
+      }
     }
+  } catch {
+    return undefined
   }
   return { keys, values }
 }
