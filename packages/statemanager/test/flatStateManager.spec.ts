@@ -124,6 +124,84 @@ describe('[StateManager/FlatStateManager]', () => {
     assert.equal(base.accountCount(), 1)
   })
 
+  it('maxResidentAccounts evicts snap keys but keeps logical accountCount()', () => {
+    const sm = new FlatStateManager({ maxResidentAccounts: 100 })
+    for (let i = 0; i < 1_000; i++) {
+      const hash = new Uint8Array(32)
+      hash[0] = i % 256
+      hash[1] = (i >> 8) & 0xff
+      hash[2] = (i >> 16) & 0xff
+      sm.putSnapBinaryAccountsBatch([
+        {
+          accountHash: hash,
+          binaryAccount: accountToBinaryAccount(createAccount({ nonce: BigInt(i) })),
+        },
+      ])
+    }
+    assert.equal(sm.accountCount(), 1_000)
+    assert.isAtMost(sm.residentAccountCount(), 100)
+    const evicted = new Uint8Array(32)
+    evicted[0] = 0
+    evicted[1] = 0
+    evicted[2] = 0
+    assert.isUndefined(sm.getBinaryAccountByHash(evicted))
+  })
+
+  it('pinned putAccount survives maxResidentAccounts eviction', async () => {
+    const sm = new FlatStateManager({ maxResidentAccounts: 2 })
+    const addr = new Address(hexToBytes(`0x${'77'.repeat(20)}`))
+    await sm.putAccount(addr, createAccount({ nonce: 99n }))
+    for (let i = 0; i < 10; i++) {
+      const hash = new Uint8Array(32)
+      hash[0] = 0xaa
+      hash[31] = i
+      sm.putSnapBinaryAccountsBatch([
+        {
+          accountHash: hash,
+          binaryAccount: accountToBinaryAccount(createAccount({ nonce: 1n })),
+        },
+      ])
+    }
+    assert.isDefined(await sm.getAccount(addr))
+    assert.equal((await sm.getAccount(addr))?.nonce, 99n)
+  })
+
+  it('setSyncedAccountCount() then tail ingest adjusts logical total', () => {
+    const sm = new FlatStateManager({ maxResidentAccounts: 50_000 })
+    sm.setSyncedAccountCount(50_000)
+    for (let i = 0; i < 10; i++) {
+      const hash = new Uint8Array(32)
+      hash[0] = 0xbb
+      hash[31] = i
+      sm.putSnapBinaryAccountsBatch([
+        {
+          accountHash: hash,
+          binaryAccount: accountToBinaryAccount(createAccount({ nonce: 1n })),
+        },
+      ])
+    }
+    assert.equal(sm.accountCount(), 50_010)
+  })
+
+  it('coldAccountLookup promotes without bumping logical count', () => {
+    const coldHash = new Uint8Array(32)
+    coldHash[0] = 0xcc
+    const coldBinary = accountToBinaryAccount(createAccount({ balance: 5n }))
+    const sm = new FlatStateManager({
+      maxResidentAccounts: 10,
+      coldAccountLookup: (h) => {
+        if (h[0] === coldHash[0]) return new Uint8Array(coldBinary)
+        return undefined
+      },
+    })
+    sm.setSyncedAccountCount(1)
+    const got = sm.getBinaryAccountByHash(coldHash)
+    assert.isDefined(got)
+    assert.equal(got!.length, BINARY_ACCOUNT_SIZE)
+    assert.equal(sm.accountCount(), 1)
+    assert.equal(sm.residentAccountCount(), 1)
+  })
+
   it('putSnapStorageBatch() round-trips via getStorage()', async () => {
     const sm = new FlatStateManager()
     const address = new Address(hexToBytes(`0x${'44'.repeat(20)}`))

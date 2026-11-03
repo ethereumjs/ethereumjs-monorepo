@@ -9,11 +9,13 @@ import {
   bytesToHex,
   bytesToUnprefixedHex,
   equalsBytes,
+  hexToBytes,
   unprefixedHexToBytes,
 } from '@ethereumjs/util'
 import type { BinaryAccount } from '@ethereumjs/util'
 import { keccak_256 } from '@noble/hashes/sha3.js'
 
+import { BinaryAccountArena } from './binaryAccountArena.ts'
 import { OriginalStorageCache } from './cache/originalStorageCache.ts'
 import { consumeBAL as consumeBALUtil } from './consumeBAL.ts'
 import { modifyAccountFields } from './util.ts'
@@ -43,7 +45,11 @@ function accountShardIndex(key: string): number {
   return Number.parseInt(key.slice(0, 2), 16)
 }
 
-function createAccountShards(): Array<Map<string, Uint8Array | undefined>> {
+function createOverlayAccountShards(): Array<Map<string, Uint8Array | undefined>> {
+  return Array.from({ length: ACCOUNT_SHARD_COUNT }, () => new Map())
+}
+
+function createSlotShards(): Array<Map<string, number>> {
   return Array.from({ length: ACCOUNT_SHARD_COUNT }, () => new Map())
 }
 
@@ -56,10 +62,19 @@ export class FlatStateManager implements StateManagerInterface {
   public originalStorageCache: OriginalStorageCache
 
   private readonly _parent?: FlatStateManager
-  private readonly _accountShards = createAccountShards()
+  /** Root: hex key → arena slot. Child: overlay binary copies / tombstones. */
+  private readonly _slotShards?: Array<Map<string, number>>
+  private readonly _overlayAccountShards: Array<Map<string, Uint8Array | undefined>>
+  private readonly _arena?: BinaryAccountArena
+  private readonly _maxResidentAccounts?: number
+  private readonly _coldAccountLookup?: (accountHash: Uint8Array) => Uint8Array | undefined
   /** Overlay keys written on a shallow copy (including tombstones). */
   private readonly _localAccountKeys = new Set<string>()
-  private _liveAccountCount = 0
+  private _logicalAccountCount = 0
+  private readonly _tombstones = new Set<string>()
+  private readonly _pinnedKeys = new Set<string>()
+  private readonly _residentStamp = new Map<string, number>()
+  private _residentStampSeq = 0
   private readonly _storage = new Map<string, Uint8Array>()
   private readonly _code = new Map<string, Uint8Array>()
   private readonly _hashToAddress = new Map<string, Address>()
@@ -72,10 +87,21 @@ export class FlatStateManager implements StateManagerInterface {
     this._parent = parent
     this._keccak = this.common?.customCrypto.keccak256 ?? keccak_256
     this.originalStorageCache = new OriginalStorageCache(this.getStorage.bind(this))
+    if (parent === undefined) {
+      this._slotShards = createSlotShards()
+      this._arena = new BinaryAccountArena()
+      this._maxResidentAccounts = opts.maxResidentAccounts
+      this._coldAccountLookup = opts.coldAccountLookup
+    }
+    this._overlayAccountShards = createOverlayAccountShards()
   }
 
-  private accountShard(key: string): Map<string, Uint8Array | undefined> {
-    return this._accountShards[accountShardIndex(key)]!
+  private slotShard(key: string): Map<string, number> {
+    return this._slotShards![accountShardIndex(key)]!
+  }
+
+  private overlayShard(key: string): Map<string, Uint8Array | undefined> {
+    return this._overlayAccountShards[accountShardIndex(key)]!
   }
 
   private accountHashHex(address: Address): string {
@@ -101,63 +127,173 @@ export class FlatStateManager implements StateManagerInterface {
     return this._deltaStack[this._deltaStack.length - 1]
   }
 
+  private pinKey(key: string): void {
+    if (this._parent !== undefined) return
+    this._pinnedKeys.add(key)
+  }
+
+  private touchResidentOrder(key: string): void {
+    this._residentStamp.set(key, ++this._residentStampSeq)
+  }
+
   private readBinaryAccountKey(key: string): Uint8Array | undefined {
-    const shard = this.accountShard(key)
-    if (shard.has(key)) {
-      return shard.get(key)
-    }
     if (this._parent !== undefined) {
+      const shard = this.overlayShard(key)
+      if (shard.has(key)) {
+        const v = shard.get(key)
+        return v === undefined ? undefined : new Uint8Array(v)
+      }
       return this._parent.readBinaryAccountKey(key)
+    }
+    if (this._tombstones.has(key)) return undefined
+    const slot = this.slotShard(key).get(key)
+    if (slot !== undefined) {
+      return this._arena!.copyOutOwned(slot)
+    }
+    if (this._coldAccountLookup !== undefined) {
+      const hashBytes = unprefixedHexToBytes(key)
+      const cold = this._coldAccountLookup(hashBytes)
+      if (cold !== undefined && cold.length === BINARY_ACCOUNT_SIZE) {
+        this.promoteColdToResident(key, cold)
+        return new Uint8Array(cold)
+      }
     }
     return undefined
   }
 
-  private assignAccountShard(key: string, binary: Uint8Array | undefined): void {
-    if (this._parent !== undefined) {
-      this._localAccountKeys.add(key)
-      const shard = this.accountShard(key)
-      if (binary === undefined) {
-        shard.set(key, undefined)
-      } else {
-        shard.set(key, binary)
-      }
-      return
-    }
-    const shard = this.accountShard(key)
-    const hadLive = shard.has(key) && shard.get(key) !== undefined
+  private promoteColdToResident(key: string, binary: Uint8Array): void {
+    if (this._slotShards === undefined) return
+    if (this.slotShard(key).has(key)) return
+    const slot = this._arena!.alloc()
+    this._arena!.write(slot, binary)
+    this.slotShard(key).set(key, slot)
+    this.touchResidentOrder(key)
+    this.maybeEvictResidents()
+  }
+
+  private assignOverlayAccountShard(key: string, binary: Uint8Array | undefined): void {
+    this._localAccountKeys.add(key)
+    const shard = this.overlayShard(key)
     if (binary === undefined) {
-      if (shard.has(key) && shard.get(key) !== undefined) {
-        this._liveAccountCount--
+      shard.set(key, undefined)
+    } else {
+      shard.set(key, new Uint8Array(binary))
+    }
+  }
+
+  private assignRootAccountShard(
+    key: string,
+    binary: Uint8Array | undefined,
+    snapIngest: boolean,
+  ): void {
+    const shard = this.slotShard(key)
+    const hadSlot = shard.has(key)
+    if (binary === undefined) {
+      if (hadSlot) {
+        const slot = shard.get(key)!
+        this._arena!.release(slot)
+        shard.delete(key)
+        this._logicalAccountCount--
       }
-      shard.delete(key)
+      this._tombstones.add(key)
+      this._residentStamp.delete(key)
       return
     }
-    if (!hadLive) {
-      this._liveAccountCount++
+    this._tombstones.delete(key)
+    let slot = shard.get(key)
+    const isNewLogical =
+      !hadSlot &&
+      !this._tombstones.has(key) &&
+      (this._coldAccountLookup === undefined ||
+        this._coldAccountLookup(unprefixedHexToBytes(key)) === undefined)
+    if (slot === undefined) {
+      slot = this._arena!.alloc()
+      shard.set(key, slot)
+      if (isNewLogical && snapIngest) {
+        this._logicalAccountCount++
+      }
     }
-    shard.set(key, binary)
+    this._arena!.write(slot, binary)
+    this.touchResidentOrder(key)
+    if (snapIngest) {
+      this.maybeEvictResidents()
+    }
+  }
+
+  private maybeEvictResidents(): void {
+    if (
+      this._maxResidentAccounts === undefined ||
+      this._deltaStack.length > 0 ||
+      this._slotShards === undefined
+    ) {
+      return
+    }
+    while (this.residentAccountCount() > this._maxResidentAccounts) {
+      if (!this.evictOneUnpinned()) break
+    }
+  }
+
+  private evictOneUnpinned(): boolean {
+    let victimKey: string | undefined
+    let victimStamp = Number.POSITIVE_INFINITY
+    if (this._slotShards === undefined) return false
+    for (const shard of this._slotShards) {
+      for (const key of shard.keys()) {
+        if (this._pinnedKeys.has(key)) continue
+        const stamp = this._residentStamp.get(key) ?? 0
+        if (stamp < victimStamp) {
+          victimStamp = stamp
+          victimKey = key
+        }
+      }
+    }
+    if (victimKey === undefined) return false
+    const shard = this.slotShard(victimKey)
+    const slot = shard.get(victimKey)
+    if (slot === undefined) return false
+    shard.delete(victimKey)
+    this._arena!.release(slot)
+    this._residentStamp.delete(victimKey)
+    return true
+  }
+
+  private writeBinaryAccountKey(
+    key: string,
+    binary: Uint8Array | undefined,
+    snapIngest: boolean,
+  ): void {
+    const frame = this.topFrame()
+    if (frame !== undefined && !frame.accounts.has(key)) {
+      const prior = this.readBinaryAccountKey(key)
+      frame.accounts.set(key, prior === undefined ? undefined : new Uint8Array(prior))
+    }
+    if (this._parent !== undefined) {
+      this.assignOverlayAccountShard(key, binary)
+      return
+    }
+    if (binary !== undefined && !snapIngest) {
+      const had = this.slotShard(key).has(key) || this._tombstones.has(key)
+      if (!had) {
+        this._logicalAccountCount++
+      }
+      this._tombstones.delete(key)
+    }
+    this.assignRootAccountShard(key, binary, snapIngest)
+  }
+
+  private writeAccountKey(key: string, account: Account | undefined): void {
+    if (account === undefined) {
+      this.writeBinaryAccountKey(key, undefined, false)
+      return
+    }
+    this.pinKey(key)
+    this.writeBinaryAccountKey(key, accountToBinaryAccount(account), false)
   }
 
   private readAccountKey(key: string): Account | undefined {
     const binary = this.readBinaryAccountKey(key)
     if (binary === undefined) return undefined
     return binaryAccountToAccount(binary)
-  }
-
-  private writeBinaryAccountKey(key: string, binary: Uint8Array | undefined): void {
-    const frame = this.topFrame()
-    if (frame !== undefined && !frame.accounts.has(key)) {
-      frame.accounts.set(key, this.readBinaryAccountKey(key))
-    }
-    this.assignAccountShard(key, binary)
-  }
-
-  private writeAccountKey(key: string, account: Account | undefined): void {
-    if (account === undefined) {
-      this.writeBinaryAccountKey(key, undefined)
-      return
-    }
-    this.writeBinaryAccountKey(key, accountToBinaryAccount(account))
   }
 
   private readStorageKey(key: string): Uint8Array | undefined {
@@ -219,6 +355,7 @@ export class FlatStateManager implements StateManagerInterface {
   }
 
   async modifyAccountFields(address: Address, accountFields: AccountFields): Promise<void> {
+    this.pinKey(this.accountHashHex(address))
     await modifyAccountFields(this, address, accountFields)
   }
 
@@ -269,6 +406,7 @@ export class FlatStateManager implements StateManagerInterface {
     if (account === undefined) {
       throw EthereumJSErrorWithoutCode('putStorage() called on non-existing account')
     }
+    this.pinKey(this.accountHashHex(address))
     const ah = this.accountHashHex(address)
     const sk = this.storageKey(ah, this.slotHashHex(key))
     this.writeStorageKey(sk, value.length === 0 ? undefined : value)
@@ -281,9 +419,6 @@ export class FlatStateManager implements StateManagerInterface {
       if (key.startsWith(prefix)) {
         this.writeStorageKey(key, undefined)
       }
-    }
-    if (this._parent !== undefined) {
-      // Parent slots remain; only clear local overlay keys (already done)
     }
   }
 
@@ -310,7 +445,7 @@ export class FlatStateManager implements StateManagerInterface {
       if (this._overlayFrames.length === 0) return
       const frame = this._overlayFrames.pop()!
       for (const [k, v] of frame.accounts) {
-        this.assignAccountShard(k, v)
+        this.assignOverlayAccountShard(k, v)
       }
       for (const [k, v] of frame.storage) {
         if (v === undefined) {
@@ -331,7 +466,7 @@ export class FlatStateManager implements StateManagerInterface {
     if (this._deltaStack.length === 0) return
     const frame = this._deltaStack.pop()!
     for (const [k, v] of frame.accounts) {
-      this.assignAccountShard(k, v)
+      this.writeBinaryAccountKey(k, v, false)
     }
     for (const [k, v] of frame.storage) {
       if (v === undefined) {
@@ -360,6 +495,16 @@ export class FlatStateManager implements StateManagerInterface {
   }
 
   async consumeBAL(bal: BALJSONBlockAccessList, expectedStateRoot?: Uint8Array): Promise<void> {
+    for (const row of bal) {
+      try {
+        const address = hexToBytes(row.address)
+        if (address.length === 20) {
+          this.pinKey(bytesToUnprefixedHex(this._keccak(address)))
+        }
+      } catch {
+        // skip malformed rows; consumeBALUtil validates further
+      }
+    }
     return consumeBALUtil(this, bal, expectedStateRoot)
   }
 
@@ -388,7 +533,8 @@ export class FlatStateManager implements StateManagerInterface {
       if (address !== undefined) {
         this._hashToAddress.set(key, address)
       }
-      this.writeAccountKey(key, account)
+      const binary = accountToBinaryAccount(account)
+      this.ingestSnapBinaryKey(key, accountHash, binary)
     }
   }
 
@@ -406,9 +552,10 @@ export class FlatStateManager implements StateManagerInterface {
       if (address !== undefined) {
         this._hashToAddress.set(key, address)
       }
-      const owned = new Uint8Array(BINARY_ACCOUNT_SIZE)
-      owned.set(binaryAccount.subarray(0, BINARY_ACCOUNT_SIZE))
-      this.writeBinaryAccountKey(key, owned)
+      this.ingestSnapBinaryKey(key, accountHash, binaryAccount)
+    }
+    if (this._parent === undefined) {
+      this.maybeEvictResidents()
     }
   }
 
@@ -424,10 +571,41 @@ export class FlatStateManager implements StateManagerInterface {
     for (let offset = 0; offset < slab.length; offset += SNAP_BINARY_ACCOUNT_SLAB_RECORD_SIZE) {
       const accountHash = slab.subarray(offset, offset + 32)
       const key = this.accountHashKey(accountHash)
-      const owned = new Uint8Array(BINARY_ACCOUNT_SIZE)
-      owned.set(slab.subarray(offset + 32, offset + SNAP_BINARY_ACCOUNT_SLAB_RECORD_SIZE))
-      this.writeBinaryAccountKey(key, owned)
+      const body = slab.subarray(offset + 32, offset + SNAP_BINARY_ACCOUNT_SLAB_RECORD_SIZE)
+      this.ingestSnapBinaryKey(key, accountHash, body)
     }
+    if (this._parent === undefined) {
+      this.maybeEvictResidents()
+    }
+  }
+
+  private ingestSnapBinaryKey(key: string, accountHash: Uint8Array, binary: Uint8Array): void {
+    const frame = this.topFrame()
+    if (frame !== undefined && !frame.accounts.has(key)) {
+      const prior = this.readBinaryAccountKey(key)
+      frame.accounts.set(key, prior === undefined ? undefined : new Uint8Array(prior))
+    }
+    if (this._parent !== undefined) {
+      this.assignOverlayAccountShard(key, binary)
+      return
+    }
+    const shard = this.slotShard(key)
+    const hadSlot = shard.has(key)
+    const coldHit =
+      !hadSlot &&
+      this._coldAccountLookup !== undefined &&
+      this._coldAccountLookup(accountHash) !== undefined
+    if (!hadSlot && !this._tombstones.has(key) && !coldHit) {
+      this._logicalAccountCount++
+    }
+    this._tombstones.delete(key)
+    let slot = shard.get(key)
+    if (slot === undefined) {
+      slot = this._arena!.alloc()
+      shard.set(key, slot)
+    }
+    this._arena!.write(slot, binary)
+    this.touchResidentOrder(key)
   }
 
   /** Lookup by account hash without materializing an {@link Account}. */
@@ -455,9 +633,10 @@ export class FlatStateManager implements StateManagerInterface {
     return this.readCodeKey(bytesToUnprefixedHex(codeHash))
   }
 
+  /** Logical account total (includes cold-only snap rows). */
   accountCount(): number {
     if (this._parent === undefined) {
-      return this._liveAccountCount
+      return this._logicalAccountCount
     }
     let n = this._parent.accountCount()
     for (const key of this._localAccountKeys) {
@@ -467,6 +646,38 @@ export class FlatStateManager implements StateManagerInterface {
       else if (!parentVisible && selfVisible) n++
     }
     return n
+  }
+
+  /** Hot resident accounts in arena pages (root only). */
+  residentAccountCount(): number {
+    if (this._slotShards === undefined) {
+      return this._parent?.residentAccountCount() ?? 0
+    }
+    let n = 0
+    for (const shard of this._slotShards) {
+      n += shard.size
+    }
+    return n
+  }
+
+  /** Set logical synced total after tail resume (does not double-count tail warmup). */
+  setSyncedAccountCount(count: number): void {
+    if (this._parent !== undefined) {
+      this._parent.setSyncedAccountCount(count)
+      return
+    }
+    this._logicalAccountCount = count
+  }
+
+  /** Evict unpinned residents down to `maxKeep` (memory watchdog). Returns slots freed. */
+  trimUnpinnedResident(maxKeep: number): number {
+    if (this._slotShards === undefined || this._maxResidentAccounts === undefined) return 0
+    let freed = 0
+    while (this.residentAccountCount() > maxKeep) {
+      if (!this.evictOneUnpinned()) break
+      freed++
+    }
+    return freed
   }
 
   sampleAccounts(opts?: {
@@ -479,8 +690,31 @@ export class FlatStateManager implements StateManagerInterface {
     const samples: FlatAccountSample[] = []
     const seen = new Set<string>()
 
-    const collect = (sm: FlatStateManager) => {
-      for (const shard of sm._accountShards) {
+    const collectRoot = (sm: FlatStateManager) => {
+      if (sm._slotShards === undefined) return
+      for (const shard of sm._slotShards) {
+        for (const [k, slot] of shard) {
+          if (seen.has(k)) continue
+          seen.add(k)
+          const hashBytes = unprefixedHexToBytes(k)
+          const hashHex = bytesToHex(hashBytes)
+          if (prefix.length > 0 && !hashHex.toLowerCase().includes(prefix)) continue
+          const binary = sm._arena!.copyOutOwned(slot)
+          const account = binaryAccountToAccount(binary)
+          samples.push({
+            accountHash: hashBytes,
+            address: sm._hashToAddress.get(k) ?? this._hashToAddress.get(k),
+            account,
+          })
+          if (opts?.sortByBalanceDesc !== true && samples.length >= limit) {
+            return
+          }
+        }
+      }
+    }
+
+    const collectOverlay = (sm: FlatStateManager) => {
+      for (const shard of sm._overlayAccountShards) {
         for (const [k, binary] of shard) {
           if (binary === undefined || seen.has(k)) continue
           seen.add(k)
@@ -498,9 +732,17 @@ export class FlatStateManager implements StateManagerInterface {
           }
         }
       }
-      if (sm._parent !== undefined) collect(sm._parent)
+      if (sm._parent !== undefined) {
+        collectOverlay(sm._parent)
+        collectRoot(sm._parent)
+      }
     }
-    collect(this)
+
+    if (this._parent === undefined) {
+      collectRoot(this)
+    } else {
+      collectOverlay(this)
+    }
 
     if (opts?.sortByBalanceDesc === true) {
       samples.sort((a, b) => (a.account.balance > b.account.balance ? -1 : 1))

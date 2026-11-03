@@ -22,7 +22,18 @@ export interface SimpleStateManagerOpts extends BaseStateManagerOpts {
 }
 
 /** Options for constructing a {@link FlatStateManager}. */
-export interface FlatStateManagerOpts extends BaseStateManagerOpts {}
+export interface FlatStateManagerOpts extends BaseStateManagerOpts {
+  /**
+   * Cap hot resident snap accounts (evicts unpinned keys FIFO).
+   * Unset keeps every ingested account in memory (default for unit tests).
+   */
+  maxResidentAccounts?: number
+  /**
+   * Synchronous fallback when a hash is not in the hot resident set (Ethy disk journals).
+   * Must return a 104-byte binary account or `undefined`.
+   */
+  coldAccountLookup?: (accountHash: Uint8Array) => Uint8Array | undefined
+}
 
 /** Options for constructing a {@link RPCStateManager}. */
 export interface RPCStateManagerOpts extends BaseStateManagerOpts {
