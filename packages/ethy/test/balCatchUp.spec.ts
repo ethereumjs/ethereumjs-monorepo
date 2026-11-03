@@ -49,6 +49,7 @@ describe('[Ethy/Sync]: BAL catch-up oracle', () => {
     b.currentLastHash[0] = 0x08
     b.currentLastHash[1] = 0x00
     b.currentLastHash[2] = 0x00
+    b.subRanges![0]!.origin = new Uint8Array(b.currentLastHash)
     const midFrac = computeSnapProgressPct(spine)
     assert.isAbove(midFrac, startFrac)
     assert.isAtMost(midFrac, 85)

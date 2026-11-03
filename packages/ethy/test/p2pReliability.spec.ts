@@ -79,19 +79,16 @@ describe('[Ethy/P2P]: resume policy', () => {
       wantSnapDiscoveryHold({ snapSessions: 2, servingSnapPeers: 0, held: false }),
       false,
     )
-    assert.equal(wantSnapDiscoveryHold({ snapSessions: 1, servingSnapPeers: 4, held: true }), true)
-    assert.equal(wantSnapDiscoveryHold({ snapSessions: 4, servingSnapPeers: 5, held: false }), true)
-    assert.equal(wantSnapDiscoveryHold({ snapSessions: 3, servingSnapPeers: 4, held: true }), true)
-    assert.equal(
-      wantSnapDiscoveryHold({ snapSessions: 3, servingSnapPeers: 4, held: false }),
-      false,
-    )
+    assert.equal(wantSnapDiscoveryHold({ snapSessions: 1, servingSnapPeers: 8, held: false }), true)
+    assert.equal(wantSnapDiscoveryHold({ snapSessions: 4, servingSnapPeers: 8, held: false }), true)
+    assert.equal(wantSnapDiscoveryHold({ snapSessions: 3, servingSnapPeers: 6, held: true }), true)
+    assert.equal(wantSnapDiscoveryHold({ snapSessions: 3, servingSnapPeers: 5, held: true }), false)
   })
 
   it('shouldVipReconnect dials below VIP_SNAP_PEER_TARGET even when discovery is held', () => {
-    assert.equal(VIP_SNAP_PEER_TARGET, 6)
+    assert.equal(VIP_SNAP_PEER_TARGET, 10)
     assert.isTrue(shouldVipReconnect({ snapPeersTowardTarget: 1 }))
-    assert.isFalse(shouldVipReconnect({ snapPeersTowardTarget: 6 }))
+    assert.isFalse(shouldVipReconnect({ snapPeersTowardTarget: 10 }))
     assert.equal(
       countSnapPeersTowardVipTarget([
         { snapSession: true, snapResponsesOk: 0 },

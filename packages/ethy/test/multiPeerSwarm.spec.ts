@@ -8,9 +8,13 @@ import { assert, describe, it, vi } from 'vitest'
 
 import { PeerBookStore } from '../src/persist/peerBook.ts'
 import {
+  FULL_BUCKET_SPAN_36,
   bucketCursorFraction,
   computeSnapProgressPct,
   createSnapBuckets,
+  cursorSpan36,
+  ensureBucketSubRanges,
+  newPrefixCursor,
 } from '../src/spine/buckets.ts'
 import { createSpine } from '../src/spine/createSpine.ts'
 import type { PeerTelemetry } from '../src/spine/types.ts'
@@ -126,6 +130,25 @@ describe('[Ethy/Sync]: multi-peer swarm (WP-04f)', () => {
     sync.stop()
   }, 20_000)
 
+  it('keeps bucketCursorFraction monotonic when a bucket splits into sub-ranges', () => {
+    const bucket = createSnapBuckets()[0]!
+    const before = bucketCursorFraction(bucket)
+    const mid = new Uint8Array(bucket.limitHash)
+    mid[1] = 0x80
+    const left = ensureBucketSubRanges(bucket)[0]!
+    left.limit = new Uint8Array(mid)
+    const rightOrigin = new Uint8Array(mid)
+    rightOrigin[1] = 0x81
+    bucket.subRanges!.push(newPrefixCursor(0, rightOrigin, bucket.limitHash, 999))
+    const after = bucketCursorFraction(bucket)
+    assert.isAtLeast(after, before)
+    assert.approximately(
+      cursorSpan36(left) + cursorSpan36(bucket.subRanges![1]!),
+      FULL_BUCKET_SPAN_36 - 1,
+      FULL_BUCKET_SPAN_36,
+    )
+  })
+
   it('keeps bucketCursorFraction and computeSnapProgressPct monotonic across sub-nibbles', () => {
     const spine = createSpine('sepolia', 11155111n)
     setPhaseSnap(spine)
@@ -143,6 +166,7 @@ describe('[Ethy/Sync]: multi-peer swarm (WP-04f)', () => {
     let lastPct = -1
     for (const cur of cursors) {
       b.currentLastHash = cur
+      b.subRanges![0]!.origin = new Uint8Array(cur)
       const frac = bucketCursorFraction(b)
       const pct = computeSnapProgressPct(spine)
       assert.isAtLeast(frac, lastFrac)
@@ -255,6 +279,71 @@ describe('[Ethy/Sync]: multi-peer swarm (WP-04f)', () => {
     assert.isAtLeast(sends.size, 2)
     sync.stop()
   }, 15_000)
+
+  it('fills more than 16 concurrent range slots across eight proven peers without duplicate origins', async () => {
+    const accountsPerBucket = 32
+    const accountCount = accountsPerBucket * 16
+    const trie = await SyntheticSnapPeer.create(accountsPerBucket)
+    const spine = createSpine('sepolia', 11155111n)
+    spine.pivotStateRoot = trie.rootHash
+    const peers = Array.from({ length: 8 }, (_, i) => ({
+      id: (i + 1).toString(16).padStart(2, '0').repeat(32),
+      caps: ['snap/1'],
+      snapResponsesOk: 4,
+      snapTimeouts: 0,
+      avgLatencyMs: 5 + i,
+    }))
+    const origins: Array<{ peerId: string; origin: string }> = []
+    let onRange: (peerId: string, payload: Uint8Array) => void = () => {}
+    let releaseReplies = false
+    const pendingReplies: Array<{ peerId: string; payload: Uint8Array }> = []
+    const sync = new SnapAccountSynchronizer({
+      spine,
+      stateManager: createFlatStateManager(),
+      transport: mockSnapTransport({
+        onAccountRange(cb) {
+          onRange = cb
+          return () => {}
+        },
+        sendAccountRange(peerId, payload) {
+          const decoded = RLP.decode(payload) as unknown[]
+          const origin = decoded[2] as Uint8Array
+          origins.push({ peerId, origin: Buffer.from(origin).toString('hex') })
+          if (releaseReplies) {
+            void trie.buildAccountRangeReply(payload).then((reply) => onRange(peerId, reply))
+          } else {
+            pendingReplies.push({ peerId, payload })
+          }
+        },
+      }),
+      flightTracker: new SnapPeerFlightTracker(),
+      getSnapPeers: () => peers,
+      verifyPool: new SnapVerifyPool({ inProcess: true }),
+    })
+    sync.start()
+    await vi.waitFor(
+      () => {
+        assert.isAbove(origins.length, 16)
+      },
+      { timeout: 3_000 },
+    )
+    const uniquePeers = new Set(origins.map((o) => o.peerId))
+    assert.equal(uniquePeers.size, 8)
+    const uniqueOrigins = new Set(origins.map((o) => o.origin))
+    assert.equal(uniqueOrigins.size, origins.length)
+    releaseReplies = true
+    for (const pending of pendingReplies) {
+      const reply = await trie.buildAccountRangeReply(pending.payload)
+      onRange(pending.peerId, reply)
+    }
+    await vi.waitFor(
+      () => {
+        assert.equal(spine.totalAccountsSynced, accountCount)
+      },
+      { timeout: 30_000 },
+    )
+    sync.stop()
+  }, 45_000)
 })
 
 function setPhaseSnap(spine: ReturnType<typeof createSpine>): void {

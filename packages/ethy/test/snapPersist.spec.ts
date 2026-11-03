@@ -8,6 +8,7 @@ import {
   type BALJSONBlockAccessList,
   accountToBinaryAccount,
   bytesToHex,
+  bytesToUnprefixedHex,
   createAccount,
   createAddressFromString,
   createBlockLevelAccessListFromJSON,
@@ -22,11 +23,22 @@ import {
   readAccountJournalFile,
 } from '../src/persist/journal.ts'
 import { SnapPivotStore, snapBucketsUnfinished } from '../src/persist/snapStore.ts'
-import { createSnapBuckets } from '../src/spine/buckets.ts'
+import { createSnapBuckets, syncBucketCursorFields } from '../src/spine/buckets.ts'
 import { createSpine } from '../src/spine/createSpine.ts'
 
 function tempDir(): string {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'ethy-snap-'))
+}
+
+function segmentJournalKey(origin: Uint8Array): string {
+  return bytesToUnprefixedHex(origin).slice(0, 16)
+}
+
+function encodeSlabRow(accountHash: Uint8Array, binaryAccount: Uint8Array): Uint8Array {
+  const row = new Uint8Array(136)
+  row.set(accountHash, 0)
+  row.set(binaryAccount, 32)
+  return row
 }
 
 function openStore(dir: string, network = 'sepolia'): SnapPivotStore {
@@ -53,6 +65,7 @@ describe('[Ethy/Persist]: snap pivot store', () => {
     const buckets = createSnapBuckets()
     buckets[3]!.status = 'done'
     buckets[4]!.status = 'done'
+    buckets[4]!.subRanges = []
     buckets[4]!.currentLastHash = new Uint8Array(buckets[4]!.limitHash)
     store.flushBuckets(buckets)
 
@@ -253,6 +266,58 @@ describe('[Ethy/Persist]: snap pivot store', () => {
     const balanceAddr = createAddressFromString('0x2adc25665018aa1fe0e6bc666dac8fc2697ff9ba')
     const account = await sm.getAccount(balanceAddr)
     assert.equal(account?.balance, hexToBigInt('0x01ec30'))
+  })
+
+  it('lookup and resume restore multi-cursor segment journals in one nibble', async () => {
+    const dir = tempDir()
+    const root = new Uint8Array(32)
+    root[31] = 0x42
+    const store = openStore(dir)
+    store.activatePivot({
+      blockNumber: 50n,
+      blockHash: new Uint8Array(32),
+      stateRoot: root,
+    })
+    const hashA = new Uint8Array(32)
+    hashA[0] = 0x01
+    const hashB = new Uint8Array(32)
+    hashB[0] = 0x0f
+    hashB[1] = 0xff
+    const binary = accountToBinaryAccount(createAccount({ nonce: 1n, balance: 1n }))
+    const buckets = createSnapBuckets()
+    await store.appendVerifiedSlabAsync(0, encodeSlabRow(hashA, binary), buckets, 'prefix')
+    const segJournal = segmentJournalKey(hashB)
+    await store.appendVerifiedSlabAsync(0, encodeSlabRow(hashB, binary), buckets, segJournal)
+    buckets[0]!.subRanges = [
+      {
+        id: 0,
+        bucketIndex: 0,
+        origin: new Uint8Array(buckets[0]!.startHash),
+        limit: hashB,
+        journal: 'prefix',
+      },
+      {
+        id: 1,
+        bucketIndex: 0,
+        origin: hashB,
+        limit: new Uint8Array(buckets[0]!.limitHash),
+        journal: segJournal,
+      },
+    ]
+    syncBucketCursorFields(buckets[0]!)
+    store.flushBuckets(buckets)
+    store.maybeFlushMetadata(true)
+    await store.drainPendingFlushes()
+
+    const lookupStore = openStore(dir)
+    assert.isDefined(lookupStore.lookupBinaryAccountByHash(hashA))
+    assert.isDefined(lookupStore.lookupBinaryAccountByHash(hashB))
+
+    const spine = createSpine('sepolia', 11155111n)
+    const sm = createFlatStateManager()
+    lookupStore.loadInto(spine, sm)
+    assert.equal(spine.snapBuckets[0]!.subRanges?.length, 2)
+    assert.isAbove(spine.snapBuckets[0]!.accountsLoaded, 0)
   })
 
   it('demo store does not touch disk', () => {

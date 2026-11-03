@@ -1,6 +1,6 @@
 # WP-04h: General `N`-Way Sub-Range Cursor Pool & 10-Peer Dynamic Work-Stealing (`@ethereumjs/ethy`)
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `DONE`
 - **Dependencies:** `WP-04g` (`DONE`)
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
@@ -66,19 +66,56 @@ export type SnapRangeCursor = {
 
 ## 3. Acceptance Criteria & Verification Gates
 
-- [ ] `SnapAccountSynchronizer` uses a unified `SnapRangeCursor` pool (removing `bucketStealReq`, `bucketStealMid`, `bucketStealUpper`, and `flight.steal` special cases).
-- [ ] Up to 8–10 proven peers (`32+` concurrent in-flight slots) can sync 16 buckets simultaneously via dynamic cursor bisection without idle peer slots or duplicate range requests.
-- [ ] `bucketCursorFraction` and `computeSnapProgressPct` remain strictly monotonic (`0% → 100%`) under multi-cursor bisection.
-- [ ] `npm run tsc`, `npm test`, and `npm run spellcheck` pass with 0 errors.
+- [x] `SnapAccountSynchronizer` uses a unified `SnapRangeCursor` pool (removing `bucketStealReq`, `bucketStealMid`, `bucketStealUpper`, and `flight.steal` special cases).
+- [x] Up to 8–10 proven peers (`32+` concurrent in-flight slots) can sync 16 buckets simultaneously via dynamic cursor bisection without idle peer slots or duplicate range requests.
+- [x] `bucketCursorFraction` and `computeSnapProgressPct` remain strictly monotonic (`0% → 100%`) under multi-cursor bisection.
+- [x] `npm run tsc`, `npm test`, and `npm run spellcheck` pass with 0 errors.
 
 ---
 
 ## 4. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled out by Grok 4.7 during the Planning pass.)*
+**D-079 refinements:** one prefix cursor per nibble at start, bisect on demand (`MIN_SPLIT_SPAN = 0x1_0000_0000`); fixed `startHash`/`limitHash` (no mutating bucket `limitHash` for steal); peer faults clear only that cursor’s in-flight state (Law 1 — siblings keep syncing); sorted journals via sticky `accounts/<nibble>.bin` plus `accounts/<nibble>.<origin-hex>.seg` per split-born cursor; discovery hold aligned to 10-peer pool (`VIP_SNAP_PEER_TARGET = 10`, hold at ≥8 serving, sticky at ≥6 while held). Out of scope: WP-04i/WP-04j, code/storage pipelining, response-byte tuning, live Sepolia CI gate.
+
+| Slice | Package / files | Work |
+| --- | --- | --- |
+| 1 | `ethy` `src/spine/types.ts` | `SnapRangeCursor` + optional `SnapBucket.subRanges`; `journal: 'prefix' \| string` |
+| 1 | `ethy` `src/spine/buckets.ts` | Seed one prefix cursor in `createSnapBuckets`; `syncBucketCursorFields`; span-based `bucketCursorFraction` when `subRanges` present; exhausted = empty `subRanges` |
+| 2 | `ethy` `src/sync/accountSync.ts` | Remove steal maps + `flight.steal` + mid filters; `InFlightRange` with `cursorId` + sent `origin`/`limit`; `fillPeerSlots` + `splitWidestSubRange`; `filterAccountSlabWithin`; per-cursor verify (drop bucket-wide `verifyingBuckets` gate); `noteRangeFailure` must not stall whole nibble |
+| 3 | `ethy` `src/persist/snapStore.ts` | Persist `subRanges` in `buckets.json`; `appendVerifiedSlabAsync(..., journal)`; segment files; multi-file `lookupBinaryAccountByHash`; resume merges file tails into cursors; `nextContractScanBatch` + optional `contract-scan.json` `segment` |
+| 4 | `ethy` `src/net/discoveryHold.ts`, `test/p2pReliability.spec.ts` | VIP target 10; hold thresholds 8/6 |
+| 5 | `ethy/test/multiPeerSwarm.spec.ts`, `buckets.spec.ts` or `multiPeerSwarm`, `snapPersist.spec.ts` | 8-peer / 32-slot burst; monotonic pct under bisect; two-segment lookup + reload |
+| 6 | `.cursor/rules/ethy-architecture.mdc` | Law 4: `SnapRangeCursor` owns limit; in-flight keeps sent limit; reply clipped to cursor limit |
+
+### Scheduler (`fillPeerSlots`)
+
+1. Skip when paused or no pivot; mark bucket `done` when `subRanges` empty.
+2. **Free cursor:** `origin <= limit`, no `inFlightReqKey`, not `verifying`; pick by bucket index then origin.
+3. For each ranked snap peer not in `peerRestUntil`, while below `maxInFlightForPeer`: assign free cursor, else if `snapResponsesOk >= 2` run `splitWidestSubRange` and assign new cursor; stop when neither applies.
+4. **Split:** only when all cursors busy; widest span ≥ `MIN_SPLIT_SPAN`; clamp left `limit = mid`, insert right with `journal =` 16 hex of `incrementKey32(mid)`; left keeps journal binding; flight carries pre-split limit.
+5. Dedupe: refuse second in-flight request with same origin bytes.
+
+### Reply path
+
+- `cursor.verifying` only for that cursor; sibling cursors may schedule during proof.
+- Clip slab to `[flight.origin, min(flight.limit, cursor.limit)]`.
+- Success: advance origin or remove cursor; failure: clear flags, rest peer; `syncBucketCursorFields`; reschedule.
+
+### Persistence resume
+
+- Legacy `buckets.json` without `subRanges`: tail-seek + single prefix cursor at repaired `currentLastHash`.
+- With `subRanges`: restore cursors, warm prefix + segment tails, bump origin from file when ahead of saved origin, drop when `origin > limit`; do not collapse pool to prefix tail only.
+
+### Implementer gates
+
+`npm run tsc` and `npm test` in `packages/ethy`; `npm run spellcheck`. No new dependencies; no `@ethereumjs/*` sibling edits.
 
 ---
 
 ## 5. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled out by Composer 2.5 after implementation and verification.)*
+- **`SnapRangeCursor`** on each nibble bucket with `fillPeerSlots`, `splitWidestSubRange` (bisect even when the left half is in flight), and per-cursor verify; steal maps and mid-slab filters removed.
+- **Span math:** inclusive `cursorSpan36` and `bucketCursorFraction` use `hi - lo + 1` so fresh buckets read `0%`, not a floating-point sliver.
+- **Persistence:** `subRanges` in `buckets.json`; prefix `.bin` plus `.seg` journals; empty `subRanges` resume; lazy `activeStateRoot` on cold lookup; `drainPendingFlushes()` for tests.
+- **Discovery:** `VIP_SNAP_PEER_TARGET = 10`, hold at ≥8 serving, sticky at ≥6 while held.
+- **Tests:** 8-peer delayed-reply swarm (`>16` origins, 32 accounts/bucket trie); segment journal persist/lookup; discovery thresholds updated.

@@ -14,6 +14,7 @@ describe('snap range display', () => {
   it('snapBucketCursorExhausted() is false until the cursor reaches the limit', () => {
     const buckets = createSnapBuckets()
     assert.equal(snapBucketCursorExhausted(buckets[0]!), false)
+    buckets[0]!.subRanges = []
     buckets[0]!.currentLastHash = new Uint8Array(buckets[0]!.limitHash)
     assert.equal(snapBucketCursorExhausted(buckets[0]!), true)
   })

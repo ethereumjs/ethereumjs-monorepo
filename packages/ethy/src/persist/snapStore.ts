@@ -14,10 +14,17 @@ import {
 } from '@ethereumjs/util'
 import { bytesToHex, unprefixedHexToBytes } from '@ethereumjs/util'
 
-import { compareBytes32, createSnapBuckets, snapBucketCursorExhausted } from '../spine/buckets.ts'
-import type { EthySpine, SnapBucket, SnapBucketStatus } from '../spine/types.ts'
+import {
+  compareBytes32,
+  createSnapBuckets,
+  newPrefixCursor,
+  snapBucketCursorExhausted,
+  syncBucketCursorFields,
+} from '../spine/buckets.ts'
+import type { EthySpine, SnapBucket, SnapBucketStatus, SnapRangeCursor } from '../spine/types.ts'
 import type { IngestedAccountMeta } from '../sync/accountSync.ts'
 import type { SnapResumeSaved } from '../sync/resumePolicy.ts'
+import { incrementKey32 } from '../sync/syntheticPeer.ts'
 import {
   BINARY_ACCOUNT_JOURNAL_MAGIC,
   BINARY_ACCOUNT_JOURNAL_RECORD_SIZE,
@@ -54,6 +61,12 @@ type PivotMeta = {
   anchoredAt: number
 }
 
+type SerializedSubRange = {
+  origin: string
+  limit: string
+  journal: string
+}
+
 type SerializedBucket = {
   index: number
   prefix: string
@@ -61,6 +74,7 @@ type SerializedBucket = {
   accountsLoaded: number
   currentLastHash: string
   lastStallReason?: string
+  subRanges?: SerializedSubRange[]
 }
 
 export type SnapStoreOpenOpts = {
@@ -103,7 +117,7 @@ export class SnapPivotStore {
   private readonly initializedAccountFiles = new Set<string>()
   private bucketsFlushInFlight?: Promise<void>
   private readonly journalFdCache = new Map<number, number>()
-  private contractScan?: { bucket: number; byteOffset: number }
+  private contractScan?: { bucket: number; byteOffset: number; segment?: string }
   private contractScanComplete = false
 
   private constructor(opts: SnapStoreOpenOpts & { root: string; networkDir: string }) {
@@ -158,7 +172,30 @@ export class SnapPivotStore {
   }
 
   private accountFile(bucketIndex: number, stateRootHex: string): string {
-    return path.join(this.pivotDir(stateRootHex), 'accounts', `${bucketIndex.toString(16)}.bin`)
+    return this.accountJournalPath(bucketIndex, stateRootHex, 'prefix')
+  }
+
+  private accountJournalPath(
+    bucketIndex: number,
+    stateRootHex: string,
+    journal: 'prefix' | string,
+  ): string {
+    const dir = path.join(this.pivotDir(stateRootHex), 'accounts')
+    if (journal === 'prefix') {
+      return path.join(dir, `${bucketIndex.toString(16)}.bin`)
+    }
+    return path.join(dir, `${bucketIndex.toString(16)}.${journal}.seg`)
+  }
+
+  private listSegmentJournalFiles(bucketIndex: number, stateRootHex: string): string[] {
+    const dir = path.join(this.pivotDir(stateRootHex), 'accounts')
+    if (!fs.existsSync(dir)) return []
+    const prefix = `${bucketIndex.toString(16)}.`
+    return fs
+      .readdirSync(dir)
+      .filter((name) => name.startsWith(prefix) && name.endsWith('.seg'))
+      .sort()
+      .map((name) => path.join(dir, name))
   }
 
   /** Read on-disk pivot metadata without replaying journals (WP-04a resume). */
@@ -266,6 +303,16 @@ export class SnapPivotStore {
     let restored = 0
     for (let i = 0; i < buckets.length; i++) {
       const bucket = buckets[i]!
+      const saved = savedBuckets?.find((b) => b.index === i)
+      if (saved?.subRanges !== undefined) {
+        restored += this.restoreBucketFromSavedSubRanges(
+          bucket,
+          saved,
+          active.stateRoot,
+          stateManager,
+        )
+        continue
+      }
       const file = this.accountFile(i, active.stateRoot)
       let journalRecords = 0
       if (fs.existsSync(file)) {
@@ -300,7 +347,6 @@ export class SnapPivotStore {
           bucket.currentLastHash = cursor.currentLastHash
         }
       }
-      const saved = savedBuckets?.find((b) => b.index === i)
       if (saved !== undefined) {
         bucket.status = saved.status
         bucket.lastStallReason = saved.lastStallReason
@@ -309,6 +355,8 @@ export class SnapPivotStore {
           bucket.currentLastHash = unprefixedHexToBytes(saved.currentLastHash.slice(2))
         }
       }
+      this.resetPrefixCursorFromBucket(bucket)
+      syncBucketCursorFields(bucket)
       if (bucket.status === 'done' && !snapBucketCursorExhausted(bucket)) {
         bucket.status = 'pending'
       }
@@ -375,6 +423,16 @@ export class SnapPivotStore {
 
     for (let i = 0; i < buckets.length; i++) {
       const bucket = buckets[i]!
+      const saved = savedBuckets?.find((b) => b.index === i)
+      if (saved?.subRanges !== undefined) {
+        restored += this.restoreBucketFromSavedSubRanges(
+          bucket,
+          saved,
+          active.stateRoot,
+          stateManager,
+        )
+        continue
+      }
       const file = this.accountFile(i, active.stateRoot)
       let journalRecords = 0
       if (fs.existsSync(file)) {
@@ -445,7 +503,6 @@ export class SnapPivotStore {
           bucket.currentLastHash = cursor.currentLastHash
         }
       }
-      const saved = savedBuckets?.find((b) => b.index === i)
       if (saved !== undefined) {
         bucket.status = saved.status
         bucket.lastStallReason = saved.lastStallReason
@@ -454,6 +511,8 @@ export class SnapPivotStore {
           bucket.currentLastHash = unprefixedHexToBytes(saved.currentLastHash.slice(2))
         }
       }
+      this.resetPrefixCursorFromBucket(bucket)
+      syncBucketCursorFields(bucket)
       if (bucket.status === 'done' && !snapBucketCursorExhausted(bucket)) {
         bucket.status = 'pending'
       }
@@ -497,16 +556,14 @@ export class SnapPivotStore {
     const chunkRows = 512
     const chunkBuf = Buffer.alloc(chunkRows * rowSize)
     while (out.length < maxRows && this.contractScan.bucket < 16) {
-      const file = this.accountFile(this.contractScan.bucket, this.activeStateRoot)
-      if (!fs.existsSync(file)) {
-        this.contractScan.bucket++
-        this.contractScan.byteOffset = BINARY_ACCOUNT_JOURNAL_MAGIC.length
+      const file = this.contractScanJournalFile()
+      if (file === undefined || !fs.existsSync(file)) {
+        this.advanceContractScanToNextJournal()
         continue
       }
       const stat = fs.statSync(file)
       if (stat.size <= this.contractScan.byteOffset) {
-        this.contractScan.bucket++
-        this.contractScan.byteOffset = BINARY_ACCOUNT_JOURNAL_MAGIC.length
+        this.advanceContractScanToNextJournal()
         continue
       }
       const fd = fs.openSync(file, 'r')
@@ -541,11 +598,10 @@ export class SnapPivotStore {
         fs.closeSync(fd)
       }
       if (this.contractScan.byteOffset + rowSize > stat.size) {
-        this.contractScan.bucket++
-        this.contractScan.byteOffset = BINARY_ACCOUNT_JOURNAL_MAGIC.length
+        this.advanceContractScanToNextJournal()
       }
     }
-    if (this.contractScan.bucket >= 16) {
+    if (this.contractScan !== undefined && this.contractScan.bucket >= 16) {
       this.contractScanComplete = true
       this.contractScan = undefined
       this.persistContractScanCursor()
@@ -553,11 +609,138 @@ export class SnapPivotStore {
     return out
   }
 
+  private resetPrefixCursorFromBucket(bucket: SnapBucket): void {
+    if (compareBytes32(bucket.currentLastHash, bucket.limitHash) >= 0) {
+      bucket.subRanges = []
+      return
+    }
+    bucket.subRanges = [
+      newPrefixCursor(bucket.index, bucket.currentLastHash, bucket.limitHash, bucket.index),
+    ]
+  }
+
+  private restoreBucketFromSavedSubRanges(
+    bucket: SnapBucket,
+    saved: SerializedBucket,
+    stateRootHex: string,
+    stateManager: FlatStateManager,
+  ): number {
+    bucket.status = saved.status
+    bucket.lastStallReason = saved.lastStallReason
+    if (saved.subRanges === undefined || saved.subRanges.length === 0) {
+      bucket.subRanges = []
+      bucket.currentLastHash = new Uint8Array(bucket.limitHash)
+      syncBucketCursorFields(bucket)
+      return 0
+    }
+    this.restoreSubRangesFromSaved(bucket, saved.subRanges, stateRootHex, stateManager)
+    syncBucketCursorFields(bucket)
+    if (bucket.status === 'done' && !snapBucketCursorExhausted(bucket)) {
+      bucket.status = 'pending'
+    }
+    return bucket.accountsLoaded
+  }
+
+  private restoreSubRangesFromSaved(
+    bucket: SnapBucket,
+    saved: SerializedSubRange[],
+    stateRootHex: string,
+    stateManager: FlatStateManager,
+  ): void {
+    bucket.subRanges = saved.map((s, idx) => ({
+      id: bucket.index * 1000 + idx,
+      bucketIndex: bucket.index,
+      origin: unprefixedHexToBytes(s.origin.replace(/^0x/i, '')),
+      limit: unprefixedHexToBytes(s.limit.replace(/^0x/i, '')),
+      journal: s.journal === 'prefix' ? 'prefix' : s.journal,
+    }))
+    let total = 0
+    for (const cursor of bucket.subRanges) {
+      const file = this.accountJournalPath(bucket.index, stateRootHex, cursor.journal)
+      total += this.warmCursorJournalTail(cursor, file, stateManager)
+    }
+    bucket.subRanges = bucket.subRanges.filter((c) => compareBytes32(c.origin, c.limit) <= 0)
+    bucket.accountsLoaded = total
+  }
+
+  private warmCursorJournalTail(
+    cursor: SnapRangeCursor,
+    file: string,
+    stateManager: FlatStateManager,
+  ): number {
+    if (!fs.existsSync(file)) return 0
+    const stat = fs.statSync(file)
+    const payloadStart = BINARY_ACCOUNT_JOURNAL_MAGIC.length
+    const rowSize = BINARY_ACCOUNT_JOURNAL_RECORD_SIZE
+    const recordCount = Math.floor((stat.size - payloadStart) / rowSize)
+    if (recordCount <= 0) return 0
+    const tailRows = Math.min(TAIL_WARMUP_JOURNAL_RECORDS, recordCount)
+    const tailStart = payloadStart + (recordCount - tailRows) * rowSize
+    const buf = Buffer.alloc(tailRows * rowSize)
+    const fd = fs.openSync(file, 'r')
+    try {
+      fs.readSync(fd, buf, 0, buf.length, tailStart)
+    } finally {
+      fs.closeSync(fd)
+    }
+    stateManager.putSnapBinaryAccountsFromSlab(new Uint8Array(buf))
+    const lastRowOffset = (tailRows - 1) * rowSize
+    const lastHash = new Uint8Array(buf.subarray(lastRowOffset, lastRowOffset + 32))
+    const next = incrementKey32(lastHash)
+    if (compareBytes32(next, cursor.origin) > 0) {
+      cursor.origin = next
+    }
+    return recordCount
+  }
+
+  private contractScanJournalFile(): string | undefined {
+    if (this.activeStateRoot === undefined || this.contractScan === undefined) return undefined
+    const journal = this.contractScan.segment ?? 'prefix'
+    return this.accountJournalPath(this.contractScan.bucket, this.activeStateRoot, journal)
+  }
+
+  private advanceContractScanToNextJournal(): void {
+    if (this.contractScan === undefined || this.activeStateRoot === undefined) return
+    if (this.contractScan.segment === undefined) {
+      const segments = this.listSegmentJournalFiles(this.contractScan.bucket, this.activeStateRoot)
+      const first = segments[0]
+      if (first === undefined) {
+        this.contractScan.bucket++
+        this.contractScan.byteOffset = BINARY_ACCOUNT_JOURNAL_MAGIC.length
+        return
+      }
+      const base = path.basename(first)
+      this.contractScan.segment = base.slice(base.indexOf('.') + 1, -4)
+      this.contractScan.byteOffset = BINARY_ACCOUNT_JOURNAL_MAGIC.length
+      return
+    }
+    this.contractScan.bucket++
+    this.contractScan.segment = undefined
+    this.contractScan.byteOffset = BINARY_ACCOUNT_JOURNAL_MAGIC.length
+  }
+
   /** Cold account lookup for {@link FlatStateManager} (sorted binary journals). */
   lookupBinaryAccountByHash(accountHash: Uint8Array): Uint8Array | undefined {
-    if (!this.enabled || this.activeStateRoot === undefined) return undefined
+    if (!this.enabled) return undefined
+    if (this.activeStateRoot === undefined) {
+      const active = this.readActive()
+      if (active === undefined) return undefined
+      this.activeStateRoot = active.stateRoot
+      this.seedInitializedAccountFiles(active.stateRoot)
+    }
     const nibble = accountHash[0]! >> 4
-    const file = this.accountFile(nibble, this.activeStateRoot)
+    const files = [
+      this.accountFile(nibble, this.activeStateRoot),
+      ...this.listSegmentJournalFiles(nibble, this.activeStateRoot),
+    ]
+    for (const file of files) {
+      const hit = this.lookupBinaryAccountInFile(file, accountHash)
+      if (hit !== undefined) return hit
+    }
+    return undefined
+  }
+
+  private lookupBinaryAccountInFile(file: string, accountHash: Uint8Array): Uint8Array | undefined {
     if (!fs.existsSync(file)) return undefined
     const stat = fs.statSync(file)
     const payloadStart = BINARY_ACCOUNT_JOURNAL_MAGIC.length
@@ -603,7 +786,9 @@ export class SnapPivotStore {
     }
     let total = 0
     for (const name of fs.readdirSync(accountsDir)) {
-      if (!name.endsWith('.bin')) continue
+      const isPrefix = /^[0-9a-f]\.bin$/i.test(name)
+      const isSegment = /^[0-9a-f]\..+\.seg$/i.test(name)
+      if (!isPrefix && !isSegment) continue
       const filePath = path.join(accountsDir, name)
       if (fs.statSync(filePath).size === 0) continue
       const index = Number.parseInt(name.slice(0, -'.bin'.length), 16)
@@ -773,12 +958,13 @@ export class SnapPivotStore {
     bucketIndex: number,
     slab: Uint8Array,
     buckets: SnapBucket[],
+    journal: 'prefix' | string = 'prefix',
   ): Promise<void> {
     if (!this.enabled || this.activeStateRoot === undefined || slab.length === 0) {
       return Promise.resolve()
     }
     this.lastBuckets = buckets
-    const file = this.accountFile(bucketIndex, this.activeStateRoot)
+    const file = this.accountJournalPath(bucketIndex, this.activeStateRoot, journal)
     const needMagic = !this.initializedAccountFiles.has(file)
     if (needMagic) this.initializedAccountFiles.add(file)
     const prior = this.accountWriteChains.get(file) ?? Promise.resolve()
@@ -879,7 +1065,12 @@ export class SnapPivotStore {
       await fs.promises.mkdir(dir, { recursive: true })
       const tmp = `${filePath}.${process.pid}.tmp`
       await fs.promises.writeFile(tmp, payload, 'utf8')
-      await fs.promises.rename(tmp, filePath)
+      try {
+        await fs.promises.rename(tmp, filePath)
+      } catch (err) {
+        const code = (err as NodeJS.ErrnoException).code
+        if (code !== 'ENOENT') throw err
+      }
     }
     this.bucketsFlushInFlight = (this.bucketsFlushInFlight ?? Promise.resolve()).then(run)
     return this.bucketsFlushInFlight
@@ -922,6 +1113,15 @@ export class SnapPivotStore {
     writeAtomicDoc(path.join(this.pivotDir(this.activeStateRoot), 'buckets.json'), {
       buckets: serializeBuckets(buckets),
     })
+  }
+
+  /** Wait for async journal appends and bucket metadata flushes (tests and clean shutdown). */
+  async drainPendingFlushes(): Promise<void> {
+    await Promise.all([...this.accountWriteChains.values()])
+    if (this.bucketsFlushInFlight !== undefined) {
+      await this.bucketsFlushInFlight
+      this.bucketsFlushInFlight = undefined
+    }
   }
 
   flushAll(buckets: SnapBucket[]): void {
@@ -1034,7 +1234,12 @@ export class SnapPivotStore {
       return
     }
     try {
-      const doc = readStoredDoc<{ bucket: number; byteOffset: number; done?: boolean }>(p)
+      const doc = readStoredDoc<{
+        bucket: number
+        byteOffset: number
+        segment?: string
+        done?: boolean
+      }>(p)
       if (doc.done === true) {
         this.contractScanComplete = true
         this.contractScan = undefined
@@ -1043,6 +1248,7 @@ export class SnapPivotStore {
       this.contractScan = {
         bucket: doc.bucket ?? 0,
         byteOffset: doc.byteOffset ?? BINARY_ACCOUNT_JOURNAL_MAGIC.length,
+        segment: doc.segment,
       }
     } catch {
       this.contractScan = { bucket: 0, byteOffset: BINARY_ACCOUNT_JOURNAL_MAGIC.length }
@@ -1060,6 +1266,7 @@ export class SnapPivotStore {
     writeAtomicDoc(p, {
       bucket: this.contractScan.bucket,
       byteOffset: this.contractScan.byteOffset,
+      segment: this.contractScan.segment,
     })
   }
 
@@ -1096,6 +1303,11 @@ function serializeBuckets(buckets: SnapBucket[]): SerializedBucket[] {
     accountsLoaded: b.accountsLoaded,
     currentLastHash: bytesToHex(b.currentLastHash),
     lastStallReason: b.lastStallReason,
+    subRanges: b.subRanges?.map((c) => ({
+      origin: bytesToHex(c.origin),
+      limit: bytesToHex(c.limit),
+      journal: c.journal,
+    })),
   }))
 }
 
