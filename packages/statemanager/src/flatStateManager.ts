@@ -71,10 +71,10 @@ export class FlatStateManager implements StateManagerInterface {
   /** Overlay keys written on a shallow copy (including tombstones). */
   private readonly _localAccountKeys = new Set<string>()
   private _logicalAccountCount = 0
+  private _residentCount = 0
+  private _evictShardCursor = 0
   private readonly _tombstones = new Set<string>()
   private readonly _pinnedKeys = new Set<string>()
-  private readonly _residentStamp = new Map<string, number>()
-  private _residentStampSeq = 0
   private readonly _storage = new Map<string, Uint8Array>()
   private readonly _code = new Map<string, Uint8Array>()
   private readonly _hashToAddress = new Map<string, Address>()
@@ -132,10 +132,6 @@ export class FlatStateManager implements StateManagerInterface {
     this._pinnedKeys.add(key)
   }
 
-  private touchResidentOrder(key: string): void {
-    this._residentStamp.set(key, ++this._residentStampSeq)
-  }
-
   private readBinaryAccountKey(key: string): Uint8Array | undefined {
     if (this._parent !== undefined) {
       const shard = this.overlayShard(key)
@@ -163,11 +159,12 @@ export class FlatStateManager implements StateManagerInterface {
 
   private promoteColdToResident(key: string, binary: Uint8Array): void {
     if (this._slotShards === undefined) return
-    if (this.slotShard(key).has(key)) return
+    const shard = this.slotShard(key)
+    if (shard.has(key)) return
     const slot = this._arena!.alloc()
     this._arena!.write(slot, binary)
-    this.slotShard(key).set(key, slot)
-    this.touchResidentOrder(key)
+    shard.set(key, slot)
+    this._residentCount++
     this.maybeEvictResidents()
   }
 
@@ -193,28 +190,23 @@ export class FlatStateManager implements StateManagerInterface {
         const slot = shard.get(key)!
         this._arena!.release(slot)
         shard.delete(key)
+        this._residentCount--
         this._logicalAccountCount--
       }
       this._tombstones.add(key)
-      this._residentStamp.delete(key)
       return
     }
     this._tombstones.delete(key)
     let slot = shard.get(key)
-    const isNewLogical =
-      !hadSlot &&
-      !this._tombstones.has(key) &&
-      (this._coldAccountLookup === undefined ||
-        this._coldAccountLookup(unprefixedHexToBytes(key)) === undefined)
     if (slot === undefined) {
       slot = this._arena!.alloc()
       shard.set(key, slot)
-      if (isNewLogical && snapIngest) {
+      this._residentCount++
+      if (snapIngest) {
         this._logicalAccountCount++
       }
     }
     this._arena!.write(slot, binary)
-    this.touchResidentOrder(key)
     if (snapIngest) {
       this.maybeEvictResidents()
     }
@@ -228,33 +220,27 @@ export class FlatStateManager implements StateManagerInterface {
     ) {
       return
     }
-    while (this.residentAccountCount() > this._maxResidentAccounts) {
+    while (this._residentCount > this._maxResidentAccounts) {
       if (!this.evictOneUnpinned()) break
     }
   }
 
   private evictOneUnpinned(): boolean {
-    let victimKey: string | undefined
-    let victimStamp = Number.POSITIVE_INFINITY
-    if (this._slotShards === undefined) return false
-    for (const shard of this._slotShards) {
-      for (const key of shard.keys()) {
+    if (this._slotShards === undefined || this._residentCount === 0) return false
+    for (let i = 0; i < ACCOUNT_SHARD_COUNT; i++) {
+      const idx = (this._evictShardCursor + i) & 0xff
+      const shard = this._slotShards[idx]!
+      if (shard.size === 0) continue
+      for (const [key, slot] of shard) {
         if (this._pinnedKeys.has(key)) continue
-        const stamp = this._residentStamp.get(key) ?? 0
-        if (stamp < victimStamp) {
-          victimStamp = stamp
-          victimKey = key
-        }
+        shard.delete(key)
+        this._arena!.release(slot)
+        this._residentCount--
+        this._evictShardCursor = (idx + 1) & 0xff
+        return true
       }
     }
-    if (victimKey === undefined) return false
-    const shard = this.slotShard(victimKey)
-    const slot = shard.get(victimKey)
-    if (slot === undefined) return false
-    shard.delete(victimKey)
-    this._arena!.release(slot)
-    this._residentStamp.delete(victimKey)
-    return true
+    return false
   }
 
   private writeBinaryAccountKey(
@@ -579,7 +565,7 @@ export class FlatStateManager implements StateManagerInterface {
     }
   }
 
-  private ingestSnapBinaryKey(key: string, accountHash: Uint8Array, binary: Uint8Array): void {
+  private ingestSnapBinaryKey(key: string, _accountHash: Uint8Array, binary: Uint8Array): void {
     const frame = this.topFrame()
     if (frame !== undefined && !frame.accounts.has(key)) {
       const prior = this.readBinaryAccountKey(key)
@@ -591,11 +577,7 @@ export class FlatStateManager implements StateManagerInterface {
     }
     const shard = this.slotShard(key)
     const hadSlot = shard.has(key)
-    const coldHit =
-      !hadSlot &&
-      this._coldAccountLookup !== undefined &&
-      this._coldAccountLookup(accountHash) !== undefined
-    if (!hadSlot && !this._tombstones.has(key) && !coldHit) {
+    if (!hadSlot && !this._tombstones.has(key)) {
       this._logicalAccountCount++
     }
     this._tombstones.delete(key)
@@ -603,9 +585,9 @@ export class FlatStateManager implements StateManagerInterface {
     if (slot === undefined) {
       slot = this._arena!.alloc()
       shard.set(key, slot)
+      this._residentCount++
     }
     this._arena!.write(slot, binary)
-    this.touchResidentOrder(key)
   }
 
   /** Lookup by account hash without materializing an {@link Account}. */
@@ -653,11 +635,7 @@ export class FlatStateManager implements StateManagerInterface {
     if (this._slotShards === undefined) {
       return this._parent?.residentAccountCount() ?? 0
     }
-    let n = 0
-    for (const shard of this._slotShards) {
-      n += shard.size
-    }
-    return n
+    return this._residentCount
   }
 
   /** Set logical synced total after tail resume (does not double-count tail warmup). */
@@ -673,7 +651,7 @@ export class FlatStateManager implements StateManagerInterface {
   trimUnpinnedResident(maxKeep: number): number {
     if (this._slotShards === undefined || this._maxResidentAccounts === undefined) return 0
     let freed = 0
-    while (this.residentAccountCount() > maxKeep) {
+    while (this._residentCount > maxKeep) {
       if (!this.evictOneUnpinned()) break
       freed++
     }
