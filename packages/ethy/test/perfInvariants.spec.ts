@@ -77,6 +77,7 @@ describe('[Ethy/Perf]: scale invariants', () => {
       flightTracker: new SnapPeerFlightTracker(),
       getSnapPeers: () => [],
       peerBusy: () => false,
+      maxInMemoryContractTasks: 25_000,
     })
     const entries = makeContractMeta(20_000)
     const t0 = performance.now()
@@ -90,7 +91,7 @@ describe('[Ethy/Perf]: scale invariants', () => {
     assert.equal(spine.codesQueued, 20_000)
   })
 
-  it('loadIntoAsync yields and reports incremental account count', async () => {
+  it('loadIntoAsync tail resume keeps turns short and restores logical count', async () => {
     const dir = tempDir()
     const root = new Uint8Array(32)
     root[31] = 0x01
@@ -129,8 +130,7 @@ describe('[Ethy/Perf]: scale invariants', () => {
     fs.writeFileSync(path.join(accountsDir, '0.bin'), body)
 
     const spine = createSpine('sepolia', 11155111n)
-    const sm = createFlatStateManager()
-    let sawMidProgress = false
+    const sm = createFlatStateManager({ maxResidentAccounts: 512 })
     let maxTurnMs = 0
     let lastTurn = performance.now()
     let stopWatch = false
@@ -139,7 +139,6 @@ describe('[Ethy/Perf]: scale invariants', () => {
       const now = performance.now()
       maxTurnMs = Math.max(maxTurnMs, now - lastTurn)
       lastTurn = now
-      if (spine.totalAccountsSynced > 0) sawMidProgress = true
       setImmediate(watch)
     }
     setImmediate(watch)
@@ -147,8 +146,9 @@ describe('[Ethy/Perf]: scale invariants', () => {
     await store.loadIntoAsync(spine, sm)
     stopWatch = true
     assert.isBelow(maxTurnMs, 25)
-    assert.isTrue(sawMidProgress)
     assert.equal(spine.totalAccountsSynced, rowCount)
+    assert.equal(sm.accountCount(), rowCount)
+    assert.isAtMost(sm.residentAccountCount(), 512)
   })
 
   it('SnapVerifyPool dispatches across worker slots', async () => {

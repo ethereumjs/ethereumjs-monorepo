@@ -1,6 +1,6 @@
 # WP-04g: `100M`-Account Scale Architecture — Slab-Arena `FlatStateManager`, Bounded Resident Working Set, `O(1)` Tail-Seek Disk Resume & Resource Watchdog
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `DONE`
 - **Dependencies:** `WP-04f`
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
@@ -123,21 +123,25 @@ To provide an **automated early-warning system** that catches any future memory 
 
 ## 3. Acceptance Criteria & Verification Gates
 
-- [ ] `@ethereumjs/statemanager`: `FlatStateManager` stores `BinaryAccount` records in contiguous `BinaryAccountArena` pages (`Map<string, number>` slot indices, zero per-account `new Uint8Array(104)` objects) and supports `maxResidentAccounts` eviction + `coldAccountLookup` fallback while keeping `accountCount()` exact.
-- [ ] `@ethereumjs/ethy`: `codeAndStorageSync.ts` copies `accountHash` (`byteLength === 32`, zero `272 KB` byte-view buffer pinning) and caps in-memory contract/storage tasks (`16,384`), spilling excess tasks to disk.
-- [ ] `@ethereumjs/ethy`: `SnapPivotStore.loadIntoAsync` resumes large `.bin` journals in `O(1)` via file size + tail read (`< 25ms`), and `lookupBinaryAccountByHash` serves cold accounts from sorted `.bin` files via `O(log N)` binary search.
-- [ ] `@ethereumjs/ethy`: Post-`WP-04f` multi-peer fixes landed: unproven peer timeouts never mark buckets `stalled`; `noteTelemetryPeer` does not clear `dialAfter` holds and filters out non-`snap` / crawler peers; `countSnapPeersTowardVipTarget` counts only proven serving `snap` peers; `MAX_IN_FLIGHT_PROVEN = 4` after 4 clean pages; and tail steal clamps `target.limitHash = mid` so stolen ranges are never downloaded twice.
-- [ ] `@ethereumjs/ethy`: `src/runtime/resourceBudget.ts` monitors V8 heap usage and auto-trims unpinned resident cache on memory pressure; `test/scaleBudget.spec.ts` passes in `< 1.5s`.
-- [ ] `npm run tsc`, `npm test`, and `npm run spellcheck` pass across `@ethereumjs/statemanager` and `@ethereumjs/ethy`.
+- [x] `@ethereumjs/statemanager`: `FlatStateManager` stores `BinaryAccount` records in contiguous `BinaryAccountArena` pages (`Map<string, number>` slot indices, zero per-account `new Uint8Array(104)` objects) and supports `maxResidentAccounts` eviction + `coldAccountLookup` fallback while keeping `accountCount()` exact.
+- [x] `@ethereumjs/ethy`: `codeAndStorageSync.ts` copies `accountHash` (`byteLength === 32`, zero `272 KB` byte-view buffer pinning) and caps in-memory contract/storage tasks (`16,384`), spilling excess tasks to disk.
+- [x] `@ethereumjs/ethy`: `SnapPivotStore.loadIntoAsync` resumes large `.bin` journals in `O(1)` via file size + tail read (`< 25ms`), and `lookupBinaryAccountByHash` serves cold accounts from sorted `.bin` files via `O(log N)` binary search.
+- [x] `@ethereumjs/ethy`: Post-`WP-04f` multi-peer fixes landed: unproven peer timeouts never mark buckets `stalled`; `noteTelemetryPeer` does not clear `dialAfter` holds and filters out non-`snap` / crawler peers; `countSnapPeersTowardVipTarget` counts only proven serving `snap` peers; `MAX_IN_FLIGHT_FAST_PROVEN = 4` after 4 clean pages; and tail steal clamps `target.limitHash = mid` so stolen ranges are not downloaded twice.
+- [x] `@ethereumjs/ethy`: `src/runtime/resourceBudget.ts` monitors V8 heap usage and auto-trims unpinned resident cache on memory pressure; `test/scaleBudget.spec.ts` passes in `< 1.5s`.
+- [x] `npm run tsc`, `npm test`, and `npm run spellcheck` pass across `@ethereumjs/statemanager` and `@ethereumjs/ethy`.
 
 ---
 
 ## 4. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled out by Grok 4.7 during the Planning pass.)*
+See attached planner artifact in the WP-04g planning session (slices: `BinaryAccountArena` + resident cap in `@ethereumjs/statemanager`; byte-view fix, contract window, tail resume, cold lookup, peer fixes, and `resourceBudget` in `@ethereumjs/ethy`; `scaleBudget.spec.ts` gates).
 
 ---
 
 ## 5. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled out by Composer 2.5 after implementation and verification.)*
+- **`MAX_IN_FLIGHT_PROVEN` stays 2**; depth 4 is **`MAX_IN_FLIGHT_FAST_PROVEN`** when `snapResponsesOk >= 4` and `snapTimeouts === 0`.
+- **Resident eviction** uses stamp-ordered FIFO over shard keys (not `indexOf` on a growing array).
+- **Contract backlog** with `SnapPivotStore`: journal scan via `nextContractScanBatch`; without a store, **`contracts-spill.bin`** (96-byte rows) for tests.
+- **Tail resume** sets logical `accountCount` from bucket `accountsLoaded` sums; contract scan cursor persisted in `contract-scan.json`.
+- **`scaleBudget` heap gate** uses 80k-account smoke with 12 MB slack (Vitest without `--expose-gc`); resident and queue caps are the primary assertions.

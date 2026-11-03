@@ -58,11 +58,17 @@ describe('[Ethy/Sync]: snap schedule policy (WP-04c)', () => {
   it('ranks proven peers by latency before unproven peers', () => {
     const slow = { ...provenPeer, id: 'slow', avgLatencyMs: 90 }
     const fast = { ...provenPeer, id: 'fast', avgLatencyMs: 20 }
-    const ranked = rankSnapPeers([unprovenPeer, slow, fast])
+    const unknownRtt = { ...provenPeer, id: 'unknown', avgLatencyMs: 0 }
+    const ranked = rankSnapPeers([unprovenPeer, slow, fast, unknownRtt])
     assert.deepEqual(
       ranked.map((p) => p.id),
-      ['fast', 'slow', 'zombie'],
+      ['fast', 'slow', 'unknown', 'zombie'],
     )
+  })
+
+  it('allows four in-flight ranges for fast proven peers', () => {
+    const fast = { ...provenPeer, snapResponsesOk: 4, snapTimeouts: 0 }
+    assert.equal(maxInFlightForPeer(fast), 4)
   })
 
   it('uses a 4s range timeout for unproven peers', () => {
@@ -115,7 +121,7 @@ describe('[Ethy/Sync]: binary journal (WP-04c)', () => {
 })
 
 describe('[Ethy/Sync]: multi-peer scaling (fast smoke)', () => {
-  it('times out a silent unproven peer at 4s and marks the bucket stalled', async () => {
+  it('times out a silent unproven peer at 4s and returns the bucket to pending', async () => {
     vi.useFakeTimers()
     try {
       const spine = createSpine('sepolia', 11155111n)
@@ -139,7 +145,7 @@ describe('[Ethy/Sync]: multi-peer scaling (fast smoke)', () => {
       sync.start()
       assert.equal(spine.snapBuckets[0]!.status, 'syncing')
       await vi.advanceTimersByTimeAsync(UNPROVEN_RANGE_TIMEOUT_MS + 100)
-      assert.equal(spine.snapBuckets[0]!.status, 'stalled')
+      assert.equal(spine.snapBuckets[0]!.status, 'pending')
       sync.stop()
     } finally {
       vi.useRealTimers()

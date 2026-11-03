@@ -8,12 +8,21 @@ export type SnapSchedulePeer = {
 }
 
 export const MAX_IN_FLIGHT_PROVEN = 2
+/** Extra pipeline depth for fast proven peers (WP-04g). */
+export const MAX_IN_FLIGHT_FAST_PROVEN = 4
 export const UNPROVEN_RANGE_TIMEOUT_MS = 4_000
 export const PROVEN_RANGE_TIMEOUT_MS = 20_000
 export const UNPROVEN_PEER_REST_MS = 30_000
 export const PROVEN_PEER_REST_MS = 10_000
 
 export function maxInFlightForPeer(peer: SnapSchedulePeer): number {
+  if (
+    peer.snapResponsesOk >= 4 &&
+    peer.snapTimeouts === 0 &&
+    peer.snapTimeouts * 4 <= peer.snapResponsesOk
+  ) {
+    return MAX_IN_FLIGHT_FAST_PROVEN
+  }
   if (peer.snapResponsesOk >= 2 && peer.snapTimeouts * 4 <= peer.snapResponsesOk) {
     return MAX_IN_FLIGHT_PROVEN
   }
@@ -58,7 +67,14 @@ export function rankSnapPeers(peers: SnapSchedulePeer[]): SnapSchedulePeer[] {
     const aProven = a.snapResponsesOk > 0 ? 0 : 1
     const bProven = b.snapResponsesOk > 0 ? 0 : 1
     if (aProven !== bProven) return aProven - bProven
-    if (aProven === 0) return a.avgLatencyMs - b.avgLatencyMs
+    if (aProven === 0) {
+      const aRtt = a.avgLatencyMs
+      const bRtt = b.avgLatencyMs
+      const aUnknown = aRtt === 0 ? 1 : 0
+      const bUnknown = bRtt === 0 ? 1 : 0
+      if (aUnknown !== bUnknown) return aUnknown - bUnknown
+      return aRtt - bRtt
+    }
     return 0
   })
 }

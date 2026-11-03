@@ -1,3 +1,6 @@
+import * as fs from 'node:fs'
+import * as path from 'node:path'
+
 import { RLP } from '@ethereumjs/rlp'
 import type { FlatStateManager } from '@ethereumjs/statemanager'
 import {
@@ -27,6 +30,9 @@ import { incrementKey32 } from './syntheticPeer.ts'
 
 const RESPONSE_BYTES = 128 * 1024
 const MAX_CODE_HASHES = 64
+/** In-memory contract/storage task cap before disk spill (WP-04g). */
+export const MAX_IN_MEMORY_CONTRACT_TASKS = 16_384
+const CONTRACT_SPILL_ROW_BYTES = 96
 const RANGE_TIMEOUT_MS = 20_000
 const STORAGE_LIMIT = new Uint8Array(32).fill(0xff)
 
@@ -69,6 +75,9 @@ export type SnapCodeAndStorageSynchronizerOpts = {
   snapStore?: SnapPivotStore
   peerBusy: (peerId: string) => boolean
   verifyPool?: SnapVerifyPool
+  maxInMemoryContractTasks?: number
+  /** Test-only spill file when no {@link SnapPivotStore} is attached. */
+  contractSpillPath?: string
 }
 
 export class SnapCodeAndStorageSynchronizer {
@@ -80,6 +89,9 @@ export class SnapCodeAndStorageSynchronizer {
   private readonly snapStore?: SnapPivotStore
   private readonly peerBusy: (peerId: string) => boolean
   private readonly verifyPool: SnapVerifyPool
+  private readonly maxInMemoryContractTasks: number
+  private readonly contractSpillPath?: string
+  private contractsSpilledOnDisk = 0
   private reqId = 1n
   private readonly codeQueue = new Map<string, CodeTask>()
   private readonly pendingStorage = new Map<string, StorageTask>()
@@ -98,6 +110,8 @@ export class SnapCodeAndStorageSynchronizer {
     this.snapStore = opts.snapStore
     this.peerBusy = opts.peerBusy
     this.verifyPool = opts.verifyPool ?? new SnapVerifyPool({ inProcess: true })
+    this.maxInMemoryContractTasks = opts.maxInMemoryContractTasks ?? MAX_IN_MEMORY_CONTRACT_TASKS
+    this.contractSpillPath = opts.contractSpillPath
   }
 
   start(): void {
@@ -125,17 +139,27 @@ export class SnapCodeAndStorageSynchronizer {
 
   noteAccounts(entries: IngestedAccountMeta[]): void {
     for (const { accountHash, codeHash, storageRoot } of entries) {
+      const ownedHash = new Uint8Array(accountHash)
       if (!equalsBytes(codeHash, KECCAK256_NULL)) {
         const key = codeHashKey(codeHash)
         if (!this.codeQueue.has(key)) {
+          if (this.codeQueue.size >= this.maxInMemoryContractTasks) {
+            this.spillContractRow(ownedHash, codeHash, storageRoot)
+            continue
+          }
           this.codeQueue.set(key, { codeHash: new Uint8Array(codeHash), missRetries: 0 })
         }
       }
       if (!equalsBytes(storageRoot, KECCAK256_RLP)) {
-        const key = accountHashKey(accountHash)
+        const key = accountHashKey(ownedHash)
         if (!this.pendingStorage.has(key)) {
+          if (this.pendingStorage.size >= this.maxInMemoryContractTasks) {
+            if (this.snapStore !== undefined) continue
+            this.spillContractRow(ownedHash, codeHash, storageRoot)
+            continue
+          }
           this.pendingStorage.set(key, {
-            accountHash,
+            accountHash: ownedHash,
             storageRoot: new Uint8Array(storageRoot),
             origin: new Uint8Array(32),
             verifying: false,
@@ -145,6 +169,12 @@ export class SnapCodeAndStorageSynchronizer {
       }
     }
     this.publishPending()
+  }
+
+  /** Spilled + journal-backed tasks not yet in memory (tests / metrics). */
+  contractsBacklogSize(): number {
+    if (this.snapStore?.contractScanRemaining() === true) return 1
+    return this.contractsSpilledOnDisk
   }
 
   clearPending(): void {
@@ -193,7 +223,9 @@ export class SnapCodeAndStorageSynchronizer {
       this.codeQueue.size === 0 &&
       this.pendingStorage.size === 0 &&
       this.storageInFlight.size === 0 &&
-      this.codesInFlight.size === 0
+      this.codesInFlight.size === 0 &&
+      !this.snapStore?.contractScanRemaining() &&
+      this.contractsSpilledOnDisk === 0
     )
   }
 
@@ -211,7 +243,7 @@ export class SnapCodeAndStorageSynchronizer {
           existing.verifying = false
         } else {
           this.pendingStorage.set(accKey, {
-            accountHash,
+            accountHash: new Uint8Array(accountHash),
             storageRoot: new Uint8Array(storageRoot),
             origin: new Uint8Array(32),
             verifying: false,
@@ -272,6 +304,7 @@ export class SnapCodeAndStorageSynchronizer {
   private schedule(): void {
     if (this.spine.snapPaused || this.spine.pivotStateRoot === undefined) return
     if (snapBucketsUnfinished(this.spine.snapBuckets)) return
+    this.refillContractTasksFromDisk()
     const now = Date.now()
     this.expireStale(now)
     const peers = this.getSnapPeers().filter((p) => p.caps.some((c) => c.startsWith('snap')))
@@ -443,6 +476,65 @@ export class SnapCodeAndStorageSynchronizer {
   private publishPending(): void {
     this.spine.codesQueued = this.codeQueue.size
     this.spine.storageQueued = this.pendingStorage.size
+  }
+
+  private spillContractRow(
+    accountHash: Uint8Array,
+    codeHash: Uint8Array,
+    storageRoot: Uint8Array,
+  ): void {
+    if (this.contractSpillPath === undefined) return
+    const row = new Uint8Array(CONTRACT_SPILL_ROW_BYTES)
+    row.set(accountHash.subarray(0, 32), 0)
+    row.set(codeHash.subarray(0, 32), 32)
+    row.set(storageRoot.subarray(0, 32), 64)
+    fs.mkdirSync(path.dirname(this.contractSpillPath), { recursive: true })
+    fs.appendFileSync(this.contractSpillPath, row)
+    this.contractsSpilledOnDisk++
+  }
+
+  private refillContractTasksFromDisk(): void {
+    while (
+      this.codeQueue.size + this.pendingStorage.size < this.maxInMemoryContractTasks &&
+      (this.snapStore?.contractScanRemaining() === true || this.contractsSpilledOnDisk > 0)
+    ) {
+      if (this.snapStore !== undefined) {
+        const batch = this.snapStore.nextContractScanBatch(512)
+        if (batch.length === 0) break
+        this.noteAccounts(batch)
+        continue
+      }
+      if (this.contractSpillPath === undefined || !fs.existsSync(this.contractSpillPath)) break
+      const stat = fs.statSync(this.contractSpillPath)
+      if (stat.size < CONTRACT_SPILL_ROW_BYTES) break
+      const row = Buffer.alloc(CONTRACT_SPILL_ROW_BYTES)
+      const fd = fs.openSync(this.contractSpillPath, 'r+')
+      try {
+        fs.readSync(fd, row, 0, CONTRACT_SPILL_ROW_BYTES, 0)
+        const rest = stat.size - CONTRACT_SPILL_ROW_BYTES
+        if (rest > 0) {
+          const tail = Buffer.alloc(rest)
+          fs.readSync(fd, tail, 0, rest, CONTRACT_SPILL_ROW_BYTES)
+          fs.ftruncateSync(fd, 0)
+          fs.writeSync(fd, tail, 0, rest, 0)
+        } else {
+          fs.ftruncateSync(fd, 0)
+        }
+      } finally {
+        fs.closeSync(fd)
+      }
+      this.contractsSpilledOnDisk = Math.max(
+        0,
+        Math.floor(stat.size / CONTRACT_SPILL_ROW_BYTES) - 1,
+      )
+      this.noteAccounts([
+        {
+          accountHash: new Uint8Array(row.subarray(0, 32)),
+          codeHash: new Uint8Array(row.subarray(32, 64)),
+          storageRoot: new Uint8Array(row.subarray(64, 96)),
+        },
+      ])
+    }
   }
 }
 

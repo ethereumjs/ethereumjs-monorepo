@@ -21,7 +21,7 @@ export function wantSnapDiscoveryHold(opts: {
 export function countSnapPeersTowardVipTarget(
   peers: ReadonlyArray<{ snapSession?: boolean; snapResponsesOk?: number }>,
 ): number {
-  return peers.filter((p) => p.snapSession === true || (p.snapResponsesOk ?? 0) > 0).length
+  return peers.filter((p) => p.snapSession === true && (p.snapResponsesOk ?? 0) > 0).length
 }
 
 /** VIP redial may run while below target even when discovery is paused. */

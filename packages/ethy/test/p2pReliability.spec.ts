@@ -95,9 +95,10 @@ describe('[Ethy/P2P]: resume policy', () => {
     assert.equal(
       countSnapPeersTowardVipTarget([
         { snapSession: true, snapResponsesOk: 0 },
+        { snapSession: true, snapResponsesOk: 2 },
         { snapSession: false, snapResponsesOk: 2 },
       ]),
-      2,
+      1,
     )
   })
 

@@ -29,6 +29,7 @@ import { PEER_BOOK_STARTUP_DIALS, discoveryNodeStorePath } from '../persist/peer
 import type { PeerBookStore } from '../persist/peerBook.ts'
 import { SnapPivotStore, snapBucketsUnfinished } from '../persist/snapStore.ts'
 import { enqueueProtocol } from '../runtime/lanes.ts'
+import { ResourceBudgetWatchdog } from '../runtime/resourceBudget.ts'
 import { createSnapBuckets } from '../spine/buckets.ts'
 import { deriveCapabilities, setPhase } from '../spine/createSpine.ts'
 import { recordDiagnostic } from '../spine/diagnostics.ts'
@@ -199,6 +200,12 @@ export async function startPeerCoordinator(
 ): Promise<PeerCoordinatorHandle> {
   const { spine, network, stateManager, snapStore, peerBook } = opts
   const dataDir = opts.dataDir ?? resolveEthyDataDir()
+  const resourceWatchdog = new ResourceBudgetWatchdog({
+    spine,
+    stateManager,
+    maxResidentAccounts: 500_000,
+  })
+  resourceWatchdog.start()
   const snapFlightTracker = new SnapPeerFlightTracker()
   let snapSync: SnapAccountSynchronizer | undefined
   let codeSync: SnapCodeAndStorageSynchronizer | undefined
@@ -506,6 +513,12 @@ export async function startPeerCoordinator(
         if (i + RESTORED_CONTRACTS_CHUNK < contracts.length) {
           await new Promise<void>((resolve) => setImmediate(resolve))
         }
+      }
+      while (codeSync !== undefined && snapStore!.contractScanRemaining()) {
+        const batch = snapStore!.nextContractScanBatch(RESTORED_CONTRACTS_CHUNK)
+        if (batch.length === 0) break
+        codeSync.noteAccounts(batch)
+        await new Promise<void>((resolve) => setImmediate(resolve))
       }
     }
     deriveCapabilities(spine)
@@ -1149,6 +1162,7 @@ export async function startPeerCoordinator(
 
   return {
     stop: () => {
+      resourceWatchdog.stop()
       snapSync?.stop()
       codeSync?.stop()
       headFollower?.stop()

@@ -37,7 +37,6 @@ export interface EthyNode {
 
 export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
   const spine = createSpine(opts.network, opts.chainId)
-  const stateManager = createFlatStateManager()
   const demo = opts.demo === true
   const dataDir = opts.dataDir ?? resolveEthyDataDir()
   const chain = chainConfigForNetwork(opts.network)
@@ -49,6 +48,14 @@ export function createEthyNode(opts: CreateEthyNodeOptions): EthyNode {
     genesisHash: networkGenesisHash(opts.network),
     enabled: !demo,
   })
+  const stateManager = createFlatStateManager(
+    demo
+      ? {}
+      : {
+          maxResidentAccounts: 500_000,
+          coldAccountLookup: (accountHash) => snapStore.lookupBinaryAccountByHash(accountHash),
+        },
+  )
   const peerBook = PeerBookStore.open({
     dataDir,
     network: opts.network,
