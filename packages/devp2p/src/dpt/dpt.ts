@@ -44,7 +44,7 @@ function peerMatchesChainFork(peer: PeerInfo, common: Common | undefined): boole
 }
 
 /** Cap TCP dial fan-out per DNS refresh (EIP-1459 may return many ENRs). */
-const MAX_DNS_PEER_NEW_PER_REFRESH = 8
+const MAX_DNS_PEER_NEW_PER_REFRESH = 16
 
 /** UDP endpoint of a remote discovery node (never this process). */
 function remoteDiscoveryLabel(peer: PeerInfo): string {

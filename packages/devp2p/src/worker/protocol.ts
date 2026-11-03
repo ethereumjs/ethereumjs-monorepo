@@ -73,6 +73,7 @@ export type WorkerCommand =
       }
     }
   | { type: 'setDiscoveryPaused'; paused: boolean }
+  | { type: 'setAdvertiseBlockRange'; enabled: boolean }
 
 export interface WorkerServingSnapshot {
   earliestBlock?: string

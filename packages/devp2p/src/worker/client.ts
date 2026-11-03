@@ -153,6 +153,11 @@ export class Devp2pWorkerClient {
     this._send({ type: 'setDiscoveryPaused', paused })
   }
 
+  /** When true, outbound ETH STATUS and BLOCK_RANGE_UPDATE use the rolling store window. */
+  setAdvertiseBlockRange(enabled: boolean): void {
+    this._send({ type: 'setAdvertiseBlockRange', enabled })
+  }
+
   /** Register a complete block bundle for rolling-window eth serving in the worker. */
   putServableBlock(block: {
     number: bigint

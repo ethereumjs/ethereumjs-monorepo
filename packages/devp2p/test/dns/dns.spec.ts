@@ -172,6 +172,7 @@ describe('[Devp2p/DNS]: client', () => {
       return Promise.resolve([[mockData.enrRoot]])
     })
 
+    dns['_seenAddresses'].clear()
     const peersB = await dns.getPeers(1, [mockData.enrTree])
     assert.strictEqual(peersB.length, 1, 'returns a cached peer')
     assert.strictEqual(

@@ -39,6 +39,8 @@ const MAX_DIAL_QUEUE = 512
  * A Sepolia DNS refresh can return more live nodes than the in-flight dial cap.
  */
 const MAX_DIAL_LATER = 2048
+/** Outbound TCP connect timeout (RLPx handshake uses {@link RLPxOptions.timeout}). */
+const DIAL_TCP_TIMEOUT_MS = 5_000
 
 /** RLPx transport: encrypted TCP sessions, HELLO/capability negotiation, and sub-protocol multiplexing. */
 export class RLPx {
@@ -65,6 +67,8 @@ export class RLPx {
   protected _peersDeferred: PeerInfo[]
   protected _server: net.Server | null
   protected _peers: Map<string, net.Socket | Peer>
+  /** Outbound TCP dials before the peer is promoted into {@link _peers}. */
+  protected _pendingDials: Map<string, net.Socket>
 
   protected _refillIntervalId: NodeJS.Timeout
   protected _refillIntervalSelectionCounter: number = 0
@@ -128,6 +132,7 @@ export class RLPx {
         ? devp2pDebug.extend(DEBUG_BASE_NAME).extend(serverAddress as string)
         : devp2pDebug.extend(DEBUG_BASE_NAME)
     this._peers = new Map()
+    this._pendingDials = new Map()
     this._peersQueue = []
     this._peersDeferred = []
     this._peersLRU = new LRUCache({ max: 25000 })
@@ -172,9 +177,17 @@ export class RLPx {
     // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for peer lookups.
     const peerKey = bytesToUnprefixedHex(peer.id)
 
-    if (this._peers.has(peerKey)) throw EthereumJSErrorWithoutCode('Already connected')
-    if (this._getOpenSlots() === 0)
+    const existing = this._peers.get(peerKey)
+    if (existing instanceof Peer) throw EthereumJSErrorWithoutCode('Already connected')
+    if (this._pendingDials.has(peerKey)) return
+
+    if (!this._canStartOutboundDial()) {
+      if (this._getOpenQueueSlots() > 0) {
+        this._peersQueue.unshift({ peer, ts: 0 })
+        return
+      }
       throw EthereumJSErrorWithoutCode('Too many peers already connected')
+    }
 
     if (this.DEBUG) {
       this._debug(
@@ -182,14 +195,15 @@ export class RLPx {
       )
     }
     const socket = new net.Socket()
-    this._peers.set(peerKey, socket)
-    socket.once('close', () => {
-      this._peers.delete(peerKey)
+    this._pendingDials.set(peerKey, socket)
+    const clearPending = () => {
+      if (this._pendingDials.get(peerKey) === socket) {
+        this._pendingDials.delete(peerKey)
+      }
       this._refillConnections()
-    })
+    }
+    socket.once('close', clearPending)
 
-    // setTimeout does not cover the TCP handshake. A dead ENR otherwise
-    // occupies a maxPeers slot until the OS gives up.
     await new Promise<void>((resolve, reject) => {
       let settled = false
       const finish = (err?: Error) => {
@@ -202,10 +216,12 @@ export class RLPx {
       const timer = setTimeout(() => {
         socket.destroy()
         finish(EthereumJSErrorWithoutCode('Connection timeout'))
-      }, this._timeout)
+      }, DIAL_TCP_TIMEOUT_MS)
       socket.once('error', (err: Error) => finish(err))
       socket.connect(peer.tcpPort!, peer.address!, () => finish())
     })
+    if (!this._pendingDials.has(peerKey)) return
+    this._pendingDials.delete(peerKey)
     socket.setTimeout(this._timeout)
     this._onConnect(socket, peer.id)
   }
@@ -216,7 +232,14 @@ export class RLPx {
 
   disconnect(id: Uint8Array) {
     // Using deprecated bytesToUnprefixedHex for performance: used as Map keys for peer lookups.
-    const peer = this._peers.get(bytesToUnprefixedHex(id))
+    const peerKey = bytesToUnprefixedHex(id)
+    const pending = this._pendingDials.get(peerKey)
+    if (pending !== undefined) {
+      pending.destroy()
+      this._pendingDials.delete(peerKey)
+      return
+    }
+    const peer = this._peers.get(peerKey)
     if (peer instanceof Peer) {
       peer.disconnect(DISCONNECT_REASON.CLIENT_QUITTING)
     }
@@ -231,7 +254,13 @@ export class RLPx {
   }
 
   _getOpenSlots() {
-    return Math.max(this._maxPeers - this._peers.size, 0)
+    return Math.max(this._maxPeers - this._connectedPeerCount(), 0)
+  }
+
+  _canStartOutboundDial(): boolean {
+    if (this._connectedPeerCount() >= this._maxPeers) return false
+    if (this._pendingDials.size >= this._maxPeers) return false
+    return true
   }
 
   _getOpenQueueSlots() {
@@ -251,7 +280,7 @@ export class RLPx {
 
     const directory = isChainDirectoryPeer(peer)
     const holdForDirectory = !directory && this._hasReadyDirectoryPeer()
-    if (this._getOpenSlots() > 0 && !holdForDirectory) {
+    if (this._canStartOutboundDial() && !holdForDirectory) {
       this._peersLRU.set(key, true)
       this._connectToPeer(peer)
       return
@@ -316,7 +345,7 @@ export class RLPx {
       if (peer?.id === undefined) continue
       const key = bytesToUnprefixedHex(peer.id)
       if (this._peersLRU.has(key)) continue
-      if (this._getOpenSlots() > 0) {
+      if (this._canStartOutboundDial()) {
         this._peersLRU.set(key, true)
         this._connectToPeer(peer)
         continue

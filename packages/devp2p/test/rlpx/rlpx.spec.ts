@@ -8,6 +8,7 @@ import { EventEmitter } from 'eventemitter3'
 import { describe, expect, it, vi } from 'vitest'
 
 import { RLPx, pk2id } from '../../src/index.ts'
+import { Peer } from '../../src/rlpx/peer.ts'
 
 import type { RLPxOptions } from '../../src/index.ts'
 
@@ -77,7 +78,7 @@ describe('[Devp2p/RLPx]: transport', () => {
       address: '127.0.0.1',
       id: new Uint8Array([11, 12, 13, 14, 15]),
     }
-    rlpx['_peers'].set('0b0c0d0e0f', {} as any)
+    rlpx['_peers'].set('0b0c0d0e0f', Object.create(Peer.prototype) as Peer)
 
     try {
       await rlpx.connect(mockPeer)
