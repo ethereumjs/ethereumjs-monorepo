@@ -130,7 +130,7 @@ export class LegacyTx implements TransactionInterface<typeof TransactionType.Leg
     const chainId = validateVAndExtractChainID(this.common, this.v)
     if (chainId !== undefined && chainId !== this.common.chainId()) {
       throw EthereumJSErrorWithoutCode(
-        `Common chain ID ${this.common.chainId} not matching the derived chain ID ${chainId}`,
+        `Common chain ID ${this.common.chainId()} not matching the derived chain ID ${chainId}`,
       )
     }
 
