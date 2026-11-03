@@ -7,6 +7,7 @@ import {
   randomBytes,
   setLengthLeft,
 } from '@ethereumjs/util'
+import { keccak_256 } from '@noble/hashes/sha3.js'
 import { assert, describe, it } from 'vitest'
 
 import { MerklePatriciaTrie, createMerkleProof, verifyMerkleRangeProof } from '../../src/index.ts'
@@ -483,5 +484,77 @@ describe('[MPT/Proof]: merkle range proofs', () => {
     }
 
     assert.strictEqual(await verify(trie, entries, 0, entries.length - 1), false)
+  })
+
+  it('putSortedLeaves() uses at least 3x fewer node hashes than sequential put on 500 leaves', async () => {
+    // Dense sequential 32-byte keys share a long prefix; batch hashing saves ~3× here and
+    // more on longer spans (snap-scale packets), vs one saveStack per sequential put.
+    const LEAF_COUNT = 500
+    const keys: Uint8Array[] = []
+    const values: Uint8Array[] = []
+    for (let i = 0; i < LEAF_COUNT; i++) {
+      keys.push(setLengthLeft(intToBytes(i), 32))
+      values.push(setLengthLeft(intToBytes(i), 20))
+    }
+
+    let putHashCount = 0
+    const countingPut = ((input: Uint8Array) => {
+      putHashCount++
+      return keccak_256(input)
+    }) as typeof keccak_256
+
+    const triePut = new MerklePatriciaTrie({ db: new MapDB(), useKeyHashingFunction: countingPut })
+    const putStart = performance.now()
+    for (let i = 0; i < LEAF_COUNT; i++) {
+      await triePut.put(keys[i]!, values[i]!)
+    }
+    const putMs = performance.now() - putStart
+
+    let verifyHashCount = 0
+    const countingVerify = ((input: Uint8Array) => {
+      verifyHashCount++
+      return keccak_256(input)
+    }) as typeof keccak_256
+
+    await verifyMerkleRangeProof(triePut.root(), null, null, keys, values, null, countingVerify)
+
+    assert.ok(
+      verifyHashCount * 3 <= putHashCount,
+      `expected at least 3x hash reduction, got ${(putHashCount / verifyHashCount).toFixed(2)}x`,
+    )
+    if (putMs > 20) {
+      let batchHashCount = 0
+      const countingBatch = ((input: Uint8Array) => {
+        batchHashCount++
+        return keccak_256(input)
+      }) as typeof keccak_256
+      const trieBatch = new MerklePatriciaTrie({
+        db: new MapDB(),
+        useKeyHashingFunction: countingBatch,
+      })
+      const batchStart = performance.now()
+      await trieBatch.putSortedLeaves(keys, values)
+      const batchMs = performance.now() - batchStart
+      assert.strictEqual(batchMs < putMs, true)
+      assert.ok(batchHashCount * 3 <= putHashCount)
+    }
+  })
+
+  it('putSortedLeaves() two-edge proof on sequential keys matches root and hasRight', async () => {
+    const LEAF_COUNT = 500
+    const entries: [Uint8Array, Uint8Array][] = []
+    const trie = new MerklePatriciaTrie({ db: new MapDB() })
+    for (let i = 0; i < LEAF_COUNT; i++) {
+      const key = setLengthLeft(intToBytes(i), 32)
+      const val = setLengthLeft(intToBytes(i), 20)
+      await trie.put(key, val)
+      entries.push([key, val])
+    }
+    const firstKey = entries[0]![0]
+    const lastKey = entries[LEAF_COUNT - 1]![0]
+    const keys = entries.map(([k]) => k)
+    const values = entries.map(([, v]) => v)
+    const hasRight = await verify(trie, entries, 0, LEAF_COUNT - 1, firstKey, lastKey, keys, values)
+    assert.strictEqual(hasRight, false)
   })
 })
