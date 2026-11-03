@@ -178,8 +178,27 @@ export async function verifyStorageRangeJob(opts: {
   }
 }
 
-/** Read snap reply reqId without full decode. */
+/** Read snap reply reqId from the outer RLP list header + element 0 in O(1) without decoding all accounts. */
 export function snapReplyRequestId(payload: Uint8Array): bigint | undefined {
+  if (payload.length < 2) return undefined
+  const b0 = payload[0]!
+  if (b0 < 0xc0) return undefined
+  let pos: number
+  if (b0 <= 0xf7) {
+    pos = 1
+  } else {
+    const lenOfLen = b0 - 0xf7
+    pos = 1 + lenOfLen
+  }
+  if (pos >= payload.length) return undefined
+  const e0 = payload[pos]!
+  if (e0 < 0x80) return BigInt(e0)
+  if (e0 === 0x80) return 0n
+  if (e0 <= 0xb7) {
+    const sLen = e0 - 0x80
+    if (pos + 1 + sLen > payload.length) return undefined
+    return bytesToBigInt(payload.subarray(pos + 1, pos + 1 + sLen))
+  }
   try {
     const decoded = RLP.decode(payload) as unknown[]
     const id = decoded[0]

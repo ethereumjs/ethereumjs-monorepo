@@ -514,12 +514,6 @@ export async function startPeerCoordinator(
           await new Promise<void>((resolve) => setImmediate(resolve))
         }
       }
-      while (codeSync !== undefined && snapStore!.contractScanRemaining()) {
-        const batch = snapStore!.nextContractScanBatch(RESTORED_CONTRACTS_CHUNK)
-        if (batch.length === 0) break
-        codeSync.noteAccounts(batch)
-        await new Promise<void>((resolve) => setImmediate(resolve))
-      }
     }
     deriveCapabilities(spine)
     if (!resumeHeadHandled) {

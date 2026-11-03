@@ -21,6 +21,7 @@ import {
   rankSnapPeers,
 } from './snapSchedulePolicy.ts'
 import type { SnapTransport } from './snapTransport.ts'
+import { snapReplyRequestId } from './snapVerifyJob.ts'
 import { SnapVerifyPool } from './snapVerifyWorker.ts'
 import { incrementKey32, ingestedMetaFromBinarySlab } from './syntheticPeer.ts'
 
@@ -132,9 +133,7 @@ export class SnapAccountSynchronizer {
     this.lastRateAt = this.syncStart
     this.lastAccountCount = this.spine.totalAccountsSynced
     this.detachAccountRange = this.transport.onAccountRange((peerId, payload) => {
-      enqueueProtocol(async () => {
-        await this.handleAccountRange(peerId, payload)
-      })
+      void this.handleAccountRange(peerId, payload)
     })
     this.tickTimer = setInterval(() => this.schedule(), 50)
     this.tickTimer.unref?.()
@@ -150,7 +149,7 @@ export class SnapAccountSynchronizer {
 
   private bucketHasInFlight(bucketIndex: number): boolean {
     for (const flight of this.inFlight.values()) {
-      if (flight.bucket === bucketIndex) return true
+      if (flight.bucket === bucketIndex && !flight.steal) return true
     }
     return false
   }
@@ -252,9 +251,15 @@ export class SnapAccountSynchronizer {
         snapTimeouts: peerRow?.snapTimeouts ?? 0,
         avgLatencyMs: peerRow?.avgLatencyMs ?? 0,
       }
-      this.peerRestUntil.set(flight.peerId, now + peerRestAfterTimeout(schedulePeer))
+      const alternate = this.hasHealthyAlternatePeer(flight.peerId, now)
+      if (schedulePeer.snapResponsesOk === 0 || alternate) {
+        this.peerRestUntil.set(flight.peerId, now + peerRestAfterTimeout(schedulePeer))
+      }
       if (peerRow !== undefined) peerRow.snapTimeouts++
       this.peerBook?.noteSnapTimeout(flight.peerId)
+      if (flight.steal === true) {
+        this.bucketStealReq.delete(flight.bucket)
+      }
       this.noteRangeFailure(bucket, flight.peerId, 'account range timed out')
     }
   }
@@ -282,8 +287,9 @@ export class SnapAccountSynchronizer {
     const quarantine = isPeerQuarantineRangeFailure(reason)
     const streak = quarantine ? (this.peerRangeFailureStreak.get(peerId) ?? 0) + 1 : 0
     if (quarantine) this.peerRangeFailureStreak.set(peerId, streak)
+    const alternate = this.hasHealthyAlternatePeer(peerId, now)
     const restMs = peerRestMsForRangeFailure(reason, schedulePeer, streak)
-    if (restMs !== undefined) {
+    if (restMs !== undefined && (schedulePeer.snapResponsesOk === 0 || alternate || streak >= 3)) {
       this.peerRestUntil.set(peerId, now + restMs)
     }
     if (quarantine) {
@@ -296,7 +302,6 @@ export class SnapAccountSynchronizer {
       bucket.lastStallReason = reason
       return
     }
-    const alternate = this.hasHealthyAlternatePeer(peerId, now)
     if ((quarantine || reason.includes('account range timed out')) && alternate) {
       bucket.status = 'pending'
       bucket.assignedPeerId = undefined
@@ -327,11 +332,65 @@ export class SnapAccountSynchronizer {
   }
 
   private scheduleStealIfNeeded(peers: SnapSchedulePeer[], now: number): void {
-    const unfinished = this.spine.snapBuckets.filter(
-      (b) => b.status !== 'done' && !bucketRangeExhausted(b),
-    )
+    if (this.spine.pivotStateRoot === undefined) return
+    const unfinished = this.spine.snapBuckets.filter((b) => b.status !== 'done')
     if (unfinished.length === 0) return
-    if (!unfinished.every((b) => this.bucketHasInFlight(b.index))) return
+
+    // 1. Continue any already-split upper range that has no active request in flight.
+    for (const [bucketIndex, upper] of this.bucketStealUpper) {
+      if (this.bucketStealReq.has(bucketIndex)) continue
+      const stealPeer = peers.find(
+        (p) =>
+          p.snapResponsesOk >= 2 &&
+          now >= (this.peerRestUntil.get(p.id) ?? 0) &&
+          this.flightTracker.inFlightCount(p.id) < maxInFlightForPeer(p),
+      )
+      if (stealPeer === undefined) return
+      const reqId = this.reqId++
+      const maxInFlight = maxInFlightForPeer(stealPeer)
+      if (
+        !this.flightTracker.tryClaim(
+          stealPeer.id,
+          { kind: 'account', reqId, sentAt: now },
+          maxInFlight,
+        )
+      ) {
+        continue
+      }
+      this.inFlight.set(inFlightKey(stealPeer.id, reqId), {
+        peerId: stealPeer.id,
+        bucket: bucketIndex,
+        reqId,
+        sentAt: now,
+        rootGeneration: this.flightTracker.rootGeneration,
+        timeoutMs: rangeTimeoutForPeer(stealPeer),
+        steal: true,
+        stealMid: new Uint8Array(upper.origin),
+      })
+      this.bucketStealReq.set(bucketIndex, reqId)
+      const row = this.spine.peers.get(stealPeer.id)
+      if (row !== undefined) row.snapRequestsSent++
+      const payload = encodeGetAccountRange(
+        reqId,
+        this.spine.pivotStateRoot,
+        upper.origin,
+        upper.limit,
+        RESPONSE_BYTES,
+      )
+      this.transport.sendAccountRange(stealPeer.id, payload)
+    }
+
+    // 2. When all unfinished primary buckets are busy, split the widest remaining bucket for an idle proven peer.
+    if (
+      !unfinished.every(
+        (b) =>
+          this.bucketHasInFlight(b.index) ||
+          this.verifyingBuckets.has(b.index) ||
+          bucketRangeExhausted(b),
+      )
+    ) {
+      return
+    }
     const stealPeer = peers.find(
       (p) =>
         p.snapResponsesOk >= 2 &&
@@ -342,7 +401,7 @@ export class SnapAccountSynchronizer {
     let target: SnapBucket | undefined
     let bestSpan = 0
     for (const b of unfinished) {
-      if (this.bucketStealReq.has(b.index)) continue
+      if (this.bucketStealReq.has(b.index) || this.bucketStealUpper.has(b.index)) continue
       const span = bucketPosition36(b.limitHash) - bucketPosition36(b.currentLastHash)
       if (span < 0x1_0000_0000) continue
       if (span > bestSpan) {
@@ -350,11 +409,12 @@ export class SnapAccountSynchronizer {
         target = b
       }
     }
-    if (target === undefined || this.spine.pivotStateRoot === undefined) return
+    if (target === undefined) return
     const mid = midpointKey32(target.currentLastHash, target.limitHash)
     const savedLimit = new Uint8Array(target.limitHash)
     target.limitHash = new Uint8Array(mid)
-    this.bucketStealUpper.set(target.index, { origin: new Uint8Array(mid), limit: savedLimit })
+    const upper = { origin: new Uint8Array(mid), limit: savedLimit }
+    this.bucketStealUpper.set(target.index, upper)
     const reqId = this.reqId++
     const maxInFlight = maxInFlightForPeer(stealPeer)
     if (
@@ -364,6 +424,8 @@ export class SnapAccountSynchronizer {
         maxInFlight,
       )
     ) {
+      target.limitHash = savedLimit
+      this.bucketStealUpper.delete(target.index)
       return
     }
     this.inFlight.set(inFlightKey(stealPeer.id, reqId), {
@@ -383,8 +445,8 @@ export class SnapAccountSynchronizer {
     const payload = encodeGetAccountRange(
       reqId,
       this.spine.pivotStateRoot,
-      mid,
-      target.limitHash,
+      upper.origin,
+      upper.limit,
       RESPONSE_BYTES,
     )
     this.transport.sendAccountRange(stealPeer.id, payload)
@@ -414,7 +476,9 @@ export class SnapAccountSynchronizer {
       this.flightTracker.release(peerId, replyId)
       return
     }
-    this.verifyingBuckets.add(flight.bucket)
+    if (!flight.steal) {
+      this.verifyingBuckets.add(flight.bucket)
+    }
     this.inFlight.delete(key)
     this.flightTracker.release(peerId, replyId)
     const bucket = this.spine.snapBuckets[flight.bucket]
@@ -422,11 +486,16 @@ export class SnapAccountSynchronizer {
       this.verifyingBuckets.delete(flight.bucket)
       return
     }
-    bucket.status = 'verifying_proof'
+    if (!flight.steal) {
+      bucket.status = 'verifying_proof'
+    }
     const origin =
       flight.steal === true && flight.stealMid !== undefined
         ? flight.stealMid
         : bucket.currentLastHash
+    // Immediately schedule another open bucket on the freed peer slot while the worker verifies!
+    this.schedule()
+
     let result: Awaited<ReturnType<SnapVerifyPool['verifyAccountRange']>>
     try {
       result = await this.verifyPool.verifyAccountRange({
@@ -441,9 +510,28 @@ export class SnapAccountSynchronizer {
         count: 0,
         reason: err instanceof Error ? err.message : String(err),
       }
-    } finally {
-      this.verifyingBuckets.delete(flight.bucket)
     }
+
+    await new Promise<void>((resolve) => {
+      enqueueProtocol(() => {
+        try {
+          if (!flight.steal) {
+            this.verifyingBuckets.delete(flight.bucket)
+          }
+          this.commitVerifiedAccountRange(peerId, flight, bucket, result)
+        } finally {
+          resolve()
+        }
+      })
+    })
+  }
+
+  private commitVerifiedAccountRange(
+    peerId: string,
+    flight: InFlightRange,
+    bucket: SnapBucket,
+    result: Awaited<ReturnType<SnapVerifyPool['verifyAccountRange']>>,
+  ): void {
     if (flight.rootGeneration !== this.flightTracker.rootGeneration) {
       if (bucket.status === 'verifying_proof') bucket.status = 'pending'
       return
@@ -458,7 +546,17 @@ export class SnapAccountSynchronizer {
       }
     }
     if (!result.ok) {
-      if (flight.steal === true) this.clearStealForBucket(flight.bucket, true)
+      if (flight.steal === true) {
+        this.bucketStealReq.delete(flight.bucket)
+        if (!this.bucketHasInFlight(flight.bucket) && bucketRangeExhausted(bucket)) {
+          const upper = this.bucketStealUpper.get(flight.bucket)
+          if (upper !== undefined) {
+            bucket.currentLastHash = new Uint8Array(upper.origin)
+            bucket.limitHash = new Uint8Array(upper.limit)
+          }
+          this.clearStealForBucket(flight.bucket, false)
+        }
+      }
       this.noteRangeFailure(bucket, peerId, result.reason ?? 'range proof failed')
       this.schedule()
       return
@@ -488,9 +586,37 @@ export class SnapAccountSynchronizer {
           this.updateRate()
         }
       }
-      bucket.status = 'pending'
-      bucket.assignedPeerId = undefined
-      this.clearStealForBucket(flight.bucket)
+      this.bucketStealReq.delete(flight.bucket)
+      const upper = this.bucketStealUpper.get(flight.bucket)
+      if (
+        upper !== undefined &&
+        result.hasRight &&
+        result.lastKey instanceof Uint8Array &&
+        compareBytes32(result.lastKey, upper.limit) < 0
+      ) {
+        upper.origin = incrementKey32(result.lastKey)
+        if (
+          !this.bucketHasInFlight(flight.bucket) &&
+          !this.verifyingBuckets.has(flight.bucket) &&
+          bucketRangeExhausted(bucket)
+        ) {
+          bucket.currentLastHash = new Uint8Array(upper.origin)
+          bucket.limitHash = new Uint8Array(upper.limit)
+          this.clearStealForBucket(flight.bucket, false)
+          bucket.status = 'pending'
+        }
+      } else {
+        this.clearStealForBucket(flight.bucket, false)
+        if (
+          !this.bucketHasInFlight(flight.bucket) &&
+          !this.verifyingBuckets.has(flight.bucket) &&
+          bucketRangeExhausted(bucket)
+        ) {
+          bucket.status = 'done'
+          bucket.assignedPeerId = undefined
+          bucket.lastStallReason = undefined
+        }
+      }
       this.schedule()
       return
     }
@@ -502,17 +628,6 @@ export class SnapAccountSynchronizer {
       row.snapResponsesOk++
       this.peerRangeFailureStreak.delete(peerId)
     }
-    const activeStealMid = this.bucketStealMid.get(flight.bucket)
-    const upper = this.bucketStealUpper.get(flight.bucket)
-    if (activeStealMid !== undefined && result.lastKey instanceof Uint8Array) {
-      if (compareBytes32(result.lastKey, activeStealMid) >= 0) {
-        this.clearStealForBucket(flight.bucket)
-        if (upper !== undefined && compareBytes32(bucket.currentLastHash, upper.limit) < 0) {
-          bucket.limitHash = new Uint8Array(upper.limit)
-          bucket.status = 'pending'
-        }
-      }
-    }
     if (result.count > 0 && bucket.accountsLoaded === 0) {
       recordDiagnostic(this.spine, {
         subsystem: 'snap',
@@ -522,14 +637,22 @@ export class SnapAccountSynchronizer {
         message: `Bucket ${bucket.prefix} accepted ${result.count} accounts`,
       })
     }
-    bucket.accountsLoaded += result.count
-    this.spine.totalAccountsSynced += result.count
+    const persistSlab =
+      result.slab !== undefined
+        ? filterAccountSlabBeforeMid(result.slab, this.bucketStealMid.get(flight.bucket))
+        : undefined
+    const acceptedCount = persistSlab !== undefined ? persistSlab.length / 136 : result.count
+    bucket.accountsLoaded += acceptedCount
+    this.spine.totalAccountsSynced += acceptedCount
     this.updateRate()
     if (result.hasRight && compareBytes32(bucket.currentLastHash, bucket.limitHash) < 0) {
       const lastKey = result.lastKey
       if (lastKey instanceof Uint8Array) {
-        bucket.currentLastHash = incrementKey32(lastKey)
-        bucket.status = 'pending'
+        if (compareBytes32(lastKey, bucket.limitHash) >= 0) {
+          bucket.currentLastHash = new Uint8Array(bucket.limitHash)
+        } else {
+          bucket.currentLastHash = incrementKey32(lastKey)
+        }
       } else {
         this.noteRangeFailure(bucket, peerId, 'account range missing last key')
         this.schedule()
@@ -537,26 +660,35 @@ export class SnapAccountSynchronizer {
       }
     } else {
       bucket.currentLastHash = new Uint8Array(bucket.limitHash)
-      bucket.status = 'done'
-      bucket.lastStallReason = undefined
     }
-    if (result.count > 0) {
-      this.peerBook?.noteSnapSuccess(peerId, Date.now())
-      if (result.slab !== undefined) {
-        const persistSlab = filterAccountSlabBeforeMid(
-          result.slab,
-          this.bucketStealMid.get(flight.bucket),
-        )
-        if (persistSlab.length > 0) {
-          void this.snapStore?.appendVerifiedSlabAsync(
-            flight.bucket,
-            persistSlab,
-            this.spine.snapBuckets,
-          )
-          this.onAccountsIngested?.(ingestedMetaFromBinarySlab(persistSlab))
+    if (bucketRangeExhausted(bucket)) {
+      const upper = this.bucketStealUpper.get(flight.bucket)
+      if (upper !== undefined) {
+        if (this.bucketStealReq.has(flight.bucket)) {
+          bucket.status = 'syncing'
+        } else {
+          bucket.currentLastHash = new Uint8Array(upper.origin)
+          bucket.limitHash = new Uint8Array(upper.limit)
+          this.clearStealForBucket(flight.bucket, false)
+          bucket.status = 'pending'
         }
+      } else {
+        bucket.status = 'done'
+        bucket.assignedPeerId = undefined
+        bucket.lastStallReason = undefined
       }
     } else {
+      bucket.status = 'pending'
+    }
+    if (acceptedCount > 0 && persistSlab !== undefined && persistSlab.length > 0) {
+      this.peerBook?.noteSnapSuccess(peerId, Date.now())
+      void this.snapStore?.appendVerifiedSlabAsync(
+        flight.bucket,
+        persistSlab,
+        this.spine.snapBuckets,
+      )
+      this.onAccountsIngested?.(ingestedMetaFromBinarySlab(persistSlab))
+    } else if (result.count === 0) {
       this.snapStore?.maybeFlushMetadata(true)
     }
     this.schedule()
@@ -599,15 +731,7 @@ export function encodeGetAccountRange(
 }
 
 function accountRangeRequestId(payload: Uint8Array): bigint | undefined {
-  try {
-    const decoded = RLP.decode(payload) as unknown[]
-    const id = decoded[0]
-    if (!(id instanceof Uint8Array)) return undefined
-    if (id.length === 0) return 0n
-    return bytesToBigInt(id)
-  } catch {
-    return undefined
-  }
+  return snapReplyRequestId(payload)
 }
 
 const ACCOUNT_SLAB_STRIDE = 136

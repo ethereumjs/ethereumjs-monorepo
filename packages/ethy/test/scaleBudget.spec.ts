@@ -73,10 +73,17 @@ describe('[Ethy/Scale]: WP-04g budget gates', () => {
     assert.notEqual(meta[0]!.storageRoot.buffer, slab.buffer)
   })
 
-  it('bounded resident set and contract spill plateau heap growth', { timeout: 120_000 }, () => {
+  it('bounded resident set and contract spill plateau heap growth', { timeout: 5_000 }, () => {
     const dir = tempDir()
     const spill = path.join(dir, 'contracts-spill.bin')
-    const sm = createFlatStateManager({ maxResidentAccounts: 10_000 })
+    let coldLookups = 0
+    const sm = createFlatStateManager({
+      maxResidentAccounts: 10_000,
+      coldAccountLookup: () => {
+        coldLookups++
+        return undefined
+      },
+    })
     const spine = createSpine('sepolia', 11155111n)
     const sync = new SnapCodeAndStorageSynchronizer({
       spine,
@@ -92,6 +99,7 @@ describe('[Ethy/Scale]: WP-04g budget gates', () => {
     let heapAt50k = process.memoryUsage().heapUsed
     const totalAccounts = 80_000
     const contractAccounts = 12_000
+    const t0 = performance.now()
     for (let i = 0; i < totalAccounts; i++) {
       const accountHash = new Uint8Array(32)
       writeIndex32(accountHash, i)
@@ -116,8 +124,11 @@ describe('[Ethy/Scale]: WP-04g budget gates', () => {
         heapAt50k = process.memoryUsage().heapUsed
       }
     }
+    const elapsedMs = performance.now() - t0
     gc?.()
     const heapAt200k = process.memoryUsage().heapUsed
+    assert.equal(coldLookups, 0)
+    assert.isBelow(elapsedMs, 2_000)
     assert.equal(sm.accountCount(), totalAccounts)
     assert.isAtMost(sm.residentAccountCount(), 10_000)
     assert.isAtMost(spine.codesQueued, 2_000)

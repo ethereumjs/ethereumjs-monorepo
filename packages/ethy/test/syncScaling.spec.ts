@@ -25,6 +25,7 @@ import { SnapAccountSynchronizer } from '../src/sync/accountSync.ts'
 import { SnapPeerFlightTracker } from '../src/sync/snapFlight.ts'
 import {
   MAX_IN_FLIGHT_PROVEN,
+  PROVEN_RANGE_TIMEOUT_MS,
   UNPROVEN_RANGE_TIMEOUT_MS,
   maxInFlightForPeer,
   rangeTimeoutForPeer,
@@ -71,9 +72,9 @@ describe('[Ethy/Sync]: snap schedule policy (WP-04c)', () => {
     assert.equal(maxInFlightForPeer(fast), 4)
   })
 
-  it('uses a 4s range timeout for unproven peers', () => {
+  it('uses a 4s range timeout for unproven peers and 8s for proven peers', () => {
     assert.equal(rangeTimeoutForPeer(unprovenPeer), UNPROVEN_RANGE_TIMEOUT_MS)
-    assert.equal(rangeTimeoutForPeer(provenPeer), 20_000)
+    assert.equal(rangeTimeoutForPeer(provenPeer), PROVEN_RANGE_TIMEOUT_MS)
   })
 
   it('tracks two concurrent flights per proven peer by reqId', () => {

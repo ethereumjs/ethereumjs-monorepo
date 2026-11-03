@@ -478,6 +478,12 @@ export class SnapPivotStore {
     return this.contractScan !== undefined
   }
 
+  /** Arm on-disk journal contract scan when live ingest exceeds in-memory contract task cap. */
+  enableContractScan(): void {
+    if (!this.enabled || this.contractScanComplete || this.contractScan !== undefined) return
+    this.contractScan = { bucket: 0, byteOffset: BINARY_ACCOUNT_JOURNAL_MAGIC.length }
+  }
+
   /** Pull the next window of contract rows from sorted bucket journals. */
   nextContractScanBatch(maxRows: number): IngestedAccountMeta[] {
     if (!this.enabled || this.activeStateRoot === undefined || this.contractScanComplete) {
@@ -488,7 +494,8 @@ export class SnapPivotStore {
     }
     const out: IngestedAccountMeta[] = []
     const rowSize = BINARY_ACCOUNT_JOURNAL_RECORD_SIZE
-    const rowBuf = Buffer.alloc(rowSize)
+    const chunkRows = 512
+    const chunkBuf = Buffer.alloc(chunkRows * rowSize)
     while (out.length < maxRows && this.contractScan.bucket < 16) {
       const file = this.accountFile(this.contractScan.bucket, this.activeStateRoot)
       if (!fs.existsSync(file)) {
@@ -505,22 +512,30 @@ export class SnapPivotStore {
       const fd = fs.openSync(file, 'r')
       try {
         while (out.length < maxRows && this.contractScan.byteOffset + rowSize <= stat.size) {
-          const n = fs.readSync(fd, rowBuf, 0, rowSize, this.contractScan.byteOffset)
-          if (n < rowSize) break
-          this.contractScan.byteOffset += rowSize
-          const accountHash = new Uint8Array(rowBuf.subarray(0, 32))
-          const binaryAccount = rowBuf.subarray(32, rowSize)
-          if (
-            !isBinaryAccountContract(binaryAccount) &&
-            isBinaryAccountEmptyStorage(binaryAccount)
-          ) {
-            continue
+          const remainingBytes = stat.size - this.contractScan.byteOffset
+          const rowsToRead = Math.min(chunkRows, Math.floor(remainingBytes / rowSize))
+          if (rowsToRead <= 0) break
+          const bytesToRead = rowsToRead * rowSize
+          const n = fs.readSync(fd, chunkBuf, 0, bytesToRead, this.contractScan.byteOffset)
+          const rowsRead = Math.floor(n / rowSize)
+          if (rowsRead <= 0) break
+          for (let r = 0; r < rowsRead; r++) {
+            const base = r * rowSize
+            this.contractScan.byteOffset += rowSize
+            const binaryAccount = chunkBuf.subarray(base + 32, base + rowSize)
+            if (
+              !isBinaryAccountContract(binaryAccount) &&
+              isBinaryAccountEmptyStorage(binaryAccount)
+            ) {
+              continue
+            }
+            out.push({
+              accountHash: new Uint8Array(chunkBuf.subarray(base, base + 32)),
+              codeHash: new Uint8Array(getBinaryAccountCodeHash(binaryAccount)),
+              storageRoot: new Uint8Array(getBinaryAccountStorageRoot(binaryAccount)),
+            })
+            if (out.length >= maxRows) break
           }
-          out.push({
-            accountHash,
-            codeHash: new Uint8Array(getBinaryAccountCodeHash(binaryAccount)),
-            storageRoot: new Uint8Array(getBinaryAccountStorageRoot(binaryAccount)),
-          })
         }
       } finally {
         fs.closeSync(fd)
@@ -533,8 +548,6 @@ export class SnapPivotStore {
     if (this.contractScan.bucket >= 16) {
       this.contractScanComplete = true
       this.contractScan = undefined
-      this.persistContractScanCursor()
-    } else {
       this.persistContractScanCursor()
     }
     return out

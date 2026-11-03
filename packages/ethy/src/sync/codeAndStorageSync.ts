@@ -117,9 +117,7 @@ export class SnapCodeAndStorageSynchronizer {
   start(): void {
     if (this.detachStorage !== undefined) return
     this.detachStorage = this.transport.onStorageRanges((peerId, payload) => {
-      enqueueProtocol(async () => {
-        await this.handleStorageRanges(peerId, payload)
-      })
+      void this.handleStorageRanges(peerId, payload)
     })
     this.detachCodes = this.transport.onByteCodes((peerId, payload) => {
       void this.handleByteCodes(peerId, payload)
@@ -144,7 +142,11 @@ export class SnapCodeAndStorageSynchronizer {
         const key = codeHashKey(codeHash)
         if (!this.codeQueue.has(key)) {
           if (this.codeQueue.size >= this.maxInMemoryContractTasks) {
-            this.spillContractRow(ownedHash, codeHash, storageRoot)
+            if (this.snapStore !== undefined) {
+              this.snapStore.enableContractScan()
+            } else {
+              this.spillContractRow(ownedHash, codeHash, storageRoot)
+            }
             continue
           }
           this.codeQueue.set(key, { codeHash: new Uint8Array(codeHash), missRetries: 0 })
@@ -154,8 +156,11 @@ export class SnapCodeAndStorageSynchronizer {
         const key = accountHashKey(ownedHash)
         if (!this.pendingStorage.has(key)) {
           if (this.pendingStorage.size >= this.maxInMemoryContractTasks) {
-            if (this.snapStore !== undefined) continue
-            this.spillContractRow(ownedHash, codeHash, storageRoot)
+            if (this.snapStore !== undefined) {
+              this.snapStore.enableContractScan()
+            } else {
+              this.spillContractRow(ownedHash, codeHash, storageRoot)
+            }
             continue
           }
           this.pendingStorage.set(key, {
@@ -399,26 +404,34 @@ export class SnapCodeAndStorageSynchronizer {
     } finally {
       task.verifying = false
     }
-    if (result.ok && result.slots !== undefined && result.slots.length > 0) {
-      this.stateManager.putSnapStorageBatch(task.accountHash, result.slots)
-      this.spine.storageSlotsSynced += result.slots.length
-      this.snapStore?.appendStorageSlots(task.accountHash, result.slots)
-    }
-    if (!result.ok) {
-      recordDiagnostic(this.spine, {
-        subsystem: 'snap',
-        severity: 'warn',
-        peerId,
-        message: result.reason ?? 'storage range failed',
+    await new Promise<void>((resolve) => {
+      enqueueProtocol(() => {
+        try {
+          if (result.ok && result.slots !== undefined && result.slots.length > 0) {
+            this.stateManager.putSnapStorageBatch(task.accountHash, result.slots)
+            this.spine.storageSlotsSynced += result.slots.length
+            this.snapStore?.appendStorageSlots(task.accountHash, result.slots)
+          }
+          if (!result.ok) {
+            recordDiagnostic(this.spine, {
+              subsystem: 'snap',
+              severity: 'warn',
+              peerId,
+              message: result.reason ?? 'storage range failed',
+            })
+            return
+          }
+          if (result.hasRight && result.lastKey !== undefined) {
+            task.origin = incrementKey32(result.lastKey)
+          } else {
+            this.pendingStorage.delete(flight.accountKey)
+          }
+          this.publishPending()
+        } finally {
+          resolve()
+        }
       })
-      return
-    }
-    if (result.hasRight && result.lastKey !== undefined) {
-      task.origin = incrementKey32(result.lastKey)
-    } else {
-      this.pendingStorage.delete(flight.accountKey)
-    }
-    this.publishPending()
+    })
   }
 
   private handleByteCodes(peerId: string, payload: Uint8Array): void {
@@ -488,7 +501,9 @@ export class SnapCodeAndStorageSynchronizer {
     row.set(accountHash.subarray(0, 32), 0)
     row.set(codeHash.subarray(0, 32), 32)
     row.set(storageRoot.subarray(0, 32), 64)
-    fs.mkdirSync(path.dirname(this.contractSpillPath), { recursive: true })
+    if (this.contractsSpilledOnDisk === 0) {
+      fs.mkdirSync(path.dirname(this.contractSpillPath), { recursive: true })
+    }
     fs.appendFileSync(this.contractSpillPath, row)
     this.contractsSpilledOnDisk++
   }

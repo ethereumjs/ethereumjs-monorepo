@@ -11,9 +11,9 @@ export const MAX_IN_FLIGHT_PROVEN = 2
 /** Extra pipeline depth for fast proven peers (WP-04g). */
 export const MAX_IN_FLIGHT_FAST_PROVEN = 4
 export const UNPROVEN_RANGE_TIMEOUT_MS = 4_000
-export const PROVEN_RANGE_TIMEOUT_MS = 20_000
+export const PROVEN_RANGE_TIMEOUT_MS = 8_000
 export const UNPROVEN_PEER_REST_MS = 30_000
-export const PROVEN_PEER_REST_MS = 10_000
+export const PROVEN_PEER_REST_MS = 3_000
 
 export function maxInFlightForPeer(peer: SnapSchedulePeer): number {
   if (
