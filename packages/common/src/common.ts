@@ -917,6 +917,48 @@ export class Common {
   }
 
   /**
+   * Beacon Chain light-client parameters for this network, when configured.
+   */
+  beaconLightClient() {
+    return this._chainParams.beaconLightClient
+  }
+
+  /**
+   * Consensus fork version active at the given Beacon epoch.
+   *
+   * @throws When this chain has no {@link ChainConfig.beaconLightClient} block
+   */
+  forkVersionAtEpoch(epoch: number): PrefixedHexString {
+    const cfg = this._chainParams.beaconLightClient
+    if (cfg === undefined) {
+      throw EthereumJSErrorWithoutCode('beaconLightClient config not available for this chain')
+    }
+    let version = cfg.forks[0]!.version
+    for (const fork of cfg.forks) {
+      if (fork.epoch <= epoch) {
+        version = fork.version
+      } else {
+        break
+      }
+    }
+    return version
+  }
+
+  /**
+   * Sync committee period index for a Beacon slot.
+   *
+   * @throws When this chain has no {@link ChainConfig.beaconLightClient} block
+   */
+  syncCommitteePeriodAtSlot(slot: number): number {
+    const cfg = this._chainParams.beaconLightClient
+    if (cfg === undefined) {
+      throw EthereumJSErrorWithoutCode('beaconLightClient config not available for this chain')
+    }
+    const { slotsPerEpoch, epochsPerSyncCommitteePeriod } = cfg
+    return Math.floor(slot / slotsPerEpoch / epochsPerSyncCommitteePeriod)
+  }
+
+  /**
    * Returns a deep copy of this {@link Common} instance.
    */
   copy(): Common {

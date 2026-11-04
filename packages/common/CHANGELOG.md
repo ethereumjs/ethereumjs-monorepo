@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 
 ### `@ethereumjs/common`
 
+- Optional `beaconLightClient` chain config on Mainnet, Sepolia, Hoodi, and Holesky; `Common.beaconLightClient()`, `forkVersionAtEpoch()`, and `syncCommitteePeriodAtSlot()`.
 - `StateManagerInterface.consumeBAL` accepts optional `ConsumeBALOptions` (`shouldApplyAccount` filter).
 
 ## 10.1.3 - 2026-08-21

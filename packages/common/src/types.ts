@@ -50,6 +50,38 @@ export interface ChainConfig {
   dnsNetworks?: string[]
   consensus: ConsensusConfig
   depositContractAddress?: PrefixedHexString
+  /** Ethereum consensus light-client parameters (Beacon Chain), when supported */
+  beaconLightClient?: BeaconLightClientConfig
+}
+
+/** Consensus fork row for Beacon light-client domain and proof layout */
+export interface BeaconForkScheduleEntry {
+  /** Consensus fork name (`phase0`, `altair`, `bellatrix`, `capella`, `deneb`, `electra`, `osaka`, …) */
+  name: string
+  /** Activation epoch on the Beacon Chain */
+  epoch: number
+  /** 4-byte fork version hex (e.g. `0x90000070`) */
+  version: PrefixedHexString
+}
+
+/** Beacon Chain metadata for Altair+ light-client verification */
+export interface BeaconLightClientConfig {
+  /** Genesis time (unix seconds) of the Beacon Chain */
+  genesisTime: number
+  /** 32-byte `genesis_validators_root` hex */
+  genesisValidatorsRoot: PrefixedHexString
+  /** Seconds per slot (12 on Mainnet and standard testnets) */
+  secondsPerSlot: number
+  /** Slots per epoch (32) */
+  slotsPerEpoch: number
+  /** Epochs per sync committee period (256) */
+  epochsPerSyncCommitteePeriod: number
+  /** Consensus fork version schedule for `forkVersionAtEpoch` / sync committee domain */
+  forks: BeaconForkScheduleEntry[]
+  /** Default untrusted Beacon REST endpoints (multi-provider fallback in WP-05b) */
+  defaultEndpoints: string[]
+  /** Optional weak-subjectivity checkpoint block root hex */
+  defaultCheckpointRoot?: PrefixedHexString
 }
 
 /** Genesis block header fields for a chain config. */
