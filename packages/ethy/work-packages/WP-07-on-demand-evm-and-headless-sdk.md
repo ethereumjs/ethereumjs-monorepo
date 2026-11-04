@@ -1,7 +1,7 @@
-# WP-06: On-Demand `@ethereumjs/evm` Sandbox, Light Beacon Pulse & Headless SDK
+# WP-07: On-Demand `@ethereumjs/evm` Sandbox & Headless SDK
 
-- **Status:** `BLOCKED_BY_WP-05`
-- **Dependencies:** `WP-04d` (`DONE`), `WP-04e` (`DONE`), `WP-04f` (`DONE`), `WP-04g` (`DONE`), `WP-04h` (`DONE`), `WP-04i` (`DONE`), `WP-04j` (`DONE`), `WP-04k`, `WP-05`
+- **Status:** `BLOCKED_BY_WP-06`
+- **Dependencies:** `WP-04d` (`DONE`), `WP-04e` (`DONE`), `WP-04f` (`DONE`), `WP-04g` (`DONE`), `WP-04h` (`DONE`), `WP-04i` (`DONE`), `WP-04j` (`DONE`), `WP-04k`, `WP-05a`, `WP-05b`, `WP-06`
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
 
@@ -22,17 +22,14 @@ Complete the first full milestone cycle of Ethy by coupling `@ethereumjs/evm` an
    - `simulateTxOnHead`: Runs a call or transaction via `@ethereumjs/evm` (`runCall`) or `@ethereumjs/vm` (`runTx`) on an overlay of the current head state (with optional state/code overrides and experimental Amsterdam EIP flags).
    - Captures a **compact, LLM-friendly semantic execution summary** (call frames, gas used, storage slot diffs, revert reason, and generated EIP-7928 BAL footprint) rather than a 50 MB raw opcode dump, and renders a structured summary widget in Zone 2.
 
-3. **Lightweight Beacon Header Pulse (`src/cl/beaconPulse.ts`):**
-   - Optional Stage-2 consensus tracker (~50 lines using built-in `fetch()`) polling a configurable Beacon REST endpoint (`/eth/v1/beacon/states/head/header` or `/eth/v2/beacon/blocks/head`) every 12 seconds when configured, feeding canonical `slot` and `execution_payload_header.state_root` / `block_hash` into `EthySpine` alongside P2P announcements.
-
-4. **Public Programmatic & Headless SDK (`src/index.ts`):**
+3. **Public Programmatic & Headless SDK (`src/index.ts`):**
    - Clean public exports for library and MCP consumers:
      - `createEthyNode(opts)` (`headless: true | false`, `network`, `stateStore`, `intentEngine`).
      - `node.spine` (read-only telemetry snapshot & event emitter).
      - `node.createSandboxOverlay()` (spawns an isolated `StateManagerInterface` + `@ethereumjs/vm` instance anchored at the current head in `<2ms`).
      - `node.executeTool(toolName, args)` and `node.resolvePrompt(prompt)` (direct structured access for MCP servers).
 
-5. **Tier-1 Unit Test Suite (`test/evmSandbox.spec.ts` & `test/headlessSdk.spec.ts`):**
+4. **Tier-1 Unit Test Suite (`test/evmSandbox.spec.ts` & `test/headlessSdk.spec.ts`):**
    - Tests `EthyStateManager` Copy-on-Write isolation: run a state-mutating contract call on the overlay, verify the overlay reflects the new storage value + return data, and verify the underlying `StateStore` remains untouched.
    - Tests on-demand cold-account fallback via `SyntheticSnapPeer`.
    - Tests `createEthyNode({ headless: true })` end-to-end (synthetic sync → BAL head update → `simulateTxOnHead` tool execution) with zero stdout output.

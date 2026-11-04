@@ -119,19 +119,33 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                       │         Rolling Pivot & Live Head Flip  │                 │
                       └───────────────────┬─────────────────────┘                 │
                                           │                                       │
+                                          ▼                                       │
+                      ┌─────────────────────────────────────────┐                 │
+                      │ WP-05a: @ethereumjs/beacon-light Core — │                 │
+                      │         Common CL Config, SSZ Merkle &  │                 │
+                      │         BLS12-381 Sync Committee Verify │                 │
+                      └───────────────────┬─────────────────────┘                 │
+                                          │                                       │
+                                          ▼                                       │
+                      ┌─────────────────────────────────────────┐                 │
+                      │ WP-05b: @ethereumjs/beacon-light Live   │                 │
+                      │         Transport, Standalone CLI Pulse │                 │
+                      │         & Ethy Consensus Anchor (/cl)   │                 │
+                      └───────────────────┬─────────────────────┘                 │
+                                          │                                       │
                                           └───────────────────┬───────────────────┘
                                                               ▼
                                           ┌─────────────────────────────────────────┐
-                                          │ WP-05: Bidirectional Local LLM          │
+                                          │ WP-06: Bidirectional Local LLM          │
                                           │        IntentEngine (<ethy_state>       │
                                           │        & Dynamic Tool Gating)           │
                                           └───────────────────┬─────────────────────┘
                                                               │
                                                               ▼
                                           ┌─────────────────────────────────────────┐
-                                          │ WP-06: On-Demand @ethereumjs/evm        │
-                                          │        Sandbox, Light Beacon Pulse &    │
-                                          │        Headless SDK (FYP / MCP Ready)   │
+                                          │ WP-07: On-Demand @ethereumjs/evm        │
+                                          │        Sandbox & Headless SDK           │
+                                          │        (FYP / MCP Ready)                │
                                           └─────────────────────────────────────────┘
 ```
 
