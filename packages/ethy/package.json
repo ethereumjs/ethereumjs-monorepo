@@ -56,6 +56,7 @@
   },
   "dependencies": {
     "@awasm/noble": "^0.1.4",
+    "@ethereumjs/beacon-light": "^10.1.3",
     "@ethereumjs/block": "^10.1.3",
     "@ethereumjs/common": "^10.1.3",
     "@ethereumjs/devp2p": "^10.1.3",

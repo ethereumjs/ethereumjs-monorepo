@@ -1,3 +1,9 @@
+import {
+  holeskyBeaconLightClient,
+  hoodiBeaconLightClient,
+  mainnetBeaconLightClient,
+  sepoliaBeaconLightClient,
+} from './beaconLightClientConfigs.ts'
 import type { ChainConfig } from './types.ts'
 
 /** Chain configuration for Ethereum mainnet (chain ID 1). */
@@ -180,6 +186,7 @@ export const Mainnet: ChainConfig = {
   dnsNetworks: [
     'enrtree://AKA3AM6LPBYEUDMVNU3BSVQJ5AD45Y7YPOHJLEF6W26QOE4VTUDPE@all.mainnet.ethdisco.net',
   ],
+  beaconLightClient: mainnetBeaconLightClient,
 }
 
 /** Chain configuration for the Sepolia testnet (chain ID 11155111). */
@@ -351,6 +358,7 @@ export const Sepolia: ChainConfig = {
   dnsNetworks: [
     'enrtree://AKA3AM6LPBYEUDMVNU3BSVQJ5AD45Y7YPOHJLEF6W26QOE4VTUDPE@all.sepolia.ethdisco.net',
   ],
+  beaconLightClient: sepoliaBeaconLightClient,
 }
 
 /** Chain configuration for the Holesky testnet (chain ID 17000). */
@@ -495,6 +503,7 @@ export const Holesky: ChainConfig = {
   dnsNetworks: [
     'enrtree://AKA3AM6LPBYEUDMVNU3BSVQJ5AD45Y7YPOHJLEF6W26QOE4VTUDPE@all.holesky.ethdisco.net',
   ],
+  beaconLightClient: holeskyBeaconLightClient,
 }
 
 /** Chain configuration for the Hoodi testnet (chain ID 560048). */
@@ -654,4 +663,5 @@ export const Hoodi: ChainConfig = {
   dnsNetworks: [
     'enrtree://AKA3AM6LPBYEUDMVNU3BSVQJ5AD45Y7YPOHJLEF6W26QOE4VTUDPE@all.hoodi.ethdisco.net',
   ],
+  beaconLightClient: hoodiBeaconLightClient,
 }

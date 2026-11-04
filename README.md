@@ -120,6 +120,7 @@ Active packages (published in sync on v10; see [`scripts/release-npm.ts`](./scri
 | ------- | ---- | ---- |
 | [`@ethereumjs/common`](./packages/common) [![npm](https://img.shields.io/npm/v/@ethereumjs/common.svg)](https://www.npmjs.com/package/@ethereumjs/common) | Chains, hardforks, EIP parameters | [README](./packages/common/README.md) |
 | [`@ethereumjs/genesis`](./packages/genesis) [![npm](https://img.shields.io/npm/v/@ethereumjs/genesis.svg)](https://www.npmjs.com/package/@ethereumjs/genesis) | Genesis state for known chains | [README](./packages/genesis/README.md) |
+| [`@ethereumjs/beacon-light`](./packages/beacon-light) [![npm](https://img.shields.io/npm/v/@ethereumjs/beacon-light.svg)](https://www.npmjs.com/package/@ethereumjs/beacon-light) | Consensus light-client sync committee verifier | [README](./packages/beacon-light/README.md) |
 
 ### Protocol types
 

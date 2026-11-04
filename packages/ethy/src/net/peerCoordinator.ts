@@ -127,6 +127,8 @@ export type StartPeerCoordinatorOptions = {
   dataDir?: string
   /** Test override for pivot bundle fetch timeout (default 15s). */
   pivotBundleTimeoutMs?: number
+  /** Cross-check EL headers against consensus light client (WP-05b). */
+  witnessExecutionHeader?: (blockNumber: bigint, blockHash: Uint8Array) => void
   /** Wipe pivot state before sync (WP-04a). */
   fresh?: boolean
 }
@@ -320,6 +322,7 @@ export async function startPeerCoordinator(
         onBalBlockBuffered: () => {
           deriveCapabilities(spine)
         },
+        onVerifiedExecutionHeader: opts.witnessExecutionHeader,
       })
     }
     headFollower.start()
@@ -718,6 +721,7 @@ export async function startPeerCoordinator(
     spine.pivotBlockNumber = parsed.number
     spine.pivotStateRoot = parsed.stateRoot
     spine.currentSlot = Number(parsed.number)
+    opts.witnessExecutionHeader?.(parsed.number, parsed.hash)
     if (firstAnchor || (prevRoot !== undefined && !equalsBytes(prevRoot, parsed.stateRoot))) {
       opts.notices?.clear('snap-resume', Date.now())
       snapStore?.activatePivot({

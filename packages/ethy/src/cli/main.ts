@@ -1,3 +1,4 @@
+import { startConsensusTracker } from '../cl/consensusTracker.ts'
 import { createEthyNode } from '../core/createEthyNode.ts'
 import { initEthyKeccak } from '../crypto/keccak.ts'
 import { advanceDemo } from '../demo/advanceDemo.ts'
@@ -43,6 +44,8 @@ async function main(): Promise<void> {
   })
 
   let coordinatorStop: (() => void) | undefined
+  let consensusStop: (() => void) | undefined
+  let witnessExecutionHeader: ((blockNumber: bigint, blockHash: Uint8Array) => void) | undefined
   let p2pError: string | undefined
   const bindPeerCoordinator = (handle: Awaited<ReturnType<typeof startPeerCoordinator>>) => {
     node.disconnectPeer = handle.disconnectPeer
@@ -70,6 +73,14 @@ async function main(): Promise<void> {
   }
   let coordinatorReady: Promise<void> = Promise.resolve()
   if (!cli.demo) {
+    const consensus = startConsensusTracker({
+      spine: node.spine,
+      network,
+      dataDir: cli.dataDir,
+      notices: node.notices,
+    })
+    consensusStop = consensus.stop
+    witnessExecutionHeader = consensus.notePeerHeader
     coordinatorReady = startPeerCoordinator({
       spine: node.spine,
       stateManager: node.stateManager,
@@ -78,6 +89,7 @@ async function main(): Promise<void> {
       snapStore: node.snapStore,
       peerBook: node.peerBook,
       fresh: cli.fresh,
+      witnessExecutionHeader,
     })
       .then((handle) => {
         bindPeerCoordinator(handle)
@@ -89,6 +101,7 @@ async function main(): Promise<void> {
 
   const shutdown = () => {
     coordinatorStop?.()
+    consensusStop?.()
   }
 
   if (cli.headless) {

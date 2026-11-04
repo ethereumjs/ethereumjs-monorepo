@@ -1,6 +1,6 @@
 # WP-05b: `@ethereumjs/beacon-light` Live Transport, Standalone CLI Pulse & Ethy Consensus-Verified Sync/Head Integration
 
-- **Status:** `BLOCKED_BY_WP-05a`
+- **Status:** `DONE`
 - **Dependencies:** `WP-04k`, `WP-05a`
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
@@ -27,7 +27,8 @@ Bring **`@ethereumjs/beacon-light`** to life on the network and inside **`@ether
        - `GET /eth/v1/beacon/light_client/updates?start_period={p}&count={n}`
        - `GET /eth/v1/beacon/light_client/finality_update`
        - `GET /eth/v1/beacon/light_client/optimistic_update`
-       - Automatic weak-subjectivity checkpoint discovery (`GET /eth/v1/beacon/states/finalized/header` or configured `--checkpoint-root` / `defaultCheckpointRoot`) when no local committee state is cached on disk.
+       - **Zero-Config Bootstrap Root Discovery:** When no `--checkpoint` / `defaultCheckpointRoot` is provided and no local committee cache exists on disk, fetch `/eth/v1/beacon/light_client/finality_update`, compute `blockRoot = bytesToHex(hashTreeRootBeaconBlockHeader(finalizedHeader.beacon, sha256))`, and fetch `/eth/v1/beacon/light_client/bootstrap/{blockRoot}`!
+       - **Wire JSON Parser (`parseLightClientHeaderJson`, etc.):** Support both Capella..Osaka `header.execution` (`ExecutionPayloadHeaderSummary`) and Amsterdam ePBS `header.execution_block_hash` (`executionBlockHash: hexToBytes(header.execution_block_hash)`).
    - **On-Disk Committee & Finality Cache (`BeaconLightStore`):**
      - Saves `{ period, currentSyncCommittee, nextSyncCommittee, finalizedHeader, optimisticHeader }` atomically to disk (`~/.ethy/networks/<net>/cl/light-client.json` or caller path).
      - On restart within the same 27-hour period (or next period), `BeaconLightClient` resumes immediately from its cached `SyncCommittee` without needing a `bootstrap` call!
@@ -65,16 +66,56 @@ Bring **`@ethereumjs/beacon-light`** to life on the network and inside **`@ether
 ---
 
 ### Acceptance Criteria (`WP-05b`)
-- [ ] `npx tsx packages/beacon-light/src/cli/main.ts --demo` and live `sepolia` mode display live BLS-verified slot/finality updates.
-- [ ] `@ethereumjs/beacon-light` persists `SyncCommittee` state and resumes without re-bootstrapping on restart.
-- [ ] `@ethereumjs/ethy` integrates `@ethereumjs/beacon-light`, surfaces `Finalized` / `BLS` status in the TUI and `/cl` command, and degrades gracefully when offline.
-- [ ] `npm run tsc`, `npm test`, and `npm run spellcheck` pass across `@ethereumjs/beacon-light` and `@ethereumjs/ethy` with 0 live network calls in CI.
+- [x] `npx tsx packages/beacon-light/src/cli/main.ts --demo` and live `sepolia` mode display live BLS-verified slot/finality updates.
+- [x] `@ethereumjs/beacon-light` persists `SyncCommittee` state and resumes without re-bootstrapping on restart.
+- [x] `@ethereumjs/ethy` integrates `@ethereumjs/beacon-light`, surfaces `Finalized` / `BLS` status in the TUI and `/cl` command, and degrades gracefully when offline.
+- [x] `npm run tsc`, `npm test`, and `npm run spellcheck` pass across `@ethereumjs/beacon-light` and `@ethereumjs/ethy` with 0 live network calls in CI.
 
 ---
 
 ## 2. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled out by Grok 4.7 during the Planning pass.)*
+**Decision D-086.** WP-05a verifier stays the trust boundary. Transport JSON is untrusted until `bootstrap` / `applyUpdate` / `applyFinalityUpdate` / `applyOptimisticUpdate` accept it. No new third-party packages. `fetch` is the runtime global (Node 22). `node:fs` only in `store.ts` and `src/cli/` (Node entrypoints).
+
+### Design locks (D-086)
+
+| Lock | Choice |
+| --- | --- |
+| Updates | **Polling**, not SSE — `optimistic_update` ~ every `secondsPerSlot` (12s), `finality_update` ~ one epoch; `updates?start_period` after resume |
+| Bootstrap discovery | No checkpoint and no store → `GET finality_update`, `blockRoot = hashTreeRootBeaconBlockHeader(finalized.beacon)`, `GET bootstrap/{blockRoot}`; `--checkpoint` / `defaultCheckpointRoot` skips discovery |
+| Resume | `exportState()` / `importState()` on `BeaconLightClient`; `BeaconLightStore` JSON (hex bytes); corrupt file deleted → cold start; still pull `updates` from stored period |
+| Ethy pivot | **No** `pivotBlockNumber` from CL — witness only: matching EL block number ⇒ hashes must match; mismatch → `spine.clStatus = 'mismatch'`; unreachable CL → `p2p_only` |
+| Wire | Capella `execution` payload summary **or** Amsterdam `execution_block_hash`; branches / sync bits as hex lists / 64-byte bitvector |
+| CI | Injected `fetch` only — no public beacon URLs |
+
+### Slice 1 — wire parser and transport
+
+- `wire.ts` — `parseLightClientHeaderJson`, bootstrap, update, finality, optimistic
+- `transport.ts` — `BeaconLightTransport` (`fetchImpl`, `AbortSignal.timeout`, endpoint rotation from `common.beaconLightClient().defaultEndpoints` + optional override first)
+- `test/transport.spec.ts` — failover, timeout, Capella + Amsterdam header JSON
+
+### Slice 2 — disk store and client snapshot
+
+- `store.ts` — `BeaconLightStore` load/save, temp+rename; `defaultLightClientPath(network)` → `~/.ethy/networks/<net>/cl/light-client.json`
+- `test/store.spec.ts` — resume without second bootstrap
+- Barrel exports + `config/public-api-snapshots/beacon-light.json`
+
+### Slice 3 — CLI
+
+- `src/cli/main.ts`, `bin/beacon-light.cjs`, `package.json` `bin` + `"cli": "tsx src/cli/main.ts"`
+- Args: network (`sepolia` default), `--beacon-url`, `--checkpoint`, `--once`, `--demo` (offline, no `fetch`)
+- Live mode: ANSI header, per-update ticker, `Ctrl+C` saves store
+- `test/cli.spec.ts` — args + `--demo` in-process
+
+### Slice 4 — Ethy
+
+- `@ethereumjs/beacon-light` dependency on ethy
+- `spine` CL fields + `consensusTracker.ts` beside `PeerCoordinator` (D-028 split)
+- TUI HEAD metrics, `/cl` widget, `test/clSync.spec.ts` — verified head, mismatch, offline `p2p_only`
+
+### Gates
+
+`npm run tsc` + `npm run test:node` in `beacon-light` and `ethy`; `npm run spellcheck`; `node scripts/public-api-snapshot.spec.mjs`; CLI `--demo` exit 0.
 
 ---
 
