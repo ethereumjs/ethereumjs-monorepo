@@ -5,6 +5,7 @@ import { sha256 as nobleSha256 } from '@noble/hashes/sha2.js'
 import { assert, beforeAll, describe, it } from 'vitest'
 
 import {
+  ETH_BLS_DST,
   computeSigningRoot,
   computeSyncCommitteeDomain,
   verifySyncCommitteeSignature,
@@ -25,7 +26,16 @@ describe('[BeaconLight]: BLS sync committee verification', () => {
   it('accepts 342-of-512 aggregate on the signing root', () => {
     const signingRoot = nobleSha256(new Uint8Array([1, 2, 3]))
     const indices = Array.from({ length: 342 }, (_, i) => i)
-    const sigs = indices.map((i) => bls12_381.sign(signingRoot, secretKeys[i]!))
+    const sigCache = new Map<Uint8Array, Uint8Array>()
+    const sigs = indices.map((i) => {
+      const sk = secretKeys[i]!
+      let s = sigCache.get(sk)
+      if (s === undefined) {
+        s = bls12_381.sign(signingRoot, sk, { DST: ETH_BLS_DST })
+        sigCache.set(sk, s)
+      }
+      return s
+    })
     const signature = bls12_381.aggregateSignatures(sigs)
     const bits = new Uint8Array(64)
     for (const i of indices) {
@@ -39,12 +49,21 @@ describe('[BeaconLight]: BLS sync committee verification', () => {
     })
     assert.ok(result.valid)
     assert.equal(result.participantCount, 342)
-  }, 60_000)
+  })
 
   it('rejects 341 participants and tampered signing root', () => {
     const signingRoot = nobleSha256(new Uint8Array([4]))
     const indices = Array.from({ length: 341 }, (_, i) => i)
-    const sigs = indices.map((i) => bls12_381.sign(signingRoot, secretKeys[i]!))
+    const sigCache = new Map<Uint8Array, Uint8Array>()
+    const sigs = indices.map((i) => {
+      const sk = secretKeys[i]!
+      let s = sigCache.get(sk)
+      if (s === undefined) {
+        s = bls12_381.sign(signingRoot, sk, { DST: ETH_BLS_DST })
+        sigCache.set(sk, s)
+      }
+      return s
+    })
     const signature = bls12_381.aggregateSignatures(sigs)
     const bits = new Uint8Array(64)
     for (const i of indices) {
@@ -60,7 +79,7 @@ describe('[BeaconLight]: BLS sync committee verification', () => {
     const badRoot = nobleSha256(new Uint8Array([5]))
     const fullBits = new Uint8Array(64)
     fullBits.fill(0xff)
-    const fullSig = bls12_381.sign(signingRoot, secretKeys[0]!)
+    const fullSig = bls12_381.sign(signingRoot, secretKeys[0]!, { DST: ETH_BLS_DST })
     const tampered = verifySyncCommitteeSignature({
       publicKeys,
       syncCommitteeBits: fullBits,

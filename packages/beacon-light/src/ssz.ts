@@ -34,13 +34,13 @@ export function chunkBytes32(bytes: Uint8Array): Uint8Array {
   return bytes
 }
 
-/** 20-byte execution address in a 32-byte SSZ chunk (bytes 12..32). */
+/** 20-byte execution address in a 32-byte SSZ chunk (`ByteVector[20]`, right-padded at bytes 0..20). */
 export function chunkExecutionAddress(address: Uint8Array): Uint8Array {
   if (address.length !== 20) {
     throw EthereumJSErrorWithoutCode('expected 20-byte execution address')
   }
   const out = new Uint8Array(32)
-  out.set(address, 12)
+  out.set(address, 0)
   return out
 }
 
@@ -72,6 +72,9 @@ function merkleHashPaddedChunks(chunks: Uint8Array[], sha256: Sha256Fn): Uint8Ar
 }
 
 function hashTreeRootByteList(data: Uint8Array, sha256: Sha256Fn): Uint8Array {
+  if (data.length > 32) {
+    throw EthereumJSErrorWithoutCode('extra_data exceeds 32 bytes')
+  }
   const chunks: Uint8Array[] = []
   for (let i = 0; i < data.length; i += 32) {
     const slice = data.subarray(i, i + 32)

@@ -39,6 +39,7 @@ export const sepoliaBeaconLightClient: BeaconLightClientConfig = {
     { name: 'deneb', epoch: 132608, version: '0x90000073' },
     { name: 'electra', epoch: 222464, version: '0x90000074' },
     { name: 'osaka', epoch: 272640, version: '0x90000075' },
+    { name: 'amsterdam', epoch: 353024, version: '0x90000076' },
   ],
   defaultEndpoints: [
     'https://lodestar-sepolia.chainsafe.io',

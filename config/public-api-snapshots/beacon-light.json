@@ -1,10 +1,13 @@
 {
   "package": "beacon-light",
   "exports": [
+    "AMSTERDAM_EXECUTION_BLOCK_HASH_GINDEX",
     "BeaconLightClient",
     "DOMAIN_SYNC_COMMITTEE",
+    "ETH_BLS_DST",
     "EXECUTION_PAYLOAD_GINDEX",
     "ZERO_HASHES",
+    "amsterdamActivationEpoch",
     "capellaActivationEpoch",
     "computeSigningRoot",
     "computeSyncCommitteeDomain",

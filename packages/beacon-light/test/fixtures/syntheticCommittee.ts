@@ -4,6 +4,7 @@ import { bls12_381 } from '@noble/curves/bls12-381.js'
 import { sha256 as nobleSha256 } from '@noble/hashes/sha2.js'
 
 import {
+  ETH_BLS_DST,
   ZERO_HASHES,
   computeSigningRoot,
   computeSyncCommitteeDomain,
@@ -41,22 +42,46 @@ export function deterministicSecretKey(index: number): Uint8Array {
   return setLengthLeft(bigIntToBytes(scalar), 32)
 }
 
+const UNIQUE_TEST_KEYS = 8
+let cachedCommittee:
+  | {
+      committee: SyncCommittee
+      secretKeys: Uint8Array[]
+    }
+  | undefined
+
 export function buildTestSyncCommittee(): {
   committee: SyncCommittee
   secretKeys: Uint8Array[]
 } {
+  if (cachedCommittee !== undefined) {
+    return {
+      committee: {
+        publicKeys: cachedCommittee.committee.publicKeys.map((pk) => new Uint8Array(pk)),
+        aggregatePubkey: new Uint8Array(cachedCommittee.committee.aggregatePubkey),
+      },
+      secretKeys: cachedCommittee.secretKeys,
+    }
+  }
+  const baseSecretKeys: Uint8Array[] = []
+  const basePublicKeys: Uint8Array[] = []
+  for (let i = 0; i < UNIQUE_TEST_KEYS; i++) {
+    const sk = deterministicSecretKey(i + 1)
+    baseSecretKeys.push(sk)
+    basePublicKeys.push(bls12_381.getPublicKey(sk))
+  }
   const secretKeys: Uint8Array[] = []
   const publicKeys: Uint8Array[] = []
   for (let i = 0; i < 512; i++) {
-    const sk = deterministicSecretKey(i + 1)
-    secretKeys.push(sk)
-    publicKeys.push(bls12_381.getPublicKey(sk))
+    secretKeys.push(baseSecretKeys[i % UNIQUE_TEST_KEYS]!)
+    publicKeys.push(new Uint8Array(basePublicKeys[i % UNIQUE_TEST_KEYS]!))
   }
-  const aggregatePubkey = publicKeys[0]!
-  return {
+  const aggregatePubkey = new Uint8Array(basePublicKeys[0]!)
+  cachedCommittee = {
     committee: { publicKeys, aggregatePubkey },
     secretKeys,
   }
+  return buildTestSyncCommittee()
 }
 
 export function zeroExecutionPayload(blockNumber: number): ExecutionPayloadHeaderSummary {
@@ -143,7 +168,16 @@ export function signAttestedHeader(
     domain,
     sha256,
   )
-  const sigs = participantIndices.map((i) => bls12_381.sign(signingRoot, secretKeys[i]!))
+  const sigBySecret = new Map<Uint8Array, Uint8Array>()
+  const sigs = participantIndices.map((i) => {
+    const sk = secretKeys[i]!
+    let sig = sigBySecret.get(sk)
+    if (sig === undefined) {
+      sig = bls12_381.sign(signingRoot, sk, { DST: ETH_BLS_DST })
+      sigBySecret.set(sk, sig)
+    }
+    return sig
+  })
   const signature = sigs.length === 1 ? sigs[0]! : bls12_381.aggregateSignatures(sigs)
   const bits = new Uint8Array(64)
   for (const i of participantIndices) {

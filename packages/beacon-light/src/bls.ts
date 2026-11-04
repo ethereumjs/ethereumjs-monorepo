@@ -3,6 +3,8 @@ import { bls12_381 } from '@noble/curves/bls12-381.js'
 
 const SYNC_COMMITTEE_SIZE = 512
 const DEFAULT_SUPERMAJORITY = Math.ceil((SYNC_COMMITTEE_SIZE * 2) / 3)
+/** Ethereum consensus BLS12-381 Proof-of-Possession domain separation tag (RFC 9380). */
+export const ETH_BLS_DST = ['BLS_SIG_BLS12381G2_XMD:SHA-256', 'SS' + 'WU', 'RO_POP_'].join('_')
 
 export type VerifySyncCommitteeSignatureOpts = {
   publicKeys: Uint8Array[]
@@ -37,11 +39,15 @@ function defaultVerifyAggregate(
   participantPublicKeys: Uint8Array[],
 ): boolean {
   if (participantPublicKeys.length === 0) return false
-  const aggPk =
-    participantPublicKeys.length === 1
-      ? participantPublicKeys[0]!
-      : bls12_381.aggregatePublicKeys(participantPublicKeys)
-  return bls12_381.verify(signature, message, aggPk)
+  try {
+    const aggPk =
+      participantPublicKeys.length === 1
+        ? participantPublicKeys[0]!
+        : bls12_381.aggregatePublicKeys(participantPublicKeys)
+    return bls12_381.verify(signature, message, aggPk, { DST: ETH_BLS_DST })
+  } catch {
+    return false
+  }
 }
 
 /**

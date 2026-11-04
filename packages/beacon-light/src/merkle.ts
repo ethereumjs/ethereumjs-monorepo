@@ -20,10 +20,10 @@ export function gindexToMerklePosition(gindex: number): { depth: number; index: 
 
 export function normalizeMerkleBranch(branch: Uint8Array[], gindex: number): Uint8Array[] {
   const { depth } = gindexToMerklePosition(gindex)
-  const extra = depth - branch.length
-  if (extra <= 0) return branch.slice()
-  const prefix = Array.from({ length: extra }, () => new Uint8Array(32))
-  return [...prefix, ...branch]
+  if (branch.length !== depth) {
+    return branch.slice()
+  }
+  return branch.slice()
 }
 
 /**
@@ -51,7 +51,7 @@ export function isValidMerkleBranch(
 }
 
 /**
- * Verify a branch after Electra-style zero-prefix normalization.
+ * Verify a Merkle branch at a generalized index `gindex` (requires exact `depth` sibling nodes).
  */
 export function isValidNormalizedMerkleBranch(
   leaf: Uint8Array,
@@ -60,9 +60,8 @@ export function isValidNormalizedMerkleBranch(
   root: Uint8Array,
   sha256: Sha256Fn,
 ): boolean {
-  const normalized = normalizeMerkleBranch(branch, gindex)
   const { depth, index } = gindexToMerklePosition(gindex)
-  return isValidMerkleBranch(leaf, normalized, depth, index, root, sha256)
+  return isValidMerkleBranch(leaf, branch, depth, index, root, sha256)
 }
 
 /** Compute Merkle root from a leaf placed at `(depth, index)` with zero siblings. */

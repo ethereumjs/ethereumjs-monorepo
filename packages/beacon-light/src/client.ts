@@ -9,7 +9,12 @@ import {
   isValidNormalizedMerkleBranch,
   merkleRootFromZeroBranch,
 } from './merkle.ts'
-import { capellaActivationEpoch, epochAtSlot, proofLayoutAtEpoch } from './proofLayout.ts'
+import {
+  amsterdamActivationEpoch,
+  capellaActivationEpoch,
+  epochAtSlot,
+  proofLayoutAtEpoch,
+} from './proofLayout.ts'
 import {
   hashTreeRootBeaconBlockHeader,
   hashTreeRootExecutionPayloadHeader,
@@ -93,8 +98,33 @@ function assertValidLightClientHeader(header: LightClientHeader, common: Common,
   const slot = header.beacon.slot
   const epoch = epochAtSlot(slot, common)
   if (epoch < capellaActivationEpoch(common)) {
-    if (header.execution !== undefined || (header.executionBranch?.length ?? 0) > 0) {
+    if (
+      header.execution !== undefined ||
+      header.executionBlockHash !== undefined ||
+      (header.executionBranch?.length ?? 0) > 0
+    ) {
       throw EthereumJSErrorWithoutCode('pre-Capella header must not carry execution payload')
+    }
+    return
+  }
+  const layout = proofLayoutAtEpoch(common, epoch)
+  if (epoch >= amsterdamActivationEpoch(common) && header.executionBlockHash !== undefined) {
+    if (header.executionBranch === undefined) {
+      throw EthereumJSErrorWithoutCode('Amsterdam light client header requires executionBranch')
+    }
+    if (header.executionBlockHash.length !== 32) {
+      throw EthereumJSErrorWithoutCode('expected 32-byte executionBlockHash')
+    }
+    if (
+      !isValidNormalizedMerkleBranch(
+        header.executionBlockHash,
+        header.executionBranch,
+        layout.executionPayloadGindex,
+        header.beacon.bodyRoot,
+        sha256,
+      )
+    ) {
+      throw EthereumJSErrorWithoutCode('invalid execution_block_hash Merkle branch')
     }
     return
   }
@@ -106,8 +136,6 @@ function assertValidLightClientHeader(header: LightClientHeader, common: Common,
     executionForkLabel(common, slot),
     sha256,
   )
-  const layout = proofLayoutAtEpoch(common, epoch)
-  const { depth, index } = gindexToMerklePosition(layout.executionPayloadGindex)
   if (
     !isValidNormalizedMerkleBranch(
       execRoot,
@@ -119,11 +147,6 @@ function assertValidLightClientHeader(header: LightClientHeader, common: Common,
   ) {
     throw EthereumJSErrorWithoutCode('invalid execution_payload Merkle branch')
   }
-  // depth/index used for clarity in errors; branch check uses gindex normalization
-  if (header.executionBranch.length > depth + 1) {
-    throw EthereumJSErrorWithoutCode('execution branch too long')
-  }
-  void index
 }
 
 function verifiedExecutionFromHeader(
@@ -131,17 +154,31 @@ function verifiedExecutionFromHeader(
   participantCount: number,
   sha256: Sha256Fn,
 ): VerifiedExecutionHead | undefined {
-  if (header.execution === undefined) return undefined
-  return {
-    slot: header.beacon.slot,
-    beaconBlockRoot: hashTreeRootBeaconBlockHeader(header.beacon, sha256),
-    blockNumber: header.execution.blockNumber,
-    blockHash: header.execution.blockHash,
-    stateRoot: header.execution.stateRoot,
-    parentHash: header.execution.parentHash,
-    timestamp: header.execution.timestamp,
-    participantCount,
+  if (header.execution !== undefined) {
+    return {
+      slot: header.beacon.slot,
+      beaconBlockRoot: hashTreeRootBeaconBlockHeader(header.beacon, sha256),
+      blockNumber: header.execution.blockNumber,
+      blockHash: header.execution.blockHash,
+      stateRoot: header.execution.stateRoot,
+      parentHash: header.execution.parentHash,
+      timestamp: header.execution.timestamp,
+      participantCount,
+    }
   }
+  if (header.executionBlockHash !== undefined) {
+    return {
+      slot: header.beacon.slot,
+      beaconBlockRoot: hashTreeRootBeaconBlockHeader(header.beacon, sha256),
+      blockNumber: 0,
+      blockHash: header.executionBlockHash,
+      stateRoot: new Uint8Array(32),
+      parentHash: new Uint8Array(32),
+      timestamp: 0,
+      participantCount,
+    }
+  }
+  return undefined
 }
 
 /**
@@ -219,7 +256,8 @@ export class BeaconLightClient {
       update.finalizedHeader.beacon.slot,
     )
 
-    const hasNextCommitteePayload = update.nextSyncCommitteeBranch.length > 0
+    const hasNextCommitteePayload =
+      !isSyncCommitteeEmpty(update.nextSyncCommittee) || update.nextSyncCommitteeBranch.length > 0
     if (hasNextCommitteePayload) {
       const epoch = epochAtSlot(update.attestedHeader.beacon.slot, this.common)
       const layout = proofLayoutAtEpoch(this.common, epoch)
@@ -237,12 +275,17 @@ export class BeaconLightClient {
       }
     }
 
-    if (isSyncCommitteeEmpty(this.nextSyncCommittee) && hasNextCommitteePayload) {
-      this.nextSyncCommittee = update.nextSyncCommittee
-    } else if (updateFinalizedPeriod === storePeriod + 1) {
+    if (
+      updateFinalizedPeriod === storePeriod + 1 &&
+      !isSyncCommitteeEmpty(this.nextSyncCommittee)
+    ) {
       this.currentSyncCommittee = this.nextSyncCommittee
-      this.nextSyncCommittee = update.nextSyncCommittee
+      this.nextSyncCommittee = hasNextCommitteePayload
+        ? update.nextSyncCommittee
+        : emptySyncCommittee()
       periodAdvanced = true
+    } else if (isSyncCommitteeEmpty(this.nextSyncCommittee) && hasNextCommitteePayload) {
+      this.nextSyncCommittee = update.nextSyncCommittee
     }
 
     if (
@@ -364,7 +407,7 @@ export class BeaconLightClient {
     const attestedEpoch = epochAtSlot(update.attestedHeader.beacon.slot, this.common)
     const layout = proofLayoutAtEpoch(this.common, attestedEpoch)
 
-    if (update.finalityBranch.length > 0 && update.finalizedHeader.beacon.slot > 0) {
+    if (update.finalizedHeader.beacon.slot > 0) {
       assertValidLightClientHeader(update.finalizedHeader, this.common, this.sha256)
       const finalizedRoot = hashTreeRootBeaconBlockHeader(
         update.finalizedHeader.beacon,

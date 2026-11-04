@@ -27,7 +27,8 @@ Bring **`@ethereumjs/beacon-light`** to life on the network and inside **`@ether
        - `GET /eth/v1/beacon/light_client/updates?start_period={p}&count={n}`
        - `GET /eth/v1/beacon/light_client/finality_update`
        - `GET /eth/v1/beacon/light_client/optimistic_update`
-       - Automatic weak-subjectivity checkpoint discovery (`GET /eth/v1/beacon/states/finalized/header` or configured `--checkpoint-root` / `defaultCheckpointRoot`) when no local committee state is cached on disk.
+       - **Zero-Config Bootstrap Root Discovery:** When no `--checkpoint` / `defaultCheckpointRoot` is provided and no local committee cache exists on disk, fetch `/eth/v1/beacon/light_client/finality_update`, compute `blockRoot = bytesToHex(hashTreeRootBeaconBlockHeader(finalizedHeader.beacon, sha256))`, and fetch `/eth/v1/beacon/light_client/bootstrap/{blockRoot}`!
+       - **Wire JSON Parser (`parseLightClientHeaderJson`, etc.):** Support both Capella..Osaka `header.execution` (`ExecutionPayloadHeaderSummary`) and Amsterdam ePBS `header.execution_block_hash` (`executionBlockHash: hexToBytes(header.execution_block_hash)`).
    - **On-Disk Committee & Finality Cache (`BeaconLightStore`):**
      - Saves `{ period, currentSyncCommittee, nextSyncCommittee, finalizedHeader, optimisticHeader }` atomically to disk (`~/.ethy/networks/<net>/cl/light-client.json` or caller path).
      - On restart within the same 27-hour period (or next period), `BeaconLightClient` resumes immediately from its cached `SyncCommittee` without needing a `bootstrap` call!

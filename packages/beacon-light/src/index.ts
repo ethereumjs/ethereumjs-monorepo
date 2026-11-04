@@ -6,7 +6,7 @@ export {
   stateRootForMerkleLeaf,
 } from './client.ts'
 export type { ApplyContext, BeaconLightClientOpts } from './client.ts'
-export { verifySyncCommitteeSignature } from './bls.ts'
+export { verifySyncCommitteeSignature, ETH_BLS_DST } from './bls.ts'
 export type { VerifySyncCommitteeSignatureOpts, VerifySyncCommitteeSignatureResult } from './bls.ts'
 export { computeSigningRoot, computeSyncCommitteeDomain, DOMAIN_SYNC_COMMITTEE } from './domain.ts'
 export {
@@ -18,7 +18,9 @@ export {
   ZERO_HASHES,
 } from './merkle.ts'
 export {
+  AMSTERDAM_EXECUTION_BLOCK_HASH_GINDEX,
   EXECUTION_PAYLOAD_GINDEX,
+  amsterdamActivationEpoch,
   capellaActivationEpoch,
   epochAtSlot,
   proofLayoutAtEpoch,

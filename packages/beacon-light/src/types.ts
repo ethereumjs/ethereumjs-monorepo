@@ -39,6 +39,8 @@ export type ExecutionPayloadHeaderSummary = {
 export type LightClientHeader = {
   beacon: BeaconBlockHeader
   execution?: ExecutionPayloadHeaderSummary
+  /** 32-byte `execution_block_hash` in Amsterdam / EIP-7732 ePBS light-client headers. */
+  executionBlockHash?: Uint8Array
   executionBranch?: Uint8Array[]
 }
 
