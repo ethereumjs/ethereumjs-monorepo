@@ -96,6 +96,56 @@ describe('[StateManager/consumeBAL]: apply block access list', () => {
     assert.isUndefined(await sm.getAccount(address))
   })
 
+  it('consumeBAL() skips accounts when shouldApplyAccount returns false', async () => {
+    const sm = new FlatStateManager()
+    const balanceAddr = createAddressFromString('0x2adc25665018aa1fe0e6bc666dac8fc2697ff9ba')
+    const otherAddr = createAddressFromString('0x0000f90827f1c53a10cb7a02335b175320002935')
+    const bal = balSimpleJSON.filter(
+      (entry) =>
+        entry.balanceChanges.length > 0 ||
+        entry.storageChanges.length > 0 ||
+        entry.nonceChanges.length > 0,
+    ) as BALJSONBlockAccessList
+
+    await sm.consumeBAL(bal, {
+      shouldApplyAccount: (addr) => addr.equals(balanceAddr),
+    })
+
+    assert.isDefined(await sm.getAccount(balanceAddr))
+    const skippedStorage = await sm.getStorage(otherAddr, setLengthLeft(hexToBytes('0x00'), 32))
+    assert.strictEqual(skippedStorage.length, 0)
+  })
+
+  it('FlatStateManager.consumeBAL() does not pin read-only BAL touches', async () => {
+    const sm = new FlatStateManager({ maxResidentAccounts: 1 })
+    const mutated = createAddressFromString('0x2adc25665018aa1fe0e6bc666dac8fc2697ff9ba')
+    const readOnly = createAddressFromString('0x0000000000000000000000000000000000000001')
+    await sm.putAccount(readOnly, createAccount({ balance: 1n }))
+    await sm.putAccount(mutated, createAccount({ balance: 1n }))
+
+    await sm.consumeBAL([
+      {
+        address: readOnly.toString() as PrefixedHexString,
+        nonceChanges: [],
+        balanceChanges: [],
+        codeChanges: [],
+        storageChanges: [],
+        storageReads: [],
+      },
+      {
+        address: mutated.toString() as PrefixedHexString,
+        nonceChanges: [],
+        balanceChanges: [{ blockAccessIndex: '0x00', postBalance: '0x02' }],
+        codeChanges: [],
+        storageChanges: [],
+        storageReads: [],
+      },
+    ])
+
+    assert.strictEqual((await sm.getAccount(mutated))?.balance, 2n)
+    assert.isDefined(await sm.getAccount(readOnly))
+  })
+
   it('MerkleStateManager.consumeBAL() throws when expected state root does not match', async () => {
     const sm = new MerkleStateManager()
     const wrongRoot = hexToBytes(('0x' + '11'.repeat(32)) as PrefixedHexString)

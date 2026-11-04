@@ -8,6 +8,7 @@ import {
   binaryAccountToAccount,
   bytesToHex,
   bytesToUnprefixedHex,
+  createAddressFromString,
   equalsBytes,
   hexToBytes,
   unprefixedHexToBytes,
@@ -20,7 +21,12 @@ import { OriginalStorageCache } from './cache/originalStorageCache.ts'
 import { consumeBAL as consumeBALUtil } from './consumeBAL.ts'
 import { modifyAccountFields } from './util.ts'
 
-import type { AccountFields, Common, StateManagerInterface } from '@ethereumjs/common'
+import type {
+  AccountFields,
+  Common,
+  ConsumeBALOptions,
+  StateManagerInterface,
+} from '@ethereumjs/common'
 import type { BALJSONBlockAccessList, PrefixedHexString } from '@ethereumjs/util'
 import type { FlatStateManagerOpts } from './types.ts'
 
@@ -337,6 +343,8 @@ export class FlatStateManager implements StateManagerInterface {
   }
 
   async deleteAccount(address: Address): Promise<void> {
+    const key = this.accountHashHex(address)
+    this._pinnedKeys.delete(key)
     await this.putAccount(address, undefined)
   }
 
@@ -480,18 +488,35 @@ export class FlatStateManager implements StateManagerInterface {
     return new FlatStateManager({ common: this.common }, this)
   }
 
-  async consumeBAL(bal: BALJSONBlockAccessList, expectedStateRoot?: Uint8Array): Promise<void> {
+  async consumeBAL(
+    bal: BALJSONBlockAccessList,
+    optsOrExpectedStateRoot?: Uint8Array | ConsumeBALOptions,
+  ): Promise<void> {
+    const opts =
+      optsOrExpectedStateRoot instanceof Uint8Array
+        ? { expectedStateRoot: optsOrExpectedStateRoot }
+        : (optsOrExpectedStateRoot ?? {})
+    const shouldApply = opts.shouldApplyAccount
     for (const row of bal) {
+      if (
+        row.balanceChanges.length === 0 &&
+        row.nonceChanges.length === 0 &&
+        row.codeChanges.length === 0 &&
+        row.storageChanges.length === 0
+      ) {
+        continue
+      }
       try {
-        const address = hexToBytes(row.address)
-        if (address.length === 20) {
-          this.pinKey(bytesToUnprefixedHex(this._keccak(address)))
+        const address = createAddressFromString(row.address)
+        if (shouldApply !== undefined && !shouldApply(address)) {
+          continue
         }
+        this.pinKey(this.accountHashHex(address))
       } catch {
         // skip malformed rows; consumeBALUtil validates further
       }
     }
-    return consumeBALUtil(this, bal, expectedStateRoot)
+    return consumeBALUtil(this, bal, optsOrExpectedStateRoot)
   }
 
   getStateRoot(): Promise<Uint8Array> {

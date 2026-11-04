@@ -10,7 +10,19 @@ import {
   setLengthLeft,
 } from '@ethereumjs/util'
 
-import type { StateManagerInterface } from '@ethereumjs/common'
+import type { ConsumeBALOptions, StateManagerInterface } from '@ethereumjs/common'
+
+export type { ConsumeBALOptions } from '@ethereumjs/common'
+
+function normalizeConsumeBALOpts(
+  optsOrExpectedStateRoot?: Uint8Array | ConsumeBALOptions,
+): ConsumeBALOptions {
+  if (optsOrExpectedStateRoot === undefined) return {}
+  if (optsOrExpectedStateRoot instanceof Uint8Array) {
+    return { expectedStateRoot: optsOrExpectedStateRoot }
+  }
+  return optsOrExpectedStateRoot
+}
 
 /**
  * Apply an EIP-7928 block-level access list onto `stateManager` without
@@ -26,8 +38,10 @@ import type { StateManagerInterface } from '@ethereumjs/common'
 export async function consumeBAL(
   stateManager: StateManagerInterface,
   bal: BALJSONBlockAccessList,
-  expectedStateRoot?: Uint8Array,
+  optsOrExpectedStateRoot?: Uint8Array | ConsumeBALOptions,
 ): Promise<void> {
+  const opts = normalizeConsumeBALOpts(optsOrExpectedStateRoot)
+  const { expectedStateRoot, shouldApplyAccount } = opts
   for (const acc of bal) {
     if (
       acc.balanceChanges.length === 0 &&
@@ -38,6 +52,9 @@ export async function consumeBAL(
       continue
     }
     const address = createAddressFromString(acc.address)
+    if (shouldApplyAccount !== undefined && !shouldApplyAccount(address)) {
+      continue
+    }
     const lastBalanceChange = acc.balanceChanges.at(-1)
     const balance =
       lastBalanceChange?.postBalance !== undefined
