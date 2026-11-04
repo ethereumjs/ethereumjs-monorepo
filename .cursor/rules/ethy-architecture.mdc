@@ -68,9 +68,13 @@ Every external I/O boundary must sit behind a lightweight TypeScript interface w
   - Verified DNS ENR peers already carry `{ id, address, tcpPort }` and must be dialed on TCP by `RLPx` **directly** (never gated on a redundant UDP `DPT.ping` or dropped when the discovery v4 k-bucket is full).
   - Filter out ENRs whose `ethForkId.forkHash` is not in our chain's `Common` fork schedule, and never auto-queue unsolicited UDP `ping` senders into `RLPx` without chain verification.
 - **No Beacon Node required for Snap Bootstrap:** Acquire the fresh pivot `stateRoot` and `blockNumber` directly from the best connected `eth` peer's latest block header (staying within the 128-block `snapAvailabilityDepth`).
-- **Single-Pivot `snap/1` Discipline & Sequential Sub-Stages (`WP-04a`):**
-  - A `snap/1` base sync (`Accounts` → `Code & Storage`) **always targets ONE fixed `pivotStateRoot` (`#P`)**. Never switch `pivotStateRoot` while `snap/1` is unfinished, and never mix BAL healing into an unfinished `snap/1` download.
-  - Within `SNAP_SYNCING`, `SnapAccountSynchronizer` gets 100% of `snap/1` peer slots until all 16 account buckets (`0x0..0xf`) reach `done`, after which `SnapCodeAndStorageSynchronizer` fetches contract bytecode and storage ranges for `#P`.
+- **Continuous Parallel `eth/71` BAL Streaming & Routine Rolling-Pivot Heartbeat (`WP-04k` — supersedes static single-pivot `WP-04a`):**
+  - From the moment the initial pivot header `#P_0` is anchored, `BalChainStreamer` runs **in parallel** with `SNAP_SYNCING`, continuously fetching and verifying blocks + `eth/71` Block-Level Access Lists (`#P_k + 1, #P_k + 2, ...`).
+  - Every `PIVOT_STEP_BLOCKS = 16` blocks (keeping target `<= bestPeerHead - 2` so all peers have the root), Ethy steps the active pivot forward (`#P_k → #P_{k+1}`):
+    1. Applies buffered BALs `#P_k + 1 .. #P_{k+1}` only to **already-synced** key-space ranges (`isAccountHashSynced === true`, skipping unsynced `subRanges` that `snap/1` will download directly at `R_{k+1}`).
+    2. Keeps in-flight `snap/1` requests alive by verifying each reply against its per-request `flight.stateRoot` (`R_k`) — zero aborted requests!
+    3. Updates `pivot.json` / `active.json` in place without wiping `accounts/` journals.
+  - When all 16 account buckets (`0x0..0xf`) and code/storage tasks finish, the remaining BAL gap is `0..15` blocks and the node flips into `★ Head Following · Live` (`● HEAD`) with a milestone summary widget in Zone 2.
 - **3-Rule Startup & "Close-the-Laptop" Resume Heuristic (`WP-04a` & `WP-04b`):**
   1. **Fresh (`--fresh` CLI flag or no saved state):** Wipes `pivots/` while preserving `peers.json` (VIP peer book), anchors fresh `#H`, and starts `snap/1` from `0%`.
   2. **Unfinished `snap/1` on disk (`pivot = #P`):** If `bestPeerHead - #P <= 90` blocks (~18 min), resume `snap/1` against the same `#P`. If `bestPeerHead - #P > 90` blocks (expired on `snap/1` peers), discard the stale partial `pivots/` directory, notify via `NoticeBoard`, and start fresh at `#H`.

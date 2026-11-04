@@ -112,6 +112,13 @@ Every Work Package delivers a **runnable, observable, and live-testable incremen
                       │         devp2p RLPx MAC Cipher Reuse    │                 │
                       └───────────────────┬─────────────────────┘                 │
                                           │                                       │
+                                          ▼                                       │
+                      ┌─────────────────────────────────────────┐                 │
+                      │ WP-04k: Continuous Parallel eth/71 BAL  │                 │
+                      │         Streaming, Routine 16-Block     │                 │
+                      │         Rolling Pivot & Live Head Flip  │                 │
+                      └───────────────────┬─────────────────────┘                 │
+                                          │                                       │
                                           └───────────────────┬───────────────────┘
                                                               ▼
                                           ┌─────────────────────────────────────────┐
