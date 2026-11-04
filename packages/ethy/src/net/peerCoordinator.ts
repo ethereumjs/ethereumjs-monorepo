@@ -721,6 +721,7 @@ export async function startPeerCoordinator(
     spine.pivotBlockNumber = parsed.number
     spine.pivotStateRoot = parsed.stateRoot
     spine.currentSlot = Number(parsed.number)
+    opts.witnessExecutionHeader?.(parsed.number, parsed.hash)
     if (firstAnchor || (prevRoot !== undefined && !equalsBytes(prevRoot, parsed.stateRoot))) {
       opts.notices?.clear('snap-resume', Date.now())
       snapStore?.activatePivot({

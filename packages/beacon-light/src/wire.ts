@@ -1,5 +1,6 @@
 import { EthereumJSErrorWithoutCode, hexToBytes } from '@ethereumjs/util'
 
+import { emptyLightClientHeader, emptySyncCommittee } from './client.ts'
 import type {
   LightClientBootstrap,
   LightClientFinalityUpdate,
@@ -64,7 +65,7 @@ function parseSyncAggregate(data: unknown): SyncAggregate {
   }
   const obj = data as Record<string, unknown>
   const bits = obj.sync_committee_bits ?? obj.syncCommitteeBits
-  const signature = obj.signature
+  const signature = obj.sync_committee_signature ?? obj.syncCommitteeSignature ?? obj.signature
   const bitBytes = parseHex(bits, 'sync_committee_bits')
   if (bitBytes.length !== 64) {
     throw EthereumJSErrorWithoutCode('sync committee bits must be 64 bytes')
@@ -171,17 +172,27 @@ function parseLightClientUpdateData(data: unknown): LightClientUpdate {
   if (data === null || typeof data !== 'object') {
     throw EthereumJSErrorWithoutCode('update data must be an object')
   }
-  const obj = data as Record<string, unknown>
+  const unwrapped =
+    'data' in (data as Record<string, unknown>) &&
+    (data as Record<string, unknown>).data !== undefined &&
+    typeof (data as Record<string, unknown>).data === 'object'
+      ? ((data as Record<string, unknown>).data as Record<string, unknown>)
+      : (data as Record<string, unknown>)
+  const nextRaw = unwrapped.next_sync_committee ?? unwrapped.nextSyncCommittee
+  const nextBranchRaw = unwrapped.next_sync_committee_branch ?? unwrapped.nextSyncCommitteeBranch
+  const finRaw = unwrapped.finalized_header ?? unwrapped.finalizedHeader
+  const finBranchRaw = unwrapped.finality_branch ?? unwrapped.finalityBranch
   return {
-    attestedHeader: parseLightClientHeaderJson(obj.attested_header ?? obj.attestedHeader),
-    nextSyncCommittee: parseSyncCommittee(obj.next_sync_committee ?? obj.nextSyncCommittee),
-    nextSyncCommitteeBranch: parseBranch(
-      obj.next_sync_committee_branch ?? obj.nextSyncCommitteeBranch,
+    attestedHeader: parseLightClientHeaderJson(
+      unwrapped.attested_header ?? unwrapped.attestedHeader,
     ),
-    finalizedHeader: parseLightClientHeaderJson(obj.finalized_header ?? obj.finalizedHeader),
-    finalityBranch: parseBranch(obj.finality_branch ?? obj.finalityBranch),
-    syncAggregate: parseSyncAggregate(obj.sync_aggregate ?? obj.syncAggregate),
-    signatureSlot: parseUint(obj.signature_slot ?? obj.signatureSlot, 'signature_slot'),
+    nextSyncCommittee: nextRaw !== undefined ? parseSyncCommittee(nextRaw) : emptySyncCommittee(),
+    nextSyncCommitteeBranch: nextBranchRaw !== undefined ? parseBranch(nextBranchRaw) : [],
+    finalizedHeader:
+      finRaw !== undefined ? parseLightClientHeaderJson(finRaw) : emptyLightClientHeader(),
+    finalityBranch: finBranchRaw !== undefined ? parseBranch(finBranchRaw) : [],
+    syncAggregate: parseSyncAggregate(unwrapped.sync_aggregate ?? unwrapped.syncAggregate),
+    signatureSlot: parseUint(unwrapped.signature_slot ?? unwrapped.signatureSlot, 'signature_slot'),
   }
 }
 
@@ -220,6 +231,9 @@ export function parseLightClientOptimisticUpdateJson(body: unknown): LightClient
 }
 
 export function parseLightClientUpdatesJson(body: unknown): LightClientUpdate[] {
+  if (Array.isArray(body)) {
+    return body.map((entry) => parseLightClientUpdateData(entry))
+  }
   return unwrapData(body, (data) => {
     if (!Array.isArray(data)) {
       throw EthereumJSErrorWithoutCode('updates data must be an array')

@@ -6,9 +6,8 @@ import { LightClientRunner } from '../runner.ts'
 import { BeaconLightStore, defaultLightClientPath } from '../store.ts'
 import { BeaconLightTransport } from '../transport.ts'
 
-import { buildBootstrap } from '../../test/fixtures/syntheticCommittee.ts'
-
 import { parseBeaconLightArgs, printBeaconLightUsage } from './args.ts'
+import { buildDemoScenario } from './demo.ts'
 
 function chainForNetwork(network: string) {
   switch (network) {
@@ -28,23 +27,24 @@ function shortHash(bytes: Uint8Array): string {
   return `${hex.slice(0, 8)}…${hex.slice(-6)}`
 }
 
-/** Post-Capella slot for offline demo bootstrap on the chosen chain. */
-function demoSlotFor(common: Common): number {
-  const cfg = common.beaconLightClient()
-  const capellaEpoch = cfg?.forks.find((f) => f.name === 'capella')?.epoch ?? 0
-  const slotsPerEpoch = cfg?.slotsPerEpoch ?? 32
-  return capellaEpoch * slotsPerEpoch + 64
-}
-
 async function runDemo(network: string): Promise<void> {
   const chain = chainForNetwork(network)
   const common = new Common({ chain })
   const client = createBeaconLightClient({ common })
-  const bootstrap = buildBootstrap(demoSlotFor(common), chain)
+  const { bootstrap, optimisticUpdate } = buildDemoScenario(common)
   client.bootstrap(bootstrap)
+  const t0 = performance.now()
+  client.applyOptimisticUpdate(optimisticUpdate)
+  const elapsedMs = (performance.now() - t0).toFixed(1)
   const head = client.getHeadExecution()
+  const fin = client.getFinalizedExecution()
+  const pct = (((head?.participantCount ?? 0) / 512) * 100).toFixed(1)
+  const elLabel =
+    head !== undefined && head.blockNumber > 0
+      ? `EL #${head.blockNumber.toLocaleString('en-US')} ${shortHash(head.blockHash)}`
+      : `EL ${shortHash(head?.blockHash ?? new Uint8Array(32))}`
   console.log(
-    `[demo] ${network} slot ${head?.slot ?? 0} · EL #${head?.blockNumber ?? 0} · ${shortHash(head?.blockHash ?? new Uint8Array(32))} · offline BLS path OK`,
+    `[demo] ${network} · Slot ${(head?.slot ?? 0).toLocaleString('en-US')} · BLS ${head?.participantCount ?? 0}/512 (${pct}%) in ${elapsedMs}ms · ${elLabel} · finalized slot ${(fin?.slot ?? 0).toLocaleString('en-US')} · offline BLS path OK`,
   )
 }
 
@@ -128,13 +128,20 @@ async function runLive(cli: ReturnType<typeof parseBeaconLightArgs>): Promise<vo
       console.log(`\x1b[33m! ${poll.error}\x1b[0m (${endpoint})`)
     } else if (head !== undefined) {
       const pct = ((poll.participantCount / 512) * 100).toFixed(1)
-      const lag =
-        fin !== undefined && head.blockNumber > fin.blockNumber
-          ? head.blockNumber - fin.blockNumber
-          : 0
-      console.log(
-        `Slot ${head.slot.toLocaleString('en-US')} · BLS ${poll.participantCount}/512 (${pct}%) · EL #${head.blockNumber.toLocaleString('en-US')} ${shortHash(head.blockHash)} · finalized #${fin?.blockNumber.toLocaleString('en-US') ?? '—'} (${lag} blk) · period ${period} · ${endpoint}`,
-      )
+      if (head.blockNumber > 0) {
+        const lag =
+          fin !== undefined && head.blockNumber > fin.blockNumber
+            ? head.blockNumber - fin.blockNumber
+            : 0
+        console.log(
+          `Slot ${head.slot.toLocaleString('en-US')} · BLS ${poll.participantCount}/512 (${pct}%) · EL #${head.blockNumber.toLocaleString('en-US')} ${shortHash(head.blockHash)} · finalized #${fin?.blockNumber.toLocaleString('en-US') ?? '—'} (-${lag} blk) · period ${period} · ${endpoint}`,
+        )
+      } else {
+        const slotLag = fin !== undefined && head.slot > fin.slot ? head.slot - fin.slot : 0
+        console.log(
+          `Slot ${head.slot.toLocaleString('en-US')} · BLS ${poll.participantCount}/512 (${pct}%) · EL ${shortHash(head.blockHash)} · finalized slot ${fin?.slot.toLocaleString('en-US') ?? '—'} (-${slotLag} slots) · period ${period} · ${endpoint}`,
+        )
+      }
     }
     await new Promise((r) => setTimeout(r, slotMs))
   }

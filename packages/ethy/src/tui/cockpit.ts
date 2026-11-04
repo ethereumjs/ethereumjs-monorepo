@@ -356,9 +356,15 @@ function metricsPairs(spine: EthySpine, domain: CapabilityId): TwoColumnPair[] {
           },
         ]
       }
+      const finAnchor =
+        spine.clFinalizedBlockNumber !== undefined && spine.clFinalizedBlockNumber > 0n
+          ? `#${spine.clFinalizedBlockNumber.toLocaleString('en-US')}`
+          : spine.clFinalizedSlot !== undefined
+            ? `slot ${spine.clFinalizedSlot.toLocaleString('en-US')}`
+            : '?'
       const clLine =
         spine.clStatus === 'verified'
-          ? `Finalized #${spine.clFinalizedBlockNumber?.toString() ?? '?'} · ${spine.clParticipationPct ?? '?'}% BLS`
+          ? `Finalized ${finAnchor} · ${spine.clParticipationPct ?? '?'}% BLS`
           : spine.clStatus === 'mismatch'
             ? 'CL mismatch'
             : spine.clStatus === 'syncing'

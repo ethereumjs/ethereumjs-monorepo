@@ -3,7 +3,11 @@ import { bytesToHex } from '@ethereumjs/util'
 import { assert, describe, it } from 'vitest'
 
 import { BeaconLightTransport } from '../src/transport.ts'
-import { parseLightClientBootstrapJson, parseLightClientHeaderJson } from '../src/wire.ts'
+import {
+  parseLightClientBootstrapJson,
+  parseLightClientHeaderJson,
+  parseLightClientUpdatesJson,
+} from '../src/wire.ts'
 
 import { buildBootstrap } from './fixtures/syntheticCommittee.ts'
 
@@ -120,5 +124,25 @@ describe('[BeaconLight]: transport and wire', () => {
     }
     const amsterdam = parseLightClientHeaderJson(amsterdamJson)
     assert.ok(amsterdam.executionBlockHash !== undefined)
+
+    // Standard Beacon API top-level array of { version, data } envelopes with sync_committee_signature
+    const updatesJson = [
+      {
+        version: 'electra',
+        data: {
+          attested_header: amsterdamJson,
+          finalized_header: amsterdamJson,
+          finality_branch: [],
+          sync_aggregate: {
+            sync_committee_bits: `0x${'ff'.repeat(64)}`,
+            sync_committee_signature: `0x${'11'.repeat(96)}`,
+          },
+          signature_slot: String(bootstrap.header.beacon.slot + 1),
+        },
+      },
+    ]
+    const updates = parseLightClientUpdatesJson(updatesJson)
+    assert.equal(updates.length, 1)
+    assert.equal(updates[0]!.signatureSlot, bootstrap.header.beacon.slot + 1)
   })
 })

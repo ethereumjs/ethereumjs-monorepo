@@ -114,10 +114,13 @@ export class LightClientRunner {
       }
     }
 
+    const pollFinality =
+      this.finalityPollCounter === 0 ||
+      this.finalityPollCounter >=
+        Math.max(1, Math.floor((this.common.beaconLightClient()?.slotsPerEpoch ?? 32) / 4))
     this.finalityPollCounter++
-    const slotsPerEpoch = this.common.beaconLightClient()?.slotsPerEpoch ?? 32
-    if (this.finalityPollCounter >= slotsPerEpoch) {
-      this.finalityPollCounter = 0
+    if (pollFinality) {
+      this.finalityPollCounter = 1
       try {
         const fin = await this.transport.fetchFinalityUpdate()
         const finResult = this.client.applyFinalityUpdate(fin)
@@ -127,7 +130,16 @@ export class LightClientRunner {
       }
     }
 
-    const updatesApplied = await this.catchUpUpdates(2)
+    const headBefore = this.client.getHeadExecution()
+    const finBefore = this.client.getFinalizedExecution()
+    const headPeriod =
+      headBefore !== undefined ? this.common.syncCommitteePeriodAtSlot(headBefore.slot) : 0
+    const finPeriod =
+      finBefore !== undefined ? this.common.syncCommitteePeriodAtSlot(finBefore.slot) : 0
+    const updatesApplied =
+      !this.client.hasNextSyncCommittee() || headPeriod > finPeriod
+        ? await this.catchUpUpdates(2)
+        : 0
     const head = this.client.getHeadExecution()
     if (head !== undefined) participantCount = head.participantCount
     this.persist()

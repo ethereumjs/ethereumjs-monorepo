@@ -40,11 +40,21 @@ export function syncSpineFromClient(
     spine.clStatus = spine.clStatus === 'mismatch' ? 'mismatch' : 'syncing'
     return
   }
-  spine.clStatus = 'verified'
-  spine.clOptimisticBlockNumber = BigInt(head.blockNumber)
-  spine.clFinalizedBlockNumber =
-    fin !== undefined ? BigInt(fin.blockNumber) : spine.clFinalizedBlockNumber
-  spine.clParticipationPct = Math.round((head.participantCount / 512) * 1000) / 10
+  spine.clStatus = spine.clStatus === 'mismatch' ? 'mismatch' : 'verified'
+  spine.clOptimisticSlot = head.slot
+  if (head.blockNumber > 0) {
+    spine.clOptimisticBlockNumber = BigInt(head.blockNumber)
+  }
+  if (fin !== undefined) {
+    spine.clFinalizedSlot = fin.slot
+    spine.clFinalizedBlockHash = new Uint8Array(fin.blockHash)
+    if (fin.blockNumber > 0) {
+      spine.clFinalizedBlockNumber = BigInt(fin.blockNumber)
+    }
+  }
+  if (head.participantCount > 0) {
+    spine.clParticipationPct = Math.round((head.participantCount / 512) * 1000) / 10
+  }
   spine.clPeriod = common.syncCommitteePeriodAtSlot(head.slot)
   spine.clHeadBlockHash = new Uint8Array(head.blockHash)
   spine.clEndpoint = endpoint
@@ -56,11 +66,17 @@ export function witnessPeerExecutionHeader(
   blockHash: Uint8Array,
   notices?: NoticeBoard,
 ): void {
-  const clNum = spine.clOptimisticBlockNumber ?? spine.clFinalizedBlockNumber
+  if (
+    spine.clFinalizedBlockHash !== undefined &&
+    equalsBytes(blockHash, spine.clFinalizedBlockHash)
+  ) {
+    spine.clFinalizedBlockNumber = blockNumber
+  }
   const clHash = spine.clHeadBlockHash
-  if (clNum === undefined || clHash === undefined) return
-  if (blockNumber !== clNum) return
+  if (clHash === undefined) return
   if (equalsBytes(blockHash, clHash)) {
+    spine.clOptimisticBlockNumber = blockNumber
+    spine.clStatus = 'verified'
     notices?.post(
       {
         key: 'cl-verify-ok',
@@ -72,11 +88,16 @@ export function witnessPeerExecutionHeader(
     )
     return
   }
+  const clNum = spine.clOptimisticBlockNumber ?? spine.clFinalizedBlockNumber
+  if (clNum === undefined || clNum === 0n || blockNumber !== clNum) return
+  const expectedHash =
+    blockNumber === spine.clOptimisticBlockNumber ? clHash : (spine.clFinalizedBlockHash ?? clHash)
+  if (equalsBytes(blockHash, expectedHash)) return
   spine.clStatus = 'mismatch'
   recordDiagnostic(spine, {
     subsystem: 'cl',
     severity: 'error',
-    message: `P2P block hash mismatch at #${blockNumber.toString()}: peer ${bytesToHex(blockHash)} vs CL ${bytesToHex(clHash)}`,
+    message: `P2P block hash mismatch at #${blockNumber.toString()}: peer ${bytesToHex(blockHash)} vs CL ${bytesToHex(expectedHash)}`,
   })
 }
 

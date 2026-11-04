@@ -289,6 +289,10 @@ export class BeaconLightClient {
     return this.bootstrapped
   }
 
+  hasNextSyncCommittee(): boolean {
+    return this.bootstrapped && !isSyncCommitteeEmpty(this.nextSyncCommittee)
+  }
+
   exportState(): BeaconLightClientSnapshot {
     return {
       version: 1,

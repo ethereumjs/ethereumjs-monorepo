@@ -161,10 +161,14 @@ export interface EthySpine {
   clStatus?: 'verified' | 'syncing' | 'p2p_only' | 'mismatch'
   clFinalizedBlockNumber?: bigint
   clOptimisticBlockNumber?: bigint
+  clFinalizedSlot?: number
+  clOptimisticSlot?: number
   clParticipationPct?: number
   clPeriod?: number
   /** Optimistic EL block hash from BLS-verified light client header. */
   clHeadBlockHash?: Uint8Array
+  /** Finalized EL block hash from BLS-verified light client header. */
+  clFinalizedBlockHash?: Uint8Array
   clEndpoint?: string
 }
 
