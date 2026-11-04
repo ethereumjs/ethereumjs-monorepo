@@ -29,7 +29,9 @@
         "gindices",
         "Gindex",
         "GINDEX",
-        "supermajority"
+        "supermajority",
+        "Json",
+        "pubkeys"
       ]
     }
   ],

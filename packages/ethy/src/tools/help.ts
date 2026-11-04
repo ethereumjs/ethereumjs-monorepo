@@ -5,6 +5,7 @@ export function buildHelpWidget(spine: EthySpine): WidgetSpec {
     ['/peers', 'Peer table (latency, caps)'],
     ['/buckets, /snap', '16-bucket snap progress'],
     ['/diag', 'Diagnostic ring buffer'],
+    ['/cl', 'Consensus light client (BLS / finality)'],
     ['/drop <peerId>', 'Remove peer (dev)'],
     ['/reassign <bucket>', 'Reassign bucket (dev)'],
   ]

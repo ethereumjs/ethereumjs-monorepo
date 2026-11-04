@@ -1,6 +1,8 @@
 import { EthereumJSErrorWithoutCode } from '@ethereumjs/util'
 import { bls12_381 } from '@noble/curves/bls12-381.js'
 
+const blsLong = bls12_381.longSignatures
+
 const SYNC_COMMITTEE_SIZE = 512
 const DEFAULT_SUPERMAJORITY = Math.ceil((SYNC_COMMITTEE_SIZE * 2) / 3)
 /** Ethereum consensus BLS12-381 Proof-of-Possession domain separation tag (RFC 9380). */
@@ -43,8 +45,9 @@ function defaultVerifyAggregate(
     const aggPk =
       participantPublicKeys.length === 1
         ? participantPublicKeys[0]!
-        : bls12_381.aggregatePublicKeys(participantPublicKeys)
-    return bls12_381.verify(signature, message, aggPk, { DST: ETH_BLS_DST })
+        : blsLong.aggregatePublicKeys(participantPublicKeys).toBytes()
+    const signingMessage = blsLong.hash(message, ETH_BLS_DST)
+    return blsLong.verify(signature, signingMessage, aggPk)
   } catch {
     return false
   }

@@ -13,6 +13,7 @@ const SLASH_COMMANDS = [
   '/bal',
   '/simulate',
   '/help',
+  '/cl',
 ] as const
 
 const SHORT_EXPAND: Record<string, string> = {

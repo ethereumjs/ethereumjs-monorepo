@@ -356,6 +356,14 @@ function metricsPairs(spine: EthySpine, domain: CapabilityId): TwoColumnPair[] {
           },
         ]
       }
+      const clLine =
+        spine.clStatus === 'verified'
+          ? `Finalized #${spine.clFinalizedBlockNumber?.toString() ?? '?'} · ${spine.clParticipationPct ?? '?'}% BLS`
+          : spine.clStatus === 'mismatch'
+            ? 'CL mismatch'
+            : spine.clStatus === 'syncing'
+              ? 'CL syncing…'
+              : 'CL: P2P-only'
       return [
         {
           label: 'Status',
@@ -370,14 +378,8 @@ function metricsPairs(spine: EthySpine, domain: CapabilityId): TwoColumnPair[] {
           label: 'Head Block',
           value: spine.headBlockNumber !== undefined ? `#${spine.headBlockNumber}` : '—',
         },
+        { label: 'Consensus', value: clLine },
         { label: 'State Root', value: shortHash(spine.headStateRoot) },
-        {
-          label: 'BAL Window',
-          value:
-            spine.balWindow.length > 0
-              ? `${spine.balWindow.length} blocks · ${spine.balWindow[0]?.accountCount ?? 0} accounts`
-              : '—',
-        },
       ]
     }
     case 'ai': {

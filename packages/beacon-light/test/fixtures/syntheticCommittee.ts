@@ -1,6 +1,8 @@
 import { type ChainConfig, Common, Hoodi } from '@ethereumjs/common'
-import { bigIntToBytes, hexToBytes, setLengthLeft } from '@ethereumjs/util'
+import { hexToBytes } from '@ethereumjs/util'
 import { bls12_381 } from '@noble/curves/bls12-381.js'
+
+const blsLong = bls12_381.longSignatures
 import { sha256 as nobleSha256 } from '@noble/hashes/sha2.js'
 
 import {
@@ -37,9 +39,11 @@ function executionPayloadFork(common: Common, slot: number): 'capella' | 'deneb'
 }
 
 export function deterministicSecretKey(index: number): Uint8Array {
-  const seed = nobleSha256(new TextEncoder().encode(`ethereumjs-beacon-light-test-${index}`))
-  const scalar = bls12_381.G1.normPrivateKeyToScalar(seed)
-  return setLengthLeft(bigIntToBytes(scalar), 32)
+  const digest = nobleSha256(new TextEncoder().encode(`ethereumjs-beacon-light-test-${index}`))
+  const seed = new Uint8Array(48)
+  seed.set(digest, 0)
+  seed.set(nobleSha256(digest).subarray(0, 16), 32)
+  return bls12_381.utils.randomSecretKey(seed)
 }
 
 const UNIQUE_TEST_KEYS = 8
@@ -68,7 +72,7 @@ export function buildTestSyncCommittee(): {
   for (let i = 0; i < UNIQUE_TEST_KEYS; i++) {
     const sk = deterministicSecretKey(i + 1)
     baseSecretKeys.push(sk)
-    basePublicKeys.push(bls12_381.getPublicKey(sk))
+    basePublicKeys.push(blsLong.getPublicKey(sk).toBytes())
   }
   const secretKeys: Uint8Array[] = []
   const publicKeys: Uint8Array[] = []
@@ -168,17 +172,18 @@ export function signAttestedHeader(
     domain,
     sha256,
   )
+  const signingMessage = blsLong.hash(signingRoot, ETH_BLS_DST)
   const sigBySecret = new Map<Uint8Array, Uint8Array>()
   const sigs = participantIndices.map((i) => {
     const sk = secretKeys[i]!
     let sig = sigBySecret.get(sk)
     if (sig === undefined) {
-      sig = bls12_381.sign(signingRoot, sk, { DST: ETH_BLS_DST })
+      sig = blsLong.sign(signingMessage, sk).toBytes()
       sigBySecret.set(sk, sig)
     }
     return sig
   })
-  const signature = sigs.length === 1 ? sigs[0]! : bls12_381.aggregateSignatures(sigs)
+  const signature = sigs.length === 1 ? sigs[0]! : blsLong.aggregateSignatures(sigs).toBytes()
   const bits = new Uint8Array(64)
   for (const i of participantIndices) {
     bits[i >> 3]! |= 1 << (i & 7)

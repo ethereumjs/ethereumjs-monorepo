@@ -157,6 +157,15 @@ export interface EthySpine {
   balWindow: BalWindowEntry[]
   snapPaused: boolean
   diagnosticRingBuffer: DiagnosticEvent[]
+  /** Consensus light client witness (WP-05b). */
+  clStatus?: 'verified' | 'syncing' | 'p2p_only' | 'mismatch'
+  clFinalizedBlockNumber?: bigint
+  clOptimisticBlockNumber?: bigint
+  clParticipationPct?: number
+  clPeriod?: number
+  /** Optimistic EL block hash from BLS-verified light client header. */
+  clHeadBlockHash?: Uint8Array
+  clEndpoint?: string
 }
 
 export type WidgetSpec =

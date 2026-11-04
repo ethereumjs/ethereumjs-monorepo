@@ -221,6 +221,8 @@ export type HeadFollowerOpts = {
   onSyncedToHead?: (head: bigint) => void
   onPivotStep?: (newPivot: VerifiedBalBlock) => void
   onBalBlockBuffered?: (entry: VerifiedBalBlock) => void
+  /** WP-05b: cross-check EL block hash against consensus light client. */
+  onVerifiedExecutionHeader?: (blockNumber: bigint, blockHash: Uint8Array) => void
 }
 
 type HeadCatchUp = {
@@ -325,10 +327,12 @@ export class BalChainStreamer {
       if (spine.bestPeerHead === undefined || fields.number > spine.bestPeerHead) {
         spine.bestPeerHead = fields.number
       }
+      const blockHash = bundle.hash ?? new Uint8Array(32)
+      this.opts.onVerifiedExecutionHeader?.(fields.number, blockHash)
       if (snapStreaming) {
         const entry: VerifiedBalBlock = {
           blockNumber: fields.number,
-          blockHash: bundle.hash ?? new Uint8Array(32),
+          blockHash,
           stateRoot: fields.stateRoot,
           headerRlp: bundle.headerRlp!,
           balRlp: bundle.balRlp,

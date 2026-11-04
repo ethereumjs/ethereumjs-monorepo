@@ -22,6 +22,7 @@ import {
 } from './ssz.ts'
 
 import type { Sha256Fn } from './ssz.ts'
+import type { BeaconLightClientSnapshot } from './stateSnapshot.ts'
 import type {
   ApplyUpdateResult,
   LightClientBootstrap,
@@ -80,6 +81,48 @@ export function emptySyncCommittee(): SyncCommittee {
   return {
     publicKeys: Array.from({ length: 512 }, () => new Uint8Array(48)),
     aggregatePubkey: new Uint8Array(48),
+  }
+}
+
+function cloneBytes(b: Uint8Array): Uint8Array {
+  return new Uint8Array(b)
+}
+
+function cloneSyncCommittee(committee: SyncCommittee): SyncCommittee {
+  return {
+    publicKeys: committee.publicKeys.map(cloneBytes),
+    aggregatePubkey: cloneBytes(committee.aggregatePubkey),
+  }
+}
+
+function cloneLightClientHeader(header: LightClientHeader): LightClientHeader {
+  return {
+    beacon: {
+      slot: header.beacon.slot,
+      proposerIndex: header.beacon.proposerIndex,
+      parentRoot: cloneBytes(header.beacon.parentRoot),
+      stateRoot: cloneBytes(header.beacon.stateRoot),
+      bodyRoot: cloneBytes(header.beacon.bodyRoot),
+    },
+    execution:
+      header.execution !== undefined
+        ? {
+            ...header.execution,
+            parentHash: cloneBytes(header.execution.parentHash),
+            feeRecipient: cloneBytes(header.execution.feeRecipient),
+            stateRoot: cloneBytes(header.execution.stateRoot),
+            receiptsRoot: cloneBytes(header.execution.receiptsRoot),
+            logsBloom: cloneBytes(header.execution.logsBloom),
+            prevRandao: cloneBytes(header.execution.prevRandao),
+            extraData: cloneBytes(header.execution.extraData),
+            blockHash: cloneBytes(header.execution.blockHash),
+            transactionsRoot: cloneBytes(header.execution.transactionsRoot),
+            withdrawalsRoot: cloneBytes(header.execution.withdrawalsRoot),
+          }
+        : undefined,
+    executionBlockHash:
+      header.executionBlockHash !== undefined ? cloneBytes(header.executionBlockHash) : undefined,
+    executionBranch: header.executionBranch?.map(cloneBytes),
   }
 }
 
@@ -189,6 +232,7 @@ export class BeaconLightClient {
   private readonly sha256: Sha256Fn
   private readonly verifyAggregate?: BeaconLightClientOpts['verifyAggregate']
 
+  private bootstrapped = false
   private finalizedHeader!: LightClientHeader
   private optimisticHeader!: LightClientHeader
   private currentSyncCommittee!: SyncCommittee
@@ -237,7 +281,36 @@ export class BeaconLightClient {
     this.currentSyncCommittee = bootstrap.currentSyncCommittee
     this.nextSyncCommittee = emptySyncCommittee()
     this.lastParticipantCount = 0
+    this.bootstrapped = true
     return bootstrap.header
+  }
+
+  isBootstrapped(): boolean {
+    return this.bootstrapped
+  }
+
+  exportState(): BeaconLightClientSnapshot {
+    return {
+      version: 1,
+      bootstrapped: this.bootstrapped,
+      lastParticipantCount: this.lastParticipantCount,
+      finalizedHeader: cloneLightClientHeader(this.finalizedHeader),
+      optimisticHeader: cloneLightClientHeader(this.optimisticHeader),
+      currentSyncCommittee: cloneSyncCommittee(this.currentSyncCommittee),
+      nextSyncCommittee: cloneSyncCommittee(this.nextSyncCommittee),
+    }
+  }
+
+  importState(snapshot: BeaconLightClientSnapshot): void {
+    if (snapshot.version !== 1) {
+      throw EthereumJSErrorWithoutCode('unsupported light client snapshot version')
+    }
+    this.bootstrapped = snapshot.bootstrapped
+    this.lastParticipantCount = snapshot.lastParticipantCount
+    this.finalizedHeader = cloneLightClientHeader(snapshot.finalizedHeader)
+    this.optimisticHeader = cloneLightClientHeader(snapshot.optimisticHeader)
+    this.currentSyncCommittee = cloneSyncCommittee(snapshot.currentSyncCommittee)
+    this.nextSyncCommittee = cloneSyncCommittee(snapshot.nextSyncCommittee)
   }
 
   applyUpdate(update: LightClientUpdate, ctx: ApplyContext = {}): ApplyUpdateResult {
