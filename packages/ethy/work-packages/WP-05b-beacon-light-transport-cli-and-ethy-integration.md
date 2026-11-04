@@ -1,6 +1,6 @@
 # WP-05b: `@ethereumjs/beacon-light` Live Transport, Standalone CLI Pulse & Ethy Consensus-Verified Sync/Head Integration
 
-- **Status:** `BLOCKED_BY_WP-05a`
+- **Status:** `READY_FOR_PLANNING`
 - **Dependencies:** `WP-04k`, `WP-05a`
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5

@@ -21,6 +21,16 @@
         "epoc",
         "cmix"
       ]
+    },
+    {
+      "filename": "**/packages/beacon-light/**",
+      "ignoreWords": [
+        "gindex",
+        "gindices",
+        "Gindex",
+        "GINDEX",
+        "supermajority"
+      ]
     }
   ],
   "words": [

@@ -1,6 +1,6 @@
 # WP-05a: `@ethereumjs/beacon-light` — Workspace Package, `@ethereumjs/common` Consensus Config, SSZ Merkle Proofs & BLS12-381 Sync Committee Verifier
 
-- **Status:** `READY_FOR_PLANNING`
+- **Status:** `DONE`
 - **Dependencies:** `WP-04k`
 - **Planner:** Grok 4.7
 - **Implementer:** Composer 2.5
@@ -95,19 +95,37 @@ Rather than trusting centralized RPC URLs or unverified execution-layer P2P head
 ---
 
 ### Acceptance Criteria (`WP-05a`)
-- [ ] Zero new third-party dependencies added to root or package `package.json`.
-- [ ] `@ethereumjs/common` exports `BeaconLightClientConfig` on `Mainnet`, `Sepolia`, `Hoodi`, and `Holesky`.
-- [ ] `@ethereumjs/beacon-light` builds (`ESM` + `CJS`), passes `public-api-snapshot.spec.mjs` and `ci-affected.spec.mjs`, and is registered in `scripts/release-npm.ts` (`ACTIVE_PACKAGES` + `PUBLISH_ORDER`).
-- [ ] `npm run tsc`, `npm test`, and `npm run spellcheck` pass across `@ethereumjs/common` and `@ethereumjs/beacon-light`.
+- [x] Zero new third-party dependencies added to root or package `package.json`.
+- [x] `@ethereumjs/common` exports `BeaconLightClientConfig` on `Mainnet`, `Sepolia`, `Hoodi`, and `Holesky`.
+- [x] `@ethereumjs/beacon-light` builds (`ESM` + `CJS`), passes `public-api-snapshot.spec.mjs` and `ci-affected.spec.mjs`, and is registered in `scripts/release-npm.ts` (`ACTIVE_PACKAGES` + `PUBLISH_ORDER`).
+- [x] `npm run tsc`, `npm test`, and `npm run spellcheck` pass across `@ethereumjs/common` and `@ethereumjs/beacon-light`.
 
 ---
 
 ## 2. Concrete Implementation Plan (Planner — Grok 4.7)
 
-*(To be filled out by Grok 4.7 during the Planning pass.)*
+**Decision D-085 (Electra generalized indices).** Pre-Electra light-client gindices: `CURRENT_SYNC_COMMITTEE` **54**, `NEXT_SYNC_COMMITTEE` **55**, `FINALIZED_ROOT` **105**; execution payload in `BeaconBlockBody` stays **25** through Fulu. Electra and later (CL Fulu stored as `osaka`): current **86**, next **87**, finalized **169**; execution **25**. `isValidMerkleBranch` uses `depth = floor(log2(gindex))`, `index = gindex - 2^depth`, and rejects branches whose length is not `depth`.
+
+**Domain & BLS.** Fork version at **`signature_slot - 1`**; `DOMAIN_SYNC_COMMITTEE = 0x07000000` mixed with `genesis_validators_root`. Signing root is `sha256(headerHashTreeRoot || domain)` (two-chunk `SigningData`). `verifySyncCommitteeSignature` sums participating G1 keys (342/512 default supermajority). Invalid bootstrap/update **throws**; BLS helper returns `{ valid, participantCount }`. SHA-256 via `common.customCrypto.sha256` when set; optional `verifyAggregate` on `createBeaconLightClient` for tests/backends (no `CustomCrypto.bls` field).
+
+**Slice 1 — `@ethereumjs/common`:** `BeaconLightClientConfig` + fork schedule on Mainnet, Sepolia, Hoodi, Holesky (`beaconLightClientConfigs.ts`); `Common.beaconLightClient()`, `forkVersionAtEpoch()`, `syncCommitteePeriodAtSlot()`; `test/beaconLightClient.spec.ts`.
+
+**Slice 2 — package & monorepo:** `packages/beacon-light` @ `10.1.3` (genesis-shaped scaffold); release npm/github, `PUBLIC_API_PACKAGES`, `ci-affected` `static`, workflow test step, root README row, `config/public-api-snapshots/beacon-light.json`.
+
+**Slice 3 — SSZ/Merkle:** Closed SSZ subset (`ssz.ts`), `merkle.ts` + `proofLayout.ts`, zero-tree synthetic proofs in `test/merkle.spec.ts`.
+
+**Slice 4 — domain/BLS:** `domain.ts`, `bls.ts`, `test/bls.spec.ts` (342/341 participants, domain at Electra epoch).
+
+**Slice 5 — state machine:** `client.ts` bootstrap / applyUpdate / finality / optimistic; `test/client.spec.ts` + `examples/verifyUpdate.ts` (offline, Mainnet).
+
+**Out of scope:** HTTP transport, CLI, Ethy `/cl` → **WP-05b**.
 
 ---
 
 ## 3. Implementation Notes & Deviations (Implementer — Composer 2.5)
 
-*(To be filled out by Composer 2.5 after implementation and verification.)*
+- **D-085** recorded in `PROGRESS.md`; Electra gindices in code match consensus-specs (not the pre-plan WP doc table).
+- **Test chain:** Offline client tests use **Hoodi** (Capella/Deneb from epoch 0) so low-slot fixtures can carry execution payloads; the example uses **Mainnet** slot `6_500_000` with fork-aware execution-header SSZ (Capella field set before Deneb activation epoch).
+- **Zero-hash ladder test:** Level 1 is `sha256(64 zero bytes)` (`0xf5a5…`), not `sha256(32 zero bytes)`.
+- **Noble BLS v2.4:** G1 scalar normalization via `bls12_381.G1.normPrivateKeyToScalar`; aggregate verify via top-level `bls12_381.verify` / `aggregatePublicKeys` / `aggregateSignatures`.
+- **Verification:** `npm run tsc` + `npm run test:node` in `common` and `beacon-light`; `npm run examples` in `beacon-light`; `node scripts/public-api-snapshot.spec.mjs`; `node scripts/ci-affected.spec.mjs`; package `spellcheck` green (cspell override for `gindex` / `supermajority` in `config/cspell-ts.json`).

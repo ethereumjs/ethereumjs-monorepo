@@ -31,6 +31,7 @@ const ACTIVE_PACKAGES = [
   'block',
   'blockchain',
   'common',
+  'beacon-light',
   'devp2p',
   'evm',
   'genesis',

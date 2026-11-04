@@ -206,6 +206,7 @@ describe('real workspace graph', () => {
     })
     assert.equal(commonOnly.jobs.ethy, true)
     assert.equal(commonOnly.jobs.common, true)
+    assert.equal(commonOnly.jobs.static, true)
     assert.equal(coverageFlags(commonOnly.changed, commonOnly.jobs).ethy_coverage, false)
   })
 

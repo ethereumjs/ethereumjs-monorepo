@@ -59,7 +59,7 @@ export const SKIPPABLE_JOBS = {
   ethy: ['ethy'],
   examples: '*',
   mpt: ['mpt'],
-  static: ['rlp', 'ethash', 'genesis', 'wallet'],
+  static: ['rlp', 'ethash', 'genesis', 'beacon-light', 'wallet'],
   statemanager: ['statemanager'],
   tx: ['tx'],
   util: ['util'],

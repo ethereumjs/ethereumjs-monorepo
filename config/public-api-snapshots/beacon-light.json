@@ -1,0 +1,27 @@
+{
+  "package": "beacon-light",
+  "exports": [
+    "BeaconLightClient",
+    "DOMAIN_SYNC_COMMITTEE",
+    "EXECUTION_PAYLOAD_GINDEX",
+    "ZERO_HASHES",
+    "capellaActivationEpoch",
+    "computeSigningRoot",
+    "computeSyncCommitteeDomain",
+    "createBeaconLightClient",
+    "emptyLightClientHeader",
+    "emptySyncCommittee",
+    "epochAtSlot",
+    "gindexToMerklePosition",
+    "hashTreeRootBeaconBlockHeader",
+    "hashTreeRootExecutionPayloadHeader",
+    "hashTreeRootSyncCommittee",
+    "isValidMerkleBranch",
+    "isValidNormalizedMerkleBranch",
+    "merkleRootFromZeroBranch",
+    "normalizeMerkleBranch",
+    "proofLayoutAtEpoch",
+    "stateRootForMerkleLeaf",
+    "verifySyncCommitteeSignature"
+  ]
+}
